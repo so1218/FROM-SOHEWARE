@@ -1,0 +1,628 @@
+#include "DebugGuiManager.h"
+#include "Engine.h"
+#include "TimeManager.h"
+
+#include "externals/imgui/imgui.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
+
+void DebugGuiManager::Initialize(Engine* engine, Camera* camera, LightManager* lightManager, MaterialManager* materialManager,
+    TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
+{
+    engine_ = engine;
+    camera_ = camera;
+    lightManager_ = lightManager;
+    materialManager_ = materialManager;
+    textureManager_ = textureManager;
+    postEffectManager_ = postEffectManager;
+	debugCamera_ = debugCamera;
+
+    cameraFov_ = camera_->GetFov();
+    cameraNearClip_ = camera_->GetNearClip();
+    cameraFarClip_ = camera_->GetFarClip();
+}
+
+void DebugGuiManager::Update()
+{
+    // メインのデバッグウィンドウ
+    ImGui::Begin("全体のデバッグ情報");
+
+    if (ImGui::CollapsingHeader("描画系"))
+    {
+        DrawRenderSettings();
+    }
+    if (ImGui::CollapsingHeader("カメラ"))
+    {
+        DrawCameraSettings();
+    }
+    if (ImGui::CollapsingHeader("ライト"))
+    {
+        DrawLightSettings();
+    }
+    if (ImGui::CollapsingHeader("ポストエフェクト"))
+    {
+        DrawPostEffectSettings();
+    }
+    if (ImGui::CollapsingHeader("全体的な情報"))
+    {
+        DrawInformationDisplays();
+    }
+    DrawConsole();
+
+    ImGui::End();
+}
+
+void DebugGuiManager::DrawRenderSettings()
+{
+    ImGui::Checkbox("isWireFrame", &engine_->isWireFrame_);
+}
+
+void DebugGuiManager::DrawCameraSettings()
+{
+    if (ImGui::TreeNode("メインカメラ"))
+    {
+        // 位置
+        Vector3 translation = camera_->GetTranslation();
+        if (ImGui::DragFloat3("World Translation", &translation.x, 0.1f)) {
+            camera_->SetTranslation(translation);
+            camera_->UpdateViewMatrix();
+        }
+
+        // 回転
+        Vector3 rotationEuler = camera_->GetWorldRotationEuler();
+        if (ImGui::DragFloat3("World Rotation", &rotationEuler.x, 0.1f)) {
+            camera_->SetWorldRotationEuler(rotationEuler);
+            camera_->UpdateViewMatrix();
+        }
+
+        // スライダーで調整
+        if (ImGui::DragFloat("FOV", &cameraFov_, 0.1f, 1.0f, 179.0f)) {
+            camera_->SetFov(cameraFov_);
+        }
+        if (ImGui::DragFloat("Near Clip", &cameraNearClip_, 0.01f, 0.001f, 100.0f)) {
+            camera_->SetNearClip(cameraNearClip_);
+        }
+        if (ImGui::DragFloat("Far Clip", &cameraFarClip_, 1.0f, 1.0f, 10000.0f)) {
+            camera_->SetFarClip(cameraFarClip_);
+        }
+        ImGui::TreePop();
+    }
+
+
+    // DebugCameraの内部パラメータを操作できるようにする
+    if (ImGui::TreeNode("デバッグカメラ"))
+    {
+        bool enabled = engine_->debugCamera_->IsEnabled();
+        if (ImGui::Checkbox("Enable Debug Camera", &enabled))
+        {
+            engine_->debugCamera_->SetEnabled(enabled);
+        }
+
+        // 注視点の編集
+        Vector3 target = debugCamera_->GetTarget();
+        if (ImGui::DragFloat3("Camera Target", &target.x, 0.1f)) {
+            debugCamera_->SetTarget(target);
+            camera_->UpdateViewMatrix();
+        }
+
+        float distance = debugCamera_->GetDistance();
+        if (ImGui::DragFloat("Camera Distance", &distance, 0.1f, 1.0f, 500.0f)) {
+            debugCamera_->SetDistance(distance);
+            camera_->UpdateViewMatrix();
+        }
+
+        float pitch = debugCamera_->GetCurrentPitch();
+        if (ImGui::DragFloat("Pitch", &pitch, 0.1f, -89.0f, 89.0f)) {
+            debugCamera_->SetCurrentPitch(pitch);
+            camera_->UpdateViewMatrix();
+        }
+
+        float yaw = debugCamera_->GetCurrentYaw();
+        if (ImGui::DragFloat("Yaw", &yaw, 0.1f, -180.0f, 180.0f)) {
+            debugCamera_->SetCurrentYaw(yaw);
+            camera_->UpdateViewMatrix();
+        }
+
+        // その他の設定の調整
+        float dragSpeed = debugCamera_->GetDragSpeed();
+        if (ImGui::DragFloat("Drag Speed", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
+            debugCamera_->SetDragSpeed(dragSpeed);
+        }
+
+        float rotateSpeed = debugCamera_->GetRotateSpeed();
+        if (ImGui::DragFloat("Rotate Speed", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
+            debugCamera_->SetRotateSpeed(rotateSpeed);
+        }
+
+        float zoomSpeed = debugCamera_->GetZoomSpeed();
+        if (ImGui::DragFloat("Zoom Speed", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
+            debugCamera_->SetZoomSpeed(zoomSpeed);
+        }
+        ImGui::TreePop();
+    }
+
+    // カメラの更新を反映（通常はEngine::UpdateやDebugCamera::Updateでまとめて行う）
+    camera_->UpdateViewProjectionMatrix();
+}
+
+void DebugGuiManager::DrawLightSettings()
+{
+    DirectionalLight* dirLights = lightManager_->GetDirectionalLightData();
+    PointLight* pointLights = lightManager_->GetPointLightData();
+    SpotLight* spotLights = lightManager_->GetSpotLightData();
+
+    MaterialSettings& materialSettings = materialManager_->GetMaterialSettings();
+
+    ImGui::Checkbox("Enable Lighting", &materialSettings.enableLighting);
+
+    // Directional Lights
+    if (ImGui::TreeNode("Directional Lights"))
+    {
+        ImGui::Combo("Light Mode", &materialSettings.lightMode,
+            "HalfLambert\0Specular\0Toon\0");
+
+        for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
+        {
+            std::string label = "Directional Light " + std::to_string(i);
+            if (ImGui::TreeNode(label.c_str()))
+            {
+                bool enabled = (dirLights[i].enable != 0);
+                if (ImGui::Checkbox("Enable", &enabled))
+                {
+                    dirLights[i].enable = enabled ? 1 : 0;
+                }
+                ImGui::DragFloat3("Direction", &dirLights[i].direction.x, 0.05f);
+                ImGui::ColorEdit4("Color", &dirLights[i].color.x);
+                ImGui::DragFloat("Intensity", &dirLights[i].intensity, 0.01f, 0.0f, 100.0f);
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    // Point Lights
+    if (ImGui::TreeNode("Point Lights"))
+    {
+        for (int i = 0; i < lightManager_->GetPointLightCount(); ++i)
+        {
+            std::string label = "Point Light " + std::to_string(i);
+            if (ImGui::TreeNode(label.c_str()))
+            {
+                bool enabled = (pointLights[i].enable != 0);
+                if (ImGui::Checkbox("Enable", &enabled))
+                {
+                    pointLights[i].enable = enabled ? 1 : 0;
+                }
+                ImGui::DragFloat3("Position", &pointLights[i].position.x, 0.05f);
+                ImGui::ColorEdit4("Color", &pointLights[i].color.x);
+                ImGui::DragFloat("Intensity", &pointLights[i].intensity, 0.01f);
+                ImGui::DragFloat("Radius", &pointLights[i].radius, 0.1f);
+                ImGui::DragFloat("Decay", &pointLights[i].decay, 0.01f);
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    // Spot Lights
+    if (ImGui::TreeNode("Spot Lights"))
+    {
+        for (int i = 0; i < lightManager_->GetSpotLightCount(); ++i)
+        {
+            std::string label = "Spot Light " + std::to_string(i);
+            if (ImGui::TreeNode(label.c_str()))
+            {
+                bool enabled = (spotLights[i].enable != 0);
+                if (ImGui::Checkbox("Enable", &enabled))
+                {
+                    spotLights[i].enable = enabled ? 1 : 0;
+                }
+                ImGui::DragFloat3("Position", &spotLights[i].position.x, 0.05f);
+                ImGui::ColorEdit4("Color", &spotLights[i].color.x);
+                ImGui::DragFloat("Intensity", &spotLights[i].intensity, 0.01f);
+                ImGui::DragFloat3("Direction", &spotLights[i].direction.x, 0.05f);
+                ImGui::DragFloat("Distance", &spotLights[i].distance, 0.1f);
+                ImGui::DragFloat("Decay", &spotLights[i].decay, 0.01f);
+                ImGui::DragFloat("Cos Angle", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    // マテリアル設定
+    ImGui::DragFloat("Shininess", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
+    ImGui::ColorEdit4("Specular Color", &materialSettings.specularColor.x, 0);
+
+}
+
+void DebugGuiManager::DrawPostEffectSettings()
+{
+    PostEffectData* postEffectData = postEffectManager_->postEffectData_;
+    BrightExtractSettings* brightExtractData = postEffectManager_->brightExtractData_;
+    BlurSettings* blurSettingsData = postEffectManager_->blurSettingsData_;
+    CombineSetting* bloomSettingsData = postEffectManager_->combineSettingsData_;
+
+    ImGui::CheckboxFlags("None", &postEffectData->modeFlags[0], NONE);
+    if (ImGui::TreeNode("PostEffectMode"))
+    {
+        if (ImGui::TreeNode("Mode[0]1~7"))
+        {
+            // 下位32bit（modeFlags[0]）
+            ImGui::CheckboxFlags("Grayscale", &postEffectData->modeFlags[0], GRAYSCALE);
+            ImGui::CheckboxFlags("Invert Color", &postEffectData->modeFlags[0], INVERT_COLOR);
+            ImGui::CheckboxFlags("Sepia", &postEffectData->modeFlags[0], SEPIA);
+            ImGui::CheckboxFlags("Brightness", &postEffectData->modeFlags[0], BRIGHTNESS);
+            ImGui::CheckboxFlags("Posterization", &postEffectData->modeFlags[0], POSTERIZATION);
+            ImGui::CheckboxFlags("Pixelation", &postEffectData->modeFlags[0], PIXELATION);
+            ImGui::CheckboxFlags("ColorTint", &postEffectData->modeFlags[0], COLOR_TINT);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Mode[0]8~16"))
+        {
+            // 下位32bit（modeFlags[0]）
+            ImGui::CheckboxFlags("Contrast", &postEffectData->modeFlags[0], CONTRAST);
+            ImGui::CheckboxFlags("Saturation", &postEffectData->modeFlags[0], SATURATION);
+            ImGui::CheckboxFlags("HueShift", &postEffectData->modeFlags[0], HUE_SHIFT);
+            ImGui::CheckboxFlags("ChannelSwap", &postEffectData->modeFlags[0], CHANNEL_SWAP);
+            ImGui::CheckboxFlags("CelShading", &postEffectData->modeFlags[0], CEL_SHADING);
+            ImGui::CheckboxFlags("NormalOutline", &postEffectData->modeFlags[0], NORMAL_OUTLINE);
+            ImGui::CheckboxFlags("BrightExtract", &postEffectData->modeFlags[0], BRIGHT_EXTRACT);
+            ImGui::CheckboxFlags("Vignette", &postEffectData->modeFlags[0], VIGNETTE);
+
+            ImGui::TreePop();
+        }
+        if (ImGui::TreeNode("Mode[0]16~24"))
+        {
+            ImGui::CheckboxFlags("ScreenNoise", &postEffectData->modeFlags[0], SCREEN_NOISE);
+            ImGui::CheckboxFlags("ChromaticAberration", &postEffectData->modeFlags[0], CHROM_ABERRATION);
+            ImGui::CheckboxFlags("ScreenWave", &postEffectData->modeFlags[0], SCREEN_WAVE);
+            ImGui::CheckboxFlags("FisheyeLens", &postEffectData->modeFlags[0], FISHEYE);
+            ImGui::CheckboxFlags("Flash", &postEffectData->modeFlags[0], FLASH);
+            ImGui::CheckboxFlags("CRTScanline", &postEffectData->modeFlags[0], SCANLINE);
+            ImGui::CheckboxFlags("BlockNoise", &postEffectData->modeFlags[0], BLOCK_NOISE);
+            ImGui::CheckboxFlags("Solarize", &postEffectData->modeFlags[0], SOLARIZE);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Mode[0]25~32"))
+        {
+            ImGui::CheckboxFlags("MultiPosterize", &postEffectData->modeFlags[0], MULTI_POSTERIZE);
+            ImGui::CheckboxFlags("RGBSplitHorizontal", &postEffectData->modeFlags[0], RGB_SPLIT);
+            ImGui::CheckboxFlags("InvertByY", &postEffectData->modeFlags[0], INVERT_BY_Y);
+            ImGui::CheckboxFlags("FilmGrain", &postEffectData->modeFlags[0], FILM_GRAIN);
+            ImGui::CheckboxFlags("Glitch", &postEffectData->modeFlags[0], GLITCH);
+            ImGui::CheckboxFlags("EdgeDetection", &postEffectData->modeFlags[0], EDGE_DETECTION);
+            ImGui::CheckboxFlags("HeatHaze", &postEffectData->modeFlags[0], HEAT_HAZE);
+            ImGui::CheckboxFlags("SplitToning", &postEffectData->modeFlags[0], SPLIT_TONING);
+            ImGui::CheckboxFlags("WaterReaction", &postEffectData->modeFlags[0], WATER_REFRACTION);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Mode[1]1~16"))
+        {
+            // 上位32bit（modeFlags[1]）
+            ImGui::CheckboxFlags("RoughEdge", &postEffectData->modeFlags[1], ROUGH_EDGE);
+            ImGui::CheckboxFlags("SpiralWarp", &postEffectData->modeFlags[1], SPIRAL_WARP);
+            ImGui::CheckboxFlags("RadialWave", &postEffectData->modeFlags[1], RADIAL_WAVE);
+            ImGui::CheckboxFlags("GlowingOutline", &postEffectData->modeFlags[1], GLOW_OUTLINE);
+            ImGui::CheckboxFlags("FBMNoise", &postEffectData->modeFlags[1], FBM_NOISE);
+            ImGui::CheckboxFlags("Flare", &postEffectData->modeFlags[1], FLARE);
+            ImGui::CheckboxFlags("BallEffect", &postEffectData->modeFlags[1], BALL_EFFECT);
+            ImGui::CheckboxFlags("DotBlink", &postEffectData->modeFlags[1], DOT_BLINK);
+            ImGui::CheckboxFlags("Outline", &postEffectData->modeFlags[1], OUTLINE);
+            ImGui::TreePop();
+        }
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Neon"))
+    {
+        if (ImGui::TreeNode("Bright Extract Settings"))
+        {
+            ImGui::SliderFloat("Threshold", &brightExtractData->threshold, 0.0f, 10.0f);
+            ImGui::SliderFloat("Intensity", &brightExtractData->intensity, 0.0f, 5.0f);
+            ImGui::TreePop();
+        }
+
+
+        if (ImGui::TreeNode("Blur Settings"))
+        {
+            ImGui::SliderFloat2("Texel Size", &blurSettingsData->texelSize.x, 0.0f, 0.1f);
+            ImGui::SliderFloat("Blur Strength", &blurSettingsData->blurStrength, 0.0f, 10.0f);
+            ImGui::TreePop();
+        }
+
+
+        if (ImGui::TreeNode("Bloom Settings"))
+        {
+            ImGui::SliderFloat("Brightness Threshold", &bloomSettingsData->brightnessThreshold, 0.0f, 10.0f);
+            static const char* modeNames[] = { "Halo", "Neon", "Bloom" };
+            ImGui::Combo("Effect Mode", &bloomSettingsData->effectMode, modeNames, IM_ARRAYSIZE(modeNames));
+            ImGui::TreePop();
+        }
+        ImGui::TreePop();
+    }
+
+    ImGui::Text("PostEffect Flags:");
+    ImGui::Separator();
+
+    if (postEffectData->modeFlags[0] & GRAYSCALE)
+    {
+        ImGui::SliderFloat("Grayscale Amount", &postEffectData->grayscaleColorAmount, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & SEPIA)
+    {
+        ImGui::SliderFloat("Sepia Amount", &postEffectData->sepiaColorAmount, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & INVERT_COLOR)
+    {
+        ImGui::SliderFloat("Invert Amount", &postEffectData->invertColorAmount, 0.0f, 1.0f);
+    }  
+    if (postEffectData->modeFlags[0] & BRIGHTNESS)
+    {
+        ImGui::SliderFloat("Brightness Value", &postEffectData->brightnessValue, -1.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & POSTERIZATION) 
+    {
+        ImGui::SliderFloat("Posterization Levels", &postEffectData->posterizationLevels, 2.0f, 32.0f);
+    }
+    if (postEffectData->modeFlags[0] & PIXELATION)
+    {
+        ImGui::SliderFloat("Pixelation Size", &postEffectData->pixelationSize, 1.0f, 64.0f);
+    }
+    if (postEffectData->modeFlags[0] & COLOR_TINT) 
+    {
+        ImGui::ColorEdit3("Tint Color", &postEffectData->tintColor.x);
+        ImGui::SliderFloat("Multiply Amount", &postEffectData->tintMulColorAmount, 0.0f, 1.0f);
+        ImGui::SliderFloat("Additive Amount", &postEffectData->tintAddColorAmount, 0.0f, 1.0f);
+        ImGui::SliderFloat("Screen Amount", &postEffectData->tintScreenColorAmount, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & CONTRAST) 
+    {
+        ImGui::SliderFloat("Contrast Value", &postEffectData->contrastValue, 0.0f, 3.0f);
+    }
+    if (postEffectData->modeFlags[0] & SATURATION) 
+    {
+        ImGui::SliderFloat("Saturation Value", &postEffectData->saturationValue, 0.0f, 2.0f);
+    }
+    if (postEffectData->modeFlags[0] & HUE_SHIFT)
+    {
+        ImGui::SliderFloat("Hue Shift Amount", &postEffectData->hueShiftAmount, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & CHANNEL_SWAP)
+    {
+        const char* items[] = { "BGR", "GRB", "GBR", "BRG", "RBG" };
+        ImGui::Combo("Channel Swap Mode", &postEffectData->channelSwapMode, items, IM_ARRAYSIZE(items));
+    }
+    if (postEffectData->modeFlags[0] & CEL_SHADING)
+    {
+        ImGui::SliderFloat("Cel Shading Levels", &postEffectData->celShadingLevels, 2.0f, 20.0f, "%.0f");
+    }
+    if (postEffectData->modeFlags[0] & NORMAL_OUTLINE)
+    {
+        ImGui::SliderFloat("Outline Threshold", &postEffectData->normalOutlineThreshold, 0.0f, 2.0f);
+        ImGui::SliderFloat("Outline Thickness", &postEffectData->normalOutlineThickness, 0.5f, 5.0f);
+        ImGui::ColorEdit3("Outline Color", &postEffectData->normalOutlineColor.x);
+    }
+    if (postEffectData->modeFlags[0] & VIGNETTE) 
+    {
+        ImGui::SliderFloat("Vignette Amount", &postEffectData->vignetteAmount, 0.0f, 10.0f);
+        ImGui::SliderFloat("Vignette Radius", &postEffectData->vignetteRadius, 0.0f, 1.0f);
+        ImGui::SliderFloat("Vignette Softness", &postEffectData->vignetteSoftness, 0.0f, 1.0f);
+        ImGui::SliderFloat2("Vignette EllipseScale", &postEffectData->vignetteEllipseScale.x, 0.0f, 2.0f);
+        ImGui::ColorEdit3("Vignette Color", &postEffectData->vignetteColor.x);
+    }
+    if (postEffectData->modeFlags[0] & SCREEN_NOISE)
+    {
+        ImGui::SliderFloat("Noise Amount", &postEffectData->noiseAmount, 0.0f, 1.0f);
+        ImGui::SliderFloat("Noise Speed", &postEffectData->noiseSpeed, 0.0f, 10.0f);
+        ImGui::SliderFloat("Noise Scale", &postEffectData->noiseScale, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & CHROM_ABERRATION)
+    {
+        ImGui::SliderFloat("Chroma Offset", &postEffectData->chromaOffset, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[0] & SCREEN_WAVE)  
+    {
+        const char* waveDirOptions[] = { "Horizontal", "Vertical", "Both" };
+        ImGui::Combo("Screen Wave Direction", &postEffectData->waveDirection, waveDirOptions, IM_ARRAYSIZE(waveDirOptions));
+        ImGui::SliderFloat("Wave Frequency", &postEffectData->waveFrequency, 1.0f, 100.0f);
+        ImGui::SliderFloat("Wave Amplitude", &postEffectData->waveAmplitude, 0.0f, 0.05f);
+        ImGui::SliderFloat("Wave Speed", &postEffectData->waveSpeed, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[0] & FISHEYE) 
+    {
+        ImGui::SliderFloat("FisheyeLens", &postEffectData->fisheyeDistortion, 0.0f, 2.0f);
+    }
+    if (postEffectData->modeFlags[0] & FLASH)
+    {
+        ImGui::SliderFloat("Flash Frequency", &postEffectData->flashFrequency, 0.1f, 10.0f);
+        ImGui::SliderFloat("Flash Intensity", &postEffectData->flashIntensity, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & SCANLINE)
+    {
+        ImGui::SliderFloat("Scanline Intensity", &postEffectData->scanlineIntensity, 0.0f, 1.0f);
+        ImGui::SliderFloat("Scanline Frequency", &postEffectData->scanlineFrequency, 1.0f, 1000.0f);
+        ImGui::SliderFloat("Scanline Scroll Speed", &postEffectData->scanlineScrollSpeed, -15.0f, 15.0f);
+        ImGui::ColorEdit3("Scanline Color", &postEffectData->scanlineColor.x);
+
+        const char* directions[] = { "Horizontal", "Vertical", "Diagonal" };
+        ImGui::Combo("Scanline Direction", &postEffectData->scanlineDirection, directions, IM_ARRAYSIZE(directions));
+    }
+    if (postEffectData->modeFlags[0] & BLOCK_NOISE)
+    {
+        ImGui::SliderFloat("Block Noise Amount", &postEffectData->blockNoiseAmount, 0.0f, 1.0f);
+        ImGui::SliderFloat("Block Size", &postEffectData->blockNoiseSize, 4.0f, 128.0f);
+        ImGui::SliderFloat("Noise Speed", &postEffectData->blockNoiseSpeed, 0.0f, 100.0f);
+    }
+    if (postEffectData->modeFlags[0] & SOLARIZE)
+    {
+        ImGui::SliderFloat("Solarize Threshold", &postEffectData->solarizeThreshold, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & MULTI_POSTERIZE) 
+    {
+        ImGui::SliderFloat("Posterize Levels", &postEffectData->multiPosterizeLevels, 2.0f, 32.0f);
+    }
+    if (postEffectData->modeFlags[0] & RGB_SPLIT)  
+    {
+        ImGui::SliderFloat("RGB Split Offset", &postEffectData->rgbSplitOffset, 0.0f, 0.05f);
+    }
+    if (postEffectData->modeFlags[0] & FILM_GRAIN)
+    {
+        ImGui::SliderFloat("Film Grain Intensity", &postEffectData->filmGrainIntensity, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & GLITCH)
+    {
+        ImGui::SliderFloat("Glitch Block Height", &postEffectData->glitchBlockHeight, 0.01f, 0.2f);
+        ImGui::SliderFloat("Glitch Amount", &postEffectData->glitchAmount, 0.0f, 0.3f);
+        ImGui::SliderFloat("Glitch Noise Intensity", &postEffectData->glitchNoiseIntensity, 0.0f, 0.5f);
+    }
+    if (postEffectData->modeFlags[0] & EDGE_DETECTION)
+    {
+        ImGui::SliderFloat("Edge Threshold", &postEffectData->edgeThreshold, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & HEAT_HAZE)
+    {
+        ImGui::SliderFloat("Distortion Strength", &postEffectData->heatDistortionStrength, 0.0f, 0.05f);
+        ImGui::SliderFloat("Noise Scale", &postEffectData->heatNoiseScale, 1.0f, 100.0f);
+        ImGui::SliderFloat("Speed", &postEffectData->heatSpeed, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[0] & SPLIT_TONING)
+    {
+        ImGui::ColorEdit3("Shadow Color", &postEffectData->shadowColor.x);
+        ImGui::ColorEdit3("Highlight Color", &postEffectData->highlightColor.x);
+        ImGui::SliderFloat("Split Tone Strength", &postEffectData->splitToneStrength, 0.0f, 1.0f);
+    }
+    if (postEffectData->modeFlags[0] & WATER_REFRACTION)
+    {
+        ImGui::SliderFloat("Turbulent Strength", &postEffectData->turbulentStrength, 0.0f, 0.1f);
+        ImGui::SliderFloat("Turbulent Frequency", &postEffectData->turbulentFrequency, 1.0f, 50.0f);
+        ImGui::SliderFloat("Turbulent Speed", &postEffectData->turbulentSpeed, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[1] & ROUGH_EDGE) 
+    {
+        ImGui::SliderFloat("Edge Threshold", &postEffectData->roughEdgeThreshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("Roughness", &postEffectData->roughEdgeRoughness, 0.0f, 2.0f);
+        ImGui::SliderFloat("Noise Scale", &postEffectData->roughEdgeNoiseScale, 1.0f, 100.0f);
+        ImGui::SliderFloat("Speed", &postEffectData->roughEdgeSpeed, 0.0f, 10.0f);
+        ImGui::ColorEdit3("Rough Edge Color", (float*)&postEffectData->roughEdgeColor);
+    }
+    if (postEffectData->modeFlags[1] & SPIRAL_WARP)
+    {
+        ImGui::SliderFloat("Base Amplitude", &postEffectData->spiralBaseAmplitude, 0.0f, 5.0f);
+        ImGui::SliderFloat("Frequency", &postEffectData->spiralFrequency, 1.0f, 20.0f);
+        ImGui::SliderFloat("Distance Falloff", &postEffectData->spiralDistanceFalloff, 0.1f, 5.0f);
+        ImGui::SliderFloat("Noise Amount", &postEffectData->spiralNoiseAmount, 0.0f, 2.0f);
+
+        ImGui::SliderFloat("Noise Speed", &postEffectData->spiralNoiseSpeed, 0.0f, 5.0f);
+        ImGui::SliderFloat("Noise Scale", &postEffectData->spiralNoiseScale, 0.1f, 20.0f);
+        ImGui::SliderFloat("Rotation Speed", &postEffectData->spiralRotationSpeed, 0.0f, 5.0f);
+        ImGui::SliderFloat("Spiral Speed", &postEffectData->spiralSpeed, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[1] & RADIAL_WAVE)
+    {
+        ImGui::SliderFloat("Wave Amplitude", &postEffectData->radialWaveAmplitude, 0.0f, 20.0f);
+        ImGui::SliderFloat("Wave Frequency", &postEffectData->radialWaveFrequency, 1.0f, 50.0f);
+        ImGui::SliderFloat("Wave Speed", &postEffectData->radialWaveSpeed, 0.0f, 10.0f);
+    }
+    if (postEffectData->modeFlags[1] & GLOW_OUTLINE) 
+    {
+        ImGui::SliderFloat("Outline Threshold", &postEffectData->glowOutlineThreshold, 0.0f, 2.0f);
+        ImGui::SliderFloat("Outline Thickness", &postEffectData->glowOutlineThickness, 0.5f, 5.0f);
+        ImGui::ColorEdit3("Outline Color", &postEffectData->glowOutlineColor.x);
+        ImGui::SliderFloat("Outline Intensity", &postEffectData->glowOutlineIntensity, 0.0f, 5.0f);
+    }
+    if (postEffectData->modeFlags[1] & FBM_NOISE)
+    {
+        ImGui::SliderInt("FBM Octaves", &postEffectData->fbmOctaves, 1, 8);
+        ImGui::SliderFloat("FBM Gain", &postEffectData->fbmGain, 0.1f, 1.0f);
+        ImGui::SliderFloat("FBM Lacunarity", &postEffectData->fbmLacunarity, 1.0f, 4.0f);
+        ImGui::SliderFloat("FBM Sharpness", &postEffectData->fbmSharpness, 0.01f, 0.5f);
+
+        ImGui::SliderFloat("FBM Noise Intensity", &postEffectData->fbmNoiseIntensity, 0.0f, 5.0f);
+        ImGui::ColorEdit3("FBM Noise Color", (float*)&postEffectData->fbmNoiseColor);
+    }
+    if (postEffectData->modeFlags[1] & FLARE)
+    {
+        ImGui::ColorEdit3("Flare Color", &postEffectData->flareColor.x);
+        ImGui::SliderFloat("Flare Intensity", &postEffectData->flareIntensity, 0.0f, 5.0f);
+
+        ImGui::SliderFloat("Flare Falloff", &postEffectData->flareFalloff, 0.1f, 10.0f);
+        ImGui::SliderFloat("Ghost Distance", &postEffectData->flareGhostDistance, 0.0f, 2.0f);
+        ImGui::SliderFloat("Ghost Intensity", &postEffectData->flareGhostIntensity, 0.0f, 1.0f);
+
+        ImGui::SliderFloat("Streak Count", &postEffectData->flareStreakCount, 2.0f, 16.0f);
+        ImGui::SliderFloat("Streak Speed", &postEffectData->flareStreakSpeed, -10.0f, 10.0f);
+        ImGui::SliderFloat("Streak Sharpness", &postEffectData->flareStreakSharpness, 1.0f, 32.0f);
+        ImGui::SliderFloat("Streak Intensity", &postEffectData->flareStreakIntensity, 0.0f, 2.0f);
+    }
+    if (postEffectData->modeFlags[1] & BALL_EFFECT)
+    {
+        ImGui::SliderFloat2("Ball Radius", &postEffectData->ballRadiusValue.x, 0.0f, 1.0f);
+        ImGui::DragFloat2("Ball Position", &postEffectData->ballPosition.x, 0.01f, 0.0f, 1.0f);
+        ImGui::SliderFloat("Noise Amount", &postEffectData->ballNoiseAmount, 0.0f, 0.1f);
+        ImGui::SliderFloat("Time Speed", &postEffectData->ballTimeSpeed, 0.0f, 5.0f);
+        ImGui::ColorEdit3("Ball Color", &postEffectData->ballColorAdjustment.x);
+    }
+    if (postEffectData->modeFlags[1] & DOT_BLINK)
+    {
+        ImGui::SliderFloat("Dot Blink Size", &postEffectData->dotBlinkSize, 0.0f, 10.0f);
+        ImGui::SliderFloat("Dot Blink Speed", &postEffectData->dotBlinkSpeed, 0.0f, 10.0f);
+    }
+}
+
+void DebugGuiManager::DrawInformationDisplays() 
+{
+    ImGui::Text("FPS: %.1f", TimeManager::GetInstance()->GetFPS());
+   
+    // オブジェクト数 (Engineから取得)
+    ImGui::Text("Triangles: %d / %d", engine_->GetTriangleCount(), engine_->kMaxTriangleCount);
+    ImGui::Text("Spheres: %d / %d", engine_->GetSphereCount(), engine_->kMaxSphereCount);
+    ImGui::Text("Models: %d / %d", engine_->GetModelCount(), engine_->kMaxModelCount);
+    ImGui::Text("Sprites: %d / %d", engine_->GetSpriteCount(), engine_->kMaxSpriteCount);
+    ImGui::Text("Cubes: %d / %d", engine_->GetCubeCount(), engine_->kMaxCubeCount);
+    ImGui::Text("Lines: %d / %d", engine_->GetLineCount(), engine_->kMaxLineCount);
+    ImGui::Text("Particles: %d / %d", engine_->GetParticleCount(), engine_->kMaxParticleCount);
+
+    // プロファイリング情報 (別途プロファイリングシステムが必要)
+   /* ImGui::Text("Profiling Info: [Not Implemented]");*/
+
+    // デバッグ用テキストオーバーレイの例
+    // ImGui::GetForegroundDrawList()->AddText(ImVec2(10, 10), IM_COL32_WHITE, "Custom Overlay Text");
+}
+
+void DebugGuiManager::RenderOffscreenTexture(
+    ID3D12DescriptorHeap* descriptorHeap,
+    uint32_t descriptorSizeSRV,
+    D3D12_CPU_DESCRIPTOR_HANDLE srcHandle,
+    uint32_t dstIndex
+) 
+{
+    D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    dstHandle.ptr += descriptorSizeSRV * dstIndex;
+
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    gpuHandle.ptr += descriptorSizeSRV * dstIndex;
+
+    // デスクリプタをコピー
+    engine_->graphicDevice_->GetDevice()->CopyDescriptorsSimple(
+        1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+    );
+
+    ImGui::SetNextWindowSize(ImVec2(800, 450), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+    ImVec2 imageSize(800, 450);
+    ImGui::Begin("Scene");
+    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
+    ImGui::End();
+}
+
+void DebugGuiManager::DrawConsole()
+{
+    ImGui::Begin("ログやデバッグ出力");
+
+    ImGui::End();
+}
