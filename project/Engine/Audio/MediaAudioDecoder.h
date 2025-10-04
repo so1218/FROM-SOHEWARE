@@ -1,0 +1,32 @@
+#pragma once
+
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <mftransform.h>
+#include <mfobjects.h>
+#include <mferror.h>
+#include <wrl.h>
+#include <comdef.h>
+#include <string>
+
+// 音声データ
+struct AudioData
+{
+    //波形フォーマット
+    WAVEFORMATEX wfex;
+    // バッファの先頭アドレス
+    BYTE* pBuffer;
+    // バッファのサイズ
+    unsigned int bufferSize;
+};
+
+class MediaAudioDecoder
+{
+public:
+    static AudioData DecodeAudioFile(const std::wstring& filePath);
+   
+private:
+    Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader_;
+    WAVEFORMATEX waveFormat_;
+};
