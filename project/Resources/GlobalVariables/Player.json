@@ -1,0 +1,9 @@
+{
+    "Player": {
+        "modelPlayer_->GetTransform().translation_": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}

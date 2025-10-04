@@ -1,0 +1,39 @@
+#pragma once
+
+#include <d3d12.h>              
+#include <wrl/client.h>         
+#include <d3dcompiler.h>        
+#include <assert.h>             
+
+class RootSignatureManager
+{
+public:
+    // ルートシグネチャを全て初期化する
+    void Initialize(ID3D12Device* device);
+
+    ID3D12RootSignature* GetPostProcessRootSignature() { return rootSignaturePostProcess_.Get(); }
+
+    // 各シェーダーで使用するルートシグネチャ
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature3D_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureLine_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureParticles_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignaturePostProcess_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureFullScreen_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureDepthExtract_;
+
+private:
+    ID3D12Device* device_ = nullptr;
+
+    // 3dパイプライン用のルートシグネチャを生成
+    void Create3dRootSignature();
+
+    // ライン描画用のルートシグネチャを生成
+    void CreateLineRootSignature();
+
+    // パーティクル描画用のルートシグネチャを生成
+    void CreateParticleGraphicsRootSignature();
+
+    void CreatePostEffectPassRootSignature();
+    void CreateFullScreenRootSignature();
+    void CreateDepthExtractRootSignature();
+};
