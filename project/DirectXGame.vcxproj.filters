@@ -378,6 +378,12 @@
     <ClCompile Include="Engine\Mesh\Sprite.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Mesh\AnimationData.cpp">
+      <Filter>Engine\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Mesh\AnimationLoader.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -672,6 +678,10 @@
     <ClInclude Include="Engine\Mesh\Sprite.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Mesh\AnimationData.h">
+      <Filter>Engine\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

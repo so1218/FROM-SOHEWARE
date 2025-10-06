@@ -155,6 +155,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Mesh\AnimationData.cpp" />
+    <ClCompile Include="Engine\Mesh\AnimationLoader.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
     <ClCompile Include="Game\Data\AudioHandle.cpp" />
@@ -252,6 +254,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Character\Player\State\PlayerWalkState.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Mesh\AnimationData.h" />
+    <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
     <ClInclude Include="Game\GameObject\GameObjectManager.h" />
     <ClInclude Include="Game\Data\AudioHandle.h" />
     <ClInclude Include="Engine\Graphics\Device\RootSignatureManager.h" />
