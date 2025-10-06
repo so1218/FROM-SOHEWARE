@@ -9,6 +9,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "ShakeEffect.h"
+#include "AnimationData.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -42,6 +43,10 @@ private:
     std::unique_ptr<Sprite> uvCheckerSprite_;
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;
+
+	ModelData modelData_;
+    Animation animation_;
+    AnimatedModelData animeModelData_;
 
     ShakeEffect shake;
 
