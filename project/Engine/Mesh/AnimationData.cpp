@@ -49,3 +49,36 @@ Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, floa
 
 	return keyframes.back().value;
 }
+
+//Skeleton CreateSkeleton(const Node& rootNode)
+//{
+//	Skeleton skeleton;
+//	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+//
+//	// 名前とindexのマッピングを行いアクセスしやすくする
+//	for (const Joint& joint : skeleton.joints)
+//	{
+//		skeleton.jointMap.emplace(joint.name, joint.index);
+//	}
+//
+//	return skeleton;
+//}
+
+int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::vector<Joint>& joints)
+{
+	Joint joint;
+	joint.name = node.name;
+	joint.transform = node.transform;
+	joint.localMatrix = node.localMatrix;
+	joint.index = static_cast<int32_t>(joints.size());
+	joint.parent = parentIndex;
+	int32_t currentIndex = joint.index;
+	// 子のJointのインデックスを取得
+	for (const Node& childNode : node.children)
+	{
+		int32_t childIndex = CreateJoint(childNode, currentIndex, joints);
+		joint.children.push_back(childIndex);
+	}
+	joints.push_back(joint);
+	return currentIndex;
+}

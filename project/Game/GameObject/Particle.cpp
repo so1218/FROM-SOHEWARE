@@ -157,11 +157,11 @@ void ParticleSystem::Update()
 
                         if (rand() % 2 == 0)
                         {
-                            it->thetaVel = float(rand() % 3 + 0.01f);
+                            it->thetaVel = float(rand() % 2 + 0.01f);
                         }
                         else
                         {
-                            it->thetaVel = -float(rand() % 3 + 0.01f);
+                            it->thetaVel = -float(rand() % 2 + 0.01f);
                         }
 
                     }
@@ -187,7 +187,7 @@ void ParticleSystem::Update()
                     it->fadeOutEase->CountEaseLinear(it->startColor, it->endColor, currentColor);
                 }
                 it->color = Uint32ToColorVector(currentColor);
-                it->scaleEase->OnceReverseEaseLinear({ 0.0f,0.0f, 0.0f }, { 0.7f,0.7f,0.1f }, it->transform->scale_);
+                it->scaleEase->OnceReverseEaseLinear({ 0.0f,0.0f, 0.0f }, { 2.0f,2.0f,0.1f }, it->transform->scale_);
             }
         }
         if (it->hasLifetime)
@@ -206,7 +206,7 @@ void ParticleSystem::Update()
     for (auto& particle : particles_)
     {
         particle.transform->UpdateMatrix();
-        engine_->SubmitParticleInstance(*particle.transform, ColorVectorToUint32(particle.color), TextureID::monsterBall, particle.transform->rotation_.z);
+        engine_->SubmitParticleInstance(*particle.transform, ColorVectorToUint32(particle.color), particle.textureHandle, particle.transform->rotation_.z);
     }
 
 }

@@ -73,6 +73,7 @@ void PlayScene::Draw()
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     player_->Draw();
     engine_->DrawParticles(*camera_);
+    engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 }
 
 void PlayScene::DebugDraw()
