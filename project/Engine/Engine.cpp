@@ -10,6 +10,7 @@
 #include "ModelHandle.h"
 #include "TextureHandle.h"
 #include "AudioHandle.h"
+#include "AnimationHandle.h"
 
 #include "externals/DirectXTex/d3dx12.h" 
 
@@ -360,6 +361,7 @@ void Engine::InitializeResources()
 	textureManager_->Initialize(graphicDevice_->GetDevice(), commandManager_->GetCommandList(), srvAllocator_.get());
 	TextureHandle::Initialize(this);
 	ModelHandle::Initialize(this);
+	AnimationHandle::Initialize();
 
 	// 配列テクスチャのパスを用意
 	std::vector<std::string> texturePaths = {

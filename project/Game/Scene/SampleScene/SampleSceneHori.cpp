@@ -4,6 +4,7 @@
 #include "ImGuiManager.h"
 #include "ModelLoader.h"
 #include "GlobalVariables.h"
+#include "AnimationHandle.h"
 #include "Input.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
@@ -19,7 +20,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
 
     animeModelData_.modelData = *ModelHandle::Get(ModelID::animatedRyu);
-    animeModelData_.animation = LoadAnimationFile("Resources/models/animatedCube/AnimatedCube.gltf");
+    animeModelData_.animation = AnimationHandle::Get(AnimationID::cube);
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
