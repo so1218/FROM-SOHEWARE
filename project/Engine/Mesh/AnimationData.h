@@ -36,6 +36,8 @@ struct Animation
     float duration; // アニメーション全体の尺(単位は秒)
     // NOdeAnimationの集合。Node名で引けるようにしておく
     std::map<std::string, NodeAnimation> nodeAnimations;
+    // rootNodeの名前
+    std::string rootNodeName;
 };
 
 struct AnimatedModelData
@@ -46,8 +48,6 @@ struct AnimatedModelData
     float animationTime = 0.0f;
     Matrix4x4 localMatrix;  // 現在のアニメーション変換行列
 
-    // rootNodeの名前もここで管理
-    std::string rootNodeName;
 };
 
 struct Node

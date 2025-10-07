@@ -18,11 +18,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
 
-    animeModelData_.modelData = *ModelHandle::Get(ModelID::ninngenn);
-    animeModelData_.animation = LoadAnimationFile("Resources/models/animSoccer", "ninngennAnimetion.glb");
-
-    animeModelData_.animationTime = 120.0f;
-	animeModelData_.rootNodeName = "mixamorig:Hips";
+    animeModelData_.modelData = *ModelHandle::Get(ModelID::animatedRyu);
+    animeModelData_.animation = LoadAnimationFile("Resources/models/animatedCube/AnimatedCube.gltf");
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -64,13 +61,14 @@ void SampleSceneHori::Update()
     {
         isEditorMode_ = !isEditorMode_;
     }
-    if (isEditorMode_) {
+    if (isEditorMode_)
+    {
         // ゲームオブジェクトの調整項目を一括更新
         objectManager_.ApplyGlobalVariables();
         ApplyGlobalVariables(); 
     }
 
-	/*engine_->UpdateAnimation(animeModelData_); */
+	engine_->UpdateAnimation(animeModelData_); 
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -105,7 +103,7 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-   /* engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));*/
+    engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));
 }
 
 void SampleSceneHori::DebugDraw()

@@ -629,7 +629,7 @@ void Engine::UpdateAnimation(AnimatedModelData& instance)
 	instance.animationTime += TimeManager::GetInstance()->GetDeltaTime();
 	instance.animationTime = std::fmod(instance.animationTime, instance.animation.duration);
 
-	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.rootNodeName];
+	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.animation.rootNodeName];
 	Vector3 translation = CalculateValue(nodeAnim.translate.keyframes, instance.animationTime);
 	Quaternion rotation = CalculateValue(nodeAnim.rotate.keyframes, instance.animationTime);
 	Vector3 scale = CalculateValue(nodeAnim.scale.keyframes, instance.animationTime);
