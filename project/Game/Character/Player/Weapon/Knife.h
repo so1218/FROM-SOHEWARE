@@ -4,7 +4,7 @@
 class Knife : public Weapon
 {
 public:
-    Knife();
+    Knife(Engine* engine, Camera* camera);
 
     void Update(Player* player) override;
     void Shoot(Player* player) override;
@@ -12,6 +12,9 @@ public:
     void SetLevel(int level) override;
 
 private:
+    Engine* engine_;
+    Camera* camera_;
+
     float cooldownTimer_ = 0.0f;
     float cooldownMax_ = 1.0f;
 };

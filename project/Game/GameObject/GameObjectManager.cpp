@@ -25,6 +25,15 @@ void GameObjectManager::Update()
     {
         obj->Update();
     }
+
+    // 削除判定して消す
+    objects_.erase(
+        std::remove_if(objects_.begin(), objects_.end(),
+            [](const std::unique_ptr<GameObject>& obj) {
+                // GameObjectに IsDead() のようなメソッドを用意しておく
+                return obj->IsDead();
+            }),
+        objects_.end());
 }
 
 void GameObjectManager::Draw() 

@@ -15,19 +15,19 @@
 #include <numbers>
 #include <algorithm>
 
-Player::Player()
-{
-	knife_ = std::make_unique<Knife>();
-	knife_->SetLevel(1);
-}
-
-void Player::Initialize(Engine* engine, Camera* camera)
+Player::Player(Engine* engine, Camera* camera)
 {
 	engine_ = engine;
 	camera_ = camera;
 
+	knife_ = std::make_unique<Knife>(engine_, camera_);
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
+	knife_->SetLevel(1);
+}
+
+void Player::Initialize()
+{
 	size_ = { 1.0f, 1.0f, 1.0f };
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
 	moveSpeed_ = 0.2f;

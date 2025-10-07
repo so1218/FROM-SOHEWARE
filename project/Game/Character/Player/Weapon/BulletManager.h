@@ -1,5 +1,6 @@
 #pragma once
 #include "BulletFactory.h"
+#include "GameObjectManager.h"
 #include "Vector3.h"
 
 class BulletManager 
@@ -11,12 +12,11 @@ public:
         return &instance;
     }
 
-    void SpawnBullet(BulletType type, const Vector3& pos, const Vector3& dir, int level);
+    void Initialize(GameObjectManager* objectManager);
 
-    void UpdateAll();
-
-    void DrawAll();
+    void SpawnBullet(Engine* engine, Camera* camera, BulletType type, const Vector3& pos, const Vector3& dir, int level);
 
 private:
     std::vector<std::unique_ptr<Bullet>> bullets_;
+    GameObjectManager* objectManager_;
 };

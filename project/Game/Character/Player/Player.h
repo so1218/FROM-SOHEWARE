@@ -9,12 +9,12 @@ class PlayScene;
 class Player : public Collider, public BaseCharacter
 {
 public:
-	Player();
+	Player(Engine* engine, Camera* camera);
 
 	GameObjectType GetType() const override { return GameObjectType::Player; }
 
 	// 初期化
-	void Initialize(Engine* engine, Camera* camera) override;
+	void Initialize() override;
 
 	// 更新
 	void Update() override;

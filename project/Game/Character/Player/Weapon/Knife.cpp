@@ -3,8 +3,11 @@
 #include "BulletManager.h"
 #include "BulletFactory.h"
 
-Knife::Knife() 
+Knife::Knife(Engine* engine, Camera* camera) 
 {
+	engine_ = engine;
+    camera_ = camera;
+
     SetLevel(1); 
 }
 
@@ -38,7 +41,7 @@ void Knife::Shoot(Player* player)
         Vector3 dirRotated = rot.RotateVector(direction);
 
         // 弾を生成
-        BulletManager::GetInstance()->SpawnBullet(BulletType::Knife, spawnPos, dirRotated, level_);
+        BulletManager::GetInstance()->SpawnBullet(engine_, camera_, BulletType::Knife, spawnPos, dirRotated, level_);
     }
 }
 

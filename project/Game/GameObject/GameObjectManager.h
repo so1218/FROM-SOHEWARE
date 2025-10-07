@@ -18,6 +18,8 @@ public:
 
     void ApplyGlobalVariables();
 
+
+
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;
 };

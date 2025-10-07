@@ -6,12 +6,12 @@
 class Enemy : public Collider, public BaseCharacter
 {
 public:
-    Enemy();
+    Enemy(Engine* engine, Camera* camera);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
 
     // 初期化処理
-    void Initialize(Engine* engine, Camera* camera) override;
+    void Initialize() override;
 
     // 更新処理
     void Update() override;

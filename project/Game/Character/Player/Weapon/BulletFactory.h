@@ -12,5 +12,5 @@ enum class BulletType
 class BulletFactory 
 {
 public:
-    static std::unique_ptr<Bullet> CreateBullet(BulletType type, const Vector3& pos, const Vector3& dir, int level);
+    static std::unique_ptr<Bullet> CreateBullet(Engine* engine, Camera* camera, BulletType type, const Vector3& pos, const Vector3& dir, int level);
 };

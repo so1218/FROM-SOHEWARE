@@ -6,18 +6,16 @@
 #include "MathUtils.h"
 #include "GlobalVariables.h"
 
-Enemy::Enemy()
-{
-
-}
-
-void Enemy::Initialize(Engine* engine, Camera* camera)
+Enemy::Enemy(Engine* engine, Camera* camera)
 {
 	engine_ = engine;
 	camera_ = camera;
 
 	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::sphere)));
+}
 
+void Enemy::Initialize()
+{
 	size_ = { 1.0f, 1.0f, 1.0f };
 
 	SetRadius(size_.x); // 半径を設定

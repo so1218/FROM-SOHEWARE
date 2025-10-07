@@ -13,8 +13,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     camera_ = camera;
 
     // インスタンスを作成
-    player_ = std::make_unique<Player>();
-    enemy_ = std::make_unique<Enemy>();
+    player_ = std::make_unique<Player>(engine_, camera_);
+    enemy_ = std::make_unique<Enemy>(engine_, camera_);
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
 
