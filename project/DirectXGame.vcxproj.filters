@@ -341,21 +341,6 @@
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Character\Player\State\PlayerState.cpp">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\State\PlayerStateJump.cpp">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\State\PlayerStateLand.cpp">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\State\PlayerStateTailFlip.cpp">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\State\PlayerWalkState.cpp">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Scene\BaseScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
@@ -382,6 +367,24 @@
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Mesh\AnimationLoader.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\Knife.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\KnifeBullet.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\BulletManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\BulletFactory.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\Bullet.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -648,21 +651,6 @@
     <ClInclude Include="Game\GameObject\GameObject.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Character\Player\State\PlayerState.h">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Character\Player\State\PlayerStateJump.h">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Character\Player\State\PlayerStateLand.h">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Character\Player\State\PlayerStateTailFlip.h">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Character\Player\State\PlayerWalkState.h">
-      <Filter>Game\Character\Player\State</Filter>
-    </ClInclude>
     <ClInclude Include="Game\Scene\SampleScene\SampleSceneHori.h">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClInclude>
@@ -682,6 +670,12 @@
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\Weapon.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\Knife.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\KnifeBullet.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\BulletManager.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\BulletFactory.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

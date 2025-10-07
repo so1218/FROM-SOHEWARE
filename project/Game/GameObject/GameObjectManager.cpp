@@ -5,11 +5,11 @@ void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj)
     objects_.push_back(std::move(obj));
 }
 
-void GameObjectManager::Initialize(Engine* engine, Camera* camera)
+void GameObjectManager::Initialize()
 {
     for (auto& obj : objects_)
     {
-        obj->Initialize(engine, camera);
+        obj->Initialize();
     }
 }
 

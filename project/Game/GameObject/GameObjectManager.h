@@ -8,7 +8,7 @@ class GameObjectManager {
 public:
     void AddObject(std::unique_ptr<GameObject> obj);
 
-    void Initialize(Engine* engine, Camera* camera);
+    void Initialize();
 
     void Update();
 

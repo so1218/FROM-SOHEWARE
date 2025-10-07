@@ -9,14 +9,16 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"  
 #include "Collision.h"   
-#include "TimeManager.h"   
+#include "TimeManager.h"
+#include "Knife.h"
 
 #include <numbers>
 #include <algorithm>
 
 Player::Player()
 {
-
+	knife_ = std::make_unique<Knife>();
+	knife_->SetLevel(1);
 }
 
 void Player::Initialize(Engine* engine, Camera* camera)
@@ -27,6 +29,8 @@ void Player::Initialize(Engine* engine, Camera* camera)
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
 	size_ = { 1.0f, 1.0f, 1.0f };
+	moveDirection_ = { 0.0f, 0.0f, 0.0f };
+	moveSpeed_ = 0.2f;
 
 	// 衝突属性を設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
@@ -47,8 +51,47 @@ void Player::ApplyGlobalVariables()
 
 void Player::Update()
 {
-
+	Move();
 }
+
+void Player::Move()
+{
+	moveDirection_ = GetMoveDirection();
+
+	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
+	modelPlayer_->GetTransform().translation_.y = 0.5f;
+}
+
+Vector3 Player::GetMoveDirection() 
+{
+	Vector3 dir = { 0.0f, 0.0f, 0.0f };
+
+	if (Input::IsKeyPressed(DIK_W)) 
+	{
+		dir.z += 1.0f;
+	}
+	if (Input::IsKeyPressed(DIK_S))
+	{
+		dir.z -= 1.0f;
+	}
+	if (Input::IsKeyPressed(DIK_D))
+	{
+		dir.x += 1.0f;
+	}
+	if (Input::IsKeyPressed(DIK_A))
+	{
+		dir.x -= 1.0f;
+	}
+
+	// 正規化（斜め移動で速くなりすぎないように）
+	if (dir.Length() > 0.0f)
+	{
+		dir = dir.Normalize(); 
+	}
+
+	return dir;
+}
+
 
 void Player::UpdateAABB()
 {
@@ -80,7 +123,7 @@ Vector3 Player::GetWorldPosition()
 
 void Player::Draw()
 {
-
+	modelPlayer_->Draw();
 }
 
 // デバッグ描画処理
