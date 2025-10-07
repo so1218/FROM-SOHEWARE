@@ -3,6 +3,7 @@
 #include "BaseCharacter.h"
 #include "Collider.h"
 
+class Knife;
 class PlayScene;
 
 class Player : public Collider, public BaseCharacter
@@ -31,6 +32,9 @@ public:
 	void ApplyGlobalVariables() override;
 	const char* GetGlobalVariableGroupName() const override { return "Player"; }
 
+	// 移動処理
+	void Move();
+
 	// AABBを取得
 	void UpdateAABB();
 	// ワールド座標を取得
@@ -40,16 +44,21 @@ public:
 	WorldTransform& GetWorldTransform() { return modelPlayer_->GetTransform(); }
 	AABB& GetAABB() { return aabb_;	}
 
+	Vector3 GetMoveDirection();
+
 private:
 	
 	Engine* engine_;
 	Camera* camera_;
 
 	std::unique_ptr<Model> modelPlayer_;
+	std::unique_ptr<Knife> knife_;
 	AABB aabb_;
 	
 	// キャラクターの当たり判定サイズ
 	Vector3 size_;
 	
+	Vector3 moveDirection_;
+	float moveSpeed_;
 };
 

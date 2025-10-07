@@ -23,13 +23,13 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     player_ = std::make_unique<Player>();
     enemy_ = std::make_unique<Enemy>();
     collisionManager_ = std::make_unique<CollisionManager>();
-    emitter_ = std::make_unique<ParticleEmitter>();
+    //emitter_ = std::make_unique<ParticleEmitter>();
 
-    // エミッターを初期化
-    emitter_->Initialize(ParticleType::Key, { 0.0f, 1.0f, 0.0f }, 0.3f, 4.0f, 20);
+    //// エミッターを初期化
+    //emitter_->Initialize(ParticleType::Key, { 0.0f, 1.0f, 0.0f }, 0.3f, 4.0f, 20);
 
-    // パーティクルシステムにエミッターを登録
-    engine_->particleSystem_->AddEmitter(emitter_.get());
+    //// パーティクルシステムにエミッターを登録
+    //engine_->particleSystem_->AddEmitter(emitter_.get());
 }
 
 PlayScene::~PlayScene()
@@ -70,9 +70,8 @@ void PlayScene::HandleCollisions()
 
 void PlayScene::Draw()
 {
-    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     player_->Draw();
-    engine_->DrawParticles(*camera_);
+
 }
 
 void PlayScene::DebugDraw()

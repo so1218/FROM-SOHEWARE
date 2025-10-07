@@ -7,6 +7,7 @@ enum class GameObjectType : int
     Background,
     Player,
     Enemy,
+    Bullet,
     UI,
 
     Count  
@@ -24,7 +25,7 @@ class GameObject
 public:
     virtual ~GameObject() = default;
 
-    virtual void Initialize(Engine* engine, Camera* camera) {}
+    virtual void Initialize() {}
     virtual void Update() {}
     virtual void Draw() {}
     virtual void DebugDraw() {}
@@ -49,6 +50,7 @@ private:
             { GameObjectType::Background,  0,   0 },
             { GameObjectType::Player,     10,  10 },
             { GameObjectType::Enemy,      20,  20 },
+            { GameObjectType::Bullet,     30,  30 },
             { GameObjectType::UI,        100, 100 }
         }
     };

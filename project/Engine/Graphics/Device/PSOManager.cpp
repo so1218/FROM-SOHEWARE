@@ -328,7 +328,8 @@ void PSOManager::CreateParticlePSO(BlendMode blendMode)
     blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;
     blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;
 
-    switch (blendMode) {
+    switch (blendMode)
+    {
     case kBlendModeNone:
         blenddesc.BlendEnable = FALSE;
         break;

@@ -47,7 +47,7 @@ void SampleSceneMikami::Initialize()
     uvCheckerSprite_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
 
     // ゲームオブジェクトの一括初期化
-    objectManager_.Initialize(engine_, camera_);
+    objectManager_.Initialize();
 }
 
 void SampleSceneMikami::Update()
