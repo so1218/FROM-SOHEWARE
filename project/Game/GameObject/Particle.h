@@ -19,6 +19,7 @@ enum class ParticleType
     None,
 
     Key,
+    HitEffect,
 
     Count
 };

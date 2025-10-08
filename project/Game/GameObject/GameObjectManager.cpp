@@ -65,3 +65,11 @@ void GameObjectManager::ApplyGlobalVariables()
         obj->ApplyGlobalVariables();
     }
 }
+
+void GameObjectManager::SaveGlobalVariables()
+{
+    for (auto& obj : objects_)
+    {
+        obj->SaveGlobalVariables();
+    }
+}

@@ -26,10 +26,9 @@ private:
     static constexpr std::array<std::pair<AnimationID, const char*>, static_cast<size_t>(AnimationID::count)> animationDefinitions_ =
     {
         {
-            // 基本的なモデル
+            // 基本的なアニメーション
             { AnimationID::cube,       "Resources/models/animatedCube/AnimatedCube.gltf" },
             { AnimationID::ryu,     "Resources/models/animated/animatedRyu.gltf" },
-           
         }
     };
 };

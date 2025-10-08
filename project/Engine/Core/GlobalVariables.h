@@ -110,7 +110,5 @@ private:
 	const std::string kDirectoryPath_ = "Resources/GlobalVariables/";
 
 	// ドラッグの感度
-	int dragSensitivityInt_ = 1;
 	float dragSensitivity_ = 0.1f;
-	float dragSensitivityVector3_ = 0.1f;
 };

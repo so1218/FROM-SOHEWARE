@@ -347,12 +347,6 @@
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneMikami.cpp">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneSuyama.cpp">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Effect\ShakeEffect.cpp">
       <Filter>Game\Effect</Filter>
     </ClCompile>
@@ -655,12 +649,6 @@
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scene\SampleScene\SampleSceneHori.h">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneMikami.h">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneSuyama.h">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClInclude>
     <ClInclude Include="Game\Effect\ShakeEffect.h">

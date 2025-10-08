@@ -250,8 +250,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Data\ModelHandle.cpp" />
     <ClCompile Include="Game\GameObject\ParticleEmitter.cpp" />
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp" />
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneMikami.cpp" />
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneSuyama.cpp" />
     <ClCompile Include="Engine\Mesh\Sprite.cpp" />
     <ClCompile Include="Game\Effect\ShakeEffect.cpp" />
   </ItemGroup>
@@ -354,8 +352,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\TimeManager.h" />
     <ClInclude Include="Engine\Graphics\Resource\SRVAllocator.h" />
     <ClInclude Include="Game\Scene\SampleScene\SampleSceneHori.h" />
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneMikami.h" />
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneSuyama.h" />
     <ClInclude Include="Engine\Mesh\Sprite.h" />
     <ClInclude Include="Game\Effect\ShakeEffect.h" />
   </ItemGroup>

@@ -8,8 +8,6 @@
 #include "ModelHandle.h"
 #include "TextureHandle.h"
 #include "SampleSceneHori.h"
-#include "SampleSceneMikami.h"
-#include "SampleSceneSuyama.h"
 
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {

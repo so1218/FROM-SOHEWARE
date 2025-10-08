@@ -62,6 +62,24 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
         particle.fadeOutEase->SetEaseDurationFrames(250);
         particle.scaleEase->interval_=0.04f;
     }
+    if (type == ParticleType::HitEffect)
+    {
+        particle.appearInterval = 30; // 30フレームごとに発生
+        particle.amount = 7;          // 毎回7つ発生
+        particle.emitterRange = { 0.0f, 0.0f, 0.0f }; // 同じ場所
+        particle.startColor = 0xff00ffff;
+        particle.endColor = 0x0000ffff;
+        particle.speed = 0.1f;
+        particle.thetaVel = 0.0f;
+        particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
+        particle.scaleEase->SetEasing(EasingType::EaseOutBack);
+        particle.fadeOutEase->SetEaseDurationFrames(60);
+        particle.scaleEase->interval_ = 0.04f;
+        particle.isExist = false;
+        particle.hasExisted = false;
+        particle.frameCount = 0;
+        particle.isEmit = false;
+    }
 
     particles_.push_back(std::move(particle));
 }
@@ -190,6 +208,8 @@ void ParticleSystem::Update()
                 it->scaleEase->OnceReverseEaseLinear({ 0.0f,0.0f, 0.0f }, { 2.0f,2.0f,0.1f }, it->transform->scale_);
             }
         }
+
+
         if (it->hasLifetime)
         {
             it->lifetime -= deltaTime;
@@ -201,7 +221,7 @@ void ParticleSystem::Update()
         }
         ++it;
     }
-
+   
     // パーティクルインスタンスの更新
     for (auto& particle : particles_)
     {

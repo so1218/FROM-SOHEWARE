@@ -30,6 +30,7 @@ public:
 
 	// 調整項目の適用
 	void ApplyGlobalVariables() override;
+	void SaveGlobalVariables() override;
 	const char* GetGlobalVariableGroupName() const override { return "Player"; }
 
 	// 移動処理

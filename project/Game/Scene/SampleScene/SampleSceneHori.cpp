@@ -39,6 +39,14 @@ void SampleSceneHori::ApplyGlobalVariables()
     const char* groupName = "SampleSceneHori";
     dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
     uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
+
+}
+
+void SampleSceneHori::SaveGlobalVariables()
+{
+    const char* groupName = "SampleSceneHori";
+    GlobalVariables::GetInstance()->SetValue(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
+    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
 }
 
 
@@ -58,16 +66,11 @@ void SampleSceneHori::Initialize()
 
 void SampleSceneHori::Update()
 {
-    if (Input::IsKeyTriggered(DIK_E)) 
-    {
-        isEditorMode_ = !isEditorMode_;
-    }
-    if (isEditorMode_)
-    {
-        // ゲームオブジェクトの調整項目を一括更新
-        objectManager_.ApplyGlobalVariables();
-        ApplyGlobalVariables(); 
-    }
+
+    // ゲームオブジェクトの調整項目を一括更新
+    objectManager_.ApplyGlobalVariables();
+    ApplyGlobalVariables(); 
+    
 
 	engine_->UpdateAnimation(animeModelData_); 
 
@@ -86,6 +89,8 @@ void SampleSceneHori::Update()
         originalTranslation_ = dragonModel_->GetTransform().translation_;
     }
 
+    dragonModel_->GetTransform().translation_.x += 0.01f;
+
     if (shake.IsActive())
     {
         dragonModel_->GetTransform().translation_ = originalTranslation_ + shake.GetOffset();
@@ -94,12 +99,15 @@ void SampleSceneHori::Update()
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
+    objectManager_.SaveGlobalVariables();
+    SaveGlobalVariables();
+
 }
 
 void SampleSceneHori::Draw()
 {
     uvCheckerSprite_->Draw();
-   /* dragonModel_->Draw();*/
+    dragonModel_->Draw();
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
@@ -109,6 +117,9 @@ void SampleSceneHori::Draw()
 
 void SampleSceneHori::DebugDraw()
 {
+    ImGui::Begin("ホリシーン");
+   
+    ImGui::End();
     // ゲームオブジェクトの一括デバッグ描画
     objectManager_.DebugDraw();
 }
