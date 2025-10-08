@@ -59,6 +59,7 @@ float (*Easing::GetEasingFunction(EasingType easingType))(const float&)
 void Easing::InitEasing()
 {
     interval_ = 0.01f;
+    frameCount_ = 60;
     cycle_ = 0.0f;
     timer_ = 0.0f;
     easeTimer_ = 0.0f;
@@ -69,6 +70,11 @@ void Easing::InitEasing()
 //template <typename T>
 void Easing::CountEaseLinear(int start, int end, int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     if (timer_ >= 1.0f) {
         current = end;
         timer_ = 0.0f;
@@ -84,6 +90,10 @@ void Easing::CountEaseLinear(int start, int end, int& current)
 
 void Easing::CountEaseLinear(float start, float end, float& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
 
     if (timer_ >= 1.0f) {
         current = end;
@@ -101,6 +111,11 @@ void Easing::CountEaseLinear(float start, float end, float& current)
 // unsigned int 用の線形補間
 void Easing::CountEaseLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -137,9 +152,12 @@ void Easing::CountEaseLinear(unsigned int start, unsigned int end, unsigned int&
 // Vector3 用の線形補間
 void Easing::CountEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
-
-    if (timer_ >= 1.0f)
+    if (frameCount_ > 0)
     {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
+    if (timer_ >= 1.0f) {
         current = end;
         easeTimer_ = 0.0f;
         timer_ = 0.0f;
@@ -155,65 +173,41 @@ void Easing::CountEaseLinear(Vector3 start, Vector3 end, Vector3& current)
     }
 }
 
-// Vector4 用の線形補間
-void Easing::CountEaseLinear(Vector4 start, Vector4 end, Vector4& current)
-{
-    if (timer_ >= 1.0f)
-    {
-        current = end;
-        easeTimer_ = 0.0f;
-        timer_ = 0.0f;
-        isEase_ = false;
-    }
-    else
-    {
-        timer_ += interval_;
-        easeTimer_ = easingFunc(timer_);
-        current.x = (1.0f - easeTimer_) * start.x + easeTimer_ * end.x;
-        current.y = (1.0f - easeTimer_) * start.y + easeTimer_ * end.y;
-        current.z = (1.0f - easeTimer_) * start.z + easeTimer_ * end.z;
-        current.w = (1.0f - easeTimer_) * start.w + easeTimer_ * end.w;
-    }
-}
-
 void Easing::ReverseEaseLinear(float start, float end, float& current)
 {
-    if (isReverse_)
+    if (frameCount_ > 0)
     {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
+    if (isReverse_) {
         // start -> end への遷移
-        if (timer_ <= 0.0f)
-        {
+        if (timer_ <= 0.0f) {
             current = start;
             easeTimer_ = 0.0f;
             timer_ = 1.0f;
             isReverse_ = false;  // 逆方向への遷移を開始
         }
-        else
-        {
+        else {
             timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
+            if (timer_ <= 0.0f) {
                 timer_ = 0.0f;
             }
             easeTimer_ = easingFunc(timer_);
             current = (1.0f - easeTimer_) * start + easeTimer_ * end;
         }
     }
-    else 
-    {
+    else {
         // end -> start への逆方向の遷移
-        if (timer_ <= 0.0f)
-        {
+        if (timer_ <= 0.0f) {
             current = end;
             easeTimer_ = 0.0f;
             timer_ = 1.0f;
             isReverse_ = true;  // 元の方向に戻る
         }
-        else
-        {
+        else {
             timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
+            if (timer_ <= 0.0f) {
                 timer_ = 0.0f;
             }
             easeTimer_ = easingFunc(timer_);
@@ -224,153 +218,58 @@ void Easing::ReverseEaseLinear(float start, float end, float& current)
 
 void Easing::ReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
-    if (isReverse_)
+    if (frameCount_ > 0)
     {
-        // start -> end への遷移
-        if (timer_ <= 0.0f) 
-        {
-            current = start;
-            easeTimer_ = 0.0f;
-            timer_ = 1.0f;
-            isReverse_ = false;  // 逆方向への遷移を開始
-        }
-        else
-        {
-            timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
-                timer_ = 0.0f;
-            }
-            easeTimer_ = easingFunc(timer_);
-            current.x = (1.0f - easeTimer_) * start.x + easeTimer_ * end.x;
-            current.y = (1.0f - easeTimer_) * start.y + easeTimer_ * end.y;
-            current.z = (1.0f - easeTimer_) * start.z + easeTimer_ * end.z;
-        }
+        interval_ = 1.0f / static_cast<float>(frameCount_);
     }
-    else
-    {
-        // end -> start への逆方向の遷移
-        if (timer_ <= 0.0f)
-        {
-            current = end;
-            easeTimer_ = 0.0f;
-            timer_ = 1.0f;
-            isReverse_ = true;  // 元の方向に戻る
-        }
-        else 
-        {
-            timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
-                timer_ = 0.0f;
-            }
-            easeTimer_ = easingFunc(timer_);
-            current.x = (1.0f - easeTimer_) * end.x + easeTimer_ * start.x;
-            current.y = (1.0f - easeTimer_) * end.y + easeTimer_ * start.y;
-            current.z = (1.0f - easeTimer_) * end.z + easeTimer_ * start.z;
-        }
-    }
-}
 
-void Easing::ReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current)
-{
-    if (isReverse_)
-    {
+    if (isReverse_) {
         // start -> end への遷移
-        if (timer_ <= 0.0f)
-        {
+        if (timer_ <= 0.0f) {
             current = start;
             easeTimer_ = 0.0f;
             timer_ = 1.0f;
             isReverse_ = false;  // 逆方向への遷移を開始
         }
-        else
-        {
+        else {
             timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
+            if (timer_ <= 0.0f) {
                 timer_ = 0.0f;
             }
             easeTimer_ = easingFunc(timer_);
             current.x = (1.0f - easeTimer_) * start.x + easeTimer_ * end.x;
             current.y = (1.0f - easeTimer_) * start.y + easeTimer_ * end.y;
             current.z = (1.0f - easeTimer_) * start.z + easeTimer_ * end.z;
-            current.w = (1.0f - easeTimer_) * start.w + easeTimer_ * end.w;
         }
     }
-    else
-    {
+    else {
         // end -> start への逆方向の遷移
-        if (timer_ <= 0.0f)
-        {
+        if (timer_ <= 0.0f) {
             current = end;
             easeTimer_ = 0.0f;
             timer_ = 1.0f;
             isReverse_ = true;  // 元の方向に戻る
         }
-        else
-        {
+        else {
             timer_ -= interval_;
-            if (timer_ <= 0.0f)
-            {
+            if (timer_ <= 0.0f) {
                 timer_ = 0.0f;
             }
             easeTimer_ = easingFunc(timer_);
             current.x = (1.0f - easeTimer_) * end.x + easeTimer_ * start.x;
             current.y = (1.0f - easeTimer_) * end.y + easeTimer_ * start.y;
             current.z = (1.0f - easeTimer_) * end.z + easeTimer_ * start.z;
-            current.w = (1.0f - easeTimer_) * end.w + easeTimer_ * start.w;
         }
     }
 }
 
 void Easing::OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
-    if (isReverse_) {
-        // start -> end
-        if (timer_ <= 0.0f) {
-            current = start;
-            easeTimer_ = 0.0f;
-            timer_ = 1.0f;
-            isReverse_ = false;  // 再び逆方向へ
-        }
-        else {
-            timer_ -= interval_;
-            if (timer_ <= 0.0f) {
-                timer_ = 0.0f;
-                current = start;
-                isEase_ = false;
-            }
-            easeTimer_ = easingFunc(timer_);
-            current.x = (1.0f - easeTimer_) * start.x + easeTimer_ * end.x;
-            current.y = (1.0f - easeTimer_) * start.y + easeTimer_ * end.y;
-            current.z = (1.0f - easeTimer_) * start.z + easeTimer_ * end.z;
-        }
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
     }
-    else {
-        // end -> start（逆方向）
-        if (timer_ <= 0.0f) {
-            current = end;
-            easeTimer_ = 0.0f;
-            timer_ = 1.0f;
-            isReverse_ = true;
-        }
-        else {
-            timer_ -= interval_;
-            if (timer_ <= 0.0f) {
-                timer_ = 0.0f;
-                current = end;
-            }
-            easeTimer_ = easingFunc(timer_);
-            current.x = (1.0f - easeTimer_) * end.x + easeTimer_ * start.x;
-            current.y = (1.0f - easeTimer_) * end.y + easeTimer_ * start.y;
-            current.z = (1.0f - easeTimer_) * end.z + easeTimer_ * start.z;
-        }
-    }
-}
 
-void Easing::OnceReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current)
-{
     if (isReverse_) {
         // start -> end
         if (timer_ <= 0.0f) {
@@ -390,7 +289,6 @@ void Easing::OnceReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current)
             current.x = (1.0f - easeTimer_) * start.x + easeTimer_ * end.x;
             current.y = (1.0f - easeTimer_) * start.y + easeTimer_ * end.y;
             current.z = (1.0f - easeTimer_) * start.z + easeTimer_ * end.z;
-            current.w = (1.0f - easeTimer_) * start.w + easeTimer_ * end.w;
         }
     }
     else {
@@ -411,7 +309,6 @@ void Easing::OnceReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current)
             current.x = (1.0f - easeTimer_) * end.x + easeTimer_ * start.x;
             current.y = (1.0f - easeTimer_) * end.y + easeTimer_ * start.y;
             current.z = (1.0f - easeTimer_) * end.z + easeTimer_ * start.z;
-            current.w = (1.0f - easeTimer_) * end.w + easeTimer_ * start.w;
         }
     }
 }
@@ -419,6 +316,11 @@ void Easing::OnceReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current)
 // 色遷移のイージング関数
 void Easing::ReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -484,6 +386,11 @@ void Easing::ReverseColorLinear(unsigned int start, unsigned int end, unsigned i
 
 void Easing::OnceReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -552,13 +459,6 @@ void Easing::OnceReverseColorLinear(unsigned int start, unsigned int end, unsign
     current = (newR << 24) | (newG << 16) | (newB << 8) | newA;
 }
 
-void Easing::SetEaseDurationFrames(int frames)
-{
-    if (frames > 0)
-    {
-        interval_ = 1.0f / static_cast<float>(frames);
-    }
-}
 
 // イージングの関数群
 float Easing::EaseLinear(const float& t) {

@@ -14,11 +14,11 @@
             20.0
         ],
         "endColor": 4294967040,
-        "fadeOutInterval": 0.0,
+        "fadeOutFrameCount": 0,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
         "particleRadius": 8.363229494783373e-41,
-        "scaleInterval": 0.0,
+        "scaleFrameCount": 0,
         "speed": 1.0,
         "startColor": 4294967295,
         "textureIndex": 1829733243
@@ -38,12 +38,12 @@
             20.0
         ],
         "endColor": 4286427392,
-        "fadeOutInterval": 0.009999999776482582,
+        "fadeOutFrameCount": 146,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
         "particleRadius": 8.363229494783373e-41,
-        "scaleInterval": 0.03999999910593033,
-        "speed": 0.1899999976158142,
+        "scaleFrameCount": 20,
+        "speed": 0.07999999821186066,
         "startColor": 16711935,
         "textureIndex": 0
     },
@@ -62,11 +62,11 @@
             20.0
         ],
         "endColor": 4294967040,
-        "fadeOutInterval": 0.0,
+        "fadeOutFrameCount": 0,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
         "particleRadius": 8.363229494783373e-41,
-        "scaleInterval": 0.0,
+        "scaleFrameCount": 0,
         "speed": 1.0,
         "startColor": 4294967295,
         "textureIndex": 1829733243

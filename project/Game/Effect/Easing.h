@@ -52,21 +52,17 @@ public:
     void CountEaseLinear(int start, int end, int& current);
     void CountEaseLinear(float start, float end, float& current);
     void CountEaseLinear(unsigned int start, unsigned int end, unsigned int& current);
-    void CountEaseLinear(Vector3 start, Vector3 end, Vector3& current);
-    void CountEaseLinear(Vector4 start, Vector4 end, Vector4& current);
+    void CountEaseLinear(Vector3 start, Vector3 end, Vector3& curren);
     void ReverseEaseLinear(float start, float end, float& current);
     void ReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current);
-    void ReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current);
     void OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current);
-    void OnceReverseEaseLinear(Vector4 start, Vector4 end, Vector4& current);
     void OnceReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
 
     // イージングの初期化
     void InitEasing();
     // 色遷移のイージング関数
     void ReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
-    // イージングのフレーム数をSetする関数
-    void SetEaseDurationFrames(int frames);
+
 
 public:
     // メンバ変数

@@ -109,8 +109,8 @@ void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath
                 };
             }
 
-            config.fadeOutEase->interval_ = entry.value("fadeOutInterval", 0.01f);
-            config.scaleEase->interval_ = entry.value("scaleInterval", 0.04f);
+            config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 0.01f);
+            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 0.04f);
             config.startColor = entry.value("startColor", 0xffffffff);
             config.endColor = entry.value("endColor", 0xffffffff);
         }
@@ -236,10 +236,10 @@ void ParticleSystem::ShowEditor()
             ImGui::DragFloat3("Emitter Range", &config.emitterRange.x, 0.01f);
 
             // fadeOutEase interval
-            ImGui::DragFloat("FadeOut Interval", &config.fadeOutEase->interval_, 0.001f);
+            ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase->frameCount_, 1);
 
             // scaleEase interval
-            ImGui::DragFloat("Scale Interval", &config.scaleEase->interval_, 0.001f);
+            ImGui::DragInt("Scale FrameCount", &config.scaleEase->frameCount_, 1);
 
             Vector4 startCol = Uint32ToColorVector(config.startColor);
             if (ImGui::ColorEdit4("Start Color", (float*)&startCol))
@@ -323,8 +323,8 @@ void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
                 config.emitterRange.y,
                 config.emitterRange.z
             }},
-            { "fadeOutInterval", config.fadeOutEase->interval_ },
-            { "scaleInterval", config.scaleEase->interval_ },
+            { "fadeOutFrameCount", config.fadeOutEase->frameCount_ },
+            { "scaleFrameCount", config.scaleEase->frameCount_ },
             { "startColor", config.startColor },
             { "endColor", config.endColor }
         };

@@ -12,7 +12,6 @@ void HitEffectParticleBehavior::Initialize(ParticleState& particle, const Partic
     particle.thetaVel = 0.0f;
     particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
     particle.scaleEase->SetEasing(EasingType::EaseOutBack);
-    particle.fadeOutEase->SetEaseDurationFrames(60);
     particle.scaleEase->interval_ = 0.04f;
     particle.isExist = false;
     particle.hasExisted = false;
