@@ -25,7 +25,7 @@ void ParticleSystem::Initialize(Engine* engine)
     engine_ = engine;
 
     // JSONから読み込む
-    LoadParticleDefinitionsFromJson("Game/Data/particles.json");
+    LoadParticleDefinitionsFromJson("Resources/json/particles.json");
 
     // JSONに色情報がない場合、ここでデフォルト色を設定する
     particleConfigs_[static_cast<size_t>(ParticleType::None)].baseColor = Uint32ToColorVector(0xFFFFFFff);
@@ -110,8 +110,8 @@ void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath
                 };
             }
 
-            config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 0.01f);
-            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 0.04f);
+            config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
+            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
             config.startColor = entry.value("startColor", 0xffffffff);
             config.endColor = entry.value("endColor", 0xffffffff);
 
@@ -285,7 +285,7 @@ void ParticleSystem::ShowEditor()
 
         if (ImGui::Button("Save Configs"))
         {
-            SaveConfigsToJson("Game/Data/particles.json");
+            SaveConfigsToJson("Resources/json/particles.json");
         }
 
         ImGui::SameLine();

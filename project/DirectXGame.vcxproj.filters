@@ -697,7 +697,7 @@
     <None Include="Resources\Shaders\ParticleCommon.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Game\Data\Particles.json">
+    <None Include="Resources\json\Particles.json">
       <Filter>Game\Data</Filter>
     </None>
     <None Include="Resources\Shaders\FullScreenQuad.hlsli">
