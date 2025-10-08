@@ -33,7 +33,7 @@ public:
     WorldTransform& GetUVTransform() { return uvTransform_; };
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
-
+    std::unique_ptr<ModelData> modelData_;
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -44,5 +44,5 @@ private:
     uint32_t textureHandle_ = 0;
     uint32_t color_ = 0xFFFFFFFF;
 
-    std::unique_ptr<ModelData> modelData_;
+   
 };

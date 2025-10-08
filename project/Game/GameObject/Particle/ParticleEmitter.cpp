@@ -1,4 +1,5 @@
 #include "ParticleEmitter.h"
+#include "TimeManager.h"
 
 void ParticleEmitter::Initialize(ParticleType type, const Vector3& position, float spawnInterval, float lifetime, int amount)
 {
@@ -10,9 +11,9 @@ void ParticleEmitter::Initialize(ParticleType type, const Vector3& position, flo
     timeSinceLastSpawn_ = 0.0f;
 }
 
-void ParticleEmitter::Update(float deltaTime, ParticleSystem& particleSystem)
+void ParticleEmitter::Update(ParticleSystem& particleSystem)
 {
-    timeSinceLastSpawn_ += deltaTime;
+    timeSinceLastSpawn_ += TimeManager::GetInstance()->GetDeltaTime();
 
     // 定期的にパーティクルを生成
     while (timeSinceLastSpawn_ >= spawnInterval_)

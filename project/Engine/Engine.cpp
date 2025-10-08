@@ -23,7 +23,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-std::wstring Engine::windowTitle_ = L"TD2_2104";	
+std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";	
 
 const int32_t Engine::kMaxTriangleCount = 25; // 三角形の最大数
 const int32_t Engine::kMaxSphereCount = 25; // 球の最大数

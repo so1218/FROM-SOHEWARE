@@ -1,39 +1,74 @@
-[
-  {
-    "type": "Water",
-    "gravity": 9.8,
-    "drag": 0.1,
-    "decayRate": 0.0,
-    "maxLifetime": 5.0,
-    "textureIndex": 0,
-    "reactsToFire": false,
-    "emitsLight": false,
-    "smoothingRadius": 0.7,
-    "restDensity": 1000.0,
-    "stiffness": 20.0,
-    "viscosityCoefficient": 0.05,
-    "particleRadius": 0.30
-  },
-  {
-    "type": "Fire",
-    "gravity": 10.0,
-    "drag": 0.05,
-    "decayRate": 0.0,
-    "maxLifetime": 2.0,
-    "textureIndex": 1,
-    "reactsToFire": true,
-    "emitsLight": false,
-    "particleRadius": 0.3
-  },
-  {
-    "type": "Ice",
-    "gravity": 0.0,
-    "drag": 0.0,
-    "decayRate": 0.0,
-    "maxLifetime": 10.0,
-    "textureIndex": 2,
-    "reactsToFire": false,
-    "emitsLight": false,
-    "particleRadius": 0.3
-  }
-]
+{
+    "HitEffect": {
+        "baseColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "decayRate": 8.784027809394187e-27,
+        "drag": 0.0,
+        "emitterRange": [
+            20.0,
+            20.0,
+            20.0
+        ],
+        "endColor": 4294967040,
+        "fadeOutInterval": 0.0,
+        "gravity": 1.5694542800437951e-43,
+        "maxLifetime": 4.590373509435236e-41,
+        "particleRadius": 8.363229494783373e-41,
+        "scaleInterval": 0.0,
+        "speed": 1.0,
+        "startColor": 4294967295,
+        "textureIndex": 1829733243
+    },
+    "Key": {
+        "baseColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "decayRate": 8.784027809394187e-27,
+        "drag": 0.0,
+        "emitterRange": [
+            0.0,
+            1.0,
+            20.0
+        ],
+        "endColor": 4286427392,
+        "fadeOutInterval": 0.009999999776482582,
+        "gravity": 1.5694542800437951e-43,
+        "maxLifetime": 4.590373509435236e-41,
+        "particleRadius": 8.363229494783373e-41,
+        "scaleInterval": 0.03999999910593033,
+        "speed": 0.1899999976158142,
+        "startColor": 16711935,
+        "textureIndex": 0
+    },
+    "None": {
+        "baseColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "decayRate": 8.784027809394187e-27,
+        "drag": 0.0,
+        "emitterRange": [
+            20.0,
+            20.0,
+            20.0
+        ],
+        "endColor": 4294967040,
+        "fadeOutInterval": 0.0,
+        "gravity": 1.5694542800437951e-43,
+        "maxLifetime": 4.590373509435236e-41,
+        "particleRadius": 8.363229494783373e-41,
+        "scaleInterval": 0.0,
+        "speed": 1.0,
+        "startColor": 4294967295,
+        "textureIndex": 1829733243
+    }
+}

@@ -171,6 +171,7 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderDockWindow("Scene", dock_main_id);
         ImGui::DockBuilderDockWindow("プレイヤー", dock_id_right);
         ImGui::DockBuilderDockWindow("ホリシーン", dock_id_right);
+        ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_right);
         ImGui::DockBuilderDockWindow("敵", dock_id_right);
         ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
         ImGui::DockBuilderDockWindow("Ground", dock_id_down);

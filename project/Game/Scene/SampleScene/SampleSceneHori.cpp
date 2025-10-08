@@ -66,7 +66,7 @@ void SampleSceneHori::Initialize()
 
 void SampleSceneHori::Update()
 {
-
+    dragonModel_->modelData_->materialHandle.materialData->isArtWave = true;
     // ゲームオブジェクトの調整項目を一括更新
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
@@ -89,7 +89,7 @@ void SampleSceneHori::Update()
         originalTranslation_ = dragonModel_->GetTransform().translation_;
     }
 
-    dragonModel_->GetTransform().translation_.x += 0.01f;
+   /* dragonModel_->GetTransform().translation_.x += 0.01f;*/
 
     if (shake.IsActive())
     {
