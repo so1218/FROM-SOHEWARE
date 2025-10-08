@@ -10,6 +10,7 @@
 #include "ModelHandle.h"
 #include "TextureHandle.h"
 #include "AudioHandle.h"
+#include "AnimationHandle.h"
 
 #include "externals/DirectXTex/d3dx12.h" 
 
@@ -22,7 +23,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
-std::wstring Engine::windowTitle_ = L"TD2_2104";	
+std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";	
 
 const int32_t Engine::kMaxTriangleCount = 25; // 三角形の最大数
 const int32_t Engine::kMaxSphereCount = 25; // 球の最大数
@@ -360,6 +361,7 @@ void Engine::InitializeResources()
 	textureManager_->Initialize(graphicDevice_->GetDevice(), commandManager_->GetCommandList(), srvAllocator_.get());
 	TextureHandle::Initialize(this);
 	ModelHandle::Initialize(this);
+	AnimationHandle::Initialize();
 
 	// 配列テクスチャのパスを用意
 	std::vector<std::string> texturePaths = {
@@ -629,7 +631,7 @@ void Engine::UpdateAnimation(AnimatedModelData& instance)
 	instance.animationTime += TimeManager::GetInstance()->GetDeltaTime();
 	instance.animationTime = std::fmod(instance.animationTime, instance.animation.duration);
 
-	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.rootNodeName];
+	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.animation.rootNodeName];
 	Vector3 translation = CalculateValue(nodeAnim.translate.keyframes, instance.animationTime);
 	Quaternion rotation = CalculateValue(nodeAnim.rotate.keyframes, instance.animationTime);
 	Vector3 scale = CalculateValue(nodeAnim.scale.keyframes, instance.animationTime);

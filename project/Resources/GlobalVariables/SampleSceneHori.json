@@ -1,9 +1,9 @@
 {
     "SampleSceneHori": {
         "dragonModel_->GetTransform()": [
-            0.0,
-            0.0,
-            0.0
+            0.189999520778656,
+            -2.200000047683716,
+            -4.300000190734863
         ],
         "uvCheckerSprite_->SetPosition": [
             0.0,

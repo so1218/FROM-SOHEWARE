@@ -62,8 +62,7 @@ public:
     void InitEasing();
     // 色遷移のイージング関数
     void ReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
-    // イージングのフレーム数をSetする関数
-    void SetEaseDurationFrames(int frames);
+
 
 public:
     // メンバ変数

@@ -30,6 +30,7 @@ public:
     virtual void Draw() {}
     virtual void DebugDraw() {}
     virtual void ApplyGlobalVariables() {}
+    virtual void SaveGlobalVariables() {}
     virtual const char* GetGlobalVariableGroupName() const = 0;
     virtual bool IsDead() const { return false; }
 

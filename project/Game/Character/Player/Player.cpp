@@ -49,6 +49,13 @@ void Player::ApplyGlobalVariables()
 		GetGlobalVariableGroupName(), "modelPlayer_->GetTransform().translation_");
 }
 
+
+void Player::SaveGlobalVariables()
+{
+	GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "modelPlayer_->GetTransform().translation_", modelPlayer_->GetTransform().translation_);
+}
+
+
 void Player::Update()
 {
 	Move();

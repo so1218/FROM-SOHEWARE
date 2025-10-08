@@ -4,15 +4,18 @@
 #include <assimp/scene.h>    
 #include <cassert>
 
-Animation LoadAnimationFile(const std::string& directoryPath, const std::string& filename)
+Animation LoadAnimationFile(const std::string& filePath)
 {
 	Animation animation;// 今回作るアニメーション
 	Assimp::Importer importer;
-	std::string filePath = directoryPath + "/" + filename;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
 	assert(scene->mNumAnimations != 0);// アニメーションが無い
 	aiAnimation* animationAssimp = scene->mAnimations[0];// 最初のアニメーションだけ採用。もちろん複数対応するに越したことはない
 	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);// 時間の単位を秒に変換
+	if (animationAssimp->mNumChannels > 0)
+	{
+		animation.rootNodeName = animationAssimp->mChannels[0]->mNodeName.C_Str();
+	}
 
 	// assimpでは個々のnodeのAnimationをchannelと呼んでいるのでchannelを回してNodeAnimationの情報を取ってくる
 	for (uint32_t channelIndex = 0; channelIndex < animationAssimp->mNumChannels; ++channelIndex)
@@ -40,7 +43,7 @@ Animation LoadAnimationFile(const std::string& directoryPath, const std::string&
 			aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
 			KeyframeVector3 keyframe;
 			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
-			keyframe.value = { -keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };// 右手->左手
+			keyframe.value = { keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };// 右手->左手
 			nodeAnimation.scale.keyframes.push_back(keyframe);
 		}
 	}

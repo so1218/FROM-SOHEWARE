@@ -218,7 +218,7 @@
     <ClCompile Include="Engine\Graphics\Utility\BlendMode.cpp">
       <Filter>Engine\Graphics\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle.cpp">
+    <ClCompile Include="Game\GameObject\Particle\Particle.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Mesh\Model.cpp">
@@ -335,7 +335,7 @@
     <ClCompile Include="Game\Data\AudioHandle.cpp">
       <Filter>Game\Data</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\ParticleEmitter.cpp">
+    <ClCompile Include="Game\GameObject\Particle\ParticleEmitter.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp">
@@ -345,12 +345,6 @@
       <Filter>Game\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneMikami.cpp">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scene\SampleScene\SampleSceneSuyama.cpp">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClCompile>
     <ClCompile Include="Game\Effect\ShakeEffect.cpp">
@@ -385,6 +379,21 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Character\Player\Weapon\Bullet.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Data\AnimationHandle.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Stage\StageManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Particle\Behavior\IParticleBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -518,7 +527,7 @@
     <ClInclude Include="Engine\Mesh\Model.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Particle.h">
+    <ClInclude Include="Game\GameObject\Particle\Particle.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core\RenderCommon.h">
@@ -642,7 +651,7 @@
     <ClInclude Include="Game\Data\AudioHandle.h">
       <Filter>Game\Data</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\ParticleEmitter.h">
+    <ClInclude Include="Game\GameObject\Particle\ParticleEmitter.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\GameObjectManager.h">
@@ -652,12 +661,6 @@
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scene\SampleScene\SampleSceneHori.h">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneMikami.h">
-      <Filter>Game\Scene\SampleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scene\SampleScene\SampleSceneSuyama.h">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClInclude>
     <ClInclude Include="Game\Effect\ShakeEffect.h">
@@ -676,6 +679,11 @@
     <ClInclude Include="Game\Character\Player\Weapon\BulletManager.h" />
     <ClInclude Include="Game\Character\Player\Weapon\BulletFactory.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
+    <ClInclude Include="Game\Data\AnimationHandle.h" />
+    <ClInclude Include="Game\Stage\StageManager.h" />
+    <ClInclude Include="Game\GameObject\Particle\Behavior\IParticleBehavior.h" />
+    <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
+    <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -689,7 +697,7 @@
     <None Include="Resources\Shaders\ParticleCommon.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Game\Data\Particles.json">
+    <None Include="Resources\json\Particles.json">
       <Filter>Game\Data</Filter>
     </None>
     <None Include="Resources\Shaders\FullScreenQuad.hlsli">

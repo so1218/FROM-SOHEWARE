@@ -32,6 +32,7 @@ public:
     void Finalize() override;
 
     void ApplyGlobalVariables();
+    void SaveGlobalVariables();
 
 private:
     // メンバー変数

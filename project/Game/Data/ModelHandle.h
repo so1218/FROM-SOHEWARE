@@ -17,7 +17,8 @@ enum class ModelID
     field,
 
 	// プレイヤー関連
-    ninngenn,
+    animatedCube,
+    animatedRyu,
 
 	// 敵関連
     dragon,
@@ -58,7 +59,8 @@ private:
             { ModelID::field,  "Resources/models/field/field.obj" },
 
             // プレイヤー関連
-            { ModelID::ninngenn,  "Resources/models/animSoccer/ninngennAnimetion.glb" },
+            { ModelID::animatedCube,  "Resources/models/animatedCube/ani.gltf" },
+            { ModelID::animatedRyu,  "Resources/models/animated/animatedRyu.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },

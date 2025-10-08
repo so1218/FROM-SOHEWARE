@@ -59,6 +59,7 @@ float (*Easing::GetEasingFunction(EasingType easingType))(const float&)
 void Easing::InitEasing()
 {
     interval_ = 0.01f;
+    frameCount_ = 60;
     cycle_ = 0.0f;
     timer_ = 0.0f;
     easeTimer_ = 0.0f;
@@ -69,6 +70,11 @@ void Easing::InitEasing()
 //template <typename T>
 void Easing::CountEaseLinear(int start, int end, int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     if (timer_ >= 1.0f) {
         current = end;
         timer_ = 0.0f;
@@ -84,6 +90,10 @@ void Easing::CountEaseLinear(int start, int end, int& current)
 
 void Easing::CountEaseLinear(float start, float end, float& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
 
     if (timer_ >= 1.0f) {
         current = end;
@@ -101,6 +111,11 @@ void Easing::CountEaseLinear(float start, float end, float& current)
 // unsigned int 用の線形補間
 void Easing::CountEaseLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -137,6 +152,10 @@ void Easing::CountEaseLinear(unsigned int start, unsigned int end, unsigned int&
 // Vector3 用の線形補間
 void Easing::CountEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
 
     if (timer_ >= 1.0f) {
         current = end;
@@ -156,6 +175,11 @@ void Easing::CountEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 
 void Easing::ReverseEaseLinear(float start, float end, float& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     if (isReverse_) {
         // start -> end への遷移
         if (timer_ <= 0.0f) {
@@ -194,6 +218,10 @@ void Easing::ReverseEaseLinear(float start, float end, float& current)
 
 void Easing::ReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
 
     if (isReverse_) {
         // start -> end への遷移
@@ -237,6 +265,11 @@ void Easing::ReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 
 void Easing::OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     if (isReverse_) {
         // start -> end
         if (timer_ <= 0.0f) {
@@ -283,6 +316,11 @@ void Easing::OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current)
 // 色遷移のイージング関数
 void Easing::ReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -348,6 +386,11 @@ void Easing::ReverseColorLinear(unsigned int start, unsigned int end, unsigned i
 
 void Easing::OnceReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current)
 {
+    if (frameCount_ > 0)
+    {
+        interval_ = 1.0f / static_cast<float>(frameCount_);
+    }
+
     unsigned int startR = (start >> 24) & 0xff;
     unsigned int startG = (start >> 16) & 0xff;
     unsigned int startB = (start >> 8) & 0xff;
@@ -416,13 +459,6 @@ void Easing::OnceReverseColorLinear(unsigned int start, unsigned int end, unsign
     current = (newR << 24) | (newG << 16) | (newB << 8) | newA;
 }
 
-void Easing::SetEaseDurationFrames(int frames)
-{
-    if (frames > 0)
-    {
-        interval_ = 1.0f / static_cast<float>(frames);
-    }
-}
 
 // イージングの関数群
 float Easing::EaseLinear(const float& t) {

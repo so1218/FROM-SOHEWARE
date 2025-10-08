@@ -68,17 +68,50 @@ int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::v
 {
 	Joint joint;
 	joint.name = node.name;
-	joint.transform = node.transform;
 	joint.localMatrix = node.localMatrix;
+	joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity();
+	joint.transform = node.transform;
 	joint.index = static_cast<int32_t>(joints.size());
 	joint.parent = parentIndex;
-	int32_t currentIndex = joint.index;
+	joints.push_back(joint);
 	// 子のJointのインデックスを取得
 	for (const Node& childNode : node.children)
 	{
-		int32_t childIndex = CreateJoint(childNode, currentIndex, joints);
-		joint.children.push_back(childIndex);
+		int32_t childIndex = CreateJoint(childNode, joint.index, joints);
+		joints[joint.index].children.push_back(childIndex);
 	}
-	joints.push_back(joint);
-	return currentIndex;
+	return joint.index;
+}
+
+void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
+{
+	for (Joint& joint : skeleton.joints)
+	{
+		// 対象のJointのAnimationがあれば、値の適用を行う。下記のif文はC++17から可能になった初期化付きif文
+		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
+		{
+			const NodeAnimation& nodeAnimation = (*it).second;
+		
+			joint.transform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, animationTime);
+			joint.transform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
+			joint.transform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, animationTime);
+		}
+	}
+}
+
+void Update(Skeleton& skeleton)
+{
+	// 全てのJointを更新。親が若いので通常ループで処理可能になっている
+	for (Joint& joint : skeleton.joints)
+	{
+		joint.localMatrix = Matrix4x4::MakeAffine(joint.transform.scale_, joint.transform.rotationQuaternion_, joint.transform.translation_);
+		if (joint.parent)
+		{
+			joint.skeletonSpaceMatrix =  joint.localMatrix * skeleton.joints[*(joint.parent)].skeletonSpaceMatrix;
+		}
+		else
+		{
+			joint.skeletonSpaceMatrix = joint.localMatrix;
+		}
+	}
 }

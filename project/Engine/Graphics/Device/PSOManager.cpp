@@ -312,7 +312,27 @@ void PSOManager::CreateParticlePSO(BlendMode blendMode)
     // 深度ステンシルの設定
     D3D12_DEPTH_STENCIL_DESC depthDesc = psoDescParticle_.DepthStencilState;
     depthDesc.DepthEnable = TRUE;
-    depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
+    switch (blendMode)
+    {
+    case kBlendModeNone:
+        depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; // 深度書き込み有効
+        break;
+
+    case kBlendModeNormal:
+    case kBlendModeAdd:
+    case kBlendModeSubtract:
+    case kBlendModeMultily:
+    case kBlendModeScreen:
+    case kBlendModeExclusion:
+        depthDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // 深度書き込み無効
+        break;
+
+    default:
+        assert(false);
+        break;
+    }
+
     depthDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
     psoDescParticle_.DepthStencilState = depthDesc;
 

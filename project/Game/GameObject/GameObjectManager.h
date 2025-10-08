@@ -18,7 +18,7 @@ public:
 
     void ApplyGlobalVariables();
 
-
+    void SaveGlobalVariables();
 
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;

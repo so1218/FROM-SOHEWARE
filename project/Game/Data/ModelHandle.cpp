@@ -9,7 +9,8 @@ constexpr std::array<ModelDefinition, static_cast<size_t>(ModelID::count)> Model
 
 ModelHandle::~ModelHandle()
 {
-    for (auto& handle : modelHandles_) {
+    for (auto& handle : modelHandles_) 
+    {
         handle.reset(); // モデル毎の ModelData を破棄
     }
     initialized_ = false;

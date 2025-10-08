@@ -4,6 +4,7 @@
 #include "ImGuiManager.h"
 #include "ModelLoader.h"
 #include "GlobalVariables.h"
+#include "AnimationHandle.h"
 #include "Input.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
@@ -18,11 +19,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
 
-    animeModelData_.modelData = *ModelHandle::Get(ModelID::ninngenn);
-    animeModelData_.animation = LoadAnimationFile("Resources/models/animSoccer", "ninngennAnimetion.glb");
-
-    animeModelData_.animationTime = 120.0f;
-	animeModelData_.rootNodeName = "mixamorig:Hips";
+    animeModelData_.modelData = *ModelHandle::Get(ModelID::animatedRyu);
+    animeModelData_.animation = AnimationHandle::Get(AnimationID::cube);
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -41,6 +39,14 @@ void SampleSceneHori::ApplyGlobalVariables()
     const char* groupName = "SampleSceneHori";
     dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
     uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
+
+}
+
+void SampleSceneHori::SaveGlobalVariables()
+{
+    const char* groupName = "SampleSceneHori";
+    GlobalVariables::GetInstance()->SetValue(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
+    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
 }
 
 
@@ -60,17 +66,13 @@ void SampleSceneHori::Initialize()
 
 void SampleSceneHori::Update()
 {
-    if (Input::IsKeyTriggered(DIK_E)) 
-    {
-        isEditorMode_ = !isEditorMode_;
-    }
-    if (isEditorMode_) {
-        // ゲームオブジェクトの調整項目を一括更新
-        objectManager_.ApplyGlobalVariables();
-        ApplyGlobalVariables(); 
-    }
+    dragonModel_->modelData_->materialHandle.materialData->isArtWave = true;
+    // ゲームオブジェクトの調整項目を一括更新
+    objectManager_.ApplyGlobalVariables();
+    ApplyGlobalVariables(); 
+    
 
-	/*engine_->UpdateAnimation(animeModelData_); */
+	engine_->UpdateAnimation(animeModelData_); 
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -87,6 +89,8 @@ void SampleSceneHori::Update()
         originalTranslation_ = dragonModel_->GetTransform().translation_;
     }
 
+   /* dragonModel_->GetTransform().translation_.x += 0.01f;*/
+
     if (shake.IsActive())
     {
         dragonModel_->GetTransform().translation_ = originalTranslation_ + shake.GetOffset();
@@ -95,21 +99,27 @@ void SampleSceneHori::Update()
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
+    objectManager_.SaveGlobalVariables();
+    SaveGlobalVariables();
+
 }
 
 void SampleSceneHori::Draw()
 {
     uvCheckerSprite_->Draw();
-   /* dragonModel_->Draw();*/
+    dragonModel_->Draw();
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-   /* engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));*/
+    engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));
 }
 
 void SampleSceneHori::DebugDraw()
 {
+    ImGui::Begin("ホリシーン");
+   
+    ImGui::End();
     // ゲームオブジェクトの一括デバッグ描画
     objectManager_.DebugDraw();
 }

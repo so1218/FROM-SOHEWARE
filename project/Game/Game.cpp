@@ -8,8 +8,6 @@
 #include "ModelHandle.h"
 #include "TextureHandle.h"
 #include "SampleSceneHori.h"
-#include "SampleSceneMikami.h"
-#include "SampleSceneSuyama.h"
 
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
@@ -126,10 +124,11 @@ void Game::Update()
 
 void Game::Draw()
 {
-    sceneManager_.Draw();
 #ifdef _DEBUG
     engine_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
 #endif
+    sceneManager_.Draw();
+
 }
 
 void Game::Finalize()

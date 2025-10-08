@@ -21,16 +21,20 @@ bool Input::controllerConnected_[4] = {};
 
 Input::Input() {}
 
-Input::~Input() {
-    if (keyboard_) {
+Input::~Input() 
+{
+    if (keyboard_)
+    {
         keyboard_->Unacquire();
         keyboard_->Release();
     }
-    if (mouse_) {
+    if (mouse_)
+    {
         mouse_->Unacquire();
         mouse_->Release();
     }
-    if (directInput_) {
+    if (directInput_) 
+    {
         directInput_->Release();
     }
 }
@@ -95,7 +99,8 @@ void Input::Update()
 void Input::UpdateController()
 {
     // コントローラー
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
 
         DWORD res = XInputGetState(i, &controllerStates_[i]);
@@ -214,55 +219,70 @@ SHORT Input::GetRightStickY(int controllerId)
     return controllerStates_[controllerId].Gamepad.sThumbRY;
 }
 
-bool Input::IsLeftOnStick(int controllerId, StickType stickType) {
-    if (stickType == LeftStick) {
+bool Input::IsLeftOnStick(int controllerId, StickType stickType)
+{
+    if (stickType == LeftStick)
+    {
         return GetLeftStickX(controllerId) < -STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) {
+    else if (stickType == RightStick) 
+    {
         return GetRightStickX(controllerId) < -STICK_THRESHOLD;
     }
     return false;
 }
 
-bool Input::IsRightOnStick(int controllerId, StickType stickType) {
-    if (stickType == LeftStick) {
+bool Input::IsRightOnStick(int controllerId, StickType stickType) 
+{
+    if (stickType == LeftStick) 
+    {
         return GetLeftStickX(controllerId) > STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) {
+    else if (stickType == RightStick)
+    {
         return GetRightStickX(controllerId) > STICK_THRESHOLD;
     }
     return false;
 }
 
-bool Input::IsUpOnStick(int controllerId, StickType stickType) {
-    if (stickType == LeftStick) {
+bool Input::IsUpOnStick(int controllerId, StickType stickType)
+{
+    if (stickType == LeftStick)
+    {
         return GetLeftStickY(controllerId) > STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) {
+    else if (stickType == RightStick)
+    {
         return GetRightStickY(controllerId) > STICK_THRESHOLD;
     }
     return false;
 }
 
 
-bool Input::IsDownOnStick(int controllerId, StickType stickType) {
-    if (stickType == LeftStick) {
+bool Input::IsDownOnStick(int controllerId, StickType stickType)
+{
+    if (stickType == LeftStick)
+    {
         return GetLeftStickY(controllerId) < -STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) {
+    else if (stickType == RightStick) 
+    {
         return GetRightStickY(controllerId) < -STICK_THRESHOLD;
     }
     return false;
 }
 
-bool Input::IsTriggerOnStick(int controllerId, StickType stickType) {
-    if (stickType == LeftStick) {
+bool Input::IsTriggerOnStick(int controllerId, StickType stickType)
+{
+    if (stickType == LeftStick)
+    {
         return (GetLeftStickX(controllerId) > STICK_THRESHOLD ||
             GetLeftStickX(controllerId) < -STICK_THRESHOLD ||
             GetLeftStickY(controllerId) > STICK_THRESHOLD ||
             GetLeftStickY(controllerId) < -STICK_THRESHOLD);
     }
-    else if (stickType == RightStick) {
+    else if (stickType == RightStick)
+    {
         return (GetRightStickX(controllerId) > STICK_THRESHOLD ||
             GetRightStickX(controllerId) < -STICK_THRESHOLD ||
             GetRightStickY(controllerId) > STICK_THRESHOLD ||

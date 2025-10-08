@@ -83,6 +83,7 @@ void PlayScene::DebugDraw()
 
 	player_->DebugDraw();
     enemy_->DebugDraw();
+    engine_->particleSystem_->ShowEditor();
 }
 
 void PlayScene::Finalize()
