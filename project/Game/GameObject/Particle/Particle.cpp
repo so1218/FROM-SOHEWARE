@@ -61,6 +61,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
 
 void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath)
 {
+
     std::ifstream file(filepath);
     nlohmann::json j;
 
@@ -113,6 +114,8 @@ void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath
             config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 0.04f);
             config.startColor = entry.value("startColor", 0xffffffff);
             config.endColor = entry.value("endColor", 0xffffffff);
+
+            
         }
         else
         {
@@ -298,13 +301,11 @@ void ParticleSystem::ShowEditor()
 }
 void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
     nlohmann::json j;
-
     for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) {
         const auto& config = particleConfigs_[i];
         std::string typeName = ParticleTypeToString(config.type);
 
-        j[typeName] =
-        {
+        nlohmann::json typeJson = {
             { "speed", config.speed },
             { "gravity", config.gravity },
             { "drag", config.drag },
@@ -328,6 +329,10 @@ void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
             { "startColor", config.startColor },
             { "endColor", config.endColor }
         };
+
+
+
+        j[typeName] = typeJson;
     }
 
     std::ofstream ofs(filepath);

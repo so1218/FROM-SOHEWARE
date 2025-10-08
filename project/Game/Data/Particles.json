@@ -37,6 +37,18 @@
             1.0,
             20.0
         ],
+        "emitters": [
+            {
+                "amount": 20,
+                "lifetime": 4.0,
+                "position": [
+                    -5.400000095367432,
+                    -5.0,
+                    0.0
+                ],
+                "spawnInterval": 0.009999999776482582
+            }
+        ],
         "endColor": 4286427392,
         "fadeOutFrameCount": 146,
         "gravity": 1.5694542800437951e-43,
