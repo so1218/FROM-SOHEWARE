@@ -5,7 +5,6 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSyst
 {
     auto& config = particleSystem.GetConfig(ParticleType::Key);
 
-    particle.appearInterval = 4;
     particle.emitterRange = config.emitterRange;
     particle.fadeOutEase->frameCount_ = config.fadeOutEase->frameCount_;
     particle.color = { 127.0f,255.0f,0.0f,255.0f };
@@ -21,21 +20,7 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSyst
     particle.speed = config.speed;
     particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
     particle.scaleEase->SetEasing(EasingType::EaseLinear);
-    //particle.fadeOutEase->SetEaseDurationFrames(250);
     particle.scaleEase->frameCount_ = config.scaleEase->frameCount_;
-
-#ifdef _DEBUG
-
-    particle.appearInterval = 4;
-    particle.color = { 127.0f,255.0f,0.0f,255.0f };
-    particle.isExist = true;
-    particle.hasExisted = false;
-    particle.frameCount = 0;
-    particle.isEmit = false;
-    particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
-    particle.scaleEase->SetEasing(EasingType::EaseLinear);
-    //particle.fadeOutEase->SetEaseDurationFrames(250);
-#endif
 
 }
 

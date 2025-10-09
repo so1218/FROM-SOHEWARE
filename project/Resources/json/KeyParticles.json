@@ -1,0 +1,36 @@
+{
+    "Key": {
+        "baseColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "decayRate": 0.0,
+        "drag": 0.0,
+        "emitterRange": [
+            20.0,
+            20.0,
+            20.0
+        ],
+        "endColor": 4294967040,
+        "endScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "fadeOutFrameCount": 171,
+        "gravity": 0.0,
+        "maxLifetime": 0.0,
+        "particleRadius": 0.0,
+        "scaleFrameCount": 0,
+        "speed": 0.009999999776482582,
+        "startColor": 4294967295,
+        "startScale": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "textureIndex": 0
+    }
+}

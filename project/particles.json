@@ -14,6 +14,11 @@
             20.0
         ],
         "endColor": 4294967040,
+        "endScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
         "fadeOutFrameCount": 0,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
@@ -21,6 +26,11 @@
         "scaleFrameCount": 0,
         "speed": 1.0,
         "startColor": 4294967295,
+        "startScale": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "textureIndex": 1829733243
     },
     "Key": {
@@ -38,6 +48,11 @@
             20.0
         ],
         "endColor": 4286427392,
+        "endScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
         "fadeOutFrameCount": 146,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
@@ -45,6 +60,11 @@
         "scaleFrameCount": 20,
         "speed": 0.0,
         "startColor": 16711935,
+        "startScale": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "textureIndex": 0
     },
     "None": {
@@ -62,6 +82,11 @@
             20.0
         ],
         "endColor": 4294967040,
+        "endScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
         "fadeOutFrameCount": 0,
         "gravity": 1.5694542800437951e-43,
         "maxLifetime": 4.590373509435236e-41,
@@ -69,6 +94,11 @@
         "scaleFrameCount": 0,
         "speed": 1.0,
         "startColor": 4294967295,
+        "startScale": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "textureIndex": 1829733243
     }
 }

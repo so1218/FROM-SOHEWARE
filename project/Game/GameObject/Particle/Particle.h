@@ -18,13 +18,15 @@ class ParticleEmitter;
 class ParticleSystem
 {
 public:
+    static constexpr const char* kConfigFilePath = "Resources/json/";
+
     void Initialize(Engine* engine);
     void SpawnParticle(WorldTransform& transform, ParticleType type, float lifetime, int amount);
     void Update();
     void AddEmitter(ParticleEmitter* emitter);
-    void LoadParticleDefinitionsFromJson(const std::string& filepath);
+    void LoadParticleDefinitionFromJson(ParticleType type);
     void ShowEditor();
-    void SaveConfigsToJson(const std::string& filepath);
+    void SaveConfigToJson(ParticleType type);
     const ParticleConfig& GetConfig(ParticleType type) const{ return particleConfigs_[static_cast<size_t>(type)]; }
     ParticleConfig& GetConfig(ParticleType type) { return particleConfigs_[static_cast<size_t>(type)]; }
 

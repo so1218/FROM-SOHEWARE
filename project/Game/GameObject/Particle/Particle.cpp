@@ -24,12 +24,11 @@ void ParticleSystem::Initialize(Engine* engine)
 {
     engine_ = engine;
 
-    // JSONから読み込む
-    LoadParticleDefinitionsFromJson("Resources/json/particles.json");
+    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) {
+        LoadParticleDefinitionFromJson(static_cast<ParticleType>(i));
+    }
 
-    // JSONに色情報がない場合、ここでデフォルト色を設定する
     particleConfigs_[static_cast<size_t>(ParticleType::None)].baseColor = Uint32ToColorVector(0xFFFFFFff);
-
     behaviors_[ParticleType::Key] = std::make_unique<KeyParticleBehavior>();
 }
 
@@ -59,88 +58,87 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
     particles_.push_back(std::move(particle));
 }
 
-void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath)
+void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
 {
+    std::string typeName = ParticleTypeToString(type);
+    std::string filepath = kConfigFilePath + typeName + "Particles.json";
 
     std::ifstream file(filepath);
-    nlohmann::json j;
-
-    if (file.is_open()) {
-        try {
-            file >> j;
-        }
-        catch (const nlohmann::json::parse_error& e) {
-            std::cerr << "Error parsing JSON: " << e.what() << std::endl;
-        }
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open particle config file: " << filepath << std::endl;
+        return;
     }
 
-    // 全ParticleTypeをチェック
-    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) {
-        ParticleType type = static_cast<ParticleType>(i);
-        std::string typeName = ParticleTypeToString(type);
+    nlohmann::json j;
+    try
+    {
+        file >> j;
+    }
+    catch (const nlohmann::json::parse_error& e)
+    {
+        std::cerr << "Error parsing JSON (" << filepath << "): " << e.what() << std::endl;
+        return;
+    }
 
-        if (j.contains(typeName)) {
-            auto& entry = j[typeName];
-            auto& config = particleConfigs_[i];
-            config.type = type;
-            config.speed = entry.value("speed", 0.0f);
-            config.gravity = entry.value("gravity", 0.0f);
-            config.drag = entry.value("drag", 0.0f);
-            config.decayRate = entry.value("decayRate", 1.0f);
-            config.maxLifetime = entry.value("maxLifetime", 5.0f);
-            config.textureIndex = entry.value("textureIndex", 0);
-            config.radius = entry.value("particleRadius", 1.0f);
+    if (!j.contains(typeName))
+    {
+        std::cerr << "JSON does not contain key: " << typeName << std::endl;
+        return;
+    }
 
-            if (entry.contains("baseColor") && entry["baseColor"].is_array()) {
-                auto colorArray = entry["baseColor"];
-                config.baseColor = {
-                    colorArray[0].get<float>(),
-                    colorArray[1].get<float>(),
-                    colorArray[2].get<float>(),
-                    colorArray[3].get<float>()
-                };
-            }
+    auto& entry = j[typeName];
+    auto& config = particleConfigs_[static_cast<size_t>(type)];
+    config.type = type;
+    config.speed = entry.value("speed", 0.0f);
+    config.gravity = entry.value("gravity", 0.0f);
+    config.drag = entry.value("drag", 0.0f);
+    config.decayRate = entry.value("decayRate", 1.0f);
+    config.maxLifetime = entry.value("maxLifetime", 5.0f);
+    config.textureIndex = entry.value("textureIndex", 0);
+    config.radius = entry.value("particleRadius", 1.0f);
 
-            if (entry.contains("emitterRange") && entry["emitterRange"].is_array()) {
-                auto& r = entry["emitterRange"];
-                config.emitterRange = {
-                    r[0].get<float>(),
-                    r[1].get<float>(),
-                    r[2].get<float>()
-                };
-            }
+    if (entry.contains("baseColor") && entry["baseColor"].is_array()) {
+        auto colorArray = entry["baseColor"];
+        config.baseColor = {
+            colorArray[0].get<float>(),
+            colorArray[1].get<float>(),
+            colorArray[2].get<float>(),
+            colorArray[3].get<float>()
+        };
+    }
 
-            config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
-            config.startColor = entry.value("startColor", 0xffffffff);
-            config.endColor = entry.value("endColor", 0xffffffff);
-            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
-            if (entry.contains("startScale") && entry["startScale"].is_array()) {
-                auto& arr = entry["startScale"];
-                config.startScale = {
-                    arr[0].get<float>(),
-                    arr[1].get<float>(),
-                    arr[2].get<float>()
-                };
-            }
+    if (entry.contains("emitterRange") && entry["emitterRange"].is_array()) {
+        auto& r = entry["emitterRange"];
+        config.emitterRange = {
+            r[0].get<float>(),
+            r[1].get<float>(),
+            r[2].get<float>()
+        };
+    }
 
-            if (entry.contains("endScale") && entry["endScale"].is_array()) {
-                auto& arr = entry["endScale"];
-                config.endScale = {
-                    arr[0].get<float>(),
-                    arr[1].get<float>(),
-                    arr[2].get<float>()
-                };
-            }
-        }
-        else
-        {
-            // 未定義ならデフォルト設定で初期化
-            particleConfigs_[i] = ParticleConfig{};
-            particleConfigs_[i].type = type;
-        }
+    config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
+    config.startColor = entry.value("startColor", 0xffffffff);
+    config.endColor = entry.value("endColor", 0xffffffff);
+    config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
+    if (entry.contains("startScale") && entry["startScale"].is_array()) {
+        auto& arr = entry["startScale"];
+        config.startScale = {
+            arr[0].get<float>(),
+            arr[1].get<float>(),
+            arr[2].get<float>()
+        };
+    }
+
+    if (entry.contains("endScale") && entry["endScale"].is_array()) {
+        auto& arr = entry["endScale"];
+        config.endScale = {
+            arr[0].get<float>(),
+            arr[1].get<float>(),
+            arr[2].get<float>()
+        };
     }
 }
-
 void ParticleSystem::Update()
 {
     for (auto& emitter : emitters_)
@@ -203,7 +201,7 @@ void ParticleSystem::ShowEditor()
     if (ImGui::Begin("パーティクルエディター"))
     {
         static int selectedType = static_cast<int>(ParticleType::Key);
-        ImGui::Combo("Particle Type", &selectedType, "None\0Key\0HitEffect\0\0");
+        ImGui::Combo("Particle Type", &selectedType, "None\0Key\0HitEffect\0");;
 
         ParticleType type = static_cast<ParticleType>(selectedType);
         auto& config = GetConfig(type);
@@ -303,9 +301,13 @@ void ParticleSystem::ShowEditor()
             }
         }
 
-        if (ImGui::Button("Save Configs"))
+        if (ImGui::Button("Save"))
         {
-            SaveConfigsToJson("Resources/json/particles.json");
+            ParticleType type = static_cast<ParticleType>(selectedType);
+            SaveConfigToJson(type);
+
+            std::string message = std::format("{}Particles.json saved", ParticleTypeToString(type));
+            MessageBoxA(nullptr, message.c_str(), "Particles", 0);
         }
 
         ImGui::SameLine();
@@ -319,53 +321,57 @@ void ParticleSystem::ShowEditor()
     }
     ImGui::End();
 }
-void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
+void ParticleSystem::SaveConfigToJson(ParticleType type) 
+{
+    const auto& config = particleConfigs_[static_cast<size_t>(type)];
+    std::string typeName = ParticleTypeToString(type);
+
     nlohmann::json j;
-    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) {
-        const auto& config = particleConfigs_[i];
-        std::string typeName = ParticleTypeToString(config.type);
+    nlohmann::json typeJson =
+    {
+        { "speed", config.speed },
+        { "gravity", config.gravity },
+        { "drag", config.drag },
+        { "decayRate", config.decayRate },
+        { "maxLifetime", config.maxLifetime },
+        { "textureIndex", config.textureIndex },
+        { "particleRadius", config.radius },
+        { "baseColor", {
+            config.baseColor.x,
+            config.baseColor.y,
+            config.baseColor.z,
+            config.baseColor.w
+        }},
+        { "emitterRange", {
+            config.emitterRange.x,
+            config.emitterRange.y,
+            config.emitterRange.z
+        }},
+        { "fadeOutFrameCount", config.fadeOutEase->frameCount_ },
+        { "startColor", config.startColor },
+        { "endColor", config.endColor },
+        { "scaleFrameCount", config.scaleEase->frameCount_ },
+        { "startScale", {
+            config.startScale.x,
+            config.startScale.y,
+            config.startScale.z
+        }},
+        { "endScale", {
+            config.endScale.x,
+            config.endScale.y,
+            config.endScale.z
+        }},
+    };
 
-        nlohmann::json typeJson = 
-        {
-            { "speed", config.speed },
-            { "gravity", config.gravity },
-            { "drag", config.drag },
-            { "decayRate", config.decayRate },
-            { "maxLifetime", config.maxLifetime },
-            { "textureIndex", config.textureIndex },
-            { "particleRadius", config.radius },
-            { "baseColor", {
-                config.baseColor.x,
-                config.baseColor.y,
-                config.baseColor.z,
-                config.baseColor.w
-            }},
-            { "emitterRange", {
-                config.emitterRange.x,
-                config.emitterRange.y,
-                config.emitterRange.z
-            }},
-            { "fadeOutFrameCount", config.fadeOutEase->frameCount_ },
-            { "startColor", config.startColor },
-            { "endColor", config.endColor },
-            { "scaleFrameCount", config.scaleEase->frameCount_ },
-            { "startScale", {
-                config.startScale.x,
-                config.startScale.y,
-                config.startScale.z
-            }},
-            { "endScale", {
-                config.endScale.x,
-                config.endScale.y,
-                config.endScale.z
-            }},
-        };
+    j[typeName] = typeJson;
 
+    std::string filename = kConfigFilePath + typeName + "Particles.json";
 
-
-        j[typeName] = typeJson;
+    std::ofstream ofs(filename);
+    if (!ofs) {
+        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        return;
     }
 
-    std::ofstream ofs(filepath);
     ofs << j.dump(4);
 }
