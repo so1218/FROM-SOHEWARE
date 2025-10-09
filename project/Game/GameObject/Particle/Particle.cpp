@@ -16,7 +16,8 @@ namespace
     {
         { "white1x1", TextureID::white1x1 },
         { "uvChecker", TextureID::uvChecker },
-        { "particlePurple", TextureID::particlePurple },
+        { "particle1", TextureID::particle1 },
+        { "particle2", TextureID::particle2 },
     };
 }
 
@@ -61,7 +62,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
 void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
 {
     std::string typeName = ParticleTypeToString(type);
-    std::string filepath = kConfigFilePath + typeName + "Particles.json";
+    std::string filepath = kConfigDirectoryPath_ + typeName + "Particles.json";
 
     std::ifstream file(filepath);
     if (!file.is_open())
@@ -365,7 +366,7 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
 
     j[typeName] = typeJson;
 
-    std::string filename = kConfigFilePath + typeName + "Particles.json";
+    std::string filename = kConfigDirectoryPath_ + typeName + "Particles.json";
 
     std::ofstream ofs(filename);
     if (!ofs) {

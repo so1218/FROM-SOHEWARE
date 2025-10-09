@@ -12,7 +12,8 @@ enum TextureID
     skydome,
 
     // particle
-    particlePurple,
+    particle1,
+    particle2,
 
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
@@ -41,7 +42,8 @@ private:
             { uvChecker,"Resources/images/uvChecker.png" },
             { monsterBall,   "Resources/images/monsterBall.png" },
             { skydome,   "Resources/images/sky_sphere.png" },
-            { particlePurple,   "Resources/images/particle1.png" },
+            { particle1,   "Resources/images/particle0.png" },
+            { particle2,   "Resources/images/circle.png" },
         }
     };
 };

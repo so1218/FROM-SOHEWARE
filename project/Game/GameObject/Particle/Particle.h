@@ -18,7 +18,7 @@ class ParticleEmitter;
 class ParticleSystem
 {
 public:
-    static constexpr const char* kConfigFilePath = "Resources/json/";
+    static constexpr const char* kConfigDirectoryPath_ = "Resources/json/";
 
     void Initialize(Engine* engine);
     void SpawnParticle(WorldTransform& transform, ParticleType type, float lifetime, int amount);
