@@ -56,6 +56,7 @@ struct ParticleConfig
     std::unique_ptr<Easing> fadeOutEase;
     std::unique_ptr<Easing> toCenterEase;
     std::unique_ptr<Easing> scaleEase;
+    Vector3 initialPosition;
 
     ParticleConfig()
     {
@@ -68,6 +69,7 @@ struct ParticleConfig
         fadeOutEase = std::make_unique<Easing>();
         toCenterEase = std::make_unique<Easing>();
         scaleEase = std::make_unique<Easing>();
+        initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
 
@@ -107,6 +109,7 @@ struct ParticleState
     std::unique_ptr<Easing> toCenterEase;
     std::unique_ptr<Easing> scaleEase;
     float theta;
+    Vector3 initialPosition; // 生成時のエミッターの座標
 
     ParticleState()
     {
@@ -124,6 +127,7 @@ struct ParticleState
         toCenterEase = std::make_unique<Easing>();
         scaleEase = std::make_unique<Easing>();
         isEmit = false;
+        initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
 

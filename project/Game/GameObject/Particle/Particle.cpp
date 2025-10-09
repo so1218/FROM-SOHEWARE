@@ -109,6 +109,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.hasLifetime = true;
+    particle.initialPosition = transform.translation_;
 
     // タイプごとの初期値
     auto it = behaviors_.find(type);
@@ -160,12 +161,12 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
 
         config.type = type;
         config.speed = configJson.value("speed", 0.0f);
-        config.gravity = entry.value("gravity", 0.0f);
-        config.drag = entry.value("drag", 0.0f);
-        config.decayRate = entry.value("decayRate", 1.0f);
-        config.maxLifetime = entry.value("maxLifetime", 5.0f);
-        config.textureIndex = entry.value("textureIndex", 0);
-        config.radius = entry.value("particleRadius", 1.0f);
+        config.gravity = configJson.value("gravity", 0.0f);
+        config.drag = configJson.value("drag", 0.0f);
+        config.decayRate = configJson.value("decayRate", 1.0f);
+        config.maxLifetime = configJson.value("maxLifetime", 5.0f);
+        config.textureIndex = configJson.value("textureIndex", 0);
+        config.radius = configJson.value("particleRadius", 1.0f);
 
         if (configJson.contains("baseColor") && configJson["baseColor"].is_array()) {
             auto colorArray = configJson["baseColor"];
@@ -186,10 +187,10 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
             };
         }
 
-        config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
-        config.startColor = entry.value("startColor", 0xffffffff);
-        config.endColor = entry.value("endColor", 0xffffffff);
-        config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
+        config.fadeOutEase->frameCount_ = configJson.value("fadeOutFrameCount", 60);
+        config.startColor = configJson.value("startColor", 0xffffffff);
+        config.endColor = configJson.value("endColor", 0xffffffff);
+        config.scaleEase->frameCount_ = configJson.value("scaleFrameCount", 60);
         if (configJson.contains("startScale") && configJson["startScale"].is_array()) {
             auto& arr = configJson["startScale"];
             config.startScale = {

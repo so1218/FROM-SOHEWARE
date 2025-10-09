@@ -2,13 +2,13 @@
     "Key": {
         "EmitterConfig": {
             "amount": 1,
-            "lifetime": 5.0,
+            "lifetime": 7.300000190734863,
             "position": [
-                -1.100000023841858,
-                0.0,
+                -5.0,
+                1.899999976158142,
                 0.0
             ],
-            "spawnInterval": 0.009999999776482582
+            "spawnInterval": 0.019999999552965164
         },
         "ParticleConfig": {
             "baseColor": [
@@ -24,25 +24,25 @@
                 0.0,
                 20.0
             ],
-            "endColor": 4294967040,
+            "endColor": 2053710080,
             "endScale": [
-                1.0,
-                1.0,
+                25.0,
+                25.0,
                 1.0
             ],
-            "fadeOutFrameCount": 156,
-            "gravity": 2.5299999713897705,
+            "fadeOutFrameCount": 145,
+            "gravity": 0.0,
             "maxLifetime": 5.0,
             "particleRadius": 1.0,
-            "scaleFrameCount": 94,
-            "speed": 0.05999999865889549,
-            "startColor": 4294967295,
+            "scaleFrameCount": 38,
+            "speed": 0.09000000357627869,
+            "startColor": 3937861887,
             "startScale": [
                 0.0,
                 0.0,
                 0.0
             ],
-            "textureIndex": 0
+            "textureIndex": 52
         }
     }
 }

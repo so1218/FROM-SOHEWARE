@@ -45,8 +45,8 @@ void KeyParticleBehavior::Update(ParticleState& particle)
                 float radius = static_cast<float>(RandomFloat(0.05f, static_cast<float>(particle.emitterRange.x)));
 
                 // 極座標 -> 直交座標
-                particle.transform->translation_.x = static_cast<float>(particle.transform->translation_.x) + radius * cos(particle.theta);
-                particle.transform->translation_.y = static_cast<float>(particle.transform->translation_.y + 0.5f) + radius * sin(particle.theta);
+                particle.transform->translation_.x = particle.initialPosition.x + radius * cos(particle.theta);
+                particle.transform->translation_.y = particle.initialPosition.y + radius * sin(particle.theta);
                 particle.velocity.x = particle.speed * cosf(particle.theta);
                 particle.velocity.y = particle.speed * sinf(particle.theta);
                 particle.isExist = true;
