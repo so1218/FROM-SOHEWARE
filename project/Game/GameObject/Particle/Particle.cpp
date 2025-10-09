@@ -90,7 +90,7 @@ void ParticleSystem::Initialize(Engine* engine)
         LoadParticleDefinitionFromJson(static_cast<ParticleType>(i));
     }
 
-    particleConfigs_[static_cast<size_t>(ParticleType::None)].baseColor = Uint32ToColorVector(0xFFFFFFff);
+    definitions_[ParticleType::None].particleConfig.baseColor = Uint32ToColorVector(0xFFFFFFff);
     behaviors_[ParticleType::Key] = std::make_unique<KeyParticleBehavior>();
 }
 
@@ -98,14 +98,14 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
 {
     if (particles_.size() >= engine_->kMaxParticleCount) return;
 
-    const ParticleConfig* config = &particleConfigs_[static_cast<size_t>(type)];
+    const ParticleConfig& config = GetConfig(type);
 
     ParticleState particle;
     particle.transform = std::make_unique<WorldTransform>(transform);
-    particle.color = config->baseColor;
+    particle.color = config.baseColor;
     particle.type = type;
     particle.amount = amount;
-    particle.textureHandle = config->textureIndex;
+    particle.textureHandle = config.textureIndex;
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.hasLifetime = true;
@@ -150,57 +150,111 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
     }
 
     auto& entry = j[typeName];
-    auto& config = particleConfigs_[static_cast<size_t>(type)];
-    config.type = type;
-    config.speed = entry.value("speed", 0.0f);
-    config.gravity = entry.value("gravity", 0.0f);
-    config.drag = entry.value("drag", 0.0f);
-    config.decayRate = entry.value("decayRate", 1.0f);
-    config.maxLifetime = entry.value("maxLifetime", 5.0f);
-    config.textureIndex = entry.value("textureIndex", 0);
-    config.radius = entry.value("particleRadius", 1.0f);
+    // 新しいマップから対象の定義を取得
+    auto& definition = definitions_[type];
 
-    if (entry.contains("baseColor") && entry["baseColor"].is_array()) {
-        auto colorArray = entry["baseColor"];
-        config.baseColor = {
-            colorArray[0].get<float>(),
-            colorArray[1].get<float>(),
-            colorArray[2].get<float>(),
-            colorArray[3].get<float>()
-        };
+    // --- ParticleConfigの読み込み ---
+    if (entry.contains("ParticleConfig")) {
+        auto& configJson = entry["ParticleConfig"];
+        auto& config = definition.particleConfig; // ParticleConfigへの参照を取得
+
+        config.type = type;
+        config.speed = configJson.value("speed", 0.0f);
+        config.gravity = entry.value("gravity", 0.0f);
+        config.drag = entry.value("drag", 0.0f);
+        config.decayRate = entry.value("decayRate", 1.0f);
+        config.maxLifetime = entry.value("maxLifetime", 5.0f);
+        config.textureIndex = entry.value("textureIndex", 0);
+        config.radius = entry.value("particleRadius", 1.0f);
+
+        if (configJson.contains("baseColor") && configJson["baseColor"].is_array()) {
+            auto colorArray = configJson["baseColor"];
+            config.baseColor = {
+                colorArray[0].get<float>(),
+                colorArray[1].get<float>(),
+                colorArray[2].get<float>(),
+                colorArray[3].get<float>()
+            };
+        }
+
+        if (configJson.contains("emitterRange") && configJson["emitterRange"].is_array()) {
+            auto& r = configJson["emitterRange"];
+            config.emitterRange = {
+                r[0].get<float>(),
+                r[1].get<float>(),
+                r[2].get<float>()
+            };
+        }
+
+        config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
+        config.startColor = entry.value("startColor", 0xffffffff);
+        config.endColor = entry.value("endColor", 0xffffffff);
+        config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
+        if (configJson.contains("startScale") && configJson["startScale"].is_array()) {
+            auto& arr = configJson["startScale"];
+            config.startScale = {
+                arr[0].get<float>(),
+                arr[1].get<float>(),
+                arr[2].get<float>()
+            };
+        }
+
+        if (configJson.contains("endScale") && configJson["endScale"].is_array()) {
+            auto& arr = configJson["endScale"];
+            config.endScale = {
+                arr[0].get<float>(),
+                arr[1].get<float>(),
+                arr[2].get<float>()
+            };
+        }
     }
 
-    if (entry.contains("emitterRange") && entry["emitterRange"].is_array()) {
-        auto& r = entry["emitterRange"];
-        config.emitterRange = {
-            r[0].get<float>(),
-            r[1].get<float>(),
-            r[2].get<float>()
-        };
-    }
+    // --- EmitterConfigの読み込み ---
+    if (entry.contains("EmitterConfig")) {
+        auto& emitterJson = entry["EmitterConfig"];
+        auto& emitterConfig = definition.emitterConfig; // EmitterConfigへの参照を取得
 
-    config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
-    config.startColor = entry.value("startColor", 0xffffffff);
-    config.endColor = entry.value("endColor", 0xffffffff);
-    config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
-    if (entry.contains("startScale") && entry["startScale"].is_array()) {
-        auto& arr = entry["startScale"];
-        config.startScale = {
-            arr[0].get<float>(),
-            arr[1].get<float>(),
-            arr[2].get<float>()
-        };
-    }
-
-    if (entry.contains("endScale") && entry["endScale"].is_array()) {
-        auto& arr = entry["endScale"];
-        config.endScale = {
-            arr[0].get<float>(),
-            arr[1].get<float>(),
-            arr[2].get<float>()
-        };
+        if (emitterJson.contains("position") && emitterJson["position"].is_array()) {
+            emitterConfig.position = {
+                emitterJson["position"][0].get<float>(),
+                emitterJson["position"][1].get<float>(),
+                emitterJson["position"][2].get<float>()
+            };
+        }
+        emitterConfig.spawnInterval = emitterJson.value("spawnInterval", 0.1f);
+        emitterConfig.lifetime = emitterJson.value("lifetime", 5.0f);
+        emitterConfig.amount = emitterJson.value("amount", 1);
     }
 }
+
+std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(ParticleType type)
+{
+    // マップから定義を検索
+    auto it = definitions_.find(type);
+    if (it == definitions_.end()) {
+        // 定義が見つからない場合はnullptrを返す
+        std::cerr << "Particle definition for type " << ParticleTypeToString(type) << " not found." << std::endl;
+        return nullptr;
+    }
+
+    // 見つかった定義からEmitterConfigを取得
+    const auto& emitterConfig = it->second.emitterConfig;
+
+    // 新しいエミッターを生成
+    auto emitter = std::make_unique<ParticleEmitter>();
+
+    // ロードした設定で初期化
+    emitter->Initialize(
+        type,
+        emitterConfig.position,
+        emitterConfig.spawnInterval,
+        emitterConfig.lifetime,
+        emitterConfig.amount
+    );
+
+    return emitter;
+}
+ 
 void ParticleSystem::Update()
 {
     for (auto& emitter : emitters_)
@@ -266,27 +320,28 @@ void ParticleSystem::ShowEditor()
         ImGui::Combo("Particle Type", &selectedType, "None\0Key\0HitEffect\0");;
 
         ParticleType type = static_cast<ParticleType>(selectedType);
-        auto& config = GetConfig(type);
+        auto& definition = definitions_[type];
+        auto& config = definition.particleConfig;
+        auto& emitterConfig = definition.emitterConfig;
 
-        if (ImGui::CollapsingHeader("Emitters"))
+        if (ImGui::CollapsingHeader("Emitter Config"))
         {
-            int emitterIndex = 0;
-            for (auto& emitter : emitters_)
-            {
-                std::string label = "Emitter_" + std::string(ParticleTypeToString(emitter->type_));
-                if (ImGui::TreeNode(label.c_str())) 
-                {
-                    ImGui::DragFloat3("Position", &emitter->position_.x, 0.1f);
-                    ImGui::DragFloat("Spawn Interval", &emitter->spawnInterval_, 0.01f, 0.01f, 10.0f);
-                    ImGui::DragFloat("Lifetime", &emitter->lifetime_, 0.01f, 0.0f, 10.0f);
-                    ImGui::DragInt("Amount", &emitter->amount_, 1, 1, 100);
+            // 値が変更されたかを検出するためのフラグ
+            bool valueChanged = false;
 
-                    ImGui::TreePop();
-                }
+            // ImGuiの各ウィジェットが値を変更したら、valueChangedフラグを立てる
+            valueChanged |= ImGui::DragFloat3("Position", &emitterConfig.position.x, 0.1f);
+            valueChanged |= ImGui::DragFloat("Spawn Interval", &emitterConfig.spawnInterval, 0.01f, 0.01f, 10.0f);
+            valueChanged |= ImGui::DragFloat("Particle Lifetime", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
+            valueChanged |= ImGui::DragInt("Amount", &emitterConfig.amount, 1, 1, 100);
+
+            // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
+            if (valueChanged) {
+                ApplyEmitterConfigToLiveEmitters(type);
             }
         }
 
-        if (ImGui::CollapsingHeader("Config"))
+        if (ImGui::CollapsingHeader("Particle Config"))
         {
             ImGui::DragFloat("Speed", &config.speed, 0.01f);
             ImGui::DragFloat("Gravity", &config.gravity, 0.01f);
@@ -385,12 +440,15 @@ void ParticleSystem::ShowEditor()
 }
 void ParticleSystem::SaveConfigToJson(ParticleType type) 
 {
-    const auto& config = particleConfigs_[static_cast<size_t>(type)];
+    const auto& definition = definitions_.at(type);
+    const auto& config = definition.particleConfig;
+    const auto& emitterConfig = definition.emitterConfig;
+
     std::string typeName = ParticleTypeToString(type);
 
     nlohmann::json j;
-    nlohmann::json typeJson =
-    {
+    nlohmann::json particleConfigJson =
+{
         { "speed", config.speed },
         { "gravity", config.gravity },
         { "drag", config.drag },
@@ -425,7 +483,23 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
         }},
     };
 
-    j[typeName] = typeJson;
+    // EmitterConfigをJSONオブジェクトに変換
+    nlohmann::json emitterConfigJson = {
+        { "position", {
+            emitterConfig.position.x,
+            emitterConfig.position.y,
+            emitterConfig.position.z
+        }},
+        { "spawnInterval", emitterConfig.spawnInterval },
+        { "lifetime", emitterConfig.lifetime },
+        { "amount", emitterConfig.amount }
+    };
+
+    // 最終的なJSONオブジェクトを構築
+    j[typeName] = {
+        { "ParticleConfig", particleConfigJson },
+        { "EmitterConfig", emitterConfigJson }
+    };
 
     std::string filename = kConfigDirectoryPath_ + typeName + "Particles.json";
 
@@ -436,4 +510,22 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
     }
 
     ofs << j.dump(4);
+}
+
+void ParticleSystem::ApplyEmitterConfigToLiveEmitters(ParticleType type)
+{
+    // 更新する設定（設計図）を取得
+    const auto& emitterConfig = definitions_[type].emitterConfig;
+
+    // 全てのライブエミッターをループ
+    for (auto& emitter : emitters_) {
+        // タイプが一致するエミッターを見つけたら...
+        if (emitter->type_ == type) {
+            // インスタンスの値を設計図の値で上書きする
+            emitter->position_ = emitterConfig.position;
+            emitter->spawnInterval_ = emitterConfig.spawnInterval;
+            emitter->lifetime_ = emitterConfig.lifetime;
+            emitter->amount_ = emitterConfig.amount;
+        }
+    }
 }

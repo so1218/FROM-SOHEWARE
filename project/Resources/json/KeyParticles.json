@@ -1,36 +1,48 @@
 {
     "Key": {
-        "baseColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.0
-        ],
-        "decayRate": 0.0,
-        "drag": 0.0,
-        "emitterRange": [
-            0.0,
-            0.0,
-            20.0
-        ],
-        "endColor": 4294967040,
-        "endScale": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "fadeOutFrameCount": 171,
-        "gravity": 0.0,
-        "maxLifetime": 0.0,
-        "particleRadius": 0.0,
-        "scaleFrameCount": 31,
-        "speed": 0.05999999865889549,
-        "startColor": 16777215,
-        "startScale": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "textureIndex": 0
+        "EmitterConfig": {
+            "amount": 1,
+            "lifetime": 5.0,
+            "position": [
+                -1.100000023841858,
+                0.0,
+                0.0
+            ],
+            "spawnInterval": 0.009999999776482582
+        },
+        "ParticleConfig": {
+            "baseColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "decayRate": 1.0,
+            "drag": 0.0,
+            "emitterRange": [
+                0.0,
+                0.0,
+                20.0
+            ],
+            "endColor": 4294967040,
+            "endScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "fadeOutFrameCount": 156,
+            "gravity": 2.5299999713897705,
+            "maxLifetime": 5.0,
+            "particleRadius": 1.0,
+            "scaleFrameCount": 94,
+            "speed": 0.05999999865889549,
+            "startColor": 4294967295,
+            "startScale": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "textureIndex": 0
+        }
     }
 }
