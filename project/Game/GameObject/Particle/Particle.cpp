@@ -111,11 +111,26 @@ void ParticleSystem::LoadParticleDefinitionsFromJson(const std::string& filepath
             }
 
             config.fadeOutEase->frameCount_ = entry.value("fadeOutFrameCount", 60);
-            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
             config.startColor = entry.value("startColor", 0xffffffff);
             config.endColor = entry.value("endColor", 0xffffffff);
+            config.scaleEase->frameCount_ = entry.value("scaleFrameCount", 60);
+            if (entry.contains("startScale") && entry["startScale"].is_array()) {
+                auto& arr = entry["startScale"];
+                config.startScale = {
+                    arr[0].get<float>(),
+                    arr[1].get<float>(),
+                    arr[2].get<float>()
+                };
+            }
 
-            
+            if (entry.contains("endScale") && entry["endScale"].is_array()) {
+                auto& arr = entry["endScale"];
+                config.endScale = {
+                    arr[0].get<float>(),
+                    arr[1].get<float>(),
+                    arr[2].get<float>()
+                };
+            }
         }
         else
         {
@@ -241,9 +256,6 @@ void ParticleSystem::ShowEditor()
             // fadeOutEase interval
             ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase->frameCount_, 1);
 
-            // scaleEase interval
-            ImGui::DragInt("Scale FrameCount", &config.scaleEase->frameCount_, 1);
-
             Vector4 startCol = Uint32ToColorVector(config.startColor);
             if (ImGui::ColorEdit4("Start Color", (float*)&startCol))
             {
@@ -255,6 +267,14 @@ void ParticleSystem::ShowEditor()
             {
                 config.endColor = ColorVectorToUint32(endCol);
             }
+
+            // scaleEase interval
+            ImGui::DragInt("Scale FrameCount", &config.scaleEase->frameCount_, 1);
+
+            // scale
+            ImGui::DragFloat3("Start Scale", &config.startScale.x, 0.01f);
+            ImGui::DragFloat3("End Scale", &config.endScale.x, 0.01f);
+
         }
 
         if (ImGui::CollapsingHeader("State (Live Particles)"))
@@ -305,7 +325,8 @@ void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
         const auto& config = particleConfigs_[i];
         std::string typeName = ParticleTypeToString(config.type);
 
-        nlohmann::json typeJson = {
+        nlohmann::json typeJson = 
+        {
             { "speed", config.speed },
             { "gravity", config.gravity },
             { "drag", config.drag },
@@ -325,9 +346,19 @@ void ParticleSystem::SaveConfigsToJson(const std::string& filepath) {
                 config.emitterRange.z
             }},
             { "fadeOutFrameCount", config.fadeOutEase->frameCount_ },
-            { "scaleFrameCount", config.scaleEase->frameCount_ },
             { "startColor", config.startColor },
-            { "endColor", config.endColor }
+            { "endColor", config.endColor },
+            { "scaleFrameCount", config.scaleEase->frameCount_ },
+            { "startScale", {
+                config.startScale.x,
+                config.startScale.y,
+                config.startScale.z
+            }},
+            { "endScale", {
+                config.endScale.x,
+                config.endScale.y,
+                config.endScale.z
+            }},
         };
 
 
