@@ -25,6 +25,9 @@
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
 
+// デバッグ描画切り替えフラグ
+constexpr bool useDebugView = true;
+
 class Engine
 {
 public:
