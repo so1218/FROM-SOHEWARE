@@ -23,10 +23,7 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     player_ = std::make_unique<Player>(engine_, camera_);
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
     collisionManager_ = std::make_unique<CollisionManager>();
-    emitter_ = std::make_unique<ParticleEmitter>();
-
-    // エミッターを初期化
-    emitter_->Initialize(ParticleType::Key, { 0.0f, 1.0f, 0.0f }, 0.3f, 4.0f, 20);
+    emitter_ = engine_->particleSystem_->CreateEmitter(ParticleType::Key);
 
     // パーティクルシステムにエミッターを登録
     engine_->particleSystem_->AddEmitter(emitter_.get());

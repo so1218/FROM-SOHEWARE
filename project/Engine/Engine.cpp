@@ -132,25 +132,29 @@ void Engine::EndFrame()
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
 	
 #ifdef _DEBUG
-
-	debugGuiManager_->RenderOffscreenTexture(
-		srvDescriptorHeap_.Get(),
-		descriptorSizeSRV_,
-		offscreenRTVManager_->GetSRVHandleCPU(postEffectManager_->bloomCombineIndex_),
-		offscreenSrvIndex_
-	);
+	if (useDebugView)
+	{
+		debugGuiManager_->RenderOffscreenTexture(
+			srvDescriptorHeap_.Get(),
+			descriptorSizeSRV_,
+			offscreenRTVManager_->GetSRVHandleCPU(postEffectManager_->bloomCombineIndex_),
+			offscreenSrvIndex_
+		);
+	}
+	else
+	{
+		DrawFullScreenQuadWithOffscreenTexture();
+	}
 
 #else
-	// フルスクリーンクアッドを描画、メイン画面
-	DrawFullScreenQuadWithOffscreenTexture(); 
-
+	DrawFullScreenQuadWithOffscreenTexture();
 #endif
-
-	// ImGui 描画コマンド積む
-	ImGuiManager::EndFrame(commandManager_->GetCommandList());
 
 	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
+
+	// ImGui 描画コマンド積む
+	ImGuiManager::EndFrame(commandManager_->GetCommandList());
 
 	// フレームレンダリング終了
 	renderCoordinator_->EndFrame();

@@ -56,6 +56,7 @@ struct ParticleConfig
     std::unique_ptr<Easing> fadeOutEase;
     std::unique_ptr<Easing> toCenterEase;
     std::unique_ptr<Easing> scaleEase;
+    Vector3 initialPosition;
 
     ParticleConfig()
     {
@@ -68,6 +69,7 @@ struct ParticleConfig
         fadeOutEase = std::make_unique<Easing>();
         toCenterEase = std::make_unique<Easing>();
         scaleEase = std::make_unique<Easing>();
+        initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
 
@@ -107,6 +109,7 @@ struct ParticleState
     std::unique_ptr<Easing> toCenterEase;
     std::unique_ptr<Easing> scaleEase;
     float theta;
+    Vector3 initialPosition; // 生成時のエミッターの座標
 
     ParticleState()
     {
@@ -124,7 +127,23 @@ struct ParticleState
         toCenterEase = std::make_unique<Easing>();
         scaleEase = std::make_unique<Easing>();
         isEmit = false;
+        initialPosition = { 0.0f,0.0f,0.0f };
     }
+};
+
+// エミッターの基本的な設定を保持する構造体
+struct EmitterConfig {
+    Vector3 position = { 0.0f, 0.0f, 0.0f };
+    float spawnInterval = 0.1f; // 発生間隔 (秒)
+    float lifetime = 5.0f;      // パーティクルの生存時間
+    int amount = 1;             // 一度に発生させる量
+    // 必要に応じて、範囲(range)や初期速度(initial velocity)なども追加できます
+};
+
+// パーティクルタイプごとの定義をまとめる構造体
+struct ParticleDefinition {
+    ParticleConfig particleConfig;
+    EmitterConfig emitterConfig;
 };
 
 class IParticleBehavior 
