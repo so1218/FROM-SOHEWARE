@@ -256,6 +256,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp" />
     <ClCompile Include="Engine\Mesh\Sprite.cpp" />
     <ClCompile Include="Game\Effect\ShakeEffect.cpp" />
+    <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Mesh\AnimationData.h" />
@@ -356,6 +357,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Include\json.hpp" />
     <ClInclude Include="Game\Data\ModelHandle.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEmitter.h" />
+    <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Engine\Core\TimeManager.h" />
     <ClInclude Include="Engine\Graphics\Resource\SRVAllocator.h" />

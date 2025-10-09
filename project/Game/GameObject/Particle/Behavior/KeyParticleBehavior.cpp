@@ -5,12 +5,13 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSyst
 {
     auto& config = particleSystem.GetConfig(ParticleType::Key);
 
-    particle.appearInterval = 4;
     particle.emitterRange = config.emitterRange;
     particle.fadeOutEase->frameCount_ = config.fadeOutEase->frameCount_;
     particle.color = { 127.0f,255.0f,0.0f,255.0f };
     particle.startColor = config.startColor;
     particle.endColor = config.endColor;
+    particle.startScale = config.startScale;
+    particle.endScale = config.endScale;
     particle.textureHandle = config.textureIndex;
     particle.isExist = true;
     particle.hasExisted = false;
@@ -19,21 +20,7 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSyst
     particle.speed = config.speed;
     particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
     particle.scaleEase->SetEasing(EasingType::EaseLinear);
-    //particle.fadeOutEase->SetEaseDurationFrames(250);
     particle.scaleEase->frameCount_ = config.scaleEase->frameCount_;
-
-#ifdef _DEBUG
-
-    particle.appearInterval = 4;
-    particle.color = { 127.0f,255.0f,0.0f,255.0f };
-    particle.isExist = true;
-    particle.hasExisted = false;
-    particle.frameCount = 0;
-    particle.isEmit = false;
-    particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
-    particle.scaleEase->SetEasing(EasingType::EaseLinear);
-    //particle.fadeOutEase->SetEaseDurationFrames(250);
-#endif
 
 }
 
@@ -99,6 +86,6 @@ void KeyParticleBehavior::Update(ParticleState& particle)
             particle.fadeOutEase->CountEaseLinear(particle.startColor, particle.endColor, currentColor);
         }
         particle.color = Uint32ToColorVector(currentColor);
-        particle.scaleEase->OnceReverseEaseLinear({ 0.0f,0.0f, 0.0f }, { 2.0f,2.0f,0.1f }, particle.transform->scale_);
+        particle.scaleEase->OnceReverseEaseLinear(particle.startScale, particle.endScale, particle.transform->scale_);
     }
 }
