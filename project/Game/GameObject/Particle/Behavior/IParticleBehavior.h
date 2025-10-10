@@ -53,9 +53,9 @@ struct ParticleConfig
     EasingType fadeOutEasing;
     EasingType scaleEasing;
     int fadeOutDurationFrames;
-    std::unique_ptr<Easing> fadeOutEase;
-    std::unique_ptr<Easing> toCenterEase;
-    std::unique_ptr<Easing> scaleEase;
+    Easing fadeOutEase;
+    Easing toCenterEase;
+    Easing scaleEase;
     Vector3 initialPosition;
 
     ParticleConfig()
@@ -66,9 +66,6 @@ struct ParticleConfig
         startScale = { 0.0f,0.0f,0.0f };
         endScale = { 1.0f,1.0f,1.0f };
         emitterRange = { 20, 20, 20 };
-        fadeOutEase = std::make_unique<Easing>();
-        toCenterEase = std::make_unique<Easing>();
-        scaleEase = std::make_unique<Easing>();
         initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
@@ -105,9 +102,9 @@ struct ParticleState
     bool isExist;
     unsigned int startColor;
     unsigned int endColor;
-    std::unique_ptr<Easing> fadeOutEase;
-    std::unique_ptr<Easing> toCenterEase;
-    std::unique_ptr<Easing> scaleEase;
+    Easing fadeOutEase;
+    Easing toCenterEase;
+    Easing scaleEase;
     float theta;
     Vector3 initialPosition; // 生成時のエミッターの座標
 
@@ -123,9 +120,6 @@ struct ParticleState
         endColor = 0xffffff00;
         speed = 1.0f;
         emitterRange = { 20, 20, 20 };
-        fadeOutEase = std::make_unique<Easing>();
-        toCenterEase = std::make_unique<Easing>();
-        scaleEase = std::make_unique<Easing>();
         isEmit = false;
         initialPosition = { 0.0f,0.0f,0.0f };
     }

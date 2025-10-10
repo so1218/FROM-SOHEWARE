@@ -187,10 +187,10 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
             };
         }
 
-        config.fadeOutEase->frameCount_ = configJson.value("fadeOutFrameCount", 60);
+        config.fadeOutEase.frameCount_ = configJson.value("fadeOutFrameCount", 60);
         config.startColor = configJson.value("startColor", 0xffffffff);
         config.endColor = configJson.value("endColor", 0xffffffff);
-        config.scaleEase->frameCount_ = configJson.value("scaleFrameCount", 60);
+        config.scaleEase.frameCount_ = configJson.value("scaleFrameCount", 60);
         if (configJson.contains("startScale") && configJson["startScale"].is_array()) {
             auto& arr = configJson["startScale"];
             config.startScale = {
@@ -370,7 +370,7 @@ void ParticleSystem::ShowEditor()
             ImGui::DragFloat3("Emitter Range", &config.emitterRange.x, 0.01f);
 
             // fadeOutEase interval
-            ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase->frameCount_, 1);
+            ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase.frameCount_, 1);
 
             Vector4 startCol = Uint32ToColorVector(config.startColor);
             if (ImGui::ColorEdit4("Start Color", (float*)&startCol))
@@ -385,7 +385,7 @@ void ParticleSystem::ShowEditor()
             }
 
             // scaleEase interval
-            ImGui::DragInt("Scale FrameCount", &config.scaleEase->frameCount_, 1);
+            ImGui::DragInt("Scale FrameCount", &config.scaleEase.frameCount_, 1);
 
             // scale
             ImGui::DragFloat3("Start Scale", &config.startScale.x, 0.01f);
@@ -468,10 +468,10 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
             config.emitterRange.y,
             config.emitterRange.z
         }},
-        { "fadeOutFrameCount", config.fadeOutEase->frameCount_ },
+        { "fadeOutFrameCount", config.fadeOutEase.frameCount_ },
         { "startColor", config.startColor },
         { "endColor", config.endColor },
-        { "scaleFrameCount", config.scaleEase->frameCount_ },
+        { "scaleFrameCount", config.scaleEase.frameCount_ },
         { "startScale", {
             config.startScale.x,
             config.startScale.y,

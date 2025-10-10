@@ -10,9 +10,9 @@ void HitEffectParticleBehavior::Initialize(ParticleState& particle, const Partic
     particle.endColor = 0x0000ffff;
     particle.speed = 0.1f;
     particle.thetaVel = 0.0f;
-    particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
-    particle.scaleEase->SetEasing(EasingType::EaseOutBack);
-    particle.scaleEase->interval_ = 0.04f;
+    particle.fadeOutEase.SetEasing(EasingType::EaseOutCirc);
+    particle.scaleEase.SetEasing(EasingType::EaseOutBack);
+    particle.scaleEase.interval_ = 0.04f;
     particle.isExist = false;
     particle.hasExisted = false;
     particle.frameCount = 0;
