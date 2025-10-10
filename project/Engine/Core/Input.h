@@ -41,6 +41,13 @@ public:
         ButtonY = XINPUT_GAMEPAD_Y,
     };
 
+    enum MouseButton
+    {
+        Left = 0,
+        Right = 1,
+        Middle = 2,
+    };
+
     static void Initialize(HINSTANCE hInstance, HWND hwnd);
     static void Update(); // 入力状態の更新
     // マウスホイールのスクロール量を取得する

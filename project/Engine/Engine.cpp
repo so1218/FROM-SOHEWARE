@@ -25,13 +25,13 @@
 
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";	
 
-const int32_t Engine::kMaxTriangleCount = 25; // 三角形の最大数
-const int32_t Engine::kMaxSphereCount = 25; // 球の最大数
+const int32_t Engine::kMaxTriangleCount = 0; // 三角形の最大数
+const int32_t Engine::kMaxSphereCount = 0; // 球の最大数
 const int32_t Engine::kMaxModelCount = 500; // モデルの最大数
-const int32_t Engine::kMaxSpriteCount = 2001; // スプライトの最大数
-const int32_t Engine::kMaxCubeCount = 25;// 立方体の最大数
+const int32_t Engine::kMaxSpriteCount = 101; // スプライトの最大数
+const int32_t Engine::kMaxCubeCount = 0;// 立方体の最大数
 const int32_t Engine::kMaxLineCount = 400;// ラインの最大数
-const int32_t Engine::kMaxParticleCount = 500;// パーティクルの最大数
+const int32_t Engine::kMaxParticleCount = 1000;// パーティクルの最大数
 
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 {

@@ -34,7 +34,7 @@ void DebugCamera::Update()
     if (!isEnabled_) return;
 
     // ズームはマウスホイールで操作
-    if (Input::IsMouseButtonPressed(1)) {
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Right)) {
         int wheelDelta = Input::GetMouseWheelDelta();
         distance_ -= wheelDelta * zoomSpeed_;
 
@@ -48,7 +48,7 @@ void DebugCamera::Update()
     }
 
     // マウス右ドラッグでカメラ回転（target中心の公転）
-    if (Input::IsMouseButtonPressed(2) && !Input::IsKeyPressed(DIK_LSHIFT))
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && !Input::IsKeyPressed(DIK_LSHIFT))
     {
         int deltaX = Input::GetMouseState().lX;
         int deltaY = Input::GetMouseState().lY;
@@ -58,7 +58,7 @@ void DebugCamera::Update()
     }
 
     // マウス中ドラッグでターゲット
-    if (Input::IsMouseButtonPressed(2) && Input::IsKeyPressed(DIK_LSHIFT)) {
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && Input::IsKeyPressed(DIK_LSHIFT)) {
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;
         Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
         Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
