@@ -1,7 +1,7 @@
 #include "HitEffectParticleBehavior.h"
 #include "TextureHandle.h"
 
-void HitEffectParticleBehavior::Initialize(ParticleState& particle, const ParticleSystem& system)
+void HitEffectParticleBehavior::Initialize(ParticleState& particle, const ParticleConfig& config)
 {
     particle.appearInterval = 30; // 30フレームごとに発生
     particle.amount = 7;          // 毎回7つ発生
@@ -19,7 +19,7 @@ void HitEffectParticleBehavior::Initialize(ParticleState& particle, const Partic
     particle.isEmit = false;
 }
 
-void HitEffectParticleBehavior::Update(ParticleState& particle)
+void HitEffectParticleBehavior::Update(ParticleState& particle, const ParticleConfig& config)
 {
     // 移動、回転、色の補間、寿命処理など
 }

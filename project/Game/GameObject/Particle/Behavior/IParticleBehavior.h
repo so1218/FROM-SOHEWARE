@@ -107,6 +107,7 @@ struct ParticleState
     Easing scaleEase;
     float theta;
     Vector3 initialPosition; // 生成時のエミッターの座標
+    std::string presetName;
 
     ParticleState()
     {
@@ -144,6 +145,6 @@ class IParticleBehavior
 {
 public:
     virtual ~IParticleBehavior() = default;
-    virtual void Initialize(ParticleState& particle, const ParticleSystem& system) = 0;
-    virtual void Update(ParticleState& particle) = 0;
+    virtual void Initialize(ParticleState& particle, const ParticleConfig& config) = 0;
+    virtual void Update(ParticleState& particle, const ParticleConfig& config) = 0;
 };

@@ -25,6 +25,7 @@ public:
     int amount_;
 
     std::string name_ = "Emitter";
+	std::string& presetName_ = name_;
 };
 
 

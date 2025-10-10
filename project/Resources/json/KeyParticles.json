@@ -1,48 +1,96 @@
 {
     "Key": {
-        "EmitterConfig": {
-            "amount": 1,
-            "lifetime": 7.300000190734863,
-            "position": [
-                -5.0,
-                1.899999976158142,
-                0.0
-            ],
-            "spawnInterval": 0.019999999552965164
+        "chest": {
+            "EmitterConfig": {
+                "amount": 1,
+                "lifetime": 5.0,
+                "position": [
+                    -0.30000001192092896,
+                    0.0,
+                    0.0
+                ],
+                "spawnInterval": 0.009999999776482582
+            },
+            "ParticleConfig": {
+                "baseColor": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "decayRate": 0.0,
+                "drag": 0.0,
+                "emitterRange": [
+                    0.0,
+                    0.0,
+                    20.0
+                ],
+                "endColor": 1939284224,
+                "endScale": [
+                    25.0,
+                    25.0,
+                    1.0
+                ],
+                "fadeOutFrameCount": 0,
+                "gravity": 0.0,
+                "maxLifetime": 0.0,
+                "particleRadius": 0.0,
+                "scaleFrameCount": 0,
+                "speed": -0.05000000074505806,
+                "startColor": 4294902015,
+                "startScale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "textureIndex": 52
+            }
         },
-        "ParticleConfig": {
-            "baseColor": [
-                0.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "decayRate": 1.0,
-            "drag": 0.0,
-            "emitterRange": [
-                0.0,
-                0.0,
-                20.0
-            ],
-            "endColor": 2053710080,
-            "endScale": [
-                25.0,
-                25.0,
-                1.0
-            ],
-            "fadeOutFrameCount": 145,
-            "gravity": 0.0,
-            "maxLifetime": 5.0,
-            "particleRadius": 1.0,
-            "scaleFrameCount": 38,
-            "speed": 0.09000000357627869,
-            "startColor": 3937861887,
-            "startScale": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "textureIndex": 52
+        "doar": {
+            "EmitterConfig": {
+                "amount": 1,
+                "lifetime": 5.0,
+                "position": [
+                    0.0,
+                    13.899999618530273,
+                    0.0
+                ],
+                "spawnInterval": 0.10000000149011612
+            },
+            "ParticleConfig": {
+                "baseColor": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "decayRate": 0.0,
+                "drag": 0.0,
+                "emitterRange": [
+                    0.0,
+                    0.0,
+                    20.0
+                ],
+                "endColor": 1979776768,
+                "endScale": [
+                    20.0,
+                    20.0,
+                    1.0
+                ],
+                "fadeOutFrameCount": 0,
+                "gravity": 0.0,
+                "maxLifetime": 0.0,
+                "particleRadius": 0.0,
+                "scaleFrameCount": 0,
+                "speed": 0.019999999552965164,
+                "startColor": 4294967295,
+                "startScale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "textureIndex": 48
+            }
         }
     }
 }
