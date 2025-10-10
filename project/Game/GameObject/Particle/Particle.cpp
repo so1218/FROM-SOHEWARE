@@ -86,11 +86,11 @@ void ParticleSystem::Initialize(Engine* engine)
 {
     engine_ = engine;
 
-    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) 
+    {
         LoadParticleDefinitionFromJson(static_cast<ParticleType>(i));
     }
 
-    definitions_[ParticleType::None].particleConfig.baseColor = Uint32ToColorVector(0xFFFFFFff);
     behaviors_[ParticleType::Key] = std::make_unique<KeyParticleBehavior>();
 }
 
