@@ -7,6 +7,7 @@
 #include "ParticleEmitter.h"
 #include "TextureHandle.h"
 #include "KeyParticleBehavior.h"
+#include "HitEffectParticleBehavior.h"
 #include "ImGuiManager.h"
 #include "json.hpp"
 
@@ -96,6 +97,7 @@ void ParticleSystem::Initialize(Engine* engine)
     }
 
     behaviors_[ParticleType::Key] = std::make_unique<KeyParticleBehavior>();
+    behaviors_[ParticleType::HitEffect] = std::make_unique<HitEffectParticleBehavior>();
 }
 
 void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type, const std::string& presetName, float lifetime, int amount)
@@ -237,35 +239,25 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
 
 std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(ParticleType type, const std::string& presetName)
 {
-    // マップから定義を検索
-    auto typeIt = definitions_.find(type);
-    if (typeIt == definitions_.end())
-    {
-        std::cerr << "Particle definition for type " << ParticleTypeToString(type) << " not found." << std::endl;
-        return nullptr;
+    // type の定義が存在しない場合、初期化（空マップ追加）
+    if (definitions_.find(type) == definitions_.end()) {
+        definitions_[type] = {}; // 空のプリセットマップを追加
+        std::cout << "No preset map found for type " << ParticleTypeToString(type) << ". Creating a new one..." << std::endl;
     }
 
-    auto presetIt = typeIt->second.find(presetName);
-    if (presetIt == typeIt->second.end())
-    {
-        // 見つからなかったので、新しいプリセットを生成する
+    // presetName が存在しない場合は新規作成
+    auto& presetMap = definitions_[type];
+    if (presetMap.find(presetName) == presetMap.end()) {
         std::cout << "Preset '" << presetName << "' for type " << ParticleTypeToString(type)
             << " not found. Creating a new default preset..." << std::endl;
 
-        // 1. デフォルトの定義をメモリ上のマップに追加
-        //    マップの[]演算子は、キーが存在しない場合に自動でデフォルト値を生成・挿入してくれるので便利
-        definitions_[type][presetName] = ParticleDefinition();
-
-        // 2. 新しいプリセットを含んだ状態でJSONに保存
-        SaveConfigToJson(type);
-
-        // 3. 再度検索する（または直接アクセスする）
-        //    すでに追加済みなので、必ず見つかる
-        presetIt = definitions_.at(type).find(presetName);
+        presetMap[presetName] = ParticleDefinition(); // デフォルトの空定義を追加
+        SaveConfigToJson(type); // 保存
     }
 
-    // 見つかった定義からEmitterConfigを取得
-    const auto& emitterConfig = presetIt->second.emitterConfig;
+    // 必ず存在するはずなので、参照取得
+    const auto& definition = presetMap.at(presetName);
+    const auto& emitterConfig = definition.emitterConfig;
 
     // 新しいエミッターを生成
     auto emitter = std::make_unique<ParticleEmitter>();
@@ -299,10 +291,7 @@ void ParticleSystem::Update()
         auto behavior = behaviors_.find(it->type);
         if (behavior != behaviors_.end()) 
         {
-            // 1. パーティクルが記憶している情報から、正しいConfigを取得
-            const ParticleConfig& config = GetConfig(it->type, it->presetName);
-            // 2. behaviorのUpdateに、取得したconfigを渡す
-            behavior->second->Update(*it, config);
+            behavior->second->Update(*it);
         }
 
         if (it->hasLifetime)

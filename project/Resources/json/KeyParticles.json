@@ -3,7 +3,7 @@
         "chest": {
             "EmitterConfig": {
                 "amount": 1,
-                "lifetime": 5.0,
+                "lifetime": 8.09000015258789,
                 "position": [
                     -0.30000001192092896,
                     0.0,
@@ -27,23 +27,23 @@
                 ],
                 "endColor": 1939284224,
                 "endScale": [
-                    25.0,
-                    25.0,
+                    15.140000343322754,
+                    14.050000190734863,
                     1.0
                 ],
-                "fadeOutFrameCount": 0,
+                "fadeOutFrameCount": 171,
                 "gravity": 0.0,
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
-                "scaleFrameCount": 0,
-                "speed": -0.05000000074505806,
+                "scaleFrameCount": 26,
+                "speed": 0.17000000178813934,
                 "startColor": 4294902015,
                 "startScale": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "textureIndex": 52
+                "textureIndex": 0
             }
         },
         "doar": {
