@@ -11,6 +11,16 @@
 #include "ShakeEffect.h"
 #include "AnimationData.h"
 
+struct Particle
+{
+    Vector3 position;
+    Vector3 velocity;
+    float lifetime;
+    bool active;
+    ParticleType type;
+    uint32_t textureIndex;
+};
+
 class SampleSceneHori : public BaseScene
 {
 public:
@@ -34,6 +44,10 @@ public:
     void ApplyGlobalVariables();
     void SaveGlobalVariables();
 
+    void UpdateParticles();
+    void EmitUpwardParticle(const Vector3& position);
+    void EmitHorizontalParticle(const Vector3& position);
+
 private:
     // メンバー変数
     Engine* engine_;
@@ -49,10 +63,15 @@ private:
     Animation animation_;
     AnimatedModelData animeModelData_;
 
+    Skeleton skeleton_;
+    float animationTime_;
+
     ShakeEffect shake;
 
     Vector3 baseTranslation_;
     Vector3 originalTranslation_;
+
+    std::vector<Particle> particles_;
 
     bool isEditorMode_ = false;
 

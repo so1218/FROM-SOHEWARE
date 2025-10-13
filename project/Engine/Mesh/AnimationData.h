@@ -68,7 +68,7 @@ struct Skeleton
     std::vector<Joint> joints; // 所属しているジョイント
 };
 
-//Skeleton CreateSkeleton(const Node& rootNode);
+Skeleton CreateSkeleton(const Node& rootNode);
 
 inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
 {
@@ -82,4 +82,4 @@ inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
-void Update(Skeleton& skeleton);
+void UpdateSkeleton(Skeleton& skeleton);

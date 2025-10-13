@@ -5,6 +5,7 @@
 #include "ModelLoader.h"
 #include "GlobalVariables.h"
 #include "AnimationHandle.h"
+#include "TimeManager.h"
 #include "Input.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
@@ -20,8 +21,11 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
 
     animeModelData_.modelData = *ModelHandle::Get(ModelID::animatedRyu);
-    animeModelData_.animation = AnimationHandle::Get(AnimationID::cube);
+    animeModelData_.animation = AnimationHandle::Get(AnimationID::ryu);
 
+    skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
+
+	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
     objectManager_.AddObject(std::move(enemy_));
@@ -59,6 +63,8 @@ void SampleSceneHori::Initialize()
     uvCheckerSprite_->SetPosition({ 0.0f, 0.0f });
     uvCheckerSprite_->SetSize({ 128.0f, 128.0f });
     uvCheckerSprite_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
+    animationTime_ = 0.0f;
+
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
@@ -71,8 +77,14 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
     
+	// アニメーション更新
+	animationTime_ += TimeManager::GetInstance()->GetDeltaTime();
+    animationTime_ = std::fmod(animationTime_, animeModelData_.animation.duration);
 
-	engine_->UpdateAnimation(animeModelData_); 
+	ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
+    UpdateSkeleton(skeleton_);
+
+	//engine_->UpdateAnimation(animeModelData_); 
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -107,12 +119,13 @@ void SampleSceneHori::Update()
 void SampleSceneHori::Draw()
 {
     uvCheckerSprite_->Draw();
-    dragonModel_->Draw();
+   /* dragonModel_->Draw();*/
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-    engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));
+   /* engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));*/
+	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 
 void SampleSceneHori::DebugDraw()

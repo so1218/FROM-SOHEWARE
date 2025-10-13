@@ -56,6 +56,7 @@ public:
     void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color = 0xffffffff);
     void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color
         , const WorldTransform& uvTransform);
+    void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
     void DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, uint32_t textureHandle, uint32_t color = 0xffffffff);
     void DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color = 0xffffffff);
     void DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);

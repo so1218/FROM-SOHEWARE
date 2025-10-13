@@ -101,7 +101,7 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 	}
 }
 
-void Update(Skeleton& skeleton)
+void UpdateSkeleton(Skeleton& skeleton)
 {
 	// 全てのJointを更新。親が若いので通常ループで処理可能になっている
 	for (Joint& joint : skeleton.joints)

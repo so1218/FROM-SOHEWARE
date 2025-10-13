@@ -770,6 +770,32 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	indexModel_++;
 }
 
+void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)
+{
+	for (const Joint& joint : skeleton.joints)
+	{
+		for (int32_t childIndex : joint.children)
+		{
+			// 親の位置（行列の平行移動成分）
+			Vector3 parentPos = Vector3(
+				joint.skeletonSpaceMatrix.m[3][0], 
+				joint.skeletonSpaceMatrix.m[3][1], 
+				joint.skeletonSpaceMatrix.m[3][2]  
+			);
+
+			// 子の位置
+			const Joint& child = skeleton.joints[childIndex];
+			Vector3 childPos = Vector3(
+				child.skeletonSpaceMatrix.m[3][0],
+				child.skeletonSpaceMatrix.m[3][1],
+				child.skeletonSpaceMatrix.m[3][2]
+			);
+
+			DrawLine(parentPos, childPos, camera, color);
+		}
+	}
+}
+
 void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, uint32_t textureHandle, uint32_t color)
 {
 	assert(indexModel_ < kMaxModelCount);
