@@ -29,6 +29,8 @@ private:
     void LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath);
 
     bool IsGLTFFile(const std::string& path);
+
+    Node ReadNode(aiNode* node);
     
 };
 

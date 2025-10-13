@@ -1,5 +1,6 @@
 #pragma once
 #include "MathUtils.h"
+#include "WorldTransform.h"
 
 #include <unordered_map>
 #include <string>
@@ -69,6 +70,14 @@ struct MaterialHandle
     MaterialType type;
 };
 
+struct Node
+{
+	WorldTransform transform;
+    Matrix4x4 localMatrix;
+	std::string name;
+    std::vector<Node> children;
+};
+
 struct ModelData
 {
     std::vector<VertexData>vertices;
@@ -76,6 +85,7 @@ struct ModelData
     MaterialData material;
     MaterialHandle materialHandle;
     uint32_t textureHandle;
+	Node rootNode;
 };
 
 struct VertexKey 

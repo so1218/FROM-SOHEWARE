@@ -50,14 +50,6 @@ struct AnimatedModelData
 
 };
 
-struct Node
-{
-    WorldTransform transform;
-	Matrix4x4 localMatrix; 
-    std::string name;
-	std::vector<Node> children;
-};
-
 struct Joint
 {
     WorldTransform transform;

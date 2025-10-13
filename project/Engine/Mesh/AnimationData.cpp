@@ -70,7 +70,7 @@ int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::v
 	joint.name = node.name;
 	joint.localMatrix = node.localMatrix;
 	joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity();
-	joint.transform = node.transform;
+	/*joint.transform = node.transform;*/
 	joint.index = static_cast<int32_t>(joints.size());
 	joint.parent = parentIndex;
 	joints.push_back(joint);

@@ -1206,32 +1206,39 @@ void Engine::DrawParticles(const Camera& camera)
 	mappedCamera_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
 	cmdList->SetGraphicsRootConstantBufferView(1, cameraBuffer_->GetGPUVirtualAddress());
 
-	// テクスチャごとに描画を分ける
+	// 先頭アドレス
+	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
+
+	// インスタンスデータのオフセット
+	size_t offset = 0;
+
 	for (auto& [textureIndex, instances] : particlesByTexture_)
 	{
 		if (instances.empty()) continue;
 
-		// 現在のフレームのマップ済み領域にインスタンスデータを書き込む
-		ParticleInstanceData* dst = mappedInstanceData_[currentFrameIndex_];
-
-		// instancesの内容をGPUマップメモリにコピー
+		// コピー先をずらしてセット
+		ParticleInstanceData* dst = dstBase + offset;
 		memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
 
-		// 2. 対応するテクスチャのSRVをセット
+		// テクスチャのSRVをセット
 		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = textures_[textureIndex].srvManager.GetSrvHandleGPU();
-		cmdList->SetGraphicsRootDescriptorTable(3, srvHandle); // t1にセット
+		cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
 
-		// 3. インスタンスバッファをセット
-		cmdList->SetGraphicsRootShaderResourceView(0, particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+		// インスタンスバッファのGPUアドレスにオフセットを加算してセット
+		UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
+		gpuAddress += sizeof(ParticleInstanceData) * offset;
+		cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
 
-		// 4. 描画
-		cmdList->DrawIndexedInstanced(static_cast<UINT>(particleMesh_.GetIndexCount()),
-			static_cast<UINT>(instances.size()), 0, 0, 0);
+		// 描画
+		cmdList->DrawIndexedInstanced(
+			static_cast<UINT>(particleMesh_.GetIndexCount()),
+			static_cast<UINT>(instances.size()),
+			0, 0, 0);
+
+		offset += instances.size();
 	}
 
-	// 描画後は次フレームの準備など
 	particlesByTexture_.clear();
-
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 	indexInstance_ = 0;
 }

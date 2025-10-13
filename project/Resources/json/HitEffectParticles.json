@@ -9,7 +9,7 @@
                     0.0,
                     0.0
                 ],
-                "spawnInterval": 0.10000000149011612
+                "spawnInterval": 0.009999999776482582
             },
             "ParticleConfig": {
                 "baseColor": [
@@ -25,7 +25,7 @@
                     0.0,
                     20.0
                 ],
-                "endColor": 11845888,
+                "endColor": 65280,
                 "endScale": [
                     20.0,
                     20.0,
@@ -36,14 +36,14 @@
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
                 "scaleFrameCount": 36,
-                "speed": 0.14000000059604645,
+                "speed": 0.07999999821186066,
                 "startColor": 4294967295,
                 "startScale": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "textureIndex": 6
+                "textureIndex": 24
             }
         }
     }
