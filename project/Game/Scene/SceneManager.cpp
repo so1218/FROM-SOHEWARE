@@ -16,6 +16,12 @@ void SceneManager::SetScene(std::unique_ptr<BaseScene> newScene)
 
 void SceneManager::Update()
 {
+    // シーン切り替えがあれば実行
+    if (nextScene_)
+    {
+        SetScene(std::move(nextScene_));
+    }
+
     if (currentScene_)
     {
         currentScene_->Update();

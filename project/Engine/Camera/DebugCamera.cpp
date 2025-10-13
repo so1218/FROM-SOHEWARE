@@ -57,21 +57,6 @@ void DebugCamera::Update()
         currentPitch_ += deltaY * rotateSpeed_;
     }
 
-    // コントローラーの右スティック入力によるカメラ回転
-    if (Input::IsControllerConnected(0))
-    {
-        SHORT stickX = Input::GetRightStickX(0);
-        SHORT stickY = Input::GetRightStickY(0);
-
-        // スティックのデッドゾーン処理（誤操作防止）
-        const int DEAD_ZONE = 8000;
-        if (abs(stickX) > DEAD_ZONE || abs(stickY) > DEAD_ZONE)
-        {
-            currentYaw_ -= static_cast<float>(stickX) * 0.000001f;
-            currentPitch_ += static_cast<float>(stickY) * 0.000001f;
-        }
-    }
-
     // マウス中ドラッグでターゲット
     if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && Input::IsKeyPressed(DIK_LSHIFT)) {
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;

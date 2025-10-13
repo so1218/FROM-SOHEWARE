@@ -174,6 +174,7 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_right);
         ImGui::DockBuilderDockWindow("敵", dock_id_right);
         ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
+        ImGui::DockBuilderDockWindow("シーンの選択", dock_id_down);
         ImGui::DockBuilderDockWindow("Ground", dock_id_down);
         ImGui::DockBuilderDockWindow("プレイシーン", dock_id_down);
         ImGui::DockBuilderDockWindow("FollowCamera", dock_id_down);
