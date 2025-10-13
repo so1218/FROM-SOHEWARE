@@ -44,5 +44,6 @@ public:
     std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> newEmitter2_ = nullptr;
 };
 
