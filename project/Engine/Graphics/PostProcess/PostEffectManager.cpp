@@ -255,6 +255,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         cmdList->ClearRenderTargetView(rtvHandleDepth, clearColor, 0, nullptr);*/
 
         // フルスクリーン三角形を描画（深度の抽出）
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         // 描画後、再度SRVとして使うために遷移（必要なら）
@@ -293,6 +294,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleExtract = offscreenRTVManager_->GetRTVHandle(brightExtractIndex_);
         cmdList->OMSetRenderTargets(1, &rtvHandleExtract, FALSE, nullptr);
 
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         // 描画後、再びSRVとして使うために遷移（必要なら）
@@ -320,6 +322,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleVertical = offscreenRTVManager_->GetRTVHandle(verticalBlurIndex_);
         cmdList->OMSetRenderTargets(1, &rtvHandleVertical, FALSE, nullptr);
 
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierVerticalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -346,6 +349,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleHorizontal = offscreenRTVManager_->GetRTVHandle(horizontalBlurIndex_);
         cmdList->OMSetRenderTargets(1, &rtvHandleHorizontal, FALSE, nullptr);
 
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierHorizontalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -378,6 +382,8 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
         float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1 };
         cmdList->ClearRenderTargetView(rtvHandleCombine, clearColor, 0, nullptr);
+
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierBloomCombineToSRV = CD3DX12_RESOURCE_BARRIER::Transition(

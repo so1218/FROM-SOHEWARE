@@ -1,0 +1,50 @@
+{
+    "HitEffect": {
+        "doar": {
+            "EmitterConfig": {
+                "amount": 1,
+                "lifetime": 5.0,
+                "position": [
+                    30.399999618530273,
+                    0.0,
+                    0.0
+                ],
+                "spawnInterval": 0.10000000149011612
+            },
+            "ParticleConfig": {
+                "baseColor": [
+                    0.003921568859368563,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "decayRate": 0.0,
+                "drag": 0.0,
+                "emitterRange": [
+                    0.0,
+                    0.0,
+                    20.0
+                ],
+                "endColor": 11845888,
+                "endScale": [
+                    20.0,
+                    20.0,
+                    1.0
+                ],
+                "fadeOutFrameCount": 118,
+                "gravity": 0.0,
+                "maxLifetime": 0.0,
+                "particleRadius": 0.0,
+                "scaleFrameCount": 36,
+                "speed": 0.14000000059604645,
+                "startColor": 4294967295,
+                "startScale": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "textureIndex": 6
+            }
+        }
+    }
+}

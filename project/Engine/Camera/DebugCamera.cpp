@@ -34,7 +34,7 @@ void DebugCamera::Update()
     if (!isEnabled_) return;
 
     // ズームはマウスホイールで操作
-    if (Input::IsMouseButtonPressed(1)) {
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Right)) {
         int wheelDelta = Input::GetMouseWheelDelta();
         distance_ -= wheelDelta * zoomSpeed_;
 
@@ -48,7 +48,7 @@ void DebugCamera::Update()
     }
 
     // マウス右ドラッグでカメラ回転（target中心の公転）
-    if (Input::IsMouseButtonPressed(2) && !Input::IsKeyPressed(DIK_LSHIFT))
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && !Input::IsKeyPressed(DIK_LSHIFT))
     {
         int deltaX = Input::GetMouseState().lX;
         int deltaY = Input::GetMouseState().lY;
@@ -57,8 +57,23 @@ void DebugCamera::Update()
         currentPitch_ += deltaY * rotateSpeed_;
     }
 
+    // コントローラーの右スティック入力によるカメラ回転
+    if (Input::IsControllerConnected(0))
+    {
+        SHORT stickX = Input::GetRightStickX(0);
+        SHORT stickY = Input::GetRightStickY(0);
+
+        // スティックのデッドゾーン処理（誤操作防止）
+        const int DEAD_ZONE = 8000;
+        if (abs(stickX) > DEAD_ZONE || abs(stickY) > DEAD_ZONE)
+        {
+            currentYaw_ -= static_cast<float>(stickX) * 0.000001f;
+            currentPitch_ += static_cast<float>(stickY) * 0.000001f;
+        }
+    }
+
     // マウス中ドラッグでターゲット
-    if (Input::IsMouseButtonPressed(2) && Input::IsKeyPressed(DIK_LSHIFT)) {
+    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && Input::IsKeyPressed(DIK_LSHIFT)) {
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;
         Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
         Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));

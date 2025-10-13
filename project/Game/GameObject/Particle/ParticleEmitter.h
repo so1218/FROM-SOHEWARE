@@ -25,6 +25,10 @@ public:
     int amount_;
 
     std::string name_ = "Emitter";
+	std::string& presetName_ = name_;
+
+    EmitterConfig emitterConfig_;
+    ParticleConfig particleConfig_;
 };
 
 

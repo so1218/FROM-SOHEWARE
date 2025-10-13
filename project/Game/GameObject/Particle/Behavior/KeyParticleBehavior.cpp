@@ -1,12 +1,10 @@
 #include "KeyParticleBehavior.h"
 #include "TextureHandle.h"
 
-void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSystem& particleSystem)
+void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleConfig& config)
 {
-    auto& config = particleSystem.GetConfig(ParticleType::Key);
-
     particle.emitterRange = config.emitterRange;
-    particle.fadeOutEase->frameCount_ = config.fadeOutEase->frameCount_;
+    particle.fadeOutEase.frameCount_ = config.fadeOutEase.frameCount_;
     particle.color = { 127.0f,255.0f,0.0f,255.0f };
     particle.startColor = config.startColor;
     particle.endColor = config.endColor;
@@ -18,9 +16,9 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleSyst
     particle.frameCount = 0;
     particle.isEmit = false;
     particle.speed = config.speed;
-    particle.fadeOutEase->SetEasing(EasingType::EaseOutCirc);
-    particle.scaleEase->SetEasing(EasingType::EaseLinear);
-    particle.scaleEase->frameCount_ = config.scaleEase->frameCount_;
+    particle.fadeOutEase.SetEasing(EasingType::EaseOutCirc);
+    particle.scaleEase.SetEasing(EasingType::EaseLinear);
+    particle.scaleEase.frameCount_ = config.scaleEase.frameCount_;
 
 }
 
@@ -42,7 +40,7 @@ void KeyParticleBehavior::Update(ParticleState& particle)
                 particle.theta = static_cast<float>(rand()) / RAND_MAX * 2.0f * float(PI);
 
                 // 半径をランダムに生成 (0～emitterRange_ の範囲)
-                float radius = static_cast<float>(RandomFloat(0.05f, static_cast<float>(particle.emitterRange.x)));
+                float radius = static_cast<float>(RandomFloat(0.05f, particle.emitterRange.x));
 
                 // 極座標 -> 直交座標
                 particle.transform->translation_.x = particle.initialPosition.x + radius * cos(particle.theta);
@@ -50,9 +48,8 @@ void KeyParticleBehavior::Update(ParticleState& particle)
                 particle.velocity.x = particle.speed * cosf(particle.theta);
                 particle.velocity.y = particle.speed * sinf(particle.theta);
                 particle.isExist = true;
-                particle.fadeOutEase->isEase_ = true;
+                particle.fadeOutEase.isEase_ = true;
                 particle.hasExisted = true;
-               
 
                 if (rand() % 2 == 0)
                 {
@@ -76,16 +73,16 @@ void KeyParticleBehavior::Update(ParticleState& particle)
         particle.transform->rotation_.z += particle.thetaVel;
         particle.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particle.transform->rotation_);
 
-        if (!particle.fadeOutEase->isEase_)
+        if (!particle.fadeOutEase.isEase_)
         {
             particle.isExist = false;
         }
         unsigned int currentColor = (unsigned int)ColorVectorToUint32(particle.color);
-        if (particle.fadeOutEase->isEase_)
+        if (particle.fadeOutEase.isEase_)
         {
-            particle.fadeOutEase->CountEaseLinear(particle.startColor, particle.endColor, currentColor);
+            particle.fadeOutEase.CountEaseLinear(particle.startColor, particle.endColor, currentColor);
         }
         particle.color = Uint32ToColorVector(currentColor);
-        particle.scaleEase->OnceReverseEaseLinear(particle.startScale, particle.endScale, particle.transform->scale_);
+        particle.scaleEase.OnceReverseEaseLinear(particle.startScale, particle.endScale, particle.transform->scale_);
     }
 }
