@@ -15,7 +15,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
     // 初期シーンを設定
-    sceneManager_.SetScene(std::make_unique <SampleSceneHori> (engine_.get(), camera_.get()));
+    sceneManager_.SetScene(std::make_unique <PlayScene> (engine_.get(), camera_.get()));
 }
 
 Game::~Game()
@@ -126,12 +126,11 @@ void Game::Update()
 
 void Game::Draw()
 {
-    sceneManager_.Draw();
-
 #ifdef _DEBUG
     engine_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
 #endif
 
+    sceneManager_.Draw();
 #ifdef _DEBUG
     DebugDraw();
 #endif
