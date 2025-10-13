@@ -5,7 +5,7 @@
 
 MaterialManager::~MaterialManager()
 {
-    materials_.clear(); 
+    materials_.clear();
 }
 
 MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
@@ -18,6 +18,8 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.resource->SetName(debugName.c_str());
 
     handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.materialData));
+
+    handle.type = MaterialType::Complex;
 
     // ここで materialSettings_ をリセットしない
     // 代わりに初期化用の一時変数を用意して使う
@@ -46,17 +48,44 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     materials_.push_back(handle);
     return handle;
 }
+
+MaterialHandle MaterialManager::CreateLineMaterial(ID3D12Device* device)
+{
+    MaterialHandle handle;
+    handle.resource = BufferManager::CreateBufferResource(device, sizeof(LineMaterial));
+    static int s_lineMaterialId = 0;
+    std::wstring debugName = L"LineMaterialResource_" + std::to_wstring(s_lineMaterialId++);
+    handle.resource->SetName(debugName.c_str());
+
+    handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.lineMaterialData));
+
+    // 初期値設定
+    if (handle.lineMaterialData)
+    {
+        handle.lineMaterialData->color = Vector4(1, 1, 1, 1);
+    }
+
+    handle.type = MaterialType::Line;
+
+    materials_.push_back(handle);
+    return handle;
+}
+
 void MaterialManager::UpdateAllMaterialsFromGlobal()
 {
-    for (auto& materials : materials_)
+    for (auto& handle : materials_)
     {
-        if (materials.materialData)
+        if (handle.type == MaterialType::Complex && handle.materialData)
         {
-            materials.materialData->enableLighting = materialSettings_.enableLighting;
-            materials.materialData->lightMode = materialSettings_.lightMode;
-            materials.materialData->shininess = materialSettings_.shininess;
-            materials.materialData->specularColor = materialSettings_.specularColor;
-            materials.materialData->gTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+            handle.materialData->enableLighting = materialSettings_.enableLighting;
+            handle.materialData->lightMode = materialSettings_.lightMode;
+            handle.materialData->shininess = materialSettings_.shininess;
+            handle.materialData->specularColor = materialSettings_.specularColor;
+            handle.materialData->gTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+        }
+        else if (handle.type == MaterialType::Line && handle.lineMaterialData)
+        {
+
         }
     }
 }

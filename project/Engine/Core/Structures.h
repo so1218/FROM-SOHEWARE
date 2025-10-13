@@ -50,10 +50,23 @@ struct Material
     Vector4 specularColor;         
 };
 
+struct LineMaterial
+{
+    Vector4 color;
+};
+
+enum class MaterialType
+{
+    Complex,
+    Line,
+};
+
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     Material* materialData;
+    LineMaterial* lineMaterialData;
+    MaterialType type;
 };
 
 struct ModelData

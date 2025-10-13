@@ -1071,7 +1071,7 @@ void Engine::CreateLines()
 
 	for (size_t i = 0; i < kMaxLineCount; ++i)
 	{
-		lines_[i].materialHandle = materialManager_->CreateMaterial(graphicDevice_->GetDevice());
+		lines_[i].materialHandle = materialManager_->CreateLineMaterial(graphicDevice_->GetDevice());
 
 		lines_[i].wvpResource = BufferManager::CreateBufferResource(graphicDevice_->GetDevice(), sizeof(TransformationMatrix));
 		lines_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lines_[i].mappedData));
@@ -1107,7 +1107,7 @@ void Engine::DrawLine(const Vector3& start, const Vector3& end, Camera& camera, 
 	line.mesh.SetVertexCount(2);
 
 	// マテリアル色のみ更新
-	line.materialHandle.materialData->color = Uint32ToColorVector(color);
+	line.materialHandle.lineMaterialData->color = Uint32ToColorVector(color);
 
 	// WVP行列更新
 	line.worldMatrix = Matrix4x4::MakeIdentity();
@@ -1128,6 +1128,7 @@ void Engine::DrawLine(const Vector3& start, const Vector3& end, Camera& camera, 
 
 	indexLine_++;
 }
+
 
 void Engine::CreateParticles()
 {
@@ -1167,9 +1168,6 @@ void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t col
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
 	ParticleInstanceData& data = mappedInstanceData_[currentFrameIndex_][indexInstance_++];
 	data.worldMatrix = worldTransform.matWorld_;
 
@@ -1197,6 +1195,9 @@ void Engine::DrawParticles(const Camera& camera)
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
+
+	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// カメラ定数バッファ更新
 	mappedCamera_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
