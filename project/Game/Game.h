@@ -30,6 +30,7 @@ public:
     void Run();
     void Update();
     void Draw();
+    void DebugDraw();
     void Finalize();
 
 private:

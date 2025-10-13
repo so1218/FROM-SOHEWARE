@@ -8,12 +8,14 @@
 #include "ModelHandle.h"
 #include "TextureHandle.h"
 #include "SampleSceneHori.h"
+#include "ImGuiManager.h"
+
 
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
     // 初期シーンを設定
-    sceneManager_.SetScene(std::make_unique <SampleSceneHori> (engine_.get(), camera_.get()));
+    sceneManager_.SetScene(std::make_unique <PlayScene> (engine_.get(), camera_.get()));
 }
 
 Game::~Game()
@@ -129,6 +131,31 @@ void Game::Draw()
 #ifdef _DEBUG
     engine_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
 #endif
+
+#ifdef _DEBUG
+    DebugDraw();
+#endif
+
+}
+
+void Game::DebugDraw()
+{
+    if (ImGui::Begin("シーンの選択"))
+    {
+        if (ImGui::Button("Title Scene"))
+        {
+            sceneManager_.RequestSceneChange(std::make_unique<TitleScene>(engine_.get(), camera_.get()));
+        }
+        if (ImGui::Button("Play Scene"))
+        {
+            sceneManager_.RequestSceneChange(std::make_unique<PlayScene>(engine_.get(), camera_.get()));
+        }
+        if (ImGui::Button("Sample Scene"))
+        {
+            sceneManager_.RequestSceneChange(std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
+        }
+    }
+    ImGui::End();
 }
 
 void Game::Finalize()

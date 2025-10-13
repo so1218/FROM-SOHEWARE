@@ -57,10 +57,5 @@ private:
     bool isEditorMode_ = false;
 
 
-    bool isJumping_ = false;
-    float verticalVelocity_ = 0.0f;
-    const float gravity_ = -0.01f;       // 重力加速度
-    const float jumpStrength_ = 0.3f;    // ジャンプ初速
-    const float groundY_ = -3.0f;
 };
 

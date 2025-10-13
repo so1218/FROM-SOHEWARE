@@ -91,28 +91,6 @@ void SampleSceneHori::Update()
 
    /* dragonModel_->GetTransform().translation_.x += 0.01f;*/
 
-    // ジャンプ入力
-    if (Input::IsKeyTriggered(DIK_SPACE) && !isJumping_)
-    {
-        verticalVelocity_ = jumpStrength_;
-        isJumping_ = true;
-    }
-
-    // 重力とジャンプ処理
-    if (isJumping_)
-    {
-        dragonModel_->GetTransform().translation_.y += verticalVelocity_;
-        verticalVelocity_ += gravity_;
-
-        // 地面に着地したらジャンプ終了
-        if (dragonModel_->GetTransform().translation_.y <= groundY_)
-        {
-            dragonModel_->GetTransform().translation_.y = groundY_;
-            verticalVelocity_ = 0.0f;
-            isJumping_ = false;
-        }
-    }
-
     if (shake.IsActive())
     {
         dragonModel_->GetTransform().translation_ = originalTranslation_ + shake.GetOffset();

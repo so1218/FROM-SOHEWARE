@@ -22,8 +22,11 @@ public:
 
     // 現在のシーンを終了
     void Finalize();
+
+    void RequestSceneChange(std::unique_ptr<BaseScene> newScene) { nextScene_ = std::move(newScene); }
    
 private:
     std::unique_ptr<BaseScene> currentScene_;
+    std::unique_ptr<BaseScene> nextScene_;
 };
 
