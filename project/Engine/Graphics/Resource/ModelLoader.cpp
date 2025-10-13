@@ -13,20 +13,19 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
     const aiScene* scene = importer.ReadFile(
         filePath,
-        aiProcess_Triangulate |
-        aiProcess_GenNormals |
-        aiProcess_FlipUVs |
-        aiProcess_CalcTangentSpace
+        aiProcess_FlipWindingOrder |
+        aiProcess_FlipUVs
     );
-
-    assert(scene->HasMeshes()); // メッシュが無いのは対応しない
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         return modelData;
     }
 
+    assert(scene->HasMeshes()); // メッシュが無いのは対応しない
+
     LoadMaterials(scene, modelData, directoryPath);
+	modelData.rootNode = ReadNode(scene->mRootNode);
 
     for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
@@ -107,15 +106,11 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         vertex.position.z = mesh->mVertices[i].z;
         vertex.position.w = 1.0f;
 
-        vertex.position.x *= -1.0f;
-
         if (mesh->HasNormals())
         {
             vertex.normal.x = mesh->mNormals[i].x;
             vertex.normal.y = mesh->mNormals[i].y;
             vertex.normal.z = mesh->mNormals[i].z;
-
-            vertex.normal.x *= -1.0f;
             
         }
         else
@@ -182,4 +177,29 @@ bool ModelLoader::IsGLTFFile(const std::string& path)
     std::string ext = std::filesystem::path(path).extension().string();
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
     return ext == ".gltf" || ext == ".glb";
+}
+
+Node ModelLoader::ReadNode(aiNode* node)
+{
+    Node result;
+	aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
+    aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトル形式に転置
+
+    for (int row = 0; row < 4; ++row)
+    {
+        for (int col = 0; col < 4; ++col)
+        {
+            result.localMatrix.m[row][col] = aiLocalMatrix[row][col];
+        }
+    }
+
+	result.name = node->mName.C_Str(); // Node名を格納
+    result.children.resize(node->mNumChildren); // 子供の数だけ確保
+	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+	{
+        // 再帰的に読んで階層構造を作っていく
+		result.children[childIndex] = ReadNode(node->mChildren[childIndex]); 
+	}
+
+    return result;
 }

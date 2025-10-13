@@ -69,6 +69,13 @@ struct MaterialHandle
     MaterialType type;
 };
 
+struct Node
+{
+    Matrix4x4 localMatrix;
+	std::string name;
+    std::vector<Node> children;
+};
+
 struct ModelData
 {
     std::vector<VertexData>vertices;
@@ -76,6 +83,7 @@ struct ModelData
     MaterialData material;
     MaterialHandle materialHandle;
     uint32_t textureHandle;
+	Node rootNode;
 };
 
 struct VertexKey 

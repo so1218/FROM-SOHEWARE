@@ -15,7 +15,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
     // 初期シーンを設定
-    sceneManager_.SetScene(std::make_unique <PlayScene> (engine_.get(), camera_.get()));
+    sceneManager_.SetScene(std::make_unique <SampleSceneHori> (engine_.get(), camera_.get()));
 }
 
 Game::~Game()
