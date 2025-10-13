@@ -50,19 +50,6 @@ Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, floa
 	return keyframes.back().value;
 }
 
-//Skeleton CreateSkeleton(const Node& rootNode)
-//{
-//	Skeleton skeleton;
-//	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
-//
-//	// 名前とindexのマッピングを行いアクセスしやすくする
-//	for (const Joint& joint : skeleton.joints)
-//	{
-//		skeleton.jointMap.emplace(joint.name, joint.index);
-//	}
-//
-//	return skeleton;
-//}
 
 int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::vector<Joint>& joints)
 {
@@ -70,7 +57,7 @@ int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::v
 	joint.name = node.name;
 	joint.localMatrix = node.localMatrix;
 	joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity();
-	/*joint.transform = node.transform;*/
+	joint.transform = node.transform;
 	joint.index = static_cast<int32_t>(joints.size());
 	joint.parent = parentIndex;
 	joints.push_back(joint);
@@ -81,6 +68,21 @@ int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::v
 		joints[joint.index].children.push_back(childIndex);
 	}
 	return joint.index;
+}
+
+
+Skeleton CreateSkeleton(const Node& rootNode)
+{
+	Skeleton skeleton;
+	skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+
+	// 名前とindexのマッピングを行いアクセスしやすくする
+	for (const Joint& joint : skeleton.joints)
+	{
+		skeleton.jointMap.emplace(joint.name, joint.index);
+	}
+
+	return skeleton;
 }
 
 void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
