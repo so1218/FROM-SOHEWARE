@@ -19,6 +19,8 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
         aiProcess_CalcTangentSpace
     );
 
+    assert(scene->HasMeshes()); // メッシュが無いのは対応しない
+
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         return modelData;
@@ -26,9 +28,11 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
     LoadMaterials(scene, modelData, directoryPath);
 
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
+    for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
-        aiMesh* mesh = scene->mMeshes[i];
+        aiMesh* mesh = scene->mMeshes[meshIndex];
+        assert(mesh->HasNormals()); // 法線が無いMeshは非対応
+        assert(mesh->HasTextureCoords(0)); // Texcoordが無いMeshは非対応
         ProcessMesh(mesh, scene, modelData, isGLTF);
     }
 
