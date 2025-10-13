@@ -3,7 +3,7 @@
 // デフォルトコンストラクタ
 WorldTransform::WorldTransform()
     : scale_({ 1, 1, 1 }), rotation_({ 0, 0, 0 }), translation_({ 0, 0, 0 }),
-    rotationQuaternion_(Quaternion::Identity()) // Quaternion::Identity() は適切なデフォルトクォータニオンを返すことを期待します
+    rotationQuaternion_(Quaternion::Identity()), parent_(nullptr) 
 {
     UpdateMatrix(); // コンストラクタで初期行列を生成
 }
@@ -11,7 +11,7 @@ WorldTransform::WorldTransform()
 // コンストラクタ(オイラー角を使用)
 WorldTransform::WorldTransform(const Vector3& scale, const Vector3& rotation, const Vector3& translation)
     : scale_(scale), rotation_(rotation), translation_(translation),
-    rotationQuaternion_(Quaternion::QuaternionFromEuler(rotation))
+    rotationQuaternion_(Quaternion::QuaternionFromEuler(rotation)), parent_(nullptr)
 {
     UpdateMatrix();
 }
@@ -19,7 +19,7 @@ WorldTransform::WorldTransform(const Vector3& scale, const Vector3& rotation, co
 // コンストラクタ(クォータニオンを使用)
 WorldTransform::WorldTransform(const Vector3& scale, const Quaternion& rotation, const Vector3& translation)
     : scale_(scale), rotation_({ 0,0,0 }), translation_(translation),
-    rotationQuaternion_(rotation)
+    rotationQuaternion_(rotation), parent_(nullptr)
 {
     UpdateMatrix();
 }

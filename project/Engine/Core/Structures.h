@@ -1,5 +1,6 @@
 #pragma once
 #include "MathUtils.h"
+#include "WorldTransform.h"
 
 #include <unordered_map>
 #include <string>
@@ -71,6 +72,7 @@ struct MaterialHandle
 
 struct Node
 {
+	WorldTransform transform;
     Matrix4x4 localMatrix;
 	std::string name;
     std::vector<Node> children;
