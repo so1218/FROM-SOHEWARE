@@ -24,7 +24,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animeModelData_.animation = AnimationHandle::Get(AnimationID::ryu);
 
     skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
-
+    skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(), skeleton_, animeModelData_.modelData,
+        engine_->srvDescriptorHeap_, engine_->descriptorSizeSRV_, engine_->srvAllocator_.get());
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -83,6 +84,7 @@ void SampleSceneHori::Update()
 
 	ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
     UpdateSkeleton(skeleton_);
+    UpdateSkinCluster(skinCluster_, skeleton_);
 
 	//engine_->UpdateAnimation(animeModelData_); 
 
@@ -124,7 +126,7 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-   /* engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, TextureHandle::Get(TextureID::uvChecker));*/
+    engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, skinCluster_, TextureHandle::Get(TextureID::uvChecker));
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

@@ -64,6 +64,7 @@ private:
     AnimatedModelData animeModelData_;
 
     Skeleton skeleton_;
+    SkinCluster skinCluster_;
     float animationTime_;
 
     ShakeEffect shake;

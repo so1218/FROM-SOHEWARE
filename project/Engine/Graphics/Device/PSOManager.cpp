@@ -44,16 +44,16 @@ void PSOManager::CreateInputLayout()
     inputElementDesc_[2].SemanticIndex = 0;
     inputElementDesc_[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
     inputElementDesc_[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-    //inputElementDesc_[3].SemanticName = "WEIGHT";
-    //inputElementDesc_[3].SemanticIndex = 0;
-    //inputElementDesc_[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-    //inputElementDesc_[3].InputSlot = 1;
-    //inputElementDesc_[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-    //inputElementDesc_[4].SemanticName = "INDEX";
-    //inputElementDesc_[4].SemanticIndex = 0;
-    //inputElementDesc_[4].Format = DXGI_FORMAT_R32G32B32A32_SINT; // int4
-    //inputElementDesc_[4].InputSlot = 1;
-    //inputElementDesc_[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDesc_[3].SemanticName = "WEIGHT";
+    inputElementDesc_[3].SemanticIndex = 0;
+    inputElementDesc_[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    inputElementDesc_[3].InputSlot = 1;
+    inputElementDesc_[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDesc_[4].SemanticName = "INDEX";
+    inputElementDesc_[4].SemanticIndex = 0;
+    inputElementDesc_[4].Format = DXGI_FORMAT_R32G32B32A32_SINT; // int4
+    inputElementDesc_[4].InputSlot = 1;
+    inputElementDesc_[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
     inputLayoutDesc_.pInputElementDescs = inputElementDesc_;
     inputLayoutDesc_.NumElements = _countof(inputElementDesc_);
@@ -81,7 +81,7 @@ void PSOManager::CreateInputLayout()
 void PSOManager::CompileShaders(IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
 {
     // Shaderをコンパイルする
-    vsBlob3D_ = ShaderManager::CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
+    vsBlob3D_ = ShaderManager::CompileShader(L"Resources/Shaders/SkinningObject3D.VS.hlsl",
         L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(vsBlob3D_ != nullptr);
 
@@ -173,7 +173,7 @@ void PSOManager::Create3DPSO()
     depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // PSOを生成する
-    psoDesc3d_.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();// RootSignature
+    psoDesc3d_.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();// RootSignature
     psoDesc3d_.InputLayout = inputLayoutDesc_;// InputLayout
     psoDesc3d_.VS = { vsBlob3D_->GetBufferPointer(),
     vsBlob3D_->GetBufferSize() };// VertexShader
@@ -225,7 +225,7 @@ void PSOManager::Create3DWireframePSO()
 
     // PSO 設定
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
+    desc.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();
     desc.InputLayout = inputLayoutDesc_;
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() };
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() };
@@ -270,7 +270,7 @@ void PSOManager::CreateGridPSO()
 
     // PSO構築
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
+    desc.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();
     desc.InputLayout = inputLayoutDesc_;                                
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() }; 
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() }; 

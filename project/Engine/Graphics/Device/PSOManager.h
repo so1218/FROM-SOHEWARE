@@ -88,7 +88,7 @@ private:
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc_{}; 
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescParticle_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescDepth_{};
-    D3D12_INPUT_ELEMENT_DESC inputElementDesc_[3] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDesc_[5] = {};
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescsParticle_;
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc3d_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescLine_{};    

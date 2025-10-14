@@ -796,7 +796,7 @@ void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t col
 	}
 }
 
-void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, uint32_t textureHandle, uint32_t color)
+void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
 {
 	assert(indexModel_ < kMaxModelCount);
 	RenderData& model = models_[indexModel_];
@@ -814,7 +814,7 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const Ani
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャの設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
 	// パイプラインステートの設定
 	if (isWireFrame_) {
 		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
@@ -836,10 +836,11 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const Ani
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-
-	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
+	// スキニングパレットのSRV
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(7, skinCluster.paletteSrvHandle.second);
+	// 頂点インフルエンス頂点バッファをセット
+	commandManager_->GetCommandList()->IASetVertexBuffers(1, 1, &skinCluster.influenceBufferView);
+	
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇

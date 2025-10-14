@@ -126,7 +126,7 @@ SkinCluster CreateSkinCluster(
 	const ModelData& modelData,
 	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
 	uint32_t descriptorSize,
-	SRVAllocator& srvAllocator)
+	SRVAllocator* srvAllocator)
 {
 	// palette用のResourceを確保
 	SkinCluster skinCluster;
@@ -137,7 +137,7 @@ SkinCluster CreateSkinCluster(
 	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));	
 	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; // spanを使ってアクセスするようにする
 	
-	uint32_t srvIndex = srvAllocator.Allocate();
+	uint32_t srvIndex = srvAllocator->Allocate();
 	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
 
