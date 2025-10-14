@@ -44,6 +44,17 @@ void PSOManager::CreateInputLayout()
     inputElementDesc_[2].SemanticIndex = 0;
     inputElementDesc_[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
     inputElementDesc_[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    //inputElementDesc_[3].SemanticName = "WEIGHT";
+    //inputElementDesc_[3].SemanticIndex = 0;
+    //inputElementDesc_[3].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    //inputElementDesc_[3].InputSlot = 1;
+    //inputElementDesc_[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    //inputElementDesc_[4].SemanticName = "INDEX";
+    //inputElementDesc_[4].SemanticIndex = 0;
+    //inputElementDesc_[4].Format = DXGI_FORMAT_R32G32B32A32_SINT; // int4
+    //inputElementDesc_[4].InputSlot = 1;
+    //inputElementDesc_[4].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
     inputLayoutDesc_.pInputElementDescs = inputElementDesc_;
     inputLayoutDesc_.NumElements = _countof(inputElementDesc_);
 

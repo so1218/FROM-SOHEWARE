@@ -15,6 +15,7 @@ public:
 
     // 各シェーダーで使用するルートシグネチャ
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature3D_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkinning_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureLine_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureParticles_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignaturePostProcess_;
@@ -26,6 +27,9 @@ private:
 
     // 3dパイプライン用のルートシグネチャを生成
     void Create3dRootSignature();
+
+    // スキニング3d描画用のルートシグネチャを生成
+    void CreateSkinningRootSignature();
 
     // ライン描画用のルートシグネチャを生成
     void CreateLineRootSignature();

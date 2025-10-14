@@ -6,6 +6,7 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
 
     CreateLineRootSignature();
     Create3dRootSignature();
+    CreateSkinningRootSignature();
     CreateParticleGraphicsRootSignature(); 
     CreatePostEffectPassRootSignature();
     CreateFullScreenRootSignature();
@@ -156,6 +157,82 @@ void RootSignatureManager::Create3dRootSignature()
         IID_PPV_ARGS(&rootSignature3D_));
     if (FAILED(hr)) {
         assert(false && "Failed to create graphic root signature!");
+        return;
+    }
+}
+
+void RootSignatureManager::CreateSkinningRootSignature()
+{
+    // DescriptorRangeの設定 (テクスチャSRV用)
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
+    srvDescriptorRange.BaseShaderRegister = 0; // t0
+    srvDescriptorRange.NumDescriptors = 1;
+    srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    enum {
+        kVertexShaderCb0Index = 0, // b0 : 通常の頂点シェーダー定数バッファ (例：ワールド行列など)
+        kVertexShaderBoneMatricesCbIndex = 1, // b1 : ボーン行列配列用CBV（スキニング用）
+        kPixelShaderCb0Index = 2,    // b0 : ピクセルシェーダー用CBV
+        kTextureSrvTableIndex = 3,   // t0 : テクスチャSRV
+        kNumRootParameters
+    };
+
+    D3D12_ROOT_PARAMETER rootParameters[kNumRootParameters] = {};
+
+    // 頂点シェーダー用CBV (b0)
+    rootParameters[kVertexShaderCb0Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kVertexShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParameters[kVertexShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
+
+    // 頂点シェーダー用ボーン行列CBV (b1)
+    rootParameters[kVertexShaderBoneMatricesCbIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kVertexShaderBoneMatricesCbIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParameters[kVertexShaderBoneMatricesCbIndex].Descriptor.ShaderRegister = 1; // b1
+
+    // ピクセルシェーダー用CBV (b0)
+    rootParameters[kPixelShaderCb0Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kPixelShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kPixelShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
+
+    // テクスチャSRVテーブル (t0)
+    rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
+
+    // サンプラの設定（3D用と同じ）
+    D3D12_STATIC_SAMPLER_DESC staticSampler = {};
+    staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler.ShaderRegister = 0; // s0
+    staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+    rootSignatureDesc.NumParameters = _countof(rootParameters);
+    rootSignatureDesc.pParameters = rootParameters;
+    rootSignatureDesc.NumStaticSamplers = 1;
+    rootSignatureDesc.pStaticSamplers = &staticSampler;
+    rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
+    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+    HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+    if (FAILED(hr)) {
+        if (errorBlob) {
+            Logger::Instance().Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+        }
+        assert(false && "Failed to serialize skinning root signature!");
+        return;
+    }
+
+    hr = device_->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureSkinning_));
+    if (FAILED(hr)) {
+        assert(false && "Failed to create skinning root signature!");
         return;
     }
 }
