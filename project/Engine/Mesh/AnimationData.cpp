@@ -207,3 +207,15 @@ SkinCluster CreateSkinCluster(
 
 	return skinCluster;
 }	
+
+void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
+{
+	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
+	{
+		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix =
+			skinCluster.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
+		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
+			Matrix4x4::Inverse(skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix).Transpose();
+	}
+}

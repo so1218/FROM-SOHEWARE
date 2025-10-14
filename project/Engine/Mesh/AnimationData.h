@@ -117,3 +117,4 @@ SkinCluster CreateSkinCluster(
 	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
 	uint32_t descriptorSize,
     SRVAllocator& srvAllocator);
+void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton);
