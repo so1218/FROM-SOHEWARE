@@ -38,7 +38,7 @@ struct NodeAnimation
 struct Animation
 {
     float duration; // アニメーション全体の尺(単位は秒)
-    // NOdeAnimationの集合。Node名で引けるようにしておく
+    // NodeAnimationの集合。Node名で引けるようにしておく
     std::map<std::string, NodeAnimation> nodeAnimations;
     // rootNodeの名前
     std::string rootNodeName;

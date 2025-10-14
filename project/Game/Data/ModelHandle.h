@@ -60,7 +60,7 @@ private:
 
             // プレイヤー関連
             { ModelID::animatedCube,  "Resources/models/animatedCube/ani.gltf" },
-            { ModelID::animatedRyu,  "Resources/models/animated/animatedRyu.gltf" },
+            { ModelID::animatedRyu,  "Resources/models/animated/sneakWalk.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },

@@ -163,18 +163,29 @@ void RootSignatureManager::Create3dRootSignature()
 
 void RootSignatureManager::CreateSkinningRootSignature()
 {
-    // DescriptorRangeの設定 (スキニング用パレットのSRV)
+    // DescriptorRangeの設定 (テクスチャSRVをt0にバインド)
     D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
     srvDescriptorRange.BaseShaderRegister = 0; // t0
-    srvDescriptorRange.NumDescriptors = 1; // 1つのSRV
+    srvDescriptorRange.NumDescriptors = 1;    // 1つのSRV
     srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+    // VS用 SRVディスクリプタレンジ (gMatrixPalette用 t0)
+    D3D12_DESCRIPTOR_RANGE srvMatrixPaletteDescriptorRange = {};
+    srvMatrixPaletteDescriptorRange.BaseShaderRegister = 0; // t0 for Vertex Shader
+    srvMatrixPaletteDescriptorRange.NumDescriptors = 1;
+    srvMatrixPaletteDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvMatrixPaletteDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
     enum {
-        kVertexShaderCb0Index = 0, // b0 : 通常の頂点シェーダー定数バッファ (例：ワールド行列など)
-        kVertexShaderBoneMatricesCbIndex = 1, // b1 : ボーン行列配列用CBV（スキニング用）
-        kPixelShaderCb0Index = 2,    // b0 : ピクセルシェーダー用CBV
-        kTextureSrvTableIndex = 3,   // t0 : スキニング用パレットSRV
+        kVertexShaderCb0Index = 0, // b0 : 頂点シェーダー用定数バッファ
+        kVertexShaderSrvT0Index = 1,
+        kPixelShaderCb0Index = 2,  // b0 : ピクセルシェーダー用定数バッファ
+        kTextureSrvTableIndex = 3, // t0 : テクスチャSRV
+        kDirectionalLightsIndex = 4, // b1 : Directional Lights
+        kCameraIndex = 5,            // b2 : Camera
+        kPointLightsIndex = 6,       // b2 : Point Lights
+        kSpotLightsIndex = 7,        // b3 : Spot Lights
         kNumRootParameters
     };
 
@@ -185,21 +196,42 @@ void RootSignatureManager::CreateSkinningRootSignature()
     rootParameters[kVertexShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
     rootParameters[kVertexShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
 
-    // 頂点シェーダー用ボーン行列CBV (b1)
-    rootParameters[kVertexShaderBoneMatricesCbIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-    rootParameters[kVertexShaderBoneMatricesCbIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
-    rootParameters[kVertexShaderBoneMatricesCbIndex].Descriptor.ShaderRegister = 1; // b1
+    // 頂点シェーダー用SRV (t0) for gMatrixPalette
+    rootParameters[kVertexShaderSrvT0Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[kVertexShaderSrvT0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParameters[kVertexShaderSrvT0Index].DescriptorTable.pDescriptorRanges = &srvMatrixPaletteDescriptorRange;
+    rootParameters[kVertexShaderSrvT0Index].DescriptorTable.NumDescriptorRanges = 1;
 
     // ピクセルシェーダー用CBV (b0)
     rootParameters[kPixelShaderCb0Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
 
-    // スキニング用パレットSRVテーブル (t0) を頂点シェーダー用に変更
+    // テクスチャのSRV設定 (t0)
     rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 頂点シェーダー用
+    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
     rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
+
+    // Directional Lights (b1)
+    rootParameters[kDirectionalLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kDirectionalLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kDirectionalLightsIndex].Descriptor.ShaderRegister = 1; // b1
+
+    // Camera (b2)
+    rootParameters[kCameraIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kCameraIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kCameraIndex].Descriptor.ShaderRegister = 2; // b2
+
+    // Point Lights (b3)
+    rootParameters[kPointLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kPointLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kPointLightsIndex].Descriptor.ShaderRegister = 3; // b3
+
+    // Spot Lights (b4)
+    rootParameters[kSpotLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kSpotLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kSpotLightsIndex].Descriptor.ShaderRegister = 4; // b4
 
     // サンプラの設定（3D用と同じ）
     D3D12_STATIC_SAMPLER_DESC staticSampler = {};
@@ -221,6 +253,7 @@ void RootSignatureManager::CreateSkinningRootSignature()
 
     Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+
     HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
     if (FAILED(hr)) {
         if (errorBlob) {

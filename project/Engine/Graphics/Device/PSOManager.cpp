@@ -19,6 +19,7 @@ void PSOManager::Initialize(
 
     Create3DPSO();
     Create3DWireframePSO();
+    CreateSkinningPSO();
     CreateGridPSO();
     CreateLinePSO();
     CreateFullscreenPSO();
@@ -81,13 +82,18 @@ void PSOManager::CreateInputLayout()
 void PSOManager::CompileShaders(IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
 {
     // Shaderをコンパイルする
-    vsBlob3D_ = ShaderManager::CompileShader(L"Resources/Shaders/SkinningObject3D.VS.hlsl",
+    vsBlob3D_ = ShaderManager::CompileShader(L"Resources/Shaders/Object3D.VS.hlsl",
         L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(vsBlob3D_ != nullptr);
 
     psBlob3D_ = ShaderManager::CompileShader(L"Resources/Shaders/Object3D.PS.hlsl",
         L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(psBlob3D_ != nullptr);
+
+    // スキニング用
+    vsBlobSkinning_ = ShaderManager::CompileShader(L"Resources/Shaders/SkinningObject3D.VS.hlsl",
+        L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+    assert(vsBlobSkinning_ != nullptr);
 
     // ライン用
     vsBlobLine_ = ShaderManager::CompileShader(L"Resources/Shaders/Line.VS.hlsl",
@@ -173,7 +179,7 @@ void PSOManager::Create3DPSO()
     depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // PSOを生成する
-    psoDesc3d_.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();// RootSignature
+    psoDesc3d_.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();// RootSignature
     psoDesc3d_.InputLayout = inputLayoutDesc_;// InputLayout
     psoDesc3d_.VS = { vsBlob3D_->GetBufferPointer(),
     vsBlob3D_->GetBufferSize() };// VertexShader
@@ -225,7 +231,7 @@ void PSOManager::Create3DWireframePSO()
 
     // PSO 設定
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();
+    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
     desc.InputLayout = inputLayoutDesc_;
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() };
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() };
@@ -244,6 +250,64 @@ void PSOManager::Create3DWireframePSO()
         IID_PPV_ARGS(&pso3DWireframe_));
     assert(SUCCEEDED(hr));
 }
+
+void PSOManager::CreateSkinningPSO()
+{
+    // BlendStateの設定
+    D3D12_BLEND_DESC blendDesc{};
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+    // RasterizerStateの設定
+    D3D12_RASTERIZER_DESC rasterizerDesc{};
+    // 裏面(時計回り)を表示しない
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+    // 三角形の中を塗りつぶす
+    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+    // DepthStencilStateの設定
+    D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+    //Depthの機能を有効化する
+    depthStencilDesc.DepthEnable = true;
+    // 書き込みをします
+    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+    // 比較関数はLessEqual。つまり、近ければ描画される
+    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+    // PSOを生成する
+    psoDescSkinning_.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();// RootSignature
+    psoDescSkinning_.InputLayout = inputLayoutDesc_;// InputLayout
+    psoDescSkinning_.VS = { vsBlobSkinning_->GetBufferPointer(),
+    vsBlobSkinning_->GetBufferSize() };// VertexShader
+    psoDescSkinning_.PS = { psBlob3D_->GetBufferPointer(),
+    psBlob3D_->GetBufferSize() };// PixelShader
+    // DepthStencilの設定
+    psoDescSkinning_.DepthStencilState = depthStencilDesc;
+    psoDescSkinning_.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDescSkinning_.BlendState = blendDesc;// BlendState
+    psoDescSkinning_.RasterizerState = rasterizerDesc;// Rasterizer
+    // 書き込むRTVの情報
+    psoDescSkinning_.NumRenderTargets = 1;
+    psoDescSkinning_.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    // 利用するとトポロジ(形状)のタイプ。三角形
+    psoDescSkinning_.PrimitiveTopologyType =
+        D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    // どのように画面に打ち込むかの設定(気にしなくていい)
+    psoDescSkinning_.SampleDesc.Count = 1;
+    psoDescSkinning_.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+    HRESULT hr = device_->CreateGraphicsPipelineState(&psoDescSkinning_,
+        IID_PPV_ARGS(&psoSkinning_));
+    assert(SUCCEEDED(hr));
+}
+
+
 void PSOManager::CreateGridPSO()
 {
     // BlendState（アルファブレンド有効）
@@ -270,7 +334,7 @@ void PSOManager::CreateGridPSO()
 
     // PSO構築
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();
+    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
     desc.InputLayout = inputLayoutDesc_;                                
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() }; 
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() }; 

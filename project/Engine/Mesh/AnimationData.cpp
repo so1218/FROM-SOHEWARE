@@ -205,6 +205,7 @@ SkinCluster CreateSkinCluster(
 		}
 	}
 
+
 	return skinCluster;
 }	
 
@@ -218,4 +219,5 @@ void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
 		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
 			Matrix4x4::Inverse(skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix).Transpose();
 	}
+
 }
