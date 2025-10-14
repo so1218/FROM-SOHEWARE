@@ -1,6 +1,6 @@
-#include "AnimatedModel.h"
+#include "AnimationModel.h"
 
-AnimatedModel::AnimatedModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation)
+AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation)
     : engine_(engine), camera_(camera)
 {
     animeModelData_.modelData = std::move(modelData);
@@ -14,7 +14,7 @@ AnimatedModel::AnimatedModel(Engine* engine, Camera* camera, ModelData modelData
     color_ = 0xFFFFFFFF;
 }
 
-void AnimatedModel::Update(float deltaTime)
+void AnimationModel::Update(float deltaTime)
 {
     // アニメーション時間を進める（ループ再生）
     animationTime_ += deltaTime;
@@ -26,7 +26,7 @@ void AnimatedModel::Update(float deltaTime)
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
 
-void AnimatedModel::Draw() 
+void AnimationModel::Draw() 
 {
     // ワールド変換行列の更新
     transform_.UpdateMatrix();

@@ -10,7 +10,7 @@
 #include "Enemy.h"
 #include "ShakeEffect.h"
 #include "AnimationData.h"
-#include "AnimatedModel.h"
+#include "AnimationModel.h"
 
 struct Particle
 {
@@ -68,7 +68,7 @@ private:
     SkinCluster skinCluster_;
     float animationTime_;
 
-    std::unique_ptr<AnimatedModel> animatedRyu_;
+    std::unique_ptr<AnimationModel> animationRyu_;
 
     ShakeEffect shake;
 

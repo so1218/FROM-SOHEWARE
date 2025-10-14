@@ -3,11 +3,11 @@
 #include "Animator.h" 
 #include "Engine.h"
 
-class AnimatedModel
+class AnimationModel
 {
 public:
     // コンストラクタ
-    AnimatedModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation);
+    AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation);
 
     // 更新処理
     void Update(float deltaTime);

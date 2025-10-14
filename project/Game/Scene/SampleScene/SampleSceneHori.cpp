@@ -19,7 +19,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
-    animatedRyu_ = std::make_unique<AnimatedModel>(
+    animationRyu_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
         *ModelHandle::Get(ModelID::animatedRyu),
@@ -76,7 +76,7 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
 
-    animatedRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -116,7 +116,7 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-    animatedRyu_->Draw();
+    animationRyu_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

@@ -399,7 +399,7 @@
     <ClCompile Include="Engine\Mesh\Animator.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\AnimatedModel.cpp">
+    <ClCompile Include="Engine\Mesh\AnimationModel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -692,7 +692,7 @@
     <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Mesh\Animator.h" />
-    <ClInclude Include="Engine\Mesh\AnimatedModel.h" />
+    <ClInclude Include="Engine\Mesh\AnimationModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

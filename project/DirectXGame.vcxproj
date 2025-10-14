@@ -155,7 +155,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Mesh\AnimatedModel.cpp" />
+    <ClCompile Include="Engine\Mesh\AnimationModel.cpp" />
     <ClCompile Include="Engine\Mesh\AnimationData.cpp" />
     <ClCompile Include="Engine\Mesh\AnimationLoader.cpp" />
     <ClCompile Include="Engine\Mesh\Animator.cpp" />
@@ -260,7 +260,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Mesh\AnimatedModel.h" />
+    <ClInclude Include="Engine\Mesh\AnimationModel.h" />
     <ClInclude Include="Engine\Mesh\AnimationData.h" />
     <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
     <ClInclude Include="Engine\Mesh\Animator.h" />
