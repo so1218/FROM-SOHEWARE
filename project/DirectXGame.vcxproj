@@ -155,8 +155,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Mesh\AnimatedModel.cpp" />
     <ClCompile Include="Engine\Mesh\AnimationData.cpp" />
     <ClCompile Include="Engine\Mesh\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Mesh\Animator.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\Bullet.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\BulletFactory.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\BulletManager.cpp" />
@@ -258,8 +260,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Mesh\AnimatedModel.h" />
     <ClInclude Include="Engine\Mesh\AnimationData.h" />
     <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
+    <ClInclude Include="Engine\Mesh\Animator.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
     <ClInclude Include="Game\Character\Player\Weapon\BulletFactory.h" />
     <ClInclude Include="Game\Character\Player\Weapon\BulletManager.h" />

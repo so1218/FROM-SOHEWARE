@@ -4,6 +4,8 @@
 Model::Model(Engine* engine, Camera* camera, std::unique_ptr<ModelData> modelData)
     : engine_(engine), camera_(camera), modelData_(std::move(modelData)) 
 {
+    textureHandle_ = 0;
+    color_ = 0xFFFFFFFF;
 }
 
 void Model::SetWorldTransform(const WorldTransform& transform)

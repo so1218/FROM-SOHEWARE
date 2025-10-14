@@ -161,8 +161,10 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         // Assimp(列優先) -> Matrix4x4(行優先)への変換（転置）
         Matrix4x4 inverseBindPoseMatrix;
 
-        for (int row = 0; row < 4; ++row) {
-            for (int col = 0; col < 4; ++col) {
+        for (int row = 0; row < 4; ++row)
+        {
+            for (int col = 0; col < 4; ++col) 
+            {
                 inverseBindPoseMatrix.m[row][col] = offsetMatrixAssimp[col][row];
             }
         }

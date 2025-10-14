@@ -630,18 +630,6 @@ void Engine::CreateModels()
 	indexModel_ = 0;
 }
 
-void Engine::UpdateAnimation(AnimatedModelData& instance)
-{
-	instance.animationTime += TimeManager::GetInstance()->GetDeltaTime();
-	instance.animationTime = std::fmod(instance.animationTime, instance.animation.duration);
-
-	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.animation.rootNodeName];
-	Vector3 translation = CalculateValue(nodeAnim.translate.keyframes, instance.animationTime);
-	Quaternion rotation = CalculateValue(nodeAnim.rotate.keyframes, instance.animationTime);
-	Vector3 scale = CalculateValue(nodeAnim.scale.keyframes, instance.animationTime);
-	instance.localMatrix = Matrix4x4::MakeAffine(scale, rotation, translation);
-}
-
 void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color)
 {
 	// indexModel_が範囲内であることを確認
@@ -796,7 +784,7 @@ void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t col
 	}
 }
 
-void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
+void Engine::DrawAnimatedModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
 {
 	assert(indexModel_ < kMaxModelCount);
 	RenderData& model = models_[indexModel_];

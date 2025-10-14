@@ -19,13 +19,13 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
+    animatedRyu_ = std::make_unique<AnimatedModel>(
+        engine_,
+        camera_,
+        *ModelHandle::Get(ModelID::animatedRyu),
+        AnimationHandle::Get(AnimationID::ryu)
+    );
 
-    animeModelData_.modelData = *ModelHandle::Get(ModelID::animatedRyu);
-    animeModelData_.animation = AnimationHandle::Get(AnimationID::ryu);
-
-    skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
-    skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(), skeleton_, animeModelData_.modelData,
-        engine_->srvDescriptorHeap_, engine_->descriptorSizeSRV_, engine_->srvAllocator_.get());
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -64,8 +64,6 @@ void SampleSceneHori::Initialize()
     uvCheckerSprite_->SetPosition({ 0.0f, 0.0f });
     uvCheckerSprite_->SetSize({ 128.0f, 128.0f });
     uvCheckerSprite_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
-    animationTime_ = 0.0f;
-
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
@@ -77,16 +75,8 @@ void SampleSceneHori::Update()
     // ゲームオブジェクトの調整項目を一括更新
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
-    
-	// アニメーション更新
-	animationTime_ += TimeManager::GetInstance()->GetDeltaTime();
-    animationTime_ = std::fmod(animationTime_, animeModelData_.animation.duration);
 
-	ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
-    UpdateSkeleton(skeleton_);
-    UpdateSkinCluster(skinCluster_, skeleton_);
-
-	//engine_->UpdateAnimation(animeModelData_); 
+    animatedRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -126,7 +116,7 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-    engine_->DrawModel(dragonModel_->GetTransform(), *camera_, animeModelData_, skinCluster_, TextureHandle::Get(TextureID::uvChecker));
+    animatedRyu_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

@@ -41,8 +41,8 @@ private:
     WorldTransform transform_;
     WorldTransform uvTransform_;
 
-    uint32_t textureHandle_ = 0;
-    uint32_t color_ = 0xFFFFFFFF;
+    uint32_t textureHandle_;
+    uint32_t color_;
 
    
 };

@@ -396,6 +396,12 @@
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Mesh\Animator.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Mesh\AnimatedModel.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -685,6 +691,8 @@
     <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
+    <ClInclude Include="Engine\Mesh\Animator.h" />
+    <ClInclude Include="Engine\Mesh\AnimatedModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
