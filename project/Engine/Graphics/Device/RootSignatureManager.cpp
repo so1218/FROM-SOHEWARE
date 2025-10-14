@@ -163,10 +163,10 @@ void RootSignatureManager::Create3dRootSignature()
 
 void RootSignatureManager::CreateSkinningRootSignature()
 {
-    // DescriptorRangeの設定 (テクスチャSRV用)
+    // DescriptorRangeの設定 (スキニング用パレットのSRV)
     D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
     srvDescriptorRange.BaseShaderRegister = 0; // t0
-    srvDescriptorRange.NumDescriptors = 1;
+    srvDescriptorRange.NumDescriptors = 1; // 1つのSRV
     srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -174,7 +174,7 @@ void RootSignatureManager::CreateSkinningRootSignature()
         kVertexShaderCb0Index = 0, // b0 : 通常の頂点シェーダー定数バッファ (例：ワールド行列など)
         kVertexShaderBoneMatricesCbIndex = 1, // b1 : ボーン行列配列用CBV（スキニング用）
         kPixelShaderCb0Index = 2,    // b0 : ピクセルシェーダー用CBV
-        kTextureSrvTableIndex = 3,   // t0 : テクスチャSRV
+        kTextureSrvTableIndex = 3,   // t0 : スキニング用パレットSRV
         kNumRootParameters
     };
 
@@ -195,9 +195,9 @@ void RootSignatureManager::CreateSkinningRootSignature()
     rootParameters[kPixelShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
 
-    // テクスチャSRVテーブル (t0)
+    // スキニング用パレットSRVテーブル (t0) を頂点シェーダー用に変更
     rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // 頂点シェーダー用
     rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
     rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
 
