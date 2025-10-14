@@ -161,5 +161,49 @@ SkinCluster CreateSkinCluster(
 		&paletteSrvDesc,
 		skinCluster.paletteSrvHandle.first);
 
+	// influence用のResourceを確保。頂点ごとにinfluence情報を追加できるようにする
+	skinCluster.influenceResource = BufferManager::CreateBufferResource(
+		device.Get(),
+		sizeof(VertexInfluence) * modelData.vertices.size());
+	VertexInfluence* mappedInfluence = nullptr;
+	skinCluster.influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInfluence));
+	std::memset(mappedInfluence, 0, sizeof(VertexInfluence) * modelData.vertices.size()); // 0埋め。weightを0にしておく
+	skinCluster.mappedInfluence = { mappedInfluence, modelData.vertices.size() }; 
+
+	// influence用のVBVを作成
+	skinCluster.influenceBufferView.BufferLocation = skinCluster.influenceResource->GetGPUVirtualAddress();
+	skinCluster.influenceBufferView.SizeInBytes = UINT(sizeof(VertexInfluence) * modelData.vertices.size());
+	skinCluster.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
+
+	// InverseBindPoseMatrixを格納する場所を作成して、単位行列で埋める
+	skinCluster.inverseBindPoseMatrices.resize(skeleton.joints.size());
+	std::generate(skinCluster.inverseBindPoseMatrices.begin(),
+		skinCluster.inverseBindPoseMatrices.end(), []() { return Matrix4x4::MakeIdentity(); });
+
+	for (const auto& jointWeight : modelData.skinClusterData) // ModelのSkinClusterの情報を解析
+	{
+		auto it = skeleton.jointMap.find(jointWeight.first); // jointWeight.firstはjoint名なので、Skeletonに対象となるjointが含まれているか判断
+		if (it == skeleton.jointMap.end())
+		{
+			continue; // Skeletonに含まれていないJointは無視
+		}
+
+		// (*it).secondにはjointのindexが入っているので、該当のinverseBindPoseMatrixを代入
+		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
+		for (const auto& vertexWeight : jointWeight.second.vertexWeights)
+		{
+			auto& currentInfluence = skinCluster.mappedInfluence[vertexWeight.vertexIndex]; // 該当のvertexIndexのinfluence情報を参照しておく
+			for (uint32_t index = 0; index < kNumMaxInfluence; ++index) // 空いているところに入れる 
+			{
+				if (currentInfluence.weights[index] == 0.0f) // weight==0が空いている状態なので、その場所にweightとjointのindexを代入
+				{
+					currentInfluence.weights[index] = vertexWeight.weight; 
+					currentInfluence.jointIndices[index] = static_cast<int32_t>((*it).second);
+					break;
+				}
+			}
+		}
+	}
+
 	return skinCluster;
-}
+}	
