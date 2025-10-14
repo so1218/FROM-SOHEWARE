@@ -320,9 +320,6 @@
     <ClCompile Include="Engine\Core\TimeManager.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Resource\SRVAllocator.cpp">
-      <Filter>Engine\Graphics\Resource</Filter>
-    </ClCompile>
     <ClCompile Include="externals\ImGuiFileDialog.cpp">
       <Filter>Game</Filter>
     </ClCompile>

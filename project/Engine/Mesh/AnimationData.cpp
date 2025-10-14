@@ -1,5 +1,7 @@
 #include "AnimationData.h"
 #include "TimeManager.h"
+#include "BufferManager.h"
+#include "BufferManager.h"
 
 #include <assimp/Importer.hpp>  
 #include <assimp/scene.h>    
@@ -116,4 +118,48 @@ void UpdateSkeleton(Skeleton& skeleton)
 			joint.skeletonSpaceMatrix = joint.localMatrix;
 		}
 	}
+}
+
+SkinCluster CreateSkinCluster(
+	const Microsoft::WRL::ComPtr<ID3D12Device>& device,
+	const Skeleton& skeleton,
+	const ModelData& modelData,
+	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
+	uint32_t descriptorSize,
+	SRVAllocator& srvAllocator)
+{
+	// palette用のResourceを確保
+	SkinCluster skinCluster;
+	skinCluster.paletteResource = BufferManager::CreateBufferResource(
+		device.Get(),
+		sizeof(WellForGPU) * skeleton.joints.size());
+	WellForGPU* mappedPalette = nullptr;	
+	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));	
+	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; // spanを使ってアクセスするようにする
+	
+	uint32_t srvIndex = srvAllocator.Allocate();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+	cpuHandle.ptr += descriptorSize * srvIndex;
+	gpuHandle.ptr += descriptorSize * srvIndex;
+
+	skinCluster.paletteSrvHandle.first = cpuHandle;
+	skinCluster.paletteSrvHandle.second = gpuHandle;
+
+	// palette用のSRVを作成。structuredBufferでアクセスできるようにする
+	D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc = {};
+	paletteSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	paletteSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	paletteSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	paletteSrvDesc.Buffer.FirstElement = 0;
+	paletteSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	paletteSrvDesc.Buffer.NumElements = static_cast<UINT>(skeleton.joints.size());
+	paletteSrvDesc.Buffer.StructureByteStride = sizeof(WellForGPU);
+	device->CreateShaderResourceView(
+		skinCluster.paletteResource.Get(),
+		&paletteSrvDesc,
+		skinCluster.paletteSrvHandle.first);
+
+	return skinCluster;
 }

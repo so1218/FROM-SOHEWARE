@@ -250,7 +250,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
     <ClCompile Include="Engine\Core\TimeManager.cpp" />
-    <ClCompile Include="Engine\Graphics\Resource\SRVAllocator.cpp" />
     <ClCompile Include="Game\Data\ModelHandle.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleEmitter.cpp" />
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp" />
