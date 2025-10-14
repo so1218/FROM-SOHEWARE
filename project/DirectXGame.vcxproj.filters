@@ -771,5 +771,6 @@
     <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\SkinningObject3d.VS.hlsl" />
   </ItemGroup>
 </Project>
