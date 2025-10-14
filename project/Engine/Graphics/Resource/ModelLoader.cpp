@@ -150,30 +150,32 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         }
     }
 
-	for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
-	{
-		aiBone* bone = mesh->mBones[boneIndex];
-		std::string jointName = bone->mName.C_Str();
-		JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
+    for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+        aiBone* bone = mesh->mBones[boneIndex];
+        std::string jointName = bone->mName.C_Str();
+        JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
 
-		aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
-        aiVector3D scale, translate;
-		aiQuaternion rotate;
-		bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
-		Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffine(
-			{ scale.x, scale.y, scale.z },
-			{ rotate.x, -rotate.y, -rotate.z, rotate.w },
-			{ -translate.x, translate.y, translate.z }
-		);  
-		jointWeightData.inverseBindPoseMatrix = Matrix4x4::Inverse(bindPoseMatrix);
+        // mOffsetMatrixを直接使う
+        aiMatrix4x4 offsetMatrixAssimp = bone->mOffsetMatrix;
+        // Assimp(列優先) -> Matrix4x4(行優先)への変換（転置）
+        Matrix4x4 inverseBindPoseMatrix;
 
-		for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
-		{
-			jointWeightData.vertexWeights.push_back(
+        for (int row = 0; row < 4; ++row) {
+            for (int col = 0; col < 4; ++col) {
+                inverseBindPoseMatrix.m[row][col] = offsetMatrixAssimp[col][row];
+            }
+        }
+        jointWeightData.inverseBindPoseMatrix = inverseBindPoseMatrix;
+
+        // 頂点IDにオフセットを加算
+        for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+        {
+            jointWeightData.vertexWeights.push_back(
                 { bone->mWeights[weightIndex].mWeight,
-                bone->mWeights[weightIndex].mVertexId});
-		}
-	}
+                bone->mWeights[weightIndex].mVertexId + vertexOffset });
+        }
+    }
 }
 
 void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath)
