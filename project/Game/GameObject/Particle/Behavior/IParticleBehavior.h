@@ -57,6 +57,7 @@ struct ParticleConfig
     Easing toCenterEase;
     Easing scaleEase;
     Vector3 initialPosition;
+    bool isInfinite = false;
 
     ParticleConfig()
     {
@@ -108,6 +109,9 @@ struct ParticleState
     float theta;
     Vector3 initialPosition; // 生成時のエミッターの座標
     std::string presetName;
+    int spawnedCount = 0;        // 生成済みの数
+    bool isSpawning = false;// 現在生成中かどうかのフラグ
+    bool isInfinite = false;
 
     ParticleState()
     {

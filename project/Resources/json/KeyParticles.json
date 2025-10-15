@@ -3,13 +3,13 @@
         "chest": {
             "EmitterConfig": {
                 "amount": 1,
-                "lifetime": 8.09000015258789,
+                "lifetime": 8.270000457763672,
                 "position": [
-                    -0.30000001192092896,
+                    18.299999237060547,
                     0.0,
                     0.0
                 ],
-                "spawnInterval": 0.05000000074505806
+                "spawnInterval": 0.07999999821186066
             },
             "ParticleConfig": {
                 "baseColor": [
@@ -25,25 +25,25 @@
                     0.0,
                     20.0
                 ],
-                "endColor": 1946099968,
+                "endColor": 16720128,
                 "endScale": [
-                    15.140000343322754,
+                    14.819999694824219,
                     14.050000190734863,
                     1.0
                 ],
-                "fadeOutFrameCount": 172,
+                "fadeOutFrameCount": 141,
                 "gravity": 0.0,
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
-                "scaleFrameCount": 26,
-                "speed": 0.019999999552965164,
-                "startColor": 4294902015,
+                "scaleFrameCount": 16,
+                "speed": -0.6899999976158142,
+                "startColor": 3408199935,
                 "startScale": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "textureIndex": 52
+                "textureIndex": 50
             }
         },
         "doar": {

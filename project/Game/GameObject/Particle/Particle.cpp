@@ -162,7 +162,7 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
         // 新しいマップから対象の定義を取得（または新規作成）
         auto& definition = definitions_[type][presetName];
 
-        // --- ParticleConfigの読み込み ---
+        // ParticleConfigの読み込み
         if (presetJson.contains("ParticleConfig")) {
             auto& configJson = presetJson["ParticleConfig"];
             auto& config = definition.particleConfig; // ParticleConfigへの参照を取得
@@ -218,7 +218,7 @@ void ParticleSystem::LoadParticleDefinitionFromJson(ParticleType type)
             }
         }
 
-        // --- EmitterConfigの読み込み ---
+        // EmitterConfigの読み込み
         if (presetJson.contains("EmitterConfig")) {
             auto& emitterJson = presetJson["EmitterConfig"];
             auto& emitterConfig = definition.emitterConfig; // EmitterConfigへの参照を取得
@@ -403,7 +403,7 @@ void ParticleSystem::ShowEditor()
                     }
                 }
 
-                // 名前配列だけ作る（Comboで使う）
+                // 名前配列だけ作る
                 std::vector<const char*> textureNameArray;
                 for (const auto& pair : particleTextureList) {
                     textureNameArray.push_back(pair.first);
@@ -489,8 +489,8 @@ void ParticleSystem::ShowEditor()
 }
 void ParticleSystem::SaveConfigToJson(ParticleType type) 
 {
-    // 指定されたタイプのプリセットマップを取得します。
- // .at(type)は、もしtypeが存在しない場合に例外を投げるので安全です。
+    // 指定されたタイプのプリセットマップを取得
+    // .at(type)は、もしtypeが存在しない場合に例外を投げる
     const auto& presets = definitions_.at(type);
     std::string typeName = ParticleTypeToString(type);
 
@@ -498,13 +498,13 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
     nlohmann::json typeJson;
 
 
-    // そのタイプの全プリセットをループしてJSONオブジェクトを構築します。
+    // そのタイプの全プリセットをループしてJSONオブジェクトを構築
     for (const auto& [presetName, definition] : presets)
     {
         const auto& config = definition.particleConfig;
         const auto& emitterConfig = definition.emitterConfig;
 
-        // ParticleConfigをJSONに変換 (この部分は元のコードと同じ)
+        // ParticleConfigをJSONに変換
         nlohmann::json particleConfigJson = {
             { "speed", config.speed },
             { "gravity", config.gravity },
@@ -523,7 +523,7 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
             { "endScale", { config.endScale.x, config.endScale.y, config.endScale.z }},
         };
 
-        // EmitterConfigをJSONに変換 (この部分も元のコードと同じ)
+        // EmitterConfigをJSONに変換
         nlohmann::json emitterConfigJson = {
             { "position", { emitterConfig.position.x, emitterConfig.position.y, emitterConfig.position.z }},
             { "spawnInterval", emitterConfig.spawnInterval },
@@ -531,14 +531,14 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
             { "amount", emitterConfig.amount }
         };
 
-        // プリセット名 (e.g., "Normal") をキーとしてJSONを構築します。
+        // プリセット名をキーとしてJSONを構築
         typeJson[presetName] = {
             { "ParticleConfig", particleConfigJson },
             { "EmitterConfig", emitterConfigJson }
         };
     }
 
-    // 最終的なJSONオブジェクトを構築します。 (e.g., { "Key": { ... } })
+    // 最終的なJSONオブジェクトを構築
     rootJson[typeName] = typeJson;
 
     std::string filename = kConfigDirectoryPath_ + typeName + "Particles.json";
@@ -548,19 +548,18 @@ void ParticleSystem::SaveConfigToJson(ParticleType type)
         return;
     }
 
-    // dump(4) でインデントを付けて見やすく出力します。
+    // dump(4) でインデントを付けて見やすく出力
     ofs << rootJson.dump(4);
 }
 
 void ParticleSystem::ApplyEmitterConfigToLiveEmitters(ParticleType type, const std::string& presetName)
 {
-    // 更新する設定（設計図）を type と presetName の両方で特定します。
+    // 更新する設定（設計図）を type と presetName の両方で特定する
     const auto& emitterConfig = definitions_.at(type).at(presetName).emitterConfig;
 
     // 全てのライブエミッターをループ
     for (auto& emitter : emitters_) {
-        // ★変更点：タイプとプリセット名の両方が一致するエミッターを見つけます。
-        // ※ParticleEmitterクラスにpresetName_のようなメンバー変数を追加していることが前提です。
+        // タイプとプリセット名の両方が一致するエミッターを見つける
         if (emitter->type_ == type && emitter->presetName_ == presetName) {
             // インスタンスの値を設計図の値で上書きする
             emitter->position_ = emitterConfig.position;

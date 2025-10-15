@@ -21,7 +21,7 @@ void AnimationModel::Update(float deltaTime)
     animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
 
     // 内部で関連する更新関数を呼び出す
-    /*ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);*/
+    ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
