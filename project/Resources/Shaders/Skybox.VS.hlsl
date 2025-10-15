@@ -1,5 +1,20 @@
 #include "Skybox.hlsli"
 
+struct VertexShaderInput
+{
+    float3 position : POSITION;
+};
+
+struct TransformationMatrix
+{
+    matrix4x4 WVP;
+};
+
+cbuffer TransformBuffer : register(b1)
+{
+    TransformationMatrix gTransformationMatrix;
+};
+
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
