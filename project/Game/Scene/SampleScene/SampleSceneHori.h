@@ -44,11 +44,6 @@ public:
 
     void ApplyGlobalVariables();
     void SaveGlobalVariables();
-
-    void UpdateParticles();
-    void EmitUpwardParticle(const Vector3& position);
-    void EmitHorizontalParticle(const Vector3& position);
-
 private:
     // メンバー変数
     Engine* engine_;
@@ -59,6 +54,7 @@ private:
     std::unique_ptr<Sprite> uvCheckerSprite_;
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;
+
 
 	ModelData modelData_;
     Animation animation_;

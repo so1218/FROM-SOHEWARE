@@ -5,11 +5,11 @@
                 "amount": 1,
                 "lifetime": 3.359999895095825,
                 "position": [
-                    30.399999618530273,
+                    0.30000001192092896,
                     0.0,
                     0.0
                 ],
-                "spawnInterval": 0.05999999865889549
+                "spawnInterval": 0.009999999776482582
             },
             "ParticleConfig": {
                 "baseColor": [
@@ -36,14 +36,14 @@
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
                 "scaleFrameCount": 36,
-                "speed": 0.019999999552965164,
+                "speed": 0.14000000059604645,
                 "startColor": 4294967295,
                 "startScale": [
                     0.0,
                     0.0,
                     0.0
                 ],
-                "textureIndex": 24
+                "textureIndex": 44
             }
         }
     }

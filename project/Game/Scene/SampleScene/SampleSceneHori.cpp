@@ -17,7 +17,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // インスタンスを作成
     player_ = std::make_unique<Player>(engine_, camera_);
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
-    dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::dragon)));
+    dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::plane)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
     animationRyu_ = std::make_unique<AnimationModel>(
         engine_,
@@ -25,7 +25,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
         *ModelHandle::Get(ModelID::animatedRyu),
         AnimationHandle::Get(AnimationID::ryu)
     );
-
+    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::uvChecker);
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -58,7 +58,7 @@ void SampleSceneHori::SaveGlobalVariables()
 void SampleSceneHori::Initialize()
 {
     // テクスチャ設定
-    dragonModel_->SetTextureHandle(TextureHandle::Get(TextureID::monsterBall));
+    dragonModel_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
 
     // スプライト設定
     uvCheckerSprite_->SetPosition({ 0.0f, 0.0f });
@@ -71,7 +71,6 @@ void SampleSceneHori::Initialize()
 
 void SampleSceneHori::Update()
 {
-    dragonModel_->modelData_->materialHandle.materialData->isArtWave = true;
     // ゲームオブジェクトの調整項目を一括更新
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
@@ -111,7 +110,7 @@ void SampleSceneHori::Update()
 void SampleSceneHori::Draw()
 {
     uvCheckerSprite_->Draw();
-   /* dragonModel_->Draw();*/
+    dragonModel_->Draw();
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();

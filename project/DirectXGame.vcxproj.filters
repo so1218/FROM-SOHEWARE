@@ -396,9 +396,6 @@
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\Animator.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Mesh\AnimationModel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -691,7 +688,6 @@
     <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
-    <ClInclude Include="Engine\Mesh\Animator.h" />
     <ClInclude Include="Engine\Mesh\AnimationModel.h" />
   </ItemGroup>
   <ItemGroup>

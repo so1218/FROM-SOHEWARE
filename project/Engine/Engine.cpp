@@ -784,7 +784,7 @@ void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t col
 	}
 }
 
-void Engine::DrawAnimatedModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
+void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
 {
 	assert(indexModel_ < kMaxModelCount);
 	RenderData& model = models_[indexModel_];

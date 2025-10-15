@@ -21,7 +21,7 @@ void AnimationModel::Update(float deltaTime)
     animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
 
     // 内部で関連する更新関数を呼び出す
-    ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
+    /*ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);*/
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
@@ -31,5 +31,5 @@ void AnimationModel::Draw()
     // ワールド変換行列の更新
     transform_.UpdateMatrix();
     // 描画関数
-    engine_->DrawAnimatedModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_);
+    engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_);
 }

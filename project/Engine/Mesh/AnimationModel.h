@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Animator.h" 
+#include "AnimationData.h" 
 #include "Engine.h"
 
 class AnimationModel
