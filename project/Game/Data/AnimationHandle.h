@@ -28,7 +28,7 @@ private:
         {
             // 基本的なアニメーション
             { AnimationID::cube,       "Resources/models/animatedCube/AnimatedCube.gltf" },
-            { AnimationID::ryu,     "Resources/models/animated/sneakWalk.gltf" },
+            { AnimationID::ryu,     "Resources/models/animated/simpleSkin.gltf" },
         }
     };
 };

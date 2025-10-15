@@ -13,7 +13,7 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
     const aiScene* scene = importer.ReadFile(
         filePath,
-        aiProcess_FlipWindingOrder |
+        aiProcess_Triangulate |
         aiProcess_FlipUVs
     );
 
@@ -106,12 +106,14 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         vertex.position.z = mesh->mVertices[i].z;
         vertex.position.w = 1.0f;
 
+        vertex.position.x *= -1;
+
         if (mesh->HasNormals())
         {
             vertex.normal.x = mesh->mNormals[i].x;
             vertex.normal.y = mesh->mNormals[i].y;
             vertex.normal.z = mesh->mNormals[i].z;
-            
+            vertex.normal.x *= -1;
         }
         else
         {
@@ -156,26 +158,20 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         std::string jointName = bone->mName.C_Str();
         JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
 
-        // mOffsetMatrixを直接使う
-        aiMatrix4x4 offsetMatrixAssimp = bone->mOffsetMatrix;
-        // Assimp(列優先) -> Matrix4x4(行優先)への変換（転置）
-        Matrix4x4 inverseBindPoseMatrix;
+        aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
+        aiVector3D scale, translate;
+        aiQuaternion rotate;
+        bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
+        Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffine(
+            { scale.x,scale.y,scale.z }, { rotate.x,-rotate.y,-rotate.z,rotate.w }, { -translate.x,translate.y,translate.z }
+        );
+        jointWeightData.inverseBindPoseMatrix = Matrix4x4::Inverse(bindPoseMatrix);
 
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col) 
-            {
-                inverseBindPoseMatrix.m[row][col] = offsetMatrixAssimp[col][row];
-            }
-        }
-        jointWeightData.inverseBindPoseMatrix = inverseBindPoseMatrix;
-
-        // 頂点IDにオフセットを加算
         for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
         {
             jointWeightData.vertexWeights.push_back(
                 { bone->mWeights[weightIndex].mWeight,
-                bone->mWeights[weightIndex].mVertexId + vertexOffset });
+                bone->mWeights[weightIndex].mVertexId });
         }
     }
 }
