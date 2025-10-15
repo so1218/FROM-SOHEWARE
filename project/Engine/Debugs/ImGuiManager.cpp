@@ -27,6 +27,7 @@ void ImGuiManager::Initialize(
     std::string fontPath = "Resources/fonts/GenJyuuGothic-Bold.ttf";
     float fontSize = 16.0f;
 
+
     ImFontConfig font_config;
     static const ImWchar ranges[] = {
         0x0020, 0x00FF,   // 基本ラテン文字＋補助
@@ -61,7 +62,7 @@ void ImGuiManager::Initialize(
     style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.07f, 0.18f, 0.35f, 1.0f);
 
     // 入力枠背景
-
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.05f, 0.2f, 0.7f);
     style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1f, 0.15f, 0.4f, 0.9f);
     style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.15f, 0.2f, 0.5f, 1.0f);
 
@@ -123,7 +124,7 @@ void ImGuiManager::Initialize(
 
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 
-    io.FontGlobalScale = 1.0f;
+    io.FontGlobalScale = 16.0f / fontSize;
 
     // ImGui初期化
     ImGui_ImplWin32_Init(hwnd);
@@ -203,7 +204,7 @@ void ImGuiManager::BeginFrame()
     ImGui::Begin("DockSpaceWindow", nullptr, window_flags);
     ImGui::PopStyleVar(3);
 
-   /* ImGui::ShowStyleEditor();*/
+    /*ImGui::ShowStyleEditor();*/
 
     // DockSpaceを作成
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);

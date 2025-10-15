@@ -25,7 +25,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
         *ModelHandle::Get(ModelID::animatedRyu),
         AnimationHandle::Get(AnimationID::ryu)
     );
-    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::uvChecker);
+    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
