@@ -338,9 +338,6 @@
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Scene\BaseScene.cpp">
-      <Filter>Game\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp">
       <Filter>Game\Scene\SampleScene</Filter>
     </ClCompile>
@@ -348,9 +345,6 @@
       <Filter>Game\Effect</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Game\GameObject\GameObject.cpp">
-      <Filter>Game\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Mesh\Sprite.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>

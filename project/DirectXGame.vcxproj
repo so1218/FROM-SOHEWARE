@@ -165,7 +165,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Character\Player\Weapon\KnifeBullet.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp" />
     <ClCompile Include="Game\Data\AnimationHandle.cpp" />
-    <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
     <ClCompile Include="Game\Data\AudioHandle.cpp" />
     <ClCompile Include="Engine\Graphics\Device\RootSignatureManager.cpp" />
@@ -237,7 +236,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Physics\Collision\Collision.cpp" />
     <ClCompile Include="Game\Physics\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Utility\Quaternion.cpp" />
-    <ClCompile Include="Game\Scene\BaseScene.cpp" />
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Game\Scene\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TitleScene.cpp" />

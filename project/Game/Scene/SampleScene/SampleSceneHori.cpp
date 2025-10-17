@@ -40,27 +40,27 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     objectManager_.AddObject(std::move(player_));
     objectManager_.AddObject(std::move(enemy_));
 
-    const char* groupName = "SampleSceneHori";
+    //const char* groupName = "SampleSceneHori";
     // グループ名を追加
-    GlobalVariables::GetInstance()->CreateGroup(groupName);
+   /* GlobalVariables::GetInstance()->CreateGroup(groupName);
     GlobalVariables::GetInstance()->LoadFiles();
     GlobalVariables::GetInstance()->AddItem(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
-    GlobalVariables::GetInstance()->AddItem(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
+    GlobalVariables::GetInstance()->AddItem(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());*/
 }
 
 void SampleSceneHori::ApplyGlobalVariables()
 {
-    const char* groupName = "SampleSceneHori";
-    dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
-    uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
+    //const char* groupName = "SampleSceneHori";
+    //dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
+    //uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
 
 }
 
 void SampleSceneHori::SaveGlobalVariables()
 {
-    const char* groupName = "SampleSceneHori";
+   /* const char* groupName = "SampleSceneHori";
     GlobalVariables::GetInstance()->SetValue(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
-    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
+    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());*/
 }
 
 

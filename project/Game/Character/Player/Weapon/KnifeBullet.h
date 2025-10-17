@@ -11,7 +11,7 @@ public:
 
     void Draw() override;
 
-    const char* GetGlobalVariableGroupName() const override { return "KnifeBullet"; }
+    std::vector<std::string> GetGlobalVariableGroupName() const { return { "KnifeBullet" }; }
 
     Engine* engine_;
     Camera* camera_;

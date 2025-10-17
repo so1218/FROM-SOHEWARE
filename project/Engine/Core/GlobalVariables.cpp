@@ -5,6 +5,7 @@
 #include "externals/imgui/imgui_impl_win32.h"
 
 #include <fstream>
+#include <iostream>
 #include <windows.h>
 
 GlobalVariables* GlobalVariables::GetInstance()
@@ -22,517 +23,598 @@ void GlobalVariables::Update()
 		return;
 	}
 
-	if (!ImGui::BeginMenuBar())
+	// メニューバー
+	if (ImGui::BeginMenuBar())
 	{
-		ImGui::End();
-		return;
-	}
-
-	if (ImGui::BeginMenu("ドラッグの感度設定"))
-	{
-		ImGui::DragFloat("Sensitivity", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
-		ImGui::EndMenu();
-	}
-
-	// 各グループについて
-	for (auto itGroup = datas_.begin(); itGroup != datas_.end(); ++itGroup)
-	{
-		const std::string& groupName = itGroup->first;
-		Group& group = itGroup->second;
-
-		if (!ImGui::BeginMenu(groupName.c_str()))
-			continue;
-
-		for (auto itItem = group.items.begin(); itItem != group.items.end(); ++itItem)
+		// 感度設定メニュー
+		if (ImGui::BeginMenu("ドラッグの感度設定"))
 		{
-			const std::string& itemName = itItem->first;
-			Item& item = itItem->second;
+			ImGui::DragFloat("Sensitivity", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
+			ImGui::EndMenu();
+		}
 
-			if (std::holds_alternative<int32_t>(item.value))
+		// トップレベルグループをメニューとして表示
+		for (auto& [groupName, group] : datas_)
+		{
+			if (ImGui::BeginMenu(groupName.c_str()))
 			{
-				int32_t* ptr = std::get_if<int32_t>(&item.value);
-				ImGui::DragInt(itemName.c_str(), ptr, (float)dragSensitivity_);
-			}
-			else if (std::holds_alternative<float>(item.value))
-			{
-				float* ptr = std::get_if<float>(&item.value);
-				ImGui::DragFloat(itemName.c_str(), ptr, dragSensitivity_);
-			}
-			else if (std::holds_alternative<bool>(item.value)) 
-			{
-				bool* ptr = std::get_if<bool>(&item.value);
-				ImGui::Checkbox(itemName.c_str(), ptr);
-			}
-			else if (std::holds_alternative<Vector2>(item.value)) 
-			{
-				Vector2* ptr = std::get_if<Vector2>(&item.value);
-				ImGui::DragFloat2(itemName.c_str(), reinterpret_cast<float*>(ptr), dragSensitivity_);
-			}
-			else if (std::holds_alternative<Vector3>(item.value))
-			{
-				Vector3* ptr = std::get_if<Vector3>(&item.value);
-				ImGui::DragFloat3(itemName.c_str(), reinterpret_cast<float*>(ptr), dragSensitivity_);
-			}
-			else if (std::holds_alternative<Vector4>(item.value)) 
-			{
-				Vector4* ptr = std::get_if<Vector4>(&item.value);
-				ImGui::ColorEdit4(itemName.c_str(), reinterpret_cast<float*>(ptr));
+				DrawGroupRecursive({ groupName }, group);
+				ImGui::EndMenu();
 			}
 		}
 
-		ImGui::Text("\n");
+		ImGui::EndMenuBar();
+	}
 
-		if (ImGui::Button("Save"))
+	ImGui::End();
+}
+
+void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPath, Group& group)
+{
+	// groupPathの末尾が現在のグループ名
+	const std::string& groupName = groupPath.back();
+
+	if (ImGui::TreeNode(groupName.c_str()))
+	{
+		// items を表示
+		for (auto& [itemName, value] : group.items)
 		{
-			SaveFile(groupName);
-			std::string message = std::format("{}.json saved", groupName);
+			std::string label = itemName;
+
+			if (value.type() == typeid(int32_t)) {
+				int32_t* ptr = std::any_cast<int32_t>(&value);
+				ImGui::DragInt(label.c_str(), ptr, (float)dragSensitivity_);
+			}
+			else if (value.type() == typeid(float)) {
+				float* ptr = std::any_cast<float>(&value);
+				ImGui::DragFloat(label.c_str(), ptr, dragSensitivity_);
+			}
+			else if (value.type() == typeid(bool)) {
+				bool* ptr = std::any_cast<bool>(&value);
+				ImGui::Checkbox(label.c_str(), ptr);
+			}
+			else if (value.type() == typeid(Vector2)) {
+				Vector2* ptr = std::any_cast<Vector2>(&value);
+				ImGui::DragFloat2(label.c_str(), reinterpret_cast<float*>(ptr), dragSensitivity_);
+			}
+			else if (value.type() == typeid(Vector3)) {
+				Vector3* ptr = std::any_cast<Vector3>(&value);
+				ImGui::DragFloat3(label.c_str(), reinterpret_cast<float*>(ptr), dragSensitivity_);
+			}
+			else if (value.type() == typeid(Vector4)) {
+				Vector4* ptr = std::any_cast<Vector4>(&value);
+				ImGui::ColorEdit4(label.c_str(), reinterpret_cast<float*>(ptr));
+			}
+		}
+
+		ImGui::Spacing();
+
+		// サブグループを再帰的に描画
+		for (auto& [subGroupName, subGroup] : group.subGroups)
+		{
+			// 次の階層パスを作成して再帰呼び出し
+			std::vector<std::string> nextGroupPath = groupPath;
+			nextGroupPath.push_back(subGroupName);
+			DrawGroupRecursive(nextGroupPath, subGroup);
+		}
+
+		// セーブボタン
+		// 「Save [現在のグループ名]」ボタン -> このグループ階層だけを保存
+		if (ImGui::Button(("Save [" + groupName + "]").c_str()))
+		{
+			// 新しい階層パスで保存するSaveFileを呼び出す
+			SaveFile(groupPath);
+			std::string message = std::format("Updated group '{}' in {}.json", groupName, groupPath[0]);
 			MessageBoxA(nullptr, message.c_str(), "GlobalVariables", 0);
 		}
 
-		ImGui::EndMenu();
+		ImGui::TreePop();
 	}
-
-	ImGui::EndMenuBar();
-	ImGui::End();
 }
-void GlobalVariables::CreateGroup(const std::string& groupName)
+
+void GlobalVariables::CreateGroup(const std::vector<std::string>& groupPath)
 {
-	// 指定名のオブジェクトが無ければ追加する
-	datas_[groupName];
+	if (groupPath.empty()) return;
+
+	Group* current = &datas_[groupPath[0]];
+	for (size_t i = 1; i < groupPath.size(); ++i)
+	{
+		current = &current->subGroups[groupPath[i]];
+	}
 }
 
-int32_t GlobalVariables::GetIntValue(const std::string& groupName, const std::string& key) const
+int32_t GlobalVariables::GetIntValue(const std::vector<std::string>& groupPath, const std::string& key) const
 {
-	// グループが存在するかチェック
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	const Group& group = itGroup->second;
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	// 項目が存在するかチェック
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
-
-	const Item& item = itItem->second;
-
-	// 型がint32_tかチェック
-	assert(std::holds_alternative<int32_t>(item.value));
-
-	// 値を取得して返す
-	return std::get<int32_t>(item.value);
+	// std::anyからint32_tにキャスト
+	try
+	{
+		return std::any_cast<int32_t>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not int32_t");
+		return 0; // 失敗時のデフォルト
+	}
 }
 
-float GlobalVariables::GetFloatValue(const std::string& groupName, const std::string& key) const
+float GlobalVariables::GetFloatValue(const std::vector<std::string>& groupPath, const std::string& key) const
 {
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	const Group& group = itGroup->second;
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
-
-	const Item& item = itItem->second;
-
-	assert(std::holds_alternative<float>(item.value));
-
-	return std::get<float>(item.value);
+	try
+	{
+		return std::any_cast<float>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not float");
+		return 0.f;
+	}
 }
 
-bool GlobalVariables::GetBoolValue(const std::string& groupName, const std::string& key) const {
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
-	const Group& group = itGroup->second;
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
-	const Item& item = itItem->second;
-	assert(std::holds_alternative<bool>(item.value));
-	return std::get<bool>(item.value);
-}
-
-Vector2 GlobalVariables::GetVector2Value(const std::string& groupName, const std::string& key) const
+bool GlobalVariables::GetBoolValue(const std::vector<std::string>& groupPath, const std::string& key) const
 {
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	const Group& group = itGroup->second;
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
+	try
+	{
+		return std::any_cast<bool>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not bool");
+		return false;
+	}
+}
 
-	const Item& item = itItem->second;
+Vector2 GlobalVariables::GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key) const
+{
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	assert(std::holds_alternative<Vector2>(item.value));
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	return std::get<Vector2>(item.value);
+	try
+	{
+		return std::any_cast<Vector2>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not Vector2");
+		return Vector2{};
+	}
 }
 
 
-Vector3 GlobalVariables::GetVector3Value(const std::string& groupName, const std::string& key) const
+Vector3 GlobalVariables::GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key) const
 {
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	const Group& group = itGroup->second;
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
-
-	const Item& item = itItem->second;
-
-	assert(std::holds_alternative<Vector3>(item.value));
-
-	return std::get<Vector3>(item.value);
+	try
+	{
+		return std::any_cast<Vector3>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not Vector3");
+		return Vector3{};
+	}
 }
 
 
-Vector4 GlobalVariables::GetVector4Value(const std::string& groupName, const std::string& key) const
+Vector4 GlobalVariables::GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key) const
 {
-	auto itGroup = datas_.find(groupName);
-	assert(itGroup != datas_.end());
+	const Group* group = FindGroup(groupPath);
+	assert(group != nullptr);
 
-	const Group& group = itGroup->second;
+	auto itItem = group->items.find(key);
+	assert(itItem != group->items.end());
 
-	auto itItem = group.items.find(key);
-	assert(itItem != group.items.end());
+	try
+	{
+		return std::any_cast<Vector4>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		assert(false && "Item type is not Vector4");
+		return Vector4{};
+	}
+}
 
-	const Item& item = itItem->second;
+const GlobalVariables::Group* GlobalVariables::FindGroup(const std::vector<std::string>& groupPath) const
+{
+	if (groupPath.empty()) return nullptr;
 
-	assert(std::holds_alternative<Vector4>(item.value));
+	auto it = datas_.find(groupPath[0]);
+	if (it == datas_.end()) return nullptr;
 
-	return std::get<Vector4>(item.value);
+	const Group* current = &it->second;
+	for (size_t i = 1; i < groupPath.size(); ++i)
+	{
+		auto itSub = current->subGroups.find(groupPath[i]);
+		if (itSub == current->subGroups.end()) return nullptr;
+		current = &itSub->second;
+	}
+	return current;
 }
 
 void GlobalVariables::SetValue(
-	const std::string& groupName,
+	const std::vector<std::string>& groupPath,
 	const std::string& key, int32_t value)
 {
-	// グループの参照を取得
-	Group& group = datas_[groupName];
-	// 新しい項目のデータを設定
-	Item newItem{};
-	newItem.value = value;
-	// 設定した項目をstd::mapに追加
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
 void GlobalVariables::SetValue(
-	const std::string& groupName,
+	const std::vector<std::string>& groupPath,
 	const std::string& key, float value)
 {
-	// グループの参照を取得
-	Group& group = datas_[groupName];
-	// 新しい項目のデータを設定
-	Item newItem{};
-	newItem.value = value;
-	// 設定した項目をstd::mapに追加
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, bool value)
+void GlobalVariables::SetValue(const std::vector<std::string>& groupPath, const std::string& key, bool value)
 {
-	Group& group = datas_[groupName];
-	Item newItem{};
-	newItem.value = value;
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector2& value)
+void GlobalVariables::SetValue(const std::vector<std::string>& groupPath, const std::string& key, const Vector2& value)
 {
-	Group& group = datas_[groupName];
-	Item newItem{};
-	newItem.value = value;
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
 void GlobalVariables::SetValue(
-	const std::string& groupName,
+	const std::vector<std::string>& groupPath,
 	const std::string& key, const Vector3& value)
 {
-	// グループの参照を取得
-	Group& group = datas_[groupName];
-	// 新しい項目のデータを設定
-	Item newItem{};
-	newItem.value = value;
-	// 設定した項目をstd::mapに追加
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
-void GlobalVariables::SetValue(const std::string& groupName, const std::string& key, const Vector4& value)
+void GlobalVariables::SetValue(const std::vector<std::string>& groupPath, const std::string& key, const Vector4& value)
 {
-	Group& group = datas_[groupName];
-	Item newItem{};
-	newItem.value = value;
-	group.items[key] = newItem;
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, int32_t value)
+GlobalVariables::Group& GlobalVariables::FindOrCreateGroup(const std::vector<std::string>& groupPath)
 {
-	// グループが存在しなければ作成
-	Group& group = datas_[groupName];
-
-	// 項目が未登録なら
-	if (group.items.find(key) == group.items.end())
+	assert(!groupPath.empty());
+	Group* current = &datas_[groupPath[0]];
+	for (size_t i = 1; i < groupPath.size(); ++i)
 	{
-		SetValue(groupName, key, value);
+		current = &current->subGroups[groupPath[i]];
+	}
+	return *current;
+}
+
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, int32_t value)
+{
+	if (groupPath.empty()) return;
+
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
+	{
+		current->items[key] = value;
 	}
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, float value)
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, float value)
 {
-	// グループが存在しなければ作成
-	Group& group = datas_[groupName];
+	if (groupPath.empty()) return;
 
-	// 項目が未登録なら
-	if (group.items.find(key) == group.items.end())
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
 	{
-		SetValue(groupName, key, value);
+		current->items[key] = value;
 	}
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, bool value)
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, bool value)
 {
-	Group& group = datas_[groupName];
-	if (group.items.find(key) == group.items.end()) 
+	if (groupPath.empty()) return;
+
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
 	{
-		SetValue(groupName, key, value);
+		current->items[key] = value;
 	}
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, const Vector2& value) 
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector2& value)
 {
-	Group& group = datas_[groupName];
-	if (group.items.find(key) == group.items.end())
+	if (groupPath.empty()) return;
+
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
 	{
-		SetValue(groupName, key, value);
+		current->items[key] = value;
 	}
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, const Vector3& value)
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector3& value)
 {
-	// グループが存在しなければ作成
-	Group& group = datas_[groupName];
+	if (groupPath.empty()) return;
 
-	// 項目が未登録なら
-	if (group.items.find(key) == group.items.end())
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
 	{
-		SetValue(groupName, key, value);
+		current->items[key] = value;
+	}
+}
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector4& value)
+{
+	if (groupPath.empty()) return;
+
+	// 1階層目を取得
+	Group* current = &datas_[groupPath[0]];
+
+	// 2階層目以降
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = &current->subGroups[groupPath[i]];
+	}
+
+	// keyが未登録なら追加
+	if (current->items.find(key) == current->items.end())
+	{
+		current->items[key] = value;
 	}
 }
 
-void GlobalVariables::AddItem(const std::string& groupName, const std::string& key, const Vector4& value)
+void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 {
-	Group& group = datas_[groupName];
-	if (group.items.find(key) == group.items.end()) 
-	{
-		SetValue(groupName, key, value);
+	if (groupPath.empty()) {
+		return; // パスが空なら何もしない
 	}
-}
 
-void GlobalVariables::SaveFile(const std::string& groupName)
-{
-	// グループ検索
-	std::map<std::string, Group>::iterator itGroup = datas_.find(groupName);
+	// ファイル名はパスの先頭要素から決まる (例: {"Player", "Stage1"} -> "Player.json")
+	const std::string& topLevelName = groupPath[0];
+	std::string filePathStr = kDirectoryPath_ + topLevelName + ".json";
+	std::filesystem::path filePath = filePathStr;
 
-	// 未登録チェック
-	assert(itGroup != datas_.end());
-
-	json root;
-	root = json::object();
-
-	// jsonオブジェクト登録
-	root[groupName] = json::object();
-
-	//各項目について
-	for (std::map<std::string, Item>::iterator itItem = itGroup->second.items.begin();
-		itItem != itGroup->second.items.end(); ++itItem)
-	{
-		// 項目名を取得
-		const std::string& itemName = itItem->first;
-		// 項目の参照を取得
-		Item& item = itItem->second;
-
-		// int32_t型の値を保持していれば
-		if (std::holds_alternative<int32_t>(item.value))
+	// プログラム内のメモリから更新対象のGroupオブジェクトを見つける
+	Group* targetGroup = &datas_[topLevelName];
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		auto it = targetGroup->subGroups.find(groupPath[i]);
+		if (it == targetGroup->subGroups.end())
 		{
-			// int32_t型の値を登録
-			root[groupName][itemName] = std::get<int32_t>(item.value);
+			assert(false && "Group path not found in memory.");
+			return;
 		}
-
-		// float型の値を保持していれば
-		if (std::holds_alternative<float>(item.value))
-		{
-			// float型の値を登録
-			root[groupName][itemName] = std::get<float>(item.value);
-		}
-
-		// bool型の値を保持していれば
-		if (std::holds_alternative<bool>(item.value))
-		{
-			// bool型の値を登録
-			root[groupName][itemName] = std::get<bool>(item.value);
-		}
-
-		// Vector2型の値を保持していれば
-		if (std::holds_alternative<Vector2>(item.value))
-		{
-			// Vector2型のjson配列登録
-			Vector2 value = std::get<Vector2>(item.value);
-			root[groupName][itemName] = json::array({ value.x,value.y });
-		}
-
-		// Vector3型の値を保持していれば
-		if (std::holds_alternative<Vector3>(item.value))
-		{
-			// Vector3型のjson配列登録
-			Vector3 value = std::get<Vector3>(item.value);
-			root[groupName][itemName] = json::array({ value.x,value.y,value.z });
-		}
-
-		// Vector4型の値を保持していれば
-		if (std::holds_alternative<Vector4>(item.value))
-		{
-			// Vector4型のjson配列登録
-			Vector4 value = std::get<Vector4>(item.value);
-			root[groupName][itemName] = json::array({ value.x,value.y,value.z,value.w });
-		}
+		targetGroup = &it->second;
 	}
 
-	// ディレクトリが無ければ作成する
-	std::filesystem::path dir(kDirectoryPath_);
-
-	// ディレクトリがなければ作成
-	if (!std::filesystem::exists(dir))
-	{
-		std::filesystem::create_directories(dir);  // 複数階層でも作成可能
+	// 既存のJSONファイルを読み込む（なければ新規作成の準備）
+	json rootJson;
+	std::ifstream ifs(filePath);
+	if (ifs.is_open()) {
+		// ファイルが存在すれば、その内容を読み込む
+		ifs >> rootJson;
+		ifs.close();
 	}
 
-	// ファイルパスは path の / operator で結合
-	std::filesystem::path filePath = dir / (groupName + ".json");
+	// JSONデータ内で、更新したい階層まで移動する
+	//    (途中の階層がなければ自動的に作られる)
+	json* currentJsonNode = &rootJson[topLevelName];
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		currentJsonNode = &(*currentJsonNode)[groupPath[i]];
+	}
 
-	// ofstream を開く
+	// メモリ上のGroupをJSONに変換し、対象の階層を丸ごと上書きする
+	*currentJsonNode = GroupToJson(*targetGroup);
+
+	// 更新したJSONデータ全体をファイルに書き戻す
 	std::ofstream ofs(filePath);
-
-	// ファイルオープン失敗？
-	if (ofs.fail())
-	{
-		std::string message = "Failed open data file for write.";
-		MessageBoxA(nullptr, message.c_str(), "GlovalVariables", 0);
-		assert(0);
+	if (ofs.fail()) {
+		MessageBoxA(nullptr, "Failed to open file for saving.", "GlobalVariables", MB_OK);
+		assert(false);
 		return;
 	}
-
-	// ファイルにjson文字列を書き込む(インデント幅4)
-	ofs << std::setw(4) << root << std::endl;
-	// ファイルを閉じる
+	ofs << std::setw(4) << rootJson << std::endl;
 	ofs.close();
+}
+
+json GlobalVariables::GroupToJson(const Group& group)
+{
+	json j;
+
+	// items を JSON に変換
+	for (const auto& [key, value] : group.items)
+	{
+		if (value.type() == typeid(int32_t)) {
+			j[key] = std::any_cast<int32_t>(value);
+		}
+		else if (value.type() == typeid(float)) {
+			j[key] = std::any_cast<float>(value);
+		}
+		else if (value.type() == typeid(bool)) {
+			j[key] = std::any_cast<bool>(value);
+		}
+		else if (value.type() == typeid(Vector2)) {
+			Vector2 v = std::any_cast<Vector2>(value);
+			j[key] = { v.x, v.y };
+		}
+		else if (value.type() == typeid(Vector3)) {
+			Vector3 v = std::any_cast<Vector3>(value);
+			j[key] = { v.x, v.y, v.z };
+		}
+		else if (value.type() == typeid(Vector4)) {
+			Vector4 v = std::any_cast<Vector4>(value);
+			j[key] = { v.x, v.y, v.z, v.w };
+		}
+		else {
+			// 対応してない型は無視 or ログ
+			std::cerr << "Unsupported type in GlobalVariables: " << key << std::endl;
+		}
+	}
+
+	// subGroups を再帰的に JSON に変換
+	for (const auto& [subGroupName, subGroup] : group.subGroups)
+	{
+		j[subGroupName] = GroupToJson(subGroup);
+	}
+
+	return j;
 }
 
 void GlobalVariables::LoadFiles()
 {
-	// 保存先のディレクトリのパスをローカル変数で宣言する
 	std::filesystem::path dir = kDirectoryPath_;
 
-	// ディレクトリがなければスキップする
 	if (!std::filesystem::exists(dir))
 	{
 		return;
 	}
 
-	std::filesystem::directory_iterator dir_it(dir);
-	for (const std::filesystem::directory_entry& entry : dir_it)
+	for (const auto& entry : std::filesystem::directory_iterator(dir))
 	{
-		// ファイルパスを取得
-		const std::filesystem::path& filePath = entry.path();
+		if (!entry.is_regular_file()) continue;
 
-		// ファイル拡張子を取得
-		std::string extension = filePath.extension().string();
-		// .jsonファイル以外はスキップ
-		if (extension.compare(".json") != 0)
+		const std::filesystem::path& filePath = entry.path();
+		if (filePath.extension() != ".json") continue;
+
+		std::string filename = filePath.stem().string();  // 例: "Player.stage1"
+
+		// ドットがある場合、最初のドット以降はカット
+		size_t dotPos = filename.find('.');
+		if (dotPos != std::string::npos)
 		{
-			continue;
+			filename = filename.substr(0, dotPos);  // "Player.stage1" -> "Player"
 		}
 
-		// ファイル読み込み
-		LoadFile(filePath.stem().string());
+		LoadFile(filename);
 	}
 }
 
 void GlobalVariables::LoadFile(const std::string& groupName)
 {
-	// 読み込むJSONファイルのフルパスを合成する
 	std::string filePath = kDirectoryPath_ + groupName + ".json";
-	// 読み込み用ファイルストリーム
-	std::ifstream ifs;
-	// ファイルを読み込みように開く
-	ifs.open(filePath);
-
-	// ファイルオープン失敗？
+	std::ifstream ifs(filePath);
 	if (ifs.fail())
 	{
-		std::string message = "Failed open data file for write.";
-		MessageBoxA(nullptr, message.c_str(), "GlovalVariables", 0);
-		assert(0);
+		MessageBoxA(nullptr, "Failed to open data file for write.", "GlobalVariables", 0);
+		assert(false);
 		return;
 	}
 
 	json root;
-
-	// json文字列からjsonのデータ構造に展開
 	ifs >> root;
-	// ファイルを閉じる
 	ifs.close();
 
-	// グループを検索
 	json::iterator itGroup = root.find(groupName);
-
-	// 未登録チェック
 	assert(itGroup != root.end());
 
-	// 各アイテムについて
-	for (json::iterator itItem = itGroup->begin(); itItem != itGroup->end(); ++itItem)
-	{
-		// アイテム名を取得
-		const std::string& itemName = itItem.key();
+	// 最上位グループ名から再帰的に読み込み開始
+	LoadGroupRecursive({ groupName }, *itGroup);
+}
 
-		// int32_t型の値を保持していれば
-		if (itItem->is_number_integer())
+void GlobalVariables::LoadGroupRecursive(const std::vector<std::string>& groupPath, const json& jGroup)
+{
+	for (auto it = jGroup.begin(); it != jGroup.end(); ++it)
+	{
+		const std::string& key = it.key();
+		const json& value = it.value();
+
+		if (value.is_object())
 		{
-			// int型の値を登録
-			int32_t value = itItem->get<int32_t>();
-			SetValue(groupName, itemName, value);
+			// サブグループの場合は再帰的に処理
+			std::vector<std::string> nextGroupPath = groupPath;
+			nextGroupPath.push_back(key);
+			LoadGroupRecursive(nextGroupPath, value);
 		}
-		// float型の値を保持していれば
-		else if (itItem->is_number_float())
+		else
 		{
-			// float型の値を登録
-			double value = itItem->get<double>();
-			SetValue(groupName, itemName, static_cast<float>(value));
-		}
-		// bool型の値を保持していれば
-		else if (itItem->is_boolean())
-		{
-			bool value = itItem->get<bool>();
-			SetValue(groupName, itemName, value);
-		}
-		// 要素数2の配列であれば
-		else if (itItem->is_array() && itItem->size() == 2)
-		{
-			Vector2 value = { (*itItem)[0], (*itItem)[1] };
-			SetValue(groupName, itemName, value);
-		}
-		// 要素数3の配列であれば
-		else if (itItem->is_array() && itItem->size() == 3)
-		{
-			// float型のjson配列登録
-			Vector3 value = { itItem->at(0),itItem->at(1),itItem->at(2) };
-			SetValue(groupName, itemName, value);
-		}
-		// 要素数4の配列であれば
-		else if (itItem->is_array() && itItem->size() == 4)
-		{
-			Vector4 value = { (*itItem)[0], (*itItem)[1], (*itItem)[2], (*itItem)[3] };
-			SetValue(groupName, itemName, value);
+			// 値の場合は型に応じて SetValue 呼び出し
+
+			if (value.is_number_integer())
+			{
+				SetValue(groupPath, key, value.get<int32_t>());
+			}
+			else if (value.is_number_float())
+			{
+				SetValue(groupPath, key, static_cast<float>(value.get<double>()));
+			}
+			else if (value.is_boolean())
+			{
+				SetValue(groupPath, key, value.get<bool>());
+			}
+			else if (value.is_array())
+			{
+				if (value.size() == 2)
+				{
+					SetValue(groupPath, key, Vector2{ value[0], value[1] });
+				}
+				else if (value.size() == 3)
+				{
+					SetValue(groupPath, key, Vector3{ value[0], value[1], value[2] });
+				}
+				else if (value.size() == 4)
+				{
+					SetValue(groupPath, key, Vector4{ value[0], value[1], value[2], value[3] });
+				}
+			}
 		}
 	}
 }
