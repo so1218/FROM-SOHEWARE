@@ -64,7 +64,8 @@ private:
     SkinCluster skinCluster_;
     float animationTime_;
 
-    std::unique_ptr<AnimationModel> animationRyu_;
+    std::unique_ptr<AnimationModel> animationShurimp_;
+    std::unique_ptr<AnimationModel> animationSneakWalk_;
 
     ShakeEffect shake;
 

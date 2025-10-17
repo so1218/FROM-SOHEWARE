@@ -17,15 +17,24 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // インスタンスを作成
     player_ = std::make_unique<Player>(engine_, camera_);
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
-    dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::plane)));
+    dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::shrimp)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
-    animationRyu_ = std::make_unique<AnimationModel>(
+    animationShurimp_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
-        *ModelHandle::Get(ModelID::animatedRyu),
-        AnimationHandle::Get(AnimationID::ryu)
+        *ModelHandle::Get(ModelID::shrimp),
+        AnimationHandle::Get(AnimationID::shrimp)
     );
-    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    animationSneakWalk_ = std::make_unique<AnimationModel>(
+        engine_,
+        camera_,
+        *ModelHandle::Get(ModelID::sneakWalk),
+        AnimationHandle::Get(AnimationID::sneakWalk)
+    );
+    animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+
+    animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -75,7 +84,8 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
 
-    animationRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationSneakWalk_->Update(TimeManager::GetInstance()->GetDeltaTime());
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -115,7 +125,8 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-    animationRyu_->Draw();
+    animationShurimp_->Draw();
+    animationSneakWalk_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

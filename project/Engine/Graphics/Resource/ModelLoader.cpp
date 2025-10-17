@@ -174,6 +174,7 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
                 bone->mWeights[weightIndex].mVertexId });
         }
     }
+
 }
 
 void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath)
