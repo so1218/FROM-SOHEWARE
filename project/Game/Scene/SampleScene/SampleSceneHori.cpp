@@ -19,22 +19,22 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::shrimp)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
-    animationShurimp_ = std::make_unique<AnimationModel>(
+   /* animationShurimp_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
         *ModelHandle::Get(ModelID::shrimp),
         AnimationHandle::Get(AnimationID::shrimp)
-    );
+    );*/
     animationSneakWalk_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
         *ModelHandle::Get(ModelID::walk),
         AnimationHandle::Get(AnimationID::walk)
     );
-    animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+  /*  animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);*/
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
-    animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
+    //animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -84,7 +84,7 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
 
-    animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());
+   /* animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());*/
     animationSneakWalk_->Update(TimeManager::GetInstance()->GetDeltaTime());
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
@@ -125,7 +125,7 @@ void SampleSceneHori::Draw()
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
-    animationShurimp_->Draw();
+    /*animationShurimp_->Draw();*/
     animationSneakWalk_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }

@@ -14,21 +14,27 @@
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
+
+    // シーンの生成と登録
+    sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get(), camera_.get()));
+    sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get(), camera_.get()));
+    sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
+
     // 初期シーンを設定
-    sceneManager_.SetScene(std::make_unique <SampleSceneHori> (engine_.get(), camera_.get()));
+    sceneManager_.RequestSceneChange(SceneID::Sample);
+
+    modelDataGrid_ = ModelHandle::Get(ModelID::field);
+    worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 
 Game::~Game()
 {
-    sceneManager_.Finalize();
     // ライブラリの終了
     engine_->Finalize();
 }
 
 void Game::Initialize()
 {
-    modelDataGrid_ = ModelHandle::Get(ModelID::field);
-    worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
     worldTransformGrid_.UpdateMatrix();
 }
 
@@ -140,17 +146,17 @@ void Game::DebugDraw()
 {
     if (ImGui::Begin("シーンの選択"))
     {
-        if (ImGui::Button("Title Scene"))
+        if (ImGui::Button("タイトルシーン"))
         {
-            sceneManager_.RequestSceneChange(std::make_unique<TitleScene>(engine_.get(), camera_.get()));
+            sceneManager_.RequestSceneChange(SceneID::Title);
         }
-        if (ImGui::Button("Play Scene"))
+        if (ImGui::Button("プレイシーン"))
         {
-            sceneManager_.RequestSceneChange(std::make_unique<PlayScene>(engine_.get(), camera_.get()));
+            sceneManager_.RequestSceneChange(SceneID::Play);
         }
-        if (ImGui::Button("Sample Scene"))
+        if (ImGui::Button("サンプルシーン"))
         {
-            sceneManager_.RequestSceneChange(std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
+            sceneManager_.RequestSceneChange(SceneID::Sample);
         }
     }
     ImGui::End();
@@ -158,6 +164,5 @@ void Game::DebugDraw()
 
 void Game::Finalize()
 {
-    sceneManager_.Finalize();
     AudioManager::GetInstance().Finalize();
 }
