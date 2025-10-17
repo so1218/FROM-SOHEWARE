@@ -11,6 +11,7 @@ enum class ModelID
     plane,
     multiMesh,
     multiMaterial,
+    walk,
 
 	// フィールド関連
     skydome,
@@ -53,14 +54,15 @@ private:
             { ModelID::plane,     "Resources/models/plane/plane.obj" },
             { ModelID::multiMesh,  "Resources/models/multiMesh/multiMesh.obj" },
             { ModelID::multiMaterial,  "Resources/models/multiMaterial/multiMaterial.obj" },
+            { ModelID::walk,  "Resources/models/animated/walk.gltf" },
 
             // フィールド関連
             { ModelID::skydome,  "Resources/models/skydome/skydome.obj" },
             { ModelID::field,  "Resources/models/field/field.obj" },
 
             // プレイヤー関連
-            { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk.gltf" },
-            { ModelID::shrimp,  "Resources/models/animated/Shrimp.gltf" },
+            { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },
+            { ModelID::shrimp,  "Resources/models/animated/Shrimp_03.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },

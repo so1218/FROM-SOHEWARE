@@ -8,147 +8,152 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				8
+				0,
+				9
 			]
 		}
 	],
 	"nodes":[
 		{
+			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2",
+			"rotation":[
+				0.7337608337402344,
+				-0.04627241566777229,
+				0.15905307233333588,
+				0.6589052677154541
+			],
+			"translation":[
+				0.08636316657066345,
+				-0.030896838754415512,
+				-0.5932702422142029
+			]
+		},
+		{
 			"name":"\u30dc\u30fc\u30f3",
 			"rotation":[
-				0.013684314675629139,
-				1.1919813402982982e-07,
-				1.631297874560289e-09,
-				0.9999063611030579
+				-0.048371680080890656,
+				0,
+				0,
+				0.9988294243812561
+			],
+			"scale":[
+				1,
+				1,
+				1.0000001192092896
 			],
 			"translation":[
 				0,
-				-0.004445399157702923,
-				-0.08151299506425858
+				0.015593215823173523,
+				0.09557059407234192
 			]
 		},
 		{
 			"name":"\u30dc\u30fc\u30f3.006",
 			"rotation":[
-				0.05737282708287239,
-				-0.00470868730917573,
-				0.00018911866936832666,
-				0.9983417391777039
+				0.027645260095596313,
+				2.12688990497336e-14,
+				-1.0765468516638066e-08,
+				0.9996178150177002
 			],
 			"translation":[
-				3.434251993894577e-09,
-				0.3756907880306244,
-				-4.623143468052149e-08
-			]
-		},
-		{
-			"children":[
-				1
-			],
-			"name":"\u30dc\u30fc\u30f3.005",
-			"rotation":[
-				0.0263789352029562,
-				0.0025682752020657063,
-				0.014329103752970695,
-				0.9995459914207458
-			],
-			"scale":[
-				1,
-				0.9999998807907104,
-				0.9999998807907104
-			],
-			"translation":[
-				3.725290298461914e-09,
-				0.2859666347503662,
-				4.6566128730773926e-09
+				8.162498641269477e-16,
+				0.3534475862979889,
+				7.450580596923828e-09
 			]
 		},
 		{
 			"children":[
 				2
 			],
-			"name":"\u30dc\u30fc\u30f3.004",
+			"name":"\u30dc\u30fc\u30f3.005",
 			"rotation":[
-				-0.030513007193803787,
-				-0.0002656832803040743,
-				-0.046413786709308624,
-				0.9984561800956726
-			],
-			"scale":[
-				0.9999998807907104,
-				0.9999999403953552,
-				1
+				-0.006373364944010973,
+				-2.8172483538201586e-14,
+				2.4818860300257484e-09,
+				0.9999796748161316
 			],
 			"translation":[
-				-9.313225746154785e-09,
-				0.28394076228141785,
-				1.7229467630386353e-08
+				2.385872430882025e-15,
+				0.32228514552116394,
+				1.4901161193847656e-08
 			]
 		},
 		{
 			"children":[
 				3
 			],
-			"name":"\u30dc\u30fc\u30f3.003",
+			"name":"\u30dc\u30fc\u30f3.004",
 			"rotation":[
-				0.0009557615267112851,
-				-0.00031599795329384506,
-				0.05402957648038864,
-				0.9985388517379761
-			],
-			"scale":[
-				1,
-				0.9999998807907104,
-				0.9999998807907104
+				-0.0022904598154127598,
+				7.122099676508398e-14,
+				8.919386340622282e-10,
+				0.9999973773956299
 			],
 			"translation":[
-				7.450580596923828e-09,
-				0.38845354318618774,
-				-1.3154931366443634e-08
+				-5.864541877565344e-15,
+				0.29669174551963806,
+				-2.2351741790771484e-08
 			]
 		},
 		{
 			"children":[
 				4
 			],
-			"name":"\u30dc\u30fc\u30f3.002",
+			"name":"\u30dc\u30fc\u30f3.003",
 			"rotation":[
-				-0.18686740100383759,
-				-0.02009841986000538,
-				-0.014239038340747356,
-				0.9820763468742371
+				-0.013816780410706997,
+				-1.5098142114311486e-07,
+				3.2941789296359048e-09,
+				0.9999045729637146
 			],
 			"scale":[
 				1,
-				1.0000001192092896,
-				1
+				1,
+				0.9999999403953552
 			],
 			"translation":[
-				-1.30385160446167e-08,
-				0.5603806376457214,
-				-3.259629011154175e-08
+				1.136000354792473e-16,
+				0.3344387412071228,
+				-3.725290298461914e-09
 			]
 		},
 		{
 			"children":[
 				5
 			],
-			"name":"\u30dc\u30fc\u30f3.001",
+			"name":"\u30dc\u30fc\u30f3.002",
 			"rotation":[
-				-0.09387312084436417,
-				-0.2625635862350464,
-				-0.9603375196456909,
-				0.00010964505054289475
+				0.003820683341473341,
+				3.1786292709057307e-08,
+				-4.5546200144741533e-10,
+				0.9999927282333374
 			],
 			"scale":[
-				0.9999999403953552,
-				1.000000238418579,
+				1,
+				1,
 				1.0000001192092896
 			],
 			"translation":[
+				-1.3322676295501878e-15,
+				0.5142005681991577,
+				-7.450580596923828e-09
+			]
+		},
+		{
+			"children":[
+				6
+			],
+			"name":"\u30dc\u30fc\u30f3.001",
+			"rotation":[
+				7.495788167943829e-08,
+				0.1193922907114029,
+				0.9928471446037292,
+				9.013866986151697e-09
+			],
+			"translation":[
 				0,
-				-0.004445399157702923,
-				-0.08151299506425858
+				0.015593215823173523,
+				0.09557059407234192
 			]
 		},
 		{
@@ -158,21 +163,21 @@
 		},
 		{
 			"children":[
-				7,
-				0,
-				6
+				8,
+				1,
+				7
 			],
-			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2",
+			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2.001",
 			"rotation":[
-				0.7478368282318115,
+				0.7619152665138245,
 				0,
 				0,
-				0.6638826131820679
+				0.6476767063140869
 			],
 			"translation":[
 				0,
 				0,
-				-0.5901445150375366
+				-0.6094866991043091
 			]
 		}
 	],
@@ -182,152 +187,152 @@
 				{
 					"sampler":0,
 					"target":{
-						"node":0,
+						"node":1,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":1,
 					"target":{
-						"node":0,
+						"node":1,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":2,
 					"target":{
-						"node":0,
+						"node":1,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":3,
 					"target":{
-						"node":6,
+						"node":7,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":4,
 					"target":{
-						"node":6,
+						"node":7,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":5,
 					"target":{
-						"node":6,
+						"node":7,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":6,
 					"target":{
-						"node":5,
+						"node":6,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":7,
 					"target":{
-						"node":5,
+						"node":6,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":8,
 					"target":{
-						"node":5,
+						"node":6,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":9,
 					"target":{
-						"node":4,
+						"node":5,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":10,
 					"target":{
-						"node":4,
+						"node":5,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":11,
 					"target":{
-						"node":4,
+						"node":5,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":12,
 					"target":{
-						"node":3,
+						"node":4,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":13,
 					"target":{
-						"node":3,
+						"node":4,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":14,
 					"target":{
-						"node":3,
+						"node":4,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":15,
 					"target":{
-						"node":2,
+						"node":3,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":16,
 					"target":{
-						"node":2,
+						"node":3,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":17,
 					"target":{
-						"node":2,
+						"node":3,
 						"path":"scale"
 					}
 				},
 				{
 					"sampler":18,
 					"target":{
-						"node":1,
+						"node":2,
 						"path":"translation"
 					}
 				},
 				{
 					"sampler":19,
 					"target":{
-						"node":1,
+						"node":2,
 						"path":"rotation"
 					}
 				},
 				{
 					"sampler":20,
 					"target":{
-						"node":1,
+						"node":2,
 						"path":"scale"
 					}
 				}
 			],
-			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2\u30a2\u30af\u30b7\u30e7\u30f3",
+			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2.001\u30a2\u30af\u30b7\u30e7\u30f3",
 			"samplers":[
 				{
 					"input":15,
@@ -335,22 +340,22 @@
 					"output":16
 				},
 				{
-					"input":17,
-					"interpolation":"LINEAR",
+					"input":15,
+					"interpolation":"STEP",
+					"output":17
+				},
+				{
+					"input":15,
+					"interpolation":"STEP",
 					"output":18
 				},
 				{
 					"input":15,
-					"interpolation":"STEP",
+					"interpolation":"LINEAR",
 					"output":19
 				},
 				{
-					"input":15,
-					"interpolation":"STEP",
-					"output":20
-				},
-				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":21
 				},
@@ -365,13 +370,13 @@
 					"output":23
 				},
 				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":24
 				},
 				{
 					"input":15,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":25
 				},
 				{
@@ -380,13 +385,13 @@
 					"output":26
 				},
 				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":27
 				},
 				{
 					"input":15,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":28
 				},
 				{
@@ -395,13 +400,13 @@
 					"output":29
 				},
 				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":30
 				},
 				{
 					"input":15,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":31
 				},
 				{
@@ -410,13 +415,13 @@
 					"output":32
 				},
 				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":33
 				},
 				{
 					"input":15,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":34
 				},
 				{
@@ -425,13 +430,13 @@
 					"output":35
 				},
 				{
-					"input":17,
+					"input":20,
 					"interpolation":"LINEAR",
 					"output":36
 				},
 				{
 					"input":15,
-					"interpolation":"LINEAR",
+					"interpolation":"STEP",
 					"output":37
 				}
 			]
@@ -487,15 +492,15 @@
 		{
 			"inverseBindMatrices":14,
 			"joints":[
-				0,
+				1,
+				7,
 				6,
 				5,
 				4,
 				3,
-				2,
-				1
+				2
 			],
-			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2"
+			"name":"\u30a2\u30fc\u30de\u30c1\u30e5\u30a2.001"
 		}
 	],
 	"accessors":[
@@ -506,7 +511,7 @@
 			"max":[
 				0.3499999940395355,
 				0.33800750970840454,
-				0.9189360737800598
+				0.918936014175415
 			],
 			"min":[
 				-0.3499999940395355,
@@ -558,7 +563,7 @@
 			"max":[
 				0.40000006556510925,
 				0.36062532663345337,
-				0.7208996415138245
+				0.7208995819091797
 			],
 			"min":[
 				-0.3999999761581421,
@@ -630,20 +635,14 @@
 		{
 			"bufferView":17,
 			"componentType":5126,
-			"count":30,
-			"max":[
-				1.25
-			],
-			"min":[
-				0.041666666666666664
-			],
-			"type":"SCALAR"
+			"count":2,
+			"type":"VEC4"
 		},
 		{
 			"bufferView":18,
 			"componentType":5126,
-			"count":30,
-			"type":"VEC4"
+			"count":2,
+			"type":"VEC3"
 		},
 		{
 			"bufferView":19,
@@ -654,8 +653,14 @@
 		{
 			"bufferView":20,
 			"componentType":5126,
-			"count":2,
-			"type":"VEC3"
+			"count":30,
+			"max":[
+				1.25
+			],
+			"min":[
+				0.041666666666666664
+			],
+			"type":"SCALAR"
 		},
 		{
 			"bufferView":21,
@@ -862,113 +867,113 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":120,
+			"byteLength":32,
 			"byteOffset":105888
 		},
 		{
 			"buffer":0,
-			"byteLength":480,
-			"byteOffset":106008
+			"byteLength":24,
+			"byteOffset":105920
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":106488
+			"byteOffset":105944
 		},
 		{
 			"buffer":0,
-			"byteLength":24,
-			"byteOffset":106512
-		},
-		{
-			"buffer":0,
-			"byteLength":480,
-			"byteOffset":106536
-		},
-		{
-			"buffer":0,
-			"byteLength":24,
-			"byteOffset":107016
-		},
-		{
-			"buffer":0,
-			"byteLength":24,
-			"byteOffset":107040
+			"byteLength":120,
+			"byteOffset":105968
 		},
 		{
 			"buffer":0,
 			"byteLength":480,
-			"byteOffset":107064
+			"byteOffset":106088
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":107544
+			"byteOffset":106568
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":107568
+			"byteOffset":106592
 		},
 		{
 			"buffer":0,
 			"byteLength":480,
-			"byteOffset":107592
+			"byteOffset":106616
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":108072
+			"byteOffset":107096
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":108096
+			"byteOffset":107120
 		},
 		{
 			"buffer":0,
 			"byteLength":480,
-			"byteOffset":108120
+			"byteOffset":107144
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":108600
+			"byteOffset":107624
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":108624
+			"byteOffset":107648
 		},
 		{
 			"buffer":0,
 			"byteLength":480,
-			"byteOffset":108648
+			"byteOffset":107672
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":109128
+			"byteOffset":108152
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":109152
+			"byteOffset":108176
 		},
 		{
 			"buffer":0,
 			"byteLength":480,
-			"byteOffset":109176
+			"byteOffset":108200
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":109656
+			"byteOffset":108680
+		},
+		{
+			"buffer":0,
+			"byteLength":24,
+			"byteOffset":108704
+		},
+		{
+			"buffer":0,
+			"byteLength":480,
+			"byteOffset":108728
+		},
+		{
+			"buffer":0,
+			"byteLength":24,
+			"byteOffset":109208
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":109680,
+			"byteLength":109232,
 			"uri":"Shrimp.bin"
 		}
 	]

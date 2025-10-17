@@ -7,6 +7,7 @@ enum class AnimationID
 {
     // 基本的なアニメーション
     sneakWalk,
+    walk,
     shrimp,
 
     count
@@ -27,8 +28,9 @@ private:
     {
         {
             // 基本的なアニメーション
-            { AnimationID::sneakWalk,       "Resources/models/animated/sneakWalk.gltf" },
-            { AnimationID::shrimp,     "Resources/models/animated/Shrimp.gltf" },
+            { AnimationID::sneakWalk,       "Resources/models/animated/sneakWalk2.gltf" },
+            { AnimationID::walk,       "Resources/models/animated/walk.gltf" },
+            { AnimationID::shrimp,     "Resources/models/animated/Shrimp_03.gltf" },
         }
     };
 };

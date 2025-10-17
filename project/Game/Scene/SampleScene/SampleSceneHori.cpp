@@ -28,8 +28,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animationSneakWalk_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
-        *ModelHandle::Get(ModelID::sneakWalk),
-        AnimationHandle::Get(AnimationID::sneakWalk)
+        *ModelHandle::Get(ModelID::walk),
+        AnimationHandle::Get(AnimationID::walk)
     );
     animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);

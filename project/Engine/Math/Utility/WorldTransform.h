@@ -67,4 +67,3 @@ public:
     void SetRotation(const Quaternion& rotation);
 
 };
-
