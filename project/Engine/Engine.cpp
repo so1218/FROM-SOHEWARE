@@ -630,18 +630,6 @@ void Engine::CreateModels()
 	indexModel_ = 0;
 }
 
-void Engine::UpdateAnimation(AnimatedModelData& instance)
-{
-	instance.animationTime += TimeManager::GetInstance()->GetDeltaTime();
-	instance.animationTime = std::fmod(instance.animationTime, instance.animation.duration);
-
-	NodeAnimation& nodeAnim = instance.animation.nodeAnimations[instance.animation.rootNodeName];
-	Vector3 translation = CalculateValue(nodeAnim.translate.keyframes, instance.animationTime);
-	Quaternion rotation = CalculateValue(nodeAnim.rotate.keyframes, instance.animationTime);
-	Vector3 scale = CalculateValue(nodeAnim.scale.keyframes, instance.animationTime);
-	instance.localMatrix = Matrix4x4::MakeAffine(scale, rotation, translation);
-}
-
 void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color)
 {
 	// indexModel_が範囲内であることを確認
@@ -770,7 +758,33 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	indexModel_++;
 }
 
-void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, uint32_t textureHandle, uint32_t color)
+void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)
+{
+	for (const Joint& joint : skeleton.joints)
+	{
+		for (int32_t childIndex : joint.children)
+		{
+			// 親の位置（行列の平行移動成分）
+			Vector3 parentPos = Vector3(
+				joint.skeletonSpaceMatrix.m[3][0], 
+				joint.skeletonSpaceMatrix.m[3][1], 
+				joint.skeletonSpaceMatrix.m[3][2]  
+			);
+
+			// 子の位置
+			const Joint& child = skeleton.joints[childIndex];
+			Vector3 childPos = Vector3(
+				child.skeletonSpaceMatrix.m[3][0],
+				child.skeletonSpaceMatrix.m[3][1],
+				child.skeletonSpaceMatrix.m[3][2]
+			);
+
+			DrawLine(parentPos, childPos, camera, color);
+		}
+	}
+}
+
+void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
 {
 	assert(indexModel_ < kMaxModelCount);
 	RenderData& model = models_[indexModel_];
@@ -779,41 +793,60 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, const Ani
 	// 色変換
 	instance.modelData.materialHandle.materialData->color = Uint32ToColorVector(color);
 
-	// アニメーションによる変換行列(localMatrix)を使ってワールド行列を計算
-	model.worldMatrix = instance.localMatrix * worldTransform.matWorld_;
+	// ワールド行列 (スケール・回転・位置) を計算
+	model.worldMatrix = worldTransform.matWorld_;
 
+	// WVP行列 (World * ViewProjection) を計算
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
 	model.mappedData->World = model.worldMatrix;
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャの設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
 	// パイプラインステートの設定
 	if (isWireFrame_) {
 		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
 	}
 	else {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
+		commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
 	}
 	// プリミティブ形状の設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 	// 定数バッファをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, instance.modelData.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+	  // [Index 0] : VS CBV (b0) -> TransformationMatrix (WVP, World, etc.)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
+	// [Index 1] : VS SRV Table (t0) -> gMatrixPalette
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, skinCluster.paletteSrvHandle.second);
 
-	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
+	// [Index 2] : PS CBV (b0) -> Material
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, instance.modelData.materialHandle.resource->GetGPUVirtualAddress());
+
+	// [Index 3] : PS SRV Table (t0) -> gTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
+	// [Index 5] : PS CBV (b2) -> Camera
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+
+	// [Index 6] : PS CBV (b3) -> PointLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+	
+	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
+		 mesh->GetVertexBufferView(),
+		 skinCluster.influenceBufferView
+	};
+	// 頂点インフルエンス頂点バッファをセット
+	commandManager_->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
+	
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇

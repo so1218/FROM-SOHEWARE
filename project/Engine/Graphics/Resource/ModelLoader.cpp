@@ -13,7 +13,7 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
     const aiScene* scene = importer.ReadFile(
         filePath,
-        aiProcess_FlipWindingOrder |
+        aiProcess_Triangulate |
         aiProcess_FlipUVs
     );
 
@@ -106,12 +106,14 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         vertex.position.z = mesh->mVertices[i].z;
         vertex.position.w = 1.0f;
 
+        vertex.position.x *= -1;
+
         if (mesh->HasNormals())
         {
             vertex.normal.x = mesh->mNormals[i].x;
             vertex.normal.y = mesh->mNormals[i].y;
             vertex.normal.z = mesh->mNormals[i].z;
-            
+            vertex.normal.x *= -1;
         }
         else
         {
@@ -149,6 +151,30 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
             }
         }
     }
+
+    for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+    {
+        aiBone* bone = mesh->mBones[boneIndex];
+        std::string jointName = bone->mName.C_Str();
+        JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
+
+        aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
+        aiVector3D scale, translate;
+        aiQuaternion rotate;
+        bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
+        Matrix4x4 bindPoseMatrix = Matrix4x4::MakeAffine(
+            { scale.x,scale.y,scale.z }, { rotate.x,-rotate.y,-rotate.z,rotate.w }, { -translate.x,translate.y,translate.z }
+        );
+        jointWeightData.inverseBindPoseMatrix = Matrix4x4::Inverse(bindPoseMatrix);
+
+        for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
+        {
+            jointWeightData.vertexWeights.push_back(
+                { bone->mWeights[weightIndex].mWeight,
+                bone->mWeights[weightIndex].mVertexId });
+        }
+    }
+
 }
 
 void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath)
@@ -182,24 +208,36 @@ bool ModelLoader::IsGLTFFile(const std::string& path)
 Node ModelLoader::ReadNode(aiNode* node)
 {
     Node result;
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
-    aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトル形式に転置
 
-    for (int row = 0; row < 4; ++row)
+    // Assimpの変換行列からスケール、回転(クォータニオン)、平行移動を抽出
+    aiVector3D scale, translate;
+    aiQuaternion rotate;
+    node->mTransformation.Decompose(scale, rotate, translate);
+
+    // transformにセット
+    result.transform.scale_ = { scale.x, scale.y, scale.z };
+
+    // 回転の軸反転と回転方向の補正
+    result.transform.rotationQuaternion_ = { rotate.x, -rotate.y, -rotate.z, rotate.w };
+
+    // 平行移動のx軸反転（こちらも座標系に応じて調整）
+    result.transform.translation_ = { -translate.x, translate.y, translate.z };
+
+    // ローカル行列を作成
+    result.localMatrix = Matrix4x4::MakeAffine(
+        result.transform.scale_,
+        result.transform.rotationQuaternion_,
+        result.transform.translation_
+    );
+
+    result.name = node->mName.C_Str();
+
+    // 子ノードも再帰的に読み込み
+    result.children.resize(node->mNumChildren);
+    for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
     {
-        for (int col = 0; col < 4; ++col)
-        {
-            result.localMatrix.m[row][col] = aiLocalMatrix[row][col];
-        }
+        result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
     }
-
-	result.name = node->mName.C_Str(); // Node名を格納
-    result.children.resize(node->mNumChildren); // 子供の数だけ確保
-	for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
-	{
-        // 再帰的に読んで階層構造を作っていく
-		result.children[childIndex] = ReadNode(node->mChildren[childIndex]); 
-	}
 
     return result;
 }

@@ -6,8 +6,8 @@
 enum class AnimationID
 {
     // 基本的なアニメーション
-    cube,
-    ryu,
+    sneakWalk,
+    shrimp,
 
     count
 };
@@ -27,8 +27,8 @@ private:
     {
         {
             // 基本的なアニメーション
-            { AnimationID::cube,       "Resources/models/animatedCube/AnimatedCube.gltf" },
-            { AnimationID::ryu,     "Resources/models/animated/animatedRyu.gltf" },
+            { AnimationID::sneakWalk,       "Resources/models/animated/sneakWalk.gltf" },
+            { AnimationID::shrimp,     "Resources/models/animated/Shrimp.gltf" },
         }
     };
 };

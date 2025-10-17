@@ -320,9 +320,6 @@
     <ClCompile Include="Engine\Core\TimeManager.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Resource\SRVAllocator.cpp">
-      <Filter>Engine\Graphics\Resource</Filter>
-    </ClCompile>
     <ClCompile Include="externals\ImGuiFileDialog.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -397,6 +394,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Mesh\AnimationModel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -688,6 +688,7 @@
     <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
+    <ClInclude Include="Engine\Mesh\AnimationModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -774,5 +775,6 @@
     <FxCompile Include="Resources\Shaders\Skybox.VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\SkinningObject3D.VS.hlsl" />
   </ItemGroup>
 </Project>

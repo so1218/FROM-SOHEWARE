@@ -80,7 +80,6 @@ void Game::Update()
         }
     }
 
-
     if (!engine_->debugCamera_->IsEnabled())
     {
         camera_->UpdateViewProjectionMatrix();

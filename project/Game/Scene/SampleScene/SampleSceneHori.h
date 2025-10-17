@@ -10,6 +10,17 @@
 #include "Enemy.h"
 #include "ShakeEffect.h"
 #include "AnimationData.h"
+#include "AnimationModel.h"
+
+struct Particle
+{
+    Vector3 position;
+    Vector3 velocity;
+    float lifetime;
+    bool active;
+    ParticleType type;
+    uint32_t textureIndex;
+};
 
 class SampleSceneHori : public BaseScene
 {
@@ -33,7 +44,6 @@ public:
 
     void ApplyGlobalVariables();
     void SaveGlobalVariables();
-
 private:
     // メンバー変数
     Engine* engine_;
@@ -45,14 +55,24 @@ private:
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;
 
+
 	ModelData modelData_;
     Animation animation_;
     AnimatedModelData animeModelData_;
+
+    Skeleton skeleton_;
+    SkinCluster skinCluster_;
+    float animationTime_;
+
+    std::unique_ptr<AnimationModel> animationShurimp_;
+    std::unique_ptr<AnimationModel> animationSneakWalk_;
 
     ShakeEffect shake;
 
     Vector3 baseTranslation_;
     Vector3 originalTranslation_;
+
+    std::vector<Particle> particles_;
 
     bool isEditorMode_ = false;
 

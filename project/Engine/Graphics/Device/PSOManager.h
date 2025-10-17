@@ -28,6 +28,7 @@ public:
     // 通常の3D描画用PSO
     Microsoft::WRL::ComPtr<ID3D12PipelineState> pso3D_;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> pso3DWireframe_;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> psoSkinning_;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> psoGrid_;
     // 線描画用PSO
     Microsoft::WRL::ComPtr<ID3D12PipelineState> psoLine_;
@@ -51,6 +52,7 @@ private:
     // 通常のグラフィックスパイプラインステート記述子を設定
     void Create3DPSO();
     void Create3DWireframePSO();
+    void CreateSkinningPSO();
     void CreateGridPSO();
     // 線描画用パイプラインステート記述子を設定
     void CreateLinePSO();
@@ -71,6 +73,7 @@ private:
     // シェーダーバイナリ
     Microsoft::WRL::ComPtr<IDxcBlob> vsBlob3D_;
     Microsoft::WRL::ComPtr<IDxcBlob> psBlob3D_;
+    Microsoft::WRL::ComPtr<IDxcBlob> vsBlobSkinning_;
     Microsoft::WRL::ComPtr<IDxcBlob> vsBlobLine_;
     Microsoft::WRL::ComPtr<IDxcBlob> psBlobLine_;
     Microsoft::WRL::ComPtr<IDxcBlob> vsBlobParticle_;
@@ -88,9 +91,10 @@ private:
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc_{}; 
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescParticle_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescDepth_{};
-    D3D12_INPUT_ELEMENT_DESC inputElementDesc_[3] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDesc_[5] = {};
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescsParticle_;
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc3d_{};
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescSkinning_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescLine_{};    
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescParticle_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc3dWireFrame_{};

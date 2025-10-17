@@ -17,8 +17,8 @@ enum class ModelID
     field,
 
 	// プレイヤー関連
-    animatedCube,
-    animatedRyu,
+    sneakWalk,
+    shrimp,
 
 	// 敵関連
     dragon,
@@ -59,8 +59,8 @@ private:
             { ModelID::field,  "Resources/models/field/field.obj" },
 
             // プレイヤー関連
-            { ModelID::animatedCube,  "Resources/models/animatedCube/ani.gltf" },
-            { ModelID::animatedRyu,  "Resources/models/animated/animatedRyu.gltf" },
+            { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk.gltf" },
+            { ModelID::shrimp,  "Resources/models/animated/Shrimp.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },

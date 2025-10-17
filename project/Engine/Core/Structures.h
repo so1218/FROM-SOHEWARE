@@ -8,6 +8,8 @@
 #include <d3d12.h> 
 #include <wrl.h> 
 #include <cstdint>
+#include <map>
+#include <span>
 
 struct VertexData
 {
@@ -70,6 +72,18 @@ struct MaterialHandle
     MaterialType type;
 };
 
+struct VertexWeightData
+{
+    float weight;
+    uint32_t vertexIndex;
+};
+
+struct JointWeightData
+{
+    Matrix4x4 inverseBindPoseMatrix;
+    std::vector<VertexWeightData> vertexWeights;
+};
+
 struct Node
 {
 	WorldTransform transform;
@@ -86,6 +100,7 @@ struct ModelData
     MaterialHandle materialHandle;
     uint32_t textureHandle;
 	Node rootNode;
+	std::map<std::string, JointWeightData> skinClusterData;
 };
 
 struct VertexKey 
