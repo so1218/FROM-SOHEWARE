@@ -15,6 +15,7 @@
 
 class Engine;
 class ParticleEmitter;
+class ParticleEditor;
 
 class ParticleSystem
 {
@@ -30,7 +31,7 @@ public:
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     void LoadParticleDefinitionFromJson(ParticleType type);
     std::unique_ptr<ParticleEmitter> CreateEmitter(ParticleType type, const std::string& presetName);
-    void ShowEditor();
+    void Draw();
     void SaveConfigToJson(ParticleType type);
     void ApplyEmitterConfigToLiveEmitters(ParticleType type, const std::string& presetName);
     const ParticleConfig& GetConfig(ParticleType type, const std::string& presetName) const { return definitions_.at(type).at(presetName).particleConfig; }
@@ -39,6 +40,7 @@ public:
 public:
     Engine* engine_;
     std::vector<std::unique_ptr<ParticleEmitter>> emitters_;  // エミッターのリスト
+    std::unique_ptr<ParticleEditor> editor_;
     std::vector<ParticleState> particles_;
     std::map<ParticleType, std::map<std::string, ParticleDefinition>> definitions_;
     std::unordered_map<ParticleType, std::unique_ptr<IParticleBehavior>> behaviors_;
