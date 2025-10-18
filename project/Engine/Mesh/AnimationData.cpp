@@ -205,6 +205,23 @@ SkinCluster CreateSkinCluster(
 		}
 	}
 
+	// ウェイトの正規化処理を追加
+	for (auto& influence : skinCluster.mappedInfluence)
+	{
+		float totalWeight = 0.0f;
+		for (float w : influence.weights)
+		{
+			totalWeight += w;
+		}
+
+		if (totalWeight > 0.0f)
+		{
+			for (float& w : influence.weights)
+			{
+				w /= totalWeight;
+			}
+		}
+	}
 
 	return skinCluster;
 }	
