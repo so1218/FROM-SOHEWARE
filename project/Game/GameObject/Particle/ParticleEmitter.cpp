@@ -17,12 +17,18 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
     // 定期的にパーティクルを生成
     while (timeSinceLastSpawn_ >= spawnInterval_)
     {
-        WorldTransform worldTransform = {
-            { 1.0f, 1.0f, 1.0f },
-            { 0.0f, 0.0f, 0.0f },
-            position_,
-        };
-        particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_, amount_);
+        // amount_の数だけループしてパーティクルを生成
+        for (int i = 0; i < amount_; ++i)
+        {
+            WorldTransform worldTransform = {
+                { 1.0f, 1.0f, 1.0f },
+                { 0.0f, 0.0f, 0.0f },
+                position_,
+            };
+            // 1つのパーティクルを生成
+            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_);
+        }
+
         timeSinceLastSpawn_ -= spawnInterval_;
     }
 }

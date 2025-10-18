@@ -27,18 +27,18 @@ public:
     ~ParticleSystem();
 
     void Initialize(Engine* engine);
-    void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, int amount);
+    void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime);
     void Update();
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);
     void Draw();
-    // presetNameだけでConfigを取得できるようにする
+    // presetNameだけでConfigを取得できるように
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }
 
 public:
     Engine* engine_;
-    std::vector<std::unique_ptr<ParticleEmitter>> emitters_;  // エミッターのリスト
+    std::vector<std::unique_ptr<ParticleEmitter>> emitters_; 
     std::unique_ptr<ParticleEditor> editor_;
     std::unique_ptr<ParticleConfigManager> configManager_;
     std::vector<ParticleState> particles_;

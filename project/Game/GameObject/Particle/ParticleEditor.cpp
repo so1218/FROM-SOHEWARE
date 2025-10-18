@@ -85,9 +85,7 @@ void ParticleEditor::ShowEditor()
 {
     if (ImGui::Begin("パーティクルエディター"))
     {
-        // ▼▼▼ UIの変更 ▼▼▼
-
-        // 1. definitions_マップのキーからプリセット名リストを直接作成
+        // definitions_マップのキーからプリセット名リストを直接作成
         std::vector<const char*> presetNames;
         std::vector<std::string> presetNameStrings;
         for (const auto& [name, def] : particleSystem_->definitions_) {
@@ -97,7 +95,7 @@ void ParticleEditor::ShowEditor()
             presetNames.push_back(name.c_str());
         }
 
-        // 2. 単一のコンボボックスでPresetを選択
+        // 単一のコンボボックスでPresetを選択
         static int selectedPresetIdx = 0;
         if (presetNames.empty()) {
             ImGui::Text("No presets available.");
@@ -156,17 +154,17 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("Physics Module"))
                 {
-                    auto& phys = config.physics; // ショートカット
+                    auto& phys = config.physics; 
                     ImGui::Checkbox("Enabled##Physics", &phys.enabled);
                     ImGui::DragFloat("Gravity", &phys.gravity, 0.001f, 0.0f, 10.0f);
-                    ImGui::DragFloat("Drag", &phys.drag, 0.001f, 0.0f, 1.0f); // 空気抵抗は0～1の範囲が一般的
+                    ImGui::DragFloat("Drag", &phys.drag, 0.001f, 0.0f, 1.0f); 
                     ImGui::TreePop();
                 }
 
                 ImGui::Separator();
                 if (ImGui::TreeNode("Rotation Over Lifetime Module"))
                 {
-                    auto& rot = config.rotation; // ショートカット
+                    auto& rot = config.rotation; 
                     ImGui::Checkbox("Enabled##Rotation", &rot.enabled);
                     ImGui::Checkbox("Random Start Rotation", &rot.randomStartRotation);
                     ImGui::DragFloat("Angular Velocity", &rot.angularVelocity, 0.001f, 0.0f, 0.0f, "%.3f deg/frame");
@@ -176,7 +174,7 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("Shape Module"))
                 {
-                    auto& shape = config.shape; // ショートカット
+                    auto& shape = config.shape; 
 
                     // 形状タイプを選択するコンボボックス
                     const char* shapeTypes[] = { "Point", "Box", "Sphere", "Circle" };
@@ -199,7 +197,6 @@ void ParticleEditor::ShowEditor()
                         break;
 
                     case ShapeModule::Type::Point:
-                        // Pointには追加設定なし
                         break;
                     }
 
@@ -209,32 +206,35 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("Texture Sheet Module"))
                 {
-                    auto& texSheet = config.textureSheet; // ショートカット
+                    auto& texSheet = config.textureSheet; 
 
                     ImGui::Checkbox("Enabled##Texture", &texSheet.enabled);
 
-                    // --- テクスチャ選択UI ---
+                    // テクスチャ選択UI
                     static int selectedTextureIdx = 0;
 
-                    // 1. 先に現在のインデックスを探す
-                    for (size_t i = 0; i < particleTextureList.size(); ++i) {
-                        if (TextureHandle::Get(particleTextureList[i].second) == texSheet.textureHandle) {
+                    // 現在のインデックスを探す
+                    for (size_t i = 0; i < particleTextureList.size(); ++i)
+                    {
+                        if (TextureHandle::Get(particleTextureList[i].second) == texSheet.textureHandle)
+                        {
                             selectedTextureIdx = static_cast<int>(i);
-                            break; // ▼▼▼ 変更点 2: 'break' を追加 ▼▼▼
+                            break;
                         }
                     }
 
-                    // 2. 表示用の名前配列を作る
+                    // 表示用の名前配列を作る
                     std::vector<const char*> textureNameArray;
-                    for (const auto& pair : particleTextureList) {
+                    for (const auto& pair : particleTextureList)
+                    {
                         textureNameArray.push_back(pair.first);
                     }
 
-                    // 3. Comboボックスを表示し、選択されたらハンドルを更新する
-                    if (ImGui::Combo("Texture Sheet", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) {
+                    // 選択されたらハンドルを更新
+                    if (ImGui::Combo("Texture Sheet", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) 
+                    {
                         texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
                     }
-                    // --- テクスチャ選択UIここまで ---
 
                     ImGui::DragInt("Tiles X", &texSheet.tilesX, 1, 1, 16);
                     ImGui::DragInt("Tiles Y", &texSheet.tilesY, 1, 1, 16);
@@ -322,7 +322,7 @@ void ParticleEditor::ShowEditor()
 
 void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetName)
 {
-    // 更新する設定（設計図）を presetName だけで特定する
+    // 更新する設定をpresetNameで特定
     const auto& emitterConfig = particleSystem_->definitions_.at(presetName).emitterConfig;
 
     // 全てのライブエミッターをループ
@@ -331,7 +331,7 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
         // プリセット名が一致するエミッターを見つける
         if (emitter->presetName_ == presetName)
         {
-            // インスタンスの値を設計図の値で上書きする
+            // インスタンスの値をemitterConfigの値で上書きする
             emitter->position_ = emitterConfig.position;
             emitter->spawnInterval_ = emitterConfig.spawnInterval;
             emitter->lifetime_ = emitterConfig.lifetime;
