@@ -1,5 +1,5 @@
 #pragma once
-#include "Particle.h"
+#include "ParticleSystem.h"
 
 class ParticleEditor
 {

@@ -227,11 +227,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Effect\Easing.cpp" />
     <ClCompile Include="Game\Effect\Fade.cpp" />
     <ClCompile Include="Game\Game.cpp" />
-    <ClCompile Include="Game\GameObject\Particle\Behavior\IParticleBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\Map\MapChipField.cpp" />
-    <ClCompile Include="Game\GameObject\Particle\Particle.cpp" />
+    <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Game\GameObject\Skydome.cpp" />
     <ClCompile Include="Game\Physics\Collision\Collider.cpp" />
     <ClCompile Include="Game\Physics\Collision\Collision.cpp" />
@@ -339,7 +338,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />
-    <ClInclude Include="Game\GameObject\Particle\Particle.h" />
+    <ClInclude Include="Game\GameObject\Particle\ParticleSystem.h" />
     <ClInclude Include="Game\GameObject\Skydome.h" />
     <ClInclude Include="Game\Physics\Collision\Collider.h" />
     <ClInclude Include="Game\Physics\Collision\Collision.h" />

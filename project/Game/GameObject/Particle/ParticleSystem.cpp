@@ -1,6 +1,6 @@
 #define _USE_MATH_DEFINES
 
-#include "Particle.h"
+#include "ParticleSystem.h"
 #include "Engine.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
@@ -115,24 +115,24 @@ void ParticleSystem::Update()
     }
 
     // パーティクル更新処理
-    for (auto it = particles_.begin(); it != particles_.end(); ) 
+    for (auto particle = particles_.begin(); particle != particles_.end(); ) 
     {
-        auto behavior = behaviors_.find(it->type);
+        auto behavior = behaviors_.find(particle->type);
         if (behavior != behaviors_.end()) 
         {
-            behavior->second->Update(*it);
+            behavior->second->Update(*particle);
         }
 
-        if (it->hasLifetime)
+        if (particle->hasLifetime)
         {
-            it->lifetime -= TimeManager::GetInstance()->GetDeltaTime();
-            if (it->lifetime <= 0.0f)
+            particle->lifetime -= TimeManager::GetInstance()->GetDeltaTime();
+            if (particle->lifetime <= 0.0f)
             {
-                it = particles_.erase(it); // 寿命が尽きたパーティクルを消去
+                particle = particles_.erase(particle); // 寿命が尽きたパーティクルを消去
                 continue;
             }
         }
-        ++it;
+        ++particle;
     }
    
     // パーティクルインスタンスの更新

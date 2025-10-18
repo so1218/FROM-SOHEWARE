@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma once
-#include "Particle.h" 
+#include "ParticleSystem.h" 
 
 class ParticleConfigManager
 {

@@ -17,7 +17,7 @@
 #include "DebugCamera.h"
 #include "RenderCommon.h"
 #include "debugGuiManager.h"
-#include "Particle.h"
+#include "ParticleSystem.h"
 #include "CameraManager.h" 
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 

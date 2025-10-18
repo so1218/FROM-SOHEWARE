@@ -218,7 +218,7 @@
     <ClCompile Include="Engine\Graphics\Utility\BlendMode.cpp">
       <Filter>Engine\Graphics\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\Particle.cpp">
+    <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Mesh\Model.cpp">
@@ -378,9 +378,6 @@
     <ClCompile Include="Game\Stage\StageManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\Behavior\IParticleBehavior.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -527,7 +524,7 @@
     <ClInclude Include="Engine\Mesh\Model.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Particle\Particle.h">
+    <ClInclude Include="Game\GameObject\Particle\ParticleSystem.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core\RenderCommon.h">

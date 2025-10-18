@@ -1,7 +1,7 @@
 #pragma once
 #include "Vector3.h"
 #include "WorldTransform.h"
-#include "Particle.h"
+#include "ParticleSystem.h"
 
 class ParticleEmitter
 {

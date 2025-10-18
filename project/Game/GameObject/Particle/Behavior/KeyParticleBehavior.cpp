@@ -51,14 +51,7 @@ void KeyParticleBehavior::Update(ParticleState& particle)
                 particle.fadeOutEase.isEase_ = true;
                 particle.hasExisted = true;
 
-                if (rand() % 2 == 0)
-                {
-                    particle.thetaVel = float(rand() % 2 + 0.01f);
-                }
-                else
-                {
-                    particle.thetaVel = -float(rand() % 2 + 0.01f);
-                }
+                particle.thetaVel = float(rand() % 2 + 0.01f);
 
             }
             particle.frameCount = 0;
