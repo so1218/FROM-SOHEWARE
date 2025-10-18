@@ -230,7 +230,10 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
     emitters_.push_back(std::move(emitter));
 }
 
-void ParticleSystem::Draw()
+void ParticleSystem::Draw(Camera* camera)
 {
+    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
+    engine_->DrawParticles(*camera);
+    engine_->SetBlendMode(BlendMode::kBlendModeNormal);
     editor_->ShowEditor();
 }

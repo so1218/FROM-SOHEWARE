@@ -72,9 +72,8 @@ void PlayScene::HandleCollisions()
 void PlayScene::Draw()
 {
     /*player_->Draw();*/
-    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
-    engine_->DrawParticles(*camera_);
-    engine_->SetBlendMode(BlendMode::kBlendModeNormal);
+
+    engine_->particleSystem_->Draw(camera_);
 }
 
 void PlayScene::DebugDraw()
@@ -85,7 +84,6 @@ void PlayScene::DebugDraw()
 
 	player_->DebugDraw();
     enemy_->DebugDraw();
-    engine_->particleSystem_->Draw();
 }
 
 void PlayScene::Finalize()

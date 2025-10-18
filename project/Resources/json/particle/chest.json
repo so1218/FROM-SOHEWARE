@@ -6,28 +6,35 @@
         "looping": true,
         "playOnAwake": true,
         "position": [
-            -7.099999904632568,
+            -6.699999809265137,
             0.0,
             0.0
         ],
-        "spawnInterval": 0.2199999988079071
+        "spawnInterval": 0.11999999731779099
     },
     "ParticleConfig": {
-        "baseColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.0
-        ],
+        "attractionModule": {
+            "enabled": false,
+            "strength": 1.0,
+            "target": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 2633957376,
-            "startColor": 1381174015
+            "endColor": 754909184,
+            "startColor": 1375734527
         },
         "physicsModule": {
             "drag": 0.0,
             "enabled": false,
-            "gravity": 0.0
+            "gravity": [
+                0.0,
+                -9.800000190734863,
+                0.0
+            ]
         },
         "rotationModule": {
             "angularVelocity": 5.0,
@@ -42,7 +49,11 @@
             ],
             "emitFromEdge": false,
             "enabled": true,
-            "radius": 2.0999999046325684,
+            "radius": [
+                10.0,
+                10.0,
+                10.0
+            ],
             "type": 1
         },
         "sizeOverLifetimeModule": {
@@ -60,7 +71,6 @@
                 1.0
             ]
         },
-        "textureIndex": 0,
         "textureSheetModule": {
             "enabled": true,
             "framesPerSecond": 10.0,
@@ -79,6 +89,16 @@
             "enabled": true,
             "randomDirection": true,
             "speed": 4.550000190734863
+        },
+        "vortexModule": {
+            "center": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enabled": false,
+            "orbitalSpeed": 10.0,
+            "rotationSpeed": 90.0
         }
     }
 }
