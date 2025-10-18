@@ -1,6 +1,8 @@
 #include "ParticleEditor.h"
 #include "imGuiManager.h"
 #include "TextureHandle.h"
+#include "ParticleEmitter.h"
+#include "ParticleConfigManager.h" 
 
 namespace
 {
@@ -130,7 +132,7 @@ void ParticleEditor::ShowEditor()
 
                 // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
                 if (valueChanged) {
-                    particleSystem_->ApplyEmitterConfigToLiveEmitters(type, selectedPresetName);
+                    ApplyEmitterConfigToLiveEmitters(type, selectedPresetName);
                 }
             }
 
@@ -213,7 +215,7 @@ void ParticleEditor::ShowEditor()
 
             if (ImGui::Button("Save"))
             {
-                particleSystem_->SaveConfigToJson(type);
+                particleSystem_->configManager_->SaveConfigToJson(type);
 
                 std::string message = std::format("{}Particles.json saved", ParticleTypeToString(type));
                 MessageBoxA(nullptr, message.c_str(), "Particles", 0);
@@ -225,4 +227,24 @@ void ParticleEditor::ShowEditor()
         }
     }
     ImGui::End();
+}
+
+void ParticleEditor::ApplyEmitterConfigToLiveEmitters(ParticleType type, const std::string& presetName)
+{
+    // 更新する設定（設計図）を type と presetName の両方で特定する
+    const auto& emitterConfig = particleSystem_->definitions_.at(type).at(presetName).emitterConfig;
+
+    // 全てのライブエミッターをループ
+    for (auto& emitter : particleSystem_->emitters_)
+    {
+        // タイプとプリセット名の両方が一致するエミッターを見つける
+        if (emitter->type_ == type && emitter->presetName_ == presetName) 
+        {
+            // インスタンスの値を設計図の値で上書きする
+            emitter->position_ = emitterConfig.position;
+            emitter->spawnInterval_ = emitterConfig.spawnInterval;
+            emitter->lifetime_ = emitterConfig.lifetime;
+            emitter->amount_ = emitterConfig.amount;
+        }
+    }
 }
