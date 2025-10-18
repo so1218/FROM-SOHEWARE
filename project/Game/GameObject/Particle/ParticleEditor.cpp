@@ -169,7 +169,7 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& phys = config.physics; 
                     ImGui::Checkbox("Enabled##Physics", &phys.enabled);
-                    ImGui::DragFloat("Gravity", &phys.gravity, 0.001f, 0.0f, 10.0f);
+                    ImGui::DragFloat3("Gravity", &phys.gravity.x, 0.1f);
                     ImGui::DragFloat("Drag", &phys.drag, 0.001f, 0.0f, 1.0f); 
                     ImGui::TreePop();
                 }

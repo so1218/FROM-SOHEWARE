@@ -134,7 +134,7 @@ void ParticleSystem::Update()
         // Physics Module: 速度を更新
         if (config.physics.enabled)
         {
-            particleState.velocity.y -= config.physics.gravity * deltaTime;
+            particleState.velocity += config.physics.gravity * deltaTime;
             particleState.velocity = particleState.velocity * (1.0f - (config.physics.drag * deltaTime));
         }
 

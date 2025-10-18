@@ -63,7 +63,15 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& physJson = configJson["physicsModule"];
                     config.physics.enabled = physJson.value("enabled", false);
-                    config.physics.gravity = physJson.value("gravity", 0.0f);
+                    if (physJson.contains("gravity") && physJson["gravity"].is_array()) 
+                    {
+                        config.physics.gravity = 
+                        {
+                            physJson["gravity"][0].get<float>(),
+                            physJson["gravity"][1].get<float>(),
+                            physJson["gravity"][2].get<float>()
+                        };
+                    }
                     config.physics.drag = physJson.value("drag", 0.0f);
                 }
 
@@ -212,7 +220,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "physicsModule",
         {
             { "enabled", config.physics.enabled },
-            { "gravity", config.physics.gravity },
+            { "gravity", { config.physics.gravity.x, config.physics.gravity.y, config.physics.gravity.z }},
             { "drag", config.physics.drag }
         }},
 

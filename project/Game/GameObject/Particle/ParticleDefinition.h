@@ -127,7 +127,7 @@ struct VelocityModule
 struct PhysicsModule
 {
     bool enabled = false;
-    float gravity = 0.0f;
+    Vector3 gravity = { 0.0f, -9.8f, 0.0f };
     float drag = 0.0f; // 空気抵抗の割合 (0.01 = 1%減速)
 };
 
@@ -164,7 +164,8 @@ struct ColorOverLifetimeModule
     }
 };
 
-struct SizeOverLifetimeModule {
+struct SizeOverLifetimeModule 
+{
     bool enabled = true;
     Vector3 startScale = { 1.0f, 1.0f, 1.0f };
     Vector3 endScale = { 0.0f, 0.0f, 0.0f };
@@ -190,7 +191,8 @@ struct SizeOverLifetimeModule {
         }
     }
 
-    SizeOverLifetimeModule() {
+    SizeOverLifetimeModule() 
+    {
         // デフォルトのイージングタイプを設定
         easing.SetEasing(EasingType::EaseLinear);
     }
@@ -208,7 +210,8 @@ struct TextureSheetAnimationModule
     bool looping = true;
 };
 
-struct NoiseModule {
+struct NoiseModule
+{
     bool enabled = false;
     float strength = 1.0f;   // 揺らぎの強さ
     float frequency = 1.0f;  // 揺らぎの細かさ（周波数）
@@ -216,14 +219,16 @@ struct NoiseModule {
     bool separateAxes = false; // X, Y, Z軸で別々の設定を使うか
 };
 
-struct VortexModule {
+struct VortexModule 
+{
     bool enabled = false;
     Vector3 center = { 0.f, 0.f, 0.f }; // 渦の中心
     float rotationSpeed = 90.0f;    // 1秒あたりの回転速度
     float orbitalSpeed = 10.0f;     // 中心へ向かう/離れる速度（負の値で離れる）
 };
 
-struct TrailModule {
+struct TrailModule
+{
     bool enabled = false;
     float lifetime = 0.5f; // 軌跡が消えるまでの時間
     // 色や太さを軌跡の始点から終点にかけて変えるためのグラデーション設定など
