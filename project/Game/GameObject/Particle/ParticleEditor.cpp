@@ -138,8 +138,111 @@ void ParticleEditor::ShowEditor()
 
             if (ImGui::CollapsingHeader("Particle Config"))
             {
-                ImGui::DragFloat("Speed", &config.speed, 0.01f);
-                ImGui::DragFloat("Gravity", &config.gravity, 0.01f);
+                if (ImGui::TreeNode("Velocity Module"))
+                {
+                    // config.velocityへの参照
+                    auto& vel = config.velocity;
+
+                    ImGui::Checkbox("Enabled", &vel.enabled);
+                    ImGui::DragFloat("Speed", &vel.speed, 0.01f, 0.0f, 1000.0f);
+                    ImGui::Checkbox("Random Direction", &vel.randomDirection);
+
+                    // randomDirectionがtrueのときだけangleRangeを表示
+                    if (vel.randomDirection) {
+                        ImGui::SliderFloat("Angle Range", &vel.angleRange, 0.0f, 360.0f, "%.0f度");
+                    }
+
+                    // randomDirectionがfalseのときは固定方向、trueのときは中心方向として使う
+                    ImGui::DragFloat3("Direction", &vel.direction.x, 0.01f);
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                ImGui::Separator();
+                if (ImGui::TreeNode("Physics Module"))
+                {
+                    auto& phys = config.physics; // ショートカット
+                    ImGui::Checkbox("Enabled##Physics", &phys.enabled);
+                    ImGui::DragFloat("Gravity", &phys.gravity, 0.001f, 0.0f, 10.0f);
+                    ImGui::DragFloat("Drag", &phys.drag, 0.001f, 0.0f, 1.0f); // 空気抵抗は0～1の範囲が一般的
+                    ImGui::TreePop();
+                }
+
+                ImGui::Separator();
+                if (ImGui::TreeNode("Rotation Over Lifetime Module"))
+                {
+                    auto& rot = config.rotation; // ショートカット
+                    ImGui::Checkbox("Enabled##Rotation", &rot.enabled);
+                    ImGui::Checkbox("Random Start Rotation", &rot.randomStartRotation);
+                    ImGui::DragFloat("Angular Velocity", &rot.angularVelocity, 0.001f, 0.0f, 0.0f, "%.3f deg/frame");
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                if (ImGui::TreeNode("Shape Module"))
+                {
+                    auto& shape = config.shape; // ショートカット
+
+                    // 形状タイプを選択するコンボボックス
+                    const char* shapeTypes[] = { "Point", "Box", "Sphere", "Circle" };
+                    int currentShapeType = static_cast<int>(shape.type);
+                    if (ImGui::Combo("Shape Type", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes))) {
+                        shape.type = static_cast<ShapeModule::Type>(currentShapeType);
+                    }
+
+                    // 選択された形状に応じて、関連するUIのみを表示
+                    switch (shape.type)
+                    {
+                    case ShapeModule::Type::Box:
+                        ImGui::DragFloat3("Box Size", &shape.boxSize.x, 0.1f);
+                        break;
+
+                    case ShapeModule::Type::Sphere:
+                    case ShapeModule::Type::Circle:
+                        ImGui::DragFloat("Radius", &shape.radius, 0.1f, 0.0f);
+                        ImGui::Checkbox("Emit from Edge", &shape.emitFromEdge);
+                        break;
+
+                    case ShapeModule::Type::Point:
+                        // Pointには追加設定なし
+                        break;
+                    }
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                if (ImGui::TreeNode("Texture Sheet Module"))
+                {
+                    auto& texSheet = config.textureSheet; // ショートカット
+
+                    ImGui::Checkbox("Enabled##Texture", &texSheet.enabled);
+
+                    // --- テクスチャ選択UI ---
+                    int selectedTextureIdx = 0;
+                    // (textureNameArrayの準備は既存のコードを流用)
+                    std::vector<const char*> textureNameArray;
+                    for (const auto& pair : particleTextureList) {
+                        textureNameArray.push_back(pair.first);
+                        if (TextureHandle::Get(pair.second) == texSheet.textureHandle) {
+                            selectedTextureIdx = static_cast<int>(textureNameArray.size() - 1);
+                        }
+                    }
+
+                    if (ImGui::Combo("Texture Sheet", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) {
+                        texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
+                    }
+                    // --- テクスチャ選択UIここまで ---
+
+                    ImGui::DragInt("Tiles X", &texSheet.tilesX, 1, 1, 16);
+                    ImGui::DragInt("Tiles Y", &texSheet.tilesY, 1, 1, 16);
+                    ImGui::DragFloat("Frames Per Second", &texSheet.framesPerSecond, 0.1f, 0.0f, 60.0f);
+                    ImGui::Checkbox("Looping", &texSheet.looping);
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
 
                 int selectedTextureIdx = 0;
                 for (size_t i = 0; i < particleTextureList.size(); ++i) {
@@ -160,8 +263,6 @@ void ParticleEditor::ShowEditor()
                     config.textureIndex = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
                 }
                 ImGui::ColorEdit4("Base Color", &config.baseColor.x);
-                // emitterRange
-                ImGui::DragFloat3("Emitter Range", &config.emitterRange.x, 0.01f);
 
                 // fadeOutEase interval
                 ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase.frameCount_, 1);
@@ -185,32 +286,6 @@ void ParticleEditor::ShowEditor()
                 ImGui::DragFloat3("Start Scale", &config.startScale.x, 0.01f);
                 ImGui::DragFloat3("End Scale", &config.endScale.x, 0.01f);
 
-            }
-
-            if (ImGui::CollapsingHeader("State (Live Particles)"))
-            {
-                int i = 0;
-                for (auto& particle : particleSystem_->particles_)
-                {
-                    if (particle.type != type) continue;
-
-                    std::string label = "Particle[" + std::to_string(i++) + "]";
-                    if (ImGui::TreeNode(label.c_str()))
-                    {
-                        ImGui::DragFloat3("Position", &particle.transform->translation_.x, 0.1f);
-                        ImGui::DragFloat("Speed", &particle.speed, 0.01f);
-                        ImGui::ColorEdit4("Color", &particle.color.x);
-                        ImGui::Checkbox("IsExist", &particle.isExist);
-
-                        if (ImGui::Button("Apply Config Values"))
-                        {
-                            particle.speed = config.speed;
-                            particle.color = config.baseColor;
-                        }
-
-                        ImGui::TreePop();
-                    }
-                }
             }
 
             if (ImGui::Button("Save"))

@@ -228,6 +228,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Effect\Fade.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp" />
+    <ClCompile Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\Map\MapChipField.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp" />
@@ -335,6 +336,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Game\GameObject\Particle\Behavior\IParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
+    <ClInclude Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />

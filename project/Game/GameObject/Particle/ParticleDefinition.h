@@ -1,6 +1,7 @@
 #pragma once
 #include "Easing.h"
 #include "WorldTransform.h"
+#include "MathUtils.h"
 
 #include <memory>
 #include <string>
@@ -34,6 +35,164 @@ inline ParticleType StringToParticleType(const std::string& str)
     return ParticleType::None; // fallback
 }
 
+struct ShapeModule
+{
+    enum class Type { Point, Box, Sphere, Circle };
+
+    bool enabled = true;
+    Type type = Type::Circle;
+
+    // Circle / Sphere 共通設定
+    float radius = 10.0f;
+    bool emitFromEdge = false; // 縁からのみ生成するか
+
+    // Box 設定
+    Vector3 boxSize = { 20.0f, 20.0f, 20.0f };
+
+    // このモジュールに基づいて初期位置のオフセットを計算する関数
+    Vector3 GetInitialPositionOffset() const
+    {
+        switch (type)
+        {
+        case Type::Point:
+            return { 0.0f, 0.0f, 0.0f };
+
+        case Type::Box:
+            return {
+                RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
+                RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
+                RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
+            };
+
+        case Type::Circle:
+        {
+            float r = emitFromEdge ? radius : radius * sqrtf(RandomFloat(0.0f, 1.0f));
+            float theta = RandomFloat(0.0f, 2.0f * 3.14159f);
+            return { cosf(theta) * r, sinf(theta) * r, 0.0f };
+        }
+
+        case Type::Sphere:
+        {
+            // 球体状に均一な点を生成
+            float phi = RandomFloat(0.0f, 2.0f * 3.14159f);
+            float cosTheta = RandomFloat(-1.0f, 1.0f);
+            float theta = acosf(cosTheta);
+            float r = emitFromEdge ? radius : radius * cbrtf(RandomFloat(0.0f, 1.0f));
+
+            return {
+                r * sinf(theta) * cosf(phi),
+                r * sinf(theta) * sinf(phi),
+                r * cosf(theta)
+            };
+        }
+        }
+        return { 0.0f, 0.0f, 0.0f };
+    }
+};
+
+struct VelocityModule
+{
+    bool enabled = false;
+    float speed = 1.0f;
+    bool randomDirection = false;
+    float angleRange = 0.0f; 
+    Vector3 direction = { 1.0f, 0.0f, 0.0f };
+
+    Vector3 GetInitialVelocity() const
+    {
+        if (randomDirection)
+        {
+            // 1. 中心となる方向ベクトルを正規化
+            Vector3 d_norm = direction.Normalize();
+
+            // 2. d_normと直交する2つのベクトル(u, v)を生成し、局所的な座標系を作る
+            Vector3 up = { 0.0f, 1.0f, 0.0f };
+            // 中心軸がY軸とほぼ平行な場合は、別のベクトルを使って外積を計算する
+            if (abs(d_norm.y) > 0.999f) {
+                up = { 1.0f, 0.0f, 0.0f };
+            }
+            Vector3 u = CrossProduct(d_norm, up).Normalize();
+            Vector3 v = CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化される
+
+            // 3. 円錐状に広がるためのランダムな角度を2つ生成
+            // phi: 中心軸周りの回転角度 (0° ～ 360°)
+            float phi = RandomFloat(0.0f, 2.0f * PI);
+            // theta: 中心軸からの広がり角度 (0° ～ angleRange/2)
+            // cosを使って分布を均一にする
+            float maxAngleRad = (angleRange / 2.0f) * (PI / 180.0f);
+            float cosTheta = RandomFloat(cosf(maxAngleRad), 1.0f);
+            float theta = acosf(cosTheta);
+
+            // 4. 局所座標系でランダムな方向ベクトルを計算
+            Vector3 randomDir =
+                (u * cosf(phi) * sinf(theta)) +
+                (v * sinf(phi) * sinf(theta)) +
+                (d_norm * cosf(theta));
+
+            return randomDir.Normalize() * speed;
+        }
+        else 
+        {
+            return direction.Normalize() * speed;
+        }
+    }
+};
+
+struct PhysicsModule
+{
+    bool enabled = false;
+    float gravity = 0.0f;
+    float drag = 0.0f; // 空気抵抗の割合 (0.01 = 1%減速)
+};
+
+struct RotationOverLifetimeModule
+{
+    bool enabled = false;
+    bool randomStartRotation = true;// 開始時の角度をランダムにするか
+    float angularVelocity = 5.0f; // 1フレームあたりの回転角度（度数法）
+};
+
+struct ColorOverLifetimeModule
+{
+    bool enabled = false;
+    unsigned int startColor = 0xffffffff;
+    unsigned int endColor = 0xffffff00;
+    Easing easing;
+    ColorOverLifetimeModule()
+    {
+        easing.SetEasing(EasingType::EaseLinear);
+        easing.frameCount_ = 60;
+    }
+
+    /* Vector4  Evaluate() const
+     {
+         
+     }*/
+};
+
+struct SizeOverLifetimeModule {
+    bool enabled = false;
+    Vector3 startScale = { 1.0f, 1.0f, 1.0f };
+    Vector3 endScale = { 0.0f, 0.0f, 0.0f };
+    EasingType easing = EasingType::EaseLinear;
+
+    //Vector3 Evaluate() const {
+    //    /*   return Ease(startScale, endScale, t, easing);*/
+    //}
+};
+
+struct TextureSheetAnimationModule
+{
+    bool enabled = false;
+    uint32_t textureHandle = 0; // スプライトシート全体のテクスチャハンドル
+
+    int tilesX = 1; // 横方向の分割数
+    int tilesY = 1; // 縦方向の分割数
+
+    float framesPerSecond = 10.0f; // 1秒あたりのフレーム数
+    bool looping = true;
+};
+
 struct ParticleConfig
 {
     ParticleType type;
@@ -60,6 +219,14 @@ struct ParticleConfig
     Vector3 initialPosition;
     bool isInfinite = false;
 
+    VelocityModule velocity;
+    SizeOverLifetimeModule sizeOverLifetime;
+    ColorOverLifetimeModule colorOverLifetime;
+    PhysicsModule physics; 
+    RotationOverLifetimeModule rotation; 
+    ShapeModule shape;
+    TextureSheetAnimationModule textureSheet;
+
     ParticleConfig()
     {
         startColor = 0xffffffff;
@@ -71,6 +238,7 @@ struct ParticleConfig
         initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
+
 
 
 struct ParticleState
@@ -113,6 +281,9 @@ struct ParticleState
     int spawnedCount = 0;        // 生成済みの数
     bool isSpawning = false;// 現在生成中かどうかのフラグ
     bool isInfinite = false;
+    Vector4 uvRect = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+    ParticleConfig config;
 
     ParticleState()
     {
@@ -130,6 +301,7 @@ struct ParticleState
         initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
+
 
 // エミッターの基本的な設定を保持する構造体
 struct EmitterConfig {

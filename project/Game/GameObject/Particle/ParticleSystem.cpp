@@ -54,6 +54,8 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
     particle.initialPosition = transform.translation_;
     particle.presetName = presetName;
 
+    particle.config = config;
+
     // タイプごとの初期値
     auto it = behaviors_.find(type);
     if (it != behaviors_.end()) 

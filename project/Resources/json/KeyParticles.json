@@ -31,19 +31,59 @@
                     13.5600004196167,
                     1.0
                 ],
-                "fadeOutFrameCount": 199,
+                "fadeOutFrameCount": 163,
                 "gravity": 0.0,
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
+                "physicsModule": {
+                    "drag": 0.19300000369548798,
+                    "enabled": false,
+                    "gravity": 0.01600000075995922
+                },
+                "rotationModule": {
+                    "angularVelocity": 5.0,
+                    "enabled": false,
+                    "randomStartRotation": true
+                },
                 "scaleFrameCount": 16,
+                "shapeModule": {
+                    "boxSize": [
+                        20.0,
+                        20.0,
+                        20.0
+                    ],
+                    "emitFromEdge": false,
+                    "enabled": true,
+                    "radius": 10.0,
+                    "type": 0
+                },
                 "speed": 0.029999999329447746,
                 "startColor": 3408199935,
                 "startScale": [
-                    0.0,
-                    0.0,
+                    15.199999809265137,
+                    14.710000038146973,
                     0.0
                 ],
-                "textureIndex": 29
+                "textureIndex": 29,
+                "textureSheetModule": {
+                    "enabled": false,
+                    "framesPerSecond": 10.0,
+                    "looping": true,
+                    "textureHandle": 0,
+                    "tilesX": 1,
+                    "tilesY": 1
+                },
+                "velocityModule": {
+                    "angleRange": 25.0,
+                    "direction": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "enabled": true,
+                    "randomDirection": true,
+                    "speed": 0.10000000149011612
+                }
             }
         },
         "doar": {
@@ -81,7 +121,28 @@
                 "gravity": 0.0,
                 "maxLifetime": 0.0,
                 "particleRadius": 0.0,
+                "physicsModule": {
+                    "drag": 0.0,
+                    "enabled": false,
+                    "gravity": 0.0
+                },
+                "rotationModule": {
+                    "angularVelocity": 5.0,
+                    "enabled": false,
+                    "randomStartRotation": true
+                },
                 "scaleFrameCount": 0,
+                "shapeModule": {
+                    "boxSize": [
+                        20.0,
+                        20.0,
+                        20.0
+                    ],
+                    "emitFromEdge": false,
+                    "enabled": true,
+                    "radius": 10.0,
+                    "type": 3
+                },
                 "speed": 0.019999999552965164,
                 "startColor": 4294967295,
                 "startScale": [
@@ -89,7 +150,26 @@
                     0.0,
                     0.0
                 ],
-                "textureIndex": 48
+                "textureIndex": 48,
+                "textureSheetModule": {
+                    "enabled": false,
+                    "framesPerSecond": 10.0,
+                    "looping": true,
+                    "textureHandle": 0,
+                    "tilesX": 1,
+                    "tilesY": 1
+                },
+                "velocityModule": {
+                    "angleRange": 90.0,
+                    "direction": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
+                    "enabled": false,
+                    "randomDirection": false,
+                    "speed": 1.0
+                }
             }
         }
     }

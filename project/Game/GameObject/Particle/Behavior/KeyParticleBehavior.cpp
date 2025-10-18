@@ -15,7 +15,6 @@ void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleConf
     particle.hasExisted = false;
     particle.frameCount = 0;
     particle.isEmit = false;
-    particle.speed = config.speed;
     particle.fadeOutEase.SetEasing(EasingType::EaseOutCirc);
     particle.scaleEase.SetEasing(EasingType::EaseLinear);
     particle.scaleEase.frameCount_ = config.scaleEase.frameCount_;
@@ -37,22 +36,25 @@ void KeyParticleBehavior::Update(ParticleState& particle)
             if (!particle.isExist)
             {
                 // ランダムで角度を設定
-                particle.theta = static_cast<float>(rand()) / RAND_MAX * 2.0f * float(PI);
+               /* particle.theta = static_cast<float>(rand()) / RAND_MAX * 2.0f * float(PI);*/
 
                 // 半径をランダムに生成 (0～emitterRange_ の範囲)
-                float radius = static_cast<float>(RandomFloat(0.05f, particle.emitterRange.x));
+               /* float radius = static_cast<float>(RandomFloat(0.05f, particle.emitterRange.x));*/
 
                 // 極座標 -> 直交座標
-                particle.transform->translation_.x = particle.initialPosition.x + radius * cos(particle.theta);
-                particle.transform->translation_.y = particle.initialPosition.y + radius * sin(particle.theta);
-                particle.velocity.x = particle.speed * cosf(particle.theta);
-                particle.velocity.y = particle.speed * sinf(particle.theta);
+               /* particle.transform->translation_.x = particle.initialPosition.x + radius * cos(particle.theta);
+                particle.transform->translation_.y = particle.initialPosition.y + radius * sin(particle.theta);*/
+                particle.velocity = particle.config.velocity.GetInitialVelocity();
                 particle.isExist = true;
                 particle.fadeOutEase.isEase_ = true;
                 particle.hasExisted = true;
 
-                particle.thetaVel = float(rand() % 2 + 0.01f);
+                if (particle.config.rotation.enabled && particle.config.rotation.randomStartRotation)
+                {
+                    particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+                }
 
+                particle.transform->translation_ = particle.initialPosition + particle.config.shape.GetInitialPositionOffset();
             }
             particle.frameCount = 0;
         }
@@ -60,10 +62,25 @@ void KeyParticleBehavior::Update(ParticleState& particle)
     particle.frameCount++;
     if (particle.isExist)
     {
-        particle.transform->translation_.x += particle.velocity.x;
-        particle.transform->translation_.y += particle.velocity.y;
+        // 位置を更新する前に、物理的な力を速度に適用する
+        if (particle.config.physics.enabled)
+        {
+            // 重力を適用（Y軸の速度を減少させる）
+            particle.velocity.y -= particle.config.physics.gravity;
 
-        particle.transform->rotation_.z += particle.thetaVel;
+            // 空気抵抗を適用（速度全体を少しずつ減速させる）
+            particle.velocity = particle.velocity * (1.0f - particle.config.physics.drag);
+        }
+
+        // （物理演算によって変化した）速度を位置に反映
+        particle.transform->translation_ += particle.velocity;
+
+        // ▼▼▼ 回転の更新 ▼▼▼
+         // モジュールの角速度に基づいて回転させる
+        if (particle.config.rotation.enabled)
+        {
+            particle.transform->rotation_.z += particle.config.rotation.angularVelocity;
+        }
         particle.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particle.transform->rotation_);
 
         if (!particle.fadeOutEase.isEase_)

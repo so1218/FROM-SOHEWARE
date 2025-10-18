@@ -25,12 +25,12 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     collisionManager_ = std::make_unique<CollisionManager>();
     emitter_ = engine_->particleSystem_->CreateEmitter(ParticleType::Key, "chest");
     newEmitter_ = engine_->particleSystem_->CreateEmitter(ParticleType::Key, "doar");
-    newEmitter2_ = engine_->particleSystem_->CreateEmitter(ParticleType::HitEffect, "doar");
+   /* newEmitter2_ = engine_->particleSystem_->CreateEmitter(ParticleType::HitEffect, "doar");*/
 
     // パーティクルシステムにエミッターを登録
     engine_->particleSystem_->AddEmitter(std::move(emitter_));
     engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
-    engine_->particleSystem_->AddEmitter(std::move(newEmitter2_));
+ /*   engine_->particleSystem_->AddEmitter(std::move(newEmitter2_));*/
 }
 
 PlayScene::~PlayScene()
