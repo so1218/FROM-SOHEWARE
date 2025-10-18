@@ -164,21 +164,50 @@ struct ColorOverLifetimeModule
         easing.frameCount_ = 60;
     }
 
-    /* Vector4  Evaluate() const
-     {
-         
-     }*/
+    Vector4 Evaluate(float t) const
+    {
+        // 1. Easingオブジェクトで時間tを加工
+        float eased_t = easing.Evaluate(t);
+
+        // 2. 色を計算しやすいVector4に変換
+        Vector4 startVec = Uint32ToColorVector(startColor);
+        Vector4 endVec = Uint32ToColorVector(endColor);
+
+        // 3. 加工された時間を使って補間
+        return Lerp(startVec, endVec, eased_t);
+    }
 };
 
 struct SizeOverLifetimeModule {
     bool enabled = false;
     Vector3 startScale = { 1.0f, 1.0f, 1.0f };
     Vector3 endScale = { 0.0f, 0.0f, 0.0f };
-    EasingType easing = EasingType::EaseLinear;
+    Easing easing;
 
-    //Vector3 Evaluate() const {
-    //    /*   return Ease(startScale, endScale, t, easing);*/
-    //}
+    bool oscillate = false;
+    float frequency = 1.0f;
+
+    Vector3 Evaluate(float t) const
+    {
+        if (oscillate) {
+            // 振動する場合
+            float sin_wave = sinf(t * frequency * 2.0f * 3.14159f);
+            float eased_t = sin_wave * 0.5f + 0.5f;
+            return Lerp(startScale, endScale, eased_t);
+        }
+        else {
+            // 通常のイージング
+            // 1. Easingオブジェクトで時間tを加工する
+            float eased_t = easing.Evaluate(t);
+            // 2. 加工された時間を使って補間する
+            return Lerp(startScale, endScale, eased_t);
+        }
+    }
+
+    SizeOverLifetimeModule() {
+        // デフォルトのイージングタイプを設定
+        easing.SetEasing(EasingType::EaseLinear);
+    }
 };
 
 struct TextureSheetAnimationModule

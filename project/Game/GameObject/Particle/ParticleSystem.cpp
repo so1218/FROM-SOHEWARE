@@ -13,8 +13,6 @@
 #include "ImGuiManager.h"
 #include "json.hpp"
 
-
-
 ParticleSystem::ParticleSystem()
 {
     editor_ = std::make_unique<ParticleEditor>(this);
@@ -43,25 +41,46 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
     const ParticleConfig& config = GetConfig(type, presetName);
 
     ParticleState particle;
-    particle.transform = std::make_unique<WorldTransform>(transform);
-    particle.color = config.baseColor;
-    particle.type = type;
-    particle.amount = amount;
-    particle.textureHandle = config.textureIndex;
-    particle.lifetime = lifetime;
-    particle.age = 0.0f;
-    particle.hasLifetime = true;
-    particle.initialPosition = transform.translation_;
-    particle.presetName = presetName;
-
     particle.config = config;
 
-    // タイプごとの初期値
-    auto it = behaviors_.find(type);
-    if (it != behaviors_.end()) 
-    {
-        it->second->Initialize(particle, config);
+    // --- モジュールに基づいて初期値を設定 ---
+
+      // Shape: Emitterの座標にShapeのオフセットを加算
+    particle.transform = std::make_unique<WorldTransform>();
+    particle.transform->translation_ = transform.translation_ + config.shape.GetInitialPositionOffset();
+
+    // Velocity: 初速を決定
+    if (config.velocity.enabled) {
+        particle.velocity = config.velocity.GetInitialVelocity();
     }
+
+    // Color: 開始色を設定 (t=0の時の色)
+    if (config.colorOverLifetime.enabled) {
+        particle.color = config.colorOverLifetime.Evaluate(0.0f);
+    }
+    else {
+        particle.color = config.baseColor; // モジュール無効なら基本色
+    }
+
+    // Size: 開始スケールを設定 (t=0の時のスケール)
+    if (config.sizeOverLifetime.enabled) {
+        particle.transform->scale_ = config.sizeOverLifetime.Evaluate(0.0f);
+    }
+    else {
+        particle.transform->scale_ = { 1.0f, 1.0f, 1.0f }; // デフォルト値
+    }
+
+    // Rotation: 初期角度を設定
+    if (config.rotation.enabled && config.rotation.randomStartRotation) {
+        particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+    }
+
+    // --- 基本的なプロパティを設定 ---
+    particle.lifetime = lifetime;
+    particle.age = 0.0f;
+    particle.type = type;
+    particle.presetName = presetName;
+    particle.isExist = true; // 新しいシステムではこのフラグは不要になるかも
 
     particles_.push_back(std::move(particle));
 }
@@ -111,37 +130,80 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(ParticleType type
  
 void ParticleSystem::Update()
 {
+    // 1. エミッターを更新して、新しいパーティクルを生成させる
     for (auto& emitter : emitters_)
     {
         emitter->Update(*this);
     }
 
-    // パーティクル更新処理
-    for (auto particle = particles_.begin(); particle != particles_.end(); ) 
+    // 2. フレームの経過時間を取得
+    float dt = TimeManager::GetInstance()->GetDeltaTime();
+
+    // 3. 全パーティクルを更新する汎用ループ
+    for (auto it = particles_.begin(); it != particles_.end(); )
     {
-        auto behavior = behaviors_.find(particle->type);
-        if (behavior != behaviors_.end()) 
-        {
-            behavior->second->Update(*particle);
+        ParticleState& p = *it;
+        const ParticleConfig& config = p.config; // パーティクルの設定を参照
+
+        // --- 寿命の処理 ---
+        p.age += dt;
+        if (p.age >= p.lifetime) {
+            it = particles_.erase(it); // 寿命が尽きたら消去
+            continue;
+        }
+        // 正規化された寿命 (0.0～1.0) を計算
+        float t = p.lifetime > 0.0f ? (p.age / p.lifetime) : 1.0f;
+
+        // --- ここからモジュールごとの処理 ---
+
+        // Physics Module: 速度を更新
+        if (config.physics.enabled) {
+            p.velocity.y -= config.physics.gravity * dt;
+            p.velocity = p.velocity * (1.0f - (config.physics.drag * dt));
         }
 
-        if (particle->hasLifetime)
-        {
-            particle->lifetime -= TimeManager::GetInstance()->GetDeltaTime();
-            if (particle->lifetime <= 0.0f)
-            {
-                particle = particles_.erase(particle); // 寿命が尽きたパーティクルを消去
-                continue;
-            }
+        // 移動: 速度を位置に反映
+        p.transform->translation_ += p.velocity * dt;
+
+        // Rotation Module: 回転を更新
+        if (config.rotation.enabled) {
+            p.transform->rotation_.z += config.rotation.angularVelocity * dt;
         }
-        ++particle;
+        p.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(p.transform->rotation_);
+
+        // ColorOverLifetime Module: 色を更新
+        if (config.colorOverLifetime.enabled) {
+            p.color = config.colorOverLifetime.Evaluate(t);
+        }
+
+        // SizeOverLifetime Module: スケールを更新
+        if (config.sizeOverLifetime.enabled) {
+            p.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
+        }
+
+        // TextureSheetAnimation Module: テクスチャのUVを更新
+        if (config.textureSheet.enabled) {
+            p.textureHandle = config.textureSheet.textureHandle;
+            // (ここにUV座標を計算するロジックを実装)
+        }
+        else {
+            p.textureHandle = config.textureSheet.textureHandle;
+            // (UVはデフォルト値(全面)を使用)
+        }
+
+        ++it;
     }
-   
-    // パーティクルインスタンスの更新
+
+    // 4. 全パーティクルのインスタンス情報をGPUに送る
     for (auto& particle : particles_)
     {
         particle.transform->UpdateMatrix();
-        engine_->SubmitParticleInstance(*particle.transform, ColorVectorToUint32(particle.color), particle.textureHandle, particle.transform->rotation_.z);
+        engine_->SubmitParticleInstance(
+            *particle.transform,
+            ColorVectorToUint32(particle.color),
+            particle.textureHandle,
+            particle.transform->rotation_.z
+        );
     }
 }
 

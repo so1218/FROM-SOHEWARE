@@ -3,7 +3,6 @@
 
 void KeyParticleBehavior::Initialize(ParticleState& particle, const ParticleConfig& config)
 {
-    particle.emitterRange = config.emitterRange;
     particle.fadeOutEase.frameCount_ = config.fadeOutEase.frameCount_;
     particle.color = { 127.0f,255.0f,0.0f,255.0f };
     particle.startColor = config.startColor;
@@ -35,16 +34,6 @@ void KeyParticleBehavior::Update(ParticleState& particle)
         {
             if (!particle.isExist)
             {
-                // ランダムで角度を設定
-               /* particle.theta = static_cast<float>(rand()) / RAND_MAX * 2.0f * float(PI);*/
-
-                // 半径をランダムに生成 (0～emitterRange_ の範囲)
-               /* float radius = static_cast<float>(RandomFloat(0.05f, particle.emitterRange.x));*/
-
-                // 極座標 -> 直交座標
-               /* particle.transform->translation_.x = particle.initialPosition.x + radius * cos(particle.theta);
-                particle.transform->translation_.y = particle.initialPosition.y + radius * sin(particle.theta);*/
-                particle.velocity = particle.config.velocity.GetInitialVelocity();
                 particle.isExist = true;
                 particle.fadeOutEase.isEase_ = true;
                 particle.hasExisted = true;
@@ -75,7 +64,7 @@ void KeyParticleBehavior::Update(ParticleState& particle)
         // （物理演算によって変化した）速度を位置に反映
         particle.transform->translation_ += particle.velocity;
 
-        // ▼▼▼ 回転の更新 ▼▼▼
+        // 回転の更新
          // モジュールの角速度に基づいて回転させる
         if (particle.config.rotation.enabled)
         {

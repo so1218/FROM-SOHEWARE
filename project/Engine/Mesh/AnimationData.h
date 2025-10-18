@@ -97,15 +97,6 @@ struct SkinCluster
 
 Skeleton CreateSkeleton(const Node& rootNode);
 
-inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
-{
-    return {
-        a.x + (b.x - a.x) * t,
-        a.y + (b.y - a.y) * t,
-        a.z + (b.z - a.z) * t
-    };
-}
-
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);

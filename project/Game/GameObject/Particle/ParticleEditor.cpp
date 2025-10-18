@@ -220,16 +220,23 @@ void ParticleEditor::ShowEditor()
                     ImGui::Checkbox("Enabled##Texture", &texSheet.enabled);
 
                     // --- テクスチャ選択UI ---
-                    int selectedTextureIdx = 0;
-                    // (textureNameArrayの準備は既存のコードを流用)
-                    std::vector<const char*> textureNameArray;
-                    for (const auto& pair : particleTextureList) {
-                        textureNameArray.push_back(pair.first);
-                        if (TextureHandle::Get(pair.second) == texSheet.textureHandle) {
-                            selectedTextureIdx = static_cast<int>(textureNameArray.size() - 1);
+                    static int selectedTextureIdx = 0;
+
+                    // 1. 先に現在のインデックスを探す
+                    for (size_t i = 0; i < particleTextureList.size(); ++i) {
+                        if (TextureHandle::Get(particleTextureList[i].second) == texSheet.textureHandle) {
+                            selectedTextureIdx = static_cast<int>(i);
+                            break; // ▼▼▼ 変更点 2: 'break' を追加 ▼▼▼
                         }
                     }
 
+                    // 2. 表示用の名前配列を作る
+                    std::vector<const char*> textureNameArray;
+                    for (const auto& pair : particleTextureList) {
+                        textureNameArray.push_back(pair.first);
+                    }
+
+                    // 3. Comboボックスを表示し、選択されたらハンドルを更新する
                     if (ImGui::Combo("Texture Sheet", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) {
                         texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
                     }
@@ -239,6 +246,68 @@ void ParticleEditor::ShowEditor()
                     ImGui::DragInt("Tiles Y", &texSheet.tilesY, 1, 1, 16);
                     ImGui::DragFloat("Frames Per Second", &texSheet.framesPerSecond, 0.1f, 0.0f, 60.0f);
                     ImGui::Checkbox("Looping", &texSheet.looping);
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                // in ParticleEditor::ShowEditor(), inside "Particle Config" collapsing header
+
+                ImGui::Separator();
+
+                // ColorOverLifetimeModuleのUI
+                if (ImGui::TreeNode("Color Over Lifetime Module"))
+                {
+                    auto& colorModule = config.colorOverLifetime; // ショートカット
+
+                    ImGui::Checkbox("Enabled##Color", &colorModule.enabled);
+
+                    // 開始色
+                    Vector4 startCol = Uint32ToColorVector(colorModule.startColor);
+                    if (ImGui::ColorEdit4("Start Color", &startCol.x)) {
+                        colorModule.startColor = ColorVectorToUint32(startCol);
+                    }
+
+                    // 終了色
+                    Vector4 endCol = Uint32ToColorVector(colorModule.endColor);
+                    if (ImGui::ColorEdit4("End Color", &endCol.x)) {
+                        colorModule.endColor = ColorVectorToUint32(endCol);
+                    }
+
+                    // イージングタイプの選択
+                    // (EasingTypeのEnumに対応する文字列配列をどこかで定義しておく)
+                    //const char* easingTypes[] = { "Linear", "InSine", "OutSine", /* ... */ };
+                    //int currentEasing = static_cast<int>(colorModule.easing.GetEasingType());
+                    //if (ImGui::Combo("Easing Type##Color", &currentEasing, easingTypes, IM_ARRAYSIZE(easingTypes))) {
+                    //    colorModule.easing.SetEasing(static_cast<EasingType>(currentEasing));
+                    //}
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                // SizeOverLifetimeModuleのUI
+                if (ImGui::TreeNode("Size Over Lifetime Module"))
+                {
+                    auto& sizeModule = config.sizeOverLifetime; // ショートカット
+
+                    ImGui::Checkbox("Enabled##Size", &sizeModule.enabled);
+                    ImGui::DragFloat3("Start Scale", &sizeModule.startScale.x, 0.01f);
+                    ImGui::DragFloat3("End Scale", &sizeModule.endScale.x, 0.01f);
+
+                    // イージングタイプの選択
+                    //const char* easingTypes[] = { "Linear", "InSine", "OutSine", /* ... */ };
+                    //int currentEasing = static_cast<int>(sizeModule.easing.GetEasingType());
+                    //if (ImGui::Combo("Easing Type##Size", &currentEasing, easingTypes, IM_ARRAYSIZE(easingTypes))) {
+                    //    sizeModule.easing.SetEasing(static_cast<EasingType>(currentEasing));
+                    //}
+
+                    // 振動設定
+                    ImGui::Separator();
+                    ImGui::Checkbox("Oscillate", &sizeModule.oscillate);
+                    if (sizeModule.oscillate) {
+                        ImGui::DragFloat("Frequency", &sizeModule.frequency, 0.1f, 0.0f, 100.0f);
+                    }
 
                     ImGui::TreePop();
                 }

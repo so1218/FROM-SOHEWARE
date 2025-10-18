@@ -115,6 +115,34 @@ void ParticleConfigManager::LoadParticleDefinitionFromJson(ParticleType type)
                 config.textureSheet.looping = texJson.value("looping", true);
             }
 
+            // ColorOverLifetimeModuleの読み込み
+            if (configJson.contains("colorOverLifetimeModule"))
+            {
+                auto& colorJson = configJson["colorOverLifetimeModule"];
+                config.colorOverLifetime.enabled = colorJson.value("enabled", false);
+                config.colorOverLifetime.startColor = colorJson.value("startColor", 0xFFFFFFFF);
+                config.colorOverLifetime.endColor = colorJson.value("endColor", 0xFFFFFF00);
+              /*  EasingType easingType = static_cast<EasingType>(colorJson.value("easingType", static_cast<int>(EasingType::EaseLinear)));
+                config.colorOverLifetime.easing.SetEasing(easingType);*/
+            }
+
+            // SizeOverLifetimeModuleの読み込み
+            if (configJson.contains("sizeOverLifetimeModule"))
+            {
+                auto& sizeJson = configJson["sizeOverLifetimeModule"];
+                config.sizeOverLifetime.enabled = sizeJson.value("enabled", false);
+                if (sizeJson.contains("startScale")) {
+                    config.sizeOverLifetime.startScale = { sizeJson["startScale"][0], sizeJson["startScale"][1], sizeJson["startScale"][2] };
+                }
+                if (sizeJson.contains("endScale")) {
+                    config.sizeOverLifetime.endScale = { sizeJson["endScale"][0], sizeJson["endScale"][1], sizeJson["endScale"][2] };
+                }
+              /*  EasingType easingType = static_cast<EasingType>(sizeJson.value("easingType", static_cast<int>(EasingType::EaseLinear)));
+                config.sizeOverLifetime.easing.SetEasing(easingType);*/
+                config.sizeOverLifetime.oscillate = sizeJson.value("oscillate", false);
+                config.sizeOverLifetime.frequency = sizeJson.value("frequency", 1.0f);
+            }
+
             config.decayRate = configJson.value("decayRate", 1.0f);
             config.maxLifetime = configJson.value("maxLifetime", 5.0f);
             config.textureIndex = configJson.value("textureIndex", 0);
@@ -248,6 +276,24 @@ void ParticleConfigManager::SaveConfigToJson(ParticleType type)
                 { "tilesY", config.textureSheet.tilesY },
                 { "framesPerSecond", config.textureSheet.framesPerSecond },
                 { "looping", config.textureSheet.looping }
+            }},
+            // ColorOverLifetimeModuleの情報
+            { "colorOverLifetimeModule", 
+            {
+                { "enabled", config.colorOverLifetime.enabled },
+                { "startColor", config.colorOverLifetime.startColor },
+                { "endColor", config.colorOverLifetime.endColor },
+                /*{ "easingType", static_cast<int>(config.colorOverLifetime.easing.GetEasingType()) }*/
+            }},
+
+            // SizeOverLifetimeModuleの情報
+            { "sizeOverLifetimeModule", {
+                { "enabled", config.sizeOverLifetime.enabled },
+                { "startScale", { config.sizeOverLifetime.startScale.x, config.sizeOverLifetime.startScale.y, config.sizeOverLifetime.startScale.z }},
+                { "endScale", { config.sizeOverLifetime.endScale.x, config.sizeOverLifetime.endScale.y, config.sizeOverLifetime.endScale.z }},
+                /*{ "easingType", static_cast<int>(config.sizeOverLifetime.easing.GetEasingType()) },*/
+                { "oscillate", config.sizeOverLifetime.oscillate },
+                { "frequency", config.sizeOverLifetime.frequency }
             }},
             { "gravity", config.gravity },
             { "drag", config.drag },

@@ -1,7 +1,7 @@
 #include "AnimationData.h"
 #include "TimeManager.h"
 #include "BufferManager.h"
-#include "BufferManager.h"
+#include "MathUtils.h"
 
 #include <assimp/Importer.hpp>  
 #include <assimp/scene.h>    

@@ -3,13 +3,13 @@
         "chest": {
             "EmitterConfig": {
                 "amount": 1,
-                "lifetime": 8.020000457763672,
+                "lifetime": 4.420000076293945,
                 "position": [
-                    14.699999809265137,
-                    -7.199999809265137,
-                    -4.099999904632568
+                    -1.2000000476837158,
+                    -5.199999809265137,
+                    -18.0
                 ],
-                "spawnInterval": 0.03999999910593033
+                "spawnInterval": 0.029999999329447746
             },
             "ParticleConfig": {
                 "baseColor": [
@@ -18,6 +18,11 @@
                     0.0,
                     0.0
                 ],
+                "colorOverLifetimeModule": {
+                    "enabled": true,
+                    "endColor": 3321954048,
+                    "startColor": 16726783
+                },
                 "decayRate": 0.0,
                 "drag": 0.0,
                 "emitterRange": [
@@ -25,7 +30,7 @@
                     0.0,
                     20.0
                 ],
-                "endColor": 4245488128,
+                "endColor": 4261347840,
                 "endScale": [
                     14.819999694824219,
                     13.5600004196167,
@@ -38,11 +43,11 @@
                 "physicsModule": {
                     "drag": 0.19300000369548798,
                     "enabled": false,
-                    "gravity": 0.01600000075995922
+                    "gravity": 4.396999835968018
                 },
                 "rotationModule": {
-                    "angularVelocity": 5.0,
-                    "enabled": false,
+                    "angularVelocity": 9.493000030517578,
+                    "enabled": true,
                     "randomStartRotation": true
                 },
                 "scaleFrameCount": 16,
@@ -55,7 +60,22 @@
                     "emitFromEdge": false,
                     "enabled": true,
                     "radius": 10.0,
-                    "type": 0
+                    "type": 2
+                },
+                "sizeOverLifetimeModule": {
+                    "enabled": true,
+                    "endScale": [
+                        0.4300000071525574,
+                        0.5199999809265137,
+                        0.0
+                    ],
+                    "frequency": 22.600000381469727,
+                    "oscillate": false,
+                    "startScale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
                 },
                 "speed": 0.029999999329447746,
                 "startColor": 3408199935,
@@ -67,22 +87,22 @@
                 "textureIndex": 29,
                 "textureSheetModule": {
                     "enabled": false,
-                    "framesPerSecond": 10.0,
+                    "framesPerSecond": 3.700000047683716,
                     "looping": true,
-                    "textureHandle": 0,
+                    "textureHandle": 17,
                     "tilesX": 1,
                     "tilesY": 1
                 },
                 "velocityModule": {
-                    "angleRange": 25.0,
+                    "angleRange": 57.0,
                     "direction": [
                         0.0,
-                        1.0,
+                        0.5899999737739563,
                         0.0
                     ],
-                    "enabled": true,
+                    "enabled": false,
                     "randomDirection": true,
-                    "speed": 0.10000000149011612
+                    "speed": 6.659999847412109
                 }
             }
         },
@@ -104,6 +124,11 @@
                     0.0,
                     0.0
                 ],
+                "colorOverLifetimeModule": {
+                    "enabled": false,
+                    "endColor": 4294967040,
+                    "startColor": 4294967295
+                },
                 "decayRate": 0.0,
                 "drag": 0.0,
                 "emitterRange": [
@@ -142,6 +167,21 @@
                     "enabled": true,
                     "radius": 10.0,
                     "type": 3
+                },
+                "sizeOverLifetimeModule": {
+                    "enabled": false,
+                    "endScale": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "frequency": 1.0,
+                    "oscillate": false,
+                    "startScale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
                 },
                 "speed": 0.019999999552965164,
                 "startColor": 4294967295,

@@ -58,6 +58,9 @@ public:
     void OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current);
     void OnceReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
 
+    // 0.0～1.0の線形な時間 t を受け取り、イージング適用後の時間 (0.0～1.0) を返す
+    float Evaluate(const float& t) const;
+   
     // イージングの初期化
     void InitEasing();
     // 色遷移のイージング関数

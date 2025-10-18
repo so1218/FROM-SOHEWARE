@@ -459,6 +459,16 @@ void Easing::OnceReverseColorLinear(unsigned int start, unsigned int end, unsign
     current = (newR << 24) | (newG << 16) | (newB << 8) | newA;
 }
 
+float Easing::Evaluate(const float& t) const
+{
+    if (easingFunc)
+    {
+        // 現在設定されているイージング関数を呼び出す
+        return easingFunc(t);
+    }
+    // 関数が設定されていない場合は、線形（何もしない）で返す
+    return t;
+}
 
 // イージングの関数群
 float Easing::EaseLinear(const float& t) {

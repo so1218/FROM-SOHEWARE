@@ -40,3 +40,16 @@ inline Vector3 CrossProduct(const Vector3& v1, const Vector3& v2) {
         v1.x * v2.y - v1.y * v2.x
     };
 }
+
+inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
+{
+    return {
+        a.x + (b.x - a.x) * t,
+        a.y + (b.y - a.y) * t,
+        a.z + (b.z - a.z) * t
+    };
+}
+
+inline Vector4 Lerp(const Vector4& start, const Vector4& end, float t) {
+    return start * (1.0f - t) + end * t;
+}
