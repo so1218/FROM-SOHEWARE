@@ -167,6 +167,9 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 emitterConfig.spawnInterval = emitterJson.value("spawnInterval", 0.1f);
                 emitterConfig.lifetime = emitterJson.value("lifetime", 5.0f);
                 emitterConfig.amount = emitterJson.value("amount", 1);
+                emitterConfig.duration = emitterJson.value("duration", 5.0f);
+                emitterConfig.looping = emitterJson.value("looping", true);
+                emitterConfig.playOnAwake = emitterJson.value("playOnAwake", true);
             }
         }
     }
@@ -250,7 +253,10 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "position", { emitterConfig.position.x, emitterConfig.position.y, emitterConfig.position.z }},
         { "spawnInterval", emitterConfig.spawnInterval },
         { "lifetime", emitterConfig.lifetime },
-        { "amount", emitterConfig.amount }
+        { "amount", emitterConfig.amount },
+        { "duration", emitterConfig.duration },
+        { "looping", emitterConfig.looping },
+        { "playOnAwake", emitterConfig.playOnAwake },
     };
 
     // プリセット名をキーとしてJSONを構築

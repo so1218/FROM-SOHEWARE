@@ -260,16 +260,20 @@ struct ParticleState
 
 
 // エミッターの基本的な設定を保持する構造体
-struct EmitterConfig {
+struct EmitterConfig
+{
     Vector3 position = { 0.0f, 0.0f, 0.0f };
     float spawnInterval = 0.1f; // 発生間隔 (秒)
     float lifetime = 4.0f;      // パーティクルの生存時間
     int amount = 1;             // 一度に発生させる量
-
+    float duration = -0.1f; // エミッターが動作し続ける時間（秒）。負の値で無限。
+    bool looping = true;   // durationが経過した後、ループするか
+    bool playOnAwake = true;// 生成時に自動で再生を開始するか
 };
 
 // パーティクルタイプごとの定義をまとめる構造体
-struct ParticleDefinition {
+struct ParticleDefinition 
+{
     ParticleConfig particleConfig;
     EmitterConfig emitterConfig;
 };

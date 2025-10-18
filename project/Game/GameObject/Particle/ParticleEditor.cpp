@@ -119,9 +119,22 @@ void ParticleEditor::ShowEditor()
 
                 // ImGuiの各ウィジェットが値を変更したら、valueChangedフラグを立てる
                 valueChanged |= ImGui::DragFloat3("Position", &emitterConfig.position.x, 0.1f);
+                ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("Spawn Interval", &emitterConfig.spawnInterval, 0.01f, 0.01f, 10.0f);
+                ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("Particle Lifetime", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
+                ImGui::Separator();
                 valueChanged |= ImGui::DragInt("Amount", &emitterConfig.amount, 1, 1, 100);
+
+                ImGui::Separator();
+                valueChanged |= ImGui::DragFloat("Duration", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f s");
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Playback duration in seconds. -1 means infinite.");
+                }
+                ImGui::Separator();
+                valueChanged |= ImGui::Checkbox("Looping", &emitterConfig.looping);
+                ImGui::Separator();
+                valueChanged |= ImGui::Checkbox("Play On Awake", &emitterConfig.playOnAwake);
 
                 // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
                 if (valueChanged) {
@@ -336,6 +349,16 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
             emitter->spawnInterval_ = emitterConfig.spawnInterval;
             emitter->lifetime_ = emitterConfig.lifetime;
             emitter->amount_ = emitterConfig.amount;
+            emitter->duration_ = emitterConfig.duration;
+
+            // 1. 設定を適用する前の状態を記憶
+            bool wasStopped = !emitter->isPlaying_;
+            emitter->looping_ = emitterConfig.looping;
+
+            if (wasStopped && emitter->looping_)
+            {
+                emitter->Play(); 
+            }
         }
     }
 }

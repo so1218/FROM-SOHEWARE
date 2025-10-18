@@ -97,12 +97,7 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 
     auto emitter = std::make_unique<ParticleEmitter>();
     emitter->presetName_ = presetName; // プリセット名を保持
-    emitter->Initialize(
-        emitterConfig.position,
-        emitterConfig.spawnInterval,
-        emitterConfig.lifetime,
-        emitterConfig.amount
-    );
+    emitter->Initialize(emitterConfig);
 
     return emitter;
 }

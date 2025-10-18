@@ -1,7 +1,10 @@
 {
     "EmitterConfig": {
         "amount": 1,
+        "duration": 5.0,
         "lifetime": 4.0,
+        "looping": true,
+        "playOnAwake": true,
         "position": [
             -7.099999904632568,
             0.0,
@@ -45,14 +48,14 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                10.0,
-                10.0,
-                0.0
+                10.069999694824219,
+                21.350000381469727,
+                0.2199999988079071
             ],
             "frequency": 0.0,
             "oscillate": true,
             "startScale": [
-                0.0,
+                0.23000000417232513,
                 0.0,
                 1.0
             ]
