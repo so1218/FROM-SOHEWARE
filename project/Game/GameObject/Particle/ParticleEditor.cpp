@@ -85,37 +85,32 @@ void ParticleEditor::ShowEditor()
 {
     if (ImGui::Begin("パーティクルエディター"))
     {
-        // 1. ParticleTypeを選択
-        static int selectedTypeIdx = static_cast<int>(ParticleType::Key);
-        ImGui::Combo("Particle Type", &selectedTypeIdx, "None\0Key\0HitEffect\0");
-        ParticleType type = static_cast<ParticleType>(selectedTypeIdx);
+        // ▼▼▼ UIの変更 ▼▼▼
 
-        // 選択されたタイプのプリセット名リストを動的に作成
+        // 1. definitions_マップのキーからプリセット名リストを直接作成
         std::vector<const char*> presetNames;
-        std::vector<std::string> presetNameStrings; // ImGui::Comboがchar*を要求するための一時的な保持用
-        if (particleSystem_->definitions_.count(type)) {
-            for (const auto& [name, def] : particleSystem_->definitions_.at(type)) {
-                presetNameStrings.push_back(name);
-            }
-            for (const auto& name : presetNameStrings) {
-                presetNames.push_back(name.c_str());
-            }
+        std::vector<std::string> presetNameStrings;
+        for (const auto& [name, def] : particleSystem_->definitions_) {
+            presetNameStrings.push_back(name);
         }
-        // 2. Presetを選択
+        for (const auto& name : presetNameStrings) {
+            presetNames.push_back(name.c_str());
+        }
+
+        // 2. 単一のコンボボックスでPresetを選択
         static int selectedPresetIdx = 0;
         if (presetNames.empty()) {
-            ImGui::Text("No presets available for this type.");
+            ImGui::Text("No presets available.");
         }
         else
         {
-            if (selectedPresetIdx >= presetNames.size())
-            { // 範囲外アクセス防止
+            if (selectedPresetIdx >= presetNames.size()) {
                 selectedPresetIdx = 0;
             }
             ImGui::Combo("Preset", &selectedPresetIdx, presetNames.data(), (int)presetNames.size());
 
             const std::string& selectedPresetName = presetNames[selectedPresetIdx];
-            auto& definition = particleSystem_->definitions_[type][selectedPresetName];
+            auto& definition = particleSystem_->definitions_[selectedPresetName];
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
 
@@ -132,7 +127,7 @@ void ParticleEditor::ShowEditor()
 
                 // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
                 if (valueChanged) {
-                    ApplyEmitterConfigToLiveEmitters(type, selectedPresetName);
+                    ApplyEmitterConfigToLiveEmitters(selectedPresetName);
                 }
             }
 
@@ -159,7 +154,6 @@ void ParticleEditor::ShowEditor()
                 }
                 ImGui::Separator();
 
-                ImGui::Separator();
                 if (ImGui::TreeNode("Physics Module"))
                 {
                     auto& phys = config.physics; // ショートカット
@@ -251,10 +245,6 @@ void ParticleEditor::ShowEditor()
                 }
                 ImGui::Separator();
 
-                // in ParticleEditor::ShowEditor(), inside "Particle Config" collapsing header
-
-                ImGui::Separator();
-
                 // ColorOverLifetimeModuleのUI
                 if (ImGui::TreeNode("Color Over Lifetime Module"))
                 {
@@ -312,57 +302,14 @@ void ParticleEditor::ShowEditor()
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
-
-                int selectedTextureIdx = 0;
-                for (size_t i = 0; i < particleTextureList.size(); ++i) {
-                    if (TextureHandle::Get(particleTextureList[i].second) == config.textureIndex) {
-                        selectedTextureIdx = static_cast<int>(i);
-                        break;
-                    }
-                }
-
-                // 名前配列だけ作る
-                std::vector<const char*> textureNameArray;
-                for (const auto& pair : particleTextureList) {
-                    textureNameArray.push_back(pair.first);
-                }
-
-                // Combo UI
-                if (ImGui::Combo("Texture", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) {
-                    config.textureIndex = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
-                }
-                ImGui::ColorEdit4("Base Color", &config.baseColor.x);
-
-                // fadeOutEase interval
-                ImGui::DragInt("FadeOut FrameCount", &config.fadeOutEase.frameCount_, 1);
-
-                Vector4 startCol = Uint32ToColorVector(config.startColor);
-                if (ImGui::ColorEdit4("Start Color", (float*)&startCol))
-                {
-                    config.startColor = ColorVectorToUint32(startCol);
-                }
-
-                Vector4 endCol = Uint32ToColorVector(config.endColor);
-                if (ImGui::ColorEdit4("End Color", (float*)&endCol))
-                {
-                    config.endColor = ColorVectorToUint32(endCol);
-                }
-
-                // scaleEase interval
-                ImGui::DragInt("Scale FrameCount", &config.scaleEase.frameCount_, 1);
-
-                // scale
-                ImGui::DragFloat3("Start Scale", &config.startScale.x, 0.01f);
-                ImGui::DragFloat3("End Scale", &config.endScale.x, 0.01f);
-
             }
 
             if (ImGui::Button("Save"))
             {
-                particleSystem_->configManager_->SaveConfigToJson(type);
-
-                std::string message = std::format("{}Particles.json saved", ParticleTypeToString(type));
-                MessageBoxA(nullptr, message.c_str(), "Particles", 0);
+                particleSystem_->configManager_->SaveParticleDefinitionToJson(selectedPresetName);
+                // 表示するメッセージを作成する
+                std::string message = std::format("{}.json saved", selectedPresetName);
+                MessageBoxA(nullptr, message.c_str(), "Save Confirmation", MB_OK);
             }
 
             ImGui::SameLine();
@@ -373,16 +320,16 @@ void ParticleEditor::ShowEditor()
     ImGui::End();
 }
 
-void ParticleEditor::ApplyEmitterConfigToLiveEmitters(ParticleType type, const std::string& presetName)
+void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetName)
 {
-    // 更新する設定（設計図）を type と presetName の両方で特定する
-    const auto& emitterConfig = particleSystem_->definitions_.at(type).at(presetName).emitterConfig;
+    // 更新する設定（設計図）を presetName だけで特定する
+    const auto& emitterConfig = particleSystem_->definitions_.at(presetName).emitterConfig;
 
     // 全てのライブエミッターをループ
     for (auto& emitter : particleSystem_->emitters_)
     {
-        // タイプとプリセット名の両方が一致するエミッターを見つける
-        if (emitter->type_ == type && emitter->presetName_ == presetName) 
+        // プリセット名が一致するエミッターを見つける
+        if (emitter->presetName_ == presetName)
         {
             // インスタンスの値を設計図の値で上書きする
             emitter->position_ = emitterConfig.position;

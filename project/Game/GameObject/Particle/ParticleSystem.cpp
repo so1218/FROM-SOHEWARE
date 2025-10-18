@@ -25,20 +25,14 @@ void ParticleSystem::Initialize(Engine* engine)
 {
     engine_ = engine;
 
-    for (size_t i = 0; i < static_cast<size_t>(ParticleType::Count); ++i) 
-    {
-        configManager_->LoadParticleDefinitionFromJson(static_cast<ParticleType>(i));
-    }
-
-    behaviors_[ParticleType::Key] = std::make_unique<KeyParticleBehavior>();
-    behaviors_[ParticleType::HitEffect] = std::make_unique<HitEffectParticleBehavior>();
+    configManager_->LoadAllParticleDefinitions();
 }
 
-void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type, const std::string& presetName, float lifetime, int amount)
+void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, int amount)
 {
     if (particles_.size() >= engine_->kMaxParticleCount) return;
 
-    const ParticleConfig& config = GetConfig(type, presetName);
+    const ParticleConfig& config = GetConfig(presetName);
 
     ParticleState particle;
     particle.config = config;
@@ -78,47 +72,29 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, ParticleType type,
     // --- 基本的なプロパティを設定 ---
     particle.lifetime = lifetime;
     particle.age = 0.0f;
-    particle.type = type;
     particle.presetName = presetName;
     particle.isExist = true; // 新しいシステムではこのフラグは不要になるかも
 
     particles_.push_back(std::move(particle));
 }
 
-std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(ParticleType type, const std::string& presetName)
+// presetNameだけでエミッターを生成する
+std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string& presetName)
 {
-    // type の定義が存在しない場合、初期化（空マップ追加）
-    if (definitions_.find(type) == definitions_.end()) 
+    // definitions_ マップにプリセットが存在するかチェック
+    if (definitions_.find(presetName) == definitions_.end())
     {
-        definitions_[type] = {}; // 空のプリセットマップを追加
-        std::cout << "No preset map found for type " << ParticleTypeToString(type) << ". Creating a new one..." << std::endl;
+        // 存在しない場合は、新しいデフォルト定義を作成して保存
+        definitions_[presetName] = ParticleDefinition();
+        configManager_->SaveParticleDefinitionToJson(presetName); // 新しい保存関数
     }
 
-    // presetName が存在しない場合は新規作成
-    auto& presetMap = definitions_[type];
-    if (presetMap.find(presetName) == presetMap.end())
-    {
-        std::cout << "Preset '" << presetName << "' for type " << ParticleTypeToString(type)
-            << " not found. Creating a new default preset..." << std::endl;
-
-        presetMap[presetName] = ParticleDefinition(); // デフォルトの空定義を追加
-        configManager_->SaveConfigToJson(type); // 保存
-    }
-
-    // 必ず存在するはずなので、参照取得
-    const auto& definition = presetMap.at(presetName);
+    const auto& definition = definitions_.at(presetName);
     const auto& emitterConfig = definition.emitterConfig;
 
-    // 新しいエミッターを生成
     auto emitter = std::make_unique<ParticleEmitter>();
-
-    emitter->type_ = type;
-
-    emitter->presetName_ = presetName;
-
-    // ロードした設定で初期化
+    emitter->presetName_ = presetName; // プリセット名を保持
     emitter->Initialize(
-        type,
         emitterConfig.position,
         emitterConfig.spawnInterval,
         emitterConfig.lifetime,
@@ -210,17 +186,17 @@ void ParticleSystem::Update()
 void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 {
     // 名前が指定されていない場合は自動で命名
-    if (emitter->name_.empty()) 
+    if (emitter->name_.empty())
     {
-        emitter->name_ = "Emitter_" + std::string(ParticleTypeToString(emitter->type_));
+        // presetNameをベースに名前を付ける
+        emitter->name_ = "Emitter_" + emitter->presetName_;
 
-        // 同じタイプが複数ある場合に備えて連番をつける
+        // 同じ名前が複数ある場合に備えて連番をつける
         int suffix = 1;
         std::string baseName = emitter->name_;
-        while (std::any_of(emitters_.begin(), emitters_.end(), [&](const auto& e)
-            {
+        while (std::any_of(emitters_.begin(), emitters_.end(), [&](const auto& e) {
             return e->name_ == emitter->name_;
-            })) 
+            }))
         {
             emitter->name_ = baseName + "_" + std::to_string(suffix++);
         }

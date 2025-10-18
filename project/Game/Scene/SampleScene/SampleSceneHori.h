@@ -12,15 +12,6 @@
 #include "AnimationData.h"
 #include "AnimationModel.h"
 
-struct Particle
-{
-    Vector3 position;
-    Vector3 velocity;
-    float lifetime;
-    bool active;
-    ParticleType type;
-    uint32_t textureIndex;
-};
 
 class SampleSceneHori : public BaseScene
 {
@@ -71,8 +62,6 @@ private:
 
     Vector3 baseTranslation_;
     Vector3 originalTranslation_;
-
-    std::vector<Particle> particles_;
 
     bool isEditorMode_ = false;
 

@@ -1,0 +1,106 @@
+{
+    "EmitterConfig": {
+        "amount": 1,
+        "lifetime": 4.0,
+        "position": [
+            -7.099999904632568,
+            0.0,
+            0.0
+        ],
+        "spawnInterval": 0.10000000149011612
+    },
+    "ParticleConfig": {
+        "baseColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "colorOverLifetimeModule": {
+            "enabled": true,
+            "endColor": 4294967040,
+            "startColor": 4294967295
+        },
+        "decayRate": 0.0,
+        "drag": 0.0,
+        "emitterRange": [
+            20.0,
+            20.0,
+            20.0
+        ],
+        "endColor": 4294967040,
+        "endScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "fadeOutFrameCount": 0,
+        "gravity": 0.0,
+        "maxLifetime": 0.0,
+        "particleRadius": 0.0,
+        "physicsModule": {
+            "drag": 0.0,
+            "enabled": false,
+            "gravity": 0.0
+        },
+        "rotationModule": {
+            "angularVelocity": 5.0,
+            "enabled": false,
+            "randomStartRotation": true
+        },
+        "scaleFrameCount": 0,
+        "shapeModule": {
+            "boxSize": [
+                20.0,
+                20.0,
+                20.0
+            ],
+            "emitFromEdge": false,
+            "enabled": true,
+            "radius": 10.0,
+            "type": 0
+        },
+        "sizeOverLifetimeModule": {
+            "enabled": true,
+            "endScale": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "frequency": 1.0,
+            "oscillate": false,
+            "startScale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "speed": 1.0,
+        "startColor": 4294967295,
+        "startScale": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "textureIndex": 0,
+        "textureSheetModule": {
+            "enabled": true,
+            "framesPerSecond": 10.0,
+            "looping": true,
+            "textureHandle": 4,
+            "tilesX": 1,
+            "tilesY": 1
+        },
+        "velocityModule": {
+            "angleRange": 60.0,
+            "direction": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "enabled": true,
+            "randomDirection": true,
+            "speed": 4.0
+        }
+    }
+}

@@ -6,41 +6,12 @@
 #include <memory>
 #include <string>
 
-enum class ParticleType
-{
-    None,
-
-    Key,
-    HitEffect,
-
-    Count
-};
-
-inline const char* ParticleTypeToString(ParticleType type)
-{
-    switch (type)
-    {
-    case ParticleType::None: return "None";
-    case ParticleType::Key: return "Key";
-    case ParticleType::HitEffect: return "HitEffect";
-    default: return "Unknown";
-    }
-}
-
-inline ParticleType StringToParticleType(const std::string& str) 
-{
-    if (str == "None") return ParticleType::None;
-    if (str == "Key") return ParticleType::Key;
-    if (str == "HitEffect") return ParticleType::HitEffect;
-    return ParticleType::None; // fallback
-}
-
 struct ShapeModule
 {
     enum class Type { Point, Box, Sphere, Circle };
 
     bool enabled = true;
-    Type type = Type::Circle;
+    Type type = Type::Point;
 
     // Circle / Sphere 共通設定
     float radius = 10.0f;
@@ -92,11 +63,11 @@ struct ShapeModule
 
 struct VelocityModule
 {
-    bool enabled = false;
-    float speed = 1.0f;
-    bool randomDirection = false;
-    float angleRange = 0.0f; 
-    Vector3 direction = { 1.0f, 0.0f, 0.0f };
+    bool enabled = true;
+    float speed = 4.0f;
+    bool randomDirection = true;
+    float angleRange = 60.0f; 
+    Vector3 direction = { 0.0f, 1.0f, 0.0f };
 
     Vector3 GetInitialVelocity() const
     {
@@ -154,7 +125,7 @@ struct RotationOverLifetimeModule
 
 struct ColorOverLifetimeModule
 {
-    bool enabled = false;
+    bool enabled = true;
     unsigned int startColor = 0xffffffff;
     unsigned int endColor = 0xffffff00;
     Easing easing;
@@ -179,7 +150,7 @@ struct ColorOverLifetimeModule
 };
 
 struct SizeOverLifetimeModule {
-    bool enabled = false;
+    bool enabled = true;
     Vector3 startScale = { 1.0f, 1.0f, 1.0f };
     Vector3 endScale = { 0.0f, 0.0f, 0.0f };
     Easing easing;
@@ -224,7 +195,6 @@ struct TextureSheetAnimationModule
 
 struct ParticleConfig
 {
-    ParticleType type;
     float gravity;
     float drag;
     float decayRate;
@@ -274,7 +244,6 @@ struct ParticleState
 {
     std::unique_ptr<WorldTransform> transform;
     Vector4 color;
-    ParticleType type;
     uint32_t textureHandle;
     float temperature;
     float lifetime;
@@ -336,7 +305,7 @@ struct ParticleState
 struct EmitterConfig {
     Vector3 position = { 0.0f, 0.0f, 0.0f };
     float spawnInterval = 0.1f; // 発生間隔 (秒)
-    float lifetime = 5.0f;      // パーティクルの生存時間
+    float lifetime = 4.0f;      // パーティクルの生存時間
     int amount = 1;             // 一度に発生させる量
 
 };

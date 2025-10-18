@@ -8,11 +8,11 @@ class ParticleConfigManager
 public:
     ParticleConfigManager(ParticleSystem* system);
 
-    // 読み込み処理：ParticleSystemが持つdefinitions_を引数で受け取る
-    void LoadParticleDefinitionFromJson(ParticleType type);
+    // ディレクトリ内の全パーティクル定義を読み込む関数
+    void LoadAllParticleDefinitions();
 
     // 保存処理：同様に、保存したいdefinitions_を引数で受け取る
-    void SaveConfigToJson(ParticleType type);
+    void SaveParticleDefinitionToJson(const std::string& presetName);
 
 private:
 

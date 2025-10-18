@@ -21,19 +21,20 @@ class ParticleConfigManager;
 class ParticleSystem
 {
 public:
-    const char* kConfigDirectoryPath_ = "Resources/json/";
+    const char* kConfigDirectoryPath_ = "Resources/json/particle/";
 
     ParticleSystem();
     ~ParticleSystem();
 
     void Initialize(Engine* engine);
-    void SpawnParticle(WorldTransform& transform, ParticleType type, const std::string& presetName, float lifetime, int amount);
+    void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, int amount);
     void Update();
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
-    std::unique_ptr<ParticleEmitter> CreateEmitter(ParticleType type, const std::string& presetName);
+    std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);
     void Draw();
-    const ParticleConfig& GetConfig(ParticleType type, const std::string& presetName) const { return definitions_.at(type).at(presetName).particleConfig; }
-    ParticleConfig& GetConfig(ParticleType type, const std::string& presetName) { return definitions_.at(type).at(presetName).particleConfig; }
+    // presetNameだけでConfigを取得できるようにする
+    const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
+    ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }
 
 public:
     Engine* engine_;
@@ -41,8 +42,8 @@ public:
     std::unique_ptr<ParticleEditor> editor_;
     std::unique_ptr<ParticleConfigManager> configManager_;
     std::vector<ParticleState> particles_;
-    std::map<ParticleType, std::map<std::string, ParticleDefinition>> definitions_;
-    std::unordered_map<ParticleType, std::unique_ptr<IParticleBehavior>> behaviors_;
+    // プリセット名(string)をキーとして、定義(ParticleDefinition)をマッピング
+    std::map<std::string, ParticleDefinition> definitions_;
 };
 
 

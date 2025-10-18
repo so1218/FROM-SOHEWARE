@@ -8,7 +8,7 @@ public:
 
     void ShowEditor();
 
-    void ApplyEmitterConfigToLiveEmitters(ParticleType type, const std::string& presetName);
+    void ApplyEmitterConfigToLiveEmitters(const std::string& presetName);
 
 private:
     ParticleSystem* particleSystem_;
