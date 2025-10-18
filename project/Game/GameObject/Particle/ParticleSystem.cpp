@@ -138,6 +138,43 @@ void ParticleSystem::Update()
             particleState.velocity = particleState.velocity * (1.0f - (config.physics.drag * deltaTime));
         }
 
+        if (config.vortex.enabled)
+        {
+            // パーティクルから渦の中心へ向かうベクトルを計算
+            Vector3 toCenter = config.vortex.center - particleState.transform->translation_;
+
+            // 距離がゼロに近い場合は何もしない
+            if (toCenter.Length() > 0.001f) {
+                Vector3 toCenter_norm = toCenter.Normalize();
+
+                // 中心へ向かう/離れる力（公転速度）を計算
+                Vector3 orbitalForce = toCenter_norm * config.vortex.orbitalSpeed;
+
+                // 回転方向のベクトルを計算 (2D/XY平面の場合)
+                Vector3 rotationalForce = { -toCenter_norm.y, toCenter_norm.x, 0.0f };
+                rotationalForce = rotationalForce * config.vortex.rotationSpeed;
+
+                // 2つの力をパーティクルの速度に加える
+                particleState.velocity += (orbitalForce + rotationalForce) * deltaTime;
+            }
+        }
+
+        // Attraction Module: 引力を速度に加える
+        if (config.attraction.enabled)
+        {
+            // パーティクルから目標への方向ベクトルを計算
+            Vector3 directionToTarget = config.attraction.target - particleState.transform->translation_;
+
+            // 正規化して、純粋な方向だけを取り出す
+            Vector3 normalizedDir = directionToTarget.Normalize();
+
+            // 速度に加えるべき力（加速度）を計算
+            Vector3 attractionForce = normalizedDir * config.attraction.strength;
+
+            // パーティクルの速度に、経過時間を考慮した力を加える
+            particleState.velocity += attractionForce * deltaTime;
+        }
+
         // 移動: 速度を位置に反映
         particleState.transform->translation_ += particleState.velocity * deltaTime;
 
@@ -166,7 +203,8 @@ void ParticleSystem::Update()
             particleState.textureHandle = config.textureSheet.textureHandle;
             // UV座標を計算
         }
-        else {
+        else
+        {
             particleState.textureHandle = config.textureSheet.textureHandle;
             // UVはデフォルト値
         }
@@ -189,23 +227,6 @@ void ParticleSystem::Update()
 
 void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 {
-    // 名前が指定されていない場合は自動で命名
-    if (emitter->name_.empty())
-    {
-        // presetNameをベースに名前を付ける
-        emitter->name_ = "Emitter_" + emitter->presetName_;
-
-        // 同じ名前が複数ある場合に備えて連番をつける
-        int suffix = 1;
-        std::string baseName = emitter->name_;
-        while (std::any_of(emitters_.begin(), emitters_.end(), [&](const auto& e) {
-            return e->name_ == emitter->name_;
-            }))
-        {
-            emitter->name_ = baseName + "_" + std::to_string(suffix++);
-        }
-    }
-
     emitters_.push_back(std::move(emitter));
 }
 

@@ -81,8 +81,15 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& shapeJson = configJson["shapeModule"];
                     config.shape.enabled = shapeJson.value("enabled", true);
-                    config.shape.type = static_cast<ShapeModule::Type>(shapeJson.value("type", static_cast<int>(ShapeModule::Type::Circle)));
-                    config.shape.radius = shapeJson.value("radius", 10.0f);
+                    config.shape.type = static_cast<ShapeModule::Type>(shapeJson.value("type", static_cast<int>(ShapeModule::Type::Point)));
+                    if (shapeJson.contains("radius") && shapeJson["radius"].is_array())
+                    {
+                        config.shape.radius = {
+                            shapeJson["radius"][0].get<float>(),
+                            shapeJson["radius"][1].get<float>(),
+                            shapeJson["radius"][2].get<float>()
+                        };
+                    }
                     config.shape.emitFromEdge = shapeJson.value("emitFromEdge", false);
                     if (shapeJson.contains("boxSize") && shapeJson["boxSize"].is_array())
                     {
@@ -133,19 +140,26 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.sizeOverLifetime.oscillate = sizeJson.value("oscillate", false);
                     config.sizeOverLifetime.frequency = sizeJson.value("frequency", 1.0f);
                 }
-
-                config.textureIndex = configJson.value("textureIndex", 0);
-
-                if (configJson.contains("baseColor") && configJson["baseColor"].is_array())
+                // VortexModuleの読み込み
+                if (configJson.contains("vortexModule"))
                 {
-                    auto colorArray = configJson["baseColor"];
-                    config.baseColor =
-                    {
-                        colorArray[0].get<float>(),
-                        colorArray[1].get<float>(),
-                        colorArray[2].get<float>(),
-                        colorArray[3].get<float>()
-                    };
+                    auto& vortexJson = configJson["vortexModule"];
+                    config.vortex.enabled = vortexJson.value("enabled", false);
+                    if (vortexJson.contains("center")) {
+                        config.vortex.center = { vortexJson["center"][0], vortexJson["center"][1], vortexJson["center"][2] };
+                    }
+                    config.vortex.rotationSpeed = vortexJson.value("rotationSpeed", 90.0f);
+                    config.vortex.orbitalSpeed = vortexJson.value("orbitalSpeed", 10.0f);
+                }
+                // AttractionModuleの読み込み
+                if (configJson.contains("attractionModule"))
+                {
+                    auto& attrJson = configJson["attractionModule"];
+                    config.attraction.enabled = attrJson.value("enabled", false);
+                    if (attrJson.contains("target")) {
+                        config.attraction.target = { attrJson["target"][0], attrJson["target"][1], attrJson["target"][2] };
+                    }
+                    config.attraction.strength = attrJson.value("strength", 1.0f);
                 }
             }
 
@@ -195,14 +209,16 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "direction", { config.velocity.direction.x, config.velocity.direction.y, config.velocity.direction.z }}
         }},
         // PhysicsModule
-        { "physicsModule", {
+        { "physicsModule",
+        {
             { "enabled", config.physics.enabled },
             { "gravity", config.physics.gravity },
             { "drag", config.physics.drag }
         }},
 
         // RotationOverLifetimeModule
-        { "rotationModule", {
+        { "rotationModule", 
+        {
             { "enabled", config.rotation.enabled },
             { "randomStartRotation", config.rotation.randomStartRotation },
             { "angularVelocity", config.rotation.angularVelocity }
@@ -210,8 +226,8 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "shapeModule",
         {
             { "enabled", config.shape.enabled },
-            { "type", static_cast<int>(config.shape.type) }, // Enumは整数として保存
-            { "radius", config.shape.radius },
+            { "type", static_cast<int>(config.shape.type) },
+            { "radius", { config.shape.radius.x, config.shape.radius.y, config.shape.radius.z }}, 
             { "emitFromEdge", config.shape.emitFromEdge },
             { "boxSize", { config.shape.boxSize.x, config.shape.boxSize.y, config.shape.boxSize.z }}
         }},
@@ -234,7 +250,8 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         }},
 
         // SizeOverLifetimeModuleの情報
-        { "sizeOverLifetimeModule", {
+        { "sizeOverLifetimeModule",
+        {
             { "enabled", config.sizeOverLifetime.enabled },
             { "startScale", { config.sizeOverLifetime.startScale.x, config.sizeOverLifetime.startScale.y, config.sizeOverLifetime.startScale.z }},
             { "endScale", { config.sizeOverLifetime.endScale.x, config.sizeOverLifetime.endScale.y, config.sizeOverLifetime.endScale.z }},
@@ -242,8 +259,23 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "oscillate", config.sizeOverLifetime.oscillate },
             { "frequency", config.sizeOverLifetime.frequency }
         }},
-        { "textureIndex", config.textureIndex },
-        { "baseColor", { config.baseColor.x, config.baseColor.y, config.baseColor.z, config.baseColor.w }},
+
+        // VortexModuleの情報
+        { "vortexModule",
+        {
+            { "enabled", config.vortex.enabled },
+            { "center", { config.vortex.center.x, config.vortex.center.y, config.vortex.center.z }},
+            { "rotationSpeed", config.vortex.rotationSpeed },
+            { "orbitalSpeed", config.vortex.orbitalSpeed }
+        }},
+
+        // AttractionModuleの情報
+        { "attractionModule", 
+        {
+            { "enabled", config.attraction.enabled },
+            { "target", { config.attraction.target.x, config.attraction.target.y, config.attraction.target.z }},
+            { "strength", config.attraction.strength }
+        }}
 
     };
 

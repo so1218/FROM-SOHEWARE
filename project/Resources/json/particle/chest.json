@@ -10,7 +10,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.10000000149011612
+        "spawnInterval": 0.2199999988079071
     },
     "ParticleConfig": {
         "baseColor": [
@@ -21,8 +21,8 @@
         ],
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 2627076096,
-            "startColor": 4216523519
+            "endColor": 2633957376,
+            "startColor": 1381174015
         },
         "physicsModule": {
             "drag": 0.0,

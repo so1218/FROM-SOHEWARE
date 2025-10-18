@@ -124,7 +124,7 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("Particle Lifetime", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragInt("Amount", &emitterConfig.amount, 1, 1, 100);
+                valueChanged |= ImGui::DragInt("Amount", &emitterConfig.amount, 1, 0);
 
                 ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("Duration", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f s");
@@ -190,11 +190,12 @@ void ParticleEditor::ShowEditor()
                     auto& shape = config.shape; 
 
                     // 形状タイプを選択するコンボボックス
-                    const char* shapeTypes[] = { "Point", "Box", "Sphere", "Circle" };
+                    const char* shapeTypes[] = { "Point", "Box", "Sphere" };
                     int currentShapeType = static_cast<int>(shape.type);
                     if (ImGui::Combo("Shape Type", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes))) {
                         shape.type = static_cast<ShapeModule::Type>(currentShapeType);
                     }
+                    ImGui::Separator();
 
                     // 選択された形状に応じて、関連するUIのみを表示
                     switch (shape.type)
@@ -204,14 +205,16 @@ void ParticleEditor::ShowEditor()
                         break;
 
                     case ShapeModule::Type::Sphere:
-                    case ShapeModule::Type::Circle:
-                        ImGui::DragFloat("Radius", &shape.radius, 0.1f, 0.0f);
+                        ImGui::DragFloat3("Radius", &shape.radius.x, 0.1f);
+                        ImGui::Separator();
                         ImGui::Checkbox("Emit from Edge", &shape.emitFromEdge);
                         break;
 
                     case ShapeModule::Type::Point:
                         break;
                     }
+                 
+                    ImGui::Separator();
 
                     ImGui::TreePop();
                 }
@@ -311,6 +314,36 @@ void ParticleEditor::ShowEditor()
                     if (sizeModule.oscillate) {
                         ImGui::DragFloat("Frequency", &sizeModule.frequency, 0.1f, 0.0f, 100.0f);
                     }
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                // VortexModuleのUI
+                if (ImGui::TreeNode("Vortex Module"))
+                {
+                    auto& vortex = config.vortex; 
+
+                    ImGui::Checkbox("Enabled##Vortex", &vortex.enabled);
+                    ImGui::DragFloat3("Center", &vortex.center.x, 0.1f);
+                    ImGui::DragFloat("Rotation Speed", &vortex.rotationSpeed, 1.0f, -1000.0f, 1000.0f, "%.0f deg/s");
+                    ImGui::DragFloat("Orbital Speed", &vortex.orbitalSpeed, 0.1f, -100.0f, 100.0f);
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip("Speed towards/away from the center. Negative values move away.");
+                    }
+
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
+                // AttractionModuleのUI
+                if (ImGui::TreeNode("Attraction Module"))
+                {
+                    auto& attraction = config.attraction;
+
+                    ImGui::Checkbox("Enabled##Attraction", &attraction.enabled);
+                    ImGui::DragFloat3("Target", &attraction.target.x, 0.1f);
+                    ImGui::DragFloat("Strength", &attraction.strength, 0.1f, 0.0f, 1000.0f);
 
                     ImGui::TreePop();
                 }

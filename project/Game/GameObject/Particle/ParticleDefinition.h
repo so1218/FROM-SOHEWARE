@@ -8,16 +8,16 @@
 
 struct ShapeModule
 {
-    enum class Type { Point, Box, Sphere, Circle };
+    enum class Type { Point, Box, Sphere };
 
     bool enabled = true;
     Type type = Type::Point;
 
-    // Circle / Sphere 共通設定
-    float radius = 10.0f;
+    // Sphere設定
+    Vector3 radius = { 10.0f, 10.0f, 10.0f };
     bool emitFromEdge = false; // 縁からのみ生成するか
 
-    // Box 設定
+    // Box設定
     Vector3 boxSize = { 20.0f, 20.0f, 20.0f };
 
     // このモジュールに基づいて初期位置のオフセットを計算する関数
@@ -29,32 +29,47 @@ struct ShapeModule
             return { 0.0f, 0.0f, 0.0f };
 
         case Type::Box:
+            // 内部（体積）から生成するロジック
             return {
                 RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
                 RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
                 RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
             };
-
-        case Type::Circle:
-        {
-            float r = emitFromEdge ? radius : radius * sqrtf(RandomFloat(0.0f, 1.0f));
-            float theta = RandomFloat(0.0f, 2.0f * 3.14159f);
-            return { cosf(theta) * r, sinf(theta) * r, 0.0f };
-        }
-
         case Type::Sphere:
         {
-            // 球体状に均一な点を生成
+            // 半径1の単位球上のランダムな点を生成する
             float phi = RandomFloat(0.0f, 2.0f * 3.14159f);
             float cosTheta = RandomFloat(-1.0f, 1.0f);
             float theta = acosf(cosTheta);
-            float r = emitFromEdge ? radius : radius * cbrtf(RandomFloat(0.0f, 1.0f));
 
-            return {
-                r * sinf(theta) * cosf(phi),
-                r * sinf(theta) * sinf(phi),
-                r * cosf(theta)
+            Vector3 unitSpherePoint = {
+                sinf(theta) * cosf(phi),
+                sinf(theta) * sinf(phi),
+                cosf(theta)
             };
+
+            // もし特定の軸の半径が0なら、その軸方向の単位球座標を強制的に0にする
+            if (radius.x == 0.0f) { unitSpherePoint.x = 0.0f; }
+            if (radius.y == 0.0f) { unitSpherePoint.y = 0.0f; }
+            if (radius.z == 0.0f) { unitSpherePoint.z = 0.0f; }
+
+            // 正規化して、点が必ず縁に来るようにする
+            unitSpherePoint = unitSpherePoint.Normalize();
+
+            // 各軸の半径を使って、単位球/円/線上の点を引き伸ばす
+            Vector3 ellipsoidPoint = {
+                unitSpherePoint.x * radius.x,
+                unitSpherePoint.y * radius.y,
+                unitSpherePoint.z * radius.z
+            };
+
+            // emitFromEdgeがfalseの場合、中心に向かってランダムに縮小する
+            if (!emitFromEdge)
+            {
+                ellipsoidPoint = ellipsoidPoint * cbrtf(RandomFloat(0.0f, 1.0f));
+            }
+
+            return ellipsoidPoint;
         }
         }
         return { 0.0f, 0.0f, 0.0f };
@@ -211,7 +226,14 @@ struct VortexModule {
 struct TrailModule {
     bool enabled = false;
     float lifetime = 0.5f; // 軌跡が消えるまでの時間
-    // 色や太さを軌跡の始点から終点にかけて変えるためのグラデーション設定なども追加
+    // 色や太さを軌跡の始点から終点にかけて変えるためのグラデーション設定など
+};
+
+struct AttractionModule
+{
+    bool enabled = false;
+    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 引き寄せられる目標地点（中心）
+    float strength = 1.0f;              // 引き寄せられる強さ（加速度）
 };
 
 struct ParticleConfig
@@ -227,6 +249,9 @@ struct ParticleConfig
     RotationOverLifetimeModule rotation; 
     ShapeModule shape;
     TextureSheetAnimationModule textureSheet;
+    VortexModule vortex;
+    TrailModule trail;
+    AttractionModule attraction;
 
     ParticleConfig()
     {
@@ -252,7 +277,6 @@ struct ParticleState
 
     ParticleState()
     {
-
         // デフォルト値で初期化
         initialPosition = { 0.0f,0.0f,0.0f };
     }
