@@ -18,26 +18,9 @@
         ],
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4294967040,
-            "startColor": 4294967295
+            "endColor": 2627076096,
+            "startColor": 4216523519
         },
-        "decayRate": 0.0,
-        "drag": 0.0,
-        "emitterRange": [
-            20.0,
-            20.0,
-            20.0
-        ],
-        "endColor": 4294967040,
-        "endScale": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "fadeOutFrameCount": 0,
-        "gravity": 0.0,
-        "maxLifetime": 0.0,
-        "particleRadius": 0.0,
         "physicsModule": {
             "drag": 0.0,
             "enabled": false,
@@ -48,51 +31,43 @@
             "enabled": false,
             "randomStartRotation": true
         },
-        "scaleFrameCount": 0,
         "shapeModule": {
             "boxSize": [
-                20.0,
-                20.0,
-                20.0
+                2.0,
+                0.0,
+                2.0
             ],
             "emitFromEdge": false,
             "enabled": true,
-            "radius": 10.0,
-            "type": 0
+            "radius": 2.0999999046325684,
+            "type": 1
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.0,
-                0.0,
+                10.0,
+                10.0,
                 0.0
             ],
-            "frequency": 1.0,
-            "oscillate": false,
+            "frequency": 0.0,
+            "oscillate": true,
             "startScale": [
-                1.0,
-                1.0,
+                0.0,
+                0.0,
                 1.0
             ]
         },
-        "speed": 1.0,
-        "startColor": 4294967295,
-        "startScale": [
-            0.0,
-            0.0,
-            0.0
-        ],
         "textureIndex": 0,
         "textureSheetModule": {
             "enabled": true,
             "framesPerSecond": 10.0,
             "looping": true,
-            "textureHandle": 4,
+            "textureHandle": 12,
             "tilesX": 1,
             "tilesY": 1
         },
         "velocityModule": {
-            "angleRange": 60.0,
+            "angleRange": 22.0,
             "direction": [
                 0.0,
                 1.0,
@@ -100,7 +75,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 4.0
+            "speed": 4.550000190734863
         }
     }
 }

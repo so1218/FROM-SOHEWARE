@@ -134,10 +134,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.sizeOverLifetime.frequency = sizeJson.value("frequency", 1.0f);
                 }
 
-                config.decayRate = configJson.value("decayRate", 1.0f);
-                config.maxLifetime = configJson.value("maxLifetime", 5.0f);
                 config.textureIndex = configJson.value("textureIndex", 0);
-                config.radius = configJson.value("particleRadius", 1.0f);
 
                 if (configJson.contains("baseColor") && configJson["baseColor"].is_array())
                 {
@@ -148,43 +145,6 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                         colorArray[1].get<float>(),
                         colorArray[2].get<float>(),
                         colorArray[3].get<float>()
-                    };
-                }
-
-                if (configJson.contains("emitterRange") && configJson["emitterRange"].is_array())
-                {
-                    auto& r = configJson["emitterRange"];
-                    config.emitterRange =
-                    {
-                        r[0].get<float>(),
-                        r[1].get<float>(),
-                        r[2].get<float>()
-                    };
-                }
-
-                config.fadeOutEase.frameCount_ = configJson.value("fadeOutFrameCount", 60);
-                config.startColor = configJson.value("startColor", 0xffffffff);
-                config.endColor = configJson.value("endColor", 0xffffffff);
-                config.scaleEase.frameCount_ = configJson.value("scaleFrameCount", 60);
-                if (configJson.contains("startScale") && configJson["startScale"].is_array())
-                {
-                    auto& arr = configJson["startScale"];
-                    config.startScale =
-                    {
-                        arr[0].get<float>(),
-                        arr[1].get<float>(),
-                        arr[2].get<float>()
-                    };
-                }
-
-                if (configJson.contains("endScale") && configJson["endScale"].is_array())
-                {
-                    auto& arr = configJson["endScale"];
-                    config.endScale =
-                    {
-                        arr[0].get<float>(),
-                        arr[1].get<float>(),
-                        arr[2].get<float>()
                     };
                 }
             }
@@ -223,7 +183,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
     // ParticleConfigをJSONに変換
     nlohmann::json particleConfigJson =
     {
-        { "speed", config.speed },
         { "velocityModule",
         {
             { "enabled", config.velocity.enabled },
@@ -280,20 +239,8 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "oscillate", config.sizeOverLifetime.oscillate },
             { "frequency", config.sizeOverLifetime.frequency }
         }},
-        { "gravity", config.gravity },
-        { "drag", config.drag },
-        { "decayRate", config.decayRate },
-        { "maxLifetime", config.maxLifetime },
         { "textureIndex", config.textureIndex },
-        { "particleRadius", config.radius },
         { "baseColor", { config.baseColor.x, config.baseColor.y, config.baseColor.z, config.baseColor.w }},
-        { "emitterRange", { config.emitterRange.x, config.emitterRange.y, config.emitterRange.z }},
-        { "fadeOutFrameCount", config.fadeOutEase.frameCount_ },
-        { "startColor", config.startColor },
-        { "endColor", config.endColor },
-        { "scaleFrameCount", config.scaleEase.frameCount_ },
-        { "startScale", { config.startScale.x, config.startScale.y, config.startScale.z }},
-        { "endScale", { config.endScale.x, config.endScale.y, config.endScale.z }},
 
     };
 

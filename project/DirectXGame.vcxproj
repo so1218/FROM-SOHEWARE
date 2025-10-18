@@ -227,8 +227,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Effect\Easing.cpp" />
     <ClCompile Include="Game\Effect\Fade.cpp" />
     <ClCompile Include="Game\Game.cpp" />
-    <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp" />
-    <ClCompile Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\Map\MapChipField.cpp" />
     <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp" />
@@ -244,7 +242,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Utility\TimedCall.cpp" />
     <ClCompile Include="Game\GameObject\Ground.cpp" />
     <ClCompile Include="Engine\Core\GlobalVariables.cpp" />
-    <ClCompile Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -334,9 +331,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Effect\Easing.h" />
     <ClInclude Include="Game\Effect\Fade.h" />
     <ClInclude Include="Game\Game.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\IParticleBehavior.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />
@@ -356,7 +350,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Ground.h" />
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
     <ClInclude Include="Game\GameObject\GameObject.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Include\json.hpp" />
     <ClInclude Include="Game\Data\ModelHandle.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEmitter.h" />

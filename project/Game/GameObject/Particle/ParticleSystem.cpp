@@ -8,8 +8,6 @@
 #include "ParticleEditor.h"
 #include "ParticleConfigManager.h"
 #include "TextureHandle.h"
-#include "KeyParticleBehavior.h"
-#include "HitEffectParticleBehavior.h"
 #include "ImGuiManager.h"
 #include "json.hpp"
 
@@ -53,7 +51,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
         particle.color = config.colorOverLifetime.Evaluate(0.0f);
     }
     else {
-        particle.color = config.baseColor; // モジュール無効なら基本色
+        particle.color = config.baseColor; // モジュール無効なら白色
     }
 
     // Size: 開始スケールを設定 (t=0の時のスケール)
@@ -73,7 +71,6 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.presetName = presetName;
-    particle.isExist = true; // 新しいシステムではこのフラグは不要になるかも
 
     particles_.push_back(std::move(particle));
 }

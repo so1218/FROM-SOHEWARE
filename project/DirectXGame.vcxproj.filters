@@ -378,12 +378,6 @@
     <ClCompile Include="Game\Stage\StageManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -391,9 +385,6 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -681,14 +672,10 @@
     <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
     <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\IParticleBehavior.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\KeyParticleBehavior.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\HitEffectParticleBehavior.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Mesh\AnimationModel.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
-    <ClInclude Include="Game\GameObject\Particle\Behavior\UniversalParticleBehavior.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

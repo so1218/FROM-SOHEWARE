@@ -4,7 +4,7 @@
 #include "WorldTransform.h"
 #include "Easing.h"
 #include "Structures.h"
-#include "IParticleBehavior.h"
+#include "ParticleDefinition.h"
 
 #include <wrl.h>
 #include <d3d12.h>

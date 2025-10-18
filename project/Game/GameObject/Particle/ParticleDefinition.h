@@ -193,30 +193,32 @@ struct TextureSheetAnimationModule
     bool looping = true;
 };
 
+struct NoiseModule {
+    bool enabled = false;
+    float strength = 1.0f;   // 揺らぎの強さ
+    float frequency = 1.0f;  // 揺らぎの細かさ（周波数）
+    float scrollSpeed = 1.0f; // ノイズが時間と共に流れる速度
+    bool separateAxes = false; // X, Y, Z軸で別々の設定を使うか
+};
+
+struct VortexModule {
+    bool enabled = false;
+    Vector3 center = { 0.f, 0.f, 0.f }; // 渦の中心
+    float rotationSpeed = 90.0f;    // 1秒あたりの回転速度
+    float orbitalSpeed = 10.0f;     // 中心へ向かう/離れる速度（負の値で離れる）
+};
+
+struct TrailModule {
+    bool enabled = false;
+    float lifetime = 0.5f; // 軌跡が消えるまでの時間
+    // 色や太さを軌跡の始点から終点にかけて変えるためのグラデーション設定なども追加
+};
+
 struct ParticleConfig
 {
-    float gravity;
-    float drag;
-    float decayRate;
-    float maxLifetime;
     uint32_t textureIndex;
-    float radius;
-    Vector4 baseColor;
-
-    float speed;
-    Vector3 emitterRange;
-    unsigned int startColor;
-    unsigned int endColor;
-    Vector3 startScale;
-    Vector3 endScale;
-    EasingType fadeOutEasing;
-    EasingType scaleEasing;
-    int fadeOutDurationFrames;
-    Easing fadeOutEase;
-    Easing toCenterEase;
-    Easing scaleEase;
     Vector3 initialPosition;
-    bool isInfinite = false;
+    Vector4 baseColor;
 
     VelocityModule velocity;
     SizeOverLifetimeModule sizeOverLifetime;
@@ -228,57 +230,22 @@ struct ParticleConfig
 
     ParticleConfig()
     {
-        startColor = 0xffffffff;
-        endColor = 0xffffff00;
-        speed = 1.0f;
-        startScale = { 0.0f,0.0f,0.0f };
-        endScale = { 1.0f,1.0f,1.0f };
-        emitterRange = { 20, 20, 20 };
         initialPosition = { 0.0f,0.0f,0.0f };
+        baseColor = { 1.0f,1.0f,1.0f,1.0f };
     }
 };
-
-
 
 struct ParticleState
 {
     std::unique_ptr<WorldTransform> transform;
     Vector4 color;
     uint32_t textureHandle;
-    float temperature;
     float lifetime;
-    float density;
     Vector3 velocity;
     float age = 0.0f;
-    bool hasLifetime;
-    float rotationSpeed;
 
-    bool hasExisted;
-    bool isEmit;
-    int frameCount;
-    int appearInterval;
-    Vector3 emitterRange;
-    Vector3 prePos = {};
-    Vector3 acceleration;
-    Vector3 startPos;
-    float speed;
-    int spawnFrame_ = 0;
-    float thetaVel = 0;
-    int amount = 0;
-    Vector3 startScale = { 0.0f,0.0f,0.0f };
-    Vector3 endScale = { 1.0f,1.0f,1.0f };
-    bool isExist;
-    unsigned int startColor;
-    unsigned int endColor;
-    Easing fadeOutEase;
-    Easing toCenterEase;
-    Easing scaleEase;
-    float theta;
     Vector3 initialPosition; // 生成時のエミッターの座標
     std::string presetName;
-    int spawnedCount = 0;        // 生成済みの数
-    bool isSpawning = false;// 現在生成中かどうかのフラグ
-    bool isInfinite = false;
     Vector4 uvRect = { 0.0f, 0.0f, 1.0f, 1.0f };
 
     ParticleConfig config;
@@ -287,15 +254,6 @@ struct ParticleState
     {
 
         // デフォルト値で初期化
-        isExist = false;
-        hasExisted = false;
-        frameCount = 0;
-        appearInterval = 4;
-        startColor = 0xffffffff;
-        endColor = 0xffffff00;
-        speed = 1.0f;
-        emitterRange = { 20, 20, 20 };
-        isEmit = false;
         initialPosition = { 0.0f,0.0f,0.0f };
     }
 };
