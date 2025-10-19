@@ -22,6 +22,8 @@
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 
 
+#include <chrono>
+
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
 
@@ -70,6 +72,10 @@ public:
 
     // メッシュキャッシュ取得・作成
     Mesh* GetOrCreateMesh(const ModelData& modelData);
+
+    // FPS固定処理
+    void InitializeFixFPS();
+    void UpdateFixFPS();
 
     // 描画カウント取得
     int32_t GetTriangleCount() const { return indexTriangle_; }
@@ -210,4 +216,10 @@ public:
 
 	// ウィンドウタイトル
     static std::wstring windowTitle_;
+
+    int kTargetFPS_ = 60; // デフォルトのターゲットFPS
+    // 目標とする次のフレームの終了時刻
+    std::chrono::steady_clock::time_point targetTime_;
+    // 1フレームあたりの時間
+    const std::chrono::microseconds frameDuration_{ 1000000 / kTargetFPS_ };
 };

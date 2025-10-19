@@ -88,10 +88,10 @@ struct VelocityModule
     {
         if (randomDirection)
         {
-            // 1. 中心となる方向ベクトルを正規化
+            // 中心となる方向ベクトルを正規化
             Vector3 d_norm = direction.Normalize();
 
-            // 2. d_normと直交する2つのベクトル(u, v)を生成し、局所的な座標系を作る
+            // d_normと直交する2つのベクトル(u, v)を生成し、局所的な座標系を作る
             Vector3 up = { 0.0f, 1.0f, 0.0f };
             // 中心軸がY軸とほぼ平行な場合は、別のベクトルを使って外積を計算する
             if (abs(d_norm.y) > 0.999f) {
@@ -100,16 +100,14 @@ struct VelocityModule
             Vector3 u = CrossProduct(d_norm, up).Normalize();
             Vector3 v = CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化される
 
-            // 3. 円錐状に広がるためのランダムな角度を2つ生成
-            // phi: 中心軸周りの回転角度 (0° ～ 360°)
+            // 円錐状に広がるためのランダムな角度を2つ生成
             float phi = RandomFloat(0.0f, 2.0f * PI);
             // theta: 中心軸からの広がり角度 (0° ～ angleRange/2)
-            // cosを使って分布を均一にする
             float maxAngleRad = (angleRange / 2.0f) * (PI / 180.0f);
             float cosTheta = RandomFloat(cosf(maxAngleRad), 1.0f);
             float theta = acosf(cosTheta);
 
-            // 4. 局所座標系でランダムな方向ベクトルを計算
+            // 局所座標系でランダムな方向ベクトルを計算
             Vector3 randomDir =
                 (u * cosf(phi) * sinf(theta)) +
                 (v * sinf(phi) * sinf(theta)) +
