@@ -7,7 +7,7 @@
 #include <fstream>
 #include <d3d12.h>    
 
-class GraphicDevice
+class GraphicsDevice
 {
 public:
     void Initialize();

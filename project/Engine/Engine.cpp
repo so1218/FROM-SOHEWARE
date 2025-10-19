@@ -260,7 +260,7 @@ void Engine::InitializeGraphics()
 	assert(SUCCEEDED(hr));
 
 	// GPUアダプタの選定+D3D12デバイスの生成
-	graphicDevice_ = std::make_unique<GraphicDevice>();
+	graphicDevice_ = std::make_unique<GraphicsDevice>();
 	graphicDevice_->Initialize();
 
 	Logger::Instance().Log("Complete create D3D12Device!!!\n", Logger::Instance().GetLogStream());// 初期化完了のログを出す
@@ -289,7 +289,7 @@ void Engine::InitializeGraphics()
 	offscreenRTVManager_->CreateOffscreenRenderTarget(kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor());
 
 	// ディスクリプタヒープの作成
-	descriptorManager_ = std::make_unique<DescriptorManager>();
+	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
 	// SRV用のヒープでディスクリプタの数は1000。SRVはShader内で触るものなので、ShaderVisibleはtrue
 	srvDescriptorHeap_ = descriptorManager_->CreateDescriptorHeap(graphicDevice_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000, true);
 	// DSV用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse

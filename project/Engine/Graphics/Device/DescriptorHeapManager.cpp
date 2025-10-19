@@ -1,9 +1,9 @@
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 
 #include <string>
 
 // DescriptorManagerクラス内の関数：ディスクリプタヒープを作成
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorManager::DescriptorManager::CreateDescriptorHeap(
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(
     ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
@@ -31,7 +31,7 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorManager::DescriptorManage
 }
 
 // 指定インデックスのCPUディスクリプタハンドルを取得
-D3D12_CPU_DESCRIPTOR_HANDLE DescriptorManager::GetCPUDescriptorHandle(
+D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapManager::GetCPUDescriptorHandle(
     ID3D12DescriptorHeap* descriptorHeap,  // 対象のディスクリプタヒープ
     uint32_t descriptorSize,               // 各ディスクリプタのサイズ
     uint32_t index)                        // インデックス（何番目か）
@@ -46,7 +46,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DescriptorManager::GetCPUDescriptorHandle(
 }
 
 // 指定インデックスのGPUディスクリプタハンドルを取得
-D3D12_GPU_DESCRIPTOR_HANDLE DescriptorManager::GetGPUDescriptorHandle(
+D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapManager::GetGPUDescriptorHandle(
     ID3D12DescriptorHeap* descriptorHeap,  // 対象のディスクリプタヒープ
     uint32_t descriptorSize,               // 各ディスクリプタのサイズ
     uint32_t index)                        // インデックス（何番目か）

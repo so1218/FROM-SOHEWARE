@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <wrl.h>
 
-class DescriptorManager
+class DescriptorHeapManager
 {
 public:
     // DescriptorHeapの作成関数

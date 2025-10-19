@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 #include "SwapChain.h"
 #include "Vector.h"
 
@@ -17,7 +17,7 @@ class RTVManager
 public:
 	~RTVManager() { rtvDescriptorHeap_.Reset(); }
 
-	void Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, uint32_t descriptorSizeRTV, DescriptorManager* descriptorManager);
+	void Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, uint32_t descriptorSizeRTV, DescriptorHeapManager* descriptorManager);
 	uint32_t backBufferCount = 0;
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
@@ -31,7 +31,7 @@ class OffscreenRTVManager
 {
 public:
     // オフスクリーン用のRTV用ヒープとSRV用ヒープを初期化
-    void Initialize(ID3D12Device* device, DescriptorManager* descriptorManager, UINT rtvDescriptorCount);
+    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, UINT rtvDescriptorCount);
 
     // 指定された解像度でオフスクリーンレンダーターゲットを作成し、インデックスを返す
     uint32_t CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor = Vector4(0.0f, 0.0f, 0.0f, 1.0f));

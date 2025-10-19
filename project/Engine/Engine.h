@@ -3,7 +3,7 @@
 #include "Window.h"
 #include "SwapChain.h"
 #include "RTVManager.h"
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 #include "RenderContext.h"
 #include "RenderCoordinator.h"
 #include "RootSignatureManager.h"
@@ -123,12 +123,12 @@ public:
 
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;
-    std::unique_ptr<GraphicDevice> graphicDevice_;
+    std::unique_ptr<GraphicsDevice> graphicDevice_;
     std::unique_ptr<CommandManager> commandManager_;
     std::unique_ptr<SwapChain> swapChain_;
     std::unique_ptr<RTVManager> rtvManager_;
     std::unique_ptr<OffscreenRTVManager> offscreenRTVManager_;
-    std::unique_ptr<DescriptorManager> descriptorManager_;
+    std::unique_ptr<DescriptorHeapManager> descriptorManager_;
     std::unique_ptr<RenderContext> renderContext_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;

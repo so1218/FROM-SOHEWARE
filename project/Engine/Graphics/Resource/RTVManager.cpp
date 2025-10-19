@@ -1,8 +1,8 @@
 #include "RTVManager.h"
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 #include "Engine.h"
 
-void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, uint32_t descriptorSizeRTV, DescriptorManager* descriptorManager)
+void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, uint32_t descriptorSizeRTV, DescriptorHeapManager* descriptorManager)
 {
     backBufferCount = bufferCount;
 
@@ -52,7 +52,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE RTVManager::GetCurrentBackBufferRTVCPUHandle(SwapCha
     return rtvHandles[backBufferIndex];
 }
 
-void OffscreenRTVManager::Initialize(ID3D12Device* device, DescriptorManager* descriptorManager, UINT rtvDescriptorCount)
+void OffscreenRTVManager::Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, UINT rtvDescriptorCount)
 {
     device_ = device;
     rtvDescriptorCount_ = rtvDescriptorCount;

@@ -10,7 +10,7 @@ void RenderCoordinator::Initialize(
     RenderContext* renderContext,
     ID3D12Fence* fence,
     HANDLE fenceEvent,
-    GraphicDevice* graphicDevice,
+    GraphicsDevice* graphicDevice,
     ID3D12DescriptorHeap* dsvDescriptorHeap,
     Engine* engine)
 {

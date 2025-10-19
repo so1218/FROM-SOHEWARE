@@ -134,28 +134,28 @@
     <ClCompile Include="Engine\Core\Window.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\CommandManager.cpp">
+    <ClCompile Include="Engine\Graphics\Device\CommandManager.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\DSVManager.cpp">
+    <ClCompile Include="Engine\Graphics\Resource\DSVManager.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\RenderContext.cpp">
+    <ClCompile Include="Engine\Graphics\Utility\RenderContext.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\RenderCoordinator.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\RTVManager.cpp">
+    <ClCompile Include="Engine\Graphics\Resource\RTVManager.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\SwapChain.cpp">
+    <ClCompile Include="Engine\Graphics\Device\SwapChain.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp">
       <Filter>Engine\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Utility\LightManager.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\LightManager.cpp">
       <Filter>Engine\Graphics\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Utility\ShapeGenerator.cpp">
@@ -164,7 +164,7 @@
     <ClCompile Include="Engine\Graphics\Resource\MaterialManager.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Resource\ModelLoader.cpp">
+    <ClCompile Include="Engine\Mesh\ModelLoader.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Resource\SRVManager.cpp">
@@ -173,13 +173,13 @@
     <ClCompile Include="Engine\Graphics\Resource\TextureManager.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Device\DescriptorManager.cpp">
+    <ClCompile Include="Engine\Graphics\Device\DescriptorHeapManager.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Device\GraphicDevice.cpp">
+    <ClCompile Include="Engine\Graphics\Device\GraphicsDevice.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Device\PSOManager.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\PSOManager.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Debugs\DebugLayerManager.cpp">
@@ -191,7 +191,7 @@
     <ClCompile Include="Engine\Camera\DebugCamera.cpp">
       <Filter>Engine\Math\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Resource\Mesh.cpp">
+    <ClCompile Include="Engine\Mesh\Mesh.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Engine.cpp">
@@ -209,10 +209,10 @@
     <ClCompile Include="Game\Scene\TitleScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\BufferManager.cpp">
+    <ClCompile Include="Engine\Graphics\Utility\BufferManager.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\ShaderManager.cpp">
+    <ClCompile Include="Engine\Graphics\Resource\ShaderManager.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Utility\BlendMode.cpp">
@@ -230,7 +230,7 @@
     <ClCompile Include="Engine\Math\Utility\MathUtils.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\StringUtils.cpp">
+    <ClCompile Include="Engine\Core\StringUtils.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Utility\WorldTransform.cpp">
@@ -323,7 +323,7 @@
     <ClCompile Include="externals\ImGuiFileDialog.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Device\RootSignatureManager.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
     <ClCompile Include="Game\Data\ModelHandle.cpp">
@@ -419,19 +419,19 @@
     <ClInclude Include="Engine\Core\Window.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\CommandManager.h">
+    <ClInclude Include="Engine\Graphics\Device\CommandManager.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\RenderContext.h">
+    <ClInclude Include="Engine\Graphics\Utility\RenderContext.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderCoordinator.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\RTVManager.h">
+    <ClInclude Include="Engine\Graphics\Resource\RTVManager.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\SwapChain.h">
+    <ClInclude Include="Engine\Graphics\Device\SwapChain.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Audio\AudioManager.h">
@@ -440,7 +440,7 @@
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
       <Filter>Engine\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Utility\LightManager.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\LightManager.h">
       <Filter>Engine\Graphics\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Utility\ShapeGenerator.h">
@@ -449,7 +449,7 @@
     <ClInclude Include="Engine\Graphics\Resource\MaterialManager.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Resource\ModelLoader.h">
+    <ClInclude Include="Engine\Mesh\ModelLoader.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Resource\SRVManager.h">
@@ -458,13 +458,13 @@
     <ClInclude Include="Engine\Graphics\Resource\TextureManager.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Device\DescriptorManager.h">
+    <ClInclude Include="Engine\Graphics\Device\DescriptorHeapManager.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Device\GraphicDevice.h">
+    <ClInclude Include="Engine\Graphics\Device\GraphicsDevice.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Device\PSOManager.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\PSOManager.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Debugs\DebugLayerManager.h">
@@ -479,7 +479,7 @@
     <ClInclude Include="Engine\Camera\DebugCamera.h">
       <Filter>Engine\Math\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Resource\Mesh.h">
+    <ClInclude Include="Engine\Mesh\Mesh.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Engine.h">
@@ -500,13 +500,13 @@
     <ClInclude Include="Game\Scene\TitleScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\BufferManager.h">
+    <ClInclude Include="Engine\Graphics\Utility\BufferManager.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\ShaderManager.h">
+    <ClInclude Include="Engine\Graphics\Resource\ShaderManager.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\DSVManager.h">
+    <ClInclude Include="Engine\Graphics\Resource\DSVManager.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Utility\BlendMode.h">
@@ -536,7 +536,7 @@
     <ClInclude Include="Engine\Math\Utility\Matrix4x4.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\StringUtils.h">
+    <ClInclude Include="Engine\Core\StringUtils.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Utility\Vector.h">
@@ -633,7 +633,7 @@
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
     <ClInclude Include="externals\ImGuiFileDialogConfig.h" />
-    <ClInclude Include="Engine\Graphics\Device\RootSignatureManager.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureManager.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
     <ClInclude Include="Game\Data\ModelHandle.h">

@@ -6,7 +6,7 @@
 #include "BufferManager.h"
 #include "CommandManager.h"
 #include "SRVManager.h"
-#include "GraphicDevice.h"
+#include "GraphicsDevice.h"
 #include "SRVAllocator.h"
 
 #include <d3d12.h>                
@@ -51,7 +51,7 @@ public:
     void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVAllocator* srvAllocator);
 
     TextureResources UploadTexture(DirectX::ScratchImage& mipImages, ID3D12DescriptorHeap* srvDescriptorHeap,
-        GraphicDevice& graphicDevice, uint32_t descriptorSizeSRV, std::vector<TextureResources>& textures_);
+        GraphicsDevice& graphicDevice, uint32_t descriptorSizeSRV, std::vector<TextureResources>& textures_);
 
     TextureResources UploadTex(DirectX::ScratchImage& mipImages);
 

@@ -1,10 +1,10 @@
-#include "GraphicDevice.h"
+#include "GraphicsDevice.h"
 #include "Logger.h"
 #include "StringUtils.h"
 
 #include <format>
 
-void GraphicDevice::Initialize()
+void GraphicsDevice::Initialize()
 {
     // DXGIファクトリーの生成
     CreateFactory();
@@ -15,13 +15,13 @@ void GraphicDevice::Initialize()
 }
 
 // DXGIファクトリーの生成
-void GraphicDevice::CreateFactory()
+void GraphicsDevice::CreateFactory()
 {
     HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory_));
     assert(SUCCEEDED(hr));
 }
 // 最適なアダプターを選定
-void GraphicDevice::SelectAdapter()
+void GraphicsDevice::SelectAdapter()
 {
     // 使用するアダプタ用の変数。最初にnullptrを入れておく
    
@@ -46,7 +46,7 @@ void GraphicDevice::SelectAdapter()
     // 適切なアダプタが見つからなかったので起動できない
     assert(useAdapter_ != nullptr);
 }
-void GraphicDevice::CreateDevice()
+void GraphicsDevice::CreateDevice()
 {
     
     // 機能レベルとログ出力用の文字列
@@ -78,7 +78,7 @@ void GraphicDevice::CreateDevice()
     // デバイスの生成がうまくいかなかったので起動できない
     assert(device_ != nullptr);
 }
-void GraphicDevice::EnableDebugLayer()
+void GraphicsDevice::EnableDebugLayer()
 {
 #ifdef _DEBUG
     if (SUCCEEDED(device_->QueryInterface(IID_PPV_ARGS(&infoQueue_))))
