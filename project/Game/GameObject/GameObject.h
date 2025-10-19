@@ -31,7 +31,6 @@ public:
     virtual void DebugDraw() {}
     virtual void ApplyGlobalVariables() {}
     virtual void SaveGlobalVariables() {}
-    virtual const char* GetGlobalVariableGroupName() const = 0;
     virtual bool IsDead() const { return false; }
 
     virtual GameObjectType GetType() const = 0;

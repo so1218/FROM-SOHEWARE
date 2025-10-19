@@ -28,39 +28,46 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animationSneakWalk_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
-        *ModelHandle::Get(ModelID::sneakWalk),
-        AnimationHandle::Get(AnimationID::sneakWalk)
+        *ModelHandle::Get(ModelID::walk),
+        AnimationHandle::Get(AnimationID::walk)
+    );
+    animationRyu_ = std::make_unique<AnimationModel>(
+        engine_,
+        camera_,
+        *ModelHandle::Get(ModelID::ryu),
+        AnimationHandle::Get(AnimationID::ryu)
     );
     animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
+    animationRyu_->GetTransform().SetTranslation(Vector3(-5, 0, 0));
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
     objectManager_.AddObject(std::move(enemy_));
 
-    const char* groupName = "SampleSceneHori";
+    //const char* groupName = "SampleSceneHori";
     // グループ名を追加
-    GlobalVariables::GetInstance()->CreateGroup(groupName);
+   /* GlobalVariables::GetInstance()->CreateGroup(groupName);
     GlobalVariables::GetInstance()->LoadFiles();
     GlobalVariables::GetInstance()->AddItem(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
-    GlobalVariables::GetInstance()->AddItem(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
+    GlobalVariables::GetInstance()->AddItem(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());*/
 }
 
 void SampleSceneHori::ApplyGlobalVariables()
 {
-    const char* groupName = "SampleSceneHori";
-    dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
-    uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
+    //const char* groupName = "SampleSceneHori";
+    //dragonModel_->GetTransform().translation_ = GlobalVariables::GetInstance()->GetVector3Value(groupName, "dragonModel_->GetTransform()");
+    //uvCheckerSprite_->SetPosition(GlobalVariables::GetInstance()->GetVector2Value(groupName, "uvCheckerSprite_->SetPosition"));
 
 }
 
 void SampleSceneHori::SaveGlobalVariables()
 {
-    const char* groupName = "SampleSceneHori";
+   /* const char* groupName = "SampleSceneHori";
     GlobalVariables::GetInstance()->SetValue(groupName, "dragonModel_->GetTransform()", dragonModel_->GetTransform().translation_);
-    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());
+    GlobalVariables::GetInstance()->SetValue(groupName, "uvCheckerSprite_->SetPosition", uvCheckerSprite_->GetPosition());*/
 }
 
 
@@ -84,8 +91,9 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
 
-    animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());
-    animationSneakWalk_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationShurimp_->Update(1.5f, true);
+    animationSneakWalk_->Update(1, true);
+    animationRyu_->Update(3, true);
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -119,14 +127,15 @@ void SampleSceneHori::Update()
 
 void SampleSceneHori::Draw()
 {
-    uvCheckerSprite_->Draw();
-    dragonModel_->Draw();
+   /* uvCheckerSprite_->Draw();*/
+   /* dragonModel_->Draw();*/
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
     animationShurimp_->Draw();
     animationSneakWalk_->Draw();
+    animationRyu_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

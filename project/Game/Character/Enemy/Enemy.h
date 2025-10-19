@@ -24,7 +24,7 @@ public:
 
     // 調整項目の適用
     void ApplyGlobalVariables() override;
-    const char* GetGlobalVariableGroupName() const override { return "Enemy"; }
+    std::vector<std::string> GetGlobalVariableGroupName() const { return { "Enemy" }; }
 
     // 衝突を検出したら呼び出されるコールバック関数
     void OnCollision() override;

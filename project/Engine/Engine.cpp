@@ -22,6 +22,9 @@
 #pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "winmm.lib")
+
+#include <thread>
 
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";	
 
@@ -39,6 +42,9 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	camera_ = camera;
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
+
+	// FPS固定初期化
+	InitializeFixFPS();
 
 	InitializeSystem();
 	InitializeWindow();
@@ -82,6 +88,8 @@ void Engine::Finalize()
 		fence_.Get()->SetEventOnCompletion(fenceValue_, fenceEvent_);
 		WaitForSingleObject(fenceEvent_, INFINITE);
 	}
+
+	timeEndPeriod(1);
 
 	// リソース解放
 	CloseHandle(fenceEvent_);
@@ -158,6 +166,9 @@ void Engine::EndFrame()
 
 	// フレームレンダリング終了
 	renderCoordinator_->EndFrame();
+
+	// FPS固定
+	UpdateFixFPS();
 
 	// アップロードリソース管理
 	uint64_t completedFenceValue = renderCoordinator_->GetFenceValue();
@@ -249,7 +260,7 @@ void Engine::InitializeGraphics()
 	assert(SUCCEEDED(hr));
 
 	// GPUアダプタの選定+D3D12デバイスの生成
-	graphicDevice_ = std::make_unique<GraphicDevice>();
+	graphicDevice_ = std::make_unique<GraphicsDevice>();
 	graphicDevice_->Initialize();
 
 	Logger::Instance().Log("Complete create D3D12Device!!!\n", Logger::Instance().GetLogStream());// 初期化完了のログを出す
@@ -278,7 +289,7 @@ void Engine::InitializeGraphics()
 	offscreenRTVManager_->CreateOffscreenRenderTarget(kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor());
 
 	// ディスクリプタヒープの作成
-	descriptorManager_ = std::make_unique<DescriptorManager>();
+	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
 	// SRV用のヒープでディスクリプタの数は1000。SRVはShader内で触るものなので、ShaderVisibleはtrue
 	srvDescriptorHeap_ = descriptorManager_->CreateDescriptorHeap(graphicDevice_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000, true);
 	// DSV用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
@@ -290,6 +301,7 @@ void Engine::InitializeGraphics()
 
 	cameraManager_ = std::make_unique<CameraManager>();
 	cameraManager_->Initialize(graphicDevice_->GetDevice());
+
 }
 
 void Engine::InitializeRenderer()
@@ -414,6 +426,37 @@ void Engine::LoadTextureArray(const std::vector<std::string>& texturePaths)
 
 	// 3. textureArraySRV_を内部で管理
 	textureManager_->textureArraySRV_ = textureArrayResource_.srvHandleGPU;
+}
+
+void Engine::InitializeFixFPS()
+{
+	timeBeginPeriod(1);
+	// 現在時間を記録する
+	targetTime_ = std::chrono::steady_clock::now();
+}
+
+void Engine::UpdateFixFPS()
+{
+	const std::chrono::microseconds kFrameDuration(1000000 / kTargetFPS_);
+
+	auto now = std::chrono::steady_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - targetTime_);
+	auto remaining = kFrameDuration - elapsed;
+
+	if (remaining.count() > 2000) 
+	{
+		// だいたいの時間だけスリープ
+		std::this_thread::sleep_for(remaining - std::chrono::microseconds(2000));
+	}
+
+	// 念のためbusy waitで調整
+	while (std::chrono::steady_clock::now() - targetTime_ < kFrameDuration)
+	{
+		// ここは何もしない
+	}
+
+	// 次のフレームの基準時間を更新
+	targetTime_ = std::chrono::steady_clock::now();
 }
 
 Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)

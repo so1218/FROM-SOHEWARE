@@ -9,18 +9,8 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "ShakeEffect.h"
-#include "AnimationData.h"
 #include "AnimationModel.h"
 
-struct Particle
-{
-    Vector3 position;
-    Vector3 velocity;
-    float lifetime;
-    bool active;
-    ParticleType type;
-    uint32_t textureIndex;
-};
 
 class SampleSceneHori : public BaseScene
 {
@@ -66,13 +56,12 @@ private:
 
     std::unique_ptr<AnimationModel> animationShurimp_;
     std::unique_ptr<AnimationModel> animationSneakWalk_;
+    std::unique_ptr<AnimationModel> animationRyu_;
 
     ShakeEffect shake;
 
     Vector3 baseTranslation_;
     Vector3 originalTranslation_;
-
-    std::vector<Particle> particles_;
 
     bool isEditorMode_ = false;
 

@@ -5,7 +5,7 @@
 #include "CommandManager.h"
 #include "RenderContext.h"
 #include "DSVManager.h"
-#include "GraphicDevice.h"
+#include "GraphicsDevice.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>   
@@ -25,7 +25,7 @@ public:
         RenderContext* renderContext,
         ID3D12Fence* fence,
         HANDLE fenceEvent,
-        GraphicDevice* graphicDevice,
+        GraphicsDevice* graphicDevice,
         ID3D12DescriptorHeap* dsvDescriptorHeap,
         Engine* engine);
 
@@ -49,9 +49,9 @@ private:
     OffscreenRTVManager* offscreenRTVManager_ = nullptr;
     CommandManager* commandManager_ = nullptr;
     RenderContext* renderContext_ = nullptr;
-    GraphicDevice* graphicDevice_ = nullptr;
+    GraphicsDevice* graphicDevice_ = nullptr;
     Engine* engine_ = nullptr;
-    DescriptorManager* descriptorManager_ = nullptr;
+    DescriptorHeapManager* descriptorManager_ = nullptr;
 
     // 深度ステンシルビューヒープとリソース
     ID3D12DescriptorHeap* dsvDescriptorHeap_ = nullptr;

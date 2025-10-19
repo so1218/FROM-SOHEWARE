@@ -4,7 +4,6 @@
 #include "Player.h"
 #include "CollisionManager.h"
 #include "ParticleEmitter.h"
-#include "Particle.h"
 #include "GameObjectManager.h"
 #include "Enemy.h"
 
@@ -44,6 +43,6 @@ public:
     std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> newEmitter2_ = nullptr;
+   /* std::unique_ptr<ParticleEmitter> newEmitter2_ = nullptr;*/
 };
 

@@ -1,27 +1,32 @@
 #include "SceneManager.h"
 
-void SceneManager::SetScene(std::unique_ptr<BaseScene> newScene)
+SceneManager::~SceneManager()
 {
+    // 最後に有効だったシーンのFinalizeを呼ぶ
     if (currentScene_)
     {
         currentScene_->Finalize();
     }
 
-    // SceneManagerをシーンに渡す
-    newScene->SetSceneManager(this);
-
-    currentScene_ = std::move(newScene);
-    currentScene_->Initialize();
 }
 
 void SceneManager::Update()
 {
-    // シーン切り替えがあれば実行
-    if (nextScene_)
+    // シーン切り替えリクエストがあれば実行
+    if (nextSceneID_)
     {
-        SetScene(std::move(nextScene_));
+        // マップから次のシーンを探す
+        auto it = scenes_.find(*nextSceneID_);
+        if (it != scenes_.end())
+        {
+            // 見つかったシーンをセットする
+            SetScene(it->second.get());
+        }
+        // リクエストをクリア
+        nextSceneID_ = std::nullopt;
     }
 
+    // 現在のシーンを更新
     if (currentScene_)
     {
         currentScene_->Update();
@@ -33,25 +38,40 @@ void SceneManager::Draw()
     if (currentScene_)
     {
 #ifdef _DEBUG
-        currentScene_->DebugDraw(); 
+        currentScene_->DebugDraw();
 #endif
-
         currentScene_->Draw();
     }
 }
 
-void SceneManager::Initialize()
+// シーンをマップに登録する
+void SceneManager::RegisterScene(SceneID id, std::unique_ptr<BaseScene> scene)
 {
-    if (currentScene_)
-    {
-        currentScene_->Initialize();
-    }
+    // SceneManagerをシーンに渡す
+    scene->SetSceneManager(this);
+    scenes_[id] = std::move(scene);
 }
 
-void SceneManager::Finalize()
+// 切り替えたいシーンのIDをセットする
+void SceneManager::RequestSceneChange(SceneID nextSceneID)
 {
+    nextSceneID_ = nextSceneID;
+}
+
+// 内部用のシーン設定処理
+void SceneManager::SetScene(BaseScene* newScene)
+{
+    // 古いシーンがあれば終了処理
     if (currentScene_)
     {
         currentScene_->Finalize();
+    }
+
+    currentScene_ = newScene;
+
+    // 新しいシーンの初期化処理
+    if (currentScene_)
+    {
+        currentScene_->Initialize();
     }
 }

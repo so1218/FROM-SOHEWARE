@@ -31,7 +31,7 @@ public:
 
     virtual GameObjectType GetType() const override { return GameObjectType::Bullet; }
 
-    virtual const char* GetGlobalVariableGroupName() const override { return "Bullet"; }
+    std::vector<std::string> GetGlobalVariableGroupName() const { return { "Bullet" }; }
 
     bool IsDead() const { return isDead_; }
 

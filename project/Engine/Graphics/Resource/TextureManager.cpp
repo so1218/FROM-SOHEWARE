@@ -201,7 +201,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12R
 TextureManager::TextureResources TextureManager::UploadTexture(
     DirectX::ScratchImage& mipImages,
     ID3D12DescriptorHeap* srvDescriptorHeap,
-    GraphicDevice& graphicDevice,
+    GraphicsDevice& graphicDevice,
     uint32_t descriptorSizeSRV,
     std::vector<TextureResources>& textures)
 {

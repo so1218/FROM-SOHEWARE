@@ -3,7 +3,7 @@
 #include "Window.h"
 #include "SwapChain.h"
 #include "RTVManager.h"
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 #include "RenderContext.h"
 #include "RenderCoordinator.h"
 #include "RootSignatureManager.h"
@@ -17,10 +17,12 @@
 #include "DebugCamera.h"
 #include "RenderCommon.h"
 #include "debugGuiManager.h"
-#include "Particle.h"
+#include "ParticleSystem.h"
 #include "CameraManager.h" 
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 
+
+#include <chrono>
 
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
@@ -71,6 +73,10 @@ public:
     // メッシュキャッシュ取得・作成
     Mesh* GetOrCreateMesh(const ModelData& modelData);
 
+    // FPS固定処理
+    void InitializeFixFPS();
+    void UpdateFixFPS();
+
     // 描画カウント取得
     int32_t GetTriangleCount() const { return indexTriangle_; }
     int32_t GetSphereCount() const { return indexSphere_; }
@@ -117,12 +123,12 @@ public:
 
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;
-    std::unique_ptr<GraphicDevice> graphicDevice_;
+    std::unique_ptr<GraphicsDevice> graphicDevice_;
     std::unique_ptr<CommandManager> commandManager_;
     std::unique_ptr<SwapChain> swapChain_;
     std::unique_ptr<RTVManager> rtvManager_;
     std::unique_ptr<OffscreenRTVManager> offscreenRTVManager_;
-    std::unique_ptr<DescriptorManager> descriptorManager_;
+    std::unique_ptr<DescriptorHeapManager> descriptorManager_;
     std::unique_ptr<RenderContext> renderContext_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;
@@ -210,4 +216,10 @@ public:
 
 	// ウィンドウタイトル
     static std::wstring windowTitle_;
+
+    int kTargetFPS_ = 60; // デフォルトのターゲットFPS
+    // 目標とする次のフレームの終了時刻
+    std::chrono::steady_clock::time_point targetTime_;
+    // 1フレームあたりの時間
+    const std::chrono::microseconds frameDuration_{ 1000000 / kTargetFPS_ };
 };
