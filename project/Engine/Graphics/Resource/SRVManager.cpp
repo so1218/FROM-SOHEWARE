@@ -1,5 +1,5 @@
 #include "SRVManager.h"
-#include "DescriptorManager.h"
+#include "DescriptorHeapManager.h"
 
 D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
     const Microsoft::WRL::ComPtr <ID3D12Resource>& textureResource,

@@ -128,7 +128,7 @@
     <ClCompile Include="Engine\Core\Input.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Core\Logger.cpp">
+    <ClCompile Include="Engine\Debugs\Logger.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Core\Window.cpp">
@@ -221,7 +221,7 @@
     <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\Model.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\Model.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Audio\AudioManager.cpp">
@@ -233,7 +233,7 @@
     <ClCompile Include="Engine\Core\StringUtils.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\WorldTransform.cpp">
+    <ClCompile Include="Engine\Math\WorldTransform.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Debugs\DebugGuiManager.cpp">
@@ -281,22 +281,22 @@
     <ClCompile Include="Game\Physics\Collision\CollisionManager.cpp">
       <Filter>Game\Physics\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Quaternion.cpp">
+    <ClCompile Include="Engine\Math\Quaternion.cpp">
       <Filter>Game\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Matrix4x4.cpp">
+    <ClCompile Include="Engine\Math\Matrix\Matrix4x4.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Vector3.cpp">
+    <ClCompile Include="Engine\Math\Vector\Vector3.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Vector4.cpp">
+    <ClCompile Include="Engine\Math\Vector\Vector4.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Matrix3x3.cpp">
+    <ClCompile Include="Engine\Math\Matrix\Matrix3x3.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Math\Utility\Vector2.cpp">
+    <ClCompile Include="Engine\Math\Vector\Vector2.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Camera\CameraManager.cpp">
@@ -345,13 +345,13 @@
       <Filter>Game\Effect</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Engine\Mesh\Sprite.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\Sprite.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\AnimationData.cpp">
+    <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\AnimationLoader.cpp">
+    <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp">
@@ -381,7 +381,7 @@
     <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Mesh\AnimationModel.cpp">
+    <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp">
@@ -413,7 +413,7 @@
     <ClInclude Include="Engine\Core\Input.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Core\Structures.h">
+    <ClInclude Include="Engine\Graphics\Resource\Structures.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core\Window.h">
@@ -515,43 +515,43 @@
     <ClInclude Include="resource.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Mesh\Model.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\Model.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Particle\ParticleSystem.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Core\RenderCommon.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\RenderCommon.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Utility\MathUtils.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Matrix.h">
+    <ClInclude Include="Engine\Math\Matrix\Matrix.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Matrix3x3.h">
+    <ClInclude Include="Engine\Math\Matrix\Matrix3x3.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Matrix4x4.h">
+    <ClInclude Include="Engine\Math\Matrix\Matrix4x4.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core\StringUtils.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Vector.h">
+    <ClInclude Include="Engine\Math\Vector\Vector.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Vector2.h">
+    <ClInclude Include="Engine\Math\Vector\Vector2.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Vector3.h">
+    <ClInclude Include="Engine\Math\Vector\Vector3.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Vector4.h">
+    <ClInclude Include="Engine\Math\Vector\Vector4.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\WorldTransform.h">
+    <ClInclude Include="Engine\Math\WorldTransform.h">
       <Filter>Engine\Math\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Debugs\DebugGuiManager.h">
@@ -602,7 +602,7 @@
     <ClInclude Include="Game\Physics\Collision\CollisionManager.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Utility\Quaternion.h">
+    <ClInclude Include="Engine\Math\Quaternion.h">
       <Filter>Game\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Camera\CameraManager.h">
@@ -611,7 +611,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectManager.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Core\Logger.h">
+    <ClInclude Include="Engine\Debugs\Logger.h">
       <Filter>Engine\Core</Filter>
     </ClInclude>
     <ClInclude Include="Game\Camera\FollowCamera.h">
@@ -657,13 +657,13 @@
     <ClInclude Include="Game\Effect\ShakeEffect.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Mesh\Sprite.h">
+    <ClInclude Include="Engine\Graphics\RenderSystem\Sprite.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Mesh\AnimationData.h">
+    <ClInclude Include="Engine\Graphics\Animation\AnimationData.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Mesh\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Weapon.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Knife.h" />
     <ClInclude Include="Game\Character\Player\Weapon\KnifeBullet.h" />
@@ -673,7 +673,7 @@
     <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
-    <ClInclude Include="Engine\Mesh\AnimationModel.h" />
+    <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
   </ItemGroup>
