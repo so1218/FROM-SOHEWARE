@@ -218,7 +218,7 @@
     <ClCompile Include="Engine\Graphics\Utility\BlendMode.cpp">
       <Filter>Engine\Graphics\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\ParticleSystem.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\Model.cpp">
@@ -260,7 +260,7 @@
     <ClCompile Include="Game\Effect\Fade.cpp">
       <Filter>Game\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Effect\Easing.cpp">
+    <ClCompile Include="Engine\Math\Easing.cpp">
       <Filter>Game\Effect</Filter>
     </ClCompile>
     <ClCompile Include="Game\Character\Enemy\Enemy.cpp">
@@ -272,13 +272,13 @@
     <ClCompile Include="Game\Utility\TimedCall.cpp">
       <Filter>Game\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Physics\Collision\Collider.cpp">
+    <ClCompile Include="Engine\Collision\Collider.cpp">
       <Filter>Game\Physics\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Physics\Collision\Collision.cpp">
+    <ClCompile Include="Engine\Collision\Collision.cpp">
       <Filter>Game\Physics\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Physics\Collision\CollisionManager.cpp">
+    <ClCompile Include="Engine\Collision\CollisionManager.cpp">
       <Filter>Game\Physics\Collision</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Quaternion.cpp">
@@ -332,7 +332,7 @@
     <ClCompile Include="Game\Data\AudioHandle.cpp">
       <Filter>Game\Data</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\ParticleEmitter.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp">
@@ -378,13 +378,13 @@
     <ClCompile Include="Game\Stage\StageManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\ParticleEditor.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Particle\ParticleConfigManager.cpp">
+    <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -518,7 +518,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\Model.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Particle\ParticleSystem.h">
+    <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderCommon.h">
@@ -578,7 +578,7 @@
     <ClInclude Include="Game\Effect\Fade.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Effect\Easing.h">
+    <ClInclude Include="Engine\Math\Easing.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
     <ClInclude Include="Game\Character\Enemy\Enemy.h">
@@ -590,16 +590,16 @@
     <ClInclude Include="Game\Utility\TimedCall.h">
       <Filter>Game\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Physics\Collision\Collider.h">
+    <ClInclude Include="Engine\Collision\Collider.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Physics\Collision\Collision.h">
+    <ClInclude Include="Engine\Collision\Collision.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Physics\Collision\CollisionConfig.h">
+    <ClInclude Include="Engine\Collision\CollisionConfig.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Physics\Collision\CollisionManager.h">
+    <ClInclude Include="Engine\Collision\CollisionManager.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Math\Quaternion.h">
@@ -642,7 +642,7 @@
     <ClInclude Include="Game\Data\AudioHandle.h">
       <Filter>Game\Data</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Particle\ParticleEmitter.h">
+    <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\GameObjectManager.h">
@@ -672,10 +672,10 @@
     <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
     <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
-    <ClInclude Include="Game\GameObject\Particle\ParticleEditor.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
-    <ClInclude Include="Game\GameObject\Particle\ParticleConfigManager.h" />
-    <ClInclude Include="Game\GameObject\Particle\ParticleDefinition.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
+    <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
