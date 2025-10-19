@@ -10,10 +10,13 @@ public:
     AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation);
 
     // 更新処理
-    void Update(float deltaTime);
+    void Update(float targetDuration, bool isLoop);
 
     // 描画処理
     void Draw();
+
+    // アニメーションの状態をリセット
+    void ResetAnimation();
 
     // トランスフォームへの参照を取得
     WorldTransform& GetTransform() { return transform_; }
@@ -31,4 +34,6 @@ public:
 
     uint32_t textureHandle_;
     uint32_t color_;
+
+    bool isFinished_ = false;      // 再生が終了したか
 };

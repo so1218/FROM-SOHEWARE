@@ -1,4 +1,6 @@
 #include "AnimationModel.h"
+#include "TimeManager.h"
+
 
 AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation)
     : engine_(engine), camera_(camera)
@@ -14,22 +16,55 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     color_ = 0xFFFFFFFF;
 }
 
-void AnimationModel::Update(float deltaTime)
+void AnimationModel::Update(float targetDuration, bool isLoop)
 {
-    // アニメーション時間を進める（ループ再生）
-    animationTime_ += deltaTime;
-    animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
+    // 再生が既に終了している場合は何もしない
+    if (isFinished_)
+    {
+        return;
+    }
 
-    // 内部で関連する更新関数を呼び出す
+    // 再生速度を計算
+    float speed = 1.0f;
+    if (targetDuration > 0.0f)
+    {
+        speed = animeModelData_.animation.duration / targetDuration;
+    }
+
+    // デルタタイムに速度を乗算してアニメーション時間を進める
+    animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speed;
+
+    // ループするかどうかで時間を調整
+    if (isLoop)
+    {
+        animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
+    }
+    else
+    {
+        if (animationTime_ >= animeModelData_.animation.duration)
+        {
+            // アニメーションの終端で時間を固定し、終了フラグを立てる
+            animationTime_ = animeModelData_.animation.duration;
+            isFinished_ = true;
+        }
+    }
+
+    // アニメーションを適用
     ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
 
-void AnimationModel::Draw() 
+void AnimationModel::Draw()
 {
     // ワールド変換行列の更新
     transform_.UpdateMatrix();
     // 描画関数
     engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_);
+}
+
+void AnimationModel::ResetAnimation()
+{
+    animationTime_ = 0.0f;
+    isFinished_ = false;
 }

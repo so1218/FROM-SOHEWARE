@@ -91,9 +91,9 @@ void SampleSceneHori::Update()
     objectManager_.ApplyGlobalVariables();
     ApplyGlobalVariables(); 
 
-    animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());
-    animationSneakWalk_->Update(TimeManager::GetInstance()->GetDeltaTime());
-    animationRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationShurimp_->Update(1.5f, true);
+    animationSneakWalk_->Update(1, true);
+    animationRyu_->Update(3, true);
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
