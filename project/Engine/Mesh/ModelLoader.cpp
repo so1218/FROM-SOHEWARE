@@ -171,7 +171,7 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         {
             jointWeightData.vertexWeights.push_back(
                 { bone->mWeights[weightIndex].mWeight,
-                bone->mWeights[weightIndex].mVertexId });
+                bone->mWeights[weightIndex].mVertexId + vertexOffset });
         }
     }
 

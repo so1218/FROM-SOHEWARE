@@ -31,10 +31,17 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
         *ModelHandle::Get(ModelID::walk),
         AnimationHandle::Get(AnimationID::walk)
     );
+    animationRyu_ = std::make_unique<AnimationModel>(
+        engine_,
+        camera_,
+        *ModelHandle::Get(ModelID::ryu),
+        AnimationHandle::Get(AnimationID::ryu)
+    );
     animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
+    animationRyu_->GetTransform().SetTranslation(Vector3(-5, 0, 0));
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -86,6 +93,7 @@ void SampleSceneHori::Update()
 
     animationShurimp_->Update(TimeManager::GetInstance()->GetDeltaTime());
     animationSneakWalk_->Update(TimeManager::GetInstance()->GetDeltaTime());
+    animationRyu_->Update(TimeManager::GetInstance()->GetDeltaTime());
 
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
@@ -119,14 +127,15 @@ void SampleSceneHori::Update()
 
 void SampleSceneHori::Draw()
 {
-    uvCheckerSprite_->Draw();
-    dragonModel_->Draw();
+   /* uvCheckerSprite_->Draw();*/
+   /* dragonModel_->Draw();*/
 
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 
     animationShurimp_->Draw();
     animationSneakWalk_->Draw();
+    animationRyu_->Draw();
 	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 

@@ -57,6 +57,7 @@ private:
 
     std::unique_ptr<AnimationModel> animationShurimp_;
     std::unique_ptr<AnimationModel> animationSneakWalk_;
+    std::unique_ptr<AnimationModel> animationRyu_;
 
     ShakeEffect shake;
 
