@@ -54,7 +54,7 @@ void Game::Run()
         else
         {
             // キーボード情報の取得開始
-            Input::Update();
+            Input::GetInstance().Update();
             // フレームの開始
             engine_->BeginFrame();
             
@@ -74,7 +74,7 @@ void Game::Run()
 
 void Game::Update()
 {
-    if (Input::IsKeyTriggered(DIK_Y))
+    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
         if (engine_->debugCamera_->IsEnabled())
         {
@@ -100,7 +100,7 @@ void Game::Update()
 #endif
 
     // ポーズボタン押下判定
-    if (Input::IsKeyTriggered(DIK_P))
+    if (Input::GetInstance().IsKeyTriggered(DIK_P))
     {
         auto timeManager = TimeManager::GetInstance();
         if (timeManager->IsPaused())

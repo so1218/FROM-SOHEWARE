@@ -13,8 +13,11 @@
 class Input
 {
 public:
-    Input();
-    ~Input();
+    static Input& GetInstance();
+
+    // コピーと代入を禁止
+    Input(const Input&) = delete;
+    Input& operator=(const Input&) = delete;
 
     enum StickType 
     {
@@ -48,57 +51,69 @@ public:
         Middle = 2,
     };
 
-    static void Initialize(HINSTANCE hInstance, HWND hwnd);
-    static void Update(); // 入力状態の更新
-    // マウスホイールのスクロール量を取得する
-    static int GetMouseWheelDelta();
-    static Vector2  GetMousePosition();
-    static int GetMouseX();        
-    static int GetMouseY();
-    static bool IsKeyTriggered(BYTE key); // キーが押された瞬間
-    static bool IsKeyPressed(BYTE key);   // キーが常に押されてるかどうか
-    static bool IsKeyReleased(BYTE key);   // キーを離した瞬間
-    static bool IsKeyUp(BYTE key);   // キーが常に押されてないかどうか
-    static bool IsMouseButtonTriggered(DWORD button);// マウスキーが押された瞬間
-    static bool IsMouseButtonPressed(DWORD button);// マウスキーが常に押されてるかどうか
-    static bool IsMouseButtonIsKeyReleased(DWORD button);// マウスキーを離した瞬間
-    static bool IsMouseButtonUp(DWORD button);// マウスキーが常に押されてないかどうか
+    void Initialize(HINSTANCE hInstance, HWND hwnd);
+    void Update(); // 入力状態の更新
 
-    static bool IsControllerConnected(int controllerId);
-    static bool IsControllerButtonPressed(int controllerId, WORD button);
-    static bool IsControllerButtonTriggered(int controllerId, WORD button);
-    static bool IsControllerButtonReleased(int controllerId, WORD button);
-    static SHORT GetLeftTrigger(int controllerId);
-    static SHORT GetRightTrigger(int controllerId);
-    static SHORT GetLeftStickX(int controllerId);
-    static SHORT GetLeftStickY(int controllerId);
-    static SHORT GetRightStickX(int controllerId);
-    static SHORT GetRightStickY(int controllerId);
-    static bool IsLeftOnStick(int controllerId, StickType stickType);
-    static bool IsRightOnStick(int controllerId, StickType stickType);
-    static bool IsUpOnStick(int controllerId, StickType stickType);
-    static bool IsDownOnStick(int controllerId, StickType stickType);
-    static bool IsTriggerOnStick(int controllerId, StickType stickType);
-    static void VibrateController(int controllerId, WORD leftMotor, WORD rightMotor);
-    static void UpdateController();
+    // マウス関連
+    int GetMouseWheelDelta();
+    Vector2  GetMousePosition();
+    int GetMouseX();        
+    int GetMouseY();
+    bool IsMouseButtonTriggered(DWORD button);// マウスキーが押された瞬間
+    bool IsMouseButtonPressed(DWORD button);// マウスキーが常に押されてるかどうか
+    bool IsMouseButtonIsKeyReleased(DWORD button);// マウスキーを離した瞬間
+    bool IsMouseButtonUp(DWORD button);// マウスキーが常に押されてないかどうか
 
-    static const DIMOUSESTATE& GetMouseState() { return mouseState_; }
-    static const DIMOUSESTATE& GetPrevMouseState() { return preMouseState_; }
+    // キーボード関連
+    bool IsKeyTriggered(BYTE key); // キーが押された瞬間
+    bool IsKeyPressed(BYTE key);   // キーが常に押されてるかどうか
+    bool IsKeyReleased(BYTE key);   // キーを離した瞬間
+    bool IsKeyUp(BYTE key);   // キーが常に押されてないかどうか
+
+    // コントローラー関連
+    bool IsControllerConnected(int controllerId);
+    bool IsControllerButtonPressed(int controllerId, WORD button);
+    bool IsControllerButtonTriggered(int controllerId, WORD button);
+    bool IsControllerButtonReleased(int controllerId, WORD button);
+    SHORT GetLeftTrigger(int controllerId);
+    SHORT GetRightTrigger(int controllerId);
+    SHORT GetLeftStickX(int controllerId);
+    SHORT GetLeftStickY(int controllerId);
+    SHORT GetRightStickX(int controllerId);
+    SHORT GetRightStickY(int controllerId);
+    bool IsLeftOnStick(int controllerId, StickType stickType);
+    bool IsRightOnStick(int controllerId, StickType stickType);
+    bool IsUpOnStick(int controllerId, StickType stickType);
+    bool IsDownOnStick(int controllerId, StickType stickType);
+    bool IsTriggerOnStick(int controllerId, StickType stickType);
+    void VibrateController(int controllerId, WORD leftMotor, WORD rightMotor);
+    void UpdateController();
+
+    const DIMOUSESTATE& GetMouseState() { return mouseState_; }
+    const DIMOUSESTATE& GetPrevMouseState() { return preMouseState_; }
 
 private:
-    static DIMOUSESTATE mouseState_;           // 現在のマウスの状態
-    static DIMOUSESTATE preMouseState_;        // 前回のマウスの状態
+    Input();
+    ~Input();
 
-    static IDirectInput8* directInput_;
-    static IDirectInputDevice8* keyboard_;
-    static BYTE keys_[256];
-    static BYTE preKeys_[256];
-    static IDirectInputDevice8* mouse_;     
-    static POINT mousePosition_;         
-    static HWND hwnd_;
+    // DirectInput
+    IDirectInput8* directInput_;
+    HWND hwnd_;
 
-    static XINPUT_STATE controllerStates_[4];
-    static XINPUT_STATE prevControllerStates_[4];
-    static bool controllerConnected_[4];
+    // キーボード
+    IDirectInputDevice8* keyboard_;
+    BYTE keys_[256];
+    BYTE preKeys_[256];
+
+    // マウス
+    IDirectInputDevice8* mouse_;
+    DIMOUSESTATE mouseState_;
+    DIMOUSESTATE preMouseState_;
+    POINT mousePosition_;
+
+    // コントローラー
+    XINPUT_STATE controllerStates_[4];
+    XINPUT_STATE prevControllerStates_[4];
+    bool controllerConnected_[4];
 };
 

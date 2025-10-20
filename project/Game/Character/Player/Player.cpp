@@ -73,19 +73,19 @@ Vector3 Player::GetMoveDirection()
 {
 	Vector3 dir = { 0.0f, 0.0f, 0.0f };
 
-	if (Input::IsKeyPressed(DIK_W)) 
+	if (Input::GetInstance().IsKeyPressed(DIK_W))
 	{
 		dir.z += 1.0f;
 	}
-	if (Input::IsKeyPressed(DIK_S))
+	if (Input::GetInstance().IsKeyPressed(DIK_S))
 	{
 		dir.z -= 1.0f;
 	}
-	if (Input::IsKeyPressed(DIK_D))
+	if (Input::GetInstance().IsKeyPressed(DIK_D))
 	{
 		dir.x += 1.0f;
 	}
-	if (Input::IsKeyPressed(DIK_A))
+	if (Input::GetInstance().IsKeyPressed(DIK_A))
 	{
 		dir.x -= 1.0f;
 	}

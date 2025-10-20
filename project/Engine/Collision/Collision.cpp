@@ -78,7 +78,7 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius, const Matrix4
     float screenY = (1.0f - ndcPos.y) * 0.5f * kClientHeight;
 
     // 4. マウス位置取得
-    Vector2 mousePos = Input::GetMousePosition();
+    Vector2 mousePos = Input::GetInstance().GetMousePosition();
 
     // 5. マウス位置とオブジェクト位置（スクリーン座標）で距離を取って比較
     float dx = mousePos.x - screenX;

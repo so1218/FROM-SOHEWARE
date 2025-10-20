@@ -98,7 +98,7 @@ void SampleSceneHori::Update()
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
     dragonModel_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(dragonModel_->GetTransform().rotation_);*/
-    if (Input::IsKeyTriggered(DIK_L))
+    if (Input::GetInstance().IsKeyTriggered(DIK_L))
     {
         originalTranslation_ = dragonModel_->GetTransform().translation_;
         shake.Start(1.0f, 2.0f);

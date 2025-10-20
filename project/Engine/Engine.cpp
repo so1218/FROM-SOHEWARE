@@ -240,7 +240,7 @@ void Engine::InitializeWindow()
 void Engine::InitializeInput()
 {
 	// 入力管理の初期化
-	Input::Initialize(window_->GetHInstance(), window_->GetHwnd());
+	Input::GetInstance().Initialize(window_->GetHInstance(), window_->GetHwnd());
 
 	TimeManager::GetInstance()->Initialize();
 }
