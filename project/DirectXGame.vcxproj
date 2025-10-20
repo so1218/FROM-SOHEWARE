@@ -158,6 +158,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\Bullet.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\BulletFactory.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\BulletManager.cpp" />
@@ -258,6 +259,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
     <ClInclude Include="Game\Character\Player\Weapon\BulletFactory.h" />
     <ClInclude Include="Game\Character\Player\Weapon\BulletManager.h" />
