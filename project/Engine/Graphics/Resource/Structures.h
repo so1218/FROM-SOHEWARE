@@ -214,7 +214,8 @@ struct ParticleInstanceData
     Vector4 color;
     uint32_t textureIndex;
     float rotationZ;
-    float padding[2];
+    int isBillboard;
+    float padding;
 
 };
 

@@ -154,7 +154,8 @@ void ParticleEditor::ShowEditor()
                     ImGui::Checkbox("Random Direction", &vel.randomDirection);
 
                     // randomDirectionがtrueのときだけangleRangeを表示
-                    if (vel.randomDirection) {
+                    if (vel.randomDirection)
+                    {
                         ImGui::SliderFloat("Angle Range", &vel.angleRange, 0.0f, 360.0f, "%.0f度");
                     }
 
@@ -179,8 +180,21 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& rot = config.rotation; 
                     ImGui::Checkbox("Enabled##Rotation", &rot.enabled);
-                    ImGui::Checkbox("Random Start Rotation", &rot.randomStartRotation);
-                    ImGui::DragFloat("Angular Velocity", &rot.angularVelocity, 0.001f, 0.0f, 0.0f, "%.3f deg/frame");
+                    ImGui::Separator();
+                    ImGui::Checkbox("Is Billboard", &rot.isBillboard);
+                    ImGui::Separator();
+                    if (rot.isBillboard)
+                    {
+                        // ビルボードが有効な場合のUI
+                        ImGui::Checkbox("Random Start Rotation", &rot.randomStartRotation);
+                        ImGui::DragFloat("Angular Velocity 2D", &rot.angularVelocity2D, 1.0f, 0.0f, 0.0f, "%.1f deg/s");
+                    }
+                    else
+                    {
+                        ImGui::DragFloat3("orientation3D", &rot.orientation3D.x, 1.0f, -360.0f, 360.0f, "%.1f deg");
+                        // ビルボードが無効な場合のUI
+                        ImGui::DragFloat3("Angular Velocity 3D", &rot.angularVelocity3D.x, 1.0f, 0.0f, 0.0f, "%.1f deg/s");
+                    }
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
@@ -264,7 +278,7 @@ void ParticleEditor::ShowEditor()
                 // ColorOverLifetimeModuleのUI
                 if (ImGui::TreeNode("Color Over Lifetime Module"))
                 {
-                    auto& colorModule = config.colorOverLifetime; // ショートカット
+                    auto& colorModule = config.colorOverLifetime;
 
                     ImGui::Checkbox("Enabled##Color", &colorModule.enabled);
 
@@ -384,7 +398,7 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
             emitter->amount_ = emitterConfig.amount;
             emitter->duration_ = emitterConfig.duration;
 
-            // 1. 設定を適用する前の状態を記憶
+            // 設定を適用する前の状態を記憶
             bool wasStopped = !emitter->isPlaying_;
             emitter->looping_ = emitterConfig.looping;
 

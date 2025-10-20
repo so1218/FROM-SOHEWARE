@@ -80,8 +80,25 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& rotJson = configJson["rotationModule"];
                     config.rotation.enabled = rotJson.value("enabled", false);
+                    config.rotation.isBillboard = rotJson.value("isBillboard", true);
+                    config.rotation.angularVelocity2D = rotJson.value("angularVelocity2D", 5.0f);
+                    if (rotJson.contains("orientation3D") && rotJson["orientation3D"].is_array() && rotJson["orientation3D"].size() == 3)
+                    {
+                        config.rotation.orientation3D = {
+                            rotJson["orientation3D"][0].get<float>(),
+                            rotJson["orientation3D"][1].get<float>(),
+                            rotJson["orientation3D"][2].get<float>()
+                        };
+                    }
+                    if (rotJson.contains("angularVelocity3D") && rotJson["angularVelocity3D"].is_array() && rotJson["angularVelocity3D"].size() == 3)
+                    {
+                        config.rotation.angularVelocity3D = {
+                            rotJson["angularVelocity3D"][0].get<float>(),
+                            rotJson["angularVelocity3D"][1].get<float>(),
+                            rotJson["angularVelocity3D"][2].get<float>()
+                        };
+                    }
                     config.rotation.randomStartRotation = rotJson.value("randomStartRotation", true);
-                    config.rotation.angularVelocity = rotJson.value("angularVelocity", 5.0f);
                 }
 
                 // ShapeModuleの読み込み
@@ -228,8 +245,12 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "rotationModule", 
         {
             { "enabled", config.rotation.enabled },
+            { "isBillboard", config.rotation.isBillboard },
+            { "angularVelocity2D", config.rotation.angularVelocity2D },
+            { "orientation3D", { config.rotation.orientation3D.x, config.rotation.orientation3D.y, config.rotation.orientation3D.z }},
+            { "angularVelocity3D", { config.rotation.angularVelocity3D.x, config.rotation.angularVelocity3D.y, config.rotation.angularVelocity3D.z }},
             { "randomStartRotation", config.rotation.randomStartRotation },
-            { "angularVelocity", config.rotation.angularVelocity }
+           
         }},
         { "shapeModule",
         {

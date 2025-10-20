@@ -64,7 +64,7 @@ public:
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
     void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void DrawParticles(const Camera& camera);
-    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ);
+    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
     void DrawFullScreenQuadWithOffscreenTexture();
 
     // ブレンドモード設定

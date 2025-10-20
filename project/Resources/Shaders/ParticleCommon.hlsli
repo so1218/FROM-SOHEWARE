@@ -14,5 +14,6 @@ struct InstanceData
     float4 color;
     uint textureIndex;
     float rotationZ;
-    float padding[2];
+    int isBillboard;
+    float padding;
 };

@@ -1240,7 +1240,7 @@ void Engine::CreateParticles()
 }
 
 
-void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ)
+void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
@@ -1250,6 +1250,7 @@ void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t col
 	data.color = Uint32ToColorVector(color);
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
+	data.isBillboard = isBillboard ? 1 : 0;
 	indexParticle_++;
 
 	particlesByTexture_[textureIndex].push_back(data);

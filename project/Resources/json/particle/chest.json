@@ -37,8 +37,19 @@
             ]
         },
         "rotationModule": {
-            "angularVelocity": 5.0,
-            "enabled": false,
+            "angularVelocity2D": 5.0,
+            "angularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enabled": true,
+            "isBillboard": false,
+            "orientation3D": [
+                0.0,
+                90.0,
+                0.0
+            ],
             "randomStartRotation": true
         },
         "shapeModule": {

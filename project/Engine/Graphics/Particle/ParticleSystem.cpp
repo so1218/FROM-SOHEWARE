@@ -37,7 +37,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
 
     // モジュールに基づいて初期値を設定
 
-      // Shape: Emitterの座標にShapeのオフセットを加算
+    // Shape: Emitterの座標にShapeのオフセットを加算
     particle.transform = std::make_unique<WorldTransform>();
     particle.transform->translation_ = transform.translation_ + config.shape.GetInitialPositionOffset();
 
@@ -68,9 +68,25 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     }
 
     // Rotation: 初期設定
-    if (config.rotation.enabled && config.rotation.randomStartRotation)
+    if (config.rotation.enabled)
     {
-        particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+        // ビルボードが有効で、かつランダムな初期回転が設定されている場合のみ適用
+        if (config.rotation.isBillboard)
+        {
+            // ビルボードが有効で、かつランダムな初期回転が設定されている場合
+            if (config.rotation.randomStartRotation)
+            {
+                // Z軸にランダムな初期回転を設定
+                particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+            }
+        }
+        else
+        {
+            // ビルボードが無効な場合、設定された向きをそのまま適用
+            particle.transform->rotation_.x = ToRadians(config.rotation.orientation3D.x);
+            particle.transform->rotation_.y = ToRadians(config.rotation.orientation3D.y);
+            particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
+        }
     }
 
     // 基本的なプロパティを設定
@@ -181,7 +197,18 @@ void ParticleSystem::Update()
         // Rotation Module: 回転を更新
         if (config.rotation.enabled)
         {
-            particleState.transform->rotation_.z += config.rotation.angularVelocity * deltaTime;
+            if (config.rotation.isBillboard)
+            {
+                // ビルボード有効時
+                particleState.transform->rotation_.x = 0.0f;
+                particleState.transform->rotation_.y = 0.0f;
+                particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
+            }
+            else
+            {
+                // ビルボード無効時
+                particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
+            }
         }
         particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
 
@@ -220,7 +247,8 @@ void ParticleSystem::Update()
             *particle.transform,
             ColorVectorToUint32(particle.color),
             particle.textureHandle,
-            particle.transform->rotation_.z
+            particle.transform->rotation_.z,      
+            particle.config.rotation.isBillboard
         );
     }
 }

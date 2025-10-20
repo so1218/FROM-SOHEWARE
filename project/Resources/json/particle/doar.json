@@ -1,7 +1,10 @@
 {
     "EmitterConfig": {
-        "amount": 1,
-        "lifetime": 4.0,
+        "amount": 3,
+        "duration": 5.0,
+        "lifetime": 0.8500000238418579,
+        "looping": true,
+        "playOnAwake": true,
         "position": [
             0.0,
             0.0,
@@ -10,45 +13,45 @@
         "spawnInterval": 0.10000000149011612
     },
     "ParticleConfig": {
-        "baseColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.0
-        ],
+        "attractionModule": {
+            "enabled": false,
+            "strength": 1.0,
+            "target": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4294967040,
-            "startColor": 4294967295
+            "endColor": 4211081216,
+            "startColor": 2442003711
         },
-        "decayRate": 0.0,
-        "drag": 0.0,
-        "emitterRange": [
-            20.0,
-            20.0,
-            20.0
-        ],
-        "endColor": 4294967040,
-        "endScale": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "fadeOutFrameCount": 0,
-        "gravity": 0.0,
-        "maxLifetime": 0.0,
-        "particleRadius": 0.0,
         "physicsModule": {
             "drag": 0.0,
             "enabled": false,
-            "gravity": 0.0
+            "gravity": [
+                0.0,
+                -9.800000190734863,
+                0.0
+            ]
         },
         "rotationModule": {
-            "angularVelocity": 5.0,
+            "angularVelocity2D": 5.0,
+            "angularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
             "enabled": false,
+            "isBillboard": true,
+            "orientation3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
             "randomStartRotation": true
         },
-        "scaleFrameCount": 0,
         "shapeModule": {
             "boxSize": [
                 20.0,
@@ -57,7 +60,11 @@
             ],
             "emitFromEdge": false,
             "enabled": true,
-            "radius": 10.0,
+            "radius": [
+                10.0,
+                10.0,
+                10.0
+            ],
             "type": 0
         },
         "sizeOverLifetimeModule": {
@@ -70,29 +77,21 @@
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                1.0,
-                1.0,
+                5.130000114440918,
+                3.0199999809265137,
                 1.0
             ]
         },
-        "speed": 1.0,
-        "startColor": 4294967295,
-        "startScale": [
-            0.0,
-            0.0,
-            0.0
-        ],
-        "textureIndex": 0,
         "textureSheetModule": {
             "enabled": false,
             "framesPerSecond": 10.0,
             "looping": true,
-            "textureHandle": 0,
+            "textureHandle": 30,
             "tilesX": 1,
             "tilesY": 1
         },
         "velocityModule": {
-            "angleRange": 60.0,
+            "angleRange": 30.0,
             "direction": [
                 0.0,
                 1.0,
@@ -100,7 +99,17 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 4.0
+            "speed": 8.930000305175781
+        },
+        "vortexModule": {
+            "center": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enabled": false,
+            "orbitalSpeed": 10.0,
+            "rotationSpeed": 90.0
         }
     }
 }

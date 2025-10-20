@@ -36,28 +36,37 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
     // インスタンスデータ
     InstanceData inst = instanceBuffer[instanceId];
     float4x4 world = inst.world;
+    float3 worldPos;
+    
+    if (inst.isBillboard == 1)
+    {
+        // 中心位置（移動成分）
+        float3 center = world[3].xyz;
 
-    // 中心位置（移動成分）
-    float3 center = world[3].xyz;
+        // スケールを world の x/y 軸から抽出
+        float scaleX = length(world[0].xyz);
+        float scaleY = length(world[1].xyz);
 
-    // スケールを world の x/y 軸から抽出
-    float scaleX = length(world[0].xyz);
-    float scaleY = length(world[1].xyz);
+        // カメラ方向のビルボードベクトル
+        float3 right = cameraRight;
+        float3 up = cameraUp;
 
-    // カメラ方向のビルボードベクトル
-    float3 right = cameraRight;
-    float3 up = cameraUp;
+        // Z軸回転（ラジアン）を使ってローカルXYを回転
+        float cosR = cos(inst.rotationZ);
+        float sinR = sin(inst.rotationZ);
+        float rotatedX = vin.position.x * cosR - vin.position.y * sinR;
+        float rotatedY = vin.position.x * sinR + vin.position.y * cosR;
 
-    // Z軸回転（ラジアン）を使ってローカルXYを回転
-    float cosR = cos(inst.rotationZ);
-    float sinR = sin(inst.rotationZ);
-    float rotatedX = vin.position.x * cosR - vin.position.y * sinR;
-    float rotatedY = vin.position.x * sinR + vin.position.y * cosR;
-
-    // カメラ方向ベースに、スケール＆回転済みのローカルオフセットを加える
-    float3 worldPos = center
+        // カメラ方向ベースに、スケール＆回転済みのローカルオフセットを加える
+        worldPos = center
         + rotatedX * right * scaleX
         + rotatedY * up * scaleY;
+    }
+    else
+    {
+        // ビルボードが無効な場合の処理
+        worldPos = mul(vin.position, world).xyz;
+    }
 
     // ワールド→クリップ座標へ
     vout.svpos = mul(float4(worldPos, 1.0f), viewProjection);
