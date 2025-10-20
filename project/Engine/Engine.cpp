@@ -848,12 +848,7 @@ void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, 
 	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
 	// パイプラインステートの設定
-	if (isWireFrame_) {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
-	}
-	else {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
-	}
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
 	// プリミティブ形状の設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// インデックスバッファの設定
