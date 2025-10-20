@@ -36,8 +36,8 @@ public:
     void StopUnique();
 
 private:
-    AudioPlayer() { /* 初期化 */ }
-    ~AudioPlayer() { /* 解放 */ }
+    AudioPlayer() {}
+    ~AudioPlayer() {}
 
     std::vector<AudioData> loadedAudios_;
     std::vector<AudioInstance> activeVoices_;

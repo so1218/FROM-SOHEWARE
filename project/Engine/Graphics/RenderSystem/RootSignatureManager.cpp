@@ -3,7 +3,10 @@
 
 void RootSignatureManager::Initialize(ID3D12Device* device)
 {
-    LOG_INFO("RootSignatureManager initialization started.");
+    LOG_INFO("\n"
+        "////////////////////////////////////////////////////////////\n"
+        "//  RootSignatureManager Initialization Started.\n"
+        "////////////////////////////////////////////////////////////");
 
     device_ = device;
 
@@ -15,7 +18,10 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
     CreateFullScreenRootSignature();
     CreateDepthExtractRootSignature();
 
-    LOG_INFO("RootSignatureManager initialization finished successfully.");
+    LOG_INFO("\n"
+        "////////////////////////////////////////////////////////////\n"
+        "//  RootSignatureManager Initialization Finished.\n"
+        "////////////////////////////////////////////////////////////");
 }
 
 void RootSignatureManager::CreateLineRootSignature()
