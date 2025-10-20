@@ -233,15 +233,12 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "angleRange", config.velocity.angleRange },
             { "direction", { config.velocity.direction.x, config.velocity.direction.y, config.velocity.direction.z }}
         }},
-        // PhysicsModule
         { "physicsModule",
         {
             { "enabled", config.physics.enabled },
             { "gravity", { config.physics.gravity.x, config.physics.gravity.y, config.physics.gravity.z }},
             { "drag", config.physics.drag }
         }},
-
-        // RotationOverLifetimeModule
         { "rotationModule", 
         {
             { "enabled", config.rotation.enabled },
@@ -269,7 +266,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "framesPerSecond", config.textureSheet.framesPerSecond },
             { "looping", config.textureSheet.looping }
         }},
-        // ColorOverLifetimeModuleの情報
         { "colorOverLifetimeModule",
         {
             { "enabled", config.colorOverLifetime.enabled },
@@ -277,8 +273,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "endColor", config.colorOverLifetime.endColor },
             /*{ "easingType", static_cast<int>(config.colorOverLifetime.easing.GetEasingType()) }*/
         }},
-
-        // SizeOverLifetimeModuleの情報
         { "sizeOverLifetimeModule",
         {
             { "enabled", config.sizeOverLifetime.enabled },
@@ -288,8 +282,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "oscillate", config.sizeOverLifetime.oscillate },
             { "frequency", config.sizeOverLifetime.frequency }
         }},
-
-        // VortexModuleの情報
         { "vortexModule",
         {
             { "enabled", config.vortex.enabled },
@@ -297,8 +289,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "rotationSpeed", config.vortex.rotationSpeed },
             { "orbitalSpeed", config.vortex.orbitalSpeed }
         }},
-
-        // AttractionModuleの情報
         { "attractionModule", 
         {
             { "enabled", config.attraction.enabled },

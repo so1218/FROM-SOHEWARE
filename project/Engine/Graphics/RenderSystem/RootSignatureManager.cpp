@@ -1,7 +1,10 @@
 #include "RootSignatureManager.h"
 #include "Logger.h"
+
 void RootSignatureManager::Initialize(ID3D12Device* device)
 {
+    LOG_INFO("RootSignatureManager initialization started.");
+
     device_ = device;
 
     CreateLineRootSignature();
@@ -11,10 +14,14 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
     CreatePostEffectPassRootSignature();
     CreateFullScreenRootSignature();
     CreateDepthExtractRootSignature();
+
+    LOG_INFO("RootSignatureManager initialization finished successfully.");
 }
 
 void RootSignatureManager::CreateLineRootSignature()
 {
+    LOG_INFO("Creating Line root signature...");
+
     enum {
         kLineMaterialCbIndex = 0, // b0
         kLineWvpCbIndex = 1,      // b1
@@ -44,23 +51,36 @@ void RootSignatureManager::CreateLineRootSignature()
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
     HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            Logger::Instance().Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+    if (FAILED(hr))
+    {
+        if (errorBlob) 
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize Line root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize line root signature!");
-        return; // エラーが発生した場合はここで処理を終了
+        else 
+        {
+            LOG_ERROR("Failed to serialize Line root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false); // デバッグビルドではここで停止
+        return;
     }
 
     hr = device_->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureLine_));
-    if (FAILED(hr)) {
-        assert(false && "Failed to create line root signature!");
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create Line root signature. HRESULT: {:#x}", hr);
+        assert(false);
         return;
     }
+
+    LOG_INFO("Successfully created Line root signature.");
 }
 
 void RootSignatureManager::Create3dRootSignature()
 {
+    LOG_INFO("Creating 3D root signature...");
+
     // DescriptorRangeの設定 (テクスチャSRV用)
     D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
     srvDescriptorRange.BaseShaderRegister = 0; // t0
@@ -143,11 +163,18 @@ void RootSignatureManager::Create3dRootSignature()
     HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
         D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            Logger::Instance().Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+    if (FAILED(hr)) 
+    {
+        if (errorBlob)
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize 3D root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize graphic root signature!");
+        else 
+        {
+            LOG_ERROR("Failed to serialize 3D root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false); 
         return;
     }
 
@@ -155,14 +182,20 @@ void RootSignatureManager::Create3dRootSignature()
     hr = device_->CreateRootSignature(0,
         signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignature3D_));
-    if (FAILED(hr)) {
-        assert(false && "Failed to create graphic root signature!");
+    if (FAILED(hr)) 
+    {
+        LOG_ERROR("Failed to create 3D root signature. HRESULT: {:#x}", hr);
+        assert(false);
         return;
     }
+
+    LOG_INFO("Successfully created 3D root signature.");
 }
 
 void RootSignatureManager::CreateSkinningRootSignature()
 {
+    LOG_INFO("Creating Skinning root signature...");
+
     // DescriptorRangeの設定 (テクスチャSRVをt0にバインド)
     D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
     srvDescriptorRange.BaseShaderRegister = 0; // t0
@@ -255,24 +288,37 @@ void RootSignatureManager::CreateSkinningRootSignature()
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 
     HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            Logger::Instance().Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+    if (FAILED(hr)) 
+    {
+        if (errorBlob)
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize Skinning root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize skinning root signature!");
+        else 
+        {
+            LOG_ERROR("Failed to serialize Skinning root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false);
         return;
     }
 
     hr = device_->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureSkinning_));
-    if (FAILED(hr)) {
-        assert(false && "Failed to create skinning root signature!");
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create Skinning root signature. HRESULT: {:#x}", hr);
+        assert(false);
         return;
     }
+
+    LOG_INFO("Successfully created Skinning root signature.");
 }
 
 // CreateParticleRootSignatureをCreateParticleGraphicsRootSignatureにリネームしました
 void RootSignatureManager::CreateParticleGraphicsRootSignature()
 {
+    LOG_INFO("Creating Particle Graphics root signature...");
+
     // インスタンシングデータ用のSRVを設定するためのDescriptorRange
     D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
     descriptorRange[0].BaseShaderRegister = 1;  // SRVのレジスタ番号
@@ -331,24 +377,37 @@ void RootSignatureManager::CreateParticleGraphicsRootSignature()
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
     HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            Logger::Instance().Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+    if (FAILED(hr))
+    {
+        if (errorBlob) 
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize Particle Graphics root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize particle graphics root signature!");
+        else 
+        {
+            LOG_ERROR("Failed to serialize Particle Graphics root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false);
         return;
     }
 
     // RootSignature を作成
     hr = device_->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignatureParticles_));
-    if (FAILED(hr)) {
-        assert(false && "Failed to create particle graphics root signature!");
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create Particle Graphics root signature. HRESULT: {:#x}", hr);
+        assert(false);
         return;
     }
+
+    LOG_INFO("Successfully created Particle Graphics root signature.");
 }
 
 void RootSignatureManager::CreatePostEffectPassRootSignature()
 {
+    LOG_INFO("Creating Post Effect Pass root signature...");
+
     // ----- Descriptor Range（Bloom用SRV: t0） -----
     D3D12_DESCRIPTOR_RANGE srvRangeBloom = {};
     srvRangeBloom.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -421,25 +480,43 @@ void RootSignatureManager::CreatePostEffectPassRootSignature()
         &errorBlob
     );
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+    if (FAILED(hr))
+    {
+        if (errorBlob) 
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize Post Effect Pass root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize FullScreen root signature");
+        else 
+        {
+            LOG_ERROR("Failed to serialize Post Effect Pass root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false);
         return;
     }
 
-    // ----- RootSignature 作成 ----- 
+    // RootSignature 作成
     hr = device_->CreateRootSignature(
         0,
         signatureBlob->GetBufferPointer(),
         signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignatureFullScreen_)
     );
-    assert(SUCCEEDED(hr));
+
+    if (FAILED(hr)) 
+    {
+        LOG_ERROR("Failed to create Post Effect Pass root signature. HRESULT: {:#x}", hr);
+        assert(false);
+        return; 
+    }
+
+    LOG_INFO("Successfully created Post Effect Pass root signature.");
 }
+
 void RootSignatureManager::CreateFullScreenRootSignature()
 {
+    LOG_INFO("Creating FullScreen root signature...");
+
     // Descriptor Range（SRV: t0〜t1 の2つ）
     D3D12_DESCRIPTOR_RANGE srvRange = {};
     srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -497,11 +574,18 @@ void RootSignatureManager::CreateFullScreenRootSignature()
         &errorBlob
     );
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+    if (FAILED(hr))
+    {
+        if (errorBlob) 
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize FullScreen root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize PostProcess root signature");
+        else 
+        {
+            LOG_ERROR("Failed to serialize FullScreen root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false);
         return;
     }
 
@@ -511,11 +595,21 @@ void RootSignatureManager::CreateFullScreenRootSignature()
         signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignaturePostProcess_)
     );
-    assert(SUCCEEDED(hr));
+
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create FullScreen root signature. HRESULT: {:#x}", hr);
+        assert(false);
+        return;
+    }
+
+    LOG_INFO("Successfully created FullScreen root signature.");
 }
 
 void RootSignatureManager::CreateDepthExtractRootSignature()
 {
+    LOG_INFO("Creating Depth Extract root signature...");
+
     // Descriptor Range（SRV: Depth 出力のための SRV）
     D3D12_DESCRIPTOR_RANGE srvRange = {};
     srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -579,11 +673,18 @@ void RootSignatureManager::CreateDepthExtractRootSignature()
         &errorBlob
     );
 
-    if (FAILED(hr)) {
-        if (errorBlob) {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+    if (FAILED(hr)) 
+    {
+        if (errorBlob)
+        {
+            const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
+            LOG_ERROR("Failed to serialize Depth Extract root signature: {}", errorMsg);
         }
-        assert(false && "Failed to serialize Depth Extract root signature");
+        else 
+        {
+            LOG_ERROR("Failed to serialize Depth Extract root signature. HRESULT: {:#x}", hr);
+        }
+        assert(false);
         return;
     }
 
@@ -593,5 +694,14 @@ void RootSignatureManager::CreateDepthExtractRootSignature()
         signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignatureDepthExtract_)
     );
-    assert(SUCCEEDED(hr));
+
+    if (FAILED(hr))
+    {
+       
+        LOG_ERROR("Failed to create Depth Extract root signature. HRESULT: {:#x}", hr);
+        assert(false);
+        return;
+    }
+
+    LOG_INFO("Successfully created Depth Extract root signature.");
 }

@@ -118,9 +118,9 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
-	Logger::Instance().Log("  UsedCount: " + std::to_string(srvAllocator_->GetUsedCount()));
-	Logger::Instance().Log("  FreeCount: " + std::to_string(srvAllocator_->GetFreeCount()));
-	Logger::Instance().Log("  MaxDescriptors: " + std::to_string(srvAllocator_->GetMaxDescriptors()));
+	/*LOG_INFO("  UsedCount: {}", srvAllocator_->GetUsedCount());
+	LOG_INFO("  FreeCount: {}", srvAllocator_->GetFreeCount());
+	LOG_INFO("  MaxDescriptors: {}", srvAllocator_->GetMaxDescriptors());*/
 
 	// オフスクリーンレンダリング終了
 	renderCoordinator_->EndOffscreenRender();
@@ -225,9 +225,6 @@ void Engine::InitializeSystem()
 	// COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 
-	// 誰も捕捉しなかった場合に、補足する関数を登録
-	SetUnhandledExceptionFilter(Logger::ExportDump);
-
 	// ロガーの初期化
 	Logger::Instance().Initialize();
 }
@@ -262,8 +259,6 @@ void Engine::InitializeGraphics()
 	// GPUアダプタの選定+D3D12デバイスの生成
 	graphicDevice_ = std::make_unique<GraphicsDevice>();
 	graphicDevice_->Initialize();
-
-	Logger::Instance().Log("Complete create D3D12Device!!!\n", Logger::Instance().GetLogStream());// 初期化完了のログを出す
 
 	// コマンドの初期化
 	commandManager_ = std::make_unique<CommandManager>();

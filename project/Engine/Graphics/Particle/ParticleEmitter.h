@@ -26,8 +26,7 @@ public:
     bool isPlaying_ = false;  // 現在再生中か
     float elapsedTime_ = 0.0f;// 再生開始からの経過時間
 
-    std::string name_ = "Emitter";
-	std::string& presetName_ = name_;
+	std::string presetName_ = "Emitter";
 
     EmitterConfig emitterConfig_;
     ParticleConfig particleConfig_;

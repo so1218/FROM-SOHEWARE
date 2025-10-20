@@ -6,7 +6,7 @@
         "looping": true,
         "playOnAwake": true,
         "position": [
-            -6.699999809265137,
+            22.799999237060547,
             0.0,
             0.0
         ],
@@ -44,7 +44,7 @@
                 0.0
             ],
             "enabled": true,
-            "isBillboard": false,
+            "isBillboard": true,
             "orientation3D": [
                 0.0,
                 90.0,

@@ -14,7 +14,10 @@ Microsoft::WRL::ComPtr <IDxcBlob> ShaderManager::CompileShader(
     // 1.hlslファイルを読む
 
     // これからシェーダーをコンパイルする旨をログに出す
-    Logger::Instance().Log(StringUtils::ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
+    LOG_INFO("Begin CompileShader, path:{}, profile:{}",
+        StringUtils::ConvertString(filePath),
+        StringUtils::ConvertString(profile)
+    );
     // hlslファイルを読む
     IDxcBlobEncoding* shaderSource = nullptr;
     HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
@@ -56,7 +59,7 @@ Microsoft::WRL::ComPtr <IDxcBlob> ShaderManager::CompileShader(
     shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
     if (shaderError != nullptr && shaderError->GetStringLength() != 0)
     {
-        Logger::Instance().Log(shaderError->GetStringPointer());
+        LOG_ERROR("Shader Compile Error: {}", shaderError->GetStringPointer());
         // 警告・エラーダメゼッタイ
         assert(false);
     }
@@ -68,7 +71,10 @@ Microsoft::WRL::ComPtr <IDxcBlob> ShaderManager::CompileShader(
     hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
     assert(SUCCEEDED(hr));
     // 成功したログを出す
-    Logger::Instance().Log(StringUtils::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
+    LOG_INFO("Compile Succeeded, path:{}, profile:{}",
+        StringUtils::ConvertString(filePath),
+        StringUtils::ConvertString(profile)
+    );
     // もう使わないリソースを開放
     shaderSource->Release();
     shaderResult->Release();

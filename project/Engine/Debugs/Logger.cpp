@@ -12,44 +12,62 @@
 
 void Logger::Initialize()
 {
-    // 誰も捕捉しなかった場合に、補足する関数を登録
+    // 未処理例外のハンドラを登録
     SetUnhandledExceptionFilter(Logger::ExportDump);
 
-     // ログのディレクトリを用意
+    // ログディレクトリを作成
     std::filesystem::create_directory("logs");
 
-    // 現在時刻を取得
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds> nowSeconds =
-    std::chrono::time_point_cast<std::chrono::seconds>(now);
-    std::chrono::zoned_time localTime{ std::chrono::current_zone(), nowSeconds };
+    // 現在時刻からログファイル名を生成
+    auto now = std::chrono::system_clock::now();
+    std::string dateString = std::format("logs/{:%Y%m%d_%H%M%S}.log", now);
 
-    // formatを使って年月日_時分秒の文字列に変換
-    std::string dateString = std::format("{:%Y%m%d_%H%M%S}", localTime);
-    std::string logFilePath = std::string("logs/") + dateString + ".log";
-
-    // ファイルを作って書き込み準備
-    logStream_.open(logFilePath);
+    // ファイルを開く
+    logStream_.open(dateString);
 }
 
-void Logger::Log(const std::string& message, std::ostream& os)
+// ログレベルを文字列に変換
+std::string Logger::LevelToString(LogLevel level)
 {
-    os << message << std::endl;
-    OutputDebugStringA((message + "\n").c_str());
+    switch (level) 
+    {
+    case LogLevel::Info:    return "INFO";
+    case LogLevel::Warning: return "WARN";
+    case LogLevel::Error:   return "ERROR";
+    case LogLevel::Debug:   return "DEBUG";
+    default:                return "UNKNOWN";
+    }
 }
 
-void Logger::Log(const std::string& message)
+// コンソールの文字色を変更 (Windows APIを使用)
+void Logger::SetConsoleColor(LogLevel level)
 {
-    OutputDebugStringA((message + "\n").c_str());
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    switch (level)
+    {
+    case LogLevel::Info:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // 白
+        break;
+    case LogLevel::Warning:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN); // 黄色
+        break;
+    case LogLevel::Error:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED); // 赤
+        break;
+    case LogLevel::Debug:
+        SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_BLUE); // シアン
+        break;
+    }
 }
 
+// クラッシュダンプ機能 
 LONG WINAPI Logger::ExportDump(EXCEPTION_POINTERS* exception)
 {
     SYSTEMTIME time;
     GetLocalTime(&time);
 
     wchar_t filePath[MAX_PATH] = { 0 };
-    CreateDirectory(L"./Dumps", nullptr);  // Dumps ディレクトリがなければ作成
+    CreateDirectory(L"./Dumps", nullptr);
 
     StringCchPrintfW(filePath, MAX_PATH,
         L"./Dumps/%04d%02d%02d-%02d%02d.dmp",
@@ -66,7 +84,8 @@ LONG WINAPI Logger::ExportDump(EXCEPTION_POINTERS* exception)
         nullptr
     );
 
-    if (dumpFileHandle == INVALID_HANDLE_VALUE) {
+    if (dumpFileHandle == INVALID_HANDLE_VALUE)
+    {
         OutputDebugStringA("Failed to create dump file.\n");
         return EXCEPTION_EXECUTE_HANDLER;
     }
@@ -76,7 +95,7 @@ LONG WINAPI Logger::ExportDump(EXCEPTION_POINTERS* exception)
     dumpInfo.ExceptionPointers = exception;
     dumpInfo.ClientPointers = TRUE;
 
-    BOOL success = MiniDumpWriteDump(
+    MiniDumpWriteDump(
         GetCurrentProcess(),
         GetCurrentProcessId(),
         dumpFileHandle,
