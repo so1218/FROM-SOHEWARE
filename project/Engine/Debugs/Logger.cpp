@@ -15,8 +15,17 @@ void Logger::Initialize()
     // 未処理例外のハンドラを登録
     SetUnhandledExceptionFilter(Logger::ExportDump);
 
+    LOG_INFO("Logger::Initialize started. Setting unhandled exception filter.");
+
     // ログディレクトリを作成
-    std::filesystem::create_directory("logs");
+    try {
+        std::filesystem::create_directory("logs");
+    }
+    catch (const std::filesystem::filesystem_error& e)
+    {
+        // これもデバッグ出力にのみ記録される。
+        LOG_ERROR("Failed to create 'logs' directory: {}", e.what());
+    }
 
     // 現在時刻からログファイル名を生成
     auto now = std::chrono::system_clock::now();
@@ -24,6 +33,17 @@ void Logger::Initialize()
 
     // ファイルを開く
     logStream_.open(dateString);
+
+    if (logStream_.is_open())
+    {
+        LOG_INFO("------------------------------------------------------------");
+        LOG_INFO("Logger successfully initialized. Log file opened: {}", dateString);
+        LOG_INFO("------------------------------------------------------------");
+    }
+    else 
+    {
+        LOG_ERROR("FATAL: Logger failed to open log file: {}", dateString);
+    }
 }
 
 // ログレベルを文字列に変換

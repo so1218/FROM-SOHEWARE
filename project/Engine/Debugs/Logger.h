@@ -63,7 +63,7 @@ private:
     std::mutex mutex_; // ログ出力の排他制御用
 
     // 出力する最低レベル
-    LogLevel minLevel_ = LogLevel::Debug;
+    LogLevel minLevel_ = LogLevel::Info;
 };
 
 // Log関数
