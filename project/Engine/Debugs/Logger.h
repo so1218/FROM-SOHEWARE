@@ -103,20 +103,18 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
 
 // 便利な呼び出しマクロ
 // std::source_location::current() をマクロ内で呼び出すことで、呼び出し元の情報を取得できる
-#ifdef _DEBUG // デバッグビルドの場合
+#ifdef _DEBUG 
 
-    // 今まで通りの定義
 #define LOG_INFO(...)    Logger::Instance().Log(LogLevel::Info,    std::source_location::current(), __VA_ARGS__)
 #define LOG_WARN(...)    Logger::Instance().Log(LogLevel::Warning, std::source_location::current(), __VA_ARGS__)
 #define LOG_ERROR(...)   Logger::Instance().Log(LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
 #define LOG_DEBUG(...)   Logger::Instance().Log(LogLevel::Debug,   std::source_location::current(), __VA_ARGS__)
 
-#else // リリースビルドの場合
+#else 
 
     // マクロを「何もしない」式に置き換える
 #define LOG_INFO(...)    ((void)0)
 #define LOG_WARN(...)    ((void)0)
-// Errorログは製品版でも残したい場合が多いので、これは有効にしておくのが一般的
 #define LOG_ERROR(...)   Logger::Instance().Log(LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
 #define LOG_DEBUG(...)   ((void)0)
 
