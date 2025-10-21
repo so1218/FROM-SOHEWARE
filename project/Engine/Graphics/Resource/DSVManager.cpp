@@ -1,7 +1,11 @@
 #include "DSVManager.h"
+#include "Logger.h"
 
 Microsoft::WRL::ComPtr <ID3D12Resource> DSVManager::CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height)
 {
+    LOG_INFO("\n-------------------- DSVManager::CreateDepthStencilTextureResource Start --------------------");
+    LOG_INFO("Attempting to create Depth Stencil Texture: Width={}, Height={}", width, height);
+
     // 生成するResourceの生成
     D3D12_RESOURCE_DESC resourceDesc{};
     resourceDesc.Width = width;// Textureの幅
@@ -31,13 +35,25 @@ Microsoft::WRL::ComPtr <ID3D12Resource> DSVManager::CreateDepthStencilTextureRes
         D3D12_RESOURCE_STATE_DEPTH_WRITE,// 深度値を書き込む状態にしておく
         &depthClearValue,// Clear最適値,
         IID_PPV_ARGS(&resource));
-    assert(SUCCEEDED(hr));
+
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create committed resource for Depth Stencil Texture. HRESULT: {:#x}", hr);
+        LOG_ERROR("-------------------- DSVManager::CreateDepthStencilTextureResource Failed --------------------\n");
+        assert(SUCCEEDED(hr)); 
+        return nullptr; 
+    }
+
+    LOG_INFO("Successfully created Depth Stencil Texture Resource.");
+    LOG_INFO("-------------------- DSVManager::CreateDepthStencilTextureResource End ----------------------\n");
 
     return resource;
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DSVManager::CreateDSVHeapAndView(ID3D12Device* device,
-    ID3D12Resource* depthResource) {
+    ID3D12Resource* depthResource) 
+{
+    LOG_INFO("\n-------------------- DSVManager::CreateDSVHeapAndView Start --------------------");
 
     // DSV Heap の作成
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
@@ -47,12 +63,14 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DSVManager::CreateDSVHeapAndView(ID
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
     HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&dsvHeap));
-    if (FAILED(hr)) {
-        OutputDebugStringA("DescriptorHeap 作成に失敗しました\n");
-        return nullptr;
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create DSV Descriptor Heap. HRESULT: {:#x}", hr);
+        LOG_ERROR("-------------------- DSVManager::CreateDSVHeapAndView Failed (Heap) --------------------\n");
+
+        assert(SUCCEEDED(hr)); 
+        return nullptr; 
     }
-    
-    assert(SUCCEEDED(hr));
 
     // DSV の作成
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -61,6 +79,9 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DSVManager::CreateDSVHeapAndView(ID
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
     device->CreateDepthStencilView(depthResource, &dsvDesc, dsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+    LOG_INFO("Successfully created DSV Heap and View.");
+    LOG_INFO("-------------------- DSVManager::CreateDSVHeapAndView End ----------------------\n");
 
     return dsvHeap;
 }
