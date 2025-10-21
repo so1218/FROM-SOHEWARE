@@ -34,6 +34,7 @@ public:
 
     uint32_t textureHandle_;
     uint32_t color_;
+    MaterialHandle materialHandle_;
 
     bool isFinished_ = false;      // 再生が終了したか
 };

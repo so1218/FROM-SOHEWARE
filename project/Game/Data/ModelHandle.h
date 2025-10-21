@@ -39,7 +39,7 @@ class ModelHandle
 public:
     ~ModelHandle();
     static void Initialize(Engine* engine);
-    static std::unique_ptr<ModelData> Get(ModelID id);
+    static ModelData* Get(ModelID id);
 
 private:
     static std::array<std::unique_ptr<ModelData>, static_cast<size_t>(ModelID::count)> modelHandles_;

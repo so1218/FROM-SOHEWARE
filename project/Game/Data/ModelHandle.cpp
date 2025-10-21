@@ -36,18 +36,8 @@ void ModelHandle::Initialize(Engine* engine)
 }
 
 
-std::unique_ptr<ModelData> ModelHandle::Get(ModelID id)
+ModelData* ModelHandle::Get(ModelID id)
 {
     assert(initialized_);
-
-    const char* path = modelDefinitions_[static_cast<size_t>(id)].path;
-
-    // 毎回新しく読み込む
-    ModelLoader loader;
-    std::unique_ptr<ModelData> modelData = std::make_unique<ModelData>(loader.LoadModel(path));
-
-    // 新しいマテリアルを割り当て（共有しない）
-    modelData->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
-
-    return modelData;
+    return modelHandles_[static_cast<size_t>(id)].get();
 }

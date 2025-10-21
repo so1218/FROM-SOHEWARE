@@ -14,12 +14,12 @@
 
 class Engine;
 
-class Model 
+class Model
 {
 public:
-    Model(Engine* engine, Camera* camera, std::unique_ptr<ModelData> modelData);
+    Model(Engine* engine, Camera* camera, ModelData* modelData);
+
     void Draw();
-    void DrawWithUV();
 
     // セッター
     void SetWorldTransform(const WorldTransform& transform);
@@ -33,7 +33,8 @@ public:
     WorldTransform& GetUVTransform() { return uvTransform_; };
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
-    std::unique_ptr<ModelData> modelData_;
+    uint32_t GetColor() const { return color_; }
+
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -41,8 +42,9 @@ private:
     WorldTransform transform_;
     WorldTransform uvTransform_;
 
-    uint32_t textureHandle_;
-    uint32_t color_;
+    uint32_t textureHandle_ = 0;
+    uint32_t color_ = 0xFFFFFFFF;
 
-   
+    ModelData* modelData_;
+    MaterialHandle materialHandle_;
 };

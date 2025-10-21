@@ -24,6 +24,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
     sceneManager_.RequestSceneChange(SceneID::Sample);
 
     modelDataGrid_ = ModelHandle::Get(ModelID::field);
+    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
     worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 

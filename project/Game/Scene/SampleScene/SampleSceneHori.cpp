@@ -22,8 +22,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animationShurimp_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
-        *ModelHandle::Get(ModelID::shrimp),
-        AnimationHandle::Get(AnimationID::shrimp)
+        *ModelHandle::Get(ModelID::walk),
+        AnimationHandle::Get(AnimationID::walk)
     );
     animationSneakWalk_ = std::make_unique<AnimationModel>(
         engine_,
