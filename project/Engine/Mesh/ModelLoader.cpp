@@ -37,11 +37,8 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     }
 
     LoadMaterials(scene, modelData, directoryPath);
-    LOG_DEBUG("Reading node hierarchy...");
 	modelData.rootNode = ReadNode(scene->mRootNode);
-    LOG_DEBUG("Node hierarchy read successfully.");
 
-    LOG_DEBUG("Processing {} meshes...", scene->mNumMeshes);
     for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
         aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -59,8 +56,7 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
         assert(mesh->HasTextureCoords(0)); // Texcoordが無いMeshは非対応
         ProcessMesh(mesh, scene, modelData, isGLTF);
     }
-    LOG_DEBUG("Finished processing meshes.");
-
+   
     LOG_INFO("Model loaded successfully: {}", filePath);
     LOG_INFO("-------------------- ModelLoader::LoadModel End ----------------------\n");
 
@@ -97,13 +93,11 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
 
     bool isGLTF = IsGLTFFile(filePath);
 
-    LOG_DEBUG("Processing {} meshes as separate model parts...", scene->mNumMeshes);
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[i];
         ModelData modelData;
 
-        LOG_DEBUG("Processing mesh index {} ('{}')...", i, mesh->mName.C_Str());
         ProcessMesh(mesh, scene, modelData, isGLTF);
 
         if (mesh->mMaterialIndex >= 0)
@@ -116,13 +110,8 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
                 std::filesystem::path fullTexturePath = path.parent_path() / texturePath.C_Str();
                 modelData.material.textureFilePath = fullTexturePath.string();
 
-                LOG_DEBUG("Loading texture for mesh {}: {}", i, modelData.material.textureFilePath);
                 // ここでテクスチャをロードし、ハンドルを取得する
                 modelData.material.textureHandle = engine->LoadTexture(fullTexturePath.string());
-            }
-            else
-            {
-                LOG_DEBUG("Mesh {} has material but no diffuse texture found.", i);
             }
         }
 
@@ -253,8 +242,6 @@ bool ModelLoader::IsGLTFFile(const std::string& path)
 
 Node ModelLoader::ReadNode(aiNode* node)
 {
-    LOG_DEBUG("    Reading Node: '{}'", node->mName.C_Str());
-
     Node result;
 
     // Assimpの変換行列からスケール、回転(クォータニオン)、平行移動を抽出
@@ -287,6 +274,5 @@ Node ModelLoader::ReadNode(aiNode* node)
         result.children[childIndex] = ReadNode(node->mChildren[childIndex]);
     }
 
-    LOG_DEBUG("    Finished Node: '{}'", result.name);
     return result;
 }

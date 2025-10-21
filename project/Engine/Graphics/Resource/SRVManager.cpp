@@ -32,9 +32,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
     srvHandleCPU_.ptr += descriptorSizeSRV * index;
     srvHandleGPU_.ptr += descriptorSizeSRV * index;
 
-    LOG_DEBUG("  -> SRV CPU Handle: {:#x}", srvHandleCPU_.ptr);
-    LOG_DEBUG("  -> SRV GPU Handle: {:#x}", srvHandleGPU_.ptr);
-
     // SRVの生成
     device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
 
@@ -70,9 +67,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::CreateTexture2DArraySRV(
     srvHandleGPU_ = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
     srvHandleCPU_.ptr += descriptorSizeSRV * index;
     srvHandleGPU_.ptr += descriptorSizeSRV * index;
-
-    LOG_DEBUG("  -> SRV CPU Handle: {:#x}", srvHandleCPU_.ptr);
-    LOG_DEBUG("  -> SRV GPU Handle: {:#x}", srvHandleGPU_.ptr);
 
     // SRV作成
     device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
