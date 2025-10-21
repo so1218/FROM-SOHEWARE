@@ -12,6 +12,7 @@ public:
 
     // Emitterの位置設定
     void SetPosition(const Vector3& position) { position_ = position; }
+    void SetTargetToFollow(WorldTransform* target, const Vector3& offset);
 
     void Play(); // エミッターの再生を開始/リスタート
     void Stop(); // エミッターの再生を停止
@@ -25,6 +26,8 @@ public:
     bool looping_;
     bool isPlaying_ = false;  // 現在再生中か
     float elapsedTime_ = 0.0f;// 再生開始からの経過時間
+    WorldTransform* targetToFollow_ = nullptr;
+    Vector3 followOffset_ = {};
 
 	std::string presetName_ = "Emitter";
 

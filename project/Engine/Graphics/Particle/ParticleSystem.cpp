@@ -255,6 +255,17 @@ void ParticleSystem::Update()
 
 void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 {
+    const std::string& name = emitter->presetName_;
+
+    // 同名エミッターが存在するなら置き換えor無視
+    auto it = namedEmitters_.find(name);
+    if (it != namedEmitters_.end())
+    {
+        // 同名のエミッターは既に存在
+        return;
+    }
+
+    namedEmitters_[name] = emitter.get();
     emitters_.push_back(std::move(emitter));
 }
 

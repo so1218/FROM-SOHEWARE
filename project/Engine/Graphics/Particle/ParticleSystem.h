@@ -45,6 +45,7 @@ public:
     std::vector<ParticleState> particles_;
     // プリセット名(string)をキーとして、定義(ParticleDefinition)をマッピング
     std::map<std::string, ParticleDefinition> definitions_;
+    std::unordered_map<std::string, ParticleEmitter*> namedEmitters_;
 };
 
 
