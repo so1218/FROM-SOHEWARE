@@ -2,6 +2,7 @@
 
 #include "AnimationData.h" 
 #include "Engine.h"
+#include "Easing.h"
 
 class AnimationModel
 {
@@ -18,6 +19,8 @@ public:
     // アニメーションの状態をリセット
     void ResetAnimation();
 
+    void SetEasing(EasingType type) { easing_.SetEasing(type); }
+
     // トランスフォームへの参照を取得
     WorldTransform& GetTransform() { return transform_; }
 
@@ -27,6 +30,7 @@ public:
 
     AnimatedModelData animeModelData_;
     WorldTransform transform_;
+    WorldTransform uvTransform_;
 
     Skeleton skeleton_;
     SkinCluster skinCluster_;
@@ -37,4 +41,5 @@ public:
     MaterialHandle materialHandle_;
 
     bool isFinished_ = false;      // 再生が終了したか
+    Easing easing_;
 };

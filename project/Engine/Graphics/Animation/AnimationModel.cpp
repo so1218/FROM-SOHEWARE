@@ -34,24 +34,33 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 
     // デルタタイムに速度を乗算してアニメーション時間を進める
     animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speed;
+    float linearT = 0.0f;
 
+    if (animeModelData_.animation.duration > 0.0f)
+    {
+        linearT = animationTime_ / animeModelData_.animation.duration;
+    }
     // ループするかどうかで時間を調整
     if (isLoop)
     {
         animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
+        linearT = fmod(linearT, 1.0f);
     }
     else
     {
-        if (animationTime_ >= animeModelData_.animation.duration)
+        if (linearT >= 1.0f)
         {
             // アニメーションの終端で時間を固定し、終了フラグを立てる
+            linearT = 1.0f;
             animationTime_ = animeModelData_.animation.duration;
             isFinished_ = true;
         }
     }
+    float easedT = easing_.Evaluate(linearT);
+    float easedAnimationTime = easedT * animeModelData_.animation.duration;
 
     // アニメーションを適用
-    ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
+    ApplyAnimation(skeleton_, animeModelData_.animation, easedAnimationTime);
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
@@ -68,4 +77,5 @@ void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
+    easing_.InitEasing();
 }

@@ -108,6 +108,16 @@ void Input::Update()
     UpdateController();
 }
 
+
+void Input::Finalize()
+{
+    // 全てのコントローラーの振動を停止する
+    for (int i = 0; i < 4; ++i)
+    {
+        VibrateController(i, 0.0f, 0.0f);
+    }
+}
+
 void Input::UpdateController()
 {
     for (int i = 0; i < 4; ++i)

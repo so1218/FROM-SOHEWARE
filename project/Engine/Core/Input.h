@@ -52,7 +52,8 @@ public:
     };
 
     void Initialize(HINSTANCE hInstance, HWND hwnd);
-    void Update(); // 入力状態の更新
+    void Update();
+    void Finalize();
 
     // マウス関連
     int GetMouseWheelDelta();

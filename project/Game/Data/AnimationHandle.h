@@ -32,7 +32,7 @@ private:
             { AnimationID::sneakWalk,       "Resources/models/animated/sneakWalk2.gltf" },
             { AnimationID::walk,       "Resources/models/animated/walk.gltf" },
             { AnimationID::ryu,     "Resources/models/animated/animatedRyu.gltf" },
-            { AnimationID::shrimp,     "Resources/models/animated/Shrimp_03.gltf" },
+            { AnimationID::shrimp,     "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
         }
     };
 };

@@ -169,5 +169,6 @@ void Game::DebugDraw()
 
 void Game::Finalize()
 {
+    Input::GetInstance().Finalize();
     AudioManager::GetInstance().Finalize();
 }

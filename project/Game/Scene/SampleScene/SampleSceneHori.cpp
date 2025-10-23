@@ -35,13 +35,14 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
         engine_,
         camera_,
         *ModelHandle::Get(ModelID::ryu),
-        AnimationHandle::Get(AnimationID::ryu)
+        AnimationHandle::Get(AnimationID::shrimp)
     );
     animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
     animationRyu_->GetTransform().SetTranslation(Vector3(-5, 0, 0));
+    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::monsterBall);
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));

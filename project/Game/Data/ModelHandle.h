@@ -64,7 +64,7 @@ private:
             // プレイヤー関連
             { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },
             { ModelID::shrimp,  "Resources/models/animated/Shrimp_03.gltf" },
-            { ModelID::ryu,  "Resources/models/animated/animatedRyu.gltf" },
+            { ModelID::ryu,  "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },
