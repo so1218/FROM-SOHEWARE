@@ -41,7 +41,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.isArtGrid = false;
     defaultSettings.gTime = 0.0f;
 
-    materialSettings_ = defaultSettings;
+   /* materialSettings_ = defaultSettings;*/
 
     memcpy(handle.materialData, &defaultSettings, sizeof(Material));
 

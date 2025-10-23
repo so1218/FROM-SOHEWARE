@@ -1,4 +1,6 @@
 #include "Input.h"
+#include "TimeManager.h"
+#include "MathUtils.h"
 
 #define STICK_THRESHOLD 0x4000
 
@@ -27,6 +29,7 @@ Input::Input()
     for (int i = 0; i < 4; i++)
     {
         controllerConnected_[i] = false;
+        vibrationTimers[i] = 0;
         ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
         ZeroMemory(&prevControllerStates_[i], sizeof(XINPUT_STATE));
     }
@@ -117,6 +120,22 @@ void Input::UpdateController()
 
         // 接続状態を更新
         controllerConnected_[i] = (result == ERROR_SUCCESS);
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        // タイマーが作動中の場合
+        if (vibrationTimers[i] > 0.0f)
+        {
+            vibrationTimers[i] -= TimeManager::GetInstance()->GetDeltaTime(); // 経過時間を引く
+
+            // タイマーが0以下になったら
+            if (vibrationTimers[i] <= 0.0f)
+            {
+                vibrationTimers[i] = 0.0f;
+                VibrateController(i, 0, 0); // 振動を停止
+            }
+        }
     }
 }
 
@@ -302,14 +321,32 @@ bool Input::IsTriggerOnStick(int controllerId, StickType stickType)
     return false;
 }
 
-void Input::VibrateController(int controllerId, WORD leftMotorSpeed, WORD rightMotorSpeed)
+void Input::VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed)
 {
-    if (controllerId < 0 ||
-        controllerId >= 4) return;
+    if (controllerId < 0 || controllerId >= 4) return;
+
+    // 値を0.0f～1.0f にクランプ
+    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
 
     XINPUT_VIBRATION vibration = { 0 };
-    vibration.wLeftMotorSpeed = leftMotorSpeed;
-    vibration.wRightMotorSpeed = rightMotorSpeed;
+    vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotorSpeed * 65535.0f);
+    vibration.wRightMotorSpeed = static_cast<WORD>(rightMotorSpeed * 65535.0f);
 
     XInputSetState(controllerId, &vibration);
+}
+
+void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds)
+{
+    if (controllerId < 0 || controllerId >= 4) return;
+
+    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
+
+
+    // 振動を開始
+    VibrateController(controllerId, leftMotorSpeed, rightMotorSpeed);
+
+    // タイマーをセット
+    vibrationTimers[controllerId] = durationSeconds;
 }

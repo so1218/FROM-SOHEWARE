@@ -86,7 +86,8 @@ public:
     bool IsUpOnStick(int controllerId, StickType stickType);
     bool IsDownOnStick(int controllerId, StickType stickType);
     bool IsTriggerOnStick(int controllerId, StickType stickType);
-    void VibrateController(int controllerId, WORD leftMotor, WORD rightMotor);
+    void VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed);
+    void StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds);
     void UpdateController();
 
     const DIMOUSESTATE& GetMouseState() { return mouseState_; }
@@ -115,5 +116,6 @@ private:
     XINPUT_STATE controllerStates_[4];
     XINPUT_STATE prevControllerStates_[4];
     bool controllerConnected_[4];
+    float vibrationTimers[4];
 };
 

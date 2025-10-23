@@ -127,6 +127,6 @@ private:
     // イージング関数を取得
     float (*GetEasingFunction(EasingType easingType))(const float&);
     float (*easingFunc)(const float&);
-    EasingType easingType_ = EasingType::EaseInOutSine;
+    EasingType easingType_ = EasingType::EaseLinear;
 };
 
