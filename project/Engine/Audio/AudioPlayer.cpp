@@ -82,33 +82,68 @@ void AudioPlayer::StopAll()
     activeVoices_.clear();
 }
 
+bool AudioPlayer::IsPlaying(int instanceID)
+{
+    // IDが無効、またはリストの範囲外
+    if (instanceID < 0 || instanceID >= (int)activeVoices_.size()) {
+        return false;
+    }
+
+    auto& voiceInfo = activeVoices_[instanceID];
+
+    // Stop() で voiceInfo.voice が nullptr にされている
+    if (!voiceInfo.voice) {
+        return false;
+    }
+
+    // ボイスの状態を確認
+    XAUDIO2_VOICE_STATE state = {};
+    voiceInfo.voice->GetState(&state);
+
+    // バッファがキューに残っていれば再生中
+    return (state.BuffersQueued > 0);
+}
+
 int AudioPlayer::PlayUnique(int audioID, bool loop, uint32_t volume)
 {
     // すでに再生中なら何もしない
-    if (currentBGMInstanceID_ >= 0 && currentBGMInstanceID_ < (int)activeVoices_.size())
+    if (uniqueInstances_.count(audioID))
     {
-        auto& voiceInfo = activeVoices_[currentBGMInstanceID_];
-        if (voiceInfo.voice) {
-            XAUDIO2_VOICE_STATE state = {};
-            voiceInfo.voice->GetState(&state);
-            if (state.BuffersQueued > 0) 
-            {
-                // 再生中なので再度再生しない
-                return currentBGMInstanceID_;
-            }
+        int instanceID = uniqueInstances_[audioID];
+
+        // 追跡中のインスタンスがまだ再生中か確認
+        if (IsPlaying(instanceID))
+        {
+            // まだ再生中なので、新しい音は再生せず、既存のIDを返す
+            return instanceID;
+        }
+        else
+        {
+            // 再生は終わっていたので、マップから削除（再度再生できるようにする）
+            uniqueInstances_.erase(audioID);
         }
     }
 
-    // 新しく再生
+    // 新しく再生する
     int newInstanceID = Play(audioID, loop, volume);
-    currentBGMInstanceID_ = newInstanceID;
+    if (newInstanceID >= 0) {
+        // 再生に成功したら、新しいInstanceIDをマップに登録
+        uniqueInstances_[audioID] = newInstanceID;
+    }
     return newInstanceID;
 }
 
-void AudioPlayer::StopUnique()
+void AudioPlayer::StopUnique(int audioID)
 {
-    if (currentBGMInstanceID_ >= 0) {
-        Stop(currentBGMInstanceID_);
-        currentBGMInstanceID_ = -1;
+    // この audioID がユニーク再生として追跡されているか確認
+    if (uniqueInstances_.count(audioID))
+    {
+        int instanceID = uniqueInstances_[audioID];
+
+        // 通常の Stop() を使って停止
+        Stop(instanceID);
+
+        // 停止したのでマップから削除
+        uniqueInstances_.erase(audioID);
     }
 }
