@@ -90,3 +90,9 @@ void ParticleEmitter::Stop()
 {
     isPlaying_ = false;
 }
+
+void ParticleEmitter::Destroy()
+{
+    isDead_ = true;
+    Stop();
+}

@@ -121,9 +121,27 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 void ParticleSystem::Update()
 {
     // エミッターを更新して、新しいパーティクルを生成
-    for (auto& emitter : emitters_)
+    auto it = emitters_.begin();
+    while (it != emitters_.end())
     {
+        auto& emitter = *it;
+        if (emitter->isDead_)
+        {
+            std::string name = emitter->presetName_;
+
+            it = emitters_.erase(it);
+
+            auto map_it = namedEmitters_.find(name);
+
+            if (map_it != namedEmitters_.end())
+            {
+                namedEmitters_.erase(map_it);
+            }
+
+            continue;
+        }
         emitter->Update(*this);
+        ++it;
     }
 
     // フレームの経過時間を取得
@@ -137,7 +155,7 @@ void ParticleSystem::Update()
 
         // 寿命の処理
         particleState.age += deltaTime;
-        if (particleState.age >= particleState.lifetime) 
+        if (particleState.age >= particleState.lifetime)
         {
             partilce = particles_.erase(partilce); // 寿命が尽きたら消去
             continue;
@@ -213,19 +231,19 @@ void ParticleSystem::Update()
         particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
 
         // ColorOverLifetime Module: 色を更新
-        if (config.colorOverLifetime.enabled) 
+        if (config.colorOverLifetime.enabled)
         {
             particleState.color = config.colorOverLifetime.Evaluate(t);
         }
 
         // SizeOverLifetime Module: スケールを更新
-        if (config.sizeOverLifetime.enabled) 
+        if (config.sizeOverLifetime.enabled)
         {
             particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
         }
 
         // TextureSheetAnimation Module: テクスチャのUVを更新
-        if (config.textureSheet.enabled) 
+        if (config.textureSheet.enabled)
         {
             particleState.textureHandle = config.textureSheet.textureHandle;
             // UV座標を計算
@@ -247,7 +265,7 @@ void ParticleSystem::Update()
             *particle.transform,
             ColorVectorToUint32(particle.color),
             particle.textureHandle,
-            particle.transform->rotation_.z,      
+            particle.transform->rotation_.z,
             particle.config.rotation.isBillboard
         );
     }
@@ -257,15 +275,8 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 {
     const std::string& name = emitter->presetName_;
 
-    // 同名エミッターが存在するなら置き換えor無視
-    auto it = namedEmitters_.find(name);
-    if (it != namedEmitters_.end())
-    {
-        // 同名のエミッターは既に存在
-        return;
-    }
-
     namedEmitters_[name] = emitter.get();
+
     emitters_.push_back(std::move(emitter));
 }
 

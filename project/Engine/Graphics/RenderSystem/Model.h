@@ -34,7 +34,7 @@ public:
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
     uint32_t GetColor() const { return color_; }
-
+    MaterialHandle materialHandle_;
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -46,5 +46,5 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
 
     ModelData* modelData_;
-    MaterialHandle materialHandle_;
+
 };
