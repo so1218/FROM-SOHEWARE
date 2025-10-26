@@ -132,8 +132,16 @@ struct PhysicsModule
 struct RotationOverLifetimeModule
 {
     bool enabled = false;
-    bool randomStartRotation = true;// 開始時の角度をランダムにするか
-    float angularVelocity = 5.0f; // 1フレームあたりの回転角度（度数法）
+    bool isBillboard = true;
+     // isBillboardがtrueの場合
+    float angularVelocity2D = 5.0f; // 1秒あたりの回転角度（度数法）
+
+    // isBillboardがfalseの場合
+    Vector3 angularVelocity3D = { 0.0f, 0.0f, 0.0f };
+    // 生成時の向きをオイラー角(度数法)で指定
+    Vector3 orientation3D = { 0.0f, 0.0f, 0.0f };
+
+    bool randomStartRotation = true;
 };
 
 struct ColorOverLifetimeModule

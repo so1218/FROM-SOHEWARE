@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseScene.h"
 #include "Engine.h"
+#include "Sprite.h"
 
 class TitleScene : public BaseScene
 {
@@ -25,4 +26,7 @@ public:
     // メンバー変数
     Engine* engine_;
     Camera* camera_;
+
+
+    std::unique_ptr<Sprite> sprite_;
 };

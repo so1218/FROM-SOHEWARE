@@ -102,7 +102,7 @@ private:
         {
             { white1x1, "Resources/images/white1x1.png" },
             { uvChecker,"Resources/images/uvChecker.png" },
-            { monsterBall,   "Resources/images/monsterBall.png" },
+            { monsterBall,   "Resources/images/Shrimp_TestTexture.png" },
             { skydome,   "Resources/images/sky_sphere.png" },
 
 			// パーティクル

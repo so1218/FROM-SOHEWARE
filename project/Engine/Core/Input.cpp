@@ -1,25 +1,39 @@
 #include "Input.h"
+#include "TimeManager.h"
+#include "MathUtils.h"
 
 #define STICK_THRESHOLD 0x4000
 
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "Xinput.lib")
 
-IDirectInput8* Input::directInput_ = nullptr;
-IDirectInputDevice8* Input::keyboard_ = nullptr;
-BYTE Input::keys_[256] = {};
-BYTE Input::preKeys_[256] = {};
-IDirectInputDevice8* Input::mouse_ = nullptr;
-DIMOUSESTATE Input::mouseState_ = {};
-DIMOUSESTATE Input::preMouseState_ = {};
-HWND Input::hwnd_ = nullptr;
-POINT Input::mousePosition_ = { 0, 0 };
+Input& Input::GetInstance()
+{
+    static Input instance;
+    return instance;
+}
 
-XINPUT_STATE Input::controllerStates_[4] = {};
-XINPUT_STATE Input::prevControllerStates_[4] = {};
-bool Input::controllerConnected_[4] = {};
+Input::Input() 
+{
+    directInput_ = nullptr;
+    keyboard_ = nullptr;
+    mouse_ = nullptr;
+    hwnd_ = nullptr;
 
-Input::Input() {}
+    ZeroMemory(keys_, sizeof(keys_));
+    ZeroMemory(preKeys_, sizeof(preKeys_));
+    ZeroMemory(&mouseState_, sizeof(mouseState_));
+    ZeroMemory(&preMouseState_, sizeof(preMouseState_));
+    ZeroMemory(&mousePosition_, sizeof(mousePosition_));
+
+    for (int i = 0; i < 4; i++)
+    {
+        controllerConnected_[i] = false;
+        vibrationTimers[i] = 0;
+        ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
+        ZeroMemory(&prevControllerStates_[i], sizeof(XINPUT_STATE));
+    }
+}
 
 Input::~Input() 
 {
@@ -39,73 +53,99 @@ Input::~Input()
     }
 }
 
-void Input::Initialize(HINSTANCE hInstance, HWND windowHandle)
+void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
-    HRESULT result;
+    hwnd_ = hwnd;
 
     // DirectInput
-    result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
-        (void**)&directInput_, NULL);
-    assert(SUCCEEDED(result));
+    HRESULT hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput_, nullptr);
+    assert(SUCCEEDED(hr));
 
     // キーボード
-    result = directInput_->CreateDevice(GUID_SysKeyboard, &keyboard_, NULL);
-    assert(SUCCEEDED(result));
+    hr = directInput_->CreateDevice(GUID_SysKeyboard, &keyboard_, NULL);
+    assert(SUCCEEDED(hr));
 
-    result = keyboard_->SetDataFormat(&c_dfDIKeyboard);
-    assert(SUCCEEDED(result));
+    hr = keyboard_->SetDataFormat(&c_dfDIKeyboard);
+    assert(SUCCEEDED(hr));
 
-    result = keyboard_->SetCooperativeLevel(windowHandle, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-    assert(SUCCEEDED(result));
+    hr = keyboard_->SetCooperativeLevel(hwnd_, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+    assert(SUCCEEDED(hr));
 
     // マウス
-    result = directInput_->CreateDevice(GUID_SysMouse, &mouse_, NULL);
-    assert(SUCCEEDED(result));
+    hr = directInput_->CreateDevice(GUID_SysMouse, &mouse_, NULL);
+    assert(SUCCEEDED(hr));
 
-    result = mouse_->SetDataFormat(&c_dfDIMouse);
-    assert(SUCCEEDED(result));
+    hr = mouse_->SetDataFormat(&c_dfDIMouse);
+    assert(SUCCEEDED(hr));
 
-    result = mouse_->SetCooperativeLevel(windowHandle, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
-    assert(SUCCEEDED(result));
-
-    hwnd_ = windowHandle;
-
-    // コントローラーも初期化
-    for (int i = 0; i < 4; i++) {
-        controllerConnected_[i] = false;
-        ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
-        ZeroMemory(&prevControllerStates_[i], sizeof(XINPUT_STATE));
-    }
+    hr = mouse_->SetCooperativeLevel(hwnd_, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+    assert(SUCCEEDED(hr));
 }
 
 void Input::Update()
 {
+    // 前回の状態を保存
     memcpy(preKeys_, keys_, sizeof(keys_));
-    memcpy(&preMouseState_, &mouseState_, sizeof(mouseState_));
-    memcpy(prevControllerStates_, controllerStates_, sizeof(controllerStates_));
-    keyboard_->Acquire();
-    mouse_->Acquire();
-    keyboard_->GetDeviceState(sizeof(keys_), keys_);
-    mouse_->GetDeviceState(sizeof(mouseState_), &mouseState_);
-    // マウス座標更新
-    POINT pt;
-    GetCursorPos(&pt); // 画面座標で取得
-    ScreenToClient(hwnd_, &pt); // クライアント座標に変換
-    mousePosition_ = pt;
-    // コントローラーも取得
+    preMouseState_ = mouseState_; // structは直接代入でOK
+
+    // デバイスの制御を取得
+    if (keyboard_) 
+    {
+        keyboard_->Acquire();
+        keyboard_->GetDeviceState(sizeof(keys_), keys_);
+    }
+    if (mouse_) 
+    {
+        mouse_->Acquire();
+        mouse_->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState_);
+    }
+
+    // マウスカーソル位置の更新
+    GetCursorPos(&mousePosition_);
+    ScreenToClient(hwnd_, &mousePosition_);
+
+    // コントローラーの状態を更新
     UpdateController();
+}
+
+
+void Input::Finalize()
+{
+    // 全てのコントローラーの振動を停止する
+    for (int i = 0; i < 4; ++i)
+    {
+        VibrateController(i, 0.0f, 0.0f);
+    }
 }
 
 void Input::UpdateController()
 {
-    // コントローラー
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; ++i)
     {
-        ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
+        // 現在の状態を前回の状態として保存
+        prevControllerStates_[i] = controllerStates_[i];
 
-        DWORD res = XInputGetState(i, &controllerStates_[i]);
+        // 新しい状態を取得
+        DWORD result = XInputGetState(i, &controllerStates_[i]);
 
-        controllerConnected_[i] = (res == ERROR_SUCCESS);
+        // 接続状態を更新
+        controllerConnected_[i] = (result == ERROR_SUCCESS);
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        // タイマーが作動中の場合
+        if (vibrationTimers[i] > 0.0f)
+        {
+            vibrationTimers[i] -= TimeManager::GetInstance()->GetDeltaTime(); // 経過時間を引く
+
+            // タイマーが0以下になったら
+            if (vibrationTimers[i] <= 0.0f)
+            {
+                vibrationTimers[i] = 0.0f;
+                VibrateController(i, 0, 0); // 振動を停止
+            }
+        }
     }
 }
 
@@ -135,19 +175,19 @@ int Input::GetMouseY()
 
 bool Input::IsKeyTriggered(BYTE key)
 {
-    return keys_[key] && !preKeys_[key];
+    return (keys_[key] & 0x80) && !(preKeys_[key] & 0x80);
 }
 bool Input::IsKeyPressed(BYTE key)
 {
-    return keys_[key];
+    return keys_[key] & 0x80;
 }
 bool Input::IsKeyReleased(BYTE key)
 {
-    return !keys_[key] && preKeys_[key];
+    return !(keys_[key] & 0x80) && (preKeys_[key] & 0x80);
 }
 bool Input::IsKeyUp(BYTE key)
 {
-    return !keys_[key];
+    return !(keys_[key] & 0x80);
 }
 bool Input::IsMouseButtonTriggered(DWORD button)
 {
@@ -291,14 +331,32 @@ bool Input::IsTriggerOnStick(int controllerId, StickType stickType)
     return false;
 }
 
-void Input::VibrateController(int controllerId, WORD leftMotorSpeed, WORD rightMotorSpeed)
+void Input::VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed)
 {
-    if (controllerId < 0 ||
-        controllerId >= 4) return;
+    if (controllerId < 0 || controllerId >= 4) return;
+
+    // 値を0.0f～1.0f にクランプ
+    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
 
     XINPUT_VIBRATION vibration = { 0 };
-    vibration.wLeftMotorSpeed = leftMotorSpeed;
-    vibration.wRightMotorSpeed = rightMotorSpeed;
+    vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotorSpeed * 65535.0f);
+    vibration.wRightMotorSpeed = static_cast<WORD>(rightMotorSpeed * 65535.0f);
 
     XInputSetState(controllerId, &vibration);
+}
+
+void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds)
+{
+    if (controllerId < 0 || controllerId >= 4) return;
+
+    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
+
+
+    // 振動を開始
+    VibrateController(controllerId, leftMotorSpeed, rightMotorSpeed);
+
+    // タイマーをセット
+    vibrationTimers[controllerId] = durationSeconds;
 }

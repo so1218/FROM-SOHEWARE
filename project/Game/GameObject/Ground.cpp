@@ -8,7 +8,7 @@ void Ground::Initialize(Engine* engine, Camera* camera)
 {
 	engine_ = engine;
 	camera_ = camera;
-	modelData_ = ModelHandle::Get(ModelID::field);
+	/*modelData_ = ModelHandle::Get(ModelID::field);*/
 	// スケールと位置の調整
 	worldTransform_.scale_ = { 1000.0f, 1.0f,1000.0f };
 	worldTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
@@ -33,7 +33,7 @@ void Ground::Update()
 // 描画処理
 void Ground::Draw()
 {
-	engine_->DrawModel(worldTransform_, *camera_, *modelData_, TextureHandle::Get(TextureID::white1x1),0x777777ff);
+	/*engine_->DrawModel(worldTransform_, *camera_, *modelData_, TextureHandle::Get(TextureID::white1x1),0x777777ff);*/
 };
 
 // デバッグ描画処理

@@ -6,6 +6,7 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     : engine_(engine), camera_(camera)
 {
     animeModelData_.modelData = std::move(modelData);
+    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
     animeModelData_.animation = std::move(animation);
     skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
     skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(),
@@ -33,24 +34,33 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 
     // デルタタイムに速度を乗算してアニメーション時間を進める
     animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speed;
+    float linearT = 0.0f;
 
+    if (animeModelData_.animation.duration > 0.0f)
+    {
+        linearT = animationTime_ / animeModelData_.animation.duration;
+    }
     // ループするかどうかで時間を調整
     if (isLoop)
     {
         animationTime_ = fmod(animationTime_, animeModelData_.animation.duration);
+        linearT = fmod(linearT, 1.0f);
     }
     else
     {
-        if (animationTime_ >= animeModelData_.animation.duration)
+        if (linearT >= 1.0f)
         {
             // アニメーションの終端で時間を固定し、終了フラグを立てる
+            linearT = 1.0f;
             animationTime_ = animeModelData_.animation.duration;
             isFinished_ = true;
         }
     }
+    float easedT = easing_.Evaluate(linearT);
+    float easedAnimationTime = easedT * animeModelData_.animation.duration;
 
     // アニメーションを適用
-    ApplyAnimation(skeleton_, animeModelData_.animation, animationTime_);
+    ApplyAnimation(skeleton_, animeModelData_.animation, easedAnimationTime);
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
@@ -60,11 +70,12 @@ void AnimationModel::Draw()
     // ワールド変換行列の更新
     transform_.UpdateMatrix();
     // 描画関数
-    engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_);
+    engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
 }
 
 void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
+    easing_.InitEasing();
 }

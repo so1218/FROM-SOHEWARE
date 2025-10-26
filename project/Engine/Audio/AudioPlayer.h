@@ -8,7 +8,7 @@
 #include <vector>
 #include <functional>
 
-struct AudioInstance 
+struct AudioInstance
 {
     IXAudio2SourceVoice* voice = nullptr;
     int audioIndex = -1;
@@ -33,17 +33,18 @@ public:
     void Stop(int instanceID);
     void StopAll();
     int PlayUnique(int audioID, bool loop = true, uint32_t volume = 100);
-    void StopUnique();
+    void StopUnique(int audioID);
+    bool IsPlaying(int instanceID);
 
 private:
-    AudioPlayer() { /* 初期化 */ }
-    ~AudioPlayer() { /* 解放 */ }
+    AudioPlayer() {}
+    ~AudioPlayer() {}
 
     std::vector<AudioData> loadedAudios_;
     std::vector<AudioInstance> activeVoices_;
     IXAudio2* xAudio2_ = nullptr;
 
-    int currentBGMInstanceID_ = -1;
+    std::unordered_map<int, int> uniqueInstances_;
 };
 
 class VoiceCallback : public IXAudio2VoiceCallback

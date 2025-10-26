@@ -29,7 +29,7 @@ void GlobalVariables::Update()
 		// 感度設定メニュー
 		if (ImGui::BeginMenu("ドラッグの感度設定"))
 		{
-			ImGui::DragFloat("Sensitivity", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
+			ImGui::DragFloat("感度", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
 			ImGui::EndMenu();
 		}
 
@@ -535,13 +535,13 @@ void GlobalVariables::LoadFiles()
 		const std::filesystem::path& filePath = entry.path();
 		if (filePath.extension() != ".json") continue;
 
-		std::string filename = filePath.stem().string();  // 例: "Player.stage1"
+		std::string filename = filePath.stem().string(); 
 
 		// ドットがある場合、最初のドット以降はカット
 		size_t dotPos = filename.find('.');
 		if (dotPos != std::string::npos)
 		{
-			filename = filename.substr(0, dotPos);  // "Player.stage1" -> "Player"
+			filename = filename.substr(0, dotPos);  
 		}
 
 		LoadFile(filename);

@@ -60,11 +60,11 @@ Vector3 CalculatePenetrationVector(const AABB& a, const AABB& b)
 
 bool IsMouseHitObject(const Vector3& objectWorldPos, float radius, const Matrix4x4& viewProjection) 
 {
-    // 1. オブジェクトのワールド位置をクリップ座標に変換
+    // オブジェクトのワールド位置をクリップ座標に変換
     Vector4 worldPos = { objectWorldPos.x, objectWorldPos.y, objectWorldPos.z, 1.0f };
     Vector4 clipPos = viewProjection * worldPos;
 
-    // 2. w除算（NDC）
+    // w除算（NDC）
     if (clipPos.w == 0.0f) return false;
     Vector3 ndcPos = 
     {
@@ -73,14 +73,14 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius, const Matrix4
         clipPos.z / clipPos.w
     };
 
-    // 3. NDC → スクリーン座標へ変換
+    // NDC → スクリーン座標へ変換
     float screenX = (ndcPos.x + 1.0f) * 0.5f * kClientWidth;
     float screenY = (1.0f - ndcPos.y) * 0.5f * kClientHeight;
 
-    // 4. マウス位置取得
-    Vector2 mousePos = Input::GetMousePosition();
+    // マウス位置取得
+    Vector2 mousePos = Input::GetInstance().GetMousePosition();
 
-    // 5. マウス位置とオブジェクト位置（スクリーン座標）で距離を取って比較
+    // マウス位置とオブジェクト位置（スクリーン座標）で距離を取って比較
     float dx = mousePos.x - screenX;
     float dy = mousePos.y - screenY;
     float distanceSq = dx * dx + dy * dy;

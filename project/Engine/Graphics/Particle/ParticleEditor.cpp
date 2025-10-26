@@ -97,102 +97,118 @@ void ParticleEditor::ShowEditor()
 
         // 単一のコンボボックスでPresetを選択
         static int selectedPresetIdx = 0;
-        if (presetNames.empty()) {
-            ImGui::Text("No presets available.");
+        if (presetNames.empty())
+        {
+            ImGui::Text("利用可能なプリセットがありません。");
         }
         else
         {
             if (selectedPresetIdx >= presetNames.size()) {
                 selectedPresetIdx = 0;
             }
-            ImGui::Combo("Preset", &selectedPresetIdx, presetNames.data(), (int)presetNames.size());
+            ImGui::Combo("プリセット", &selectedPresetIdx, presetNames.data(), (int)presetNames.size());
 
             const std::string& selectedPresetName = presetNames[selectedPresetIdx];
             auto& definition = particleSystem_->definitions_[selectedPresetName];
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
 
-            if (ImGui::CollapsingHeader("Emitter Config"))
+            if (ImGui::CollapsingHeader("エミッター設定"))
             {
                 // 値が変更されたかを検出するためのフラグ
                 bool valueChanged = false;
 
                 // ImGuiの各ウィジェットが値を変更したら、valueChangedフラグを立てる
-                valueChanged |= ImGui::DragFloat3("Position", &emitterConfig.position.x, 0.1f);
+                valueChanged |= ImGui::DragFloat3("位置", &emitterConfig.position.x, 0.1f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat("Spawn Interval", &emitterConfig.spawnInterval, 0.01f, 0.01f, 10.0f);
+                valueChanged |= ImGui::DragFloat("発生間隔 (秒)", &emitterConfig.spawnInterval, 0.01f, 0.01f, 10.0f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat("Particle Lifetime", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
+                valueChanged |= ImGui::DragFloat("パーティクルの生存時間", &emitterConfig.lifetime, 0.01f, 0.0f, 10.0f);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragInt("Amount", &emitterConfig.amount, 1, 0);
-
+                valueChanged |= ImGui::DragInt("一度の発生数", &emitterConfig.amount, 1, 0);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat("Duration", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f s");
-                if (ImGui::IsItemHovered()) {
-                    ImGui::SetTooltip("Playback duration in seconds. -1 means infinite.");
+                valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f 秒");
+                if (ImGui::IsItemHovered()) 
+                {
+                    ImGui::SetTooltip("エミッターがパーティクルを放出し続ける時間\n-1で無限");
                 }
                 ImGui::Separator();
-                valueChanged |= ImGui::Checkbox("Looping", &emitterConfig.looping);
+                valueChanged |= ImGui::Checkbox("ループ", &emitterConfig.looping);
                 ImGui::Separator();
-                valueChanged |= ImGui::Checkbox("Play On Awake", &emitterConfig.playOnAwake);
+                valueChanged |= ImGui::Checkbox("生成時に再生", &emitterConfig.playOnAwake);
 
                 // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
-                if (valueChanged) {
+                if (valueChanged) 
+                {
                     ApplyEmitterConfigToLiveEmitters(selectedPresetName);
                 }
             }
 
-            if (ImGui::CollapsingHeader("Particle Config"))
+            if (ImGui::CollapsingHeader("パーティクル設定"))
             {
-                if (ImGui::TreeNode("Velocity Module"))
+                if (ImGui::TreeNode("初速モジュール"))
                 {
                     // config.velocityへの参照
                     auto& vel = config.velocity;
 
-                    ImGui::Checkbox("Enabled", &vel.enabled);
-                    ImGui::DragFloat("Speed", &vel.speed, 0.01f, 0.0f, 1000.0f);
-                    ImGui::Checkbox("Random Direction", &vel.randomDirection);
+                    ImGui::Checkbox("有効##Velocity", &vel.enabled);
+                    ImGui::DragFloat("速度", &vel.speed, 0.01f, 0.0f, 1000.0f);
+                    ImGui::Checkbox("ランダムな方向", &vel.randomDirection);
 
                     // randomDirectionがtrueのときだけangleRangeを表示
-                    if (vel.randomDirection) {
-                        ImGui::SliderFloat("Angle Range", &vel.angleRange, 0.0f, 360.0f, "%.0f度");
+                    if (vel.randomDirection)
+                    {
+                        ImGui::SliderFloat("拡散角度", &vel.angleRange, 0.0f, 360.0f, "%.0f 度");
                     }
 
                     // randomDirectionがfalseのときは固定方向、trueのときは中心方向として使う
-                    ImGui::DragFloat3("Direction", &vel.direction.x, 0.01f);
+                    ImGui::DragFloat3("放出方向", &vel.direction.x, 0.01f);
 
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
 
-                if (ImGui::TreeNode("Physics Module"))
+                if (ImGui::TreeNode("物理モジュール"))
                 {
                     auto& phys = config.physics; 
-                    ImGui::Checkbox("Enabled##Physics", &phys.enabled);
-                    ImGui::DragFloat3("Gravity", &phys.gravity.x, 0.1f);
-                    ImGui::DragFloat("Drag", &phys.drag, 0.001f, 0.0f, 1.0f); 
+                    ImGui::Checkbox("有効##Physics", &phys.enabled);
+                    ImGui::DragFloat3("重力", &phys.gravity.x, 0.1f);
+                    ImGui::DragFloat("空気抵抗", &phys.drag, 0.001f, 0.0f, 1.0f);
                     ImGui::TreePop();
                 }
 
                 ImGui::Separator();
-                if (ImGui::TreeNode("Rotation Over Lifetime Module"))
+                if (ImGui::TreeNode("回転モジュール"))
                 {
-                    auto& rot = config.rotation; 
-                    ImGui::Checkbox("Enabled##Rotation", &rot.enabled);
-                    ImGui::Checkbox("Random Start Rotation", &rot.randomStartRotation);
-                    ImGui::DragFloat("Angular Velocity", &rot.angularVelocity, 0.001f, 0.0f, 0.0f, "%.3f deg/frame");
+                    auto& rot = config.rotation;
+                    ImGui::Checkbox("有効##Rotation", &rot.enabled);
+                    ImGui::Separator();
+                    ImGui::Checkbox("ビルボード", &rot.isBillboard);
+                    ImGui::Separator();
+                    if (rot.isBillboard)
+                    {
+                        // ビルボードが有効な場合のUI
+                        ImGui::Checkbox("開始角度をランダムに", &rot.randomStartRotation);
+                        ImGui::DragFloat("回転速度 (2D)", &rot.angularVelocity2D, 1.0f, 0.0f, 0.0f, "%.1f 度/秒");
+                    }
+                    else
+                    {
+                        ImGui::DragFloat3("初期角度 (3D)", &rot.orientation3D.x, 1.0f, -360.0f, 360.0f, "%.1f 度");
+                        ImGui::DragFloat3("回転速度 (3D)", &rot.angularVelocity3D.x, 1.0f, 0.0f, 0.0f, "%.1f 度/秒");
+                    }
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
 
-                if (ImGui::TreeNode("Shape Module"))
+                if (ImGui::TreeNode("形状モジュール"))
                 {
                     auto& shape = config.shape; 
 
                     // 形状タイプを選択するコンボボックス
-                    const char* shapeTypes[] = { "Point", "Box", "Sphere" };
+                    const char* shapeTypes[] = { "点", "ボックス", "球" };
                     int currentShapeType = static_cast<int>(shape.type);
-                    if (ImGui::Combo("Shape Type", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes))) {
+                    if (ImGui::Combo("形状タイプ", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
+                    {
                         shape.type = static_cast<ShapeModule::Type>(currentShapeType);
                     }
                     ImGui::Separator();
@@ -201,15 +217,13 @@ void ParticleEditor::ShowEditor()
                     switch (shape.type)
                     {
                     case ShapeModule::Type::Box:
-                        ImGui::DragFloat3("Box Size", &shape.boxSize.x, 0.1f);
+                        ImGui::DragFloat3("ボックスのサイズ", &shape.boxSize.x, 0.1f);
                         break;
-
                     case ShapeModule::Type::Sphere:
-                        ImGui::DragFloat3("Radius", &shape.radius.x, 0.1f);
+                        ImGui::DragFloat3("半径", &shape.radius.x, 0.1f);
                         ImGui::Separator();
-                        ImGui::Checkbox("Emit from Edge", &shape.emitFromEdge);
+                        ImGui::Checkbox("縁から放出", &shape.emitFromEdge);
                         break;
-
                     case ShapeModule::Type::Point:
                         break;
                     }
@@ -220,11 +234,11 @@ void ParticleEditor::ShowEditor()
                 }
                 ImGui::Separator();
 
-                if (ImGui::TreeNode("Texture Sheet Module"))
+                if (ImGui::TreeNode("テクスチャシートモジュール"))
                 {
                     auto& texSheet = config.textureSheet; 
 
-                    ImGui::Checkbox("Enabled##Texture", &texSheet.enabled);
+                    ImGui::Checkbox("有効##Texture", &texSheet.enabled);
 
                     // テクスチャ選択UI
                     static int selectedTextureIdx = 0;
@@ -247,36 +261,36 @@ void ParticleEditor::ShowEditor()
                     }
 
                     // 選択されたらハンドルを更新
-                    if (ImGui::Combo("Texture Sheet", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) 
+                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) 
                     {
                         texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
                     }
 
-                    ImGui::DragInt("Tiles X", &texSheet.tilesX, 1, 1, 16);
-                    ImGui::DragInt("Tiles Y", &texSheet.tilesY, 1, 1, 16);
-                    ImGui::DragFloat("Frames Per Second", &texSheet.framesPerSecond, 0.1f, 0.0f, 60.0f);
-                    ImGui::Checkbox("Looping", &texSheet.looping);
+                    ImGui::DragInt("横の分割数", &texSheet.tilesX, 1, 1, 16);
+                    ImGui::DragInt("縦の分割数", &texSheet.tilesY, 1, 1, 16);
+                    ImGui::DragFloat("再生速度 (フレーム/秒)", &texSheet.framesPerSecond, 0.1f, 0.0f, 60.0f);
+                    ImGui::Checkbox("ループ##TextureLoop", &texSheet.looping);
 
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
 
                 // ColorOverLifetimeModuleのUI
-                if (ImGui::TreeNode("Color Over Lifetime Module"))
+                if (ImGui::TreeNode("生存期間中の色モジュール"))
                 {
-                    auto& colorModule = config.colorOverLifetime; // ショートカット
+                    auto& colorModule = config.colorOverLifetime;
 
-                    ImGui::Checkbox("Enabled##Color", &colorModule.enabled);
+                    ImGui::Checkbox("有効##Color", &colorModule.enabled);
 
                     // 開始色
                     Vector4 startCol = Uint32ToColorVector(colorModule.startColor);
-                    if (ImGui::ColorEdit4("Start Color", &startCol.x)) {
+                    if (ImGui::ColorEdit4("開始色", &startCol.x)) {
                         colorModule.startColor = ColorVectorToUint32(startCol);
                     }
 
                     // 終了色
                     Vector4 endCol = Uint32ToColorVector(colorModule.endColor);
-                    if (ImGui::ColorEdit4("End Color", &endCol.x)) {
+                    if (ImGui::ColorEdit4("終了色", &endCol.x)) {
                         colorModule.endColor = ColorVectorToUint32(endCol);
                     }
 
@@ -293,64 +307,53 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
 
                 // SizeOverLifetimeModuleのUI
-                if (ImGui::TreeNode("Size Over Lifetime Module"))
+                if (ImGui::TreeNode("生存期間中のサイズモジュール"))
                 {
                     auto& sizeModule = config.sizeOverLifetime; // ショートカット
 
-                    ImGui::Checkbox("Enabled##Size", &sizeModule.enabled);
-                    ImGui::DragFloat3("Start Scale", &sizeModule.startScale.x, 0.01f);
-                    ImGui::DragFloat3("End Scale", &sizeModule.endScale.x, 0.01f);
-
-                    // イージングタイプの選択
-                    //const char* easingTypes[] = { "Linear", "InSine", "OutSine", /* ... */ };
-                    //int currentEasing = static_cast<int>(sizeModule.easing.GetEasingType());
-                    //if (ImGui::Combo("Easing Type##Size", &currentEasing, easingTypes, IM_ARRAYSIZE(easingTypes))) {
-                    //    sizeModule.easing.SetEasing(static_cast<EasingType>(currentEasing));
-                    //}
-
-                    // 振動設定
+                    ImGui::Checkbox("有効##Size", &sizeModule.enabled);
+                    ImGui::DragFloat3("開始サイズ", &sizeModule.startScale.x, 0.01f);
+                    ImGui::DragFloat3("終了サイズ", &sizeModule.endScale.x, 0.01f);
                     ImGui::Separator();
-                    ImGui::Checkbox("Oscillate", &sizeModule.oscillate);
-                    if (sizeModule.oscillate) {
-                        ImGui::DragFloat("Frequency", &sizeModule.frequency, 0.1f, 0.0f, 100.0f);
+                    ImGui::Checkbox("振動させる", &sizeModule.oscillate);
+                    if (sizeModule.oscillate) 
+                    {
+                        ImGui::DragFloat("周波数", &sizeModule.frequency, 0.1f, 0.0f, 100.0f);
                     }
-
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
 
                 // VortexModuleのUI
-                if (ImGui::TreeNode("Vortex Module"))
+                if (ImGui::TreeNode("渦モジュール"))
                 {
                     auto& vortex = config.vortex; 
-
-                    ImGui::Checkbox("Enabled##Vortex", &vortex.enabled);
-                    ImGui::DragFloat3("Center", &vortex.center.x, 0.1f);
-                    ImGui::DragFloat("Rotation Speed", &vortex.rotationSpeed, 1.0f, -1000.0f, 1000.0f, "%.0f deg/s");
-                    ImGui::DragFloat("Orbital Speed", &vortex.orbitalSpeed, 0.1f, -100.0f, 100.0f);
+                    ImGui::Checkbox("有効##Vortex", &vortex.enabled);
+                    ImGui::DragFloat3("中心座標", &vortex.center.x, 0.1f);
+                    ImGui::DragFloat("回転速度", &vortex.rotationSpeed, 1.0f, -1000.0f, 1000.0f, "%.0f 度/秒");
+                    ImGui::DragFloat("公転速度", &vortex.orbitalSpeed, 0.1f, -100.0f, 100.0f);
                     if (ImGui::IsItemHovered()) {
-                        ImGui::SetTooltip("Speed towards/away from the center. Negative values move away.");
+                        ImGui::SetTooltip("中心へ向かう/離れる速度。\nマイナス値で中心から離れます。");
                     }
-
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
 
                 // AttractionModuleのUI
-                if (ImGui::TreeNode("Attraction Module"))
+                if (ImGui::TreeNode("引力モジュール"))
                 {
                     auto& attraction = config.attraction;
 
-                    ImGui::Checkbox("Enabled##Attraction", &attraction.enabled);
-                    ImGui::DragFloat3("Target", &attraction.target.x, 0.1f);
-                    ImGui::DragFloat("Strength", &attraction.strength, 0.1f, 0.0f, 1000.0f);
+                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
+                    ImGui::DragFloat3("目標地点", &attraction.target.x, 0.1f);
+                    ImGui::DragFloat("強さ", &attraction.strength, 0.1f, 0.0f, 1000.0f);
 
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
             }
 
-            if (ImGui::Button("Save"))
+            if (ImGui::Button("セーブ"))
             {
                 particleSystem_->configManager_->SaveParticleDefinitionToJson(selectedPresetName);
                 // 表示するメッセージを作成する
@@ -384,7 +387,7 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
             emitter->amount_ = emitterConfig.amount;
             emitter->duration_ = emitterConfig.duration;
 
-            // 1. 設定を適用する前の状態を記憶
+            // 設定を適用する前の状態を記憶
             bool wasStopped = !emitter->isPlaying_;
             emitter->looping_ = emitterConfig.looping;
 

@@ -39,7 +39,7 @@ class ModelHandle
 public:
     ~ModelHandle();
     static void Initialize(Engine* engine);
-    static std::unique_ptr<ModelData> Get(ModelID id);
+    static ModelData* Get(ModelID id);
 
 private:
     static std::array<std::unique_ptr<ModelData>, static_cast<size_t>(ModelID::count)> modelHandles_;
@@ -64,7 +64,7 @@ private:
             // プレイヤー関連
             { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },
             { ModelID::shrimp,  "Resources/models/animated/Shrimp_03.gltf" },
-            { ModelID::shrimp,  "Resources/models/animated/animatedRyu.gltf" },
+            { ModelID::ryu,  "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
 
             // 敵関連
             { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },

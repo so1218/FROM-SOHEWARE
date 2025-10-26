@@ -118,9 +118,9 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
-	Logger::Instance().Log("  UsedCount: " + std::to_string(srvAllocator_->GetUsedCount()));
-	Logger::Instance().Log("  FreeCount: " + std::to_string(srvAllocator_->GetFreeCount()));
-	Logger::Instance().Log("  MaxDescriptors: " + std::to_string(srvAllocator_->GetMaxDescriptors()));
+	/*LOG_INFO("  UsedCount: {}", srvAllocator_->GetUsedCount());
+	LOG_INFO("  FreeCount: {}", srvAllocator_->GetFreeCount());
+	LOG_INFO("  MaxDescriptors: {}", srvAllocator_->GetMaxDescriptors());*/
 
 	// オフスクリーンレンダリング終了
 	renderCoordinator_->EndOffscreenRender();
@@ -225,9 +225,6 @@ void Engine::InitializeSystem()
 	// COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 
-	// 誰も捕捉しなかった場合に、補足する関数を登録
-	SetUnhandledExceptionFilter(Logger::ExportDump);
-
 	// ロガーの初期化
 	Logger::Instance().Initialize();
 }
@@ -243,7 +240,7 @@ void Engine::InitializeWindow()
 void Engine::InitializeInput()
 {
 	// 入力管理の初期化
-	Input::Initialize(window_->GetHInstance(), window_->GetHwnd());
+	Input::GetInstance().Initialize(window_->GetHInstance(), window_->GetHwnd());
 
 	TimeManager::GetInstance()->Initialize();
 }
@@ -262,8 +259,6 @@ void Engine::InitializeGraphics()
 	// GPUアダプタの選定+D3D12デバイスの生成
 	graphicDevice_ = std::make_unique<GraphicsDevice>();
 	graphicDevice_->Initialize();
-
-	Logger::Instance().Log("Complete create D3D12Device!!!\n", Logger::Instance().GetLogStream());// 初期化完了のログを出す
 
 	// コマンドの初期化
 	commandManager_ = std::make_unique<CommandManager>();
@@ -655,16 +650,13 @@ Mesh* Engine::GetOrCreateMesh(const ModelData& modelData)
 	meshCache[&modelData] = std::move(newMesh);
 	return &meshCache[&modelData];
 }
+
 void Engine::CreateModels()
 {
 	models_.resize(kMaxModelCount);
 
 	for (size_t i = 0; i < kMaxModelCount; ++i)
 	{
-		// マテリアルを作成
-		models_[i].materialHandle = materialManager_->CreateMaterial(graphicDevice_->GetDevice());
-		models_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();
-
 		// WVP行列用のバッファを作成
 		models_[i].wvpResource = BufferManager::CreateBufferResource(
 			graphicDevice_->GetDevice(), sizeof(TransformationMatrix));
@@ -673,11 +665,10 @@ void Engine::CreateModels()
 	indexModel_ = 0;
 }
 
-void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color)
+void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
 {
 	// indexModel_が範囲内であることを確認
 	assert(indexModel_ < kMaxModelCount);
-
 
 	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
 	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
@@ -690,7 +681,7 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	Mesh* mesh = GetOrCreateMesh(modelData);
 
 	// 色変換
-	modelData.materialHandle.materialData->color = Uint32ToColorVector(color);
+	materialHandle.materialData->color = Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	model.worldMatrix = worldTransform.matWorld_;
@@ -717,7 +708,7 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 	// 定数バッファをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
@@ -730,73 +721,6 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexModel_++;
-}
-void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, const WorldTransform& uvTransform)
-{
-	// indexModel_が範囲内であることを確認
-	assert(indexModel_ < kMaxModelCount);
-
-	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	// 描画するモデルを取得
-	RenderData& model = models_[indexModel_];
-
-	// 一度だけ作られたMeshを使う
-	Mesh* mesh = GetOrCreateMesh(modelData);
-	model.mesh = *mesh;
-
-	// 色変換
-	modelData.materialHandle = model.materialHandle;
-	modelData.materialHandle.materialData->color = Uint32ToColorVector(color);
-
-	// ワールド行列 (スケール・回転・位置) を計算
-	model.worldMatrix = worldTransform.matWorld_;
-
-	// WVP行列 (World * ViewProjection) を計算
-	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
-	model.mappedData->WVP = wvpMatrix;
-	model.mappedData->World = model.worldMatrix;
-	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
-
-	// uvTransformMatrixの設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	// マテリアルリソースに uvTransformMatrix を設定
-	model.materialHandle.materialData->uvTransform = uvTransformMatrix;
-
-	// ルートシグネチャの設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// パイプラインステートの設定
-	if (isWireFrame_) {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
-	}
-	else {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	}
-	// プリミティブ形状の設定
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &model.mesh.GetVertexBufferView());
-	// インデックスバッファの設定
-	commandManager_->GetCommandList()->IASetIndexBuffer(&model.mesh.GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-
-	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
-	// 描画コマンド
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(model.mesh.GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇
 	indexModel_++;
 }
@@ -827,14 +751,19 @@ void Engine::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t col
 	}
 }
 
-void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color)
+void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
 {
 	assert(indexModel_ < kMaxModelCount);
+
+	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
+	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
+
 	RenderData& model = models_[indexModel_];
 	Mesh* mesh = GetOrCreateMesh(instance.modelData);
 
 	// 色変換
-	instance.modelData.materialHandle.materialData->color = Uint32ToColorVector(color);
+	materialHandle.materialData->color = Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	model.worldMatrix = worldTransform.matWorld_;
@@ -848,12 +777,7 @@ void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, 
 	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
 	// パイプラインステートの設定
-	if (isWireFrame_) {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
-	}
-	else {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
-	}
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
 	// プリミティブ形状の設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// インデックスバッファの設定
@@ -866,7 +790,7 @@ void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, 
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, skinCluster.paletteSrvHandle.second);
 
 	// [Index 2] : PS CBV (b0) -> Material
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, instance.modelData.materialHandle.resource->GetGPUVirtualAddress());
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress());
 
 	// [Index 3] : PS SRV Table (t0) -> gTexture
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, textures_[textureHandle].srvManager.GetSrvHandleGPU());
@@ -1240,7 +1164,7 @@ void Engine::CreateParticles()
 }
 
 
-void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ)
+void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
@@ -1250,6 +1174,7 @@ void Engine::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t col
 	data.color = Uint32ToColorVector(color);
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
+	data.isBillboard = isBillboard ? 1 : 0;
 	indexParticle_++;
 
 	particlesByTexture_[textureIndex].push_back(data);

@@ -37,7 +37,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
 
     // モジュールに基づいて初期値を設定
 
-      // Shape: Emitterの座標にShapeのオフセットを加算
+    // Shape: Emitterの座標にShapeのオフセットを加算
     particle.transform = std::make_unique<WorldTransform>();
     particle.transform->translation_ = transform.translation_ + config.shape.GetInitialPositionOffset();
 
@@ -68,9 +68,25 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     }
 
     // Rotation: 初期設定
-    if (config.rotation.enabled && config.rotation.randomStartRotation)
+    if (config.rotation.enabled)
     {
-        particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+        // ビルボードが有効で、かつランダムな初期回転が設定されている場合のみ適用
+        if (config.rotation.isBillboard)
+        {
+            // ビルボードが有効で、かつランダムな初期回転が設定されている場合
+            if (config.rotation.randomStartRotation)
+            {
+                // Z軸にランダムな初期回転を設定
+                particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+            }
+        }
+        else
+        {
+            // ビルボードが無効な場合、設定された向きをそのまま適用
+            particle.transform->rotation_.x = ToRadians(config.rotation.orientation3D.x);
+            particle.transform->rotation_.y = ToRadians(config.rotation.orientation3D.y);
+            particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
+        }
     }
 
     // 基本的なプロパティを設定
@@ -105,9 +121,27 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 void ParticleSystem::Update()
 {
     // エミッターを更新して、新しいパーティクルを生成
-    for (auto& emitter : emitters_)
+    auto it = emitters_.begin();
+    while (it != emitters_.end())
     {
+        auto& emitter = *it;
+        if (emitter->isDead_)
+        {
+            std::string name = emitter->presetName_;
+
+            it = emitters_.erase(it);
+
+            auto map_it = namedEmitters_.find(name);
+
+            if (map_it != namedEmitters_.end())
+            {
+                namedEmitters_.erase(map_it);
+            }
+
+            continue;
+        }
         emitter->Update(*this);
+        ++it;
     }
 
     // フレームの経過時間を取得
@@ -121,7 +155,7 @@ void ParticleSystem::Update()
 
         // 寿命の処理
         particleState.age += deltaTime;
-        if (particleState.age >= particleState.lifetime) 
+        if (particleState.age >= particleState.lifetime)
         {
             partilce = particles_.erase(partilce); // 寿命が尽きたら消去
             continue;
@@ -181,24 +215,35 @@ void ParticleSystem::Update()
         // Rotation Module: 回転を更新
         if (config.rotation.enabled)
         {
-            particleState.transform->rotation_.z += config.rotation.angularVelocity * deltaTime;
+            if (config.rotation.isBillboard)
+            {
+                // ビルボード有効時
+                particleState.transform->rotation_.x = 0.0f;
+                particleState.transform->rotation_.y = 0.0f;
+                particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
+            }
+            else
+            {
+                // ビルボード無効時
+                particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
+            }
         }
         particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
 
         // ColorOverLifetime Module: 色を更新
-        if (config.colorOverLifetime.enabled) 
+        if (config.colorOverLifetime.enabled)
         {
             particleState.color = config.colorOverLifetime.Evaluate(t);
         }
 
         // SizeOverLifetime Module: スケールを更新
-        if (config.sizeOverLifetime.enabled) 
+        if (config.sizeOverLifetime.enabled)
         {
             particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
         }
 
         // TextureSheetAnimation Module: テクスチャのUVを更新
-        if (config.textureSheet.enabled) 
+        if (config.textureSheet.enabled)
         {
             particleState.textureHandle = config.textureSheet.textureHandle;
             // UV座標を計算
@@ -220,13 +265,18 @@ void ParticleSystem::Update()
             *particle.transform,
             ColorVectorToUint32(particle.color),
             particle.textureHandle,
-            particle.transform->rotation_.z
+            particle.transform->rotation_.z,
+            particle.config.rotation.isBillboard
         );
     }
 }
 
 void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 {
+    const std::string& name = emitter->presetName_;
+
+    namedEmitters_[name] = emitter.get();
+
     emitters_.push_back(std::move(emitter));
 }
 

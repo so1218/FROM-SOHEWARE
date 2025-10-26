@@ -22,8 +22,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animationShurimp_ = std::make_unique<AnimationModel>(
         engine_,
         camera_,
-        *ModelHandle::Get(ModelID::shrimp),
-        AnimationHandle::Get(AnimationID::shrimp)
+        *ModelHandle::Get(ModelID::walk),
+        AnimationHandle::Get(AnimationID::walk)
     );
     animationSneakWalk_ = std::make_unique<AnimationModel>(
         engine_,
@@ -35,13 +35,14 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
         engine_,
         camera_,
         *ModelHandle::Get(ModelID::ryu),
-        AnimationHandle::Get(AnimationID::ryu)
+        AnimationHandle::Get(AnimationID::shrimp)
     );
     animationShurimp_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     animationSneakWalk_->textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     animationShurimp_->GetTransform().SetTranslation(Vector3(3, 0, 0));
     animationRyu_->GetTransform().SetTranslation(Vector3(-5, 0, 0));
+    animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::monsterBall);
 	
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player_));
@@ -98,7 +99,7 @@ void SampleSceneHori::Update()
     dragonModel_->GetTransform().scale_.x = 1.0f;
   /*  dragonModel_->GetTransform().rotation_.y += 0.01f;
     dragonModel_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(dragonModel_->GetTransform().rotation_);*/
-    if (Input::IsKeyTriggered(DIK_L))
+    if (Input::GetInstance().IsKeyTriggered(DIK_L))
     {
         originalTranslation_ = dragonModel_->GetTransform().translation_;
         shake.Start(1.0f, 2.0f);

@@ -36,7 +36,7 @@ void GraphicsDevice::SelectAdapter()
         if (!(adapterDesc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE))
         {
             // 採用したアダプタの情報をログに出力。
-            Logger::Instance().Log(StringUtils::ConvertString(std::format(L"Use Adapter: {}\n", adapterDesc.Description)), Logger::Instance().GetLogStream());
+            LOG_INFO("Use Adapter: {}", StringUtils::ConvertString(adapterDesc.Description));
             break;
         }
         // ソフトウェアアダプタの場合は見なかったことにする
@@ -71,7 +71,7 @@ void GraphicsDevice::CreateDevice()
         if (SUCCEEDED(hr))
         {
             // 生成できたのでログ出力を行ってループを抜ける
-            Logger::Instance().Log(std::format("Feature Level : {}", featureLevelStrings[i]), Logger::Instance().GetLogStream());
+            LOG_INFO("Feature Level : {}", featureLevelStrings[i]);
             break;
         }
     }

@@ -8,7 +8,7 @@ void Skydome::Initialize(Engine* engine, Camera* camera)
 {
 	engine_ = engine;
 	camera_ = camera;
-	modelData_ = ModelHandle::Get(ModelID::skydome);
+	/*modelData_ = ModelHandle::Get(ModelID::skydome);*/
 	// スケールと位置の調整
 	worldTransform_.scale_ = { 1.0f, 1.0f, 1.0f };
 	worldTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
@@ -35,7 +35,7 @@ void Skydome::Update()
 // 描画処理
 void Skydome::Draw()
 {
-	engine_->DrawModel(worldTransform_, *camera_, *modelData_, TextureHandle::Get(TextureID::skydome), 0xffffffff, uvTransform_);
+	/*engine_->DrawModel(worldTransform_, *camera_, *modelData_, TextureHandle::Get(TextureID::skydome), 0xffffffff, uvTransform_);*/
 };
 
 // デバッグ描画処理

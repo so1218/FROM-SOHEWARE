@@ -21,9 +21,14 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
     sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
 
     // 初期シーンを設定
-    sceneManager_.RequestSceneChange(SceneID::Sample);
+#ifdef _DEBUG
+    sceneManager_.RequestSceneChange(SceneID::Title);
+#else
+    sceneManager_.RequestSceneChange(SceneID::Title);
+#endif
 
     modelDataGrid_ = ModelHandle::Get(ModelID::field);
+    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
     worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 
@@ -54,7 +59,7 @@ void Game::Run()
         else
         {
             // キーボード情報の取得開始
-            Input::Update();
+            Input::GetInstance().Update();
             // フレームの開始
             engine_->BeginFrame();
             
@@ -74,7 +79,7 @@ void Game::Run()
 
 void Game::Update()
 {
-    if (Input::IsKeyTriggered(DIK_Y))
+    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
         if (engine_->debugCamera_->IsEnabled())
         {
@@ -100,7 +105,7 @@ void Game::Update()
 #endif
 
     // ポーズボタン押下判定
-    if (Input::IsKeyTriggered(DIK_P))
+    if (Input::GetInstance().IsKeyTriggered(DIK_P))
     {
         auto timeManager = TimeManager::GetInstance();
         if (timeManager->IsPaused())
@@ -164,5 +169,6 @@ void Game::DebugDraw()
 
 void Game::Finalize()
 {
+    Input::GetInstance().Finalize();
     AudioManager::GetInstance().Finalize();
 }

@@ -42,7 +42,7 @@ private:
     std::unique_ptr<MaterialManager> materialManager_;
 
 	// グリッドモデルデータ
-    std::unique_ptr<ModelData> modelDataGrid_;
+    ModelData* modelDataGrid_;
     WorldTransform worldTransformGrid_;
 
     // シーン管理

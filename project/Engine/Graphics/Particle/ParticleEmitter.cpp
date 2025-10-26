@@ -15,16 +15,29 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     isPlaying_ = false;
 
     // playOnAwakeがtrueなら、自動的に再生
-    if (config.playOnAwake) {
+    if (config.playOnAwake)
+    {
         Play();
     }
+}
+
+void ParticleEmitter::SetTargetToFollow(WorldTransform* target, const Vector3& offset)
+{
+    targetToFollow_ = target;
+    followOffset_ = offset;
 }
 
 void ParticleEmitter::Update(ParticleSystem& particleSystem)
 {
     // 再生中でなければ何もしない
-    if (!isPlaying_) {
+    if (!isPlaying_)
+    {
         return;
+    }
+
+    if (targetToFollow_)
+    {
+        position_ = targetToFollow_->translation_ + followOffset_;
     }
 
     // 経過時間を更新
@@ -76,4 +89,10 @@ void ParticleEmitter::Play()
 void ParticleEmitter::Stop()
 {
     isPlaying_ = false;
+}
+
+void ParticleEmitter::Destroy()
+{
+    isDead_ = true;
+    Stop();
 }

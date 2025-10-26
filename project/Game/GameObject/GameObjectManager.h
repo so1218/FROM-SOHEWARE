@@ -4,7 +4,8 @@
 
 #include "GameObject.h"
 
-class GameObjectManager {
+class GameObjectManager 
+{
 public:
     void AddObject(std::unique_ptr<GameObject> obj);
 

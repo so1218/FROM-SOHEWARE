@@ -34,8 +34,8 @@ void DebugCamera::Update()
     if (!isEnabled_) return;
 
     // ズームはマウスホイールで操作
-    if (Input::IsMouseButtonPressed(Input::MouseButton::Right)) {
-        int wheelDelta = Input::GetMouseWheelDelta();
+    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Right)) {
+        int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
         distance_ -= wheelDelta * zoomSpeed_;
 
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;
@@ -48,23 +48,23 @@ void DebugCamera::Update()
     }
 
     // マウス右ドラッグでカメラ回転（target中心の公転）
-    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && !Input::IsKeyPressed(DIK_LSHIFT))
+    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle) && !Input::GetInstance().IsKeyPressed(DIK_LSHIFT))
     {
-        int deltaX = Input::GetMouseState().lX;
-        int deltaY = Input::GetMouseState().lY;
+        int deltaX = Input::GetInstance().GetMouseState().lX;
+        int deltaY = Input::GetInstance().GetMouseState().lY;
 
         currentYaw_ += deltaX * rotateSpeed_;
         currentPitch_ += deltaY * rotateSpeed_;
     }
 
     // マウス中ドラッグでターゲット
-    if (Input::IsMouseButtonPressed(Input::MouseButton::Middle) && Input::IsKeyPressed(DIK_LSHIFT)) {
+    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle) && Input::GetInstance().IsKeyPressed(DIK_LSHIFT)) {
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;
         Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
         Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
 
-        int deltaX = Input::GetMouseState().lX;
-        int deltaY = Input::GetMouseState().lY;
+        int deltaX = Input::GetInstance().GetMouseState().lX;
+        int deltaY = Input::GetInstance().GetMouseState().lY;
 
         target_ -= right * static_cast<float>(deltaX) * dragSpeed_;
         target_ += up * static_cast<float>(deltaY) * dragSpeed_;

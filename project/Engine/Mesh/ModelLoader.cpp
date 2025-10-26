@@ -1,8 +1,13 @@
 #include "ModelLoader.h"
+#include "Logger.h"
+
 #include <filesystem> 
 
 ModelData ModelLoader::LoadModel(const std::string& filePath)
 {
+    LOG_INFO("\n-------------------- ModelLoader::LoadModel Start --------------------");
+    LOG_INFO("Loading model from: {}", filePath);
+
     ModelData modelData;
     Assimp::Importer importer;
 
@@ -19,10 +24,17 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
+        LOG_ERROR("Failed to load model file or scene is incomplete: {}", filePath);
+        LOG_ERROR("Assimp error: {}", importer.GetErrorString());
+        LOG_ERROR("-------------------- ModelLoader::LoadModel Failed ---------------------\n");
+
         return modelData;
     }
 
-    assert(scene->HasMeshes()); // メッシュが無いのは対応しない
+    if (!scene->HasMeshes())
+    {
+        LOG_ERROR("Model scene has no meshes: {}", filePath);
+    }
 
     LoadMaterials(scene, modelData, directoryPath);
 	modelData.rootNode = ReadNode(scene->mRootNode);
@@ -30,16 +42,32 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
         aiMesh* mesh = scene->mMeshes[meshIndex];
+
+        if (!mesh->HasNormals())
+        {
+            LOG_WARN("Mesh '{}' (Index {}) has no normals. Skipping or using default.", mesh->mName.C_Str(), meshIndex);
+        }
+        if (!mesh->HasTextureCoords(0))
+        {
+            LOG_WARN("Mesh '{}' (Index {}) has no texture coordinates (UVs). Skipping or using default.", mesh->mName.C_Str(), meshIndex);
+        }
+
         assert(mesh->HasNormals()); // 法線が無いMeshは非対応
         assert(mesh->HasTextureCoords(0)); // Texcoordが無いMeshは非対応
         ProcessMesh(mesh, scene, modelData, isGLTF);
     }
+   
+    LOG_INFO("Model loaded successfully: {}", filePath);
+    LOG_INFO("-------------------- ModelLoader::LoadModel End ----------------------\n");
 
     return modelData;
 }
 
 std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, Engine* engine)
 {
+    LOG_INFO("\n-------------------- ModelLoader::LoadMultiModel Start --------------------");
+    LOG_INFO("Loading multi-model parts from: {}", filePath);
+
     std::vector<ModelData> modelParts;
     Assimp::Importer importer;
 
@@ -56,6 +84,10 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
+        LOG_ERROR("Failed to load multi-model file or scene is incomplete: {}", filePath);
+        LOG_ERROR("Assimp error: {}", importer.GetErrorString());
+        LOG_ERROR("-------------------- ModelLoader::LoadMultiModel Failed ------------------\n");
+
         return modelParts;
     }
 
@@ -78,7 +110,7 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
                 std::filesystem::path fullTexturePath = path.parent_path() / texturePath.C_Str();
                 modelData.material.textureFilePath = fullTexturePath.string();
 
-                // ここでテクスチャをロードし、ハンドルを取得する例（仮関数）
+                // ここでテクスチャをロードし、ハンドルを取得する
                 modelData.material.textureHandle = engine->LoadTexture(fullTexturePath.string());
             }
         }
@@ -87,6 +119,9 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
 
         modelParts.push_back(std::move(modelData));
     }
+
+    LOG_INFO("Multi-model loaded successfully. {} parts created.", modelParts.size());
+    LOG_INFO("-------------------- ModelLoader::LoadMultiModel End ----------------------\n");
 
     return modelParts;
 }

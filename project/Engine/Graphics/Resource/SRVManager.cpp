@@ -1,5 +1,6 @@
 #include "SRVManager.h"
 #include "DescriptorHeapManager.h"
+#include "Logger.h"
 
 D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
     const Microsoft::WRL::ComPtr <ID3D12Resource>& textureResource,
@@ -10,6 +11,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
     uint32_t index
 ) 
 {
+    LOG_INFO("\n"
+        "//=========================================================\n"
+        "// Creating Shader Resource View (SRV)\n"
+        "// Index: {}", index);
+
     // metaDataを基にSRVの設定
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = metadata.format;
@@ -29,6 +35,8 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
     // SRVの生成
     device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
 
+    LOG_INFO("// SRV Creation Successful.\n"
+        "//=========================================================");
     return srvHandleGPU_;
 }
 
@@ -40,6 +48,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::CreateTexture2DArraySRV(
     uint32_t descriptorSizeSRV,
     uint32_t index
 ) {
+    LOG_INFO("\n"
+        "//=========================================================\n"
+        "// Creating Texture2DArray SRV\n"
+        "// Index: {}, ArraySize: {}", index, metadata.arraySize);
+
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Format = metadata.format;
@@ -57,6 +70,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::CreateTexture2DArraySRV(
 
     // SRV作成
     device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
+
+    LOG_INFO("// Texture2DArray SRV Creation Successful.\n"
+        "//=========================================================");
 
     return srvHandleGPU_;
 }
