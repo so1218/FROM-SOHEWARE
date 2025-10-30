@@ -72,7 +72,7 @@ namespace
         { "star_06", TextureID::star_06 },
         { "star_07", TextureID::star_07 },
         { "star_08", TextureID::star_08 },
-        { "star_09", TextureID::star_09 }
+        { "star_09", TextureID::star_09 },
     };
 }
 
@@ -95,20 +95,18 @@ void ParticleEditor::ShowEditor()
             presetNames.push_back(name.c_str());
         }
 
-        // 単一のコンボボックスでPresetを選択
-        static int selectedPresetIdx = 0;
         if (presetNames.empty())
         {
             ImGui::Text("利用可能なプリセットがありません。");
         }
         else
         {
-            if (selectedPresetIdx >= presetNames.size()) {
-                selectedPresetIdx = 0;
+            if (selectedPresetIdx_ >= presetNames.size()) {
+                selectedPresetIdx_ = 0;
             }
-            ImGui::Combo("プリセット", &selectedPresetIdx, presetNames.data(), (int)presetNames.size());
+            ImGui::Combo("プリセット", &selectedPresetIdx_, presetNames.data(), (int)presetNames.size());
 
-            const std::string& selectedPresetName = presetNames[selectedPresetIdx];
+            const std::string& selectedPresetName = presetNames[selectedPresetIdx_];
             auto& definition = particleSystem_->definitions_[selectedPresetName];
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
@@ -128,7 +126,7 @@ void ParticleEditor::ShowEditor()
                 valueChanged |= ImGui::DragInt("一度の発生数", &emitterConfig.amount, 1, 0);
                 ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f 秒");
-                if (ImGui::IsItemHovered()) 
+                if (ImGui::IsItemHovered())
                 {
                     ImGui::SetTooltip("エミッターがパーティクルを放出し続ける時間\n-1で無限");
                 }
@@ -138,7 +136,7 @@ void ParticleEditor::ShowEditor()
                 valueChanged |= ImGui::Checkbox("生成時に再生", &emitterConfig.playOnAwake);
 
                 // もし値が一つでも変更されていたら、ライブエミッターに設定を適用する
-                if (valueChanged) 
+                if (valueChanged)
                 {
                     ApplyEmitterConfigToLiveEmitters(selectedPresetName);
                 }
@@ -170,7 +168,7 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("物理モジュール"))
                 {
-                    auto& phys = config.physics; 
+                    auto& phys = config.physics;
                     ImGui::Checkbox("有効##Physics", &phys.enabled);
                     ImGui::DragFloat3("重力", &phys.gravity.x, 0.1f);
                     ImGui::DragFloat("空気抵抗", &phys.drag, 0.001f, 0.0f, 1.0f);
@@ -185,6 +183,8 @@ void ParticleEditor::ShowEditor()
                     ImGui::Separator();
                     ImGui::Checkbox("ビルボード", &rot.isBillboard);
                     ImGui::Separator();
+                    ImGui::DragFloat3("初期角度 (3D)", &rot.orientation3D.x, 1.0f, -360.0f, 360.0f, "%.1f 度");
+                    ImGui::Separator();
                     if (rot.isBillboard)
                     {
                         // ビルボードが有効な場合のUI
@@ -193,7 +193,6 @@ void ParticleEditor::ShowEditor()
                     }
                     else
                     {
-                        ImGui::DragFloat3("初期角度 (3D)", &rot.orientation3D.x, 1.0f, -360.0f, 360.0f, "%.1f 度");
                         ImGui::DragFloat3("回転速度 (3D)", &rot.angularVelocity3D.x, 1.0f, 0.0f, 0.0f, "%.1f 度/秒");
                     }
                     ImGui::TreePop();
@@ -202,7 +201,7 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("形状モジュール"))
                 {
-                    auto& shape = config.shape; 
+                    auto& shape = config.shape;
 
                     // 形状タイプを選択するコンボボックス
                     const char* shapeTypes[] = { "点", "ボックス", "球" };
@@ -227,7 +226,7 @@ void ParticleEditor::ShowEditor()
                     case ShapeModule::Type::Point:
                         break;
                     }
-                 
+
                     ImGui::Separator();
 
                     ImGui::TreePop();
@@ -236,19 +235,16 @@ void ParticleEditor::ShowEditor()
 
                 if (ImGui::TreeNode("テクスチャシートモジュール"))
                 {
-                    auto& texSheet = config.textureSheet; 
+                    auto& texSheet = config.textureSheet;
 
                     ImGui::Checkbox("有効##Texture", &texSheet.enabled);
-
-                    // テクスチャ選択UI
-                    static int selectedTextureIdx = 0;
 
                     // 現在のインデックスを探す
                     for (size_t i = 0; i < particleTextureList.size(); ++i)
                     {
                         if (TextureHandle::Get(particleTextureList[i].second) == texSheet.textureHandle)
                         {
-                            selectedTextureIdx = static_cast<int>(i);
+                            selectedTextureIdx_ = static_cast<int>(i);
                             break;
                         }
                     }
@@ -261,9 +257,9 @@ void ParticleEditor::ShowEditor()
                     }
 
                     // 選択されたらハンドルを更新
-                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size()))) 
+                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx_, textureNameArray.data(), static_cast<int>(textureNameArray.size())))
                     {
-                        texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx].second);
+                        texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx_].second);
                     }
 
                     ImGui::DragInt("横の分割数", &texSheet.tilesX, 1, 1, 16);
@@ -316,7 +312,7 @@ void ParticleEditor::ShowEditor()
                     ImGui::DragFloat3("終了サイズ", &sizeModule.endScale.x, 0.01f);
                     ImGui::Separator();
                     ImGui::Checkbox("振動させる", &sizeModule.oscillate);
-                    if (sizeModule.oscillate) 
+                    if (sizeModule.oscillate)
                     {
                         ImGui::DragFloat("周波数", &sizeModule.frequency, 0.1f, 0.0f, 100.0f);
                     }
@@ -327,7 +323,7 @@ void ParticleEditor::ShowEditor()
                 // VortexModuleのUI
                 if (ImGui::TreeNode("渦モジュール"))
                 {
-                    auto& vortex = config.vortex; 
+                    auto& vortex = config.vortex;
                     ImGui::Checkbox("有効##Vortex", &vortex.enabled);
                     ImGui::DragFloat3("中心座標", &vortex.center.x, 0.1f);
                     ImGui::DragFloat("回転速度", &vortex.rotationSpeed, 1.0f, -1000.0f, 1000.0f, "%.0f 度/秒");
@@ -365,8 +361,10 @@ void ParticleEditor::ShowEditor()
 
 
         }
+
     }
     ImGui::End();
+
 }
 
 void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetName)
@@ -393,7 +391,7 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
 
             if (wasStopped && emitter->looping_)
             {
-                emitter->Play(); 
+                emitter->Play();
             }
         }
     }

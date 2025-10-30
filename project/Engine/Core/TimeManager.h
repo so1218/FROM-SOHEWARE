@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <algorithm>
 
 class TimeManager
 {
@@ -9,13 +10,16 @@ public:
     void Initialize();
     void Update();
 
-    float GetDeltaTime() const { return deltaTime_; }
+    float GetDeltaTime() const { return deltaTime_ * timeScale_; }
+    float GetUnscaledDeltaTime() const { return deltaTime_; }
     float GetTotalTime() const { return totalTime_; }
     float GetFPS() const { return fps_; }
 
     void Pause() { isPaused_ = true; }
     void Resume() { isPaused_ = false; }
     bool IsPaused() const { return isPaused_; }
+    void SetTimeScale(float scale) { timeScale_ = std::clamp(scale, 0.0f, 10.0f); };
+    float GetTimeScale() const { return timeScale_; }
 
     void Reset();
 
@@ -29,12 +33,13 @@ private:
     using Clock = std::chrono::steady_clock;
     Clock::time_point startTime_;
     Clock::time_point prevTime_;
-    Clock::duration pausedDuration_ = Clock::duration::zero();  // ポーズ中の経過時間を保持
+    Clock::duration pausedDuration_ = Clock::duration::zero(); 
     Clock::time_point pauseStartTime_;
 
     float deltaTime_ = 0.0f;
     float totalTime_ = 0.0f;
     float fps_ = 0.0f;
 
+    float timeScale_ = 1.0f;
     bool isPaused_ = false;
 };

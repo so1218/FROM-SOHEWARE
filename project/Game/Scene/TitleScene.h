@@ -27,6 +27,5 @@ public:
     Engine* engine_;
     Camera* camera_;
 
-
     std::unique_ptr<Sprite> sprite_;
 };

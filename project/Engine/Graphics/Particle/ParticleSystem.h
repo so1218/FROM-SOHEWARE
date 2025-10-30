@@ -36,10 +36,11 @@ public:
     // presetNameだけでConfigを取得できるように
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }
+    void Clear();
 
 public:
     Engine* engine_;
-    std::vector<std::unique_ptr<ParticleEmitter>> emitters_; 
+    std::vector<std::unique_ptr<ParticleEmitter>> emitters_;
     std::unique_ptr<ParticleEditor> editor_;
     std::unique_ptr<ParticleConfigManager> configManager_;
     std::vector<ParticleState> particles_;
