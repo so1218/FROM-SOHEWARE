@@ -576,7 +576,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
 void DebugGuiManager::DrawInformationDisplays() 
 {
-    ImGui::Text("FPS: %.1f", TimeManager::GetInstance()->GetFPS());
+    ImGui::Text("FPS: %.1f", TimeManager::GetInstance()->GetAverageFPS());
    
     // オブジェクト数 (Engineから取得)
     ImGui::Text("Triangles: %d / %d", engine_->GetTriangleCount(), engine_->kMaxTriangleCount);
