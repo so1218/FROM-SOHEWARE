@@ -47,4 +47,53 @@ void LightManager::Initialize(ID3D12Device* device)
         spotLightData_[i].decay = 3.0f;
         spotLightData_[i].cosAngle = 0.866f;
     }
+
+    // 利用可能なインデックスキューを初期化
+    availablePointLightIndices_ = {}; // キューをクリア
+    for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
+        availablePointLightIndices_.push(i);
+        pointLightData_[i].enable = false; // 全てのライトを非アクティブで初期化
+    }
+}
+
+int LightManager::RequestPointLight()
+{
+    if (availablePointLightIndices_.empty()) {
+        // 利用可能なライトスロットがない
+        return -1;
+    }
+    int index = availablePointLightIndices_.front();
+    availablePointLightIndices_.pop();
+
+    pointLightData_[index].enable = true; // ライトを有効化
+    return index;
+}
+
+void LightManager::ReturnPointLight(int index)
+{
+    if (index < 0 || index >= pointLightCount_) {
+        return; // 無効なインデックス
+    }
+
+    pointLightData_[index].enable = false; // ライトを無効化
+    // 念のためデータをリセット
+    pointLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+    pointLightData_[index].intensity = 0.0f;
+
+    availablePointLightIndices_.push(index); // キューに戻す
+}
+
+void LightManager::UpdatePointLightPosition(int index, const Vector3& position)
+{
+    if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
+    pointLightData_[index].position = position;
+}
+
+void LightManager::UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float decay)
+{
+    if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
+    pointLightData_[index].color = color;
+    pointLightData_[index].intensity = intensity;
+    pointLightData_[index].radius = radius;
+    pointLightData_[index].decay = decay;
 }

@@ -27,7 +27,6 @@ public:
     AudioPlayer(const AudioPlayer&) = delete;
     AudioPlayer& operator=(const AudioPlayer&) = delete;
 
-    // 既存のメソッドはそのまま使う
     int Load(const std::wstring& filePath);
     int Play(int audioID, bool loop = false, uint32_t volume = 100);
     void Stop(int instanceID);
@@ -37,8 +36,8 @@ public:
     bool IsPlaying(int instanceID);
 
 private:
-    AudioPlayer() {}
-    ~AudioPlayer() {}
+    AudioPlayer() {  }
+    ~AudioPlayer() {  }
 
     std::vector<AudioData> loadedAudios_;
     std::vector<AudioInstance> activeVoices_;

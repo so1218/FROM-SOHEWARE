@@ -52,7 +52,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     {
         particle.color = config.colorOverLifetime.Evaluate(0.0f);
     }
-    else 
+    else
     {
         particle.color = config.baseColor; // モジュール無効なら基本色
     }
@@ -62,15 +62,14 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     {
         particle.transform->scale_ = config.sizeOverLifetime.Evaluate(0.0f);
     }
-    else 
+    else
     {
-        particle.transform->scale_ = { 1.0f, 1.0f, 1.0f }; // デフォルト値
+        particle.transform->scale_ = { 1.0f, 1.0f, 1.0f };
     }
 
     // Rotation: 初期設定
     if (config.rotation.enabled)
     {
-        // ビルボードが有効で、かつランダムな初期回転が設定されている場合のみ適用
         if (config.rotation.isBillboard)
         {
             // ビルボードが有効で、かつランダムな初期回転が設定されている場合
@@ -78,6 +77,11 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
             {
                 // Z軸にランダムな初期回転を設定
                 particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+            }
+            else
+            {
+                // orientation3D.z を 2D の初期回転として使用する
+                particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
             }
         }
         else
@@ -87,6 +91,10 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
             particle.transform->rotation_.y = ToRadians(config.rotation.orientation3D.y);
             particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
         }
+    }
+    else
+    {
+        particle.transform->rotation_ = { 0.0f, 0.0f, 0.0f };
     }
 
     // 基本的なプロパティを設定
@@ -117,7 +125,7 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 
     return emitter;
 }
- 
+
 void ParticleSystem::Update()
 {
     // エミッターを更新して、新しいパーティクルを生成
@@ -280,10 +288,27 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
     emitters_.push_back(std::move(emitter));
 }
 
+
 void ParticleSystem::Draw(Camera* camera)
 {
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     engine_->DrawParticles(*camera);
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
+
+#ifdef _DEBUG
     editor_->ShowEditor();
+#endif
+}
+
+
+void ParticleSystem::Clear()
+{
+    // すべてのアクティブなパーティクルを削除
+    particles_.clear();
+
+    // すべてのエミッターを削除
+    emitters_.clear();
+
+    // 名前付きエミッターのマップをクリア
+    namedEmitters_.clear();
 }

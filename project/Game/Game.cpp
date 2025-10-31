@@ -79,6 +79,7 @@ void Game::Run()
 
 void Game::Update()
 {
+#ifdef _DEBUG
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
         if (engine_->debugCamera_->IsEnabled())
@@ -90,6 +91,7 @@ void Game::Update()
             engine_->debugCamera_->SetEnabled(true);
         }
     }
+#endif
 
     if (!engine_->debugCamera_->IsEnabled())
     {
@@ -102,7 +104,6 @@ void Game::Update()
 #ifdef _DEBUG
     // グローバル変数の更新
     GlobalVariables::GetInstance()->Update();
-#endif
 
     // ポーズボタン押下判定
     if (Input::GetInstance().IsKeyTriggered(DIK_P))
@@ -113,6 +114,7 @@ void Game::Update()
         else
             timeManager->Pause();
     }
+#endif
 
 	materialManager_->UpdateAllMaterialsFromGlobal();
     modelDataGrid_->materialHandle.materialData->isArtGrid = true;
@@ -141,14 +143,13 @@ void Game::Draw()
 #endif
 
     sceneManager_.Draw();
-#ifdef _DEBUG
     DebugDraw();
-#endif
 
 }
 
 void Game::DebugDraw()
 {
+#ifdef _DEBUG
     if (ImGui::Begin("シーンの選択"))
     {
         if (ImGui::Button("タイトルシーン"))
@@ -165,6 +166,7 @@ void Game::DebugDraw()
         }
     }
     ImGui::End();
+#endif
 }
 
 void Game::Finalize()

@@ -1,24 +1,23 @@
 #pragma once
 #include <unordered_map>
 
-// StageConfig はステージ別設定を保持する構造体
-struct StageConfig
-{
-    float slopeAngle;
-    int slopeLength;
-};
 
 class StageManager
 {
 public:
-    void SetStage(int stageId);
-    int GetStage() const { return currentStage_; }
+	// 最大ステージ数(4はタイトルシーン用)
+	static constexpr int kMaxStages = 4;
 
-    float GetSlopeAngle() const;
-    int GetSlopeLength() const;
+	StageManager();
+
+	// 全ステージの設定を最初に読み込む
+	void Initialize();
+
+	// ステージIDをセットする
+	void SetCurrentStage(int stageId) { currentStage_ = stageId; }
+	int GetCurrentStage() const { return currentStage_; }
 
 private:
-    int currentStage_ = 1;
-    // キャッシュされたステージ設定
-    std::unordered_map<int, StageConfig> configs_;
+
+	int currentStage_ = 1;
 };
