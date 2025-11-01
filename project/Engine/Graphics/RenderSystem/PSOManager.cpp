@@ -28,6 +28,7 @@ void PSOManager::Initialize(
     CreateBloomBlurVerticalPSO();
     CreateBloomCombinePSO();
     CreateDepthPSO();
+    CreateSkyboxPSO();
 }
 
 void PSOManager::CreateInputLayout()
@@ -71,6 +72,17 @@ void PSOManager::CreateInputLayout()
     // Layout に設定
     inputLayoutDescParticle_.pInputElementDescs = inputElementDescsParticle_.data();
     inputLayoutDescParticle_.NumElements = static_cast<UINT>(inputElementDescsParticle_.size());
+
+    inputElementDescSkybox_[0].SemanticName = "POSITION";
+    inputElementDescSkybox_[0].SemanticIndex = 0;
+    inputElementDescSkybox_[0].Format = DXGI_FORMAT_R32G32B32_FLOAT; // float3
+    inputElementDescSkybox_[0].InputSlot = 0;
+    inputElementDescSkybox_[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+    inputElementDescSkybox_[0].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+    inputElementDescSkybox_[0].InstanceDataStepRate = 0;
+
+    inputLayoutDescSkybox_.pInputElementDescs = inputElementDescSkybox_;
+    inputLayoutDescSkybox_.NumElements = _countof(inputElementDescSkybox_);
 }
 
 void PSOManager::CompileShaders(IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
@@ -141,6 +153,16 @@ void PSOManager::CompileShaders(IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler,
         L"Resources/Shaders/Depth.PS.hlsl",
         L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
     assert(psBlobDepth_ != nullptr);
+
+    vsBlobSkybox_ = ShaderManager::CompileShader(
+        L"Resources/Shaders/Skybox.VS.hlsl",
+        L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+    assert(vsBlobSkybox_ != nullptr);
+
+    psBlobSkybox_ = ShaderManager::CompileShader(
+        L"Resources/Shaders/Skybox.PS.hlsl",
+        L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+    assert(psBlobSkybox_ != nullptr);
 }
 
 void PSOManager::Create3DPSO()
@@ -824,4 +846,57 @@ void PSOManager::CreateDepthPSO()
     HRESULT hr = device_->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&psoDepth_));
     assert(SUCCEEDED(hr));
     psoDepth_->SetName(L"PSO_DepthPass");
+}
+
+void PSOManager::CreateSkyboxPSO()
+{
+    // BlendStateの設定 (スカイボックスは不透明なのでブレンドOFF)
+    D3D12_BLEND_DESC blendDesc{};
+    blendDesc.RenderTarget[0].BlendEnable = FALSE; // ブレンドOFF
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+    // RasterizerStateの設定 (重要)
+    D3D12_RASTERIZER_DESC rasterizerDesc{};
+    // スカイボックスは「内側」から見るので、表面(時計回り)をカリングする
+    rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT; // CULL_MODE_FRONT に変更
+    // 三角形の中を塗りつぶす
+    rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+    // DepthStencilStateの設定 (最重要)
+    D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+    // Depthの機能を有効化する
+    depthStencilDesc.DepthEnable = true;
+    // 深度書き込みは「しない」(Zero)
+    // スカイボックスが深度バッファを埋めると、他の全てが描画されなくなるため
+    depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+    // 比較関数はLessEqual
+    // VSの.xywwトリックで深度が1.0になる。クリア値の1.0と同じなので LESS だと通らない
+    depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+    // PSOを生成する
+    // ★psoDescSkybox_ と rootSignatureSkybox_ を使用
+    psoDescSkybox_.pRootSignature = rootSignatureManager_->rootSignatureSkybox_.Get();
+    psoDescSkybox_.InputLayout = inputLayoutDescSkybox_; // スカイボックス用レイアウト
+    psoDescSkybox_.VS = { vsBlobSkybox_->GetBufferPointer(),
+    vsBlobSkybox_->GetBufferSize() }; // スカイボックス用VS
+    psoDescSkybox_.PS = { psBlobSkybox_->GetBufferPointer(),
+    psBlobSkybox_->GetBufferSize() }; // スカイボックス用PS
+    // DepthStencilの設定
+    psoDescSkybox_.DepthStencilState = depthStencilDesc;
+    psoDescSkybox_.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    psoDescSkybox_.BlendState = blendDesc;
+    psoDescSkybox_.RasterizerState = rasterizerDesc;
+    // 書き込むRTVの情報
+    psoDescSkybox_.NumRenderTargets = 1;
+    psoDescSkybox_.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    // トポロジは三角形
+    psoDescSkybox_.PrimitiveTopologyType =
+        D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    // その他
+    psoDescSkybox_.SampleDesc.Count = 1;
+    psoDescSkybox_.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+
+    HRESULT hr = device_->CreateGraphicsPipelineState(&psoDescSkybox_,
+        IID_PPV_ARGS(&psoSkybox_)); 
+    assert(SUCCEEDED(hr));
 }

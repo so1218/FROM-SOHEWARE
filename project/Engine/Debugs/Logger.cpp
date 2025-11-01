@@ -127,3 +127,16 @@ LONG WINAPI Logger::ExportDump(EXCEPTION_POINTERS* exception)
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
+
+std::string Logger::GetAnsiColorCode(LogLevel level)
+{
+    // \x1B はエスケープ文字 (ESC)
+    switch (level)
+    {
+    case LogLevel::Info:    return "\x1B[37m"; // 白
+    case LogLevel::Warning: return "\x1B[93m"; // 明るい黄色
+    case LogLevel::Error:   return "\x1B[91m"; // 明るい赤
+    case LogLevel::Debug:   return "\x1B[96m"; // 明るいシアン
+    default:                return "\x1B[37m"; // デフォルト (白)
+    }
+}

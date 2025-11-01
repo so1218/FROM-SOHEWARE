@@ -7,15 +7,16 @@ Engine* ModelHandle::engine_ = nullptr;
 
 constexpr std::array<ModelDefinition, static_cast<size_t>(ModelID::count)> ModelHandle::modelDefinitions_;
 
-ModelHandle::~ModelHandle()
+void ModelHandle::Finalize() 
 {
-    for (auto& handle : modelHandles_) 
+    if (!initialized_) return; 
+
+    for (auto& handle : modelHandles_)
     {
         handle.reset(); // モデル毎の ModelData を破棄
     }
     initialized_ = false;
 }
-
 void ModelHandle::Initialize(Engine* engine)
 {
     if (initialized_) return;

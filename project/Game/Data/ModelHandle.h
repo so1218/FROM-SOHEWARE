@@ -37,8 +37,8 @@ struct ModelDefinition
 class ModelHandle
 {
 public:
-    ~ModelHandle();
     static void Initialize(Engine* engine);
+    static void Finalize();
     static ModelData* Get(ModelID id);
 
 private:

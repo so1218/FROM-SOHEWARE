@@ -17,6 +17,8 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
     CreatePostEffectPassRootSignature();
     CreateFullScreenRootSignature();
     CreateDepthExtractRootSignature();
+    CreateSkyboxRootSignature();
+    CreateSkyboxRootSignature();
 
     LOG_INFO("\n"
         "////////////////////////////////////////////////////////////\n"
@@ -710,4 +712,87 @@ void RootSignatureManager::CreateDepthExtractRootSignature()
     }
 
     LOG_INFO("Successfully created Depth Extract root signature.");
+}
+
+void RootSignatureManager::CreateSkyboxRootSignature()
+{
+    LOG_INFO("Creating Skybox root signature...");
+
+    // DescriptorRangeの設定 (テクスチャSRV用)
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
+    srvDescriptorRange.BaseShaderRegister = 0; // t0
+    srvDescriptorRange.NumDescriptors = 1;
+    srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    enum {
+        kPixelShaderCb0Index = 0,   // b0 (PixelShader)
+        kVertexShaderCb1Index = 1,  // b1 (VertexShader)
+        kTextureSrvTableIndex = 2,  // t0 (PixelShader)
+        kNumGraphicRootParameters
+    };
+
+    // RootParameter作成
+    D3D12_ROOT_PARAMETER rootParameters[kNumGraphicRootParameters] = {};
+
+    // RootParameter[0]: ピクセルシェーダー用CBV (b0) -> gMaterialColor
+    rootParameters[kPixelShaderCb0Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kPixelShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kPixelShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
+
+    // RootParameter[1]: バーテックスシェーダー用CBV (b1) -> gTransformationMatrix
+    rootParameters[kVertexShaderCb1Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kVertexShaderCb1Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+    rootParameters[kVertexShaderCb1Index].Descriptor.ShaderRegister = 1; // b1 
+
+    // RootParameter[2]: テクスチャSRV用のDescriptorTable (t0) -> gTexture
+    rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
+
+    D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+    descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    descriptionRootSignature.NumParameters = _countof(rootParameters);
+    descriptionRootSignature.pParameters = rootParameters;
+
+    // Samplerの設定 (s0)
+    D3D12_STATIC_SAMPLER_DESC staticSampler = {};
+    staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+    staticSampler.MaxLOD = D3D12_FLOAT32_MAX;
+    staticSampler.ShaderRegister = 0; // s0
+    staticSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    descriptionRootSignature.NumStaticSamplers = 1;
+    descriptionRootSignature.pStaticSamplers = &staticSampler;
+
+    // シリアライズ
+    Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
+    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+    HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+        D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to serialize Skybox root signature.");
+        assert(false);
+        return;
+    }
+
+    // バイナリを元に生成
+    hr = device_->CreateRootSignature(0,
+        signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+        IID_PPV_ARGS(&rootSignatureSkybox_));
+    if (FAILED(hr))
+    {
+        LOG_ERROR("Failed to create Skybox root signature.");
+        assert(false);
+        return;
+    }
+
+    LOG_INFO("Successfully created Skybox root signature.");
 }

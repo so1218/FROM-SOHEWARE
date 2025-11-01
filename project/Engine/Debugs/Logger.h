@@ -64,6 +64,11 @@ private:
 
     // 出力する最低レベル
     LogLevel minLevel_ = LogLevel::Info;
+
+    // ANSIエスケープコードを返すヘルパー
+    std::string GetAnsiColorCode(LogLevel level);
+    // 色をリセットするコード
+    const std::string ANSI_RESET = "\x1B[0m";
 };
 
 // Log関数
@@ -93,12 +98,16 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
         userMessage
     );
 
-    if (logStream_.is_open()) {
+    if (logStream_.is_open())
+    {
         logStream_ << logMessage << std::endl;
     }
 
- 
-    OutputDebugStringA((logMessage + "\n").c_str());
+    // デバッグ出力
+    OutputDebugStringA(logMessage.c_str());
+
+    // コンソール出力 
+    SetConsoleColor(level);
 }
 
 // 便利な呼び出しマクロ

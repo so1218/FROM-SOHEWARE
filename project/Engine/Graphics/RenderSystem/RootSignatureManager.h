@@ -21,6 +21,7 @@ public:
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignaturePostProcess_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureFullScreen_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureDepthExtract_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox_;
 
 private:
     ID3D12Device* device_ = nullptr;
@@ -40,4 +41,5 @@ private:
     void CreatePostEffectPassRootSignature();
     void CreateFullScreenRootSignature();
     void CreateDepthExtractRootSignature();
+    void CreateSkyboxRootSignature();
 };
