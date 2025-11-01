@@ -82,7 +82,7 @@ PixelShaderOutput main(PixelShaderInput input)
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     float3 baseColor = textureColor.rgb;
 
-    // --- アートエフェクト適用 ---
+    // アートエフェクト適用
     if (gMaterial.isArtWave)
     {
         baseColor = DrawArtWaveColor(input);
