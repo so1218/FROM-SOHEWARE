@@ -10,7 +10,7 @@
 #include "Enemy.h"
 #include "ShakeEffect.h"
 #include "AnimationModel.h"
-
+#include "FollowCamera.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -39,12 +39,13 @@ private:
     Engine* engine_;
     Camera* camera_;
     GameObjectManager objectManager_;
+    FollowCamera followCamera_;
 
     std::unique_ptr<Model> dragonModel_;
     std::unique_ptr<Sprite> uvCheckerSprite_;
-    std::unique_ptr<Player> player_;
-    std::unique_ptr<Enemy> enemy_;
 
+    Player* player_ = nullptr;
+    Enemy* enemy_ = nullptr;
 
 	ModelData modelData_;
     Animation animation_;

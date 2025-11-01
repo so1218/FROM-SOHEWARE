@@ -5,35 +5,42 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
-void FollowCamera::Initialize(Camera* camera, Player* target) 
+void FollowCamera::Initialize(Camera* camera, Player* target)
 {
     camera_ = camera;
     target_ = target;
-   
-    yaw_ = PI; 
-    distance_ = 50.0f; 
-    targetDistance_ = 50.0f;
-    pitch_ = 0.3f;
-    interpSpeed_ = 8.0f;
 
-    // 初期位置と回転を計算
+    // 初期角度・距離設定
+    currentYaw_ = targetYaw_ = PI;
+    currentPitch_ = targetPitch_ = 0.3f;
+    distance_ = targetDistance_ = 50.0f;
+
+    // 速度とスムーズ時間の初期化
+    yawVelocity_ = pitchVelocity_ = distanceVelocity_ = 0.0f;
+    rotationSmoothTime_ = 0.1f;
+    zoomSmoothTime_ = 0.2f;
+
+    // 初期位置計算
     Vector3 targetPos = target_->GetWorldTransform().translation_;
-    float horizontalDistance = std::cos(pitch_) * distance_;
-    Vector3 targetOffset;
-    targetOffset.x = std::sin(yaw_) * horizontalDistance;
-    targetOffset.z = std::cos(yaw_) * horizontalDistance;
-    targetOffset.y = std::sin(pitch_) * distance_;
+    float horizontalDistance = std::cos(currentPitch_) * distance_;
+    Vector3 targetOffset = {
+        std::sin(currentYaw_) * horizontalDistance,
+        std::sin(currentPitch_) * distance_,
+        std::cos(currentYaw_) * horizontalDistance
+    };
 
-    Vector3 cameraPos = targetPos + targetOffset; 
+    smoothedTargetPos_ = targetPos;
+    posVelocity_ = { 0.0f, 0.0f, 0.0f };
+
+    Vector3 cameraPos = targetPos + targetOffset;
     Vector3 cameraTarget = targetPos + lookAtOffset_;
     Vector3 cameraUp = { 0.0f, 1.0f, 0.0f };
     Vector3 cameraForward = (cameraTarget - cameraPos).Normalize();
     Quaternion cameraRot = Quaternion::LookRotation(cameraForward, cameraUp);
 
-    // 現在のカメラ位置と回転として設定
-    currentCameraPos_ = cameraPos;
+    camera_->SetTranslation(cameraPos);
+    camera_->SetRotation(cameraRot);
     currentCameraRot_ = cameraRot;
-
 }
 
 void FollowCamera::Update()
@@ -41,96 +48,119 @@ void FollowCamera::Update()
     if (!target_ || !camera_) return;
 
     float dt = TimeManager::GetInstance()->GetUnscaledDeltaTime();
-
-    // 毎フレーム、シェイクタイマーを更新する
     shakeEffect_.Update();
 
-    // 入力処理
-    const float rotateSpeed = 2.0f; // 回転速度
-    const float zoomSpeed = 20.0f;    // ズーム速度
+    const float rotateSpeed = 2.0f;
+    const float zoomSpeed = 20.0f;
 
-    // 左右回転（Y軸回転）
-    //if (Input::IsKeyPressed(DIK_A) || Input::IsLeftOnStick(0, Input::RightStick)) 
-    //{
-    //    yaw_ += rotateSpeed * dt;
-    //}
-    //else if (Input::IsKeyPressed(DIK_D) || Input::IsRightOnStick(0, Input::RightStick))
-    //{
-    //    yaw_ -= rotateSpeed * dt;
-    //}
+    // 回転入力
+    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))
+        targetYaw_ += rotateSpeed * dt;
+    else if (Input::GetInstance().IsKeyPressed(DIK_RIGHT))
+        targetYaw_ -= rotateSpeed * dt;
 
-    //// ズームイン/アウト（距離調整）
-    //if (Input::IsKeyPressed(DIK_W) || Input::IsUpOnStick(0, Input::RightStick))
-    //{
-    //    distance_ -= zoomSpeed * dt;
-    //    if (distance_ < 1.0f)
-    //    {
-    //        distance_ = 1.0f;
-    //    } // 最小距離制限
-    //}
-    //else if (Input::IsKeyPressed(DIK_S) || Input::IsDownOnStick(0, Input::RightStick))
-    //{
-    //    distance_ += zoomSpeed * dt;
-    //}
+    // ズーム入力
+    if (Input::GetInstance().IsKeyPressed(DIK_UP))
+        targetDistance_ -= zoomSpeed * dt;
+    else if (Input::GetInstance().IsKeyPressed(DIK_DOWN))
+        targetDistance_ += zoomSpeed * dt;
 
-    // 最小/最大距離制限
-    targetDistance_ = std::clamp(targetDistance_, 5.0f, 100.0f);
-    // 現在の距離を目標距離に補間する
-    float zoomEffectiveSpeed = MyMin<float>(1.0f, zoomLerpSpeed_ * dt);
-    distance_ = Lerp(distance_, targetDistance_, zoomEffectiveSpeed);
+    // 回転・ズーム補間
+    targetDistance_ = std::clamp(targetDistance_, minDistance_, maxDistance_);
+    distance_ = SmoothDamp(distance_, targetDistance_, distanceVelocity_, zoomSmoothTime_, dt);
 
-    // Pitchが上下反転しないようクランプする
-    const float minPitch = -0.8f; 
-    const float maxPitch = 1.4f;  
-    pitch_ = std::clamp(pitch_, minPitch, maxPitch);
+    targetPitch_ = std::clamp(targetPitch_, minPitch_, maxPitch_);
+    currentYaw_ = SmoothDampAngle(currentYaw_, targetYaw_, yawVelocity_, rotationSmoothTime_, dt);
+    currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
-    // 目標オフセット計算
-    Vector3 targetOffset;
-    // 水平方向の距離
-    float horizontalDistance = std::cos(pitch_) * distance_;
+    // ターゲット位置のスムージング
+    Vector3 actualPlayerPos = target_->GetWorldTransform().translation_;
+    float posEffectiveSpeed = MyMin<float>(1.0f, positionLerpSpeed_ * dt);
+    smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 
-    targetOffset.x = std::sin(yaw_) * horizontalDistance; 
-    targetOffset.z = std::cos(yaw_) * horizontalDistance;
-    targetOffset.y = std::sin(pitch_) * distance_;
+    // カメラ位置計算
+    float horizontalDistance = std::cos(currentPitch_) * distance_;
+    Vector3 targetOffset = {
+        std::sin(currentYaw_) * horizontalDistance,
+        std::sin(currentPitch_) * distance_,
+        std::cos(currentYaw_) * horizontalDistance
+    };
 
-    // 目標カメラ位置と回転の計算
-    Vector3 targetPos = target_->GetWorldTransform().translation_;
-    Vector3 desiredCameraPos = targetPos + targetOffset; // 目標のカメラ位置
-    Vector3 desiredCameraTarget = targetPos + lookAtOffset_;
-    Vector3 cameraUp = { 0.0f, 1.0f, 0.0f };
+    Vector3 targetPos = smoothedTargetPos_;
+    Vector3 finalCameraPos = targetPos + targetOffset;
+    Vector3 desiredCameraTarget = actualPlayerPos + lookAtOffset_;
 
-    Vector3 desiredCameraForward = (desiredCameraTarget - desiredCameraPos).Normalize();
-    Quaternion desiredCameraRot = Quaternion::LookRotation(desiredCameraForward, cameraUp); // 目標のカメラ回転
-
-    // 1.0fを超えないようにしつつ、deltaTimeでスケーリング
-    float effectiveSpeed = MyMin<float>(1.0f, interpSpeed_ * TimeManager::GetInstance()->GetUnscaledDeltaTime());
-
-    // 補間処理
-    // 現在のカメラ位置を目標位置へ線形補間
-    currentCameraPos_ = Vector3::Lerp(currentCameraPos_, desiredCameraPos, effectiveSpeed);
-    // 現在のカメラ回転を目標回転へ球面線形補間 
-    currentCameraRot_ = Quaternion::Slerp(currentCameraRot_, desiredCameraRot, effectiveSpeed);
-
-    // シェイクによるオフセットを取得
+    // カメラ回転とシェイク適用
+    Vector3 finalCameraForward = (desiredCameraTarget - finalCameraPos).Normalize();
+    currentCameraRot_ = Quaternion::LookRotation(finalCameraForward, { 0.0f, 1.0f, 0.0f });
     Vector3 shakeOffset = shakeEffect_.GetOffset();
 
-    // カメラに設定
-    camera_->SetTranslation(currentCameraPos_ + shakeOffset);
+    camera_->SetTranslation(finalCameraPos + shakeOffset);
     camera_->SetRotation(currentCameraRot_);
     camera_->UpdateViewProjectionMatrix();
 }
 
-// デバッグ描画処理
 void FollowCamera::DebugDraw()
 {
     ImGui::Begin("FollowCamera");
-    ImGui::DragFloat("Yaw", &yaw_, 0.01f);
-    ImGui::DragFloat("Distance", &distance_, 0.1f, 1.0f, 50.0f);
-    ImGui::DragFloat("Interp Speed", &interpSpeed_, 0.001f, 0.0f, 1.0f); // 補間速度を調整可能に
+
+    ImGui::Text("--- Target Values ---");
+    ImGui::DragFloat("Yaw", &targetYaw_, 0.01f);
+    ImGui::DragFloat("Pitch", &targetPitch_, 0.01f, minPitch_, maxPitch_);
+    ImGui::DragFloat("Distance", &targetDistance_, 0.1f, minDistance_, maxDistance_);
+
+    ImGui::Text("--- Current Values ---");
+    ImGui::Text("Yaw: %.2f", currentYaw_);
+    ImGui::Text("Pitch: %.2f", currentPitch_);
+    ImGui::Text("Distance: %.2f", distance_);
+
+    ImGui::Separator();
+    ImGui::Text("--- Smooth Settings ---");
+    ImGui::DragFloat("Rotation Smooth Time", &rotationSmoothTime_, 0.01f, 0.0f, 1.0f);
+    ImGui::DragFloat("Zoom Smooth Time", &zoomSmoothTime_, 0.01f, 0.0f, 1.0f);
+    ImGui::DragFloat("Position Lerp Speed", &positionLerpSpeed_, 0.1f, 0.0f, 20.0f);
+
     ImGui::End();
 }
 
 void FollowCamera::StartShake(float duration, float intensity)
 {
     shakeEffect_.Start(duration, intensity);
+}
+
+float FollowCamera::SmoothDamp(float current, float target, float& currentVelocity,
+    float smoothTime, float deltaTime, float maxSpeed)
+{
+    smoothTime = std::max(0.0001F, smoothTime);
+    float omega = 2.0F / smoothTime;
+    float x = omega * deltaTime;
+    float exp = 1.0F / (1.0F + x + 0.48F * x * x + 0.235F * x * x * x);
+    float change = current - target;
+    float originalTo = target;
+
+    float maxChange = maxSpeed * smoothTime;
+    change = std::clamp(change, -maxChange, maxChange);
+    target = current - change;
+
+    float temp = (currentVelocity + omega * change) * deltaTime;
+    currentVelocity = (currentVelocity - omega * temp) * exp;
+    float output = target + (change + temp) * exp;
+
+    // オーバーシュート防止
+    if ((originalTo - current > 0.0F) == (output > originalTo))
+    {
+        output = originalTo;
+        currentVelocity = (output - originalTo) / deltaTime;
+    }
+    return output;
+}
+
+float FollowCamera::SmoothDampAngle(float current, float target, float& currentVelocity,
+    float smoothTime, float deltaTime, float maxSpeed)
+{
+    float delta = target - current;
+    while (delta > PI) delta -= PI * 2.0f;
+    while (delta < -PI) delta += PI * 2.0f;
+    target = current + delta;
+    return SmoothDamp(current, target, currentVelocity, smoothTime, deltaTime, maxSpeed);
 }

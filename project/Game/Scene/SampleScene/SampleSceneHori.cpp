@@ -15,8 +15,11 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     camera_ = camera;
 
     // インスタンスを作成
-    player_ = std::make_unique<Player>(engine_, camera_);
-    enemy_ = std::make_unique<Enemy>(engine_, camera_);
+    auto player = std::make_unique<Player>(engine_, camera_);
+    auto enemy = std::make_unique<Enemy>(engine_, camera_);
+    player_ = player.get();
+    enemy_ = enemy.get();
+
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::shrimp)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
     animationShurimp_ = std::make_unique<AnimationModel>(
@@ -45,8 +48,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     animationRyu_->textureHandle_ = TextureHandle::Get(TextureID::monsterBall);
 	
     // 作成したゲームオブジェクトを管理クラスに登録
-    objectManager_.AddObject(std::move(player_));
-    objectManager_.AddObject(std::move(enemy_));
+    objectManager_.AddObject(std::move(player));
+    objectManager_.AddObject(std::move(enemy));
 
     //const char* groupName = "SampleSceneHori";
     // グループ名を追加
@@ -84,6 +87,8 @@ void SampleSceneHori::Initialize()
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
+
+    followCamera_.Initialize(camera_, player_);
 }
 
 void SampleSceneHori::Update()
@@ -121,6 +126,8 @@ void SampleSceneHori::Update()
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
+    followCamera_.Update();
+
     objectManager_.SaveGlobalVariables();
     SaveGlobalVariables();
 
@@ -147,6 +154,8 @@ void SampleSceneHori::DebugDraw()
     ImGui::End();
     // ゲームオブジェクトの一括デバッグ描画
     objectManager_.DebugDraw();
+
+    followCamera_.DebugDraw();
 }
 
 void SampleSceneHori::Finalize()

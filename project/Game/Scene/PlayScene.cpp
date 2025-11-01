@@ -22,6 +22,8 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     // オブジェクトを生成
     player_ = std::make_unique<Player>(engine_, camera_);
     enemy_ = std::make_unique<Enemy>(engine_, camera_);
+    followCamera_.Initialize(camera_, player_.get());
+
     collisionManager_ = std::make_unique<CollisionManager>();
     emitter_ = engine_->particleSystem_->CreateEmitter("chest");
     newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
@@ -52,6 +54,9 @@ void PlayScene::Update()
     
     // プレイヤーの更新処理
     player_->Update();
+    // プレイヤーの新しい位置に合わせてカメラを更新
+    followCamera_.Update();
+
     // パーティクルシステムを更新
     engine_->particleSystem_->Update();
 
@@ -84,6 +89,7 @@ void PlayScene::DebugDraw()
 
 	player_->DebugDraw();
     enemy_->DebugDraw();
+    followCamera_.DebugDraw();
 }
 
 void PlayScene::Finalize()
