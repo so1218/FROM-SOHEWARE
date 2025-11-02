@@ -10,7 +10,7 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     animeModelData_.animation = std::move(animation);
     skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
     skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(),
-        skeleton_, animeModelData_.modelData, engine_->srvDescriptorHeap_, engine_->descriptorSizeSRV_, engine_->srvAllocator_.get());
+        skeleton_, animeModelData_.modelData, engine_->srvManager_.get());
 
     animationTime_ = 0.0f;
     textureHandle_ = 0;

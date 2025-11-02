@@ -134,19 +134,17 @@ public:
     MaterialManager* materialManager_ = nullptr;
     std::unique_ptr<TextureManager> textureManager_;
     std::unique_ptr<SRVManager> srvManager_;
+    std::unique_ptr<DSVManager> dsvManager_;
     std::unique_ptr<LightManager> lightManager_;
     std::unique_ptr<DebugCamera> debugCamera_;
     std::unique_ptr<DebugGuiManager> debugGuiManager_;
     std::unique_ptr<ParticleSystem> particleSystem_;
     std::unique_ptr<CameraManager> cameraManager_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
-    std::unique_ptr<SRVAllocator> srvAllocator_;
     Camera* camera_ = nullptr;
 
     // DirectX関連
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap_;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap_;
     Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
     Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_;

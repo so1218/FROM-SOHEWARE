@@ -34,7 +34,7 @@ const int32_t Engine::kMaxModelCount = 500; // モデルの最大数
 const int32_t Engine::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Engine::kMaxCubeCount = 0;// 立方体の最大数
 const int32_t Engine::kMaxLineCount = 400;// ラインの最大数
-const int32_t Engine::kMaxParticleCount = 1000;// パーティクルの最大数
+const int32_t Engine::kMaxParticleCount = 8000;// パーティクルの最大数
 
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 {
@@ -136,17 +136,15 @@ void Engine::EndFrame()
 	commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 	
 	// ImGui用DescriptorHeapをCommandListにバインド
-	ID3D12DescriptorHeap* defaultHeaps[] = { srvDescriptorHeap_.Get()};
+	ID3D12DescriptorHeap* defaultHeaps[] = { srvManager_->GetSRVHeap()};
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
 	
 #ifdef _DEBUG
 	if (useDebugView)
 	{
 		debugGuiManager_->RenderOffscreenTexture(
-			srvDescriptorHeap_.Get(),
-			descriptorSizeSRV_,
-			offscreenRTVManager_->GetSRVHandleCPU(postEffectManager_->bloomCombineIndex_),
-			offscreenSrvIndex_
+			srvManager_.get(),
+			postEffectManager_->bloomCombineIndex_
 		);
 	}
 	else
@@ -158,7 +156,7 @@ void Engine::EndFrame()
 	DrawFullScreenQuadWithOffscreenTexture();
 #endif
 
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// ImGui 描画コマンド積む
@@ -186,7 +184,7 @@ void Engine::DrawFullScreenQuadWithOffscreenTexture()
 	auto* cmdList = commandManager_->GetCommandList();
 
 	// SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { offscreenRTVManager_->GetSRVDescriptorHeap() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// パイプラインステートをセット（フルスクリーン描画用PSO）
@@ -196,9 +194,9 @@ void Engine::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureFullScreen_.Get());
 
 	// ルートパラメータにSRVなどをセット
-	cmdList->SetGraphicsRootDescriptorTable(1, offscreenRTVManager_->GetSRVHandleGPU(postEffectManager_->bloomCombineIndex_));
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(postEffectManager_->bloomCombineIndex_));
 	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->constantBuffer_->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(2, offscreenRTVManager_->GetSRVHandleGPU(postEffectManager_->depthExtractIndex_));
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(postEffectManager_->depthExtractIndex_));
 
 	// プリミティブトポロジーを設定
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -268,27 +266,32 @@ void Engine::InitializeGraphics()
 	swapChain_ = std::make_unique<SwapChain>();
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(), kClientWidth, kClientHeight, 2, dxgiFactory_);
 
-	// SRVAllocatorの初期化（最大数128と仮定、必要に応じて調整）
-	srvAllocator_ = std::make_unique<SRVAllocator>(128);
-
 	// DescriptorSizeを取得しておく
 	descriptorSizeSRV_ = graphicDevice_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	descriptorSizeRTV_ = graphicDevice_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	descriptorSizeDSV_ = graphicDevice_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	// ディスクリプタヒープの作成
+	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
+	//// SRV用のヒープでディスクリプタの数は1000。SRVはShader内で触るものなので、ShaderVisibleはtrue
+	//srvDescriptorHeap_ = descriptorManager_->CreateDescriptorHeap(graphicDevice_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000, true);
+	// DSV用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
+	// ★ ここで「DSV支配人」を作成
+	dsvManager_ = std::make_unique<DSVManager>();
+	dsvManager_->Initialize(graphicDevice_->GetDevice(), descriptorManager_.get(), 8); // 8個と仮定
 
 	// レンダーターゲットの初期化
 	rtvManager_ = std::make_unique<RTVManager>();
 	rtvManager_->Initialize(graphicDevice_->GetDevice(), swapChain_->GetSwapChain(), 2, descriptorSizeRTV_, descriptorManager_.get());
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
 	offscreenRTVManager_->Initialize(graphicDevice_->GetDevice(), descriptorManager_.get(), 16);
-	offscreenRTVManager_->CreateOffscreenRenderTarget(kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor());
+	/*offscreenRTVManager_->CreateOffscreenRenderTarget(kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor());*/
 
-	// ディスクリプタヒープの作成
-	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
-	// SRV用のヒープでディスクリプタの数は1000。SRVはShader内で触るものなので、ShaderVisibleはtrue
-	srvDescriptorHeap_ = descriptorManager_->CreateDescriptorHeap(graphicDevice_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1000, true);
-	// DSV用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
-	dsvDescriptorHeap_ = descriptorManager_->CreateDescriptorHeap(graphicDevice_->GetDevice(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	// ▼▼▼ ★ここでSRVManagerを作成★ ▼▼▼
+	// 他の全て（ImGui, Renderer, Resources）より先に作成する
+	srvManager_ = std::make_unique<SRVManager>();
+	// SRVManager が内部でヒープとアロケータを作成する
+	srvManager_->Initialize(graphicDevice_->GetDevice(), 1000);
 
 	// 光源の初期化
 	lightManager_ = std::make_unique<LightManager>();
@@ -301,15 +304,33 @@ void Engine::InitializeGraphics()
 
 void Engine::InitializeRenderer()
 {
-	// DepthStencilTextureをウィンドウのサイズで作成
-	depthStencilResource_ = DSVManager::CreateDepthStencilTextureResource(graphicDevice_->GetDevice(), kClientWidth, kClientHeight);
+	// 「支配人」にリソース作成とDSV作成を「両方」依頼する
+	D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle = dsvManager_->CreateDepthStencilView(
+		kClientWidth,
+		kClientHeight,
+		depthStencilResource_ // リソースも返してもらう
+	);
 
-	// DSVの設定
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;// Format。基本的にはResourceに合わせる
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;// 2dTexture
-	// DSVHeapの先頭にDSVをつくる
-	graphicDevice_->GetDevice()->CreateDepthStencilView(depthStencilResource_.Get(), &dsvDesc, dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart());
+	// --- 2. オフスクリーンRTVを作成 ---
+	auto [offscreenTexture, offscreenRtvHandle] =
+		offscreenRTVManager_->CreateOffscreenRenderTarget(
+			kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor()
+		);
+
+	// メインのオフスクリーンテクスチャ（今作ったやつ）用のSRVを作成
+	D3D12_SHADER_RESOURCE_VIEW_DESC sceneSrvDesc = {};
+	sceneSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // RTVフォーマットと合わせる
+	sceneSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	sceneSrvDesc.Texture2D.MipLevels = 1;
+	sceneSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+	offscreenSrvIndex_ = srvManager_->CreateSRV(offscreenTexture.Get(), sceneSrvDesc);
+
+	// --- 3. オフスクリーンDSVを作成 ---
+	Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource;
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle = dsvManager_->CreateDepthStencilView(
+		kClientWidth, kClientHeight, offscreenDepthResource
+	);
 
 	// フェンスとイベント
 	HRESULT hr = graphicDevice_->GetDevice()->CreateFence(fenceValue_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_));
@@ -321,8 +342,22 @@ void Engine::InitializeRenderer()
 	// レンダラーの初期化
 	renderContext_ = std::make_unique<RenderContext>(kClientWidth, kClientHeight);
 	renderCoordinator_ = std::make_unique<RenderCoordinator>();
-	renderCoordinator_->Initialize(swapChain_.get(), rtvManager_.get(), offscreenRTVManager_.get(), commandManager_.get(),
-	renderContext_.get(), fence_.Get(), fenceEvent_, graphicDevice_.get(), dsvDescriptorHeap_.Get(), this);
+	renderCoordinator_->Initialize(
+		swapChain_.get(),
+		rtvManager_.get(),
+		offscreenRTVManager_.get(),
+		commandManager_.get(),
+		renderContext_.get(),
+		fence_.Get(),
+		fenceEvent_,
+		graphicDevice_.get(),
+		this,
+		// --- ★ リファクタリングされた引数 ★ ---
+		mainDsvHandle,
+		offscreenRtvHandle,
+		offscreenTexture.Get(), // ★ バリア用にリソースを渡す
+		offscreenDsvHandle
+	);
 	
 	// dxcCompilerを初期化
 	HRESULT hr1 = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
@@ -343,33 +378,27 @@ void Engine::InitializeRenderer()
 	psoManager_->Initialize(graphicDevice_->GetDevice(), dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get(), rootSignatureManager_.get());
 
 	postEffectManager_ = std::make_unique<PostEffectManager>();
-	postEffectManager_->Initialize(this, graphicDevice_->GetDevice(), offscreenRTVManager_.get(), kClientWidth, kClientHeight, rootSignatureManager_.get(), psoManager_.get(), camera_);
-
-	// DepthのSRV用Indexを確保
-	postEffectManager_->sceneDepthIndex_ = srvAllocator_->Allocate();
-
-	// CPUハンドルを取得
-	D3D12_CPU_DESCRIPTOR_HANDLE depthSRV_CPU = srvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-	depthSRV_CPU.ptr += postEffectManager_->sceneDepthIndex_ * descriptorSizeSRV_;
+	postEffectManager_->Initialize(this, graphicDevice_->GetDevice(), offscreenRTVManager_.get(), kClientWidth, kClientHeight, rootSignatureManager_.get(), psoManager_.get(), camera_, srvManager_.get());
 
 	// SRVの記述
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Texture2D.MipLevels = 1;
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthSrvDesc{};
+	depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	depthSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	depthSrvDesc.Texture2D.MipLevels = 1;
 
-	// SRVを作成
-	graphicDevice_->GetDevice()->CreateShaderResourceView(
-		depthStencilResource_.Get(), &srvDesc, depthSRV_CPU);
+	// 2. 「支配人」に作成を依頼し、インデックスをもらう
+	postEffectManager_->sceneDepthIndex_ = srvManager_->CreateSRV(
+		depthStencilResource_.Get(),
+		depthSrvDesc
+	);
 }
 
 void Engine::InitializeResources()
 {
-	offscreenSrvIndex_ = srvAllocator_->Allocate();
 
 	textureManager_ = std::make_unique<TextureManager>();
-	textureManager_->Initialize(graphicDevice_->GetDevice(), commandManager_->GetCommandList(), srvAllocator_.get());
+	textureManager_->Initialize(graphicDevice_->GetDevice(), commandManager_->GetCommandList(), srvManager_.get());
 	TextureHandle::Initialize(this);
 	ModelHandle::Initialize(this);
 	AnimationHandle::Initialize();
@@ -386,10 +415,15 @@ void Engine::InitializeResources()
 
 void Engine::InitializeImGui()
 {
+	// ★ SRVManager からヒープを取得する
+	ID3D12DescriptorHeap* srvHeap = srvManager_->GetSRVHeap();
+
 	// ImGuiの初期化
 	ImGuiManager::Initialize(window_->GetHwnd(), graphicDevice_->GetDevice(),
-		rtvManager_->rtvDesc, swapChain_->GetSwapChainDesc(), srvDescriptorHeap_.Get(),
-		srvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap_->GetGPUDescriptorHandleForHeapStart());
+		rtvManager_->rtvDesc, swapChain_->GetSwapChainDesc(), srvHeap,
+		srvHeap->GetCPUDescriptorHandleForHeapStart(),
+		srvHeap->GetGPUDescriptorHandleForHeapStart()
+	);
 }
 
 void Engine::InitializeAudio()
@@ -405,7 +439,7 @@ int Engine::LoadTexture(const std::string& texturePath)
 	DirectX::ScratchImage mipImages = TextureManager::LoadTexture(texturePath);
 
 	// テクスチャをアップロード
-	TextureManager::TextureResources texResources = textureManager_->UploadTexture(mipImages, srvDescriptorHeap_.Get(), *graphicDevice_, descriptorSizeSRV_, textures_);
+	TextureManager::TextureResources texResources = textureManager_->UploadTexture(mipImages, textures_);
 
 	// 保存したテクスチャのインデックスを返す
 	return static_cast<int>(textures_.size()) - 1;
@@ -417,10 +451,8 @@ void Engine::LoadTextureArray(const std::vector<std::string>& texturePaths)
 	std::vector<DirectX::ScratchImage> images = textureManager_->LoadMultipleTextures(texturePaths);
 
 	// 2. Texture2DArray作成＆アップロード
-	textureManager_->CreateAndUploadTexture2DArray(images, srvDescriptorHeap_.Get(), descriptorSizeSRV_, textureArrayResource_);
+	textureManager_->CreateAndUploadTexture2DArray(images, textureArrayResource_);
 
-	// 3. textureArraySRV_を内部で管理
-	textureManager_->textureArraySRV_ = textureArrayResource_.srvHandleGPU;
 }
 
 void Engine::InitializeFixFPS()
@@ -513,7 +545,7 @@ void Engine::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldT
 	assert(indexTriangle_ < kMaxTriangleCount);
 
 	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画する三角形を取得
@@ -547,7 +579,7 @@ void Engine::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldT
 	// 定数バッファをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangle.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangle.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -588,7 +620,7 @@ void Engine::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTra
 	assert(indexSphere_ < kMaxSphereCount);
 
 	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画する球体を取得
@@ -624,7 +656,7 @@ void Engine::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTra
 	// 定数バッファをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphere.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphere.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -671,7 +703,7 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	assert(indexModel_ < kMaxModelCount);
 
 	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画するモデルを取得
@@ -710,7 +742,7 @@ void Engine::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData
 	// 定数バッファをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -756,7 +788,7 @@ void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, 
 	assert(indexModel_ < kMaxModelCount);
 
 	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	RenderData& model = models_[indexModel_];
@@ -787,13 +819,13 @@ void Engine::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, 
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
 
 	// [Index 1] : VS SRV Table (t0) -> gMatrixPalette
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, skinCluster.paletteSrvHandle.second);
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex));
 
 	// [Index 2] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress());
 
 	// [Index 3] : PS SRV Table (t0) -> gTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 
 	// [Index 4] : PS CBV (b1) -> DirectionalLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
@@ -827,7 +859,7 @@ void Engine::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData&
 
 
 	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画するモデルを取得
@@ -861,7 +893,7 @@ void Engine::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData&
 	// 定数バッファをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -922,7 +954,7 @@ void Engine::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t
 	assert(indexSprite_ < kMaxSpriteCount);
 
 	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画するスプライトを取得
@@ -972,7 +1004,7 @@ void Engine::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t
 	// 定数バッファ(RootParameter)をGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -1018,7 +1050,7 @@ void Engine::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTrans
 	assert(indexCube_ < kMaxCubeCount);
 
 	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// 描画する立方体を取得
@@ -1054,7 +1086,7 @@ void Engine::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTrans
 	// 定数バッファをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cube.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, cube.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textures_[textureHandle].srvManager.GetSrvHandleGPU());
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -1091,7 +1123,7 @@ void Engine::DrawLine(const Vector3& start, const Vector3& end, Camera& camera, 
 	assert(indexLine_ < kMaxLineCount);
 
 	// 描画に必要なSRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	RenderData& line = lines_[indexLine_];
@@ -1197,7 +1229,7 @@ void Engine::DrawParticles(const Camera& camera)
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
 
-	ID3D12DescriptorHeap* heaps[] = { srvDescriptorHeap_.Get() };
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// カメラ定数バッファ更新
@@ -1222,7 +1254,7 @@ void Engine::DrawParticles(const Camera& camera)
 		memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
 
 		// テクスチャのSRVをセット
-		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = textures_[textureIndex].srvManager.GetSrvHandleGPU();
+		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textures_[textureIndex].srvIndex);
 		cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
 
 		// インスタンスバッファのGPUアドレスにオフセットを加算してセット

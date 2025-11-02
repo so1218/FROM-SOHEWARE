@@ -18,7 +18,6 @@ void RootSignatureManager::Initialize(ID3D12Device* device)
     CreateFullScreenRootSignature();
     CreateDepthExtractRootSignature();
     CreateSkyboxRootSignature();
-    CreateSkyboxRootSignature();
 
     LOG_INFO("\n"
         "////////////////////////////////////////////////////////////\n"

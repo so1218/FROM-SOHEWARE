@@ -124,9 +124,7 @@ SkinCluster CreateSkinCluster(
 	const Microsoft::WRL::ComPtr<ID3D12Device>& device,
 	const Skeleton& skeleton,
 	const ModelData& modelData,
-	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
-	uint32_t descriptorSize,
-	SRVAllocator* srvAllocator)
+	SRVManager* srvManager)
 {
 	// palette用のResourceを確保
 	SkinCluster skinCluster;
@@ -136,16 +134,6 @@ SkinCluster CreateSkinCluster(
 	WellForGPU* mappedPalette = nullptr;	
 	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));	
 	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; // spanを使ってアクセスするようにする
-	
-	uint32_t srvIndex = srvAllocator->Allocate();
-	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-
-	cpuHandle.ptr += descriptorSize * srvIndex;
-	gpuHandle.ptr += descriptorSize * srvIndex;
-
-	skinCluster.paletteSrvHandle.first = cpuHandle;
-	skinCluster.paletteSrvHandle.second = gpuHandle;
 
 	// palette用のSRVを作成。structuredBufferでアクセスできるようにする
 	D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc = {};
@@ -156,10 +144,12 @@ SkinCluster CreateSkinCluster(
 	paletteSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 	paletteSrvDesc.Buffer.NumElements = static_cast<UINT>(skeleton.joints.size());
 	paletteSrvDesc.Buffer.StructureByteStride = sizeof(WellForGPU);
-	device->CreateShaderResourceView(
+
+	// 「支配人」に作成を依頼し、「インデックス」をもらう
+	skinCluster.paletteSrvIndex = srvManager->CreateSRV(
 		skinCluster.paletteResource.Get(),
-		&paletteSrvDesc,
-		skinCluster.paletteSrvHandle.first);
+		paletteSrvDesc
+	);
 
 	// influence用のResourceを確保。頂点ごとにinfluence情報を追加できるようにする
 	skinCluster.influenceResource = BufferManager::CreateBufferResource(

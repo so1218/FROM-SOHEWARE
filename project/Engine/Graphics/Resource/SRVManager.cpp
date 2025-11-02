@@ -2,77 +2,85 @@
 #include "DescriptorHeapManager.h"
 #include "Logger.h"
 
-D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::Create(
-    const Microsoft::WRL::ComPtr <ID3D12Resource>& textureResource,
-    const DirectX::TexMetadata& metadata,
-    ID3D12DescriptorHeap* descriptorHeap,
-    const Microsoft::WRL::ComPtr <ID3D12Device>& device,
-    uint32_t descriptorSizeSRV,
-    uint32_t index
-) 
+void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)
 {
-    LOG_INFO("\n"
-        "//=========================================================\n"
-        "// Creating Shader Resource View (SRV)\n"
-        "// Index: {}", index);
+    device_ = device;
+    srvDescriptorSize_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // metaDataを基にSRVの設定
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = metadata.format;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+    // Shader Visibleヒープ（GPUから見える）を作成
+    D3D12_DESCRIPTOR_HEAP_DESC heapDescVisible = {};
+    heapDescVisible.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heapDescVisible.NumDescriptors = maxDescriptors;
+    heapDescVisible.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    HRESULT hr = device_->CreateDescriptorHeap(&heapDescVisible, IID_PPV_ARGS(&srvHeap_));
+    assert(SUCCEEDED(hr));
 
+    // CPU専用ヒープ（コピー用）を作成
+    D3D12_DESCRIPTOR_HEAP_DESC heapDescCPU = {};
+    heapDescCPU.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heapDescCPU.NumDescriptors = maxDescriptors;
+    heapDescCPU.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    hr = device_->CreateDescriptorHeap(&heapDescCPU, IID_PPV_ARGS(&srvHeapCPU_));
+    assert(SUCCEEDED(hr));
 
-    // SRVを作成するDescriptorHeapの場所を決める
-    srvHandleCPU_ = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    srvHandleGPU_ = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-
-    // 先頭はImGuiが使っているのでその次を使う
-    srvHandleCPU_.ptr += descriptorSizeSRV * index;
-    srvHandleGPU_.ptr += descriptorSizeSRV * index;
-
-    // SRVの生成
-    device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
-
-    LOG_INFO("// SRV Creation Successful.\n"
-        "//=========================================================");
-    return srvHandleGPU_;
+    // SRVの割り当て管理用アロケータを作成
+    allocator_ = std::make_unique<SRVAllocator>(maxDescriptors);
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::CreateTexture2DArraySRV(
-    const Microsoft::WRL::ComPtr<ID3D12Resource>& textureResource,
-    const DirectX::TexMetadata& metadata,
-    ID3D12DescriptorHeap* descriptorHeap,
-    const Microsoft::WRL::ComPtr<ID3D12Device>& device,
-    uint32_t descriptorSizeSRV,
-    uint32_t index
-) {
-    LOG_INFO("\n"
-        "//=========================================================\n"
-        "// Creating Texture2DArray SRV\n"
-        "// Index: {}, ArraySize: {}", index, metadata.arraySize);
+uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)
+{
+    // 空きインデックスを取得
+    uint32_t index = allocator_->Allocate();
 
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Format = metadata.format;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    srvDesc.Texture2DArray.MostDetailedMip = 0;
-    srvDesc.Texture2DArray.MipLevels = static_cast<UINT>(metadata.mipLevels);
-    srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.ArraySize = static_cast<UINT>(metadata.arraySize);
+    // 表側（GPU可視）ヒープにSRVを作成
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleVisible = srvHeap_->GetCPUDescriptorHandleForHeapStart();
+    cpuHandleVisible.ptr += (SIZE_T)index * srvDescriptorSize_;
+    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleVisible);
 
-    // デスクリプタ位置計算
-    srvHandleCPU_ = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    srvHandleGPU_ = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    srvHandleCPU_.ptr += descriptorSizeSRV * index;
-    srvHandleGPU_.ptr += descriptorSizeSRV * index;
+    // 裏側（CPU専用）ヒープにも同じSRVを作成
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleCopy = srvHeapCPU_->GetCPUDescriptorHandleForHeapStart();
+    cpuHandleCopy.ptr += (SIZE_T)index * srvDescriptorSize_;
+    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
 
-    // SRV作成
-    device->CreateShaderResourceView(textureResource.Get(), &srvDesc, srvHandleCPU_);
+    LOG_INFO("SRV Created at Index: {}", index);
+    return index;
+}
 
-    LOG_INFO("// Texture2DArray SRV Creation Successful.\n"
-        "//=========================================================");
+void SRVManager::FreeSRV(uint32_t index)
+{
+    // インデックスをアロケータに返却
+    allocator_->Free(index);
+    LOG_INFO("SRV Freed at Index: {}", index);
+}
 
-    return srvHandleGPU_;
+D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleGPU(uint32_t index) const
+{
+    // インデックスからGPUハンドルを計算して返す
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvHeap_->GetGPUDescriptorHandleForHeapStart();
+    gpuHandle.ptr += (SIZE_T)index * srvDescriptorSize_;
+    return gpuHandle;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleCPU_Visible(uint32_t index) const
+{
+    // 表側ヒープからCPUハンドルを取得（ImGuiなどのデバッグ用）
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvHeap_->GetCPUDescriptorHandleForHeapStart();
+    cpuHandle.ptr += (SIZE_T)index * srvDescriptorSize_;
+    return cpuHandle;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleCPU_ForCopying(uint32_t index) const
+{
+    // 裏側ヒープからCPUハンドルを取得（コピー元用）
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvHeapCPU_->GetCPUDescriptorHandleForHeapStart();
+    cpuHandle.ptr += (SIZE_T)index * srvDescriptorSize_;
+    return cpuHandle;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleCPU(uint32_t index) const
+{
+    // 汎用CPUハンドルを取得
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvHeap_->GetCPUDescriptorHandleForHeapStart();
+    cpuHandle.ptr += (SIZE_T)index * srvDescriptorSize_;
+    return cpuHandle;
 }

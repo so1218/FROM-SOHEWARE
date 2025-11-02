@@ -19,10 +19,8 @@ public:
     void Update(); 
 
     void RenderOffscreenTexture(
-        ID3D12DescriptorHeap* descriptorHeap,
-        uint32_t descriptorSizeSRV,
-        D3D12_CPU_DESCRIPTOR_HANDLE srcHandle,
-        uint32_t dstIndex
+        SRVManager* srvManager,    
+        uint32_t srvIndexToShow
     );
 
 private:

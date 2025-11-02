@@ -644,27 +644,25 @@ void DebugGuiManager::DrawInformationDisplays()
 }
 
 void DebugGuiManager::RenderOffscreenTexture(
-    ID3D12DescriptorHeap* descriptorHeap,
-    uint32_t descriptorSizeSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE srcHandle,
-    uint32_t dstIndex
+    SRVManager* srvManager,
+    uint32_t srvIndexToShow
 ) 
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    dstHandle.ptr += descriptorSizeSRV * dstIndex;
+    // 1. マネージャから、表示したいSRVの「GPUハンドル」を直接もらう
+     //    (コピーもCPUハンドルも不要)
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    gpuHandle.ptr += descriptorSizeSRV * dstIndex;
-
-    // デスクリプタをコピー
-    engine_->graphicDevice_->GetDevice()->CopyDescriptorsSimple(
-        1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-    );
-
+    // 2. ImGuiで表示する
     ImGui::SetNextWindowSize(ImVec2(800, 450), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
     ImGui::Begin("Scene");
     ImVec2 imageSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
+
+    // (void*) キャストは ImGui の作法なので、reinterpret_cast が2回必要
+    ImGui::Image(
+        reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)),
+        imageSize
+    );
+
     ImGui::End();
 }

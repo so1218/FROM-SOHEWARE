@@ -4,30 +4,22 @@ TextureManager::TextureManager() {};
 
 TextureManager::~TextureManager() {}
 
-void TextureManager::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVAllocator* srvAllocator)
+void TextureManager::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager)
 {
-    this->device_ = device;
-    this->commandList_ = commandList;
-
-    // SRVAllocator
-    srvAllocator_ = srvAllocator;
-
-    // index0はImGui用に予約（dummy登録）
-    D3D12_GPU_DESCRIPTOR_HANDLE dummy{};
-    dummy.ptr = 0;
-    allSRVs_.push_back(dummy);
+    device_ = device;
+    commandList_ = commandList;
+    srvManager_ = srvManager;
 }
 
 DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
 {
-    // テキスチャファイルを読んでプログラムで扱えるようにする
+    // テクスチャファイルを読み込み、プログラムで扱える形式に変換
     DirectX::ScratchImage image{};
     std::wstring filePathW = StringUtils::ConvertString(filePath);
     HRESULT hr;
 
-    hr;
-    // テキスチャファイルを読んでプログラムで扱えるようにする
-    if (filePathW.ends_with(L".dds"))// .ddsで終わっていたらddsとみなす。より安全な方法はいくらでもあるらしい
+    // 拡張子によって読み込み方法を切り替え
+    if (filePathW.ends_with(L".dds"))
     {
         hr = DirectX::LoadFromDDSFile(filePathW.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image);
     }
@@ -36,29 +28,32 @@ DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
         hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
     }
     assert(SUCCEEDED(hr));
-    
-    // ミップマップの作成
+
+    // ミップマップを生成（圧縮フォーマットの場合はスキップ）
     DirectX::ScratchImage mipImages{};
-    if (DirectX::IsCompressed(image.GetMetadata().format))// 圧縮フォーマットかどうか調べる
+    if (DirectX::IsCompressed(image.GetMetadata().format))
     {
-        mipImages = std::move(image);// 圧縮フォーマットならそのまま使うのでmoveする
+        mipImages = std::move(image);
     }
     else
     {
-        hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+        hr = DirectX::GenerateMipMaps(
+            image.GetImages(),
+            image.GetImageCount(),
+            image.GetMetadata(),
+            DirectX::TEX_FILTER_SRGB,
+            0,
+            mipImages
+        );
+        assert(SUCCEEDED(hr));
     }
-    assert(SUCCEEDED(hr));
 
-    // ミップマップ付きのデータを渡す
+    // ミップマップ付きテクスチャを返す
     return mipImages;
 }
 
 TextureManager::TextureResources TextureManager::CreateTexture2DArray(
-    const std::vector<DirectX::ScratchImage>& mipImagesArray,
-    ID3D12DescriptorHeap* srvDescriptorHeap,
-    ID3D12Device* device,
-    uint32_t descriptorSizeSRV,
-    ID3D12GraphicsCommandList* commandList
+    const std::vector<DirectX::ScratchImage>& mipImagesArray
 ) {
     TextureResources result;
 
@@ -84,7 +79,7 @@ TextureManager::TextureResources TextureManager::CreateTexture2DArray(
     D3D12_HEAP_PROPERTIES heapProps{};
     heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
 
-    HRESULT hr = device->CreateCommittedResource(
+    HRESULT hr = device_->CreateCommittedResource(
         &heapProps,
         D3D12_HEAP_FLAG_NONE,
         &desc,
@@ -99,14 +94,14 @@ TextureManager::TextureResources TextureManager::CreateTexture2DArray(
 
     for (size_t i = 0; i < arraySize; ++i) {
         std::vector<D3D12_SUBRESOURCE_DATA> subresourceTmp;
-        DirectX::PrepareUpload(device, mipImagesArray[i].GetImages(), mipImagesArray[i].GetImageCount(), mipImagesArray[i].GetMetadata(), subresourceTmp);
+        DirectX::PrepareUpload(device_, mipImagesArray[i].GetImages(), mipImagesArray[i].GetImageCount(), mipImagesArray[i].GetMetadata(), subresourceTmp);
         subresources.insert(subresources.end(), subresourceTmp.begin(), subresourceTmp.end());
     }
 
     UINT64 requiredSize = GetRequiredIntermediateSize(result.texture.Get(), 0, static_cast<UINT>(subresources.size()));
-    result.intermediate = BufferManager::CreateBufferResource(device, requiredSize);
+    result.intermediate = BufferManager::CreateBufferResource(device_, requiredSize);
 
-    UpdateSubresources(commandList, result.texture.Get(), result.intermediate.Get(), 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
+    UpdateSubresources(commandList_, result.texture.Get(), result.intermediate.Get(), 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
 
     // Resource Barrier
     D3D12_RESOURCE_BARRIER barrier{};
@@ -115,30 +110,10 @@ TextureManager::TextureResources TextureManager::CreateTexture2DArray(
     barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
     barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    commandList->ResourceBarrier(1, &barrier);
+    commandList_->ResourceBarrier(1, &barrier);
 
-    // SRV インデックス取得,登録
-    uint32_t index = AllocateAndRegisterSRV(result.srvHandleGPU);
-
-    // SRV 描画に使うハンドル取得
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    cpuHandle.ptr += index * descriptorSizeSRV;
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = arrayMeta.format;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    srvDesc.Texture2DArray.MipLevels = UINT(arrayMeta.mipLevels);
-    srvDesc.Texture2DArray.ArraySize = UINT(arrayMeta.arraySize);
-    srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.MostDetailedMip = 0;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-    device->CreateShaderResourceView(result.texture.Get(), &srvDesc, cpuHandle);
-
-    // GPUハンドルも計算してセット
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    gpuHandle.ptr += index * descriptorSizeSRV;
-    result.srvHandleGPU = gpuHandle;
+    // SRVインデックスは「カラ」のまま返す
+    result.srvIndex = 0;
 
     return result;
 }
@@ -200,30 +175,26 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12R
 
 TextureManager::TextureResources TextureManager::UploadTexture(
     DirectX::ScratchImage& mipImages,
-    ID3D12DescriptorHeap* srvDescriptorHeap,
-    GraphicsDevice& graphicDevice,
-    uint32_t descriptorSizeSRV,
     std::vector<TextureResources>& textures)
 {
     TextureResources result;
 
+    // 1. テクスチャリソースとアップロード用バッファを作成
     result.metadata = mipImages.GetMetadata();
     result.texture = CreateTextureResource(device_, result.metadata);
     result.intermediate = UploadTextureData(result.texture.Get(), mipImages, device_, commandList_);
 
-    // SRVインデックスを割り当てる
-    uint32_t index = AllocateAndRegisterSRV(result.srvHandleGPU);
+    // 2. シェーダーリソースビュー（SRV）の設定を構築
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    srvDesc.Format = result.metadata.format;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = UINT(result.metadata.mipLevels);
 
-    // SRV作成,登録
-    result.srvHandleGPU = result.srvManager.Create(
-        result.texture.Get(),
-        result.metadata,
-        srvDescriptorHeap,
-        graphicDevice.GetDevice(),
-        descriptorSizeSRV,
-        index
-    );
+    // 3. SRVManagerを通してSRVを作成し、インデックスを取得
+    result.srvIndex = srvManager_->CreateSRV(result.texture.Get(), srvDesc);
 
+    // 4. テクスチャリストに追加し、新規アップロードとして登録
     textures.push_back(result);
     AddNewUpload(result);
 
@@ -274,35 +245,26 @@ std::vector<DirectX::ScratchImage> TextureManager::LoadMultipleTextures(const st
 
 void TextureManager::CreateAndUploadTexture2DArray(
     const std::vector<DirectX::ScratchImage>& images,
-    ID3D12DescriptorHeap* srvHeap,
-    uint32_t descriptorSize,
     TextureResources& outTextureArrayResource)
 {
-    // 1. Texture2DArrayリソース作成＆アップロード
-    outTextureArrayResource = CreateTexture2DArray(
-        images,
-        srvHeap,
-        device_,
-        descriptorSize,
-        commandList_
-    );
+    // 1. Texture2DArrayリソースを作成してGPUにアップロード
+    outTextureArrayResource = CreateTexture2DArray(images);
 
-    // 2. SRVのGPUハンドルをメンバー等に保持しておく（例）
-    textureArraySRV_ = outTextureArrayResource.srvHandleGPU;
-}
+    // 2. SRVの設定を構築
+    const auto& arrayMeta = outTextureArrayResource.metadata;
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    srvDesc.Format = arrayMeta.format;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
+    srvDesc.Texture2DArray.MipLevels = UINT(arrayMeta.mipLevels);
+    srvDesc.Texture2DArray.ArraySize = UINT(arrayMeta.arraySize);
+    srvDesc.Texture2DArray.FirstArraySlice = 0;
+    srvDesc.Texture2DArray.MostDetailedMip = 0;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-uint32_t TextureManager::AllocateAndRegisterSRV(D3D12_GPU_DESCRIPTOR_HANDLE handle)
-{
-    assert(srvAllocator_); // 忘れず初期化してあること
+    // 3. SRVManagerを使用してSRVを作成し、インデックスを取得
+    uint32_t index = srvManager_->CreateSRV(outTextureArrayResource.texture.Get(), srvDesc);
 
-    // 1. SRVAllocatorから空いているインデックスを取得
-    uint32_t index = srvAllocator_->Allocate();
-
-    // 2. allSRVs_が小さければ拡張、既にあれば上書き
-    if (index >= allSRVs_.size()) {
-        allSRVs_.resize(index + 1);
-    }
-    allSRVs_[index] = handle;
-
-    return index;
+    // 4. 取得したインデックスをリソース情報として保存
+    outTextureArrayResource.srvIndex = index;
+    textureArraySrvIndex_ = index;
 }
