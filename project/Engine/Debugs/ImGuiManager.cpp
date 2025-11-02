@@ -25,7 +25,7 @@ void ImGuiManager::Initialize(
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // ドッキング有効化
     io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
-    io.IniFilename = "imgui_layout.ini";
+  /*  io.IniFilename = "imgui_layout.ini";*/
 
     // フォント設定（日本語対応）
     std::string fontPath = "Resources/fonts/GenJyuuGothic-Bold.ttf";
@@ -152,15 +152,24 @@ void ImGuiManager::BeginFrame()
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
 
+    ImVec2 dockPos = viewport->Pos;
+    ImVec2 dockSize = viewport->Size;
+
+    if (ImGui::GetItemRectSize().y > 0.0f)
+    {
+        dockPos.y += ImGui::GetItemRectSize().y;    // Y座標をメニューバーのぶん下げる
+        dockSize.y -= ImGui::GetItemRectSize().y;   // 高さをメニューバーのぶん縮める
+    }
+
     bool iniFileExists = (io.IniFilename != nullptr && std::filesystem::exists(io.IniFilename));
 
       // 初回のみDock構造を作成
-    if (!dockInitialized_ && !iniFileExists) {
+    if (!dockInitialized_/* && !iniFileExists*/) {
         dockInitialized_ = true;
 
         ImGui::DockBuilderRemoveNode(dockspace_id);
         ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-        ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
+        ImGui::DockBuilderSetNodeSize(dockspace_id, dockSize);
 
         ImGuiID dock_main_id = dockspace_id;
         ImGuiID dock_id_down, dock_id_right;
@@ -188,15 +197,15 @@ void ImGuiManager::BeginFrame()
 
         ImGui::DockBuilderFinish(dockspace_id);
     }
-    else if (!dockInitialized_ && iniFileExists)
+    else if (!dockInitialized_/* && iniFileExists*/)
     {
         dockInitialized_ = true; // .iniから読み込んだので「組んだ」扱い
     }
 
 
     // メインDockSpaceの背景ウィンドウを描画
-    ImGui::SetNextWindowPos(viewport->Pos);
-    ImGui::SetNextWindowSize(viewport->Size);
+    ImGui::SetNextWindowPos(dockPos);  
+    ImGui::SetNextWindowSize(dockSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
     ImGuiWindowFlags window_flags =

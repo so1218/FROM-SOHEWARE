@@ -17,8 +17,9 @@ LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
     // メッセージに応じてゲーム固有の処理を行う
     switch (msg)
     {
-        // ウィンドウが破壊された
+
     case WM_DESTROY:
+
         // OSに対して、アプリの終了を伝える
         PostQuitMessage(0);
         return 0;
