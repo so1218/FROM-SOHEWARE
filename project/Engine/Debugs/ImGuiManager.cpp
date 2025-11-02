@@ -7,6 +7,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "externals/stb_image.h"
 
+bool ImGuiManager::dockInitialized_ = false;
+
 void ImGuiManager::Initialize(
     HWND hwnd,
     ID3D12Device* device,
@@ -22,6 +24,8 @@ void ImGuiManager::Initialize(
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // ドッキング有効化
     io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
+
+    io.IniFilename = "imgui_layout.ini";
 
     // フォント設定（日本語対応）
     std::string fontPath = "Resources/fonts/GenJyuuGothic-Bold.ttf";
@@ -142,16 +146,17 @@ void ImGuiManager::BeginFrame()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    //DrawMenuBar();
+    DrawMenuBar();
 
     ImGuiIO& io = ImGui::GetIO();
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
 
+    bool iniFileExists = (io.IniFilename != nullptr && std::filesystem::exists(io.IniFilename));
+
       // 初回のみDock構造を作成
-    static bool dockInitialized = false;
-    if (!dockInitialized) {
-        dockInitialized = true;
+    if (!dockInitialized_ && !iniFileExists) {
+        dockInitialized_ = true;
 
         ImGui::DockBuilderRemoveNode(dockspace_id);
         ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
@@ -167,22 +172,25 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.35f, &dock_id_right, &dock_main_id);
 
         // 割り当て
-        ImGui::DockBuilderDockWindow("ログやデバッグ出力", dock_id_down);
         ImGui::DockBuilderDockWindow("全体のデバッグ情報", dock_id_down);
         ImGui::DockBuilderDockWindow("Scene", dock_main_id);
         ImGui::DockBuilderDockWindow("プレイヤー", dock_id_right);
         ImGui::DockBuilderDockWindow("ホリシーン", dock_id_right);
-        ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_right);
+        ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_down);
         ImGui::DockBuilderDockWindow("敵", dock_id_right);
         ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
         ImGui::DockBuilderDockWindow("シーンの選択", dock_id_down);
-        ImGui::DockBuilderDockWindow("Ground", dock_id_down);
-        ImGui::DockBuilderDockWindow("プレイシーン", dock_id_down);
-        ImGui::DockBuilderDockWindow("FollowCamera", dock_id_down);
-        ImGui::DockBuilderDockWindow("タイトルシーン", dock_id_down);
-        ImGui::DockBuilderDockWindow("天球", dock_id_down);
+        ImGui::DockBuilderDockWindow("Ground", dock_id_right);
+        ImGui::DockBuilderDockWindow("プレイシーン", dock_id_right);
+        ImGui::DockBuilderDockWindow("FollowCamera", dock_id_right);
+        ImGui::DockBuilderDockWindow("タイトルシーン", dock_id_right);
+        ImGui::DockBuilderDockWindow("天球", dock_id_right);
 
         ImGui::DockBuilderFinish(dockspace_id);
+    }
+    else if (!dockInitialized_ && iniFileExists)
+    {
+        dockInitialized_ = true; // .iniから読み込んだので「組んだ」扱い
     }
 
 
@@ -209,7 +217,7 @@ void ImGuiManager::BeginFrame()
     // DockSpaceを作成
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    ImGui::End(); // "DockSpaceWindow"
+    ImGui::End(); 
 }
 
 void ImGuiManager::DrawMenuBar()
@@ -218,65 +226,81 @@ void ImGuiManager::DrawMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open...", "Ctrl+O"))
-            {
-                // ファイルダイアログ表示フラグを立てる
-                IGFD::FileDialogConfig config;
-                config.path = ".";  // 初期ディレクトリ指定
+            //if (ImGui::MenuItem("Open...", "Ctrl+O"))
+            //{
+            //    // ファイルダイアログ表示フラグを立てる
+            //    IGFD::FileDialogConfig config;
+            //    config.path = ".";  // 初期ディレクトリ指定
 
-                ImGuiFileDialog::Instance()->OpenDialog(
-                    "ChooseFileDlgKey",
-                    "Choose File",
-                    ".png,.txt,.cpp,.h",
-                    config);
-            }
-            if (ImGui::MenuItem("Save", "Ctrl+S"))
-            {
-                // セーブ処理を呼ぶ（後述）
-                SaveFile();
-            }
+            //    ImGuiFileDialog::Instance()->OpenDialog(
+            //        "ChooseFileDlgKey",
+            //        "Choose File",
+            //        ".png,.txt,.cpp,.h",
+            //        config);
+            //}
+            //if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+            //{
+            //    IGFD::FileDialogConfig config;
+            //    config.path = "."; // 初期ディレクトリ
+            //    ImGuiFileDialog::Instance()->OpenDialog(
+            //        "SaveFileDlgKey", // Openとは別のキー
+            //        "Save File As",   // ダイアログのタイトル
+            //        ".json,.txt",     // 保存形式のフィルタ
+            //        config);
+            //}
             if (ImGui::MenuItem("Exit"))
             {
                 PostQuitMessage(0);
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo", "Ctrl+Z")) {}
-            if (ImGui::MenuItem("Redo", "Ctrl+Y")) {}
-            ImGui::EndMenu();
-        }
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("Toggle Debug Panel")) {}
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Help"))
-        {
-            if (ImGui::MenuItem("About"))
+            if (ImGui::MenuItem("Reset Layout")) // レイアウトをリセット
             {
-                // Aboutダイアログ表示など
+                // .ini ファイルを削除する
+                ImGuiIO& io = ImGui::GetIO();
+                if (io.IniFilename != nullptr) {
+                    std::filesystem::remove(io.IniFilename);
+                }
+
+                // 再ビルドを強制する
+                dockInitialized_ = false;
             }
             ImGui::EndMenu();
         }
+        
         ImGui::EndMainMenuBar();
     }
 
     //ファイルダイアログの表示処理
-    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
-    {
-        // OKボタン押された場合
-        if (ImGuiFileDialog::Instance()->IsOk())
-        {
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+    //if (ImGuiFileDialog::Instance()->Display("SaveFileDlgKey"))
+    //{
+    //    if (ImGuiFileDialog::Instance()->IsOk())
+    //    {
+    //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
 
-            // ここでファイルを開いて読み込みなどの処理
-            OpenFile(filePathName);
-        }
-        ImGuiFileDialog::Instance()->Close();
-    }
+    //        // 既存のSaveFile()を、パスを引数に取るように改造
+    //        SaveFile(filePathName);
+    //    }
+    //    ImGuiFileDialog::Instance()->Close();
+    //}
+
+    //if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
+    //{
+    //    // "OK" が押されたら
+    //    if (ImGuiFileDialog::Instance()->IsOk())
+    //    {
+    //        // 選択されたファイルのフルパスを取得
+    //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+
+    //        // ファイルを開く処理を呼ぶ
+    //        OpenFile(filePathName);
+    //    }
+
+    //    // ダイアログを閉じる (OKでもキャンセルでも)
+    //    ImGuiFileDialog::Instance()->Close();
+    //}
 }
 
 void ImGuiManager::OpenFile(const std::string& filename)
@@ -289,20 +313,14 @@ void ImGuiManager::OpenFile(const std::string& filename)
         return;
     }
 
-    // 画像データを DirectX/OpenGL のテクスチャに変換して ImGui::Image() に渡す
-    // ※この部分は使っているレンダラー（DirectX11, OpenGLなど）により異なります。
-
     // テクスチャ作成後は、dataは解放してOK
     stbi_image_free(data);
 }
 
-void ImGuiManager::SaveFile()
+void ImGuiManager::SaveFile(const std::string& filename)
 {
     // 実際のファイル保存処理
-    // 例：保存ダイアログを開く・ファイル書き込み処理など
-    // ここでは簡易的に固定のファイル名に保存
-    std::string fileName = "output.txt";
-    std::ofstream ofs(fileName);
+    std::ofstream ofs(filename);
     if (ofs.is_open())
     {
         ofs << "保存したいデータなどを書き込む\n";

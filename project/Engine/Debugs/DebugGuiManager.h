@@ -50,8 +50,8 @@ private:
     void DrawCameraSettings();
     void DrawLightSettings();
     void DrawPostEffectSettings();
-    void DrawInformationDisplays();
-    void DrawConsole();    
+    void DrawTimeSettings();
+    void DrawInformationDisplays();  
 };
 
 // PostEffect bit flags

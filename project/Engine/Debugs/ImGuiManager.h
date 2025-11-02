@@ -24,11 +24,12 @@ public:
 
 	static void BeginFrame();
     static void DrawMenuBar();
-    static void SaveFile();
+    static void SaveFile(const std::string& filename);
     static void OpenFile(const std::string& filename);
 	static void EndFrame(ID3D12GraphicsCommandList* commandList);
 	// ImGuiの終了処理
 	static void Finalize();
 
+    static bool dockInitialized_;
 };
 
