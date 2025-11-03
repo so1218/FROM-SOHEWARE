@@ -9,9 +9,12 @@ class FollowCamera
 {
 public:
     void Initialize(Camera* camera, Player* target);
+    void ApplyGlobalVariables();
     void Update();
     void DebugDraw();
     void StartShake(float duration, float intensity);
+
+    std::vector<std::string> GetGlobalVariableGroupName() const { return { "FollowCamera" }; }
 
 private:
     Camera* camera_ = nullptr;
@@ -47,10 +50,10 @@ private:
     ShakeEffect shakeEffect_;     // カメラシェイク効果
 
     // --- 制限値 ---
-    const float minPitch_ = -0.8f;
-    const float maxPitch_ = 1.4f;
-    const float minDistance_ = 5.0f;
-    const float maxDistance_ = 100.0f;
+    float minPitch_ = -0.8f;
+    float maxPitch_ = 1.4f;
+    float minDistance_ = 5.0f;
+    float maxDistance_ = 100.0f;
 
     // --- スムーズ補間関数 ---
     float SmoothDamp(float current, float target, float& currentVelocity,

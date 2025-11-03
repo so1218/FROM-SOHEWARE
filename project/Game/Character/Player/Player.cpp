@@ -5,6 +5,7 @@
 #include "GlobalVariables.h"
 #include "TextureHandle.h"
 #include "ModelHandle.h"
+#include "AnimationHandle.h"
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"  
@@ -20,7 +21,12 @@ Player::Player(Engine* engine, Camera* camera)
 	camera_ = camera;
 
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
-
+	animationPlayer_ = std::make_unique<AnimationModel>(
+		engine_,
+		camera_,
+		*ModelHandle::Get(ModelID::walk),
+		AnimationHandle::Get(AnimationID::walk)
+	);
 }
 
 void Player::Initialize()
@@ -72,53 +78,75 @@ void Player::Update()
 {
 	Move();
 
-	// 持っている武器すべてに「Updateしろ」と命令
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+	animationPlayer_->Update(1, true);
+	animationPlayer_->transform_ = modelPlayer_->GetTransform();
 	for (auto& weapon : weapons_)
 	{
-		weapon->Update(deltaTime);
+		weapon->Update(TimeManager::GetInstance()->GetDeltaTime());
 	}
 }
 
 void Player::Move()
 {
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+
 	moveDirection_ = GetMoveDirection();
 
 	if (moveDirection_.Length() > 0.0f)
 	{
-		// 動いているなら、その方向を「最後の方向」として記憶する
 		lastMoveDirection_ = moveDirection_;
+	}
+
+	if (lastMoveDirection_.Length() > 0.001f)
+	{
+		// 1. 目標の「角度」を計算 
+		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
+
+		// 2. 目標の角度から「目標のクォータニオン」を計算
+		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
+
+		// 3. 現在の「クォータニオン」を取得
+		Quaternion currentRotation = modelPlayer_->GetTransform().rotationQuaternion_;
+
+		// 4. Slerp (球面線形補間) を実行
+		float slerpFactor = Math::Clamp(rotationSpeed_ * deltaTime, 0.0f, 1.0f);
+
+		Quaternion newRotation = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
+
+		// 5. 補間された「クォータニオン」をモデルにセット
+		modelPlayer_->GetTransform().rotationQuaternion_ = newRotation;
+
 	}
 
 	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
 	modelPlayer_->GetTransform().translation_.y = 0.5f;
 }
 
-Vector3 Player::GetMoveDirection() 
+Vector3 Player::GetMoveDirection()
 {
 	Vector3 dir = { 0.0f, 0.0f, 0.0f };
 
-	if (Input::GetInstance().IsKeyPressed(DIK_W))
-	{
-		dir.z += 1.0f;
-	}
-	if (Input::GetInstance().IsKeyPressed(DIK_S))
-	{
-		dir.z -= 1.0f;
-	}
-	if (Input::GetInstance().IsKeyPressed(DIK_D))
-	{
-		dir.x += 1.0f;
-	}
-	if (Input::GetInstance().IsKeyPressed(DIK_A))
-	{
-		dir.x -= 1.0f;
-	}
+	if (Input::GetInstance().IsKeyPressed(DIK_W)) dir.z += 1.0f;
+	if (Input::GetInstance().IsKeyPressed(DIK_S)) dir.z -= 1.0f;
+	if (Input::GetInstance().IsKeyPressed(DIK_D)) dir.x += 1.0f;
+	if (Input::GetInstance().IsKeyPressed(DIK_A)) dir.x -= 1.0f;
 
-	// 正規化（斜め移動で速くなりすぎないように）
 	if (dir.Length() > 0.0f)
 	{
-		dir = dir.Normalize(); 
+		dir = dir.Normalize();
+
+		// カメラの向きに合わせて方向を変換
+		Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+		Vector3 cameraRight = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 1.0f, 0.0f, 0.0f });
+
+		// y軸方向は固定
+		cameraForward.y = 0.0f;
+		cameraRight.y = 0.0f;
+		cameraForward = cameraForward.Normalize();
+		cameraRight = cameraRight.Normalize();
+
+		dir = cameraForward * dir.z + cameraRight * dir.x;
+		dir = dir.Normalize(); // 斜め移動も正規化
 	}
 
 	return dir;
@@ -156,6 +184,8 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	modelPlayer_->Draw();
+
+	animationPlayer_->Draw();
 
 	for (auto& weapon : weapons_)
 	{

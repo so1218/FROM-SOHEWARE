@@ -3,6 +3,7 @@
 #include "BaseCharacter.h"
 #include "Collider.h"
 #include "Weapon.h"
+#include "AnimationModel.h"
 
 class PlayScene;
 
@@ -60,6 +61,7 @@ private:
 	Camera* camera_;
 
 	std::unique_ptr<Model> modelPlayer_;
+	std::unique_ptr<AnimationModel> animationPlayer_;
 	AABB aabb_;
 	
 	// キャラクターの当たり判定サイズ
@@ -67,6 +69,8 @@ private:
 	
 	Vector3 moveDirection_;
 	float moveSpeed_;
+
+	float rotationSpeed_ = 10.0f;
 
 	// 武器の設計図のリストを持つ。
 	std::vector<std::unique_ptr<Weapon>> weapons_;

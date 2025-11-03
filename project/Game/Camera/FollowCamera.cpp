@@ -4,11 +4,28 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
+#include "GlobalVariables.h"
 
 void FollowCamera::Initialize(Camera* camera, Player* target)
 {
     camera_ = camera;
     target_ = target;
+
+    // --- GlobalVariables 登録 ---
+    auto* gv = GlobalVariables::GetInstance();
+    gv->CreateGroup(GetGlobalVariableGroupName());
+    gv->LoadFiles();
+
+    gv->AddItem(GetGlobalVariableGroupName(), "Target Yaw", targetYaw_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Target Pitch", targetPitch_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Target Distance", targetDistance_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Rotation Smooth Time", rotationSmoothTime_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Zoom Smooth Time", zoomSmoothTime_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Position Lerp Speed", positionLerpSpeed_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Min Pitch", minPitch_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Max Pitch", maxPitch_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Min Distance", minDistance_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Max Distance", maxDistance_);
 
     // 初期角度・距離設定
     currentYaw_ = targetYaw_ = Math::PI;
@@ -41,6 +58,26 @@ void FollowCamera::Initialize(Camera* camera, Player* target)
     camera_->SetTranslation(cameraPos);
     camera_->SetRotation(cameraRot);
     currentCameraRot_ = cameraRot;
+
+    ApplyGlobalVariables();
+}
+
+void FollowCamera::ApplyGlobalVariables()
+{
+    auto* gv = GlobalVariables::GetInstance();
+
+    targetYaw_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Target Yaw");
+    targetPitch_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Target Pitch");
+    targetDistance_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Target Distance");
+
+    rotationSmoothTime_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Rotation Smooth Time");
+    zoomSmoothTime_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Zoom Smooth Time");
+    positionLerpSpeed_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Position Lerp Speed");
+
+    minPitch_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Min Pitch");
+    maxPitch_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Max Pitch");
+    minDistance_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Min Distance");
+    maxDistance_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Max Distance");
 }
 
 void FollowCamera::Update()
@@ -53,17 +90,16 @@ void FollowCamera::Update()
     const float rotateSpeed = 2.0f;
     const float zoomSpeed = 20.0f;
 
-    // 回転入力
-    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))
-        targetYaw_ += rotateSpeed * dt;
-    else if (Input::GetInstance().IsKeyPressed(DIK_RIGHT))
-        targetYaw_ -= rotateSpeed * dt;
 
-    // ズーム入力
-    if (Input::GetInstance().IsKeyPressed(DIK_UP))
-        targetDistance_ -= zoomSpeed * dt;
-    else if (Input::GetInstance().IsKeyPressed(DIK_DOWN))
-        targetDistance_ += zoomSpeed * dt;
+    // 左右キーでカメラを回転
+    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))
+    {
+        targetYaw_ -= rotateSpeed * dt; // 左に回転
+    }
+    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT))
+    {
+        targetYaw_ += rotateSpeed * dt; // 右に回転
+    }
 
     // 回転・ズーム補間
     targetDistance_ = std::clamp(targetDistance_, minDistance_, maxDistance_);
@@ -102,23 +138,60 @@ void FollowCamera::Update()
 
 void FollowCamera::DebugDraw()
 {
-    ImGui::Begin("FollowCamera");
-
-    ImGui::Text("--- Target Values ---");
-    ImGui::DragFloat("Yaw", &targetYaw_, 0.01f);
-    ImGui::DragFloat("Pitch", &targetPitch_, 0.01f, minPitch_, maxPitch_);
-    ImGui::DragFloat("Distance", &targetDistance_, 0.1f, minDistance_, maxDistance_);
-
-    ImGui::Text("--- Current Values ---");
-    ImGui::Text("Yaw: %.2f", currentYaw_);
-    ImGui::Text("Pitch: %.2f", currentPitch_);
-    ImGui::Text("Distance: %.2f", distance_);
+    ImGui::Begin("追従カメラ");
 
     ImGui::Separator();
-    ImGui::Text("--- Smooth Settings ---");
-    ImGui::DragFloat("Rotation Smooth Time", &rotationSmoothTime_, 0.01f, 0.0f, 1.0f);
-    ImGui::DragFloat("Zoom Smooth Time", &zoomSmoothTime_, 0.01f, 0.0f, 1.0f);
-    ImGui::DragFloat("Position Lerp Speed", &positionLerpSpeed_, 0.1f, 0.0f, 20.0f);
+    ImGui::Text("スムージング設定");
+
+    ImGui::Separator();
+    ImGui::Text("初期カメラ設定");
+
+    if (ImGui::DragFloat("初期ヨー角", &targetYaw_, 0.01f, -Math::PI, Math::PI))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Target Yaw", targetYaw_);
+    }
+    if (ImGui::DragFloat("初期ピッチ角", &targetPitch_, 0.01f, -1.57f, 1.57f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Target Pitch", targetPitch_);
+    }
+
+    if (ImGui::DragFloat("初期距離", &targetDistance_, 0.1f, minDistance_, maxDistance_))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Target Distance", targetDistance_);
+    }
+
+    if (ImGui::DragFloat("回転スムース時間", &rotationSmoothTime_, 0.01f, 0.0f, 1.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Rotation Smooth Time", rotationSmoothTime_);
+    }
+    if (ImGui::DragFloat("ズームスムース時間", &zoomSmoothTime_, 0.01f, 0.0f, 1.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Zoom Smooth Time", zoomSmoothTime_);
+    }
+    if (ImGui::DragFloat("位置補間スピード", &positionLerpSpeed_, 0.1f, 0.0f, 20.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Position Lerp Speed", positionLerpSpeed_);
+    }
+
+    ImGui::Separator();
+    ImGui::Text("制限値");
+
+    if (ImGui::DragFloat("ピッチ最小角度", &minPitch_, 0.01f, -1.57f, 0.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Min Pitch", minPitch_);
+    }
+    if (ImGui::DragFloat("ピッチ最大角度", &maxPitch_, 0.01f, 0.0f, 1.57f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Max Pitch", maxPitch_);
+    }
+    if (ImGui::DragFloat("最小距離", &minDistance_, 0.1f, 0.0f, 200.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Min Distance", minDistance_);
+    }
+    if (ImGui::DragFloat("最大距離", &maxDistance_, 0.1f, 0.0f, 200.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Max Distance", maxDistance_);
+    }
 
     ImGui::End();
 }

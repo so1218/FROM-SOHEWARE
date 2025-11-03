@@ -191,7 +191,7 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderDockWindow("シーンの選択", dock_id_down);
         ImGui::DockBuilderDockWindow("Ground", dock_id_right);
         ImGui::DockBuilderDockWindow("プレイシーン", dock_id_right);
-        ImGui::DockBuilderDockWindow("FollowCamera", dock_id_right);
+        ImGui::DockBuilderDockWindow("追従カメラ", dock_id_right);
         ImGui::DockBuilderDockWindow("タイトルシーン", dock_id_right);
         ImGui::DockBuilderDockWindow("天球", dock_id_right);
         ImGui::DockBuilderDockWindow("武器 - ナイフ", dock_id_right);
