@@ -100,6 +100,8 @@ public:
     static const int32_t kMaxLineCount;
     static const int32_t kMaxParticleCount;
 
+    bool isWireFrame_ = false;
+
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
@@ -154,8 +156,6 @@ private:
     std::vector<ParticleInstanceData> instanceData_;
     int indexInstance_ = 0;
     Mesh particleMesh_;
-
-    bool isWireFrame_ = false;
 
     // 定数フレームバッファ数
     static constexpr int kFrameCount = 3;

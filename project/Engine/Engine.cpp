@@ -26,7 +26,8 @@
 
 #include <thread>
 
-std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";	
+std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
+int Engine::kFixedFPS_ = 60;
 
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 {
@@ -35,8 +36,8 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
 
-	// FPS固定初期化
-	InitializeFixFPS();
+	frameLimiter_ = std::make_unique<FrameLimiter>(kFixedFPS_); 
+	frameLimiter_->Initialize();
 
 	InitializeSystem();
 	InitializeWindow();
@@ -50,7 +51,6 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	debugGuiManager_->Initialize(this, camera_, lightManager_.get(), materialManager_, textureManager_.get(), postEffectManager_.get(), debugCamera_.get());
 	particleSystem_ = std::make_unique<ParticleSystem>();
 	particleSystem_->Initialize(this);
-
 }
 
 void Engine::Finalize()
@@ -66,7 +66,7 @@ void Engine::Finalize()
 		WaitForSingleObject(fenceEvent_, INFINITE);
 	}
 
-	timeEndPeriod(1);
+	frameLimiter_->Finalize();
 
 	// リソース解放
 	CloseHandle(fenceEvent_);
@@ -146,7 +146,7 @@ void Engine::EndFrame()
 	renderCoordinator_->EndFrame();
 
 	// FPS固定
-	UpdateFixFPS();
+	frameLimiter_->WaitNextFrame();
 
 	// アップロードリソース管理
 	uint64_t completedFenceValue = renderCoordinator_->GetFenceValue();
@@ -417,35 +417,4 @@ int Engine::LoadTexture(const std::string& texturePath)
 void Engine::LoadTextureArray(const std::vector<std::string>& texturePaths)
 {
 	renderer_->LoadTextureArray(texturePaths);
-}
-
-void Engine::InitializeFixFPS()
-{
-	timeBeginPeriod(1);
-	// 現在時間を記録する
-	targetTime_ = std::chrono::steady_clock::now();
-}
-
-void Engine::UpdateFixFPS()
-{
-	const std::chrono::microseconds kFrameDuration(1000000 / kTargetFPS_);
-
-	auto now = std::chrono::steady_clock::now();
-	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - targetTime_);
-	auto remaining = kFrameDuration - elapsed;
-
-	if (remaining.count() > 2000) 
-	{
-		// だいたいの時間だけスリープ
-		std::this_thread::sleep_for(remaining - std::chrono::microseconds(2000));
-	}
-
-	// 念のためbusy waitで調整
-	while (std::chrono::steady_clock::now() - targetTime_ < kFrameDuration)
-	{
-		// ここは何もしない
-	}
-
-	// 次のフレームの基準時間を更新
-	targetTime_ = std::chrono::steady_clock::now();
 }

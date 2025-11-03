@@ -22,8 +22,7 @@
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 
 #include "Renderer.h" 
-
-#include <chrono>
+#include "FrameLimiter.h" 
 
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
@@ -50,10 +49,6 @@ public:
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { renderer_->currentBlendMode_ = blendMode; }
-
-    // FPS固定処理
-    void InitializeFixFPS();
-    void UpdateFixFPS();
 
 private:
     // 各種初期化処理
@@ -92,6 +87,7 @@ public:
     std::unique_ptr<CameraManager> cameraManager_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<Renderer> renderer_;
+    std::unique_ptr<FrameLimiter> frameLimiter_;
     Camera* camera_ = nullptr;
 
     // DirectX関連
@@ -105,16 +101,10 @@ public:
 
     uint32_t descriptorSizeRTV_ = 0;
 
-    bool isWireFrame_ = false;
-
     uint32_t offscreenSrvIndex_;
 
 	// ウィンドウタイトル
     static std::wstring windowTitle_;
-
-    int kTargetFPS_ = 60; // デフォルトのターゲットFPS
-    // 目標とする次のフレームの終了時刻
-    std::chrono::steady_clock::time_point targetTime_;
-    // 1フレームあたりの時間
-    const std::chrono::microseconds frameDuration_{ 1000000 / kTargetFPS_ };
+    // 固定FPS
+    static int kFixedFPS_; 
 };

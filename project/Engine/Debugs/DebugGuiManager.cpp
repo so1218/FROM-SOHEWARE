@@ -57,7 +57,7 @@ void DebugGuiManager::Update()
 
 void DebugGuiManager::DrawRenderSettings()
 {
-    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->isWireFrame_);
+    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->renderer_->isWireFrame_);
 }
 
 void DebugGuiManager::DrawCameraSettings()
