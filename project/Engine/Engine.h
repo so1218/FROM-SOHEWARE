@@ -99,10 +99,6 @@ public:
     Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
     HANDLE fenceEvent_ = nullptr;
 
-    uint32_t descriptorSizeRTV_ = 0;
-
-    uint32_t offscreenSrvIndex_;
-
 	// ウィンドウタイトル
     static std::wstring windowTitle_;
     // 固定FPS

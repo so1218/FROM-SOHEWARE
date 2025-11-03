@@ -36,7 +36,7 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
         };
 
     // シーンテクスチャ（入力元）のSRVインデックスを取得
-    sceneTextureSRVIndex_ = engine_->offscreenSrvIndex_;
+    sceneTextureSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
 
     // 各ポストエフェクト用のターゲットを作成
     std::tie(brightExtractResource_, brightExtractRTVHandle_, brightExtractIndex_) = createTarget(width, height);

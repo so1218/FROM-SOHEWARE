@@ -207,12 +207,12 @@ void Engine::InitializeGraphics()
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(),
 		kClientWidth, kClientHeight, 2, dxgiFactory_);
 
-	// RTVディスクリプタのサイズを取得
-	descriptorSizeRTV_ = graphicsDevice_->GetDevice()->GetDescriptorHandleIncrementSize(
-		D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
 	// ディスクリプタヒープマネージャの作成
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
+
+	// SRVマネージャの初期化
+	srvManager_ = std::make_unique<SRVManager>();
+	srvManager_->Initialize(graphicsDevice_->GetDevice(), 1000);
 
 	// DSVマネージャの初期化
 	dsvManager_ = std::make_unique<DSVManager>();
@@ -221,15 +221,11 @@ void Engine::InitializeGraphics()
 	// RTVマネージャの初期化
 	rtvManager_ = std::make_unique<RTVManager>();
 	rtvManager_->Initialize(graphicsDevice_->GetDevice(), swapChain_->GetSwapChain(),
-		2, descriptorSizeRTV_, descriptorManager_.get());
+		2, descriptorManager_.get());
 
 	// オフスクリーンレンダーターゲットの初期化
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
-	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), descriptorManager_.get(), 16);
-
-	// SRVマネージャの初期化
-	srvManager_ = std::make_unique<SRVManager>();
-	srvManager_->Initialize(graphicsDevice_->GetDevice(), 1000);
+	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 16);
 
 	// ライト（光源）マネージャの初期化
 	lightManager_ = std::make_unique<LightManager>();
@@ -254,15 +250,6 @@ void Engine::InitializeRenderer()
 		offscreenRTVManager_->CreateOffscreenRenderTarget(
 			kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor()
 		);
-
-	// オフスクリーンテクスチャ用のSRVを作成
-	D3D12_SHADER_RESOURCE_VIEW_DESC sceneSrvDesc = {};
-	sceneSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; 
-	sceneSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	sceneSrvDesc.Texture2D.MipLevels = 1;
-	sceneSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-	offscreenSrvIndex_ = srvManager_->CreateSRV(offscreenTexture.Get(), sceneSrvDesc);
 
 	// オフスクリーン用の深度ステンシルバッファを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource;
