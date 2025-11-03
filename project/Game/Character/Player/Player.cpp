@@ -10,8 +10,7 @@
 #include "MathUtils.h"  
 #include "Collision.h"   
 #include "TimeManager.h"
-#include "Knife.h"
-
+#include "WeaponKnife.h"
 #include <numbers>
 #include <algorithm>
 
@@ -20,10 +19,8 @@ Player::Player(Engine* engine, Camera* camera)
 	engine_ = engine;
 	camera_ = camera;
 
-	knife_ = std::make_unique<Knife>(engine_, camera_);
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
-	knife_->SetLevel(1);
 }
 
 void Player::Initialize()
@@ -55,15 +52,43 @@ void Player::SaveGlobalVariables()
 	GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "modelPlayer_->GetTransform().translation_", modelPlayer_->GetTransform().translation_);
 }
 
+void Player::AddWeapon(WeaponType type)
+{
+	// 注文書(type)を見て、正しい武器を "製造" する
+	switch (type)
+	{
+	case WeaponType::Knife:
+		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this));
+		break;
+
+	default:
+		// 該当なし（エラー）
+		assert(false && "未定義の武器タイプが指定されました");
+		break;
+	}
+}
 
 void Player::Update()
 {
 	Move();
+
+	// 持っている武器すべてに「Updateしろ」と命令
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+	for (auto& weapon : weapons_)
+	{
+		weapon->Update(deltaTime);
+	}
 }
 
 void Player::Move()
 {
 	moveDirection_ = GetMoveDirection();
+
+	if (moveDirection_.Length() > 0.0f)
+	{
+		// 動いているなら、その方向を「最後の方向」として記憶する
+		lastMoveDirection_ = moveDirection_;
+	}
 
 	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
 	modelPlayer_->GetTransform().translation_.y = 0.5f;
@@ -131,6 +156,11 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	modelPlayer_->Draw();
+
+	for (auto& weapon : weapons_)
+	{
+		weapon->Draw();
+	}
 }
 
 // デバッグ描画処理
@@ -140,6 +170,11 @@ void Player::DebugDraw()
 	ImGui::DragFloat3("Transform Translation", &modelPlayer_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f);
 	ImGui::DragFloat3("Transform Scale", &modelPlayer_->GetTransform().scale_.x, 0.1f, -100.0f, 100.0f);
 	ImGui::End();
+
+	for (auto& weapon : weapons_)
+	{
+		weapon->DebugDraw();
+	}
 }
 
 

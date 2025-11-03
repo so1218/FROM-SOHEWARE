@@ -194,6 +194,7 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderDockWindow("FollowCamera", dock_id_right);
         ImGui::DockBuilderDockWindow("タイトルシーン", dock_id_right);
         ImGui::DockBuilderDockWindow("天球", dock_id_right);
+        ImGui::DockBuilderDockWindow("武器 - ナイフ", dock_id_right);
 
         ImGui::DockBuilderFinish(dockspace_id);
     }

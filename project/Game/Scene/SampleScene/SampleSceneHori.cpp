@@ -20,6 +20,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     player_ = player.get();
     enemy_ = enemy.get();
 
+    player_->AddWeapon(WeaponType::Knife);
+
     dragonModel_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::shrimp)));
     uvCheckerSprite_ = std::make_unique<Sprite>(engine_);
     animationShurimp_ = std::make_unique<AnimationModel>(

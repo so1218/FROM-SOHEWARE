@@ -2,8 +2,8 @@
 
 #include "BaseCharacter.h"
 #include "Collider.h"
+#include "Weapon.h"
 
-class Knife;
 class PlayScene;
 
 class Player : public Collider, public BaseCharacter
@@ -33,6 +33,8 @@ public:
 	void SaveGlobalVariables() override;
 	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Player" }; }
 
+	void AddWeapon(WeaponType type); // 武器を追加する関数
+
 	// 移動処理
 	void Move();
 
@@ -47,13 +49,17 @@ public:
 
 	Vector3 GetMoveDirection();
 
+	// 武器が「照準」に使うための公開関数
+	Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
+	// カメラを返す
+	Camera* GetCamera() const { return camera_; }
+
 private:
 	
 	Engine* engine_;
 	Camera* camera_;
 
 	std::unique_ptr<Model> modelPlayer_;
-	std::unique_ptr<Knife> knife_;
 	AABB aabb_;
 	
 	// キャラクターの当たり判定サイズ
@@ -61,5 +67,9 @@ private:
 	
 	Vector3 moveDirection_;
 	float moveSpeed_;
+
+	// 武器の設計図のリストを持つ。
+	std::vector<std::unique_ptr<Weapon>> weapons_;
+	Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
 };
 
