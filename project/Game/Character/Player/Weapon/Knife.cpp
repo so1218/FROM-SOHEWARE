@@ -36,7 +36,7 @@ void Knife::Shoot(Player* player)
         float angleOffset = ((i - (numKnives - 1) / 2.0f) * spreadAngle);
 
         // 回転させた方向ベクトルを作る（Y軸周りの回転）
-        float radians = ToRadians(angleOffset); // 角度をラジアンに変換
+        float radians = Math::ToRadians(angleOffset); // 角度をラジアンに変換
         Quaternion rot = Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, radians);
         Vector3 dirRotated = rot.RotateVector(direction);
 

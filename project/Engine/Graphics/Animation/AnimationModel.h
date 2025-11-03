@@ -19,7 +19,7 @@ public:
     // アニメーションの状態をリセット
     void ResetAnimation();
 
-    void SetEasing(EasingType type) { easing_.SetEasing(type); }
+    void SetEasing(EasingType type) { easingType_ = type; }
 
     // トランスフォームへの参照を取得
     WorldTransform& GetTransform() { return transform_; }
@@ -41,5 +41,5 @@ public:
     MaterialHandle materialHandle_;
 
     bool isFinished_ = false;      // 再生が終了したか
-    Easing easing_;
+    EasingType easingType_ = EasingType::EaseLinear;
 };

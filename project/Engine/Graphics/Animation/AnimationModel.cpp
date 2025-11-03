@@ -56,7 +56,7 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
             isFinished_ = true;
         }
     }
-    float easedT = easing_.Evaluate(linearT);
+    float easedT = Easing::Evaluate(easingType_, linearT);
     float easedAnimationTime = easedT * animeModelData_.animation.duration;
 
     // アニメーションを適用
@@ -77,5 +77,4 @@ void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
-    easing_.InitEasing();
 }

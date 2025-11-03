@@ -11,7 +11,7 @@ void FollowCamera::Initialize(Camera* camera, Player* target)
     target_ = target;
 
     // 初期角度・距離設定
-    currentYaw_ = targetYaw_ = PI;
+    currentYaw_ = targetYaw_ = Math::PI;
     currentPitch_ = targetPitch_ = 0.3f;
     distance_ = targetDistance_ = 50.0f;
 
@@ -75,7 +75,7 @@ void FollowCamera::Update()
 
     // ターゲット位置のスムージング
     Vector3 actualPlayerPos = target_->GetWorldTransform().translation_;
-    float posEffectiveSpeed = MyMin<float>(1.0f, positionLerpSpeed_ * dt);
+    float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 
     // カメラ位置計算
@@ -159,8 +159,8 @@ float FollowCamera::SmoothDampAngle(float current, float target, float& currentV
     float smoothTime, float deltaTime, float maxSpeed)
 {
     float delta = target - current;
-    while (delta > PI) delta -= PI * 2.0f;
-    while (delta < -PI) delta += PI * 2.0f;
+    while (delta > Math::PI) delta -= Math::PI * 2.0f;
+    while (delta < -Math::PI) delta += Math::PI * 2.0f;
     target = current + delta;
     return SmoothDamp(current, target, currentVelocity, smoothTime, deltaTime, maxSpeed);
 }

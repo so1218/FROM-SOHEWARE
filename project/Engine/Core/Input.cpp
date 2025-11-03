@@ -336,8 +336,8 @@ void Input::VibrateController(int controllerId, float leftMotorSpeed, float righ
     if (controllerId < 0 || controllerId >= 4) return;
 
     // 値を0.0f～1.0f にクランプ
-    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
-    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
+    leftMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, rightMotorSpeed));
 
     XINPUT_VIBRATION vibration = { 0 };
     vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotorSpeed * 65535.0f);
@@ -350,8 +350,8 @@ void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMo
 {
     if (controllerId < 0 || controllerId >= 4) return;
 
-    leftMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, leftMotorSpeed));
-    rightMotorSpeed = MyMax<float>(0.0f, MyMin<float>(1.0f, rightMotorSpeed));
+    leftMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, leftMotorSpeed));
+    rightMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, rightMotorSpeed));
 
 
     // 振動を開始

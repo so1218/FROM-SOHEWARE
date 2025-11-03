@@ -23,7 +23,7 @@ Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time
 		{
 			// 範囲内を保管する
 			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
-			return Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
+			return Math::Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
 		}
 	}
 

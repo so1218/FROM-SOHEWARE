@@ -5,7 +5,7 @@
 #include "MathUtils.h"
 #include "WorldTransform.h"
 
-Vector3 Project(
+Vector3 Math::Project(
     const Vector3 worldPosition,
     float viewportX, float viewportY, float viewportWidth, float viewportHeight,
     const Matrix4x4 viewProjection)
@@ -46,7 +46,7 @@ Vector3 Project(
 
 
 
-Vector4 Uint32ToColorVector(uint32_t color)
+Vector4 Math::Uint32ToColorVector(uint32_t color)
 {
     float r = ((color >> 24) & 0xFF) / 255.0f;
     float g = ((color >> 16) & 0xFF) / 255.0f;
@@ -56,7 +56,7 @@ Vector4 Uint32ToColorVector(uint32_t color)
     return { r, g, b, a };
 }
 
-uint32_t ColorVectorToUint32(const Vector4& color)
+uint32_t Math::ColorVectorToUint32(const Vector4& color)
 {
     uint32_t r = static_cast<uint32_t>(color.x * 255.0f) & 0xFF;
     uint32_t g = static_cast<uint32_t>(color.y * 255.0f) & 0xFF;
@@ -66,12 +66,12 @@ uint32_t ColorVectorToUint32(const Vector4& color)
     return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
-float RandomFloat(float min, float max)
+float Math::RandomFloat(float min, float max)
 {
     return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
 }
 
-float ToRadians(float degrees)
+float Math::ToRadians(float degrees)
 {
     return degrees * (float(M_PI) / 180.0f);
 }

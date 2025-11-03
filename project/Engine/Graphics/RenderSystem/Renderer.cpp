@@ -188,7 +188,7 @@ void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, Worl
 	RenderData& triangle = triangles_[indexTriangle_];
 
 	// マテリアルに色情報を設定
-	triangle.materialHandle.materialData->color = Uint32ToColorVector(color);
+	triangle.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列（スケール・回転・移動）を計算
 	Vector3 pivot = { 320.0f, 180.0f, 0.0f }; // 三角形の中心
@@ -263,7 +263,7 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 	RenderData& sphere = spheres_[indexSphere_];
 
 	// マテリアルに色情報を設定
-	sphere.materialHandle.materialData->color = Uint32ToColorVector(color);
+	sphere.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列を計算
 	sphere.worldMatrix = worldTransform.matWorld_;
@@ -349,7 +349,7 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	Mesh* mesh = GetOrCreateMesh(modelData);
 
 	// 色変換
-	materialHandle.materialData->color = Uint32ToColorVector(color);
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	model.worldMatrix = worldTransform.matWorld_;
@@ -431,7 +431,7 @@ void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera
 	Mesh* mesh = GetOrCreateMesh(instance.modelData);
 
 	// 色変換
-	materialHandle.materialData->color = Uint32ToColorVector(color);
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	model.worldMatrix = worldTransform.matWorld_;
@@ -505,7 +505,7 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	Mesh* mesh = GetOrCreateMesh(modelData);
 
 	// 色変換
-	modelData.materialHandle.materialData->color = Uint32ToColorVector(color);
+	modelData.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	model.worldMatrix = worldTransform.matWorld_;
@@ -597,7 +597,7 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 	RenderData& sprite = sprites_[indexSprite_];
 
 	// マテリアルに色情報を設定
-	sprite.materialHandle.materialData->color = Uint32ToColorVector(color);
+	sprite.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	sprite.materialHandle.materialData->enableLighting = false;
 
@@ -693,7 +693,7 @@ void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTra
 	RenderData& cube = cubes_[indexCube_];
 
 	// 色変換
-	cube.materialHandle.materialData->color = Uint32ToColorVector(color);;
+	cube.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// ワールド行列 (スケール・回転・位置) を計算
 	cube.worldMatrix = Matrix4x4::MakeAffine(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_);
@@ -775,7 +775,7 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 	line.mesh.SetVertexCount(2);
 
 	// マテリアル色のみ更新
-	line.materialHandle.lineMaterialData->color = Uint32ToColorVector(color);
+	line.materialHandle.lineMaterialData->color = Math::Uint32ToColorVector(color);
 
 	// WVP行列更新
 	line.worldMatrix = Matrix4x4::MakeIdentity();
@@ -837,7 +837,7 @@ void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t c
 	ParticleInstanceData& data = mappedInstanceData_[currentFrameIndex_][indexInstance_++];
 	data.worldMatrix = worldTransform.matWorld_;
 
-	data.color = Uint32ToColorVector(color);
+	data.color = Math::Uint32ToColorVector(color);
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
 	data.isBillboard = isBillboard ? 1 : 0;
