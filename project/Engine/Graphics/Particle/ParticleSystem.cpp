@@ -28,7 +28,7 @@ void ParticleSystem::Initialize(Engine* engine)
 
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime)
 {
-    if (particles_.size() >= engine_->kMaxParticleCount) return;
+    if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
 
     const ParticleConfig& config = GetConfig(presetName);
 
@@ -269,7 +269,7 @@ void ParticleSystem::Update()
     for (auto& particle : particles_)
     {
         particle.transform->UpdateMatrix();
-        engine_->SubmitParticleInstance(
+        engine_->renderer_->SubmitParticleInstance(
             *particle.transform,
             ColorVectorToUint32(particle.color),
             particle.textureHandle,
@@ -292,7 +292,7 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 void ParticleSystem::Draw(Camera* camera)
 {
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
-    engine_->DrawParticles(*camera);
+    engine_->renderer_->DrawParticles(*camera);
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
 #ifdef _DEBUG

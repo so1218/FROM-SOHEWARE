@@ -4,7 +4,7 @@
 Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
     : engine_(engine), camera_(camera), modelData_(modelData)
 {
-    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
+    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 }
 
 void Model::SetWorldTransform(const WorldTransform& transform)
@@ -38,5 +38,5 @@ void Model::Draw()
 {
     transform_.UpdateMatrix();
 
-    engine_->DrawModel(transform_, *camera_, *modelData_, textureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawModel(transform_, *camera_, *modelData_, textureHandle_, color_, materialHandle_);
 }

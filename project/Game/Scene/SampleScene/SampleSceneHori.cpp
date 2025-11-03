@@ -144,7 +144,7 @@ void SampleSceneHori::Draw()
     animationShurimp_->Draw();
     animationSneakWalk_->Draw();
     animationRyu_->Draw();
-	engine_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
+	engine_->renderer_->DrawSkeleton(skeleton_, *camera_, 0xff0000ff);
 }
 
 void SampleSceneHori::DebugDraw()

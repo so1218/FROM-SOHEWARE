@@ -115,7 +115,7 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
             }
         }
 
-        modelData.materialHandle = engine->materialManager_->CreateMaterial(engine->graphicDevice_->GetDevice());
+        modelData.materialHandle = engine->materialManager_->CreateMaterial(engine->graphicsDevice_->GetDevice());
 
         modelParts.push_back(std::move(modelData));
     }

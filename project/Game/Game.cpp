@@ -28,7 +28,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 #endif
 
     modelDataGrid_ = ModelHandle::Get(ModelID::field);
-    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
+    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 
@@ -62,9 +62,6 @@ void Game::Run()
             Input::GetInstance().Update();
             // フレームの開始
             engine_->BeginFrame();
-            
-            // 描画前処理
-            engine_->PreDraw();
 
             Update();
             Draw();
@@ -139,7 +136,7 @@ void Game::Update()
 void Game::Draw()
 {
 #ifdef _DEBUG
-    engine_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
+    engine_->renderer_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
 #endif
 
     sceneManager_.Draw();

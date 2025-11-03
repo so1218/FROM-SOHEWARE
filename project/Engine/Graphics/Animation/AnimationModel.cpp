@@ -6,10 +6,10 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     : engine_(engine), camera_(camera)
 {
     animeModelData_.modelData = std::move(modelData);
-    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
+    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     animeModelData_.animation = std::move(animation);
     skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
-    skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(),
+    skinCluster_ = CreateSkinCluster(engine_->graphicsDevice_->GetDevice(),
         skeleton_, animeModelData_.modelData, engine_->srvManager_.get());
 
     animationTime_ = 0.0f;
@@ -70,7 +70,7 @@ void AnimationModel::Draw()
     // ワールド変換行列の更新
     transform_.UpdateMatrix();
     // 描画関数
-    engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
 }
 
 void AnimationModel::ResetAnimation()

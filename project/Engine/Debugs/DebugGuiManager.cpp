@@ -627,14 +627,14 @@ void DebugGuiManager::DrawTimeSettings()
 
 void DebugGuiManager::DrawInformationDisplays() 
 {
-    // オブジェクト数 (Engineから取得)
-    ImGui::Text("Triangles: %d / %d", engine_->GetTriangleCount(), engine_->kMaxTriangleCount);
-    ImGui::Text("Spheres: %d / %d", engine_->GetSphereCount(), engine_->kMaxSphereCount);
-    ImGui::Text("Models: %d / %d", engine_->GetModelCount(), engine_->kMaxModelCount);
-    ImGui::Text("Sprites: %d / %d", engine_->GetSpriteCount(), engine_->kMaxSpriteCount);
-    ImGui::Text("Cubes: %d / %d", engine_->GetCubeCount(), engine_->kMaxCubeCount);
-    ImGui::Text("Lines: %d / %d", engine_->GetLineCount(), engine_->kMaxLineCount);
-    ImGui::Text("Particles: %d / %d", engine_->GetParticleCount(), engine_->kMaxParticleCount);
+    // オブジェクト数
+    ImGui::Text("Triangles: %d / %d", engine_->renderer_->GetTriangleCount(), engine_->renderer_->kMaxTriangleCount);
+    ImGui::Text("Spheres: %d / %d", engine_->renderer_->GetSphereCount(), engine_->renderer_->kMaxSphereCount);
+    ImGui::Text("Models: %d / %d", engine_->renderer_->GetModelCount(), engine_->renderer_->kMaxModelCount);
+    ImGui::Text("Sprites: %d / %d", engine_->renderer_->GetSpriteCount(), engine_->renderer_->kMaxSpriteCount);
+    ImGui::Text("Cubes: %d / %d", engine_->renderer_->GetCubeCount(), engine_->renderer_->kMaxCubeCount);
+    ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->kMaxLineCount);
+    ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->kMaxParticleCount);
 
     // プロファイリング情報 (別途プロファイリングシステムが必要)
    /* ImGui::Text("Profiling Info: [Not Implemented]");*/
