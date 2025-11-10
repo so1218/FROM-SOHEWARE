@@ -4,6 +4,8 @@
 
 #include "GameObject.h"
 
+class CollisionManager;
+
 class GameObjectManager 
 {
 public:
@@ -20,6 +22,8 @@ public:
     void ApplyGlobalVariables();
 
     void SaveGlobalVariables();
+
+    void AddAllCollidersToManager(CollisionManager* manager);
 
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;

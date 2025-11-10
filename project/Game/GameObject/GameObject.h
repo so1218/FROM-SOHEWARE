@@ -6,9 +6,11 @@ enum class GameObjectType : int
 {
     Background,
     Player,
+    PlayerWeapon,
     Enemy,
     Bullet,
     UI,
+    Effect,
 
     Count  
 };
@@ -50,8 +52,10 @@ private:
         {
             { GameObjectType::Background,  0,   0 },
             { GameObjectType::Player,     10,  10 },
+            { GameObjectType::PlayerWeapon,     15,  15 },
             { GameObjectType::Enemy,      20,  20 },
             { GameObjectType::Bullet,     30,  30 },
+            { GameObjectType::Effect,     95,  95 },
             { GameObjectType::UI,        100, 100 }
         }
     };

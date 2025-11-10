@@ -16,6 +16,9 @@ void TimeManager::Initialize()
     totalTime_ = 0.0f;
     fps_ = 0.0f;
     isPaused_ = false;
+    averageFps_ = 0.0f;
+    frameCount_ = 0;
+    timeElapsedForFps_ = 0.0f;
 }
 
 void TimeManager::Update()
@@ -31,7 +34,6 @@ void TimeManager::Update()
         deltaTime_ = 0.0f;
         fps_ = 0.0f;
 
-        // totalTime_ はポーズ中は更新しないので prevTime_ は変えない
         return;
     }
     else
@@ -41,6 +43,8 @@ void TimeManager::Update()
         {
             pausedDuration_ += currentTime - pauseStartTime_;
             pauseStartTime_ = Clock::time_point{};
+
+            prevTime_ = currentTime;
         }
     }
 
@@ -50,13 +54,30 @@ void TimeManager::Update()
     deltaTime_ = frameDuration.count();
     totalTime_ = totalDuration.count();
 
-    if (deltaTime_ > 0.0001f)
+    if (deltaTime_ > 0.0001f) 
     {
         fps_ = 1.0f / deltaTime_;
     }
     else
     {
         fps_ = 0.0f;
+    }
+
+    // 平均FPSの計算
+
+    // 1フレーム分の時間とカウントを加算
+    timeElapsedForFps_ += deltaTime_;
+    frameCount_++;
+
+    // 経過時間が1秒を超えたら平均FPSを計算
+    if (timeElapsedForFps_ >= 1.0f)
+    {
+        // 1秒間に描画したフレーム数
+        averageFps_ = static_cast<float>(frameCount_) / timeElapsedForFps_;
+
+        // 次の1秒間のためにリセット
+        frameCount_ = 0;
+        timeElapsedForFps_ -= 1.0f;
     }
 
     prevTime_ = currentTime;
@@ -73,4 +94,7 @@ void TimeManager::Reset()
     totalTime_ = 0.0f;
     fps_ = 0.0f;
     isPaused_ = false;
+    averageFps_ = 0.0f;
+    frameCount_ = 0;
+    timeElapsedForFps_ = 0.0f;
 }

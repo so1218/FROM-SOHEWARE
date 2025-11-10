@@ -1,4 +1,6 @@
 #include "GameObjectManager.h"
+#include "CollisionManager.h" 
+#include "Collider.h"
 
 void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj) 
 {
@@ -71,5 +73,21 @@ void GameObjectManager::SaveGlobalVariables()
     for (auto& obj : objects_)
     {
         obj->SaveGlobalVariables();
+    }
+}
+
+void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
+{
+    // 自分が持っている全てのオブジェクトをループ
+    for (const auto& object : objects_)
+    {
+        // GameObject* を Collider* に動的キャスト
+        Collider* collider = dynamic_cast<Collider*>(object.get());
+
+        // キャストが成功し、Collider であれば登録
+        if (collider)
+        {
+            manager->AddCollider(collider);
+        }
     }
 }

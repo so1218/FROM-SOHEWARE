@@ -31,15 +31,15 @@ struct ShapeModule
         case Type::Box:
             // 内部（体積）から生成するロジック
             return {
-                RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
-                RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
-                RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
+                Math::RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
+                Math::RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
+                Math::RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
             };
         case Type::Sphere:
         {
             // 半径1の単位球上のランダムな点を生成する
-            float phi = RandomFloat(0.0f, 2.0f * 3.14159f);
-            float cosTheta = RandomFloat(-1.0f, 1.0f);
+            float phi = Math::RandomFloat(0.0f, 2.0f * 3.14159f);
+            float cosTheta = Math::RandomFloat(-1.0f, 1.0f);
             float theta = acosf(cosTheta);
 
             Vector3 unitSpherePoint = {
@@ -66,7 +66,7 @@ struct ShapeModule
             // emitFromEdgeがfalseの場合、中心に向かってランダムに縮小する
             if (!emitFromEdge)
             {
-                ellipsoidPoint = ellipsoidPoint * cbrtf(RandomFloat(0.0f, 1.0f));
+                ellipsoidPoint = ellipsoidPoint * cbrtf(Math::RandomFloat(0.0f, 1.0f));
             }
 
             return ellipsoidPoint;
@@ -97,14 +97,14 @@ struct VelocityModule
             if (abs(d_norm.y) > 0.999f) {
                 up = { 1.0f, 0.0f, 0.0f };
             }
-            Vector3 u = CrossProduct(d_norm, up).Normalize();
-            Vector3 v = CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化される
+            Vector3 u = Math::CrossProduct(d_norm, up).Normalize();
+            Vector3 v = Math::CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化される
 
             // 円錐状に広がるためのランダムな角度を2つ生成
-            float phi = RandomFloat(0.0f, 2.0f * PI);
+            float phi = Math::RandomFloat(0.0f, 2.0f * Math::PI);
             // theta: 中心軸からの広がり角度 (0° ～ angleRange/2)
-            float maxAngleRad = (angleRange / 2.0f) * (PI / 180.0f);
-            float cosTheta = RandomFloat(cosf(maxAngleRad), 1.0f);
+            float maxAngleRad = (angleRange / 2.0f) * (Math::PI / 180.0f);
+            float cosTheta = Math::RandomFloat(cosf(maxAngleRad), 1.0f);
             float theta = acosf(cosTheta);
 
             // 局所座標系でランダムな方向ベクトルを計算
@@ -149,24 +149,19 @@ struct ColorOverLifetimeModule
     bool enabled = true;
     unsigned int startColor = 0xffffffff;
     unsigned int endColor = 0xffffff00;
-    Easing easing;
-    ColorOverLifetimeModule()
-    {
-        easing.SetEasing(EasingType::EaseLinear);
-        easing.frameCount_ = 60;
-    }
+    EasingType easingType = EasingType::EaseLinear;
 
     Vector4 Evaluate(float t) const
     {
         // 1. Easingオブジェクトで時間tを加工
-        float eased_t = easing.Evaluate(t);
+        float eased_t = Easing::Evaluate(this->easingType, t);
 
         // 2. 色を計算しやすいVector4に変換
-        Vector4 startVec = Uint32ToColorVector(startColor);
-        Vector4 endVec = Uint32ToColorVector(endColor);
+        Vector4 startVec = Math::Uint32ToColorVector(startColor);
+        Vector4 endVec = Math::Uint32ToColorVector(endColor);
 
         // 3. 加工された時間を使って補間
-        return Lerp(startVec, endVec, eased_t);
+        return Math::Lerp(startVec, endVec, eased_t);
     }
 };
 
@@ -175,32 +170,27 @@ struct SizeOverLifetimeModule
     bool enabled = true;
     Vector3 startScale = { 1.0f, 1.0f, 1.0f };
     Vector3 endScale = { 0.0f, 0.0f, 0.0f };
-    Easing easing;
+    EasingType easingType = EasingType::EaseLinear;
 
     bool oscillate = false;
     float frequency = 1.0f;
 
     Vector3 Evaluate(float t) const
     {
-        if (oscillate) {
-            // 振動する場合
+        if (oscillate)
+        {
             float sin_wave = sinf(t * frequency * 2.0f * 3.14159f);
             float eased_t = sin_wave * 0.5f + 0.5f;
-            return Lerp(startScale, endScale, eased_t);
+            return Math::Lerp(startScale, endScale, eased_t);
         }
-        else {
+        else
+        {
             // 通常のイージング
-            // 1. Easingオブジェクトで時間tを加工する
-            float eased_t = easing.Evaluate(t);
-            // 2. 加工された時間を使って補間する
-            return Lerp(startScale, endScale, eased_t);
-        }
-    }
+            float eased_t = Easing::Evaluate(this->easingType, t); 
 
-    SizeOverLifetimeModule() 
-    {
-        // デフォルトのイージングタイプを設定
-        easing.SetEasing(EasingType::EaseLinear);
+            // 加工された時間を使って補間する
+            return Math::Lerp(startScale, endScale, eased_t);
+        }
     }
 };
 

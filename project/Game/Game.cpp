@@ -15,6 +15,9 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
 
+    // シーンマネージャーの初期化
+    sceneManager_.Initialize(engine_.get());
+
     // シーンの生成と登録
     sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get(), camera_.get()));
     sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get(), camera_.get()));
@@ -22,13 +25,13 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 
     // 初期シーンを設定
 #ifdef _DEBUG
-    sceneManager_.RequestSceneChange(SceneID::Title);
+    sceneManager_.RequestSceneChange(SceneID::Play);
 #else
     sceneManager_.RequestSceneChange(SceneID::Title);
 #endif
 
     modelDataGrid_ = ModelHandle::Get(ModelID::field);
-    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
+    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 
@@ -62,9 +65,6 @@ void Game::Run()
             Input::GetInstance().Update();
             // フレームの開始
             engine_->BeginFrame();
-            
-            // 描画前処理
-            engine_->PreDraw();
 
             Update();
             Draw();
@@ -139,7 +139,7 @@ void Game::Update()
 void Game::Draw()
 {
 #ifdef _DEBUG
-    engine_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
+    engine_->renderer_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
 #endif
 
     sceneManager_.Draw();

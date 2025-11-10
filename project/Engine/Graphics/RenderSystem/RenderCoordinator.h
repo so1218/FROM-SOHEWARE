@@ -26,24 +26,29 @@ public:
         ID3D12Fence* fence,
         HANDLE fenceEvent,
         GraphicsDevice* graphicDevice,
-        ID3D12DescriptorHeap* dsvDescriptorHeap,
-        Engine* engine);
+        Engine* engine,
+        D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
+        D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle, // オフスクリーン用RTV
+        ID3D12Resource* offscreenTexture,               // バリア用
+        D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle);
 
+    // フレーム描画開始・終了
     void BeginFrame();
     void EndFrame();
 
+    // オフスクリーン描画開始・終了
     void BeginOffscreenRender();
     void EndOffscreenRender();
 
-    // ゲッター
+    // フェンス関連ゲッター
     uint64_t GetFenceValue() const { return fenceValue_; }
     ID3D12Fence* GetFence() const { return fence_.Get(); }
 
 private:
-    // バリア情報(内部用）
+    // リソースバリア用
     D3D12_RESOURCE_BARRIER barrier_{};
 
-    // 各種依存オブジェクト(初期化時に外部から渡される）
+    // 外部から渡される依存オブジェクト
     SwapChain* swapChain_ = nullptr;
     RTVManager* rtvManager_ = nullptr;
     OffscreenRTVManager* offscreenRTVManager_ = nullptr;
@@ -51,15 +56,13 @@ private:
     RenderContext* renderContext_ = nullptr;
     GraphicsDevice* graphicDevice_ = nullptr;
     Engine* engine_ = nullptr;
-    DescriptorHeapManager* descriptorManager_ = nullptr;
 
-    // 深度ステンシルビューヒープとリソース
+    // 深度ステンシルヒープとハンドル
     ID3D12DescriptorHeap* dsvDescriptorHeap_ = nullptr;
-    Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_ = nullptr;
-
-    // オフスクリーン用 DSV
-    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepth_;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> offscreenDSVHeap_;
+    D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle_;      // メインレンダーターゲット用
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle_; // オフスクリーンRTV
+    ID3D12Resource* offscreenTexture_;               // バリア用リソース
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle_; // オフスクリーンDSV
 
     // フェンス関連
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_ = nullptr;

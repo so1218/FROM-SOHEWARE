@@ -1,30 +1,182 @@
 #pragma once
 
-//class Renderer
-//{
-//public:
-//    void Initialize(GraphicsDevice* device, CommandManager* commandManager, /* ... */);
-//    void Finalize();
-//
-//    void BeginFrame();
-//    void ExecuteDrawCommands(); // 実際に描画命令を積む
-//    void EndFrame();
-//
-//    void ResetDrawCounters();
-//
-//    // 描画リクエストを受け付けるメソッド (旧Drawメソッド)
-//    void SubmitTriangle(WorldTransform& worldTransform, uint32_t color, ...);
-//    void SubmitSphere(WorldTransform& worldTransform, Camera& camera, ...);
-//    void SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, ...);
-//    // ...
-//
-//private:
-//    // ここにEngineから移動してきたメンバー変数を配置する
-//    GraphicsDevice* device_ = nullptr;
-//    CommandManager* commandManager_ = nullptr;
-//    // ...
-//
-//    uint32_t indexSphere_ = 0;
-//    std::vector<RenderData> spheres_;
-//    // ...
-//};
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <functional>
+#include <wrl/client.h> 
+#include <d3d12.h>
+
+class GraphicsDevice;
+class CommandManager;
+class PSOManager;
+class RootSignatureManager;
+class SRVManager;
+class LightManager;
+class CameraManager;
+class MaterialManager;
+class Camera;
+class PostEffectManager;
+
+#include "Mesh.h"
+#include "WorldTransform.h"
+#include "RenderCommon.h" 
+#include "BlendMode.h" 
+#include "MaterialManager.h"
+#include "TextureManager.h"
+#include "AnimationData.h"
+#include "Structures.h"
+
+class Renderer 
+{
+public:
+    Renderer();
+    ~Renderer();
+
+    // Engineから必要なコンポーネントを受け取る
+    void Initialize(
+        GraphicsDevice* device,
+        CommandManager* commandManager,
+        PSOManager* psoManager,
+        RootSignatureManager* rootSignatureManager,
+        TextureManager* textureManager,
+        SRVManager* srvManager,
+        LightManager* lightManager,
+        CameraManager* cameraManager,
+        MaterialManager* materialManager,
+        Camera* camera,
+        PostEffectManager* postEffectManager,
+        int clientWidth, int clientHeight
+    );
+    void Finalize();
+
+    // フレーム処理
+    void BeginFrame(); // 描画カウンターのリセットなど
+
+    // テクスチャ読み込み
+    int LoadTexture(const std::string& texturePath);
+    void LoadTextureArray(const std::vector<std::string>& texturePaths);
+
+    // 描画関数
+    void DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
+    void DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t color = 0xffffffff);
+    void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
+    void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
+    void DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
+    void DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color = 0xffffffff);
+    void DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
+    void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
+    void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
+    void DrawParticles(const Camera& camera);
+    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
+    void DrawFullScreenQuadWithOffscreenTexture();
+
+    // ブレンドモード設定
+    void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
+
+    // メッシュキャッシュ取得・作成 
+    Mesh* GetOrCreateMesh(const ModelData& modelData);
+
+    // 描画カウント取得
+    int32_t GetTriangleCount() const { return indexTriangle_; }
+    int32_t GetSphereCount() const { return indexSphere_; }
+    int32_t GetModelCount() const { return indexModel_; }
+    int32_t GetSpriteCount() const { return indexSprite_; }
+    int32_t GetCubeCount() const { return indexCube_; }
+    int32_t GetLineCount() const { return indexLine_; }
+    int32_t GetParticleCount() const { return indexParticle_; }
+
+    // デバッグ用
+    void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
+
+    BlendMode currentBlendMode_ = kBlendModeNormal;
+
+    // 描画可能な最大数
+    static const int32_t kMaxTriangleCount;
+    static const int32_t kMaxSphereCount;
+    static const int32_t kMaxModelCount;
+    static const int32_t kMaxSpriteCount;
+    static const int32_t kMaxCubeCount;
+    static const int32_t kMaxLineCount;
+    static const int32_t kMaxParticleCount;
+
+    bool isWireFrame_ = false;
+
+private:
+    // 描画用オブジェクト作成処理
+    void CreateObjects();
+    void CreateTriangles();
+    void CreateSpheres();
+    void CreateModels();
+    void CreateSprites();
+    void CreateCubes();
+    void CreateLines();
+    void CreateParticles();
+
+    Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot);
+
+private:
+    // Engineから受け取るポインタ
+    GraphicsDevice* device_ = nullptr;
+    CommandManager* commandManager_ = nullptr;
+    PSOManager* psoManager_ = nullptr;
+    RootSignatureManager* rootSignatureManager_ = nullptr;
+    TextureManager* textureManager_ = nullptr;
+    SRVManager* srvManager_ = nullptr;
+    LightManager* lightManager_ = nullptr;
+    CameraManager* cameraManager_ = nullptr;
+    MaterialManager* materialManager_ = nullptr;
+    Camera* camera_ = nullptr;
+    PostEffectManager* postEffectManager_ = nullptr;
+
+    // 描画インデックスと描画情報（各プリミティブ）
+    uint32_t indexTriangle_ = 0;
+    std::vector<RenderData> triangles_;
+
+    uint32_t indexSphere_ = 0;
+    std::vector<RenderData> spheres_;
+
+    uint32_t indexModel_ = 0;
+    std::vector<RenderData> models_;
+    std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
+    std::unordered_map<const ModelData*, Mesh> meshCache;
+
+    uint32_t indexSprite_ = 0;
+    std::vector<RenderData> sprites_;
+
+    uint32_t indexCube_ = 0;
+    std::vector<RenderData> cubes_;
+
+    uint32_t indexLine_ = 0;
+    std::vector<RenderData> lines_;
+    std::vector<LineVertex> lineVertexBuffer_;
+
+    uint32_t indexParticle_ = 0;
+    std::vector<RenderData> particles_;
+    std::vector<ParticleInstanceData> instanceData_;
+    int indexInstance_ = 0;
+    Mesh particleMesh_;
+
+    // 定数フレームバッファ数
+    static constexpr int kFrameCount = 3;
+
+    // GPU用カメラバッファ
+    Microsoft::WRL::ComPtr<ID3D12Resource> cameraBuffer_;
+    CameraBuffer* mappedCamera_ = nullptr;
+
+    // パーティクルインスタンスバッファ（フレーム毎）
+    Microsoft::WRL::ComPtr<ID3D12Resource> particleInstanceBuffer_[kFrameCount];
+    ParticleInstanceData* mappedInstanceData_[kFrameCount] = {};
+    int currentFrameIndex_ = 0;
+
+    // テクスチャ配列関連
+    D3D12_GPU_DESCRIPTOR_HANDLE textureArraySrvHandleGPU_{};
+    std::vector<TextureManager::TextureResources> textures_;
+    TextureManager::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
+
+    // 各テクスチャIDごとにParticleInstanceDataの配列を持つ
+    std::unordered_map<uint32_t, std::vector<ParticleInstanceData>> particlesByTexture_;
+
+    int clientWidth_ = 0;
+    int clientHeight_ = 0;
+};

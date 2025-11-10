@@ -6,6 +6,7 @@
 #include "ParticleEmitter.h"
 #include "GameObjectManager.h"
 #include "Enemy.h"
+#include "FollowCamera.h"
 
 class PlayScene : public BaseScene
 {
@@ -37,6 +38,7 @@ public:
      // メンバー変数
     Engine* engine_;
     Camera* camera_;
+    FollowCamera followCamera_;
 
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;

@@ -279,15 +279,15 @@ void ParticleEditor::ShowEditor()
                     ImGui::Checkbox("有効##Color", &colorModule.enabled);
 
                     // 開始色
-                    Vector4 startCol = Uint32ToColorVector(colorModule.startColor);
+                    Vector4 startCol = Math::Uint32ToColorVector(colorModule.startColor);
                     if (ImGui::ColorEdit4("開始色", &startCol.x)) {
-                        colorModule.startColor = ColorVectorToUint32(startCol);
+                        colorModule.startColor = Math::ColorVectorToUint32(startCol);
                     }
 
                     // 終了色
-                    Vector4 endCol = Uint32ToColorVector(colorModule.endColor);
+                    Vector4 endCol = Math::Uint32ToColorVector(colorModule.endColor);
                     if (ImGui::ColorEdit4("終了色", &endCol.x)) {
-                        colorModule.endColor = ColorVectorToUint32(endCol);
+                        colorModule.endColor = Math::ColorVectorToUint32(endCol);
                     }
 
                     // イージングタイプの選択

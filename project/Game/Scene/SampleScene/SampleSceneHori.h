@@ -6,11 +6,15 @@
 #include "Sprite.h"
 #include "BaseScene.h"
 #include "GameObjectManager.h"
+#include "CollisionManager.h"
 #include "Player.h"
 #include "Enemy.h"
 #include "ShakeEffect.h"
 #include "AnimationModel.h"
-
+#include "FollowCamera.h"
+#include "EnemyManager.h"
+#include "ParticleSystemWrapper.h"
+#include "ParticleEmitter.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -32,39 +36,22 @@ public:
     // 終了処理
     void Finalize() override;
 
-    void ApplyGlobalVariables();
-    void SaveGlobalVariables();
+    // 衝突に関する処理をまとめる関数
+    void HandleCollisions();
 private:
     // メンバー変数
     Engine* engine_;
     Camera* camera_;
     GameObjectManager objectManager_;
+    std::unique_ptr<CollisionManager> collisionManager_;
+    FollowCamera followCamera_;
+    std::unique_ptr<EnemyManager> enemyManager_;
+    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
+    std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
 
-    std::unique_ptr<Model> dragonModel_;
-    std::unique_ptr<Sprite> uvCheckerSprite_;
-    std::unique_ptr<Player> player_;
-    std::unique_ptr<Enemy> enemy_;
-
-
-	ModelData modelData_;
-    Animation animation_;
-    AnimatedModelData animeModelData_;
-
-    Skeleton skeleton_;
-    SkinCluster skinCluster_;
-    float animationTime_;
-
-    std::unique_ptr<AnimationModel> animationShurimp_;
-    std::unique_ptr<AnimationModel> animationSneakWalk_;
-    std::unique_ptr<AnimationModel> animationRyu_;
-
-    ShakeEffect shake;
-
-    Vector3 baseTranslation_;
-    Vector3 originalTranslation_;
-
-    bool isEditorMode_ = false;
-
+    Player* player_ = nullptr;
+    Enemy* enemy_ = nullptr;
 
 };
 

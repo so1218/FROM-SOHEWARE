@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+#include "GlobalVariables.h"
 
 SceneManager::~SceneManager()
 {
@@ -7,7 +8,11 @@ SceneManager::~SceneManager()
     {
         currentScene_->Finalize();
     }
+}
 
+void SceneManager::Initialize(Engine* engine)
+{
+    engine_ = engine;
 }
 
 void SceneManager::Update()
@@ -65,8 +70,10 @@ void SceneManager::SetScene(BaseScene* newScene)
     if (currentScene_)
     {
         currentScene_->Finalize();
+       
     }
 
+    engine_->particleSystem_->Clear();
     currentScene_ = newScene;
 
     // 新しいシーンの初期化処理

@@ -43,46 +43,55 @@ void DebugGuiManager::Update()
     {
         DrawPostEffectSettings();
     }
+    if (ImGui::CollapsingHeader("時間 / FPS"))
+    {
+        DrawTimeSettings(); 
+    }
     if (ImGui::CollapsingHeader("全体的な情報"))
     {
         DrawInformationDisplays();
     }
-    DrawConsole();
 
     ImGui::End();
 }
 
 void DebugGuiManager::DrawRenderSettings()
 {
-    ImGui::Checkbox("isWireFrame", &engine_->isWireFrame_);
+    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->renderer_->isWireFrame_);
 }
 
 void DebugGuiManager::DrawCameraSettings()
 {
+    bool enabled = engine_->debugCamera_->IsEnabled();
+    if (ImGui::Checkbox("デバッグカメラを有効化", &enabled))
+    {
+        engine_->debugCamera_->SetEnabled(enabled);
+    }
+
     if (ImGui::TreeNode("メインカメラ"))
     {
         // 位置
         Vector3 translation = camera_->GetTranslation();
-        if (ImGui::DragFloat3("World Translation", &translation.x, 0.1f)) {
+        if (ImGui::DragFloat3("座標 (World)", &translation.x, 0.1f)) {
             camera_->SetTranslation(translation);
             camera_->UpdateViewMatrix();
         }
 
         // 回転
         Vector3 rotationEuler = camera_->GetWorldRotationEuler();
-        if (ImGui::DragFloat3("World Rotation", &rotationEuler.x, 0.1f)) {
+        if (ImGui::DragFloat3("回転 (World)", &rotationEuler.x, 0.1f)) {
             camera_->SetWorldRotationEuler(rotationEuler);
             camera_->UpdateViewMatrix();
         }
 
         // スライダーで調整
-        if (ImGui::DragFloat("FOV", &cameraFov_, 0.1f, 1.0f, 179.0f)) {
+        if (ImGui::DragFloat("視野角 (FOV)", &cameraFov_, 0.1f, 1.0f, 179.0f)) {
             camera_->SetFov(cameraFov_);
         }
-        if (ImGui::DragFloat("Near Clip", &cameraNearClip_, 0.01f, 0.001f, 100.0f)) {
+        if (ImGui::DragFloat("ニアクリップ", &cameraNearClip_, 0.01f, 0.001f, 100.0f)) {
             camera_->SetNearClip(cameraNearClip_);
         }
-        if (ImGui::DragFloat("Far Clip", &cameraFarClip_, 1.0f, 1.0f, 10000.0f)) {
+        if (ImGui::DragFloat("ファークリップ", &cameraFarClip_, 1.0f, 1.0f, 10000.0f)) {
             camera_->SetFarClip(cameraFarClip_);
         }
         ImGui::TreePop();
@@ -92,56 +101,50 @@ void DebugGuiManager::DrawCameraSettings()
     // DebugCameraの内部パラメータを操作できるようにする
     if (ImGui::TreeNode("デバッグカメラ"))
     {
-        bool enabled = engine_->debugCamera_->IsEnabled();
-        if (ImGui::Checkbox("Enable Debug Camera", &enabled))
-        {
-            engine_->debugCamera_->SetEnabled(enabled);
-        }
-
         // 注視点の編集
         Vector3 target = debugCamera_->GetTarget();
-        if (ImGui::DragFloat3("Camera Target", &target.x, 0.1f)) {
+        if (ImGui::DragFloat3("注視点", &target.x, 0.1f)) {
             debugCamera_->SetTarget(target);
             camera_->UpdateViewMatrix();
         }
 
         float distance = debugCamera_->GetDistance();
-        if (ImGui::DragFloat("Camera Distance", &distance, 0.1f, 1.0f, 500.0f)) {
+        if (ImGui::DragFloat("注視点からの距離", &distance, 0.1f, 1.0f, 500.0f)) {
             debugCamera_->SetDistance(distance);
             camera_->UpdateViewMatrix();
         }
 
         float pitch = debugCamera_->GetCurrentPitch();
-        if (ImGui::DragFloat("Pitch", &pitch, 0.1f, -89.0f, 89.0f)) {
+        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f)) {
             debugCamera_->SetCurrentPitch(pitch);
             camera_->UpdateViewMatrix();
         }
 
         float yaw = debugCamera_->GetCurrentYaw();
-        if (ImGui::DragFloat("Yaw", &yaw, 0.1f, -180.0f, 180.0f)) {
+        if (ImGui::DragFloat("ヨー (横回転)", &yaw, 0.1f, -180.0f, 180.0f)) {
             debugCamera_->SetCurrentYaw(yaw);
             camera_->UpdateViewMatrix();
         }
 
         // その他の設定の調整
         float dragSpeed = debugCamera_->GetDragSpeed();
-        if (ImGui::DragFloat("Drag Speed", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
+        if (ImGui::DragFloat("ドラッグ速度 (中クリック)", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
             debugCamera_->SetDragSpeed(dragSpeed);
         }
 
         float rotateSpeed = debugCamera_->GetRotateSpeed();
-        if (ImGui::DragFloat("Rotate Speed", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
+        if (ImGui::DragFloat("回転速度 (右クリック)", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
             debugCamera_->SetRotateSpeed(rotateSpeed);
         }
 
         float zoomSpeed = debugCamera_->GetZoomSpeed();
-        if (ImGui::DragFloat("Zoom Speed", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
+        if (ImGui::DragFloat("ズーム速度 (ホイール)", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
             debugCamera_->SetZoomSpeed(zoomSpeed);
         }
         ImGui::TreePop();
     }
 
-    // カメラの更新を反映（通常はEngine::UpdateやDebugCamera::Updateでまとめて行う）
+    // カメラの更新を反映
     camera_->UpdateViewProjectionMatrix();
 }
 
@@ -153,86 +156,86 @@ void DebugGuiManager::DrawLightSettings()
 
     MaterialSettings& materialSettings = materialManager_->GetMaterialSettings();
 
-    ImGui::Checkbox("Enable Lighting", &materialSettings.enableLighting);
+    ImGui::Checkbox("ライティング有効", &materialSettings.enableLighting);
 
-    // Directional Lights
-    if (ImGui::TreeNode("Directional Lights"))
+    // ディレクショナルライト
+    if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
-        ImGui::Combo("Light Mode", &materialSettings.lightMode,
-            "HalfLambert\0Specular\0Toon\0");
+        ImGui::Combo("ライトモード", &materialSettings.lightMode,
+            "ハーフランバート\0スペキュラ\0トゥーン\0");
 
         for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
         {
-            std::string label = "Directional Light " + std::to_string(i);
+            std::string label = "ディレクショナルライト " + std::to_string(i);
             if (ImGui::TreeNode(label.c_str()))
             {
                 bool enabled = (dirLights[i].enable != 0);
-                if (ImGui::Checkbox("Enable", &enabled))
+                if (ImGui::Checkbox("有効", &enabled))
                 {
                     dirLights[i].enable = enabled ? 1 : 0;
                 }
-                ImGui::DragFloat3("Direction", &dirLights[i].direction.x, 0.05f);
-                ImGui::ColorEdit4("Color", &dirLights[i].color.x);
-                ImGui::DragFloat("Intensity", &dirLights[i].intensity, 0.01f, 0.0f, 100.0f);
+                ImGui::DragFloat3("向き", &dirLights[i].direction.x, 0.05f);
+                ImGui::ColorEdit4("色", &dirLights[i].color.x);
+                ImGui::DragFloat("強度", &dirLights[i].intensity, 0.01f, 0.0f, 100.0f);
                 ImGui::TreePop();
             }
         }
         ImGui::TreePop();
     }
 
-    // Point Lights
-    if (ImGui::TreeNode("Point Lights"))
+    // ポイントライト
+    if (ImGui::TreeNode("ポイントライト (点光源)"))
     {
         for (int i = 0; i < lightManager_->GetPointLightCount(); ++i)
         {
-            std::string label = "Point Light " + std::to_string(i);
+            std::string label = "ポイントライト " + std::to_string(i);
             if (ImGui::TreeNode(label.c_str()))
             {
                 bool enabled = (pointLights[i].enable != 0);
-                if (ImGui::Checkbox("Enable", &enabled))
+                if (ImGui::Checkbox("有効", &enabled))
                 {
                     pointLights[i].enable = enabled ? 1 : 0;
                 }
-                ImGui::DragFloat3("Position", &pointLights[i].position.x, 0.05f);
-                ImGui::ColorEdit4("Color", &pointLights[i].color.x);
-                ImGui::DragFloat("Intensity", &pointLights[i].intensity, 0.01f);
-                ImGui::DragFloat("Radius", &pointLights[i].radius, 0.1f);
-                ImGui::DragFloat("Decay", &pointLights[i].decay, 0.01f);
+                ImGui::DragFloat3("座標", &pointLights[i].position.x, 0.05f);
+                ImGui::ColorEdit4("色", &pointLights[i].color.x);
+                ImGui::DragFloat("強度", &pointLights[i].intensity, 0.01f);
+                ImGui::DragFloat("影響半径", &pointLights[i].radius, 0.1f);
+                ImGui::DragFloat("減衰", &pointLights[i].decay, 0.01f);
                 ImGui::TreePop();
             }
         }
         ImGui::TreePop();
     }
 
-    // Spot Lights
-    if (ImGui::TreeNode("Spot Lights"))
+    // スポットライト
+    if (ImGui::TreeNode("スポットライト"))
     {
         for (int i = 0; i < lightManager_->GetSpotLightCount(); ++i)
         {
-            std::string label = "Spot Light " + std::to_string(i);
+            std::string label = "スポットライト " + std::to_string(i);
             if (ImGui::TreeNode(label.c_str()))
             {
                 bool enabled = (spotLights[i].enable != 0);
-                if (ImGui::Checkbox("Enable", &enabled))
+                if (ImGui::Checkbox("有効", &enabled))
                 {
                     spotLights[i].enable = enabled ? 1 : 0;
                 }
-                ImGui::DragFloat3("Position", &spotLights[i].position.x, 0.05f);
-                ImGui::ColorEdit4("Color", &spotLights[i].color.x);
-                ImGui::DragFloat("Intensity", &spotLights[i].intensity, 0.01f);
-                ImGui::DragFloat3("Direction", &spotLights[i].direction.x, 0.05f);
-                ImGui::DragFloat("Distance", &spotLights[i].distance, 0.1f);
-                ImGui::DragFloat("Decay", &spotLights[i].decay, 0.01f);
-                ImGui::DragFloat("Cos Angle", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat3("座標", &spotLights[i].position.x, 0.05f);
+                ImGui::ColorEdit4("色", &spotLights[i].color.x);
+                ImGui::DragFloat("強度", &spotLights[i].intensity, 0.01f);
+                ImGui::DragFloat3("向き", &spotLights[i].direction.x, 0.05f);
+                ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
+                ImGui::DragFloat("減衰", &spotLights[i].decay, 0.01f);
+                ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
                 ImGui::TreePop();
             }
         }
         ImGui::TreePop();
     }
 
-    // マテリアル設定
-    ImGui::DragFloat("Shininess", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
-    ImGui::ColorEdit4("Specular Color", &materialSettings.specularColor.x, 0);
+    // マテリアル設定（スペキュラ）
+    ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
+    ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
 
 }
 
@@ -574,18 +577,64 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 }
 
+void DebugGuiManager::DrawTimeSettings()
+{
+    TimeManager* time = TimeManager::GetInstance();
+
+    // 時間の制御
+
+    // 一時停止
+    bool isPaused = time->IsPaused();
+    if (ImGui::Checkbox("一時停止 (Pause)", &isPaused))
+    {
+        if (isPaused) {
+            time->Pause();
+        }
+        else {
+            time->Resume();
+        }
+    }
+
+    // タイムスケール (スローモーション/早送りデバッグ)
+    float timeScale = time->GetTimeScale();
+    if (ImGui::DragFloat("タイムスケール", &timeScale, 0.01f, 0.0f, 10.0f))
+    {
+        time->SetTimeScale(timeScale);
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("リセット"))
+    {
+        time->SetTimeScale(1.0f);
+    }
+
+
+    ImGui::Separator(); // 制御と表示を分離
+
+    // 時間情報の表示
+
+    // FPS関連
+    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS()); 
+    ImGui::Text("瞬間 FPS: %.1f", time->GetFPS());
+
+    // DeltaTime
+    ImGui::Text("DeltaTime (Scaled):   %.2f ms", time->GetDeltaTime() * 1000.0f);
+    ImGui::Text("DeltaTime (Unscaled): %.2f ms", time->GetUnscaledDeltaTime() * 1000.0f);
+
+    // 実行時間
+    ImGui::Text("総実行時間 (TotalTime): %.2f s", time->GetTotalTime());
+}
+
 void DebugGuiManager::DrawInformationDisplays() 
 {
-    ImGui::Text("FPS: %.1f", TimeManager::GetInstance()->GetFPS());
-   
-    // オブジェクト数 (Engineから取得)
-    ImGui::Text("Triangles: %d / %d", engine_->GetTriangleCount(), engine_->kMaxTriangleCount);
-    ImGui::Text("Spheres: %d / %d", engine_->GetSphereCount(), engine_->kMaxSphereCount);
-    ImGui::Text("Models: %d / %d", engine_->GetModelCount(), engine_->kMaxModelCount);
-    ImGui::Text("Sprites: %d / %d", engine_->GetSpriteCount(), engine_->kMaxSpriteCount);
-    ImGui::Text("Cubes: %d / %d", engine_->GetCubeCount(), engine_->kMaxCubeCount);
-    ImGui::Text("Lines: %d / %d", engine_->GetLineCount(), engine_->kMaxLineCount);
-    ImGui::Text("Particles: %d / %d", engine_->GetParticleCount(), engine_->kMaxParticleCount);
+    // オブジェクト数
+    ImGui::Text("Triangles: %d / %d", engine_->renderer_->GetTriangleCount(), engine_->renderer_->kMaxTriangleCount);
+    ImGui::Text("Spheres: %d / %d", engine_->renderer_->GetSphereCount(), engine_->renderer_->kMaxSphereCount);
+    ImGui::Text("Models: %d / %d", engine_->renderer_->GetModelCount(), engine_->renderer_->kMaxModelCount);
+    ImGui::Text("Sprites: %d / %d", engine_->renderer_->GetSpriteCount(), engine_->renderer_->kMaxSpriteCount);
+    ImGui::Text("Cubes: %d / %d", engine_->renderer_->GetCubeCount(), engine_->renderer_->kMaxCubeCount);
+    ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->kMaxLineCount);
+    ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->kMaxParticleCount);
 
     // プロファイリング情報 (別途プロファイリングシステムが必要)
    /* ImGui::Text("Profiling Info: [Not Implemented]");*/
@@ -595,34 +644,25 @@ void DebugGuiManager::DrawInformationDisplays()
 }
 
 void DebugGuiManager::RenderOffscreenTexture(
-    ID3D12DescriptorHeap* descriptorHeap,
-    uint32_t descriptorSizeSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE srcHandle,
-    uint32_t dstIndex
+    SRVManager* srvManager,
+    uint32_t srvIndexToShow
 ) 
 {
-    D3D12_CPU_DESCRIPTOR_HANDLE dstHandle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    dstHandle.ptr += descriptorSizeSRV * dstIndex;
+    // 1. マネージャから、表示したいSRVの「GPUハンドル」を直接もらう
+     //    (コピーもCPUハンドルも不要)
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    gpuHandle.ptr += descriptorSizeSRV * dstIndex;
-
-    // デスクリプタをコピー
-    engine_->graphicDevice_->GetDevice()->CopyDescriptorsSimple(
-        1, dstHandle, srcHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-    );
-
+    // 2. ImGuiで表示する
     ImGui::SetNextWindowSize(ImVec2(800, 450), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-    ImVec2 imageSize(800, 450);
     ImGui::Begin("Scene");
-    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
-    ImGui::End();
-}
+    ImVec2 imageSize = ImGui::GetContentRegionAvail();
 
-void DebugGuiManager::DrawConsole()
-{
-    ImGui::Begin("ログやデバッグ出力");
+    // (void*) キャストは ImGui の作法なので、reinterpret_cast が2回必要
+    ImGui::Image(
+        reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)),
+        imageSize
+    );
 
     ImGui::End();
 }

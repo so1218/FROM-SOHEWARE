@@ -28,7 +28,7 @@ void ParticleSystem::Initialize(Engine* engine)
 
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime)
 {
-    if (particles_.size() >= engine_->kMaxParticleCount) return;
+    if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
 
     const ParticleConfig& config = GetConfig(presetName);
 
@@ -76,20 +76,20 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
             if (config.rotation.randomStartRotation)
             {
                 // Z軸にランダムな初期回転を設定
-                particle.transform->rotation_.z = RandomFloat(0.0f, 360.0f);
+                particle.transform->rotation_.z = Math::RandomFloat(0.0f, 360.0f);
             }
             else
             {
                 // orientation3D.z を 2D の初期回転として使用する
-                particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
+                particle.transform->rotation_.z = Math::ToRadians(config.rotation.orientation3D.z);
             }
         }
         else
         {
             // ビルボードが無効な場合、設定された向きをそのまま適用
-            particle.transform->rotation_.x = ToRadians(config.rotation.orientation3D.x);
-            particle.transform->rotation_.y = ToRadians(config.rotation.orientation3D.y);
-            particle.transform->rotation_.z = ToRadians(config.rotation.orientation3D.z);
+            particle.transform->rotation_.x = Math::ToRadians(config.rotation.orientation3D.x);
+            particle.transform->rotation_.y = Math::ToRadians(config.rotation.orientation3D.y);
+            particle.transform->rotation_.z = Math::ToRadians(config.rotation.orientation3D.z);
         }
     }
     else
@@ -269,9 +269,9 @@ void ParticleSystem::Update()
     for (auto& particle : particles_)
     {
         particle.transform->UpdateMatrix();
-        engine_->SubmitParticleInstance(
+        engine_->renderer_->SubmitParticleInstance(
             *particle.transform,
-            ColorVectorToUint32(particle.color),
+            Math::ColorVectorToUint32(particle.color),
             particle.textureHandle,
             particle.transform->rotation_.z,
             particle.config.rotation.isBillboard
@@ -292,7 +292,7 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 void ParticleSystem::Draw(Camera* camera)
 {
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
-    engine_->DrawParticles(*camera);
+    engine_->renderer_->DrawParticles(*camera);
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
 #ifdef _DEBUG

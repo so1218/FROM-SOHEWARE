@@ -31,8 +31,8 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
         colliderB->GetWorldPosition(), colliderB->GetRadius()))
     {
         // 衝突したらコールバックを呼び出す
-        colliderA->OnCollision();
-        colliderB->OnCollision();
+        colliderA->OnCollision(colliderB);
+        colliderB->OnCollision(colliderA);
     }
 }
 

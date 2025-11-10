@@ -5,57 +5,91 @@
 
 #include <externals/DirectXTex/d3dx12.h>
 
-void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height, RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera)
+void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height,
+    RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera, SRVManager* srvManager)
 {
-	engine_ = engine;
+    engine_ = engine;
     offscreenRTVManager_ = offscreenRTVManager;
     rootSignatureManager_ = rootSignatureManager;
     psoManager_ = psoManager;
-
+    srvManager_ = srvManager;
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // Bloomで使用する2つのSRV（sceneTextureSRV_, blurred）
-    sceneTextureSRV_ = offscreenRTVManager_->GetSRVHandleGPU(0);
-    brightExtractIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
-    verticalBlurIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
-    horizontalBlurIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
-    bloomCombineIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
+    // 共通SRV設定
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-    // 特定のオブジェクトだけを描画するネオン用レンダーターゲット
-    neonIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
+    // オフスクリーン描画ターゲットを生成する汎用関数
+    auto createTarget = [this, &srvDesc](UINT w, UINT h) {
+        const Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    // Depth関連のリソース作成
-    depthExtractIndex_ = offscreenRTVManager_->CreateOffscreenRenderTarget(width, height);
+        // レンダーターゲットとRTVハンドルを作成
+        auto [resource, rtvHandle] = offscreenRTVManager_->CreateOffscreenRenderTarget(w, h, clearColor);
 
-    // 1. SRVヒープ作成（2つ: scene, blurred）
+        // SRVを登録
+        uint32_t srvIndex = srvManager_->CreateSRV(resource.Get(), srvDesc);
+
+        return std::make_tuple(resource, rtvHandle, srvIndex);
+        };
+
+    // シーンテクスチャ（入力元）のSRVインデックスを取得
+    sceneTextureSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
+
+    // 各ポストエフェクト用のターゲットを作成
+    std::tie(brightExtractResource_, brightExtractRTVHandle_, brightExtractIndex_) = createTarget(width, height);
+    std::tie(verticalBlurResource_, verticalBlurRTVHandle_, verticalBlurIndex_) = createTarget(width, height);
+    std::tie(horizontalBlurResource_, horizontalBlurRTVHandle_, horizontalBlurIndex_) = createTarget(width, height);
+    std::tie(bloomCombineResource_, bloomCombineRTVHandle_, bloomCombineIndex_) = createTarget(width, height);
+    std::tie(neonResource_, neonRTVHandle_, neonIndex_) = createTarget(width, height);
+    std::tie(depthExtractResource_, depthExtractRTVHandle_, depthExtractIndex_) = createTarget(width, height);
+
+    // SRVヒープの作成（ポストエフェクト用）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heapDesc.NumDescriptors = 3; // t0: scene, t1: blurred
+    heapDesc.NumDescriptors = 3; // t0: scene, t1: blurred, t2: depth
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
     HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&srvTableHeap_));
     assert(SUCCEEDED(hr));
 
-    // 2. CPU/GPUハンドル取得
+    // CPU/GPUハンドルの取得
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvTableHeap_->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvTableHeap_->GetGPUDescriptorHandleForHeapStart();
-    UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // 3. t0 = sceneTextureSRV_
-    D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU = offscreenRTVManager_->GetSRVHandleCPU(0); // シーン用SRV
-    device->CopyDescriptorsSimple(1, cpuHandle, sceneCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    UINT numToCopy = 1;
 
-    // 4. t1 = blurred（horizontalBlurIndex_）
-    cpuHandle.ptr += descriptorSize;
-    D3D12_CPU_DESCRIPTOR_HANDLE blurCPU = offscreenRTVManager_->GetSRVHandleCPU(horizontalBlurIndex_);
-    device->CopyDescriptorsSimple(1, cpuHandle, blurCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // SRVのコピー（GPU可視ヒープへ）
 
-    // 5. t2 = depthTextureSRV_（Depth関連）
-    cpuHandle.ptr += descriptorSize;
-    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU = offscreenRTVManager_->GetSRVHandleCPU(depthExtractIndex_);
-    device->CopyDescriptorsSimple(1, cpuHandle, depthCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // t0 = シーンテクスチャ
+    D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU = srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureSRVIndex_);
+    device->CopyDescriptors(
+        1, &cpuHandle, &numToCopy,
+        1, &sceneCPU, &numToCopy,
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+    );
 
-    // 6. SRVテーブル先頭のGPUハンドルを保存（描画時に SetGraphicsRootDescriptorTable で使う）
+    // t1 = ブラー済みテクスチャ
+    cpuHandle.ptr += descriptorSize_;
+    D3D12_CPU_DESCRIPTOR_HANDLE blurCPU = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurIndex_);
+    device->CopyDescriptors(
+        1, &cpuHandle, &numToCopy,
+        1, &blurCPU, &numToCopy,
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+    );
+
+    // t2 = 深度テクスチャ
+    cpuHandle.ptr += descriptorSize_;
+    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU = srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_);
+    device->CopyDescriptors(
+        1, &cpuHandle, &numToCopy,
+        1, &depthCPU, &numToCopy,
+        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+    );
+
+    // SRVテーブル先頭のGPUハンドルを保存（描画時に使用）
     bloomCombineSRVTable_ = gpuHandle;
 
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
@@ -213,181 +247,161 @@ void PostEffectManager::SetMode(int mode)
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
-    ID3D12DescriptorHeap* descriptorHeaps[] = { offscreenRTVManager_->GetSRVDescriptorHeap() };
+    // SRVヒープをセット
+    ID3D12DescriptorHeap* descriptorHeaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-    // --- 0. DepthStencil を SRV として使うための Barrier ---
+    // DepthStencilをSRVとして使用可能にする
     CD3DX12_RESOURCE_BARRIER barrierToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->depthStencilResource_.Get(),
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &barrierToSRV);
 
-    // --- 1. Depth Extract --- 
+    // Depth Extract
     {
-        // リソース状態遷移：レンダーターゲットとして使うために遷移
-        auto resourceDepthExtract = offscreenRTVManager_->GetOffscreenTexture(depthExtractIndex_);
+        // Depth Extract用にレンダーターゲットに遷移
         CD3DX12_RESOURCE_BARRIER barrierDepthExtract = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceDepthExtract.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,  // 現在の状態（SRVとして使用中）
-            D3D12_RESOURCE_STATE_RENDER_TARGET);         // レンダーターゲットへ遷移
+            depthExtractResource_.Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierDepthExtract);
 
-        // Depth Extract用のルートシグネチャをセット
-        cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureDepthExtract_.Get()); // Depth専用
-
-        // Depth Extract用のPSOをセット
+        // ルートシグネチャ・PSO・SRV・CBをセット
+        cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureDepthExtract_.Get());
         cmdList->SetPipelineState(psoManager_->psoDepth_.Get());
-
-        // DepthのSRVをセット
-        cmdList->SetGraphicsRootDescriptorTable(2, offscreenRTVManager_->GetSRVHandleGPU(sceneDepthIndex_));
-
-        // Depth用のCBをセット
+        cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbDepthExtractVS_->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootConstantBufferView(1, cbDepthExtractPS_->GetGPUVirtualAddress());
 
-        // DepthのRTVをセット
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleDepth = offscreenRTVManager_->GetRTVHandle(depthExtractIndex_);
-        cmdList->OMSetRenderTargets(1, &rtvHandleDepth, FALSE, nullptr);
+        // Depth Extract用のRTVをセットしてクリア
+        cmdList->OMSetRenderTargets(1, &depthExtractRTVHandle_, FALSE, nullptr);
+        float clearColor[4] = { 0, 0, 0, 1 };
+        cmdList->ClearRenderTargetView(depthExtractRTVHandle_, clearColor, 0, nullptr);
 
-        // Depthのレンダーターゲットをクリア
-      /*  float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(rtvHandleDepth, clearColor, 0, nullptr);*/
-
-        // フルスクリーン三角形を描画（深度の抽出）
+        // フルスクリーン三角形で描画
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
-        // 描画後、再度SRVとして使うために遷移（必要なら）
+        // 描画後、SRVとして再利用可能に遷移
         CD3DX12_RESOURCE_BARRIER barrierDepthExtractToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceDepthExtract.Get(),
+            depthExtractResource_.Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE); // SRVとして使用
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierDepthExtractToSRV);
     }
 
-    // --- 2. DepthStencil を元の Depth 書き込みに戻すための Barrier ---
+    // DepthStencilを元の書き込み状態に戻す
     CD3DX12_RESOURCE_BARRIER barrierToDepth = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->depthStencilResource_.Get(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_DEPTH_WRITE);
     cmdList->ResourceBarrier(1, &barrierToDepth);
 
-    // 共通の設定
+    // 共通ルートシグネチャをセット
     cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignaturePostProcess_.Get());
-    // --- 1. BrightExtract ---
+
+    // Bright Extract
     {
-        // リソース状態遷移：レンダーターゲットとして使うために遷移
-        auto resourceBrightExtract = offscreenRTVManager_->GetOffscreenTexture(brightExtractIndex_);
         CD3DX12_RESOURCE_BARRIER barrierBrightExtract = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceBrightExtract.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,  // ここは現在の状態に応じて変更してください
+            brightExtractResource_.Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierBrightExtract);
 
         cmdList->SetPipelineState(psoManager_->psoExtract_.Get());
+        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sceneTextureSRVIndex_));
+        cmdList->SetGraphicsRootConstantBufferView(0, cbBrightExtract_->GetGPUVirtualAddress());
 
-        D3D12_GPU_DESCRIPTOR_HANDLE srvInput = sceneTextureSRV_;
-        cmdList->SetGraphicsRootDescriptorTable(1, srvInput);  // t0
-        cmdList->SetGraphicsRootConstantBufferView(0, cbBrightExtract_->GetGPUVirtualAddress()); // b0
-
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleExtract = offscreenRTVManager_->GetRTVHandle(brightExtractIndex_);
-        cmdList->OMSetRenderTargets(1, &rtvHandleExtract, FALSE, nullptr);
+        cmdList->OMSetRenderTargets(1, &brightExtractRTVHandle_, FALSE, nullptr);
+        float clearColor[4] = { 0, 0, 0, 1 };
+        cmdList->ClearRenderTargetView(brightExtractRTVHandle_, clearColor, 0, nullptr);
 
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
-        // 描画後、再びSRVとして使うために遷移（必要なら）
         CD3DX12_RESOURCE_BARRIER barrierBrightExtractToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceBrightExtract.Get(),
+            brightExtractResource_.Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierBrightExtractToSRV);
     }
 
-    // --- 2. Vertical Blur ---
+    // Vertical Blur
     {
-        auto resourceVerticalBlur = offscreenRTVManager_->GetOffscreenTexture(verticalBlurIndex_);
         CD3DX12_RESOURCE_BARRIER barrierVerticalBlur = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceVerticalBlur.Get(),
+            verticalBlurResource_.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierVerticalBlur);
 
         cmdList->SetPipelineState(psoManager_->psoBlurY_.Get());
-
-        cmdList->SetGraphicsRootDescriptorTable(1, offscreenRTVManager_->GetSRVHandleGPU(brightExtractIndex_));
+        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
 
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleVertical = offscreenRTVManager_->GetRTVHandle(verticalBlurIndex_);
-        cmdList->OMSetRenderTargets(1, &rtvHandleVertical, FALSE, nullptr);
+        cmdList->OMSetRenderTargets(1, &verticalBlurRTVHandle_, FALSE, nullptr);
+        float clearColor[4] = { 0, 0, 0, 1 };
+        cmdList->ClearRenderTargetView(verticalBlurRTVHandle_, clearColor, 0, nullptr);
 
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierVerticalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceVerticalBlur.Get(),
+            verticalBlurResource_.Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierVerticalBlurToSRV);
     }
 
-    // --- 3. Horizontal Blur ---
+    // Horizontal Blur
     {
-        auto resourceHorizontalBlur = offscreenRTVManager_->GetOffscreenTexture(horizontalBlurIndex_);
         CD3DX12_RESOURCE_BARRIER barrierHorizontalBlur = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceHorizontalBlur.Get(),
+            horizontalBlurResource_.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierHorizontalBlur);
 
         cmdList->SetPipelineState(psoManager_->psoBlurX_.Get());
-
-        cmdList->SetGraphicsRootDescriptorTable(1, offscreenRTVManager_->GetSRVHandleGPU(verticalBlurIndex_));
+        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(verticalBlurIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
 
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleHorizontal = offscreenRTVManager_->GetRTVHandle(horizontalBlurIndex_);
-        cmdList->OMSetRenderTargets(1, &rtvHandleHorizontal, FALSE, nullptr);
+        cmdList->OMSetRenderTargets(1, &horizontalBlurRTVHandle_, FALSE, nullptr);
+        float clearColor[4] = { 0, 0, 0, 1 };
+        cmdList->ClearRenderTargetView(horizontalBlurRTVHandle_, clearColor, 0, nullptr);
 
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierHorizontalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceHorizontalBlur.Get(),
+            horizontalBlurResource_.Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierHorizontalBlurToSRV);
     }
 
-    // --- 4. Bloom Combine ---
+    // Bloom Combine
     {
-        auto resourceBloomCombine = offscreenRTVManager_->GetOffscreenTexture(bloomCombineIndex_);
         CD3DX12_RESOURCE_BARRIER barrierBloomCombine = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceBloomCombine.Get(),
+            bloomCombineResource_.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierBloomCombine);
 
         cmdList->SetPipelineState(psoManager_->psoBloomCombine_.Get());
-
-        // SRV: t0 = 元のシーン, t1 = ブラー後のハイライト
         ID3D12DescriptorHeap* heaps[] = { srvTableHeap_.Get() };
         cmdList->SetDescriptorHeaps(1, heaps);
         cmdList->SetGraphicsRootDescriptorTable(1, bloomCombineSRVTable_);
-
         cmdList->SetGraphicsRootConstantBufferView(0, cbBloom_->GetGPUVirtualAddress());
 
-        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleCombine = offscreenRTVManager_->GetRTVHandle(bloomCombineIndex_);
-        cmdList->OMSetRenderTargets(1, &rtvHandleCombine, FALSE, nullptr);
-
-        float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1 };
-        cmdList->ClearRenderTargetView(rtvHandleCombine, clearColor, 0, nullptr);
+        cmdList->OMSetRenderTargets(1, &bloomCombineRTVHandle_, FALSE, nullptr);
+        float clearColor[4] = { 0, 0, 0, 1 };
+        cmdList->ClearRenderTargetView(bloomCombineRTVHandle_, clearColor, 0, nullptr);
 
         cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         cmdList->DrawInstanced(3, 1, 0, 0);
 
         CD3DX12_RESOURCE_BARRIER barrierBloomCombineToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            resourceBloomCombine.Get(),
+            bloomCombineResource_.Get(),
             D3D12_RESOURCE_STATE_RENDER_TARGET,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierBloomCombineToSRV);

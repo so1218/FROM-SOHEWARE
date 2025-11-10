@@ -6,7 +6,7 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     // EmitterConfigからすべての設定をコピー
     position_ = config.position;
     spawnInterval_ = config.spawnInterval;
-    lifetime_ = config.lifetime; 
+    lifetime_ = config.lifetime;
     amount_ = config.amount;
     duration_ = config.duration;
     looping_ = config.looping;
@@ -15,8 +15,7 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     isPlaying_ = false;
 
     // playOnAwakeがtrueなら、自動的に再生
-    if (config.playOnAwake)
-    {
+    if (config.playOnAwake) {
         Play();
     }
 }

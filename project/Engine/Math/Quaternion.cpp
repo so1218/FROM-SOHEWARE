@@ -45,7 +45,7 @@ Quaternion Quaternion::MakeFromTwoVectors(const Vector3& from, const Vector3& to
             axis = Vector3(0.0f, 1.0f, 0.0f).Cross(v0);
         }
         axis = axis.Normalize(); // 回転軸を正規化
-        return Quaternion::FromAxisAngle(axis, PI); // 180度回転
+        return Quaternion::FromAxisAngle(axis, Math::PI); // 180度回転
     }
 
     // 通常のケース: 軸と角度からクォータニオンを生成
@@ -98,7 +98,7 @@ Vector3 Quaternion::QuaternionToEuler(const Quaternion& q)
     // Y軸（ピッチ）
     float sinp = 2.0f * (q.w * q.y - q.z * q.x);
     if (std::abs(sinp) >= 1)
-        euler.y = std::copysign(PI / 2, sinp); // 90度クランプ
+        euler.y = std::copysign(Math::PI / 2, sinp); // 90度クランプ
     else
         sinp = std::clamp(sinp, -1.0f, 1.0f);
         euler.y = std::asin(sinp);

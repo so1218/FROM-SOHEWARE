@@ -2,7 +2,7 @@
 #include "Quaternion.h"
 #include "Structures.h"
 #include "WorldTransform.h"
-#include "SRVAllocator.h"
+#include "SRVManager.h"
 
 #include <vector>    
 #include <map>       
@@ -92,7 +92,7 @@ struct SkinCluster
     std::span<VertexInfluence> mappedInfluence;
     Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
     std::span<WellForGPU> mappedPalette;
-    std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> paletteSrvHandle;
+    uint32_t paletteSrvIndex; // パレット用SRVのインデックス番号
 };
 
 Skeleton CreateSkeleton(const Node& rootNode);
@@ -105,7 +105,5 @@ SkinCluster CreateSkinCluster(
     const Microsoft::WRL::ComPtr<ID3D12Device>& device,
     const Skeleton& skeleton,
     const ModelData& modelData,
-	const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap,
-	uint32_t descriptorSize,
-    SRVAllocator* srvAllocator);
+    SRVManager* srvManager);
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton);

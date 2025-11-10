@@ -390,11 +390,78 @@ float FBM(float2 p, int octaves, float gain, float lacunarity)
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
-    float4 color = gTexture.Sample(gSampler, uv);
     
     float2 center = float2(0.5, 0.5);
     float2 coord = uv - center;
     float aspectRatio = screenResolution.x / screenResolution.y;
+    
+    if ((flag.x & PIXELATION) != 0)
+    {
+        float2 pixelSizeUV = pixelationSize / screenResolution;
+        uv = floor(uv / pixelSizeUV) * pixelSizeUV;
+    }
+    if ((flag.x & SCREEN_WAVE) != 0)
+    {
+        float2 waveOffset = float2(0.0, 0.0);
+
+        // 横方向（X座標に揺らぎ → 横波）
+        if (waveDirection == 0 || waveDirection == 2) // 横 or 両方
+        {
+            float waveX = sin(uv.y * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
+            waveOffset.x += waveX;
+        }
+        
+        float edgeFadeX = 1.0 - abs(uv.x - 0.5) * 2.0;
+        float edgeFadeY = 1.0 - abs(uv.y - 0.5) * 2.0;
+        
+        float edgeFade = saturate(edgeFadeX * edgeFadeY);
+        
+        edgeFade = smoothstep(0.0, 0.2, edgeFade);
+
+        // 縦方向（Y座標に揺らぎ → 縦波）
+        if (waveDirection == 1 || waveDirection == 2) // 縦 or 両方
+        {
+            float waveY = sin(uv.x * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
+            waveOffset.y += waveY;
+        }
+
+        uv += waveOffset * edgeFade;
+        uv = saturate(uv);
+    }
+    if ((flag.x & HEAT_HAZE) != 0)
+    {
+        float2 noiseUV = uv * heatNoiseScale + float2(totalTime * heatSpeed, totalTime * heatSpeed * 0.3);
+
+        // FBMでX・Yそれぞれにノイズを生成
+        float noiseX = FBM(noiseUV + float2(13.0, 7.0), 5, 0.5, 2.0);
+        float noiseY = FBM(noiseUV + float2(21.0, 11.0), 5, 0.5, 2.0);
+
+        // -0.5〜+0.5に調整して変位ベクトルに
+        float2 offset = (float2(noiseX, noiseY) - 0.5) * heatDistortionStrength;
+
+
+        // UV変形・サンプル
+        uv += offset;
+        uv = saturate(uv);
+    }
+    if ((flag.x & WATER_REFRACTION) != 0)
+    {
+           // UVを時間によるオフセットを含めて調整
+        float2 noiseUV = uv * turbulentFrequency + float2(totalTime * turbulentSpeed, 0.0);
+
+        // より軽量なノイズ関数（FBMの代わり）
+        float displacement = sin(noiseUV.x * 10.0 + totalTime * 0.5) * 0.5 + sin(noiseUV.y * 10.0 + totalTime * 0.5) * 0.5;
+
+        // 歪ませる方向に対する強度を適用
+        float2 offset = float2(displacement, displacement) * turbulentStrength;
+
+        // UVにオフセットを加えて歪ませる
+        uv += offset;
+      
+    }
+ 
+    float4 color = gTexture.Sample(gSampler, uv);
+    
 
     // エフェクトの適用
     if ((flag.x & GRAYSCALE) != 0)
@@ -425,13 +492,6 @@ float4 main(VSOutput input) : SV_TARGET
     {
         float levels = max(2.0, posterizationLevels);
         color.rgb = floor(color.rgb * levels) / (levels - 1.0);
-    }
-    if ((flag.x & PIXELATION) != 0)
-    {
-        float2 pixelSizeUV = pixelationSize / screenResolution;
-        uv = floor(uv / pixelSizeUV) * pixelSizeUV;
-        
-        color = gTexture.Sample(gSampler, uv);
     }
     if ((flag.x & COLOR_TINT) != 0)
     {
@@ -584,29 +644,6 @@ float4 main(VSOutput input) : SV_TARGET
         float blue = gTexture.Sample(gSampler, uv - offset).b;
 
         color = float4(red, green, blue, 1.0);
-    }
-    if ((flag.x & SCREEN_WAVE) != 0)
-    {
-        float2 waveOffset = float2(0.0, 0.0);
-
-        // 横方向（X座標に揺らぎ → 横波）
-        if (waveDirection == 0 || waveDirection == 2) // 横 or 両方
-        {
-            float waveX = sin(uv.y * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
-            waveOffset.x += waveX;
-        }
-
-    // 縦方向（Y座標に揺らぎ → 縦波）
-        if (waveDirection == 1 || waveDirection == 2) // 縦 or 両方
-        {
-            float waveY = sin(uv.x * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
-            waveOffset.y += waveY;
-        }
-
-        uv += waveOffset;
-        uv = saturate(uv);
-
-        color = gTexture.Sample(gSampler, uv);
     }
     if ((flag.x & FISHEYE) != 0)
     {
@@ -792,23 +829,7 @@ float4 main(VSOutput input) : SV_TARGET
         float3 edgeColor = float3(0.0, 0.0, 0.0); // 白い線で描く
         color.rgb = lerp(color.rgb, edgeColor, edge); // エッジ部分だけ白く混ぜる
     }
-    if ((flag.x & HEAT_HAZE) != 0)
-    {
-        float2 noiseUV = uv * heatNoiseScale + float2(totalTime * heatSpeed, totalTime * heatSpeed * 0.3);
-
-    // FBMでX・Yそれぞれにノイズを生成
-        float noiseX = FBM(noiseUV + float2(13.0, 7.0), 5, 0.5, 2.0);
-        float noiseY = FBM(noiseUV + float2(21.0, 11.0), 5, 0.5, 2.0);
-
-    // -0.5〜+0.5に調整して変位ベクトルに
-        float2 offset = (float2(noiseX, noiseY) - 0.5) * heatDistortionStrength;
-
-
-    // UV変形・サンプル
-        uv += offset;
-        uv = saturate(uv);
-        color = gTexture.Sample(gSampler, uv);
-    }
+  
     if ((flag.x & SPLIT_TONING) != 0)
     {
         float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114)); // 明度計算
@@ -819,58 +840,42 @@ float4 main(VSOutput input) : SV_TARGET
         // 元の色と補正色をブレンド
         color.rgb = lerp(color.rgb, toneColor, splitToneStrength);
     }
-    if ((flag.x & WATER_REFRACTION) != 0)
-    {
-           // UVを時間によるオフセットを含めて調整
-        float2 noiseUV = uv * turbulentFrequency + float2(totalTime * turbulentSpeed, 0.0);
-
-    // より軽量なノイズ関数（FBMの代わり）
-        float displacement = sin(noiseUV.x * 10.0 + totalTime * 0.5) * 0.5 + sin(noiseUV.y * 10.0 + totalTime * 0.5) * 0.5;
-
-    // 歪ませる方向に対する強度を適用
-        float2 offset = float2(displacement, displacement) * turbulentStrength;
-
-    // UVにオフセットを加えて歪ませる
-        uv += offset;
-
-    // 歪んだUVで再サンプリング
-        color = gTexture.Sample(gSampler, uv);
-    }
+  
     if ((flag.y & ROUGH_EDGE) != 0)
     {
         float2 timeOffset = float2(totalTime * roughEdgeSpeed, totalTime * roughEdgeSpeed);
 
-    // ノイズ生成を最適化（FBMを減らす）
+        // ノイズ生成を最適化（FBMを減らす）
         float2 baseNoiseUV = uv * roughEdgeNoiseScale + timeOffset;
         float baseNoise = FBM(baseNoiseUV); // 一度だけFBMを計算
 
-    // ノイズのオフセット計算を簡素化
+        // ノイズのオフセット計算を簡素化
         float2 offsetUV = uv + (baseNoise - 0.5) * roughEdgeRoughness * 0.01;
         float edge = GetEdge(offsetUV);
 
-    // ノイズを一度だけ計算し、複数回利用
+        // ノイズを一度だけ計算し、複数回利用
         float secondaryNoise = FBM(uv * (roughEdgeNoiseScale * 0.5) + timeOffset); // 再利用
         edge += (secondaryNoise - 0.5) * roughEdgeRoughness * 0.5;
 
-    // しきい値の調整を改善
+        // しきい値の調整を改善
         float noisyThreshold = roughEdgeThreshold + (FBM(uv * 2.0 + timeOffset) - 0.5) * 0.2;
         float mask = smoothstep(noisyThreshold - 0.1, noisyThreshold + 0.1, edge);
 
-    // 最終的なマスクの調整
+        // 最終的なマスクの調整
         mask *= (FBM(uv * 10.0 + timeOffset) * 0.5 + 0.5);
 
-    // エッジカラーの適用：ユーザーが指定した色を使う
+        // エッジカラーの適用：ユーザーが指定した色を使う
         float3 edgeColor = float3(roughEdgeColor.x, roughEdgeColor.y, roughEdgeColor.z) * 2.0;
 
-    // 最終的な色のブレンド
+        // 最終的な色のブレンド
         color.rgb = lerp(color.rgb, edgeColor, mask * abs(FBM(uv * 30.0 + timeOffset)));
     }
     if ((flag.y & SPIRAL_WARP) != 0)
     {
-    // UV座標の中心を基準にして、中心との相対的な座標を求める
+        // UV座標の中心を基準にして、中心との相対的な座標を求める
         float2 coord = uv - center;
 
-    // 半径rと角度を計算
+        // 半径rと角度を計算
         float r = length(coord); // UV座標の中心からの距離
         float angle = atan2(coord.y, coord.x); // atan2で角度を取得
 
@@ -879,20 +884,20 @@ float4 main(VSOutput input) : SV_TARGET
 
         float baseRotation = spiralRotationSpeed * timeWithSpeed / (r + 0.01);
 
-    // ノイズを用いた角度の変動
+        // ノイズを用いた角度の変動
         float n = FBM(coord * spiralNoiseScale + totalTime * 1000);
         float noiseAngleOffset = (n - 0.5) * 2.0 * spiralNoiseAmount;
 
-    // 総合的な回転角度
+        // 総合的な回転角度
         angle += baseRotation * spiralBaseAmplitude + noiseAngleOffset;
 
-    // 渦巻き後の座標（cos, sinを使って回転）
+        // 渦巻き後の座標（cos, sinを使って回転）
         float2 warpedCoord = float2(cos(angle), sin(angle)) * r;
 
-    // 最終的なUV座標
+        // 最終的なUV座標
         uv = warpedCoord + center; // 元の中心に戻す
 
-    // 変形したUVで色をサンプリング
+        // 変形したUVで色をサンプリング
         color = gTexture.Sample(gSampler, uv);
     }
     if ((flag.y & RADIAL_WAVE) != 0)

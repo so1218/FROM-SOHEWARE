@@ -8,6 +8,8 @@
 #include <dinput.h>
 #include <Xinput.h>
 
+#define STICK_THRESHOLD 0x4000
+
 #include "Vector2.h"
 
 class Input
@@ -119,4 +121,3 @@ private:
     bool controllerConnected_[4];
     float vibrationTimers[4];
 };
-

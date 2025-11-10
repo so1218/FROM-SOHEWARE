@@ -54,7 +54,7 @@ void Fade::Draw()
 	{
 		return;
 	}
-	engine_->DrawSprite(spritePos, spriteSize, 0.0f, ColorVectorToUint32(color_), uvTransform, TextureHandle::Get(TextureID::white1x1));
+	engine_->renderer_->DrawSprite(spritePos, spriteSize, 0.0f, Math::ColorVectorToUint32(color_), uvTransform, TextureHandle::Get(TextureID::white1x1));
 }
 
 void Fade::Start(Status status, float duration)

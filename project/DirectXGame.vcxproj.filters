@@ -357,19 +357,7 @@
     <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Character\Player\Weapon\Knife.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\Weapon\KnifeBullet.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\Weapon\BulletManager.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\Weapon\BulletFactory.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Character\Player\Weapon\Bullet.cpp">
+    <ClCompile Include="Game\Character\Player\Weapon\WeaponKnife.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Data\AnimationHandle.cpp">
@@ -388,6 +376,18 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Core\FrameLimiter.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\KnifeProjectile.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Enemy\EnemyManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -668,11 +668,7 @@
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Weapon.h" />
-    <ClInclude Include="Game\Character\Player\Weapon\Knife.h" />
-    <ClInclude Include="Game\Character\Player\Weapon\KnifeBullet.h" />
-    <ClInclude Include="Game\Character\Player\Weapon\BulletManager.h" />
-    <ClInclude Include="Game\Character\Player\Weapon\BulletFactory.h" />
-    <ClInclude Include="Game\Character\Player\Weapon\Bullet.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\WeaponKnife.h" />
     <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
@@ -680,6 +676,10 @@
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
+    <ClInclude Include="Engine\Core\FrameLimiter.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\KnifeProjectile.h" />
+    <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />
+    <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

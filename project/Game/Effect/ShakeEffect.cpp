@@ -43,8 +43,8 @@ Vector3 ShakeEffect::GetOffset() const
     // X, Y, Z にランダム値を加える（減衰付き）
     return 
     {
-        RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,
-        RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,
-        RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation
+        Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,
+        Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,
+        Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation
     };
 }

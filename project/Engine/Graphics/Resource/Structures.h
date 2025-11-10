@@ -170,9 +170,9 @@ struct MaterialSettings
 
     Vector2 iResolution;
     float gTime; 
-    float shininess;
+    float shininess = 50.0f;
 
-    Vector4 specularColor;
+    Vector4 specularColor = { 1,1,1,1 };
 };
 
 struct DirectionalLight

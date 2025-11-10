@@ -6,11 +6,11 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     : engine_(engine), camera_(camera)
 {
     animeModelData_.modelData = std::move(modelData);
-    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicDevice_->GetDevice());
+    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     animeModelData_.animation = std::move(animation);
     skeleton_ = CreateSkeleton(animeModelData_.modelData.rootNode);
-    skinCluster_ = CreateSkinCluster(engine_->graphicDevice_->GetDevice(),
-        skeleton_, animeModelData_.modelData, engine_->srvDescriptorHeap_, engine_->descriptorSizeSRV_, engine_->srvAllocator_.get());
+    skinCluster_ = CreateSkinCluster(engine_->graphicsDevice_->GetDevice(),
+        skeleton_, animeModelData_.modelData, engine_->srvManager_.get());
 
     animationTime_ = 0.0f;
     textureHandle_ = 0;
@@ -56,7 +56,7 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
             isFinished_ = true;
         }
     }
-    float easedT = easing_.Evaluate(linearT);
+    float easedT = Easing::Evaluate(easingType_, linearT);
     float easedAnimationTime = easedT * animeModelData_.animation.duration;
 
     // アニメーションを適用
@@ -70,12 +70,11 @@ void AnimationModel::Draw()
     // ワールド変換行列の更新
     transform_.UpdateMatrix();
     // 描画関数
-    engine_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
 }
 
 void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
-    easing_.InitEasing();
 }

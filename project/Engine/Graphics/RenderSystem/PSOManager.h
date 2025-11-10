@@ -43,6 +43,7 @@ public:
     Microsoft::WRL::ComPtr<ID3D12PipelineState> psoBloomCombine_;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> psoFullscreen_;
     Microsoft::WRL::ComPtr<ID3D12PipelineState> psoDepth_;
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> psoSkybox_;
 
 private:
     // 入力レイアウトを生成
@@ -66,6 +67,7 @@ private:
     void CreateBloomCombinePSO();
     void CreatePostEffectPassPSO();
     void CreateDepthPSO();
+    void CreateSkyboxPSO();
 
     ID3D12Device* device_;
     RootSignatureManager* rootSignatureManager_;
@@ -86,17 +88,22 @@ private:
     Microsoft::WRL::ComPtr<IDxcBlob> psBlobFullscreen_;
     Microsoft::WRL::ComPtr<IDxcBlob> vsBlobDepth_;
     Microsoft::WRL::ComPtr<IDxcBlob> psBlobDepth_;
+    Microsoft::WRL::ComPtr<IDxcBlob> vsBlobSkybox_; 
+    Microsoft::WRL::ComPtr<IDxcBlob> psBlobSkybox_;
 
     // パイプラインステート記述子および入力レイアウト関連
     D3D12_INPUT_LAYOUT_DESC inputLayoutDesc_{}; 
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescParticle_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescDepth_{};
+    D3D12_INPUT_LAYOUT_DESC inputLayoutDescSkybox_{};
     D3D12_INPUT_ELEMENT_DESC inputElementDesc_[5] = {};
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescsParticle_;
+    D3D12_INPUT_ELEMENT_DESC inputElementDescSkybox_[1] = {};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc3d_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescSkinning_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescLine_{};    
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescParticle_{};
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc3dWireFrame_{};
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDescSkybox_{};
 };
 

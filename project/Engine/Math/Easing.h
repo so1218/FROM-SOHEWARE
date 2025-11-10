@@ -38,59 +38,43 @@ enum class EasingType
 class Easing
 {
 public:
-    // コンストラクタ
-    Easing();
-    // デストラクタ
-    ~Easing();
-public:
-    // メンバ関数
-    // イージング関数の設定
-    void SetEasing(EasingType easingType);
-
-    // イージング処理
-  /*  template <typename T>*/
-    void CountEaseLinear(int start, int end, int& current);
-    void CountEaseLinear(float start, float end, float& current);
-    void CountEaseLinear(unsigned int start, unsigned int end, unsigned int& current);
-    void CountEaseLinear(Vector3 start, Vector3 end, Vector3& curren);
-    void ReverseEaseLinear(float start, float end, float& current);
-    void ReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current);
-    void OnceReverseEaseLinear(Vector3 start, Vector3 end, Vector3& current);
-    void OnceReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
-
-    // 0.0～1.0の線形な時間 t を受け取り、イージング適用後の時間 (0.0～1.0) を返す
-    float Evaluate(const float& t) const;
-   
-    // イージングの初期化
-    void InitEasing();
-    // 色遷移のイージング関数
-    void ReverseColorLinear(unsigned int start, unsigned int end, unsigned int& current);
-
-
-public:
-    // メンバ変数
-    float interval_ = 0.01f;
-    float cycle_ = 0.0f;
-    float timer_ = 0.0f;
-    float easeTimer_ = 0.0f;
-    bool isEase_ = false;
-    bool isReverse_ = true;
-    bool hasReverse_ = false;
-    int frameCount_ = 0;
-    int runCount_ = 0;
-    unsigned int fadeColor_ = 0x00000000;
-
-    // スタートの変数
-    unsigned int startColor_ = 0x000000ff;
-    int intStartPos_ = 0;
-    float floatStartPos_ = 0.0f;
-    Vector3 vec3StartPos_ = { 0.0f, 0.0f, 0.0f };
-
-    // エンドの変数
-    unsigned int endColor_ = 0x000000ff;
-    int intEndPos_ = 0;
-    float floatEndPos_ = 0.0f;
-    Vector3 vec3EndPos_ = { 0.0f, 0.0f, 0.0f };
+ 
+    // どのイージングを使うか、進捗はいくつか を渡す
+    static float Evaluate(EasingType easingType, const float& t)
+    {
+        switch (easingType)
+        {
+            case EasingType::EaseLinear:        return EaseLinear(t);
+            case EasingType::EaseInSine:        return EaseInSine(t);
+            case EasingType::EaseOutSine:       return EaseOutSine(t);
+            case EasingType::EaseInOutSine:     return EaseInOutSine(t);
+            case EasingType::EaseInQuad:        return EaseInQuad(t);
+            case EasingType::EaseOutQuad:       return EaseOutQuad(t);
+            case EasingType::EaseInOutQuad:     return EaseInOutQuad(t);
+            case EasingType::EaseInCubic:       return EaseInCubic(t);
+            case EasingType::EaseOutCubic:      return EaseOutCubic(t);
+            case EasingType::EaseInOutCubic:    return EaseInOutCubic(t);
+            case EasingType::EaseInQuart:       return EaseInQuart(t);
+            case EasingType::EaseOutQuart:      return EaseOutQuart(t);
+            case EasingType::EaseInOutQuart:    return EaseInOutQuart(t);
+            case EasingType::EaseInExpo:        return EaseInExpo(t);
+            case EasingType::EaseOutExpo:       return EaseOutExpo(t);
+            case EasingType::EaseInOutExpo:     return EaseInOutExpo(t);
+            case EasingType::EaseInCirc:        return EaseInCirc(t);
+            case EasingType::EaseOutCirc:       return EaseOutCirc(t);
+            case EasingType::EaseInOutCirc:     return EaseInOutCirc(t);
+            case EasingType::EaseInBack:        return EaseInBack(t);
+            case EasingType::EaseOutBack:       return EaseOutBack(t);
+            case EasingType::EaseInOutBack:     return EaseInOutBack(t);
+            case EasingType::EaseInElastic:     return EaseInElastic(t);
+            case EasingType::EaseOutElastic:    return EaseOutElastic(t);
+            case EasingType::EaseInOutElastic:  return EaseInOutElastic(t);
+            case EasingType::EaseInBounce:      return EaseInBounce(t);
+            case EasingType::EaseOutBounce:     return EaseOutBounce(t);
+            case EasingType::EaseInOutBounce:   return EaseInOutBounce(t);
+            default:                            return t;
+        }
+    }
 
 private:
     // イージング関数
@@ -124,9 +108,5 @@ private:
     static float EaseOutBounce(const float& t);
     static float EaseInOutBounce(const float& t);
 
-    // イージング関数を取得
-    float (*GetEasingFunction(EasingType easingType))(const float&);
-    float (*easingFunc)(const float&);
-    EasingType easingType_ = EasingType::EaseLinear;
 };
 

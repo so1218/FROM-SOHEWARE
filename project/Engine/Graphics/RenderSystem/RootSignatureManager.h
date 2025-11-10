@@ -11,8 +11,6 @@ public:
     // ルートシグネチャを全て初期化する
     void Initialize(ID3D12Device* device);
 
-    ID3D12RootSignature* GetPostProcessRootSignature() { return rootSignaturePostProcess_.Get(); }
-
     // 各シェーダーで使用するルートシグネチャ
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature3D_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkinning_;
@@ -21,6 +19,7 @@ public:
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignaturePostProcess_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureFullScreen_;
     Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureDepthExtract_;
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureSkybox_;
 
 private:
     ID3D12Device* device_ = nullptr;
@@ -40,4 +39,5 @@ private:
     void CreatePostEffectPassRootSignature();
     void CreateFullScreenRootSignature();
     void CreateDepthExtractRootSignature();
+    void CreateSkyboxRootSignature();
 };

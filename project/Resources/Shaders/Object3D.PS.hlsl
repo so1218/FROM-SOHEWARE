@@ -82,7 +82,7 @@ PixelShaderOutput main(PixelShaderInput input)
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     float3 baseColor = textureColor.rgb;
 
-    // --- アートエフェクト適用 ---
+    // アートエフェクト適用
     if (gMaterial.isArtWave)
     {
         baseColor = DrawArtWaveColor(input);
@@ -136,7 +136,7 @@ PixelShaderOutput main(PixelShaderInput input)
         finalColor = baseColor;
     }
 
-    output.color.rgb = finalColor * gMaterial.color.rgb;
+   output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
 
     // ディザー透明処理

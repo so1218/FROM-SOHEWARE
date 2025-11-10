@@ -14,12 +14,13 @@ public:
     float GetUnscaledDeltaTime() const { return deltaTime_; }
     float GetTotalTime() const { return totalTime_; }
     float GetFPS() const { return fps_; }
+    float GetAverageFPS() const { return averageFps_; }
+    float GetTimeScale() const { return timeScale_; }
 
     void Pause() { isPaused_ = true; }
     void Resume() { isPaused_ = false; }
     bool IsPaused() const { return isPaused_; }
     void SetTimeScale(float scale) { timeScale_ = std::clamp(scale, 0.0f, 10.0f); };
-    float GetTimeScale() const { return timeScale_; }
 
     void Reset();
 
@@ -42,4 +43,9 @@ private:
 
     float timeScale_ = 1.0f;
     bool isPaused_ = false;
+
+    // 平均FPS用
+    float averageFps_ = 0.0f;
+    int frameCount_ = 0;
+    float timeElapsedForFps_ = 0.0f;
 };
