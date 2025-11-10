@@ -21,18 +21,10 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
 
     // オブジェクトを生成
     player_ = std::make_unique<Player>(engine_, camera_);
-  /*  enemy_ = std::make_unique<Enemy>(engine_, camera_);*/
     followCamera_.Initialize(camera_, player_.get());
 
     collisionManager_ = std::make_unique<CollisionManager>();
-    //emitter_ = engine_->particleSystem_->CreateEmitter("chest");
-    //newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
-   /* newEmitter2_ = engine_->particleSystem_->CreateEmitter(ParticleType::HitEffect, "doar");*/
 
-    // パーティクルシステムにエミッターを登録
-    //engine_->particleSystem_->AddEmitter(std::move(emitter_));
-    //engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
- /*   engine_->particleSystem_->AddEmitter(std::move(newEmitter2_));*/
 }
 
 PlayScene::~PlayScene()
@@ -62,7 +54,7 @@ void PlayScene::Update()
     player_->Update();
     // プレイヤーの新しい位置に合わせてカメラを更新
     followCamera_.Update();
-
+    engine_->particleSystem_->Update();
 
 }
 
@@ -80,7 +72,7 @@ void PlayScene::HandleCollisions()
 
 void PlayScene::Draw()
 {
-
+    engine_->particleSystem_->Draw(camera_);
 }
 
 void PlayScene::DebugDraw()
@@ -89,9 +81,11 @@ void PlayScene::DebugDraw()
 
     ImGui::End();
 
+
 	player_->DebugDraw();
   /*  enemy_->DebugDraw();*/
     followCamera_.DebugDraw();
+
 }
 
 void PlayScene::Finalize()

@@ -14,6 +14,7 @@
 #include "FollowCamera.h"
 #include "EnemyManager.h"
 #include "ParticleSystemWrapper.h"
+#include "ParticleEmitter.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -46,6 +47,8 @@ private:
     FollowCamera followCamera_;
     std::unique_ptr<EnemyManager> enemyManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
+    std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
 
     Player* player_ = nullptr;
     Enemy* enemy_ = nullptr;

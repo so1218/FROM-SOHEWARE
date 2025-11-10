@@ -35,6 +35,12 @@ void SampleSceneHori::Initialize()
     objectManager_.Initialize();
 
     followCamera_.Initialize(camera_, player_);
+
+    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
+    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
+
+    engine_->particleSystem_->AddEmitter(std::move(emitter_));
+    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
 }
 
 void SampleSceneHori::Update()
