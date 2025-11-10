@@ -5,7 +5,7 @@
 class WeaponKnife : public Weapon
 {
 public:
-    WeaponKnife(Engine* engine, Player* owner);
+    WeaponKnife(Engine* engine, Player* player, Camera* camera);
 
     void Initialize();             
     void Update(float deltaTime) override;
@@ -17,10 +17,12 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() { return { "WeaponKnife" }; }
 
 private:
-    void Fire(); // 攻撃（投げる）処理
+    void Fire(); // 攻撃処理
 
     // このナイフが発射した、すべてのアクティブな弾を管理するリスト
     std::vector<std::unique_ptr<KnifeProjectile>> projectiles_;
+
+    Camera* camera_ = nullptr;
 
     float projectileSpeed_ = 20.0f;
     float projectileLifetime_ = 3.0f;

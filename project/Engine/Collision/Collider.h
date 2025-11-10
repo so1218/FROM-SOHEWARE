@@ -18,7 +18,7 @@ public:
 	uint32_t GetCollisionAttribute() const { return collisionAttribute_; }
 	uint32_t GetCollisionMask() const { return collisionMask_; }
 	// 衝突判定のための純粋仮想関数
-	virtual void OnCollision() = 0;
+	virtual void OnCollision(Collider* other) = 0;
 
 	// ワールド座標を取得
 	virtual Vector3 GetWorldPosition() = 0;

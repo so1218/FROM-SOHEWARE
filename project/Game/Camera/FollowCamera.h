@@ -55,6 +55,9 @@ private:
     float minDistance_ = 5.0f;
     float maxDistance_ = 100.0f;
 
+    float rotateSpeedYaw_ = 2.0f;   // 左右回転速度
+    float rotateSpeedPitch_ = 2.0f; // 上下回転速度
+
     // --- スムーズ補間関数 ---
     float SmoothDamp(float current, float target, float& currentVelocity,
         float smoothTime, float deltaTime, float maxSpeed = 1000.0f);

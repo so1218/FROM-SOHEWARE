@@ -2,8 +2,6 @@
 #include "TimeManager.h"
 #include "MathUtils.h"
 
-#define STICK_THRESHOLD 0x4000
-
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "Xinput.lib")
 

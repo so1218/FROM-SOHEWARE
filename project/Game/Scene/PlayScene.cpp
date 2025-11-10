@@ -21,7 +21,7 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
 
     // オブジェクトを生成
     player_ = std::make_unique<Player>(engine_, camera_);
-    enemy_ = std::make_unique<Enemy>(engine_, camera_);
+  /*  enemy_ = std::make_unique<Enemy>(engine_, camera_);*/
     followCamera_.Initialize(camera_, player_.get());
 
     collisionManager_ = std::make_unique<CollisionManager>();
@@ -88,7 +88,7 @@ void PlayScene::DebugDraw()
     ImGui::End();
 
 	player_->DebugDraw();
-    enemy_->DebugDraw();
+  /*  enemy_->DebugDraw();*/
     followCamera_.DebugDraw();
 }
 

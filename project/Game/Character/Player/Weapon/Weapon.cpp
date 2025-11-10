@@ -2,4 +2,4 @@
 #include "Engine.h"
 #include "Player.h"
 
-Weapon::Weapon(Engine* engine, Player* owner) : engine_(engine), owner_(owner) {}
+Weapon::Weapon(Engine* engine, Player* player) : engine_(engine), player_(player) {}

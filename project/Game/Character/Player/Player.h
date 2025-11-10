@@ -27,14 +27,14 @@ public:
 	void DebugDraw() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollision() override;
+	void OnCollision(Collider* other) override;
 
 	// 調整項目の適用
 	void ApplyGlobalVariables() override;
 	void SaveGlobalVariables() override;
 	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Player" }; }
 
-	void AddWeapon(WeaponType type); // 武器を追加する関数
+	void AddWeapon(WeaponType type); 
 
 	// 移動処理
 	void Move();

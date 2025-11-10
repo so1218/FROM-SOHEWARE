@@ -26,6 +26,8 @@ void FollowCamera::Initialize(Camera* camera, Player* target)
     gv->AddItem(GetGlobalVariableGroupName(), "Max Pitch", maxPitch_);
     gv->AddItem(GetGlobalVariableGroupName(), "Min Distance", minDistance_);
     gv->AddItem(GetGlobalVariableGroupName(), "Max Distance", maxDistance_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Rotate Speed Yaw", rotateSpeedYaw_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Rotate Speed Pitch", rotateSpeedPitch_);
 
     // 初期角度・距離設定
     currentYaw_ = targetYaw_ = Math::PI;
@@ -78,6 +80,9 @@ void FollowCamera::ApplyGlobalVariables()
     maxPitch_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Max Pitch");
     minDistance_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Min Distance");
     maxDistance_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Max Distance");
+
+    rotateSpeedYaw_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Rotate Speed Yaw");
+    rotateSpeedPitch_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Rotate Speed Pitch");
 }
 
 void FollowCamera::Update()
@@ -87,18 +92,22 @@ void FollowCamera::Update()
     float dt = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     shakeEffect_.Update();
 
-    const float rotateSpeed = 2.0f;
-    const float zoomSpeed = 20.0f;
-
-
     // 左右キーでカメラを回転
-    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))
+    if (Input::GetInstance().IsKeyPressed(DIK_LEFT) || Input::GetInstance().IsLeftOnStick(0, Input::RightStick))
     {
-        targetYaw_ -= rotateSpeed * dt; // 左に回転
+        targetYaw_ -= rotateSpeedYaw_ * dt;
     }
-    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT))
+    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT) || Input::GetInstance().IsRightOnStick(0, Input::RightStick))
     {
-        targetYaw_ += rotateSpeed * dt; // 右に回転
+        targetYaw_ += rotateSpeedYaw_ * dt;
+    }
+    if (Input::GetInstance().IsKeyPressed(DIK_UP) || Input::GetInstance().IsUpOnStick(0, Input::RightStick))
+    {
+        targetPitch_ -= rotateSpeedPitch_ * dt;
+    }
+    if (Input::GetInstance().IsKeyPressed(DIK_DOWN) || Input::GetInstance().IsDownOnStick(0, Input::RightStick))
+    {
+        targetPitch_ += rotateSpeedPitch_ * dt;
     }
 
     // 回転・ズーム補間
@@ -173,14 +182,23 @@ void FollowCamera::DebugDraw()
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Position Lerp Speed", positionLerpSpeed_);
     }
 
+    if (ImGui::DragFloat("左右回転速度", &rotateSpeedYaw_, 0.01f, 0.0f, 10.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Rotate Speed Yaw", rotateSpeedYaw_);
+    }
+    if (ImGui::DragFloat("上下回転速度", &rotateSpeedPitch_, 0.01f, 0.0f, 10.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Rotate Speed Pitch", rotateSpeedPitch_);
+    }
+
     ImGui::Separator();
     ImGui::Text("制限値");
 
-    if (ImGui::DragFloat("ピッチ最小角度", &minPitch_, 0.01f, -1.57f, 0.0f))
+    if (ImGui::DragFloat("ピッチ最小角度", &minPitch_, 0.01f, 0.0f, 0.0f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Min Pitch", minPitch_);
     }
-    if (ImGui::DragFloat("ピッチ最大角度", &maxPitch_, 0.01f, 0.0f, 1.57f))
+    if (ImGui::DragFloat("ピッチ最大角度", &maxPitch_, 0.01f, 0.0f, 0.0f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Max Pitch", maxPitch_);
     }

@@ -4,7 +4,8 @@
 #include "GlobalVariables.h"
 #include "imGuiManager.h"
 
-WeaponKnife::WeaponKnife(Engine* engine, Player* owner) : Weapon(engine, owner)
+WeaponKnife::WeaponKnife(Engine* engine, Player* player, Camera* camera)
+    : Weapon(engine, player), camera_(camera)
 {
     // ナイフの初期設定
     damage_ = 20.0f;
@@ -18,16 +19,16 @@ void WeaponKnife::Initialize()
 {
     auto* gv = GlobalVariables::GetInstance();
 
-    // グループを登録して値をロード
+    // グローバル変数グループを登録して読み込み
     gv->CreateGroup(GetGlobalVariableGroupName());
     gv->LoadFiles();
 
-    // 登録
+    // パラメータを登録
     gv->AddItem(GetGlobalVariableGroupName(), "Damage", damage_);
     gv->AddItem(GetGlobalVariableGroupName(), "Cooldown", cooldown_);
     gv->AddItem(GetGlobalVariableGroupName(), "Projectile Speed", projectileSpeed_);
     gv->AddItem(GetGlobalVariableGroupName(), "Projectile Lifetime", projectileLifetime_);
-    gv->AddItem(GetGlobalVariableGroupName(), "Projectile Count", (float)projectileCount_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Projectile Count", static_cast<float>(projectileCount_));
 
     ApplyGlobalVariables();
 }
@@ -49,8 +50,8 @@ void WeaponKnife::Update(float deltaTime)
     cooldownTimer_ -= deltaTime;
     if (cooldownTimer_ <= 0.0f)
     {
-        cooldownTimer_ = cooldown_; 
-        Fire();                     
+        cooldownTimer_ = cooldown_;
+        Fire();
     }
 
     // 弾の更新
@@ -68,7 +69,7 @@ void WeaponKnife::Update(float deltaTime)
 
 void WeaponKnife::Draw()
 {
-    // すべての弾（ナイフ）を描画
+    // すべての弾を描画
     for (auto& projectile : projectiles_)
     {
         projectile->Draw();
@@ -95,7 +96,6 @@ void WeaponKnife::DebugDraw()
         changed = true;
     }
 
-
     if (ImGui::DragFloat("弾の速度", &projectileSpeed_, 0.1f, 0.0f, 0.0f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile Speed", projectileSpeed_);
@@ -110,7 +110,7 @@ void WeaponKnife::DebugDraw()
 
     if (ImGui::DragInt("同時発射数", &projectileCount_, 1, 0, 0))
     {
-        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile Count", (float)projectileCount_);
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile Count", static_cast<float>(projectileCount_));
         changed = true;
     }
 
@@ -124,30 +124,31 @@ void WeaponKnife::DebugDraw()
 
 void WeaponKnife::Fire()
 {
-    // 弾の生成に必要な情報を取得
-    Vector3 dir = owner_->GetLastMoveDirection(); // 発射方向
-    Vector3 startPos = owner_->GetWorldPosition(); // 発射位置
-    Camera* camera = owner_->GetCamera();          // カメラ参照
+    // プレイヤーの位置と向きを取得
+    Vector3 playerPos = player_->GetWorldPosition();
+    Vector3 playerDir = player_->GetLastMoveDirection();
 
-    // 複数発射（レベルアップによる増加に対応）
-    for (int i = 0; i < projectileCount_; ++i)
+    // 向きがゼロベクトルの場合は正面方向を使用
+    if (playerDir.Length() < 0.001f) 
     {
-        auto projectile = std::make_unique<KnifeProjectile>(engine_, camera, startPos, dir);
-
-        projectile->SetSpeed(projectileSpeed_);
-        projectile->SetLifetime(projectileLifetime_);
-
-        projectiles_.push_back(std::move(projectile));
+        playerDir = { 0.0f, 0.0f, 1.0f };
     }
+
+    // 弾の生成と初期設定
+    auto newProjectile = std::make_unique<KnifeProjectile>(engine_, camera_, playerPos, playerDir);
+    newProjectile->SetDamage(damage_);
+    newProjectile->SetSpeed(projectileSpeed_);
+    newProjectile->SetLifetime(projectileLifetime_);
+
+    projectiles_.push_back(std::move(newProjectile));
 }
 
 void WeaponKnife::LevelUp()
 {
-    // レベルアップ処理
     level_++;
 
-    if (level_ == 2) { projectileCount_++; }   
-    if (level_ == 3) { damage_ *= 1.5f; }      
-    if (level_ == 4) { projectileCount_++; }   
-    if (level_ == 5) { cooldown_ *= 0.8f; }    
+    if (level_ == 2) projectileCount_++;
+    if (level_ == 3) damage_ *= 1.5f;
+    if (level_ == 4) projectileCount_++;
+    if (level_ == 5) cooldown_ *= 0.8f;
 }
