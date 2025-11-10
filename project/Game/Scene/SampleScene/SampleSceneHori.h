@@ -13,6 +13,7 @@
 #include "AnimationModel.h"
 #include "FollowCamera.h"
 #include "EnemyManager.h"
+#include "ParticleSystemWrapper.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -43,34 +44,11 @@ private:
     GameObjectManager objectManager_;
     std::unique_ptr<CollisionManager> collisionManager_;
     FollowCamera followCamera_;
-
     std::unique_ptr<EnemyManager> enemyManager_;
-
-    std::unique_ptr<Model> dragonModel_;
-    std::unique_ptr<Sprite> uvCheckerSprite_;
+    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
 
     Player* player_ = nullptr;
     Enemy* enemy_ = nullptr;
-
-	ModelData modelData_;
-    Animation animation_;
-    AnimatedModelData animeModelData_;
-
-    Skeleton skeleton_;
-    SkinCluster skinCluster_;
-    float animationTime_;
-
-    std::unique_ptr<AnimationModel> animationShurimp_;
-    std::unique_ptr<AnimationModel> animationSneakWalk_;
-    std::unique_ptr<AnimationModel> animationRyu_;
-
-    ShakeEffect shake;
-
-    Vector3 baseTranslation_;
-    Vector3 originalTranslation_;
-
-    bool isEditorMode_ = false;
-
 
 };
 

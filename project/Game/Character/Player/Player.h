@@ -35,6 +35,7 @@ public:
 	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Player" }; }
 
 	void AddWeapon(WeaponType type); 
+	void AddWeaponColliders(CollisionManager* manager);
 
 	// 移動処理
 	void Move();

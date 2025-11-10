@@ -24,12 +24,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(
-		engine_,
-		camera_,
-		*ModelHandle::Get(ModelID::walk),
-		AnimationHandle::Get(AnimationID::walk)
-	);
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
 }
 
 void Player::Initialize()
@@ -46,31 +41,20 @@ void Player::Initialize()
 	// デバッグ用のグローバル変数登録
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
 	GlobalVariables::GetInstance()->LoadFiles();
-	GlobalVariables::GetInstance()->AddItem(
-		GetGlobalVariableGroupName(),
-		"modelPlayer_->GetTransform().translation_",
-		modelPlayer_->GetTransform().translation_
-	);
+	GlobalVariables::GetInstance()->AddItem(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_",modelPlayer_->GetTransform().translation_);
 }
 
 // グローバル変数の適用処理
 void Player::ApplyGlobalVariables()
 {
 	modelPlayer_->GetTransform().translation_ =
-		GlobalVariables::GetInstance()->GetVector3Value(
-			GetGlobalVariableGroupName(),
-			"modelPlayer_->GetTransform().translation_"
-		);
+		GlobalVariables::GetInstance()->GetVector3Value(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_");
 }
 
 // 現在の値をグローバル変数に保存
 void Player::SaveGlobalVariables()
 {
-	GlobalVariables::GetInstance()->SetValue(
-		GetGlobalVariableGroupName(),
-		"modelPlayer_->GetTransform().translation_",
-		modelPlayer_->GetTransform().translation_
-	);
+	GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_",modelPlayer_->GetTransform().translation_);
 }
 
 // 武器を追加する処理
@@ -106,6 +90,14 @@ void Player::Update()
 	for (auto& weapon : weapons_)
 	{
 		weapon->Update(TimeManager::GetInstance()->GetDeltaTime());
+	}
+}
+
+void Player::AddWeaponColliders(CollisionManager* manager)
+{
+	for (auto& weapon : weapons_)
+	{
+		weapon->AddCollidersToManager(manager);
 	}
 }
 

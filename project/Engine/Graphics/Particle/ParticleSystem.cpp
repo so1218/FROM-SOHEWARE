@@ -28,7 +28,7 @@ void ParticleSystem::Initialize(Engine* engine)
 
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime)
 {
-    if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
+    if (particles_.size() >= engine_->renderer_->GetParticleCount()) return;
 
     const ParticleConfig& config = GetConfig(presetName);
 

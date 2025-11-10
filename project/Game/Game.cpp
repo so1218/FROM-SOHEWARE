@@ -15,6 +15,9 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
 
+    // シーンマネージャーの初期化
+    sceneManager_.Initialize(engine_.get());
+
     // シーンの生成と登録
     sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get(), camera_.get()));
     sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get(), camera_.get()));
@@ -169,6 +172,5 @@ void Game::DebugDraw()
 void Game::Finalize()
 {
     Input::GetInstance().Finalize();
-    ModelHandle::Finalize();
     AudioManager::GetInstance().Finalize();
 }

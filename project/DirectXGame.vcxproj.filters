@@ -387,6 +387,9 @@
     <ClCompile Include="Game\Character\Enemy\EnemyManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -676,6 +679,7 @@
     <ClInclude Include="Engine\Core\FrameLimiter.h" />
     <ClInclude Include="Game\Character\Player\Weapon\KnifeProjectile.h" />
     <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />
+    <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

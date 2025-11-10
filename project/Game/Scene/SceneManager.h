@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "BaseScene.h"
+#include "Engine.h"
 
 // シーンを識別するためのID
 enum class SceneID
@@ -20,6 +21,8 @@ public:
     SceneManager() : currentScene_(nullptr) {}
 
     ~SceneManager();
+
+    void Initialize(Engine* engine);
 
     // 現在のシーンを更新
     void Update();
@@ -39,6 +42,8 @@ private:
 
     // 現在のシーン
     BaseScene* currentScene_ = nullptr;
+
+	Engine* engine_ = nullptr;
 
     // 次に切り替えるシーンのIDを保持する
     std::optional<SceneID> nextSceneID_ = std::nullopt;

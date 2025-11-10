@@ -25,13 +25,13 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     followCamera_.Initialize(camera_, player_.get());
 
     collisionManager_ = std::make_unique<CollisionManager>();
-    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
-    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
+    //emitter_ = engine_->particleSystem_->CreateEmitter("chest");
+    //newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
    /* newEmitter2_ = engine_->particleSystem_->CreateEmitter(ParticleType::HitEffect, "doar");*/
 
     // パーティクルシステムにエミッターを登録
-    engine_->particleSystem_->AddEmitter(std::move(emitter_));
-    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
+    //engine_->particleSystem_->AddEmitter(std::move(emitter_));
+    //engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
  /*   engine_->particleSystem_->AddEmitter(std::move(newEmitter2_));*/
 }
 
@@ -57,8 +57,6 @@ void PlayScene::Update()
     // プレイヤーの新しい位置に合わせてカメラを更新
     followCamera_.Update();
 
-    // パーティクルシステムを更新
-    engine_->particleSystem_->Update();
 
 }
 
@@ -76,9 +74,7 @@ void PlayScene::HandleCollisions()
 
 void PlayScene::Draw()
 {
-    /*player_->Draw();*/
 
-    engine_->particleSystem_->Draw(camera_);
 }
 
 void PlayScene::DebugDraw()

@@ -13,6 +13,7 @@ public:
     void ApplyGlobalVariables();   
     void DebugDraw();
     void LevelUp() override;
+    void AddCollidersToManager(CollisionManager* manager) override;
 
     std::vector<std::string> GetGlobalVariableGroupName() { return { "WeaponKnife" }; }
 

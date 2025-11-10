@@ -28,7 +28,8 @@ public:
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleCPU;
     };
 
-    struct UploadResourceEntry {
+    struct UploadResourceEntry 
+    {
         Microsoft::WRL::ComPtr<ID3D12Resource> resource;
         uint64_t fenceValue;
     };

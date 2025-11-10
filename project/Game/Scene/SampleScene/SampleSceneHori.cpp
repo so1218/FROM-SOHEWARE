@@ -14,17 +14,21 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     engine_ = engine;
     camera_ = camera;
 
+    engine_->particleSystem_->Clear();
+
     collisionManager_ = std::make_unique<CollisionManager>();
 
     // インスタンスを作成
     auto player = std::make_unique<Player>(engine_, camera_);
     player_ = player.get();
     player_->AddWeapon(WeaponType::Knife);
-
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
-	
+    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
+
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
+    objectManager_.AddObject(std::move(particleSystemWrapper_));
+
 }
 
 void SampleSceneHori::Initialize()
@@ -53,14 +57,16 @@ void SampleSceneHori::Update()
 
 void SampleSceneHori::HandleCollisions()
 {
-   // 1. 衝突マネージャのリストをクリアする
+    // 衝突マネージャのリストをクリアする
     collisionManager_->ClearColliders();
 
-    // 2. ObjectManager に「全オブジェクトを登録して」と依頼
+    // ObjectManager に「全オブジェクトを登録して」と依頼
     objectManager_.AddAllCollidersToManager(collisionManager_.get());
 
+    // プレイヤーが持つ武器の弾を登録
+    player_->AddWeaponColliders(collisionManager_.get());
    
-    // 4. 衝突マネージャの当たり判定処理を呼び出す
+    // 衝突マネージャの当たり判定処理を呼び出す
     collisionManager_->CheckAllCollisions();
 }
 

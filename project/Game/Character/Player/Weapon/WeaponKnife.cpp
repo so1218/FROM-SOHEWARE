@@ -152,3 +152,16 @@ void WeaponKnife::LevelUp()
     if (level_ == 4) projectileCount_++;
     if (level_ == 5) cooldown_ *= 0.8f;
 }
+
+void WeaponKnife::AddCollidersToManager(CollisionManager* manager)
+{
+    // 自分が管理しているすべての弾をCollisionManager に登録する
+    for (auto& projectile : projectiles_)
+    {
+        if (projectile && !projectile->IsDead())
+        {
+            // KnifeProjectile は Collider を継承しているのでそのまま渡せる
+            manager->AddCollider(projectile.get());
+        }
+    }
+}

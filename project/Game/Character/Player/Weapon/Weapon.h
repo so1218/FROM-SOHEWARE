@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CollisionManager.h"
+
 class Engine;
 class Player;
 
@@ -34,6 +36,7 @@ public:
     virtual void Draw() = 0;
     virtual void DebugDraw() = 0;
     virtual void LevelUp() = 0;
+    virtual void AddCollidersToManager(CollisionManager* manager) = 0;
 
     void SetLevel(int level) { level_ = level; }
 };

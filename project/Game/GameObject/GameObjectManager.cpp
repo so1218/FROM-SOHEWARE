@@ -78,11 +78,10 @@ void GameObjectManager::SaveGlobalVariables()
 
 void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
 {
-    // 自分が持っている全てのオブジェクト (GameObject*) をループ
+    // 自分が持っている全てのオブジェクトをループ
     for (const auto& object : objects_)
     {
         // GameObject* を Collider* に動的キャスト
-        // (Player や Enemy は両方継承しているはず)
         Collider* collider = dynamic_cast<Collider*>(object.get());
 
         // キャストが成功し、Collider であれば登録

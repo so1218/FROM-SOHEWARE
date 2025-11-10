@@ -138,4 +138,8 @@ void Enemy::OnCollision(Collider* other)
 	{
 		isDead_ = true;
 	}
+	if (other->GetCollisionAttribute() & kCollisionAttributePlayerWeapon)
+	{
+		isDead_ = true;
+	}
 }
