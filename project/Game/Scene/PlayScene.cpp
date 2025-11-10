@@ -45,6 +45,12 @@ void PlayScene::Initialize()
     // 初期化
     player_->Initialize();
     camera_->Initialize();
+
+    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
+    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
+
+    engine_->particleSystem_->AddEmitter(std::move(emitter_));
+    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
 }
 
 void PlayScene::Update()

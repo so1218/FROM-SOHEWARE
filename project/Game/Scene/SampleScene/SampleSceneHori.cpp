@@ -14,8 +14,6 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     engine_ = engine;
     camera_ = camera;
 
-    engine_->particleSystem_->Clear();
-
     collisionManager_ = std::make_unique<CollisionManager>();
 
     // インスタンスを作成

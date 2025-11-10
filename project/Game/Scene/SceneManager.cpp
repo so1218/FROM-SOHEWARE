@@ -8,12 +8,11 @@ SceneManager::~SceneManager()
     {
         currentScene_->Finalize();
     }
-
 }
 
 void SceneManager::Initialize(Engine* engine)
 {
-    /*engine_ = engine;*/
+    engine_ = engine;
 }
 
 void SceneManager::Update()
@@ -74,7 +73,7 @@ void SceneManager::SetScene(BaseScene* newScene)
        
     }
 
-   /* engine_->particleSystem_->Clear();*/
+    engine_->particleSystem_->Clear();
     currentScene_ = newScene;
 
     // 新しいシーンの初期化処理
