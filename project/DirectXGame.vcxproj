@@ -161,7 +161,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
     <ClCompile Include="Game\Character\Enemy\EnemyManager.cpp" />
+    <ClCompile Include="Game\Character\Player\Weapon\AxeProjectile.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\KnifeProjectile.cpp" />
+    <ClCompile Include="Game\Character\Player\Weapon\WeaponAxe.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\WeaponKnife.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp" />
     <ClCompile Include="Game\Data\AnimationHandle.cpp" />
@@ -262,7 +264,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\AxeProjectile.h" />
     <ClInclude Include="Game\Character\Player\Weapon\KnifeProjectile.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\WeaponAxe.h" />
     <ClInclude Include="Game\Character\Player\Weapon\WeaponKnife.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Weapon.h" />
     <ClInclude Include="Game\Data\AnimationHandle.h" />

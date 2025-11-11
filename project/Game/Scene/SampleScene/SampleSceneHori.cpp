@@ -19,6 +19,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // インスタンスを作成
     auto player = std::make_unique<Player>(engine_, camera_);
     player_ = player.get();
+    player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
@@ -36,11 +37,6 @@ void SampleSceneHori::Initialize()
 
     followCamera_.Initialize(camera_, player_);
 
-    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
-    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
-
-    engine_->particleSystem_->AddEmitter(std::move(emitter_));
-    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
 }
 
 void SampleSceneHori::Update()

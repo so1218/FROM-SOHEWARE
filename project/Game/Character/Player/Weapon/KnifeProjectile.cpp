@@ -3,12 +3,20 @@
 #include "TimeManager.h" 
 #include "CollisionConfig.h" 
 #include "Enemy.h" 
+#include "TextureHandle.h" 
 
 KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction)
 {
-    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::sphere)));
+    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::knife)));
+    model_->SetTextureHandle(TextureHandle::Get(TextureID::knife));
     model_->GetTransform().translation_ = startPos;
+    model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
     direction_ = direction.Normalize();
+
+    // 進行方向ベクトルからY軸回転(Yaw)を計算
+    float initialYaw = atan2(direction_.x, direction_.z);
+    model_->GetTransform().rotation_.y = initialYaw;
+    model_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(model_->GetTransform().rotation_);
 
     // 衝突判定の初期化
     Vector3 size = { 0.2f, 0.2f, 0.2f };

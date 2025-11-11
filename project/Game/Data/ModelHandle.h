@@ -16,6 +16,8 @@ enum class ModelID
 	// フィールド関連
     skydome,
     field,
+    axe,
+    knife,
 
 	// プレイヤー関連
     sneakWalk,
@@ -60,6 +62,8 @@ private:
             // フィールド関連
             { ModelID::skydome,  "Resources/models/skydome/skydome.obj" },
             { ModelID::field,  "Resources/models/field/field.obj" },
+            { ModelID::axe,  "Resources/models/player/weapons/axe/Axe.obj" },
+            { ModelID::knife,  "Resources/models/player/weapons/knife/Knife.obj" },
 
             // プレイヤー関連
             { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },

@@ -12,6 +12,8 @@
 #include "Collision.h"   
 #include "TimeManager.h"
 #include "WeaponKnife.h"
+#include "WeaponAxe.h"
+
 #include <numbers>
 #include <algorithm>
 
@@ -65,6 +67,10 @@ void Player::AddWeapon(WeaponType type)
 	case WeaponType::Knife:
 		// ナイフ武器を追加
 		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this, camera_));
+		break;
+
+	case WeaponType::Axe:
+		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this, camera_));
 		break;
 
 	default:

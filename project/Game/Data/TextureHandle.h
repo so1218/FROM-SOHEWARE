@@ -10,6 +10,8 @@ enum TextureID
 
     // PlayScene     
     skydome,
+    axe,
+    knife,
 
     // particle
     circle_01,
@@ -104,6 +106,8 @@ private:
             { uvChecker,"Resources/images/uvChecker.png" },
             { monsterBall,   "Resources/images/Shrimp_TestTexture.png" },
             { skydome,   "Resources/images/sky_sphere.png" },
+            { axe,   "Resources/images/Woodcutter-Axe.jpg" },
+            { knife,   "Resources/images/KnifeTexture..jpg" },
 
 			// パーティクル
             { circle_01,   "Resources/images/particles/circle_01.png" },
