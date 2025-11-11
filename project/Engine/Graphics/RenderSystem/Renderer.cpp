@@ -740,7 +740,7 @@ void Renderer::CreateLines()
 
 	for (size_t i = 0; i < kMaxLineCount; ++i)
 	{
-		lines_[i].materialHandle = materialManager_->CreateLineMaterial(device_->GetDevice());
+		lines_[i].materialHandle = materialManager_->CreateSimpleMaterial(device_->GetDevice());
 
 		lines_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 		lines_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lines_[i].mappedData));
@@ -776,7 +776,7 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 	line.mesh.SetVertexCount(2);
 
 	// マテリアル色のみ更新
-	line.materialHandle.lineMaterialData->color = Math::Uint32ToColorVector(color);
+	line.materialHandle.simpleMaterialData->color = Math::Uint32ToColorVector(color);
 
 	// WVP行列更新
 	line.worldMatrix = Matrix4x4::MakeIdentity();
@@ -927,10 +927,10 @@ void Renderer::CreateSkybox()
 	skyboxWvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedSkyboxWvp_));
 
 	// マテリアルバッファを作成
-	skyboxMaterialHandle_ = materialManager_->CreateMaterial(device_->GetDevice());
+	skyboxMaterialHandle_ = materialManager_->CreateSimpleMaterial(device_->GetDevice());
 
 	// スカイボックスのデフォルト色
-	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	skyboxMaterialHandle_.simpleMaterialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
 void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
@@ -962,7 +962,7 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 
 	// マテリアルカラーの設定
 	// 引数の color をマテリアルバッファに設定
-	skyboxMaterialHandle_.materialData->color = Math::Uint32ToColorVector(color);
+	skyboxMaterialHandle_.simpleMaterialData->color = Math::Uint32ToColorVector(color);
 
 	// メッシュ情報をセット
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -975,7 +975,7 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 	// WVP
 	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
 	// Cube Texture SRV
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(cubeTextureSrvIndex));
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[cubeTextureSrvIndex].srvIndex));
 
 	// 描画コマンド
 	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);

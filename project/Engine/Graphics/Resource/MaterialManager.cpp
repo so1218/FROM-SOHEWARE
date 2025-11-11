@@ -49,23 +49,23 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     return handle;
 }
 
-MaterialHandle MaterialManager::CreateLineMaterial(ID3D12Device* device)
+MaterialHandle MaterialManager::CreateSimpleMaterial(ID3D12Device* device)
 {
     MaterialHandle handle;
-    handle.resource = BufferManager::CreateBufferResource(device, sizeof(LineMaterial));
+    handle.resource = BufferManager::CreateBufferResource(device, sizeof(SimpleMaterial));
     static int s_lineMaterialId = 0;
-    std::wstring debugName = L"LineMaterialResource_" + std::to_wstring(s_lineMaterialId++);
+    std::wstring debugName = L"SimpleMaterialResource_" + std::to_wstring(s_lineMaterialId++);
     handle.resource->SetName(debugName.c_str());
 
-    handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.lineMaterialData));
+    handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.simpleMaterialData));
 
     // 初期値設定
-    if (handle.lineMaterialData)
+    if (handle.simpleMaterialData)
     {
-        handle.lineMaterialData->color = Vector4(1, 1, 1, 1);
+        handle.simpleMaterialData->color = Vector4(1, 1, 1, 1);
     }
 
-    handle.type = MaterialType::Line;
+    handle.type = MaterialType::Simple;
 
     materials_.push_back(handle);
     return handle;
@@ -83,7 +83,7 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->specularColor = materialSettings_.specularColor;
             handle.materialData->gTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
         }
-        else if (handle.type == MaterialType::Line && handle.lineMaterialData)
+        else if (handle.type == MaterialType::Simple && handle.simpleMaterialData)
         {
 
         }
