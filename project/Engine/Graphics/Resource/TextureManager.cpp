@@ -31,8 +31,9 @@ DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
 
     // ミップマップを生成（圧縮フォーマットの場合はスキップ）
     DirectX::ScratchImage mipImages{};
-    if (DirectX::IsCompressed(image.GetMetadata().format))
+    if (DirectX::IsCompressed(image.GetMetadata().format) || image.GetMetadata().IsCubemap())
     {
+        // キューブマップや圧縮テクスチャはそのまま使う
         mipImages = std::move(image);
     }
     else

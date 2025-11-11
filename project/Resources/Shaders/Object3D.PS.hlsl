@@ -29,6 +29,7 @@ struct Material
 
 ConstantBuffer<Material> gMaterial : register(b0);
 Texture2D<float4> gTexture : register(t0);
+TextureCube<float4> gEnvironmentTexture : register(t1);
 SamplerState gSampler : register(s0);
 cbuffer DirectionalLights : register(b1)
 {
@@ -130,6 +131,17 @@ PixelShaderOutput main(PixelShaderInput input)
 
         // Spot Light
         finalColor += ApplySpotLights(baseColor, normal, input.worldPosition, toEye);
+        
+        // 環境マップ処理
+
+        // toEye はピクセルからカメラへのベクトル
+        float3 reflectedVector = reflect(-toEye, normal);
+        
+        // 環境マップから色をサンプリング
+        float4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
+        
+        // 環境光を最終的な色に加算する
+        finalColor += environmentColor.rgb;
     }
     else
     {

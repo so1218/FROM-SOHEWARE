@@ -8,11 +8,14 @@ enum TextureID
     uvChecker,
     monsterBall,
 
+    // dds
+    skyboxCubemapBlack,
+    skyboxCubemap,
+
     // PlayScene     
     skydome,
     axe,
     knife,
-    skyboxCubemap,
 
     // particle
     circle_01,
@@ -106,10 +109,15 @@ private:
             { white1x1, "Resources/images/white1x1.png" },
             { uvChecker,"Resources/images/uvChecker.png" },
             { monsterBall,   "Resources/images/Shrimp_TestTexture.png" },
+
+			// dds
+            { skyboxCubemapBlack,   "Resources/images/black_cube.dds" },
+			{ skyboxCubemap,   "Resources/images/rostock_laage_airport_4k.dds" },
+
+
             { skydome,   "Resources/images/sky_sphere.png" },
             { axe,   "Resources/images/Woodcutter-Axe.jpg" },
             { knife,   "Resources/images/KnifeTexture..jpg" },
-            { skyboxCubemap,   "Resources/images/rostock_laage_airport_4k.dds" },
 
 			// パーティクル
             { circle_01,   "Resources/images/particles/circle_01.png" },

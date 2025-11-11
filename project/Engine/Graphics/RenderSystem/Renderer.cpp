@@ -176,7 +176,7 @@ void Renderer::CreateTriangles()
 	// 最初に使用するスフィアのインデックスをリセット
 	indexTriangle_ = 0;
 }
-void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
+void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
 {
 	// indexTriangle_が範囲内であることを確認
 	assert(indexTriangle_ < kMaxTriangleCount);
@@ -214,13 +214,33 @@ void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, Worl
 	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &triangle.mesh.GetVertexBufferView());
 	// 定数バッファをGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangle.materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangle.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 2. バグ修正: textures_ 配列を削除
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+
+	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
+
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	// ★ 4. インデックス変更 (3 -> 4)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
+	// [Index 5] : PS CBV (b2) -> Camera
+	// ★ 4. インデックス変更 (4 -> 5)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+
+	// [Index 6] : PS CBV (b3) -> PointLights
+	// ★ 4. インデックス変更 (5 -> 6)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	// ★ 4. インデックス変更 (6 -> 7)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawInstanced(UINT(triangle.mesh.GetVertexCount()), 1, 0, 0);
 	// 使用カウント上昇
@@ -251,7 +271,7 @@ void Renderer::CreateSpheres()
 	}
 	indexSphere_ = 0;
 }
-void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t color)
+void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color)
 {
 	// indexSphere_が範囲内であることを確認
 	assert(indexSphere_ < kMaxSphereCount);
@@ -291,13 +311,27 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sphere.mesh.GetIndexBufferView());
 	// 定数バッファをGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphere.materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphere.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 2. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+
+	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
+
+	// ★ 4. インデックスずらし (3->4, 4->5, 5->6, 6->7)
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// [Index 5] : PS CBV (b2) -> Camera
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	// [Index 6] : PS CBV (b3) -> PointLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sphere.mesh.GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇
@@ -334,7 +368,7 @@ void Renderer::CreateModels()
 	indexModel_ = 0;
 }
 
-void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
+void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle)
 {
 	// indexModel_が範囲内であることを確認
 	assert(indexModel_ < kMaxModelCount);
@@ -377,17 +411,33 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 	// 定数バッファをGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 2. バグ修正: textures_ 配列を削除
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
+	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
 
-	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	// ★ 4. インデックス変更 (3 -> 4)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
+	// [Index 5] : PS CBV (b2) -> Camera
+	// ★ 4. インデックス変更 (4 -> 5)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+
+	// [Index 6] : PS CBV (b3) -> PointLights
+	// ★ 4. インデックス変更 (5 -> 6)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	// ★ 4. インデックス変更 (6 -> 7)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇
@@ -420,7 +470,7 @@ void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t c
 	}
 }
 
-void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
+void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle)
 {
 	assert(indexModel_ < kMaxModelCount);
 
@@ -452,7 +502,7 @@ void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 	// 定数バッファをGPUにバインド
-	  // [Index 0] : VS CBV (b0) -> TransformationMatrix (WVP, World, etc.)
+	// [Index 0] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
 
 	// [Index 1] : VS SRV Table (t0) -> gMatrixPalette
@@ -462,19 +512,27 @@ void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress());
 
 	// [Index 3] : PS SRV Table (t0) -> gTexture
+	// ★ 2. バグ修正: textures_ 配列を削除
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// ★ 3. NEW: [Index 4] : PS SRV Table (t1) -> gEnvironmentTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
 
-	// [Index 5] : PS CBV (b2) -> Camera
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	// [Index 5] : PS CBV (b1) -> DirectionalLights
+	// ★ 4. インデックス変更 (4 -> 5)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 
-	// [Index 6] : PS CBV (b3) -> PointLights
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	// [Index 6] : PS CBV (b2) -> Camera
+	// ★ 4. インデックス変更 (5 -> 6)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 
-	// [Index 7] : PS CBV (b4) -> SpotLights
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+	// [Index 7] : PS CBV (b3) -> PointLights
+	// ★ 4. インデックス変更 (6 -> 7)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+
+	// [Index 8] : PS CBV (b4) -> SpotLights
+	// ★ 4. インデックス変更 (7 -> 8)
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 
 	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
 		 mesh->GetVertexBufferView(),
@@ -528,13 +586,29 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 	// 定数バッファをGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 1. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+
+	// ★ 2. NEW: [Index 3] : PS SRV (t1) -> ダミーをセット
+	// DrawGridは環境マップを使わないが、RootSignatureの要件を満たすため
+	// t0と同じハンドルをt1スロットにもバインドする。
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
+
+	// ★ 3. インデックスずらし (3->4, 4->5, 5->6, 6->7)
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// [Index 5] : PS CBV (b2) -> Camera
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	// [Index 6] : PS CBV (b3) -> PointLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 
 	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 
@@ -639,13 +713,30 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
 	// 定数バッファ(RootParameter)をGPUにバインド
+	// 定数バッファ(RootParameter)をGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 1. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+
+	// ★ 2. NEW: [Index 3] : PS SRV (t1) -> ダミーをセット
+	// スプライトはライティング無効(enableLighting=false)なので、t1は使われません。
+	// ただし、RootSignatureの要件を満たすため、有効なSRV (t0と同じもの) をバインドしておきます。
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
+
+	// ★ 3. インデックスずらし (3->4, 4->5, 5->6, 6->7)
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// [Index 5] : PS CBV (b2) -> Camera
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	// [Index 6] : PS CBV (b3) -> PointLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇
@@ -681,7 +772,7 @@ void Renderer::CreateCubes()
 
 	indexCube_ = 0;
 }
-void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
+void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
 {
 	// indexCube_が範囲内であることを確認
 	assert(indexCube_ < kMaxCubeCount);
@@ -721,13 +812,27 @@ void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTra
 	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&cube.mesh.GetIndexBufferView());
 	// 定数バッファをGPUにバインド
+	// [Index 0] : PS CBV (b0) -> Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cube.materialHandle.resource->GetGPUVirtualAddress());
+	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, cube.wvpResource->GetGPUVirtualAddress());
+
+	// [Index 2] : PS SRV (t0) -> gTexture
+	// ★ 2. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+
+	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
+
+	// ★ 4. インデックスずらし (3->4, 4->5, 5->6, 6->7)
+	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	// [Index 5] : PS CBV (b2) -> Camera
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	// [Index 6] : PS CBV (b3) -> PointLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	// [Index 7] : PS CBV (b4) -> SpotLights
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	// 描画コマンド
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(cube.mesh.GetIndexCount()), 1, 0, 0, 0);
 	// 使用カウント上昇

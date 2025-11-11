@@ -24,6 +24,7 @@ public:
     // トランスフォームへの参照を取得
     WorldTransform& GetTransform() { return transform_; }
 
+    void SetEnvironmentMapHandle(uint32_t handle);
 
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -37,6 +38,7 @@ public:
     float animationTime_;
 
     uint32_t textureHandle_;
+    uint32_t envMapTextureHandle_;
     uint32_t color_;
     MaterialHandle materialHandle_;
 

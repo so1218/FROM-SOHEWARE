@@ -89,21 +89,29 @@ void RootSignatureManager::Create3dRootSignature()
     LOG_INFO("Creating 3D root signature...");
 
     // DescriptorRangeの設定 (テクスチャSRV用)
-    D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
-    srvDescriptorRange.BaseShaderRegister = 0; // t0
-    srvDescriptorRange.NumDescriptors = 1;
-    srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRangeT0 = {};
+    srvDescriptorRangeT0.BaseShaderRegister = 0; // t0
+    srvDescriptorRangeT0.NumDescriptors = 1;
+    srvDescriptorRangeT0.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRangeT0.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    // DescriptorRangeの設定 (t1: 環境マップSRV用)
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRangeT1 = {};
+    srvDescriptorRangeT1.BaseShaderRegister = 1; // t1
+    srvDescriptorRangeT1.NumDescriptors = 1;
+    srvDescriptorRangeT1.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRangeT1.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
     enum {
         kPixelShaderCb0Index = 0, // b0 (PixelShader)
         kVertexShaderCb0Index = 1, // b0 (VertexShader)
         kTextureSrvTableIndex = 2, // t0 (PixelShader)
-        kPixelShaderCb1Index = 3, // b1 (PixelShader)
-        kPixelShaderCb2Index = 4, // b2 (PixelShader)
-        kPixelShaderCb3Index = 5, // b3 (PixelShader)
-        kPixelShaderCb4Index = 6, // b4 (PixelShader)
-        kNumGraphicRootParameters
+        kEnvMapSrvTableIndex = 3,  // t1 (PixelShader)
+        kPixelShaderCb1Index = 4, // b1 (PixelShader) 
+        kPixelShaderCb2Index = 5, // b2 (PixelShader) 
+        kPixelShaderCb3Index = 6, // b3 (PixelShader) 
+        kPixelShaderCb4Index = 7, // b4 (PixelShader) 
+        kNumGraphicRootParameters 
     };
 
     // RootParameter作成
@@ -122,25 +130,31 @@ void RootSignatureManager::Create3dRootSignature()
     // RootParameter[2]: テクスチャSRV用のDescriptorTable (t0)
     rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRangeT0; 
     rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
 
-    // RootParameter[3]: ピクセルシェーダー用CBV (b1)
+    // ★ RootParameter[3]: 環境マップSRV用のDescriptorTable (t1) 
+    rootParameters[kEnvMapSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[kEnvMapSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kEnvMapSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRangeT1;
+    rootParameters[kEnvMapSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
+
+    // RootParameter[4]: ピクセルシェーダー用CBV (b1)
     rootParameters[kPixelShaderCb1Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb1Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb1Index].Descriptor.ShaderRegister = 1; // b1
 
-    // RootParameter[4]: ピクセルシェーダー用CBV (b2)
+    // RootParameter[5]: ピクセルシェーダー用CBV (b2)
     rootParameters[kPixelShaderCb2Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb2Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb2Index].Descriptor.ShaderRegister = 2; // b2
 
-    // RootParameter[5]: ピクセルシェーダー用CBV (b3)
+    // RootParameter[6]: ピクセルシェーダー用CBV (b3)
     rootParameters[kPixelShaderCb3Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb3Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb3Index].Descriptor.ShaderRegister = 3; // b3
 
-    // RootParameter[6]: ピクセルシェーダー用CBV (b4)
+    // RootParameter[7]: ピクセルシェーダー用CBV (b4)
     rootParameters[kPixelShaderCb4Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb4Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb4Index].Descriptor.ShaderRegister = 4; // b4
@@ -170,18 +184,18 @@ void RootSignatureManager::Create3dRootSignature()
     HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
         D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 
-    if (FAILED(hr)) 
+    if (FAILED(hr))
     {
         if (errorBlob)
         {
             const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
             LOG_ERROR("Failed to serialize 3D root signature: {}", errorMsg);
         }
-        else 
+        else
         {
             LOG_ERROR("Failed to serialize 3D root signature. HRESULT: {:#x}", hr);
         }
-        assert(false); 
+        assert(false);
         return;
     }
 
@@ -189,7 +203,7 @@ void RootSignatureManager::Create3dRootSignature()
     hr = device_->CreateRootSignature(0,
         signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
         IID_PPV_ARGS(&rootSignature3D_));
-    if (FAILED(hr)) 
+    if (FAILED(hr))
     {
         LOG_ERROR("Failed to create 3D root signature. HRESULT: {:#x}", hr);
         assert(false);
@@ -203,14 +217,21 @@ void RootSignatureManager::CreateSkinningRootSignature()
 {
     LOG_INFO("Creating Skinning root signature...");
 
-    // DescriptorRangeの設定 (テクスチャSRVをt0にバインド)
-    D3D12_DESCRIPTOR_RANGE srvDescriptorRange = {};
-    srvDescriptorRange.BaseShaderRegister = 0; // t0
-    srvDescriptorRange.NumDescriptors = 1;    // 1つのSRV
-    srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    srvDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+    // DescriptorRangeの設定 (PS t0: テクスチャSRV)
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRangeT0_PS = {};
+    srvDescriptorRangeT0_PS.BaseShaderRegister = 0; // t0
+    srvDescriptorRangeT0_PS.NumDescriptors = 1;
+    srvDescriptorRangeT0_PS.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRangeT0_PS.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    // VS用 SRVディスクリプタレンジ (gMatrixPalette用 t0)
+    // DescriptorRangeの設定 (PS t1: 環境マップSRV) 
+    D3D12_DESCRIPTOR_RANGE srvDescriptorRangeT1_PS = {};
+    srvDescriptorRangeT1_PS.BaseShaderRegister = 1; // t1
+    srvDescriptorRangeT1_PS.NumDescriptors = 1;
+    srvDescriptorRangeT1_PS.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvDescriptorRangeT1_PS.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    // VS用 SRVディスクリプタレンジ (VS t0: gMatrixPalette用)
     D3D12_DESCRIPTOR_RANGE srvMatrixPaletteDescriptorRange = {};
     srvMatrixPaletteDescriptorRange.BaseShaderRegister = 0; // t0 for Vertex Shader
     srvMatrixPaletteDescriptorRange.NumDescriptors = 1;
@@ -219,14 +240,15 @@ void RootSignatureManager::CreateSkinningRootSignature()
 
     enum {
         kVertexShaderCb0Index = 0, // b0 : 頂点シェーダー用定数バッファ
-        kVertexShaderSrvT0Index = 1,
+        kVertexShaderSrvT0Index = 1, // t0 : 頂点シェーダー用SRV (Palette)
         kPixelShaderCb0Index = 2,  // b0 : ピクセルシェーダー用定数バッファ
         kTextureSrvTableIndex = 3, // t0 : テクスチャSRV
-        kDirectionalLightsIndex = 4, // b1 : Directional Lights
-        kCameraIndex = 5,            // b2 : Camera
-        kPointLightsIndex = 6,       // b2 : Point Lights
-        kSpotLightsIndex = 7,        // b3 : Spot Lights
-        kNumRootParameters
+        kEnvMapSrvTableIndex = 4,    // t1 : 環境マップSRV
+        kDirectionalLightsIndex = 5, // b1 : Directional Lights 
+        kCameraIndex = 6,            // b2 : Camera 
+        kPointLightsIndex = 7,       // b3 : Point Lights
+        kSpotLightsIndex = 8,        // b4 : Spot Lights 
+        kNumRootParameters 
     };
 
     D3D12_ROOT_PARAMETER rootParameters[kNumRootParameters] = {};
@@ -247,11 +269,17 @@ void RootSignatureManager::CreateSkinningRootSignature()
     rootParameters[kPixelShaderCb0Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb0Index].Descriptor.ShaderRegister = 0; // b0
 
-    // テクスチャのSRV設定 (t0)
+    // テクスチャのSRV設定 (PS t0)
     rootParameters[kTextureSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     rootParameters[kTextureSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRange;
+    rootParameters[kTextureSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRangeT0_PS; 
     rootParameters[kTextureSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
+
+    // 環境マップのSRV設定 (PS t1)
+    rootParameters[kEnvMapSrvTableIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParameters[kEnvMapSrvTableIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kEnvMapSrvTableIndex].DescriptorTable.pDescriptorRanges = &srvDescriptorRangeT1_PS;
+    rootParameters[kEnvMapSrvTableIndex].DescriptorTable.NumDescriptorRanges = 1;
 
     // Directional Lights (b1)
     rootParameters[kDirectionalLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -268,12 +296,11 @@ void RootSignatureManager::CreateSkinningRootSignature()
     rootParameters[kPointLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPointLightsIndex].Descriptor.ShaderRegister = 3; // b3
 
-    // Spot Lights (b4)
+    // Spot Lights (b4) 
     rootParameters[kSpotLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kSpotLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kSpotLightsIndex].Descriptor.ShaderRegister = 4; // b4
 
-    // サンプラの設定（3D用と同じ）
     D3D12_STATIC_SAMPLER_DESC staticSampler = {};
     staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
     staticSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -295,14 +322,14 @@ void RootSignatureManager::CreateSkinningRootSignature()
     Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 
     HRESULT hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-    if (FAILED(hr)) 
+    if (FAILED(hr))
     {
         if (errorBlob)
         {
             const char* errorMsg = reinterpret_cast<const char*>(errorBlob->GetBufferPointer());
             LOG_ERROR("Failed to serialize Skinning root signature: {}", errorMsg);
         }
-        else 
+        else
         {
             LOG_ERROR("Failed to serialize Skinning root signature. HRESULT: {:#x}", hr);
         }

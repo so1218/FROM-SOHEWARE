@@ -58,14 +58,14 @@ public:
     void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // 描画関数
-    void DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
-    void DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t color = 0xffffffff);
-    void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
+    void DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
+    void DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color = 0xffffffff);
+    void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle);
     void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
-    void DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
+    void DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle);
     void DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color = 0xffffffff);
     void DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
-    void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
+    void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void DrawParticles(const Camera& camera);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
