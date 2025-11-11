@@ -80,6 +80,7 @@ void Renderer::CreateObjects()
     CreateCubes();
     CreateLines();
     CreateParticles();
+	CreateSkybox();
 }
 
 int Renderer::LoadTexture(const std::string& texturePath)
@@ -908,4 +909,74 @@ void Renderer::DrawParticles(const Camera& camera)
 	particlesByTexture_.clear();
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 	indexInstance_ = 0;
+}
+
+void Renderer::CreateSkybox()
+{
+	std::vector<VertexData> vertices;
+	std::vector<uint32_t> indices;
+
+	// ShapeGenerator を使ってメッシュデータを生成
+	ShapeGenerator::SkyBoxGenerator(vertices, indices);
+
+	// メッシュを初期化 (GPUにデータを転送)
+	skyboxMesh_.Initialize(device_->GetDevice(), vertices, indices);
+
+	// WVP行列用のバッファを作成
+	skyboxWvpResource_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+	skyboxWvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedSkyboxWvp_));
+
+	// マテリアルバッファを作成
+	skyboxMaterialHandle_ = materialManager_->CreateMaterial(device_->GetDevice());
+
+	// スカイボックスのデフォルト色
+	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+}
+
+void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// PSO と RootSignature をセット
+	cmdList->SetPipelineState(psoManager_->psoSkybox_.Get());
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkybox_.Get());
+
+	// SRVヒープをセット
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+	// WVP行列の計算
+	Matrix4x4 viewMatrix = camera.GetViewMatrix();
+	Matrix4x4 projectionMatrix = camera.GetProjectionMatrix();
+
+	// ビュー行列から移動成分を削除
+	viewMatrix.m[3][0] = 0.0f;
+	viewMatrix.m[3][1] = 0.0f;
+	viewMatrix.m[3][2] = 0.0f;
+
+	// 引数の worldTransform をワールド行列として使用 (回転を反映)
+	Matrix4x4 worldMatrix = worldTransform.matWorld_;
+	Matrix4x4 wvpMatrix = worldMatrix * viewMatrix * projectionMatrix;
+
+	memcpy(mappedSkyboxWvp_, &wvpMatrix, sizeof(TransformationMatrix));
+
+	// マテリアルカラーの設定
+	// 引数の color をマテリアルバッファに設定
+	skyboxMaterialHandle_.materialData->color = Math::Uint32ToColorVector(color);
+
+	// メッシュ情報をセット
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->IASetVertexBuffers(0, 1, &skyboxMesh_.GetVertexBufferView());
+	cmdList->IASetIndexBuffer(&skyboxMesh_.GetIndexBufferView());
+
+	// ルートパラメータを設定
+	// MaterialColor
+	cmdList->SetGraphicsRootConstantBufferView(0, skyboxMaterialHandle_.resource->GetGPUVirtualAddress());
+	// WVP
+	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
+	// Cube Texture SRV
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(cubeTextureSrvIndex));
+
+	// 描画コマンド
+	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
 }

@@ -24,6 +24,10 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
 
+    skybox_ = std::make_unique<Skybox>(engine_, camera_);
+    uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
+    skybox_->SetCubeTextureHandle(cubemapHandle);
+
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
@@ -73,6 +77,7 @@ void SampleSceneHori::HandleCollisions()
 
 void SampleSceneHori::Draw()
 {
+    skybox_->Draw();
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 }

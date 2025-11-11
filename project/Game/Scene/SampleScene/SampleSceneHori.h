@@ -15,6 +15,7 @@
 #include "EnemyManager.h"
 #include "ParticleSystemWrapper.h"
 #include "ParticleEmitter.h"
+#include "Skybox.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -53,5 +54,6 @@ private:
     Player* player_ = nullptr;
     Enemy* enemy_ = nullptr;
 
+    std::unique_ptr<Skybox> skybox_;
 };
 

@@ -69,6 +69,7 @@ public:
     void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void DrawParticles(const Camera& camera);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
+    void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void DrawFullScreenQuadWithOffscreenTexture();
 
     // ブレンドモード設定
@@ -112,6 +113,7 @@ private:
     void CreateCubes();
     void CreateLines();
     void CreateParticles();
+    void CreateSkybox();
 
     Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot);
 
@@ -176,6 +178,12 @@ private:
 
     // 各テクスチャIDごとにParticleInstanceDataの配列を持つ
     std::unordered_map<uint32_t, std::vector<ParticleInstanceData>> particlesByTexture_;
+
+    // スカイボックス
+    Mesh skyboxMesh_; 
+    Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_; 
+    TransformationMatrix* mappedSkyboxWvp_ = nullptr; 
+    MaterialHandle skyboxMaterialHandle_; 
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;

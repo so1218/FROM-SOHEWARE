@@ -12,6 +12,7 @@ enum TextureID
     skydome,
     axe,
     knife,
+    skyboxCubemap,
 
     // particle
     circle_01,
@@ -108,6 +109,7 @@ private:
             { skydome,   "Resources/images/sky_sphere.png" },
             { axe,   "Resources/images/Woodcutter-Axe.jpg" },
             { knife,   "Resources/images/KnifeTexture..jpg" },
+            { skyboxCubemap,   "Resources/images/rostock_laage_airport_4k.dds" },
 
 			// パーティクル
             { circle_01,   "Resources/images/particles/circle_01.png" },
