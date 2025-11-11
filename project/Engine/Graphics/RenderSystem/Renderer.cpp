@@ -176,75 +176,54 @@ void Renderer::CreateTriangles()
 	// 最初に使用するスフィアのインデックスをリセット
 	indexTriangle_ = 0;
 }
+
 void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
 {
-	// indexTriangle_が範囲内であることを確認
-	assert(indexTriangle_ < kMaxTriangleCount);
+	assert(indexTriangle_ < kMaxTriangleCount); // 配列範囲チェック
 
-	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画する三角形を取得
 	RenderData& triangle = triangles_[indexTriangle_];
 
-	// マテリアルに色情報を設定
+	// マテリアル色を設定
 	triangle.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// ワールド行列（スケール・回転・移動）を計算
+	// ワールド行列を中心を基準に計算
 	Vector3 pivot = { 320.0f, 180.0f, 0.0f }; // 三角形の中心
 	triangle.worldMatrix = MakeCenteredAffineMatrix(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_, pivot);
 
-	// WVP行列（World * ViewProjection）を計算
+	// WVP行列（World * Orthographic）を計算してGPUバッファにコピー
 	Matrix4x4 wvpMatrix = triangle.worldMatrix * Matrix4x4::MakeOrthographic(0, 0, float(clientWidth_), float(clientHeight_), 0, 100);
 	memcpy(&triangle.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 	triangle.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(triangle.worldMatrix.Transpose());
 
-	// UV変換行列の設定
+	// UV変換行列をマテリアルに設定
 	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
 	uvTransformMatrix = uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z) * Matrix4x4::MakeTranslate(uvTransform.translation_);
 	triangle.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
-	// パイプラインステートの設定
+	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// プリミティブ形状を設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &triangle.mesh.GetVertexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
+
+	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangle.materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangle.wvpResource->GetGPUVirtualAddress());
-
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 2. バグ修正: textures_ 配列を削除
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
-
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
-	// ★ 4. インデックス変更 (3 -> 4)
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-	// [Index 5] : PS CBV (b2) -> Camera
-	// ★ 4. インデックス変更 (4 -> 5)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-
-	// [Index 6] : PS CBV (b3) -> PointLights
-	// ★ 4. インデックス変更 (5 -> 6)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-
-	// [Index 7] : PS CBV (b4) -> SpotLights
-	// ★ 4. インデックス変更 (6 -> 7)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画コマンド
+
+	// 描画
 	commandManager_->GetCommandList()->DrawInstanced(UINT(triangle.mesh.GetVertexCount()), 1, 0, 0);
-	// 使用カウント上昇
-	indexTriangle_++;
+
+	indexTriangle_++; // 使用カウント更新
 }
 
 void Renderer::CreateSpheres()
@@ -271,71 +250,55 @@ void Renderer::CreateSpheres()
 	}
 	indexSphere_ = 0;
 }
+
 void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color)
 {
-	// indexSphere_が範囲内であることを確認
-	assert(indexSphere_ < kMaxSphereCount);
+	assert(indexSphere_ < kMaxSphereCount); // 配列範囲チェック
 
-	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画する球体を取得
 	RenderData& sphere = spheres_[indexSphere_];
 
-	// マテリアルに色情報を設定
+	// マテリアル色を設定
 	sphere.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// ワールド行列を計算
+	// ワールド行列を設定
 	sphere.worldMatrix = worldTransform.matWorld_;
 
-	// WVP行列（World * ViewProjection）を計算
+	// WVP行列（World * ViewProjection）を計算してGPUバッファにコピー
 	Matrix4x4 wvpMatrix = sphere.worldMatrix * camera.GetViewProjectionMatrix();
 	memcpy(&sphere.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 	sphere.mappedData->World = sphere.worldMatrix;
 	sphere.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(sphere.worldMatrix.Transpose());
 
-	// UV変換行列の設定
+	// UV変換行列を設定
 	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
 	uvTransformMatrix = uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z) * Matrix4x4::MakeTranslate(uvTransform.translation_);
 	sphere.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
-	// パイプラインステートの設定
+	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// プリミティブ形状を設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sphere.mesh.GetVertexBufferView());
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sphere.mesh.GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
+
+	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphere.materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphere.wvpResource->GetGPUVirtualAddress());
-
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 2. バグ修正 (textures_ 削除)
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
-
-	// ★ 4. インデックスずらし (3->4, 4->5, 5->6, 6->7)
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// [Index 5] : PS CBV (b2) -> Camera
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	// [Index 6] : PS CBV (b3) -> PointLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	// [Index 7] : PS CBV (b4) -> SpotLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画コマンド
+
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sphere.mesh.GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexSphere_++;
+
+	indexSphere_++; // 使用カウント更新
 }
 
 Mesh* Renderer::GetOrCreateMesh(const ModelData& modelData)
@@ -370,78 +333,52 @@ void Renderer::CreateModels()
 
 void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle)
 {
-	// indexModel_が範囲内であることを確認
-	assert(indexModel_ < kMaxModelCount);
+	assert(indexModel_ < kMaxModelCount); // 配列範囲チェック
 
-	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画するモデルを取得
 	RenderData& model = models_[indexModel_];
 
-	// 一度だけ作られたMeshを使う
+	// Meshの取得（キャッシュ）
 	Mesh* mesh = GetOrCreateMesh(modelData);
 
-	// 色変換
+	// マテリアル色を設定
 	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// ワールド行列 (スケール・回転・位置) を計算
+	// ワールド行列を設定
 	model.worldMatrix = worldTransform.matWorld_;
 
-	// WVP行列 (World * ViewProjection) を計算
+	// WVP行列（World * ViewProjection）を計算してGPUバッファにコピー
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
 	model.mappedData->World = model.worldMatrix;
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
-	// ルートシグネチャの設定
+	// ルートシグネチャ・パイプライン設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// パイプラインステートの設定
-	if (isWireFrame_) {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3DWireframe_.Get());
-	}
-	else {
-		commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	}
-	// プリミティブ形状の設定
+	commandManager_->GetCommandList()->SetPipelineState(isWireFrame_ ? psoManager_->pso3DWireframe_.Get() : psoManager_->pso3D_.Get());
+
+	// プリミティブ・バッファ設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
 
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 2. バグ修正: textures_ 配列を削除
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
-
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
-	// ★ 4. インデックス変更 (3 -> 4)
+	// 定数バッファ・SRVをGPUにバインド
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress()); // Material
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());       // WVP
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // Texture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // Environment Map
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-	// [Index 5] : PS CBV (b2) -> Camera
-	// ★ 4. インデックス変更 (4 -> 5)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-
-	// [Index 6] : PS CBV (b3) -> PointLights
-	// ★ 4. インデックス変更 (5 -> 6)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-
-	// [Index 7] : PS CBV (b4) -> SpotLights
-	// ★ 4. インデックス変更 (6 -> 7)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画コマンド
+
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexModel_++;
+
+	indexModel_++; // 使用カウント更新
 }
 
 void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)
@@ -470,153 +407,106 @@ void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t c
 	}
 }
 
-void Renderer::DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle)
+void Renderer::DrawAnimationModel(
+	WorldTransform& worldTransform,
+	Camera& camera,
+	const AnimatedModelData& instance,
+	const SkinCluster& skinCluster,
+	uint32_t textureHandle,
+	uint32_t envMapSrvHandle,
+	uint32_t color,
+	MaterialHandle& materialHandle)
 {
-	assert(indexModel_ < kMaxModelCount);
+	assert(indexModel_ < kMaxModelCount); // 配列範囲チェック
 
-	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	RenderData& model = models_[indexModel_];
 	Mesh* mesh = GetOrCreateMesh(instance.modelData);
 
-	// 色変換
+	// マテリアル色を設定
 	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// ワールド行列 (スケール・回転・位置) を計算
+	// ワールド行列を設定
 	model.worldMatrix = worldTransform.matWorld_;
 
-	// WVP行列 (World * ViewProjection) を計算
+	// WVP行列を計算してGPUバッファにコピー
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
 	model.mappedData->World = model.worldMatrix;
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
-	// ルートシグネチャの設定
+	// ルートシグネチャ・パイプライン設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
-	// パイプラインステートの設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
-	// プリミティブ形状の設定
+
+	// プリミティブ・バッファ設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : VS CBV (b0) -> WVP
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
 
-	// [Index 1] : VS SRV Table (t0) -> gMatrixPalette
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex));
-
-	// [Index 2] : PS CBV (b0) -> Material
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress());
-
-	// [Index 3] : PS SRV Table (t0) -> gTexture
-	// ★ 2. バグ修正: textures_ 配列を削除
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. NEW: [Index 4] : PS SRV Table (t1) -> gEnvironmentTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
-
-	// [Index 5] : PS CBV (b1) -> DirectionalLights
-	// ★ 4. インデックス変更 (4 -> 5)
+	// 定数バッファ・SRVをGPUにバインド
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress()); // VS WVP
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex)); // VS MatrixPalette
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress()); // PS Material
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // PS Texture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // PS Environment
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-	// [Index 6] : PS CBV (b2) -> Camera
-	// ★ 4. インデックス変更 (5 -> 6)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-
-	// [Index 7] : PS CBV (b3) -> PointLights
-	// ★ 4. インデックス変更 (6 -> 7)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-
-	// [Index 8] : PS CBV (b4) -> SpotLights
-	// ★ 4. インデックス変更 (7 -> 8)
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 
-	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = {
-		 mesh->GetVertexBufferView(),
-		 skinCluster.influenceBufferView
-	};
-	// 頂点インフルエンス頂点バッファをセット
+	// 頂点バッファ設定（通常頂点 + スキンインフルエンス頂点）
+	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), skinCluster.influenceBufferView };
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
 
-	// 描画コマンド
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexModel_++;
+
+	indexModel_++; // 使用カウント更新
 }
 
 void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color)
 {
-	// indexModel_が範囲内であることを確認
-	assert(indexModel_ < kMaxModelCount);
+	assert(indexModel_ < kMaxModelCount); // モデル配列の範囲チェック
 
-
-	// 描画に必要なSRVヒープをセット（モデル描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画するモデルを取得
 	RenderData& model = models_[indexModel_];
+	Mesh* mesh = GetOrCreateMesh(modelData); // メッシュ取得
 
-	// 一度だけ作られたMeshを使う
-	Mesh* mesh = GetOrCreateMesh(modelData);
-
-	// 色変換
-	modelData.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
-	// ワールド行列 (スケール・回転・位置) を計算
-	model.worldMatrix = worldTransform.matWorld_;
-
-	// WVP行列 (World * ViewProjection) を計算
+	modelData.materialHandle.materialData->color = Math::Uint32ToColorVector(color); // 色セット
+	model.worldMatrix = worldTransform.matWorld_; // ワールド行列
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
 	model.mappedData->World = model.worldMatrix;
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
-	// ルートシグネチャの設定
+	// ルートシグネチャとパイプラインステート
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// パイプラインステートの設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoGrid_.Get());
-	// プリミティブ形状の設定
+
+	// 頂点・インデックスバッファ
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
+
+	// 定数バッファ・SRVバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 1. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 2. NEW: [Index 3] : PS SRV (t1) -> ダミーをセット
-	// DrawGridは環境マップを使わないが、RootSignatureの要件を満たすため
-	// t0と同じハンドルをt1スロットにもバインドする。
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. インデックスずらし (3->4, 4->5, 5->6, 6->7)
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // ダミー環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// [Index 5] : PS CBV (b2) -> Camera
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	// [Index 6] : PS CBV (b3) -> PointLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	// [Index 7] : PS CBV (b4) -> SpotLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-
-	//commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[swapChain_->GetSwapChain()->GetCurrentBackBufferIndex()], false, &dsvHandle);
-	// 描画コマンド
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexModel_++;
+	indexModel_++; // 使用カウント更新
 }
 
 void Renderer::CreateSprites()
@@ -661,86 +551,54 @@ void Renderer::CreateSprites()
 
 void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
 {
-	// indexSprite_が範囲外でないことを確認
-	assert(indexSprite_ < kMaxSpriteCount);
+	assert(indexSprite_ < kMaxSpriteCount); // スプライト配列の範囲チェック
 
-	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画するスプライトを取得
 	RenderData& sprite = sprites_[indexSprite_];
 
-	// マテリアルに色情報を設定
+	// マテリアル設定
 	sprite.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
 	sprite.materialHandle.materialData->enableLighting = false;
 
-	// スプライトのワールド行列を計算
+	// ワールド行列を計算
 	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
 	Matrix4x4 rotationMatrix = Matrix4x4::MakeRotateZ(rotation);
 	Matrix4x4 translateMatrix = Matrix4x4::MakeTranslate({ position.x, position.y, 0.0f });
-
-	// WorldTransformのメンバーを直接使う代わりに、ローカル変数で計算
 	sprite.worldMatrix = (scaleMatrix * rotationMatrix) * translateMatrix;
 
-	// MakeWVPMatrix2D関数に直接Matrix4x4を渡せるようにする
-	// worldMatrixから一時的なWorldTransformを構築してMakeWVPMatrix2Dに渡す
-	WorldTransform tempTransform = {
-		{size.x, size.y, 1.0f},
-		{0.0f, 0.0f, rotation},
-		{position.x, position.y, 0.0f}
-	};
+	// WVP行列を計算してGPUバッファにコピー
+	WorldTransform tempTransform = { {size.x, size.y, 1.0f}, {0.0f, 0.0f, rotation}, {position.x, position.y, 0.0f} };
 	Matrix4x4 wvpMatrix = Matrix4x4::MakeWVPMatrix2D(tempTransform, float(clientWidth_), float(clientHeight_));
-
-	// WVP行列をGPU用バッファにコピー
 	memcpy(&sprite.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 
-	// uvTransformMatrixの設定
+	// UV変換行列をマテリアルに設定
 	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
 	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	// マテリアルリソースに uvTransformMatrix を設定
 	sprite.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
-	// パイプラインステートの設定
+	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// プリミティブ形状を設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
-	// 定数バッファ(RootParameter)をGPUにバインド
-	// 定数バッファ(RootParameter)をGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
+
+	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
-
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 1. バグ修正 (textures_ 削除)
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 2. NEW: [Index 3] : PS SRV (t1) -> ダミーをセット
-	// スプライトはライティング無効(enableLighting=false)なので、t1は使われません。
-	// ただし、RootSignatureの要件を満たすため、有効なSRV (t0と同じもの) をバインドしておきます。
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. インデックスずらし (3->4, 4->5, 5->6, 6->7)
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // ダミー
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// [Index 5] : PS CBV (b2) -> Camera
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	// [Index 6] : PS CBV (b3) -> PointLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	// [Index 7] : PS CBV (b4) -> SpotLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画コマンド
+
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexSprite_++;
+	indexSprite_++; // 使用カウント更新
 }
 
 void Renderer::CreateCubes()
@@ -772,71 +630,55 @@ void Renderer::CreateCubes()
 
 	indexCube_ = 0;
 }
+
 void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
 {
-	// indexCube_が範囲内であることを確認
-	assert(indexCube_ < kMaxCubeCount);
+	assert(indexCube_ < kMaxCubeCount); // 配列の範囲チェック
 
-	// 描画に必要なSRVヒープをセット（描画に必要なヒープに切り替え）
+	// 描画用SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 描画する立方体を取得
 	RenderData& cube = cubes_[indexCube_];
 
-	// 色変換
+	// マテリアル色を設定
 	cube.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// ワールド行列 (スケール・回転・位置) を計算
+	// ワールド行列を計算
 	cube.worldMatrix = Matrix4x4::MakeAffine(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_);
 
-	// WVP行列 (World * ViewProjection) を計算
+	// WVP行列を計算してGPUバッファにコピー
 	camera_->UpdateViewProjectionMatrix();
 	Matrix4x4 wvpMatrix = cube.worldMatrix * camera_->GetViewProjectionMatrix();
 	memcpy(&cube.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 	cube.mappedData->World = cube.worldMatrix;
 	cube.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(cube.worldMatrix.Transpose());
 
-	// UV変換行列の設定
+	// UV変換行列をマテリアルに設定
 	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
 	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
 	cube.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
-	// パイプラインステートの設定
+	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// ルートシグネチャの設定
 	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
-	// 頂点バッファの設定
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &cube.mesh.GetVertexBufferView());
-	// インデックスバッファの設定
 	commandManager_->GetCommandList()->IASetIndexBuffer(&cube.mesh.GetIndexBufferView());
-	// 定数バッファをGPUにバインド
-	// [Index 0] : PS CBV (b0) -> Material
+
+	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cube.materialHandle.resource->GetGPUVirtualAddress());
-	// [Index 1] : VS CBV (b0) -> WVP
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, cube.wvpResource->GetGPUVirtualAddress());
-
-	// [Index 2] : PS SRV (t0) -> gTexture
-	// ★ 2. バグ修正 (textures_ 削除)
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-
-	// ★ 3. NEW: [Index 3] : PS SRV (t1) -> gEnvironmentTexture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex));
-
-	// ★ 4. インデックスずらし (3->4, 4->5, 5->6, 6->7)
-	// [Index 4] : PS CBV (b1) -> DirectionalLights
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	// [Index 5] : PS CBV (b2) -> Camera
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	// [Index 6] : PS CBV (b3) -> PointLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	// [Index 7] : PS CBV (b4) -> SpotLights
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	// 描画コマンド
+
+	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(cube.mesh.GetIndexCount()), 1, 0, 0, 0);
-	// 使用カウント上昇
-	indexCube_++;
+	indexCube_++; // 使用カウント更新
 }
 
 void Renderer::CreateLines()
