@@ -14,11 +14,12 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, const EnemyData& da
 	camera_ = camera;
 	player_ = player;
 
-	// 設計図(data)からステータスを初期化
+	// dataからステータスを初期化
 	hp_ = data.hp;
 	speed_ = data.speed;
 	size_ = data.size;
 	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
+	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, *ModelHandle::Get(data.modelId), AnimationHandle::Get(data.animationId));
 }
 
 void Enemy::Initialize()
@@ -47,28 +48,38 @@ void Enemy::Update()
 		return;
 	}
 
-	// --- プレイヤー追跡ロジック ---
-	// 1. プレイヤーの座標と自分の座標を取得
+	// プレイヤー追跡ロジック
+	// プレイヤーの座標と自分の座標を取得
 	Vector3 playerPos = player_->GetWorldPosition();
 	Vector3 selfPos = GetWorldPosition();
 
-	// 2. プレイヤーへの方向ベクトルを計算
+	// プレイヤーへの方向ベクトルを計算
 	Vector3 direction = playerPos - selfPos;
 
 	direction.y = 0.0f;
 
-	// 4. 方向ベクトルを正規化
+	WorldTransform& transform = modelEnemy_->GetTransform();
+
+	// 方向ベクトルを正規化
 	if (direction.Length() > 0.001f) // ゼロ除算を避ける
 	{ 
+		// 向きのベクトルを正規化
+		Vector3 forwardDirection = direction.Normalize();
+
+		// 上方向を定義
+		Vector3 upVector = { 0.0f, 1.0f, 0.0f };
+
+		// LookRotation を使って向きのクォータニオンを計算
+		transform.rotationQuaternion_ = Quaternion::LookRotation(forwardDirection, upVector);
+
 		direction = direction.Normalize();
 	}
 
-	// 5. 速度とデルタタイムをかけて、このフレームでの移動量を計算
+	// 速度とデルタタイムをかけて、このフレームでの移動量を計算
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 	Vector3 velocity = direction * speed_ * deltaTime;
 
-	// 6. 座標を更新
-	WorldTransform& transform = modelEnemy_->GetTransform();
+	// 座標を更新
 	transform.translation_.x += velocity.x;
 	transform.translation_.y += velocity.y;
 	transform.translation_.z += velocity.z;
@@ -76,6 +87,9 @@ void Enemy::Update()
 	// ワールド行列とAABBを更新
 	transform.UpdateMatrix();
 	UpdateAABB();
+
+	animationEnemy_->Update(1.0f, true);
+	animationEnemy_->transform_ = transform;
 }
 
 void Enemy::TakeDamage(float damage)
@@ -95,7 +109,7 @@ void Enemy::Draw()
 	if (isDead_) {
 		return;
 	}
-	modelEnemy_->Draw();
+	animationEnemy_->Draw();
 }
 
 

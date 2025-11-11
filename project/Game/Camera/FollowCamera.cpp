@@ -194,11 +194,11 @@ void FollowCamera::DebugDraw()
     ImGui::Separator();
     ImGui::Text("制限値");
 
-    if (ImGui::DragFloat("ピッチ最小角度", &minPitch_, 0.01f, 0.0f, 0.0f))
+    if (ImGui::DragFloat("ピッチ最小角度", &minPitch_, 0.01f, -1.57f, 1.57f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Min Pitch", minPitch_);
     }
-    if (ImGui::DragFloat("ピッチ最大角度", &maxPitch_, 0.01f, 0.0f, 0.0f))
+    if (ImGui::DragFloat("ピッチ最大角度", &maxPitch_, 0.01f, -1.57f, 1.57f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Max Pitch", maxPitch_);
     }

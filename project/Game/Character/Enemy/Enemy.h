@@ -3,12 +3,15 @@
 #include "BaseCharacter.h"
 #include "Collider.h"
 #include "ModelHandle.h"
+#include "AnimationModel.h"
+#include "AnimationHandle.h"
 
 class Player;
 
 struct EnemyData
 {
-    ModelID modelId = ModelID::cube; // 使用するモデル
+    ModelID modelId = ModelID::walk; // 使用するモデル
+    AnimationID animationId = AnimationID::walk;
     float hp = 50.0f;
     float speed = 1.0f;
     Vector3 size = { 1.0f, 1.0f, 1.0f };
@@ -54,6 +57,7 @@ private:
     Player* player_;
 
     std::unique_ptr<Model> modelEnemy_;
+    std::unique_ptr<AnimationModel> animationEnemy_;
 
     AABB aabb_;
 

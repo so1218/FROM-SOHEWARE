@@ -28,6 +28,14 @@ protected:
     int projectileCount_ = 1;
     float areaSize_ = 1.0f;
 
+    // ベースパラメータ (レベル1の値)
+    float damageBase_ = 20.0f;
+    float cooldownBase_ = 1.5f;
+    int projectileCountBase_ = 1;
+
+    // 当たり判定サイズ
+    Vector3 collisionSize_ = { 0.2f, 0.2f, 0.2f };
+
 public:
     Weapon(Engine* engine, Player* owner);
     virtual ~Weapon() {} 
@@ -36,6 +44,7 @@ public:
     virtual void Draw() = 0;
     virtual void DebugDraw() = 0;
     virtual void LevelUp() = 0;
+    virtual void ApplyLevelEffects() = 0;
     virtual void AddCollidersToManager(CollisionManager* manager) = 0;
 
     void SetLevel(int level) { level_ = level; }

@@ -5,7 +5,7 @@
 #include "Enemy.h" 
 #include "TextureHandle.h" 
 
-KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction)
+KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize)
 {
     model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::knife)));
     model_->SetTextureHandle(TextureHandle::Get(TextureID::knife));
@@ -19,8 +19,8 @@ KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& 
     model_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(model_->GetTransform().rotation_);
 
     // 衝突判定の初期化
-    Vector3 size = { 0.2f, 0.2f, 0.2f };
-    SetRadius(size.x);  
+    collisionSize_ = collisionSize;
+    SetRadius(collisionSize_.x);
     UpdateAABB();       
 
     // 衝突属性設定
@@ -75,12 +75,11 @@ Vector3 KnifeProjectile::GetWorldPosition()
 void KnifeProjectile::UpdateAABB()
 {
     // 当たり判定ボックスを更新
-    Vector3 size = { 0.2f, 0.2f, 0.2f };
     Vector3 center = model_->GetTransform().GetWorldPosition();
 
-    float halfW = size.x / 2.0f;
-    float halfH = size.y / 2.0f;
-    float halfD = size.z / 2.0f;
+    float halfW = collisionSize_.x / 2.0f;
+    float halfH = collisionSize_.y / 2.0f;
+    float halfD = collisionSize_.z / 2.0f;
 
     aabb_.min = { center.x - halfW, center.y - halfH, center.z - halfD };
     aabb_.max = { center.x + halfW, center.y + halfH, center.z + halfD };

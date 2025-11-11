@@ -8,10 +8,11 @@
 WeaponAxe::WeaponAxe(Engine* engine, Player* player, Camera* camera)
     : Weapon(engine, player), camera_(camera)
 {
-    damage_ = 40.0f;
-    cooldown_ = 3.0f;
-    projectileCount_ = 1;
-    level_ = 2;
+    // ベース値を初期化
+    damageBase_ = 40.0f;
+    cooldownBase_ = 3.0f;
+    projectileCountBase_ = 1;
+    level_ = 1;
 
     Initialize();
 }
@@ -22,11 +23,13 @@ void WeaponAxe::Initialize()
     gv->CreateGroup(GetGlobalVariableGroupName());
     gv->LoadFiles();
 
-    gv->AddItem(GetGlobalVariableGroupName(), "Damage", damage_);
-    gv->AddItem(GetGlobalVariableGroupName(), "Cooldown", cooldown_);
+    gv->AddItem(GetGlobalVariableGroupName(), "DamageBase", damageBase_);
+    gv->AddItem(GetGlobalVariableGroupName(), "CooldownBase", cooldownBase_);
+    gv->AddItem(GetGlobalVariableGroupName(), "Projectile CountBase", static_cast<float>(projectileCountBase_));
+    gv->AddItem(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
     gv->AddItem(GetGlobalVariableGroupName(), "Projectile InitialSpeedY", projectileInitialSpeedY_);
     gv->AddItem(GetGlobalVariableGroupName(), "Projectile Lifetime", projectileLifetime_);
-    gv->AddItem(GetGlobalVariableGroupName(), "Projectile Count", static_cast<float>(projectileCount_));
+    gv->AddItem(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
 
     ApplyGlobalVariables();
 }
@@ -34,11 +37,15 @@ void WeaponAxe::Initialize()
 void WeaponAxe::ApplyGlobalVariables()
 {
     auto* gv = GlobalVariables::GetInstance();
-    damage_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Damage");
-    cooldown_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Cooldown");
+    damageBase_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "DamageBase");
+    cooldownBase_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "CooldownBase");
+    projectileCountBase_ = static_cast<int>(gv->GetFloatValue(GetGlobalVariableGroupName(), "Projectile CountBase"));
+    level_ = static_cast<int>(gv->GetFloatValue(GetGlobalVariableGroupName(), "Level"));
     projectileInitialSpeedY_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Projectile InitialSpeedY");
     projectileLifetime_ = gv->GetFloatValue(GetGlobalVariableGroupName(), "Projectile Lifetime");
-    projectileCount_ = static_cast<int>(gv->GetFloatValue(GetGlobalVariableGroupName(), "Projectile Count"));
+    collisionSize_ = gv->GetVector3Value(GetGlobalVariableGroupName(), "CollisionSize");
+
+    ApplyLevelEffects();
 }
 
 void WeaponAxe::Update(float deltaTime)
@@ -71,8 +78,63 @@ void WeaponAxe::Draw()
 
 void WeaponAxe::DebugDraw()
 {
-    ImGui::Begin("Weapon Axe");
+    ImGui::Begin("武器：斧");
     ImGui::Separator();
+
+    bool changed = false;
+    bool levelChanged = false;
+
+    if (ImGui::DragFloat("ダメージ(Base)", &damageBase_, 0.1f, 0.0f, 0.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "DamageBase", damageBase_);
+        changed = true;
+    }
+
+    if (ImGui::DragFloat("クールダウン(Base)", &cooldownBase_, 0.01f, 0.0f, 0.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "CooldownBase", cooldownBase_);
+        changed = true;
+    }
+
+    if (ImGui::DragInt("発射数(Base)", &projectileCountBase_, 1, 1, 10))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile CountBase", static_cast<float>(projectileCountBase_));
+        changed = true;
+    }
+
+    if (ImGui::DragFloat("Y初速", &projectileInitialSpeedY_, 0.1f, 0.0f, 0.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile InitialSpeedY", projectileInitialSpeedY_);
+        changed = true;
+    }
+
+    if (ImGui::DragFloat("弾の寿命", &projectileLifetime_, 0.1f, 0.0f, 0.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Projectile Lifetime", projectileLifetime_);
+        changed = true;
+    }
+
+    if (ImGui::DragInt("レベル", &level_, 1, 1, 99))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
+        levelChanged = true;
+    }
+
+    if (ImGui::DragFloat3("弾の当たり判定サイズ", &collisionSize_.x, 0.01f, 0.01f, 10.0f))
+    {
+        GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
+    }
+
+
+    if (changed)
+    {
+        ApplyGlobalVariables();
+    }
+    else if (levelChanged)
+    {
+        ApplyLevelEffects();
+    }
+
     ImGui::End();
 }
 
@@ -100,10 +162,26 @@ void WeaponAxe::Fire()
 void WeaponAxe::LevelUp()
 {
     level_++;
-    if (level_ == 2) projectileCount_++;
-    if (level_ == 3) damage_ *= 1.5f;
-    if (level_ == 4) projectileCount_++;
-    if (level_ == 5) cooldown_ *= 0.8f;
+
+    // GlobalVariables に現在のレベルを保存
+    GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
+
+    // ステータスを再計算
+    ApplyLevelEffects();
+}
+
+void WeaponAxe::ApplyLevelEffects()
+{
+    // ベース値(レベル1)をセット
+    damage_ = damageBase_;
+    cooldown_ = cooldownBase_;
+    projectileCount_ = projectileCountBase_;
+
+    // 現在のレベルに応じて効果を上乗せ 
+    if (level_ >= 2) projectileCount_++;
+    if (level_ >= 3) damage_ *= 1.5f;
+    if (level_ >= 4) projectileCount_++;
+    if (level_ >= 5) cooldown_ *= 0.8f;
 }
 
 void WeaponAxe::AddCollidersToManager(CollisionManager* manager)

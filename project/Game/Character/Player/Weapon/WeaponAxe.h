@@ -15,6 +15,7 @@ public:
     void ApplyGlobalVariables();
     void DebugDraw();
     void LevelUp() override;
+    void ApplyLevelEffects() override;
     void AddCollidersToManager(CollisionManager* manager) override;
 
     std::vector<std::string> GetGlobalVariableGroupName() { return { "WeaponAxe" }; } 
