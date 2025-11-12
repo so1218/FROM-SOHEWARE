@@ -4,6 +4,7 @@
 #include "SceneManager.h"
 #include "WorldTransform.h"
 #include "Model.h"
+#include "Grid.h"
 #include "DebugLayerManager.h"
 
 struct D3DResourceLeakChecker
@@ -41,9 +42,8 @@ private:
     // マテリアル管理
     std::unique_ptr<MaterialManager> materialManager_;
 
-	// グリッドモデルデータ
-    ModelData* modelDataGrid_;
-    WorldTransform worldTransformGrid_;
+	// グリッド
+	std::unique_ptr<Grid> grid_;
 
     // シーン管理
     SceneManager sceneManager_;

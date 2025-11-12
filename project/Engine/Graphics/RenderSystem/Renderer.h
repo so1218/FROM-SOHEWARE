@@ -63,7 +63,7 @@ public:
     void DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle);
     void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
     void DrawAnimationModel(WorldTransform& worldTransform, Camera& camera, const AnimatedModelData& instance, const SkinCluster& skinCluster, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle);
-    void DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color = 0xffffffff);
+    void DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
     void DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);

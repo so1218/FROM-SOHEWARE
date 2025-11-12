@@ -24,7 +24,7 @@ KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& 
     UpdateAABB();       
 
     // 衝突属性設定
-    SetCollisionAttribute(kCollisionAttributePlayerWeapon);
+    SetCollisionAttribute(kCollisionAttributePlayerWeaponKnife);
     SetCollisionMask(kCollisionAttributeEnemy);            
 }
 

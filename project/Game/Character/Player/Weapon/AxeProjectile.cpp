@@ -24,7 +24,7 @@ AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& star
     SetRadius(size.x);
     UpdateAABB();
 
-    SetCollisionAttribute(kCollisionAttributePlayerWeapon);
+    SetCollisionAttribute(kCollisionAttributePlayerWeaponAxe);
     SetCollisionMask(kCollisionAttributeEnemy);
 }
 

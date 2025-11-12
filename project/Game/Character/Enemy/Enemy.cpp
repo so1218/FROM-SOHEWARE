@@ -28,7 +28,7 @@ void Enemy::Initialize()
 	// 衝突属性を設定
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	// 衝突対象を自分の属性以外に設定
-	SetCollisionMask(kCollisionAttributePlayer | kCollisionAttributePlayerWeapon);
+	SetCollisionMask(kCollisionAttributePlayer | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe);
 
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
@@ -149,10 +149,6 @@ void Enemy::OnCollision(Collider* other)
 {
 	// もしプレイヤーにぶつかったら
 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer)
-	{
-		isDead_ = true;
-	}
-	if (other->GetCollisionAttribute() & kCollisionAttributePlayerWeapon)
 	{
 		isDead_ = true;
 	}

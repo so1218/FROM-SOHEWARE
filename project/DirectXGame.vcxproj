@@ -159,6 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
     <ClCompile Include="Game\Character\Enemy\EnemyManager.cpp" />
@@ -168,6 +169,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Character\Player\Weapon\WeaponKnife.cpp" />
     <ClCompile Include="Game\Character\Player\Weapon\Weapon.cpp" />
     <ClCompile Include="Game\Data\AnimationHandle.cpp" />
+    <ClCompile Include="Game\GameObject\ExperienceGem.cpp" />
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
     <ClCompile Include="Game\Data\AudioHandle.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp" />
@@ -263,6 +265,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Grid.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
     <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />
@@ -272,6 +275,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Character\Player\Weapon\WeaponKnife.h" />
     <ClInclude Include="Game\Character\Player\Weapon\Weapon.h" />
     <ClInclude Include="Game\Data\AnimationHandle.h" />
+    <ClInclude Include="Game\GameObject\ExperienceGem.h" />
     <ClInclude Include="Game\GameObject\GameObjectManager.h" />
     <ClInclude Include="Game\Data\AudioHandle.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureManager.h" />

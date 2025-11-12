@@ -399,6 +399,12 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\ExperienceGem.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\RenderSystem\Grid.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -692,6 +698,8 @@
     <ClInclude Include="Game\Character\Player\Weapon\AxeProjectile.h" />
     <ClInclude Include="Game\Character\Player\Weapon\WeaponAxe.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
+    <ClInclude Include="Game\GameObject\ExperienceGem.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Grid.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

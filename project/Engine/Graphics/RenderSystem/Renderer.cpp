@@ -467,7 +467,7 @@ void Renderer::DrawAnimationModel(
 	indexModel_++; // 使用カウント更新
 }
 
-void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color)
+void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
 {
 	assert(indexModel_ < kMaxModelCount); // モデル配列の範囲チェック
 
@@ -478,7 +478,7 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	RenderData& model = models_[indexModel_];
 	Mesh* mesh = GetOrCreateMesh(modelData); // メッシュ取得
 
-	modelData.materialHandle.materialData->color = Math::Uint32ToColorVector(color); // 色セット
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color); // 色セット
 	model.worldMatrix = worldTransform.matWorld_; // ワールド行列
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
@@ -495,7 +495,7 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
 	// 定数バッファ・SRVバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, modelData.materialHandle.resource->GetGPUVirtualAddress());
+	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // ダミー環境マップ

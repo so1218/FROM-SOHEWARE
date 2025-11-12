@@ -29,10 +29,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 #else
     sceneManager_.RequestSceneChange(SceneID::Title);
 #endif
-
-    modelDataGrid_ = ModelHandle::Get(ModelID::field);
-    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
-    worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
+	grid_ = std::make_unique<Grid>(engine_.get(), camera_.get(), std::move(ModelHandle::Get(ModelID::field)));
 }
 
 Game::~Game()
@@ -43,7 +40,6 @@ Game::~Game()
 
 void Game::Initialize()
 {
-    worldTransformGrid_.UpdateMatrix();
 }
 
 void Game::Run()
@@ -117,7 +113,6 @@ void Game::Update()
 #endif
 
 	materialManager_->UpdateAllMaterialsFromGlobal();
-    modelDataGrid_->materialHandle.materialData->isArtGrid = true;
 
     if (!TimeManager::GetInstance()->IsPaused())
     {
@@ -139,7 +134,7 @@ void Game::Update()
 void Game::Draw()
 {
 #ifdef _DEBUG
-    engine_->renderer_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
+	grid_->Draw();
 #endif
 
     sceneManager_.Draw();
@@ -172,6 +167,5 @@ void Game::DebugDraw()
 void Game::Finalize()
 {
     Input::GetInstance().Finalize();
-    ModelHandle::Finalize();
     AudioManager::GetInstance().Finalize();
 }

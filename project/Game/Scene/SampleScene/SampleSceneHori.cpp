@@ -77,7 +77,7 @@ void SampleSceneHori::HandleCollisions()
 
 void SampleSceneHori::Draw()
 {
-   /* skybox_->Draw();*/
+    /*skybox_->Draw();*/
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 }
