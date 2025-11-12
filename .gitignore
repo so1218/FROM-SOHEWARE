@@ -327,3 +327,7 @@ FodyWeavers.xsd
 
 # logs ディレクトリを無視
 [Ll]ogs/
+
+# ImGui layout files (User-specific)
+imgui.ini
+imgui_layout.ini
