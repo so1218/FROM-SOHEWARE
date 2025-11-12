@@ -32,5 +32,5 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
     uint32_t textureHandle_;
     MaterialHandle materialHandle_;
-    ModelData* modelData_; // グリッド用のメッシュデータ
+    ModelData* modelData_; 
 };

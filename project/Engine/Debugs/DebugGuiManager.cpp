@@ -236,6 +236,7 @@ void DebugGuiManager::DrawLightSettings()
     // マテリアル設定（スペキュラ）
     ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
     ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+    ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
 
 }
 

@@ -8,7 +8,7 @@ Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
-    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemapBlack);
+    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
 }
 
 void Model::SetWorldTransform(const WorldTransform& transform)
@@ -46,6 +46,5 @@ void Model::SetCamera(Camera* camera)
 void Model::Draw()
 {
     transform_.UpdateMatrix();
-
     engine_->renderer_->DrawModel(transform_, *camera_, *modelData_, textureHandle_, envMapTextureHandle_, color_, materialHandle_);
 }

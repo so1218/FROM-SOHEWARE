@@ -90,7 +90,7 @@ void Player::Update()
 
 	// アニメーション更新
 	animationPlayer_->Update(1, true);
-	animationPlayer_->transform_ = modelPlayer_->GetTransform();
+	animationPlayer_->SetTransform(modelPlayer_->GetTransform());
 
 	// 所持武器の更新
 	for (auto& weapon : weapons_)

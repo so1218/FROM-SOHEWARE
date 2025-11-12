@@ -89,7 +89,7 @@ void Enemy::Update()
 	UpdateAABB();
 
 	animationEnemy_->Update(1.0f, true);
-	animationEnemy_->transform_ = transform;
+	animationEnemy_->SetTransform(transform);
 }
 
 void Enemy::TakeDamage(float damage)

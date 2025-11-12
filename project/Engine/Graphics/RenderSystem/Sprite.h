@@ -10,7 +10,7 @@ class Sprite
 public:
     Sprite(Engine* engine);
 
-    void Draw(); // エンジンへ描画命令を渡す
+    void Draw(); 
 
     // セッター
     void SetPosition(const Vector2& position);
@@ -20,7 +20,7 @@ public:
     void SetTextureHandle(uint32_t textureHandle);
     void SetUVTransform(const WorldTransform& uvTransform);
 
-    // ゲッターや public メンバでもよい
+	// ゲッター
     Vector2& GetPosition();
     Vector2& GetSize();
     float& GetRotation();
@@ -34,6 +34,5 @@ private:
     float rotation_ = 0.0f;
     uint32_t color_ = 0xFFFFFFFF;
     uint32_t textureHandle_ = 0;
-
     WorldTransform uvTransform_; 
 };

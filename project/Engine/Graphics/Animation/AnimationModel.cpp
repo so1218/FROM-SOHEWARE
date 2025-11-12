@@ -14,13 +14,8 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
 
     animationTime_ = 0.0f;
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
-    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemapBlack);
+    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     color_ = 0xFFFFFFFF;
-}
-
-void AnimationModel::SetEnvironmentMapHandle(uint32_t handle)
-{
-    envMapTextureHandle_ = handle;
 }
 
 void AnimationModel::Update(float targetDuration, bool isLoop)
@@ -73,9 +68,7 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 
 void AnimationModel::Draw()
 {
-    // ワールド変換行列の更新
     transform_.UpdateMatrix();
-    // 描画関数
     engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, envMapTextureHandle_, color_, materialHandle_);
 }
 

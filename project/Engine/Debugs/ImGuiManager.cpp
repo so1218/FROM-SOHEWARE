@@ -25,7 +25,7 @@ void ImGuiManager::Initialize(
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // ドッキング有効化
     io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
-  /*  io.IniFilename = "imgui_layout.ini";*/
+    io.IniFilename = "imgui_layout.ini";
 
     // フォント設定（日本語対応）
     std::string fontPath = "Resources/fonts/GenJyuuGothic-Bold.ttf";
@@ -164,7 +164,7 @@ void ImGuiManager::BeginFrame()
     bool iniFileExists = (io.IniFilename != nullptr && std::filesystem::exists(io.IniFilename));
 
       // 初回のみDock構造を作成
-    if (!dockInitialized_/* && !iniFileExists*/) {
+    if (!dockInitialized_ && !iniFileExists) {
         dockInitialized_ = true;
 
         ImGui::DockBuilderRemoveNode(dockspace_id);
@@ -174,36 +174,23 @@ void ImGuiManager::BeginFrame()
         ImGuiID dock_main_id = dockspace_id;
         ImGuiID dock_id_down, dock_id_right;
 
-        // 下30%を分割
-        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.3f, &dock_id_down, &dock_main_id);
-
-        // 右35%を分割、dock_main_idは残り部分
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.35f, &dock_id_right, &dock_main_id);
+
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.3f, &dock_id_down, &dock_main_id);
 
         // 割り当て
         ImGui::DockBuilderDockWindow("全体のデバッグ情報", dock_id_down);
         ImGui::DockBuilderDockWindow("Scene", dock_main_id);
-        ImGui::DockBuilderDockWindow("プレイヤー", dock_id_right);
-        ImGui::DockBuilderDockWindow("ホリシーン", dock_id_right);
         ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_down);
-        ImGui::DockBuilderDockWindow("敵", dock_id_right);
         ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
         ImGui::DockBuilderDockWindow("シーンの選択", dock_id_down);
-        ImGui::DockBuilderDockWindow("Ground", dock_id_right);
-        ImGui::DockBuilderDockWindow("プレイシーン", dock_id_right);
-        ImGui::DockBuilderDockWindow("追従カメラ", dock_id_right);
-        ImGui::DockBuilderDockWindow("タイトルシーン", dock_id_right);
-        ImGui::DockBuilderDockWindow("天球", dock_id_right);
-        ImGui::DockBuilderDockWindow("武器：ナイフ", dock_id_right);
-        ImGui::DockBuilderDockWindow("武器：斧", dock_id_right);
 
         ImGui::DockBuilderFinish(dockspace_id);
     }
-    else if (!dockInitialized_/* && iniFileExists*/)
+    else if (!dockInitialized_ && iniFileExists)
     {
         dockInitialized_ = true; // .iniから読み込んだので「組んだ」扱い
     }
-
 
     // メインDockSpaceの背景ウィンドウを描画
     ImGui::SetNextWindowPos(dockPos);  
@@ -223,7 +210,7 @@ void ImGuiManager::BeginFrame()
     ImGui::Begin("DockSpaceWindow", nullptr, window_flags);
     ImGui::PopStyleVar(3);
 
-    /*ImGui::ShowStyleEditor();*/
+  /*  ImGui::ShowStyleEditor();*/
 
     // DockSpaceを作成
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);

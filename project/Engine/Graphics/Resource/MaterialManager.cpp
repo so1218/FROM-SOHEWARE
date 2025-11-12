@@ -21,9 +21,6 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
 
     handle.type = MaterialType::Complex;
 
-    // ここで materialSettings_ をリセットしない
-    // 代わりに初期化用の一時変数を用意して使う
-
     MaterialSettings defaultSettings;
     // defaultSettings を初期化
     defaultSettings.color = Vector4(1, 1, 1, 1);
@@ -39,6 +36,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.isArtSound = false;
     defaultSettings.isArtFrag = false;
     defaultSettings.isArtGrid = false;
+	defaultSettings.environmentMapIntensity = 0.0f;
     defaultSettings.gTime = 0.0f;
 
    /* materialSettings_ = defaultSettings;*/
@@ -81,6 +79,7 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->lightMode = materialSettings_.lightMode;
             handle.materialData->shininess = materialSettings_.shininess;
             handle.materialData->specularColor = materialSettings_.specularColor;
+            handle.materialData->environmentMapIntensity = materialSettings_.environmentMapIntensity;
             handle.materialData->gTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
         }
         else if (handle.type == MaterialType::Simple && handle.simpleMaterialData)
