@@ -63,7 +63,9 @@ void Game::Run()
 
             Update();
             Draw();
+#ifdef _DEBUG
             DebugDraw();
+#endif
 
             // フレームの終了
             engine_->EndFrame();
@@ -138,7 +140,6 @@ void Game::Draw()
 
 void Game::DebugDraw()
 {
-#ifdef _DEBUG
     if (ImGui::Begin("シーンの選択"))
     {
         if (ImGui::Button("タイトルシーン"))
@@ -155,7 +156,8 @@ void Game::DebugDraw()
         }
     }
     ImGui::End();
-#endif
+
+    sceneManager_.DebugDraw();
 }
 
 void Game::Finalize()

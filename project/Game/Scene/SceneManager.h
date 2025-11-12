@@ -29,6 +29,9 @@ public:
     // 現在のシーンを描画
     void Draw();
 
+	// 現在のシーンのデバッグ描画
+    void DebugDraw();
+
     // シーンを登録するための関数
     void RegisterScene(SceneID id, std::unique_ptr<BaseScene> scene);
 

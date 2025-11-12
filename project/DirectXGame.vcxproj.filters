@@ -408,6 +408,9 @@
     <ClCompile Include="Game\Data\ParticleTextureHandle.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Debugs\DebugUtils.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -704,6 +707,7 @@
     <ClInclude Include="Game\GameObject\ExperienceGem.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
+    <ClInclude Include="Engine\Debugs\DebugUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

@@ -22,10 +22,7 @@
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "xaudio2.lib")
 #pragma comment(lib, "dinput8.lib")
-#pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "winmm.lib")
-
-#include <thread>
 
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;

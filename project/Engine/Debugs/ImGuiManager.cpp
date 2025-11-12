@@ -18,6 +18,7 @@ void ImGuiManager::Initialize(
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle,
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
+#ifdef _DEBUG
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -138,10 +139,12 @@ void ImGuiManager::Initialize(
         srvDescriptorHeap,
         cpuHandle,
         gpuHandle);
+#endif
 }
 
 void ImGuiManager::BeginFrame()
 {
+#ifdef _DEBUG
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -216,10 +219,12 @@ void ImGuiManager::BeginFrame()
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End(); 
+#endif
 }
 
 void ImGuiManager::DrawMenuBar()
 {
+#ifdef _DEBUG
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -299,10 +304,12 @@ void ImGuiManager::DrawMenuBar()
     //    // ダイアログを閉じる (OKでもキャンセルでも)
     //    ImGuiFileDialog::Instance()->Close();
     //}
+#endif
 }
 
 void ImGuiManager::OpenFile(const std::string& filename)
 {
+#ifdef _DEBUG
     int width, height, channels;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 4); // RGBAに変換
     if (!data)
@@ -313,6 +320,7 @@ void ImGuiManager::OpenFile(const std::string& filename)
 
     // テクスチャ作成後は、dataは解放してOK
     stbi_image_free(data);
+#endif
 }
 
 void ImGuiManager::SaveFile(const std::string& filename)
@@ -333,19 +341,23 @@ void ImGuiManager::SaveFile(const std::string& filename)
 
 void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList)
 {
+#ifdef _DEBUG
     // ImGuiの内部コマンドを生成する
     ImGui::Render();
 
     // 実際のcommandListのImGuiの描画コマンドを積む
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
+#endif
 }
 // ImGuiの終了処理
 void ImGuiManager::Finalize()
 {
+#ifdef _DEBUG
     // ImGuiの終了処理。詳細はさして重要ではないので開設は省略する
     // 初期化と逆順に行う
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
+#endif
 }
 
