@@ -390,6 +390,24 @@
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\AxeProjectile.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Character\Player\Weapon\WeaponAxe.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\ExperienceGem.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Grid.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Data\ParticleTextureHandle.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -680,6 +698,12 @@
     <ClInclude Include="Game\Character\Player\Weapon\KnifeProjectile.h" />
     <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\AxeProjectile.h" />
+    <ClInclude Include="Game\Character\Player\Weapon\WeaponAxe.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
+    <ClInclude Include="Game\GameObject\ExperienceGem.h" />
+    <ClInclude Include="Game\GameObject\Grid.h" />
+    <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

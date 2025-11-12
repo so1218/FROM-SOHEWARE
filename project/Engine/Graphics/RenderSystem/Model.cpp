@@ -1,10 +1,14 @@
 #include "Model.h"
 #include "Engine.h"
+#include "TextureHandle.h"
 
 Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
     : engine_(engine), camera_(camera), modelData_(modelData)
 {
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
+
+    textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
 }
 
 void Model::SetWorldTransform(const WorldTransform& transform)
@@ -24,6 +28,11 @@ void Model::SetTextureHandle(uint32_t handle)
     textureHandle_ = handle;
 }
 
+void Model::SetEnvironmentMapHandle(uint32_t handle)
+{
+    envMapTextureHandle_ = handle;
+}
+
 void Model::SetColor(uint32_t color)
 {
     color_ = color;
@@ -37,6 +46,5 @@ void Model::SetCamera(Camera* camera)
 void Model::Draw()
 {
     transform_.UpdateMatrix();
-
-    engine_->renderer_->DrawModel(transform_, *camera_, *modelData_, textureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawModel(transform_, *camera_, *modelData_, textureHandle_, envMapTextureHandle_, color_, materialHandle_);
 }

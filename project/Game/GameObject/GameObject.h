@@ -9,8 +9,9 @@ enum class GameObjectType : int
     PlayerWeapon,
     Enemy,
     Bullet,
-    UI,
+    Grid,
     Effect,
+    UI,
 
     Count  
 };
@@ -50,12 +51,18 @@ private:
     static constexpr std::array<GameObjectPriority, static_cast<size_t>(GameObjectType::Count)> priorities = 
     { 
         {
+            // 不透明
             { GameObjectType::Background,  0,   0 },
             { GameObjectType::Player,     10,  10 },
             { GameObjectType::PlayerWeapon,     15,  15 },
             { GameObjectType::Enemy,      20,  20 },
             { GameObjectType::Bullet,     30,  30 },
+
+            // 半透明 
+            { GameObjectType::Grid,     50,  50 },
             { GameObjectType::Effect,     95,  95 },
+
+            // UI
             { GameObjectType::UI,        100, 100 }
         }
     };

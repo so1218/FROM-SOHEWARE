@@ -50,10 +50,13 @@ struct Material
     float gTime; // グローバル時間
     float shininess;   
 
-    Vector4 specularColor;         
+    Vector4 specularColor;  
+
+    float environmentMapIntensity;
+	float padding[3]; 
 };
 
-struct LineMaterial
+struct SimpleMaterial
 {
     Vector4 color;
 };
@@ -61,14 +64,14 @@ struct LineMaterial
 enum class MaterialType
 {
     Complex,
-    Line,
+    Simple,
 };
 
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     Material* materialData;
-    LineMaterial* lineMaterialData;
+    SimpleMaterial* simpleMaterialData;
     MaterialType type;
 };
 
@@ -173,22 +176,24 @@ struct MaterialSettings
     float shininess = 50.0f;
 
     Vector4 specularColor = { 1,1,1,1 };
+
+    float environmentMapIntensity;
 };
 
 struct DirectionalLight
 {
-    Vector4 color;// ライトの色
-    Vector3 direction;// ライトの向き
-    float intensity;// 輝度
+    Vector4 color;
+    Vector3 direction;
+    float intensity;
     int enable;
-    float padding[3];     // 明示的に 16 バイト追加（これで合計 48 bytes）
+    float padding[3];    
 };
 
 struct PointLight
 {
-    Vector4 color;// ライトの色
-    Vector3 position;// ライトの位置
-    float intensity;// 輝度
+    Vector4 color;
+    Vector3 position;
+    float intensity;
     float radius;
     float decay;
     int enable;
@@ -223,7 +228,7 @@ struct CameraBuffer
 {
     Matrix4x4 viewProjectionMatrix;
     Vector3 cameraRight; // X軸方向
-	float padding0; // パディング
+	float padding0; 
     Vector3 cameraUp; // Y軸方向
 
 };

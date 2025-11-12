@@ -13,7 +13,7 @@ public:
 
     // マテリアルの生成
     MaterialHandle CreateMaterial(ID3D12Device* device);
-    MaterialHandle CreateLineMaterial(ID3D12Device* device);
+    MaterialHandle CreateSimpleMaterial(ID3D12Device* device);
 
     // グローバル設定からすべてのマテリアルを更新
     void UpdateAllMaterialsFromGlobal();

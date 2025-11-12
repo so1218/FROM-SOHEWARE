@@ -1,6 +1,6 @@
 #include "AnimationModel.h"
 #include "TimeManager.h"
-
+#include "TextureHandle.h"
 
 AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation)
     : engine_(engine), camera_(camera)
@@ -13,7 +13,8 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
         skeleton_, animeModelData_.modelData, engine_->srvManager_.get());
 
     animationTime_ = 0.0f;
-    textureHandle_ = 0;
+    textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     color_ = 0xFFFFFFFF;
 }
 
@@ -67,10 +68,8 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 
 void AnimationModel::Draw()
 {
-    // ワールド変換行列の更新
     transform_.UpdateMatrix();
-    // 描画関数
-    engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, envMapTextureHandle_, color_, materialHandle_);
 }
 
 void AnimationModel::ResetAnimation()

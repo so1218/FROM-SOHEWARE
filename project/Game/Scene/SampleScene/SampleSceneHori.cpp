@@ -7,6 +7,7 @@
 #include "AnimationHandle.h"
 #include "TimeManager.h"
 #include "Input.h"
+#include "Grid.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
@@ -19,13 +20,20 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // インスタンスを作成
     auto player = std::make_unique<Player>(engine_, camera_);
     player_ = player.get();
+    player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
 
+    skybox_ = std::make_unique<Skybox>(engine_, camera_);
+    uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
+    skybox_->SetCubeTextureHandle(cubemapHandle);
+    auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
+
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
+    objectManager_.AddObject(std::move(grid));
 
 }
 
@@ -36,11 +44,6 @@ void SampleSceneHori::Initialize()
 
     followCamera_.Initialize(camera_, player_);
 
-    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
-    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
-
-    engine_->particleSystem_->AddEmitter(std::move(emitter_));
-    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
 }
 
 void SampleSceneHori::Update()
@@ -77,6 +80,7 @@ void SampleSceneHori::HandleCollisions()
 
 void SampleSceneHori::Draw()
 {
+    /*skybox_->Draw();*/
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 }

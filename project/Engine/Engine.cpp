@@ -9,6 +9,7 @@
 #include "TimeManager.h"
 #include "ModelHandle.h"
 #include "TextureHandle.h"
+#include "ParticleTextureHandle.h"
 #include "AudioHandle.h"
 #include "AnimationHandle.h"
 
@@ -363,6 +364,7 @@ void Engine::InitializeResources()
 
 	// 各種ハンドルクラスの初期化（エンジン全体で共通的に利用）
 	TextureHandle::Initialize(this);
+	ParticleTextureHandle::Initialize(this);
 	ModelHandle::Initialize(this);
 	AnimationHandle::Initialize();
 

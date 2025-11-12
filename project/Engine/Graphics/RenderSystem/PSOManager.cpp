@@ -82,7 +82,7 @@ void PSOManager::CreateInputLayout()
     inputElementDescSkybox_[0].InstanceDataStepRate = 0;
 
     inputLayoutDescSkybox_.pInputElementDescs = inputElementDescSkybox_;
-    inputLayoutDescSkybox_.NumElements = _countof(inputElementDescSkybox_);
+    inputLayoutDescSkybox_.NumElements = 1;
 }
 
 void PSOManager::CompileShaders(IDxcUtils* dxcUtils, IDxcCompiler3* dxcCompiler, IDxcIncludeHandler* includeHandler)
@@ -866,7 +866,7 @@ void PSOManager::CreateSkyboxPSO()
     D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
     // Depthの機能を有効化する
     depthStencilDesc.DepthEnable = true;
-    // 深度書き込みは「しない」(Zero)
+    // 深度書き込みはしない(Zero)
     // スカイボックスが深度バッファを埋めると、他の全てが描画されなくなるため
     depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
     // 比較関数はLessEqual
@@ -874,7 +874,7 @@ void PSOManager::CreateSkyboxPSO()
     depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // PSOを生成する
-    // ★psoDescSkybox_ と rootSignatureSkybox_ を使用
+    // psoDescSkybox_ と rootSignatureSkybox_ を使用
     psoDescSkybox_.pRootSignature = rootSignatureManager_->rootSignatureSkybox_.Get();
     psoDescSkybox_.InputLayout = inputLayoutDescSkybox_; // スカイボックス用レイアウト
     psoDescSkybox_.VS = { vsBlobSkybox_->GetBufferPointer(),

@@ -31,8 +31,9 @@ DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
 
     // ミップマップを生成（圧縮フォーマットの場合はスキップ）
     DirectX::ScratchImage mipImages{};
-    if (DirectX::IsCompressed(image.GetMetadata().format))
+    if (DirectX::IsCompressed(image.GetMetadata().format) || image.GetMetadata().IsCubemap())
     {
+        // キューブマップや圧縮テクスチャはそのまま使う
         mipImages = std::move(image);
     }
     else
@@ -179,22 +180,36 @@ TextureManager::TextureResources TextureManager::UploadTexture(
 {
     TextureResources result;
 
-    // 1. テクスチャリソースとアップロード用バッファを作成
+    // テクスチャリソースとアップロード用バッファを作成
     result.metadata = mipImages.GetMetadata();
     result.texture = CreateTextureResource(device_, result.metadata);
     result.intermediate = UploadTextureData(result.texture.Get(), mipImages, device_, commandList_);
 
-    // 2. シェーダーリソースビュー（SRV）の設定を構築
+    // シェーダーリソースビュー（SRV）の設定を構築
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = result.metadata.format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = UINT(result.metadata.mipLevels);
 
-    // 3. SRVManagerを通してSRVを作成し、インデックスを取得
+    // メタデータからCubemapかどうかを判定 
+    if (result.metadata.IsCubemap())
+    {
+        // キューブマップ用の設定
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+        srvDesc.TextureCube.MostDetailedMip = 0;
+        srvDesc.TextureCube.MipLevels = UINT(result.metadata.mipLevels);
+        srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+    }
+    else
+    {
+        // 今までの2Dテクスチャ用の設定
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = UINT(result.metadata.mipLevels);
+    }
+
+    // SRVManagerを通してSRVを作成し、インデックスを取得
     result.srvIndex = srvManager_->CreateSRV(result.texture.Get(), srvDesc);
 
-    // 4. テクスチャリストに追加し、新規アップロードとして登録
+    // テクスチャリストに追加し、新規アップロードとして登録
     textures.push_back(result);
     AddNewUpload(result);
 

@@ -12,6 +12,8 @@
 #include "Collision.h"   
 #include "TimeManager.h"
 #include "WeaponKnife.h"
+#include "WeaponAxe.h"
+
 #include <numbers>
 #include <algorithm>
 
@@ -67,6 +69,10 @@ void Player::AddWeapon(WeaponType type)
 		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this, camera_));
 		break;
 
+	case WeaponType::Axe:
+		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this, camera_));
+		break;
+
 	default:
 		break;
 	}
@@ -84,7 +90,7 @@ void Player::Update()
 
 	// アニメーション更新
 	animationPlayer_->Update(1, true);
-	animationPlayer_->transform_ = modelPlayer_->GetTransform();
+	animationPlayer_->SetTransform(modelPlayer_->GetTransform());
 
 	// 所持武器の更新
 	for (auto& weapon : weapons_)

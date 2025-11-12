@@ -3,7 +3,7 @@
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
 {
-    D3DResourceLeakChecker leacCheck;
+    D3DResourceLeakChecker leakCheck;
     Game game;
     game.Run();
 	return 0;

@@ -12,7 +12,6 @@ enum class SceneID
     Title,
     Play,
     Sample,
-
 };
 
 class SceneManager

@@ -25,14 +25,10 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 
     // 初期シーンを設定
 #ifdef _DEBUG
-    sceneManager_.RequestSceneChange(SceneID::Play);
+    sceneManager_.RequestSceneChange(SceneID::Sample);
 #else
     sceneManager_.RequestSceneChange(SceneID::Title);
 #endif
-
-    modelDataGrid_ = ModelHandle::Get(ModelID::field);
-    modelDataGrid_->materialHandle = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
-    worldTransformGrid_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
 
 Game::~Game()
@@ -43,7 +39,6 @@ Game::~Game()
 
 void Game::Initialize()
 {
-    worldTransformGrid_.UpdateMatrix();
 }
 
 void Game::Run()
@@ -68,6 +63,7 @@ void Game::Run()
 
             Update();
             Draw();
+            DebugDraw();
 
             // フレームの終了
             engine_->EndFrame();
@@ -117,7 +113,6 @@ void Game::Update()
 #endif
 
 	materialManager_->UpdateAllMaterialsFromGlobal();
-    modelDataGrid_->materialHandle.materialData->isArtGrid = true;
 
     if (!TimeManager::GetInstance()->IsPaused())
     {
@@ -138,13 +133,7 @@ void Game::Update()
 
 void Game::Draw()
 {
-#ifdef _DEBUG
-    engine_->renderer_->DrawGrid(worldTransformGrid_, *camera_, *modelDataGrid_, TextureHandle::Get(TextureID::white1x1), 0xffffff00);
-#endif
-
     sceneManager_.Draw();
-    DebugDraw();
-
 }
 
 void Game::DebugDraw()

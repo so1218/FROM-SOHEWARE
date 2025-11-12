@@ -7,6 +7,8 @@
 #include "GameObjectManager.h"
 #include "Enemy.h"
 #include "FollowCamera.h"
+#include "ParticleSystemWrapper.h"
+#include "GameObjectManager.h"
 
 class PlayScene : public BaseScene
 {
@@ -43,6 +45,7 @@ public:
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;
     std::unique_ptr<CollisionManager> collisionManager_;
+    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
     std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
    /* std::unique_ptr<ParticleEmitter> newEmitter2_ = nullptr;*/

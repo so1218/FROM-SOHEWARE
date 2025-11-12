@@ -25,10 +25,14 @@ struct Material
     float shininess;
     
     float4 specularColor;
+
+    float environmentMapIntensity;
+    float3 padding;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
 Texture2D<float4> gTexture : register(t0);
+TextureCube<float4> gEnvironmentTexture : register(t1);
 SamplerState gSampler : register(s0);
 cbuffer DirectionalLights : register(b1)
 {
@@ -115,7 +119,7 @@ PixelShaderOutput main(PixelShaderInput input)
         return output;
     }
     
-    // --- ライティング処理 ---
+    // ライティング処理
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
     float3 normal = normalize(input.normal);
     float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
@@ -130,6 +134,17 @@ PixelShaderOutput main(PixelShaderInput input)
 
         // Spot Light
         finalColor += ApplySpotLights(baseColor, normal, input.worldPosition, toEye);
+        
+        // 環境マップ処理
+
+        // toEye はピクセルからカメラへのベクトル
+        float3 reflectedVector = reflect(-toEye, normal);
+        
+        // 環境マップから色をサンプリング
+        float4 environmentColor = gEnvironmentTexture.Sample(gSampler, reflectedVector);
+        
+        // 環境光を最終的な色に加算する
+        finalColor += environmentColor.rgb * gMaterial.environmentMapIntensity;
     }
     else
     {
@@ -261,7 +276,7 @@ float3 DrawArtWaveColor(PixelShaderInput input)
     float2 uv = screenUV / resolution.y;
 
     float d = length(uv);
-    float3 col = Palette(d); // Palette関数が別で定義されていると仮定
+    float3 col = Palette(d); 
 
     float sinTime = d * 8.0f + gMaterial.gTime;
     d = sin(sinTime) / 8.0f;
@@ -270,11 +285,11 @@ float3 DrawArtWaveColor(PixelShaderInput input)
 
     col *= d;
 
-    return col; // ← PixelShaderOutput を返さないように修正
+    return col; 
 }
 float3 DrawArtQuadColor(PixelShaderInput input)
 {
-    float2 resolution = float2(720.0f, 720.0f); // または gMaterial.iResolution
+    float2 resolution = float2(720.0f, 720.0f); 
     float2 screenUV = input.texcoord * resolution;
     float2 u = (screenUV + screenUV - resolution) / resolution.y;
 
@@ -368,6 +383,7 @@ float3 DrawArtSoundColor(PixelShaderInput input)
     
     return color;
 }
+
 float3 DrawArtFragColor(PixelShaderInput input)
 {
     float2 fragCoord = input.texcoord * gMaterial.iResolution;
@@ -386,6 +402,7 @@ float3 DrawArtFragColor(PixelShaderInput input)
 
     return col;
 }
+
 float3 DrawArtGridColor(PixelShaderInput input)
 {
     float2 fragCoord = input.texcoord * gMaterial.iResolution;
@@ -418,7 +435,7 @@ float3 DrawArtGridColor(PixelShaderInput input)
     // 背景色・グリッド色
     float3 bgColor = float3(0.05, 0.05, 0.05);
     float3 lineColor = float3(0.07, 0.07, 0.07);
-    float3 majorLineColor = float3(0.10, 0.10, 0.10);
+    float3 majorLineColor = float3(0.20, 0.20, 0.20);
 
     // 線を重ねる
     float3 col = lerp(bgColor, lineColor, gridMask);
@@ -502,6 +519,7 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye)
 
     return finalColor;
 }
+
 float3 ApplyPointLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye)
 {
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);

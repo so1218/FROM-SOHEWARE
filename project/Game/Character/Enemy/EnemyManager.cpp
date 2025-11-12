@@ -31,7 +31,7 @@ void EnemyManager::Update()
 
         EnemyData enemyData;
         enemyData.modelId = ModelID::shrimp;
-        enemyData.hp = 10.0f;
+        enemyData.hp = 50.0f;
         enemyData.speed = 2.0f;
         enemyData.size = { 1.0f, 1.0f, 1.0f };
 

@@ -24,6 +24,7 @@ public:
     // セッター
     void SetWorldTransform(const WorldTransform& transform);
     void SetTextureHandle(uint32_t handle);
+    void SetEnvironmentMapHandle(uint32_t handle);
     void SetColor(uint32_t color);
     void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
@@ -34,7 +35,6 @@ public:
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
     uint32_t GetColor() const { return color_; }
-    MaterialHandle materialHandle_;
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -42,9 +42,10 @@ private:
     WorldTransform transform_;
     WorldTransform uvTransform_;
 
-    uint32_t textureHandle_ = 0;
+    uint32_t textureHandle_;
+    uint32_t envMapTextureHandle_;
     uint32_t color_ = 0xFFFFFFFF;
 
     ModelData* modelData_;
-
+    MaterialHandle materialHandle_;
 };
