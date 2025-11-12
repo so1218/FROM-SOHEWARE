@@ -12,6 +12,7 @@
 #include "MathUtils.h"
 #include "ModelLoader.h"
 #include "Input.h"
+#include "Grid.h"
 
 PlayScene::PlayScene(Engine* engine, Camera* camera)
 {
@@ -24,7 +25,11 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     followCamera_.Initialize(camera_, player_.get());
 
     collisionManager_ = std::make_unique<CollisionManager>();
+    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
+    auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
 
+    objectManager_.AddObject(std::move(grid));
+    objectManager_.AddObject(std::move(particleSystemWrapper_));
 }
 
 PlayScene::~PlayScene()
@@ -38,24 +43,33 @@ void PlayScene::Initialize()
     player_->Initialize();
     camera_->Initialize();
 
+
     emitter_ = engine_->particleSystem_->CreateEmitter("chest");
     newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
 
     engine_->particleSystem_->AddEmitter(std::move(emitter_));
     engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
+
+    // ゲームオブジェクトの一括初期化
+    objectManager_.Initialize();
 }
 
 void PlayScene::Update()
 {
-    // 衝突処理の実行
+    // ゲームオブジェクトの調整項目を一括更新
+    objectManager_.ApplyGlobalVariables();
+
     HandleCollisions();
+
+    // ゲームオブジェクトの一括更新
+    objectManager_.Update();
+
+    followCamera_.Update();
+
+    objectManager_.SaveGlobalVariables();
     
     // プレイヤーの更新処理
     player_->Update();
-    // プレイヤーの新しい位置に合わせてカメラを更新
-    followCamera_.Update();
-    engine_->particleSystem_->Update();
-
 }
 
 void PlayScene::HandleCollisions()
@@ -72,7 +86,7 @@ void PlayScene::HandleCollisions()
 
 void PlayScene::Draw()
 {
-    engine_->particleSystem_->Draw(camera_);
+	objectManager_.Draw();
 }
 
 void PlayScene::DebugDraw()
@@ -81,6 +95,7 @@ void PlayScene::DebugDraw()
 
     ImGui::End();
 
+	objectManager_.DebugDraw();
 
 	player_->DebugDraw();
   /*  enemy_->DebugDraw();*/

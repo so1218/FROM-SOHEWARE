@@ -1,12 +1,19 @@
 #pragma once
 
 #include "Engine.h"
+#include "GameObject.h"
 
-class Grid
+class Grid : public GameObject
 {
 public:
     Grid(Engine* engine, Camera* camera, ModelData* modelData);
-    void Draw();
+    ~Grid() override = default;
+
+    void Initialize() override {};
+    void Update() override {}
+    void Draw() override;
+
+    GameObjectType GetType() const override { return GameObjectType::Grid; }
 
     // Modelクラスと共通のセッター
     void SetWorldTransform(const WorldTransform& transform);

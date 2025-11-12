@@ -29,7 +29,6 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 #else
     sceneManager_.RequestSceneChange(SceneID::Title);
 #endif
-	grid_ = std::make_unique<Grid>(engine_.get(), camera_.get(), std::move(ModelHandle::Get(ModelID::field)));
 }
 
 Game::~Game()
@@ -64,6 +63,7 @@ void Game::Run()
 
             Update();
             Draw();
+            DebugDraw();
 
             // フレームの終了
             engine_->EndFrame();
@@ -133,13 +133,7 @@ void Game::Update()
 
 void Game::Draw()
 {
-#ifdef _DEBUG
-	grid_->Draw();
-#endif
-
     sceneManager_.Draw();
-    DebugDraw();
-
 }
 
 void Game::DebugDraw()

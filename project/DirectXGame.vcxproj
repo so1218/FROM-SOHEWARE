@@ -159,7 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
-    <ClCompile Include="Engine\Graphics\RenderSystem\Grid.cpp" />
+    <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
     <ClCompile Include="Game\Character\Enemy\EnemyManager.cpp" />
@@ -265,7 +265,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
-    <ClInclude Include="Engine\Graphics\RenderSystem\Grid.h" />
+    <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
     <ClInclude Include="Game\Character\Enemy\EnemyManager.h" />

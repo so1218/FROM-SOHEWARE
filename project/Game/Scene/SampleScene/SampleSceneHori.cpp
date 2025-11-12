@@ -7,6 +7,7 @@
 #include "AnimationHandle.h"
 #include "TimeManager.h"
 #include "Input.h"
+#include "Grid.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
@@ -27,10 +28,12 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     skybox_ = std::make_unique<Skybox>(engine_, camera_);
     uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
     skybox_->SetCubeTextureHandle(cubemapHandle);
+    auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
+    objectManager_.AddObject(std::move(grid));
 
 }
 

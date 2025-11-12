@@ -42,9 +42,6 @@ private:
     // マテリアル管理
     std::unique_ptr<MaterialManager> materialManager_;
 
-	// グリッド
-	std::unique_ptr<Grid> grid_;
-
     // シーン管理
     SceneManager sceneManager_;
 };
