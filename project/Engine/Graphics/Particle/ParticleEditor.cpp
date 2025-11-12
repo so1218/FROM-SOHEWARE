@@ -1,80 +1,9 @@
 #include "ParticleEditor.h"
 #include "imGuiManager.h"
 #include "TextureHandle.h"
+#include "ParticleTextureHandle.h"
 #include "ParticleEmitter.h"
 #include "ParticleConfigManager.h" 
-
-namespace
-{
-    static const std::vector<std::pair<const char*, TextureID>> particleTextureList =
-    {
-        { "white1x1", TextureID::white1x1 },
-        { "circle_01", TextureID::circle_01 },
-        { "circle_02", TextureID::circle_02 },
-        { "circle_03", TextureID::circle_03 },
-        { "circle_04", TextureID::circle_04 },
-        { "circle_05", TextureID::circle_05 },
-        { "dirt_01", TextureID::dirt_01 },
-        { "dirt_02", TextureID::dirt_02 },
-        { "dirt_03", TextureID::dirt_03 },
-        { "fire_01", TextureID::fire_01 },
-        { "fire_02", TextureID::fire_02 },
-        { "flame_01", TextureID::flame_01 },
-        { "flame_02", TextureID::flame_02 },
-        { "flame_03", TextureID::flame_03 },
-        { "flame_04", TextureID::flame_04 },
-        { "flame_05", TextureID::flame_05 },
-        { "flame_06", TextureID::flame_06 },
-        { "flare_01", TextureID::flare_01 },
-        { "light_01", TextureID::light_01 },
-        { "light_02", TextureID::light_02 },
-        { "light_03", TextureID::light_03 },
-        { "magic_01", TextureID::magic_01 },
-        { "magic_02", TextureID::magic_02 },
-        { "magic_03", TextureID::magic_03 },
-        { "magic_04", TextureID::magic_04 },
-        { "magic_05", TextureID::magic_05 },
-        { "muzzle_01", TextureID::muzzle_01 },
-        { "muzzle_02", TextureID::muzzle_02 },
-        { "muzzle_03", TextureID::muzzle_03 },
-        { "muzzle_04", TextureID::muzzle_04 },
-        { "muzzle_05", TextureID::muzzle_05 },
-        { "scorch_01", TextureID::scorch_01 },
-        { "scorch_02", TextureID::scorch_02 },
-        { "scorch_03", TextureID::scorch_03 },
-        { "scratch_01", TextureID::scratch_01 },
-        { "slash_01", TextureID::slash_01 },
-        { "slash_02", TextureID::slash_02 },
-        { "slash_03", TextureID::slash_03 },
-        { "slash_04", TextureID::slash_04 },
-        { "smoke_01", TextureID::smoke_01 },
-        { "smoke_02", TextureID::smoke_02 },
-        { "smoke_03", TextureID::smoke_03 },
-        { "smoke_04", TextureID::smoke_04 },
-        { "smoke_05", TextureID::smoke_05 },
-        { "smoke_06", TextureID::smoke_06 },
-        { "smoke_07", TextureID::smoke_07 },
-        { "smoke_08", TextureID::smoke_08 },
-        { "smoke_09", TextureID::smoke_09 },
-        { "smoke_10", TextureID::smoke_10 },
-        { "spark_01", TextureID::spark_01 },
-        { "spark_02", TextureID::spark_02 },
-        { "spark_03", TextureID::spark_03 },
-        { "spark_04", TextureID::spark_04 },
-        { "spark_05", TextureID::spark_05 },
-        { "spark_06", TextureID::spark_06 },
-        { "spark_07", TextureID::spark_07 },
-        { "star_01", TextureID::star_01 },
-        { "star_02", TextureID::star_02 },
-        { "star_03", TextureID::star_03 },
-        { "star_04", TextureID::star_04 },
-        { "star_05", TextureID::star_05 },
-        { "star_06", TextureID::star_06 },
-        { "star_07", TextureID::star_07 },
-        { "star_08", TextureID::star_08 },
-        { "star_09", TextureID::star_09 },
-    };
-}
 
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem)
     : particleSystem_(particleSystem)
@@ -236,30 +165,57 @@ void ParticleEditor::ShowEditor()
                 if (ImGui::TreeNode("テクスチャシートモジュール"))
                 {
                     auto& texSheet = config.textureSheet;
-
                     ImGui::Checkbox("有効##Texture", &texSheet.enabled);
 
-                    // 現在のインデックスを探す
-                    for (size_t i = 0; i < particleTextureList.size(); ++i)
+                    const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
+                    std::vector<const char*> textureNameArray;
+                    std::vector<ParticleTextureID> idArray;
+
+                    for (const auto& def : allDefinitions)
                     {
-                        if (TextureHandle::Get(particleTextureList[i].second) == texSheet.textureHandle)
+                        const char* path = def.path;
+                        const char* filename = path; // デフォルトはパス全体
+
+                        // 最後の '/' を探す
+                        const char* lastSlash = strrchr(path, '/');
+                        // 最後の '\' を探す
+                        const char* lastBackslash = strrchr(path, '\\');
+
+                        const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
+
+                        if (lastSlash > separator)
                         {
-                            selectedTextureIdx_ = static_cast<int>(i);
+                            separator = lastSlash;
+                        }
+                        if (lastBackslash > separator) 
+                        {
+                            separator = lastBackslash;
+                        }
+
+                        if (separator != nullptr)
+                        {
+                            filename = separator + 1;
+                        }
+
+                        textureNameArray.push_back(filename); 
+
+                        idArray.push_back(def.id);
+                    }
+
+                    int selectedTextureIdx = 0;
+
+                    // ローカル変数を探す
+                    for (size_t i = 0; i < idArray.size(); ++i)
+                    {
+                        if (ParticleTextureHandle::Get(idArray[i]) == texSheet.textureHandle)
+                        {
+                            selectedTextureIdx = static_cast<int>(i);
                             break;
                         }
                     }
-
-                    // 表示用の名前配列を作る
-                    std::vector<const char*> textureNameArray;
-                    for (const auto& pair : particleTextureList)
+                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx, textureNameArray.data(), static_cast<int>(textureNameArray.size())))
                     {
-                        textureNameArray.push_back(pair.first);
-                    }
-
-                    // 選択されたらハンドルを更新
-                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx_, textureNameArray.data(), static_cast<int>(textureNameArray.size())))
-                    {
-                        texSheet.textureHandle = TextureHandle::Get(particleTextureList[selectedTextureIdx_].second);
+                        texSheet.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
                     }
 
                     ImGui::DragInt("横の分割数", &texSheet.tilesX, 1, 1, 16);

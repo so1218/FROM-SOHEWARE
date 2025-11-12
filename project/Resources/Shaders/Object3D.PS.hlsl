@@ -430,7 +430,7 @@ float3 DrawArtGridColor(PixelShaderInput input)
     // 背景色・グリッド色
     float3 bgColor = float3(0.05, 0.05, 0.05);
     float3 lineColor = float3(0.07, 0.07, 0.07);
-    float3 majorLineColor = float3(0.10, 0.10, 0.10);
+    float3 majorLineColor = float3(0.20, 0.20, 0.20);
 
     // 線を重ねる
     float3 col = lerp(bgColor, lineColor, gridMask);

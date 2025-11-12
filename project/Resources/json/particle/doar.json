@@ -86,7 +86,7 @@
             "enabled": false,
             "framesPerSecond": 10.0,
             "looping": true,
-            "textureHandle": 30,
+            "textureHandle": 33,
             "tilesX": 1,
             "tilesY": 1
         },
