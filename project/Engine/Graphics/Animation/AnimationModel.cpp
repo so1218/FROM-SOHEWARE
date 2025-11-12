@@ -18,6 +18,14 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     color_ = 0xFFFFFFFF;
 }
 
+AnimationModel::~AnimationModel()
+{
+    if (engine_->srvManager_ != nullptr)
+    {
+        engine_->srvManager_->FreeSRV(skinCluster_.paletteSrvIndex);
+    }
+}
+
 void AnimationModel::Update(float targetDuration, bool isLoop)
 {
     // 再生が既に終了している場合は何もしない

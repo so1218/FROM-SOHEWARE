@@ -45,7 +45,7 @@ public:
 
     void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager);
 
-    TextureResources UploadTexture(DirectX::ScratchImage& mipImages, std::vector<TextureResources>& textures_);
+    TextureResources UploadTexture(DirectX::ScratchImage& mipImages);
 
     TextureResources UploadTex(DirectX::ScratchImage& mipImages);
 
@@ -82,8 +82,13 @@ private:
     ID3D12GraphicsCommandList* commandList_ = nullptr;
 
     std::vector<UploadResourceEntry> pendingUploadResources_;
-    std::vector<TextureResources> newUploads_;
     SRVManager* srvManager_;
 
     uint32_t textureArraySrvIndex_;
+
+    // 永続リスト (デストラクタでのSRV解放用)
+    std::vector<TextureResources> loadedTextures_;
+
+    // 一時リスト (中間バッファのクリーンアップ用)
+    std::vector<TextureResources> newUploads_;
 };

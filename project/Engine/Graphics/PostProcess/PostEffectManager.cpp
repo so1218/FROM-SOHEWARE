@@ -5,6 +5,17 @@
 
 #include <externals/DirectXTex/d3dx12.h>
 
+PostEffectManager::~PostEffectManager()
+{
+    // Initialize で確保したものは、すべてここで解放する
+    srvManager_->FreeSRV(brightExtractIndex_);
+    srvManager_->FreeSRV(verticalBlurIndex_);
+    srvManager_->FreeSRV(horizontalBlurIndex_);
+    srvManager_->FreeSRV(bloomCombineIndex_);
+    srvManager_->FreeSRV(neonIndex_);
+    srvManager_->FreeSRV(depthExtractIndex_);
+}
+
 void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height,
     RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera, SRVManager* srvManager)
 {

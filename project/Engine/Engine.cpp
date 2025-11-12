@@ -51,6 +51,8 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	particleSystem_->Initialize(this);
 }
 
+
+
 void Engine::Finalize()
 {
 	ImGuiManager::Finalize();
@@ -65,6 +67,19 @@ void Engine::Finalize()
 	}
 
 	frameLimiter_->Finalize();
+
+	// InitializeRendererで確保した深度SRVを解放
+	if (srvManager_ && postEffectManager_) 
+	{
+		srvManager_->FreeSRV(postEffectManager_->sceneDepthIndex_);
+	}
+
+	// srvManager_ を使うクラスを先に解放する
+	textureManager_.reset();     
+	postEffectManager_.reset();  
+
+	// 依存されていた srvManager_ を解放する
+	srvManager_.reset();
 
 	// リソース解放
 	CloseHandle(fenceEvent_);

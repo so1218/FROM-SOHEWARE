@@ -2,7 +2,20 @@
 
 TextureManager::TextureManager() {};
 
-TextureManager::~TextureManager() {}
+TextureManager::~TextureManager()
+{
+    //// 確保したすべてのテクスチャリソースを解放する
+    //for (const TextureResources& resource : loadedTextures_)
+    //{
+    //    // Allocate で確保した srvIndex を解放する
+    //    srvManager_->FreeSRV(resource.srvIndex);
+    //}
+
+    //if (textureArraySrvIndex_ > 0)
+    //{
+    //    srvManager_->FreeSRV(textureArraySrvIndex_);
+    //}
+}
 
 void TextureManager::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager)
 {
@@ -174,9 +187,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12R
     return intermediateResource;
 }
 
-TextureManager::TextureResources TextureManager::UploadTexture(
-    DirectX::ScratchImage& mipImages,
-    std::vector<TextureResources>& textures)
+TextureManager::TextureResources TextureManager::UploadTexture(DirectX::ScratchImage& mipImages)
 {
     TextureResources result;
 
@@ -210,7 +221,7 @@ TextureManager::TextureResources TextureManager::UploadTexture(
     result.srvIndex = srvManager_->CreateSRV(result.texture.Get(), srvDesc);
 
     // テクスチャリストに追加し、新規アップロードとして登録
-    textures.push_back(result);
+    loadedTextures_.push_back(result);
     AddNewUpload(result);
 
     return result;

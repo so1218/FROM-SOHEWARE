@@ -11,6 +11,8 @@ class Engine;
 class PostEffectManager
 {
 public:
+    ~PostEffectManager();
+
     // 初期化
     void Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height,
         RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera, SRVManager* srvManager);
