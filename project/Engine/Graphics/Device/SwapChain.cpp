@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+
 void SwapChain::Initialize(
     HWND hwnd,
     ID3D12CommandQueue* commandQueue,

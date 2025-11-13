@@ -9,6 +9,7 @@ class AnimationModel
 public:
     // コンストラクタ
     AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation);
+    ~AnimationModel();
 
     // アニメーション更新
     void Update(float targetDuration, bool isLoop);

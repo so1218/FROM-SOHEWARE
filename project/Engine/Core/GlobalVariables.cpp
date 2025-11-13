@@ -17,33 +17,28 @@ GlobalVariables* GlobalVariables::GetInstance()
 
 void GlobalVariables::Update()
 {
-	if (!ImGui::Begin("Global Variables", nullptr, ImGuiWindowFlags_MenuBar))
+	if (!ImGui::Begin("Global Variables"))
 	{
 		ImGui::End();
 		return;
 	}
 
-	// メニューバー
-	if (ImGui::BeginMenuBar())
+	if (ImGui::TreeNode("ドラッグの感度設定"))
 	{
-		// 感度設定メニュー
-		if (ImGui::BeginMenu("ドラッグの感度設定"))
-		{
-			ImGui::DragFloat("感度", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
-			ImGui::EndMenu();
-		}
+		ImGui::DragFloat("感度", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
+		ImGui::TreePop();
+	}
+	ImGui::Separator();
 
-		// トップレベルグループをメニューとして表示
-		for (auto& [groupName, group] : datas_)
+	// トップレベルグループをツリーとして表示
+	for (auto& [groupName, group] : datas_)
+	{
+		if (ImGui::TreeNode(groupName.c_str()))
 		{
-			if (ImGui::BeginMenu(groupName.c_str()))
-			{
-				DrawGroupRecursive({ groupName }, group);
-				ImGui::EndMenu();
-			}
+			DrawGroupRecursive({ groupName }, group);
+			ImGui::TreePop();
 		}
-
-		ImGui::EndMenuBar();
+		ImGui::Separator();
 	}
 
 	ImGui::End();

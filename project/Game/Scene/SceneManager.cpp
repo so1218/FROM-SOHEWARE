@@ -42,10 +42,15 @@ void SceneManager::Draw()
 {
     if (currentScene_)
     {
-#ifdef _DEBUG
-        currentScene_->DebugDraw();
-#endif
         currentScene_->Draw();
+    }
+}
+
+void SceneManager::DebugDraw()
+{
+    if (currentScene_)
+    {
+        currentScene_->DebugDraw();
     }
 }
 

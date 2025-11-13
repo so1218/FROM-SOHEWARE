@@ -89,10 +89,10 @@ int Renderer::LoadTexture(const std::string& texturePath)
 	DirectX::ScratchImage mipImages = TextureManager::LoadTexture(texturePath);
 
 	// テクスチャをアップロード
-	TextureManager::TextureResources texResources = textureManager_->UploadTexture(mipImages, textures_);
+	TextureManager::TextureResources texResources = textureManager_->UploadTexture(mipImages);
 
 	// 保存したテクスチャのインデックスを返す
-	return static_cast<int>(textures_.size()) - 1;
+	return texResources.srvIndex;
 }
 
 void Renderer::LoadTextureArray(const std::vector<std::string>& texturePaths)
@@ -213,8 +213,8 @@ void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, Worl
 	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangle.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangle.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -288,8 +288,8 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphere.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphere.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -368,8 +368,8 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress()); // Material
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());       // WVP
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // Texture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // Environment Map
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // Texture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // Environment Map
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -450,8 +450,8 @@ void Renderer::DrawAnimationModel(
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress()); // VS WVP
 	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex)); // VS MatrixPalette
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress()); // PS Material
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // PS Texture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // PS Environment
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textureHandle)); // PS Texture
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // PS Environment
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -497,8 +497,8 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	// 定数バッファ・SRVバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // ダミー環境マップ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textureHandle)); // ダミー環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -589,8 +589,8 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex));
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // ダミー
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textureHandle)); // ダミー
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -669,8 +669,8 @@ void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTra
 	// 定数バッファ・SRVをGPUにバインド
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cube.materialHandle.resource->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, cube.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[textureHandle].srvIndex)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textures_[envMapSrvHandle].srvIndex)); // 環境マップ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
+	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
 	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
@@ -836,7 +836,7 @@ void Renderer::DrawParticles(const Camera& camera)
 		memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
 
 		// テクスチャのSRVをセット
-		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textures_[textureIndex].srvIndex);
+		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textureIndex);
 		cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
 
 		// インスタンスバッファのGPUアドレスにオフセットを加算してセット
@@ -922,7 +922,7 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 	// WVP
 	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
 	// Cube Texture SRV
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textures_[cubeTextureSrvIndex].srvIndex));
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(cubeTextureSrvIndex));
 
 	// 描画コマンド
 	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
