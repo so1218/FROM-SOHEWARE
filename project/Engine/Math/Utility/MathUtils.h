@@ -66,37 +66,9 @@ namespace Math
 
     // --- 線形補間 (Lerp: Linear Interpolation) ---
 
-    // float の線形補間
-    inline float Lerp(float a, float b, float t)
-    {
-        return a + (b - a) * t;
-    }
-
-    // Vector2 の線形補間
-    inline Vector2 Lerp(const Vector2& a, const Vector2& b, float t)
+    template <typename T>
+    inline T Lerp(const T& a, const T& b, float t)
     {
         return a * (1.0f - t) + b * t;
-    }
-
-    // Vector3 の線形補間
-    inline Vector3 Lerp(const Vector3& a, const Vector3& b, float t)
-    {
-        return a * (1.0f - t) + b * t;
-    }
-
-    // Vector4 の線形補間
-    inline Vector4 Lerp(const Vector4& start, const Vector4& end, float t)
-    {
-        return start * (1.0f - t) + end * t;
-    }
-
-    // 32bitカラー値の線形補間
-    inline uint32_t LerpColor(uint32_t startColor, uint32_t endColor, float t)
-    {
-        // カラーをVector4に変換して補間し、再び32bitカラーに戻す
-        Vector4 startVec = Uint32ToColorVector(startColor);
-        Vector4 endVec = Uint32ToColorVector(endColor);
-        Vector4 resultVec = Lerp(startVec, endVec, t);
-        return Math::ColorVectorToUint32(resultVec);
     }
 }

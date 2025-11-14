@@ -712,6 +712,7 @@
     <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
+    <ClInclude Include="Engine\Math\Tween.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
