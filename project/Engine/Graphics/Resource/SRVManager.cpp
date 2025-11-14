@@ -42,7 +42,7 @@ uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESO
     cpuHandleCopy.ptr += (SIZE_T)index * srvDescriptorSize_;
     device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
 
-    LOG_INFO("SRV Created at Index: {}", index);
+   /* LOG_INFO("SRV Created at Index: {}", index);*/
     return index;
 }
 
@@ -50,7 +50,7 @@ void SRVManager::FreeSRV(uint32_t index)
 {
     // インデックスをアロケータに返却
     allocator_->Free(index);
-    LOG_INFO("SRV Freed at Index: {}", index);
+   /* LOG_INFO("SRV Freed at Index: {}", index);*/
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleGPU(uint32_t index) const

@@ -32,8 +32,6 @@ public:
     virtual void Update() {}
     virtual void Draw() {}
     virtual void DebugDraw() {}
-    virtual void ApplyGlobalVariables() {}
-    virtual void SaveGlobalVariables() {}
     virtual bool IsDead() const { return false; }
 
     virtual GameObjectType GetType() const = 0;

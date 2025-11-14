@@ -5,6 +5,7 @@
 #include "ModelHandle.h"
 #include "AnimationModel.h"
 #include "AnimationHandle.h"
+#include "GameObjectManager.h"
 
 class Player;
 
@@ -20,7 +21,7 @@ struct EnemyData
 class Enemy : public Collider, public BaseCharacter
 {
 public:
-    Enemy(Engine* engine, Camera* camera, Player* player, const EnemyData& data);
+    Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
 
@@ -37,13 +38,14 @@ public:
     void DebugDraw() override;
 
     // 調整項目の適用
-    void ApplyGlobalVariables() override;
+    void ApplyGlobalVariables();
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "Enemy" }; }
 
     // 衝突・ダメージ処理
     void OnCollision(Collider* other) override;
     void TakeDamage(float damage); // ダメージを受ける関数を追加
-    bool IsDead() const { return isDead_; } // 死亡フラグ
+    void SpawnExperienceGem();  // 経験値を生成する関数
+    bool IsDead() const override { return isDead_; } // 死亡フラグ
 
     // 座標・当たり判定
     Vector3 GetWorldPosition() override;
@@ -55,6 +57,7 @@ private:
     Engine* engine_;
     Camera* camera_;
     Player* player_;
+    GameObjectManager* objectManager_;
 
     std::unique_ptr<Model> modelEnemy_;
     std::unique_ptr<AnimationModel> animationEnemy_;

@@ -17,6 +17,8 @@ enum TextureID
     axe,
     knife,
 
+    enemy,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -51,6 +53,8 @@ private:
             { skydome,   "Resources/images/sky_sphere.png" },
             { axe,   "Resources/images/Woodcutter-Axe.jpg" },
             { knife,   "Resources/images/KnifeTexture..jpg" },
+
+            { enemy,   "Resources/images/Blaze_baseColor.png" },
         }
     };
 };

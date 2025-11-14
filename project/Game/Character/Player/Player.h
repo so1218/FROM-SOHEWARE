@@ -30,8 +30,7 @@ public:
 	void OnCollision(Collider* other) override;
 
 	// 調整項目の適用
-	void ApplyGlobalVariables() override;
-	void SaveGlobalVariables() override;
+	void ApplyGlobalVariables();
 	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Player" }; }
 
 	void AddWeapon(WeaponType type); 
@@ -56,7 +55,15 @@ public:
 	// カメラを返す
 	Camera* GetCamera() const { return camera_; }
 
+	// 経験値取得、ダメージ
+	void GainExperience(int amount);
+	void TakeDamage(float damage);
+
+
 private:
+
+	// レベルアップの内部処理
+	void LevelUp();
 	
 	Engine* engine_;
 	Camera* camera_;
@@ -73,8 +80,21 @@ private:
 
 	float rotationSpeed_ = 10.0f;
 
-	// 武器の設計図のリストを持つ。
+	// 武器の設計図のリスト
 	std::vector<std::unique_ptr<Weapon>> weapons_;
 	Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
+
+	// HP/ダメージ関連の変数
+	float maxHp_ = 100.0f;
+	float hp_ = 100.0f;
+	bool isInvincible_ = false;      // 無敵中か
+	float invincibilityTimer_ = 0.0f; // 無敵時間タイマー
+	float invincibilityDuration_ = 1.0f; // 無敵時間の長さ
+
+	// 経験値/レベル関連の変数
+	int experience_ = 0;      // 現在の経験値
+	int xpToNextLevel_ = 10;  // 次のレベルアップに必要な経験値
+	int level_ = 1;
+	bool isDead_ = false; // 死亡フラグ
 };
 

@@ -104,7 +104,7 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
     }
 
     // デバッグ出力
-    OutputDebugStringA(logMessage.c_str());
+    OutputDebugStringA((logMessage + "\n").c_str());
 
     // コンソール出力 
     SetConsoleColor(level);

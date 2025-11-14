@@ -25,7 +25,7 @@ enum class ModelID
     ryu,
 
 	// 敵関連
-    dragon,
+    enemy,
 
     count
 };
@@ -71,7 +71,7 @@ private:
             { ModelID::ryu,  "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
 
             // 敵関連
-            { ModelID::dragon ,  "Resources/models/dragon/dragon.obj" },
+            { ModelID::enemy ,  "Resources/models/enemy/blaze.obj" },
         }
     };
 };

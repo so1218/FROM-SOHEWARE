@@ -48,9 +48,6 @@ void SampleSceneHori::Initialize()
 
 void SampleSceneHori::Update()
 {
-    // ゲームオブジェクトの調整項目を一括更新
-    objectManager_.ApplyGlobalVariables();
-
     HandleCollisions();
 
     enemyManager_->Update();
@@ -58,8 +55,6 @@ void SampleSceneHori::Update()
     objectManager_.Update();
 
     followCamera_.Update();
-
-    objectManager_.SaveGlobalVariables();
 }
 
 void SampleSceneHori::HandleCollisions()

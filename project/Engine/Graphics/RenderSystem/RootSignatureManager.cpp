@@ -111,6 +111,7 @@ void RootSignatureManager::Create3dRootSignature()
         kPixelShaderCb2Index = 5, // b2 (PixelShader) 
         kPixelShaderCb3Index = 6, // b3 (PixelShader) 
         kPixelShaderCb4Index = 7, // b4 (PixelShader) 
+        kPixelShaderCb5Index = 8,
         kNumGraphicRootParameters 
     };
 
@@ -158,6 +159,10 @@ void RootSignatureManager::Create3dRootSignature()
     rootParameters[kPixelShaderCb4Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kPixelShaderCb4Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kPixelShaderCb4Index].Descriptor.ShaderRegister = 4; // b4
+
+    rootParameters[kPixelShaderCb5Index].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kPixelShaderCb5Index].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kPixelShaderCb5Index].Descriptor.ShaderRegister = 5;
 
     D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
     descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -248,6 +253,7 @@ void RootSignatureManager::CreateSkinningRootSignature()
         kCameraIndex = 6,            // b2 : Camera 
         kPointLightsIndex = 7,       // b3 : Point Lights
         kSpotLightsIndex = 8,        // b4 : Spot Lights 
+        kAreaLightsIndex = 9,
         kNumRootParameters 
     };
 
@@ -300,6 +306,10 @@ void RootSignatureManager::CreateSkinningRootSignature()
     rootParameters[kSpotLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
     rootParameters[kSpotLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
     rootParameters[kSpotLightsIndex].Descriptor.ShaderRegister = 4; // b4
+
+    rootParameters[kAreaLightsIndex].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+    rootParameters[kAreaLightsIndex].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+    rootParameters[kAreaLightsIndex].Descriptor.ShaderRegister = 5;
 
     D3D12_STATIC_SAMPLER_DESC staticSampler = {};
     staticSampler.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;

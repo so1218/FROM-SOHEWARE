@@ -51,6 +51,11 @@ cbuffer SpotLights : register(b4)
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
 
+cbuffer AreaLightsBuffer : register(b5) 
+{
+    AreaLight gAreaLights[MAX_AREA_LIGHTS];
+}
+
 struct PixelShaderOutput
 {
     float4 color : SV_TARGET0;
@@ -77,6 +82,7 @@ bool ShouldDiscardArtGrid(PixelShaderInput input);
 float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye);
 float3 ApplyPointLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplySpotLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
+float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 
 PixelShaderOutput main(PixelShaderInput input)
 {
@@ -135,6 +141,9 @@ PixelShaderOutput main(PixelShaderInput input)
         // Spot Light
         finalColor += ApplySpotLights(baseColor, normal, input.worldPosition, toEye);
         
+        // Area Light
+        finalColor += ApplyAreaLights(baseColor, normal, input.worldPosition, toEye);
+        
         // 環境マップ処理
 
         // toEye はピクセルからカメラへのベクトル
@@ -148,10 +157,10 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     else
     {
-        finalColor = baseColor;
+        finalColor = baseColor * gMaterial.color.rgb;
     }
 
-   output.color.rgb = finalColor;
+    output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
 
     // ディザー透明処理
@@ -583,6 +592,64 @@ float3 ApplySpotLights(float3 baseColor, float3 normal, float3 worldPos, float3 
             float3 halfVec = normalize(-lightDir + toEye);
             float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
             float3 specular = gMaterial.specularColor.rgb * gSpotLights[i].color.rgb * gSpotLights[i].intensity * spec * attenuation;
+            finalColor += specular;
+        }
+    }
+
+    return finalColor;
+}
+
+float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye)
+{
+    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < MAX_AREA_LIGHTS; ++i)
+    {
+        if (gAreaLights[i].enable == 0)
+            continue;
+
+        // 1. ライトの中心からピクセルへのベクトルを計算
+        float3 vecToPixel = worldPos - gAreaLights[i].position;
+
+        // 2. ライトのローカル軸（right, up）へピクセルを射影
+        float3 rightDir = normalize(gAreaLights[i].right);
+        float3 upDir = normalize(gAreaLights[i].up);
+        float halfWidth = length(gAreaLights[i].right);
+        float halfHeight = length(gAreaLights[i].up);
+
+        float projRight = dot(vecToPixel, rightDir);
+        float projUp = dot(vecToPixel, upDir);
+
+        // 3. 射影した点を矩形の範囲内にクランプ（はみ出さないようにする）
+        float clampedRight = clamp(projRight, -halfWidth, halfWidth);
+        float clampedUp = clamp(projUp, -halfHeight, halfHeight);
+
+        // 4. クランプした位置から「ピクセルに最も近いライト表面上の点」を再構築
+        float3 closestPointOnLight = gAreaLights[i].position +
+                                     rightDir * clampedRight +
+                                     upDir * clampedUp;
+
+        // 5. "最も近い点" を光源として、点光源と同様の計算を行う
+        float3 lightVec = closestPointOnLight - worldPos;
+        float distance = length(lightVec);
+        float3 lightDir = normalize(lightVec); // これが実質的なライト方向
+
+        // 6. 減衰の計算 
+        float attenuation = gAreaLights[i].range > 0.001f
+            ? pow(saturate(1.0f - distance / gAreaLights[i].range), gAreaLights[i].decay)
+            : 1.0f;
+
+        // 7. ディフューズ（拡散光）
+        float ndotl = saturate(dot(normal, lightDir));
+        float3 diffuse = gMaterial.color.rgb * baseColor * gAreaLights[i].color.rgb * ndotl * gAreaLights[i].intensity * attenuation;
+        finalColor += diffuse;
+
+        // 8. スペキュラ（鏡面反射）
+        if (ndotl > 0.0f)
+        {
+            float3 halfVec = normalize(lightDir + toEye);
+            float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
+            float3 specular = gMaterial.specularColor.rgb * gAreaLights[i].color.rgb * gAreaLights[i].intensity * spec * attenuation;
             finalColor += specular;
         }
     }

@@ -36,27 +36,53 @@ void Player::Initialize()
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
 	moveSpeed_ = 0.2f;
 
+	// ステータス初期化
+	level_ = 1;
+	hp_ = maxHp_;
+	experience_ = 0;
+	isInvincible_ = false;
+	invincibilityTimer_ = 0.0f;
+
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
-	SetCollisionMask(kCollisionAttributeEnemy);
+	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
 
 	// デバッグ用のグローバル変数登録
-	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
-	GlobalVariables::GetInstance()->LoadFiles();
-	GlobalVariables::GetInstance()->AddItem(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_",modelPlayer_->GetTransform().translation_);
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName(); 
+	gv->CreateGroup(groupName);
+	gv->LoadFiles();
+
+	gv->AddItem(groupName, "Translation", modelPlayer_->GetTransform().translation_);
+	gv->AddItem(groupName, "Scale", modelPlayer_->GetTransform().scale_);
+	gv->AddItem(groupName, "Move Speed", moveSpeed_);
+	gv->AddItem(groupName, "HP", hp_);
+	gv->AddItem(groupName, "MaxHP", maxHp_);
+	gv->AddItem(groupName, "Invincibility Duration", invincibilityDuration_);
+	gv->AddItem(groupName, "Level", level_);
+	gv->AddItem(groupName, "Experience", experience_);
+	gv->AddItem(groupName, "XP to Next Level", xpToNextLevel_);
+
+	ApplyGlobalVariables();
 }
 
 // グローバル変数の適用処理
 void Player::ApplyGlobalVariables()
 {
-	modelPlayer_->GetTransform().translation_ =
-		GlobalVariables::GetInstance()->GetVector3Value(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_");
-}
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName();
 
-// 現在の値をグローバル変数に保存
-void Player::SaveGlobalVariables()
-{
-	GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(),"modelPlayer_->GetTransform().translation_",modelPlayer_->GetTransform().translation_);
+	modelPlayer_->GetTransform().translation_ = gv->GetVector3Value(groupName, "Translation");
+	modelPlayer_->GetTransform().scale_ = gv->GetVector3Value(groupName, "Scale");
+	moveSpeed_ = gv->GetFloatValue(groupName, "Move Speed");
+	hp_ = gv->GetFloatValue(groupName, "HP");
+	maxHp_ = gv->GetFloatValue(groupName, "MaxHP");
+	invincibilityDuration_ = gv->GetFloatValue(groupName, "Invincibility Duration");
+
+	// (GetIntValue がない場合は GetFloatValue を static_cast<int> してください)
+	level_ = gv->GetIntValue(groupName, "Level");
+	experience_ = gv->GetIntValue(groupName, "Experience");
+	xpToNextLevel_ = gv->GetIntValue(groupName, "XP to Next Level");
 }
 
 // 武器を追加する処理
@@ -81,6 +107,19 @@ void Player::AddWeapon(WeaponType type)
 // 更新処理
 void Player::Update()
 {
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+
+	// 無敵時間の更新処理
+	if (isInvincible_)
+	{
+		invincibilityTimer_ -= deltaTime;
+		if (invincibilityTimer_ <= 0.0f)
+		{
+			isInvincible_ = false;
+			// (モデルの色を元に戻す処理)
+		}
+	}
+
 	// 移動処理
 	Move();
 
@@ -198,6 +237,14 @@ void Player::UpdateAABB()
 
 void Player::OnCollision(Collider* other)
 {
+	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
+	{
+		TakeDamage(10.0f);
+	}
+	if (other->GetCollisionAttribute() & kCollisionAttributeExpGem)
+	{
+		GainExperience(5);
+	}
 }
 
 Vector3 Player::GetWorldPosition()
@@ -223,12 +270,129 @@ void Player::Draw()
 void Player::DebugDraw()
 {
 	ImGui::Begin("プレイヤー");
-	ImGui::DragFloat3("Transform Translation", &modelPlayer_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f);
-	ImGui::DragFloat3("Transform Scale", &modelPlayer_->GetTransform().scale_.x, 0.1f, -100.0f, 100.0f);
+
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName();
+	bool changed = false;
+
+	ImGui::Text("トランスフォーム");
+	if (ImGui::DragFloat3("位置（Translation）", &modelPlayer_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f))
+	{
+		gv->SetValue(groupName, "Translation", modelPlayer_->GetTransform().translation_);
+		changed = true;
+	}
+	if (ImGui::DragFloat3("スケール（Scale）", &modelPlayer_->GetTransform().scale_.x, 0.1f, 0.1f, 100.0f))
+	{
+		gv->SetValue(groupName, "Scale", modelPlayer_->GetTransform().scale_);
+		changed = true;
+	}
+
+	ImGui::Separator();
+
+	ImGui::Text("ステータス");
+	if (ImGui::DragFloat("移動速度", &moveSpeed_, 0.01f, 0.0f, 10.0f))
+	{
+		gv->SetValue(groupName, "Move Speed", moveSpeed_);
+		changed = true;
+	}
+	if (ImGui::DragFloat("現在HP", &hp_, 1.0f, 0.0f, maxHp_))
+	{
+		gv->SetValue(groupName, "HP", hp_);
+		changed = true;
+	}
+	if (ImGui::DragFloat("最大HP", &maxHp_, 1.0f, 1.0f, 1000.0f))
+	{
+		gv->SetValue(groupName, "MaxHP", maxHp_);
+		changed = true;
+	}
+
+	ImGui::Separator();
+
+	ImGui::Text("レベルと経験値");
+	if (ImGui::DragInt("レベル", &level_, 1, 1, 99))
+	{
+		gv->SetValue(groupName, "Level", level_);
+		changed = true;
+	}
+	if (ImGui::DragInt("経験値", &experience_, 1, 0, 10000))
+	{
+		gv->SetValue(groupName, "Experience", experience_);
+		changed = true;
+	}
+	if (ImGui::DragInt("次のレベルまでの経験値", &xpToNextLevel_, 1, 1, 10000))
+	{
+		gv->SetValue(groupName, "XP to Next Level", xpToNextLevel_);
+		changed = true;
+	}
+
+	ImGui::Separator();
+
+	ImGui::Text("戦闘設定");
+	if (ImGui::DragFloat("無敵時間（秒）", &invincibilityDuration_, 0.05f, 0.0f, 5.0f))
+	{
+		gv->SetValue(groupName, "Invincibility Duration", invincibilityDuration_);
+		changed = true;
+	}
+
+	if (changed)
+	{
+		ApplyGlobalVariables();
+	}
+
 	ImGui::End();
 
+	// 所持武器のDebugDraw
 	for (auto& weapon : weapons_)
 	{
 		weapon->DebugDraw();
+	}
+}
+
+void Player::TakeDamage(float damage)
+{
+	// 無敵時間中はダメージを受けない
+	if (isInvincible_) 
+	{
+		return;
+	}
+
+	hp_ -= damage;
+	if (hp_ <= 0.0f)
+	{
+		hp_ = 0.0f;
+		isDead_ = true;
+		modelPlayer_->SetColor(0x0000ffff);
+	}
+
+	// ダメージを受けたら無敵時間を開始
+	isInvincible_ = true;
+	invincibilityTimer_ = invincibilityDuration_;
+
+}
+
+void Player::GainExperience(int amount)
+{
+	experience_ += amount;
+
+	// 経験値が次のレベルに達したら、達しなくなるまでレベルアップ処理を繰り返す
+	while (experience_ >= xpToNextLevel_)
+	{
+		LevelUp();
+	}
+}
+
+void Player::LevelUp()
+{
+	level_++;
+	experience_ -= xpToNextLevel_; 
+
+	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.5f);
+
+	// TODO: 本来はここで「レベルアップ選択画面」を開く
+
+	// [仮実装]: 最初の武器(ナイフなど)を強制的にレベルアップさせる
+	if (!weapons_.empty())
+	{
+		weapons_[0]->LevelUp();
 	}
 }

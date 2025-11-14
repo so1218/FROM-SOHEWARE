@@ -153,6 +153,7 @@ void DebugGuiManager::DrawLightSettings()
     DirectionalLight* dirLights = lightManager_->GetDirectionalLightData();
     PointLight* pointLights = lightManager_->GetPointLightData();
     SpotLight* spotLights = lightManager_->GetSpotLightData();
+    AreaLight* areaLights = lightManager_->GetAreaLightData();
 
     MaterialSettings& materialSettings = materialManager_->GetMaterialSettings();
 
@@ -227,6 +228,33 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
                 ImGui::DragFloat("減衰", &spotLights[i].decay, 0.01f);
                 ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("エリアライト (矩形光源)"))
+    {
+        for (int i = 0; i < lightManager_->GetAreaLightCount(); ++i)
+        {
+            std::string label = "エリアライト " + std::to_string(i);
+            if (ImGui::TreeNode(label.c_str()))
+            {
+                bool enabled = (areaLights[i].enable != 0);
+                if (ImGui::Checkbox("有効", &enabled))
+                {
+                    areaLights[i].enable = enabled ? 1 : 0;
+                }
+                ImGui::DragFloat3("座標 (中心)", &areaLights[i].position.x, 0.05f);
+                ImGui::ColorEdit4("色", &areaLights[i].color.x);
+                ImGui::DragFloat("強度", &areaLights[i].intensity, 0.01f);
+
+                // right と up は、ライトの向きとサイズ（半分の幅/高さ）を制御します
+                ImGui::DragFloat3("右ベクトル (幅/2)", &areaLights[i].right.x, 0.05f);
+                ImGui::DragFloat3("上ベクトル (高さ/2)", &areaLights[i].up.x, 0.05f);
+
+                ImGui::DragFloat("影響半径", &areaLights[i].range, 0.1f);
+                ImGui::DragFloat("減衰", &areaLights[i].decay, 0.01f);
                 ImGui::TreePop();
             }
         }

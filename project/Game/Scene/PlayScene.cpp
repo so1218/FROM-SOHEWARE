@@ -56,9 +56,6 @@ void PlayScene::Initialize()
 
 void PlayScene::Update()
 {
-    // ゲームオブジェクトの調整項目を一括更新
-    objectManager_.ApplyGlobalVariables();
-
     HandleCollisions();
 
     // ゲームオブジェクトの一括更新
@@ -66,8 +63,6 @@ void PlayScene::Update()
 
     followCamera_.Update();
 
-    objectManager_.SaveGlobalVariables();
-    
     // プレイヤーの更新処理
     player_->Update();
 }

@@ -213,6 +213,20 @@ struct SpotLight
     float padding;
 };
 
+struct AreaLight
+{
+    Vector4 color;
+    Vector3 position;
+    float intensity;
+    Vector3 right;
+    float range;
+    Vector3 up;
+    float decay;
+    int enable;
+    Vector3 padding;
+};
+
+
 struct ParticleInstanceData
 {
     Matrix4x4 worldMatrix;

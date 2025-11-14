@@ -30,7 +30,7 @@ void EnemyManager::Update()
         spawnPos.z = playerPos.z + std::sin(randomAngle) * spawnRadius_;
 
         EnemyData enemyData;
-        enemyData.modelId = ModelID::shrimp;
+        enemyData.modelId = ModelID::enemy;
         enemyData.hp = 50.0f;
         enemyData.speed = 2.0f;
         enemyData.size = { 1.0f, 1.0f, 1.0f };
@@ -42,7 +42,7 @@ void EnemyManager::Update()
 void EnemyManager::SpawnEnemy(const EnemyData& data, const Vector3& position)
 {
     // 敵の生成
-    auto newEnemy = std::make_unique<Enemy>(engine_, camera_, player_, data);
+    auto newEnemy = std::make_unique<Enemy>(engine_, camera_, player_, objectManager_, data);
 
     // 初期位置設定
     newEnemy->GetWorldTransform().translation_ = position;

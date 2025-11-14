@@ -60,22 +60,6 @@ void GameObjectManager::DebugDraw()
     }
 }
 
-void GameObjectManager::ApplyGlobalVariables()
-{
-    for (auto& obj : objects_)
-    {
-        obj->ApplyGlobalVariables();
-    }
-}
-
-void GameObjectManager::SaveGlobalVariables()
-{
-    for (auto& obj : objects_)
-    {
-        obj->SaveGlobalVariables();
-    }
-}
-
 void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
 {
     // 自分が持っている全てのオブジェクトをループ

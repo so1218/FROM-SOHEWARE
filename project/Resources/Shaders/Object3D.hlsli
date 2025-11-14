@@ -1,6 +1,7 @@
 #define MAX_DIRECTIONAL_LIGHTS 2
 #define MAX_POINT_LIGHTS 4
 #define MAX_SPOT_LIGHTS 2
+#define MAX_AREA_LIGHTS 2
 
 struct VertexShaderOutput
 {
@@ -44,6 +45,19 @@ struct SpotLight
     float32_t decay;
     float32_t cosAngle;
     int enable;
+};
+
+struct AreaLight
+{
+    float4 color;
+    float3 position; 
+    float intensity;
+    float3 right; 
+    float range;
+    float3 up; 
+    float decay; 
+    int enable;
+    float3 padding; 
 };
 
 // Light types

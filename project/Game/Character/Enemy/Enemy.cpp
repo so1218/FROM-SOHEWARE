@@ -7,18 +7,21 @@
 #include "Player.h"
 #include "TimeManager.h"
 #include "GlobalVariables.h"
+#include "ExperienceGem.h"
 
-Enemy::Enemy(Engine* engine, Camera* camera, Player* player, const EnemyData& data)
+Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data)
 {
 	engine_ = engine;
 	camera_ = camera;
 	player_ = player;
+	objectManager_ = objectManager;
 
 	// dataからステータスを初期化
 	hp_ = data.hp;
 	speed_ = data.speed;
 	size_ = data.size;
 	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
+	modelEnemy_->SetColor(0x000088ff);
 	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, *ModelHandle::Get(data.modelId), AnimationHandle::Get(data.animationId));
 }
 
@@ -33,6 +36,8 @@ void Enemy::Initialize()
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
 	GlobalVariables::GetInstance()->LoadFiles();
+
+	ApplyGlobalVariables();
 }
 
 void Enemy::ApplyGlobalVariables()
@@ -43,11 +48,6 @@ void Enemy::ApplyGlobalVariables()
 
 void Enemy::Update()
 {
-	// 死亡していたら何もしない
-	if (isDead_) {
-		return;
-	}
-
 	// プレイヤー追跡ロジック
 	// プレイヤーの座標と自分の座標を取得
 	Vector3 playerPos = player_->GetWorldPosition();
@@ -94,22 +94,32 @@ void Enemy::Update()
 
 void Enemy::TakeDamage(float damage)
 {
-	if (isDead_) return; 
-
 	hp_ -= damage;
 	if (hp_ <= 0.0f) 
 	{
 		isDead_ = true;
+		// 死亡時に経験値を生成
+		SpawnExperienceGem();
 	}
+}
+
+void Enemy::SpawnExperienceGem()
+{
+	// 経験値を生成
+	auto experience = std::make_unique<ExperienceGem>(engine_, camera_, player_);
+
+	// 敵がいた位置に経験値を配置する
+	experience->GetWorldTransform().translation_ = GetWorldPosition();
+
+	// 経験値の初期化
+	experience->Initialize();
+
+	objectManager_->AddObject(std::move(experience));
 }
 
 void Enemy::Draw()
 {
-	// 死亡していたら描画しない
-	if (isDead_) {
-		return;
-	}
-	animationEnemy_->Draw();
+	modelEnemy_->Draw();
 }
 
 

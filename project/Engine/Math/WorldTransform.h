@@ -42,9 +42,7 @@ public:
         const Vector3& translation);
 
     // 親を設定するメソッド
-    void SetParent(WorldTransform* parent) {
-        parent_ = parent;
-    }
+    void SetParent(WorldTransform* parent) { parent_ = parent; }
 
     // 行列を更新する関数
     void UpdateMatrix();

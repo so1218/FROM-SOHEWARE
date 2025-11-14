@@ -19,10 +19,6 @@ public:
 
     void DebugDraw();
 
-    void ApplyGlobalVariables();
-
-    void SaveGlobalVariables();
-
     void AddAllCollidersToManager(CollisionManager* manager);
 
 private:
