@@ -411,6 +411,9 @@
     <ClCompile Include="Engine\Debugs\DebugUtils.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -708,6 +711,7 @@
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

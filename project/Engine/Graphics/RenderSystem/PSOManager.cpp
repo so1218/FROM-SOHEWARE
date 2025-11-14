@@ -195,7 +195,7 @@ void PSOManager::Create3DPSO()
     depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // PSOを生成する
-    psoDesc3d_.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();// RootSignature
+    psoDesc3d_.pRootSignature = rootSignatureManager_->Get3DRootSignature();// RootSignature
     psoDesc3d_.InputLayout = inputLayoutDesc_;// InputLayout
     psoDesc3d_.VS = { vsBlob3D_->GetBufferPointer(),
     vsBlob3D_->GetBufferSize() };// VertexShader
@@ -247,7 +247,7 @@ void PSOManager::Create3DWireframePSO()
 
     // PSO 設定
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
+    desc.pRootSignature = rootSignatureManager_->Get3DRootSignature();
     desc.InputLayout = inputLayoutDesc_;
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() };
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() };
@@ -297,7 +297,7 @@ void PSOManager::CreateSkinningPSO()
     depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
     // PSOを生成する
-    psoDescSkinning_.pRootSignature = rootSignatureManager_->rootSignatureSkinning_.Get();// RootSignature
+    psoDescSkinning_.pRootSignature = rootSignatureManager_->GetSkinningRootSignature();// RootSignature
     psoDescSkinning_.InputLayout = inputLayoutDesc_;// InputLayout
     psoDescSkinning_.VS = { vsBlobSkinning_->GetBufferPointer(),
     vsBlobSkinning_->GetBufferSize() };// VertexShader
@@ -350,7 +350,7 @@ void PSOManager::CreateGridPSO()
 
     // PSO構築
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
-    desc.pRootSignature = rootSignatureManager_->rootSignature3D_.Get();
+    desc.pRootSignature = rootSignatureManager_->Get3DRootSignature();
     desc.InputLayout = inputLayoutDesc_;                                
     desc.VS = { vsBlob3D_->GetBufferPointer(), vsBlob3D_->GetBufferSize() }; 
     desc.PS = { psBlob3D_->GetBufferPointer(), psBlob3D_->GetBufferSize() }; 
@@ -377,7 +377,7 @@ void PSOManager::CreateLinePSO()
 
     psoDescLine_.RasterizerState.AntialiasedLineEnable = true;
 
-    psoDescLine_.pRootSignature = rootSignatureManager_->rootSignatureLine_.Get();// RootSignature
+    psoDescLine_.pRootSignature = rootSignatureManager_->GetLineRootSignature();// RootSignature
 
     // ライン用シェーダに差し替え
     psoDescLine_.VS = { vsBlobLine_->GetBufferPointer(), vsBlobLine_->GetBufferSize() };
@@ -394,7 +394,7 @@ void PSOManager::CreateParticlePSO(BlendMode blendMode)
     psoDescParticle_ = psoDesc3d_;
 
     // 粒子用のRootSignatureに差し替え
-    psoDescParticle_.pRootSignature = rootSignatureManager_->rootSignatureParticles_.Get();
+    psoDescParticle_.pRootSignature = rootSignatureManager_->GetParticleRootSignature();
 
     // 粒子用シェーダに差し替え
     psoDescParticle_.VS = { vsBlobParticle_->GetBufferPointer(), vsBlobParticle_->GetBufferSize() };
@@ -515,7 +515,7 @@ void PSOManager::CreateFullscreenPSO()
     ZeroMemory(&desc, sizeof(desc));
 
     // Root Signature
-    desc.pRootSignature = rootSignatureManager_->rootSignatureFullScreen_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetFullScreenRootSignature();
 
     // VS / PS
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
@@ -562,7 +562,7 @@ void PSOManager::CreateBrightnessExtractPSO()
     ZeroMemory(&desc, sizeof(desc));
 
     // Root Signature
-    desc.pRootSignature = rootSignatureManager_->rootSignaturePostProcess_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetPostProcessRootSignature();
 
     // VS / PS
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
@@ -608,7 +608,7 @@ void PSOManager::CreateBloomBlurVerticalPSO()
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
     ZeroMemory(&desc, sizeof(desc));
 
-    desc.pRootSignature = rootSignatureManager_->rootSignaturePostProcess_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetPostProcessRootSignature();
 
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
     desc.PS = { psBlobBlurY_->GetBufferPointer(), psBlobBlurY_->GetBufferSize() };
@@ -648,7 +648,7 @@ void PSOManager::CreateBloomBlurHorizontalPSO()
     D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
     ZeroMemory(&desc, sizeof(desc));
 
-    desc.pRootSignature = rootSignatureManager_->rootSignaturePostProcess_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetPostProcessRootSignature();
 
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
     desc.PS = { psBlobBlurX_->GetBufferPointer(), psBlobBlurX_->GetBufferSize() };
@@ -689,7 +689,7 @@ void PSOManager::CreateBloomCombinePSO()
     ZeroMemory(&desc, sizeof(desc));
 
     // Root Signature
-    desc.pRootSignature = rootSignatureManager_->rootSignaturePostProcess_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetPostProcessRootSignature();
 
     // VS / PS
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
@@ -754,7 +754,7 @@ void  PSOManager::CreatePostEffectPassPSO()
     ZeroMemory(&desc, sizeof(desc));
 
     // Root Signature
-    desc.pRootSignature = rootSignatureManager_->rootSignatureFullScreen_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetFullScreenRootSignature();
 
     // VS / PS
     desc.VS = { vsBlobFullscreen_->GetBufferPointer(), vsBlobFullscreen_->GetBufferSize() };
@@ -801,7 +801,7 @@ void PSOManager::CreateDepthPSO()
     ZeroMemory(&desc, sizeof(desc));
 
     // Root Signature
-    desc.pRootSignature = rootSignatureManager_->rootSignatureDepthExtract_.Get();
+    desc.pRootSignature = rootSignatureManager_->GetDepthExtractRootSignature();
 
     // VS / PS
     // 深度パス用の頂点シェーダーとピクセルシェーダーのバイナリが必要です
@@ -875,7 +875,7 @@ void PSOManager::CreateSkyboxPSO()
 
     // PSOを生成する
     // psoDescSkybox_ と rootSignatureSkybox_ を使用
-    psoDescSkybox_.pRootSignature = rootSignatureManager_->rootSignatureSkybox_.Get();
+    psoDescSkybox_.pRootSignature = rootSignatureManager_->GetSkyboxRootSignature();
     psoDescSkybox_.InputLayout = inputLayoutDescSkybox_; // スカイボックス用レイアウト
     psoDescSkybox_.VS = { vsBlobSkybox_->GetBufferPointer(),
     vsBlobSkybox_->GetBufferSize() }; // スカイボックス用VS

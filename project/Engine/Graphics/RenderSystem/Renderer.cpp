@@ -118,7 +118,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->SetPipelineState(psoManager_->psoFullscreen_.Get());
 
 	// ルートシグネチャをセット（フルスクリーン用のルートシグネチャ）
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureFullScreen_.Get());
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetFullScreenRootSignature());
 
 	// ルートパラメータにSRVなどをセット
 	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(postEffectManager_->bloomCombineIndex_));
@@ -206,7 +206,7 @@ void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, Worl
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &triangle.mesh.GetVertexBufferView());
 
@@ -281,7 +281,7 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sphere.mesh.GetVertexBufferView());
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sphere.mesh.GetIndexBufferView());
@@ -359,7 +359,7 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャ・パイプライン設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->SetPipelineState(isWireFrame_ ? psoManager_->pso3DWireframe_.Get() : psoManager_->pso3D_.Get());
 
 	// プリミティブ・バッファ設定
@@ -442,7 +442,7 @@ void Renderer::DrawAnimationModel(
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャ・パイプライン設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkinning_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetSkinningRootSignature());
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
 
 	// プリミティブ・バッファ設定
@@ -490,7 +490,7 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャとパイプラインステート
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoGrid_.Get());
 
 	// 頂点・インデックスバッファ
@@ -586,7 +586,7 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
@@ -668,7 +668,7 @@ void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTra
 	// パイプライン・ルートシグネチャ・プリミティブ設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignature3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &cube.mesh.GetVertexBufferView());
 	commandManager_->GetCommandList()->IASetIndexBuffer(&cube.mesh.GetIndexBufferView());
 
@@ -739,7 +739,7 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 
 	// パイプライン設定
 	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoLine_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureLine_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetLineRootSignature());
 
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &line.mesh.GetVertexBufferView());
@@ -813,7 +813,7 @@ void Renderer::DrawParticles(const Camera& camera)
 	if (it == psoMap.end()) return;
 
 	cmdList->SetPipelineState(it->second.Get());
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureParticles_.Get());
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetParticleRootSignature());
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
@@ -893,7 +893,7 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 
 	// PSO と RootSignature をセット
 	cmdList->SetPipelineState(psoManager_->psoSkybox_.Get());
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureSkybox_.Get());
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetSkyboxRootSignature());
 
 	// SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };

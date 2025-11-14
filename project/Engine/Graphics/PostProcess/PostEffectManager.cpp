@@ -279,7 +279,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         cmdList->ResourceBarrier(1, &barrierDepthExtract);
 
         // ルートシグネチャ・PSO・SRV・CBをセット
-        cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignatureDepthExtract_.Get());
+        cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetDepthExtractRootSignature());
         cmdList->SetPipelineState(psoManager_->psoDepth_.Get());
         cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbDepthExtractVS_->GetGPUVirtualAddress());
@@ -310,7 +310,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     cmdList->ResourceBarrier(1, &barrierToDepth);
 
     // 共通ルートシグネチャをセット
-    cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignaturePostProcess_.Get());
+    cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetPostProcessRootSignature());
 
     // Bright Extract
     {
