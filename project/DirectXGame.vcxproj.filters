@@ -738,6 +738,7 @@
     <None Include="Resources\Shaders\Skybox.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Resources\Shaders\ShaderConstants.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DirectXGame.rc">

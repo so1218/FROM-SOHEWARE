@@ -1,6 +1,7 @@
 #pragma once
 #include "MathUtils.h"
 #include "WorldTransform.h"
+#include "ShaderConstants.hlsli"
 
 #include <unordered_map>
 #include <string>
@@ -28,32 +29,6 @@ struct LineVertex
 {
     Vector4 position;
     Vector3 color;
-};
-
-struct Material
-{
-    Matrix4x4 uvTransform;
-
-    Vector4 color;     
-
-    int32_t enableLighting;
-    int32_t lightMode;
-    int32_t isArtWave;
-    int32_t isArtSound;
-
-    int32_t isArtQuad;
-    int32_t isArtKikagaku;
-    int32_t isArtFrag;
-    int32_t isArtGrid;
-
-    Vector2 iResolution;
-    float gTime; // グローバル時間
-    float shininess;   
-
-    Vector4 specularColor;  
-
-    float environmentMapIntensity;
-	float padding[3]; 
 };
 
 struct SimpleMaterial
