@@ -5,7 +5,7 @@
 #define PI 3.1415926535
 #define TAU 6.2831853071
 
-ConstantBuffer<Material> gMaterial : register(b0);
+ConstantBuffer<MaterialData> gMaterial : register(b0);
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
 SamplerState gSampler : register(s0);
@@ -14,7 +14,7 @@ cbuffer DirectionalLights : register(b1)
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
 
-ConstantBuffer<CameraForGPU> gCamera : register(b2);
+ConstantBuffer<FrameData> gFrameData : register(b2);
 
 cbuffer PointLights : register(b3)
 {
@@ -103,7 +103,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // ライティング処理
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
     float3 normal = normalize(input.normal);
-    float3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
+    float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     
     if (gMaterial.enableLighting != 0)
     {
@@ -262,7 +262,7 @@ float3 DrawArtWaveColor(PixelShaderInput input)
     float d = length(uv);
     float3 col = Palette(d); 
 
-    float sinTime = d * 8.0f + gMaterial.gTime;
+    float sinTime = d * 8.0f + gFrameData.gTime;
     d = sin(sinTime) / 8.0f;
     d = abs(d);
     d = 0.02f / d;
@@ -278,7 +278,7 @@ float3 DrawArtQuadColor(PixelShaderInput input)
     float2 u = (screenUV + screenUV - resolution) / resolution.y;
 
     float3 col = float3(0, 0, 0);
-    float time = gMaterial.gTime;
+    float time = gFrameData.gTime;
 
     for (float i = 0.0; i < 20.0; i += 1.0)
     {
@@ -302,7 +302,7 @@ float3 DrawArtQuadColor(PixelShaderInput input)
 }
 float3 DrawArtKikagakuColor(PixelShaderInput input)
 {
-    float2 resolution = gMaterial.iResolution;
+    float2 resolution = gFrameData.iResolution;
     float2 fragCoord = input.texcoord * resolution;
     float2 uv = (fragCoord * 2.0 - resolution) / resolution.y;
 
@@ -310,7 +310,7 @@ float3 DrawArtKikagakuColor(PixelShaderInput input)
     uv = normalize(uv) * length(uv);
 
     float3 col = float3(0, 0, 0);
-    float time = gMaterial.gTime;
+    float time = gFrameData.gTime;
 
     [unroll]
     for (int i = 0; i < 12; i++)
@@ -334,12 +334,12 @@ float3 DrawArtKikagakuColor(PixelShaderInput input)
 }
 float3 DrawArtSoundColor(PixelShaderInput input)
 {
-    float2 resolution = gMaterial.iResolution;
+    float2 resolution = gFrameData.iResolution;
     float2 fragCoord = input.texcoord * resolution;
     float2 uv = (fragCoord - 0.5 * resolution) / resolution.y;
 
     float3 color = float3(0.0, 0.0, 0.0);
-    float time = gMaterial.gTime;
+    float time = gFrameData.gTime;
 
     [unroll]
     for (int i = 0; i < 20; i++)
@@ -370,26 +370,26 @@ float3 DrawArtSoundColor(PixelShaderInput input)
 
 float3 DrawArtFragColor(PixelShaderInput input)
 {
-    float2 fragCoord = input.texcoord * gMaterial.iResolution;
-    float2 uv = fragCoord / gMaterial.iResolution;
-    float time = gMaterial.gTime;
+    float2 fragCoord = input.texcoord * gFrameData.iResolution;
+    float2 uv = fragCoord / gFrameData.iResolution;
+    float time = gFrameData.gTime;
 
     // 任意の変換行列（方向違いのライン）
     float2x2 m1 = float2x2(1.0, 0.0, 1.0, 1.0);
     float2x2 m2 = float2x2(1.0, 1.0, 1.0, 0.0);
 
     float3 col = float3(0.0, 0.0, 0.0);
-    col = getLine(col, fragCoord, m1, 1.02, time, gMaterial.iResolution);
-    col = getLine(col, fragCoord, m2, 1.02, time, gMaterial.iResolution);
-    col = getLine(col, fragCoord, m1, -0.02, time, gMaterial.iResolution);
-    col = getLine(col, fragCoord, m2, -0.02, time, gMaterial.iResolution);
+    col = getLine(col, fragCoord, m1, 1.02, time, gFrameData.iResolution);
+    col = getLine(col, fragCoord, m2, 1.02, time, gFrameData.iResolution);
+    col = getLine(col, fragCoord, m1, -0.02, time, gFrameData.iResolution);
+    col = getLine(col, fragCoord, m2, -0.02, time, gFrameData.iResolution);
 
     return col;
 }
 
 float3 DrawArtGridColor(PixelShaderInput input)
 {
-    float2 fragCoord = input.texcoord * gMaterial.iResolution;
+    float2 fragCoord = input.texcoord * gFrameData.iResolution;
 
     // UV原点を中央に（-0.5～+0.5）
     float2 uv = input.texcoord - 0.5;

@@ -103,7 +103,7 @@ void Engine::BeginFrame()
 	// ポストエフェクトのパラメータ更新など
 	postEffectManager_->Update();
 
-	cameraManager_->GetCameraData()->worldPosition = camera_->GetTranslation();
+	cameraManager_->GetFrameData()->cameraWorldPosition = camera_->GetTranslation();
 
 #ifdef _DEBUG
 	debugGuiManager_->Update();

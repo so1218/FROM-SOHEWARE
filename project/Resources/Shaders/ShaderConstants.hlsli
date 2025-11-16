@@ -21,36 +21,44 @@ struct TransformationMatrix
     float4x4 WorldInverseTranspose;
 };
 
-struct Material
+struct FrameData
+{
+    float4x4 viewProjectionMatrix;
+
+    float3 cameraWorldPosition;
+    float padding0;
+    float3 cameraRight;
+    float padding1;
+    float3 cameraUp;
+    float padding2;
+
+    float2 iResolution; 
+    float2 screenResolution;
+    
+    float gTime; 
+    float3 padding3;
+};
+
+struct MaterialData
 {
     float4x4 uvTransform;
-
     float4 color;
 
     int32_t enableLighting;
     int32_t lightMode;
+    float shininess; 
+    float padding0;
+    float4 specularColor; 
+    float environmentMapIntensity; 
+    float3 padding1;
+
     int32_t isArtWave;
     int32_t isArtSound;
-
     int32_t isArtQuad;
     int32_t isArtKikagaku;
     int32_t isArtFrag;
     int32_t isArtGrid;
-
-    float2 iResolution;
-    float gTime;
-    float shininess;
-
-    float4 specularColor;
-
-    float environmentMapIntensity;
-    float3 padding;
-};
-
-struct CameraForGPU 
-{
-    float3 worldPosition;
-    float32_t padding0;
+    float2 padding2; 
 };
 
 struct DirectionalLight
@@ -107,13 +115,4 @@ struct ParticleInstanceData
     float rotationZ;
     int32_t isBillboard;
     float padding; 
-};
-
-struct CameraBuffer
-{
-    float4x4 viewProjectionMatrix;
-    float3 cameraRight;
-    float padding0;
-    float3 cameraUp;
-    float padding1;
 };

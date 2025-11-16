@@ -108,10 +108,10 @@ std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, 
             if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
             {
                 std::filesystem::path fullTexturePath = path.parent_path() / texturePath.C_Str();
-                modelData.material.textureFilePath = fullTexturePath.string();
+                modelData.textureData.textureFilePath = fullTexturePath.string();
 
                 // ここでテクスチャをロードし、ハンドルを取得する
-                modelData.material.textureHandle = engine->LoadTexture(fullTexturePath.string());
+                modelData.textureData.textureHandle = engine->LoadTexture(fullTexturePath.string());
             }
         }
 
@@ -224,11 +224,11 @@ void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, cons
             material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
         {
             std::filesystem::path fullTexturePath = std::filesystem::path(directoryPath) / texturePath.C_Str();
-            modelData.material.textureFilePath = fullTexturePath.string();
+            modelData.textureData.textureFilePath = fullTexturePath.string();
         }
         else
         {
-            modelData.material.textureFilePath = "";
+            modelData.textureData.textureFilePath = "";
         }
     }
 }

@@ -166,7 +166,7 @@ private:
 
     // GPU用カメラバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cameraBuffer_;
-    CameraBuffer* mappedCamera_ = nullptr;
+    FrameData* frameData_ = nullptr;
 
     // パーティクルインスタンスバッファ（フレーム毎）
     Microsoft::WRL::ComPtr<ID3D12Resource> particleInstanceBuffer_[kFrameCount];

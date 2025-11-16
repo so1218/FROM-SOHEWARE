@@ -19,7 +19,7 @@ struct VertexData
     Vector3 normal;
 };
 
-struct MaterialData
+struct TextureData
 {
     std::string textureFilePath;
     uint32_t textureHandle = 0;
@@ -31,23 +31,10 @@ struct LineVertex
     Vector3 color;
 };
 
-struct SimpleMaterial
-{
-    Vector4 color;
-};
-
-enum class MaterialType
-{
-    Complex,
-    Simple,
-};
-
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-    Material* materialData;
-    SimpleMaterial* simpleMaterialData;
-    MaterialType type;
+    MaterialData* materialData;
 };
 
 struct VertexWeightData
@@ -74,7 +61,7 @@ struct ModelData
 {
     std::vector<VertexData>vertices;
     std::vector<uint32_t>indices;
-    MaterialData material;
+    TextureData textureData;
     MaterialHandle materialHandle;
     uint32_t textureHandle;
 	Node rootNode;
@@ -125,27 +112,25 @@ namespace std
 
 struct MaterialSettings
 {
-    Matrix4x4 uvTransform;
+    Matrix4x4 uvTransform = Matrix4x4::MakeIdentity();
 
-    Vector4 color;
+    Vector4 color = Vector4(1, 1, 1, 1);
 
-    bool enableLighting;
-    int32_t lightMode;
-    int32_t isArtWave;
-    int32_t isArtSound;
-
-    int32_t isArtQuad;
-    int32_t isArtKikagaku;
-    int32_t isArtFrag;
-    int32_t isArtGrid;
-
-    Vector2 iResolution;
-    float gTime; 
+    bool enableLighting = false;
+    int32_t lightMode = 1;
     float shininess = 50.0f;
+    float padding0;
+    float4 specularColor = Vector4(1, 1, 1, 1);
+    float environmentMapIntensity = 0.0f;
+    float3 padding1;
 
-    Vector4 specularColor = { 1,1,1,1 };
-
-    float environmentMapIntensity;
+    int32_t isArtWave = false;
+    int32_t isArtSound = false;
+    int32_t isArtQuad = false;
+    int32_t isArtKikagaku = false;
+    int32_t isArtFrag = false;
+    int32_t isArtGrid = false;
+    float2 padding2;
 };
 
 struct AABB

@@ -1,7 +1,6 @@
-cbuffer WVP : register(b1)
-{
-    matrix wvp;
-};
+#include "ShaderConstants.hlsli"
+
+ConstantBuffer<TransformationMatrix> gTransform : register(b1);
 
 struct VertexInput
 {
@@ -18,6 +17,6 @@ struct VertexOutput
 VertexOutput main(VertexInput input)
 {
     VertexOutput output;
-    output.position = mul(input.position, wvp);
+    output.position = mul(input.position, gTransform.WVP);
     return output;
 }

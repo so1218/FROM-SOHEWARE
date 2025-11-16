@@ -1,9 +1,8 @@
-cbuffer Material : register(b0)
-{
-    float4 color;
-};
+#include "ShaderConstants.hlsli"
+
+ConstantBuffer<MaterialData> gMaterial : register(b0);
 
 float4 main() : SV_Target
 {
-    return color;
+    return gMaterial.color;
 }

@@ -10,7 +10,7 @@ struct VertexIn
 // GPUインスタンシング用バッファ
 // インスタンシング用のデータを格納するためのバッファ
 StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);
-ConstantBuffer<CameraBuffer> cameraBuffer : register(b0);
+ConstantBuffer<FrameData> gFrameData : register(b0);
 
 // 出力
 struct VertexOut
@@ -41,8 +41,8 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
         float scaleY = length(world[1].xyz);
 
         // カメラ方向のビルボードベクトル
-        float3 right = cameraBuffer.cameraRight;
-        float3 up = cameraBuffer.cameraUp;
+        float3 right = gFrameData.cameraRight;
+        float3 up = gFrameData.cameraUp;
 
         // Z軸回転（ラジアン）を使ってローカルXYを回転
         float cosR = cos(inst.rotationZ);
@@ -62,7 +62,7 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
     }
 
     // ワールド→クリップ座標へ
-    vout.svpos = mul(float4(worldPos, 1.0f), cameraBuffer.viewProjectionMatrix);
+    vout.svpos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
 
     // その他属性
     vout.uv = vin.uv;

@@ -11,6 +11,7 @@
 #include "ShapeGenerator.h"
 #include "Camera.h"
 #include "PostEffectManager.h"
+#include "TimeManager.h"
 
 // 最大数の定義
 const int32_t Renderer::kMaxTriangleCount = 0; // 三角形の最大数
@@ -69,6 +70,20 @@ void Renderer::BeginFrame()
     indexLine_ = 0;
     indexParticle_ = 0;
 	indexInstance_ = 0;
+
+	if (frameData_)
+	{
+		frameData_->gTime += static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+
+		// 非常に大きな値になるのを防ぐ
+		if (frameData_->gTime > 10000.0f) 
+		{
+			frameData_->gTime = 0.0f;
+		}
+		frameData_->iResolution = Vector2(1, 1);
+		frameData_->screenResolution = Vector2(static_cast<float>(clientWidth_), static_cast<float>(clientHeight_));
+	}
+
 }
 
 void Renderer::CreateObjects()
@@ -711,7 +726,7 @@ void Renderer::CreateLines()
 
 	for (size_t i = 0; i < kMaxLineCount; ++i)
 	{
-		lines_[i].materialHandle = materialManager_->CreateSimpleMaterial(device_->GetDevice());
+		lines_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
 
 		lines_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 		lines_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lines_[i].mappedData));
@@ -747,7 +762,7 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 	line.mesh.SetVertexCount(2);
 
 	// マテリアル色のみ更新
-	line.materialHandle.simpleMaterialData->color = Math::Uint32ToColorVector(color);
+	line.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
 	// WVP行列更新
 	line.worldMatrix = Matrix4x4::MakeIdentity();
@@ -796,8 +811,8 @@ void Renderer::CreateParticles()
 		particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
 	}
 
-	cameraBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(CameraBuffer));
-	cameraBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedCamera_));
+	cameraBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(FrameData));
+	cameraBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
 void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
@@ -843,10 +858,10 @@ void Renderer::DrawParticles(const Camera& camera)
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// カメラ定数バッファ更新
-	mappedCamera_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
+	frameData_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
 	Matrix4x4 view = camera.GetViewMatrix();
-	mappedCamera_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
-	mappedCamera_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
+	frameData_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
+	frameData_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
 	cmdList->SetGraphicsRootConstantBufferView(1, cameraBuffer_->GetGPUVirtualAddress());
 
 	// 先頭アドレス
@@ -902,10 +917,10 @@ void Renderer::CreateSkybox()
 	skyboxWvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedSkyboxWvp_));
 
 	// マテリアルバッファを作成
-	skyboxMaterialHandle_ = materialManager_->CreateSimpleMaterial(device_->GetDevice());
+	skyboxMaterialHandle_ = materialManager_->CreateMaterial(device_->GetDevice());
 
 	// スカイボックスのデフォルト色
-	skyboxMaterialHandle_.simpleMaterialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
 void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
@@ -937,7 +952,7 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 
 	// マテリアルカラーの設定
 	// 引数の color をマテリアルバッファに設定
-	skyboxMaterialHandle_.simpleMaterialData->color = Math::Uint32ToColorVector(color);
+	skyboxMaterialHandle_.materialData->color = Math::Uint32ToColorVector(color);
 
 	// メッシュ情報をセット
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

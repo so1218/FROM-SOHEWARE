@@ -23,7 +23,4 @@ float4 main(VertexOut vin) : SV_TARGET
         discard;
 
     return finalColor;
-
-    // 単色
-    //return vin.color;
 }
