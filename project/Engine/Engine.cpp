@@ -51,8 +51,6 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	particleSystem_->Initialize(this);
 }
 
-
-
 void Engine::Finalize()
 {
 	ImGuiManager::Finalize();
@@ -133,7 +131,7 @@ void Engine::EndFrame()
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
 	
 #ifdef _DEBUG
-	if (useDebugView)
+	if (useDebugView_)
 	{
 		debugGuiManager_->RenderOffscreenTexture(
 			srvManager_.get(),
@@ -309,6 +307,10 @@ void Engine::InitializeRenderer()
 	hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
 	assert(SUCCEEDED(hr));
 
+	// ShaderManager を生成・初期化
+	shaderManager_ = std::make_unique<ShaderManager>();
+	shaderManager_->Initialize(dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+
 	// ルートシグネチャの初期化
 	rootSignatureManager_ = std::make_unique<RootSignatureManager>();
 	rootSignatureManager_->Initialize(graphicsDevice_->GetDevice());
@@ -317,9 +319,7 @@ void Engine::InitializeRenderer()
 	psoManager_ = std::make_unique<PSOManager>();
 	psoManager_->Initialize(
 		graphicsDevice_->GetDevice(),
-		dxcUtils_.Get(),
-		dxcCompiler_.Get(),
-		includeHandler_.Get(),
+		shaderManager_.get(),
 		rootSignatureManager_.get()
 	);
 

@@ -1,0 +1,12 @@
+{
+  "RootSignature": "Skinning",
+  "VertexShader": "Resources/Shaders/SkinningObject3D.VS.hlsl",
+  "PixelShader": "Resources/Shaders/Object3D.PS.hlsl",
+  "InputLayout": "Skinning",
+  "BlendState": "AlphaBlend",
+  "RasterizerState": "BackCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormat": "R8G8B8A8_UNORM_SRGB",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

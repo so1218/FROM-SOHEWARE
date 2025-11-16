@@ -74,6 +74,8 @@ public:
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
+    // BlendMode (enum) を PSO名 (string) に変換するヘルパー
+    std::string GetParticlePSOName(BlendMode mode);
 
     // メッシュキャッシュ取得・作成 
     Mesh* GetOrCreateMesh(const ModelData& modelData);

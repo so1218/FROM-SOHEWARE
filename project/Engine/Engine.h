@@ -23,12 +23,10 @@
 #include "AnimationLoader.h" 
 #include "Renderer.h" 
 #include "FrameLimiter.h" 
+#include "ShaderManager.h"
 
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
-
-// デバッグ描画切り替えフラグ
-constexpr bool useDebugView = true;
 
 class Engine
 {
@@ -75,6 +73,7 @@ public:
     std::unique_ptr<RenderContext> renderContext_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;
+    std::unique_ptr<ShaderManager> shaderManager_;
     std::unique_ptr<PSOManager> psoManager_;
     MaterialManager* materialManager_ = nullptr;
     std::unique_ptr<TextureManager> textureManager_;
@@ -103,4 +102,7 @@ public:
     static std::wstring windowTitle_;
     // 固定FPS
     static int kFixedFPS_; 
+
+    // デバッグ描画切り替えフラグ
+    bool useDebugView_ = true;
 };

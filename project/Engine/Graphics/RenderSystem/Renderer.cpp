@@ -115,10 +115,10 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// パイプラインステートをセット（フルスクリーン描画用PSO）
-	cmdList->SetPipelineState(psoManager_->psoFullscreen_.Get());
+	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
 
 	// ルートシグネチャをセット（フルスクリーン用のルートシグネチャ）
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetFullScreenRootSignature());
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Fullscreen"));
 
 	// ルートパラメータにSRVなどをセット
 	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(postEffectManager_->bloomCombineIndex_));
@@ -141,6 +141,24 @@ Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vect
     Matrix4x4 moveBack = Matrix4x4::MakeTranslate(pivot);
     Matrix4x4 result = (moveToOrigin * rotateScale) * moveBack;
     return result * Matrix4x4::MakeTranslate(translate);
+}
+
+// BlendMode (enum) を PSO名 (string) に変換するヘルパー
+std::string Renderer::GetParticlePSOName(BlendMode mode)
+{
+	switch (mode)
+	{
+	case kBlendModeNone:     return "ParticleOpaque";
+	case kBlendModeNormal:   return "ParticleAlphaBlend";
+	case kBlendModeAdd:      return "ParticleAdditive";
+	case kBlendModeSubtract: return "ParticleSubtract";
+	case kBlendModeMultily:  return "ParticleMultiply";
+	case kBlendModeScreen:   return "ParticleScreen";
+	case kBlendModeExclusion: return "ParticleExclusion";
+	default:
+		assert(false && "Unknown BlendMode");
+		return "ParticleOpaque"; // 不明な場合はとりあえずOpaque
+	}
 }
 
 void Renderer::CreateTriangles()
@@ -205,8 +223,8 @@ void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, Worl
 	triangle.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &triangle.mesh.GetVertexBufferView());
 
@@ -280,8 +298,8 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 	sphere.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sphere.mesh.GetVertexBufferView());
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sphere.mesh.GetIndexBufferView());
@@ -359,8 +377,8 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャ・パイプライン設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
-	commandManager_->GetCommandList()->SetPipelineState(isWireFrame_ ? psoManager_->pso3DWireframe_.Get() : psoManager_->pso3D_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
+	commandManager_->GetCommandList()->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
 
 	// プリミティブ・バッファ設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -442,8 +460,8 @@ void Renderer::DrawAnimationModel(
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャ・パイプライン設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetSkinningRootSignature());
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoSkinning_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Skinning"));
 
 	// プリミティブ・バッファ設定
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -490,8 +508,8 @@ void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelDat
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
 	// ルートシグネチャとパイプラインステート
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoGrid_.Get());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Grid"));
 
 	// 頂点・インデックスバッファ
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -585,8 +603,8 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 	sprite.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandManager_->GetCommandList()->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
@@ -666,9 +684,9 @@ void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTra
 	cube.materialHandle.materialData->uvTransform = uvTransformMatrix;
 
 	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->pso3D_.Get());
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->Get3DRootSignature());
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &cube.mesh.GetVertexBufferView());
 	commandManager_->GetCommandList()->IASetIndexBuffer(&cube.mesh.GetIndexBufferView());
 
@@ -738,8 +756,8 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 	memcpy(&line.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 
 	// パイプライン設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->psoLine_.Get());
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetLineRootSignature());
+	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Line"));
+	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
 
 	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &line.mesh.GetVertexBufferView());
@@ -781,8 +799,6 @@ void Renderer::CreateParticles()
 
 	cameraBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(CameraBuffer));
 	cameraBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedCamera_));
-
-	psoManager_->CreateAllParticlePipelines();
 }
 
 void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
@@ -807,13 +823,19 @@ void Renderer::DrawParticles(const Camera& camera)
 
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// 共通設定（パイプラインやルートシグネチャ、頂点/indexバッファ）
-	auto& psoMap = psoManager_->psoParticles_;
-	auto it = psoMap.find(currentBlendMode_);
-	if (it == psoMap.end()) return;
+	// ★新しいロジック: enum を string に変換
+	std::string psoName = GetParticlePSOName(currentBlendMode_);
 
-	cmdList->SetPipelineState(it->second.Get());
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetParticleRootSignature());
+	// ★新しいロジック: string で GetPSO を呼び出す
+	ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
+	if (pso == nullptr) {
+		// JSONファイル名が間違っているか、JSON定義が不正
+		assert(false && "Particle PSO not found. Check JSON file name or definition.");
+		return;
+	}
+
+	cmdList->SetPipelineState(pso);
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Particle"));
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
@@ -892,8 +914,8 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 	auto* cmdList = commandManager_->GetCommandList();
 
 	// PSO と RootSignature をセット
-	cmdList->SetPipelineState(psoManager_->psoSkybox_.Get());
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetSkyboxRootSignature());
+	cmdList->SetPipelineState(psoManager_->GetPSO("Skybox"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skybox"));
 
 	// SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };

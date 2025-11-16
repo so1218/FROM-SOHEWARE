@@ -279,8 +279,8 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         cmdList->ResourceBarrier(1, &barrierDepthExtract);
 
         // ルートシグネチャ・PSO・SRV・CBをセット
-        cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetDepthExtractRootSignature());
-        cmdList->SetPipelineState(psoManager_->psoDepth_.Get());
+        cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("DepthExtract"));
+        cmdList->SetPipelineState(psoManager_->GetPSO("Depth"));
         cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbDepthExtractVS_->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootConstantBufferView(1, cbDepthExtractPS_->GetGPUVirtualAddress());
@@ -310,7 +310,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     cmdList->ResourceBarrier(1, &barrierToDepth);
 
     // 共通ルートシグネチャをセット
-    cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetPostProcessRootSignature());
+    cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("PostProcess"));
 
     // Bright Extract
     {
@@ -320,7 +320,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierBrightExtract);
 
-        cmdList->SetPipelineState(psoManager_->psoExtract_.Get());
+        cmdList->SetPipelineState(psoManager_->GetPSO("BrightnessExtract"));
         cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sceneTextureSRVIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBrightExtract_->GetGPUVirtualAddress());
 
@@ -346,7 +346,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierVerticalBlur);
 
-        cmdList->SetPipelineState(psoManager_->psoBlurY_.Get());
+        cmdList->SetPipelineState(psoManager_->GetPSO("BlurVertical"));
         cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
 
@@ -372,7 +372,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierHorizontalBlur);
 
-        cmdList->SetPipelineState(psoManager_->psoBlurX_.Get());
+        cmdList->SetPipelineState(psoManager_->GetPSO("BlurHorizontal"));
         cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(verticalBlurIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
 
@@ -398,7 +398,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierBloomCombine);
 
-        cmdList->SetPipelineState(psoManager_->psoBloomCombine_.Get());
+        cmdList->SetPipelineState(psoManager_->GetPSO("BloomCombine"));
         ID3D12DescriptorHeap* heaps[] = { srvTableHeap_.Get() };
         cmdList->SetDescriptorHeaps(1, heaps);
         cmdList->SetGraphicsRootDescriptorTable(1, bloomCombineSRVTable_);
