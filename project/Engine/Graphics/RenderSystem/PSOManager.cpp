@@ -332,9 +332,9 @@ D3D12_RASTERIZER_DESC PSOManager::GetRasterizerState(const std::string& name)
     if (name == "LineAA") 
     {
         D3D12_RASTERIZER_DESC rasterizerDesc{};
-        rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK; // "BackCullSolid"と同じ
-        rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID; // "BackCullSolid"と同じ
-        rasterizerDesc.AntialiasedLineEnable = true; // ★ここがtrue
+        rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK; 
+        rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+        rasterizerDesc.AntialiasedLineEnable = true; 
         return rasterizerDesc;
     }
 

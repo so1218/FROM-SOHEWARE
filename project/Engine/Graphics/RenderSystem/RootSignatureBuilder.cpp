@@ -53,31 +53,26 @@ void RootSignatureBuilder::AddDescriptorTableRange(
     D3D12_SHADER_VISIBILITY visibility,
     UINT registerSpace)
 {
-    // 1. レンジを定義
+    // 単一のデスクリプタレンジを作成してテーブルに追加
     D3D12_DESCRIPTOR_RANGE range = {};
     range.RangeType = type;
     range.NumDescriptors = numDescriptors;
     range.BaseShaderRegister = baseShaderRegister;
     range.RegisterSpace = registerSpace;
-    // D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND を使う
     range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-    // 2. 1つのレンジを持つテーブルとして、AddDescriptorTable を呼び出す
-    //    (vector の初期化子リストを使用)
     AddDescriptorTable({ range }, visibility);
 }
 
 void RootSignatureBuilder::AddDescriptorTable(const std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY visibility)
 {
-    // 1. レンジのコピーを内部ストレージに保存
-    //    (Build時にこのデータへのポインタを使うため)
+    // レンジを内部ストレージに保持（Build時に参照するため）
     descriptorRangeStorage_.push_back(ranges);
 
-    // 2. ルートパラメータを設定
+    // ルートパラメータとして登録
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     param.ShaderVisibility = visibility;
-    // 最後にストレージに追加された vector の実体を指す
     param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptorRangeStorage_.back().size());
     param.DescriptorTable.pDescriptorRanges = descriptorRangeStorage_.back().data();
 
@@ -96,7 +91,7 @@ void RootSignatureBuilder::AddStaticSampler(
     sampler.AddressU = addressModeAll;
     sampler.AddressV = addressModeAll;
     sampler.AddressW = addressModeAll;
-    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // 既存コードに合わせる
+    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; 
     sampler.MaxLOD = maxLod;
     sampler.ShaderRegister = shaderRegister;
     sampler.ShaderVisibility = visibility;
@@ -112,9 +107,9 @@ ComPtr<ID3D12RootSignature> RootSignatureBuilder::Build(
     D3D12_ROOT_SIGNATURE_DESC desc = {};
     desc.Flags = flags;
     desc.NumParameters = static_cast<UINT>(parameters_.size());
-    desc.pParameters = parameters_.data(); // m_parameters が実体
+    desc.pParameters = parameters_.data(); 
     desc.NumStaticSamplers = static_cast<UINT>(staticSamplers_.size());
-    desc.pStaticSamplers = staticSamplers_.data(); // m_staticSamplers が実体
+    desc.pStaticSamplers = staticSamplers_.data();
 
     // シリアライズ
     ComPtr<ID3DBlob> signatureBlob = nullptr;
