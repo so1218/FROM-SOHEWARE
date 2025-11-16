@@ -7,13 +7,3 @@ struct Particle
     float4 color;
     uint textureIndex;
 };
-
-struct InstanceData
-{
-    float4x4 world;
-    float4 color;
-    uint textureIndex;
-    float rotationZ;
-    int isBillboard;
-    float padding;
-};

@@ -5,32 +5,6 @@
 #define PI 3.1415926535
 #define TAU 6.2831853071
 
-//struct Material
-//{
-//    float4x4 uvTransform;
-    
-//    float4 color;
-    
-//    int32_t enableLighting;
-//    int32_t lightMode;
-//    int32_t isArtWave;
-//    int32_t isArtSound;
-    
-//    int32_t isArtQuad;
-//    int32_t isArtKikagaku;
-//    int32_t isArtFrag;
-//    int32_t isArtGrid;
-    
-//    float2 iResolution;
-//    float gTime;
-//    float shininess;
-    
-//    float4 specularColor;
-
-//    float environmentMapIntensity;
-//    float3 padding;
-//};
-
 ConstantBuffer<Material> gMaterial : register(b0);
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
@@ -40,7 +14,7 @@ cbuffer DirectionalLights : register(b1)
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
 
-ConstantBuffer<Camera> gCamera : register(b2);
+ConstantBuffer<CameraForGPU> gCamera : register(b2);
 
 cbuffer PointLights : register(b3)
 {

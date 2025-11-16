@@ -123,13 +123,6 @@ namespace std
     };
 }
 
-struct TransformationMatrix
-{
-    Matrix4x4 WVP;
-    Matrix4x4 World;
-    Matrix4x4 WorldInverseTranspose;
-};
-
 struct MaterialSettings
 {
     Matrix4x4 uvTransform;
@@ -155,83 +148,10 @@ struct MaterialSettings
     float environmentMapIntensity;
 };
 
-struct DirectionalLight
-{
-    Vector4 color;
-    Vector3 direction;
-    float intensity;
-    int enable;
-    float padding[3];    
-};
-
-struct PointLight
-{
-    Vector4 color;
-    Vector3 position;
-    float intensity;
-    float radius;
-    float decay;
-    int enable;
-    float padding;
-};
-
-struct SpotLight
-{
-    Vector4 color;
-    Vector3 position;
-    float intensity;
-    Vector3 direction;
-    float distance;
-    float decay;
-    float cosAngle;
-    int enable;
-    float padding;
-};
-
-struct AreaLight
-{
-    Vector4 color;
-    Vector3 position;
-    float intensity;
-    Vector3 right;
-    float range;
-    Vector3 up;
-    float decay;
-    int enable;
-    Vector3 padding;
-};
-
-
-struct ParticleInstanceData
-{
-    Matrix4x4 worldMatrix;
-    Vector4 color;
-    uint32_t textureIndex;
-    float rotationZ;
-    int isBillboard;
-    float padding;
-
-};
-
-struct CameraBuffer
-{
-    Matrix4x4 viewProjectionMatrix;
-    Vector3 cameraRight; // X軸方向
-	float padding0; 
-    Vector3 cameraUp; // Y軸方向
-
-};
-
 struct AABB
 {
     Vector3 min;
     Vector3 max;
-};
-
-struct CameraForGPU
-{
-    Vector3 worldPosition;
-    float padding0;
 };
 
 struct BloomSettingsCPU {

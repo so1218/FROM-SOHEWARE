@@ -11,55 +11,6 @@ struct VertexShaderOutput
     float32_t3 worldPosition : POSITION1;
 };
 
-struct DirectionalLight 
-{
-    float4 color;
-    float3 direction;
-    float intensity;
-    int enable;
-};
-
-struct Camera
-{
-    float32_t3 worldPosition;
-    float32_t padding0;
-};
-
-struct PointLight
-{
-    float32_t4 color; 
-    float32_t3 position;
-    float intensity;
-    float radius;
-    float decay;
-    int enable;
-};
-
-struct SpotLight
-{
-    float32_t4 color;
-    float32_t3 position;
-    float32_t intensity;
-    float32_t3 direction;
-    float32_t distance;
-    float32_t decay;
-    float32_t cosAngle;
-    int enable;
-};
-
-struct AreaLight
-{
-    float4 color;
-    float3 position; 
-    float intensity;
-    float3 right; 
-    float range;
-    float3 up; 
-    float decay; 
-    int enable;
-    float3 padding; 
-};
-
 // Light types
 #define LIGHT_HALFLAMBERT 0
 #define LIGHT_PHONG_SPECULAR 1

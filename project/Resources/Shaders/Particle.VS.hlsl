@@ -1,4 +1,5 @@
 #include "ParticleCommon.hlsli" 
+#include "ShaderConstants.hlsli" 
 // 頂点入力：板ポリ（1インスタンスあたり4頂点）
 struct VertexIn
 {
@@ -6,18 +7,10 @@ struct VertexIn
     float2 uv : TEXCOORD; // UV
 };
 
-// Camera用定数バッファ
-cbuffer CameraBuffer : register(b0)
-{
-    float4x4 viewProjection;
-    float3 cameraRight; // X軸方向
-    float padding0; // パディング
-    float3 cameraUp; // Y軸方向
-};
-
 // GPUインスタンシング用バッファ
 // インスタンシング用のデータを格納するためのバッファ
-StructuredBuffer<InstanceData> instanceBuffer : register(t0);
+StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);
+ConstantBuffer<CameraBuffer> cameraBuffer : register(b0);
 
 // 出力
 struct VertexOut
@@ -34,8 +27,8 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
     VertexOut vout;
 
     // インスタンスデータ
-    InstanceData inst = instanceBuffer[instanceId];
-    float4x4 world = inst.world;
+    ParticleInstanceData inst = instanceBuffer[instanceId];
+    float4x4 world = inst.worldMatrix;
     float3 worldPos;
     
     if (inst.isBillboard == 1)
@@ -48,8 +41,8 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
         float scaleY = length(world[1].xyz);
 
         // カメラ方向のビルボードベクトル
-        float3 right = cameraRight;
-        float3 up = cameraUp;
+        float3 right = cameraBuffer.cameraRight;
+        float3 up = cameraBuffer.cameraUp;
 
         // Z軸回転（ラジアン）を使ってローカルXYを回転
         float cosR = cos(inst.rotationZ);
@@ -69,7 +62,7 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
     }
 
     // ワールド→クリップ座標へ
-    vout.svpos = mul(float4(worldPos, 1.0f), viewProjection);
+    vout.svpos = mul(float4(worldPos, 1.0f), cameraBuffer.viewProjectionMatrix);
 
     // その他属性
     vout.uv = vin.uv;

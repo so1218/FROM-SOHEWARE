@@ -8,10 +8,18 @@
 #define float2 Vector2
 #define int32_t int32_t
 #define uint32_t uint32_t
+#define float32_t float
 
 #else
 
 #endif
+
+struct TransformationMatrix
+{
+    float4x4 WVP;
+    float4x4 World;
+    float4x4 WorldInverseTranspose;
+};
 
 struct Material
 {
@@ -37,4 +45,75 @@ struct Material
 
     float environmentMapIntensity;
     float3 padding;
+};
+
+struct CameraForGPU 
+{
+    float3 worldPosition;
+    float32_t padding0;
+};
+
+struct DirectionalLight
+{
+    float4 color;
+    float3 direction;
+    float intensity;
+    int32_t enable;
+    float3 padding; 
+};
+
+struct PointLight
+{
+    float4 color;
+    float3 position;
+    float intensity;
+    float radius;
+    float decay;
+    int32_t enable;
+    float padding; 
+};
+
+struct SpotLight
+{
+    float4 color;
+    float3 position;
+    float intensity;
+    float3 direction;
+    float distance;
+    float decay;
+    float cosAngle;
+    int32_t enable;
+    float padding;
+};
+
+struct AreaLight
+{
+    float4 color;
+    float3 position;
+    float intensity;
+    float3 right;
+    float range;
+    float3 up;
+    float decay;
+    int32_t enable;
+    float3 padding; 
+};
+
+struct ParticleInstanceData
+{
+    float4x4 worldMatrix;
+    float4 color;
+    uint32_t textureIndex;
+    float rotationZ;
+    int32_t isBillboard;
+    float padding; 
+};
+
+struct CameraBuffer
+{
+    float4x4 viewProjectionMatrix;
+    float3 cameraRight;
+    float padding0;
+    float3 cameraUp;
+    float padding1;
 };
