@@ -4,7 +4,8 @@
 #include <unordered_set>
 #include <stdexcept>  
 
-class SRVAllocator {
+class SRVAllocator
+{
 public:
     SRVAllocator(uint32_t maxDescriptors)
         : maxDescriptors_(maxDescriptors)
