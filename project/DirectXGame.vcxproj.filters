@@ -790,9 +790,6 @@
     <FxCompile Include="Resources\Shaders\Depth.VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\PostEffectPass.PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -800,5 +797,8 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\SkinningObject3D.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\PostEffectPass.PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

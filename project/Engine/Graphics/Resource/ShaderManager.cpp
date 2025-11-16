@@ -46,7 +46,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
         L"-T", profile,  // シェーダープロファイルの指定
         L"-Zi", L"-Qembed_debug",  // デバッグ情報を埋め込むオプション
         L"-Od",  // 最適化を外す
-        L"-Zpr"  // メモリレイアウトの指定
+        L"-Zpr",  // メモリレイアウトの指定
     };
     // 実際にShaderをコンパイルする
     IDxcResult* shaderResult = nullptr;

@@ -15,7 +15,8 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     isPlaying_ = false;
 
     // playOnAwakeがtrueなら、自動的に再生
-    if (config.playOnAwake) {
+    if (config.playOnAwake)
+    {
         Play();
     }
 }
@@ -46,11 +47,13 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
     // Durationを超えたかチェック
     if (duration_ >= 0.0f && elapsedTime_ >= duration_)
     {
-        if (looping_) {
+        if (looping_)
+        {
             // ループ再生なら時間をリセット
             elapsedTime_ -= duration_;
         }
-        else {
+        else
+        {
             // ループしないなら停止して終了
             Stop();
             return;
@@ -65,7 +68,8 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
         // amount_の数だけループしてパーティクルを生成
         for (int i = 0; i < amount_; ++i)
         {
-            WorldTransform worldTransform = {
+            WorldTransform worldTransform = 
+            {
                 { 1.0f, 1.0f, 1.0f },
                 { 0.0f, 0.0f, 0.0f },
                 position_,
