@@ -234,16 +234,38 @@ void ParticleEditor::ShowEditor()
 
                     ImGui::Checkbox("有効##Color", &colorModule.enabled);
 
-                    // 開始色
-                    Vector4 startCol = Math::Uint32ToColorVector(colorModule.startColor);
-                    if (ImGui::ColorEdit4("開始色", &startCol.x)) {
-                        colorModule.startColor = Math::ColorVectorToUint32(startCol);
+                    const char* modes[] = { "単一グラデーション", "2グラデーションからランダム" };
+                    int currentMode = static_cast<int>(colorModule.mode);
+                    if (ImGui::Combo("モード", &currentMode, modes, IM_ARRAYSIZE(modes)))
+                    {
+                        colorModule.mode = static_cast<ColorOverLifetimeModule::Mode>(currentMode);
                     }
 
-                    // 終了色
+                    // --- グラデーション 1 ---
+                    ImGui::Text("グラデーション 1");
+                    Vector4 startCol = Math::Uint32ToColorVector(colorModule.startColor);
+                    if (ImGui::ColorEdit4("開始色 1", &startCol.x)) {
+                        colorModule.startColor = Math::ColorVectorToUint32(startCol);
+                    }
                     Vector4 endCol = Math::Uint32ToColorVector(colorModule.endColor);
-                    if (ImGui::ColorEdit4("終了色", &endCol.x)) {
+                    if (ImGui::ColorEdit4("終了色 1", &endCol.x)) {
                         colorModule.endColor = Math::ColorVectorToUint32(endCol);
+                    }
+
+                    // ★ モードが "RandomBetweenTwo" の場合のみグラデーション2を表示
+                    if (colorModule.mode == ColorOverLifetimeModule::Mode::RandomBetweenTwo)
+                    {
+                        ImGui::Separator();
+                        ImGui::Text("グラデーション 2");
+
+                        Vector4 startCol2 = Math::Uint32ToColorVector(colorModule.startColor2);
+                        if (ImGui::ColorEdit4("開始色 2", &startCol2.x)) {
+                            colorModule.startColor2 = Math::ColorVectorToUint32(startCol2);
+                        }
+                        Vector4 endCol2 = Math::Uint32ToColorVector(colorModule.endColor2);
+                        if (ImGui::ColorEdit4("終了色 2", &endCol2.x)) {
+                            colorModule.endColor2 = Math::ColorVectorToUint32(endCol2);
+                        }
                     }
 
                     // イージングタイプの選択

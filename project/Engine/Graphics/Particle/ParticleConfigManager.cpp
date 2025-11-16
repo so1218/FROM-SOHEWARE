@@ -143,8 +143,16 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& colorJson = configJson["colorOverLifetimeModule"];
                     config.colorOverLifetime.enabled = colorJson.value("enabled", false);
+                    config.colorOverLifetime.mode = static_cast<ColorOverLifetimeModule::Mode>(
+                        colorJson.value("mode", static_cast<int>(ColorOverLifetimeModule::Mode::Single))
+                        );
+                    // グラデーション 1
                     config.colorOverLifetime.startColor = colorJson.value("startColor", 0xFFFFFFFF);
                     config.colorOverLifetime.endColor = colorJson.value("endColor", 0xFFFFFF00);
+
+                    // ★ グラデーション 2 の読み込み (デフォルト値は 1 と同じにしておく)
+                    config.colorOverLifetime.startColor2 = colorJson.value("startColor2", config.colorOverLifetime.startColor);
+                    config.colorOverLifetime.endColor2 = colorJson.value("endColor2", config.colorOverLifetime.endColor);
                     /*  EasingType easingType = static_cast<EasingType>(colorJson.value("easingType", static_cast<int>(EasingType::EaseLinear)));
                       config.colorOverLifetime.easing.SetEasing(easingType);*/
                 }
@@ -269,8 +277,15 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "colorOverLifetimeModule",
         {
             { "enabled", config.colorOverLifetime.enabled },
+            { "mode", static_cast<int>(config.colorOverLifetime.mode) },
+
+            // グラデーション 1
             { "startColor", config.colorOverLifetime.startColor },
             { "endColor", config.colorOverLifetime.endColor },
+
+            // ★ グラデーション 2
+            { "startColor2", config.colorOverLifetime.startColor2 },
+            { "endColor2", config.colorOverLifetime.endColor2 },
             /*{ "easingType", static_cast<int>(config.colorOverLifetime.easing.GetEasingType()) }*/
         }},
         { "sizeOverLifetimeModule",

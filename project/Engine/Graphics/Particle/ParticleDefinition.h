@@ -146,9 +146,22 @@ struct RotationOverLifetimeModule
 
 struct ColorOverLifetimeModule
 {
+    // ★ どのモードで色を決定するか
+    enum class Mode : int
+    { 
+        Single = 0,
+        RandomBetweenTwo = 1
+    };
+
     bool enabled = true;
+    Mode mode = Mode::Single;
+
     unsigned int startColor = 0xffffffff;
     unsigned int endColor = 0xffffff00;
+    // ★ グラデーション2 (RandomBetweenTwo用)
+    unsigned int startColor2 = 0xffffffff; // (例: 2つ目の開始色)
+    unsigned int endColor2 = 0xffffff00;   // (例: 2つ目の終了色)
+
     EasingType easingType = EasingType::EaseLinear;
 
     Vector4 Evaluate(float t) const

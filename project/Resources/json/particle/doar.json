@@ -25,7 +25,10 @@
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4211081216,
-            "startColor": 2442003711
+            "endColor2": 7142144,
+            "mode": 1,
+            "startColor": 3014590719,
+            "startColor2": 5834751
         },
         "physicsModule": {
             "drag": 0.0,

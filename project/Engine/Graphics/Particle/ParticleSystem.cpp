@@ -13,6 +13,7 @@
 
 ParticleSystem::ParticleSystem()
 {
+    // エディタと設定マネージャを生成
     editor_ = std::make_unique<ParticleEditor>(this);
     configManager_ = std::make_unique<ParticleConfigManager>(this);
 }
@@ -23,97 +24,95 @@ void ParticleSystem::Initialize(Engine* engine)
 {
     engine_ = engine;
 
+    // 全パーティクル設定をロード
     configManager_->LoadAllParticleDefinitions();
 }
 
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime)
 {
+    // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
 
-    const ParticleConfig& config = GetConfig(presetName);
+    // パーティクル設定を取得
+    auto& config = GetConfig(presetName);
 
     ParticleState particle;
     particle.config = config;
 
-    // モジュールに基づいて初期値を設定
-
-    // Shape: Emitterの座標にShapeのオフセットを加算
+    // Shape
+    // エミッタ位置 + Shapeオフセットで初期座標を設定
     particle.transform = std::make_unique<WorldTransform>();
-    particle.transform->translation_ = transform.translation_ + config.shape.GetInitialPositionOffset();
+    particle.transform->translation_ = transform.translation_ + particle.config.shape.GetInitialPositionOffset();
 
-    // Velocity: 初期設定
-    if (config.velocity.enabled)
-    {
-        particle.velocity = config.velocity.GetInitialVelocity();
-    }
+    // Velocity 
+    if (particle.config.velocity.enabled)
+        particle.velocity = particle.config.velocity.GetInitialVelocity();
 
-    // Color: 初期設定
-    if (config.colorOverLifetime.enabled)
+    // Color
+    if (particle.config.colorOverLifetime.enabled &&
+        particle.config.colorOverLifetime.mode == ColorOverLifetimeModule::Mode::RandomBetweenTwo)
     {
-        particle.color = config.colorOverLifetime.Evaluate(0.0f);
-    }
-    else
-    {
-        particle.color = config.baseColor; // モジュール無効なら基本色
-    }
-
-    // Size: 初期設定
-    if (config.sizeOverLifetime.enabled)
-    {
-        particle.transform->scale_ = config.sizeOverLifetime.Evaluate(0.0f);
-    }
-    else
-    {
-        particle.transform->scale_ = { 1.0f, 1.0f, 1.0f };
-    }
-
-    // Rotation: 初期設定
-    if (config.rotation.enabled)
-    {
-        if (config.rotation.isBillboard)
+        // 50%の確率で2つ目のグラデーションを使用
+        if (Math::RandomFloat(0.0f, 1.0f) > 0.5f)
         {
-            // ビルボードが有効で、かつランダムな初期回転が設定されている場合
-            if (config.rotation.randomStartRotation)
-            {
-                // Z軸にランダムな初期回転を設定
-                particle.transform->rotation_.z = Math::RandomFloat(0.0f, 360.0f);
-            }
-            else
-            {
-                // orientation3D.z を 2D の初期回転として使用する
-                particle.transform->rotation_.z = Math::ToRadians(config.rotation.orientation3D.z);
-            }
+            particle.config.colorOverLifetime.startColor = particle.config.colorOverLifetime.startColor2;
+            particle.config.colorOverLifetime.endColor = particle.config.colorOverLifetime.endColor2;
+        }
+    }
+
+    // 初期色を評価
+    particle.color = particle.config.colorOverLifetime.enabled ?
+        particle.config.colorOverLifetime.Evaluate(0.0f) :
+        particle.config.baseColor;
+
+    // Size
+    particle.transform->scale_ = particle.config.sizeOverLifetime.enabled ?
+        particle.config.sizeOverLifetime.Evaluate(0.0f) :
+        Vector3{ 1.0f, 1.0f, 1.0f };
+
+    // Rotation
+    if (particle.config.rotation.enabled)
+    {
+        if (particle.config.rotation.isBillboard)
+        {
+            // ビルボード回転
+            particle.transform->rotation_.z = particle.config.rotation.randomStartRotation ?
+                Math::RandomFloat(0.0f, 360.0f) :
+                Math::ToRadians(particle.config.rotation.orientation3D.z);
         }
         else
         {
-            // ビルボードが無効な場合、設定された向きをそのまま適用
-            particle.transform->rotation_.x = Math::ToRadians(config.rotation.orientation3D.x);
-            particle.transform->rotation_.y = Math::ToRadians(config.rotation.orientation3D.y);
-            particle.transform->rotation_.z = Math::ToRadians(config.rotation.orientation3D.z);
+            // 通常回転
+            particle.transform->rotation_ = 
+            {
+                Math::ToRadians(particle.config.rotation.orientation3D.x),
+                Math::ToRadians(particle.config.rotation.orientation3D.y),
+                Math::ToRadians(particle.config.rotation.orientation3D.z)
+            };
         }
     }
     else
     {
+        // 回転無効
         particle.transform->rotation_ = { 0.0f, 0.0f, 0.0f };
     }
 
-    // 基本的なプロパティを設定
+    // 共通プロパティ
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.presetName = presetName;
 
+    // 生成したパーティクルを格納
     particles_.push_back(std::move(particle));
 }
 
-// presetNameでエミッターを生成する
 std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string& presetName)
 {
-    // definitions_マップにプリセットが存在するかチェック
+    // 定義が存在しなければデフォルトを作成して保存
     if (definitions_.find(presetName) == definitions_.end())
     {
-        // 存在しない場合は、新しいデフォルト定義を作成して保存
         definitions_[presetName] = ParticleDefinition();
-        configManager_->SaveParticleDefinitionToJson(presetName); // 新しい保存関数
+        configManager_->SaveParticleDefinitionToJson(presetName);
     }
 
     const auto& definition = definitions_.at(presetName);
@@ -121,151 +120,115 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 
     auto emitter = std::make_unique<ParticleEmitter>();
     emitter->presetName_ = presetName; // プリセット名を保持
-    emitter->Initialize(emitterConfig);
+    emitter->Initialize(emitterConfig); // 設定で初期化
 
     return emitter;
 }
 
 void ParticleSystem::Update()
 {
-    // エミッターを更新して、新しいパーティクルを生成
+    // エミッター更新 
     auto it = emitters_.begin();
     while (it != emitters_.end())
     {
         auto& emitter = *it;
+
+        // エミッターが寿命切れなら削除
         if (emitter->isDead_)
         {
             std::string name = emitter->presetName_;
-
             it = emitters_.erase(it);
 
-            auto map_it = namedEmitters_.find(name);
-
-            if (map_it != namedEmitters_.end())
-            {
-                namedEmitters_.erase(map_it);
-            }
-
+            // 名前付きエミッターも削除
+            namedEmitters_.erase(name);
             continue;
         }
+
+        // エミッターを更新して新パーティクル生成
         emitter->Update(*this);
         ++it;
     }
 
-    // フレームの経過時間を取得
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-    // 全パーティクルを更新
+    // パーティクルの更新
     for (auto partilce = particles_.begin(); partilce != particles_.end(); )
     {
         ParticleState& particleState = *partilce;
-        const ParticleConfig& config = particleState.config; // パーティクルの設定を参照
+        const ParticleConfig& config = particleState.config;
 
-        // 寿命の処理
+        // 寿命チェック
         particleState.age += deltaTime;
         if (particleState.age >= particleState.lifetime)
         {
-            partilce = particles_.erase(partilce); // 寿命が尽きたら消去
+            partilce = particles_.erase(partilce);
             continue;
         }
-        // 正規化された寿命を計算
+
         float t = particleState.lifetime > 0.0f ? (particleState.age / particleState.lifetime) : 1.0f;
 
-        // モジュールごとの処理
-
-        // Physics Module: 速度を更新
+        // Physics Module
         if (config.physics.enabled)
         {
             particleState.velocity += config.physics.gravity * deltaTime;
-            particleState.velocity = particleState.velocity * (1.0f - (config.physics.drag * deltaTime));
+            particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
         }
 
+        // Vortex Module
         if (config.vortex.enabled)
         {
-            // パーティクルから渦の中心へ向かうベクトルを計算
             Vector3 toCenter = config.vortex.center - particleState.transform->translation_;
-
-            // 距離がゼロに近い場合は何もしない
-            if (toCenter.Length() > 0.001f) {
+            if (toCenter.Length() > 0.001f)
+            {
                 Vector3 toCenter_norm = toCenter.Normalize();
-
-                // 中心へ向かう/離れる力（公転速度）を計算
                 Vector3 orbitalForce = toCenter_norm * config.vortex.orbitalSpeed;
-
-                // 回転方向のベクトルを計算 (2D/XY平面の場合)
                 Vector3 rotationalForce = { -toCenter_norm.y, toCenter_norm.x, 0.0f };
                 rotationalForce = rotationalForce * config.vortex.rotationSpeed;
-
-                // 2つの力をパーティクルの速度に加える
                 particleState.velocity += (orbitalForce + rotationalForce) * deltaTime;
             }
         }
 
-        // Attraction Module: 引力を速度に加える
+        // Attraction Module
         if (config.attraction.enabled)
         {
-            // パーティクルから目標への方向ベクトルを計算
             Vector3 directionToTarget = config.attraction.target - particleState.transform->translation_;
-
-            // 正規化して、純粋な方向だけを取り出す
-            Vector3 normalizedDir = directionToTarget.Normalize();
-
-            // 速度に加えるべき力（加速度）を計算
-            Vector3 attractionForce = normalizedDir * config.attraction.strength;
-
-            // パーティクルの速度に、経過時間を考慮した力を加える
-            particleState.velocity += attractionForce * deltaTime;
+            particleState.velocity += directionToTarget.Normalize() * config.attraction.strength * deltaTime;
         }
 
-        // 移動: 速度を位置に反映
+        // 位置を更新
         particleState.transform->translation_ += particleState.velocity * deltaTime;
 
-        // Rotation Module: 回転を更新
+        // Rotation Module
         if (config.rotation.enabled)
         {
             if (config.rotation.isBillboard)
             {
-                // ビルボード有効時
                 particleState.transform->rotation_.x = 0.0f;
                 particleState.transform->rotation_.y = 0.0f;
                 particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
             }
             else
             {
-                // ビルボード無効時
                 particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
             }
         }
         particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
 
-        // ColorOverLifetime Module: 色を更新
+        // Color Module
         if (config.colorOverLifetime.enabled)
-        {
             particleState.color = config.colorOverLifetime.Evaluate(t);
-        }
 
-        // SizeOverLifetime Module: スケールを更新
+        // Size Module
         if (config.sizeOverLifetime.enabled)
-        {
             particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
-        }
 
-        // TextureSheetAnimation Module: テクスチャのUVを更新
-        if (config.textureSheet.enabled)
-        {
-            particleState.textureHandle = config.textureSheet.textureHandle;
-            // UV座標を計算
-        }
-        else
-        {
-            particleState.textureHandle = config.textureSheet.textureHandle;
-            // UVはデフォルト値
-        }
+        // Texture Module
+        particleState.textureHandle = config.textureSheet.textureHandle;
 
         ++partilce;
     }
 
-    // 全パーティクルのインスタンス情報をGPUに送る
+    // GPUへ送信
     for (auto& particle : particles_)
     {
         particle.transform->UpdateMatrix();
