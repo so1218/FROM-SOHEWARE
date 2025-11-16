@@ -143,7 +143,6 @@ Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vect
     return result * Matrix4x4::MakeTranslate(translate);
 }
 
-// BlendMode (enum) を PSO名 (string) に変換するヘルパー
 std::string Renderer::GetParticlePSOName(BlendMode mode)
 {
 	switch (mode)
@@ -157,7 +156,7 @@ std::string Renderer::GetParticlePSOName(BlendMode mode)
 	case kBlendModeExclusion: return "ParticleExclusion";
 	default:
 		assert(false && "Unknown BlendMode");
-		return "ParticleOpaque"; // 不明な場合はとりあえずOpaque
+		return "ParticleOpaque"; // 不明な場合はOpaque
 	}
 }
 
