@@ -837,12 +837,11 @@ void Renderer::DrawParticles(const Camera& camera)
 
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// ★新しいロジック: enum を string に変換
 	std::string psoName = GetParticlePSOName(currentBlendMode_);
 
-	// ★新しいロジック: string で GetPSO を呼び出す
 	ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
-	if (pso == nullptr) {
+	if (pso == nullptr) 
+	{
 		// JSONファイル名が間違っているか、JSON定義が不正
 		assert(false && "Particle PSO not found. Check JSON file name or definition.");
 		return;

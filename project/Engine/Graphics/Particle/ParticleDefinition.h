@@ -10,34 +10,35 @@ struct ShapeModule
 {
     enum class Type { Point, Box, Sphere };
 
-    bool enabled = true;
-    Type type = Type::Point;
+    bool enabled = true;      // モジュールが有効かどうか
+    Type type = Type::Point;  // 形状の種類
 
     // Sphere設定
-    Vector3 radius = { 10.0f, 10.0f, 10.0f };
-    bool emitFromEdge = false; // 縁からのみ生成するか
+    Vector3 radius = { 10.0f, 10.0f, 10.0f }; // 各軸方向の半径
+    bool emitFromEdge = false;                // 縁からのみ生成するか
 
     // Box設定
-    Vector3 boxSize = { 20.0f, 20.0f, 20.0f };
+    Vector3 boxSize = { 20.0f, 20.0f, 20.0f }; // 各軸方向のサイズ
 
-    // このモジュールに基づいて初期位置のオフセットを計算する関数
+    // 初期位置オフセットを形状に基づいて計算
     Vector3 GetInitialPositionOffset() const
     {
         switch (type)
         {
         case Type::Point:
-            return { 0.0f, 0.0f, 0.0f };
+            return { 0.0f, 0.0f, 0.0f }; // 原点のみ
 
         case Type::Box:
-            // 内部（体積）から生成するロジック
+            // ボックス内部のランダムな位置
             return {
                 Math::RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
                 Math::RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
                 Math::RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
             };
+
         case Type::Sphere:
         {
-            // 半径1の単位球上のランダムな点を生成する
+            // 単位球上のランダムな点を生成
             float phi = Math::RandomFloat(0.0f, 2.0f * 3.14159f);
             float cosTheta = Math::RandomFloat(-1.0f, 1.0f);
             float theta = acosf(cosTheta);
@@ -48,31 +49,30 @@ struct ShapeModule
                 cosf(theta)
             };
 
-            // もし特定の軸の半径が0なら、その軸方向の単位球座標を強制的に0にする
-            if (radius.x == 0.0f) { unitSpherePoint.x = 0.0f; }
-            if (radius.y == 0.0f) { unitSpherePoint.y = 0.0f; }
-            if (radius.z == 0.0f) { unitSpherePoint.z = 0.0f; }
+            // 半径0の軸は0に固定
+            if (radius.x == 0.0f) unitSpherePoint.x = 0.0f;
+            if (radius.y == 0.0f) unitSpherePoint.y = 0.0f;
+            if (radius.z == 0.0f) unitSpherePoint.z = 0.0f;
 
-            // 正規化して、点が必ず縁に来るようにする
+            // 単位ベクトル化（縁上に配置）
             unitSpherePoint = unitSpherePoint.Normalize();
 
-            // 各軸の半径を使って、単位球/円/線上の点を引き伸ばす
+            // 各軸に沿って拡大（楕円体化）
             Vector3 ellipsoidPoint = {
                 unitSpherePoint.x * radius.x,
                 unitSpherePoint.y * radius.y,
                 unitSpherePoint.z * radius.z
             };
 
-            // emitFromEdgeがfalseの場合、中心に向かってランダムに縮小する
+            // emitFromEdgeがfalseなら中心寄りに縮小
             if (!emitFromEdge)
-            {
                 ellipsoidPoint = ellipsoidPoint * cbrtf(Math::RandomFloat(0.0f, 1.0f));
-            }
 
             return ellipsoidPoint;
         }
         }
-        return { 0.0f, 0.0f, 0.0f };
+
+        return { 0.0f, 0.0f, 0.0f }; // デフォルト
     }
 };
 
@@ -146,7 +146,7 @@ struct RotationOverLifetimeModule
 
 struct ColorOverLifetimeModule
 {
-    // ★ どのモードで色を決定するか
+    // どのモードで色を決定するか
     enum class Mode : int
     { 
         Single = 0,
@@ -158,7 +158,7 @@ struct ColorOverLifetimeModule
 
     unsigned int startColor = 0xffffffff;
     unsigned int endColor = 0xffffff00;
-    // ★ グラデーション2 (RandomBetweenTwo用)
+    // グラデーション2 (RandomBetweenTwo用)
     unsigned int startColor2 = 0xffffffff; // (例: 2つ目の開始色)
     unsigned int endColor2 = 0xffffff00;   // (例: 2つ目の終了色)
 

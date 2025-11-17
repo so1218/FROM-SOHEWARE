@@ -6,8 +6,6 @@
 #define float4 Vector4
 #define float3 Vector3
 #define float2 Vector2
-#define int32_t int32_t
-#define uint32_t uint32_t
 #define float32_t float
 
 #else

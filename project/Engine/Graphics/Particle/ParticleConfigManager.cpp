@@ -150,7 +150,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.colorOverLifetime.startColor = colorJson.value("startColor", 0xFFFFFFFF);
                     config.colorOverLifetime.endColor = colorJson.value("endColor", 0xFFFFFF00);
 
-                    // ★ グラデーション 2 の読み込み (デフォルト値は 1 と同じにしておく)
+                    // グラデーション 2 の読み込み (デフォルト値は 1 と同じにしておく)
                     config.colorOverLifetime.startColor2 = colorJson.value("startColor2", config.colorOverLifetime.startColor);
                     config.colorOverLifetime.endColor2 = colorJson.value("endColor2", config.colorOverLifetime.endColor);
                     /*  EasingType easingType = static_cast<EasingType>(colorJson.value("easingType", static_cast<int>(EasingType::EaseLinear)));
@@ -283,7 +283,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "startColor", config.colorOverLifetime.startColor },
             { "endColor", config.colorOverLifetime.endColor },
 
-            // ★ グラデーション 2
+            // グラデーション 2
             { "startColor2", config.colorOverLifetime.startColor2 },
             { "endColor2", config.colorOverLifetime.endColor2 },
             /*{ "easingType", static_cast<int>(config.colorOverLifetime.easing.GetEasingType()) }*/

@@ -13,6 +13,8 @@ public:
     // Emitterの位置設定
     void SetTargetToFollow(WorldTransform* target, const Vector3& offset);
 
+    void SetFollowOffset(const Vector3& offset) { followOffset_ = offset; }
+
     void Play(); // エミッターの再生を開始/リスタート
     void Stop(); // エミッターの再生を停止
 
