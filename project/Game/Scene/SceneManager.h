@@ -3,6 +3,7 @@
 #include <map>
 #include <optional>
 
+#include "Fade.h"
 #include "BaseScene.h"
 #include "Engine.h"
 
@@ -17,6 +18,13 @@ enum class SceneID
 class SceneManager
 {
 public:
+    enum class TransitionState
+    {
+        None,     // 通常時
+        FadeOut,  // フェードアウト
+        FadeIn    // フェードイン
+    };
+
     SceneManager() : currentScene_(nullptr) {}
 
     ~SceneManager();
@@ -35,6 +43,9 @@ public:
     // シーンを登録するための関数
     void RegisterScene(SceneID id, std::unique_ptr<BaseScene> scene);
 
+    // 最初のシーンをフェードインでセット
+    void SetInitialScene(SceneID initialSceneID);
+
     // IDでシーン切り替えをリクエストする関数
     void RequestSceneChange(SceneID nextSceneID);
 
@@ -52,5 +63,8 @@ private:
 
     // すべてのシーンを保持するマップ
     std::map<SceneID, std::unique_ptr<BaseScene>> scenes_;
+
+    std::unique_ptr<Fade> fade_; 
+    TransitionState transitionState_ = TransitionState::None;
 };
 

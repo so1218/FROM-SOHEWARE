@@ -16,6 +16,13 @@ public:
 	// 描画
 	void Draw();
 
+	// デバッグ描画
+	void DebugDraw();
+
+	// 調整項目の適用
+	void ApplyGlobalVariables();
+	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Fade" }; }
+
 	Engine* engine_;
 
 	Vector2 spritePos = { 0,0 };

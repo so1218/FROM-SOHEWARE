@@ -1,5 +1,7 @@
 #include "Fade.h"
 #include "TextureHandle.h"
+#include "GlobalVariables.h"
+#include "externals/imgui/imgui.h"
 
 #include <algorithm>
 
@@ -11,6 +13,24 @@ Fade::Fade(Engine* engine)
 void Fade::Initialize()
 {
 	spriteSize = { (float)kClientWidth,(float)kClientHeight };
+
+	// デバッグ用のグローバル変数登録
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName();
+	gv->CreateGroup(groupName);
+	gv->LoadFiles();
+
+	gv->AddItem(groupName, "duration_", duration_);
+
+	ApplyGlobalVariables();
+}
+
+void Fade::ApplyGlobalVariables()
+{
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName();
+
+	duration_ = gv->GetFloatValue(groupName, "duration_");
 }
 
 void Fade::Update()
@@ -55,6 +75,28 @@ void Fade::Draw()
 		return;
 	}
 	engine_->renderer_->DrawSprite(spritePos, spriteSize, 0.0f, Math::ColorVectorToUint32(color_), uvTransform, TextureHandle::Get(TextureID::white1x1));
+}
+
+void Fade::DebugDraw()
+{
+	ImGui::Begin("フェード");
+
+	auto* gv = GlobalVariables::GetInstance();
+	auto groupName = GetGlobalVariableGroupName();
+	bool changed = false;
+
+	if (ImGui::DragFloat("フェード時間（秒）", &duration_, 0.05f, 0.0f))
+	{
+		gv->SetValue(groupName, "duration_", duration_);
+		changed = true;
+	}
+
+	if (changed)
+	{
+		ApplyGlobalVariables();
+	}
+
+	ImGui::End();
 }
 
 void Fade::Start(Status status, float duration)

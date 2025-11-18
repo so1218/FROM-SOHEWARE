@@ -25,9 +25,9 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
 
     // 初期シーンを設定
 #ifdef _DEBUG
-    sceneManager_.RequestSceneChange(SceneID::Sample);
+    sceneManager_.SetInitialScene(SceneID::Sample);
 #else
-    sceneManager_.RequestSceneChange(SceneID::Title);
+    sceneManager_.SetInitialScene(SceneID::Title);
 #endif
 }
 

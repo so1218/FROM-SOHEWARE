@@ -43,7 +43,6 @@ void PlayScene::Initialize()
     player_->Initialize();
     camera_->Initialize();
 
-
     emitter_ = engine_->particleSystem_->CreateEmitter("chest");
     newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
 
