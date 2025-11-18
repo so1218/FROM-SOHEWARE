@@ -71,9 +71,7 @@ void AxeProjectile::OnCollision(Collider* other)
 
 void AxeProjectile::SetSize(const Vector3& size)
 {
-    // モデルの見た目の大きさを変更
-    model_->GetTransform().scale_ = size;
-
+ 
     // 当たり判定の半径を変更
     SetRadius(size.x);
 
@@ -92,8 +90,10 @@ Vector3 AxeProjectile::GetWorldPosition()
 void AxeProjectile::UpdateAABB()
 {
     // 当たり判定の箱を更新
-    Vector3 size = { 0.4f, 0.4f, 0.4f };
+    float r = GetRadius();
+    Vector3 size = { r * 2.0f, r * 2.0f, r * 2.0f };
     Vector3 center = model_->GetTransform().GetWorldPosition();
+
     float halfW = size.x / 2.0f;
     float halfH = size.y / 2.0f;
     float halfD = size.z / 2.0f;

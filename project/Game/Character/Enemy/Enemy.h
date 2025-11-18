@@ -14,7 +14,7 @@ struct EnemyData
     ModelID modelId = ModelID::walk; // 使用するモデル
     AnimationID animationId = AnimationID::walk;
     float hp = 50.0f;
-    float speed = 1.0f;
+    float speed = 1.4f;
     Vector3 size = { 1.0f, 1.0f, 1.0f };
 };
 

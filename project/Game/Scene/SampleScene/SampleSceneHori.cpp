@@ -36,12 +36,17 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     skybox_->SetCubeTextureHandle(cubemapHandle);
     auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
 
+    // タイマーの生成
+    auto gameTimer = std::make_unique<GameTimer>(engine_);
+    gameTimer_ = gameTimer.get();
+
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(playerUI));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
     objectManager_.AddObject(std::move(followCamera));
     objectManager_.AddObject(std::move(grid));
+    objectManager_.AddObject(std::move(gameTimer));
 
 }
 
@@ -86,6 +91,9 @@ void SampleSceneHori::Initialize()
     engine_->postEffectManager_->postEffectData_->vignetteSoftness = 0.261f;
     engine_->postEffectManager_->postEffectData_->vignetteEllipseScale = { 1.2f,1.0f };
     engine_->postEffectManager_->postEffectData_->vignetteColor = { 0,0,0 };
+
+    // 制限時間を設定
+    gameTimer_->Initialize(2.0f);
 }
 
 void SampleSceneHori::Update()
@@ -99,6 +107,11 @@ void SampleSceneHori::Update()
     if (player_->IsEnd())
     {
         sceneManager_->RequestSceneChange(SceneID::Title);
+    }
+    // タイムアップ
+    if (gameTimer_->IsTimeUp())
+    {
+        sceneManager_->RequestSceneChange(SceneID::Play);
     }
 
 }

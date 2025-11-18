@@ -23,7 +23,11 @@ void DebugCamera::Initialize()
     rotateSpeed_ = 0.001f;
     zoomSpeed_ = 0.03f;
 
+#ifdef _DEBUG
     isEnabled_ = true;
+#else
+    isEnabled_ = false;
+#endif
 
     // ワールド行列の更新
     worldTransform_.UpdateMatrix();

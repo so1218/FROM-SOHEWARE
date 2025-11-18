@@ -417,6 +417,9 @@
     <ClCompile Include="Game\GameObject\PlayerUI.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\GameTimer.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -717,6 +720,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
     <ClInclude Include="Game\GameObject\PlayerUI.h" />
+    <ClInclude Include="Game\GameObject\GameTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
