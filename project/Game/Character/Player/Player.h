@@ -59,11 +59,15 @@ public:
 	void GainExperience(int amount);
 	void TakeDamage(float damage);
 
-	
 	std::unique_ptr<Model> modelPlayer_;
 
 	void SetWalkEmitter(ParticleEmitter* emitter) { walkEmitterPtr_ = emitter; }
 	ParticleEmitter* walkEmitterPtr_ = nullptr;
+
+	// UIが必要とする情報
+	float GetHpRatio() const;
+	float GetXpRatio() const;
+	int GetLevel() const { return level_; }
 private:
 
 	// レベルアップの内部処理

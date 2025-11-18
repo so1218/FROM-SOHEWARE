@@ -414,6 +414,9 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\PlayerUI.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -713,6 +716,7 @@
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
+    <ClInclude Include="Game\GameObject\PlayerUI.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

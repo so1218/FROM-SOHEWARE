@@ -48,34 +48,49 @@ void Enemy::ApplyGlobalVariables()
 
 void Enemy::Update()
 {
-	// プレイヤー追跡ロジック
-	// プレイヤーの座標と自分の座標を取得
+	// フラッシュタイマーの更新
+	if (flashTimer_ > 0)
+	{
+		flashTimer_--;
+	}
+
+	// ノックバック処理
+	if (knockbackVelocity_.Length() > 0.001f)
+	{
+		WorldTransform& transform = modelEnemy_->GetTransform();
+		transform.translation_.x += knockbackVelocity_.x;
+		transform.translation_.y += knockbackVelocity_.y;
+		transform.translation_.z += knockbackVelocity_.z;
+
+		// 摩擦で減速させる
+		knockbackVelocity_ *= knockbackFriction_;
+
+		// ある程度小さくなったら0にする
+		if (knockbackVelocity_.Length() < 0.01f)
+		{
+			knockbackVelocity_ = { 0.0f, 0.0f, 0.0f };
+		}
+	}
+
+	// 通常の追跡ロジック
+
 	Vector3 playerPos = player_->GetWorldPosition();
 	Vector3 selfPos = GetWorldPosition();
 
-	// プレイヤーへの方向ベクトルを計算
 	Vector3 direction = playerPos - selfPos;
-
 	direction.y = 0.0f;
 
 	WorldTransform& transform = modelEnemy_->GetTransform();
 
-	// 方向ベクトルを正規化
-	if (direction.Length() > 0.001f) // ゼロ除算を避ける
-	{ 
-		// 向きのベクトルを正規化
+	if (direction.Length() > 0.001f)
+	{
 		Vector3 forwardDirection = direction.Normalize();
-
-		// 上方向を定義
 		Vector3 upVector = { 0.0f, 1.0f, 0.0f };
-
-		// LookRotation を使って向きのクォータニオンを計算
 		transform.rotationQuaternion_ = Quaternion::LookRotation(forwardDirection, upVector);
 
 		direction = direction.Normalize();
 	}
 
-	// 速度とデルタタイムをかけて、このフレームでの移動量を計算
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 	Vector3 velocity = direction * speed_ * deltaTime;
 
@@ -92,9 +107,25 @@ void Enemy::Update()
 	animationEnemy_->SetTransform(transform);
 }
 
-void Enemy::TakeDamage(float damage)
+void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)
 {
 	hp_ -= damage;
+
+	// 白フラッシュを開始
+	flashTimer_ = kFlashDuration_;
+
+	// ノックバック計算
+	// 敵が吹き飛ぶ方向を求める
+	Vector3 knockbackDir = GetWorldPosition() - hitSourcePosition;
+	knockbackDir.y = 0.0f; // XZ平面のみ
+
+	if (knockbackDir.Length() > 0.001f)
+	{
+		knockbackDir = knockbackDir.Normalize();
+		// 瞬発的な速度を与える
+		knockbackVelocity_ = knockbackDir * knockbackPower_;
+	}
+
 	if (hp_ <= 0.0f) 
 	{
 		isDead_ = true;
@@ -119,7 +150,20 @@ void Enemy::SpawnExperienceGem()
 
 void Enemy::Draw()
 {
+	if (flashTimer_ > 0)
+	{
+
+		modelEnemy_->SetColor(0xffffffff);
+	}
+	else
+	{
+		modelEnemy_->SetColor(0x0000ffff);
+	}
 	modelEnemy_->Draw();
+	if (flashTimer_ > 0)
+	{
+		modelEnemy_->SetColor(0x0000ffff);
+	}
 }
 
 

@@ -19,6 +19,18 @@ enum TextureID
 
     enemy,
 
+    //文字フォント
+    num1,
+    num2,
+    num3,
+    num4,
+    num5,
+    num6,
+    num7,
+    num8,
+    num9,
+    num0,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -55,6 +67,17 @@ private:
             { knife,   "Resources/images/KnifeTexture..jpg" },
 
             { enemy,   "Resources/images/Blaze_baseColor.png" },
+
+            { num1, "Resources/images/numFont/1.png" },
+            { num2, "Resources/images/numFont/2.png" },
+            { num3, "Resources/images/numFont/3.png" },
+            { num4, "Resources/images/numFont/4.png" },
+            { num5, "Resources/images/numFont/5.png" },
+            { num6, "Resources/images/numFont/6.png" },
+            { num7, "Resources/images/numFont/7.png" },
+            { num8, "Resources/images/numFont/8.png" },
+            { num9, "Resources/images/numFont/9.png" },
+            { num0, "Resources/images/numFont/0.png" },
         }
     };
 };

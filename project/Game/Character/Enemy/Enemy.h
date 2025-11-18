@@ -43,7 +43,7 @@ public:
 
     // 衝突・ダメージ処理
     void OnCollision(Collider* other) override;
-    void TakeDamage(float damage); // ダメージを受ける関数を追加
+    void TakeDamage(float damage, const Vector3& hitSourcePosition); // ダメージを受ける関数を追加
     void SpawnExperienceGem();  // 経験値を生成する関数
     bool IsDead() const override { return isDead_; } // 死亡フラグ
 
@@ -69,4 +69,13 @@ private:
     float hp_;     // 現在のHP
     float speed_;  // 移動速度
     bool isDead_ = false; // 死亡フラグ
+
+    // 白く光らせるためのタイマー
+    int flashTimer_ = 0;
+    static const int kFlashDuration_ = 15; // 5フレーム光る
+
+    // ノックバック関連
+    Vector3 knockbackVelocity_ = { 0.0f, 0.0f, 0.0f }; // ノックバック速度
+    float knockbackFriction_ = 0.8f; // ノックバックの減衰率 (小さいほどすぐ止まる)
+    float knockbackPower_ = 1.0f;    // ノックバックの強さ
 };

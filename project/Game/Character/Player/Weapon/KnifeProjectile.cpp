@@ -58,7 +58,7 @@ void KnifeProjectile::OnCollision(Collider* other)
     if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
     {
         Enemy* enemy = static_cast<Enemy*>(other);
-        enemy->TakeDamage(damage_);
+        enemy->TakeDamage(damage_, GetWorldPosition());
         isHit_ = true;
     }
 }

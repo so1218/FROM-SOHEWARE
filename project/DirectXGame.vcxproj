@@ -246,6 +246,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
+    <ClCompile Include="Game\GameObject\PlayerUI.cpp" />
     <ClCompile Include="Game\Map\MapChipField.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Game\GameObject\Skydome.cpp" />
@@ -361,6 +362,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\GameObject\PlayerUI.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Game\GameObject\Skydome.h" />

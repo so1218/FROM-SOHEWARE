@@ -8,6 +8,7 @@
 #include "TimeManager.h"
 #include "Input.h"
 #include "Grid.h"
+#include "PlayerUI.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
@@ -22,6 +23,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     player_ = player.get();
     player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
+    auto playerUI = std::make_unique<PlayerUI>(engine_, player_);
     auto followCamera = std::make_unique<FollowCamera>(camera_, player_);
     followCamera_ = followCamera.get();
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
@@ -34,6 +36,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
+    objectManager_.AddObject(std::move(playerUI));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
     objectManager_.AddObject(std::move(followCamera));
     objectManager_.AddObject(std::move(grid));

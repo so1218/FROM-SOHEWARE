@@ -5,73 +5,101 @@
 #include "MathUtils.h"
 #include "WorldTransform.h"
 
-Vector3 Math::Project(
-    const Vector3 worldPosition,
-    float viewportX, float viewportY, float viewportWidth, float viewportHeight,
-    const Matrix4x4 viewProjection)
+namespace Math
 {
-    // 1. ワールド座標をクリップ座標に変換
-    Vector4 clipPos = viewProjection * Vector4(worldPosition.x, worldPosition.y, worldPosition.z, 1.0f);
+    Vector3 Project(
+        const Vector3 worldPosition,
+        float viewportX, float viewportY, float viewportWidth, float viewportHeight,
+        const Matrix4x4 viewProjection)
+    {
+        // ワールド座標をクリップ座標に変換
+        Vector4 clipPos = viewProjection * Vector4(worldPosition.x, worldPosition.y, worldPosition.z, 1.0f);
 
-    // 2. クリップ座標を正規化デバイス座標(NDC)に変換(w除算)
-    Vector3 ndcPos;
-    if (clipPos.w != 0.0f) {
-        ndcPos.x = clipPos.x / clipPos.w;
-        ndcPos.y = clipPos.y / clipPos.w;
-        ndcPos.z = clipPos.z / clipPos.w; 
+        // クリップ座標を正規化デバイス座標(NDC)に変換(w除算)
+        Vector3 ndcPos;
+        if (clipPos.w != 0.0f)
+        {
+            ndcPos.x = clipPos.x / clipPos.w;
+            ndcPos.y = clipPos.y / clipPos.w;
+            ndcPos.z = clipPos.z / clipPos.w;
+        }
+        else 
+        {
+            return Vector3(-FLT_MAX, -FLT_MAX, 0.0f);
+        }
+
+        // 正規化デバイス座標(NDC)をビューポート座標(スクリーン座標)に変換
+        Vector3 screenPos;
+        screenPos.x = (ndcPos.x + 1.0f) * 0.5f * viewportWidth + viewportX;
+        screenPos.y = (1.0f - ndcPos.y) * 0.5f * viewportHeight + viewportY; // Y軸反転
+        screenPos.z = ndcPos.z;
+
+        return screenPos;
     }
-    else {
-        return Vector3(-FLT_MAX, -FLT_MAX, 0.0f); 
+
+    Vector4 Uint32ToColorVector(uint32_t color)
+    {
+        float r = ((color >> 24) & 0xFF) / 255.0f;
+        float g = ((color >> 16) & 0xFF) / 255.0f;
+        float b = ((color >> 8) & 0xFF) / 255.0f;
+        float a = (color & 0xFF) / 255.0f;
+
+        return { r, g, b, a };
     }
 
-    // NDCが画面内にあるかのチェック
-    /*
-    if (ndcPos.x < -1.0f || ndcPos.x > 1.0f ||
-        ndcPos.y < -1.0f || ndcPos.y > 1.0f ||
-        ndcPos.z < 0.0f || ndcPos.z > 1.0f) {
-        // 画面外またはクリップ面外
-        return Vector3(-FLT_MAX, -FLT_MAX, 0.0f);
+    uint32_t ColorVectorToUint32(const Vector4& color)
+    {
+        uint32_t r = static_cast<uint32_t>(color.x * 255.0f) & 0xFF;
+        uint32_t g = static_cast<uint32_t>(color.y * 255.0f) & 0xFF;
+        uint32_t b = static_cast<uint32_t>(color.z * 255.0f) & 0xFF;
+        uint32_t a = static_cast<uint32_t>(color.w * 255.0f) & 0xFF;
+
+        return (r << 24) | (g << 16) | (b << 8) | a;
     }
-    */
 
+    float RandomFloat(float min, float max)
+    {
+        return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
+    }
 
-    // 3. 正規化デバイス座標(NDC)をビューポート座標(スクリーン座標)に変換
-    Vector3 screenPos;
-    screenPos.x = (ndcPos.x + 1.0f) * 0.5f * viewportWidth + viewportX;
-    screenPos.y = (1.0f - ndcPos.y) * 0.5f * viewportHeight + viewportY; // Y軸反転
-    screenPos.z = ndcPos.z; 
+    float ToRadians(float degrees)
+    {
+        return degrees * (float(Math::PI) / 180.0f);
+    }
 
-    return screenPos;
-}
+    Vector3 CrossProduct(const Vector3& v1, const Vector3& v2)
+    {
+        return
+        {
+            v1.y * v2.z - v1.z * v2.y,
+            v1.z * v2.x - v1.x * v2.z,
+            v1.x * v2.y - v1.y * v2.x
+        };
+    }
 
+    Vector2 WorldToScreen(const Vector3& worldPos, const Matrix4x4& viewProjection, float screenWidth, float screenHeight)
+    {
+        // クリップ座標へ変換
+        Vector4 clipPos = viewProjection * Vector4(worldPos.x, worldPos.y, worldPos.z, 1.0f);
 
+        // カメラ背面にある場合は無効値を返す
+        if (clipPos.w <= 0.0f)
+        {
+            return { -10000.0f, -10000.0f };
+        }
 
-Vector4 Math::Uint32ToColorVector(uint32_t color)
-{
-    float r = ((color >> 24) & 0xFF) / 255.0f;
-    float g = ((color >> 16) & 0xFF) / 255.0f;
-    float b = ((color >> 8) & 0xFF) / 255.0f;
-    float a = (color & 0xFF) / 255.0f;
+        // NDC (正規化デバイス座標) へ変換
+        Vector3 ndcPos = 
+        {
+            clipPos.x / clipPos.w,
+            clipPos.y / clipPos.w,
+            clipPos.z / clipPos.w
+        };
 
-    return { r, g, b, a };
-}
+        // スクリーン座標へ変換
+        float screenX = (ndcPos.x + 1.0f) * 0.5f * screenWidth;
+        float screenY = (1.0f - ndcPos.y) * 0.5f * screenHeight;
 
-uint32_t Math::ColorVectorToUint32(const Vector4& color)
-{
-    uint32_t r = static_cast<uint32_t>(color.x * 255.0f) & 0xFF;
-    uint32_t g = static_cast<uint32_t>(color.y * 255.0f) & 0xFF;
-    uint32_t b = static_cast<uint32_t>(color.z * 255.0f) & 0xFF;
-    uint32_t a = static_cast<uint32_t>(color.w * 255.0f) & 0xFF;
-
-    return (r << 24) | (g << 16) | (b << 8) | a;
-}
-
-float Math::RandomFloat(float min, float max)
-{
-    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
-}
-
-float Math::ToRadians(float degrees)
-{
-    return degrees * (float(M_PI) / 180.0f);
+        return { screenX, screenY };
+    }
 }

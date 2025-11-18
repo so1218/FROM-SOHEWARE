@@ -368,8 +368,7 @@ void Player::TakeDamage(float damage)
 	if (hp_ <= 0.0f)
 	{
 		hp_ = 0.0f;
-		isDead_ = true;
-		modelPlayer_->SetColor(0x0000ffff);
+	
 	}
 
 	// ダメージを受けたら無敵時間を開始
@@ -396,11 +395,19 @@ void Player::LevelUp()
 
 	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.5f);
 
-	// TODO: 本来はここで「レベルアップ選択画面」を開く
+	// ここでレベルアップ選択画面を開く
 
-	// [仮実装]: 最初の武器(ナイフなど)を強制的にレベルアップさせる
+	// [仮]: 最初の武器(ナイフなど)を強制的にレベルアップさせる
 	if (!weapons_.empty())
 	{
 		weapons_[0]->LevelUp();
+		weapons_[1]->LevelUp();
 	}
+}
+
+float Player::GetHpRatio() const { return hp_ / maxHp_; }
+float Player::GetXpRatio() const
+{
+	if (xpToNextLevel_ <= 0) return 0.0f;
+	return static_cast<float>(experience_) / static_cast<float>(xpToNextLevel_);
 }
