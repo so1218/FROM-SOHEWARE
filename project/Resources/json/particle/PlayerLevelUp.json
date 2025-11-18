@@ -1,16 +1,16 @@
 {
     "EmitterConfig": {
-        "amount": 2,
-        "duration": -0.10000000149011612,
-        "lifetime": 0.3100000023841858,
-        "looping": true,
+        "amount": 11,
+        "duration": 1.0,
+        "lifetime": 0.4099999964237213,
+        "looping": false,
         "playOnAwake": false,
         "position": [
             0.0,
             0.0,
             0.0
         ],
-        "spawnInterval": 0.019999999552965164
+        "spawnInterval": 0.10000000149011612
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -24,18 +24,18 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 1143410176,
-            "endColor2": 1210914304,
+            "endColor": 3134521344,
+            "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4291334399,
-            "startColor2": 3233253631
+            "startColor": 3218931967,
+            "startColor2": 4294967295
         },
         "physicsModule": {
             "drag": 0.0,
-            "enabled": true,
+            "enabled": false,
             "gravity": [
                 0.0,
-                26.799999237060547,
+                -9.800000190734863,
                 0.0
             ]
         },
@@ -46,7 +46,7 @@
                 0.0,
                 0.0
             ],
-            "enabled": false,
+            "enabled": true,
             "isBillboard": true,
             "orientation3D": [
                 0.0,
@@ -57,44 +57,44 @@
         },
         "shapeModule": {
             "boxSize": [
-                0.20000000298023224,
-                0.0,
-                0.0
+                20.0,
+                20.0,
+                20.0
             ],
-            "emitFromEdge": false,
+            "emitFromEdge": true,
             "enabled": true,
             "radius": [
-                10.0,
-                10.0,
-                10.0
+                0.800000011920929,
+                0.0,
+                0.800000011920929
             ],
-            "type": 1
+            "type": 2
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.5,
-                0.5,
+                0.0,
+                0.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
+                1.0,
                 1.5,
-                1.5,
-                1.0
+                3.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
             "framesPerSecond": 10.0,
             "looping": true,
-            "textureHandle": 67,
+            "textureHandle": 91,
             "tilesX": 1,
             "tilesY": 1
         },
         "velocityModule": {
-            "angleRange": 348.0,
+            "angleRange": 12.0,
             "direction": [
                 0.0,
                 1.0,
@@ -102,7 +102,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 2.3399999141693115
+            "speed": 11.109999656677246
         },
         "vortexModule": {
             "center": [

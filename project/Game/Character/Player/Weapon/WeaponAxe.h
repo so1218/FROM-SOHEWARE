@@ -31,4 +31,9 @@ private:
     float projectileInitialSpeedY_ = 10.0f; //  Y軸への初速
     float projectileLifetime_ = 3.0f;
 
+    // ベースのサイズ
+    Vector3 collisionSize_ = { 0.5f, 0.5f, 0.5f };
+
+    // レベル補正後の実際のサイズ (これを弾に渡す)
+    Vector3 currentCollisionSize_ = { 0.5f, 0.5f, 0.5f };
 };

@@ -123,6 +123,7 @@ void WeaponAxe::DebugDraw()
     if (ImGui::DragFloat3("弾の当たり判定サイズ", &collisionSize_.x, 0.01f, 0.01f, 10.0f))
     {
         GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
+        changed = true;
     }
 
 
@@ -155,6 +156,8 @@ void WeaponAxe::Fire()
         newProjectile->SetDamage(damage_);
         newProjectile->SetLifetime(projectileLifetime_);
 
+        newProjectile->SetSize(currentCollisionSize_);
+
         projectiles_.push_back(std::move(newProjectile));
     }
 }
@@ -162,9 +165,6 @@ void WeaponAxe::Fire()
 void WeaponAxe::LevelUp()
 {
     level_++;
-
-    // GlobalVariables に現在のレベルを保存
-    GlobalVariables::GetInstance()->SetValue(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
 
     // ステータスを再計算
     ApplyLevelEffects();
@@ -176,12 +176,36 @@ void WeaponAxe::ApplyLevelEffects()
     damage_ = damageBase_;
     cooldown_ = cooldownBase_;
     projectileCount_ = projectileCountBase_;
+    Vector3 currentSize = collisionSize_;
 
-    // 現在のレベルに応じて効果を上乗せ 
-    if (level_ >= 2) projectileCount_++;
-    if (level_ >= 3) damage_ *= 1.5f;
-    if (level_ >= 4) projectileCount_++;
-    if (level_ >= 5) cooldown_ *= 0.8f;
+    if (level_ >= 2)  projectileCount_ += 1;        
+    if (level_ >= 3)  damage_ *= 1.2f;              
+    if (level_ >= 4)  projectileCount_ += 1;        
+    if (level_ >= 5)  currentSize *= 1.2f;          
+
+    if (level_ >= 6)  projectileCount_ += 1;        
+    if (level_ >= 7)  damage_ *= 1.2f;              
+    if (level_ >= 8)  cooldown_ *= 0.9f;            
+    if (level_ >= 9)  projectileCount_ += 1;        
+    if (level_ >= 10) 
+    {
+        damage_ *= 1.5f;
+        currentSize *= 1.3f;
+    }
+
+    if (level_ >= 11) cooldown_ *= 0.9f;           
+    if (level_ >= 12) projectileCount_ += 1;       
+    if (level_ >= 13) currentSize *= 1.2f;         
+    if (level_ >= 14) damage_ *= 1.5f;             
+    if (level_ >= 15)
+    {
+        projectileCount_ += 2;  
+        cooldown_ *= 0.8f;      
+        damage_ *= 1.5f;        
+        currentSize *= 1.5f;    
+    }
+
+    currentCollisionSize_ = currentSize;
 }
 
 void WeaponAxe::AddCollidersToManager(CollisionManager* manager)

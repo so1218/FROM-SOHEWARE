@@ -27,6 +27,9 @@ public:
     void SetDamage(float damage) { damage_ = damage; }
     void SetLifetime(float lifetime) { lifetime_ = lifetime; }
 
+    // サイズをセットする関数
+    void SetSize(const Vector3& size);
+
 private:
     std::unique_ptr<Model> model_;
     AABB aabb_;

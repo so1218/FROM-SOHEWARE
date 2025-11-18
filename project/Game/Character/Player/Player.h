@@ -64,6 +64,12 @@ public:
 
 	void SetWalkEmitter(ParticleEmitter* emitter) { walkEmitterPtr_ = emitter; }
 	ParticleEmitter* walkEmitterPtr_ = nullptr;
+	void SetLevelUpEmitter(ParticleEmitter* emitter) { levelUpEmitterPtr_ = emitter; }
+	ParticleEmitter* levelUpEmitterPtr_ = nullptr;
+	void SetDamagedEmitter(ParticleEmitter* emitter) { damagedEmitterPtr_ = emitter; }
+	ParticleEmitter* damagedEmitterPtr_ = nullptr;
+	void SetGetExpEmitter(ParticleEmitter* emitter) { getExpEmitterPtr_ = emitter; }
+	ParticleEmitter* getExpEmitterPtr_ = nullptr;
 
 	// UIが必要とする情報
 	float GetHpRatio() const;

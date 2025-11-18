@@ -54,6 +54,21 @@ void SampleSceneHori::Initialize()
     player_->SetWalkEmitter(playerWalkEmitter_.get());
     playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
     engine_->particleSystem_->AddEmitter(std::move(playerWalkEmitter_));
+    playerLevelUpEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerLevelUp");
+    player_->SetLevelUpEmitter(playerLevelUpEmitter_.get());
+    playerLevelUpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
+    engine_->particleSystem_->AddEmitter(std::move(playerLevelUpEmitter_));
+    playerDamagedEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerDamaged");
+    player_->SetDamagedEmitter(playerDamagedEmitter_.get());
+    playerDamagedEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,0.0f, 0.0f });
+    engine_->particleSystem_->AddEmitter(std::move(playerDamagedEmitter_));
+    playerGetExpEmitter_ = engine_->particleSystem_->CreateEmitter("playerGetExp");
+    player_->SetGetExpEmitter(playerGetExpEmitter_.get());
+    playerGetExpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,0.0f, 0.0f });
+    engine_->particleSystem_->AddEmitter(std::move(playerGetExpEmitter_));
+    std::unique_ptr<ParticleEmitter> playerLevelUpEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerDamagedEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerGetExpEmitter_ = nullptr;
 
     // ライトの設定
     engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
@@ -71,8 +86,6 @@ void SampleSceneHori::Initialize()
     engine_->postEffectManager_->postEffectData_->vignetteSoftness = 0.261f;
     engine_->postEffectManager_->postEffectData_->vignetteEllipseScale = { 1.2f,1.0f };
     engine_->postEffectManager_->postEffectData_->vignetteColor = { 0,0,0 };
-
-
 }
 
 void SampleSceneHori::Update()
@@ -95,7 +108,7 @@ void SampleSceneHori::HandleCollisions()
     // 衝突マネージャのリストをクリアする
     collisionManager_->ClearColliders();
 
-    // ObjectManager に「全オブジェクトを登録して」と依頼
+    // ObjectManager に全オブジェクトを登録してと依頼
     objectManager_.AddAllCollidersToManager(collisionManager_.get());
 
     // プレイヤーが持つ武器の弾を登録
@@ -108,7 +121,7 @@ void SampleSceneHori::HandleCollisions()
 
 void SampleSceneHori::Draw()
 {
-    skybox_->Draw();
+ /*   skybox_->Draw();*/
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 }

@@ -48,6 +48,9 @@ private:
     std::unique_ptr<EnemyManager> enemyManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
     std::unique_ptr<ParticleEmitter> playerWalkEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerLevelUpEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerDamagedEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerGetExpEmitter_ = nullptr;
 
     Player* player_ = nullptr;
     Enemy* enemy_ = nullptr;

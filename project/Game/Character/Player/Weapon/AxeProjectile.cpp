@@ -69,6 +69,17 @@ void AxeProjectile::OnCollision(Collider* other)
     }
 }
 
+void AxeProjectile::SetSize(const Vector3& size)
+{
+    // モデルの見た目の大きさを変更
+    model_->GetTransform().scale_ = size;
+
+    // 当たり判定の半径を変更
+    SetRadius(size.x);
+
+    UpdateAABB();
+}
+
 Vector3 AxeProjectile::GetWorldPosition()
 {
     Vector3 worldPos;

@@ -1,16 +1,16 @@
 {
     "EmitterConfig": {
-        "amount": 2,
-        "duration": -0.10000000149011612,
-        "lifetime": 0.3100000023841858,
-        "looping": true,
+        "amount": 7,
+        "duration": 0.30000001192092896,
+        "lifetime": 0.9599999785423279,
+        "looping": false,
         "playOnAwake": false,
         "position": [
             0.0,
             0.0,
             0.0
         ],
-        "spawnInterval": 0.019999999552965164
+        "spawnInterval": 0.07999999821186066
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -24,18 +24,18 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 1143410176,
-            "endColor2": 1210914304,
+            "endColor": 3139313152,
+            "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4291334399,
-            "startColor2": 3233253631
+            "startColor": 4093640959,
+            "startColor2": 4294967295
         },
         "physicsModule": {
             "drag": 0.0,
             "enabled": true,
             "gravity": [
                 0.0,
-                26.799999237060547,
+                -42.400001525878906,
                 0.0
             ]
         },
@@ -57,9 +57,9 @@
         },
         "shapeModule": {
             "boxSize": [
-                0.20000000298023224,
-                0.0,
-                0.0
+                20.0,
+                20.0,
+                20.0
             ],
             "emitFromEdge": false,
             "enabled": true,
@@ -68,20 +68,20 @@
                 10.0,
                 10.0
             ],
-            "type": 1
+            "type": 0
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.5,
-                0.5,
+                0.0,
+                0.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                1.5,
-                1.5,
+                1.0,
+                1.0,
                 1.0
             ]
         },
@@ -89,12 +89,12 @@
             "enabled": false,
             "framesPerSecond": 10.0,
             "looping": true,
-            "textureHandle": 67,
+            "textureHandle": 39,
             "tilesX": 1,
             "tilesY": 1
         },
         "velocityModule": {
-            "angleRange": 348.0,
+            "angleRange": 144.0,
             "direction": [
                 0.0,
                 1.0,
@@ -102,7 +102,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 2.3399999141693115
+            "speed": 13.010000228881836
         },
         "vortexModule": {
             "center": [

@@ -17,40 +17,26 @@ GlobalVariables* GlobalVariables::GetInstance()
 
 void GlobalVariables::Update()
 {
-	if (!ImGui::Begin("グローバル変数###GlobalVariables"))
+	if (!ImGui::Begin("Global Variables", nullptr, ImGuiWindowFlags_MenuBar))
 	{
 		ImGui::End();
 		return;
 	}
-
-
-	if (ImGui::Button("全てのグローバル変数を保存"))
-	{
-		SaveAllFiles();
-	}
-
-	if (!statusMessage_.empty())
-	{
-		ImGui::SameLine();
-		ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s", statusMessage_.c_str());
-	}
-
-	ImGui::Separator();
 
 	if (ImGui::TreeNode("ドラッグの感度設定"))
 	{
 		ImGui::DragFloat("感度", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
 		ImGui::TreePop();
 	}
-	ImGui::Separator();
 
 	// トップレベルグループをツリーとして表示
 	for (auto& [groupName, group] : datas_)
 	{
-
-		DrawGroupRecursive({ groupName }, group);
-
-		ImGui::Separator();
+		if (ImGui::TreeNode(groupName.c_str()))
+		{
+			DrawGroupRecursive({ groupName }, group);
+			ImGui::TreePop();
+		}
 	}
 
 	ImGui::End();
@@ -63,21 +49,6 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 
 	if (ImGui::TreeNode(groupName.c_str()))
 	{
-		// セーブボタン
-		// このグループ階層だけを保存
-		std::string saveButtonLabel = std::format("セーブ");
-		if (ImGui::Button(saveButtonLabel.c_str()))
-		{
-			// 新しい階層パスで保存するSaveFileを呼び出す
-			SaveFile(groupPath);
-			statusMessage_ = std::format("{}.json をセーブ(最終)", groupPath[0]);
-		}
-		if (!statusMessage_.empty())
-		{
-			ImGui::SameLine();
-			ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s", statusMessage_.c_str());
-		}
-
 		// items を表示
 		for (auto& [itemName, value] : group.items)
 		{
@@ -118,6 +89,16 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 			std::vector<std::string> nextGroupPath = groupPath;
 			nextGroupPath.push_back(subGroupName);
 			DrawGroupRecursive(nextGroupPath, subGroup);
+		}
+
+		// セーブボタン
+		// 「Save [現在のグループ名]」ボタン -> このグループ階層だけを保存
+		if (ImGui::Button(("Save [" + groupName + "]").c_str()))
+		{
+			// 新しい階層パスで保存するSaveFileを呼び出す
+			SaveFile(groupPath);
+			std::string message = std::format("Updated group '{}' in {}.json", groupName, groupPath[0]);
+			MessageBoxA(nullptr, message.c_str(), "GlobalVariables", 0);
 		}
 
 		ImGui::TreePop();
@@ -435,6 +416,21 @@ void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const s
 	}
 }
 
+void GlobalVariables::RemoveItem(const std::vector<std::string>& groupPath, const std::string& key)
+{
+	// メモリ上のグループを探す
+	Group& targetGroup = FindOrCreateGroup(groupPath);
+
+	// items マップから key に該当するイテレータを探す
+	auto it = targetGroup.items.find(key);
+
+	// 見つかったら items マップから削除する
+	if (it != targetGroup.items.end())
+	{
+		targetGroup.items.erase(it);
+	}
+}
+
 void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 {
 	if (groupPath.empty()) {
@@ -477,16 +473,8 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 	// メモリ上のGroupをJSONに変換し、対象の階層を丸ごと上書きする
 	*currentJsonNode = GroupToJson(*targetGroup);
 
-	// パスからディレクトリ部分を取得し、存在しなければ作成する
-	std::filesystem::path dir = filePath.parent_path();
-	if (!std::filesystem::exists(dir))
-	{
-		std::filesystem::create_directories(dir);
-	}
-
-	// ファイルを開く
+	// 更新したJSONデータ全体をファイルに書き戻す
 	std::ofstream ofs(filePath);
-
 	if (ofs.fail()) {
 		MessageBoxA(nullptr, "Failed to open file for saving.", "GlobalVariables", MB_OK);
 		assert(false);
@@ -494,19 +482,6 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 	}
 	ofs << std::setw(4) << rootJson << std::endl;
 	ofs.close();
-}
-
-void GlobalVariables::SaveAllFiles()
-{
-	// datas_の内容をすべて処理する
-	for (const auto& [topLevelName, group] : datas_)
-	{
-		// 各ファイルを丸ごと保存する
-		SaveFile({ topLevelName });
-	}
-
-	// ユーザーに完了を通知
-	statusMessage_ = std::format("全{}ファイルをセーブ(最終)", datas_.size());
 }
 
 json GlobalVariables::GroupToJson(const Group& group)
@@ -568,13 +543,13 @@ void GlobalVariables::LoadFiles()
 		const std::filesystem::path& filePath = entry.path();
 		if (filePath.extension() != ".json") continue;
 
-		std::string filename = filePath.stem().string();
+		std::string filename = filePath.stem().string();  // 例: "Player.stage1"
 
 		// ドットがある場合、最初のドット以降はカット
 		size_t dotPos = filename.find('.');
 		if (dotPos != std::string::npos)
 		{
-			filename = filename.substr(0, dotPos);
+			filename = filename.substr(0, dotPos);  // "Player.stage1" -> "Player"
 		}
 
 		LoadFile(filename);

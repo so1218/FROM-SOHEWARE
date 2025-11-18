@@ -248,12 +248,20 @@ void Player::OnCollision(Collider* other)
 		TakeDamage(10.0f);
 		followCamera_->StartShake(0.2f, 0.5f);
 		Input::GetInstance().StartVibration(0, 0.3f, 0.3f, 0.3f);
+		if (damagedEmitterPtr_)
+		{
+			damagedEmitterPtr_->Play();
+		}
 	}
 	if (other->GetCollisionAttribute() & kCollisionAttributeExpGem)
 	{
 		GainExperience(5);
 		followCamera_->StartShake(0.1f, 0.2f);
 		Input::GetInstance().StartVibration(0, 0.15f, 0.15f, 0.15f);
+		if (getExpEmitterPtr_)
+		{
+			getExpEmitterPtr_->Play();
+		}
 	}
 }
 
@@ -395,9 +403,14 @@ void Player::LevelUp()
 	level_++;
 	experience_ -= xpToNextLevel_; 
 
-	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.5f);
+	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.2f);
 
 	Input::GetInstance().StartVibration(0, 0.3f, 0.3f, 0.3f);
+
+	if (levelUpEmitterPtr_)
+	{
+		levelUpEmitterPtr_->Play();
+	}
 
 	// ここでレベルアップ選択画面を開く
 
