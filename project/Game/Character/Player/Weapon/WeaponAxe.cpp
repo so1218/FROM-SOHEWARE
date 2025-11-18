@@ -21,7 +21,6 @@ void WeaponAxe::Initialize()
 {
     auto* gv = GlobalVariables::GetInstance();
     gv->CreateGroup(GetGlobalVariableGroupName());
-    gv->LoadFiles();
 
     gv->AddItem(GetGlobalVariableGroupName(), "DamageBase", damageBase_);
     gv->AddItem(GetGlobalVariableGroupName(), "CooldownBase", cooldownBase_);

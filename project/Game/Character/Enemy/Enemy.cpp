@@ -35,7 +35,6 @@ void Enemy::Initialize()
 
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
-	GlobalVariables::GetInstance()->LoadFiles();
 
 	ApplyGlobalVariables();
 }

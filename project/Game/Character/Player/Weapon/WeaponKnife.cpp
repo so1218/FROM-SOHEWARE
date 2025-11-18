@@ -22,7 +22,6 @@ void WeaponKnife::Initialize()
 
     // グローバル変数グループを登録して読み込み
     gv->CreateGroup(GetGlobalVariableGroupName());
-    gv->LoadFiles();
 
     // パラメータを登録
     gv->AddItem(GetGlobalVariableGroupName(), "DamageBase", damageBase_);

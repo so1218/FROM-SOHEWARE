@@ -18,7 +18,6 @@ void Fade::Initialize()
 	auto* gv = GlobalVariables::GetInstance();
 	auto groupName = GetGlobalVariableGroupName();
 	gv->CreateGroup(groupName);
-	gv->LoadFiles();
 
 	gv->AddItem(groupName, "duration_", duration_);
 

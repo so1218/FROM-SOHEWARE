@@ -52,7 +52,6 @@ void Player::Initialize()
 	auto* gv = GlobalVariables::GetInstance();
 	auto groupName = GetGlobalVariableGroupName(); 
 	gv->CreateGroup(groupName);
-	gv->LoadFiles();
 
 	gv->AddItem(groupName, "Translation", modelPlayer_->GetTransform().translation_);
 	gv->AddItem(groupName, "Scale", modelPlayer_->GetTransform().scale_);

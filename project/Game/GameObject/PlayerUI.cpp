@@ -39,7 +39,6 @@ void PlayerUI::Initialize()
     auto* gv = GlobalVariables::GetInstance();
     auto groupName = GetGlobalVariableGroupName();
     gv->CreateGroup(groupName);
-    gv->LoadFiles();
 
     gv->AddItem(groupName, "XP Bar Pos", xpBarPos_);
     gv->AddItem(groupName, "XP Bar Size", xpBarSize_);

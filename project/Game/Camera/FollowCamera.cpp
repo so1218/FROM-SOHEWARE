@@ -16,7 +16,6 @@ void FollowCamera::Initialize()
 {
     auto* gv = GlobalVariables::GetInstance();
     gv->CreateGroup(GetGlobalVariableGroupName());
-    gv->LoadFiles();
 
     gv->AddItem(GetGlobalVariableGroupName(), "Target Yaw", targetYaw_);
     gv->AddItem(GetGlobalVariableGroupName(), "Target Pitch", targetPitch_);

@@ -12,6 +12,7 @@
 #include "ParticleTextureHandle.h"
 #include "AudioHandle.h"
 #include "AnimationHandle.h"
+#include "GlobalVariables.h"
 
 #include "externals/DirectXTex/d3dx12.h" 
 
@@ -176,6 +177,8 @@ void Engine::InitializeSystem()
 
 	// ロガーの初期化
 	Logger::Instance().Initialize();
+
+	GlobalVariables::GetInstance()->LoadFiles();
 }
 
 void Engine::InitializeWindow()
