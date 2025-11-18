@@ -334,7 +334,18 @@ void ParticleEditor::ShowEditor()
                 particleSystem_->configManager_->SaveParticleDefinitionToJson(selectedPresetName);
 
                 std::string message = std::format("{}.json saved", selectedPresetName);
-                MessageBoxA(nullptr, message.c_str(), "Save Confirmation", MB_OK);
+                // タイマーをセットする
+                saveMessageTimer_ = 3.0f;
+            }
+
+            if (saveMessageTimer_ > 0.0f)
+            {
+                ImGui::SameLine();
+
+                ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s.json を保存", selectedPresetName.c_str());
+
+                // 経過時間を減算
+                saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
             }
 
             ImGui::SameLine();

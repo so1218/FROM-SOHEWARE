@@ -22,7 +22,6 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
 
     // オブジェクトを生成
     player_ = std::make_unique<Player>(engine_, camera_);
-    followCamera_.Initialize(camera_, player_.get());
 
     collisionManager_ = std::make_unique<CollisionManager>();
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
@@ -60,8 +59,6 @@ void PlayScene::Update()
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
-    followCamera_.Update();
-
     // プレイヤーの更新処理
     player_->Update();
 }
@@ -93,7 +90,6 @@ void PlayScene::DebugDraw()
 
 	player_->DebugDraw();
   /*  enemy_->DebugDraw();*/
-    followCamera_.DebugDraw();
 
 }
 

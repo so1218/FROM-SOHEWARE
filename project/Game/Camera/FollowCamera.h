@@ -2,16 +2,21 @@
 
 #include "Engine.h"
 #include "ShakeEffect.h"
+#include "GameObject.h"
 
 class Player;
 
-class FollowCamera
+class FollowCamera : public GameObject
 {
 public:
-    void Initialize(Camera* camera, Player* target);
+    FollowCamera(Camera* camera, Player* target);
+    void Initialize() override;
+    void Update() override;
+    void DebugDraw() override;
+    void Draw() override {}
+    GameObjectType GetType() const override { return GameObjectType::FollowCamera; }
+
     void ApplyGlobalVariables();
-    void Update();
-    void DebugDraw();
     void StartShake(float duration, float intensity);
 
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "FollowCamera" }; }

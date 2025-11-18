@@ -22,6 +22,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     player_ = player.get();
     player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
+    auto followCamera = std::make_unique<FollowCamera>(camera_, player_);
+    followCamera_ = followCamera.get();
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
 
@@ -33,6 +35,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
+    objectManager_.AddObject(std::move(followCamera));
     objectManager_.AddObject(std::move(grid));
 
 }
@@ -42,7 +45,10 @@ void SampleSceneHori::Initialize()
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
 
-    followCamera_.Initialize(camera_, player_);
+    playerWalkEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerWalk");
+    player_->SetWalkEmitter(playerWalkEmitter_.get());
+    playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
+    engine_->particleSystem_->AddEmitter(std::move(playerWalkEmitter_));
 
 }
 
@@ -54,7 +60,6 @@ void SampleSceneHori::Update()
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
-    followCamera_.Update();
 }
 
 void SampleSceneHori::HandleCollisions()
@@ -87,8 +92,6 @@ void SampleSceneHori::DebugDraw()
     ImGui::End();
     // ゲームオブジェクトの一括デバッグ描画
     objectManager_.DebugDraw();
-
-    followCamera_.DebugDraw();
 }
 
 void SampleSceneHori::Finalize()

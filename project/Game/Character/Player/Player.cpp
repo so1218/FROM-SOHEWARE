@@ -156,6 +156,14 @@ void Player::Move()
 	if (moveDirection_.Length() > 0.0f)
 	{
 		lastMoveDirection_ = moveDirection_;
+
+	}
+	else
+	{
+		if (walkEmitterPtr_)
+		{
+			walkEmitterPtr_->Play();
+		}
 	}
 
 	// 向きを補間して滑らかに回転させる

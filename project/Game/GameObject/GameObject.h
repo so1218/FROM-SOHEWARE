@@ -5,6 +5,7 @@
 enum class GameObjectType : int
 {
     Background,
+    FollowCamera,
     Player,
     PlayerWeapon,
     Enemy,
@@ -51,6 +52,7 @@ private:
         {
             // 不透明
             { GameObjectType::Background,  0,   0 },
+            { GameObjectType::FollowCamera, 12, 12 },
             { GameObjectType::Player,     10,  10 },
             { GameObjectType::PlayerWeapon,     15,  15 },
             { GameObjectType::Enemy,      20,  20 },

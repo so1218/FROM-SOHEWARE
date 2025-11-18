@@ -20,5 +20,8 @@ private:
 
     int selectedPresetIdx_ = 0;
     int selectedTextureIdx_ = 0;
+
+    // 保存メッセージの表示残り時間
+    float saveMessageTimer_ = 0.0f;
 };
 

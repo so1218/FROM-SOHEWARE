@@ -45,14 +45,13 @@ private:
     Camera* camera_;
     GameObjectManager objectManager_;
     std::unique_ptr<CollisionManager> collisionManager_;
-    FollowCamera followCamera_;
     std::unique_ptr<EnemyManager> enemyManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
-    std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> playerWalkEmitter_ = nullptr;
 
     Player* player_ = nullptr;
     Enemy* enemy_ = nullptr;
+    FollowCamera* followCamera_ = nullptr;
 
     std::unique_ptr<Skybox> skybox_;
 };

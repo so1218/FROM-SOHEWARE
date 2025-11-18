@@ -6,12 +6,14 @@
 #include "TimeManager.h"
 #include "GlobalVariables.h"
 
-void FollowCamera::Initialize(Camera* camera, Player* target)
+FollowCamera::FollowCamera(Camera* camera, Player* target) :
+    camera_(camera),
+    target_(target)
 {
-    camera_ = camera;
-    target_ = target;
+}
 
-    // --- GlobalVariables 登録 ---
+void FollowCamera::Initialize()
+{
     auto* gv = GlobalVariables::GetInstance();
     gv->CreateGroup(GetGlobalVariableGroupName());
     gv->LoadFiles();

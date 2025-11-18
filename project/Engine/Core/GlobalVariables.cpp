@@ -17,14 +17,14 @@ GlobalVariables* GlobalVariables::GetInstance()
 
 void GlobalVariables::Update()
 {
-	if (!ImGui::Begin("Global Variables"))
+	if (!ImGui::Begin("グローバル変数###GlobalVariables"))
 	{
 		ImGui::End();
 		return;
 	}
 
 
-	if (ImGui::Button("Save All Global Variables"))
+	if (ImGui::Button("全てのグローバル変数を保存"))
 	{
 		SaveAllFiles();
 	}
@@ -32,7 +32,7 @@ void GlobalVariables::Update()
 	if (!statusMessage_.empty())
 	{
 		ImGui::SameLine();
-		ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "%s", statusMessage_.c_str());
+		ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s", statusMessage_.c_str());
 	}
 
 	ImGui::Separator();
@@ -65,16 +65,17 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 	{
 		// セーブボタン
 		// このグループ階層だけを保存
-		if (ImGui::Button(("Save [" + groupName + "]").c_str()))
+		std::string saveButtonLabel = std::format("セーブ");
+		if (ImGui::Button(saveButtonLabel.c_str()))
 		{
 			// 新しい階層パスで保存するSaveFileを呼び出す
 			SaveFile(groupPath);
-			statusMessage_ = std::format("Last Saved group:{}.json", groupPath[0]);
+			statusMessage_ = std::format("{}.json をセーブ(最終)", groupPath[0]);
 		}
 		if (!statusMessage_.empty())
 		{
 			ImGui::SameLine();
-			ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "%s", statusMessage_.c_str());
+			ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s", statusMessage_.c_str());
 		}
 
 		// items を表示
@@ -505,8 +506,7 @@ void GlobalVariables::SaveAllFiles()
 	}
 
 	// ユーザーに完了を通知
-	std::string message = std::format("Saved all {} files.", datas_.size());
-	statusMessage_ = std::format("Last All {} files saved successfully.", datas_.size());
+	statusMessage_ = std::format("全{}ファイルをセーブ(最終)", datas_.size());
 }
 
 json GlobalVariables::GroupToJson(const Group& group)

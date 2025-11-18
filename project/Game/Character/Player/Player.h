@@ -59,7 +59,11 @@ public:
 	void GainExperience(int amount);
 	void TakeDamage(float damage);
 
+	
+	std::unique_ptr<Model> modelPlayer_;
 
+	void SetWalkEmitter(ParticleEmitter* emitter) { walkEmitterPtr_ = emitter; }
+	ParticleEmitter* walkEmitterPtr_ = nullptr;
 private:
 
 	// レベルアップの内部処理
@@ -68,7 +72,7 @@ private:
 	Engine* engine_;
 	Camera* camera_;
 
-	std::unique_ptr<Model> modelPlayer_;
+
 	std::unique_ptr<AnimationModel> animationPlayer_;
 	AABB aabb_;
 	
