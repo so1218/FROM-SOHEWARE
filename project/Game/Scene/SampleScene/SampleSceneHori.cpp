@@ -84,6 +84,7 @@ void SampleSceneHori::Initialize()
     engine_->lightManager_->GetDirectionalLightData()[1].intensity = 1.00f;
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
     engine_->materialManager_->GetMaterialSettings().lightMode = 1;
+    engine_->materialManager_->GetMaterialSettings().environmentMapIntensity = 0.04f;
 
     engine_->postEffectManager_->postEffectData_->modeFlags[0] |= VIGNETTE;
     engine_->postEffectManager_->postEffectData_->vignetteAmount = 0.452f;

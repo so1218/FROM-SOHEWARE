@@ -19,7 +19,7 @@ private:
 	Player* player_;
 
 	float spawnTimer_ = 0.0f;
-	float spawnInterval_ = 1.8f; 
+	float spawnInterval_ = 1.4f; 
 	float spawnRadius_ = 30.0f;
 
 	GameObjectManager* objectManager_;
