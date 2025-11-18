@@ -153,7 +153,7 @@ void Enemy::Draw()
 	if (flashTimer_ > 0)
 	{
 
-		modelEnemy_->SetColor(0xffffffff);
+		modelEnemy_->SetColor(0xff0000ff);
 	}
 	else
 	{

@@ -9,6 +9,7 @@
 #include "Input.h"
 #include "Grid.h"
 #include "PlayerUI.h"
+#include "SceneManager.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
@@ -26,6 +27,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     auto playerUI = std::make_unique<PlayerUI>(engine_, player_);
     auto followCamera = std::make_unique<FollowCamera>(camera_, player_);
     followCamera_ = followCamera.get();
+    player_->SetFollowCamera(followCamera_);
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
 
@@ -53,6 +55,24 @@ void SampleSceneHori::Initialize()
     playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
     engine_->particleSystem_->AddEmitter(std::move(playerWalkEmitter_));
 
+    // ライトの設定
+    engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
+    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -6.25f,-1.0f,1.25f };
+    engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.55f;
+    engine_->lightManager_->GetDirectionalLightData()[1].enable = true;
+    engine_->lightManager_->GetDirectionalLightData()[1].direction = { 3.5f,-1.0f,1.25f };
+    engine_->lightManager_->GetDirectionalLightData()[1].intensity = 1.00f;
+    engine_->materialManager_->GetMaterialSettings().enableLighting = true;
+    engine_->materialManager_->GetMaterialSettings().lightMode = 1;
+
+    engine_->postEffectManager_->postEffectData_->modeFlags[0] |= VIGNETTE;
+    engine_->postEffectManager_->postEffectData_->vignetteAmount = 0.452f;
+    engine_->postEffectManager_->postEffectData_->vignetteRadius = 0;
+    engine_->postEffectManager_->postEffectData_->vignetteSoftness = 0.261f;
+    engine_->postEffectManager_->postEffectData_->vignetteEllipseScale = { 1.2f,1.0f };
+    engine_->postEffectManager_->postEffectData_->vignetteColor = { 0,0,0 };
+
+
 }
 
 void SampleSceneHori::Update()
@@ -62,6 +82,11 @@ void SampleSceneHori::Update()
     enemyManager_->Update();
     // ゲームオブジェクトの一括更新
     objectManager_.Update();
+
+    if (player_->IsEnd())
+    {
+        sceneManager_->RequestSceneChange(SceneID::Title);
+    }
 
 }
 

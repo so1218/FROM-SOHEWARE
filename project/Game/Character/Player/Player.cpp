@@ -42,6 +42,7 @@ void Player::Initialize()
 	experience_ = 0;
 	isInvincible_ = false;
 	invincibilityTimer_ = 0.0f;
+	isEnd_ = false;
 
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
@@ -66,7 +67,6 @@ void Player::Initialize()
 	ApplyGlobalVariables();
 }
 
-// グローバル変数の適用処理
 void Player::ApplyGlobalVariables()
 {
 	auto* gv = GlobalVariables::GetInstance();
@@ -78,8 +78,6 @@ void Player::ApplyGlobalVariables()
 	hp_ = gv->GetFloatValue(groupName, "HP");
 	maxHp_ = gv->GetFloatValue(groupName, "MaxHP");
 	invincibilityDuration_ = gv->GetFloatValue(groupName, "Invincibility Duration");
-
-	// (GetIntValue がない場合は GetFloatValue を static_cast<int> してください)
 	level_ = gv->GetIntValue(groupName, "Level");
 	experience_ = gv->GetIntValue(groupName, "Experience");
 	xpToNextLevel_ = gv->GetIntValue(groupName, "XP to Next Level");
@@ -248,10 +246,14 @@ void Player::OnCollision(Collider* other)
 	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
 	{
 		TakeDamage(10.0f);
+		followCamera_->StartShake(0.2f, 0.5f);
+		Input::GetInstance().StartVibration(0, 0.3f, 0.3f, 0.3f);
 	}
 	if (other->GetCollisionAttribute() & kCollisionAttributeExpGem)
 	{
 		GainExperience(5);
+		followCamera_->StartShake(0.1f, 0.2f);
+		Input::GetInstance().StartVibration(0, 0.15f, 0.15f, 0.15f);
 	}
 }
 
@@ -368,7 +370,7 @@ void Player::TakeDamage(float damage)
 	if (hp_ <= 0.0f)
 	{
 		hp_ = 0.0f;
-	
+		isEnd_ = true;
 	}
 
 	// ダメージを受けたら無敵時間を開始
@@ -394,6 +396,8 @@ void Player::LevelUp()
 	experience_ -= xpToNextLevel_; 
 
 	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.5f);
+
+	Input::GetInstance().StartVibration(0, 0.3f, 0.3f, 0.3f);
 
 	// ここでレベルアップ選択画面を開く
 

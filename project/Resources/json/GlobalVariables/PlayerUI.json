@@ -1,0 +1,26 @@
+{
+    "PlayerUI": {
+        "HP Bar Size": [
+            114.0,
+            12.0
+        ],
+        "HP Offset Y": -1.2200000286102295,
+        "Level Num Pos": [
+            597.0,
+            54.0
+        ],
+        "Level Num Size": [
+            80.0,
+            60.0
+        ],
+        "Level Num Space": 24.0,
+        "XP Bar Pos": [
+            240.0,
+            10.0
+        ],
+        "XP Bar Size": [
+            800.0,
+            20.0
+        ]
+    }
+}

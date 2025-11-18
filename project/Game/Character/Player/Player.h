@@ -4,6 +4,7 @@
 #include "Collider.h"
 #include "Weapon.h"
 #include "AnimationModel.h"
+#include "FollowCamera.h"
 
 class PlayScene;
 
@@ -68,6 +69,11 @@ public:
 	float GetHpRatio() const;
 	float GetXpRatio() const;
 	int GetLevel() const { return level_; }
+
+	bool IsEnd() const { return isEnd_; }
+
+	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
+	FollowCamera* followCamera_;
 private:
 
 	// レベルアップの内部処理
@@ -103,6 +109,6 @@ private:
 	int experience_ = 0;      // 現在の経験値
 	int xpToNextLevel_ = 10;  // 次のレベルアップに必要な経験値
 	int level_ = 1;
-	bool isDead_ = false; // 死亡フラグ
+	bool isEnd_ = false; // 死亡フラグ
 };
 

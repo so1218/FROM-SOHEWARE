@@ -6,7 +6,7 @@
 class PlayerUI : public GameObject
 {
 public:
-    PlayerUI(Engine* engine, Player* player) : engine_(engine), player_(player) {}
+    PlayerUI(Engine* engine, Player* player);
 
     GameObjectType GetType() const override { return GameObjectType::UI; }
 
@@ -15,6 +15,11 @@ public:
     void Update() override;
 
     void Draw() override;
+
+    void DebugDraw() override;
+
+    void ApplyGlobalVariables();
+    std::vector<std::string> GetGlobalVariableGroupName() const { return { "PlayerUI" }; }
 
 private:
     Engine* engine_ = nullptr;
@@ -26,9 +31,6 @@ private:
     std::unique_ptr<Sprite> hpBarBgSprite_;
     std::unique_ptr<Sprite> hpBarSprite_;
 
-    const Vector2 kHpBarSize_ = { 100.0f, 10.0f }; 
-    const float kHpBarOffsetHeight_ = -1.5f;
-
     // 数字テクスチャのハンドル配列
     std::array<uint32_t, 10> digitTextureHandles_;
 
@@ -38,8 +40,16 @@ private:
     // 数字描画用のスプライトリスト
     std::vector<std::unique_ptr<Sprite>> levelNumberSprites_;
 
-    // 数字の表示設定
-    const Vector2 kLevelNumberPos_ = { 20.0f, 10.0f }; // 表示開始位置（画面左上など）
-    const float kNumberSpace_ = 24.0f; // 数字ごとの間隔（画像の横幅に合わせて調整）
-    const Vector2 kNumberSize_ = { 32.0f, 32.0f };     // 数字画像の表示サイズ
+    // XPバー設定
+    Vector2 xpBarPos_ = { (1280.0f - 800.0f) / 2.0f, 10.0f };
+    Vector2 xpBarSize_ = { 800.0f, 20.0f };
+
+    // HPバー設定
+    Vector2 hpBarSize_ = { 100.0f, 10.0f };
+    float hpBarOffsetHeight_ = -1.5f;
+
+    // レベル数字設定
+    Vector2 levelNumberPos_ = { 20.0f, 10.0f };
+    float numberSpace_ = 24.0f;
+    Vector2 numberSize_ = { 32.0f, 32.0f };
 };

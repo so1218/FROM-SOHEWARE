@@ -29,7 +29,8 @@ void TitleScene::Initialize()
 void TitleScene::Update()
 {
 	// シーン切り替えの入力検出
-	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
+        || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
 		sceneManager_->RequestSceneChange(SceneID::Sample);
