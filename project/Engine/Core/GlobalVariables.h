@@ -92,6 +92,7 @@ public:
 	/// <param name="groupName">グループ</param>
 	// 階層パスを受け取り、JSONファイルの一部だけを更新する
 	void SaveFile(const std::vector<std::string>& groupPath);
+	void SaveAllFiles();
 
 	// GroupをJSON に変換する再帰関数を作る
 	json GroupToJson(const Group& group);
@@ -131,4 +132,7 @@ private:
 	int dragSensitivityInt_ = 1;
 	float dragSensitivity_ = 0.1f;
 	float dragSensitivityVector3_ = 0.1f;
+
+	// 画面表示用のステータスメッセージ
+	std::string statusMessage_;
 };

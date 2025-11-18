@@ -28,7 +28,12 @@ void TitleScene::Initialize()
 
 void TitleScene::Update()
 {
-  
+	// シーン切り替えの入力検出
+	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+	{
+		// シーンマネージャーを通じてシーン切り替えをリクエスト
+		sceneManager_->RequestSceneChange(SceneID::Sample);
+	}
 }
 
 void TitleScene::Draw()

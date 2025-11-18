@@ -23,6 +23,20 @@ void GlobalVariables::Update()
 		return;
 	}
 
+
+	if (ImGui::Button("Save All Global Variables"))
+	{
+		SaveAllFiles();
+	}
+
+	if (!statusMessage_.empty())
+	{
+		ImGui::SameLine();
+		ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "%s", statusMessage_.c_str());
+	}
+
+	ImGui::Separator();
+
 	if (ImGui::TreeNode("ドラッグの感度設定"))
 	{
 		ImGui::DragFloat("感度", &dragSensitivity_, 0.01f, 0.001f, 10.0f, "%.3f");
@@ -33,11 +47,9 @@ void GlobalVariables::Update()
 	// トップレベルグループをツリーとして表示
 	for (auto& [groupName, group] : datas_)
 	{
-		if (ImGui::TreeNode(groupName.c_str()))
-		{
-			DrawGroupRecursive({ groupName }, group);
-			ImGui::TreePop();
-		}
+
+		DrawGroupRecursive({ groupName }, group);
+
 		ImGui::Separator();
 	}
 
@@ -51,6 +63,20 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 
 	if (ImGui::TreeNode(groupName.c_str()))
 	{
+		// セーブボタン
+		// このグループ階層だけを保存
+		if (ImGui::Button(("Save [" + groupName + "]").c_str()))
+		{
+			// 新しい階層パスで保存するSaveFileを呼び出す
+			SaveFile(groupPath);
+			statusMessage_ = std::format("Last Saved group:{}.json", groupPath[0]);
+		}
+		if (!statusMessage_.empty())
+		{
+			ImGui::SameLine();
+			ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "%s", statusMessage_.c_str());
+		}
+
 		// items を表示
 		for (auto& [itemName, value] : group.items)
 		{
@@ -91,16 +117,6 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 			std::vector<std::string> nextGroupPath = groupPath;
 			nextGroupPath.push_back(subGroupName);
 			DrawGroupRecursive(nextGroupPath, subGroup);
-		}
-
-		// セーブボタン
-		// 「Save [現在のグループ名]」ボタン -> このグループ階層だけを保存
-		if (ImGui::Button(("Save [" + groupName + "]").c_str()))
-		{
-			// 新しい階層パスで保存するSaveFileを呼び出す
-			SaveFile(groupPath);
-			std::string message = std::format("Updated group '{}' in {}.json", groupName, groupPath[0]);
-			MessageBoxA(nullptr, message.c_str(), "GlobalVariables", 0);
 		}
 
 		ImGui::TreePop();
@@ -460,8 +476,16 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 	// メモリ上のGroupをJSONに変換し、対象の階層を丸ごと上書きする
 	*currentJsonNode = GroupToJson(*targetGroup);
 
-	// 更新したJSONデータ全体をファイルに書き戻す
+	// パスからディレクトリ部分を取得し、存在しなければ作成する
+	std::filesystem::path dir = filePath.parent_path();
+	if (!std::filesystem::exists(dir))
+	{
+		std::filesystem::create_directories(dir);
+	}
+
+	// ファイルを開く
 	std::ofstream ofs(filePath);
+
 	if (ofs.fail()) {
 		MessageBoxA(nullptr, "Failed to open file for saving.", "GlobalVariables", MB_OK);
 		assert(false);
@@ -469,6 +493,20 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 	}
 	ofs << std::setw(4) << rootJson << std::endl;
 	ofs.close();
+}
+
+void GlobalVariables::SaveAllFiles()
+{
+	// datas_の内容をすべて処理する
+	for (const auto& [topLevelName, group] : datas_)
+	{
+		// 各ファイルを丸ごと保存する
+		SaveFile({ topLevelName });
+	}
+
+	// ユーザーに完了を通知
+	std::string message = std::format("Saved all {} files.", datas_.size());
+	statusMessage_ = std::format("Last All {} files saved successfully.", datas_.size());
 }
 
 json GlobalVariables::GroupToJson(const Group& group)
@@ -530,13 +568,13 @@ void GlobalVariables::LoadFiles()
 		const std::filesystem::path& filePath = entry.path();
 		if (filePath.extension() != ".json") continue;
 
-		std::string filename = filePath.stem().string(); 
+		std::string filename = filePath.stem().string();
 
 		// ドットがある場合、最初のドット以降はカット
 		size_t dotPos = filename.find('.');
 		if (dotPos != std::string::npos)
 		{
-			filename = filename.substr(0, dotPos);  
+			filename = filename.substr(0, dotPos);
 		}
 
 		LoadFile(filename);
