@@ -84,7 +84,7 @@ void Input::Update()
 {
     // 前回の状態を保存
     memcpy(preKeys_, keys_, sizeof(keys_));
-    preMouseState_ = mouseState_; // structは直接代入でOK
+    preMouseState_ = mouseState_; 
 
     // デバイスの制御を取得
     if (keyboard_) 

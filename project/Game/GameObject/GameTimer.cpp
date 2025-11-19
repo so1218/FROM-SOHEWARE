@@ -9,12 +9,12 @@ GameTimer::GameTimer(Engine* engine) : engine_(engine)
 
 void GameTimer::Initialize(float limitMinutes)
 {
-    // 時間設定 (分 -> 秒)
+    // 時間設定
     maxTime_ = limitMinutes * 60.0f;
     currentTime_ = maxTime_;
     isTimeUp_ = false;
 
-    // テクスチャハンドルの取得 (PlayerUIと同じIDマップを使用)
+    // テクスチャハンドルの取得
     std::array<TextureID, 10> idMap = {
         TextureID::num0, TextureID::num1, TextureID::num2, TextureID::num3, TextureID::num4,
         TextureID::num5, TextureID::num6, TextureID::num7, TextureID::num8, TextureID::num9
@@ -22,7 +22,7 @@ void GameTimer::Initialize(float limitMinutes)
     for (int i = 0; i < 10; ++i) {
         digitTextureHandles_[i] = TextureHandle::Get(idMap[i]);
     }
-    // コロン用のテクスチャ (無ければ white1x1 で代用するか、TextureID::colon を追加)
+    // コロン用のテクスチャ
     colonTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     // スプライトの生成 (5文字分: MM:SS)
@@ -113,8 +113,6 @@ void GameTimer::UpdateSpriteTextures(int minutes, int seconds)
     sprites_[0]->SetTextureHandle(digitTextureHandles_[(minutes / 10) % 10]);
     // 分の1の位
     sprites_[1]->SetTextureHandle(digitTextureHandles_[minutes % 10]);
-
-    // [2]はコロンなので更新不要
 
     // 秒の10の位
     sprites_[3]->SetTextureHandle(digitTextureHandles_[(seconds / 10) % 10]);

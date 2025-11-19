@@ -272,9 +272,6 @@
     <ClCompile Include="Game\Utility\TimedCall.cpp">
       <Filter>Game\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Collision\Collider.cpp">
-      <Filter>Game\Physics\Collision</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Collision\Collision.cpp">
       <Filter>Game\Physics\Collision</Filter>
     </ClCompile>

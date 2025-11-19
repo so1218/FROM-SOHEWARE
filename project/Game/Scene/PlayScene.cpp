@@ -61,6 +61,13 @@ void PlayScene::Update()
 
     // プレイヤーの更新処理
     player_->Update();
+
+    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
+        || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
+    {
+        // シーンマネージャーを通じてシーン切り替えをリクエスト
+        sceneManager_->RequestSceneChange(SceneID::Title);
+    }
 }
 
 void PlayScene::HandleCollisions()

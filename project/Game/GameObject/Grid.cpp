@@ -29,7 +29,7 @@ void Grid::SetTextureHandle(uint32_t handle)
 
 void Grid::Draw()
 {
-//#ifdef _DEBUG
+#ifdef _DEBUG
     materialHandle_.materialData->isArtGrid = true;
 
     transform_.UpdateMatrix();
@@ -42,5 +42,5 @@ void Grid::Draw()
         color_,
         materialHandle_
     );
-//#endif
+#endif
 }

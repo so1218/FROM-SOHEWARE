@@ -8,6 +8,21 @@
 
 class PlayScene;
 
+enum class UpgradeType
+{
+	NewWeapon,      // 新しい武器を取得
+	LevelUpWeapon,  // 所持している武器を強化
+	Heal,           // 回復
+};
+
+// 画面に表示する1つの選択肢データ
+struct UpgradeInfo
+{
+	UpgradeType type;       // 強化の種類
+	WeaponType weaponId;    // 対象の武器ID
+	std::string name;       // 表示名
+};
+
 class Player : public Collider, public BaseCharacter
 {
 public:

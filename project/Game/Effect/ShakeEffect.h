@@ -7,7 +7,7 @@ public:
     void Start(float duration, float intensity);
     void Update();
 
-    // 現在のシェイクオフセットを返す
+    // 現在のシェイクオフセット
     Vector3 GetOffset() const;
 
     bool IsActive() const { return isActive_; }

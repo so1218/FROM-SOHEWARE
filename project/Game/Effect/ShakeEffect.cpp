@@ -25,7 +25,7 @@ void ShakeEffect::Update()
         isActive_ = false;
     }
 
-    // Updateの最後で、前回の状態を記録
+    // 前回の状態を記録
     wasActive_ = true;
 }
 
@@ -36,11 +36,11 @@ Vector3 ShakeEffect::GetOffset() const
         return { 0.0f, 0.0f, 0.0f };
     }
 
-    // 揺れの進行度（0.0〜1.0）
+    // 揺れの進行度
     float progress = timer_ / duration_;
     float attenuation = 1.0f - progress; // 時間とともに減衰
 
-    // X, Y, Z にランダム値を加える（減衰付き）
+    // X, Y, Z にランダム値を加える（減衰）
     return 
     {
         Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,

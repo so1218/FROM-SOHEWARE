@@ -6,7 +6,7 @@
 
 void CollisionManager::AddCollider(Collider* collider)
 {
-    if (collider) // nullチェック
+    if (collider) 
     {
         colliders_.push_back(collider);
     }

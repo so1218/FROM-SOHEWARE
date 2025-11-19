@@ -338,7 +338,8 @@ void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldT
 Mesh* Renderer::GetOrCreateMesh(const ModelData& modelData)
 {
 	auto it = meshCache.find(&modelData);
-	if (it != meshCache.end()) {
+	if (it != meshCache.end())
+	{
 		return &it->second;
 	}
 

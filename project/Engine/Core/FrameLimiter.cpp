@@ -29,7 +29,7 @@ void FrameLimiter::WaitNextFrame()
         std::this_thread::sleep_for(remaining - std::chrono::microseconds(2000));
     }
 
-    // 念のためbusy waitで調整
+    // 調整
     while (std::chrono::steady_clock::now() - targetTime_ < kFrameDuration_)
     {
         // 何もしない
