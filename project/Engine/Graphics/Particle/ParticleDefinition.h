@@ -125,57 +125,46 @@ struct VelocityModule
 
 struct PhysicsModule
 {
-    bool enabled = false;
-    Vector3 gravity = { 0.0f, -9.8f, 0.0f };
-    float drag = 0.0f; // 空気抵抗の割合 (0.01 = 1%減速)
+    bool enabled = false;               // モジュールの有効/無効
+    Vector3 gravity = { 0.0f, -9.8f, 0.0f }; // 重力加速度
+    float drag = 0.0f;                  // 空気抵抗 (0.01 = 1% 減速)
 };
 
 struct RotationOverLifetimeModule
 {
-    bool enabled = false;
-    bool isBillboard = true;
-     // isBillboardがtrueの場合
-    float angularVelocity2D = 5.0f; // 1秒あたりの回転角度（度数法）
+    bool enabled = false;               // モジュールの有効/無効
+    bool isBillboard = true;            // ビルボード回転か3D回転か
 
-    // isBillboardがfalseの場合
-    Vector3 angularVelocity3D = { 0.0f, 0.0f, 0.0f };
-    // 生成時の向きをオイラー角(度数法)で指定
-    Vector3 orientation3D = { 0.0f, 0.0f, 0.0f };
-
-    bool randomStartRotation = true;
+    float angularVelocity2D = 5.0f;     // 2D回転速度 (度/秒)、isBillboard=true時
+    Vector3 angularVelocity3D = { 0.0f, 0.0f, 0.0f }; // 3D回転速度、isBillboard=false時
+    Vector3 orientation3D = { 0.0f, 0.0f, 0.0f };     // 初期向き (度数法)
+    bool randomStartRotation = true;    // 初期回転をランダムにするか
 };
 
 struct ColorOverLifetimeModule
 {
-    // どのモードで色を決定するか
     enum class Mode : int
-    { 
-        Single = 0,
-        RandomBetweenTwo = 1
+    {
+        Single = 0,             // 単一グラデーション
+        RandomBetweenTwo = 1    // 2種類の色からランダムに選択
     };
 
-    bool enabled = true;
-    Mode mode = Mode::Single;
+    bool enabled = true;         // モジュールの有効/無効
+    Mode mode = Mode::Single;    // 色決定モード
 
-    unsigned int startColor = 0xffffffff;
-    unsigned int endColor = 0xffffff00;
-    // グラデーション2 (RandomBetweenTwo用)
-    unsigned int startColor2 = 0xffffffff; // (例: 2つ目の開始色)
-    unsigned int endColor2 = 0xffffff00;   // (例: 2つ目の終了色)
+    unsigned int startColor = 0xffffffff;  // 開始色
+    unsigned int endColor = 0xffffff00;    // 終了色
+    unsigned int startColor2 = 0xffffffff; // 2つ目の開始色 (RandomBetweenTwo用)
+    unsigned int endColor2 = 0xffffff00;   // 2つ目の終了色 (RandomBetweenTwo用)
 
-    EasingType easingType = EasingType::EaseLinear;
+    EasingType easingType = EasingType::EaseLinear; // 補間のイージングタイプ
 
     Vector4 Evaluate(float t) const
     {
-        // 1. Easingオブジェクトで時間tを加工
-        float eased_t = Easing::Evaluate(this->easingType, t);
-
-        // 2. 色を計算しやすいVector4に変換
+        float eased_t = Easing::Evaluate(this->easingType, t);  // 時間をイージング
         Vector4 startVec = Math::Uint32ToColorVector(startColor);
         Vector4 endVec = Math::Uint32ToColorVector(endColor);
-
-        // 3. 加工された時間を使って補間
-        return Math::Lerp(startVec, endVec, eased_t);
+        return Math::Lerp(startVec, endVec, eased_t);           // 色を補間
     }
 };
 
@@ -210,32 +199,32 @@ struct SizeOverLifetimeModule
 
 struct TextureSheetAnimationModule
 {
-    bool enabled = false;
-    uint32_t textureHandle = 0; // スプライトシート全体のテクスチャハンドル
+    bool enabled = false;           // アニメーションの有効/無効
+    uint32_t textureHandle = 0;     // スプライトシート全体のテクスチャハンドル
 };
 
 struct NoiseModule
 {
     bool enabled = false;
-    float strength = 1.0f;   // 揺らぎの強さ
-    float frequency = 1.0f;  // 揺らぎの細かさ（周波数）
-    float scrollSpeed = 1.0f; // ノイズが時間と共に流れる速度
-    bool separateAxes = false; // X, Y, Z軸で別々の設定を使うか
+    float strength = 1.0f;    // 揺らぎの強さ
+    float frequency = 1.0f;   // 揺らぎの細かさ
+    float scrollSpeed = 1.0f; // 時間に応じてノイズが流れる速度
+    bool separateAxes = false; // X/Y/Z軸で別々のノイズを使うか
 };
 
-struct VortexModule 
+struct VortexModule
 {
     bool enabled = false;
-    Vector3 center = { 0.f, 0.f, 0.f }; // 渦の中心
-    float rotationSpeed = 90.0f;    // 1秒あたりの回転速度
-    float orbitalSpeed = 10.0f;     // 中心へ向かう/離れる速度（負の値で離れる）
+    Vector3 center = { 0.f, 0.f, 0.f }; // 渦の中心位置
+    float rotationSpeed = 90.0f;        // 秒あたりの回転速度
+    float orbitalSpeed = 10.0f;         // 中心方向への移動速度（負で外向き）
 };
 
 struct AttractionModule
 {
     bool enabled = false;
-    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 引き寄せられる目標地点（中心）
-    float strength = 1.0f;              // 引き寄せられる強さ（加速度）
+    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 引き寄せる目標位置
+    float strength = 1.0f;                 // 引力の強さ（加速度）
 };
 
 enum class TrailTextureMode
@@ -253,8 +242,8 @@ enum class TrailAlignment
 enum class JitterMode
 {
     Wave,   // 0: 滑らか
-    Step,   // 2: 規則的 (四角・階段) ★追加
-    Random, // 1: ランダム (稲妻)
+    Step,   // 1: 規則的 (四角・階段)
+    Random, // 2: ランダム (稲妻)
 };
 
 struct TrailModule

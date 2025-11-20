@@ -396,7 +396,6 @@ void ParticleEditor::ShowEditor()
                             trail.jitterMode = static_cast<JitterMode>(currentJitter);
                         }
 
-                        // --- ジッター (雷・斬撃) ---
                         ImGui::Text("ジッター (形状変形)");
                         ImGui::DragFloat("強さ", &trail.jitterStrength, 0.1f, 0.0f, 50.0f);
                         ImGui::DragFloat("周波数", &trail.jitterFrequency, 0.1f, 0.1f, 100.0f);
@@ -405,11 +404,9 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Separator();
 
-                        // --- ディゾルブ (消滅演出) ---
                         ImGui::Text("ディゾルブ (侵食消滅)");
 
-                        // ノイズテクスチャ選択
-                        int selectedDissolveIdx = -1; // 未設定時は-1
+                        int selectedDissolveIdx = -1; 
                         for (size_t i = 0; i < idArray.size(); ++i)
                         {
                             if (ParticleTextureHandle::Get(idArray[i]) == trail.dissolveTextureHandle)
@@ -424,10 +421,8 @@ void ParticleEditor::ShowEditor()
                         {
                             trail.dissolveTextureHandle = ParticleTextureHandle::Get(idArray[selectedDissolveIdx]);
                         }
-                        // 解除用ボタン
                         if (ImGui::Button("ノイズ解除"))
                         {
-                            // White1x1ではなく、0 (未設定) にする
                             trail.dissolveTextureHandle = 0;
                         }
 

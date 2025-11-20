@@ -99,25 +99,25 @@
                 1.0,
                 0.0
             ],
-            "headWidthScale": 2.119999885559082,
+            "headWidthScale": 0.44999998807907104,
             "jitterFrequency": 6.199999809265137,
-            "jitterMode": 1,
+            "jitterMode": 0,
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
-            "jitterStrength": 0.10000000149011612,
-            "lifetime": 5.0,
+            "jitterStrength": 0.0,
+            "lifetime": 0.30000001192092896,
             "minVertexDistance": 0.009999999776482582,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
-                0.10588236153125763,
-                0.11849097162485123,
-                0.6039215922355652,
+                0.6681624054908752,
+                0.9156118035316467,
+                0.06567679345607758,
                 1.0
             ],
-            "tailWidthScale": 0.15000000596046448,
+            "tailWidthScale": 2.9700000286102295,
             "textureHandle": 34,
             "textureMode": 0,
             "tiling": [
