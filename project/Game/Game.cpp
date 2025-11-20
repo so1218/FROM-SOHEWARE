@@ -127,6 +127,7 @@ void Game::Update()
         engine_->debugCamera_->Update();
 
         // camera_にコピー
+        camera_->SetTranslation(engine_->debugCamera_->GetCameraWorldPosition());
         camera_->SetViewMatrix(engine_->debugCamera_->GetViewMatrix());
         camera_->SetProjectionMatrix(engine_->debugCamera_->GetProjectionMatrix());
         camera_->SetViewProjectionMatrix(engine_->debugCamera_->GetViewProjectionMatrix());

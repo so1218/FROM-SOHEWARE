@@ -816,8 +816,8 @@ void Renderer::CreateParticles()
 		particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
 	}
 
-	cameraBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(FrameData));
-	cameraBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
+	frameDataResource_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(FrameData));
+	frameDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
 void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
@@ -866,7 +866,7 @@ void Renderer::DrawParticles(const Camera& camera)
 	Matrix4x4 view = camera.GetViewMatrix();
 	frameData_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
 	frameData_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
-	cmdList->SetGraphicsRootConstantBufferView(1, cameraBuffer_->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, frameDataResource_->GetGPUVirtualAddress());
 
 	// 先頭アドレス
 	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
@@ -981,75 +981,103 @@ void Renderer::CreateTrails()
 
 	for (size_t i = 0; i < kMaxTrailCount; ++i)
 	{
-		// WVP行列用バッファ
-		trails_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+		// WVP バッファ作成とマッピング
+		trails_[i].wvpResource =
+			BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 		trails_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&trails_[i].mappedWvp));
 
-		// 動的な頂点バッファの作成
-		// 空のデータでいい。最大サイズ確保する
+		// マテリアルバッファ作成とマッピング
+		trails_[i].materialResource =
+			BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TrailMaterialData));
+		trails_[i].materialResource->Map(0, nullptr, reinterpret_cast<void**>(&trails_[i].mappedMaterial));
+
+		// 頂点バッファ作成（最大数確保）
 		std::vector<VertexDataTrail> dummyVertices(kMaxTrailVertices);
 		trails_[i].mesh.InitializeVertexTrail(device_->GetDevice(), dummyVertices);
 	}
+
 	indexTrail_ = 0;
 }
-
-void Renderer::DrawTrail(const std::vector<Vector3>& points, float width, uint32_t textureHandle, Camera& camera,
-	const Vector4& startColor, const Vector4& endColor)
+void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera)
 {
 	if (indexTrail_ >= kMaxTrailCount) return;
-	if (points.size() < 2) return; // 最低2点必要
+	if (points.size() < 2) return;
 
 	TrailRenderData& trailData = trails_[indexTrail_];
-
-	// 頂点生成（CPUでビルボード・リボン形状を構築）
 	std::vector<VertexDataTrail> vertices;
 	vertices.reserve(points.size() * 2);
 
+	// Tile 用に距離を計算
+	std::vector<float> distances;
+	float totalLength = 0.0f;
+	if (config.textureMode == TrailTextureMode::Tile)
+	{
+		distances.resize(points.size());
+		distances[0] = 0.0f;
+		for (size_t i = 0; i < points.size() - 1; ++i)
+		{
+			float d = (points[i + 1].position - points[i].position).Length();
+			totalLength += d;
+			distances[i + 1] = totalLength;
+		}
+	}
+
 	Vector3 cameraPos = camera.GetTranslation();
 
+	// 頂点生成
 	for (size_t i = 0; i < points.size(); ++i)
 	{
 		if (vertices.size() >= kMaxTrailVertices) break;
 
-		Vector3 currentPos = points[i];
+		Vector3 currentPos = points[i].position;
 
 		// 進行方向
-		Vector3 forward = (i < points.size() - 1)
-			? (points[i + 1] - currentPos)
-			: (currentPos - points[i - 1]);
+		Vector3 forward;
+		if (i < points.size() - 1) forward = points[i + 1].position - currentPos;
+		else forward = currentPos - points[i - 1].position;
 		forward = forward.Normalize();
 
-		// ビルボード横方向
-		Vector3 toCamera = (cameraPos - currentPos).Normalize();
-		Vector3 right = Math::CrossProduct(toCamera, forward).Normalize();
+		// 横方向
+		Vector3 right;
+		if (config.alignment == TrailAlignment::View)
+		{
+			Vector3 toCamera = (cameraPos - points[i].position).Normalize();
+			right = Math::CrossProduct(toCamera, forward).Normalize();
+		}
+		else
+		{
+			Vector3 upVector = points[i].rotationQuaternion.RotateVector({ 0.0f, 1.0f, 0.0f });
+			right = Math::CrossProduct(upVector, forward).Normalize();
+		}
 
-		// 左右の頂点
-		Vector3 posLeft = currentPos - right * (width * 0.5f);
-		Vector3 posRight = currentPos + right * (width * 0.5f);
+		// 横方向が計算不能なら補正
+		if (right.LengthSq() < 0.001f)
+			right = { 1.0f, 0.0f, 0.0f };
 
-		// u: 0 → 1（トレイルの長さ方向）
-		float u = static_cast<float>(i) / (points.size() - 1);
+		// 幅の計算
+		float u_norm = static_cast<float>(i) / (points.size() - 1);
+		float widthScale = std::lerp(config.tailWidthScale, config.headWidthScale, u_norm);
+		float currentWidth = config.width * widthScale;
 
-		// 始端→末端のカラー補間
+		Vector3 posLeft = currentPos - right * (currentWidth * 0.5f);
+		Vector3 posRight = currentPos + right * (currentWidth * 0.5f);
+
+		// UV
+		float texU = 0.0f;
+		if (config.textureMode == TrailTextureMode::Stretch)
+			texU = u_norm * config.tiling.x;
+		else
+			texU = distances[i] * config.tiling.x;
+
+		// 色補間
 		Vector4 color;
-		color.x = std::lerp(endColor.x, startColor.x, u);
-		color.y = std::lerp(endColor.y, startColor.y, u);
-		color.z = std::lerp(endColor.z, startColor.z, u);
-		color.w = std::lerp(endColor.w, startColor.w, u);
+		color.x = std::lerp(config.endColor.x, config.startColor.x, u_norm);
+		color.y = std::lerp(config.endColor.y, config.startColor.y, u_norm);
+		color.z = std::lerp(config.endColor.z, config.startColor.z, u_norm);
+		color.w = std::lerp(config.endColor.w, config.startColor.w, u_norm);
 
-		// 左頂点
-		vertices.push_back({
-			{ posLeft.x, posLeft.y, posLeft.z, 1.0f },
-			{ u, 0.0f },
-			color
-			});
-
-		// 右頂点
-		vertices.push_back({
-			{ posRight.x, posRight.y, posRight.z, 1.0f },
-			{ u, 1.0f },
-			color
-			});
+		vertices.push_back({ { posLeft.x, posLeft.y, posLeft.z, 1.0f }, { texU, 0.0f }, color });
+		vertices.push_back({ { posRight.x, posRight.y, posRight.z, 1.0f }, { texU, 1.0f }, color });
 	}
 
 	// 頂点バッファ更新
@@ -1059,29 +1087,33 @@ void Renderer::DrawTrail(const std::vector<Vector3>& points, float width, uint32
 	trailData.mesh.GetVertexResource()->Unmap(0, nullptr);
 	trailData.mesh.SetVertexCount(static_cast<uint32_t>(vertices.size()));
 
-	// 行列（トレイルはワールド座標で生成するので単位行列）
+	// 行列設定
 	Matrix4x4 worldMat = Matrix4x4::MakeIdentity();
 	Matrix4x4 wvpMat = worldMat * camera.GetViewProjectionMatrix();
 	trailData.mappedWvp->WVP = wvpMat;
 	trailData.mappedWvp->World = worldMat;
 
-	// 描画コマンド
-	auto* cmdList = commandManager_->GetCommandList();
+	// マテリアル設定（スクロール速度）
+	trailData.mappedMaterial->scrollSpeed = config.scrollSpeed;
 
+	// 描画設定
+	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	cmdList->SetPipelineState(psoManager_->GetPSO("Trail"));
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Trail"));
-
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	cmdList->IASetVertexBuffers(0, 1, &trailData.mesh.GetVertexBufferView());
 
-	// b0: 行列、t0: テクスチャ
+	// CBV
 	cmdList->SetGraphicsRootConstantBufferView(0, trailData.wvpResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(textureHandle));
+	cmdList->SetGraphicsRootConstantBufferView(1, trailData.materialResource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
+
+	// SRV（Trail のテクスチャ）
+	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(config.textureHandle));
 
 	cmdList->DrawInstanced(static_cast<UINT>(vertices.size()), 1, 0, 0);
-
 	indexTrail_++;
 }

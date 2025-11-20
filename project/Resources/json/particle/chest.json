@@ -87,30 +87,38 @@
         },
         "textureSheetModule": {
             "enabled": true,
-            "framesPerSecond": 10.0,
-            "looping": true,
-            "textureHandle": 12,
-            "tilesX": 1,
-            "tilesY": 1
+            "textureHandle": 12
         },
         "trailModule": {
+            "alignment": 0,
             "enabled": true,
             "endColor": [
-                0.05912512168288231,
-                0.4793440103530884,
-                0.5189872980117798,
+                0.0,
+                0.025316476821899414,
+                1.0,
                 0.0
             ],
+            "headWidthScale": 1.149999976158142,
             "lifetime": 0.5,
-            "minVertexDistance": 0.10000000149011612,
+            "minVertexDistance": 0.009999999776482582,
+            "scrollSpeed": [
+                0.0,
+                0.0
+            ],
             "startColor": [
                 0.10588236153125763,
                 0.6039215922355652,
                 0.10588236153125763,
                 1.0
             ],
+            "tailWidthScale": 0.4399999976158142,
             "textureHandle": 34,
-            "width": 0.6000000238418579
+            "textureMode": 0,
+            "tiling": [
+                5.0,
+                5.0
+            ],
+            "width": 0.5
         },
         "velocityModule": {
             "angleRange": 22.0,

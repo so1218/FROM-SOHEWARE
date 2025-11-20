@@ -12,17 +12,15 @@ PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
 
-    // テクスチャからサンプリング
+    // テクスチャをサンプリング
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-    
-    // テクスチャの色 × 頂点カラー（フェード値含む）
+
+    // テクスチャ色と頂点カラーを乗算
     output.color = textureColor * input.color;
 
-    // 必要であればアルファテスト（完全に透明なら描画しない）
+    // 透明なら描画しない
     if (output.color.a <= 0.0f)
-    {
         discard;
-    }
 
     return output;
 }

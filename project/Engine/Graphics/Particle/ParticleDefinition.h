@@ -244,6 +244,12 @@ enum class TrailTextureMode
     Tile     // 距離に応じて繰り返す (鎖、タイヤ痕など)
 };
 
+enum class TrailAlignment
+{
+    View,      // ビルボード（常にカメラ向き）。幅が一定に見える。煙やビームなど。
+    Transform  // 回転追従。剣の軌跡やタイヤ痕など。
+};
+
 struct TrailModule
 {
     bool enabled = false;
@@ -258,16 +264,18 @@ struct TrailModule
     Vector2 tiling = { 1.0f, 1.0f };       // リピート回数
     Vector2 scrollSpeed = { 0.0f, 0.0f };  // UVスクロール速度
 
-    float headWidthScale = 1.0f; // 先端（新しい方）の太さ倍率
-    float tailWidthScale = 1.0f; // 尻尾（古い方）の太さ倍率
+    TrailAlignment alignment = TrailAlignment::View;
+
+    float headWidthScale = 1.0f; // 先端の太さ倍率
+    float tailWidthScale = 1.0f; // 尻尾の太さ倍率
 
 };
 
 struct TrailPoint
 {
     Vector3 position;
-    Quaternion rotation;
-    float time; // 生成された時刻（またはパーティクルの年齢）
+    Quaternion rotationQuaternion;
+    float time; // 生成された時刻
 };
 
 struct ParticleConfig

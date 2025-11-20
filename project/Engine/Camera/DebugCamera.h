@@ -64,6 +64,8 @@ public:
     void SetRotateSpeed(float speed) { rotateSpeed_ = speed; }
     void SetZoomSpeed(float speed) { zoomSpeed_ = speed; }
 
+    Vector3 GetCameraWorldPosition() const { return cameraWorldPosition_; }
+
 private:
     void UpdateProjectionMatrix()
     {

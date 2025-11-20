@@ -3,11 +3,15 @@
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    // C++側で既にワールド座標系でメッシュを作っている場合、
-    // WVPは ViewProjection 行列のみが入っている想定
+
+    // 位置をビュー射影行列で変換
     output.position = mul(input.position, gTransformationMatrix.WVP);
-    
-    output.texcoord = input.texcoord;
-    output.color = input.color; // C++で作ったフェード用カラーをパス
+
+    // UVにスクロールを適用
+    float2 scroll = gTrailMaterial.scrollSpeed * gFrameData.gTime;
+    output.texcoord = input.texcoord + scroll;
+
+    output.color = input.color;
+
     return output;
 }

@@ -2,6 +2,7 @@
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 ConstantBuffer<TrailMaterialData> gTrailMaterial : register(b1);
+ConstantBuffer<FrameData> gFrameData : register(b2);
 
 struct VertexShaderInput
 {

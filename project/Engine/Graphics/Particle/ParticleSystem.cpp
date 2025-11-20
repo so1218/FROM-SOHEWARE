@@ -152,130 +152,156 @@ void ParticleSystem::Update()
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     // パーティクルの更新
-    for (auto partilce = particles_.begin(); partilce != particles_.end(); )
+    for (auto particle = particles_.begin(); particle != particles_.end(); )
     {
-        ParticleState& particleState = *partilce;
+        ParticleState& particleState = *particle;
         const ParticleConfig& config = particleState.config;
 
         // 寿命チェック
         particleState.age += deltaTime;
-        if (particleState.age >= particleState.lifetime)
+
+        // 削除条件
+        bool isExpired = (particleState.age >= particleState.lifetime);
+        bool isTrailEmpty = particleState.trailHistory.empty();
+
+        // 削除するかどうかの判定
+        bool shouldDelete = false;
+
+        if (!config.trail.enabled)
         {
-            partilce = particles_.erase(partilce);
-            continue;
+            shouldDelete = isExpired;
+        }
+        else
+        {
+            shouldDelete = (isExpired && isTrailEmpty);
         }
 
-        float t = particleState.lifetime > 0.0f ? (particleState.age / particleState.lifetime) : 1.0f;
-
-        // Physics Module
-        if (config.physics.enabled)
+        if (shouldDelete)
         {
-            particleState.velocity += config.physics.gravity * deltaTime;
-            particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
+            particle = particles_.erase(particle);
+            continue; 
         }
 
-        // Vortex Module
-        if (config.vortex.enabled)
+        if (!isExpired)
         {
-            Vector3 toCenter = config.vortex.center - particleState.transform->translation_;
-            if (toCenter.Length() > 0.001f)
+            float t = particleState.lifetime > 0.0f ? (particleState.age / particleState.lifetime) : 1.0f;
+
+            // Physics Module
+            if (config.physics.enabled)
             {
-                Vector3 toCenter_norm = toCenter.Normalize();
-                Vector3 orbitalForce = toCenter_norm * config.vortex.orbitalSpeed;
-                Vector3 rotationalForce = { -toCenter_norm.y, toCenter_norm.x, 0.0f };
-                rotationalForce = rotationalForce * config.vortex.rotationSpeed;
-                particleState.velocity += (orbitalForce + rotationalForce) * deltaTime;
+                particleState.velocity += config.physics.gravity * deltaTime;
+                particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
             }
+
+            // Vortex Module
+            if (config.vortex.enabled)
+            {
+                Vector3 toCenter = config.vortex.center - particleState.transform->translation_;
+                if (toCenter.Length() > 0.001f)
+                {
+                    Vector3 toCenter_norm = toCenter.Normalize();
+                    Vector3 orbitalForce = toCenter_norm * config.vortex.orbitalSpeed;
+                    Vector3 rotationalForce = { -toCenter_norm.y, toCenter_norm.x, 0.0f };
+                    rotationalForce = rotationalForce * config.vortex.rotationSpeed;
+                    particleState.velocity += (orbitalForce + rotationalForce) * deltaTime;
+                }
+            }
+
+            // Attraction Module
+            if (config.attraction.enabled)
+            {
+                Vector3 directionToTarget = config.attraction.target - particleState.transform->translation_;
+                particleState.velocity += directionToTarget.Normalize() * config.attraction.strength * deltaTime;
+            }
+
+            // 位置を更新
+            particleState.transform->translation_ += particleState.velocity * deltaTime;
+
+            // Rotation Module
+            if (config.rotation.enabled)
+            {
+                if (config.rotation.isBillboard)
+                {
+                    particleState.transform->rotation_.x = 0.0f;
+                    particleState.transform->rotation_.y = 0.0f;
+                    particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
+                }
+                else
+                {
+                    particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
+                }
+            }
+            particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
+
+            // Color Module
+            if (config.colorOverLifetime.enabled)
+                particleState.color = config.colorOverLifetime.Evaluate(t);
+
+            // Size Module
+            if (config.sizeOverLifetime.enabled)
+                particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
+
+            // Texture Module
+            particleState.textureHandle = config.textureSheet.textureHandle;
+
         }
 
-        // Attraction Module
-        if (config.attraction.enabled)
-        {
-            Vector3 directionToTarget = config.attraction.target - particleState.transform->translation_;
-            particleState.velocity += directionToTarget.Normalize() * config.attraction.strength * deltaTime;
-        }
-
-        // 位置を更新
-        particleState.transform->translation_ += particleState.velocity * deltaTime;
-
+        // Trail(軌跡)処理
         if (config.trail.enabled)
         {
             Vector3 currentPos = particleState.transform->translation_;
 
-            // 新しいポイントを追加するか判定
-            bool shouldAdd = false;
-            if (particleState.trailHistory.empty())
+            // 新しいポイント追加は生きている間だけ
+            if (!isExpired)
             {
-                shouldAdd = true;
-            }
-            else
-            {
-                // 前回ポイントとの距離が一定以上なら追加
-                Vector3 lastPos = particleState.trailHistory.back().position;
-                float distSq = (currentPos - lastPos).LengthSq();
-                if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance)
+                bool shouldAdd = false;
+                if (particleState.trailHistory.empty())
                 {
                     shouldAdd = true;
                 }
+                else 
+                {
+                    Vector3 lastPos = particleState.trailHistory.back().position;
+                    float distSq = (currentPos - lastPos).LengthSq();
+                    if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance) 
+                    {
+                        shouldAdd = true;
+                    }
+                }
+
+                if (shouldAdd) 
+                {
+                    TrailPoint newPoint;
+                    newPoint.position = currentPos;
+                    newPoint.rotationQuaternion = particleState.transform->rotationQuaternion_;
+                    newPoint.time = particleState.age;
+                    particleState.trailHistory.push_back(newPoint);
+                }
             }
 
-            // ポイント追加
-            if (shouldAdd)
-            {
-                TrailPoint newPoint;
-                newPoint.position = currentPos;
-                newPoint.time = particleState.age;   // 生成時刻
-                particleState.trailHistory.push_back(newPoint);
-            }
-
-            // 寿命を過ぎたポイントを削除
+            // 死亡後も古い点を寿命で削除
             while (!particleState.trailHistory.empty())
             {
                 float timeAlive = particleState.age - particleState.trailHistory.front().time;
                 if (timeAlive > config.trail.lifetime)
-                {
                     particleState.trailHistory.pop_front();
-                }
                 else
-                {
                     break;
-                }
             }
         }
 
-        // Rotation Module
-        if (config.rotation.enabled)
-        {
-            if (config.rotation.isBillboard)
-            {
-                particleState.transform->rotation_.x = 0.0f;
-                particleState.transform->rotation_.y = 0.0f;
-                particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
-            }
-            else
-            {
-                particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
-            }
+        if (!isExpired) {
+            particleState.transform->UpdateMatrix();
         }
-        particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);
 
-        // Color Module
-        if (config.colorOverLifetime.enabled)
-            particleState.color = config.colorOverLifetime.Evaluate(t);
-
-        // Size Module
-        if (config.sizeOverLifetime.enabled)
-            particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
-
-        // Texture Module
-        particleState.textureHandle = config.textureSheet.textureHandle;
-
-        ++partilce;
+        ++particle;
     }
 
     // GPUへ送信
     for (auto& particle : particles_)
     {
+        if (particle.age >= particle.lifetime) continue;
+
         particle.transform->UpdateMatrix();
         engine_->renderer_->SubmitParticleInstance(
             *particle.transform,
@@ -307,23 +333,29 @@ void ParticleSystem::Draw(Camera* camera)
         if (!particle.config.trail.enabled) continue;
         if (particle.trailHistory.size() < 2) continue;
 
-        // 履歴からポイントを構築（最後に現在位置も追加）
-        std::vector<Vector3> points;
-        points.reserve(particle.trailHistory.size() + 1);
+        // ポイントリスト作成（回転情報も含める）
+        std::vector<TrailPoint> drawPoints;
+        drawPoints.reserve(particle.trailHistory.size() + 1);
 
-        for (const auto& tp : particle.trailHistory)
-        {
-            points.push_back(tp.position);
+        for (const auto& tp : particle.trailHistory) {
+            drawPoints.push_back(tp);
         }
-        points.push_back(particle.transform->translation_);
 
+        // 生きているなら現在位置も追加
+        if (particle.age < particle.lifetime)
+        {
+            drawPoints.push_back({
+                particle.transform->translation_,
+                particle.transform->rotationQuaternion_,
+                particle.age
+                });
+        }
+
+        // Renderer呼び出し
         engine_->renderer_->DrawTrail(
-            points,
-            particle.config.trail.width,
-            particle.config.trail.textureHandle,
-            *camera,
-            particle.config.trail.startColor,
-            particle.config.trail.endColor
+            drawPoints,
+            particle.config.trail, 
+            *camera
         );
     }
 

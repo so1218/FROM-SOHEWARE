@@ -198,10 +198,29 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.width = trailJson.value("width", 1.0f);
                     config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
 
-                    // テクスチャハンドル
                     config.trail.textureHandle = trailJson.value("textureHandle", 0);
 
-                    // 開始色 (Vector4 -> JSON配列)
+                    config.trail.textureMode = static_cast<TrailTextureMode>(trailJson.value("textureMode", 0));
+
+                    if (trailJson.contains("tiling") && trailJson["tiling"].is_array())
+                    {
+                        config.trail.tiling = {
+                            trailJson["tiling"][0].get<float>(),
+                            trailJson["tiling"][1].get<float>()
+                        };
+                    }
+
+                    if (trailJson.contains("scrollSpeed") && trailJson["scrollSpeed"].is_array())
+                    {
+                        config.trail.scrollSpeed = {
+                            trailJson["scrollSpeed"][0].get<float>(),
+                            trailJson["scrollSpeed"][1].get<float>()
+                        };
+                    }
+                    config.trail.headWidthScale = trailJson.value("headWidthScale", 1.0f);
+                    config.trail.tailWidthScale = trailJson.value("tailWidthScale", 1.0f);
+
+                    config.trail.alignment = static_cast<TrailAlignment>(trailJson.value("alignment", 0));
                     if (trailJson.contains("startColor") && trailJson["startColor"].is_array())
                     {
                         config.trail.startColor = {
@@ -211,8 +230,6 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                             trailJson["startColor"][3].get<float>()
                         };
                     }
-
-                    // 終了色 (Vector4 -> JSON配列)
                     if (trailJson.contains("endColor") && trailJson["endColor"].is_array())
                     {
                         config.trail.endColor = {
@@ -342,8 +359,13 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "width", config.trail.width },
             { "minVertexDistance", config.trail.minVertexDistance },
             { "textureHandle", config.trail.textureHandle },
+            { "textureMode", static_cast<int>(config.trail.textureMode) },
+            { "tiling", { config.trail.tiling.x, config.trail.tiling.y } },
+            { "scrollSpeed", { config.trail.scrollSpeed.x, config.trail.scrollSpeed.y } },
+            { "headWidthScale", config.trail.headWidthScale },
+            { "tailWidthScale", config.trail.tailWidthScale },
+            { "alignment", static_cast<int>(config.trail.alignment) },
 
-            // 色 (Vector4) を配列として保存
             { "startColor", {
                 config.trail.startColor.x,
                 config.trail.startColor.y,

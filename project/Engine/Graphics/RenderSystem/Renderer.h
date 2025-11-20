@@ -26,6 +26,7 @@ class PostEffectManager;
 #include "TextureManager.h"
 #include "AnimationData.h"
 #include "Structures.h"
+#include "ParticleDefinition.h"
 
 class Renderer 
 {
@@ -70,8 +71,7 @@ public:
     void DrawParticles(const Camera& camera);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
     void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
-    void DrawTrail(const std::vector<Vector3>& points, float width, uint32_t textureHandle, Camera& camera,
-        const Vector4& startColor, const Vector4& endColor);
+    void DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
 
     // ブレンドモード設定
@@ -97,6 +97,8 @@ public:
         Mesh mesh; // 動的頂点バッファを持つメッシュ
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource; // 行列バッファ
         TransformationMatrix* mappedWvp = nullptr; // 行列マップ用ポインタ
+        Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+        TrailMaterialData* mappedMaterial = nullptr;
     };
 
     // デバッグ用
@@ -178,7 +180,7 @@ private:
     static constexpr int kFrameCount = 3;
 
     // GPU用カメラバッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> cameraBuffer_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> frameDataResource_;
     FrameData* frameData_ = nullptr;
 
     // パーティクルインスタンスバッファ（フレーム毎）
