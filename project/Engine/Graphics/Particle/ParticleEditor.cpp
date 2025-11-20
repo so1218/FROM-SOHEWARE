@@ -337,44 +337,43 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Separator();
 
+                        
+                        // テクスチャ一覧取得
+                        const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
+                        std::vector<const char*> textureNameArray;
+                        std::vector<ParticleTextureID> idArray;
+
+                        for (const auto& def : allDefinitions)
                         {
-                            // テクスチャ一覧取得
-                            const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
-                            std::vector<const char*> textureNameArray;
-                            std::vector<ParticleTextureID> idArray;
+                            const char* path = def.path;
+                            const char* filename = path;
 
-                            for (const auto& def : allDefinitions)
+                            const char* lastSlash = strrchr(path, '/');
+                            const char* lastBackslash = strrchr(path, '\\');
+                            const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
+
+                            if (separator)
+                                filename = separator + 1;
+
+                            textureNameArray.push_back(filename);
+                            idArray.push_back(def.id);
+                        }
+
+                        int selectedTextureIdx = 0;
+                        for (size_t i = 0; i < idArray.size(); ++i)
+                        {
+                            if (ParticleTextureHandle::Get(idArray[i]) == trail.textureHandle)
                             {
-                                const char* path = def.path;
-                                const char* filename = path;
-
-                                const char* lastSlash = strrchr(path, '/');
-                                const char* lastBackslash = strrchr(path, '\\');
-                                const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
-
-                                if (separator)
-                                    filename = separator + 1;
-
-                                textureNameArray.push_back(filename);
-                                idArray.push_back(def.id);
+                                selectedTextureIdx = static_cast<int>(i);
+                                break;
                             }
+                        }
 
-                            int selectedTextureIdx = 0;
-                            for (size_t i = 0; i < idArray.size(); ++i)
-                            {
-                                if (ParticleTextureHandle::Get(idArray[i]) == trail.textureHandle)
-                                {
-                                    selectedTextureIdx = static_cast<int>(i);
-                                    break;
-                                }
-                            }
-
-                            if (ImGui::Combo("テクスチャ", &selectedTextureIdx,
-                                textureNameArray.data(),
-                                (int)textureNameArray.size()))
-                            {
-                                trail.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
-                            }
+                        if (ImGui::Combo("テクスチャ", &selectedTextureIdx,
+                            textureNameArray.data(),
+                            (int)textureNameArray.size()))
+                        {
+                            trail.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
                         }
                         ImGui::Separator();
 
@@ -389,6 +388,49 @@ void ParticleEditor::ShowEditor()
                         ImGui::DragFloat2("スクロール速度", &trail.scrollSpeed.x, 0.01f);
 
                         ImGui::Separator();
+
+                        const char* jitterModes[] = { "Wave (滑らか)", "Step (四角)", "Random (稲妻)" };
+                        int currentJitter = static_cast<int>(trail.jitterMode);
+                        if (ImGui::Combo("揺れタイプ", &currentJitter, jitterModes, IM_ARRAYSIZE(jitterModes)))
+                        {
+                            trail.jitterMode = static_cast<JitterMode>(currentJitter);
+                        }
+
+                        // --- ジッター (雷・斬撃) ---
+                        ImGui::Text("ジッター (形状変形)");
+                        ImGui::DragFloat("強さ", &trail.jitterStrength, 0.1f, 0.0f, 50.0f);
+                        ImGui::DragFloat("周波数", &trail.jitterFrequency, 0.1f, 0.1f, 100.0f);
+                        ImGui::DragFloat("変動速度", &trail.jitterSpeed, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat("位相 (位置ずらし)", &trail.jitterPhase, 0.01f, -10.0f, 10.0f);
+
+                        ImGui::Separator();
+
+                        // --- ディゾルブ (消滅演出) ---
+                        ImGui::Text("ディゾルブ (侵食消滅)");
+
+                        // ノイズテクスチャ選択
+                        int selectedDissolveIdx = -1; // 未設定時は-1
+                        for (size_t i = 0; i < idArray.size(); ++i)
+                        {
+                            if (ParticleTextureHandle::Get(idArray[i]) == trail.dissolveTextureHandle)
+                            {
+                                selectedDissolveIdx = static_cast<int>(i);
+                                break;
+                            }
+                        }
+                        ImGui::Separator();
+
+                        if (ImGui::Combo("ノイズ画像", &selectedDissolveIdx, textureNameArray.data(), (int)textureNameArray.size()))
+                        {
+                            trail.dissolveTextureHandle = ParticleTextureHandle::Get(idArray[selectedDissolveIdx]);
+                        }
+                        // 解除用ボタン
+                        if (ImGui::Button("ノイズ解除"))
+                        {
+                            // White1x1ではなく、0 (未設定) にする
+                            trail.dissolveTextureHandle = 0;
+                        }
+
 
                         ImGui::Text("太さの変化 (Width over Trail)");
                         ImGui::DragFloat("先端スケール (Head)", &trail.headWidthScale, 0.01f, 0.0f, 5.0f);

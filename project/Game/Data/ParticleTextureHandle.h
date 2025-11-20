@@ -71,6 +71,9 @@ enum ParticleTextureID
     star_08,
     star_09,
 
+    // ノイズテキスチャ
+    noise_39,
+
     // 全てのパーティクルテクスチャIDの数
     PARTICLE_TEXTURES_COUNT
 };
@@ -163,6 +166,8 @@ private:
             { star_07,      "Resources/images/particles/star_07.png" },
             { star_08,      "Resources/images/particles/star_08.png" },
             { star_09,      "Resources/images/particles/star_09.png" },
+
+            { noise_39,      "Resources/images/lightning.png" },
         }
     };
 };

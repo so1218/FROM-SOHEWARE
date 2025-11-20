@@ -217,6 +217,15 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                             trailJson["scrollSpeed"][1].get<float>()
                         };
                     }
+
+                    config.trail.jitterMode = static_cast<JitterMode>(trailJson.value("jitterMode", 0));
+                    config.trail.jitterStrength = trailJson.value("jitterStrength", 0.0f);
+                    config.trail.jitterFrequency = trailJson.value("jitterFrequency", 10.0f);
+                    config.trail.jitterSpeed = trailJson.value("jitterSpeed", 0.0f);
+                    config.trail.jitterPhase = trailJson.value("jitterPhase", 0.0f);
+
+                    config.trail.dissolveTextureHandle = trailJson.value("dissolveTextureHandle", 0);
+
                     config.trail.headWidthScale = trailJson.value("headWidthScale", 1.0f);
                     config.trail.tailWidthScale = trailJson.value("tailWidthScale", 1.0f);
 
@@ -362,6 +371,12 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "textureMode", static_cast<int>(config.trail.textureMode) },
             { "tiling", { config.trail.tiling.x, config.trail.tiling.y } },
             { "scrollSpeed", { config.trail.scrollSpeed.x, config.trail.scrollSpeed.y } },
+            { "jitterMode", static_cast<int>(config.trail.jitterMode) },
+            { "jitterStrength", config.trail.jitterStrength },
+            { "jitterFrequency", config.trail.jitterFrequency },
+            { "jitterSpeed", config.trail.jitterSpeed },
+            { "jitterPhase", config.trail.jitterPhase },
+            { "dissolveTextureHandle", config.trail.dissolveTextureHandle },
             { "headWidthScale", config.trail.headWidthScale },
             { "tailWidthScale", config.trail.tailWidthScale },
             { "alignment", static_cast<int>(config.trail.alignment) },

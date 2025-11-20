@@ -240,14 +240,21 @@ struct AttractionModule
 
 enum class TrailTextureMode
 {
-    Stretch, // 全体でUV 0-1 (伸びる)
-    Tile     // 距離に応じて繰り返す (鎖、タイヤ痕など)
+    Stretch, // 全体を0〜1で伸ばす
+    Tile     // 距離に応じて繰り返す
 };
 
 enum class TrailAlignment
 {
-    View,      // ビルボード（常にカメラ向き）。幅が一定に見える。煙やビームなど。
-    Transform  // 回転追従。剣の軌跡やタイヤ痕など。
+    View,      // ビルボード
+    Transform  // パーティクルの回転に沿う
+};
+
+enum class JitterMode
+{
+    Wave,   // 0: 滑らか
+    Step,   // 2: 規則的 (四角・階段) ★追加
+    Random, // 1: ランダム (稲妻)
 };
 
 struct TrailModule
@@ -257,18 +264,30 @@ struct TrailModule
     float width = 1.0f;
     float minVertexDistance = 0.1f;
     uint32_t textureHandle = 0;
-    Vector4 startColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-    Vector4 endColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+
+    Vector4 startColor = { 1, 1, 1, 1 };
+    Vector4 endColor = { 1, 1, 1, 0 };
 
     TrailTextureMode textureMode = TrailTextureMode::Stretch;
-    Vector2 tiling = { 1.0f, 1.0f };       // リピート回数
-    Vector2 scrollSpeed = { 0.0f, 0.0f };  // UVスクロール速度
+    Vector2 tiling = { 1, 1 };       // UV の繰り返し数
+    Vector2 scrollSpeed = { 0, 0 };  // UV スクロール速度
 
     TrailAlignment alignment = TrailAlignment::View;
 
-    float headWidthScale = 1.0f; // 先端の太さ倍率
-    float tailWidthScale = 1.0f; // 尻尾の太さ倍率
+    float headWidthScale = 1.0f; // 先端の太さ
+    float tailWidthScale = 1.0f; // 尻尾の太さ
 
+    // ジッター（揺れ）の設定
+    float jitterStrength = 0.0f;
+    float jitterFrequency = 10.0f;
+    float jitterSpeed = 0.0f;
+    float jitterPhase = 0.0f;
+
+    // ディゾルブの設定
+    uint32_t dissolveTextureHandle = 0;
+    float dissolveSpeed = 2.0f;
+
+    JitterMode jitterMode = JitterMode::Wave;
 };
 
 struct TrailPoint
@@ -327,21 +346,20 @@ struct ParticleState
     }
 };
 
-
-// エミッターの基本的な設定を保持する構造体
+// エミッター設定
 struct EmitterConfig
 {
     Vector3 position = { 0.0f, 0.0f, 0.0f };
-    float spawnInterval = 0.1f; // 発生間隔 (秒)
-    float lifetime = 4.0f;      // パーティクルの生存時間
-    int amount = 1;             // 一度に発生させる量
-    float duration = -0.1f; // エミッターが動作し続ける時間（秒）。負の値で無限。
-    bool looping = true;   // durationが経過した後、ループするか
-    bool playOnAwake = true;// 生成時に自動で再生を開始するか
+    float spawnInterval = 0.1f; // パーティクルの生成間隔
+    float lifetime = 4.0f;      // パーティクル寿命
+    int amount = 1;             // 1回の生成数
+    float duration = -0.1f;     // エミッター稼働時間（負なら無限）
+    bool looping = true;        // duration 終了後にループするか
+    bool playOnAwake = true;    // 生成時に自動再生するか
 };
 
-// パーティクルタイプごとの定義をまとめる構造体
-struct ParticleDefinition 
+// パーティクル・エミッター設定のセット
+struct ParticleDefinition
 {
     ParticleConfig particleConfig;
     EmitterConfig emitterConfig;

@@ -10,14 +10,14 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.11999999731779099
+        "spawnInterval": 0.550000011920929
     },
     "ParticleConfig": {
         "attractionModule": {
             "enabled": false,
-            "strength": 1.0,
+            "strength": 18.200000762939453,
             "target": [
-                0.0,
+                28.700000762939453,
                 0.0,
                 0.0
             ]
@@ -27,12 +27,12 @@
             "endColor": 754909184,
             "endColor2": 754909184,
             "mode": 0,
-            "startColor": 1375734527,
+            "startColor": 4160756479,
             "startColor2": 1375734527
         },
         "physicsModule": {
             "drag": 0.0,
-            "enabled": false,
+            "enabled": true,
             "gravity": [
                 0.0,
                 -9.800000190734863,
@@ -91,15 +91,21 @@
         },
         "trailModule": {
             "alignment": 0,
+            "dissolveTextureHandle": 0,
             "enabled": true,
             "endColor": [
                 0.0,
-                0.025316476821899414,
+                0.025316715240478516,
                 1.0,
                 0.0
             ],
-            "headWidthScale": 1.149999976158142,
-            "lifetime": 0.5,
+            "headWidthScale": 2.119999885559082,
+            "jitterFrequency": 6.199999809265137,
+            "jitterMode": 1,
+            "jitterPhase": 0.0,
+            "jitterSpeed": 0.0,
+            "jitterStrength": 0.10000000149011612,
+            "lifetime": 5.0,
             "minVertexDistance": 0.009999999776482582,
             "scrollSpeed": [
                 0.0,
@@ -107,21 +113,21 @@
             ],
             "startColor": [
                 0.10588236153125763,
+                0.11849097162485123,
                 0.6039215922355652,
-                0.10588236153125763,
                 1.0
             ],
-            "tailWidthScale": 0.4399999976158142,
+            "tailWidthScale": 0.15000000596046448,
             "textureHandle": 34,
             "textureMode": 0,
             "tiling": [
                 5.0,
                 5.0
             ],
-            "width": 0.5
+            "width": 0.30000001192092896
         },
         "velocityModule": {
-            "angleRange": 22.0,
+            "angleRange": 83.0,
             "direction": [
                 0.0,
                 1.0,
@@ -129,7 +135,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 4.550000190734863
+            "speed": 8.9399995803833
         },
         "vortexModule": {
             "center": [

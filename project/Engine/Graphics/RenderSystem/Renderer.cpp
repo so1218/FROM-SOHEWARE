@@ -1095,6 +1095,12 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 
 	// マテリアル設定（スクロール速度）
 	trailData.mappedMaterial->scrollSpeed = config.scrollSpeed;
+	trailData.mappedMaterial->scrollSpeed = config.scrollSpeed;
+	trailData.mappedMaterial->jitterStrength = config.jitterStrength;
+	trailData.mappedMaterial->jitterFrequency = config.jitterFrequency;
+	trailData.mappedMaterial->jitterSpeed = config.jitterSpeed;
+	trailData.mappedMaterial->jitterMode = static_cast<int>(config.jitterMode);
+	trailData.mappedMaterial->jitterPhase = config.jitterPhase;
 
 	// 描画設定
 	auto* cmdList = commandManager_->GetCommandList();
@@ -1111,8 +1117,24 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 	cmdList->SetGraphicsRootConstantBufferView(1, trailData.materialResource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
 
-	// SRV（Trail のテクスチャ）
+	// メインテクスチャ
 	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(config.textureHandle));
+
+	// ディゾルブテクスチャ
+	
+	if (config.dissolveTextureHandle != 0)
+	{
+		trailData.mappedMaterial->isDissolveEnabled = 1; // 有効
+		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(config.dissolveTextureHandle));
+	}
+	else
+	{
+		trailData.mappedMaterial->isDissolveEnabled = 0; // 無効
+
+		// 無効でもGPUバリデーションエラーを防ぐために何かバインドしておく必要がある
+		// メインテクスチャや、White1x1などを入れておく
+		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(config.textureHandle));
+	}
 
 	cmdList->DrawInstanced(static_cast<UINT>(vertices.size()), 1, 0, 0);
 	indexTrail_++;

@@ -61,8 +61,17 @@ struct MaterialData
 
 struct TrailMaterialData
 {
-    float2 scrollSpeed; // スクロール速度
-    float2 padding;
+    float2 scrollSpeed;
+    float jitterStrength; 
+    float jitterFrequency;
+    
+    float jitterSpeed; 
+    float jitterPhase;
+    float dissolveThreshold; 
+    int isDissolveEnabled;
+    
+    int jitterMode;
+    float3 padding;
 };
 
 struct DirectionalLight
