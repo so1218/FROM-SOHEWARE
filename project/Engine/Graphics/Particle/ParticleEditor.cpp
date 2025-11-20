@@ -189,8 +189,7 @@ void ParticleEditor::ShowEditor()
                 if (ImGui::TreeNode("テクスチャシート"))
                 {
                     auto& texSheet = config.textureSheet;
-                    ImGui::Checkbox("有効##Texture", &texSheet.enabled);
-
+                  
                     // テクスチャ一覧取得
                     const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
                     std::vector<const char*> textureNameArray;
@@ -229,10 +228,6 @@ void ParticleEditor::ShowEditor()
                         texSheet.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
                     }
 
-                    ImGui::DragInt("横分割", &texSheet.tilesX, 1, 1, 16);
-                    ImGui::DragInt("縦分割", &texSheet.tilesY, 1, 1, 16);
-                    ImGui::DragFloat("再生速度", &texSheet.framesPerSecond, 0.1f, 0.0f, 60.0f);
-                    ImGui::Checkbox("ループ", &texSheet.looping);
 
                     ImGui::TreePop();
                 }

@@ -132,10 +132,6 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     auto& texJson = configJson["textureSheetModule"];
                     config.textureSheet.enabled = texJson.value("enabled", false);
                     config.textureSheet.textureHandle = texJson.value("textureHandle", 0);
-                    config.textureSheet.tilesX = texJson.value("tilesX", 1);
-                    config.textureSheet.tilesY = texJson.value("tilesY", 1);
-                    config.textureSheet.framesPerSecond = texJson.value("framesPerSecond", 10.0f);
-                    config.textureSheet.looping = texJson.value("looping", true);
                 }
 
                 // ColorOverLifetimeModuleの読み込み
@@ -288,7 +284,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "orientation3D", { config.rotation.orientation3D.x, config.rotation.orientation3D.y, config.rotation.orientation3D.z }},
             { "angularVelocity3D", { config.rotation.angularVelocity3D.x, config.rotation.angularVelocity3D.y, config.rotation.angularVelocity3D.z }},
             { "randomStartRotation", config.rotation.randomStartRotation },
-           
         }},
         { "shapeModule",
         {
@@ -302,10 +297,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.textureSheet.enabled },
             { "textureHandle", config.textureSheet.textureHandle },
-            { "tilesX", config.textureSheet.tilesX },
-            { "tilesY", config.textureSheet.tilesY },
-            { "framesPerSecond", config.textureSheet.framesPerSecond },
-            { "looping", config.textureSheet.looping }
         }},
         { "colorOverLifetimeModule",
         {

@@ -59,6 +59,12 @@ struct MaterialData
     float2 padding2; 
 };
 
+struct TrailMaterialData
+{
+    float2 scrollSpeed; // スクロール速度
+    float2 padding;
+};
+
 struct DirectionalLight
 {
     float4 color;

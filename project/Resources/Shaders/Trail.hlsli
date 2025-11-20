@@ -1,6 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
+ConstantBuffer<TrailMaterialData> gTrailMaterial : register(b1);
 
 struct VertexShaderInput
 {

@@ -212,12 +212,6 @@ struct TextureSheetAnimationModule
 {
     bool enabled = false;
     uint32_t textureHandle = 0; // スプライトシート全体のテクスチャハンドル
-
-    int tilesX = 1; // 横方向の分割数
-    int tilesY = 1; // 縦方向の分割数
-
-    float framesPerSecond = 10.0f; // 1秒あたりのフレーム数
-    bool looping = true;
 };
 
 struct NoiseModule
@@ -244,21 +238,35 @@ struct AttractionModule
     float strength = 1.0f;              // 引き寄せられる強さ（加速度）
 };
 
+enum class TrailTextureMode
+{
+    Stretch, // 全体でUV 0-1 (伸びる)
+    Tile     // 距離に応じて繰り返す (鎖、タイヤ痕など)
+};
+
 struct TrailModule
 {
     bool enabled = false;
-    float lifetime = 0.5f;      // トレイルが消えるまでの時間
-    float width = 1.0f;         // トレイルの太さ
-    float minVertexDistance = 0.1f; // 頂点を追加する最小距離（最適化用）
+    float lifetime = 0.5f;
+    float width = 1.0f;
+    float minVertexDistance = 0.1f;
     uint32_t textureHandle = 0;
-
     Vector4 startColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     Vector4 endColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+
+    TrailTextureMode textureMode = TrailTextureMode::Stretch;
+    Vector2 tiling = { 1.0f, 1.0f };       // リピート回数
+    Vector2 scrollSpeed = { 0.0f, 0.0f };  // UVスクロール速度
+
+    float headWidthScale = 1.0f; // 先端（新しい方）の太さ倍率
+    float tailWidthScale = 1.0f; // 尻尾（古い方）の太さ倍率
+
 };
 
 struct TrailPoint
 {
     Vector3 position;
+    Quaternion rotation;
     float time; // 生成された時刻（またはパーティクルの年齢）
 };
 
