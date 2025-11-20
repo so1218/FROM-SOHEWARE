@@ -10,7 +10,6 @@ class Skybox
 public:
     Skybox(Engine* engine, Camera* camera);
 
-    // 描画
     void Draw();
 
     void SetCubeTextureHandle(uint32_t textureHandle);

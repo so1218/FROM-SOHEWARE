@@ -116,7 +116,7 @@ void WorldTransform::UpdateMatrix(
 
 void WorldTransform::DetachFromParent()
 {
-    // 親から離脱する前にワールド行列を更新（最新化）
+    // 親から離脱する前にワールド行列を更新
     UpdateMatrix();
 
     // 親を外す

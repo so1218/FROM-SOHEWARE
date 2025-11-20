@@ -43,7 +43,6 @@ private:
     Vector4 directionalLightColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     float directionalLightIntensity_ = 1.0f;
 
-    // ヘルパー関数
     void DrawRenderSettings();
     void DrawCameraSettings();
     void DrawLightSettings();

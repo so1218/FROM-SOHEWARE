@@ -5,9 +5,7 @@
 class Collider
 {
 public:
-	// コンストラクタ
 	Collider() = default;
-	// デストラクタ
 	~Collider() = default;
 	// 衝突半径を設定
 	void SetRadius(float radius) { radius_ = radius; }

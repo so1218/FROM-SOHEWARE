@@ -8,9 +8,7 @@
 
 using json = nlohmann::json;
 
-/// <summary>
-/// ゲームの設定値やパラメータをグループごとに管理するクラス
-/// </summary>
+// ゲームの設定値やパラメータをグループごとに管理するクラス
 class GlobalVariables
 {
 public:
@@ -32,10 +30,7 @@ public:
 	// シングルトンのインスタンスを取得
 	static GlobalVariables* GetInstance();
 
-	/// <summary>
-	/// グループの作成
-	/// </summary>
-	/// <param name="groupName">グループ名</param>
+	// グループの作成
 	void CreateGroup(const std::vector<std::string>& groupPath);
 
 	// 値の取得
@@ -78,18 +73,13 @@ public:
 	// 項目の追加(Vector4)
 	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector4& value);
 
-	/// <summary>
-	/// 毎フレーム処理
-	/// </summary>
+	// 毎フレーム処理
 	void Update();
 
 	// 再帰描画関数
 	void DrawGroupRecursive(const std::vector<std::string>& groupPath, Group& group);
 
-	/// <summary>
-	/// ファイルに書き出し
-	/// </summary>
-	/// <param name="groupName">グループ</param>
+	// ファイルに書き出し
 	// 階層パスを受け取り、JSONファイルの一部だけを更新する
 	void SaveFile(const std::vector<std::string>& groupPath);
 	void SaveAllFiles();
@@ -97,15 +87,10 @@ public:
 	// GroupをJSON に変換する再帰関数を作る
 	json GroupToJson(const Group& group);
 
-	/// <summary>
-	/// ディレクトリの全ファイル読み込み
-	/// </summary>
+	// ディレクトリの全ファイル読み込み
 	void LoadFiles();
 
-	/// <summary>
-	/// ファイルから読み込む
-	/// </summary>
-	/// <param name="groupName">グループ</param>
+	// ファイルから読み込む
 	void LoadFile(const std::string& groupName);
 
 	// 再帰的にグループを読み込む関数

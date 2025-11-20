@@ -6,7 +6,6 @@
 class CommandManager
 {
 public:
-    // 初期化
     void Initialize(ID3D12Device* device);
 
     // ゲッター

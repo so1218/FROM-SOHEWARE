@@ -23,19 +23,10 @@ class SampleSceneHori : public BaseScene
 public:
 	SampleSceneHori(Engine* engine, Camera* camera);
 
-    // 初期化処理
     void Initialize() override;
-
-    // 更新処理
     void Update() override;
-
-    // 描画処理
     void Draw() override;
-
-    // デバッグ描画処理
     void DebugDraw() override;
-
-    // 終了処理
     void Finalize() override;
 
     // 衝突に関する処理をまとめる関数

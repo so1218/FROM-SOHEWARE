@@ -12,7 +12,6 @@ using Microsoft::WRL::ComPtr;
 class RootSignatureManager
 {
 public:
-    // 初期化
     void Initialize(ID3D12Device* device);
 
     // ルートシグネチャ取得

@@ -7,16 +7,9 @@ class Fade
 public:
 	Fade(Engine* engine);
 
-	// 初期化
 	void Initialize();
-
-	// 更新
 	void Update();
-
-	// 描画
 	void Draw();
-
-	// デバッグ描画
 	void DebugDraw();
 
 	// 調整項目の適用

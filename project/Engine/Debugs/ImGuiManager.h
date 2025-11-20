@@ -12,7 +12,6 @@
 class ImGuiManager
 {
 public:
-	// ImGuiの初期化
 	static void Initialize(
         HWND hwnd,
         ID3D12Device* device,

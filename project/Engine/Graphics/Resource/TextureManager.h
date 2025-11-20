@@ -24,7 +24,7 @@ public:
         Microsoft::WRL::ComPtr<ID3D12Resource> texture;
         Microsoft::WRL::ComPtr<ID3D12Resource> intermediate;
         DirectX::TexMetadata metadata;
-        uint32_t srvIndex; // SRVヒープの「インデックス番号」を保存
+        uint32_t srvIndex; // SRVヒープのインデックス番号を保存
         D3D12_CPU_DESCRIPTOR_HANDLE rtvHandleCPU;
     };
 

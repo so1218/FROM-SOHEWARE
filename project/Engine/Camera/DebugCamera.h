@@ -91,7 +91,7 @@ private:
     float currentPitch_ = 0.0f;
     float currentYaw_ = 0.0f;
 
-    // パラメータ(マウス操作など用）
+    // パラメータ
     float fovY_ = 0.45f;
     float aspectRatio_ = 1280.0f / 720.0f;
     float nearClip_ = 0.1f;

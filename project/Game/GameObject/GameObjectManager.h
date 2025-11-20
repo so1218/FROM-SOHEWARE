@@ -12,11 +12,8 @@ public:
     void AddObject(std::unique_ptr<GameObject> obj);
 
     void Initialize();
-
     void Update();
-
     void Draw();
-
     void DebugDraw();
 
     void AddAllCollidersToManager(CollisionManager* manager);
