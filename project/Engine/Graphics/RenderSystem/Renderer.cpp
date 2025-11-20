@@ -21,6 +21,8 @@ const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Renderer::kMaxCubeCount = 0;// 立方体の最大数
 const int32_t Renderer::kMaxLineCount = 400;// ラインの最大数
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
+const int32_t Renderer::kMaxTrailCount = 100; // 同時に描画できるトレイルの最大本数
+const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
 
 Renderer::Renderer() {}
 Renderer::~Renderer()
@@ -70,6 +72,7 @@ void Renderer::BeginFrame()
     indexLine_ = 0;
     indexParticle_ = 0;
 	indexInstance_ = 0;
+	indexTrail_ = 0;
 
 	if (frameData_)
 	{
@@ -96,6 +99,7 @@ void Renderer::CreateObjects()
     CreateLines();
     CreateParticles();
 	CreateSkybox();
+	CreateTrails();
 }
 
 int Renderer::LoadTexture(const std::string& texturePath)
@@ -969,4 +973,141 @@ void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32
 
 	// 描画コマンド
 	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+}
+
+void Renderer::CreateTrails()
+{
+	trails_.resize(kMaxTrailCount);
+
+	for (size_t i = 0; i < kMaxTrailCount; ++i)
+	{
+		// WVP行列用バッファ
+		trails_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+		trails_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&trails_[i].mappedWvp));
+
+		// 動的な頂点バッファの作成
+		// 空のデータでいい。最大サイズ確保する
+		std::vector<VertexDataTrail> dummyVertices(kMaxTrailVertices);
+		trails_[i].mesh.InitializeVertexTrail(device_->GetDevice(), dummyVertices);
+	}
+	indexTrail_ = 0;
+}
+
+void Renderer::DrawTrail(const std::vector<Vector3>& points, float width, uint32_t textureHandle, Camera& camera,
+	const Vector4& startColor, const Vector4& endColor)
+{
+	if (indexTrail_ >= kMaxTrailCount) return;
+	if (points.size() < 2) return; // 点が2つ以上ないと線にならない
+
+	TrailRenderData& trailData = trails_[indexTrail_];
+
+	// 1. 頂点データの生成 (CPU側でリボン形状を作る)
+	std::vector<VertexDataTrail> vertices;
+	vertices.reserve(points.size() * 2); // 1点につき左右2頂点
+
+	Vector3 cameraPos = camera.GetTranslation(); // カメラ位置
+
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		// 最大頂点数を超えたらそこで打ち止め
+		if (vertices.size() >= kMaxTrailVertices) break;
+
+		Vector3 currentPos = points[i];
+
+		// 進行方向ベクトル(forward)の計算
+		Vector3 forward;
+		if (i < points.size() - 1)
+		{
+			forward = points[i + 1] - currentPos;
+		}
+		else
+		{
+			forward = currentPos - points[i - 1];
+		}
+		forward = forward.Normalize();
+
+		// ビルボード計算: カメラへのベクトルと進行方向の外積で「横方向」を求める
+		Vector3 toCamera = (cameraPos - currentPos).Normalize();
+		Vector3 right = Math::CrossProduct(toCamera, forward).Normalize();
+
+		// 左右の頂点位置
+		Vector3 posLeft = currentPos - (right * width * 0.5f);
+		Vector3 posRight = currentPos + (right * width * 0.5f);
+
+		// UV計算 (長さ方向を 0.0 -> 1.0 に正規化)
+		float u = static_cast<float>(i) / static_cast<float>(points.size() - 1);
+
+		// カラー計算 (古いほう[index 0]を透明にする例)
+		// 実際には points にアルファ値や寿命が含まれているのが理想ですが、
+		// ここでは簡易的に index でフェードさせます。
+		float alpha = u; // 先端(1.0)ほど濃く、末尾(0.0)ほど薄く
+		Vector4 color;
+		color.x = std::lerp(endColor.x, startColor.x, u);
+		color.y = std::lerp(endColor.y, startColor.y, u);
+		color.z = std::lerp(endColor.z, startColor.z, u);
+		color.w = std::lerp(endColor.w, startColor.w, u);
+
+		// 頂点追加 
+		VertexDataTrail vLeft;
+		vLeft.pos = { posLeft.x, posLeft.y, posLeft.z, 1.0f };
+		vLeft.tex = { u, 0.0f };
+		vLeft.color = color; 
+
+		VertexDataTrail vRight;
+		vRight.pos = { posRight.x, posRight.y, posRight.z, 1.0f };
+		vRight.tex = { u, 1.0f };
+		vRight.color = color; 
+
+		vertices.push_back(vLeft);
+		vertices.push_back(vRight);
+	}
+
+	// 2. 頂点バッファの更新 (Map / Memcpy / Unmap)
+	VertexDataTrail* mappedVertices = nullptr;
+	// Map時に書き込み範囲を指定しない(nullptr)のが一般的
+	trailData.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
+
+	// データをコピー
+	memcpy(mappedVertices, vertices.data(), sizeof(VertexDataTrail) * vertices.size());
+
+	trailData.mesh.GetVertexResource()->Unmap(0, nullptr);
+
+	// 描画する頂点数を設定
+	trailData.mesh.SetVertexCount(static_cast<uint32_t>(vertices.size()));
+
+	// 行列バッファの更新
+	// Trailの頂点はすでにワールド座標系で計算したので、World行列は単位行
+	Matrix4x4 worldMat = Matrix4x4::MakeIdentity();
+	Matrix4x4 wvpMat = worldMat * camera.GetViewProjectionMatrix();
+
+	trailData.mappedWvp->WVP = wvpMat;
+	trailData.mappedWvp->World = worldMat; // 使わないが一応
+
+	// 4. コマンドリストの設定と描画
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// SRVヒープセット
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+	// PSO / RootSignature 設定
+	cmdList->SetPipelineState(psoManager_->GetPSO("Trail"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Trail"));
+
+	// プリミティブトポロジー設定 (重要: TRIANGLESTRIP)
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	cmdList->IASetVertexBuffers(0, 1, &trailData.mesh.GetVertexBufferView());
+	// IndexBufferは使わないのでセットしない（頂点順序でStripを作るため）
+
+	// RootParameter設定
+	// b0: 行列
+	cmdList->SetGraphicsRootConstantBufferView(0, trailData.wvpResource->GetGPUVirtualAddress());
+	// t0: テクスチャ
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(textureHandle));
+
+	// 描画実行
+	cmdList->DrawInstanced(static_cast<UINT>(vertices.size()), 1, 0, 0);
+
+	// カウントアップ
+	indexTrail_++;
 }

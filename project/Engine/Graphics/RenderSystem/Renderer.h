@@ -70,6 +70,8 @@ public:
     void DrawParticles(const Camera& camera);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
     void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
+    void DrawTrail(const std::vector<Vector3>& points, float width, uint32_t textureHandle, Camera& camera,
+        const Vector4& startColor, const Vector4& endColor);
     void DrawFullScreenQuadWithOffscreenTexture();
 
     // ブレンドモード設定
@@ -89,6 +91,14 @@ public:
     int32_t GetLineCount() const { return indexLine_; }
     int32_t GetParticleCount() const { return indexParticle_; }
 
+    // Trail用のレンダリングデータ構造体
+    struct TrailRenderData
+    {
+        Mesh mesh; // 動的頂点バッファを持つメッシュ
+        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource; // 行列バッファ
+        TransformationMatrix* mappedWvp = nullptr; // 行列マップ用ポインタ
+    };
+
     // デバッグ用
     void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
 
@@ -102,6 +112,8 @@ public:
     static const int32_t kMaxCubeCount;
     static const int32_t kMaxLineCount;
     static const int32_t kMaxParticleCount;
+    static const int32_t kMaxTrailCount;       
+    static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
 
     bool isWireFrame_ = false;
 
@@ -116,6 +128,7 @@ private:
     void CreateLines();
     void CreateParticles();
     void CreateSkybox();
+    void CreateTrails();
 
     Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot);
 
@@ -186,6 +199,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_; 
     TransformationMatrix* mappedSkyboxWvp_ = nullptr; 
     MaterialHandle skyboxMaterialHandle_; 
+
+    // トレイル
+    std::vector<TrailRenderData> trails_; 
+    int32_t indexTrail_ = 0;
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;

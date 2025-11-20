@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <deque>
 
 struct ShapeModule
 {
@@ -236,18 +237,29 @@ struct VortexModule
     float orbitalSpeed = 10.0f;     // 中心へ向かう/離れる速度（負の値で離れる）
 };
 
-struct TrailModule
-{
-    bool enabled = false;
-    float lifetime = 0.5f; // 軌跡が消えるまでの時間
-    // 色や太さを軌跡の始点から終点にかけて変えるためのグラデーション設定など
-};
-
 struct AttractionModule
 {
     bool enabled = false;
     Vector3 target = { 0.0f, 0.0f, 0.0f }; // 引き寄せられる目標地点（中心）
     float strength = 1.0f;              // 引き寄せられる強さ（加速度）
+};
+
+struct TrailModule
+{
+    bool enabled = false;
+    float lifetime = 0.5f;      // トレイルが消えるまでの時間
+    float width = 1.0f;         // トレイルの太さ
+    float minVertexDistance = 0.1f; // 頂点を追加する最小距離（最適化用）
+    uint32_t textureHandle = 0;
+
+    Vector4 startColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    Vector4 endColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+};
+
+struct TrailPoint
+{
+    Vector3 position;
+    float time; // 生成された時刻（またはパーティクルの年齢）
 };
 
 struct ParticleConfig
@@ -286,6 +298,9 @@ struct ParticleState
     Vector3 initialPosition; // 生成時のエミッターの座標
     std::string presetName;
     Vector4 uvRect = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+    // トレイル用の履歴バッファ
+    std::deque<TrailPoint> trailHistory;
 
     ParticleConfig config;
 

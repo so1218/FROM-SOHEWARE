@@ -8,6 +8,7 @@
 #include "externals/stb_image.h"
 
 bool ImGuiManager::dockInitialized_ = false;
+bool ImGuiManager::resetSceneSize_ = false;
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -269,6 +270,11 @@ void ImGuiManager::DrawMenuBar()
 
                 // 再ビルドを強制する
                 dockInitialized_ = false;
+            }
+
+            if (ImGui::MenuItem("Reset Scene Size"))
+            {
+                resetSceneSize_ = true; // フラグを立てる
             }
             ImGui::EndMenu();
         }

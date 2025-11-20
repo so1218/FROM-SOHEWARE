@@ -6,7 +6,7 @@
         "looping": true,
         "playOnAwake": true,
         "position": [
-            6.300000190734863,
+            23.799999237060547,
             0.0,
             0.0
         ],
@@ -25,7 +25,10 @@
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 754909184,
-            "startColor": 1375734527
+            "endColor2": 754909184,
+            "mode": 0,
+            "startColor": 1375734527,
+            "startColor2": 1375734527
         },
         "physicsModule": {
             "drag": 0.0,
@@ -70,8 +73,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                10.069999694824219,
-                21.350000381469727,
+                1.0,
+                1.0,
                 0.2199999988079071
             ],
             "frequency": 0.0,
@@ -89,6 +92,25 @@
             "textureHandle": 12,
             "tilesX": 1,
             "tilesY": 1
+        },
+        "trailModule": {
+            "enabled": true,
+            "endColor": [
+                0.05912512168288231,
+                0.4793440103530884,
+                0.5189872980117798,
+                0.0
+            ],
+            "lifetime": 0.5,
+            "minVertexDistance": 0.10000000149011612,
+            "startColor": [
+                0.10588236153125763,
+                0.6039215922355652,
+                0.10588236153125763,
+                1.0
+            ],
+            "textureHandle": 34,
+            "width": 0.6000000238418579
         },
         "velocityModule": {
             "angleRange": 22.0,

@@ -14,6 +14,9 @@ public:
     // 初期化(頂点 + インデックス)
     void Initialize(ID3D12Device* device, const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indies);
 
+    // Trail用（頂点カラー付き）の初期化関数
+    void InitializeVertexTrail(ID3D12Device* device, const std::vector<VertexDataTrail>& vertices);
+
     // ゲッター
     size_t GetVertexCount() const { return vertexCount_; }
     size_t GetIndexCount() const { return indexCount_; }

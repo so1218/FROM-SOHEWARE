@@ -744,6 +744,7 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\ShaderConstants.hlsli" />
+    <None Include="Resources\Shaders\Trail.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DirectXGame.rc">
@@ -806,5 +807,7 @@
     <FxCompile Include="Resources\Shaders\PostEffectPass.PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Resources\Shaders\Trail.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Trail.VS.hlsl" />
   </ItemGroup>
 </Project>

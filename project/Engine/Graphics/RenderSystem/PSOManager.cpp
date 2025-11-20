@@ -53,6 +53,15 @@ void PSOManager::Initialize(
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescSkybox_ = { inputElementsSkybox_.data(), (UINT)inputElementsSkybox_.size() };
+
+    // Trail
+    inputElementsTrail_ =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+    inputLayoutDescTrail_ = { inputElementsTrail_.data(), (UINT)inputElementsTrail_.size() };
 }
 
 ID3D12PipelineState* PSOManager::GetPSO(const std::string& psoName)
@@ -467,6 +476,10 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Fullscreen") 
     {
         return {};
+    }
+    if (name == "Trail")
+    {
+        return inputLayoutDescTrail_;
     }
 
     // 未定義のレイアウト

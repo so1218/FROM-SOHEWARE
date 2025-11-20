@@ -19,6 +19,14 @@ struct VertexData
     Vector3 normal;
 };
 
+// Trail専用の頂点構造体
+struct VertexDataTrail
+{
+    Vector4 pos;  
+    Vector2 tex;  
+    Vector4 color;
+};
+
 struct TextureData
 {
     std::string textureFilePath;

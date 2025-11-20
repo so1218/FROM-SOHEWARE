@@ -194,6 +194,39 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     }
                     config.attraction.strength = attrJson.value("strength", 1.0f);
                 }
+                if (configJson.contains("trailModule"))
+                {
+                    auto& trailJson = configJson["trailModule"];
+                    config.trail.enabled = trailJson.value("enabled", false);
+                    config.trail.lifetime = trailJson.value("lifetime", 0.5f);
+                    config.trail.width = trailJson.value("width", 1.0f);
+                    config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
+
+                    // テクスチャハンドル
+                    config.trail.textureHandle = trailJson.value("textureHandle", 0);
+
+                    // 開始色 (Vector4 -> JSON配列)
+                    if (trailJson.contains("startColor") && trailJson["startColor"].is_array())
+                    {
+                        config.trail.startColor = {
+                            trailJson["startColor"][0].get<float>(),
+                            trailJson["startColor"][1].get<float>(),
+                            trailJson["startColor"][2].get<float>(),
+                            trailJson["startColor"][3].get<float>()
+                        };
+                    }
+
+                    // 終了色 (Vector4 -> JSON配列)
+                    if (trailJson.contains("endColor") && trailJson["endColor"].is_array())
+                    {
+                        config.trail.endColor = {
+                            trailJson["endColor"][0].get<float>(),
+                            trailJson["endColor"][1].get<float>(),
+                            trailJson["endColor"][2].get<float>(),
+                            trailJson["endColor"][3].get<float>()
+                        };
+                    }
+                }
             }
 
             // EmitterConfigの読み込み
@@ -309,8 +342,30 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "enabled", config.attraction.enabled },
             { "target", { config.attraction.target.x, config.attraction.target.y, config.attraction.target.z }},
             { "strength", config.attraction.strength }
-        }}
+        }},
 
+        { "trailModule",
+        {
+            { "enabled", config.trail.enabled },
+            { "lifetime", config.trail.lifetime },
+            { "width", config.trail.width },
+            { "minVertexDistance", config.trail.minVertexDistance },
+            { "textureHandle", config.trail.textureHandle },
+
+            // 色 (Vector4) を配列として保存
+            { "startColor", {
+                config.trail.startColor.x,
+                config.trail.startColor.y,
+                config.trail.startColor.z,
+                config.trail.startColor.w
+            }},
+            { "endColor", {
+                config.trail.endColor.x,
+                config.trail.endColor.y,
+                config.trail.endColor.z,
+                config.trail.endColor.w
+            }}
+        }},
     };
 
     // EmitterConfigをJSONに変換

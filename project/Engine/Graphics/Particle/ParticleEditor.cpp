@@ -272,6 +272,8 @@ void ParticleEditor::ShowEditor()
                             color.endColor2 = Math::ColorVectorToUint32(end2);
                     }
 
+                    ImGui::Separator();
+
                     ImGui::TreePop();
                 }
 
@@ -327,6 +329,82 @@ void ParticleEditor::ShowEditor()
                 }
                 ImGui::Separator();
             }
+
+            ImGui::Separator();
+            if (ImGui::TreeNode("トレイル設定"))
+            {
+                auto& trail = config.trail; // 参照を取得
+
+                ImGui::Checkbox("有効##Trail", &trail.enabled);
+
+                if (trail.enabled)
+                {
+                    // 基本パラメータ
+                    ImGui::DragFloat("太さ", &trail.width, 0.1f, 0.1f, 10.0f);
+                    ImGui::DragFloat("寿命", &trail.lifetime, 0.1f, 0.1f, 5.0f);
+                    ImGui::DragFloat("最小頂点距離", &trail.minVertexDistance, 0.01f, 0.01f, 10.0f);
+
+                    ImGui::Separator();
+
+                    // --- テクスチャ選択 (TextureSheetと同じロジックを使用) ---
+                    const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
+                    std::vector<const char*> textureNameArray;
+                    std::vector<ParticleTextureID> idArray;
+
+                    for (const auto& def : allDefinitions)
+                    {
+                        // パスからファイル名のみを抽出する処理（既存コード流用）
+                        const char* path = def.path;
+                        const char* filename = path;
+                        const char* lastSlash = strrchr(path, '/');
+                        const char* lastBackslash = strrchr(path, '\\');
+                        const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
+                        if (separator) filename = separator + 1;
+
+                        textureNameArray.push_back(filename);
+                        idArray.push_back(def.id);
+                    }
+
+                    // 現在のハンドルからコンボボックスのインデックスを逆算
+                    int selectedTrailTexIdx = 0;
+                    for (size_t i = 0; i < idArray.size(); ++i)
+                    {
+                        if (ParticleTextureHandle::Get(idArray[i]) == trail.textureHandle)
+                        {
+                            selectedTrailTexIdx = (int)i;
+                            break;
+                        }
+                    }
+
+                    // コンボボックス表示
+                    if (ImGui::Combo("トレイルテクスチャ", &selectedTrailTexIdx,
+                        textureNameArray.data(), (int)textureNameArray.size()))
+                    {
+                        // 選択されたIDからハンドルを取得して設定
+                        trail.textureHandle = ParticleTextureHandle::Get(idArray[selectedTrailTexIdx]);
+                    }
+                    // -------------------------------------------------------
+
+                    ImGui::Separator();
+
+                    // 色設定
+                    Vector4 startCol = Math::Uint32ToColorVector(Math::ColorVectorToUint32(trail.startColor));
+                    if (ImGui::ColorEdit4("開始色 (根元)", &startCol.x))
+                    {
+                        trail.startColor = startCol;
+                    }
+
+                    Vector4 endCol = Math::Uint32ToColorVector(Math::ColorVectorToUint32(trail.endColor));
+                    if (ImGui::ColorEdit4("終了色 (先端)", &endCol.x))
+                    {
+                        trail.endColor = endCol;
+                    }
+                }
+
+                ImGui::TreePop();
+            }
+
+            ImGui::Separator();
 
             // 保存ボタン
             if (ImGui::Button("セーブ"))

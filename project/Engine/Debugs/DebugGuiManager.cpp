@@ -1,10 +1,7 @@
 #include "DebugGuiManager.h"
 #include "Engine.h"
 #include "TimeManager.h"
-
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
+#include "ImGuiManager.h"
 
 void DebugGuiManager::Initialize(Engine* engine, Camera* camera, LightManager* lightManager, MaterialManager* materialManager,
     TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
@@ -683,8 +680,18 @@ void DebugGuiManager::RenderOffscreenTexture(
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
     // 2. ImGuiで表示する
-    ImGui::SetNextWindowSize(ImVec2(800, 450), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+    ImGuiCond cond = ImGuiCond_FirstUseEver; // デフォルトは初回のみ
+
+    // リセット要求が来ているかチェック
+    if (ImGuiManager::GetSceneResetRequested())
+    {
+        cond = ImGuiCond_Always;             // このフレームだけ強制適用
+        ImGuiManager::ClearSceneResetRequested(); // フラグを下ろす
+    }
+
+    // cond 変数を使って設定
+    ImGui::SetNextWindowSize(ImVec2(800, 450), cond);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), cond); // 必要なら位置もリセット
     ImGui::Begin("Scene");
     ImVec2 imageSize = ImGui::GetContentRegionAvail();
 

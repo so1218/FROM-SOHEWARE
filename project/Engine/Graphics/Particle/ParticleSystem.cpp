@@ -198,6 +198,52 @@ void ParticleSystem::Update()
         // 位置を更新
         particleState.transform->translation_ += particleState.velocity * deltaTime;
 
+        if (config.trail.enabled)
+        {
+            Vector3 currentPos = particleState.transform->translation_;
+
+            // 1. 新しいポイントを追加するか判定
+            bool shouldAdd = false;
+            if (particleState.trailHistory.empty())
+            {
+                shouldAdd = true;
+            }
+            else
+            {
+                // 直近のポイントとの距離をチェック
+                Vector3 lastPos = particleState.trailHistory.back().position;
+                float distSq = (currentPos - lastPos).LengthSq();
+                if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance)
+                {
+                    shouldAdd = true;
+                }
+            }
+
+            // ポイント追加
+            if (shouldAdd)
+            {
+                TrailPoint newPoint;
+                newPoint.position = currentPos;
+                newPoint.time = particleState.age; // 現在の年齢を記録
+                particleState.trailHistory.push_back(newPoint);
+            }
+
+            // 2. 寿命切れのポイントを削除
+            // (現在時刻 - 生成時刻) > トレイル寿命 なら削除
+            while (!particleState.trailHistory.empty())
+            {
+                float timeAlive = particleState.age - particleState.trailHistory.front().time;
+                if (timeAlive > config.trail.lifetime)
+                {
+                    particleState.trailHistory.pop_front();
+                }
+                else
+                {
+                    break; 
+                }
+            }
+        }
+
         // Rotation Module
         if (config.rotation.enabled)
         {
@@ -251,11 +297,47 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
     emitters_.push_back(std::move(emitter));
 }
 
-
 void ParticleSystem::Draw(Camera* camera)
 {
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     engine_->renderer_->DrawParticles(*camera);
+    // 2. ★追加: トレイルの描画
+      // トレイルも加算合成にするか、半透明合成にするかはデザイン次第ですが、
+      // 光の帯ならAdd、煙ならNormalが適しています。ここではAddと仮定。
+
+    for (const auto& particle : particles_)
+    {
+        if (!particle.config.trail.enabled) continue;
+        if (particle.trailHistory.size() < 2) continue;
+
+        // 履歴データから座標リストを作成
+        // 履歴(過去) -> 現在位置 の順でつなぐことで、滑らかなラインにする
+        std::vector<Vector3> points;
+        points.reserve(particle.trailHistory.size() + 1);
+
+        for (const auto& tp : particle.trailHistory)
+        {
+            points.push_back(tp.position);
+        }
+        // 現在位置もつなげることで、パーティクル本体と隙間が空かないようにする
+        points.push_back(particle.transform->translation_);
+
+        // テクスチャハンドルの取得 (TextureIndexからハンドルへの変換が必要)
+        // ※ TextureManagerの実装に依存します。ここでは仮の関数呼び出しです。
+        uint32_t trailTexHandle = particle.config.trail.textureHandle;
+
+        // レンダラーへ描画リクエスト
+        // ※DrawTrailに色情報を渡せるようにオーバーロードする必要があります（後述）
+        engine_->renderer_->DrawTrail(
+            points,
+            particle.config.trail.width,
+            trailTexHandle,
+            *camera,
+            particle.config.trail.startColor, 
+            particle.config.trail.endColor    
+        );
+    }
+
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
 #ifdef _DEBUG
