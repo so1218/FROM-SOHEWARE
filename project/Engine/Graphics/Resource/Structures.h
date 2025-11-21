@@ -327,25 +327,11 @@ struct PostEffectData
     float _paddingdotBlink;
 };
 
-struct BrightExtractSettings
-{
-    float threshold = 0.7f;
-    float intensity = 1.0f;
-    Vector2 padding = { 0.0f, 0.0f }; 
-};
-
 struct BlurSettings
 {
     Vector2 texelSize = { 1.0f / 1280.0f, 1.0f / 720.0f };
     float blurStrength = 1.0f;
     float padding; 
-};
-
-struct CombineSetting
-{
-    float brightnessThreshold = 0.75f;
-    int effectMode; // 0: Halo, 1: Neon
-    Vector2 padding;
 };
 
 struct DepthExtractSettingsVS

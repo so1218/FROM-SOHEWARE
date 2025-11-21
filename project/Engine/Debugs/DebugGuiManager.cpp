@@ -271,7 +271,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     PostEffectData* postEffectData = postEffectManager_->postEffectData_;
     BrightExtractSettings* brightExtractData = postEffectManager_->brightExtractData_;
     BlurSettings* blurSettingsData = postEffectManager_->blurSettingsData_;
-    CombineSetting* bloomSettingsData = postEffectManager_->combineSettingsData_;
+    CombineSettings* combineSettingsData = postEffectManager_->combineSettingsData_;
 
     ImGui::CheckboxFlags("None", &postEffectData->modeFlags[0], NONE);
     if (ImGui::TreeNode("PostEffectMode"))
@@ -353,6 +353,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         if (ImGui::TreeNode("Bright Extract Settings"))
         {
             ImGui::SliderFloat("Threshold", &brightExtractData->threshold, 0.0f, 10.0f);
+            ImGui::SliderFloat("Soft Knee", &brightExtractData->softKnee, 0.0f, 1.0f);
             ImGui::SliderFloat("Intensity", &brightExtractData->intensity, 0.0f, 5.0f);
             ImGui::TreePop();
         }
@@ -368,9 +369,8 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         if (ImGui::TreeNode("Bloom Settings"))
         {
-            ImGui::SliderFloat("Brightness Threshold", &bloomSettingsData->brightnessThreshold, 0.0f, 10.0f);
-            static const char* modeNames[] = { "Halo", "Neon", "Bloom" };
-            ImGui::Combo("Effect Mode", &bloomSettingsData->effectMode, modeNames, IM_ARRAYSIZE(modeNames));
+            ImGui::SliderFloat("Bloom Intensity", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
+            ImGui::SliderFloat("Exposure", &combineSettingsData->exposure, 0.1f, 5.0f);
             ImGui::TreePop();
         }
         ImGui::TreePop();

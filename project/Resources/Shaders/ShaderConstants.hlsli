@@ -129,3 +129,19 @@ struct ParticleInstanceData
     int32_t isBillboard;
     float padding; 
 };
+
+struct BrightExtractSettings
+{
+    float threshold; 
+    float softKnee;
+    float intensity; 
+    float padding;
+};
+
+
+struct CombineSettings
+{
+    float bloomIntensity;
+    float exposure;
+    float2 padding;
+};

@@ -10,7 +10,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.550000011920929
+        "spawnInterval": 0.10000000149011612
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -24,10 +24,10 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 754909184,
+            "endColor": 4278190080,
             "endColor2": 754909184,
             "mode": 0,
-            "startColor": 4160756479,
+            "startColor": 4278196479,
             "startColor2": 1375734527
         },
         "physicsModule": {
@@ -73,15 +73,15 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                1.0,
-                1.0,
+                0.0,
+                0.0,
                 0.2199999988079071
             ],
             "frequency": 0.0,
             "oscillate": true,
             "startScale": [
-                0.23000000417232513,
-                0.0,
+                1.0,
+                1.0,
                 1.0
             ]
         },
@@ -105,7 +105,7 @@
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
             "jitterStrength": 0.0,
-            "lifetime": 0.30000001192092896,
+            "lifetime": 2.299999952316284,
             "minVertexDistance": 0.009999999776482582,
             "scrollSpeed": [
                 0.0,

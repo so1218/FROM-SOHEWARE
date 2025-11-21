@@ -40,7 +40,7 @@ public:
     // CPU側から書き込み可能なマッピングポインタ
     BrightExtractSettings* brightExtractData_ = nullptr;
     BlurSettings* blurSettingsData_ = nullptr;
-    CombineSetting* combineSettingsData_ = nullptr;
+    CombineSettings* combineSettingsData_ = nullptr;
     DepthExtractSettingsVS* depthExtractVSData_ = nullptr;
     DepthExtractSettingsPS* depthExtractPSData_ = nullptr;
 

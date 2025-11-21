@@ -115,7 +115,7 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     cbBlur_->Map(0, nullptr, reinterpret_cast<void**>(&blurSettingsData_));
 
     // Bloom Combine 等
-    cbBloom_ = BufferManager::CreateBufferResource(device, sizeof(CombineSetting));
+    cbBloom_ = BufferManager::CreateBufferResource(device, sizeof(CombineSettings));
     cbBloom_->Map(0, nullptr, reinterpret_cast<void**>(&combineSettingsData_));
 
     // Depth関連の定数バッファ作成
@@ -125,14 +125,15 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     cbDepthExtractPS_ = BufferManager::CreateBufferResource(device, sizeof(DepthExtractSettingsPS));
     cbDepthExtractPS_->Map(0, nullptr, reinterpret_cast<void**>(&depthExtractPSData_));
 
-    brightExtractData_->threshold = 1.01f;
-    brightExtractData_->intensity = 0.4f;
+    brightExtractData_->threshold = 0.9f;
+    brightExtractData_->softKnee = 0.2f;
+    brightExtractData_->intensity = 1.0f;
 
     blurSettingsData_->texelSize = { 0.004f, 0.004f };
     blurSettingsData_->blurStrength = 0.574f;
 
-    combineSettingsData_->brightnessThreshold = 0.0f;
-    combineSettingsData_->effectMode = 1;
+    combineSettingsData_->bloomIntensity = 0.8f; 
+    combineSettingsData_->exposure = 1.2f; 
 
     depthExtractVSData_->nearPlane = camera->GetNearClip();
     depthExtractVSData_->farPlane = camera->GetFarClip();
