@@ -28,11 +28,22 @@ public:
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
     void SetEasing(EasingType type) { easingType_ = type; }
+    // アウトライン設定
+    void SetEnableOutline(bool enable);
+    void SetOutline(float width, const Vector4& color) {
+        outlineWidth_ = width;
+        outlineColor_ = color;
+    }
+    void SetOutline(float width, uint32_t color) {
+        outlineWidth_ = width;
+        outlineColor_ = Math::Uint32ToColorVector(color); 
+    }
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
     bool IsFinished() const { return isFinished_; }
     float GetAnimationTime() const { return animationTime_; }
+    bool IsOutlineEnabled() const { return enableOutline_; }
     uint32_t GetColor() const { return color_; }
 
 private:
@@ -55,4 +66,8 @@ private:
 
     bool isFinished_ = false;      // 再生が終了したか
     EasingType easingType_ = EasingType::EaseLinear;
+
+    bool enableOutline_ = false;
+    float outlineWidth_ = 5.0f;     
+    Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 };

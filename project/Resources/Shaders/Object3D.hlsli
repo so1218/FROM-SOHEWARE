@@ -19,6 +19,19 @@ struct VertexShaderInput
     float32_t3 smoothNormal : TANGENT0;
 };
 
+struct Well
+{
+    float32_t4x4 skeletonSpaceMatrix;
+    float32_t4x4 skeletonSpaceInverseTransposeMatrix;
+};
+
+struct Skinned
+{
+    float32_t4 position;
+    float32_t3 normal;
+    float32_t3 smoothNormal;
+};
+
 // Light types
 #define LIGHT_HALFLAMBERT 0
 #define LIGHT_PHONG_SPECULAR 1

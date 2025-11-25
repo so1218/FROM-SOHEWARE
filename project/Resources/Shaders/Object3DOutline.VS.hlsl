@@ -28,8 +28,12 @@ OutlineVertexShaderOutput main(VertexShaderInput input)
     // NDC空間(-1.0～1.0)の幅は2.0
     float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
 
+    // clipPos.w（深度）が大きくなりすぎないように制限（Clamp）をかける
+    float depthScale = min(clipPos.w, 20.0f);
+
     // 押し出し適用
-    float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * clipPos.w;
+    // クランプした深度を使ってオフセット
+    float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * depthScale;
 
     output.position = clipPos;
     output.position.xy += offset;

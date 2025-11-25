@@ -482,7 +482,10 @@ void Renderer::DrawAnimationModel(
 	uint32_t textureHandle,
 	uint32_t envMapSrvHandle,
 	uint32_t color,
-	MaterialHandle& materialHandle)
+	MaterialHandle& materialHandle,
+	bool enableOutline,
+	float outlineWidth,
+	const Vector4& outlineColor)
 {
 	assert(indexModel_ < kMaxModelCount); // 配列範囲チェック
 
@@ -529,10 +532,30 @@ void Renderer::DrawAnimationModel(
 	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), skinCluster.influenceBufferView };
 	commandManager_->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
 
-	// 描画
 	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 
-	indexModel_++; // 使用カウント更新
+	// アウトライン描画
+	if (outlineWidth > 0.0f)
+	{
+		// アウトラインデータをバッファに書き込み
+		if (model.outlineMappedData)
+		{
+			model.outlineMappedData->width = outlineWidth;
+			model.outlineMappedData->color = outlineColor;
+		}
+
+		commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("SkinningOutline"));
+		commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("SkinningOutline"));
+
+		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
+		commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex));
+		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, model.outlineResource->GetGPUVirtualAddress());
+		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, frameDataResource_->GetGPUVirtualAddress());
+
+		commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+	}
+
+	indexModel_++; 
 }
 
 void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)

@@ -45,6 +45,7 @@ void Player::Initialize()
 	isEnd_ = false;
 
 	modelPlayer_->SetEnableOutline(true);
+	animationPlayer_->SetEnableOutline(true);
 
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
@@ -278,7 +279,7 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	modelPlayer_->Draw();
-	/*animationPlayer_->Draw();*/
+	animationPlayer_->Draw();
 
 	for (auto& weapon : weapons_)
 	{

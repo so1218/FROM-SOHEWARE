@@ -77,7 +77,19 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 void AnimationModel::Draw()
 {
     transform_.UpdateMatrix();
-    engine_->renderer_->DrawAnimationModel(transform_, *camera_, animeModelData_, skinCluster_, textureHandle_, envMapTextureHandle_, color_, materialHandle_);
+    engine_->renderer_->DrawAnimationModel(
+        transform_,
+        *camera_,
+        animeModelData_,
+        skinCluster_,
+        textureHandle_,
+        envMapTextureHandle_,
+        color_,
+        materialHandle_,
+        enableOutline_,
+        outlineWidth_,
+        outlineColor_ 
+    );
 }
 
 void AnimationModel::ResetAnimation()
@@ -85,3 +97,5 @@ void AnimationModel::ResetAnimation()
     animationTime_ = 0.0f;
     isFinished_ = false;
 }
+
+void AnimationModel::SetEnableOutline(bool enable) { enableOutline_ = enable; }
