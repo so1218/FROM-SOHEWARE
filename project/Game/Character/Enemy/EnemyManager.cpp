@@ -13,30 +13,30 @@ EnemyManager::EnemyManager(Engine* engine, Camera* camera, Player* player, GameO
 
 void EnemyManager::Update()
 {
-    // 敵のスポーン処理
-    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-    spawnTimer_ += deltaTime;
+    //// 敵のスポーン処理
+    //float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    //spawnTimer_ += deltaTime;
 
-    if (spawnTimer_ >= spawnInterval_)
-    {
-        spawnTimer_ -= spawnInterval_;
+    //if (spawnTimer_ >= spawnInterval_)
+    //{
+    //    spawnTimer_ -= spawnInterval_;
 
-        Vector3 playerPos = player_->GetWorldPosition();
-        float randomAngle = Math::RandomFloat(0.0f, 2.0f * Math::PI);
+    //    Vector3 playerPos = player_->GetWorldPosition();
+    //    float randomAngle = Math::RandomFloat(0.0f, 2.0f * Math::PI);
 
-        Vector3 spawnPos;
-        spawnPos.x = playerPos.x + std::cos(randomAngle) * spawnRadius_;
-        spawnPos.y = 0.0f;
-        spawnPos.z = playerPos.z + std::sin(randomAngle) * spawnRadius_;
+    //    Vector3 spawnPos;
+    //    spawnPos.x = playerPos.x + std::cos(randomAngle) * spawnRadius_;
+    //    spawnPos.y = 0.0f;
+    //    spawnPos.z = playerPos.z + std::sin(randomAngle) * spawnRadius_;
 
-        EnemyData enemyData;
-        enemyData.modelId = ModelID::enemy;
-        enemyData.hp = 50.0f;
-        enemyData.speed = 3.0f;
-        enemyData.size = { 1.0f, 1.0f, 1.0f };
+    //    EnemyData enemyData;
+    //    enemyData.modelId = ModelID::enemy;
+    //    enemyData.hp = 50.0f;
+    //    enemyData.speed = 3.0f;
+    //    enemyData.size = { 1.0f, 1.0f, 1.0f };
 
-        SpawnEnemy(enemyData, spawnPos);
-    }
+    //    SpawnEnemy(enemyData, spawnPos);
+    //}
 }
 
 void EnemyManager::SpawnEnemy(const EnemyData& data, const Vector3& position)

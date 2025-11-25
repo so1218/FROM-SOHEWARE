@@ -278,7 +278,7 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	modelPlayer_->Draw();
-	animationPlayer_->Draw();
+	/*animationPlayer_->Draw();*/
 
 	for (auto& weapon : weapons_)
 	{

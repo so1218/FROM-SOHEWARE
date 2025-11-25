@@ -21,6 +21,7 @@ void PSOManager::Initialize(
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescDefault_ = { inputElementsDefault_.data(), (UINT)inputElementsDefault_.size() };
 
@@ -334,6 +335,21 @@ D3D12_RASTERIZER_DESC PSOManager::GetRasterizerState(const std::string& name)
         D3D12_RASTERIZER_DESC rasterizerDesc{};
         rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
         rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+        return rasterizerDesc;
+    }
+
+    // アウトライン用 (前面カリング + 深度バイアス)
+    if (name == "FrontCullBias")
+    {
+        D3D12_RASTERIZER_DESC rasterizerDesc{};
+        rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT; 
+        rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+        // Zファイティング対策
+        rasterizerDesc.DepthBias = 100;              
+        rasterizerDesc.SlopeScaledDepthBias = 1.0f;  
+        rasterizerDesc.DepthBiasClamp = 0.0f;
+
         return rasterizerDesc;
     }
 

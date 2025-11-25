@@ -11,6 +11,14 @@ struct VertexShaderOutput
     float32_t3 worldPosition : POSITION1;
 };
 
+struct VertexShaderInput
+{
+    float32_t4 position : POSITION0;
+    float32_t2 texcoord : TEXCOORD0;
+    float32_t3 normal : NORMAL0;
+    float32_t3 smoothNormal : TANGENT0;
+};
+
 // Light types
 #define LIGHT_HALFLAMBERT 0
 #define LIGHT_PHONG_SPECULAR 1

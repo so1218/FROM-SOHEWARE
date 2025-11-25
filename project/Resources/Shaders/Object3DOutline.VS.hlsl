@@ -1,15 +1,9 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-struct VertexShaderInput
-{
-    float32_t4 position : POSITION0;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
-};
-
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 ConstantBuffer<OutlineData> gOutlineData : register(b1);
+ConstantBuffer<FrameData> gFrameData : register(b2);
 
 struct OutlineVertexShaderOutput
 {
@@ -20,15 +14,25 @@ OutlineVertexShaderOutput main(VertexShaderInput input)
 {
     OutlineVertexShaderOutput output;
 
-    // 定数バッファから太さを取得
-    float32_t outlineWidth = gOutlineData.width;
+    // クリップ空間へ変換
+    float4 clipPos = mul(input.position, gTransformationMatrix.WVP);
 
-    // 法線方向に頂点を押し出す
-    float32_t4 positions = input.position;
-    positions.xyz += input.normal * outlineWidth;
+    // 法線をクリップ空間へ変換
+    float3 normal = normalize(input.smoothNormal);
+    float4 clipNormal = mul(float4(normal, 0.0f), gTransformationMatrix.WVP);
 
-    // 座標変換
-    output.position = mul(positions, gTransformationMatrix.WVP);
+    // 画面上の広げる方向（2Dベクトル）
+    float2 offsetDir = normalize(clipNormal.xy);
+
+    // スクリーン解像度を使ってオフセット量を計算
+    // NDC空間(-1.0～1.0)の幅は2.0
+    float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
+
+    // 押し出し適用
+    float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * clipPos.w;
+
+    output.position = clipPos;
+    output.position.xy += offset;
 
     return output;
 }

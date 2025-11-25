@@ -69,6 +69,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_VERTEX);
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Outline");
     }

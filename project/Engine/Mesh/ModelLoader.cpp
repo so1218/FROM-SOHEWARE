@@ -2,6 +2,8 @@
 #include "Logger.h"
 
 #include <filesystem> 
+#include <map>
+#include <tuple>
 
 ModelData ModelLoader::LoadModel(const std::string& filePath)
 {
@@ -56,6 +58,8 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
         assert(mesh->HasTextureCoords(0)); // Texcoordが無いMeshは非対応
         ProcessMesh(mesh, scene, modelData, isGLTF);
     }
+    // 全てのMeshの処理が終わった後、頂点全体に対してスムース法線を計算する
+    CalculateSmoothNormals(modelData.vertices);
    
     LOG_INFO("Model loaded successfully: {}", filePath);
     LOG_INFO("-------------------- ModelLoader::LoadModel End ----------------------\n");
@@ -209,7 +213,6 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
                 bone->mWeights[weightIndex].mVertexId + vertexOffset });
         }
     }
-
 }
 
 void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath)
@@ -275,4 +278,32 @@ Node ModelLoader::ReadNode(aiNode* node)
     }
 
     return result;
+}
+
+void ModelLoader::CalculateSmoothNormals(std::vector<VertexData>& vertices)
+{
+    // 座標をキーにして法線を蓄積するマップ
+    std::map<std::tuple<float, float, float>, Vector3> normalMap;
+
+    // 同じ座標にある頂点の法線を加算
+    for (const auto& v : vertices)
+    {
+        auto key = std::make_tuple(v.position.x, v.position.y, v.position.z);
+
+        // ベクトルの加算
+        normalMap[key] += v.normal;
+    }
+
+    // 加算された法線を正規化
+    for (auto& pair : normalMap)
+    {
+        pair.second = pair.second.Normalize();
+    }
+
+    // 計算結果を各頂点の smoothNormal に格納
+    for (auto& v : vertices)
+    {
+        auto key = std::make_tuple(v.position.x, v.position.y, v.position.z);
+        v.smoothNormal = normalMap[key];
+    }
 }

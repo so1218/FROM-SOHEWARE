@@ -32,5 +32,6 @@ private:
 
     Node ReadNode(aiNode* node);
     
+    void CalculateSmoothNormals(std::vector<VertexData>& vertices);
 };
 

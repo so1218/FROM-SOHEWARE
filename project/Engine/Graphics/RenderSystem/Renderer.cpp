@@ -383,7 +383,7 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 
 	auto commandList = commandManager_->GetCommandList();
 
-	// SRVヒープセット（共通）
+	// SRVヒープセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
@@ -412,8 +412,8 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 
 		commandList->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
 		commandList->SetGraphicsRootConstantBufferView(1, model.outlineResource->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
 
-		// 描画
 		commandList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	}
 

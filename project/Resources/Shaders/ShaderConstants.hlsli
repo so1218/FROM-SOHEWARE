@@ -150,4 +150,5 @@ struct OutlineData
 {
     float4 color;
     float width;
+    float padding[3];
 };

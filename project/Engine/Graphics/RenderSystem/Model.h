@@ -56,6 +56,6 @@ private:
     MaterialHandle materialHandle_;
 
     bool enableOutline_ = false;
-    float outlineWidth_ = 0.05f; 
+    float outlineWidth_ = 5.0f; 
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 };
