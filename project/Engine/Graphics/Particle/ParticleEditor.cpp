@@ -319,12 +319,10 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& attraction = config.attraction;
 
-                    // 有効/無効の切り替え
-                    if (ImGui::Checkbox("有効##Attraction", &attraction.enabled));
+                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
 
                     if (attraction.enabled)
                     {
-                        // 引力の強さ
                         ImGui::DragFloat("強さ", &attraction.strength, 0.1f, -1000.0f, 1000.0f);
 
                         ImGui::Separator();
