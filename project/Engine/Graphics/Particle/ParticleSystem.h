@@ -28,7 +28,8 @@ public:
     ~ParticleSystem();
 
     void Initialize(Engine* engine);
-    void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime);
+    void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime,
+        const WorldTransform* attractionTarget = nullptr);
     void Update();
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);

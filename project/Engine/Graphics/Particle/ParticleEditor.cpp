@@ -55,6 +55,9 @@ void ParticleEditor::ShowEditor()
                 // エミッター基本設定
                 valueChanged |= ImGui::DragFloat3("位置", &emitterConfig.position.x, 0.1f);
                 ImGui::Separator();
+                valueChanged |= ImGui::DragFloat3("追従オフセット", &emitterConfig.followOffset.x, 0.1f);
+
+                ImGui::Separator();
                 bool intervalEdited = ImGui::DragFloat("発生間隔 (秒)", &emitterConfig.spawnInterval, 0.01f);
                 valueChanged |= intervalEdited;
                 if (ImGui::IsItemDeactivatedAfterEdit())
@@ -316,9 +319,24 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& attraction = config.attraction;
 
-                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
-                    ImGui::DragFloat3("ターゲット", &attraction.target.x, 0.1f);
-                    ImGui::DragFloat("強さ", &attraction.strength, 0.1f, 0.0f, 1000.0f);
+                    // 有効/無効の切り替え
+                    if (ImGui::Checkbox("有効##Attraction", &attraction.enabled));
+
+                    if (attraction.enabled)
+                    {
+                        // 引力の強さ
+                        ImGui::DragFloat("強さ", &attraction.strength, 0.1f, -1000.0f, 1000.0f);
+
+                        ImGui::Separator();
+
+                        ImGui::Text("静的ターゲット (ターゲット未設定時)");
+                        ImGui::DragFloat3("座標##AttractTarget", &attraction.target.x, 0.1f);
+
+                        ImGui::Separator(); 
+
+                        ImGui::Text("動的ターゲット (SetAttractionTarget使用時)");
+                        ImGui::DragFloat3("オフセット##AttractOffset", &attraction.offset.x, 0.1f);
+                    }
 
                     ImGui::TreePop();
                 }
@@ -496,6 +514,7 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
             emitter->lifetime_ = emitterConfig.lifetime;
             emitter->amount_ = emitterConfig.amount;
             emitter->duration_ = emitterConfig.duration;
+            emitter->followOffset_ = emitterConfig.followOffset;
 
             // ループ設定を更新し、停止中だったエミッターを再生
             bool wasStopped = !emitter->isPlaying_;

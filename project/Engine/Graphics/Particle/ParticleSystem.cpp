@@ -28,7 +28,7 @@ void ParticleSystem::Initialize(Engine* engine)
     configManager_->LoadAllParticleDefinitions();
 }
 
-void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime)
+void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget)
 {
     // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
@@ -101,6 +101,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.presetName = presetName;
+    particle.attractionTarget = attractionTarget;
 
     // 生成したパーティクルを格納
     particles_.push_back(std::move(particle));
@@ -210,7 +211,20 @@ void ParticleSystem::Update()
             // Attraction Module
             if (config.attraction.enabled)
             {
-                Vector3 directionToTarget = config.attraction.target - particleState.transform->translation_;
+                Vector3 targetPos;
+
+                // ターゲットが設定されていればターゲット座標 + オフセット
+                if (particleState.attractionTarget)
+                {
+                    targetPos = particleState.attractionTarget->translation_ + config.attraction.offset;
+                }
+                // 設定されていなければ静的ターゲット座標
+                else
+                {
+                    targetPos = config.attraction.target;
+                }
+
+                Vector3 directionToTarget = targetPos - particleState.transform->translation_;
                 particleState.velocity += directionToTarget.Normalize() * config.attraction.strength * deltaTime;
             }
 

@@ -11,9 +11,10 @@ public:
     void Update(ParticleSystem& particleSystem);
 
     // Emitterの位置設定
-    void SetTargetToFollow(WorldTransform* target, const Vector3& offset);
+    void SetTargetToFollow(WorldTransform* target);
 
     void SetFollowOffset(const Vector3& offset) { followOffset_ = offset; }
+    void SetAttractionTarget(const WorldTransform* target) { attractionTarget_ = target; }
 
     void Play(); // エミッターの再生を開始/リスタート
     void Stop(); // エミッターの再生を停止
@@ -31,6 +32,7 @@ public:
     float elapsedTime_ = 0.0f;// 再生開始からの経過時間
     WorldTransform* targetToFollow_ = {};
     Vector3 followOffset_ = { 0.0f, 0.0f, 0.0f };
+    const WorldTransform* attractionTarget_ = nullptr;
 
     std::string name_ = "Emitter";
     std::string& presetName_ = name_;

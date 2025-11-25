@@ -57,19 +57,19 @@ void SampleSceneHori::Initialize()
 
     playerWalkEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerWalk");
     player_->SetWalkEmitter(playerWalkEmitter_.get());
-    playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
+    playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
     engine_->particleSystem_->AddEmitter(std::move(playerWalkEmitter_));
     playerLevelUpEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerLevelUp");
     player_->SetLevelUpEmitter(playerLevelUpEmitter_.get());
-    playerLevelUpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,-(player_->modelPlayer_->GetTransform().scale_.y / 2.0f), 0.0f });
+    playerLevelUpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
     engine_->particleSystem_->AddEmitter(std::move(playerLevelUpEmitter_));
     playerDamagedEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerDamaged");
     player_->SetDamagedEmitter(playerDamagedEmitter_.get());
-    playerDamagedEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,0.0f, 0.0f });
+    playerDamagedEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
     engine_->particleSystem_->AddEmitter(std::move(playerDamagedEmitter_));
     playerGetExpEmitter_ = engine_->particleSystem_->CreateEmitter("playerGetExp");
     player_->SetGetExpEmitter(playerGetExpEmitter_.get());
-    playerGetExpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform(), { 0,0.0f, 0.0f });
+    playerGetExpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
     engine_->particleSystem_->AddEmitter(std::move(playerGetExpEmitter_));
     std::unique_ptr<ParticleEmitter> playerLevelUpEmitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> playerDamagedEmitter_ = nullptr;

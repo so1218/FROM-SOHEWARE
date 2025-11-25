@@ -2,6 +2,11 @@
     "EmitterConfig": {
         "amount": 2,
         "duration": -0.10000000149011612,
+        "followOffset": [
+            0.0,
+            -0.4000000059604645,
+            0.0
+        ],
         "lifetime": 0.3100000023841858,
         "looping": true,
         "playOnAwake": false,
@@ -87,11 +92,44 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "framesPerSecond": 10.0,
-            "looping": true,
-            "textureHandle": 67,
-            "tilesX": 1,
-            "tilesY": 1
+            "textureHandle": 67
+        },
+        "trailModule": {
+            "alignment": 0,
+            "dissolveTextureHandle": 0,
+            "enabled": false,
+            "endColor": [
+                1.0,
+                1.0,
+                1.0,
+                0.0
+            ],
+            "headWidthScale": 1.0,
+            "jitterFrequency": 10.0,
+            "jitterMode": 0,
+            "jitterPhase": 0.0,
+            "jitterSpeed": 0.0,
+            "jitterStrength": 0.0,
+            "lifetime": 0.5,
+            "minVertexDistance": 0.10000000149011612,
+            "scrollSpeed": [
+                0.0,
+                0.0
+            ],
+            "startColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "tailWidthScale": 1.0,
+            "textureHandle": 0,
+            "textureMode": 0,
+            "tiling": [
+                1.0,
+                1.0
+            ],
+            "width": 1.0
         },
         "velocityModule": {
             "angleRange": 348.0,

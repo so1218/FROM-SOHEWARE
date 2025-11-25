@@ -188,6 +188,11 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     if (attrJson.contains("target")) {
                         config.attraction.target = { attrJson["target"][0], attrJson["target"][1], attrJson["target"][2] };
                     }
+                    if (attrJson.contains("offset") && attrJson["offset"].is_array()) {
+                        config.attraction.offset = {
+                            attrJson["offset"][0], attrJson["offset"][1], attrJson["offset"][2]
+                        };
+                    }
                     config.attraction.strength = attrJson.value("strength", 1.0f);
                 }
                 if (configJson.contains("trailModule"))
@@ -264,6 +269,15 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                         emitterJson["position"][0].get<float>(),
                         emitterJson["position"][1].get<float>(),
                         emitterJson["position"][2].get<float>()
+                    };
+                }
+                if (emitterJson.contains("followOffset") && emitterJson["followOffset"].is_array())
+                {
+                    emitterConfig.followOffset =
+                    {
+                        emitterJson["followOffset"][0].get<float>(),
+                        emitterJson["followOffset"][1].get<float>(),
+                        emitterJson["followOffset"][2].get<float>()
                     };
                 }
                 emitterConfig.spawnInterval = emitterJson.value("spawnInterval", 0.1f);
@@ -358,6 +372,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.attraction.enabled },
             { "target", { config.attraction.target.x, config.attraction.target.y, config.attraction.target.z }},
+            { "offset", { config.attraction.offset.x, config.attraction.offset.y, config.attraction.offset.z } },
             { "strength", config.attraction.strength }
         }},
 
@@ -400,6 +415,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
     nlohmann::json emitterConfigJson =
     {
         { "position", { emitterConfig.position.x, emitterConfig.position.y, emitterConfig.position.z }},
+        { "followOffset", { emitterConfig.followOffset.x, emitterConfig.followOffset.y, emitterConfig.followOffset.z }},
         { "spawnInterval", emitterConfig.spawnInterval },
         { "lifetime", emitterConfig.lifetime },
         { "amount", emitterConfig.amount },

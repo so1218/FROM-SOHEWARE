@@ -10,6 +10,7 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     amount_ = config.amount;
     duration_ = config.duration;
     looping_ = config.looping;
+    followOffset_ = config.followOffset;
 
     timeSinceLastSpawn_ = 0.0f;
     isPlaying_ = false;
@@ -21,10 +22,9 @@ void ParticleEmitter::Initialize(const EmitterConfig& config)
     }
 }
 
-void ParticleEmitter::SetTargetToFollow(WorldTransform* target, const Vector3& offset)
+void ParticleEmitter::SetTargetToFollow(WorldTransform* target)
 {
     targetToFollow_ = target;
-    followOffset_ = offset;
 }
 
 void ParticleEmitter::Update(ParticleSystem& particleSystem)
@@ -75,7 +75,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
                 position_,
             };
             // 1つのパーティクルを生成
-            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_);
+            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_, attractionTarget_);
         }
 
         timeSinceLastSpawn_ -= spawnInterval_;

@@ -223,7 +223,8 @@ struct VortexModule
 struct AttractionModule
 {
     bool enabled = false;
-    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 引き寄せる目標位置
+    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 静的な目標位置（ターゲット未設定時）
+    Vector3 offset = { 0.0f, 0.0f, 0.0f };// 動的ターゲットに対するオフセット
     float strength = 1.0f;                 // 引力の強さ（加速度）
 };
 
@@ -318,6 +319,7 @@ struct ParticleState
     float lifetime;
     Vector3 velocity;
     float age = 0.0f;
+    const WorldTransform* attractionTarget = nullptr;
 
     Vector3 initialPosition; // 生成時のエミッターの座標
     std::string presetName;
@@ -345,6 +347,7 @@ struct EmitterConfig
     float duration = -0.1f;     // エミッター稼働時間（負なら無限）
     bool looping = true;        // duration 終了後にループするか
     bool playOnAwake = true;    // 生成時に自動再生するか
+    Vector3 followOffset = { 0.0f, 0.0f, 0.0f };// 追従時のオフセット座標
 };
 
 // パーティクル・エミッター設定のセット
