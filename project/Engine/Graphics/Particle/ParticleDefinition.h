@@ -215,9 +215,10 @@ struct NoiseModule
 struct VortexModule
 {
     bool enabled = false;
-    Vector3 center = { 0.f, 0.f, 0.f }; // 渦の中心位置
-    float rotationSpeed = 90.0f;        // 秒あたりの回転速度
-    float orbitalSpeed = 10.0f;         // 中心方向への移動速度（負で外向き）
+    Vector3 center = { 0.0f, 0.0f, 0.0f }; // 渦の基準点
+    Vector3 axis = { 0.0f, 1.0f, 0.0f };   // 回転軸
+    float orbitalSpeed = 2.0f; // 周回スピード（接線方向）
+    float radialSpeed = 0.0f;  // 中心へ向かうスピード（負の値で外へ広がる）
 };
 
 struct AttractionModule

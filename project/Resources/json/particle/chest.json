@@ -2,6 +2,11 @@
     "EmitterConfig": {
         "amount": 1,
         "duration": 5.0,
+        "followOffset": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "lifetime": 4.0,
         "looping": true,
         "playOnAwake": true,
@@ -15,6 +20,11 @@
     "ParticleConfig": {
         "attractionModule": {
             "enabled": false,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
             "strength": 18.200000762939453,
             "target": [
                 28.700000762939453,
@@ -32,9 +42,9 @@
         },
         "physicsModule": {
             "drag": 0.0,
-            "enabled": true,
+            "enabled": false,
             "gravity": [
-                0.0,
+                23.0,
                 -9.800000190734863,
                 0.0
             ]
@@ -61,14 +71,14 @@
                 0.0,
                 2.0
             ],
-            "emitFromEdge": false,
+            "emitFromEdge": true,
             "enabled": true,
             "radius": [
                 10.0,
-                10.0,
+                0.0,
                 10.0
             ],
-            "type": 1
+            "type": 2
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
@@ -94,17 +104,17 @@
             "dissolveTextureHandle": 0,
             "enabled": true,
             "endColor": [
-                0.0,
-                0.025316715240478516,
                 1.0,
+                0.8860759735107422,
+                0.0,
                 0.0
             ],
             "headWidthScale": 0.44999998807907104,
             "jitterFrequency": 6.199999809265137,
-            "jitterMode": 0,
+            "jitterMode": 1,
             "jitterPhase": 0.0,
-            "jitterSpeed": 0.0,
-            "jitterStrength": 0.0,
+            "jitterSpeed": 0.20000000298023224,
+            "jitterStrength": 0.10000000149011612,
             "lifetime": 2.299999952316284,
             "minVertexDistance": 0.009999999776482582,
             "scrollSpeed": [
@@ -124,10 +134,10 @@
                 5.0,
                 5.0
             ],
-            "width": 0.30000001192092896
+            "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 83.0,
+            "angleRange": 0.0,
             "direction": [
                 0.0,
                 1.0,
@@ -135,17 +145,22 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 8.9399995803833
+            "speed": 5.070000171661377
         },
         "vortexModule": {
-            "center": [
+            "axis": [
                 0.0,
+                5.199999809265137,
+                0.0
+            ],
+            "center": [
+                23.0,
                 0.0,
                 0.0
             ],
-            "enabled": false,
-            "orbitalSpeed": 10.0,
-            "rotationSpeed": 90.0
+            "enabled": true,
+            "orbitalSpeed": 18.0,
+            "radialSpeed": 30.0
         }
     }
 }

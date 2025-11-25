@@ -177,8 +177,14 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     if (vortexJson.contains("center")) {
                         config.vortex.center = { vortexJson["center"][0], vortexJson["center"][1], vortexJson["center"][2] };
                     }
-                    config.vortex.rotationSpeed = vortexJson.value("rotationSpeed", 90.0f);
-                    config.vortex.orbitalSpeed = vortexJson.value("orbitalSpeed", 10.0f);
+                    if (vortexJson.contains("axis")) {
+                        config.vortex.axis = { vortexJson["axis"][0], vortexJson["axis"][1], vortexJson["axis"][2] };
+                    }
+                    else {
+                        config.vortex.axis = { 0.0f, 1.0f, 0.0f }; // デフォルト値
+                    }
+                    config.vortex.orbitalSpeed = vortexJson.value("orbitalSpeed", 2.0f);
+                    config.vortex.radialSpeed = vortexJson.value("radialSpeed", 0.0f);
                 }
                 // AttractionModuleの読み込み
                 if (configJson.contains("attractionModule"))
@@ -365,8 +371,9 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.vortex.enabled },
             { "center", { config.vortex.center.x, config.vortex.center.y, config.vortex.center.z }},
-            { "rotationSpeed", config.vortex.rotationSpeed },
-            { "orbitalSpeed", config.vortex.orbitalSpeed }
+            { "axis", { config.vortex.axis.x, config.vortex.axis.y, config.vortex.axis.z }},
+            { "orbitalSpeed", config.vortex.orbitalSpeed },
+            { "radialSpeed", config.vortex.radialSpeed }
         }},
         { "attractionModule", 
         {

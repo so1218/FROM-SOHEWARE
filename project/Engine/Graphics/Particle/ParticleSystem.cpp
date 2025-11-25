@@ -197,14 +197,37 @@ void ParticleSystem::Update()
             // Vortex Module
             if (config.vortex.enabled)
             {
-                Vector3 toCenter = config.vortex.center - particleState.transform->translation_;
-                if (toCenter.Length() > 0.001f)
+                // 渦の中心基準点を決定（エミッターの位置 + オフセット）
+                Vector3 vortexCenter = particleState.initialPosition + config.vortex.center;
+
+                // 現在位置から中心へのベクトル
+                Vector3 diff = particleState.transform->translation_ - vortexCenter;
+
+                // 軸(Axis)に対する高さ成分を計算
+                Vector3 axis = config.vortex.axis.Normalize();
+                float height = diff.Dot(axis);
+
+                // 軸上の点（射影点）を求める
+                Vector3 pointOnAxis = axis * height;
+
+                // 軸からパーティクルへのベクトル（半径方向ベクトル）
+                Vector3 radialVector = diff - pointOnAxis;
+                float distanceToAxis = radialVector.Length();
+
+                if (distanceToAxis > 0.001f)
                 {
-                    Vector3 toCenter_norm = toCenter.Normalize();
-                    Vector3 orbitalForce = toCenter_norm * config.vortex.orbitalSpeed;
-                    Vector3 rotationalForce = { -toCenter_norm.y, toCenter_norm.x, 0.0f };
-                    rotationalForce = rotationalForce * config.vortex.rotationSpeed;
-                    particleState.velocity += (orbitalForce + rotationalForce) * deltaTime;
+                    Vector3 radialDir = radialVector.Normalize();
+
+                    // 6. 回転方向（接線ベクトル）を計算 (外積: 軸 × 半径方向)
+                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize();
+
+                    // 力を適用
+                    Vector3 orbitalForce = tangentialDir * config.vortex.orbitalSpeed;
+
+                    Vector3 radialForce = radialDir * config.vortex.radialSpeed;
+
+                    // デルタタイムを掛けて速度に加算
+                    particleState.velocity += (orbitalForce + radialForce) * deltaTime;
                 }
             }
 

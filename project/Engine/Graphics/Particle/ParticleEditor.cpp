@@ -303,8 +303,9 @@ void ParticleEditor::ShowEditor()
 
                     ImGui::Checkbox("有効##Vortex", &vortex.enabled);
                     ImGui::DragFloat3("中心", &vortex.center.x, 0.1f);
-                    ImGui::DragFloat("回転速度", &vortex.rotationSpeed, 1.0f, -1000.0f, 1000.0f);
-                    ImGui::DragFloat("公転速度", &vortex.orbitalSpeed, 0.1f, -100.0f, 100.0f);
+                    ImGui::DragFloat3("回転軸 (Axis)", &vortex.axis.x, 0.1f);
+                    ImGui::DragFloat("周回スピード", &vortex.orbitalSpeed, 0.1f, -1000.0f, 1000.0f);
+                    ImGui::DragFloat("半径方向スピード", &vortex.radialSpeed, 0.1f, -100.0f, 100.0f);
 
                     if (ImGui::IsItemHovered())
                         ImGui::SetTooltip("中心方向への力\n負値で外向き");
