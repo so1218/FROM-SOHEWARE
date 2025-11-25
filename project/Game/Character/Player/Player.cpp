@@ -44,6 +44,8 @@ void Player::Initialize()
 	invincibilityTimer_ = 0.0f;
 	isEnd_ = false;
 
+	modelPlayer_->SetEnableOutline(true);
+
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);

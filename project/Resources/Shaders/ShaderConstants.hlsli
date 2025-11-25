@@ -145,3 +145,9 @@ struct CombineSettings
     float exposure;
     float2 padding;
 };
+
+struct OutlineData
+{
+    float4 color;
+    float width;
+};

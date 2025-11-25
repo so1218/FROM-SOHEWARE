@@ -12,4 +12,6 @@ struct RenderData
 	Matrix4x4 worldMatrix;
 	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
 	TransformationMatrix* mappedData = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
+	OutlineData* outlineMappedData = nullptr;
 };

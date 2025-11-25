@@ -366,59 +366,86 @@ void Renderer::CreateModels()
 		models_[i].wvpResource = BufferManager::CreateBufferResource(
 			device_->GetDevice(), sizeof(TransformationMatrix));
 		models_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&models_[i].mappedData));
+	
+		// アウトライン用のバッファ作成
+		models_[i].outlineResource = BufferManager::CreateBufferResource(
+			device_->GetDevice(), sizeof(OutlineData));
+		models_[i].outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&models_[i].outlineMappedData));
 	}
 	indexModel_ = 0;
 }
 
-void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle)
+void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
+	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle,
+	bool enableOutline, float outlineWidth, const Vector4& outlineColor)
 {
-	assert(indexModel_ < kMaxModelCount); // 配列範囲チェック
+	assert(indexModel_ < kMaxModelCount);
 
-	// 描画用SRVヒープをセット
+	auto commandList = commandManager_->GetCommandList();
+
+	// SRVヒープセット（共通）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
+	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	RenderData& model = models_[indexModel_];
-
-	// Meshの取得（キャッシュ）
 	Mesh* mesh = GetOrCreateMesh(modelData);
 
-	// マテリアル色を設定
-	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
-	// ワールド行列を設定
+	// ワールド行列・WVP行列計算
 	model.worldMatrix = worldTransform.matWorld_;
-
-	// WVP行列（World * ViewProjection）を計算してGPUバッファにコピー
 	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
 	model.mappedData->WVP = wvpMatrix;
 	model.mappedData->World = model.worldMatrix;
 	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
 
-	// ルートシグネチャ・パイプライン設定
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-	commandManager_->GetCommandList()->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
+	// アウトライン描画 (有効な場合のみ)
+	if (enableOutline)
+	{
+		model.outlineMappedData->color = outlineColor;
+		model.outlineMappedData->width = outlineWidth;
 
-	// プリミティブ・バッファ設定
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
+		commandList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Outline"));
+		commandList->SetPipelineState(psoManager_->GetPSO("Object3DOutline"));
 
-	// 定数バッファ・SRVをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress()); // Material
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());       // WVP
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // Texture
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // Environment Map
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+		commandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+		commandList->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(1, model.outlineResource->GetGPUVirtualAddress());
+
+		// 描画
+		commandList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+	}
+
+	// 通常描画
+
+	// マテリアル色を設定
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
+
+	// ルートシグネチャ・PSOを通常用に戻す
+	commandList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
+	commandList->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
+
+	// VB/IB設定
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+	commandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+	// 通常描画用のリソースバインド
+	commandList->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress()); 
+	commandList->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());       
+	commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));        
+	commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle));      
+	commandList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
 
 	// 描画
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 
-	indexModel_++; // 使用カウント更新
+	indexModel_++;
 }
 
 void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)

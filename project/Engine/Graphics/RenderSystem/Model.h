@@ -28,6 +28,9 @@ public:
     void SetColor(uint32_t color);
     void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
+    void SetEnableOutline(bool enable);
+    void SetOutlineWidth(float width);
+    void SetOutlineColor(const Vector4& color);
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
@@ -35,6 +38,9 @@ public:
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
     uint32_t GetColor() const { return color_; }
+    bool IsOutlineEnabled() const { return enableOutline_; }
+    float GetOutlineWidth() const { return outlineWidth_; }
+    const Vector4& GetOutlineColor() const { return outlineColor_; }
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -48,4 +54,8 @@ private:
 
     ModelData* modelData_;
     MaterialHandle materialHandle_;
+
+    bool enableOutline_ = false;
+    float outlineWidth_ = 0.05f; 
+    Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 };

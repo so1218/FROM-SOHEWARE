@@ -65,6 +65,13 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Skinning");
     }
+    if (name == "Outline")
+    {
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
+
+        return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Outline");
+    }
 
     // Line
     if (name == "Line")

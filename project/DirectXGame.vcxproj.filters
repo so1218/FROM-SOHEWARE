@@ -809,5 +809,7 @@
     </FxCompile>
     <FxCompile Include="Resources\Shaders\Trail.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Trail.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Object3DOutline.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Object3DOutline.VS.hlsl" />
   </ItemGroup>
 </Project>
