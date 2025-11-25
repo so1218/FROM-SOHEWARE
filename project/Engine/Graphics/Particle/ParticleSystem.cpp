@@ -197,37 +197,42 @@ void ParticleSystem::Update()
             // Vortex Module
             if (config.vortex.enabled)
             {
-                // 渦の中心基準点を決定（エミッターの位置 + オフセット）
+                // 1. 中心と軸の計算
                 Vector3 vortexCenter = particleState.initialPosition + config.vortex.center;
-
-                // 現在位置から中心へのベクトル
                 Vector3 diff = particleState.transform->translation_ - vortexCenter;
-
-                // 軸(Axis)に対する高さ成分を計算
                 Vector3 axis = config.vortex.axis.Normalize();
-                float height = diff.Dot(axis);
 
-                // 軸上の点（射影点）を求める
-                Vector3 pointOnAxis = axis * height;
-
-                // 軸からパーティクルへのベクトル（半径方向ベクトル）
-                Vector3 radialVector = diff - pointOnAxis;
+                // 2. 軸成分と半径成分の分解
+                float height = diff.Dot(axis);          // 軸方向の高さ
+                Vector3 pointOnAxis = axis * height;    // 軸上の点
+                Vector3 radialVector = diff - pointOnAxis; // 軸からパーティクルへのベクトル
                 float distanceToAxis = radialVector.Length();
 
-                if (distanceToAxis > 0.001f)
+                if (distanceToAxis > 0.01f) // 0除算防止
                 {
-                    Vector3 radialDir = radialVector.Normalize();
+                    Vector3 radialDir = radialVector.Normalize();           // 外向き
+                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize(); // 接線方向(回転)
 
-                    // 6. 回転方向（接線ベクトル）を計算 (外積: 軸 × 半径方向)
-                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize();
+                    // 3. 速度の合成
+                    // 現在の「軸方向（上昇）の速度」だけは維持する (VelocityやGravityの影響を残すため)
+                    float currentAxialSpeed = particleState.velocity.Dot(axis);
+                    Vector3 axialVelocity = axis * currentAxialSpeed;
 
-                    // 力を適用
-                    Vector3 orbitalForce = tangentialDir * config.vortex.orbitalSpeed;
+                    // 設定値を使って速度を作成
+                    Vector3 orbitalVelocity = tangentialDir * config.vortex.orbitalSpeed;
 
-                    Vector3 radialForce = radialDir * config.vortex.radialSpeed;
+                    // radialSpeedが負なら中心へ (収束)、正なら外へ (拡散)
+                    Vector3 radialVelocity = radialDir * config.vortex.radialSpeed;
 
-                    // デルタタイムを掛けて速度に加算
-                    particleState.velocity += (orbitalForce + radialForce) * deltaTime;
+                    // 4. 目標速度
+                    Vector3 targetVelocity = axialVelocity + orbitalVelocity + radialVelocity;
+
+                    // 5. 速度を適用 (Lerpで補間すると、少し慣性が残って自然になります)
+                    // 10.0f * deltaTime くらいで強めに補間
+                    float lerpRate = 10.0f * deltaTime;
+                    if (lerpRate > 1.0f) lerpRate = 1.0f;
+
+                    particleState.velocity = Math::Lerp(particleState.velocity, targetVelocity, lerpRate);
                 }
             }
 
