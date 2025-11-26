@@ -213,6 +213,41 @@ struct TextureSheetAnimationModule
     uint32_t textureHandle = 0;     // スプライトシート全体のテクスチャハンドル
 };
 
+struct CollisionModule
+{
+    bool enabled = false;
+
+    enum class Type
+    {
+        Plane, // 無限平面 (床など)
+        World, // ワールド内の特定の球や箱
+    };
+    Type type = Type::Plane;
+
+    float bounce = 0.5f;     // 跳ね返り (0=吸着, 1=完全反射)
+    float friction = 0.0f;   // 摩擦 (床を滑る抵抗)
+    float dampen = 0.0f;     // 衝突後の速度減衰 (0=なし, 1=停止)
+    float lifeLoss = 0.0f;   // 衝突時に失う寿命 (1=即死)
+    float minKillSpeed = 0.0f;// この速度以下で衝突したら消滅
+
+    // 形状設定
+    struct PlaneData
+    {
+        Vector3 point = { 0.0f, 0.0f, 0.0f }; // 平面上の点
+        Vector3 normal = { 0.0f, 1.0f, 0.0f };// 法線
+    } plane;
+
+    // 形状設定
+    struct WorldObject 
+    {
+        enum class Shape { Sphere, Box };
+        Shape shape = Shape::Sphere;
+        Vector3 center = { 0.0f, 0.0f, 0.0f };
+        Vector3 scale = { 2.0f, 2.0f, 2.0f }; 
+    } worldObj;
+
+};
+
 struct NoiseModule
 {
     bool enabled = false;
@@ -312,6 +347,7 @@ struct ParticleConfig
     RotationOverLifetimeModule rotation; 
     ShapeModule shape;
     TextureSheetAnimationModule textureSheet;
+    CollisionModule collision;
     VortexModule vortex;
     TrailModule trail;
     AttractionModule attraction;

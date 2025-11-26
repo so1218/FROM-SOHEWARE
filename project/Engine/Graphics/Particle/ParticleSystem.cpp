@@ -240,6 +240,105 @@ void ParticleSystem::Update()
                 particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
             }
 
+            if (config.collision.enabled)
+            {
+                Vector3& pos = particleState.transform->translation_;
+                Vector3& vel = particleState.velocity;
+                const auto& col = config.collision;
+
+                bool isCollided = false;
+                Vector3 normal = { 0.0f, 1.0f, 0.0f };
+                float penetration = 0.0f; // めり込み量
+
+                // 1. 平面衝突 (Plane)
+                // 方程式: (P - PlanePoint) dot PlaneNormal = 距離
+                if (col.type == CollisionModule::Type::Plane)
+                {
+                    Vector3 vecToParticle = pos - col.plane.point;
+                    float dist = vecToParticle.Dot(col.plane.normal);
+
+                    // 平面の裏側(距離が負)に行ったら衝突
+                    if (dist < 0.0f)
+                    {
+                        isCollided = true;
+                        normal = col.plane.normal;
+                        penetration = -dist;
+                    }
+                }
+                // 2. 簡易ワールド衝突 (World)
+                else if (col.type == CollisionModule::Type::World)
+                {
+                    if (col.worldObj.shape == CollisionModule::WorldObject::Shape::Sphere)
+                    {
+                        Vector3 diff = pos - col.worldObj.center;
+                        float distSq = diff.LengthSq();
+                        float r = col.worldObj.scale.x; // SphereなのでXを半径とする
+
+                        if (distSq < r * r)
+                        {
+                            isCollided = true;
+                            float dist = sqrtf(distSq);
+                            if (dist > 0.0001f) {
+                                normal = diff / dist;
+                                penetration = r - dist;
+                            }
+                        }
+                    }
+                    else if (col.worldObj.shape == CollisionModule::WorldObject::Shape::Box)
+                    {
+                        // AABB判定 (回転なしBox)
+                        Vector3 halfSize = col.worldObj.scale * 0.5f;
+                        Vector3 min = col.worldObj.center - halfSize;
+                        Vector3 max = col.worldObj.center + halfSize;
+
+                        if (pos.x > min.x && pos.x < max.x &&
+                            pos.y > min.y && pos.y < max.y &&
+                            pos.z > min.z && pos.z < max.z)
+                        {
+                            isCollided = true;
+                            // 最も近い面を探して法線を決定（前回のAABB解説参照）
+                            // ... (省略: 最短距離計算) ...
+                            // 簡易的にY平面だけ判定する例:
+                            normal = { 0.0f, 1.0f, 0.0f };
+                            penetration = (col.worldObj.center.y + halfSize.y) - pos.y;
+                        }
+                    }
+                }
+
+                // 衝突時の応答処理
+                if (isCollided)
+                {
+                    // 1. 位置補正 (押し出し)
+                    pos += normal * penetration;
+
+                    // 2. 速度の反射と減衰
+                    float dot = vel.Dot(normal);
+                    if (dot < 0.0f) // 面に向かって進んでいる時のみ
+                    {
+                        Vector3 normalVel = normal * dot;
+                        Vector3 tangentVel = vel - normalVel;
+
+                        // 反発 (Bounce)
+                        normalVel = normalVel * -col.bounce;
+
+                        // 摩擦 (Friction)
+                        tangentVel = tangentVel * (1.0f - col.friction);
+
+                        // 合成
+                        vel = normalVel + tangentVel;
+
+                        // Dampen (全体的なエネルギー減衰)
+                        vel *= (1.0f - col.dampen);
+                    }
+
+                    // 3. 寿命減少 (Life Loss)
+                    particleState.age += particleState.lifetime * col.lifeLoss;
+                    if (particleState.age >= particleState.lifetime) {
+                        // 消滅処理へ続く...
+                    }
+                }
+            }
+
             // Vortex Module
             if (config.vortex.enabled)
             {

@@ -272,6 +272,47 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.noise.scrollSpeed = noiseJson.value("scrollSpeed", 1.0f);
                     config.noise.separateAxes = noiseJson.value("separateAxes", false);
                 }
+                if (configJson.contains("collisionModule"))
+                {
+                    auto& colJson = configJson["collisionModule"];
+                    auto& col = config.collision; // 参照
+
+                    col.enabled = colJson.value("enabled", false);
+                    col.type = static_cast<CollisionModule::Type>(colJson.value("type", 0)); // 0: Plane, 1: World
+
+                    col.bounce = colJson.value("bounce", 0.5f);
+                    col.friction = colJson.value("friction", 0.0f);
+                    col.dampen = colJson.value("dampen", 0.0f);
+                    col.lifeLoss = colJson.value("lifeLoss", 0.0f);
+
+                    if (colJson.contains("plane"))
+                    {
+                        auto& planeJson = colJson["plane"];
+                        if (planeJson.contains("point") && planeJson["point"].is_array())
+                        {
+                            col.plane.point = { planeJson["point"][0], planeJson["point"][1], planeJson["point"][2] };
+                        }
+                        if (planeJson.contains("normal") && planeJson["normal"].is_array())
+                        {
+                            col.plane.normal = { planeJson["normal"][0], planeJson["normal"][1], planeJson["normal"][2] };
+                        }
+                    }
+
+                    if (colJson.contains("worldObj"))
+                    {
+                        auto& worldJson = colJson["worldObj"];
+                        col.worldObj.shape = static_cast<CollisionModule::WorldObject::Shape>(worldJson.value("shape", 0)); // 0: Sphere, 1: Box
+
+                        if (worldJson.contains("center") && worldJson["center"].is_array())
+                        {
+                            col.worldObj.center = { worldJson["center"][0], worldJson["center"][1], worldJson["center"][2] };
+                        }
+                        if (worldJson.contains("scale") && worldJson["scale"].is_array())
+                        {
+                            col.worldObj.scale = { worldJson["scale"][0], worldJson["scale"][1], worldJson["scale"][2] };
+                        }
+                    }
+                }
             }
 
             // EmitterConfigの読み込み
@@ -312,7 +353,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
 void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& presetName)
 {
     // 指定されたタイプのプリセットマップを取得
-   // 指定されたプリセットの定義を取得
+    // 指定されたプリセットの定義を取得
     const auto& definition = particleSystem_->definitions_.at(presetName);
     const auto& config = definition.particleConfig;
     const auto& emitterConfig = definition.emitterConfig;
@@ -435,12 +476,37 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         }},
         { "noiseModule",
         {
-        { "enabled", config.noise.enabled },
-        { "strength", config.noise.strength },
-        { "frequency", config.noise.frequency },
-        { "scrollSpeed", config.noise.scrollSpeed },
-        { "separateAxes", config.noise.separateAxes }
-    } },
+            { "enabled", config.noise.enabled },
+            { "strength", config.noise.strength },
+            { "frequency", config.noise.frequency },
+            { "scrollSpeed", config.noise.scrollSpeed },
+            { "separateAxes", config.noise.separateAxes }
+        }},
+        { "collisionModule",
+        {
+            { "enabled", config.collision.enabled },
+            { "type", static_cast<int>(config.collision.type) },
+    
+            { "bounce", config.collision.bounce },
+            { "friction", config.collision.friction },
+            { "dampen", config.collision.dampen },
+            { "lifeLoss", config.collision.lifeLoss },
+    
+            // Plane設定
+            { "plane", {
+                { "point", { config.collision.plane.point.x, config.collision.plane.point.y, config.collision.plane.point.z } },
+                { "normal", { config.collision.plane.normal.x, config.collision.plane.normal.y, config.collision.plane.normal.z } }
+            }},
+    
+            // World Object設定
+            { "worldObj", {
+                { "shape", static_cast<int>(config.collision.worldObj.shape) },
+                { "center", { config.collision.worldObj.center.x, config.collision.worldObj.center.y, config.collision.worldObj.center.z } },
+                { "scale", { config.collision.worldObj.scale.x, config.collision.worldObj.scale.y, config.collision.worldObj.scale.z } }
+            }}
+        }
+    },
+
     };
 
     // EmitterConfigをJSONに変換
