@@ -48,6 +48,7 @@ public:
         D3D12_FILTER filter,
         D3D12_TEXTURE_ADDRESS_MODE addressModeAll,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_PIXEL,
+        D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_NEVER,
         float maxLod = D3D12_FLOAT32_MAX);
 
     // ルートシグネチャを生成

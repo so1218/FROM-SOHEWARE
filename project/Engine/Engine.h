@@ -24,6 +24,7 @@
 #include "Renderer.h" 
 #include "FrameLimiter.h" 
 #include "ShaderManager.h"
+#include "ShadowMap.h"
 
 constexpr int32_t kClientWidth = 1280;
 constexpr int32_t kClientHeight = 720;
@@ -87,6 +88,7 @@ public:
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
+    std::unique_ptr<ShadowMap> shadowMap_;
     Camera* camera_ = nullptr;
 
     // DirectX関連

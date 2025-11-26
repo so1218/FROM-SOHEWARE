@@ -121,6 +121,44 @@ void Game::Update()
         sceneManager_.Update();
     }
 
+    {
+        // 1. ライト情報の取得
+        // (ここでは0番目のディレクショナルライトを使うと仮定)
+        auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+        if (dirLights[0].enable) // 有効なら計算
+        {
+            Vector3 lightDir = dirLights[0].direction;
+            lightDir = lightDir.Normalize();
+
+            // 2. ビュー行列 (View) の計算
+            // 影を落としたい中心座標（プレイヤーなど）
+            // デバッグ中は原点 {0,0,0} でもOKですが、プレイヤーに追従させると高品質になります
+            Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
+
+            float distance = 100.0f; // 光源までの距離
+            Vector3 lightPos = shadowTarget - (lightDir * distance);
+
+            Vector3 up = { 0.0f, 1.0f, 0.0f };
+            if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f }; // 真上/真下対策
+
+            Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
+
+            // 3. プロジェクション行列 (Projection) の計算
+            // 平行光源なので正射影を使います
+            float size = 100.0f; // 影が落ちる範囲（幅・高さ）
+            float nearZ = 0.1f;
+            float farZ = 200.0f; // 深度の範囲 (distanceより大きく)
+
+            Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
+
+            // 4. 行列合成 & 更新
+            Matrix4x4 lightViewProj = lightView * lightProj;
+
+            // ★ここで呼び出す！
+            engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
+        }
+    }
+
     if (engine_->debugCamera_->IsEnabled())
     {
         // デバッグカメラを更新

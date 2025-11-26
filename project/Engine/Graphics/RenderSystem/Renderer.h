@@ -27,6 +27,7 @@ class PostEffectManager;
 #include "AnimationData.h"
 #include "Structures.h"
 #include "ParticleDefinition.h"
+#include "ShadowMap.h"
 
 class Renderer 
 {
@@ -47,7 +48,7 @@ public:
         MaterialManager* materialManager,
         Camera* camera,
         PostEffectManager* postEffectManager,
-        int clientWidth, int clientHeight
+        int clientWidth, int clientHeight, ShadowMap* shadowMap
     );
     void Finalize();
 
@@ -80,6 +81,7 @@ public:
     void DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
     void DrawSceneForShadow();
+    void DrawScene();
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
@@ -154,6 +156,7 @@ private:
     MaterialManager* materialManager_ = nullptr;
     Camera* camera_ = nullptr;
     PostEffectManager* postEffectManager_ = nullptr;
+    ShadowMap* shadowMap_ = nullptr;
 
     // 描画インデックスと描画情報（各プリミティブ）
     uint32_t indexTriangle_ = 0;

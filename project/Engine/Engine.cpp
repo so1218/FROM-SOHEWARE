@@ -114,6 +114,58 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
+	// -------------------------------------------------------
+	// 1. シャドウパス (Shadow Pass)
+	// -------------------------------------------------------
+
+	// シャドウマップを書き込みモードへ遷移
+	shadowMap_->TransitionToDepthWrite(commandManager_->GetCommandList());
+
+	// シャドウ用DSVをクリア & セット
+	// ※シャドウマップには色情報(RTV)は不要なのでnullptr
+	D3D12_CPU_DESCRIPTOR_HANDLE shadowDSV = shadowMap_->GetDSVHandle();
+	commandManager_->GetCommandList()->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
+	commandManager_->GetCommandList()->ClearDepthStencilView(shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	// ビューポートをシャドウマップのサイズに合わせる (重要！)
+	// 例: 2048x2048 の場合
+	D3D12_VIEWPORT shadowVP = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
+	D3D12_RECT shadowRect = { 0, 0, 2048, 2048 };
+	commandManager_->GetCommandList()->RSSetViewports(1, &shadowVP);
+	commandManager_->GetCommandList()->RSSetScissorRects(1, &shadowRect);
+
+	// ★シャドウ生成用の描画呼び出し
+	renderer_->DrawSceneForShadow();
+
+	// シャドウマップを読み取りモードへ戻す
+	shadowMap_->TransitionToRead(commandManager_->GetCommandList());
+
+	// -------------------------------------------------------
+	// 2. メインパス (Main Pass: オフスクリーン描画)
+	// -------------------------------------------------------
+
+	// オフスクリーンのターゲットに戻すために、再度 RenderCoordinator の機能を使いたいが、
+	// BeginOffscreenRender は既に BeginFrame で呼ばれているため、
+	// ここでは「ターゲットの再設定」だけを手動で行うか、専用関数を作るのが良い。
+
+	// 手動設定の例 (RenderCoordinatorが持っているハンドルを取得できる前提)
+	// ※もしGetOffscreenRTVHandleなどがなければ、RenderCoordinatorにアクセサを追加してください
+	// cmdList->OMSetRenderTargets(1, &renderCoordinator_->GetOffscreenRTVHandle(), FALSE, &renderCoordinator_->GetOffscreenDSVHandle());
+
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTV = renderCoordinator_->GetOffscreenRTVHandle();
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDSV = renderCoordinator_->GetOffscreenDSVHandle();
+
+	// ターゲットセット & ビューポート復帰
+	commandManager_->GetCommandList()->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
+
+	// ビューポートを画面サイズに戻す
+	// (これも RenderCoordinator の設定を使うのが安全)
+	commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
+	commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
+
+	// ★メインシーン描画呼び出し
+	renderer_->DrawScene();
+
 	// オフスクリーンレンダリング終了
 	renderCoordinator_->EndOffscreenRender();
 
@@ -351,6 +403,9 @@ void Engine::InitializeRenderer()
 		depthStencilResource_.Get(),
 		depthSrvDesc
 	);
+
+	shadowMap_ = std::make_unique<ShadowMap>();
+	shadowMap_->Initialize(graphicsDevice_->GetDevice(), 2048, 2048, srvManager_.get());
 }
 
 void Engine::InitializeResources()
@@ -374,7 +429,8 @@ void Engine::InitializeResources()
 		camera_,   
 		postEffectManager_.get(),
 		kClientWidth,
-		kClientHeight
+		kClientHeight,
+		shadowMap_.get()
 	);
 
 	// 各種ハンドルクラスの初期化（エンジン全体で共通的に利用）

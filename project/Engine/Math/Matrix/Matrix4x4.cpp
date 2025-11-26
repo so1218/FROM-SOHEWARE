@@ -160,6 +160,15 @@ Matrix4x4 Matrix4x4::MakeOrthographic(float left, float top, float right, float 
     return result;
 }
 
+Matrix4x4 Matrix4x4::MakeOrthographic(float width, float height, float nearClip, float farClip)
+{
+    // 中心(0,0)を基準に、左右・上下に幅の半分ずつ広げる
+    float halfWidth = width * 0.5f;
+    float halfHeight = height * 0.5f;
+
+    return MakeOrthographic(-halfWidth, halfHeight, halfWidth, -halfHeight, nearClip, farClip);
+}
+
 // 透視投影行列
 Matrix4x4 Matrix4x4::MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip) {
     Matrix4x4 matrix = {};

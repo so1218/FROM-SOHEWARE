@@ -33,4 +33,5 @@ struct ModelSubmission
 
     // 割り当てられた定数バッファのインデックス（後述）
     size_t instanceIndex;
+
 };

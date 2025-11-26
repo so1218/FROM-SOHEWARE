@@ -24,5 +24,5 @@ WorldTransform& Sprite::GetUVTransform() { return uvTransform_; }
 void Sprite::Draw() 
 {
     uvTransform_.UpdateMatrix(); 
-    engine_->renderer_->DrawSprite(position_, size_, rotation_, color_, uvTransform_, textureHandle_);
+   /* engine_->renderer_->DrawSprite(position_, size_, rotation_, color_, uvTransform_, textureHandle_);*/
 }

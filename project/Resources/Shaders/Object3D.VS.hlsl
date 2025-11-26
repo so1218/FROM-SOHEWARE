@@ -1,13 +1,12 @@
 #include "Object3D.hlsli"
-
-struct TransformationMatrix
-{
-    float32_t4x4 WVP;
-    float32_t4x4 World;
-    float32_t4x4 WorldInverseTranspose;
-};
+#include "ShaderConstants.hlsli"
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
+
+cbuffer DirectionalLights : register(b1)
+{
+    DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+};
 
 VertexShaderOutput main(VertexShaderInput input)
 {
@@ -17,5 +16,9 @@ VertexShaderOutput main(VertexShaderInput input)
     output.normal = normalize(mul(input.normal, (float32_t3x3)gTransformationMatrix.WorldInverseTranspose));
      // ワールド空間での頂点位置を計算
     output.worldPosition = mul(input.position, gTransformationMatrix.World).xyz;
+    
+    float4 worldPos = float4(output.worldPosition, 1.0f);
+    output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
+    
     return output;
 }

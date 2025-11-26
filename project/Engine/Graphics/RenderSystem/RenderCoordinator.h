@@ -44,6 +44,10 @@ public:
     uint64_t GetFenceValue() const { return fenceValue_; }
     ID3D12Fence* GetFence() const { return fence_.Get(); }
 
+    // オフスクリーンRTV/DSVのハンドル
+    D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenRTVHandle() const { return offscreenRtvHandle_; }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenDSVHandle() const { return offscreenDsvHandle_; }
+
 private:
     // リソースバリア用
     D3D12_RESOURCE_BARRIER barrier_{};

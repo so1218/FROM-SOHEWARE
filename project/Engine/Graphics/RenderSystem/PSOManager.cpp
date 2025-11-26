@@ -150,8 +150,16 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
     desc.RootSignature = json["RootSignature"];
     desc.VertexShader = json["VertexShader"];
 
+    if (json.contains("PixelShader") && !json["PixelShader"].is_null())
+    {
+        desc.PixelShader = json["PixelShader"].get<std::string>();
+    }
+    else
+    {
+        desc.PixelShader = ""; // null または未定義なら空文字
+    }
+
     // 任意キー（無ければ既定値）
-    desc.PixelShader = json.value("PixelShader", desc.PixelShader);
     desc.InputLayout = json.value("InputLayout", desc.InputLayout);
     desc.BlendState = json.value("BlendState", desc.BlendState);
     desc.RasterizerState = json.value("RasterizerState", desc.RasterizerState);
@@ -159,12 +167,6 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
     desc.Topology = json.value("Topology", desc.Topology);
     desc.RTVFormat0 = json.value("RTVFormat", desc.RTVFormat0);
     desc.DSVFormat = json.value("DSVFormat", desc.DSVFormat);
-
-    // PixelShader が null の場合は空文字にする
-    if (json.contains("PixelShader") && json["PixelShader"].is_null()) 
-    {
-        desc.PixelShader = "";
-    }
 
     return desc;
 }
@@ -458,6 +460,10 @@ DXGI_FORMAT PSOManager::GetDSVFormat(const std::string& name)
     if (name == "D24_UNORM_S8_UINT") 
     {
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    }
+    if (name == "D32_FLOAT")
+    {
+        return DXGI_FORMAT_D32_FLOAT;
     }
     if (name == "UNKNOWN")
     {

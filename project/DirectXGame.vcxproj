@@ -167,6 +167,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
+    <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="Game\Data\ParticleTextureHandle.cpp" />
     <ClCompile Include="Game\GameObject\GameTimer.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
@@ -277,6 +278,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
+    <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
     <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
     <ClInclude Include="Game\GameObject\GameTimer.h" />

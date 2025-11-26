@@ -9,6 +9,8 @@ ConstantBuffer<MaterialData> gMaterial : register(b0);
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
 SamplerState gSampler : register(s0);
+Texture2D<float> gShadowMap : register(t2);
+SamplerComparisonState gShadowSampler : register(s1);
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
@@ -42,6 +44,7 @@ struct PixelShaderInput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 worldPosition : POSITION1;
+    float4 shadowCoord : POSITION2;
 };
 
 float DitherThreshold4x4(int2 position);
@@ -54,10 +57,13 @@ float3 DrawArtFragColor(PixelShaderInput input);
 float3 DrawArtGridColor(PixelShaderInput input);
 bool ShouldDiscardArtGrid(PixelShaderInput input);
 
-float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye);
+float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, float shadowFactor);
 float3 ApplyPointLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplySpotLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
+
+// 影の濃さを計算する関数
+float CalculateShadow(float4 shadowCoord);
 
 PixelShaderOutput main(PixelShaderInput input)
 {
@@ -100,6 +106,15 @@ PixelShaderOutput main(PixelShaderInput input)
         return output;
     }
     
+    // ▼▼▼ 影の計算 ▼▼▼
+    float shadowFactor = 1.0f;
+    
+    // 0番目のライトが有効なら影を計算
+    if (gDirectionalLights[0].enable)
+    {
+        shadowFactor = CalculateShadow(input.shadowCoord);
+    }
+    
     // ライティング処理
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
     float3 normal = normalize(input.normal);
@@ -108,7 +123,7 @@ PixelShaderOutput main(PixelShaderInput input)
     if (gMaterial.enableLighting != 0)
     {
         // Directional Light
-        finalColor += ApplyDirectionalLights(baseColor, normal, toEye);
+        finalColor += ApplyDirectionalLights(baseColor, normal, toEye, shadowFactor);
 
         // Point Light
         finalColor += ApplyPointLights(baseColor, normal, input.worldPosition, toEye);
@@ -457,7 +472,7 @@ bool ShouldDiscardArtGrid(PixelShaderInput input)
     return gridAlpha < 1e-8;
 }
 
-float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye)
+float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, float shadowFactor)
 {
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
@@ -468,37 +483,52 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye)
 
         float3 lightDir = normalize(-gDirectionalLights[i].direction);
         float ndotl = saturate(dot(normal, lightDir));
-
-        // RGB * alpha で光の色をアルファに応じてスケーリング
         float3 lightColor = gDirectionalLights[i].color.rgb * gDirectionalLights[i].color.a;
         float lightIntensity = gDirectionalLights[i].intensity;
+
+        // diffuseとspecularをここで定義・初期化
+        float3 diffuse = float3(0.0f, 0.0f, 0.0f);
+        float3 specular = float3(0.0f, 0.0f, 0.0f);
 
         if (gMaterial.lightMode == LIGHT_HALFLAMBERT)
         {
             float halfLambert = pow(ndotl * 0.5f + 0.5f, 4.0f);
-            finalColor += gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
+            // finalColorに足さず、diffuseに代入
+            diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
         }
         else if (gMaterial.lightMode == LIGHT_PHONG_SPECULAR)
         {
+            // Diffuse計算
             float halfLambert = pow(ndotl * 0.5f + 0.5f, 6.0f);
-            finalColor += gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
+            diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
 
+            // Specular計算
             if (ndotl > 0.0f)
             {
                 float3 halfVec = normalize(lightDir + toEye);
                 float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-                float3 specular = gMaterial.specularColor.rgb * lightColor * spec * lightIntensity;
-                finalColor += specular;
+                specular = gMaterial.specularColor.rgb * lightColor * spec * lightIntensity;
             }
         }
         else if (gMaterial.lightMode == LIGHT_TOON)
         {
-            float3 diffuseColor =
+            float3 toonColor =
                 ndotl > 0.7f ? baseColor :
                 ndotl > 0.3f ? baseColor * 0.25f :
                                baseColor * 0.04f;
-            finalColor += diffuseColor * lightColor;
+            diffuse = toonColor * lightColor * lightIntensity; // lightIntensity忘れずに
         }
+
+        // ▼▼▼ ここで影を適用 ▼▼▼
+        // 0番目のライトのみ影を落とす設定
+        if (i == 0)
+        {
+            diffuse *= shadowFactor;
+            specular *= shadowFactor;
+        }
+
+        // 最後にまとめて加算
+        finalColor += diffuse + specular;
     }
 
     return finalColor;
@@ -630,4 +660,41 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
     }
 
     return finalColor;
+}
+
+// 影の濃さを計算する関数
+float CalculateShadow(float4 shadowCoord)
+{
+    // 1. 透視除算 (w除算)
+    // 平行光源(正射影)ならw=1なので実質不要ですが、汎用性のために行います
+    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
+
+    // 2. クリップ空間(-1~1)からUV空間(0~1)へ変換
+    projCoords.x = projCoords.x * 0.5f + 0.5f;
+    projCoords.y = -projCoords.y * 0.5f + 0.5f; // Y反転に注意
+
+    // 範囲外判定 (シャドウマップの外なら影にしない)
+    if (projCoords.z > 1.0f || projCoords.z < 0.0f ||
+        projCoords.x > 1.0f || projCoords.x < 0.0f ||
+        projCoords.y > 1.0f || projCoords.y < 0.0f)
+    {
+        return 1.0f; // 影なし
+    }
+
+    // 3. 深度比較 (PCFなしの単純比較の場合)
+    // float currentDepth = projCoords.z;
+    // float shadowMapDepth = gShadowMap.Sample(gSampler, projCoords.xy).r;
+    // if (currentDepth - 0.005f > shadowMapDepth) return 0.5f; // 影あり(0.5倍)
+
+    // 3. 深度比較 (PCFあり・比較サンプラー使用・推奨)
+    // SampleCmpLevelZero は、(マップ値 < 比較値) なら 0、勝てば 1 を返します
+    // つまり、(マップの深度 < 現在の深度) なら「奥にある＝影」なので 0 が返る
+    float bias = 0.005f; // シャドウアクネ対策のバイアス
+    float shadowFactor = gShadowMap.SampleCmpLevelZero(
+        gShadowSampler,
+        projCoords.xy,
+        projCoords.z - bias
+    );
+
+    return shadowFactor; // 1.0(日向) ～ 0.0(影)
 }

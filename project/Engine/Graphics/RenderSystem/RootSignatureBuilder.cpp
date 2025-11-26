@@ -84,6 +84,7 @@ void RootSignatureBuilder::AddStaticSampler(
     D3D12_FILTER filter,
     D3D12_TEXTURE_ADDRESS_MODE addressModeAll,
     D3D12_SHADER_VISIBILITY visibility,
+    D3D12_COMPARISON_FUNC comparisonFunc,
     float maxLod)
 {
     D3D12_STATIC_SAMPLER_DESC sampler = {};
@@ -91,7 +92,7 @@ void RootSignatureBuilder::AddStaticSampler(
     sampler.AddressU = addressModeAll;
     sampler.AddressV = addressModeAll;
     sampler.AddressW = addressModeAll;
-    sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; 
+    sampler.ComparisonFunc = comparisonFunc;
     sampler.MaxLOD = maxLod;
     sampler.ShaderRegister = shaderRegister;
     sampler.ShaderVisibility = visibility;

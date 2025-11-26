@@ -38,6 +38,7 @@ public:
     static Matrix4x4 MakeAffine(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
     static Matrix4x4 MakeAffine(const Vector3& scale, const Quaternion& rotation, const Vector3& translation);
     static Matrix4x4 MakeOrthographic(float left, float top, float right, float bottom, float nearClip, float farClip);
+    static Matrix4x4 MakeOrthographic(float width, float height, float nearClip, float farClip);
     static Matrix4x4 MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip);
     static Matrix4x4 MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth);
     static Matrix4x4 MakeLookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
