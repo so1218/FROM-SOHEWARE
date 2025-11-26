@@ -153,6 +153,38 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
+void Renderer::DrawSceneForShadow()
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// 1. シャドウマップ生成用のパイプライン設定
+	// ※事前に "ShadowMap" という名前でPSOとルートシグネチャを作っておく必要があります
+	cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
+
+	// プリミティブトポロジー (通常はトライアングルリスト)
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 2. ライト情報のセット (b1: LightCamera / DirectionalLightData)
+	// LightManager が持つ「ライト行列(viewProj)入りのリソース」をセットします
+	// ※前回の議論で LightManager に行列を持たせたリソースを使います
+	cmdList->SetGraphicsRootConstantBufferView(1,
+		lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
+	// ★リストの中身を全部描画
+	for (const auto& data : modelSubmissions_)
+	{
+		// 行列などをセット
+		cmdList->SetGraphicsRootConstantBufferView(0, data.transform->constBuff_->GetGPUVirtualAddress());
+
+		// メッシュ描画 (頂点バッファセット -> Draw)
+		// ※ModelDataに頂点バッファViewがある想定
+		cmdList->IASetVertexBuffers(0, 1, &data.modelData->vbView);
+		cmdList->IASetIndexBuffer(&data.modelData->ibView);
+		cmdList->DrawIndexedInstanced(data.modelData->indices.size(), 1, 0, 0, 0);
+	}
+}
+
 Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)
 {
     Matrix4x4 moveToOrigin = Matrix4x4::MakeTranslate({ -pivot.x, -pivot.y, -pivot.z });
@@ -358,21 +390,17 @@ Mesh* Renderer::GetOrCreateMesh(const ModelData& modelData)
 
 void Renderer::CreateModels()
 {
-	models_.resize(kMaxModelCount);
-
-	for (size_t i = 0; i < kMaxModelCount; ++i)
+	perObjectBuffers_.resize(kMaxModelCount);
+	for (auto& buffer : perObjectBuffers_)
 	{
-		// WVP行列用のバッファを作成
-		models_[i].wvpResource = BufferManager::CreateBufferResource(
-			device_->GetDevice(), sizeof(TransformationMatrix));
-		models_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&models_[i].mappedData));
-	
-		// アウトライン用のバッファ作成
-		models_[i].outlineResource = BufferManager::CreateBufferResource(
-			device_->GetDevice(), sizeof(OutlineData));
-		models_[i].outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&models_[i].outlineMappedData));
+		// WVPバッファ作成
+		buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+		buffer.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.wvpMapped));
+
+		// Outlineバッファ作成
+		buffer.outlineResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(OutlineData));
+		buffer.outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.outlineMapped));
 	}
-	indexModel_ = 0;
 }
 
 void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,

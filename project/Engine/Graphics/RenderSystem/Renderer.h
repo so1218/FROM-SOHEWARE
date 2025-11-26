@@ -79,6 +79,7 @@ public:
     void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
+    void DrawSceneForShadow();
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
@@ -165,6 +166,18 @@ private:
     std::vector<RenderData> models_;
     std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
     std::unordered_map<const ModelData*, Mesh> meshCache;
+    // 描画リクエストを貯めるリスト
+    std::vector<ModelSubmission> modelSubmissions_;
+    // 定数バッファリソースの配列 (RenderData の代わり)
+    // ※リングバッファや、フレームごとの管理が必要ですが、一旦シンプルに配列で考えます
+    struct PerObjectBuffer {
+        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
+        TransformationMatrix* wvpMapped = nullptr;
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
+        OutlineData* outlineMapped = nullptr;
+    };
+    std::vector<PerObjectBuffer> perObjectBuffers_;
 
     uint32_t indexSprite_ = 0;
     std::vector<RenderData> sprites_;

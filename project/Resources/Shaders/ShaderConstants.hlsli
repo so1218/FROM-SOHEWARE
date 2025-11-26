@@ -79,6 +79,9 @@ struct DirectionalLight
     float4 color;
     float3 direction;
     float intensity;
+    
+    float4x4 viewProj;
+    
     int32_t enable;
     float3 padding; 
 };

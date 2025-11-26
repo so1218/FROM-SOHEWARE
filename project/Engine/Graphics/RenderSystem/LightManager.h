@@ -48,6 +48,9 @@ public:
         const Vector3& position, const Vector3& right, const Vector3& up,
         float range, float decay);
 
+    // ディレクショナルライトの行列更新
+    void UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection);
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;

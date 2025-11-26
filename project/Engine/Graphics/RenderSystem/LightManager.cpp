@@ -156,3 +156,12 @@ void LightManager::UpdateAreaLightProperties(int index, const Vector4& color, fl
     areaLightData_[index].range = range;
     areaLightData_[index].decay = decay;
 }
+
+void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection)
+{
+    // 範囲チェック
+    if (index < 0 || index >= directionalLightCount_) return;
+
+    // マップ済みのメモリに直接書き込む
+    directionalLightData_[index].viewProj = viewProjection;
+}
