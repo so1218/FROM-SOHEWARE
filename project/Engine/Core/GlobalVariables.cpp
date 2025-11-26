@@ -458,7 +458,7 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 		targetGroup = &it->second;
 	}
 
-	// 既存のJSONファイルを読み込む（なければ新規作成の準備）
+	// 既存のJSONファイルを読み込む（なければ新しく作る準備）
 	json rootJson;
 	std::ifstream ifs(filePath);
 	if (ifs.is_open()) {

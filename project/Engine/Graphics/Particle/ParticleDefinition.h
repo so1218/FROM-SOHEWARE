@@ -315,6 +315,7 @@ struct ParticleConfig
     VortexModule vortex;
     TrailModule trail;
     AttractionModule attraction;
+    NoiseModule noise;
 
     ParticleConfig()
     {

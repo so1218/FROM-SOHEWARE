@@ -488,6 +488,24 @@ void ParticleEditor::ShowEditor()
 
                     ImGui::TreePop();
                 }
+
+                if (ImGui::TreeNode("ノイズモジュール"))
+                {
+                    auto& noise = config.noise;
+
+                    ImGui::Checkbox("有効##Noise", &noise.enabled);
+                    if (noise.enabled)
+                    {
+                        ImGui::DragFloat("強度", &noise.strength, 0.1f, 0.0f, 100.0f);
+                        ImGui::DragFloat("周波数", &noise.frequency, 0.01f, 0.01f, 10.0f);
+                        ImGui::DragFloat("スクロール速度", &noise.scrollSpeed, 0.01f, 0.0f, 10.0f);
+
+                        ImGui::Checkbox("XYZ軸で分離", &noise.separateAxes);
+       
+                    }
+
+                    ImGui::TreePop();
+                }
             }
 
             ImGui::Separator();

@@ -60,7 +60,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
         }
     }
 
-    // 初期色を評価
+    // 初期色
     particle.color = particle.config.colorOverLifetime.enabled ?
         particle.config.colorOverLifetime.Evaluate(0.0f) :
         particle.config.baseColor;
@@ -198,6 +198,40 @@ void ParticleSystem::Update()
         if (!isExpired)
         {
             float t = particleState.lifetime > 0.0f ? (particleState.age / particleState.lifetime) : 1.0f;
+
+            if (config.noise.enabled)
+            {
+                // ノイズのサンプリング座標を計算
+                float frequency = config.noise.frequency;
+                float scroll = TimeManager::GetInstance()->GetTotalTime() * config.noise.scrollSpeed;
+
+                Vector3 samplePos = particleState.transform->translation_ * frequency;
+
+                // Y軸方向へスクロール
+                samplePos.y -= scroll;
+
+                // ノイズ強度の計算
+                float strength = config.noise.strength;
+
+                // 3軸分のノイズを計算              
+                Vector3 noiseVelocity;
+
+                if (config.noise.separateAxes)
+                {
+                    noiseVelocity.x = Math::PerlinNoise(samplePos.x, samplePos.y, samplePos.z);
+                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z); 
+                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z); 
+                }
+                else
+                {
+                    noiseVelocity.x = Math::PerlinNoise(samplePos.x, samplePos.y, samplePos.z);
+                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z);
+                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z);
+                }
+
+                // 速度に加算
+                particleState.transform->translation_ += noiseVelocity * strength * deltaTime;
+            }
 
             // Physics Module
             if (config.physics.enabled)

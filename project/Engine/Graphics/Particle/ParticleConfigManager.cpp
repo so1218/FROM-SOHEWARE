@@ -263,6 +263,15 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                         };
                     }
                 }
+                if (configJson.contains("noiseModule"))
+                {
+                    auto& noiseJson = configJson["noiseModule"];
+                    config.noise.enabled = noiseJson.value("enabled", false);
+                    config.noise.strength = noiseJson.value("strength", 1.0f);
+                    config.noise.frequency = noiseJson.value("frequency", 1.0f);
+                    config.noise.scrollSpeed = noiseJson.value("scrollSpeed", 1.0f);
+                    config.noise.separateAxes = noiseJson.value("separateAxes", false);
+                }
             }
 
             // EmitterConfigの読み込み
@@ -424,6 +433,14 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
                 config.trail.endColor.w
             }}
         }},
+        { "noiseModule",
+        {
+        { "enabled", config.noise.enabled },
+        { "strength", config.noise.strength },
+        { "frequency", config.noise.frequency },
+        { "scrollSpeed", config.noise.scrollSpeed },
+        { "separateAxes", config.noise.separateAxes }
+    } },
     };
 
     // EmitterConfigをJSONに変換
