@@ -25,6 +25,8 @@ Player::Player(Engine* engine, Camera* camera)
 	// 通常モデルを生成
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
+	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
 }
@@ -279,7 +281,8 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	modelPlayer_->Draw();
-	/*animationPlayer_->Draw();*/
+	modelTamesi_->Draw();
+	animationPlayer_->Draw();
 
 	for (auto& weapon : weapons_)
 	{
@@ -306,7 +309,10 @@ void Player::DebugDraw()
 		gv->SetValue(groupName, "Scale", modelPlayer_->GetTransform().scale_);
 		changed = true;
 	}
-
+	if (ImGui::DragFloat3("tamesi位置（Translation）", &modelTamesi_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f))
+	
+	if (ImGui::DragFloat3("tamesiスケール（Scale）", &modelTamesi_->GetTransform().scale_.x, 0.1f, 0.1f, 100.0f))
+	
 	ImGui::Separator();
 
 	ImGui::Text("ステータス");

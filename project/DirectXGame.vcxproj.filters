@@ -817,5 +817,8 @@
     <FxCompile Include="Resources\Shaders\Object3DOutline.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\SkinningOutline.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\ShadowMap.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\ShadowMapSkinning.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
   </ItemGroup>
 </Project>

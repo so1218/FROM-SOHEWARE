@@ -689,7 +689,7 @@ float CalculateShadow(float4 shadowCoord)
     // 3. 深度比較 (PCFあり・比較サンプラー使用・推奨)
     // SampleCmpLevelZero は、(マップ値 < 比較値) なら 0、勝てば 1 を返します
     // つまり、(マップの深度 < 現在の深度) なら「奥にある＝影」なので 0 が返る
-    float bias = 0.005f; // シャドウアクネ対策のバイアス
+    float bias = 0.0008f; // シャドウアクネ対策のバイアス
     float shadowFactor = gShadowMap.SampleCmpLevelZero(
         gShadowSampler,
         projCoords.xy,

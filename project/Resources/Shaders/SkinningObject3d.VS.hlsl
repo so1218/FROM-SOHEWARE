@@ -1,13 +1,11 @@
 #include "Object3D.hlsli"
-
-struct TransformationMatrix
-{
-    float32_t4x4 WVP;
-    float32_t4x4 World;
-    float32_t4x4 WorldInverseTranspose;
-};
+#include "ShaderConstants.hlsli"
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
+cbuffer DirectionalLights : register(b1)
+{
+    DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
+};
 StructuredBuffer<Well> gMatrixPalette : register(t0);
 
 struct SkinningVertexShaderInput
@@ -18,6 +16,7 @@ struct SkinningVertexShaderInput
     float32_t4 weight : WEIGHT0;
     int32_t4 index : INDEX0;
 };
+
 
 Skinned Skinning(SkinningVertexShaderInput input)
 {
@@ -43,13 +42,21 @@ Skinned Skinning(SkinningVertexShaderInput input)
 VertexShaderOutput main(SkinningVertexShaderInput input)
 {
     VertexShaderOutput output;
-    Skinned skinned = Skinning(input); 
+    Skinned skinned = Skinning(input);
     
     // Skinning結果を使って変換
     output.position = mul(skinned.position, gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
     output.normal = normalize(mul(skinned.normal, (float32_t3x3) gTransformationMatrix.WorldInverseTranspose));
+    
     // ワールド空間での頂点位置を計算
-    output.worldPosition = mul(skinned.position, gTransformationMatrix.World).xyz;
+    float4 worldPos = mul(skinned.position, gTransformationMatrix.World);
+    output.worldPosition = worldPos.xyz;
+
+    // ▼▼▼ 3. 追加: シャドウ座標 (POSITION2) の計算 ▼▼▼
+    // 0番目のライトが影を落とすと仮定して、ライト空間へ変換
+    output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
     return output;
 }

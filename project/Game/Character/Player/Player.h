@@ -76,6 +76,7 @@ public:
 	void TakeDamage(float damage);
 
 	std::unique_ptr<Model> modelPlayer_;
+	std::unique_ptr<Model> modelTamesi_;
 
 	void SetWalkEmitter(ParticleEmitter* emitter) { walkEmitterPtr_ = emitter; }
 	ParticleEmitter* walkEmitterPtr_ = nullptr;
