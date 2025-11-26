@@ -136,9 +136,18 @@ struct RotationOverLifetimeModule
     bool enabled = false;               // モジュールの有効/無効
     bool isBillboard = true;            // ビルボード回転か3D回転か
 
-    float angularVelocity2D = 5.0f;     // 2D回転速度 (度/秒)、isBillboard=true時
-    Vector3 angularVelocity3D = { 0.0f, 0.0f, 0.0f }; // 3D回転速度、isBillboard=false時
-    Vector3 orientation3D = { 0.0f, 0.0f, 0.0f };     // 初期向き (度数法)
+    // 2D (Billboard) 用の速度範囲
+    float minAngularVelocity2D = 0.0f;
+    float maxAngularVelocity2D = 5.0f;
+
+    // 3D 用の速度範囲
+    Vector3 minAngularVelocity3D = { 0.0f, 0.0f, 0.0f };
+    Vector3 maxAngularVelocity3D = { 0.0f, 0.0f, 0.0f };
+
+    // 初期角度
+    Vector3 minStartRotation = { 0.0f, 0.0f, 0.0f };
+    Vector3 maxStartRotation = { 0.0f, 0.0f, 360.0f };
+
     bool randomStartRotation = true;    // 初期回転をランダムにするか
 };
 
@@ -323,6 +332,7 @@ struct ParticleState
     Vector3 velocity;
     float age = 0.0f;
     const WorldTransform* attractionTarget = nullptr;
+    Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
 
     Vector3 initialPosition; // 生成時のエミッターの座標
     std::string presetName;

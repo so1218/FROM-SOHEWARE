@@ -156,17 +156,22 @@ void ParticleEditor::ShowEditor()
                     ImGui::Separator();
                     ImGui::Checkbox("ビルボード", &rot.isBillboard);
                     ImGui::Separator();
-                    ImGui::DragFloat3("初期角度", &rot.orientation3D.x, 1.0f, -360.0f, 360.0f);
+
+                    ImGui::Text("初期角度");
+                    ImGui::DragFloat3("最小##StartRotMin", &rot.minStartRotation.x, 1.0f);
+                    ImGui::DragFloat3("最大##StartRotMax", &rot.maxStartRotation.x, 1.0f);
 
                     ImGui::Separator();
+                    ImGui::Text("回転速度");
                     if (rot.isBillboard)
                     {
-                        ImGui::Checkbox("開始角度ランダム", &rot.randomStartRotation);
-                        ImGui::DragFloat("回転速度 (2D)", &rot.angularVelocity2D, 1.0f, 0.0f, 0.0f, "%.1f 度/秒");
+                        ImGui::DragFloat("最小速度 (2D)", &rot.minAngularVelocity2D, 1.0f);
+                        ImGui::DragFloat("最大速度 (2D)", &rot.maxAngularVelocity2D, 1.0f);
                     }
                     else
                     {
-                        ImGui::DragFloat3("回転速度 (3D)", &rot.angularVelocity3D.x, 1.0f, 0.0f, 0.0f, "%.1f 度/秒");
+                        ImGui::DragFloat3("最小速度 (3D)", &rot.minAngularVelocity3D.x, 1.0f);
+                        ImGui::DragFloat3("最大速度 (3D)", &rot.maxAngularVelocity3D.x, 1.0f);
                     }
 
                     ImGui::TreePop();

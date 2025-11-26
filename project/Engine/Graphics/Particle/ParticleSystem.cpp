@@ -73,28 +73,40 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     // Rotation
     if (particle.config.rotation.enabled)
     {
-        if (particle.config.rotation.isBillboard)
+        const auto& rotConfig = particle.config.rotation;
+
+        // 初期角度の決定
+        Vector3 startRot;
+        startRot.x = Math::RandomFloat(rotConfig.minStartRotation.x, rotConfig.maxStartRotation.x);
+        startRot.y = Math::RandomFloat(rotConfig.minStartRotation.y, rotConfig.maxStartRotation.y);
+        startRot.z = Math::RandomFloat(rotConfig.minStartRotation.z, rotConfig.maxStartRotation.z);
+
+        // ラジアン変換してセット
+        particle.transform->rotation_ = {
+            Math::ToRadians(startRot.x),
+            Math::ToRadians(startRot.y),
+            Math::ToRadians(startRot.z)
+        };
+
+        // 回転速度の決定
+        if (rotConfig.isBillboard)
         {
-            // ビルボード回転
-            particle.transform->rotation_.z = particle.config.rotation.randomStartRotation ?
-                Math::RandomFloat(0.0f, 360.0f) :
-                Math::ToRadians(particle.config.rotation.orientation3D.z);
+            // 2Dの場合、Z軸回転のみ速度を持つ
+            float velZ = Math::RandomFloat(rotConfig.minAngularVelocity2D, rotConfig.maxAngularVelocity2D);
+            particle.currentAngularVelocity = { 0.0f, 0.0f, velZ };
         }
         else
         {
-            // 通常回転
-            particle.transform->rotation_ = 
-            {
-                Math::ToRadians(particle.config.rotation.orientation3D.x),
-                Math::ToRadians(particle.config.rotation.orientation3D.y),
-                Math::ToRadians(particle.config.rotation.orientation3D.z)
-            };
+            // 3Dの場合、3軸それぞれの速度
+            particle.currentAngularVelocity.x = Math::RandomFloat(rotConfig.minAngularVelocity3D.x, rotConfig.maxAngularVelocity3D.x);
+            particle.currentAngularVelocity.y = Math::RandomFloat(rotConfig.minAngularVelocity3D.y, rotConfig.maxAngularVelocity3D.y);
+            particle.currentAngularVelocity.z = Math::RandomFloat(rotConfig.minAngularVelocity3D.z, rotConfig.maxAngularVelocity3D.z);
         }
     }
     else
     {
-        // 回転無効
         particle.transform->rotation_ = { 0.0f, 0.0f, 0.0f };
+        particle.currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
     }
 
     // 共通プロパティ
@@ -262,15 +274,29 @@ void ParticleSystem::Update()
             // Rotation Module
             if (config.rotation.enabled)
             {
+                // 生成時に決定したこのパーティクル固有の回転速度を取得
+                Vector3 angularVelocity = particleState.currentAngularVelocity;
+
                 if (config.rotation.isBillboard)
                 {
+                    // ビルボードの場合、XY軸の回転は0に固定し、Z軸だけ回す
                     particleState.transform->rotation_.x = 0.0f;
                     particleState.transform->rotation_.y = 0.0f;
-                    particleState.transform->rotation_.z += config.rotation.angularVelocity2D * deltaTime;
+
+                    // 度数法で保存されている速度をラジアンに変換して加算
+                    particleState.transform->rotation_.z += Math::ToRadians(angularVelocity.z) * deltaTime;
                 }
                 else
                 {
-                    particleState.transform->rotation_ += config.rotation.angularVelocity3D * deltaTime;
+                    // 3Dモデルの場合、XYZ全軸を回転させる
+                    Vector3 velocityRadians = 
+                    {
+                        Math::ToRadians(angularVelocity.x),
+                        Math::ToRadians(angularVelocity.y),
+                        Math::ToRadians(angularVelocity.z)
+                    };
+
+                    particleState.transform->rotation_ += velocityRadians * deltaTime;
                 }
             }
             particleState.transform->rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform->rotation_);

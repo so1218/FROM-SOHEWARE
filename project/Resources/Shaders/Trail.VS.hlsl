@@ -35,14 +35,14 @@ VertexShaderOutput main(VertexShaderInput input)
 
         if (gTrailMaterial.jitterMode == 0)
         {
-            // Wave: 滑らかなSin/Cos波でずらす
+            // Wave
             offset.x = sin((u + timeOffset) * gTrailMaterial.jitterFrequency);
             offset.y = cos((u + timeOffset * 1.2) * gTrailMaterial.jitterFrequency);
             offset.z = sin((u + timeOffset * 0.8) * gTrailMaterial.jitterFrequency);
         }
         else if (gTrailMaterial.jitterMode == 1)
         {
-            // Digital Wave: Waveを階段状にカクカクさせる
+            // Digital Wave
             float uStep = floor(u * gTrailMaterial.jitterFrequency);
             float timeStep = floor(time * gTrailMaterial.jitterSpeed);
             float stepInput = uStep + timeStep;
@@ -53,7 +53,7 @@ VertexShaderOutput main(VertexShaderInput input)
         }
         else
         {
-            // Lightning: 稲妻風ランダムオフセット
+            // Lightning
             float uStep = floor(u * gTrailMaterial.jitterFrequency);
             float timeStep = floor(time * gTrailMaterial.jitterSpeed);
             float seed = uStep + timeStep * 13.0;

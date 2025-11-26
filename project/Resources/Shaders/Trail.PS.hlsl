@@ -17,7 +17,7 @@ PixelShaderOutput main(VertexShaderOutput input)
     float4 texColor = gTexture.Sample(gSampler, input.texcoord);
     float4 finalColor = texColor * input.color;
 
-    // ディゾルブ（自然な消滅）
+    // ディゾルブ
     if (gTrailMaterial.isDissolveEnabled > 0.5)
     {
         float alpha = input.color.a;
