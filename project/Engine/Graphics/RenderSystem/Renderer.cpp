@@ -870,20 +870,22 @@ void Renderer::CreateParticles()
 	frameDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
-void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard)
+void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, BlendMode blendMode, bool isBillboard)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
-	ParticleInstanceData& data = mappedInstanceData_[currentFrameIndex_][indexInstance_++];
+	// インスタンスデータを一時作成（GPUメモリには書き込まない）
+	ParticleInstanceData data; 
 	data.worldMatrix = worldTransform.matWorld_;
-
 	data.color = Math::Uint32ToColorVector(color);
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
 	data.isBillboard = isBillboard ? 1 : 0;
-	indexParticle_++;
 
-	particlesByTexture_[textureIndex].push_back(data);
+	particleBatches_[blendMode][textureIndex].push_back(data);
+
+	indexParticle_++;
+	indexInstance_++;
 }
 
 void Renderer::DrawParticles(const Camera& camera)
@@ -892,17 +894,6 @@ void Renderer::DrawParticles(const Camera& camera)
 
 	auto* cmdList = commandManager_->GetCommandList();
 
-	std::string psoName = GetParticlePSOName(currentBlendMode_);
-
-	ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
-	if (pso == nullptr) 
-	{
-		// JSONファイル名が間違っているか、JSON定義が不正
-		assert(false && "Particle PSO not found. Check JSON file name or definition.");
-		return;
-	}
-
-	cmdList->SetPipelineState(pso);
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Particle"));
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
@@ -922,38 +913,65 @@ void Renderer::DrawParticles(const Camera& camera)
 	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
 
 	// インスタンスデータのオフセット
-	size_t offset = 0;
+	size_t currentOffset = 0;
 
-	for (auto& [textureIndex, instances] : particlesByTexture_)
+	// ブレンドモードごとのループ
+	for (auto& [blendMode, textureMap] : particleBatches_)
 	{
-		if (instances.empty()) continue;
+		// ブレンドモードに対応するPSOを取得してセット
+		std::string psoName;
+		switch (blendMode)
+		{
+		case kBlendModeNone:      psoName = "ParticleOpaque"; break;     
+		case kBlendModeNormal:    psoName = "ParticleAlphaBlend"; break; 
+		case kBlendModeAdd:       psoName = "ParticleAdditive"; break;   
+		case kBlendModeSubtract:  psoName = "ParticleSubtract"; break;   
+		case kBlendModeMultiply:  psoName = "ParticleMultiply"; break;   
+		case kBlendModeScreen:    psoName = "ParticleScreen"; break;     
+		case kBlendModeExclusion: psoName = "ParticleExclusion"; break;  
+		default:                  psoName = "ParticleAlphaBlend"; break; 
+		}
 
-		// コピー先をずらしてセット
-		ParticleInstanceData* dst = dstBase + offset;
-		memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
+		ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
+		if (!pso) continue; // PSOがない場合はスキップ
 
-		// テクスチャのSRVをセット
-		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textureIndex);
-		cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
+		cmdList->SetPipelineState(pso);
 
-		// インスタンスバッファのGPUアドレスにオフセットを加算してセット
-		UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-		gpuAddress += sizeof(ParticleInstanceData) * offset;
-		cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
+		// テクスチャごとのループ
+		for (auto& [textureIndex, instances] : textureMap)
+		{
+			if (instances.empty()) continue;
 
-		// 描画
-		cmdList->DrawIndexedInstanced(
-			static_cast<UINT>(particleMesh_.GetIndexCount()),
-			static_cast<UINT>(instances.size()),
-			0, 0, 0);
+			// GPUメモリへコピー (DrawIndexedInstanced用)
+			ParticleInstanceData* dst = dstBase + currentOffset;
+			memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
 
-		offset += instances.size();
+			// テクスチャSRVセット
+			D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textureIndex);
+			cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
+
+			// インスタンスバッファのGPUアドレスセット
+			UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
+			gpuAddress += sizeof(ParticleInstanceData) * currentOffset;
+			cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
+
+			// 描画コマンド
+			cmdList->DrawIndexedInstanced(
+				static_cast<UINT>(particleMesh_.GetIndexCount()),
+				static_cast<UINT>(instances.size()),
+				0, 0, 0);
+
+			// オフセットを進める
+			currentOffset += instances.size();
+		}
 	}
 
-	particlesByTexture_.clear();
+	// 後処理
+	particleBatches_.clear(); // マップをクリア
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 	indexInstance_ = 0;
 }
+
 
 void Renderer::CreateSkybox()
 {

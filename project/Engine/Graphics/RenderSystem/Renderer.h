@@ -74,7 +74,8 @@ public:
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void DrawParticles(const Camera& camera);
-    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, bool isBillboard = true);
+    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
+        BlendMode blendMode, bool isBillboard = true);
     void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
@@ -199,7 +200,7 @@ private:
     TextureManager::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
 
     // 各テクスチャIDごとにParticleInstanceDataの配列を持つ
-    std::unordered_map<uint32_t, std::vector<ParticleInstanceData>> particlesByTexture_;
+    std::map<BlendMode, std::map<uint32_t, std::vector<ParticleInstanceData>>> particleBatches_;
 
     // スカイボックス
     Mesh skyboxMesh_; 

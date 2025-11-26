@@ -72,7 +72,6 @@ struct ModelData
     std::vector<uint32_t>indices;
     TextureData textureData;
     MaterialHandle materialHandle;
-    uint32_t textureHandle;
 	Node rootNode;
 	std::map<std::string, JointWeightData> skinClusterData;
 };

@@ -2,6 +2,7 @@
 #include "Easing.h"
 #include "WorldTransform.h"
 #include "MathUtils.h"
+#include "BlendMode.h"
 
 #include <memory>
 #include <string>
@@ -293,6 +294,7 @@ struct ParticleConfig
     uint32_t textureIndex;
     Vector3 initialPosition;
     Vector4 baseColor;
+    BlendMode blendMode = BlendMode::kBlendModeAdd;
 
     VelocityModule velocity;
     SizeOverLifetimeModule sizeOverLifetime;

@@ -47,6 +47,25 @@ void ParticleEditor::ShowEditor()
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
 
+            // コンボボックス表示用の配列
+            const char* blendModeItems[] = 
+            {
+                "None",      
+                "Normal",    
+                "Add",       
+                "Subtract",  
+                "Multiply",  
+                "Screen",    
+                "Exclusion"  
+            };
+
+            int currentBlendMode = static_cast<int>(config.blendMode);
+
+            if (ImGui::Combo("ブレンドモード", &currentBlendMode, blendModeItems, IM_ARRAYSIZE(blendModeItems)))
+            {
+                config.blendMode = static_cast<BlendMode>(currentBlendMode);
+            }
+
             // エミッター設定
             if (ImGui::CollapsingHeader("エミッター設定"))
             {
@@ -81,8 +100,6 @@ void ParticleEditor::ShowEditor()
                 valueChanged |= ImGui::DragInt("発生数", &emitterConfig.amount, 1, 0);
                 ImGui::Separator();
                 valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f 秒");
-                if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("エミッターの再生時間（-1で無限）");
 
                 ImGui::Separator();
                 valueChanged |= ImGui::Checkbox("ループ", &emitterConfig.looping);

@@ -102,7 +102,7 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureHandle": 0,
-            "enabled": true,
+            "enabled": false,
             "endColor": [
                 1.0,
                 0.8860759735107422,

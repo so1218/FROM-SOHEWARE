@@ -350,6 +350,7 @@ void ParticleSystem::Update()
             Math::ColorVectorToUint32(particle.color),
             particle.textureHandle,
             particle.transform->rotation_.z,
+            particle.config.blendMode,
             particle.config.rotation.isBillboard
         );
     }
@@ -366,9 +367,9 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 
 void ParticleSystem::Draw(Camera* camera)
 {
-    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     engine_->renderer_->DrawParticles(*camera);
 
+    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     // トレイル描画
     for (const auto& particle : particles_)
     {
