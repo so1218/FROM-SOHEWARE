@@ -28,6 +28,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 	modelTamesi_->GetTransform().scale_.x = 25;
 	modelTamesi_->GetTransform().scale_.z = 25;
+	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));

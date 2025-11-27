@@ -21,7 +21,7 @@ const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Renderer::kMaxCubeCount = 0;// 立方体の最大数
 const int32_t Renderer::kMaxLineCount = 400;// ラインの最大数
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
-const int32_t Renderer::kMaxTrailCount = 100; // 同時に描画できるトレイルの最大本数
+const int32_t Renderer::kMaxTrailCount = 200; // 同時に描画できるトレイルの最大本数
 const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
 
 Renderer::Renderer() {}
