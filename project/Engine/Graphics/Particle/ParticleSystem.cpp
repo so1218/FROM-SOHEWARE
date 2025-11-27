@@ -526,8 +526,6 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 
 void ParticleSystem::Draw(Camera* camera)
 {
-    engine_->renderer_->DrawParticles(*camera);
-
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
     // トレイル描画
     for (const auto& particle : particles_)
@@ -554,7 +552,7 @@ void ParticleSystem::Draw(Camera* camera)
         }
 
         // Renderer呼び出し
-        engine_->renderer_->DrawTrail(
+        engine_->renderer_->SubmitTrail(
             drawPoints,
             particle.config.trail, 
             *camera

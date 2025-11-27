@@ -32,7 +32,7 @@ void Skybox::Draw()
     // トランスフォーム行列を更新
     transform_.UpdateMatrix();
 
-    engine_->renderer_->DrawSkybox(
+    engine_->renderer_->SubmitSkybox(
         *camera_,
         transform_,
         color_,

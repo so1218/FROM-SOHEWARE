@@ -24,7 +24,9 @@ enum class RenderType
     Sprite,
     Particle,
     Grid,
-    Line
+    Line,
+    Trail,
+    Skybox
 };
 
 // 描画グループ（描画の順番）

@@ -74,11 +74,10 @@ public:
     void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle);
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
-    void DrawParticles(const Camera& camera);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard = true);
-    void DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
-    void DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
+    void SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
+    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
     void DrawSceneForShadow();
     void DrawScene();
@@ -146,6 +145,9 @@ private:
     void DrawModel(const ModelSubmission& sub);
     void DrawGrid(const ModelSubmission& sub);
     void DrawLine(const ModelSubmission& sub);
+    void DrawParticles(const Camera& camera);
+    void DrawSkybox(const ModelSubmission& sub);
+    void DrawTrail(const ModelSubmission& sub);
 
     Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot);
 
@@ -203,6 +205,7 @@ private:
     std::vector<ParticleInstanceData> instanceData_;
     int indexInstance_ = 0;
     Mesh particleMesh_;
+    bool hasParticles_ = false;
 
     // 定数フレームバッファ数
     static constexpr int kFrameCount = 3;

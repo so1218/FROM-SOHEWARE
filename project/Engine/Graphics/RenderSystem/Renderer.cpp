@@ -210,6 +210,20 @@ void Renderer::DrawSceneForShadow()
 }
 void Renderer::DrawScene()
 {
+	if (hasParticles_)
+	{
+		ModelSubmission particleSubmission{};
+		particleSubmission.type = RenderType::Particle;
+
+		// 半透明グループに所属させる
+		particleSubmission.group = RenderGroup::Transparent;
+
+		// 深度設定: 
+		particleSubmission.depth = 0.0f;
+
+		modelSubmissions_.push_back(particleSubmission);
+	}
+
 	// 描画順にソート（グループ→深度→UI順）
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
 		[](const ModelSubmission& a, const ModelSubmission& b)
@@ -248,6 +262,15 @@ void Renderer::DrawScene()
 		case RenderType::Line:
 			DrawLine(sub);
 			break;
+		case RenderType::Particle:
+			DrawParticles(*camera_); 
+			break;
+		case RenderType::Trail:
+			DrawTrail(sub);
+			break;
+		case RenderType::Skybox:
+			DrawSkybox(sub);
+			break;
 		case RenderType::Model:
 		case RenderType::Skinning:
 			DrawModel(sub);  
@@ -256,6 +279,10 @@ void Renderer::DrawScene()
 	}
 
 	modelSubmissions_.clear();
+
+	particleBatches_.clear();
+	hasParticles_ = false;
+	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
 Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)
@@ -827,53 +854,38 @@ void Renderer::SubmitLine(const Vector3& start, const Vector3& end, Camera& came
 {
 	assert(indexLine_ < kMaxLineCount);
 
-	// 1. データ取得
 	RenderData& line = lines_[indexLine_];
 
-	// 2. 頂点バッファの更新 (Mapして書き込む)
-	// ※ Submitの時点で行わないと、描画時(DrawScene)には座標情報が消えているため
+	// 頂点バッファを更新
 	VertexData* mappedVertices = nullptr;
 	line.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
-
 	mappedVertices[0] = { { start.x, start.y, start.z, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
 	mappedVertices[1] = { { end.x,   end.y,   end.z,   1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
-
 	line.mesh.GetVertexResource()->Unmap(0, nullptr);
-
-	// 頂点数を2に設定（描画時に使用）
 	line.mesh.SetVertexCount(2);
 
-	// 3. マテリアル・行列更新
+	// マテリアルと行列を設定
 	line.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
 	line.worldMatrix = Matrix4x4::MakeIdentity();
 	Matrix4x4 wvpMatrix = line.worldMatrix * camera.GetViewProjectionMatrix();
 	memcpy(&line.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 
-	// 4. 深度計算 (線の中点で計算)
-	// Depthソートのために、線の中間地点のZ値を使用します
+	// 中点のZで深度を計算
 	Vector3 midPoint = { (start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f, (start.z + end.z) * 0.5f };
 	Matrix4x4 worldView = line.worldMatrix * camera.GetViewMatrix();
-	// 中点座標にワールドView変換を適用してZを取得
 	float w = midPoint.x * worldView.m[0][3] + midPoint.y * worldView.m[1][3] + midPoint.z * worldView.m[2][3] + worldView.m[3][3];
 	float z = (midPoint.x * worldView.m[0][2] + midPoint.y * worldView.m[1][2] + midPoint.z * worldView.m[2][2] + worldView.m[3][2]) / w;
 
-	// 5. 描画キューに登録
+	// 描画キューに登録
 	ModelSubmission submission{};
 	submission.type = RenderType::Line;
 	submission.instanceIndex = indexLine_;
-
-	// 線は不透明または半透明扱いにします
-	// (デバッグ用なら最前面(UI)でも良いですが、通常は3D空間にあるのでOpaqueかTransparent)
 	submission.group = RenderGroup::Opaque;
 	submission.depth = z;
-
-	// LineではTextureやModelDataは使わないのでセット不要
 	submission.materialHandle = line.materialHandle;
 	submission.color = color;
 
 	modelSubmissions_.push_back(submission);
-
 	indexLine_++;
 }
 
@@ -912,18 +924,22 @@ void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t c
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
-	// インスタンスデータを一時作成（GPUメモリには書き込まない）
-	ParticleInstanceData data; 
+	// インスタンスデータ作成
+	ParticleInstanceData data;
 	data.worldMatrix = worldTransform.matWorld_;
 	data.color = Math::Uint32ToColorVector(color);
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
 	data.isBillboard = isBillboard ? 1 : 0;
 
+	// ブレンドモード・テクスチャごとにバッチ登録
 	particleBatches_[blendMode][textureIndex].push_back(data);
 
 	indexParticle_++;
 	indexInstance_++;
+
+	// このフレームでパーティクル描画が必要であることを記録
+	hasParticles_ = true;
 }
 
 void Renderer::DrawParticles(const Camera& camera)
@@ -932,55 +948,50 @@ void Renderer::DrawParticles(const Camera& camera)
 
 	auto* cmdList = commandManager_->GetCommandList();
 
+	// ルートシグネチャとトポロジー設定
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Particle"));
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 頂点・インデックスバッファセット
 	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
 
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	// カメラ定数バッファ更新
+	// カメラ情報を更新
 	frameData_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
 	Matrix4x4 view = camera.GetViewMatrix();
 	frameData_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
 	frameData_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
 	cmdList->SetGraphicsRootConstantBufferView(1, frameDataResource_->GetGPUVirtualAddress());
 
-	// 先頭アドレス
 	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
-
-	// インスタンスデータのオフセット
 	size_t currentOffset = 0;
 
-	// ブレンドモードごとのループ
+	// ブレンドモードごとに描画
 	for (auto& [blendMode, textureMap] : particleBatches_)
 	{
-		// ブレンドモードに対応するPSOを取得してセット
 		std::string psoName;
 		switch (blendMode)
 		{
-		case kBlendModeNone:      psoName = "ParticleOpaque"; break;     
-		case kBlendModeNormal:    psoName = "ParticleAlphaBlend"; break; 
-		case kBlendModeAdd:       psoName = "ParticleAdditive"; break;   
-		case kBlendModeSubtract:  psoName = "ParticleSubtract"; break;   
-		case kBlendModeMultiply:  psoName = "ParticleMultiply"; break;   
-		case kBlendModeScreen:    psoName = "ParticleScreen"; break;     
-		case kBlendModeExclusion: psoName = "ParticleExclusion"; break;  
-		default:                  psoName = "ParticleAlphaBlend"; break; 
+		case kBlendModeNone:      psoName = "ParticleOpaque"; break;
+		case kBlendModeNormal:    psoName = "ParticleAlphaBlend"; break;
+		case kBlendModeAdd:       psoName = "ParticleAdditive"; break;
+		case kBlendModeSubtract:  psoName = "ParticleSubtract"; break;
+		case kBlendModeMultiply:  psoName = "ParticleMultiply"; break;
+		case kBlendModeScreen:    psoName = "ParticleScreen"; break;
+		case kBlendModeExclusion: psoName = "ParticleExclusion"; break;
+		default:                  psoName = "ParticleAlphaBlend"; break;
 		}
 
 		ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
-		if (!pso) continue; // PSOがない場合はスキップ
-
+		if (!pso) continue;
 		cmdList->SetPipelineState(pso);
 
-		// テクスチャごとのループ
+		// テクスチャごとに描画
 		for (auto& [textureIndex, instances] : textureMap)
 		{
 			if (instances.empty()) continue;
 
-			// GPUメモリへコピー (DrawIndexedInstanced用)
+			// インスタンスデータをGPUにコピー
 			ParticleInstanceData* dst = dstBase + currentOffset;
 			memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
 
@@ -988,28 +999,21 @@ void Renderer::DrawParticles(const Camera& camera)
 			D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textureIndex);
 			cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
 
-			// インスタンスバッファのGPUアドレスセット
+			// インスタンスバッファセット
 			UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
 			gpuAddress += sizeof(ParticleInstanceData) * currentOffset;
 			cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
 
-			// 描画コマンド
+			// 描画
 			cmdList->DrawIndexedInstanced(
 				static_cast<UINT>(particleMesh_.GetIndexCount()),
 				static_cast<UINT>(instances.size()),
 				0, 0, 0);
 
-			// オフセットを進める
 			currentOffset += instances.size();
 		}
 	}
-
-	// 後処理
-	particleBatches_.clear(); // マップをクリア
-	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
-	indexInstance_ = 0;
 }
-
 
 void Renderer::CreateSkybox()
 {
@@ -1033,52 +1037,34 @@ void Renderer::CreateSkybox()
 	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void Renderer::DrawSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
+void Renderer::SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
 {
-	auto* cmdList = commandManager_->GetCommandList();
-
-	// PSO と RootSignature をセット
-	cmdList->SetPipelineState(psoManager_->GetPSO("Skybox"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skybox"));
-
-	// SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	// WVP行列の計算
+	// WVP行列の計算（カメラの位置を除去して回転のみ反映）
 	Matrix4x4 viewMatrix = camera.GetViewMatrix();
 	Matrix4x4 projectionMatrix = camera.GetProjectionMatrix();
-
-	// ビュー行列から移動成分を削除
 	viewMatrix.m[3][0] = 0.0f;
 	viewMatrix.m[3][1] = 0.0f;
 	viewMatrix.m[3][2] = 0.0f;
 
-	// 引数の worldTransform をワールド行列として使用 (回転を反映)
 	Matrix4x4 worldMatrix = worldTransform.matWorld_;
 	Matrix4x4 wvpMatrix = worldMatrix * viewMatrix * projectionMatrix;
-
 	memcpy(mappedSkyboxWvp_, &wvpMatrix, sizeof(TransformationMatrix));
 
-	// マテリアルカラーの設定
-	// 引数の color をマテリアルバッファに設定
+	// マテリアルカラー設定
 	skyboxMaterialHandle_.materialData->color = Math::Uint32ToColorVector(color);
 
-	// メッシュ情報をセット
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->IASetVertexBuffers(0, 1, &skyboxMesh_.GetVertexBufferView());
-	cmdList->IASetIndexBuffer(&skyboxMesh_.GetIndexBufferView());
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Skybox;
+	submission.group = RenderGroup::Opaque;
 
-	// ルートパラメータを設定
-	// MaterialColor
-	cmdList->SetGraphicsRootConstantBufferView(0, skyboxMaterialHandle_.resource->GetGPUVirtualAddress());
-	// WVP
-	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
-	// Cube Texture SRV
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(cubeTextureSrvIndex));
+	// 深度を最大値にして必ず最後に描画
+	submission.depth = FLT_MAX;
 
-	// 描画コマンド
-	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+	// キューブテクスチャを指定
+	submission.textureHandle = cubeTextureSrvIndex;
+
+	modelSubmissions_.push_back(submission);
 }
 
 void Renderer::CreateTrails()
@@ -1104,16 +1090,18 @@ void Renderer::CreateTrails()
 
 	indexTrail_ = 0;
 }
-void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera)
+void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera)
 {
 	if (indexTrail_ >= kMaxTrailCount) return;
 	if (points.size() < 2) return;
 
 	TrailRenderData& trailData = trails_[indexTrail_];
+
+	// 頂点生成
 	std::vector<VertexDataTrail> vertices;
 	vertices.reserve(points.size() * 2);
 
-	// Tile 用に距離を計算
+	// Tile用の距離計算
 	std::vector<float> distances;
 	float totalLength = 0.0f;
 	if (config.textureMode == TrailTextureMode::Tile)
@@ -1130,7 +1118,7 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 
 	Vector3 cameraPos = camera.GetTranslation();
 
-	// 頂点生成
+	// 頂点データ作成（左右位置、UV、色）
 	for (size_t i = 0; i < points.size(); ++i)
 	{
 		if (vertices.size() >= kMaxTrailVertices) break;
@@ -1138,9 +1126,7 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 		Vector3 currentPos = points[i].position;
 
 		// 進行方向
-		Vector3 forward;
-		if (i < points.size() - 1) forward = points[i + 1].position - currentPos;
-		else forward = currentPos - points[i - 1].position;
+		Vector3 forward = (i < points.size() - 1) ? points[i + 1].position - currentPos : currentPos - points[i - 1].position;
 		forward = forward.Normalize();
 
 		// 横方向
@@ -1156,11 +1142,10 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 			right = Math::CrossProduct(upVector, forward).Normalize();
 		}
 
-		// 横方向が計算不能なら補正
 		if (right.LengthSq() < 0.001f)
 			right = { 1.0f, 0.0f, 0.0f };
 
-		// 幅の計算
+		// 幅と頂点位置
 		float u_norm = static_cast<float>(i) / (points.size() - 1);
 		float widthScale = std::lerp(config.tailWidthScale, config.headWidthScale, u_norm);
 		float currentWidth = config.width * widthScale;
@@ -1168,12 +1153,8 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 		Vector3 posLeft = currentPos - right * (currentWidth * 0.5f);
 		Vector3 posRight = currentPos + right * (currentWidth * 0.5f);
 
-		// UV
-		float texU = 0.0f;
-		if (config.textureMode == TrailTextureMode::Stretch)
-			texU = u_norm * config.tiling.x;
-		else
-			texU = distances[i] * config.tiling.x;
+		// UV計算
+		float texU = (config.textureMode == TrailTextureMode::Stretch) ? u_norm * config.tiling.x : distances[i] * config.tiling.x;
 
 		// 色補間
 		Vector4 color;
@@ -1199,50 +1180,31 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 	trailData.mappedWvp->WVP = wvpMat;
 	trailData.mappedWvp->World = worldMat;
 
-	// マテリアル設定（スクロール速度）
-	trailData.mappedMaterial->scrollSpeed = config.scrollSpeed;
+	// マテリアル設定
 	trailData.mappedMaterial->scrollSpeed = config.scrollSpeed;
 	trailData.mappedMaterial->jitterStrength = config.jitterStrength;
 	trailData.mappedMaterial->jitterFrequency = config.jitterFrequency;
 	trailData.mappedMaterial->jitterSpeed = config.jitterSpeed;
 	trailData.mappedMaterial->jitterMode = static_cast<int>(config.jitterMode);
 	trailData.mappedMaterial->jitterPhase = config.jitterPhase;
+	trailData.mappedMaterial->isDissolveEnabled = (config.dissolveTextureHandle != 0) ? 1 : 0;
 
-	// 描画設定
-	auto* cmdList = commandManager_->GetCommandList();
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+	// 深度計算（半透明ソート用）
+	Vector3 midPos = (points.front().position + points.back().position) * 0.5f;
+	Matrix4x4 worldView = worldMat * camera.GetViewMatrix();
+	float w = midPos.x * worldView.m[0][3] + midPos.y * worldView.m[1][3] + midPos.z * worldView.m[2][3] + worldView.m[3][3];
+	float z = (midPos.x * worldView.m[0][2] + midPos.y * worldView.m[1][2] + midPos.z * worldView.m[2][2] + worldView.m[3][2]) / w;
 
-	cmdList->SetPipelineState(psoManager_->GetPSO("Trail"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Trail"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	cmdList->IASetVertexBuffers(0, 1, &trailData.mesh.GetVertexBufferView());
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Trail;
+	submission.instanceIndex = indexTrail_;
+	submission.group = RenderGroup::Transparent;
+	submission.depth = z;
+	submission.textureHandle = config.textureHandle;
+	submission.envMapSrvHandle = config.dissolveTextureHandle; // Dissolveテクスチャ用
 
-	// CBV
-	cmdList->SetGraphicsRootConstantBufferView(0, trailData.wvpResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, trailData.materialResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
-
-	// メインテクスチャ
-	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(config.textureHandle));
-
-	// ディゾルブテクスチャ
-	
-	if (config.dissolveTextureHandle != 0)
-	{
-		trailData.mappedMaterial->isDissolveEnabled = 1; // 有効
-		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(config.dissolveTextureHandle));
-	}
-	else
-	{
-		trailData.mappedMaterial->isDissolveEnabled = 0; // 無効
-
-		// 無効でもGPUバリデーションエラーを防ぐために何かバインドしておく必要がある
-		// メインテクスチャや、White1x1などを入れておく
-		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(config.textureHandle));
-	}
-
-	cmdList->DrawInstanced(static_cast<UINT>(vertices.size()), 1, 0, 0);
+	modelSubmissions_.push_back(submission);
 	indexTrail_++;
 }
 
@@ -1405,4 +1367,58 @@ void Renderer::DrawLine(const ModelSubmission& sub)
 
 	// 描画
 	cmdList->DrawInstanced(UINT(line.mesh.GetVertexCount()), 1, 0, 0);
+}
+
+void Renderer::DrawTrail(const ModelSubmission& sub)
+{
+	TrailRenderData& trailData = trails_[sub.instanceIndex];
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// パイプラインとルートシグネチャ設定
+	cmdList->SetPipelineState(psoManager_->GetPSO("Trail"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Trail"));
+
+	// プリミティブトポロジー設定（TRIANGLESTRIP）
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	cmdList->IASetVertexBuffers(0, 1, &trailData.mesh.GetVertexBufferView());
+
+	// 定数バッファ設定（WVP、マテリアル、フレームデータ）
+	cmdList->SetGraphicsRootConstantBufferView(0, trailData.wvpResource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, trailData.materialResource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
+
+	// テクスチャ設定（メイン + ディゾルブ）
+	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+	uint32_t dissolveHandle = sub.envMapSrvHandle;
+	if (trailData.mappedMaterial->isDissolveEnabled)
+		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(dissolveHandle));
+	else
+		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+
+	// 描画
+	cmdList->DrawInstanced(UINT(trailData.mesh.GetVertexCount()), 1, 0, 0);
+}
+
+void Renderer::DrawSkybox(const ModelSubmission& sub)
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// パイプラインステートとルートシグネチャ設定
+	cmdList->SetPipelineState(psoManager_->GetPSO("Skybox"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skybox"));
+
+	// プリミティブトポロジー設定（三角形リスト）
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// メッシュの頂点・インデックスバッファ設定
+	cmdList->IASetVertexBuffers(0, 1, &skyboxMesh_.GetVertexBufferView());
+	cmdList->IASetIndexBuffer(&skyboxMesh_.GetIndexBufferView());
+
+	// ルートパラメータ設定
+	cmdList->SetGraphicsRootConstantBufferView(0, skyboxMaterialHandle_.resource->GetGPUVirtualAddress()); // マテリアルカラー
+	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());              // WVP行列
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));             // キューブテクスチャ
+
+	// 描画
+	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
 }
