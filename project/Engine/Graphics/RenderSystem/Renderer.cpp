@@ -234,9 +234,9 @@ void Renderer::DrawScene()
 			}
 			switch (a.group)
 			{
-			case RenderGroup::Opaque:      return a.depth < b.depth;   // 不透明
-			case RenderGroup::Transparent: return a.depth > b.depth;   // 半透明
-			case RenderGroup::UI:          return a.layerOrder < b.layerOrder; // UI
+			case RenderGroup::Opaque:      return a.depth < b.depth;   
+			case RenderGroup::Transparent: return a.depth > b.depth;   
+			case RenderGroup::UI:          return a.layerOrder < b.layerOrder;
 			default:                       return a.depth < b.depth;
 			}
 		});
@@ -508,7 +508,7 @@ void Renderer::CreateModels()
 
 void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
 	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle,
-	bool enableOutline, float outlineWidth, const Vector4& outlineColor)
+	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
 {
 	assert(indexModel_ < kMaxModelCount);
 
@@ -530,8 +530,7 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 	// 描画キューに登録
 	ModelSubmission submission{};
 	submission.type = RenderType::Model;
-	submission.group = RenderGroup::Opaque;
-	submission.priority = 0;
+	submission.group = group;
 	submission.modelData = &modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
@@ -586,7 +585,8 @@ void Renderer::SubmitAnimationModel(
 	MaterialHandle& materialHandle,
 	bool enableOutline,
 	float outlineWidth,
-	const Vector4& outlineColor)
+	const Vector4& outlineColor,
+	RenderGroup group)
 {
 	assert(indexModel_ < kMaxModelCount);
 
@@ -608,8 +608,7 @@ void Renderer::SubmitAnimationModel(
 	// 描画キューに登録
 	ModelSubmission submission{};
 	submission.type = RenderType::Skinning;
-	submission.group = RenderGroup::Opaque;
-	submission.priority = 0;
+	submission.group = group;
 	submission.modelData = &instance.modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
@@ -648,7 +647,6 @@ void Renderer::SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelD
 	ModelSubmission submission{};
 	submission.type = RenderType::Grid;
 	submission.group = RenderGroup::Transparent;
-	submission.priority = 0;
 	submission.modelData = &modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
@@ -701,7 +699,7 @@ void Renderer::CreateSprites()
 	indexSprite_ = 0;
 }
 
-void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
+void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
 
@@ -739,9 +737,8 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	submission.materialHandle = sprite.materialHandle;
 	submission.color = color;
 	submission.worldMatrix = sprite.worldMatrix;
-	submission.priority = 100;
 	submission.depth = 0.0f;
-	submission.data = nullptr;
+	submission.layerOrder = layerOrder;
 
 	modelSubmissions_.push_back(submission);
 

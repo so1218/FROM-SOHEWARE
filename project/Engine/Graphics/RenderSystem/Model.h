@@ -31,6 +31,7 @@ public:
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width);
     void SetOutlineColor(const Vector4& color);
+    void SetRenderGroup(RenderGroup group);
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
@@ -58,4 +59,6 @@ private:
     bool enableOutline_ = false;
     float outlineWidth_ = 7.0f; 
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    RenderGroup renderGroup_ = RenderGroup::Opaque;
 };

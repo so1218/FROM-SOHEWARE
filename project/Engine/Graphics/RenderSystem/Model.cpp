@@ -25,6 +25,7 @@ void Model::SetCamera(Camera* camera){ camera_ = camera;}
 void Model::SetEnableOutline(bool enable) { enableOutline_ = enable; }
 void Model::SetOutlineWidth(float width) { outlineWidth_ = width; }
 void Model::SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
+void Model::SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
 
 void Model::Draw()
 {
@@ -39,6 +40,7 @@ void Model::Draw()
         materialHandle_,
         enableOutline_,
         outlineWidth_,
-        outlineColor_
+        outlineColor_,
+        renderGroup_
     );
 }

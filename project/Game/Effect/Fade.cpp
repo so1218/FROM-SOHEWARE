@@ -73,7 +73,13 @@ void Fade::Draw()
 	{
 		return;
 	}
-	engine_->renderer_->SubmitSprite(spritePos, spriteSize, 0.0f, Math::ColorVectorToUint32(color_), uvTransform, TextureHandle::Get(TextureID::white1x1));
+	engine_->renderer_->SubmitSprite(
+		spritePos,
+		spriteSize,
+		0.0f,
+		Math::ColorVectorToUint32(color_),
+		uvTransform,
+		TextureHandle::Get(TextureID::white1x1),0);
 }
 
 void Fade::DebugDraw()

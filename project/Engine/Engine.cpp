@@ -114,88 +114,50 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
-	// -------------------------------------------------------
-	// 1. シャドウパス (Shadow Pass)
-	// -------------------------------------------------------
-
-	// シャドウマップを書き込みモードへ遷移
+	// シャドウパス
 	shadowMap_->TransitionToDepthWrite(commandManager_->GetCommandList());
-
-	// シャドウ用DSVをクリア & セット
-	// ※シャドウマップには色情報(RTV)は不要なのでnullptr
 	D3D12_CPU_DESCRIPTOR_HANDLE shadowDSV = shadowMap_->GetDSVHandle();
 	commandManager_->GetCommandList()->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
 	commandManager_->GetCommandList()->ClearDepthStencilView(shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	// ビューポートをシャドウマップのサイズに合わせる (重要！)
-	// 例: 2048x2048 の場合
 	D3D12_VIEWPORT shadowVP = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
 	D3D12_RECT shadowRect = { 0, 0, 2048, 2048 };
 	commandManager_->GetCommandList()->RSSetViewports(1, &shadowVP);
 	commandManager_->GetCommandList()->RSSetScissorRects(1, &shadowRect);
 
-	// ★シャドウ生成用の描画呼び出し
 	renderer_->DrawSceneForShadow();
-
-	// シャドウマップを読み取りモードへ戻す
 	shadowMap_->TransitionToRead(commandManager_->GetCommandList());
 
-	// -------------------------------------------------------
-	// 2. メインパス (Main Pass: オフスクリーン描画)
-	// -------------------------------------------------------
-
-	// オフスクリーンのターゲットに戻すために、再度 RenderCoordinator の機能を使いたいが、
-	// BeginOffscreenRender は既に BeginFrame で呼ばれているため、
-	// ここでは「ターゲットの再設定」だけを手動で行うか、専用関数を作るのが良い。
-
-	// 手動設定の例 (RenderCoordinatorが持っているハンドルを取得できる前提)
-	// ※もしGetOffscreenRTVHandleなどがなければ、RenderCoordinatorにアクセサを追加してください
-	// cmdList->OMSetRenderTargets(1, &renderCoordinator_->GetOffscreenRTVHandle(), FALSE, &renderCoordinator_->GetOffscreenDSVHandle());
-
+	// メインパス (オフスクリーン描画)
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTV = renderCoordinator_->GetOffscreenRTVHandle();
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDSV = renderCoordinator_->GetOffscreenDSVHandle();
-
-	// ターゲットセット & ビューポート復帰
 	commandManager_->GetCommandList()->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
-
-	// ビューポートを画面サイズに戻す
-	// (これも RenderCoordinator の設定を使うのが安全)
 	commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
 	commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 
-	// ★メインシーン描画呼び出し
 	renderer_->DrawScene();
-
-	// オフスクリーンレンダリング終了
 	renderCoordinator_->EndOffscreenRender();
-
-	// フレームレンダリング開始
 	renderCoordinator_->BeginFrame();
 
 	// ポストエフェクト適用
 	postEffectManager_->ExecutePostEffects(commandManager_->GetCommandList());
 
-	// バックバッファのRTVをセット
+	// バックバッファへ描画
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
 	commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-	
-	// ImGui用DescriptorHeapをCommandListにバインド
-	ID3D12DescriptorHeap* defaultHeaps[] = { srvManager_->GetSRVHeap()};
+
+	ID3D12DescriptorHeap* defaultHeaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
-	
+
 #ifdef _DEBUG
 	if (useDebugView_)
 	{
-		debugGuiManager_->RenderOffscreenTexture(
-			srvManager_.get(),
-			postEffectManager_->bloomCombineIndex_
-		);
+		debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), postEffectManager_->bloomCombineIndex_);
 	}
 	else
 	{
 		renderer_->DrawFullScreenQuadWithOffscreenTexture();
 	}
-
 #else
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
 #endif
@@ -203,13 +165,11 @@ void Engine::EndFrame()
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// ImGui 描画コマンド積む
+	// ImGui描画
 	ImGuiManager::EndFrame(commandManager_->GetCommandList());
 
-	// フレームレンダリング終了
+	// フレーム終了
 	renderCoordinator_->EndFrame();
-
-	// FPS固定
 	frameLimiter_->WaitNextFrame();
 
 	// アップロードリソース管理

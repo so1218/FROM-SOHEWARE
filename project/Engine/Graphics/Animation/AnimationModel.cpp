@@ -88,7 +88,8 @@ void AnimationModel::Draw()
         materialHandle_,
         enableOutline_,
         outlineWidth_,
-        outlineColor_ 
+        outlineColor_,
+        renderGroup_
     );
 }
 

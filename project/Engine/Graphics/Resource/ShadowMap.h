@@ -3,7 +3,7 @@
 #include <wrl.h>
 #include <cstdint>
 
-class SRVManager; // 前方宣言
+class SRVManager; 
 
 class ShadowMap
 {

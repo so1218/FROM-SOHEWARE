@@ -39,6 +39,8 @@ public:
         outlineColor_ = Math::Uint32ToColorVector(color); 
     }
 
+    void SetRenderGroup(RenderGroup group){ renderGroup_ = group; }
+
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
     bool IsFinished() const { return isFinished_; }
@@ -70,4 +72,6 @@ private:
     bool enableOutline_ = false;
     float outlineWidth_ = 5.0f;     
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+    RenderGroup renderGroup_ = RenderGroup::Opaque;
 };

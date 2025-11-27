@@ -19,12 +19,14 @@ public:
     void SetColor(uint32_t color);
     void SetTextureHandle(uint32_t textureHandle);
     void SetUVTransform(const WorldTransform& uvTransform);
+    void SetLayerOrder(int order);
 
 	// ゲッター
     Vector2& GetPosition();
     Vector2& GetSize();
     float& GetRotation();
     WorldTransform& GetUVTransform();
+    int GetLayerOrder() const;
 
 private:
     Engine* engine_ = nullptr;
@@ -35,4 +37,6 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
     uint32_t textureHandle_ = 0;
     WorldTransform uvTransform_; 
+
+    int layerOrder_ = 0;
 };

@@ -58,8 +58,7 @@ struct ModelSubmission
     // スキニング情報（スキニングしない場合は nullptr）
     const SkinCluster* skinCluster = nullptr;
 
-    // 描画順序と距離（ソート用）
-    uint32_t priority;
+    // 距離（ソート用）
     float depth;
 
     // 描画タイプ
@@ -68,7 +67,4 @@ struct ModelSubmission
 
     // 手動で順序を決めたい場合のみ使う
     int layerOrder = 0;
-
-    // 描画タイプに応じた追加データ
-    const void* data;
 };
