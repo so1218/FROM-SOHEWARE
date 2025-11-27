@@ -5,7 +5,7 @@ SamplerState samLinear : register(s0);
 
 cbuffer BlurSettings : register(b0)
 {
-    float2 texelSize; 
+    float2 texelSize;
     float blurStrength;
     float _padding;
 }

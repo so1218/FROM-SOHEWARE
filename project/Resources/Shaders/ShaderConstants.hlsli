@@ -45,10 +45,14 @@ struct MaterialData
     int32_t enableLighting;
     int32_t lightMode;
     float shininess; 
-    float padding0;
+    float environmentMapIntensity;
+    
     float4 specularColor; 
-    float environmentMapIntensity; 
-    float3 padding1;
+    
+    float diffuseReflection;
+    int32_t addShadow;
+    float shadowBias; 
+    float shadowDensity; 
 
     int32_t isArtWave;
     int32_t isArtSound;
@@ -136,16 +140,14 @@ struct ParticleInstanceData
 struct BrightExtractSettings
 {
     float threshold; 
-    float softKnee;
     float intensity; 
-    float padding;
+    float2 _padding;
 };
-
 
 struct CombineSettings
 {
     float bloomIntensity;
-    float exposure;
+    int effectMode; 
     float2 padding;
 };
 

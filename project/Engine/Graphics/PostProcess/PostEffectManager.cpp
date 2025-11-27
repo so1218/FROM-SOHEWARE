@@ -24,6 +24,7 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     rootSignatureManager_ = rootSignatureManager;
     psoManager_ = psoManager;
     srvManager_ = srvManager;
+    device_ = device;
     descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // 共通SRV設定
@@ -125,15 +126,14 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     cbDepthExtractPS_ = BufferManager::CreateBufferResource(device, sizeof(DepthExtractSettingsPS));
     cbDepthExtractPS_->Map(0, nullptr, reinterpret_cast<void**>(&depthExtractPSData_));
 
-    brightExtractData_->threshold = 0.9f;
-    brightExtractData_->softKnee = 0.2f;
-    brightExtractData_->intensity = 1.0f;
+    brightExtractData_->threshold = 1.01f;
+    brightExtractData_->intensity = 0.4f;
 
     blurSettingsData_->texelSize = { 0.004f, 0.004f };
     blurSettingsData_->blurStrength = 0.574f;
 
     combineSettingsData_->bloomIntensity = 0.8f; 
-    combineSettingsData_->exposure = 1.2f; 
+    combineSettingsData_->effectMode = 1;
 
     depthExtractVSData_->nearPlane = camera->GetNearClip();
     depthExtractVSData_->farPlane = camera->GetFarClip();
@@ -400,6 +400,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         cmdList->ResourceBarrier(1, &barrierBloomCombine);
 
         cmdList->SetPipelineState(psoManager_->GetPSO("BloomCombine"));
+
         ID3D12DescriptorHeap* heaps[] = { srvTableHeap_.Get() };
         cmdList->SetDescriptorHeaps(1, heaps);
         cmdList->SetGraphicsRootDescriptorTable(1, bloomCombineSRVTable_);

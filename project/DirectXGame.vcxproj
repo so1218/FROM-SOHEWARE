@@ -166,6 +166,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="Game\Data\ParticleTextureHandle.cpp" />
@@ -277,6 +278,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />

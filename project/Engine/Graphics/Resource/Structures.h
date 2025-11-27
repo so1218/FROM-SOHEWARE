@@ -127,10 +127,13 @@ struct MaterialSettings
     bool enableLighting = false;
     int32_t lightMode = 1;
     float shininess = 50.0f;
-    float padding0;
-    float4 specularColor = Vector4(1, 1, 1, 1);
     float environmentMapIntensity = 0.0f;
-    float3 padding1;
+    float4 specularColor = Vector4(1, 1, 1, 1);
+
+    float diffuseReflection = 4.0f;
+    bool addShadow = true;
+    float shadowBias = 0.0005f;
+    float shadowDensity = 0.7f;
 
     int32_t isArtWave = false;
     int32_t isArtSound = false;

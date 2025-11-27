@@ -420,6 +420,9 @@
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -722,6 +725,7 @@
     <ClInclude Include="Game\GameObject\PlayerUI.h" />
     <ClInclude Include="Game\GameObject\GameTimer.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

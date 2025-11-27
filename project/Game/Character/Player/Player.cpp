@@ -51,6 +51,8 @@ void Player::Initialize()
 	modelPlayer_->SetEnableOutline(true);
 	animationPlayer_->SetEnableOutline(true);
 
+	animationPlayer_->SetColor(0xff0000ff);
+
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);

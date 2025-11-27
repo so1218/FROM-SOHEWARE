@@ -77,6 +77,7 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 void AnimationModel::Draw()
 {
     transform_.UpdateMatrix();
+
     engine_->renderer_->SubmitAnimationModel(
         transform_,
         *camera_,

@@ -63,6 +63,7 @@ private:
     RootSignatureManager* rootSignatureManager_;
     PSOManager* psoManager_;
     SRVManager* srvManager_;
+    ID3D12Device* device_;
 
     // シーンテクスチャやSRVテーブル
     D3D12_GPU_DESCRIPTOR_HANDLE sceneTextureSRV_;

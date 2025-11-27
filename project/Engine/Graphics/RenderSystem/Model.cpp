@@ -30,6 +30,7 @@ void Model::SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
 void Model::Draw()
 {
     transform_.UpdateMatrix();
+
     engine_->renderer_->SubmitModel(
         transform_,
         *camera_,

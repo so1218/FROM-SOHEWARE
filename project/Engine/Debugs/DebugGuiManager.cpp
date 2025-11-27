@@ -259,10 +259,30 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::TreePop();
     }
 
+    ImGui::Separator();
+
+    if (ImGui::TreeNode("影の設定"))
+    {
+        ImGui::Checkbox("影を受ける", &materialSettings.addShadow);
+
+        ImGui::DragFloat("シャドウバイアス ", &materialSettings.shadowBias, 0.00001f, 0.0f, 0.01f, "%.5f");
+
+        ImGui::SliderFloat("影の濃さ", &materialSettings.shadowDensity, 0.0f, 1.0f);
+
+        ImGui::TreePop();
+    }
+
+    ImGui::Separator();
+
     // マテリアル設定（スペキュラ）
-    ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
-    ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
-    ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
+    if (ImGui::TreeNode("マテリアル基本設定"))
+    {
+        ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
+        ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
+        ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+        ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
+        ImGui::TreePop();
+    }
 
 }
 
@@ -275,7 +295,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
     ImGui::CheckboxFlags("None", &postEffectData->modeFlags[0], NONE);
     if (ImGui::TreeNode("PostEffectMode"))
-    {
+  {
         if (ImGui::TreeNode("Mode[0]1~7"))
         {
             // 下位32bit（modeFlags[0]）
@@ -353,7 +373,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         if (ImGui::TreeNode("Bright Extract Settings"))
         {
             ImGui::SliderFloat("Threshold", &brightExtractData->threshold, 0.0f, 10.0f);
-            ImGui::SliderFloat("Soft Knee", &brightExtractData->softKnee, 0.0f, 1.0f);
             ImGui::SliderFloat("Intensity", &brightExtractData->intensity, 0.0f, 5.0f);
             ImGui::TreePop();
         }
@@ -369,8 +388,9 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         if (ImGui::TreeNode("Bloom Settings"))
         {
-            ImGui::SliderFloat("Bloom Intensity", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
-            ImGui::SliderFloat("Exposure", &combineSettingsData->exposure, 0.1f, 5.0f);
+            ImGui::SliderFloat("Brightness Threshold", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
+            static const char* modeNames[] = { "Halo", "Neon", "Bloom" };
+            ImGui::Combo("Effect Mode", &combineSettingsData->effectMode, modeNames, IM_ARRAYSIZE(modeNames));
             ImGui::TreePop();
         }
         ImGui::TreePop();

@@ -106,11 +106,11 @@ PixelShaderOutput main(PixelShaderInput input)
         return output;
     }
     
-    // ▼▼▼ 影の計算 ▼▼▼
+    // 影の計算 
     float shadowFactor = 1.0f;
     
     // 0番目のライトが有効なら影を計算
-    if (gDirectionalLights[0].enable)
+    if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
         shadowFactor = CalculateShadow(input.shadowCoord);
     }
@@ -493,12 +493,12 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
         // ライティングモード別計算
         if (gMaterial.lightMode == LIGHT_HALFLAMBERT)
         {
-            float halfLambert = pow(ndotl * 0.5f + 0.5f, 4.0f);
+            float halfLambert = pow(ndotl * 0.5f + 0.5f, gMaterial.diffuseReflection);
             diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
         }
         else if (gMaterial.lightMode == LIGHT_PHONG_SPECULAR)
         {
-            float halfLambert = pow(ndotl * 0.5f + 0.5f, 6.0f);
+            float halfLambert = pow(ndotl * 0.5f + 0.5f, gMaterial.diffuseReflection +2.0f);
             diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
 
             if (ndotl > 0.0f)
@@ -520,8 +520,11 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
         // 影を適用（0番目のライトのみ）
         if (i == 0)
         {
-            diffuse *= shadowFactor;
-            specular *= shadowFactor;
+            float shadowAtten = 1.0f - gMaterial.shadowDensity; // 影部分の明るさ
+            float finalShadow = shadowFactor + shadowAtten * (1.0f - shadowFactor);
+
+            diffuse *= finalShadow;
+            specular *= finalShadow;
         }
 
         // 合計色に加算
@@ -678,7 +681,7 @@ float CalculateShadow(float4 shadowCoord)
     }
 
     // 深度比較（PCFあり、バイアス付き）
-    float bias = 0.0005f;
+    float bias = gMaterial.shadowBias;
     float shadowFactor = gShadowMap.SampleCmpLevelZero(
         gShadowSampler,
         projCoords.xy,

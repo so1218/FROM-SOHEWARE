@@ -27,6 +27,9 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.shininess = 50.0f;
     defaultSettings.uvTransform = Matrix4x4::MakeIdentity();
     defaultSettings.specularColor = Vector4(1, 1, 1, 1);
+    defaultSettings.addShadow = true;        
+    defaultSettings.shadowBias = 0.0005f;    
+    defaultSettings.shadowDensity = 0.7f;
     defaultSettings.isArtWave = false;
     defaultSettings.isArtQuad = false;
     defaultSettings.isArtKikagaku = false;
@@ -43,28 +46,6 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     return handle;
 }
 
-//MaterialHandle MaterialManager::CreateSimpleMaterial(ID3D12Device* device)
-//{
-//    MaterialHandle handle;
-//    handle.resource = BufferManager::CreateBufferResource(device, sizeof(SimpleMaterial));
-//    static int s_lineMaterialId = 0;
-//    std::wstring debugName = L"SimpleMaterialResource_" + std::to_wstring(s_lineMaterialId++);
-//    handle.resource->SetName(debugName.c_str());
-//
-//    handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.simpleMaterialData));
-//
-//    // 初期値設定
-//    if (handle.simpleMaterialData)
-//    {
-//        handle.simpleMaterialData->color = Vector4(1, 1, 1, 1);
-//    }
-//
-//    handle.type = MaterialType::Simple;
-//
-//    materials_.push_back(handle);
-//    return handle;
-//}
-
 void MaterialManager::UpdateAllMaterialsFromGlobal()
 {
     for (auto& handle : materials_)
@@ -76,6 +57,10 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->shininess = materialSettings_.shininess;
             handle.materialData->specularColor = materialSettings_.specularColor;
             handle.materialData->environmentMapIntensity = materialSettings_.environmentMapIntensity;
+            handle.materialData->diffuseReflection = materialSettings_.diffuseReflection;
+            handle.materialData->addShadow = materialSettings_.addShadow;
+            handle.materialData->shadowBias = materialSettings_.shadowBias;
+            handle.materialData->shadowDensity = materialSettings_.shadowDensity;
         }
     }
 }
