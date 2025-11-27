@@ -151,7 +151,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 
 	// 頂点バッファなし
 
-	// DrawCall発行（3頂点の三角形）
+	// DrawCall（3頂点の三角形）
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
@@ -162,229 +162,100 @@ void Renderer::DrawSceneForShadow()
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 現在のPSO状態を追跡（頻繁な切り替えを防ぐため）
-	bool currentIsSkinning = false;
-
-	// デフォルトは通常モデル用
+	// 通常モデル用の設定
 	cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// ライト行列 (b1)
+	// ライト行列をセット
 	cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 
 	for (const auto& sub : modelSubmissions_)
 	{
+		if (sub.type != RenderType::Model && sub.type != RenderType::Skinning) {
+			continue;
+		}
 		Mesh* mesh = GetOrCreateMesh(*sub.modelData);
 		auto& buffer = perObjectBuffers_[sub.instanceIndex];
 
-		// スキニング判定
 		bool isSkinning = (sub.skinCluster != nullptr);
 
 		if (isSkinning)
 		{
-			// スキニング用に切り替え
+			// スキニング用の設定
 			cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinning"));
 			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinning"));
-
-			// ライト行列再セット (RootSigが変わったので必要)
-			// ※RootSigの構造上、インデックス1がライトなら同じ
 			cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-			// MatrixPaletteセット (t0 -> Param 2)
 			cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
 
-			// 頂点バッファ (通常 + Influence)
 			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
 			cmdList->IASetVertexBuffers(0, 2, vbvs);
 		}
 		else
 		{
-			// 通常モデル用に切り替え
+			// 通常モデル用の設定
 			cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
 			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
-
-			// ライト行列再セット
 			cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-			// 頂点バッファ (通常のみ)
 			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 		}
 
-		// オブジェクト行列 (b0 -> Param 0)
+		// オブジェクト行列をセット
 		cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
 
-		// インデックスバッファ & 描画
+		// 描画
 		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	}
 }
 void Renderer::DrawScene()
 {
+	// 描画順にソート（グループ→深度→UI順）
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
-		[](const ModelSubmission& a, const ModelSubmission& b) {
-			return a.priority < b.priority;
+		[](const ModelSubmission& a, const ModelSubmission& b)
+		{
+			if (a.group != b.group) 
+			{
+				return a.group < b.group;
+			}
+			switch (a.group)
+			{
+			case RenderGroup::Opaque:      return a.depth < b.depth;   // 不透明
+			case RenderGroup::Transparent: return a.depth > b.depth;   // 半透明
+			case RenderGroup::UI:          return a.layerOrder < b.layerOrder; // UI
+			default:                       return a.depth < b.depth;
+			}
 		});
 
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// 共通の設定（ヒープなど）
+	// 共通設定（SRVヒープ、プリミティブタイプ）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// 全ての登録モデルを描画
+	// 登録済みモデルを描画
 	for (const auto& sub : modelSubmissions_)
 	{
-		Mesh* mesh = GetOrCreateMesh(*sub.modelData);
-		auto& buffer = perObjectBuffers_[sub.instanceIndex];
-
-		// スキニングかどうか判定
-		bool isSkinning = (sub.skinCluster != nullptr);
-
-		// ---------------------------------------------------
-		// アウトライン描画 (背面法線押し出し法など)
-		// ---------------------------------------------------
-		if (sub.enableOutline)
+		switch (sub.type)
 		{
-			if (isSkinning)
-			{
-				// ▼ スキニング用アウトライン
-				cmdList->SetPipelineState(psoManager_->GetPSO("SkinningOutline"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("SkinningOutline"));
-
-				// 定数バッファ (SkinningOutline用)
-				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-				// MatrixPalette (t0)
-				cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-				// OutlineData (b1)
-				cmdList->SetGraphicsRootConstantBufferView(2, buffer.outlineResource->GetGPUVirtualAddress());
-				// FrameData (b2)
-				cmdList->SetGraphicsRootConstantBufferView(3, frameDataResource_->GetGPUVirtualAddress());
-
-				// 頂点バッファ (Influence追加)
-				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
-				cmdList->IASetVertexBuffers(0, 2, vbvs);
-			}
-			else
-			{
-				cmdList->SetPipelineState(psoManager_->GetPSO("Object3DOutline"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Outline"));
-
-				cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-
-				// 定数バッファセット
-				// 0: WVP行列
-				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-				// 1: アウトライン設定 (色・太さ)
-				cmdList->SetGraphicsRootConstantBufferView(1, buffer.outlineResource->GetGPUVirtualAddress());
-				// 2: フレーム情報 (時間など) - コメントアウトを解除
-				cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
-			}
-
-			cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-			cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+		case RenderType::Sprite: 
+			DrawSprite(sub); 
+			break;
+		case RenderType::Grid:    
+			DrawGrid(sub);    
+			break;
+		case RenderType::Line:
+			DrawLine(sub);
+			break;
+		case RenderType::Model:
+		case RenderType::Skinning:
+			DrawModel(sub);  
+			break;
 		}
-
-		if (isSkinning)
-		{
-			// ▼▼▼ アニメーション描画 ▼▼▼
-			cmdList->SetPipelineState(psoManager_->GetPSO("Skinning"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
-
-			// 頂点バッファ (Mesh + Influence)
-			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
-			cmdList->IASetVertexBuffers(0, 2, vbvs);
-			cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-			// リソースバインド
-			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-			cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.textureHandle));
-			cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
-			// 5: ディレクショナルライト (b1)
-			cmdList->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-			// 6: カメラ情報 (b2)
-			cmdList->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-
-			// 7: ポイントライト (b3)
-			cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-
-			// 8: スポットライト (b4)
-			cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-
-			// 9: エリアライト (b5)
-			cmdList->SetGraphicsRootConstantBufferView(9, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-
-			// 10: シャドウマップ (t2) 
-			// (Skinning用RootSignatureに追加したDescriptorTableの位置に合わせてください。通常は最後尾)
-			cmdList->SetGraphicsRootDescriptorTable(10, shadowMap_->GetSRVHandle());
-		}
-		else
-		{
-			// ---------------------------------------------------
-			// 通常描画 (メインパス)
-			// ---------------------------------------------------
-			cmdList->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-
-			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-			// マテリアル色更新
-			sub.materialHandle.materialData->color = Math::Uint32ToColorVector(sub.color);
-
-			// --- リソースバインド ---
-
-			// 0: マテリアル
-			cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
-
-			// 1: WVP行列 (カメラ視点)
-			cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
-
-			// 2: テクスチャ (t0)
-			cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
-
-			// 3: 環境マップ (t1)
-			cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
-
-			// 4: ディレクショナルライト (b1)
-			cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-			// 5: カメラ情報 (b2)
-			cmdList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-
-			// --- コメントアウトされていたライト群を復帰 ---
-
-			// 6: ポイントライト (b3)
-			cmdList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-
-			// 7: スポットライト (b4)
-			cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-
-			// 8: エリアライト (b5)
-			cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-
-			// --- ★ここが重要: シャドウマップ (t2) ---
-
-			// ルートパラメータの 9番目 に シャドウマップのSRV をセットすると仮定
-			// (RootSignatureで DescriptorTable(t2) を定義している箇所に合わせてください)
-			// shadowMap_ は ShadowMapクラスのインスタンス、あるいはSRVManagerからハンドルを取得
-			cmdList->SetGraphicsRootDescriptorTable(9, shadowMap_->GetSRVHandle());
-		}
-
-		// 描画発行
-		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	}
 
-	// フレーム終了処理
 	modelSubmissions_.clear();
-	indexModel_ = 0;
 }
 
 Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)
@@ -608,34 +479,32 @@ void Renderer::CreateModels()
 	}
 }
 
-void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
+void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
 	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle,
 	bool enableOutline, float outlineWidth, const Vector4& outlineColor)
 {
 	assert(indexModel_ < kMaxModelCount);
 
-	// 1. 空いている定数バッファを取得
 	auto& buffer = perObjectBuffers_[indexModel_];
 
-	// 2. データを書き込む (カメラ行列はこの時点では確定させない方が良いが、
-	//    メイン描画用としてここで書いてしまってもOK。シャドウ用は別途計算が必要)
-
-	// メインカメラ用の行列計算
+	// 行列計算と定数バッファ転送
 	Matrix4x4 world = worldTransform.matWorld_;
 	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
-
 	buffer.wvpMapped->WVP = wvp;
 	buffer.wvpMapped->World = world;
 	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
 
-	// アウトラインデータ書き込み
+	// アウトライン設定
 	if (enableOutline) {
 		buffer.outlineMapped->color = outlineColor;
 		buffer.outlineMapped->width = outlineWidth;
 	}
 
-	// 3. リストに登録
-	ModelSubmission submission;
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Model;
+	submission.group = RenderGroup::Opaque;
+	submission.priority = 0;
 	submission.modelData = &modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
@@ -643,85 +512,15 @@ void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelDa
 	submission.color = color;
 	submission.worldMatrix = world;
 	submission.enableOutline = enableOutline;
-	submission.instanceIndex = indexModel_; // バッファの何番目を使ったか記録
+	submission.instanceIndex = indexModel_;
+
+	// 深度設定
+	Matrix4x4 worldView = world * camera.GetViewMatrix();
+	submission.depth = worldView.m[3][2];
 
 	modelSubmissions_.push_back(submission);
-
 	indexModel_++;
 }
-//
-//void Renderer::DrawModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-//	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color, MaterialHandle& materialHandle,
-//	bool enableOutline, float outlineWidth, const Vector4& outlineColor)
-//{
-//	assert(indexModel_ < kMaxModelCount);
-//
-//	auto commandList = commandManager_->GetCommandList();
-//
-//	// SRVヒープセット
-//	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-//	commandList->SetDescriptorHeaps(_countof(heaps), heaps);
-//
-//	RenderData& model = models_[indexModel_];
-//	Mesh* mesh = GetOrCreateMesh(modelData);
-//
-//	// ワールド行列・WVP行列計算
-//	model.worldMatrix = worldTransform.matWorld_;
-//	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
-//	model.mappedData->WVP = wvpMatrix;
-//	model.mappedData->World = model.worldMatrix;
-//	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
-//
-//	// アウトライン描画 (有効な場合のみ)
-//	if (enableOutline)
-//	{
-//		model.outlineMappedData->color = outlineColor;
-//		model.outlineMappedData->width = outlineWidth;
-//
-//		commandList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Outline"));
-//		commandList->SetPipelineState(psoManager_->GetPSO("Object3DOutline"));
-//
-//		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//		commandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-//		commandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-//
-//		commandList->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
-//		commandList->SetGraphicsRootConstantBufferView(1, model.outlineResource->GetGPUVirtualAddress());
-//		commandList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
-//
-//		commandList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-//	}
-//
-//	// 通常描画
-//
-//	// マテリアル色を設定
-//	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-//
-//	// ルートシグネチャ・PSOを通常用に戻す
-//	commandList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-//	commandList->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
-//
-//	// VB/IB設定
-//	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//	commandList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-//	commandList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-//
-//	// 通常描画用のリソースバインド
-//	commandList->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));
-//	commandList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle));
-//	commandList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-//	commandList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-//
-//	// 描画
-//	commandList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-//
-//	indexModel_++;
-//}
 
 void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)
 {
@@ -744,12 +543,12 @@ void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t c
 				child.skeletonSpaceMatrix.m[3][2]
 			);
 
-			DrawLine(parentPos, childPos, camera, color);
+			SubmitLine(parentPos, childPos, camera, color);
 		}
 	}
 }
 
-void Renderer::DrawAnimationModel(
+void Renderer::SubmitAnimationModel(
 	WorldTransform& worldTransform,
 	Camera& camera,
 	const AnimatedModelData& instance,
@@ -764,26 +563,27 @@ void Renderer::DrawAnimationModel(
 {
 	assert(indexModel_ < kMaxModelCount);
 
-	// 1. 新しいバッファ配列を使用 (models_ ではなく perObjectBuffers_)
 	auto& buffer = perObjectBuffers_[indexModel_];
 
-	// 2. データ書き込み
+	// 行列計算と定数バッファ転送
 	Matrix4x4 world = worldTransform.matWorld_;
 	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
-
 	buffer.wvpMapped->WVP = wvp;
 	buffer.wvpMapped->World = world;
 	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
 
-	// アウトライン書き込み
+	// アウトライン設定
 	if (enableOutline) {
 		buffer.outlineMapped->color = outlineColor;
 		buffer.outlineMapped->width = outlineWidth;
 	}
 
-	// 3. リストに登録
-	ModelSubmission submission;
-	submission.modelData = &instance.modelData; // アニメーション用モデルデータ
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Skinning;
+	submission.group = RenderGroup::Opaque;
+	submission.priority = 0;
+	submission.modelData = &instance.modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
 	submission.envMapSrvHandle = envMapSrvHandle;
@@ -791,190 +591,92 @@ void Renderer::DrawAnimationModel(
 	submission.worldMatrix = world;
 	submission.enableOutline = enableOutline;
 	submission.instanceIndex = indexModel_;
-
-	// ★ここがポイント: SkinClusterをセットする
 	submission.skinCluster = &skinCluster;
+
+	// 深度設定
+	Matrix4x4 worldView = world * camera.GetViewMatrix();
+	submission.depth = worldView.m[3][2];
+
+	modelSubmissions_.push_back(submission);
+	indexModel_++;
+}
+
+void Renderer::SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
+{
+	assert(indexModel_ < kMaxModelCount);
+
+	auto& buffer = perObjectBuffers_[indexModel_];
+
+	// マテリアル設定
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
+
+	// 行列計算と定数バッファ転送
+	Matrix4x4 world = worldTransform.matWorld_;
+	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
+	buffer.wvpMapped->WVP = wvp;
+	buffer.wvpMapped->World = world;
+	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Grid;
+	submission.group = RenderGroup::Transparent;
+	submission.priority = 0;
+	submission.modelData = &modelData;
+	submission.materialHandle = materialHandle;
+	submission.textureHandle = textureHandle;
+	submission.color = color;
+	submission.worldMatrix = world;
+	submission.instanceIndex = indexModel_;
+	submission.skinCluster = nullptr;
+	submission.enableOutline = false;
+
+	// 深度設定
+	Matrix4x4 worldView = worldTransform.matWorld_ * camera.GetViewMatrix();
+	submission.depth = worldView.m[3][2];
 
 	modelSubmissions_.push_back(submission);
 
 	indexModel_++;
 }
 
-//void Renderer::DrawAnimationModel(
-//	WorldTransform& worldTransform,
-//	Camera& camera,
-//	const AnimatedModelData& instance,
-//	const SkinCluster& skinCluster,
-//	uint32_t textureHandle,
-//	uint32_t envMapSrvHandle,
-//	uint32_t color,
-//	MaterialHandle& materialHandle,
-//	bool enableOutline,
-//	float outlineWidth,
-//	const Vector4& outlineColor)
-//{
-//	assert(indexModel_ < kMaxModelCount); // 配列範囲チェック
-//
-//	// 描画用SRVヒープをセット
-//	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-//	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-//
-//	RenderData& model = models_[indexModel_];
-//	Mesh* mesh = GetOrCreateMesh(instance.modelData);
-//
-//	// マテリアル色を設定
-//	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-//
-//	// ワールド行列を設定
-//	model.worldMatrix = worldTransform.matWorld_;
-//
-//	// WVP行列を計算してGPUバッファにコピー
-//	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
-//	model.mappedData->WVP = wvpMatrix;
-//	model.mappedData->World = model.worldMatrix;
-//	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
-//
-//	// ルートシグネチャ・パイプライン設定
-//	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
-//	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Skinning"));
-//
-//	// プリミティブ・バッファ設定
-//	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
-//
-//	// 定数バッファ・SRVをGPUにバインド
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress()); // VS WVP
-//	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex)); // VS MatrixPalette
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, materialHandle.resource->GetGPUVirtualAddress()); // PS Material
-//	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textureHandle)); // PS Texture
-//	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // PS Environment
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-//	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(9, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-//
-//	// 頂点バッファ設定（通常頂点 + スキンインフルエンス頂点）
-//	D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), skinCluster.influenceBufferView };
-//	commandManager_->GetCommandList()->IASetVertexBuffers(0, 2, vbvs);
-//
-//	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-//
-//	// アウトライン描画
-//	if (outlineWidth > 0.0f)
-//	{
-//		// アウトラインデータをバッファに書き込み
-//		if (model.outlineMappedData)
-//		{
-//			model.outlineMappedData->width = outlineWidth;
-//			model.outlineMappedData->color = outlineColor;
-//		}
-//
-//		commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("SkinningOutline"));
-//		commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("SkinningOutline"));
-//
-//		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, model.wvpResource->GetGPUVirtualAddress());
-//		commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(skinCluster.paletteSrvIndex));
-//		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(2, model.outlineResource->GetGPUVirtualAddress());
-//		commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(3, frameDataResource_->GetGPUVirtualAddress());
-//
-//		commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-//	}
-//
-//	indexModel_++; 
-//}
-
-void Renderer::DrawGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
-{
-	assert(indexModel_ < kMaxModelCount); // モデル配列の範囲チェック
-
-	// 描画用SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	RenderData& model = models_[indexModel_];
-	Mesh* mesh = GetOrCreateMesh(modelData); // メッシュ取得
-
-	materialHandle.materialData->color = Math::Uint32ToColorVector(color); // 色セット
-	model.worldMatrix = worldTransform.matWorld_; // ワールド行列
-	Matrix4x4 wvpMatrix = model.worldMatrix * camera.GetViewProjectionMatrix();
-	model.mappedData->WVP = wvpMatrix;
-	model.mappedData->World = model.worldMatrix;
-	model.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(model.worldMatrix.Transpose());
-
-	// ルートシグネチャとパイプラインステート
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Grid"));
-
-	// 頂点・インデックスバッファ
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-	commandManager_->GetCommandList()->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-	// 定数バッファ・SRVバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, model.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(textureHandle)); // ダミー環境マップ
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(9, srvManager_->GetSRVHandleGPU(textureHandle));
-
-	// 描画
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	indexModel_++; // 使用カウント更新
-}
-
 void Renderer::CreateSprites()
 {
-	// 最大数のスプライト分の配列を確保
+	// スプライトの配列を確保
 	sprites_.resize(kMaxSpriteCount);
 
-	// 原点を左上にするように設定
+	// 左上原点のスプライト用頂点データ
 	std::vector<VertexData> spriteVertices = {
-		// 左上
-		{{0.0f,       0.0f,        0.0f, 1.0f}, {0.0f, 0.0f}},
-		// 右上
-		{{1.0f,      0.0f,        0.0f, 1.0f}, {1.0f, 0.0f}},
-		// 左下
-		{{0.0f,       1.0f,      0.0f, 1.0f}, {0.0f, 1.0f}},
-		// 右下
-		{{1.0f,      1.0f,      0.0f, 1.0f}, {1.0f, 1.0f}},
+		{{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // 左上
+		{{1.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // 右上
+		{{0.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // 左下
+		{{1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // 右下
 	};
 
-	// 初期仮のインデックス(これも後で実質的に無視される)
-	std::vector<uint32_t> spriteIndices = { 0,1,2,1,3,2 };
+	// スプライト共通のインデックス
+	std::vector<uint32_t> spriteIndices = { 0, 1, 2, 1, 3, 2 };
 
-	// 指定数分のスフィアメッシュとリソースを初期化
+	// スプライト用メッシュとバッファを生成
 	for (size_t i = 0; i < kMaxSpriteCount; ++i)
 	{
-		// メッシュ初期化(vertex + index データをGPUへ転送)
 		sprites_[i].mesh.Initialize(device_->GetDevice(), spriteVertices, spriteIndices);
 
-		// マテリアルを作成・設定
 		sprites_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
-		sprites_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();// UV行列は単位行列で初期化
-		// WVP行列用のバッファを作成
-		sprites_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		sprites_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&sprites_[i].mappedData));  // CPUアクセス用にマッピング
+		sprites_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();
 
-		sprites_[i].mesh.SetIndexCount(spriteIndices.size()); // インデックス数を設定
+		sprites_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+		sprites_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&sprites_[i].mappedData));
+
+		sprites_[i].mesh.SetIndexCount(spriteIndices.size());
 	}
 
-	// 最初に使用するスフィアのインデックスをリセット
+	// 使用開始位置をリセット
 	indexSprite_ = 0;
 }
 
-void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
+void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle)
 {
-	assert(indexSprite_ < kMaxSpriteCount); // スプライト配列の範囲チェック
-
-	// 描画用SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
+	assert(indexSprite_ < kMaxSpriteCount);
 
 	RenderData& sprite = sprites_[indexSprite_];
 
@@ -982,40 +684,41 @@ void Renderer::DrawSprite(Vector2 position, Vector2 size, float rotation, uint32
 	sprite.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 	sprite.materialHandle.materialData->enableLighting = false;
 
-	// ワールド行列を計算
+	// UV変換行列設定
+	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
+	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
+	sprite.materialHandle.materialData->uvTransform = uvTransformMatrix;
+
+	// ワールド行列計算
 	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
 	Matrix4x4 rotationMatrix = Matrix4x4::MakeRotateZ(rotation);
 	Matrix4x4 translateMatrix = Matrix4x4::MakeTranslate({ position.x, position.y, 0.0f });
 	sprite.worldMatrix = (scaleMatrix * rotationMatrix) * translateMatrix;
 
-	// WVP行列を計算してGPUバッファにコピー
+	// WVP行列計算
 	WorldTransform tempTransform = { {size.x, size.y, 1.0f}, {0.0f, 0.0f, rotation}, {position.x, position.y, 0.0f} };
 	Matrix4x4 wvpMatrix = Matrix4x4::MakeWVPMatrix2D(tempTransform, float(clientWidth_), float(clientHeight_));
-	memcpy(&sprite.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 
-	// UV変換行列をマテリアルに設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	sprite.materialHandle.materialData->uvTransform = uvTransformMatrix;
+	// 定数バッファにコピー
+	sprite.mappedData->WVP = wvpMatrix;
+	sprite.mappedData->World = sprite.worldMatrix;
 
-	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Sprite"));
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Sprite"));
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
+	// 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Sprite;
+	submission.group = RenderGroup::UI;
+	submission.instanceIndex = indexSprite_;
+	submission.textureHandle = textureHandle;
+	submission.materialHandle = sprite.materialHandle;
+	submission.color = color;
+	submission.worldMatrix = sprite.worldMatrix;
+	submission.priority = 100;
+	submission.depth = 0.0f;
+	submission.data = nullptr;
 
-	// 定数バッファ・SRVをGPUにバインド
-	// 0: Material (b0)
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
-	// 1: WVP (b0)
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
-	// 2: Texture (t0)
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle));
+	modelSubmissions_.push_back(submission);
 
-	// 描画
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
-	indexSprite_++; // 使用カウント更新
+	indexSprite_++;
 }
 
 void Renderer::CreateCubes()
@@ -1120,17 +823,15 @@ void Renderer::CreateLines()
 	indexLine_ = 0;
 }
 
-void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color)
+void Renderer::SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color)
 {
 	assert(indexLine_ < kMaxLineCount);
 
-	// 描画に必要なSRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
+	// 1. データ取得
 	RenderData& line = lines_[indexLine_];
 
-	// 頂点バッファに直接書き込む（毎回作らない）
+	// 2. 頂点バッファの更新 (Mapして書き込む)
+	// ※ Submitの時点で行わないと、描画時(DrawScene)には座標情報が消えているため
 	VertexData* mappedVertices = nullptr;
 	line.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
 
@@ -1138,27 +839,40 @@ void Renderer::DrawLine(const Vector3& start, const Vector3& end, Camera& camera
 	mappedVertices[1] = { { end.x,   end.y,   end.z,   1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
 
 	line.mesh.GetVertexResource()->Unmap(0, nullptr);
+
+	// 頂点数を2に設定（描画時に使用）
 	line.mesh.SetVertexCount(2);
 
-	// マテリアル色のみ更新
+	// 3. マテリアル・行列更新
 	line.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
 
-	// WVP行列更新
 	line.worldMatrix = Matrix4x4::MakeIdentity();
 	Matrix4x4 wvpMatrix = line.worldMatrix * camera.GetViewProjectionMatrix();
 	memcpy(&line.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
 
-	// パイプライン設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Line"));
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
+	// 4. 深度計算 (線の中点で計算)
+	// Depthソートのために、線の中間地点のZ値を使用します
+	Vector3 midPoint = { (start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f, (start.z + end.z) * 0.5f };
+	Matrix4x4 worldView = line.worldMatrix * camera.GetViewMatrix();
+	// 中点座標にワールドView変換を適用してZを取得
+	float w = midPoint.x * worldView.m[0][3] + midPoint.y * worldView.m[1][3] + midPoint.z * worldView.m[2][3] + worldView.m[3][3];
+	float z = (midPoint.x * worldView.m[0][2] + midPoint.y * worldView.m[1][2] + midPoint.z * worldView.m[2][2] + worldView.m[3][2]) / w;
 
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &line.mesh.GetVertexBufferView());
+	// 5. 描画キューに登録
+	ModelSubmission submission{};
+	submission.type = RenderType::Line;
+	submission.instanceIndex = indexLine_;
 
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, line.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, line.wvpResource->GetGPUVirtualAddress());
+	// 線は不透明または半透明扱いにします
+	// (デバッグ用なら最前面(UI)でも良いですが、通常は3D空間にあるのでOpaqueかTransparent)
+	submission.group = RenderGroup::Opaque;
+	submission.depth = z;
 
-	commandManager_->GetCommandList()->DrawInstanced(UINT(line.mesh.GetVertexCount()), 1, 0, 0);
+	// LineではTextureやModelDataは使わないのでセット不要
+	submission.materialHandle = line.materialHandle;
+	submission.color = color;
+
+	modelSubmissions_.push_back(submission);
 
 	indexLine_++;
 }
@@ -1530,4 +1244,165 @@ void Renderer::DrawTrail(const std::vector<TrailPoint>& points, const TrailModul
 
 	cmdList->DrawInstanced(static_cast<UINT>(vertices.size()), 1, 0, 0);
 	indexTrail_++;
+}
+
+void Renderer::DrawSprite(const ModelSubmission& sub)
+{
+	RenderData& sprite = sprites_[sub.instanceIndex];
+	auto* cmdList = commandManager_->GetCommandList();
+
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	cmdList->SetPipelineState(psoManager_->GetPSO("Sprite"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Sprite"));
+
+	cmdList->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
+	cmdList->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
+
+	cmdList->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+
+	cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
+}
+void Renderer::DrawModel(const ModelSubmission& sub)
+{
+	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
+	auto& buffer = perObjectBuffers_[sub.instanceIndex];
+	auto* cmdList = commandManager_->GetCommandList();
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	bool isSkinning = (sub.skinCluster != nullptr);
+
+	// アウトライン描画
+	if (sub.enableOutline)
+	{
+		if (isSkinning)
+		{
+			cmdList->SetPipelineState(psoManager_->GetPSO("SkinningOutline"));
+			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("SkinningOutline"));
+
+			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+			cmdList->SetGraphicsRootConstantBufferView(2, buffer.outlineResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(3, frameDataResource_->GetGPUVirtualAddress());
+
+			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+			cmdList->IASetVertexBuffers(0, 2, vbvs);
+		}
+		else
+		{
+			cmdList->SetPipelineState(psoManager_->GetPSO("Object3DOutline"));
+			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Outline"));
+
+			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(1, buffer.outlineResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
+		}
+
+		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+	}
+
+	// スキニング描画
+	if (isSkinning)
+	{
+		cmdList->SetPipelineState(psoManager_->GetPSO("Skinning"));
+		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
+
+		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+		cmdList->IASetVertexBuffers(0, 2, vbvs);
+		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+		sub.materialHandle.materialData->color = Math::Uint32ToColorVector(sub.color);
+
+		cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+		cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
+		cmdList->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(9, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(10, shadowMap_->GetSRVHandle());
+	}
+
+	// 通常モデル描画
+	else
+	{
+		cmdList->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
+		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
+
+		cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+		sub.materialHandle.materialData->color = Math::Uint32ToColorVector(sub.color);
+
+		cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+		cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
+		cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootDescriptorTable(9, shadowMap_->GetSRVHandle());
+	}
+
+	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+}
+void Renderer::DrawGrid(const ModelSubmission& sub)
+{
+	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
+	auto& buffer = perObjectBuffers_[sub.instanceIndex];
+	auto* cmdList = commandManager_->GetCommandList();
+
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	cmdList->SetPipelineState(psoManager_->GetPSO("Grid"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
+
+	cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+	cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+
+	cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+
+	cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
+
+	cmdList->SetGraphicsRootDescriptorTable(9, shadowMap_->GetSRVHandle());
+
+	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+}
+
+void Renderer::DrawLine(const ModelSubmission& sub)
+{
+	RenderData& line = lines_[sub.instanceIndex];
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// PSOとルートシグネチャを設定
+	cmdList->SetPipelineState(psoManager_->GetPSO("Line"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
+
+	// 線描画用のプリミティブトポロジーを設定
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	// 頂点バッファをセット（インデックスバッファなし）
+	cmdList->IASetVertexBuffers(0, 1, &line.mesh.GetVertexBufferView());
+
+	// 定数バッファをセット
+	cmdList->SetGraphicsRootConstantBufferView(0, line.materialHandle.resource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, line.wvpResource->GetGPUVirtualAddress());
+
+	// 描画
+	cmdList->DrawInstanced(UINT(line.mesh.GetVertexCount()), 1, 0, 0);
 }

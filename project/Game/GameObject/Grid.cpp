@@ -34,13 +34,13 @@ void Grid::Draw()
 
     transform_.UpdateMatrix();
 
- /*   engine_->renderer_->DrawGrid(
+    engine_->renderer_->SubmitGrid(
         transform_,
         *camera_,
         *modelData_,
         textureHandle_,
         color_,
         materialHandle_
-    );*/
+    );
 #endif
 }

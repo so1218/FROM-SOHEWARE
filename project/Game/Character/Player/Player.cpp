@@ -26,6 +26,8 @@ Player::Player(Engine* engine, Camera* camera)
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
 	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+	modelTamesi_->GetTransform().scale_.x = 25;
+	modelTamesi_->GetTransform().scale_.z = 25;
 
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
@@ -309,9 +311,9 @@ void Player::DebugDraw()
 		gv->SetValue(groupName, "Scale", modelPlayer_->GetTransform().scale_);
 		changed = true;
 	}
-	if (ImGui::DragFloat3("tamesi位置（Translation）", &modelTamesi_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f))
+	ImGui::DragFloat3("tamesi位置（Translation）", &modelTamesi_->GetTransform().translation_.x, 0.1f, -100.0f, 100.0f);
 	
-	if (ImGui::DragFloat3("tamesiスケール（Scale）", &modelTamesi_->GetTransform().scale_.x, 0.1f, 0.1f, 100.0f))
+	ImGui::DragFloat3("tamesiスケール（Scale）", &modelTamesi_->GetTransform().scale_.x, 0.1f, 0.1f, 100.0f);
 	
 	ImGui::Separator();
 

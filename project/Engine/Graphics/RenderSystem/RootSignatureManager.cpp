@@ -29,7 +29,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 {
     RootSignatureBuilder builder;
 
-    // 3D
     if (name == "3D")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -50,8 +49,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "3D");
     }
-
-    // Skinning
     if (name == "Skinning")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -75,11 +72,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "Sprite") 
     {
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL); // b0: Material
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX); // b0: TransformationMatrix (WVP)
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL); 
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t0: Texture
 
-        // 静的サンプラー
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL);
 
@@ -103,16 +99,12 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "SkinningOutline");
     }
-
-    // Line
     if (name == "Line")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_VERTEX);
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Line");
     }
-
-    // Particle
     if (name == "Particle")
     {
         builder.AddSRV(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -124,8 +116,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Particle");
     }
-
-    // PostProcess
     if (name == "PostProcess")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -135,8 +125,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "PostProcess");
     }
-
-    // Fullscreen
     if (name == "Fullscreen")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -147,8 +135,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Fullscreen");
     }
-
-    // DepthExtract
     if (name == "DepthExtract")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -159,8 +145,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "DepthExtract");
     }
-
-    // Skybox
     if (name == "Skybox")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -171,8 +155,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Skybox");
     }
-
-    // Trail
     if (name == "Trail")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -185,8 +167,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Trail");
     }
-
-    // ShadowMap
     if (name == "ShadowMap")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -194,16 +174,11 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "ShadowMap");
     }
-
     if (name == "ShadowMapSkinning")
     {
-        // b0: TransformationMatrix (VS)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
-
-        // b1: Light (VS)
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_VERTEX);
 
-        // t0: MatrixPalette (VS) - これが必要！
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_VERTEX);
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "ShadowMapSkinning");

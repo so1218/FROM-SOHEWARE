@@ -22,36 +22,51 @@ enum class RenderType
     Model,
     Skinning,
     Sprite,
-    Particle
+    Particle,
+    Grid,
+    Line
 };
 
-// 描画リクエストデータ
+// 描画グループ（描画の順番）
+enum class RenderGroup {
+    Opaque = 0,      // 不透明
+    AlphaTest,       // アルファテスト
+    Transparent,     // 半透明 
+    UI,              // UI
+};
+
+// 描画リクエスト情報
 struct ModelSubmission
 {
-    const ModelData* modelData;      // メッシュデータへの参照
-    MaterialHandle materialHandle;   // マテリアル
-    uint32_t textureHandle;          // テクスチャ
-    uint32_t envMapSrvHandle;        // 環境マップ
-    uint32_t color;                  // 色
+    const ModelData* modelData;      // モデルのメッシュデータ
+    MaterialHandle materialHandle;   // 使用するマテリアル
+    uint32_t textureHandle;          // テクスチャのSRV
+    uint32_t envMapSrvHandle;        // 環境マップのSRV
+    uint32_t color;                  // メッシュカラー
     Matrix4x4 worldMatrix;           // ワールド行列
 
-    // アウトライン情報
+    // アウトライン設定
     bool enableOutline;
     float outlineWidth;
     Vector4 outlineColor;
 
-    // 割り当てられた定数バッファのインデックス（後述）
+    // 使用する定数バッファのインデックス
     size_t instanceIndex;
 
+    // スキニング情報（スキニングしない場合は nullptr）
     const SkinCluster* skinCluster = nullptr;
 
-    uint32_t priority; // 描画順 (UI=100, 不透明=0, 半透明=50 など)
-    float depth;       // カメラからの距離 (半透明ソート用)
+    // 描画順序と距離（ソート用）
+    uint32_t priority;
+    float depth;
 
-    // --- 描画タイプとデータ ---
+    // 描画タイプ
     RenderType type;
+    RenderGroup group;// ソート順の基準
 
-    // 各データへのポインタ（共用体 union を使うとメモリ節約になりますが、まずはポインタでOK）
-    // 描画時に type を見て、適切な型にキャストして使います
+    // 手動で順序を決めたい場合のみ使う
+    int layerOrder = 0;
+
+    // 描画タイプに応じた追加データ
     const void* data;
 };

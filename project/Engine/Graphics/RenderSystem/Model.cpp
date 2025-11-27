@@ -29,7 +29,7 @@ void Model::SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
 void Model::Draw()
 {
     transform_.UpdateMatrix();
-    engine_->renderer_->DrawModel(
+    engine_->renderer_->SubmitModel(
         transform_,
         *camera_,
         *modelData_,

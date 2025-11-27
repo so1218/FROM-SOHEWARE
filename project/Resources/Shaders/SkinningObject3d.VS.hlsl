@@ -17,25 +17,26 @@ struct SkinningVertexShaderInput
     int32_t4 index : INDEX0;
 };
 
-
 Skinned Skinning(SkinningVertexShaderInput input)
 {
     Skinned skinned;
-    
-    // 位置の変換
-    skinned.position = mul(input.position, gMatrixPalette[input.index.x].skeletonSpaceMatrix) * input.weight.x;
-    skinned.position += mul(input.position, gMatrixPalette[input.index.y].skeletonSpaceMatrix) * input.weight.y;
-    skinned.position += mul(input.position, gMatrixPalette[input.index.z].skeletonSpaceMatrix) * input.weight.z;
-    skinned.position += mul(input.position, gMatrixPalette[input.index.w].skeletonSpaceMatrix) * input.weight.w;
+
+    // 位置のスキニング
+    skinned.position =
+        mul(input.position, gMatrixPalette[input.index.x].skeletonSpaceMatrix) * input.weight.x +
+        mul(input.position, gMatrixPalette[input.index.y].skeletonSpaceMatrix) * input.weight.y +
+        mul(input.position, gMatrixPalette[input.index.z].skeletonSpaceMatrix) * input.weight.z +
+        mul(input.position, gMatrixPalette[input.index.w].skeletonSpaceMatrix) * input.weight.w;
     skinned.position.w = 1.0f;
-    
-    // 法線の変換
-    skinned.normal = mul(input.normal, (float32_t3x3)gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x;
-    skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y;
-    skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z;
-    skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
-    skinned.normal = normalize(skinned.normal); 
-    
+
+    // 法線のスキニング
+    skinned.normal =
+        mul(input.normal, (float3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x +
+        mul(input.normal, (float3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y +
+        mul(input.normal, (float3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z +
+        mul(input.normal, (float3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
+    skinned.normal = normalize(skinned.normal);
+
     return skinned;
 }
 
@@ -43,20 +44,18 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
 {
     VertexShaderOutput output;
     Skinned skinned = Skinning(input);
-    
-    // Skinning結果を使って変換
+
+    // スキニング結果で変換
     output.position = mul(skinned.position, gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(skinned.normal, (float32_t3x3) gTransformationMatrix.WorldInverseTranspose));
-    
-    // ワールド空間での頂点位置を計算
+    output.normal = normalize(mul(skinned.normal, (float3x3) gTransformationMatrix.WorldInverseTranspose));
+
+    // ワールド座標を計算
     float4 worldPos = mul(skinned.position, gTransformationMatrix.World);
     output.worldPosition = worldPos.xyz;
 
-    // ▼▼▼ 3. 追加: シャドウ座標 (POSITION2) の計算 ▼▼▼
-    // 0番目のライトが影を落とすと仮定して、ライト空間へ変換
+    // シャドウマップ用のライト空間座標
     output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     return output;
 }
