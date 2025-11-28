@@ -510,7 +510,8 @@ void ParticleSystem::Update()
             particle.textureHandle,
             particle.transform->rotation_.z,
             particle.config.blendMode,
-            particle.config.rotation.isBillboard
+            particle.config.rotation.isBillboard,
+            particle.config.intensity
         );
     }
 }

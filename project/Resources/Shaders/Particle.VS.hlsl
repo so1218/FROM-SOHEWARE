@@ -67,6 +67,7 @@ VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
     // その他属性
     vout.uv = vin.uv;
     vout.color = inst.color;
+    vout.color.rgb *= inst.intensity;
     vout.textureIndex = inst.textureIndex;
 
     return vout;

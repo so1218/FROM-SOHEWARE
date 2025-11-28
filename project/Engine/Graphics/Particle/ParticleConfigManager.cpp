@@ -41,6 +41,10 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 auto& configJson = j["ParticleConfig"];
                 auto& config = definition.particleConfig; // ParticleConfigへの参照を取得
 
+                config.intensity = configJson.value("intensity", 1.0f);
+
+                config.blendMode = static_cast<BlendMode>(configJson.value("blendMode", static_cast<int>(BlendMode::kBlendModeAdd)));
+
                 // VelocityModuleの読み込み
                 if (configJson.contains("velocityModule"))
                 {
@@ -361,6 +365,9 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
     // ParticleConfigをJSONに変換
     nlohmann::json particleConfigJson =
     {
+        { "intensity", config.intensity },
+        { "blendMode", static_cast<int>(config.blendMode) },
+
         { "velocityModule",
         {
             { "enabled", config.velocity.enabled },

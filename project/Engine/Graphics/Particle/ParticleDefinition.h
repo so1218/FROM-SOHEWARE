@@ -338,6 +338,7 @@ struct ParticleConfig
     uint32_t textureIndex;
     Vector3 initialPosition;
     Vector4 baseColor;
+    float intensity = 1.0f;
     BlendMode blendMode = BlendMode::kBlendModeAdd;
 
     VelocityModule velocity;

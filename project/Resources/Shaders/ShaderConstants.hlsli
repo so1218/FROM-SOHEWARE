@@ -56,9 +56,11 @@ struct MaterialData
 
     int enableRim; 
     float rimPower;
-    float2 padding1;
     float rimIntensity; 
+    float padding1;
+    
     float3 rimColor;
+    int32_t rimUseLightDir;
 
     int32_t isArtWave;
     int32_t isArtSound;
@@ -139,8 +141,8 @@ struct ParticleInstanceData
     float4 color;
     uint32_t textureIndex;
     float rotationZ;
-    int32_t isBillboard;
-    float padding; 
+    int32_t isBillboard; 
+    float intensity;
 };
 
 struct BrightExtractSettings

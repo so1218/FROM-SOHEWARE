@@ -76,7 +76,7 @@ public:
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
-        BlendMode blendMode, bool isBillboard = true);
+        BlendMode blendMode, bool isBillboard, float intensity);
     void SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();

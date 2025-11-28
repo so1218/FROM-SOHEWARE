@@ -60,6 +60,7 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->rimPower = materialSettings_.rimPower;
             handle.materialData->rimIntensity = materialSettings_.rimIntensity;
             handle.materialData->rimColor = materialSettings_.rimColor;
+            handle.materialData ->rimUseLightDir = materialSettings_.rimUseLightDir;
         }
     }
 }

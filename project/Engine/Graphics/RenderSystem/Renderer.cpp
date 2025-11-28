@@ -917,7 +917,8 @@ void Renderer::CreateParticles()
 	frameDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
-void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, BlendMode blendMode, bool isBillboard)
+void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, 
+	BlendMode blendMode, bool isBillboard, float intensity)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
 
@@ -928,6 +929,7 @@ void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t c
 	data.textureIndex = textureIndex;
 	data.rotationZ = rotationZ;
 	data.isBillboard = isBillboard ? 1 : 0;
+	data.intensity = intensity;
 
 	// ブレンドモード・テクスチャごとにバッチ登録
 	particleBatches_[blendMode][textureIndex].push_back(data);

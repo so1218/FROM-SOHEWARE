@@ -32,6 +32,40 @@
                 0.0
             ]
         },
+        "blendMode": 1,
+        "collisionModule": {
+            "bounce": 0.5,
+            "dampen": 0.0,
+            "enabled": false,
+            "friction": 0.0,
+            "lifeLoss": 0.0,
+            "plane": {
+                "normal": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "point": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": 0,
+            "worldObj": {
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    2.0,
+                    2.0,
+                    2.0
+                ],
+                "shape": 0
+            }
+        },
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4211081216,
@@ -39,6 +73,14 @@
             "mode": 1,
             "startColor": 3014590719,
             "startColor2": 5834751
+        },
+        "intensity": 12.300000190734863,
+        "noiseModule": {
+            "enabled": false,
+            "frequency": 1.0,
+            "scrollSpeed": 1.0,
+            "separateAxes": false,
+            "strength": 1.0
         },
         "physicsModule": {
             "drag": 0.0,
@@ -50,20 +92,30 @@
             ]
         },
         "rotationModule": {
-            "angularVelocity2D": 5.0,
-            "angularVelocity3D": [
-                0.0,
-                0.0,
-                0.0
-            ],
             "enabled": false,
             "isBillboard": true,
-            "orientation3D": [
+            "maxAngularVelocity2D": 0.0,
+            "maxAngularVelocity3D": [
                 0.0,
                 0.0,
                 0.0
             ],
-            "randomStartRotation": true
+            "maxStartRotation": [
+                0.0,
+                0.0,
+                360.0
+            ],
+            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "minStartRotation": [
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         "shapeModule": {
             "boxSize": [
@@ -78,7 +130,7 @@
                 10.0,
                 10.0
             ],
-            "type": 1
+            "type": 0
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
@@ -97,7 +149,7 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureHandle": 34
+            "textureHandle": 40
         },
         "trailModule": {
             "alignment": 0,

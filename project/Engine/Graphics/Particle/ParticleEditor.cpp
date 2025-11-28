@@ -47,23 +47,31 @@ void ParticleEditor::ShowEditor()
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
 
-            // コンボボックス表示用の配列
-            const char* blendModeItems[] = 
+            if (ImGui::CollapsingHeader("基本設定"))
             {
-                "None",      
-                "Normal",    
-                "Add",       
-                "Subtract",  
-                "Multiply",  
-                "Screen",    
-                "Exclusion"  
-            };
+                bool intensityChanged = ImGui::DragFloat("発光強度", &config.intensity, 0.1f, 0.0f, 50.0f, "%.1f");
 
-            int currentBlendMode = static_cast<int>(config.blendMode);
+                ImGui::Separator();
 
-            if (ImGui::Combo("ブレンドモード", &currentBlendMode, blendModeItems, IM_ARRAYSIZE(blendModeItems)))
-            {
-                config.blendMode = static_cast<BlendMode>(currentBlendMode);
+                // コンボボックス表示用の配列
+                const char* blendModeItems[] =
+                {
+                    "None",
+                    "Normal",
+                    "Add",
+                    "Subtract",
+                    "Multiply",
+                    "Screen",
+                    "Exclusion"
+                };
+
+                int currentBlendMode = static_cast<int>(config.blendMode);
+
+                if (ImGui::Combo("ブレンドモード", &currentBlendMode, blendModeItems, IM_ARRAYSIZE(blendModeItems)))
+                {
+                    config.blendMode = static_cast<BlendMode>(currentBlendMode);
+                }
+
             }
 
             // エミッター設定

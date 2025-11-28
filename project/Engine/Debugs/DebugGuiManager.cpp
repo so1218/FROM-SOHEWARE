@@ -286,12 +286,8 @@ void DebugGuiManager::DrawLightSettings()
 
     if (ImGui::TreeNode("リムライト"))
     {
-        // int <-> bool の変換 (チェックボックス用)
-        bool rimEnabled = (materialSettings.enableRim != 0);
-        if (ImGui::Checkbox("リムライト有効", &rimEnabled))
-        {
-            materialSettings.enableRim = rimEnabled ? 1 : 0;
-        }
+        ImGui::Checkbox("リムライト有効", &materialSettings.enableRim);
+        ImGui::Checkbox("ライト方向の影響を受ける", &materialSettings.rimUseLightDir);
 
         ImGui::DragFloat("鋭さ", &materialSettings.rimPower, 0.1f, 0.1f, 20.0f);
 
