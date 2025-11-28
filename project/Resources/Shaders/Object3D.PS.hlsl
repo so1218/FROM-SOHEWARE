@@ -330,7 +330,6 @@ float3 DrawArtKikagakuColor(PixelShaderInput input)
     float2 fragCoord = input.texcoord * resolution;
     float2 uv = (fragCoord * 2.0 - resolution) / resolution.y;
 
-    // normalize(uv) * length(uv)
     uv = normalize(uv) * length(uv);
 
     float3 col = float3(0, 0, 0);
@@ -415,29 +414,28 @@ float3 DrawArtGridColor(PixelShaderInput input)
 {
     float2 fragCoord = input.texcoord * gFrameData.iResolution;
 
-    // UV原点を中央に（-0.5～+0.5）
+    // UV の中心を原点に（-0.5 ～ +0.5）
     float2 uv = input.texcoord - 0.5;
 
-    // ±10000範囲に変換（スプライトが10000x10000単位で扱う）
+    // 10000x10000 単位のグリッド空間に変換
     uv *= 10000.0;
 
-    // グリッド線の設定
+    // グリッド線設定
     float scale = 1.0;
     float thickness = 1.5;
 
-    // 通常のグリッド線
+    // 通常グリッド線
     float normalLine = gridLine(uv, scale, thickness);
     float gridMask = 1.0 - normalLine;
 
-    // 10単位ごとの太線（強調ライン）
+    // 10単位ごとの太線
     float majorLineThickness = 1.5;
     float majorInterval = 10.0;
-
     float2 majorUV = uv / majorInterval;
     float majorLine = gridLine(majorUV, 1.0, majorLineThickness);
     float majorMask = 1.0 - majorLine;
 
-    // 線の優先度（太線優先）
+    // 太線優先で合成
     float finalGridMask = max(gridMask, majorMask);
 
     // 背景色・グリッド色
@@ -445,18 +443,18 @@ float3 DrawArtGridColor(PixelShaderInput input)
     float3 lineColor = float3(0.07, 0.07, 0.07);
     float3 majorLineColor = float3(0.20, 0.20, 0.20);
 
-    // 線を重ねる
+    // 通常線と太線を重ねる
     float3 col = lerp(bgColor, lineColor, gridMask);
     col = lerp(col, majorLineColor, majorMask);
 
-    // 原点軸の太さとカラー
+    // 原点軸（X, Z）の強調
     float axisThickness = 2.0;
 
-    // Z軸 = 緑
+    // Z軸（緑）
     float zAxis = smoothstep(0.0, 1.0, abs(uv.x) / (fwidth(uv.x) * axisThickness));
     col = lerp(col, float3(0.1, 0.6, 0.1), 1.0 - zAxis);
 
-    // X軸 = 赤
+    // X軸（赤）
     float xAxis = smoothstep(0.0, 1.0, abs(uv.y) / (fwidth(uv.y) * axisThickness));
     col = lerp(col, float3(0.6, 0.1, 0.1), 1.0 - xAxis);
 
@@ -622,48 +620,51 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
         if (gAreaLights[i].enable == 0)
             continue;
 
-        // 1. ライトの中心からピクセルへのベクトルを計算
+        // ライト中心からピクセルへのベクトル
         float3 vecToPixel = worldPos - gAreaLights[i].position;
 
-        // 2. ライトのローカル軸（right, up）へピクセルを射影
+        // ライトのローカル軸（right, up）と半サイズ
         float3 rightDir = normalize(gAreaLights[i].right);
         float3 upDir = normalize(gAreaLights[i].up);
         float halfWidth = length(gAreaLights[i].right);
         float halfHeight = length(gAreaLights[i].up);
 
+        // ピクセルをライトのローカル軸へ射影
         float projRight = dot(vecToPixel, rightDir);
         float projUp = dot(vecToPixel, upDir);
 
-        // 3. 射影した点を矩形の範囲内にクランプ（はみ出さないようにする）
+        // 射影点を矩形領域内にクランプ
         float clampedRight = clamp(projRight, -halfWidth, halfWidth);
         float clampedUp = clamp(projUp, -halfHeight, halfHeight);
 
-        // 4. クランプした位置から「ピクセルに最も近いライト表面上の点」を再構築
+        // ピクセルに最も近いライト面上の点
         float3 closestPointOnLight = gAreaLights[i].position +
                                      rightDir * clampedRight +
                                      upDir * clampedUp;
 
-        // 5. "最も近い点" を光源として、点光源と同様の計算を行う
+        // その点を光源として扱う
         float3 lightVec = closestPointOnLight - worldPos;
         float distance = length(lightVec);
-        float3 lightDir = normalize(lightVec); // これが実質的なライト方向
+        float3 lightDir = normalize(lightVec);
 
-        // 6. 減衰の計算 
+        // 光の減衰
         float attenuation = gAreaLights[i].range > 0.001f
             ? pow(saturate(1.0f - distance / gAreaLights[i].range), gAreaLights[i].decay)
             : 1.0f;
 
-        // 7. ディフューズ（拡散光）
+        // ディフューズ
         float ndotl = saturate(dot(normal, lightDir));
-        float3 diffuse = gMaterial.color.rgb * baseColor * gAreaLights[i].color.rgb * ndotl * gAreaLights[i].intensity * attenuation;
+        float3 diffuse = gMaterial.color.rgb * baseColor * gAreaLights[i].color.rgb *
+                         ndotl * gAreaLights[i].intensity * attenuation;
         finalColor += diffuse;
 
-        // 8. スペキュラ（鏡面反射）
+        // スペキュラ
         if (ndotl > 0.0f)
         {
             float3 halfVec = normalize(lightDir + toEye);
             float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-            float3 specular = gMaterial.specularColor.rgb * gAreaLights[i].color.rgb * gAreaLights[i].intensity * spec * attenuation;
+            float3 specular = gMaterial.specularColor.rgb * gAreaLights[i].color.rgb *
+                              gAreaLights[i].intensity * spec * attenuation;
             finalColor += specular;
         }
     }
@@ -671,13 +672,13 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
     return finalColor;
 }
 
-// 影の濃さを計算
+// シャドウ強度を計算
 float CalculateShadow(float4 shadowCoord)
 {
-    // 透視除算
+    // 透視除算でプロジェクション座標に変換
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
-    // UV空間(0~1)に変換（Y反転に注意）
+    // UV空間(0〜1)へ変換（Yは反転）
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
@@ -689,7 +690,7 @@ float CalculateShadow(float4 shadowCoord)
         return 1.0f;
     }
 
-    // 深度比較（PCFあり、バイアス付き）
+    // PCF付き深度比較（バイアス使用）
     float bias = gMaterial.shadowBias;
     float shadowFactor = gShadowMap.SampleCmpLevelZero(
         gShadowSampler,
@@ -697,22 +698,20 @@ float CalculateShadow(float4 shadowCoord)
         projCoords.z - bias
     );
 
-    return shadowFactor; // 1.0=日向, 0.0=影
+    return shadowFactor; // 1.0＝光が当たる、0.0＝影
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye)
 {
-    // 法線と視線ベクトルの内積（0.0〜1.0）
-    // 正面を向いているほど 1.0、輪郭ほど 0.0 になる
+    // 法線と視線ベクトルの内積（正面ほど1.0）
     float NdotV = saturate(dot(normal, toEye));
 
-    // 反転させる（正面 0.0、輪郭 1.0）
+    // 輪郭強調用に反転（輪郭ほど1.0）
     float rim = 1.0f - NdotV;
 
-    // 指数関数でカーブを調整（鋭さの制御）
-    // rimPowerが大きいほど、光の帯が細くなる
+    // rimPowerで帯の鋭さを調整
     rim = pow(rim, max(gMaterial.rimPower, 0.001f));
 
-    // 色と強さを乗算
+    // 色と強度を適用
     return gMaterial.rimColor * rim * gMaterial.rimIntensity;
 }
