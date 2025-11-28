@@ -824,5 +824,6 @@
     <FxCompile Include="Resources\Shaders\ShadowMapSkinning.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\Downsample.PS.hlsl" />
   </ItemGroup>
 </Project>

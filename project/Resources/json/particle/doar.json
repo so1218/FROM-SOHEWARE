@@ -32,7 +32,7 @@
                 0.0
             ]
         },
-        "blendMode": 1,
+        "blendMode": 2,
         "collisionModule": {
             "bounce": 0.5,
             "dampen": 0.0,

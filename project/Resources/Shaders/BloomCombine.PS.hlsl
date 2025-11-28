@@ -32,7 +32,8 @@ float4 main(VSOutput input) : SV_TARGET
         result = sceneColor + bloomColor * gCombineSettings.bloomIntensity;
     }
     else if (gCombineSettings.effectMode == 2)
-    { // Overlayっぽい加算
+    { 
+        // Overlayっぽい加算
         float3 overlay = 1.0 - (1.0 - bloomColor.rgb) * (1.0 - sceneColor.rgb);
         result.rgb = lerp(sceneColor.rgb, overlay, gCombineSettings.bloomIntensity);
     }

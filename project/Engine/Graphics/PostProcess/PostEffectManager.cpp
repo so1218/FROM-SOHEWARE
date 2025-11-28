@@ -50,10 +50,16 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     // シーンテクスチャ（入力元）のSRVインデックスを取得
     sceneTextureSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
 
+    UINT smallWidth = width / 4;  // 1/4 サイズに設定
+    UINT smallHeight = height / 4;
+    // 最小サイズチェック
+    smallWidth = Math::MyMax(1u, smallWidth);
+    smallHeight = Math::MyMax(1u, smallHeight);
+
     // 各ポストエフェクト用のターゲットを作成
     std::tie(brightExtractResource_, brightExtractRTVHandle_, brightExtractIndex_) = createTarget(width, height);
-    std::tie(verticalBlurResource_, verticalBlurRTVHandle_, verticalBlurIndex_) = createTarget(width, height);
-    std::tie(horizontalBlurResource_, horizontalBlurRTVHandle_, horizontalBlurIndex_) = createTarget(width, height);
+    std::tie(verticalBlurResource_, verticalBlurRTVHandle_, verticalBlurIndex_) = createTarget(smallWidth, smallHeight);
+    std::tie(horizontalBlurResource_, horizontalBlurRTVHandle_, horizontalBlurIndex_) = createTarget(smallWidth, smallHeight);
     std::tie(bloomCombineResource_, bloomCombineRTVHandle_, bloomCombineIndex_) = createTarget(width, height);
     std::tie(neonResource_, neonRTVHandle_, neonIndex_) = createTarget(width, height);
     std::tie(depthExtractResource_, depthExtractRTVHandle_, depthExtractIndex_) = createTarget(width, height);
@@ -129,7 +135,7 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     brightExtractData_->threshold = 1.01f;
     brightExtractData_->intensity = 0.4f;
 
-    blurSettingsData_->texelSize = { 0.004f, 0.004f };
+    blurSettingsData_->texelSize = { 1.0f / smallWidth, 1.0f / smallHeight };
     blurSettingsData_->blurStrength = 0.574f;
 
     combineSettingsData_->bloomIntensity = 0.8f; 
@@ -339,6 +345,46 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         cmdList->ResourceBarrier(1, &barrierBrightExtractToSRV);
     }
 
+    // 縮小用のビューポートを定義 (画面サイズの 1/4)
+    D3D12_VIEWPORT smallViewport = {};
+    smallViewport.Width = static_cast<float>(kClientWidth) / 4.0f;
+    smallViewport.Height = static_cast<float>(kClientHeight) / 4.0f;
+    smallViewport.MinDepth = 0.0f;
+    smallViewport.MaxDepth = 1.0f;
+
+    D3D12_RECT smallScissor = {};
+    smallScissor.right = static_cast<LONG>(kClientWidth) / 4;
+    smallScissor.bottom = static_cast<LONG>(kClientHeight) / 4;
+
+    // Downsampling (縮小パス)
+    {
+        // 書き込み先: verticalBlurResource_ (あらかじめ1/4サイズで作っておく)
+        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            verticalBlurResource_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        cmdList->ResourceBarrier(1, &barrier);
+
+        // ビューポートを小さくする
+        cmdList->RSSetViewports(1, &smallViewport);
+        cmdList->RSSetScissorRects(1, &smallScissor);
+
+        // PSOは「ただのテクスチャ描画(Copy)」か「4点平均ダウンサンプル」を使う
+        cmdList->SetPipelineState(psoManager_->GetPSO("Downsample")); 
+
+        // 入力: さっき作った高輝度テクスチャ(大)
+        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
+
+        // 出力: 縮小バッファ(verticalBlurRTV)
+        cmdList->OMSetRenderTargets(1, &verticalBlurRTVHandle_, FALSE, nullptr);
+
+        cmdList->DrawInstanced(3, 1, 0, 0);
+
+        // リソースバリアは次のBlurでRTとして使うので、ここではまだ遷移させなくていいが、
+        // わかりやすく一旦SRVに戻すなら遷移させる（最適化の余地あり）
+        CD3DX12_RESOURCE_BARRIER toSRV = CD3DX12_RESOURCE_BARRIER::Transition(
+            verticalBlurResource_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        cmdList->ResourceBarrier(1, &toSRV);
+    }
+
     // Vertical Blur
     {
         CD3DX12_RESOURCE_BARRIER barrierVerticalBlur = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -346,6 +392,10 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierVerticalBlur);
+
+        // ビューポートを小さくする
+        cmdList->RSSetViewports(1, &smallViewport);
+        cmdList->RSSetScissorRects(1, &smallScissor);
 
         cmdList->SetPipelineState(psoManager_->GetPSO("BlurVertical"));
         cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
@@ -373,6 +423,10 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrierHorizontalBlur);
 
+        // ビューポートを小さくする
+        cmdList->RSSetViewports(1, &smallViewport);
+        cmdList->RSSetScissorRects(1, &smallScissor);
+
         cmdList->SetPipelineState(psoManager_->GetPSO("BlurHorizontal"));
         cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(verticalBlurIndex_));
         cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
@@ -390,6 +444,13 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &barrierHorizontalBlurToSRV);
     }
+
+    // ここでビューポートをフルサイズに戻す
+    D3D12_VIEWPORT fullViewport = { 0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClientHeight), 0.0f, 1.0f };
+    D3D12_RECT fullScissor = { 0, 0, static_cast<LONG>(kClientWidth), static_cast<LONG>(kClientHeight) };
+
+    cmdList->RSSetViewports(1, &fullViewport);
+    cmdList->RSSetScissorRects(1, &fullScissor);
 
     // Bloom Combine
     {

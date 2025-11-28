@@ -5,22 +5,25 @@ SamplerState samLinear : register(s0);
 
 cbuffer BlurSettings : register(b0)
 {
-    float2 texelSize; // 1.0 / resolution
+    float2 texelSize;
     float blurStrength; // ブラー範囲
     float _padding;
 }
 
+static const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+static const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
 float4 main(VSOutput input) : SV_TARGET
 {
-    float weights[5] = { 0.204164f, 0.304005f, 0.093913f, 0.020597f, 0.003327f };
-
-    float4 color = tex.Sample(samLinear, input.uv) * weights[0];
-
-    for (int i = 1; i < 5; ++i)
+    // 中心ピクセル
+    float4 color = tex.Sample(samLinear, input.uv) * weight[0];
+    
+    for (int i = 1; i < 3; ++i)
     {
-        float offset = i * texelSize.y * blurStrength;
-        color += tex.Sample(samLinear, input.uv + float2(0, offset)) * weights[i];
-        color += tex.Sample(samLinear, input.uv - float2(0, offset)) * weights[i];
+        float2 offsetUV = float2(0.0, offset[i] * texelSize.y * blurStrength);
+
+        color += tex.Sample(samLinear, input.uv + offsetUV) * weight[i];
+        color += tex.Sample(samLinear, input.uv - offsetUV) * weight[i];
     }
 
     return color;
