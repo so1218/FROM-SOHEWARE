@@ -54,6 +54,12 @@ struct MaterialData
     float shadowBias; 
     float shadowDensity; 
 
+    int enableRim; 
+    float rimPower;
+    float2 padding1;
+    float rimIntensity; 
+    float3 rimColor;
+
     int32_t isArtWave;
     int32_t isArtSound;
     int32_t isArtQuad;

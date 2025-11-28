@@ -30,11 +30,6 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.addShadow = true;        
     defaultSettings.shadowBias = 0.0005f;    
     defaultSettings.shadowDensity = 0.7f;
-    defaultSettings.isArtWave = false;
-    defaultSettings.isArtQuad = false;
-    defaultSettings.isArtKikagaku = false;
-    defaultSettings.isArtSound = false;
-    defaultSettings.isArtFrag = false;
     defaultSettings.isArtGrid = false;
 	defaultSettings.environmentMapIntensity = 0.0f;
 
@@ -61,6 +56,10 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->addShadow = materialSettings_.addShadow;
             handle.materialData->shadowBias = materialSettings_.shadowBias;
             handle.materialData->shadowDensity = materialSettings_.shadowDensity;
+            handle.materialData->enableRim = materialSettings_.enableRim;
+            handle.materialData->rimPower = materialSettings_.rimPower;
+            handle.materialData->rimIntensity = materialSettings_.rimIntensity;
+            handle.materialData->rimColor = materialSettings_.rimColor;
         }
     }
 }

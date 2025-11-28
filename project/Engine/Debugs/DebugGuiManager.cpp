@@ -284,6 +284,23 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("リムライト"))
+    {
+        // int <-> bool の変換 (チェックボックス用)
+        bool rimEnabled = (materialSettings.enableRim != 0);
+        if (ImGui::Checkbox("リムライト有効", &rimEnabled))
+        {
+            materialSettings.enableRim = rimEnabled ? 1 : 0;
+        }
+
+        ImGui::DragFloat("鋭さ", &materialSettings.rimPower, 0.1f, 0.1f, 20.0f);
+
+        ImGui::DragFloat("強さ", &materialSettings.rimIntensity, 0.01f, 0.0f, 10.0f);
+
+        ImGui::ColorEdit3("発光色", &materialSettings.rimColor.x);
+
+        ImGui::TreePop();
+    }
 }
 
 void DebugGuiManager::DrawPostEffectSettings()

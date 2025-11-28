@@ -135,6 +135,11 @@ struct MaterialSettings
     float shadowBias = 0.0005f;
     float shadowDensity = 0.7f;
 
+    int enableRim = 0;        
+    float rimPower = 3.0f;    
+    float rimIntensity = 1.0f;
+    Vector3 rimColor = { 1.0f, 1.0f, 1.0f }; 
+
     int32_t isArtWave = false;
     int32_t isArtSound = false;
     int32_t isArtQuad = false;

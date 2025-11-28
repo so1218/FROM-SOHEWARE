@@ -61,6 +61,7 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
 float3 ApplyPointLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplySpotLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 toEye);
+float3 ApplyRimLight(float3 normal, float3 toEye);
 
 // 影の濃さを計算する関数
 float CalculateShadow(float4 shadowCoord);
@@ -144,6 +145,14 @@ PixelShaderOutput main(PixelShaderInput input)
         
         // 環境光を最終的な色に加算する
         finalColor += environmentColor.rgb * gMaterial.environmentMapIntensity;
+        
+        if (gMaterial.enableRim != 0)
+        {
+            float3 rimColor = ApplyRimLight(normal, toEye);
+            
+            // 既存の色に「加算」することで発光表現にする
+            finalColor += rimColor;
+        }
     }
     else
     {
@@ -689,4 +698,21 @@ float CalculateShadow(float4 shadowCoord)
     );
 
     return shadowFactor; // 1.0=日向, 0.0=影
+}
+
+float3 ApplyRimLight(float3 normal, float3 toEye)
+{
+    // 法線と視線ベクトルの内積（0.0〜1.0）
+    // 正面を向いているほど 1.0、輪郭ほど 0.0 になる
+    float NdotV = saturate(dot(normal, toEye));
+
+    // 反転させる（正面 0.0、輪郭 1.0）
+    float rim = 1.0f - NdotV;
+
+    // 指数関数でカーブを調整（鋭さの制御）
+    // rimPowerが大きいほど、光の帯が細くなる
+    rim = pow(rim, max(gMaterial.rimPower, 0.001f));
+
+    // 色と強さを乗算
+    return gMaterial.rimColor * rim * gMaterial.rimIntensity;
 }
