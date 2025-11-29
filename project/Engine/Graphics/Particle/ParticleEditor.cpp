@@ -49,7 +49,7 @@ void ParticleEditor::ShowEditor()
 
             if (ImGui::CollapsingHeader("基本設定"))
             {
-                bool intensityChanged = ImGui::DragFloat("発光強度", &config.intensity, 0.1f, 0.0f, 50.0f, "%.1f");
+                bool intensityChanged = ImGui::DragFloat("発光強度", &config.intensity, 0.1f, 0.0f);
 
                 ImGui::Separator();
 

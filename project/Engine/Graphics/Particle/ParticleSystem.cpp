@@ -342,12 +342,12 @@ void ParticleSystem::Update()
             // Vortex Module
             if (config.vortex.enabled)
             {
-                // 1. 中心と軸の計算
+                // 中心と軸の計算
                 Vector3 vortexCenter = particleState.initialPosition + config.vortex.center;
                 Vector3 diff = particleState.transform->translation_ - vortexCenter;
                 Vector3 axis = config.vortex.axis.Normalize();
 
-                // 2. 軸成分と半径成分の分解
+                // 軸成分と半径成分の分解
                 float height = diff.Dot(axis);          // 軸方向の高さ
                 Vector3 pointOnAxis = axis * height;    // 軸上の点
                 Vector3 radialVector = diff - pointOnAxis; // 軸からパーティクルへのベクトル
