@@ -31,6 +31,8 @@ PixelShaderOutput main(PixelShaderInput input)
     // 3. 色の決定 (テクスチャ色 × マテリアル色)
     // ライティング計算は行わない
     output.color = textureColor * gMaterial.color;
+    
+    output.color *= gMaterial.emissiveIntensity;
 
     // 4. アルファテスト (完全に透明なら描画しない)
     if (output.color.a == 0.0)

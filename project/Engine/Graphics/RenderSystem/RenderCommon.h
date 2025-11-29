@@ -33,6 +33,7 @@ enum class RenderType
 enum class RenderGroup {
     Opaque = 0,      // 不透明
     AlphaTest,       // アルファテスト
+    Grid,
     Transparent,     // 半透明 
     UI,              // UI
 };

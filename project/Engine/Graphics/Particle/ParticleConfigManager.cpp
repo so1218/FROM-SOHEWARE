@@ -214,6 +214,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.enabled = trailJson.value("enabled", false);
                     config.trail.lifetime = trailJson.value("lifetime", 0.5f);
                     config.trail.width = trailJson.value("width", 1.0f);
+                    config.trail.emissiveIntensity = trailJson.value("emissiveIntensity", 1.0f);
                     config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
 
                     config.trail.textureHandle = trailJson.value("textureHandle", 0);
@@ -453,6 +454,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "enabled", config.trail.enabled },
             { "lifetime", config.trail.lifetime },
             { "width", config.trail.width },
+            { "emissiveIntensity", config.trail.emissiveIntensity },
             { "minVertexDistance", config.trail.minVertexDistance },
             { "textureHandle", config.trail.textureHandle },
             { "textureMode", static_cast<int>(config.trail.textureMode) },

@@ -156,7 +156,7 @@ void DebugGuiManager::DrawLightSettings()
     MaterialSettings& materialSettings = materialManager_->GetMaterialSettings();
 
     ImGui::Checkbox("ライティング有効", &materialSettings.enableLighting);
-
+    ImGui::Separator();
     // ディレクショナルライト
     if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
@@ -181,7 +181,7 @@ void DebugGuiManager::DrawLightSettings()
         }
         ImGui::TreePop();
     }
-
+    ImGui::Separator();
     // ポイントライト
     if (ImGui::TreeNode("ポイントライト (点光源)"))
     {
@@ -205,7 +205,7 @@ void DebugGuiManager::DrawLightSettings()
         }
         ImGui::TreePop();
     }
-
+    ImGui::Separator();
     // スポットライト
     if (ImGui::TreeNode("スポットライト"))
     {
@@ -231,6 +231,7 @@ void DebugGuiManager::DrawLightSettings()
         }
         ImGui::TreePop();
     }
+    ImGui::Separator();
     if (ImGui::TreeNode("エリアライト (矩形光源)"))
     {
         for (int i = 0; i < lightManager_->GetAreaLightCount(); ++i)
@@ -281,21 +282,7 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
         ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
         ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
-        ImGui::TreePop();
-    }
-    if (ImGui::TreeNode("エミッシブ (自己発光)"))
-    {
-        // 発光強度
-        // 1.0を超えるとBloomがかかるように設計されているので、上限を高めに設定
-        ImGui::DragFloat("発光強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip("0.0: 発光なし\n1.0以上: ブルームがかかり始めます\n10.0以上: 激しく発光します");
-        }
-
-        // 発光色
-        ImGui::ColorEdit3("発光色", &materialSettings.emissiveColor.x);
-
+        ImGui::DragFloat("エミッシブ (自己発光):発光強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
         ImGui::TreePop();
     }
     ImGui::Separator();

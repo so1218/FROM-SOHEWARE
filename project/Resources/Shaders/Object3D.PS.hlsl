@@ -140,9 +140,7 @@ PixelShaderOutput main(PixelShaderInput input)
         // ★★★ ここで自己発光を加算 ★★★
     // ライティングの影響を受けず、常に一定の明るさを足す
     // emissiveIntensity を 2.0 や 5.0 にすれば、閾値(1.1)を超えて確実に光る
-        float3 emissive = gMaterial.emissiveColor * gMaterial.emissiveIntensity;
-        
-        finalColor += emissive;
+        finalColor *= gMaterial.emissiveIntensity;
     }
     else
     {

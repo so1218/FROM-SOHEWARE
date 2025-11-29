@@ -235,6 +235,7 @@ void Renderer::DrawScene()
 			switch (a.group)
 			{
 			case RenderGroup::Opaque:      return a.depth < b.depth;   
+			case RenderGroup::Grid:         return a.depth < b.depth;
 			case RenderGroup::Transparent: return a.depth > b.depth;   
 			case RenderGroup::UI:          return a.layerOrder < b.layerOrder;
 			default:                       return a.depth < b.depth;
@@ -646,7 +647,7 @@ void Renderer::SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelD
 	// 描画キューに登録
 	ModelSubmission submission{};
 	submission.type = RenderType::Grid;
-	submission.group = RenderGroup::Transparent;
+	submission.group = RenderGroup::Grid;
 	submission.modelData = &modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
@@ -1187,6 +1188,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	trailData.mappedMaterial->jitterMode = static_cast<int>(config.jitterMode);
 	trailData.mappedMaterial->jitterPhase = config.jitterPhase;
 	trailData.mappedMaterial->isDissolveEnabled = (config.dissolveTextureHandle != 0) ? 1 : 0;
+	trailData.mappedMaterial->emissiveIntensity = config.emissiveIntensity;
 
 	// 深度計算（半透明ソート用）
 	Vector3 midPos = (points.front().position + points.back().position) * 0.5f;

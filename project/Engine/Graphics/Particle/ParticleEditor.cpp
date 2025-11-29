@@ -439,6 +439,7 @@ void ParticleEditor::ShowEditor()
                     if (trail.enabled)
                     {
                         ImGui::DragFloat("太さ", &trail.width, 0.1f, 0.1f, 10.0f);
+                        ImGui::DragFloat("発光強度", &trail.emissiveIntensity, 0.1f, 0.0f, 100.0f);
                         ImGui::DragFloat("寿命", &trail.lifetime, 0.1f, 0.1f, 5.0f);
                         ImGui::DragFloat("最小頂点距離", &trail.minVertexDistance, 0.01f, 0.01f, 10.0f);
 

@@ -324,6 +324,8 @@ struct TrailModule
     float dissolveSpeed = 2.0f;
 
     JitterMode jitterMode = JitterMode::Wave;
+
+    float emissiveIntensity = 1.0f;
 };
 
 struct TrailPoint

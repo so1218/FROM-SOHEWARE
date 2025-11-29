@@ -57,13 +57,10 @@ struct MaterialData
     int enableRim; 
     float rimPower;
     float rimIntensity; 
-    float padding1;
+    float emissiveIntensity;
     
     float3 rimColor;
     int32_t rimUseLightDir;
-    
-    float3 emissiveColor; 
-    float emissiveIntensity;
 
     int32_t isArtWave;
     int32_t isArtSound;
@@ -86,7 +83,9 @@ struct TrailMaterialData
     int isDissolveEnabled;
     
     int jitterMode;
-    float3 padding;
+    float emissiveIntensity;
+    float2 padding;
+    
 };
 
 struct DirectionalLight
