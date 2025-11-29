@@ -74,12 +74,12 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     texDesc.Height = height;
     texDesc.DepthOrArraySize = 1;
     texDesc.MipLevels = 1;
-    texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     texDesc.SampleDesc.Count = 1;
     texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
     D3D12_CLEAR_VALUE clearValue = {};
-    clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    clearValue.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     clearValue.Color[0] = clearColor.x;
     clearValue.Color[1] = clearColor.y;
     clearValue.Color[2] = clearColor.z;
@@ -106,7 +106,7 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     offscreenRTVHandles_[rtvIndex] = rtvHandle;
 
     D3D12_SHADER_RESOURCE_VIEW_DESC sceneSrvDesc = {};
-    sceneSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    sceneSrvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     sceneSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     sceneSrvDesc.Texture2D.MipLevels = 1;
     sceneSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

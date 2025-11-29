@@ -142,6 +142,9 @@ struct MaterialSettings
 
     bool rimUseLightDir = false;
 
+    Vector3 emissiveColor = { 1.0f, 1.0f, 1.0f }; 
+    float emissiveIntensity = 0.0f;
+
     int32_t isArtWave = false;
     int32_t isArtSound = false;
     int32_t isArtQuad = false;

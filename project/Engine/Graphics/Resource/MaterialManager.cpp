@@ -61,6 +61,8 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->rimIntensity = materialSettings_.rimIntensity;
             handle.materialData->rimColor = materialSettings_.rimColor;
             handle.materialData ->rimUseLightDir = materialSettings_.rimUseLightDir;
+            handle.materialData->emissiveColor = materialSettings_.emissiveColor;
+            handle.materialData->emissiveIntensity = materialSettings_.emissiveIntensity;
         }
     }
 }

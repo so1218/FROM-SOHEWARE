@@ -61,6 +61,9 @@ struct MaterialData
     
     float3 rimColor;
     int32_t rimUseLightDir;
+    
+    float3 emissiveColor; 
+    float emissiveIntensity;
 
     int32_t isArtWave;
     int32_t isArtSound;

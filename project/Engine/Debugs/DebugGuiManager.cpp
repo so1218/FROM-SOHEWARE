@@ -283,7 +283,22 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
         ImGui::TreePop();
     }
+    if (ImGui::TreeNode("エミッシブ (自己発光)"))
+    {
+        // 発光強度
+        // 1.0を超えるとBloomがかかるように設計されているので、上限を高めに設定
+        ImGui::DragFloat("発光強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("0.0: 発光なし\n1.0以上: ブルームがかかり始めます\n10.0以上: 激しく発光します");
+        }
 
+        // 発光色
+        ImGui::ColorEdit3("発光色", &materialSettings.emissiveColor.x);
+
+        ImGui::TreePop();
+    }
+    ImGui::Separator();
     if (ImGui::TreeNode("リムライト"))
     {
         ImGui::Checkbox("リムライト有効", &materialSettings.enableRim);
@@ -297,6 +312,7 @@ void DebugGuiManager::DrawLightSettings()
 
         ImGui::TreePop();
     }
+    ImGui::Separator();
 }
 
 void DebugGuiManager::DrawPostEffectSettings()

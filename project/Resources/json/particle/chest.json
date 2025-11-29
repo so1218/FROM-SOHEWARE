@@ -1,17 +1,17 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 15,
         "duration": 5.0,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 4.0,
+        "lifetime": 2.3499999046325684,
         "looping": true,
         "playOnAwake": true,
         "position": [
-            23.799999237060547,
+            22.399999618530273,
             0.0,
             0.0
         ],
@@ -32,38 +32,90 @@
                 0.0
             ]
         },
+        "blendMode": 2,
+        "collisionModule": {
+            "bounce": 0.5,
+            "dampen": 0.0,
+            "enabled": false,
+            "friction": 0.0,
+            "lifeLoss": 0.0,
+            "plane": {
+                "normal": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "point": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": 0,
+            "worldObj": {
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    2.0,
+                    2.0,
+                    2.0
+                ],
+                "shape": 0
+            }
+        },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4278190080,
+            "endColor": 218622208,
             "endColor2": 754909184,
             "mode": 0,
-            "startColor": 4278196479,
+            "startColor": 103864575,
             "startColor2": 1375734527
+        },
+        "intensity": 132.10000610351563,
+        "noiseModule": {
+            "enabled": false,
+            "frequency": 5.590000152587891,
+            "scrollSpeed": 1.0,
+            "separateAxes": false,
+            "strength": 13.300000190734863
         },
         "physicsModule": {
             "drag": 0.0,
-            "enabled": false,
+            "enabled": true,
             "gravity": [
                 23.0,
-                -9.800000190734863,
+                -18.0,
                 0.0
             ]
         },
         "rotationModule": {
-            "angularVelocity2D": 5.0,
-            "angularVelocity3D": [
-                0.0,
-                0.0,
-                0.0
-            ],
             "enabled": true,
             "isBillboard": true,
-            "orientation3D": [
+            "maxAngularVelocity2D": 0.0,
+            "maxAngularVelocity3D": [
                 0.0,
-                90.0,
+                0.0,
                 0.0
             ],
-            "randomStartRotation": true
+            "maxStartRotation": [
+                0.0,
+                0.0,
+                360.0
+            ],
+            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "minStartRotation": [
+                0.0,
+                0.0,
+                0.0
+            ]
         },
         "shapeModule": {
             "boxSize": [
@@ -83,21 +135,21 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.0,
-                0.0,
+                3.0,
+                3.0,
                 0.2199999988079071
             ],
             "frequency": 0.0,
-            "oscillate": true,
+            "oscillate": false,
             "startScale": [
-                1.0,
-                1.0,
+                3.0,
+                3.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": true,
-            "textureHandle": 12
+            "textureHandle": 40
         },
         "trailModule": {
             "alignment": 0,
@@ -145,7 +197,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 5.070000171661377
+            "speed": 22.15999984741211
         },
         "vortexModule": {
             "axis": [
@@ -159,8 +211,8 @@
                 0.0
             ],
             "enabled": true,
-            "orbitalSpeed": 18.0,
-            "radialSpeed": 30.0
+            "orbitalSpeed": 93.4000015258789,
+            "radialSpeed": 0.30000001192092896
         }
     }
 }
