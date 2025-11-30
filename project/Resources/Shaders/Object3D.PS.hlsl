@@ -460,7 +460,7 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
 // シャドウ強度を計算
 float CalculateShadow(float4 shadowCoord)
 {
-    // 透視除算でプロジェクション座標に変換
+    // 透視除算
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
     // UV空間(0〜1)へ変換（Yは反転）
@@ -475,20 +475,37 @@ float CalculateShadow(float4 shadowCoord)
         return 1.0f;
     }
 
-    // PCF付き深度比較（バイアス使用）
     float bias = gMaterial.shadowBias;
-    float shadowFactor = gShadowMap.SampleCmpLevelZero(
-        gShadowSampler,
-        projCoords.xy,
-        projCoords.z - bias
-    );
+    float currentDepth = projCoords.z - bias;
 
-    return shadowFactor; // 1.0＝光が当たる、0.0＝影
+    // PCF処理 (3x3 サンプリング)
+    float shadowSum = 0.0f;
+    
+    // シャドウマップの1ピクセルあたりのサイズ (2048x2048想定)
+    // 本当はC++から送りたい
+    float2 texelSize = float2(1.0f / 2048.0f, 1.0f / 2048.0f);
+
+    // 周囲のピクセルをサンプリングして平均化
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            shadowSum += gShadowMap.SampleCmpLevelZero(
+                gShadowSampler,
+                projCoords.xy + offset,
+                currentDepth
+            );
+        }
+    }
+
+    // 9回分の平均を返す
+    return shadowSum / 9.0f;
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
 {
-    // 基本のリムライト（視線との角度）
+    // 基本のリムライト
     float NdotV = saturate(dot(normal, toEye));
     float rim = 1.0f - NdotV;
     rim = pow(rim, max(gMaterial.rimPower, 0.001f));

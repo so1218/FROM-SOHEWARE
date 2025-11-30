@@ -74,7 +74,7 @@
             "startColor": 3826323967,
             "startColor2": 1375734527
         },
-        "intensity": 39.5,
+        "intensity": 41.70000076293945,
         "noiseModule": {
             "enabled": false,
             "frequency": 5.590000152587891,
@@ -181,13 +181,13 @@
                 1.0
             ],
             "tailWidthScale": 2.9700000286102295,
-            "textureHandle": 40,
+            "textureHandle": 41,
             "textureMode": 0,
             "tiling": [
                 1.0,
                 1.0
             ],
-            "width": 0.10000000149011612
+            "width": 0.5
         },
         "velocityModule": {
             "angleRange": 110.0,
