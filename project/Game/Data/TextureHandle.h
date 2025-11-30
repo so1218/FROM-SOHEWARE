@@ -7,6 +7,7 @@ enum TextureID
     white1x1,
     uvChecker,
     monsterBall,
+    toonRamp,
 
     // dds
     skyboxCubemapBlack,
@@ -57,6 +58,7 @@ private:
             { white1x1, "Resources/images/white1x1.png" },
             { uvChecker,"Resources/images/uvChecker.png" },
             { monsterBall,   "Resources/images/Shrimp_TestTexture.png" },
+            { toonRamp,   "Resources/images/toonRamp_3.png" },
 
             // dds
             { skyboxCubemapBlack,   "Resources/images/black_cube.dds" },

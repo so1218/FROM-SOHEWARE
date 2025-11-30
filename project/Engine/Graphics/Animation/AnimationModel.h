@@ -27,6 +27,7 @@ public:
     void SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
+    void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetEasing(EasingType type) { easingType_ = type; }
     // アウトライン設定
     void SetEnableOutline(bool enable);
@@ -63,6 +64,7 @@ private:
 
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
+    uint32_t toonRampHandle_;
     uint32_t color_;
     MaterialHandle materialHandle_;
 

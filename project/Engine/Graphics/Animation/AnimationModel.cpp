@@ -15,6 +15,7 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, ModelData modelDa
     animationTime_ = 0.0f;
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
+    toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
     color_ = 0xFFFFFFFF;
 }
 
@@ -85,6 +86,7 @@ void AnimationModel::Draw()
         skinCluster_,
         textureHandle_,
         envMapTextureHandle_,
+        toonRampHandle_,
         color_,
         materialHandle_,
         enableOutline_,

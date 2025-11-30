@@ -45,6 +45,7 @@ struct ModelSubmission
     MaterialHandle materialHandle;   // 使用するマテリアル
     uint32_t textureHandle;          // テクスチャのSRV
     uint32_t envMapSrvHandle;        // 環境マップのSRV
+    uint32_t toonRampHandle;
     uint32_t color;                  // メッシュカラー
     Matrix4x4 worldMatrix;           // ワールド行列
 

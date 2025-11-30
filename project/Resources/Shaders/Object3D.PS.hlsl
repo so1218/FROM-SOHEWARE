@@ -10,7 +10,9 @@ Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
 SamplerState gSampler : register(s0);
 Texture2D<float> gShadowMap : register(t2);
+Texture2D<float4> gToonRamp : register(t3);
 SamplerComparisonState gShadowSampler : register(s1);
+SamplerState gClampSampler : register(s2);
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
@@ -268,6 +270,8 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
 
         // ライト方向・強度・色を取得
         float3 lightDir = normalize(-gDirectionalLights[i].direction);
+        // ランプ計算用にsaturateしていない生のdot積を取る
+        float NdotL_Raw = dot(normal, lightDir);
         float ndotl = saturate(dot(normal, lightDir));
         float3 lightColor = gDirectionalLights[i].color.rgb * gDirectionalLights[i].color.a;
         float lightIntensity = gDirectionalLights[i].intensity;
@@ -295,11 +299,15 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
         }
         else if (gMaterial.lightMode == LIGHT_TOON)
         {
-            float3 toonColor =
-                ndotl > 0.7f ? baseColor :
-                ndotl > 0.3f ? baseColor * 0.25f :
-                               baseColor * 0.04f;
-            diffuse = toonColor * lightColor * lightIntensity;
+            // 法線とライトの角度をUV座標に変換
+            float rampU = NdotL_Raw * 0.5f + 0.5f;
+            
+            // テキスチャから色を取得
+            float3 rampColor = gToonRamp.Sample(gClampSampler, float2(rampU, 0.5f)).rgb;
+            
+            //float3 finalShadowColor = rampColor * gMaterial.shadowColor;
+
+            diffuse = gMaterial.color.rgb * baseColor * rampColor * lightColor * lightIntensity;
         }
 
         // 影を適用（0番目のライトのみ）

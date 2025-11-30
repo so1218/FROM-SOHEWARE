@@ -25,6 +25,7 @@ public:
     void SetWorldTransform(const WorldTransform& transform);
     void SetTextureHandle(uint32_t handle);
     void SetEnvironmentMapHandle(uint32_t handle);
+    void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetColor(uint32_t color);
     void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
@@ -51,6 +52,7 @@ private:
 
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
+    uint32_t toonRampHandle_;
     uint32_t color_ = 0xFFFFFFFF;
 
     ModelData* modelData_;
