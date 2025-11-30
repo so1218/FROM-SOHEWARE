@@ -26,6 +26,7 @@ public:
     void SetColor(uint32_t color) { color_ = color; }
     void SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
+    void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetEasing(EasingType type) { easingType_ = type; }

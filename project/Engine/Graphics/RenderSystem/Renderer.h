@@ -72,7 +72,7 @@ public:
         MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
     void SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
-    void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder);
+    void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, float emissiveIntensity);
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,

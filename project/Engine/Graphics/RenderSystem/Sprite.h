@@ -20,6 +20,7 @@ public:
     void SetTextureHandle(uint32_t textureHandle);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);
+    void SetEmissiveIntensity(float intensity);
 
 	// ゲッター
     Vector2& GetPosition();
@@ -39,4 +40,5 @@ private:
     WorldTransform uvTransform_; 
 
     int layerOrder_ = 0;
+    float emissiveIntensity_ = 1.0f;
 };

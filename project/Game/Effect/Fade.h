@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "Sprite.h"
 
 class Fade
 {
@@ -18,11 +19,11 @@ public:
 
 	Engine* engine_;
 
+	std::unique_ptr<Sprite> sprite_;
+
 	Vector2 spritePos = { 0,0 };
 	Vector2 spriteSize;
 	Vector4 color_ = { 0,0,0,1 };
-
-	WorldTransform uvTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 	// フェードの状態
 	enum class Status

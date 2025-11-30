@@ -7,6 +7,8 @@ Sprite::Sprite(Engine* engine)
     uvTransform_.scale_ = { 1.0f, 1.0f, 1.0f };
     uvTransform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     uvTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
+
+    emissiveIntensity_ = 1.0f;
 }
 
 void Sprite::SetPosition(const Vector2& position) { position_ = position; }
@@ -16,6 +18,7 @@ void Sprite::SetColor(uint32_t color) { color_ = color; }
 void Sprite::SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
 void Sprite::SetUVTransform(const WorldTransform& uv) { uvTransform_ = uv; }
 void Sprite::SetLayerOrder(int order) { layerOrder_ = order; }
+void Sprite::SetEmissiveIntensity(float intensity) { emissiveIntensity_ = intensity; }
 
 Vector2& Sprite::GetPosition() { return position_; }
 Vector2& Sprite::GetSize() { return size_; }
@@ -33,6 +36,7 @@ void Sprite::Draw()
         color_, 
         uvTransform_,
         textureHandle_,
-        layerOrder_
+        layerOrder_,
+        emissiveIntensity_
     );
 }

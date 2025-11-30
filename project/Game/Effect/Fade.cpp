@@ -8,11 +8,17 @@
 Fade::Fade(Engine* engine)
 {
 	engine_ = engine;
+
+	sprite_ = std::make_unique<Sprite>(engine_);
 }
 
 void Fade::Initialize()
 {
 	spriteSize = { (float)kClientWidth,(float)kClientHeight };
+
+	sprite_->SetPosition(spritePos);
+	sprite_->SetSize(spriteSize);
+	sprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
 
 	// デバッグ用のグローバル変数登録
 	auto* gv = GlobalVariables::GetInstance();
@@ -65,6 +71,8 @@ void Fade::Update()
 		color_.w = std::clamp(counter_ / duration_, 0.0f, 1.0f);
 		break;
 	}
+
+	sprite_->SetColor(Math::ColorVectorToUint32(color_));
 }
 
 void Fade::Draw()
@@ -73,13 +81,7 @@ void Fade::Draw()
 	{
 		return;
 	}
-	engine_->renderer_->SubmitSprite(
-		spritePos,
-		spriteSize,
-		0.0f,
-		Math::ColorVectorToUint32(color_),
-		uvTransform,
-		TextureHandle::Get(TextureID::white1x1),0);
+	sprite_->Draw();
 }
 
 void Fade::DebugDraw()

@@ -33,6 +33,7 @@ public:
     void SetOutlineWidth(float width);
     void SetOutlineColor(const Vector4& color);
     void SetRenderGroup(RenderGroup group);
+    void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }

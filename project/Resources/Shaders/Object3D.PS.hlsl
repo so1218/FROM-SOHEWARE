@@ -138,16 +138,15 @@ PixelShaderOutput main(PixelShaderInput input)
             
             finalColor += rimColor;
         }
-        
-        // ★★★ ここで自己発光を加算 ★★★
-    // ライティングの影響を受けず、常に一定の明るさを足す
-    // emissiveIntensity を 2.0 や 5.0 にすれば、閾値(1.1)を超えて確実に光る
-        finalColor *= gMaterial.emissiveIntensity;
+       
     }
     else
     {
         finalColor = baseColor * gMaterial.color.rgb;
     }
+    
+     // 自己発光を加算
+    finalColor *= gMaterial.emissiveIntensity;
 
     output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;

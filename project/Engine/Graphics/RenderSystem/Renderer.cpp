@@ -703,7 +703,8 @@ void Renderer::CreateSprites()
 	indexSprite_ = 0;
 }
 
-void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder)
+void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
+        float emissiveIntensity)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
 
@@ -743,6 +744,7 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	submission.worldMatrix = sprite.worldMatrix;
 	submission.depth = 0.0f;
 	submission.layerOrder = layerOrder;
+	submission.materialHandle.materialData->emissiveIntensity = emissiveIntensity;
 
 	modelSubmissions_.push_back(submission);
 
