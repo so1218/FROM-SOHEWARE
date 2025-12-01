@@ -4,7 +4,7 @@
 // オブジェクトの変換行列
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 
-// ライト情報（単体または配列先頭をバインド）
+// ライト情報（今は配列先頭をバインド）
 ConstantBuffer<DirectionalLight> gLight : register(b1);
 
 struct ShadowVSOutput

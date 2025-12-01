@@ -1,7 +1,7 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-// スキニング用の入力（ボーンウェイト等が必要なため）
+// スキニング用の入力
 struct SkinningVertexShaderInput
 {
     float32_t4 position : POSITION0;

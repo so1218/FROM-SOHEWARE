@@ -125,7 +125,7 @@ PixelShaderOutput main(PixelShaderInput input)
         
         if (gMaterial.enableRim != 0)
         {
-            // メインライトの方向を取得（ライトが有効でない場合は、とりあえず上方向などを入れておく）
+            // メインライトの方向を取得
             float3 toLight = float3(0, 1, 0);
             if (gDirectionalLights[0].enable != 0)
             {

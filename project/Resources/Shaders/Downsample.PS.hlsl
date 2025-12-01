@@ -5,7 +5,7 @@ SamplerState samLinear : register(s0);
 
 cbuffer BlurSettings : register(b0)
 {
-    float2 texelSize; // 1.0 / resolution
+    float2 texelSize; // 1.0/resolution
     float blurStrength; // ブラー範囲
     float _padding;
 }
@@ -25,7 +25,7 @@ float4 main(VSOutput input) : SV_TARGET
     float3 s5 = tex.Sample(samLinear, uv).rgb; // 中心
 
     // 重み付け平均
-    // 中心を強く(0.5)、周囲を弱く(0.125 * 4 = 0.5)混ぜることで
+    // 中心を強く(0.5)、周囲を弱く(0.125 * 4 = 0.5)
     // 光の芯を残しつつ滑らかにする
     float3 result = (s1 + s2 + s3 + s4) * 0.125f + s5 * 0.5f;
 

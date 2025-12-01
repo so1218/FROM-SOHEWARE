@@ -1,8 +1,7 @@
 #include "FullScreenQuad.hlsli"
 
 Texture2D gTexture : register(t0);
-// 深度テクスチャ
-Texture2D gDepthTex : register(t1); // 深度テクスチャ（t1）
+Texture2D gDepthTex : register(t1); 
 SamplerState gSampler : register(s0);
 
 cbuffer PostEffectSettings : register(b0)
@@ -590,14 +589,14 @@ float4 main(VSOutput input) : SV_TARGET
         float2 waveOffset = float2(0.0, 0.0);
 
         // 横方向（X座標に揺らぎ → 横波）
-        if (waveDirection == 0 || waveDirection == 2) // 横 or 両方
+        if (waveDirection == 0 || waveDirection == 2) 
         {
             float waveX = sin(uv.y * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
             waveOffset.x += waveX;
         }
 
-    // 縦方向（Y座標に揺らぎ → 縦波）
-        if (waveDirection == 1 || waveDirection == 2) // 縦 or 両方
+        // 縦方向（Y座標に揺らぎ → 縦波）
+        if (waveDirection == 1 || waveDirection == 2) 
         {
             float waveY = sin(uv.x * waveFrequency + totalTime * waveSpeed) * waveAmplitude;
             waveOffset.y += waveY;
