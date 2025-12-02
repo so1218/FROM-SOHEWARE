@@ -27,7 +27,7 @@ AnimationModel::~AnimationModel()
     }
 }
 
-void AnimationModel::Update(float targetDuration, bool isLoop)
+void AnimationModel::Update(float speedScale, bool isLoop)
 {
     // 再生が既に終了している場合は何もしない
     if (isFinished_)
@@ -37,9 +37,9 @@ void AnimationModel::Update(float targetDuration, bool isLoop)
 
     // 再生速度を計算
     float speed = 1.0f;
-    if (targetDuration > 0.0f)
+    if (speedScale > 0.0f)
     {
-        speed = animeModelData_.animation.duration / targetDuration;
+        speed = animeModelData_.animation.duration / speedScale;
     }
 
     // デルタタイムに速度を乗算してアニメーション時間を進める
@@ -100,6 +100,15 @@ void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
+}
+
+void AnimationModel::SetAnimation(const Animation& animation)
+{
+    // アニメーションデータを上書きコピー
+    animeModelData_.animation = animation;
+
+    // 再生時間をリセット
+    ResetAnimation();
 }
 
 void AnimationModel::SetEnableOutline(bool enable) { enableOutline_ = enable; }

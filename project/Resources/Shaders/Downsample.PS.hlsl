@@ -26,7 +26,7 @@ float4 main(VSOutput input) : SV_TARGET
 
     // 重み付け平均
     // 中心を強く(0.5)、周囲を弱く(0.125 * 4 = 0.5)
-    // 光の芯を残しつつ滑らかにする
+    // 光の芯を残しつつ滑らかにする処理
     float3 result = (s1 + s2 + s3 + s4) * 0.125f + s5 * 0.5f;
 
     return float4(result, 1.0f);

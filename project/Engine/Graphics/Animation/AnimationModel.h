@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AnimationData.h" 
+#include "AnimationHandle.h" 
 #include "Engine.h"
 #include "Easing.h"
 
@@ -12,13 +13,16 @@ public:
     ~AnimationModel();
 
     // アニメーション更新
-    void Update(float targetDuration, bool isLoop);
+    void Update(float speedScale, bool isLoop);
 
     // 描画処理
     void Draw();
 
     // アニメーションのリセット
     void ResetAnimation();
+
+    // 現在再生中のアニメーションのIDを取得(多重再生防止)
+    AnimationID GetCurrentAnimationID() const { return currentAnimationID_; }
 
     // セッター
     void SetTransform(const WorldTransform& transform) { transform_ = transform; }
@@ -32,16 +36,11 @@ public:
     void SetEasing(EasingType type) { easingType_ = type; }
     // アウトライン設定
     void SetEnableOutline(bool enable);
-    void SetOutline(float width, const Vector4& color) {
-        outlineWidth_ = width;
-        outlineColor_ = color;
-    }
-    void SetOutline(float width, uint32_t color) {
-        outlineWidth_ = width;
-        outlineColor_ = Math::Uint32ToColorVector(color); 
-    }
+    void SetOutlineWidth(float width) { outlineWidth_ = width; }
+    void SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
+    void SetOutlineColor(uint32_t color) { outlineColor_ = Math::Uint32ToColorVector(color); }
 
-    void SetRenderGroup(RenderGroup group){ renderGroup_ = group; }
+    void SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
@@ -49,6 +48,11 @@ public:
     float GetAnimationTime() const { return animationTime_; }
     bool IsOutlineEnabled() const { return enableOutline_; }
     uint32_t GetColor() const { return color_; }
+
+    // アニメーションを切り替える関数
+    void SetAnimation(const Animation& animation);
+
+    MaterialHandle materialHandle_;
 
 private:
 
@@ -67,14 +71,16 @@ private:
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
     uint32_t color_;
-    MaterialHandle materialHandle_;
 
     bool isFinished_ = false;      // 再生が終了したか
     EasingType easingType_ = EasingType::EaseLinear;
 
     bool enableOutline_ = false;
-    float outlineWidth_ = 5.0f;     
+    float outlineWidth_ = 5.0f;
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;
+
+    AnimationID currentAnimationID_ = AnimationID::count;
+    float speedScale_ = 1.0f;
 };

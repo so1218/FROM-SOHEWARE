@@ -18,9 +18,6 @@ float4 main(VSOutput input) : SV_TARGET
 {
     // 深度テクスチャから深度値をサンプル
     float depth = depthTexture.Sample(samplerLinear, input.uv);
-
-    // 深度値は0〜1に正規化されているのでそのまま使えます
-    // 必要に応じて線形化する場合はここで計算
-
+   
     return float4(depth, depth, depth, 1.0f);
 }

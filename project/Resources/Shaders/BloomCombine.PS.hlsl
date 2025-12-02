@@ -33,8 +33,7 @@ float3 UpsampleTent(Texture2D tex, SamplerState s, float2 uv, float2 texelSize, 
     return (s1 + s3 + s7 + s9) * 0.0625 + (s2 + s4 + s6 + s8) * 0.125 + s5 * 0.25;
 }
 
-// 簡易トーンマッピング (Reinhard)
-// これにより、強烈な光(10.0など)を 0.0~1.0 のモニタ表示範囲に自然に収める
+// トーンマッピング
 float3 ACESFilm(float3 x)
 {
     float a = 2.51f;
@@ -47,23 +46,21 @@ float3 ACESFilm(float3 x)
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    // 1. シーン情報の取得
+    // シーン情報の取得
     float4 sceneColor = gSceneTexture.Sample(gSampler, input.uv);
     
-    // 2. Bloomテクスチャのテクセルサイズを自動取得
-    // (C++で定数バッファを作らなくても、HLSL側で画像の大きさを調べられます)
+    // Bloomテクスチャのテクセルサイズを自動取得
     uint width, height;
     gBlurredBloom.GetDimensions(width, height);
     float2 bloomTexelSize = float2(1.0f / float(width), 1.0f / float(height));
 
-    // 3. Tent Filterを使って滑らかに拡大サンプリング
-    // 半径(sampleScale)を少し広め(1.0~2.0)にとるとよりフワッとなります
+    // Tent Filterを使って滑らかに拡大サンプリング
     float3 bloomColor = UpsampleTent(gBlurredBloom, gSampler, input.uv, bloomTexelSize, 1.0f);
 
     float3 result = float3(0, 0, 0);
 
-    // 4. 合成処理 (基本は EffectMode 1 の加算)
-    if (gCombineSettings.effectMode == 0) // Halo (輝度ベース)
+    // 合成処理
+    if (gCombineSettings.effectMode == 0) // Halo
     {
         float luminance = dot(bloomColor.rgb, float3(0.299, 0.587, 0.114));
         float3 haloColor = float3(1.0, 1.0, 1.0) * luminance * 1.5;
@@ -75,9 +72,8 @@ float4 main(VSOutput input) : SV_TARGET
         float3 overlay = 1.0 - (1.0 - bloomColor.rgb) * (1.0 - sceneColor.rgb);
         result = lerp(sceneColor.rgb, overlay, gCombineSettings.bloomIntensity);
     }
-    else // Default: Standard Additive (Neon) ★ここがパーティクル用におすすめ
+    else // Neon
     {
-        // 単純加算。BloomColor自体がHDR(1.0以上)を持っている場合、強烈に発光する
         result = sceneColor.rgb + bloomColor * gCombineSettings.bloomIntensity;
     }
     
@@ -88,9 +84,7 @@ float4 main(VSOutput input) : SV_TARGET
     
     result = clamp(result, 0.0, 65504.0);
 
-    // 5. トーンマッピング
-    // saturate() の代わりに ToneMap() を使うことで、
-    // 1.0を超えた光の「芯」が白く飛び、周囲が色づく「発光感」が出る
+    // トーンマッピング
     result = ACESFilm(result);
 
     return float4(result, sceneColor.a);
