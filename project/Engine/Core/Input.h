@@ -21,14 +21,14 @@ public:
     Input(const Input&) = delete;
     Input& operator=(const Input&) = delete;
 
-    enum StickType 
+    enum StickType
     {
         LeftStick,
         RightStick
     };
 
     // Xboxコントローラーのボタン列挙
-    enum PadButton 
+    enum PadButton
     {
         ButtonUp = XINPUT_GAMEPAD_DPAD_UP,
         ButtonDown = XINPUT_GAMEPAD_DPAD_DOWN,
@@ -36,14 +36,16 @@ public:
         ButtonRight = XINPUT_GAMEPAD_DPAD_RIGHT,
         ButtonMenu = XINPUT_GAMEPAD_START,
         ButtonPhoto = XINPUT_GAMEPAD_BACK,
-        ButtonLT = XINPUT_GAMEPAD_LEFT_THUMB,
-        ButtonRT = XINPUT_GAMEPAD_RIGHT_THUMB,
+        ButtonL3 = XINPUT_GAMEPAD_LEFT_THUMB,
+        ButtonR3 = XINPUT_GAMEPAD_RIGHT_THUMB,
         ButtonLB = XINPUT_GAMEPAD_LEFT_SHOULDER,
         ButtonRB = XINPUT_GAMEPAD_RIGHT_SHOULDER,
         ButtonA = XINPUT_GAMEPAD_A,
         ButtonB = XINPUT_GAMEPAD_B,
         ButtonX = XINPUT_GAMEPAD_X,
         ButtonY = XINPUT_GAMEPAD_Y,
+        ButtonLT = 0x10000,
+        ButtonRT = 0x20000,
     };
 
     enum MouseButton
@@ -60,7 +62,7 @@ public:
     // マウス関連
     int GetMouseWheelDelta();
     Vector2  GetMousePosition();
-    int GetMouseX();        
+    int GetMouseX();
     int GetMouseY();
     bool IsMouseButtonTriggered(DWORD button);// マウスキーが押された瞬間
     bool IsMouseButtonPressed(DWORD button);// マウスキーが常に押されてるかどうか
@@ -75,9 +77,9 @@ public:
 
     // コントローラー関連
     bool IsControllerConnected(int controllerId);
-    bool IsControllerButtonPressed(int controllerId, WORD button);
-    bool IsControllerButtonTriggered(int controllerId, WORD button);
-    bool IsControllerButtonReleased(int controllerId, WORD button);
+    bool IsControllerButtonPressed(int controllerId, int button);
+    bool IsControllerButtonTriggered(int controllerId, int button);
+    bool IsControllerButtonReleased(int controllerId, int button);
     SHORT GetLeftTrigger(int controllerId);
     SHORT GetRightTrigger(int controllerId);
     SHORT GetLeftStickX(int controllerId);

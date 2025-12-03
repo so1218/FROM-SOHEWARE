@@ -11,7 +11,7 @@ Input& Input::GetInstance()
     return instance;
 }
 
-Input::Input() 
+Input::Input()
 {
     directInput_ = nullptr;
     keyboard_ = nullptr;
@@ -33,7 +33,7 @@ Input::Input()
     }
 }
 
-Input::~Input() 
+Input::~Input()
 {
     if (keyboard_)
     {
@@ -45,7 +45,7 @@ Input::~Input()
         mouse_->Unacquire();
         mouse_->Release();
     }
-    if (directInput_) 
+    if (directInput_)
     {
         directInput_->Release();
     }
@@ -84,15 +84,15 @@ void Input::Update()
 {
     // 前回の状態を保存
     memcpy(preKeys_, keys_, sizeof(keys_));
-    preMouseState_ = mouseState_; 
+    preMouseState_ = mouseState_; // structは直接代入でOK
 
     // デバイスの制御を取得
-    if (keyboard_) 
+    if (keyboard_)
     {
         keyboard_->Acquire();
         keyboard_->GetDeviceState(sizeof(keys_), keys_);
     }
-    if (mouse_) 
+    if (mouse_)
     {
         mouse_->Acquire();
         mouse_->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState_);
@@ -149,7 +149,7 @@ void Input::UpdateController()
 
 int Input::GetMouseWheelDelta()
 {
-    return mouseState_.lZ; 
+    return mouseState_.lZ;
 }
 
 Vector2 Input::GetMousePosition()
@@ -191,15 +191,15 @@ bool Input::IsMouseButtonTriggered(DWORD button)
 {
     return (mouseState_.rgbButtons[button] & 0x80) && !(preMouseState_.rgbButtons[button] & 0x80);
 }
-bool Input::IsMouseButtonPressed(DWORD button) 
+bool Input::IsMouseButtonPressed(DWORD button)
 {
     return (mouseState_.rgbButtons[button] & 0x80);
 }
-bool Input::IsMouseButtonIsKeyReleased(DWORD button) 
+bool Input::IsMouseButtonIsKeyReleased(DWORD button)
 {
     return !(mouseState_.rgbButtons[button] & 0x80) && (preMouseState_.rgbButtons[button] & 0x80);
 }
-bool Input::IsMouseButtonUp(DWORD button) 
+bool Input::IsMouseButtonUp(DWORD button)
 {
     return !(preMouseState_.rgbButtons[button] & 0x80);
 }
@@ -209,20 +209,70 @@ bool Input::IsControllerConnected(int controllerId)
     return (XInputGetState(controllerId, &controllerStates_[controllerId]) == ERROR_SUCCESS);
 }
 
-bool Input::IsControllerButtonPressed(int controllerId, WORD button)
+bool Input::IsControllerButtonPressed(int controllerId, int button)
 {
+    if (controllerId < 0 || controllerId >= 4) return false;
+
+    // LT
+    if (button == PadButton::ButtonLT)
+    {
+        return controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    }
+    // RT
+    else if (button == PadButton::ButtonRT)
+    {
+        return controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    }
+
+    // 通常ボタン
     return (controllerStates_[controllerId].Gamepad.wButtons & button) == button;
 }
 
-bool Input::IsControllerButtonTriggered(int controllerId, WORD button)
+bool Input::IsControllerButtonTriggered(int controllerId, int button)
 {
-    return  ((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
+    if (controllerId < 0 || controllerId >= 4) return false;
+
+    // LT
+    if (button == PadButton::ButtonLT)
+    {
+        bool isPressed = controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        return isPressed && !wasPressed;
+    }
+    // RT
+    else if (button == PadButton::ButtonRT)
+    {
+        bool isPressed = controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        return isPressed && !wasPressed;
+    }
+
+    // 通常ボタン
+    return ((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
         !((prevControllerStates_[controllerId].Gamepad.wButtons & button) == button);
 }
 
-bool Input::IsControllerButtonReleased(int controllerId, WORD button)
+bool Input::IsControllerButtonReleased(int controllerId, int button)
 {
-    return  !((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
+    if (controllerId < 0 || controllerId >= 4) return false;
+
+    // LT
+    if (button == PadButton::ButtonLT)
+    {
+        bool isPressed = controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        return !isPressed && wasPressed; // 今回押されてなくて、前回押されていた
+    }
+    // RT
+    else if (button == PadButton::ButtonRT)
+    {
+        bool isPressed = controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        return !isPressed && wasPressed;
+    }
+
+    // 通常ボタン
+    return !((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
         ((prevControllerStates_[controllerId].Gamepad.wButtons & button) == button);
 }
 
@@ -263,16 +313,16 @@ bool Input::IsLeftOnStick(int controllerId, StickType stickType)
     {
         return GetLeftStickX(controllerId) < -STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) 
+    else if (stickType == RightStick)
     {
         return GetRightStickX(controllerId) < -STICK_THRESHOLD;
     }
     return false;
 }
 
-bool Input::IsRightOnStick(int controllerId, StickType stickType) 
+bool Input::IsRightOnStick(int controllerId, StickType stickType)
 {
-    if (stickType == LeftStick) 
+    if (stickType == LeftStick)
     {
         return GetLeftStickX(controllerId) > STICK_THRESHOLD;
     }
@@ -303,7 +353,7 @@ bool Input::IsDownOnStick(int controllerId, StickType stickType)
     {
         return GetLeftStickY(controllerId) < -STICK_THRESHOLD;
     }
-    else if (stickType == RightStick) 
+    else if (stickType == RightStick)
     {
         return GetRightStickY(controllerId) < -STICK_THRESHOLD;
     }
