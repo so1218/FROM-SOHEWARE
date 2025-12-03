@@ -23,6 +23,7 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* 
 	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
 	modelEnemy_->SetColor(0x000088ff);
 	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, *ModelHandle::Get(data.modelId), AnimationHandle::Get(data.animationId));
+	modelEnemy_->SetEnableOutline(true);
 }
 
 void Enemy::Initialize()
@@ -104,6 +105,12 @@ void Enemy::Update()
 
 	animationEnemy_->Update(1.0f, true);
 	animationEnemy_->SetTransform(transform);
+
+	modelEnemy_->SetEmissiveIntensity(4.0f);
+	modelEnemy_->materialHandle_.materialData->enableRim = true;
+	modelEnemy_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+	modelEnemy_->materialHandle_.materialData->rimPower = 3.8f;
+	modelEnemy_->materialHandle_.materialData->rimIntensity = 1.7f;
 }
 
 void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)

@@ -44,6 +44,8 @@ public:
     bool IsOutlineEnabled() const { return enableOutline_; }
     float GetOutlineWidth() const { return outlineWidth_; }
     const Vector4& GetOutlineColor() const { return outlineColor_; }
+
+    MaterialHandle materialHandle_;
 private:
     Engine* engine_ = nullptr;
     Camera* camera_ = nullptr;
@@ -57,7 +59,6 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
 
     ModelData* modelData_;
-    MaterialHandle materialHandle_;
 
     bool enableOutline_ = false;
     float outlineWidth_ = 7.0f; 

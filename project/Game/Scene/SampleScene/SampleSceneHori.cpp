@@ -45,7 +45,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     objectManager_.AddObject(std::move(playerUI));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
     objectManager_.AddObject(std::move(followCamera));
-    objectManager_.AddObject(std::move(grid));
+    //objectManager_.AddObject(std::move(grid));
     objectManager_.AddObject(std::move(gameTimer));
 
 }
@@ -77,10 +77,10 @@ void SampleSceneHori::Initialize()
 
     // ライトの設定
     engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
-    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -6.25f,-1.0f,1.25f };
-    engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.55f;
+    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-0.7f,1.4f };
+    engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
-    engine_->materialManager_->GetMaterialSettings().lightMode = 1;
+    engine_->materialManager_->GetMaterialSettings().lightMode = 2;
 
     engine_->postEffectManager_->postEffectData_->modeFlags[0] |= VIGNETTE;
     engine_->postEffectManager_->postEffectData_->vignetteAmount = 0.452f;
@@ -131,7 +131,7 @@ void SampleSceneHori::HandleCollisions()
 
 void SampleSceneHori::Draw()
 {
-    skybox_->Draw();
+ /*   skybox_->Draw();*/
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
 }

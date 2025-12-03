@@ -44,6 +44,13 @@ void KnifeProjectile::Update(float deltaTime)
     // 行列と当たり判定を更新
     model_->GetTransform().UpdateMatrix();
     UpdateAABB();
+
+    model_->SetEmissiveIntensity(4.0f);
+    model_->materialHandle_.materialData->enableRim = true;
+    model_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+    model_->materialHandle_.materialData->rimPower = 3.8f;
+    model_->materialHandle_.materialData->rimIntensity = 1.7f;
+    model_->SetEnableOutline(true);
 }
 
 void KnifeProjectile::Draw()

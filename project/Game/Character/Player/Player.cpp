@@ -26,8 +26,10 @@ Player::Player(Engine* engine, Camera* camera)
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 
 	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
-	modelTamesi_->GetTransform().scale_.x = 25;
-	modelTamesi_->GetTransform().scale_.z = 25;
+	modelTamesi_->GetTransform().scale_.x = 500;
+	modelTamesi_->GetTransform().scale_.z = 500;
+	modelTamesi_->GetTransform().translation_.y = -0.5f;
+	modelTamesi_->SetColor(0xaaaaaaff);
 
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
@@ -142,6 +144,14 @@ void Player::Update()
 	{
 		weapon->Update(TimeManager::GetInstance()->GetDeltaTime());
 	}
+
+	animationPlayer_->SetEmissiveIntensity(3.5f);
+	animationPlayer_->materialHandle_.materialData->enableRim = true;
+	animationPlayer_->materialHandle_.materialData->rimUseLightDir = true;
+	animationPlayer_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,237.0f / 255.0f,51.0f / 255.0f };
+	animationPlayer_->materialHandle_.materialData->rimPower = 5.2f;
+	animationPlayer_->materialHandle_.materialData->rimIntensity = 5.2f;
+
 }
 
 void Player::AddWeaponColliders(CollisionManager* manager)

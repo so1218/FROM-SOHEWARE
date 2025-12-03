@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include "Engine.h"
+#include "TextureHandle.h"
 
 Sprite::Sprite(Engine* engine)
     : engine_(engine)
@@ -7,6 +8,8 @@ Sprite::Sprite(Engine* engine)
     uvTransform_.scale_ = { 1.0f, 1.0f, 1.0f };
     uvTransform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     uvTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
+
+    textureHandle_ = TextureHandle::Get(TextureID::white1x1);
 
     emissiveIntensity_ = 1.0f;
 }
@@ -26,14 +29,14 @@ float& Sprite::GetRotation() { return rotation_; }
 WorldTransform& Sprite::GetUVTransform() { return uvTransform_; }
 int Sprite::GetLayerOrder() const { return layerOrder_; }
 
-void Sprite::Draw() 
+void Sprite::Draw()
 {
-    uvTransform_.UpdateMatrix(); 
+    uvTransform_.UpdateMatrix();
     engine_->renderer_->SubmitSprite(
         position_,
         size_,
-        rotation_, 
-        color_, 
+        rotation_,
+        color_,
         uvTransform_,
         textureHandle_,
         layerOrder_,

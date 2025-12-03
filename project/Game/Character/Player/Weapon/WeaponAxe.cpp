@@ -31,6 +31,7 @@ void WeaponAxe::Initialize()
     gv->AddItem(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
 
     ApplyGlobalVariables();
+
 }
 
 void WeaponAxe::ApplyGlobalVariables()

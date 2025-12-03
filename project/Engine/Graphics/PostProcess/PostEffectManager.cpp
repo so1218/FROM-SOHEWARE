@@ -136,7 +136,7 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     brightExtractData_->intensity = 0.4f;
 
     blurSettingsData_->texelSize = { 1.0f / smallWidth, 1.0f / smallHeight };
-    blurSettingsData_->blurStrength = 0.574f;
+    blurSettingsData_->blurStrength = 1.6f;
 
     combineSettingsData_->bloomIntensity = 0.8f; 
     combineSettingsData_->effectMode = 1;
