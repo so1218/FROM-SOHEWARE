@@ -67,9 +67,9 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& physJson = configJson["physicsModule"];
                     config.physics.enabled = physJson.value("enabled", false);
-                    if (physJson.contains("gravity") && physJson["gravity"].is_array()) 
+                    if (physJson.contains("gravity") && physJson["gravity"].is_array())
                     {
-                        config.physics.gravity = 
+                        config.physics.gravity =
                         {
                             physJson["gravity"][0].get<float>(),
                             physJson["gravity"][1].get<float>(),
@@ -138,7 +138,8 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& texJson = configJson["textureSheetModule"];
                     config.textureSheet.enabled = texJson.value("enabled", false);
-                    config.textureSheet.textureHandle = texJson.value("textureHandle", 0);
+                    int id = texJson.value("textureID", 0);
+                    config.textureSheet.textureID = static_cast<ParticleTextureID>(id);
                 }
 
                 // ColorOverLifetimeModuleの読み込み
@@ -217,7 +218,8 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.emissiveIntensity = trailJson.value("emissiveIntensity", 1.0f);
                     config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
 
-                    config.trail.textureHandle = trailJson.value("textureHandle", 0);
+                    int texID = trailJson.value("textureID", 0);
+                    config.trail.textureID = static_cast<ParticleTextureID>(texID);
 
                     config.trail.textureMode = static_cast<TrailTextureMode>(trailJson.value("textureMode", 0));
 
@@ -243,7 +245,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.jitterSpeed = trailJson.value("jitterSpeed", 0.0f);
                     config.trail.jitterPhase = trailJson.value("jitterPhase", 0.0f);
 
-                    config.trail.dissolveTextureHandle = trailJson.value("dissolveTextureHandle", 0);
+                    config.trail.dissolveTextureID = trailJson.value("dissolveTextureID", -1);
 
                     config.trail.headWidthScale = trailJson.value("headWidthScale", 1.0f);
                     config.trail.tailWidthScale = trailJson.value("tailWidthScale", 1.0f);
@@ -383,7 +385,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "gravity", { config.physics.gravity.x, config.physics.gravity.y, config.physics.gravity.z }},
             { "drag", config.physics.drag }
         }},
-        { "rotationModule", 
+        { "rotationModule",
         {
             { "enabled", config.rotation.enabled },
             { "isBillboard", config.rotation.isBillboard },
@@ -401,14 +403,14 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.shape.enabled },
             { "type", static_cast<int>(config.shape.type) },
-            { "radius", { config.shape.radius.x, config.shape.radius.y, config.shape.radius.z }}, 
+            { "radius", { config.shape.radius.x, config.shape.radius.y, config.shape.radius.z }},
             { "emitFromEdge", config.shape.emitFromEdge },
             { "boxSize", { config.shape.boxSize.x, config.shape.boxSize.y, config.shape.boxSize.z }}
         }},
         { "textureSheetModule",
         {
             { "enabled", config.textureSheet.enabled },
-            { "textureHandle", config.textureSheet.textureHandle },
+            { "textureID", static_cast<int>(config.textureSheet.textureID) },
         }},
         { "colorOverLifetimeModule",
         {
@@ -441,7 +443,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "orbitalSpeed", config.vortex.orbitalSpeed },
             { "radialSpeed", config.vortex.radialSpeed }
         }},
-        { "attractionModule", 
+        { "attractionModule",
         {
             { "enabled", config.attraction.enabled },
             { "target", { config.attraction.target.x, config.attraction.target.y, config.attraction.target.z }},
@@ -456,7 +458,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "width", config.trail.width },
             { "emissiveIntensity", config.trail.emissiveIntensity },
             { "minVertexDistance", config.trail.minVertexDistance },
-            { "textureHandle", config.trail.textureHandle },
+            { "textureID", static_cast<int>(config.trail.textureID) },
             { "textureMode", static_cast<int>(config.trail.textureMode) },
             { "tiling", { config.trail.tiling.x, config.trail.tiling.y } },
             { "scrollSpeed", { config.trail.scrollSpeed.x, config.trail.scrollSpeed.y } },
@@ -465,7 +467,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "jitterFrequency", config.trail.jitterFrequency },
             { "jitterSpeed", config.trail.jitterSpeed },
             { "jitterPhase", config.trail.jitterPhase },
-            { "dissolveTextureHandle", config.trail.dissolveTextureHandle },
+            { "dissolveTextureID", config.trail.dissolveTextureID },
             { "headWidthScale", config.trail.headWidthScale },
             { "tailWidthScale", config.trail.tailWidthScale },
             { "alignment", static_cast<int>(config.trail.alignment) },
@@ -495,26 +497,26 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.collision.enabled },
             { "type", static_cast<int>(config.collision.type) },
-    
+
             { "bounce", config.collision.bounce },
             { "friction", config.collision.friction },
             { "dampen", config.collision.dampen },
             { "lifeLoss", config.collision.lifeLoss },
-    
+
             // Plane設定
             { "plane", {
                 { "point", { config.collision.plane.point.x, config.collision.plane.point.y, config.collision.plane.point.z } },
                 { "normal", { config.collision.plane.normal.x, config.collision.plane.normal.y, config.collision.plane.normal.z } }
             }},
-    
-            // World Object設定
-            { "worldObj", {
-                { "shape", static_cast<int>(config.collision.worldObj.shape) },
-                { "center", { config.collision.worldObj.center.x, config.collision.worldObj.center.y, config.collision.worldObj.center.z } },
-                { "scale", { config.collision.worldObj.scale.x, config.collision.worldObj.scale.y, config.collision.worldObj.scale.z } }
-            }}
-        }
-    },
+
+        // World Object設定
+        { "worldObj", {
+            { "shape", static_cast<int>(config.collision.worldObj.shape) },
+            { "center", { config.collision.worldObj.center.x, config.collision.worldObj.center.y, config.collision.worldObj.center.z } },
+            { "scale", { config.collision.worldObj.scale.x, config.collision.worldObj.scale.y, config.collision.worldObj.scale.z } }
+        }}
+    }
+},
 
     };
 

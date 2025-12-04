@@ -9,6 +9,7 @@
 #include "ParticleConfigManager.h"
 #include "TextureHandle.h"
 #include "ImGuiManager.h"
+#include "ParticleTextureHandle.h"
 #include "json.hpp"
 
 ParticleSystem::ParticleSystem()
@@ -192,7 +193,7 @@ void ParticleSystem::Update()
         if (shouldDelete)
         {
             particle = particles_.erase(particle);
-            continue; 
+            continue;
         }
 
         if (!isExpired)
@@ -219,8 +220,8 @@ void ParticleSystem::Update()
                 if (config.noise.separateAxes)
                 {
                     noiseVelocity.x = Math::PerlinNoise(samplePos.x, samplePos.y, samplePos.z);
-                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z); 
-                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z); 
+                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z);
+                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z);
                 }
                 else
                 {
@@ -422,7 +423,7 @@ void ParticleSystem::Update()
                 else
                 {
                     // 3Dモデルの場合、XYZ全軸を回転させる
-                    Vector3 velocityRadians = 
+                    Vector3 velocityRadians =
                     {
                         Math::ToRadians(angularVelocity.x),
                         Math::ToRadians(angularVelocity.y),
@@ -443,7 +444,7 @@ void ParticleSystem::Update()
                 particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
 
             // Texture Module
-            particleState.textureHandle = config.textureSheet.textureHandle;
+            particleState.textureHandle = ParticleTextureHandle::Get(config.textureSheet.textureID);;
 
         }
 
@@ -460,17 +461,17 @@ void ParticleSystem::Update()
                 {
                     shouldAdd = true;
                 }
-                else 
+                else
                 {
                     Vector3 lastPos = particleState.trailHistory.back().position;
                     float distSq = (currentPos - lastPos).LengthSq();
-                    if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance) 
+                    if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance)
                     {
                         shouldAdd = true;
                     }
                 }
 
-                if (shouldAdd) 
+                if (shouldAdd)
                 {
                     TrailPoint newPoint;
                     newPoint.position = currentPos;
@@ -555,7 +556,7 @@ void ParticleSystem::Draw(Camera* camera)
         // Renderer呼び出し
         engine_->renderer_->SubmitTrail(
             drawPoints,
-            particle.config.trail, 
+            particle.config.trail,
             *camera
         );
     }

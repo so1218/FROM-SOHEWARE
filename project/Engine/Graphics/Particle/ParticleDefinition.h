@@ -3,6 +3,7 @@
 #include "WorldTransform.h"
 #include "MathUtils.h"
 #include "BlendMode.h"
+#include "ParticleTextureHandle.h"
 
 #include <memory>
 #include <string>
@@ -83,7 +84,7 @@ struct VelocityModule
     bool enabled = true;
     float speed = 4.0f;
     bool randomDirection = true;
-    float angleRange = 60.0f; 
+    float angleRange = 60.0f;
     Vector3 direction = { 0.0f, 1.0f, 0.0f };
 
     Vector3 GetInitialVelocity() const
@@ -117,7 +118,7 @@ struct VelocityModule
 
             return randomDir.Normalize() * speed;
         }
-        else 
+        else
         {
             return direction.Normalize() * speed;
         }
@@ -178,7 +179,7 @@ struct ColorOverLifetimeModule
     }
 };
 
-struct SizeOverLifetimeModule 
+struct SizeOverLifetimeModule
 {
     bool enabled = true;
     Vector3 startScale = { 1.0f, 1.0f, 1.0f };
@@ -199,7 +200,7 @@ struct SizeOverLifetimeModule
         else
         {
             // 通常のイージング
-            float eased_t = Easing::Evaluate(this->easingType, t); 
+            float eased_t = Easing::Evaluate(this->easingType, t);
 
             // 加工された時間を使って補間する
             return Math::Lerp(startScale, endScale, eased_t);
@@ -210,7 +211,7 @@ struct SizeOverLifetimeModule
 struct TextureSheetAnimationModule
 {
     bool enabled = false;           // アニメーションの有効/無効
-    uint32_t textureHandle = 0;     // スプライトシート全体のテクスチャハンドル
+    ParticleTextureID textureID = ParticleTextureID::white1x1Particle;
 };
 
 struct CollisionModule
@@ -238,12 +239,12 @@ struct CollisionModule
     } plane;
 
     // 形状設定
-    struct WorldObject 
+    struct WorldObject
     {
         enum class Shape { Sphere, Box };
         Shape shape = Shape::Sphere;
         Vector3 center = { 0.0f, 0.0f, 0.0f };
-        Vector3 scale = { 2.0f, 2.0f, 2.0f }; 
+        Vector3 scale = { 2.0f, 2.0f, 2.0f };
     } worldObj;
 
 };
@@ -299,7 +300,7 @@ struct TrailModule
     float lifetime = 0.5f;
     float width = 1.0f;
     float minVertexDistance = 0.1f;
-    uint32_t textureHandle = 0;
+    ParticleTextureID textureID = ParticleTextureID::white1x1Particle;
 
     Vector4 startColor = { 1, 1, 1, 1 };
     Vector4 endColor = { 1, 1, 1, 0 };
@@ -320,7 +321,7 @@ struct TrailModule
     float jitterPhase = 0.0f;
 
     // ディゾルブの設定
-    uint32_t dissolveTextureHandle = 0;
+    int dissolveTextureID = -1;
     float dissolveSpeed = 2.0f;
 
     JitterMode jitterMode = JitterMode::Wave;
@@ -346,8 +347,8 @@ struct ParticleConfig
     VelocityModule velocity;
     SizeOverLifetimeModule sizeOverLifetime;
     ColorOverLifetimeModule colorOverLifetime;
-    PhysicsModule physics; 
-    RotationOverLifetimeModule rotation; 
+    PhysicsModule physics;
+    RotationOverLifetimeModule rotation;
     ShapeModule shape;
     TextureSheetAnimationModule textureSheet;
     CollisionModule collision;

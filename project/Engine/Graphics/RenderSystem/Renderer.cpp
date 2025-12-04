@@ -1192,7 +1192,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	trailData.mappedMaterial->jitterSpeed = config.jitterSpeed;
 	trailData.mappedMaterial->jitterMode = static_cast<int>(config.jitterMode);
 	trailData.mappedMaterial->jitterPhase = config.jitterPhase;
-	trailData.mappedMaterial->isDissolveEnabled = (config.dissolveTextureHandle != 0) ? 1 : 0;
+	trailData.mappedMaterial->isDissolveEnabled = (config.dissolveTextureID >= 0) ? 1 : 0;
 	trailData.mappedMaterial->emissiveIntensity = config.emissiveIntensity;
 
 	// 深度計算（半透明ソート用）
@@ -1201,14 +1201,22 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	float w = midPos.x * worldView.m[0][3] + midPos.y * worldView.m[1][3] + midPos.z * worldView.m[2][3] + worldView.m[3][3];
 	float z = (midPos.x * worldView.m[0][2] + midPos.y * worldView.m[1][2] + midPos.z * worldView.m[2][2] + worldView.m[3][2]) / w;
 
+	// ディゾルブテクスチャ
+	uint32_t dissolveHandle = 0;
+	if (config.dissolveTextureID >= 0)
+	{
+		dissolveHandle = ParticleTextureHandle::Get(static_cast<ParticleTextureID>(config.dissolveTextureID));
+	}
+
 	// 描画キューに登録
 	ModelSubmission submission{};
 	submission.type = RenderType::Trail;
 	submission.instanceIndex = indexTrail_;
 	submission.group = RenderGroup::Transparent;
 	submission.depth = z;
-	submission.textureHandle = config.textureHandle;
-	submission.envMapSrvHandle = config.dissolveTextureHandle; // Dissolveテクスチャ用
+	uint32_t mainTexHandle = ParticleTextureHandle::Get(config.textureID);
+	submission.textureHandle = mainTexHandle;
+	submission.envMapSrvHandle = dissolveHandle;// Dissolveテクスチャ用
 
 	modelSubmissions_.push_back(submission);
 	indexTrail_++;

@@ -17,11 +17,11 @@ void ParticleEditor::ShowEditor()
         // プリセット名リスト生成
         std::vector<const char*> presetNames;
         std::vector<std::string> presetNameStrings;
-        for (const auto& [name, def] : particleSystem_->definitions_) 
+        for (const auto& [name, def] : particleSystem_->definitions_)
         {
             presetNameStrings.push_back(name);
         }
-        for (const auto& name : presetNameStrings) 
+        for (const auto& name : presetNameStrings)
         {
             presetNames.push_back(name.c_str());
         }
@@ -34,7 +34,7 @@ void ParticleEditor::ShowEditor()
         else
         {
             // 選択インデックス調整
-            if (selectedPresetIdx_ >= presetNames.size()) 
+            if (selectedPresetIdx_ >= presetNames.size())
             {
                 selectedPresetIdx_ = 0;
             }
@@ -107,7 +107,7 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
                 valueChanged |= ImGui::DragInt("発生数", &emitterConfig.amount, 1, 0);
                 ImGui::Separator();
-                valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.1f, -1.0f, 300.0f, "%.1f 秒");
+                valueChanged |= ImGui::DragFloat("再生時間", &emitterConfig.duration, 0.001f);
 
                 ImGui::Separator();
                 valueChanged |= ImGui::Checkbox("ループ", &emitterConfig.looping);
@@ -222,45 +222,15 @@ void ParticleEditor::ShowEditor()
                 if (ImGui::TreeNode("テクスチャモジュール"))
                 {
                     auto& texSheet = config.textureSheet;
-                  
-                    // テクスチャ一覧取得
-                    const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
-                    std::vector<const char*> textureNameArray;
-                    std::vector<ParticleTextureID> idArray;
 
-                    for (const auto& def : allDefinitions)
+                    const auto& items = ParticleTextureHandle::GetTextureItems();
+
+                    int currentItem = static_cast<int>(texSheet.textureID);
+
+                    if (ImGui::Combo("テクスチャ", &currentItem, items.data(), (int)items.size()))
                     {
-                        const char* path = def.path;
-                        const char* filename = path;
-
-                        const char* lastSlash = strrchr(path, '/');
-                        const char* lastBackslash = strrchr(path, '\\');
-                        const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
-
-                        if (separator)
-                            filename = separator + 1;
-
-                        textureNameArray.push_back(filename);
-                        idArray.push_back(def.id);
+                        texSheet.textureID = static_cast<ParticleTextureID>(currentItem);
                     }
-
-                    int selectedTextureIdx = 0;
-                    for (size_t i = 0; i < idArray.size(); ++i)
-                    {
-                        if (ParticleTextureHandle::Get(idArray[i]) == texSheet.textureHandle)
-                        {
-                            selectedTextureIdx = (int)i;
-                            break;
-                        }
-                    }
-
-                    if (ImGui::Combo("テクスチャ", &selectedTextureIdx,
-                        textureNameArray.data(),
-                        (int)textureNameArray.size()))
-                    {
-                        texSheet.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
-                    }
-
 
                     ImGui::TreePop();
                 }
@@ -421,7 +391,7 @@ void ParticleEditor::ShowEditor()
                         ImGui::Text("静的ターゲット (ターゲット未設定時)");
                         ImGui::DragFloat3("座標##AttractTarget", &attraction.target.x, 0.1f);
 
-                        ImGui::Separator(); 
+                        ImGui::Separator();
 
                         ImGui::Text("動的ターゲット (SetAttractionTarget使用時)");
                         ImGui::DragFloat3("オフセット##AttractOffset", &attraction.offset.x, 0.1f);
@@ -432,7 +402,7 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
                 if (ImGui::TreeNode("トレイルモジュール"))
                 {
-                    auto& trail = config.trail; 
+                    auto& trail = config.trail;
 
                     ImGui::Checkbox("有効##Trail", &trail.enabled);
 
@@ -445,44 +415,18 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Separator();
 
-                        
-                        // テクスチャ一覧取得
-                        const auto& allDefinitions = ParticleTextureHandle::GetDefinitions();
-                        std::vector<const char*> textureNameArray;
-                        std::vector<ParticleTextureID> idArray;
 
-                        for (const auto& def : allDefinitions)
+                        // テクスチャ選択
+                        const auto& items = ParticleTextureHandle::GetTextureItems();
+
+                        // 現在のIDをintに変換
+                        int currentItem = static_cast<int>(trail.textureID);
+
+                        if (ImGui::Combo("テクスチャ", &currentItem, items.data(), (int)items.size()))
                         {
-                            const char* path = def.path;
-                            const char* filename = path;
-
-                            const char* lastSlash = strrchr(path, '/');
-                            const char* lastBackslash = strrchr(path, '\\');
-                            const char* separator = (lastSlash > lastBackslash) ? lastSlash : lastBackslash;
-
-                            if (separator)
-                                filename = separator + 1;
-
-                            textureNameArray.push_back(filename);
-                            idArray.push_back(def.id);
+                            trail.textureID = static_cast<ParticleTextureID>(currentItem);
                         }
 
-                        int selectedTextureIdx = 0;
-                        for (size_t i = 0; i < idArray.size(); ++i)
-                        {
-                            if (ParticleTextureHandle::Get(idArray[i]) == trail.textureHandle)
-                            {
-                                selectedTextureIdx = static_cast<int>(i);
-                                break;
-                            }
-                        }
-
-                        if (ImGui::Combo("テクスチャ", &selectedTextureIdx,
-                            textureNameArray.data(),
-                            (int)textureNameArray.size()))
-                        {
-                            trail.textureHandle = ParticleTextureHandle::Get(idArray[selectedTextureIdx]);
-                        }
                         ImGui::Separator();
 
                         const char* modes[] = { "Stretch (全体)", "Tile (繰り返し)" };
@@ -514,25 +458,19 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Text("ディゾルブ (侵食消滅)");
 
-                        int selectedDissolveIdx = -1; 
-                        for (size_t i = 0; i < idArray.size(); ++i)
-                        {
-                            if (ParticleTextureHandle::Get(idArray[i]) == trail.dissolveTextureHandle)
-                            {
-                                selectedDissolveIdx = static_cast<int>(i);
-                                break;
-                            }
-                        }
-                        ImGui::Separator();
+                        // 現在の選択状態
+                        int currentDissolve = trail.dissolveTextureID;
 
-                        if (ImGui::Combo("ノイズ画像", &selectedDissolveIdx, textureNameArray.data(), (int)textureNameArray.size()))
+                        if (ImGui::Combo("ノイズ画像", &currentDissolve, items.data(), (int)items.size()))
                         {
-                            trail.dissolveTextureHandle = ParticleTextureHandle::Get(idArray[selectedDissolveIdx]);
+                            trail.dissolveTextureID = currentDissolve;
                         }
+
                         if (ImGui::Button("ノイズ解除"))
                         {
-                            trail.dissolveTextureHandle = 0;
+                            trail.dissolveTextureID = -1;
                         }
+                        ImGui::Separator();
 
 
                         ImGui::Text("太さの変化 (Width over Trail)");
@@ -572,7 +510,7 @@ void ParticleEditor::ShowEditor()
                         ImGui::DragFloat("スクロール速度", &noise.scrollSpeed, 0.01f, 0.0f, 10.0f);
 
                         ImGui::Checkbox("XYZ軸で分離", &noise.separateAxes);
-       
+
                     }
 
                     ImGui::TreePop();

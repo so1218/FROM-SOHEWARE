@@ -1,7 +1,10 @@
 #pragma once
-#include "Engine.h"
+#include <vector>  
+#include <string>
 #include <array>
 #include <cstdint>
+
+class Engine;
 
 enum ParticleTextureID
 {
@@ -93,9 +96,19 @@ public:
     // ParticleEditor が参照するための関数
     static const auto& GetDefinitions() { return particleTextureDefinitions_; }
 
+    // UI表示用の名前リストを取得（キャッシュ付き）
+    static const std::vector<std::string>& GetTextureNames();
+
+    // ImGui::Combo でそのまま使える const char* の配列を取得
+    static const std::vector<const char*>& GetTextureItems();
+
 private:
     static std::array<uint32_t, PARTICLE_TEXTURES_COUNT> particleTextureHandles_;
     static bool initialized_;
+
+    // キャッシュ用変数
+    static std::vector<std::string> cachedTextureNames_;
+    static std::vector<const char*> cachedTextureItems_;
 
     // パーティクル専用の定義リスト
     static constexpr std::array<ParticleTextureDefinition, PARTICLE_TEXTURES_COUNT> particleTextureDefinitions_ =
