@@ -5,36 +5,40 @@
 #include "Structures.h"
 #include "Mesh.h"
 #include "AnimationData.h"
+#include "BlendMode.h"
 
 struct RenderData
 {
-	Mesh mesh;
-	MaterialHandle materialHandle;
-	Matrix4x4 worldMatrix;
-	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-	TransformationMatrix* mappedData = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
-	OutlineData* outlineMappedData = nullptr;
+    Mesh mesh;
+    MaterialHandle materialHandle;
+    Matrix4x4 worldMatrix;
+    Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
+    TransformationMatrix* mappedData = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
+    OutlineData* outlineMappedData = nullptr;
 };
 
-enum class RenderType 
+enum class RenderType
 {
     Model,
     Skinning,
     Sprite,
+    Trail,
     Particle,
     Grid,
     Line,
-    Trail,
     Skybox
 };
 
 // 描画グループ（描画の順番）
 enum class RenderGroup {
-    Opaque = 0,      // 不透明
+    Background = 0,
+    Opaque,      // 不透明
     AlphaTest,       // アルファテスト
     Grid,
+    Skybox,
     Transparent,     // 半透明 
+    Trail,
     UI,              // UI
 };
 
@@ -48,6 +52,8 @@ struct ModelSubmission
     uint32_t toonRampHandle;
     uint32_t color;                  // メッシュカラー
     Matrix4x4 worldMatrix;           // ワールド行列
+
+    BlendMode blendMode = BlendMode::kBlendModeNormal;
 
     // アウトライン設定
     bool enableOutline;

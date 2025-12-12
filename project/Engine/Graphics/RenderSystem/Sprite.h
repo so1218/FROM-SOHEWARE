@@ -2,15 +2,16 @@
 
 #include "Vector2.h"
 #include "WorldTransform.h"
+#include "Structures.h"
 
 class Engine;
 
-class Sprite 
+class Sprite
 {
 public:
     Sprite(Engine* engine);
 
-    void Draw(); 
+    void Draw();
 
     // セッター
     void SetPosition(const Vector2& position);
@@ -20,14 +21,17 @@ public:
     void SetTextureHandle(uint32_t textureHandle);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);
-    void SetEmissiveIntensity(float intensity);
+    void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
 
-	// ゲッター
+    // ゲッター
     Vector2& GetPosition();
     Vector2& GetSize();
     float& GetRotation();
     WorldTransform& GetUVTransform();
     int GetLayerOrder() const;
+    bool GetIsVisible() const { return isVisible_; }
+
+    MaterialHandle materialHandle_;
 
 private:
     Engine* engine_ = nullptr;
@@ -36,9 +40,9 @@ private:
     Vector2 size_ = { 1.0f, 1.0f };
     float rotation_ = 0.0f;
     uint32_t color_ = 0xFFFFFFFF;
-    uint32_t textureHandle_ = 0;
-    WorldTransform uvTransform_; 
+    uint32_t textureHandle_ = 1;
+    WorldTransform uvTransform_;
+    bool isVisible_ = true;
 
     int layerOrder_ = 0;
-    float emissiveIntensity_ = 1.0f;
 };

@@ -19,60 +19,60 @@ const int32_t Renderer::kMaxSphereCount = 0; // 球の最大数
 const int32_t Renderer::kMaxModelCount = 500; // モデルの最大数
 const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Renderer::kMaxCubeCount = 0;// 立方体の最大数
-const int32_t Renderer::kMaxLineCount = 400;// ラインの最大数
+const int32_t Renderer::kMaxLineCount = 200;// ラインの最大数
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
-const int32_t Renderer::kMaxTrailCount = 200; // 同時に描画できるトレイルの最大本数
+const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
 const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
 
 Renderer::Renderer() {}
 Renderer::~Renderer()
 {
-   
+
 }
 
 void Renderer::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
-    PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
-    TextureManager* textureManager, SRVManager* srvManager, LightManager* lightManager,
-    CameraManager* cameraManager, MaterialManager* materialManager, Camera* camera,
+	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
+	TextureManager* textureManager, SRVManager* srvManager, LightManager* lightManager,
+	CameraManager* cameraManager, MaterialManager* materialManager, Camera* camera,
 	PostEffectManager* postEffectManager,
-    int clientWidth, int clientHeight, ShadowMap* shadowMap)
+	int clientWidth, int clientHeight, ShadowMap* shadowMap)
 {
-    // ポインタをメンバ変数に保存
-    device_ = device;
-    commandManager_ = commandManager;
-    psoManager_ = psoManager;
-    rootSignatureManager_ = rootSignatureManager;
-    textureManager_ = textureManager;
-    srvManager_ = srvManager;
-    lightManager_ = lightManager;
-    cameraManager_ = cameraManager;
-    materialManager_ = materialManager;
-    camera_ = camera;
+	// ポインタをメンバ変数に保存
+	device_ = device;
+	commandManager_ = commandManager;
+	psoManager_ = psoManager;
+	rootSignatureManager_ = rootSignatureManager;
+	textureManager_ = textureManager;
+	srvManager_ = srvManager;
+	lightManager_ = lightManager;
+	cameraManager_ = cameraManager;
+	materialManager_ = materialManager;
+	camera_ = camera;
 	clientWidth_ = clientWidth;
 	clientHeight_ = clientHeight;
 	postEffectManager_ = postEffectManager;
 
-    CreateObjects();
+	CreateObjects();
 
 	shadowMap_ = shadowMap;
 }
 
 void Renderer::Finalize()
 {
-    meshCache.clear();
+	meshCache.clear();
 }
 
 void Renderer::BeginFrame()
 {
-    // 描画カウンタの初期化
-    indexSphere_ = 0;
-    indexModel_ = 0;
-    indexSprite_ = 0;
-    indexTriangle_ = 0;
-    indexCube_ = 0;
-    indexLine_ = 0;
-    indexParticle_ = 0;
+	// 描画カウンタの初期化
+	indexSphere_ = 0;
+	indexModel_ = 0;
+	indexSprite_ = 0;
+	indexTriangle_ = 0;
+	indexCube_ = 0;
+	indexLine_ = 0;
+	indexParticle_ = 0;
 	indexInstance_ = 0;
 	indexTrail_ = 0;
 
@@ -81,7 +81,7 @@ void Renderer::BeginFrame()
 		frameData_->gTime += static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
 
 		// 非常に大きな値になるのを防ぐ
-		if (frameData_->gTime > 10000.0f) 
+		if (frameData_->gTime > 10000.0f)
 		{
 			frameData_->gTime = 0.0f;
 		}
@@ -93,13 +93,13 @@ void Renderer::BeginFrame()
 
 void Renderer::CreateObjects()
 {
-    CreateSpheres();
-    CreateModels();
-    CreateSprites();
-    CreateTriangles();
-    CreateCubes();
-    CreateLines();
-    CreateParticles();
+	CreateSpheres();
+	CreateModels();
+	CreateSprites();
+	CreateTriangles();
+	CreateCubes();
+	CreateLines();
+	CreateParticles();
 	CreateSkybox();
 	CreateTrails();
 }
@@ -175,6 +175,17 @@ void Renderer::DrawSceneForShadow()
 		if (sub.type != RenderType::Model && sub.type != RenderType::Skinning) {
 			continue;
 		}
+
+		if (sub.group == RenderGroup::Background)
+		{
+			continue;
+		}
+
+		if (sub.group == RenderGroup::UI || sub.group == RenderGroup::Transparent)
+		{
+			continue;
+		}
+
 		Mesh* mesh = GetOrCreateMesh(*sub.modelData);
 		auto& buffer = perObjectBuffers_[sub.instanceIndex];
 
@@ -228,15 +239,15 @@ void Renderer::DrawScene()
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
 		[](const ModelSubmission& a, const ModelSubmission& b)
 		{
-			if (a.group != b.group) 
+			if (a.group != b.group)
 			{
 				return a.group < b.group;
 			}
 			switch (a.group)
 			{
-			case RenderGroup::Opaque:      return a.depth < b.depth;   
+			case RenderGroup::Opaque:      return a.depth < b.depth;
 			case RenderGroup::Grid:         return a.depth < b.depth;
-			case RenderGroup::Transparent: return a.depth > b.depth;   
+			case RenderGroup::Transparent: return a.depth > b.depth;
 			case RenderGroup::UI:          return a.layerOrder < b.layerOrder;
 			default:                       return a.depth < b.depth;
 			}
@@ -254,17 +265,17 @@ void Renderer::DrawScene()
 	{
 		switch (sub.type)
 		{
-		case RenderType::Sprite: 
-			DrawSprite(sub); 
+		case RenderType::Sprite:
+			DrawSprite(sub);
 			break;
-		case RenderType::Grid:    
-			DrawGrid(sub);    
+		case RenderType::Grid:
+			DrawGrid(sub);
 			break;
 		case RenderType::Line:
 			DrawLine(sub);
 			break;
 		case RenderType::Particle:
-			DrawParticles(*camera_); 
+			DrawParticles(*camera_);
 			break;
 		case RenderType::Trail:
 			DrawTrail(sub);
@@ -274,7 +285,7 @@ void Renderer::DrawScene()
 			break;
 		case RenderType::Model:
 		case RenderType::Skinning:
-			DrawModel(sub);  
+			DrawModel(sub);
 			break;
 		}
 	}
@@ -288,11 +299,11 @@ void Renderer::DrawScene()
 
 Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)
 {
-    Matrix4x4 moveToOrigin = Matrix4x4::MakeTranslate({ -pivot.x, -pivot.y, -pivot.z });
-    Matrix4x4 rotateScale = Matrix4x4::MakeAffine(scale, rotate, { 0.0f, 0.0f, 0.0f });
-    Matrix4x4 moveBack = Matrix4x4::MakeTranslate(pivot);
-    Matrix4x4 result = (moveToOrigin * rotateScale) * moveBack;
-    return result * Matrix4x4::MakeTranslate(translate);
+	Matrix4x4 moveToOrigin = Matrix4x4::MakeTranslate({ -pivot.x, -pivot.y, -pivot.z });
+	Matrix4x4 rotateScale = Matrix4x4::MakeAffine(scale, rotate, { 0.0f, 0.0f, 0.0f });
+	Matrix4x4 moveBack = Matrix4x4::MakeTranslate(pivot);
+	Matrix4x4 result = (moveToOrigin * rotateScale) * moveBack;
+	return result * Matrix4x4::MakeTranslate(translate);
 }
 
 std::string Renderer::GetParticlePSOName(BlendMode mode)
@@ -508,7 +519,7 @@ void Renderer::CreateModels()
 }
 
 void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle,
+	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
 	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
 {
 	assert(indexModel_ < kMaxModelCount);
@@ -541,6 +552,27 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 	submission.worldMatrix = world;
 	submission.enableOutline = enableOutline;
 	submission.instanceIndex = indexModel_;
+	submission.blendMode = blendMode;
+
+	bool hasAlpha = ((color >> 24) & 0xFF) < 255;
+	bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
+
+	if (hasAlpha || isBlend)
+	{
+		// アルファ成分がある、または加算/半透明モードなら強制的にTransparentグループへ
+		submission.group = RenderGroup::Transparent;
+
+		// もしモードが None(不透明) なのにアルファ値があるなら、Normal(半透明)扱いに変更
+		if (submission.blendMode == BlendMode::kBlendModeNone)
+		{
+			submission.blendMode = BlendMode::kBlendModeNormal;
+		}
+	}
+	else
+	{
+		// それ以外は引数のグループを使う
+		submission.group = group;
+	}
 
 	// 深度設定
 	Matrix4x4 worldView = world * camera.GetViewMatrix();
@@ -690,9 +722,6 @@ void Renderer::CreateSprites()
 	{
 		sprites_[i].mesh.Initialize(device_->GetDevice(), spriteVertices, spriteIndices);
 
-		sprites_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
-		sprites_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();
-
 		sprites_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 		sprites_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&sprites_[i].mappedData));
 
@@ -704,20 +733,20 @@ void Renderer::CreateSprites()
 }
 
 void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
-        float emissiveIntensity)
+	MaterialHandle& materialHandle)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
 
 	RenderData& sprite = sprites_[indexSprite_];
 
 	// マテリアル設定
-	sprite.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-	sprite.materialHandle.materialData->enableLighting = false;
+	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
+	materialHandle.materialData->enableLighting = false;
 
 	// UV変換行列設定
 	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
 	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	sprite.materialHandle.materialData->uvTransform = uvTransformMatrix;
+	materialHandle.materialData->uvTransform = uvTransformMatrix;
 
 	// ワールド行列計算
 	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
@@ -739,12 +768,11 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	submission.group = RenderGroup::UI;
 	submission.instanceIndex = indexSprite_;
 	submission.textureHandle = textureHandle;
-	submission.materialHandle = sprite.materialHandle;
+	submission.materialHandle = materialHandle;
 	submission.color = color;
 	submission.worldMatrix = sprite.worldMatrix;
 	submission.depth = 0.0f;
 	submission.layerOrder = layerOrder;
-	submission.materialHandle.materialData->emissiveIntensity = emissiveIntensity;
 
 	modelSubmissions_.push_back(submission);
 
@@ -923,7 +951,7 @@ void Renderer::CreateParticles()
 	frameDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
-void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, 
+void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
 	BlendMode blendMode, bool isBillboard, float intensity)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
@@ -1148,7 +1176,16 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 		}
 
 		if (right.LengthSq() < 0.001f)
-			right = { 1.0f, 0.0f, 0.0f };
+		{
+			right = Math::CrossProduct({ 0.0f, 1.0f, 0.0f }, forward);
+
+			if (right.LengthSq() < 0.001f)
+			{
+				right = Math::CrossProduct({ 1.0f, 0.0f, 0.0f }, forward);
+			}
+
+			right = right.Normalize();
+		}
 
 		// 幅と頂点位置
 		float u_norm = static_cast<float>(i) / (points.size() - 1);
@@ -1212,7 +1249,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	ModelSubmission submission{};
 	submission.type = RenderType::Trail;
 	submission.instanceIndex = indexTrail_;
-	submission.group = RenderGroup::Transparent;
+	submission.group = RenderGroup::Trail;
 	submission.depth = z;
 	uint32_t mainTexHandle = ParticleTextureHandle::Get(config.textureID);
 	submission.textureHandle = mainTexHandle;
@@ -1235,7 +1272,7 @@ void Renderer::DrawSprite(const ModelSubmission& sub)
 	cmdList->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
 	cmdList->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
 
-	cmdList->SetGraphicsRootConstantBufferView(0, sprite.materialHandle.resource->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
 
@@ -1248,6 +1285,30 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	auto* cmdList = commandManager_->GetCommandList();
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	bool isSkinning = (sub.skinCluster != nullptr);
+
+	std::string psoName;
+
+	// スキニングかどうかで分岐
+	if (isSkinning)
+	{
+		psoName = "Skinning";
+	}
+	else // 通常モデル
+	{
+		if (isWireFrame_)
+		{
+			psoName = "Wireframe";
+		}
+		else {
+			switch (sub.blendMode)
+			{
+			case BlendMode::kBlendModeAdd:      psoName = "Object3DAdd";   break;
+			case BlendMode::kBlendModeNormal:   psoName = "Object3DTransparent"; break;
+			case BlendMode::kBlendModeNone:
+			default:                            psoName = "Standard3D";       break; // 通常
+			}
+		}
+	}
 
 	// アウトライン描画
 	if (sub.enableOutline)

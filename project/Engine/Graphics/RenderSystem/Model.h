@@ -34,6 +34,7 @@ public:
     void SetOutlineColor(const Vector4& color);
     void SetRenderGroup(RenderGroup group);
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
+    void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
@@ -44,6 +45,7 @@ public:
     bool IsOutlineEnabled() const { return enableOutline_; }
     float GetOutlineWidth() const { return outlineWidth_; }
     const Vector4& GetOutlineColor() const { return outlineColor_; }
+    BlendMode GetBlendMode() const { return blendMode_; }
 
     MaterialHandle materialHandle_;
 private:
@@ -57,11 +59,12 @@ private:
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
     uint32_t color_ = 0xFFFFFFFF;
+    BlendMode blendMode_ = BlendMode::kBlendModeNone;
 
     ModelData* modelData_;
 
     bool enableOutline_ = false;
-    float outlineWidth_ = 7.0f; 
+    float outlineWidth_ = 7.0f;
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;

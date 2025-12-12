@@ -12,17 +12,17 @@ Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
 }
 
-void Model::SetWorldTransform(const WorldTransform& transform){ transform_ = transform;}
+void Model::SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
 void Model::SetUVTransform(const WorldTransform& uvTransform)
 {
     uvTransform_ = uvTransform;
     uvTransform_.UpdateMatrix();
     materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
 }
-void Model::SetTextureHandle(uint32_t handle){ textureHandle_ = handle;}
-void Model::SetEnvironmentMapHandle(uint32_t handle){ envMapTextureHandle_ = handle;}
-void Model::SetColor(uint32_t color){ color_ = color;}
-void Model::SetCamera(Camera* camera){ camera_ = camera;}
+void Model::SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
+void Model::SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
+void Model::SetColor(uint32_t color) { color_ = color; }
+void Model::SetCamera(Camera* camera) { camera_ = camera; }
 void Model::SetEnableOutline(bool enable) { enableOutline_ = enable; }
 void Model::SetOutlineWidth(float width) { outlineWidth_ = width; }
 void Model::SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
@@ -41,6 +41,7 @@ void Model::Draw()
         toonRampHandle_,
         color_,
         materialHandle_,
+        blendMode_,
         enableOutline_,
         outlineWidth_,
         outlineColor_,

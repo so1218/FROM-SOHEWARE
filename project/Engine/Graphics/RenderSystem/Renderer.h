@@ -29,7 +29,7 @@ class PostEffectManager;
 #include "ParticleDefinition.h"
 #include "ShadowMap.h"
 
-class Renderer 
+class Renderer
 {
 public:
     Renderer();
@@ -63,7 +63,7 @@ public:
     void DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color = 0xffffffff);
     void SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
         bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
     void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
     void SubmitAnimationModel(WorldTransform& worldTransform, Camera& camera,
@@ -72,7 +72,7 @@ public:
         MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
     void SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
-    void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, float emissiveIntensity);
+    void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, MaterialHandle& materialHandle);
     void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
@@ -123,7 +123,7 @@ public:
     static const int32_t kMaxCubeCount;
     static const int32_t kMaxLineCount;
     static const int32_t kMaxParticleCount;
-    static const int32_t kMaxTrailCount;       
+    static const int32_t kMaxTrailCount;
     static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
 
     bool isWireFrame_ = false;
@@ -180,8 +180,7 @@ private:
     std::unordered_map<const ModelData*, Mesh> meshCache;
     // 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
-    // 定数バッファリソースの配列 (RenderData の代わり)
-    // ※リングバッファや、フレームごとの管理が必要ですが、一旦シンプルに配列で考えます
+    // 定数バッファリソースの配列
     struct PerObjectBuffer {
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* wvpMapped = nullptr;
@@ -229,13 +228,13 @@ private:
     std::map<BlendMode, std::map<uint32_t, std::vector<ParticleInstanceData>>> particleBatches_;
 
     // スカイボックス
-    Mesh skyboxMesh_; 
-    Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_; 
-    TransformationMatrix* mappedSkyboxWvp_ = nullptr; 
-    MaterialHandle skyboxMaterialHandle_; 
+    Mesh skyboxMesh_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_;
+    TransformationMatrix* mappedSkyboxWvp_ = nullptr;
+    MaterialHandle skyboxMaterialHandle_;
 
     // トレイル
-    std::vector<TrailRenderData> trails_; 
+    std::vector<TrailRenderData> trails_;
     int32_t indexTrail_ = 0;
 
     int clientWidth_ = 0;
