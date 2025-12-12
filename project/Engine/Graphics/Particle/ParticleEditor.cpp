@@ -362,39 +362,24 @@ void ParticleEditor::ShowEditor()
                     auto& vortex = config.vortex;
 
                     ImGui::Checkbox("有効##Vortex", &vortex.enabled);
-                    ImGui::DragFloat3("中心", &vortex.center.x, 0.1f);
-                    ImGui::DragFloat3("回転軸 (Axis)", &vortex.axis.x, 0.1f);
-                    ImGui::DragFloat("周回スピード", &vortex.orbitalSpeed, 0.1f, -1000.0f, 1000.0f);
-                    ImGui::DragFloat("半径方向スピード", &vortex.radialSpeed, 0.1f, -100.0f, 100.0f);
 
-                    if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip("中心方向への力\n負値で外向き");
-
-                    ImGui::TreePop();
-                }
-
-                ImGui::Separator();
-
-                // 引力モジュール
-                if (ImGui::TreeNode("引力モジュール"))
-                {
-                    auto& attraction = config.attraction;
-
-                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
-
-                    if (attraction.enabled)
+                    if (vortex.enabled)
                     {
-                        ImGui::DragFloat("強さ", &attraction.strength, 0.1f, -1000.0f, 1000.0f);
+                        ImGui::DragFloat3("回転軸 (Axis)", &vortex.axis.x, 0.1f);
+                        ImGui::DragFloat("周回スピード", &vortex.orbitalSpeed, 0.1f, -1000.0f, 1000.0f);
+                        ImGui::DragFloat("半径方向スピード", &vortex.radialSpeed, 0.1f, -100.0f, 100.0f);
+                        if (ImGui::IsItemHovered())
+                            ImGui::SetTooltip("負値で中心へ(吸引)、正値で外へ(拡散)");
 
                         ImGui::Separator();
 
-                        ImGui::Text("静的ターゲット (ターゲット未設定時)");
-                        ImGui::DragFloat3("座標##AttractTarget", &attraction.target.x, 0.1f);
+                        ImGui::Text("静的中心 (ターゲット未設定時)");
+                        ImGui::DragFloat3("相対座標##VortexCenter", &vortex.center.x, 0.1f);
 
                         ImGui::Separator();
 
-                        ImGui::Text("動的ターゲット (SetAttractionTarget使用時)");
-                        ImGui::DragFloat3("オフセット##AttractOffset", &attraction.offset.x, 0.1f);
+                        ImGui::Text("動的ターゲット (SetVortexTarget使用時)");
+                        ImGui::DragFloat3("オフセット##VortexOffset", &vortex.offset.x, 0.1f);
                     }
 
                     ImGui::TreePop();

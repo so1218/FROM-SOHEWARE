@@ -14,12 +14,17 @@ public:
     void SetTargetToFollow(WorldTransform* target);
 
     void SetFollowOffset(const Vector3& offset) { followOffset_ = offset; }
+    void SetOffsetScale(const Vector3& scale) { offsetScale_ = scale; }
     void SetAttractionTarget(const WorldTransform* target) { attractionTarget_ = target; }
+    void SetVortexTarget(const WorldTransform* target) { vortexTarget_ = target; }
+    void SetPosition(const Vector3& position) { position_ = position; }
 
     void Play(); // エミッターの再生を開始/リスタート
     void Stop(); // エミッターの再生を停止
 
     void Destroy();
+
+    void SetFollowAxes(bool x, bool y, bool z);
 
     Vector3 position_;
     float spawnInterval_;
@@ -32,7 +37,9 @@ public:
     float elapsedTime_ = 0.0f;// 再生開始からの経過時間
     WorldTransform* targetToFollow_ = {};
     Vector3 followOffset_ = { 0.0f, 0.0f, 0.0f };
+    Vector3 offsetScale_ = { 1.0f, 1.0f, 1.0f };
     const WorldTransform* attractionTarget_ = nullptr;
+    const WorldTransform* vortexTarget_ = nullptr;
 
     std::string name_ = "Emitter";
     std::string& presetName_ = name_;
@@ -41,6 +48,10 @@ public:
     ParticleConfig particleConfig_;
 
     bool isDead_ = false;
+
+    bool followX_ = true;
+    bool followY_ = true;
+    bool followZ_ = true;
 };
 
 

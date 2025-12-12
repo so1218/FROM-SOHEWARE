@@ -265,6 +265,8 @@ struct VortexModule
     Vector3 axis = { 0.0f, 1.0f, 0.0f };   // 回転軸
     float orbitalSpeed = 2.0f; // 周回スピード（接線方向）
     float radialSpeed = 0.0f;  // 中心へ向かうスピード（負の値で外へ広がる）
+    const WorldTransform* targetToFollow = nullptr;
+    Vector3 offset = { 0.0f, 0.0f, 0.0f };
 };
 
 struct AttractionModule
@@ -373,6 +375,7 @@ struct ParticleState
     Vector3 velocity;
     float age = 0.0f;
     const WorldTransform* attractionTarget = nullptr;
+    const WorldTransform* vortexTarget = nullptr;
     Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
 
     Vector3 initialPosition; // 生成時のエミッターの座標

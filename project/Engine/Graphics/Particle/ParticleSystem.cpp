@@ -29,7 +29,7 @@ void ParticleSystem::Initialize(Engine* engine)
     configManager_->LoadAllParticleDefinitions();
 }
 
-void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget)
+void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget)
 {
     // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
@@ -115,6 +115,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     particle.age = 0.0f;
     particle.presetName = presetName;
     particle.attractionTarget = attractionTarget;
+    particle.vortexTarget = vortexTarget;
 
     // 生成したパーティクルを格納
     particles_.push_back(std::move(particle));
@@ -343,38 +344,39 @@ void ParticleSystem::Update()
             // Vortex Module
             if (config.vortex.enabled)
             {
-                // 中心と軸の計算
-                Vector3 vortexCenter = particleState.initialPosition + config.vortex.center;
+                Vector3 vortexCenter;
+
+                if (particleState.vortexTarget != nullptr)
+                {
+                    vortexCenter = particleState.vortexTarget->translation_ + config.vortex.offset;
+                }
+                else
+                {
+                    vortexCenter = particleState.initialPosition + config.vortex.center;
+                }
+
                 Vector3 diff = particleState.transform->translation_ - vortexCenter;
                 Vector3 axis = config.vortex.axis.Normalize();
 
-                // 軸成分と半径成分の分解
-                float height = diff.Dot(axis);          // 軸方向の高さ
-                Vector3 pointOnAxis = axis * height;    // 軸上の点
-                Vector3 radialVector = diff - pointOnAxis; // 軸からパーティクルへのベクトル
+                float height = diff.Dot(axis);
+                Vector3 pointOnAxis = axis * height;
+                Vector3 radialVector = diff - pointOnAxis;
                 float distanceToAxis = radialVector.Length();
 
-                if (distanceToAxis > 0.01f) // 0除算防止
+                if (distanceToAxis > 0.01f)
                 {
-                    Vector3 radialDir = radialVector.Normalize();           // 外向き
-                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize(); // 接線方向(回転)
+                    Vector3 radialDir = radialVector.Normalize();
+                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize();
 
-                    // 3. 速度の合成
-                    // 現在の「軸方向（上昇）の速度」だけは維持する (VelocityやGravityの影響を残すため)
                     float currentAxialSpeed = particleState.velocity.Dot(axis);
                     Vector3 axialVelocity = axis * currentAxialSpeed;
 
-                    // 設定値を使って速度を作成
                     Vector3 orbitalVelocity = tangentialDir * config.vortex.orbitalSpeed;
 
-                    // radialSpeedが負なら中心へ (収束)、正なら外へ (拡散)
                     Vector3 radialVelocity = radialDir * config.vortex.radialSpeed;
 
-                    // 4. 目標速度
                     Vector3 targetVelocity = axialVelocity + orbitalVelocity + radialVelocity;
 
-                    // 5. 速度を適用 (Lerpで補間すると、少し慣性が残って自然になります)
-                    // 10.0f * deltaTime くらいで強めに補間
                     float lerpRate = 10.0f * deltaTime;
                     if (lerpRate > 1.0f) lerpRate = 1.0f;
 

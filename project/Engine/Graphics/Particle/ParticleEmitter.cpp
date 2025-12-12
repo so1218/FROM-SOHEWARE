@@ -37,7 +37,26 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
 
     if (targetToFollow_)
     {
-        position_ = targetToFollow_->translation_ + followOffset_;
+        Vector3 finalOffset = followOffset_;
+        finalOffset.x *= offsetScale_.x;
+        finalOffset.y *= offsetScale_.y;
+        finalOffset.z *= offsetScale_.z;
+
+        Vector3 targetPos = targetToFollow_->translation_ + finalOffset;
+
+        if (followX_)
+        {
+            position_.x = targetPos.x;
+        }
+        if (followY_)
+        {
+            position_.y = targetPos.y;
+        }
+        if (followZ_)
+        {
+            position_.z = targetPos.z;
+        }
+
     }
 
     // 経過時間を更新
@@ -68,14 +87,14 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
         // amount_の数だけループしてパーティクルを生成
         for (int i = 0; i < amount_; ++i)
         {
-            WorldTransform worldTransform = 
+            WorldTransform worldTransform =
             {
                 { 1.0f, 1.0f, 1.0f },
                 { 0.0f, 0.0f, 0.0f },
                 position_,
             };
             // 1つのパーティクルを生成
-            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_, attractionTarget_);
+            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_);
         }
 
         timeSinceLastSpawn_ -= spawnInterval_;
@@ -98,4 +117,11 @@ void ParticleEmitter::Destroy()
 {
     isDead_ = true;
     Stop();
+}
+
+void ParticleEmitter::SetFollowAxes(bool x, bool y, bool z)
+{
+    followX_ = x;
+    followY_ = y;
+    followZ_ = z;
 }
