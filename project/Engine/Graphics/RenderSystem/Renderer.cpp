@@ -1370,7 +1370,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	// 通常モデル描画
 	else
 	{
-		cmdList->SetPipelineState(isWireFrame_ ? psoManager_->GetPSO("Wireframe") : psoManager_->GetPSO("Standard3D"));
+		cmdList->SetPipelineState(psoManager_->GetPSO(psoName));
 		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 
 		cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
