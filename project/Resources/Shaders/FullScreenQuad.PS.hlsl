@@ -154,17 +154,6 @@ cbuffer PostEffectSettings : register(b0)
     float flareStreakSharpness;
     float flareStreakIntensity;
     float paddingFlare;
-    
-    float2 ballRadiusValue;
-    float2 ballPosition;
-    
-    float ballNoiseAmount;
-    float3 ballColorAdjustment;
-    
-    float ballTimeSpeed;
-    float dotBlinkSize;
-    float dotBlinkSpeed;
-    float _paddingdotBlink;
 
 }
 
@@ -983,82 +972,7 @@ float4 main(VSOutput input) : SV_TARGET
         // 加算合成
         color.rgb += finalFlare;
     }
-    if ((flag.y & BALL_EFFECT) != 0)
-    {
-        float2 ballCenter = ballPosition;
-        float2 radius = ballRadiusValue;
-        float2 dist = uv - ballCenter;
-
-        // 楕円の長さを計算する
-        float len = length(dist / radius);
-
-        if (len < 1.0)
-        {
-            // ノイズ座標（球体範囲内だけ）
-            float2 noiseUV = uv * 10.0 + float2(totalTime * ballTimeSpeed, 0.0);
-
-            // ノイズ強度
-            float fbmValue = FBM(noiseUV, 4, 0.5, 2.0); // 0〜1
-            float noiseDisplace = (fbmValue - 0.5) * ballNoiseAmount;
-
-            // X方向にノイズで歪ませる
-            float2 scrollUV = uv;
-            scrollUV.x += noiseDisplace * (1.0 - len); // 中心ほど強い
-
-            // テクスチャ再取得
-            float4 noisyColor = gTexture.Sample(gSampler, scrollUV);
-
-            // 発光的な追加（色を colorAdjustment で制御）
-            float3 glowColor = ballColorAdjustment.rgb * (1.0 - len); // 発光色を colorAdjustment.rgb で調整
-            noisyColor.rgb += glowColor;
-
-            // RGBAを操作
-            // 透明度の変更:中心ほど不透明、外側ほど透明
-            noisyColor.a = lerp(1.0, 0.0, len); // 透明度の補間（球の外に向かって透明度が下がる）
-
-            // 球体領域だけ合成
-            color.rgb = lerp(color.rgb, noisyColor.rgb, 1.0 - len);
-            color.a = lerp(color.a, noisyColor.a, 1.0 - len); // アルファも合成
-        }
-    }
-    if ((flag.y & DOT_BLINK) != 0)
-    {
-        // ピクセル位置をスクリーン解像度に基づいてグリッド化
-        float2 pixelPos = uv * screenResolution;
-        float2 gridPos = floor(pixelPos / dotBlinkSize); // グリッド化
-
-        // 時間による点滅の周期を計算
-        float blinkPeriod = totalTime * dotBlinkSpeed; // 点滅の速さ
-        float pattern = frac(blinkPeriod + gridPos.x + gridPos.y); // グリッド位置ごとにオフセット
-
-        // 点滅の状態
-        float blink = step(0.5, pattern); // 0〜1の周期で点滅
-
-        // 点滅効果
-        color.rgb *= blink;
-    }
-    if ((flag.y & OUTLINE) != 0)
-    {
-        // 深度の差分を取ることでエッジを強調
-        float depthCenter = gDepthTex.Sample(gSampler, uv).r; // 中心の深度
-        float depthLeft = gDepthTex.Sample(gSampler, uv + float2(-1.0, 0.0) / screenResolution).r; // 左側の深度
-        float depthRight = gDepthTex.Sample(gSampler, uv + float2(1.0, 0.0) / screenResolution).r; // 右側の深度
-        float depthUp = gDepthTex.Sample(gSampler, uv + float2(0.0, -1.0) / screenResolution).r; // 上側の深度
-        float depthDown = gDepthTex.Sample(gSampler, uv + float2(0.0, 1.0) / screenResolution).r; // 下側の深度
-
-        // 中心の深度と周囲の深度差を計算
-        float edgeDetection = abs(depthCenter - depthLeft) + abs(depthCenter - depthRight) +
-                              abs(depthCenter - depthUp) + abs(depthCenter - depthDown);
-
-        // エッジ検出によってアウトラインを強調
-        float outlineThreshold = 0.05; // アウトラインを描画するための深度差の閾値
-        if (edgeDetection > outlineThreshold)
-        {
-            // エッジ部分は黒でアウトラインを描画
-            color.rgb = float3(0.0, 0.0, 0.0); // 黒色でアウトライン
-            color.a = 1.0; // 不透明にする
-        }
-    }
+    
      
     return color;
 }

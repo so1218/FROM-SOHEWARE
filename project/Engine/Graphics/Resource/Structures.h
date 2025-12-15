@@ -326,17 +326,6 @@ struct PostEffectData
     float flareStreakSharpness;
     float flareStreakIntensity;
     float paddingFlare;
-
-    Vector2 ballRadiusValue;
-    Vector2 ballPosition;
-
-    float ballNoiseAmount;
-    Vector3 ballColorAdjustment;
-
-    float ballTimeSpeed;
-    float dotBlinkSize;
-    float dotBlinkSpeed;
-    float _paddingdotBlink;
 };
 
 struct BlurSettings

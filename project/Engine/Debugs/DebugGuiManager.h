@@ -93,6 +93,3 @@ private:
 #define GLOW_OUTLINE        (1 << 3)  
 #define FBM_NOISE           (1 << 4)
 #define FLARE               (1 << 5)
-#define BALL_EFFECT         (1 << 6) 
-#define DOT_BLINK           (1 << 7) 
-#define OUTLINE             (1 << 8) 

@@ -244,13 +244,6 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     postEffectData_->flareStreakSpeed = 1.0f;
     postEffectData_->flareStreakSharpness = 16.0f;
     postEffectData_->flareStreakIntensity = 0.8f;
-    postEffectData_->ballRadiusValue = Vector2(0.25f, 0.25f);
-    postEffectData_->ballPosition = Vector2(0.5f, 0.5f);  
-    postEffectData_->ballNoiseAmount = 0.02f;             
-    postEffectData_->ballTimeSpeed = 1.0f;
-    postEffectData_->ballColorAdjustment = Vector3(1, 1, 1);
-    postEffectData_->dotBlinkSize = 8.0f;
-    postEffectData_->dotBlinkSpeed = 5.0f;
 }
 
 void PostEffectManager::Update()

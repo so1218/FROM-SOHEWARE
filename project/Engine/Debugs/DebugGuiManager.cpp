@@ -376,9 +376,6 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::CheckboxFlags("GlowingOutline", &postEffectData->modeFlags[1], GLOW_OUTLINE);
             ImGui::CheckboxFlags("FBMNoise", &postEffectData->modeFlags[1], FBM_NOISE);
             ImGui::CheckboxFlags("Flare", &postEffectData->modeFlags[1], FLARE);
-            ImGui::CheckboxFlags("BallEffect", &postEffectData->modeFlags[1], BALL_EFFECT);
-            ImGui::CheckboxFlags("DotBlink", &postEffectData->modeFlags[1], DOT_BLINK);
-            ImGui::CheckboxFlags("Outline", &postEffectData->modeFlags[1], OUTLINE);
             ImGui::TreePop();
         }
         ImGui::TreePop();
@@ -624,19 +621,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Streak Speed", &postEffectData->flareStreakSpeed, -10.0f, 10.0f);
         ImGui::SliderFloat("Streak Sharpness", &postEffectData->flareStreakSharpness, 1.0f, 32.0f);
         ImGui::SliderFloat("Streak Intensity", &postEffectData->flareStreakIntensity, 0.0f, 2.0f);
-    }
-    if (postEffectData->modeFlags[1] & BALL_EFFECT)
-    {
-        ImGui::SliderFloat2("Ball Radius", &postEffectData->ballRadiusValue.x, 0.0f, 1.0f);
-        ImGui::DragFloat2("Ball Position", &postEffectData->ballPosition.x, 0.01f, 0.0f, 1.0f);
-        ImGui::SliderFloat("Noise Amount", &postEffectData->ballNoiseAmount, 0.0f, 0.1f);
-        ImGui::SliderFloat("Time Speed", &postEffectData->ballTimeSpeed, 0.0f, 5.0f);
-        ImGui::ColorEdit3("Ball Color", &postEffectData->ballColorAdjustment.x);
-    }
-    if (postEffectData->modeFlags[1] & DOT_BLINK)
-    {
-        ImGui::SliderFloat("Dot Blink Size", &postEffectData->dotBlinkSize, 0.0f, 10.0f);
-        ImGui::SliderFloat("Dot Blink Speed", &postEffectData->dotBlinkSpeed, 0.0f, 10.0f);
     }
 }
 
