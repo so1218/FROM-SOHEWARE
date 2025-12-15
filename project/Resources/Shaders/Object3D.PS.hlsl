@@ -150,6 +150,7 @@ PixelShaderOutput main(PixelShaderInput input)
 
     output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
+    output.color.a = 1.0f;
 
     // ディザー透明処理
     //{

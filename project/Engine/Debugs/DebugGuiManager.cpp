@@ -366,18 +366,6 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::CheckboxFlags("WaterReaction", &postEffectData->modeFlags[0], WATER_REFRACTION);
             ImGui::TreePop();
         }
-
-        if (ImGui::TreeNode("Mode[1]1~16"))
-        {
-            // 上位32bit（modeFlags[1]）
-            ImGui::CheckboxFlags("RoughEdge", &postEffectData->modeFlags[1], ROUGH_EDGE);
-            ImGui::CheckboxFlags("SpiralWarp", &postEffectData->modeFlags[1], SPIRAL_WARP);
-            ImGui::CheckboxFlags("RadialWave", &postEffectData->modeFlags[1], RADIAL_WAVE);
-            ImGui::CheckboxFlags("GlowingOutline", &postEffectData->modeFlags[1], GLOW_OUTLINE);
-            ImGui::CheckboxFlags("FBMNoise", &postEffectData->modeFlags[1], FBM_NOISE);
-            ImGui::CheckboxFlags("Flare", &postEffectData->modeFlags[1], FLARE);
-            ImGui::TreePop();
-        }
         ImGui::TreePop();
     }
 
@@ -565,63 +553,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Turbulent Frequency", &postEffectData->turbulentFrequency, 1.0f, 50.0f);
         ImGui::SliderFloat("Turbulent Speed", &postEffectData->turbulentSpeed, 0.0f, 10.0f);
     }
-    if (postEffectData->modeFlags[1] & ROUGH_EDGE) 
-    {
-        ImGui::SliderFloat("Edge Threshold", &postEffectData->roughEdgeThreshold, 0.0f, 1.0f);
-        ImGui::SliderFloat("Roughness", &postEffectData->roughEdgeRoughness, 0.0f, 2.0f);
-        ImGui::SliderFloat("Noise Scale", &postEffectData->roughEdgeNoiseScale, 1.0f, 100.0f);
-        ImGui::SliderFloat("Speed", &postEffectData->roughEdgeSpeed, 0.0f, 10.0f);
-        ImGui::ColorEdit3("Rough Edge Color", (float*)&postEffectData->roughEdgeColor);
-    }
-    if (postEffectData->modeFlags[1] & SPIRAL_WARP)
-    {
-        ImGui::SliderFloat("Base Amplitude", &postEffectData->spiralBaseAmplitude, 0.0f, 5.0f);
-        ImGui::SliderFloat("Frequency", &postEffectData->spiralFrequency, 1.0f, 20.0f);
-        ImGui::SliderFloat("Distance Falloff", &postEffectData->spiralDistanceFalloff, 0.1f, 5.0f);
-        ImGui::SliderFloat("Noise Amount", &postEffectData->spiralNoiseAmount, 0.0f, 2.0f);
 
-        ImGui::SliderFloat("Noise Speed", &postEffectData->spiralNoiseSpeed, 0.0f, 5.0f);
-        ImGui::SliderFloat("Noise Scale", &postEffectData->spiralNoiseScale, 0.1f, 20.0f);
-        ImGui::SliderFloat("Rotation Speed", &postEffectData->spiralRotationSpeed, 0.0f, 5.0f);
-        ImGui::SliderFloat("Spiral Speed", &postEffectData->spiralSpeed, 0.0f, 10.0f);
-    }
-    if (postEffectData->modeFlags[1] & RADIAL_WAVE)
-    {
-        ImGui::SliderFloat("Wave Amplitude", &postEffectData->radialWaveAmplitude, 0.0f, 20.0f);
-        ImGui::SliderFloat("Wave Frequency", &postEffectData->radialWaveFrequency, 1.0f, 50.0f);
-        ImGui::SliderFloat("Wave Speed", &postEffectData->radialWaveSpeed, 0.0f, 10.0f);
-    }
-    if (postEffectData->modeFlags[1] & GLOW_OUTLINE) 
-    {
-        ImGui::SliderFloat("Outline Threshold", &postEffectData->glowOutlineThreshold, 0.0f, 2.0f);
-        ImGui::SliderFloat("Outline Thickness", &postEffectData->glowOutlineThickness, 0.5f, 5.0f);
-        ImGui::ColorEdit3("Outline Color", &postEffectData->glowOutlineColor.x);
-        ImGui::SliderFloat("Outline Intensity", &postEffectData->glowOutlineIntensity, 0.0f, 5.0f);
-    }
-    if (postEffectData->modeFlags[1] & FBM_NOISE)
-    {
-        ImGui::SliderInt("FBM Octaves", &postEffectData->fbmOctaves, 1, 8);
-        ImGui::SliderFloat("FBM Gain", &postEffectData->fbmGain, 0.1f, 1.0f);
-        ImGui::SliderFloat("FBM Lacunarity", &postEffectData->fbmLacunarity, 1.0f, 4.0f);
-        ImGui::SliderFloat("FBM Sharpness", &postEffectData->fbmSharpness, 0.01f, 0.5f);
-
-        ImGui::SliderFloat("FBM Noise Intensity", &postEffectData->fbmNoiseIntensity, 0.0f, 5.0f);
-        ImGui::ColorEdit3("FBM Noise Color", (float*)&postEffectData->fbmNoiseColor);
-    }
-    if (postEffectData->modeFlags[1] & FLARE)
-    {
-        ImGui::ColorEdit3("Flare Color", &postEffectData->flareColor.x);
-        ImGui::SliderFloat("Flare Intensity", &postEffectData->flareIntensity, 0.0f, 5.0f);
-
-        ImGui::SliderFloat("Flare Falloff", &postEffectData->flareFalloff, 0.1f, 10.0f);
-        ImGui::SliderFloat("Ghost Distance", &postEffectData->flareGhostDistance, 0.0f, 2.0f);
-        ImGui::SliderFloat("Ghost Intensity", &postEffectData->flareGhostIntensity, 0.0f, 1.0f);
-
-        ImGui::SliderFloat("Streak Count", &postEffectData->flareStreakCount, 2.0f, 16.0f);
-        ImGui::SliderFloat("Streak Speed", &postEffectData->flareStreakSpeed, -10.0f, 10.0f);
-        ImGui::SliderFloat("Streak Sharpness", &postEffectData->flareStreakSharpness, 1.0f, 32.0f);
-        ImGui::SliderFloat("Streak Intensity", &postEffectData->flareStreakIntensity, 0.0f, 2.0f);
-    }
 }
 
 void DebugGuiManager::DrawTimeSettings()

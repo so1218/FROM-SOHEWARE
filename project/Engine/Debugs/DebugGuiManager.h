@@ -85,11 +85,3 @@ private:
 #define HEAT_HAZE           (1 << 29)
 #define SPLIT_TONING        (1 << 30)
 #define WATER_REFRACTION    (1 << 31)
-
-// ここから mode.y
-#define ROUGH_EDGE          (1 << 0)  
-#define SPIRAL_WARP         (1 << 1)  
-#define RADIAL_WAVE         (1 << 2)  
-#define GLOW_OUTLINE        (1 << 3)  
-#define FBM_NOISE           (1 << 4)
-#define FLARE               (1 << 5)

@@ -272,60 +272,10 @@ struct PostEffectData
     float turbulentSpeed;
     float _paddingTurbulence;
 
-    float roughEdgeThreshold;
-    float roughEdgeRoughness;
-    float roughEdgeNoiseScale;
-    float roughEdgeSpeed;
-
-    Vector3 roughEdgeColor;
-    float _paddingRoughEdge;
-
-    float spiralBaseAmplitude;
-    float spiralFrequency;
-    float spiralDistanceFalloff;
-    float spiralNoiseAmount;
-
-    float spiralNoiseSpeed;
-    float spiralNoiseScale;
-    float spiralRotationSpeed;
-    float spiralSpeed;
-
-    float radialWaveSpeed;
-    float radialWaveAmplitude;
-    float radialWaveFrequency;
-    float _paddingRadialWave;
-
-    float glowOutlineThreshold;
-    float glowOutlineThickness;
-    float glowOutlineIntensity;
-    float _paddingGlow0;
-
-    Vector3 glowOutlineColor;
-    float _paddingGlow1;
-
+   
     uint32_t modeFlags[2];
     Vector2 _paddingGlow2;
 
-    int fbmOctaves;
-    float fbmGain;
-    float fbmLacunarity;
-    float fbmSharpness; 
-
-    float fbmNoiseIntensity; 
-    Vector3 fbmNoiseColor;
-
-    Vector3 flareColor;
-    float flareIntensity;
-
-    float flareFalloff;
-    float flareGhostDistance;
-    float flareGhostIntensity;
-    float flareStreakCount;
-
-    float flareStreakSpeed;
-    float flareStreakSharpness;
-    float flareStreakIntensity;
-    float paddingFlare;
 };
 
 struct BlurSettings

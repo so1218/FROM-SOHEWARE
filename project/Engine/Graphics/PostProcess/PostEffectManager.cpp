@@ -207,43 +207,8 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     postEffectData_->turbulentStrength = 0.2f;
     postEffectData_->turbulentFrequency = 10.0f;
     postEffectData_->turbulentSpeed = 3.0f;
-    postEffectData_->roughEdgeThreshold = 0.5f; 
-    postEffectData_->roughEdgeRoughness = 0.5f; 
-    postEffectData_->roughEdgeNoiseScale = 10.0f; 
-    postEffectData_->roughEdgeSpeed = 1.0f; 
-    postEffectData_->roughEdgeColor = Vector3(1.0f, 1.0f, 1.0f); 
-    postEffectData_->spiralBaseAmplitude = 5.0f;
-    postEffectData_->spiralFrequency = 5.0f;
-    postEffectData_->spiralDistanceFalloff = 1.0f;
-    postEffectData_->spiralNoiseAmount = 0.5f;
-    postEffectData_->spiralNoiseSpeed = 1.0f;
-    postEffectData_->spiralNoiseScale = 5.0f;
-    postEffectData_->spiralRotationSpeed = 1.0f;
-    postEffectData_->spiralSpeed = 1.0f;
-    postEffectData_->radialWaveSpeed = 0.02f;
-    postEffectData_->radialWaveAmplitude = 20.0f;
-    postEffectData_->radialWaveFrequency = 2.0f;
-    postEffectData_->glowOutlineThreshold = 0.1f;
-    postEffectData_->glowOutlineThickness = 1.0f;
-    postEffectData_->glowOutlineColor = Vector3(1.0f, 0.8f, 0.2f);
-    postEffectData_->glowOutlineIntensity = 2.0f;
     postEffectData_->modeFlags[0] = 0;
     postEffectData_->modeFlags[1] = 0;
-    postEffectData_->fbmOctaves = 5;
-    postEffectData_->fbmGain = 0.5f;
-    postEffectData_->fbmLacunarity = 2.0f;
-    postEffectData_->fbmSharpness = 0.1f;
-    postEffectData_->fbmNoiseIntensity = 1.5f;
-    postEffectData_->fbmNoiseColor = Vector3(0.2f, 0.8f, 1.0f);
-    postEffectData_->flareColor = Vector3(1.0f, 0.85f, 0.6f);    
-    postEffectData_->flareIntensity = 1.0f;
-    postEffectData_->flareFalloff = 2.0f;
-    postEffectData_->flareGhostDistance = 0.5f;
-    postEffectData_->flareGhostIntensity = 0.4f;
-    postEffectData_->flareStreakCount = 6.0f;
-    postEffectData_->flareStreakSpeed = 1.0f;
-    postEffectData_->flareStreakSharpness = 16.0f;
-    postEffectData_->flareStreakIntensity = 0.8f;
 }
 
 void PostEffectManager::Update()
