@@ -2,7 +2,7 @@
 
 Texture2D gTexture : register(t0);
 // 深度テクスチャ
-Texture2D gDepthTex : register(t1); // 深度テクスチャ（t1）
+Texture2D gDepthTex : register(t1); 
 SamplerState gSampler : register(s0);
 
 cbuffer PostEffectSettings : register(b0)
@@ -262,51 +262,6 @@ float perlinNoise(float2 uv)
     return lerp(v, lerp(u, g1, g2), lerp(u, g3, g4));
 }
 
-// Simplexノイズ関数（簡易版）
-float simplexNoise(float2 uv)
-{
-    // 3D空間に埋め込むことで擬似3Dノイズを2Dに投影
-    float3 p = float3(uv, 0.0);
-    p = p - floor(p);
-    float4 grad = float4(1.0, 1.0, -1.0, -1.0);
-
-    return grad.x * p.x + grad.y * p.y;
-}
-
-// 近傍のセルの生成
-float worleyNoise(float2 uv)
-{
-    float2 p = floor(uv);
-    float2 f = uv - p;
-    
-    float minDist = 1.0; // 最短距離
-    for (int x = -1; x <= 1; ++x)
-    {
-        for (int y = -1; y <= 1; ++y)
-        {
-            float2 neighbor = float2(p.x + x, p.y + y);
-            float2 diff = uv - neighbor;
-            minDist = min(minDist, length(diff));
-        }
-    }
-    return minDist;
-}
-
-
-// グラディエントノイズ：値を滑らかに補間
-float FBMnoise(float2 p)
-{
-    float2 i = floor(p);
-    float2 f = frac(p);
-    float2 u = f * f * (3.0 - 2.0 * f);
-
-    float a = hash(i + float2(0.0, 0.0));
-    float b = hash(i + float2(1.0, 0.0));
-    float c = hash(i + float2(0.0, 1.0));
-    float d = hash(i + float2(1.0, 1.0));
-
-    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
-}
 
 // 高自由度 FBM：オクターブ数、ラフネス、スケール、回転などに対応
 float FBM(float2 p, int octaves, float gain, float lacunarity)
