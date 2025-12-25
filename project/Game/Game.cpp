@@ -130,7 +130,7 @@ void Game::Update()
             Vector3 lightDir = dirLights[0].direction;
             lightDir = lightDir.Normalize();
 
-            // 影を落とす対象の中心座標（デバッグ中は原点でも可）
+            // 影を落とす対象の中心座標
             Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
 
             // ライト位置を決定
@@ -145,7 +145,7 @@ void Game::Update()
             Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
 
             // 平行光源用の正射影行列を作成
-            float size = 100.0f;
+            float size = 30.0f;
             float nearZ = -100.0f;
             float farZ = 200.0f;
             Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);

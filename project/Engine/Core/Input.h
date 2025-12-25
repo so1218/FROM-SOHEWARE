@@ -90,6 +90,10 @@ public:
     bool IsRightOnStick(int controllerId, StickType stickType);
     bool IsUpOnStick(int controllerId, StickType stickType);
     bool IsDownOnStick(int controllerId, StickType stickType);
+    bool IsStickLeftTriggered(int controllerId, StickType stickType);
+    bool IsStickRightTriggered(int controllerId, StickType stickType);
+    bool IsStickUpTriggered(int controllerId, StickType stickType);
+    bool IsStickDownTriggered(int controllerId, StickType stickType);
     bool IsTriggerOnStick(int controllerId, StickType stickType);
     void VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed);
     void StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds);
@@ -97,6 +101,12 @@ public:
 
     const DIMOUSESTATE& GetMouseState() { return mouseState_; }
     const DIMOUSESTATE& GetPrevMouseState() { return preMouseState_; }
+
+    // 前のフレームのスティック位置を取得する
+    SHORT GetPrevLeftStickX(int controllerId);
+    SHORT GetPrevLeftStickY(int controllerId);
+    SHORT GetPrevRightStickX(int controllerId);
+    SHORT GetPrevRightStickY(int controllerId);
 
 private:
     Input();

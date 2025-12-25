@@ -149,11 +149,11 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureHandle": 95
+            "textureID": 57
         },
         "trailModule": {
             "alignment": 0,
-            "dissolveTextureHandle": 0,
+            "dissolveTextureID": -1,
             "emissiveIntensity": 1.0,
             "enabled": false,
             "endColor": [
@@ -181,7 +181,7 @@
                 1.0
             ],
             "tailWidthScale": 1.0,
-            "textureHandle": 0,
+            "textureID": 0,
             "textureMode": 0,
             "tiling": [
                 1.0,
@@ -212,6 +212,11 @@
                 0.0
             ],
             "enabled": false,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
             "orbitalSpeed": 10.0,
             "radialSpeed": 0.0
         }

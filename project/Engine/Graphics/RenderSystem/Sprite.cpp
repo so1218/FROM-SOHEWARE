@@ -41,6 +41,7 @@ void Sprite::Draw()
         size_,
         rotation_,
         color_,
+        anchorPoint_,
         uvTransform_,
         textureHandle_,
         layerOrder_,

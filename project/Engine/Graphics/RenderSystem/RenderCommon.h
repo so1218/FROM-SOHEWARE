@@ -38,6 +38,7 @@ enum class RenderGroup {
     Grid,
     Skybox,
     Transparent,     // 半透明 
+    Particle,
     Trail,
     UI,              // UI
 };

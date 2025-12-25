@@ -29,7 +29,6 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_->GetTransform().scale_.x = 500;
 	modelTamesi_->GetTransform().scale_.z = 500;
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
-	modelTamesi_->SetColor(0xaaaaaaff);
 
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
@@ -420,27 +419,76 @@ void Player::GainExperience(int amount)
 	}
 }
 
+bool Player::HasWeapon(WeaponType type)const
+{
+	for (const auto& weapon : weapons_)
+	{
+		if (weapon->GetType() == type)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void Player::LevelUp()
 {
+	// レベル自体の数値を上げる
 	level_++;
 	experience_ -= xpToNextLevel_; 
-
 	xpToNextLevel_ = static_cast<int>(xpToNextLevel_ * 1.2f);
 
 	Input::GetInstance().StartVibration(0, 0.3f, 0.3f, 0.3f);
-
 	if (levelUpEmitterPtr_)
 	{
 		levelUpEmitterPtr_->Play();
 	}
 
 	// ここでレベルアップ選択画面を開く
+	isWaitingForUpgrade_ = true;
 
-	// [仮]: 最初の武器(ナイフなど)を強制的にレベルアップさせる
-	if (!weapons_.empty())
+	/*if (!weapons_.empty())
 	{
 		weapons_[0]->LevelUp();
 		weapons_[1]->LevelUp();
+	}*/
+}
+
+void Player::ApplyUpgrade(const UpgradeInfo& upgrade)
+{
+	switch (upgrade.type)
+	{
+	case UpgradeType::newWeapon:
+		AddWeapon(static_cast<WeaponType>(upgrade.weaponId));
+		break;
+
+	case UpgradeType::UpgradeWeapon:
+		// 所持している該当武器をレベルアップ
+		for (auto& weapon : weapons_)
+		{
+			if (weapon->GetType() == static_cast<WeaponType>(upgrade.weaponId))
+			{
+				weapon->LevelUp();
+				break;
+			}
+		}
+		break;
+
+	case UpgradeType::passiveUp:
+		// ステータス強化
+		if (upgrade.name == "MaxHp Up")
+		{
+			maxHp_ += upgrade.value;
+		}
+		else if (upgrade.name == "Speed Up")
+		{
+			moveSpeed_ += upgrade.value;
+		}
+		break;
+
+	case UpgradeType::heal:
+		hp_ = Math::MyMin(hp_ + upgrade.value, maxHp_);
+		break;
 	}
 }
 

@@ -14,6 +14,7 @@ public:
     void DebugDraw();
     void LevelUp() override;
     void AddCollidersToManager(CollisionManager* manager) override;
+    WeaponType GetType() const override { return WeaponType::Knife; }
 
     std::vector<std::string> GetGlobalVariableGroupName() { return { "WeaponKnife" }; }
 

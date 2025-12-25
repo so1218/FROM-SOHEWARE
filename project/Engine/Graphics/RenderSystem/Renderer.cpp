@@ -227,7 +227,7 @@ void Renderer::DrawScene()
 		particleSubmission.type = RenderType::Particle;
 
 		// 半透明グループに所属させる
-		particleSubmission.group = RenderGroup::Transparent;
+		particleSubmission.group = RenderGroup::Particle;
 
 		// 深度設定: 
 		particleSubmission.depth = 0.0f;
@@ -732,7 +732,7 @@ void Renderer::CreateSprites()
 	indexSprite_ = 0;
 }
 
-void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
+void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
 	MaterialHandle& materialHandle)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
@@ -748,15 +748,30 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
 	materialHandle.materialData->uvTransform = uvTransformMatrix;
 
-	// ワールド行列計算
-	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
-	Matrix4x4 rotationMatrix = Matrix4x4::MakeRotateZ(rotation);
-	Matrix4x4 translateMatrix = Matrix4x4::MakeTranslate({ position.x, position.y, 0.0f });
-	sprite.worldMatrix = (scaleMatrix * rotationMatrix) * translateMatrix;
+	// 行列計算
 
-	// WVP行列計算
-	WorldTransform tempTransform = { {size.x, size.y, 1.0f}, {0.0f, 0.0f, rotation}, {position.x, position.y, 0.0f} };
-	Matrix4x4 wvpMatrix = Matrix4x4::MakeWVPMatrix2D(tempTransform, float(clientWidth_), float(clientHeight_));
+	// アンカーポイント分ずらす行列
+	Matrix4x4 anchorMatrix = Matrix4x4::MakeTranslate({ -anchorPoint.x, -anchorPoint.y, 0.0f });
+
+	// スケーリング行列
+	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
+
+	// 回転行列
+	Matrix4x4 rotationMatrix = Matrix4x4::MakeRotateZ(rotation);
+
+	// 平行移動行列
+	Matrix4x4 translateMatrix = Matrix4x4::MakeTranslate({ position.x, position.y, 0.0f });
+
+	// 全て合成してワールド行列を作る
+	sprite.worldMatrix = anchorMatrix * scaleMatrix * rotationMatrix * translateMatrix;
+
+	// 平行投影行列を作成
+	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographic(
+		0.0f, 0.0f, float(clientWidth_), float(clientHeight_),
+		0.0f, 100.0f 
+	);
+
+	Matrix4x4 wvpMatrix = sprite.worldMatrix * projectionMatrix;
 
 	// 定数バッファにコピー
 	sprite.mappedData->WVP = wvpMatrix;

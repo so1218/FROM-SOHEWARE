@@ -61,7 +61,7 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight);
 
 // 影の濃さを計算する関数
-float CalculateShadow(float4 shadowCoord);
+float CalculateShadow(float4 shadowCoord, float3 normal);
 
 PixelShaderOutput main(PixelShaderInput input)
 {
@@ -90,7 +90,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // 0番目のライトが有効なら影を計算
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
-        shadowFactor = CalculateShadow(input.shadowCoord);
+        shadowFactor = CalculateShadow(input.shadowCoord, normalize(input.normal));
     }
     
     // ライティング処理
@@ -458,17 +458,51 @@ float3 ApplyAreaLights(float3 baseColor, float3 normal, float3 worldPos, float3 
     return finalColor;
 }
 
-// シャドウ強度を計算
-float CalculateShadow(float4 shadowCoord)
+static const float2 poissonDisk[16] =
 {
-    // 透視除算
+    float2(-0.94201624, -0.39906216), float2(0.94558609, -0.76890725),
+    float2(-0.094184101, -0.92938870), float2(0.34495938, 0.29387760),
+    float2(-0.91588581, 0.45771432), float2(-0.81544232, -0.87912464),
+    float2(-0.38277543, 0.27676845), float2(0.97484398, 0.75648379),
+    float2(0.44323325, -0.97511554), float2(0.53742981, -0.47373420),
+    float2(-0.26496911, -0.41893023), float2(0.79197514, 0.19090188),
+    float2(-0.24188840, 0.99706507), float2(-0.81409955, 0.91437590),
+    float2(0.19984126, 0.78641367), float2(0.14383161, -0.14100790)
+};
+
+// シャドウ強度を計算
+float CalculateShadow(float4 shadowCoord, float3 normal)
+{
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
-    // UV空間(0〜1)へ変換（Yは反転）
+    // ノーマルオフセットバイアス
+    // 法線とライト方向の角度に応じて、参照座標を少しずらす
+    // これにより、自分自身の影によるシマ模様（アクネ）を劇的に防げる
+    float3 lightDir = normalize(-gDirectionalLights[0].direction);
+    float dotNL = dot(normal, lightDir);
+    float biasScale = clamp(1.0f - dotNL, 0.0f, 1.0f); // 浅い角度ほど大きくずらす
+
+    // バイアス値の基本設定（MaterialDataから調整できるようにすると良い）
+    // 例: bias = 0.005, normalBias = 0.001 くらいが目安
+    float depthBias = gMaterial.shadowBias;
+    float normalBias = 0.002f * biasScale; // 法線方向へのオフセット量
+
+    // 座標変換
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
-    // シャドウマップ外は影なし
+    // ★重要: 法線方向にサンプリング位置をずらす（Normal Offset）
+    // 深度(z)を引くのではなく、XY平面上でずらすことで、見た目のズレを抑えつつアクネを消す
+    float2 shadowMapSize = float2(2048.0f, 2048.0f);
+    float2 texelSize = 1.0f / shadowMapSize;
+    
+    // 法線のXY成分を使ってずらす
+    projCoords.xy += normal.xy * normalBias;
+
+    // 深度比較用のバイアスも少しだけかける
+    float currentDepth = projCoords.z - depthBias;
+
+    // 範囲外判定
     if (projCoords.z > 1.0f || projCoords.z < 0.0f ||
         projCoords.x > 1.0f || projCoords.x < 0.0f ||
         projCoords.y > 1.0f || projCoords.y < 0.0f)
@@ -476,32 +510,28 @@ float CalculateShadow(float4 shadowCoord)
         return 1.0f;
     }
 
-    float bias = gMaterial.shadowBias;
-    float currentDepth = projCoords.z - bias;
-
-    // PCF処理 (3x3 サンプリング)
+    // PCF (Poisson Disk Sampling)
+    // 3x3ループの代わりに、ランダムに散らばった点を使うことで
+    // 四角いジャギジャギを「ノイズ」に変え、自然なボケにする
     float shadowSum = 0.0f;
     
-    // シャドウマップの1ピクセルあたりのサイズ (2048x2048想定)
-    // 本当はC++から送りたい
-    float2 texelSize = float2(1.0f / 2048.0f, 1.0f / 2048.0f);
+    // 影のボケ具合を調整するパラメータ (MaterialDataに追加推奨)
+    // 値が大きいほどボケる (例: 1.0 = 硬い, 3.0 = 柔らかい)
+    float softness = 1.0f; // 追加推奨: デフォルト 1.5f 程度
+    if (softness <= 0.0f)
+        softness = 1.0f;
 
-    // 周囲のピクセルをサンプリングして平均化
-    for (int x = -1; x <= 1; ++x)
+    for (int i = 0; i < 16; ++i)
     {
-        for (int y = -1; y <= 1; ++y)
-        {
-            float2 offset = float2(x, y) * texelSize;
-            shadowSum += gShadowMap.SampleCmpLevelZero(
-                gShadowSampler,
-                projCoords.xy + offset,
-                currentDepth
-            );
-        }
+        float2 offset = poissonDisk[i] * texelSize * softness;
+        shadowSum += gShadowMap.SampleCmpLevelZero(
+            gShadowSampler,
+            projCoords.xy + offset,
+            currentDepth
+        );
     }
 
-    // 9回分の平均を返す
-    return shadowSum / 9.0f;
+    return shadowSum / 16.0f;
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)

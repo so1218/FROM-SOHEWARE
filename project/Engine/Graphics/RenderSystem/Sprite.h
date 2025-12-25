@@ -22,6 +22,7 @@ public:
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
+    void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
 
     // ゲッター
     Vector2& GetPosition();
@@ -30,6 +31,7 @@ public:
     WorldTransform& GetUVTransform();
     int GetLayerOrder() const;
     bool GetIsVisible() const { return isVisible_; }
+    const Vector2& GetAnchorPoint() const { return anchorPoint_; }
 
     MaterialHandle materialHandle_;
 
@@ -43,6 +45,8 @@ private:
     uint32_t textureHandle_ = 1;
     WorldTransform uvTransform_;
     bool isVisible_ = true;
+    // アンカーポイント (デフォルトは左上)
+    Vector2 anchorPoint_ = { 0.0f, 0.0f };
 
     int layerOrder_ = 0;
 };

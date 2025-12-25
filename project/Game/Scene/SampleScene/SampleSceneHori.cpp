@@ -103,12 +103,12 @@ void SampleSceneHori::Update()
 
     if (player_->IsEnd())
     {
-        sceneManager_->RequestSceneChange(SceneID::Title);
+        //sceneManager_->RequestSceneChange(SceneID::Title);
     }
     // タイムアップ
     if (gameTimer_->IsTimeUp())
     {
-        sceneManager_->RequestSceneChange(SceneID::Play);
+        //sceneManager_->RequestSceneChange(SceneID::Play);
     }
 
 }

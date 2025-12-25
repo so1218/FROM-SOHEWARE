@@ -5,23 +5,9 @@
 #include "Weapon.h"
 #include "AnimationModel.h"
 #include "FollowCamera.h"
+#include "UpgradeInfo.h"
 
 class PlayScene;
-
-enum class UpgradeType
-{
-	NewWeapon,      // 新しい武器を取得
-	LevelUpWeapon,  // 所持している武器を強化
-	Heal,           // 回復
-};
-
-// 画面に表示する1つの選択肢データ
-struct UpgradeInfo
-{
-	UpgradeType type;       // 強化の種類
-	WeaponType weaponId;    // 対象の武器ID
-	std::string name;       // 表示名
-};
 
 class Player : public Collider, public BaseCharacter
 {
@@ -96,6 +82,18 @@ public:
 
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
 	FollowCamera* followCamera_;
+
+	// 選択された強化を適用する関数
+	void ApplyUpgrade(const UpgradeInfo& upgrade);
+
+	// 外部から状態を取得、変更するための関数
+	bool IsWaitingForUpgrade() const { return isWaitingForUpgrade_; }
+	void FinishUpgrade() { isWaitingForUpgrade_ = false; }
+
+	bool HasWeapon(WeaponType type) const; 
+	// 武器リストへのアクセサ
+	const std::vector<std::unique_ptr<Weapon>>& GetWeapons() const { return weapons_; }
+
 private:
 
 	// レベルアップの内部処理
@@ -132,5 +130,7 @@ private:
 	int xpToNextLevel_ = 10;  // 次のレベルアップに必要な経験値
 	int level_ = 1;
 	bool isEnd_ = false; // 死亡フラグ
+
+	bool isWaitingForUpgrade_ = false; // 選択待ちフラグ
 };
 

@@ -203,23 +203,7 @@ void WeaponKnife::ApplyLevelEffects()
     if (level_ >= 4)  projectileCount_ += 1;
 
     if (level_ >= 6)  projectileCount_ += 1;
-    if (level_ >= 7)  damage_ *= 1.2f;
-    if (level_ >= 8)  cooldown_ *= 0.9f;
-    if (level_ >= 9)  projectileCount_ += 1;
-    if (level_ >= 10)
-    {
-        damage_ *= 1.5f;
-    }
 
-    if (level_ >= 11) cooldown_ *= 0.9f;
-    if (level_ >= 12) projectileCount_ += 1;
-    if (level_ >= 14) damage_ *= 1.5f;
-    if (level_ >= 15)
-    {
-        projectileCount_ += 2;
-        cooldown_ *= 0.8f;
-        damage_ *= 1.5f;
-    }
 }
 
 void WeaponKnife::LevelUp()

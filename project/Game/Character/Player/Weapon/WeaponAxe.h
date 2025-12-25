@@ -17,6 +17,7 @@ public:
     void LevelUp() override;
     void ApplyLevelEffects() override;
     void AddCollidersToManager(CollisionManager* manager) override;
+    WeaponType GetType() const override { return WeaponType::Axe; }
 
     std::vector<std::string> GetGlobalVariableGroupName() { return { "WeaponAxe" }; } 
 

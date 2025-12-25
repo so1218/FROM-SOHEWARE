@@ -360,6 +360,56 @@ bool Input::IsDownOnStick(int controllerId, StickType stickType)
     return false;
 }
 
+
+SHORT Input::GetPrevLeftStickX(int controllerId)
+{
+    return prevControllerStates_[controllerId].Gamepad.sThumbLX;
+}
+SHORT Input::GetPrevLeftStickY(int controllerId)
+{
+    return prevControllerStates_[controllerId].Gamepad.sThumbLY;
+}
+SHORT Input::GetPrevRightStickX(int controllerId)
+{
+    return prevControllerStates_[controllerId].Gamepad.sThumbRX;
+}
+SHORT Input::GetPrevRightStickY(int controllerId)
+{
+    return prevControllerStates_[controllerId].Gamepad.sThumbRY;
+}
+
+bool Input::IsStickLeftTriggered(int controllerId, StickType stickType)
+{
+    SHORT currentX = (stickType == LeftStick) ? GetLeftStickX(controllerId) : GetRightStickX(controllerId);
+    SHORT prevX = (stickType == LeftStick) ? GetPrevLeftStickX(controllerId) : GetPrevRightStickX(controllerId);
+
+    return (prevX >= -STICK_THRESHOLD && currentX < -STICK_THRESHOLD);
+}
+
+bool Input::IsStickRightTriggered(int controllerId, StickType stickType)
+{
+    SHORT currentX = (stickType == LeftStick) ? GetLeftStickX(controllerId) : GetRightStickX(controllerId);
+    SHORT prevX = (stickType == LeftStick) ? GetPrevLeftStickX(controllerId) : GetPrevRightStickX(controllerId);
+
+    return (prevX <= STICK_THRESHOLD && currentX > STICK_THRESHOLD);
+}
+
+bool Input::IsStickUpTriggered(int controllerId, StickType stickType)
+{
+    SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
+    SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
+
+    return (prevY >= -STICK_THRESHOLD && currentY < -STICK_THRESHOLD);
+}
+
+bool Input::IsStickDownTriggered(int controllerId, StickType stickType)
+{
+    SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
+    SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
+
+    return (prevY <= STICK_THRESHOLD && currentY > STICK_THRESHOLD);
+}
+
 bool Input::IsTriggerOnStick(int controllerId, StickType stickType)
 {
     if (stickType == LeftStick)

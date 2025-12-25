@@ -32,6 +32,10 @@ enum TextureID
     num9,
     num0,
 
+    // カードフォント
+    cardTextKnife,
+    cardTextAxe,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -80,6 +84,9 @@ private:
             { num8, "Resources/images/numFont/8.png" },
             { num9, "Resources/images/numFont/9.png" },
             { num0, "Resources/images/numFont/0.png" },
+
+            { cardTextKnife, "Resources/images/numFont/9.png" },
+            { cardTextAxe, "Resources/images/numFont/0.png" },
         }
     };
 };
