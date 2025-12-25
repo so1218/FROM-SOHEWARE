@@ -411,7 +411,7 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\PlayerUI.cpp">
+    <ClCompile Include="Game\GameObject\UI\PlayerUI.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\GameTimer.cpp">
@@ -728,7 +728,7 @@
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
-    <ClInclude Include="Game\GameObject\PlayerUI.h" />
+    <ClInclude Include="Game\GameObject\UI\PlayerUI.h" />
     <ClInclude Include="Game\GameObject\GameTimer.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />

@@ -4,11 +4,11 @@
 
 LevelUpManager::LevelUpManager()
 {
-	uint32_t texKnife = TextureHandle::Get(TextureID::cardTextKnife);
-	uint32_t texAxe = TextureHandle::Get(TextureID::cardTextAxe);
-	uint32_t texMaxHpUp = TextureHandle::Get(TextureID::white1x1);
-	uint32_t texSpeedUp = TextureHandle::Get(TextureID::white1x1);
-	uint32_t texHpHeal = TextureHandle::Get(TextureID::white1x1);
+	uint32_t texKnife = TextureHandle::Get(TextureID::num0);
+	uint32_t texAxe = TextureHandle::Get(TextureID::num1);
+	uint32_t texMaxHpUp = TextureHandle::Get(TextureID::num2);
+	uint32_t texSpeedUp = TextureHandle::Get(TextureID::num3);
+	uint32_t texHpHeal = TextureHandle::Get(TextureID::num4);
 
 	// データを登録
 	allNewWeapons_.push_back({ 100,UpgradeType::newWeapon,"Knife","Throws knives forward", (int)WeaponType::Knife,0, texKnife });
@@ -47,6 +47,23 @@ std::vector<UpgradeInfo> LevelUpManager::PickUpgrades(Player* player)
 			info.weaponId = (int)weapon->GetType();
 			info.name = "Upgrade Weapon";
 			info.description = "Level Up";
+			bool found = false;
+			for (const auto& weaponInfo : allNewWeapons_)
+			{
+				if (weaponInfo.weaponId == info.weaponId)
+				{
+					info.textureHandle = weaponInfo.textureHandle; 
+					found = true;
+					break;
+				}
+			}
+
+			// 見つからなかった場合
+			if (!found)
+			{
+				info.textureHandle = TextureHandle::Get(TextureID::white1x1);
+			}
+
 			candidates.push_back(info);
 		}
 	}

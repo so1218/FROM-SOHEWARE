@@ -17,6 +17,8 @@
 #include "ParticleEmitter.h"
 #include "Skybox.h"
 #include "GameTimer.h"
+#include "LevelUpManager.h" 
+#include "LevelUpUI.h"
 
 class SampleSceneHori : public BaseScene
 {
@@ -31,6 +33,18 @@ public:
 
     // 衝突に関する処理をまとめる関数
     void HandleCollisions();
+
+    // 通常プレイ中の更新処理
+    void UpdatePlaying();
+    // レベルアップ選択画面中の更新処理
+    void UpdateLevelUpSelection();
+
+    enum class SceneState
+    {
+        Playing,    
+        LevelUpSelection 
+    };
+
 private:
     // メンバー変数
     Engine* engine_;
@@ -50,5 +64,10 @@ private:
     GameTimer* gameTimer_ = nullptr;
 
     std::unique_ptr<Skybox> skybox_;
+
+    SceneState sceneState_ = SceneState::Playing;
+
+    std::unique_ptr<LevelUpManager> levelUpManager_;
+    std::unique_ptr<LevelUpUI> levelUpUI_;
 };
 

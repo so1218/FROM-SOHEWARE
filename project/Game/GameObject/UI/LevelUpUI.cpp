@@ -140,16 +140,16 @@ void LevelUpUI::Draw()
 
 void LevelUpUI::DebugDraw()
 {
-    ImGui::Begin("LevelUpUI");
+    ImGui::Begin("レベルアップUI");
 
     bool changed = false;
     auto* gv = GlobalVariables::GetInstance();
     auto groupName = GetGlobalVariableGroupName();
 
-    if (ImGui::DragFloat2("Start Pos", &cardStartPos_.x, 1.0f)) changed = true;
-    if (ImGui::DragFloat2("Size", &cardSize_.x, 1.0f)) changed = true;
-    if (ImGui::DragFloat("Gap Y", &cardGapY_, 1.0f)) changed = true;
-    if (ImGui::DragFloat("Select Scale", &selectedScale_, 0.01f)) changed = true;
+    if (ImGui::DragFloat2("開始位置", &cardStartPos_.x, 1.0f)) changed = true;
+    if (ImGui::DragFloat2("大きさ", &cardSize_.x, 1.0f)) changed = true;
+    if (ImGui::DragFloat("縦間隔", &cardGapY_, 1.0f)) changed = true;
+    if (ImGui::DragFloat("選択時スケール", &selectedScale_, 0.01f)) changed = true;
 
     // 値が変わったら保存
     if (changed) 

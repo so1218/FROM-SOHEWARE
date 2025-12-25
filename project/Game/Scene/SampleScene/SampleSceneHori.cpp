@@ -40,6 +40,9 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     auto gameTimer = std::make_unique<GameTimer>(engine_);
     gameTimer_ = gameTimer.get();
 
+    levelUpManager_ = std::make_unique<LevelUpManager>();
+    levelUpUI_ = std::make_unique<LevelUpUI>(engine_);
+
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(playerUI));
@@ -89,18 +92,59 @@ void SampleSceneHori::Initialize()
     engine_->postEffectManager_->postEffectData_->vignetteEllipseScale = { 1.2f,1.0f };
     engine_->postEffectManager_->postEffectData_->vignetteColor = { 0,0,0 };
 
+    levelUpUI_->Initialize();
+
+    sceneState_ = SceneState::Playing;
+
     // 制限時間を設定
     gameTimer_->Initialize(2.0f);
 }
 
 void SampleSceneHori::Update()
 {
+    switch (sceneState_)
+    {
+    case SceneState::Playing:
+        UpdatePlaying();
+        break;
+
+    case SceneState::LevelUpSelection:
+        UpdateLevelUpSelection();
+        break;
+    }
+}
+
+void SampleSceneHori::UpdatePlaying()
+{
     HandleCollisions();
 
+    // ゲームオブジェクトの更新
     enemyManager_->Update();
-    // ゲームオブジェクトの一括更新
     objectManager_.Update();
 
+    // プレイヤーがレベルアップして待機状態になったかチェック
+    if (player_->IsWaitingForUpgrade())
+    {
+        // 抽選
+        auto candidates = levelUpManager_->PickUpgrades(player_);
+
+        // UI表示
+        if (!candidates.empty())
+        {
+            // UIに候補を渡して起動
+            levelUpUI_->Activate(candidates);
+
+            // 状態をレベルアップ画面へ移行
+            sceneState_ = SceneState::LevelUpSelection;
+        }
+        else
+        {
+            // 候補がない場合はそのまま継続（またはHP回復など代替処理）
+            player_->FinishUpgrade();
+        }
+    }
+
+    // ゲーム終了判定
     if (player_->IsEnd())
     {
         //sceneManager_->RequestSceneChange(SceneID::Title);
@@ -110,7 +154,29 @@ void SampleSceneHori::Update()
     {
         //sceneManager_->RequestSceneChange(SceneID::Play);
     }
+}
 
+// レベルアップ選択画面中の更新処理
+void SampleSceneHori::UpdateLevelUpSelection()
+{
+    // UIだけ更新する
+    levelUpUI_->Update();
+
+    // 決定されたかチェック
+    if (levelUpUI_->IsDecided())
+    {
+        // 選んだ情報を取得
+        UpgradeInfo selectedUpgrade = levelUpUI_->GetDecision();
+
+        // プレイヤーに適用
+        player_->ApplyUpgrade(selectedUpgrade);
+
+        // プレイヤーの待機フラグを下ろす
+        player_->FinishUpgrade();
+
+        // ゲームプレイ状態に戻る
+        sceneState_ = SceneState::Playing;
+    }
 }
 
 void SampleSceneHori::HandleCollisions()
@@ -134,6 +200,13 @@ void SampleSceneHori::Draw()
  /*   skybox_->Draw();*/
     // ゲームオブジェクトの一括描画
     objectManager_.Draw();
+
+    // レベルアップ選択中なら、その上にUIを描画
+    if (sceneState_ == SceneState::LevelUpSelection)
+    {
+        // 半透明の黒背景を描画したい
+        levelUpUI_->Draw();
+    }
 }
 
 void SampleSceneHori::DebugDraw()
@@ -143,6 +216,7 @@ void SampleSceneHori::DebugDraw()
     ImGui::End();
     // ゲームオブジェクトの一括デバッグ描画
     objectManager_.DebugDraw();
+    levelUpUI_->DebugDraw();
 }
 
 void SampleSceneHori::Finalize()

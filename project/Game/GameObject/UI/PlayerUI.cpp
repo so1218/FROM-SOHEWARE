@@ -12,11 +12,13 @@ void PlayerUI::Initialize()
     xpBarBgSprite_ = std::make_unique<Sprite>(engine_);
     xpBarBgSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     xpBarBgSprite_->SetColor(0x444444FF);
+    xpBarBgSprite_->SetLayerOrder(10);
 
     // ゲージ本体
     xpBarSprite_ = std::make_unique<Sprite>(engine_);
     xpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     xpBarSprite_->SetColor(0x00FF00FF);
+    xpBarSprite_->SetLayerOrder(11);
 
     // HPバー背景
     hpBarBgSprite_ = std::make_unique<Sprite>(engine_);
