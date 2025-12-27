@@ -14,11 +14,8 @@
 #include "TimeManager.h"
 
 // 最大数の定義
-const int32_t Renderer::kMaxTriangleCount = 0; // 三角形の最大数
-const int32_t Renderer::kMaxSphereCount = 0; // 球の最大数
 const int32_t Renderer::kMaxModelCount = 500; // モデルの最大数
 const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
-const int32_t Renderer::kMaxCubeCount = 0;// 立方体の最大数
 const int32_t Renderer::kMaxLineCount = 200;// ラインの最大数
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
 const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
@@ -66,11 +63,8 @@ void Renderer::Finalize()
 void Renderer::BeginFrame()
 {
 	// 描画カウンタの初期化
-	indexSphere_ = 0;
 	indexModel_ = 0;
 	indexSprite_ = 0;
-	indexTriangle_ = 0;
-	indexCube_ = 0;
 	indexLine_ = 0;
 	indexParticle_ = 0;
 	indexInstance_ = 0;
@@ -93,11 +87,8 @@ void Renderer::BeginFrame()
 
 void Renderer::CreateObjects()
 {
-	CreateSpheres();
 	CreateModels();
 	CreateSprites();
-	CreateTriangles();
-	CreateCubes();
 	CreateLines();
 	CreateParticles();
 	CreateSkybox();
@@ -297,15 +288,6 @@ void Renderer::DrawScene()
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-Matrix4x4 Renderer::MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot)
-{
-	Matrix4x4 moveToOrigin = Matrix4x4::MakeTranslate({ -pivot.x, -pivot.y, -pivot.z });
-	Matrix4x4 rotateScale = Matrix4x4::MakeAffine(scale, rotate, { 0.0f, 0.0f, 0.0f });
-	Matrix4x4 moveBack = Matrix4x4::MakeTranslate(pivot);
-	Matrix4x4 result = (moveToOrigin * rotateScale) * moveBack;
-	return result * Matrix4x4::MakeTranslate(translate);
-}
-
 std::string Renderer::GetParticlePSOName(BlendMode mode)
 {
 	switch (mode)
@@ -321,169 +303,6 @@ std::string Renderer::GetParticlePSOName(BlendMode mode)
 		assert(false && "Unknown BlendMode");
 		return "ParticleOpaque"; // 不明な場合はOpaque
 	}
-}
-
-void Renderer::CreateTriangles()
-{
-	// 最大数の三角形分の配列を確保
-	triangles_.resize(kMaxTriangleCount);
-
-	// 初期仮の頂点データ(これは後で上書きされる)
-	std::vector<VertexData> triangleVertices =
-	{
-		{{ 0.0f,   360.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }, {0.0f,0.0f,1.0f}},
-		{{ 320.0f,   0.0f, 0.0f, 1.0f }, { 0.5f, 0.0f }, {0.0f,0.0f,1.0f}},
-		{{ 640.0f, 360.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, {0.0f,0.0f,1.0f}}
-	};
-
-	// 指定数分の三角形メッシュとリソースを初期化
-	for (size_t i = 0; i < kMaxTriangleCount; ++i)
-	{
-		// メッシュ初期化(vertex + index データをGPUへ転送)
-		triangles_[i].mesh.InitializeVertexOnly(device_->GetDevice(), triangleVertices);
-		// マテリアルを作成・設定
-		triangles_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
-
-		triangles_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();// UV行列は単位行列で初期化
-
-		// WVP行列用のバッファを作成
-		triangles_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		triangles_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&triangles_[i].mappedData));  // CPUアクセス用にマッピング
-
-		triangles_[i].mesh.SetVertexCount(triangleVertices.size()); // インデックス数を設定
-	}
-
-	// 最初に使用するスフィアのインデックスをリセット
-	indexTriangle_ = 0;
-}
-
-void Renderer::DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
-{
-	assert(indexTriangle_ < kMaxTriangleCount); // 配列範囲チェック
-
-	// 描画用SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	RenderData& triangle = triangles_[indexTriangle_];
-
-	// マテリアル色を設定
-	triangle.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
-	// ワールド行列を中心を基準に計算
-	Vector3 pivot = { 320.0f, 180.0f, 0.0f }; // 三角形の中心
-	triangle.worldMatrix = MakeCenteredAffineMatrix(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_, pivot);
-
-	// WVP行列（World * Orthographic）を計算してGPUバッファにコピー
-	Matrix4x4 wvpMatrix = triangle.worldMatrix * Matrix4x4::MakeOrthographic(0, 0, float(clientWidth_), float(clientHeight_), 0, 100);
-	memcpy(&triangle.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
-	triangle.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(triangle.worldMatrix.Transpose());
-
-	// UV変換行列をマテリアルに設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	triangle.materialHandle.materialData->uvTransform = uvTransformMatrix;
-
-	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &triangle.mesh.GetVertexBufferView());
-
-	// 定数バッファ・SRVをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, triangle.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, triangle.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(9, srvManager_->GetSRVHandleGPU(textureHandle));
-
-	// 描画
-	commandManager_->GetCommandList()->DrawInstanced(UINT(triangle.mesh.GetVertexCount()), 1, 0, 0);
-
-	indexTriangle_++; // 使用カウント更新
-}
-
-void Renderer::CreateSpheres()
-{
-	spheres_.resize(kMaxSphereCount);
-
-	std::vector<VertexData> sphereVertices;
-	std::vector<uint32_t> sphereIndices;
-
-	ShapeGenerator shapeGenerator;
-	shapeGenerator.SphereGenerator(sphereVertices, sphereIndices);
-
-	for (size_t i = 0; i < kMaxSphereCount; ++i)
-	{
-		spheres_[i].mesh.Initialize(device_->GetDevice(), sphereVertices, sphereIndices);
-
-		spheres_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
-		spheres_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();
-
-		spheres_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		spheres_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&spheres_[i].mappedData));
-
-		spheres_[i].mesh.SetIndexCount(sphereIndices.size());
-	}
-	indexSphere_ = 0;
-}
-
-void Renderer::DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color)
-{
-	assert(indexSphere_ < kMaxSphereCount); // 配列範囲チェック
-
-	// 描画用SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	RenderData& sphere = spheres_[indexSphere_];
-
-	// マテリアル色を設定
-	sphere.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
-	// ワールド行列を設定
-	sphere.worldMatrix = worldTransform.matWorld_;
-
-	// WVP行列（World * ViewProjection）を計算してGPUバッファにコピー
-	Matrix4x4 wvpMatrix = sphere.worldMatrix * camera.GetViewProjectionMatrix();
-	memcpy(&sphere.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
-	sphere.mappedData->World = sphere.worldMatrix;
-	sphere.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(sphere.worldMatrix.Transpose());
-
-	// UV変換行列を設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	sphere.materialHandle.materialData->uvTransform = uvTransformMatrix;
-
-	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &sphere.mesh.GetVertexBufferView());
-	commandManager_->GetCommandList()->IASetIndexBuffer(&sphere.mesh.GetIndexBufferView());
-
-	// 定数バッファ・SRVをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, sphere.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, sphere.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(9, srvManager_->GetSRVHandleGPU(textureHandle));
-
-
-	// 描画
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(sphere.mesh.GetIndexCount()), 1, 0, 0, 0);
-
-	indexSphere_++; // 使用カウント更新
 }
 
 Mesh* Renderer::GetOrCreateMesh(const ModelData& modelData)
@@ -792,87 +611,6 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	modelSubmissions_.push_back(submission);
 
 	indexSprite_++;
-}
-
-void Renderer::CreateCubes()
-{
-	cubes_.resize(kMaxCubeCount);
-
-	// 立方体の頂点とインデックスを生成
-	std::vector<VertexData> cubeVertices;
-	std::vector<uint32_t> cubeIndices;
-
-	ShapeGenerator shapeGenerator;
-	shapeGenerator.CubeGenerator(cubeVertices, cubeIndices);
-
-	for (size_t i = 0; i < kMaxCubeCount; ++i)
-	{
-		// メッシュ初期化
-		cubes_[i].mesh.Initialize(device_->GetDevice(), cubeVertices, cubeIndices);
-
-		// マテリアル作成
-		cubes_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
-		cubes_[i].materialHandle.materialData->uvTransform = Matrix4x4::MakeIdentity();
-
-		// WVPバッファ作成
-		cubes_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		cubes_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&cubes_[i].mappedData));
-
-		cubes_[i].mesh.SetIndexCount(cubeIndices.size());
-	}
-
-	indexCube_ = 0;
-}
-
-void Renderer::DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle)
-{
-	assert(indexCube_ < kMaxCubeCount); // 配列の範囲チェック
-
-	// 描画用SRVヒープをセット
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-	RenderData& cube = cubes_[indexCube_];
-
-	// マテリアル色を設定
-	cube.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-
-	// ワールド行列を計算
-	cube.worldMatrix = Matrix4x4::MakeAffine(worldTransform.scale_, worldTransform.rotation_, worldTransform.translation_);
-
-	// WVP行列を計算してGPUバッファにコピー
-	camera_->UpdateViewProjectionMatrix();
-	Matrix4x4 wvpMatrix = cube.worldMatrix * camera_->GetViewProjectionMatrix();
-	memcpy(&cube.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
-	cube.mappedData->World = cube.worldMatrix;
-	cube.mappedData->WorldInverseTranspose = Matrix4x4::Inverse(cube.worldMatrix.Transpose());
-
-	// UV変換行列をマテリアルに設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	cube.materialHandle.materialData->uvTransform = uvTransformMatrix;
-
-	// パイプライン・ルートシグネチャ・プリミティブ設定
-	commandManager_->GetCommandList()->SetPipelineState(psoManager_->GetPSO("Standard3D"));
-	commandManager_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandManager_->GetCommandList()->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
-	commandManager_->GetCommandList()->IASetVertexBuffers(0, 1, &cube.mesh.GetVertexBufferView());
-	commandManager_->GetCommandList()->IASetIndexBuffer(&cube.mesh.GetIndexBufferView());
-
-	// 定数バッファ・SRVをGPUにバインド
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cube.materialHandle.resource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(1, cube.wvpResource->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(textureHandle)); // テクスチャ
-	commandManager_->GetCommandList()->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(envMapSrvHandle)); // 環境マップ
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
-	commandManager_->GetCommandList()->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
-
-	// 描画
-	commandManager_->GetCommandList()->DrawIndexedInstanced(UINT(cube.mesh.GetIndexCount()), 1, 0, 0, 0);
-	indexCube_++; // 使用カウント更新
 }
 
 void Renderer::CreateLines()

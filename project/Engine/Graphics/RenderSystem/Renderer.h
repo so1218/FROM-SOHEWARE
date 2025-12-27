@@ -60,8 +60,6 @@ public:
     void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // 描画関数
-    void DrawTriangle(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
-    void DrawSphere(WorldTransform& worldTransform, Camera& camera, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t color = 0xffffffff);
     void SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
         uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
         bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
@@ -73,7 +71,6 @@ public:
         RenderGroup group);
     void SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
     void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, MaterialHandle& materialHandle);
-    void DrawCube(WorldTransform& worldTransform, uint32_t color, WorldTransform& uvTransform, uint32_t textureHandle, uint32_t envMapSrvHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
     void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);
@@ -92,11 +89,8 @@ public:
     Mesh* GetOrCreateMesh(const ModelData& modelData);
 
     // 描画カウント取得
-    int32_t GetTriangleCount() const { return indexTriangle_; }
-    int32_t GetSphereCount() const { return indexSphere_; }
     int32_t GetModelCount() const { return indexModel_; }
     int32_t GetSpriteCount() const { return indexSprite_; }
-    int32_t GetCubeCount() const { return indexCube_; }
     int32_t GetLineCount() const { return indexLine_; }
     int32_t GetParticleCount() const { return indexParticle_; }
 
@@ -116,11 +110,8 @@ public:
     BlendMode currentBlendMode_ = kBlendModeNormal;
 
     // 描画可能な最大数
-    static const int32_t kMaxTriangleCount;
-    static const int32_t kMaxSphereCount;
     static const int32_t kMaxModelCount;
     static const int32_t kMaxSpriteCount;
-    static const int32_t kMaxCubeCount;
     static const int32_t kMaxLineCount;
     static const int32_t kMaxParticleCount;
     static const int32_t kMaxTrailCount;
@@ -131,11 +122,8 @@ public:
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
-    void CreateTriangles();
-    void CreateSpheres();
     void CreateModels();
     void CreateSprites();
-    void CreateCubes();
     void CreateLines();
     void CreateParticles();
     void CreateSkybox();
@@ -168,12 +156,6 @@ private:
     ShadowMap* shadowMap_ = nullptr;
 
     // 描画インデックスと描画情報（各プリミティブ）
-    uint32_t indexTriangle_ = 0;
-    std::vector<RenderData> triangles_;
-
-    uint32_t indexSphere_ = 0;
-    std::vector<RenderData> spheres_;
-
     uint32_t indexModel_ = 0;
     std::vector<RenderData> models_;
     std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
@@ -192,9 +174,6 @@ private:
 
     uint32_t indexSprite_ = 0;
     std::vector<RenderData> sprites_;
-
-    uint32_t indexCube_ = 0;
-    std::vector<RenderData> cubes_;
 
     uint32_t indexLine_ = 0;
     std::vector<RenderData> lines_;
