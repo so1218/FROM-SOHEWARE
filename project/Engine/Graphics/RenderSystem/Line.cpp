@@ -1,6 +1,6 @@
 #include "Line.h"
-#include "Engine.h" // Rendererを含むヘッダ
-#include "Math.h" // 行列計算用
+#include "Engine.h" 
+#include "Math.h" 
 
 Line::Line(Engine* engine, Camera* camera)
     : engine_(engine), camera_(camera)

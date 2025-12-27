@@ -113,6 +113,7 @@ public:
     static const int32_t kMaxModelCount;
     static const int32_t kMaxSpriteCount;
     static const int32_t kMaxLineCount;
+    static const int32_t kMaxLineVertices;
     static const int32_t kMaxParticleCount;
     static const int32_t kMaxTrailCount;
     static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
@@ -124,7 +125,7 @@ private:
     void CreateObjects();
     void CreateModels();
     void CreateSprites();
-    void CreateLines();
+    void CreateLineBatch();
     void CreateParticles();
     void CreateSkybox();
     void CreateTrails();
@@ -133,12 +134,10 @@ private:
     void DrawSprite(const ModelSubmission& sub);
     void DrawModel(const ModelSubmission& sub);
     void DrawGrid(const ModelSubmission& sub);
-    void DrawLine(const ModelSubmission& sub);
+    void FlushLines(Camera& camera);
     void DrawParticles(const Camera& camera);
     void DrawSkybox(const ModelSubmission& sub);
     void DrawTrail(const ModelSubmission& sub);
-
-    Matrix4x4 MakeCenteredAffineMatrix(Vector3 scale, Vector3 rotate, Vector3 translate, Vector3 pivot);
 
 private:
     // Engineから受け取るポインタ
@@ -177,7 +176,16 @@ private:
 
     uint32_t indexLine_ = 0;
     std::vector<RenderData> lines_;
-    std::vector<LineVertex> lineVertexBuffer_;
+    // 線描画用のリソース
+    struct LineBatchResource 
+    {
+        Mesh mesh; // 動的頂点バッファ用のメッシュ
+        std::vector<LineVertex> verticesCPU; // CPU側の一時保管場所
+
+        // WVP行列は全ての線で共通なので1つ
+        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
+        TransformationMatrix* mappedWvp = nullptr;
+    } lineBatch_;
 
     uint32_t indexParticle_ = 0;
     std::vector<RenderData> particles_;

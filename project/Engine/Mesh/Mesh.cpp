@@ -70,3 +70,24 @@ void Mesh::InitializeVertexTrail(ID3D12Device* device, const std::vector<VertexD
 	// ストライド（1頂点の幅）を VertexDataTrail に合わせる
 	vertexBufferView_.StrideInBytes = sizeof(VertexDataTrail);
 }
+
+void Mesh::CreateDynamicMesh(ID3D12Device* device, size_t maxVertexCount, size_t stride)
+{
+	// 最大頂点数を保存
+	vertexCount_ = maxVertexCount;
+
+	// バッファサイズ計算 (最大数 × 1頂点のサイズ)
+	size_t bufferSize = stride * vertexCount_;
+
+	// リソース作成 (BufferManager::CreateBufferResource は UploadHeapで作ると仮定)
+	// ※ UploadHeap (D3D12_HEAP_TYPE_UPLOAD) でないと、毎フレームの書き換えができません
+	vertexResource_ = BufferManager::CreateBufferResource(device, bufferSize);
+
+	// ビューの設定
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
+	vertexBufferView_.StrideInBytes = static_cast<UINT>(stride);
+
+	// 注: ここでは Map/Unmap はしません。
+	// 描画する直前(FlushLines)で Map -> Copy -> Unmap を行います。
+}

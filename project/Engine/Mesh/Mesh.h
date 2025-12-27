@@ -17,6 +17,8 @@ public:
     // Trail用（頂点カラー付き）の初期化関数
     void InitializeVertexTrail(ID3D12Device* device, const std::vector<VertexDataTrail>& vertices);
 
+    void CreateDynamicMesh(ID3D12Device* device, size_t maxVertexCount, size_t stride);
+
     // ゲッター
     size_t GetVertexCount() const { return vertexCount_; }
     size_t GetIndexCount() const { return indexCount_; }

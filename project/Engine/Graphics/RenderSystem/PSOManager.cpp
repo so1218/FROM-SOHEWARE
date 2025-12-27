@@ -64,6 +64,14 @@ void PSOManager::Initialize(
         { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescTrail_ = { inputElementsTrail_.data(), (UINT)inputElementsTrail_.size() };
+
+    // Line
+    inputElementsLine_ =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+    inputLayoutDescLine_ = { inputElementsLine_.data(), (UINT)inputElementsLine_.size() };
 }
 
 ID3D12PipelineState* PSOManager::GetPSO(const std::string& psoName)
@@ -503,6 +511,10 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Trail")
     {
         return inputLayoutDescTrail_;
+    }
+    if (name == "Line")
+    {
+        return inputLayoutDescLine_;
     }
 
     // 未定義のレイアウト

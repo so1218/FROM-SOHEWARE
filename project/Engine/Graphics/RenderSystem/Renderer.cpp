@@ -16,7 +16,8 @@
 // 最大数の定義
 const int32_t Renderer::kMaxModelCount = 500; // モデルの最大数
 const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
-const int32_t Renderer::kMaxLineCount = 200;// ラインの最大数
+const int32_t Renderer::kMaxLineCount = 4096;
+const int32_t Renderer::kMaxLineVertices = kMaxLineCount * 2;
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
 const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
 const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
@@ -89,7 +90,7 @@ void Renderer::CreateObjects()
 {
 	CreateModels();
 	CreateSprites();
-	CreateLines();
+	CreateLineBatch();
 	CreateParticles();
 	CreateSkybox();
 	CreateTrails();
@@ -256,14 +257,13 @@ void Renderer::DrawScene()
 	{
 		switch (sub.type)
 		{
+			if (sub.type == RenderType::Line) continue;
+
 		case RenderType::Sprite:
 			DrawSprite(sub);
 			break;
 		case RenderType::Grid:
 			DrawGrid(sub);
-			break;
-		case RenderType::Line:
-			DrawLine(sub);
 			break;
 		case RenderType::Particle:
 			DrawParticles(*camera_);
@@ -280,6 +280,8 @@ void Renderer::DrawScene()
 			break;
 		}
 	}
+
+	FlushLines(*camera_);
 
 	modelSubmissions_.clear();
 
@@ -613,64 +615,43 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 	indexSprite_++;
 }
 
-void Renderer::CreateLines()
+void Renderer::CreateLineBatch()
 {
-	lines_.resize(kMaxLineCount);
+	// 1. 動的な頂点バッファを作成
+	// Meshクラスに CreateDynamicVertexBuffer のような機能があると仮定
+	// なければ、D3D12_HEAP_TYPE_UPLOAD でバッファを作る処理を書く
+	lineBatch_.mesh.CreateDynamicMesh(device_->GetDevice(), kMaxLineVertices, sizeof(LineVertex));
 
-	for (size_t i = 0; i < kMaxLineCount; ++i)
-	{
-		lines_[i].materialHandle = materialManager_->CreateMaterial(device_->GetDevice());
+	// CPU側の配列を予約（再割り当てを防ぐ）
+	lineBatch_.verticesCPU.reserve(kMaxLineVertices);
 
-		lines_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		lines_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lines_[i].mappedData));
-		lines_[i].mesh.SetVertexCount(2);
-
-		// 空の2頂点バッファを1回だけ作る（後でMap更新）
-		std::vector<VertexData> dummyVertices = {
-			{}, {}
-		};
-		lines_[i].mesh.InitializeVertexOnly(device_->GetDevice(), dummyVertices);
-	}
-	indexLine_ = 0;
+	// 2. WVP用の定数バッファ作成（カメラ用）
+	lineBatch_.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
+	lineBatch_.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lineBatch_.mappedWvp));
+	lineBatch_.mappedWvp->WVP = Matrix4x4::MakeIdentity();
 }
 
 void Renderer::SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color)
 {
-	assert(indexLine_ < kMaxLineCount);
+	// 上限チェック
+	if (lineBatch_.verticesCPU.size() >= kMaxLineVertices) return;
 
-	RenderData& line = lines_[indexLine_];
+	// 色の変換 (uint32 -> Vector4)
+	Vector4 colorVec = Math::Uint32ToColorVector(color);
 
-	// 頂点バッファを更新
-	VertexData* mappedVertices = nullptr;
-	line.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
-	mappedVertices[0] = { { start.x, start.y, start.z, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
-	mappedVertices[1] = { { end.x,   end.y,   end.z,   1.0f }, { 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };
-	line.mesh.GetVertexResource()->Unmap(0, nullptr);
-	line.mesh.SetVertexCount(2);
+	// 始点
+	LineVertex v1;
+	v1.position = { start.x, start.y, start.z, 1.0f };
+	v1.color = colorVec;
 
-	// マテリアルと行列を設定
-	line.materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-	line.worldMatrix = Matrix4x4::MakeIdentity();
-	Matrix4x4 wvpMatrix = line.worldMatrix * camera.GetViewProjectionMatrix();
-	memcpy(&line.mappedData->WVP, &wvpMatrix, sizeof(TransformationMatrix));
+	// 終点
+	LineVertex v2;
+	v2.position = { end.x, end.y, end.z, 1.0f };
+	v2.color = colorVec;
 
-	// 中点のZで深度を計算
-	Vector3 midPoint = { (start.x + end.x) * 0.5f, (start.y + end.y) * 0.5f, (start.z + end.z) * 0.5f };
-	Matrix4x4 worldView = line.worldMatrix * camera.GetViewMatrix();
-	float w = midPoint.x * worldView.m[0][3] + midPoint.y * worldView.m[1][3] + midPoint.z * worldView.m[2][3] + worldView.m[3][3];
-	float z = (midPoint.x * worldView.m[0][2] + midPoint.y * worldView.m[1][2] + midPoint.z * worldView.m[2][2] + worldView.m[3][2]) / w;
-
-	// 描画キューに登録
-	ModelSubmission submission{};
-	submission.type = RenderType::Line;
-	submission.instanceIndex = indexLine_;
-	submission.group = RenderGroup::Opaque;
-	submission.depth = z;
-	submission.materialHandle = line.materialHandle;
-	submission.color = color;
-
-	modelSubmissions_.push_back(submission);
-	indexLine_++;
+	// CPUリストに追加
+	lineBatch_.verticesCPU.push_back(v1);
+	lineBatch_.verticesCPU.push_back(v2);
 }
 
 void Renderer::CreateParticles()
@@ -1177,27 +1158,50 @@ void Renderer::DrawGrid(const ModelSubmission& sub)
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 }
 
-void Renderer::DrawLine(const ModelSubmission& sub)
+void Renderer::FlushLines(Camera& camera)
 {
-	RenderData& line = lines_[sub.instanceIndex];
+	// 線がなければ何もしない
+	if (lineBatch_.verticesCPU.empty()) return;
+
+	// 1. カメラ行列の更新 (World行列は単位行列扱いで、VP行列だけセット)
+	Matrix4x4 vpMatrix = camera.GetViewProjectionMatrix();
+	lineBatch_.mappedWvp->WVP = vpMatrix;
+
+	// 2. CPUのデータをGPUバッファに一括コピー (Map -> Memcpy -> Unmap)
+	LineVertex* gpuPtr = nullptr;
+	// Meshクラスが頂点リソース取得機能を持っている前提
+	lineBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&gpuPtr));
+
+	// std::vectorの中身をそのままコピー（これが高速！）
+	std::memcpy(gpuPtr, lineBatch_.verticesCPU.data(), sizeof(LineVertex) * lineBatch_.verticesCPU.size());
+
+	lineBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
+
+	// 3. 描画コマンド発行
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// PSOとルートシグネチャを設定
+	// 線用のPSOとRootSignature
 	cmdList->SetPipelineState(psoManager_->GetPSO("Line"));
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
 
-	// 線描画用のプリミティブトポロジーを設定
+	// トポロジーを線リストに設定
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	// 頂点バッファをセット（インデックスバッファなし）
-	cmdList->IASetVertexBuffers(0, 1, &line.mesh.GetVertexBufferView());
+	// 頂点バッファをセット
+	D3D12_VERTEX_BUFFER_VIEW vbView = lineBatch_.mesh.GetVertexBufferView();
+	// 実際に描画するサイズに合わせてSizeInBytesを調整するとさらに良いが、
+	// VertexCountを指定すれば安全に描画される
+	cmdList->IASetVertexBuffers(0, 1, &vbView);
 
-	// 定数バッファをセット
-	cmdList->SetGraphicsRootConstantBufferView(0, line.materialHandle.resource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, line.wvpResource->GetGPUVirtualAddress());
+	// 定数バッファ（WVP）
+	cmdList->SetGraphicsRootConstantBufferView(0, lineBatch_.wvpResource->GetGPUVirtualAddress());
 
-	// 描画
-	cmdList->DrawInstanced(UINT(line.mesh.GetVertexCount()), 1, 0, 0);
+	// 一回のドローコールですべて描画！
+	// DrawInstancedの第1引数が頂点数。第2引数(インスタンス数)は1でOK。
+	cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
+
+	// 4. 次フレームのためにCPUリストをクリア
+	lineBatch_.verticesCPU.clear();
 }
 
 void Renderer::DrawTrail(const ModelSubmission& sub)

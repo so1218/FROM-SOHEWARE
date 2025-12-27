@@ -1,8 +1,6 @@
 #pragma once
-#include "Vector3.h"
-#include "Vector4.h"
-#include "Matrix4x4.h"
 #include "WorldTransform.h"
+#include "MathUtils.h"
 
 class Engine;
 class Camera;
@@ -19,6 +17,7 @@ public:
     // セッター
     void SetStart(const Vector3& start) { localStart_ = start; }
     void SetEnd(const Vector3& end) { localEnd_ = end; }
+    void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); } 
     void SetColor(uint32_t color) { color_ = color; }
 
     // ゲッター

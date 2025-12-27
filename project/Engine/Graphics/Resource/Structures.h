@@ -38,7 +38,7 @@ struct TextureData
 struct LineVertex
 {
     Vector4 position;
-    Vector3 color;
+    Vector4 color;
 };
 
 struct MaterialHandle
