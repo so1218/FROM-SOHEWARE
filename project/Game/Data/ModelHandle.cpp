@@ -13,7 +13,7 @@ void ModelHandle::Finalize()
 
     for (auto& handle : modelHandles_)
     {
-        handle.reset(); // モデル毎の ModelData を破棄
+        handle.reset(); // モデル毎のModelDataを破棄
     }
     initialized_ = false;
 }

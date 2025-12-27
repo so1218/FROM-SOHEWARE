@@ -23,16 +23,66 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
     if (((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0) ||
         ((colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) == 0))
     {
-        return; // フィルタリングにより衝突判定をスキップ
+        return; 
     }
 
-    // 球と球の交差判定
-    if (IsCollision(colliderA->GetWorldPosition(), colliderA->GetRadius(),
-        colliderB->GetWorldPosition(), colliderB->GetRadius()))
+    CollisionShapeType typeA = colliderA->GetType();
+    CollisionShapeType typeB = colliderB->GetType();
+
+    // 両方とも球
+    if (typeA == CollisionShapeType::Sphere && typeB == CollisionShapeType::Sphere)
     {
-        // 衝突したらコールバックを呼び出す
-        colliderA->OnCollision(colliderB);
-        colliderB->OnCollision(colliderA);
+        if (IsCollision(colliderA->GetWorldPosition(), colliderA->GetRadius(),
+            colliderB->GetWorldPosition(), colliderB->GetRadius())) {
+            colliderA->OnCollision(colliderB);
+            colliderB->OnCollision(colliderA);
+        }
+    }
+    // 両方ともAABB
+    else if (typeA == CollisionShapeType::AABB && typeB == CollisionShapeType::AABB) 
+    {
+        Vector3 posA = colliderA->GetWorldPosition();
+        Vector3 posB = colliderB->GetWorldPosition();
+        Vector3 sizeA = colliderA->GetSize();
+        Vector3 sizeB = colliderB->GetSize();
+
+        AABB boxA = { posA - sizeA, posA + sizeA }; 
+        AABB boxB = { posB - sizeB, posB + sizeB };
+
+        if (IsCollision(boxA, boxB)) {
+            colliderA->OnCollision(colliderB);
+            colliderB->OnCollision(colliderA);
+        }
+    }
+    // 球とAABB
+    else if (typeA == CollisionShapeType::Sphere && typeB == CollisionShapeType::AABB)
+    {
+        // AABBの計算
+        Vector3 posB = colliderB->GetWorldPosition();
+        Vector3 sizeB = colliderB->GetSize();
+        AABB boxB = { posB - sizeB, posB + sizeB };
+
+        // 判定
+        if (IsCollision(boxB, colliderA->GetWorldPosition(), colliderA->GetRadius()))
+        {
+            colliderA->OnCollision(colliderB);
+            colliderB->OnCollision(colliderA);
+        }
+    }
+    // AABBと球
+    else if (typeA == CollisionShapeType::AABB && typeB == CollisionShapeType::Sphere)
+    {
+        // AABBの計算
+        Vector3 posA = colliderA->GetWorldPosition();
+        Vector3 sizeA = colliderA->GetSize();
+        AABB boxA = { posA - sizeA, posA + sizeA };
+
+        // 判定
+        if (IsCollision(boxA, colliderB->GetWorldPosition(), colliderB->GetRadius()))
+        {
+            colliderA->OnCollision(colliderB);
+            colliderB->OnCollision(colliderA);
+        }
     }
 }
 

@@ -15,8 +15,9 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2)
 }
 
 bool IsCollision(const Vector3& sphere1Pos, float sphere1Radius,
-    const Vector3& sphere2Pos, float sphere2Radius) {
-    // 2つの球の中心間の距離の2乗を計算
+    const Vector3& sphere2Pos, float sphere2Radius) 
+{
+    // 2つの球の中心間の距離の2乗
     float distanceSquared = Vector3::DistanceSquared(sphere1Pos, sphere2Pos);
 
     // 2つの球の半径の合計を計算し、その2乗を求める
@@ -25,6 +26,24 @@ bool IsCollision(const Vector3& sphere1Pos, float sphere1Radius,
 
     // 距離の2乗と半径の合計の2乗を比較して衝突を判定
     return distanceSquared < sumOfRadiiSquared;
+}
+
+bool IsCollision(const AABB& aabb, const Vector3& spherePos, float sphereRadius)
+{
+    // 球の中心座標をAABBの範囲内にクランプ
+    float closestX = std::clamp(spherePos.x, aabb.min.x, aabb.max.x);
+    float closestY = std::clamp(spherePos.y, aabb.min.y, aabb.max.y);
+    float closestZ = std::clamp(spherePos.z, aabb.min.z, aabb.max.z);
+
+    Vector3 closestPoint = { closestX, closestY, closestZ };
+
+    // 球の中心と最も近い点の距離を求める
+    float distanceSquared = (closestPoint.x - spherePos.x) * (closestPoint.x - spherePos.x) +
+        (closestPoint.y - spherePos.y) * (closestPoint.y - spherePos.y) +
+        (closestPoint.z - spherePos.z) * (closestPoint.z - spherePos.z);
+
+    // 距離が半径より小さければ衝突
+    return distanceSquared <= (sphereRadius * sphereRadius);
 }
 
 Vector3 CalculatePenetrationVector(const AABB& a, const AABB& b)
