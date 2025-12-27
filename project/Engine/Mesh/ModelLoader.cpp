@@ -149,24 +149,33 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
 
         if (mesh->HasNormals())
         {
-            vertex.normal.x = mesh->mNormals[i].x;
-            vertex.normal.y = mesh->mNormals[i].y;
-            vertex.normal.z = mesh->mNormals[i].z;
-            vertex.normal.x *= -1;
+            vertex.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+            vertex.normal.x *= -1.0f;
         }
         else
         {
-            vertex.normal = { 0.0f, 0.0f, 0.0f };
+            vertex.normal = { 0.0f, 1.0f, 0.0f };
         }
 
         if (mesh->HasTextureCoords(0))
         {
-            vertex.texcoord.x = mesh->mTextureCoords[0][i].x;
-            vertex.texcoord.y = mesh->mTextureCoords[0][i].y;
+            vertex.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
         }
         else
         {
             vertex.texcoord = { 0.0f, 0.0f };
+        }
+
+        if (mesh->HasVertexColors(0))
+        {
+            vertex.color.x = mesh->mColors[0][i].r;
+            vertex.color.y = mesh->mColors[0][i].g;
+            vertex.color.z = mesh->mColors[0][i].b;
+            vertex.color.w = mesh->mColors[0][i].a;
+        }
+        else
+        {
+            vertex.color = { 1.0f, 1.0f, 1.0f, 1.0f }; 
         }
 
         modelData.vertices.push_back(vertex);

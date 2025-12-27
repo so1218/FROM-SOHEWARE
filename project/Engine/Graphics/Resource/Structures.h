@@ -18,6 +18,7 @@ struct VertexData
     Vector2 texcoord;
     Vector3 normal;
     Vector3 smoothNormal;
+    Vector4 color;
 };
 
 // Trail専用の頂点構造体
