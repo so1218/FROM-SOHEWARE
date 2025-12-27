@@ -302,6 +302,7 @@ void Player::Draw()
 	modelPlayer_->Draw();
 	modelTamesi_->Draw();
 	animationPlayer_->Draw();
+	DrawCollider();
 
 	debugLine1_->SetStart(modelPlayer_->GetTransform().translation_);
 	debugLine1_->SetEnd({ 0.0f, 5.0f, 0.0f });

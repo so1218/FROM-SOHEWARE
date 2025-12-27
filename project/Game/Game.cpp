@@ -9,11 +9,14 @@
 #include "TextureHandle.h"
 #include "SampleSceneHori.h"
 #include "ImGuiManager.h"
-
+#include "DebugDraw.h"
 
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
+#ifdef _DEBUG
+    DebugDraw::Initialize(engine_->renderer_.get());
+#endif
 
     // シーンマネージャーの初期化
     sceneManager_.Initialize(engine_.get());
@@ -89,6 +92,10 @@ void Game::Update()
             engine_->debugCamera_->SetEnabled(true);
         }
     }
+#endif
+
+#ifdef _DEBUG
+    DebugDraw::SetCamera(camera_.get());
 #endif
 
     if (!engine_->debugCamera_->IsEnabled())

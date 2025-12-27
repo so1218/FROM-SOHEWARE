@@ -13,6 +13,7 @@
 #include "AudioHandle.h"
 #include "AnimationHandle.h"
 #include "GlobalVariables.h"
+#include "DebugDraw.h"
 
 #include "externals/DirectXTex/d3dx12.h" 
 

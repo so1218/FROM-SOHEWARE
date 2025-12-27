@@ -429,6 +429,12 @@
     <ClCompile Include="Game\GameObject\UI\LevelUpUI.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Debugs\DebugDraw.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Collision\Collider.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -735,6 +741,7 @@
     <ClInclude Include="Game\Character\Player\UpgradeInfo.h" />
     <ClInclude Include="Game\Character\Player\LevelUpManager.h" />
     <ClInclude Include="Game\GameObject\UI\LevelUpUI.h" />
+    <ClInclude Include="Engine\Debugs\DebugDraw.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

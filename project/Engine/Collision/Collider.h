@@ -31,6 +31,9 @@ public:
 	// ワールド座標を取得
 	virtual Vector3 GetWorldPosition() = 0;
 
+	void DrawCollider();
+
+
 private:
 	// 形状タイプ
 	CollisionShapeType type_ = CollisionShapeType::Sphere;
