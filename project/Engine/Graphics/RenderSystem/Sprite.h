@@ -18,6 +18,7 @@ public:
     void SetSize(const Vector2& size);
     void SetRotation(float rotation);
     void SetColor(uint32_t color);
+    void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
     void SetTextureHandle(uint32_t textureHandle);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);

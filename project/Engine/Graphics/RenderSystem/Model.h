@@ -27,10 +27,12 @@ public:
     void SetEnvironmentMapHandle(uint32_t handle);
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetColor(uint32_t color);
+    void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
     void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width);
+    void SetOutlineColor(uint32_t color) { outlineColor_ = Math::Uint32ToColorVector(color); }
     void SetOutlineColor(const Vector4& color);
     void SetRenderGroup(RenderGroup group);
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
