@@ -51,6 +51,8 @@ public:
     // ディレクショナルライトの行列更新
     void UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection);
 
+    void DrawDebugLights();
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;

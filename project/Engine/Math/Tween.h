@@ -33,7 +33,7 @@ void Tween<T>::Start(T* target, T endValue, float duration, EasingType type)
     startValue_ = *target;
     endValue_ = endValue;
 
-    duration_ = (duration <= 0.0f) ? 0.001f : duration; // 0除算防止
+    duration_ = (duration <= 0.0f) ? 0.001f : duration; 
     elapsed_ = 0.0f;
     type_ = type;
     isDone_ = false;

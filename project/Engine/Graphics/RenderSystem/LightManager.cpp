@@ -1,5 +1,6 @@
 #include "LightManager.h"
 #include "Structures.h"
+#include "DebugDraw.h"
 
 void LightManager::Initialize(ID3D12Device* device)
 {
@@ -164,4 +165,105 @@ void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4
 
     // マップ済みのメモリに直接書き込む
     directionalLightData_[index].viewProj = viewProjection;
+}
+
+void LightManager::DrawDebugLights()
+{
+#ifdef _DEBUG
+    // --- 1. Point Light の描画 ---
+    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
+    {
+        if (!pointLightData_[i].enable) continue;
+
+        // ライトの色をデバッグ線の色にも反映させると分かりやすい
+        Vector4 color = pointLightData_[i].color;
+        color.w = 1.0f; // アルファは不透明に
+
+        // 半径を表す球を描画
+        DebugDraw::DrawSphere(pointLightData_[i].position, pointLightData_[i].radius, color);
+    }
+
+    // --- 2. Spot Light の描画 (円錐を描く) ---
+    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
+    {
+        if (!spotLightData_[i].enable) continue;
+
+        Vector4 color = spotLightData_[i].color;
+        color.w = 1.0f;
+
+        Vector3 startPos = spotLightData_[i].position;
+        Vector3 dir = spotLightData_[i].direction; // 正規化されている前提
+        float dist = spotLightData_[i].distance;
+        float angleCos = spotLightData_[i].cosAngle;
+
+        // 円錐の底面の中心
+        Vector3 baseCenter = startPos + (dir * dist);
+
+        // 円錐の底面の半径 (三角関数: 半径 = 距離 * tan(acos(cosAngle)))
+        // acosとか重いので簡易的に計算しても良いが、正確にはこう
+        float angle = acosf(angleCos);
+        float radius = dist * tanf(angle);
+
+        // 中心線を引く
+        DebugDraw::DrawLine(startPos, baseCenter, color);
+
+        // 底面の円を描くための軸作成 (dirに垂直なベクトルを見つける)
+        Vector3 up = { 0, 1, 0 };
+        if (fabsf(dir.y) > 0.99f) up = { 1, 0, 0 }; // dirが真上ならX軸を仮の右とする
+        Vector3 right = Math::CrossProduct(up, dir); // 修正: Math::CrossProductが必要
+        up = Math::CrossProduct(dir, right); // 正確な上方向
+
+        // 円を簡易的に描画 (16分割)
+        const int segments = 16;
+        float step = (3.141592f * 2.0f) / segments;
+        for (int j = 0; j < segments; ++j)
+        {
+            float theta = j * step;
+            float nextTheta = (j + 1) * step;
+
+            // 円周上の点
+            Vector3 p1 = baseCenter + (right * (cosf(theta) * radius)) + (up * (sinf(theta) * radius));
+            Vector3 p2 = baseCenter + (right * (cosf(nextTheta) * radius)) + (up * (sinf(nextTheta) * radius));
+
+            // 円周を描く
+            DebugDraw::DrawLine(p1, p2, color);
+            // 始点から円周への線（4本に1本くらい引くと円錐っぽくなる）
+            if (j % 4 == 0) {
+                DebugDraw::DrawLine(startPos, p1, color);
+            }
+        }
+    }
+
+    // --- 3. Area Light の描画 (長方形を描く) ---
+    for (int i = 0; i < MAX_AREA_LIGHTS; ++i)
+    {
+        if (!areaLightData_[i].enable) continue;
+
+        Vector4 color = areaLightData_[i].color;
+        color.w = 1.0f;
+
+        Vector3 pos = areaLightData_[i].position;
+        Vector3 right = areaLightData_[i].right; // 中心から端までのベクトルと仮定
+        Vector3 up = areaLightData_[i].up;       // 中心から上までのベクトルと仮定
+
+        // 4つの頂点を計算 (Center +/- Right +/- Up)
+        Vector3 p0 = pos - right - up; // 左下
+        Vector3 p1 = pos + right - up; // 右下
+        Vector3 p2 = pos + right + up; // 右上
+        Vector3 p3 = pos - right + up; // 左上
+
+        // 枠線を描画
+        DebugDraw::DrawLine(p0, p1, color);
+        DebugDraw::DrawLine(p1, p2, color);
+        DebugDraw::DrawLine(p2, p3, color);
+        DebugDraw::DrawLine(p3, p0, color);
+
+        // どっちが「表」か分かるように法線も引くと親切
+        Vector3 normal = Math::CrossProduct(right, up); // 必要に応じて正規化
+        // 簡易的に長さを1.0fくらいにして描画
+        // DebugDraw::DrawLine(pos, pos + normal, color);
+    }
+
+    // Directional Lightは数が少ないので、空の高いところ等に固定表示したりする
+#endif
 }

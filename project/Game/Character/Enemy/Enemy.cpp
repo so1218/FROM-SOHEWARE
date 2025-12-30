@@ -170,6 +170,8 @@ void Enemy::Draw()
 	{
 		modelEnemy_->SetColor(0x0000ffff);
 	}
+
+	DrawCollider();
 }
 
 

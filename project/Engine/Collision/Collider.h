@@ -31,8 +31,9 @@ public:
 	// ワールド座標を取得
 	virtual Vector3 GetWorldPosition() = 0;
 
-	void DrawCollider();
+	void SetColor(const Vector4& color) { color_ = color; }
 
+	void DrawCollider();
 
 private:
 	// 形状タイプ
@@ -46,5 +47,7 @@ private:
 	uint32_t collisionAttribute_ = 0xffffffff;
 	// 衝突マスク(相手)
 	uint32_t collisionMask_ = 0xffffffff;
+
+	Vector4 color_ = { 0.0f, 1.0f, 0.0f, 1.0f };
 };
 

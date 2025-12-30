@@ -203,6 +203,8 @@ void Game::DebugDraw()
     ImGui::End();
 
     sceneManager_.DebugDraw();
+
+    engine_->lightManager_->DrawDebugLights();
 }
 
 void Game::Finalize()

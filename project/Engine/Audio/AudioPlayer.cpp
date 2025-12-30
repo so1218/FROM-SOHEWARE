@@ -34,7 +34,8 @@ int AudioPlayer::Play(int audioID, bool loop, uint32_t volume)
         return -1;
     }
 
-    float fVolume = std::clamp(volume / 100.0f, 0.0f, 1.0f);
+    float fVolume = volume / 100.0f;
+    fVolume = std::clamp(fVolume, 0.0f, 10.0f);
     sourceVoice->SetVolume(fVolume);
 
     hr = sourceVoice->Start(0);
