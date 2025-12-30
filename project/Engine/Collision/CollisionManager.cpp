@@ -6,7 +6,8 @@
 
 void CollisionManager::AddCollider(Collider* collider)
 {
-    if (collider) 
+    // 有効なコライダーのみ登録
+    if (collider)
     {
         colliders_.push_back(collider);
     }
@@ -14,6 +15,7 @@ void CollisionManager::AddCollider(Collider* collider)
 
 void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* colliderB) 
 {
+    // 無効チェック
     if (!colliderA || !colliderB)
     {
         return;
@@ -57,12 +59,10 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
     // 球とAABB
     else if (typeA == CollisionShapeType::Sphere && typeB == CollisionShapeType::AABB)
     {
-        // AABBの計算
         Vector3 posB = colliderB->GetWorldPosition();
         Vector3 sizeB = colliderB->GetSize();
         AABB boxB = { posB - sizeB, posB + sizeB };
 
-        // 判定
         if (IsCollision(boxB, colliderA->GetWorldPosition(), colliderA->GetRadius()))
         {
             colliderA->OnCollision(colliderB);
@@ -72,12 +72,10 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
     // AABBと球
     else if (typeA == CollisionShapeType::AABB && typeB == CollisionShapeType::Sphere)
     {
-        // AABBの計算
         Vector3 posA = colliderA->GetWorldPosition();
         Vector3 sizeA = colliderA->GetSize();
         AABB boxA = { posA - sizeA, posA + sizeA };
 
-        // 判定
         if (IsCollision(boxA, colliderB->GetWorldPosition(), colliderB->GetRadius()))
         {
             colliderA->OnCollision(colliderB);
@@ -86,18 +84,16 @@ void CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
     }
 }
 
-void CollisionManager::CheckAllCollisions() 
+void CollisionManager::CheckAllCollisions()
 {
-    // リスト内のペアを総当たり
-    std::list<Collider*>::iterator itrA = colliders_.begin();
-    for (; itrA != colliders_.end(); ++itrA)
+    // 登録コライダーを総当たりで判定
+    for (auto itrA = colliders_.begin(); itrA != colliders_.end(); ++itrA)
     {
-        // itrBはitrAの次の要素から開始
-        std::list<Collider*>::iterator itrB = itrA;
+        auto itrB = itrA;
         ++itrB;
+
         for (; itrB != colliders_.end(); ++itrB)
         {
-            // ペアの衝突判定を呼び出す
             CheckCollisionPair(*itrA, *itrB);
         }
     }

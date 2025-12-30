@@ -3,19 +3,23 @@
 
 #include <list>
 
+// コライダー同士の衝突判定を管理するクラス
 class CollisionManager
 {
 public:
+    // 登録済みコライダーを全てクリア
+    void ClearColliders() { colliders_.clear(); }
 
-	void ClearColliders() { colliders_.clear(); }
+    // コライダーを登録
+    void AddCollider(Collider* collider);
 
-	void AddCollider(Collider* collider);
-
-	void CheckAllCollisions();
+    // 全コライダーの衝突判定を実行
+    void CheckAllCollisions();
 
 private:
-	// コライダーリスト
-	std::list<Collider*> colliders_;
+    // 登録コライダーのリスト
+    std::list<Collider*> colliders_;
 
-	void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
+    // コライダーペアの衝突判定
+    void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 };

@@ -27,27 +27,28 @@ public:
 	uint32_t GetCollisionAttribute() const { return collisionAttribute_; }
 	uint32_t GetCollisionMask() const { return collisionMask_; }
 
+	// 衝突時コールバック
 	virtual void OnCollision(Collider* other) = 0;
-	// ワールド座標を取得
+	// ワールド座標取得
 	virtual Vector3 GetWorldPosition() = 0;
-
+	// デバッグ描画用カラー
 	void SetColor(const Vector4& color) { color_ = color; }
-
+	// コライダー描画（デバッグ用）
 	void DrawCollider();
 
 private:
 	// 形状タイプ
 	CollisionShapeType type_ = CollisionShapeType::Sphere;
 
-	// 衝突半径
+	// 球コライダー半径
 	float radius_ = 1.0f;
-	// AABB衝突ハーフサイズ
+	// AABBハーフサイズ
 	Vector3 size_ = { 0.5f,0.5f,0.5f };
 	// 衝突属性
 	uint32_t collisionAttribute_ = 0xffffffff;
 	// 衝突マスク(相手)
 	uint32_t collisionMask_ = 0xffffffff;
-
+	// デバッグ表示色
 	Vector4 color_ = { 0.0f, 1.0f, 0.0f, 1.0f };
 };
 

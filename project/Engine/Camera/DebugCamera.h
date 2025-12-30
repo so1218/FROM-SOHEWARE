@@ -3,9 +3,7 @@
 #include "Matrix.h"
 #include "Camera.h"
 
-/// <summary>
 /// デバッグカメラ
-/// </summary>
 class DebugCamera
 {
 public:
@@ -21,7 +19,7 @@ public:
     void Initialize();
     void Update();
 
-    // カメラ取得(読み取り専用）
+    // ゲッター
     const Camera& GetCamera() const { return camera_; }
 
     // ビュー射影行列取得
