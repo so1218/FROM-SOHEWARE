@@ -76,108 +76,112 @@ void Game::Run()
     }
 
     Finalize();
-}
-
-void Game::Update()
+}void Game::Update()
 {
+    // ---------------------------------------------------------
+    // 0. 前処理 (Input更新などはRunで行われている前提)
+    // ---------------------------------------------------------
 #ifdef _DEBUG
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
-        if (engine_->debugCamera_->IsEnabled())
-        {
-            engine_->debugCamera_->SetEnabled(false);
-        }
-        else
-        {
-            engine_->debugCamera_->SetEnabled(true);
-        }
-    }
-#endif
-
-#ifdef _DEBUG
-    DebugDraw::SetCamera(camera_.get());
-#endif
-
-    if (!engine_->debugCamera_->IsEnabled())
-    {
-        camera_->UpdateViewProjectionMatrix();
-        camera_->SetViewMatrix(camera_->GetViewMatrix());
-        camera_->SetProjectionMatrix(camera_->GetProjectionMatrix());
-        camera_->SetViewProjectionMatrix(camera_->GetViewProjectionMatrix());
+        bool isEnabled = engine_->debugCamera_->IsEnabled();
+        engine_->debugCamera_->SetEnabled(!isEnabled);
     }
 
-#ifdef _DEBUG
-    // グローバル変数の更新
     GlobalVariables::GetInstance()->Update();
 
-    // ポーズボタン押下判定
     if (Input::GetInstance().IsKeyTriggered(DIK_P))
     {
         auto timeManager = TimeManager::GetInstance();
-        if (timeManager->IsPaused())
-            timeManager->Resume();
-        else
-            timeManager->Pause();
+        if (timeManager->IsPaused()) timeManager->Resume();
+        else timeManager->Pause();
     }
 #endif
 
-	materialManager_->UpdateAllMaterialsFromGlobal();
+    materialManager_->UpdateAllMaterialsFromGlobal();
 
+
+    // ---------------------------------------------------------
+    // 1. ★最優先★ ゲームロジック（シーン）の更新
+    // ---------------------------------------------------------
+    // ここでプレイヤーが動き、ゲームカメラ(camera_)の位置調整が行われる
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
     }
 
-    {
-        // 0番目のディレクショナルライトを取得
-        auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
-        if (dirLights[0].enable)
-        {
-            // ライト方向を正規化
-            Vector3 lightDir = dirLights[0].direction;
-            lightDir = lightDir.Normalize();
 
-            // 影を落とす対象の中心座標
-            Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
+    // ---------------------------------------------------------
+    // 2. ゲームカメラ本来の行列を確定・保存
+    // ---------------------------------------------------------
+    // シーン更新で移動した camera_ の座標を元に行列を作る
+    camera_->UpdateViewProjectionMatrix();
 
-            // ライト位置を決定
-            float distance = 100.0f;
-            Vector3 lightPos = shadowTarget - (lightDir * distance);
+    // この時点での「本来のゲーム視点」を保存（視錐台描画用）
+    Matrix4x4 gameCameraVP = camera_->GetViewProjectionMatrix();
 
-            // 上方向ベクトル（真上/真下はX軸に変更）
-            Vector3 up = { 0.0f, 1.0f, 0.0f };
-            if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
-            // ライトのビュー行列を作成
-            Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
-
-            // 平行光源用の正射影行列を作成
-            float size = 30.0f;
-            float nearZ = -100.0f;
-            float farZ = 200.0f;
-            Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
-
-            // ビュー行列と射影行列を合成
-            Matrix4x4 lightViewProj = lightView * lightProj;
-
-            // シャドウ行列をライトマネージャに更新
-            engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
-        }
-    }
-
+    // ---------------------------------------------------------
+    // 3. 描画用カメラの最終決定（デバッグカメラによる上書き）
+    // ---------------------------------------------------------
+    // シーン更新が終わった後に上書きすることで、確実にデバッグ視点になる
     if (engine_->debugCamera_->IsEnabled())
     {
-        // デバッグカメラを更新
         engine_->debugCamera_->Update();
 
-        // camera_にコピー
         camera_->SetTranslation(engine_->debugCamera_->GetCameraWorldPosition());
         camera_->SetViewMatrix(engine_->debugCamera_->GetViewMatrix());
         camera_->SetProjectionMatrix(engine_->debugCamera_->GetProjectionMatrix());
         camera_->SetViewProjectionMatrix(engine_->debugCamera_->GetViewProjectionMatrix());
     }
-}
+    else
+    {
+        // デバッグカメラが無効なら、手順2で作った行列をそのまま使う
+        // (念のためセットし直すが、値は変わらない)
+        camera_->SetViewMatrix(camera_->GetViewMatrix());
+        camera_->SetProjectionMatrix(camera_->GetProjectionMatrix());
+        camera_->SetViewProjectionMatrix(gameCameraVP);
+    }
 
+
+    // ---------------------------------------------------------
+    // 4. DebugDrawの設定と描画登録
+    // ---------------------------------------------------------
+#ifdef _DEBUG
+    // 最終決定したカメラ視点をDebugDrawに教える
+    DebugDraw::SetCamera(camera_.get());
+
+    // デバッグカメラ有効時のみ、ゲームカメラの視錐台を描画
+    if (engine_->debugCamera_->IsEnabled())
+    {
+        DebugDraw::DrawFrustum(gameCameraVP, { 1.0f, 1.0f, 0.0f, 1.0f });
+    }
+#endif
+
+
+    // ---------------------------------------------------------
+    // 5. シャドウマップ計算 (レンダリング直前に行う)
+    // ---------------------------------------------------------
+    {
+        auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+        if (dirLights[0].enable)
+        {
+            Vector3 lightDir = dirLights[0].direction.Normalize();
+            Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
+            float distance = 100.0f;
+            Vector3 lightPos = shadowTarget - (lightDir * distance);
+
+            Vector3 up = { 0.0f, 1.0f, 0.0f };
+            if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+
+            Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
+            Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(30.0f, 30.0f, -100.0f, 200.0f);
+            Matrix4x4 lightViewProj = lightView * lightProj;
+
+            engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
+        }
+    }
+}
 void Game::Draw()
 {
     sceneManager_.Draw();

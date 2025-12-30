@@ -123,4 +123,61 @@ void DebugDraw::DrawSphere(const Vector3& center, float radius, const Vector4& c
     }
 }
 
+void DebugDraw::DrawFrustum(const Matrix4x4& viewProjectionMatrix, const Vector4& color)
+{
+    // 8つの頂点（NDC座標: -1.0 ~ 1.0）
+    // Direct3Dの場合、Zは 0.0(Near) ～ 1.0(Far)
+    // OpenGLの場合は -1.0(Near) ～ 1.0(Far) ですが、今回は一般的なD3D系と仮定します
+    std::vector<Vector3> ndcPoints = {
+        // Near Plane (z = 0)
+        {-1.0f, -1.0f, 0.0f}, { 1.0f, -1.0f, 0.0f},
+        { 1.0f,  1.0f, 0.0f}, {-1.0f,  1.0f, 0.0f},
+        // Far Plane (z = 1)
+        {-1.0f, -1.0f, 1.0f}, { 1.0f, -1.0f, 1.0f},
+        { 1.0f,  1.0f, 1.0f}, {-1.0f,  1.0f, 1.0f}
+    };
+
+    // 逆行列を計算
+    Matrix4x4 inverseVP = Matrix4x4::Inverse(viewProjectionMatrix);
+
+    std::vector<Vector3> worldPoints;
+    for (const auto& p : ndcPoints)
+    {
+        // 座標変換 (Transform)
+        // ここでは同次座標系(w)の計算を行い、w除算(透視投影変換の逆)をする必要があります
+        Vector4 pos4 = { p.x, p.y, p.z, 1.0f };
+
+        // 行列との掛け算 (実装に合わせて Matrix * Vec か Vec * Matrix か確認してください)
+        // ここでは Vector4 * Matrix4x4 と仮定
+        Vector4 transformed = inverseVP.Transform(pos4);
+
+        // w除算してワールド座標へ
+        if (transformed.w != 0.0f) {
+            transformed.x /= transformed.w;
+            transformed.y /= transformed.w;
+            transformed.z /= transformed.w;
+        }
+        worldPoints.push_back({ transformed.x, transformed.y, transformed.z });
+    }
+
+    // 線を結ぶ
+    // Near面
+    DrawLine(worldPoints[0], worldPoints[1], color);
+    DrawLine(worldPoints[1], worldPoints[2], color);
+    DrawLine(worldPoints[2], worldPoints[3], color);
+    DrawLine(worldPoints[3], worldPoints[0], color);
+
+    // Far面
+    DrawLine(worldPoints[4], worldPoints[5], color);
+    DrawLine(worldPoints[5], worldPoints[6], color);
+    DrawLine(worldPoints[6], worldPoints[7], color);
+    DrawLine(worldPoints[7], worldPoints[4], color);
+
+    // NearとFarを結ぶ柱
+    DrawLine(worldPoints[0], worldPoints[4], color);
+    DrawLine(worldPoints[1], worldPoints[5], color);
+    DrawLine(worldPoints[2], worldPoints[6], color);
+    DrawLine(worldPoints[3], worldPoints[7], color);
+}
+
 #endif

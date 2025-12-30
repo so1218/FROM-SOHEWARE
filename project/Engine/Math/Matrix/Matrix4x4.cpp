@@ -380,6 +380,20 @@ Vector3 Matrix4x4::Transform(const Vector3& vec) const {
     return result;
 }
 
+Vector4 Matrix4x4::Transform(const Vector4& vec) const
+{
+    Vector4 result;
+    // vec.w をそのまま使用して行列計算を行う
+    result.x = vec.x * m[0][0] + vec.y * m[1][0] + vec.z * m[2][0] + vec.w * m[3][0];
+    result.y = vec.x * m[0][1] + vec.y * m[1][1] + vec.z * m[2][1] + vec.w * m[3][1];
+    result.z = vec.x * m[0][2] + vec.y * m[1][2] + vec.z * m[2][2] + vec.w * m[3][2];
+    result.w = vec.x * m[0][3] + vec.y * m[1][3] + vec.z * m[2][3] + vec.w * m[3][3];
+
+    // Vector4を返す変換では、通常ここで w 除算は行いません。
+    // クリップ空間の座標や、射影変換の逆変換などで w の値そのものが必要になるためです。
+    return result;
+}
+
 // 法線ベクトルの変換
 Vector3 Matrix4x4::TransformNormal(const Vector3& v) const {
     Vector3 result;

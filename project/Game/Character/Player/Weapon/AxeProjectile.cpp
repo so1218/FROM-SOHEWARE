@@ -64,6 +64,7 @@ void AxeProjectile::Draw()
 {
     if (IsDead()) return;
     model_->Draw();
+    DrawCollider();
 }
 
 void AxeProjectile::OnCollision(Collider* other)

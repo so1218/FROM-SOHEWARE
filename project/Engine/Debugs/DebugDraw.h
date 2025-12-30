@@ -21,7 +21,8 @@ public:
     static void DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color);
     static void DrawOBB(const Vector3& center, const Vector3& size, const Matrix4x4& rot, const Vector4& color);
     static void DrawSphere(const Vector3& center, float radius, const Vector4& color);
-   
+    static void DrawFrustum(const Matrix4x4& viewProjectionMatrix, const Vector4& color);
+
 #else
     // リリース時は中身のないインライン関数に置換される
     // コンパイラの最適化で呼び出し自体が消滅する（コストゼロ）
@@ -30,6 +31,7 @@ public:
     static inline void DrawAABB(const Vector3&, const Vector3&, const Vector4&) {}
     static inline void DrawOBB(const Vector3&, const Vector3&, const Matrix4x4&, const Vector4&) {}
     static inline void DrawSphere(const Vector3&, float, const Vector4&) {}
+    static inline void DrawFrustum(const Matrix4x4& viewProjectionMatrix, const Vector4& color) {}
 #endif
 
 private:

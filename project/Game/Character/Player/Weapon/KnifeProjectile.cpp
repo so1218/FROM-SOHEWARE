@@ -57,6 +57,7 @@ void KnifeProjectile::Draw()
 {
     if (IsDead()) return;
     model_->Draw();
+    DrawCollider();
 }
 
 void KnifeProjectile::OnCollision(Collider* other)

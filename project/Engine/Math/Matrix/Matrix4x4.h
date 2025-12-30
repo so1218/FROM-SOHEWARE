@@ -23,6 +23,7 @@ public:
     // メンバ関数
     Matrix4x4 Transpose() const;
     Vector3 Transform(const Vector3& vec) const;
+    Vector4 Transform(const Vector4& vec) const;
     Vector3 TransformNormal(const Vector3& v) const;
     Vector3 TransformPoint(const Vector3& point) const;
     Vector3 TransformVector(const Vector3& v) const;
