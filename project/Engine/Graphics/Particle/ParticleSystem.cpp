@@ -537,7 +537,8 @@ void ParticleSystem::Draw(Camera* camera)
         if (!particle.config.trail.enabled) continue;
         if (particle.trailHistory.size() < 2) continue;
 
-        // ポイントリスト作成（回転情報も含める）
+        // ポイントリスト作成
+        // (std::vectorの再確保コストを下げるため、メンバ変数に作業用vectorを持たせるのもテクニックですが、一旦このままでOK)
         std::vector<TrailPoint> drawPoints;
         drawPoints.reserve(particle.trailHistory.size() + 1);
 
@@ -545,7 +546,7 @@ void ParticleSystem::Draw(Camera* camera)
             drawPoints.push_back(tp);
         }
 
-        // 生きているなら現在位置も追加
+        // 生存中なら現在位置も追加
         if (particle.age < particle.lifetime)
         {
             drawPoints.push_back({
@@ -555,14 +556,13 @@ void ParticleSystem::Draw(Camera* camera)
                 });
         }
 
-        // Renderer呼び出し
+        // Rendererへ登録 (ここで行列計算や頂点生成が行われ、バッチに積まれる)
         engine_->renderer_->SubmitTrail(
             drawPoints,
             particle.config.trail,
             *camera
         );
     }
-
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
 #ifdef _DEBUG

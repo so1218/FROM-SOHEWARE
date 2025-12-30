@@ -611,6 +611,7 @@ void DebugGuiManager::DrawInformationDisplays()
     ImGui::Text("Sprites: %d / %d", engine_->renderer_->GetSpriteCount(), engine_->renderer_->kMaxSpriteCount);
     ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->kMaxLineCount);
     ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->kMaxParticleCount);
+    ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->kMaxTrailCount);
 
     // プロファイリング情報 (別途プロファイリングシステムが必要)
    /* ImGui::Text("Profiling Info: [Not Implemented]");*/

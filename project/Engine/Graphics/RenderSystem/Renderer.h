@@ -93,6 +93,7 @@ public:
     int32_t GetSpriteCount() const { return indexSprite_; }
     int32_t GetLineCount() const { return indexLine_; }
     int32_t GetParticleCount() const { return indexParticle_; }
+    int32_t GetTrailCount() const { return indexTrail_; }
 
     // Trail用のレンダリングデータ構造体
     struct TrailRenderData
@@ -137,7 +138,7 @@ private:
     void FlushLines(Camera& camera);
     void DrawParticles(const Camera& camera);
     void DrawSkybox(const ModelSubmission& sub);
-    void DrawTrail(const ModelSubmission& sub);
+    void DrawTrails(const Camera& camera);
 
 private:
     // Engineから受け取るポインタ
@@ -220,9 +221,34 @@ private:
     TransformationMatrix* mappedSkyboxWvp_ = nullptr;
     MaterialHandle skyboxMaterialHandle_;
 
-    // トレイル
-    std::vector<TrailRenderData> trails_;
+    // トレイル用のバッチ構造体
+    // [New] 実際にSubmitされたトレイルの数を数えるカウンタ
     int32_t indexTrail_ = 0;
+    struct TrailBatch
+    {
+        uint32_t startVertexIndex;  // このバッチの開始頂点インデックス
+        uint32_t vertexCount;       // 頂点数
+        uint32_t textureHandle;     // テクスチャ
+        uint32_t dissolveHandle;    // ディゾルブテクスチャ
+        TrailMaterialData materialData; // マテリアル設定（定数バッファ用）
+    };
+    // バッチ描画用リソース
+    struct TrailBatchResource
+    {
+        Mesh mesh; // 巨大な動的頂点バッファ
+        std::vector<VertexDataTrail> verticesCPU; // CPU側の一時バッファ
+
+        // マテリアル用定数バッファ（描画直前に更新して使う）
+        Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+        TrailMaterialData* mappedMaterial = nullptr;
+
+        // WVP行列用（基本Identityで、頂点計算済み座標を使うなら不要だが、VP行列を渡すなら必要）
+        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
+        TransformationMatrix* mappedWvp = nullptr;
+    } trailBatch_;
+
+    // 1フレーム中のバッチリスト
+    std::vector<TrailBatch> trailBatches_;
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;
