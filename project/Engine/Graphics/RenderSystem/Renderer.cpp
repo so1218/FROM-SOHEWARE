@@ -213,6 +213,33 @@ void Renderer::DrawSceneForShadow()
 }
 void Renderer::DrawScene()
 {
+	// --- 1. Lineの描画リクエストを登録 ---
+	// もし描画すべきラインがあれば、サブミッションリストに追加する
+	if (!lineBatch_.verticesCPU.empty())
+	{
+		ModelSubmission lineSubmission{};
+		lineSubmission.type = RenderType::Line;
+
+		// ★重要: 不透明グループとして扱う（またはOpaqueより少し後の専用グループを作る）
+		// これにより、UIや半透明（Transparent）より先に描画される＝奥に表示される
+		lineSubmission.group = RenderGroup::Opaque;
+
+		// 深度はバッチ描画なので代表値（例えばカメラの目の前など）にするか、
+		// Opaqueグループ内での描画順を制御するために適切な値を入れます。
+		// ここではとりあえず 0.0f ではなく、Opaqueの最後の方に描画されるように調整しても良いですが、
+		// 単純にOpaqueグループに入れればUIよりは奥に行きます。
+		lineSubmission.depth = 0.0f;
+
+		modelSubmissions_.push_back(lineSubmission);
+
+		// ★本数を保存 (頂点数 / 2)
+		indexLine_ = static_cast<uint32_t>(lineBatch_.verticesCPU.size()) / 2;
+	}
+	else
+	{
+		indexLine_ = 0;
+	}
+
 	if (hasParticles_)
 	{
 		ModelSubmission particleSubmission{};
@@ -257,8 +284,6 @@ void Renderer::DrawScene()
 	{
 		switch (sub.type)
 		{
-			if (sub.type == RenderType::Line) continue;
-
 		case RenderType::Sprite:
 			DrawSprite(sub);
 			break;
@@ -278,10 +303,15 @@ void Renderer::DrawScene()
 		case RenderType::Skinning:
 			DrawModel(sub);
 			break;
+		case RenderType::Line:
+			// Lineリスト用のトポロジーに変更が必要
+			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+			FlushLines(*camera_);
+			// 戻しておく（他の描画のため）
+			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			break;
 		}
 	}
-
-	FlushLines(*camera_);
 
 	modelSubmissions_.clear();
 

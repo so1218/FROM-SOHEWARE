@@ -133,8 +133,5 @@ private:
 	bool isEnd_ = false; // 死亡フラグ
 
 	bool isWaitingForUpgrade_ = false; // 選択待ちフラグ
-
-	std::unique_ptr<Line> debugLine1_; 
-	std::unique_ptr<Line> debugLine2_;
 };
 

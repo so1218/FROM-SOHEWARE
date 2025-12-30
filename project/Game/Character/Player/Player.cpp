@@ -32,12 +32,6 @@ Player::Player(Engine* engine, Camera* camera)
 
 	// アニメーションモデルを生成
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
-
-	debugLine1_ = std::make_unique<Line>(engine_, camera_);
-	debugLine1_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f }); 
-
-	debugLine2_ = std::make_unique<Line>(engine_, camera_);
-	debugLine2_->SetColor({ 0.0f, 1.0f, 0.0f, 1.0f });
 }
 
 void Player::Initialize()
@@ -303,14 +297,6 @@ void Player::Draw()
 	modelTamesi_->Draw();
 	animationPlayer_->Draw();
 	DrawCollider();
-
-	debugLine1_->SetStart(modelPlayer_->GetTransform().translation_);
-	debugLine1_->SetEnd({ 0.0f, 5.0f, 0.0f });
-	debugLine1_->Draw();
-
-	debugLine2_->SetStart(modelPlayer_->GetTransform().translation_);
-	debugLine2_->SetEnd({ 0.0f, 10.0f, 0.0f });
-	debugLine2_->Draw();
 
 	for (auto& weapon : weapons_)
 	{

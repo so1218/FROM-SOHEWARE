@@ -21,6 +21,7 @@ public:
     static void DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color);
     static void DrawOBB(const Vector3& center, const Vector3& size, const Matrix4x4& rot, const Vector4& color);
     static void DrawSphere(const Vector3& center, float radius, const Vector4& color);
+   
 #else
     // リリース時は中身のないインライン関数に置換される
     // コンパイラの最適化で呼び出し自体が消滅する（コストゼロ）

@@ -192,7 +192,7 @@ void LightManager::DrawDebugLights()
         color.w = 1.0f;
 
         Vector3 startPos = spotLightData_[i].position;
-        Vector3 dir = spotLightData_[i].direction; // 正規化されている前提
+        Vector3 dir = -spotLightData_[i].direction;
         float dist = spotLightData_[i].distance;
         float angleCos = spotLightData_[i].cosAngle;
 
@@ -259,11 +259,8 @@ void LightManager::DrawDebugLights()
         DebugDraw::DrawLine(p3, p0, color);
 
         // どっちが「表」か分かるように法線も引くと親切
-        Vector3 normal = Math::CrossProduct(right, up); // 必要に応じて正規化
-        // 簡易的に長さを1.0fくらいにして描画
-        // DebugDraw::DrawLine(pos, pos + normal, color);
+        Vector3 normal = Math::CrossProduct(right, up); 
     }
 
-    // Directional Lightは数が少ないので、空の高いところ等に固定表示したりする
 #endif
 }
