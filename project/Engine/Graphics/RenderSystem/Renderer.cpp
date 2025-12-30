@@ -213,44 +213,25 @@ void Renderer::DrawSceneForShadow()
 }
 void Renderer::DrawScene()
 {
-	// --- 1. Lineの描画リクエストを登録 ---
-	// もし描画すべきラインがあれば、サブミッションリストに追加する
+	// ライン描画を登録
 	if (!lineBatch_.verticesCPU.empty())
 	{
 		ModelSubmission lineSubmission{};
 		lineSubmission.type = RenderType::Line;
-
-		// ★重要: 不透明グループとして扱う（またはOpaqueより少し後の専用グループを作る）
-		// これにより、UIや半透明（Transparent）より先に描画される＝奥に表示される
 		lineSubmission.group = RenderGroup::Opaque;
-
-		// 深度はバッチ描画なので代表値（例えばカメラの目の前など）にするか、
-		// Opaqueグループ内での描画順を制御するために適切な値を入れます。
-		// ここではとりあえず 0.0f ではなく、Opaqueの最後の方に描画されるように調整しても良いですが、
-		// 単純にOpaqueグループに入れればUIよりは奥に行きます。
 		lineSubmission.depth = 0.0f;
-
 		modelSubmissions_.push_back(lineSubmission);
-
-		// ★本数を保存 (頂点数 / 2)
 		indexLine_ = static_cast<uint32_t>(lineBatch_.verticesCPU.size()) / 2;
 	}
-	else
-	{
-		indexLine_ = 0;
-	}
+	else indexLine_ = 0;
 
+	// パーティクル描画を登録
 	if (hasParticles_)
 	{
 		ModelSubmission particleSubmission{};
 		particleSubmission.type = RenderType::Particle;
-
-		// 半透明グループに所属させる
 		particleSubmission.group = RenderGroup::Particle;
-
-		// 深度設定: 
 		particleSubmission.depth = 0.0f;
-
 		modelSubmissions_.push_back(particleSubmission);
 	}
 
@@ -258,63 +239,53 @@ void Renderer::DrawScene()
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
 		[](const ModelSubmission& a, const ModelSubmission& b)
 		{
-			if (a.group != b.group)
-			{
-				return a.group < b.group;
-			}
+			if (a.group != b.group) return a.group < b.group;
 			switch (a.group)
 			{
-			case RenderGroup::Opaque:      return a.depth < b.depth;
-			case RenderGroup::Grid:         return a.depth < b.depth;
+			case RenderGroup::Opaque: return a.depth < b.depth;
+			case RenderGroup::Grid: return a.depth < b.depth;
 			case RenderGroup::Transparent: return a.depth > b.depth;
-			case RenderGroup::UI:          return a.layerOrder < b.layerOrder;
-			default:                       return a.depth < b.depth;
+			case RenderGroup::UI: return a.layerOrder < b.layerOrder;
+			default: return a.depth < b.depth;
 			}
 		});
 
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// 共通設定（SRVヒープ、プリミティブタイプ）
+	// 共通設定
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// 登録済みモデルを描画
+	// 登録モデルを描画
 	for (const auto& sub : modelSubmissions_)
 	{
 		switch (sub.type)
 		{
-		case RenderType::Sprite:
-			DrawSprite(sub);
-			break;
-		case RenderType::Grid:
-			DrawGrid(sub);
-			break;
+		case RenderType::Sprite:  
+			DrawSprite(sub); break;
+		case RenderType::Grid:   
+			DrawGrid(sub); break;
 		case RenderType::Particle:
-			DrawParticles(*camera_);
-			break;
-		case RenderType::Trail:
-			DrawTrail(sub);
-			break;
-		case RenderType::Skybox:
-			DrawSkybox(sub);
-			break;
+			DrawParticles(*camera_); break;
+		case RenderType::Trail:   
+			DrawTrail(sub); break;
+		case RenderType::Skybox:  
+			DrawSkybox(sub); break;
 		case RenderType::Model:
 		case RenderType::Skinning:
-			DrawModel(sub);
-			break;
+			DrawModel(sub); break;
 		case RenderType::Line:
-			// Lineリスト用のトポロジーに変更が必要
+			// ライントポロジーで描画
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 			FlushLines(*camera_);
-			// 戻しておく（他の描画のため）
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			break;
 		}
 	}
 
+	// 後処理
 	modelSubmissions_.clear();
-
 	particleBatches_.clear();
 	hasParticles_ = false;
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
@@ -647,15 +618,13 @@ void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint
 
 void Renderer::CreateLineBatch()
 {
-	// 1. 動的な頂点バッファを作成
-	// Meshクラスに CreateDynamicVertexBuffer のような機能があると仮定
-	// なければ、D3D12_HEAP_TYPE_UPLOAD でバッファを作る処理を書く
+	// 動的頂点バッファ作成
 	lineBatch_.mesh.CreateDynamicMesh(device_->GetDevice(), kMaxLineVertices, sizeof(LineVertex));
 
-	// CPU側の配列を予約（再割り当てを防ぐ）
+	// CPU側配列を予約
 	lineBatch_.verticesCPU.reserve(kMaxLineVertices);
 
-	// 2. WVP用の定数バッファ作成（カメラ用）
+	// WVP用定数バッファ作成
 	lineBatch_.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 	lineBatch_.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lineBatch_.mappedWvp));
 	lineBatch_.mappedWvp->WVP = Matrix4x4::MakeIdentity();
@@ -663,23 +632,15 @@ void Renderer::CreateLineBatch()
 
 void Renderer::SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color)
 {
-	// 上限チェック
 	if (lineBatch_.verticesCPU.size() >= kMaxLineVertices) return;
 
-	// 色の変換 (uint32 -> Vector4)
 	Vector4 colorVec = Math::Uint32ToColorVector(color);
 
-	// 始点
-	LineVertex v1;
-	v1.position = { start.x, start.y, start.z, 1.0f };
-	v1.color = colorVec;
+	// 頂点作成
+	LineVertex v1{ {start.x, start.y, start.z, 1.0f}, colorVec };
+	LineVertex v2{ {end.x, end.y, end.z, 1.0f}, colorVec };
 
-	// 終点
-	LineVertex v2;
-	v2.position = { end.x, end.y, end.z, 1.0f };
-	v2.color = colorVec;
-
-	// CPUリストに追加
+	// CPUバッファに追加
 	lineBatch_.verticesCPU.push_back(v1);
 	lineBatch_.verticesCPU.push_back(v2);
 }
@@ -1190,47 +1151,35 @@ void Renderer::DrawGrid(const ModelSubmission& sub)
 
 void Renderer::FlushLines(Camera& camera)
 {
-	// 線がなければ何もしない
-	if (lineBatch_.verticesCPU.empty()) return;
+	// 線がなければ終了
+	if (lineBatch_.verticesCPU.empty()) return; 
 
-	// 1. カメラ行列の更新 (World行列は単位行列扱いで、VP行列だけセット)
-	Matrix4x4 vpMatrix = camera.GetViewProjectionMatrix();
-	lineBatch_.mappedWvp->WVP = vpMatrix;
+	// カメラ行列更新
+	lineBatch_.mappedWvp->WVP = camera.GetViewProjectionMatrix();
 
-	// 2. CPUのデータをGPUバッファに一括コピー (Map -> Memcpy -> Unmap)
+	// CPUデータをGPUバッファにコピー
 	LineVertex* gpuPtr = nullptr;
-	// Meshクラスが頂点リソース取得機能を持っている前提
 	lineBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&gpuPtr));
-
-	// std::vectorの中身をそのままコピー（これが高速！）
 	std::memcpy(gpuPtr, lineBatch_.verticesCPU.data(), sizeof(LineVertex) * lineBatch_.verticesCPU.size());
-
 	lineBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
 
-	// 3. 描画コマンド発行
+	// 描画コマンド発行
 	auto* cmdList = commandManager_->GetCommandList();
-
-	// 線用のPSOとRootSignature
 	cmdList->SetPipelineState(psoManager_->GetPSO("Line"));
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
-
-	// トポロジーを線リストに設定
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	// 頂点バッファをセット
+	// 頂点バッファセット
 	D3D12_VERTEX_BUFFER_VIEW vbView = lineBatch_.mesh.GetVertexBufferView();
-	// 実際に描画するサイズに合わせてSizeInBytesを調整するとさらに良いが、
-	// VertexCountを指定すれば安全に描画される
 	cmdList->IASetVertexBuffers(0, 1, &vbView);
 
-	// 定数バッファ（WVP）
+	// 定数バッファ(WVP)セット
 	cmdList->SetGraphicsRootConstantBufferView(0, lineBatch_.wvpResource->GetGPUVirtualAddress());
 
-	// 一回のドローコールですべて描画！
-	// DrawInstancedの第1引数が頂点数。第2引数(インスタンス数)は1でOK。
+	// 描画
 	cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
 
-	// 4. 次フレームのためにCPUリストをクリア
+	// CPUバッファクリア
 	lineBatch_.verticesCPU.clear();
 }
 
