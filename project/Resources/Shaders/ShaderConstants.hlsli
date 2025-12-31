@@ -157,8 +157,7 @@ struct BrightExtractSettings
 struct CombineSettings
 {
     float bloomIntensity;
-    int effectMode; 
-    float2 padding;
+    float3 padding;
 };
 
 struct OutlineData

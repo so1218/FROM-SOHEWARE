@@ -139,7 +139,6 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     blurSettingsData_->blurStrength = 1.6f;
 
     combineSettingsData_->bloomIntensity = 0.8f; 
-    combineSettingsData_->effectMode = 1;
 
     depthExtractVSData_->nearPlane = camera->GetNearClip();
     depthExtractVSData_->farPlane = camera->GetFarClip();

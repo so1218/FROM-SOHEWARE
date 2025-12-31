@@ -343,35 +343,31 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("Neon"))
+    if (ImGui::TreeNode("ブルーム設定 (Bloom)"))
     {
-        if (ImGui::TreeNode("Bright Extract Settings"))
+        if (ImGui::TreeNode("輝度抽出設定"))
         {
-            ImGui::SliderFloat("Threshold", &brightExtractData->threshold, 0.0f, 10.0f);
-            ImGui::SliderFloat("Intensity", &brightExtractData->intensity, 0.0f, 5.0f);
+            ImGui::SliderFloat("抽出する明るさのしきい値", &brightExtractData->threshold, 0.0f, 10.0f);
+            ImGui::SliderFloat("抽出時の強度", &brightExtractData->intensity, 0.0f, 5.0f);
             ImGui::TreePop();
         }
 
 
-        if (ImGui::TreeNode("Blur Settings"))
+        if (ImGui::TreeNode("ぼかし設定 (Blur)"))
         {
-            ImGui::SliderFloat2("Texel Size", &blurSettingsData->texelSize.x, 0.0f, 0.1f);
-            ImGui::SliderFloat("Blur Strength", &blurSettingsData->blurStrength, 0.0f, 10.0f);
+            ImGui::SliderFloat2("テクセルサイズ", &blurSettingsData->texelSize.x, 0.0f, 0.1f);
+            ImGui::SliderFloat("ぼかしの強さ", &blurSettingsData->blurStrength, 0.0f, 10.0f);
             ImGui::TreePop();
         }
 
 
-        if (ImGui::TreeNode("Bloom Settings"))
+        if (ImGui::TreeNode("合成設定"))
         {
-            ImGui::SliderFloat("Brightness Threshold", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
-            static const char* modeNames[] = { "Halo", "Neon", "Bloom" };
-            ImGui::Combo("Effect Mode", &combineSettingsData->effectMode, modeNames, IM_ARRAYSIZE(modeNames));
+            ImGui::SliderFloat("ブルームの合成強度", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
             ImGui::TreePop();
         }
         ImGui::TreePop();
     }
-
-    ImGui::Text("PostEffect Flags:");
     ImGui::Separator();
 
     if (postEffectData->modeFlags[0] & GRAYSCALE)

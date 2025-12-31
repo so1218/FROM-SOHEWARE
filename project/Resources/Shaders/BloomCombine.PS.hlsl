@@ -57,34 +57,20 @@ float4 main(VSOutput input) : SV_TARGET
     // Tent Filterを使って滑らかに拡大サンプリング
     float3 bloomColor = UpsampleTent(gBlurredBloom, gSampler, input.uv, bloomTexelSize, 1.0f);
 
-    float3 result = float3(0, 0, 0);
-
     // 合成処理
-    if (gCombineSettings.effectMode == 0) // Halo
-    {
-        float luminance = dot(bloomColor.rgb, float3(0.299, 0.587, 0.114));
-        float3 haloColor = float3(1.0, 1.0, 1.0) * luminance * 1.5;
-        haloColor = haloColor * gCombineSettings.bloomIntensity;
-        result = sceneColor.rgb + haloColor;
-    }
-    else if (gCombineSettings.effectMode == 2) // Overlay
-    {
-        float3 overlay = 1.0 - (1.0 - bloomColor.rgb) * (1.0 - sceneColor.rgb);
-        result = lerp(sceneColor.rgb, overlay, gCombineSettings.bloomIntensity);
-    }
-    else // Neon
-    {
-        result = sceneColor.rgb + bloomColor * gCombineSettings.bloomIntensity;
-    }
+    float3 result = sceneColor.rgb + (bloomColor * gCombineSettings.bloomIntensity);
     
+    // 計算エラーで画面が真っ黒になるのを防ぐ
     if (any(isnan(result)))
     {
         result = float3(0.0, 0.0, 0.0);
     }
     
+    // HDR値のクランプ (無限大の発散を防ぐ)
     result = clamp(result, 0.0, 65504.0);
 
     // トーンマッピング
+    // Bloomを加算して輝度が高くなった状態から、モニタ表示用の0.0-1.0に落とし込む
     result = ACESFilm(result);
 
     return float4(result, sceneColor.a);
