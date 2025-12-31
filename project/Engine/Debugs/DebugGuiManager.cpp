@@ -309,48 +309,37 @@ void DebugGuiManager::DrawPostEffectSettings()
     BlurSettings* blurSettingsData = postEffectManager_->blurSettingsData_;
     CombineSettings* combineSettingsData = postEffectManager_->combineSettingsData_;
 
-    ImGui::CheckboxFlags("None", &postEffectData->modeFlags[0], NONE);
-    if (ImGui::TreeNode("PostEffectMode"))
-  {
-        if (ImGui::TreeNode("Mode[0]1~7"))
-        {
-            // 下位32bit（modeFlags[0]）
-            ImGui::CheckboxFlags("Grayscale", &postEffectData->modeFlags[0], GRAYSCALE);
-            ImGui::CheckboxFlags("Sepia", &postEffectData->modeFlags[0], SEPIA);
-            ImGui::CheckboxFlags("Pixelation", &postEffectData->modeFlags[0], PIXELATION);
-            ImGui::CheckboxFlags("ColorTint", &postEffectData->modeFlags[0], COLOR_TINT);
+    if (ImGui::TreeNode("ポストエフェクト設定"))
+    {
+        // カラー・色調系
+        ImGui::TextDisabled("カラー・色調");
+        ImGui::CheckboxFlags("グレースケール", &postEffectData->modeFlags[0], GRAYSCALE);
+        ImGui::CheckboxFlags("セピア", &postEffectData->modeFlags[0], SEPIA);
+        ImGui::CheckboxFlags("カラーティント", &postEffectData->modeFlags[0], COLOR_TINT);
+        ImGui::CheckboxFlags("ビネット", &postEffectData->modeFlags[0], VIGNETTE);
+        ImGui::CheckboxFlags("RGBずらし (スプリット)", &postEffectData->modeFlags[0], RGB_SPLIT);
+        ImGui::CheckboxFlags("色収差", &postEffectData->modeFlags[0], CHROM_ABERRATION);
 
-            ImGui::TreePop();
-        }
+        ImGui::Separator();
 
-        if (ImGui::TreeNode("Mode[0]8~16"))
-        {
-            // 下位32bit（modeFlags[0]）
-            ImGui::CheckboxFlags("CelShading", &postEffectData->modeFlags[0], CEL_SHADING);
-            ImGui::CheckboxFlags("Vignette", &postEffectData->modeFlags[0], VIGNETTE);
+        // 形状・歪み系
+        ImGui::TextDisabled("形状・歪み");
+        ImGui::CheckboxFlags("ドット化 (モザイク)", &postEffectData->modeFlags[0], PIXELATION);
+        ImGui::CheckboxFlags("画面の波紋 (Wave)", &postEffectData->modeFlags[0], SCREEN_WAVE);
+        ImGui::CheckboxFlags("魚眼レンズ", &postEffectData->modeFlags[0], FISHEYE);
+        ImGui::CheckboxFlags("ヒートハイズ (陽炎)", &postEffectData->modeFlags[0], HEAT_HAZE);
+        ImGui::CheckboxFlags("水面屈折", &postEffectData->modeFlags[0], WATER_REFRACTION);
 
-            ImGui::TreePop();
-        }
-        if (ImGui::TreeNode("Mode[0]16~24"))
-        {
-            ImGui::CheckboxFlags("ScreenNoise", &postEffectData->modeFlags[0], SCREEN_NOISE);
-            ImGui::CheckboxFlags("ChromaticAberration", &postEffectData->modeFlags[0], CHROM_ABERRATION);
-            ImGui::CheckboxFlags("ScreenWave", &postEffectData->modeFlags[0], SCREEN_WAVE);
-            ImGui::CheckboxFlags("FisheyeLens", &postEffectData->modeFlags[0], FISHEYE);
-            ImGui::CheckboxFlags("CRTScanline", &postEffectData->modeFlags[0], SCANLINE);
-            ImGui::CheckboxFlags("BlockNoise", &postEffectData->modeFlags[0], BLOCK_NOISE);
-            ImGui::TreePop();
-        }
+        ImGui::Separator();
 
-        if (ImGui::TreeNode("Mode[0]25~32"))
-        {
-            ImGui::CheckboxFlags("RGBSplitHorizontal", &postEffectData->modeFlags[0], RGB_SPLIT);
-            ImGui::CheckboxFlags("FilmGrain", &postEffectData->modeFlags[0], FILM_GRAIN);
-            ImGui::CheckboxFlags("Glitch", &postEffectData->modeFlags[0], GLITCH);
-            ImGui::CheckboxFlags("HeatHaze", &postEffectData->modeFlags[0], HEAT_HAZE);
-            ImGui::CheckboxFlags("WaterReaction", &postEffectData->modeFlags[0], WATER_REFRACTION);
-            ImGui::TreePop();
-        }
+        // 特殊効果・ノイズ系
+        ImGui::TextDisabled("特殊効果・ノイズ");
+        ImGui::CheckboxFlags("走査線", &postEffectData->modeFlags[0], SCANLINE);
+        ImGui::CheckboxFlags("スクリーンノイズ", &postEffectData->modeFlags[0], SCREEN_NOISE);
+        ImGui::CheckboxFlags("ブロックノイズ", &postEffectData->modeFlags[0], BLOCK_NOISE);
+        ImGui::CheckboxFlags("フィルムグレイン", &postEffectData->modeFlags[0], FILM_GRAIN);
+        ImGui::CheckboxFlags("グリッチエフェクト", &postEffectData->modeFlags[0], GLITCH);
+
         ImGui::TreePop();
     }
 
@@ -403,10 +392,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Multiply Amount", &postEffectData->tintMulColorAmount, 0.0f, 1.0f);
         ImGui::SliderFloat("Additive Amount", &postEffectData->tintAddColorAmount, 0.0f, 1.0f);
         ImGui::SliderFloat("Screen Amount", &postEffectData->tintScreenColorAmount, 0.0f, 1.0f);
-    }
-    if (postEffectData->modeFlags[0] & CEL_SHADING)
-    {
-        ImGui::SliderFloat("Cel Shading Levels", &postEffectData->celShadingLevels, 2.0f, 20.0f, "%.0f");
     }
     if (postEffectData->modeFlags[0] & VIGNETTE) 
     {

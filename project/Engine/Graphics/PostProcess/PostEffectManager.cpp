@@ -164,7 +164,6 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     postEffectData_->noiseAmount = 0.05f;
     postEffectData_->noiseSpeed = 1.0f;
     postEffectData_->noiseScale = 0.2f;
-    postEffectData_->celShadingLevels = 4.0f;
     postEffectData_->waveAmplitude = 0.01f;
     postEffectData_->waveFrequency = 15.0f;
     postEffectData_->waveDirection = 0;

@@ -35,10 +35,10 @@ cbuffer PostEffectSettings : register(b0)
     float noiseScale;
     float _padding2;
 
-    float celShadingLevels;
     float chromaOffset;
     float waveAmplitude;
     float waveFrequency;
+    float _paddingWave;
 
     int waveDirection;
     float waveSpeed;
@@ -265,15 +265,6 @@ float3 ApplyColorTint(float3 color)
     return (mulTint + addTint + screenTint) / 3.0;
 }
 
-// セルシェーディング風ポスタライズ
-float3 ApplyCelShading(float3 color)
-{
-    float luminance = dot(color, float3(0.299, 0.587, 0.114));
-    float levels = max(2.0, celShadingLevels);
-    float step = floor(luminance * levels) / (levels - 1.0);
-    return saturate(color * (step / max(luminance, 1e-5)));
-}
-
 // ビネット
 float3 ApplyVignette(float3 color, float2 uv)
 {
@@ -370,7 +361,7 @@ float4 main(VSOutput input) : SV_TARGET
     float2 uv = input.uv;
     float4 finalColor = float4(0, 0, 0, 1);
 
-   　// 座標系を加工して視覚効果を作る
+    // 座標系を加工して視覚効果を作る
     if (flag.x & PIXELATION)
         uv = ApplyPixelation(uv);
     if (flag.x & SCREEN_WAVE)
@@ -414,8 +405,6 @@ float4 main(VSOutput input) : SV_TARGET
         finalColor.rgb = ApplySepia(finalColor.rgb);
     if (flag.x & COLOR_TINT)
         finalColor.rgb = ApplyColorTint(finalColor.rgb);
-    if (flag.x & CEL_SHADING)
-        finalColor.rgb = ApplyCelShading(finalColor.rgb);
     if (flag.x & SCANLINE)
         finalColor.rgb = ApplyScanline(finalColor.rgb, uv);
     if (flag.x & VIGNETTE)

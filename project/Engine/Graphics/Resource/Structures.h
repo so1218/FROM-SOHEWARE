@@ -206,10 +206,10 @@ struct PostEffectData
     float noiseScale;
     float _padding2;
 
-    float celShadingLevels;
     float chromaOffset;
     float waveAmplitude;
     float waveFrequency;
+    float _paddingWave;
 
     int waveDirection;
     float waveSpeed;
