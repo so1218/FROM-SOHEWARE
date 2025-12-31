@@ -316,10 +316,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         {
             // 下位32bit（modeFlags[0]）
             ImGui::CheckboxFlags("Grayscale", &postEffectData->modeFlags[0], GRAYSCALE);
-            ImGui::CheckboxFlags("Invert Color", &postEffectData->modeFlags[0], INVERT_COLOR);
             ImGui::CheckboxFlags("Sepia", &postEffectData->modeFlags[0], SEPIA);
-            ImGui::CheckboxFlags("Brightness", &postEffectData->modeFlags[0], BRIGHTNESS);
-            ImGui::CheckboxFlags("Posterization", &postEffectData->modeFlags[0], POSTERIZATION);
             ImGui::CheckboxFlags("Pixelation", &postEffectData->modeFlags[0], PIXELATION);
             ImGui::CheckboxFlags("ColorTint", &postEffectData->modeFlags[0], COLOR_TINT);
 
@@ -329,13 +326,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         if (ImGui::TreeNode("Mode[0]8~16"))
         {
             // 下位32bit（modeFlags[0]）
-            ImGui::CheckboxFlags("Contrast", &postEffectData->modeFlags[0], CONTRAST);
-            ImGui::CheckboxFlags("Saturation", &postEffectData->modeFlags[0], SATURATION);
-            ImGui::CheckboxFlags("HueShift", &postEffectData->modeFlags[0], HUE_SHIFT);
-            ImGui::CheckboxFlags("ChannelSwap", &postEffectData->modeFlags[0], CHANNEL_SWAP);
             ImGui::CheckboxFlags("CelShading", &postEffectData->modeFlags[0], CEL_SHADING);
-            ImGui::CheckboxFlags("NormalOutline", &postEffectData->modeFlags[0], NORMAL_OUTLINE);
-            ImGui::CheckboxFlags("BrightExtract", &postEffectData->modeFlags[0], BRIGHT_EXTRACT);
             ImGui::CheckboxFlags("Vignette", &postEffectData->modeFlags[0], VIGNETTE);
 
             ImGui::TreePop();
@@ -346,23 +337,17 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::CheckboxFlags("ChromaticAberration", &postEffectData->modeFlags[0], CHROM_ABERRATION);
             ImGui::CheckboxFlags("ScreenWave", &postEffectData->modeFlags[0], SCREEN_WAVE);
             ImGui::CheckboxFlags("FisheyeLens", &postEffectData->modeFlags[0], FISHEYE);
-            ImGui::CheckboxFlags("Flash", &postEffectData->modeFlags[0], FLASH);
             ImGui::CheckboxFlags("CRTScanline", &postEffectData->modeFlags[0], SCANLINE);
             ImGui::CheckboxFlags("BlockNoise", &postEffectData->modeFlags[0], BLOCK_NOISE);
-            ImGui::CheckboxFlags("Solarize", &postEffectData->modeFlags[0], SOLARIZE);
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Mode[0]25~32"))
         {
-            ImGui::CheckboxFlags("MultiPosterize", &postEffectData->modeFlags[0], MULTI_POSTERIZE);
             ImGui::CheckboxFlags("RGBSplitHorizontal", &postEffectData->modeFlags[0], RGB_SPLIT);
-            ImGui::CheckboxFlags("InvertByY", &postEffectData->modeFlags[0], INVERT_BY_Y);
             ImGui::CheckboxFlags("FilmGrain", &postEffectData->modeFlags[0], FILM_GRAIN);
             ImGui::CheckboxFlags("Glitch", &postEffectData->modeFlags[0], GLITCH);
-            ImGui::CheckboxFlags("EdgeDetection", &postEffectData->modeFlags[0], EDGE_DETECTION);
             ImGui::CheckboxFlags("HeatHaze", &postEffectData->modeFlags[0], HEAT_HAZE);
-            ImGui::CheckboxFlags("SplitToning", &postEffectData->modeFlags[0], SPLIT_TONING);
             ImGui::CheckboxFlags("WaterReaction", &postEffectData->modeFlags[0], WATER_REFRACTION);
             ImGui::TreePop();
         }
@@ -408,18 +393,6 @@ void DebugGuiManager::DrawPostEffectSettings()
     {
         ImGui::SliderFloat("Sepia Amount", &postEffectData->sepiaColorAmount, 0.0f, 1.0f);
     }
-    if (postEffectData->modeFlags[0] & INVERT_COLOR)
-    {
-        ImGui::SliderFloat("Invert Amount", &postEffectData->invertColorAmount, 0.0f, 1.0f);
-    }  
-    if (postEffectData->modeFlags[0] & BRIGHTNESS)
-    {
-        ImGui::SliderFloat("Brightness Value", &postEffectData->brightnessValue, -1.0f, 1.0f);
-    }
-    if (postEffectData->modeFlags[0] & POSTERIZATION) 
-    {
-        ImGui::SliderFloat("Posterization Levels", &postEffectData->posterizationLevels, 2.0f, 32.0f);
-    }
     if (postEffectData->modeFlags[0] & PIXELATION)
     {
         ImGui::SliderFloat("Pixelation Size", &postEffectData->pixelationSize, 1.0f, 64.0f);
@@ -431,32 +404,9 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Additive Amount", &postEffectData->tintAddColorAmount, 0.0f, 1.0f);
         ImGui::SliderFloat("Screen Amount", &postEffectData->tintScreenColorAmount, 0.0f, 1.0f);
     }
-    if (postEffectData->modeFlags[0] & CONTRAST) 
-    {
-        ImGui::SliderFloat("Contrast Value", &postEffectData->contrastValue, 0.0f, 3.0f);
-    }
-    if (postEffectData->modeFlags[0] & SATURATION) 
-    {
-        ImGui::SliderFloat("Saturation Value", &postEffectData->saturationValue, 0.0f, 2.0f);
-    }
-    if (postEffectData->modeFlags[0] & HUE_SHIFT)
-    {
-        ImGui::SliderFloat("Hue Shift Amount", &postEffectData->hueShiftAmount, 0.0f, 1.0f);
-    }
-    if (postEffectData->modeFlags[0] & CHANNEL_SWAP)
-    {
-        const char* items[] = { "BGR", "GRB", "GBR", "BRG", "RBG" };
-        ImGui::Combo("Channel Swap Mode", &postEffectData->channelSwapMode, items, IM_ARRAYSIZE(items));
-    }
     if (postEffectData->modeFlags[0] & CEL_SHADING)
     {
         ImGui::SliderFloat("Cel Shading Levels", &postEffectData->celShadingLevels, 2.0f, 20.0f, "%.0f");
-    }
-    if (postEffectData->modeFlags[0] & NORMAL_OUTLINE)
-    {
-        ImGui::SliderFloat("Outline Threshold", &postEffectData->normalOutlineThreshold, 0.0f, 2.0f);
-        ImGui::SliderFloat("Outline Thickness", &postEffectData->normalOutlineThickness, 0.5f, 5.0f);
-        ImGui::ColorEdit3("Outline Color", &postEffectData->normalOutlineColor.x);
     }
     if (postEffectData->modeFlags[0] & VIGNETTE) 
     {
@@ -488,11 +438,6 @@ void DebugGuiManager::DrawPostEffectSettings()
     {
         ImGui::SliderFloat("FisheyeLens", &postEffectData->fisheyeDistortion, 0.0f, 2.0f);
     }
-    if (postEffectData->modeFlags[0] & FLASH)
-    {
-        ImGui::SliderFloat("Flash Frequency", &postEffectData->flashFrequency, 0.1f, 10.0f);
-        ImGui::SliderFloat("Flash Intensity", &postEffectData->flashIntensity, 0.0f, 1.0f);
-    }
     if (postEffectData->modeFlags[0] & SCANLINE)
     {
         ImGui::SliderFloat("Scanline Intensity", &postEffectData->scanlineIntensity, 0.0f, 1.0f);
@@ -509,14 +454,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Block Size", &postEffectData->blockNoiseSize, 4.0f, 128.0f);
         ImGui::SliderFloat("Noise Speed", &postEffectData->blockNoiseSpeed, 0.0f, 100.0f);
     }
-    if (postEffectData->modeFlags[0] & SOLARIZE)
-    {
-        ImGui::SliderFloat("Solarize Threshold", &postEffectData->solarizeThreshold, 0.0f, 1.0f);
-    }
-    if (postEffectData->modeFlags[0] & MULTI_POSTERIZE) 
-    {
-        ImGui::SliderFloat("Posterize Levels", &postEffectData->multiPosterizeLevels, 2.0f, 32.0f);
-    }
     if (postEffectData->modeFlags[0] & RGB_SPLIT)  
     {
         ImGui::SliderFloat("RGB Split Offset", &postEffectData->rgbSplitOffset, 0.0f, 0.05f);
@@ -531,21 +468,11 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Glitch Amount", &postEffectData->glitchAmount, 0.0f, 0.3f);
         ImGui::SliderFloat("Glitch Noise Intensity", &postEffectData->glitchNoiseIntensity, 0.0f, 0.5f);
     }
-    if (postEffectData->modeFlags[0] & EDGE_DETECTION)
-    {
-        ImGui::SliderFloat("Edge Threshold", &postEffectData->edgeThreshold, 0.0f, 1.0f);
-    }
     if (postEffectData->modeFlags[0] & HEAT_HAZE)
     {
         ImGui::SliderFloat("Distortion Strength", &postEffectData->heatDistortionStrength, 0.0f, 0.05f);
         ImGui::SliderFloat("Noise Scale", &postEffectData->heatNoiseScale, 1.0f, 100.0f);
         ImGui::SliderFloat("Speed", &postEffectData->heatSpeed, 0.0f, 10.0f);
-    }
-    if (postEffectData->modeFlags[0] & SPLIT_TONING)
-    {
-        ImGui::ColorEdit3("Shadow Color", &postEffectData->shadowColor.x);
-        ImGui::ColorEdit3("Highlight Color", &postEffectData->highlightColor.x);
-        ImGui::SliderFloat("Split Tone Strength", &postEffectData->splitToneStrength, 0.0f, 1.0f);
     }
     if (postEffectData->modeFlags[0] & WATER_REFRACTION)
     {

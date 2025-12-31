@@ -41,7 +41,7 @@ private:
 
     // 数字テクスチャのハンドル配列
     std::array<uint32_t, 10> digitTextureHandles_;
-    uint32_t colonTextureHandle_ = 0; // コロン(:)用のテクスチャ
+    uint32_t colonTextureHandle_ = 0; // コロン用のテクスチャ
 
     // 調整用パラメータ
     Vector2 position_ = { 640.0f, 50.0f };

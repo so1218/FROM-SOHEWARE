@@ -362,11 +362,11 @@ float4 main(VSOutput input) : SV_TARGET
         float gray = dot(color.rgb, float3(0.299, 0.587, 0.114));
         color.rgb = lerp(color.rgb, float3(gray, gray, gray), grayscaleColorAmount);
     }
-    if ((flag.x & INVERT_COLOR) != 0)
-    {
-        float3 invertedColor = 1.0 - color.rgb;
-        color.rgb = lerp(color.rgb, invertedColor, invertColorAmount);
-    }
+    //if ((flag.x & INVERT_COLOR) != 0)
+    //{
+    //    float3 invertedColor = 1.0 - color.rgb;
+    //    color.rgb = lerp(color.rgb, invertedColor, invertColorAmount);
+    //}
     if ((flag.x & SEPIA) != 0)
     {
         float3 sepia = float3(
@@ -377,15 +377,15 @@ float4 main(VSOutput input) : SV_TARGET
 
         color.rgb = lerp(color.rgb, sepia, sepiaColorAmount);
     }
-    if ((flag.x & BRIGHTNESS) != 0)
-    {
-        color.rgb += brightnessValue;
-    }
-    if ((flag.x & POSTERIZATION) != 0)
-    {
-        float levels = max(2.0, posterizationLevels);
-        color.rgb = floor(color.rgb * levels) / (levels - 1.0);
-    }
+    //if ((flag.x & BRIGHTNESS) != 0)
+    //{
+    //    color.rgb += brightnessValue;
+    //}
+    //if ((flag.x & POSTERIZATION) != 0)
+    //{
+    //    float levels = max(2.0, posterizationLevels);
+    //    color.rgb = floor(color.rgb * levels) / (levels - 1.0);
+    //}
     if ((flag.x & COLOR_TINT) != 0)
     {
         // 掛け算×補間
@@ -399,42 +399,42 @@ float4 main(VSOutput input) : SV_TARGET
 
         color.rgb = (mulTint + addTint + screenTint) / 3.0;
     }
-    if ((flag.x & CONTRAST) != 0)
-    {
-        color.rgb = (color.rgb - 0.5) * contrastValue + 0.5;
-    }
-    if ((flag.x & SATURATION) != 0)
-    {
-        float gray = dot(color.rgb, float3(0.299, 0.587, 0.114));
-        color.rgb = lerp(gray.xxx, color.rgb, saturationValue);
-    }
-    if ((flag.x & HUE_SHIFT) != 0)
-    {
-        float3 hsv = RGBToHSV(color.rgb);
-        hsv.x = frac(hsv.x + hueShiftAmount);
-        color.rgb = HSVToRGB(hsv);
-    }
-    if ((flag.x & CHANNEL_SWAP) != 0)
-    {
-        switch (channelSwapMode)
-        {
-            case 0:
-                color.rgb = color.bgr;
-                break;
-            case 1:
-                color.rgb = color.grb;
-                break;
-            case 2:
-                color.rgb = color.gbr;
-                break;
-            case 3:
-                color.rgb = color.brg;
-                break;
-            case 4:
-                color.rgb = color.rbg;
-                break;
-        }
-    }
+    //if ((flag.x & CONTRAST) != 0)
+    //{
+    //    color.rgb = (color.rgb - 0.5) * contrastValue + 0.5;
+    //}
+    //if ((flag.x & SATURATION) != 0)
+    //{
+    //    float gray = dot(color.rgb, float3(0.299, 0.587, 0.114));
+    //    color.rgb = lerp(gray.xxx, color.rgb, saturationValue);
+    //}
+    //if ((flag.x & HUE_SHIFT) != 0)
+    //{
+    //    float3 hsv = RGBToHSV(color.rgb);
+    //    hsv.x = frac(hsv.x + hueShiftAmount);
+    //    color.rgb = HSVToRGB(hsv);
+    //}
+    //if ((flag.x & CHANNEL_SWAP) != 0)
+    //{
+    //    switch (channelSwapMode)
+    //    {
+    //        case 0:
+    //            color.rgb = color.bgr;
+    //            break;
+    //        case 1:
+    //            color.rgb = color.grb;
+    //            break;
+    //        case 2:
+    //            color.rgb = color.gbr;
+    //            break;
+    //        case 3:
+    //            color.rgb = color.brg;
+    //            break;
+    //        case 4:
+    //            color.rgb = color.rbg;
+    //            break;
+    //    }
+    //}
     if ((flag.x & CEL_SHADING) != 0)
     {
        // 明度（輝度）の取得
@@ -452,46 +452,7 @@ float4 main(VSOutput input) : SV_TARGET
         // 最終カラー
         color.rgb = saturate(toonColor);
     }
-    if ((flag.x & NORMAL_OUTLINE) != 0)
-    {
-        float2 texel = normalOutlineThickness / screenResolution;
 
-        float3 centerColor = gTexture.Sample(gSampler, uv).rgb;
-
-        float maxDiff = 0.0;
-        [unroll]
-        for (int y = -1; y <= 1; y++)
-        {
-            [unroll]
-            for (int x = -1; x <= 1; x++)
-            {
-                if (x == 0 && y == 0)
-                    continue;
-
-                float2 offset = float2(x, y) * texel;
-                float2 sampleUV = saturate(uv + offset);
-                float3 sampleColor = gTexture.Sample(gSampler, sampleUV).rgb;
-
-                // 色差を計算
-                float diff = length(centerColor - sampleColor);
-
-                maxDiff = max(maxDiff, diff);
-            }
-        }
-
-        // エッジ検出の閾値調整
-        float edgeFactor = smoothstep(normalOutlineThreshold * 0.5, normalOutlineThreshold + 0.1, maxDiff);
-
-        // 指定色でアウトライン。
-        color.rgb = lerp(color.rgb, normalOutlineColor, edgeFactor);
-    }
-    if ((flag.x & BRIGHT_EXTRACT) != 0)
-    {
-        // 高輝度成分だけ抽出
-        float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114));
-        float threshold = 0.8;
-        color.rgb = (luminance > threshold) ? color.rgb : float3(0, 0, 0);
-    }
     if ((flag.x & VIGNETTE) != 0)
     {
         float2 offset = uv - float2(0.5, 0.5);
@@ -561,14 +522,14 @@ float4 main(VSOutput input) : SV_TARGET
             color = gTexture.Sample(gSampler, newUV);
         }
     }
-    if ((flag.x & FLASH) != 0)
-    {
-        // 0〜1を周期的に変化させる
-        float flash = (sin(totalTime * 6.28318 * flashFrequency) + 1.0) * 0.5;
+    //if ((flag.x & FLASH) != 0)
+    //{
+    //    // 0〜1を周期的に変化させる
+    //    float flash = (sin(totalTime * 6.28318 * flashFrequency) + 1.0) * 0.5;
 
-        // 明るさを増加（色が飛びすぎないようにsaturateでクランプ）
-        color.rgb = saturate(color.rgb + flash * flashIntensity);
-    }
+    //    // 明るさを増加（色が飛びすぎないようにsaturateでクランプ）
+    //    color.rgb = saturate(color.rgb + flash * flashIntensity);
+    //}
     if ((flag.x & SCANLINE) != 0)
     {
         float wave = 0.0;
@@ -606,25 +567,25 @@ float4 main(VSOutput input) : SV_TARGET
         float3 noiseColor = float3(n, n, n);
         color.rgb = lerp(color.rgb, noiseColor, blockNoiseAmount);
     }
-    if ((flag.x & SOLARIZE) != 0)
-    {
-        float3 threshold = float3(solarizeThreshold, solarizeThreshold, solarizeThreshold); // 明るさの閾値
+    //if ((flag.x & SOLARIZE) != 0)
+    //{
+    //    float3 threshold = float3(solarizeThreshold, solarizeThreshold, solarizeThreshold); // 明るさの閾値
 
-        // 条件付きで各色チャネルを反転
-        color.r = (color.r > threshold.r) ? 1.0 - color.r : color.r;
-        color.g = (color.g > threshold.g) ? 1.0 - color.g : color.g;
-        color.b = (color.b > threshold.b) ? 1.0 - color.b : color.b;
-    }
-    if ((flag.x & MULTI_POSTERIZE) != 0)
-    {
-        float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114));
-        float levels = max(2.0, multiPosterizeLevels);
-        float poster = floor(luminance * levels) / (levels - 1.0);
-        color.rgb = float3(poster, poster, poster); // グレースケール版
+    //    // 条件付きで各色チャネルを反転
+    //    color.r = (color.r > threshold.r) ? 1.0 - color.r : color.r;
+    //    color.g = (color.g > threshold.g) ? 1.0 - color.g : color.g;
+    //    color.b = (color.b > threshold.b) ? 1.0 - color.b : color.b;
+    //}
+    //if ((flag.x & MULTI_POSTERIZE) != 0)
+    //{
+    //    float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114));
+    //    float levels = max(2.0, multiPosterizeLevels);
+    //    float poster = floor(luminance * levels) / (levels - 1.0);
+    //    color.rgb = float3(poster, poster, poster); // グレースケール版
 
-        // もし元の色で色相を残したい場合
-        // color.rgb *= poster;
-    }
+    //    // もし元の色で色相を残したい場合
+    //    // color.rgb *= poster;
+    //}
     if ((flag.x & RGB_SPLIT) != 0)
     {
         // オフセット値をUV空間で指定
@@ -636,17 +597,6 @@ float4 main(VSOutput input) : SV_TARGET
         float b = gTexture.Sample(gSampler, saturate(uv + offset)).b;
 
         color = float4(r, g, b, 1.0);
-    }
-    if ((flag.x & INVERT_BY_Y) != 0)
-    {
-        // uv.yは0〜1の縦位置（0が上、1が下）
-        float invertAmount = uv.y;
-
-        // 色反転した色
-        float3 invertedColor = 1.0 - color.rgb;
-
-        // 元の色と反転色を縦位置によって線形補間
-        color.rgb = lerp(color.rgb, invertedColor, invertAmount);
     }
     if ((flag.x & FILM_GRAIN) != 0)
     {
@@ -700,39 +650,16 @@ float4 main(VSOutput input) : SV_TARGET
 
         color.rgb = saturate(glitchColor);
     }
-    if ((flag.x & EDGE_DETECTION) != 0)
-    {
-        float2 texelSize = 1.0 / screenResolution.xy;
+    //if ((flag.x & SPLIT_TONING) != 0)
+    //{
+    //    float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114)); // 明度計算
 
-        float lumTL = dot(gTexture.Sample(gSampler, uv + texelSize * float2(-1, -1)).rgb, float3(0.299, 0.587, 0.114));
-        float lumTC = dot(gTexture.Sample(gSampler, uv + texelSize * float2(0, -1)).rgb, float3(0.299, 0.587, 0.114));
-        float lumTR = dot(gTexture.Sample(gSampler, uv + texelSize * float2(1, -1)).rgb, float3(0.299, 0.587, 0.114));
-        float lumCL = dot(gTexture.Sample(gSampler, uv + texelSize * float2(-1, 0)).rgb, float3(0.299, 0.587, 0.114));
-        float lumCR = dot(gTexture.Sample(gSampler, uv + texelSize * float2(1, 0)).rgb, float3(0.299, 0.587, 0.114));
-        float lumBL = dot(gTexture.Sample(gSampler, uv + texelSize * float2(-1, 1)).rgb, float3(0.299, 0.587, 0.114));
-        float lumBC = dot(gTexture.Sample(gSampler, uv + texelSize * float2(0, 1)).rgb, float3(0.299, 0.587, 0.114));
-        float lumBR = dot(gTexture.Sample(gSampler, uv + texelSize * float2(1, 1)).rgb, float3(0.299, 0.587, 0.114));
+    //    // シャドウ〜ハイライト間の色を線形補間
+    //    float3 toneColor = lerp(shadowColor, highlightColor, luminance);
 
-        float gx = -lumTL - 2.0 * lumCL - lumBL + lumTR + 2.0 * lumCR + lumBR;
-        float gy = -lumTL - 2.0 * lumTC - lumTR + lumBL + 2.0 * lumBC + lumBR;
-
-        float edgeStrength = length(float2(gx, gy));
-
-        float edge = smoothstep(edgeThreshold, edgeThreshold + 0.1, edgeStrength);
-        float3 edgeColor = float3(0.0, 0.0, 0.0); // 白い線で描く
-        color.rgb = lerp(color.rgb, edgeColor, edge); // エッジ部分だけ白く混ぜる
-    }
-  
-    if ((flag.x & SPLIT_TONING) != 0)
-    {
-        float luminance = dot(color.rgb, float3(0.299, 0.587, 0.114)); // 明度計算
-
-        // シャドウ〜ハイライト間の色を線形補間
-        float3 toneColor = lerp(shadowColor, highlightColor, luminance);
-
-        // 元の色と補正色をブレンド
-        color.rgb = lerp(color.rgb, toneColor, splitToneStrength);
-    }
+    //    // 元の色と補正色をブレンド
+    //    color.rgb = lerp(color.rgb, toneColor, splitToneStrength);
+    //}
   
     return color;
 }
