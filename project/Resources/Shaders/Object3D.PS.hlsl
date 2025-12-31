@@ -71,7 +71,7 @@ PixelShaderOutput main(PixelShaderInput input)
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     float3 baseColor = textureColor.rgb;
 
-    // アートエフェクト適用
+    // グリッド適用
     if (gMaterial.isArtGrid)
     {
         if (ShouldDiscardArtGrid(input))
@@ -475,63 +475,47 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
 {
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
-    // ノーマルオフセットバイアス
-    // 法線とライト方向の角度に応じて、参照座標を少しずらす
-    // これにより、自分自身の影によるシマ模様（アクネ）を劇的に防げる
+    // 法線ベースのバイアス
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float dotNL = dot(normal, lightDir);
-    float biasScale = clamp(1.0f - dotNL, 0.0f, 1.0f); // 浅い角度ほど大きくずらす
+    float biasScale = saturate(1.0f - dot(normal, lightDir));
 
-    // バイアス値の基本設定（MaterialDataから調整できるようにすると良い）
-    // 例: bias = 0.005, normalBias = 0.001 くらいが目安
     float depthBias = gMaterial.shadowBias;
-    float normalBias = 0.002f * biasScale; // 法線方向へのオフセット量
+    float normalBias = 0.002f * biasScale;
 
-    // 座標変換
+    // NDC → UV
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
-    // ★重要: 法線方向にサンプリング位置をずらす（Normal Offset）
-    // 深度(z)を引くのではなく、XY平面上でずらすことで、見た目のズレを抑えつつアクネを消す
-    float2 shadowMapSize = float2(2048.0f, 2048.0f);
-    float2 texelSize = 1.0f / shadowMapSize;
-    
-    // 法線のXY成分を使ってずらす
+    // 法線オフセット
     projCoords.xy += normal.xy * normalBias;
 
-    // 深度比較用のバイアスも少しだけかける
     float currentDepth = projCoords.z - depthBias;
 
-    // 範囲外判定
-    if (projCoords.z > 1.0f || projCoords.z < 0.0f ||
-        projCoords.x > 1.0f || projCoords.x < 0.0f ||
-        projCoords.y > 1.0f || projCoords.y < 0.0f)
+    // 範囲外
+    if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
+        projCoords.x < 0.0f || projCoords.x > 1.0f ||
+        projCoords.y < 0.0f || projCoords.y > 1.0f)
     {
         return 1.0f;
     }
 
-    // PCF (Poisson Disk Sampling)
-    // 3x3ループの代わりに、ランダムに散らばった点を使うことで
-    // 四角いジャギジャギを「ノイズ」に変え、自然なボケにする
-    float shadowSum = 0.0f;
-    
-    // 影のボケ具合を調整するパラメータ (MaterialDataに追加推奨)
-    // 値が大きいほどボケる (例: 1.0 = 硬い, 3.0 = 柔らかい)
-    float softness = 1.0f; // 追加推奨: デフォルト 1.5f 程度
-    if (softness <= 0.0f)
-        softness = 1.0f;
+    // PCF（Poisson）
+    float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
+    float softness = max(softness, 1.0f);
 
+    float shadow = 0.0f;
+    [unroll]
     for (int i = 0; i < 16; ++i)
     {
         float2 offset = poissonDisk[i] * texelSize * softness;
-        shadowSum += gShadowMap.SampleCmpLevelZero(
+        shadow += gShadowMap.SampleCmpLevelZero(
             gShadowSampler,
             projCoords.xy + offset,
             currentDepth
         );
     }
 
-    return shadowSum / 16.0f;
+    return shadow * (1.0f / 16.0f);
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)

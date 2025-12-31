@@ -12,7 +12,6 @@ cbuffer BlurSettings : register(b0)
 float4 main(VSOutput input) : SV_TARGET
 {
     // Karis Average (チラつき防止の高品質ダウンサンプル)
-    // 中心 + 四隅の少し外側をサンプリング
     float2 uv = input.uv;
 
     // オフセット計算 (テクセルサイズ分ずらす)
@@ -25,8 +24,7 @@ float4 main(VSOutput input) : SV_TARGET
     float3 s5 = tex.Sample(samLinear, uv).rgb; // 中心
 
     // 重み付け平均
-    // 中心を強く(0.5)、周囲を弱く(0.125 * 4 = 0.5)
-    // 光の芯を残しつつ滑らかにする処理
+    // 中心を強く、周囲を弱く、光の芯を残しつつ滑らかにする処理
     float3 result = (s1 + s2 + s3 + s4) * 0.125f + s5 * 0.5f;
 
     return float4(result, 1.0f);
