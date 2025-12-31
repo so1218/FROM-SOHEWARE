@@ -20,9 +20,6 @@ public:
     // 更新処理
     void Update();
 
-    // ポストエフェクトモードの切替
-    void SetMode(int mode);
-
     // 各エフェクト用定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     Microsoft::WRL::ComPtr<ID3D12Resource> cbBrightExtract_;

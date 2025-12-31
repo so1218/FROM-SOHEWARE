@@ -147,63 +147,44 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
 
     depthExtractPSData_->nearPlane = camera->GetNearClip();
     depthExtractPSData_->farPlane = camera->GetFarClip();
-    
-    postEffectData_->mode = 0;
+
     postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-    postEffectData_->brightnessValue = 0.2f;
     postEffectData_->pixelationSize = 2.386f;
-    postEffectData_->posterizationLevels = 4;
     postEffectData_->screenResolution = Vector2(float(width), float(height));
     postEffectData_->grayscaleColorAmount = 1.0f;
     postEffectData_->sepiaColorAmount = 1.0f;
-    postEffectData_->invertColorAmount = 1.0f;
     postEffectData_->tintMulColorAmount = 1.0f;
     postEffectData_->tintAddColorAmount = 1.0f;
     postEffectData_->tintScreenColorAmount = 1.0f;
     postEffectData_->tintColor = Vector3(1.0f, 1.0f, 1.0f);
-    postEffectData_->contrastValue = 1.0f;
-    postEffectData_->saturationValue = 1.0f;
-    postEffectData_->hueShiftAmount = 0.5f;
     postEffectData_->vignetteAmount = 0.294f;
     postEffectData_->vignetteRadius = 0.148f;
     postEffectData_->vignetteSoftness = 0.3f;
     postEffectData_->vignetteEllipseScale = Vector2(1.2f, 1.0f);
-    postEffectData_->channelSwapMode = 0;
     postEffectData_->noiseAmount = 0.05f;
     postEffectData_->noiseSpeed = 1.0f;
     postEffectData_->noiseScale = 0.2f;
     postEffectData_->celShadingLevels = 4.0f;
-    postEffectData_->normalOutlineThreshold = 0.1f;
-    postEffectData_->normalOutlineThickness = 1.0f;
-    postEffectData_->normalOutlineColor = Vector3(0.0f, 0.0f, 0.0f);
     postEffectData_->waveAmplitude = 0.01f;
     postEffectData_->waveFrequency = 15.0f;
     postEffectData_->waveDirection = 0;
     postEffectData_->waveSpeed = 2.0f;
     postEffectData_->fisheyeDistortion = 0.2f;
-    postEffectData_->flashFrequency = 2.0f;
-    postEffectData_->flashIntensity = 0.5f;
     postEffectData_->scanlineScrollSpeed = 0.2f; 
     postEffectData_->scanlineColor = { 0.0f, 0.0f, 0.0f }; 
     postEffectData_->scanlineDirection = 0;
     postEffectData_->blockNoiseAmount = 0.5f;
     postEffectData_->blockNoiseSize = 16.0f;
     postEffectData_->noiseSpeed = 1.0f;
-    postEffectData_->solarizeThreshold = 0.5f;
-    postEffectData_->multiPosterizeLevels = 4.0f;
     postEffectData_->rgbSplitOffset = 0.003f;
     postEffectData_->filmGrainIntensity = 0.5f;
     postEffectData_->glitchBlockHeight = 0.5f;
     postEffectData_->glitchAmount = 0.1f;
     postEffectData_->glitchNoiseIntensity = 0.2f;
-    postEffectData_->edgeThreshold = 0.2f;
     postEffectData_->heatDistortionStrength = 0.02f;
     postEffectData_->heatNoiseScale = 20.0f;
     postEffectData_->heatSpeed = 5.0f;
     postEffectData_->vignetteColor = Vector3(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
-    postEffectData_->shadowColor = Vector3(0.1f, 0.2f, 0.6f);
-    postEffectData_->highlightColor = Vector3(1.0f, 0.85f, 0.6f);
-    postEffectData_->splitToneStrength = 0.5f;
     postEffectData_->turbulentStrength = 0.2f;
     postEffectData_->turbulentFrequency = 10.0f;
     postEffectData_->turbulentSpeed = 3.0f;
@@ -214,11 +195,6 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
 void PostEffectManager::Update()
 {
     postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-}
-
-void PostEffectManager::SetMode(int mode)
-{
-    postEffectData_->mode = mode;
 }
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)

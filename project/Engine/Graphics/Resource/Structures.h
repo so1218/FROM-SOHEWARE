@@ -178,105 +178,82 @@ struct BlurSettingsCPU {
 
 struct PostEffectData
 {
-    int mode; 
+    float pixelationSize;
+    float3 _padding0;
 
-    float brightnessValue; 
-    float posterizationLevels; 
-    float pixelationSize; 
-
-    Vector2 screenResolution;
+    float2 screenResolution;
     float grayscaleColorAmount;
     float sepiaColorAmount;
 
-    float invertColorAmount;
     float tintMulColorAmount;
     float tintAddColorAmount;
     float tintScreenColorAmount;
+    float _padding1;
 
-    Vector3 tintColor; 
+    float3 tintColor;
     float totalTime;
 
-    float contrastValue; 
-    float saturationValue;
-    float hueShiftAmount;           
     float vignetteAmount;
-
     float vignetteRadius;
     float vignetteSoftness;
-    Vector2 vignetteEllipseScale;
+    float padding_1;
 
-    int channelSwapMode;
+    float2 vignetteEllipseScale;
+    float2 padding_2;
+
     float noiseAmount;
     float noiseSpeed;
     float noiseScale;
+    float _padding2;
 
     float celShadingLevels;
-    float normalOutlineThreshold;
-    float normalOutlineThickness;
-    float _paddingNormlOutline1;
-
-
-    Vector3 normalOutlineColor;
-    float _paddingNormlOutline2;
-
     float chromaOffset;
-    float waveAmplitude; 
-    float waveFrequency; 
-    int waveDirection;
+    float waveAmplitude;
+    float waveFrequency;
 
+    int waveDirection;
     float waveSpeed;
     float fisheyeDistortion;
-    Vector2 _paddingFisheye;
+    float _paddingFisheye;
 
-    float flashFrequency;
-    float flashIntensity;
     float scanlineIntensity;
     float scanlineFrequency;
-
     int scanlineDirection;
-    Vector3 scanlineColor;
+    float _padding3;
 
+    float3 scanlineColor;
     float scanlineScrollSpeed;
-    Vector3 _paddingscanline;
 
     float blockNoiseAmount;
     float blockNoiseSize;
     float blockNoiseSpeed;
-    float solarizeThreshold;
+    float _padding4;
 
-    float multiPosterizeLevels; 
     float rgbSplitOffset;
     float filmGrainIntensity;
-    float _padding1;
+    float _padding5;
+    float _padding6;
 
     float glitchBlockHeight;
     float glitchAmount;
     float glitchNoiseIntensity;
-    float edgeThreshold;
+    float _padding7;
 
-    float heatDistortionStrength; 
-    float heatSpeed; 
+    float heatDistortionStrength;
+    float heatSpeed;
     float heatNoiseScale;
-    float _padding2;
+    float _padding8;
 
-    Vector3 vignetteColor;
-    float _padding3;
-
-    Vector3 shadowColor;
-    float _paddingSplit;
-
-    Vector3 highlightColor;
-    float splitToneStrength;
+    float3 vignetteColor;
+    float _padding9;
 
     float turbulentStrength;
     float turbulentFrequency;
     float turbulentSpeed;
     float _paddingTurbulence;
 
-   
-    uint32_t modeFlags[2];
-    Vector2 _paddingGlow2;
-
+    int32_t modeFlags[2];
+    float2 _paddingGlow2;
 };
 
 struct BlurSettings
