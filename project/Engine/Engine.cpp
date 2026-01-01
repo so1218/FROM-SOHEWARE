@@ -68,12 +68,6 @@ void Engine::Finalize()
 
 	frameLimiter_->Finalize();
 
-	// InitializeRendererで確保した深度SRVを解放
-	if (srvManager_ && postEffectManager_) 
-	{
-		srvManager_->FreeSRV(postEffectManager_->sceneDepthIndex_);
-	}
-
 	// srvManager_ を使うクラスを先に解放する
 	textureManager_.reset();     
 	postEffectManager_.reset();  
@@ -153,10 +147,13 @@ void Engine::EndFrame()
 #ifdef _DEBUG
 	if (useDebugView_)
 	{
-		debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), postEffectManager_->bloomCombineIndex_);
+		// ポストエフェクトの最終結果をデバッグ表示
+		uint32_t srvIndex = postEffectManager_->GetBloomCombineSRVIndex();
+		debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), srvIndex);
 	}
 	else
 	{
+		// 通常描画（バックバッファへコピー）
 		renderer_->DrawFullScreenQuadWithOffscreenTexture();
 	}
 #else
@@ -343,9 +340,8 @@ void Engine::InitializeRenderer()
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(
 		this,
-		graphicsDevice_->GetDevice(),
-		offscreenRTVManager_.get(),
-		kClientWidth, kClientHeight,
+		kClientWidth,
+		kClientHeight,
 		rootSignatureManager_.get(),
 		psoManager_.get(),
 		camera_,
@@ -360,10 +356,10 @@ void Engine::InitializeRenderer()
 	depthSrvDesc.Texture2D.MipLevels = 1;
 
 	// 深度バッファをシェーダから参照するためのSRVを作成
-	postEffectManager_->sceneDepthIndex_ = srvManager_->CreateSRV(
+	postEffectManager_->SetSceneDepthIndex(srvManager_->CreateSRV(
 		depthStencilResource_.Get(),
 		depthSrvDesc
-	);
+	));
 
 	shadowMap_ = std::make_unique<ShadowMap>();
 	shadowMap_->Initialize(graphicsDevice_->GetDevice(), 2048, 2048, srvManager_.get());

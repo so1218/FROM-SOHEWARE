@@ -168,6 +168,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\BrightExtractPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\DeprhExtractPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\IPostEffect.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
@@ -283,6 +289,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\DepthExtractPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\IPostEffect.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />

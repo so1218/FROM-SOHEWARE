@@ -85,12 +85,12 @@ void SampleSceneHori::Initialize()
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
     engine_->materialManager_->GetMaterialSettings().lightMode = 2;
 
-    engine_->postEffectManager_->postEffectData_->modeFlags[0] |= VIGNETTE;
-    engine_->postEffectManager_->postEffectData_->vignetteAmount = 0.452f;
-    engine_->postEffectManager_->postEffectData_->vignetteRadius = 0;
-    engine_->postEffectManager_->postEffectData_->vignetteSoftness = 0.261f;
-    engine_->postEffectManager_->postEffectData_->vignetteEllipseScale = { 1.2f,1.0f };
-    engine_->postEffectManager_->postEffectData_->vignetteColor = { 0,0,0 };
+    engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 0.452f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteRadius = 0;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteSoftness = 0.261f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteEllipseScale = { 1.2f,1.0f };
+    engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 0,0,0 };
 
     levelUpUI_->Initialize();
 

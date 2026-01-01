@@ -1,152 +1,70 @@
+//#include "PostEffectManager.h"
+//#include "BufferManager.h"
+//#include "TimeManager.h"
+//#include "Engine.h"
+
 #include "PostEffectManager.h"
-#include "BufferManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
 
-#include <externals/DirectXTex/d3dx12.h>
-
 PostEffectManager::~PostEffectManager()
 {
-    // Initialize で確保したものは、すべてここで解放する
-    srvManager_->FreeSRV(brightExtractIndex_);
-    srvManager_->FreeSRV(verticalBlurIndex_);
-    srvManager_->FreeSRV(horizontalBlurIndex_);
-    srvManager_->FreeSRV(bloomCombineIndex_);
-    srvManager_->FreeSRV(neonIndex_);
-    srvManager_->FreeSRV(depthExtractIndex_);
+    // 各Passのunique_ptrはここで自動破棄され、それに伴い各PassのSRVも自動解放されます
+    // (depthPass_, brightPass_ などはここで勝手に消えます)
+
+    // しかし、シーン深度のSRVインデックスだけは「単なる数値」として残っているため、
+    // ここで手動で解放する必要があります。
+    if (srvManager_ && sceneDepthIndex_ != 0)
+    {
+        srvManager_->FreeSRV(sceneDepthIndex_);
+        sceneDepthIndex_ = 0;
+    }
 }
 
-void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height,
-    RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera, SRVManager* srvManager)
+void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
+    RootSignatureManager* rootSigManager, PSOManager* psoManager,
+    Camera* camera, SRVManager* srvManager)
 {
     engine_ = engine;
-    offscreenRTVManager_ = offscreenRTVManager;
-    rootSignatureManager_ = rootSignatureManager;
-    psoManager_ = psoManager;
     srvManager_ = srvManager;
-    device_ = device;
-    descriptorSize_ = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    rootSigManager_ = rootSigManager;
 
-    // 共通SRV設定
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    // シーンテクスチャ/深度のSRVインデックス取得
+    sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex();
+    // ※ depthStencilResource_ のSRVインデックスはSRVManagerで管理されている前提(sceneDepthIndex_)
+    // もし管理されていないならここでCreateSRVするか、Engineから取得する必要があります
+    sceneDepthIndex_ = 0; // ★仮定: Engine等から適切なIndexをもらってください
 
-    // オフスクリーン描画ターゲットを生成する汎用関数
-    auto createTarget = [this, &srvDesc](UINT w, UINT h) {
-        const Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // 1. 深度抽出パス (Full Size)
+    depthPass_ = std::make_unique<DepthExtractPass>();
+    depthPass_->Initialize(engine, width, height, psoManager, rootSigManager, camera);
 
-        // レンダーターゲットとRTVハンドルを作成
-        auto [resource, rtvHandle] = offscreenRTVManager_->CreateOffscreenRenderTarget(w, h, clearColor);
+    // 2. 輝度抽出パス (Full Size)
+    brightPass_ = std::make_unique<BrightExtractPass>();
+    brightPass_->Initialize(engine, width, height, psoManager);
 
-        // SRVを登録
-        uint32_t srvIndex = srvManager_->CreateSRV(resource.Get(), srvDesc);
+    // 3. ブラーパス (1/4 Size)
+    UINT smallW = Math::MyMax(1u, width / 4);
+    UINT smallH = Math::MyMax(1u, height / 4);
 
-        return std::make_tuple(resource, rtvHandle, srvIndex);
-        };
+    downsamplePass_ = std::make_unique<DownsamplePass>();
+    downsamplePass_->Initialize(engine, smallW, smallH, psoManager);
 
-    // シーンテクスチャ（入力元）のSRVインデックスを取得
-    sceneTextureSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
+    verticalBlurPass_ = std::make_unique<BlurPass>();
+    verticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true); // true = Vertical
 
-    UINT smallWidth = width / 4;  // 1/4 サイズに設定
-    UINT smallHeight = height / 4;
-    // 最小サイズチェック
-    smallWidth = Math::MyMax(1u, smallWidth);
-    smallHeight = Math::MyMax(1u, smallHeight);
+    horizontalBlurPass_ = std::make_unique<BlurPass>();
+    horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false); // false = Horizontal
 
-    // 各ポストエフェクト用のターゲットを作成
-    std::tie(brightExtractResource_, brightExtractRTVHandle_, brightExtractIndex_) = createTarget(width, height);
-    std::tie(verticalBlurResource_, verticalBlurRTVHandle_, verticalBlurIndex_) = createTarget(smallWidth, smallHeight);
-    std::tie(horizontalBlurResource_, horizontalBlurRTVHandle_, horizontalBlurIndex_) = createTarget(smallWidth, smallHeight);
-    std::tie(bloomCombineResource_, bloomCombineRTVHandle_, bloomCombineIndex_) = createTarget(width, height);
-    std::tie(neonResource_, neonRTVHandle_, neonIndex_) = createTarget(width, height);
-    std::tie(depthExtractResource_, depthExtractRTVHandle_, depthExtractIndex_) = createTarget(width, height);
+    // 4. 合成パス (Full Size)
+    combinePass_ = std::make_unique<BloomCombinePass>();
+    combinePass_->Initialize(engine, width, height, psoManager, srvManager);
 
-    // SRVヒープの作成（ポストエフェクト用）
-    D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heapDesc.NumDescriptors = 3; // t0: scene, t1: blurred, t2: depth
-    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
+    cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
-    HRESULT hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&srvTableHeap_));
-    assert(SUCCEEDED(hr));
-
-    // CPU/GPUハンドルの取得
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvTableHeap_->GetCPUDescriptorHandleForHeapStart();
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvTableHeap_->GetGPUDescriptorHandleForHeapStart();
-
-    UINT numToCopy = 1;
-
-    // SRVのコピー（GPU可視ヒープへ）
-
-    // t0 = シーンテクスチャ
-    D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU = srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureSRVIndex_);
-    device->CopyDescriptors(
-        1, &cpuHandle, &numToCopy,
-        1, &sceneCPU, &numToCopy,
-        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-    );
-
-    // t1 = ブラー済みテクスチャ
-    cpuHandle.ptr += descriptorSize_;
-    D3D12_CPU_DESCRIPTOR_HANDLE blurCPU = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurIndex_);
-    device->CopyDescriptors(
-        1, &cpuHandle, &numToCopy,
-        1, &blurCPU, &numToCopy,
-        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-    );
-
-    // t2 = 深度テクスチャ
-    cpuHandle.ptr += descriptorSize_;
-    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU = srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_);
-    device->CopyDescriptors(
-        1, &cpuHandle, &numToCopy,
-        1, &depthCPU, &numToCopy,
-        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
-    );
-
-    // SRVテーブル先頭のGPUハンドルを保存（描画時に使用）
-    bloomCombineSRVTable_ = gpuHandle;
-
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
-    
-    // Bright Extract
-    cbBrightExtract_ = BufferManager::CreateBufferResource(device, sizeof(BrightExtractSettings));
-    cbBrightExtract_->Map(0, nullptr, reinterpret_cast<void**>(&brightExtractData_));
-
-    // Blur（縦横共通）
-    cbBlur_ = BufferManager::CreateBufferResource(device, sizeof(BlurSettings));
-    cbBlur_->Map(0, nullptr, reinterpret_cast<void**>(&blurSettingsData_));
-
-    // Bloom Combine 等
-    cbBloom_ = BufferManager::CreateBufferResource(device, sizeof(CombineSettings));
-    cbBloom_->Map(0, nullptr, reinterpret_cast<void**>(&combineSettingsData_));
-
-    // Depth関連の定数バッファ作成
-    cbDepthExtractVS_ = BufferManager::CreateBufferResource(device, sizeof(DepthExtractSettingsVS));
-    cbDepthExtractVS_->Map(0, nullptr, reinterpret_cast<void**>(&depthExtractVSData_));
-
-    cbDepthExtractPS_ = BufferManager::CreateBufferResource(device, sizeof(DepthExtractSettingsPS));
-    cbDepthExtractPS_->Map(0, nullptr, reinterpret_cast<void**>(&depthExtractPSData_));
-
-    brightExtractData_->threshold = 1.01f;
-    brightExtractData_->intensity = 0.4f;
-
-    blurSettingsData_->texelSize = { 1.0f / smallWidth, 1.0f / smallHeight };
-    blurSettingsData_->blurStrength = 1.6f;
-
-    combineSettingsData_->bloomIntensity = 0.8f; 
-
-    depthExtractVSData_->nearPlane = camera->GetNearClip();
-    depthExtractVSData_->farPlane = camera->GetFarClip();
-    depthExtractVSData_->invViewProjection = Matrix4x4::Inverse(camera->GetViewProjectionMatrix());
-
-    depthExtractPSData_->nearPlane = camera->GetNearClip();
-    depthExtractPSData_->farPlane = camera->GetFarClip();
-
+    // パラメータの初期値を設定
     postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     postEffectData_->pixelationSize = 2.386f;
     postEffectData_->screenResolution = Vector2(float(width), float(height));
@@ -168,8 +86,8 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
     postEffectData_->waveDirection = 0;
     postEffectData_->waveSpeed = 2.0f;
     postEffectData_->fisheyeDistortion = 0.2f;
-    postEffectData_->scanlineScrollSpeed = 0.2f; 
-    postEffectData_->scanlineColor = { 0.0f, 0.0f, 0.0f }; 
+    postEffectData_->scanlineScrollSpeed = 0.2f;
+    postEffectData_->scanlineColor = { 0.0f, 0.0f, 0.0f };
     postEffectData_->scanlineDirection = 0;
     postEffectData_->blockNoiseAmount = 0.5f;
     postEffectData_->blockNoiseSize = 16.0f;
@@ -192,241 +110,108 @@ void PostEffectManager::Initialize(Engine* engine, ID3D12Device* device, Offscre
 
 void PostEffectManager::Update()
 {
-    postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+    // 必要ならカメラ情報の更新などをここで呼ぶ
+    // depthPass_->UpdateCamera(camera); 
+    if (postEffectData_)
+    {
+        postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+        // その他の動的パラメータ更新もここで行う
+    }
+
+    //if (verticalBlurPass_ && horizontalBlurPass_)
+    //{
+    //    // マスター（Horizontal / ImGuiで操作している方）
+    //    auto* hSettings = horizontalBlurPass_->GetSettings();
+    //    // スレーブ（Vertical / 自動で合わせる方）
+    //    auto* vSettings = verticalBlurPass_->GetSettings();
+
+    //    // --- 強さの同期 ---
+    //    vSettings->blurStrength = hSettings->blurStrength;
+
+    //    // --- テクセルサイズ（ぼかし幅）の同期 ---
+    //    // ImGuiで texelSize.x をいじると、hSettings->texelSize.x が変わる。
+
+    //    // HorizontalPass (横): X方向に値を持ち、Yは0にする
+    //    hSettings->texelSize.y = 0.0f; // 横ブラーなので縦はずらさない
+
+    //    // VerticalPass (縦): 横の設定(x)を、縦方向(y)に適用する
+    //    vSettings->texelSize.x = 0.0f;               // 縦ブラーなので横はずらさない
+    //    vSettings->texelSize.y = hSettings->texelSize.x; // 横のサイズを縦に適用
+    //}
 }
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
-    // SRVヒープをセット
-    ID3D12DescriptorHeap* descriptorHeaps[] = { srvManager_->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-    // DepthStencilをSRVとして使用可能にする
-    CD3DX12_RESOURCE_BARRIER barrierToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->depthStencilResource_.Get(),
-        D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-    cmdList->ResourceBarrier(1, &barrierToSRV);
-
-    // Depth Extract
+    // -------------------------------------------------------------
+    // 1. Depth Extraction
+    // -------------------------------------------------------------
+    // DSV(深度バッファ)をSRVとして使うためのバリア
     {
-        // Depth Extract用にレンダーターゲットに遷移
-        CD3DX12_RESOURCE_BARRIER barrierDepthExtract = CD3DX12_RESOURCE_BARRIER::Transition(
-            depthExtractResource_.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-        cmdList->ResourceBarrier(1, &barrierDepthExtract);
-
-        // ルートシグネチャ・PSO・SRV・CBをセット
-        cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("DepthExtract"));
-        cmdList->SetPipelineState(psoManager_->GetPSO("Depth"));
-        cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
-        cmdList->SetGraphicsRootConstantBufferView(0, cbDepthExtractVS_->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootConstantBufferView(1, cbDepthExtractPS_->GetGPUVirtualAddress());
-
-        // Depth Extract用のRTVをセットしてクリア
-        cmdList->OMSetRenderTargets(1, &depthExtractRTVHandle_, FALSE, nullptr);
-        float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(depthExtractRTVHandle_, clearColor, 0, nullptr);
-
-        // フルスクリーン三角形で描画
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        cmdList->DrawInstanced(3, 1, 0, 0);
-
-        // 描画後、SRVとして再利用可能に遷移
-        CD3DX12_RESOURCE_BARRIER barrierDepthExtractToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            depthExtractResource_.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            engine_->depthStencilResource_.Get(),
+            D3D12_RESOURCE_STATE_DEPTH_WRITE,
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrierDepthExtractToSRV);
-    }
-
-    // DepthStencilを元の書き込み状態に戻す
-    CD3DX12_RESOURCE_BARRIER barrierToDepth = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->depthStencilResource_.Get(),
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_DEPTH_WRITE);
-    cmdList->ResourceBarrier(1, &barrierToDepth);
-
-    // 共通ルートシグネチャをセット
-    cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("PostProcess"));
-
-    // Bright Extract
-    {
-        CD3DX12_RESOURCE_BARRIER barrierBrightExtract = CD3DX12_RESOURCE_BARRIER::Transition(
-            brightExtractResource_.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-        cmdList->ResourceBarrier(1, &barrierBrightExtract);
-
-        cmdList->SetPipelineState(psoManager_->GetPSO("BrightnessExtract"));
-        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sceneTextureSRVIndex_));
-        cmdList->SetGraphicsRootConstantBufferView(0, cbBrightExtract_->GetGPUVirtualAddress());
-
-        cmdList->OMSetRenderTargets(1, &brightExtractRTVHandle_, FALSE, nullptr);
-        float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(brightExtractRTVHandle_, clearColor, 0, nullptr);
-
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        cmdList->DrawInstanced(3, 1, 0, 0);
-
-        CD3DX12_RESOURCE_BARRIER barrierBrightExtractToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            brightExtractResource_.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrierBrightExtractToSRV);
-    }
-
-    // 縮小用のビューポートを定義 (画面サイズの 1/4)
-    D3D12_VIEWPORT smallViewport = {};
-    smallViewport.Width = static_cast<float>(kClientWidth) / 4.0f;
-    smallViewport.Height = static_cast<float>(kClientHeight) / 4.0f;
-    smallViewport.MinDepth = 0.0f;
-    smallViewport.MaxDepth = 1.0f;
-
-    D3D12_RECT smallScissor = {};
-    smallScissor.right = static_cast<LONG>(kClientWidth) / 4;
-    smallScissor.bottom = static_cast<LONG>(kClientHeight) / 4;
-
-    // Downsampling (縮小パス)
-    {
-        // 書き込み先: verticalBlurResource_ (あらかじめ1/4サイズで作っておく)
-        CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            verticalBlurResource_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
         cmdList->ResourceBarrier(1, &barrier);
 
-        // ビューポートを小さくする
-        cmdList->RSSetViewports(1, &smallViewport);
-        cmdList->RSSetScissorRects(1, &smallScissor);
+        // 深度バッファのSRVを使って描画 (sceneDepthIndex_は別途正しく設定されている前提)
+        depthPass_->Execute(cmdList, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
 
-        // PSOは「ただのテクスチャ描画(Copy)」か「4点平均ダウンサンプル」を使う
-        cmdList->SetPipelineState(psoManager_->GetPSO("Downsample")); 
-
-        // 入力: さっき作った高輝度テクスチャ(大)
-        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
-
-        // 出力: 縮小バッファ(verticalBlurRTV)
-        cmdList->OMSetRenderTargets(1, &verticalBlurRTVHandle_, FALSE, nullptr);
-
-        cmdList->DrawInstanced(3, 1, 0, 0);
-
-        // リソースバリアは次のBlurでRTとして使うので、ここではまだ遷移させなくていいが、
-        // わかりやすく一旦SRVに戻すなら遷移させる（最適化の余地あり）
-        CD3DX12_RESOURCE_BARRIER toSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            verticalBlurResource_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &toSRV);
-    }
-
-    // Vertical Blur
-    {
-        CD3DX12_RESOURCE_BARRIER barrierVerticalBlur = CD3DX12_RESOURCE_BARRIER::Transition(
-            verticalBlurResource_.Get(),
+        // 元に戻す
+        auto barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
+            engine_->depthStencilResource_.Get(),
             D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-        cmdList->ResourceBarrier(1, &barrierVerticalBlur);
-
-        // ビューポートを小さくする
-        cmdList->RSSetViewports(1, &smallViewport);
-        cmdList->RSSetScissorRects(1, &smallScissor);
-
-        cmdList->SetPipelineState(psoManager_->GetPSO("BlurVertical"));
-        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(brightExtractIndex_));
-        cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
-
-        cmdList->OMSetRenderTargets(1, &verticalBlurRTVHandle_, FALSE, nullptr);
-        float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(verticalBlurRTVHandle_, clearColor, 0, nullptr);
-
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        cmdList->DrawInstanced(3, 1, 0, 0);
-
-        CD3DX12_RESOURCE_BARRIER barrierVerticalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            verticalBlurResource_.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrierVerticalBlurToSRV);
+            D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        cmdList->ResourceBarrier(1, &barrierBack);
     }
 
-    // Horizontal Blur
-    {
-        CD3DX12_RESOURCE_BARRIER barrierHorizontalBlur = CD3DX12_RESOURCE_BARRIER::Transition(
-            horizontalBlurResource_.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-        cmdList->ResourceBarrier(1, &barrierHorizontalBlur);
+    // -------------------------------------------------------------
+    // 2. Post Process Chain (共通設定)
+    // -------------------------------------------------------------
+    // ここからは共通のSRVヒープを使う場合の設定
+    ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+    cmdList->SetDescriptorHeaps(1, heaps);
+    cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
 
-        // ビューポートを小さくする
-        cmdList->RSSetViewports(1, &smallViewport);
-        cmdList->RSSetScissorRects(1, &smallScissor);
+    // シーンテクスチャのGPUハンドル
+    auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
-        cmdList->SetPipelineState(psoManager_->GetPSO("BlurHorizontal"));
-        cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(verticalBlurIndex_));
-        cmdList->SetGraphicsRootConstantBufferView(0, cbBlur_->GetGPUVirtualAddress());
+    // --- A. Brightness Extraction ---
+    // 入力: シーン画像 -> 出力: 高輝度部
+    brightPass_->Execute(cmdList, sceneSRV);
 
-        cmdList->OMSetRenderTargets(1, &horizontalBlurRTVHandle_, FALSE, nullptr);
-        float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(horizontalBlurRTVHandle_, clearColor, 0, nullptr);
+    //downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
 
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        cmdList->DrawInstanced(3, 1, 0, 0);
+    // --- B. Downsample & Vertical Blur ---
+    // 入力: 高輝度部 -> 出力: 縦ブラー(縮小)
+    // ※ダウンサンプル専用パスを作るのが丁寧ですが、今回はBlurPassで兼ねるか、
+    //   BlurPassの前に「DownsamplePass」クラスを挟むと完璧です。
+    //   ここでは簡単のため、VerticalBlurPassが縮小解像度を持っているのでそのまま突っ込みます。
+    verticalBlurPass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
 
-        CD3DX12_RESOURCE_BARRIER barrierHorizontalBlurToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            horizontalBlurResource_.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrierHorizontalBlurToSRV);
-    }
+    // --- C. Horizontal Blur ---
+    // 入力: 縦ブラー -> 出力: 横ブラー(完成したブルームテクスチャ)
+    horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
 
-    // ここでビューポートをフルサイズに戻す
-    D3D12_VIEWPORT fullViewport = { 0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClientHeight), 0.0f, 1.0f };
-    D3D12_RECT fullScissor = { 0, 0, static_cast<LONG>(kClientWidth), static_cast<LONG>(kClientHeight) };
+    // -------------------------------------------------------------
+    // 3. Bloom Combine
+    // -------------------------------------------------------------
+    // 合成パスは専用のヒープを使うため、必要なCPUハンドルを集める
+    // コピー元のCPUハンドルを取得
+    auto handleScene = srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_);
+    auto handleBlur = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex());
+    auto handleDepth = srvManager_->GetSRVHandleCPU_ForCopying(depthPass_->GetSRVIndex()); // リニア深度
 
-    cmdList->RSSetViewports(1, &fullViewport);
-    cmdList->RSSetScissorRects(1, &fullScissor);
+    // 3つをCombinePass内のヒープにコピーしてセットアップ
+    combinePass_->SetupInputViews(
+        engine_->graphicsDevice_->GetDevice(),
+        handleScene,
+        handleBlur,
+        handleDepth
+    );
 
-    // Bloom Combine
-    {
-        CD3DX12_RESOURCE_BARRIER barrierBloomCombine = CD3DX12_RESOURCE_BARRIER::Transition(
-            bloomCombineResource_.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_RENDER_TARGET);
-        cmdList->ResourceBarrier(1, &barrierBloomCombine);
+    // 実行 (内部でDescriptorHeapが切り替わる)
+    combinePass_->Execute(cmdList, sceneSRV /*unused*/);
 
-        cmdList->SetPipelineState(psoManager_->GetPSO("BloomCombine"));
-
-        ID3D12DescriptorHeap* heaps[] = { srvTableHeap_.Get() };
-        cmdList->SetDescriptorHeaps(1, heaps);
-        cmdList->SetGraphicsRootDescriptorTable(1, bloomCombineSRVTable_);
-        cmdList->SetGraphicsRootConstantBufferView(0, cbBloom_->GetGPUVirtualAddress());
-
-        cmdList->OMSetRenderTargets(1, &bloomCombineRTVHandle_, FALSE, nullptr);
-        float clearColor[4] = { 0, 0, 0, 1 };
-        cmdList->ClearRenderTargetView(bloomCombineRTVHandle_, clearColor, 0, nullptr);
-
-        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        cmdList->DrawInstanced(3, 1, 0, 0);
-
-        CD3DX12_RESOURCE_BARRIER barrierBloomCombineToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
-            bloomCombineResource_.Get(),
-            D3D12_RESOURCE_STATE_RENDER_TARGET,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrierBloomCombineToSRV);
-    }
+    // 必要ならメインのHeapに戻しておく
+    cmdList->SetDescriptorHeaps(1, heaps);
 }
-
-//void PostEffectManager::ExecuteNeonPostEffect(ID3D12GraphicsCommandList* cmdList)
-//{
-//    ID3D12DescriptorHeap* heaps[] = { offscreenRTVManager_->GetSRVDescriptorHeap() };
-//    cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-//
-//    // BrightExtract → Blur Vertical → Blur Horizontal → Combine（省略可能）
-//    // ここは ExecutePostEffects() の内容を参考に、neonIndex_ を使って処理
-//
-//    // 最後に合成（加算）
-//    cmdList->SetPipelineState(psoManager_->pipelineStateAdditive_.Get());
-//    cmdList->SetGraphicsRootSignature(rootSignatureManager_->rootSignaturePostProcess_.Get());
-//
-//    // t0: 通常のシーン, t1: ネオンブラー済み
-//    cmdList->SetGraphicsRootDescriptorTable(1, bloomCombineSRVTableNeon_);
-//    cmdList->DrawInstanced(3, 1, 0, 0);
-//}

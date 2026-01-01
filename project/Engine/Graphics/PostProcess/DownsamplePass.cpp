@@ -1,0 +1,31 @@
+#include "DownsamplePass.h"
+#include "BufferManager.h"
+#include "Engine.h"
+
+void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+{
+    // 親クラスで 1/4 サイズのRTV/SRVを作成させる
+    InitializeBase(engine, w, h);
+    psoManager_ = pso;
+    engine_ = engine;
+}
+
+void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV)
+{
+    PreDraw(cmdList); // ビューポート設定、RTVセット、クリア
+
+    // Downsample用のPSOを使用
+    cmdList->SetPipelineState(psoManager_->GetPSO("Downsample"));
+
+    // 共通ルートシグネチャ (t0に入力SRV)
+    ID3D12DescriptorHeap* heaps[] = { engine_->srvManager_->GetSRVHeap() }; // IPostEffectが持つ自身のSRVヒープ(空の場合もある)
+    // ※ 共通ヒープを使う場合は srvManager->GetSRVHeap() をセット
+
+    // 入力テクスチャ (BrightExtractの結果) をセット
+    cmdList->SetGraphicsRootDescriptorTable(1, inputSRV);
+
+    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    cmdList->DrawInstanced(3, 1, 0, 0);
+
+    PostDraw(cmdList); // ResourceBarrierでSRVに戻す
+}

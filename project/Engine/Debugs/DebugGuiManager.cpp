@@ -304,10 +304,11 @@ void DebugGuiManager::DrawLightSettings()
 
 void DebugGuiManager::DrawPostEffectSettings()
 {
-    PostEffectData* postEffectData = postEffectManager_->postEffectData_;
-    BrightExtractSettings* brightExtractData = postEffectManager_->brightExtractData_;
-    BlurSettings* blurSettingsData = postEffectManager_->blurSettingsData_;
-    CombineSettings* combineSettingsData = postEffectManager_->combineSettingsData_;
+    PostEffectData* postEffectData = postEffectManager_->GetPostEffectData();
+    BrightExtractSettings* brightExtractData = postEffectManager_->GetBrightSettings();
+    BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();        
+    BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings(); 
+    CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
 
     if (ImGui::TreeNode("ポストエフェクト設定"))
     {
@@ -352,14 +353,27 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::TreePop();
         }
 
-
         if (ImGui::TreeNode("ぼかし設定 (Blur)"))
         {
-            ImGui::SliderFloat2("テクセルサイズ", &blurSettingsData->texelSize.x, 0.0f, 0.1f);
-            ImGui::SliderFloat("ぼかしの強さ", &blurSettingsData->blurStrength, 0.0f, 10.0f);
+            ImGui::TextDisabled("横方向 (Horizontal)");
+            ImGui::SliderFloat("サイズ X", &hSettings->texelSize.x, 0.0f, 0.01f, "%.5f");
+
+            ImGui::Separator();
+
+            ImGui::TextDisabled("縦方向 (Vertical)");
+            ImGui::SliderFloat("サイズ Y", &vSettings->texelSize.y, 0.0f, 0.01f, "%.5f");
+
+            ImGui::Separator();
+
+            ImGui::TextDisabled("共通");
+
+            if (ImGui::SliderFloat("強さ", &hSettings->blurStrength, 0.0f, 10.0f))
+            {
+                vSettings->blurStrength = hSettings->blurStrength;
+            }
+
             ImGui::TreePop();
         }
-
 
         if (ImGui::TreeNode("合成設定"))
         {

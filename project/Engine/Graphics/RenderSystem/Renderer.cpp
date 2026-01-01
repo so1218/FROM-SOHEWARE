@@ -120,30 +120,36 @@ void Renderer::LoadTextureArray(const std::vector<std::string>& texturePaths)
 
 void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 {
-	// コマンドリストのローカル変数を取得
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// SRVヒープをセット
+	// 1. ヒープの設定
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// パイプラインステートをセット（フルスクリーン描画用PSO）
+	// 2. PSOとルートシグネチャの変更
+	// ★変更: 単純コピーではなく、高機能な「PostProcess」PSOを使う
+	// ※ PSO名は FullScreenQuad.PS.hlsl をコンパイルしたものを指定してください
 	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
 
-	// ルートシグネチャをセット（フルスクリーン用のルートシグネチャ）
+	// ルートシグネチャもそれに合わせる
 	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Fullscreen"));
 
-	// ルートパラメータにSRVなどをセット
-	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(postEffectManager_->bloomCombineIndex_));
-	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->constantBuffer_->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(postEffectManager_->depthExtractIndex_));
+	// 3. ルートパラメータの設定
+	// "PostProcess" ルートシグネチャの定義に合わせて設定します。
+	// おそらく [0]:CBV(b0), [1]:Table(t0~) という構成になっているはずです。
 
-	// プリミティブトポロジーを設定
+	// [0] CBV: PostEffectData (b0)
+	// PostEffectManagerからバッファのアドレスをもらってセット
+	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->GetPostEffectDataAddress());
+
+	// [1] DescriptorTable: Textures (t0)
+	// 入力は「BloomCombinePassの結果」です。
+	// これを t0 としてセットし、シェーダー内でグリッチやトーンマップをかけます。
+	uint32_t finalImageIndex = postEffectManager_->GetBloomCombineSRVIndex();
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(finalImageIndex));
+
+	// 4. 描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// 頂点バッファなし
-
-	// DrawCall（3頂点の三角形）
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 

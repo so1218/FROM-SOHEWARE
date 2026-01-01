@@ -1,10 +1,12 @@
 #pragma once
 #include "Structures.h"
-#include "RTVManager.h"
-#include "RootSignatureManager.h"
-#include "PSOManager.h"
-#include "Camera.h"
-#include "SRVManager.h"
+#include "IPostEffect.h"
+#include "BrightExtractPass.h"
+#include "DownsamplePass.h"
+#include "BlurPass.h"
+#include "BloomCombinePass.h"
+#include "DepthExtractPass.h"
+#include <memory>
 
 class Engine;
 
@@ -13,80 +15,65 @@ class PostEffectManager
 public:
     ~PostEffectManager();
 
-    // 初期化
-    void Initialize(Engine* engine, ID3D12Device* device, OffscreenRTVManager* offscreenRTVManager, UINT width, UINT height,
-        RootSignatureManager* rootSignatureManager, PSOManager* psoManager, Camera* camera, SRVManager* srvManager);
+    void Initialize(Engine* engine, UINT width, UINT height,
+        RootSignatureManager* rootSigManager, PSOManager* psoManager,
+        Camera* camera, SRVManager* srvManager);
 
-    // 更新処理
     void Update();
-
-    // 各エフェクト用定数バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbBrightExtract_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbBlur_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbBloom_;
-
-    // 深度関連リソース
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbDepthExtractVS_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbDepthExtractPS_;
-    D3D12_GPU_DESCRIPTOR_HANDLE depthTextureSRV_;
-    uint32_t depthExtractIndex_ = 0;
-
-    PostEffectData* postEffectData_ = nullptr;
-
-    // CPU側から書き込み可能なマッピングポインタ
-    BrightExtractSettings* brightExtractData_ = nullptr;
-    BlurSettings* blurSettingsData_ = nullptr;
-    CombineSettings* combineSettingsData_ = nullptr;
-    DepthExtractSettingsVS* depthExtractVSData_ = nullptr;
-    DepthExtractSettingsPS* depthExtractPSData_ = nullptr;
 
     // ポストエフェクト実行
     void ExecutePostEffects(ID3D12GraphicsCommandList* cmdList);
-    void ExecuteNeonPostEffect(ID3D12GraphicsCommandList* cmdList);
 
-    // 各エフェクト用SRV/RTVインデックス
-    uint32_t brightExtractIndex_ = 0;
-    uint32_t verticalBlurIndex_ = 0;
-    uint32_t horizontalBlurIndex_ = 0;
-    uint32_t bloomCombineIndex_ = 0;
-    uint32_t neonIndex_ = 0;
-    uint32_t sceneDepthIndex_ = 0;
+    // 設定データへのアクセサ (ImGui用など)
+
+    BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }
+    // Horizontal (横) の設定を「マスター」として返します
+    BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
+    BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); } // 縦横共通の設定なら片方でOK
+    CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
+
+    // --- SRVハンドルへのアクセス (描画コマンドで使用) ---
+    // 合成結果（最終画像）のSRVハンドル
+    D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
+
+    // 深度抽出結果のSRVハンドル
+    D3D12_GPU_DESCRIPTOR_HANDLE GetDepthExtractSRVHandle() const { return depthPass_->GetSRVHandleGPU(); }
+
+    // 深度抽出結果のSRVインデックス (解放処理などでインデックスが必要な場合)
+    uint32_t GetDepthExtractSRVIndex() const { return depthPass_->GetSRVIndex(); }
+
+    PostEffectData* GetPostEffectData() const { return postEffectData_; }
+
+    D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return cbPostEffect_->GetGPUVirtualAddress(); }
+
+    uint32_t GetBloomCombineSRVIndex() const {
+        if (combinePass_) {
+            return combinePass_->GetSRVIndex(); // CombinePassが持っているはずのSRV番号
+        }
+        return 0;
+    }
+
+    void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
 
 private:
     // 依存オブジェクト
-    Engine* engine_;
-    OffscreenRTVManager* offscreenRTVManager_ = nullptr;
-    RootSignatureManager* rootSignatureManager_;
-    PSOManager* psoManager_;
-    SRVManager* srvManager_;
-    ID3D12Device* device_;
+    Engine* engine_ = nullptr;
+    SRVManager* srvManager_ = nullptr;
+    RootSignatureManager* rootSigManager_ = nullptr;
 
-    // シーンテクスチャやSRVテーブル
-    D3D12_GPU_DESCRIPTOR_HANDLE sceneTextureSRV_;
-    D3D12_GPU_DESCRIPTOR_HANDLE bloomCombineSRVTable_;
+    // 各パス (ユニークポインタで管理)
+    std::unique_ptr<DepthExtractPass> depthPass_;
+    std::unique_ptr<BrightExtractPass> brightPass_;
+    std::unique_ptr<DownsamplePass> downsamplePass_;
+    std::unique_ptr<BlurPass> verticalBlurPass_;
+    std::unique_ptr<BlurPass> horizontalBlurPass_;
+    std::unique_ptr<BloomCombinePass> combinePass_;
 
-    // オフスクリーンRTVハンドル
-    D3D12_CPU_DESCRIPTOR_HANDLE brightExtractRTVHandle_;
-    D3D12_CPU_DESCRIPTOR_HANDLE verticalBlurRTVHandle_;
-    D3D12_CPU_DESCRIPTOR_HANDLE horizontalBlurRTVHandle_;
-    D3D12_CPU_DESCRIPTOR_HANDLE bloomCombineRTVHandle_;
-    D3D12_CPU_DESCRIPTOR_HANDLE neonRTVHandle_;
-    D3D12_CPU_DESCRIPTOR_HANDLE depthExtractRTVHandle_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;
+    PostEffectData* postEffectData_ = nullptr;
 
-    // SRVインデックス
-    uint32_t sceneTextureSRVIndex_;
-
-    // 各エフェクト用リソース
-    Microsoft::WRL::ComPtr<ID3D12Resource> brightExtractResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> verticalBlurResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> horizontalBlurResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> bloomCombineResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> neonResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> depthExtractResource_;
-
-    // SRV用ディスクリプタヒープ
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvTableHeap_;
-    UINT descriptorSize_ = 0;
+    // シーン情報
+    uint32_t sceneTextureIndex_ = 0;
+    uint32_t sceneDepthIndex_ = 0;
 };
 

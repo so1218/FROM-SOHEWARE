@@ -435,6 +435,24 @@
     <ClCompile Include="Engine\Collision\Collider.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\IPostEffect.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\BrightExtractPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\DeprhExtractPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -742,6 +760,12 @@
     <ClInclude Include="Game\Character\Player\LevelUpManager.h" />
     <ClInclude Include="Game\GameObject\UI\LevelUpUI.h" />
     <ClInclude Include="Engine\Debugs\DebugDraw.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\IPostEffect.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\DepthExtractPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
