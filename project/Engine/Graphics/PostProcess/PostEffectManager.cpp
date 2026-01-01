@@ -179,18 +179,42 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     // 入力: シーン画像 -> 出力: 高輝度部
     brightPass_->Execute(cmdList, sceneSRV);
 
-    //downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
+    downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
 
-    // --- B. Downsample & Vertical Blur ---
-    // 入力: 高輝度部 -> 出力: 縦ブラー(縮小)
-    // ※ダウンサンプル専用パスを作るのが丁寧ですが、今回はBlurPassで兼ねるか、
-    //   BlurPassの前に「DownsamplePass」クラスを挟むと完璧です。
-    //   ここでは簡単のため、VerticalBlurPassが縮小解像度を持っているのでそのまま突っ込みます。
-    verticalBlurPass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
+    // 最初の入力は「ダウンサンプルされた画像」
+    auto currentInputSRV = downsamplePass_->GetSRVHandleGPU();
 
-    // --- C. Horizontal Blur ---
-    // 入力: 縦ブラー -> 出力: 横ブラー(完成したブルームテクスチャ)
-    horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
+    // 繰り返し回数 (例: 3回〜4回)
+    // 回数を増やすほど、圧倒的に広く、かつ滑らかになります。
+    const int blurLoopCount = 4;
+
+    for (int i = 0; i < blurLoopCount; ++i)
+    {
+        // --- 1. Vertical Blur (縦) ---
+        // 入力: currentInputSRV
+        // 出力: VerticalBlurPass内部のテクスチャ
+        verticalBlurPass_->Execute(cmdList, currentInputSRV);
+
+        // --- 2. Horizontal Blur (横) ---
+        // 入力: 縦ブラーの結果
+        // 出力: HorizontalBlurPass内部のテクスチャ
+        horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
+
+        // --- 次のループの準備 ---
+        // 次の縦ブラーは、今の「横ブラーの結果」を入力にする
+        currentInputSRV = horizontalBlurPass_->GetSRVHandleGPU();
+    }
+
+    //// --- B. Downsample & Vertical Blur ---
+    //// 入力: 高輝度部 -> 出力: 縦ブラー(縮小)
+    //// ※ダウンサンプル専用パスを作るのが丁寧ですが、今回はBlurPassで兼ねるか、
+    ////   BlurPassの前に「DownsamplePass」クラスを挟むと完璧です。
+    ////   ここでは簡単のため、VerticalBlurPassが縮小解像度を持っているのでそのまま突っ込みます。
+    //verticalBlurPass_->Execute(cmdList, downsamplePass_->GetSRVHandleGPU());
+
+    //// --- C. Horizontal Blur ---
+    //// 入力: 縦ブラー -> 出力: 横ブラー(完成したブルームテクスチャ)
+    //horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
 
     // -------------------------------------------------------------
     // 3. Bloom Combine
