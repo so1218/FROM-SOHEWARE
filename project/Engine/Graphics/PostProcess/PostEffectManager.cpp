@@ -161,21 +161,21 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     // -------------------------------------------------------------
     // DSV(深度バッファ)をSRVとして使うためのバリア
     {
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            engine_->depthStencilResource_.Get(),
-            D3D12_RESOURCE_STATE_DEPTH_WRITE,
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrier);
+        //auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        //    engine_->depthStencilResource_.Get(),
+        //    D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        //    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        //cmdList->ResourceBarrier(1, &barrier);
 
         // 深度バッファのSRVを使って描画 (sceneDepthIndex_は別途正しく設定されている前提)
         depthPass_->Execute(cmdList, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
 
         // 元に戻す
-        auto barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
-            engine_->depthStencilResource_.Get(),
-            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-            D3D12_RESOURCE_STATE_DEPTH_WRITE);
-        cmdList->ResourceBarrier(1, &barrierBack);
+        //auto barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
+        //    engine_->offscreenDepthResource_.Get(),
+        //    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        //    D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        //cmdList->ResourceBarrier(1, &barrierBack);
     }
 
     // -------------------------------------------------------------

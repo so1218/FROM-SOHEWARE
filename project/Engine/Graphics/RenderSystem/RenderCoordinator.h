@@ -30,7 +30,9 @@ public:
         D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
         D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle, // オフスクリーン用RTV
         ID3D12Resource* offscreenTexture,               // バリア用
-        D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle);
+        D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
+        ID3D12Resource* offscreenDepthResource
+    );
 
     // フレーム描画開始・終了
     void BeginFrame();
@@ -47,6 +49,8 @@ public:
     // オフスクリーンRTV/DSVのハンドル
     D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenRTVHandle() const { return offscreenRtvHandle_; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenDSVHandle() const { return offscreenDsvHandle_; }
+
+    ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_; }
 
 private:
     // リソースバリア用
@@ -72,4 +76,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_ = nullptr;
     HANDLE fenceEvent_ = nullptr;
     uint64_t fenceValue_ = 0;
+
+    // ★追加: オフスクリーン深度リソースへのポインタ
+    ID3D12Resource* offscreenDepthResource_ = nullptr;
 };

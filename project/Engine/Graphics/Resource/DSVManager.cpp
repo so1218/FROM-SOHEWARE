@@ -1,10 +1,12 @@
 #include "DSVManager.h"
 #include "DescriptorHeapManager.h"
 #include "Logger.h"
+#include "SRVManager.h"
 
-void DSVManager::Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, UINT dsvCount)
+void DSVManager::Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, UINT dsvCount)
 {
     device_ = device;
+    srvManager_ = srvManager;
     maxDSVCount_ = dsvCount;
     createdDSVCount_ = 0;
 
@@ -40,6 +42,19 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+    // ★ここでSRVも作成して登録する
+    // フォーマット注意: R24G8_TYPELESS の場合、
+    // Depthを読むには DXGI_FORMAT_R24_UNORM_X8_TYPELESS を使う
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    // SRVManagerを使ってSRV作成
+    uint32_t srvIndex = srvManager_->CreateSRV(outResource.Get(), srvDesc);
+    depthSrvIndices_.push_back(srvIndex); // インデックスを保存
 
     D3D12_HEAP_PROPERTIES heapProperties{};
     heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;

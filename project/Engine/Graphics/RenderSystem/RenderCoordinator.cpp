@@ -15,7 +15,9 @@ void RenderCoordinator::Initialize(
     D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle,
     ID3D12Resource* offscreenTexture,
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle)
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
+    ID3D12Resource* offscreenDepthResource
+)
 {
     // 各マネージャーとリソースのポインタを保持
     swapChain_ = swapChainManager;
@@ -33,6 +35,8 @@ void RenderCoordinator::Initialize(
     offscreenRtvHandle_ = offscreenRtvHandle;
     offscreenTexture_ = offscreenTexture;
     offscreenDsvHandle_ = offscreenDsvHandle;
+
+    offscreenDepthResource_ = offscreenDepthResource;
 }
 
 void RenderCoordinator::BeginFrame()

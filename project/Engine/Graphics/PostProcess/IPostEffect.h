@@ -9,7 +9,8 @@ class Engine;
 class SRVManager;
 class OffscreenRTVManager;
 
-class IPostEffect {
+class IPostEffect
+{
 protected:
     // 出力用リソース
     Microsoft::WRL::ComPtr<ID3D12Resource> textureResource_;

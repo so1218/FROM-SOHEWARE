@@ -9,15 +9,12 @@
 #include <vector>
 
 class DescriptorHeapManager;
+class SRVManager;
 
 class DSVManager
 {
 public:
-    void Initialize(
-        ID3D12Device* device,
-        DescriptorHeapManager* descriptorManager, 
-        UINT dsvCount // 作成するDSVの最大数
-    );
+    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, UINT dsvCount);
 
     // 深度ステンシルビューの作成
     // リソースを作成し、DSVヒープにDSVを作成
@@ -30,6 +27,12 @@ public:
 
     // DSVヒープの取得
     ID3D12DescriptorHeap* GetHeap() const { return dsvHeap_.Get(); }
+
+    uint32_t GetDSVTextureSRVIndex(UINT dsvIndex) const 
+    {
+        if (dsvIndex < depthSrvIndices_.size()) return depthSrvIndices_[dsvIndex];
+        return 0; // エラー時は0などを返す
+    }
 
 private:
     ID3D12Device* device_ = nullptr;
@@ -45,4 +48,7 @@ private:
 
     // DSV用リソースの保持
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthTextures_;
+
+    SRVManager* srvManager_ = nullptr;
+    std::vector<uint32_t> depthSrvIndices_;
 };

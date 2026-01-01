@@ -42,9 +42,8 @@ void DepthExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DES
     // ルートパラメータ設定 (DepthExtract.hlslに合わせて調整)
     // param 0: VS CB, param 1: PS CB, param 2: Depth Texture SRV と仮定
     // 元コード: RootParameter 0=VS_CB, 1=PS_CB, 2=SRV_Table
-    cmdList->SetGraphicsRootConstantBufferView(0, cbVS_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, cbPS_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootDescriptorTable(2, depthSRV);
+    cmdList->SetGraphicsRootConstantBufferView(0, engine_->cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(1, depthSRV);
 
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->DrawInstanced(3, 1, 0, 0);

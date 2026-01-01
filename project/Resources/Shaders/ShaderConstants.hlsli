@@ -34,7 +34,9 @@ struct FrameData
     float2 screenResolution;
     
     float gTime; 
-    float3 padding3;
+    float nearClip;
+    float farClip; 
+    float padding3;
 };
 
 struct MaterialData

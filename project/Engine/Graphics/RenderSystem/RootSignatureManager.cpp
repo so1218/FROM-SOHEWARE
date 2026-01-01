@@ -143,8 +143,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "DepthExtract")
     {
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_PIXEL);

@@ -10,6 +10,8 @@ class CameraManager
 public:
     void Initialize(ID3D12Device* device);
 
+    void Update(Camera* camera);
+
     // ゲッター
     FrameData* GetFrameData() { return frameData_; }
     ID3D12Resource* GetCameraResource() { return cameraResource_.Get(); }
