@@ -77,6 +77,8 @@ public:
     void SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
+    // 単純にテクスチャをそのまま画面に出すメソッド
+    void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
     void DrawScene();
 

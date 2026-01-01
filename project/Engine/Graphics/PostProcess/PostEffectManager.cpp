@@ -64,6 +64,20 @@ void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
     cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
+    // ここで新しいオフスクリーンRTを作ると、
+      // OffscreenRTVManager内部の offscreenSrvIndex_ が「この新しいテクスチャ」のものに上書きされます。
+
+    auto resultPair = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+        width, height, Vector4(0.0f, 0.0f, 0.0f, 1.0f) // 黒クリア
+    );
+
+    // リソースとRTVハンドルを保存 (バリアやRTV設定で使用)
+    finalPassResource_ = resultPair.first;
+    finalPassRTVHandle_ = resultPair.second;
+
+    // ★重要: 今作ったばかりのテクスチャのSRVインデックスを取得して保存
+    finalPassSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
+
     // パラメータの初期値を設定
     postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     postEffectData_->pixelationSize = 2.386f;

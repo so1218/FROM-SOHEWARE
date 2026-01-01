@@ -53,6 +53,10 @@ public:
         return 0;
     }
 
+    uint32_t GetFinalPassSRVIndex() const { return finalPassSRVIndex_; }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetFinalPassRTV() const { return finalPassRTVHandle_; }
+    ID3D12Resource* GetFinalPassResource() const { return finalPassResource_.Get(); }
+
     void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
 
 private:
@@ -75,5 +79,9 @@ private:
     // シーン情報
     uint32_t sceneTextureIndex_ = 0;
     uint32_t sceneDepthIndex_ = 0;
+
+    uint32_t finalPassSRVIndex_ = 0;       // ImGuiやコピー描画で使うSRV
+    D3D12_CPU_DESCRIPTOR_HANDLE finalPassRTVHandle_; // 描画先として使うRTV
+    Microsoft::WRL::ComPtr<ID3D12Resource> finalPassResource_; // リソース本体(バリア用)
 };
 

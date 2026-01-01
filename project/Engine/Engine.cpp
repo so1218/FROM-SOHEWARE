@@ -132,38 +132,84 @@ void Engine::EndFrame()
 
 	renderer_->DrawScene();
 	renderCoordinator_->EndOffscreenRender();
-	renderCoordinator_->BeginFrame();
+	renderCoordinator_->BeginFrame(); // ここで一旦バックバッファがRTになるが、すぐ下で変更するからOK
 
-	// ポストエフェクト適用
+	// ポストエフェクト適用 (Bloom生成など)
 	postEffectManager_->ExecutePostEffects(commandManager_->GetCommandList());
 
-	// バックバッファへ描画
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
-	commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+	{
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			postEffectManager_->GetFinalPassResource(),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, // 現在は読み取り用
+			D3D12_RESOURCE_STATE_RENDER_TARGET           // 書き込み用に変更
+		);
+		commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+	}
 
+	// -----------------------------------------------------------
+	// 1. 最終合成 & トーンマップ -> 【FinalBuffer】に描画
+	// -----------------------------------------------------------
+
+	// ★ 描画先を「FinalBuffer」に切り替える
+	D3D12_CPU_DESCRIPTOR_HANDLE finalRTV = postEffectManager_->GetFinalPassRTV();
+	commandManager_->GetCommandList()->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
+
+	// ヒープ設定
 	ID3D12DescriptorHeap* defaultHeaps[] = { srvManager_->GetSRVHeap() };
 	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
 
-#ifdef _DEBUG
-	if (useDebugView_)
-	{
-		// ポストエフェクトの最終結果をデバッグ表示
-		uint32_t srvIndex = postEffectManager_->GetBloomCombineSRVIndex();
-		debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), srvIndex);
-	}
-	else
-	{
-		// 通常描画（バックバッファへコピー）
-		renderer_->DrawFullScreenQuadWithOffscreenTexture();
-	}
-#else
+	// ★ FinalBuffer に対して描画実行 (トーンマップ処理)
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
+
+	// -----------------------------------------------------------
+	// 2. リソースバリア (FinalBuffer: RenderTarget -> SRV)
+	// -----------------------------------------------------------
+	{
+		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			postEffectManager_->GetFinalPassResource(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+		);
+		commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+	}
+
+	// -----------------------------------------------------------
+	// 3. ImGui表示 または バックバッファへのコピー
+	// -----------------------------------------------------------
+
+	// ★ ここで初めて「バックバッファ」を描画先に設定する
+	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
+	commandManager_->GetCommandList()->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
+
+#ifdef _DEBUG
+	// ImGuiウィンドウの中に FinalBuffer を表示
+	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
+	debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), finalSrvIndex);
+
+	// useDebugView_の時は、ImGuiがバックバッファ全体を覆うか、
+	// シーンウィンドウ内にゲーム画面が出るので、全画面コピーは不要
+#else
+	// リリース時
+	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
+	renderer_->DrawFinalResult(finalSrvIndex);
 #endif
 
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(heaps), heaps);
+	// -----------------------------------------------------------
+	// 4. 後始末 (FinalBuffer: SRV -> RenderTarget)
+	// -----------------------------------------------------------
+	//{
+	//	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+	//		postEffectManager_->GetFinalPassResource(),
+	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+	//		D3D12_RESOURCE_STATE_RENDER_TARGET
+	//	);
+	//	commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+	//}
 
-	// ImGui描画
+
+	// ImGui描画 (バックバッファへの書き込み)
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	commandManager_->GetCommandList()->SetDescriptorHeaps(1, heaps);
 	ImGuiManager::EndFrame(commandManager_->GetCommandList());
 
 	// フレーム終了

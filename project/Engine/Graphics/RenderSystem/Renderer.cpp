@@ -153,6 +153,33 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
+// 単純にテクスチャをそのまま画面に出すメソッド
+void Renderer::DrawFinalResult(uint32_t srvIndex)
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// 1. ヒープ設定
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(1, heaps);
+
+	// 2. パイプライン設定
+	// ※ここでは「トーンマップ計算なし」の単純コピーPSOがあればベストですが、
+	// 面倒なら既存の "Fullscreen" (トーンマップ付き) を使っても
+	// パラメータ調整で「何もしない」設定にできればそれでもOKです。
+	// いったんは既存のものを使います。
+	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Fullscreen"));
+
+	// 3. ルートパラメータ
+	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->GetPostEffectDataAddress());
+	// ★ここに入力として「FinalBuffer」を指定
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(srvIndex));
+
+	// 4. 描画
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->DrawInstanced(3, 1, 0, 0);
+}
+
 void Renderer::DrawSceneForShadow()
 {
 	auto* cmdList = commandManager_->GetCommandList();

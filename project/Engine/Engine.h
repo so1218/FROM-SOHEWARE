@@ -105,6 +105,4 @@ public:
     // 固定FPS
     static int kFixedFPS_; 
 
-    // デバッグ描画切り替えフラグ
-    bool useDebugView_ = true;
 };
