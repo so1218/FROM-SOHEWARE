@@ -43,19 +43,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-    // ★ここでSRVも作成して登録する
-    // フォーマット注意: R24G8_TYPELESS の場合、
-    // Depthを読むには DXGI_FORMAT_R24_UNORM_X8_TYPELESS を使う
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    // SRVManagerを使ってSRV作成
-    uint32_t srvIndex = srvManager_->CreateSRV(outResource.Get(), srvDesc);
-    depthSrvIndices_.push_back(srvIndex); // インデックスを保存
-
     D3D12_HEAP_PROPERTIES heapProperties{};
     heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
@@ -63,15 +50,27 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     depthClearValue.DepthStencil.Depth = 1.0f;
     depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+    // 2. ★先にリソースを作成する（これが絶対優先！）
     HRESULT hr = device_->CreateCommittedResource(
         &heapProperties,
         D3D12_HEAP_FLAG_NONE,
-        &resourceDesc,
+        &resourceDesc,                  // R24G8_TYPELESS
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        &depthClearValue,
-        IID_PPV_ARGS(&outResource)
+        &depthClearValue,               // D24_UNORM_S8_UINT
+        IID_PPV_ARGS(&outResource)      // ここでポインタが入る
     );
     assert(SUCCEEDED(hr));
+
+    // 3. リソースのポインタが確定したので、SRVを作成する
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // 深度(24bit)部分だけを赤色として読む設定
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    // ここで正しいリソースポインタを渡す
+    uint32_t srvIndex = srvManager_->CreateSRV(outResource.Get(), srvDesc);
+    depthSrvIndices_.push_back(srvIndex);
 
     // 作成したリソースを保持
     depthTextures_.push_back(outResource);
