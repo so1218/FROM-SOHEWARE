@@ -15,43 +15,34 @@ class PostEffectManager
 public:
     ~PostEffectManager();
 
-    void Initialize(Engine* engine, UINT width, UINT height,
+    // 初期化
+    void Initialize(
+        Engine* engine, UINT width, UINT height,
         RootSignatureManager* rootSigManager, PSOManager* psoManager,
         Camera* camera, SRVManager* srvManager,
         uint32_t sceneDepthSrvIndex);
 
+    // 更新
     void Update();
 
     // ポストエフェクト実行
     void ExecutePostEffects(ID3D12GraphicsCommandList* cmdList);
 
-    // 設定データへのアクセサ (ImGui用など)
-
+    // ---- 設定アクセス（ImGui用） ----
     BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }
-    // Horizontal (横) の設定を「マスター」として返します
     BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
-    BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); } // 縦横共通の設定なら片方でOK
+    BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
     CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
 
-    // --- SRVハンドルへのアクセス (描画コマンドで使用) ---
-    // 合成結果（最終画像）のSRVハンドル
+    // ---- 出力リソース ----
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
 
-    //// 深度抽出結果のSRVハンドル
-    //D3D12_GPU_DESCRIPTOR_HANDLE GetDepthExtractSRVHandle() const { return depthPass_->GetSRVHandleGPU(); }
-
-    //// 深度抽出結果のSRVインデックス (解放処理などでインデックスが必要な場合)
-    //uint32_t GetDepthExtractSRVIndex() const { return depthPass_->GetSRVIndex(); }
-
     PostEffectData* GetPostEffectData() const { return postEffectData_; }
-
     D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return cbPostEffect_->GetGPUVirtualAddress(); }
 
-    uint32_t GetBloomCombineSRVIndex() const {
-        if (combinePass_) {
-            return combinePass_->GetSRVIndex(); // CombinePassが持っているはずのSRV番号
-        }
-        return 0;
+    uint32_t GetBloomCombineSRVIndex() const
+    {
+        return combinePass_ ? combinePass_->GetSRVIndex() : 0;
     }
 
     uint32_t GetFinalPassSRVIndex() const { return finalPassSRVIndex_; }
@@ -66,29 +57,31 @@ private:
     SRVManager* srvManager_ = nullptr;
     RootSignatureManager* rootSigManager_ = nullptr;
 
-    // 各パス (ユニークポインタで管理)
+    // ---- ポストエフェクトパス ----
     std::unique_ptr<BrightExtractPass> brightPass_;
 
-    // Bloom用
+    // Bloom
     std::unique_ptr<DownsamplePass> downsamplePass_;
     std::unique_ptr<BlurPass> verticalBlurPass_;
     std::unique_ptr<BlurPass> horizontalBlurPass_;
-    // DoF用
+
+    // DoF
     std::unique_ptr<DownsamplePass> dofDownsamplePass_;
     std::unique_ptr<BlurPass> dofVerticalBlurPass_;
     std::unique_ptr<BlurPass> dofHorizontalBlurPass_;
 
     std::unique_ptr<BloomCombinePass> combinePass_;
 
+    // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;
     PostEffectData* postEffectData_ = nullptr;
 
-    // シーン情報
+    // シーン入力
     uint32_t sceneTextureIndex_ = 0;
     uint32_t sceneDepthIndex_ = 0;
 
-    uint32_t finalPassSRVIndex_ = 0;       // ImGuiやコピー描画で使うSRV
-    D3D12_CPU_DESCRIPTOR_HANDLE finalPassRTVHandle_; // 描画先として使うRTV
-    Microsoft::WRL::ComPtr<ID3D12Resource> finalPassResource_; // リソース本体(バリア用)
+    // 最終出力
+    uint32_t finalPassSRVIndex_ = 0;
+    D3D12_CPU_DESCRIPTOR_HANDLE finalPassRTVHandle_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> finalPassResource_;
 };
-

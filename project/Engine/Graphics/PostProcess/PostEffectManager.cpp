@@ -6,67 +6,67 @@ PostEffectManager::~PostEffectManager()
 {
 }
 
-void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
-    RootSignatureManager* rootSigManager, PSOManager* psoManager,
-    Camera* camera, SRVManager* srvManager,
+void PostEffectManager::Initialize(
+    Engine* engine,
+    UINT width,
+    UINT height,
+    RootSignatureManager* rootSigManager,
+    PSOManager* psoManager,
+    Camera* camera,
+    SRVManager* srvManager,
     uint32_t sceneDepthSrvIndex)
 {
     engine_ = engine;
     srvManager_ = srvManager;
     rootSigManager_ = rootSigManager;
 
-    // シーンテクスチャ/深度のSRVインデックス取得
+    // シーンカラー / 深度SRV
     sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex();
-    // ※ depthStencilResource_ のSRVインデックスはSRVManagerで管理されている前提(sceneDepthIndex_)
-    // もし管理されていないならここでCreateSRVするか、Engineから取得する必要があります
-    sceneDepthIndex_ = sceneDepthSrvIndex; // ★仮定: Engine等から適切なIndexをもらってください
+    sceneDepthIndex_ = sceneDepthSrvIndex;
 
-    // 2. 輝度抽出パス (Full Size)
+    // 輝度抽出
     brightPass_ = std::make_unique<BrightExtractPass>();
     brightPass_->Initialize(engine, width, height, psoManager);
 
-    // 3. ブラーパス (1/4 Size)
+    // 縮小サイズ
     UINT smallW = Math::MyMax(1u, width / 4);
     UINT smallH = Math::MyMax(1u, height / 4);
 
+    // Bloom
     downsamplePass_ = std::make_unique<DownsamplePass>();
     downsamplePass_->Initialize(engine, smallW, smallH, psoManager);
 
     verticalBlurPass_ = std::make_unique<BlurPass>();
-    verticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true); // true = Vertical
+    verticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true);
 
     horizontalBlurPass_ = std::make_unique<BlurPass>();
-    horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false); // false = Horizontal
+    horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
 
+    // DOF
     dofDownsamplePass_ = std::make_unique<DownsamplePass>();
     dofDownsamplePass_->Initialize(engine, smallW, smallH, psoManager);
 
     dofVerticalBlurPass_ = std::make_unique<BlurPass>();
-    dofVerticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true); // true = Vertical
+    dofVerticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true);
 
     dofHorizontalBlurPass_ = std::make_unique<BlurPass>();
-    dofHorizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false); // false = Horizontal
+    dofHorizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
 
-    // 4. 合成パス (Full Size)
+    // 最終合成
     combinePass_ = std::make_unique<BloomCombinePass>();
     combinePass_->Initialize(engine, width, height, psoManager, srvManager);
 
+    // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
     cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
-    // ここで新しいオフスクリーンRTを作ると、
-      // OffscreenRTVManager内部の offscreenSrvIndex_ が「この新しいテクスチャ」のものに上書きされます。
-
+    // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
     auto resultPair = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
-        width, height, Vector4(0.0f, 0.0f, 0.0f, 1.0f) // 黒クリア
-    );
+        width, height, Vector4(0, 0, 0, 1));
 
-    // リソースとRTVハンドルを保存 (バリアやRTV設定で使用)
     finalPassResource_ = resultPair.first;
     finalPassRTVHandle_ = resultPair.second;
-
-    // ★重要: 今作ったばかりのテクスチャのSRVインデックスを取得して保存
     finalPassSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
 
     // パラメータの初期値を設定
@@ -115,89 +115,70 @@ void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
 
 void PostEffectManager::Update()
 {
-    // 必要ならカメラ情報の更新などをここで呼ぶ
-    // depthPass_->UpdateCamera(camera); 
+    // 時間依存エフェクト用
     if (postEffectData_)
     {
-        postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-        // その他の動的パラメータ更新もここで行う
+        postEffectData_->totalTime =
+            static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     }
 }
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
-    // -------------------------------------------------------------
-    // 1. 深度バッファの準備 (バリア開始)
-    // -------------------------------------------------------------
-    // ★ここが最重要！
-    // DepthPass(コピー)をしないなら、オリジナルの深度バッファを「読み取りモード」に変える必要があります。
-    // そして、CombinePassが終わるまで「戻してはいけません」。
+    // 深度をポストエフェクト用に読み取り状態へ
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->offscreenDepthResource_.Get(), // ※必ずオフスクリーンの深度リソースを指定
-        D3D12_RESOURCE_STATE_DEPTH_WRITE,       // 書き込みモードから
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE // 読み取りモードへ
+        engine_->offscreenDepthResource_.Get(),
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
     cmdList->ResourceBarrier(1, &barrier);
 
-
-    // -------------------------------------------------------------
-    // 2. Post Process Chain (Bloom / DoF)
-    // -------------------------------------------------------------
+    // SRVヒープとルートシグネチャ設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
-    cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
+    cmdList->SetGraphicsRootSignature(
+        rootSigManager_->GetRootSignature("PostProcess"));
 
     auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
-    // --- A. Bloom Generation ---
+    // Bloom生成
     brightPass_->Execute(cmdList, sceneSRV);
     downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
 
     auto bloomInputSRV = downsamplePass_->GetSRVHandleGPU();
-    const int bloomLoop = 4;
-    for (int i = 0; i < bloomLoop; ++i) {
+    for (int i = 0; i < 4; ++i)
+    {
         verticalBlurPass_->Execute(cmdList, bloomInputSRV);
-        horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
+        horizontalBlurPass_->Execute(
+            cmdList, verticalBlurPass_->GetSRVHandleGPU());
         bloomInputSRV = horizontalBlurPass_->GetSRVHandleGPU();
     }
 
-    // --- B. DoF Generation ---
+    // DoF生成
     dofDownsamplePass_->Execute(cmdList, sceneSRV);
     auto dofInputSRV = dofDownsamplePass_->GetSRVHandleGPU();
-    const int dofLoop = 3;
-    for (int i = 0; i < dofLoop; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         dofVerticalBlurPass_->Execute(cmdList, dofInputSRV);
-        dofHorizontalBlurPass_->Execute(cmdList, dofVerticalBlurPass_->GetSRVHandleGPU());
+        dofHorizontalBlurPass_->Execute(
+            cmdList, dofVerticalBlurPass_->GetSRVHandleGPU());
         dofInputSRV = dofHorizontalBlurPass_->GetSRVHandleGPU();
     }
 
-    // -------------------------------------------------------------
-    // 3. Bloom Combine (最終合成)
-    // -------------------------------------------------------------
-    // ここで初めて深度バッファ(t3)が読まれます。
-    // さっき張ったバリアが効いているので、ここでは正常に読めるはずです。
-
-    auto handleScene = srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_);
-    auto handleBloom = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex());
-    auto handleDoF = srvManager_->GetSRVHandleCPU_ForCopying(dofHorizontalBlurPass_->GetSRVIndex());
-    auto handleDepth = srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_); // 生の深度バッファSRV
-
+    // 最終合成
     combinePass_->SetupInputViews(
         engine_->graphicsDevice_->GetDevice(),
-        handleScene,
-        handleBloom,
-        handleDoF,
-        handleDepth
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_),
+        srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(dofHorizontalBlurPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_)
     );
 
     combinePass_->Execute(cmdList, sceneSRV);
 
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    // -------------------------------------------------------------
-    // 4. 後始末 (バリア終了)
-    // -------------------------------------------------------------
-    // ★読み終わったので、次回の描画のために「書き込みモード」に戻します。
+    // 深度を次フレーム用に書き込み状態へ戻す
     CD3DX12_RESOURCE_BARRIER barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->offscreenDepthResource_.Get(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
