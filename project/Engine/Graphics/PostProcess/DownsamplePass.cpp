@@ -37,7 +37,7 @@ void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCR
     cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
 
     // 入力テクスチャを t0 (ルートパラメータ 1番) にセット
-    cmdList->SetGraphicsRootDescriptorTable(1, inputSRV);
+    cmdList->SetGraphicsRootDescriptorTable(2, inputSRV);
 
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->DrawInstanced(3, 1, 0, 0);

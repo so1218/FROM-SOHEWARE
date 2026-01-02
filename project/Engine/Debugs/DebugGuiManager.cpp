@@ -374,11 +374,23 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("合成設定"))
+        if (ImGui::TreeNode("合成・DoF設定"))
         {
-            ImGui::SliderFloat("ブルームの合成強度", &combineSettingsData->bloomIntensity, 0.0f, 10.0f);
+            ImGui::TextDisabled("ブルーム (Bloom)");
+            ImGui::SliderFloat("合成強度", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
+
+            ImGui::Separator();
+
+            ImGui::TextDisabled("被写界深度 (DoF)");
+            // ピントを合わせる距離
+            ImGui::SliderFloat("ピント距離", &combineSettingsData->focusDistance, 0.1f, 500.0f, "%.1f");
+
+            // ピントが合っている範囲の広さ
+            ImGui::SliderFloat("ピント範囲", &combineSettingsData->focusRange, 0.1f, 500.0f, "%.1f");
+
             ImGui::TreePop();
         }
+
         ImGui::TreePop();
     }
     ImGui::Separator();

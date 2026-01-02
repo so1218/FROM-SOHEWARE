@@ -17,7 +17,8 @@ public:
 
     void Initialize(Engine* engine, UINT width, UINT height,
         RootSignatureManager* rootSigManager, PSOManager* psoManager,
-        Camera* camera, SRVManager* srvManager);
+        Camera* camera, SRVManager* srvManager,
+        uint32_t sceneDepthSrvIndex);
 
     void Update();
 
@@ -36,11 +37,11 @@ public:
     // 合成結果（最終画像）のSRVハンドル
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
 
-    // 深度抽出結果のSRVハンドル
-    D3D12_GPU_DESCRIPTOR_HANDLE GetDepthExtractSRVHandle() const { return depthPass_->GetSRVHandleGPU(); }
+    //// 深度抽出結果のSRVハンドル
+    //D3D12_GPU_DESCRIPTOR_HANDLE GetDepthExtractSRVHandle() const { return depthPass_->GetSRVHandleGPU(); }
 
-    // 深度抽出結果のSRVインデックス (解放処理などでインデックスが必要な場合)
-    uint32_t GetDepthExtractSRVIndex() const { return depthPass_->GetSRVIndex(); }
+    //// 深度抽出結果のSRVインデックス (解放処理などでインデックスが必要な場合)
+    //uint32_t GetDepthExtractSRVIndex() const { return depthPass_->GetSRVIndex(); }
 
     PostEffectData* GetPostEffectData() const { return postEffectData_; }
 
@@ -66,11 +67,17 @@ private:
     RootSignatureManager* rootSigManager_ = nullptr;
 
     // 各パス (ユニークポインタで管理)
-    std::unique_ptr<DepthExtractPass> depthPass_;
     std::unique_ptr<BrightExtractPass> brightPass_;
+
+    // Bloom用
     std::unique_ptr<DownsamplePass> downsamplePass_;
     std::unique_ptr<BlurPass> verticalBlurPass_;
     std::unique_ptr<BlurPass> horizontalBlurPass_;
+    // DoF用
+    std::unique_ptr<DownsamplePass> dofDownsamplePass_;
+    std::unique_ptr<BlurPass> dofVerticalBlurPass_;
+    std::unique_ptr<BlurPass> dofHorizontalBlurPass_;
+
     std::unique_ptr<BloomCombinePass> combinePass_;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;

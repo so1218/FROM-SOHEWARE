@@ -20,5 +20,7 @@ float4 main(VSOutput input) : SV_TARGET
 {
     float rawDepth = depthTexture.Sample(samplerLinear, input.uv).r;
     float linearDepth = LinearizeDepth(rawDepth);
-    return float4(linearDepth, 0.0f, 0.0f, 1.0f);
+    float depthValue = linearDepth / gFrame.farClip;
+
+    return float4(depthValue, depthValue, depthValue, 1.0f);
 }

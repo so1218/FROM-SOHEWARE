@@ -20,7 +20,7 @@ void BrightExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DE
     PreDraw(cmdList); // バリア & クリア
 
     cmdList->SetPipelineState(psoManager_->GetPSO("BrightnessExtract"));
-    cmdList->SetGraphicsRootDescriptorTable(1, inputSRV); // t0
+    cmdList->SetGraphicsRootDescriptorTable(2, inputSRV); // t0
     cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress()); // b0
 
     // フルスクリーン描画

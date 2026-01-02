@@ -24,7 +24,7 @@ void BlurPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_
     // 縦横でPSOを切り替え
     cmdList->SetPipelineState(psoManager_->GetPSO(isVertical_ ? "BlurVertical" : "BlurHorizontal"));
 
-    cmdList->SetGraphicsRootDescriptorTable(1, inputSRV);
+    cmdList->SetGraphicsRootDescriptorTable(2, inputSRV);
     cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
 
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

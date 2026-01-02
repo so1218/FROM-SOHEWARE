@@ -127,6 +127,7 @@ void Engine::EndFrame()
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTV = renderCoordinator_->GetOffscreenRTVHandle();
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDSV = renderCoordinator_->GetOffscreenDSVHandle();
 	commandManager_->GetCommandList()->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
+	commandManager_->GetCommandList()->ClearDepthStencilView(offscreenDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
 	commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 
@@ -139,14 +140,14 @@ void Engine::EndFrame()
 	auto cmdList = commandManager_->GetCommandList();
 
 	// 【重要】オフスクリーン深度バッファを「書き込み(DSV)」->「読み込み(SRV)」へ遷移
-	{
-		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			offscreenDepthResource_.Get(), // ★メンバ変数化したリソースを使う
-			D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-		);
-		cmdList->ResourceBarrier(1, &barrier);
-	}
+	//{
+	//	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+	//		offscreenDepthResource_.Get(), // ★メンバ変数化したリソースを使う
+	//		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+	//	);
+	//	cmdList->ResourceBarrier(1, &barrier);
+	//}
 
 	// --- ポストエフェクト実行 ---
 	// ここで PostEffectManager はセットされた depthIndex を使って SRVハンドルを取得し、
@@ -155,20 +156,20 @@ void Engine::EndFrame()
 
 
 	// 【重要】オフスクリーン深度バッファを「読み込み」->「書き込み」へ戻す (次フレーム用)
-	{
-		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			offscreenDepthResource_.Get(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_DEPTH_WRITE
-		);
-		cmdList->ResourceBarrier(1, &barrier);
-	}
+	//{
+	//	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+	//		offscreenDepthResource_.Get(),
+	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+	//		D3D12_RESOURCE_STATE_DEPTH_WRITE
+	//	);
+	//	cmdList->ResourceBarrier(1, &barrier);
+	//}
 
 	// ---------------------------------------------------------
 	renderCoordinator_->BeginFrame(); // ここで一旦バックバッファがRTになるが、すぐ下で変更するからOK
 
 	// ポストエフェクト適用 (Bloom生成など)
-	postEffectManager_->ExecutePostEffects(commandManager_->GetCommandList());
+	/*postEffectManager_->ExecutePostEffects(commandManager_->GetCommandList());*/
 
 	{
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -415,6 +416,15 @@ void Engine::InitializeRenderer()
 		rootSignatureManager_.get()
 	);
 
+	// DSVManagerは「作成順」にインデックスを管理していると仮定します。
+	// 1回目: CreateDepthStencilView (メイン用) -> Index 0
+	// 2回目: CreateDepthStencilView (オフスクリーン用) -> Index 1
+	
+	// 今回必要なのは「オフスクリーンに描画された3Dシーンの深度」なので、
+	// 2回目に作ったDSVに対応するSRVを取得します。
+	// (DSVManagerの実装に合わせて引数は調整してください)
+	uint32_t offscreenDepthSrvIndex = dsvManager_->GetDSVTextureSRVIndex(1);
+
 	// ポストエフェクト管理の初期化
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(
@@ -424,17 +434,9 @@ void Engine::InitializeRenderer()
 		rootSignatureManager_.get(),
 		psoManager_.get(),
 		camera_,
-		srvManager_.get()
+		srvManager_.get(),
+		offscreenDepthSrvIndex
 	);
-
-	// DSVManagerは「作成順」にインデックスを管理していると仮定します。
-	// 1回目: CreateDepthStencilView (メイン用) -> Index 0
-	// 2回目: CreateDepthStencilView (オフスクリーン用) -> Index 1
-
-	// 今回必要なのは「オフスクリーンに描画された3Dシーンの深度」なので、
-	// 2回目に作ったDSVに対応するSRVを取得します。
-	// (DSVManagerの実装に合わせて引数は調整してください)
-	uint32_t offscreenDepthSrvIndex = dsvManager_->GetDSVTextureSRVIndex(1);
 
 	// PostEffectManagerにセット
 	postEffectManager_->SetSceneDepthIndex(offscreenDepthSrvIndex);

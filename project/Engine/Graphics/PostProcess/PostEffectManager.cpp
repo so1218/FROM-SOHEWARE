@@ -1,29 +1,15 @@
-//#include "PostEffectManager.h"
-//#include "BufferManager.h"
-//#include "TimeManager.h"
-//#include "Engine.h"
-
 #include "PostEffectManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
 
 PostEffectManager::~PostEffectManager()
 {
-    // 各Passのunique_ptrはここで自動破棄され、それに伴い各PassのSRVも自動解放されます
-    // (depthPass_, brightPass_ などはここで勝手に消えます)
-
-    // しかし、シーン深度のSRVインデックスだけは「単なる数値」として残っているため、
-    // ここで手動で解放する必要があります。
-    if (srvManager_ && sceneDepthIndex_ != 0)
-    {
-        srvManager_->FreeSRV(sceneDepthIndex_);
-        sceneDepthIndex_ = 0;
-    }
 }
 
 void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
     RootSignatureManager* rootSigManager, PSOManager* psoManager,
-    Camera* camera, SRVManager* srvManager)
+    Camera* camera, SRVManager* srvManager,
+    uint32_t sceneDepthSrvIndex)
 {
     engine_ = engine;
     srvManager_ = srvManager;
@@ -33,11 +19,7 @@ void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
     sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex();
     // ※ depthStencilResource_ のSRVインデックスはSRVManagerで管理されている前提(sceneDepthIndex_)
     // もし管理されていないならここでCreateSRVするか、Engineから取得する必要があります
-    sceneDepthIndex_ = 0; // ★仮定: Engine等から適切なIndexをもらってください
-
-    // 1. 深度抽出パス (Full Size)
-    depthPass_ = std::make_unique<DepthExtractPass>();
-    depthPass_->Initialize(engine, width, height, psoManager, rootSigManager, camera);
+    sceneDepthIndex_ = sceneDepthSrvIndex; // ★仮定: Engine等から適切なIndexをもらってください
 
     // 2. 輝度抽出パス (Full Size)
     brightPass_ = std::make_unique<BrightExtractPass>();
@@ -55,6 +37,15 @@ void PostEffectManager::Initialize(Engine* engine, UINT width, UINT height,
 
     horizontalBlurPass_ = std::make_unique<BlurPass>();
     horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false); // false = Horizontal
+
+    dofDownsamplePass_ = std::make_unique<DownsamplePass>();
+    dofDownsamplePass_->Initialize(engine, smallW, smallH, psoManager);
+
+    dofVerticalBlurPass_ = std::make_unique<BlurPass>();
+    dofVerticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true); // true = Vertical
+
+    dofHorizontalBlurPass_ = std::make_unique<BlurPass>();
+    dofHorizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false); // false = Horizontal
 
     // 4. 合成パス (Full Size)
     combinePass_ = std::make_unique<BloomCombinePass>();
@@ -131,125 +122,86 @@ void PostEffectManager::Update()
         postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
         // その他の動的パラメータ更新もここで行う
     }
-
-    //if (verticalBlurPass_ && horizontalBlurPass_)
-    //{
-    //    // マスター（Horizontal / ImGuiで操作している方）
-    //    auto* hSettings = horizontalBlurPass_->GetSettings();
-    //    // スレーブ（Vertical / 自動で合わせる方）
-    //    auto* vSettings = verticalBlurPass_->GetSettings();
-
-    //    // --- 強さの同期 ---
-    //    vSettings->blurStrength = hSettings->blurStrength;
-
-    //    // --- テクセルサイズ（ぼかし幅）の同期 ---
-    //    // ImGuiで texelSize.x をいじると、hSettings->texelSize.x が変わる。
-
-    //    // HorizontalPass (横): X方向に値を持ち、Yは0にする
-    //    hSettings->texelSize.y = 0.0f; // 横ブラーなので縦はずらさない
-
-    //    // VerticalPass (縦): 横の設定(x)を、縦方向(y)に適用する
-    //    vSettings->texelSize.x = 0.0f;               // 縦ブラーなので横はずらさない
-    //    vSettings->texelSize.y = hSettings->texelSize.x; // 横のサイズを縦に適用
-    //}
 }
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
     // -------------------------------------------------------------
-    // 1. Depth Extraction
+    // 1. 深度バッファの準備 (バリア開始)
     // -------------------------------------------------------------
-    // DSV(深度バッファ)をSRVとして使うためのバリア
-    {
-        //auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        //    engine_->depthStencilResource_.Get(),
-        //    D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        //    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        //cmdList->ResourceBarrier(1, &barrier);
+    // ★ここが最重要！
+    // DepthPass(コピー)をしないなら、オリジナルの深度バッファを「読み取りモード」に変える必要があります。
+    // そして、CombinePassが終わるまで「戻してはいけません」。
+    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        engine_->offscreenDepthResource_.Get(), // ※必ずオフスクリーンの深度リソースを指定
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,       // 書き込みモードから
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE // 読み取りモードへ
+    );
+    cmdList->ResourceBarrier(1, &barrier);
 
-        // 深度バッファのSRVを使って描画 (sceneDepthIndex_は別途正しく設定されている前提)
-        depthPass_->Execute(cmdList, srvManager_->GetSRVHandleGPU(sceneDepthIndex_));
-
-        // 元に戻す
-        //auto barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
-        //    engine_->offscreenDepthResource_.Get(),
-        //    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        //    D3D12_RESOURCE_STATE_DEPTH_WRITE);
-        //cmdList->ResourceBarrier(1, &barrierBack);
-    }
 
     // -------------------------------------------------------------
-    // 2. Post Process Chain (共通設定)
+    // 2. Post Process Chain (Bloom / DoF)
     // -------------------------------------------------------------
-    // ここからは共通のSRVヒープを使う場合の設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
     cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
 
-    // シーンテクスチャのGPUハンドル
     auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
-    // --- A. Brightness Extraction ---
-    // 入力: シーン画像 -> 出力: 高輝度部
+    // --- A. Bloom Generation ---
     brightPass_->Execute(cmdList, sceneSRV);
-
     downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
 
-    // 最初の入力は「ダウンサンプルされた画像」
-    auto currentInputSRV = downsamplePass_->GetSRVHandleGPU();
-
-    // 繰り返し回数 (例: 3回〜4回)
-    // 回数を増やすほど、圧倒的に広く、かつ滑らかになります。
-    const int blurLoopCount = 4;
-
-    for (int i = 0; i < blurLoopCount; ++i)
-    {
-        // --- 1. Vertical Blur (縦) ---
-        // 入力: currentInputSRV
-        // 出力: VerticalBlurPass内部のテクスチャ
-        verticalBlurPass_->Execute(cmdList, currentInputSRV);
-
-        // --- 2. Horizontal Blur (横) ---
-        // 入力: 縦ブラーの結果
-        // 出力: HorizontalBlurPass内部のテクスチャ
+    auto bloomInputSRV = downsamplePass_->GetSRVHandleGPU();
+    const int bloomLoop = 4;
+    for (int i = 0; i < bloomLoop; ++i) {
+        verticalBlurPass_->Execute(cmdList, bloomInputSRV);
         horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
-
-        // --- 次のループの準備 ---
-        // 次の縦ブラーは、今の「横ブラーの結果」を入力にする
-        currentInputSRV = horizontalBlurPass_->GetSRVHandleGPU();
+        bloomInputSRV = horizontalBlurPass_->GetSRVHandleGPU();
     }
 
-    //// --- B. Downsample & Vertical Blur ---
-    //// 入力: 高輝度部 -> 出力: 縦ブラー(縮小)
-    //// ※ダウンサンプル専用パスを作るのが丁寧ですが、今回はBlurPassで兼ねるか、
-    ////   BlurPassの前に「DownsamplePass」クラスを挟むと完璧です。
-    ////   ここでは簡単のため、VerticalBlurPassが縮小解像度を持っているのでそのまま突っ込みます。
-    //verticalBlurPass_->Execute(cmdList, downsamplePass_->GetSRVHandleGPU());
-
-    //// --- C. Horizontal Blur ---
-    //// 入力: 縦ブラー -> 出力: 横ブラー(完成したブルームテクスチャ)
-    //horizontalBlurPass_->Execute(cmdList, verticalBlurPass_->GetSRVHandleGPU());
+    // --- B. DoF Generation ---
+    dofDownsamplePass_->Execute(cmdList, sceneSRV);
+    auto dofInputSRV = dofDownsamplePass_->GetSRVHandleGPU();
+    const int dofLoop = 3;
+    for (int i = 0; i < dofLoop; ++i) {
+        dofVerticalBlurPass_->Execute(cmdList, dofInputSRV);
+        dofHorizontalBlurPass_->Execute(cmdList, dofVerticalBlurPass_->GetSRVHandleGPU());
+        dofInputSRV = dofHorizontalBlurPass_->GetSRVHandleGPU();
+    }
 
     // -------------------------------------------------------------
-    // 3. Bloom Combine
+    // 3. Bloom Combine (最終合成)
     // -------------------------------------------------------------
-    // 合成パスは専用のヒープを使うため、必要なCPUハンドルを集める
-    // コピー元のCPUハンドルを取得
+    // ここで初めて深度バッファ(t3)が読まれます。
+    // さっき張ったバリアが効いているので、ここでは正常に読めるはずです。
+
     auto handleScene = srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_);
-    auto handleBlur = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex());
-    auto handleDepth = srvManager_->GetSRVHandleCPU_ForCopying(depthPass_->GetSRVIndex()); // リニア深度
+    auto handleBloom = srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex());
+    auto handleDoF = srvManager_->GetSRVHandleCPU_ForCopying(dofHorizontalBlurPass_->GetSRVIndex());
+    auto handleDepth = srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_); // 生の深度バッファSRV
 
-    // 3つをCombinePass内のヒープにコピーしてセットアップ
     combinePass_->SetupInputViews(
         engine_->graphicsDevice_->GetDevice(),
         handleScene,
-        handleBlur,
+        handleBloom,
+        handleDoF,
         handleDepth
     );
 
-    // 実行 (内部でDescriptorHeapが切り替わる)
-    combinePass_->Execute(cmdList, sceneSRV /*unused*/);
+    combinePass_->Execute(cmdList, sceneSRV);
 
-    // 必要ならメインのHeapに戻しておく
     cmdList->SetDescriptorHeaps(1, heaps);
+
+    // -------------------------------------------------------------
+    // 4. 後始末 (バリア終了)
+    // -------------------------------------------------------------
+    // ★読み終わったので、次回の描画のために「書き込みモード」に戻します。
+    CD3DX12_RESOURCE_BARRIER barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
+        engine_->offscreenDepthResource_.Get(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE
+    );
+    cmdList->ResourceBarrier(1, &barrierBack);
 }

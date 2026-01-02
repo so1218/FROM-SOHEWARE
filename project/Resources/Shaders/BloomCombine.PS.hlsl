@@ -2,10 +2,23 @@
 #include "ShaderConstants.hlsli"
 
 Texture2D gSceneTexture : register(t0); // 元のシーン
-Texture2D gBlurredBloom : register(t1); // ブラー済みBloomテクスチャ
+Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)
+Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
+Texture2D<float> gDepthTexture : register(t3); // 深度マップ
+
 SamplerState gSampler : register(s0);
 
 ConstantBuffer<CombineSettings> gCombineSettings : register(b0);
+ConstantBuffer<FrameData> gFrameData : register(b1);
+
+// 深度リニア化関数
+float LinearizeDepth(float d)
+{
+    float n = gFrameData.nearClip;
+    float f = gFrameData.farClip;
+
+    return (n * f) / (f - d * (f - n));
+}
 struct PSInput
 {
     float4 position : SV_POSITION;
@@ -46,32 +59,48 @@ float3 ACESFilm(float3 x)
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    // シーン情報の取得
+    // 1. 各テクスチャのサンプリング
     float4 sceneColor = gSceneTexture.Sample(gSampler, input.uv);
-    
-    // Bloomテクスチャのテクセルサイズを自動取得
+    float4 dofColor = gDoFTexture.Sample(gSampler, input.uv); // 全体ボケ画像
+    float depthVal = gDepthTexture.Sample(gSampler, input.uv);
+
+    // Bloomテクスチャの処理 (Tent Filter)
     uint width, height;
-    gBlurredBloom.GetDimensions(width, height);
+    gBloomTexture.GetDimensions(width, height);
     float2 bloomTexelSize = float2(1.0f / float(width), 1.0f / float(height));
+    float3 bloomColor = UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
 
-    // Tent Filterを使って滑らかに拡大サンプリング
-    float3 bloomColor = UpsampleTent(gBlurredBloom, gSampler, input.uv, bloomTexelSize, 1.0f);
-
-    // 合成処理
-    float3 result = sceneColor.rgb + (bloomColor * gCombineSettings.bloomIntensity);
+    // 2. DoF (被写界深度) の適用
+    // ---------------------------------------------------------
+    // 深度をリニア(メートル単位)に変換
+    float linearDepth = LinearizeDepth(depthVal);
     
-    // 計算エラーで画面が真っ黒になるのを防ぐ
+    // ピント位置との差分を計算
+    float distToFocus = abs(linearDepth - gCombineSettings.focusDistance);
+    
+    // 差分に基づいてボケ具合(0.0～1.0)を決定
+    // smoothstep(min, max, x) で滑らかに補間
+    float blurFactor = smoothstep(0.0f, gCombineSettings.focusRange, distToFocus);
+
+    // クッキリ画像(sceneColor) と ボケ画像(dofColor) を混ぜる
+    float3 combinedScene = lerp(sceneColor.rgb, dofColor.rgb, blurFactor);
+
+
+    // 3. Bloom の合成
+    // ---------------------------------------------------------
+    // DoF処理後の画像に、光のあふれ(Bloom)を加算する
+    float3 result = combinedScene + (bloomColor * gCombineSettings.bloomIntensity);
+
+    
+    // 4. トーンマッピング & 出力調整
+    // ---------------------------------------------------------
     if (any(isnan(result)))
     {
         result = float3(0.0, 0.0, 0.0);
     }
-    
-    // HDR値のクランプ (無限大の発散を防ぐ)
-    result = clamp(result, 0.0, 65504.0);
 
-    // トーンマッピング
-    // Bloomを加算して輝度が高くなった状態から、モニタ表示用の0.0-1.0に落とし込む
+    result = clamp(result, 0.0, 65504.0);
     result = ACESFilm(result);
 
-    return float4(result, sceneColor.a);
+    return float4(result, 1.0f);
 }

@@ -22,10 +22,13 @@ private:
 public:
     void Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, SRVManager* srvManager);
 
-    void SetupInputViews(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU, D3D12_CPU_DESCRIPTOR_HANDLE blurCPU, D3D12_CPU_DESCRIPTOR_HANDLE depthCPU);
+    void SetupInputViews(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU, D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU, D3D12_CPU_DESCRIPTOR_HANDLE dofCPU, D3D12_CPU_DESCRIPTOR_HANDLE depthCPU);
 
     void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE /*unused*/) override;
 
     // 設定変更用のアクセサ
     CombineSettings* GetSettings() const { return combineData_; }
+
+    // 追加: このパス専用のディスクリプタヒープ
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 };
