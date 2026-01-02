@@ -444,9 +444,6 @@
     <ClCompile Include="Engine\Graphics\PostProcess\BrightExtractPass.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\PostProcess\DeprhExtractPass.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -763,7 +760,6 @@
     <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\IPostEffect.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />
-    <ClInclude Include="Engine\Graphics\PostProcess\DepthExtractPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
   </ItemGroup>
@@ -783,9 +779,6 @@
       <Filter>Game\Data</Filter>
     </None>
     <None Include="Resources\Shaders\FullScreenQuad.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Resources\Shaders\DepthExtract.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Resources\Shaders\Skybox.hlsli">
@@ -839,12 +832,6 @@
     <FxCompile Include="Resources\Shaders\BrightExtract.PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Resources\Shaders\Depth.PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Resources\Shaders\Depth.VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Resources\Shaders\Skybox.PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -852,9 +839,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\Shaders\SkinningObject3D.VS.hlsl" />
-    <FxCompile Include="Resources\Shaders\PostEffectPass.PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Resources\Shaders\Trail.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Trail.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Object3DOutline.PS.hlsl" />

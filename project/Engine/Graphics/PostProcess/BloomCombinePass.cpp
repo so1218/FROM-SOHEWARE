@@ -16,8 +16,8 @@ void BloomCombinePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* ps
     cb_->Map(0, nullptr, reinterpret_cast<void**>(&combineData_));
 
     combineData_->bloomIntensity = 0.8f;
-    combineData_->focusDistance = 10.0f;
-    combineData_->focusRange = 5.0f;
+    combineData_->focusDistance = 0.0f;
+    combineData_->focusRange = 0.0f;
 
     // --- 2. 専用SRVヒープ作成 ---
     // Scene, Bloom, DoF, Depth の4枚分

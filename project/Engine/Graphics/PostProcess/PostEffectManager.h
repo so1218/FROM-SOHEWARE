@@ -5,7 +5,7 @@
 #include "DownsamplePass.h"
 #include "BlurPass.h"
 #include "BloomCombinePass.h"
-#include "DepthExtractPass.h"
+#include "Camera.h"
 #include <memory>
 
 class Engine;
