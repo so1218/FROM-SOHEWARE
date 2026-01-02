@@ -19,6 +19,13 @@ void BloomCombinePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* ps
     combineData_->focusDistance = 0.0f;
     combineData_->focusRange = 0.0f;
 
+    combineData_->fogColor = Vector3(0.6f, 0.7f, 0.8f); 
+    combineData_->fogStart = 10.0f; 
+    combineData_->fogEnd = 50.0f;
+
+    combineData_->enableDoF = false;
+    combineData_->enableFog = false;
+
     // --- 2. 専用SRVヒープ作成 ---
     // Scene, Bloom, DoF, Depth の4枚分
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};

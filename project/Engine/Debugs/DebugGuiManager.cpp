@@ -343,7 +343,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("ブルーム設定 (Bloom)"))
+    if (ImGui::TreeNode("ブルーム設定"))
     {
         if (ImGui::TreeNode("輝度抽出設定"))
         {
@@ -359,7 +359,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
             ImGui::Separator();
 
-            ImGui::TextDisabled("縦方向 (Vertical)");
+            ImGui::TextDisabled("縦方向");
             ImGui::SliderFloat("サイズ Y", &vSettings->texelSize.y, 0.0f, 0.01f, "%.5f");
 
             ImGui::Separator();
@@ -376,17 +376,58 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         if (ImGui::TreeNode("合成・DoF設定"))
         {
-            ImGui::TextDisabled("ブルーム (Bloom)");
+            ImGui::TextDisabled("ブルーム");
             ImGui::SliderFloat("合成強度", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
 
             ImGui::Separator();
 
             ImGui::TextDisabled("被写界深度 (DoF)");
+
+            // int を bool として扱うための変換
+            bool dofFlag = (combineSettingsData->enableDoF != 0);
+            if (ImGui::Checkbox("被写界深度有効", &dofFlag))
+            {
+                combineSettingsData->enableDoF = dofFlag ? 1 : 0;
+            }
+
+            // OFFのときは設定をグレーアウトさせると親切
+            if (!dofFlag) ImGui::BeginDisabled();
             // ピントを合わせる距離
             ImGui::SliderFloat("ピント距離", &combineSettingsData->focusDistance, 0.1f, 500.0f, "%.1f");
 
             // ピントが合っている範囲の広さ
             ImGui::SliderFloat("ピント範囲", &combineSettingsData->focusRange, 0.1f, 500.0f, "%.1f");
+
+            if (!dofFlag) ImGui::EndDisabled();
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("フォグ設定"))
+        {
+            bool fogFlag = (combineSettingsData->enableFog != 0);
+            if (ImGui::Checkbox("フォグ有効", &fogFlag))
+            {
+                combineSettingsData->enableFog = fogFlag ? 1 : 0;
+            }
+
+            if (!fogFlag) ImGui::BeginDisabled();
+
+            // 色の設定 (ColorEdit3 は float[3] を期待するので、XMFLOAT3のアドレスをキャストするか、.xのアドレスを渡す)
+            ImGui::ColorEdit3("フォグの色", &combineSettingsData->fogColor.x);
+
+            // 距離設定
+            // 0m ～ 500m 程度の範囲で調整
+            ImGui::DragFloat("開始距離", &combineSettingsData->fogStart, 0.1f, 0.0f, 500.0f, "%.1f m");
+            ImGui::DragFloat("終了距離", &combineSettingsData->fogEnd, 0.1f, 0.0f, 1000.0f, "%.1f m");
+
+            if (!fogFlag) ImGui::EndDisabled();
+
+            // 開始が終了を超えないように補正（UX向上）
+            if (combineSettingsData->fogStart > combineSettingsData->fogEnd)
+            {
+                combineSettingsData->fogStart = combineSettingsData->fogEnd;
+            }
 
             ImGui::TreePop();
         }

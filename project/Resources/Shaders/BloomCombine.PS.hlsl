@@ -70,30 +70,66 @@ float4 main(VSOutput input) : SV_TARGET
     float2 bloomTexelSize = float2(1.0f / float(width), 1.0f / float(height));
     float3 bloomColor = UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
 
-    // 2. DoF (被写界深度) の適用
-    // ---------------------------------------------------------
-    // 深度をリニア(メートル単位)に変換
+   // =========================================================
+// 2. DoF (被写界深度) の適用 [高品質版: 光学的CoC近似]
+// =========================================================
+
     float linearDepth = LinearizeDepth(depthVal);
+   // =========================================================
+    // 2. DoF (被写界深度) の適用
+    // =========================================================
     
-    // ピント位置との差分を計算
-    float distToFocus = abs(linearDepth - gCombineSettings.focusDistance);
-    
-    // 差分に基づいてボケ具合(0.0～1.0)を決定
-    // smoothstep(min, max, x) で滑らかに補間
-    float blurFactor = smoothstep(0.0f, gCombineSettings.focusRange, distToFocus);
+    // ★変更点: デフォルトは「ボケなし(シーンそのまま)」にする
+    float3 combinedScene = sceneColor.rgb;
 
-    // クッキリ画像(sceneColor) と ボケ画像(dofColor) を混ぜる
-    float3 combinedScene = lerp(sceneColor.rgb, dofColor.rgb, blurFactor);
+    // フラグが ON (0以外) の場合のみ計算する
+    if (gCombineSettings.enableDoF != 0)
+    {
+        float focusDist = gCombineSettings.focusDistance;
+        float focusRange = gCombineSettings.focusRange;
 
+        // CoC計算
+        float coc = (linearDepth - focusDist) / max(0.01f, linearDepth);
+        float blurAmount = abs(coc) * (100.0f / max(0.1f, focusRange));
+        float blurFactor = saturate(blurAmount);
+
+        // 前景・背景ブレンド計算
+        float mixingFactor = smoothstep(0.0f, 1.0f, blurFactor);
+        
+        // ボケ画像を適用
+        combinedScene = lerp(sceneColor.rgb, dofColor.rgb, mixingFactor);
+    }
 
     // 3. Bloom の合成
     // ---------------------------------------------------------
     // DoF処理後の画像に、光のあふれ(Bloom)を加算する
     float3 result = combinedScene + (bloomColor * gCombineSettings.bloomIntensity);
 
+  // =========================================================
+// 3.5 Fog (フォグ) の適用 [高品質版: 指数二乗フォグ]
+// =========================================================
+
+// フラグが ON の場合のみ計算してブレンド
+    if (gCombineSettings.enableFog != 0)
+    {
+        float fogDensity = 0.0f;
+        // ゼロ除算防止
+        if (gCombineSettings.fogEnd > 0.001f)
+        {
+            fogDensity = 4.605f / gCombineSettings.fogEnd;
+        }
+
+        float fogDist = max(0.0f, linearDepth - gCombineSettings.fogStart);
+
+        // 指数二乗フォグ計算 (重いexp/pow計算をスキップできるメリットがある)
+        float fogFactor = exp(-pow(fogDist * fogDensity, 2.0f));
+        fogFactor = saturate(1.0f - fogFactor);
+
+        // フォグ色をブレンド
+        result = lerp(result, gCombineSettings.fogColor, fogFactor);
+    }
     
     // 4. トーンマッピング & 出力調整
-    // ---------------------------------------------------------
     if (any(isnan(result)))
     {
         result = float3(0.0, 0.0, 0.0);

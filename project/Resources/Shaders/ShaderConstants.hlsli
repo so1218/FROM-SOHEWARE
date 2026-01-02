@@ -161,7 +161,14 @@ struct CombineSettings
     float bloomIntensity;
     float focusDistance;
     float focusRange; 
-    float padding;
+    int enableDoF;
+    
+    float3 fogColor;
+    float fogStart;
+    
+    float fogEnd; 
+    int enableFog;
+    float2 padding2;
 };
 
 struct OutlineData
