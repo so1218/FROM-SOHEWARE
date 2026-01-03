@@ -107,7 +107,7 @@ float noise(float2 uv, float time)
     return (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
 }
 
-// 2D hash: 小さい乱数を生成する
+// 2D hash:小さい乱数を生成する
 float hash(float2 p)
 {
     return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);

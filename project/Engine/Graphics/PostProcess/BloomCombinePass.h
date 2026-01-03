@@ -4,31 +4,48 @@
 
 class BloomCombinePass : public IPostEffect
 {
-private:
-    // --- 定数バッファ ---
+public:
+    // 初期化
+    void Initialize(
+        Engine* engine,
+        UINT w,
+        UINT h,
+        PSOManager* pso,
+        SRVManager* srvManager
+    );
 
-    // 1. 合成設定 (Bloom強度など: b0想定)
+    // 入力テクスチャ設定
+    void SetupInputViews(
+        ID3D12Device* device,
+        D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU,
+        D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU,
+        D3D12_CPU_DESCRIPTOR_HANDLE dofCPU,
+        D3D12_CPU_DESCRIPTOR_HANDLE depthCPU
+    );
+
+    // 合成パス実行
+    void Execute(
+        ID3D12GraphicsCommandList* cmdList,
+        D3D12_GPU_DESCRIPTOR_HANDLE /* 未使用 */
+    ) override;
+
+    // 合成設定取得
+    CombineSettings* GetSettings() const { return combineData_; }
+
+    // このパス専用のディスクリプタヒープ
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
+
+private:
+    // 合成用定数バッファ（Bloom強度など）
     Microsoft::WRL::ComPtr<ID3D12Resource> cb_;
     CombineSettings* combineData_ = nullptr;
 
-    // --- 依存オブジェクト ---
+    // 依存オブジェクト
     PSOManager* psoManager_ = nullptr;
     SRVManager* srvManager_ = nullptr;
 
-    // --- 専用SRVヒープ (t0:Scene, t1:Blur, t2:Depth) ---
+    // 入力テクスチャ用 SRV ヒープ
+    // t0: Scene / t1: Bloom / t2: DoF / t3: Depth
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
     UINT descriptorSize_ = 0;
-
-public:
-    void Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, SRVManager* srvManager);
-
-    void SetupInputViews(ID3D12Device* device, D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU, D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU, D3D12_CPU_DESCRIPTOR_HANDLE dofCPU, D3D12_CPU_DESCRIPTOR_HANDLE depthCPU);
-
-    void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE /*unused*/) override;
-
-    // 設定変更用のアクセサ
-    CombineSettings* GetSettings() const { return combineData_; }
-
-    // 追加: このパス専用のディスクリプタヒープ
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 };

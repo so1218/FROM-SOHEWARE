@@ -122,33 +122,30 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// 1. ヒープの設定
+	// SRVヒープをセット（ポストプロセス入力用）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 2. PSOとルートシグネチャの変更
-	// ★変更: 単純コピーではなく、高機能な「PostProcess」PSOを使う
-	// ※ PSO名は FullScreenQuad.PS.hlsl をコンパイルしたものを指定してください
+	// フルスクリーン用PSO / ルートシグネチャ
 	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
+	cmdList->SetGraphicsRootSignature(
+		rootSignatureManager_->GetRootSignature("Fullscreen")
+	);
 
-	// ルートシグネチャもそれに合わせる
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Fullscreen"));
+	// ポストエフェクト定数バッファ
+	cmdList->SetGraphicsRootConstantBufferView(
+		0,
+		postEffectManager_->GetPostEffectDataAddress()
+	);
 
-	// 3. ルートパラメータの設定
-	// "PostProcess" ルートシグネチャの定義に合わせて設定します。
-	// おそらく [0]:CBV(b0), [1]:Table(t0~) という構成になっているはずです。
-
-	// [0] CBV: PostEffectData (b0)
-	// PostEffectManagerからバッファのアドレスをもらってセット
-	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->GetPostEffectDataAddress());
-
-	// [1] DescriptorTable: Textures (t0)
-	// 入力は「BloomCombinePassの結果」です。
-	// これを t0 としてセットし、シェーダー内でグリッチやトーンマップをかけます。
+	// 最終入力テクスチャ（Bloom合成結果）
 	uint32_t finalImageIndex = postEffectManager_->GetBloomCombineSRVIndex();
-	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(finalImageIndex));
+	cmdList->SetGraphicsRootDescriptorTable(
+		1,
+		srvManager_->GetSRVHandleGPU(finalImageIndex)
+	);
 
-	// 4. 描画
+	// フルスクリーントライアングル描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
@@ -158,24 +155,29 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// 1. ヒープ設定
+	// SRVヒープをセット（最終出力テクスチャ）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 
-	// 2. パイプライン設定
-	// ※ここでは「トーンマップ計算なし」の単純コピーPSOがあればベストですが、
-	// 面倒なら既存の "Fullscreen" (トーンマップ付き) を使っても
-	// パラメータ調整で「何もしない」設定にできればそれでもOKです。
-	// いったんは既存のものを使います。
+	// フルスクリーン描画用PSO / ルートシグネチャ
 	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Fullscreen"));
+	cmdList->SetGraphicsRootSignature(
+		rootSignatureManager_->GetRootSignature("Fullscreen")
+	);
 
-	// 3. ルートパラメータ
-	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->GetPostEffectDataAddress());
-	// ★ここに入力として「FinalBuffer」を指定
-	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(srvIndex));
+	// ポストエフェクト定数
+	cmdList->SetGraphicsRootConstantBufferView(
+		0,
+		postEffectManager_->GetPostEffectDataAddress()
+	);
 
-	// 4. 描画
+	// 最終結果テクスチャ
+	cmdList->SetGraphicsRootDescriptorTable(
+		1,
+		srvManager_->GetSRVHandleGPU(srvIndex)
+	);
+
+	// フルスクリーントライアングル描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }

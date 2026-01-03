@@ -14,27 +14,26 @@ OutlineVertexShaderOutput main(VertexShaderInput input)
 {
     OutlineVertexShaderOutput output;
 
-    // クリップ空間へ変換
+    // 頂点位置をクリップ空間へ変換
     float4 clipPos = mul(input.position, gTransformationMatrix.WVP);
 
-    // 法線をクリップ空間へ変換
+    // 法線を正規化してクリップ空間へ変換
     float3 normal = normalize(input.smoothNormal);
     float4 clipNormal = mul(float4(normal, 0.0f), gTransformationMatrix.WVP);
 
-    // 画面上の広げる方向（2Dベクトル）
+    // 画面上でのアウトライン押し出し方向
     float2 offsetDir = normalize(clipNormal.xy);
 
-    // スクリーン解像度を使ってオフセット量を計算
-    // NDC空間(-1.0～1.0)の幅は2.0
+    // ピクセル単位のNDCサイズを計算
     float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
 
-    // clipPos.w（深度）が大きくなりすぎないように制限（Clamp）をかける
+    // 深度による過剰な拡大を防ぐための制限
     float depthScale = min(clipPos.w, 20.0f);
 
-    // 押し出し適用
-    // クランプした深度を使ってオフセット
+    // 解像度と深度に応じたアウトラインオフセット
     float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * depthScale;
 
+    // オフセットを適用
     output.position = clipPos;
     output.position.xy += offset;
 

@@ -4,43 +4,52 @@
 
 void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
-    // 親クラスで 1/4 サイズのRTV/SRVを作成させる
+    // 親クラスで1/4サイズのRTV/SRVを作成
     InitializeBase(engine, w, h);
+
     psoManager_ = pso;
     engine_ = engine;
 
+    // 定数バッファを作成
     constantBuffer_ = BufferManager::CreateBufferResource(
         engine->graphicsDevice_->GetDevice(),
         sizeof(BlurSettings)
     );
 
-    // ★追加: マッピング
+    // 定数バッファを CPU から更新できるようにマップ
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     cbData_->texelSize = { 1.0f / kClientWidth, 1.0f / kClientHeight };
-
-    // その他はダミー
     cbData_->blurStrength = 0.0f;
 }
 
-void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV)
+void DownsamplePass::Execute(
+    ID3D12GraphicsCommandList* cmdList,
+    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV
+)
 {
-    PreDraw(cmdList); // ビューポート設定、RTVセット、クリア
+    // 描画前処理
+    PreDraw(cmdList);
 
-    // Downsample用のPSOを使用
+    // ダウンサンプル用PSOを設定
     cmdList->SetPipelineState(psoManager_->GetPSO("Downsample"));
 
-    // 共通ルートシグネチャ (t0に入力SRV)
-    ID3D12DescriptorHeap* heaps[] = { engine_->srvManager_->GetSRVHeap() }; // IPostEffectが持つ自身のSRVヒープ(空の場合もある)
-    // ※ 共通ヒープを使う場合は srvManager->GetSRVHeap() をセット
+    // 共通SRVヒープを設定
+    ID3D12DescriptorHeap* heaps[] = {
+        engine_->srvManager_->GetSRVHeap()
+    };
+    cmdList->SetDescriptorHeaps(1, heaps);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
-
-    // 入力テクスチャを t0 (ルートパラメータ 1番) にセット
+    cmdList->SetGraphicsRootConstantBufferView(
+        0,
+        constantBuffer_->GetGPUVirtualAddress()
+    );
     cmdList->SetGraphicsRootDescriptorTable(2, inputSRV);
 
+    // フルスクリーン三角形を描画
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->DrawInstanced(3, 1, 0, 0);
 
-    PostDraw(cmdList); // ResourceBarrierでSRVに戻す
+    // 描画後処理
+    PostDraw(cmdList);
 }

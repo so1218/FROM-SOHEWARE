@@ -1,7 +1,6 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-// 定数定義
 #define PI 3.1415926535
 #define TAU 6.2831853071
 
@@ -192,54 +191,60 @@ float gridLine(float2 uv, float scale, float thickness)
 
 float3 DrawArtGridColor(PixelShaderInput input)
 {
+    // 画面解像度を考慮したフラグメント座標
     float2 fragCoord = input.texcoord * gFrameData.iResolution;
 
-    // UV の中心を原点に（-0.5 ～ +0.5）
+    // UVの中心を原点に変換
     float2 uv = input.texcoord - 0.5;
 
-    // 10000x10000 単位のグリッド空間に変換
+    // グリッド用のワールドスケールに変換
     uv *= 10000.0;
 
-    // グリッド線設定
+    // 通常グリッド線の設定
     float scale = 1.0;
     float thickness = 1.5;
 
-    // 通常グリッド線
     float normalLine = gridLine(uv, scale, thickness);
     float gridMask = 1.0 - normalLine;
 
-    // 10単位ごとの太線
+    // 一定間隔ごとの太線グリッド
     float majorLineThickness = 1.5;
     float majorInterval = 10.0;
+
     float2 majorUV = uv / majorInterval;
     float majorLine = gridLine(majorUV, 1.0, majorLineThickness);
     float majorMask = 1.0 - majorLine;
 
-    // 太線優先で合成
+    // 太線を優先して合成
     float finalGridMask = max(gridMask, majorMask);
 
-    // 背景色・グリッド色
+    // 背景とグリッドの基本色
     float3 bgColor = float3(0.05, 0.05, 0.05);
     float3 lineColor = float3(0.07, 0.07, 0.07);
     float3 majorLineColor = float3(0.20, 0.20, 0.20);
 
-    // 通常線と太線を重ねる
+    // 通常線と太線をブレンド
     float3 col = lerp(bgColor, lineColor, gridMask);
     col = lerp(col, majorLineColor, majorMask);
 
-    // 原点軸（X, Z）の強調
+    // 原点軸の強調表示
     float axisThickness = 2.0;
 
-    // Z軸（緑）
-    float zAxis = smoothstep(0.0, 1.0, abs(uv.x) / (fwidth(uv.x) * axisThickness));
+    // Z 軸を緑で表示
+    float zAxis =
+        smoothstep(0.0, 1.0,
+            abs(uv.x) / (fwidth(uv.x) * axisThickness));
     col = lerp(col, float3(0.1, 0.6, 0.1), 1.0 - zAxis);
 
-    // X軸（赤）
-    float xAxis = smoothstep(0.0, 1.0, abs(uv.y) / (fwidth(uv.y) * axisThickness));
+    // X 軸を赤で表示
+    float xAxis =
+        smoothstep(0.0, 1.0,
+            abs(uv.y) / (fwidth(uv.y) * axisThickness));
     col = lerp(col, float3(0.6, 0.1, 0.1), 1.0 - xAxis);
 
     return col;
 }
+
 bool ShouldDiscardArtGrid(PixelShaderInput input)
 {
     float2 uv = (input.texcoord - 0.5f) * 10000.0;
@@ -304,8 +309,6 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
             
             // テキスチャから色を取得
             float3 rampColor = gToonRamp.Sample(gClampSampler, float2(rampU, 0.5f)).rgb;
-            
-            //float3 finalShadowColor = rampColor * gMaterial.shadowColor;
 
             diffuse = gMaterial.color.rgb * baseColor * rampColor * lightColor * lightIntensity;
         }
@@ -482,7 +485,7 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
     float depthBias = gMaterial.shadowBias;
     float normalBias = 0.002f * biasScale;
 
-    // NDC → UV
+    // NDC→UV
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
@@ -499,7 +502,7 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         return 1.0f;
     }
 
-    // PCF（Poisson）
+    // PCF
     float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
     float softness = max(softness, 1.0f);
 

@@ -1,4 +1,3 @@
-// 入力
 struct VertexOut
 {
     float4 svpos : SV_POSITION;
@@ -7,11 +6,9 @@ struct VertexOut
     float textureIndex : TEXCOORD1;
 };
 
-// テクスチャ
 Texture2DArray diffuseMapArray : register(t1);
 SamplerState sampler0 : register(s0);
 
-// メイン
 float4 main(VertexOut vin) : SV_TARGET
 {
     // テクスチャを使う場合

@@ -1,18 +1,16 @@
 #include "ParticleCommon.hlsli" 
 #include "ShaderConstants.hlsli" 
-// 頂点入力：板ポリ（1インスタンスあたり4頂点）
+
 struct VertexIn
 {
-    float4 position : POSITION; // ローカル座標（-0.5〜+0.5）
-    float2 uv : TEXCOORD; // UV
+    float4 position : POSITION; 
+    float2 uv : TEXCOORD; 
 };
 
-// GPUインスタンシング用バッファ
 // インスタンシング用のデータを格納するためのバッファ
 StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
-// 出力
 struct VertexOut
 {
     float4 svpos : SV_POSITION;
@@ -21,50 +19,49 @@ struct VertexOut
     float textureIndex : TEXCOORD1;
 };
 
-// メインシェーダー
 VertexOut main(VertexIn vin, uint instanceId : SV_InstanceID)
 {
     VertexOut vout;
 
-    // インスタンスデータ
+    // インスタンスデータを取得
     ParticleInstanceData inst = instanceBuffer[instanceId];
+
     float4x4 world = inst.worldMatrix;
     float3 worldPos;
-    
+
     if (inst.isBillboard == 1)
     {
-        // 中心位置（移動成分）
+        // ビルボード中心位置
         float3 center = world[3].xyz;
 
-        // スケールを world の x/y 軸から抽出
+        // ワールド行列からスケールを取得
         float scaleX = length(world[0].xyz);
         float scaleY = length(world[1].xyz);
 
-        // カメラ方向のビルボードベクトル
+        // カメラ基準の右方向と上方向
         float3 right = gFrameData.cameraRight;
         float3 up = gFrameData.cameraUp;
 
-        // Z軸回転（ラジアン）を使ってローカルXYを回転
+        // Z軸回転を適用
         float cosR = cos(inst.rotationZ);
         float sinR = sin(inst.rotationZ);
+
         float rotatedX = vin.position.x * cosR - vin.position.y * sinR;
         float rotatedY = vin.position.x * sinR + vin.position.y * cosR;
 
-        // カメラ方向ベースに、スケール＆回転済みのローカルオフセットを加える
-        worldPos = center
-        + rotatedX * right * scaleX
-        + rotatedY * up * scaleY;
+        // カメラ向きに板ポリゴンを配置
+        worldPos = center + rotatedX * right * scaleX + rotatedY * up * scaleY;
     }
     else
     {
-        // ビルボードが無効な場合の処理
+        // 通常のワールド変換
         worldPos = mul(vin.position, world).xyz;
     }
 
-    // ワールド→クリップ座標へ
+    // ワールド座標からクリップ空間へ変換
     vout.svpos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
 
-    // その他属性
+    // 頂点属性を設定
     vout.uv = vin.uv;
     vout.color = inst.color;
     vout.color.rgb *= inst.intensity;

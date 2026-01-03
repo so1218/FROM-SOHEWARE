@@ -109,144 +109,92 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
+	auto* cmdList = commandManager_->GetCommandList();
+
 	// シャドウパス
-	shadowMap_->TransitionToDepthWrite(commandManager_->GetCommandList());
+	shadowMap_->TransitionToDepthWrite(cmdList);
 	D3D12_CPU_DESCRIPTOR_HANDLE shadowDSV = shadowMap_->GetDSVHandle();
-	commandManager_->GetCommandList()->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
-	commandManager_->GetCommandList()->ClearDepthStencilView(shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	cmdList->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
+	cmdList->ClearDepthStencilView(
+		shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr
+	);
 
 	D3D12_VIEWPORT shadowVP = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
 	D3D12_RECT shadowRect = { 0, 0, 2048, 2048 };
-	commandManager_->GetCommandList()->RSSetViewports(1, &shadowVP);
-	commandManager_->GetCommandList()->RSSetScissorRects(1, &shadowRect);
+	cmdList->RSSetViewports(1, &shadowVP);
+	cmdList->RSSetScissorRects(1, &shadowRect);
 
 	renderer_->DrawSceneForShadow();
-	shadowMap_->TransitionToRead(commandManager_->GetCommandList());
+	shadowMap_->TransitionToRead(cmdList);
 
-	// メインパス (オフスクリーン描画)
+	// メインパス（オフスクリーン描画）
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTV = renderCoordinator_->GetOffscreenRTVHandle();
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDSV = renderCoordinator_->GetOffscreenDSVHandle();
-	commandManager_->GetCommandList()->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
-	commandManager_->GetCommandList()->ClearDepthStencilView(offscreenDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
-	commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
+	cmdList->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
+	cmdList->ClearDepthStencilView(
+		offscreenDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr
+	);
+	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
+	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 
 	renderer_->DrawScene();
 	renderCoordinator_->EndOffscreenRender();
-	// ---------------------------------------------------------
-	// ★ここからDoF処理
-	// ---------------------------------------------------------
 
-	auto cmdList = commandManager_->GetCommandList();
-
-	// 【重要】オフスクリーン深度バッファを「書き込み(DSV)」->「読み込み(SRV)」へ遷移
-	//{
-	//	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-	//		offscreenDepthResource_.Get(), // ★メンバ変数化したリソースを使う
-	//		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-	//	);
-	//	cmdList->ResourceBarrier(1, &barrier);
-	//}
-
-	// --- ポストエフェクト実行 ---
-	// ここで PostEffectManager はセットされた depthIndex を使って SRVハンドルを取得し、
-	// シェーダーの t1 にセットするように Execute を実装しているはずです。
+	// ポストエフェクト（Bloomなど）
 	postEffectManager_->ExecutePostEffects(cmdList);
 
+	// バックバッファ準備（直後に描画先は切り替える）
+	renderCoordinator_->BeginFrame();
 
-	// 【重要】オフスクリーン深度バッファを「読み込み」->「書き込み」へ戻す (次フレーム用)
-	//{
-	//	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-	//		offscreenDepthResource_.Get(),
-	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-	//		D3D12_RESOURCE_STATE_DEPTH_WRITE
-	//	);
-	//	cmdList->ResourceBarrier(1, &barrier);
-	//}
-
-	// ---------------------------------------------------------
-	renderCoordinator_->BeginFrame(); // ここで一旦バックバッファがRTになるが、すぐ下で変更するからOK
-
-	// ポストエフェクト適用 (Bloom生成など)
-	/*postEffectManager_->ExecutePostEffects(commandManager_->GetCommandList());*/
-
+	// FinalBuffer：SRV → RenderTarget
 	{
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			postEffectManager_->GetFinalPassResource(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, // 現在は読み取り用
-			D3D12_RESOURCE_STATE_RENDER_TARGET           // 書き込み用に変更
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET
 		);
-		commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+		cmdList->ResourceBarrier(1, &barrier);
 	}
 
-	// -----------------------------------------------------------
-	// 1. 最終合成 & トーンマップ -> 【FinalBuffer】に描画
-	// -----------------------------------------------------------
-
-	// ★ 描画先を「FinalBuffer」に切り替える
+	// 最終合成・トーンマップ
 	D3D12_CPU_DESCRIPTOR_HANDLE finalRTV = postEffectManager_->GetFinalPassRTV();
-	commandManager_->GetCommandList()->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
+	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
 
-	// ヒープ設定
-	ID3D12DescriptorHeap* defaultHeaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(_countof(defaultHeaps), defaultHeaps);
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// ★ FinalBuffer に対して描画実行 (トーンマップ処理)
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
 
-	// -----------------------------------------------------------
-	// 2. リソースバリア (FinalBuffer: RenderTarget -> SRV)
-	// -----------------------------------------------------------
+	// FinalBuffer：RenderTarget → SRV
 	{
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			postEffectManager_->GetFinalPassResource(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
 		);
-		commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+		cmdList->ResourceBarrier(1, &barrier);
 	}
 
-	// -----------------------------------------------------------
-	// 3. ImGui表示 または バックバッファへのコピー
-	// -----------------------------------------------------------
-
-	// ★ ここで初めて「バックバッファ」を描画先に設定する
-	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
-	commandManager_->GetCommandList()->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
+	// バックバッファ出力
+	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV =
+		rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
+	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
 #ifdef _DEBUG
-	// ImGuiウィンドウの中に FinalBuffer を表示
+	// ImGui上にFinalBufferを表示
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), finalSrvIndex);
-
-	// useDebugView_の時は、ImGuiがバックバッファ全体を覆うか、
-	// シーンウィンドウ内にゲーム画面が出るので、全画面コピーは不要
 #else
-	// リリース時
+	// 最終結果をバックバッファへ描画
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	renderer_->DrawFinalResult(finalSrvIndex);
 #endif
 
-	// -----------------------------------------------------------
-	// 4. 後始末 (FinalBuffer: SRV -> RenderTarget)
-	// -----------------------------------------------------------
-	//{
-	//	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-	//		postEffectManager_->GetFinalPassResource(),
-	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-	//		D3D12_RESOURCE_STATE_RENDER_TARGET
-	//	);
-	//	commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
-	//}
+	// ImGui描画
+	cmdList->SetDescriptorHeaps(1, heaps);
+	ImGuiManager::EndFrame(cmdList);
 
-
-	// ImGui描画 (バックバッファへの書き込み)
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	commandManager_->GetCommandList()->SetDescriptorHeaps(1, heaps);
-	ImGuiManager::EndFrame(commandManager_->GetCommandList());
-
-	// フレーム終了
+	// フレーム終了処理
 	renderCoordinator_->EndFrame();
 	frameLimiter_->WaitNextFrame();
 
@@ -254,10 +202,14 @@ void Engine::EndFrame()
 	uint64_t completedFenceValue = renderCoordinator_->GetFenceValue();
 	for (auto& textureResource : textureManager_->GetNewUploads())
 	{
-		textureManager_->RegisterPendingUpload(textureResource.intermediate, completedFenceValue);
+		textureManager_->RegisterPendingUpload(
+			textureResource.intermediate, completedFenceValue
+		);
 	}
 	textureManager_->ClearNewUploads();
-	textureManager_->CleanupCompletedUploads(renderCoordinator_->GetFence()->GetCompletedValue());
+	textureManager_->CleanupCompletedUploads(
+		renderCoordinator_->GetFence()->GetCompletedValue()
+	);
 }
 
 void Engine::InitializeSystem()
@@ -331,7 +283,7 @@ void Engine::InitializeGraphics()
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
 	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 16);
 
-	// ライト（光源）マネージャの初期化
+	// ライトマネージャの初期化
 	lightManager_ = std::make_unique<LightManager>();
 	lightManager_->Initialize(graphicsDevice_->GetDevice());
 
@@ -342,34 +294,40 @@ void Engine::InitializeGraphics()
 
 void Engine::InitializeRenderer()
 {
-	// 深度ステンシルバッファと対応するDSVの作成
-	D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle = dsvManager_->CreateDepthStencilView(
-		kClientWidth,
-		kClientHeight,
-		depthStencilResource_ // 深度ステンシル用リソースを生成・取得
-	);
-
-	// オフスクリーンレンダーターゲットの作成
-	auto [offscreenTexture, offscreenRtvHandle] =
-		offscreenRTVManager_->CreateOffscreenRenderTarget(
-			kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor()
+	// メイン深度ステンシル
+	D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle =
+		dsvManager_->CreateDepthStencilView(
+			kClientWidth,
+			kClientHeight,
+			depthStencilResource_
 		);
 
-	// オフスクリーン用の深度ステンシルバッファを作成
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle = dsvManager_->CreateDepthStencilView(
-		kClientWidth, kClientHeight, offscreenDepthResource_
-	);
+	// オフスクリーンレンダーターゲット
+	auto [offscreenTexture, offscreenRtvHandle] =
+		offscreenRTVManager_->CreateOffscreenRenderTarget(
+			kClientWidth,
+			kClientHeight,
+			offscreenRTVManager_->GetClearColor()
+		);
 
-	// フェンスとイベントの作成（GPUの処理完了を待機するため）
+	// オフスクリーン深度ステンシル
+	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle =
+		dsvManager_->CreateDepthStencilView(
+			kClientWidth,
+			kClientHeight,
+			offscreenDepthResource_
+		);
+
+	// フェンス作成（GPU同期用）
 	HRESULT hr = graphicsDevice_->GetDevice()->CreateFence(
-		fenceValue_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_));
+		fenceValue_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_)
+	);
 	assert(SUCCEEDED(hr));
 
-	// フェンスシグナルを待機するためのイベントを作成
 	fenceEvent_ = CreateEvent(nullptr, false, false, nullptr);
 	assert(fenceEvent_ != nullptr);
 
-	// レンダリングコンテキストおよびレンダーコーディネーターの初期化
+	// レンダリング制御クラス初期化
 	renderContext_ = std::make_unique<RenderContext>(kClientWidth, kClientHeight);
 	renderCoordinator_ = std::make_unique<RenderCoordinator>();
 	renderCoordinator_->Initialize(
@@ -382,33 +340,35 @@ void Engine::InitializeRenderer()
 		fenceEvent_,
 		graphicsDevice_.get(),
 		this,
-		// 各種レンダーターゲット・DSVハンドルを渡す
 		mainDsvHandle,
 		offscreenRtvHandle,
-		offscreenTexture.Get(), // バリア処理用にリソースを渡す
+		offscreenTexture.Get(),
 		offscreenDsvHandle,
 		offscreenDepthResource_.Get()
 	);
 
-	// DXCコンパイラ関連の初期化
-	HRESULT hr1 = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
-	assert(SUCCEEDED(hr1));
-	HRESULT hr2 = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
-	assert(SUCCEEDED(hr2));
+	// DXC 初期化
+	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
+	assert(SUCCEEDED(hr));
+	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
+	assert(SUCCEEDED(hr));
 
-	// インクルードパス対応のためのハンドラを作成
 	hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
 	assert(SUCCEEDED(hr));
 
-	// ShaderManager を生成・初期化
+	// シェーダ管理
 	shaderManager_ = std::make_unique<ShaderManager>();
-	shaderManager_->Initialize(dxcUtils_.Get(), dxcCompiler_.Get(), includeHandler_.Get());
+	shaderManager_->Initialize(
+		dxcUtils_.Get(),
+		dxcCompiler_.Get(),
+		includeHandler_.Get()
+	);
 
-	// ルートシグネチャの初期化
+	// ルートシグネチャ
 	rootSignatureManager_ = std::make_unique<RootSignatureManager>();
 	rootSignatureManager_->Initialize(graphicsDevice_->GetDevice());
 
-	// PSOの初期化
+	// PSO
 	psoManager_ = std::make_unique<PSOManager>();
 	psoManager_->Initialize(
 		graphicsDevice_->GetDevice(),
@@ -416,16 +376,11 @@ void Engine::InitializeRenderer()
 		rootSignatureManager_.get()
 	);
 
-	// DSVManagerは「作成順」にインデックスを管理していると仮定します。
-	// 1回目: CreateDepthStencilView (メイン用) -> Index 0
-	// 2回目: CreateDepthStencilView (オフスクリーン用) -> Index 1
-	
-	// 今回必要なのは「オフスクリーンに描画された3Dシーンの深度」なので、
-	// 2回目に作ったDSVに対応するSRVを取得します。
-	// (DSVManagerの実装に合わせて引数は調整してください)
-	uint32_t offscreenDepthSrvIndex = dsvManager_->GetDSVTextureSRVIndex(1);
+	// オフスクリーン深度の SRV インデックス
+	uint32_t offscreenDepthSrvIndex =
+		dsvManager_->GetDSVTextureSRVIndex(1);
 
-	// ポストエフェクト管理の初期化
+	// ポストエフェクト
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(
 		this,
@@ -438,20 +393,29 @@ void Engine::InitializeRenderer()
 		offscreenDepthSrvIndex
 	);
 
-	// PostEffectManagerにセット
 	postEffectManager_->SetSceneDepthIndex(offscreenDepthSrvIndex);
 
+	// シャドウマップ
 	shadowMap_ = std::make_unique<ShadowMap>();
-	shadowMap_->Initialize(graphicsDevice_->GetDevice(), 2048, 2048, srvManager_.get());
+	shadowMap_->Initialize(
+		graphicsDevice_->GetDevice(),
+		2048,
+		2048,
+		srvManager_.get()
+	);
 }
 
 void Engine::InitializeResources()
 {
-	// テクスチャマネージャの初期化
+	// テクスチャ管理
 	textureManager_ = std::make_unique<TextureManager>();
-	textureManager_->Initialize(graphicsDevice_->GetDevice(), commandManager_->GetCommandList(), srvManager_.get());
+	textureManager_->Initialize(
+		graphicsDevice_->GetDevice(),
+		commandManager_->GetCommandList(),
+		srvManager_.get()
+	);
 
-	// レンダラーの初期化
+	// レンダラー
 	renderer_ = std::make_unique<Renderer>();
 	renderer_->Initialize(
 		graphicsDevice_.get(),
@@ -459,30 +423,28 @@ void Engine::InitializeResources()
 		psoManager_.get(),
 		rootSignatureManager_.get(),
 		textureManager_.get(),
-		srvManager_.get(),     
+		srvManager_.get(),
 		lightManager_.get(),
 		cameraManager_.get(),
-		materialManager_,      
-		camera_,   
+		materialManager_,
+		camera_,
 		postEffectManager_.get(),
 		kClientWidth,
 		kClientHeight,
 		shadowMap_.get()
 	);
 
-	// 各種ハンドルクラスの初期化（エンジン全体で共通的に利用）
+	// 共通ハンドル初期化
 	TextureHandle::Initialize(this);
 	ParticleTextureHandle::Initialize(this);
 	ModelHandle::Initialize(this);
 	AnimationHandle::Initialize();
 
-	// 配列テクスチャのパスを用意
+	// テクスチャ配列
 	std::vector<std::string> texturePaths = {
 		"Resources/images/uvChecker.png",
-
 	};
 
-	// テクスチャ配列を読み込み、GPUにアップロード
 	LoadTextureArray(texturePaths);
 }
 

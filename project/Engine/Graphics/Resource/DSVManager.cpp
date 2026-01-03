@@ -3,14 +3,19 @@
 #include "Logger.h"
 #include "SRVManager.h"
 
-void DSVManager::Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, UINT dsvCount)
+void DSVManager::Initialize(
+    ID3D12Device* device,
+    DescriptorHeapManager* descriptorManager,
+    SRVManager* srvManager,
+    UINT dsvCount
+)
 {
     device_ = device;
     srvManager_ = srvManager;
     maxDSVCount_ = dsvCount;
     createdDSVCount_ = 0;
 
-    // DSV用ヒープを作成（Shader-Visibleではない）
+    // DSV用ディスクリプタヒープを作成（Shader Visible なし）
     dsvHeap_ = descriptorManager->CreateDescriptorHeap(
         device_,
         D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
@@ -18,21 +23,23 @@ void DSVManager::Initialize(ID3D12Device* device, DescriptorHeapManager* descrip
         false
     );
 
-    // DSVディスクリプタのサイズとヒープ先頭ハンドルを取得
-    dsvDescriptorSize_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    // DSVディスクリプタサイズとヒープ先頭ハンドルを取得
+    dsvDescriptorSize_ =
+        device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
     dsvHeapStart_ = dsvHeap_->GetCPUDescriptorHandleForHeapStart();
 }
 
-// リソース作成とDSV作成を同時に行う
+// 深度ステンシル用リソースとDSVを作成
 D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     UINT width,
     UINT height,
-    Microsoft::WRL::ComPtr<ID3D12Resource>& outResource)
+    Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
+)
 {
-    // ヒープの空きスロット確認
+    // DSV作成数の上限チェック
     assert(createdDSVCount_ < maxDSVCount_);
 
-    // 深度ステンシル用リソースを作成
+    // 深度ステンシル用テクスチャの設定
     D3D12_RESOURCE_DESC resourceDesc{};
     resourceDesc.Width = width;
     resourceDesc.Height = height;
@@ -43,42 +50,45 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
+    // デフォルトヒープを使用
     D3D12_HEAP_PROPERTIES heapProperties{};
     heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
 
+    // 深度初期化用のクリア値
     D3D12_CLEAR_VALUE depthClearValue{};
     depthClearValue.DepthStencil.Depth = 1.0f;
     depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-    // 2. ★先にリソースを作成する（これが絶対優先！）
+    // 深度ステンシルリソースを作成
     HRESULT hr = device_->CreateCommittedResource(
         &heapProperties,
         D3D12_HEAP_FLAG_NONE,
-        &resourceDesc,                  // R24G8_TYPELESS
+        &resourceDesc,
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        &depthClearValue,               // D24_UNORM_S8_UINT
-        IID_PPV_ARGS(&outResource)      // ここでポインタが入る
+        &depthClearValue,
+        IID_PPV_ARGS(&outResource)
     );
     assert(SUCCEEDED(hr));
 
-    // 3. リソースのポインタが確定したので、SRVを作成する
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // 深度(24bit)部分だけを赤色として読む設定
+    // 深度テクスチャ参照用のSRVを作成
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Shader4ComponentMapping =
+        D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Texture2D.MipLevels = 1;
 
-    // ここで正しいリソースポインタを渡す
     uint32_t srvIndex = srvManager_->CreateSRV(outResource.Get(), srvDesc);
     depthSrvIndices_.push_back(srvIndex);
 
-    // 作成したリソースを保持
+    // リソースを管理リストに保持
     depthTextures_.push_back(outResource);
 
-    // 空きスロットのハンドルを計算
+    // DSVの書き込み先ハンドルを計算
     UINT dsvIndex = createdDSVCount_++;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeapStart_;
-    dsvHandle.ptr += (SIZE_T)dsvIndex * dsvDescriptorSize_;
+    dsvHandle.ptr +=
+        static_cast<SIZE_T>(dsvIndex) * dsvDescriptorSize_;
 
     // DSVの設定
     D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
@@ -87,11 +97,14 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
     // DSVをヒープに作成
-    device_->CreateDepthStencilView(outResource.Get(), &dsvDesc, dsvHandle);
+    device_->CreateDepthStencilView(
+        outResource.Get(),
+        &dsvDesc,
+        dsvHandle
+    );
 
     LOG_INFO("DSV Created at Index: {}", dsvIndex);
 
     // 作成したDSVのCPUハンドルを返す
     return dsvHandle;
 }
-

@@ -13,6 +13,5 @@ public:
 
     void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override;
 
-    // ImGui等から設定をいじれるようにアクセサを用意
     BrightExtractSettings* GetSettings() { return cbData_; }
 };

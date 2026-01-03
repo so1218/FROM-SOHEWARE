@@ -14,41 +14,51 @@ class SRVManager;
 class DSVManager
 {
 public:
-    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, UINT dsvCount);
+    // 初期化
+    void Initialize(
+        ID3D12Device* device,
+        DescriptorHeapManager* descriptorManager,
+        SRVManager* srvManager,
+        UINT dsvCount
+    );
 
-    // 深度ステンシルビューの作成
-    // リソースを作成し、DSVヒープにDSVを作成
-    // 作成したCPUハンドルとリソースを返す
+    // 深度ステンシル用リソースとDSVを作成
+    // 作成したリソースとCPUハンドルを返す
     D3D12_CPU_DESCRIPTOR_HANDLE CreateDepthStencilView(
         UINT width,
         UINT height,
         Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
     );
 
-    // DSVヒープの取得
+    // DSVヒープを取得
     ID3D12DescriptorHeap* GetHeap() const { return dsvHeap_.Get(); }
 
-    uint32_t GetDSVTextureSRVIndex(UINT dsvIndex) const 
+    // 指定したDSVに対応するSRVのインデックスを取得
+    uint32_t GetDSVTextureSRVIndex(UINT dsvIndex) const
     {
-        if (dsvIndex < depthSrvIndices_.size()) return depthSrvIndices_[dsvIndex];
-        return 0; // エラー時は0などを返す
+        if (dsvIndex < depthSrvIndices_.size())
+        {
+            return depthSrvIndices_[dsvIndex];
+        }
+        return 0;
     }
 
 private:
     ID3D12Device* device_ = nullptr;
+    SRVManager* srvManager_ = nullptr;
 
-    // DSVヒープ
+    // DSV用ディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;
     UINT dsvDescriptorSize_ = 0;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHeapStart_{};
 
-    // 作成したDSVの管理用
-    UINT createdDSVCount_ = 0; // 作成済みのDSV数
-    UINT maxDSVCount_ = 0;     // 最大DSV数
+    // DSVの作成状況管理
+    UINT createdDSVCount_ = 0;
+    UINT maxDSVCount_ = 0;
 
-    // DSV用リソースの保持
+    // 深度ステンシル用テクスチャの保持
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthTextures_;
 
-    SRVManager* srvManager_ = nullptr;
+    // 深度テクスチャ用SRVインデックス
     std::vector<uint32_t> depthSrvIndices_;
 };
