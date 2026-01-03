@@ -168,52 +168,51 @@ Quaternion Quaternion::FromAxisAngle(const Vector3& axis, float angle)
 // 球面線形補間の定義
 Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t)
 {
-    float cosTheta = Dot(q0, q1); // 静的メンバ関数Dotを呼び出す
+    // 内積で角度を取得
+    float cosTheta = Dot(q0, q1);
     Quaternion q1mod = q1;
 
-    // 最短経路補間と、補間結果が同じ回転を示すようにするため
+    // 最短経路補間のため符号反転
     if (cosTheta < 0.0f)
     {
         q1mod = Quaternion(-q1.x, -q1.y, -q1.z, -q1.w);
         cosTheta = -cosTheta;
     }
 
-    const float THRESHOLD = 0.9995f; // 角度が非常に小さい場合の閾値
+    // 角度が小さい場合は線形補間にフォールバック
+    const float THRESHOLD = 0.9995f;
     if (cosTheta > THRESHOLD)
     {
-        // 角度が非常に小さい場合は線形補間にフォールバックし、正規化
-        Quaternion result(
-            q0.x + t * (q1mod.x - q0.x),
+        Quaternion result(q0.x + t * (q1mod.x - q0.x),
             q0.y + t * (q1mod.y - q0.y),
             q0.z + t * (q1mod.z - q0.z),
-            q0.w + t * (q1mod.w - q0.w)
-        );
+            q0.w + t * (q1mod.w - q0.w));
         return result.Normalize();
     }
 
+    // 通常の球面線形補間
     float theta = acosf(cosTheta);
     float sinTheta = sinf(theta);
 
-    // sinThetaが非常に小さい場合も線形補間にフォールバック
-    if (std::abs(sinTheta) < 1e-6f) { // 浮動小数点誤差を考慮
-        Quaternion result(
-            q0.x * (1.0f - t) + q1mod.x * t,
+    // sinThetaがほぼ0なら線形補間にフォールバック
+    if (std::abs(sinTheta) < 1e-6f)
+    {
+        Quaternion result(q0.x * (1.0f - t) + q1mod.x * t,
             q0.y * (1.0f - t) + q1mod.y * t,
             q0.z * (1.0f - t) + q1mod.z * t,
-            q0.w * (1.0f - t) + q1mod.w * t
-        );
+            q0.w * (1.0f - t) + q1mod.w * t);
         return result.Normalize();
     }
 
+    // 球面補間の重みを計算
     float w0 = sinf((1.0f - t) * theta) / sinTheta;
     float w1 = sinf(t * theta) / sinTheta;
 
-    return Quaternion(
-        q0.x * w0 + q1mod.x * w1,
+    // 補間結果を返す
+    return Quaternion(q0.x * w0 + q1mod.x * w1,
         q0.y * w0 + q1mod.y * w1,
         q0.z * w0 + q1mod.z * w1,
-        q0.w * w0 + q1mod.w * w1
-    );
+        q0.w * w0 + q1mod.w * w1);
 }
 
 // ドット積の定義
@@ -285,7 +284,7 @@ Matrix4x4 Quaternion::ToMatrix() const {
     result.m[2][2] = 1.0f - 2.0f * (xx + yy);
     result.m[2][3] = 0.0f;
 
-    // 4行目（変換行列の一番下）
+    // 4行目
     result.m[3][0] = 0.0f;
     result.m[3][1] = 0.0f;
     result.m[3][2] = 0.0f;

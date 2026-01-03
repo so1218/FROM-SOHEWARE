@@ -2,7 +2,7 @@
 
 #include <string>
 
-// DescriptorManagerクラス内の関数：ディスクリプタヒープを作成
+// ディスクリプタヒープを作成
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(
     ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
@@ -30,33 +30,26 @@ Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHe
     return descriptorHeap;
 }
 
-// 指定インデックスのCPUディスクリプタハンドルを取得
+// CPUディスクリプタハンドルを取得
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeapManager::GetCPUDescriptorHandle(
-    ID3D12DescriptorHeap* descriptorHeap,  // 対象のディスクリプタヒープ
-    uint32_t descriptorSize,               // 各ディスクリプタのサイズ
-    uint32_t index)                        // インデックス（何番目か）
+    ID3D12DescriptorHeap* descriptorHeap, // 対象ヒープ
+    uint32_t descriptorSize,              // ディスクリプタ1個分のサイズ
+    uint32_t index)                       // インデックス
 {
-    // ヒープの先頭アドレスを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-    // インデックスに応じてポインタを加算
-    handleCPU.ptr += (descriptorSize * index);
-
-    return handleCPU;  // 対象ディスクリプタのCPUハンドルを返す
+    // ヒープ先頭からインデックス分オフセット
+    D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+    handle.ptr += descriptorSize * index;
+    return handle;
 }
 
-// 指定インデックスのGPUディスクリプタハンドルを取得
+// GPUディスクリプタハンドルを取得
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapManager::GetGPUDescriptorHandle(
-    ID3D12DescriptorHeap* descriptorHeap,  // 対象のディスクリプタヒープ
-    uint32_t descriptorSize,               // 各ディスクリプタのサイズ
-    uint32_t index)                        // インデックス（何番目か）
+    ID3D12DescriptorHeap* descriptorHeap, // 対象ヒープ
+    uint32_t descriptorSize,              // ディスクリプタ1個分のサイズ
+    uint32_t index)                       // インデックス
 {
-    // ヒープの先頭アドレスを取得（GPU用）
-    D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-
-    // インデックスに応じてポインタを加算
-    handleGPU.ptr += (descriptorSize * index);
-
-    return handleGPU;  // 対象ディスクリプタのGPUハンドルを返す
+    // ヒープ先頭からインデックス分オフセット
+    D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    handle.ptr += descriptorSize * index;
+    return handle;
 }
-

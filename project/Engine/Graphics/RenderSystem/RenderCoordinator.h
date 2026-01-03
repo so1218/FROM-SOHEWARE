@@ -17,6 +17,7 @@ class Engine;
 class RenderCoordinator
 {
 public:
+    // 初期化
     void Initialize(
         SwapChain* swapChainManager,
         RTVManager* rtvManager,
@@ -29,7 +30,7 @@ public:
         Engine* engine,
         D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
         D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle, // オフスクリーン用RTV
-        ID3D12Resource* offscreenTexture,               // バリア用
+        ID3D12Resource* offscreenTexture,               // バリア用リソース
         D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
         ID3D12Resource* offscreenDepthResource
     );
@@ -46,17 +47,18 @@ public:
     uint64_t GetFenceValue() const { return fenceValue_; }
     ID3D12Fence* GetFence() const { return fence_.Get(); }
 
-    // オフスクリーンRTV/DSVのハンドル
+    // オフスクリーンRTV/DSVハンドル取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenRTVHandle() const { return offscreenRtvHandle_; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenDSVHandle() const { return offscreenDsvHandle_; }
 
+    // オフスクリーン深度リソース取得
     ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_; }
 
 private:
     // リソースバリア用
     D3D12_RESOURCE_BARRIER barrier_{};
 
-    // 外部から渡される依存オブジェクト
+    // 外部依存オブジェクト
     SwapChain* swapChain_ = nullptr;
     RTVManager* rtvManager_ = nullptr;
     OffscreenRTVManager* offscreenRTVManager_ = nullptr;
@@ -65,18 +67,18 @@ private:
     GraphicsDevice* graphicDevice_ = nullptr;
     Engine* engine_ = nullptr;
 
-    // 深度ステンシルヒープとハンドル
+    // DSVヒープとハンドル
     ID3D12DescriptorHeap* dsvDescriptorHeap_ = nullptr;
-    D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle_;      // メインレンダーターゲット用
+    D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle_;      // メイン用DSV
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle_; // オフスクリーンRTV
-    ID3D12Resource* offscreenTexture_;               // バリア用リソース
+    ID3D12Resource* offscreenTexture_;               // バリア用
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle_; // オフスクリーンDSV
 
-    // フェンス関連
+    // フェンス管理
     Microsoft::WRL::ComPtr<ID3D12Fence> fence_ = nullptr;
     HANDLE fenceEvent_ = nullptr;
     uint64_t fenceValue_ = 0;
 
-    // ★追加: オフスクリーン深度リソースへのポインタ
+    // オフスクリーン深度リソース
     ID3D12Resource* offscreenDepthResource_ = nullptr;
 };

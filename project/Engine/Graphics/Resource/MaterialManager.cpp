@@ -33,8 +33,6 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.isArtGrid = false;
 	defaultSettings.environmentMapIntensity = 0.0f;
 
-   /* materialSettings_ = defaultSettings;*/
-
     memcpy(handle.materialData, &defaultSettings, sizeof(MaterialData));
 
     materials_.push_back(handle);

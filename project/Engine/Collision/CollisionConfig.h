@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-// 衝突属性ビット定義
+// 衝突属性定義
 const uint32_t kCollisionAttributePlayer = 0b1;
 const uint32_t kCollisionAttributePlayerWeaponKnife = 0b1 << 1;
 const uint32_t kCollisionAttributePlayerWeaponAxe = 0b1 << 2;

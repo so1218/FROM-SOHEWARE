@@ -17,7 +17,8 @@ public:
     // 回転を保持するクォータニオン
     Quaternion rotationQuaternion_;
 
-    WorldTransform* parent_; // 親のWorldTransformへのポインタ
+    // 親のWorldTransformへのポインタ
+    WorldTransform* parent_;
 
 public:
     // コンストラクタ

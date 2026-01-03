@@ -246,17 +246,16 @@ void Renderer::DrawSceneForShadow()
 		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 	}
 }
+
 void Renderer::DrawScene()
 {
+	// トレイル描画を登録
 	if (!trailBatch_.verticesCPU.empty())
 	{
 		ModelSubmission trailSubmission{};
 		trailSubmission.type = RenderType::Trail;
-		// トレイルは通常半透明なので Transparent グループへ
-		trailSubmission.group = RenderGroup::Trail;
-		// 深度は簡易的に0、あるいはカメラ距離など。
-		// ※バッチ化すると個別の深度ソートは犠牲になりますが、高速化のトレードオフです
-		trailSubmission.depth = 0.0f;
+		trailSubmission.group = RenderGroup::Trail; // 半透明グループ
+		trailSubmission.depth = 0.0f; // 簡易的な深度
 		modelSubmissions_.push_back(trailSubmission);
 	}
 
@@ -309,23 +308,14 @@ void Renderer::DrawScene()
 	{
 		switch (sub.type)
 		{
-		case RenderType::Sprite:  
-			DrawSprite(sub); break;
-		case RenderType::Grid:   
-			DrawGrid(sub); break;
-		case RenderType::Particle:
-			DrawParticles(*camera_); break;
-		case RenderType::Trail:
-			// 前回の回答で作ったバッチ一括描画関数を呼ぶ
-			DrawTrails(*camera_);
-			break;
-		case RenderType::Skybox:  
-			DrawSkybox(sub); break;
+		case RenderType::Sprite: DrawSprite(sub); break;
+		case RenderType::Grid: DrawGrid(sub); break;
+		case RenderType::Particle: DrawParticles(*camera_); break;
+		case RenderType::Trail: DrawTrails(*camera_); break; 
+		case RenderType::Skybox: DrawSkybox(sub); break;
 		case RenderType::Model:
-		case RenderType::Skinning:
-			DrawModel(sub); break;
+		case RenderType::Skinning: DrawModel(sub); break;
 		case RenderType::Line:
-			// ライントポロジーで描画
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 			FlushLines(*camera_);
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

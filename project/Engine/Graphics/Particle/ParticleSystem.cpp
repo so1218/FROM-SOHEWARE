@@ -530,42 +530,35 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 
 void ParticleSystem::Draw(Camera* camera)
 {
+    // 加算ブレンドに切り替え
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
+
     // トレイル描画
     for (const auto& particle : particles_)
     {
-        if (!particle.config.trail.enabled) continue;
-        if (particle.trailHistory.size() < 2) continue;
+        if (!particle.config.trail.enabled) continue; // トレイル無効ならスキップ
+        if (particle.trailHistory.size() < 2) continue; // 頂点が足りなければスキップ
 
-        // ポイントリスト作成
-        // (std::vectorの再確保コストを下げるため、メンバ変数に作業用vectorを持たせるのもテクニックですが、一旦このままでOK)
+        // 描画用ポイントリストを作成
         std::vector<TrailPoint> drawPoints;
         drawPoints.reserve(particle.trailHistory.size() + 1);
 
-        for (const auto& tp : particle.trailHistory) {
+        for (const auto& tp : particle.trailHistory)
             drawPoints.push_back(tp);
-        }
 
         // 生存中なら現在位置も追加
         if (particle.age < particle.lifetime)
-        {
-            drawPoints.push_back({
-                particle.transform->translation_,
-                particle.transform->rotationQuaternion_,
-                particle.age
-                });
-        }
+            drawPoints.push_back({ particle.transform->translation_, particle.transform->rotationQuaternion_, particle.age });
 
-        // Rendererへ登録 (ここで行列計算や頂点生成が行われ、バッチに積まれる)
-        engine_->renderer_->SubmitTrail(
-            drawPoints,
-            particle.config.trail,
-            *camera
-        );
+        // Rendererに登録
+        engine_->renderer_->SubmitTrail(drawPoints, particle.config.trail, *camera);
     }
+
+    // ブレンドを元に戻す
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
 #ifdef _DEBUG
+    // デバッグ用エディタ表示
     editor_->ShowEditor();
 #endif
 }

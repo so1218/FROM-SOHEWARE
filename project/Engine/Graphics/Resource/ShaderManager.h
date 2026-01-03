@@ -15,7 +15,6 @@
 class ShaderManager
 {
 public:
-    // コンストラクタでDXCオブジェクトを受け取る
     void Initialize(
         IDxcUtils* dxcUtils,
         IDxcCompiler3* dxcCompiler,
@@ -23,7 +22,6 @@ public:
     );
 
     // ファイルパスとプロファイルからシェーダーBlobを取得する
-    // 内部でキャッシュをチェックし、なければコンパイルする
     IDxcBlob* GetShader(const std::wstring& filePath, const wchar_t* profile);
 
 private:
@@ -33,12 +31,11 @@ private:
         const wchar_t* profile
     );
 
-    // DXC関連 (PSOManagerから移動)
+    // DXC関連
     IDxcUtils* dxcUtils_ = nullptr;
     IDxcCompiler3* dxcCompiler_ = nullptr;
     IDxcIncludeHandler* includeHandler_ = nullptr;
 
     // シェーダーキャッシュ
-    // キーは "filePath_profile" のような一意な文字列
     std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
 };

@@ -76,20 +76,21 @@ void Game::Run()
     }
 
     Finalize();
-}void Game::Update()
+}
+
+void Game::Update()
 {
-    // ---------------------------------------------------------
-    // 0. 前処理 (Input更新などはRunで行われている前提)
-    // ---------------------------------------------------------
 #ifdef _DEBUG
+    // デバッグカメラの有効/無効切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
-        bool isEnabled = engine_->debugCamera_->IsEnabled();
-        engine_->debugCamera_->SetEnabled(!isEnabled);
+        engine_->debugCamera_->SetEnabled(!engine_->debugCamera_->IsEnabled());
     }
 
+    // グローバル変数更新
     GlobalVariables::GetInstance()->Update();
 
+    // ゲーム一時停止切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_P))
     {
         auto timeManager = TimeManager::GetInstance();
@@ -98,37 +99,23 @@ void Game::Run()
     }
 #endif
 
+    // マテリアルをグローバル状態に合わせて更新
     materialManager_->UpdateAllMaterialsFromGlobal();
 
-
-    // ---------------------------------------------------------
-    // 1. ★最優先★ ゲームロジック（シーン）の更新
-    // ---------------------------------------------------------
-    // ここでプレイヤーが動き、ゲームカメラ(camera_)の位置調整が行われる
+    // ゲームロジック更新（シーン）
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
     }
 
-
-    // ---------------------------------------------------------
-    // 2. ゲームカメラ本来の行列を確定・保存
-    // ---------------------------------------------------------
-    // シーン更新で移動した camera_ の座標を元に行列を作る
+    // ゲームカメラの行列を更新
     camera_->UpdateViewProjectionMatrix();
-
-    // この時点での「本来のゲーム視点」を保存（視錐台描画用）
     Matrix4x4 gameCameraVP = camera_->GetViewProjectionMatrix();
 
-
-    // ---------------------------------------------------------
-    // 3. 描画用カメラの最終決定（デバッグカメラによる上書き）
-    // ---------------------------------------------------------
-    // シーン更新が終わった後に上書きすることで、確実にデバッグ視点になる
+    // デバッグカメラが有効なら上書き
     if (engine_->debugCamera_->IsEnabled())
     {
         engine_->debugCamera_->Update();
-
         camera_->SetTranslation(engine_->debugCamera_->GetCameraWorldPosition());
         camera_->SetViewMatrix(engine_->debugCamera_->GetViewMatrix());
         camera_->SetProjectionMatrix(engine_->debugCamera_->GetProjectionMatrix());
@@ -136,52 +123,41 @@ void Game::Run()
     }
     else
     {
-        // デバッグカメラが無効なら、手順2で作った行列をそのまま使う
-        // (念のためセットし直すが、値は変わらない)
+        // デバッグカメラ無効ならゲームカメラ行列を使用
         camera_->SetViewMatrix(camera_->GetViewMatrix());
         camera_->SetProjectionMatrix(camera_->GetProjectionMatrix());
         camera_->SetViewProjectionMatrix(gameCameraVP);
     }
 
-
-    // ---------------------------------------------------------
-    // 4. DebugDrawの設定と描画登録
-    // ---------------------------------------------------------
 #ifdef _DEBUG
-    // 最終決定したカメラ視点をDebugDrawに教える
+    // デバッグ描画用カメラを設定
     DebugDraw::SetCamera(camera_.get());
 
-    // デバッグカメラ有効時のみ、ゲームカメラの視錐台を描画
+    // ゲームカメラ視錐台を描画
     if (engine_->debugCamera_->IsEnabled())
-    {
         DebugDraw::DrawFrustum(gameCameraVP, { 1.0f, 1.0f, 0.0f, 1.0f });
-    }
 #endif
 
-
-    // ---------------------------------------------------------
-    // 5. シャドウマップ計算 (レンダリング直前に行う)
-    // ---------------------------------------------------------
+    // シャドウマップ更新
+    auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+    if (dirLights[0].enable)
     {
-        auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
-        if (dirLights[0].enable)
-        {
-            Vector3 lightDir = dirLights[0].direction.Normalize();
-            Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
-            float distance = 100.0f;
-            Vector3 lightPos = shadowTarget - (lightDir * distance);
+        Vector3 lightDir = dirLights[0].direction.Normalize();
+        Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
+        float distance = 100.0f;
+        Vector3 lightPos = shadowTarget - (lightDir * distance);
 
-            Vector3 up = { 0.0f, 1.0f, 0.0f };
-            if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+        Vector3 up = { 0.0f, 1.0f, 0.0f };
+        if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
-            Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
-            Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(30.0f, 30.0f, -100.0f, 200.0f);
-            Matrix4x4 lightViewProj = lightView * lightProj;
+        Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
+        Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(30.0f, 30.0f, -100.0f, 200.0f);
+        Matrix4x4 lightViewProj = lightView * lightProj;
 
-            engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
-        }
+        engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
     }
 }
+
 void Game::Draw()
 {
     sceneManager_.Draw();

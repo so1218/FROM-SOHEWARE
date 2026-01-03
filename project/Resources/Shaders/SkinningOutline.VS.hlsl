@@ -1,7 +1,6 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-// スキニング用の入力
 struct SkinningVertexShaderInput
 {
     float32_t4 position : POSITION0;
@@ -57,22 +56,26 @@ OutlineVertexShaderOutput main(SkinningVertexShaderInput input)
     // スキニング計算
     Skinned skinned = Skinning(input);
 
-    // 位置をクリップ空間へ
+    // ワールド→クリップ空間変換
     float4 clipPos = mul(skinned.position, gTransformationMatrix.WVP);
 
-    // 法線をクリップ空間へ 
+    // 法線を正規化してクリップ空間へ変換
     float3 normal = normalize(skinned.smoothNormal);
     float4 clipNormal = mul(float4(normal, 0.0f), gTransformationMatrix.WVP);
 
-    // アウトライン押し出し計算
+    // スクリーンスペースでの押し出し方向
     float2 offsetDir = normalize(clipNormal.xy);
+
+    // ピクセル単位の NDC サイズ
     float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
-    // clipPos.w（深度）が大きくなりすぎないように制限（Clamp）をかける
+
+    // 過剰な押し出しを防ぐ深度制限
     float depthScale = min(clipPos.w, 20.0f);
 
-    // クランプした深度を使ってオフセット
+    // アウトライン幅に応じたオフセット
     float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * depthScale;
 
+    // 位置にオフセットを適用
     output.position = clipPos;
     output.position.xy += offset;
 
