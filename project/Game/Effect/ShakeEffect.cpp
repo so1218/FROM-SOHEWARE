@@ -38,9 +38,11 @@ Vector3 ShakeEffect::GetOffset() const
 
     // 揺れの進行度
     float progress = timer_ / duration_;
-    float attenuation = 1.0f - progress; // 時間とともに減衰
 
-    // X, Y, Z にランダム値を加える（減衰）
+    // 時間とともに減衰
+    float attenuation = 1.0f - progress; 
+
+    // X, Y, Z にランダム値を加える
     return 
     {
         Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,

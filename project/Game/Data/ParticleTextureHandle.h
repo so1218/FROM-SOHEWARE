@@ -90,16 +90,19 @@ struct ParticleTextureDefinition
 class ParticleTextureHandle
 {
 public:
+    // 初期化
     static void Initialize(Engine* engine);
+
+    // IDからテクスチャハンドルを取得
     static uint32_t Get(ParticleTextureID id);
 
-    // ParticleEditor が参照するための関数
+    // エディタ用：テクスチャ定義を参照
     static const auto& GetDefinitions() { return particleTextureDefinitions_; }
 
-    // UI表示用の名前リストを取得（キャッシュ付き）
+    // UI用：テクスチャ名リストを取得（キャッシュあり）
     static const std::vector<std::string>& GetTextureNames();
 
-    // ImGui::Combo でそのまま使える const char* の配列を取得
+    // ImGui Comboにそのまま使えるconst char*配列を取得
     static const std::vector<const char*>& GetTextureItems();
 
 private:

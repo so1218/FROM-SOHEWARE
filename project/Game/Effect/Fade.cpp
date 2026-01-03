@@ -40,38 +40,41 @@ void Fade::ApplyGlobalVariables()
 
 void Fade::Update()
 {
-	// フェード状態による分岐
+	// フェード状態に応じて処理
 	switch (status_)
 	{
 	case Status::None:
-		// 何もしない
+		// フェードなし
 		break;
+
 	case Status::FadeIn:
-		// フェードイン
-		// 1フレーム分の秒数をカウントアップ
-		counter_ += 1.0f / 60.0f;
-		// フェード継続時間に達したら打ち止め
+		// フェードイン処理
+		counter_ += 1.0f / 60.0f; // 1フレーム分を加算
+
 		if (counter_ >= duration_)
 		{
 			counter_ = duration_;
 		}
-		// 0.0fから1.0fの間で、経過時間がフェード継続時間に近づくほどアルファ値を大きくする
+
+		// 経過に応じてアルファ値を0から1に
 		color_.w = std::clamp(1.0f - counter_ / duration_, 0.0f, 1.0f);
 		break;
+
 	case Status::FadeOut:
-		// フェードアウト
-		// 1フレーム分の秒数をカウントアップ
-		counter_ += 1.0f / 60.0f;
-		// フェード継続時間に達したら打ち止め
+		// フェードアウト処理
+		counter_ += 1.0f / 60.0f; // 1フレーム分を加算
+
 		if (counter_ >= duration_)
 		{
 			counter_ = duration_;
 		}
-		// 0.0fから1.0fの間で、経過時間がフェード継続時間に近づくほどアルファ値を大きくする
+
+		// 経過に応じてアルファ値を0から1に
 		color_.w = std::clamp(counter_ / duration_, 0.0f, 1.0f);
 		break;
 	}
 
+	// スプライトに反映
 	sprite_->SetColor(Math::ColorVectorToUint32(color_));
 }
 
