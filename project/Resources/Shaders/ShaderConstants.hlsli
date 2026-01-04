@@ -156,7 +156,7 @@ struct BrightExtractSettings
     float2 _padding;
 };
 
-struct DoFSettingsData
+struct DoFSettings
 {
     float focusDistance;
     float focusRange;

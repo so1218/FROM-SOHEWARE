@@ -14,7 +14,7 @@ void BokehBlurPass::Initialize(Engine* engine,
 
     // DoF設定用定数バッファ
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(DoFSettingsData));
+    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(DoFSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 }
 

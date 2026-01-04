@@ -8,7 +8,7 @@ Texture2D<float> gDepthTexture : register(t1);
 SamplerState gSampler : register(s0);
 
 // DoF設定
-ConstantBuffer<DoFSettingsData> gDoFSettings : register(b0);
+ConstantBuffer<DoFSettings> gDoFSettings : register(b0);
 // フレーム共通データ
 ConstantBuffer<FrameData> gFrameData : register(b1);
 
@@ -20,7 +20,7 @@ float LinearizeDepth(float d)
     return (n * f) / (f - d * (f - n));
 }
 
-// 符号付きCoC（-：手前ボケ, +:：奥ボケ）
+// 符号付きCoC（-：手前ボケ, +：奥ボケ）
 float GetSignedCoC(float depth)
 {
     float coc = (depth - gDoFSettings.focusDistance) / max(0.0001f, depth);
@@ -45,7 +45,7 @@ float4 main(VSOutput input) : SV_TARGET
     float totalWeight = 0;
 
     // アスペクト補正
-    float aspect = gDoFSettings.resolution.x / gDoFSettings.resolution.y;
+    float aspect = (gFrameData.screenResolution.x / 2.0f) / (gFrameData.screenResolution.y / 2.0f);
 
     // ボケサンプリング
     for (int i = 0; i < SAMPLE_COUNT; i++)
@@ -56,7 +56,7 @@ float4 main(VSOutput input) : SV_TARGET
 
         float2 offset = float2(cos(theta), sin(theta)) * r * gDoFSettings.bokehRadius;
         offset.x /= aspect;
-        offset /= gDoFSettings.resolution.xy;
+        offset /= gFrameData.screenResolution.xy / 2.0f;
 
         float2 sampleUV = uv + offset;
 

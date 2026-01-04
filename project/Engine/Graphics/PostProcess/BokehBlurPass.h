@@ -22,7 +22,7 @@ private:
 
     // DoF設定用CB
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    DoFSettingsData* cbData_ = nullptr;
+    DoFSettings* cbData_ = nullptr;
 
     PSOManager* psoManager_ = nullptr;
 };
