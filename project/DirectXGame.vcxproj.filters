@@ -854,5 +854,6 @@
     <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Downsample.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\BokehBlur.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\GodRay.PS.hlsl" />
   </ItemGroup>
 </Project>

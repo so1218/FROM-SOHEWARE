@@ -40,12 +40,6 @@ void GameObjectManager::Update()
 
 void GameObjectManager::Draw() 
 {
-    std::sort(objects_.begin(), objects_.end(),
-        [](const std::unique_ptr<GameObject>& a, const std::unique_ptr<GameObject>& b) 
-        {
-            return a->GetDrawPriority() < b->GetDrawPriority();
-        });
-
     for (auto& obj : objects_)
     {
         obj->Draw();

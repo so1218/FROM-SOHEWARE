@@ -21,7 +21,6 @@ struct GameObjectPriority
 {
     GameObjectType type;
     int updatePriority;
-    int drawPriority;
 };
 
 class GameObject 
@@ -39,8 +38,6 @@ public:
 
     int GetUpdatePriority() const { return GetPriority().updatePriority; }
 
-    int GetDrawPriority() const { return GetPriority().drawPriority; }
-
 private:
     const GameObjectPriority& GetPriority() const
     {
@@ -50,20 +47,15 @@ private:
     static constexpr std::array<GameObjectPriority, static_cast<size_t>(GameObjectType::Count)> priorities = 
     { 
         {
-            // 不透明
-            { GameObjectType::Background,  0,   0 },
-            { GameObjectType::FollowCamera, 12, 12 },
-            { GameObjectType::Player,     10,  10 },
-            { GameObjectType::PlayerWeapon,     15,  15 },
-            { GameObjectType::Enemy,      20,  20 },
-            { GameObjectType::Bullet,     30,  30 },
-
-            // 半透明 
-            { GameObjectType::Grid,     50,  50 },
-            { GameObjectType::Effect,     95,  95 },
-
-            // UI
-            { GameObjectType::UI,        100, 100 }
+            { GameObjectType::Background,  0 },
+            { GameObjectType::FollowCamera, 12 },
+            { GameObjectType::Player, 10 },
+            { GameObjectType::PlayerWeapon, 15 },
+            { GameObjectType::Enemy, 20 },
+            { GameObjectType::Bullet, 30 },
+            { GameObjectType::Grid, 50 },
+            { GameObjectType::Effect, 95 },
+            { GameObjectType::UI, 100 }
         }
     };
 };
