@@ -5,7 +5,7 @@
 #include "RootSignatureManager.h"
 #include "LightManager.h"
 #include "SRVManager.h"
-#include "CameraManager.h"
+#include "GlobalConstants.h"
 #include "MaterialManager.h"
 #include "BufferManager.h"
 #include "ShapeGenerator.h"
@@ -32,7 +32,7 @@ void Renderer::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
 	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
 	TextureManager* textureManager, SRVManager* srvManager, LightManager* lightManager,
-	CameraManager* cameraManager, MaterialManager* materialManager, Camera* camera,
+	GlobalConstants* globalConstants, MaterialManager* materialManager, Camera* camera,
 	PostEffectManager* postEffectManager,
 	int clientWidth, int clientHeight, ShadowMap* shadowMap)
 {
@@ -44,7 +44,7 @@ void Renderer::Initialize(
 	textureManager_ = textureManager;
 	srvManager_ = srvManager;
 	lightManager_ = lightManager;
-	cameraManager_ = cameraManager;
+	globalConstants_ = globalConstants;
 	materialManager_ = materialManager;
 	camera_ = camera;
 	clientWidth_ = clientWidth;
@@ -70,20 +70,6 @@ void Renderer::BeginFrame()
 	indexParticle_ = 0;
 	indexInstance_ = 0;
 	indexTrail_ = 0;
-
-	if (frameData_)
-	{
-		frameData_->gTime += static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-
-		// 非常に大きな値になるのを防ぐ
-		if (frameData_->gTime > 10000.0f)
-		{
-			frameData_->gTime = 0.0f;
-		}
-		frameData_->iResolution = Vector2(1, 1);
-		frameData_->screenResolution = Vector2(static_cast<float>(clientWidth_), static_cast<float>(clientHeight_));
-	}
-
 }
 
 void Renderer::CreateObjects()
@@ -713,9 +699,6 @@ void Renderer::CreateParticles()
 
 		particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
 	}
-
-	frameDataResource_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(FrameData));
-	frameDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&frameData_));
 }
 
 void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
@@ -757,11 +740,7 @@ void Renderer::DrawParticles(const Camera& camera)
 	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
 
 	// カメラ情報を更新
-	frameData_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
-	Matrix4x4 view = camera.GetViewMatrix();
-	frameData_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
-	frameData_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
-	cmdList->SetGraphicsRootConstantBufferView(1, frameDataResource_->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(1, globalConstants_->GetResource()->GetGPUVirtualAddress());
 
 	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
 	size_t currentOffset = 0;
@@ -1095,7 +1074,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
 			cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
 			cmdList->SetGraphicsRootConstantBufferView(2, buffer.outlineResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(3, frameDataResource_->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(3, globalConstants_->GetResource()->GetGPUVirtualAddress());
 
 			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
 			cmdList->IASetVertexBuffers(0, 2, vbvs);
@@ -1108,7 +1087,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
 			cmdList->SetGraphicsRootConstantBufferView(1, buffer.outlineResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
 		}
 
 		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
@@ -1133,7 +1112,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.textureHandle));
 		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
 		cmdList->SetGraphicsRootConstantBufferView(5, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-		cmdList->SetGraphicsRootConstantBufferView(6, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(6, globalConstants_->GetResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(9, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
@@ -1157,7 +1136,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
 		cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle));
 		cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-		cmdList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+		cmdList->SetGraphicsRootConstantBufferView(5, globalConstants_->GetResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
@@ -1191,7 +1170,7 @@ void Renderer::DrawGrid(const ModelSubmission & sub)
 
 	// ライト・カメラ情報設定
 	cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(5, cameraManager_->GetCameraResource()->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(5, globalConstants_->GetResource()->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(6, lightManager_->GetPointLightResource()->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(7, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
@@ -1260,7 +1239,7 @@ void Renderer::DrawTrails(const Camera& camera)
 	trailBatch_.mappedWvp->WVP = camera.GetViewProjectionMatrix();
 	trailBatch_.mappedWvp->World = Matrix4x4::MakeIdentity();
 	cmdList->SetGraphicsRootConstantBufferView(0, trailBatch_.wvpResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(2, frameDataResource_->GetGPUVirtualAddress());
+	cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
 
 	// バッチ描画 (256Bアライメントを考慮したオフセット移動)
 	const uint32_t alignedSize = (sizeof(TrailMaterialData) + 255) & ~255;

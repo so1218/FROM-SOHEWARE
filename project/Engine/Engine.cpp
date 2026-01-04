@@ -99,7 +99,7 @@ void Engine::BeginFrame()
 	// ポストエフェクトのパラメータ更新など
 	postEffectManager_->Update();
 
-	cameraManager_->Update(camera_);
+	globalConstants_->Update(*camera_);
 
 #ifdef _DEBUG
 	debugGuiManager_->Update();
@@ -288,8 +288,8 @@ void Engine::InitializeGraphics()
 	lightManager_->Initialize(graphicsDevice_->GetDevice());
 
 	// カメラマネージャの初期化
-	cameraManager_ = std::make_unique<CameraManager>();
-	cameraManager_->Initialize(graphicsDevice_->GetDevice());
+	globalConstants_ = std::make_unique<GlobalConstants>();
+	globalConstants_->Initialize(graphicsDevice_->GetDevice());
 }
 
 void Engine::InitializeRenderer()
@@ -425,7 +425,7 @@ void Engine::InitializeResources()
 		textureManager_.get(),
 		srvManager_.get(),
 		lightManager_.get(),
-		cameraManager_.get(),
+		globalConstants_.get(),
 		materialManager_,
 		camera_,
 		postEffectManager_.get(),

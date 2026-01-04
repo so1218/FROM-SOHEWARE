@@ -227,7 +227,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\RenderSystem\LightManager.cpp" />
     <ClCompile Include="Engine\Graphics\Utility\ShapeGenerator.cpp" />
     <ClCompile Include="Engine\Camera\Camera.cpp" />
-    <ClCompile Include="Engine\Camera\CameraManager.cpp" />
+    <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp" />
     <ClCompile Include="Engine\Camera\DebugCamera.cpp" />
     <ClCompile Include="Engine\Math\Utility\MathUtils.cpp" />
     <ClCompile Include="Engine\Math\Matrix\Matrix3x3.cpp" />
@@ -352,7 +352,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\LightManager.h" />
     <ClInclude Include="Engine\Graphics\Utility\ShapeGenerator.h" />
     <ClInclude Include="Engine\Camera\Camera.h" />
-    <ClInclude Include="Engine\Camera\CameraManager.h" />
+    <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Camera\DebugCamera.h" />
     <ClInclude Include="Engine\Math\Utility\MathUtils.h" />
     <ClInclude Include="Engine\Math\Matrix\Matrix.h" />

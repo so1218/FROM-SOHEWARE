@@ -13,7 +13,7 @@ class PSOManager;
 class RootSignatureManager;
 class SRVManager;
 class LightManager;
-class CameraManager;
+class GlobalConstants;
 class MaterialManager;
 class Camera;
 class PostEffectManager;
@@ -44,7 +44,7 @@ public:
         TextureManager* textureManager,
         SRVManager* srvManager,
         LightManager* lightManager,
-        CameraManager* cameraManager,
+        GlobalConstants* globalConstants,
         MaterialManager* materialManager,
         Camera* camera,
         PostEffectManager* postEffectManager,
@@ -151,7 +151,7 @@ private:
     TextureManager* textureManager_ = nullptr;
     SRVManager* srvManager_ = nullptr;
     LightManager* lightManager_ = nullptr;
-    CameraManager* cameraManager_ = nullptr;
+    GlobalConstants* globalConstants_ = nullptr;
     MaterialManager* materialManager_ = nullptr;
     Camera* camera_ = nullptr;
     PostEffectManager* postEffectManager_ = nullptr;
@@ -199,10 +199,6 @@ private:
 
     // 定数フレームバッファ数
     static constexpr int kFrameCount = 3;
-
-    // GPU用カメラバッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> frameDataResource_;
-    FrameData* frameData_ = nullptr;
 
     // パーティクルインスタンスバッファ（フレーム毎）
     Microsoft::WRL::ComPtr<ID3D12Resource> particleInstanceBuffer_[kFrameCount];

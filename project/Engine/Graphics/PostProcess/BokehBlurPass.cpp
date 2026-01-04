@@ -49,8 +49,8 @@ void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
 
     cmdList->SetGraphicsRootConstantBufferView(
         1,
-        engine_->cameraManager_
-        ->GetCameraResource()
+        engine_->globalConstants_
+        ->GetResource()
         ->GetGPUVirtualAddress()
     );
 

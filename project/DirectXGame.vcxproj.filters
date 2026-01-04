@@ -296,7 +296,7 @@
     <ClCompile Include="Engine\Math\Vector\Vector2.cpp">
       <Filter>Engine\Math\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Camera\CameraManager.cpp">
+    <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp">
       <Filter>Engine\Math\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\PostProcess\PostEffectManager.cpp">
@@ -671,7 +671,7 @@
     <ClInclude Include="Engine\Math\Quaternion.h">
       <Filter>Game\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Camera\CameraManager.h">
+    <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h">
       <Filter>Engine\Math\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectManager.h">

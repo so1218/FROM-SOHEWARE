@@ -113,8 +113,8 @@ void BloomCombinePass::Execute(
     // カメラ定数
     cmdList->SetGraphicsRootConstantBufferView(
         1,
-        engine_->cameraManager_
-        ->GetCameraResource()
+        engine_->globalConstants_
+        ->GetResource()
         ->GetGPUVirtualAddress()
     );
 

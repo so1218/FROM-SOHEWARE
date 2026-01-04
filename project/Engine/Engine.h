@@ -18,7 +18,7 @@
 #include "RenderCommon.h"
 #include "debugGuiManager.h"
 #include "ParticleSystem.h"
-#include "CameraManager.h" 
+#include "GlobalConstants.h" 
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 
 #include "Renderer.h" 
@@ -84,7 +84,7 @@ public:
     std::unique_ptr<DebugCamera> debugCamera_;
     std::unique_ptr<DebugGuiManager> debugGuiManager_;
     std::unique_ptr<ParticleSystem> particleSystem_;
-    std::unique_ptr<CameraManager> cameraManager_;
+    std::unique_ptr<GlobalConstants> globalConstants_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
