@@ -268,10 +268,34 @@ float3 ApplyColorTint(float3 color)
 // ビネット
 float3 ApplyVignette(float3 color, float2 uv)
 {
-    float2 offset = (uv - 0.5) / vignetteEllipseScale;
-    float distSqr = dot(offset, offset);
-    float vignette = smoothstep(vignetteRadius, vignetteRadius + vignetteSoftness, distSqr);
-    return lerp(color, vignetteColor, vignette * vignetteAmount);
+    // 中心座標
+    float2 center = uv - 0.5;
+    
+    // 距離の計算
+    float dist = length(center / vignetteEllipseScale);
+
+    // 距離に基づいたリニアな進行度を計算
+    // ゼロ除算対策
+    float fadeLength = max(vignetteSoftness, 0.0001);
+    
+    float darkness = (dist - vignetteRadius) / fadeLength;
+    
+    // 0.0～1.0の範囲に切り取る
+    darkness = saturate(darkness);
+
+    // 滑らかにする
+    darkness = smoothstep(0.0, 1.0, darkness);
+
+    // 強度とディザリング
+    darkness *= vignetteAmount;
+
+    float dither = (random(uv) - 0.5) / 255.0;
+    darkness += dither * 2.0;
+
+    // 合成
+    float3 blendFactor = lerp(float3(1.0, 1.0, 1.0), vignetteColor.rgb, darkness);
+
+    return color * blendFactor;
 }
 
 // スキャンライン
