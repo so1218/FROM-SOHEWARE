@@ -153,21 +153,13 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     }
 
     // DoF生成
-
-    // 実行 (内部で "Fullscreen" RS に切り替わる)
-    // ※第4引数で Fullscreen 用の RS を渡す
     bokehPass_->Execute(
         cmdList,
         sceneSRV,
         srvManager_->GetSRVHandleGPU(sceneDepthIndex_)
     );
 
-    // ---------------------------------------------------
-    // 3. 最終合成 (PostProcess RS に戻す！！)
-    // ---------------------------------------------------
-
-    // ★重要: RootSignature が "Fullscreen" になっているので、
-    // "PostProcess" に戻さないと次の CombinePass が死にます。
+    // ルートシグネチャをPostProcessに戻す
     cmdList->SetGraphicsRootSignature(
         rootSigManager_->GetRootSignature("PostProcess"));
 

@@ -146,7 +146,7 @@ void Engine::EndFrame()
 	// バックバッファ準備（直後に描画先は切り替える）
 	renderCoordinator_->BeginFrame();
 
-	// FinalBuffer：SRV → RenderTarget
+	// FinalBuffer（SRV → RenderTarget）
 	{
 		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			postEffectManager_->GetFinalPassResource(),

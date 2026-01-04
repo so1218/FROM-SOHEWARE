@@ -165,7 +165,8 @@ private:
     // 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
     // 定数バッファリソースの配列
-    struct PerObjectBuffer {
+    struct PerObjectBuffer 
+    {
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* wvpMapped = nullptr;
 
@@ -188,7 +189,7 @@ private:
         // WVP行列は全ての線で共通なので1つ
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* mappedWvp = nullptr;
-    } lineBatch_;
+    }lineBatch_;
 
     uint32_t indexParticle_ = 0;
     std::vector<RenderData> particles_;
@@ -220,7 +221,6 @@ private:
     MaterialHandle skyboxMaterialHandle_;
 
     // トレイル用のバッチ構造体
-    // [New] 実際にSubmitされたトレイルの数を数えるカウンタ
     int32_t indexTrail_ = 0;
     struct TrailBatch
     {
@@ -230,17 +230,18 @@ private:
         uint32_t dissolveHandle;    // ディゾルブテクスチャ
         TrailMaterialData materialData; // マテリアル設定（定数バッファ用）
     };
+
     // バッチ描画用リソース
     struct TrailBatchResource
     {
         Mesh mesh; // 巨大な動的頂点バッファ
         std::vector<VertexDataTrail> verticesCPU; // CPU側の一時バッファ
 
-        // マテリアル用定数バッファ（描画直前に更新して使う）
+        // マテリアル用定数バッファ
         Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
         TrailMaterialData* mappedMaterial = nullptr;
 
-        // WVP行列用（基本Identityで、頂点計算済み座標を使うなら不要だが、VP行列を渡すなら必要）
+        // WVP行列用
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* mappedWvp = nullptr;
     } trailBatch_;
