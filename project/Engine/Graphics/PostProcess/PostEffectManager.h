@@ -4,6 +4,7 @@
 #include "BrightExtractPass.h"
 #include "DownsamplePass.h"
 #include "BlurPass.h"
+#include "BokehBlurPass.h"
 #include "BloomCombinePass.h"
 #include "Camera.h"
 #include <memory>
@@ -61,9 +62,7 @@ private:
     std::unique_ptr<BlurPass> horizontalBlurPass_;
 
     // DoF用
-    std::unique_ptr<DownsamplePass> dofDownsamplePass_;
-    std::unique_ptr<BlurPass> dofVerticalBlurPass_;
-    std::unique_ptr<BlurPass> dofHorizontalBlurPass_;
+    std::unique_ptr<BokehBlurPass> bokehPass_;
 
     std::unique_ptr<BloomCombinePass> combinePass_;
 

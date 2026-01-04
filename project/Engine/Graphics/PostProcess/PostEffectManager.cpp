@@ -42,15 +42,13 @@ void PostEffectManager::Initialize(
     horizontalBlurPass_ = std::make_unique<BlurPass>();
     horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
 
-    // DOF
-    dofDownsamplePass_ = std::make_unique<DownsamplePass>();
-    dofDownsamplePass_->Initialize(engine, smallW, smallH, psoManager);
+    // --- DOF (Bokeh) の初期化 ---
+    // 高速化と「ボケの拡散感」を出すため、解像度は半分 (width/2) にするのがプロの定石です。
+    UINT halfW = Math::MyMax(1u, width / 2);
+    UINT halfH = Math::MyMax(1u, height / 2);
 
-    dofVerticalBlurPass_ = std::make_unique<BlurPass>();
-    dofVerticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true);
-
-    dofHorizontalBlurPass_ = std::make_unique<BlurPass>();
-    dofHorizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
+    bokehPass_ = std::make_unique<BokehBlurPass>();
+    bokehPass_->Initialize(engine, halfW, halfH, psoManager);
 
     // 最終合成
     combinePass_ = std::make_unique<BloomCombinePass>();
@@ -155,22 +153,30 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     }
 
     // DoF生成
-    dofDownsamplePass_->Execute(cmdList, sceneSRV);
-    auto dofInputSRV = dofDownsamplePass_->GetSRVHandleGPU();
-    for (int i = 0; i < 3; ++i)
-    {
-        dofVerticalBlurPass_->Execute(cmdList, dofInputSRV);
-        dofHorizontalBlurPass_->Execute(
-            cmdList, dofVerticalBlurPass_->GetSRVHandleGPU());
-        dofInputSRV = dofHorizontalBlurPass_->GetSRVHandleGPU();
-    }
+
+    // 実行 (内部で "Fullscreen" RS に切り替わる)
+    // ※第4引数で Fullscreen 用の RS を渡す
+    bokehPass_->Execute(
+        cmdList,
+        sceneSRV,
+        srvManager_->GetSRVHandleGPU(sceneDepthIndex_)
+    );
+
+    // ---------------------------------------------------
+    // 3. 最終合成 (PostProcess RS に戻す！！)
+    // ---------------------------------------------------
+
+    // ★重要: RootSignature が "Fullscreen" になっているので、
+    // "PostProcess" に戻さないと次の CombinePass が死にます。
+    cmdList->SetGraphicsRootSignature(
+        rootSigManager_->GetRootSignature("PostProcess"));
 
     // 最終合成
     combinePass_->SetupInputViews(
         engine_->graphicsDevice_->GetDevice(),
         srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_),
         srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(dofHorizontalBlurPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_)
     );
 

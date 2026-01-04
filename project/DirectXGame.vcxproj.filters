@@ -450,6 +450,9 @@
     <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\BokehBlurPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -762,6 +765,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -849,5 +853,6 @@
     <FxCompile Include="Resources\Shaders\Sprite.VS.hlsl" />
     <FxCompile Include="Resources\Shaders\Sprite.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\Downsample.PS.hlsl" />
+    <FxCompile Include="Resources\Shaders\BokehBlur.PS.hlsl" />
   </ItemGroup>
 </Project>

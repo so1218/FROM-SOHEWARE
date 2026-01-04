@@ -156,6 +156,17 @@ struct BrightExtractSettings
     float2 _padding;
 };
 
+struct DoFSettingsData
+{
+    float focusDistance;
+    float focusRange;
+    float bokehRadius;
+    float _padding;
+    
+    float2 resolution;
+    float2 _padding2;
+};
+
 struct CombineSettings
 {
     float bloomIntensity;
