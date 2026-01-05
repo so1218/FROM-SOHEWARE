@@ -22,6 +22,7 @@ void Grid::SetCamera(Camera* camera)
 {
     camera_ = camera;
 }
+
 void Grid::SetTextureHandle(uint32_t handle)
 {
     textureHandle_ = handle;

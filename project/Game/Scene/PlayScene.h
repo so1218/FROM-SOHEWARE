@@ -45,7 +45,9 @@ public:
     std::unique_ptr<Enemy> enemy_;
     std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
-    std::unique_ptr<ParticleEmitter> emitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> newEmitter_ = nullptr;
+
+    std::unique_ptr<ParticleEmitter> hanabi1Emitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> hanabi2Emitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> hanabi3Emitter_ = nullptr;
 };
 

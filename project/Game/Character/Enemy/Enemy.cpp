@@ -174,7 +174,6 @@ void Enemy::Draw()
 	DrawCollider();
 }
 
-
 // デバッグ描画処理
 void Enemy::DebugDraw()
 {

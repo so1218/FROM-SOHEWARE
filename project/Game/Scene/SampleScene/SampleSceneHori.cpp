@@ -74,23 +74,34 @@ void SampleSceneHori::Initialize()
     player_->SetGetExpEmitter(playerGetExpEmitter_.get());
     playerGetExpEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
     engine_->particleSystem_->AddEmitter(std::move(playerGetExpEmitter_));
-    std::unique_ptr<ParticleEmitter> playerLevelUpEmitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> playerDamagedEmitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> playerGetExpEmitter_ = nullptr;
+    sceneEmitter_ = engine_->particleSystem_->CreateEmitter("scene");
+    player_->SetGetExpEmitter(sceneEmitter_.get());
+    sceneEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
+    engine_->particleSystem_->AddEmitter(std::move(sceneEmitter_));
 
     // ライトの設定
     engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
-    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-0.7f,1.4f };
+    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
     engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
-    engine_->materialManager_->GetMaterialSettings().lightMode = 2;
+    engine_->materialManager_->GetMaterialSettings().lightMode = 1 ;
 
     engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 0.452f;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteRadius = 0;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteSoftness = 0.261f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 1.18f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteRadius = 0.124f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteSoftness = 0.723f;
     engine_->postEffectManager_->GetPostEffectData()->vignetteEllipseScale = { 1.2f,1.0f };
-    engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 0,0,0 };
+    engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 12.0f / 255.0f,24.0f / 255.0f,105.0f / 255.0f };
+    engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= COLOR_TINT;
+    engine_->postEffectManager_->GetPostEffectData()->tintColor = { 130.0f / 255.0f,255.0f / 255.0f,241.0f / 255.0f };
+    engine_->postEffectManager_->GetPostEffectData()->tintMulColorAmount = 0.015f;
+    engine_->postEffectManager_->GetPostEffectData()->tintAddColorAmount = 0.075f;
+    engine_->postEffectManager_->GetPostEffectData()->tintScreenColorAmount = 0.25f;
+    engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 12.0f / 255.0f,24.0f / 255.0f,105.0f / 255.0f };
+    engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
+    engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
+    engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
+    engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
 
     levelUpUI_->Initialize();
 

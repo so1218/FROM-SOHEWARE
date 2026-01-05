@@ -13,6 +13,7 @@ void BrightExtractPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     // 初期値設定
     cbData_->threshold = 1.0f;
+    cbData_->intensity = 0.80f;
 }
 
 void BrightExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV)

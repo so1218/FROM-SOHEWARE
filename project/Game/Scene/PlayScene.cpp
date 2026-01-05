@@ -42,11 +42,15 @@ void PlayScene::Initialize()
     player_->Initialize();
     camera_->Initialize();
 
-    emitter_ = engine_->particleSystem_->CreateEmitter("chest");
-    newEmitter_ = engine_->particleSystem_->CreateEmitter("doar");
+    hanabi1Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi1");
+    hanabi2Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi2");
+    hanabi3Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi3");
 
-    engine_->particleSystem_->AddEmitter(std::move(emitter_));
-    engine_->particleSystem_->AddEmitter(std::move(newEmitter_));
+    engine_->particleSystem_->AddEmitter(std::move(hanabi1Emitter_));
+    engine_->particleSystem_->AddEmitter(std::move(hanabi2Emitter_));
+    engine_->particleSystem_->AddEmitter(std::move(hanabi3Emitter_));
+
+    engine_->postEffectManager_->GetCombineSettings()->enableFog = false;
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
