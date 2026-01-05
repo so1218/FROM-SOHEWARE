@@ -3,7 +3,7 @@
   "VertexShader": "Resources/Shaders/Sprite.VS.hlsl",
   "PixelShader": "Resources/Shaders/Sprite.PS.hlsl",
   "InputLayout": "Default3D",
-  "BlendState": "AlphaBlend",
+  "BlendState": "AlphaBlendUI",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Off",
   "Topology": "Triangle",

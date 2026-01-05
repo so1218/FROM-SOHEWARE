@@ -30,8 +30,10 @@ void WeaponAxe::Initialize()
     gv->AddItem(GetGlobalVariableGroupName(), "Projectile Lifetime", projectileLifetime_);
     gv->AddItem(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
 
-    ApplyGlobalVariables();
+    level_ = 1;
+    gv->SetValue(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
 
+    ApplyGlobalVariables();
 }
 
 void WeaponAxe::ApplyGlobalVariables()

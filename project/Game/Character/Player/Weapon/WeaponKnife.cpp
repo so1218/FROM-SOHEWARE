@@ -33,6 +33,9 @@ void WeaponKnife::Initialize()
     gv->AddItem(GetGlobalVariableGroupName(), "CollisionSize", collisionSize_);
     gv->AddItem(GetGlobalVariableGroupName(), "Time Between Projectiles", timeBetweenProjectiles_);
 
+    level_ = 1;
+    gv->SetValue(GetGlobalVariableGroupName(), "Level", static_cast<float>(level_));
+
     ApplyGlobalVariables();
 }
 

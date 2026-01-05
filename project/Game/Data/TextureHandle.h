@@ -36,6 +36,8 @@ enum TextureID
     cardTextKnife,
     cardTextAxe,
 
+    title,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -87,6 +89,8 @@ private:
 
             { cardTextKnife, "Resources/images/numFont/9.png" },
             { cardTextAxe, "Resources/images/numFont/0.png" },
+
+            { title, "Resources/images/title.png" },
         }
     };
 };

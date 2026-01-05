@@ -80,7 +80,8 @@ public:
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
-    void DrawScene();
+    void Draw3D(); // 旧 DrawScene (UI以外を描画・リスト保持)
+    void DrawUI();
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }

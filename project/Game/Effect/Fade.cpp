@@ -20,6 +20,8 @@ void Fade::Initialize()
 	sprite_->SetSize(spriteSize);
 	sprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
 
+	sprite_->SetLayerOrder(9999);
+
 	// デバッグ用のグローバル変数登録
 	auto* gv = GlobalVariables::GetInstance();
 	auto groupName = GetGlobalVariableGroupName();

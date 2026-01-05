@@ -144,6 +144,44 @@ void Player::Update()
 		weapon->Update(TimeManager::GetInstance()->GetDeltaTime());
 	}
 
+
+	{
+		// 0番目のディレクショナルライトを取得
+		auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+		if (dirLights[0].enable)
+		{
+			// ライト方向を正規化
+			Vector3 lightDir = dirLights[0].direction;
+			lightDir = lightDir.Normalize();
+
+			// 影を落とす対象の中心座標
+			Vector3 shadowTarget = modelPlayer_->GetTransform().translation_;
+
+			// ライト位置を決定
+			float distance = 100.0f;
+			Vector3 lightPos = shadowTarget - (lightDir * distance);
+
+			// 上方向ベクトル（真上/真下はX軸に変更）
+			Vector3 up = { 0.0f, 1.0f, 0.0f };
+			if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+
+			// ライトのビュー行列を作成
+			Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
+
+			// 平行光源用の正射影行列を作成
+			float size = 50.0f;
+			float nearZ = -100.0f;
+			float farZ = 200.0f;
+			Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
+
+			// ビュー行列と射影行列を合成
+			Matrix4x4 lightViewProj = lightView * lightProj;
+
+			// シャドウ行列をライトマネージャに更新
+			engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
+		}
+	}
+
 	animationPlayer_->SetEmissiveIntensity(3.5f);
 	animationPlayer_->materialHandle_.materialData->enableRim = true;
 	animationPlayer_->materialHandle_.materialData->rimUseLightDir = true;
@@ -196,7 +234,9 @@ void Player::Move()
 
 	// 実際の位置更新
 	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
-	modelPlayer_->GetTransform().translation_.y = 0.5f; // 地面の高さを固定
+	modelPlayer_->GetTransform().translation_.y = 0.1f; // 地面の高さを固定
+	modelTamesi_->GetTransform().translation_ = modelPlayer_->GetTransform().translation_;
+	modelTamesi_->GetTransform().translation_.y = -0.5f;
 }
 
 // 入力から移動方向を取得
@@ -293,7 +333,7 @@ Vector3 Player::GetWorldPosition()
 
 void Player::Draw()
 {
-	modelPlayer_->Draw();
+	/*modelPlayer_->Draw();*/
 	modelTamesi_->Draw();
 	animationPlayer_->Draw();
 	DrawCollider();

@@ -137,7 +137,7 @@ void Engine::EndFrame()
 	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
 	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 
-	renderer_->DrawScene();
+	renderer_->Draw3D();
 	renderCoordinator_->EndOffscreenRender();
 
 	// ポストエフェクト（Bloomなど）
@@ -164,6 +164,9 @@ void Engine::EndFrame()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
+
+	renderer_->DrawUI();
+
 
 	// FinalBuffer：RenderTarget → SRV
 	{

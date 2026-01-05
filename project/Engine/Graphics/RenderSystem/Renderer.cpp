@@ -233,7 +233,7 @@ void Renderer::DrawSceneForShadow()
 	}
 }
 
-void Renderer::DrawScene()
+void Renderer::Draw3D()
 {
 	// トレイル描画を登録
 	if (!trailBatch_.verticesCPU.empty())
@@ -241,7 +241,7 @@ void Renderer::DrawScene()
 		ModelSubmission trailSubmission{};
 		trailSubmission.type = RenderType::Trail;
 		trailSubmission.group = RenderGroup::Trail; // 半透明グループ
-		trailSubmission.depth = 0.0f; // 簡易的な深度
+		trailSubmission.depth = 0.0f; // 深度
 		modelSubmissions_.push_back(trailSubmission);
 	}
 
@@ -292,6 +292,12 @@ void Renderer::DrawScene()
 	// 登録モデルを描画
 	for (const auto& sub : modelSubmissions_)
 	{
+		// UIグループなら描画せずにスキップ
+		if (sub.group == RenderGroup::UI)
+		{
+			continue;
+		}
+
 		switch (sub.type)
 		{
 		case RenderType::Sprite: DrawSprite(sub); break;
@@ -306,6 +312,35 @@ void Renderer::DrawScene()
 			FlushLines(*camera_);
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			break;
+		}
+	}
+}
+
+void Renderer::DrawUI()
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	// UI描画用の設定（必要ならDepthTestを無効化する設定などをここに入れると良い）
+	// cmdList->OMSetDepthStencilState(...); // UIは深度無視設定推奨
+
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// --- UIのみ描画 ---
+	for (const auto& sub : modelSubmissions_)
+	{
+		// UI以外はスキップ
+		if (sub.group != RenderGroup::UI)
+		{
+			continue;
+		}
+
+		// UIは基本的にSpriteのみだと思いますが、ModelでUI表現する場合も対応
+		switch (sub.type)
+		{
+		case RenderType::Sprite: DrawSprite(sub); break;
+			// 必要ならLineなども
 		}
 	}
 

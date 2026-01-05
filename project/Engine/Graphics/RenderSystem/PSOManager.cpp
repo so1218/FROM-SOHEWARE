@@ -294,6 +294,29 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
         return blendDesc;
     }
 
+    // UI用
+    if (name == "AlphaBlendUI")
+    {
+        D3D12_BLEND_DESC blendDesc{};
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
+        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+        blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+        // 書き込みマスクをRGBのみに制限する（Alphaを除外）
+        blendDesc.RenderTarget[0].RenderTargetWriteMask =
+            D3D12_COLOR_WRITE_ENABLE_RED |
+            D3D12_COLOR_WRITE_ENABLE_GREEN |
+            D3D12_COLOR_WRITE_ENABLE_BLUE;
+
+        return blendDesc;
+    }
+
     // 不透明（ブレンドなし）
     if (name == "Opaque") 
     {

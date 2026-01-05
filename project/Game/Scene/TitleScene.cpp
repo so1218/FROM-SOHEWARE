@@ -23,7 +23,7 @@ void TitleScene::Initialize()
     camera_->SetTranslation(Vector3(0, 0, -6.6f));
     sprite_->SetPosition({ 320, 180 });
     sprite_->SetSize({ 640, 360 });
-    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
+    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::title));
 }
 
 void TitleScene::Update()

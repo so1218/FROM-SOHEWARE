@@ -139,7 +139,7 @@ void Game::Update()
 #endif
 
     // シャドウマップ更新
-    auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+   /* auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
     if (dirLights[0].enable)
     {
         Vector3 lightDir = dirLights[0].direction.Normalize();
@@ -155,7 +155,7 @@ void Game::Update()
         Matrix4x4 lightViewProj = lightView * lightProj;
 
         engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
-    }
+    }*/
 }
 
 void Game::Draw()
