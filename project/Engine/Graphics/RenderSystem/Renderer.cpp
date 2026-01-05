@@ -404,7 +404,7 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 	submission.instanceIndex = indexModel_;
 	submission.blendMode = blendMode;
 
-	bool hasAlpha = ((color >> 24) & 0xFF) < 255;
+	bool hasAlpha = ((color) & 0xFF) < 255;
 	bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
 
 	if (hasAlpha || isBlend)
