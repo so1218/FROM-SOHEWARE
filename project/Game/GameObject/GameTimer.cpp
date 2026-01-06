@@ -23,9 +23,9 @@ void GameTimer::Initialize(float limitMinutes)
         digitTextureHandles_[i] = TextureHandle::Get(idMap[i]);
     }
     // コロン用のテクスチャ
-    colonTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    colonTextureHandle_ = TextureHandle::Get(TextureID::coron);
 
-    // スプライトの生成 (5文字分: MM:SS)
+    // スプライトの生成
     for (int i = 0; i < 5; ++i)
     {
         sprites_[i] = std::make_unique<Sprite>(engine_);
@@ -72,7 +72,6 @@ void GameTimer::ApplyGlobalVariables()
 
         // コロンだけサイズを変えたい場合はここで個別調整も可能
         if (i == 2) {
-            // 例: コロンは細くする
             Vector2 colonSize = { charSize_.x * 0.5f, charSize_.y * 0.5f };
             Vector2 colonPos = { pos.x + (charSize_.x - colonSize.x) / 2.0f, pos.y + (charSize_.y - colonSize.y) / 2.0f };
             sprites_[i]->SetSize(colonSize);

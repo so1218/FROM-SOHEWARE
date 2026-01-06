@@ -9,12 +9,16 @@
 #include "GlobalVariables.h"
 #include "ExperienceGem.h"
 
+int Enemy::enemyCount_ = 0;
+
 Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data)
 {
 	engine_ = engine;
 	camera_ = camera;
 	player_ = player;
 	objectManager_ = objectManager;
+
+	enemyCount_++;
 
 	// dataからステータスを初期化
 	hp_ = data.hp;
@@ -27,6 +31,11 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* 
 	animationEnemy_->SetColor(0x27FFE7FF);
 	modelEnemy_->SetEnableOutline(true);
 
+}
+
+Enemy::~Enemy()
+{
+	enemyCount_--;
 }
 
 void Enemy::Initialize()

@@ -15,13 +15,19 @@ void LevelUpUI::Initialize()
 		// 背景用
 		auto bg = std::make_unique<Sprite>(engine_);
 		bg->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
-		bg->SetAnchorPoint({ 0.5f, 0.5f }); // 中央基準にすると拡大縮小の中心がズレなくて良い
+		bg->SetAnchorPoint({ 0.5f, 0.5f });
 		cardBgSprites_.push_back(std::move(bg));
 
 		// 中身用
 		auto content = std::make_unique<Sprite>(engine_);
 		content->SetAnchorPoint({ 0.5f, 0.5f });
+        content->SetLayerOrder(40);
 		cardContentSprites_.push_back(std::move(content));
+
+        auto contentFrame = std::make_unique<Sprite>(engine_);
+        contentFrame->SetAnchorPoint({ 0.5f, 0.5f });
+        contentFrame->SetLayerOrder(35);
+        cardContentFrameSprites_.push_back(std::move(contentFrame));
 	}
 
 	// グローバル変数の初期化
@@ -63,6 +69,13 @@ void LevelUpUI::Activate(const std::vector<UpgradeInfo>& options)
 			cardContentSprites_[i]->SetTextureHandle(currentOptions_[i].textureHandle);
 		}
 	}
+    for (int i = 0; i < 3; ++i)
+    {
+        if (i < currentOptions_.size())
+        {
+            cardContentFrameSprites_[i]->SetColor(0x000000ff);
+        }
+    }
 }
 
 void LevelUpUI::Update()
@@ -80,7 +93,7 @@ void LevelUpUI::Update()
     {
         selectedIndex_++;
         if (selectedIndex_ >= currentOptions_.size()) {
-            selectedIndex_ = 0; // 一番上へループ
+            selectedIndex_ = 0; 
         }
     }
 
@@ -88,7 +101,6 @@ void LevelUpUI::Update()
     if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA))
     {
         isDecided_ = true;
-        // 決定音を鳴らすならここ
     }
 
 
@@ -97,10 +109,9 @@ void LevelUpUI::Update()
     {
         // 有効な選択肢の数を超えていたら非表示にしてスキップ
         if (i >= currentOptions_.size()) {
-            // 本来は SetVisible(false) などがあると良い
-            // ここでは簡易的にサイズ0にして隠す例
             cardBgSprites_[i]->SetSize({ 0,0 });
             cardContentSprites_[i]->SetSize({ 0,0 });
+            cardContentFrameSprites_[i]->SetSize({ 0,0 });
             continue;
         }
 
@@ -125,6 +136,9 @@ void LevelUpUI::Update()
         cardContentSprites_[i]->SetPosition(pos);
         cardContentSprites_[i]->SetSize({ cardSize_.x * scale, cardSize_.y * scale });
         cardContentSprites_[i]->SetColor(color);
+
+        cardContentFrameSprites_[i]->SetPosition(pos);
+        cardContentFrameSprites_[i]->SetSize({ cardSize_.x * scale * 1.05f, cardSize_.y * scale * 1.05f });
     }
 }
 
@@ -135,6 +149,7 @@ void LevelUpUI::Draw()
     {
         cardBgSprites_[i]->Draw();
         cardContentSprites_[i]->Draw();
+        cardContentFrameSprites_[i]->Draw();
     }
 }
 

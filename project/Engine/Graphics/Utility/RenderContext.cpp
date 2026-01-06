@@ -12,7 +12,7 @@ RenderContext::RenderContext(uint32_t width, uint32_t height)
     viewport_.MaxDepth = 1.0f;
 
     // シザー矩形
-    // 基本的にビューポートと同じ矩形が構成されるようにする
+    // ビューポートと同じ矩形が構成されるようにする
     scissorRect_.left = 0;
     scissorRect_.right = width;
     scissorRect_.top = 0;

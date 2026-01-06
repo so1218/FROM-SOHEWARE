@@ -52,4 +52,19 @@ private:
     Vector2 levelNumberPos_ = { 20.0f, 10.0f };
     float numberSpace_ = 24.0f;
     Vector2 numberSize_ = { 32.0f, 32.0f };
+
+    std::unique_ptr<Sprite> spriteMove_;
+    std::unique_ptr<Sprite> spriteCamera_;
+    std::unique_ptr<Sprite> spriteExpFrame_;
+    std::unique_ptr<Sprite> spriteHpFrame_;
+
+    Vector2 spriteSizeMove_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeCamera_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeExpFrame_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeHpFrame_ = { 640.0f, 360.0f };
+
+    Vector2 spritePosMove_ = { 640.0f, 360.0f };
+    Vector2 spritePosCamera_ = { 640.0f, 360.0f };
+    Vector2 spritePosExpFrame_ = { 640.0f, 360.0f };
+    Vector2 spritePosHpFrame_ = { 640.0f, 360.0f };
 };

@@ -31,6 +31,9 @@ enum TextureID
     num8,
     num9,
     num0,
+    
+    coron,
+    hpGage,
 
     // カードフォント
     cardTextKnife,
@@ -97,6 +100,9 @@ private:
             { num8, "Resources/images/numFont/8.png" },
             { num9, "Resources/images/numFont/9.png" },
             { num0, "Resources/images/numFont/0.png" },
+
+            { coron, "Resources/images/numFont/coron.png" },
+            { hpGage, "Resources/images/hpGage.png" },
 
             { cardTextKnife, "Resources/images/numFont/9.png" },
             { cardTextAxe, "Resources/images/numFont/0.png" },

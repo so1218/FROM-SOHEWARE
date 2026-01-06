@@ -4,33 +4,68 @@
 #include "externals/imgui/imgui.h"
 
 PlayerUI::PlayerUI(Engine* engine, Player* player) : engine_(engine), player_(player) 
-{}
+{
+    xpBarBgSprite_ = std::make_unique<Sprite>(engine_);
+    xpBarSprite_ = std::make_unique<Sprite>(engine_);
+    hpBarBgSprite_ = std::make_unique<Sprite>(engine_);
+    hpBarSprite_ = std::make_unique<Sprite>(engine_);
+
+    spriteMove_ = std::make_unique<Sprite>(engine_);
+    spriteCamera_ = std::make_unique<Sprite>(engine_);
+    spriteExpFrame_ = std::make_unique<Sprite>(engine_);
+    spriteHpFrame_ = std::make_unique<Sprite>(engine_);
+}
 
 void PlayerUI::Initialize()
 {
     // ゲージ背景
-    xpBarBgSprite_ = std::make_unique<Sprite>(engine_);
     xpBarBgSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     xpBarBgSprite_->SetColor(0x444444FF);
     xpBarBgSprite_->SetLayerOrder(10);
 
     // ゲージ本体
-    xpBarSprite_ = std::make_unique<Sprite>(engine_);
     xpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     xpBarSprite_->SetColor(0x00FF00FF);
     xpBarSprite_->SetLayerOrder(11);
 
     // HPバー背景
-    hpBarBgSprite_ = std::make_unique<Sprite>(engine_);
     hpBarBgSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     hpBarBgSprite_->SetColor(0x330000FF);
-    xpBarBgSprite_->SetLayerOrder(10);
+    hpBarBgSprite_->SetLayerOrder(10);
 
     // HPバー本体
-    hpBarSprite_ = std::make_unique<Sprite>(engine_);
     hpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     hpBarSprite_->SetColor(0xFF0000FF);
-    xpBarSprite_->SetLayerOrder(18);
+    hpBarSprite_->SetLayerOrder(18);
+
+    spritePosMove_ = { 251, 628 };
+    spriteMove_->SetPosition(spritePosMove_);
+    spriteSizeMove_ = { 454.0f, 70.0f };
+    spriteMove_->SetSize(spriteSizeMove_);
+    spriteMove_->SetAnchorPoint({ 0.5f, 0.5f });
+    spriteMove_->SetTextureHandle(TextureHandle::Get(TextureID::moveSousa));
+
+    spritePosCamera_ = { 251, 681 };
+    spriteCamera_->SetPosition(spritePosCamera_);
+    spriteSizeCamera_ = { 449.0f, 70.0f };
+    spriteCamera_->SetSize(spriteSizeCamera_);
+    spriteCamera_->SetAnchorPoint({ 0.5f, 0.5f });
+    spriteCamera_->SetTextureHandle(TextureHandle::Get(TextureID::cameraSousa));
+
+    spritePosExpFrame_ = { 645, 28.7f };
+    spriteExpFrame_->SetPosition(spritePosExpFrame_);
+    spriteSizeExpFrame_ = { 574.0f, 26.0f };
+    spriteExpFrame_->SetSize(spriteSizeExpFrame_);
+    spriteExpFrame_->SetAnchorPoint({ 0.5f, 0.5f });
+    spriteExpFrame_->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
+    spriteExpFrame_->SetColor(0x000000ff);
+
+    spritePosHpFrame_ = { 646, 29 };
+    spriteHpFrame_->SetPosition(spritePosHpFrame_);
+    spriteSizeHpFrame_ = { 124.0f, 28.0f };
+    spriteHpFrame_->SetSize(spriteSizeHpFrame_);
+    spriteHpFrame_->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
+    spriteHpFrame_->SetColor(0x000000ff);
 
     std::array<TextureID, 10> idMap = {
         TextureID::num0, TextureID::num1, TextureID::num2, TextureID::num3, TextureID::num4,
@@ -108,6 +143,7 @@ void PlayerUI::Update()
 
     hpBarBgSprite_->SetPosition(centeredPosBg);
     hpBarSprite_->SetPosition(centeredPosFg);
+    spriteHpFrame_->SetPosition({ screenPos.x - hpBarSize_.x / 2.0f - 5.0f, screenPos.y - 5.0f });
 
     // レベル数値
     int currentLevel = player_->GetLevel();
@@ -144,6 +180,11 @@ void PlayerUI::Draw()
 
     hpBarBgSprite_->Draw();
     hpBarSprite_->Draw();
+
+    spriteMove_->Draw();
+    spriteCamera_->Draw();
+    spriteExpFrame_->Draw();
+    spriteHpFrame_->Draw();
 
     for (auto& sprite : levelNumberSprites_)
     {
@@ -200,6 +241,35 @@ void PlayerUI::DebugDraw()
             changed = true;
         }
         ImGui::TreePop();
+    }
+
+    if (ImGui::DragFloat2("Sprite Pos Move", &spritePosMove_.x, 1.0f))
+    {
+        spriteMove_->SetPosition(spritePosMove_);
+    }
+    if (ImGui::DragFloat2("Sprite Size Move", &spriteSizeMove_.x, 1.0f))
+    {
+        spriteMove_->SetSize(spriteSizeMove_);
+    }
+    if (ImGui::DragFloat2("Sprite Pos Camera", &spritePosCamera_.x, 1.0f))
+    {
+        spriteCamera_->SetPosition(spritePosCamera_);
+    }
+    if (ImGui::DragFloat2("Sprite Size Camera", &spriteSizeCamera_.x, 1.0f))
+    {
+        spriteCamera_->SetSize(spriteSizeCamera_);
+    }
+    if (ImGui::DragFloat2("Sprite Pos HpFrame", &spritePosExpFrame_.x, 1.0f))
+    {
+        spriteExpFrame_->SetPosition(spritePosExpFrame_);
+    }
+    if (ImGui::DragFloat2("Sprite Size ExpFrame", &spriteSizeExpFrame_.x, 1.0f))
+    {
+        spriteExpFrame_->SetSize(spriteSizeExpFrame_);
+    }
+    if (ImGui::DragFloat2("Sprite Size HpFrame", &spriteSizeHpFrame_.x, 1.0f))
+    {
+        spriteHpFrame_->SetSize(spriteSizeHpFrame_);
     }
 
     // 値が変更されたら適用

@@ -28,6 +28,7 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
 
     sprite_ = std::make_unique<Sprite>(engine_);
+    spriteUse_ = std::make_unique<Sprite>(engine_);
 
     objectManager_.AddObject(std::move(grid));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
@@ -57,11 +58,19 @@ void PlayScene::Initialize()
     engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
     engine_->postEffectManager_->GetCombineSettings()->fogEnd = 5000.0f;
 
-    sprite_->SetPosition({ 640, 360 });
-    spriteSize_ = { 600.0f, 220.0f };
+    spritePos_ = { 640, 227 };
+    sprite_->SetPosition(spritePos_);
+    spriteSize_ = { 800.0f, 280.0f };
     sprite_->SetSize(spriteSize_);
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
     sprite_->SetTextureHandle(TextureHandle::Get(TextureID::clear));
+
+    spritePosUse_ = { 640, 522 };
+    spriteUse_->SetPosition(spritePosUse_);
+    spriteSizeUse_ = { 800.0f, 131.0f };
+    spriteUse_->SetSize(spriteSizeUse_);
+    spriteUse_->SetAnchorPoint({ 0.5f, 0.5f });
+    spriteUse_->SetTextureHandle(TextureHandle::Get(TextureID::pressSousa));
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
@@ -100,6 +109,7 @@ void PlayScene::HandleCollisions()
 void PlayScene::Draw()
 {
     sprite_->Draw();
+    spriteUse_->Draw();
 	objectManager_.Draw();
 }
 
@@ -107,9 +117,21 @@ void PlayScene::DebugDraw()
 {
     ImGui::Begin("プレイシーン");
 
+    if (ImGui::DragFloat2("Sprite Pos", &spritePos_.x, 1.0f))
+    {
+        sprite_->SetPosition(spritePos_);
+    }
     if (ImGui::DragFloat2("Sprite Size", &spriteSize_.x, 1.0f))
     {
         sprite_->SetSize(spriteSize_);
+    }
+    if (ImGui::DragFloat2("Sprite Pos Use", &spritePosUse_.x, 1.0f))
+    {
+        spriteUse_->SetPosition(spritePosUse_);
+    }
+    if (ImGui::DragFloat2("Sprite Size Use", &spriteSizeUse_.x, 1.0f))
+    {
+        spriteUse_->SetSize(spriteSizeUse_);
     }
 
     ImGui::End();

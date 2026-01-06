@@ -165,8 +165,9 @@ void Engine::EndFrame()
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
 
+#ifdef _DEBUG
 	renderer_->DrawUI();
-
+#endif
 
 	// FinalBuffer：RenderTarget → SRV
 	{
@@ -191,7 +192,9 @@ void Engine::EndFrame()
 	// 最終結果をバックバッファへ描画
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	renderer_->DrawFinalResult(finalSrvIndex);
+	renderer_->DrawUI();
 #endif
+
 
 	// ImGui描画
 	cmdList->SetDescriptorHeaps(1, heaps);

@@ -61,7 +61,7 @@ std::vector<UpgradeInfo> LevelUpManager::PickUpgrades(Player* player)
 			// 見つからなかった場合
 			if (!found)
 			{
-				info.textureHandle = TextureHandle::Get(TextureID::white1x1);
+				info.textureHandle = TextureHandle::Get(TextureID::cardTextAxe);
 			}
 
 			candidates.push_back(info);

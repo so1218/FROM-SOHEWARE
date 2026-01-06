@@ -22,6 +22,7 @@ class Enemy : public Collider, public BaseCharacter
 {
 public:
     Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data);
+    ~Enemy();
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
 
@@ -53,6 +54,8 @@ public:
     WorldTransform& GetWorldTransform() { return modelEnemy_->GetTransform(); }
     AABB& GetAABB() { return aabb_; }
 
+    static int GetEnemyCount() { return enemyCount_; }
+
 private:
     Engine* engine_;
     Camera* camera_;
@@ -76,6 +79,8 @@ private:
 
     // ノックバック関連
     Vector3 knockbackVelocity_ = { 0.0f, 0.0f, 0.0f }; // ノックバック速度
-    float knockbackFriction_ = 0.8f; // ノックバックの減衰率 (小さいほどすぐ止まる)
+    float knockbackFriction_ = 0.8f; // ノックバックの減衰率
     float knockbackPower_ = 1.0f;    // ノックバックの強さ
+
+    static int enemyCount_;
 };

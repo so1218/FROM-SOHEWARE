@@ -52,7 +52,12 @@ public:
     std::unique_ptr<ParticleEmitter> clearEmitter_ = nullptr;
 
     std::unique_ptr<Sprite> sprite_;
+    std::unique_ptr<Sprite> spriteUse_;
 
     Vector2 spriteSize_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeUse_ = { 640.0f, 360.0f };
+
+    Vector2 spritePos_ = { 640.0f, 360.0f };
+    Vector2 spritePosUse_ = { 640.0f, 360.0f };
 };
 

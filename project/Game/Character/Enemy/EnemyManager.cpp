@@ -21,6 +21,11 @@ void EnemyManager::Update()
     {
         spawnTimer_ -= spawnInterval_;
 
+        if (Enemy::GetEnemyCount() >= 200)
+        {
+            return;
+        }
+
         Vector3 playerPos = player_->GetWorldPosition();
         float randomAngle = Math::RandomFloat(0.0f, 2.0f * Math::PI);
 

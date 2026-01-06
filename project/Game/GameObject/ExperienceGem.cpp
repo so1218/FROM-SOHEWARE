@@ -8,9 +8,12 @@
 ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
     : engine_(engine), camera_(camera), player_(player)
 {
-    // 経験値オーブ用のモデルをロード (例: ModelID::exp_orb)
+    // 経験値オーブ用のモデルをロード
     model_ = std::make_unique<Model>(engine_, camera_, ModelHandle::Get(ModelID::cube));
-	model_->SetTextureHandle(TextureHandle::Get(TextureID::uvChecker));
+	model_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+
+    model_->SetEnableOutline(true);
+    model_->SetColor(0xFFFF00FF);
 }
 
 void ExperienceGem::Initialize()
@@ -21,6 +24,8 @@ void ExperienceGem::Initialize()
     SetCollisionAttribute(kCollisionAttributeExpGem);
     // 衝突対象はプレイヤーのみ
     SetCollisionMask(kCollisionAttributePlayer);
+
+    model_->GetTransform().translation_.y = 0.5f;
 }
 
 void ExperienceGem::Update()
@@ -44,6 +49,12 @@ void ExperienceGem::Update()
     }
 
     transform.UpdateMatrix();
+
+    model_->SetEmissiveIntensity(4.0f);
+    model_->materialHandle_.materialData->enableRim = true;
+    model_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+    model_->materialHandle_.materialData->rimPower = 3.8f;
+    model_->materialHandle_.materialData->rimIntensity = 1.7f;
 }
 
 void ExperienceGem::Draw()

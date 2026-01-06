@@ -48,6 +48,8 @@ private:
     std::vector<std::unique_ptr<Sprite>> cardBgSprites_;
     // 中身
     std::vector<std::unique_ptr<Sprite>> cardContentSprites_;
+    // 中身の枠
+    std::vector<std::unique_ptr<Sprite>> cardContentFrameSprites_;
 
     Vector2 cardStartPos_ = { 640.0f, 150.0f };
     Vector2 cardSize_ = { 400.0f, 120.0f };    
