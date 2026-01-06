@@ -12,6 +12,7 @@ public:
 
 	// 敵を生成する関数
 	void SpawnEnemy(const EnemyData& data, const Vector3& positon);
+	void Reset();
 
 private:
 	Engine* engine_;

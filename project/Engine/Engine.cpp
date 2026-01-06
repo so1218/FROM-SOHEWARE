@@ -164,7 +164,6 @@ void Engine::EndFrame()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
-
 #ifdef _DEBUG
 	renderer_->DrawUI();
 #endif
@@ -189,12 +188,13 @@ void Engine::EndFrame()
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), finalSrvIndex);
 #else
+	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
+	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 	// 最終結果をバックバッファへ描画
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	renderer_->DrawFinalResult(finalSrvIndex);
 	renderer_->DrawUI();
 #endif
-
 
 	// ImGui描画
 	cmdList->SetDescriptorHeaps(1, heaps);

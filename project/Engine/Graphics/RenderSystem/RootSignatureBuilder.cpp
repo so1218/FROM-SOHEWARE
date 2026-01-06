@@ -96,6 +96,20 @@ void RootSignatureBuilder::AddStaticSampler(
     sampler.MaxLOD = maxLod;
     sampler.ShaderRegister = shaderRegister;
     sampler.ShaderVisibility = visibility;
+    sampler.MaxAnisotropy = 1;
+
+    // シャドウマップの場合、枠外は白（影なし）にしないと、マップ外が全部影になる可能性がある
+    if (filter == D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR ||
+        filter == D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT)
+    {
+        // 影用設定：枠外は白（1.0 = 奥）
+        sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    }
+    else
+    {
+        // 通常テクスチャ：枠外は透明黒（0.0）
+        sampler.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;
+    }
 
     staticSamplers_.push_back(sampler);
 }

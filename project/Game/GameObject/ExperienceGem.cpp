@@ -4,6 +4,8 @@
 #include "ModelHandle.h"     
 #include "TimeManager.h"     
 #include "TextureHandle.h"  
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
     : engine_(engine), camera_(camera), player_(player)
@@ -71,6 +73,8 @@ void ExperienceGem::OnCollision(Collider* other)
     {
         // 収集フラグを立てる
         isCollected_ = true;
+
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::exp), false, 100);
     }
 }
 

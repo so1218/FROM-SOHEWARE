@@ -13,6 +13,8 @@
 #include "TimeManager.h"
 #include "WeaponKnife.h"
 #include "WeaponAxe.h"
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 #include <numbers>
 #include <algorithm>
@@ -169,7 +171,7 @@ void Player::Update()
 			Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
 
 			// 平行光源用の正射影行列を作成
-			float size = 50.0f;
+			float size = 100.0f;
 			float nearZ = -100.0f;
 			float farZ = 200.0f;
 			Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
@@ -318,6 +320,7 @@ void Player::OnCollision(Collider* other)
 		{
 			damagedEmitterPtr_->Play();
 		}
+		AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::playerHit), false, 100);
 	}
 	if (other->GetCollisionAttribute() & kCollisionAttributeExpGem)
 	{
@@ -493,7 +496,7 @@ void Player::LevelUp()
 	{
 		levelUpEmitterPtr_->Play();
 	}
-
+	AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::levelUp), false, 100);
 	// ここでレベルアップ選択画面を開く
 	isWaitingForUpgrade_ = true;
 

@@ -51,6 +51,7 @@ enum TextureID
     moveSousa,
     useController,
     pressSousa,
+    ikinokore,
 
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
@@ -119,6 +120,7 @@ private:
             { moveSousa, "Resources/images/moveSousa.png" },
             { useController, "Resources/images/useController.png" },
             { pressSousa, "Resources/images/pressSousa.png" },
+            { ikinokore, "Resources/images/ikinokore.png" },
         }
     };
 };

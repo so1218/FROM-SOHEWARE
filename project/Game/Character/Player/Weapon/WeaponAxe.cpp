@@ -3,7 +3,9 @@
 #include "ImGuiManager.h"
 #include "CollisionManager.h"
 #include "Player.h"
-#include "AxeProjectile.h" 
+#include "AxeProjectile.h"
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 WeaponAxe::WeaponAxe(Engine* engine, Player* player, Camera* camera)
     : Weapon(engine, player), camera_(camera)
@@ -57,6 +59,7 @@ void WeaponAxe::Update(float deltaTime)
     {
         cooldownTimer_ = cooldown_;
         Fire();
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::throwAxe), false, 100);
     }
 
     for (auto& projectile : projectiles_)

@@ -185,7 +185,8 @@ void Renderer::DrawSceneForShadow()
 
 	for (const auto& sub : modelSubmissions_)
 	{
-		if (sub.type != RenderType::Model && sub.type != RenderType::Skinning) {
+		if (sub.type != RenderType::Model && sub.type != RenderType::Skinning)
+		{
 			continue;
 		}
 
@@ -320,14 +321,11 @@ void Renderer::DrawUI()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
-	// UI描画用の設定（必要ならDepthTestを無効化する設定などをここに入れると良い）
-	// cmdList->OMSetDepthStencilState(...); // UIは深度無視設定推奨
-
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// --- UIのみ描画 ---
+	// UIのみ描画
 	for (const auto& sub : modelSubmissions_)
 	{
 		// UI以外はスキップ
@@ -336,11 +334,10 @@ void Renderer::DrawUI()
 			continue;
 		}
 
-		// UIは基本的にSpriteのみだと思いますが、ModelでUI表現する場合も対応
 		switch (sub.type)
 		{
 		case RenderType::Sprite: DrawSprite(sub); break;
-			// 必要ならLineなども
+			// Lineなども
 		}
 	}
 

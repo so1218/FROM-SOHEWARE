@@ -21,7 +21,7 @@ void EnemyManager::Update()
     {
         spawnTimer_ -= spawnInterval_;
 
-        if (Enemy::GetEnemyCount() >= 200)
+        if (Enemy::GetEnemyCount() >= 180)
         {
             return;
         }
@@ -57,4 +57,9 @@ void EnemyManager::SpawnEnemy(const EnemyData& data, const Vector3& position)
 
     // オブジェクトマネージャーに登録
     objectManager_->AddObject(std::move(newEnemy));
+}
+
+void EnemyManager::Reset()
+{
+    spawnTimer_ = 0.0f;
 }

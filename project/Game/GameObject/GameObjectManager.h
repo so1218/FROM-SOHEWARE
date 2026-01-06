@@ -18,6 +18,8 @@ public:
 
     void AddAllCollidersToManager(CollisionManager* manager);
 
+    void ClearEnemies();
+
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;
 };

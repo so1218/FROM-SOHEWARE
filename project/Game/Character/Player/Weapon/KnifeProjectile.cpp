@@ -4,6 +4,8 @@
 #include "CollisionConfig.h" 
 #include "Enemy.h" 
 #include "TextureHandle.h" 
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize)
 {
@@ -68,6 +70,7 @@ void KnifeProjectile::OnCollision(Collider* other)
         Enemy* enemy = static_cast<Enemy*>(other);
         enemy->TakeDamage(damage_, GetWorldPosition());
         isHit_ = true;
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::enemyHit), false, 100);
     }
 }
 

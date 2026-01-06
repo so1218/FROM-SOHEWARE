@@ -3,6 +3,8 @@
 #include "ImGuiManager.h"
 #include "Input.h"
 #include "TextureHandle.h"
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 LevelUpUI::LevelUpUI(Engine* engine) : engine_(engine)
 {
@@ -26,6 +28,7 @@ void LevelUpUI::Initialize()
 
         auto contentFrame = std::make_unique<Sprite>(engine_);
         contentFrame->SetAnchorPoint({ 0.5f, 0.5f });
+        contentFrame->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
         contentFrame->SetLayerOrder(35);
         cardContentFrameSprites_.push_back(std::move(contentFrame));
 	}
@@ -87,7 +90,7 @@ void LevelUpUI::Update()
         {
             selectedIndex_ = static_cast<int>(currentOptions_.size()) - 1;
         }
-        // 効果音を鳴らすならここ
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::cursolSE), false, 100);
     }
     if (Input::GetInstance().IsKeyTriggered(DIK_DOWN) || Input::GetInstance().IsStickDownTriggered(0, Input::StickType::LeftStick))
     {
@@ -95,12 +98,15 @@ void LevelUpUI::Update()
         if (selectedIndex_ >= currentOptions_.size()) {
             selectedIndex_ = 0; 
         }
+
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::cursolSE), false, 100);
     }
 
     // 決定
     if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA))
     {
         isDecided_ = true;
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::dicision), false, 100);
     }
 
 
@@ -138,7 +144,7 @@ void LevelUpUI::Update()
         cardContentSprites_[i]->SetColor(color);
 
         cardContentFrameSprites_[i]->SetPosition(pos);
-        cardContentFrameSprites_[i]->SetSize({ cardSize_.x * scale * 1.05f, cardSize_.y * scale * 1.05f });
+        cardContentFrameSprites_[i]->SetSize({ cardSize_.x * scale * 1.05f, cardSize_.y * scale * 1.15f });
     }
 }
 

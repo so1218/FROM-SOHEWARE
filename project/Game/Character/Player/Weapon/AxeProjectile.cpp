@@ -3,6 +3,8 @@
 #include "TimeManager.h" 
 #include "CollisionConfig.h" 
 #include "TextureHandle.h" 
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw)
 {
@@ -74,6 +76,7 @@ void AxeProjectile::OnCollision(Collider* other)
         Enemy* enemy = static_cast<Enemy*>(other);
         enemy->TakeDamage(damage_, GetWorldPosition());
         isHit_ = true; // ヒットしたら消える
+        AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::enemyHit), false, 100);
     }
 }
 

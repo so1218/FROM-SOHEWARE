@@ -57,14 +57,17 @@ private:
     std::unique_ptr<Sprite> spriteCamera_;
     std::unique_ptr<Sprite> spriteExpFrame_;
     std::unique_ptr<Sprite> spriteHpFrame_;
+    std::unique_ptr<Sprite> spriteIkinokore_;
 
     Vector2 spriteSizeMove_ = { 640.0f, 360.0f };
     Vector2 spriteSizeCamera_ = { 640.0f, 360.0f };
     Vector2 spriteSizeExpFrame_ = { 640.0f, 360.0f };
     Vector2 spriteSizeHpFrame_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeIkinokore_ = { 640.0f, 360.0f };
 
     Vector2 spritePosMove_ = { 640.0f, 360.0f };
     Vector2 spritePosCamera_ = { 640.0f, 360.0f };
     Vector2 spritePosExpFrame_ = { 640.0f, 360.0f };
     Vector2 spritePosHpFrame_ = { 640.0f, 360.0f };
+    Vector2 spritePosIkinokore_ = { 640.0f, 360.0f };
 };

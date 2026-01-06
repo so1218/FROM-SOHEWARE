@@ -14,6 +14,7 @@ PlayerUI::PlayerUI(Engine* engine, Player* player) : engine_(engine), player_(pl
     spriteCamera_ = std::make_unique<Sprite>(engine_);
     spriteExpFrame_ = std::make_unique<Sprite>(engine_);
     spriteHpFrame_ = std::make_unique<Sprite>(engine_);
+    spriteIkinokore_ = std::make_unique<Sprite>(engine_);
 }
 
 void PlayerUI::Initialize()
@@ -66,6 +67,13 @@ void PlayerUI::Initialize()
     spriteHpFrame_->SetSize(spriteSizeHpFrame_);
     spriteHpFrame_->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
     spriteHpFrame_->SetColor(0x000000ff);
+
+    spritePosIkinokore_ = { 230, 562 };
+    spriteIkinokore_->SetPosition(spritePosIkinokore_);
+    spriteSizeIkinokore_ = { 403.0f, 90.0f };
+    spriteIkinokore_->SetSize(spriteSizeIkinokore_);
+    spriteIkinokore_->SetAnchorPoint({ 0.5f, 0.5f });
+    spriteIkinokore_->SetTextureHandle(TextureHandle::Get(TextureID::ikinokore));
 
     std::array<TextureID, 10> idMap = {
         TextureID::num0, TextureID::num1, TextureID::num2, TextureID::num3, TextureID::num4,
@@ -185,6 +193,7 @@ void PlayerUI::Draw()
     spriteCamera_->Draw();
     spriteExpFrame_->Draw();
     spriteHpFrame_->Draw();
+    spriteIkinokore_->Draw();
 
     for (auto& sprite : levelNumberSprites_)
     {
@@ -270,6 +279,14 @@ void PlayerUI::DebugDraw()
     if (ImGui::DragFloat2("Sprite Size HpFrame", &spriteSizeHpFrame_.x, 1.0f))
     {
         spriteHpFrame_->SetSize(spriteSizeHpFrame_);
+    }
+    if (ImGui::DragFloat2("Sprite Pos Ikinokore", &spritePosIkinokore_.x, 1.0f))
+    {
+        spriteIkinokore_->SetPosition(spritePosIkinokore_);
+    }
+    if (ImGui::DragFloat2("Sprite Size Ikinokore", &spriteSizeIkinokore_.x, 1.0f))
+    {
+        spriteIkinokore_->SetSize(spriteSizeIkinokore_);
     }
 
     // 値が変更されたら適用

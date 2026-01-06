@@ -8,6 +8,8 @@
 #include "TimeManager.h"
 #include "GlobalVariables.h"
 #include "ExperienceGem.h"
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 int Enemy::enemyCount_ = 0;
 

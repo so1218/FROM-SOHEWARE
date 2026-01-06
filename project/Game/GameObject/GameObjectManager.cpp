@@ -1,6 +1,8 @@
 #include "GameObjectManager.h"
 #include "CollisionManager.h" 
 #include "Collider.h"
+#include "Enemy.h" 
+#include <algorithm>
 
 void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj) 
 {
@@ -68,4 +70,14 @@ void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
             manager->AddCollider(collider);
         }
     }
+}
+
+void GameObjectManager::ClearEnemies()
+{
+    objects_.erase(
+        std::remove_if(objects_.begin(), objects_.end(),
+            [](const std::unique_ptr<GameObject>& obj) {
+                return dynamic_cast<Enemy*>(obj.get()) != nullptr;
+            }),
+        objects_.end());
 }

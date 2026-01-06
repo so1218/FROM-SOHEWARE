@@ -10,6 +10,8 @@
 #include "Grid.h"
 #include "PlayerUI.h"
 #include "SceneManager.h"
+#include "AudioPlayer.h"
+#include "AudioHandle.h"
 
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
@@ -108,10 +110,19 @@ void SampleSceneHori::Initialize()
 
     // 制限時間を設定
     gameTimer_->Initialize(2.0f);
+
+    objectManager_.ClearEnemies();
+
+    enemyManager_->Reset();
+
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clear));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::title));
 }
 
 void SampleSceneHori::Update()
 {
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::playScene), true, 20);
+
     switch (sceneState_)
     {
     case SceneState::Playing:
@@ -157,12 +168,13 @@ void SampleSceneHori::UpdatePlaying()
     // ゲーム終了判定
     if (player_->IsEnd())
     {
-        //sceneManager_->RequestSceneChange(SceneID::Title);
+        sceneManager_->RequestSceneChange(SceneID::Sample);
     }
     // タイムアップ
     if (gameTimer_->IsTimeUp())
     {
-        //sceneManager_->RequestSceneChange(SceneID::Play);
+        sceneManager_->RequestSceneChange(SceneID::Play);
+        AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSE), false, 100);
     }
 }
 

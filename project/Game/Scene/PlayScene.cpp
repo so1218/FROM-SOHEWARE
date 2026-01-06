@@ -74,10 +74,15 @@ void PlayScene::Initialize()
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
+
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playScene));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::title));
 }
 
 void PlayScene::Update()
 {
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clear), true, 20);
+
     HandleCollisions();
 
     // ゲームオブジェクトの一括更新
@@ -91,6 +96,7 @@ void PlayScene::Update()
     {
         // シーンマネージャーを通じてシーン切り替えをリクエスト
         sceneManager_->RequestSceneChange(SceneID::Title);
+        AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::dicision), false, 100);
     }
 }
 

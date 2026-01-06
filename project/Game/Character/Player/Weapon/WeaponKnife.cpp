@@ -3,6 +3,8 @@
 #include "Player.h"
 #include "GlobalVariables.h"
 #include "imGuiManager.h"
+#include "AudioHandle.h"
+#include "AudioPlayer.h"
 
 WeaponKnife::WeaponKnife(Engine* engine, Player* player, Camera* camera)
     : Weapon(engine, player), camera_(camera)
@@ -189,6 +191,8 @@ void WeaponKnife::FireOneProjectile()
     newProjectile->SetDamage(damage_);
     newProjectile->SetSpeed(projectileSpeed_);
     newProjectile->SetLifetime(projectileLifetime_);
+
+    AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::throwKnife), false, 20);
 
     projectiles_.push_back(std::move(newProjectile));
 }

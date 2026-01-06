@@ -5,6 +5,8 @@
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "ModelHandle.h"
+#include "AudioPlayer.h"
+#include "AudioHandle.h"
 #include "TimeManager.h"
 #include "ModelLoader.h"
 #include "Collision.h"
@@ -68,10 +70,17 @@ void TitleScene::Initialize()
     engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
 
     objectManager_.Initialize();
+
+
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clear));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playScene));
+
 }
 
 void TitleScene::Update()
 {
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::title), true, 20);
+
     objectManager_.Update();
 
 	// シーン切り替えの入力検出
@@ -80,6 +89,7 @@ void TitleScene::Update()
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
 		sceneManager_->RequestSceneChange(SceneID::Sample);
+        AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::dicision), false, 100);
 	}
 }
 
