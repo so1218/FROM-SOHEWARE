@@ -26,7 +26,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "winmm.lib")
 
-std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
+std::wstring Engine::windowTitle_ = L"LE2A_13_ホリ_ソウヘイ_IceSurvivor";
 int Engine::kFixedFPS_ = 60;
 
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
