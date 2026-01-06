@@ -20,6 +20,7 @@ enum class ModelID
     knife,
 
 	// プレイヤー関連
+    player,
     sneakWalk,
     shrimp,
     ryu,
@@ -66,12 +67,13 @@ private:
             { ModelID::knife,  "Resources/models/player/weapons/knife/Knife.obj" },
 
             // プレイヤー関連
+            { ModelID::player,  "Resources/models/player/player.gltf" },
             { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },
             { ModelID::shrimp,  "Resources/models/animated/Shrimp_03.gltf" },
             { ModelID::ryu,  "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
 
             // 敵関連
-            { ModelID::enemy ,  "Resources/models/enemy/blaze.obj" },
+            { ModelID::enemy ,  "Resources/models/enemy/body/zombi.gltf" },
         }
     };
 };

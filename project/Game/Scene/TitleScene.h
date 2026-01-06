@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "Sprite.h"
 #include "GameObjectManager.h"
+#include "ParticleSystemWrapper.h"
+#include "ParticleEmitter.h"
 
 class TitleScene : public BaseScene
 {
@@ -21,5 +23,18 @@ public:
 
     GameObjectManager objectManager_;
 
+    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
+    std::unique_ptr<ParticleEmitter> titleEmitter_ = nullptr;
+
     std::unique_ptr<Sprite> sprite_;
+    std::unique_ptr<Sprite> spriteUse_;
+    std::unique_ptr<Sprite> spritePress_;
+
+    Vector2 spriteSize_ = { 640.0f, 360.0f };
+    Vector2 spriteSizeUse_ = { 640.0f, 360.0f };
+    Vector2 spriteSizePress_ = { 640.0f, 360.0f };
+
+    Vector2 spritePos_ = { 640.0f, 360.0f };
+    Vector2 spritePosUse_ = { 640.0f, 360.0f };
+    Vector2 spritePosPress_ = { 640.0f, 360.0f };
 };

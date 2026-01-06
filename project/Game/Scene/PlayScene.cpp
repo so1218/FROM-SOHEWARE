@@ -27,6 +27,8 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
     auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
 
+    sprite_ = std::make_unique<Sprite>(engine_);
+
     objectManager_.AddObject(std::move(grid));
     objectManager_.AddObject(std::move(particleSystemWrapper_));
 }
@@ -45,12 +47,21 @@ void PlayScene::Initialize()
     hanabi1Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi1");
     hanabi2Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi2");
     hanabi3Emitter_ = engine_->particleSystem_->CreateEmitter("hanabi3");
+    clearEmitter_ = engine_->particleSystem_->CreateEmitter("clear");
 
     engine_->particleSystem_->AddEmitter(std::move(hanabi1Emitter_));
     engine_->particleSystem_->AddEmitter(std::move(hanabi2Emitter_));
     engine_->particleSystem_->AddEmitter(std::move(hanabi3Emitter_));
+    engine_->particleSystem_->AddEmitter(std::move(clearEmitter_));
 
-    engine_->postEffectManager_->GetCombineSettings()->enableFog = false;
+    engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
+    engine_->postEffectManager_->GetCombineSettings()->fogEnd = 5000.0f;
+
+    sprite_->SetPosition({ 640, 360 });
+    spriteSize_ = { 600.0f, 220.0f };
+    sprite_->SetSize(spriteSize_);
+    sprite_->SetAnchorPoint({ 0.5f, 0.5f });
+    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::clear));
 
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
@@ -88,12 +99,18 @@ void PlayScene::HandleCollisions()
 
 void PlayScene::Draw()
 {
+    sprite_->Draw();
 	objectManager_.Draw();
 }
 
 void PlayScene::DebugDraw()
 {
     ImGui::Begin("プレイシーン");
+
+    if (ImGui::DragFloat2("Sprite Size", &spriteSize_.x, 1.0f))
+    {
+        sprite_->SetSize(spriteSize_);
+    }
 
     ImGui::End();
 

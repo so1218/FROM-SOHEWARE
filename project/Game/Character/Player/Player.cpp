@@ -31,7 +31,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::walk),AnimationHandle::Get(AnimationID::walk));
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::player),AnimationHandle::Get(AnimationID::player));
 }
 
 void Player::Initialize()
@@ -52,7 +52,7 @@ void Player::Initialize()
 	modelPlayer_->SetEnableOutline(true);
 	animationPlayer_->SetEnableOutline(true);
 
-	animationPlayer_->SetColor(0xff0000ff);
+	animationPlayer_->SetColor(0x86FF30ff);
 
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
@@ -135,7 +135,7 @@ void Player::Update()
 	UpdateAABB();
 
 	// アニメーション更新
-	animationPlayer_->Update(1, true);
+	animationPlayer_->Update(1.5f, true);
 	animationPlayer_->SetTransform(modelPlayer_->GetTransform());
 
 	// 所持武器の更新
@@ -209,13 +209,22 @@ void Player::Move()
 	if (moveDirection_.Length() > 0.0f)
 	{
 		lastMoveDirection_ = moveDirection_;
-
+		if (currentAnimState_ != PlayerAnimState::Walk)
+		{
+			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::player));
+			currentAnimState_ = PlayerAnimState::Walk; 
+		}
 	}
 	else
 	{
 		if (walkEmitterPtr_)
 		{
 			walkEmitterPtr_->Play();
+		}
+		if (currentAnimState_ != PlayerAnimState::Idle)
+		{
+			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::playerIdle));
+			currentAnimState_ = PlayerAnimState::Idle; 
 		}
 	}
 

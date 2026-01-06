@@ -30,7 +30,7 @@ void PlayerUI::Initialize()
     hpBarSprite_ = std::make_unique<Sprite>(engine_);
     hpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
     hpBarSprite_->SetColor(0xFF0000FF);
-    xpBarSprite_->SetLayerOrder(11);
+    xpBarSprite_->SetLayerOrder(18);
 
     std::array<TextureID, 10> idMap = {
         TextureID::num0, TextureID::num1, TextureID::num2, TextureID::num3, TextureID::num4,

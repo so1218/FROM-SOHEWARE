@@ -8,11 +8,7 @@ class Player;
 enum class WeaponType
 {
     Knife,
-    Garlic,
     Axe,
-    Bible,
-    FireWand,
-    MagicMissile
 };
 
 class Weapon

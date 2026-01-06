@@ -11,6 +11,11 @@ enum class AnimationID
     ryu,
     shrimp,
 
+    player,
+    playerIdle,
+
+    enemy,
+
     count
 };
 
@@ -33,6 +38,11 @@ private:
             { AnimationID::walk,       "Resources/models/animated/walk.gltf" },
             { AnimationID::ryu,     "Resources/models/animated/animatedRyu.gltf" },
             { AnimationID::shrimp,     "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
+
+            { AnimationID::player,     "Resources/models/player/player.gltf" },
+            { AnimationID::playerIdle,     "Resources/models/player/player.gltf" },
+
+            { AnimationID::enemy ,  "Resources/models/enemy/body/zombi.gltf" },
         }
     };
 };

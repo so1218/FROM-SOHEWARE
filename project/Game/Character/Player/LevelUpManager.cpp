@@ -4,11 +4,11 @@
 
 LevelUpManager::LevelUpManager()
 {
-	uint32_t texKnife = TextureHandle::Get(TextureID::num0);
-	uint32_t texAxe = TextureHandle::Get(TextureID::num1);
-	uint32_t texMaxHpUp = TextureHandle::Get(TextureID::num2);
-	uint32_t texSpeedUp = TextureHandle::Get(TextureID::num3);
-	uint32_t texHpHeal = TextureHandle::Get(TextureID::num4);
+	uint32_t texKnife = TextureHandle::Get(TextureID::knifeLevelUp);
+	uint32_t texAxe = TextureHandle::Get(TextureID::axeLevelUp);
+	uint32_t texMaxHpUp = TextureHandle::Get(TextureID::hpUp);
+	uint32_t texSpeedUp = TextureHandle::Get(TextureID::speedUp);
+	uint32_t texHpHeal = TextureHandle::Get(TextureID::heal);
 
 	// データを登録
 	allNewWeapons_.push_back({ 100,UpgradeType::newWeapon,"Knife","Throws knives forward", (int)WeaponType::Knife,0, texKnife });

@@ -37,6 +37,17 @@ enum TextureID
     cardTextAxe,
 
     title,
+    clear,
+    axeLevelUp,
+    knifeLevelUp,
+    hpUp,
+    speedUp,
+    heal,
+
+    cameraSousa,
+    moveSousa,
+    useController,
+    pressSousa,
 
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
@@ -91,6 +102,17 @@ private:
             { cardTextAxe, "Resources/images/numFont/0.png" },
 
             { title, "Resources/images/title.png" },
+            { clear, "Resources/images/clear.png" },
+            { axeLevelUp, "Resources/images/axeLevelUp.png" },
+            { knifeLevelUp, "Resources/images/knifeLevelUp.png" },
+            { hpUp, "Resources/images/hpUp.png" },
+            { speedUp, "Resources/images/speedUp.png" },
+            { heal, "Resources/images/heal.png" },
+
+            { cameraSousa, "Resources/images/cameraSousa.png" },
+            { moveSousa, "Resources/images/moveSousa.png" },
+            { useController, "Resources/images/useController.png" },
+            { pressSousa, "Resources/images/pressSousa.png" },
         }
     };
 };

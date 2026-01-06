@@ -10,6 +10,13 @@
 
 class PlayScene;
 
+enum class PlayerAnimState
+{
+	None, 
+	Idle, 
+	Walk  
+};
+
 class Player : public Collider, public BaseCharacter
 {
 public:
@@ -133,5 +140,7 @@ private:
 	bool isEnd_ = false; // 死亡フラグ
 
 	bool isWaitingForUpgrade_ = false; // 選択待ちフラグ
+
+	PlayerAnimState currentAnimState_ = PlayerAnimState::None;
 };
 

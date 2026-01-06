@@ -8,7 +8,7 @@
 #include "Enemy.h"
 #include "FollowCamera.h"
 #include "ParticleSystemWrapper.h"
-#include "GameObjectManager.h"
+#include "Sprite.h"
 
 class PlayScene : public BaseScene
 {
@@ -49,5 +49,10 @@ public:
     std::unique_ptr<ParticleEmitter> hanabi1Emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> hanabi2Emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> hanabi3Emitter_ = nullptr;
+    std::unique_ptr<ParticleEmitter> clearEmitter_ = nullptr;
+
+    std::unique_ptr<Sprite> sprite_;
+
+    Vector2 spriteSize_ = { 640.0f, 360.0f };
 };
 

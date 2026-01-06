@@ -21,9 +21,12 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* 
 	speed_ = data.speed;
 	size_ = data.size;
 	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
-	modelEnemy_->SetColor(0x000088ff);
-	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, *ModelHandle::Get(data.modelId), AnimationHandle::Get(data.animationId));
+	modelEnemy_->SetColor(0x27FFE7FF);
+	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, *ModelHandle::Get(ModelID::enemy), AnimationHandle::Get(AnimationID::enemy));
+	animationEnemy_->SetEnableOutline(true);
+	animationEnemy_->SetColor(0x27FFE7FF);
 	modelEnemy_->SetEnableOutline(true);
+
 }
 
 void Enemy::Initialize()
@@ -106,11 +109,11 @@ void Enemy::Update()
 	animationEnemy_->Update(1.0f, true);
 	animationEnemy_->SetTransform(transform);
 
-	modelEnemy_->SetEmissiveIntensity(4.0f);
-	modelEnemy_->materialHandle_.materialData->enableRim = true;
-	modelEnemy_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
-	modelEnemy_->materialHandle_.materialData->rimPower = 3.8f;
-	modelEnemy_->materialHandle_.materialData->rimIntensity = 1.7f;
+	animationEnemy_->SetEmissiveIntensity(4.0f);
+	animationEnemy_->materialHandle_.materialData->enableRim = true;
+	animationEnemy_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+	animationEnemy_->materialHandle_.materialData->rimPower = 3.8f;
+	animationEnemy_->materialHandle_.materialData->rimIntensity = 1.7f;
 }
 
 void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)
@@ -159,16 +162,16 @@ void Enemy::Draw()
 	if (flashTimer_ > 0)
 	{
 
-		modelEnemy_->SetColor(0xff0000ff);
+		animationEnemy_->SetColor(0xff0000ff);
 	}
 	else
 	{
-		modelEnemy_->SetColor(0x0000ffff);
+		animationEnemy_->SetColor(0x27FFE7FF);
 	}
-	modelEnemy_->Draw();
+	animationEnemy_->Draw();
 	if (flashTimer_ > 0)
 	{
-		modelEnemy_->SetColor(0x0000ffff);
+		animationEnemy_->SetColor(0x27FFE7FF);
 	}
 
 	DrawCollider();

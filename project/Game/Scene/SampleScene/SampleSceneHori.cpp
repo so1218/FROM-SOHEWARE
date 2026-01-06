@@ -97,6 +97,7 @@ void SampleSceneHori::Initialize()
     engine_->postEffectManager_->GetPostEffectData()->tintAddColorAmount = 0.075f;
     engine_->postEffectManager_->GetPostEffectData()->tintScreenColorAmount = 0.25f;
     engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
+    engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
     engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
     engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
     engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
