@@ -567,12 +567,6 @@ void DebugGuiManager::DrawInformationDisplays()
     ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->kMaxLineCount);
     ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->kMaxParticleCount);
     ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->kMaxTrailCount);
-
-    // プロファイリング情報 (別途プロファイリングシステムが必要)
-   /* ImGui::Text("Profiling Info: [Not Implemented]");*/
-
-    // デバッグ用テキストオーバーレイの例
-    // ImGui::GetForegroundDrawList()->AddText(ImVec2(10, 10), IM_COL32_WHITE, "Custom Overlay Text");
 }
 
 void DebugGuiManager::RenderOffscreenTexture(
@@ -580,11 +574,10 @@ void DebugGuiManager::RenderOffscreenTexture(
     uint32_t srvIndexToShow
 ) 
 {
-    // 1. マネージャから、表示したいSRVの「GPUハンドル」を直接もらう
-     //    (コピーもCPUハンドルも不要)
+    // マネージャから、表示したいSRVのGPUハンドルを直接もらう
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
-    // 2. ImGuiで表示する
+    // ImGuiで表示する
     ImGuiCond cond = ImGuiCond_FirstUseEver; // デフォルトは初回のみ
 
     // リセット要求が来ているかチェック
@@ -594,13 +587,12 @@ void DebugGuiManager::RenderOffscreenTexture(
         ImGuiManager::ClearSceneResetRequested(); // フラグを下ろす
     }
 
-    // cond 変数を使って設定
+    // cond変数を使って設定
     ImGui::SetNextWindowSize(ImVec2(800, 450), cond);
-    ImGui::SetNextWindowPos(ImVec2(0, 0), cond); // 必要なら位置もリセット
+    ImGui::SetNextWindowPos(ImVec2(0, 0), cond); 
     ImGui::Begin("Scene");
     ImVec2 imageSize = ImGui::GetContentRegionAvail();
 
-    // (void*) キャストは ImGui の作法なので、reinterpret_cast が2回必要
     ImGui::Image(
         reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)),
         imageSize

@@ -45,7 +45,7 @@ void DebugCamera::Update()
         Quaternion currentRotation = worldTransform_.rotationQuaternion_;
         Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
         if (distance_ < minDistance_) {
-            // target を forward 方向に押す
+            // targetをforward方向に押す
             target_ += forward * (minDistance_ - distance_);
             distance_ = minDistance_;
         }
@@ -74,7 +74,7 @@ void DebugCamera::Update()
         target_ += up * static_cast<float>(deltaY) * dragSpeed_;
     }
 
-    // currentPitch_ と currentYaw_ を使って回転クォータニオンを作成し、常に反映
+    // currentPitch_とcurrentYaw_を使って回転クォータニオンを作成し、常に反映
     Quaternion pitchQuaternion = Quaternion::FromAxisAngle({ 1.0f, 0.0f, 0.0f }, currentPitch_);
     Quaternion yawQuaternion = Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, currentYaw_);
     worldTransform_.SetRotation(yawQuaternion * pitchQuaternion);

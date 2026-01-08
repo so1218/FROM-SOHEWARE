@@ -105,7 +105,7 @@ void ParticleEmitter::Play()
 {
     isPlaying_ = true;
     elapsedTime_ = 0.0f;
-    timeSinceLastSpawn_ = 0.0f; // 放出タイミングもリセット
+    timeSinceLastSpawn_ = 0.0f; // 放出タイミングリセット
 }
 
 void ParticleEmitter::Stop()

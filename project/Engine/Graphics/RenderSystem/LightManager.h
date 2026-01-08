@@ -31,7 +31,7 @@ public:
     int GetAreaLightCount() const { return areaLightCount_; }
 
     // ポイントライトのスロットを要求する
-    // 成功すればインデックス (0 ~ MAX-1) を、失敗すれば -1 を返す
+    // 成功すればインデックス(0 ~ MAX-1)を、失敗すれば-1を返す
     int RequestPointLight();
     int RequestAreaLight();
 

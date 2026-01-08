@@ -453,6 +453,9 @@
     <ClCompile Include="Engine\Graphics\PostProcess\BokehBlurPass.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\GodRayPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -766,6 +769,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\GodRayPass.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

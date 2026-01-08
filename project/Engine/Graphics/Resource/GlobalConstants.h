@@ -5,7 +5,7 @@
 
 class Camera;
 
-// 役割: シーン全体で共有する定数バッファ(b1)の管理
+// シーン全体で共有する定数バッファの管理
 class GlobalConstants
 {
 public:
@@ -17,7 +17,7 @@ public:
 
     // ゲッター
     FrameData* GetFrameData() { return frameData_; }
-    ID3D12Resource* GetResource() { return constantBuffer_.Get(); } // 名前も汎用的に
+    ID3D12Resource* GetResource() { return constantBuffer_.Get(); }
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;

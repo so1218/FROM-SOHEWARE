@@ -259,10 +259,6 @@ void ParticleEditor::ShowEditor()
                             if (ImGui::Button("法線の正規化")) {
                                 col.plane.normal = col.plane.normal.Normalize();
                             }
-
-                            // ギズモ描画 (デバッグ用)
-                            // 緑色のグリッドなどを描画して平面を可視化する
-                            // DebugDraw::DrawGrid(col.plane.point, col.plane.normal, 10.0f, Color::Green);
                         }
                         else
                         {
@@ -278,10 +274,6 @@ void ParticleEditor::ShowEditor()
                                 ImGui::DragFloat("半径", &col.worldObj.scale.x, 0.1f);
                             else
                                 ImGui::DragFloat3("サイズ", &col.worldObj.scale.x, 0.1f);
-
-                            // ギズモ描画
-                            // if (shape == Sphere) DebugDraw::DrawWireSphere(center, radius, Color::Red);
-                            // else DebugDraw::DrawWireBox(center, size, Color::Red);
                         }
 
                         ImGui::Separator();

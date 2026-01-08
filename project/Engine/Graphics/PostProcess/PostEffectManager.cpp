@@ -42,8 +42,7 @@ void PostEffectManager::Initialize(
     horizontalBlurPass_ = std::make_unique<BlurPass>();
     horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
 
-    // --- DOF (Bokeh) の初期化 ---
-    // 高速化と「ボケの拡散感」を出すため、解像度は半分 (width/2) にするのがプロの定石です。
+    // DOF(Bokeh)の初期化
     UINT halfW = Math::MyMax(1u, width / 2);
     UINT halfH = Math::MyMax(1u, height / 2);
 

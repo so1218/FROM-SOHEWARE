@@ -75,7 +75,7 @@ struct ShapeModule
         }
         }
 
-        return { 0.0f, 0.0f, 0.0f }; // デフォルト
+        return { 0.0f, 0.0f, 0.0f }; 
     }
 };
 
@@ -165,8 +165,8 @@ struct ColorOverLifetimeModule
 
     unsigned int startColor = 0xffffffff;  // 開始色
     unsigned int endColor = 0xffffff00;    // 終了色
-    unsigned int startColor2 = 0xffffffff; // 2つ目の開始色 (RandomBetweenTwo用)
-    unsigned int endColor2 = 0xffffff00;   // 2つ目の終了色 (RandomBetweenTwo用)
+    unsigned int startColor2 = 0xffffffff; // 2つ目の開始色
+    unsigned int endColor2 = 0xffffff00;   // 2つ目の終了色
 
     EasingType easingType = EasingType::EaseLinear; // 補間のイージングタイプ
 
@@ -402,7 +402,7 @@ struct EmitterConfig
     float lifetime = 4.0f;      // パーティクル寿命
     int amount = 1;             // 1回の生成数
     float duration = -0.1f;     // エミッター稼働時間（負なら無限）
-    bool looping = true;        // duration 終了後にループするか
+    bool looping = true;        // duration終了後にループするか
     bool playOnAwake = true;    // 生成時に自動再生するか
     Vector3 followOffset = { 0.0f, 0.0f, 0.0f };// 追従時のオフセット座標
 };

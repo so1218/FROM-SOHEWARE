@@ -15,7 +15,7 @@
 
 void AudioManager::Initialize()
 {
-    // Media Foundation の初期化
+    // MediaFoundationの初期化
     HRESULT hr = MFStartup(MF_VERSION);
     assert(SUCCEEDED(hr));
 

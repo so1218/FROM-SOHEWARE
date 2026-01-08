@@ -29,7 +29,7 @@ void ImGuiManager::Initialize(
 
     io.IniFilename = "imgui_layout.ini";
 
-    // フォント設定（日本語対応）
+    // フォント設定
     std::string fontPath = "Resources/fonts/GenJyuuGothic-Bold.ttf";
     float fontSize = 16.0f;
 
@@ -124,8 +124,8 @@ void ImGuiManager::Initialize(
     style.ScrollbarSize = 10;
     style.GrabMinSize = 10;
     style.WindowRounding = 1.0f;
-    style.FrameRounding = 10.0f;       // ボタン・スライダーの角丸
-    style.ScrollbarRounding = 10.0f;   // スクロールバーの角丸
+    style.FrameRounding = 10.0f;       
+    style.ScrollbarRounding = 10.0f;   
     style.GrabRounding = 10.0f;
 
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
@@ -230,28 +230,6 @@ void ImGuiManager::DrawMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            //if (ImGui::MenuItem("Open...", "Ctrl+O"))
-            //{
-            //    // ファイルダイアログ表示フラグを立てる
-            //    IGFD::FileDialogConfig config;
-            //    config.path = ".";  // 初期ディレクトリ指定
-
-            //    ImGuiFileDialog::Instance()->OpenDialog(
-            //        "ChooseFileDlgKey",
-            //        "Choose File",
-            //        ".png,.txt,.cpp,.h",
-            //        config);
-            //}
-            //if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-            //{
-            //    IGFD::FileDialogConfig config;
-            //    config.path = "."; // 初期ディレクトリ
-            //    ImGuiFileDialog::Instance()->OpenDialog(
-            //        "SaveFileDlgKey", // Openとは別のキー
-            //        "Save File As",   // ダイアログのタイトル
-            //        ".json,.txt",     // 保存形式のフィルタ
-            //        config);
-            //}
             if (ImGui::MenuItem("Exit"))
             {
                 PostQuitMessage(0);
@@ -262,9 +240,10 @@ void ImGuiManager::DrawMenuBar()
         {
             if (ImGui::MenuItem("Reset Layout")) // レイアウトをリセット
             {
-                // .ini ファイルを削除する
+                // .iniファイルを削除する
                 ImGuiIO& io = ImGui::GetIO();
-                if (io.IniFilename != nullptr) {
+                if (io.IniFilename != nullptr)
+                {
                     std::filesystem::remove(io.IniFilename);
                 }
 
@@ -281,35 +260,6 @@ void ImGuiManager::DrawMenuBar()
         
         ImGui::EndMainMenuBar();
     }
-
-    //ファイルダイアログの表示処理
-    //if (ImGuiFileDialog::Instance()->Display("SaveFileDlgKey"))
-    //{
-    //    if (ImGuiFileDialog::Instance()->IsOk())
-    //    {
-    //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-
-    //        // 既存のSaveFile()を、パスを引数に取るように改造
-    //        SaveFile(filePathName);
-    //    }
-    //    ImGuiFileDialog::Instance()->Close();
-    //}
-
-    //if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
-    //{
-    //    // "OK" が押されたら
-    //    if (ImGuiFileDialog::Instance()->IsOk())
-    //    {
-    //        // 選択されたファイルのフルパスを取得
-    //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-
-    //        // ファイルを開く処理を呼ぶ
-    //        OpenFile(filePathName);
-    //    }
-
-    //    // ダイアログを閉じる (OKでもキャンセルでも)
-    //    ImGuiFileDialog::Instance()->Close();
-    //}
 #endif
 }
 
@@ -359,7 +309,7 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList)
 void ImGuiManager::Finalize()
 {
 #ifdef _DEBUG
-    // ImGuiの終了処理。詳細はさして重要ではないので開設は省略する
+    // ImGuiの終了処理
     // 初期化と逆順に行う
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplWin32_Shutdown();

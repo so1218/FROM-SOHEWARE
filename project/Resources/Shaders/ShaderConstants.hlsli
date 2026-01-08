@@ -179,6 +179,17 @@ struct CombineSettings
     float2 padding2;
 };
 
+struct GodRaySettings
+{
+    float2 lightPosScreen;
+    float density;
+    float decay;
+    float weight;
+    float exposure;
+    float threshold;
+    int numSamples;
+};
+
 struct OutlineData
 {
     float4 color;

@@ -12,7 +12,7 @@
 
 class RootSignatureManager;
 
-// JSON で指定する PSO 設定
+// JSONで指定するPSO設定
 struct PSODescription
 {
     std::string RootSignature;
@@ -40,7 +40,7 @@ public:
     ID3D12PipelineState* GetPSO(const std::string& psoName);
 
 private:
-    // PSO を必要時に生成
+    // PSOを必要時に生成
     Microsoft::WRL::ComPtr<ID3D12PipelineState> CreatePSO(const std::string& psoName);
 
     // データ変換
@@ -58,7 +58,7 @@ private:
     ShaderManager* shaderManager_ = nullptr;
     RootSignatureManager* rootSignatureManager_ = nullptr;
 
-    // PSO のキャッシュ
+    // PSOのキャッシュ
     std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D12PipelineState>> psoCache_;
 
     // 入力レイアウト

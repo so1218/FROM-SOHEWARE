@@ -35,7 +35,6 @@ public:
     Renderer();
     ~Renderer();
 
-    // Engineから必要なコンポーネントを受け取る
     void Initialize(
         GraphicsDevice* device,
         CommandManager* commandManager,

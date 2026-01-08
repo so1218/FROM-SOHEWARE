@@ -10,7 +10,6 @@
 
 GlobalVariables* GlobalVariables::GetInstance()
 {
-	// 関数内static変数は、最初の呼び出し時にのみ初期化され、スレッドセーフが保証される
 	static GlobalVariables instance;
 	return &instance;
 }
@@ -441,7 +440,7 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 		return; // パスが空なら何もしない
 	}
 
-	// ファイル名はパスの先頭要素から決まる (例: {"Player", "Stage1"} -> "Player.json")
+	// ファイル名はパスの先頭要素から決まる ({"Player", "Stage1"} -> "Player.json")
 	const std::string& topLevelName = groupPath[0];
 	std::string filePathStr = kDirectoryPath_ + topLevelName + ".json";
 	std::filesystem::path filePath = filePathStr;

@@ -11,7 +11,7 @@ public:
 	virtual void DebugDraw() = 0;// デバッグ描画
     virtual void Finalize() = 0;// 終了処理
 
-    // SceneManager を注入
+    // SceneManagerを注入
     virtual void SetSceneManager(class SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
 protected:

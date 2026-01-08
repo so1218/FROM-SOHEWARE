@@ -107,7 +107,8 @@ void DebugDraw::DrawSphere(const Vector3& center, float radius, const Vector4& c
 void DebugDraw::DrawFrustum(const Matrix4x4& viewProj, const Vector4& color)
 {
     // NDCの8頂点をワールド変換
-    std::vector<Vector3> ndc = {
+    std::vector<Vector3> ndc = 
+    {
         {-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0},
         {-1,-1,1},{1,-1,1},{1,1,1},{-1,1,1}
     };

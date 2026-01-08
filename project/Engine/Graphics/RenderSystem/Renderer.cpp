@@ -337,7 +337,7 @@ void Renderer::DrawUI()
 		switch (sub.type)
 		{
 		case RenderType::Sprite: DrawSprite(sub); break;
-			// Lineなども
+			// Lineなども後でやる
 		}
 	}
 
@@ -444,7 +444,7 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 		// アルファ成分がある、または加算/半透明モードなら強制的にTransparentグループへ
 		submission.group = RenderGroup::Transparent;
 
-		// もしモードが None(不透明) なのにアルファ値があるなら、Normal(半透明)扱いに変更
+		// もしモードがNoneなのにアルファ値があったら、Normal扱いに変更
 		if (submission.blendMode == BlendMode::kBlendModeNone)
 		{
 			submission.blendMode = BlendMode::kBlendModeNormal;
@@ -589,7 +589,8 @@ void Renderer::CreateSprites()
 	sprites_.resize(kMaxSpriteCount);
 
 	// 左上原点のスプライト用頂点データ
-	std::vector<VertexData> spriteVertices = {
+	std::vector<VertexData> spriteVertices = 
+	{
 		{{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // 左上
 		{{1.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // 右上
 		{{0.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // 左下
@@ -831,7 +832,7 @@ void Renderer::CreateSkybox()
 	std::vector<VertexData> vertices;
 	std::vector<uint32_t> indices;
 
-	// ShapeGenerator を使ってメッシュデータを生成
+	// ShapeGeneratorを使ってメッシュデータを生成
 	ShapeGenerator::SkyBoxGenerator(vertices, indices);
 
 	// メッシュを初期化 (GPUにデータを転送)
@@ -889,7 +890,7 @@ void Renderer::CreateTrails()
 	std::vector<VertexDataTrail> dummyVertices(kMaxTotalTrailVertices);
 	trailBatch_.mesh.InitializeVertexTrail(device_->GetDevice(), dummyVertices);
 
-	// マテリアルCB（256byte align）
+	// マテリアルCB
 	uint32_t materialSize = sizeof(TrailMaterialData);
 	materialSize = (materialSize + 255) & ~255;
 

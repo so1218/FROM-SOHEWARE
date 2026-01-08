@@ -13,7 +13,7 @@ AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
     Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
     Microsoft::WRL::ComPtr<IMFMediaType> audioTypeOut;
 
-    // Media Foundation 初期化
+    // MediaFoundation初期化
     MFStartup(MF_VERSION);
 
     // ソースリーダー作成

@@ -91,7 +91,7 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 {
 	for (Joint& joint : skeleton.joints)
 	{
-		// 対象のJointのAnimationがあれば、値の適用を行う。下記のif文はC++17から可能になった初期化付きif文
+		// 対象のJointのAnimationがあれば、値の適用を行う
 		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
 		{
 			const NodeAnimation& nodeAnimation = (*it).second;
@@ -133,7 +133,7 @@ SkinCluster CreateSkinCluster(
 		sizeof(WellForGPU) * skeleton.joints.size());
 	WellForGPU* mappedPalette = nullptr;	
 	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));	
-	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; // spanを使ってアクセスするようにする
+	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; 
 
 	// palette用のSRVを作成。structuredBufferでアクセスできるようにする
 	D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc = {};
@@ -145,7 +145,7 @@ SkinCluster CreateSkinCluster(
 	paletteSrvDesc.Buffer.NumElements = static_cast<UINT>(skeleton.joints.size());
 	paletteSrvDesc.Buffer.StructureByteStride = sizeof(WellForGPU);
 
-	// 「支配人」に作成を依頼し、「インデックス」をもらう
+	// CreateSRVで作成し、インデックスをもらう
 	skinCluster.paletteSrvIndex = srvManager->CreateSRV(
 		skinCluster.paletteResource.Get(),
 		paletteSrvDesc
@@ -172,7 +172,7 @@ SkinCluster CreateSkinCluster(
 
 	for (const auto& jointWeight : modelData.skinClusterData) // ModelのSkinClusterの情報を解析
 	{
-		auto it = skeleton.jointMap.find(jointWeight.first); // jointWeight.firstはjoint名なので、Skeletonに対象となるjointが含まれているか判断
+		auto it = skeleton.jointMap.find(jointWeight.first); 
 		if (it == skeleton.jointMap.end())
 		{
 			continue; // Skeletonに含まれていないJointは無視

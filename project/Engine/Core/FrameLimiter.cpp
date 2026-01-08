@@ -8,13 +8,15 @@ FrameLimiter::FrameLimiter(int targetFPS)
 
 void FrameLimiter::Initialize()
 {
-    timeBeginPeriod(1); // システムタイマーの精度を上げる
+    // システムタイマーの精度を上げる
+    timeBeginPeriod(1); 
     targetTime_ = std::chrono::steady_clock::now();
 }
 
 void FrameLimiter::Finalize()
 {
-    timeEndPeriod(1); // タイマー精度を元に戻す
+    // タイマー精度を元に戻す
+    timeEndPeriod(1);
 }
 
 void FrameLimiter::WaitNextFrame()
@@ -31,9 +33,7 @@ void FrameLimiter::WaitNextFrame()
 
     // 調整
     while (std::chrono::steady_clock::now() - targetTime_ < kFrameDuration_)
-    {
-        // 何もしない
-    }
+    {}
 
     // 次のフレームの基準時間を更新
     targetTime_ = std::chrono::steady_clock::now();

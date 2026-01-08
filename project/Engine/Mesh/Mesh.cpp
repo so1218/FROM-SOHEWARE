@@ -58,11 +58,10 @@ void Mesh::InitializeVertexTrail(ID3D12Device* device, const std::vector<VertexD
 	vertexResource_ = BufferManager::CreateBufferResource(device, bufferSize);
 
 	// データ転送
-	// (Trailは毎フレーム更新するので、ここは空のデータでも良いが、初期値を入れておく)
 	VertexDataTrail* mappedData = nullptr;
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedData));
 	std::memcpy(mappedData, vertices.data(), bufferSize);
-	vertexResource_->Unmap(0, nullptr); // Mapしっぱなしにする設計ならUnmapしない
+	vertexResource_->Unmap(0, nullptr); 
 
 	// 頂点バッファビューの作成
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
@@ -79,15 +78,11 @@ void Mesh::CreateDynamicMesh(ID3D12Device* device, size_t maxVertexCount, size_t
 	// バッファサイズ計算 (最大数 × 1頂点のサイズ)
 	size_t bufferSize = stride * vertexCount_;
 
-	// リソース作成 (BufferManager::CreateBufferResource は UploadHeapで作ると仮定)
-	// ※ UploadHeap (D3D12_HEAP_TYPE_UPLOAD) でないと、毎フレームの書き換えができません
+	// リソース作成
 	vertexResource_ = BufferManager::CreateBufferResource(device, bufferSize);
 
 	// ビューの設定
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
 	vertexBufferView_.StrideInBytes = static_cast<UINT>(stride);
-
-	// 注: ここでは Map/Unmap はしません。
-	// 描画する直前(FlushLines)で Map -> Copy -> Unmap を行います。
 }

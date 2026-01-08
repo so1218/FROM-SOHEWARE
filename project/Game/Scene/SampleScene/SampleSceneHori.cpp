@@ -168,12 +168,12 @@ void SampleSceneHori::UpdatePlaying()
     // ゲーム終了判定
     if (player_->IsEnd())
     {
-        sceneManager_->RequestSceneChange(SceneID::Sample);
+       /* sceneManager_->RequestSceneChange(SceneID::Sample);*/
     }
     // タイムアップ
     if (gameTimer_->IsTimeUp())
     {
-        sceneManager_->RequestSceneChange(SceneID::Play);
+       /* sceneManager_->RequestSceneChange(SceneID::Play);*/
         AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSE), false, 100);
     }
 }

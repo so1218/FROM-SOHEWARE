@@ -252,8 +252,7 @@ void ParticleSystem::Update()
                 Vector3 normal = { 0.0f, 1.0f, 0.0f };
                 float penetration = 0.0f; // めり込み量
 
-                // 1. 平面衝突 (Plane)
-                // 方程式: (P - PlanePoint) dot PlaneNormal = 距離
+                // 平面衝突
                 if (col.type == CollisionModule::Type::Plane)
                 {
                     Vector3 vecToParticle = pos - col.plane.point;
@@ -267,14 +266,14 @@ void ParticleSystem::Update()
                         penetration = -dist;
                     }
                 }
-                // 2. 簡易ワールド衝突 (World)
+                // 簡易ワールド衝突
                 else if (col.type == CollisionModule::Type::World)
                 {
                     if (col.worldObj.shape == CollisionModule::WorldObject::Shape::Sphere)
                     {
                         Vector3 diff = pos - col.worldObj.center;
                         float distSq = diff.LengthSq();
-                        float r = col.worldObj.scale.x; // SphereなのでXを半径とする
+                        float r = col.worldObj.scale.x; 
 
                         if (distSq < r * r)
                         {
@@ -288,7 +287,7 @@ void ParticleSystem::Update()
                     }
                     else if (col.worldObj.shape == CollisionModule::WorldObject::Shape::Box)
                     {
-                        // AABB判定 (回転なしBox)
+                        // AABB判定
                         Vector3 halfSize = col.worldObj.scale * 0.5f;
                         Vector3 min = col.worldObj.center - halfSize;
                         Vector3 max = col.worldObj.center + halfSize;
@@ -298,9 +297,7 @@ void ParticleSystem::Update()
                             pos.z > min.z && pos.z < max.z)
                         {
                             isCollided = true;
-                            // 最も近い面を探して法線を決定（前回のAABB解説参照）
-                            // ... (省略: 最短距離計算) ...
-                            // 簡易的にY平面だけ判定する例:
+                            // 最も近い面を探して法線を決定
                             normal = { 0.0f, 1.0f, 0.0f };
                             penetration = (col.worldObj.center.y + halfSize.y) - pos.y;
                         }
@@ -310,34 +307,32 @@ void ParticleSystem::Update()
                 // 衝突時の応答処理
                 if (isCollided)
                 {
-                    // 1. 位置補正 (押し出し)
+                    // 位置補正
                     pos += normal * penetration;
 
-                    // 2. 速度の反射と減衰
+                    // 速度の反射と減衰
                     float dot = vel.Dot(normal);
                     if (dot < 0.0f) // 面に向かって進んでいる時のみ
                     {
                         Vector3 normalVel = normal * dot;
                         Vector3 tangentVel = vel - normalVel;
 
-                        // 反発 (Bounce)
+                        // 反発 
                         normalVel = normalVel * -col.bounce;
 
-                        // 摩擦 (Friction)
+                        // 摩擦 
                         tangentVel = tangentVel * (1.0f - col.friction);
 
                         // 合成
                         vel = normalVel + tangentVel;
 
-                        // Dampen (全体的なエネルギー減衰)
+                        // 全体的なエネルギー減衰
                         vel *= (1.0f - col.dampen);
                     }
 
-                    // 3. 寿命減少 (Life Loss)
+                    // 寿命減少
                     particleState.age += particleState.lifetime * col.lifeLoss;
-                    if (particleState.age >= particleState.lifetime) {
-                        // 消滅処理へ続く...
-                    }
+                    if (particleState.age >= particleState.lifetime) {}
                 }
             }
 
@@ -450,7 +445,7 @@ void ParticleSystem::Update()
 
         }
 
-        // Trail(軌跡)処理
+        // Trail処理
         if (config.trail.enabled)
         {
             Vector3 currentPos = particleState.transform->translation_;
@@ -530,7 +525,6 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 
 void ParticleSystem::Draw(Camera* camera)
 {
-    // 加算ブレンドに切り替え
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
 
     // トレイル描画

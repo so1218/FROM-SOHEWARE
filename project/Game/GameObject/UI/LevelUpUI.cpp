@@ -83,7 +83,7 @@ void LevelUpUI::Activate(const std::vector<UpgradeInfo>& options)
 
 void LevelUpUI::Update()
 {
-    if (Input::GetInstance().IsKeyTriggered(DIK_UP) || Input::GetInstance().IsStickUpTriggered(0, Input::StickType::LeftStick))
+    if (Input::GetInstance().IsKeyTriggered(DIK_UP) || Input::GetInstance().IsStickDownTriggered(0, Input::StickType::LeftStick))
     {
         selectedIndex_--;
         if (selectedIndex_ < 0)
@@ -92,7 +92,7 @@ void LevelUpUI::Update()
         }
         AudioPlayer::GetInstance().Play(AudioHandle::Get(AudioID::cursolSE), false, 100);
     }
-    if (Input::GetInstance().IsKeyTriggered(DIK_DOWN) || Input::GetInstance().IsStickDownTriggered(0, Input::StickType::LeftStick))
+    if (Input::GetInstance().IsKeyTriggered(DIK_DOWN) || Input::GetInstance().IsStickUpTriggered(0, Input::StickType::LeftStick))
     {
         selectedIndex_++;
         if (selectedIndex_ >= currentOptions_.size()) {

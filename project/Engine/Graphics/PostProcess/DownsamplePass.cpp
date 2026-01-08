@@ -16,7 +16,7 @@ void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
         sizeof(BlurSettings)
     );
 
-    // 定数バッファを CPU から更新できるようにマップ
+    // 定数バッファをCPUから更新できるようにマップ
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     cbData_->texelSize = { 1.0f / kClientWidth, 1.0f / kClientHeight };

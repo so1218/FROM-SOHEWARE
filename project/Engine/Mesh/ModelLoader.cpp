@@ -309,7 +309,7 @@ void ModelLoader::CalculateSmoothNormals(std::vector<VertexData>& vertices)
         pair.second = pair.second.Normalize();
     }
 
-    // 計算結果を各頂点の smoothNormal に格納
+    // 計算結果を各頂点のsmoothNormalに格納
     for (auto& v : vertices)
     {
         auto key = std::make_tuple(v.position.x, v.position.y, v.position.z);

@@ -5,7 +5,6 @@
 class BloomCombinePass : public IPostEffect
 {
 public:
-    // 初期化
     void Initialize(
         Engine* engine,
         UINT w,
@@ -36,7 +35,7 @@ public:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 
 private:
-    // 合成用定数バッファ（Bloom強度など）
+    // 合成用定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cb_;
     CombineSettings* combineData_ = nullptr;
 
@@ -44,8 +43,7 @@ private:
     PSOManager* psoManager_ = nullptr;
     SRVManager* srvManager_ = nullptr;
 
-    // 入力テクスチャ用 SRV ヒープ
-    // t0: Scene / t1: Bloom / t2: DoF / t3: Depth
+    // 入力テクスチャ用SRVヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
     UINT descriptorSize_ = 0;
 };

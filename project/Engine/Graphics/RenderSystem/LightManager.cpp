@@ -68,7 +68,8 @@ void LightManager::Initialize(ID3D12Device* device)
 
     // 利用可能なインデックスキューを初期化
     availablePointLightIndices_ = {}; // キューをクリア
-    for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
+    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
+    {
         availablePointLightIndices_.push(i);
         pointLightData_[i].enable = false; // 全てのライトを非アクティブで初期化
     }
@@ -83,7 +84,8 @@ void LightManager::Initialize(ID3D12Device* device)
 
 int LightManager::RequestPointLight()
 {
-    if (availablePointLightIndices_.empty()) {
+    if (availablePointLightIndices_.empty())
+    {
         // 利用可能なライトスロットがない
         return -1;
     }
@@ -96,7 +98,8 @@ int LightManager::RequestPointLight()
 
 int LightManager::RequestAreaLight()
 {
-    if (availableAreaLightIndices_.empty()) {
+    if (availableAreaLightIndices_.empty()) 
+    {
         return -1; // 利用可能なスロットがない
     }
     int index = availableAreaLightIndices_.front();
@@ -108,12 +111,12 @@ int LightManager::RequestAreaLight()
 
 void LightManager::ReturnPointLight(int index)
 {
-    if (index < 0 || index >= pointLightCount_) {
+    if (index < 0 || index >= pointLightCount_)
+    {
         return; // 無効なインデックス
     }
 
     pointLightData_[index].enable = false; // ライトを無効化
-    // 念のためデータをリセット
     pointLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
     pointLightData_[index].intensity = 0.0f;
 
@@ -122,7 +125,8 @@ void LightManager::ReturnPointLight(int index)
 
 void LightManager::ReturnAreaLight(int index)
 {
-    if (index < 0 || index >= areaLightCount_) {
+    if (index < 0 || index >= areaLightCount_)
+    {
         return; // 無効なインデックス
     }
     areaLightData_[index].enable = false; // ライトを無効化

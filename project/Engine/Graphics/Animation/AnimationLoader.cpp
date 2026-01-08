@@ -10,7 +10,7 @@ Animation LoadAnimationFile(const std::string& filePath)
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filePath.c_str(), 0);
 	assert(scene->mNumAnimations != 0);// アニメーションが無い
-	aiAnimation* animationAssimp = scene->mAnimations[0];// 最初のアニメーションだけ採用。もちろん複数対応するに越したことはない
+	aiAnimation* animationAssimp = scene->mAnimations[0];// 最初のアニメーションだけ採用。複数対応は後々したい
 	animation.duration = float(animationAssimp->mDuration / animationAssimp->mTicksPerSecond);// 時間の単位を秒に変換
 	animation.rootNodeName = scene->mRootNode->mName.C_Str();
 
@@ -23,7 +23,7 @@ Animation LoadAnimationFile(const std::string& filePath)
 		{
 			aiVectorKey& keyAssimp = nodeAnimationAssimp->mPositionKeys[keyIndex];
 			KeyframeVector3 keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
+			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// 秒に変換
 			keyframe.value = { -keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };// 右手->左手
 			nodeAnimation.translate.keyframes.push_back(keyframe);
 		}
@@ -31,7 +31,7 @@ Animation LoadAnimationFile(const std::string& filePath)
 		{
 			aiQuatKey& keyAssimp = nodeAnimationAssimp->mRotationKeys[keyIndex];
 			KeyframeQuaternion keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
+			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// 秒に変換
 			keyframe.value = { keyAssimp.mValue.x,-keyAssimp.mValue.y,-keyAssimp.mValue.z,keyAssimp.mValue.w };// 右手->左手
 			nodeAnimation.rotate.keyframes.push_back(keyframe);
 		}
@@ -39,7 +39,7 @@ Animation LoadAnimationFile(const std::string& filePath)
 		{
 			aiVectorKey& keyAssimp = nodeAnimationAssimp->mScalingKeys[keyIndex];
 			KeyframeVector3 keyframe;
-			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// ここも秒に変換
+			keyframe.time = float(keyAssimp.mTime / animationAssimp->mTicksPerSecond);// 秒に変換
 			keyframe.value = { keyAssimp.mValue.x,keyAssimp.mValue.y,keyAssimp.mValue.z };// 右手->左手
 			nodeAnimation.scale.keyframes.push_back(keyframe);
 		}

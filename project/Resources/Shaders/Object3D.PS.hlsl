@@ -230,13 +230,13 @@ float3 DrawArtGridColor(PixelShaderInput input)
     // 原点軸の強調表示
     float axisThickness = 2.0;
 
-    // Z 軸を緑で表示
+    // Z軸を表示
     float zAxis =
         smoothstep(0.0, 1.0,
             abs(uv.x) / (fwidth(uv.x) * axisThickness));
     col = lerp(col, float3(0.1, 0.6, 0.1), 1.0 - zAxis);
 
-    // X 軸を赤で表示
+    // X軸を表示
     float xAxis =
         smoothstep(0.0, 1.0,
             abs(uv.y) / (fwidth(uv.y) * axisThickness));

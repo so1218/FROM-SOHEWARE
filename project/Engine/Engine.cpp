@@ -26,7 +26,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "winmm.lib")
 
-std::wstring Engine::windowTitle_ = L"LE2A_13_ホリ_ソウヘイ_IceSurvivor";
+std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
 
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
@@ -68,11 +68,10 @@ void Engine::Finalize()
 
 	frameLimiter_->Finalize();
 
-	// srvManager_ を使うクラスを先に解放する
+	// srvManager_を使うクラスを先に解放
 	textureManager_.reset();     
 	postEffectManager_.reset();  
 
-	// 依存されていた srvManager_ を解放する
 	srvManager_.reset();
 
 	// リソース解放
