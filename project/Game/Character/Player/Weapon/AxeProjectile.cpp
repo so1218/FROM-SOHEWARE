@@ -14,9 +14,7 @@ AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& star
     model_->GetTransform().translation_ = startPos;
 	model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
 
-    velocity_ = initialVelocity; // 初速を設定
-
-    // 発射方向(Yaw)をモデルの初期Y軸回転に設定
+    velocity_ = initialVelocity; 
     model_->GetTransform().rotation_.y = initialYaw;
 
     model_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(model_->GetTransform().rotation_);

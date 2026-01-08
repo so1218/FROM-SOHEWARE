@@ -34,8 +34,8 @@ private:
     std::unique_ptr<Model> model_;
     AABB aabb_;
 
-    Vector3 velocity_;       // 速度
-    float gravity_ = -15.0f; // 斧にかかる重力
+    Vector3 velocity_;      
+    float gravity_ = -15.0f;
 
     float lifetime_ = 3.0f;
     float damage_ = 0.0f;

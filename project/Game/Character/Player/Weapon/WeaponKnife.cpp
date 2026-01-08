@@ -64,10 +64,9 @@ void WeaponKnife::Update(float deltaTime)
 
     if (projectilesToFire_ == 0 && cooldownTimer_ <= 0.0f)
     {
-        // バースト(連射)開始
-        projectilesToFire_ = projectileCount_;  // 発射する総数をセット
-        burstTimer_ = 0.0f;                     // 1発目はすぐ発射
-        cooldownTimer_ = cooldown_;             // 次のバーストのためのクールダウンをリセット
+        projectilesToFire_ = projectileCount_;
+        burstTimer_ = 0.0f;                   
+        cooldownTimer_ = cooldown_;           
     }
 
     // バースト発射中の処理
@@ -231,7 +230,6 @@ void WeaponKnife::AddCollidersToManager(CollisionManager* manager)
     {
         if (projectile && !projectile->IsDead())
         {
-            // KnifeProjectile は Collider を継承しているのでそのまま渡せる
             manager->AddCollider(projectile.get());
         }
     }

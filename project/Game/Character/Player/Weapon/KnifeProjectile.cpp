@@ -15,7 +15,6 @@ KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& 
     model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
     direction_ = direction.Normalize();
 
-    // 進行方向ベクトルからY軸回転(Yaw)を計算
     float initialYaw = atan2(direction_.x, direction_.z);
     model_->GetTransform().rotation_.y = initialYaw;
     model_->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler(model_->GetTransform().rotation_);

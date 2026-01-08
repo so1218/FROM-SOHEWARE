@@ -35,6 +35,5 @@ private:
     // ベースのサイズ
     Vector3 collisionSize_ = { 0.5f, 0.5f, 0.5f };
 
-    // レベル補正後の実際のサイズ (これを弾に渡す)
     Vector3 currentCollisionSize_ = { 0.5f, 0.5f, 0.5f };
 };
