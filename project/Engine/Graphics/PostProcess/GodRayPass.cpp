@@ -20,6 +20,7 @@ void GodRayPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
     cbData_->exposure = 0.07f;
     cbData_->numSamples = 64; 
     cbData_->threshold = 0.8f;
+    cbData_->sunRadius = 0.1f;
 
     // パス用SRVヒープ作成
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();

@@ -54,7 +54,7 @@ void Player::Initialize()
 	//modelPlayer_->SetEnableOutline(true);
 	/*animationPlayer_->SetEnableOutline(true);*/
 	animationPlayer_->SetTextureHandle(TextureHandle::Get(TextureID::monsterBall));
-	animationPlayer_->SetColor(0x86FF3000);
+	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0x333333ff);
 
@@ -342,7 +342,7 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	//modelPlayer_->Draw();
-	modelTamesi_->Draw();
+	/*modelTamesi_->Draw();*/
 	animationPlayer_->Draw();
 	DrawCollider();
 

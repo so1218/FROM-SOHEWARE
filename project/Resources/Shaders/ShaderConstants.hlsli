@@ -193,10 +193,14 @@ struct GodRaySettings
     float2 lightPosScreen;
     float density;
     float decay;
+    
     float weight;
     float exposure;
     float threshold;
     int numSamples;
+    
+    float3 lightColor;
+    float sunRadius;
 };
 
 struct OutlineData

@@ -152,6 +152,8 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     Vector2 lightUV = { 0.5f, 0.5f }; 
     bool isLightVisible = false;
 
+    Vector3 lightColor = { 1.0f, 1.0f, 1.0f };
+
     if (engine_->lightManager_)
     {
         // 0番目のDirectionalLight（メインの太陽）を取得
@@ -176,8 +178,17 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
                 lightUV.x = (ndc.x + 1.0f) * 0.5f;
                 lightUV.y = (1.0f - ndc.y) * 0.5f;
             }
+
+            // ライトの色を取得
+            lightColor = Vector3(
+                dirLights[0].color.x * dirLights[0].intensity,
+                dirLights[0].color.y * dirLights[0].intensity,
+                dirLights[0].color.z * dirLights[0].intensity
+            );
         }
     }
+
+	godRayPass_->GetSettings()->lightColor = lightColor;
 
     godRayPass_->Execute(cmdList, srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_), // SceneのCPUハンドル
         srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_), lightUV);
