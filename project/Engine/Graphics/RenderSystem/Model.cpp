@@ -10,6 +10,7 @@ Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
+    dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
 }
 
 void Model::SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
@@ -39,6 +40,7 @@ void Model::Draw()
         textureHandle_,
         envMapTextureHandle_,
         toonRampHandle_,
+        dissolveTextureHandle_,
         color_,
         materialHandle_,
         blendMode_,

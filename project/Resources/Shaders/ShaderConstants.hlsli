@@ -64,13 +64,16 @@ struct MaterialData
     float3 rimColor;
     int32_t rimUseLightDir;
 
-    int32_t isArtWave;
-    int32_t isArtSound;
-    int32_t isArtQuad;
-    int32_t isArtKikagaku;
-    int32_t isArtFrag;
     int32_t isArtGrid;
-    float2 padding2; 
+    float3 padding2; 
+    
+    int32_t enableDissolve;
+    float3 edgeColor;
+
+    float dissolveThreshold;
+    float edgeWidth;
+    float edgeIntensity;
+    float padding3;
 };
 
 struct TrailMaterialData

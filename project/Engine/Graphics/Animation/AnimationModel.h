@@ -35,6 +35,8 @@ public:
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetEasing(EasingType type) { easingType_ = type; }
+    void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
+    void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
     // アウトライン設定
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width) { outlineWidth_ = width; }
@@ -84,4 +86,6 @@ private:
 
     AnimationID currentAnimationID_ = AnimationID::count;
     float speedScale_ = 1.0f;
+
+    uint32_t dissolveTextureHandle_;
 };

@@ -118,6 +118,13 @@ void Player::AddWeapon(WeaponType type)
 // 更新処理
 void Player::Update()
 {
+	animationPlayer_->SetDissolveTextureHandle(TextureHandle::Get(TextureID::noise1));
+	//animationPlayer_->materialHandle_.materialData->edgeColor = { 1.0f, 0.2f, 0.1f };
+	//animationPlayer_->materialHandle_.materialData->edgeIntensity = 5.0f;
+	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
+	//animationPlayer_->SetEnableDissolve(true);
+	//animationPlayer_->materialHandle_.materialData->dissolveThreshold = 0.5f;
+
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
 	// 無敵時間の更新処理
@@ -185,12 +192,12 @@ void Player::Update()
 		}
 	}
 
-	animationPlayer_->SetEmissiveIntensity(3.5f);
-	animationPlayer_->materialHandle_.materialData->enableRim = true;
-	animationPlayer_->materialHandle_.materialData->rimUseLightDir = true;
-	animationPlayer_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,237.0f / 255.0f,51.0f / 255.0f };
-	animationPlayer_->materialHandle_.materialData->rimPower = 5.2f;
-	animationPlayer_->materialHandle_.materialData->rimIntensity = 5.2f;
+	//animationPlayer_->SetEmissiveIntensity(3.5f);
+	//animationPlayer_->materialHandle_.materialData->enableRim = true;
+	//animationPlayer_->materialHandle_.materialData->rimUseLightDir = true;
+	//animationPlayer_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,237.0f / 255.0f,51.0f / 255.0f };
+	//animationPlayer_->materialHandle_.materialData->rimPower = 5.2f;
+	//animationPlayer_->materialHandle_.materialData->rimIntensity = 5.2f;
 
 }
 
@@ -414,6 +421,35 @@ void Player::DebugDraw()
 	{
 		gv->SetValue(groupName, "Invincibility Duration", invincibilityDuration_);
 		changed = true;
+	}
+
+	ImGui::Text("ディゾルブ設定 (Dissolve)");
+
+	// データへのポインタを取得して記述を短くする
+	auto* matData = animationPlayer_->materialHandle_.materialData;
+
+	if (matData)
+	{
+		// 1. 有効/無効の切り替え (int <-> bool 変換)
+		// シェーダー側が int なので、ImGui用の bool を噛ませる
+		bool isDissolve = (matData->enableDissolve != 0);
+		if (ImGui::Checkbox("有効化 (Enable)", &isDissolve))
+		{
+			animationPlayer_->SetEnableDissolve(isDissolve);
+		}
+
+		// 2. 閾値 (Threshold) - 0.0～1.0 でスライドさせる
+		// これを動かしてモデルが消えたり現れたりするか確認してください
+		ImGui::DragFloat("閾値 (Threshold)", &matData->dissolveThreshold, 0.01f, 0.0f, 1.0f);
+
+		// 3. エッジの幅
+		ImGui::DragFloat("エッジ幅 (Width)", &matData->edgeWidth, 0.001f, 0.0f, 0.5f);
+
+		// 4. エッジの発光強度
+		ImGui::DragFloat("発光強度 (Intensity)", &matData->edgeIntensity, 0.1f, 0.0f, 50.0f);
+
+		// 5. エッジの色 (ColorEdit3 を使うとカラーピッカーが出る)
+		ImGui::ColorEdit3("エッジ色 (Color)", &matData->edgeColor.x);
 	}
 
 	if (changed)

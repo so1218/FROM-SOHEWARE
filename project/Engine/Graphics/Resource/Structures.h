@@ -145,13 +145,13 @@ struct MaterialSettings
 
     float emissiveIntensity = 1.0f;
 
-    int32_t isArtWave = false;
-    int32_t isArtSound = false;
-    int32_t isArtQuad = false;
-    int32_t isArtKikagaku = false;
-    int32_t isArtFrag = false;
     int32_t isArtGrid = false;
-    float2 padding2;
+
+    int32_t enableDissolve;
+    Vector3 edgeColor;   
+    float dissolveThreshold;
+    float edgeWidth;
+    float edgeIntensity;
 };
 
 struct AABB

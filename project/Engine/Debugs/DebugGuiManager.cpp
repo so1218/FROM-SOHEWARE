@@ -375,7 +375,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
 
         // God Ray設定
-        if (ImGui::TreeNode("God Ray設定"))
+        if (ImGui::TreeNode("ゴッドレイ設定"))
         {
             ImGui::TextDisabled("合成強度");
             ImGui::SliderFloat("強度", &combineSettingsData->godRayIntensity, 0.0f, 5.0f);
@@ -545,7 +545,7 @@ void DebugGuiManager::DrawTimeSettings()
 
     // 一時停止
     bool isPaused = time->IsPaused();
-    if (ImGui::Checkbox("一時停止 (Pause)", &isPaused))
+    if (ImGui::Checkbox("一時停止", &isPaused))
     {
         if (isPaused) {
             time->Pause();

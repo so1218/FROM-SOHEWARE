@@ -65,10 +65,10 @@ void Game::Run()
             engine_->BeginFrame();
 
             Update();
-            Draw();
 #ifdef _DEBUG
             DebugDraw();
 #endif
+            Draw();
 
             // フレームの終了
             engine_->EndFrame();

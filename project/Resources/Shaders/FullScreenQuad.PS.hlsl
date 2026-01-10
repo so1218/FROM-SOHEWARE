@@ -1,8 +1,7 @@
 #include "FullScreenQuad.hlsli"
 
 Texture2D gTexture : register(t0);
-// 深度テクスチャ
-Texture2D gDepthTex : register(t1); 
+Texture2D gDissolveTexture : register(t1);
 SamplerState gSampler : register(s0);
 
 cbuffer PostEffectSettings : register(b0)

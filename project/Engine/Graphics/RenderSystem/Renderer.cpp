@@ -401,7 +401,7 @@ void Renderer::CreateModels()
 }
 
 void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
+	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
 	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
 {
 	assert(indexModel_ < kMaxModelCount);
@@ -430,6 +430,7 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 	submission.textureHandle = textureHandle;
 	submission.envMapSrvHandle = envMapSrvHandle;
 	submission.toonRampHandle = toonRampHandle;
+	submission.dissolveTextureHandle = dissolveTextureHandle;
 	submission.color = color;
 	submission.worldMatrix = world;
 	submission.enableOutline = enableOutline;
@@ -498,6 +499,7 @@ void Renderer::SubmitAnimationModel(
 	uint32_t textureHandle,
 	uint32_t envMapSrvHandle,
 	uint32_t toonRampHandle,
+	uint32_t dissolveTextureHandle,
 	uint32_t color,
 	MaterialHandle& materialHandle,
 	bool enableOutline,
@@ -531,6 +533,7 @@ void Renderer::SubmitAnimationModel(
 	submission.textureHandle = textureHandle;
 	submission.envMapSrvHandle = envMapSrvHandle;
 	submission.toonRampHandle = toonRampHandle;
+	submission.dissolveTextureHandle = dissolveTextureHandle;
 	submission.color = color;
 	submission.worldMatrix = world;
 	submission.enableOutline = enableOutline;
@@ -1064,6 +1067,7 @@ void Renderer::DrawSprite(const ModelSubmission& sub)
 
 	cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
 }
+
 void Renderer::DrawModel(const ModelSubmission& sub)
 {
 	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
@@ -1151,6 +1155,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootConstantBufferView(9, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootDescriptorTable(10, shadowMap_->GetSRVHandle());
 		cmdList->SetGraphicsRootDescriptorTable(11, srvManager_->GetSRVHandleGPU(sub.toonRampHandle));
+		cmdList->SetGraphicsRootDescriptorTable(12, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 	}
 
 	// 通常モデル描画
@@ -1175,6 +1180,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootConstantBufferView(8, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootDescriptorTable(9, shadowMap_->GetSRVHandle());
 		cmdList->SetGraphicsRootDescriptorTable(10, srvManager_->GetSRVHandleGPU(sub.toonRampHandle));
+		cmdList->SetGraphicsRootDescriptorTable(11, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 	}
 
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);

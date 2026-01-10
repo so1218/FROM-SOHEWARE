@@ -5,34 +5,33 @@
 #define TAU 6.2831853071
 
 ConstantBuffer<MaterialData> gMaterial : register(b0);
-Texture2D<float4> gTexture : register(t0);
-TextureCube<float4> gEnvironmentTexture : register(t1);
-SamplerState gSampler : register(s0);
-Texture2D<float> gShadowMap : register(t2);
-Texture2D<float4> gToonRamp : register(t3);
-SamplerComparisonState gShadowSampler : register(s1);
-SamplerState gClampSampler : register(s2);
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-
 ConstantBuffer<FrameData> gFrameData : register(b2);
-
 cbuffer PointLights : register(b3)
 {
     PointLight gPointLights[MAX_POINT_LIGHTS];
 };
-
 cbuffer SpotLights : register(b4)
 {
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
-
 cbuffer AreaLightsBuffer : register(b5) 
 {
     AreaLight gAreaLights[MAX_AREA_LIGHTS];
 }
+
+Texture2D<float4> gTexture : register(t0);
+TextureCube<float4> gEnvironmentTexture : register(t1);
+Texture2D<float> gShadowMap : register(t2);
+Texture2D<float4> gToonRamp : register(t3);
+Texture2D<float4> gDissolveTexture : register(t4);
+
+SamplerState gSampler : register(s0);
+SamplerComparisonState gShadowSampler : register(s1);
+SamplerState gClampSampler : register(s2);
 
 struct PixelShaderOutput
 {
@@ -69,6 +68,38 @@ PixelShaderOutput main(PixelShaderInput input)
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
     float3 baseColor = textureColor.rgb;
+
+    // ディゾルブ処理
+    float3 dissolveEdgeEmission = float3(0, 0, 0);
+
+    // マテリアル設定でディゾルブが有効、かつ閾値が0より大きい場合のみ計算
+    if (gMaterial.enableDissolve != 0)
+    {
+        // ノイズテクスチャをサンプリング
+        float noiseValue = gDissolveTexture.Sample(gSampler, transformedUV.xy).r;
+
+        // ノイズの値が閾値より低ければピクセルを捨てる
+        if (noiseValue <= gMaterial.dissolveThreshold)
+        {
+            discard;
+        }
+
+        // 境界線の発光
+        float difference = noiseValue - gMaterial.dissolveThreshold;
+        
+       // エッジ幅の範囲内なら発光させる
+        if (difference < gMaterial.edgeWidth)
+        {
+            // differenceが小さいほど1.0に近づくように反転
+            float t = 1.0f - (difference / gMaterial.edgeWidth);
+
+            // グラデーションを滑らかにする
+            t = smoothstep(0.0f, 1.0f, t);
+
+            // 高輝度カラーの計算
+            dissolveEdgeEmission = gMaterial.edgeColor * t * gMaterial.edgeIntensity;
+        }
+    }
 
     // グリッド適用
     if (gMaterial.isArtGrid)
@@ -146,10 +177,12 @@ PixelShaderOutput main(PixelShaderInput input)
     
      // 自己発光を加算
     finalColor *= gMaterial.emissiveIntensity;
+    
+    // 最後にディゾルブのエッジ発光を加算
+    finalColor += dissolveEdgeEmission;
 
     output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
-    output.color.a = 1.0f;
 
     // ディザー透明処理
     //{

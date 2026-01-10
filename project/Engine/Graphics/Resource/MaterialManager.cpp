@@ -32,6 +32,11 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.shadowDensity = 0.7f;
     defaultSettings.isArtGrid = false;
 	defaultSettings.environmentMapIntensity = 0.0f;
+    defaultSettings.enableDissolve = 0;             
+    defaultSettings.edgeColor = { 1.0f, 0.5f, 0.0f }; 
+    defaultSettings.dissolveThreshold = 0.5f;
+    defaultSettings.edgeWidth = 0.05f;
+    defaultSettings.edgeIntensity = 2.0f;
 
     memcpy(handle.materialData, &defaultSettings, sizeof(MaterialData));
 

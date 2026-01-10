@@ -37,6 +37,8 @@ public:
     void SetRenderGroup(RenderGroup group);
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
+    void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
+    void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
@@ -71,4 +73,5 @@ private:
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;
 
+    uint32_t dissolveTextureHandle_;
 };
