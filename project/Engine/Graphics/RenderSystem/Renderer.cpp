@@ -218,28 +218,82 @@ void Renderer::DrawSceneForShadow()
 
 		bool isSkinning = (sub.skinCluster != nullptr);
 
-		if (isSkinning)
-		{
-			// スキニング用の設定
-			cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinning"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinning"));
-			cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+		bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
+			(sub.materialHandle.materialData->color.w < 1.0f);
 
-			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
-			cmdList->IASetVertexBuffers(0, 2, vbvs);
+		// ■■■ A. ディゾルブ・透明処理が必要な場合（重い処理） ■■■
+		if (needDissolve)
+		{
+			if (isSkinning)
+			{
+				// === スキニング・ディゾルブ影 ===
+				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinningDissolve"));
+				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinningDissolve"));
+
+				// [0] VS b0: WVP
+				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+				// [1] VS b1: Light
+				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+				// [2] VS t0: Palette
+				cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+
+				// --- PS用 ---
+				// [3] PS b0: Material
+				cmdList->SetGraphicsRootConstantBufferView(3, sub.materialHandle.resource->GetGPUVirtualAddress());
+				// [4] PS t4: Dissolve Texture
+				cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
+
+				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+				cmdList->IASetVertexBuffers(0, 2, vbvs);
+			}
+			else
+			{
+				// === 通常・ディゾルブ影 ===
+				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapDissolve"));
+				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapDissolve"));
+
+				// [0] VS b0: WVP
+				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+				// [1] VS b1: Light
+				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
+				// --- PS用 ---
+				// [2] PS b0: Material
+				cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
+				// [3] PS t4: Dissolve Texture
+				cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
+
+				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+			}
 		}
+		// ■■■ B. 不透明の場合（高速処理・既存コード） ■■■
 		else
 		{
-			// 通常モデル用の設定
-			cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
-			cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-		}
+			if (isSkinning)
+			{
+				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinning"));
+				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinning"));
 
-		// オブジェクト行列をセット
-		cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+				// 既存のShadowMapSkinning用バインド
+				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+				cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+
+				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+				cmdList->IASetVertexBuffers(0, 2, vbvs);
+			}
+			else
+			{
+				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
+				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
+
+				// 既存のShadowMap用バインド
+				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+			}
+
+			// オブジェクト行列
+			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+		}
 
 		// 描画
 		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());

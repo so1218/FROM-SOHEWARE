@@ -22,6 +22,7 @@ struct SkinningVertexShaderInput
 struct ShadowVSOutput
 {
     float32_t4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
 };
 
 // 位置のみをスキニングする
@@ -49,6 +50,9 @@ ShadowVSOutput main(SkinningVertexShaderInput input)
 
     // ライト空間へ変換
     output.position = mul(worldPos, gLight.viewProj);
+    
+    // UVをパス
+    output.texcoord = input.texcoord;
 
     return output;
 }

@@ -183,19 +183,13 @@ PixelShaderOutput main(PixelShaderInput input)
 
     output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
+  
     // ディザー透明処理
-    //{
-    //    int2 screenPos = int2(input.position.xy);
-    //    float alpha = output.color.a;
-
-    //    float threshold = DitherThreshold4x4(screenPos);
-
-    //    if (alpha < threshold)
-    //    {
-    //        discard;
-    //    }
-    //}
-
+    if (output.color.a <= 0.01f)
+    {
+        discard;
+    }
+    
     return output;
 }
 
