@@ -183,7 +183,6 @@ PixelShaderOutput main(PixelShaderInput input)
 
     output.color.rgb = finalColor;
     output.color.a = textureColor.a * gMaterial.color.a;
-
     // ディザー透明処理
     //{
     //    int2 screenPos = int2(input.position.xy);

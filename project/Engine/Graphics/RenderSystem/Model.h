@@ -72,6 +72,6 @@ private:
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;
-
+    
     uint32_t dissolveTextureHandle_;
 };

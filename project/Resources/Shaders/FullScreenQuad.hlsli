@@ -21,3 +21,4 @@ struct VSOutput
 #define GLITCH              (1 << 13)
 #define HEAT_HAZE           (1 << 14)
 #define WATER_REFRACTION    (1 << 15)
+#define DISSOLVE            (1 << 16)

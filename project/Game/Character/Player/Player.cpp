@@ -33,7 +33,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::player),AnimationHandle::Get(AnimationID::player));
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::shrimp),AnimationHandle::Get(AnimationID::shrimp));
 }
 
 void Player::Initialize()
@@ -51,8 +51,10 @@ void Player::Initialize()
 	invincibilityTimer_ = 0.0f;
 	isEnd_ = false;
 
-	modelPlayer_->SetEnableOutline(true);
+	//modelPlayer_->SetEnableOutline(true);
 	animationPlayer_->SetEnableOutline(true);
+
+	animationPlayer_->SetTextureHandle(TextureHandle::Get(TextureID::monsterBall));
 
 	animationPlayer_->SetColor(0x86FF30ff);
 
@@ -118,7 +120,7 @@ void Player::AddWeapon(WeaponType type)
 // 更新処理
 void Player::Update()
 {
-	animationPlayer_->SetDissolveTextureHandle(TextureHandle::Get(TextureID::noise1));
+	modelPlayer_->SetDissolveTextureHandle(TextureHandle::Get(TextureID::noise1));
 	//animationPlayer_->materialHandle_.materialData->edgeColor = { 1.0f, 0.2f, 0.1f };
 	//animationPlayer_->materialHandle_.materialData->edgeIntensity = 5.0f;
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
@@ -342,9 +344,9 @@ Vector3 Player::GetWorldPosition()
 
 void Player::Draw()
 {
-	/*modelPlayer_->Draw();*/
+	modelPlayer_->Draw();
 	modelTamesi_->Draw();
-	animationPlayer_->Draw();
+	/*animationPlayer_->Draw();*/
 	DrawCollider();
 
 	for (auto& weapon : weapons_)
@@ -426,7 +428,7 @@ void Player::DebugDraw()
 	ImGui::Text("ディゾルブ設定 (Dissolve)");
 
 	// データへのポインタを取得して記述を短くする
-	auto* matData = animationPlayer_->materialHandle_.materialData;
+	auto* matData = modelPlayer_->materialHandle_.materialData;
 
 	if (matData)
 	{
@@ -435,7 +437,7 @@ void Player::DebugDraw()
 		bool isDissolve = (matData->enableDissolve != 0);
 		if (ImGui::Checkbox("有効化 (Enable)", &isDissolve))
 		{
-			animationPlayer_->SetEnableDissolve(isDissolve);
+			modelPlayer_->SetEnableDissolve(isDissolve);
 		}
 
 		// 2. 閾値 (Threshold) - 0.0～1.0 でスライドさせる

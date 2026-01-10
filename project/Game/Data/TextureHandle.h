@@ -124,7 +124,7 @@ private:
             { pressSousa, "Resources/images/pressSousa.png" },
             { ikinokore, "Resources/images/ikinokore.png" },
 
-            { noise1, "Resources/images/noise/Noise_Gradients/T_Random_44.png" },
+            { noise1, "Resources/images/noise/Noise_Gradients/T_Random_59.png" },
         }
     };
 };

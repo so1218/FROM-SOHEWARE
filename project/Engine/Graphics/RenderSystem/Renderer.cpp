@@ -11,6 +11,7 @@
 #include "ShapeGenerator.h"
 #include "Camera.h"
 #include "PostEffectManager.h"
+#include "TextureHandle.h"
 #include "TimeManager.h"
 
 // 最大数の定義
@@ -131,6 +132,12 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 		srvManager_->GetSRVHandleGPU(finalImageIndex)
 	);
 
+	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise1);
+	cmdList->SetGraphicsRootDescriptorTable(
+		2,
+		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
+	);
+
 	// フルスクリーントライアングル描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
@@ -161,6 +168,12 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 	cmdList->SetGraphicsRootDescriptorTable(
 		1,
 		srvManager_->GetSRVHandleGPU(srvIndex)
+	);
+
+	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise1);
+	cmdList->SetGraphicsRootDescriptorTable(
+		2,
+		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
 	);
 
 	// フルスクリーントライアングル描画

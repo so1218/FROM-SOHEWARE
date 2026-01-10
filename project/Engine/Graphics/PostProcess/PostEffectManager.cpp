@@ -114,6 +114,10 @@ void PostEffectManager::Initialize(
     postEffectData_->turbulentSpeed = 3.0f;
     postEffectData_->modeFlags[0] = 0;
     postEffectData_->modeFlags[1] = 0;
+    postEffectData_->dissolveThreshold = 0.0f;     
+    postEffectData_->dissolveEdgeWidth = 0.04f;    
+    postEffectData_->dissolveEdgeIntensity = 4.0f; 
+    postEffectData_->dissolveEdgeColor = Vector3(1.0f, 0.4f, 0.1f);
 }
 
 void PostEffectManager::Update()

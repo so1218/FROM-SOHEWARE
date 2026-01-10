@@ -340,6 +340,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::CheckboxFlags("ブロックノイズ", &postEffectData->modeFlags[0], BLOCK_NOISE);
         ImGui::CheckboxFlags("フィルムグレイン", &postEffectData->modeFlags[0], FILM_GRAIN);
         ImGui::CheckboxFlags("グリッチエフェクト", &postEffectData->modeFlags[0], GLITCH);
+        ImGui::CheckboxFlags("ディゾルブ", &postEffectData->modeFlags[0], DISSOLVE);
 
         ImGui::TreePop();
     }
@@ -534,7 +535,16 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::SliderFloat("Turbulent Frequency", &postEffectData->turbulentFrequency, 1.0f, 50.0f);
         ImGui::SliderFloat("Turbulent Speed", &postEffectData->turbulentSpeed, 0.0f, 10.0f);
     }
+    if (postEffectData->modeFlags[0] & DISSOLVE)
+    {
+        ImGui::Separator();
+        ImGui::Text("Dissolve Settings");
 
+        ImGui::SliderFloat("進行度", &postEffectData->dissolveThreshold, 0.0f, 1.0f);
+        ImGui::SliderFloat("エッジの幅", &postEffectData->dissolveEdgeWidth, 0.0f, 0.2f);
+        ImGui::DragFloat("エッジの発光強度", &postEffectData->dissolveEdgeIntensity, 0.1f, 0.0f, 50.0f);
+        ImGui::ColorEdit3("エッジの色", &postEffectData->dissolveEdgeColor.x);
+    }
 }
 
 void DebugGuiManager::DrawTimeSettings()

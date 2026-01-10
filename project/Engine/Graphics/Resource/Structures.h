@@ -137,18 +137,24 @@ struct MaterialSettings
     float shadowDensity = 0.7f;
 
     bool enableRim = false;
-    float rimPower = 3.0f;    
+    float rimPower = 3.0f;
     float rimIntensity = 1.0f;
-    Vector3 rimColor = { 1.0f, 1.0f, 1.0f }; 
+    Vector3 rimColor = { 1.0f, 1.0f, 1.0f };
 
     bool rimUseLightDir = false;
 
     float emissiveIntensity = 1.0f;
 
+    int32_t isArtWave = false;
+    int32_t isArtSound = false;
+    int32_t isArtQuad = false;
+    int32_t isArtKikagaku = false;
+    int32_t isArtFrag = false;
     int32_t isArtGrid = false;
+    float2 padding2;
 
     int32_t enableDissolve;
-    Vector3 edgeColor;   
+    Vector3 edgeColor;
     float dissolveThreshold;
     float edgeWidth;
     float edgeIntensity;
@@ -254,6 +260,14 @@ struct PostEffectData
 
     int32_t modeFlags[2];
     float2 _paddingGlow2;
+
+    float dissolveThreshold;
+    float dissolveEdgeWidth;
+    float dissolveEdgeIntensity;
+    float _paddingDissolve;
+
+    float3 dissolveEdgeColor;
+    float _paddingDissolve2;
 };
 
 struct BlurSettings

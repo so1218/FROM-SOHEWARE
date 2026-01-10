@@ -46,26 +46,31 @@ struct MaterialData
 
     int32_t enableLighting;
     int32_t lightMode;
-    float shininess; 
+    float shininess;
     float environmentMapIntensity;
     
-    float4 specularColor; 
+    float4 specularColor;
     
     float diffuseReflection;
     int32_t addShadow;
-    float shadowBias; 
-    float shadowDensity; 
+    float shadowBias;
+    float shadowDensity;
 
-    int enableRim; 
+    int enableRim;
     float rimPower;
-    float rimIntensity; 
+    float rimIntensity;
     float emissiveIntensity;
     
     float3 rimColor;
     int32_t rimUseLightDir;
 
+    int32_t isArtWave;
+    int32_t isArtSound;
+    int32_t isArtQuad;
+    int32_t isArtKikagaku;
+    int32_t isArtFrag;
     int32_t isArtGrid;
-    float3 padding2; 
+    float2 padding2;
     
     int32_t enableDissolve;
     float3 edgeColor;

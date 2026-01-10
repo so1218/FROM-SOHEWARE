@@ -82,6 +82,14 @@ cbuffer PostEffectSettings : register(b0)
 
     int2 flag;
     float2 _paddingGlow2;
+    
+    float dissolveThreshold; 
+    float dissolveEdgeWidth; 
+    float dissolveEdgeIntensity; 
+    float _paddingDissolve;
+
+    float3 dissolveEdgeColor; 
+    float _paddingDissolve2; 
 }
 
 // 擬似乱数関数
@@ -379,6 +387,43 @@ float4 SampleChromAb(float2 uv)
     return float4(r, g, b, 1.0);
 }
 
+// ディゾルブ
+float4 ApplyDissolve(float4 currentColor, float2 uv)
+{
+    // ノイズテクスチャからサンプリング
+    float noise = gDissolveTexture.Sample(gSampler, uv).r;
+
+    // 閾値より低い部分は消滅（黒色）させる
+    if (noise <= dissolveThreshold)
+    {
+        return float4(0.0f, 0.0f, 0.0f, 1.0f);
+    }
+
+    // 境界線の発光処理
+    float thresholdEdge = dissolveThreshold + dissolveEdgeWidth;
+    
+    // ノイズ値が閾値 ～ 閾値+幅の間にある場合、エッジ色を適用
+    if (noise < thresholdEdge)
+    {
+        // 閾値に近いほど強く発光させる係数
+        float t = 1.0f - ((noise - dissolveThreshold) / dissolveEdgeWidth);
+        
+        // 芯が白く飛び、周囲がカラーになり、Bloomっぽくする
+        float glowFactor = pow(t, 2.5f) * dissolveEdgeIntensity;
+        
+        // 加算合成
+        float3 edgeGlow = dissolveEdgeColor * glowFactor;
+
+        // 加算合成のような見た目にする
+        currentColor.rgb += edgeGlow;
+        
+        // 燃え尽きるように元絵を消す
+        currentColor.rgb = lerp(currentColor.rgb, dissolveEdgeColor * dissolveEdgeIntensity, t);
+    }
+
+    return currentColor;
+}
+
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
@@ -419,6 +464,11 @@ float4 main(VSOutput input) : SV_TARGET
     {
         // 標準サンプリング
         finalColor = gTexture.Sample(gSampler, uv);
+    }
+    
+    if (flag.x & DISSOLVE)
+    {
+        finalColor = ApplyDissolve(finalColor, uv);
     }
 
       // 色補正・フィルタ処理
