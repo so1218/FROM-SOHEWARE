@@ -308,6 +308,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();        
     BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings(); 
     CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
+    GodRaySettings* godRaySettings = postEffectManager_->GetGodRaySettings();
 
     if (ImGui::TreeNode("ポストエフェクト設定"))
     {
@@ -370,6 +371,31 @@ void DebugGuiManager::DrawPostEffectSettings()
             if (ImGui::SliderFloat("強さ", &hSettings->blurStrength, 0.0f, 10.0f))
                 vSettings->blurStrength = hSettings->blurStrength;
 
+            ImGui::TreePop();
+        }
+
+        // God Ray設定
+        if (ImGui::TreeNode("God Ray設定"))
+        {
+            ImGui::TextDisabled("合成強度");
+            ImGui::SliderFloat("強度", &combineSettingsData->godRayIntensity, 0.0f, 5.0f);
+
+            ImGui::Separator();
+
+            if (godRaySettings)
+            {
+                ImGui::TextDisabled("生成パラメータ");
+                ImGui::SliderFloat("輝度閾値", &godRaySettings->threshold, 0.0f, 1.0f);
+                ImGui::SliderFloat("密度", &godRaySettings->density, 0.0f, 2.0f);
+                ImGui::DragFloat("減衰率", &godRaySettings->decay, 0.001f, 0.8f, 0.999f, "%.4f");
+                ImGui::SliderFloat("重み", &godRaySettings->weight, 0.0f, 1.0f);
+                ImGui::SliderFloat("露出", &godRaySettings->exposure, 0.0f, 5.0f);
+                int samples = godRaySettings->numSamples;
+                if (ImGui::SliderInt("サンプル数", &samples, 16, 128))
+                {
+                    godRaySettings->numSamples = samples;
+                }
+            }
             ImGui::TreePop();
         }
 

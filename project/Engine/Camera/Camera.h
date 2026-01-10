@@ -70,6 +70,17 @@ public:
         UpdateViewProjectionMatrix();
     }
 
+    // カメラの前方ベクトルを取得
+    Vector3 GetForward() const 
+    {
+        // ワールド行列のZ軸成分が前方ベクトル
+        Vector3 forward;
+        forward.x = worldTransform_.matWorld_.m[2][0];
+        forward.y = worldTransform_.matWorld_.m[2][1];
+        forward.z = worldTransform_.matWorld_.m[2][2];
+        return forward;
+    }
+
     // 行列取得
     const Matrix4x4& GetViewMatrix() const { return matView_; }
     const Matrix4x4& GetProjectionMatrix() const { return matProjection_; }

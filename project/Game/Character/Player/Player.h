@@ -49,8 +49,6 @@ public:
 	// 移動処理
 	void Move();
 
-	// AABBを取得
-	void UpdateAABB();
 	// ワールド座標を取得
 	Vector3 GetWorldPosition() override;
 	

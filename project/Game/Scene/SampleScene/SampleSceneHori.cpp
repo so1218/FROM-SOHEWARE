@@ -87,22 +87,22 @@ void SampleSceneHori::Initialize()
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
     engine_->materialManager_->GetMaterialSettings().lightMode = 1 ;
 
-    engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 1.29f;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteRadius = 0.029f;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteSoftness = 0.723f;
-    engine_->postEffectManager_->GetPostEffectData()->vignetteEllipseScale = { 1.05f,0.95f };
-    engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 6.0f / 255.0f,42.0f / 255.0f,72.0f / 255.0f };
-    engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= COLOR_TINT;
-    engine_->postEffectManager_->GetPostEffectData()->tintColor = { 130.0f / 255.0f,255.0f / 255.0f,241.0f / 255.0f };
-    engine_->postEffectManager_->GetPostEffectData()->tintMulColorAmount = 0.015f;
-    engine_->postEffectManager_->GetPostEffectData()->tintAddColorAmount = 0.075f;
-    engine_->postEffectManager_->GetPostEffectData()->tintScreenColorAmount = 0.25f;
-    engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
-    engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
-    engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
-    engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
-    engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
+    //engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
+    //engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 1.29f;
+    //engine_->postEffectManager_->GetPostEffectData()->vignetteRadius = 0.029f;
+    //engine_->postEffectManager_->GetPostEffectData()->vignetteSoftness = 0.723f;
+    //engine_->postEffectManager_->GetPostEffectData()->vignetteEllipseScale = { 1.05f,0.95f };
+    //engine_->postEffectManager_->GetPostEffectData()->vignetteColor = { 6.0f / 255.0f,42.0f / 255.0f,72.0f / 255.0f };
+    //engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= COLOR_TINT;
+    //engine_->postEffectManager_->GetPostEffectData()->tintColor = { 130.0f / 255.0f,255.0f / 255.0f,241.0f / 255.0f };
+    //engine_->postEffectManager_->GetPostEffectData()->tintMulColorAmount = 0.015f;
+    //engine_->postEffectManager_->GetPostEffectData()->tintAddColorAmount = 0.075f;
+    //engine_->postEffectManager_->GetPostEffectData()->tintScreenColorAmount = 0.25f;
+    //engine_->postEffectManager_->GetCombineSettings()->enableFog = true;
+    //engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
+    //engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
+    //engine_->postEffectManager_->GetCombineSettings()->fogEnd = 100.0f;
+    //engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
 
     levelUpUI_->Initialize();
 

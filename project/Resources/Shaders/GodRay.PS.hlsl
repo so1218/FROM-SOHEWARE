@@ -35,33 +35,48 @@ float4 main(VSOutput input) : SV_TARGET
 
     float illuminationDecay = 1.0f;
     float4 finalColor = float4(0, 0, 0, 0);
-
-    // 光源に向かってサンプリング位置をずらしながら加算
+    
+    // ★重要: 固定の「光の色」を決める（定数バッファから取るのが理想）
+    float3 lightColor = float3(1.0f, 0.9f, 0.8f);
     for (int i = 0; i < gGodRaySettings.numSamples; i++)
     {
         texCoord -= deltaTexCoord;
-        
-        // ずらした位置の深度と色をサンプリング
+
+        // 画面外チェック（前回のBORDER設定をしていない場合の保険）
+        if (any(step(1.0, texCoord) + step(texCoord, 0.0)))
+            break;
+
+        // 深度をサンプリング
         float sampleDepth = gDepthTexture.Sample(gSampler, texCoord);
-        float4 sampleColor = gSceneTexture.Sample(gSampler, texCoord);
-        
-        // マスク処理（同様に遮蔽物を黒にする）
-        if (sampleDepth < 0.999f)
+
+        // ★修正点: シーンカラー(gSceneTexture)は一切読み込まない！
+        // 代わりに「深度」だけで「光」か「影」かを判定する。
+
+        float3 sampleColor = float3(0, 0, 0);
+
+        // 深度が「空(1.0)」に近い場合のみ、光として扱う
+        // ※深度バッファが通常(手前0.0, 奥1.0)の場合
+        if (sampleDepth >= 0.999f)
         {
-            sampleColor = float4(0, 0, 0, 0);
+            // 空の部分だけ「光の色」にする
+            sampleColor = lightColor;
         }
         else
         {
-             // 閾値処理
-            float luminance = dot(sampleColor.rgb, float3(0.2126, 0.7152, 0.0722));
-            sampleColor.rgb *= step(gGodRaySettings.threshold, luminance);
+            // 建物やキャラなどがある場所は「黒（遮蔽）」にする
+            sampleColor = float3(0, 0, 0);
         }
 
+        // --- ここから下はパーティクル対策 ---
+        // パーティクルが「深度を書き込まない(Z-Write Off)」設定であれば、
+        // 深度バッファには「パーティクルの奥にある空」の値が入っているため、
+        // 上記の判定だけでパーティクルを無視して光が貫通します。
+        
+        // 加算
         sampleColor *= illuminationDecay * gGodRaySettings.weight;
-        finalColor += sampleColor;
+        finalColor.rgb += sampleColor;
         illuminationDecay *= gGodRaySettings.decay;
     }
 
     return finalColor * gGodRaySettings.exposure;
-
 }

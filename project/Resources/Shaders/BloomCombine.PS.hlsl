@@ -5,6 +5,7 @@ Texture2D gSceneTexture : register(t0); // 元のシーン
 Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)
 Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
 Texture2D<float> gDepthTexture : register(t3); // 深度マップ
+Texture2D gGodRayTexture : register(t4);
 
 SamplerState gSampler : register(s0);
 
@@ -74,6 +75,9 @@ float4 main(VSOutput input) : SV_TARGET
 
     float3 bloomColor =
         UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
+    
+    // GodRayサンプリング
+    float3 godRayColor = gGodRayTexture.Sample(gSampler, input.uv).rgb;
 
     // 深度をリニア化
     float linearDepth = LinearizeDepth(depthVal);
@@ -102,10 +106,10 @@ float4 main(VSOutput input) : SV_TARGET
             lerp(sceneColor.rgb, dofColor.rgb, mixingFactor);
     }
 
-    // Bloomを加算合成
-    float3 result =
-        combinedScene +
-        (bloomColor * gCombineSettings.bloomIntensity);
+    // BloomとGodRayの加算
+    float3 result = combinedScene +
+                    (bloomColor * gCombineSettings.bloomIntensity) +
+                    (godRayColor * gCombineSettings.godRayIntensity);
 
     // フォグの適用
     if (gCombineSettings.enableFog != 0)

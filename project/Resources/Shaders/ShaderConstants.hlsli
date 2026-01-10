@@ -176,7 +176,8 @@ struct CombineSettings
     
     float fogEnd; 
     int enableFog;
-    float2 padding2;
+    float godRayIntensity;
+    float _padding1;
 };
 
 struct GodRaySettings

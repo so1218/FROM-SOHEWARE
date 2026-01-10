@@ -6,6 +6,7 @@
 #include "BlurPass.h"
 #include "BokehBlurPass.h"
 #include "BloomCombinePass.h"
+#include "GodRayPass.h"
 #include "Camera.h"
 #include <memory>
 
@@ -34,6 +35,7 @@ public:
     BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
     BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
     CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
+    GodRaySettings* GetGodRaySettings() const { return godRayPass_->GetSettings(); }
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
@@ -46,6 +48,12 @@ public:
     ID3D12Resource* GetFinalPassResource() const { return finalPassResource_.Get(); }
 
     void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
+
+    // 光源位置をセットする関数
+    void SetLightPosition(const Vector3& pos) { lightPosition_ = pos; }
+
+    // GodRay結果のSRVインデックスを取得する関数
+    uint32_t GetGodRaySRVIndex() const { return godRayPass_->GetSRVIndex(); }
 
 private:
     // 依存オブジェクト
@@ -66,6 +74,8 @@ private:
 
     std::unique_ptr<BloomCombinePass> combinePass_;
 
+    std::unique_ptr<GodRayPass> godRayPass_;
+
     // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;
     PostEffectData* postEffectData_ = nullptr;
@@ -78,4 +88,7 @@ private:
     uint32_t finalPassSRVIndex_ = 0;
     D3D12_CPU_DESCRIPTOR_HANDLE finalPassRTVHandle_;
     Microsoft::WRL::ComPtr<ID3D12Resource> finalPassResource_;
+
+    // 光源のワールド座標を保存する変数
+    Vector3 lightPosition_ = { 0, 100, 100 };
 };

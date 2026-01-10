@@ -53,6 +53,12 @@ void PostEffectManager::Initialize(
     combinePass_ = std::make_unique<BloomCombinePass>();
     combinePass_->Initialize(engine, width, height, psoManager, srvManager);
 
+    // GodRay初期化
+    UINT godRayW = Math::MyMax(1u, width / 2);
+    UINT godRayH = Math::MyMax(1u, height / 2);
+    godRayPass_ = std::make_unique<GodRayPass>();
+    godRayPass_->Initialize(engine, godRayW, godRayH, psoManager);
+
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
@@ -138,6 +144,42 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
+    // 光源位置のスクリーン座標変換
+    Vector2 lightUV = { 0.5f, 0.5f }; 
+    bool isLightVisible = false;
+
+    if (engine_->lightManager_)
+    {
+        // 0番目のDirectionalLight（メインの太陽）を取得
+        auto dirLights = engine_->lightManager_->GetDirectionalLightData();
+        // 有効なら計算
+        if (dirLights[0].enable)
+        {
+            // カメラからライト逆方向へ遠ざけた点
+            Vector3 camPos = engine_->camera_->GetTranslation();
+            Vector3 lightDir = dirLights[0].direction;
+            Vector3 virtualPos = camPos + (lightDir * -5000.0f);
+
+            // クリップ空間へ変換
+            Matrix4x4 matViewProj = engine_->camera_->GetViewMatrix() * engine_->camera_->GetProjectionMatrix();
+            Vector4 clipPos = matViewProj.Transform({ virtualPos.x, virtualPos.y, virtualPos.z, 1.0f });
+
+            // カメラ前方判定
+            if (clipPos.w > 0.0f)
+            {
+                // Clip -> NDC -> UV
+                Vector2 ndc = { clipPos.x / clipPos.w, clipPos.y / clipPos.w };
+                lightUV.x = (ndc.x + 1.0f) * 0.5f;
+                lightUV.y = (1.0f - ndc.y) * 0.5f;
+            }
+        }
+    }
+
+    godRayPass_->Execute(cmdList, srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_), // SceneのCPUハンドル
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_), lightUV);
+
+    cmdList->SetDescriptorHeaps(1, heaps);
+
     // Bloom生成
     brightPass_->Execute(cmdList, sceneSRV);
     downsamplePass_->Execute(cmdList, brightPass_->GetSRVHandleGPU());
@@ -168,7 +210,8 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_),
         srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_)
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_),
+        srvManager_->GetSRVHandleCPU_ForCopying(godRayPass_->GetSRVIndex())
     );
 
     combinePass_->Execute(cmdList, sceneSRV);

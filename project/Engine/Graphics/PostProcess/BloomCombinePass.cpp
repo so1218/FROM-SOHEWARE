@@ -31,9 +31,11 @@ void BloomCombinePass::Initialize(
     combineData_->enableDoF = false;
     combineData_->enableFog = false;
 
+    combineData_->godRayIntensity = 1.0f;
+
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 4;
+    heapDesc.NumDescriptors = 5;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -55,7 +57,8 @@ void BloomCombinePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE dofCPU,
-    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU)
+    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
+    D3D12_CPU_DESCRIPTOR_HANDLE godRaySRV)
 {
     // 専用ヒープの先頭
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle =
@@ -88,6 +91,10 @@ void BloomCombinePass::SetupInputViews(
     device->CopyDescriptorsSimple(
         1, destHandle, depthCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
     );
+    destHandle.ptr += descriptorSize; 
+
+    // GodRay
+    device->CopyDescriptorsSimple(1, destHandle, godRaySRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void BloomCombinePass::Execute(

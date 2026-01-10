@@ -56,6 +56,8 @@ void Player::Initialize()
 
 	animationPlayer_->SetColor(0x86FF30ff);
 
+	modelTamesi_->SetColor(0x333333ff);
+
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
@@ -134,7 +136,6 @@ void Player::Update()
 
 	// モデルの行列更新
 	modelPlayer_->GetTransform().UpdateMatrix();
-	UpdateAABB();
 
 	// アニメーション更新
 	animationPlayer_->Update(1.5f, true);
@@ -296,17 +297,6 @@ Vector3 Player::GetMoveDirection()
 	}
 
 	return dir;
-}
-
-void Player::UpdateAABB()
-{
-	Vector3 center = modelPlayer_->GetTransform().GetWorldPosition();
-	float halfW = size_.x / 2.0f;
-	float halfH = size_.y / 2.0f;
-	float halfD = size_.z / 2.0f;
-
-	aabb_.min = { center.x - halfW, center.y - halfH, center.z - halfD };
-	aabb_.max = { center.x + halfW, center.y + halfH, center.z + halfD };
 }
 
 void Player::OnCollision(Collider* other)
