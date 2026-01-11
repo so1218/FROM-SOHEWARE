@@ -6,10 +6,12 @@
 // 音声ID
 enum class AudioID
 {
-    title,
-    playScene,
-    clear,
+    // BGM
+    titleSceneBGM,
+    playSceneBGM,
+    clearSceneBGM,
 
+    // SE
     exp,
     levelUp,
     enemyHit,
@@ -40,18 +42,21 @@ private:
     static constexpr std::array<AudioDefinition, static_cast<size_t>(AudioID::count)> audioDefinitions_ =
     { 
         {
-            { AudioID::title, L"Assets/Audio/title.mp3" },
-            { AudioID::playScene, L"Assets/Audio/playScene.mp3" },
-            { AudioID::clear, L"Assets/Audio/clear.mp3" },
-            { AudioID::exp, L"Assets/Audio/exp.mp3" },
-            { AudioID::levelUp, L"Assets/Audio/levelUp.mp3" },
-			{ AudioID::enemyHit, L"Assets/Audio/enemyHit.mp3" },
-			{ AudioID::playerHit, L"Assets/Audio/playerHit.mp3" },
-			{ AudioID::throwKnife, L"Assets/Audio/throwKnife.mp3" },
-			{ AudioID::throwAxe, L"Assets/Audio/axe.mp3" },
-			{ AudioID::clearSE, L"Assets/Audio/clearSE.mp3" },
-            { AudioID::dicision, L"Assets/Audio/dicision.mp3" },
-            { AudioID::cursolSE, L"Assets/Audio/cursolSE.mp3" },
+            // BGM
+            { AudioID::titleSceneBGM, L"Assets/Audio/BGM/titleSceneBGM.mp3" },
+            { AudioID::playSceneBGM, L"Assets/Audio/BGM/playSceneBGM.mp3" },
+            { AudioID::clearSceneBGM, L"Assets/Audio/BGM/clearSceneBGM.mp3" },
+
+            // SE
+            { AudioID::exp, L"Assets/Audio/SE/exp.mp3" },
+            { AudioID::levelUp, L"Assets/Audio/SE/levelUp.mp3" },
+			{ AudioID::enemyHit, L"Assets/Audio/SE/enemyHit.mp3" },
+			{ AudioID::playerHit, L"Assets/Audio/SE/playerHit.mp3" },
+			{ AudioID::throwKnife, L"Assets/Audio/SE/throwKnife.mp3" },
+			{ AudioID::throwAxe, L"Assets/Audio/SE/axe.mp3" },
+			{ AudioID::clearSE, L"Assets/Audio/SE/clearSE.mp3" },
+            { AudioID::dicision, L"Assets/Audio/SE/dicision.mp3" },
+            { AudioID::cursolSE, L"Assets/Audio/SE/cursolSE.mp3" },
         }
     };
 

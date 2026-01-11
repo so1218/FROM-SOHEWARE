@@ -115,13 +115,13 @@ void SampleSceneHori::Initialize()
 
     enemyManager_->Reset();
 
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clear));
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::title));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clearSceneBGM));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::titleSceneBGM));
 }
 
 void SampleSceneHori::Update()
 {
-    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::playScene), true, 20);
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::playSceneBGM), true, 20);
 
     switch (sceneState_)
     {

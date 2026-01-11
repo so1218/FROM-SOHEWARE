@@ -72,14 +72,14 @@ void TitleScene::Initialize()
     objectManager_.Initialize();
 
 
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clear));
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playScene));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clearSceneBGM));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
 
 }
 
 void TitleScene::Update()
 {
-    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::title), true, 20);
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::titleSceneBGM), true, 20);
 
     objectManager_.Update();
 

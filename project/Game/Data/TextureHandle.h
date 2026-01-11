@@ -52,6 +52,8 @@ enum TextureID
 
     noise1,
 
+    lut_natural,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -119,6 +121,8 @@ private:
             { ikinokore, "Assets/Textures/ikinokore.png" },
 
             { noise1, "Assets/Textures/Noise/Noise_Gradients/T_Random_59.png" },
+
+            { lut_natural, "Assets/Textures/LUTs/RGBTable16x1.png" },
         }
     };
 };

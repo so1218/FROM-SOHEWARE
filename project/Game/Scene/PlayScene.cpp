@@ -75,13 +75,13 @@ void PlayScene::Initialize()
     // ゲームオブジェクトの一括初期化
     objectManager_.Initialize();
 
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playScene));
-    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::title));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
+    AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::titleSceneBGM));
 }
 
 void PlayScene::Update()
 {
-    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clear), true, 20);
+    AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSceneBGM), true, 20);
 
     HandleCollisions();
 
