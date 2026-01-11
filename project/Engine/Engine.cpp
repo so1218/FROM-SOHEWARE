@@ -102,6 +102,9 @@ void Engine::BeginFrame()
 
 #ifdef _DEBUG
 	debugGuiManager_->Update();
+
+	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
+	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);
 #endif
 	renderer_->BeginFrame();
 }
@@ -183,9 +186,8 @@ void Engine::EndFrame()
 	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
 #ifdef _DEBUG
-	// ImGui上にFinalBufferを表示
-	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
-	debugGuiManager_->RenderOffscreenTexture(srvManager_.get(), finalSrvIndex);
+	// シーンウィンドウを閉じる
+	debugGuiManager_->EndSceneView();
 #else
 	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
 	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());

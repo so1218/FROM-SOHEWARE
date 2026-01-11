@@ -2,13 +2,17 @@
 
 #include <filesystem>
 
-#include "externals/imgui/imgui_internal.h"
+#include "imgui_internal.h"
 #include "externals/ImGuiFileDialog.h"
+#include "WorldTransform.h"
+#include "Camera.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "externals/stb_image.h"
 
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
+int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -150,9 +154,15 @@ void ImGuiManager::BeginFrame()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
+    // ImGuizmoのフレーム開始処理
+    ImGuizmo::BeginFrame();
+    ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext()); // コンテキスト設定
+
+    // Gizmoを描画する画面範囲を指定（画面全体に設定）
+    ImGuiIO& io = ImGui::GetIO();
+
     DrawMenuBar();
 
-    ImGuiIO& io = ImGui::GetIO();
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
 
@@ -315,5 +325,55 @@ void ImGuiManager::Finalize()
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 #endif
+}
+
+void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
+{
+    // 操作モードの切り替え
+    if (ImGui::IsKeyPressed(ImGuiKey_1)) gizmoOperation_ = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_2)) gizmoOperation_ = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_3)) gizmoOperation_ = ImGuizmo::SCALE;
+
+    // 行列の準備
+    const Matrix4x4& viewMatrix = camera.GetViewMatrix();
+    const Matrix4x4& projMatrix = camera.GetProjectionMatrix();
+
+    // Transform -> Matrix
+    Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
+
+    ImGui::PushID(reinterpret_cast<void*>(&transform));
+
+    // Gizmo表示
+    ImGuizmo::Manipulate(
+        &viewMatrix.m[0][0],
+        &projMatrix.m[0][0],
+        (ImGuizmo::OPERATION)gizmoOperation_,
+        ImGuizmo::WORLD,
+        &worldMatrix.m[0][0]
+    );
+
+    // 数値の書き戻し
+    if (ImGuizmo::IsUsing())
+    {
+        Vector3 translation, rotationDeg, scale;
+        ImGuizmo::DecomposeMatrixToComponents(
+            &worldMatrix.m[0][0],
+            &translation.x,
+            &rotationDeg.x,
+            &scale.x
+        );
+
+        // 結果をTransformに反映
+        transform.translation_ = translation;
+        transform.scale_ = scale;
+
+        float toRadian = Math::PI / 180.0f;
+        transform.rotation_.x = rotationDeg.x * toRadian;
+        transform.rotation_.y = rotationDeg.y * toRadian;
+        transform.rotation_.z = rotationDeg.z * toRadian;
+		transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(transform.rotation_);
+    }
+
+    ImGui::PopID();
 }
 

@@ -18,10 +18,8 @@ public:
         TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera);
     void Update(); 
 
-    void RenderOffscreenTexture(
-        SRVManager* srvManager,    
-        uint32_t srvIndexToShow
-    );
+    void BeginSceneView(SRVManager* srvManager, uint32_t srvIndexToShow);
+    void EndSceneView();
 
 private:
     Engine* engine_; 

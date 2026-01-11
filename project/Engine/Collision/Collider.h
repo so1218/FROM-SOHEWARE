@@ -49,6 +49,6 @@ private:
 	// 衝突マスク(相手)
 	uint32_t collisionMask_ = 0xffffffff;
 	// デバッグ表示色
-	Vector4 color_ = { 0.0f, 1.0f, 0.0f, 1.0f };
+	Vector4 color_ = { 0.0f, 1.0f, 1.0f, 1.0f };
 };
 

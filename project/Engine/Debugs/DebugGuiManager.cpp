@@ -605,34 +605,47 @@ void DebugGuiManager::DrawInformationDisplays()
     ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->kMaxTrailCount);
 }
 
-void DebugGuiManager::RenderOffscreenTexture(
+void DebugGuiManager::BeginSceneView(
     SRVManager* srvManager,
     uint32_t srvIndexToShow
 ) 
 {
-    // マネージャから、表示したいSRVのGPUハンドルを直接もらう
+    /// GPUハンドル取得
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
-    // ImGuiで表示する
-    ImGuiCond cond = ImGuiCond_FirstUseEver; // デフォルトは初回のみ
-
-    // リセット要求が来ているかチェック
+    // リセット要求などのロジック
+    ImGuiCond cond = ImGuiCond_FirstUseEver;
     if (ImGuiManager::GetSceneResetRequested())
     {
-        cond = ImGuiCond_Always;             // このフレームだけ強制適用
-        ImGuiManager::ClearSceneResetRequested(); // フラグを下ろす
+        cond = ImGuiCond_Always;
+        ImGuiManager::ClearSceneResetRequested();
     }
 
-    // cond変数を使って設定
+    // ウィンドウ設定
     ImGui::SetNextWindowSize(ImVec2(800, 450), cond);
-    ImGui::SetNextWindowPos(ImVec2(0, 0), cond); 
-    ImGui::Begin("Scene");
-    ImVec2 imageSize = ImGui::GetContentRegionAvail();
+    ImGui::SetNextWindowPos(ImVec2(0, 0), cond);
 
+    // パディングなしで開始
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::Begin("Scene");
+    ImGui::PopStyleVar();
+
+    // 画像を描画（命令の記録）
+    ImVec2 imageSize = ImGui::GetContentRegionAvail();
     ImGui::Image(
         reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)),
         imageSize
     );
 
+    // Gizmoの準備をここで行う
+    ImVec2 vMin = ImGui::GetItemRectMin();
+    ImVec2 vMax = ImGui::GetItemRectMax();
+    ImGuizmo::SetRect(vMin.x, vMin.y, vMax.x - vMin.x, vMax.y - vMin.y);
+    ImGuizmo::SetDrawlist();
+}
+
+void DebugGuiManager::EndSceneView()
+{
+    // ウィンドウを閉じるだけ
     ImGui::End();
 }

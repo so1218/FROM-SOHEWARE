@@ -5,9 +5,13 @@
 #include <fstream>
 #include <iostream>
 
-#include "externals/imgui/imgui.h"
-#include "externals/imgui/imgui_impl_dx12.h"
-#include "externals/imgui/imgui_impl_win32.h"
+#include "imgui.h"
+#include "imgui_impl_dx12.h"
+#include "imgui_impl_win32.h"
+#include "ImGuizmo.h"
+
+class WorldTransform;
+class Camera;
 
 class ImGuiManager
 {
@@ -32,7 +36,14 @@ public:
     static bool GetSceneResetRequested() { return resetSceneSize_; }
     static void ClearSceneResetRequested() { resetSceneSize_ = false; }
 
+    // 誰でも1行でGizmoを出せるようにする関数
+    static void DrawGizmo(WorldTransform& transform, const Camera& camera);
+
     static bool dockInitialized_;
     static bool resetSceneSize_;
+
+private:
+    // 操作モードを保持する変数
+    static int gizmoOperation_;
 };
 

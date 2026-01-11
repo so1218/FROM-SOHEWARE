@@ -463,6 +463,8 @@ void Player::DebugDraw()
 	{
 		weapon->DebugDraw();
 	}
+
+	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform(), *camera_);
 }
 
 void Player::TakeDamage(float damage)
