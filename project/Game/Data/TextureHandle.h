@@ -77,32 +77,32 @@ private:
         {
             { white1x1, "Assets/Textures/white1x1.png" },
             { uvChecker,"Assets/Textures/uvChecker.png" },
-            { toonRamp,   "Assets/Textures/toonRamp_3.png" },
+            { toonRamp,   "Assets/Textures/Ramps/toonRamp_3.png" },
 
             // dds
-            { skyboxCubemapBlack,   "Assets/Textures/black_cube.dds" },
-            { skyboxCubemap,   "Assets/Textures/rostock_laage_airport_4k.dds" },
+            { skyboxCubemapBlack,   "Assets/Textures/Environments/black_cube.dds" },
+            { skyboxCubemap,   "Assets/Textures/Environments/rostock_laage_airport_4k.dds" },
 
             { skydome,   "Assets/Textures/sky_sphere.png" },
             { axe,   "Assets/Textures/Woodcutter-Axe.jpg" },
             { knife,   "Assets/Textures/KnifeTexture..jpg" },
 
-            { num1, "Assets/Textures/numFont/1.png" },
-            { num2, "Assets/Textures/numFont/2.png" },
-            { num3, "Assets/Textures/numFont/3.png" },
-            { num4, "Assets/Textures/numFont/4.png" },
-            { num5, "Assets/Textures/numFont/5.png" },
-            { num6, "Assets/Textures/numFont/6.png" },
-            { num7, "Assets/Textures/numFont/7.png" },
-            { num8, "Assets/Textures/numFont/8.png" },
-            { num9, "Assets/Textures/numFont/9.png" },
-            { num0, "Assets/Textures/numFont/0.png" },
-
-            { coron, "Assets/Textures/numFont/coron.png" },
+            { num1, "Assets/Textures/UI/numFont/1.png" },
+            { num2, "Assets/Textures/UI/numFont/2.png" },
+            { num3, "Assets/Textures/UI/numFont/3.png" },
+            { num4, "Assets/Textures/UI/numFont/4.png" },
+            { num5, "Assets/Textures/UI/numFont/5.png" },
+            { num6, "Assets/Textures/UI/numFont/6.png" },
+            { num7, "Assets/Textures/UI/numFont/7.png" },
+            { num8, "Assets/Textures/UI/numFont/8.png" },
+            { num9, "Assets/Textures/UI/numFont/9.png" },
+            { num0, "Assets/Textures/UI/numFont/0.png" },
+                                    
+            { coron, "Assets/Textures/UI/numFont/coron.png" },
             { hpGage, "Assets/Textures/hpGage.png" },
 
-            { cardTextKnife, "Assets/Textures/numFont/9.png" },
-            { cardTextAxe, "Assets/Textures/numFont/0.png" },
+            { cardTextKnife, "Assets/Textures/UI/numFont/9.png" },
+            { cardTextAxe, "Assets/Textures/UI/numFont/0.png" },
 
             { title, "Assets/Textures/title.png" },
             { clear, "Assets/Textures/clear.png" },
@@ -118,7 +118,7 @@ private:
             { pressSousa, "Assets/Textures/pressSousa.png" },
             { ikinokore, "Assets/Textures/ikinokore.png" },
 
-            { noise1, "Assets/Textures/noise/Noise_Gradients/T_Random_59.png" },
+            { noise1, "Assets/Textures/Noise/Noise_Gradients/T_Random_59.png" },
         }
     };
 };

@@ -52,16 +52,16 @@ private:
             { ModelID::plane,     "Assets/Models/Primitives/Plane/plane.obj" },
 
             // フィールド関連
-            { ModelID::skydome,  "Assets/Models/skydome/skydome.obj" },
-            { ModelID::field,  "Assets/Models/field/field.obj" },
-            { ModelID::axe,  "Assets/Models/player/weapons/axe/Axe.obj" },
-            { ModelID::knife,  "Assets/Models/player/weapons/knife/Knife.obj" },
+            { ModelID::skydome,  "Assets/Models/Environment/Skydome/skydome.obj" },
+            { ModelID::field,  "Assets/Models/Environment/Field/field.obj" },
+            { ModelID::axe,  "Assets/Models/Characters/Player/weapons/axe/Axe.obj" },
+            { ModelID::knife,  "Assets/Models/Characters/Player/weapons/knife/Knife.obj" },
 
             // プレイヤー関連
-            { ModelID::player,  "Assets/Models/player/player.gltf" },
+            { ModelID::player,  "Assets/Models/Characters/Player/player.gltf" },
 
             // 敵関連
-            { ModelID::enemy ,  "Assets/Models/enemy/zombi.gltf" },
+            { ModelID::enemy ,  "Assets/Models/Characters/Enemy/zombi.gltf" },
         }
     };
 };
