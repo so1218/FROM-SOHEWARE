@@ -6,7 +6,6 @@
 // 音声ID
 enum class AudioID
 {
-    fanfare,
     title,
     playScene,
     clear,
@@ -41,8 +40,6 @@ private:
     static constexpr std::array<AudioDefinition, static_cast<size_t>(AudioID::count)> audioDefinitions_ =
     { 
         {
-            { AudioID::fanfare, L"Resources/audios/fanfare.wav" },
-
             { AudioID::title, L"Resources/audios/title.mp3" },
             { AudioID::playScene, L"Resources/audios/playScene.mp3" },
             { AudioID::clear, L"Resources/audios/clear.mp3" },

@@ -183,7 +183,7 @@ private:
             { star_08,      "Resources/images/particles/star_08.png" },
             { star_09,      "Resources/images/particles/star_09.png" },
 
-            { noise_39,      "Resources/images/lightning.png" },
+            { noise_39,      "Resources/images/noise/Noise_Gradients/T_Random_59.png" },
         }
     };
 };

@@ -6,11 +6,6 @@
 enum class AnimationID
 {
     // 基本的なアニメーション
-    sneakWalk,
-    walk,
-    ryu,
-    shrimp,
-
     player,
     playerIdle,
 
@@ -34,15 +29,10 @@ private:
     {
         {
             // 基本的なアニメーション
-            { AnimationID::sneakWalk,       "Resources/models/animated/sneakWalk2.gltf" },
-            { AnimationID::walk,       "Resources/models/animated/walk.gltf" },
-            { AnimationID::ryu,     "Resources/models/animated/animatedRyu.gltf" },
-            { AnimationID::shrimp,     "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
-
             { AnimationID::player,     "Resources/models/player/player.gltf" },
             { AnimationID::playerIdle,     "Resources/models/player/player.gltf" },
 
-            { AnimationID::enemy ,  "Resources/models/enemy/body/zombi.gltf" },
+            { AnimationID::enemy ,  "Resources/models/enemy/zombi.gltf" },
         }
     };
 };

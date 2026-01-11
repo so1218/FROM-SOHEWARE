@@ -9,9 +9,6 @@ enum class ModelID
     cube,
     sphere,
     plane,
-    multiMesh,
-    multiMaterial,
-    walk,
 
 	// フィールド関連
     skydome,
@@ -21,9 +18,6 @@ enum class ModelID
 
 	// プレイヤー関連
     player,
-    sneakWalk,
-    shrimp,
-    ryu,
 
 	// 敵関連
     enemy,
@@ -56,9 +50,6 @@ private:
             { ModelID::cube,       "Resources/models/cube/normalCube.obj" },
             { ModelID::sphere,     "Resources/models/sphere/sphere.obj" },
             { ModelID::plane,     "Resources/models/plane/plane.obj" },
-            { ModelID::multiMesh,  "Resources/models/multiMesh/multiMesh.obj" },
-            { ModelID::multiMaterial,  "Resources/models/multiMaterial/multiMaterial.obj" },
-            { ModelID::walk,  "Resources/models/animated/walk.gltf" },
 
             // フィールド関連
             { ModelID::skydome,  "Resources/models/skydome/skydome.obj" },
@@ -68,12 +59,9 @@ private:
 
             // プレイヤー関連
             { ModelID::player,  "Resources/models/player/player.gltf" },
-            { ModelID::sneakWalk,  "Resources/models/animated/sneakWalk2.gltf" },
-            { ModelID::shrimp,  "Resources/models/animated/Shrimp_03.gltf" },
-            { ModelID::ryu,  "Resources/models/shrimp/ShrimpTailFripAnimation.gltf" },
 
             // 敵関連
-            { ModelID::enemy ,  "Resources/models/enemy/body/zombi.gltf" },
+            { ModelID::enemy ,  "Resources/models/enemy/zombi.gltf" },
         }
     };
 };

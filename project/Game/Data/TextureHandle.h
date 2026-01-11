@@ -6,7 +6,6 @@ enum TextureID
 {
     white1x1,
     uvChecker,
-    monsterBall,
     toonRamp,
 
     // dds
@@ -17,8 +16,6 @@ enum TextureID
     skydome,
     axe,
     knife,
-
-    enemy,
 
     //文字フォント
     num1,
@@ -80,7 +77,6 @@ private:
         {
             { white1x1, "Resources/images/white1x1.png" },
             { uvChecker,"Resources/images/uvChecker.png" },
-            { monsterBall,   "Resources/images/Shrimp_TestTexture.png" },
             { toonRamp,   "Resources/images/toonRamp_3.png" },
 
             // dds
@@ -90,8 +86,6 @@ private:
             { skydome,   "Resources/images/sky_sphere.png" },
             { axe,   "Resources/images/Woodcutter-Axe.jpg" },
             { knife,   "Resources/images/KnifeTexture..jpg" },
-
-            { enemy,   "Resources/images/Blaze_baseColor.png" },
 
             { num1, "Resources/images/numFont/1.png" },
             { num2, "Resources/images/numFont/2.png" },

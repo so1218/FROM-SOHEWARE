@@ -33,7 +33,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::player),AnimationHandle::Get(AnimationID::player));
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::enemy),AnimationHandle::Get(AnimationID::enemy));
 }
 
 void Player::Initialize()
@@ -53,7 +53,7 @@ void Player::Initialize()
 
 	//modelPlayer_->SetEnableOutline(true);
 	/*animationPlayer_->SetEnableOutline(true);*/
-	animationPlayer_->SetTextureHandle(TextureHandle::Get(TextureID::monsterBall));
+
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0x333333ff);
@@ -220,7 +220,7 @@ void Player::Move()
 		lastMoveDirection_ = moveDirection_;
 		if (currentAnimState_ != PlayerAnimState::Walk)
 		{
-			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::player));
+			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::enemy));
 			currentAnimState_ = PlayerAnimState::Walk; 
 		}
 	}
@@ -232,7 +232,7 @@ void Player::Move()
 		}
 		if (currentAnimState_ != PlayerAnimState::Idle)
 		{
-			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::playerIdle));
+			animationPlayer_->SetAnimation(AnimationHandle::Get(AnimationID::enemy));
 			currentAnimState_ = PlayerAnimState::Idle; 
 		}
 	}

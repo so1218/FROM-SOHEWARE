@@ -40,7 +40,7 @@ void EnemyManager::Update()
         enemyData.speed = 3.0f;
         enemyData.size = { 1.0f, 1.0f, 1.0f };
 
-        //SpawnEnemy(enemyData, spawnPos);
+        SpawnEnemy(enemyData, spawnPos);
     }
 }
 
