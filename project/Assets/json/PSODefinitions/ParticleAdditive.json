@@ -1,0 +1,12 @@
+{
+  "RootSignature": "Particle",
+  "VertexShader": "Assets/Shaders/Particle.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Particle.PS.hlsl",
+  "InputLayout": "Particle",
+  "BlendState": "Additive",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "ReadOnly",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

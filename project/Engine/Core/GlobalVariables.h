@@ -111,7 +111,7 @@ private:
 	std::map<std::string, Group> datas_;
 
 	// グローバル変数の保存先ファイルパス
-	const std::string kDirectoryPath_ = "Resources/json/GlobalVariables/";
+	const std::string kDirectoryPath_ = "Assets/json/GlobalVariables/";
 
 	// ドラッグの感度
 	int dragSensitivityInt_ = 1;

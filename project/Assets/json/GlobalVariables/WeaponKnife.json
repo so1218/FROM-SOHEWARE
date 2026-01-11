@@ -1,0 +1,19 @@
+{
+    "WeaponKnife": {
+        "CollisionSize": [
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
+        ],
+        "Cooldown": 1.7300000190734863,
+        "CooldownBase": 1.5,
+        "Damage": 20.0,
+        "DamageBase": 20.0,
+        "Level": 1.0,
+        "Projectile Count": 1.0,
+        "Projectile CountBase": 1.0,
+        "Projectile Lifetime": 2.5999999046325684,
+        "Projectile Speed": 25.299999237060547,
+        "Time Between Projectiles": 0.10000000149011612
+    }
+}

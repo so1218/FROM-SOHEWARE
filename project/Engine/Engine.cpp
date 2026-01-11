@@ -447,7 +447,7 @@ void Engine::InitializeResources()
 
 	// テクスチャ配列
 	std::vector<std::string> texturePaths = {
-		"Resources/images/uvChecker.png",
+		"Assets/images/uvChecker.png",
 	};
 
 	LoadTextureArray(texturePaths);

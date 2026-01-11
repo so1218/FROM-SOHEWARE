@@ -1,0 +1,12 @@
+{
+  "RootSignature": "PostProcess",
+  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
+  "PixelShader": "Assets/Shaders/BloomCombine.PS.hlsl",
+  "InputLayout": "Fullscreen",
+  "BlendState": "BloomCombine",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "Off",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "UNKNOWN"
+}

@@ -29,10 +29,10 @@ private:
     {
         {
             // 基本的なアニメーション
-            { AnimationID::player,     "Resources/models/player/player.gltf" },
-            { AnimationID::playerIdle,     "Resources/models/player/player.gltf" },
+            { AnimationID::player,     "Assets/models/player/player.gltf" },
+            { AnimationID::playerIdle,     "Assets/models/player/player.gltf" },
 
-            { AnimationID::enemy ,  "Resources/models/enemy/zombi.gltf" },
+            { AnimationID::enemy ,  "Assets/models/enemy/zombi.gltf" },
         }
     };
 };

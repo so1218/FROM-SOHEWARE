@@ -1,0 +1,12 @@
+{
+  "RootSignature": "Skybox",
+  "VertexShader": "Assets/Shaders/Skybox.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Skybox.PS.hlsl",
+  "InputLayout": "Skybox",
+  "BlendState": "Opaque",
+  "RasterizerState": "FrontCullSolid",
+  "DepthStencilState": "ReadOnly",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

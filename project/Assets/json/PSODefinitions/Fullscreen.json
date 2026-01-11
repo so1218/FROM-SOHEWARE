@@ -1,0 +1,12 @@
+{
+  "RootSignature": "Fullscreen",
+  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
+  "PixelShader": "Assets/Shaders/FullScreenQuad.PS.hlsl",
+  "InputLayout": "Fullscreen",
+  "BlendState": "Opaque",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "Off",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "UNKNOWN"
+}

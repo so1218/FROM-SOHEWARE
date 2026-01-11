@@ -1,0 +1,12 @@
+{
+  "RootSignature": "Outline",
+  "VertexShader": "Assets/Shaders/Object3DOutline.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Object3DOutline.PS.hlsl",
+  "InputLayout": "Default3D",
+  "BlendState": "AlphaBlend",
+  "RasterizerState": "FrontCullBias",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

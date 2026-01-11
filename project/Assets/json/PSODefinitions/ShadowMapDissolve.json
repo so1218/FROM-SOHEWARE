@@ -1,0 +1,13 @@
+{
+  "Name": "ShadowMapDissolve",
+  "RootSignature": "ShadowMapDissolve",
+  "VertexShader": "Assets/Shaders/ShadowMap.VS.hlsl",
+  "PixelShader": "Assets/Shaders/ShadowMap.PS.hlsl",
+  "InputLayout": "Default3D",
+  "BlendState": "Opaque",
+  "RasterizerState": "BackCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormat": "UNKNOWN",
+  "DSVFormat": "D32_FLOAT"
+}

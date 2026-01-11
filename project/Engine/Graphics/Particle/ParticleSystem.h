@@ -22,7 +22,7 @@ class ParticleConfigManager;
 class ParticleSystem
 {
 public:
-    const char* kConfigDirectoryPath_ = "Resources/json/particle/";
+    const char* kConfigDirectoryPath_ = "Assets/json/particle/";
 
     ParticleSystem();
     ~ParticleSystem();

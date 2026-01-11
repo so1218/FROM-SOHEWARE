@@ -1,0 +1,12 @@
+{
+  "RootSignature": "3D",
+  "VertexShader": "Assets/Shaders/Object3D.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
+  "InputLayout": "Default3D",
+  "BlendState": "AlphaBlend",
+  "RasterizerState": "Wireframe",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

@@ -1,0 +1,12 @@
+{
+  "RootSignature": "SkinningOutline",
+  "VertexShader": "Assets/Shaders/SkinningOutline.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Object3DOutline.PS.hlsl",
+  "InputLayout": "Skinning",
+  "BlendState": "AlphaBlend",
+  "RasterizerState": "FrontCullBias",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormat": "R16G16B16A16_FLOAT",
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

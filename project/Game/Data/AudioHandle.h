@@ -40,18 +40,18 @@ private:
     static constexpr std::array<AudioDefinition, static_cast<size_t>(AudioID::count)> audioDefinitions_ =
     { 
         {
-            { AudioID::title, L"Resources/audios/title.mp3" },
-            { AudioID::playScene, L"Resources/audios/playScene.mp3" },
-            { AudioID::clear, L"Resources/audios/clear.mp3" },
-            { AudioID::exp, L"Resources/audios/exp.mp3" },
-            { AudioID::levelUp, L"Resources/audios/levelUp.mp3" },
-			{ AudioID::enemyHit, L"Resources/audios/enemyHit.mp3" },
-			{ AudioID::playerHit, L"Resources/audios/playerHit.mp3" },
-			{ AudioID::throwKnife, L"Resources/audios/throwKnife.mp3" },
-			{ AudioID::throwAxe, L"Resources/audios/axe.mp3" },
-			{ AudioID::clearSE, L"Resources/audios/clearSE.mp3" },
-            { AudioID::dicision, L"Resources/audios/dicision.mp3" },
-            { AudioID::cursolSE, L"Resources/audios/cursolSE.mp3" },
+            { AudioID::title, L"Assets/audios/title.mp3" },
+            { AudioID::playScene, L"Assets/audios/playScene.mp3" },
+            { AudioID::clear, L"Assets/audios/clear.mp3" },
+            { AudioID::exp, L"Assets/audios/exp.mp3" },
+            { AudioID::levelUp, L"Assets/audios/levelUp.mp3" },
+			{ AudioID::enemyHit, L"Assets/audios/enemyHit.mp3" },
+			{ AudioID::playerHit, L"Assets/audios/playerHit.mp3" },
+			{ AudioID::throwKnife, L"Assets/audios/throwKnife.mp3" },
+			{ AudioID::throwAxe, L"Assets/audios/axe.mp3" },
+			{ AudioID::clearSE, L"Assets/audios/clearSE.mp3" },
+            { AudioID::dicision, L"Assets/audios/dicision.mp3" },
+            { AudioID::cursolSE, L"Assets/audios/cursolSE.mp3" },
         }
     };
 
