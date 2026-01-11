@@ -30,7 +30,7 @@ void ImGuiManager::Initialize(
     io.IniFilename = "imgui_layout.ini";
 
     // フォント設定
-    std::string fontPath = "Assets/fonts/GenJyuuGothic-Bold.ttf";
+    std::string fontPath = "Assets/Fonts/GenJyuuGothic-Bold.ttf";
     float fontSize = 16.0f;
 
 

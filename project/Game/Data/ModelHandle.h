@@ -47,21 +47,21 @@ private:
     { 
         {
             // 基本的なモデル
-            { ModelID::cube,       "Assets/models/cube/normalCube.obj" },
-            { ModelID::sphere,     "Assets/models/sphere/sphere.obj" },
-            { ModelID::plane,     "Assets/models/plane/plane.obj" },
+            { ModelID::cube,       "Assets/Models/Primitives/Cube/normalCube.obj" },
+            { ModelID::sphere,     "Assets/Models/Primitives/Sphere/sphere.obj" },
+            { ModelID::plane,     "Assets/Models/Primitives/Plane/plane.obj" },
 
             // フィールド関連
-            { ModelID::skydome,  "Assets/models/skydome/skydome.obj" },
-            { ModelID::field,  "Assets/models/field/field.obj" },
-            { ModelID::axe,  "Assets/models/player/weapons/axe/Axe.obj" },
-            { ModelID::knife,  "Assets/models/player/weapons/knife/Knife.obj" },
+            { ModelID::skydome,  "Assets/Models/skydome/skydome.obj" },
+            { ModelID::field,  "Assets/Models/field/field.obj" },
+            { ModelID::axe,  "Assets/Models/player/weapons/axe/Axe.obj" },
+            { ModelID::knife,  "Assets/Models/player/weapons/knife/Knife.obj" },
 
             // プレイヤー関連
-            { ModelID::player,  "Assets/models/player/player.gltf" },
+            { ModelID::player,  "Assets/Models/player/player.gltf" },
 
             // 敵関連
-            { ModelID::enemy ,  "Assets/models/enemy/zombi.gltf" },
+            { ModelID::enemy ,  "Assets/Models/enemy/zombi.gltf" },
         }
     };
 };
