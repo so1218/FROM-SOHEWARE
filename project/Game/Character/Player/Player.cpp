@@ -56,7 +56,7 @@ void Player::Initialize()
 
 	animationPlayer_->SetColor(0x86FF30ff);
 
-	modelTamesi_->SetColor(0x333333ff);
+	modelTamesi_->SetColor(0xffffffff);
 
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
@@ -342,7 +342,7 @@ Vector3 Player::GetWorldPosition()
 void Player::Draw()
 {
 	//modelPlayer_->Draw();
-	/*modelTamesi_->Draw();*/
+	modelTamesi_->Draw();
 	animationPlayer_->Draw();
 	DrawCollider();
 

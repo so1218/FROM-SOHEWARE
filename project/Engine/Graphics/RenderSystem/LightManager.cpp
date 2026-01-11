@@ -174,6 +174,67 @@ void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4
 void LightManager::DrawDebugLights()
 {
 #ifdef _DEBUG
+    // Directional Lightの描画
+    for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
+    {
+        if (!directionalLightData_[i].enable) continue;
+
+        Vector4 color = directionalLightData_[i].color;
+        color.w = 1.0f;
+
+        // 1. 仮想的な位置（太陽の位置）
+        // 複数ある場合に重ならないようずらす（Y=10.0fなどに固定してもOK）
+        Vector3 virtualPos = { float(i) * 3.0f, 10.0f, 0.0f };
+
+        // 2. 方向ベクトルの正規化
+        Vector3 dir = directionalLightData_[i].direction;
+        float len = sqrtf(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        if (len != 0.0f) {
+            dir = { dir.x / len, dir.y / len, dir.z / len };
+        }
+
+        // 3. 座標軸の作成（円を描くため）
+        Vector3 up = { 0.0f, 1.0f, 0.0f };
+        if (fabsf(dir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f }; // 真上・真下の対策
+        Vector3 right = Math::CrossProduct(up, dir);
+        up = Math::CrossProduct(dir, right);
+
+        // --- 描画パラメータ ---
+        float sunRadius = 0.5f;   // 中心の球の大きさ
+        float ringRadius = 1.5f;  // 光の束の太さ
+        float rayLength = 5.0f;   // 光の線の長さ
+        int segments = 8;         // 円の分割数（8角形で十分）
+
+        // A. 中心の太陽（球）
+        DebugDraw::DrawSphere(virtualPos, sunRadius, color);
+
+        // B. 光の束（円筒状の平行線）
+        float step = (3.141592f * 2.0f) / segments;
+        for (int j = 0; j < segments; ++j)
+        {
+            float theta = j * step;
+            float nextTheta = (j + 1) * step;
+
+            // 円周上の点（ローカル）
+            Vector3 offset1 = (right * cosf(theta) * ringRadius) + (up * sinf(theta) * ringRadius);
+            Vector3 offset2 = (right * cosf(nextTheta) * ringRadius) + (up * sinf(nextTheta) * ringRadius);
+
+            // ワールド座標に変換
+            Vector3 p1 = virtualPos + offset1;
+            Vector3 p2 = virtualPos + offset2;
+
+            // リング（太陽の周りの輪っか）を描く
+            DebugDraw::DrawLine(p1, p2, color);
+
+            // リングから伸びる平行線を描く
+            Vector3 p1End = p1 + (dir * rayLength);
+            DebugDraw::DrawLine(p1, p1End, color);
+        }
+
+        // C. 中心線（太陽からまっすぐ伸びる線）
+        DebugDraw::DrawLine(virtualPos, virtualPos + (dir * rayLength), color);
+    }
+
     // Point Lightの描画
     for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
     {
