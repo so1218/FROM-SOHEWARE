@@ -12,19 +12,19 @@
 #include "ParticleTextureHandle.h"
 #include "json.hpp"
 
-ParticleSystem::ParticleSystem()
+ParticleSystem::ParticleSystem(Engine* engine)
 {
+    engine_ = engine;
+
     // エディタと設定マネージャを生成
-    editor_ = std::make_unique<ParticleEditor>(this);
+    editor_ = std::make_unique<ParticleEditor>(this, engine_);
     configManager_ = std::make_unique<ParticleConfigManager>(this);
 }
 
 ParticleSystem::~ParticleSystem() = default;
 
-void ParticleSystem::Initialize(Engine* engine)
+void ParticleSystem::Initialize()
 {
-    engine_ = engine;
-
     // 全パーティクル設定をロード
     configManager_->LoadAllParticleDefinitions();
 }

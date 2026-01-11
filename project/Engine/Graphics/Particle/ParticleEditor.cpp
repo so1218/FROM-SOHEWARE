@@ -4,9 +4,10 @@
 #include "ParticleTextureHandle.h"
 #include "ParticleEmitter.h"
 #include "ParticleConfigManager.h" 
+#include "Engine.h" 
 
-ParticleEditor::ParticleEditor(ParticleSystem* particleSystem)
-    : particleSystem_(particleSystem)
+ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
+    : particleSystem_(particleSystem), engine_(engine)
 {
 }
 
@@ -46,6 +47,76 @@ void ParticleEditor::ShowEditor()
             auto& definition = particleSystem_->definitions_[selectedPresetName];
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
+
+            // パレット表示用の共通関数
+            auto ShowTexturePalette = [&](const char* label, ParticleTextureID& currentId)
+                {
+                    if (ImGui::TreeNode(label))
+                    {
+                        const auto& defs = ParticleTextureHandle::GetDefinitions();
+                        float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+                        ImGuiStyle& style = ImGui::GetStyle();
+
+                        for (int i = 0; i < defs.size(); i++)
+                        {
+                            ParticleTextureID id = static_cast<ParticleTextureID>(i);
+                            uint32_t textureHandleIndex = ParticleTextureHandle::Get(id);
+
+                            // エンジンのSRVマネージャからハンドル取得
+                            auto gpuHandle = engine_->srvManager_->GetSRVHandleGPU(textureHandleIndex);
+                            ImTextureID imTexID = (ImTextureID)gpuHandle.ptr;
+
+                            ImGui::PushID(i);
+
+                            // 状態判定
+                            bool isSelected = (currentId == id);
+                            int pushedColors = 0;
+
+                            // 選択中
+                            if (isSelected) 
+                            {
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+                                pushedColors++;
+                            }
+                            // ホバー時
+                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.4f));
+                            pushedColors++;
+
+                            // クリック時
+                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
+                            pushedColors++;
+
+                            // 画像ボタン
+                            if (ImGui::ImageButton("TexBtn", imTexID, ImVec2(32, 32),
+                                ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
+                            {
+                                currentId = id;
+                            }
+
+                            ImGui::PopStyleColor(pushedColors);
+
+                            // ツールチップ
+                            if (ImGui::IsItemHovered())
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::Text("%s", defs[i].path);
+                                ImGui::Image(imTexID, ImVec2(128, 128));
+                                ImGui::EndTooltip();
+                            }
+
+                            ImGui::PopID();
+
+                            // 横並び計算
+                            float lastButtonX2 = ImGui::GetItemRectMax().x;
+                            float nextButtonX2 = lastButtonX2 + style.ItemSpacing.x + 32.0f;
+                            if (i + 1 < defs.size() && nextButtonX2 < windowVisibleX2)
+                            {
+                                ImGui::SameLine();
+                            }
+                        }
+                        ImGui::TreePop();
+                    }
+                };
 
             if (ImGui::CollapsingHeader("基本設定"))
             {
@@ -219,21 +290,7 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
 
                 // テクスチャシート
-                if (ImGui::TreeNode("テクスチャモジュール"))
-                {
-                    auto& texSheet = config.textureSheet;
-
-                    const auto& items = ParticleTextureHandle::GetTextureItems();
-
-                    int currentItem = static_cast<int>(texSheet.textureID);
-
-                    if (ImGui::Combo("テクスチャ", &currentItem, items.data(), (int)items.size()))
-                    {
-                        texSheet.textureID = static_cast<ParticleTextureID>(currentItem);
-                    }
-
-                    ImGui::TreePop();
-                }
+                ShowTexturePalette("テクスチャモジュール", config.textureSheet.textureID);
 
                 ImGui::Separator();
 
@@ -399,10 +456,7 @@ void ParticleEditor::ShowEditor()
                         // 現在のIDをintに変換
                         int currentItem = static_cast<int>(trail.textureID);
 
-                        if (ImGui::Combo("テクスチャ", &currentItem, items.data(), (int)items.size()))
-                        {
-                            trail.textureID = static_cast<ParticleTextureID>(currentItem);
-                        }
+                        ShowTexturePalette("トレイルテクスチャ選択", trail.textureID);
 
                         ImGui::Separator();
 

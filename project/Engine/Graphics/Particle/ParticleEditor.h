@@ -1,10 +1,12 @@
 #pragma once
 #include "ParticleSystem.h"
 
+class Engine;
+
 class ParticleEditor
 {
 public:
-    ParticleEditor(ParticleSystem* system);
+    ParticleEditor(ParticleSystem* system, Engine* engine);
 
     void ShowEditor();
 
@@ -16,6 +18,7 @@ public:
     }
 
 private:
+    Engine* engine_;
     ParticleSystem* particleSystem_;
 
     int selectedPresetIdx_ = 0;

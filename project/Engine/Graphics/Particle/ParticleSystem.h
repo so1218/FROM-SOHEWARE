@@ -24,10 +24,10 @@ class ParticleSystem
 public:
     const char* kConfigDirectoryPath_ = "Assets/json/particle/";
 
-    ParticleSystem();
+    ParticleSystem(Engine* engine);
     ~ParticleSystem();
 
-    void Initialize(Engine* engine);
+    void Initialize();
     void SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime,
         const WorldTransform* attractionTarget, const WorldTransform* vortexTarget);
     void Update();

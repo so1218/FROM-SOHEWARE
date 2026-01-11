@@ -49,8 +49,8 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	InitializeAudio();
 	debugGuiManager_ = std::make_unique<DebugGuiManager>();
 	debugGuiManager_->Initialize(this, camera_, lightManager_.get(), materialManager_, textureManager_.get(), postEffectManager_.get(), debugCamera_.get());
-	particleSystem_ = std::make_unique<ParticleSystem>();
-	particleSystem_->Initialize(this);
+	particleSystem_ = std::make_unique<ParticleSystem>(this);
+	particleSystem_->Initialize();
 }
 
 void Engine::Finalize()
