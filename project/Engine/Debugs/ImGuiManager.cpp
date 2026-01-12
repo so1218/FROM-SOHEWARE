@@ -193,7 +193,7 @@ void ImGuiManager::BeginFrame()
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.3f, &dock_id_down, &dock_main_id);
 
         // 割り当て
-        ImGui::DockBuilderDockWindow("全体のデバッグ情報", dock_id_down);
+        ImGui::DockBuilderDockWindow("全体のデバッグ情報・設定", dock_id_down);
         ImGui::DockBuilderDockWindow("Scene", dock_main_id);
         ImGui::DockBuilderDockWindow("パーティクルエディター", dock_id_down);
         ImGui::DockBuilderDockWindow("Global Variables", dock_id_down);
@@ -203,7 +203,7 @@ void ImGuiManager::BeginFrame()
     }
     else if (!dockInitialized_ && iniFileExists)
     {
-        dockInitialized_ = true; // .iniから読み込んだので「組んだ」扱い
+        dockInitialized_ = true; // .iniから読み込んだので組んだ扱い
     }
 
     // メインDockSpaceの背景ウィンドウを描画
@@ -238,17 +238,17 @@ void ImGuiManager::DrawMenuBar()
 #ifdef _DEBUG
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu("ファイル"))
         {
-            if (ImGui::MenuItem("Exit"))
+            if (ImGui::MenuItem("終了"))
             {
                 PostQuitMessage(0);
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("View"))
+        if (ImGui::BeginMenu("ビュー"))
         {
-            if (ImGui::MenuItem("Reset Layout")) // レイアウトをリセット
+            if (ImGui::MenuItem("レイアウトの初期化")) 
             {
                 // .iniファイルを削除する
                 ImGuiIO& io = ImGui::GetIO();
@@ -261,9 +261,9 @@ void ImGuiManager::DrawMenuBar()
                 dockInitialized_ = false;
             }
 
-            if (ImGui::MenuItem("Reset Scene Size"))
+            if (ImGui::MenuItem("シーン表示サイズのリセット"))
             {
-                resetSceneSize_ = true; // フラグを立てる
+                resetSceneSize_ = true; 
             }
             ImGui::EndMenu();
         }
@@ -277,14 +277,14 @@ void ImGuiManager::OpenFile(const std::string& filename)
 {
 #ifdef _DEBUG
     int width, height, channels;
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 4); // RGBAに変換
+    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 4); 
     if (!data)
     {
         std::cerr << "Failed to load image: " << filename << std::endl;
         return;
     }
 
-    // テクスチャ作成後は、dataは解放してOK
+    // テクスチャ作成後は、dataは解放
     stbi_image_free(data);
 #endif
 }

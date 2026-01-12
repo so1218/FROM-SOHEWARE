@@ -189,7 +189,7 @@ float2 ApplyPixelation(float2 uv)
     return floor(uv / pixelSizeUV) * pixelSizeUV;
 }
 
-// 画面波（横・縦・両方）
+// 画面波（横・縦・両方） 
 float2 ApplyScreenWave(float2 uv)
 {
     float2 waveOffset = float2(0.0, 0.0);

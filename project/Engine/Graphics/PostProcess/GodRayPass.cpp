@@ -48,7 +48,6 @@ void GodRayPass::Execute(ID3D12GraphicsCommandList* cmdList,
     cbData_->lightPosScreen = lightPosUV;
 
     // ディスクリプタをパス用ヒープに集約コピー
-    // t0: Scene, t1: Depthとなるよう連続配置する
     ID3D12Device* device = engine_->graphicsDevice_->GetDevice();
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
