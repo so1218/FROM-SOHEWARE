@@ -542,7 +542,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         ImGui::Text("ブルーム合成強度");
         ImGui::SliderFloat("Intensity", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
-
+        
         ImGui::TreePop();
     }
 
