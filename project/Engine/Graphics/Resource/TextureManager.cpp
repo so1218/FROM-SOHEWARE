@@ -273,10 +273,10 @@ void TextureManager::CreateAndUploadTexture2DArray(
     const std::vector<DirectX::ScratchImage>& images,
     TextureResources& outTextureArrayResource)
 {
-    // 1. Texture2DArrayリソースを作成してGPUにアップロード
+    // Texture2DArrayリソースを作成してGPUにアップロード
     outTextureArrayResource = CreateTexture2DArray(images);
 
-    // 2. SRVの設定を構築
+    // SRVの設定を構築
     const auto& arrayMeta = outTextureArrayResource.metadata;
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = arrayMeta.format;
@@ -287,10 +287,10 @@ void TextureManager::CreateAndUploadTexture2DArray(
     srvDesc.Texture2DArray.MostDetailedMip = 0;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-    // 3. SRVManagerを使用してSRVを作成し、インデックスを取得
+    // SRVManagerを使用してSRVを作成し、インデックスを取得
     uint32_t index = srvManager_->CreateSRV(outTextureArrayResource.texture.Get(), srvDesc);
 
-    // 4. 取得したインデックスをリソース情報として保存
+    // 取得したインデックスをリソース情報として保存
     outTextureArrayResource.srvIndex = index;
     textureArraySrvIndex_ = index;
 }

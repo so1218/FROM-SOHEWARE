@@ -136,6 +136,10 @@ struct MaterialSettings
     float shadowBias = 0.0005f;
     float shadowDensity = 0.7f;
 
+    float shadowSoftness;
+    int32_t isArtGrid;
+    float2 padding2;
+
     bool enableRim = false;
     float rimPower = 3.0f;
     float rimIntensity = 1.0f;
@@ -144,14 +148,6 @@ struct MaterialSettings
     bool rimUseLightDir = false;
 
     float emissiveIntensity = 1.0f;
-
-    int32_t isArtWave = false;
-    int32_t isArtSound = false;
-    int32_t isArtQuad = false;
-    int32_t isArtKikagaku = false;
-    int32_t isArtFrag = false;
-    int32_t isArtGrid = false;
-    float2 padding2;
 
     int32_t enableDissolve;
     Vector3 edgeColor;

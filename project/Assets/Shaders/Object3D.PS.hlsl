@@ -530,7 +530,7 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
 
     // PCF
     float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
-    float softness = max(softness, 1.0f);
+    float softness = max(gMaterial.shadowSoftness, 1.0f);
 
     float shadow = 0.0f;
     [unroll]

@@ -1,4 +1,5 @@
 #include "FullScreenQuad.hlsli"
+#include "ShaderConstants.hlsli"
 
 Texture2D gTexture : register(t0);
 Texture2D gDissolveTexture : register(t1);
@@ -159,7 +160,6 @@ float perlinNoise(float2 uv)
 
     return lerp(v, lerp(u, g1, g2), lerp(u, g3, g4));
 }
-
 
 // 高自由度FBM
 float FBM(float2 p, int octaves, float gain, float lacunarity)

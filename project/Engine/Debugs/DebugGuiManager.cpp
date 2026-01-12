@@ -247,7 +247,6 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::ColorEdit4("色", &areaLights[i].color.x);
                 ImGui::DragFloat("強度", &areaLights[i].intensity, 0.01f);
 
-                // right と up は、ライトの向きとサイズ（半分の幅/高さ）を制御します
                 ImGui::DragFloat3("右ベクトル (幅/2)", &areaLights[i].right.x, 0.05f);
                 ImGui::DragFloat3("上ベクトル (高さ/2)", &areaLights[i].up.x, 0.05f);
 
@@ -264,11 +263,9 @@ void DebugGuiManager::DrawLightSettings()
     if (ImGui::TreeNode("影の設定"))
     {
         ImGui::Checkbox("影を受ける", &materialSettings.addShadow);
-
         ImGui::DragFloat("シャドウバイアス ", &materialSettings.shadowBias, 0.00001f, 0.0f, 0.01f, "%.5f");
-
         ImGui::SliderFloat("影の濃さ", &materialSettings.shadowDensity, 0.0f, 1.0f);
-
+        ImGui::SliderFloat("影の柔らかさ", &materialSettings.shadowSoftness, 1.0f, 10.0f);
         ImGui::TreePop();
     }
 

@@ -30,6 +30,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.addShadow = true;        
     defaultSettings.shadowBias = 0.0005f;    
     defaultSettings.shadowDensity = 0.7f;
+    defaultSettings.shadowSoftness = 1.0f;
     defaultSettings.isArtGrid = false;
 	defaultSettings.environmentMapIntensity = 0.0f;
     defaultSettings.enableDissolve = 0;             
@@ -59,6 +60,7 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->addShadow = materialSettings_.addShadow;
             handle.materialData->shadowBias = materialSettings_.shadowBias;
             handle.materialData->shadowDensity = materialSettings_.shadowDensity;
+            handle.materialData->shadowSoftness = materialSettings_.shadowSoftness;
             handle.materialData->enableRim = materialSettings_.enableRim;
             handle.materialData->rimPower = materialSettings_.rimPower;
             handle.materialData->rimIntensity = materialSettings_.rimIntensity;
