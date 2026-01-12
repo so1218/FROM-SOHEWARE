@@ -24,13 +24,13 @@ Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(
     resourceDesc.Flags = flags; 
 
     // 実際にバッファリソースを作成
-    Microsoft::WRL::ComPtr<ID3D12Resource> bufferResource = nullptr; // vertexResource から bufferResource に名称変更
+    Microsoft::WRL::ComPtr<ID3D12Resource> bufferResource = nullptr;
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties, // ヒーププロパティ
-        D3D12_HEAP_FLAG_NONE, // ヒープフラグ（特になし）
+        D3D12_HEAP_FLAG_NONE, // ヒープフラグ
         &resourceDesc, // リソースの説明
         initialState,
-        nullptr, // 詳細設定なし (ClearValueなど)
+        nullptr,
         IID_PPV_ARGS(&bufferResource) // リソースのポインタを受け取る
     );
 
@@ -40,7 +40,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(
     if (FAILED(hr))
     {
         // エラーハンドリング
-        // Log関数などがあればより良い
         return nullptr;
     }
 

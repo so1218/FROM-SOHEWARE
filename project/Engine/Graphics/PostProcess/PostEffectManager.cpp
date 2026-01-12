@@ -118,6 +118,8 @@ void PostEffectManager::Initialize(
     postEffectData_->dissolveEdgeWidth = 0.04f;    
     postEffectData_->dissolveEdgeIntensity = 4.0f; 
     postEffectData_->dissolveEdgeColor = Vector3(1.0f, 0.4f, 0.1f);
+	postEffectData_->radialBlurCenter = Vector2(0.5f, 0.5f);
+	postEffectData_->radialBlurStrength = 0.3f; 
 }
 
 void PostEffectManager::Update()

@@ -264,6 +264,10 @@ struct PostEffectData
 
     float3 dissolveEdgeColor;
     float _paddingDissolve2;
+
+    float radialBlurStrength;
+    float2 radialBlurCenter;
+    float _paddingRadial;
 };
 
 struct BlurSettings

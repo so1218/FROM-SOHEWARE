@@ -91,6 +91,10 @@ cbuffer PostEffectSettings : register(b0)
 
     float3 dissolveEdgeColor; 
     float _paddingDissolve2; 
+    
+    float radialBlurStrength;
+    float2 radialBlurCenter; 
+    float _paddingRadial; 
 }
 
 // 擬似乱数関数
@@ -387,13 +391,38 @@ float4 SampleChromAb(float2 uv)
     return float4(r, g, b, 1.0);
 }
 
+// ラディアルブラー
+float4 ApplyRadialBlur(float2 uv)
+{
+    // サンプリング回数
+    const int SAMPLES = 12;
+    
+    float4 color = float4(0, 0, 0, 0);
+    
+    // 中心から外側へ向かってサンプリング位置をずらしながら加算
+    for (int i = 0; i < SAMPLES; i++)
+    {
+        // 0.0(中心) ～ 1.0(元の位置) の間でスケールを変化させる
+        float scale = 1.0 - radialBlurStrength * (float(i) / (float(SAMPLES) - 1));
+        
+        // 中心を基準にUVを縮小
+        float2 sampleUV = (uv - radialBlurCenter) * scale + radialBlurCenter;
+        
+        // テクスチャサンプリングして加算
+        color += gTexture.Sample(gSampler, sampleUV);
+    }
+    
+    // 合計値を回数で割って平均化
+    return color / float(SAMPLES);
+}
+
 // ディゾルブ
 float4 ApplyDissolve(float4 currentColor, float2 uv)
 {
     // ノイズテクスチャからサンプリング
     float noise = gDissolveTexture.Sample(gSampler, uv).r;
 
-    // 閾値より低い部分は消滅（黒色）させる
+    // 閾値より低い部分は黒色にさせる
     if (noise <= dissolveThreshold)
     {
         return float4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -459,6 +488,10 @@ float4 main(VSOutput input) : SV_TARGET
     else if (flag.x & CHROM_ABERRATION)
     {
         finalColor = SampleChromAb(uv);
+    }
+    else if (flag.x & RADIAL_BLUR)
+    {
+        finalColor = ApplyRadialBlur(uv);
     }
     else
     {

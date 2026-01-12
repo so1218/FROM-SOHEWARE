@@ -430,6 +430,16 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::Unindent();
     }
 
+    // ラディアルブラー
+    if (ImGui::CheckboxFlags("ラディアルブラー", &postEffectData->modeFlags[0], RADIAL_BLUR)) {}
+    if (postEffectData->modeFlags[0] & RADIAL_BLUR)
+    {
+        ImGui::Indent();
+        ImGui::SliderFloat("ブラー強度", &postEffectData->radialBlurStrength, 0.0f, 0.2f);
+        ImGui::SliderFloat2("中心座標 (UV)", &postEffectData->radialBlurCenter.x, 0.0f, 1.0f);
+        ImGui::Unindent();
+    }
+
     ImGui::Separator();
 
     // 特殊効果・ノイズ系
@@ -607,8 +617,6 @@ void DebugGuiManager::DrawTimeSettings()
     TimeManager* time = TimeManager::GetInstance();
 
     // 時間の制御
-
-    // 一時停止
     bool isPaused = time->IsPaused();
     if (ImGui::Checkbox("一時停止", &isPaused))
     {
