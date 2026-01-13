@@ -20,8 +20,7 @@ float RGBToLuminance(float3 col)
     return dot(col, float3(0.2126f, 0.7152f, 0.0722f));
 }
 
-// Karis Average用の重み計算
-// 高輝度ピクセルの影響を抑えてチラつきを防ぐ
+// KarisAverage用の重み計算
 float KarisAverage(float3 col)
 {
     float luma = RGBToLuminance(col);

@@ -83,7 +83,7 @@ void Engine::Finalize()
 
 void Engine::BeginFrame()
 {
-	// ImGuiなどUIのフレーム開始
+	// ImGuiのフレーム開始
 	ImGuiManager::BeginFrame();
 
 	// デバッグカメラ更新

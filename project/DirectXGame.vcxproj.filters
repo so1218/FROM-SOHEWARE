@@ -864,5 +864,7 @@
     <FxCompile Include="Resources\Shaders\BokehBlur.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\GodRay.PS.hlsl" />
     <FxCompile Include="Resources\Shaders\ShadowMap.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FinalCombine.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SceneCombine.PS.hlsl" />
   </ItemGroup>
 </Project>
