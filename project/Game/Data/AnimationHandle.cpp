@@ -17,9 +17,9 @@ void AnimationHandle::Initialize()
     initialized_ = true;
 }
 
-const Animation& AnimationHandle::Get(AnimationID id)
+const Animation* AnimationHandle::Get(AnimationID id)
 {
     assert(initialized_);
 
-    return animations_[static_cast<size_t>(id)];
+    return &animations_[static_cast<size_t>(id)];
 }

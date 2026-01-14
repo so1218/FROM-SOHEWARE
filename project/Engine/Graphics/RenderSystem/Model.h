@@ -17,7 +17,7 @@ class Engine;
 class Model
 {
 public:
-    Model(Engine* engine, Camera* camera, ModelData* modelData);
+    Model(Engine* engine, Camera* camera, const ModelData* modelData);
 
     void Draw();
 
@@ -65,13 +65,13 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
 
-    ModelData* modelData_;
+    const ModelData* modelData_;
 
     bool enableOutline_ = false;
     float outlineWidth_ = 7.0f;
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;
-    
+
     uint32_t dissolveTextureHandle_;
 };

@@ -36,7 +36,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     skybox_ = std::make_unique<Skybox>(engine_, camera_);
     uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
     skybox_->SetCubeTextureHandle(cubemapHandle);
-    auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
+    auto grid = std::make_unique<Grid>(engine_, camera_);
 
     // タイマーの生成
     auto gameTimer = std::make_unique<GameTimer>(engine_);

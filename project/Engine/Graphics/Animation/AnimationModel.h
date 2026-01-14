@@ -9,7 +9,7 @@ class AnimationModel
 {
 public:
     // コンストラクタ
-    AnimationModel(Engine* engine, Camera* camera, ModelData modelData, Animation animation);
+    AnimationModel(Engine* engine, Camera* camera, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 
     // アニメーション更新
@@ -53,7 +53,7 @@ public:
     uint32_t GetColor() const { return color_; }
 
     // アニメーションを切り替える関数
-    void SetAnimation(const Animation& animation);
+    void SetAnimation(const Animation* animation);
 
     MaterialHandle materialHandle_;
 

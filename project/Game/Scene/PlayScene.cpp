@@ -25,7 +25,7 @@ PlayScene::PlayScene(Engine* engine, Camera* camera)
 
     collisionManager_ = std::make_unique<CollisionManager>();
     particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
-    auto grid = std::make_unique<Grid>(engine_, camera_, std::move(ModelHandle::Get(ModelID::field)));
+    auto grid = std::make_unique<Grid>(engine_, camera_);
 
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);

@@ -31,7 +31,7 @@ D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode)
         desc.DestBlend = D3D12_BLEND_ONE;
         desc.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
         break;
-    case kBlendModeMultily:
+    case kBlendModeMultiply:
         desc.SrcBlend = D3D12_BLEND_ZERO;
         desc.DestBlend = D3D12_BLEND_SRC_COLOR;
         desc.BlendOp = D3D12_BLEND_OP_ADD;

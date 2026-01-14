@@ -33,7 +33,7 @@ Player::Player(Engine* engine, Camera* camera)
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,*ModelHandle::Get(ModelID::enemy),AnimationHandle::Get(AnimationID::enemy));
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,ModelHandle::Get(ModelID::enemy),AnimationHandle::Get(AnimationID::enemy));
 }
 
 void Player::Initialize()

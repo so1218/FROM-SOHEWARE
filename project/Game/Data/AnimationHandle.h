@@ -19,7 +19,7 @@ class AnimationHandle
 public:
 
     static void Initialize();
-    static const Animation& Get(AnimationID id);
+    static const Animation* Get(AnimationID id);
 
 private:
     static std::array<Animation, static_cast<size_t>(AnimationID::count)> animations_;

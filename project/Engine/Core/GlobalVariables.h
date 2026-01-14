@@ -44,34 +44,16 @@ public:
 	// グループ階層をたどる関数
 	const Group* FindGroup(const std::vector<std::string>& groupPath) const;
 
-	// 値のセット(int)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, int32_t value);
-	// 値のセット(float)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, float value);
-	// 値のセット(bool)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, bool value);
-	// 値のセット(Vector2)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, const Vector2& value);
-	// 値のセット(Vector3)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, const Vector3& value);
-	// 値のセット(Vector4)
-	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, const Vector4& value);
+	// 値のセット
+	template <typename T>
+	void SetValue(const std::vector<std::string>& groupPath, const std::string& key, const T& value);
+
+	// 項目の追加
+	template <typename T>
+	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, const T& value);
 
 	// ネスとしたグループに対して値をセットさせる関数
 	Group& FindOrCreateGroup(const std::vector<std::string>& groupPath);
-
-	// 項目の追加(int)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, int32_t value);
-	// 項目の追加(float)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, float value);
-	// 項目の追加(bool)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, bool value);
-	// 項目の追加(Vector2)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector2& value);
-	// 項目の追加(Vector3)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector3& value);
-	// 項目の追加(Vector4)
-	void AddItem(const std::vector<std::string>& groupPath, const std::string& key, const Vector4& value);
 
 	// 毎フレーム処理
 	void Update();
@@ -121,3 +103,26 @@ private:
 	// 画面表示用のステータスメッセージ
 	std::string statusMessage_;
 };
+
+template <typename T>
+void GlobalVariables::SetValue(const std::vector<std::string>& groupPath, const std::string& key, const T& value)
+{
+	Group& group = FindOrCreateGroup(groupPath);
+	group.items[key] = value;
+}
+
+template <typename T>
+void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const std::string& key, const T& value)
+{
+	if (groupPath.empty()) return;
+
+	Group& current = datas_[groupPath[0]];
+	for (size_t i = 1; i < groupPath.size(); ++i) {
+		current = current.subGroups[groupPath[i]];
+	}
+
+	if (current.items.find(key) == current.items.end())
+	{
+		current.items[key] = value;
+	}
+}

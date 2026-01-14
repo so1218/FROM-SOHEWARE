@@ -356,7 +356,7 @@ void Renderer::Draw3D()
 		case RenderType::Sprite: DrawSprite(sub); break;
 		case RenderType::Grid: DrawGrid(sub); break;
 		case RenderType::Particle: DrawParticles(*camera_); break;
-		case RenderType::Trail: DrawTrails(*camera_); break; 
+		case RenderType::Trail: DrawTrails(*camera_); break;
 		case RenderType::Skybox: DrawSkybox(sub); break;
 		case RenderType::Model:
 		case RenderType::Skinning: DrawModel(sub); break;
@@ -411,7 +411,7 @@ std::string Renderer::GetParticlePSOName(BlendMode mode)
 	case kBlendModeNormal:   return "ParticleAlphaBlend";
 	case kBlendModeAdd:      return "ParticleAdditive";
 	case kBlendModeSubtract: return "ParticleSubtract";
-	case kBlendModeMultily:  return "ParticleMultiply";
+	case kBlendModeMultiply:  return "ParticleMultiply";
 	case kBlendModeScreen:   return "ParticleScreen";
 	case kBlendModeExclusion: return "ParticleExclusion";
 	default:
@@ -580,7 +580,7 @@ void Renderer::SubmitAnimationModel(
 	ModelSubmission submission{};
 	submission.type = RenderType::Skinning;
 	submission.group = group;
-	submission.modelData = &instance.modelData;
+	submission.modelData = instance.modelData;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
 	submission.envMapSrvHandle = envMapSrvHandle;
@@ -644,7 +644,7 @@ void Renderer::CreateSprites()
 	sprites_.resize(kMaxSpriteCount);
 
 	// 左上原点のスプライト用頂点データ
-	std::vector<VertexData> spriteVertices = 
+	std::vector<VertexData> spriteVertices =
 	{
 		{{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // 左上
 		{{1.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // 右上
@@ -706,7 +706,7 @@ void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float ro
 	// 平行投影行列を作成
 	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographic(
 		0.0f, 0.0f, float(clientWidth_), float(clientHeight_),
-		0.0f, 100.0f 
+		0.0f, 100.0f
 	);
 
 	Matrix4x4 wvpMatrix = sprite.worldMatrix * projectionMatrix;
@@ -1238,7 +1238,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 }
 
-void Renderer::DrawGrid(const ModelSubmission & sub)
+void Renderer::DrawGrid(const ModelSubmission& sub)
 {
 	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
 	auto& buffer = perObjectBuffers_[sub.instanceIndex];
@@ -1277,7 +1277,7 @@ void Renderer::DrawGrid(const ModelSubmission & sub)
 void Renderer::FlushLines(const Camera& camera)
 {
 	// 線がなければ終了
-	if (lineBatch_.verticesCPU.empty()) return; 
+	if (lineBatch_.verticesCPU.empty()) return;
 
 	// カメラ行列更新
 	lineBatch_.mappedWvp->WVP = camera.GetViewProjectionMatrix();

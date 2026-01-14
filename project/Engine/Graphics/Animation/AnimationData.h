@@ -10,7 +10,7 @@
 #include <optional>
 #include <array>
 
-static uint32_t constexpr kNumMaxInfluence = 4; 
+static uint32_t constexpr kNumMaxInfluence = 4;
 
 template<typename tValue>
 struct Keyframe
@@ -46,8 +46,8 @@ struct Animation
 
 struct AnimatedModelData
 {
-    ModelData modelData; 
-    Animation animation; 
+    const ModelData* modelData = nullptr;
+    const Animation* currentAnimation = nullptr;
 
     float animationTime = 0.0f;
     Matrix4x4 localMatrix;  // 現在のアニメーション変換行列
@@ -60,7 +60,7 @@ struct Joint
     Matrix4x4 localMatrix;
     Matrix4x4 skeletonSpaceMatrix; // skeletonSpaceでの変換行列
     std::string name;
-	std::vector<int32_t> children; // 子Jointのインデックスのリスト。いなければ空
+    std::vector<int32_t> children; // 子Jointのインデックスのリスト。いなければ空
     int32_t index; // 自身のインデックス
     std::optional<int32_t> parent; // 親Jointのインデックス。いなければnull
 };
@@ -75,13 +75,13 @@ struct Skeleton
 struct VertexInfluence
 {
     std::array<float, kNumMaxInfluence> weights;
-	std::array<int32_t, kNumMaxInfluence> jointIndices; // JointのIndex
+    std::array<int32_t, kNumMaxInfluence> jointIndices; // JointのIndex
 };
 
 struct WellForGPU
 {
     Matrix4x4 skeletonSpaceMatrix; // 位置用
-	Matrix4x4 skeletonSpaceInverseTransposeMatrix; // 法線用 
+    Matrix4x4 skeletonSpaceInverseTransposeMatrix; // 法線用 
 };
 
 struct SkinCluster

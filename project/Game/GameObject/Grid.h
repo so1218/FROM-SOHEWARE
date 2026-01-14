@@ -6,7 +6,7 @@
 class Grid : public GameObject
 {
 public:
-    Grid(Engine* engine, Camera* camera, ModelData* modelData);
+    Grid(Engine* engine, Camera* camera);
     ~Grid() override = default;
 
     void Initialize() override {};
@@ -32,5 +32,5 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
     uint32_t textureHandle_;
     MaterialHandle materialHandle_;
-    ModelData* modelData_; 
+    const ModelData* modelData_;
 };

@@ -7,9 +7,9 @@ Engine* ModelHandle::engine_ = nullptr;
 
 constexpr std::array<ModelDefinition, static_cast<size_t>(ModelID::count)> ModelHandle::modelDefinitions_;
 
-void ModelHandle::Finalize() 
+void ModelHandle::Finalize()
 {
-    if (!initialized_) return; 
+    if (!initialized_) return;
 
     for (auto& handle : modelHandles_)
     {
@@ -21,7 +21,7 @@ void ModelHandle::Initialize(Engine* engine)
 {
     if (initialized_) return;
 
-	engine_ = engine;
+    engine_ = engine;
 
     ModelLoader loader;
     for (const auto& def : modelDefinitions_)
@@ -37,7 +37,7 @@ void ModelHandle::Initialize(Engine* engine)
 }
 
 
-ModelData* ModelHandle::Get(ModelID id)
+const ModelData* ModelHandle::Get(ModelID id)
 {
     assert(initialized_);
     return modelHandles_[static_cast<size_t>(id)].get();

@@ -3,7 +3,8 @@
 #include <cassert>
 #include <iostream>
 
-enum BlendMode {
+enum BlendMode
+{
 	kBlendModeNone,   // ブレンドなし
 	kBlendModeNormal, // 通常αブレンド。デフォルトSrc * SrcA + Dest * (1 - SrcA)
 	kBlendModeAdd,    // 加算 Src * SrcA + Dest * 1
@@ -14,9 +15,6 @@ enum BlendMode {
 
 	// 利用してはいけない
 	kCountOfBlendMode,
-
-	// スペルミス互換用
-	kBlendModeMultily = kBlendModeMultiply,
 };
 
 D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode);

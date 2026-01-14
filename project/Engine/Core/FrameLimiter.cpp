@@ -1,8 +1,8 @@
 #include "FrameLimiter.h"
 
 FrameLimiter::FrameLimiter(int targetFPS)
-    : kTargetFPS_(targetFPS),
-    kFrameDuration_(1000000 / targetFPS)
+    : targetFPS_(targetFPS),
+    frameDuration_(1000000 / targetFPS)
 {
 }
 
@@ -23,7 +23,7 @@ void FrameLimiter::WaitNextFrame()
 {
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - targetTime_);
-    auto remaining = kFrameDuration_ - elapsed;
+    auto remaining = frameDuration_ - elapsed;
 
     if (remaining.count() > 2000)
     {
@@ -32,7 +32,7 @@ void FrameLimiter::WaitNextFrame()
     }
 
     // 調整
-    while (std::chrono::steady_clock::now() - targetTime_ < kFrameDuration_)
+    while (std::chrono::steady_clock::now() - targetTime_ < frameDuration_)
     {}
 
     // 次のフレームの基準時間を更新

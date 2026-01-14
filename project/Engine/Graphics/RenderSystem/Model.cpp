@@ -2,7 +2,7 @@
 #include "Engine.h"
 #include "TextureHandle.h"
 
-Model::Model(Engine* engine, Camera* camera, ModelData* modelData)
+Model::Model(Engine* engine, Camera* camera, const ModelData* modelData)
     : engine_(engine), camera_(camera), modelData_(modelData)
 {
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());

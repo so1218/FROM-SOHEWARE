@@ -17,7 +17,7 @@ public:
     void WaitNextFrame();
 
 private:
-    const int kTargetFPS_;
-    const std::chrono::microseconds kFrameDuration_;
+    const int targetFPS_;
+    const std::chrono::microseconds frameDuration_;
     std::chrono::steady_clock::time_point targetTime_;
 };

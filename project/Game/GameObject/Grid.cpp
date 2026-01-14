@@ -1,11 +1,13 @@
 #include "Grid.h"
 #include "TextureHandle.h"
+#include "ModelHandle.h"
 
-Grid::Grid(Engine* engine, Camera* camera, ModelData* modelData)
-    : engine_(engine), camera_(camera), modelData_(modelData)
+Grid::Grid(Engine* engine, Camera* camera)
+    : engine_(engine), camera_(camera)
 {
     // デフォルト
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    modelData_ = ModelHandle::Get(ModelID::field);
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     transform_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }
