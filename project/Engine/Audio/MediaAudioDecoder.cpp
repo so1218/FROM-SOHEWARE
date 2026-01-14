@@ -1,7 +1,6 @@
 #include "MediaAudioDecoder.h"
 
 #include <stdexcept>
-#include <vector>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
@@ -65,9 +64,7 @@ AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
 
     AudioData audioData{};
     audioData.wfex = *pWaveFormat;
-    audioData.bufferSize = static_cast<UINT32>(pcmBuffer.size());
-    audioData.pBuffer = new BYTE[audioData.bufferSize];
-    memcpy(audioData.pBuffer, pcmBuffer.data(), audioData.bufferSize);
+    audioData.buffer = std::move(pcmBuffer);
 
     CoTaskMemFree(pWaveFormat);
     return audioData;

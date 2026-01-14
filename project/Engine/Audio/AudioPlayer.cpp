@@ -23,8 +23,8 @@ int AudioPlayer::Play(int audioID, bool loop, uint32_t volume)
     if (FAILED(hr)) return -1;
 
     XAUDIO2_BUFFER buffer = { 0 };
-    buffer.AudioBytes = audioData.bufferSize;
-    buffer.pAudioData = audioData.pBuffer;
+    buffer.AudioBytes = static_cast<UINT32>(audioData.buffer.size());
+    buffer.pAudioData = audioData.buffer.data();
     buffer.Flags = XAUDIO2_END_OF_STREAM;
     buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
 

@@ -17,6 +17,8 @@ public:
 	void ApplyGlobalVariables();
 	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Fade" }; }
 
+	float GetDuration() const { return duration_; }
+
 	Engine* engine_;
 
 	std::unique_ptr<Sprite> sprite_;
@@ -37,7 +39,7 @@ public:
 	Status status_ = Status::None;
 
 	// フェードの持続時間
-	float duration_ = 3.0f;
+	float duration_ = 1.0f;
 	// 経過時間カウンター
 	float counter_ = 0.0f;
 

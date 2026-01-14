@@ -27,7 +27,7 @@ Input::Input()
     for (int i = 0; i < 4; i++)
     {
         controllerConnected_[i] = false;
-        vibrationTimers[i] = 0;
+        vibrationTimers_[i] = 0;
         ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
         ZeroMemory(&prevControllerStates_[i], sizeof(XINPUT_STATE));
     }
@@ -133,14 +133,14 @@ void Input::UpdateController()
     for (int i = 0; i < 4; ++i)
     {
         // タイマーが作動中の場合
-        if (vibrationTimers[i] > 0.0f)
+        if (vibrationTimers_[i] > 0.0f)
         {
-            vibrationTimers[i] -= TimeManager::GetInstance()->GetDeltaTime(); // 経過時間を引く
+            vibrationTimers_[i] -= TimeManager::GetInstance()->GetDeltaTime(); // 経過時間を引く
 
             // タイマーが0以下になったら
-            if (vibrationTimers[i] <= 0.0f)
+            if (vibrationTimers_[i] <= 0.0f)
             {
-                vibrationTimers[i] = 0.0f;
+                vibrationTimers_[i] = 0.0f;
                 VibrateController(i, 0, 0); // 振動を停止
             }
         }
@@ -456,5 +456,5 @@ void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMo
     VibrateController(controllerId, leftMotorSpeed, rightMotorSpeed);
 
     // タイマーをセット
-    vibrationTimers[controllerId] = durationSeconds;
+    vibrationTimers_[controllerId] = durationSeconds;
 }

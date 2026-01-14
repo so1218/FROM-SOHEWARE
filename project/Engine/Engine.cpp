@@ -92,9 +92,6 @@ void Engine::BeginFrame()
 	// 時間の更新
 	TimeManager::GetInstance()->Update();
 
-	// オフスクリーンレンダリングの準備開始
-	renderCoordinator_->BeginOffscreenRender();
-
 	// ポストエフェクトのパラメータ更新など
 	postEffectManager_->Update();
 
@@ -129,15 +126,8 @@ void Engine::EndFrame()
 	renderer_->DrawSceneForShadow();
 	shadowMap_->TransitionToRead(cmdList);
 
-	// メインパス（オフスクリーン描画）
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenRTV = renderCoordinator_->GetOffscreenRTVHandle();
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDSV = renderCoordinator_->GetOffscreenDSVHandle();
-	cmdList->OMSetRenderTargets(1, &offscreenRTV, FALSE, &offscreenDSV);
-	cmdList->ClearDepthStencilView(
-		offscreenDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr
-	);
-	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
-	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
+	// オフスクリーンレンダリングの準備開始
+	renderCoordinator_->BeginOffscreenRender();
 
 	renderer_->Draw3D();
 	renderCoordinator_->EndOffscreenRender();
@@ -161,9 +151,6 @@ void Engine::EndFrame()
 	// 最終合成・トーンマップ
 	D3D12_CPU_DESCRIPTOR_HANDLE finalRTV = postEffectManager_->GetFinalPassRTV();
 	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
-
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
 #ifdef _DEBUG
@@ -198,7 +185,8 @@ void Engine::EndFrame()
 #endif
 
 	// ImGui描画
-	cmdList->SetDescriptorHeaps(1, heaps);
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	ImGuiManager::EndFrame(cmdList);
 
 	// フレーム終了処理

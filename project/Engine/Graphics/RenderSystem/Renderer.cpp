@@ -452,8 +452,8 @@ void Renderer::CreateModels()
 	}
 }
 
-void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
+void Renderer::SubmitModel(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData,
+	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
 	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
 {
 	assert(indexModel_ < kMaxModelCount);
@@ -517,7 +517,7 @@ void Renderer::SubmitModel(WorldTransform& worldTransform, Camera& camera, Model
 	indexModel_++;
 }
 
-void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color)
+void Renderer::DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint32_t color)
 {
 	for (const Joint& joint : skeleton.joints)
 	{
@@ -544,8 +544,8 @@ void Renderer::DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t c
 }
 
 void Renderer::SubmitAnimationModel(
-	WorldTransform& worldTransform,
-	Camera& camera,
+	const WorldTransform& worldTransform,
+	const Camera& camera,
 	const AnimatedModelData& instance,
 	const SkinCluster& skinCluster,
 	uint32_t textureHandle,
@@ -553,7 +553,7 @@ void Renderer::SubmitAnimationModel(
 	uint32_t toonRampHandle,
 	uint32_t dissolveTextureHandle,
 	uint32_t color,
-	MaterialHandle& materialHandle,
+	const MaterialHandle& materialHandle,
 	bool enableOutline,
 	float outlineWidth,
 	const Vector4& outlineColor,
@@ -600,7 +600,7 @@ void Renderer::SubmitAnimationModel(
 	indexModel_++;
 }
 
-void Renderer::SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle)
+void Renderer::SubmitGrid(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle)
 {
 	assert(indexModel_ < kMaxModelCount);
 
@@ -670,8 +670,8 @@ void Renderer::CreateSprites()
 	indexSprite_ = 0;
 }
 
-void Renderer::SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
-	MaterialHandle& materialHandle)
+void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
+	const MaterialHandle& materialHandle)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
 
@@ -746,7 +746,7 @@ void Renderer::CreateLineBatch()
 	lineBatch_.mappedWvp->WVP = Matrix4x4::MakeIdentity();
 }
 
-void Renderer::SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color)
+void Renderer::SubmitLine(const Vector3& start, const Vector3& end, const Camera& camera, uint32_t color)
 {
 	if (lineBatch_.verticesCPU.size() >= kMaxLineVertices) return;
 
@@ -789,7 +789,7 @@ void Renderer::CreateParticles()
 	}
 }
 
-void Renderer::SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
+void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
 	BlendMode blendMode, bool isBillboard, float intensity)
 {
 	if (indexInstance_ >= kMaxParticleCount) return;
@@ -904,7 +904,7 @@ void Renderer::CreateSkybox()
 	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void Renderer::SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
+void Renderer::SubmitSkybox(const Camera& camera, const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
 {
 	// WVP行列の計算（カメラの位置を除去して回転のみ反映）
 	Matrix4x4 viewMatrix = camera.GetViewMatrix();
@@ -965,7 +965,7 @@ void Renderer::CreateTrails()
 		reinterpret_cast<void**>(&trailBatch_.mappedWvp));
 }
 
-void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera)
+void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, const Camera& camera)
 {
 	// 上限・最小チェック
 	if (indexTrail_ >= kMaxTrailCount) return;
@@ -1274,7 +1274,7 @@ void Renderer::DrawGrid(const ModelSubmission & sub)
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 }
 
-void Renderer::FlushLines(Camera& camera)
+void Renderer::FlushLines(const Camera& camera)
 {
 	// 線がなければ終了
 	if (lineBatch_.verticesCPU.empty()) return; 

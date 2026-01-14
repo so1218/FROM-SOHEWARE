@@ -9,6 +9,7 @@
 #include <wrl.h>
 #include <comdef.h>
 #include <string>
+#include <vector>
 
 // 音声データ
 struct AudioData
@@ -16,9 +17,7 @@ struct AudioData
     //波形フォーマット
     WAVEFORMATEX wfex;
     // バッファの先頭アドレス
-    BYTE* pBuffer;
-    // バッファのサイズ
-    unsigned int bufferSize;
+    std::vector<BYTE> buffer;
 };
 
 class MediaAudioDecoder

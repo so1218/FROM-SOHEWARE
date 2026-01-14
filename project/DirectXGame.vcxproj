@@ -20,6 +20,7 @@
     <ProjectGuid>{cd7dbdc9-d0ce-49f9-83de-fcb4f52da80d}</ProjectGuid>
     <RootNamespace>DirectXGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>FromSoheEngine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -80,7 +81,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Game\Scene\Transitions</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -109,7 +110,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Game\Scene\Transitions</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,7 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Data;$(ProjectDir)Game\Camera;$(ProjectDir)Game\Physics;$(ProjectDir)Game\Effect;$(ProjectDir)Game\Character\Enemy;$(ProjectDir)Game\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\SampleScene;$(ProjectDir)Game\Character\Player\Weapon;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Game\Scene\Transitions</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -197,7 +198,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Data\AudioHandle.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp" />
     <ClCompile Include="externals\ImGuiFileDialog.cpp" />
-    <ClCompile Include="Game\Character\BaseCharater.cpp" />
+    <ClCompile Include="Game\Character\BaseCharacter.cpp" />
     <ClCompile Include="Engine\Audio\AudioManager.cpp" />
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
@@ -268,6 +269,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Game\Scene\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TitleScene.cpp" />
+    <ClCompile Include="Game\Scene\Transitions\FadeInState.cpp" />
+    <ClCompile Include="Game\Scene\Transitions\FadeOutState.cpp" />
+    <ClCompile Include="Game\Scene\Transitions\NormalState.cpp" />
     <ClCompile Include="Game\Stage\StageManager.cpp" />
     <ClCompile Include="Game\Utility\TimedCall.cpp" />
     <ClCompile Include="Game\GameObject\Ground.cpp" />
@@ -401,6 +405,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Scene\BaseScene.h" />
     <ClInclude Include="Game\Scene\SceneManager.h" />
     <ClInclude Include="Game\Scene\TitleScene.h" />
+    <ClInclude Include="Game\Scene\Transitions\FadeInState.h" />
+    <ClInclude Include="Game\Scene\Transitions\FadeOutState.h" />
+    <ClInclude Include="Game\Scene\Transitions\ISceneTransitionState.h" />
+    <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
     <ClInclude Include="Game\Utility\TimedCall.h" />
     <ClInclude Include="Game\GameObject\Ground.h" />

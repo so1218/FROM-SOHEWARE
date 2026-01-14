@@ -7,6 +7,8 @@
 #include "BaseScene.h"
 #include "Engine.h"
 
+class ISceneTransitionState;
+
 // シーンを識別するためのID
 enum class SceneID
 {
@@ -25,7 +27,7 @@ public:
         FadeIn    // フェードイン
     };
 
-    SceneManager() : currentScene_(nullptr) {}
+    SceneManager();
 
     ~SceneManager();
 
@@ -49,6 +51,18 @@ public:
     // IDでシーン切り替えをリクエストする関数
     void RequestSceneChange(SceneID nextSceneID);
 
+    // 状態クラスからアクセスするためのゲッター
+    Fade* GetFade() const { return fade_.get(); }
+    BaseScene* GetCurrentScene() const { return currentScene_; }
+
+    // 次のシーン予約があるか確認
+    bool HasNextSceneID() const { return nextSceneID_.has_value(); }
+
+    // 状態を切り替える関数
+    void ChangeState(std::unique_ptr<ISceneTransitionState> newState);
+    // 実際のシーン入れ替え処理
+    void ChangeSceneActual();
+
 private:
     // シーンを設定する
     void SetScene(BaseScene* newScene);
@@ -65,6 +79,7 @@ private:
     std::map<SceneID, std::unique_ptr<BaseScene>> scenes_;
 
     std::unique_ptr<Fade> fade_; 
-    TransitionState transitionState_ = TransitionState::None;
+
+    std::unique_ptr<ISceneTransitionState> state_;
 };
 

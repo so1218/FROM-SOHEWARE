@@ -131,5 +131,5 @@ private:
     XINPUT_STATE controllerStates_[4];
     XINPUT_STATE prevControllerStates_[4];
     bool controllerConnected_[4];
-    float vibrationTimers[4];
+    float vibrationTimers_[4];
 };

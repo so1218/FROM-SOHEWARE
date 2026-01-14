@@ -59,32 +59,32 @@ public:
     void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // 描画関数
-    void SubmitModel(WorldTransform& worldTransform, Camera& camera, ModelData& modelData,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, MaterialHandle& materialHandle, BlendMode blendMode,
+    void SubmitModel(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
         bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
-    void DrawSkeleton(const Skeleton& skeleton, Camera& camera, uint32_t color);
-    void SubmitAnimationModel(WorldTransform& worldTransform, Camera& camera,
+    void DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint32_t color);
+    void SubmitAnimationModel(const WorldTransform& worldTransform, const Camera& camera,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
         uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color,
-        MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
+        const MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
-    void SubmitGrid(WorldTransform& worldTransform, Camera& camera, ModelData& modelData, uint32_t textureHandle, uint32_t color, MaterialHandle& materialHandle);
-    void SubmitSprite(Vector2 position, Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, MaterialHandle& materialHandle);
-    void SubmitLine(const Vector3& start, const Vector3& end, Camera& camera, uint32_t color);
-    void SubmitParticleInstance(WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
+    void SubmitGrid(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
+    void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, const MaterialHandle& materialHandle);
+    void SubmitLine(const Vector3& start, const Vector3& end, const Camera& camera, uint32_t color);
+    void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);
-    void SubmitSkybox(Camera& camera, WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
-    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, Camera& camera);
+    void SubmitSkybox(const Camera& camera, const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
+    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, const Camera& camera);
     void DrawFullScreenQuadWithOffscreenTexture();
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
-    void Draw3D(); // 旧 DrawScene (UI以外を描画・リスト保持)
+    void Draw3D(); 
     void DrawUI();
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
-    // BlendMode (enum) を PSO名 (string) に変換するヘルパー
+    // BlendModeをPSO名に変換
     std::string GetParticlePSOName(BlendMode mode);
 
     // メッシュキャッシュ取得・作成 
@@ -137,7 +137,7 @@ private:
     void DrawSprite(const ModelSubmission& sub);
     void DrawModel(const ModelSubmission& sub);
     void DrawGrid(const ModelSubmission& sub);
-    void FlushLines(Camera& camera);
+    void FlushLines(const Camera& camera);
     void DrawParticles(const Camera& camera);
     void DrawSkybox(const ModelSubmission& sub);
     void DrawTrails(const Camera& camera);
