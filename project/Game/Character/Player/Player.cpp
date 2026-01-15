@@ -19,6 +19,8 @@
 #include <numbers>
 #include <algorithm>
 
+using namespace FromEngine;
+
 Player::Player(Engine* engine, Camera* camera)
 {
 	engine_ = engine;

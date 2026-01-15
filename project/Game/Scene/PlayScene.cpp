@@ -14,6 +14,8 @@
 #include "Input.h"
 #include "Grid.h"
 
+using namespace FromEngine;
+
 PlayScene::PlayScene(Engine* engine, Camera* camera)
 {
     // ポインタを保存

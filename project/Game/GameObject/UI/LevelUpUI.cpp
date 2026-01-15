@@ -6,6 +6,8 @@
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 
+using namespace FromEngine;
+
 LevelUpUI::LevelUpUI(Engine* engine) : engine_(engine)
 {
 }

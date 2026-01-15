@@ -1,6 +1,8 @@
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 
+using namespace FromEngine;
+
 std::array<int, static_cast<size_t>(AudioID::count)> AudioHandle::audioIndices_ = {};
 bool AudioHandle::initialized_ = false;
 

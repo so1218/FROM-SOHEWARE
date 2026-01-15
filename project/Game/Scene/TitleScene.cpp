@@ -11,6 +11,8 @@
 #include "ModelLoader.h"
 #include "Collision.h"
 
+using namespace FromEngine;
+
 TitleScene::TitleScene(Engine* engine, Camera* camera)
 {
     // ポインタを保存

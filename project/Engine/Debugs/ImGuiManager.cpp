@@ -13,6 +13,9 @@
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
 int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
+Vector2 ImGuiManager::sceneRectMin_ = { 0.0f, 0.0f };
+Vector2 ImGuiManager::sceneRectSize_ = { 0.0f, 0.0f };
+bool ImGuiManager::isSceneHovered_ = false;
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -341,6 +344,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     // Transform -> Matrix
     Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
 
+    ImGuizmo::PushID(reinterpret_cast<void*>(&transform));
+
     ImGui::PushID(reinterpret_cast<void*>(&transform));
 
     // Gizmo表示
@@ -374,6 +379,15 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
 		transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(transform.rotation_);
     }
 
+    ImGuizmo::PopID();
+
     ImGui::PopID();
+}
+
+void ImGuiManager::SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered)
+{
+    sceneRectMin_ = min;
+    sceneRectSize_ = size;
+    isSceneHovered_ = isHovered;
 }
 

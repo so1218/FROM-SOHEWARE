@@ -29,6 +29,8 @@
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
 
+using namespace FromEngine;
+
 void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 {
 	materialManager_ = materialManager;

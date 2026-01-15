@@ -13,6 +13,8 @@
 #include "AudioPlayer.h"
 #include "AudioHandle.h"
 
+using namespace FromEngine;
+
 SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
 {
     // ポインタを保持

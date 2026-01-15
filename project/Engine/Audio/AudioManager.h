@@ -2,33 +2,31 @@
 #include <xaudio2.h>           
 #include <wrl.h>     
 
-// XAudio2の生成・管理を行うオーディオマネージャ
-class AudioManager
+namespace FromEngine
 {
-public:
-    static AudioManager& GetInstance()
+    class AudioManager
     {
-        static AudioManager instance;
-        return instance;
-    }
+    public:
 
-    void Initialize();
+        static AudioManager& GetInstance()
+        {
+            static AudioManager instance;
+            return instance;
+        }
 
-    void Finalize();
+        void Initialize();
+        void Finalize();
 
-    // ゲッター
-    IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
+        IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
 
-private:
-    AudioManager() = default;
-    ~AudioManager() = default;
+    private:
+        AudioManager() = default;
+        ~AudioManager() = default;
 
-    // シングルトンのためコピー・ムーブ禁止
-    AudioManager(const AudioManager&) = delete;
-    AudioManager& operator=(const AudioManager&) = delete;
+        AudioManager(const AudioManager&) = delete;
+        AudioManager& operator=(const AudioManager&) = delete;
 
-    Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
-
-    // マスターボイス
-    IXAudio2MasteringVoice* masterVoice_ = nullptr;
-};
+        Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
+        IXAudio2MasteringVoice* masterVoice_ = nullptr;
+    };
+}

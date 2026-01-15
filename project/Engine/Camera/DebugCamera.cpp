@@ -4,6 +4,7 @@
 
 #include "DebugCamera.h"
 #include "Input.h"
+#include "ImGuiManager.h"
 
 void DebugCamera::Initialize()
 {
@@ -37,8 +38,17 @@ void DebugCamera::Update()
 {
     if (!isEnabled_) return;
 
+#ifdef _DEBUG
+    // マウスがScene Viewの上にないなら操作しない
+    // Gizmoをドラッグ中ならカメラ操作はしない
+    if (!ImGuiManager::IsSceneHovered() || ImGuizmo::IsUsing())
+    {
+        return;
+    }
+#endif
+
     // ズームはマウスホイールで操作
-    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Right)) {
+    {
         int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
         distance_ -= wheelDelta * zoomSpeed_;
 
@@ -52,7 +62,7 @@ void DebugCamera::Update()
     }
 
     // マウス右ドラッグでカメラ回転（target中心の公転）
-    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle) && !Input::GetInstance().IsKeyPressed(DIK_LSHIFT))
+    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle))
     {
         int deltaX = Input::GetInstance().GetMouseState().lX;
         int deltaY = Input::GetInstance().GetMouseState().lY;
