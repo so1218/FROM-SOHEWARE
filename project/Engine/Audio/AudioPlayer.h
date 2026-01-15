@@ -10,12 +10,14 @@
 
 namespace FromEngine
 {
+	/// @brief 音声データ情報
     struct AudioInstance
     {
         IXAudio2SourceVoice* voice = nullptr;
         int audioIndex = -1;
     };
 
+    /// @brief 音声再生管理クラス
     class AudioPlayer
     {
     public:

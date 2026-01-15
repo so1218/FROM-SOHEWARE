@@ -693,18 +693,25 @@ void DebugGuiManager::BeginSceneView(
     ImGui::Begin("Scene");
     ImGui::PopStyleVar();
 
-    // 画像を描画（命令の記録）
+    // 画像描画
     ImVec2 imageSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(
-        reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)),
-        imageSize
-    );
+    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
 
-    // Gizmoの準備をここで行う
+    // 座標計算
     ImVec2 vMin = ImGui::GetItemRectMin();
     ImVec2 vMax = ImGui::GetItemRectMax();
+    bool isHovered = ImGui::IsItemHovered();
+
+    // ImGuizmoのセットアップ 
     ImGuizmo::SetRect(vMin.x, vMin.y, vMax.x - vMin.x, vMax.y - vMin.y);
     ImGuizmo::SetDrawlist();
+
+    // 計算結果をImGuiManagerへ
+    ImGuiManager::SetSceneViewRect(
+        Vector2(vMin.x, vMin.y),
+        Vector2(vMax.x - vMin.x, vMax.y - vMin.y),
+        isHovered
+    );
 }
 
 void DebugGuiManager::EndSceneView()

@@ -13,6 +13,9 @@
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
 int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
+Vector2 ImGuiManager::sceneRectMin_ = { 0.0f, 0.0f };
+Vector2 ImGuiManager::sceneRectSize_ = { 0.0f, 0.0f };
+bool ImGuiManager::isSceneHovered_ = false;
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -379,5 +382,12 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     ImGuizmo::PopID();
 
     ImGui::PopID();
+}
+
+void ImGuiManager::SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered)
+{
+    sceneRectMin_ = min;
+    sceneRectSize_ = size;
+    isSceneHovered_ = isHovered;
 }
 

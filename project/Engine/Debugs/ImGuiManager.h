@@ -9,6 +9,7 @@
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
 #include "ImGuizmo.h"
+#include "Vector2.h"
 
 class WorldTransform;
 class Camera;
@@ -36,8 +37,17 @@ public:
     static bool GetSceneResetRequested() { return resetSceneSize_; }
     static void ClearSceneResetRequested() { resetSceneSize_ = false; }
 
-    // 誰でも1行でGizmoを出せるようにする関数
+    // Gizmoを出せるようにする関数
     static void DrawGizmo(WorldTransform& transform, const Camera& camera);
+
+    // シーンビューの情報をセットする
+    static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
+
+    // 外部から情報を取る用
+    static bool IsSceneHovered() { return isSceneHovered_; }
+
+    // マウス座標の補正用
+    static Vector2 GetMousePosInScene();
 
     static bool dockInitialized_;
     static bool resetSceneSize_;
@@ -45,5 +55,10 @@ public:
 private:
     // 操作モードを保持する変数
     static int gizmoOperation_;
+
+    // 状態保持用
+    static Vector2 sceneRectMin_;
+    static Vector2 sceneRectSize_;
+    static bool isSceneHovered_;
 };
 
