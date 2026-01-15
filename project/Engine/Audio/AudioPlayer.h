@@ -8,60 +8,63 @@
 #include <vector>
 #include <functional>
 
-struct AudioInstance
+namespace FromEngine
 {
-    IXAudio2SourceVoice* voice = nullptr;
-    int audioIndex = -1;
-};
-
-class AudioPlayer
-{
-public:
-    static AudioPlayer& GetInstance()
+    struct AudioInstance
     {
-        static AudioPlayer instance;
-        return instance;
-    }
+        IXAudio2SourceVoice* voice = nullptr;
+        int audioIndex = -1;
+    };
 
-    // コピー禁止
-    AudioPlayer(const AudioPlayer&) = delete;
-    AudioPlayer& operator=(const AudioPlayer&) = delete;
+    class AudioPlayer
+    {
+    public:
+        static AudioPlayer& GetInstance()
+        {
+            static AudioPlayer instance;
+            return instance;
+        }
 
-    int Load(const std::wstring& filePath);
-    int Play(int audioID, bool loop = false, uint32_t volume = 100);
-    void Stop(int instanceID);
-    void StopAll();
-    int PlayUnique(int audioID, bool loop = true, uint32_t volume = 100);
-    void StopUnique(int audioID);
-    bool IsPlaying(int instanceID);
+        // コピー禁止
+        AudioPlayer(const AudioPlayer&) = delete;
+        AudioPlayer& operator=(const AudioPlayer&) = delete;
 
-private:
-    AudioPlayer() {  }
-    ~AudioPlayer() {  }
+        int Load(const std::wstring& filePath);
+        int Play(int audioID, bool loop = false, uint32_t volume = 100);
+        void Stop(int instanceID);
+        void StopAll();
+        int PlayUnique(int audioID, bool loop = true, uint32_t volume = 100);
+        void StopUnique(int audioID);
+        bool IsPlaying(int instanceID);
 
-    std::vector<AudioData> loadedAudios_;
-    std::vector<AudioInstance> activeVoices_;
-    IXAudio2* xAudio2_ = nullptr;
+    private:
+        AudioPlayer() {}
+        ~AudioPlayer() {}
 
-    std::unordered_map<int, int> uniqueInstances_;
-};
+        std::vector<AudioData> loadedAudios_;
+        std::vector<AudioInstance> activeVoices_;
+        IXAudio2* xAudio2_ = nullptr;
 
-class VoiceCallback : public IXAudio2VoiceCallback
-{
-public:
-    std::function<void()> onBufferEnd_;
+        std::unordered_map<int, int> uniqueInstances_;
+    };
 
-    VoiceCallback(std::function<void()> onBufferEnd = nullptr) : onBufferEnd_(onBufferEnd) {}
+    class VoiceCallback : public IXAudio2VoiceCallback
+    {
+    public:
+        std::function<void()> onBufferEnd_;
 
-    void STDMETHODCALLTYPE OnBufferEnd(void* pBufferContext) override {
-        if (onBufferEnd_) onBufferEnd_();
-    }
+        VoiceCallback(std::function<void()> onBufferEnd = nullptr) : onBufferEnd_(onBufferEnd) {}
 
-    // 他のメソッドは空
-    void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32) override {}
-    void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
-    void STDMETHODCALLTYPE OnStreamEnd() override {}
-    void STDMETHODCALLTYPE OnBufferStart(void*) override {}
-    void STDMETHODCALLTYPE OnLoopEnd(void*) override {}
-    void STDMETHODCALLTYPE OnVoiceError(void*, HRESULT) override {}
-};
+        void STDMETHODCALLTYPE OnBufferEnd(void* pBufferContext) override {
+            if (onBufferEnd_) onBufferEnd_();
+        }
+
+        // 他のメソッドは空
+        void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32) override {}
+        void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
+        void STDMETHODCALLTYPE OnStreamEnd() override {}
+        void STDMETHODCALLTYPE OnBufferStart(void*) override {}
+        void STDMETHODCALLTYPE OnLoopEnd(void*) override {}
+        void STDMETHODCALLTYPE OnVoiceError(void*, HRESULT) override {}
+    };
+}

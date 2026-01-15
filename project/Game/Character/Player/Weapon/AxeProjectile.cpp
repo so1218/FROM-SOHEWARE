@@ -6,6 +6,8 @@
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 
+using namespace FromEngine;
+
 AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw)
 {
     // モデルを作って開始位置に置く

@@ -341,6 +341,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     // Transform -> Matrix
     Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
 
+    ImGuizmo::PushID(reinterpret_cast<void*>(&transform));
+
     ImGui::PushID(reinterpret_cast<void*>(&transform));
 
     // Gizmo表示
@@ -373,6 +375,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
         transform.rotation_.z = rotationDeg.z * toRadian;
 		transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(transform.rotation_);
     }
+
+    ImGuizmo::PopID();
 
     ImGui::PopID();
 }

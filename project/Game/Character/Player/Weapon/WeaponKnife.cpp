@@ -6,6 +6,8 @@
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 
+using namespace FromEngine;
+
 WeaponKnife::WeaponKnife(Engine* engine, Player* player, Camera* camera)
     : Weapon(engine, player), camera_(camera)
 {

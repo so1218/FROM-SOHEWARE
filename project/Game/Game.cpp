@@ -11,6 +11,8 @@
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 
+using namespace FromEngine;
+
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
     engine_->Initialize(camera_.get(), materialManager_.get());

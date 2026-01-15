@@ -13,22 +13,26 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-void AudioManager::Initialize()
+namespace FromEngine
 {
-    // MediaFoundationの初期化
-    HRESULT hr = MFStartup(MF_VERSION);
-    assert(SUCCEEDED(hr));
+    /// @brief AudioManagerの初期化
+    void AudioManager::Initialize()
+    {
+        // MediaFoundationの初期化
+        HRESULT hr = MFStartup(MF_VERSION);
+        assert(SUCCEEDED(hr));
 
-    // XAudio2 初期化
-    hr = XAudio2Create(&xAudio2_, 0, XAUDIO2_DEFAULT_PROCESSOR);
-    assert(SUCCEEDED(hr));
-    hr = xAudio2_->CreateMasteringVoice(&masterVoice_);
-    assert(SUCCEEDED(hr));
-}
+        // XAudio2 初期化
+        hr = XAudio2Create(&xAudio2_, 0, XAUDIO2_DEFAULT_PROCESSOR);
+        assert(SUCCEEDED(hr));
+        hr = xAudio2_->CreateMasteringVoice(&masterVoice_);
+        assert(SUCCEEDED(hr));
+    }
 
-void AudioManager::Finalize()
-{
-    // 音声データ開放
-    AudioPlayer::GetInstance().StopAll();
-    MFShutdown();
+    void AudioManager::Finalize()
+    {
+        // 音声データ開放
+        AudioPlayer::GetInstance().StopAll();
+        MFShutdown();
+    }
 }

@@ -2,33 +2,43 @@
 #include <xaudio2.h>           
 #include <wrl.h>     
 
-// XAudio2の生成・管理を行うオーディオマネージャ
-class AudioManager
+namespace FromEngine
 {
-public:
-    static AudioManager& GetInstance()
+    /// @brief オーディオ管理クラス
+    class AudioManager
     {
-        static AudioManager instance;
-        return instance;
-    }
+    public:
+        /// @brief シングルトンインスタンス取得
+        /// @return AudioManagerのインスタンス
+        static AudioManager& GetInstance()
+        {
+            static AudioManager instance;
+            return instance;
+        }
 
-    void Initialize();
+        /// @brief 初期化
+        void Initialize();
+        /// @brief 終了処理
+        void Finalize();
 
-    void Finalize();
+        /// @brief  XAudio2インスタンス取得
+        /// @return IXAudio2インスタンス
+        IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
 
-    // ゲッター
-    IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
+    private:
+        /// @brief コンストラクタ・デストラクタ
+        AudioManager() = default;
+        ~AudioManager() = default;
 
-private:
-    AudioManager() = default;
-    ~AudioManager() = default;
+        /// @brief コピー禁止
+        /// @param  
+        AudioManager(const AudioManager&) = delete;
+        AudioManager& operator=(const AudioManager&) = delete;
 
-    // シングルトンのためコピー・ムーブ禁止
-    AudioManager(const AudioManager&) = delete;
-    AudioManager& operator=(const AudioManager&) = delete;
+        /// @brief XAudio2インスタンス
+        Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
 
-    Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
-
-    // マスターボイス
-    IXAudio2MasteringVoice* masterVoice_ = nullptr;
-};
+        /// @brief マスターボイス
+        IXAudio2MasteringVoice* masterVoice_ = nullptr;
+    };
+}

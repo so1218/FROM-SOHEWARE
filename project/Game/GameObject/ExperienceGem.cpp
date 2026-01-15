@@ -7,6 +7,8 @@
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 
+using namespace FromEngine;
+
 ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
     : engine_(engine), camera_(camera), player_(player)
 {
