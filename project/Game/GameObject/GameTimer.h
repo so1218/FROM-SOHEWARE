@@ -8,7 +8,7 @@ class Engine;
 class GameTimer : public GameObject
 {
 public:
-    GameTimer(Engine* engine);
+    GameTimer(Engine* engine, Camera* camera);
     ~GameTimer() override = default;
 
     void Initialize(float limitMinutes);
@@ -29,7 +29,6 @@ public:
     void ApplyGlobalVariables();
 
 private:
-    Engine* engine_ = nullptr;
 
     // 時間管理
     float maxTime_ = 0.0f;     // 最大時間（秒換算）

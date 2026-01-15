@@ -17,7 +17,7 @@ enum class PlayerAnimState
 	Walk  
 };
 
-class Player : public Collider, public BaseCharacter
+class Player : public Collider, public GameObject
 {
 public:
 	Player(Engine* engine, Camera* camera);
@@ -104,10 +104,6 @@ private:
 
 	// レベルアップの内部処理
 	void LevelUp();
-	
-	Engine* engine_;
-	Camera* camera_;
-
 
 	std::unique_ptr<AnimationModel> animationPlayer_;
 	AABB aabb_;

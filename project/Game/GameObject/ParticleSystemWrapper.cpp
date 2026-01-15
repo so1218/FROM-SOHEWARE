@@ -1,7 +1,7 @@
 #include "ParticleSystemWrapper.h" 
 
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine, Camera* camera)
-    : engine_(engine), camera_(camera)
+    : GameObject(engine, camera)
 {
 }
 

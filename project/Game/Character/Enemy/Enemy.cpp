@@ -13,10 +13,8 @@
 
 int Enemy::enemyCount_ = 0;
 
-Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data)
+Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data) : GameObject(engine, camera)
 {
-	engine_ = engine;
-	camera_ = camera;
 	player_ = player;
 	objectManager_ = objectManager;
 

@@ -21,11 +21,8 @@
 
 using namespace FromEngine;
 
-Player::Player(Engine* engine, Camera* camera)
+Player::Player(Engine* engine, Camera* camera) : GameObject(engine, camera)
 {
-	engine_ = engine;
-	camera_ = camera;
-
 	// 通常モデルを生成
 	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
 

@@ -9,7 +9,7 @@
 class LevelUpUI : public GameObject
 {
 public:
-    LevelUpUI(Engine* engine);
+    LevelUpUI(Engine* engine, Camera* camera);
 
     GameObjectType GetType() const override { return GameObjectType::UI; }
 
@@ -32,8 +32,6 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "LevelUpUI" }; }
 
 private:
-    Engine* engine_ = nullptr;
-
     // 選択肢データ
     std::vector<UpgradeInfo> currentOptions_;
 

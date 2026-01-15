@@ -25,8 +25,6 @@ public:
     WorldTransform& GetTransform() { return transform_; }
 
 private:
-    Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 
     WorldTransform transform_;
     uint32_t color_ = 0xFFFFFFFF;

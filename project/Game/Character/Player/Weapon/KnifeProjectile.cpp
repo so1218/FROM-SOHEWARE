@@ -9,7 +9,7 @@
 
 using namespace FromEngine;
 
-KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize)
+KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize) : GameObject(engine, camera)
 {
     model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::knife)));
     model_->SetTextureHandle(TextureHandle::Get(TextureID::knife));

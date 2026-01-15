@@ -17,6 +17,4 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "ParticleSystem" }; }
 
 private:
-    Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 };

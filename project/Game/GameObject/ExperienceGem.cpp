@@ -10,7 +10,7 @@
 using namespace FromEngine;
 
 ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
-    : engine_(engine), camera_(camera), player_(player)
+    : GameObject(engine, camera), player_(player)
 {
     // 経験値オーブ用のモデルをロード
     model_ = std::make_unique<Model>(engine_, camera_, ModelHandle::Get(ModelID::cube));

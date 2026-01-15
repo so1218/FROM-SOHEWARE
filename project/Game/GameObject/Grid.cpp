@@ -3,7 +3,7 @@
 #include "ModelHandle.h"
 
 Grid::Grid(Engine* engine, Camera* camera)
-    : engine_(engine), camera_(camera)
+    : GameObject(engine, camera)
 {
     // デフォルト
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);

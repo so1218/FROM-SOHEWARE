@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Engine.h"
+#include "Model.h"
+#include "ModelHandle.h"
+#include "AnimationModel.h"
+#include "AnimationHandle.h"
 
 enum class GameObjectType : int
 {
@@ -26,6 +30,7 @@ struct GameObjectPriority
 class GameObject 
 {
 public:
+    GameObject(Engine* engine, Camera* camera);
     virtual ~GameObject() = default;
 
     virtual void Initialize() {}
@@ -58,4 +63,11 @@ private:
             { GameObjectType::UI, 100 }
         }
     };
+
+protected:
+	std::unique_ptr<Model> CreateModel(ModelID modelID);
+	std::unique_ptr<AnimationModel> CreateAnimationModel(ModelID modelId, AnimationID animationId);
+
+    Engine* engine_ = nullptr;
+	Camera* camera_ = nullptr;
 };

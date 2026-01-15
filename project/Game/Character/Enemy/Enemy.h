@@ -18,7 +18,7 @@ struct EnemyData
     Vector3 size = { 1.0f, 1.0f, 1.0f };
 };
 
-class Enemy : public Collider, public BaseCharacter
+class Enemy : public Collider, public GameObject
 {
 public:
     Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data);
@@ -57,8 +57,6 @@ public:
     static int GetEnemyCount() { return enemyCount_; }
 
 private:
-    Engine* engine_;
-    Camera* camera_;
     Player* player_;
     GameObjectManager* objectManager_;
 

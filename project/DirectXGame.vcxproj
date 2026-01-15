@@ -182,6 +182,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="Game\Character\Player\LevelUpManager.cpp" />
     <ClCompile Include="Game\Data\ParticleTextureHandle.cpp" />
+    <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\GameTimer.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />

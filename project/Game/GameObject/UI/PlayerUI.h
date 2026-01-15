@@ -6,7 +6,7 @@
 class PlayerUI : public GameObject
 {
 public:
-    PlayerUI(Engine* engine, Player* player);
+    PlayerUI(Engine* engine, Camera* camera, Player* player);
 
     GameObjectType GetType() const override { return GameObjectType::UI; }
 
@@ -22,7 +22,6 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "PlayerUI" }; }
 
 private:
-    Engine* engine_ = nullptr;
     Player* player_ = nullptr; 
 
     std::unique_ptr<Sprite> xpBarBgSprite_;

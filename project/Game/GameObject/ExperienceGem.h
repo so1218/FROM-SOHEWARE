@@ -29,8 +29,6 @@ public:
     bool IsDead() const override { return isCollected_; }
 
 private:
-    Engine* engine_;
-    Camera* camera_;
     Player* player_;
     std::unique_ptr<Model> model_;
 

@@ -28,8 +28,8 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     player_ = player.get();
     player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
-    auto playerUI = std::make_unique<PlayerUI>(engine_, player_);
-    auto followCamera = std::make_unique<FollowCamera>(camera_, player_);
+    auto playerUI = std::make_unique<PlayerUI>(engine_, camera_, player_);
+    auto followCamera = std::make_unique<FollowCamera>(engine_, camera_, player_);
     followCamera_ = followCamera.get();
     player_->SetFollowCamera(followCamera_);
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
@@ -41,11 +41,11 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     auto grid = std::make_unique<Grid>(engine_, camera_);
 
     // タイマーの生成
-    auto gameTimer = std::make_unique<GameTimer>(engine_);
+    auto gameTimer = std::make_unique<GameTimer>(engine_, camera_);
     gameTimer_ = gameTimer.get();
 
     levelUpManager_ = std::make_unique<LevelUpManager>();
-    levelUpUI_ = std::make_unique<LevelUpUI>(engine_);
+    levelUpUI_ = std::make_unique<LevelUpUI>(engine_, camera_);
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));

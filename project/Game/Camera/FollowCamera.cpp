@@ -6,8 +6,8 @@
 #include "TimeManager.h"
 #include "GlobalVariables.h"
 
-FollowCamera::FollowCamera(Camera* camera, Player* target) :
-    camera_(camera),
+FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
+    : GameObject(engine, camera),
     target_(target)
 {
 }
