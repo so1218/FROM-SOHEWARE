@@ -46,8 +46,8 @@ public:
     // 外部から情報を取る用
     static bool IsSceneHovered() { return isSceneHovered_; }
 
-    // マウス座標の補正用
-    static Vector2 GetMousePosInScene();
+    static Vector2 GetSceneViewportMin() { return sceneRectMin_; }
+    static Vector2 GetSceneViewportSize() { return sceneRectSize_; }
 
     static bool dockInitialized_;
     static bool resetSceneSize_;

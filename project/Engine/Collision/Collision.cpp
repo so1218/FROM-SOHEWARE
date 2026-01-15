@@ -1,6 +1,7 @@
 #include "Collision.h"
 #include "Input.h"
 #include "Engine.h"
+#include "ImGuiManager.h"
 
 // AABB同士の衝突判定
 bool IsCollision(const AABB& aabb1, const AABB& aabb2)
@@ -86,6 +87,38 @@ Vector3 CalculatePenetrationVector(const AABB& a, const AABB& b)
 bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     const Matrix4x4& viewProjection)
 {
+    // 判定に使う画面サイズとマウス位置を変数化
+    Vector2 checkViewportSize;
+    Vector2 checkMousePos;
+
+    // 現在のマウス位置（ウィンドウ左上基準）
+    Vector2 rawMousePos = Input::GetInstance().GetMousePosition();
+
+#ifdef _DEBUG
+    // デバッグ時はImGuiManagerからSceneの情報を取得
+    Vector2 sceneSize = ImGuiManager::GetSceneViewportSize();
+    Vector2 sceneMin = ImGuiManager::GetSceneViewportMin();
+
+    // シーンサイズが有効（0より大きい）ならSceneView基準にする
+    if (sceneSize.x > 0.0f && sceneSize.y > 0.0f)
+    {
+        checkViewportSize = sceneSize;
+
+        // マウス位置をウィンドウ全体からScene画像内へ変換
+        checkMousePos = rawMousePos - sceneMin;
+    }
+    else
+    {
+        // まだSceneViewが出ていない等の場合はウィンドウ全体を使う
+        checkViewportSize = { kClientWidth, kClientHeight };
+        checkMousePos = rawMousePos;
+    }
+#else
+    // リリース時は常にウィンドウ全体基準
+    checkViewportSize = { kClientWidth, kClientHeight };
+    checkMousePos = rawMousePos;
+#endif
+
     // ワールド→クリップ座標
     Vector4 worldPos = { objectWorldPos.x, objectWorldPos.y, objectWorldPos.z, 1.0f };
     Vector4 clipPos = viewProjection * worldPos;
@@ -99,14 +132,15 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
         clipPos.z / clipPos.w
     };
 
-    // スクリーン座標
-    float screenX = (ndcPos.x + 1.0f) * 0.5f * kClientWidth;
-    float screenY = (1.0f - ndcPos.y) * 0.5f * kClientHeight;
+    // スクリーン座標変換
+    // checkViewportSizeを使う
+    float screenX = (ndcPos.x + 1.0f) * 0.5f * checkViewportSize.x;
+    float screenY = (1.0f - ndcPos.y) * 0.5f * checkViewportSize.y;
 
     // マウスとの距離判定
-    Vector2 mousePos = Input::GetInstance().GetMousePosition();
-    float dx = mousePos.x - screenX;
-    float dy = mousePos.y - screenY;
+    // 補正済みのcheckMousePosを使う
+    float dx = checkMousePos.x - screenX;
+    float dy = checkMousePos.y - screenY;
 
     return (dx * dx + dy * dy) <= radius * radius;
 }

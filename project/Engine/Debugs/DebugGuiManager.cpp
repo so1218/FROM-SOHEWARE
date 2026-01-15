@@ -693,14 +693,43 @@ void DebugGuiManager::BeginSceneView(
     ImGui::Begin("Scene");
     ImGui::PopStyleVar();
 
-    // 画像描画
-    ImVec2 imageSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
+    // ウィンドウの利用可能なサイズを取得
+    ImVec2 windowSize = ImGui::GetContentRegionAvail();
+
+    // ゲームの解像度のアスペクト比を計算
+    float targetAspect = static_cast<float>(kClientWidth) / static_cast<float>(kClientHeight);
+
+    // ウィンドウのアスペクト比を計算
+    float windowAspect = windowSize.x / windowSize.y;
+
+    // アスペクト比に合わせて描画サイズを計算
+    ImVec2 finalSize = windowSize;
+    if (windowAspect > targetAspect)
+    {
+        // ウィンドウの方が横長 → 高さに合わせる
+        finalSize.x = windowSize.y * targetAspect;
+    }
+    else
+    {
+        // ウィンドウの方が縦長 → 幅に合わせる
+        finalSize.y = windowSize.x / targetAspect;
+    }
+
+    // 画像を中央に寄せるためのオフセット計算
+    ImVec2 cursorStart = ImGui::GetCursorPos();
+    ImVec2 offset;
+    offset.x = (windowSize.x - finalSize.x) * 0.5f;
+    offset.y = (windowSize.y - finalSize.y) * 0.5f;
+
+    // カーソル位置をずらして画像を描画
+    ImGui::SetCursorPos(ImVec2(cursorStart.x + offset.x, cursorStart.y + offset.y));
+
+    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), finalSize);
 
     // 座標計算
     ImVec2 vMin = ImGui::GetItemRectMin();
     ImVec2 vMax = ImGui::GetItemRectMax();
-    bool isHovered = ImGui::IsItemHovered();
+    bool isHovered = ImGui::IsItemHovered(); 
 
     // ImGuizmoのセットアップ 
     ImGuizmo::SetRect(vMin.x, vMin.y, vMax.x - vMin.x, vMax.y - vMin.y);
