@@ -24,15 +24,15 @@ using namespace FromEngine;
 Player::Player(Engine* engine, Camera* camera) : GameObject(engine, camera)
 {
 	// 通常モデルを生成
-	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+	modelPlayer_ = CreateModel(ModelID::cube);
 
-	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+	modelTamesi_ = CreateModel(ModelID::cube);
 	modelTamesi_->GetTransform().scale_.x = 500;
 	modelTamesi_->GetTransform().scale_.z = 500;
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,ModelHandle::Get(ModelID::enemy),AnimationHandle::Get(AnimationID::enemy));
+	animationPlayer_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
 }
 
 void Player::Initialize()

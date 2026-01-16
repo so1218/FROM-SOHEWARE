@@ -24,9 +24,9 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* 
 	hp_ = data.hp;
 	speed_ = data.speed;
 	size_ = data.size;
-	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
+	modelEnemy_ = CreateModel(ModelID::enemy);
 	modelEnemy_->SetColor(0x27FFE7FF);
-	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, ModelHandle::Get(ModelID::enemy), AnimationHandle::Get(AnimationID::enemy));
+	animationEnemy_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
 	animationEnemy_->SetEnableOutline(true);
 	animationEnemy_->SetColor(0x27FFE7FF);
 	modelEnemy_->SetEnableOutline(true);

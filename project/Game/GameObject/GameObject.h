@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Engine.h"
-#include "Model.h"
 #include "ModelHandle.h"
-#include "AnimationModel.h"
 #include "AnimationHandle.h"
+#include "TextureHandle.h"
+
+class Sprite;
+class Model;
+class AnimationModel;
 
 enum class GameObjectType : int
 {
@@ -66,7 +69,8 @@ private:
 
 protected:
 	std::unique_ptr<Model> CreateModel(ModelID modelID);
-	std::unique_ptr<AnimationModel> CreateAnimationModel(ModelID modelId, AnimationID animationId);
+    std::unique_ptr<AnimationModel> CreateAnimationModel(ModelID modelId, AnimationID animationId);
+    std::unique_ptr<Sprite> CreateSprite(uint32_t textureHandle);
 
     Engine* engine_ = nullptr;
 	Camera* camera_ = nullptr;

@@ -1,32 +1,18 @@
 #pragma once
 #include "Engine.h"
+#include "GameObject.h"
 
 // 天球
-class Skydome
+class Skydome : public GameObject
 {
 public:
-    // 初期化処理
-    void Initialize(Engine* engine, Camera* camera);
+    Skydome(Engine* engine, Camera* camera);
 
-    // 更新処理
-    void Update();
+    GameObjectType GetType() const override { return GameObjectType::Enemy; }
 
-    // 描画処理
-    void Draw();
-
-    // デバッグ描画処理
-    void DebugDraw();
-
-    // ワールド変換データ
-    WorldTransform worldTransform_;
-
-    WorldTransform uvTransform_;
-    Vector3 eulerAngles_ = { 0.0f, 0.0f, 0.0f };
-
-    // モデルデータ
-    std::unique_ptr<ModelData> modelData_;
-
-    Camera* camera_;
-    Engine* engine_;
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
+    void DebugDraw() override;
 };
 

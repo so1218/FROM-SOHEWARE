@@ -1,20 +1,18 @@
 #pragma once
 #include "Engine.h"
+#include "GameObject.h"
 
-class Ground
+class Ground : public GameObject
 {
 public:
-    // 初期化処理
-    void Initialize(Engine* engine, Camera* camera);
+    Ground(Engine* engine, Camera* camera);
 
-    // 更新処理
-    void Update();
+    GameObjectType GetType() const override { return GameObjectType::Enemy; }
 
-    // 描画処理
-    void Draw();
-
-    // デバッグ描画処理
-    void DebugDraw();
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
+    void DebugDraw() override;
 
 };
 

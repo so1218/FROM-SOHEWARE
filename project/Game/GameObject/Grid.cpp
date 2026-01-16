@@ -1,11 +1,9 @@
 #include "Grid.h"
 #include "TextureHandle.h"
-#include "ModelHandle.h"
 
 Grid::Grid(Engine* engine, Camera* camera)
     : GameObject(engine, camera)
 {
-    // デフォルト
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     modelData_ = ModelHandle::Get(ModelID::field);
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());

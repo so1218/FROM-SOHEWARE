@@ -1,29 +1,28 @@
-#include "Ground.h"
-#include "TextureHandle.h"
-#include "ModelHandle.h"
+#include "Ground.h""
 #include "ImGuiManager.h"
 
-// 初期化処理
-void Ground::Initialize(Engine* engine, Camera* camera)
+Ground::Ground(Engine* engine, Camera* camera) : GameObject(engine, camera)
+{
+}
+
+void Ground::Initialize()
 {
 
 };
 
-// 更新処理
 void Ground::Update()
 {
 
 };
 
-// 描画処理
 void Ground::Draw()
 {
-	
+
 };
 
-// デバッグ描画処理
 void Ground::DebugDraw()
 {
 	ImGui::Begin("地面");
+
 	ImGui::End();
 }
