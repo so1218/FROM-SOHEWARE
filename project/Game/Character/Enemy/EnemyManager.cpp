@@ -50,7 +50,10 @@ void EnemyManager::SpawnEnemy(const EnemyData& data, const Vector3& position)
     auto newEnemy = std::make_unique<Enemy>(engine_, camera_, player_, objectManager_, data);
 
     // 初期位置設定
-    newEnemy->GetWorldTransform().translation_ = position;
+    WorldTransform& transform = newEnemy->GetWorldTransform();
+    transform.translation_ = position;
+
+    transform.UpdateMatrix();
 
     // 初期化処理
     newEnemy->Initialize();

@@ -24,7 +24,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     followCamera_ = followCamera.get();
     player_->SetFollowCamera(followCamera_);
     enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
-
+    
     skybox_ = std::make_unique<Skybox>(engine_, camera_);
     uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
     skybox_->SetCubeTextureHandle(cubemapHandle);
@@ -73,7 +73,7 @@ void SampleSceneHori::OnInitialize()
     engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
     engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
-    engine_->materialManager_->GetMaterialSettings().lightMode = 1 ;
+    engine_->materialManager_->GetMaterialSettings().lightMode = 1;
 
     //engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
     //engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 1.29f;
@@ -110,6 +110,9 @@ void SampleSceneHori::OnInitialize()
 void SampleSceneHori::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::playSceneBGM), true, 20);
+
+    // プレイヤーが持つ武器の弾を登録
+    player_->AddWeaponColliders(collisionManager_.get());
 
     switch (sceneState_)
     {
@@ -153,12 +156,12 @@ void SampleSceneHori::UpdatePlaying()
     // ゲーム終了判定
     if (player_->IsEnd())
     {
-       /* sceneManager_->RequestSceneChange(SceneID::Sample);*/
+        /* sceneManager_->RequestSceneChange(SceneID::Sample);*/
     }
     // タイムアップ
     if (gameTimer_->IsTimeUp())
     {
-       /* sceneManager_->RequestSceneChange(SceneID::Play);*/
+        /* sceneManager_->RequestSceneChange(SceneID::Play);*/
         AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSE), false, 100);
     }
 }
@@ -186,9 +189,11 @@ void SampleSceneHori::UpdateLevelUpSelection()
     }
 }
 
+
 void SampleSceneHori::OnDraw()
 {
- /*   skybox_->Draw();*/
+    /*   skybox_->Draw();*/
+       // ゲームオブジェクトの一括描画
 
     // レベルアップ選択中なら、その上にUIを描画
     if (sceneState_ == SceneState::LevelUpSelection)
@@ -201,7 +206,7 @@ void SampleSceneHori::OnDraw()
 void SampleSceneHori::OnDebugDraw()
 {
     ImGui::Begin("ホリシーン");
-   
+
     ImGui::End();
 
     levelUpUI_->DebugDraw();
