@@ -1,32 +1,23 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 #include "PlayScene.h"
-#include "TextureHandle.h"
 #include "Input.h"
 #include "ImGuiManager.h"
-#include "ModelHandle.h"
 #include "AudioPlayer.h"
-#include "AudioHandle.h"
 #include "TimeManager.h"
-#include "ModelLoader.h"
-#include "Collision.h"
+#include "AudioHandle.h"
 
 using namespace FromEngine;
 
 TitleScene::TitleScene(Engine* engine, Camera* camera)
+    : BaseScene(engine, camera)
 {
-    // ポインタを保存
-    engine_ = engine;
-    camera_ = camera;
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);
     spritePress_ = std::make_unique<Sprite>(engine_);
-    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
-
-    objectManager_.AddObject(std::move(particleSystemWrapper_));
 }
 
-void TitleScene::Initialize()
+void TitleScene::OnInitialize()
 {
     camera_->Initialize();
     camera_->SetTranslation(Vector3(0, 0, -6.6f));
@@ -71,19 +62,14 @@ void TitleScene::Initialize()
     engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
     engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
 
-    objectManager_.Initialize();
-
-
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clearSceneBGM));
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
 
 }
 
-void TitleScene::Update()
+void TitleScene::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::titleSceneBGM), true, 20);
-
-    objectManager_.Update();
 
 	// シーン切り替えの入力検出
 	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
@@ -95,15 +81,14 @@ void TitleScene::Update()
 	}
 }
 
-void TitleScene::Draw()
+void TitleScene::OnDraw()
 {
-    objectManager_.Draw();
     sprite_->Draw();
     spriteUse_->Draw();
     spritePress_->Draw();
 }
 
-void TitleScene::DebugDraw()
+void TitleScene::OnDebugDraw()
 {
     ImGui::Begin("タイトルシーン");
 
@@ -135,11 +120,8 @@ void TitleScene::DebugDraw()
 
 
     ImGui::End();
-
-    objectManager_.DebugDraw();
 }
 
-void TitleScene::Finalize()
+void TitleScene::OnFinalize()
 {
-   
 }

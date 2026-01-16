@@ -44,7 +44,7 @@ void Enemy::Initialize()
 	// 衝突属性を設定
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	// 衝突対象を自分の属性以外に設定
-	SetCollisionMask(kCollisionAttributePlayer | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe);
+	SetCollisionMask(kCollisionAttributePlayer/* | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe*/);
 
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
@@ -195,7 +195,7 @@ void Enemy::DebugDraw()
 }
 
 
-Vector3 Enemy::GetWorldPosition()
+Vector3 Enemy::GetWorldPosition() const
 {
 	// ワールド座標を入れる変数
 	Vector3 worldPos;
@@ -218,7 +218,7 @@ void Enemy::UpdateAABB()
 	aabb_.max = { center.x + halfW, center.y + halfH, center.z + halfD };
 }
 
-void Enemy::OnCollision(Collider* other)
+void Enemy::OnCollisionExit(Collider* other)
 {
 	// もしプレイヤーにぶつかったら
 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer)

@@ -399,7 +399,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Skydome.h" />
     <ClInclude Include="Engine\Collision\Collider.h" />
     <ClInclude Include="Engine\Collision\Collision.h" />
-    <ClInclude Include="Engine\Collision\CollisionConfig.h" />
+    <ClInclude Include="Game\Data\CollisionConfig.h" />
     <ClInclude Include="Engine\Collision\CollisionManager.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />
     <ClInclude Include="Game\Scene\PlayScene.h" />

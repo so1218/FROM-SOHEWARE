@@ -1,13 +1,9 @@
 #pragma once
-
 #include "BaseScene.h"
 #include "Player.h"
-#include "CollisionManager.h"
 #include "ParticleEmitter.h"
-#include "GameObjectManager.h"
 #include "Enemy.h"
 #include "FollowCamera.h"
-#include "ParticleSystemWrapper.h"
 #include "Sprite.h"
 
 class PlayScene : public BaseScene
@@ -17,34 +13,16 @@ public:
 
     ~PlayScene();
 
-    // 初期化処理
-    void Initialize() override;
+    void OnInitialize() override;
+    void OnUpdate() override;
+    void OnDraw() override;
+    void OnDebugDraw() override;
+    void OnFinalize() override;
 
-    // 更新処理
-    void Update() override;
-
-    // 描画処理
-    void Draw() override;
-
-    // デバッグ描画処理
-    void DebugDraw() override;
-
-    // 終了処理
-    void Finalize() override;
-
-    // 衝突に関する処理をまとめる関数
-    void HandleCollisions();
-
-    GameObjectManager objectManager_;
-
-     // メンバー変数
-    Engine* engine_;
-    Camera* camera_;
-
+private:
+    // メンバー変数
     std::unique_ptr<Player> player_;
     std::unique_ptr<Enemy> enemy_;
-    std::unique_ptr<CollisionManager> collisionManager_;
-    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
 
     std::unique_ptr<ParticleEmitter> hanabi1Emitter_ = nullptr;
     std::unique_ptr<ParticleEmitter> hanabi2Emitter_ = nullptr;

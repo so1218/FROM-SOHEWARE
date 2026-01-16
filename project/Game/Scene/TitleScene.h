@@ -1,9 +1,6 @@
 #pragma once
 #include "BaseScene.h"
-#include "Engine.h"
 #include "Sprite.h"
-#include "GameObjectManager.h"
-#include "ParticleSystemWrapper.h"
 #include "ParticleEmitter.h"
 
 class TitleScene : public BaseScene
@@ -11,19 +8,14 @@ class TitleScene : public BaseScene
 public:
     TitleScene(Engine* engine, Camera* camera);
 
-    void Initialize() override;
-    void Update() override;
-    void Draw() override;
-    void DebugDraw() override;
-    void Finalize() override;
+    void OnInitialize() override;
+    void OnUpdate() override;
+    void OnDraw() override;
+    void OnDebugDraw() override;
+    void OnFinalize() override;
 
+private:
     // メンバー変数
-    Engine* engine_;
-    Camera* camera_;
-
-    GameObjectManager objectManager_;
-
-    std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
     std::unique_ptr<ParticleEmitter> titleEmitter_ = nullptr;
 
     std::unique_ptr<Sprite> sprite_;

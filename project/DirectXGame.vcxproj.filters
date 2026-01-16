@@ -680,7 +680,7 @@
     <ClInclude Include="Engine\Collision\Collision.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Collision\CollisionConfig.h">
+    <ClInclude Include="Game\Data\CollisionConfig.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\CollisionManager.h">

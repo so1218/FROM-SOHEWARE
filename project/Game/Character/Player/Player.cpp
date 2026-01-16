@@ -304,7 +304,7 @@ Vector3 Player::GetMoveDirection()
 	return dir;
 }
 
-void Player::OnCollision(Collider* other)
+void Player::OnCollisionEnter(Collider* other)
 {
 	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
 	{
@@ -329,7 +329,7 @@ void Player::OnCollision(Collider* other)
 	}
 }
 
-Vector3 Player::GetWorldPosition()
+Vector3 Player::GetWorldPosition() const
 {
 	Vector3 worldPos;
 	worldPos.x = modelPlayer_->GetTransform().matWorld_.m[3][0];

@@ -18,9 +18,9 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void OnCollision(Collider* other) override;
+    void OnCollisionStay(Collider* other) override;
 
-    Vector3 GetWorldPosition() override;
+    Vector3 GetWorldPosition() const override;
     WorldTransform& GetWorldTransform() { return model_->GetTransform(); }
 
     // 収集されたか

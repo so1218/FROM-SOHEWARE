@@ -63,7 +63,7 @@ void KnifeProjectile::Draw()
     DrawCollider();
 }
 
-void KnifeProjectile::OnCollision(Collider* other)
+void KnifeProjectile::OnCollisionStay(Collider* other)
 {
     // 敵と衝突した場合の処理
     if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
@@ -75,7 +75,7 @@ void KnifeProjectile::OnCollision(Collider* other)
     }
 }
 
-Vector3 KnifeProjectile::GetWorldPosition()
+Vector3 KnifeProjectile::GetWorldPosition() const
 {
     Vector3 worldPos;
     worldPos.x = model_->GetTransform().matWorld_.m[3][0];

@@ -37,7 +37,7 @@ public:
 	void DebugDraw() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollision(Collider* other) override;
+	void OnCollisionEnter(Collider* other) override;
 
 	// 調整項目の適用
 	void ApplyGlobalVariables();
@@ -50,7 +50,7 @@ public:
 	void Move();
 
 	// ワールド座標を取得
-	Vector3 GetWorldPosition() override;
+	Vector3 GetWorldPosition() const override;
 	
 	// ゲッター
 	WorldTransform& GetWorldTransform() { return modelPlayer_->GetTransform(); }

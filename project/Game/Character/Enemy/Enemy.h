@@ -43,13 +43,13 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "Enemy" }; }
 
     // 衝突・ダメージ処理
-    void OnCollision(Collider* other) override;
+    void OnCollisionExit(Collider* other) override;
     void TakeDamage(float damage, const Vector3& hitSourcePosition); // ダメージを受ける関数を追加
     void SpawnExperienceGem();  // 経験値を生成する関数
     bool IsDead() const override { return isDead_; } // 死亡フラグ
 
     // 座標・当たり判定
-    Vector3 GetWorldPosition() override;
+    Vector3 GetWorldPosition() const override;
     void UpdateAABB();
     WorldTransform& GetWorldTransform() { return modelEnemy_->GetTransform(); }
     AABB& GetAABB() { return aabb_; }

@@ -69,7 +69,7 @@ void AxeProjectile::Draw()
     DrawCollider();
 }
 
-void AxeProjectile::OnCollision(Collider* other)
+void AxeProjectile::OnCollisionStay(Collider* other)
 {
     if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
     {
@@ -89,7 +89,7 @@ void AxeProjectile::SetSize(const Vector3& size)
     UpdateAABB();
 }
 
-Vector3 AxeProjectile::GetWorldPosition()
+Vector3 AxeProjectile::GetWorldPosition() const
 {
     Vector3 worldPos;
     worldPos.x = model_->GetTransform().matWorld_.m[3][0];

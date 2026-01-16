@@ -68,7 +68,7 @@ void ExperienceGem::Draw()
     }
 }
 
-void ExperienceGem::OnCollision(Collider* other)
+void ExperienceGem::OnCollisionStay(Collider* other)
 {
     // プレイヤーと衝突したら
     if (other->GetCollisionAttribute() & kCollisionAttributePlayer)
@@ -80,7 +80,7 @@ void ExperienceGem::OnCollision(Collider* other)
     }
 }
 
-Vector3 ExperienceGem::GetWorldPosition()
+Vector3 ExperienceGem::GetWorldPosition() const
 {
     // ワールド座標を入れる変数
     Vector3 worldPos;
