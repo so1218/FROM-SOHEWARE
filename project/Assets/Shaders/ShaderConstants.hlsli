@@ -100,6 +100,9 @@ struct MaterialData
     float normalTiling;
     float normalIntensity;
     float padding4;
+    
+    float roughness;
+    float metalness;
 };
 
 struct TrailMaterialData

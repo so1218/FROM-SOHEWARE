@@ -41,6 +41,8 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.enableNormalMap = false;
     defaultSettings.normalTiling = 1.0f;
     defaultSettings.normalIntensity = 1.0f;
+    defaultSettings.roughness = 0.5f;
+    defaultSettings.metalness = 0.0f;
 
     memcpy(handle.materialData, &defaultSettings, sizeof(MaterialData));
 
@@ -70,6 +72,8 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->rimColor = materialSettings_.rimColor;
             handle.materialData->rimUseLightDir = materialSettings_.rimUseLightDir;
             handle.materialData->emissiveIntensity = materialSettings_.emissiveIntensity;
+            handle.materialData->roughness = materialSettings_.roughness;
+            handle.materialData->metalness = materialSettings_.metalness;
         }
     }
 }

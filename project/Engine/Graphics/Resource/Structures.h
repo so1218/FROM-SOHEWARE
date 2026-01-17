@@ -163,6 +163,9 @@ struct MaterialSettings
     float normalIntensity;
     float padding4;
 
+    float roughness;
+    float metalness;
+
 };
 
 struct AABB

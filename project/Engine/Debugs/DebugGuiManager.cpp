@@ -12,7 +12,7 @@ void DebugGuiManager::Initialize(Engine* engine, Camera* camera, LightManager* l
     materialManager_ = materialManager;
     textureManager_ = textureManager;
     postEffectManager_ = postEffectManager;
-	debugCamera_ = debugCamera;
+    debugCamera_ = debugCamera;
 
     cameraFov_ = camera_->GetFov();
     cameraNearClip_ = camera_->GetNearClip();
@@ -43,7 +43,7 @@ void DebugGuiManager::Update()
     }
     if (ImGui::CollapsingHeader("時間 / FPS"))
     {
-        DrawTimeSettings(); 
+        DrawTimeSettings();
     }
     if (ImGui::CollapsingHeader("全体的な情報"))
     {
@@ -163,7 +163,7 @@ void DebugGuiManager::DrawLightSettings()
     if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
         ImGui::Combo("ライトモード", &materialSettings.lightMode,
-            "ハーフランバート\0スペキュラ\0トゥーン\0");
+            "ハーフランバート\0スペキュラ\0トゥーン\0PBR\0");
 
         for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
         {
@@ -277,11 +277,33 @@ void DebugGuiManager::DrawLightSettings()
     // マテリアル設定（スペキュラ）
     if (ImGui::TreeNode("マテリアル基本設定"))
     {
-        ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
-        ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
-        ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+        // PBRモードかどうかを判定
+        bool isPBR = (materialSettings.lightMode == 3);
+
+        if (isPBR)
+        {
+            // PBR用
+            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "PBR Settings");
+
+            ImGui::SliderFloat("ラフネス (粗さ)", &materialSettings.roughness, 0.0f, 1.0f);
+            ImGui::SliderFloat("メタルネス (金属度)", &materialSettings.metalness, 0.0f, 1.0f);
+        }
+        else
+        {
+            // レガシー用
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "Legacy Settings");
+
+            ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
+            ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
+            ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+        }
+
+        // 共通設定
+        ImGui::Separator();
+        ImGui::Text("共通設定");
         ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("エミッシブ (自己発光):発光強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+        ImGui::DragFloat("エミッシブ強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+
         ImGui::TreePop();
     }
     ImGui::Separator();
@@ -545,7 +567,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         ImGui::Text("ブルーム合成強度");
         ImGui::SliderFloat("Intensity", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
-        
+
         ImGui::TreePop();
     }
 
@@ -610,7 +632,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
         ImGui::TreePop();
     }
-    
+
 
     ImGui::Separator();
 }
@@ -650,7 +672,7 @@ void DebugGuiManager::DrawTimeSettings()
     // 時間情報の表示
 
     // FPS関連
-    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS()); 
+    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS());
     ImGui::Text("瞬間 FPS: %.1f", time->GetFPS());
 
     // DeltaTime
@@ -661,7 +683,7 @@ void DebugGuiManager::DrawTimeSettings()
     ImGui::Text("総実行時間 (TotalTime): %.2f s", time->GetTotalTime());
 }
 
-void DebugGuiManager::DrawInformationDisplays() 
+void DebugGuiManager::DrawInformationDisplays()
 {
     // オブジェクト数
     ImGui::Text("Models: %d / %d", engine_->renderer_->GetModelCount(), engine_->renderer_->kMaxModelCount);
@@ -674,7 +696,7 @@ void DebugGuiManager::DrawInformationDisplays()
 void DebugGuiManager::BeginSceneView(
     SRVManager* srvManager,
     uint32_t srvIndexToShow
-) 
+)
 {
     /// GPUハンドル取得
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
@@ -732,7 +754,7 @@ void DebugGuiManager::BeginSceneView(
     // 座標計算
     ImVec2 vMin = ImGui::GetItemRectMin();
     ImVec2 vMax = ImGui::GetItemRectMax();
-    bool isHovered = ImGui::IsItemHovered(); 
+    bool isHovered = ImGui::IsItemHovered();
 
     // ImGuizmoのセットアップ 
     ImGuizmo::SetRect(vMin.x, vMin.y, vMax.x - vMin.x, vMax.y - vMin.y);
