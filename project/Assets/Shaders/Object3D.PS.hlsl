@@ -18,7 +18,7 @@ cbuffer SpotLights : register(b4)
 {
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
-cbuffer AreaLightsBuffer : register(b5) 
+cbuffer AreaLightsBuffer : register(b5)
 {
     AreaLight gAreaLights[MAX_AREA_LIGHTS];
 }
@@ -28,6 +28,7 @@ TextureCube<float4> gEnvironmentTexture : register(t1);
 Texture2D<float> gShadowMap : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
+Texture2D<float3> gNormalTexture : register(t5);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -45,6 +46,7 @@ struct PixelShaderInput
     float3 normal : NORMAL0;
     float3 worldPosition : POSITION1;
     float4 shadowCoord : POSITION2;
+    float3 tangent : TANGENT;
 };
 
 float DitherThreshold4x4(int2 position);
@@ -60,6 +62,7 @@ float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight);
 
 // 影の濃さを計算する関数
 float CalculateShadow(float4 shadowCoord, float3 normal);
+float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 
 PixelShaderOutput main(PixelShaderInput input)
 {
@@ -113,7 +116,7 @@ PixelShaderOutput main(PixelShaderInput input)
         output.color.a = 1.0;
         return output;
     }
-    
+
     // 影の計算 
     float shadowFactor = 1.0f;
     
@@ -125,7 +128,17 @@ PixelShaderOutput main(PixelShaderInput input)
     
     // ライティング処理
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-    float3 normal = normalize(input.normal);
+    float3 normal;
+    
+    if (gMaterial.enableNormalMap != 0)
+    {
+        normal = CalculateNormalFromMap(input, input.normal, transformedUV.xy);
+    }
+    else
+    {
+        normal = normalize(input.normal);
+    }
+    
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     
     if (gMaterial.enableLighting != 0)
@@ -318,7 +331,7 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 normal, float3 toEye, flo
         }
         else if (gMaterial.lightMode == LIGHT_PHONG_SPECULAR)
         {
-            float halfLambert = pow(ndotl * 0.5f + 0.5f, gMaterial.diffuseReflection +2.0f);
+            float halfLambert = pow(ndotl * 0.5f + 0.5f, gMaterial.diffuseReflection + 2.0f);
             diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
 
             if (ndotl > 0.0f)
@@ -563,4 +576,25 @@ float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
     }
 
     return gMaterial.rimColor * rim * gMaterial.rimIntensity;
+}
+
+float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
+{
+    // ノーマルマップから法線をサンプリング
+    float3 mapNormal = gNormalTexture.Sample(gSampler, uv);
+    
+    // (0,1)を(-1,1)に変換
+    mapNormal = mapNormal * 2.0f - 1.0f;
+
+    // TBN行列の構築
+    // 法線と接線の直交化
+    float3 N = normalize(normal);
+    float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
+    float3 B = cross(N, T);
+
+    // タンジェント空間の法線をワールド空間へ変換
+    float3x3 TBN = float3x3(T, B, N);
+    float3 transformedNormal = mul(mapNormal, TBN);
+
+    return normalize(transformedNormal);
 }

@@ -21,6 +21,7 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, const ModelData* 
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
     dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    normalMapHandle_ = TextureHandle::Get(TextureID::white1x1);
     color_ = 0xFFFFFFFF;
 }
 
@@ -96,6 +97,7 @@ void AnimationModel::Draw()
         envMapTextureHandle_,
         toonRampHandle_,
         dissolveTextureHandle_,
+        normalMapHandle_,
         color_,
         materialHandle_,
         enableOutline_,

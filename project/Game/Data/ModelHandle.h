@@ -9,6 +9,7 @@ enum class ModelID
     cube,
     sphere,
     plane,
+    cylinder,
 
     // フィールド関連
     skydome,
@@ -50,6 +51,7 @@ private:
             { ModelID::cube,       "Assets/Models/Primitives/Cube/normalCube.obj" },
             { ModelID::sphere,     "Assets/Models/Primitives/Sphere/sphere.obj" },
             { ModelID::plane,     "Assets/Models/Primitives/Plane/plane.obj" },
+            { ModelID::cylinder,     "Assets/Models/Primitives/Cylinder/cylinder.gltf" },
 
             // フィールド関連
             { ModelID::skydome,  "Assets/Models/Environment/Skydome/skydome.obj" },

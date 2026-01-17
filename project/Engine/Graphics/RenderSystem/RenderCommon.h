@@ -54,6 +54,7 @@ struct ModelSubmission
     uint32_t envMapSrvHandle;         // 環境マップSRV
     uint32_t toonRampHandle;          // トゥーンラップ
     uint32_t dissolveTextureHandle;   // ディゾルブテクスチャ
+    uint32_t normalMapHandle;		  // 法線マップテクスチャ
     uint32_t color;                   // メッシュカラー
     Matrix4x4 worldMatrix;            // ワールド変換行列
 

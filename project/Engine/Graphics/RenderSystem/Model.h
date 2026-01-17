@@ -38,6 +38,7 @@ public:
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
     void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
+    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
 
     // ゲッター
@@ -62,6 +63,7 @@ private:
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
+    uint32_t normalMapHandle_;
     uint32_t color_ = 0xFFFFFFFF;
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
 

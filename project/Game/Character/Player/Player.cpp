@@ -56,7 +56,7 @@ void Player::Initialize()
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0xffffffff);
-
+	modelTamesi_->SetNormalMapHandle(TextureHandle::Get(TextureID::normalMap));
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
@@ -123,6 +123,7 @@ void Player::Update()
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
 	//animationPlayer_->SetEnableDissolve(true);
 	//animationPlayer_->materialHandle_.materialData->dissolveThreshold = 0.5f;
+	modelTamesi_->materialHandle_.materialData->enableNormalMap = true;
 
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 

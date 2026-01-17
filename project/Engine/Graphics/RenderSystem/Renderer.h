@@ -60,12 +60,14 @@ public:
 
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t normalMapHandle,
+        uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
         bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
     void DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint32_t color);
     void SubmitAnimationModel(const WorldTransform& worldTransform, const Camera& camera,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle,
+        uint32_t normalMapHandle, uint32_t color,
         const MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
     void SubmitGrid(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
@@ -79,7 +81,7 @@ public:
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
-    void Draw3D(); 
+    void Draw3D();
     void DrawUI();
 
     // ブレンドモード設定
@@ -165,7 +167,7 @@ private:
     // 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
     // 定数バッファリソースの配列
-    struct PerObjectBuffer 
+    struct PerObjectBuffer
     {
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* wvpMapped = nullptr;
@@ -181,7 +183,7 @@ private:
     uint32_t indexLine_ = 0;
     std::vector<RenderData> lines_;
     // 線描画用のリソース
-    struct LineBatchResource 
+    struct LineBatchResource
     {
         Mesh mesh; // 動的頂点バッファ用のメッシュ
         std::vector<LineVertex> verticesCPU; // CPU側の一時保管場所

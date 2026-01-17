@@ -10,6 +10,7 @@ struct VertexShaderOutput
     float32_t3 normal : NORMAL0;
     float32_t3 worldPosition : POSITION1;
     float4 shadowCoord : POSITION2;
+    float3 tangent : TANGENT;
 };
 
 struct VertexShaderInput
@@ -17,7 +18,8 @@ struct VertexShaderInput
     float32_t4 position : POSITION0;
     float32_t2 texcoord : TEXCOORD0;
     float32_t3 normal : NORMAL0;
-    float32_t3 smoothNormal : TANGENT0;
+    float32_t3 tangent : TANGENT0;
+    float32_t3 smoothNormal : TEXCOORD1;
 };
 
 struct Well
@@ -30,6 +32,7 @@ struct Skinned
 {
     float32_t4 position;
     float32_t3 normal;
+    float32_t3 tangent;
     float32_t3 smoothNormal;
 };
 

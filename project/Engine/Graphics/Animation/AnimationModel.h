@@ -37,6 +37,7 @@ public:
     void SetEasing(EasingType type) { easingType_ = type; }
     void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
+    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
     // アウトライン設定
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width) { outlineWidth_ = width; }
@@ -73,6 +74,7 @@ private:
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
+    uint32_t normalMapHandle_;
     uint32_t color_;
 
     bool isFinished_ = false;      // 再生が終了したか

@@ -5,8 +5,6 @@
 #include "AudioManager.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "ModelHandle.h"
-#include "TextureHandle.h"
 #include "SampleSceneHori.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"

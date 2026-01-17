@@ -27,17 +27,18 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.shininess = 50.0f;
     defaultSettings.uvTransform = Matrix4x4::MakeIdentity();
     defaultSettings.specularColor = Vector4(1, 1, 1, 1);
-    defaultSettings.addShadow = true;        
-    defaultSettings.shadowBias = 0.0005f;    
+    defaultSettings.addShadow = true;
+    defaultSettings.shadowBias = 0.0005f;
     defaultSettings.shadowDensity = 0.7f;
     defaultSettings.shadowSoftness = 1.0f;
     defaultSettings.isArtGrid = false;
-	defaultSettings.environmentMapIntensity = 0.0f;
-    defaultSettings.enableDissolve = 0;             
-    defaultSettings.edgeColor = { 1.0f, 0.5f, 0.0f }; 
+    defaultSettings.environmentMapIntensity = 0.0f;
+    defaultSettings.enableDissolve = 0;
+    defaultSettings.edgeColor = { 1.0f, 0.5f, 0.0f };
     defaultSettings.dissolveThreshold = 0.5f;
     defaultSettings.edgeWidth = 0.05f;
     defaultSettings.edgeIntensity = 2.0f;
+    defaultSettings.enableNormalMap = false;
 
     memcpy(handle.materialData, &defaultSettings, sizeof(MaterialData));
 
@@ -65,7 +66,7 @@ void MaterialManager::UpdateAllMaterialsFromGlobal()
             handle.materialData->rimPower = materialSettings_.rimPower;
             handle.materialData->rimIntensity = materialSettings_.rimIntensity;
             handle.materialData->rimColor = materialSettings_.rimColor;
-            handle.materialData ->rimUseLightDir = materialSettings_.rimUseLightDir;
+            handle.materialData->rimUseLightDir = materialSettings_.rimUseLightDir;
             handle.materialData->emissiveIntensity = materialSettings_.emissiveIntensity;
         }
     }
