@@ -42,6 +42,7 @@ public:
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
     uint32_t GetColor() const { return color_; }
+    uint32_t* GetColorPtr() { return &color_; }
     bool IsOutlineEnabled() const { return enableOutline_; }
     float GetOutlineWidth() const { return outlineWidth_; }
     const Vector4& GetOutlineColor() const { return outlineColor_; }

@@ -64,27 +64,30 @@ void DebugCamera::Update()
             }
         }
 
-        // マウス右ドラッグでカメラ回転（target中心の公転）
+        // マウス中ボタンドラッグ時の処理
         if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle))
         {
+            // マウスの移動量を取得
             int deltaX = Input::GetInstance().GetMouseState().lX;
             int deltaY = Input::GetInstance().GetMouseState().lY;
 
-            currentYaw_ += deltaX * rotateSpeed_;
-            currentPitch_ += deltaY * rotateSpeed_;
-        }
+            // Shiftキーの有無で分岐
+            if (Input::GetInstance().IsKeyPressed(DIK_LSHIFT))
+            {
+                // 平行移動
+                Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+                Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
+                Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
 
-        // マウス中ドラッグでターゲット
-        if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle) && Input::GetInstance().IsKeyPressed(DIK_LSHIFT)) {
-            Quaternion currentRotation = worldTransform_.rotationQuaternion_;
-            Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
-            Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
-
-            int deltaX = Input::GetInstance().GetMouseState().lX;
-            int deltaY = Input::GetInstance().GetMouseState().lY;
-
-            target_ -= right * static_cast<float>(deltaX) * dragSpeed_;
-            target_ += up * static_cast<float>(deltaY) * dragSpeed_;
+                target_ -= right * static_cast<float>(deltaX) * dragSpeed_;
+                target_ += up * static_cast<float>(deltaY) * dragSpeed_;
+            }
+            else
+            {
+                // 回転
+                currentYaw_ += deltaX * rotateSpeed_;
+                currentPitch_ += deltaY * rotateSpeed_;
+            }
         }
     }
 

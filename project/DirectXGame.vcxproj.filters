@@ -790,6 +790,7 @@
     <ClInclude Include="Game\Scene\Transitions\FadeOutState.h" />
     <ClInclude Include="Game\Scene\Transitions\FadeInState.h" />
     <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
+    <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

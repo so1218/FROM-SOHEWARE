@@ -2,6 +2,7 @@
 
 #include "Engine.h"
 #include "Sprite.h"
+#include "PropertyBinder.h"
 
 class Fade
 {
@@ -12,10 +13,6 @@ public:
 	void Update();
 	void Draw();
 	void DebugDraw();
-
-	// 調整項目の適用
-	void ApplyGlobalVariables();
-	std::vector<std::string> GetGlobalVariableGroupName() const { return { "Fade" }; }
 
 	float GetDuration() const { return duration_; }
 
@@ -51,4 +48,6 @@ public:
 
 	// フェード終了判定
 	bool IsFinished() const;
+
+	std::unique_ptr<PropertyBinder> binder_;
 };

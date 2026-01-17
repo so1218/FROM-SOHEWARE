@@ -23,21 +23,9 @@ void Fade::Initialize()
 	sprite_->SetLayerOrder(9999);
 
 	// デバッグ用のグローバル変数登録
-	auto* gv = GlobalVariables::GetInstance();
-	auto groupName = GetGlobalVariableGroupName();
-	gv->CreateGroup(groupName);
+	binder_ = std::make_unique<PropertyBinder>(std::vector<std::string>{"Fade"});
 
-	gv->AddItem(groupName, "duration_", duration_);
-
-	ApplyGlobalVariables();
-}
-
-void Fade::ApplyGlobalVariables()
-{
-	auto* gv = GlobalVariables::GetInstance();
-	auto groupName = GetGlobalVariableGroupName();
-
-	duration_ = gv->GetFloatValue(groupName, "duration_");
+	binder_->BindFloat("duration_", &duration_, 1.0f, 0.05f, 0.0f, 10.0f);
 }
 
 void Fade::Update()
@@ -94,20 +82,7 @@ void Fade::DebugDraw()
 #ifdef IS_DEVELOPMENT
 	ImGui::Begin("フェード");
 
-	auto* gv = GlobalVariables::GetInstance();
-	auto groupName = GetGlobalVariableGroupName();
-	bool changed = false;
-
-	if (ImGui::DragFloat("フェード時間（秒）", &duration_, 0.05f, 0.0f))
-	{
-		gv->SetValue(groupName, "duration_", duration_);
-		changed = true;
-	}
-
-	if (changed)
-	{
-		ApplyGlobalVariables();
-	}
+	binder_->Draw("duration_", "フェード時間（秒）");
 
 	ImGui::End();
 #endif

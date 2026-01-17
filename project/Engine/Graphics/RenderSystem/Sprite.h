@@ -30,6 +30,7 @@ public:
     Vector2& GetPosition();
     Vector2& GetSize();
     float& GetRotation();
+    uint32_t* GetColorPtr() { return &color_; }
     WorldTransform& GetUVTransform();
     int GetLayerOrder() const;
     bool GetIsVisible() const { return isVisible_; }

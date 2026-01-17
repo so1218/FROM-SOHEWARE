@@ -22,6 +22,7 @@ public:
 
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
+    uint32_t* GetColorPtr() { return &color_; }
 
 private:
     Engine* engine_ = nullptr;

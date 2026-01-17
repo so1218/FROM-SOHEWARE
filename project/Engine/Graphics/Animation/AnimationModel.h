@@ -52,6 +52,7 @@ public:
     float GetAnimationTime() const { return animationTime_; }
     bool IsOutlineEnabled() const { return enableOutline_; }
     uint32_t GetColor() const { return color_; }
+    uint32_t* GetColorPtr() { return &color_; }
 
     // アニメーションを切り替える関数
     void SetAnimation(const Animation* animation);
