@@ -13,6 +13,7 @@ ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
 
 void ParticleEditor::ShowEditor()
 {
+#ifdef IS_DEVELOPMENT
     if (ImGui::Begin("パーティクルエディター"))
     {
         // プリセット名リスト生成
@@ -575,6 +576,7 @@ void ParticleEditor::ShowEditor()
     }
 
     ImGui::End();
+#endif
 }
 
 void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetName)

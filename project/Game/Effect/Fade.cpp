@@ -1,7 +1,7 @@
 #include "Fade.h"
 #include "TextureHandle.h"
 #include "GlobalVariables.h"
-#include "externals/imgui/imgui.h"
+#include "ImGuiManager.h"
 
 #include <algorithm>
 
@@ -91,6 +91,7 @@ void Fade::Draw()
 
 void Fade::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("フェード");
 
 	auto* gv = GlobalVariables::GetInstance();
@@ -109,6 +110,7 @@ void Fade::DebugDraw()
 	}
 
 	ImGui::End();
+#endif
 }
 
 void Fade::Start(Status status, float duration)

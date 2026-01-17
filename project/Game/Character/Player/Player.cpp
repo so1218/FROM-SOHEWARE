@@ -354,6 +354,7 @@ void Player::Draw()
 
 void Player::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("プレイヤー");
 
 	auto* gv = GlobalVariables::GetInstance();
@@ -465,6 +466,7 @@ void Player::DebugDraw()
 	}
 
 	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform(), *camera_);
+#endif
 }
 
 void Player::TakeDamage(float damage)

@@ -88,6 +88,7 @@ void PlayScene::OnDraw()
 
 void PlayScene::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("プレイシーン");
 
     if (ImGui::DragFloat2("Sprite Pos", &spritePos_.x, 1.0f))
@@ -110,6 +111,7 @@ void PlayScene::OnDebugDraw()
     ImGui::End();
 
 	player_->DebugDraw();
+#endif
 }
 
 void PlayScene::OnFinalize()

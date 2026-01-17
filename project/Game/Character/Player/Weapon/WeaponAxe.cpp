@@ -85,6 +85,7 @@ void WeaponAxe::Draw()
 
 void WeaponAxe::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("武器：斧");
     ImGui::Separator();
 
@@ -144,6 +145,7 @@ void WeaponAxe::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void WeaponAxe::Fire()

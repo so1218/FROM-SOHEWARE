@@ -90,6 +90,7 @@ void TitleScene::OnDraw()
 
 void TitleScene::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("タイトルシーン");
 
     if (ImGui::DragFloat2("Sprite Pos", &spritePos_.x, 1.0f))
@@ -120,6 +121,7 @@ void TitleScene::OnDebugDraw()
 
 
     ImGui::End();
+#endif
 }
 
 void TitleScene::OnFinalize()

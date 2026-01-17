@@ -30,7 +30,7 @@ void Grid::SetTextureHandle(uint32_t handle)
 
 void Grid::Draw()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     materialHandle_.materialData->isArtGrid = true;
 
     transform_.UpdateMatrix();

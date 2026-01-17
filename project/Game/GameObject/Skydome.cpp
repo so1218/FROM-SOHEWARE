@@ -22,7 +22,9 @@ void Skydome::Draw()
 
 void Skydome::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("天球");
 
 	ImGui::End();
+#endif
 }

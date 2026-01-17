@@ -205,11 +205,13 @@ void SampleSceneHori::OnDraw()
 
 void SampleSceneHori::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("ホリシーン");
 
     ImGui::End();
 
     levelUpUI_->DebugDraw();
+#endif
 }
 
 void SampleSceneHori::OnFinalize()

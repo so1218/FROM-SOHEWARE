@@ -189,9 +189,11 @@ void Enemy::Draw()
 // デバッグ描画処理
 void Enemy::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("敵");
 
 	ImGui::End();
+#endif
 }
 
 

@@ -1,6 +1,6 @@
 #include "DebugDraw.h"
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 
 #include "Renderer.h"
 #include "Camera.h"

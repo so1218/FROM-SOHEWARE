@@ -1,7 +1,7 @@
 #include "PlayerUI.h"
 #include "TextureHandle.h"
 #include "GlobalVariables.h"
-#include "externals/imgui/imgui.h"
+#include "ImGuiManager.h"
 
 PlayerUI::PlayerUI(Engine* engine, Camera* camera, Player* player) : GameObject(engine, camera), player_(player)
 {
@@ -203,6 +203,7 @@ void PlayerUI::Draw()
 
 void PlayerUI::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("PlayerUI");
 
     auto* gv = GlobalVariables::GetInstance();
@@ -296,4 +297,5 @@ void PlayerUI::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }

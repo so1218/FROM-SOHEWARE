@@ -110,6 +110,7 @@ void WeaponKnife::Draw()
 
 void WeaponKnife::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("武器：ナイフ");
     ImGui::Separator();
     ImGui::Text("パラメータ調整");
@@ -173,6 +174,7 @@ void WeaponKnife::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void WeaponKnife::FireOneProjectile()

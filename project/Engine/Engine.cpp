@@ -99,7 +99,7 @@ void Engine::BeginFrame()
 
 	globalConstants_->Update(*camera_);
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 	debugGuiManager_->Update();
 
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
@@ -155,7 +155,7 @@ void Engine::EndFrame()
 	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 	renderer_->DrawUI();
 #endif
 
@@ -174,7 +174,7 @@ void Engine::EndFrame()
 		rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
 	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 	// シーンウィンドウを閉じる
 	debugGuiManager_->EndSceneView();
 #else

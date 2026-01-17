@@ -5,10 +5,13 @@
 #include <fstream>
 #include <iostream>
 
+#ifdef IS_DEVELOPMENT
 #include "imgui.h"
 #include "imgui_impl_dx12.h"
 #include "imgui_impl_win32.h"
 #include "ImGuizmo.h"
+#endif
+
 #include "Vector2.h"
 
 class WorldTransform;
@@ -17,7 +20,7 @@ class Camera;
 class ImGuiManager
 {
 public:
-	static void Initialize(
+    static void Initialize(
         HWND hwnd,
         ID3D12Device* device,
         D3D12_RENDER_TARGET_VIEW_DESC rtvDesc,
@@ -26,13 +29,13 @@ public:
         D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle,
         D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
 
-	static void BeginFrame();
+    static void BeginFrame();
     static void DrawMenuBar();
     static void SaveFile(const std::string& filename);
     static void OpenFile(const std::string& filename);
-	static void EndFrame(ID3D12GraphicsCommandList* commandList);
-	// ImGuiの終了処理
-	static void Finalize();
+    static void EndFrame(ID3D12GraphicsCommandList* commandList);
+    // ImGuiの終了処理
+    static void Finalize();
     // リセット要求を確認・取得する
     static bool GetSceneResetRequested() { return resetSceneSize_; }
     static void ClearSceneResetRequested() { resetSceneSize_ = false; }
@@ -44,15 +47,17 @@ public:
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
 
     // 外部から情報を取る用
+#ifdef IS_DEVELOPMENT
     static bool IsSceneHovered() { return isSceneHovered_; }
-
     static Vector2 GetSceneViewportMin() { return sceneRectMin_; }
     static Vector2 GetSceneViewportSize() { return sceneRectSize_; }
+#endif
 
     static bool dockInitialized_;
     static bool resetSceneSize_;
 
 private:
+#ifdef IS_DEVELOPMENT
     // 操作モードを保持する変数
     static int gizmoOperation_;
 
@@ -60,5 +65,6 @@ private:
     static Vector2 sceneRectMin_;
     static Vector2 sceneRectSize_;
     static bool isSceneHovered_;
+#endif
 };
 

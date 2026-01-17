@@ -14,7 +14,7 @@ using namespace FromEngine;
 Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
 {
     engine_->Initialize(camera_.get(), materialManager_.get());
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     DebugDraw::Initialize(engine_->renderer_.get());
 #endif
 
@@ -27,7 +27,7 @@ Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Cam
     sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
 
     // 初期シーンを設定
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     sceneManager_.SetInitialScene(SceneID::Sample);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
@@ -65,9 +65,9 @@ void Game::Run()
             engine_->BeginFrame();
 
             Update();
-#ifdef _DEBUG
+
             DebugDraw();
-#endif
+
             Draw();
 
             // フレームの終了
@@ -80,7 +80,7 @@ void Game::Run()
 
 void Game::Update()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // デバッグカメラの有効/無効切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
@@ -129,7 +129,7 @@ void Game::Update()
         camera_->SetViewProjectionMatrix(gameCameraVP);
     }
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // デバッグ描画用カメラを設定
     DebugDraw::SetCamera(camera_.get());
 
@@ -165,6 +165,7 @@ void Game::Draw()
 
 void Game::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     if (ImGui::Begin("シーンの選択"))
     {
         if (ImGui::Button("タイトルシーン"))
@@ -185,6 +186,7 @@ void Game::DebugDraw()
     sceneManager_.DebugDraw();
 
     engine_->lightManager_->DrawDebugLights();
+#endif
 }
 
 void Game::Finalize()

@@ -94,7 +94,7 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     // 現在のマウス位置（ウィンドウ左上基準）
     Vector2 rawMousePos = Input::GetInstance().GetMousePosition();
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // デバッグ時はImGuiManagerからSceneの情報を取得
     Vector2 sceneSize = ImGuiManager::GetSceneViewportSize();
     Vector2 sceneMin = ImGuiManager::GetSceneViewportMin();

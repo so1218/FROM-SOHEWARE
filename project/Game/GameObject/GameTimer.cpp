@@ -1,7 +1,7 @@
 #include "GameTimer.h"
 #include "TextureHandle.h"
 #include "TimeManager.h" 
-#include "externals/imgui/imgui.h"
+#include "ImGuiManager.h" 
 
 GameTimer::GameTimer(Engine* engine, Camera* camera) : GameObject(engine, camera)
 {
@@ -129,6 +129,7 @@ void GameTimer::Draw()
 
 void GameTimer::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("ゲームタイマー");
 
     auto* gv = GlobalVariables::GetInstance();
@@ -165,4 +166,5 @@ void GameTimer::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }

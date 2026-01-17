@@ -148,6 +148,7 @@ void FollowCamera::Update()
 
 void FollowCamera::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("追従カメラ");
 
     ImGui::Separator();
@@ -213,6 +214,7 @@ void FollowCamera::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void FollowCamera::StartShake(float duration, float intensity)

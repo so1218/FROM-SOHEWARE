@@ -163,6 +163,7 @@ void LevelUpUI::Draw()
 
 void LevelUpUI::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("レベルアップUI");
 
     bool changed = false;
@@ -188,6 +189,7 @@ void LevelUpUI::DebugDraw()
     ImGui::Text("Is Decided: %d", isDecided_);
 
     ImGui::End();
+#endif
 }
 
 UpgradeInfo LevelUpUI::GetDecision() const
