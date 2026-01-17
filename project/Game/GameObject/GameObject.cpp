@@ -22,7 +22,7 @@ std::unique_ptr<Sprite> GameObject::CreateSprite(uint32_t textureHandle)
 {
     auto sprite = std::make_unique<Sprite>(engine_);
 
-    sprite->SetTextureHandle(textureHandle);
+    sprite->SetTexture((TextureID)textureHandle);
 
     return sprite;
 }

@@ -18,7 +18,7 @@ void LevelUpUI::Initialize()
 	{
 		// 背景用
 		auto bg = std::make_unique<Sprite>(engine_);
-		bg->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+		bg->SetTexture(TextureID::white1x1);
 		bg->SetAnchorPoint({ 0.5f, 0.5f });
 		cardBgSprites_.push_back(std::move(bg));
 
@@ -30,7 +30,7 @@ void LevelUpUI::Initialize()
 
         auto contentFrame = std::make_unique<Sprite>(engine_);
         contentFrame->SetAnchorPoint({ 0.5f, 0.5f });
-        contentFrame->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
+        contentFrame->SetTexture(TextureID::hpGage);
         contentFrame->SetLayerOrder(35);
         cardContentFrameSprites_.push_back(std::move(contentFrame));
 	}
@@ -71,7 +71,7 @@ void LevelUpUI::Activate(const std::vector<UpgradeInfo>& options)
 		if (i < currentOptions_.size())
 		{
 			// UpgradeInfoに持たせた画像ハンドルをセット
-			cardContentSprites_[i]->SetTextureHandle(currentOptions_[i].textureHandle);
+			cardContentSprites_[i]->SetTexture((TextureID)currentOptions_[i].textureID);
 		}
 	}
     for (int i = 0; i < 3; ++i)

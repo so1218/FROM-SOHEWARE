@@ -1,6 +1,6 @@
 #include "Model.h"
 #include "Engine.h"
-#include "TextureHandle.h"
+#include "MaterialManager.h"
 
 Model::Model(Engine* engine, Camera* camera, const ModelData* modelData)
     : engine_(engine), camera_(camera), modelData_(modelData)
@@ -21,7 +21,7 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
     uvTransform_.UpdateMatrix();
     materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
 }
-void Model::SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
+void Model::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
 void Model::SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
 void Model::SetColor(uint32_t color) { color_ = color; }
 void Model::SetCamera(Camera* camera) { camera_ = camera; }

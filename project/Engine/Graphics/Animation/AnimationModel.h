@@ -3,7 +3,7 @@
 #include "AnimationData.h" 
 #include "AnimationHandle.h" 
 #include "Engine.h"
-#include "Easing.h"
+#include "TextureHandle.h"
 
 class AnimationModel
 {
@@ -29,7 +29,7 @@ public:
     void SetUvTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
     void SetColor(uint32_t color) { color_ = color; }
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
+    void SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }

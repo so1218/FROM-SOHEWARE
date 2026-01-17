@@ -11,14 +11,13 @@ Sprite::Sprite(Engine* engine)
 
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
-    materialHandle_.materialData->emissiveIntensity = 5.0f;
 }
 
 void Sprite::SetPosition(const Vector2& position) { position_ = position; }
 void Sprite::SetSize(const Vector2& size) { size_ = size; }
 void Sprite::SetRotation(float rotation) { rotation_ = rotation; }
 void Sprite::SetColor(uint32_t color) { color_ = color; }
-void Sprite::SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
+void Sprite::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
 void Sprite::SetUVTransform(const WorldTransform& uv) { uvTransform_ = uv; }
 void Sprite::SetLayerOrder(int order) { layerOrder_ = order; }
 

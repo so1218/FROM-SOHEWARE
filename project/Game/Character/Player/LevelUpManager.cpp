@@ -52,7 +52,7 @@ std::vector<UpgradeInfo> LevelUpManager::PickUpgrades(Player* player)
 			{
 				if (weaponInfo.weaponId == info.weaponId)
 				{
-					info.textureHandle = weaponInfo.textureHandle; 
+					info.textureID = weaponInfo.textureID; 
 					found = true;
 					break;
 				}
@@ -61,7 +61,7 @@ std::vector<UpgradeInfo> LevelUpManager::PickUpgrades(Player* player)
 			// 見つからなかった場合
 			if (!found)
 			{
-				info.textureHandle = TextureHandle::Get(TextureID::cardTextAxe);
+				info.textureID = TextureID::cardTextAxe;
 			}
 
 			candidates.push_back(info);

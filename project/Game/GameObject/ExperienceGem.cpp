@@ -14,7 +14,7 @@ ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
 {
     // 経験値オーブ用のモデルをロード
     model_ = std::make_unique<Model>(engine_, camera_, ModelHandle::Get(ModelID::cube));
-	model_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+	model_->SetTexture(TextureID::white1x1);
 
     model_->SetEnableOutline(true);
     model_->SetColor(0xFFFF00FF);

@@ -12,7 +12,7 @@ AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& star
 {
     // モデルを作って開始位置に置く
     model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::axe)));
-	model_->SetTextureHandle(TextureHandle::Get(TextureID::axe));
+	model_->SetTexture(TextureID::axe);
     model_->GetTransform().translation_ = startPos;
 	model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
 

@@ -18,7 +18,7 @@ void Fade::Initialize()
 
 	sprite_->SetPosition(spritePos);
 	sprite_->SetSize(spriteSize);
-	sprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+	sprite_->SetTexture(TextureID::white1x1);
 
 	sprite_->SetLayerOrder(9999);
 

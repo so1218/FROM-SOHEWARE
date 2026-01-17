@@ -27,21 +27,21 @@ void TitleScene::OnInitialize()
     spriteSize_ = { 1000.0f, 300.0f }; 
     sprite_->SetSize(spriteSize_);
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
-    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::title));
+    sprite_->SetTexture(TextureID::title);
 
     spritePosUse_ = { 640, 457 };
     spriteUse_->SetPosition(spritePosUse_);
     spriteSizeUse_ = { 473.0f, 105.0f };
     spriteUse_->SetSize(spriteSizeUse_);
     spriteUse_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteUse_->SetTextureHandle(TextureHandle::Get(TextureID::useController));
+    spriteUse_->SetTexture(TextureID::useController);
 
     spritePosPress_ = { 640, 564 };
     spritePress_->SetPosition(spritePosPress_);
     spriteSizePress_ = { 757.0f, 153.0f };
     spritePress_->SetSize(spriteSizePress_);
     spritePress_->SetAnchorPoint({ 0.5f, 0.5f });
-    spritePress_->SetTextureHandle(TextureHandle::Get(TextureID::pressSousa));
+    spritePress_->SetTexture(TextureID::pressSousa);
 
     titleEmitter_ = engine_->particleSystem_->CreateEmitter("title");
     engine_->particleSystem_->AddEmitter(std::move(titleEmitter_));

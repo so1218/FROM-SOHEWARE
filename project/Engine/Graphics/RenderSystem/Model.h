@@ -5,12 +5,7 @@
 
 #include "WorldTransform.h"
 #include "Camera.h"
-#include "TextureManager.h"
-#include "RenderCommon.h"
-#include "LightManager.h"
-#include "PSOManager.h"
-#include "RootSignatureManager.h"
-#include "MaterialManager.h"
+#include "TextureHandle.h"
 
 class Engine;
 
@@ -23,7 +18,7 @@ public:
 
     // セッター
     void SetWorldTransform(const WorldTransform& transform);
-    void SetTextureHandle(uint32_t handle);
+    void SetTexture(TextureID id);
     void SetEnvironmentMapHandle(uint32_t handle);
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetColor(uint32_t color);

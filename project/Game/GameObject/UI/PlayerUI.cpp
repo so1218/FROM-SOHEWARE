@@ -20,22 +20,22 @@ PlayerUI::PlayerUI(Engine* engine, Camera* camera, Player* player) : GameObject(
 void PlayerUI::Initialize()
 {
     // ゲージ背景
-    xpBarBgSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+    xpBarBgSprite_->SetTexture(TextureID::white1x1);
     xpBarBgSprite_->SetColor(0x444444FF);
     xpBarBgSprite_->SetLayerOrder(10);
 
     // ゲージ本体
-    xpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+    xpBarSprite_->SetTexture(TextureID::white1x1);
     xpBarSprite_->SetColor(0x00FF00FF);
     xpBarSprite_->SetLayerOrder(11);
 
     // HPバー背景
-    hpBarBgSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+    hpBarBgSprite_->SetTexture(TextureID::white1x1);
     hpBarBgSprite_->SetColor(0x330000FF);
     hpBarBgSprite_->SetLayerOrder(10);
 
     // HPバー本体
-    hpBarSprite_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+    hpBarSprite_->SetTexture(TextureID::white1x1);
     hpBarSprite_->SetColor(0xFF0000FF);
     hpBarSprite_->SetLayerOrder(18);
 
@@ -44,28 +44,28 @@ void PlayerUI::Initialize()
     spriteSizeMove_ = { 454.0f, 70.0f };
     spriteMove_->SetSize(spriteSizeMove_);
     spriteMove_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteMove_->SetTextureHandle(TextureHandle::Get(TextureID::moveSousa));
+    spriteMove_->SetTexture(TextureID::moveSousa);
 
     spritePosCamera_ = { 251, 681 };
     spriteCamera_->SetPosition(spritePosCamera_);
     spriteSizeCamera_ = { 449.0f, 70.0f };
     spriteCamera_->SetSize(spriteSizeCamera_);
     spriteCamera_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteCamera_->SetTextureHandle(TextureHandle::Get(TextureID::cameraSousa));
+    spriteCamera_->SetTexture(TextureID::cameraSousa);
 
     spritePosExpFrame_ = { 645, 28.7f };
     spriteExpFrame_->SetPosition(spritePosExpFrame_);
     spriteSizeExpFrame_ = { 574.0f, 26.0f };
     spriteExpFrame_->SetSize(spriteSizeExpFrame_);
     spriteExpFrame_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteExpFrame_->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
+    spriteExpFrame_->SetTexture(TextureID::hpGage);
     spriteExpFrame_->SetColor(0x000000ff);
 
     spritePosHpFrame_ = { 646, 29 };
     spriteHpFrame_->SetPosition(spritePosHpFrame_);
     spriteSizeHpFrame_ = { 124.0f, 28.0f };
     spriteHpFrame_->SetSize(spriteSizeHpFrame_);
-    spriteHpFrame_->SetTextureHandle(TextureHandle::Get(TextureID::hpGage));
+    spriteHpFrame_->SetTexture(TextureID::hpGage);
     spriteHpFrame_->SetColor(0x000000ff);
 
     spritePosIkinokore_ = { 230, 562 };
@@ -73,14 +73,14 @@ void PlayerUI::Initialize()
     spriteSizeIkinokore_ = { 403.0f, 90.0f };
     spriteIkinokore_->SetSize(spriteSizeIkinokore_);
     spriteIkinokore_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteIkinokore_->SetTextureHandle(TextureHandle::Get(TextureID::ikinokore));
+    spriteIkinokore_->SetTexture(TextureID::ikinokore);
 
     std::array<TextureID, 10> idMap = {
         TextureID::num0, TextureID::num1, TextureID::num2, TextureID::num3, TextureID::num4,
         TextureID::num5, TextureID::num6, TextureID::num7, TextureID::num8, TextureID::num9
     };
     for (int i = 0; i < 10; ++i) {
-        digitTextureHandles_[i] = TextureHandle::Get(idMap[i]);
+        digitTextureId_[i] = idMap[i];
     }
 
     auto* gv = GlobalVariables::GetInstance();
@@ -168,7 +168,7 @@ void PlayerUI::Update()
         {
             int digit = levelStr[i] - '0';
             auto sprite = std::make_unique<Sprite>(engine_);
-            sprite->SetTextureHandle(digitTextureHandles_[digit]);
+            sprite->SetTexture((TextureID)digitTextureId_[digit]);
 
             Vector2 pos = levelNumberPos_;
             pos.x += i * numberSpace_;

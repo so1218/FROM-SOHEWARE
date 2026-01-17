@@ -51,14 +51,14 @@ void PlayScene::OnInitialize()
     spriteSize_ = { 800.0f, 280.0f };
     sprite_->SetSize(spriteSize_);
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
-    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::clear));
+    sprite_->SetTexture(TextureID::clear);
 
     spritePosUse_ = { 640, 522 };
     spriteUse_->SetPosition(spritePosUse_);
     spriteSizeUse_ = { 800.0f, 131.0f };
     spriteUse_->SetSize(spriteSizeUse_);
     spriteUse_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteUse_->SetTextureHandle(TextureHandle::Get(TextureID::pressSousa));
+    spriteUse_->SetTexture(TextureID::pressSousa);
 
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::titleSceneBGM));
