@@ -116,7 +116,7 @@ PixelShaderOutput main(PixelShaderInput input)
         output.color.a = 1.0;
         return output;
     }
-
+    
     // 影の計算 
     float shadowFactor = 1.0f;
     
@@ -580,19 +580,25 @@ float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
 
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
 {
+    // UVタイリング補正
+    float2 tiledUV = uv * gMaterial.normalTiling;
+
     // ノーマルマップから法線をサンプリング
-    float3 mapNormal = gNormalTexture.Sample(gSampler, uv);
+    float3 mapSample = gNormalTexture.Sample(gSampler, tiledUV);
+    float3 mapNormal = mapSample;
     
     // (0,1)を(-1,1)に変換
     mapNormal = mapNormal * 2.0f - 1.0f;
 
-    // TBN行列の構築
-    // 法線と接線の直交化
+    // 法線の強度調整
+    mapNormal.xy *= gMaterial.normalIntensity;
+
+    // BN行列の構築と変換
     float3 N = normalize(normal);
+    // グラム・シュミットの直交化
     float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
     float3 B = cross(N, T);
 
-    // タンジェント空間の法線をワールド空間へ変換
     float3x3 TBN = float3x3(T, B, N);
     float3 transformedNormal = mul(mapNormal, TBN);
 

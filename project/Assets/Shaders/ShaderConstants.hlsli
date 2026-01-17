@@ -94,7 +94,12 @@ struct MaterialData
     float dissolveThreshold;
     float edgeWidth;
     float edgeIntensity;
+    float padding3;
+    
     int32_t enableNormalMap;
+    float normalTiling;
+    float normalIntensity;
+    float padding4;
 };
 
 struct TrailMaterialData

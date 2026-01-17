@@ -39,6 +39,8 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     defaultSettings.edgeWidth = 0.05f;
     defaultSettings.edgeIntensity = 2.0f;
     defaultSettings.enableNormalMap = false;
+    defaultSettings.normalTiling = 1.0f;
+    defaultSettings.normalIntensity = 1.0f;
 
     memcpy(handle.materialData, &defaultSettings, sizeof(MaterialData));
 
