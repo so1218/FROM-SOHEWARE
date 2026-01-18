@@ -7,24 +7,18 @@
 #include "MathUtils.h" 
 
 Renderer* DebugDraw::renderer_ = nullptr;
-Camera* DebugDraw::camera_ = nullptr;
 
 void DebugDraw::Initialize(Renderer* renderer)
 {
     renderer_ = renderer;
 }
 
-void DebugDraw::SetCamera(Camera* camera)
-{
-    camera_ = camera;
-}
-
 void DebugDraw::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
-    if (!renderer_ || !camera_) return;
+    if (!renderer_) return;
 
     uint32_t colorU = Math::ColorVectorToUint32(color); 
-    renderer_->SubmitLine(start, end, *camera_, colorU); 
+    renderer_->SubmitLine(start, end, colorU);
 }
 
 void DebugDraw::DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color)

@@ -1,6 +1,6 @@
 #include "BaseCharacter.h"
 
-void BaseCharacter::Initialize(Engine* engine, Camera* camera)
+void BaseCharacter::Initialize(Engine* engine)
 {
 	engine_ = engine;
 }

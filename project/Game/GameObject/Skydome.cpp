@@ -1,7 +1,7 @@
 #include "Skydome.h"
 #include "ImGuiManager.h"
 
-Skydome::Skydome(Engine* engine, Camera* camera) : GameObject(engine, camera)
+Skydome::Skydome(Engine* engine) : GameObject(engine)
 {
 }
 

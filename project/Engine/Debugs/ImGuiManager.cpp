@@ -20,6 +20,8 @@ int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
 Vector2 ImGuiManager::sceneRectMin_ = { 0.0f, 0.0f };
 Vector2 ImGuiManager::sceneRectSize_ = { 0.0f, 0.0f };
 bool ImGuiManager::isSceneHovered_ = false;
+Matrix4x4 ImGuiManager::gizmoViewMatrix_ = Matrix4x4::MakeIdentity();
+Matrix4x4 ImGuiManager::gizmoProjMatrix_ = Matrix4x4::MakeIdentity();
 #endif
 
 void ImGuiManager::Initialize(
@@ -337,7 +339,7 @@ void ImGuiManager::Finalize()
 #endif
 }
 
-void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
+void ImGuiManager::DrawGizmo(WorldTransform& transform)
 {
 #ifdef IS_DEVELOPMENT
     // 操作モードの切り替え
@@ -346,8 +348,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     if (ImGui::IsKeyPressed(ImGuiKey_3)) gizmoOperation_ = ImGuizmo::SCALE;
 
     // 行列の準備
-    const Matrix4x4& viewMatrix = camera.GetViewMatrix();
-    const Matrix4x4& projMatrix = camera.GetProjectionMatrix();
+    const Matrix4x4& viewMatrix = gizmoViewMatrix_;
+    const Matrix4x4& projMatrix = gizmoProjMatrix_;
 
     // Transform -> Matrix
     Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
@@ -390,6 +392,14 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     ImGuizmo::PopID();
 
     ImGui::PopID();
+#endif
+}
+
+void ImGuiManager::SetGizmoCamera(const Matrix4x4& view, const Matrix4x4& proj)
+{
+#ifdef IS_DEVELOPMENT
+    gizmoViewMatrix_ = view;
+    gizmoProjMatrix_ = proj;
 #endif
 }
 

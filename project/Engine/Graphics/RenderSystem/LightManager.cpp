@@ -173,7 +173,7 @@ void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4
 
 void LightManager::DrawDebugLights()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // Directional Lightの描画
     for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
     {

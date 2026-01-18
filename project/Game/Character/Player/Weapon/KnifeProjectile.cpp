@@ -9,9 +9,9 @@
 
 using namespace FromEngine;
 
-KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize) : GameObject(engine, camera)
+KnifeProjectile::KnifeProjectile(Engine* engine, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize) : GameObject(engine)
 {
-    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::knife)));
+    model_ = std::make_unique<Model>(engine, std::move(ModelHandle::Get(ModelID::knife)));
     model_->SetTexture(TextureID::knife);
     model_->GetTransform().translation_ = startPos;
     model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };

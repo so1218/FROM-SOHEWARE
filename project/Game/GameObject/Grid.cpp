@@ -1,8 +1,8 @@
 #include "Grid.h"
 #include "TextureHandle.h"
 
-Grid::Grid(Engine* engine, Camera* camera)
-    : GameObject(engine, camera)
+Grid::Grid(Engine* engine)
+    : GameObject(engine)
 {
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     modelData_ = ModelHandle::Get(ModelID::field);
@@ -17,10 +17,6 @@ void Grid::SetWorldTransform(const WorldTransform& transform)
 void Grid::SetColor(uint32_t color)
 {
     color_ = color;
-}
-void Grid::SetCamera(Camera* camera)
-{
-    camera_ = camera;
 }
 
 void Grid::SetTextureHandle(uint32_t handle)
@@ -37,7 +33,6 @@ void Grid::Draw()
 
     engine_->renderer_->SubmitGrid(
         transform_,
-        *camera_,
         *modelData_,
         textureHandle_,
         color_,

@@ -2,8 +2,8 @@
 #include "TimeManager.h"
 #include "TextureHandle.h"
 
-AnimationModel::AnimationModel(Engine* engine, Camera* camera, const ModelData* modelData, const Animation* animation)
-    : engine_(engine), camera_(camera)
+AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation)
+    : engine_(engine)
 {
     assert(modelData != nullptr);
     assert(animation != nullptr);
@@ -90,7 +90,6 @@ void AnimationModel::Draw()
 
     engine_->renderer_->SubmitAnimationModel(
         transform_,
-        *camera_,
         animeModelData_,
         skinCluster_,
         textureHandle_,

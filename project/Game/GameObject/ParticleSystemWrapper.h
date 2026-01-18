@@ -6,7 +6,7 @@
 class ParticleSystemWrapper : public GameObject
 {
 public:
-    ParticleSystemWrapper(Engine* engine, Camera* camera);
+    ParticleSystemWrapper(Engine* engine);
 
     void Update() override;
 

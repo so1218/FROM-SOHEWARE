@@ -5,7 +5,7 @@
 class Ground : public GameObject
 {
 public:
-    Ground(Engine* engine, Camera* camera);
+    Ground(Engine* engine);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
 

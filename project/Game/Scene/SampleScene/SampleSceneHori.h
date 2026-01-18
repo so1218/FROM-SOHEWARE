@@ -14,7 +14,7 @@
 class SampleSceneHori : public BaseScene
 {
 public:
-	SampleSceneHori(Engine* engine, Camera* camera);
+	SampleSceneHori(Engine* engine);
 
     void OnInitialize() override;
     void OnUpdate() override;

@@ -11,12 +11,12 @@
 
 using namespace FromEngine;
 
-PlayScene::PlayScene(Engine* engine, Camera* camera)
-    : BaseScene(engine, camera)
+PlayScene::PlayScene(Engine* engine)
+    : BaseScene(engine)
 {
     // オブジェクトを生成
-    player_ = std::make_unique<Player>(engine_, camera_);
-    auto grid = std::make_unique<Grid>(engine_, camera_);
+    player_ = std::make_unique<Player>(engine_, camera_.get());
+    auto grid = std::make_unique<Grid>(engine_);
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);
 

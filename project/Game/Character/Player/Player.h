@@ -105,6 +105,8 @@ private:
 	// レベルアップの内部処理
 	void LevelUp();
 
+	Camera* camera_ = nullptr;
+
 	std::unique_ptr<AnimationModel> animationPlayer_;
 	AABB aabb_;
 	

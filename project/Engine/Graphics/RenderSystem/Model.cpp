@@ -2,8 +2,8 @@
 #include "Engine.h"
 #include "MaterialManager.h"
 
-Model::Model(Engine* engine, Camera* camera, const ModelData* modelData)
-    : engine_(engine), camera_(camera), modelData_(modelData)
+Model::Model(Engine* engine, const ModelData* modelData)
+    : engine_(engine), modelData_(modelData)
 {
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
@@ -24,7 +24,6 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
 void Model::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
 void Model::SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
 void Model::SetColor(uint32_t color) { color_ = color; }
-void Model::SetCamera(Camera* camera) { camera_ = camera; }
 void Model::SetEnableOutline(bool enable) { enableOutline_ = enable; }
 void Model::SetOutlineWidth(float width) { outlineWidth_ = width; }
 void Model::SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
@@ -36,7 +35,6 @@ void Model::Draw()
 
     engine_->renderer_->SubmitModel(
         transform_,
-        *camera_,
         *modelData_,
         textureHandle_,
         envMapTextureHandle_,

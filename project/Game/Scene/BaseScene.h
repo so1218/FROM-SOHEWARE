@@ -10,11 +10,12 @@
 class BaseScene
 {
 public:
-    BaseScene(Engine* engine, Camera* camera)
-        : engine_(engine), camera_(camera)
+    BaseScene(Engine* engine)
+        : engine_(engine)
     {
         collisionManager_ = std::make_unique<CollisionManager>();
-        particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine, camera);
+        camera_ = std::make_unique<Camera>();
+        particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine);
 
         objectManager_.AddObject(std::move(particleSystemWrapper_));
     }
@@ -37,6 +38,12 @@ public:
 
         // 全オブジェクト更新
         objectManager_.Update();
+
+        // カメラの行列更新
+        if (camera_)
+        {
+            camera_->UpdateViewMatrix();
+        }
     }
 
     virtual void Draw() final
@@ -59,6 +66,9 @@ public:
     // SceneManagerをセット
     virtual void SetSceneManager(class SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
+    // エンジンが情報を取りに来れるように
+    Camera* GetActiveCamera() const { return camera_.get(); }
+
 protected:
     virtual void OnInitialize() {}
     virtual void OnUpdate() {}
@@ -76,7 +86,7 @@ protected:
 protected:
     // メンバ変数
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
+    std::unique_ptr<Camera> camera_;
     SceneManager* sceneManager_ = nullptr;
 
     GameObjectManager objectManager_;

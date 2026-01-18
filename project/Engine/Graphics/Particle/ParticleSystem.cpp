@@ -523,7 +523,7 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
     emitters_.push_back(std::move(emitter));
 }
 
-void ParticleSystem::Draw(Camera* camera)
+void ParticleSystem::Draw()
 {
     engine_->SetBlendMode(BlendMode::kBlendModeAdd);
 
@@ -545,13 +545,13 @@ void ParticleSystem::Draw(Camera* camera)
             drawPoints.push_back({ particle.transform->translation_, particle.transform->rotationQuaternion_, particle.age });
 
         // Rendererに登録
-        engine_->renderer_->SubmitTrail(drawPoints, particle.config.trail, *camera);
+        engine_->renderer_->SubmitTrail(drawPoints, particle.config.trail);
     }
 
     // ブレンドを元に戻す
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // デバッグ用エディタ表示
     editor_->ShowEditor();
 #endif

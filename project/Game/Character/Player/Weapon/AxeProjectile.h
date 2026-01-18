@@ -9,7 +9,7 @@
 class AxeProjectile : public GameObject, public Collider
 {
 public:
-    AxeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw);
+    AxeProjectile(Engine* engine, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw);
     ~AxeProjectile();
 
     GameObjectType GetType() const override { return GameObjectType::PlayerWeapon; }

@@ -9,8 +9,8 @@
 
 using namespace FromEngine;
 
-TitleScene::TitleScene(Engine* engine, Camera* camera)
-    : BaseScene(engine, camera)
+TitleScene::TitleScene(Engine* engine)
+    : BaseScene(engine)
 {
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);

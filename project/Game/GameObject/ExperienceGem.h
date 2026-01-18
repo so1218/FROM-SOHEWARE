@@ -11,7 +11,7 @@ class Player;
 class ExperienceGem : public Collider, public GameObject
 {
 public:
-    ExperienceGem(Engine* engine, Camera* camera, Player* player);
+    ExperienceGem(Engine* engine, Player* player);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; } 
 

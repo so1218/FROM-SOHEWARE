@@ -7,8 +7,8 @@
 #include "GlobalVariables.h"
 
 FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
-    : GameObject(engine, camera),
-    target_(target)
+    : GameObject(engine),
+    target_(target), camera_(camera)
 {
 }
 

@@ -8,7 +8,7 @@ class Camera;
 class Skybox
 {
 public:
-    Skybox(Engine* engine, Camera* camera);
+    Skybox(Engine* engine);
 
     void Draw();
 
@@ -20,7 +20,6 @@ public:
 
 private:
     Engine* engine_ = nullptr;
-	Camera* camera_ = nullptr;
 
     WorldTransform transform_; 
     uint32_t cubeTextureHandle_ = 0; 

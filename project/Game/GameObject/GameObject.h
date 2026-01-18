@@ -33,7 +33,7 @@ struct GameObjectPriority
 class GameObject 
 {
 public:
-    GameObject(Engine* engine, Camera* camera);
+    GameObject(Engine* engine);
     virtual ~GameObject() = default;
 
     virtual void Initialize() {}
@@ -70,8 +70,7 @@ private:
 protected:
 	std::unique_ptr<Model> CreateModel(ModelID modelID);
     std::unique_ptr<AnimationModel> CreateAnimationModel(ModelID modelId, AnimationID animationId);
-    std::unique_ptr<Sprite> CreateSprite(uint32_t textureHandle);
+    std::unique_ptr<Sprite> CreateSprite(TextureID textureID);
 
     Engine* engine_ = nullptr;
-	Camera* camera_ = nullptr;
 };

@@ -13,7 +13,7 @@
 
 int Enemy::enemyCount_ = 0;
 
-Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data) : GameObject(engine, camera)
+Enemy::Enemy(Engine* engine, Player* player, GameObjectManager* objectManager, const EnemyData& data) : GameObject(engine)
 {
 	player_ = player;
 	objectManager_ = objectManager;
@@ -155,7 +155,7 @@ void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)
 void Enemy::SpawnExperienceGem()
 {
 	// 経験値を生成
-	auto experience = std::make_unique<ExperienceGem>(engine_, camera_, player_);
+	auto experience = std::make_unique<ExperienceGem>(engine_, player_);
 
 	// 敵がいた位置に経験値を配置する
 	experience->GetWorldTransform().translation_ = GetWorldPosition();
@@ -220,7 +220,7 @@ void Enemy::UpdateAABB()
 	aabb_.max = { center.x + halfW, center.y + halfH, center.z + halfD };
 }
 
-void Enemy::OnCollisionExit(Collider* other)
+void Enemy::OnCollisionEnter(Collider* other)
 {
 	// もしプレイヤーにぶつかったら
 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer)

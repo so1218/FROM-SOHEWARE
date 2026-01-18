@@ -9,7 +9,7 @@
 class KnifeProjectile : public GameObject, public Collider
 {
 public:
-    KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize);
+    KnifeProjectile(Engine* engine, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize);
     ~KnifeProjectile();
 
     GameObjectType GetType() const override { return GameObjectType::PlayerWeapon; }

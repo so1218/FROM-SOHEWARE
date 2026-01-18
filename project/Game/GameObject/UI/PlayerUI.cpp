@@ -3,7 +3,7 @@
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 
-PlayerUI::PlayerUI(Engine* engine, Camera* camera, Player* player) : GameObject(engine, camera), player_(player)
+PlayerUI::PlayerUI(Engine* engine, Player* player) : GameObject(engine), player_(player)
 {
     xpBarBgSprite_ = std::make_unique<Sprite>(engine_);
     xpBarSprite_ = std::make_unique<Sprite>(engine_);

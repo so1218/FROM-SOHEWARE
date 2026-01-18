@@ -8,7 +8,7 @@ class Engine;
 class GameTimer : public GameObject
 {
 public:
-    GameTimer(Engine* engine, Camera* camera);
+    GameTimer(Engine* engine);
     ~GameTimer() override = default;
 
     void Initialize(float limitMinutes);

@@ -23,6 +23,7 @@ public:
 
 private:
     Player* target_ = nullptr;
+    Camera* camera_ = nullptr;
 
     // 目標値
     float targetYaw_ = 0.0f;

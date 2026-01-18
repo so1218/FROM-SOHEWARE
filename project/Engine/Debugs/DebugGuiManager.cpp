@@ -3,23 +3,18 @@
 #include "TimeManager.h"
 #include "ImGuiManager.h"
 
-void DebugGuiManager::Initialize(Engine* engine, Camera* camera, LightManager* lightManager, MaterialManager* materialManager,
+void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
     TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
 {
     engine_ = engine;
-    camera_ = camera;
     lightManager_ = lightManager;
     materialManager_ = materialManager;
     textureManager_ = textureManager;
     postEffectManager_ = postEffectManager;
     debugCamera_ = debugCamera;
-
-    cameraFov_ = camera_->GetFov();
-    cameraNearClip_ = camera_->GetNearClip();
-    cameraFarClip_ = camera_->GetFarClip();
 }
 
-void DebugGuiManager::Update()
+void DebugGuiManager::Update(Camera* targetCamera)
 {
 #ifdef IS_DEVELOPMENT
     // メインのデバッグウィンドウ
@@ -31,7 +26,7 @@ void DebugGuiManager::Update()
     }
     if (ImGui::CollapsingHeader("カメラ設定"))
     {
-        DrawCameraSettings();
+        DrawCameraSettings(targetCamera);
     }
     if (ImGui::CollapsingHeader("ライト設定"))
     {
@@ -60,7 +55,7 @@ void DebugGuiManager::DrawRenderSettings()
     ImGui::Checkbox("ワイヤーフレーム描画", &engine_->renderer_->isWireFrame_);
 }
 
-void DebugGuiManager::DrawCameraSettings()
+void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
 {
     bool enabled = engine_->debugCamera_->IsEnabled();
     if (ImGui::Checkbox("デバッグカメラを有効化", &enabled))
@@ -68,84 +63,89 @@ void DebugGuiManager::DrawCameraSettings()
         engine_->debugCamera_->SetEnabled(enabled);
     }
 
-    if (ImGui::TreeNode("メインカメラ"))
+    if (targetCamera && ImGui::TreeNode("ターゲットカメラ (Scene)"))
     {
-        // 位置
-        Vector3 translation = camera_->GetTranslation();
+        // ★重要: UI表示前に、カメラの現在値をローカル変数に同期させる
+        // これをしないと、UIの値と実際のカメラの値がズレる
+        Vector3 translation = targetCamera->GetTranslation();
+        Vector3 rotationEuler = targetCamera->GetWorldRotationEuler();
+        float fov = targetCamera->GetFov();          
+        float nearClip = targetCamera->GetNearClip();
+        float farClip = targetCamera->GetFarClip();
+
+        // 座標
         if (ImGui::DragFloat3("座標 (World)", &translation.x, 0.1f)) {
-            camera_->SetTranslation(translation);
-            camera_->UpdateViewMatrix();
+            targetCamera->SetTranslation(translation);
+            targetCamera->UpdateViewMatrix(); // 即座に反映
         }
 
         // 回転
-        Vector3 rotationEuler = camera_->GetWorldRotationEuler();
         if (ImGui::DragFloat3("回転 (World)", &rotationEuler.x, 0.1f)) {
-            camera_->SetWorldRotationEuler(rotationEuler);
-            camera_->UpdateViewMatrix();
+            targetCamera->SetWorldRotationEuler(rotationEuler);
+            targetCamera->UpdateViewMatrix();
         }
 
-        // スライダーで調整
-        if (ImGui::DragFloat("視野角 (FOV)", &cameraFov_, 0.1f, 1.0f, 179.0f)) {
-            camera_->SetFov(cameraFov_);
+        // FOVなど
+        if (ImGui::DragFloat("視野角 (FOV)", &fov, 0.1f, 1.0f, 179.0f)) {
+            targetCamera->SetFov(fov);
         }
-        if (ImGui::DragFloat("ニアクリップ", &cameraNearClip_, 0.01f, 0.001f, 100.0f)) {
-            camera_->SetNearClip(cameraNearClip_);
+        if (ImGui::DragFloat("ニアクリップ", &nearClip, 0.01f, 0.001f, 100.0f)) {
+            targetCamera->SetNearClip(nearClip);
         }
-        if (ImGui::DragFloat("ファークリップ", &cameraFarClip_, 1.0f, 1.0f, 10000.0f)) {
-            camera_->SetFarClip(cameraFarClip_);
+        if (ImGui::DragFloat("ファークリップ", &farClip, 1.0f, 1.0f, 10000.0f)) {
+            targetCamera->SetFarClip(farClip);
         }
+
+        // 最後に射影行列も更新しておく
+        targetCamera->UpdateProjectionMatrix();
+
         ImGui::TreePop();
     }
 
-
-    // DebugCameraの内部パラメータを操作できるようにする
-    if (ImGui::TreeNode("デバッグカメラ"))
+    // 3. デバッグカメラの内部パラメータ
+    if (ImGui::TreeNode("デバッグカメラ設定"))
     {
         // 注視点の編集
         Vector3 target = debugCamera_->GetTarget();
         if (ImGui::DragFloat3("注視点", &target.x, 0.1f)) {
             debugCamera_->SetTarget(target);
-            camera_->UpdateViewMatrix();
+            // DebugCamera内でUpdateMatrixされるはずなので、外部からの呼び出しは不要な場合が多い
         }
 
         float distance = debugCamera_->GetDistance();
         if (ImGui::DragFloat("注視点からの距離", &distance, 0.1f, 1.0f, 500.0f)) {
             debugCamera_->SetDistance(distance);
-            camera_->UpdateViewMatrix();
         }
 
         float pitch = debugCamera_->GetCurrentPitch();
         if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f)) {
             debugCamera_->SetCurrentPitch(pitch);
-            camera_->UpdateViewMatrix();
         }
 
         float yaw = debugCamera_->GetCurrentYaw();
         if (ImGui::DragFloat("ヨー (横回転)", &yaw, 0.1f, -180.0f, 180.0f)) {
             debugCamera_->SetCurrentYaw(yaw);
-            camera_->UpdateViewMatrix();
         }
 
-        // その他の設定の調整
+        // 速度設定など
         float dragSpeed = debugCamera_->GetDragSpeed();
-        if (ImGui::DragFloat("ドラッグ速度 (中クリック)", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
+        if (ImGui::DragFloat("ドラッグ速度", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
             debugCamera_->SetDragSpeed(dragSpeed);
         }
 
         float rotateSpeed = debugCamera_->GetRotateSpeed();
-        if (ImGui::DragFloat("回転速度 (右クリック)", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
+        if (ImGui::DragFloat("回転速度", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
             debugCamera_->SetRotateSpeed(rotateSpeed);
         }
 
         float zoomSpeed = debugCamera_->GetZoomSpeed();
-        if (ImGui::DragFloat("ズーム速度 (ホイール)", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
+        if (ImGui::DragFloat("ズーム速度", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
             debugCamera_->SetZoomSpeed(zoomSpeed);
         }
+
         ImGui::TreePop();
     }
 
-    // カメラの更新を反映
-    camera_->UpdateViewProjectionMatrix();
 }
 
 void DebugGuiManager::DrawLightSettings()

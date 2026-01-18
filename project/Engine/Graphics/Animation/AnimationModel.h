@@ -9,7 +9,7 @@ class AnimationModel
 {
 public:
     // コンストラクタ
-    AnimationModel(Engine* engine, Camera* camera, const ModelData* modelData, const Animation* animation);
+    AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 
     // アニメーション更新
@@ -62,7 +62,6 @@ public:
 private:
 
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 
     AnimatedModelData animeModelData_;
     WorldTransform transform_;

@@ -12,7 +12,7 @@ public:
 	virtual ~BaseCharacter() = default;
 
 	// 初期化
-	virtual void Initialize(Engine* engine, Camera* camera);
+	virtual void Initialize(Engine* engine);
 
 	// 更新
 	virtual void Update();
@@ -25,6 +25,5 @@ public:
 
 protected:
 	Engine* engine_ = nullptr;
-	Camera* camera_ = nullptr;
 };
 

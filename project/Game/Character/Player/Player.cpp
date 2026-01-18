@@ -21,7 +21,8 @@
 
 using namespace FromEngine;
 
-Player::Player(Engine* engine, Camera* camera) : GameObject(engine, camera)
+Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
+	camera_(camera)
 {
 	// 通常モデルを生成
 	modelPlayer_ = CreateModel(ModelID::cube);
@@ -102,11 +103,11 @@ void Player::AddWeapon(WeaponType type)
 	{
 	case WeaponType::Knife:
 		// ナイフ武器を追加
-		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this, camera_));
+		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this));
 		break;
 
 	case WeaponType::Axe:
-		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this, camera_));
+		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this));
 		break;
 
 	default:
@@ -253,7 +254,7 @@ void Player::Move()
 	// 実際の位置更新
 	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
 	modelPlayer_->GetTransform().translation_.y = 0.1f; // 地面の高さを固定
-	modelTamesi_->GetTransform().translation_ = modelPlayer_->GetTransform().translation_;
+	/*modelTamesi_->GetTransform().translation_ = modelPlayer_->GetTransform().translation_;*/
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 }
 
@@ -465,7 +466,7 @@ void Player::DebugDraw()
 		weapon->DebugDraw();
 	}
 
-	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform(), *camera_);
+	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform());
 #endif
 }
 

@@ -13,6 +13,7 @@
 #endif
 
 #include "Vector2.h"
+#include "Matrix4x4.h"
 
 class WorldTransform;
 class Camera;
@@ -40,8 +41,11 @@ public:
     static bool GetSceneResetRequested() { return resetSceneSize_; }
     static void ClearSceneResetRequested() { resetSceneSize_ = false; }
 
+    // 毎フレーム、現在有効なカメラ行列をセットする関数
+    static void SetGizmoCamera(const Matrix4x4& view, const Matrix4x4& proj);
+
     // Gizmoを出せるようにする関数
-    static void DrawGizmo(WorldTransform& transform, const Camera& camera);
+    static void DrawGizmo(WorldTransform& transform);
 
     // シーンビューの情報をセットする
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
@@ -65,6 +69,10 @@ private:
     static Vector2 sceneRectMin_;
     static Vector2 sceneRectSize_;
     static bool isSceneHovered_;
+
+    // Gizmo計算用の行列
+    static Matrix4x4 gizmoViewMatrix_;
+    static Matrix4x4 gizmoProjMatrix_;
 #endif
 };
 

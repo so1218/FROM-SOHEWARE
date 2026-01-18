@@ -3,7 +3,7 @@
 #include "TimeManager.h" 
 #include "ImGuiManager.h" 
 
-GameTimer::GameTimer(Engine* engine, Camera* camera) : GameObject(engine, camera)
+GameTimer::GameTimer(Engine* engine) : GameObject(engine)
 {
 }
 

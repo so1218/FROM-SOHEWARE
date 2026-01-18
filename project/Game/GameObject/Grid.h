@@ -6,7 +6,7 @@
 class Grid : public GameObject
 {
 public:
-    Grid(Engine* engine, Camera* camera);
+    Grid(Engine* engine);
     ~Grid() override = default;
 
     void Initialize() override {};
@@ -18,7 +18,6 @@ public:
     // Modelクラスと共通のセッター
     void SetWorldTransform(const WorldTransform& transform);
     void SetColor(uint32_t color);
-    void SetCamera(Camera* camera);
     void SetTextureHandle(uint32_t handle);
 
     // ゲッター

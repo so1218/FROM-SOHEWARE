@@ -6,7 +6,7 @@
 class TitleScene : public BaseScene
 {
 public:
-    TitleScene(Engine* engine, Camera* camera);
+    TitleScene(Engine* engine);
 
     void OnInitialize() override;
     void OnUpdate() override;

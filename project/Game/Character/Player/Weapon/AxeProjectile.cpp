@@ -8,10 +8,10 @@
 
 using namespace FromEngine;
 
-AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw) : GameObject(engine, camera)
+AxeProjectile::AxeProjectile(Engine* engine, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw) : GameObject(engine)
 {
     // モデルを作って開始位置に置く
-    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::axe)));
+    model_ = std::make_unique<Model>(engine, std::move(ModelHandle::Get(ModelID::axe)));
 	model_->SetTexture(TextureID::axe);
     model_->GetTransform().translation_ = startPos;
 	model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };

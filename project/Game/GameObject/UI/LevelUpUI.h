@@ -9,7 +9,7 @@
 class LevelUpUI : public GameObject
 {
 public:
-    LevelUpUI(Engine* engine, Camera* camera);
+    LevelUpUI(Engine* engine);
 
     GameObjectType GetType() const override { return GameObjectType::UI; }
 

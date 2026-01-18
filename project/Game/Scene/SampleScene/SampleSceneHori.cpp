@@ -11,31 +11,31 @@
 
 using namespace FromEngine;
 
-SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
-    : BaseScene(engine, camera)
+SampleSceneHori::SampleSceneHori(Engine* engine)
+    : BaseScene(engine)
 {
     // インスタンスを作成
-    auto player = std::make_unique<Player>(engine_, camera_);
+    auto player = std::make_unique<Player>(engine_, camera_.get());
     player_ = player.get();
     player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
-    auto playerUI = std::make_unique<PlayerUI>(engine_, camera_, player_);
-    auto followCamera = std::make_unique<FollowCamera>(engine_, camera_, player_);
+    auto playerUI = std::make_unique<PlayerUI>(engine_, player_);
+    auto followCamera = std::make_unique<FollowCamera>(engine_, camera_.get(), player_);
     followCamera_ = followCamera.get();
     player_->SetFollowCamera(followCamera_);
-    enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
+    enemyManager_ = std::make_unique<EnemyManager>(engine_, player_, &objectManager_);
     
-    skybox_ = std::make_unique<Skybox>(engine_, camera_);
+    skybox_ = std::make_unique<Skybox>(engine_);
     uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
     skybox_->SetCubeTextureHandle(cubemapHandle);
-    auto grid = std::make_unique<Grid>(engine_, camera_);
+    auto grid = std::make_unique<Grid>(engine_);
 
     // タイマーの生成
-    auto gameTimer = std::make_unique<GameTimer>(engine_, camera_);
+    auto gameTimer = std::make_unique<GameTimer>(engine_);
     gameTimer_ = gameTimer.get();
 
     levelUpManager_ = std::make_unique<LevelUpManager>();
-    levelUpUI_ = std::make_unique<LevelUpUI>(engine_, camera_);
+    levelUpUI_ = std::make_unique<LevelUpUI>(engine_);
 
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));

@@ -3,8 +3,8 @@
 #include "Renderer.h"
 #include "Camera.h"
 
-Skybox::Skybox(Engine* engine, Camera* camera)
-	: engine_(engine), camera_(camera)
+Skybox::Skybox(Engine* engine)
+	: engine_(engine)
 {
     // トランスフォームを初期化
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
@@ -33,7 +33,6 @@ void Skybox::Draw()
     transform_.UpdateMatrix();
 
     engine_->renderer_->SubmitSkybox(
-        *camera_,
         transform_,
         color_,
         cubeTextureHandle_

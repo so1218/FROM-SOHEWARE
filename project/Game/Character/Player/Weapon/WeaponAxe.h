@@ -7,7 +7,7 @@
 class WeaponAxe : public Weapon
 {
 public:
-    WeaponAxe(Engine* engine, Player* player, Camera* camera);
+    WeaponAxe(Engine* engine, Player* player);
 
     void Initialize();
     void Update(float deltaTime) override;

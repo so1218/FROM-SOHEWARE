@@ -6,7 +6,7 @@
 class Skydome : public GameObject
 {
 public:
-    Skydome(Engine* engine, Camera* camera);
+    Skydome(Engine* engine);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
 

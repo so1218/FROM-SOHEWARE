@@ -4,7 +4,6 @@
 #include <string>
 
 #include "WorldTransform.h"
-#include "Camera.h"
 #include "TextureHandle.h"
 
 class Engine;
@@ -12,7 +11,7 @@ class Engine;
 class Model
 {
 public:
-    Model(Engine* engine, Camera* camera, const ModelData* modelData);
+    Model(Engine* engine, const ModelData* modelData);
 
     void Draw();
 
@@ -23,7 +22,6 @@ public:
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetColor(uint32_t color);
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width);
@@ -51,7 +49,6 @@ public:
     MaterialHandle materialHandle_;
 private:
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 
     WorldTransform transform_;
     WorldTransform uvTransform_;

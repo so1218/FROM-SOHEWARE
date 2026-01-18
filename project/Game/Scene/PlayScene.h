@@ -9,7 +9,7 @@
 class PlayScene : public BaseScene
 {
 public:
-    PlayScene(Engine* engine, Camera* camera);
+    PlayScene(Engine* engine);
 
     ~PlayScene();
 

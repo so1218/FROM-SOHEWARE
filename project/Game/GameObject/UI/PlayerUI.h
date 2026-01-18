@@ -6,7 +6,7 @@
 class PlayerUI : public GameObject
 {
 public:
-    PlayerUI(Engine* engine, Camera* camera, Player* player);
+    PlayerUI(Engine* engine, Player* player);
 
     GameObjectType GetType() const override { return GameObjectType::UI; }
 

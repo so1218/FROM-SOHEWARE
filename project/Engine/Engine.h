@@ -35,8 +35,17 @@ public:
     ~Engine() {}
 
     // 初期化・終了
-    void Initialize(Camera* camera, MaterialManager* materialManager);
+    void Initialize();
     void Finalize();
+
+    // 毎フレーム、描画直前にGameクラスから呼ばれる
+    void SetCameraState(
+        const Matrix4x4& view,
+        const Matrix4x4& projection,
+        const Vector3& eyePos,
+        float nearClip,
+        float farClip
+    );
 
     // フレーム処理
     void BeginFrame();
@@ -76,7 +85,7 @@ public:
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;
     std::unique_ptr<ShaderManager> shaderManager_;
     std::unique_ptr<PSOManager> psoManager_;
-    MaterialManager* materialManager_ = nullptr;
+    std::unique_ptr<MaterialManager> materialManager_;
     std::unique_ptr<TextureManager> textureManager_;
     std::unique_ptr<SRVManager> srvManager_;
     std::unique_ptr<DSVManager> dsvManager_;
@@ -89,7 +98,6 @@ public:
     std::unique_ptr<Renderer> renderer_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<ShadowMap> shadowMap_;
-    Camera* camera_ = nullptr;
 
     // DirectX関連
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
@@ -105,5 +113,10 @@ public:
     static std::wstring windowTitle_;
     // 固定FPS
     static int kFixedFPS_; 
+
+    // 現在設定されているカメラ行列
+    Matrix4x4 viewMatrix_;
+    Matrix4x4 projectionMatrix_;
+    Vector3 eyePos_;
 
 };

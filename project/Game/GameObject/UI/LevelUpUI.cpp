@@ -8,7 +8,7 @@
 
 using namespace FromEngine;
 
-LevelUpUI::LevelUpUI(Engine* engine, Camera* camera) : GameObject(engine, camera)
+LevelUpUI::LevelUpUI(Engine* engine) : GameObject(engine)
 {
 }
 

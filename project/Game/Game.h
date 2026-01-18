@@ -19,12 +19,8 @@ public:
     void Finalize();
 
 private:
-    // メインエンジンとカメラ
+    // エンジン
     std::unique_ptr<Engine> engine_;
-    std::unique_ptr<Camera> camera_;
-
-    // マテリアル管理
-    std::unique_ptr<MaterialManager> materialManager_;
 
     // シーン管理
     SceneManager sceneManager_;

@@ -8,7 +8,7 @@ class Camera;
 class Line
 {
 public:
-    Line(Engine* engine, Camera* camera);
+    Line(Engine* engine);
 
     void Initialize();
     void Update();
@@ -26,7 +26,6 @@ public:
 
 private:
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
     WorldTransform transform_; 
 
     // ローカル座標での始点と終点

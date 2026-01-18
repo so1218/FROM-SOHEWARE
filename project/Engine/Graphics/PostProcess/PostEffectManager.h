@@ -21,14 +21,18 @@ public:
     void Initialize(
         Engine* engine, UINT width, UINT height,
         RootSignatureManager* rootSigManager, PSOManager* psoManager,
-        Camera* camera, SRVManager* srvManager,
+        SRVManager* srvManager,
         uint32_t sceneDepthSrvIndex);
 
     // 更新処理
     void Update();
 
     // ポストエフェクト実行
-    void ExecutePostEffects(ID3D12GraphicsCommandList* cmdList);
+    void ExecutePostEffects(
+        ID3D12GraphicsCommandList* cmdListconst,
+        const Matrix4x4& viewMatrix,
+        const Matrix4x4& projectionMatrix,
+        const Vector3& cameraPosition);
 
     // 設定アクセス（ImGui用）
     BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }

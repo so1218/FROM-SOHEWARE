@@ -1,7 +1,7 @@
 #include "Ground.h"
 #include "ImGuiManager.h"
 
-Ground::Ground(Engine* engine, Camera* camera) : GameObject(engine, camera)
+Ground::Ground(Engine* engine) : GameObject(engine)
 {
 }
 

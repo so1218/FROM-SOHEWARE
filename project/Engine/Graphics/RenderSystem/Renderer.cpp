@@ -33,7 +33,7 @@ void Renderer::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
 	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
 	TextureManager* textureManager, SRVManager* srvManager, LightManager* lightManager,
-	GlobalConstants* globalConstants, MaterialManager* materialManager, Camera* camera,
+	GlobalConstants* globalConstants, MaterialManager* materialManager,
 	PostEffectManager* postEffectManager,
 	int clientWidth, int clientHeight, ShadowMap* shadowMap)
 {
@@ -47,10 +47,13 @@ void Renderer::Initialize(
 	lightManager_ = lightManager;
 	globalConstants_ = globalConstants;
 	materialManager_ = materialManager;
-	camera_ = camera;
 	clientWidth_ = clientWidth;
 	clientHeight_ = clientHeight;
 	postEffectManager_ = postEffectManager;
+
+	viewMatrix_ = Matrix4x4::MakeIdentity();
+	projectionMatrix_ = Matrix4x4::MakeIdentity();
+	viewProjectionMatrix_ = Matrix4x4::MakeIdentity();
 
 	CreateObjects();
 
@@ -64,6 +67,12 @@ void Renderer::Finalize()
 
 void Renderer::BeginFrame()
 {
+	prevModelCount_ = indexModel_;
+	prevSpriteCount_ = indexSprite_;
+	prevLineCount_ = indexLine_;     
+	prevParticleCount_ = indexParticle_;
+	prevTrailCount_ = indexTrail_;
+
 	// 描画カウンタの初期化
 	indexModel_ = 0;
 	indexSprite_ = 0;
@@ -81,6 +90,14 @@ void Renderer::CreateObjects()
 	CreateParticles();
 	CreateSkybox();
 	CreateTrails();
+}
+
+void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
+{
+	viewMatrix_ = view;
+	projectionMatrix_ = projection;
+	viewProjectionMatrix_ = view * projection;
+	cameraPosition_ = cameraPosition;
 }
 
 int Renderer::LoadTexture(const std::string& texturePath)
@@ -355,14 +372,14 @@ void Renderer::Draw3D()
 		{
 		case RenderType::Sprite: DrawSprite(sub); break;
 		case RenderType::Grid: DrawGrid(sub); break;
-		case RenderType::Particle: DrawParticles(*camera_); break;
-		case RenderType::Trail: DrawTrails(*camera_); break;
+		case RenderType::Particle: DrawParticles(); break;
+		case RenderType::Trail: DrawTrails(); break;
 		case RenderType::Skybox: DrawSkybox(sub); break;
 		case RenderType::Model:
 		case RenderType::Skinning: DrawModel(sub); break;
 		case RenderType::Line:
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-			FlushLines(*camera_);
+			FlushLines();
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			break;
 		}
@@ -452,7 +469,7 @@ void Renderer::CreateModels()
 	}
 }
 
-void Renderer::SubmitModel(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData,
+void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
 	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t normalMapHandle,
 	uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
 	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
@@ -463,7 +480,7 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const Camera& c
 
 	// 行列計算と定数バッファ転送
 	Matrix4x4 world = worldTransform.matWorld_;
-	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
+	Matrix4x4 wvp = world * viewProjectionMatrix_;
 	buffer.wvpMapped->WVP = wvp;
 	buffer.wvpMapped->World = world;
 	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
@@ -512,14 +529,14 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const Camera& c
 	}
 
 	// 深度設定
-	Matrix4x4 worldView = world * camera.GetViewMatrix();
+	Matrix4x4 worldView = world * viewMatrix_;
 	submission.depth = worldView.m[3][2];
 
 	modelSubmissions_.push_back(submission);
 	indexModel_++;
 }
 
-void Renderer::DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint32_t color)
+void Renderer::DrawSkeleton(const Skeleton& skeleton, uint32_t color)
 {
 	for (const Joint& joint : skeleton.joints)
 	{
@@ -540,14 +557,13 @@ void Renderer::DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint
 				child.skeletonSpaceMatrix.m[3][2]
 			);
 
-			SubmitLine(parentPos, childPos, camera, color);
+			SubmitLine(parentPos, childPos, color);
 		}
 	}
 }
 
 void Renderer::SubmitAnimationModel(
 	const WorldTransform& worldTransform,
-	const Camera& camera,
 	const AnimatedModelData& instance,
 	const SkinCluster& skinCluster,
 	uint32_t textureHandle,
@@ -568,7 +584,7 @@ void Renderer::SubmitAnimationModel(
 
 	// 行列計算と定数バッファ転送
 	Matrix4x4 world = worldTransform.matWorld_;
-	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
+	Matrix4x4 wvp = world * viewProjectionMatrix_;
 	buffer.wvpMapped->WVP = wvp;
 	buffer.wvpMapped->World = world;
 	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
@@ -597,14 +613,14 @@ void Renderer::SubmitAnimationModel(
 	submission.skinCluster = &skinCluster;
 
 	// 深度設定
-	Matrix4x4 worldView = world * camera.GetViewMatrix();
+	Matrix4x4 worldView = world * viewMatrix_;
 	submission.depth = worldView.m[3][2];
 
 	modelSubmissions_.push_back(submission);
 	indexModel_++;
 }
 
-void Renderer::SubmitGrid(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle)
+void Renderer::SubmitGrid(const WorldTransform& worldTransform, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle)
 {
 	assert(indexModel_ < kMaxModelCount);
 
@@ -615,7 +631,7 @@ void Renderer::SubmitGrid(const WorldTransform& worldTransform, const Camera& ca
 
 	// 行列計算と定数バッファ転送
 	Matrix4x4 world = worldTransform.matWorld_;
-	Matrix4x4 wvp = world * camera.GetViewProjectionMatrix();
+	Matrix4x4 wvp = world * viewProjectionMatrix_;
 	buffer.wvpMapped->WVP = wvp;
 	buffer.wvpMapped->World = world;
 	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
@@ -634,7 +650,7 @@ void Renderer::SubmitGrid(const WorldTransform& worldTransform, const Camera& ca
 	submission.enableOutline = false;
 
 	// 深度設定
-	Matrix4x4 worldView = worldTransform.matWorld_ * camera.GetViewMatrix();
+	Matrix4x4 worldView = worldTransform.matWorld_ * viewMatrix_;
 	submission.depth = worldView.m[3][2];
 
 	modelSubmissions_.push_back(submission);
@@ -750,7 +766,7 @@ void Renderer::CreateLineBatch()
 	lineBatch_.mappedWvp->WVP = Matrix4x4::MakeIdentity();
 }
 
-void Renderer::SubmitLine(const Vector3& start, const Vector3& end, const Camera& camera, uint32_t color)
+void Renderer::SubmitLine(const Vector3& start, const Vector3& end, uint32_t color)
 {
 	if (lineBatch_.verticesCPU.size() >= kMaxLineVertices) return;
 
@@ -817,7 +833,7 @@ void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint
 	hasParticles_ = true;
 }
 
-void Renderer::DrawParticles(const Camera& camera)
+void Renderer::DrawParticles()
 {
 	if (indexInstance_ == 0) return;
 
@@ -908,17 +924,17 @@ void Renderer::CreateSkybox()
 	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void Renderer::SubmitSkybox(const Camera& camera, const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
+void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
 {
 	// WVP行列の計算（カメラの位置を除去して回転のみ反映）
-	Matrix4x4 viewMatrix = camera.GetViewMatrix();
-	Matrix4x4 projectionMatrix = camera.GetProjectionMatrix();
+	Matrix4x4 viewMatrix = viewMatrix_;
+	Matrix4x4 projectionMatrix = projectionMatrix_;
 	viewMatrix.m[3][0] = 0.0f;
 	viewMatrix.m[3][1] = 0.0f;
 	viewMatrix.m[3][2] = 0.0f;
 
 	Matrix4x4 worldMatrix = worldTransform.matWorld_;
-	Matrix4x4 wvpMatrix = worldMatrix * viewMatrix * projectionMatrix;
+	Matrix4x4 wvpMatrix = worldMatrix * viewMatrix_ * projectionMatrix_;
 	memcpy(mappedSkyboxWvp_, &wvpMatrix, sizeof(TransformationMatrix));
 
 	// マテリアルカラー設定
@@ -969,7 +985,7 @@ void Renderer::CreateTrails()
 		reinterpret_cast<void**>(&trailBatch_.mappedWvp));
 }
 
-void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, const Camera& camera)
+void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
 {
 	// 上限・最小チェック
 	if (indexTrail_ >= kMaxTrailCount) return;
@@ -1029,7 +1045,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 		distances.back() = total;
 	}
 
-	Vector3 cameraPos = camera.GetTranslation();
+	Vector3 cameraPos = cameraPosition_;
 
 	// セグメント生成
 	for (size_t i = 0; i < points.size() - 1; ++i)
@@ -1280,13 +1296,13 @@ void Renderer::DrawGrid(const ModelSubmission& sub)
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 }
 
-void Renderer::FlushLines(const Camera& camera)
+void Renderer::FlushLines()
 {
 	// 線がなければ終了
 	if (lineBatch_.verticesCPU.empty()) return;
 
 	// カメラ行列更新
-	lineBatch_.mappedWvp->WVP = camera.GetViewProjectionMatrix();
+	lineBatch_.mappedWvp->WVP = viewProjectionMatrix_;
 
 	// CPUデータをGPUバッファにコピー
 	LineVertex* gpuPtr = nullptr;
@@ -1311,7 +1327,7 @@ void Renderer::FlushLines(const Camera& camera)
 	cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
 }
 
-void Renderer::DrawTrails(const Camera& camera)
+void Renderer::DrawTrails()
 {
 	if (trailBatches_.empty() || trailBatch_.verticesCPU.empty()) return;
 
@@ -1333,7 +1349,7 @@ void Renderer::DrawTrails(const Camera& camera)
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// 全バッチ共通のWVP更新
-	trailBatch_.mappedWvp->WVP = camera.GetViewProjectionMatrix();
+	trailBatch_.mappedWvp->WVP = viewProjectionMatrix_;
 	trailBatch_.mappedWvp->World = Matrix4x4::MakeIdentity();
 	cmdList->SetGraphicsRootConstantBufferView(0, trailBatch_.wvpResource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());

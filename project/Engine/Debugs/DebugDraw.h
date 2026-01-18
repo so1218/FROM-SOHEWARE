@@ -12,8 +12,6 @@ class Camera;
 class DebugDraw
 {
 public:
-    static void SetCamera(Camera* camera);
-
 #ifdef IS_DEVELOPMENT
     static void Initialize(Renderer* renderer);
 
@@ -35,5 +33,4 @@ public:
 
 private:
     static Renderer* renderer_; 
-    static Camera* camera_;     
 };

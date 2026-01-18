@@ -3,26 +3,26 @@
 #include "AnimationModel.h"
 #include "Sprite.h"
 
-GameObject::GameObject(Engine* engine, Camera* camera)
-    : engine_(engine), camera_(camera)
+GameObject::GameObject(Engine* engine)
+    : engine_(engine)
 {
 }
 
 std::unique_ptr<Model> GameObject::CreateModel(ModelID modelID)
 {
-	return std::make_unique<Model>(engine_, camera_, ModelHandle::Get(modelID));
+	return std::make_unique<Model>(engine_, ModelHandle::Get(modelID));
 }
 
 std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(ModelID modelID, AnimationID animationID)
 {
-	return std::make_unique<AnimationModel>(engine_, camera_, ModelHandle::Get(modelID), AnimationHandle::Get(animationID));
+	return std::make_unique<AnimationModel>(engine_, ModelHandle::Get(modelID), AnimationHandle::Get(animationID));
 }
 
-std::unique_ptr<Sprite> GameObject::CreateSprite(uint32_t textureHandle)
+std::unique_ptr<Sprite> GameObject::CreateSprite(TextureID textureID)
 {
     auto sprite = std::make_unique<Sprite>(engine_);
 
-    sprite->SetTexture((TextureID)textureHandle);
+    sprite->SetTexture(textureID);
 
     return sprite;
 }
