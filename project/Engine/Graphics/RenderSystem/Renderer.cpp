@@ -1354,7 +1354,7 @@ void Renderer::DrawTrails()
 	cmdList->SetGraphicsRootConstantBufferView(0, trailBatch_.wvpResource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
 
-	// バッチ描画 (256Bアライメントを考慮したオフセット移動)
+	// バッチ描画
 	const uint32_t alignedSize = (sizeof(TrailMaterialData) + 255) & ~255;
 	D3D12_GPU_VIRTUAL_ADDRESS materialBaseAddr = trailBatch_.materialResource->GetGPUVirtualAddress();
 	uint8_t* mappedBasePtr = reinterpret_cast<uint8_t*>(trailBatch_.mappedMaterial);

@@ -161,7 +161,7 @@ void PostEffectManager::ExecutePostEffects(
 
     if (engine_->lightManager_)
     {
-        // 0番目のDirectionalLight（メインの太陽）を取得
+        // 0番目のDirectionalLightを取得
         auto dirLights = engine_->lightManager_->GetDirectionalLightData();
         // 有効なら計算
         if (dirLights[0].enable)
