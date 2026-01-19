@@ -331,3 +331,5 @@ FodyWeavers.xsd
 # ImGui layout files (User-specific)
 imgui.ini
 imgui_layout.ini
+
+*[Cc]ompiled/
