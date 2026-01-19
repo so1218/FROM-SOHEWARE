@@ -25,7 +25,7 @@ void Fade::Initialize()
 	// デバッグ用のグローバル変数登録
 	binder_ = std::make_unique<PropertyBinder>(std::vector<std::string>{"Fade"});
 
-	binder_->BindFloat("duration_", &duration_, 1.0f, 0.05f, 0.0f, 10.0f);
+	binder_->Bind("duration_", &duration_, 1.0f, 0.05f);
 }
 
 void Fade::Update()

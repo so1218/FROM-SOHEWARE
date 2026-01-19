@@ -14,6 +14,94 @@ public:
         GlobalVariables::GetInstance()->CreateGroup(groupPath_);
     }
 
+    //  汎用Bind関数
+    template <typename T>
+    void Bind(const std::string& key, T* ptr, const T& defaultValue, float speed = 1.0f, float min = 0.0f, float max = 0.0f)
+    {
+        // int32_t 
+        if constexpr (std::is_same_v<T, int32_t>)
+        {
+            BindInt(key, ptr, defaultValue, speed, static_cast<int32_t>(min), static_cast<int32_t>(max));
+        }
+        // uint32_t
+        else if constexpr (std::is_same_v<T, uint32_t>)
+        {
+            BindUint(key, ptr, defaultValue, speed, static_cast<uint32_t>(min), static_cast<uint32_t>(max));
+        }
+        // float
+        else if constexpr (std::is_same_v<T, float>)
+        {
+            BindFloat(key, ptr, defaultValue, speed, min, max);
+        }
+        // bool 
+        else if constexpr (std::is_same_v<T, bool>)
+        {
+            BindBool(key, ptr, defaultValue);
+        }
+        // Vector2
+        else if constexpr (std::is_same_v<T, Vector2>)
+        {
+            BindVector2(key, ptr, defaultValue, speed, min, max);
+        }
+        // Vector3
+        else if constexpr (std::is_same_v<T, Vector3>)
+        {
+            BindVector3(key, ptr, defaultValue, speed, min, max);
+        }
+        // Vector4
+        else if constexpr (std::is_same_v<T, Vector4>)
+        {
+            BindVector4(key, ptr, defaultValue, speed, min, max);
+        }
+        else
+        {
+            // 対応していない型の場合のコンパイルエラー
+            static_assert(always_false<T>, "Unsupported type for Bind function");
+        }
+    }
+
+    //  色用Bind関数
+    template <typename T>
+    void BindColor(const std::string& key, T* ptr, const T& defaultValue)
+    {
+        // Vector4 の場合
+        if constexpr (std::is_same_v<T, Vector4>)
+        {
+            BindColorVector4(key, ptr, defaultValue);
+        }
+        // uint32_t の場合
+        else if constexpr (std::is_same_v<T, uint32_t>)
+        {
+            BindColor32(key, ptr, defaultValue);
+        }
+        else {
+            static_assert(always_false<T>, "Unsupported type for BindColor function (Use Vector4 or uint32_t)");
+        }
+    }
+
+    void Draw(const std::string& key, const std::string& name = "")
+    {
+        // 指定されたキーが存在すれば実行
+        if (items_.count(key))
+        {
+            items_[key](name);
+        }
+    }
+
+private:
+    // 共通処理
+    template<typename T>
+    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr)
+    {
+        auto* gv = GlobalVariables::GetInstance();
+        // 重複登録防止
+        if (items_.find(key) == items_.end())
+        {
+            keys_.push_back(key); // 順序を記録
+            gv->AddItem(groupPath_, key, defaultValue);
+        }
+    }
+
     void BindInt(const std::string& key, int32_t* ptr, int32_t defaultValue, float speed = 1.0f, int32_t min = 0, int32_t max = 0)
     {
         RegisterItem(key, defaultValue, ptr);
@@ -22,10 +110,35 @@ public:
         *ptr = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
 
 #ifdef IS_DEVELOPMENT
+        items_[key] = [=](const std::string& nameOverride)
+            {
+                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+                if (ImGui::DragInt(label.c_str(), ptr, speed, min, max))
+                {
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                }
+            };
+#endif
+    }
+
+    void BindUint(const std::string& key, uint32_t* ptr, uint32_t defaultValue, float speed, uint32_t min, uint32_t max)
+    {
+        RegisterItem(key, defaultValue, ptr);
+
+        // ロード 
+        int32_t val = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
+        *ptr = static_cast<uint32_t>(val);
+
+#ifdef IS_DEVELOPMENT
         items_[key] = [=](const std::string& nameOverride) {
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
-            if (ImGui::DragInt(label.c_str(), ptr, speed, min, max)) {
-                GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+
+            int val = static_cast<int>(*ptr);
+
+            if (ImGui::DragInt(label.c_str(), &val, speed, static_cast<int>(min), static_cast<int>(max)))
+            {
+                *ptr = static_cast<uint32_t>(val);
+                GlobalVariables::GetInstance()->SetValue(groupPath_, key, val);
             }
             };
 #endif
@@ -126,6 +239,7 @@ public:
 #endif
     }
 
+
     void BindColorVector4(const std::string& key, Vector4* ptr, const Vector4& defaultValue)
     {
         RegisterItem(key, defaultValue, ptr);
@@ -166,13 +280,13 @@ public:
         items_[key] = [=](const std::string& nameOverride) {
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
 
-            // Modelの値を一時的にVector4にする
+            // 一時的にVector4にする
             Vector4 tempColor = Math::Uint32ToColorVector(*ptr);
 
-            // ImGuiは一時変数tempColorを編集する
+            // ImGuiはtempColorを編集
             if (ImGui::ColorEdit4(label.c_str(), &tempColor.x)) {
 
-                // 結果をuint32_tに戻してModelに反映
+                // 結果をuint32_tに戻して反映
                 *ptr = Math::ColorVectorToUint32(tempColor);
 
                 // JSON保存用にはVector4を渡す
@@ -182,28 +296,7 @@ public:
 #endif
     }
 
-    void Draw(const std::string& key, const std::string& name = "")
-    {
-        // 指定されたキーが存在すれば実行
-        if (items_.count(key))
-        {
-            items_[key](name);
-        }
-    }
-
-private:
-    // 共通処理
-    template<typename T>
-    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr)
-    {
-        auto* gv = GlobalVariables::GetInstance();
-        // 重複登録防止
-        if (items_.find(key) == items_.end())
-        {
-            keys_.push_back(key); // 順序を記録
-            gv->AddItem(groupPath_, key, defaultValue);
-        }
-    }
+    template <class T> static constexpr bool always_false = false;
 
     std::vector<std::string> groupPath_;
 
