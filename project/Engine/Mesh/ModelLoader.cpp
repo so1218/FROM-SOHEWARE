@@ -21,7 +21,8 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     const aiScene* scene = importer.ReadFile(
         filePath,
         aiProcess_Triangulate |
-        aiProcess_FlipUVs
+        aiProcess_FlipUVs |
+        aiProcess_CalcTangentSpace
     );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -39,7 +40,7 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     }
 
     LoadMaterials(scene, modelData, directoryPath);
-	modelData.rootNode = ReadNode(scene->mRootNode);
+    modelData.rootNode = ReadNode(scene->mRootNode);
 
     for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
@@ -60,7 +61,7 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     }
     // 全てのMeshの処理が終わった後、頂点全体に対してスムース法線を計算する
     CalculateSmoothNormals(modelData.vertices);
-   
+
     LOG_INFO("Model loaded successfully: {}", filePath);
     LOG_INFO("-------------------- ModelLoader::LoadModel End ----------------------\n");
 
@@ -166,6 +167,19 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
             vertex.texcoord = { 0.0f, 0.0f };
         }
 
+        if (mesh->HasTangentsAndBitangents())
+        {
+            // TangentもX軸を反転
+            vertex.tangent.x = mesh->mTangents[i].x * -1.0f;
+            vertex.tangent.y = mesh->mTangents[i].y;
+            vertex.tangent.z = mesh->mTangents[i].z;
+        }
+        else
+        {
+            // タンジェントがない
+            vertex.tangent = { 0.0f, 0.0f, 0.0f };
+        }
+
         if (mesh->HasVertexColors(0))
         {
             vertex.color.x = mesh->mColors[0][i].r;
@@ -175,7 +189,7 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         }
         else
         {
-            vertex.color = { 1.0f, 1.0f, 1.0f, 1.0f }; 
+            vertex.color = { 1.0f, 1.0f, 1.0f, 1.0f };
         }
 
         modelData.vertices.push_back(vertex);

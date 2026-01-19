@@ -54,6 +54,8 @@ enum TextureID
 
     lut_natural,
 
+    normalMap,
+
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
 };
@@ -83,7 +85,7 @@ private:
 
             // dds
             { skyboxCubemapBlack,   "Assets/Textures/Environments/black_cube.dds" },
-            { skyboxCubemap,   "Assets/Textures/Environments/rostock_laage_airport_4k.dds" },
+            { skyboxCubemap,   "Assets/Textures/Environments/night.dds" },
 
             { skydome,   "Assets/Textures/sky_sphere.png" },
             { axe,   "Assets/Textures/Woodcutter-Axe.jpg" },
@@ -123,6 +125,8 @@ private:
             { noise1, "Assets/Textures/Noise/Noise_Gradients/T_Random_59.png" },
 
             { lut_natural, "Assets/Textures/LUTs/RGBTable16x1.png" },
+
+            { normalMap, "Assets/Textures/Noise/Noise_Normals/T_NoiseNormal_73.png" },
         }
     };
 };

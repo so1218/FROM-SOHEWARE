@@ -1,8 +1,10 @@
 #include "GlobalVariables.h"
 
+#ifdef IS_DEVELOPMENT
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
+#endif
 
 #include <fstream>
 #include <iostream>
@@ -16,6 +18,7 @@ GlobalVariables* GlobalVariables::GetInstance()
 
 void GlobalVariables::Update()
 {
+#ifdef IS_DEVELOPMENT
 	if (!ImGui::Begin("グローバル変数###GlobalVariables"))
 	{
 		ImGui::End();
@@ -53,10 +56,12 @@ void GlobalVariables::Update()
 	}
 
 	ImGui::End();
+#endif
 }
 
 void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPath, Group& group)
 {
+#ifdef IS_DEVELOPMENT
 	// groupPathの末尾が現在のグループ名
 	const std::string& groupName = groupPath.back();
 
@@ -121,6 +126,7 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 
 		ImGui::TreePop();
 	}
+#endif
 }
 
 void GlobalVariables::CreateGroup(const std::vector<std::string>& groupPath)

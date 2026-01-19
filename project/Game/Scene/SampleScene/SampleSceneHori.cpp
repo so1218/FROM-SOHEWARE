@@ -1,10 +1,6 @@
 #include "SampleSceneHori.h"
-#include "TextureHandle.h"
-#include "ModelHandle.h"
 #include "ImGuiManager.h"
-#include "ModelLoader.h"
 #include "GlobalVariables.h"
-#include "AnimationHandle.h"
 #include "TimeManager.h"
 #include "Input.h"
 #include "Grid.h"
@@ -15,30 +11,23 @@
 
 using namespace FromEngine;
 
-SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
+SampleSceneHori::SampleSceneHori(Engine* engine)
+    : BaseScene(engine)
 {
-    // ポインタを保持
-    engine_ = engine;
-    camera_ = camera;
-
-    collisionManager_ = std::make_unique<CollisionManager>();
-
     // インスタンスを作成
-    auto player = std::make_unique<Player>(engine_, camera_);
+    auto player = std::make_unique<Player>(engine_, camera_.get());
     player_ = player.get();
     player_->AddWeapon(WeaponType::Axe);
     player_->AddWeapon(WeaponType::Knife);
     auto playerUI = std::make_unique<PlayerUI>(engine_, player_);
-    auto followCamera = std::make_unique<FollowCamera>(camera_, player_);
+    auto followCamera = std::make_unique<FollowCamera>(engine_, camera_.get(), player_);
     followCamera_ = followCamera.get();
     player_->SetFollowCamera(followCamera_);
-    enemyManager_ = std::make_unique<EnemyManager>(engine_, camera_, player_, &objectManager_);
-    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
-
-    skybox_ = std::make_unique<Skybox>(engine_, camera_);
-    uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
-    skybox_->SetCubeTextureHandle(cubemapHandle);
-    auto grid = std::make_unique<Grid>(engine_, camera_);
+    enemyManager_ = std::make_unique<EnemyManager>(engine_, player_, &objectManager_);
+    
+    skybox_ = std::make_unique<Skybox>(engine_);
+    skybox_->SetCubeTexture(TextureID::skyboxCubemap);
+    auto grid = std::make_unique<Grid>(engine_);
 
     // タイマーの生成
     auto gameTimer = std::make_unique<GameTimer>(engine_);
@@ -50,18 +39,14 @@ SampleSceneHori::SampleSceneHori(Engine* engine, Camera* camera)
     // 作成したゲームオブジェクトを管理クラスに登録
     objectManager_.AddObject(std::move(player));
     objectManager_.AddObject(std::move(playerUI));
-    objectManager_.AddObject(std::move(particleSystemWrapper_));
     objectManager_.AddObject(std::move(followCamera));
     //objectManager_.AddObject(std::move(grid));
     objectManager_.AddObject(std::move(gameTimer));
 
 }
 
-void SampleSceneHori::Initialize()
+void SampleSceneHori::OnInitialize()
 {
-    // ゲームオブジェクトの一括初期化
-    objectManager_.Initialize();
-
     playerWalkEmitter_ = engine_->particleSystem_->CreateEmitter("PlayerWalk");
     player_->SetWalkEmitter(playerWalkEmitter_.get());
     playerWalkEmitter_->SetTargetToFollow(&player_->modelPlayer_->GetTransform());
@@ -87,7 +72,7 @@ void SampleSceneHori::Initialize()
     engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
     engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->materialManager_->GetMaterialSettings().enableLighting = true;
-    engine_->materialManager_->GetMaterialSettings().lightMode = 1 ;
+    engine_->materialManager_->GetMaterialSettings().lightMode = 1;
 
     //engine_->postEffectManager_->GetPostEffectData()->modeFlags[0] |= VIGNETTE;
     //engine_->postEffectManager_->GetPostEffectData()->vignetteAmount = 1.29f;
@@ -121,9 +106,12 @@ void SampleSceneHori::Initialize()
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::titleSceneBGM));
 }
 
-void SampleSceneHori::Update()
+void SampleSceneHori::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::playSceneBGM), true, 20);
+
+    // プレイヤーが持つ武器の弾を登録
+    player_->AddWeaponColliders(collisionManager_.get());
 
     switch (sceneState_)
     {
@@ -139,11 +127,8 @@ void SampleSceneHori::Update()
 
 void SampleSceneHori::UpdatePlaying()
 {
-    HandleCollisions();
-
     // ゲームオブジェクトの更新
     enemyManager_->Update();
-    objectManager_.Update();
 
     // プレイヤーがレベルアップして待機状態になったかチェック
     if (player_->IsWaitingForUpgrade())
@@ -170,12 +155,12 @@ void SampleSceneHori::UpdatePlaying()
     // ゲーム終了判定
     if (player_->IsEnd())
     {
-       /* sceneManager_->RequestSceneChange(SceneID::Sample);*/
+        /* sceneManager_->RequestSceneChange(SceneID::Sample);*/
     }
     // タイムアップ
     if (gameTimer_->IsTimeUp())
     {
-       /* sceneManager_->RequestSceneChange(SceneID::Play);*/
+        /* sceneManager_->RequestSceneChange(SceneID::Play);*/
         AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSE), false, 100);
     }
 }
@@ -203,27 +188,11 @@ void SampleSceneHori::UpdateLevelUpSelection()
     }
 }
 
-void SampleSceneHori::HandleCollisions()
+
+void SampleSceneHori::OnDraw()
 {
-    // 衝突マネージャのリストをクリアする
-    collisionManager_->ClearColliders();
-
-    // ObjectManager に全オブジェクトを登録してと依頼
-    objectManager_.AddAllCollidersToManager(collisionManager_.get());
-
-    // プレイヤーが持つ武器の弾を登録
-    player_->AddWeaponColliders(collisionManager_.get());
-   
-    // 衝突マネージャの当たり判定処理を呼び出す
-    collisionManager_->CheckAllCollisions();
-}
-
-
-void SampleSceneHori::Draw()
-{
- /*   skybox_->Draw();*/
-    // ゲームオブジェクトの一括描画
-    objectManager_.Draw();
+    /*   skybox_->Draw();*/
+       // ゲームオブジェクトの一括描画
 
     // レベルアップ選択中なら、その上にUIを描画
     if (sceneState_ == SceneState::LevelUpSelection)
@@ -233,16 +202,17 @@ void SampleSceneHori::Draw()
     }
 }
 
-void SampleSceneHori::DebugDraw()
+void SampleSceneHori::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("ホリシーン");
-   
+
     ImGui::End();
-    // ゲームオブジェクトの一括デバッグ描画
-    objectManager_.DebugDraw();
+
     levelUpUI_->DebugDraw();
+#endif
 }
 
-void SampleSceneHori::Finalize()
+void SampleSceneHori::OnFinalize()
 {
 }

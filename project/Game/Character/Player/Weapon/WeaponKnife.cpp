@@ -8,8 +8,8 @@
 
 using namespace FromEngine;
 
-WeaponKnife::WeaponKnife(Engine* engine, Player* player, Camera* camera)
-    : Weapon(engine, player), camera_(camera)
+WeaponKnife::WeaponKnife(Engine* engine, Player* player)
+    : Weapon(engine, player)
 {
     // ナイフの初期設定
     damageBase_ = 20.0f;
@@ -110,6 +110,7 @@ void WeaponKnife::Draw()
 
 void WeaponKnife::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("武器：ナイフ");
     ImGui::Separator();
     ImGui::Text("パラメータ調整");
@@ -173,6 +174,7 @@ void WeaponKnife::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void WeaponKnife::FireOneProjectile()
@@ -188,7 +190,7 @@ void WeaponKnife::FireOneProjectile()
     }
 
     // 弾の生成と初期設定
-    auto newProjectile = std::make_unique<KnifeProjectile>(engine_, camera_, playerPos, playerDir, collisionSize_);
+    auto newProjectile = std::make_unique<KnifeProjectile>(engine_, playerPos, playerDir, collisionSize_);
     newProjectile->SetDamage(damage_);
     newProjectile->SetSpeed(projectileSpeed_);
     newProjectile->SetLifetime(projectileLifetime_);

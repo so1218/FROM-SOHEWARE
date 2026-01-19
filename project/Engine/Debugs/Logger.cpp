@@ -23,7 +23,7 @@ void Logger::Initialize()
     }
     catch (const std::filesystem::filesystem_error& e)
     {
-        // これもデバッグ出力にのみ記録される。
+        // デバッグ出力にのみ記録
         LOG_ERROR("Failed to create 'logs' directory: {}", e.what());
     }
 
@@ -130,7 +130,6 @@ LONG WINAPI Logger::ExportDump(EXCEPTION_POINTERS* exception)
 
 std::string Logger::GetAnsiColorCode(LogLevel level)
 {
-    // \x1B はエスケープ文字 (ESC)
     switch (level)
     {
     case LogLevel::Info:    return "\x1B[37m"; // 白

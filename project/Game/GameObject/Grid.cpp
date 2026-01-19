@@ -1,11 +1,9 @@
 #include "Grid.h"
 #include "TextureHandle.h"
-#include "ModelHandle.h"
 
-Grid::Grid(Engine* engine, Camera* camera)
-    : engine_(engine), camera_(camera)
+Grid::Grid(Engine* engine)
+    : GameObject(engine)
 {
-    // デフォルト
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     modelData_ = ModelHandle::Get(ModelID::field);
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
@@ -20,10 +18,6 @@ void Grid::SetColor(uint32_t color)
 {
     color_ = color;
 }
-void Grid::SetCamera(Camera* camera)
-{
-    camera_ = camera;
-}
 
 void Grid::SetTextureHandle(uint32_t handle)
 {
@@ -32,14 +26,13 @@ void Grid::SetTextureHandle(uint32_t handle)
 
 void Grid::Draw()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     materialHandle_.materialData->isArtGrid = true;
 
     transform_.UpdateMatrix();
 
     engine_->renderer_->SubmitGrid(
         transform_,
-        *camera_,
         *modelData_,
         textureHandle_,
         color_,

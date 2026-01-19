@@ -1,32 +1,23 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 #include "PlayScene.h"
-#include "TextureHandle.h"
 #include "Input.h"
 #include "ImGuiManager.h"
-#include "ModelHandle.h"
 #include "AudioPlayer.h"
-#include "AudioHandle.h"
 #include "TimeManager.h"
-#include "ModelLoader.h"
-#include "Collision.h"
+#include "AudioHandle.h"
 
 using namespace FromEngine;
 
-TitleScene::TitleScene(Engine* engine, Camera* camera)
+TitleScene::TitleScene(Engine* engine)
+    : BaseScene(engine)
 {
-    // ポインタを保存
-    engine_ = engine;
-    camera_ = camera;
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);
     spritePress_ = std::make_unique<Sprite>(engine_);
-    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
-
-    objectManager_.AddObject(std::move(particleSystemWrapper_));
 }
 
-void TitleScene::Initialize()
+void TitleScene::OnInitialize()
 {
     camera_->Initialize();
     camera_->SetTranslation(Vector3(0, 0, -6.6f));
@@ -36,21 +27,21 @@ void TitleScene::Initialize()
     spriteSize_ = { 1000.0f, 300.0f }; 
     sprite_->SetSize(spriteSize_);
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
-    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::title));
+    sprite_->SetTexture(TextureID::title);
 
     spritePosUse_ = { 640, 457 };
     spriteUse_->SetPosition(spritePosUse_);
     spriteSizeUse_ = { 473.0f, 105.0f };
     spriteUse_->SetSize(spriteSizeUse_);
     spriteUse_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteUse_->SetTextureHandle(TextureHandle::Get(TextureID::useController));
+    spriteUse_->SetTexture(TextureID::useController);
 
     spritePosPress_ = { 640, 564 };
     spritePress_->SetPosition(spritePosPress_);
     spriteSizePress_ = { 757.0f, 153.0f };
     spritePress_->SetSize(spriteSizePress_);
     spritePress_->SetAnchorPoint({ 0.5f, 0.5f });
-    spritePress_->SetTextureHandle(TextureHandle::Get(TextureID::pressSousa));
+    spritePress_->SetTexture(TextureID::pressSousa);
 
     titleEmitter_ = engine_->particleSystem_->CreateEmitter("title");
     engine_->particleSystem_->AddEmitter(std::move(titleEmitter_));
@@ -71,19 +62,14 @@ void TitleScene::Initialize()
     engine_->postEffectManager_->GetCombineSettings()->fogStart = 20.0f;
     engine_->postEffectManager_->GetCombineSettings()->fogColor = { 86.0f / 255.0f,175.0f / 255.0f,254.0f / 255.0f };
 
-    objectManager_.Initialize();
-
-
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::clearSceneBGM));
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
 
 }
 
-void TitleScene::Update()
+void TitleScene::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::titleSceneBGM), true, 20);
-
-    objectManager_.Update();
 
 	// シーン切り替えの入力検出
 	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
@@ -95,16 +81,16 @@ void TitleScene::Update()
 	}
 }
 
-void TitleScene::Draw()
+void TitleScene::OnDraw()
 {
-    objectManager_.Draw();
     sprite_->Draw();
     spriteUse_->Draw();
     spritePress_->Draw();
 }
 
-void TitleScene::DebugDraw()
+void TitleScene::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("タイトルシーン");
 
     if (ImGui::DragFloat2("Sprite Pos", &spritePos_.x, 1.0f))
@@ -135,11 +121,9 @@ void TitleScene::DebugDraw()
 
 
     ImGui::End();
-
-    objectManager_.DebugDraw();
+#endif
 }
 
-void TitleScene::Finalize()
+void TitleScene::OnFinalize()
 {
-   
 }

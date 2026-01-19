@@ -28,9 +28,11 @@ public:
 	uint32_t GetCollisionMask() const { return collisionMask_; }
 
 	// 衝突時コールバック
-	virtual void OnCollision(Collider* other) = 0;
+	virtual void OnCollisionEnter(Collider* other) {}
+	virtual void OnCollisionStay(Collider* other) {}
+	virtual void OnCollisionExit(Collider* other) {}
 	// ワールド座標取得
-	virtual Vector3 GetWorldPosition() = 0;
+	virtual Vector3 GetWorldPosition() const = 0;
 	// デバッグ描画用カラー
 	void SetColor(const Vector4& color) { color_ = color; }
 	// コライダー描画（デバッグ用）

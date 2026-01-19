@@ -3,18 +3,19 @@
 #include "Renderer.h"
 #include "Camera.h"
 
-Skybox::Skybox(Engine* engine, Camera* camera)
-	: engine_(engine), camera_(camera)
+Skybox::Skybox(Engine* engine)
+	: engine_(engine)
 {
     // トランスフォームを初期化
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
     transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
+    cubeTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemapBlack);
 }
 
-void Skybox::SetCubeTextureHandle(uint32_t textureHandle)
+void Skybox::SetCubeTexture(TextureID textureID)
 {
-    cubeTextureHandle_ = textureHandle;
+    cubeTextureHandle_ = TextureHandle::Get(textureID);
 }
 
 void Skybox::SetColor(uint32_t color)
@@ -33,7 +34,6 @@ void Skybox::Draw()
     transform_.UpdateMatrix();
 
     engine_->renderer_->SubmitSkybox(
-        *camera_,
         transform_,
         color_,
         cubeTextureHandle_

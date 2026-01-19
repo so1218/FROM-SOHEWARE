@@ -468,6 +468,9 @@
     <ClCompile Include="Game\Scene\Transitions\NormalState.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\GameObject.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -677,7 +680,7 @@
     <ClInclude Include="Engine\Collision\Collision.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Collision\CollisionConfig.h">
+    <ClInclude Include="Game\Data\CollisionConfig.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\CollisionManager.h">
@@ -787,6 +790,7 @@
     <ClInclude Include="Game\Scene\Transitions\FadeOutState.h" />
     <ClInclude Include="Game\Scene\Transitions\FadeInState.h" />
     <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
+    <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

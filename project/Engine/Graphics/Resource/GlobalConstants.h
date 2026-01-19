@@ -13,7 +13,13 @@ public:
     void Initialize(ID3D12Device* device);
 
     // 更新
-    void Update(const Camera& camera);
+    void Update(
+        const Matrix4x4& viewMatrix,
+        const Matrix4x4& projectionMatrix,
+        const Vector3& eyePos,
+        float nearClip,
+        float farClip
+    );
 
     // ゲッター
     FrameData* GetFrameData() { return frameData_; }

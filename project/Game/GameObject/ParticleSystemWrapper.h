@@ -6,7 +6,7 @@
 class ParticleSystemWrapper : public GameObject
 {
 public:
-    ParticleSystemWrapper(Engine* engine, Camera* camera);
+    ParticleSystemWrapper(Engine* engine);
 
     void Update() override;
 
@@ -17,6 +17,4 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "ParticleSystem" }; }
 
 private:
-    Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 };

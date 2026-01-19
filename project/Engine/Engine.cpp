@@ -31,10 +31,9 @@ int Engine::kFixedFPS_ = 60;
 
 using namespace FromEngine;
 
-void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
+void Engine::Initialize()
 {
-	materialManager_ = materialManager;
-	camera_ = camera;
+	materialManager_ = std::make_unique<MaterialManager>();
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
 
@@ -50,7 +49,7 @@ void Engine::Initialize(Camera* camera, MaterialManager* materialManager)
 	InitializeImGui();
 	InitializeAudio();
 	debugGuiManager_ = std::make_unique<DebugGuiManager>();
-	debugGuiManager_->Initialize(this, camera_, lightManager_.get(), materialManager_, textureManager_.get(), postEffectManager_.get(), debugCamera_.get());
+	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureManager_.get(), postEffectManager_.get(), debugCamera_.get());
 	particleSystem_ = std::make_unique<ParticleSystem>(this);
 	particleSystem_->Initialize();
 }
@@ -83,6 +82,25 @@ void Engine::Finalize()
 	CoUninitialize();
 }
 
+void Engine::SetCameraState(
+	const Matrix4x4& view,
+	const Matrix4x4& projection,
+	const Vector3& eyePos,
+	float nearClip,
+	float farClip
+)
+{
+	viewMatrix_ = view;
+	projectionMatrix_ = projection;
+	eyePos_ = eyePos;
+
+	// GlobalConstantsを更新
+	globalConstants_->Update(view, projection, eyePos, nearClip, farClip);
+
+	// Rendererにセット（描画パス用）
+	renderer_->SetCameraState(view, projection, eyePos);
+}
+
 void Engine::BeginFrame()
 {
 	// ImGuiのフレーム開始
@@ -97,11 +115,13 @@ void Engine::BeginFrame()
 	// ポストエフェクトのパラメータ更新など
 	postEffectManager_->Update();
 
-	globalConstants_->Update(*camera_);
+	// マテリアルをグローバル状態に合わせて更新
+	if (materialManager_) 
+	{
+		materialManager_->UpdateAllMaterialsFromGlobal();
+	}
 
-#ifdef _DEBUG
-	debugGuiManager_->Update();
-
+#ifdef IS_DEVELOPMENT
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);
 #endif
@@ -135,7 +155,12 @@ void Engine::EndFrame()
 	renderCoordinator_->EndOffscreenRender();
 
 	// ポストエフェクト（Bloomなど）
-	postEffectManager_->ExecutePostEffects(cmdList);
+	postEffectManager_->ExecutePostEffects(
+		cmdList,
+		viewMatrix_,       
+		projectionMatrix_, 
+		eyePos_            
+	);
 
 	// バックバッファ準備（直後に描画先は切り替える）
 	renderCoordinator_->BeginFrame();
@@ -155,7 +180,7 @@ void Engine::EndFrame()
 	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
 
 	renderer_->DrawFullScreenQuadWithOffscreenTexture();
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 	renderer_->DrawUI();
 #endif
 
@@ -174,7 +199,7 @@ void Engine::EndFrame()
 		rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
 	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
 	// シーンウィンドウを閉じる
 	debugGuiManager_->EndSceneView();
 #else
@@ -385,7 +410,6 @@ void Engine::InitializeRenderer()
 		kClientHeight,
 		rootSignatureManager_.get(),
 		psoManager_.get(),
-		camera_,
 		srvManager_.get(),
 		offscreenDepthSrvIndex
 	);
@@ -423,8 +447,7 @@ void Engine::InitializeResources()
 		srvManager_.get(),
 		lightManager_.get(),
 		globalConstants_.get(),
-		materialManager_,
-		camera_,
+		materialManager_.get(),
 		postEffectManager_.get(),
 		kClientWidth,
 		kClientHeight,
@@ -456,6 +479,10 @@ void Engine::InitializeImGui()
 		srvHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvHeap->GetGPUDescriptorHandleForHeapStart()
 	);
+
+#ifdef IS_DEVELOPMENT
+	DebugDraw::Initialize(renderer_.get());
+#endif
 }
 
 void Engine::InitializeAudio()

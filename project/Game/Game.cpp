@@ -5,31 +5,27 @@
 #include "AudioManager.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "ModelHandle.h"
-#include "TextureHandle.h"
 #include "SampleSceneHori.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 
 using namespace FromEngine;
 
-Game::Game() : engine_(std::make_unique<Engine>()), camera_(std::make_unique<Camera>()), materialManager_(std::make_unique<MaterialManager>())
+Game::Game() 
+    : engine_(std::make_unique<Engine>())
 {
-    engine_->Initialize(camera_.get(), materialManager_.get());
-#ifdef _DEBUG
-    DebugDraw::Initialize(engine_->renderer_.get());
-#endif
+    engine_->Initialize();
 
     // シーンマネージャーの初期化
     sceneManager_.Initialize(engine_.get());
 
     // シーンの生成と登録
-    sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get(), camera_.get()));
-    sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get(), camera_.get()));
-    sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get(), camera_.get()));
+    sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get()));
+    sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get()));
+    sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get()));
 
     // 初期シーンを設定
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     sceneManager_.SetInitialScene(SceneID::Sample);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
@@ -67,9 +63,9 @@ void Game::Run()
             engine_->BeginFrame();
 
             Update();
-#ifdef _DEBUG
+
             DebugDraw();
-#endif
+
             Draw();
 
             // フレームの終了
@@ -82,7 +78,7 @@ void Game::Run()
 
 void Game::Update()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // デバッグカメラの有効/無効切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
@@ -101,63 +97,64 @@ void Game::Update()
     }
 #endif
 
-    // マテリアルをグローバル状態に合わせて更新
-    materialManager_->UpdateAllMaterialsFromGlobal();
-
     // ゲームロジック更新（シーン）
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
     }
 
-    // ゲームカメラの行列を更新
-    camera_->UpdateViewProjectionMatrix();
-    Matrix4x4 gameCameraVP = camera_->GetViewProjectionMatrix();
+    // 描画に使うカメラ情報の決定
+    Matrix4x4 viewMat, projMat;
+    Vector3 eyePos;
 
-    // デバッグカメラが有効なら上書き
+    // 現在のシーンからカメラを取得
+    Camera* sceneCamera = sceneManager_.GetCurrentScene()->GetActiveCamera();
+
+#ifdef IS_DEVELOPMENT
     if (engine_->debugCamera_->IsEnabled())
     {
         engine_->debugCamera_->Update();
-    /*    camera_->SetTranslation(engine_->debugCamera_->GetCameraWorldPosition());*/
-        camera_->SetViewMatrix(engine_->debugCamera_->GetViewMatrix());
-        camera_->SetProjectionMatrix(engine_->debugCamera_->GetProjectionMatrix());
-        camera_->SetViewProjectionMatrix(engine_->debugCamera_->GetViewProjectionMatrix());
+
+        // デバッグカメラの行列を使う
+        viewMat = engine_->debugCamera_->GetViewMatrix();
+        projMat = engine_->debugCamera_->GetProjectionMatrix();
+        eyePos = engine_->debugCamera_->GetCameraWorldPosition();
     }
-    else
+    else 
     {
-        // デバッグカメラ無効ならゲームカメラ行列を使用
-        camera_->SetViewMatrix(camera_->GetViewMatrix());
-        camera_->SetProjectionMatrix(camera_->GetProjectionMatrix());
-        camera_->SetViewProjectionMatrix(gameCameraVP);
+        // ゲーム内カメラの行列を使う
+        viewMat = sceneCamera->GetViewMatrix();
+        projMat = sceneCamera->GetProjectionMatrix();
+        eyePos = sceneCamera->GetTranslation();
     }
 
-#ifdef _DEBUG
-    // デバッグ描画用カメラを設定
-    DebugDraw::SetCamera(camera_.get());
+    engine_->debugGuiManager_->Update(sceneCamera);
 
-    // ゲームカメラ視錐台を描画
-    if (engine_->debugCamera_->IsEnabled())
-        DebugDraw::DrawFrustum(gameCameraVP, { 1.0f, 1.0f, 0.0f, 1.0f });
+#else
+    // リリース時は常にシーンカメラ
+    viewMat = sceneCamera->GetViewMatrix();
+    projMat = sceneCamera->GetProjectionMatrix();
+    eyePos = sceneCamera->GetTranslation();
 #endif
 
-    // シャドウマップ更新
-   /* auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
-    if (dirLights[0].enable)
+    // 決定したカメラ情報をEngineに転送
+    engine_->SetCameraState(
+        viewMat, 
+        projMat,
+        eyePos,
+        sceneCamera->GetNearClip(), 
+        sceneCamera->GetFarClip());
+
+#ifdef IS_DEVELOPMENT
+    // ゲームカメラ視錐台を描画
+    if (engine_->debugCamera_->IsEnabled())
     {
-        Vector3 lightDir = dirLights[0].direction.Normalize();
-        Vector3 shadowTarget = { 0.0f, 0.0f, 0.0f };
-        float distance = 100.0f;
-        Vector3 lightPos = shadowTarget - (lightDir * distance);
+        DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
+    }
 
-        Vector3 up = { 0.0f, 1.0f, 0.0f };
-        if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+    ImGuiManager::SetGizmoCamera(viewMat, projMat);
 
-        Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
-        Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(30.0f, 30.0f, -100.0f, 200.0f);
-        Matrix4x4 lightViewProj = lightView * lightProj;
-
-        engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
-    }*/
+#endif
 }
 
 void Game::Draw()
@@ -167,6 +164,7 @@ void Game::Draw()
 
 void Game::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     if (ImGui::Begin("シーンの選択"))
     {
         if (ImGui::Button("タイトルシーン"))
@@ -187,6 +185,7 @@ void Game::DebugDraw()
     sceneManager_.DebugDraw();
 
     engine_->lightManager_->DrawDebugLights();
+#endif
 }
 
 void Game::Finalize()

@@ -1,9 +1,9 @@
 #include "GameTimer.h"
 #include "TextureHandle.h"
 #include "TimeManager.h" 
-#include "externals/imgui/imgui.h"
+#include "ImGuiManager.h" 
 
-GameTimer::GameTimer(Engine* engine) : engine_(engine)
+GameTimer::GameTimer(Engine* engine) : GameObject(engine)
 {
 }
 
@@ -20,10 +20,10 @@ void GameTimer::Initialize(float limitMinutes)
         TextureID::num5, TextureID::num6, TextureID::num7, TextureID::num8, TextureID::num9
     };
     for (int i = 0; i < 10; ++i) {
-        digitTextureHandles_[i] = TextureHandle::Get(idMap[i]);
+        digitTextureIds_[i] = idMap[i];
     }
     // コロン用のテクスチャ
-    colonTextureHandle_ = TextureHandle::Get(TextureID::coron);
+    colonTextureId_ = TextureID::coron;
 
     // スプライトの生成
     for (int i = 0; i < 5; ++i)
@@ -31,10 +31,10 @@ void GameTimer::Initialize(float limitMinutes)
         sprites_[i] = std::make_unique<Sprite>(engine_);
         // コロン(インデックス2)以外は数字の0で初期化
         if (i == 2) {
-            sprites_[i]->SetTextureHandle(colonTextureHandle_);
+            sprites_[i]->SetTexture(TextureID(colonTextureId_));
         }
         else {
-            sprites_[i]->SetTextureHandle(digitTextureHandles_[0]);
+            sprites_[i]->SetTexture(TextureID(digitTextureIds_[0]));
         }
     }
 
@@ -109,14 +109,14 @@ void GameTimer::Update()
 void GameTimer::UpdateSpriteTextures(int minutes, int seconds)
 {
     // 分の10の位
-    sprites_[0]->SetTextureHandle(digitTextureHandles_[(minutes / 10) % 10]);
+    sprites_[0]->SetTexture((TextureID)digitTextureIds_[(minutes / 10) % 10]);
     // 分の1の位
-    sprites_[1]->SetTextureHandle(digitTextureHandles_[minutes % 10]);
+    sprites_[1]->SetTexture((TextureID)digitTextureIds_[minutes % 10]);
 
     // 秒の10の位
-    sprites_[3]->SetTextureHandle(digitTextureHandles_[(seconds / 10) % 10]);
+    sprites_[3]->SetTexture((TextureID)digitTextureIds_[(seconds / 10) % 10]);
     // 秒の1の位
-    sprites_[4]->SetTextureHandle(digitTextureHandles_[seconds % 10]);
+    sprites_[4]->SetTexture((TextureID)digitTextureIds_[seconds % 10]);
 }
 
 void GameTimer::Draw()
@@ -129,6 +129,7 @@ void GameTimer::Draw()
 
 void GameTimer::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("ゲームタイマー");
 
     auto* gv = GlobalVariables::GetInstance();
@@ -165,4 +166,5 @@ void GameTimer::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }

@@ -22,18 +22,26 @@ void GlobalConstants::Initialize(ID3D12Device* device)
     frameData_->viewProjectionMatrix = Matrix4x4::MakeIdentity(); 
 }
 
-void GlobalConstants::Update(const Camera& camera)
+void GlobalConstants::Update(
+    const Matrix4x4& viewMatrix,
+    const Matrix4x4& projectionMatrix,
+    const Vector3& eyePos,
+    float nearClip,
+    float farClip
+)
 {
+    // VP行列の計算
+    Matrix4x4 matViewProjection = viewMatrix * projectionMatrix;
+
     // カメラ情報の転送
-    frameData_->cameraWorldPosition = camera.GetTranslation();
-    frameData_->viewProjectionMatrix = camera.GetViewProjectionMatrix();
+    frameData_->cameraWorldPosition = eyePos;
+    frameData_->viewProjectionMatrix = matViewProjection;
 
-    Matrix4x4 view = camera.GetViewMatrix();
-    frameData_->cameraRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
-    frameData_->cameraUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
+    frameData_->cameraRight = { viewMatrix.m[0][0], viewMatrix.m[1][0], viewMatrix.m[2][0] };
+    frameData_->cameraUp = { viewMatrix.m[0][1], viewMatrix.m[1][1], viewMatrix.m[2][1] };
 
-    frameData_->nearClip = camera.GetNearClip();
-    frameData_->farClip = camera.GetFarClip();
+    frameData_->nearClip = nearClip;
+    frameData_->farClip = farClip;
 
     // カメラ以外のデータも更新
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();

@@ -6,7 +6,7 @@
 class EnemyManager
 {
 public:
-	EnemyManager(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager);
+	EnemyManager(Engine* engine, Player* player, GameObjectManager* objectManager);
 
 	void Update();
 
@@ -16,7 +16,6 @@ public:
 
 private:
 	Engine* engine_;
-	Camera* camera_;
 	Player* player_;
 
 	float spawnTimer_ = 0.0f;

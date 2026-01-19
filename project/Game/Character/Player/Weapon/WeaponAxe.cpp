@@ -9,8 +9,8 @@
 
 using namespace FromEngine;
 
-WeaponAxe::WeaponAxe(Engine* engine, Player* player, Camera* camera)
-    : Weapon(engine, player), camera_(camera)
+WeaponAxe::WeaponAxe(Engine* engine, Player* player)
+    : Weapon(engine, player)
 {
     // ベース値を初期化
     damageBase_ = 40.0f;
@@ -85,6 +85,7 @@ void WeaponAxe::Draw()
 
 void WeaponAxe::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("武器：斧");
     ImGui::Separator();
 
@@ -144,6 +145,7 @@ void WeaponAxe::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void WeaponAxe::Fire()
@@ -158,7 +160,7 @@ void WeaponAxe::Fire()
 
         float initialYaw = atan2(initialVelocity.x, initialVelocity.z);
 
-        auto newProjectile = std::make_unique<AxeProjectile>(engine_, camera_, playerPos, initialVelocity, initialYaw);
+        auto newProjectile = std::make_unique<AxeProjectile>(engine_, playerPos, initialVelocity, initialYaw);
 
         newProjectile->SetDamage(damage_);
         newProjectile->SetLifetime(projectileLifetime_);

@@ -3,9 +3,8 @@
 #include "TimeManager.h"
 #include "Player.h"
 
-EnemyManager::EnemyManager(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager)
+EnemyManager::EnemyManager(Engine* engine, Player* player, GameObjectManager* objectManager)
     : engine_(engine),
-    camera_(camera),
     player_(player),
     objectManager_(objectManager)
 {
@@ -47,10 +46,13 @@ void EnemyManager::Update()
 void EnemyManager::SpawnEnemy(const EnemyData& data, const Vector3& position)
 {
     // 敵の生成
-    auto newEnemy = std::make_unique<Enemy>(engine_, camera_, player_, objectManager_, data);
+    auto newEnemy = std::make_unique<Enemy>(engine_, player_, objectManager_, data);
 
     // 初期位置設定
-    newEnemy->GetWorldTransform().translation_ = position;
+    WorldTransform& transform = newEnemy->GetWorldTransform();
+    transform.translation_ = position;
+
+    transform.UpdateMatrix();
 
     // 初期化処理
     newEnemy->Initialize();

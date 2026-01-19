@@ -24,7 +24,7 @@ void DebugCamera::Initialize()
     rotateSpeed_ = 0.001f;
     zoomSpeed_ = 0.03f;
 
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     isEnabled_ = true;
 #else
     isEnabled_ = false;
@@ -38,50 +38,57 @@ void DebugCamera::Update()
 {
     if (!isEnabled_) return;
 
-#ifdef _DEBUG
+    bool canInput = true;
+#ifdef IS_DEVELOPMENT
     // マウスがScene Viewの上にないなら操作しない
     // Gizmoをドラッグ中ならカメラ操作はしない
     if (!ImGuiManager::IsSceneHovered() || ImGuizmo::IsUsing())
     {
-        return;
+        canInput = false;
     }
 #endif
 
-    // ズームはマウスホイールで操作
+    if (canInput)
     {
-        int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
-        distance_ -= wheelDelta * zoomSpeed_;
+        // ズームはマウスホイールで操作
+        {
+            int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
+            distance_ -= wheelDelta * zoomSpeed_;
 
-        Quaternion currentRotation = worldTransform_.rotationQuaternion_;
-        Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
-        if (distance_ < minDistance_) {
-            // targetをforward方向に押す
-            target_ += forward * (minDistance_ - distance_);
-            distance_ = minDistance_;
+            Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+            Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
+            if (distance_ < minDistance_) {
+                // targetをforward方向に押す
+                target_ += forward * (minDistance_ - distance_);
+                distance_ = minDistance_;
+            }
         }
-    }
 
-    // マウス右ドラッグでカメラ回転（target中心の公転）
-    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle))
-    {
-        int deltaX = Input::GetInstance().GetMouseState().lX;
-        int deltaY = Input::GetInstance().GetMouseState().lY;
+        // マウス中ボタンドラッグ時の処理
+        if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle))
+        {
+            // マウスの移動量を取得
+            int deltaX = Input::GetInstance().GetMouseState().lX;
+            int deltaY = Input::GetInstance().GetMouseState().lY;
 
-        currentYaw_ += deltaX * rotateSpeed_;
-        currentPitch_ += deltaY * rotateSpeed_;
-    }
+            // Shiftキーの有無で分岐
+            if (Input::GetInstance().IsKeyPressed(DIK_LSHIFT))
+            {
+                // 平行移動
+                Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+                Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
+                Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
 
-    // マウス中ドラッグでターゲット
-    if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle) && Input::GetInstance().IsKeyPressed(DIK_LSHIFT)) {
-        Quaternion currentRotation = worldTransform_.rotationQuaternion_;
-        Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
-        Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
-
-        int deltaX = Input::GetInstance().GetMouseState().lX;
-        int deltaY = Input::GetInstance().GetMouseState().lY;
-
-        target_ -= right * static_cast<float>(deltaX) * dragSpeed_;
-        target_ += up * static_cast<float>(deltaY) * dragSpeed_;
+                target_ -= right * static_cast<float>(deltaX) * dragSpeed_;
+                target_ += up * static_cast<float>(deltaY) * dragSpeed_;
+            }
+            else
+            {
+                // 回転
+                currentYaw_ += deltaX * rotateSpeed_;
+                currentPitch_ += deltaY * rotateSpeed_;
+            }
+        }
     }
 
     // currentPitch_とcurrentYaw_を使って回転クォータニオンを作成し、常に反映

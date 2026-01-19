@@ -17,6 +17,7 @@ struct VertexData
     Vector4 position;
     Vector2 texcoord;
     Vector3 normal;
+    Vector3 tangent;
     Vector3 smoothNormal;
     Vector4 color;
 };
@@ -151,9 +152,20 @@ struct MaterialSettings
 
     int32_t enableDissolve;
     Vector3 edgeColor;
+
     float dissolveThreshold;
     float edgeWidth;
     float edgeIntensity;
+    float padding3;
+
+    int32_t enableNormalMap;
+    float normalTiling;
+    float normalIntensity;
+    float padding4;
+
+    float roughness;
+    float metalness;
+
 };
 
 struct AABB

@@ -17,7 +17,7 @@ enum class PlayerAnimState
 	Walk  
 };
 
-class Player : public Collider, public BaseCharacter
+class Player : public Collider, public GameObject
 {
 public:
 	Player(Engine* engine, Camera* camera);
@@ -37,7 +37,7 @@ public:
 	void DebugDraw() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollision(Collider* other) override;
+	void OnCollisionEnter(Collider* other) override;
 
 	// 調整項目の適用
 	void ApplyGlobalVariables();
@@ -50,7 +50,7 @@ public:
 	void Move();
 
 	// ワールド座標を取得
-	Vector3 GetWorldPosition() override;
+	Vector3 GetWorldPosition() const override;
 	
 	// ゲッター
 	WorldTransform& GetWorldTransform() { return modelPlayer_->GetTransform(); }
@@ -104,10 +104,8 @@ private:
 
 	// レベルアップの内部処理
 	void LevelUp();
-	
-	Engine* engine_;
-	Camera* camera_;
 
+	Camera* camera_ = nullptr;
 
 	std::unique_ptr<AnimationModel> animationPlayer_;
 	AABB aabb_;

@@ -15,6 +15,7 @@ struct SkinningVertexShaderInput
     float32_t3 normal : NORMAL0;
     float32_t4 weight : WEIGHT0;
     int32_t4 index : INDEX0;
+    float32_t3 tangent : TANGENT;
 };
 
 Skinned Skinning(SkinningVertexShaderInput input)
@@ -36,6 +37,14 @@ Skinned Skinning(SkinningVertexShaderInput input)
         mul(input.normal, (float3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z +
         mul(input.normal, (float3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
     skinned.normal = normalize(skinned.normal);
+    
+    // タンジェントのスキニング
+    skinned.tangent =
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
+    skinned.tangent = normalize(skinned.tangent);
 
     return skinned;
 }
@@ -49,6 +58,7 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
     output.position = mul(skinned.position, gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
     output.normal = normalize(mul(skinned.normal, (float3x3) gTransformationMatrix.WorldInverseTranspose));
+    output.tangent = normalize(mul(skinned.tangent, (float3x3) gTransformationMatrix.WorldInverseTranspose));
 
     // ワールド座標を計算
     float4 worldPos = mul(skinned.position, gTransformationMatrix.World);

@@ -6,9 +6,9 @@
 #include "TimeManager.h"
 #include "GlobalVariables.h"
 
-FollowCamera::FollowCamera(Camera* camera, Player* target) :
-    camera_(camera),
-    target_(target)
+FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
+    : GameObject(engine),
+    target_(target), camera_(camera)
 {
 }
 
@@ -148,6 +148,7 @@ void FollowCamera::Update()
 
 void FollowCamera::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("追従カメラ");
 
     ImGui::Separator();
@@ -213,6 +214,7 @@ void FollowCamera::DebugDraw()
     }
 
     ImGui::End();
+#endif
 }
 
 void FollowCamera::StartShake(float duration, float intensity)

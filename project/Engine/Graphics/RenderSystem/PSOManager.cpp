@@ -16,17 +16,18 @@ void PSOManager::Initialize(
     rootSignatureManager_ = rootSignatureManager;
 
     // Default3D
-    inputElementsDefault_ = 
+    inputElementsDefault_ =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescDefault_ = { inputElementsDefault_.data(), (UINT)inputElementsDefault_.size() };
 
     // Skinning 
-    inputElementsSkinning_ = 
+    inputElementsSkinning_ =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -50,7 +51,7 @@ void PSOManager::Initialize(
     inputLayoutDescDepth_ = inputLayoutDescDefault_;
 
     // Skybox
-    inputElementsSkybox_ = 
+    inputElementsSkybox_ =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
@@ -119,12 +120,12 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
     psoDesc.DSVFormat = GetDSVFormat(desc.DSVFormat);
 
     if (rtvFormat == DXGI_FORMAT_UNKNOWN)  // RTVなし
-    { 
+    {
         psoDesc.NumRenderTargets = 0;
         psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
     }
     else  // RTV1枚
-    {                                    
+    {
         psoDesc.NumRenderTargets = 1;
         psoDesc.RTVFormats[0] = rtvFormat;
     }
@@ -197,12 +198,12 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // 加算
-    if (name == "Additive") 
+    if (name == "Additive")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = TRUE;
         blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE; 
+        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
         blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
         blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
         blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -212,11 +213,11 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // 減算
-    if (name == "Subtract") 
+    if (name == "Subtract")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = TRUE;
-        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT; 
+        blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
         blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
         blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
         blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -227,13 +228,13 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // 乗算
-    if (name == "Multiply") 
+    if (name == "Multiply")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = TRUE;
         blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO; 
-        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR; 
+        blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+        blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
         blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
         blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
         blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -242,7 +243,7 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // スクリーン
-    if (name == "Screen") 
+    if (name == "Screen")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -318,7 +319,7 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // 不透明（ブレンドなし）
-    if (name == "Opaque") 
+    if (name == "Opaque")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = FALSE; // ブレンドしない
@@ -364,7 +365,7 @@ D3D12_RASTERIZER_DESC PSOManager::GetRasterizerState(const std::string& name)
     }
 
     // 前面カリング
-    if (name == "FrontCullSolid") 
+    if (name == "FrontCullSolid")
     {
         D3D12_RASTERIZER_DESC rasterizerDesc{};
         rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
@@ -376,24 +377,24 @@ D3D12_RASTERIZER_DESC PSOManager::GetRasterizerState(const std::string& name)
     if (name == "FrontCullBias")
     {
         D3D12_RASTERIZER_DESC rasterizerDesc{};
-        rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT; 
+        rasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
         rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
         // Zファイティング対策
-        rasterizerDesc.DepthBias = 100;              
-        rasterizerDesc.SlopeScaledDepthBias = 1.0f;  
+        rasterizerDesc.DepthBias = 100;
+        rasterizerDesc.SlopeScaledDepthBias = 1.0f;
         rasterizerDesc.DepthBiasClamp = 0.0f;
 
         return rasterizerDesc;
     }
 
     // 線のAA
-    if (name == "LineAA") 
+    if (name == "LineAA")
     {
         D3D12_RASTERIZER_DESC rasterizerDesc{};
-        rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK; 
+        rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
         rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-        rasterizerDesc.AntialiasedLineEnable = true; 
+        rasterizerDesc.AntialiasedLineEnable = true;
         return rasterizerDesc;
     }
 
@@ -407,7 +408,7 @@ D3D12_RASTERIZER_DESC PSOManager::GetRasterizerState(const std::string& name)
 D3D12_DEPTH_STENCIL_DESC PSOManager::GetDepthStencilState(const std::string& name)
 {
     // 深度テスト+書き込み
-    if (name == "Default") 
+    if (name == "Default")
     {
         D3D12_DEPTH_STENCIL_DESC desc{};
         desc.DepthEnable = true;
@@ -417,7 +418,7 @@ D3D12_DEPTH_STENCIL_DESC PSOManager::GetDepthStencilState(const std::string& nam
     }
 
     // 深度読み取りのみ
-    if (name == "ReadOnly") 
+    if (name == "ReadOnly")
     {
         D3D12_DEPTH_STENCIL_DESC desc{};
         desc.DepthEnable = true;
@@ -454,7 +455,7 @@ D3D12_DEPTH_STENCIL_DESC PSOManager::GetDepthStencilState(const std::string& nam
 
 D3D12_PRIMITIVE_TOPOLOGY_TYPE PSOManager::GetTopologyType(const std::string& name)
 {
-    if (name == "Triangle") 
+    if (name == "Triangle")
     {
         return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     }
@@ -469,7 +470,7 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE PSOManager::GetTopologyType(const std::string& nam
 
 DXGI_FORMAT PSOManager::GetRTVFormat(const std::string& name)
 {
-    if (name == "R8G8B8A8_UNORM_SRGB") 
+    if (name == "R8G8B8A8_UNORM_SRGB")
     {
         return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     }
@@ -488,7 +489,7 @@ DXGI_FORMAT PSOManager::GetRTVFormat(const std::string& name)
 
 DXGI_FORMAT PSOManager::GetDSVFormat(const std::string& name)
 {
-    if (name == "D24_UNORM_S8_UINT") 
+    if (name == "D24_UNORM_S8_UINT")
     {
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
     }
@@ -507,11 +508,11 @@ DXGI_FORMAT PSOManager::GetDSVFormat(const std::string& name)
 
 D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
 {
-    if (name == "Default3D") 
+    if (name == "Default3D")
     {
-        return inputLayoutDescDefault_; 
+        return inputLayoutDescDefault_;
     }
-    if (name == "Skinning") 
+    if (name == "Skinning")
     {
         return inputLayoutDescSkinning_;
     }
@@ -519,15 +520,15 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     {
         return inputLayoutDescParticle_;
     }
-    if (name == "Skybox") 
+    if (name == "Skybox")
     {
-        return inputLayoutDescSkybox_; 
+        return inputLayoutDescSkybox_;
     }
-    if (name == "Depth") 
+    if (name == "Depth")
     {
         return inputLayoutDescDepth_;
     }
-    if (name == "Fullscreen") 
+    if (name == "Fullscreen")
     {
         return {};
     }

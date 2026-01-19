@@ -2,8 +2,8 @@
 #include "TimeManager.h"
 #include "TextureHandle.h"
 
-AnimationModel::AnimationModel(Engine* engine, Camera* camera, const ModelData* modelData, const Animation* animation)
-    : engine_(engine), camera_(camera)
+AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation)
+    : engine_(engine)
 {
     assert(modelData != nullptr);
     assert(animation != nullptr);
@@ -21,6 +21,7 @@ AnimationModel::AnimationModel(Engine* engine, Camera* camera, const ModelData* 
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
     dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    normalMapHandle_ = TextureHandle::Get(TextureID::white1x1);
     color_ = 0xFFFFFFFF;
 }
 
@@ -89,13 +90,13 @@ void AnimationModel::Draw()
 
     engine_->renderer_->SubmitAnimationModel(
         transform_,
-        *camera_,
         animeModelData_,
         skinCluster_,
         textureHandle_,
         envMapTextureHandle_,
         toonRampHandle_,
         dissolveTextureHandle_,
+        normalMapHandle_,
         color_,
         materialHandle_,
         enableOutline_,

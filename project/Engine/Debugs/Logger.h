@@ -111,7 +111,7 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
 }
 
 // 便利な呼び出しマクロ
-#ifdef _DEBUG 
+#ifdef IS_DEVELOPMENT
 
 #define LOG_DEBUG(...)   Logger::Instance().Log(LogLevel::Debug,   std::source_location::current(), __VA_ARGS__)
 #define LOG_INFO(...)    Logger::Instance().Log(LogLevel::Info,    std::source_location::current(), __VA_ARGS__)

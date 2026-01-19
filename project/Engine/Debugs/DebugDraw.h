@@ -12,9 +12,7 @@ class Camera;
 class DebugDraw
 {
 public:
-    static void SetCamera(Camera* camera);
-
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     static void Initialize(Renderer* renderer);
 
     // デバッグ用描画
@@ -35,5 +33,4 @@ public:
 
 private:
     static Renderer* renderer_; 
-    static Camera* camera_;     
 };

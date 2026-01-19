@@ -4,31 +4,24 @@
 #include <string>
 
 #include "WorldTransform.h"
-#include "Camera.h"
-#include "TextureManager.h"
-#include "RenderCommon.h"
-#include "LightManager.h"
-#include "PSOManager.h"
-#include "RootSignatureManager.h"
-#include "MaterialManager.h"
+#include "TextureHandle.h"
 
 class Engine;
 
 class Model
 {
 public:
-    Model(Engine* engine, Camera* camera, const ModelData* modelData);
+    Model(Engine* engine, const ModelData* modelData);
 
     void Draw();
 
     // セッター
     void SetWorldTransform(const WorldTransform& transform);
-    void SetTextureHandle(uint32_t handle);
+    void SetTexture(TextureID id);
     void SetEnvironmentMapHandle(uint32_t handle);
     void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
     void SetColor(uint32_t color);
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetCamera(Camera* camera);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width);
@@ -38,6 +31,7 @@ public:
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
     void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
+    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
 
     // ゲッター
@@ -46,6 +40,7 @@ public:
     const WorldTransform& GetTransform() const { return transform_; }
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
     uint32_t GetColor() const { return color_; }
+    uint32_t* GetColorPtr() { return &color_; }
     bool IsOutlineEnabled() const { return enableOutline_; }
     float GetOutlineWidth() const { return outlineWidth_; }
     const Vector4& GetOutlineColor() const { return outlineColor_; }
@@ -54,7 +49,6 @@ public:
     MaterialHandle materialHandle_;
 private:
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 
     WorldTransform transform_;
     WorldTransform uvTransform_;
@@ -62,6 +56,7 @@ private:
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
+    uint32_t normalMapHandle_;
     uint32_t color_ = 0xFFFFFFFF;
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
 

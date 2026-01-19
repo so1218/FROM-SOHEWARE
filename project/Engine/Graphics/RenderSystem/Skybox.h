@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WorldTransform.h"
+#include "TextureHandle.h"
 
 class Engine;
 class Camera; 
@@ -8,11 +9,11 @@ class Camera;
 class Skybox
 {
 public:
-    Skybox(Engine* engine, Camera* camera);
+    Skybox(Engine* engine);
 
     void Draw();
 
-    void SetCubeTextureHandle(uint32_t textureHandle);
+    void SetCubeTexture(TextureID textureID);
 
     void SetColor(uint32_t color);
 
@@ -20,7 +21,6 @@ public:
 
 private:
     Engine* engine_ = nullptr;
-	Camera* camera_ = nullptr;
 
     WorldTransform transform_; 
     uint32_t cubeTextureHandle_ = 0; 

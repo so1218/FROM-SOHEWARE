@@ -3,13 +3,13 @@
 #include "AnimationData.h" 
 #include "AnimationHandle.h" 
 #include "Engine.h"
-#include "Easing.h"
+#include "TextureHandle.h"
 
 class AnimationModel
 {
 public:
     // コンストラクタ
-    AnimationModel(Engine* engine, Camera* camera, const ModelData* modelData, const Animation* animation);
+    AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 
     // アニメーション更新
@@ -29,7 +29,7 @@ public:
     void SetUvTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
     void SetColor(uint32_t color) { color_ = color; }
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetTextureHandle(uint32_t handle) { textureHandle_ = handle; }
+    void SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
@@ -37,6 +37,7 @@ public:
     void SetEasing(EasingType type) { easingType_ = type; }
     void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
+    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
     // アウトライン設定
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width) { outlineWidth_ = width; }
@@ -51,6 +52,7 @@ public:
     float GetAnimationTime() const { return animationTime_; }
     bool IsOutlineEnabled() const { return enableOutline_; }
     uint32_t GetColor() const { return color_; }
+    uint32_t* GetColorPtr() { return &color_; }
 
     // アニメーションを切り替える関数
     void SetAnimation(const Animation* animation);
@@ -60,7 +62,6 @@ public:
 private:
 
     Engine* engine_ = nullptr;
-    Camera* camera_ = nullptr;
 
     AnimatedModelData animeModelData_;
     WorldTransform transform_;
@@ -73,6 +74,7 @@ private:
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
+    uint32_t normalMapHandle_;
     uint32_t color_;
 
     bool isFinished_ = false;      // 再生が終了したか

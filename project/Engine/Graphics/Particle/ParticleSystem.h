@@ -5,7 +5,6 @@
 #include "Easing.h"
 #include "Structures.h"
 #include "ParticleDefinition.h"
-#include "Camera.h"
 
 #include <wrl.h>
 #include <d3d12.h>
@@ -33,7 +32,7 @@ public:
     void Update();
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);
-    void Draw(Camera* camera);
+    void Draw();
     // presetNameだけでConfigを取得できるように
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }

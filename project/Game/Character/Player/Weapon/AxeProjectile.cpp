@@ -8,11 +8,11 @@
 
 using namespace FromEngine;
 
-AxeProjectile::AxeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw)
+AxeProjectile::AxeProjectile(Engine* engine, const Vector3& startPos, const Vector3& initialVelocity, float initialYaw) : GameObject(engine)
 {
     // モデルを作って開始位置に置く
-    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::axe)));
-	model_->SetTextureHandle(TextureHandle::Get(TextureID::axe));
+    model_ = std::make_unique<Model>(engine, std::move(ModelHandle::Get(ModelID::axe)));
+	model_->SetTexture(TextureID::axe);
     model_->GetTransform().translation_ = startPos;
 	model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
 
@@ -69,7 +69,7 @@ void AxeProjectile::Draw()
     DrawCollider();
 }
 
-void AxeProjectile::OnCollision(Collider* other)
+void AxeProjectile::OnCollisionStay(Collider* other)
 {
     if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
     {
@@ -89,7 +89,7 @@ void AxeProjectile::SetSize(const Vector3& size)
     UpdateAABB();
 }
 
-Vector3 AxeProjectile::GetWorldPosition()
+Vector3 AxeProjectile::GetWorldPosition() const
 {
     Vector3 worldPos;
     worldPos.x = model_->GetTransform().matWorld_.m[3][0];

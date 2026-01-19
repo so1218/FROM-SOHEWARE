@@ -17,5 +17,5 @@ struct UpgradeInfo
 	std::string description; // 説明文
 	int weaponId; // 武器の場合のID
 	float value; // ステータスアップなどの数値
-	uint32_t textureHandle;
+	uint32_t textureID;
 };

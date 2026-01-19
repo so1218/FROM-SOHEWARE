@@ -13,10 +13,8 @@
 
 int Enemy::enemyCount_ = 0;
 
-Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data)
+Enemy::Enemy(Engine* engine, Player* player, GameObjectManager* objectManager, const EnemyData& data) : GameObject(engine)
 {
-	engine_ = engine;
-	camera_ = camera;
 	player_ = player;
 	objectManager_ = objectManager;
 
@@ -26,9 +24,9 @@ Enemy::Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* 
 	hp_ = data.hp;
 	speed_ = data.speed;
 	size_ = data.size;
-	modelEnemy_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(data.modelId)));
+	modelEnemy_ = CreateModel(ModelID::enemy);
 	modelEnemy_->SetColor(0x27FFE7FF);
-	animationEnemy_ = std::make_unique<AnimationModel>(engine_, camera_, ModelHandle::Get(ModelID::enemy), AnimationHandle::Get(AnimationID::enemy));
+	animationEnemy_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
 	animationEnemy_->SetEnableOutline(true);
 	animationEnemy_->SetColor(0x27FFE7FF);
 	modelEnemy_->SetEnableOutline(true);
@@ -46,7 +44,7 @@ void Enemy::Initialize()
 	// 衝突属性を設定
 	SetCollisionAttribute(kCollisionAttributeEnemy);
 	// 衝突対象を自分の属性以外に設定
-	SetCollisionMask(kCollisionAttributePlayer | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe);
+	SetCollisionMask(kCollisionAttributePlayer/* | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe*/);
 
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
@@ -157,7 +155,7 @@ void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)
 void Enemy::SpawnExperienceGem()
 {
 	// 経験値を生成
-	auto experience = std::make_unique<ExperienceGem>(engine_, camera_, player_);
+	auto experience = std::make_unique<ExperienceGem>(engine_, player_);
 
 	// 敵がいた位置に経験値を配置する
 	experience->GetWorldTransform().translation_ = GetWorldPosition();
@@ -191,13 +189,15 @@ void Enemy::Draw()
 // デバッグ描画処理
 void Enemy::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("敵");
 
 	ImGui::End();
+#endif
 }
 
 
-Vector3 Enemy::GetWorldPosition()
+Vector3 Enemy::GetWorldPosition() const
 {
 	// ワールド座標を入れる変数
 	Vector3 worldPos;
@@ -220,7 +220,7 @@ void Enemy::UpdateAABB()
 	aabb_.max = { center.x + halfW, center.y + halfH, center.z + halfD };
 }
 
-void Enemy::OnCollision(Collider* other)
+void Enemy::OnCollisionEnter(Collider* other)
 {
 	// もしプレイヤーにぶつかったら
 	if (other->GetCollisionAttribute() & kCollisionAttributePlayer)

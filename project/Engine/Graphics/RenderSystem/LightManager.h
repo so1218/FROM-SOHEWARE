@@ -42,7 +42,7 @@ public:
     // 特定のポイントライトの位置を更新する
     void UpdatePointLightPosition(int index, const Vector3& position);
 
-    // 特定のポイントライトのパラメータ（色や強さなど）を更新する
+    // 特定のポイントライトのパラメータを更新する
     void UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float decay);
     void UpdateAreaLightProperties(int index, const Vector4& color, float intensity,
         const Vector3& position, const Vector3& right, const Vector3& up,

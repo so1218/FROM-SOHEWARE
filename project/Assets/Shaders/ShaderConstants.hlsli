@@ -50,12 +50,12 @@ struct FrameData
     float3 cameraUp;
     float padding2;
 
-    float2 iResolution; 
+    float2 iResolution;
     float2 screenResolution;
     
-    float gTime; 
+    float gTime;
     float nearClip;
-    float farClip; 
+    float farClip;
     float padding3;
 };
 
@@ -95,17 +95,25 @@ struct MaterialData
     float edgeWidth;
     float edgeIntensity;
     float padding3;
+    
+    int32_t enableNormalMap;
+    float normalTiling;
+    float normalIntensity;
+    float padding4;
+    
+    float roughness;
+    float metalness;
 };
 
 struct TrailMaterialData
 {
     float2 scrollSpeed;
-    float jitterStrength; 
+    float jitterStrength;
     float jitterFrequency;
     
-    float jitterSpeed; 
+    float jitterSpeed;
     float jitterPhase;
-    float dissolveThreshold; 
+    float dissolveThreshold;
     int isDissolveEnabled;
     
     int jitterMode;
@@ -123,7 +131,7 @@ struct DirectionalLight
     float4x4 viewProj;
     
     int32_t enable;
-    float3 padding; 
+    float3 padding;
 };
 
 struct PointLight
@@ -134,7 +142,7 @@ struct PointLight
     float radius;
     float decay;
     int32_t enable;
-    float padding; 
+    float padding;
 };
 
 struct SpotLight
@@ -160,7 +168,7 @@ struct AreaLight
     float3 up;
     float decay;
     int32_t enable;
-    float3 padding; 
+    float3 padding;
 };
 
 struct ParticleInstanceData
@@ -169,14 +177,14 @@ struct ParticleInstanceData
     float4 color;
     uint32_t textureIndex;
     float rotationZ;
-    int32_t isBillboard; 
+    int32_t isBillboard;
     float intensity;
 };
 
 struct BrightExtractSettings
 {
-    float threshold; 
-    float intensity; 
+    float threshold;
+    float intensity;
     float2 _padding;
 };
 
@@ -192,13 +200,13 @@ struct CombineSettings
 {
     float bloomIntensity;
     float focusDistance;
-    float focusRange; 
+    float focusRange;
     int enableDoF;
     
     float3 fogColor;
     float fogStart;
     
-    float fogEnd; 
+    float fogEnd;
     int enableFog;
     float godRayIntensity;
     float _padding1;

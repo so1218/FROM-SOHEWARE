@@ -9,12 +9,12 @@
 
 using namespace FromEngine;
 
-ExperienceGem::ExperienceGem(Engine* engine, Camera* camera, Player* player)
-    : engine_(engine), camera_(camera), player_(player)
+ExperienceGem::ExperienceGem(Engine* engine, Player* player)
+    : GameObject(engine), player_(player)
 {
     // 経験値オーブ用のモデルをロード
-    model_ = std::make_unique<Model>(engine_, camera_, ModelHandle::Get(ModelID::cube));
-	model_->SetTextureHandle(TextureHandle::Get(TextureID::white1x1));
+    model_ = std::make_unique<Model>(engine_, ModelHandle::Get(ModelID::cube));
+	model_->SetTexture(TextureID::white1x1);
 
     model_->SetEnableOutline(true);
     model_->SetColor(0xFFFF00FF);
@@ -68,7 +68,7 @@ void ExperienceGem::Draw()
     }
 }
 
-void ExperienceGem::OnCollision(Collider* other)
+void ExperienceGem::OnCollisionStay(Collider* other)
 {
     // プレイヤーと衝突したら
     if (other->GetCollisionAttribute() & kCollisionAttributePlayer)
@@ -80,7 +80,7 @@ void ExperienceGem::OnCollision(Collider* other)
     }
 }
 
-Vector3 ExperienceGem::GetWorldPosition()
+Vector3 ExperienceGem::GetWorldPosition() const
 {
     // ワールド座標を入れる変数
     Vector3 worldPos;

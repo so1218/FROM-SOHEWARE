@@ -9,10 +9,10 @@
 
 using namespace FromEngine;
 
-KnifeProjectile::KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize)
+KnifeProjectile::KnifeProjectile(Engine* engine, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize) : GameObject(engine)
 {
-    model_ = std::make_unique<Model>(engine, camera, std::move(ModelHandle::Get(ModelID::knife)));
-    model_->SetTextureHandle(TextureHandle::Get(TextureID::knife));
+    model_ = std::make_unique<Model>(engine, std::move(ModelHandle::Get(ModelID::knife)));
+    model_->SetTexture(TextureID::knife);
     model_->GetTransform().translation_ = startPos;
     model_->GetTransform().scale_ = { 0.5f, 0.5f, 0.5f };
     direction_ = direction.Normalize();
@@ -63,7 +63,7 @@ void KnifeProjectile::Draw()
     DrawCollider();
 }
 
-void KnifeProjectile::OnCollision(Collider* other)
+void KnifeProjectile::OnCollisionStay(Collider* other)
 {
     // 敵と衝突した場合の処理
     if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
@@ -75,7 +75,7 @@ void KnifeProjectile::OnCollision(Collider* other)
     }
 }
 
-Vector3 KnifeProjectile::GetWorldPosition()
+Vector3 KnifeProjectile::GetWorldPosition() const
 {
     Vector3 worldPos;
     worldPos.x = model_->GetTransform().matWorld_.m[3][0];

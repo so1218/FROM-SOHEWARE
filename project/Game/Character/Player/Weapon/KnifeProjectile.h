@@ -9,7 +9,7 @@
 class KnifeProjectile : public GameObject, public Collider
 {
 public:
-    KnifeProjectile(Engine* engine, Camera* camera, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize);
+    KnifeProjectile(Engine* engine, const Vector3& startPos, const Vector3& direction, const Vector3& collisionSize);
     ~KnifeProjectile();
 
     GameObjectType GetType() const override { return GameObjectType::PlayerWeapon; }
@@ -17,10 +17,10 @@ public:
     void Update(float deltaTime);
     void Draw(); 
     void UpdateAABB(); 
-    Vector3 GetWorldPosition() override; 
+    Vector3 GetWorldPosition() const override;
 
     // 当たり判定
-    void OnCollision(Collider* other) override; 
+    void OnCollisionStay(Collider* other) override; 
     bool IsDead() const { return lifetime_ <= 0.0f || isHit_; } 
 
     // 武器からの設定

@@ -3,24 +3,20 @@
 #include "TimeManager.h"
 #include "ImGuiManager.h"
 
-void DebugGuiManager::Initialize(Engine* engine, Camera* camera, LightManager* lightManager, MaterialManager* materialManager,
+void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
     TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
 {
     engine_ = engine;
-    camera_ = camera;
     lightManager_ = lightManager;
     materialManager_ = materialManager;
     textureManager_ = textureManager;
     postEffectManager_ = postEffectManager;
-	debugCamera_ = debugCamera;
-
-    cameraFov_ = camera_->GetFov();
-    cameraNearClip_ = camera_->GetNearClip();
-    cameraFarClip_ = camera_->GetFarClip();
+    debugCamera_ = debugCamera;
 }
 
-void DebugGuiManager::Update()
+void DebugGuiManager::Update(Camera* targetCamera)
 {
+#ifdef IS_DEVELOPMENT
     // メインのデバッグウィンドウ
     ImGui::Begin("全体のデバッグ情報・設定");
 
@@ -30,7 +26,7 @@ void DebugGuiManager::Update()
     }
     if (ImGui::CollapsingHeader("カメラ設定"))
     {
-        DrawCameraSettings();
+        DrawCameraSettings(targetCamera);
     }
     if (ImGui::CollapsingHeader("ライト設定"))
     {
@@ -42,7 +38,7 @@ void DebugGuiManager::Update()
     }
     if (ImGui::CollapsingHeader("時間 / FPS"))
     {
-        DrawTimeSettings(); 
+        DrawTimeSettings();
     }
     if (ImGui::CollapsingHeader("全体的な情報"))
     {
@@ -50,14 +46,16 @@ void DebugGuiManager::Update()
     }
 
     ImGui::End();
+#endif
 }
 
+#ifdef IS_DEVELOPMENT
 void DebugGuiManager::DrawRenderSettings()
 {
     ImGui::Checkbox("ワイヤーフレーム描画", &engine_->renderer_->isWireFrame_);
 }
 
-void DebugGuiManager::DrawCameraSettings()
+void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
 {
     bool enabled = engine_->debugCamera_->IsEnabled();
     if (ImGui::Checkbox("デバッグカメラを有効化", &enabled))
@@ -65,84 +63,91 @@ void DebugGuiManager::DrawCameraSettings()
         engine_->debugCamera_->SetEnabled(enabled);
     }
 
-    if (ImGui::TreeNode("メインカメラ"))
+    if (targetCamera && ImGui::TreeNode("ターゲットカメラ (Scene)"))
     {
-        // 位置
-        Vector3 translation = camera_->GetTranslation();
-        if (ImGui::DragFloat3("座標 (World)", &translation.x, 0.1f)) {
-            camera_->SetTranslation(translation);
-            camera_->UpdateViewMatrix();
+        Vector3 translation = targetCamera->GetTranslation();
+        Vector3 rotationEuler = targetCamera->GetWorldRotationEuler();
+        float fov = targetCamera->GetFov();          
+        float nearClip = targetCamera->GetNearClip();
+        float farClip = targetCamera->GetFarClip();
+
+        if (ImGui::DragFloat3("座標 (World)", &translation.x, 0.1f))
+        {
+            targetCamera->SetTranslation(translation);
+            targetCamera->UpdateViewMatrix(); 
         }
 
-        // 回転
-        Vector3 rotationEuler = camera_->GetWorldRotationEuler();
-        if (ImGui::DragFloat3("回転 (World)", &rotationEuler.x, 0.1f)) {
-            camera_->SetWorldRotationEuler(rotationEuler);
-            camera_->UpdateViewMatrix();
+        if (ImGui::DragFloat3("回転 (World)", &rotationEuler.x, 0.1f))
+        {
+            targetCamera->SetWorldRotationEuler(rotationEuler);
+            targetCamera->UpdateViewMatrix();
         }
 
-        // スライダーで調整
-        if (ImGui::DragFloat("視野角 (FOV)", &cameraFov_, 0.1f, 1.0f, 179.0f)) {
-            camera_->SetFov(cameraFov_);
+        if (ImGui::DragFloat("視野角 (FOV)", &fov, 0.1f, 1.0f, 179.0f))
+        {
+            targetCamera->SetFov(fov);
         }
-        if (ImGui::DragFloat("ニアクリップ", &cameraNearClip_, 0.01f, 0.001f, 100.0f)) {
-            camera_->SetNearClip(cameraNearClip_);
+        if (ImGui::DragFloat("ニアクリップ", &nearClip, 0.01f, 0.001f, 100.0f)) 
+        {
+            targetCamera->SetNearClip(nearClip);
         }
-        if (ImGui::DragFloat("ファークリップ", &cameraFarClip_, 1.0f, 1.0f, 10000.0f)) {
-            camera_->SetFarClip(cameraFarClip_);
+        if (ImGui::DragFloat("ファークリップ", &farClip, 1.0f, 1.0f, 10000.0f))
+        {
+            targetCamera->SetFarClip(farClip);
         }
+
+        targetCamera->UpdateProjectionMatrix();
+
         ImGui::TreePop();
     }
 
-
-    // DebugCameraの内部パラメータを操作できるようにする
-    if (ImGui::TreeNode("デバッグカメラ"))
+    if (ImGui::TreeNode("デバッグカメラ設定"))
     {
-        // 注視点の編集
         Vector3 target = debugCamera_->GetTarget();
-        if (ImGui::DragFloat3("注視点", &target.x, 0.1f)) {
+        if (ImGui::DragFloat3("注視点", &target.x, 0.1f))
+        {
             debugCamera_->SetTarget(target);
-            camera_->UpdateViewMatrix();
         }
 
         float distance = debugCamera_->GetDistance();
-        if (ImGui::DragFloat("注視点からの距離", &distance, 0.1f, 1.0f, 500.0f)) {
+        if (ImGui::DragFloat("注視点からの距離", &distance, 0.1f, 1.0f, 500.0f))
+        {
             debugCamera_->SetDistance(distance);
-            camera_->UpdateViewMatrix();
         }
 
         float pitch = debugCamera_->GetCurrentPitch();
-        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f)) {
+        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f)) 
+        {
             debugCamera_->SetCurrentPitch(pitch);
-            camera_->UpdateViewMatrix();
         }
 
         float yaw = debugCamera_->GetCurrentYaw();
-        if (ImGui::DragFloat("ヨー (横回転)", &yaw, 0.1f, -180.0f, 180.0f)) {
+        if (ImGui::DragFloat("ヨー (横回転)", &yaw, 0.1f, -180.0f, 180.0f))
+        {
             debugCamera_->SetCurrentYaw(yaw);
-            camera_->UpdateViewMatrix();
         }
 
-        // その他の設定の調整
         float dragSpeed = debugCamera_->GetDragSpeed();
-        if (ImGui::DragFloat("ドラッグ速度 (中クリック)", &dragSpeed, 0.001f, 0.001f, 1.0f)) {
+        if (ImGui::DragFloat("ドラッグ速度", &dragSpeed, 0.001f, 0.001f, 1.0f))
+        {
             debugCamera_->SetDragSpeed(dragSpeed);
         }
 
         float rotateSpeed = debugCamera_->GetRotateSpeed();
-        if (ImGui::DragFloat("回転速度 (右クリック)", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) {
+        if (ImGui::DragFloat("回転速度", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) 
+        {
             debugCamera_->SetRotateSpeed(rotateSpeed);
         }
 
         float zoomSpeed = debugCamera_->GetZoomSpeed();
-        if (ImGui::DragFloat("ズーム速度 (ホイール)", &zoomSpeed, 0.001f, 0.01f, 1.0f)) {
+        if (ImGui::DragFloat("ズーム速度", &zoomSpeed, 0.001f, 0.01f, 1.0f)) 
+        {
             debugCamera_->SetZoomSpeed(zoomSpeed);
         }
+
         ImGui::TreePop();
     }
 
-    // カメラの更新を反映
-    camera_->UpdateViewProjectionMatrix();
 }
 
 void DebugGuiManager::DrawLightSettings()
@@ -156,11 +161,11 @@ void DebugGuiManager::DrawLightSettings()
 
     ImGui::Checkbox("ライティング有効", &materialSettings.enableLighting);
     ImGui::Separator();
-    // ディレクショナルライト
+
     if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
         ImGui::Combo("ライトモード", &materialSettings.lightMode,
-            "ハーフランバート\0スペキュラ\0トゥーン\0");
+            "ハーフランバート\0スペキュラ\0トゥーン\0PBR\0");
 
         for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
         {
@@ -181,7 +186,7 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::TreePop();
     }
     ImGui::Separator();
-    // ポイントライト
+
     if (ImGui::TreeNode("ポイントライト (点光源)"))
     {
         for (int i = 0; i < lightManager_->GetPointLightCount(); ++i)
@@ -205,7 +210,7 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::TreePop();
     }
     ImGui::Separator();
-    // スポットライト
+
     if (ImGui::TreeNode("スポットライト"))
     {
         for (int i = 0; i < lightManager_->GetSpotLightCount(); ++i)
@@ -274,11 +279,33 @@ void DebugGuiManager::DrawLightSettings()
     // マテリアル設定（スペキュラ）
     if (ImGui::TreeNode("マテリアル基本設定"))
     {
-        ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
-        ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
-        ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+        // PBRモードかどうかを判定
+        bool isPBR = (materialSettings.lightMode == 3);
+
+        if (isPBR)
+        {
+            // PBR用
+            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "PBR Settings");
+
+            ImGui::SliderFloat("ラフネス (粗さ)", &materialSettings.roughness, 0.0f, 1.0f);
+            ImGui::SliderFloat("メタルネス (金属度)", &materialSettings.metalness, 0.0f, 1.0f);
+        }
+        else
+        {
+            // レガシー用
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "Legacy Settings");
+
+            ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
+            ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
+            ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
+        }
+
+        // 共通設定
+        ImGui::Separator();
+        ImGui::Text("共通設定");
         ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("エミッシブ (自己発光):発光強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+        ImGui::DragFloat("エミッシブ強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+
         ImGui::TreePop();
     }
     ImGui::Separator();
@@ -542,7 +569,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         ImGui::Text("ブルーム合成強度");
         ImGui::SliderFloat("Intensity", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
-        
+
         ImGui::TreePop();
     }
 
@@ -607,7 +634,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
         ImGui::TreePop();
     }
-    
+
 
     ImGui::Separator();
 }
@@ -647,7 +674,7 @@ void DebugGuiManager::DrawTimeSettings()
     // 時間情報の表示
 
     // FPS関連
-    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS()); 
+    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS());
     ImGui::Text("瞬間 FPS: %.1f", time->GetFPS());
 
     // DeltaTime
@@ -658,7 +685,7 @@ void DebugGuiManager::DrawTimeSettings()
     ImGui::Text("総実行時間 (TotalTime): %.2f s", time->GetTotalTime());
 }
 
-void DebugGuiManager::DrawInformationDisplays() 
+void DebugGuiManager::DrawInformationDisplays()
 {
     // オブジェクト数
     ImGui::Text("Models: %d / %d", engine_->renderer_->GetModelCount(), engine_->renderer_->kMaxModelCount);
@@ -671,7 +698,7 @@ void DebugGuiManager::DrawInformationDisplays()
 void DebugGuiManager::BeginSceneView(
     SRVManager* srvManager,
     uint32_t srvIndexToShow
-) 
+)
 {
     /// GPUハンドル取得
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
@@ -693,9 +720,38 @@ void DebugGuiManager::BeginSceneView(
     ImGui::Begin("Scene");
     ImGui::PopStyleVar();
 
-    // 画像描画
-    ImVec2 imageSize = ImGui::GetContentRegionAvail();
-    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), imageSize);
+    // ウィンドウの利用可能なサイズを取得
+    ImVec2 windowSize = ImGui::GetContentRegionAvail();
+
+    // ゲームの解像度のアスペクト比を計算
+    float targetAspect = static_cast<float>(kClientWidth) / static_cast<float>(kClientHeight);
+
+    // ウィンドウのアスペクト比を計算
+    float windowAspect = windowSize.x / windowSize.y;
+
+    // アスペクト比に合わせて描画サイズを計算
+    ImVec2 finalSize = windowSize;
+    if (windowAspect > targetAspect)
+    {
+        // ウィンドウの方が横長 → 高さに合わせる
+        finalSize.x = windowSize.y * targetAspect;
+    }
+    else
+    {
+        // ウィンドウの方が縦長 → 幅に合わせる
+        finalSize.y = windowSize.x / targetAspect;
+    }
+
+    // 画像を中央に寄せるためのオフセット計算
+    ImVec2 cursorStart = ImGui::GetCursorPos();
+    ImVec2 offset;
+    offset.x = (windowSize.x - finalSize.x) * 0.5f;
+    offset.y = (windowSize.y - finalSize.y) * 0.5f;
+
+    // カーソル位置をずらして画像を描画
+    ImGui::SetCursorPos(ImVec2(cursorStart.x + offset.x, cursorStart.y + offset.y));
+
+    ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), finalSize);
 
     // 座標計算
     ImVec2 vMin = ImGui::GetItemRectMin();
@@ -719,3 +775,5 @@ void DebugGuiManager::EndSceneView()
     // ウィンドウを閉じるだけ
     ImGui::End();
 }
+
+#endif

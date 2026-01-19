@@ -3,6 +3,7 @@
 #include "Vector2.h"
 #include "WorldTransform.h"
 #include "Structures.h"
+#include "TextureHandle.h"
 
 class Engine;
 
@@ -19,7 +20,7 @@ public:
     void SetRotation(float rotation);
     void SetColor(uint32_t color);
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetTextureHandle(uint32_t textureHandle);
+    void SetTexture(TextureID id);
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
@@ -29,6 +30,7 @@ public:
     Vector2& GetPosition();
     Vector2& GetSize();
     float& GetRotation();
+    uint32_t* GetColorPtr() { return &color_; }
     WorldTransform& GetUVTransform();
     int GetLayerOrder() const;
     bool GetIsVisible() const { return isVisible_; }

@@ -32,8 +32,6 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "LevelUpUI" }; }
 
 private:
-    Engine* engine_ = nullptr;
-
     // 選択肢データ
     std::vector<UpgradeInfo> currentOptions_;
 

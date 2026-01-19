@@ -29,7 +29,6 @@ public:
     void ApplyGlobalVariables();
 
 private:
-    Engine* engine_ = nullptr;
 
     // 時間管理
     float maxTime_ = 0.0f;     // 最大時間（秒換算）
@@ -40,8 +39,8 @@ private:
     std::array<std::unique_ptr<Sprite>, 5> sprites_;
 
     // 数字テクスチャのハンドル配列
-    std::array<uint32_t, 10> digitTextureHandles_;
-    uint32_t colonTextureHandle_ = 0; // コロン用のテクスチャ
+    std::array<uint32_t, 10> digitTextureIds_;
+    uint32_t colonTextureId_ = 0; // コロン用のテクスチャ
 
     // 調整用パラメータ
     Vector2 position_ = { 640.0f, 50.0f };

@@ -22,7 +22,6 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "PlayerUI" }; }
 
 private:
-    Engine* engine_ = nullptr;
     Player* player_ = nullptr; 
 
     std::unique_ptr<Sprite> xpBarBgSprite_;
@@ -32,7 +31,7 @@ private:
     std::unique_ptr<Sprite> hpBarSprite_;
 
     // 数字テクスチャのハンドル配列
-    std::array<uint32_t, 10> digitTextureHandles_;
+    std::array<uint32_t, 10> digitTextureId_;
 
     // 現在表示しているレベルの数値
     int currentDisplayLevel_ = -1;

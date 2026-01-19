@@ -18,10 +18,10 @@ struct EnemyData
     Vector3 size = { 1.0f, 1.0f, 1.0f };
 };
 
-class Enemy : public Collider, public BaseCharacter
+class Enemy : public Collider, public GameObject
 {
 public:
-    Enemy(Engine* engine, Camera* camera, Player* player, GameObjectManager* objectManager, const EnemyData& data);
+    Enemy(Engine* engine, Player* player, GameObjectManager* objectManager, const EnemyData& data);
     ~Enemy();
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; }
@@ -43,13 +43,13 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "Enemy" }; }
 
     // 衝突・ダメージ処理
-    void OnCollision(Collider* other) override;
+    void OnCollisionEnter(Collider* other) override;
     void TakeDamage(float damage, const Vector3& hitSourcePosition); // ダメージを受ける関数を追加
     void SpawnExperienceGem();  // 経験値を生成する関数
     bool IsDead() const override { return isDead_; } // 死亡フラグ
 
     // 座標・当たり判定
-    Vector3 GetWorldPosition() override;
+    Vector3 GetWorldPosition() const override;
     void UpdateAABB();
     WorldTransform& GetWorldTransform() { return modelEnemy_->GetTransform(); }
     AABB& GetAABB() { return aabb_; }
@@ -57,8 +57,6 @@ public:
     static int GetEnemyCount() { return enemyCount_; }
 
 private:
-    Engine* engine_;
-    Camera* camera_;
     Player* player_;
     GameObjectManager* objectManager_;
 

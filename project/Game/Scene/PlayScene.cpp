@@ -1,47 +1,33 @@
 #include "PlayScene.h"
 #include "SceneManager.h"
 #include "TitleScene.h"
-#include "MediaAudioDecoder.h"
-#include "Collision.h"
 #include "ImGuiManager.h"
-#include "TextureHandle.h"
-#include "ModelHandle.h"
 #include "AudioHandle.h"
 #include "AudioPlayer.h"
 #include "TimeManager.h"
 #include "MathUtils.h"
-#include "ModelLoader.h"
 #include "Input.h"
 #include "Grid.h"
 
 using namespace FromEngine;
 
-PlayScene::PlayScene(Engine* engine, Camera* camera)
+PlayScene::PlayScene(Engine* engine)
+    : BaseScene(engine)
 {
-    // ポインタを保存
-    engine_ = engine;
-    camera_ = camera;
-
     // オブジェクトを生成
-    player_ = std::make_unique<Player>(engine_, camera_);
-
-    collisionManager_ = std::make_unique<CollisionManager>();
-    particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine_, camera_);
-    auto grid = std::make_unique<Grid>(engine_, camera_);
-
+    player_ = std::make_unique<Player>(engine_, camera_.get());
+    auto grid = std::make_unique<Grid>(engine_);
     sprite_ = std::make_unique<Sprite>(engine_);
     spriteUse_ = std::make_unique<Sprite>(engine_);
 
     objectManager_.AddObject(std::move(grid));
-    objectManager_.AddObject(std::move(particleSystemWrapper_));
 }
 
 PlayScene::~PlayScene()
 {
-
 }
 
-void PlayScene::Initialize()
+void PlayScene::OnInitialize()
 {
     // 初期化
     player_->Initialize();
@@ -65,30 +51,22 @@ void PlayScene::Initialize()
     spriteSize_ = { 800.0f, 280.0f };
     sprite_->SetSize(spriteSize_);
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
-    sprite_->SetTextureHandle(TextureHandle::Get(TextureID::clear));
+    sprite_->SetTexture(TextureID::clear);
 
     spritePosUse_ = { 640, 522 };
     spriteUse_->SetPosition(spritePosUse_);
     spriteSizeUse_ = { 800.0f, 131.0f };
     spriteUse_->SetSize(spriteSizeUse_);
     spriteUse_->SetAnchorPoint({ 0.5f, 0.5f });
-    spriteUse_->SetTextureHandle(TextureHandle::Get(TextureID::pressSousa));
-
-    // ゲームオブジェクトの一括初期化
-    objectManager_.Initialize();
+    spriteUse_->SetTexture(TextureID::pressSousa);
 
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::playSceneBGM));
     AudioPlayer::GetInstance().StopUnique(AudioHandle::Get(AudioID::titleSceneBGM));
 }
 
-void PlayScene::Update()
+void PlayScene::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique(AudioHandle::Get(AudioID::clearSceneBGM), true, 20);
-
-    HandleCollisions();
-
-    // ゲームオブジェクトの一括更新
-    objectManager_.Update();
 
     // プレイヤーの更新処理
     player_->Update();
@@ -102,27 +80,15 @@ void PlayScene::Update()
     }
 }
 
-void PlayScene::HandleCollisions()
-{
-    // 衝突マネージャのリストをクリアする
-    collisionManager_->ClearColliders();
-
-    // プレイヤーと敵を登録
-    collisionManager_->AddCollider(player_.get());
-
-    // 衝突マネージャの当たり判定処理を呼び出す
-    collisionManager_->CheckAllCollisions();
-}
-
-void PlayScene::Draw()
+void PlayScene::OnDraw()
 {
     sprite_->Draw();
     spriteUse_->Draw();
-	objectManager_.Draw();
 }
 
-void PlayScene::DebugDraw()
+void PlayScene::OnDebugDraw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("プレイシーン");
 
     if (ImGui::DragFloat2("Sprite Pos", &spritePos_.x, 1.0f))
@@ -144,15 +110,11 @@ void PlayScene::DebugDraw()
 
     ImGui::End();
 
-	objectManager_.DebugDraw();
-
 	player_->DebugDraw();
-  /*  enemy_->DebugDraw();*/
-
+#endif
 }
 
-void PlayScene::Finalize()
+void PlayScene::OnFinalize()
 {
-
 }
 

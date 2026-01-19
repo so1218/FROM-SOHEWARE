@@ -21,21 +21,19 @@
 
 using namespace FromEngine;
 
-Player::Player(Engine* engine, Camera* camera)
+Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
+	camera_(camera)
 {
-	engine_ = engine;
-	camera_ = camera;
-
 	// 通常モデルを生成
-	modelPlayer_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+	modelPlayer_ = CreateModel(ModelID::cube);
 
-	modelTamesi_ = std::make_unique<Model>(engine_, camera_, std::move(ModelHandle::Get(ModelID::cube)));
+	modelTamesi_ = CreateModel(ModelID::cube);
 	modelTamesi_->GetTransform().scale_.x = 500;
 	modelTamesi_->GetTransform().scale_.z = 500;
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_,camera_,ModelHandle::Get(ModelID::enemy),AnimationHandle::Get(AnimationID::enemy));
+	animationPlayer_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
 }
 
 void Player::Initialize()
@@ -59,7 +57,7 @@ void Player::Initialize()
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0xffffffff);
-
+	modelTamesi_->SetNormalMapHandle(TextureHandle::Get(TextureID::normalMap));
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
@@ -105,11 +103,11 @@ void Player::AddWeapon(WeaponType type)
 	{
 	case WeaponType::Knife:
 		// ナイフ武器を追加
-		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this, camera_));
+		weapons_.push_back(std::make_unique<WeaponKnife>(engine_, this));
 		break;
 
 	case WeaponType::Axe:
-		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this, camera_));
+		weapons_.push_back(std::make_unique<WeaponAxe>(engine_, this));
 		break;
 
 	default:
@@ -126,6 +124,7 @@ void Player::Update()
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
 	//animationPlayer_->SetEnableDissolve(true);
 	//animationPlayer_->materialHandle_.materialData->dissolveThreshold = 0.5f;
+	modelTamesi_->materialHandle_.materialData->enableNormalMap = true;
 
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
@@ -255,7 +254,7 @@ void Player::Move()
 	// 実際の位置更新
 	modelPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
 	modelPlayer_->GetTransform().translation_.y = 0.1f; // 地面の高さを固定
-	modelTamesi_->GetTransform().translation_ = modelPlayer_->GetTransform().translation_;
+	/*modelTamesi_->GetTransform().translation_ = modelPlayer_->GetTransform().translation_;*/
 	modelTamesi_->GetTransform().translation_.y = -0.5f;
 }
 
@@ -307,7 +306,7 @@ Vector3 Player::GetMoveDirection()
 	return dir;
 }
 
-void Player::OnCollision(Collider* other)
+void Player::OnCollisionEnter(Collider* other)
 {
 	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
 	{
@@ -332,7 +331,7 @@ void Player::OnCollision(Collider* other)
 	}
 }
 
-Vector3 Player::GetWorldPosition()
+Vector3 Player::GetWorldPosition() const
 {
 	Vector3 worldPos;
 	worldPos.x = modelPlayer_->GetTransform().matWorld_.m[3][0];
@@ -356,6 +355,7 @@ void Player::Draw()
 
 void Player::DebugDraw()
 {
+#ifdef IS_DEVELOPMENT
 	ImGui::Begin("プレイヤー");
 
 	auto* gv = GlobalVariables::GetInstance();
@@ -466,7 +466,8 @@ void Player::DebugDraw()
 		weapon->DebugDraw();
 	}
 
-	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform(), *camera_);
+	ImGuiManager::DrawGizmo(modelPlayer_->GetTransform());
+#endif
 }
 
 void Player::TakeDamage(float damage)

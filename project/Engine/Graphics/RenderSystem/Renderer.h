@@ -45,7 +45,6 @@ public:
         LightManager* lightManager,
         GlobalConstants* globalConstants,
         MaterialManager* materialManager,
-        Camera* camera,
         PostEffectManager* postEffectManager,
         int clientWidth, int clientHeight, ShadowMap* shadowMap
     );
@@ -54,32 +53,37 @@ public:
     // フレーム処理
     void BeginFrame(); // 描画カウンターのリセットなど
 
+    // このフレームで使うカメラ行列をセットする
+    void SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition);
+
     // テクスチャ読み込み
     int LoadTexture(const std::string& texturePath);
     void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // 描画関数
-    void SubmitModel(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
+    void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t normalMapHandle,
+        uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
         bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
-    void DrawSkeleton(const Skeleton& skeleton, const Camera& camera, uint32_t color);
-    void SubmitAnimationModel(const WorldTransform& worldTransform, const Camera& camera,
+    void DrawSkeleton(const Skeleton& skeleton, uint32_t color);
+    void SubmitAnimationModel(const WorldTransform& worldTransform,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t color,
+        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle,
+        uint32_t normalMapHandle, uint32_t color,
         const MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
-    void SubmitGrid(const WorldTransform& worldTransform, const Camera& camera, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
+    void SubmitGrid(const WorldTransform& worldTransform,const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
     void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, const MaterialHandle& materialHandle);
-    void SubmitLine(const Vector3& start, const Vector3& end, const Camera& camera, uint32_t color);
+    void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
     void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);
-    void SubmitSkybox(const Camera& camera, const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
-    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config, const Camera& camera);
+    void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
+    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
     void DrawFullScreenQuadWithOffscreenTexture();
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
-    void Draw3D(); 
+    void Draw3D();
     void DrawUI();
 
     // ブレンドモード設定
@@ -91,11 +95,11 @@ public:
     Mesh* GetOrCreateMesh(const ModelData& modelData);
 
     // 描画カウント取得
-    int32_t GetModelCount() const { return indexModel_; }
-    int32_t GetSpriteCount() const { return indexSprite_; }
-    int32_t GetLineCount() const { return indexLine_; }
-    int32_t GetParticleCount() const { return indexParticle_; }
-    int32_t GetTrailCount() const { return indexTrail_; }
+    uint32_t GetModelCount() const { return prevModelCount_; }
+    uint32_t GetSpriteCount() const { return prevSpriteCount_; }
+    uint32_t GetLineCount() const { return prevLineCount_; }
+    uint32_t GetParticleCount() const { return prevParticleCount_; }
+    uint32_t GetTrailCount() const { return prevTrailCount_; }
 
     // Trail用のレンダリングデータ構造体
     struct TrailRenderData
@@ -137,10 +141,10 @@ private:
     void DrawSprite(const ModelSubmission& sub);
     void DrawModel(const ModelSubmission& sub);
     void DrawGrid(const ModelSubmission& sub);
-    void FlushLines(const Camera& camera);
-    void DrawParticles(const Camera& camera);
+    void FlushLines();
+    void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);
-    void DrawTrails(const Camera& camera);
+    void DrawTrails();
 
 private:
     // Engineから受け取るポインタ
@@ -153,19 +157,24 @@ private:
     LightManager* lightManager_ = nullptr;
     GlobalConstants* globalConstants_ = nullptr;
     MaterialManager* materialManager_ = nullptr;
-    Camera* camera_ = nullptr;
     PostEffectManager* postEffectManager_ = nullptr;
     ShadowMap* shadowMap_ = nullptr;
 
+    // 現在設定されているカメラ行列
+    Matrix4x4 viewMatrix_;
+    Matrix4x4 projectionMatrix_;
+    Matrix4x4 viewProjectionMatrix_;
+    // カメラのワールド座標
+    Vector3 cameraPosition_;
+
     // 描画インデックスと描画情報（各プリミティブ）
-    uint32_t indexModel_ = 0;
     std::vector<RenderData> models_;
     std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
     std::unordered_map<const ModelData*, Mesh> meshCache;
     // 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
     // 定数バッファリソースの配列
-    struct PerObjectBuffer 
+    struct PerObjectBuffer
     {
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* wvpMapped = nullptr;
@@ -175,13 +184,11 @@ private:
     };
     std::vector<PerObjectBuffer> perObjectBuffers_;
 
-    uint32_t indexSprite_ = 0;
     std::vector<RenderData> sprites_;
 
-    uint32_t indexLine_ = 0;
     std::vector<RenderData> lines_;
     // 線描画用のリソース
-    struct LineBatchResource 
+    struct LineBatchResource
     {
         Mesh mesh; // 動的頂点バッファ用のメッシュ
         std::vector<LineVertex> verticesCPU; // CPU側の一時保管場所
@@ -191,7 +198,6 @@ private:
         TransformationMatrix* mappedWvp = nullptr;
     }lineBatch_;
 
-    uint32_t indexParticle_ = 0;
     std::vector<RenderData> particles_;
     std::vector<ParticleInstanceData> instanceData_;
     int indexInstance_ = 0;
@@ -221,7 +227,6 @@ private:
     MaterialHandle skyboxMaterialHandle_;
 
     // トレイル用のバッチ構造体
-    int32_t indexTrail_ = 0;
     struct TrailBatch
     {
         uint32_t startVertexIndex;  // このバッチの開始頂点インデックス
@@ -251,4 +256,18 @@ private:
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;
+
+    // 現在カウント中
+    uint32_t indexModel_ = 0;
+    uint32_t indexSprite_ = 0;
+    uint32_t indexLine_ = 0;
+    uint32_t indexParticle_ = 0;
+    uint32_t indexTrail_ = 0;
+
+    // 前フレームの最終カウント保存用
+    uint32_t prevModelCount_ = 0;
+    uint32_t prevSpriteCount_ = 0;
+    uint32_t prevLineCount_ = 0;
+    uint32_t prevParticleCount_ = 0;
+    uint32_t prevTrailCount_ = 0;
 };

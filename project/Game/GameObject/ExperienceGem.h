@@ -11,16 +11,16 @@ class Player;
 class ExperienceGem : public Collider, public GameObject
 {
 public:
-    ExperienceGem(Engine* engine, Camera* camera, Player* player);
+    ExperienceGem(Engine* engine, Player* player);
 
     GameObjectType GetType() const override { return GameObjectType::Enemy; } 
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void OnCollision(Collider* other) override;
+    void OnCollisionStay(Collider* other) override;
 
-    Vector3 GetWorldPosition() override;
+    Vector3 GetWorldPosition() const override;
     WorldTransform& GetWorldTransform() { return model_->GetTransform(); }
 
     // 収集されたか
@@ -29,8 +29,6 @@ public:
     bool IsDead() const override { return isCollected_; }
 
 private:
-    Engine* engine_;
-    Camera* camera_;
     Player* player_;
     std::unique_ptr<Model> model_;
 

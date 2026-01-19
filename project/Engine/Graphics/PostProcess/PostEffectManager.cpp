@@ -12,7 +12,6 @@ void PostEffectManager::Initialize(
     UINT height,
     RootSignatureManager* rootSigManager,
     PSOManager* psoManager,
-    Camera* camera,
     SRVManager* srvManager,
     uint32_t sceneDepthSrvIndex)
 {
@@ -132,7 +131,11 @@ void PostEffectManager::Update()
     }
 }
 
-void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
+void PostEffectManager::ExecutePostEffects(
+    ID3D12GraphicsCommandList* cmdList,
+    const Matrix4x4& viewMatrix,       
+    const Matrix4x4& projectionMatrix, 
+    const Vector3& cameraPosition)
 {
     // 深度をポストエフェクト用に読み取り状態へ
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -158,18 +161,18 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     if (engine_->lightManager_)
     {
-        // 0番目のDirectionalLight（メインの太陽）を取得
+        // 0番目のDirectionalLightを取得
         auto dirLights = engine_->lightManager_->GetDirectionalLightData();
         // 有効なら計算
         if (dirLights[0].enable)
         {
             // カメラからライト逆方向へ遠ざけた点
-            Vector3 camPos = engine_->camera_->GetTranslation();
+            Vector3 camPos = cameraPosition;
             Vector3 lightDir = dirLights[0].direction;
             Vector3 virtualPos = camPos + (lightDir * -5000.0f);
 
             // クリップ空間へ変換
-            Matrix4x4 matViewProj = engine_->camera_->GetViewMatrix() * engine_->camera_->GetProjectionMatrix();
+            Matrix4x4 matViewProj = viewMatrix * projectionMatrix;
             Vector4 clipPos = matViewProj.Transform({ virtualPos.x, virtualPos.y, virtualPos.z, 1.0f });
 
             // カメラ前方判定

@@ -1,21 +1,28 @@
 #include "ImGuiManager.h"
 
+#ifdef IS_DEVELOPMENT
 #include <filesystem>
 
 #include "imgui_internal.h"
 #include "externals/ImGuiFileDialog.h"
-#include "WorldTransform.h"
-#include "Camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "externals/stb_image.h"
+#endif
 
+#include "WorldTransform.h"
+#include "Camera.h"
+
+#ifdef IS_DEVELOPMENT
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
 int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
 Vector2 ImGuiManager::sceneRectMin_ = { 0.0f, 0.0f };
 Vector2 ImGuiManager::sceneRectSize_ = { 0.0f, 0.0f };
 bool ImGuiManager::isSceneHovered_ = false;
+Matrix4x4 ImGuiManager::gizmoViewMatrix_ = Matrix4x4::MakeIdentity();
+Matrix4x4 ImGuiManager::gizmoProjMatrix_ = Matrix4x4::MakeIdentity();
+#endif
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -26,7 +33,7 @@ void ImGuiManager::Initialize(
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle,
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle)
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -152,7 +159,7 @@ void ImGuiManager::Initialize(
 
 void ImGuiManager::BeginFrame()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -238,7 +245,7 @@ void ImGuiManager::BeginFrame()
 
 void ImGuiManager::DrawMenuBar()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("ファイル"))
@@ -278,7 +285,7 @@ void ImGuiManager::DrawMenuBar()
 
 void ImGuiManager::OpenFile(const std::string& filename)
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     int width, height, channels;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 4); 
     if (!data)
@@ -294,6 +301,7 @@ void ImGuiManager::OpenFile(const std::string& filename)
 
 void ImGuiManager::SaveFile(const std::string& filename)
 {
+#ifdef IS_DEVELOPMENT
     // 実際のファイル保存処理
     std::ofstream ofs(filename);
     if (ofs.is_open())
@@ -306,11 +314,12 @@ void ImGuiManager::SaveFile(const std::string& filename)
     {
         OutputDebugStringA("ファイル保存に失敗しました\n");
     }
+#endif
 }
 
 void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList)
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // ImGuiの内部コマンドを生成する
     ImGui::Render();
 
@@ -321,7 +330,7 @@ void ImGuiManager::EndFrame(ID3D12GraphicsCommandList* commandList)
 // ImGuiの終了処理
 void ImGuiManager::Finalize()
 {
-#ifdef _DEBUG
+#ifdef IS_DEVELOPMENT
     // ImGuiの終了処理
     // 初期化と逆順に行う
     ImGui_ImplDX12_Shutdown();
@@ -330,16 +339,17 @@ void ImGuiManager::Finalize()
 #endif
 }
 
-void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
+void ImGuiManager::DrawGizmo(WorldTransform& transform)
 {
+#ifdef IS_DEVELOPMENT
     // 操作モードの切り替え
     if (ImGui::IsKeyPressed(ImGuiKey_1)) gizmoOperation_ = ImGuizmo::TRANSLATE;
     if (ImGui::IsKeyPressed(ImGuiKey_2)) gizmoOperation_ = ImGuizmo::ROTATE;
     if (ImGui::IsKeyPressed(ImGuiKey_3)) gizmoOperation_ = ImGuizmo::SCALE;
 
     // 行列の準備
-    const Matrix4x4& viewMatrix = camera.GetViewMatrix();
-    const Matrix4x4& projMatrix = camera.GetProjectionMatrix();
+    const Matrix4x4& viewMatrix = gizmoViewMatrix_;
+    const Matrix4x4& projMatrix = gizmoProjMatrix_;
 
     // Transform -> Matrix
     Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
@@ -382,12 +392,23 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform, const Camera& camera)
     ImGuizmo::PopID();
 
     ImGui::PopID();
+#endif
+}
+
+void ImGuiManager::SetGizmoCamera(const Matrix4x4& view, const Matrix4x4& proj)
+{
+#ifdef IS_DEVELOPMENT
+    gizmoViewMatrix_ = view;
+    gizmoProjMatrix_ = proj;
+#endif
 }
 
 void ImGuiManager::SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered)
 {
+#ifdef IS_DEVELOPMENT
     sceneRectMin_ = min;
     sceneRectSize_ = size;
     isSceneHovered_ = isHovered;
+#endif
 }
 

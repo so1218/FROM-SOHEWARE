@@ -9,7 +9,7 @@ class Player;
 class FollowCamera : public GameObject
 {
 public:
-    FollowCamera(Camera* camera, Player* target);
+    FollowCamera(Engine* engine, Camera* camera, Player* target);
     void Initialize() override;
     void Update() override;
     void DebugDraw() override;
@@ -22,8 +22,8 @@ public:
     std::vector<std::string> GetGlobalVariableGroupName() const { return { "FollowCamera" }; }
 
 private:
-    Camera* camera_ = nullptr;
     Player* target_ = nullptr;
+    Camera* camera_ = nullptr;
 
     // 目標値
     float targetYaw_ = 0.0f;
