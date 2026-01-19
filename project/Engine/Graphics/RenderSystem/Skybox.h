@@ -1,6 +1,7 @@
 #pragma once
 
 #include "WorldTransform.h"
+#include "TextureHandle.h"
 
 class Engine;
 class Camera; 
@@ -12,7 +13,7 @@ public:
 
     void Draw();
 
-    void SetCubeTextureHandle(uint32_t textureHandle);
+    void SetCubeTexture(TextureID textureID);
 
     void SetColor(uint32_t color);
 

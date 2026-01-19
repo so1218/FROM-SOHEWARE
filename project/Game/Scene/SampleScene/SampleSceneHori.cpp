@@ -26,8 +26,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine)
     enemyManager_ = std::make_unique<EnemyManager>(engine_, player_, &objectManager_);
     
     skybox_ = std::make_unique<Skybox>(engine_);
-    uint32_t cubemapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
-    skybox_->SetCubeTextureHandle(cubemapHandle);
+    skybox_->SetCubeTexture(TextureID::skyboxCubemap);
     auto grid = std::make_unique<Grid>(engine_);
 
     // タイマーの生成

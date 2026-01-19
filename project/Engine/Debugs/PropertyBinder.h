@@ -9,7 +9,10 @@
 class PropertyBinder
 {
 public:
-    PropertyBinder(const std::vector<std::string>& groupPath) : groupPath_(groupPath)
+    // 可変長テンプレートコンストラクタ
+    template <typename... Args>
+    PropertyBinder(Args&&... args)
+        : groupPath_{ std::string(std::forward<Args>(args))... }
     {
         GlobalVariables::GetInstance()->CreateGroup(groupPath_);
     }
@@ -261,17 +264,14 @@ private:
 
     void BindColor32(const std::string& key, uint32_t* ptr, uint32_t defaultValue)
     {
-        // 初期化とロード
         auto* gv = GlobalVariables::GetInstance();
         if (items_.find(key) == items_.end())
         {
             keys_.push_back(key);
-            // デフォルト値をVector4に変換して登録
             Vector4 defVec = Math::Uint32ToColorVector(defaultValue);
             gv->AddItem(groupPath_, key, defVec);
         }
 
-        // 保存されたVector4を読み込み、Modelのuint32_tに適用
         Vector4 savedVec = gv->GetVector4Value(groupPath_, key);
         *ptr = Math::ColorVectorToUint32(savedVec);
 
@@ -280,16 +280,12 @@ private:
         items_[key] = [=](const std::string& nameOverride) {
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
 
-            // 一時的にVector4にする
             Vector4 tempColor = Math::Uint32ToColorVector(*ptr);
 
-            // ImGuiはtempColorを編集
-            if (ImGui::ColorEdit4(label.c_str(), &tempColor.x)) {
-
-                // 結果をuint32_tに戻して反映
+            if (ImGui::ColorEdit4(label.c_str(), &tempColor.x))
+            {
                 *ptr = Math::ColorVectorToUint32(tempColor);
 
-                // JSON保存用にはVector4を渡す
                 GlobalVariables::GetInstance()->SetValue(groupPath_, key, tempColor);
             }
             };

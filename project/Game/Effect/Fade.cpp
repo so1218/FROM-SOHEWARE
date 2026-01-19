@@ -23,7 +23,7 @@ void Fade::Initialize()
 	sprite_->SetLayerOrder(9999);
 
 	// デバッグ用のグローバル変数登録
-	binder_ = std::make_unique<PropertyBinder>(std::vector<std::string>{"Fade"});
+	binder_ = std::make_unique<PropertyBinder>("Fade");
 
 	binder_->Bind("duration_", &duration_, 1.0f, 0.05f);
 }
