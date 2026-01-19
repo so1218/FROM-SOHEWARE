@@ -85,7 +85,7 @@ private:
 
             // dds
             { skyboxCubemapBlack,   "Assets/Textures/Environments/black_cube.dds" },
-            { skyboxCubemap,   "Assets/Textures/Environments/rostock_laage_airport_4k.dds" },
+            { skyboxCubemap,   "Assets/Textures/Environments/output_skybox.dds" },
 
             { skydome,   "Assets/Textures/sky_sphere.png" },
             { axe,   "Assets/Textures/Woodcutter-Axe.jpg" },
