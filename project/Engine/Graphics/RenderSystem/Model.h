@@ -17,9 +17,9 @@ public:
 
     // セッター
     void SetWorldTransform(const WorldTransform& transform);
-    void SetTexture(TextureID id);
-    void SetEnvironmentMapHandle(uint32_t handle);
-    void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
+    void SetTexture(TextureID textureID);
+    void SetEnvironmentMapTexture(TextureID textureID);
+    void SetToonRampTexture(TextureID textureID) { toonRampHandle_ = TextureHandle::Get(textureID); }
     void SetColor(uint32_t color);
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
     void SetUVTransform(const WorldTransform& uvTransform);
@@ -30,8 +30,8 @@ public:
     void SetRenderGroup(RenderGroup group);
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
-    void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
-    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
+    void SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
+    void SetNormalMapTexture(TextureID textureID) { normalMapHandle_ = TextureHandle::Get(textureID); }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
 
     // ゲッター
@@ -56,6 +56,7 @@ private:
     uint32_t textureHandle_;
     uint32_t envMapTextureHandle_;
     uint32_t toonRampHandle_;
+    uint32_t dissolveTextureHandle_;
     uint32_t normalMapHandle_;
     uint32_t color_ = 0xFFFFFFFF;
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
@@ -67,6 +68,4 @@ private:
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     RenderGroup renderGroup_ = RenderGroup::Opaque;
-
-    uint32_t dissolveTextureHandle_;
 };

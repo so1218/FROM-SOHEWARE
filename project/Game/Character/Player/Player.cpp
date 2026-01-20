@@ -57,7 +57,7 @@ void Player::Initialize()
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0xffffffff);
-	modelTamesi_->SetNormalMapHandle(TextureHandle::Get(TextureID::normalMap));
+	modelTamesi_->SetNormalMapTexture(TextureID::normalMap);
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
@@ -118,7 +118,7 @@ void Player::AddWeapon(WeaponType type)
 // 更新処理
 void Player::Update()
 {
-	modelPlayer_->SetDissolveTextureHandle(TextureHandle::Get(TextureID::noise1));
+	modelPlayer_->SetDissolveTexture(TextureID::noise1);
 	//animationPlayer_->materialHandle_.materialData->edgeColor = { 1.0f, 0.2f, 0.1f };
 	//animationPlayer_->materialHandle_.materialData->edgeIntensity = 5.0f;
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;

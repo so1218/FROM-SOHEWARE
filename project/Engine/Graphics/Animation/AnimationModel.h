@@ -29,15 +29,15 @@ public:
     void SetUvTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
     void SetColor(uint32_t color) { color_ = color; }
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
-    void SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
+    void SetTexture(TextureID textureID) { textureHandle_ = TextureHandle::Get(textureID); }
     void SetMaterialHandle(MaterialHandle handle) { materialHandle_ = handle; }
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
-    void SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
-    void SetToonRampHandle(uint32_t handle) { toonRampHandle_ = handle; }
+    void SetEnvironmentMapTexture(TextureID textureID) { envMapTextureHandle_ = TextureHandle::Get(textureID); }
+    void SetToonRampTexture(TextureID textureID) { toonRampHandle_ = TextureHandle::Get(textureID); }
     void SetEasing(EasingType type) { easingType_ = type; }
-    void SetDissolveTextureHandle(uint32_t handle) { dissolveTextureHandle_ = handle; }
+    void SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
-    void SetNormalMapHandle(uint32_t handle) { normalMapHandle_ = handle; }
+    void SetNormalMapTexture(TextureID textureID) { normalMapHandle_ = TextureHandle::Get(textureID); }
     // アウトライン設定
     void SetEnableOutline(bool enable);
     void SetOutlineWidth(float width) { outlineWidth_ = width; }

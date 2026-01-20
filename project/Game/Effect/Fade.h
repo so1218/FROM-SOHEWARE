@@ -20,9 +20,19 @@ public:
 
 	std::unique_ptr<Sprite> sprite_;
 
-	Vector2 spritePos = { 0,0 };
-	Vector2 spriteSize;
+	Vector2 spritePos_ = { 0,0 };
+	Vector2 spriteSize_;
 	Vector4 color_ = { 0,0,0,1 };
+
+	bool useAlphaFade_;    // 透明度変化を使うか
+	bool useDissolve_;    // ディゾルブを使うか
+
+	// パラメータ
+	float dissolveThreshold_ = 0.0f;
+	float edgeWidth_;
+	float edgeIntensity_;
+	Vector3 edgeColor_;
+	float currentAlpha_ = 0.0f;
 
 	// フェードの状態
 	enum class Status

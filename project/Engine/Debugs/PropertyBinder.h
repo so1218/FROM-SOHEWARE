@@ -19,22 +19,38 @@ public:
 
     //  汎用Bind関数
     template <typename T>
-    void Bind(const std::string& key, T* ptr, const T& defaultValue, float speed = 1.0f, float min = 0.0f, float max = 0.0f)
+    void Bind(const std::string& key, T* ptr, const T& defaultValue, float speed = -1.0f, float min = 0.0f, float max = 0.0f)
     {
+        // 実際に適用するスピード変数
+        float appliedSpeed = speed;
+
+        // 引数が省略された（または負の値）場合、型に応じたデフォルト値を設定
+        if (appliedSpeed <= 0.0f)
+        {
+            if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
+            {
+                appliedSpeed = 1.0f; 
+            }
+            else
+            {
+                appliedSpeed = 0.01f; 
+            }
+        }
+
         // int32_t 
         if constexpr (std::is_same_v<T, int32_t>)
         {
-            BindInt(key, ptr, defaultValue, speed, static_cast<int32_t>(min), static_cast<int32_t>(max));
+            BindInt(key, ptr, defaultValue, appliedSpeed, static_cast<int32_t>(min), static_cast<int32_t>(max));
         }
         // uint32_t
         else if constexpr (std::is_same_v<T, uint32_t>)
         {
-            BindUint(key, ptr, defaultValue, speed, static_cast<uint32_t>(min), static_cast<uint32_t>(max));
+            BindUint(key, ptr, defaultValue, appliedSpeed, static_cast<uint32_t>(min), static_cast<uint32_t>(max));
         }
         // float
         else if constexpr (std::is_same_v<T, float>)
         {
-            BindFloat(key, ptr, defaultValue, speed, min, max);
+            BindFloat(key, ptr, defaultValue, appliedSpeed, min, max);
         }
         // bool 
         else if constexpr (std::is_same_v<T, bool>)
@@ -44,22 +60,17 @@ public:
         // Vector2
         else if constexpr (std::is_same_v<T, Vector2>)
         {
-            BindVector2(key, ptr, defaultValue, speed, min, max);
+            BindVector2(key, ptr, defaultValue, appliedSpeed, min, max);
         }
         // Vector3
         else if constexpr (std::is_same_v<T, Vector3>)
         {
-            BindVector3(key, ptr, defaultValue, speed, min, max);
+            BindVector3(key, ptr, defaultValue, appliedSpeed, min, max);
         }
         // Vector4
         else if constexpr (std::is_same_v<T, Vector4>)
         {
-            BindVector4(key, ptr, defaultValue, speed, min, max);
-        }
-        else
-        {
-            // 対応していない型の場合のコンパイルエラー
-            static_assert(always_false<T>, "Unsupported type for Bind function");
+            BindVector4(key, ptr, defaultValue, appliedSpeed, min, max);
         }
     }
 
@@ -67,8 +78,13 @@ public:
     template <typename T>
     void BindColor(const std::string& key, T* ptr, const T& defaultValue)
     {
+        // Vector3 の場合
+        if constexpr (std::is_same_v<T, Vector3>)
+        {
+            BindColorVector3(key, ptr, defaultValue);
+        }
         // Vector4 の場合
-        if constexpr (std::is_same_v<T, Vector4>)
+        else if constexpr (std::is_same_v<T, Vector4>)
         {
             BindColorVector4(key, ptr, defaultValue);
         }
@@ -76,9 +92,6 @@ public:
         else if constexpr (std::is_same_v<T, uint32_t>)
         {
             BindColor32(key, ptr, defaultValue);
-        }
-        else {
-            static_assert(always_false<T>, "Unsupported type for BindColor function (Use Vector4 or uint32_t)");
         }
     }
 
@@ -288,6 +301,26 @@ private:
 
                 GlobalVariables::GetInstance()->SetValue(groupPath_, key, tempColor);
             }
+            };
+#endif
+    }
+
+    void BindColorVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue)
+    {
+        RegisterItem(key, defaultValue, ptr);
+
+        // 保存されているデータを反映
+        *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
+
+#ifdef IS_DEVELOPMENT
+        items_[key] = [=](const std::string& nameOverride)
+            {
+                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+
+                if (ImGui::ColorEdit3(label.c_str(), &ptr->x))
+                {
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                }
             };
 #endif
     }

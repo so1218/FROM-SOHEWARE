@@ -10,6 +10,7 @@ Sprite::Sprite(Engine* engine)
     uvTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
 
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
+    dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 }
 
@@ -43,6 +44,7 @@ void Sprite::Draw()
         anchorPoint_,
         uvTransform_,
         textureHandle_,
+        dissolveTextureHandle_,
         layerOrder_,
         materialHandle_
     );

@@ -248,9 +248,6 @@
     <ClCompile Include="Game\Map\MapChipField.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Camera\CameraController.cpp">
-      <Filter>Game\Camera</Filter>
-    </ClCompile>
     <ClCompile Include="Game\Data\TextureHandle.cpp">
       <Filter>Game\Data</Filter>
     </ClCompile>
@@ -646,9 +643,6 @@
     </ClInclude>
     <ClInclude Include="Game\Map\MapChipField.h">
       <Filter>Game\GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Camera\CameraController.h">
-      <Filter>Game\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Game\Data\TextureHandle.h">
       <Filter>Game\Data</Filter>

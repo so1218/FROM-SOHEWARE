@@ -73,7 +73,8 @@ public:
         const MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
         RenderGroup group);
     void SubmitGrid(const WorldTransform& worldTransform,const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
-    void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder, const MaterialHandle& materialHandle);
+    void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle,
+        uint32_t dissolveTextureHandle, int layerOrder, const MaterialHandle& materialHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
     void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);

@@ -21,6 +21,8 @@ public:
     void SetColor(uint32_t color);
     void SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
     void SetTexture(TextureID id);
+    void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
+    void SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
     void SetUVTransform(const WorldTransform& uvTransform);
     void SetLayerOrder(int order);
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
@@ -45,7 +47,8 @@ private:
     Vector2 size_ = { 1.0f, 1.0f };
     float rotation_ = 0.0f;
     uint32_t color_ = 0xFFFFFFFF;
-    uint32_t textureHandle_ = 1;
+    uint32_t textureHandle_;
+    uint32_t dissolveTextureHandle_;
     WorldTransform uvTransform_;
     bool isVisible_ = true;
     // アンカーポイント (デフォルトは左上)

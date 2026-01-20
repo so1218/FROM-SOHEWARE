@@ -1,5 +1,14 @@
 {
     "Fade": {
+        "Dissolve Color": [
+            1.0,
+            0.27997642755508423,
+            0.06751054525375366
+        ],
+        "Dissolve Edge Width": 0.03999999910593033,
+        "Dissolve Intensity": 1.0,
+        "Enable Alpha Fade": false,
+        "Enable Dissolve": true,
         "duration_": 1.0
     }
 }

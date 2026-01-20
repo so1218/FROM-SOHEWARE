@@ -690,7 +690,8 @@ void Renderer::CreateSprites()
 	indexSprite_ = 0;
 }
 
-void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle, int layerOrder,
+void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform,
+	uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
 	const MaterialHandle& materialHandle)
 {
 	assert(indexSprite_ < kMaxSpriteCount);
@@ -741,6 +742,7 @@ void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float ro
 	submission.group = RenderGroup::UI;
 	submission.instanceIndex = indexSprite_;
 	submission.textureHandle = textureHandle;
+	submission.dissolveTextureHandle = dissolveTextureHandle;
 	submission.materialHandle = materialHandle;
 	submission.color = color;
 	submission.worldMatrix = sprite.worldMatrix;
@@ -1136,6 +1138,7 @@ void Renderer::DrawSprite(const ModelSubmission& sub)
 	cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
 	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
+	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 
 	cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
 }

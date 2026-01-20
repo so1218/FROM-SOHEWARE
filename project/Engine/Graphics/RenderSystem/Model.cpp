@@ -21,8 +21,8 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
     uvTransform_.UpdateMatrix();
     materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
 }
-void Model::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
-void Model::SetEnvironmentMapHandle(uint32_t handle) { envMapTextureHandle_ = handle; }
+void Model::SetTexture(TextureID textureID) { textureHandle_ = TextureHandle::Get(textureID); }
+void Model::SetEnvironmentMapTexture(TextureID textureID) { envMapTextureHandle_ = TextureHandle::Get(textureID); }
 void Model::SetColor(uint32_t color) { color_ = color; }
 void Model::SetEnableOutline(bool enable) { enableOutline_ = enable; }
 void Model::SetOutlineWidth(float width) { outlineWidth_ = width; }
