@@ -124,7 +124,7 @@ void Player::Update()
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
 	//animationPlayer_->SetEnableDissolve(true);
 	//animationPlayer_->materialHandle_.materialData->dissolveThreshold = 0.5f;
-	modelTamesi_->materialHandle_.materialData->enableNormalMap = true;
+	modelTamesi_->GetMaterial()->enableNormalMap = true;
 
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
@@ -427,7 +427,7 @@ void Player::DebugDraw()
 	ImGui::Text("ディゾルブ設定 (Dissolve)");
 
 	// データへのポインタを取得して記述を短くする
-	auto* matData = modelPlayer_->materialHandle_.materialData;
+	auto* matData = modelPlayer_->GetMaterial();
 
 	if (matData)
 	{

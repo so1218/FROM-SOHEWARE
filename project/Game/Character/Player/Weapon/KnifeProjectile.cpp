@@ -49,10 +49,10 @@ void KnifeProjectile::Update(float deltaTime)
     UpdateAABB();
 
     model_->SetEmissiveIntensity(4.0f);
-    model_->materialHandle_.materialData->enableRim = true;
-    model_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
-    model_->materialHandle_.materialData->rimPower = 3.8f;
-    model_->materialHandle_.materialData->rimIntensity = 1.7f;
+    model_->GetMaterial()->enableRim = true;
+    model_->GetMaterial()->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+    model_->GetMaterial()->rimPower = 3.8f;
+    model_->GetMaterial()->rimIntensity = 1.7f;
     model_->SetEnableOutline(true);
 }
 

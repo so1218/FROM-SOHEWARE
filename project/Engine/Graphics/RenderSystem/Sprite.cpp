@@ -9,24 +9,18 @@ Sprite::Sprite(Engine* engine)
     uvTransform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     uvTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
 
+    // 初期テクスチャ設定
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
+
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 }
 
-void Sprite::SetPosition(const Vector2& position) { position_ = position; }
-void Sprite::SetSize(const Vector2& size) { size_ = size; }
-void Sprite::SetRotation(float rotation) { rotation_ = rotation; }
-void Sprite::SetColor(uint32_t color) { color_ = color; }
 void Sprite::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
-void Sprite::SetUVTransform(const WorldTransform& uv) { uvTransform_ = uv; }
-void Sprite::SetLayerOrder(int order) { layerOrder_ = order; }
 
-Vector2& Sprite::GetPosition() { return position_; }
-Vector2& Sprite::GetSize() { return size_; }
-float& Sprite::GetRotation() { return rotation_; }
-WorldTransform& Sprite::GetUVTransform() { return uvTransform_; }
-int Sprite::GetLayerOrder() const { return layerOrder_; }
+void Sprite::SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
+
+void Sprite::SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
 
 void Sprite::Draw()
 {
@@ -36,6 +30,7 @@ void Sprite::Draw()
     }
 
     uvTransform_.UpdateMatrix();
+
     engine_->renderer_->SubmitSprite(
         position_,
         size_,

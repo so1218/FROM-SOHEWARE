@@ -1,6 +1,6 @@
 #include "AnimationModel.h"
 #include "TimeManager.h"
-#include "TextureHandle.h"
+#include "Engine.h"
 
 AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation)
     : engine_(engine)
@@ -17,11 +17,14 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
         skeleton_, *animeModelData_.modelData, engine_->srvManager_.get());
 
     animationTime_ = 0.0f;
+
+    // 初期テクスチャ設定
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
     dissolveTextureHandle_ = TextureHandle::Get(TextureID::white1x1);
     normalMapHandle_ = TextureHandle::Get(TextureID::white1x1);
+
     color_ = 0xFFFFFFFF;
 }
 
@@ -31,6 +34,29 @@ AnimationModel::~AnimationModel()
     {
         engine_->srvManager_->FreeSRV(skinCluster_.paletteSrvIndex);
     }
+}
+
+void AnimationModel::SetTexture(TextureID textureID) { textureHandle_ = TextureHandle::Get(textureID); }
+void AnimationModel::SetEnvironmentMapTexture(TextureID textureID) { envMapTextureHandle_ = TextureHandle::Get(textureID); }
+void AnimationModel::SetToonRampTexture(TextureID textureID) { toonRampHandle_ = TextureHandle::Get(textureID); }
+void AnimationModel::SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
+void AnimationModel::SetNormalMapTexture(TextureID textureID) { normalMapHandle_ = TextureHandle::Get(textureID); }
+void AnimationModel::SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
+void AnimationModel::SetOutlineColor(uint32_t color) { outlineColor_ = Math::Uint32ToColorVector(color); }
+
+// アニメーション制御
+void AnimationModel::ResetAnimation()
+{
+    animationTime_ = 0.0f;
+    isFinished_ = false;
+}
+
+void AnimationModel::SetAnimation(const Animation* animation)
+{
+    // アニメーションデータを上書きコピー
+    animeModelData_.currentAnimation = animation;
+    // 再生時間をリセット
+    ResetAnimation();
 }
 
 void AnimationModel::Update(float speedScale, bool isLoop)
@@ -105,20 +131,3 @@ void AnimationModel::Draw()
         renderGroup_
     );
 }
-
-void AnimationModel::ResetAnimation()
-{
-    animationTime_ = 0.0f;
-    isFinished_ = false;
-}
-
-void AnimationModel::SetAnimation(const Animation* animation)
-{
-    // アニメーションデータを上書きコピー
-    animeModelData_.currentAnimation = animation;
-
-    // 再生時間をリセット
-    ResetAnimation();
-}
-
-void AnimationModel::SetEnableOutline(bool enable) { enableOutline_ = enable; }

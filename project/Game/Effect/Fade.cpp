@@ -85,8 +85,7 @@ void Fade::Update()
         // Dissolveを有効化
         sprite_->SetEnableDissolve(true);
 
-        // マテリアルデータへのポインタを取得して値を書き込む
-        auto* material = sprite_->materialHandle_.materialData;
+        auto* material = sprite_->GetMaterial();
         if (material)
         {
             material->edgeWidth = edgeWidth_;

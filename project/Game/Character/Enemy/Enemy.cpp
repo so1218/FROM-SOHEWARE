@@ -119,10 +119,10 @@ void Enemy::Update()
 	animationEnemy_->SetTransform(transform);
 
 	animationEnemy_->SetEmissiveIntensity(4.0f);
-	animationEnemy_->materialHandle_.materialData->enableRim = true;
-	animationEnemy_->materialHandle_.materialData->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
-	animationEnemy_->materialHandle_.materialData->rimPower = 3.8f;
-	animationEnemy_->materialHandle_.materialData->rimIntensity = 1.7f;
+	animationEnemy_->GetMaterial()->enableRim = true;
+	animationEnemy_->GetMaterial()->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+	animationEnemy_->GetMaterial()->rimPower = 3.8f;
+	animationEnemy_->GetMaterial()->rimIntensity = 1.7f;
 }
 
 void Enemy::TakeDamage(float damage, const Vector3& hitSourcePosition)

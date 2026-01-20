@@ -7,6 +7,7 @@ Model::Model(Engine* engine, const ModelData* modelData)
 {
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
+    // 初期テクスチャ設定
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
     envMapTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemap);
     toonRampHandle_ = TextureHandle::Get(TextureID::toonRamp);
@@ -14,20 +15,20 @@ Model::Model(Engine* engine, const ModelData* modelData)
     normalMapHandle_ = TextureHandle::Get(TextureID::white1x1);
 }
 
-void Model::SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
 void Model::SetUVTransform(const WorldTransform& uvTransform)
 {
     uvTransform_ = uvTransform;
     uvTransform_.UpdateMatrix();
     materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
 }
+
 void Model::SetTexture(TextureID textureID) { textureHandle_ = TextureHandle::Get(textureID); }
 void Model::SetEnvironmentMapTexture(TextureID textureID) { envMapTextureHandle_ = TextureHandle::Get(textureID); }
-void Model::SetColor(uint32_t color) { color_ = color; }
-void Model::SetEnableOutline(bool enable) { enableOutline_ = enable; }
-void Model::SetOutlineWidth(float width) { outlineWidth_ = width; }
-void Model::SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
-void Model::SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
+void Model::SetToonRampTexture(TextureID textureID) { toonRampHandle_ = TextureHandle::Get(textureID); }
+void Model::SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
+void Model::SetNormalMapTexture(TextureID textureID) { normalMapHandle_ = TextureHandle::Get(textureID); }
+void Model::SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }
+void Model::SetOutlineColor(uint32_t color) { outlineColor_ = Math::Uint32ToColorVector(color); }
 
 void Model::Draw()
 {
