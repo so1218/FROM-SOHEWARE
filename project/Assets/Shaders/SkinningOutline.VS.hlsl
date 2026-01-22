@@ -8,7 +8,8 @@ struct SkinningVertexShaderInput
     float32_t3 normal : NORMAL0;
     float32_t4 weight : WEIGHT0;
     int32_t4 index : INDEX0;
-    float32_t3 smoothNormal : TANGENT0;
+    float32_t3 tangent : TANGENT0;
+    float32_t3 smoothNormal : TEXCOORD1;
 };
 
 struct OutlineVertexShaderOutput
@@ -17,7 +18,7 @@ struct OutlineVertexShaderOutput
 };
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
-StructuredBuffer<Well> gMatrixPalette : register(t0); 
+StructuredBuffer<Well> gMatrixPalette : register(t0);
 ConstantBuffer<OutlineData> gOutlineData : register(b1);
 ConstantBuffer<FrameData> gFrameData : register(b2);
 
@@ -40,6 +41,14 @@ Skinned Skinning(SkinningVertexShaderInput input)
     skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
     skinned.normal = normalize(skinned.normal);
     
+    // 接線の計算(ノーマルマップ)
+    skinned.tangent = mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x;
+    skinned.tangent += mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y;
+    skinned.tangent += mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z;
+    skinned.tangent += mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
+    skinned.tangent = normalize(skinned.tangent);
+
+    // スムース法線の計算
     skinned.smoothNormal = mul(input.smoothNormal, (float32_t3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x;
     skinned.smoothNormal += mul(input.smoothNormal, (float32_t3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y;
     skinned.smoothNormal += mul(input.smoothNormal, (float32_t3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z;

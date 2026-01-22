@@ -115,12 +115,6 @@ void Engine::BeginFrame()
 	// ポストエフェクトのパラメータ更新など
 	postEffectManager_->Update();
 
-	// マテリアルをグローバル状態に合わせて更新
-	if (materialManager_) 
-	{
-		materialManager_->UpdateAllMaterialsFromGlobal();
-	}
-
 #ifdef IS_DEVELOPMENT
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);

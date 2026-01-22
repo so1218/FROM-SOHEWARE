@@ -24,9 +24,9 @@ public:
     void SetDissolveTexture(TextureID textureID);
     void SetNormalMapTexture(TextureID textureID);
 
-    // 色変換関係 (Math依存)
-    void SetColor(const Vector4& color);     
-    void SetOutlineColor(uint32_t color);    
+    // 色変換関係
+    void SetColor(const Vector4& color);
+    void SetOutlineColor(uint32_t color);
 
     // 単純なセッター
     void SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
@@ -53,7 +53,6 @@ public:
     const WorldTransform& GetUVTransform() const { return uvTransform_; }
 
     uint32_t GetColor() const { return color_; }
-    uint32_t* GetColorPtr() { return &color_; }
 
     bool IsOutlineEnabled() const { return enableOutline_; }
     float GetOutlineWidth() const { return outlineWidth_; }
@@ -63,6 +62,28 @@ public:
     // マテリアルデータへのアクセサ
     MaterialData* GetMaterial() { return materialHandle_.materialData; }
     const MaterialData* GetMaterial() const { return materialHandle_.materialData; }
+
+    // ImGui用
+    void UpdateUV()
+    {
+        uvTransform_.UpdateMatrix();
+        // マテリアルデータへの転送
+        if (materialHandle_.materialData)
+        {
+            materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
+        }
+    }
+    uint32_t* GetColorPtr() { return &color_; }
+
+    uint32_t* GetTextureHandlePtr() { return &textureHandle_; }
+    uint32_t* GetEnvMapTextureHandlePtr() { return &envMapTextureHandle_; }
+    uint32_t* GetToonRampHandlePtr() { return &toonRampHandle_; }
+    uint32_t* GetDissolveTextureHandlePtr() { return &dissolveTextureHandle_; }
+    uint32_t* GetNormalMapHandlePtr() { return &normalMapHandle_; }
+
+    bool* GetEnableOutlinePtr() { return &enableOutline_; }
+    float* GetOutlineWidthPtr() { return &outlineWidth_; }
+    Vector4* GetOutlineColorPtr() { return &outlineColor_; }
 
 private:
     Engine* engine_ = nullptr;

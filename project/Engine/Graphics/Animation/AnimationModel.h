@@ -12,12 +12,17 @@ public:
     AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 
-    void Update(float speedScale, bool isLoop);
+    void Update();
+    void Play(const Animation* animation, bool isLoop = true, float speedScale = 1.0f);
     void Draw();
 
     // アニメーション制御 
     void ResetAnimation();
     void SetAnimation(const Animation* animation);
+
+    // 途中変更用のセッター
+    void SetSpeedScale(float speedScale) { speedScale_ = speedScale; }
+    void SetIsLoop(bool isLoop) { isLoop_ = isLoop; }
 
     // 複雑なセッター
     // テクスチャ関係
@@ -28,8 +33,8 @@ public:
     void SetNormalMapTexture(TextureID textureID);
 
     // 色変換関係
-    void SetColor(const Vector4& color);       
-    void SetOutlineColor(uint32_t color);      
+    void SetColor(const Vector4& color);
+    void SetOutlineColor(uint32_t color);
 
     // 単純なセッター
     void SetTransform(const WorldTransform& transform) { transform_ = transform; }
@@ -49,10 +54,6 @@ public:
     void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
     void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
 
-    // マテリアルデータへのアクセサ
-    MaterialData* GetMaterial() { return materialHandle_.materialData; }
-    const MaterialData* GetMaterial() const { return materialHandle_.materialData; }
-
     // ゲッター
     WorldTransform& GetTransform() { return transform_; }
     AnimationID GetCurrentAnimationID() const { return currentAnimationID_; }
@@ -61,12 +62,54 @@ public:
 
     bool IsOutlineEnabled() const { return enableOutline_; }
     uint32_t GetColor() const { return color_; }
+
+    // マテリアルデータへのアクセサ
+    MaterialData* GetMaterial() { return materialHandle_.materialData; }
+    const MaterialData* GetMaterial() const { return materialHandle_.materialData; }
+
+    // ImGui用
+    void UpdateUV()
+    {
+        uvTransform_.UpdateMatrix();
+        // マテリアルデータへの転送
+        if (materialHandle_.materialData)
+        {
+            materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
+        }
+    }
+    // Transform
+    WorldTransform* GetTransformPtr() { return &transform_; }
+    WorldTransform* GetUVTransformPtr() { return &uvTransform_; }
+
+    // マテリアル
+    MaterialData* GetMaterialData() { return materialHandle_.materialData; }
+
+    // 色・アウトライン
     uint32_t* GetColorPtr() { return &color_; }
+    bool* GetEnableOutlinePtr() { return &enableOutline_; }
+    float* GetOutlineWidthPtr() { return &outlineWidth_; }
+    Vector4* GetOutlineColorPtr() { return &outlineColor_; }
+
+    // テクスチャハンドル 
+    uint32_t* GetTextureHandlePtr() { return &textureHandle_; }
+    uint32_t* GetEnvMapTextureHandlePtr() { return &envMapTextureHandle_; }
+    uint32_t* GetToonRampHandlePtr() { return &toonRampHandle_; }
+    uint32_t* GetDissolveTextureHandlePtr() { return &dissolveTextureHandle_; }
+    uint32_t* GetNormalMapHandlePtr() { return &normalMapHandle_; }
+
+    // アニメーション制御
+    float* GetSpeedScalePtr() { return &speedScale_; }
+    bool* GetIsLoopPtr() { return &isLoop_; }
 
 private:
     Engine* engine_ = nullptr;
 
     MaterialHandle materialHandle_;
+
+    const Animation* currentAnimation_ = nullptr;
+    bool isLoop_ = true;       // ループするか
+    float speedScale_ = 1.0f;  // 再生速度
+    bool isPlaying_ = false;   // 再生中かどうか
 
     AnimatedModelData animeModelData_;
     WorldTransform transform_;
@@ -90,7 +133,6 @@ private:
     bool isFinished_ = false;       // 再生が終了したか
     EasingType easingType_ = EasingType::EaseLinear;
     AnimationID currentAnimationID_ = AnimationID::count;
-    float speedScale_ = 1.0f;
 
     // アウトライン
     bool enableOutline_ = false;

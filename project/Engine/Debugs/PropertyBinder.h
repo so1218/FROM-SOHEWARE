@@ -5,6 +5,12 @@
 
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
+#include "Engine.h"
+#include "TextureHandle.h"
+
+class Model;
+class AnimationModel;
+class Sprite;
 
 // 変数の登録を行えば、GlobalVariablesの読み書きとImGuiの表示をしてくれる関数
 class PropertyBinder
@@ -12,8 +18,9 @@ class PropertyBinder
 public:
     // 可変長テンプレートコンストラクタ
     template <typename... Args>
-    PropertyBinder(Args&&... args)
-        : groupPath_{ std::string(std::forward<Args>(args))... }
+    PropertyBinder(Engine* engine, Args&&... args)
+        : engine_(engine),
+        groupPath_{ std::string(std::forward<Args>(args))... }
     {
         GlobalVariables::GetInstance()->CreateGroup(groupPath_);
     }
@@ -30,11 +37,11 @@ public:
         {
             if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
             {
-                appliedSpeed = 1.0f; 
+                appliedSpeed = 1.0f;
             }
             else
             {
-                appliedSpeed = 0.01f; 
+                appliedSpeed = 0.01f;
             }
         }
 
@@ -75,26 +82,35 @@ public:
         }
     }
 
+    // Vector専用のBindオーバーロード (onChange 対応版)
+    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
+    {
+        // コールバック付き
+        BindVector3(key, ptr, defaultValue, speed, 0.0f, 0.0f, onChange);
+    }
+
     //  色用Bind関数
     template <typename T>
     void BindColor(const std::string& key, T* ptr, const T& defaultValue)
     {
-        // Vector3 の場合
+        // Vector3の場合
         if constexpr (std::is_same_v<T, Vector3>)
         {
             BindColorVector3(key, ptr, defaultValue);
         }
-        // Vector4 の場合
+        // Vector4の場合
         else if constexpr (std::is_same_v<T, Vector4>)
         {
             BindColorVector4(key, ptr, defaultValue);
         }
-        // uint32_t の場合
+        // uint32_tの場合
         else if constexpr (std::is_same_v<T, uint32_t>)
         {
             BindColor32(key, ptr, defaultValue);
         }
     }
+
+    void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
 
     void Draw(const std::string& key, const std::string& name = "")
     {
@@ -104,6 +120,24 @@ public:
             items_[key](name);
         }
     }
+
+    // モデルを受け取って、そのマテリアル設定を全部自動登録する
+    void BindModel(const std::string& groupName, Model* model);
+    // モデルごとの描画を一括で行う
+    void DrawModel(const std::string& groupName, const std::string& customLabel = "");
+
+    void BindAnimationModel(const std::string& groupName, AnimationModel* model);
+    void DrawAnimationModel(const std::string& groupName, const std::string& customLabel);
+
+    void BindSprite(const std::string& groupName, Sprite* sprite);
+    void DrawSprite(const std::string& groupName, const std::string& customLabel);
+
+    // int/uintをboolとして扱うための関数
+    void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
+    void BindBool(const std::string& key, uint32_t* ptr, bool defaultValue);
+
+    // 回転専用のBind関数
+    void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
 
 private:
     // 共通処理
@@ -220,21 +254,15 @@ private:
 
     void BindVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
     {
-        RegisterItem(key, defaultValue, ptr);
+        // 共通関数を呼ぶ
+        BindVector3Internal(key, ptr, defaultValue, speed, min, max, nullptr);
+    }
 
-        // 保存されているデータを反映
-        *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
-
-#ifdef IS_DEVELOPMENT
-        items_[key] = [=](const std::string& nameOverride)
-            {
-                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
-                if (ImGui::DragFloat3(label.c_str(), &ptr->x, speed, min, max))
-                {
-                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
-                }
-            };
-#endif
+    // コールバックを受け取る版
+    void BindVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange)
+    {
+        // 共通関数を呼ぶ（コールバックを渡す）
+        BindVector3Internal(key, ptr, defaultValue, speed, min, max, onChange);
     }
 
     void BindVector4(const std::string& key, Vector4* ptr, const Vector4& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
@@ -326,6 +354,40 @@ private:
 #endif
     }
 
+    // 共通実装
+    void BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange)
+    {
+        RegisterItem(key, defaultValue, ptr);
+
+        // 保存データを反映
+        *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
+
+#ifdef IS_DEVELOPMENT
+        // ラムダ式内で onChange をキャプチャ
+        items_[key] = [=](const std::string& nameOverride)
+            {
+                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+
+                // 値が変更されたら
+                if (ImGui::DragFloat3(label.c_str(), &ptr->x, speed, min, max))
+                {
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+
+                    // コールバックがあれば実行
+                    if (onChange)
+                    {
+                        onChange();
+                    }
+                }
+            };
+#endif
+    }
+
+    // テクスチャID用バインド関数
+    void BindTexture(const std::string& key, uint32_t* ptr);
+
+    Engine* engine_ = nullptr;
+
     template <class T> static constexpr bool always_false = false;
 
     std::vector<std::string> groupPath_;
@@ -335,4 +397,12 @@ private:
 
     // キーと描画処理を紐付けるマップ
     std::unordered_map<std::string, std::function<void(const std::string&)>> items_;
+
+    // 内部で管理するためのヘルパー
+    struct ModelBindInfo
+    {
+        Model* model = nullptr;
+        // テクスチャIDなどを一時的に保持する変数が必要なら
+    };
+    std::unordered_map<std::string, ModelBindInfo> modelBindMap_;
 };

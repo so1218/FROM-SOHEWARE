@@ -16,7 +16,7 @@ Sprite::Sprite(Engine* engine)
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 }
 
-void Sprite::SetTexture(TextureID id) { textureHandle_ = TextureHandle::Get(id); }
+void Sprite::SetTexture(TextureID textureID) { textureHandle_ = TextureHandle::Get(textureID); }
 
 void Sprite::SetDissolveTexture(TextureID textureID) { dissolveTextureHandle_ = TextureHandle::Get(textureID); }
 
@@ -28,8 +28,6 @@ void Sprite::Draw()
     {
         return;
     }
-
-    uvTransform_.UpdateMatrix();
 
     engine_->renderer_->SubmitSprite(
         position_,

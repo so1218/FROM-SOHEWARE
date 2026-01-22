@@ -46,6 +46,8 @@ void Enemy::Initialize()
 	// 衝突対象を自分の属性以外に設定
 	SetCollisionMask(kCollisionAttributePlayer/* | kCollisionAttributePlayerWeaponKnife | kCollisionAttributePlayerWeaponAxe*/);
 
+	animationEnemy_->Play(AnimationHandle::Get(AnimationID::enemy), true);
+
 	// グループ名を追加
 	GlobalVariables::GetInstance()->CreateGroup(GetGlobalVariableGroupName());
 
@@ -115,7 +117,7 @@ void Enemy::Update()
 	transform.UpdateMatrix();
 	UpdateAABB();
 
-	animationEnemy_->Update(1.0f, true);
+	animationEnemy_->Update();
 	animationEnemy_->SetTransform(transform);
 
 	animationEnemy_->SetEmissiveIntensity(4.0f);

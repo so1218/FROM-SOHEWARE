@@ -8,32 +8,32 @@
 
 Fade::Fade(Engine* engine)
 {
-	engine_ = engine;
+    engine_ = engine;
 
-	sprite_ = std::make_unique<Sprite>(engine_);
+    sprite_ = std::make_unique<Sprite>(engine_);
 }
 
 void Fade::Initialize()
 {
-	spriteSize_ = { (float)kClientWidth,(float)kClientHeight };
+    spriteSize_ = { (float)kClientWidth,(float)kClientHeight };
 
-	// 通常スプライト
-	sprite_->SetPosition(spritePos_);
-	sprite_->SetSize(spriteSize_);
-	sprite_->SetColor(0x000000FF);
-	sprite_->SetLayerOrder(9999);
+    // 通常スプライト
+    sprite_->SetPosition(spritePos_);
+    sprite_->SetSize(spriteSize_);
+    sprite_->SetColor(0x000000FF);
+    sprite_->SetLayerOrder(9999);
 
-	sprite_->SetIsVisible(false);
+    sprite_->SetIsVisible(false);
     sprite_->SetDissolveTexture(TextureID::noise1);
 
-	// グローバル変数登録
-	binder_ = std::make_unique<PropertyBinder>("Fade");
+    // グローバル変数登録
+    binder_ = std::make_unique<PropertyBinder>(engine_, "Fade");
 
-	binder_->Bind("duration_", &duration_, 1.0f);
-	binder_->Bind("Enable Alpha Fade", &useAlphaFade_, true);
-	binder_->Bind("Enable Dissolve", &useDissolve_, false);
-	binder_->Bind("Dissolve Edge Width", &edgeWidth_, 0.04f);
-	binder_->Bind("Dissolve Intensity", &edgeIntensity_, 2.0f);
+    binder_->Bind("duration_", &duration_, 1.0f);
+    binder_->Bind("Enable Alpha Fade", &useAlphaFade_, true);
+    binder_->Bind("Enable Dissolve", &useDissolve_, false);
+    binder_->Bind("Dissolve Edge Width", &edgeWidth_, 0.04f);
+    binder_->Bind("Dissolve Intensity", &edgeIntensity_, 2.0f);
     binder_->BindColor("Dissolve Color", &edgeColor_, { 1.0f, 1.0f, 1.0f });
 }
 
@@ -60,7 +60,7 @@ void Fade::Update()
     float t = std::clamp(counter_ / duration_, 0.0f, 1.0f);
 
     // 透明度フェード
-    float alpha = 1.0f; 
+    float alpha = 1.0f;
 
     if (useAlphaFade_)
     {
@@ -98,7 +98,7 @@ void Fade::Update()
                 // フェードイン
                 material->dissolveThreshold = t;
             }
-            else 
+            else
             {
                 // フェードアウト
                 material->dissolveThreshold = 1.0f - t;
@@ -114,17 +114,17 @@ void Fade::Update()
 
 void Fade::Draw()
 {
-	if (status_ == Status::None)
-	{
-		return;
-	}
-	sprite_->Draw();
+    if (status_ == Status::None)
+    {
+        return;
+    }
+    sprite_->Draw();
 }
 
 void Fade::DebugDraw()
 {
 #ifdef IS_DEVELOPMENT
-    ImGui::Begin("フェード設定"); 
+    ImGui::Begin("フェード設定");
 
     if (ImGui::CollapsingHeader("基本設定", ImGuiTreeNodeFlags_DefaultOpen))
     {
@@ -140,48 +140,48 @@ void Fade::DebugDraw()
         {
             binder_->Draw("Dissolve Edge Width", "エッジの幅");
             binder_->Draw("Dissolve Intensity", "エッジの発光強度");
-            binder_->Draw("Dissolve Color", "エッジの色"); 
+            binder_->Draw("Dissolve Color", "エッジの色");
         }
     }
 
     ImGui::Separator();
 
-    ImGui::End(); 
+    ImGui::End();
 #endif
 }
 
 void Fade::Start(Status status, float duration)
 {
-	status_ = status;
-	duration_ = duration;
-	counter_ = 0.0f;
+    status_ = status;
+    duration_ = duration;
+    counter_ = 0.0f;
 
-	// 開始時に表示ON
-	sprite_->SetIsVisible(true);
+    // 開始時に表示ON
+    sprite_->SetIsVisible(true);
 }
 
 void Fade::Stop()
 {
-	status_ = Status::None;
-	sprite_->SetIsVisible(false);
+    status_ = Status::None;
+    sprite_->SetIsVisible(false);
 }
 
 bool Fade::IsFinished() const
 {
-	// フェード状態による分岐
-	switch (status_)
-	{
-	case Status::FadeIn:
-	case Status::FadeOut:
-		if (counter_ >= duration_)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
+    // フェード状態による分岐
+    switch (status_)
+    {
+    case Status::FadeIn:
+    case Status::FadeOut:
+        if (counter_ >= duration_)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
-	return true;
+    return true;
 }

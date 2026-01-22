@@ -59,55 +59,76 @@ void AnimationModel::SetAnimation(const Animation* animation)
     ResetAnimation();
 }
 
-void AnimationModel::Update(float speedScale, bool isLoop)
+// 毎フレームの更新
+void AnimationModel::Update()
 {
-    // 再生が既に終了している場合は何もしない
-    if (isFinished_)
+    // 再生中でない、または終了している場合は、姿勢更新のみ行い終了
+    if (!isPlaying_ || isFinished_)
     {
+        UpdateSkeleton(skeleton_);
+        UpdateSkinCluster(skinCluster_, skeleton_);
         return;
     }
 
-    // 再生速度を計算
-    float speed = 1.0f;
-    if (speedScale > 0.0f)
-    {
-        speed = animeModelData_.currentAnimation->duration / speedScale;
+    // アニメーションデータがない、または長さが0なら処理しない
+    if (!animeModelData_.currentAnimation || animeModelData_.currentAnimation->duration <= 0.0f) {
+        return;
     }
 
-    // デルタタイムに速度を乗算してアニメーション時間を進める
-    animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speed;
-    float linearT = 0.0f;
+    float duration = animeModelData_.currentAnimation->duration;
 
-    if (animeModelData_.currentAnimation->duration > 0.0f)
+    // 速度の計算
+    animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speedScale_;
+
+    // 進行度（0.0～1.0）の計算
+    float linearT = animationTime_ / duration;
+
+    // ループと終了判定
+    if (isLoop_)
     {
-        linearT = animationTime_ / animeModelData_.currentAnimation->duration;
-    }
-    // ループするかどうかで時間を調整
-    if (isLoop)
-    {
-        animationTime_ = fmod(animationTime_, animeModelData_.currentAnimation->duration);
+        // 1.0を超えたら0.0に戻る
         linearT = fmod(linearT, 1.0f);
+        animationTime_ = fmod(animationTime_, duration);
     }
     else
     {
+        // 1.0でカンストし、終了フラグを立てる
         if (linearT >= 1.0f)
         {
-            // アニメーションの終端で時間を固定し、終了フラグを立てる
             linearT = 1.0f;
-            animationTime_ = animeModelData_.currentAnimation->duration;
+            animationTime_ = duration;
             isFinished_ = true;
+            isPlaying_ = false;
         }
     }
-    float easedT = Easing::Evaluate(easingType_, linearT);
-    float easedAnimationTime = easedT * animeModelData_.currentAnimation->duration;
 
-    // アニメーションを適用
-    if (animeModelData_.currentAnimation)
-    {
-        ApplyAnimation(skeleton_, *animeModelData_.currentAnimation, easedAnimationTime);
-    }
+    // イージングの適用
+    float easedT = Easing::Evaluate(easingType_, linearT);
+
+    // イージングされたTを、実際のアニメーション時間に戻す
+    float playbackTime = easedT * duration;
+
+    // アニメーション適用
+    ApplyAnimation(skeleton_, *animeModelData_.currentAnimation, playbackTime);
+
+    // 行列更新
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
+}
+
+// アニメーション再生の開始
+void AnimationModel::Play(const Animation* animation, bool isLoop, float speedScale)
+{
+    // アニメーション切り替え
+    animeModelData_.currentAnimation = animation;
+
+    // 設定をメンバ変数に保存
+    isLoop_ = isLoop;
+    speedScale_ = speedScale;
+
+    // 時間リセット
+    ResetAnimation();
+    isPlaying_ = true;
 }
 
 void AnimationModel::Draw()

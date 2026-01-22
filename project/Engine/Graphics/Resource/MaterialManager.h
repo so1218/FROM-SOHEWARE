@@ -13,9 +13,6 @@ public:
 
     // マテリアルの生成
     MaterialHandle CreateMaterial(ID3D12Device* device);
- 
-    // グローバル設定からすべてのマテリアルを更新
-    void UpdateAllMaterialsFromGlobal();
 
     // ゲッター
     const std::vector<MaterialHandle>& GetMaterials() const { return materials_; }

@@ -72,6 +72,9 @@ public:
     static void Initialize(Engine* engine);
     static uint32_t Get(TextureID id);
 
+    // IDからファイル名だけを取得する関数
+    static std::string GetFileName(TextureID id);
+
 private:
     static std::array<uint32_t, TEXTURES_COUNT> textureHandles_;
     static bool initialized_;

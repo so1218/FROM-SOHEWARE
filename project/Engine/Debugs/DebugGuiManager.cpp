@@ -67,14 +67,14 @@ void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
     {
         Vector3 translation = targetCamera->GetTranslation();
         Vector3 rotationEuler = targetCamera->GetWorldRotationEuler();
-        float fov = targetCamera->GetFov();          
+        float fov = targetCamera->GetFov();
         float nearClip = targetCamera->GetNearClip();
         float farClip = targetCamera->GetFarClip();
 
         if (ImGui::DragFloat3("座標 (World)", &translation.x, 0.1f))
         {
             targetCamera->SetTranslation(translation);
-            targetCamera->UpdateViewMatrix(); 
+            targetCamera->UpdateViewMatrix();
         }
 
         if (ImGui::DragFloat3("回転 (World)", &rotationEuler.x, 0.1f))
@@ -87,7 +87,7 @@ void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
         {
             targetCamera->SetFov(fov);
         }
-        if (ImGui::DragFloat("ニアクリップ", &nearClip, 0.01f, 0.001f, 100.0f)) 
+        if (ImGui::DragFloat("ニアクリップ", &nearClip, 0.01f, 0.001f, 100.0f))
         {
             targetCamera->SetNearClip(nearClip);
         }
@@ -116,7 +116,7 @@ void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
         }
 
         float pitch = debugCamera_->GetCurrentPitch();
-        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f)) 
+        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f))
         {
             debugCamera_->SetCurrentPitch(pitch);
         }
@@ -134,13 +134,13 @@ void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
         }
 
         float rotateSpeed = debugCamera_->GetRotateSpeed();
-        if (ImGui::DragFloat("回転速度", &rotateSpeed, 0.0001f, 0.0001f, 0.05f)) 
+        if (ImGui::DragFloat("回転速度", &rotateSpeed, 0.0001f, 0.0001f, 0.05f))
         {
             debugCamera_->SetRotateSpeed(rotateSpeed);
         }
 
         float zoomSpeed = debugCamera_->GetZoomSpeed();
-        if (ImGui::DragFloat("ズーム速度", &zoomSpeed, 0.001f, 0.01f, 1.0f)) 
+        if (ImGui::DragFloat("ズーム速度", &zoomSpeed, 0.001f, 0.01f, 1.0f))
         {
             debugCamera_->SetZoomSpeed(zoomSpeed);
         }

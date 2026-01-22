@@ -14,9 +14,9 @@ public:
     void Draw();
 
     // 複雑なセッター
-    void SetTexture(TextureID id);
+    void SetTexture(TextureID textureID);
     void SetDissolveTexture(TextureID textureID);
-    void SetColor(const Vector4& color); 
+    void SetColor(const Vector4& color);
 
     // 単純なセッター
     void SetPosition(const Vector2& position) { position_ = position; }
@@ -56,6 +56,22 @@ public:
     int GetLayerOrder() const { return layerOrder_; }
     bool GetIsVisible() const { return isVisible_; }
     const Vector2& GetAnchorPoint() const { return anchorPoint_; }
+
+    // ImGui用
+    void UpdateUV()
+    {
+        uvTransform_.UpdateMatrix();
+        // マテリアルデータへの転送
+        if (materialHandle_.materialData)
+        {
+            materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
+        }
+    }
+    uint32_t* GetTextureHandlePtr() { return &textureHandle_; }
+    uint32_t* GetDissolveTextureHandlePtr() { return &dissolveTextureHandle_; }
+    bool* GetIsVisiblePtr() { return &isVisible_; }
+    int* GetLayerOrderPtr() { return &layerOrder_; }
+    Vector2* GetAnchorPointPtr() { return &anchorPoint_; }
 
 private:
     Engine* engine_ = nullptr;

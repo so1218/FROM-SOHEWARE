@@ -52,12 +52,15 @@ void Player::Initialize()
 	isEnd_ = false;
 
 	//modelPlayer_->SetEnableOutline(true);
-	/*animationPlayer_->SetEnableOutline(true);*/
+	animationPlayer_->SetEnableOutline(true);
 
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0xffffffff);
 	modelTamesi_->SetNormalMapTexture(TextureID::normalMap);
+
+	animationPlayer_->Play(AnimationHandle::Get(AnimationID::enemy), true);
+
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);
 	SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeExpGem);
@@ -146,7 +149,7 @@ void Player::Update()
 	modelPlayer_->GetTransform().UpdateMatrix();
 
 	// アニメーション更新
-	animationPlayer_->Update(1.5f, true);
+	animationPlayer_->Update();
 	animationPlayer_->SetTransform(modelPlayer_->GetTransform());
 
 	// 所持武器の更新
@@ -342,9 +345,9 @@ Vector3 Player::GetWorldPosition() const
 
 void Player::Draw()
 {
-	modelPlayer_->Draw();
+	/*modelPlayer_->Draw();*/
 	modelTamesi_->Draw();
-	/*animationPlayer_->Draw();*/
+	animationPlayer_->Draw();
 	DrawCollider();
 
 	for (auto& weapon : weapons_)
