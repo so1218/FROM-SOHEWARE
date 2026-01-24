@@ -62,17 +62,14 @@ public:
 
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t normalMapHandle,
-        uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
-        bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group);
+        const std::vector<MaterialHandle>& materials, BlendMode blendMode,
+        RenderGroup group);
     void DrawSkeleton(const Skeleton& skeleton, uint32_t color);
     void SubmitAnimationModel(const WorldTransform& worldTransform,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
-        uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle,
-        uint32_t normalMapHandle, uint32_t color,
-        const MaterialHandle& materialHandle, bool enableOutline, float outlineWidth, const Vector4& outlineColor,
+        const std::vector<MaterialHandle>& materials, BlendMode blendMode,
         RenderGroup group);
-    void SubmitGrid(const WorldTransform& worldTransform,const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
+    void SubmitGrid(const WorldTransform& worldTransform, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
     void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle,
         uint32_t dissolveTextureHandle, int layerOrder, const MaterialHandle& materialHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
@@ -93,7 +90,7 @@ public:
     std::string GetParticlePSOName(BlendMode mode);
 
     // メッシュキャッシュ取得・作成 
-    Mesh* GetOrCreateMesh(const ModelData& modelData);
+    const std::vector<Mesh>& GetOrCreateModelBatch(const ModelData& modelData);
 
     // 描画カウント取得
     uint32_t GetModelCount() const { return prevModelCount_; }
@@ -171,7 +168,11 @@ private:
     // 描画インデックスと描画情報（各プリミティブ）
     std::vector<RenderData> models_;
     std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
-    std::unordered_map<const ModelData*, Mesh> meshCache;
+    struct ModelBatch
+    {
+        std::vector<Mesh> meshes; // メッシュの配列
+    };
+    std::map<const ModelData*, ModelBatch> meshCache;
     // 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
     // 定数バッファリソースの配列
@@ -181,7 +182,6 @@ private:
         TransformationMatrix* wvpMapped = nullptr;
 
         Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
-        OutlineData* outlineMapped = nullptr;
     };
     std::vector<PerObjectBuffer> perObjectBuffers_;
 

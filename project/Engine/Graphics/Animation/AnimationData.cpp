@@ -95,7 +95,7 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
 		{
 			const NodeAnimation& nodeAnimation = (*it).second;
-		
+
 			joint.transform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, animationTime);
 			joint.transform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
 			joint.transform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, animationTime);
@@ -111,7 +111,7 @@ void UpdateSkeleton(Skeleton& skeleton)
 		joint.localMatrix = Matrix4x4::MakeAffine(joint.transform.scale_, joint.transform.rotationQuaternion_, joint.transform.translation_);
 		if (joint.parent)
 		{
-			joint.skeletonSpaceMatrix =  joint.localMatrix * skeleton.joints[*(joint.parent)].skeletonSpaceMatrix;
+			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*(joint.parent)].skeletonSpaceMatrix;
 		}
 		else
 		{
@@ -131,9 +131,9 @@ SkinCluster CreateSkinCluster(
 	skinCluster.paletteResource = BufferManager::CreateBufferResource(
 		device.Get(),
 		sizeof(WellForGPU) * skeleton.joints.size());
-	WellForGPU* mappedPalette = nullptr;	
-	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));	
-	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() }; 
+	WellForGPU* mappedPalette = nullptr;
+	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
+	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() };
 
 	// palette用のSRVを作成。structuredBufferでアクセスできるようにする
 	D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc = {};
@@ -151,70 +151,90 @@ SkinCluster CreateSkinCluster(
 		paletteSrvDesc
 	);
 
-	// influence用のResourceを確保。頂点ごとにinfluence情報を追加できるようにする
-	skinCluster.influenceResource = BufferManager::CreateBufferResource(
-		device.Get(),
-		sizeof(VertexInfluence) * modelData.vertices.size());
-	VertexInfluence* mappedInfluence = nullptr;
-	skinCluster.influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInfluence));
-	std::memset(mappedInfluence, 0, sizeof(VertexInfluence) * modelData.vertices.size()); // 0埋め。weightを0にしておく
-	skinCluster.mappedInfluence = { mappedInfluence, modelData.vertices.size() }; 
+	// InverseBindPoseMatrixの初期化
 
-	// influence用のVBVを作成
-	skinCluster.influenceBufferView.BufferLocation = skinCluster.influenceResource->GetGPUVirtualAddress();
-	skinCluster.influenceBufferView.SizeInBytes = UINT(sizeof(VertexInfluence) * modelData.vertices.size());
-	skinCluster.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
-
-	// InverseBindPoseMatrixを格納する場所を作成して、単位行列で埋める
 	skinCluster.inverseBindPoseMatrices.resize(skeleton.joints.size());
 	std::generate(skinCluster.inverseBindPoseMatrices.begin(),
 		skinCluster.inverseBindPoseMatrices.end(), []() { return Matrix4x4::MakeIdentity(); });
 
-	for (const auto& jointWeight : modelData.skinClusterData) // ModelのSkinClusterの情報を解析
+	// Influence (ウェイト情報) の作成
+
+	// メッシュの数だけInfluence格納場所を確保
+	skinCluster.meshInfluences.resize(modelData.meshes.size());
+
+	// メッシュごとに処理
+	for (size_t i = 0; i < modelData.meshes.size(); ++i)
 	{
-		auto it = skeleton.jointMap.find(jointWeight.first); 
-		if (it == skeleton.jointMap.end())
+		const auto& mesh = modelData.meshes[i];            // 現在のメッシュデータ
+		auto& influenceInfo = skinCluster.meshInfluences[i]; // 現在のメッシュ用Influence構造体
+
+		// Resource確保 (このメッシュの頂点数分)
+		influenceInfo.influenceResource = BufferManager::CreateBufferResource(
+			device.Get(),
+			sizeof(VertexInfluence) * mesh.vertices.size());
+
+		VertexInfluence* mappedInfluence = nullptr;
+		influenceInfo.influenceResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedInfluence));
+		std::memset(mappedInfluence, 0, sizeof(VertexInfluence) * mesh.vertices.size()); // 0埋め
+
+		influenceInfo.mappedInfluence = { mappedInfluence, mesh.vertices.size() };
+
+		// VBV作成
+		influenceInfo.influenceBufferView.BufferLocation = influenceInfo.influenceResource->GetGPUVirtualAddress();
+		influenceInfo.influenceBufferView.SizeInBytes = UINT(sizeof(VertexInfluence) * mesh.vertices.size());
+		influenceInfo.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
+
+		// SkinCluster情報の解析と書き込み
+		for (const auto& jointWeight : mesh.skinClusterData)
 		{
-			continue; // Skeletonに含まれていないJointは無視
+			auto it = skeleton.jointMap.find(jointWeight.first);
+			if (it == skeleton.jointMap.end())
+			{
+				continue; // Skeletonに含まれていないJointは無視
+			}
+
+			// InverseBindPoseMatrixのセット
+			skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
+
+			// 頂点ウェイトのセット
+			for (const auto& vertexWeight : jointWeight.second.vertexWeights)
+			{
+				// メッシュ内のローカルな頂点インデックスでアクセス
+				auto& currentInfluence = influenceInfo.mappedInfluence[vertexWeight.vertexIndex];
+
+				for (uint32_t index = 0; index < kNumMaxInfluence; ++index)
+				{
+					if (currentInfluence.weights[index] == 0.0f) // 空きを探す
+					{
+						currentInfluence.weights[index] = vertexWeight.weight;
+						currentInfluence.jointIndices[index] = static_cast<int32_t>((*it).second);
+						break;
+					}
+				}
+			}
 		}
 
-		// (*it).secondにはjointのindexが入っているので、該当のinverseBindPoseMatrixを代入
-		skinCluster.inverseBindPoseMatrices[(*it).second] = jointWeight.second.inverseBindPoseMatrix;
-		for (const auto& vertexWeight : jointWeight.second.vertexWeights)
+		// ウェイトの正規化処理 (このメッシュに対して行う)
+		for (auto& influence : influenceInfo.mappedInfluence)
 		{
-			auto& currentInfluence = skinCluster.mappedInfluence[vertexWeight.vertexIndex]; // 該当のvertexIndexのinfluence情報を参照しておく
-			for (uint32_t index = 0; index < kNumMaxInfluence; ++index) // 空いているところに入れる 
+			float totalWeight = 0.0f;
+			for (float w : influence.weights)
 			{
-				if (currentInfluence.weights[index] == 0.0f) // weight==0が空いている状態なので、その場所にweightとjointのindexを代入
+				totalWeight += w;
+			}
+
+			if (totalWeight > 0.0f)
+			{
+				for (float& w : influence.weights)
 				{
-					currentInfluence.weights[index] = vertexWeight.weight; 
-					currentInfluence.jointIndices[index] = static_cast<int32_t>((*it).second);
-					break;
+					w /= totalWeight;
 				}
 			}
 		}
 	}
 
-	// ウェイトの正規化処理を追加
-	for (auto& influence : skinCluster.mappedInfluence)
-	{
-		float totalWeight = 0.0f;
-		for (float w : influence.weights)
-		{
-			totalWeight += w;
-		}
-
-		if (totalWeight > 0.0f)
-		{
-			for (float& w : influence.weights)
-			{
-				w /= totalWeight;
-			}
-		}
-	}
-
 	return skinCluster;
-}	
+}
 
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
 {

@@ -25,8 +25,8 @@ struct VertexData
 // Trail専用の頂点構造体
 struct VertexDataTrail
 {
-    Vector4 pos;  
-    Vector2 tex;  
+    Vector4 pos;
+    Vector2 tex;
     Vector4 color;
 };
 
@@ -46,6 +46,16 @@ struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     MaterialData* materialData;
+
+    // マテリアルごとのテクスチャハンドル
+    uint32_t textureHandle = 0;       // アルベド
+    uint32_t envMapHandle = 0;        // 環境マップ
+    uint32_t normalMapHandle = 0;     // 法線マップ
+    uint32_t dissolveMapHandle = 0;   // ディゾルブマップ
+    uint32_t toonRampHandle = 0;      // トゥーンランプ
+
+    // エディタ編集用UVデータ
+    WorldTransform uvTransformData;
 };
 
 struct VertexWeightData
@@ -62,23 +72,37 @@ struct JointWeightData
 
 struct Node
 {
-	WorldTransform transform;
+    WorldTransform transform;
     Matrix4x4 localMatrix;
-	std::string name;
+    std::string name;
     std::vector<Node> children;
+    std::vector<unsigned int> meshIndices; // このノードが持つメッシュIDのリスト
+};
+
+struct MeshData
+{
+    // 形状データ
+    std::vector<VertexData> vertices;
+    std::vector<uint32_t> indices;
+
+    // マテリアル・テクスチャ情報（パーツごとに異なるため）
+    MaterialHandle materialHandle;
+    TextureData textureData;
+
+    // スキニング情報（このメッシュの頂点に対するウェイト）
+    std::map<std::string, JointWeightData> skinClusterData;
 };
 
 struct ModelData
 {
-    std::vector<VertexData>vertices;
-    std::vector<uint32_t>indices;
-    TextureData textureData;
-    MaterialHandle materialHandle;
-	Node rootNode;
-	std::map<std::string, JointWeightData> skinClusterData;
+    // 複数のメッシュ（パーツ）を持つリストに変更
+    std::vector<MeshData> meshes;
+
+    // スケルトン階層はモデル全体で1つ共有
+    Node rootNode;
 };
 
-struct VertexKey 
+struct VertexKey
 {
     Vector4 position;
     Vector2 texcoord;
@@ -120,54 +144,6 @@ namespace std
     };
 }
 
-struct MaterialSettings
-{
-    Matrix4x4 uvTransform = Matrix4x4::MakeIdentity();
-
-    Vector4 color = Vector4(1, 1, 1, 1);
-
-    bool enableLighting = false;
-    int32_t lightMode = 1;
-    float shininess = 50.0f;
-    float environmentMapIntensity = 0.0f;
-    float4 specularColor = Vector4(1, 1, 1, 1);
-
-    float diffuseReflection = 4.0f;
-    bool addShadow = true;
-    float shadowBias = 0.0005f;
-    float shadowDensity = 0.7f;
-
-    float shadowSoftness;
-    int32_t isArtGrid;
-    float2 padding2;
-
-    bool enableRim = false;
-    float rimPower = 3.0f;
-    float rimIntensity = 1.0f;
-    Vector3 rimColor = { 1.0f, 1.0f, 1.0f };
-
-    bool rimUseLightDir = false;
-
-    float emissiveIntensity = 1.0f;
-
-    int32_t enableDissolve;
-    Vector3 edgeColor;
-
-    float dissolveThreshold;
-    float edgeWidth;
-    float edgeIntensity;
-    float padding3;
-
-    int32_t enableNormalMap;
-    float normalTiling;
-    float normalIntensity;
-    float padding4;
-
-    float roughness;
-    float metalness;
-
-};
-
 struct AABB
 {
     Vector3 min;
@@ -177,17 +153,17 @@ struct AABB
 struct BloomSettingsCPU {
     float brightnessThreshold;
     float padding[3];
-   
+
 };
 
 struct CombineSettingsCPU {
     float bloomIntensity;
-    float padding[3]; 
+    float padding[3];
 };
 
 struct BlurSettingsCPU {
-    Vector2 texelSize; 
-    float padding[2];            
+    Vector2 texelSize;
+    float padding[2];
 };
 
 struct PostEffectData
@@ -286,14 +262,14 @@ struct BlurSettings
 {
     Vector2 texelSize = { 1.0f / 1280.0f, 1.0f / 720.0f };
     float blurStrength = 1.0f;
-    float padding; 
+    float padding;
 };
 
 struct DepthExtractSettingsVS
 {
     float nearPlane;
     float farPlane;
-    Vector2 padding; 
+    Vector2 padding;
     Matrix4x4 invViewProjection;
 };
 

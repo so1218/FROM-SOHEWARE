@@ -103,6 +103,13 @@ struct MaterialData
     
     float roughness;
     float metalness;
+    float2 paddingMetalness;
+    
+    float4 outlineColor;
+    
+    float outlineWidth;
+    int32_t enableOutline;
+    float2 paddingOutline;
 };
 
 struct TrailMaterialData
@@ -225,11 +232,4 @@ struct GodRaySettings
     
     float3 lightColor;
     float sunRadius;
-};
-
-struct OutlineData
-{
-    float4 color;
-    float width;
-    float padding[3];
 };

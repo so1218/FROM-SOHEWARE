@@ -11,102 +11,96 @@ class Engine;
 class Model
 {
 public:
+    // コンストラクタ
     Model(Engine* engine, const ModelData* modelData);
+    ~Model() = default;
+
+    // 描画処理
     void Draw();
 
-    // 複雑なセッター
-    void SetUVTransform(const WorldTransform& uvTransform);
+    // UV情報の更新
+    void UpdateUV();
 
-    // テクスチャ関係
+    // ========================================================================
+    // 基本トランスフォーム
+    // ========================================================================
+    void SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
+    const WorldTransform& GetTransform() const { return transform_; }
+    WorldTransform& GetTransform() { return transform_; }
+
+    // ========================================================================
+    // 一括設定 (全マテリアルへ適用)
+    // ========================================================================
+    // テクスチャ
     void SetTexture(TextureID textureID);
     void SetEnvironmentMapTexture(TextureID textureID);
     void SetToonRampTexture(TextureID textureID);
     void SetDissolveTexture(TextureID textureID);
     void SetNormalMapTexture(TextureID textureID);
 
-    // 色変換関係
+    // UV
+    void SetUVTransform(const WorldTransform& uvTransform);
+
+    // カラー・発光
     void SetColor(const Vector4& color);
+    void SetColor(uint32_t color);
+    void SetEmissiveIntensity(float intensity);
+
+    // アウトライン
+    void SetEnableOutline(bool enable);
+    void SetOutlineWidth(float width);
+    void SetOutlineColor(const Vector4& color);
     void SetOutlineColor(uint32_t color);
 
-    // 単純なセッター
-    void SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
+    // ディゾルブ
+    void SetEnableDissolve(bool enable);
 
-    // 色の直接代入
-    void SetColor(uint32_t color) { color_ = color; }
-    void SetOutlineColor(const Vector4& color) { outlineColor_ = color; }
-
-    // フラグ・パラメータ系
-    void SetEnableOutline(bool enable) { enableOutline_ = enable; }
-    void SetOutlineWidth(float width) { outlineWidth_ = width; }
+    // 描画ステート
     void SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
-
-    // マテリアルパラメータ
-    void SetEmissiveIntensity(float intensity) { materialHandle_.materialData->emissiveIntensity = intensity; }
-    void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
-
-    // ゲッター
-    WorldTransform& GetTransform() { return transform_; }
-    const WorldTransform& GetTransform() const { return transform_; }
-
-    WorldTransform& GetUVTransform() { return uvTransform_; };
-    const WorldTransform& GetUVTransform() const { return uvTransform_; }
-
-    uint32_t GetColor() const { return color_; }
-
-    bool IsOutlineEnabled() const { return enableOutline_; }
-    float GetOutlineWidth() const { return outlineWidth_; }
-    const Vector4& GetOutlineColor() const { return outlineColor_; }
     BlendMode GetBlendMode() const { return blendMode_; }
 
-    // マテリアルデータへのアクセサ
-    MaterialData* GetMaterial() { return materialHandle_.materialData; }
-    const MaterialData* GetMaterial() const { return materialHandle_.materialData; }
+    // ========================================================================
+    // 個別設定
+    // ========================================================================
+    void SetMaterialColor(size_t index, const Vector4& color);
+    void SetMaterialColor(size_t index, uint32_t color);
 
-    // ImGui用
-    void UpdateUV()
-    {
-        uvTransform_.UpdateMatrix();
-        // マテリアルデータへの転送
-        if (materialHandle_.materialData)
-        {
-            materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
-        }
-    }
-    uint32_t* GetColorPtr() { return &color_; }
+    // ========================================================================
+    // ゲッター
+    // ========================================================================
 
-    uint32_t* GetTextureHandlePtr() { return &textureHandle_; }
-    uint32_t* GetEnvMapTextureHandlePtr() { return &envMapTextureHandle_; }
-    uint32_t* GetToonRampHandlePtr() { return &toonRampHandle_; }
-    uint32_t* GetDissolveTextureHandlePtr() { return &dissolveTextureHandle_; }
-    uint32_t* GetNormalMapHandlePtr() { return &normalMapHandle_; }
+    // UVトランスフォーム取得
+    WorldTransform* GetUVTransform(size_t index = 0);
 
-    bool* GetEnableOutlinePtr() { return &enableOutline_; }
-    float* GetOutlineWidthPtr() { return &outlineWidth_; }
-    Vector4* GetOutlineColorPtr() { return &outlineColor_; }
+    // マテリアルデータ取得
+    MaterialData* GetMaterialData(size_t index = 0);
+    const MaterialData* GetMaterialData(size_t index = 0) const;
+
+    // マテリアルハンドル取得
+    MaterialHandle* GetMaterialHandle(size_t index = 0);
+
+    // 色ポインタ取得 (ImGui等で直接編集する場合に使用)
+    Vector4* GetMaterialColorPtr(size_t index);
+
+    // マテリアル数
+    size_t GetMaterialCount() const { return materials_.size(); }
+
+private:
+    // ヘルパー関数: 範囲チェック
+    bool IsValidMaterialIndex(size_t index) const;
 
 private:
     Engine* engine_ = nullptr;
-    const ModelData* modelData_;
-    MaterialHandle materialHandle_;
+    const ModelData* modelData_ = nullptr;
 
+    // メッシュごとのマテリアルリスト
+    std::vector<MaterialHandle> materials_;
+
+    // モデル自体のトランスフォーム
     WorldTransform transform_;
-    WorldTransform uvTransform_;
 
-    // テクスチャハンドル
-    uint32_t textureHandle_ = 0;
-    uint32_t envMapTextureHandle_ = 0;
-    uint32_t toonRampHandle_ = 0;
-    uint32_t dissolveTextureHandle_ = 0;
-    uint32_t normalMapHandle_ = 0;
-
-    // 色・描画設定
-    uint32_t color_ = 0xFFFFFFFF;
+    // 描画設定
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
     RenderGroup renderGroup_ = RenderGroup::Opaque;
-
-    // アウトライン
-    bool enableOutline_ = false;
-    float outlineWidth_ = 7.0f;
-    Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
 };

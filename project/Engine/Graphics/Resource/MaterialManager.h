@@ -14,12 +14,13 @@ public:
     // マテリアルの生成
     MaterialHandle CreateMaterial(ID3D12Device* device);
 
+    // すべてのマテリアルのライトモードを一括変更
+    void SetGlobalLightMode(int32_t mode);
+
     // ゲッター
     const std::vector<MaterialHandle>& GetMaterials() const { return materials_; }
-    MaterialSettings& GetMaterialSettings() { return materialSettings_; }
 
 private:
     std::vector<MaterialHandle> materials_;
-    MaterialSettings materialSettings_;
 };
 

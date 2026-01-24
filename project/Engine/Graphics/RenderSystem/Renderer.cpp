@@ -69,7 +69,7 @@ void Renderer::BeginFrame()
 {
 	prevModelCount_ = indexModel_;
 	prevSpriteCount_ = indexSprite_;
-	prevLineCount_ = indexLine_;     
+	prevLineCount_ = indexLine_;
 	prevParticleCount_ = indexParticle_;
 	prevTrailCount_ = indexTrail_;
 
@@ -230,7 +230,11 @@ void Renderer::DrawSceneForShadow()
 			continue;
 		}
 
-		Mesh* mesh = GetOrCreateMesh(*sub.modelData);
+		// メッシュリストを取得して、正しいインデックスのMesh*を取り出す
+		const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
+		assert(sub.meshIndex < meshes.size());
+		const Mesh* mesh = &meshes[sub.meshIndex];
+
 		auto& buffer = perObjectBuffers_[sub.instanceIndex];
 
 		bool isSkinning = (sub.skinCluster != nullptr);
@@ -253,7 +257,8 @@ void Renderer::DrawSceneForShadow()
 				cmdList->SetGraphicsRootConstantBufferView(3, sub.materialHandle.resource->GetGPUVirtualAddress());
 				cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 
-				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+				const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
+				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
 				cmdList->IASetVertexBuffers(0, 2, vbvs);
 			}
 			else
@@ -281,7 +286,8 @@ void Renderer::DrawSceneForShadow()
 				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
 				cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
 
-				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+				const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
+				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
 				cmdList->IASetVertexBuffers(0, 2, vbvs);
 			}
 			else
@@ -437,21 +443,34 @@ std::string Renderer::GetParticlePSOName(BlendMode mode)
 	}
 }
 
-Mesh* Renderer::GetOrCreateMesh(const ModelData& modelData)
+const std::vector<Mesh>& Renderer::GetOrCreateModelBatch(const ModelData& modelData)
 {
+	// キャッシュを検索
 	auto it = meshCache.find(&modelData);
 	if (it != meshCache.end())
 	{
-		return &it->second;
+		return it->second.meshes;
 	}
 
-	Mesh newMesh;
-	newMesh.Initialize(device_->GetDevice(), modelData.vertices, modelData.indices);
-	newMesh.SetVertexCount(static_cast<uint32_t>(modelData.vertices.size()));
-	newMesh.SetIndexCount(static_cast<uint32_t>(modelData.indices.size()));
+	// 新規作成
+	ModelBatch batch;
+	batch.meshes.resize(modelData.meshes.size());
 
-	meshCache[&modelData] = std::move(newMesh);
-	return &meshCache[&modelData];
+	for (size_t i = 0; i < modelData.meshes.size(); ++i)
+	{
+		// 各パーツ(MeshData)からGPUバッファ(Mesh)を生成
+		batch.meshes[i].Initialize(
+			device_->GetDevice(),
+			modelData.meshes[i].vertices,
+			modelData.meshes[i].indices
+		);
+		batch.meshes[i].SetVertexCount(static_cast<uint32_t>(modelData.meshes[i].vertices.size()));
+		batch.meshes[i].SetIndexCount(static_cast<uint32_t>(modelData.meshes[i].indices.size()));
+	}
+
+	// キャッシュに保存
+	meshCache[&modelData] = std::move(batch);
+	return meshCache[&modelData].meshes;
 }
 
 void Renderer::CreateModels()
@@ -462,78 +481,116 @@ void Renderer::CreateModels()
 		// WVPバッファ作成
 		buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
 		buffer.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.wvpMapped));
-
-		// Outlineバッファ作成
-		buffer.outlineResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(OutlineData));
-		buffer.outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.outlineMapped));
 	}
 }
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
-	uint32_t textureHandle, uint32_t envMapSrvHandle, uint32_t toonRampHandle, uint32_t dissolveTextureHandle, uint32_t normalMapHandle,
-	uint32_t color, const MaterialHandle& materialHandle, BlendMode blendMode,
-	bool enableOutline, float outlineWidth, const Vector4& outlineColor, RenderGroup group)
+	const std::vector<MaterialHandle>& materials, BlendMode blendMode, RenderGroup group)
 {
-	assert(indexModel_ < kMaxModelCount);
+	// モデルに対応するGPUメッシュリストを取得
+	const auto& meshes = GetOrCreateModelBatch(modelData);
 
-	auto& buffer = perObjectBuffers_[indexModel_];
-
-	// 行列計算と定数バッファ転送
-	Matrix4x4 world = worldTransform.matWorld_;
-	Matrix4x4 wvp = world * viewProjectionMatrix_;
-	buffer.wvpMapped->WVP = wvp;
-	buffer.wvpMapped->World = world;
-	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
-
-	// アウトライン設定
-	if (enableOutline) {
-		buffer.outlineMapped->color = outlineColor;
-		buffer.outlineMapped->width = outlineWidth;
-	}
-
-	// 描画キューに登録
-	ModelSubmission submission{};
-	submission.type = RenderType::Model;
-	submission.group = group;
-	submission.modelData = &modelData;
-	submission.materialHandle = materialHandle;
-	submission.textureHandle = textureHandle;
-	submission.envMapSrvHandle = envMapSrvHandle;
-	submission.toonRampHandle = toonRampHandle;
-	submission.dissolveTextureHandle = dissolveTextureHandle;
-	submission.normalMapHandle = normalMapHandle;
-	submission.color = color;
-	submission.worldMatrix = world;
-	submission.enableOutline = enableOutline;
-	submission.instanceIndex = indexModel_;
-	submission.blendMode = blendMode;
-
-	bool hasAlpha = ((color) & 0xFF) < 255;
-	bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
-
-	if (hasAlpha || isBlend)
-	{
-		// アルファ成分がある、または加算/半透明モードなら強制的にTransparentグループへ
-		submission.group = RenderGroup::Transparent;
-
-		// もしモードがNoneなのにアルファ値があったら、Normal扱いに変更
-		if (submission.blendMode == BlendMode::kBlendModeNone)
+	// 再帰的にノードを巡回するラムダ関数
+	std::function<void(const Node&, const Matrix4x4&)> Traverse =
+		[&](const Node& node, const Matrix4x4& parentMatrix)
 		{
-			submission.blendMode = BlendMode::kBlendModeNormal;
-		}
-	}
-	else
-	{
-		// それ以外は引数のグループを使う
-		submission.group = group;
-	}
+			// 現在のノードのワールド行列を計算
+			Matrix4x4 currentWorldMatrix = node.localMatrix * parentMatrix;
 
-	// 深度設定
-	Matrix4x4 worldView = world * viewMatrix_;
-	submission.depth = worldView.m[3][2];
+			// このノードが持つすべてのメッシュを描画登録
+			for (unsigned int meshIndex : node.meshIndices)
+			{
+				assert(indexModel_ < kMaxModelCount);
 
-	modelSubmissions_.push_back(submission);
-	indexModel_++;
+				// 対象のメッシュデータとGPUメッシュを取得
+				const auto& meshPart = modelData.meshes[meshIndex];
+
+				// メッシュインデックスに対応するマテリアルを取り出す
+				MaterialHandle actualMaterialHandle;
+				if (meshIndex < materials.size())
+				{
+					actualMaterialHandle = materials[meshIndex];
+				}
+				else
+				{
+					// 万が一足りない場合は0番目かデフォルトを使う
+					actualMaterialHandle = materials.empty() ? meshPart.materialHandle : materials[0];
+				}
+
+				// マテリアルからテクスチャ情報を取得する
+				uint32_t actualTextureHandle = actualMaterialHandle.textureHandle;
+				if (actualTextureHandle == 0)
+				{
+					actualTextureHandle = meshPart.textureData.textureHandle;
+				}
+
+				auto& buffer = perObjectBuffers_[indexModel_];
+
+				// 行列計算 (ノードの階層を考慮した行列を使う)
+				Matrix4x4 wvp = currentWorldMatrix * viewProjectionMatrix_;
+				buffer.wvpMapped->WVP = wvp;
+				buffer.wvpMapped->World = currentWorldMatrix;
+				buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
+
+				// 描画キューに登録
+				ModelSubmission submission{};
+				submission.type = RenderType::Model;
+				submission.group = group;
+				submission.modelData = &modelData;     // 親のModelData
+				submission.meshIndex = meshIndex;      // 何番目のメッシュか
+				submission.materialHandle = actualMaterialHandle;
+				submission.textureHandle = actualTextureHandle;
+				submission.envMapSrvHandle = actualMaterialHandle.envMapHandle;
+				submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
+				submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
+				submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
+				submission.worldMatrix = currentWorldMatrix;
+				// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
+				if (actualMaterialHandle.materialData)
+				{
+					submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
+				}
+				else
+				{
+					submission.enableOutline = false;
+				}
+				submission.instanceIndex = indexModel_; // 定数バッファのインデックス
+				submission.blendMode = blendMode;
+
+				// アルファ判定
+				bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
+				bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
+
+				if (hasAlpha || isBlend)
+				{
+					submission.group = RenderGroup::Transparent;
+					if (submission.blendMode == BlendMode::kBlendModeNone)
+					{
+						submission.blendMode = BlendMode::kBlendModeNormal;
+					}
+				}
+				else
+				{
+					submission.group = group;
+				}
+
+				// 深度設定
+				Matrix4x4 worldView = currentWorldMatrix * viewMatrix_;
+				submission.depth = worldView.m[3][2];
+
+				modelSubmissions_.push_back(submission);
+				indexModel_++;
+			}
+
+			// 子ノードへ
+			for (const auto& child : node.children)
+			{
+				Traverse(child, currentWorldMatrix);
+			}
+		};
+
+	// ルートノードから探索開始
+	Traverse(modelData.rootNode, worldTransform.matWorld_);
 }
 
 void Renderer::DrawSkeleton(const Skeleton& skeleton, uint32_t color)
@@ -566,58 +623,96 @@ void Renderer::SubmitAnimationModel(
 	const WorldTransform& worldTransform,
 	const AnimatedModelData& instance,
 	const SkinCluster& skinCluster,
-	uint32_t textureHandle,
-	uint32_t envMapSrvHandle,
-	uint32_t toonRampHandle,
-	uint32_t dissolveTextureHandle,
-	uint32_t normalMapHandle,
-	uint32_t color,
-	const MaterialHandle& materialHandle,
-	bool enableOutline,
-	float outlineWidth,
-	const Vector4& outlineColor,
+	const std::vector<MaterialHandle>& materials,
+	BlendMode blendMode,
 	RenderGroup group)
 {
-	assert(indexModel_ < kMaxModelCount);
+	const auto& modelData = instance.modelData;
+	// GPUメッシュ生成済みか確認
+	GetOrCreateModelBatch(*modelData);
 
-	auto& buffer = perObjectBuffers_[indexModel_];
+	for (size_t i = 0; i < modelData->meshes.size(); ++i)
+	{
+		assert(indexModel_ < kMaxModelCount);
 
-	// 行列計算と定数バッファ転送
-	Matrix4x4 world = worldTransform.matWorld_;
-	Matrix4x4 wvp = world * viewProjectionMatrix_;
-	buffer.wvpMapped->WVP = wvp;
-	buffer.wvpMapped->World = world;
-	buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+		const auto& meshPart = modelData->meshes[i];
+		auto& buffer = perObjectBuffers_[indexModel_];
 
-	// アウトライン設定
-	if (enableOutline) {
-		buffer.outlineMapped->color = outlineColor;
-		buffer.outlineMapped->width = outlineWidth;
+		// 各パーツのWorld行列はモデル全体のWorldで統一される
+		Matrix4x4 world = worldTransform.matWorld_;
+		Matrix4x4 wvp = world * viewProjectionMatrix_;
+		buffer.wvpMapped->WVP = wvp;
+		buffer.wvpMapped->World = world;
+		buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+
+		// マテリアル決定
+		MaterialHandle actualMaterialHandle;
+		if (i < materials.size())
+		{
+			actualMaterialHandle = materials[i];
+		}
+		else
+		{
+			// 万が一足りない場合は0番目かデフォルトを使う
+			actualMaterialHandle = materials.empty() ? meshPart.materialHandle : materials[0];
+		}
+
+		// マテリアルからテクスチャ情報を取得する
+		uint32_t actualTextureHandle = actualMaterialHandle.textureHandle;
+		if (actualTextureHandle == 0)
+		{
+			actualTextureHandle = meshPart.textureData.textureHandle;
+		}
+
+		// 描画キュー登録
+		ModelSubmission submission{};
+		submission.type = RenderType::Skinning;
+		submission.group = group;
+		submission.modelData = modelData;
+		submission.meshIndex = static_cast<uint32_t>(i); // 何番目のメッシュか指定
+		submission.materialHandle = actualMaterialHandle;
+		submission.textureHandle = actualTextureHandle;
+		submission.envMapSrvHandle = actualMaterialHandle.envMapHandle;
+		submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
+		submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
+		submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
+		submission.worldMatrix = world;
+		// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
+		if (actualMaterialHandle.materialData)
+		{
+			submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
+		}
+		else {
+			submission.enableOutline = false;
+		}
+		submission.instanceIndex = indexModel_;
+		submission.skinCluster = &skinCluster;
+		submission.blendMode = blendMode;
+
+		// アルファ判定
+		bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
+		bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
+
+		if (hasAlpha || isBlend)
+		{
+			submission.group = RenderGroup::Transparent;
+			if (submission.blendMode == BlendMode::kBlendModeNone)
+			{
+				submission.blendMode = BlendMode::kBlendModeNormal;
+			}
+		}
+		else
+		{
+			submission.group = group;
+		}
+
+		// 深度設定
+		Matrix4x4 worldView = world * viewMatrix_;
+		submission.depth = worldView.m[3][2];
+
+		modelSubmissions_.push_back(submission);
+		indexModel_++;
 	}
-
-	// 描画キューに登録
-	ModelSubmission submission{};
-	submission.type = RenderType::Skinning;
-	submission.group = group;
-	submission.modelData = instance.modelData;
-	submission.materialHandle = materialHandle;
-	submission.textureHandle = textureHandle;
-	submission.envMapSrvHandle = envMapSrvHandle;
-	submission.toonRampHandle = toonRampHandle;
-	submission.dissolveTextureHandle = dissolveTextureHandle;
-	submission.normalMapHandle = normalMapHandle;
-	submission.color = color;
-	submission.worldMatrix = world;
-	submission.enableOutline = enableOutline;
-	submission.instanceIndex = indexModel_;
-	submission.skinCluster = &skinCluster;
-
-	// 深度設定
-	Matrix4x4 worldView = world * viewMatrix_;
-	submission.depth = worldView.m[3][2];
-
-	modelSubmissions_.push_back(submission);
-	indexModel_++;
 }
 
 void Renderer::SubmitGrid(const WorldTransform& worldTransform, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle)
@@ -641,6 +736,7 @@ void Renderer::SubmitGrid(const WorldTransform& worldTransform, const ModelData&
 	submission.type = RenderType::Grid;
 	submission.group = RenderGroup::Grid;
 	submission.modelData = &modelData;
+	submission.meshIndex = 0;
 	submission.materialHandle = materialHandle;
 	submission.textureHandle = textureHandle;
 	submission.color = color;
@@ -1145,7 +1241,13 @@ void Renderer::DrawSprite(const ModelSubmission& sub)
 
 void Renderer::DrawModel(const ModelSubmission& sub)
 {
-	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
+	// モデルデータに対応するメッシュリストを取得
+	const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
+
+	// 今回の描画コマンドで指定されたインデックスのメッシュを取得
+	assert(sub.meshIndex < meshes.size());
+	const Mesh* mesh = &meshes[sub.meshIndex];
+
 	auto& buffer = perObjectBuffers_[sub.instanceIndex];
 	auto* cmdList = commandManager_->GetCommandList();
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1185,10 +1287,11 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 
 			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
 			cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-			cmdList->SetGraphicsRootConstantBufferView(2, buffer.outlineResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
 			cmdList->SetGraphicsRootConstantBufferView(3, globalConstants_->GetResource()->GetGPUVirtualAddress());
 
-			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+			const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
+			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
 			cmdList->IASetVertexBuffers(0, 2, vbvs);
 		}
 		else
@@ -1198,7 +1301,7 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 
 			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(1, buffer.outlineResource->GetGPUVirtualAddress());
+			cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());
 			cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
 		}
 
@@ -1212,11 +1315,10 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetPipelineState(psoManager_->GetPSO("Skinning"));
 		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
 
-		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), sub.skinCluster->influenceBufferView };
+		const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
+		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
 		cmdList->IASetVertexBuffers(0, 2, vbvs);
 		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-		sub.materialHandle.materialData->color = Math::Uint32ToColorVector(sub.color);
 
 		cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
@@ -1243,8 +1345,6 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
-		sub.materialHandle.materialData->color = Math::Uint32ToColorVector(sub.color);
-
 		cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
 		cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
@@ -1265,7 +1365,14 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 
 void Renderer::DrawGrid(const ModelSubmission& sub)
 {
-	Mesh* mesh = GetOrCreateMesh(*sub.modelData);
+	const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
+
+	// meshIndexを使って描画対象のメッシュを特定
+	if (sub.meshIndex >= meshes.size()) {
+		return;
+	}
+	const Mesh* mesh = &meshes[sub.meshIndex];
+
 	auto& buffer = perObjectBuffers_[sub.instanceIndex];
 	auto* cmdList = commandManager_->GetCommandList();
 

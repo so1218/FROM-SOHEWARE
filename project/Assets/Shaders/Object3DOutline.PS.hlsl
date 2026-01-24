@@ -5,12 +5,12 @@ struct PixelShaderOutput
     float32_t4 color : SV_TARGET0;
 };
 
-ConstantBuffer<OutlineData> gOutlineData : register(b1);
+ConstantBuffer<MaterialData> gMaterialData : register(b1);
 
 PixelShaderOutput main()
 {
     PixelShaderOutput output;
     // アウトラインの色
-    output.color = gOutlineData.color;
+    output.color = gMaterialData.outlineColor;
     return output;
 }

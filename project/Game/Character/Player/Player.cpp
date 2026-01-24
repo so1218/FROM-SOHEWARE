@@ -34,6 +34,8 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
 
 	// アニメーションモデルを生成
 	animationPlayer_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
+
+	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 }
 
 void Player::Initialize()
@@ -81,6 +83,8 @@ void Player::Initialize()
 	gv->AddItem(groupName, "XP to Next Level", xpToNextLevel_);
 
 	ApplyGlobalVariables();
+
+	binder_->BindAnimationModel("PlayerModel", animationPlayer_.get());
 }
 
 void Player::ApplyGlobalVariables()
@@ -127,7 +131,7 @@ void Player::Update()
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;
 	//animationPlayer_->SetEnableDissolve(true);
 	//animationPlayer_->materialHandle_.materialData->dissolveThreshold = 0.5f;
-	modelTamesi_->GetMaterial()->enableNormalMap = true;
+	modelTamesi_->GetMaterialData()->enableNormalMap = true;
 
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
@@ -361,6 +365,8 @@ void Player::DebugDraw()
 #ifdef IS_DEVELOPMENT
 	ImGui::Begin("プレイヤー");
 
+	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
+
 	auto* gv = GlobalVariables::GetInstance();
 	auto groupName = GetGlobalVariableGroupName();
 	bool changed = false;
@@ -430,7 +436,7 @@ void Player::DebugDraw()
 	ImGui::Text("ディゾルブ設定 (Dissolve)");
 
 	// データへのポインタを取得して記述を短くする
-	auto* matData = modelPlayer_->GetMaterial();
+	auto* matData = modelPlayer_->GetMaterialData();
 
 	if (matData)
 	{

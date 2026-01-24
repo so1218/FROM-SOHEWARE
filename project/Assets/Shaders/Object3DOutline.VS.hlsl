@@ -2,7 +2,7 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
-ConstantBuffer<OutlineData> gOutlineData : register(b1);
+ConstantBuffer<MaterialData> gMaterialData : register(b1);
 ConstantBuffer<FrameData> gFrameData : register(b2);
 
 struct OutlineVertexShaderOutput
@@ -31,7 +31,7 @@ OutlineVertexShaderOutput main(VertexShaderInput input)
     float depthScale = min(clipPos.w, 20.0f);
 
     // 解像度と深度に応じたアウトラインオフセット
-    float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * depthScale;
+    float2 offset = offsetDir * ndcPixelSize * gMaterialData.outlineWidth * depthScale;
 
     // オフセットを適用
     output.position = clipPos;

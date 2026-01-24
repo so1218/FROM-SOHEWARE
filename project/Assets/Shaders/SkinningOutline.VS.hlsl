@@ -19,7 +19,7 @@ struct OutlineVertexShaderOutput
 
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 StructuredBuffer<Well> gMatrixPalette : register(t0);
-ConstantBuffer<OutlineData> gOutlineData : register(b1);
+ConstantBuffer<MaterialData> gMaterialData : register(b1);
 ConstantBuffer<FrameData> gFrameData : register(b2);
 
 // スキニング計算関数
@@ -82,7 +82,7 @@ OutlineVertexShaderOutput main(SkinningVertexShaderInput input)
     float depthScale = min(clipPos.w, 20.0f);
 
     // アウトライン幅に応じたオフセット
-    float2 offset = offsetDir * ndcPixelSize * gOutlineData.width * depthScale;
+    float2 offset = offsetDir * ndcPixelSize * gMaterialData.outlineWidth * depthScale;
 
     // 位置にオフセットを適用
     output.position = clipPos;

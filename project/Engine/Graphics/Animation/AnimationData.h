@@ -86,13 +86,19 @@ struct WellForGPU
 
 struct SkinCluster
 {
+    // メッシュごとに異なるデータ
+    struct MeshInfluence {
+        Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
+        D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
+        std::span<VertexInfluence> mappedInfluence;
+    };
+    std::vector<MeshInfluence> meshInfluences; // メッシュの数だけ用意する
+
+    // モデル全体で共通のデータ
     std::vector<Matrix4x4> inverseBindPoseMatrices;
-    Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
-    D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
-    std::span<VertexInfluence> mappedInfluence;
     Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
     std::span<WellForGPU> mappedPalette;
-    uint32_t paletteSrvIndex; // パレット用SRVのインデックス番号
+    uint32_t paletteSrvIndex;
 };
 
 Skeleton CreateSkeleton(const Node& rootNode);

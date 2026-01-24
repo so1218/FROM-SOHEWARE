@@ -55,10 +55,10 @@ void AxeProjectile::Update()
     UpdateAABB();
 
     model_->SetEmissiveIntensity(2.0f);
-    model_->GetMaterial()->enableRim = true;
-    model_->GetMaterial()->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
-    model_->GetMaterial()->rimPower = 3.8f;
-    model_->GetMaterial()->rimIntensity = 1.7f;
+    model_->GetMaterialData()->enableRim = true;
+    model_->GetMaterialData()->rimColor = { 255.0f / 255.0f,137.0f / 255.0f,51.0f / 255.0f };
+    model_->GetMaterialData()->rimPower = 3.8f;
+    model_->GetMaterialData()->rimIntensity = 1.7f;
     model_->SetEnableOutline(true);
 }
 

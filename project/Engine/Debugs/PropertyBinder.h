@@ -82,13 +82,6 @@ public:
         }
     }
 
-    // Vector専用のBindオーバーロード (onChange 対応版)
-    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
-    {
-        // コールバック付き
-        BindVector3(key, ptr, defaultValue, speed, 0.0f, 0.0f, onChange);
-    }
-
     //  色用Bind関数
     template <typename T>
     void BindColor(const std::string& key, T* ptr, const T& defaultValue)
@@ -110,8 +103,6 @@ public:
         }
     }
 
-    void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
-
     void Draw(const std::string& key, const std::string& name = "")
     {
         // 指定されたキーが存在すれば実行
@@ -121,20 +112,27 @@ public:
         }
     }
 
-    // モデルを受け取って、そのマテリアル設定を全部自動登録する
+    // 特殊系
+    // インスペクターのようなもの
     void BindModel(const std::string& groupName, Model* model);
-    // モデルごとの描画を一括で行う
     void DrawModel(const std::string& groupName, const std::string& customLabel = "");
-
     void BindAnimationModel(const std::string& groupName, AnimationModel* model);
-    void DrawAnimationModel(const std::string& groupName, const std::string& customLabel);
-
+    void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void BindSprite(const std::string& groupName, Sprite* sprite);
-    void DrawSprite(const std::string& groupName, const std::string& customLabel);
+    void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
+
+    // Vector専用のBindオーバーロード (onChange 対応版)
+    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
+    {
+        // コールバック付き
+        BindVector3(key, ptr, defaultValue, speed, 0.0f, 0.0f, onChange);
+    }
 
     // int/uintをboolとして扱うための関数
     void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
     void BindBool(const std::string& key, uint32_t* ptr, bool defaultValue);
+
+    void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
 
     // 回転専用のBind関数
     void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
@@ -386,6 +384,8 @@ private:
     // テクスチャID用バインド関数
     void BindTexture(const std::string& key, uint32_t* ptr);
 
+    void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
+
     Engine* engine_ = nullptr;
 
     template <class T> static constexpr bool always_false = false;
@@ -402,7 +402,14 @@ private:
     struct ModelBindInfo
     {
         Model* model = nullptr;
-        // テクスチャIDなどを一時的に保持する変数が必要なら
     };
     std::unordered_map<std::string, ModelBindInfo> modelBindMap_;
+
+    struct AnimationBindInfo
+    {
+        AnimationModel* model = nullptr;
+    };
+    std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
 };
+
+

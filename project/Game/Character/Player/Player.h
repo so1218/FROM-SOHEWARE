@@ -7,6 +7,7 @@
 #include "FollowCamera.h"
 #include "UpgradeInfo.h"
 #include "Line.h"
+#include "PropertyBinder.h"
 
 class PlayScene;
 
@@ -108,6 +109,7 @@ private:
 	Camera* camera_ = nullptr;
 
 	std::unique_ptr<AnimationModel> animationPlayer_;
+	std::unique_ptr<PropertyBinder> binder_;
 	AABB aabb_;
 	
 	// キャラクターの当たり判定サイズ

@@ -15,7 +15,6 @@ struct RenderData
     Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
     TransformationMatrix* mappedData = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
-    OutlineData* outlineMappedData = nullptr;
 };
 
 // 描画するオブジェクトの種類
@@ -49,6 +48,7 @@ enum class RenderGroup
 struct ModelSubmission
 {
     const ModelData* modelData;       // メッシュデータ
+    uint32_t meshIndex;               // このモデルの何番目のメッシュ(MeshData)を描画するか
     MaterialHandle materialHandle;    // 使用マテリアル
     uint32_t textureHandle;           // テクスチャSRV
     uint32_t envMapSrvHandle;         // 環境マップSRV

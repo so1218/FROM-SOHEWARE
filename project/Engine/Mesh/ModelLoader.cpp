@@ -39,12 +39,13 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
         LOG_ERROR("Model scene has no meshes: {}", filePath);
     }
 
-    LoadMaterials(scene, modelData, directoryPath);
     modelData.rootNode = ReadNode(scene->mRootNode);
 
+    // 全メッシュをループ処理
     for (uint32_t meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
     {
         aiMesh* mesh = scene->mMeshes[meshIndex];
+        MeshData meshPart; // 新しいパーツを作成
 
         if (!mesh->HasNormals())
         {
@@ -57,10 +58,21 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
         assert(mesh->HasNormals()); // 法線が無いMeshは非対応
         assert(mesh->HasTextureCoords(0)); // Texcoordが無いMeshは非対応
-        ProcessMesh(mesh, scene, modelData, isGLTF);
+
+        // メッシュデータの構築
+        ProcessMesh(mesh, scene, meshPart, isGLTF);
+
+        // マテリアルの読み込み
+        LoadMaterialForMesh(scene, mesh, meshPart, directoryPath);
+
+        // 構築が完了したmeshPartをmodelDataに保存
+        modelData.meshes.push_back(std::move(meshPart));
     }
-    // 全てのMeshの処理が終わった後、頂点全体に対してスムース法線を計算する
-    CalculateSmoothNormals(modelData.vertices);
+    // 全てのMeshの処理が終わった後、各メッシュに対して事後計算を行う
+    for (auto& meshPart : modelData.meshes)
+    {
+        CalculateSmoothNormals(meshPart.vertices);
+    }
 
     LOG_INFO("Model loaded successfully: {}", filePath);
     LOG_INFO("-------------------- ModelLoader::LoadModel End ----------------------\n");
@@ -68,74 +80,8 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
     return modelData;
 }
 
-std::vector<ModelData> ModelLoader::LoadMultiModel(const std::string& filePath, Engine* engine)
+void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, MeshData& outMeshData, bool isGLTF)
 {
-    LOG_INFO("\n-------------------- ModelLoader::LoadMultiModel Start --------------------");
-    LOG_INFO("Loading multi-model parts from: {}", filePath);
-
-    std::vector<ModelData> modelParts;
-    Assimp::Importer importer;
-
-    std::filesystem::path path(filePath);
-    std::string directoryPath = path.parent_path().string();
-
-    const aiScene* scene = importer.ReadFile(
-        filePath,
-        aiProcess_Triangulate |
-        aiProcess_GenNormals |
-        aiProcess_FlipUVs |
-        aiProcess_CalcTangentSpace
-    );
-
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        LOG_ERROR("Failed to load multi-model file or scene is incomplete: {}", filePath);
-        LOG_ERROR("Assimp error: {}", importer.GetErrorString());
-        LOG_ERROR("-------------------- ModelLoader::LoadMultiModel Failed ------------------\n");
-
-        return modelParts;
-    }
-
-    bool isGLTF = IsGLTFFile(filePath);
-
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-    {
-        aiMesh* mesh = scene->mMeshes[i];
-        ModelData modelData;
-
-        ProcessMesh(mesh, scene, modelData, isGLTF);
-
-        if (mesh->mMaterialIndex >= 0)
-        {
-            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-            aiString texturePath;
-
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
-            {
-                std::filesystem::path fullTexturePath = path.parent_path() / texturePath.C_Str();
-                modelData.textureData.textureFilePath = fullTexturePath.string();
-
-                // ここでテクスチャをロードし、ハンドルを取得する
-                modelData.textureData.textureHandle = engine->LoadTexture(fullTexturePath.string());
-            }
-        }
-
-        modelData.materialHandle = engine->materialManager_->CreateMaterial(engine->graphicsDevice_->GetDevice());
-
-        modelParts.push_back(std::move(modelData));
-    }
-
-    LOG_INFO("Multi-model loaded successfully. {} parts created.", modelParts.size());
-    LOG_INFO("-------------------- ModelLoader::LoadMultiModel End ----------------------\n");
-
-    return modelParts;
-}
-
-void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& modelData, bool isGLTF)
-{
-    // 現在の頂点数をオフセットとして記録
-    unsigned int vertexOffset = static_cast<unsigned int>(modelData.vertices.size());
-
     // 頂点を追加
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
     {
@@ -192,7 +138,7 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
             vertex.color = { 1.0f, 1.0f, 1.0f, 1.0f };
         }
 
-        modelData.vertices.push_back(vertex);
+        outMeshData.vertices.push_back(vertex);
     }
 
     // インデックスを追加（vertexOffsetを足す）
@@ -201,16 +147,9 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         aiFace face = mesh->mFaces[i];
         if (face.mNumIndices == 3)
         {
-            modelData.indices.push_back(face.mIndices[0] + vertexOffset);
-            modelData.indices.push_back(face.mIndices[2] + vertexOffset);
-            modelData.indices.push_back(face.mIndices[1] + vertexOffset);
-        }
-        else
-        {
-            for (unsigned int j = 0; j < face.mNumIndices; ++j)
-            {
-                modelData.indices.push_back(face.mIndices[j] + vertexOffset);
-            }
+            outMeshData.indices.push_back(face.mIndices[0]);
+            outMeshData.indices.push_back(face.mIndices[2]);
+            outMeshData.indices.push_back(face.mIndices[1]);
         }
     }
 
@@ -218,7 +157,7 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
     {
         aiBone* bone = mesh->mBones[boneIndex];
         std::string jointName = bone->mName.C_Str();
-        JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
+        JointWeightData& jointWeightData = outMeshData.skinClusterData[jointName];
 
         aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
         aiVector3D scale, translate;
@@ -229,32 +168,59 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, ModelData& mod
         );
         jointWeightData.inverseBindPoseMatrix = Matrix4x4::Inverse(bindPoseMatrix);
 
+        // vertexIdもオフセットなしでそのまま使う
         for (uint32_t weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex)
         {
-            jointWeightData.vertexWeights.push_back(
-                { bone->mWeights[weightIndex].mWeight,
-                bone->mWeights[weightIndex].mVertexId + vertexOffset });
+            outMeshData.skinClusterData[jointName].vertexWeights.push_back(
+                { bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId }
+            );
         }
     }
 }
 
-void ModelLoader::LoadMaterials(const aiScene* scene, ModelData& modelData, const std::string& directoryPath)
+void ModelLoader::LoadMaterialForMesh(const aiScene* scene, aiMesh* mesh, MeshData& outMeshData, const std::string& directoryPath)
 {
-    if (scene->mNumMaterials > 0)
+    // メッシュが参照しているマテリアルのインデックスを確認
+    if (mesh->mMaterialIndex >= 0)
     {
-        aiMaterial* material = scene->mMaterials[0]; // 最初のマテリアルを取得
-
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
         aiString texturePath;
-        // glTF用: ベースカラー取得
+
+        // ベースカラーまたはディフューズテクスチャを探す
         if (material->GetTexture(aiTextureType_BASE_COLOR, 0, &texturePath) == AI_SUCCESS ||
             material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
         {
-            std::filesystem::path fullTexturePath = std::filesystem::path(directoryPath) / texturePath.C_Str();
-            modelData.textureData.textureFilePath = fullTexturePath.string();
+            // Assimpの文字列をstd::stringに変換
+            std::string pathStr = texturePath.C_Str();
+
+            // 埋め込みテクスチャのチェック
+            if (pathStr.size() > 0 && pathStr[0] == '*')
+            {
+                outMeshData.textureData.textureFilePath = "";
+                printf("[ModelLoader] Embedded texture found (not supported yet): %s\n", pathStr.c_str());
+                return;
+            }
+
+            try
+            {
+                // パスの結合
+                std::filesystem::path dir(directoryPath);
+                std::filesystem::path file(pathStr);
+
+                std::filesystem::path fullTexturePath = dir / file.filename();
+
+                outMeshData.textureData.textureFilePath = fullTexturePath.string();
+            }
+            catch (const std::system_error& e)
+            {
+                // エラー内容を表示してクラッシュを防ぐ
+                printf("[Error] Filesystem Error: %s\nPath: %s\n", e.what(), pathStr.c_str());
+                outMeshData.textureData.textureFilePath = "";
+            }
         }
         else
         {
-            modelData.textureData.textureFilePath = "";
+            outMeshData.textureData.textureFilePath = ""; // テクスチャなし
         }
     }
 }
@@ -293,8 +259,15 @@ Node ModelLoader::ReadNode(aiNode* node)
 
     result.name = node->mName.C_Str();
 
+    result.meshIndices.resize(node->mNumMeshes);
+    for (unsigned int i = 0; i < node->mNumMeshes; ++i)
+    {
+        result.meshIndices[i] = node->mMeshes[i];
+    }
+
     // 子ノードも再帰的に読み込み
     result.children.resize(node->mNumChildren);
+
     for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
     {
         result.children[childIndex] = ReadNode(node->mChildren[childIndex]);

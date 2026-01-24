@@ -157,16 +157,10 @@ void DebugGuiManager::DrawLightSettings()
     SpotLight* spotLights = lightManager_->GetSpotLightData();
     AreaLight* areaLights = lightManager_->GetAreaLightData();
 
-    MaterialSettings& materialSettings = materialManager_->GetMaterialSettings();
-
-    ImGui::Checkbox("ライティング有効", &materialSettings.enableLighting);
     ImGui::Separator();
 
     if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
-        ImGui::Combo("ライトモード", &materialSettings.lightMode,
-            "ハーフランバート\0スペキュラ\0トゥーン\0PBR\0");
-
         for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
         {
             std::string label = "ディレクショナルライト " + std::to_string(i);
@@ -262,67 +256,6 @@ void DebugGuiManager::DrawLightSettings()
         }
         ImGui::TreePop();
     }
-
-    ImGui::Separator();
-
-    if (ImGui::TreeNode("影の設定"))
-    {
-        ImGui::Checkbox("影を受ける", &materialSettings.addShadow);
-        ImGui::DragFloat("シャドウバイアス ", &materialSettings.shadowBias, 0.00001f, 0.0f, 0.01f, "%.5f");
-        ImGui::SliderFloat("影の濃さ", &materialSettings.shadowDensity, 0.0f, 1.0f);
-        ImGui::SliderFloat("影の柔らかさ", &materialSettings.shadowSoftness, 1.0f, 10.0f);
-        ImGui::TreePop();
-    }
-
-    ImGui::Separator();
-
-    // マテリアル設定（スペキュラ）
-    if (ImGui::TreeNode("マテリアル基本設定"))
-    {
-        // PBRモードかどうかを判定
-        bool isPBR = (materialSettings.lightMode == 3);
-
-        if (isPBR)
-        {
-            // PBR用
-            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "PBR Settings");
-
-            ImGui::SliderFloat("ラフネス (粗さ)", &materialSettings.roughness, 0.0f, 1.0f);
-            ImGui::SliderFloat("メタルネス (金属度)", &materialSettings.metalness, 0.0f, 1.0f);
-        }
-        else
-        {
-            // レガシー用
-            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "Legacy Settings");
-
-            ImGui::DragFloat("拡散反射の減衰", &materialSettings.diffuseReflection, 0.1f, 1.0f, 10.0f);
-            ImGui::DragFloat("光沢度 (Shininess)", &materialSettings.shininess, 1.0f, 0.0f, 256.0f);
-            ImGui::ColorEdit4("鏡面反射色 (Specular)", &materialSettings.specularColor.x, 0);
-        }
-
-        // 共通設定
-        ImGui::Separator();
-        ImGui::Text("共通設定");
-        ImGui::DragFloat("環境マップの強さ", &materialSettings.environmentMapIntensity, 0.01f, 0.0f, 1.0f);
-        ImGui::DragFloat("エミッシブ強度", &materialSettings.emissiveIntensity, 0.1f, 0.0f, 50.0f);
-
-        ImGui::TreePop();
-    }
-    ImGui::Separator();
-    if (ImGui::TreeNode("リムライト"))
-    {
-        ImGui::Checkbox("リムライト有効", &materialSettings.enableRim);
-        ImGui::Checkbox("ライト方向の影響を受ける", &materialSettings.rimUseLightDir);
-
-        ImGui::DragFloat("鋭さ", &materialSettings.rimPower, 0.1f, 0.1f, 20.0f);
-
-        ImGui::DragFloat("強さ", &materialSettings.rimIntensity, 0.01f, 0.0f, 10.0f);
-
-        ImGui::ColorEdit3("発光色", &materialSettings.rimColor.x);
-
-        ImGui::TreePop();
-    }
-    ImGui::Separator();
 }
 
 void DebugGuiManager::DrawPostEffectSettings()

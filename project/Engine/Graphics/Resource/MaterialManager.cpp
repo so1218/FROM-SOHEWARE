@@ -19,7 +19,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
 
     handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.materialData));
 
-    // defaultSettings を初期化
+    // materialDataを初期化
     handle.materialData->color = Vector4(1, 1, 1, 1);
     handle.materialData->enableLighting = true;
     handle.materialData->lightMode = 1;
@@ -49,7 +49,22 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->normalIntensity = 1.0f;
     handle.materialData->roughness = 0.5f;
     handle.materialData->metalness = 0.0f;
+    handle.materialData->enableOutline = false;
+    handle.materialData->outlineWidth = 5.0f;
+    handle.materialData->outlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     materials_.push_back(handle);
     return handle;
+}
+
+void MaterialManager::SetGlobalLightMode(int32_t mode)
+{
+    for (auto& handle : materials_)
+    {
+        // 安全のためヌルチェック
+        if (handle.materialData)
+        {
+            handle.materialData->lightMode = mode;
+        }
+    }
 }
