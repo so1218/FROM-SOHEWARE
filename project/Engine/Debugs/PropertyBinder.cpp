@@ -749,6 +749,8 @@ void PropertyBinder::BindTexture(const std::string& key, uint32_t* ptr, TextureI
             // 現在のタイプがキューブマップかどうか判定
             bool isCurrentCubeMap = (TextureHandle::GetType(currentId) == TextureType::CubeMap);
 
+#ifdef IS_DEVELOPMENT
+            // ラベル表示
             ImGui::Text("%s", labelName.c_str());
 
             uint32_t currentGpuIndex = TextureHandle::Get(currentId);
@@ -789,7 +791,7 @@ void PropertyBinder::BindTexture(const std::string& key, uint32_t* ptr, TextureI
                 ImGui::BeginTooltip();
                 ImGui::Text("[%d] %s", (int)currentId, currentFileName.c_str());
 
-                // ★ ツールチップでもキューブマップなら画像を出さない
+                // ツールチップでもキューブマップなら画像を出さない
                 if (currentGpuHandle.ptr != 0 && !isCurrentCubeMap) {
                     ImGui::Image((ImTextureID)currentGpuHandle.ptr, ImVec2(128, 128));
                 }
@@ -911,6 +913,7 @@ void PropertyBinder::BindTexture(const std::string& key, uint32_t* ptr, TextureI
 
                 ImGui::EndPopup();
             }
+#endif
         };
 }
 
