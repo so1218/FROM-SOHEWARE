@@ -183,7 +183,7 @@ private:
             { star_08,      "Assets/Textures/Particles/star_08.png" },
             { star_09,      "Assets/Textures/Particles/star_09.png" },
 
-            { noise_39,      "Assets/Textures/Noise/Noise_Gradients/T_Random_59.png" },
+            { noise_39,      "Assets/Textures/Noise/noise_59.png" },
         }
     };
 };

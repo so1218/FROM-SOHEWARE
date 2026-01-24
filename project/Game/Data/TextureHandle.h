@@ -18,16 +18,8 @@ enum TextureID
     knife,
 
     //文字フォント
-    num1,
-    num2,
-    num3,
-    num4,
-    num5,
-    num6,
-    num7,
-    num8,
-    num9,
-    num0,
+    num1, num2, num3, num4, num5,
+    num6, num7, num8, num9, num0,
     
     coron,
     hpGage,
@@ -54,10 +46,19 @@ enum TextureID
 
     lut_natural,
 
-    normalMap,
+    normal_01,
 
     // 全てのテクスチャIDの数
     TEXTURES_COUNT
+};
+
+enum class TextureType
+{
+    Albedo,     // 通常
+    Normal,     // ノーマルマップ
+    Toon,       // トゥーン
+    Noise,      // ノイズ
+    CubeMap     // スカイボックス (DDS)
 };
 
 struct TextureDefinition
@@ -72,12 +73,18 @@ public:
     static void Initialize(Engine* engine);
     static uint32_t Get(TextureID id);
 
+    // タイプを取得する関数 (Binderで使う)
+    static TextureType GetType(TextureID id);
+
     // IDからファイル名だけを取得する関数
     static std::string GetFileName(TextureID id);
 
 private:
     static std::array<uint32_t, TEXTURES_COUNT> textureHandles_;
     static bool initialized_;
+
+    // 判定したタイプを保存しておく配列
+    static std::array<TextureType, TEXTURES_COUNT> textureTypes_;
 
     static constexpr std::array<TextureDefinition, TEXTURES_COUNT> textureDefinitions_ = 
     { 
@@ -125,11 +132,11 @@ private:
             { pressSousa, "Assets/Textures/pressSousa.png" },
             { ikinokore, "Assets/Textures/ikinokore.png" },
 
-            { noise1, "Assets/Textures/Noise/Noise_Gradients/T_Random_59.png" },
+            { noise1, "Assets/Textures/Noise/noise_59.png" },
 
             { lut_natural, "Assets/Textures/LUTs/RGBTable16x1.png" },
 
-            { normalMap, "Assets/Textures/Noise/Noise_Normals/T_NoiseNormal_73.png" },
+            { normal_01, "Assets/Textures/Normal/normal_23.png" },
         }
     };
 };

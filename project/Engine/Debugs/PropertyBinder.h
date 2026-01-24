@@ -382,7 +382,7 @@ private:
     }
 
     // テクスチャID用バインド関数
-    void BindTexture(const std::string& key, uint32_t* ptr);
+    void BindTexture(const std::string& key, uint32_t* ptr, TextureID defaultId, TextureType filterType = TextureType::Albedo);
 
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 

@@ -35,7 +35,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
 	// アニメーションモデルを生成
 	animationPlayer_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
 
-	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
+	binder_ = std::make_unique<PropertyBinder>(engine, "PlayerTest");
 }
 
 void Player::Initialize()
@@ -59,7 +59,7 @@ void Player::Initialize()
 	animationPlayer_->SetColor(0x86FF30ff);
 
 	modelTamesi_->SetColor(0xffffffff);
-	modelTamesi_->SetNormalMapTexture(TextureID::normalMap);
+	modelTamesi_->SetNormalMapTexture(TextureID::normal_01);
 
 	animationPlayer_->Play(AnimationHandle::Get(AnimationID::enemy), true);
 
