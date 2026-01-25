@@ -128,7 +128,7 @@ PixelShaderOutput main(PixelShaderInput input)
         output.color.a = 1.0;
         return output;
     }
-    
+   
     // 影の計算 
     float shadowFactor = 1.0f;
     
@@ -190,16 +190,24 @@ PixelShaderOutput main(PixelShaderInput input)
             float3 F_env = F_Schlick(max(dot(normal, toEye), 0.0f), F0);
             float3 ambientSpecular = envColor * F_env;
 
-            // 合成
-            finalColor += (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
+            // 拡散反射と鏡面反射の合成
+            float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
+            
+            // 環境光にも影の影響を与える
+             // 0.0なら真っ暗、0.5なら半分の明るさが残る
+            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
+     
+            finalColor += ambient * ambientOcclusion;
         }
         else
         {
             // 単純な環境マッピング
             float3 reflectionVector = reflect(-toEye, normal);
             float4 envColor = gEnvironmentTexture.Sample(gSampler, reflectionVector);
-    
-            finalColor += envColor.rgb * gMaterial.environmentMapIntensity;
+
+            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
+     
+            finalColor += envColor.rgb * gMaterial.environmentMapIntensity * ambientOcclusion;
         }
         
         if (gMaterial.enableRim != 0)
@@ -401,10 +409,8 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal,
             // 影適用
             if (i == 0)
             {
-                float shadowAtten = 1.0f - gMaterial.shadowDensity;
-                float finalShadow = shadowFactor + shadowAtten * (1.0f - shadowFactor);
-                diffuse *= finalShadow;
-                specular *= finalShadow;
+                diffuse *= shadowFactor;
+                specular *= shadowFactor;
             }
             
             radiance = diffuse + specular;
@@ -662,7 +668,13 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         );
     }
 
-    return shadow * (1.0f / 16.0f);
+    // 平均化（0.0が完全な影、1.0が完全な光）
+    float shadowVisibility = shadow * (1.0f / 16.0f);
+
+    float densityLimit = min(gMaterial.shadowDensity, 0.99f);
+    
+    // densityLimitが高いほど、薄いグレーの影が黒(0.0)に変換され、影が太くくっきりする
+    return smoothstep(densityLimit, 1.0f, shadowVisibility);
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)

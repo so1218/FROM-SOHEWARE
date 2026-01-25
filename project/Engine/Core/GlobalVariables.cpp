@@ -1,10 +1,8 @@
 #include "GlobalVariables.h"
 
-#ifdef IS_DEVELOPMENT
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
-#endif
 
 #include <fstream>
 #include <iostream>
@@ -140,7 +138,7 @@ void GlobalVariables::CreateGroup(const std::vector<std::string>& groupPath)
 	}
 }
 
-int32_t GlobalVariables::GetIntValue(const std::vector<std::string>& groupPath, const std::string& key) const
+int32_t GlobalVariables::GetIntValue(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -160,7 +158,7 @@ int32_t GlobalVariables::GetIntValue(const std::vector<std::string>& groupPath, 
 	}
 }
 
-float GlobalVariables::GetFloatValue(const std::vector<std::string>& groupPath, const std::string& key) const
+float GlobalVariables::GetFloatValue(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -179,7 +177,7 @@ float GlobalVariables::GetFloatValue(const std::vector<std::string>& groupPath, 
 	}
 }
 
-bool GlobalVariables::GetBoolValue(const std::vector<std::string>& groupPath, const std::string& key) const
+bool GlobalVariables::GetBoolValue(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -198,7 +196,7 @@ bool GlobalVariables::GetBoolValue(const std::vector<std::string>& groupPath, co
 	}
 }
 
-Vector2 GlobalVariables::GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key) const
+Vector2 GlobalVariables::GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -218,7 +216,7 @@ Vector2 GlobalVariables::GetVector2Value(const std::vector<std::string>& groupPa
 }
 
 
-Vector3 GlobalVariables::GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key) const
+Vector3 GlobalVariables::GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -238,7 +236,7 @@ Vector3 GlobalVariables::GetVector3Value(const std::vector<std::string>& groupPa
 }
 
 
-Vector4 GlobalVariables::GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key) const
+Vector4 GlobalVariables::GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key)
 {
 	const Group* group = FindGroup(groupPath);
 	assert(group != nullptr);
@@ -447,7 +445,16 @@ void GlobalVariables::LoadFile(const std::string& groupName)
 	ifs.close();
 
 	json::iterator itGroup = root.find(groupName);
-	assert(itGroup != root.end());
+	// グループが見つからない場合は、ルート全体を読み込む
+	if (itGroup == root.end())
+	{
+		// JSONファイルのルートに直接データがある場合
+		if (!root.empty())
+		{
+			LoadGroupRecursive({ groupName }, root);
+		}
+		return;
+	}
 
 	// 最上位グループ名から再帰的に読み込み開始
 	LoadGroupRecursive({ groupName }, *itGroup);
@@ -499,5 +506,14 @@ void GlobalVariables::LoadGroupRecursive(const std::vector<std::string>& groupPa
 				}
 			}
 		}
+	}
+}
+
+void GlobalVariables::RemoveGroup(const std::string& groupName)
+{
+	// メモリ(datas_)から該当するグループを削除する
+	auto it = datas_.find(groupName);
+	if (it != datas_.end()) {
+		datas_.erase(it);
 	}
 }

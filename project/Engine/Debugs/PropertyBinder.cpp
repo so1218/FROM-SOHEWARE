@@ -206,7 +206,8 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
                             Draw(matPrefix + "AddShadow", "影を受ける");
                             if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
                             {
-                                Draw(matPrefix + "ShadowDens", "影の濃さ");
+                                Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
+                                Draw(matPrefix + "ShadowEnv", "影の明るさ");
                                 Draw(matPrefix + "ShadowBias", "バイアス");
                                 Draw(matPrefix + "ShadowSoft", "柔らかさ");
                             }
@@ -762,14 +763,14 @@ void PropertyBinder::BindTexture(const std::string& key, uint32_t* ptr, TextureI
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
 
             // メインボタンの分岐処理
-            if (currentGpuHandle.ptr == 0) 
+            if (currentGpuHandle.ptr == 0)
             {
                 if (ImGui::Button("Null", ImVec2(32, 32))) { openPopup = true; }
             }
             else if (isCurrentCubeMap)
             {
                 // キューブマップの場合は画像を使わず、テキストボタンで代用
-                if (ImGui::Button("CUBE", ImVec2(32, 32))) 
+                if (ImGui::Button("CUBE", ImVec2(32, 32)))
                 {
                     openPopup = true;
                 }
@@ -1028,7 +1029,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindTexture(prefix + "NormalMapTex", &handle->normalMapHandle, TextureID::normal_01, TextureType::Normal);
     BindTexture(prefix + "DissolveTex", &handle->dissolveMapHandle, TextureID::white1x1, TextureType::Noise);
     BindTexture(prefix + "ToonRampTex", &handle->toonRampHandle, TextureID::toonRamp, TextureType::Toon);
-    
+
     auto onUVChange = [handle]()
         {
             handle->uvTransformData.rotationQuaternion_ = Quaternion::QuaternionFromEuler(handle->uvTransformData.rotation_);
@@ -1059,7 +1060,8 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 
     BindBool(prefix + "AddShadow", &matData->addShadow, true);
     Bind(prefix + "ShadowBias", &matData->shadowBias, 0.0005f, 0.0001f, 0.0f, 0.1f);
-    Bind(prefix + "ShadowDens", &matData->shadowDensity, 0.7f, 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "ShadowDens", &matData->shadowDensity, 0.8f, 0.01f, 0.0f, 0.99f);
+    Bind(prefix + "ShadowEnv", &matData->shadowEnvStrength, 0.0f, 0.01f, 0.0f, 1.0f);
     Bind(prefix + "ShadowSoft", &matData->shadowSoftness, 0.0f, 0.01f, 0.0f, 5.0f);
 
     BindBool(prefix + "RimEnable", &matData->enableRim, false);

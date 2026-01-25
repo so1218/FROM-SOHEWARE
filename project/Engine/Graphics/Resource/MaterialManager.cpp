@@ -28,7 +28,8 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->specularColor = Vector4(1, 1, 1, 1);
     handle.materialData->addShadow = true;
     handle.materialData->shadowBias = 0.0005f;
-    handle.materialData->shadowDensity = 0.7f;
+    handle.materialData->shadowDensity = 0.8f;
+    handle.materialData->shadowEnvStrength = 0.0f;
     handle.materialData->shadowSoftness = 1.0f;
     handle.materialData->enableRim = false;
     handle.materialData->rimPower = 3.0f;

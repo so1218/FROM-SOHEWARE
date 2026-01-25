@@ -24,6 +24,8 @@ public:
 	{
 		std::unordered_map<std::string, std::any> items;
 		std::unordered_map<std::string, Group> subGroups;
+
+		Group() = default;
 	};
 
 
@@ -34,12 +36,12 @@ public:
 	void CreateGroup(const std::vector<std::string>& groupPath);
 
 	// 値の取得
-	int32_t GetIntValue(const std::vector<std::string>& groupPath, const std::string& key) const;
-	float GetFloatValue(const std::vector<std::string>& groupPath, const std::string& key) const;
-	bool GetBoolValue(const std::vector<std::string>& groupPath, const std::string& key) const;
-	Vector2 GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key) const;
-	Vector3 GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key) const;
-	Vector4 GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key) const;
+	int32_t GetIntValue(const std::vector<std::string>& groupPath, const std::string& key);
+	float GetFloatValue(const std::vector<std::string>& groupPath, const std::string& key);
+	bool GetBoolValue(const std::vector<std::string>& groupPath, const std::string& key);
+	Vector2 GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key);
+	Vector3 GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key);
+	Vector4 GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key);
 
 	// グループ階層をたどる関数
 	const Group* FindGroup(const std::vector<std::string>& groupPath) const;
@@ -77,6 +79,8 @@ public:
 
 	// 再帰的にグループを読み込む関数
 	void LoadGroupRecursive(const std::vector<std::string>& groupPath, const json& jGroup);
+
+	void RemoveGroup(const std::string& groupName);
 
 private:
 	// コンストラクタをprivateにし、外部からの直接生成を禁止
