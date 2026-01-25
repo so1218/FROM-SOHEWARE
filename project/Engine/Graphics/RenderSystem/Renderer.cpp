@@ -149,7 +149,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 		srvManager_->GetSRVHandleGPU(finalImageIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise1);
+	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise_01);
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -187,7 +187,7 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 		srvManager_->GetSRVHandleGPU(srvIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise1);
+	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise_01);
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -485,7 +485,8 @@ void Renderer::CreateModels()
 }
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
-	const std::vector<MaterialHandle>& materials, BlendMode blendMode, RenderGroup group)
+	const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
+	DepthMode depthMode, RenderGroup group)
 {
 	// モデルに対応するGPUメッシュリストを取得
 	const auto& meshes = GetOrCreateModelBatch(modelData);
@@ -556,6 +557,8 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData
 				}
 				submission.instanceIndex = indexModel_; // 定数バッファのインデックス
 				submission.blendMode = blendMode;
+				submission.cullMode = cullMode;
+				submission.depthMode = depthMode;
 
 				// アルファ判定
 				bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
@@ -1260,20 +1263,43 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	{
 		psoName = "Skinning";
 	}
-	else // 通常モデル
+	else if (isWireFrame_)
 	{
-		if (isWireFrame_)
+		psoName = "Wireframe";
+	}
+	else
+	{
+		// 通常モデル (ブレンドモードで分岐)
+		switch (sub.blendMode)
 		{
-			psoName = "Wireframe";
+		case BlendMode::kBlendModeAdd:      psoName = "Object3DAdd";         break;
+		case BlendMode::kBlendModeNormal:   psoName = "Object3DTransparent"; break;
+		case BlendMode::kBlendModeNone:
+		default:                            psoName = "Standard3D";          break;
 		}
-		else {
-			switch (sub.blendMode)
-			{
-			case BlendMode::kBlendModeAdd:      psoName = "Object3DAdd";   break;
-			case BlendMode::kBlendModeNormal:   psoName = "Object3DTransparent"; break;
-			case BlendMode::kBlendModeNone:
-			default:                            psoName = "Standard3D";       break; // 通常
-			}
+	}
+
+	// ワイヤーフレーム以外の場合、カリングとデプスの設定を名前に付与する
+	if (psoName != "Wireframe")
+	{
+		// カリング設定の接尾辞追加
+		if (sub.cullMode == CullMode::None)
+		{
+			psoName += "_NoCull";
+		}
+		else if (sub.cullMode == CullMode::Front)
+		{
+			psoName += "_FrontCull";
+		}
+
+		// デプス設定の接尾辞追加
+		if (sub.depthMode == DepthMode::ReadOnly)
+		{
+			psoName += "_DepthRead";
+		}
+		else if (sub.depthMode == DepthMode::None)
+		{
+			psoName += "_DepthOff";
 		}
 	}
 
@@ -1312,7 +1338,15 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	// スキニング描画
 	if (isSkinning)
 	{
-		cmdList->SetPipelineState(psoManager_->GetPSO("Skinning"));
+		// 生成した名前でPSOを検索
+		ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
+
+		// もしその組み合わせのPSOを作っていなかった場合の安全策 (フォールバック)
+		if (!pso)
+		{
+			pso = psoManager_->GetPSO("Skinning"); // 基本に戻す
+		}
+		cmdList->SetPipelineState(pso);
 		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skinning"));
 
 		const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
@@ -1339,7 +1373,17 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 	// 通常モデル描画
 	else
 	{
-		cmdList->SetPipelineState(psoManager_->GetPSO(psoName));
+		// 通常モデル
+		ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
+
+		// 安全策
+		if (!pso)
+		{
+			// 見つからなければ標準的なものを使用
+			pso = psoManager_->GetPSO("Standard3D");
+		}
+
+		cmdList->SetPipelineState(pso);
 		cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("3D"));
 
 		cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());

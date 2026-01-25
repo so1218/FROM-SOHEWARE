@@ -102,6 +102,20 @@ struct ModelData
     Node rootNode;
 };
 
+enum class CullMode
+{
+    Back,   // 通常 (裏面カリング)
+    Front,  // 前面カリング
+    None    // カリングなし (両面描画)
+};
+
+enum class DepthMode
+{
+    Write,      // 書き込みあり (通常)
+    ReadOnly,   // 書き込みなし・テストあり (半透明・エフェクト)
+    None        // テストも書き込みもなし (UI・常に最前面)
+};
+
 struct VertexKey
 {
     Vector4 position;

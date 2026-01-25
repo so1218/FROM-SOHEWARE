@@ -199,7 +199,7 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
     }
 
     // 加算
-    if (name == "Additive")
+    if (name == "Additive" || name == "Add")
     {
         D3D12_BLEND_DESC blendDesc{};
         blendDesc.RenderTarget[0].BlendEnable = TRUE;

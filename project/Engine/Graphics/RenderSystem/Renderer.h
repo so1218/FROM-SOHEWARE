@@ -62,8 +62,8 @@ public:
 
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
-        const std::vector<MaterialHandle>& materials, BlendMode blendMode,
-        RenderGroup group);
+        const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
+        DepthMode depthMode, RenderGroup group);
     void DrawSkeleton(const Skeleton& skeleton, uint32_t color);
     void SubmitAnimationModel(const WorldTransform& worldTransform,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,

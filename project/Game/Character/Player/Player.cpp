@@ -125,7 +125,7 @@ void Player::AddWeapon(WeaponType type)
 // 更新処理
 void Player::Update()
 {
-	modelPlayer_->SetDissolveTexture(TextureID::noise1);
+	modelPlayer_->SetDissolveTexture(TextureID::noise_01);
 	//animationPlayer_->materialHandle_.materialData->edgeColor = { 1.0f, 0.2f, 0.1f };
 	//animationPlayer_->materialHandle_.materialData->edgeIntensity = 5.0f;
 	//animationPlayer_->materialHandle_.materialData->edgeWidth = 0.1f;

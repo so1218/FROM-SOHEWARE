@@ -59,6 +59,8 @@ public:
     void SetRenderGroup(RenderGroup group) { renderGroup_ = group; }
     void SetBlendMode(BlendMode blendMode) { blendMode_ = blendMode; }
     BlendMode GetBlendMode() const { return blendMode_; }
+    void SetCullMode(CullMode mode) { cullMode_ = mode; }
+    void SetDepthMode(DepthMode mode) { depthMode_ = mode; }
 
     // ========================================================================
     // 個別設定
@@ -86,6 +88,8 @@ public:
     // マテリアル数
     size_t GetMaterialCount() const { return materials_.size(); }
 
+    void ApplyRenderSettings(const RenderSettings& settings);
+
 private:
     // ヘルパー関数: 範囲チェック
     bool IsValidMaterialIndex(size_t index) const;
@@ -103,4 +107,6 @@ private:
     // 描画設定
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
     RenderGroup renderGroup_ = RenderGroup::Opaque;
+    CullMode cullMode_ = CullMode::Back;
+    DepthMode depthMode_ = DepthMode::Write;
 };

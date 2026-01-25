@@ -42,7 +42,7 @@ enum TextureID
     pressSousa,
     ikinokore,
 
-    noise1,
+    noise_01,
 
     lut_natural,
 
@@ -132,7 +132,7 @@ private:
             { pressSousa, "Assets/Textures/pressSousa.png" },
             { ikinokore, "Assets/Textures/ikinokore.png" },
 
-            { noise1, "Assets/Textures/Noise/noise_59.png" },
+            { noise_01, "Assets/Textures/Noise/noise_59.png" },
 
             { lut_natural, "Assets/Textures/LUTs/RGBTable16x1.png" },
 

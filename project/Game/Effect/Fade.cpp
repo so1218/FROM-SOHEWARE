@@ -24,7 +24,7 @@ void Fade::Initialize()
     sprite_->SetLayerOrder(9999);
 
     sprite_->SetIsVisible(false);
-    sprite_->SetDissolveTexture(TextureID::noise1);
+    sprite_->SetDissolveTexture(TextureID::noise_01);
 
     // グローバル変数登録
     binder_ = std::make_unique<PropertyBinder>(engine_, "Fade");

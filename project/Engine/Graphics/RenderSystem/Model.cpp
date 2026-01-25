@@ -48,6 +48,8 @@ void Model::Draw()
         *modelData_,
         materials_,
         blendMode_,
+        cullMode_,
+        depthMode_,
         renderGroup_
     );
 }
@@ -230,4 +232,13 @@ Vector4* Model::GetMaterialColorPtr(size_t index)
 bool Model::IsValidMaterialIndex(size_t index) const
 {
     return index < materials_.size();
+}
+
+
+void Model::ApplyRenderSettings(const RenderSettings& settings)
+{
+    SetBlendMode(settings.blendMode);
+    SetCullMode(settings.cullMode);
+    SetDepthMode(settings.depthMode);
+    SetRenderGroup(settings.renderGroup);
 }
