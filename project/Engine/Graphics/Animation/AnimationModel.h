@@ -60,6 +60,8 @@ public:
     // カラー・発光
     void SetColor(const Vector4& color);
     void SetColor(uint32_t color);
+    void SetBaseColor(const Vector4& color) { baseColor_ = color; }
+    void SetBaseColor(uint32_t color);
     void SetEmissiveIntensity(float intensity);
 
     // アウトライン
@@ -96,6 +98,9 @@ public:
     WorldTransform& GetTransform() { return transform_; }
     const WorldTransform& GetTransform() const { return transform_; }
 
+    // スケルトン取得
+    const Skeleton& GetSkeleton() const { return skeleton_; }
+
     // マテリアル関連
     MaterialData* GetMaterialData(size_t index = 0);
     const MaterialData* GetMaterialData(size_t index = 0) const;
@@ -103,6 +108,8 @@ public:
     MaterialHandle* GetMaterialHandle(size_t index = 0);
     Vector4* GetMaterialColorPtr(size_t index); // ImGui等での編集用
     size_t GetMaterialCount() const { return materials_.size(); }
+
+    const Vector4& GetBaseColor() const { return baseColor_; }
 
     // ImGui用: UV更新処理
     void UpdateUV();
@@ -125,6 +132,9 @@ private:
 
     // モデル・アニメーションデータ
     AnimatedModelData animeModelData_;
+
+    // モデル全体の色
+    Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // 姿勢制御
     Skeleton skeleton_;

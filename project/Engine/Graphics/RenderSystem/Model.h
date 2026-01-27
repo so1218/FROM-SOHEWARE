@@ -45,6 +45,9 @@ public:
     void SetColor(const Vector4& color);
     void SetColor(uint32_t color);
     void SetEmissiveIntensity(float intensity);
+    // マテリアルは触らず、モデル自体の色を変える
+    void SetBaseColor(const Vector4& color) { baseColor_ = color; }
+    void SetBaseColor(uint32_t color);
 
     // アウトライン
     void SetEnableOutline(bool enable);
@@ -82,6 +85,8 @@ public:
     // マテリアルハンドル取得
     MaterialHandle* GetMaterialHandle(size_t index = 0);
 
+    const Vector4& GetBaseColor() const { return baseColor_; }
+
     // 色ポインタ取得 (ImGui等で直接編集する場合に使用)
     Vector4* GetMaterialColorPtr(size_t index);
 
@@ -97,6 +102,9 @@ private:
 private:
     Engine* engine_ = nullptr;
     const ModelData* modelData_ = nullptr;
+
+    // マテリアルとは別に、モデル自体が持つ色
+    Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     // メッシュごとのマテリアルリスト
     std::vector<MaterialHandle> materials_;

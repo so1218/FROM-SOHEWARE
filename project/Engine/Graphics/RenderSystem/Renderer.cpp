@@ -486,7 +486,7 @@ void Renderer::CreateModels()
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
 	const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
-	DepthMode depthMode, RenderGroup group)
+	DepthMode depthMode, RenderGroup group, const Vector4& instanceColor)
 {
 	// モデルに対応するGPUメッシュリストを取得
 	const auto& meshes = GetOrCreateModelBatch(modelData);
@@ -532,6 +532,7 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData
 				buffer.wvpMapped->WVP = wvp;
 				buffer.wvpMapped->World = currentWorldMatrix;
 				buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
+				buffer.wvpMapped->WorldColor = instanceColor;
 
 				// 描画キューに登録
 				ModelSubmission submission{};
@@ -628,7 +629,8 @@ void Renderer::SubmitAnimationModel(
 	const SkinCluster& skinCluster,
 	const std::vector<MaterialHandle>& materials,
 	BlendMode blendMode,
-	RenderGroup group)
+	RenderGroup group,
+	const Vector4& instanceColor)
 {
 	const auto& modelData = instance.modelData;
 	// GPUメッシュ生成済みか確認
@@ -647,6 +649,7 @@ void Renderer::SubmitAnimationModel(
 		buffer.wvpMapped->WVP = wvp;
 		buffer.wvpMapped->World = world;
 		buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+		buffer.wvpMapped->WorldColor = instanceColor;
 
 		// マテリアル決定
 		MaterialHandle actualMaterialHandle;

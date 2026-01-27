@@ -66,6 +66,8 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
 
     // シャドウマップ用のライト空間座標
     output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
+    
+    output.worldColor = gTransformationMatrix.WorldColor;
 
     return output;
 }

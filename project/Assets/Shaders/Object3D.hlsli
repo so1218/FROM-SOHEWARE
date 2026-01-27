@@ -11,6 +11,7 @@ struct VertexShaderOutput
     float32_t3 worldPosition : POSITION1;
     float4 shadowCoord : POSITION2;
     float3 tangent : TANGENT;
+    float32_t4 worldColor : COLOR0;
 };
 
 struct VertexShaderInput

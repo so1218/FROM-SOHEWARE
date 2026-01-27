@@ -22,5 +22,7 @@ VertexShaderOutput main(VertexShaderInput input)
     // ワールド変換行列の回転成分だけを適用して渡す
     output.tangent = normalize(mul(input.tangent, (float3x3) gTransformationMatrix.World));
     
+    output.worldColor = gTransformationMatrix.WorldColor;
+    
     return output;
 }

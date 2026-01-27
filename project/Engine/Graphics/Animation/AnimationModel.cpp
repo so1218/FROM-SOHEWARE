@@ -130,7 +130,8 @@ void AnimationModel::Draw()
         skinCluster_,
         materials_,
         blendMode_,
-        renderGroup_
+        renderGroup_,
+        baseColor_
     );
 }
 
@@ -226,6 +227,8 @@ void AnimationModel::SetColor(uint32_t color)
 {
     SetColor(Math::Uint32ToColorVector(color));
 }
+
+void AnimationModel::SetBaseColor(uint32_t color) { baseColor_ = Math::Uint32ToColorVector(color); }
 
 void AnimationModel::SetEmissiveIntensity(float intensity)
 {

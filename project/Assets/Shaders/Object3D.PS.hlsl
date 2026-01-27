@@ -44,6 +44,7 @@ struct PixelShaderInput
     float3 worldPosition : POSITION1;
     float4 shadowCoord : POSITION2;
     float3 tangent : TANGENT;
+    float4 worldColor : COLOR0;
 };
 
 float DitherThreshold4x4(int2 position);
@@ -128,7 +129,7 @@ PixelShaderOutput main(PixelShaderInput input)
         output.color.a = 1.0;
         return output;
     }
-   
+    
     // 影の計算 
     float shadowFactor = 1.0f;
     
@@ -229,6 +230,8 @@ PixelShaderOutput main(PixelShaderInput input)
     {
         finalColor = baseColor * gMaterial.color.rgb;
     }
+    
+    finalColor *= input.worldColor.rgb;
     
      // 自己発光を加算
     finalColor *= gMaterial.emissiveIntensity;

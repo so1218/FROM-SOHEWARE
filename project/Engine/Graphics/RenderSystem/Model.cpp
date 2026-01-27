@@ -50,7 +50,8 @@ void Model::Draw()
         blendMode_,
         cullMode_,
         depthMode_,
-        renderGroup_
+        renderGroup_,
+        baseColor_
     );
 }
 
@@ -130,6 +131,8 @@ void Model::SetColor(uint32_t color)
 {
     SetColor(Math::Uint32ToColorVector(color));
 }
+
+void Model::SetBaseColor(uint32_t color) { baseColor_ = Math::Uint32ToColorVector(color); }
 
 void Model::SetEmissiveIntensity(float intensity)
 {

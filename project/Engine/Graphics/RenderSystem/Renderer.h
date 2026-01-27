@@ -63,12 +63,12 @@ public:
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
-        DepthMode depthMode, RenderGroup group);
+        DepthMode depthMode, RenderGroup group, const Vector4& instanceColor);
     void DrawSkeleton(const Skeleton& skeleton, uint32_t color);
     void SubmitAnimationModel(const WorldTransform& worldTransform,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode,
-        RenderGroup group);
+        RenderGroup group, const Vector4& instanceColor);
     void SubmitGrid(const WorldTransform& worldTransform, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
     void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle,
         uint32_t dissolveTextureHandle, int layerOrder, const MaterialHandle& materialHandle);
