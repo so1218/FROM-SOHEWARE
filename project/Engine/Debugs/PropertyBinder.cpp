@@ -431,6 +431,7 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                     std::string matPrefix;
                     std::string matNodeName;
 
+                    // マテリアル数に応じて名前を変える
                     if (matCount == 1)
                     {
                         matPrefix = prefix;
@@ -442,7 +443,7 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                         matNodeName = "Material " + std::to_string(i);
                     }
 
-                    // 個別マテリアルのツリー
+                    // マテリアルごとのツリー
                     if (ImGui::TreeNodeEx(matNodeName.c_str(), ImGuiTreeNodeFlags_None))
                     {
                         ImGui::Indent(10.0f);
@@ -477,15 +478,17 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                         {
                             ImGui::Spacing();
                             int currentMode = gv->GetIntValue(groupPath_, matPrefix + "LightMode");
-                            if (currentMode == 3)
+                            bool isPBR = (currentMode == 3);
+
+                            if (isPBR)
                             {
-                                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[ PBR ]");
+                                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[ PBR設定 ]");
                                 Draw(matPrefix + "Roughness", "粗さ");
                                 Draw(matPrefix + "Metalness", "金属度");
                             }
                             else
                             {
-                                ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "[ Standard ]");
+                                ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "[ スタンダード設定 ]");
                                 Draw(matPrefix + "Shininess", "光沢度");
                                 Draw(matPrefix + "SpecColor", "スペキュラ色");
                                 Draw(matPrefix + "DiffuseRef", "拡散反射率");
@@ -499,7 +502,8 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                             Draw(matPrefix + "AddShadow", "影を受ける");
                             if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
                             {
-                                Draw(matPrefix + "ShadowDens", "影の濃さ");
+                                Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
+                                Draw(matPrefix + "ShadowEnv", "影の明るさ");
                                 Draw(matPrefix + "ShadowBias", "バイアス");
                                 Draw(matPrefix + "ShadowSoft", "柔らかさ");
                             }
@@ -515,6 +519,7 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                                 Draw(matPrefix + "RimColor", "発光色");
                                 Draw(matPrefix + "RimInten", "強度");
                                 Draw(matPrefix + "RimPower", "鋭さ");
+                                Draw(matPrefix + "RimUseDir", "ライト方向依存");
                             }
                             ImGui::TreePop();
                         }
@@ -526,7 +531,8 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                             if (gv->GetIntValue(groupPath_, matPrefix + "NormEnable") > 0)
                             {
                                 Draw(matPrefix + "NormalMapTex", "テクスチャ");
-                                Draw(matPrefix + "NormInten", "強度");
+                                Draw(matPrefix + "NormInten", "凹凸の強さ");
+                                Draw(matPrefix + "NormTile", "タイリング");
                             }
                             ImGui::TreePop();
                         }
@@ -539,7 +545,9 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
                             {
                                 Draw(matPrefix + "DissolveTex", "ノイズマップ");
                                 Draw(matPrefix + "DisThres", "進行度");
+                                ImGui::Separator();
                                 Draw(matPrefix + "EdgeWidth", "エッジ幅");
+                                Draw(matPrefix + "EdgeInten", "エッジ強度");
                                 Draw(matPrefix + "EdgeColor", "エッジ色");
                             }
                             ImGui::TreePop();
