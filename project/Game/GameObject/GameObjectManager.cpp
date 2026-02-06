@@ -71,13 +71,3 @@ void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
         }
     }
 }
-
-void GameObjectManager::ClearEnemies()
-{
-    objects_.erase(
-        std::remove_if(objects_.begin(), objects_.end(),
-            [](const std::unique_ptr<GameObject>& obj) {
-                return dynamic_cast<Enemy*>(obj.get()) != nullptr;
-            }),
-        objects_.end());
-}

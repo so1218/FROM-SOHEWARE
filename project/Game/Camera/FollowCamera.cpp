@@ -41,7 +41,7 @@ void FollowCamera::Initialize()
     zoomSmoothTime_ = 0.2f;
 
     // 初期位置計算
-    Vector3 targetPos = target_->GetWorldTransform().translation_;
+    Vector3 targetPos = target_->GetWorldPosition();
     float horizontalDistance = std::cos(currentPitch_) * distance_;
     Vector3 targetOffset = {
         std::sin(currentYaw_) * horizontalDistance,
@@ -120,7 +120,7 @@ void FollowCamera::Update()
     currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
     // ターゲット位置のスムージング
-    Vector3 actualPlayerPos = target_->GetWorldTransform().translation_;
+    Vector3 actualPlayerPos = target_->GetWorldPosition();
     float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 
