@@ -10,18 +10,14 @@ enum class ModelID
     sphere,
     plane,
     cylinder,
+    openCylinder,
 
     // フィールド関連
     skydome,
     field,
-    axe,
-    knife,
 
     // プレイヤー関連
-    player,
-
-    // 敵関連
-    enemy,
+    playerMesh,
 
     count
 };
@@ -52,18 +48,14 @@ private:
             { ModelID::sphere,     "Assets/Models/Primitives/Sphere/sphere.obj" },
             { ModelID::plane,     "Assets/Models/Primitives/Plane/plane.obj" },
             { ModelID::cylinder,     "Assets/Models/Primitives/Cylinder/cylinder.gltf" },
+            { ModelID::openCylinder,     "Assets/Models/Primitives/OpenCylinder/openCylinder.gltf" },
 
             // フィールド関連
             { ModelID::skydome,  "Assets/Models/Environment/Skydome/skydome.obj" },
             { ModelID::field,  "Assets/Models/Environment/Field/field.obj" },
-            { ModelID::axe,  "Assets/Models/Characters/Player/weapons/axe/Axe.obj" },
-            { ModelID::knife,  "Assets/Models/Characters/Player/weapons/knife/Knife.obj" },
 
             // プレイヤー関連
-            { ModelID::player,  "Assets/Models/Characters/Player/player.gltf" },
-
-            // 敵関連
-            { ModelID::enemy ,  "Assets/Models/Characters/Enemy/zombi.gltf" },
+            { ModelID::playerMesh,  "Assets/Models/Characters/Player/playerClear.gltf" },
         }
     };
 };

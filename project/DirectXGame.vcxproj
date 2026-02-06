@@ -262,7 +262,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Scene\Transitions\FadeOutState.cpp" />
     <ClCompile Include="Game\Scene\Transitions\NormalState.cpp" />
     <ClCompile Include="Game\Stage\StageManager.cpp" />
-    <ClCompile Include="Game\Utility\TimedCall.cpp" />
     <ClCompile Include="Game\GameObject\Ground.cpp" />
     <ClCompile Include="Engine\Core\GlobalVariables.cpp" />
     <ClCompile Include="main.cpp">
@@ -386,7 +385,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Scene\Transitions\ISceneTransitionState.h" />
     <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
-    <ClInclude Include="Game\Utility\TimedCall.h" />
     <ClInclude Include="Game\GameObject\Ground.h" />
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
     <ClInclude Include="Game\GameObject\GameObject.h" />

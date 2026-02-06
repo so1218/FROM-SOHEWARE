@@ -20,7 +20,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
 	camera_(camera)
 {
 	// アニメーションモデルを生成
-	animationPlayer_ = CreateAnimationModel(ModelID::enemy, AnimationID::enemy);
+	animationPlayer_ = CreateAnimationModel(ModelID::playerMesh, AnimationID::playerWalk);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 }
@@ -34,7 +34,7 @@ void Player::Initialize()
 	// ステータス初期化
 	hp_ = maxHp_;
 
-	animationPlayer_->Play(AnimationHandle::Get(AnimationID::enemy), true);
+	animationPlayer_->Play(AnimationHandle::Get(AnimationID::playerWalk));
 
 	// 衝突判定の属性設定
 	SetCollisionAttribute(kCollisionAttributePlayer);

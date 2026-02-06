@@ -14,33 +14,12 @@ enum TextureID
 
     // PlayScene     
     skydome,
-    axe,
-    knife,
 
     //文字フォント
     num1, num2, num3, num4, num5,
     num6, num7, num8, num9, num0,
     
     coron,
-    hpGage,
-
-    // カードフォント
-    cardTextKnife,
-    cardTextAxe,
-
-    title,
-    clear,
-    axeLevelUp,
-    knifeLevelUp,
-    hpUp,
-    speedUp,
-    heal,
-
-    cameraSousa,
-    moveSousa,
-    useController,
-    pressSousa,
-    ikinokore,
 
     noise_01,
 
@@ -98,8 +77,6 @@ private:
             { skyboxCubemap,   "Assets/Textures/Environments/night.dds" },
 
             { skydome,   "Assets/Textures/sky_sphere.png" },
-            { axe,   "Assets/Textures/Woodcutter-Axe.jpg" },
-            { knife,   "Assets/Textures/KnifeTexture..jpg" },
 
             { num1, "Assets/Textures/UI/numFont/1.png" },
             { num2, "Assets/Textures/UI/numFont/2.png" },
@@ -113,25 +90,7 @@ private:
             { num0, "Assets/Textures/UI/numFont/0.png" },
                                     
             { coron, "Assets/Textures/UI/numFont/coron.png" },
-            { hpGage, "Assets/Textures/hpGage.png" },
-
-            { cardTextKnife, "Assets/Textures/UI/numFont/9.png" },
-            { cardTextAxe, "Assets/Textures/UI/numFont/0.png" },
-
-            { title, "Assets/Textures/title.png" },
-            { clear, "Assets/Textures/clear.png" },
-            { axeLevelUp, "Assets/Textures/axeLevelUp.png" },
-            { knifeLevelUp, "Assets/Textures/knifeLevelUp.png" },
-            { hpUp, "Assets/Textures/hpUp.png" },
-            { speedUp, "Assets/Textures/speedUp.png" },
-            { heal, "Assets/Textures/heal.png" },
-
-            { cameraSousa, "Assets/Textures/cameraSousa.png" },
-            { moveSousa, "Assets/Textures/moveSousa.png" },
-            { useController, "Assets/Textures/useController.png" },
-            { pressSousa, "Assets/Textures/pressSousa.png" },
-            { ikinokore, "Assets/Textures/ikinokore.png" },
-
+  
             { noise_01, "Assets/Textures/Noise/noise_59.png" },
 
             { lut_natural, "Assets/Textures/LUTs/RGBTable16x1.png" },

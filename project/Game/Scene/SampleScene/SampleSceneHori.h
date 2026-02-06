@@ -1,8 +1,6 @@
 #pragma once
 #include "BaseScene.h"
 #include "Player.h"
-#include "Enemy.h"
-#include "ShakeEffect.h"
 #include "FollowCamera.h"
 #include "ParticleEmitter.h"
 

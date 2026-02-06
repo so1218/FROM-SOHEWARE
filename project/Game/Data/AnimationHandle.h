@@ -5,11 +5,9 @@
 // アニメーションID
 enum class AnimationID
 {
-    // 基本的なアニメーション
-    player,
+    // プレイヤー
     playerIdle,
-
-    enemy,
+    playerWalk,
 
     count
 };
@@ -28,11 +26,9 @@ private:
     static constexpr std::array<std::pair<AnimationID, const char*>, static_cast<size_t>(AnimationID::count)> animationDefinitions_ =
     {
         {
-            // 基本的なアニメーション
-            { AnimationID::player,     "Assets/Models/Characters/Player/player.gltf" },
-            { AnimationID::playerIdle,     "Assets/Models/Characters/Player/player.gltf" },
-
-            { AnimationID::enemy ,  "Assets/Models/Characters/Enemy/zombi.gltf" },
+            // プレイヤー
+            { AnimationID::playerIdle,     "Assets/Models/Characters/Player/playerIdle.gltf" },
+            { AnimationID::playerWalk,     "Assets/Models/Characters/Player/playerWalk.gltf" },
         }
     };
 };
