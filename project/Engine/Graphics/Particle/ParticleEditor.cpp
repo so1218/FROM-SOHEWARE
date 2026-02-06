@@ -435,6 +435,28 @@ void ParticleEditor::ShowEditor()
                     ImGui::TreePop();
                 }
                 ImGui::Separator();
+                if (ImGui::TreeNode("引力モジュール"))
+                {
+                    auto& attraction = config.attraction;
+
+                    ImGui::Checkbox("有効##Attraction", &attraction.enabled);
+
+                    if (attraction.enabled)
+                    {
+                        ImGui::DragFloat("引力の強さ", &attraction.strength, 0.1f, 0.0f, 300.0f);
+
+                        ImGui::Separator();
+                        ImGui::Text("静的ターゲット (ターゲット未設定時)");
+                        ImGui::DragFloat3("座標##AttractionTarget", &attraction.target.x, 0.1f);
+
+                        ImGui::Separator();
+                        ImGui::Text("動的ターゲット (SetTargetToFollow使用時)");
+                        ImGui::DragFloat3("オフセット##AttractionOffset", &attraction.offset.x, 0.1f);
+                    }
+                    ImGui::TreePop();
+                }
+                ImGui::Separator();
+
                 if (ImGui::TreeNode("トレイルモジュール"))
                 {
                     auto& trail = config.trail;
