@@ -31,7 +31,7 @@ void ParticleEditor::ShowEditor()
         // プリセットがない場合
         if (presetNames.empty())
         {
-            ImGui::Text("利用可能なプリセットがありません。");
+            ImGui::Text("利用可能なプリセットがない");
         }
         else
         {

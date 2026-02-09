@@ -25,7 +25,8 @@ namespace FromEngine
     {
         // 名前でデータを検索
         auto it = audioDataMap_.find(name);
-        if (it == audioDataMap_.end()) {
+        if (it == audioDataMap_.end())
+        {
             // データが見つからない
             return -1;
         }

@@ -1,11 +1,12 @@
 #include "Grid.h"
 #include "TextureHandle.h"
+#include "ModelManager.h"
 
 Grid::Grid(Engine* engine)
     : GameObject(engine)
 {
     textureHandle_ = TextureHandle::Get(TextureID::white1x1);
-    modelData_ = ModelHandle::Get(ModelID::field);
+    modelData_ = ModelManager::GetInstance().GetModel("field");
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
     transform_.scale_ = { 10000.0f, 1.0f,10000.0f };
 }

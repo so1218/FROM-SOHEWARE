@@ -10,6 +10,8 @@ class AnimationModel
 {
 public:
     // コンストラクタ
+    AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName);
+    // （内部生成用）
     AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 
@@ -20,13 +22,18 @@ public:
     void Draw();
 
     // ========================================================================
-    // アニメーション制御
+    // アニメーション制御 (文字列)
     // ========================================================================
+    // 名前指定で再生
+    void Play(const std::string& animationName, bool isLoop = true, float speedScale = 1.0f);
 
-    // アニメーション再生開始
+    // 名前指定で切り替え
+    void SetAnimation(const std::string& animationName);
+
+    // ========================================================================
+    // アニメーション制御 (内部処理用)
+    // ========================================================================
     void Play(const Animation* animation, bool isLoop = true, float speedScale = 1.0f);
-
-    // アニメーションの切り替え (設定は維持)
     void SetAnimation(const Animation* animation);
 
     // 最初から再生しなおす

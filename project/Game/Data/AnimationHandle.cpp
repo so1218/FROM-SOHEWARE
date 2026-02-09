@@ -1,25 +1,59 @@
 #include "AnimationHandle.h"
-#include "AnimationLoader.h"
+#include "AnimationManager.h"
+#include "StringUtils.h"
+#include <fstream>
+#include <sstream>
+#include <cassert>
 
-std::array<Animation, static_cast<size_t>(AnimationID::count)> AnimationHandle::animations_{};
 bool AnimationHandle::initialized_ = false;
 
 void AnimationHandle::Initialize()
 {
     if (initialized_) return;
 
-    for (const auto& def : animationDefinitions_)
+    const std::string csvPath = "Assets/Data/AnimationList.csv";
+    std::ifstream file(csvPath);
+
+    if (!file.is_open()) 
     {
-        // 配列に登録
-        animations_[static_cast<size_t>(def.first)] = LoadAnimationFile(def.second);
+        assert(false && "AnimationList.csv not found.");
+        return;
+    }
+
+    // ルートパスを指定
+    const std::string kDirectoryPath = "Assets/Models/";
+
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line))
+    {
+        if (line.empty()) continue;
+
+        size_t firstChar = line.find_first_not_of(" \t");
+        if (firstChar == std::string::npos) continue;
+        if (line[firstChar] == '#' || (line[firstChar] == '/' && line[firstChar + 1] == '/'))
+        {
+            continue;
+        }
+
+        std::istringstream stream(line);
+        std::string name, path;
+
+        if (std::getline(stream, name, ',') && std::getline(stream, path))
+        {
+            name = StringUtils::Trim(name);
+            path = StringUtils::Trim(path);
+
+            if (!name.empty() && !path.empty())
+            {
+                // パスを結合
+                std::string fullPath = kDirectoryPath + path;
+
+                AnimationManager::GetInstance().Load(name, fullPath);
+            }
+        }
     }
 
     initialized_ = true;
-}
-
-const Animation* AnimationHandle::Get(AnimationID id)
-{
-    assert(initialized_);
-
-    return &animations_[static_cast<size_t>(id)];
 }

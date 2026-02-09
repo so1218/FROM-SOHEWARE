@@ -1,6 +1,8 @@
 #include "GameObject.h"
-#include "Model.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
 #include "AnimationModel.h"
+#include "Model.h"
 #include "Sprite.h"
 
 GameObject::GameObject(Engine* engine)
@@ -8,14 +10,38 @@ GameObject::GameObject(Engine* engine)
 {
 }
 
-std::unique_ptr<Model> GameObject::CreateModel(ModelID modelID)
+std::unique_ptr<Model> GameObject::CreateModel(const std::string& modelName)
 {
-	return std::make_unique<Model>(engine_, ModelHandle::Get(modelID));
+    // ModelManagerから取得
+    const ModelData* modelData = ModelManager::GetInstance().GetModel(modelName);
+
+    // 見つからなかった場合の安全策
+    if (!modelData)
+    {
+        // エラーログを出して、assertする
+        assert(false && "Model not found!");
+        return nullptr;
+    }
+
+    return std::make_unique<Model>(engine_, modelData);
 }
 
-std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(ModelID modelID, AnimationID animationID)
+std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(const std::string& modelName, const std::string& animationName)
 {
-	return std::make_unique<AnimationModel>(engine_, ModelHandle::Get(modelID), AnimationHandle::Get(animationID));
+    // ModelManagerから取得
+    const ModelData* modelData = ModelManager::GetInstance().GetModel(modelName);
+
+    // AnimationManagerから取得
+    const Animation* animation = AnimationManager::GetInstance().GetAnimation(animationName);
+
+    // 両方存在するかチェック
+    if (!modelData || !animation) 
+    {
+        assert(false && "Model or Animation not found!");
+        return nullptr;
+    }
+
+    return std::make_unique<AnimationModel>(engine_, modelData, animation);
 }
 
 std::unique_ptr<Sprite> GameObject::CreateSprite(TextureID textureID)

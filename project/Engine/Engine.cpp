@@ -451,7 +451,7 @@ void Engine::InitializeResources()
 	// 共通ハンドル初期化
 	TextureHandle::Initialize(this);
 	ParticleTextureHandle::Initialize(this);
-	ModelHandle::Initialize(this);
+	ModelHandle::Initialize();
 	AnimationHandle::Initialize();
 
 	// テクスチャ配列

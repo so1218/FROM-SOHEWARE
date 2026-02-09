@@ -1,6 +1,11 @@
 #include "Model.h"
 #include "Engine.h"
-#include "MaterialManager.h"
+#include "ModelManager.h"
+
+Model::Model(Engine* engine, const std::string& modelName)
+    : Model(engine, ModelManager::GetInstance().GetModel(modelName))
+{
+}
 
 Model::Model(Engine* engine, const ModelData* modelData)
     : engine_(engine), modelData_(modelData)

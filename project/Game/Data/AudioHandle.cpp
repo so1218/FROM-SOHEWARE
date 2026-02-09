@@ -18,24 +18,44 @@ void AudioHandle::Initialize()
     const std::string csvPath = "Assets/Data/AudioList.csv";
     std::ifstream file(csvPath);
 
-    // ファイルがない場合
-    if (!file.is_open())
+    if (!file.is_open()) 
     {
-        assert(false && "AudioList.csvが見つからない");
+        assert(false && "AudioList.csv not found.");
         return;
     }
 
-    std::string line;
-    std::getline(file, line); // 1行目をスキップ
+    // オーディオのルートフォルダ
+    const std::string kAudioRootPath = "Assets/Audio/";
 
-    while (std::getline(file, line)) {
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line))
+    {
+        if (line.empty()) continue;
+
+        size_t firstChar = line.find_first_not_of(" \t");
+        if (firstChar == std::string::npos) continue;
+        if (line[firstChar] == '#' || (line[firstChar] == '/' && line[firstChar + 1] == '/')) {
+            continue;
+        }
+
         std::istringstream stream(line);
         std::string name, path;
 
-        // カンマ区切りで読み込み
-        if (std::getline(stream, name, ',') && std::getline(stream, path, ',')) 
+        if (std::getline(stream, name, ',') && std::getline(stream, path))
         {
-            AudioPlayer::GetInstance().Load(name, StringUtils::ConvertString(path));
+            name = StringUtils::Trim(name);
+            path = StringUtils::Trim(path);
+
+            if (!name.empty() && !path.empty())
+            {
+                // パスを結合
+                std::string fullPath = kAudioRootPath + path;
+
+                // 結合してからConvertStringに渡す
+                AudioPlayer::GetInstance().Load(name, StringUtils::ConvertString(fullPath));
+            }
         }
     }
 

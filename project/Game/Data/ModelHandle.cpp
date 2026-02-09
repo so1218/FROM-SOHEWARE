@@ -1,44 +1,57 @@
 #include "ModelHandle.h"
-#include "ModelLoader.h"
+#include "ModelManager.h"
+#include "StringUtils.h"
+#include <fstream>
+#include <sstream>
+#include <cassert>
 
-std::array<std::unique_ptr<ModelData>, static_cast<size_t>(ModelID::count)> ModelHandle::modelHandles_{};
 bool ModelHandle::initialized_ = false;
-Engine* ModelHandle::engine_ = nullptr;
 
-constexpr std::array<ModelDefinition, static_cast<size_t>(ModelID::count)> ModelHandle::modelDefinitions_;
-
-void ModelHandle::Finalize()
-{
-    if (!initialized_) return;
-
-    for (auto& handle : modelHandles_)
-    {
-        handle.reset(); // モデル毎のModelDataを破棄
-    }
-    initialized_ = false;
-}
-void ModelHandle::Initialize(Engine* engine)
+void ModelHandle::Initialize()
 {
     if (initialized_) return;
 
-    engine_ = engine;
+    const std::string csvPath = "Assets/Data/ModelList.csv";
+    std::ifstream file(csvPath);
 
-    ModelLoader loader;
-    for (const auto& def : modelDefinitions_)
+    if (!file.is_open()) {
+        assert(false && "ModelList.csv not found.");
+        return;
+    }
+
+    // 共通の親フォルダパスを定義
+    const std::string kDirectoryPath = "Assets/Models/";
+
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line))
     {
-        // モデルデータを読み込む
-        std::unique_ptr<ModelData> modelData = std::make_unique<ModelData>(loader.LoadModel(def.path));
+        if (line.empty()) continue;
 
-        // 配列に登録
-        modelHandles_[static_cast<size_t>(def.id)] = std::move(modelData);
+        size_t firstChar = line.find_first_not_of(" \t");
+        if (firstChar == std::string::npos) continue;
+        if (line[firstChar] == '#' || (line.size() > firstChar + 1 && line[firstChar] == '/' && line[firstChar + 1] == '/')) {
+            continue;
+        }
+
+        std::istringstream stream(line);
+        std::string name, path;
+
+        if (std::getline(stream, name, ',') && std::getline(stream, path))
+        {
+            name = StringUtils::Trim(name);
+            path = StringUtils::Trim(path);
+
+            if (!name.empty() && !path.empty()) 
+            {
+                // ディレクトリパスと結合
+                std::string fullPath = kDirectoryPath + path;
+
+                ModelManager::GetInstance().Load(name, fullPath);
+            }
+        }
     }
 
     initialized_ = true;
-}
-
-
-const ModelData* ModelHandle::Get(ModelID id)
-{
-    assert(initialized_);
-    return modelHandles_[static_cast<size_t>(id)].get();
 }

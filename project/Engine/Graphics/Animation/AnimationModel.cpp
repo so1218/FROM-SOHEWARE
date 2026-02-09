@@ -1,6 +1,15 @@
 #include "AnimationModel.h"
 #include "TimeManager.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
 #include "Engine.h"
+
+AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
+    : AnimationModel(engine,
+        ModelManager::GetInstance().GetModel(modelName),
+        AnimationManager::GetInstance().GetAnimation(animationName))
+{
+}
 
 AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation)
     : engine_(engine)
@@ -139,8 +148,37 @@ void AnimationModel::Draw()
 // アニメーション制御
 // ========================================================================
 
+void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale)
+{
+    // Managerから検索
+    const Animation* anim = AnimationManager::GetInstance().GetAnimation(animationName);
+
+    // 見つかればポインタ版のPlayに投げる
+    if (anim)
+    {
+        Play(anim, isLoop, speedScale);
+    }
+    else
+    {
+        // エラーログ
+    }
+}
+
+void AnimationModel::SetAnimation(const std::string& animationName)
+{
+    // Managerから検索
+    const Animation* anim = AnimationManager::GetInstance().GetAnimation(animationName);
+
+    // 見つかればセット
+    if (anim)
+    {
+        SetAnimation(anim);
+    }
+}
+
 void AnimationModel::Play(const Animation* animation, bool isLoop, float speedScale)
 {
+    // ポインタが無効なら無視
     if (!animation) return;
 
     animeModelData_.currentAnimation = animation;
@@ -153,6 +191,7 @@ void AnimationModel::Play(const Animation* animation, bool isLoop, float speedSc
 
 void AnimationModel::SetAnimation(const Animation* animation)
 {
+    // 違うアニメーションなら切り替え
     if (animeModelData_.currentAnimation != animation)
     {
         animeModelData_.currentAnimation = animation;

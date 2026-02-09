@@ -12,6 +12,8 @@ class Model
 {
 public:
     // コンストラクタ
+    Model(Engine* engine, const std::string& modelName);
+    // 内部処理用
     Model(Engine* engine, const ModelData* modelData);
     ~Model() = default;
 
