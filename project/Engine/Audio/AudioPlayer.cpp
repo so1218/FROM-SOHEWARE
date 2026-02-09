@@ -5,25 +5,41 @@
 
 namespace FromEngine
 {
-    int AudioPlayer::Load(const std::wstring& filePath)
+    // ロード処理
+    void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)
     {
+        // 重複チェック
+        if (audioDataMap_.find(name) != audioDataMap_.end())
+        {
+            return;
+        }
+
         AudioData audioData = MediaAudioDecoder::DecodeAudioFile(filePath);
-        loadedAudios_.push_back(std::move(audioData));
-        return static_cast<int>(loadedAudios_.size()) - 1;
+
+        // ムーブで格納
+        audioDataMap_[name] = std::move(audioData);
     }
 
-    // 音声再生
-    int AudioPlayer::Play(int audioID, bool loop, uint32_t volume)
+    // 再生処理
+    int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
     {
-        if (audioID < 0 || audioID >= (int)loadedAudios_.size()) return -1;
+        // 名前でデータを検索
+        auto it = audioDataMap_.find(name);
+        if (it == audioDataMap_.end()) {
+            // データが見つからない
+            return -1;
+        }
+
+        const auto& audioData = it->second;
+
         if (!AudioManager::GetInstance().GetXAudio2()) return -1;
 
-        const auto& audioData = loadedAudios_[audioID];
-
+        // ソースボイス作成
         IXAudio2SourceVoice* sourceVoice = nullptr;
         HRESULT hr = AudioManager::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex);
         if (FAILED(hr)) return -1;
 
+        // バッファ設定
         XAUDIO2_BUFFER buffer = { 0 };
         buffer.AudioBytes = static_cast<UINT32>(audioData.buffer.size());
         buffer.pAudioData = audioData.buffer.data();
@@ -36,118 +52,119 @@ namespace FromEngine
             return -1;
         }
 
+        // 音量設定
         float fVolume = volume / 100.0f;
         fVolume = std::clamp(fVolume, 0.0f, 10.0f);
         sourceVoice->SetVolume(fVolume);
 
+        // 再生開始
         hr = sourceVoice->Start(0);
         if (FAILED(hr)) {
             sourceVoice->DestroyVoice();
             return -1;
         }
 
-        // 再生中の音声を管理
-        activeVoices_.push_back({ sourceVoice, audioID });
+        // ハンドルIDの発行と管理
+        int handleID = nextHandleID_;
+        nextHandleID_++; // 次回用にカウントアップ
 
-        // 再生中の音声のIDとしてインデックスを返す
-        return static_cast<int>(activeVoices_.size()) - 1;
+        // mapに登録
+        activeVoices_[handleID] = { sourceVoice, name };
+
+        return handleID;
     }
 
-    void AudioPlayer::Stop(int instanceID)
+    // 停止処理
+    void AudioPlayer::Stop(int handleID)
     {
-        if (instanceID < 0 || instanceID >= (int)activeVoices_.size()) return;
-
-        auto& voiceInfo = activeVoices_[instanceID];
-        if (voiceInfo.voice)
+        // mapから検索
+        auto it = activeVoices_.find(handleID);
+        if (it == activeVoices_.end()) 
         {
-            voiceInfo.voice->Stop(0);
-            voiceInfo.voice->FlushSourceBuffers();
-            voiceInfo.voice->DestroyVoice();
-            voiceInfo.voice = nullptr;
+            return; // 存在しない、または既に停止済み
         }
 
-        // 無効化or削除
-        voiceInfo.audioIndex = -1;
+        // ボイスの破棄
+        if (it->second.voice)
+        {
+            it->second.voice->Stop(0);
+            it->second.voice->FlushSourceBuffers();
+            it->second.voice->DestroyVoice();
+        }
+
+        // mapから削除
+        activeVoices_.erase(it);
     }
 
+    // 全停止
     void AudioPlayer::StopAll()
     {
-        for (auto& voiceInfo : activeVoices_)
+        for (auto& pair : activeVoices_)
         {
-            if (voiceInfo.voice) {
-                voiceInfo.voice->Stop(0);
-                voiceInfo.voice->FlushSourceBuffers();
-                voiceInfo.voice->DestroyVoice();
-                voiceInfo.voice = nullptr;
+            if (pair.second.voice) {
+                pair.second.voice->Stop(0);
+                pair.second.voice->FlushSourceBuffers();
+                pair.second.voice->DestroyVoice();
             }
-            voiceInfo.audioIndex = -1;
         }
         activeVoices_.clear();
+        uniqueHandles_.clear();
     }
 
-    bool AudioPlayer::IsPlaying(int instanceID)
+    // 再生中か確認
+    bool AudioPlayer::IsPlaying(int handleID)
     {
-        // IDが無効、またはリストの範囲外
-        if (instanceID < 0 || instanceID >= (int)activeVoices_.size()) {
-            return false;
-        }
+        auto it = activeVoices_.find(handleID);
+        if (it == activeVoices_.end()) return false;
 
-        auto& voiceInfo = activeVoices_[instanceID];
+        if (!it->second.voice) return false;
 
-        // Stop() で voiceInfo.voice が nullptr にされている
-        if (!voiceInfo.voice) {
-            return false;
-        }
-
-        // ボイスの状態を確認
         XAUDIO2_VOICE_STATE state = {};
-        voiceInfo.voice->GetState(&state);
+        it->second.voice->GetState(&state);
 
-        // バッファがキューに残っていれば再生中
         return (state.BuffersQueued > 0);
     }
 
-    int AudioPlayer::PlayUnique(int audioID, bool loop, uint32_t volume)
+    // ユニーク再生
+    int AudioPlayer::PlayUnique(const std::string& name, bool loop, uint32_t volume)
     {
-        // すでに再生中なら何もしない
-        if (uniqueInstances_.count(audioID))
+        // その名前の音がすでに管理されているか確認
+        if (uniqueHandles_.count(name))
         {
-            int instanceID = uniqueInstances_[audioID];
+            int existingHandle = uniqueHandles_[name];
 
-            // 追跡中のインスタンスがまだ再生中か確認
-            if (IsPlaying(instanceID))
+            // まだ再生中か
+            if (IsPlaying(existingHandle))
             {
-                // まだ再生中なので、新しい音は再生せず、既存のIDを返す
-                return instanceID;
+                // 再生中なら何もしない
+                return existingHandle;
             }
             else
             {
-                // 再生は終わっていたので、マップから削除（再度再生できるようにする）
-                uniqueInstances_.erase(audioID);
+                // 終わっているなら情報を消して、再作成に進む
+                uniqueHandles_.erase(name);
             }
         }
 
-        // 新しく再生する
-        int newInstanceID = Play(audioID, loop, volume);
-        if (newInstanceID >= 0) {
-            // 再生に成功したら、新しいInstanceIDをマップに登録
-            uniqueInstances_[audioID] = newInstanceID;
+        // 新規再生
+        int newHandle = Play(name, loop, volume);
+
+        // 成功したらユニーク管理に登録
+        if (newHandle >= 0) {
+            uniqueHandles_[name] = newHandle;
         }
-        return newInstanceID;
+
+        return newHandle;
     }
 
-    void AudioPlayer::StopUnique(int audioID)
+    // ユニーク停止
+    void AudioPlayer::StopUnique(const std::string& name)
     {
-        // この audioID がユニーク再生として追跡されているか確認
-        if (uniqueInstances_.count(audioID))
+        if (uniqueHandles_.count(name))
         {
-            int instanceID = uniqueInstances_[audioID];
-
-            // 通常の Stop() を使って停止
-            Stop(instanceID);
-
-            // 停止したのでマップから削除
-            uniqueInstances_.erase(audioID);
+            int handle = uniqueHandles_[name];
+            Stop(handle); // 実体を停止
+            uniqueHandles_.erase(name); // 管理情報削除
         }
     }
 }
