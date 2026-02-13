@@ -1,15 +1,15 @@
 #include "Player.h"
 #include "CollisionConfig.h"
-#include "TextureHandleManager.h"
-#include "ModelHandle.h"
-#include "AnimationHandle.h"
+#include "TextureManager.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
 #include "AnimationModel.h"
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"  
 #include "Collision.h"   
 #include "TimeManager.h"
-#include "AudioHandle.h"
+#include "AudioDevice.h"
 #include "AudioPlayer.h"
 
 #include <numbers>
@@ -71,7 +71,7 @@ void Player::Update()
 			float distance = 100.0f;
 			Vector3 lightPos = shadowTarget - (lightDir * distance);
 
-			// 上方向ベクトル（真上/真下はX軸に変更）
+			// 上方向ベクトル
 			Vector3 up = { 0.0f, 1.0f, 0.0f };
 			if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
@@ -105,7 +105,7 @@ void Player::Move()
 		lastMoveDirection_ = moveDirection_;
 	}
 
-	// 向きを補間して滑らかに回転させる
+	// 向きを補間して回転
 	if (lastMoveDirection_.Length() > 0.001f)
 	{
 		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);

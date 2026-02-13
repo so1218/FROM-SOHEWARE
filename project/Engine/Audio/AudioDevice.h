@@ -4,13 +4,13 @@
 
 namespace FromEngine
 {
-    class AudioManager
+    class AudioDevice
     {
     public:
 
-        static AudioManager& GetInstance()
+        static AudioDevice& GetInstance()
         {
-            static AudioManager instance;
+            static AudioDevice instance;
             return instance;
         }
 
@@ -20,11 +20,11 @@ namespace FromEngine
         IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
 
     private:
-        AudioManager() = default;
-        ~AudioManager() = default;
+        AudioDevice() = default;
+        ~AudioDevice() = default;
 
-        AudioManager(const AudioManager&) = delete;
-        AudioManager& operator=(const AudioManager&) = delete;
+        AudioDevice(const AudioDevice&) = delete;
+        AudioDevice& operator=(const AudioDevice&) = delete;
 
         Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
         IXAudio2MasteringVoice* masterVoice_ = nullptr;

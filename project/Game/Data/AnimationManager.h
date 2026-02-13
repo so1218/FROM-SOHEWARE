@@ -7,17 +7,17 @@
 class AnimationManager
 {
 public:
-    static AnimationManager& GetInstance() 
-    {
-        static AnimationManager instance;
-        return instance;
-    }
+    // シングルトン取得
+    static AnimationManager* GetInstance();
 
     // コピー禁止
     AnimationManager(const AnimationManager&) = delete;
     AnimationManager& operator=(const AnimationManager&) = delete;
 
-    // ロード関数
+    // CSVから一括ロード（初期化）
+    void LoadFromCSV(const std::string& csvPath = "Assets/Data/AnimationList.csv");
+
+    // 単体ロード（CSVを使わず直接ロードしたい場合用）
     void Load(const std::string& name, const std::string& path);
 
     // 取得関数
@@ -27,6 +27,5 @@ private:
     AnimationManager() = default;
     ~AnimationManager() = default;
 
-    // 文字列でアニメーションデータを管理
     std::unordered_map<std::string, Animation> animations_;
 };

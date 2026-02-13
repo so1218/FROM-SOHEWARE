@@ -3,7 +3,7 @@
 #include "Camera.h"
 #include "LightManager.h"
 #include "MaterialManager.h"
-#include "TextureManager.h"
+#include "TextureLoader.h"
 #include "PostEffectManager.h"
 #include "DebugCamera.h"
 
@@ -15,7 +15,7 @@ class DebugGuiManager
 {
 public:
     void Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager, 
-        TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera);
+        TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera);
     void Update(Camera* targetCamera);
 
     void BeginSceneView(SRVManager* srvManager, uint32_t srvIndexToShow);
@@ -25,7 +25,7 @@ private:
     Engine* engine_; 
     LightManager* lightManager_;
     MaterialManager* materialManager_;
-    TextureManager* textureManager_;
+    TextureLoader* textureLoader_;
     PostEffectManager* postEffectManager_;
     DebugCamera* debugCamera_;
 

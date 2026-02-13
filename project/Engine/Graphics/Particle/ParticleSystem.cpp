@@ -7,7 +7,7 @@
 #include "ParticleEmitter.h"
 #include "ParticleEditor.h"
 #include "ParticleConfigManager.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 #include "ImGuiManager.h"
 #include "json.hpp"
 
@@ -440,7 +440,7 @@ void ParticleSystem::Update()
                 particleState.transform->scale_ = config.sizeOverLifetime.Evaluate(t);
 
             // Texture Module
-            particleState.textureHandle = TextureHandleManager::GetInstance().Get(config.textureSheet.textureName);
+            particleState.textureHandle = TextureManager::GetInstance().Get(config.textureSheet.textureName);
 
         }
 

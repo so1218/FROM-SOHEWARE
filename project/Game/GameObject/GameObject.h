@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Engine.h"
-#include "ModelHandle.h"
-#include "AnimationHandle.h"
-#include "TextureHandleManager.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
+#include "TextureManager.h"
 
 class Sprite;
 class Model;

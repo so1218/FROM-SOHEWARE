@@ -2,7 +2,7 @@
 #include "PlayScene.h"
 #include "TitleScene.h"
 #include "GlobalVariables.h"
-#include "AudioManager.h"
+#include "AudioDevice.h"
 #include "Input.h"
 #include "TimeManager.h"
 #include "SampleSceneHori.h"
@@ -191,5 +191,5 @@ void Game::DebugDraw()
 void Game::Finalize()
 {
     Input::GetInstance().Finalize();
-    AudioManager::GetInstance().Finalize();
+    AudioDevice::GetInstance().Finalize();
 }

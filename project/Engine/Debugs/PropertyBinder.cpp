@@ -755,7 +755,7 @@ void PropertyBinder::BindTexture(
     const std::string& defaultName,
     TextureType filterType)
 {
-    auto& texManager = TextureHandleManager::GetInstance();
+    auto& texManager = TextureManager::GetInstance();
     GlobalVariables* gv = GlobalVariables::GetInstance();
 
     // デフォルト値の決定と登録
@@ -780,7 +780,7 @@ void PropertyBinder::BindTexture(
     // 描画処理の登録 (ラムダ式)
     items_[key] = [this, key, filterType, defaultName, onValueChanged](const std::string& label)
         {
-            auto& texManager = TextureHandleManager::GetInstance();
+            auto& texManager = TextureManager::GetInstance();
             auto* srvManager = this->engine_->srvManager_.get();
             GlobalVariables* gv = GlobalVariables::GetInstance();
 
@@ -963,7 +963,7 @@ void PropertyBinder::BindTexture(
             *currentNamePtr = newName;
 
             // ハンドル更新
-            *currentHandlePtr = TextureHandleManager::GetInstance().Get(newName);
+            *currentHandlePtr = TextureManager::GetInstance().Get(newName);
         },
 
         defaultName,      // デフォルト値

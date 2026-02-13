@@ -1,6 +1,6 @@
 #include "Sprite.h"
 #include "Engine.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 
 Sprite::Sprite(Engine* engine)
     : engine_(engine)
@@ -13,7 +13,7 @@ Sprite::Sprite(Engine* engine)
     textureName_ = "white1x1";
     dissolveTextureName_ = "white1x1";
 
-    auto& texManager = TextureHandleManager::GetInstance();
+    auto& texManager = TextureManager::GetInstance();
 
     // ハンドル取得
     textureHandle_ = texManager.Get(textureName_);
@@ -25,13 +25,13 @@ Sprite::Sprite(Engine* engine)
 void Sprite::SetTexture(const std::string& textureName)
 {
     textureName_ = textureName; 
-    textureHandle_ = TextureHandleManager::GetInstance().Get(textureName_);
+    textureHandle_ = TextureManager::GetInstance().Get(textureName_);
 }
 
 void Sprite::SetDissolveTexture(const std::string& textureName)
 {
     dissolveTextureName_ = textureName;
-    dissolveTextureHandle_ = TextureHandleManager::GetInstance().Get(dissolveTextureName_);
+    dissolveTextureHandle_ = TextureManager::GetInstance().Get(dissolveTextureName_);
 }
 
 void Sprite::SetColor(const Vector4& color) { color_ = Math::ColorVectorToUint32(color); }

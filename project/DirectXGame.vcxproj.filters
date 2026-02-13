@@ -170,7 +170,7 @@
     <ClCompile Include="Engine\Graphics\Resource\SRVManager.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Resource\TextureManager.cpp">
+    <ClCompile Include="Engine\Graphics\Resource\TextureLoader.cpp">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Device\DescriptorHeapManager.cpp">
@@ -224,7 +224,7 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\Model.cpp">
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Audio\AudioManager.cpp">
+    <ClCompile Include="Engine\Audio\AudioDevice.cpp">
       <Filter>Engine\Audio</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Utility\MathUtils.cpp">
@@ -247,9 +247,6 @@
     </ClCompile>
     <ClCompile Include="Game\Map\MapChipField.cpp">
       <Filter>Game\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Data\TextureHandle.cpp">
-      <Filter>Game\Data</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp">
       <Filter>Engine\Audio</Filter>
@@ -314,10 +311,7 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Data\ModelHandle.cpp">
-      <Filter>Game\Data</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Data\AudioHandle.cpp">
+    <ClCompile Include="Game\Data\AudioManager.cpp">
       <Filter>Game\Data</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp">
@@ -340,9 +334,6 @@
       <Filter>Engine\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Data\AnimationHandle.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Stage\StageManager.cpp">
@@ -370,9 +361,6 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Grid.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Data\ParticleTextureHandle.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Debugs\DebugUtils.cpp">
@@ -438,6 +426,9 @@
     <ClCompile Include="Game\Data\AnimationManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Data\TextureManager.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -485,7 +476,7 @@
     <ClInclude Include="Engine\Graphics\Device\SwapChain.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Audio\AudioManager.h">
+    <ClInclude Include="Engine\Audio\AudioDevice.h">
       <Filter>Engine\Audio</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Audio\AudioPlayer.h">
@@ -506,7 +497,7 @@
     <ClInclude Include="Engine\Graphics\Resource\SRVManager.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Resource\TextureManager.h">
+    <ClInclude Include="Engine\Graphics\Resource\TextureLoader.h">
       <Filter>Engine\Graphics\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Device\DescriptorHeapManager.h">
@@ -614,9 +605,6 @@
     <ClInclude Include="Game\Map\MapChipField.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Data\TextureHandle.h">
-      <Filter>Game\Data</Filter>
-    </ClInclude>
     <ClInclude Include="Include\json.hpp">
       <Filter>Data</Filter>
     </ClInclude>
@@ -629,7 +617,7 @@
     <ClInclude Include="Engine\Math\Easing.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Character\Enemy\Enemy.h">
+    <ClInclude Include="Game\Character\Player\Enemy.h">
       <Filter>Game\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Game\Character\Player\Player.h">
@@ -678,10 +666,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureManager.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Data\ModelHandle.h">
-      <Filter>Game\Data</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Data\AudioHandle.h">
+    <ClInclude Include="Game\Data\AudioManager.h">
       <Filter>Game\Data</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h">
@@ -706,7 +691,6 @@
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
-    <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\Stage\StageManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
@@ -717,7 +701,6 @@
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
-    <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -739,6 +722,7 @@
     <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
     <ClInclude Include="Game\Data\ModelManager.h" />
     <ClInclude Include="Game\Data\AnimationManager.h" />
+    <ClInclude Include="Game\Data\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

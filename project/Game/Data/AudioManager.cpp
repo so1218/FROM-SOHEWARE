@@ -1,4 +1,4 @@
-#include "AudioHandle.h"
+#include "AudioManager.h"
 #include "AudioPlayer.h"
 #include "StringUtils.h"
 #include <fstream>
@@ -8,10 +8,10 @@
 
 using namespace FromEngine;
 
-std::unordered_map<std::string, int> AudioHandle::audioMap_;
-bool AudioHandle::initialized_ = false;
+std::unordered_map<std::string, int> AudioManager::audioMap_;
+bool AudioManager::initialized_ = false;
 
-void AudioHandle::Initialize()
+void AudioManager::Initialize()
 {
     if (initialized_) return;
 
@@ -62,7 +62,7 @@ void AudioHandle::Initialize()
     initialized_ = true;
 }
 
-int AudioHandle::Get(const std::string& name)
+int AudioManager::Get(const std::string& name)
 {
     assert(initialized_);
 

@@ -1,5 +1,5 @@
 #include "AudioPlayer.h"
-#include "AudioManager.h"
+#include "AudioDevice.h"
 
 #include <algorithm>
 
@@ -33,11 +33,11 @@ namespace FromEngine
 
         const auto& audioData = it->second;
 
-        if (!AudioManager::GetInstance().GetXAudio2()) return -1;
+        if (!AudioDevice::GetInstance().GetXAudio2()) return -1;
 
         // ソースボイス作成
         IXAudio2SourceVoice* sourceVoice = nullptr;
-        HRESULT hr = AudioManager::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex);
+        HRESULT hr = AudioDevice::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex);
         if (FAILED(hr)) return -1;
 
         // バッファ設定

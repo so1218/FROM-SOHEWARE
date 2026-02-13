@@ -24,7 +24,7 @@ public:
     // ========================================================================
     // 基本トランスフォーム
     // ========================================================================
-    void SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
+    void SetTransform(const WorldTransform& transform) { transform_ = transform; }
     const WorldTransform& GetTransform() const { return transform_; }
     WorldTransform& GetTransform() { return transform_; }
 

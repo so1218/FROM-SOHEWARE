@@ -19,11 +19,10 @@ public:
     ModelManager(const ModelManager&) = delete;
     ModelManager& operator=(const ModelManager&) = delete;
 
-    // 初期化・終了
-    void Initialize();
-    void Finalize();
+    // CSVから一括ロード
+    void LoadFromCSV(const std::string& csvPath = "Assets/Data/ModelList.csv");
 
-    // 名前とパスでロード
+    // 単体ロード（外部から個別に読み込みたい場合用）
     void Load(const std::string& name, const std::string& path);
 
     // 名前でモデルデータを取得
@@ -33,9 +32,9 @@ private:
     ModelManager() = default;
     ~ModelManager() = default;
 
+    // 終了処理
+    void Clear();
+
     // モデルデータの格納場所
     std::unordered_map<std::string, std::unique_ptr<ModelData>> models_;
-
-    // エラー時に返す用のダミーモデル
-    std::unique_ptr<ModelData> errorModel_;
 };

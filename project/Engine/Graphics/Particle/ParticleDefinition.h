@@ -3,7 +3,7 @@
 #include "WorldTransform.h"
 #include "MathUtils.h"
 #include "BlendMode.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 
 #include <memory>
 #include <string>

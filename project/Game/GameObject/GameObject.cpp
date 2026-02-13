@@ -32,7 +32,7 @@ std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(const std::stri
     const ModelData* modelData = ModelManager::GetInstance().GetModel(modelName);
 
     // AnimationManagerから取得
-    const Animation* animation = AnimationManager::GetInstance().GetAnimation(animationName);
+    const Animation* animation = AnimationManager::GetInstance()->GetAnimation(animationName);
 
     // 両方存在するかチェック
     if (!modelData || !animation) 

@@ -1,6 +1,6 @@
 #include "Model.h"
 #include "ModelManager.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 
 Model::Model(Engine* engine, const std::string& modelName)
     : Model(engine, ModelManager::GetInstance().GetModel(modelName))
@@ -20,7 +20,7 @@ Model::Model(Engine* engine, const ModelData* modelData)
         // マテリアル作成
         MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
-        auto& texManager = TextureHandleManager::GetInstance();
+        auto& texManager = TextureManager::GetInstance();
 
         // デフォルト設定
         newMaterial.textureHandle = texManager.Get("white1x1");
@@ -100,7 +100,7 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
 void Model::SetTexture(const std::string& textureName)
 {
     // 文字列からGPUハンドルを検索して取得
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
 
     // 全マテリアルに適用
     for (auto& mat : materials_) mat.textureHandle = handle;
@@ -108,25 +108,25 @@ void Model::SetTexture(const std::string& textureName)
 
 void Model::SetEnvironmentMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.envMapHandle = handle;
 }
 
 void Model::SetToonRampTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.toonRampHandle = handle;
 }
 
 void Model::SetDissolveTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.dissolveMapHandle = handle;
 }
 
 void Model::SetNormalMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 

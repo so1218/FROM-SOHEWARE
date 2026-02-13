@@ -2,12 +2,12 @@
 #include "TimeManager.h"
 #include "ModelManager.h"
 #include "AnimationManager.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 
 AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
     : AnimationModel(engine,
         ModelManager::GetInstance().GetModel(modelName),
-        AnimationManager::GetInstance().GetAnimation(animationName))
+        AnimationManager::GetInstance()->GetAnimation(animationName))
 {
 }
 
@@ -28,7 +28,7 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
     {
         MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
-        auto& texManager = TextureHandleManager::GetInstance();
+        auto& texManager = TextureManager::GetInstance();
 
         // デフォルト設定
         newMaterial.textureHandle = texManager.Get("white1x1");
@@ -149,7 +149,7 @@ void AnimationModel::Draw()
 void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale)
 {
     // Managerから検索
-    const Animation* anim = AnimationManager::GetInstance().GetAnimation(animationName);
+    const Animation* anim = AnimationManager::GetInstance()->GetAnimation(animationName);
 
     // 見つかればポインタ版のPlayに投げる
     if (anim)
@@ -165,7 +165,7 @@ void AnimationModel::Play(const std::string& animationName, bool isLoop, float s
 void AnimationModel::SetAnimation(const std::string& animationName)
 {
     // Managerから検索
-    const Animation* anim = AnimationManager::GetInstance().GetAnimation(animationName);
+    const Animation* anim = AnimationManager::GetInstance()->GetAnimation(animationName);
 
     // 見つかればセット
     if (anim)
@@ -226,7 +226,7 @@ void AnimationModel::SetUVTransform(const WorldTransform& uvTransform)
 void AnimationModel::SetTexture(const std::string& textureName)
 {
     // 文字列からGPUハンドルを検索して取得
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
 
     // 全マテリアルに適用
     for (auto& mat : materials_) mat.textureHandle = handle;
@@ -234,25 +234,25 @@ void AnimationModel::SetTexture(const std::string& textureName)
 
 void AnimationModel::SetEnvironmentMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.envMapHandle = handle;
 }
 
 void AnimationModel::SetToonRampTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.toonRampHandle = handle;
 }
 
 void AnimationModel::SetDissolveTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.dissolveMapHandle = handle;
 }
 
 void AnimationModel::SetNormalMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandleManager::GetInstance().Get(textureName);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 

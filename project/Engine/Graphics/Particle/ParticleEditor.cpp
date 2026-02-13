@@ -1,6 +1,6 @@
 #include "ParticleEditor.h"
 #include "imGuiManager.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 #include "ParticleEmitter.h"
 #include "ParticleConfigManager.h" 
 #include "Engine.h" 
@@ -54,7 +54,7 @@ void ParticleEditor::ShowEditor()
                     if (ImGui::TreeNode(label))
                     {
                         // 全テクスチャリストを取得
-                        const auto& allTextures = TextureHandleManager::GetInstance().GetAllTextures();
+                        const auto& allTextures = TextureManager::GetInstance().GetAllTextures();
 
                         float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
                         ImGuiStyle& style = ImGui::GetStyle();

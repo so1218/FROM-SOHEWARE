@@ -1,4 +1,4 @@
-#include "AudioManager.h"
+#include "AudioDevice.h"
 #include "AudioPlayer.h"
 
 #include <cassert>
@@ -15,8 +15,8 @@
 
 namespace FromEngine
 {
-    /// @brief AudioManagerの初期化
-    void AudioManager::Initialize()
+    /// @brief AudioDeviceの初期化
+    void AudioDevice::Initialize()
     {
         // MediaFoundationの初期化
         HRESULT hr = MFStartup(MF_VERSION);
@@ -29,7 +29,7 @@ namespace FromEngine
         assert(SUCCEEDED(hr));
     }
 
-    void AudioManager::Finalize()
+    void AudioDevice::Finalize()
     {
         // 音声データ開放
         AudioPlayer::GetInstance().StopAll();

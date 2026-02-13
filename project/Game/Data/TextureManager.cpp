@@ -1,17 +1,17 @@
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 #include "Engine.h"
 #include <iostream>
 
 namespace fs = std::filesystem;
 
-void TextureHandleManager::LoadAllTextures(Engine* engine, const std::string& rootDirectory)
+void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDirectory)
 {
     textures_.clear();
     nameToIndex_.clear();
 
     if (!fs::exists(rootDirectory))
     {
-        std::cerr << "[TextureHandleManager] Directory not found: " << rootDirectory << std::endl;
+        std::cerr << "[TextureManager] Directory not found: " << rootDirectory << std::endl;
         return;
     }
 
@@ -69,7 +69,7 @@ void TextureHandleManager::LoadAllTextures(Engine* engine, const std::string& ro
     }
 }
 
-uint32_t TextureHandleManager::Get(const std::string& name) 
+uint32_t TextureManager::Get(const std::string& name)
 {
     // 検索時も入力されたキーを小文字化して探す
     std::string nameLower = name;
@@ -81,11 +81,11 @@ uint32_t TextureHandleManager::Get(const std::string& name)
         return textures_[it->second].handle;
     }
 
-    std::cerr << "[TextureHandleManager] Texture not found: " << name << std::endl;
+    std::cerr << "[TextureManager] Texture not found: " << name << std::endl;
     return errorHandle_;
 }
 
-const TextureHandleData* TextureHandleManager::GetMetaData(const std::string& name) 
+const TextureHandleData* TextureManager::GetMetaData(const std::string& name)
 {
     // メタデータ取得も小文字化検索
     std::string nameLower = name;
@@ -99,7 +99,7 @@ const TextureHandleData* TextureHandleManager::GetMetaData(const std::string& na
     return nullptr;
 }
 
-TextureType TextureHandleManager::DetectTypeFromPath(const std::filesystem::path& path) 
+TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path)
 {
     // パス全体を小文字化して判定 
     std::string pathStr = path.generic_string();

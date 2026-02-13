@@ -8,7 +8,8 @@
 
 class Engine;
 
-enum class TextureType {
+enum class TextureType 
+{
     Albedo,
     Normal,
     Toon,
@@ -27,10 +28,12 @@ struct TextureHandleData
     uint32_t handle;        // SRVインデックス
 };
 
-class TextureHandleManager {
+class TextureManager
+{
 public:
-    static TextureHandleManager& GetInstance() {
-        static TextureHandleManager instance;
+    static TextureManager& GetInstance() 
+    {
+        static TextureManager instance;
         return instance;
     }
 
@@ -40,8 +43,8 @@ public:
     const std::vector<TextureHandleData>& GetAllTextures() const { return textures_; }
 
 private:
-    TextureHandleManager() = default;
-    ~TextureHandleManager() = default;
+    TextureManager() = default;
+    ~TextureManager() = default;
 
     TextureType DetectTypeFromPath(const std::filesystem::path& path);
 

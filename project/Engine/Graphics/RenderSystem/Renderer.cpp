@@ -11,7 +11,7 @@
 #include "ShapeGenerator.h"
 #include "Camera.h"
 #include "PostEffectManager.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 #include "TimeManager.h"
 
 // 最大数の定義
@@ -32,7 +32,7 @@ Renderer::~Renderer()
 void Renderer::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
 	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
-	TextureManager* textureManager, SRVManager* srvManager, LightManager* lightManager,
+	TextureLoader* textureLoader, SRVManager* srvManager, LightManager* lightManager,
 	GlobalConstants* globalConstants, MaterialManager* materialManager,
 	PostEffectManager* postEffectManager,
 	int clientWidth, int clientHeight, ShadowMap* shadowMap)
@@ -42,7 +42,7 @@ void Renderer::Initialize(
 	commandManager_ = commandManager;
 	psoManager_ = psoManager;
 	rootSignatureManager_ = rootSignatureManager;
-	textureManager_ = textureManager;
+	textureLoader_ = textureLoader;
 	srvManager_ = srvManager;
 	lightManager_ = lightManager;
 	globalConstants_ = globalConstants;
@@ -103,10 +103,10 @@ void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection
 int Renderer::LoadTexture(const std::string& texturePath)
 {
 	// テクスチャをロード
-	DirectX::ScratchImage mipImages = TextureManager::LoadTexture(texturePath);
+	DirectX::ScratchImage mipImages = TextureLoader::LoadTexture(texturePath);
 
 	// テクスチャをアップロード
-	TextureManager::TextureResources texResources = textureManager_->UploadTexture(mipImages);
+	TextureLoader::TextureResources texResources = textureLoader_->UploadTexture(mipImages);
 
 	// 保存したテクスチャのインデックスを返す
 	return texResources.srvIndex;
@@ -115,10 +115,10 @@ int Renderer::LoadTexture(const std::string& texturePath)
 void Renderer::LoadTextureArray(const std::vector<std::string>& texturePaths)
 {
 	// 複数テクスチャをロード
-	std::vector<DirectX::ScratchImage> images = textureManager_->LoadMultipleTextures(texturePaths);
+	std::vector<DirectX::ScratchImage> images = textureLoader_->LoadMultipleTextures(texturePaths);
 
 	// Texture2DArray作成＆アップロード
-	textureManager_->CreateAndUploadTexture2DArray(images, textureArrayResource_);
+	textureLoader_->CreateAndUploadTexture2DArray(images, textureArrayResource_);
 
 }
 
@@ -149,7 +149,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 		srvManager_->GetSRVHandleGPU(finalImageIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandleManager::GetInstance().Get("noise_01");
+	uint32_t dissolveMapIndex = TextureManager::GetInstance().Get("noise_01");
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -187,7 +187,7 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 		srvManager_->GetSRVHandleGPU(srvIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandleManager::GetInstance().Get("noise_01");
+	uint32_t dissolveMapIndex = TextureManager::GetInstance().Get("noise_01");
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -1096,15 +1096,15 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	if (points.size() < 2) return;
 
 	// テクスチャ取得
-	uint32_t textureHandle = TextureHandleManager::GetInstance().Get(config.textureName);
+	uint32_t textureHandle = TextureManager::GetInstance().Get(config.textureName);
 	uint32_t dissolveHandle = 0;
 	if (!config.dissolveTextureName.empty() && config.dissolveTextureName != "none") 
 	{
-		dissolveHandle = TextureHandleManager::GetInstance().Get(config.dissolveTextureName);
+		dissolveHandle = TextureManager::GetInstance().Get(config.dissolveTextureName);
 	}
 	else
 	{
-		dissolveHandle = TextureHandleManager::GetInstance().Get("white1x1");
+		dissolveHandle = TextureManager::GetInstance().Get("white1x1");
 	}
 
 	// マテリアル定数

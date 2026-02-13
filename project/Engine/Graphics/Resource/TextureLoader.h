@@ -16,7 +16,7 @@
 #include <vector>                 
 #include <d3dcompiler.h> 
 
-class TextureManager
+class TextureLoader
 {
 public:
     struct TextureResources
@@ -34,8 +34,8 @@ public:
         uint64_t fenceValue;
     };
 
-    TextureManager();
-    ~TextureManager();
+    TextureLoader();
+    ~TextureLoader();
 
     static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 

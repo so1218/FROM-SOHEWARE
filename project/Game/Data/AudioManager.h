@@ -2,7 +2,7 @@
 #include <string>
 #include <unordered_map>
 
-class AudioHandle
+class AudioManager
 {
 public:
     // CSVから全アセットをロード

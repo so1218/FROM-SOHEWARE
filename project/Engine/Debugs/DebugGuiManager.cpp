@@ -4,12 +4,12 @@
 #include "ImGuiManager.h"
 
 void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
-    TextureManager* textureManager, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
+    TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
 {
     engine_ = engine;
     lightManager_ = lightManager;
     materialManager_ = materialManager;
-    textureManager_ = textureManager;
+    textureLoader_ = textureLoader;
     postEffectManager_ = postEffectManager;
     debugCamera_ = debugCamera;
 }

@@ -1,8 +1,8 @@
-#include "TextureManager.h"
+#include "TextureLoader.h"
 
-TextureManager::TextureManager() {};
+TextureLoader::TextureLoader() {};
 
-TextureManager::~TextureManager()
+TextureLoader::~TextureLoader()
 {
     //// 確保したすべてのテクスチャリソースを解放する
     //for (const TextureResources& resource : loadedTextures_)
@@ -17,14 +17,14 @@ TextureManager::~TextureManager()
     //}
 }
 
-void TextureManager::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager)
+void TextureLoader::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager)
 {
     device_ = device;
     commandList_ = commandList;
     srvManager_ = srvManager;
 }
 
-DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
+DirectX::ScratchImage TextureLoader::LoadTexture(const std::string& filePath)
 {
     // テクスチャファイルを読み込み、プログラムで扱える形式に変換
     DirectX::ScratchImage image{};
@@ -66,7 +66,7 @@ DirectX::ScratchImage TextureManager::LoadTexture(const std::string& filePath)
     return mipImages;
 }
 
-TextureManager::TextureResources TextureManager::CreateTexture2DArray(
+TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
     const std::vector<DirectX::ScratchImage>& mipImagesArray
 ) {
     TextureResources result;
@@ -132,7 +132,7 @@ TextureManager::TextureResources TextureManager::CreateTexture2DArray(
     return result;
 }
  
-Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
 {
     // 1.metadataを基にResourceの設定
     D3D12_RESOURCE_DESC resourceDesc{};
@@ -166,7 +166,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::CreateTextureResource(ID3
 }
 
 [[nodiscard]]
-Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device,
+Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device,
     ID3D12GraphicsCommandList* commandList)
 {
     std::vector<D3D12_SUBRESOURCE_DATA>subresources;
@@ -187,7 +187,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureManager::UploadTextureData(ID3D12R
     return intermediateResource;
 }
 
-TextureManager::TextureResources TextureManager::UploadTexture(DirectX::ScratchImage& mipImages)
+TextureLoader::TextureResources TextureLoader::UploadTexture(DirectX::ScratchImage& mipImages)
 {
     TextureResources result;
 
@@ -227,7 +227,7 @@ TextureManager::TextureResources TextureManager::UploadTexture(DirectX::ScratchI
     return result;
 }
 
-TextureManager::TextureResources TextureManager::UploadTex(DirectX::ScratchImage& mipImages)
+TextureLoader::TextureResources TextureLoader::UploadTex(DirectX::ScratchImage& mipImages)
 {
     TextureResources result;
 
@@ -238,12 +238,12 @@ TextureManager::TextureResources TextureManager::UploadTex(DirectX::ScratchImage
     return result;
 }
 
-void TextureManager::RegisterPendingUpload(Microsoft::WRL::ComPtr<ID3D12Resource> intermediate, uint64_t fenceValue)
+void TextureLoader::RegisterPendingUpload(Microsoft::WRL::ComPtr<ID3D12Resource> intermediate, uint64_t fenceValue)
 {
     pendingUploadResources_.push_back({ intermediate, fenceValue });
 }
 
-void TextureManager::CleanupCompletedUploads(uint64_t completedFenceValue)
+void TextureLoader::CleanupCompletedUploads(uint64_t completedFenceValue)
 {
     size_t before = pendingUploadResources_.size();
     auto it = pendingUploadResources_.begin();
@@ -258,18 +258,18 @@ void TextureManager::CleanupCompletedUploads(uint64_t completedFenceValue)
     size_t after = pendingUploadResources_.size();
 }
 
-std::vector<DirectX::ScratchImage> TextureManager::LoadMultipleTextures(const std::vector<std::string>& texturePaths)
+std::vector<DirectX::ScratchImage> TextureLoader::LoadMultipleTextures(const std::vector<std::string>& texturePaths)
 {
     std::vector<DirectX::ScratchImage> images;
     for (const auto& path : texturePaths)
     {
-        DirectX::ScratchImage img = TextureManager::LoadTexture(path);
+        DirectX::ScratchImage img = TextureLoader::LoadTexture(path);
         images.push_back(std::move(img));
     }
     return images;
 }
 
-void TextureManager::CreateAndUploadTexture2DArray(
+void TextureLoader::CreateAndUploadTexture2DArray(
     const std::vector<DirectX::ScratchImage>& images,
     TextureResources& outTextureArrayResource)
 {

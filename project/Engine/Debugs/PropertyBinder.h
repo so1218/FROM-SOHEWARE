@@ -6,7 +6,7 @@
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 #include "Engine.h"
-#include "TextureHandleManager.h"
+#include "TextureManager.h"
 
 class Model;
 class AnimationModel;

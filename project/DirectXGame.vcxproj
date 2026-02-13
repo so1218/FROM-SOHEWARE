@@ -183,17 +183,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="Game\Data\AnimationManager.cpp" />
     <ClCompile Include="Game\Data\ModelManager.cpp" />
-    <ClCompile Include="Game\Data\TextureHandleManager.cpp" />
+    <ClCompile Include="Game\Data\TextureManager.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
-    <ClCompile Include="Game\Data\AnimationHandle.cpp" />
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
-    <ClCompile Include="Game\Data\AudioHandle.cpp" />
+    <ClCompile Include="Game\Data\AudioManager.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp" />
     <ClCompile Include="externals\ImGuiFileDialog.cpp" />
-    <ClCompile Include="Engine\Audio\AudioManager.cpp" />
+    <ClCompile Include="Engine\Audio\AudioDevice.cpp" />
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="Engine\Core\Input.cpp" />
@@ -219,7 +218,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Mesh\Mesh.cpp" />
     <ClCompile Include="Engine\Mesh\ModelLoader.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\SRVManager.cpp" />
-    <ClCompile Include="Engine\Graphics\Resource\TextureManager.cpp" />
+    <ClCompile Include="Engine\Graphics\Resource\TextureLoader.cpp" />
     <ClCompile Include="Engine\Graphics\Utility\BlendMode.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightManager.cpp" />
     <ClCompile Include="Engine\Graphics\Utility\ShapeGenerator.cpp" />
@@ -270,7 +269,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
     <ClCompile Include="Engine\Core\TimeManager.cpp" />
-    <ClCompile Include="Game\Data\ModelHandle.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp" />
     <ClCompile Include="Game\Scene\SampleScene\SampleSceneHori.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Sprite.cpp" />
@@ -299,16 +297,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Game\Data\AnimationManager.h" />
     <ClInclude Include="Game\Data\ModelManager.h" />
-    <ClInclude Include="Game\Data\TextureHandleManager.h" />
+    <ClInclude Include="Game\Data\TextureManager.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
-    <ClInclude Include="Game\Data\AnimationHandle.h" />
     <ClInclude Include="Game\GameObject\GameObjectManager.h" />
-    <ClInclude Include="Game\Data\AudioHandle.h" />
+    <ClInclude Include="Game\Data\AudioManager.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureManager.h" />
     <ClInclude Include="externals\ImGuiFileDialogConfig.h" />
-    <ClInclude Include="Engine\Audio\AudioManager.h" />
+    <ClInclude Include="Engine\Audio\AudioDevice.h" />
     <ClInclude Include="Engine\Audio\MediaAudioDecoder.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
     <ClInclude Include="Engine\Core\Input.h" />
@@ -336,7 +333,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Mesh\Mesh.h" />
     <ClInclude Include="Engine\Mesh\ModelLoader.h" />
     <ClInclude Include="Engine\Graphics\Resource\SRVManager.h" />
-    <ClInclude Include="Engine\Graphics\Resource\TextureManager.h" />
+    <ClInclude Include="Engine\Graphics\Resource\TextureLoader.h" />
     <ClInclude Include="Engine\Graphics\Utility\BlendMode.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightManager.h" />
     <ClInclude Include="Engine\Graphics\Utility\ShapeGenerator.h" />
@@ -362,7 +359,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Game\Camera\FollowCamera.h" />
-    <ClInclude Include="Game\Character\Enemy\Enemy.h" />
+    <ClInclude Include="Game\Character\Player\Enemy.h" />
     <ClInclude Include="Game\Character\Player\Player.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Game\Effect\Fade.h" />
@@ -391,7 +388,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
     <ClInclude Include="Game\GameObject\GameObject.h" />
     <ClInclude Include="Include\json.hpp" />
-    <ClInclude Include="Game\Data\ModelHandle.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
     <ClInclude Include="resource.h" />
