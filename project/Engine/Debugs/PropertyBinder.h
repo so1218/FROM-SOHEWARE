@@ -6,7 +6,7 @@
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 #include "Engine.h"
-#include "TextureHandle.h"
+#include "TextureHandleManager.h"
 
 class Model;
 class AnimationModel;
@@ -32,7 +32,7 @@ public:
         // 実際に適用するスピード変数
         float appliedSpeed = speed;
 
-        // 引数が省略された（または負の値）場合、型に応じたデフォルト値を設定
+        // 引数が省略された場合、型に応じたデフォルト値を設定
         if (appliedSpeed <= 0.0f)
         {
             if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
@@ -381,8 +381,16 @@ private:
 #endif
     }
 
+    void BindTexture(
+        const std::string& key,
+        const std::string& initialValue,
+        std::function<void(const std::string&)> onValueChanged, // 変更時のコールバック
+        const std::string& defaultName = "white1x1",
+        TextureType filterType = TextureType::Albedo
+    );
+
     // テクスチャID用バインド関数
-    void BindTexture(const std::string& key, uint32_t* ptr, TextureID defaultId, TextureType filterType = TextureType::Albedo);
+    void BindTexture(const std::string& key, std::string* currentTextureName, uint32_t* currentHandlePtr, const std::string& defaultName, TextureType filterType = TextureType::Albedo);
 
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 

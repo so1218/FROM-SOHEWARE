@@ -3,7 +3,6 @@
 #include "Vector2.h"
 #include "WorldTransform.h"
 #include "Structures.h"
-#include "TextureHandle.h"
 
 class Engine;
 
@@ -14,8 +13,8 @@ public:
     void Draw();
 
     // 複雑なセッター
-    void SetTexture(TextureID textureID);
-    void SetDissolveTexture(TextureID textureID);
+    void SetTexture(const std::string& textureName);
+    void SetDissolveTexture(const std::string& textureName);
     void SetColor(const Vector4& color);
 
     // 単純なセッター
@@ -67,8 +66,8 @@ public:
             materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
         }
     }
-    uint32_t* GetTextureHandlePtr() { return &textureHandle_; }
-    uint32_t* GetDissolveTextureHandlePtr() { return &dissolveTextureHandle_; }
+    std::string& GetTextureName() { return textureName_; }
+    std::string& GetDissolveTextureName() { return dissolveTextureName_; }
     bool* GetIsVisiblePtr() { return &isVisible_; }
     int* GetLayerOrderPtr() { return &layerOrder_; }
     Vector2* GetAnchorPointPtr() { return &anchorPoint_; }
@@ -81,13 +80,17 @@ private:
     Vector2 position_ = { 0.0f, 0.0f };
     Vector2 size_ = { 1.0f, 1.0f };
     float rotation_ = 0.0f;
-    Vector2 anchorPoint_ = { 0.0f, 0.0f }; // デフォルトは左上(0,0)
+    Vector2 anchorPoint_ = { 0.0f, 0.0f }; // デフォルトは左上
 
     uint32_t color_ = 0xFFFFFFFF;
 
-    // テクスチャハンドル
+    // テクスチャハンドル (描画用)
     uint32_t textureHandle_ = 0;
     uint32_t dissolveTextureHandle_ = 0;
+
+    // テクスチャハンドル
+    std::string textureName_ = "white1x1";
+    std::string dissolveTextureName_ = "white1x1";
 
     WorldTransform uvTransform_;
 

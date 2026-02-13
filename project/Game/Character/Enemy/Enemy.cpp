@@ -1,6 +1,5 @@
 #include "Enemy.h"
 #include "CollisionConfig.h"
-#include "TextureHandle.h"
 #include "ModelHandle.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"

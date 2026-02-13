@@ -8,8 +8,7 @@
 #include "DSVManager.h"
 #include "TimeManager.h"
 #include "ModelHandle.h"
-#include "TextureHandle.h"
-#include "ParticleTextureHandle.h"
+#include "TextureHandleManager.h"
 #include "AudioHandle.h"
 #include "AnimationHandle.h"
 #include "GlobalVariables.h"
@@ -449,8 +448,7 @@ void Engine::InitializeResources()
 	);
 
 	// 共通ハンドル初期化
-	TextureHandle::Initialize(this);
-	ParticleTextureHandle::Initialize(this);
+	TextureHandleManager::GetInstance().LoadAllTextures(this);
 	ModelHandle::Initialize();
 	AnimationHandle::Initialize();
 

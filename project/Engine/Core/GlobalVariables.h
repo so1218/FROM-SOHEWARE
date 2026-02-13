@@ -42,6 +42,7 @@ public:
 	Vector2 GetVector2Value(const std::vector<std::string>& groupPath, const std::string& key);
 	Vector3 GetVector3Value(const std::vector<std::string>& groupPath, const std::string& key);
 	Vector4 GetVector4Value(const std::vector<std::string>& groupPath, const std::string& key);
+	std::string GetStringValue(const std::vector<std::string>& groupPath, const std::string& key);
 
 	// グループ階層をたどる関数
 	const Group* FindGroup(const std::vector<std::string>& groupPath) const;

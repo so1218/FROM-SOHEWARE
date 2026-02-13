@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "ParticleEmitter.h"
+#include "PropertyBinder.h"
 
 class TitleScene : public BaseScene
 {
@@ -16,4 +17,9 @@ public:
 
 private:
     // メンバー変数
+    std::unique_ptr<Sprite> titleSprite_;
+
+    std::unique_ptr<ParticleEmitter> titleSceneEmitter_ = nullptr;
+
+    std::unique_ptr<PropertyBinder> binder_;
 };

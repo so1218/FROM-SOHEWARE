@@ -1,6 +1,6 @@
 #include "Player.h"
 #include "CollisionConfig.h"
-#include "TextureHandle.h"
+#include "TextureHandleManager.h"
 #include "ModelHandle.h"
 #include "AnimationHandle.h"
 #include "AnimationModel.h"

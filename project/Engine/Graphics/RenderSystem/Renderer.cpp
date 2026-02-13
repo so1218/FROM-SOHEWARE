@@ -11,7 +11,7 @@
 #include "ShapeGenerator.h"
 #include "Camera.h"
 #include "PostEffectManager.h"
-#include "TextureHandle.h"
+#include "TextureHandleManager.h"
 #include "TimeManager.h"
 
 // 最大数の定義
@@ -149,7 +149,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 		srvManager_->GetSRVHandleGPU(finalImageIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise_01);
+	uint32_t dissolveMapIndex = TextureHandleManager::GetInstance().Get("noise_01");
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -187,7 +187,7 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 		srvManager_->GetSRVHandleGPU(srvIndex)
 	);
 
-	uint32_t dissolveMapIndex = TextureHandle::Get(TextureID::noise_01);
+	uint32_t dissolveMapIndex = TextureHandleManager::GetInstance().Get("noise_01");
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
@@ -1096,11 +1096,16 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	if (points.size() < 2) return;
 
 	// テクスチャ取得
-	uint32_t textureHandle = ParticleTextureHandle::Get(config.textureID);
-	uint32_t dissolveHandle =
-		(config.dissolveTextureID >= 0)
-		? ParticleTextureHandle::Get(static_cast<ParticleTextureID>(config.dissolveTextureID))
-		: 0;
+	uint32_t textureHandle = TextureHandleManager::GetInstance().Get(config.textureName);
+	uint32_t dissolveHandle = 0;
+	if (!config.dissolveTextureName.empty() && config.dissolveTextureName != "none") 
+	{
+		dissolveHandle = TextureHandleManager::GetInstance().Get(config.dissolveTextureName);
+	}
+	else
+	{
+		dissolveHandle = TextureHandleManager::GetInstance().Get("white1x1");
+	}
 
 	// マテリアル定数
 	TrailMaterialData currentMatData{};
@@ -1110,7 +1115,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	currentMatData.jitterSpeed = config.jitterSpeed;
 	currentMatData.jitterMode = static_cast<int>(config.jitterMode);
 	currentMatData.jitterPhase = config.jitterPhase;
-	currentMatData.isDissolveEnabled = (config.dissolveTextureID >= 0) ? 1 : 0;
+	currentMatData.isDissolveEnabled = (config.dissolveTextureName != "white1x1") ? 1 : 0;
 	currentMatData.emissiveIntensity = config.emissiveIntensity;
 
 	// バッチ切り替え判定
@@ -1118,6 +1123,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	if (!isNewBatch)
 	{
 		const auto& last = trailBatches_.back();
+		// memcmp は危険な場合もありますが（パディング等）、とりあえずそのまま
 		isNewBatch =
 			last.textureHandle != textureHandle ||
 			last.dissolveHandle != dissolveHandle ||
@@ -1415,7 +1421,8 @@ void Renderer::DrawGrid(const ModelSubmission& sub)
 	const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
 
 	// meshIndexを使って描画対象のメッシュを特定
-	if (sub.meshIndex >= meshes.size()) {
+	if (sub.meshIndex >= meshes.size()) 
+	{
 		return;
 	}
 	const Mesh* mesh = &meshes[sub.meshIndex];

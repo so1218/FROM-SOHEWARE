@@ -1,7 +1,6 @@
 #include "ParticleEditor.h"
 #include "imGuiManager.h"
-#include "TextureHandle.h"
-#include "ParticleTextureHandle.h"
+#include "TextureHandleManager.h"
 #include "ParticleEmitter.h"
 #include "ParticleConfigManager.h" 
 #include "Engine.h" 
@@ -50,57 +49,56 @@ void ParticleEditor::ShowEditor()
             auto& emitterConfig = definition.emitterConfig;
 
             // パレット表示用の共通関数
-            auto ShowTexturePalette = [&](const char* label, ParticleTextureID& currentId)
+            auto ShowTexturePalette = [&](const char* label, std::string& currentTexName, TextureType filterType)
                 {
                     if (ImGui::TreeNode(label))
                     {
-                        const auto& defs = ParticleTextureHandle::GetDefinitions();
+                        // 全テクスチャリストを取得
+                        const auto& allTextures = TextureHandleManager::GetInstance().GetAllTextures();
+
                         float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
                         ImGuiStyle& style = ImGui::GetStyle();
 
-                        for (int i = 0; i < defs.size(); i++)
+                        // フィルタリングして表示
+                        for (size_t i = 0; i < allTextures.size(); i++)
                         {
-                            ParticleTextureID id = static_cast<ParticleTextureID>(i);
-                            uint32_t textureHandleIndex = ParticleTextureHandle::Get(id);
+                            const auto& data = allTextures[i];
 
-                            // エンジンのSRVマネージャからハンドル取得
-                            auto gpuHandle = engine_->srvManager_->GetSRVHandleGPU(textureHandleIndex);
+                            // 指定されたタイプ以外はスキップ
+                            if (data.type != filterType) {
+                                continue;
+                            }
+
+                            // GPUハンドル取得
+                            auto gpuHandle = engine_->srvManager_->GetSRVHandleGPU(data.handle);
                             ImTextureID imTexID = (ImTextureID)gpuHandle.ptr;
 
-                            ImGui::PushID(i);
+                            ImGui::PushID((int)i);
 
-                            // 状態判定
-                            bool isSelected = (currentId == id);
-                            int pushedColors = 0;
+                            // 選択状態判定 (文字列比較)
+                            bool isSelected = (currentTexName == data.name);
 
-                            // 選択中
-                            if (isSelected) 
-                            {
-                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
-                                pushedColors++;
+                            if (isSelected) {
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f)); // 黄色枠
                             }
-                            // ホバー時
-                            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.4f));
-                            pushedColors++;
-
-                            // クリック時
-                            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.8f, 0.8f, 1.0f));
-                            pushedColors++;
+                            else {
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+                            }
 
                             // 画像ボタン
                             if (ImGui::ImageButton("TexBtn", imTexID, ImVec2(32, 32),
                                 ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
                             {
-                                currentId = id;
+                                currentTexName = data.name; // 名前を更新
                             }
 
-                            ImGui::PopStyleColor(pushedColors);
+                            ImGui::PopStyleColor();
 
                             // ツールチップ
                             if (ImGui::IsItemHovered())
                             {
                                 ImGui::BeginTooltip();
-                                ImGui::Text("%s", defs[i].path);
+                                ImGui::Text("%s", data.name.c_str());
                                 ImGui::Image(imTexID, ImVec2(128, 128));
                                 ImGui::EndTooltip();
                             }
@@ -110,7 +108,8 @@ void ParticleEditor::ShowEditor()
                             // 横並び計算
                             float lastButtonX2 = ImGui::GetItemRectMax().x;
                             float nextButtonX2 = lastButtonX2 + style.ItemSpacing.x + 32.0f;
-                            if (i + 1 < defs.size() && nextButtonX2 < windowVisibleX2)
+
+                            if (nextButtonX2 < windowVisibleX2)
                             {
                                 ImGui::SameLine();
                             }
@@ -291,7 +290,7 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
 
                 // テクスチャシート
-                ShowTexturePalette("テクスチャモジュール", config.textureSheet.textureID);
+                ShowTexturePalette("テクスチャモジュール", config.textureSheet.textureName, TextureType::Particle);
 
                 ImGui::Separator();
 
@@ -472,14 +471,8 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Separator();
 
-
-                        // テクスチャ選択
-                        const auto& items = ParticleTextureHandle::GetTextureItems();
-
-                        // 現在のIDをintに変換
-                        int currentItem = static_cast<int>(trail.textureID);
-
-                        ShowTexturePalette("トレイルテクスチャ選択", trail.textureID);
+                        // メインテクスチャ選択
+                        ShowTexturePalette("トレイルテクスチャ選択", trail.textureName, TextureType::Particle);
 
                         ImGui::Separator();
 
@@ -512,18 +505,9 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Text("ディゾルブ (侵食消滅)");
 
-                        // 現在の選択状態
-                        int currentDissolve = trail.dissolveTextureID;
+                        ShowTexturePalette("ノイズ画像選択", trail.dissolveTextureName, TextureType::Noise);
 
-                        if (ImGui::Combo("ノイズ画像", &currentDissolve, items.data(), (int)items.size()))
-                        {
-                            trail.dissolveTextureID = currentDissolve;
-                        }
-
-                        if (ImGui::Button("ノイズ解除"))
-                        {
-                            trail.dissolveTextureID = -1;
-                        }
+                        ImGui::DragFloat("ディゾルブ速度", &trail.dissolveSpeed, 0.1f);
                         ImGui::Separator();
 
 

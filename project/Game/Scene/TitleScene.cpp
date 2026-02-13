@@ -1,23 +1,35 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
-#include "PlayScene.h"
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "AudioPlayer.h"
 #include "TimeManager.h"
-#include "AudioHandle.h"
+#include "Grid.h"
 
 using namespace FromEngine;
 
 TitleScene::TitleScene(Engine* engine)
     : BaseScene(engine)
 {
+	auto grid = std::make_unique<Grid>(engine_);
+
+	objectManager_.AddObject(std::move(grid));
+
+	titleSprite_ = std::make_unique<Sprite>(engine_);
+
+	binder_ = std::make_unique<PropertyBinder>(engine_, "Title");
+
 }
 
 void TitleScene::OnInitialize()
 {
     camera_->Initialize();
     camera_->SetTranslation(Vector3(0, 0, -6.6f));
+
+	binder_->BindSprite("TitleSprite", titleSprite_.get());
+
+	titleSceneEmitter_ = engine_->particleSystem_->CreateEmitter("titleScene");
+	engine_->particleSystem_->AddEmitter(std::move(titleSceneEmitter_));
 }
 
 void TitleScene::OnUpdate()
@@ -33,14 +45,14 @@ void TitleScene::OnUpdate()
 
 void TitleScene::OnDraw()
 {
-
+	titleSprite_->Draw();
 }
 
 void TitleScene::OnDebugDraw()
 {
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("タイトルシーン");
-
+	binder_->DrawSprite("TitleSprite", "タイトルスプライトインスペクター");
     ImGui::End();
 #endif
 }

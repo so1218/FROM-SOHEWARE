@@ -2,9 +2,7 @@
 
 #include "AnimationData.h" 
 #include "AnimationHandle.h" 
-#include "TextureHandle.h"
-
-class Engine;
+#include "Engine.h"
 
 class AnimationModel
 {
@@ -58,11 +56,11 @@ public:
     // マテリアル一括設定 (全マテリアルへ適用)
     // ========================================================================
     // テクスチャ
-    void SetTexture(TextureID textureID);
-    void SetEnvironmentMapTexture(TextureID textureID);
-    void SetToonRampTexture(TextureID textureID);
-    void SetDissolveTexture(TextureID textureID);
-    void SetNormalMapTexture(TextureID textureID);
+    void SetTexture(const std::string& textureName);
+    void SetEnvironmentMapTexture(const std::string& textureName);
+    void SetToonRampTexture(const std::string& textureName);
+    void SetDissolveTexture(const std::string& textureName);
+    void SetNormalMapTexture(const std::string& textureName);
 
     // カラー・発光
     void SetColor(const Vector4& color);

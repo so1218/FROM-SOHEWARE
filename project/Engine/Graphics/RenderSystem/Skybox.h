@@ -1,7 +1,7 @@
 #pragma once
 
 #include "WorldTransform.h"
-#include "TextureHandle.h"
+#include <string>
 
 class Engine;
 class Camera; 
@@ -13,7 +13,7 @@ public:
 
     void Draw();
 
-    void SetCubeTexture(TextureID textureID);
+    void SetCubeTexture(const std::string& textureName);
 
     void SetColor(uint32_t color);
 

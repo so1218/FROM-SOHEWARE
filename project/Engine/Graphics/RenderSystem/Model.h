@@ -4,9 +4,7 @@
 #include <string>
 
 #include "WorldTransform.h"
-#include "TextureHandle.h"
-
-class Engine;
+#include "Engine.h"
 
 class Model
 {
@@ -34,11 +32,11 @@ public:
     // 一括設定 (全マテリアルへ適用)
     // ========================================================================
     // テクスチャ
-    void SetTexture(TextureID textureID);
-    void SetEnvironmentMapTexture(TextureID textureID);
-    void SetToonRampTexture(TextureID textureID);
-    void SetDissolveTexture(TextureID textureID);
-    void SetNormalMapTexture(TextureID textureID);
+    void SetTexture(const std::string& textureName);
+    void SetEnvironmentMapTexture(const std::string& textureName);
+    void SetToonRampTexture(const std::string& textureName);
+    void SetDissolveTexture(const std::string& textureName);
+    void SetNormalMapTexture(const std::string& textureName);
 
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);

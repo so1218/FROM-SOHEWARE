@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "ModelHandle.h"
 #include "AnimationHandle.h"
-#include "TextureHandle.h"
+#include "TextureHandleManager.h"
 
 class Sprite;
 class Model;
@@ -72,7 +72,7 @@ protected:
     std::unique_ptr<Model> CreateModel(const std::string& modelName);
     // アニメーション付きモデルの生成
     std::unique_ptr<AnimationModel> CreateAnimationModel(const std::string& modelName, const std::string& animationName);
-    std::unique_ptr<Sprite> CreateSprite(TextureID textureID);
+    std::unique_ptr<Sprite> CreateSprite(const std::string& textureName);
 
     Engine* engine_ = nullptr;
 };

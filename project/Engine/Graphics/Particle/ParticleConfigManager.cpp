@@ -138,8 +138,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& texJson = configJson["textureSheetModule"];
                     config.textureSheet.enabled = texJson.value("enabled", false);
-                    int id = texJson.value("textureID", 0);
-                    config.textureSheet.textureID = static_cast<ParticleTextureID>(id);
+                    config.textureSheet.textureName = texJson.value("textureName", "white1x1");
                 }
 
                 // ColorOverLifetimeModuleの読み込み
@@ -226,9 +225,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.width = trailJson.value("width", 1.0f);
                     config.trail.emissiveIntensity = trailJson.value("emissiveIntensity", 1.0f);
                     config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
-
-                    int texID = trailJson.value("textureID", 0);
-                    config.trail.textureID = static_cast<ParticleTextureID>(texID);
+                    config.trail.textureName = trailJson.value("textureName", "white1x1");
 
                     config.trail.textureMode = static_cast<TrailTextureMode>(trailJson.value("textureMode", 0));
 
@@ -253,8 +250,7 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.jitterFrequency = trailJson.value("jitterFrequency", 10.0f);
                     config.trail.jitterSpeed = trailJson.value("jitterSpeed", 0.0f);
                     config.trail.jitterPhase = trailJson.value("jitterPhase", 0.0f);
-
-                    config.trail.dissolveTextureID = trailJson.value("dissolveTextureID", -1);
+                    config.trail.dissolveTextureName = trailJson.value("dissolveTextureName", "white1x1");
 
                     config.trail.headWidthScale = trailJson.value("headWidthScale", 1.0f);
                     config.trail.tailWidthScale = trailJson.value("tailWidthScale", 1.0f);
@@ -419,7 +415,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "textureSheetModule",
         {
             { "enabled", config.textureSheet.enabled },
-            { "textureID", static_cast<int>(config.textureSheet.textureID) },
+            { "textureName", config.textureSheet.textureName },
         }},
         { "colorOverLifetimeModule",
         {
@@ -468,7 +464,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "width", config.trail.width },
             { "emissiveIntensity", config.trail.emissiveIntensity },
             { "minVertexDistance", config.trail.minVertexDistance },
-            { "textureID", static_cast<int>(config.trail.textureID) },
+            { "textureName", config.trail.textureName },
             { "textureMode", static_cast<int>(config.trail.textureMode) },
             { "tiling", { config.trail.tiling.x, config.trail.tiling.y } },
             { "scrollSpeed", { config.trail.scrollSpeed.x, config.trail.scrollSpeed.y } },
@@ -477,7 +473,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "jitterFrequency", config.trail.jitterFrequency },
             { "jitterSpeed", config.trail.jitterSpeed },
             { "jitterPhase", config.trail.jitterPhase },
-            { "dissolveTextureID", config.trail.dissolveTextureID },
+            { "dissolveTextureName", config.trail.dissolveTextureName },
             { "headWidthScale", config.trail.headWidthScale },
             { "tailWidthScale", config.trail.tailWidthScale },
             { "alignment", static_cast<int>(config.trail.alignment) },

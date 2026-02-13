@@ -44,11 +44,13 @@ std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(const std::stri
     return std::make_unique<AnimationModel>(engine_, modelData, animation);
 }
 
-std::unique_ptr<Sprite> GameObject::CreateSprite(TextureID textureID)
+std::unique_ptr<Sprite> GameObject::CreateSprite(const std::string& textureName)
 {
+    // スプライトインスタンス生成
     auto sprite = std::make_unique<Sprite>(engine_);
 
-    sprite->SetTexture(textureID);
+    // 文字列でテクスチャを指定
+    sprite->SetTexture(textureName);
 
     return sprite;
 }

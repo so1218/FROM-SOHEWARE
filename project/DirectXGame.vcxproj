@@ -183,7 +183,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="Game\Data\AnimationManager.cpp" />
     <ClCompile Include="Game\Data\ModelManager.cpp" />
-    <ClCompile Include="Game\Data\ParticleTextureHandle.cpp" />
+    <ClCompile Include="Game\Data\TextureHandleManager.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
@@ -245,7 +245,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Camera\FollowCamera.cpp" />
     <ClCompile Include="Game\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Game\Character\Player\Player.cpp" />
-    <ClCompile Include="Game\Data\TextureHandle.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Game\Effect\Fade.cpp" />
     <ClCompile Include="Game\Game.cpp" />
@@ -300,7 +299,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Game\Data\AnimationManager.h" />
     <ClInclude Include="Game\Data\ModelManager.h" />
-    <ClInclude Include="Game\Data\ParticleTextureHandle.h" />
+    <ClInclude Include="Game\Data\TextureHandleManager.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
@@ -365,7 +364,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Camera\FollowCamera.h" />
     <ClInclude Include="Game\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\Character\Player\Player.h" />
-    <ClInclude Include="Game\Data\TextureHandle.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Game\Effect\Fade.h" />
     <ClInclude Include="Game\Game.h" />
