@@ -9,7 +9,7 @@
 #include "Input.h"
 #include "Grid.h"
 
-using namespace FromEngine;
+using namespace MyFrom;
 
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine)

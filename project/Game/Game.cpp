@@ -9,7 +9,7 @@
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 
-using namespace FromEngine;
+using namespace MyFrom;
 
 Game::Game() 
     : engine_(std::make_unique<Engine>())

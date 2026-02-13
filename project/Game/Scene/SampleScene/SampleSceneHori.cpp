@@ -8,7 +8,7 @@
 #include "AudioPlayer.h"
 #include "AudioManager.h"
 
-using namespace FromEngine;
+using namespace MyFrom;
 
 SampleSceneHori::SampleSceneHori(Engine* engine)
     : BaseScene(engine)

@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-namespace FromEngine
+namespace MyFrom
 {
     // ロード処理
     void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)

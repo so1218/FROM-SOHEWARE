@@ -2,7 +2,7 @@
 #include <xaudio2.h>           
 #include <wrl.h>     
 
-namespace FromEngine
+namespace MyFrom
 {
     class AudioDevice
     {

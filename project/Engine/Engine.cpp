@@ -28,7 +28,7 @@
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
 
-using namespace FromEngine;
+using namespace MyFrom;
 
 void Engine::Initialize()
 {

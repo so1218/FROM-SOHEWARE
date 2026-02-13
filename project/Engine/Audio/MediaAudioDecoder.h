@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace FromEngine
+namespace MyFrom
 {
     // 音声データ
     struct AudioData

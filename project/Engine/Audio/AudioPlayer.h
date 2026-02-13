@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <map>
 
-namespace FromEngine
+namespace MyFrom
 {
     /// @brief 再生中のインスタンス情報
     struct AudioInstance

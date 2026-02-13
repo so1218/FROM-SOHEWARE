@@ -311,7 +311,7 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp">
       <Filter>Engine\Graphics\Device</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Data\AudioManager.cpp">
+    <ClCompile Include="Engine\Resources\AudioManager.cpp">
       <Filter>Game\Data</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp">
@@ -420,13 +420,13 @@
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Data\ModelManager.cpp">
+    <ClCompile Include="Engine\Resources\ModelManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Data\AnimationManager.cpp">
+    <ClCompile Include="Engine\Resources\AnimationManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Data\TextureManager.cpp">
+    <ClCompile Include="Engine\Resources\TextureManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -629,7 +629,7 @@
     <ClInclude Include="Engine\Collision\Collision.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Data\CollisionConfig.h">
+    <ClInclude Include="Game\Global\CollisionConfig.h">
       <Filter>Game\Physics\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\CollisionManager.h">
@@ -666,7 +666,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureManager.h">
       <Filter>Engine\Graphics\Device</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Data\AudioManager.h">
+    <ClInclude Include="Engine\Resources\AudioManager.h">
       <Filter>Game\Data</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h">
@@ -720,9 +720,10 @@
     <ClInclude Include="Game\Scene\Transitions\FadeInState.h" />
     <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
     <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
-    <ClInclude Include="Game\Data\ModelManager.h" />
-    <ClInclude Include="Game\Data\AnimationManager.h" />
-    <ClInclude Include="Game\Data\TextureManager.h" />
+    <ClInclude Include="Engine\Resources\ModelManager.h" />
+    <ClInclude Include="Engine\Resources\AnimationManager.h" />
+    <ClInclude Include="Engine\Resources\TextureManager.h" />
+    <ClInclude Include="Game\Global\WindowConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

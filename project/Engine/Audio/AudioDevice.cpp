@@ -13,7 +13,7 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-namespace FromEngine
+namespace MyFrom
 {
     /// @brief AudioDeviceの初期化
     void AudioDevice::Initialize()

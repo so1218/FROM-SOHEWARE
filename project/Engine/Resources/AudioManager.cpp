@@ -6,7 +6,7 @@
 #include <cassert>
 #include <iostream>
 
-using namespace FromEngine;
+using namespace MyFrom;
 
 std::unordered_map<std::string, int> AudioManager::audioMap_;
 bool AudioManager::initialized_ = false;
