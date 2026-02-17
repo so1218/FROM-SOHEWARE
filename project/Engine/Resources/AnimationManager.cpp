@@ -70,7 +70,7 @@ void AnimationManager::Load(const std::string& name, const std::string& path)
     animations_[name] = LoadAnimationFile(path.c_str());
 }
 
-const Animation* AnimationManager::GetAnimation(const std::string& name)
+const Animation* AnimationManager::Get(const std::string& name)
 {
     auto it = animations_.find(name);
     if (it == animations_.end())

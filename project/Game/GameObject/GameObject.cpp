@@ -13,13 +13,12 @@ GameObject::GameObject(Engine* engine)
 std::unique_ptr<Model> GameObject::CreateModel(const std::string& modelName)
 {
     // ModelManagerから取得
-    const ModelData* modelData = ModelManager::GetInstance().GetModel(modelName);
+    const ModelData* modelData = ModelManager::GetInstance().Get(modelName);
 
     // 見つからなかった場合の安全策
     if (!modelData)
     {
-        // エラーログを出して、assertする
-        assert(false && "Model not found!");
+        assert(false && "Model not found");
         return nullptr;
     }
 
@@ -29,15 +28,15 @@ std::unique_ptr<Model> GameObject::CreateModel(const std::string& modelName)
 std::unique_ptr<AnimationModel> GameObject::CreateAnimationModel(const std::string& modelName, const std::string& animationName)
 {
     // ModelManagerから取得
-    const ModelData* modelData = ModelManager::GetInstance().GetModel(modelName);
+    const ModelData* modelData = ModelManager::GetInstance().Get(modelName);
 
     // AnimationManagerから取得
-    const Animation* animation = AnimationManager::GetInstance()->GetAnimation(animationName);
+    const Animation* animation = AnimationManager::GetInstance()->Get(animationName);
 
     // 両方存在するかチェック
     if (!modelData || !animation) 
     {
-        assert(false && "Model or Animation not found!");
+        assert(false && "Model or Animation not found");
         return nullptr;
     }
 

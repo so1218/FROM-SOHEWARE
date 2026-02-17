@@ -80,7 +80,7 @@ void Game::Update()
 {
 #ifdef IS_DEVELOPMENT
     // デバッグカメラの有効/無効切り替え
-    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
+    if (Input::GetInstance().IsKeyTriggered(DIK_C))
     {
         engine_->debugCamera_->SetEnabled(!engine_->debugCamera_->IsEnabled());
     }
@@ -97,7 +97,7 @@ void Game::Update()
     }
 #endif
 
-    // ゲームロジック更新（シーン）
+    // ゲームシーン更新
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
@@ -115,7 +115,7 @@ void Game::Update()
     {
         engine_->debugCamera_->Update();
 
-        // デバッグカメラの行列を使う
+        // デバッグカメラの行列を使用
         viewMat = engine_->debugCamera_->GetViewMatrix();
         projMat = engine_->debugCamera_->GetProjectionMatrix();
         eyePos = engine_->debugCamera_->GetCameraWorldPosition();

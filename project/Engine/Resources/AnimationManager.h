@@ -21,7 +21,7 @@ public:
     void Load(const std::string& name, const std::string& path);
 
     // 取得関数
-    const Animation* GetAnimation(const std::string& name);
+    const Animation* Get(const std::string& name);
 
 private:
     AnimationManager() = default;

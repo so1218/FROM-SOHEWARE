@@ -3,7 +3,7 @@
 #include "TextureManager.h"
 
 Model::Model(Engine* engine, const std::string& modelName)
-    : Model(engine, ModelManager::GetInstance().GetModel(modelName))
+    : Model(engine, ModelManager::GetInstance().Get(modelName))
 {
 }
 

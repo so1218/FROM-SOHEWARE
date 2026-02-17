@@ -70,7 +70,7 @@ void ModelManager::Load(const std::string& name, const std::string& path)
     models_[name] = std::make_unique<ModelData>(std::move(data));
 }
 
-const ModelData* ModelManager::GetModel(const std::string& name) const
+const ModelData* ModelManager::Get(const std::string& name) const
 {
     auto it = models_.find(name);
     if (it == models_.end())

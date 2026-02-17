@@ -6,8 +6,8 @@
 
 AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
     : AnimationModel(engine,
-        ModelManager::GetInstance().GetModel(modelName),
-        AnimationManager::GetInstance()->GetAnimation(animationName))
+        ModelManager::GetInstance().Get(modelName),
+        AnimationManager::GetInstance()->Get(animationName))
 {
 }
 
@@ -149,7 +149,7 @@ void AnimationModel::Draw()
 void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale)
 {
     // Managerから検索
-    const Animation* anim = AnimationManager::GetInstance()->GetAnimation(animationName);
+    const Animation* anim = AnimationManager::GetInstance()->Get(animationName);
 
     // 見つかればポインタ版のPlayに投げる
     if (anim)
@@ -165,7 +165,7 @@ void AnimationModel::Play(const std::string& animationName, bool isLoop, float s
 void AnimationModel::SetAnimation(const std::string& animationName)
 {
     // Managerから検索
-    const Animation* anim = AnimationManager::GetInstance()->GetAnimation(animationName);
+    const Animation* anim = AnimationManager::GetInstance()->Get(animationName);
 
     // 見つかればセット
     if (anim)

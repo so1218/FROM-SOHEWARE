@@ -26,7 +26,7 @@ public:
     void Load(const std::string& name, const std::string& path);
 
     // 名前でモデルデータを取得
-    const ModelData* GetModel(const std::string& name) const;
+    const ModelData* Get(const std::string& name) const;
 
 private:
     ModelManager() = default;
