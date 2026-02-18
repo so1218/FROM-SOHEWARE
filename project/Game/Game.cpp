@@ -5,7 +5,7 @@
 #include "AudioDevice.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "SampleSceneHori.h"
+#include "TestSceneHori.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 
@@ -22,11 +22,11 @@ Game::Game()
     // シーンの生成と登録
     sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get()));
     sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get()));
-    sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get()));
+    sceneManager_.RegisterScene(SceneID::TestHori, std::make_unique<TestSceneHori>(engine_.get()));
 
     // 初期シーンを設定
 #ifdef IS_DEVELOPMENT
-    sceneManager_.SetInitialScene(SceneID::Sample);
+    sceneManager_.SetInitialScene(SceneID::TestHori);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
 #endif
@@ -175,9 +175,9 @@ void Game::DebugDraw()
         {
             sceneManager_.RequestSceneChange(SceneID::Play);
         }
-        if (ImGui::Button("サンプルシーン"))
+        if (ImGui::Button("ホリーテストシーン"))
         {
-            sceneManager_.RequestSceneChange(SceneID::Sample);
+            sceneManager_.RequestSceneChange(SceneID::TestHori);
         }
     }
     ImGui::End();

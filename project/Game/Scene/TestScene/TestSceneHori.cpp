@@ -1,4 +1,4 @@
-#include "SampleSceneHori.h"
+#include "TestSceneHori.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 #include "Input.h"
@@ -8,7 +8,7 @@
 
 using namespace MyFrom;
 
-SampleSceneHori::SampleSceneHori(Engine* engine)
+TestSceneHori::TestSceneHori(Engine* engine)
     : BaseScene(engine)
 {
     // インスタンスを作成
@@ -27,7 +27,7 @@ SampleSceneHori::SampleSceneHori(Engine* engine)
     objectManager_.AddObject(std::move(grid));
 }
 
-void SampleSceneHori::OnInitialize()
+void TestSceneHori::OnInitialize()
 {
     // ライトの設定
     engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
@@ -35,17 +35,17 @@ void SampleSceneHori::OnInitialize()
     engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
 }
 
-void SampleSceneHori::OnUpdate()
+void TestSceneHori::OnUpdate()
 {
     AudioPlayer::GetInstance().PlayUnique("titleSceneBGM");
 }
 
-void SampleSceneHori::OnDraw()
+void TestSceneHori::OnDraw()
 {
    
 }
 
-void SampleSceneHori::OnDebugDraw()
+void TestSceneHori::OnDebugDraw()
 {
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("ホリシーン");
@@ -54,6 +54,6 @@ void SampleSceneHori::OnDebugDraw()
 #endif
 }
 
-void SampleSceneHori::OnFinalize()
+void TestSceneHori::OnFinalize()
 {
 }

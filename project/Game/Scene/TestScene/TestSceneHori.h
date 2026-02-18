@@ -4,10 +4,10 @@
 #include "FollowCamera.h"
 #include "ParticleEmitter.h"
 
-class SampleSceneHori : public BaseScene
+class TestSceneHori : public BaseScene
 {
 public:
-	SampleSceneHori(Engine* engine);
+    TestSceneHori(Engine* engine);
 
     void OnInitialize() override;
     void OnUpdate() override;

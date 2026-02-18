@@ -39,7 +39,7 @@ void TitleScene::OnUpdate()
         || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
-		sceneManager_->RequestSceneChange(SceneID::Sample);
+		sceneManager_->RequestSceneChange(SceneID::TestHori);
 	}
 }
 

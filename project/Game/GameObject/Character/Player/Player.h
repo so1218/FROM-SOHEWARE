@@ -8,13 +8,6 @@
 
 class PlayScene;
 
-enum class PlayerAnimState
-{
-	None, 
-	Idle, 
-	Walk  
-};
-
 class Player : public Collider, public GameObject
 {
 public:
