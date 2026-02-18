@@ -103,7 +103,7 @@ void Game::Update()
         sceneManager_.Update();
     }
 
-    // 描画に使うカメラ情報の決定
+    // 描画に使うカメラ情報
     Matrix4x4 viewMat, projMat;
     Vector3 eyePos;
 

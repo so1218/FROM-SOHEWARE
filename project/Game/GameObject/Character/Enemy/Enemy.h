@@ -27,5 +27,5 @@ public:
     void DebugDraw() override;
 
 private:
-    std::unique_ptr<AnimationModel> animationPlayer_;
+    std::unique_ptr<AnimationModel> animationEnemy_;
 };
