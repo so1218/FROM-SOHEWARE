@@ -1,15 +1,11 @@
 #include "Player.h"
 #include "CollisionConfig.h"
-#include "TextureManager.h"
-#include "ModelManager.h"
-#include "AnimationManager.h"
 #include "AnimationModel.h"
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"  
 #include "Collision.h"   
 #include "TimeManager.h"
-#include "AudioDevice.h"
 #include "AudioPlayer.h"
 
 #include <numbers>

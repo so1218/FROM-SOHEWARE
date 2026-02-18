@@ -121,7 +121,7 @@ public:
     void BindSprite(const std::string& groupName, Sprite* sprite);
     void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
 
-    // Vector専用のBindオーバーロード (onChange 対応版)
+    // Vector専用のBindオーバーロード (onChange対応版)
     void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
     {
         // コールバック付き
@@ -361,7 +361,7 @@ private:
         *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
 
 #ifdef IS_DEVELOPMENT
-        // ラムダ式内で onChange をキャプチャ
+        // ラムダ式内でonChangeをキャプチャ
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;

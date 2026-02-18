@@ -33,8 +33,8 @@ void GameObjectManager::Update()
     // 削除判定して消す
     objects_.erase(
         std::remove_if(objects_.begin(), objects_.end(),
-            [](const std::unique_ptr<GameObject>& obj) {
-                // GameObjectに IsDead() のようなメソッドを用意しておく
+            [](const std::unique_ptr<GameObject>& obj) 
+            {
                 return obj->IsDead();
             }),
         objects_.end());

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Collider.h"
-#include "ModelManager.h"
 #include "AnimationModel.h"
-#include "AnimationManager.h"
 #include "GameObjectManager.h"
 
 class Player;

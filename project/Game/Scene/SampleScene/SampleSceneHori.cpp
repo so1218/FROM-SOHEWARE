@@ -1,12 +1,10 @@
 #include "SampleSceneHori.h"
 #include "ImGuiManager.h"
-#include "GlobalVariables.h"
 #include "TimeManager.h"
 #include "Input.h"
 #include "Grid.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
-#include "AudioManager.h"
 
 using namespace MyFrom;
 

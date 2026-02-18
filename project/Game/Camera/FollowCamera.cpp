@@ -4,7 +4,6 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
-#include "GlobalVariables.h"
 
 FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
     : GameObject(engine),

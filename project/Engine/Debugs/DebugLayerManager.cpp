@@ -10,7 +10,8 @@ DebugLayerManager::DebugLayerManager()
 DebugLayerManager::~DebugLayerManager()
 {
 #ifdef _DEBUG
-    if (debugController_) {
+    if (debugController_)
+    {
         debugController_->Release();
         debugController_ = nullptr;
     }

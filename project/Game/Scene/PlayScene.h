@@ -2,7 +2,6 @@
 #include "BaseScene.h"
 #include "Player.h"
 #include "ParticleEmitter.h"
-#include "Enemy.h"
 #include "FollowCamera.h"
 #include "Sprite.h"
 

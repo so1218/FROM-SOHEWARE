@@ -1,11 +1,9 @@
 #include "Enemy.h"
 #include "CollisionConfig.h"
-#include "ModelManager.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "Player.h"
 #include "TimeManager.h"
-#include "AudioManager.h"
 #include "AudioPlayer.h"
 
 Enemy::Enemy(Engine* engine) : GameObject(engine)

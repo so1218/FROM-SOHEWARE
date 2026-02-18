@@ -9,7 +9,7 @@ class AnimationModel
 public:
     // コンストラクタ
     AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName);
-    // （内部生成用）
+    // 内部生成用
     AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();
 

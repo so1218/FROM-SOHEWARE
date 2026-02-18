@@ -257,10 +257,10 @@
     <ClCompile Include="Engine\Math\Easing.cpp">
       <Filter>Game\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Character\Enemy\Enemy.cpp">
+    <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp">
       <Filter>Game\Character\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Character\Player\Player.cpp">
+    <ClCompile Include="Game\GameObject\Character\Player\Player.cpp">
       <Filter>Game\Character\Player</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Collision\Collision.cpp">
@@ -617,10 +617,10 @@
     <ClInclude Include="Engine\Math\Easing.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Character\Player\Enemy.h">
+    <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h">
       <Filter>Game\Character\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Character\Player\Player.h">
+    <ClInclude Include="Game\GameObject\Character\Player\Player.h">
       <Filter>Game\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\Collider.h">
