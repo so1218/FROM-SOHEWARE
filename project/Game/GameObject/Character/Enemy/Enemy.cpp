@@ -5,9 +5,9 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
-Enemy::Enemy(Engine* engine) : GameObject(engine)
+Enemy::Enemy(Engine* engine) : GameObject(engine, 10)
 {
-
+	SetTag("Enemy");
 }
 
 Enemy::~Enemy()

@@ -15,8 +15,7 @@ public:
     void Update() override;
     void DebugDraw() override;
     void Draw() override {}
-    GameObjectType GetType() const override { return GameObjectType::FollowCamera; }
-
+   
     void StartShake(float duration, float intensity);
 
 private:

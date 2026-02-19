@@ -12,7 +12,5 @@ public:
 
     void Draw() override;
 
-    GameObjectType GetType() const override { return GameObjectType::Effect; }
-
 private:
 };

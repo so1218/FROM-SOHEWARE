@@ -3,6 +3,7 @@
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
     : GameObject(engine)
 {
+	SetTag("ParticleSystemWrapper");
 }
 
 void ParticleSystemWrapper::Update()

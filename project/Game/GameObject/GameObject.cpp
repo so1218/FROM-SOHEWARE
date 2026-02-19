@@ -5,8 +5,8 @@
 #include "Model.h"
 #include "Sprite.h"
 
-GameObject::GameObject(Engine* engine)
-    : engine_(engine)
+GameObject::GameObject(Engine* engine, int priority)
+    : engine_(engine), priority_(priority)
 {
 }
 

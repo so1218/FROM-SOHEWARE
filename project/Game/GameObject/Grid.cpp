@@ -5,6 +5,8 @@
 Grid::Grid(Engine* engine)
     : GameObject(engine)
 {
+    SetTag("Grid");
+
     textureHandle_ = TextureManager::GetInstance().Get("white1x1");
     modelData_ = ModelManager::GetInstance().Get("field");
     materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());

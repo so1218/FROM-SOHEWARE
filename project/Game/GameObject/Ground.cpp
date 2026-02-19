@@ -3,6 +3,7 @@
 
 Ground::Ground(Engine* engine) : GameObject(engine)
 {
+	SetTag("Ground");
 }
 
 void Ground::Initialize()

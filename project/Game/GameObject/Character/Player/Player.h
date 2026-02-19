@@ -13,8 +13,6 @@ class Player : public Collider, public GameObject
 public:
 	Player(Engine* engine, Camera* camera);
 
-	GameObjectType GetType() const override { return GameObjectType::Player; }
-
 	// 初期化
 	void Initialize() override;
 

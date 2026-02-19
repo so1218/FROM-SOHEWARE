@@ -13,9 +13,11 @@
 
 using namespace MyFrom;
 
-Player::Player(Engine* engine, Camera* camera) : GameObject(engine),
+Player::Player(Engine* engine, Camera* camera) : GameObject(engine, 10),
 	camera_(camera)
 {
+	SetTag("Player");
+
 	// アニメーションモデルを生成
 	animationPlayer_ = CreateAnimationModel("playerMesh", "playerWalk");
 

@@ -6,9 +6,10 @@
 #include "TimeManager.h"
 
 FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
-    : GameObject(engine),
+    : GameObject(engine, 100),
     target_(target), camera_(camera)
 {
+    SetTag("FollowCamera");
 }
 
 void FollowCamera::Initialize()

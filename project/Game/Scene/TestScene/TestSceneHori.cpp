@@ -12,19 +12,11 @@ TestSceneHori::TestSceneHori(Engine* engine)
     : BaseScene(engine)
 {
     // インスタンスを作成
-    auto player = std::make_unique<Player>(engine_, camera_.get());
-    player_ = player.get();
+    player_ = objectManager_.Create<Player>(engine_, camera_.get());
+    followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
+    objectManager_.Create<Grid>(engine_);
 
-    auto followCamera = std::make_unique<FollowCamera>(engine_, camera_.get(), player_);
-    followCamera_ = followCamera.get();
     player_->SetFollowCamera(followCamera_);
-  
-    auto grid = std::make_unique<Grid>(engine_);
-
-    // 作成したゲームオブジェクトを管理クラスに登録
-    objectManager_.AddObject(std::move(player));
-    objectManager_.AddObject(std::move(followCamera));
-    objectManager_.AddObject(std::move(grid));
 }
 
 void TestSceneHori::OnInitialize()

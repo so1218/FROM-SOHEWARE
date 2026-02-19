@@ -12,8 +12,6 @@ public:
     Enemy(Engine* engine);
     ~Enemy();
 
-    GameObjectType GetType() const override { return GameObjectType::Enemy; }
-
     // 初期化処理
     void Initialize() override;
 

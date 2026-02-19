@@ -7,8 +7,6 @@ class Ground : public GameObject
 public:
     Ground(Engine* engine);
 
-    GameObjectType GetType() const override { return GameObjectType::Enemy; }
-
     void Initialize() override;
     void Update() override;
     void Draw() override;
