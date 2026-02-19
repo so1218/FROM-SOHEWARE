@@ -28,8 +28,6 @@
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
 
-using namespace MyFrom;
-
 void Engine::Initialize()
 {
 	materialManager_ = std::make_unique<MaterialManager>();

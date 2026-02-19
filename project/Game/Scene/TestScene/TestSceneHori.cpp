@@ -6,12 +6,10 @@
 #include "SceneManager.h"
 #include "AudioPlayer.h"
 
-using namespace MyFrom;
-
 TestSceneHori::TestSceneHori(Engine* engine)
     : BaseScene(engine)
 {
-    // インスタンスを作成
+	// ゲームオブジェクトの生成・登録
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
     objectManager_.Create<Grid>(engine_);

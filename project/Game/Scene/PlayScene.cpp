@@ -8,8 +8,6 @@
 #include "Input.h"
 #include "Grid.h"
 
-using namespace MyFrom;
-
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine)
 {

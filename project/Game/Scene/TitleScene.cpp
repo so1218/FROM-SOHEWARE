@@ -6,8 +6,6 @@
 #include "TimeManager.h"
 #include "Grid.h"
 
-using namespace MyFrom;
-
 TitleScene::TitleScene(Engine* engine)
     : BaseScene(engine)
 {

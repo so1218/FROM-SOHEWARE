@@ -2,31 +2,28 @@
 #include <xaudio2.h>           
 #include <wrl.h>     
 
-namespace MyFrom
+class AudioDevice
 {
-    class AudioDevice
+public:
+
+    static AudioDevice& GetInstance()
     {
-    public:
+        static AudioDevice instance;
+        return instance;
+    }
 
-        static AudioDevice& GetInstance()
-        {
-            static AudioDevice instance;
-            return instance;
-        }
+    void Initialize();
+    void Finalize();
 
-        void Initialize();
-        void Finalize();
+    IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
 
-        IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
+private:
+    AudioDevice() = default;
+    ~AudioDevice() = default;
 
-    private:
-        AudioDevice() = default;
-        ~AudioDevice() = default;
+    AudioDevice(const AudioDevice&) = delete;
+    AudioDevice& operator=(const AudioDevice&) = delete;
 
-        AudioDevice(const AudioDevice&) = delete;
-        AudioDevice& operator=(const AudioDevice&) = delete;
-
-        Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
-        IXAudio2MasteringVoice* masterVoice_ = nullptr;
-    };
-}
+    Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
+    IXAudio2MasteringVoice* masterVoice_ = nullptr;
+};

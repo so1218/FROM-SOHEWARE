@@ -11,8 +11,6 @@
 #include <numbers>
 #include <algorithm>
 
-using namespace MyFrom;
-
 Player::Player(Engine* engine, Camera* camera) : GameObject(engine, 10),
 	camera_(camera)
 {
