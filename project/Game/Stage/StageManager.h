@@ -5,7 +5,7 @@
 class StageManager
 {
 public:
-	// 最大ステージ数(4はタイトルシーン用)
+	// 最大ステージ数
 	static constexpr int kMaxStages = 4;
 
 	StageManager();
