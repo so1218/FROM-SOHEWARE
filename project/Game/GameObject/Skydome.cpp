@@ -3,6 +3,7 @@
 
 Skydome::Skydome(Engine* engine) : GameObject(engine)
 {
+	SetTag("Skydome");
 }
 
 void Skydome::Initialize()

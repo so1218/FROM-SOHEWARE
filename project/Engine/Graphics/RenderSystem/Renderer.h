@@ -23,7 +23,7 @@ class PostEffectManager;
 #include "RenderCommon.h" 
 #include "BlendMode.h" 
 #include "MaterialManager.h"
-#include "TextureManager.h"
+#include "TextureLoader.h"
 #include "AnimationData.h"
 #include "Structures.h"
 #include "ParticleDefinition.h"
@@ -40,7 +40,7 @@ public:
         CommandManager* commandManager,
         PSOManager* psoManager,
         RootSignatureManager* rootSignatureManager,
-        TextureManager* textureManager,
+        TextureLoader* textureLoader,
         SRVManager* srvManager,
         LightManager* lightManager,
         GlobalConstants* globalConstants,
@@ -150,7 +150,7 @@ private:
     CommandManager* commandManager_ = nullptr;
     PSOManager* psoManager_ = nullptr;
     RootSignatureManager* rootSignatureManager_ = nullptr;
-    TextureManager* textureManager_ = nullptr;
+    TextureLoader* textureLoader_ = nullptr;
     SRVManager* srvManager_ = nullptr;
     LightManager* lightManager_ = nullptr;
     GlobalConstants* globalConstants_ = nullptr;
@@ -215,8 +215,8 @@ private:
 
     // テクスチャ配列関連
     D3D12_GPU_DESCRIPTOR_HANDLE textureArraySrvHandleGPU_{};
-    std::vector<TextureManager::TextureResources> textures_;
-    TextureManager::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
+    std::vector<TextureLoader::TextureResources> textures_;
+    TextureLoader::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
 
     // 各テクスチャIDごとにParticleInstanceDataの配列を持つ
     std::map<BlendMode, std::map<uint32_t, std::vector<ParticleInstanceData>>> particleBatches_;

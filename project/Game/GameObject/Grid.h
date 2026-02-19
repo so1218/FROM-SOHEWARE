@@ -13,8 +13,6 @@ public:
     void Update() override {}
     void Draw() override;
 
-    GameObjectType GetType() const override { return GameObjectType::Grid; }
-
     // Modelクラスと共通のセッター
     void SetWorldTransform(const WorldTransform& transform);
     void SetColor(uint32_t color);

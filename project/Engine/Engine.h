@@ -9,7 +9,7 @@
 #include "RootSignatureManager.h"
 #include "PSOManager.h"
 #include "MaterialManager.h"
-#include "TextureManager.h"
+#include "TextureLoader.h"
 #include "Mesh.h"
 #include "LightManager.h"
 #include "WorldTransform.h"
@@ -86,7 +86,7 @@ public:
     std::unique_ptr<ShaderManager> shaderManager_;
     std::unique_ptr<PSOManager> psoManager_;
     std::unique_ptr<MaterialManager> materialManager_;
-    std::unique_ptr<TextureManager> textureManager_;
+    std::unique_ptr<TextureLoader> textureLoader_;
     std::unique_ptr<SRVManager> srvManager_;
     std::unique_ptr<DSVManager> dsvManager_;
     std::unique_ptr<LightManager> lightManager_;

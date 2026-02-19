@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "AudioManager.h"
+#include "AudioDevice.h"
 #include "DebugLayerManager.h"
 #include "Logger.h"
 #include "Input.h"
@@ -7,11 +7,10 @@
 #include "ShapeGenerator.h"
 #include "DSVManager.h"
 #include "TimeManager.h"
-#include "ModelHandle.h"
-#include "TextureHandle.h"
-#include "ParticleTextureHandle.h"
-#include "AudioHandle.h"
-#include "AnimationHandle.h"
+#include "ModelManager.h"
+#include "TextureManager.h"
+#include "AudioManager.h"
+#include "AnimationManager.h"
 #include "GlobalVariables.h"
 #include "DebugDraw.h"
 
@@ -28,8 +27,6 @@
 
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
-
-using namespace FromEngine;
 
 void Engine::Initialize()
 {
@@ -49,7 +46,7 @@ void Engine::Initialize()
 	InitializeImGui();
 	InitializeAudio();
 	debugGuiManager_ = std::make_unique<DebugGuiManager>();
-	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureManager_.get(), postEffectManager_.get(), debugCamera_.get());
+	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), postEffectManager_.get(), debugCamera_.get());
 	particleSystem_ = std::make_unique<ParticleSystem>(this);
 	particleSystem_->Initialize();
 }
@@ -70,7 +67,7 @@ void Engine::Finalize()
 	frameLimiter_->Finalize();
 
 	// srvManager_を使うクラスを先に解放
-	textureManager_.reset();     
+	textureLoader_.reset();     
 	postEffectManager_.reset();  
 
 	srvManager_.reset();
@@ -216,14 +213,14 @@ void Engine::EndFrame()
 
 	// アップロードリソース管理
 	uint64_t completedFenceValue = renderCoordinator_->GetFenceValue();
-	for (auto& textureResource : textureManager_->GetNewUploads())
+	for (auto& textureResource : textureLoader_->GetNewUploads())
 	{
-		textureManager_->RegisterPendingUpload(
+		textureLoader_->RegisterPendingUpload(
 			textureResource.intermediate, completedFenceValue
 		);
 	}
-	textureManager_->ClearNewUploads();
-	textureManager_->CleanupCompletedUploads(
+	textureLoader_->ClearNewUploads();
+	textureLoader_->CleanupCompletedUploads(
 		renderCoordinator_->GetFence()->GetCompletedValue()
 	);
 }
@@ -423,8 +420,8 @@ void Engine::InitializeRenderer()
 void Engine::InitializeResources()
 {
 	// テクスチャ管理
-	textureManager_ = std::make_unique<TextureManager>();
-	textureManager_->Initialize(
+	textureLoader_ = std::make_unique<TextureLoader>();
+	textureLoader_->Initialize(
 		graphicsDevice_->GetDevice(),
 		commandManager_->GetCommandList(),
 		srvManager_.get()
@@ -437,7 +434,7 @@ void Engine::InitializeResources()
 		commandManager_.get(),
 		psoManager_.get(),
 		rootSignatureManager_.get(),
-		textureManager_.get(),
+		textureLoader_.get(),
 		srvManager_.get(),
 		lightManager_.get(),
 		globalConstants_.get(),
@@ -449,10 +446,9 @@ void Engine::InitializeResources()
 	);
 
 	// 共通ハンドル初期化
-	TextureHandle::Initialize(this);
-	ParticleTextureHandle::Initialize(this);
-	ModelHandle::Initialize(this);
-	AnimationHandle::Initialize();
+	TextureManager::GetInstance().LoadAllTextures(this);
+	ModelManager::GetInstance().LoadFromCSV();
+	AnimationManager::GetInstance()->LoadFromCSV();
 
 	// テクスチャ配列
 	std::vector<std::string> texturePaths = {
@@ -482,8 +478,8 @@ void Engine::InitializeImGui()
 void Engine::InitializeAudio()
 {
 	// XAudioエンジン
-	AudioManager::GetInstance().Initialize();
-	AudioHandle::Initialize();
+	AudioDevice::GetInstance().Initialize();
+	AudioManager::Initialize();
 }
 
 int Engine::LoadTexture(const std::string& texturePath)

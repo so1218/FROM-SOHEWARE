@@ -15,9 +15,8 @@ public:
     {
         collisionManager_ = std::make_unique<CollisionManager>();
         camera_ = std::make_unique<Camera>();
-        particleSystemWrapper_ = std::make_unique<ParticleSystemWrapper>(engine);
 
-        objectManager_.AddObject(std::move(particleSystemWrapper_));
+        objectManager_.Create<ParticleSystemWrapper>(engine);
     }
     virtual ~BaseScene() = default;
 

@@ -1,6 +1,11 @@
 #include "Model.h"
-#include "Engine.h"
-#include "MaterialManager.h"
+#include "ModelManager.h"
+#include "TextureManager.h"
+
+Model::Model(Engine* engine, const std::string& modelName)
+    : Model(engine, ModelManager::GetInstance().Get(modelName))
+{
+}
 
 Model::Model(Engine* engine, const ModelData* modelData)
     : engine_(engine), modelData_(modelData)
@@ -15,12 +20,14 @@ Model::Model(Engine* engine, const ModelData* modelData)
         // マテリアル作成
         MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
-        // デフォルトテクスチャ設定
-        newMaterial.textureHandle = TextureHandle::Get(TextureID::white1x1);
-        newMaterial.envMapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
-        newMaterial.toonRampHandle = TextureHandle::Get(TextureID::toonRamp);
-        newMaterial.dissolveMapHandle = TextureHandle::Get(TextureID::white1x1);
-        newMaterial.normalMapHandle = TextureHandle::Get(TextureID::white1x1);
+        auto& texManager = TextureManager::GetInstance();
+
+        // デフォルト設定
+        newMaterial.textureHandle = texManager.Get("white1x1");
+        newMaterial.envMapHandle = texManager.Get("skybox");
+        newMaterial.toonRampHandle = texManager.Get("toonRamp_01");
+        newMaterial.dissolveMapHandle = texManager.Get("white1x1");
+        newMaterial.normalMapHandle = texManager.Get("white1x1");
 
         // UVトランスフォーム初期化
         newMaterial.uvTransformData.Initialize();
@@ -90,35 +97,39 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
     }
 }
 
-void Model::SetTexture(TextureID textureID)
+void Model::SetTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    // 文字列からGPUハンドルを検索して取得
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
+
+    // 全マテリアルに適用
     for (auto& mat : materials_) mat.textureHandle = handle;
 }
 
-void Model::SetEnvironmentMapTexture(TextureID textureID)
+void Model::SetEnvironmentMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.envMapHandle = handle;
 }
 
-void Model::SetToonRampTexture(TextureID textureID)
+void Model::SetToonRampTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.toonRampHandle = handle;
 }
 
-void Model::SetDissolveTexture(TextureID textureID)
+void Model::SetDissolveTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.dissolveMapHandle = handle;
 }
 
-void Model::SetNormalMapTexture(TextureID textureID)
+void Model::SetNormalMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
+
 
 void Model::SetColor(const Vector4& color)
 {

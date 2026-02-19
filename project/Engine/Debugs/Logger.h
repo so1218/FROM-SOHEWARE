@@ -88,12 +88,19 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
     ss << std::this_thread::get_id();
     const std::string threadIdStr = ss.str();
 
+    // ファイル名安全取得
+    std::string_view path = location.file_name();
+    auto pos = path.find_last_of("/\\");
+    std::string fileName = (pos == std::string_view::npos)
+        ? std::string(path)
+        : std::string(path.substr(pos + 1));
+
     const std::string logMessage = std::format(
         "[{:%Y-%m-%d %H:%M:%S}] [{}] [{}] [{}:{}] {}",
         now,
         threadIdStr,
         LevelToString(level),
-        std::filesystem::path(location.file_name()).filename().string(),
+        fileName,
         location.line(),
         userMessage
     );

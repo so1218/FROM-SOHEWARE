@@ -1,0 +1,12 @@
+Name,Path
+# Primitives
+cube,Primitives/Cube/normalCube.obj
+sphere,Primitives/Sphere/sphere.obj
+plane,Primitives/Plane/plane.obj
+
+# Characters
+playerMesh,Characters/Player/playerClear.gltf
+
+# Environment
+skydome,Environment/Skydome/skydome.obj
+field,Environment/Field/field.obj

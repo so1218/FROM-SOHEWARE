@@ -1,0 +1,5 @@
+Name,Path
+# BGM
+titleSceneBGM,BGM/titleSceneBGM.mp3
+playSceneBGM,BGM/playSceneBGM.mp3
+clearSceneBGM,BGM/clearSceneBGM.mp3

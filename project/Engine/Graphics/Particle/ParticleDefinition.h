@@ -3,7 +3,7 @@
 #include "WorldTransform.h"
 #include "MathUtils.h"
 #include "BlendMode.h"
-#include "ParticleTextureHandle.h"
+#include "TextureManager.h"
 
 #include <memory>
 #include <string>
@@ -211,7 +211,7 @@ struct SizeOverLifetimeModule
 struct TextureSheetAnimationModule
 {
     bool enabled = false;           // アニメーションの有効/無効
-    ParticleTextureID textureID = ParticleTextureID::white1x1Particle;
+    std::string textureName = "white1x1";
 };
 
 struct CollisionModule
@@ -302,7 +302,7 @@ struct TrailModule
     float lifetime = 0.5f;
     float width = 1.0f;
     float minVertexDistance = 0.1f;
-    ParticleTextureID textureID = ParticleTextureID::white1x1Particle;
+    std::string textureName = "white1x1";
 
     Vector4 startColor = { 1, 1, 1, 1 };
     Vector4 endColor = { 1, 1, 1, 0 };
@@ -323,7 +323,7 @@ struct TrailModule
     float jitterPhase = 0.0f;
 
     // ディゾルブの設定
-    int dissolveTextureID = -1;
+    std::string dissolveTextureName = "white1x1";
     float dissolveSpeed = 2.0f;
 
     JitterMode jitterMode = JitterMode::Wave;

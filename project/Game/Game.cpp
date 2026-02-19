@@ -2,14 +2,12 @@
 #include "PlayScene.h"
 #include "TitleScene.h"
 #include "GlobalVariables.h"
-#include "AudioManager.h"
+#include "AudioDevice.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "SampleSceneHori.h"
+#include "TestSceneHori.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
-
-using namespace FromEngine;
 
 Game::Game() 
     : engine_(std::make_unique<Engine>())
@@ -22,11 +20,11 @@ Game::Game()
     // シーンの生成と登録
     sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get()));
     sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get()));
-    sceneManager_.RegisterScene(SceneID::Sample, std::make_unique<SampleSceneHori>(engine_.get()));
+    sceneManager_.RegisterScene(SceneID::TestHori, std::make_unique<TestSceneHori>(engine_.get()));
 
     // 初期シーンを設定
 #ifdef IS_DEVELOPMENT
-    sceneManager_.SetInitialScene(SceneID::Sample);
+    sceneManager_.SetInitialScene(SceneID::TestHori);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
 #endif
@@ -80,7 +78,7 @@ void Game::Update()
 {
 #ifdef IS_DEVELOPMENT
     // デバッグカメラの有効/無効切り替え
-    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
+    if (Input::GetInstance().IsKeyTriggered(DIK_C))
     {
         engine_->debugCamera_->SetEnabled(!engine_->debugCamera_->IsEnabled());
     }
@@ -97,13 +95,13 @@ void Game::Update()
     }
 #endif
 
-    // ゲームロジック更新（シーン）
+    // ゲームシーン更新
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
     }
 
-    // 描画に使うカメラ情報の決定
+    // 描画に使うカメラ情報
     Matrix4x4 viewMat, projMat;
     Vector3 eyePos;
 
@@ -115,7 +113,7 @@ void Game::Update()
     {
         engine_->debugCamera_->Update();
 
-        // デバッグカメラの行列を使う
+        // デバッグカメラの行列を使用
         viewMat = engine_->debugCamera_->GetViewMatrix();
         projMat = engine_->debugCamera_->GetProjectionMatrix();
         eyePos = engine_->debugCamera_->GetCameraWorldPosition();
@@ -175,9 +173,9 @@ void Game::DebugDraw()
         {
             sceneManager_.RequestSceneChange(SceneID::Play);
         }
-        if (ImGui::Button("サンプルシーン"))
+        if (ImGui::Button("ホリーテストシーン"))
         {
-            sceneManager_.RequestSceneChange(SceneID::Sample);
+            sceneManager_.RequestSceneChange(SceneID::TestHori);
         }
     }
     ImGui::End();
@@ -191,5 +189,5 @@ void Game::DebugDraw()
 void Game::Finalize()
 {
     Input::GetInstance().Finalize();
-    AudioManager::GetInstance().Finalize();
+    AudioDevice::GetInstance().Finalize();
 }

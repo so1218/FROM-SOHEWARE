@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "ParticleEmitter.h"
+#include "PropertyBinder.h"
 
 class TitleScene : public BaseScene
 {
@@ -16,17 +17,9 @@ public:
 
 private:
     // メンバー変数
-    std::unique_ptr<ParticleEmitter> titleEmitter_ = nullptr;
+    std::unique_ptr<Sprite> titleSprite_;
 
-    std::unique_ptr<Sprite> sprite_;
-    std::unique_ptr<Sprite> spriteUse_;
-    std::unique_ptr<Sprite> spritePress_;
+    std::unique_ptr<ParticleEmitter> titleSceneEmitter_ = nullptr;
 
-    Vector2 spriteSize_ = { 640.0f, 360.0f };
-    Vector2 spriteSizeUse_ = { 640.0f, 360.0f };
-    Vector2 spriteSizePress_ = { 640.0f, 360.0f };
-
-    Vector2 spritePos_ = { 640.0f, 360.0f };
-    Vector2 spritePosUse_ = { 640.0f, 360.0f };
-    Vector2 spritePosPress_ = { 640.0f, 360.0f };
+    std::unique_ptr<PropertyBinder> binder_;
 };

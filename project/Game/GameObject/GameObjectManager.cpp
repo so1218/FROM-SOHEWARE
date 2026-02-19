@@ -1,13 +1,7 @@
 #include "GameObjectManager.h"
 #include "CollisionManager.h" 
 #include "Collider.h"
-#include "Enemy.h" 
 #include <algorithm>
-
-void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj) 
-{
-    objects_.push_back(std::move(obj));
-}
 
 void GameObjectManager::Initialize()
 {
@@ -19,25 +13,35 @@ void GameObjectManager::Initialize()
 
 void GameObjectManager::Update()
 {
-    std::sort(objects_.begin(), objects_.end(),
-        [](const std::unique_ptr<GameObject>& a, const std::unique_ptr<GameObject>& b) 
-        {
-            return a->GetUpdatePriority() < b->GetUpdatePriority();
-        });
-
-    for (auto& obj : objects_) 
+    if (isSortNeeded_)
     {
-        obj->Update();
+        std::sort(objects_.begin(), objects_.end(),
+            [](const std::unique_ptr<GameObject>& a, const std::unique_ptr<GameObject>& b)
+            {
+                return a->GetUpdatePriority() < b->GetUpdatePriority();
+            });
+        isSortNeeded_ = false;
     }
 
-    // 削除判定して消す
-    objects_.erase(
-        std::remove_if(objects_.begin(), objects_.end(),
-            [](const std::unique_ptr<GameObject>& obj) {
-                // GameObjectに IsDead() のようなメソッドを用意しておく
-                return obj->IsDead();
-            }),
-        objects_.end());
+    for (size_t i = 0; i < objects_.size(); ++i)
+    {
+        if (!objects_[i]->IsDead())
+        {
+            objects_[i]->Update();
+        }
+    }
+
+    // 削除処理
+    auto it = std::remove_if(objects_.begin(), objects_.end(),
+        [](const std::unique_ptr<GameObject>& obj)
+        {
+            return obj->IsDead();
+        });
+
+    if (it != objects_.end())
+    {
+        objects_.erase(it, objects_.end());
+    }
 }
 
 void GameObjectManager::Draw() 
@@ -56,6 +60,12 @@ void GameObjectManager::DebugDraw()
     }
 }
 
+void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj)
+{
+    objects_.push_back(std::move(obj));
+    isSortNeeded_ = true;
+}
+
 void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
 {
     // 自分が持っている全てのオブジェクトをループ
@@ -72,12 +82,28 @@ void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
     }
 }
 
-void GameObjectManager::ClearEnemies()
+GameObject* GameObjectManager::FindObjectWithTag(const std::string& tag)
 {
-    objects_.erase(
-        std::remove_if(objects_.begin(), objects_.end(),
-            [](const std::unique_ptr<GameObject>& obj) {
-                return dynamic_cast<Enemy*>(obj.get()) != nullptr;
-            }),
-        objects_.end());
+    for (auto& obj : objects_)
+    {
+        if (!obj->IsDead() && obj->CompareTag(tag))
+        {
+            return obj.get();
+        }
+    }
+    return nullptr;
+}
+
+std::vector<GameObject*> GameObjectManager::FindGameObjectsWithTag(const std::string& tag)
+{
+    std::vector<GameObject*> result;
+    for (auto& obj : objects_)
+    {
+        // 生きていて、かつタグが一致するものをリストに追加
+        if (!obj->IsDead() && obj->CompareTag(tag))
+        {
+            result.push_back(obj.get());
+        }
+    }
+    return result;
 }

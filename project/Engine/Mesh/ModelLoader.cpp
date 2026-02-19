@@ -247,7 +247,7 @@ Node ModelLoader::ReadNode(aiNode* node)
     // 回転の軸反転と回転方向の補正
     result.transform.rotationQuaternion_ = { rotate.x, -rotate.y, -rotate.z, rotate.w };
 
-    // 平行移動のx軸反転（こちらも座標系に応じて調整）
+    // 平行移動のx軸反転
     result.transform.translation_ = { -translate.x, translate.y, translate.z };
 
     // ローカル行列を作成

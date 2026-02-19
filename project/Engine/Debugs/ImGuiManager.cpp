@@ -49,7 +49,8 @@ void ImGuiManager::Initialize(
 
 
     ImFontConfig font_config;
-    static const ImWchar ranges[] = {
+    static const ImWchar ranges[] = 
+    {
         0x0020, 0x00FF,   // 基本ラテン文字＋補助
         0x3040, 0x309F,   // ひらがな
         0x30A0, 0x30FF,   // カタカナ
@@ -60,7 +61,8 @@ void ImGuiManager::Initialize(
 
     ImFont* font = io.Fonts->AddFontFromFileTTF(fontPath.c_str(), fontSize, &font_config, ranges);
 
-    if (!font) {
+    if (!font)
+    {
         io.Fonts->AddFontDefault();
         OutputDebugStringA("Failed to load font. Using default.\n");
     }
@@ -111,7 +113,7 @@ void ImGuiManager::Initialize(
     style.Colors[ImGuiCol_PlotLines] = ImVec4(0.12f, 0.22f, 0.40f, 1.0f);
     style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.18f, 0.30f, 0.50f, 1.0f);
 
-    // ヘッダー（Disabled含む）
+    // ヘッダー
     style.Colors[ImGuiCol_Header] = ImVec4(0.05f, 0.05f, 0.2f, 0.7f);      
     style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.1f, 0.15f, 0.4f, 0.9f);
     style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.15f, 0.2f, 0.5f, 1.0f); 
@@ -260,14 +262,14 @@ void ImGuiManager::DrawMenuBar()
         {
             if (ImGui::MenuItem("レイアウトの初期化")) 
             {
-                // .iniファイルを削除する
+                // .iniファイルを削除
                 ImGuiIO& io = ImGui::GetIO();
                 if (io.IniFilename != nullptr)
                 {
                     std::filesystem::remove(io.IniFilename);
                 }
 
-                // 再ビルドを強制する
+                // 再ビルド
                 dockInitialized_ = false;
             }
 
@@ -294,7 +296,7 @@ void ImGuiManager::OpenFile(const std::string& filename)
         return;
     }
 
-    // テクスチャ作成後は、dataは解放
+    // テクスチャ作成後、data解放
     stbi_image_free(data);
 #endif
 }

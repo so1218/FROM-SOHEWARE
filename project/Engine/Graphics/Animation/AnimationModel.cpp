@@ -1,6 +1,15 @@
 #include "AnimationModel.h"
 #include "TimeManager.h"
-#include "Engine.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
+#include "TextureManager.h"
+
+AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
+    : AnimationModel(engine,
+        ModelManager::GetInstance().Get(modelName),
+        AnimationManager::GetInstance()->Get(animationName))
+{
+}
 
 AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation)
     : engine_(engine)
@@ -19,12 +28,14 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
     {
         MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
 
+        auto& texManager = TextureManager::GetInstance();
+
         // デフォルト設定
-        newMaterial.textureHandle = TextureHandle::Get(TextureID::white1x1);
-        newMaterial.envMapHandle = TextureHandle::Get(TextureID::skyboxCubemap);
-        newMaterial.toonRampHandle = TextureHandle::Get(TextureID::toonRamp);
-        newMaterial.dissolveMapHandle = TextureHandle::Get(TextureID::white1x1);
-        newMaterial.normalMapHandle = TextureHandle::Get(TextureID::white1x1);
+        newMaterial.textureHandle = texManager.Get("white1x1");
+        newMaterial.envMapHandle = texManager.Get("skybox"); 
+        newMaterial.toonRampHandle = texManager.Get("toonRamp_01");    
+        newMaterial.dissolveMapHandle = texManager.Get("white1x1"); 
+        newMaterial.normalMapHandle = texManager.Get("white1x1");
 
         // UV初期化
         newMaterial.uvTransformData.Initialize();
@@ -58,10 +69,6 @@ AnimationModel::~AnimationModel()
         engine_->srvManager_->FreeSRV(skinCluster_.paletteSrvIndex);
     }
 }
-
-// ========================================================================
-// 更新処理
-// ========================================================================
 
 void AnimationModel::Update()
 {
@@ -139,8 +146,37 @@ void AnimationModel::Draw()
 // アニメーション制御
 // ========================================================================
 
+void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale)
+{
+    // Managerから検索
+    const Animation* anim = AnimationManager::GetInstance()->Get(animationName);
+
+    // 見つかればポインタ版のPlayに投げる
+    if (anim)
+    {
+        Play(anim, isLoop, speedScale);
+    }
+    else
+    {
+        // エラーログ
+    }
+}
+
+void AnimationModel::SetAnimation(const std::string& animationName)
+{
+    // Managerから検索
+    const Animation* anim = AnimationManager::GetInstance()->Get(animationName);
+
+    // 見つかればセット
+    if (anim)
+    {
+        SetAnimation(anim);
+    }
+}
+
 void AnimationModel::Play(const Animation* animation, bool isLoop, float speedScale)
 {
+    // ポインタが無効なら無視
     if (!animation) return;
 
     animeModelData_.currentAnimation = animation;
@@ -153,6 +189,7 @@ void AnimationModel::Play(const Animation* animation, bool isLoop, float speedSc
 
 void AnimationModel::SetAnimation(const Animation* animation)
 {
+    // 違うアニメーションなら切り替え
     if (animeModelData_.currentAnimation != animation)
     {
         animeModelData_.currentAnimation = animation;
@@ -186,33 +223,36 @@ void AnimationModel::SetUVTransform(const WorldTransform& uvTransform)
     }
 }
 
-void AnimationModel::SetTexture(TextureID textureID)
+void AnimationModel::SetTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    // 文字列からGPUハンドルを検索して取得
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
+
+    // 全マテリアルに適用
     for (auto& mat : materials_) mat.textureHandle = handle;
 }
 
-void AnimationModel::SetEnvironmentMapTexture(TextureID textureID)
+void AnimationModel::SetEnvironmentMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.envMapHandle = handle;
 }
 
-void AnimationModel::SetToonRampTexture(TextureID textureID)
+void AnimationModel::SetToonRampTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.toonRampHandle = handle;
 }
 
-void AnimationModel::SetDissolveTexture(TextureID textureID)
+void AnimationModel::SetDissolveTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.dissolveMapHandle = handle;
 }
 
-void AnimationModel::SetNormalMapTexture(TextureID textureID)
+void AnimationModel::SetNormalMapTexture(const std::string& textureName)
 {
-    uint32_t handle = TextureHandle::Get(textureID);
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 

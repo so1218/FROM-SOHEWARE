@@ -109,6 +109,20 @@ void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPa
 				Vector4* ptr = std::any_cast<Vector4>(&value);
 				ImGui::ColorEdit4(label.c_str(), reinterpret_cast<float*>(ptr));
 			}
+			else if (value.type() == typeid(std::string)) {
+				std::string* ptr = std::any_cast<std::string>(&value);
+
+				char buffer[256];
+				// 現在の値をバッファにコピー
+				strcpy_s(buffer, ptr->c_str());
+
+				// 入力欄を表示
+				if (ImGui::InputText(label.c_str(), buffer, sizeof(buffer)))
+				{
+					// バッファの内容をstringに戻す
+					*ptr = std::string(buffer);
+				}
+			}
 		}
 
 		ImGui::Spacing();
@@ -255,6 +269,35 @@ Vector4 GlobalVariables::GetVector4Value(const std::vector<std::string>& groupPa
 	}
 }
 
+std::string GlobalVariables::GetStringValue(const std::vector<std::string>& groupPath, const std::string& key)
+{
+	// グループ検索
+	const Group* group = FindGroup(groupPath);
+	// グループ自体がない場合は空文字を返す
+	if (!group) 
+	{
+		return "";
+	}
+
+	// アイテム検索
+	auto itItem = group->items.find(key);
+
+	// アイテムが見つからない場合も空文字を返す
+	if (itItem == group->items.end()) {
+		return "";
+	}
+
+	// 値のキャスト
+	try
+	{
+		return std::any_cast<std::string>(itItem->second);
+	}
+	catch (const std::bad_any_cast&)
+	{
+		return "";
+	}
+}
+
 const GlobalVariables::Group* GlobalVariables::FindGroup(const std::vector<std::string>& groupPath) const
 {
 	if (groupPath.empty()) return nullptr;
@@ -306,7 +349,7 @@ void GlobalVariables::SaveFile(const std::vector<std::string>& groupPath)
 		targetGroup = &it->second;
 	}
 
-	// 既存のJSONファイルを読み込む（なければ新しく作る準備）
+	// 既存のJSONファイルを読み込む（なければ新しく作る）
 	json rootJson;
 	std::ifstream ifs(filePath);
 	if (ifs.is_open()) {
@@ -384,6 +427,9 @@ json GlobalVariables::GroupToJson(const Group& group)
 		else if (value.type() == typeid(Vector4)) {
 			Vector4 v = std::any_cast<Vector4>(value);
 			j[key] = { v.x, v.y, v.z, v.w };
+		}
+		else if (value.type() == typeid(std::string)) {
+			j[key] = std::any_cast<std::string>(value);
 		}
 		else {
 			// 対応してない型は無視 or ログ
@@ -489,6 +535,10 @@ void GlobalVariables::LoadGroupRecursive(const std::vector<std::string>& groupPa
 			else if (value.is_boolean())
 			{
 				SetValue(groupPath, key, value.get<bool>());
+			}
+			else if (value.is_string())
+			{
+				SetValue(groupPath, key, value.get<std::string>());
 			}
 			else if (value.is_array())
 			{

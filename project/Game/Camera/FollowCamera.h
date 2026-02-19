@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "ShakeEffect.h"
 #include "GameObject.h"
+#include "PropertyBinder.h"
 
 class Player;
 
@@ -14,16 +15,14 @@ public:
     void Update() override;
     void DebugDraw() override;
     void Draw() override {}
-    GameObjectType GetType() const override { return GameObjectType::FollowCamera; }
-
-    void ApplyGlobalVariables();
+   
     void StartShake(float duration, float intensity);
-
-    std::vector<std::string> GetGlobalVariableGroupName() const { return { "FollowCamera" }; }
 
 private:
     Player* target_ = nullptr;
     Camera* camera_ = nullptr;
+
+    std::unique_ptr<PropertyBinder> binder_;
 
     // 目標値
     float targetYaw_ = 0.0f;

@@ -1,76 +1,48 @@
 #pragma once
 
 #include "Engine.h"
-#include "ModelHandle.h"
-#include "AnimationHandle.h"
-#include "TextureHandle.h"
+#include "ModelManager.h"
+#include "AnimationManager.h"
+#include "TextureManager.h"
+
+#include <string>
+#include <string_view>
 
 class Sprite;
 class Model;
 class AnimationModel;
 
-enum class GameObjectType : int
-{
-    Background,
-    FollowCamera,
-    Player,
-    PlayerWeapon,
-    Enemy,
-    Bullet,
-    Grid,
-    Effect,
-    UI,
-
-    Count  
-};
-
-struct GameObjectPriority 
-{
-    GameObjectType type;
-    int updatePriority;
-};
-
 class GameObject 
 {
 public:
-    GameObject(Engine* engine);
+    GameObject(Engine* engine, int priority = 50);
     virtual ~GameObject() = default;
 
     virtual void Initialize() {}
     virtual void Update() {}
     virtual void Draw() {}
     virtual void DebugDraw() {}
-    virtual bool IsDead() const { return false; }
 
-    virtual GameObjectType GetType() const = 0;
+    // 生存フラグ
+    bool IsDead() const { return isDead_; }
+    void Destroy() { isDead_ = true; }
 
-    int GetUpdatePriority() const { return GetPriority().updatePriority; }
+    // タグの取得と設定
+    void SetTag(const std::string& tag) { tag_ = tag; }
+    const std::string& GetTag() const { return tag_; }
 
-private:
-    const GameObjectPriority& GetPriority() const
-    {
-        return priorities[static_cast<int>(GetType())];
-    }
+    // 特定のタグかどうか判定する関数
+    bool CompareTag(std::string_view tag) const { return tag_ == tag; }
 
-    static constexpr std::array<GameObjectPriority, static_cast<size_t>(GameObjectType::Count)> priorities = 
-    { 
-        {
-            { GameObjectType::Background,  0 },
-            { GameObjectType::FollowCamera, 12 },
-            { GameObjectType::Player, 10 },
-            { GameObjectType::PlayerWeapon, 15 },
-            { GameObjectType::Enemy, 20 },
-            { GameObjectType::Bullet, 30 },
-            { GameObjectType::Grid, 50 },
-            { GameObjectType::Effect, 95 },
-            { GameObjectType::UI, 100 }
-        }
-    };
+    int GetUpdatePriority() const { return priority_; }
 
 protected:
-	std::unique_ptr<Model> CreateModel(ModelID modelID);
-    std::unique_ptr<AnimationModel> CreateAnimationModel(ModelID modelId, AnimationID animationId);
-    std::unique_ptr<Sprite> CreateSprite(TextureID textureID);
+    std::unique_ptr<Model> CreateModel(const std::string& modelName);
+    std::unique_ptr<AnimationModel> CreateAnimationModel(const std::string& modelName, const std::string& animationName);
+    std::unique_ptr<Sprite> CreateSprite(const std::string& textureName);
 
     Engine* engine_ = nullptr;
+    std::string tag_ = "None";
+    int priority_ = 0;
+    bool isDead_ = false;
 };

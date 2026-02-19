@@ -1,0 +1,4 @@
+Name,Path
+# Characters
+playerIdle,Characters/Player/playerIdle.gltf
+playerWalk,Characters/Player/playerWalk.gltf

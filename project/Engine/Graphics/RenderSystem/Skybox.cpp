@@ -1,6 +1,7 @@
 #include "Skybox.h"
 #include "Engine.h"
 #include "Renderer.h"
+#include "TextureManager.h"
 #include "Camera.h"
 
 Skybox::Skybox(Engine* engine)
@@ -10,12 +11,12 @@ Skybox::Skybox(Engine* engine)
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
     transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
-    cubeTextureHandle_ = TextureHandle::Get(TextureID::skyboxCubemapBlack);
+    cubeTextureHandle_ = TextureManager::GetInstance().Get("black_cube");
 }
 
-void Skybox::SetCubeTexture(TextureID textureID)
+void Skybox::SetCubeTexture(const std::string& textureName)
 {
-    cubeTextureHandle_ = TextureHandle::Get(textureID);
+    cubeTextureHandle_ = TextureManager::GetInstance().Get(textureName);
 }
 
 void Skybox::SetColor(uint32_t color)

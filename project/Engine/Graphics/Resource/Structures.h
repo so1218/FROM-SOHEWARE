@@ -47,12 +47,18 @@ struct MaterialHandle
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     MaterialData* materialData;
 
+    std::string textureName = "white1x1";       // アルベド
+    std::string envMapName = "skybox";  // 環境マップ
+    std::string normalMapName = "white1x1";       // 法線マップ
+    std::string dissolveMapName = "white1x1";       // ディゾルブマップ
+    std::string toonRampName = "toonRamp_01";       // トゥーンランプ
+
     // マテリアルごとのテクスチャハンドル
-    uint32_t textureHandle = 0;       // アルベド
-    uint32_t envMapHandle = 0;        // 環境マップ
-    uint32_t normalMapHandle = 0;     // 法線マップ
-    uint32_t dissolveMapHandle = 0;   // ディゾルブマップ
-    uint32_t toonRampHandle = 0;      // トゥーンランプ
+    uint32_t textureHandle = 0;     
+    uint32_t envMapHandle = 0;      
+    uint32_t normalMapHandle = 0;   
+    uint32_t dissolveMapHandle = 0; 
+    uint32_t toonRampHandle = 0;    
 
     // エディタ編集用UVデータ
     WorldTransform uvTransformData;

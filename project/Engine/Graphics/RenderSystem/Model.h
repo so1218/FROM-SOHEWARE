@@ -4,14 +4,14 @@
 #include <string>
 
 #include "WorldTransform.h"
-#include "TextureHandle.h"
-
-class Engine;
+#include "Engine.h"
 
 class Model
 {
 public:
     // コンストラクタ
+    Model(Engine* engine, const std::string& modelName);
+    // 内部処理用
     Model(Engine* engine, const ModelData* modelData);
     ~Model() = default;
 
@@ -24,7 +24,7 @@ public:
     // ========================================================================
     // 基本トランスフォーム
     // ========================================================================
-    void SetWorldTransform(const WorldTransform& transform) { transform_ = transform; }
+    void SetTransform(const WorldTransform& transform) { transform_ = transform; }
     const WorldTransform& GetTransform() const { return transform_; }
     WorldTransform& GetTransform() { return transform_; }
 
@@ -32,11 +32,11 @@ public:
     // 一括設定 (全マテリアルへ適用)
     // ========================================================================
     // テクスチャ
-    void SetTexture(TextureID textureID);
-    void SetEnvironmentMapTexture(TextureID textureID);
-    void SetToonRampTexture(TextureID textureID);
-    void SetDissolveTexture(TextureID textureID);
-    void SetNormalMapTexture(TextureID textureID);
+    void SetTexture(const std::string& textureName);
+    void SetEnvironmentMapTexture(const std::string& textureName);
+    void SetToonRampTexture(const std::string& textureName);
+    void SetDissolveTexture(const std::string& textureName);
+    void SetNormalMapTexture(const std::string& textureName);
 
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);
