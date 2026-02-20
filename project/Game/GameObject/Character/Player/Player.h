@@ -37,16 +37,15 @@ public:
 	Vector3 GetMoveDirection();
 
 	Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
-	// カメラを返す
+
 	Camera* GetCamera() const { return camera_; }
 
-	// UIが必要とする情報
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
-	FollowCamera* followCamera_;
 
 private:
 
 	Camera* camera_ = nullptr;
+	FollowCamera* followCamera_;
 
 	std::unique_ptr<AnimationModel> animationPlayer_;
 	std::unique_ptr<PropertyBinder> binder_;
