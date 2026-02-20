@@ -8,5 +8,5 @@ plane,Primitives/Plane/plane.obj
 playerMesh,Characters/Player/playerClear.gltf
 
 # Environment
-skydome,Environment/Skydome/skydome.obj
+skydome,Environment/Skydome/skydome.gltf
 field,Environment/Field/field.obj
