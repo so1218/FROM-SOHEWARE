@@ -94,7 +94,7 @@ GameObject* GameObjectManager::FindObjectWithTag(const std::string& tag)
     return nullptr;
 }
 
-std::vector<GameObject*> GameObjectManager::FindGameObjectsWithTag(const std::string& tag)
+std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(const std::string& tag)
 {
     std::vector<GameObject*> result;
     for (auto& obj : objects_)

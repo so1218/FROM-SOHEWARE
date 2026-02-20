@@ -39,7 +39,7 @@ public:
     GameObject* FindObjectWithTag(const std::string& tag);
 
     // 特定のタグを持つオブジェクトを全てリストアップ
-    std::vector<GameObject*> FindGameObjectsWithTag(const std::string& tag);
+    std::vector<GameObject*> FindObjectsWithTag(const std::string& tag);
 
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;

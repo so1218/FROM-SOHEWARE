@@ -103,7 +103,7 @@ PixelShaderOutput main(PixelShaderInput input)
         // 境界線の発光
         float difference = noiseValue - gMaterial.dissolveThreshold;
         
-       // エッジ幅の範囲内なら発光させる
+        // エッジ幅の範囲内なら発光させる
         if (difference < gMaterial.edgeWidth)
         {
             // differenceが小さいほど1.0に近づくように反転
