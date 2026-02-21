@@ -81,6 +81,17 @@ float4 main(VSOutput input) : SV_TARGET
 
     // 深度をリニア化
     float linearDepth = LinearizeDepth(depthVal);
+    
+    // UVをクリップ空間に変換
+    float clipX = input.uv.x * 2.0f - 1.0f;
+    float clipY = (1.0f - input.uv.y) * 2.0f - 1.0f;
+
+    // クリップ空間の座標を作成（ZにDepthを入れる）
+    float4 clipPos = float4(clipX, clipY, depthVal, 1.0f);
+
+    // 逆行列を掛けてワールド空間へ
+    float4 worldPos = mul(clipPos, gFrameData.invViewProj);
+    worldPos /= worldPos.w; // W除算で座標を確定
 
     // DoF未適用時はシーンカラーをそのまま使用
     float3 combinedScene = sceneColor.rgb;
@@ -114,22 +125,44 @@ float4 main(VSOutput input) : SV_TARGET
     // フォグの適用
     if (gCombineSettings.enableFog != 0)
     {
-        float fogDensity = 0.0f;
-        if (gCombineSettings.fogEnd > 0.001f)
+        // ハイトフォグの計算
+        float3 rayDir = worldPos.xyz - gFrameData.cameraWorldPosition;
+        float rayLength = length(rayDir); // ハイトフォグはカメラ位置からすぐ発生
+        
+        float heightDiff = rayDir.y;
+        if (abs(heightDiff) < 0.001f)
         {
-            fogDensity = 4.605f / gCombineSettings.fogEnd;
+            heightDiff = 0.001f;
         }
 
-        float fogDist =
-            max(0.0f, linearDepth - gCombineSettings.fogStart);
+        float camHeight = gFrameData.cameraWorldPosition.y - gCombineSettings.heightFogBaseHeight;
+        float pixHeight = worldPos.y - gCombineSettings.heightFogBaseHeight;
+        float falloff = gCombineSettings.heightFogFalloff;
 
-        // 指数二乗フォグ
-        float fogFactor =
-            exp(-pow(fogDist * fogDensity, 2.0f));
-        fogFactor = saturate(1.0f - fogFactor);
+        float fogAmount = (exp(-falloff * camHeight) - exp(-falloff * pixHeight)) / (falloff * heightDiff);
+        
+        // ハイトフォグの最終的な濃さ (0.0 ～ 1.0)
+        float heightFogFactor = exp(-gCombineSettings.heightFogDensity * fogAmount * rayLength);
+        heightFogFactor = saturate(1.0f - heightFogFactor);
+        
+        // 距離フォグの計算
+        float distFogFactor = 0.0f;
+        float distStart = gCombineSettings.distanceFogStart;
+        float distEnd = gCombineSettings.distanceFogEnd;
+        
+        // StartとEndの距離に応じて 0.0 ～ 1.0 で線形補間
+        if (distEnd > distStart)
+        {
+            distFogFactor = saturate((linearDepth - distStart) / (distEnd - distStart));
+            
+            // smoothstep を使うと、霧の始まりと終わりがより自然に（フワッと）繋がります
+            distFogFactor = smoothstep(0.0f, 1.0f, distFogFactor);
+        }
 
-        result =
-            lerp(result, gCombineSettings.fogColor, fogFactor);
+        // ２つの霧を合成
+        float finalFogFactor = max(heightFogFactor, distFogFactor);
+
+        result = lerp(result, gCombineSettings.fogColor, finalFogFactor);
     }
 
     // NaN対策

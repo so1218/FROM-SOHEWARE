@@ -3,6 +3,7 @@
 #include "TimeManager.h"
 #include "Input.h"
 #include "Grid.h"
+#include "Ground.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
 
@@ -13,6 +14,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
     objectManager_.Create<Grid>(engine_);
+    objectManager_.Create<Ground>(engine_);
 
     player_->SetFollowCamera(followCamera_);
 }

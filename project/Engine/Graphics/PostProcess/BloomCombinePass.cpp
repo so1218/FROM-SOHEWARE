@@ -25,8 +25,11 @@ void BloomCombinePass::Initialize(
     combineData_->focusRange = 0.0f;
 
     combineData_->fogColor = Vector3(0.6f, 0.7f, 0.8f);
-    combineData_->fogStart = 10.0f;
-    combineData_->fogEnd = 50.0f;
+    combineData_->distanceFogStart = 10.0f;
+    combineData_->distanceFogEnd = 30.0f;
+    combineData_->heightFogBaseHeight = 0.0f;
+    combineData_->heightFogDensity = 0.05f;
+    combineData_->heightFogFalloff = 0.5f;
 
     combineData_->enableDoF = false;
     combineData_->enableFog = false;
@@ -91,7 +94,7 @@ void BloomCombinePass::SetupInputViews(
     device->CopyDescriptorsSimple(
         1, destHandle, depthCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
     );
-    destHandle.ptr += descriptorSize; 
+    destHandle.ptr += descriptorSize;
 
     // GodRay
     device->CopyDescriptorsSimple(1, destHandle, godRaySRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);

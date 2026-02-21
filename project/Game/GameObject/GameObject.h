@@ -4,13 +4,12 @@
 #include "ModelManager.h"
 #include "AnimationManager.h"
 #include "TextureManager.h"
+#include "Sprite.h"
+#include "Model.h"
+#include "AnimationModel.h"
 
 #include <string>
 #include <string_view>
-
-class Sprite;
-class Model;
-class AnimationModel;
 
 class GameObject 
 {

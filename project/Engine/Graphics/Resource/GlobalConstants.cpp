@@ -19,7 +19,7 @@ void GlobalConstants::Initialize(ID3D12Device* device)
     // デフォルト値
     frameData_->nearClip = 0.1f;
     frameData_->farClip = 1000.0f;
-    frameData_->viewProjectionMatrix = Matrix4x4::MakeIdentity(); 
+    frameData_->viewProjectionMatrix = Matrix4x4::MakeIdentity();
 }
 
 void GlobalConstants::Update(
@@ -33,9 +33,12 @@ void GlobalConstants::Update(
     // VP行列の計算
     Matrix4x4 matViewProjection = viewMatrix * projectionMatrix;
 
+    Matrix4x4 invVP = Matrix4x4::Inverse(matViewProjection);
+
     // カメラ情報の転送
     frameData_->cameraWorldPosition = eyePos;
     frameData_->viewProjectionMatrix = matViewProjection;
+    frameData_->invViewProj = invVP;
 
     frameData_->cameraRight = { viewMatrix.m[0][0], viewMatrix.m[1][0], viewMatrix.m[2][0] };
     frameData_->cameraUp = { viewMatrix.m[0][1], viewMatrix.m[1][1], viewMatrix.m[2][1] };

@@ -1,0 +1,93 @@
+{
+    "Ground": {
+        "Model_AddShadow": 1,
+        "Model_AlbedoMap": "white1x1",
+        "Model_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Model_DiffuseRef": 4.0,
+        "Model_DisEnable": 0,
+        "Model_DisThres": 0.5,
+        "Model_DissolveTex": "white1x1",
+        "Model_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "Model_EdgeInten": 2.0,
+        "Model_EdgeWidth": 0.05000000074505806,
+        "Model_Emissive": 1.0,
+        "Model_EnvMapInt": 0.28999999165534973,
+        "Model_EnvMapTex": "skybox",
+        "Model_LightMode": 3,
+        "Model_Lighting": 1,
+        "Model_Metalness": 0.3400000035762787,
+        "Model_NormEnable": 1,
+        "Model_NormInten": 4.21999979019165,
+        "Model_NormTile": 49.70000076293945,
+        "Model_NormalMapTex": "normal_18",
+        "Model_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "Model_OutlineEnable": 0,
+        "Model_OutlineWidth": 1.0,
+        "Model_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Model_RimEnable": 0,
+        "Model_RimInten": 1.0,
+        "Model_RimPower": 3.0,
+        "Model_RimUseDir": 0,
+        "Model_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Model_Roughness": 0.6800000071525574,
+        "Model_Scale": [
+            1000.0,
+            1.0,
+            1000.0
+        ],
+        "Model_ShadowBias": 0.0005000000237487257,
+        "Model_ShadowDens": 0.800000011920929,
+        "Model_ShadowEnv": 0.0,
+        "Model_ShadowSoft": 0.0,
+        "Model_Shininess": 50.0,
+        "Model_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Model_ToonRampTex": "toonRamp_01",
+        "Model_Trans": [
+            0.0,
+            0.699999988079071,
+            0.0
+        ],
+        "Model_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Model_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Model_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}

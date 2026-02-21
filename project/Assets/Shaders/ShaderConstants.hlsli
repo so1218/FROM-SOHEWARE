@@ -44,6 +44,7 @@ struct TransformationMatrix
 struct FrameData
 {
     float4x4 viewProjectionMatrix;
+    float4x4 invViewProj;
 
     float3 cameraWorldPosition;
     float padding0;
@@ -60,7 +61,6 @@ struct FrameData
     float farClip;
     float padding3;
 };
-
 struct MaterialData
 {
     float4x4 uvTransform;
@@ -214,14 +214,17 @@ struct CombineSettings
     int enableDoF;
     
     float3 fogColor;
-    float fogStart;
-    
-    float fogEnd;
     int enableFog;
-    float godRayIntensity;
-    float _padding1;
-};
 
+    float heightFogDensity;
+    float heightFogFalloff;
+    float heightFogBaseHeight;
+    float distanceFogStart;
+                                               
+    float distanceFogEnd;
+    float godRayIntensity;
+    float2 _padding;
+};
 struct GodRaySettings
 {
     float2 lightPosScreen;
