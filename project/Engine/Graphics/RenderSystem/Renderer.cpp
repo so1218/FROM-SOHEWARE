@@ -236,14 +236,14 @@ void Renderer::DrawSceneForShadow()
 			continue;
 		}
 
-		if (sub.group == RenderGroup::Background)
+		if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI)
 		{
 			continue;
 		}
 
-		if (sub.group == RenderGroup::UI || sub.group == RenderGroup::Transparent)
+		if (sub.materialHandle.materialData->color.w <= 0.0f)
 		{
-			continue;
+			continue; // 透明度0なら影を描かない
 		}
 
 		// メッシュリストを取得して、正しいインデックスのMesh*を取り出す
