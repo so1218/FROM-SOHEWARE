@@ -21,8 +21,6 @@ void BloomCombinePass::Initialize(
     cb_->Map(0, nullptr, reinterpret_cast<void**>(&combineData_));
 
     combineData_->bloomIntensity = 0.8f;
-    combineData_->focusDistance = 0.0f;
-    combineData_->focusRange = 0.0f;
 
     combineData_->fogColor = Vector3(0.6f, 0.7f, 0.8f);
     combineData_->distanceFogStart = 10.0f;

@@ -202,16 +202,19 @@ struct DoFSettings
 {
     float focusDistance;
     float focusRange;
+    float transitionRange;
     float bokehRadius;
-    float _padding;
+    
+    float bokehHighlightThreshold;
+    float bokehHighlightIntensity;
+    float2 padding;
 };
 
 struct CombineSettings
 {
     float bloomIntensity;
-    float focusDistance;
-    float focusRange;
     int enableDoF;
+    float2 _padding1;
     
     float3 fogColor;
     int enableFog;
@@ -223,8 +226,9 @@ struct CombineSettings
                                                
     float distanceFogEnd;
     float godRayIntensity;
-    float2 _padding;
+    float2 _padding2;
 };
+
 struct GodRaySettings
 {
     float2 lightPosScreen;

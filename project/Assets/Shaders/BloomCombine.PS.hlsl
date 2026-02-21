@@ -99,22 +99,8 @@ float4 main(VSOutput input) : SV_TARGET
     // 被写界深度の適用
     if (gCombineSettings.enableDoF != 0)
     {
-        float focusDist = gCombineSettings.focusDistance;
-        float focusRange = gCombineSettings.focusRange;
-
-        // CoC近似計算
-        float coc =
-            (linearDepth - focusDist) / max(0.01f, linearDepth);
-        float blurAmount =
-            abs(coc) * (100.0f / max(0.1f, focusRange));
-        float blurFactor = saturate(blurAmount);
-
-        // ボケ量に応じてブレンド
-        float mixingFactor =
-            smoothstep(0.0f, 1.0f, blurFactor);
-
-        combinedScene =
-            lerp(sceneColor.rgb, dofColor.rgb, mixingFactor);
+        // ピントが合っている場所はdofColor.aが0で、SceneColorが使われる
+        combinedScene = lerp(sceneColor.rgb, dofColor.rgb, dofColor.a);
     }
 
     // BloomとGodRayの加算
@@ -155,7 +141,7 @@ float4 main(VSOutput input) : SV_TARGET
         {
             distFogFactor = saturate((linearDepth - distStart) / (distEnd - distStart));
             
-            // smoothstep を使うと、霧の始まりと終わりがより自然に（フワッと）繋がります
+            // smoothstep を使い、霧の始まりと終わりがより自然に
             distFogFactor = smoothstep(0.0f, 1.0f, distFogFactor);
         }
 

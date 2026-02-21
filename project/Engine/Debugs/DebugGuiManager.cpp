@@ -267,6 +267,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
     CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
     GodRaySettings* godRaySettings = postEffectManager_->GetGodRaySettings();
+    DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
 
     // カラー・色調系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
@@ -579,8 +580,15 @@ void DebugGuiManager::DrawPostEffectSettings()
         if (dofFlag)
         {
             ImGui::Indent();
-            ImGui::SliderFloat("ピント距離", &combineSettingsData->focusDistance, 0.1f, 500.0f, "%.1f m");
-            ImGui::SliderFloat("ピント範囲", &combineSettingsData->focusRange, 0.1f, 500.0f, "%.1f m");
+            ImGui::SliderFloat("ピント距離", &dofSettings->focusDistance, 0.1f, 500.0f, "%.1f m");
+            ImGui::SliderFloat("ピント範囲 (ボケない幅)", &dofSettings->focusRange, 0.1f, 100.0f, "%.1f m");
+            ImGui::SliderFloat("ボケの強さ (半径)", &dofSettings->bokehRadius, 1.0f, 50.0f, "%.1f px");
+
+            ImGui::Separator();
+            ImGui::SliderFloat("ボケ移行距離", &dofSettings->transitionRange, 0.1f, 100.0f, "%.1f m");
+            ImGui::SliderFloat("玉ボケ閾値 (明るさ)", &dofSettings->bokehHighlightThreshold, 0.0f, 2.0f, "%.2f");
+            ImGui::SliderFloat("玉ボケ強度", &dofSettings->bokehHighlightIntensity, 0.0f, 200.0f, "%.1f");
+
             ImGui::Unindent();
         }
         ImGui::TreePop();
@@ -623,6 +631,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
         ImGui::TreePop();
     }
+
 
     ImGui::Separator();
 }

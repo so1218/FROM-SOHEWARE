@@ -40,6 +40,7 @@ public:
     BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
     CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
     GodRaySettings* GetGodRaySettings() const { return godRayPass_->GetSettings(); }
+    DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }

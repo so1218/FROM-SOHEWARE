@@ -16,6 +16,13 @@ void BokehBlurPass::Initialize(Engine* engine,
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(DoFSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+
+    cbData_->focusDistance = 10.0f;
+    cbData_->focusRange = 5.0f;
+    cbData_->transitionRange = 5.0f;
+    cbData_->bokehRadius = 5.0f;
+    cbData_->bokehHighlightThreshold = 1.0f;
+    cbData_->bokehHighlightIntensity = 50.0f;
 }
 
 void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,

@@ -17,6 +17,8 @@ public:
         D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU,
         D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU);
 
+    DoFSettings* GetSettings() const { return cbData_; }
+
 private:
     Engine* engine_ = nullptr;
 
