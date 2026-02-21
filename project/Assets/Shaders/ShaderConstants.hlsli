@@ -31,6 +31,7 @@
 #define WATER_REFRACTION    (1 << 15)
 #define DISSOLVE            (1 << 16)
 #define RADIAL_BLUR         (1 << 17)
+#define COLOR_GRADING_LUT   (1 << 18)
 
 struct TransformationMatrix
 {

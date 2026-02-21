@@ -15,7 +15,7 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
         return;
     }
 
-    for (const auto& entry : fs::recursive_directory_iterator(rootDirectory)) 
+    for (const auto& entry : fs::recursive_directory_iterator(rootDirectory))
     {
         if (entry.is_regular_file()) {
             fs::path filePath = entry.path();
@@ -37,7 +37,7 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
                 std::string stemLower = stem;
                 std::transform(stemLower.begin(), stemLower.end(), stemLower.begin(), ::tolower);
 
-                data.name = stem; 
+                data.name = stem;
 
                 // タイプ判定
                 data.type = DetectTypeFromPath(filePath);
@@ -46,7 +46,7 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
                 data.handle = engine->LoadTexture(data.fullPath);
 
                 // 検索用マップには小文字化した名前で登録
-                if (nameToIndex_.count(stemLower) > 0) 
+                if (nameToIndex_.count(stemLower) > 0)
                 {
                     std::cerr << "[Warning] Duplicate texture name (case-insensitive): " << stem << std::endl;
                     continue;
@@ -59,11 +59,11 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
     }
 
     // エラーハンドルの設定 (小文字で検索)
-    if (nameToIndex_.count("white1x1")) 
+    if (nameToIndex_.count("white1x1"))
     {
         errorHandle_ = Get("white1x1");
     }
-    else if (!textures_.empty()) 
+    else if (!textures_.empty())
     {
         errorHandle_ = textures_[0].handle;
     }
@@ -92,7 +92,7 @@ const TextureHandleData* TextureManager::GetMetaData(const std::string& name)
     std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
 
     auto it = nameToIndex_.find(nameLower);
-    if (it != nameToIndex_.end()) 
+    if (it != nameToIndex_.end())
     {
         return &textures_[it->second];
     }
@@ -112,6 +112,7 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     if (pathStr.find("/normal/") != std::string::npos)    return TextureType::Normal;
     if (pathStr.find("/ramps/") != std::string::npos)     return TextureType::Toon;
     if (pathStr.find("/noise/") != std::string::npos)     return TextureType::Noise;
+    if (pathStr.find("/luts/") != std::string::npos)      return TextureType::LUT;
 
     // ファイル名ルール
     std::string filename = path.stem().string();
@@ -119,7 +120,20 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
     if (filename.ends_with("_n") || filename.ends_with("_normal")) return TextureType::Normal;
-    if (path.extension().string() == ".dds") return TextureType::CubeMap; 
+    if (path.extension().string() == ".dds") return TextureType::CubeMap;
 
     return TextureType::Albedo;
+}
+
+std::vector<std::string> TextureManager::GetTextureNamesByType(TextureType type) const
+{
+    std::vector<std::string> names;
+    for (const auto& tex : textures_)
+    {
+        if (tex.type == type)
+        {
+            names.push_back(tex.name); // オリジナルの名前をリスト化
+        }
+    }
+    return names;
 }

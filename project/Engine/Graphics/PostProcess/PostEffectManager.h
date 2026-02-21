@@ -59,6 +59,9 @@ public:
     // GodRay結果のSRVインデックスを取得する関数
     uint32_t GetGodRaySRVIndex() const { return godRayPass_->GetSRVIndex(); }
 
+    const std::string& GetCurrentLutName() const { return currentLutName_; }
+    void SetCurrentLutName(const std::string& name) { currentLutName_ = name; }
+
 private:
     // 依存オブジェクト
     Engine* engine_ = nullptr;
@@ -95,4 +98,6 @@ private:
 
     // 光源のワールド座標を保存する変数
     Vector3 lightPosition_ = { 0, 100, 100 };
+
+    std::string currentLutName_ = "LUT_Neutral_32";
 };

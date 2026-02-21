@@ -473,6 +473,45 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::Unindent();
     }
 
+    if (ImGui::CheckboxFlags("カラーグレーディング (LUT)", &postEffectData->modeFlags[0], COLOR_GRADING_LUT)) {}
+    if (postEffectData->modeFlags[0] & COLOR_GRADING_LUT)
+    {
+        ImGui::Indent();
+
+        std::vector<std::string> lutNames = TextureManager::GetInstance().GetTextureNamesByType(TextureType::LUT);
+
+        if (lutNames.empty())
+        {
+            ImGui::TextColored(ImVec4(1, 0, 0, 1), "LUTテクスチャがない");
+        }
+        else
+        {
+            // PostEffectManager から現在の名前を取得
+            std::string currentLut = postEffectManager_->GetCurrentLutName();
+
+            if (ImGui::BeginCombo("LUTテクスチャ", currentLut.c_str()))
+            {
+                for (const auto& name : lutNames)
+                {
+                    bool isSelected = (currentLut == name);
+
+                    if (ImGui::Selectable(name.c_str(), isSelected))
+                    {
+                        // 選択されたら、Manager側に保存する
+                        postEffectManager_->SetCurrentLutName(name);
+                    }
+
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+        }
+        ImGui::Unindent();
+    }
+
     // 環境・光・深度設定
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "環境・光・深度設定");
 

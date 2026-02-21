@@ -3,7 +3,9 @@
 
 Texture2D gTexture : register(t0);
 Texture2D gDissolveTexture : register(t1);
+Texture2D gLutTexture : register(t2);
 SamplerState gSampler : register(s0);
+SamplerState gClampSampler : register(s1);
 
 cbuffer PostEffectSettings : register(b0)
 {
@@ -84,17 +86,17 @@ cbuffer PostEffectSettings : register(b0)
     int2 flag;
     float2 _paddingGlow2;
     
-    float dissolveThreshold; 
-    float dissolveEdgeWidth; 
-    float dissolveEdgeIntensity; 
+    float dissolveThreshold;
+    float dissolveEdgeWidth;
+    float dissolveEdgeIntensity;
     float _paddingDissolve;
 
-    float3 dissolveEdgeColor; 
-    float _paddingDissolve2; 
+    float3 dissolveEdgeColor;
+    float _paddingDissolve2;
     
     float radialBlurStrength;
-    float2 radialBlurCenter; 
-    float _paddingRadial; 
+    float2 radialBlurCenter;
+    float _paddingRadial;
 }
 
 // 擬似乱数関数
@@ -453,6 +455,43 @@ float4 ApplyDissolve(float4 currentColor, float2 uv)
     return currentColor;
 }
 
+// LUTを使ったカラーグレーディング
+float3 ApplyColorGradingLUT(float3 color)
+{
+    // LUTのサイズ
+    const float LUT_SIZE = 32.0f;
+    const float MAX_COLOR = LUT_SIZE - 1.0f;
+
+    // 入力カラーをLUTのインデックスに変換 (0.0～1.0 -> 0.0～31.0)
+    float3 lutIndex = saturate(color) * MAX_COLOR;
+
+    // 2D展開されたLUT（1024x32）からサンプリングするためのUV計算
+    float sliceX = floor(lutIndex.z); // 現在のスライス
+    float nextSliceX = min(sliceX + 1.0f, MAX_COLOR); // 次のスライス（補間用）
+
+    // ピクセル中心に合わせるためのハーフピクセルオフセット
+    float halfPixelX = 0.5f / (LUT_SIZE * LUT_SIZE);
+    float halfPixelY = 0.5f / LUT_SIZE;
+
+    // 現在のスライスのUV
+    float2 uv1;
+    uv1.x = (sliceX * LUT_SIZE + lutIndex.x + 0.5f) / (LUT_SIZE * LUT_SIZE);
+    uv1.y = (lutIndex.y + 0.5f) / LUT_SIZE;
+
+    // 次のスライスのUV
+    float2 uv2;
+    uv2.x = (nextSliceX * LUT_SIZE + lutIndex.x + 0.5f) / (LUT_SIZE * LUT_SIZE);
+    uv2.y = (lutIndex.y + 0.5f) / LUT_SIZE;
+
+    // 2つのスライスからサンプリング
+    float3 color1 = gLutTexture.SampleLevel(gClampSampler, uv1, 0).rgb;
+    float3 color2 = gLutTexture.SampleLevel(gClampSampler, uv2, 0).rgb;
+
+    // Z軸（青成分）の端数で線形補間
+    float zFraction = frac(lutIndex.z);
+    return lerp(color1, color2, zFraction);
+}
+
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
@@ -549,6 +588,10 @@ float4 main(VSOutput input) : SV_TARGET
 
         float3 noiseColor = float3(nR, nG, nB);
         finalColor.rgb += (noiseColor - 0.5) * noiseAmount;
+    }
+    if (flag.x & COLOR_GRADING_LUT)
+    {
+        finalColor.rgb = ApplyColorGradingLUT(finalColor.rgb);
     }
 
     return finalColor;

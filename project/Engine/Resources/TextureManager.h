@@ -8,19 +8,20 @@
 
 class Engine;
 
-enum class TextureType 
+enum class TextureType
 {
     Albedo,
     Normal,
     Toon,
-    Noise,     
+    Noise,
     CubeMap,
     Particle,
     UI,
+    LUT,
     Unknown
 };
 
-struct TextureHandleData 
+struct TextureHandleData
 {
     std::string name;       // 検索キー
     std::string fullPath;   // フルパス
@@ -31,7 +32,7 @@ struct TextureHandleData
 class TextureManager
 {
 public:
-    static TextureManager& GetInstance() 
+    static TextureManager& GetInstance()
     {
         static TextureManager instance;
         return instance;
@@ -41,6 +42,9 @@ public:
     uint32_t Get(const std::string& name);
     const TextureHandleData* GetMetaData(const std::string& name);
     const std::vector<TextureHandleData>& GetAllTextures() const { return textures_; }
+
+    // 指定タイプのテクスチャ名前一覧を取得する関数
+    std::vector<std::string> GetTextureNamesByType(TextureType type) const;
 
 private:
     TextureManager() = default;

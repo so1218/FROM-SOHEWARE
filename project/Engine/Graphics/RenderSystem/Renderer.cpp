@@ -155,6 +155,14 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
 	);
 
+	// 現在のLUTの名前を取得
+	std::string lutName = postEffectManager_->GetCurrentLutName();
+	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
+
+	cmdList->SetGraphicsRootDescriptorTable(
+		3, srvManager_->GetSRVHandleGPU(lutMapIndex)
+	);
+
 	// フルスクリーントライアングル描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
@@ -191,6 +199,14 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 	cmdList->SetGraphicsRootDescriptorTable(
 		2,
 		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
+	);
+
+	// 現在のLUTの名前を取得
+	std::string lutName = postEffectManager_->GetCurrentLutName();
+	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
+
+	cmdList->SetGraphicsRootDescriptorTable(
+		3, srvManager_->GetSRVHandleGPU(lutMapIndex)
 	);
 
 	// フルスクリーントライアングル描画
