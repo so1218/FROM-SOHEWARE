@@ -16,5 +16,4 @@ VSOutput main(uint vertexID : SV_VertexID)
     output.uv = float2((positions[vertexID].x + 1.0f) * 0.5f, 1.0f - ((positions[vertexID].y + 1.0f) * 0.5f));
 
     return output;
-    
 }

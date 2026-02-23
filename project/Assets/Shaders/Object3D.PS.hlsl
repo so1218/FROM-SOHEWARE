@@ -33,7 +33,9 @@ SamplerState gClampSampler : register(s2);
 
 struct PixelShaderOutput
 {
-    float4 color : SV_TARGET0;
+    float4 color : SV_TARGET0; // 1枚目：SceneColor
+    float4 normal : SV_TARGET1; // 2枚目：法線
+    float4 material : SV_TARGET2; // 3枚目：材質パラメータ
 };
 
 struct PixelShaderInput
@@ -127,6 +129,10 @@ PixelShaderOutput main(PixelShaderInput input)
 
         output.color.rgb = DrawArtGridColor(input);
         output.color.a = 1.0;
+        // グリッドの法線は上、材質は適当な値
+        output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
+        output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
+        
         return output;
     }
     
@@ -247,6 +253,15 @@ PixelShaderOutput main(PixelShaderInput input)
     {
         discard;
     }
+    
+    // G-Bufferへの情報書き込み
+
+    // 法線情報
+    output.normal = float4(normal, 1.0f);
+
+    // 材質情報
+    // R=メタルネス(金属度), G=ラフネス(粗さ) として保存
+    output.material = float4(gMaterial.metalness, gMaterial.roughness, 0.0f, 1.0f);
     
     return output;
 }

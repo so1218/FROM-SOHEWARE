@@ -7,6 +7,8 @@
   "RasterizerState": "FrontCullSolid",
   "DepthStencilState": "ReadOnly",
   "Topology": "Triangle",
-  "RTVFormat": "R16G16B16A16_FLOAT",
+  "RTVFormats": [
+    "R16G16B16A16_FLOAT"
+  ],
   "DSVFormat": "D24_UNORM_S8_UINT"
 }

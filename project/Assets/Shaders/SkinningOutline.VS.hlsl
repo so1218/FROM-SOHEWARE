@@ -75,7 +75,7 @@ OutlineVertexShaderOutput main(SkinningVertexShaderInput input)
     // スクリーンスペースでの押し出し方向
     float2 offsetDir = normalize(clipNormal.xy);
 
-    // ピクセル単位の NDC サイズ
+    // ピクセル単位のNDCサイズ
     float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
 
     // 過剰な押し出しを防ぐ深度制限

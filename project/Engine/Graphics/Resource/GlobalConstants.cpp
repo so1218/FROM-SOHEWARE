@@ -40,6 +40,9 @@ void GlobalConstants::Update(
     frameData_->viewProjectionMatrix = matViewProjection;
     frameData_->invViewProj = invVP;
 
+    frameData_->viewMatrix = viewMatrix;
+    frameData_->projectionMatrix = projectionMatrix;
+
     frameData_->cameraRight = { viewMatrix.m[0][0], viewMatrix.m[1][0], viewMatrix.m[2][0] };
     frameData_->cameraUp = { viewMatrix.m[0][1], viewMatrix.m[1][1], viewMatrix.m[2][1] };
 

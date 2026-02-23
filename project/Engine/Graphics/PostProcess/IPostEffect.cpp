@@ -17,20 +17,17 @@ void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_F
 
     // オフスクリーンRT作成
     Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    auto result = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
-        width, height, clearColor);
 
-    textureResource_ = std::get<0>(result);
-    rtvHandle_ = std::get<1>(result);
+    // tupleから3つの値（Resource, RTV, SRVIndex）を直接受け取る
+    auto [resource, rtvHandle, srvIndex] =
+        engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+            width, height, clearColor, format
+        );
 
-    // SRV作成
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = format;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-    srvIndex_ = engine_->srvManager_->CreateSRV(textureResource_.Get(), srvDesc);
+    // 取得した値をメンバ変数に保存
+    textureResource_ = resource;
+    rtvHandle_ = rtvHandle;
+    srvIndex_ = srvIndex; // CreateOffscreenRenderTargetで作ったSRVをそのまま使う
 
     // 描画設定
     viewport_ = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };

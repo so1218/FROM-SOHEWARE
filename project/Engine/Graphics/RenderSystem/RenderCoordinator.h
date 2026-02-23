@@ -29,8 +29,6 @@ public:
         GraphicsDevice* graphicDevice,
         Engine* engine,
         D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-        D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle, // オフスクリーン用RTV
-        ID3D12Resource* offscreenTexture,               // バリア用リソース
         D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
         ID3D12Resource* offscreenDepthResource
     );
@@ -48,16 +46,13 @@ public:
     ID3D12Fence* GetFence() const { return fence_.Get(); }
 
     // オフスクリーンRTV/DSVハンドル取得
-    D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenRTVHandle() const { return offscreenRtvHandle_; }
+    D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenRTVHandle() const { return offscreenRtvColor_; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetOffscreenDSVHandle() const { return offscreenDsvHandle_; }
 
     // オフスクリーン深度リソース取得
     ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_; }
 
 private:
-    // リソースバリア用
-    D3D12_RESOURCE_BARRIER barrier_{};
-
     // 外部依存オブジェクト
     SwapChain* swapChain_ = nullptr;
     RTVManager* rtvManager_ = nullptr;
@@ -70,8 +65,6 @@ private:
     // DSVヒープとハンドル
     ID3D12DescriptorHeap* dsvDescriptorHeap_ = nullptr;
     D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle_;      // メイン用DSV
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle_; // オフスクリーンRTV
-    ID3D12Resource* offscreenTexture_;               // バリア用
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle_; // オフスクリーンDSV
 
     // フェンス管理
@@ -81,4 +74,12 @@ private:
 
     // オフスクリーン深度リソース
     ID3D12Resource* offscreenDepthResource_ = nullptr;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexColor_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexNormal_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexMaterial_;
+
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvColor_;
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
 };

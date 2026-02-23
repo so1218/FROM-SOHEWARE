@@ -64,12 +64,14 @@ void PostEffectManager::Initialize(
     cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
     // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
-    auto resultPair = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
-        width, height, Vector4(0, 0, 0, 1));
+    auto [finalResource, finalRtvHandle, finalSrvIndex] =
+        engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+            width, height, Vector4(0, 0, 0, 1), DXGI_FORMAT_R16G16B16A16_FLOAT
+        );
 
-    finalPassResource_ = resultPair.first;
-    finalPassRTVHandle_ = resultPair.second;
-    finalPassSRVIndex_ = engine_->offscreenRTVManager_->GetOffscreenSRVIndex();
+    finalPassResource_ = finalResource;
+    finalPassRTVHandle_ = finalRtvHandle;
+    finalPassSRVIndex_ = finalSrvIndex;
 
     // パラメータの初期値を設定
     postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());

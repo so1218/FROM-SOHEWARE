@@ -8,6 +8,8 @@
   "RasterizerState": "BackCullSolid",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
-  "RTVFormat": "UNKNOWN",
+  "RTVFormats": [
+    "UNKNOWN"
+  ],
   "DSVFormat": "D32_FLOAT"
 }

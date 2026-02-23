@@ -315,14 +315,6 @@ void Engine::InitializeRenderer()
 			depthStencilResource_
 		);
 
-	// オフスクリーンレンダーターゲット
-	auto [offscreenTexture, offscreenRtvHandle] =
-		offscreenRTVManager_->CreateOffscreenRenderTarget(
-			kClientWidth,
-			kClientHeight,
-			offscreenRTVManager_->GetClearColor()
-		);
-
 	// オフスクリーン深度ステンシル
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle =
 		dsvManager_->CreateDepthStencilView(
@@ -354,8 +346,6 @@ void Engine::InitializeRenderer()
 		graphicsDevice_.get(),
 		this,
 		mainDsvHandle,
-		offscreenRtvHandle,
-		offscreenTexture.Get(),
 		offscreenDsvHandle,
 		offscreenDepthResource_.Get()
 	);

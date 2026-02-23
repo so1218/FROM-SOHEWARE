@@ -117,18 +117,23 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
     psoDesc.PrimitiveTopologyType = GetTopologyType(desc.Topology);
 
     // RTV / DSV 設定
-    DXGI_FORMAT rtvFormat = GetRTVFormat(desc.RTVFormat0);
     psoDesc.DSVFormat = GetDSVFormat(desc.DSVFormat);
 
-    if (rtvFormat == DXGI_FORMAT_UNKNOWN)  // RTVなし
+    if (desc.RTVFormats.empty() ||
+        (desc.RTVFormats.size() == 1 && GetRTVFormat(desc.RTVFormats[0]) == DXGI_FORMAT_UNKNOWN))
     {
+        // RTVなし（Depthのみのパスなど）
         psoDesc.NumRenderTargets = 0;
         psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
     }
-    else  // RTV1枚
+    else
     {
-        psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = rtvFormat;
+        // RTV複数枚（G-Bufferなど）または1枚
+        psoDesc.NumRenderTargets = static_cast<UINT>(desc.RTVFormats.size());
+        for (UINT i = 0; i < psoDesc.NumRenderTargets; ++i)
+        {
+            psoDesc.RTVFormats[i] = GetRTVFormat(desc.RTVFormats[i]);
+        }
     }
 
     psoDesc.SampleDesc.Count = 1;
@@ -175,7 +180,14 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
     desc.RasterizerState = json.value("RasterizerState", desc.RasterizerState);
     desc.DepthStencilState = json.value("DepthStencilState", desc.DepthStencilState);
     desc.Topology = json.value("Topology", desc.Topology);
-    desc.RTVFormat0 = json.value("RTVFormat", desc.RTVFormat0);
+    if (json.contains("RTVFormats") && json["RTVFormats"].is_array())
+    {
+        // "RTVFormats" : ["Format1", "Format2"] のように配列で指定された場合
+        for (const auto& fmt : json["RTVFormats"])
+        {
+            desc.RTVFormats.push_back(fmt.get<std::string>());
+        }
+    }
     desc.DSVFormat = json.value("DSVFormat", desc.DSVFormat);
 
     return desc;
@@ -478,6 +490,10 @@ DXGI_FORMAT PSOManager::GetRTVFormat(const std::string& name)
     if (name == "R16G16B16A16_FLOAT")
     {
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    }
+    if (name == "R8G8B8A8_UNORM")
+    { 
+        return DXGI_FORMAT_R8G8B8A8_UNORM;
     }
     if (name == "UNKNOWN")
     {

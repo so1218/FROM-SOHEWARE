@@ -13,8 +13,6 @@ void RenderCoordinator::Initialize(
     GraphicsDevice* graphicDevice,
     Engine* engine,
     D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvHandle,
-    ID3D12Resource* offscreenTexture,
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
     ID3D12Resource* offscreenDepthResource
 )
@@ -32,11 +30,26 @@ void RenderCoordinator::Initialize(
 
     // レンダーターゲット・DSV・オフスクリーン関連のハンドルを保持
     mainDsvHandle_ = mainDsvHandle;
-    offscreenRtvHandle_ = offscreenRtvHandle;
-    offscreenTexture_ = offscreenTexture;
     offscreenDsvHandle_ = offscreenDsvHandle;
-
     offscreenDepthResource_ = offscreenDepthResource;
+
+    // カラー用
+    auto [texColor, rtvColor, srvColor] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+        kClientWidth, kClientHeight, offscreenRTVManager_->GetClearColor(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+    offscreenTexColor_ = texColor;
+    offscreenRtvColor_ = rtvColor;
+
+    // 法線用
+    auto [texNormal, rtvNormal, srvNormal] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+        kClientWidth, kClientHeight, Vector4(0, 0, 0, 0), DXGI_FORMAT_R16G16B16A16_FLOAT);
+    offscreenTexNormal_ = texNormal;
+    offscreenRtvNormal_ = rtvNormal;
+
+    // 材質用
+    auto [texMaterial, rtvMaterial, srvMaterial] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+        kClientWidth, kClientHeight, Vector4(0, 0, 0, 0), DXGI_FORMAT_R8G8B8A8_UNORM);
+    offscreenTexMaterial_ = texMaterial;
+    offscreenRtvMaterial_ = rtvMaterial;
 }
 
 void RenderCoordinator::BeginFrame()
@@ -100,39 +113,59 @@ void RenderCoordinator::EndFrame()
 
 void RenderCoordinator::BeginOffscreenRender()
 {
-    // オフスクリーンテクスチャを描画可能状態に遷移
-    barrier_ = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexture_,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_RENDER_TARGET
-    );
-    commandManager_->GetCommandList()->ResourceBarrier(1, &barrier_);
+    auto* cmdList = commandManager_->GetCommandList();
 
-    // オフスクリーンのRTVとDSVを設定
-    commandManager_->GetCommandList()->OMSetRenderTargets(1, &offscreenRtvHandle_, FALSE, &offscreenDsvHandle_);
+    // 3枚のテクスチャを同時にRENDER_TARGET状態へ遷移
+    D3D12_RESOURCE_BARRIER barriers[3];
+    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdList->ResourceBarrier(3, barriers);
 
-    // クリア
-    float clearColor[] = {
-        offscreenRTVManager_->GetClearColor().x,
-        offscreenRTVManager_->GetClearColor().y,
-        offscreenRTVManager_->GetClearColor().z,
-        offscreenRTVManager_->GetClearColor().w
-    };
-    commandManager_->GetCommandList()->ClearRenderTargetView(offscreenRtvHandle_, clearColor, 0, nullptr);
-    commandManager_->GetCommandList()->ClearDepthStencilView(offscreenDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+    // 3枚のRTVハンドルを配列にしてセット
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[3] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_ };
+    cmdList->OMSetRenderTargets(3, rtvHandles, FALSE, &offscreenDsvHandle_);
+
+    // それぞれをクリアする
+    Vector4 cc = offscreenRTVManager_->GetClearColor();
+    float clearColorDefault[] = { cc.x, cc.y, cc.z, cc.w };
+    float clearColorZero[] = { 0.0f, 0.0f, 0.0f, 0.0f };    // 法線・材質用
+
+    cmdList->ClearRenderTargetView(offscreenRtvColor_, clearColorDefault, 0, nullptr);
+    cmdList->ClearRenderTargetView(offscreenRtvNormal_, clearColorZero, 0, nullptr);
+    cmdList->ClearRenderTargetView(offscreenRtvMaterial_, clearColorZero, 0, nullptr);
+    cmdList->ClearDepthStencilView(offscreenDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // ビューポートとシザーを設定
-    commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
-    commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
+    cmdList->RSSetViewports(1, &renderContext_->GetViewport());
+    cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 }
 
 void RenderCoordinator::EndOffscreenRender()
 {
-    // オフスクリーンテクスチャをシェーダーリソース状態に遷移
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexture_,
+    D3D12_RESOURCE_BARRIER barriers[3];
+
+    // カラー
+    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
+        offscreenTexColor_.Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET,
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
-    commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
+
+    // 法線
+    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
+        offscreenTexNormal_.Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+    );
+
+    // 材質
+    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(
+        offscreenTexMaterial_.Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+    );
+
+    // コマンドリストに3つのバリアをまとめて積む
+    commandManager_->GetCommandList()->ResourceBarrier(3, barriers);
 }

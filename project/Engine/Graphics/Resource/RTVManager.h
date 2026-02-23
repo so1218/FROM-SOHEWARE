@@ -5,6 +5,7 @@
 #include <dxgi1_6.h>
 #include <cstdint>
 #include <vector>
+#include <tuple>
 
 #include "DescriptorHeapManager.h"
 #include "SwapChain.h"
@@ -32,14 +33,21 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferRTVCPUHandle(SwapChain* swapChainManager);
 };
 
+enum class GBufferIndex : UINT 
+{
+    Color = 0,
+    Normal = 1,
+    Material = 2
+};
+
 class OffscreenRTVManager
 {
 public:
     void Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, UINT rtvDescriptorCount);
 
     // オフスクリーンレンダーターゲットを作成し、リソースとRTVハンドルを返す
-    std::pair<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE>
-        CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor);
+    std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t>
+        CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format);
 
     // RTVヒープの取得
     ID3D12DescriptorHeap* GetRTVDescriptorHeap() const { return rtvDescriptorHeap_.Get(); }
@@ -47,8 +55,12 @@ public:
     // 現在設定されているクリアカラーを取得
     Vector4 GetClearColor() const { return clearColor_; }
 
-    // SRVインデックスを外部から取得できるようにする
-    uint32_t GetOffscreenSRVIndex() const { return offscreenSrvIndex_; }
+    // 引数なしの場合は0番目（カラー）を返す
+    uint32_t GetOffscreenSRVIndex(UINT index = 0) const
+    {
+        assert(index < offscreenSrvIndices_.size());
+        return offscreenSrvIndices_[index];
+    }
 
 private:
     ID3D12Device* device_ = nullptr;  
@@ -63,5 +75,6 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> offscreenTextures_; // オフスクリーンテクスチャ
     Vector4 clearColor_;  // 作成時に設定するクリアカラー
     SRVManager* srvManager_ = nullptr;
-    uint32_t offscreenSrvIndex_ = 0;
+
+    std::vector<uint32_t> offscreenSrvIndices_;
 };

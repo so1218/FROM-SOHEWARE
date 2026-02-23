@@ -60,8 +60,8 @@ void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManage
     clearColor_ = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
 }
 
-std::pair<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE>
-OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor)
+std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t>
+OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format)
 {
     UINT rtvIndex = createdRTVCount_;
     assert(rtvIndex < rtvDescriptorCount_);
@@ -74,12 +74,12 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     texDesc.Height = height;
     texDesc.DepthOrArraySize = 1;
     texDesc.MipLevels = 1;
-    texDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    texDesc.Format = format;
     texDesc.SampleDesc.Count = 1;
     texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
     D3D12_CLEAR_VALUE clearValue = {};
-    clearValue.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    clearValue.Format = format;
     clearValue.Color[0] = clearColor.x;
     clearValue.Color[1] = clearColor.y;
     clearValue.Color[2] = clearColor.z;
@@ -106,14 +106,16 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     offscreenRTVHandles_[rtvIndex] = rtvHandle;
 
     D3D12_SHADER_RESOURCE_VIEW_DESC sceneSrvDesc = {};
-    sceneSrvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    sceneSrvDesc.Format = format;
     sceneSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     sceneSrvDesc.Texture2D.MipLevels = 1;
     sceneSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-    // SRVを作成し、offscreenSrvIndex_に保存する
-    offscreenSrvIndex_ = srvManager_->CreateSRV(texture.Get(), sceneSrvDesc);
+    // SRVを作成し、インデックスを取得
+    uint32_t srvIndex = srvManager_->CreateSRV(texture.Get(), sceneSrvDesc);
 
-    // 作成したリソースとRTVハンドルを返す
-    return { texture, rtvHandle };
+    // メンバ変数の配列に保存しておく
+    offscreenSrvIndices_.push_back(srvIndex);
+
+    return { texture, rtvHandle, srvIndex };
 }

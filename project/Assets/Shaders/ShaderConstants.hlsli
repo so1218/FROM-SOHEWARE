@@ -43,6 +43,9 @@ struct TransformationMatrix
 
 struct FrameData
 {
+    float4x4 viewMatrix; 
+    float4x4 projectionMatrix;
+    
     float4x4 viewProjectionMatrix;
     float4x4 invViewProj;
 
@@ -61,6 +64,7 @@ struct FrameData
     float farClip;
     float padding3;
 };
+
 struct MaterialData
 {
     float4x4 uvTransform;

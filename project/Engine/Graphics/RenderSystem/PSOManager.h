@@ -23,7 +23,7 @@ struct PSODescription
     std::string RasterizerState;
     std::string DepthStencilState;
     std::string Topology = "Triangle";                  
-    std::string RTVFormat0 = "R8G8B8A8_UNORM_SRGB";     
+    std::vector<std::string> RTVFormats;
     std::string DSVFormat = "D24_UNORM_S8_UINT";        
 };
 
