@@ -429,6 +429,12 @@
     <ClCompile Include="Engine\Resources\TextureManager.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\SSAOPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -724,6 +730,8 @@
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
     <ClInclude Include="Game\Global\WindowConfig.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\SSAOPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -816,5 +824,7 @@
     <FxCompile Include="Resources\Shaders\ShadowMap.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\FinalCombine.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\SceneCombine.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSAO.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\BilateralBlur.PS.hlsl" />
   </ItemGroup>
 </Project>

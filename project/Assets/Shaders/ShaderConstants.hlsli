@@ -48,6 +48,7 @@ struct FrameData
     
     float4x4 viewProjectionMatrix;
     float4x4 invViewProj;
+    float4x4 invProjMatrix;
 
     float3 cameraWorldPosition;
     float padding0;
@@ -218,7 +219,8 @@ struct CombineSettings
 {
     float bloomIntensity;
     int enableDoF;
-    float2 _padding1;
+    int enableSSAO;
+    float _padding1;
     
     float3 fogColor;
     int enableFog;
@@ -246,4 +248,26 @@ struct GodRaySettings
     
     float3 lightColor;
     float sunRadius;
+};
+
+struct SSAOSettings
+{
+    float radius; 
+    float intensity; 
+    float bias; 
+    int sampleCount;
+
+    float fadeStart; 
+    float fadeEnd; 
+    float padding[2];
+};
+
+struct BilateralBlurSettings
+{
+    float2 texelSize;
+    float2 direction;
+    
+    float depthTolerance;
+    float normalTolerance;
+    float2 padding;
 };

@@ -58,6 +58,20 @@ void PostEffectManager::Initialize(
     godRayPass_ = std::make_unique<GodRayPass>();
     godRayPass_->Initialize(engine, godRayW, godRayH, psoManager);
 
+    // SSAO初期化
+    ssaoPass_ = std::make_unique<SSAOPass>();
+    ssaoPass_->Initialize(engine, width, height, psoManager);
+
+    // BilateralBlur初期化 (横)
+    horizontalBilateralPass_ = std::make_unique<BilateralBlurPass>();
+    horizontalBilateralPass_->Initialize(engine, width, height, psoManager);
+    horizontalBilateralPass_->GetSettings()->direction = { 1.0f, 0.0f }; 
+
+    // BilateralBlur初期化 (縦)
+    verticalBilateralPass_ = std::make_unique<BilateralBlurPass>();
+    verticalBilateralPass_->Initialize(engine, width, height, psoManager);
+    verticalBilateralPass_->GetSettings()->direction = { 0.0f, 1.0f };
+
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
@@ -131,6 +145,17 @@ void PostEffectManager::Update()
         postEffectData_->totalTime =
             static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     }
+
+    // バイラテラルブラーのパラメータを縦・横で同期する処理
+    if (horizontalBilateralPass_ && verticalBilateralPass_)
+    {
+        auto* hSettings = horizontalBilateralPass_->GetSettings();
+        auto* vSettings = verticalBilateralPass_->GetSettings();
+
+        // 許容度だけ同期
+        vSettings->depthTolerance = hSettings->depthTolerance;
+        vSettings->normalTolerance = hSettings->normalTolerance;
+    }
 }
 
 void PostEffectManager::ExecutePostEffects(
@@ -150,6 +175,32 @@ void PostEffectManager::ExecutePostEffects(
     // SRVヒープとルートシグネチャ設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
+
+    // SSAOの実行
+    uint32_t normalSrvIndex = engine_->offscreenRTVManager_->GetOffscreenSRVIndex(
+        static_cast<UINT>(GBufferIndex::Normal));
+
+    auto normalSRV = srvManager_->GetSRVHandleGPU(normalSrvIndex);
+    auto depthSRV = srvManager_->GetSRVHandleGPU(sceneDepthIndex_);
+
+    ssaoPass_->Execute(cmdList, normalSRV, depthSRV);
+
+    // 横方向のバイラテラルブラー (入力: SSAOの出力)
+    horizontalBilateralPass_->Execute(
+        cmdList,
+        ssaoPass_->GetSRVHandleGPU(),
+        normalSRV,
+        depthSRV
+    );
+
+    // 縦方向のバイラテラルブラー (入力: 横方向ブラーの出力)
+    verticalBilateralPass_->Execute(
+        cmdList,
+        horizontalBilateralPass_->GetSRVHandleGPU(),
+        normalSRV,
+        depthSRV
+    );
+
     cmdList->SetGraphicsRootSignature(
         rootSigManager_->GetRootSignature("PostProcess"));
 
@@ -233,7 +284,8 @@ void PostEffectManager::ExecutePostEffects(
         srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_),
-        srvManager_->GetSRVHandleCPU_ForCopying(godRayPass_->GetSRVIndex())
+        srvManager_->GetSRVHandleCPU_ForCopying(godRayPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(verticalBilateralPass_->GetSRVIndex())
     );
 
     combinePass_->Execute(cmdList, sceneSRV);

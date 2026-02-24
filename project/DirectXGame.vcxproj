@@ -170,6 +170,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BokehBlurPass.cpp" />
@@ -177,6 +178,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\GodRayPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\IPostEffect.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\SSAOPass.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
@@ -283,6 +285,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
@@ -290,6 +293,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\GodRayPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\IPostEffect.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\SSAOPass.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
@@ -438,6 +442,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ResourceCompile Include="DirectXGame.rc" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\Shaders\BilateralBlur.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Assets\Shaders\FinalCombine.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -450,6 +462,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\SSAO.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

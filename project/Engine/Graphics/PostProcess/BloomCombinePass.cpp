@@ -28,6 +28,7 @@ void BloomCombinePass::Initialize(
     combineData_->heightFogBaseHeight = 0.0f;
     combineData_->heightFogDensity = 0.05f;
     combineData_->heightFogFalloff = 0.5f;
+    combineData_->enableSSAO = false;
 
     combineData_->enableDoF = false;
     combineData_->enableFog = false;
@@ -36,7 +37,7 @@ void BloomCombinePass::Initialize(
 
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 5;
+    heapDesc.NumDescriptors = 8;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -59,7 +60,9 @@ void BloomCombinePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE dofCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
-    D3D12_CPU_DESCRIPTOR_HANDLE godRaySRV)
+    D3D12_CPU_DESCRIPTOR_HANDLE godRaySRV,
+    D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV
+)
 {
     // 専用ヒープの先頭
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle =
@@ -96,6 +99,10 @@ void BloomCombinePass::SetupInputViews(
 
     // GodRay
     device->CopyDescriptorsSimple(1, destHandle, godRaySRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    destHandle.ptr += descriptorSize;
+
+    // SSAO
+    device->CopyDescriptorsSimple(1, destHandle, ssaoSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void BloomCombinePass::Execute(

@@ -1,0 +1,45 @@
+#include "SSAOPass.h"
+#include "Engine.h"
+#include "RootSignatureManager.h"
+
+void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
+{
+    InitializeBase(engine, width, height, DXGI_FORMAT_R8_UNORM);
+    psoManager_ = psoManager;
+
+    // 定数バッファ生成
+    cbSSAO_ = BufferManager::CreateBufferResource(engine->graphicsDevice_->GetDevice(), sizeof(SSAOSettings));
+    cbSSAO_->Map(0, nullptr, reinterpret_cast<void**>(&ssaoData_));
+    *ssaoData_ = SSAOSettings();
+
+    ssaoData_->radius = 1.0f;
+    ssaoData_->intensity = 2.5f;
+    ssaoData_->bias = 0.025f;      
+    ssaoData_->sampleCount = 32;    
+
+    ssaoData_->fadeStart = 50.0f;  
+    ssaoData_->fadeEnd = 100.0f;
+}
+
+void SSAOPass::Execute(
+    ID3D12GraphicsCommandList* cmdList,
+    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
+    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV)
+{
+    PreDraw(cmdList);
+
+    // SSAO用のルートシグネチャとPSOをセット
+    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("SSAO"));
+    cmdList->SetPipelineState(psoManager_->GetPSO("SSAO"));
+
+    cmdList->SetGraphicsRootConstantBufferView(0, cbSSAO_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(2, normalSRV);
+    cmdList->SetGraphicsRootDescriptorTable(3, depthSRV);
+
+    // 全画面ポリゴン描画
+    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    cmdList->DrawInstanced(3, 1, 0, 0);
+
+    PostDraw(cmdList);
+}

@@ -268,6 +268,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
     GodRaySettings* godRaySettings = postEffectManager_->GetGodRaySettings();
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
+    SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
+    BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
 
     // カラー・色調系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
@@ -516,6 +518,47 @@ void DebugGuiManager::DrawPostEffectSettings()
     // 環境・光・深度設定
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "環境・光・深度設定");
 
+    // SSAO
+    if (ImGui::TreeNode("環境遮蔽 (SSAO)"))
+    {
+        bool ssaoFlag = (combineSettingsData->enableSSAO != 0);
+        if (ImGui::Checkbox("SSAO有効", &ssaoFlag))
+        {
+            combineSettingsData->enableSSAO = ssaoFlag ? 1 : 0;
+        }
+
+        if (ssaoFlag && ssaoSettings)
+        {
+            ImGui::Indent();
+
+            ImGui::SliderFloat("サンプリング半径", &ssaoSettings->radius, 0.1f, 50.0f, "%.1f");
+            ImGui::SliderFloat("影の濃さ", &ssaoSettings->intensity, 0.0f, 10.0f, "%.2f");
+            ImGui::DragFloat("バイアス", &ssaoSettings->bias, 0.001f, 0.0f, 1.0f, "%.4f");
+
+            ImGui::Separator();
+
+            ImGui::SliderInt("サンプル数", &ssaoSettings->sampleCount, 4, 64);
+            ImGui::DragFloat("フェード開始距離", &ssaoSettings->fadeStart, 1.0f, 0.0f, 1000.0f, "%.1f");
+            ImGui::DragFloat("フェード終了距離", &ssaoSettings->fadeEnd, 1.0f, 0.0f, 1000.0f, "%.1f");
+
+            if (ssaoSettings->fadeStart > ssaoSettings->fadeEnd)
+            {
+                ssaoSettings->fadeEnd = ssaoSettings->fadeStart + 0.1f;
+            }
+
+            if (bilateralSettings)
+            {
+                ImGui::Separator();
+                ImGui::TextDisabled("ノイズ除去 (Bilateral Blur)");
+                ImGui::SliderFloat("深度の許容度", &bilateralSettings->depthTolerance, 0.0f, 100.0f, "%.3f");
+                ImGui::SliderFloat("法線の許容度", &bilateralSettings->normalTolerance, 0.0f, 256.0f, "%.1f");
+            }
+          
+            ImGui::Unindent();
+        }
+        ImGui::TreePop();
+    }
+
     // ブルーム設定
     if (ImGui::TreeNode("ブルーム"))
     {
@@ -631,7 +674,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
         ImGui::TreePop();
     }
-
 
     ImGui::Separator();
 }

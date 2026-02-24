@@ -1,0 +1,114 @@
+#include "BilateralBlurPass.h"
+#include "Engine.h"
+#include "RootSignatureManager.h"
+
+BilateralBlurPass::~BilateralBlurPass()
+{
+    // 中間バッファ用のSRVを解放
+    if (engine_->srvManager_ && intermediateSRVIndex_ != 0)
+    {
+        engine_->srvManager_->FreeSRV(intermediateSRVIndex_);
+        intermediateSRVIndex_ = 0;
+    }
+}
+
+void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
+{
+    // 縦ブラー結果（最終出力）用のバッファを初期化
+    InitializeBase(engine, width, height, DXGI_FORMAT_R8_UNORM);
+    psoManager_ = psoManager;
+
+    // 中間バッファ（横ブラー結果用）の生成
+    Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    auto [resource, rtvHandle, srvIndex] = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+        width, height, clearColor, DXGI_FORMAT_R8_UNORM
+    );
+    intermediateResource_ = resource;
+    intermediateRTV_ = rtvHandle;
+    intermediateSRVIndex_ = srvIndex;
+
+    // 定数バッファ生成
+    auto device = engine->graphicsDevice_->GetDevice();
+    cbBlurX_ = BufferManager::CreateBufferResource(device, sizeof(BilateralBlurSettings));
+    cbBlurX_->Map(0, nullptr, reinterpret_cast<void**>(&blurXData_));
+
+    cbBlurY_ = BufferManager::CreateBufferResource(device, sizeof(BilateralBlurSettings));
+    cbBlurY_->Map(0, nullptr, reinterpret_cast<void**>(&blurYData_));
+
+    // パラメータの初期化
+    settingsData_->texelSize = { 1.0f / width, 1.0f / height };
+    settingsData_->depthTolerance = 1.0f;
+    settingsData_->normalTolerance = 16.0f;
+
+    *blurXData_ = *settingsData_;
+    blurXData_->direction = { 1.0f, 0.0f }; // 横パス
+
+    *blurYData_ = *settingsData_;
+    blurYData_->direction = { 0.0f, 1.0f }; // 縦パス
+}
+
+void BilateralBlurPass::Execute(
+    ID3D12GraphicsCommandList* cmdList,
+    D3D12_GPU_DESCRIPTOR_HANDLE ssaoSRV,
+    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
+    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV)
+{
+    // 定数バッファに反映
+    blurXData_->depthTolerance = settingsData_->depthTolerance;
+    blurXData_->normalTolerance = settingsData_->normalTolerance;
+    blurYData_->depthTolerance = settingsData_->depthTolerance;
+    blurYData_->normalTolerance = settingsData_->normalTolerance;
+
+    // ルートシグネチャとPSOをセット
+    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("BilateralBlur"));
+    cmdList->SetPipelineState(psoManager_->GetPSO("BilateralBlur"));
+    cmdList->SetGraphicsRootConstantBufferView(1, engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+
+    // 横方向のブラー (SSAO -> 中間バッファ)
+
+    // 中間バッファをSRVからRTVに変更
+    auto barrierToRTV = CD3DX12_RESOURCE_BARRIER::Transition(
+        intermediateResource_.Get(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdList->ResourceBarrier(1, &barrierToRTV);
+
+    // 描画先を中間バッファに設定してクリア
+    cmdList->RSSetViewports(1, &viewport_);
+    cmdList->RSSetScissorRects(1, &scissorRect_);
+    cmdList->OMSetRenderTargets(1, &intermediateRTV_, FALSE, nullptr);
+    const float clearCol[] = { 0, 0, 0, 1 };
+    cmdList->ClearRenderTargetView(intermediateRTV_, clearCol, 0, nullptr);
+
+    cmdList->SetGraphicsRootConstantBufferView(0, cbBlurX_->GetGPUVirtualAddress());
+
+    cmdList->SetGraphicsRootDescriptorTable(2, ssaoSRV);  
+    cmdList->SetGraphicsRootDescriptorTable(3, depthSRV); 
+    cmdList->SetGraphicsRootDescriptorTable(4, normalSRV); 
+
+    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    cmdList->DrawInstanced(3, 1, 0, 0);
+
+    // 中間バッファを RTV から SRV に戻す (IPostEffect::PostDrawと同じ処理)
+    auto barrierToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
+        intermediateResource_.Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    cmdList->ResourceBarrier(1, &barrierToSRV);
+
+    // 縦方向のブラー (中間バッファ -> 最終バッファ)
+
+    PreDraw(cmdList);
+
+    cmdList->SetGraphicsRootConstantBufferView(0, cbBlurY_->GetGPUVirtualAddress());
+
+    D3D12_GPU_DESCRIPTOR_HANDLE intermediateSRVHandle = engine_->srvManager_->GetSRVHandleGPU(intermediateSRVIndex_);
+    cmdList->SetGraphicsRootDescriptorTable(2, intermediateSRVHandle);
+
+    cmdList->SetGraphicsRootDescriptorTable(3, depthSRV);
+    cmdList->SetGraphicsRootDescriptorTable(4, normalSRV);
+
+    cmdList->DrawInstanced(3, 1, 0, 0);
+
+    PostDraw(cmdList);
+}

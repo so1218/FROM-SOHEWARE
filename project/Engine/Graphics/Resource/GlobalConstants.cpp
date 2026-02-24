@@ -32,13 +32,14 @@ void GlobalConstants::Update(
 {
     // VP行列の計算
     Matrix4x4 matViewProjection = viewMatrix * projectionMatrix;
-
     Matrix4x4 invVP = Matrix4x4::Inverse(matViewProjection);
+    Matrix4x4 invProj = Matrix4x4::Inverse(projectionMatrix);
 
     // カメラ情報の転送
     frameData_->cameraWorldPosition = eyePos;
     frameData_->viewProjectionMatrix = matViewProjection;
     frameData_->invViewProj = invVP;
+    frameData_->invProjMatrix = invProj;
 
     frameData_->viewMatrix = viewMatrix;
     frameData_->projectionMatrix = projectionMatrix;

@@ -1,0 +1,14 @@
+{
+  "RootSignature": "BilateralBlur",
+  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
+  "PixelShader": "Assets/Shaders/BilateralBlur.PS.hlsl",
+  "InputLayout": "Fullscreen",
+  "BlendState": "Off",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "Off",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "R8_UNORM"
+  ],
+  "DSVFormat": "UNKNOWN"
+}

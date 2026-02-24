@@ -7,6 +7,8 @@
 #include "BokehBlurPass.h"
 #include "BloomCombinePass.h"
 #include "GodRayPass.h"
+#include "SSAOPass.h"
+#include "BilateralBlurPass.h"
 #include "Camera.h"
 #include <memory>
 
@@ -41,6 +43,8 @@ public:
     CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
     GodRaySettings* GetGodRaySettings() const { return godRayPass_->GetSettings(); }
     DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
+    SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
+    BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
@@ -83,6 +87,11 @@ private:
     std::unique_ptr<BloomCombinePass> combinePass_;
 
     std::unique_ptr<GodRayPass> godRayPass_;
+
+    std::unique_ptr<SSAOPass> ssaoPass_;
+
+    std::unique_ptr<BilateralBlurPass> horizontalBilateralPass_;
+    std::unique_ptr<BilateralBlurPass> verticalBilateralPass_;
 
     // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;

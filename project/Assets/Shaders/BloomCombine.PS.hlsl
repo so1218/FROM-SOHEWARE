@@ -6,6 +6,7 @@ Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)
 Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
 Texture2D<float> gDepthTexture : register(t3); // 深度マップ
 Texture2D gGodRayTexture : register(t4);
+Texture2D gSSAOTexture : register(t5); // SSAOマップ
 
 SamplerState gSampler : register(s0);
 
@@ -101,6 +102,15 @@ float4 main(VSOutput input) : SV_TARGET
     {
         // ピントが合っている場所はdofColor.aが0で、SceneColorが使われる
         combinedScene = lerp(sceneColor.rgb, dofColor.rgb, dofColor.a);
+    }
+    
+    // SSAOの適用
+    if (gCombineSettings.enableSSAO != 0)
+    {
+        float ssao = gSSAOTexture.Sample(gSampler, input.uv).r;
+        
+        // ベースのシーンカラーに対してのみ影を落とす
+        combinedScene *= ssao;
     }
 
     // BloomとGodRayの加算
