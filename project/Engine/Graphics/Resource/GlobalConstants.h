@@ -26,6 +26,16 @@ public:
     FrameData* GetFrameData() { return frameData_; }
     ID3D12Resource* GetResource() { return constantBuffer_.Get(); }
 
+    // 環境効果の値をセット
+    void SetLightningFlash(const Vector3& color, float intensity)
+    {
+        if (frameData_)
+        {
+            frameData_->lightningFlashColor = color;
+            frameData_->lightningFlashIntensity = intensity;
+        }
+    }
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     FrameData* frameData_ = nullptr;

@@ -69,6 +69,9 @@ struct FrameData
     float nearClip;
     float farClip;
     float padding3;
+    
+    float3 lightningFlashColor;
+    float lightningFlashIntensity;
 };
 
 struct MaterialData

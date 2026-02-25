@@ -269,6 +269,11 @@ PixelShaderOutput main(PixelShaderInput input)
         // Area Light
         finalColor += ApplyAreaLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
         
+        // 雷フラッシュの共通準備
+        float flashIntensity = gFrameData.lightningFlashIntensity;
+        float3 flashColor = gFrameData.lightningFlashColor * flashIntensity;
+        float flashShadowCancel = saturate(flashIntensity);
+
         // 環境マップ処理
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
@@ -276,11 +281,22 @@ PixelShaderOutput main(PixelShaderInput input)
             float3 kS = F_Schlick(max(dot(normal, toEye), 0.0f), float3(0.04f, 0.04f, 0.04f));
             float3 kD = 1.0f - kS;
             kD *= (1.0f - currentMetalness);
-            float3 ambientDiffuse = kD * pbrAlbedo * float3(0.03f, 0.03f, 0.03f);
+            
+            float3 baseAmbient = float3(0.03f, 0.03f, 0.03f);
+            
+            // 影の計算（フラッシュ時は影を打ち消す）
+            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
+            ambientOcclusion = lerp(ambientOcclusion, 1.0f, flashShadowCancel);
+
+            // PBR用：アンビエントディフューズにフラッシュを加算
+            float3 ambientDiffuse = kD * pbrAlbedo * (baseAmbient + flashColor);
 
             // 鏡面反射
             float3 reflectionVector = reflect(-toEye, normal);
             float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, currentRoughness * 6.0f).rgb;
+            
+            // 空の反射（環境マップ）自体をフラッシュで発光させる
+            envColor += flashColor;
     
             float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, currentMetalness);
             float3 F_env = F_Schlick(max(dot(normal, toEye), 0.0f), F0);
@@ -288,9 +304,6 @@ PixelShaderOutput main(PixelShaderInput input)
 
             // 拡散反射と鏡面反射の合成
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
-            
-            // 環境光にも影の影響を与える
-            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
      
             finalColor += ambient * ambientOcclusion;
         }
@@ -300,9 +313,15 @@ PixelShaderOutput main(PixelShaderInput input)
             float3 reflectionVector = reflect(-toEye, normal);
             float4 envColor = gEnvironmentTexture.Sample(gSampler, reflectionVector);
 
+            // 影の計算（フラッシュ時は影を打ち消す）
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
-     
+            ambientOcclusion = lerp(ambientOcclusion, 1.0f, flashShadowCancel);
+
+            // 環境光の加算
             finalColor += envColor.rgb * gMaterial.environmentMapIntensity * ambientOcclusion;
+
+            // ベースカラーに対して、フラッシュの色と強さをそのまま乗せる
+            finalColor += baseColor * gMaterial.color.rgb * flashColor;
         }
         
         if (gMaterial.enableRim != 0)
