@@ -52,6 +52,8 @@ struct MaterialHandle
     std::string normalMapName = "white1x1";       // 法線マップ
     std::string dissolveMapName = "white1x1";       // ディゾルブマップ
     std::string toonRampName = "toonRamp_01";       // トゥーンランプ
+    std::string rippleTextureName = "white1x1";     // 波紋用テクスチャ
+    std::string puddleNoiseName = "white1x1";        // 水たまり用ノイズ
 
     // マテリアルごとのテクスチャハンドル
     uint32_t textureHandle = 0;     
@@ -59,6 +61,8 @@ struct MaterialHandle
     uint32_t normalMapHandle = 0;   
     uint32_t dissolveMapHandle = 0; 
     uint32_t toonRampHandle = 0;    
+    uint32_t rippleTextureHandle = 0;
+    uint32_t puddleNoiseHandle = 0;
 
     // エディタ編集用UVデータ
     WorldTransform uvTransformData;

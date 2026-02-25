@@ -9,6 +9,7 @@
 #include "GodRayPass.h"
 #include "SSAOPass.h"
 #include "BilateralBlurPass.h"
+#include "SSRPass.h"
 #include "Camera.h"
 #include <memory>
 
@@ -45,6 +46,7 @@ public:
     DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
+    SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
@@ -66,6 +68,9 @@ public:
 
     const std::string& GetCurrentLutName() const { return currentLutName_; }
     void SetCurrentLutName(const std::string& name) { currentLutName_ = name; }
+
+    const std::string& GetCurrentNoiseName() const { return currentNoiseName_; }
+    void SetCurrentNoiseName(const std::string& name) { currentNoiseName_ = name; }
 
 private:
     // 依存オブジェクト
@@ -90,6 +95,8 @@ private:
 
     std::unique_ptr<SSAOPass> ssaoPass_;
 
+    std::unique_ptr<SSRPass> ssrPass_;
+
     std::unique_ptr<BilateralBlurPass> horizontalBilateralPass_;
     std::unique_ptr<BilateralBlurPass> verticalBilateralPass_;
 
@@ -110,4 +117,5 @@ private:
     Vector3 lightPosition_ = { 0, 100, 100 };
 
     std::string currentLutName_ = "LUT_Neutral_32";
+    std::string currentNoiseName_ = "normal_00";
 };

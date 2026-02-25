@@ -3,9 +3,9 @@
         "Model_AddShadow": 1,
         "Model_AlbedoMap": "white1x1",
         "Model_Color": [
-            0.0,
-            0.0,
-            0.0,
+            0.2278481125831604,
+            0.20192722976207733,
+            0.09133151918649673,
             1.0
         ],
         "Model_DiffuseRef": 4.0,
@@ -21,14 +21,14 @@
         "Model_EdgeWidth": 0.05000000074505806,
         "Model_Emissive": 1.2999999523162842,
         "Model_EnvMapInt": 0.949999988079071,
-        "Model_EnvMapTex": "skybox",
+        "Model_EnvMapTex": "pureSky",
         "Model_LightMode": 3,
         "Model_Lighting": 1,
         "Model_Metalness": 0.9200000166893005,
         "Model_NormEnable": 1,
-        "Model_NormInten": 4.21999979019165,
+        "Model_NormInten": 10.0,
         "Model_NormTile": 50.0,
-        "Model_NormalMapTex": "normal_22",
+        "Model_NormalMapTex": "normal_30",
         "Model_OutlineColor": [
             0.0,
             0.0,
@@ -37,6 +37,15 @@
         ],
         "Model_OutlineEnable": 0,
         "Model_OutlineWidth": 1.0,
+        "Model_PuddleColor": [
+            0.0,
+            0.004806925542652607,
+            0.18987339735031128
+        ],
+        "Model_PuddleFalloff": 0.38999998569488525,
+        "Model_PuddleNoise": "noise_39",
+        "Model_PuddleScale": 0.010999999940395355,
+        "Model_PuddleTint": 1.0,
         "Model_RimColor": [
             1.0,
             1.0,
@@ -46,6 +55,14 @@
         "Model_RimInten": 1.0,
         "Model_RimPower": 3.0,
         "Model_RimUseDir": 0,
+        "Model_RippleEnable": 1,
+        "Model_RippleFreq": 1.7000000476837158,
+        "Model_RippleMap": "normal_31",
+        "Model_RippleMix": 0.8199999928474426,
+        "Model_RippleScale": 0.800000011920929,
+        "Model_RippleSize": 2.0,
+        "Model_RippleSpeed": 0.800000011920929,
+        "Model_RippleStren": 1.0,
         "Model_Rot": [
             0.0,
             0.0,
@@ -88,6 +105,9 @@
             0.0,
             0.0,
             0.0
-        ]
+        ],
+        "Model_UsePuddle": 1,
+        "Model_WetDarkness": 0.15000000596046448,
+        "Model_Wetness": 0.5699999928474426
     }
 }

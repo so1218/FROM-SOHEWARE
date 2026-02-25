@@ -53,6 +53,18 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->enableOutline = false;
     handle.materialData->outlineWidth = 5.0f;
     handle.materialData->outlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+    handle.materialData->enableRipple = 0;        
+    handle.materialData->wetness = 0.5f;          
+    handle.materialData->rippleScale = 2.0f;      
+    handle.materialData->rippleSpeed = 1.0f;      
+    handle.materialData->rippleStrength = 0.05f;  
+    handle.materialData->puddleScale = 0.1f;      
+    handle.materialData->puddleFalloff = 0.1f;    
+    handle.materialData->wetDarkness = 0.5f;      
+    handle.materialData->usePuddle = 0;
+    handle.materialData->rippleSize = 0.4f;
+    handle.materialData->rippleFrequency = 1.0f;
+    handle.materialData->rippleLayerMix = 0.5f;
 
     materials_.push_back(handle);
     return handle;

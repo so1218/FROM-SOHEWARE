@@ -33,7 +33,14 @@ void BloomCombinePass::Initialize(
     combineData_->enableDoF = false;
     combineData_->enableFog = false;
 
+    combineData_->fogNoiseScale = 0.01f;
+	combineData_->fogNoiseContrast = 1.0f;
+	combineData_->fogNoiseSpeed = 1.0f;
+
     combineData_->godRayIntensity = 1.0f;
+
+    combineData_->enableSSR = false;  
+    combineData_->ssrIntensity = 1.0f;
 
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -61,7 +68,9 @@ void BloomCombinePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE dofCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE godRaySRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV
+    D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV,
+    D3D12_CPU_DESCRIPTOR_HANDLE ssrSRV,
+    D3D12_CPU_DESCRIPTOR_HANDLE noiseSRV
 )
 {
     // 専用ヒープの先頭
@@ -103,6 +112,14 @@ void BloomCombinePass::SetupInputViews(
 
     // SSAO
     device->CopyDescriptorsSimple(1, destHandle, ssaoSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    destHandle.ptr += descriptorSize; 
+
+    // SSR
+    device->CopyDescriptorsSimple(1, destHandle, ssrSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    destHandle.ptr += descriptorSize;
+
+    // Noise
+    device->CopyDescriptorsSimple(1, destHandle, noiseSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void BloomCombinePass::Execute(

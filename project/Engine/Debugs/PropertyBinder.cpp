@@ -269,6 +269,43 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
                             ImGui::TreePop();
                         }
 
+                        if (ImGui::TreeNode("WaterEffects", "水たまり・波紋"))
+                        {
+                            ImGui::Spacing();
+                            Draw(matPrefix + "RippleEnable", "有効化");
+
+                            if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
+                            {
+                                Draw(matPrefix + "UsePuddle", "水たまりを形成する");
+                                Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
+                                Draw(matPrefix + "WetDarkness", "濡れた所の暗さ");
+
+                                ImGui::Separator();
+                                ImGui::TextDisabled("波紋設定");
+                                Draw(matPrefix + "RippleMap", "波紋法線マップ");
+                                Draw(matPrefix + "RippleScale", "雨の密度 (格子数)");
+                                Draw(matPrefix + "RippleSize", "一粒の大きさ");      
+                                Draw(matPrefix + "RippleFreq", "発生頻度");          
+                                Draw(matPrefix + "RippleSpeed", "波の広がる速さ");
+                                Draw(matPrefix + "RippleStren", "波紋の高さ(強さ)");
+                                Draw(matPrefix + "RippleMix", "レイヤー合成比率");
+
+                                if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
+                                {
+                                    ImGui::Separator();
+                                    ImGui::TextDisabled("水たまり形状設定");
+                                    Draw(matPrefix + "PuddleNoise", "分布ノイズ");
+                                    Draw(matPrefix + "PuddleScale", "水たまりスケール");
+                                    Draw(matPrefix + "PuddleFalloff", "フチのボケ具合");
+
+                                    ImGui::Spacing();
+                                    Draw(matPrefix + "PuddleColor", "水たまりの色");
+                                    Draw(matPrefix + "PuddleTint", "水の濁り具合(色の強さ)");
+                                }
+                            }
+                            ImGui::TreePop();
+                        }
+
                         ImGui::Unindent(10.0f);
                         ImGui::TreePop();
                     }
@@ -1082,6 +1119,8 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindTexture(prefix + "NormalMapTex", &handle->normalMapName, &handle->normalMapHandle, "normal_01", TextureType::Normal);
     BindTexture(prefix + "DissolveTex", &handle->dissolveMapName, &handle->dissolveMapHandle, "white1x1", TextureType::Noise);
     BindTexture(prefix + "ToonRampTex", &handle->toonRampName, &handle->toonRampHandle, "toonRamp_01", TextureType::Toon);
+    BindTexture(prefix + "RippleMap", &handle->rippleTextureName, &handle->rippleTextureHandle, "normal_00", TextureType::Normal);
+    BindTexture(prefix + "PuddleNoise", &handle->puddleNoiseName, &handle->puddleNoiseHandle, "noise_00", TextureType::Noise);
 
     auto onUVChange = [handle]()
         {
@@ -1136,4 +1175,23 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindBool(prefix + "OutlineEnable", &matData->enableOutline, false);
     Bind(prefix + "OutlineWidth", &matData->outlineWidth, 1.0f, 0.1f, 0.0f, 50.0f);
     BindColor(prefix + "OutlineColor", &matData->outlineColor, { 0.0f, 0.0f, 0.0f, 1.0f });
+
+    BindBool(prefix + "RippleEnable", &matData->enableRipple, false);
+    BindBool(prefix + "UsePuddle", &matData->usePuddle, false);
+
+    Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "WetDarkness", &matData->wetDarkness, 0.5f, 0.01f, 0.0f, 1.0f);
+
+    Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
+    Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+    Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 1.0f);
+
+    Bind(prefix + "PuddleScale", &matData->puddleScale, 0.1f, 0.01f, 0.001f, 10.0f);
+    Bind(prefix + "PuddleFalloff", &matData->puddleFalloff, 0.1f, 0.005f, 0.001f, 0.5f);
+    Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 1.0f);
+    Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
+    Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
+
+    BindColor(prefix + "PuddleColor", &matData->puddleColor, { 0.4f, 0.3f, 0.2f }); 
+    Bind(prefix + "PuddleTint", &matData->puddleTint, 0.5f, 0.01f, 0.0f, 1.0f);
 }

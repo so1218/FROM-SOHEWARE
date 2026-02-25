@@ -92,7 +92,7 @@ void Engine::SetCameraState(
 	eyePos_ = eyePos;
 
 	// GlobalConstantsを更新
-	globalConstants_->Update(view, projection, eyePos, nearClip, farClip);
+	globalConstants_->Update(view, projection, eyePos, nearClip, farClip, lightManager_->GetDirectionalLightData()[0]);
 
 	// Rendererにセット（描画パス用）
 	renderer_->SetCameraState(view, projection, eyePos);
@@ -294,7 +294,7 @@ void Engine::InitializeGraphics()
 
 	// オフスクリーンレンダーターゲットの初期化
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
-	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 16);
+	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 20);
 
 	// ライトマネージャの初期化
 	lightManager_ = std::make_unique<LightManager>();

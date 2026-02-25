@@ -56,11 +56,11 @@ float4 main(VSOutput input) : SV_TARGET
     {
         // 規則正しいらせん状（スパイラル）にサンプリング点を配置
         float u = (float(i) + 0.5f) / float(sampleCount);
-        float theta = u * 2.0f * 3.14159265f * 7.0f; // 7回転のらせん
+        float theta = u * 2.0f * 3.14159265f * 7.0f; 
         
         // 半球状の座標計算
-        float r = sqrt(u); // 中心に偏らないように平方根
-        float z = sqrt(max(0.0f, 1.0f - r * r)); // 高さを計算して半球
+        float r = sqrt(u); 
+        float z = sqrt(max(0.0f, 1.0f - r * r)); 
         float3 hemispherePos = float3(r * cos(theta), r * sin(theta), z);
 
         // TBN行列を掛けて、サンプリング点を法線の方向へ傾ける
@@ -84,7 +84,7 @@ float4 main(VSOutput input) : SV_TARGET
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, sampleUV, 0);
         float sampleZ = GetViewPos(sampleUV, sampleDepth).z;
 
-        // 遮蔽判定 (滑らかに減衰させる)
+        // 遮蔽判定 (滑らかに減衰)
         float rangeCheck = smoothstep(0.0f, 1.0f, gSSAOSettings.radius / abs(viewPos.z - sampleZ));
         if (sampleZ < samplePos.z - gSSAOSettings.bias)
         {
@@ -94,10 +94,10 @@ float4 main(VSOutput input) : SV_TARGET
 
     occlusion = 1.0f - (occlusion / (float) sampleCount);
     
-    // 遠距離でフェードアウトさせる処理
+    // 遠距離でフェードアウト
     float linearDepth = LinearizeDepth(depth, gFrameData.nearClip, gFrameData.farClip);
     float fade = saturate((linearDepth - gSSAOSettings.fadeStart) / (gSSAOSettings.fadeEnd - gSSAOSettings.fadeStart));
-    occlusion = lerp(occlusion, 1.0f, fade); // 遠くは影なし(1.0)
+    occlusion = lerp(occlusion, 1.0f, fade); 
 
     occlusion = pow(abs(occlusion), gSSAOSettings.intensity);
 

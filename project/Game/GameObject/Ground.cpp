@@ -13,6 +13,7 @@ Ground::Ground(Engine* engine) : GameObject(engine)
 void Ground::Initialize()
 {
 	binder_->BindModel("Model", model_.get());
+	
 };
 
 void Ground::Update()

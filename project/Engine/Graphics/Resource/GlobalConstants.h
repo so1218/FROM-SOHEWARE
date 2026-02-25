@@ -18,7 +18,8 @@ public:
         const Matrix4x4& projectionMatrix,
         const Vector3& eyePos,
         float nearClip,
-        float farClip
+        float farClip,
+        const DirectionalLight& mainLight
     );
 
     // ゲッター

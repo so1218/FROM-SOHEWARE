@@ -72,6 +72,10 @@ void PostEffectManager::Initialize(
     verticalBilateralPass_->Initialize(engine, width, height, psoManager);
     verticalBilateralPass_->GetSettings()->direction = { 0.0f, 1.0f };
 
+    // SSR初期化
+    ssrPass_ = std::make_unique<SSRPass>();
+    ssrPass_->Initialize(engine, width, height, psoManager);
+
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->graphicsDevice_->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
@@ -206,6 +210,19 @@ void PostEffectManager::ExecutePostEffects(
 
     auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
+    // マテリアル情報のSRVインデックスを取得
+    uint32_t materialSrvIndex = engine_->offscreenRTVManager_->GetOffscreenSRVIndex(
+        static_cast<UINT>(GBufferIndex::Material));
+
+    // SSR の実行
+    ssrPass_->Execute(
+        cmdList,
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_), 
+        srvManager_->GetSRVHandleCPU_ForCopying(normalSrvIndex),   
+        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_), 
+        srvManager_->GetSRVHandleCPU_ForCopying(materialSrvIndex)  
+    );
+
     // 光源位置のスクリーン座標変換
     Vector2 lightUV = { 0.5f, 0.5f }; 
     bool isLightVisible = false;
@@ -285,7 +302,9 @@ void PostEffectManager::ExecutePostEffects(
         srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_),
         srvManager_->GetSRVHandleCPU_ForCopying(godRayPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(verticalBilateralPass_->GetSRVIndex())
+        srvManager_->GetSRVHandleCPU_ForCopying(verticalBilateralPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(ssrPass_->GetSRVIndex()),
+        srvManager_->GetSRVHandleCPU_ForCopying(TextureManager::GetInstance().Get(currentNoiseName_))
     );
 
     combinePass_->Execute(cmdList, sceneSRV);

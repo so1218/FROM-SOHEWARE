@@ -7,8 +7,11 @@ Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
 Texture2D<float> gDepthTexture : register(t3); // 深度マップ
 Texture2D gGodRayTexture : register(t4);
 Texture2D gSSAOTexture : register(t5); // SSAOマップ
+Texture2D gSSRTexture : register(t6); // SSRマップ
+Texture2D gNoiseTexture : register(t7); // Noise(フォグの揺らぎ用)
 
 SamplerState gSampler : register(s0);
+SamplerState gWrapSampler : register(s1);
 
 ConstantBuffer<CombineSettings> gCombineSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
@@ -59,6 +62,29 @@ float3 ACESFilm(float3 x)
     float d = 0.59f;
     float e = 0.14f;
     return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
+}
+
+float GetFogNoise(float3 worldPos, float time)
+{
+    // パラメータに基づいたスケーリング
+    float2 uv = worldPos.xz * gCombineSettings.fogNoiseScale;
+    float moveTime = time * gCombineSettings.fogNoiseSpeed;
+    
+    // 2枚のサンプリング（速度を変えて干渉させる）
+    float2 scroll1 = float2(moveTime * 1.0, moveTime * 0.4);
+    float2 scroll2 = float2(moveTime * -0.6, moveTime * 0.8);
+    
+    float n1 = gNoiseTexture.Sample(gWrapSampler, uv + scroll1).r;
+    float n2 = gNoiseTexture.Sample(gWrapSampler, uv + scroll2).r;
+    
+    // 合成
+    float combinedNoise = n1 * n2;
+
+    // コントラスト調整 (Blightboundのようなパキッとした霧にするため)
+    // 0.5を中心に、Contrast倍してsaturateする
+    combinedNoise = saturate((combinedNoise - 0.5) * gCombineSettings.fogNoiseContrast + 0.5);
+    
+    return combinedNoise;
 }
 
 float4 main(VSOutput input) : SV_TARGET
@@ -112,6 +138,15 @@ float4 main(VSOutput input) : SV_TARGET
         // ベースのシーンカラーに対してのみ影を落とす
         combinedScene *= ssao;
     }
+    
+    // SSRの適用
+    if (gCombineSettings.enableSSR != 0)
+    {
+        float4 ssrColor = gSSRTexture.Sample(gSampler, input.uv);
+        
+        // シーンカラーに加算
+        combinedScene += ssrColor.rgb * ssrColor.a * gCombineSettings.ssrIntensity;
+    }
 
     // BloomとGodRayの加算
     float3 result = combinedScene +
@@ -121,44 +156,48 @@ float4 main(VSOutput input) : SV_TARGET
     // フォグの適用
     if (gCombineSettings.enableFog != 0)
     {
-        // ハイトフォグの計算
-        float3 rayDir = worldPos.xyz - gFrameData.cameraWorldPosition;
-        float rayLength = length(rayDir); // ハイトフォグはカメラ位置からすぐ発生
-        
-        float heightDiff = rayDir.y;
+        float3 rayVec = worldPos.xyz - gFrameData.cameraWorldPosition;
+        float rayLength = length(rayVec);
+    
+        // ゼロ除算の防止
+        float3 rayDir = rayVec / max(rayLength, 0.0001f);
+
+        // ノイズによる密度の変化
+        float noise = GetFogNoise(worldPos.xyz, gFrameData.gTime);
+        float animatedDensity = gCombineSettings.heightFogDensity * (0.5f + noise * 0.5f);
+
+        float heightDiff = rayVec.y;
+        // 微小値の扱いをより安全に
         if (abs(heightDiff) < 0.001f)
-        {
-            heightDiff = 0.001f;
-        }
+            heightDiff = (heightDiff >= 0) ? 0.001f : -0.001f;
 
         float camHeight = gFrameData.cameraWorldPosition.y - gCombineSettings.heightFogBaseHeight;
         float pixHeight = worldPos.y - gCombineSettings.heightFogBaseHeight;
-        float falloff = gCombineSettings.heightFogFalloff;
+    
+        // falloffが0の場合のクラッシュ防止
+        float falloff = max(gCombineSettings.heightFogFalloff, 0.0001f);
 
+        // ハイトフォグの公式
         float fogAmount = (exp(-falloff * camHeight) - exp(-falloff * pixHeight)) / (falloff * heightDiff);
-        
-        // ハイトフォグの最終的な濃さ (0.0 ～ 1.0)
-        float heightFogFactor = exp(-gCombineSettings.heightFogDensity * fogAmount * rayLength);
-        heightFogFactor = saturate(1.0f - heightFogFactor);
-        
-        // 距離フォグの計算
-        float distFogFactor = 0.0f;
-        float distStart = gCombineSettings.distanceFogStart;
-        float distEnd = gCombineSettings.distanceFogEnd;
-        
-        // StartとEndの距離に応じて 0.0 ～ 1.0 で線形補間
-        if (distEnd > distStart)
-        {
-            distFogFactor = saturate((linearDepth - distStart) / (distEnd - distStart));
-            
-            // smoothstep を使い、霧の始まりと終わりがより自然に
-            distFogFactor = smoothstep(0.0f, 1.0f, distFogFactor);
-        }
+        float heightFogFactor = saturate(1.0f - exp(-animatedDensity * fogAmount * rayLength));
 
-        // ２つの霧を合成
+        // 太陽光による散乱 
+        float3 lightDir = normalize(gFrameData.mainLightDirection);
+        float scattering = pow(saturate(dot(rayDir, lightDir)), 4.0f);
+    
+        // 太陽の色を少し強めにしてフォグに乗せる
+        float3 scatteringColor = gFrameData.mainLightColor.rgb * 2.0f;
+        float3 fogColor = lerp(gCombineSettings.fogColor.rgb, scatteringColor, scattering);
+
+        // 距離フォグ
+        float distFogFactor = saturate((linearDepth - gCombineSettings.distanceFogStart) /
+                                   max(gCombineSettings.distanceFogEnd - gCombineSettings.distanceFogStart, 0.0001f));
+        distFogFactor = smoothstep(0.0, 1.0, distFogFactor);
+
         float finalFogFactor = max(heightFogFactor, distFogFactor);
 
-        result = lerp(result, gCombineSettings.fogColor, finalFogFactor);
+        // 最終合成
+        result = lerp(result, fogColor, finalFogFactor);
     }
 
     // NaN対策

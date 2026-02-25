@@ -270,6 +270,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
     SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
+    SSRSettings* ssrSettings = postEffectManager_->GetSSRSettings();
 
     // カラー・色調系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
@@ -637,6 +638,42 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
+    if (ImGui::TreeNode("反射 (SSR)"))
+    {
+        bool ssrFlag = (combineSettingsData->enableSSR != 0);
+        if (ImGui::Checkbox("SSR有効", &ssrFlag))
+        {
+            combineSettingsData->enableSSR = ssrFlag ? 1 : 0;
+        }
+
+        if (ssrFlag)
+        {
+            ImGui::Indent();
+
+            ImGui::TextDisabled("合成設定");
+            ImGui::SliderFloat("反射強度", &combineSettingsData->ssrIntensity, 0.0f, 5.0f, "%.2f");
+
+            ImGui::Separator();
+
+            if (ssrSettings)
+            {
+                ImGui::TextDisabled("生成パラメータ");
+
+                ImGui::DragFloat("最大探索距離", &ssrSettings->maxDistance, 0.5f, 0.0f, 1000.0f, "%.1f m");
+                ImGui::DragFloat("ステップサイズ", &ssrSettings->stepSize, 0.01f, 0.01f, 10.0f, "%.3f");
+                ImGui::SliderInt("最大ステップ数", &ssrSettings->maxSteps, 1, 256);
+                ImGui::DragFloat("厚み判定", &ssrSettings->thickness, 0.01f, 0.0f, 5.0f, "%.3f");
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "SSRSettings のポインタが null です");
+            }
+
+            ImGui::Unindent();
+        }
+        ImGui::TreePop();
+    }
+
     // フォグ設定
     if (ImGui::TreeNode("ハイブリッドフォグ設定"))
     {
@@ -669,6 +706,29 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::DragFloat("基準の高さ", &combineSettingsData->heightFogBaseHeight, 0.1f, -100.0f, 100.0f, "%.1f m");
             ImGui::DragFloat("足元の霧の濃さ", &combineSettingsData->heightFogDensity, 0.001f, 0.0f, 1.0f, "%.4f");
             ImGui::DragFloat("高さによる減衰率", &combineSettingsData->heightFogFalloff, 0.01f, 0.001f, 5.0f, "%.3f");
+
+            ImGui::Text("ノイズ設定");
+            std::vector<std::string> noiseNames = TextureManager::GetInstance().GetTextureNamesByType(TextureType::Noise);
+
+            if (noiseNames.empty()) {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Noiseテクスチャが読み込まれていない");
+            }
+            else {
+                std::string currentNoise = postEffectManager_->GetCurrentNoiseName();
+                if (ImGui::BeginCombo("フォグノイズ", currentNoise.c_str())) {
+                    for (const auto& name : noiseNames) {
+                        bool isSelected = (currentNoise == name);
+                        if (ImGui::Selectable(name.c_str(), isSelected)) {
+                            postEffectManager_->SetCurrentNoiseName(name);
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+
+            ImGui::DragFloat("ノイズスケール", &combineSettingsData->fogNoiseScale, 0.001f, 0.0001f, 0.5f, "%.4f");
+            ImGui::DragFloat("流れる速度", &combineSettingsData->fogNoiseSpeed, 0.001f, 0.0f, 2.0f, "%.3f");
+            ImGui::SliderFloat("コントラスト(キレ)", &combineSettingsData->fogNoiseContrast, 0.0f, 10.0f, "%.2f");
 
             ImGui::Unindent();
         }

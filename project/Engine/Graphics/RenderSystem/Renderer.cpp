@@ -562,6 +562,8 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData
 				submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
 				submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
 				submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
+				submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
+				submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
 				submission.worldMatrix = currentWorldMatrix;
 				// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
 				if (actualMaterialHandle.materialData)
@@ -698,6 +700,8 @@ void Renderer::SubmitAnimationModel(
 		submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
 		submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
 		submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
+		submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
+		submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
 		submission.worldMatrix = world;
 		// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
 		if (actualMaterialHandle.materialData)
@@ -1393,6 +1397,8 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootDescriptorTable(11, srvManager_->GetSRVHandleGPU(sub.toonRampHandle));
 		cmdList->SetGraphicsRootDescriptorTable(12, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 		cmdList->SetGraphicsRootDescriptorTable(13, srvManager_->GetSRVHandleGPU(sub.normalMapHandle));
+		cmdList->SetGraphicsRootDescriptorTable(14, srvManager_->GetSRVHandleGPU(sub.rippleTextureHandle));
+		cmdList->SetGraphicsRootDescriptorTable(15, srvManager_->GetSRVHandleGPU(sub.puddleNoiseHandle));
 	}
 
 	// 通常モデル描画
@@ -1427,6 +1433,8 @@ void Renderer::DrawModel(const ModelSubmission& sub)
 		cmdList->SetGraphicsRootDescriptorTable(10, srvManager_->GetSRVHandleGPU(sub.toonRampHandle));
 		cmdList->SetGraphicsRootDescriptorTable(11, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 		cmdList->SetGraphicsRootDescriptorTable(12, srvManager_->GetSRVHandleGPU(sub.normalMapHandle));
+		cmdList->SetGraphicsRootDescriptorTable(13, srvManager_->GetSRVHandleGPU(sub.rippleTextureHandle));    
+		cmdList->SetGraphicsRootDescriptorTable(14, srvManager_->GetSRVHandleGPU(sub.puddleNoiseHandle));
 	}
 
 	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);

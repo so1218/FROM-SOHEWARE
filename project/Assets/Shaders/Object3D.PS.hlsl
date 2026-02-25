@@ -26,6 +26,8 @@ Texture2D<float> gShadowMap : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
 Texture2D<float3> gNormalTexture : register(t5);
+Texture2D<float3> gRippleTexture : register(t6);
+Texture2D<float> gPuddleNoiseTexture : register(t7);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -111,7 +113,7 @@ PixelShaderOutput main(PixelShaderInput input)
             // differenceが小さいほど1.0に近づくように反転
             float t = 1.0f - (difference / gMaterial.edgeWidth);
 
-            // グラデーションを滑らかにする
+            // グラデーションを滑らかに
             t = smoothstep(0.0f, 1.0f, t);
 
             // 高輝度カラーの計算
@@ -158,9 +160,99 @@ PixelShaderOutput main(PixelShaderInput input)
         normal = normalize(input.normal);
     }
     
+    // 現在のラフネスとメタルネスを変数化
+    float currentRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
+    float currentMetalness = saturate(gMaterial.metalness);
+    
+    // 波紋と水たまりの処理
+    if (gMaterial.enableRipple != 0 && gMaterial.wetness > 0.0f)
+    {
+        // 基本的な全体の濡れ具合
+        float globalWetness = gMaterial.wetness;
+        float puddleDepth = 0.0f; // 水たまりの深さ
+
+        // 水たまりマスクの計算
+        if (gMaterial.usePuddle != 0)
+        {
+            // ノイズに基づいて水が溜まる場所を特定
+            float2 puddleUV = input.worldPosition.xz * gMaterial.puddleScale;
+            float noiseVal = gPuddleNoiseTexture.Sample(gSampler, puddleUV).r;
+            float edgeSoftness = max(gMaterial.puddleFalloff, 0.001f);
+            
+            // 水たまりの深さ
+            puddleDepth = smoothstep(gMaterial.wetness, gMaterial.wetness - edgeSoftness, noiseVal);
+        }
+
+        // 最終的な濡れ度
+        float effectiveWetness = max(globalWetness, puddleDepth);
+
+       // 暗さ・ツヤを全体に適用
+        baseColor = lerp(baseColor, baseColor * gMaterial.wetDarkness, effectiveWetness);
+    
+        // 水たまり部分には水の色をブレンド
+        if (gMaterial.usePuddle != 0 && puddleDepth > 0.0f)
+        {
+            // 深いところほど強く色が乗るようにpuddleDepthを掛ける
+            float tintWeight = puddleDepth * gMaterial.puddleTint;
+            baseColor = lerp(baseColor, gMaterial.puddleColor, tintWeight);
+        }
+        currentRoughness = lerp(currentRoughness, 0.01f, effectiveWetness);
+
+        // 波紋の計算
+        float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
+        float time = gFrameData.gTime * gMaterial.rippleSpeed;
+        float3 combinedRipple = float3(0, 0, 0);
+
+        for (int i = 0; i < 3; i++)
+        {
+            float2 offset = float2(i * 0.33, i * 0.71);
+            float2 p = rippleUV + offset;
+            float2 gridID = floor(p);
+            float2 f = frac(p);
+
+            float3 seed = float3(gridID, float(i));
+            float rand = frac(sin(dot(seed.xy + seed.z, float2(12.9898, 78.233))) * 43758.5453);
+            
+            float localTime = frac(time * gMaterial.rippleFrequency + rand);
+
+            float spread = localTime * gMaterial.rippleSize + 0.0001;
+            float2 animatedUV = (f - 0.5) / spread + 0.5;
+
+            float3 r = float3(0, 0, 0);
+            if (animatedUV.x >= 0.0 && animatedUV.x <= 1.0 && animatedUV.y >= 0.0 && animatedUV.y <= 1.0)
+            {
+                r = gRippleTexture.Sample(gSampler, animatedUV).xyz * 2.0f - 1.0f;
+            }
+
+            float mask = smoothstep(1.0, 0.0, localTime);
+            float edgeMask = smoothstep(0.5, 0.4, length(f - 0.5));
+
+            combinedRipple += r * mask * edgeMask;
+        }
+
+        // 波紋の強さは全体の濡れ具合に合わせて掛ける
+        float3 rippleNormal = combinedRipple * gMaterial.rippleStrength * effectiveWetness;
+
+        // 法線の合成
+        if (gMaterial.usePuddle != 0)
+        {
+            // 水が溜まっている部分だけ地面を平坦に
+            float3 flatNormal = float3(0, 1, 0);
+            // puddleDepthが高いほど平らに
+            float3 baseN = normalize(lerp(normal, flatNormal, puddleDepth * 0.9f));
+            
+            // 平らにした地面の上に、全体に降っている波紋を乗せる
+            normal = normalize(baseN + float3(rippleNormal.x, 0.0f, rippleNormal.y));
+        }
+        else
+        {
+            // 元の法線を維持して波紋だけ乗せる
+            normal = normalize(normal + float3(rippleNormal.x, 0.0f, rippleNormal.y));
+        }
+    }
+    
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
 
-    
     if (gMaterial.enableLighting != 0)
     {
         float3 pbrAlbedo = baseColor * pow(gMaterial.color.rgb, 2.2f);
@@ -180,20 +272,17 @@ PixelShaderOutput main(PixelShaderInput input)
         // 環境マップ処理
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-            float metalness = saturate(gMaterial.metalness);
-
             // 拡散反射
             float3 kS = F_Schlick(max(dot(normal, toEye), 0.0f), float3(0.04f, 0.04f, 0.04f));
             float3 kD = 1.0f - kS;
-            kD *= (1.0f - metalness);
+            kD *= (1.0f - currentMetalness);
             float3 ambientDiffuse = kD * pbrAlbedo * float3(0.03f, 0.03f, 0.03f);
 
             // 鏡面反射
             float3 reflectionVector = reflect(-toEye, normal);
-            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, roughness * 6.0f).rgb;
+            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, currentRoughness * 6.0f).rgb;
     
-            float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, metalness);
+            float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, currentMetalness);
             float3 F_env = F_Schlick(max(dot(normal, toEye), 0.0f), F0);
             float3 ambientSpecular = envColor * F_env;
 
@@ -201,7 +290,6 @@ PixelShaderOutput main(PixelShaderInput input)
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
             
             // 環境光にも影の影響を与える
-             // 0.0なら真っ暗、0.5なら半分の明るさが残る
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
      
             finalColor += ambient * ambientOcclusion;
@@ -242,7 +330,7 @@ PixelShaderOutput main(PixelShaderInput input)
      // 自己発光を加算
     finalColor *= gMaterial.emissiveIntensity;
     
-    // 最後にディゾルブのエッジ発光を加算
+    // ディゾルブのエッジ発光を加算
     finalColor += dissolveEdgeEmission;
 
     output.color.rgb = finalColor;
@@ -260,8 +348,8 @@ PixelShaderOutput main(PixelShaderInput input)
     output.normal = float4(normal, 1.0f);
 
     // 材質情報
-    // R=メタルネス(金属度), G=ラフネス(粗さ) として保存
-    output.material = float4(gMaterial.metalness, gMaterial.roughness, 0.0f, 1.0f);
+    // R=メタルネス, G=ラフネス
+    output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
     
     return output;
 }

@@ -27,7 +27,8 @@ void GlobalConstants::Update(
     const Matrix4x4& projectionMatrix,
     const Vector3& eyePos,
     float nearClip,
-    float farClip
+    float farClip,
+    const DirectionalLight& mainLight
 )
 {
     // VP行列の計算
@@ -49,6 +50,19 @@ void GlobalConstants::Update(
 
     frameData_->nearClip = nearClip;
     frameData_->farClip = farClip;
+
+    // メインライト情報の転送
+    Vector3 dir = mainLight.direction;
+    float len = sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+    frameData_->mainLightDirection = { dir.x / len, dir.y / len, dir.z / len };
+
+    // 色にintensityを掛け合わせた状態
+    frameData_->mainLightColor = 
+    {
+        mainLight.color.x * mainLight.intensity,
+        mainLight.color.y * mainLight.intensity,
+        mainLight.color.z * mainLight.intensity
+    };
 
     // カメラ以外のデータも更新
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();

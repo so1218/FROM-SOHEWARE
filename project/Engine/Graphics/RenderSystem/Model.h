@@ -37,6 +37,8 @@ public:
     void SetToonRampTexture(const std::string& textureName);
     void SetDissolveTexture(const std::string& textureName);
     void SetNormalMapTexture(const std::string& textureName);
+    void SetRippleTexture(const std::string& textureName);
+    void SetPuddleNoiseTexture(const std::string& textureName);
 
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);

@@ -57,6 +57,11 @@ struct FrameData
     float3 cameraUp;
     float padding2;
 
+    float3 mainLightDirection; 
+    float paddingLight0;
+    float3 mainLightColor; 
+    float paddingLight1;
+
     float2 iResolution;
     float2 screenResolution;
     
@@ -118,6 +123,24 @@ struct MaterialData
     float outlineWidth;
     int32_t enableOutline;
     float2 paddingOutline;
+
+    int32_t enableRipple;
+    float wetness; 
+    float rippleScale; 
+    float rippleSpeed;
+    
+    float rippleStrength; 
+    float puddleScale; 
+    float puddleFalloff; 
+    float wetDarkness;
+    
+    int32_t usePuddle;
+    float rippleSize;
+    float rippleFrequency;
+    float rippleLayerMix;
+    
+    float3 puddleColor;
+    float puddleTint;
 };
 
 struct TrailMaterialData
@@ -220,19 +243,24 @@ struct CombineSettings
     float bloomIntensity;
     int enableDoF;
     int enableSSAO;
-    float _padding1;
+    int enableFog;
     
     float3 fogColor;
-    int enableFog;
-
     float heightFogDensity;
+    
     float heightFogFalloff;
     float heightFogBaseHeight;
-    float distanceFogStart;
-                                               
+    float distanceFogStart;                              
     float distanceFogEnd;
+    
+    float fogNoiseSpeed;
+    float fogNoiseScale;
+    float fogNoiseContrast; 
     float godRayIntensity;
-    float2 _padding2;
+    
+    int enableSSR;
+    float ssrIntensity;
+    float _padding2[2]; 
 };
 
 struct GodRaySettings
@@ -270,4 +298,12 @@ struct BilateralBlurSettings
     float depthTolerance;
     float normalTolerance;
     float2 padding;
+};
+
+struct SSRSettings
+{
+    float maxDistance;
+    float stepSize; 
+    int maxSteps; 
+    float thickness; 
 };

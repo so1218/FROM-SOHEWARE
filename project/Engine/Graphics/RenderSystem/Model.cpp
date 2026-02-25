@@ -130,6 +130,17 @@ void Model::SetNormalMapTexture(const std::string& textureName)
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 
+void Model::SetRippleTexture(const std::string& textureName)
+{
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
+    for (auto& mat : materials_) mat.rippleTextureHandle = handle;
+}
+
+void Model::SetPuddleNoiseTexture(const std::string& textureName)
+{
+    uint32_t handle = TextureManager::GetInstance().Get(textureName);
+    for (auto& mat : materials_) mat.puddleNoiseHandle = handle;
+}
 
 void Model::SetColor(const Vector4& color)
 {
