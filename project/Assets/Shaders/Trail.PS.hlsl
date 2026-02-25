@@ -16,6 +16,16 @@ PixelShaderOutput main(VertexShaderOutput input)
     // メインテクスチャと頂点カラーを掛け合わせ
     float4 texColor = gTexture.Sample(gSampler, input.texcoord);
     float4 finalColor = texColor * input.color;
+    
+    // 雷専用の見た目処理
+    if (gTrailMaterial.jitterMode == 2)
+    {
+        // 雷のチカチカ演出
+        float flicker = frac(sin(gFrameData.gTime * 60.0) * 43758.5453);
+        float flash = (flicker > 0.1) ? 1.0 : 0.2; 
+        
+        finalColor.rgb *= flash;
+    }
 
     // ディゾルブ
     if (gTrailMaterial.isDissolveEnabled > 0.5)

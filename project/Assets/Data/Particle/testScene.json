@@ -1,0 +1,224 @@
+{
+    "EmitterConfig": {
+        "amount": 1,
+        "duration": -0.10000000149011612,
+        "followOffset": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "lifetime": 4.0,
+        "looping": true,
+        "playOnAwake": true,
+        "position": [
+            0.0,
+            23.399999618530273,
+            0.0
+        ],
+        "spawnInterval": 1.0700000524520874
+    },
+    "ParticleConfig": {
+        "attractionModule": {
+            "enabled": false,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "strength": 1.0,
+            "target": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        "blendMode": 2,
+        "collisionModule": {
+            "bounce": 0.5,
+            "dampen": 0.0,
+            "enabled": false,
+            "friction": 0.0,
+            "lifeLoss": 0.0,
+            "plane": {
+                "normal": [
+                    0.0,
+                    1.0,
+                    0.0
+                ],
+                "point": [
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "type": 0,
+            "worldObj": {
+                "center": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    2.0,
+                    2.0,
+                    2.0
+                ],
+                "shape": 0
+            }
+        },
+        "colorOverLifetimeModule": {
+            "enabled": true,
+            "endColor": 4294967040,
+            "endColor2": 4294967040,
+            "mode": 0,
+            "startColor": 4294967295,
+            "startColor2": 4294967295
+        },
+        "intensity": 1.0,
+        "noiseModule": {
+            "enabled": true,
+            "frequency": 1.0,
+            "scrollSpeed": 1.0,
+            "separateAxes": false,
+            "strength": 25.299999237060547
+        },
+        "physicsModule": {
+            "drag": 0.0,
+            "enabled": false,
+            "gravity": [
+                0.0,
+                -9.800000190734863,
+                0.0
+            ]
+        },
+        "rotationModule": {
+            "enabled": false,
+            "isBillboard": true,
+            "maxAngularVelocity2D": 5.0,
+            "maxAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "maxStartRotation": [
+                0.0,
+                0.0,
+                360.0
+            ],
+            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity3D": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "minStartRotation": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        "shapeModule": {
+            "boxSize": [
+                20.0,
+                20.0,
+                20.0
+            ],
+            "emitFromEdge": false,
+            "enabled": true,
+            "radius": [
+                10.0,
+                10.0,
+                10.0
+            ],
+            "type": 0
+        },
+        "sizeOverLifetimeModule": {
+            "enabled": true,
+            "endScale": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "frequency": 1.0,
+            "oscillate": false,
+            "startScale": [
+                0.0,
+                1.0,
+                1.0
+            ]
+        },
+        "textureSheetModule": {
+            "enabled": false,
+            "textureName": "white1x1"
+        },
+        "trailModule": {
+            "alignment": 0,
+            "dissolveTextureName": "white1x1",
+            "emissiveIntensity": 2.0,
+            "enabled": true,
+            "endColor": [
+                0.14345991611480713,
+                1.0,
+                0.1636136770248413,
+                1.0
+            ],
+            "headWidthScale": 0.9700000286102295,
+            "jitterFrequency": 13.399999618530273,
+            "jitterMode": 2,
+            "jitterPhase": 0.0,
+            "jitterSpeed": 12.0,
+            "jitterStrength": 0.699999988079071,
+            "lifetime": 4.400000095367432,
+            "minVertexDistance": 0.10000000149011612,
+            "scrollSpeed": [
+                0.0,
+                0.0
+            ],
+            "startColor": [
+                0.13502109050750732,
+                1.0,
+                0.15691930055618286,
+                1.0
+            ],
+            "tailWidthScale": 0.1899999976158142,
+            "textureMode": 0,
+            "textureName": "window_04",
+            "tiling": [
+                1.0,
+                1.0
+            ],
+            "width": 1.0
+        },
+        "velocityModule": {
+            "angleRange": 0.0,
+            "direction": [
+                0.0,
+                -0.6299999952316284,
+                0.0
+            ],
+            "enabled": true,
+            "randomDirection": true,
+            "speed": 20.010000228881836
+        },
+        "vortexModule": {
+            "axis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "center": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enabled": false,
+            "offset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbitalSpeed": 2.0,
+            "radialSpeed": 0.0
+        }
+    }
+}

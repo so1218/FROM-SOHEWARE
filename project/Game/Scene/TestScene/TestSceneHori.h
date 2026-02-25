@@ -19,5 +19,7 @@ private:
     // メンバー変数
     Player* player_ = nullptr;
     FollowCamera* followCamera_ = nullptr;
+
+    std::unique_ptr<ParticleEmitter> testSceneEmitter_ = nullptr;
 };
 
