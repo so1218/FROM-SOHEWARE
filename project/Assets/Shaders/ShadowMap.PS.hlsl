@@ -1,7 +1,7 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-ConstantBuffer<MaterialData> gMaterial : register(b0);
+ConstantBuffer<MaterialData> gMaterial : register(b5);
 Texture2D<float4> gDissolveTexture : register(t4); 
 SamplerState gSampler : register(s0);
 
@@ -30,7 +30,7 @@ float DitherThreshold4x4(float2 pixelPos)
 
 void main(ShadowVSOutput input)
 {
-   // ディゾルブ処理
+    // ディゾルブ処理
     if (gMaterial.enableDissolve != 0)
     {
         float noise = gDissolveTexture.Sample(gSampler, input.texcoord).r;
@@ -43,7 +43,7 @@ void main(ShadowVSOutput input)
     // Alpha値によるディザリング
     float alpha = gMaterial.color.a;
 
-    // もしアルファが1.0(完全不透明)未満なら、ディザリングを行う
+    // もしアルファが1.0(完全不透明)未満なら、ディザリング
     if (alpha < 1.0f)
     {
         // 画面上のピクセル位置に基づいて閾値を取得 

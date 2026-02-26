@@ -283,10 +283,11 @@ void Renderer::DrawSceneForShadow()
 				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapDissolve"));
 				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapDissolve"));
 
-				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
+				cmdList->SetGraphicsRootConstantBufferView(0, globalConstants_->GetResource()->GetGPUVirtualAddress()); 
+				cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());       
+				cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());              
+				cmdList->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+				cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));   
 
 				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 			}
@@ -311,7 +312,11 @@ void Renderer::DrawSceneForShadow()
 				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
 				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
 
-				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+				cmdList->SetGraphicsRootConstantBufferView(0, globalConstants_->GetResource()->GetGPUVirtualAddress()); 
+				cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());      
+				cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());            
+				cmdList->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
+
 				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
 			}
 
