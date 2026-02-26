@@ -11,10 +11,22 @@
 #include <string>
 #include <string_view>
 
+namespace UpdateOrder
+{
+    enum Priority
+    {
+        Field = 10,
+        Player = 30,
+        Default = 30,
+        Effect = 60,
+        UI = 90,
+    };
+}
+
 class GameObject 
 {
 public:
-    GameObject(Engine* engine, int priority = 50);
+    GameObject(Engine* engine, int priority = UpdateOrder::Default);
     virtual ~GameObject() = default;
 
     virtual void Initialize() {}

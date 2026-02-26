@@ -11,7 +11,7 @@
 #include <numbers>
 #include <algorithm>
 
-Player::Player(Engine* engine, Camera* camera) : GameObject(engine, 10),
+Player::Player(Engine* engine, Camera* camera) : GameObject(engine, UpdateOrder::Player),
 	camera_(camera)
 {
 	SetTag("Player");
@@ -198,6 +198,6 @@ void Player::DebugDraw()
 
 	ImGui::End();
 
-	ImGuiManager::DrawGizmo(animationPlayer_->GetTransform());
+	/*ImGuiManager::DrawGizmo(animationPlayer_->GetTransform());*/
 #endif
 }
