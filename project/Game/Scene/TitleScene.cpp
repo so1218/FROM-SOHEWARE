@@ -16,7 +16,6 @@ TitleScene::TitleScene(Engine* engine)
 	titleSprite_ = std::make_unique<Sprite>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Title");
-
 }
 
 void TitleScene::OnInitialize()

@@ -835,5 +835,7 @@
     <FxCompile Include="Assets\Shaders\SSAO.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\BilateralBlur.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\SSR.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Grass.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Grass.VS.hlsl" />
   </ItemGroup>
 </Project>

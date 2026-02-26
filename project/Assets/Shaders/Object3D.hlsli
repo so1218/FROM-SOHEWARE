@@ -16,11 +16,28 @@ struct VertexShaderOutput
 
 struct VertexShaderInput
 {
-    float32_t4 position : POSITION0;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
-    float32_t3 tangent : TANGENT0;
-    float32_t3 smoothNormal : TEXCOORD1;
+    float4 position : POSITION;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT;
+};
+
+struct PixelShaderInput
+{
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 worldPosition : POSITION1;
+    float4 shadowCoord : POSITION2;
+    float3 tangent : TANGENT;
+    float4 worldColor : COLOR0;
+};
+
+struct PixelShaderOutput
+{
+    float4 color : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 material : SV_TARGET2;
 };
 
 struct Well

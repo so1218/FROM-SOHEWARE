@@ -318,3 +318,9 @@ struct SSRSettings
     int maxSteps; 
     float thickness; 
 };
+
+struct GrassInstance
+{
+    float4x4 world;
+    float4 color;
+};

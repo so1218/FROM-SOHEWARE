@@ -33,24 +33,6 @@ SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gClampSampler : register(s2);
 
-struct PixelShaderOutput
-{
-    float4 color : SV_TARGET0; // SceneColor
-    float4 normal : SV_TARGET1; // 法線
-    float4 material : SV_TARGET2; // 材質パラメータ
-};
-
-struct PixelShaderInput
-{
-    float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD0;
-    float3 normal : NORMAL0;
-    float3 worldPosition : POSITION1;
-    float4 shadowCoord : POSITION2;
-    float3 tangent : TANGENT;
-    float4 worldColor : COLOR0;
-};
-
 float DitherThreshold4x4(int2 position);
 
 float3 DrawArtGridColor(PixelShaderInput input);
