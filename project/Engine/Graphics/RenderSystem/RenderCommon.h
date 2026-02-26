@@ -25,7 +25,6 @@ enum class RenderType
     Sprite,      // スプライト
     Trail,       // トレイル
     Particle,    // パーティクル
-    Grid,        // グリッド
     Line,        // ライン
     Skybox       // スカイボックス
 };
@@ -120,5 +119,11 @@ namespace RenderingPreset
     static const RenderSettings UI =
     {
         BlendMode::kBlendModeNormal, CullMode::None, DepthMode::None, RenderGroup::Transparent
+    };
+
+    // グリッド用 
+    static const RenderSettings Grid =
+    {
+        BlendMode::kBlendModeNormal, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
     };
 }

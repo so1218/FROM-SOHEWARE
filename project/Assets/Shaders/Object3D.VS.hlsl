@@ -1,12 +1,12 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
-
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
+
+ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 
 VertexShaderOutput main(VertexShaderInput input)
 {

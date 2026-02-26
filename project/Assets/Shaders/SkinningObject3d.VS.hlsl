@@ -1,12 +1,13 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-StructuredBuffer<Well> gMatrixPalette : register(t0);
+
+ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
+StructuredBuffer<Well> gMatrixPalette : register(t8);
 
 struct SkinningVertexShaderInput
 {

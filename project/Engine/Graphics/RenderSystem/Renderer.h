@@ -69,7 +69,6 @@ public:
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode,
         RenderGroup group, const Vector4& instanceColor);
-    void SubmitGrid(const WorldTransform& worldTransform, const ModelData& modelData, uint32_t textureHandle, uint32_t color, const MaterialHandle& materialHandle);
     void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle,
         uint32_t dissolveTextureHandle, int layerOrder, const MaterialHandle& materialHandle);
     void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
@@ -138,7 +137,6 @@ private:
     // 実際の描画コマンド発行を行う内部関数
     void DrawSprite(const ModelSubmission& sub);
     void DrawModel(const ModelSubmission& sub);
-    void DrawGrid(const ModelSubmission& sub);
     void FlushLines();
     void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);

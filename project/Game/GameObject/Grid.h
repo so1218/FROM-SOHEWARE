@@ -13,19 +13,7 @@ public:
     void Update() override {}
     void Draw() override;
 
-    // Modelクラスと共通のセッター
-    void SetWorldTransform(const WorldTransform& transform);
-    void SetColor(uint32_t color);
-    void SetTextureHandle(uint32_t handle);
-
-    // ゲッター
-    WorldTransform& GetTransform() { return transform_; }
-
 private:
+    std::unique_ptr<Model> model_;
 
-    WorldTransform transform_;
-    uint32_t color_ = 0xFFFFFFFF;
-    uint32_t textureHandle_;
-    MaterialHandle materialHandle_;
-    const ModelData* modelData_;
 };

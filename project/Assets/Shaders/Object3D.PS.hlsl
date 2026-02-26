@@ -1,24 +1,29 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-ConstantBuffer<MaterialData> gMaterial : register(b0);
+ConstantBuffer<FrameData> gFrameData : register(b0);
+
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-ConstantBuffer<FrameData> gFrameData : register(b2);
-cbuffer PointLights : register(b3)
+
+cbuffer PointLights : register(b2)
 {
     PointLight gPointLights[MAX_POINT_LIGHTS];
 };
-cbuffer SpotLights : register(b4)
+
+cbuffer SpotLights : register(b3)
 {
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
-cbuffer AreaLightsBuffer : register(b5)
+
+cbuffer AreaLightsBuffer : register(b4)
 {
     AreaLight gAreaLights[MAX_AREA_LIGHTS];
-}
+};
+
+ConstantBuffer<MaterialData> gMaterial : register(b5);
 
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
@@ -288,7 +293,7 @@ PixelShaderOutput main(PixelShaderInput input)
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
             ambientOcclusion = lerp(ambientOcclusion, 1.0f, flashShadowCancel);
 
-            // PBR用：アンビエントディフューズにフラッシュを加算
+            // アンビエントディフューズにフラッシュを加算
             float3 ambientDiffuse = kD * pbrAlbedo * (baseAmbient + flashColor);
 
             // 鏡面反射
