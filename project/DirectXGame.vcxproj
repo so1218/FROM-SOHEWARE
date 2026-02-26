@@ -187,6 +187,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Resources\AnimationManager.cpp" />
     <ClCompile Include="Engine\Resources\ModelManager.cpp" />
     <ClCompile Include="Engine\Resources\TextureManager.cpp" />
+    <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Renderer.cpp" />
@@ -304,6 +305,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
+    <ClInclude Include="Game\GameObject\Bubble.h" />
     <ClInclude Include="Game\Global\WindowConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Renderer.h" />

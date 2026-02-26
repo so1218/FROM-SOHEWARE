@@ -2,27 +2,22 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-
 cbuffer PointLights : register(b2)
 {
     PointLight gPointLights[MAX_POINT_LIGHTS];
 };
-
 cbuffer SpotLights : register(b3)
 {
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
-
 cbuffer AreaLightsBuffer : register(b4)
 {
     AreaLight gAreaLights[MAX_AREA_LIGHTS];
 };
-
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 
 Texture2D<float4> gTexture : register(t0);
@@ -40,9 +35,9 @@ SamplerState gClampSampler : register(s2);
 
 struct PixelShaderOutput
 {
-    float4 color : SV_TARGET0; // 1枚目：SceneColor
-    float4 normal : SV_TARGET1; // 2枚目：法線
-    float4 material : SV_TARGET2; // 3枚目：材質パラメータ
+    float4 color : SV_TARGET0; // SceneColor
+    float4 normal : SV_TARGET1; // 法線
+    float4 material : SV_TARGET2; // 材質パラメータ
 };
 
 struct PixelShaderInput
@@ -257,6 +252,29 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
+    
+    // バブル処理
+    float bubbleAlpha = textureColor.a;
+    if (gMaterial.isBubble != 0)
+    {
+        float3 bubbleNormal = normalize(input.normal);
+        float NdotV = saturate(dot(bubbleNormal, toEye));
+        float fresnel = 1.0f - NdotV;
+
+        // 虹色の計算
+        float t = fresnel + gFrameData.gTime * (gMaterial.wobbleSpeed * 0.1f);
+        float3 a = float3(0.5, 0.5, 0.5);
+        float3 b = float3(0.5, 0.5, 0.5);
+        float3 c = float3(1.0, 1.0, 1.0);
+        float3 d = float3(0.00, 0.33, 0.67);
+        float3 rainbowColor = a + b * cos(6.28318 * (c * t + d));
+
+        // ベースカラーに虹色を乗せる
+        baseColor += rainbowColor * fresnel * gMaterial.rainbowIntensity;
+        
+        // 縁を不透明にする
+        bubbleAlpha = lerp(0.1f, 1.0f, pow(fresnel, gMaterial.fresnelExponent));
+    }
 
     if (gMaterial.enableLighting != 0)
     {
@@ -300,7 +318,7 @@ PixelShaderOutput main(PixelShaderInput input)
             float3 reflectionVector = reflect(-toEye, normal);
             float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, currentRoughness * 6.0f).rgb;
             
-            // 空の反射（環境マップ）自体をフラッシュで発光させる
+            // 空の反射（環境マップ）自体をフラッシュで発光
             envColor += flashColor;
     
             float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, currentMetalness);

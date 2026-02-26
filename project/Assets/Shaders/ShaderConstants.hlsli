@@ -144,6 +144,14 @@ struct MaterialData
     
     float3 puddleColor;
     float puddleTint;
+    
+    int32_t isBubble;
+    float wobbleSpeed;
+    float wobbleAmplitude;
+    float rainbowIntensity;
+    
+    float fresnelExponent;
+    float3 paddingBubble;
 };
 
 struct TrailMaterialData

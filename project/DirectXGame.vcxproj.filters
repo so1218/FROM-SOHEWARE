@@ -438,6 +438,9 @@
     <ClCompile Include="Engine\Graphics\PostProcess\SSRPass.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Bubble.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -736,6 +739,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\SSAOPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\SSRPass.h" />
+    <ClInclude Include="Game\GameObject\Bubble.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

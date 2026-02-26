@@ -1,0 +1,117 @@
+{
+    "Bubble": {
+        "bubbleModel_AddShadow": 0,
+        "bubbleModel_AlbedoMap": "white1x1",
+        "bubbleModel_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.8549019694328308
+        ],
+        "bubbleModel_DiffuseRef": 4.0,
+        "bubbleModel_DisEnable": 1,
+        "bubbleModel_DisThres": 0.0,
+        "bubbleModel_DissolveTex": "noise_53",
+        "bubbleModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "bubbleModel_EdgeInten": 2.0,
+        "bubbleModel_EdgeWidth": 0.05000000074505806,
+        "bubbleModel_Emissive": 1.2000000476837158,
+        "bubbleModel_EnvMapInt": 0.9700000286102295,
+        "bubbleModel_EnvMapTex": "skybox",
+        "bubbleModel_LightMode": 3,
+        "bubbleModel_Lighting": 1,
+        "bubbleModel_Metalness": 1.0,
+        "bubbleModel_NormEnable": 1,
+        "bubbleModel_NormInten": 0.05000000074505806,
+        "bubbleModel_NormTile": 9.199999809265137,
+        "bubbleModel_NormalMapTex": "normal_18",
+        "bubbleModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "bubbleModel_OutlineEnable": 0,
+        "bubbleModel_OutlineWidth": 1.0,
+        "bubbleModel_PuddleColor": [
+            0.4000000059604645,
+            0.30000001192092896,
+            0.20000000298023224
+        ],
+        "bubbleModel_PuddleFalloff": 0.10000000149011612,
+        "bubbleModel_PuddleNoise": "white1x1",
+        "bubbleModel_PuddleScale": 0.10000000149011612,
+        "bubbleModel_PuddleTint": 0.5,
+        "bubbleModel_RimColor": [
+            1.0,
+            0.9118731021881104,
+            0.3670886158943176
+        ],
+        "bubbleModel_RimEnable": 0,
+        "bubbleModel_RimInten": 2.200000047683716,
+        "bubbleModel_RimPower": 1.100000023841858,
+        "bubbleModel_RimUseDir": 0,
+        "bubbleModel_RippleEnable": 0,
+        "bubbleModel_RippleFreq": 1.0,
+        "bubbleModel_RippleMap": "white1x1",
+        "bubbleModel_RippleMix": 0.5,
+        "bubbleModel_RippleScale": 2.0,
+        "bubbleModel_RippleSize": 0.4000000059604645,
+        "bubbleModel_RippleSpeed": 1.0,
+        "bubbleModel_RippleStren": 0.05000000074505806,
+        "bubbleModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "bubbleModel_Roughness": 0.11999999731779099,
+        "bubbleModel_Scale": [
+            3.0,
+            3.0,
+            3.0
+        ],
+        "bubbleModel_ShadowBias": 0.008999999612569809,
+        "bubbleModel_ShadowDens": 0.5400000214576721,
+        "bubbleModel_ShadowEnv": 0.4300000071525574,
+        "bubbleModel_ShadowSoft": 0.3199999928474426,
+        "bubbleModel_Shininess": 50.0,
+        "bubbleModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "bubbleModel_ToonRampTex": "toonRamp_01",
+        "bubbleModel_Trans": [
+            5.599999904632568,
+            3.5999999046325684,
+            4.599999904632568
+        ],
+        "bubbleModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "bubbleModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "bubbleModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "bubbleModel_UsePuddle": 0,
+        "bubbleModel_WetDarkness": 0.5,
+        "bubbleModel_Wetness": 0.5,
+        "fresnelExponent": 3.0399999618530273,
+        "rainbowIntensity": 2.940000057220459,
+        "wobbleAmplitude": 0.05000000074505806,
+        "wobbleSpeed": 5.159999847412109
+    }
+}
