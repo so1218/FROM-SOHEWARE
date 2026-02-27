@@ -319,7 +319,7 @@ struct SSRSettings
     float thickness; 
 };
 
-struct GrassInstance
+struct GrassInstanceData
 {
     float4x4 world;
     float4 color;

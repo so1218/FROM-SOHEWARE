@@ -116,6 +116,8 @@ void LightManager::ReturnPointLight(int index)
         return; // 無効なインデックス
     }
 
+    if (!pointLightData_[index].enable) return;
+
     pointLightData_[index].enable = false; // ライトを無効化
     pointLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
     pointLightData_[index].intensity = 0.0f;
@@ -129,6 +131,9 @@ void LightManager::ReturnAreaLight(int index)
     {
         return; // 無効なインデックス
     }
+
+    if (!areaLightData_[index].enable) return;
+
     areaLightData_[index].enable = false; // ライトを無効化
     availableAreaLightIndices_.push(index); // キューに戻す
 }
