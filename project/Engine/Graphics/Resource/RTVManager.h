@@ -56,7 +56,7 @@ public:
     Vector4 GetClearColor() const { return clearColor_; }
 
     // 引数なしの場合は0番目（カラー）を返す
-    uint32_t GetOffscreenSRVIndex(UINT index = 0) const
+    uint32_t GetOffscreenSRVIndex(UINT index) const
     {
         assert(index < offscreenSrvIndices_.size());
         return offscreenSrvIndices_[index];

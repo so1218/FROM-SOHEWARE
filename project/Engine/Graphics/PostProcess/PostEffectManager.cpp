@@ -20,7 +20,7 @@ void PostEffectManager::Initialize(
     rootSigManager_ = rootSigManager;
 
     // シーンカラー / 深度SRV
-    sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex();
+    sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Color));
     sceneDepthIndex_ = sceneDepthSrvIndex;
 
     // 輝度抽出

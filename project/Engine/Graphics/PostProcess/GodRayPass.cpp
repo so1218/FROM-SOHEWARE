@@ -61,6 +61,7 @@ void GodRayPass::Execute(ID3D12GraphicsCommandList* cmdList,
     PreDraw(cmdList);
 
     cmdList->SetPipelineState(psoManager_->GetPSO("GodRay"));
+    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("PostProcess"));
 
     // ヒープ設定
     ID3D12DescriptorHeap* heaps[] = { passHeap_.Get() };
