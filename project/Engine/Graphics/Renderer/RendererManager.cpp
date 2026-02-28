@@ -18,6 +18,7 @@
 #include "ParticleRenderer.h"
 #include "TrailRenderer.h"
 #include "SkyboxRenderer.h"
+#include "GrassRenderer.h"
 
 RendererManager::RendererManager() {}
 RendererManager::~RendererManager() {}
@@ -65,6 +66,7 @@ void RendererManager::Initialize(
 	trailRenderer_->Initialize(env_);
 	skyboxRenderer_ = std::make_unique<SkyboxRenderer>();
 	skyboxRenderer_->Initialize(env_);
+	grassRenderer_ = std::make_unique<GrassRenderer>();
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -86,6 +88,7 @@ void RendererManager::BeginFrame()
 	if (particleRenderer_) { particleRenderer_->BeginFrame(); }
 	if (trailRenderer_) { trailRenderer_->BeginFrame(); }
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
+	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 }
 
 void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -229,6 +232,11 @@ void RendererManager::Draw3D()
 		modelRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
 	}
 
+	if (grassRenderer_) 
+	{
+		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_);
+	}
+
 	if (modelRenderer_) 
 	{
 		modelRenderer_->Draw(env_, RenderGroup::Grid, isWireFrame_, shadowMap_);
@@ -343,6 +351,28 @@ void RendererManager::SubmitSkybox(const WorldTransform& worldTransform, uint32_
 	if (skyboxRenderer_)
 	{
 		skyboxRenderer_->Submit(worldTransform, color, cubeTextureSrvIndex);
+	}
+}
+
+void RendererManager::InitializeGrass(const ModelData& grassModel)
+{
+	if (grassRenderer_)
+	{
+		grassRenderer_->Initialize(env_, grassModel);
+	}
+}
+
+void RendererManager::SetGrassRenderingParams(uint32_t textureHandle, const MaterialData& materialData)
+{
+	grassTextureHandle_ = textureHandle;
+	grassMaterialData_ = materialData;
+}
+
+void RendererManager::SubmitGrass(const Matrix4x4& world, const Vector4& color)
+{
+	if (grassRenderer_)
+	{
+		grassRenderer_->Submit(world, color);
 	}
 }
 

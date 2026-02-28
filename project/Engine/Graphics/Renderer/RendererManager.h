@@ -16,6 +16,7 @@ class LineRenderer;
 class ParticleRenderer;
 class TrailRenderer;
 class SkyboxRenderer;
+class GrassRenderer;
 
 #include "Mesh.h"
 #include "RenderCommon.h" 
@@ -71,6 +72,7 @@ public:
         BlendMode blendMode, bool isBillboard, float intensity);
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
+    void SubmitGrass(const Matrix4x4& world, const Vector4& color);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
@@ -101,6 +103,9 @@ public:
 
     bool isWireFrame_ = false;
 
+    void InitializeGrass(const ModelData& grassModel);
+    void SetGrassRenderingParams(uint32_t textureHandle, const MaterialData& materialData);
+
 private:
     // Engineから受け取るポインタ
     GraphicsDevice* device_ = nullptr;
@@ -122,6 +127,9 @@ private:
     // カメラのワールド座標
     Vector3 cameraPosition_;
 
+    uint32_t grassTextureHandle_ = 0;
+    MaterialData grassMaterialData_ = {};
+
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
     std::unique_ptr<ModelRenderer> modelRenderer_;
@@ -130,18 +138,5 @@ private:
     std::unique_ptr<ParticleRenderer> particleRenderer_;
     std::unique_ptr<TrailRenderer> trailRenderer_;
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
-
-    // 1バッチごとの管理
-    struct GrassBatch
-    {
-        const ModelData* modelData;
-        MaterialHandle materialHandle;
-        uint32_t instanceCount = 0;
-        uint32_t maxInstanceCount = 0;
-        Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer;
-        GrassInstanceData* mappedData = nullptr;
-        uint32_t srvIndex = 0; 
-    };
-    std::vector<GrassBatch> grassBatches_;
-
+    std::unique_ptr<GrassRenderer> grassRenderer_;
 };

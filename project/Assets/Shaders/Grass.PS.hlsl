@@ -9,7 +9,10 @@ cbuffer DirectionalLights : register(b1)
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 
 Texture2D<float4> gTexture : register(t0);
+Texture2D<float> gShadowMap : register(t1);
+
 SamplerState gSampler : register(s0);
+SamplerComparisonState gShadowSampler : register(s1);
 
 struct PixelInput
 {
