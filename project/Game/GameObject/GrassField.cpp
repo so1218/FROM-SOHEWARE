@@ -1,28 +1,47 @@
 #include "GrassField.h"
 #include "ImGuiManager.h"
+#include "Player.h"
 #include <random>
+GrassField::GrassField(Engine* engine, Player* player) : GameObject(engine)
 
-GrassField::GrassField(Engine* engine) : GameObject(engine)
 {
     SetTag("GrassField");
 
     // システムの初期化 (引数のモデル名とテクスチャ名はご自身の環境に合わせてください)
-    grassSystem_ = std::make_unique<GrassSystem>(engine_, "plane", "white1x1");
+    grassSystem_ = std::make_unique<GrassSystem>(engine_, "grass", "white1x1");
 
     binder_ = std::make_unique<PropertyBinder>(engine_, "GrassField");
+
+    player_ = player;
 }
 
 void GrassField::Initialize()
 {
     auto* grassMat = grassSystem_->GetMaterialData();
 
-    // PropertyBinder にマテリアルデータをバインド
+    // 座標とスケール
+    binder_->Bind("Position", &transform_.translation_, { 0.0f,0.0f,0.0f });
+    binder_->Bind("BaseScale", &baseScale_, 1.0f);
+
+    // 色とマテリアル質感
+    binder_->BindColor("Color", &grassMat->color, { 1.0f,1.0f,1.0f,1.0f });
+    binder_->Bind("ShadowDensity", &grassMat->shadowDensity, 0.5f);
+    binder_->Bind("Wetness", &grassMat->wetness, 0.0f);
+    binder_->Bind("Roughness", &grassMat->roughness, 0.8f);
+
+    // 既存のパラメータ
     binder_->Bind("WindSpeed", &grassMat->grassWindSpeed, 1.0f);
     binder_->Bind("WindAmplitude", &grassMat->grassWindAmplitude, 0.5f);
     binder_->Bind("NormalBlend", &grassMat->grassNormalBlend, 0.5f);
     binder_->Bind("Translucency", &grassMat->grassTranslucency, 0.5f);
     binder_->Bind("RootAO", &grassMat->grassRootAO, 0.5f);
     binder_->Bind("AlphaCutoff", &grassMat->grassAlphaCutoff, 0.1f);
+    binder_->Bind("InteractRadius", &grassMat->interactRadius, 1.5f);
+    binder_->Bind("InteractStrength", &grassMat->interactStrength, 1.0f);
+
+    // 初期状態を記憶
+    prevPosition_ = transform_.translation_;
+    prevBaseScale_ = baseScale_;
 
     // 初回の草生成
     GenerateGrass();
@@ -30,7 +49,23 @@ void GrassField::Initialize()
 
 void GrassField::Update()
 {
-    // 配置した草自体は動かないのでUpdateは特に処理なし
+    // === 座標やスケールが変更されたら草を再配置する ===
+    if (transform_.translation_.x != prevPosition_.x ||
+        transform_.translation_.y != prevPosition_.y ||
+        transform_.translation_.z != prevPosition_.z ||
+        baseScale_ != prevBaseScale_)
+    {
+        GenerateGrass();
+
+        // 記憶を更新
+        prevPosition_ = transform_.translation_;
+        prevBaseScale_ = baseScale_;
+    }
+
+    if (player_)
+    {
+        grassSystem_->GetMaterialData()->playerPos = player_->animationPlayer_->GetTransform().translation_;
+    }
 }
 
 void GrassField::Draw()
@@ -43,11 +78,12 @@ void GrassField::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("草むら設定");
 
-    // 配置に関する設定
     ImGui::Text("--- 配置設定 ---");
-    bool needsRegenerate = false;
+    // 位置とスケールのUI描画
+    binder_->Draw("Position", "中心座標");
+    binder_->Draw("BaseScale", "全体の大きさ");
 
-    // 数や範囲をスライダーでいじった瞬間に再生成フラグを立てる
+    bool needsRegenerate = false;
     if (ImGui::DragInt("草の数", &grassCount_, 50, 1, 10000)) { needsRegenerate = true; }
     if (ImGui::DragFloat("配置範囲", &spreadRadius_, 0.5f, 1.0f, 100.0f)) { needsRegenerate = true; }
 
@@ -59,7 +95,13 @@ void GrassField::DebugDraw()
     ImGui::Separator();
     ImGui::Text("--- 質感・風の設定 ---");
 
-    // PropertyBinderによるパラメータ描画
+    // 新規追加パラメータのUI描画
+    binder_->Draw("Color", "草の色");
+    binder_->Draw("ShadowDensity", "影の濃さ");
+    binder_->Draw("Wetness", "濡れ度");
+    binder_->Draw("Roughness", "ラフネス");
+
+    // 既存パラメータのUI描画
     binder_->Draw("WindSpeed", "風の速さ");
     binder_->Draw("WindAmplitude", "風の強さ");
     binder_->Draw("NormalBlend", "法線の滑らかさ");
@@ -67,34 +109,38 @@ void GrassField::DebugDraw()
     binder_->Draw("RootAO", "根本の影の濃さ");
     binder_->Draw("AlphaCutoff", "アルファカットオフ");
 
+    ImGui::Separator();
+    ImGui::Text("--- インタラクト（踏み込み）設定 ---");
+    binder_->Draw("InteractRadius", "草が避ける範囲");
+    binder_->Draw("InteractStrength", "草の倒れ具合");
+
     ImGui::End();
 #endif
 }
 
 void GrassField::GenerateGrass()
 {
-    // 一度すべての草を消す
     grassSystem_->Clear();
 
-    // 乱数生成器の準備
     std::mt19937 randEngine(std::random_device{}());
     std::uniform_real_distribution<float> posDist(-spreadRadius_, spreadRadius_);
-    std::uniform_real_distribution<float> scaleDist(0.8f, 1.2f);     // 大きさのばらつき
-    std::uniform_real_distribution<float> rotDist(0.0f, 6.283185f);  // Y軸回転 (0 〜 2π)
+    std::uniform_real_distribution<float> scaleDist(0.8f, 1.2f);
+    std::uniform_real_distribution<float> rotDist(0.0f, 6.283185f);
 
-    // このGameObjectの座標を基準に配置
     Vector3 basePos = transform_.translation_;
 
     for (int i = 0; i < grassCount_; ++i)
     {
         Vector3 pos = basePos;
         pos.x += posDist(randEngine);
-        pos.z += posDist(randEngine); // Y（高さ）は変えず、XとZにばらまく
+        pos.z += posDist(randEngine);
 
         Vector3 rot = { 0.0f, rotDist(randEngine), 0.0f };
-        Vector3 scale = { scaleDist(randEngine), scaleDist(randEngine), scaleDist(randEngine) };
 
-        // システムに草を追加
+        // === 追加: ランダムな大きさに「全体のスケール」を掛ける ===
+        float finalScale = scaleDist(randEngine) * baseScale_;
+        Vector3 scale = { finalScale, finalScale, finalScale };
+
         grassSystem_->AddGrass(pos, rot, scale);
     }
 }

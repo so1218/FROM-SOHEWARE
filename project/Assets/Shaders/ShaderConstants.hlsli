@@ -160,7 +160,11 @@ struct MaterialData
 
     float grassRootAO; 
     float grassAlphaCutoff; 
-    float2 paddingGrass;
+    float interactRadius; 
+    float interactStrength; 
+    
+    float3 playerPos;
+    float paddingGrass2;
 };
 
 struct TrailMaterialData

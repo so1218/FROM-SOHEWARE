@@ -42,12 +42,13 @@ public:
 
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
 
+	std::unique_ptr<AnimationModel> animationPlayer_;
+
 private:
 
 	Camera* camera_ = nullptr;
 	FollowCamera* followCamera_;
 
-	std::unique_ptr<AnimationModel> animationPlayer_;
 	std::unique_ptr<PropertyBinder> binder_;
 	
 	Vector3 moveDirection_;

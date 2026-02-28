@@ -15,10 +15,10 @@ TestSceneHori::TestSceneHori(Engine* engine)
 	// ゲームオブジェクトの生成・登録
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
-    objectManager_.Create<Grid>(engine_);
+    //objectManager_.Create<Grid>(engine_);
     objectManager_.Create<Ground>(engine_);
     objectManager_.Create<Bubble>(engine_);
-    objectManager_.Create<GrassField>(engine_);
+    objectManager_.Create<GrassField>(engine_, player_);
 
     player_->SetFollowCamera(followCamera_);
 }

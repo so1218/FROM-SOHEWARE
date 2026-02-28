@@ -1,19 +1,19 @@
 {
     "EmitterConfig": {
-        "amount": 3,
+        "amount": 6,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 0.46000000834465027,
+        "lifetime": 0.1899999976158142,
         "looping": true,
         "playOnAwake": true,
         "position": [
-            0.0,
-            23.399999618530273,
-            0.0
+            4.0,
+            46.20000076293945,
+            -59.20000076293945
         ],
         "spawnInterval": 0.009999999776482582
     },
@@ -119,9 +119,9 @@
         },
         "shapeModule": {
             "boxSize": [
-                46.20000076293945,
+                6.300000190734863,
                 0.0,
-                61.400001525878906
+                0.5
             ],
             "emitFromEdge": false,
             "enabled": true,
@@ -160,15 +160,15 @@
                 1.0,
                 1.0,
                 1.0,
-                0.10980392247438431
+                0.40784314274787903
             ],
-            "headWidthScale": 0.25,
+            "headWidthScale": 0.18000000715255737,
             "jitterFrequency": 13.399999618530273,
             "jitterMode": 0,
             "jitterPhase": 0.0,
             "jitterSpeed": 12.0,
             "jitterStrength": 0.0,
-            "lifetime": 0.10000000149011612,
+            "lifetime": 0.05000000074505806,
             "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
@@ -178,16 +178,16 @@
                 1.0,
                 1.0,
                 1.0,
-                0.12156862765550613
+                0.3019607961177826
             ],
-            "tailWidthScale": 0.1899999976158142,
+            "tailWidthScale": 0.1599999964237213,
             "textureMode": 0,
             "textureName": "circle_05",
             "tiling": [
                 1.0,
                 1.0
             ],
-            "width": 1.0
+            "width": 0.10000000149011612
         },
         "velocityModule": {
             "angleRange": 15.0,
@@ -198,7 +198,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 53.0
+            "speed": 28.040000915527344
         },
         "vortexModule": {
             "axis": [

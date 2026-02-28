@@ -18,7 +18,7 @@ public:
     uint32_t GetMaxCount() const { return kMaxTrailCount; }
 
 private:
-    static const int32_t kMaxTrailCount = 300;
+    static const int32_t kMaxTrailCount = 800;
     static const int32_t kMaxTrailVertices = 512;
 
     struct TrailBatch

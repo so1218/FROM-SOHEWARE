@@ -54,14 +54,48 @@ PixelShaderOutput main(PixelInput input)
 
     // 透過光
     float viewDotLight = saturate(dot(toEye, -lightDir));
-
     float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
+    
+    // ベースとなる草の色
+    float3 finalColor = diffuse + translucency + (baseColor * 0.2f);
 
-    float3 finalColor = diffuse + translucency + (baseColor * 0.2f); // 0.2fはAmbient
-
+    // 根本の影を適用
     finalColor *= smoothstep(1.0f, gMaterial.grassRootAO, input.texcoord.y);
 
+    // 頂点カラー適用
     finalColor *= input.color.rgb;
+
+    // 濡れたときのハイライト計算
+    float3 specular = float3(0.0f, 0.0f, 0.0f);
+    
+    if (gMaterial.wetness > 0.0f)
+    {
+        // カメラの少し上から光が出ている
+        float3 fakeLightDir = normalize(toEye + float3(0.0f, 0.5f, 0.0f));
+        float3 H = normalize(fakeLightDir + toEye);
+        
+        // 両面描画の対策
+        float3 fixedNormal = normal;
+        if (dot(normal, toEye) < 0.0f)
+        {
+            fixedNormal = -normal;
+        }
+       
+        float3 wetNormal = normalize(fixedNormal + float3(0.0f, 0.3f, 0.0f));
+        
+        float NdotH = saturate(dot(wetNormal, H));
+        
+        float shininess = lerp(30.0f, 150.0f, gMaterial.wetness);
+        
+        // ハイライトの強さ
+        float specIntensity = pow(NdotH, shininess) * gMaterial.wetness;
+        
+        float shadowMask = lerp(0.3f, 1.0f, shadowFactor);
+        
+        specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity * shadowMask;
+    }
+
+    finalColor += specular;
 
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
@@ -134,11 +168,10 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         );
     }
 
-    // 平均化（0.0が完全な影、1.0が完全な光）
+    // 平均化
     float shadowVisibility = shadow * (1.0f / 16.0f);
 
     float densityLimit = min(gMaterial.shadowDensity, 0.99f);
     
-    // densityLimitが高いほど、薄いグレーの影が黒(0.0)に変換され、影が太くくっきりする
     return smoothstep(densityLimit, 1.0f, shadowVisibility);
 }
