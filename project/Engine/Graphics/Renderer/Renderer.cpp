@@ -45,8 +45,6 @@ void Renderer::Initialize(
 	lightManager_ = lightManager;
 	globalConstants_ = globalConstants;
 	materialManager_ = materialManager;
-	clientWidth_ = clientWidth;
-	clientHeight_ = clientHeight;
 	postEffectManager_ = postEffectManager;
 
 	env_.device = device_;
@@ -308,16 +306,23 @@ void Renderer::Draw3D()
 		modelRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
 	}
 
+	if (modelRenderer_) 
+	{
+		modelRenderer_->Draw(env_, RenderGroup::Grid, isWireFrame_, shadowMap_);
+	}
+
 	// モデル以外のもの（スプライト、ライン等）を描画
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	for (const auto& sub : modelSubmissions_)
 	{
-		// モデルこのループ内では何もしない
+		// モデルは描画済みなのでスキップ
 		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
 
-		switch (sub.type)
+		// 半透明系(Particle, Trail)は後で描画するのでスキップ
+		if (sub.group == RenderGroup::Particle || sub.group == RenderGroup::Transparent || sub.group == RenderGroup::Trail) continue;
+
+		switch (sub.type) 
 		{
-		case RenderType::Particle: DrawParticles(); break;
-		case RenderType::Trail: DrawTrails(); break;
 		case RenderType::Skybox: DrawSkybox(sub); break;
 		case RenderType::Line:
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -331,6 +336,18 @@ void Renderer::Draw3D()
 	if (modelRenderer_)
 	{
 		modelRenderer_->Draw(env_, RenderGroup::Transparent, isWireFrame_, shadowMap_);
+	}
+
+	for (const auto& sub : modelSubmissions_)
+	{
+		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
+
+		// ここでは半透明系のみを描画
+		switch (sub.type) 
+		{
+		case RenderType::Particle: DrawParticles(); break;
+		case RenderType::Trail:    DrawTrails();    break;
+		}
 	}
 }
 

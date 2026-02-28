@@ -176,8 +176,6 @@ private:
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
 
-    /*std::vector<RenderData> sprites_;*/
-
     std::vector<RenderData> lines_;
     // 線描画用のリソース
     struct LineBatchResource
@@ -259,17 +257,12 @@ private:
     };
     std::vector<GrassBatch> grassBatches_;
 
-    int clientWidth_ = 0;
-    int clientHeight_ = 0;
-
     // 現在カウント中
-    /*uint32_t indexSprite_ = 0;*/
     uint32_t indexLine_ = 0;
     uint32_t indexParticle_ = 0;
     uint32_t indexTrail_ = 0;
 
     // 前フレームの最終カウント保存用
-    /*uint32_t prevSpriteCount_ = 0;*/
     uint32_t prevLineCount_ = 0;
     uint32_t prevParticleCount_ = 0;
     uint32_t prevTrailCount_ = 0;
