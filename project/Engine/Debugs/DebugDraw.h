@@ -23,7 +23,7 @@ public:
     static void DrawFrustum(const Matrix4x4& viewProjectionMatrix, const Vector4& color);       // カメラ視錐台
 #else
     // リリース時は無効化
-    static inline void Initialize(Renderer*) {}
+    static inline void Initialize(RendererManager*) {}
     static inline void DrawLine(const Vector3&, const Vector3&, const Vector4&) {}
     static inline void DrawAABB(const Vector3&, const Vector3&, const Vector4&) {}
     static inline void DrawOBB(const Vector3&, const Vector3&, const Matrix4x4&, const Vector4&) {}

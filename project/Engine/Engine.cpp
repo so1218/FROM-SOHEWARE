@@ -28,6 +28,11 @@
 std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
 int Engine::kFixedFPS_ = 60;
 
+Engine::~Engine()
+{
+	CoUninitialize();
+}
+
 void Engine::Initialize()
 {
 	materialManager_ = std::make_unique<MaterialManager>();
@@ -76,8 +81,6 @@ void Engine::Finalize()
 	// リソース解放
 	CloseHandle(fenceEvent_);
 	CloseWindow(window_->GetHwnd());
-
-	CoUninitialize();
 }
 
 void Engine::SetCameraState(
@@ -199,8 +202,8 @@ void Engine::EndFrame()
 	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 	// 最終結果をバックバッファへ描画
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
-	renderer_->DrawFinalResult(finalSrvIndex);
-	renderer_->DrawUI();
+	rendererManager_->DrawFinalResult(finalSrvIndex);
+	rendererManager_->DrawUI();
 #endif
 
 	// ImGui描画

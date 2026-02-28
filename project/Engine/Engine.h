@@ -32,7 +32,7 @@ constexpr int32_t kClientHeight = 720;
 class Engine
 {
 public:
-    ~Engine() {}
+    ~Engine();
 
     // 初期化・終了
     void Initialize();
@@ -71,6 +71,16 @@ private:
 public:
     uint64_t fenceValue_ = 0; // GPU同期用フェンス値
 
+    // DirectX関連
+    Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource_;
+    Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
+    Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_;
+    Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_;
+    Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
+    HANDLE fenceEvent_ = nullptr;
+
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;
     std::unique_ptr<GraphicsDevice> graphicsDevice_;
@@ -98,16 +108,6 @@ public:
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<ShadowMap> shadowMap_;
 
-    // DirectX関連
-    Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource_;
-    Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
-    Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_;
-    Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_;
-    Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
-    HANDLE fenceEvent_ = nullptr;
-
 	// ウィンドウタイトル
     static std::wstring windowTitle_;
     // 固定FPS
@@ -117,5 +117,4 @@ public:
     Matrix4x4 viewMatrix_;
     Matrix4x4 projectionMatrix_;
     Vector3 eyePos_;
-
 };
