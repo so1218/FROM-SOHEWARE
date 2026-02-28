@@ -12,18 +12,17 @@
 #include "Camera.h"
 #include "PostEffectManager.h"
 #include "TextureManager.h"
-#include "TimeManager.h"
+#include "ModelRenderer.h"
+#include "SpriteRenderer.h"
+#include "LineRenderer.h"
+#include "ParticleRenderer.h"
 
 // 最大数の定義
-const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
 const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
 const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
 
 Renderer::Renderer() {}
-Renderer::~Renderer()
-{
-
-}
+Renderer::~Renderer() {}
 
 void Renderer::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
@@ -62,6 +61,8 @@ void Renderer::Initialize(
 	spriteRenderer_->Initialize(env_, clientWidth, clientHeight);
 	lineRenderer_ = std::make_unique<LineRenderer>();
 	lineRenderer_->Initialize(env_);
+	particleRenderer_ = std::make_unique<ParticleRenderer>();
+	particleRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -80,22 +81,19 @@ void Renderer::Finalize()
 
 void Renderer::BeginFrame()
 {
-	prevParticleCount_ = indexParticle_;
 	prevTrailCount_ = indexTrail_;
 
 	// 描画カウンタの初期化
-	indexParticle_ = 0;
-	indexInstance_ = 0;
 	indexTrail_ = 0;
 
 	if (modelRenderer_) { modelRenderer_->BeginFrame(); }
 	if (spriteRenderer_) { spriteRenderer_->BeginFrame(); }
 	if (lineRenderer_) { lineRenderer_->BeginFrame(); }
+	if (particleRenderer_) { particleRenderer_->BeginFrame(); }
 }
 
 void Renderer::CreateObjects()
 {
-	CreateParticles();
 	CreateSkybox();
 	CreateTrails();
 }
@@ -248,16 +246,6 @@ void Renderer::Draw3D()
 		modelSubmissions_.push_back(trailSubmission);
 	}
 
-	// パーティクル描画を登録
-	if (hasParticles_)
-	{
-		ModelSubmission particleSubmission{};
-		particleSubmission.type = RenderType::Particle;
-		particleSubmission.group = RenderGroup::Particle;
-		particleSubmission.depth = 0.0f;
-		modelSubmissions_.push_back(particleSubmission);
-	}
-
 	// 描画順にソート（グループ→深度→UI順）
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
 		[](const ModelSubmission& a, const ModelSubmission& b)
@@ -298,7 +286,7 @@ void Renderer::Draw3D()
 		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
 
 		// 半透明系(Particle, Trail)は後で描画するのでスキップ
-		if (sub.group == RenderGroup::Particle || sub.group == RenderGroup::Transparent || sub.group == RenderGroup::Trail) continue;
+		if (sub.group == RenderGroup::Transparent || sub.group == RenderGroup::Trail) continue;
 
 		switch (sub.type) 
 		{
@@ -317,6 +305,11 @@ void Renderer::Draw3D()
 		modelRenderer_->Draw(env_, RenderGroup::Transparent, isWireFrame_, shadowMap_);
 	}
 
+	if (particleRenderer_)
+	{
+		particleRenderer_->Draw(env_);
+	}
+
 	for (const auto& sub : modelSubmissions_)
 	{
 		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
@@ -324,7 +317,6 @@ void Renderer::Draw3D()
 		// ここでは半透明系のみを描画
 		switch (sub.type) 
 		{
-		case RenderType::Particle: DrawParticles(); break;
 		case RenderType::Trail:    DrawTrails();    break;
 		}
 	}
@@ -346,11 +338,8 @@ void Renderer::DrawUI()
 
 	// 後処理
 	modelSubmissions_.clear();
-	particleBatches_.clear();
 	trailBatch_.verticesCPU.clear();
 	trailBatches_.clear();
-	hasParticles_ = false;
-	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
@@ -398,124 +387,12 @@ void Renderer::SubmitLine(const Vector3& start, const Vector3& end, uint32_t col
 	if (lineRenderer_) { lineRenderer_->Submit(start, end, color); }
 }
 
-void Renderer::CreateParticles()
-{
-	// 最大数のパーティクル分の配列を確保
-	particles_.resize(kMaxParticleCount);
-
-	// 頂点・インデックス(1枚の板ポリ)
-	std::vector<VertexData> vertices =
-	{
-		{{-0.5f, -0.5f, 0, 1}, {0, 1}, {0, 0, -1}},
-		{{0.5f, -0.5f, 0, 1}, {1, 1}, {0, 0, -1}},
-		{{-0.5f, 0.5f, 0, 1}, {0, 0}, {0, 0, -1}},
-		{{0.5f, 0.5f, 0, 1}, {1, 0}, {0, 0, -1}},
-	};
-	std::vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
-
-	particleMesh_.Initialize(device_->GetDevice(), vertices, indices);
-
-	// インスタンスバッファをフレーム数分リングで確保
-	for (int i = 0; i < kFrameCount; ++i)
-	{
-		particleInstanceBuffer_[i] = BufferManager::CreateBufferResource(
-			device_->GetDevice(),
-			sizeof(ParticleInstanceData) * kMaxParticleCount);
-
-		particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
-	}
-}
-
 void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
 	BlendMode blendMode, bool isBillboard, float intensity)
 {
-	if (indexInstance_ >= kMaxParticleCount) return;
-
-	// インスタンスデータ作成
-	ParticleInstanceData data;
-	data.worldMatrix = worldTransform.matWorld_;
-	data.color = Math::Uint32ToColorVector(color);
-	data.textureIndex = textureIndex;
-	data.rotationZ = rotationZ;
-	data.isBillboard = isBillboard ? 1 : 0;
-	data.intensity = intensity;
-
-	// ブレンドモード・テクスチャごとにバッチ登録
-	particleBatches_[blendMode][textureIndex].push_back(data);
-
-	indexParticle_++;
-	indexInstance_++;
-
-	// このフレームでパーティクル描画が必要であることを記録
-	hasParticles_ = true;
-}
-
-void Renderer::DrawParticles()
-{
-	if (indexInstance_ == 0) return;
-
-	auto* cmdList = commandManager_->GetCommandList();
-
-	// ルートシグネチャとトポロジー設定
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Particle"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// 頂点・インデックスバッファセット
-	cmdList->IASetIndexBuffer(&particleMesh_.GetIndexBufferView());
-	cmdList->IASetVertexBuffers(0, 1, &particleMesh_.GetVertexBufferView());
-
-	// カメラ情報を更新
-	cmdList->SetGraphicsRootConstantBufferView(1, globalConstants_->GetResource()->GetGPUVirtualAddress());
-
-	ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
-	size_t currentOffset = 0;
-
-	// ブレンドモードごとに描画
-	for (auto& [blendMode, textureMap] : particleBatches_)
+	if (particleRenderer_)
 	{
-		std::string psoName;
-		switch (blendMode)
-		{
-		case kBlendModeNone:      psoName = "ParticleOpaque"; break;
-		case kBlendModeNormal:    psoName = "ParticleAlphaBlend"; break;
-		case kBlendModeAdd:       psoName = "ParticleAdditive"; break;
-		case kBlendModeSubtract:  psoName = "ParticleSubtract"; break;
-		case kBlendModeMultiply:  psoName = "ParticleMultiply"; break;
-		case kBlendModeScreen:    psoName = "ParticleScreen"; break;
-		case kBlendModeExclusion: psoName = "ParticleExclusion"; break;
-		default:                  psoName = "ParticleAlphaBlend"; break;
-		}
-
-		ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
-		if (!pso) continue;
-		cmdList->SetPipelineState(pso);
-
-		// テクスチャごとに描画
-		for (auto& [textureIndex, instances] : textureMap)
-		{
-			if (instances.empty()) continue;
-
-			// インスタンスデータをGPUにコピー
-			ParticleInstanceData* dst = dstBase + currentOffset;
-			memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
-
-			// テクスチャSRVセット
-			D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetSRVHandleGPU(textureIndex);
-			cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
-
-			// インスタンスバッファセット
-			UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-			gpuAddress += sizeof(ParticleInstanceData) * currentOffset;
-			cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
-
-			// 描画
-			cmdList->DrawIndexedInstanced(
-				static_cast<UINT>(particleMesh_.GetIndexCount()),
-				static_cast<UINT>(instances.size()),
-				0, 0, 0);
-
-			currentOffset += instances.size();
-		}
+		particleRenderer_->Submit(worldTransform, color, textureIndex, rotationZ, blendMode, isBillboard, intensity);
 	}
 }
 
@@ -815,4 +692,39 @@ void Renderer::DrawSkybox(const ModelSubmission& sub)
 
 	// 描画実行
 	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+}
+
+uint32_t Renderer::GetModelCount() const 
+{
+	return modelRenderer_ ? modelRenderer_->GetCount() : 0;
+}
+uint32_t Renderer::GetSpriteCount() const 
+{
+	return spriteRenderer_ ? spriteRenderer_->GetCount() : 0;
+}
+uint32_t Renderer::GetLineCount() const 
+{
+	return lineRenderer_ ? lineRenderer_->GetCount() : 0;
+}
+uint32_t Renderer::GetParticleCount() const
+{ 
+	return particleRenderer_ ? particleRenderer_->GetCount() : 0;
+}
+uint32_t Renderer::GetTrailCount() const { return prevTrailCount_; }
+
+uint32_t Renderer::GetMaxModelCount() const 
+{
+	return modelRenderer_ ? modelRenderer_->GetMaxCount() : 0;
+}
+uint32_t Renderer::GetMaxSpriteCount() const 
+{
+	return spriteRenderer_ ? spriteRenderer_->GetMaxCount() : 0;
+}
+uint32_t Renderer::GetMaxLineCount() const 
+{
+	return lineRenderer_ ? lineRenderer_->GetMaxCount() : 0;
+}
+uint32_t Renderer::GetMaxParticleCount() const
+{
+	return particleRenderer_ ? particleRenderer_->GetMaxCount() : 0;
 }

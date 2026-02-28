@@ -1,5 +1,4 @@
 #include "SpriteRenderer.h"
-#include "Renderer.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"
 #include "PSOManager.h"

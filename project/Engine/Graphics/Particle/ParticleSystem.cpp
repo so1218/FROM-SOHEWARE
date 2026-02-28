@@ -31,7 +31,7 @@ void ParticleSystem::Initialize()
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget)
 {
     // 最大数を超える場合は生成しない
-    if (particles_.size() >= engine_->renderer_->kMaxParticleCount) return;
+    if (particles_.size() >= engine_->renderer_->GetMaxParticleCount()) return;
 
     // パーティクル設定を取得
     auto& config = GetConfig(presetName);

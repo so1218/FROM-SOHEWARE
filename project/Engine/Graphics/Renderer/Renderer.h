@@ -1,12 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <functional>
-#include <wrl/client.h> 
-#include <d3d12.h>
-
 class GraphicsDevice;
 class CommandManager;
 class PSOManager;
@@ -17,21 +10,19 @@ class GlobalConstants;
 class MaterialManager;
 class Camera;
 class PostEffectManager;
+class ModelRenderer;
+class SpriteRenderer;
+class LineRenderer;
+class ParticleRenderer;
 
 #include "Mesh.h"
-#include "WorldTransform.h"
 #include "RenderCommon.h" 
 #include "BlendMode.h" 
-#include "MaterialManager.h"
 #include "TextureLoader.h"
-#include "AnimationData.h"
 #include "Structures.h"
 #include "ParticleDefinition.h"
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
-#include "ModelRenderer.h"
-#include "SpriteRenderer.h"
-#include "LineRenderer.h"
 
 class Renderer
 {
@@ -90,27 +81,16 @@ public:
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
 
     // 描画カウント取得
-    uint32_t GetModelCount() const {
-        return modelRenderer_ ? modelRenderer_->GetCount() : 0;
-    }
-    uint32_t GetSpriteCount() const {
-        return spriteRenderer_ ? spriteRenderer_->GetCount() : 0;
-    }
-    uint32_t GetLineCount() const {
-        return lineRenderer_ ? lineRenderer_->GetCount() : 0;
-    }
-    uint32_t GetParticleCount() const { return prevParticleCount_; }
-    uint32_t GetTrailCount() const { return prevTrailCount_; }
+    uint32_t GetModelCount() const;
+    uint32_t GetSpriteCount() const;
+    uint32_t GetLineCount() const;
+    uint32_t GetParticleCount() const;
+    uint32_t GetTrailCount() const;
 
-    uint32_t GetMaxModelCount() const {
-        return modelRenderer_ ? modelRenderer_->GetMaxCount() : 0;
-    }
-    uint32_t GetMaxSpriteCount() const {
-        return spriteRenderer_ ? spriteRenderer_->GetMaxCount() : 0;
-    }
-    uint32_t GetMaxLineCount() const {
-        return lineRenderer_ ? lineRenderer_->GetMaxCount() : 0;
-    }
+    uint32_t GetMaxModelCount() const;
+    uint32_t GetMaxSpriteCount() const;
+    uint32_t GetMaxLineCount() const;
+    uint32_t GetMaxParticleCount() const;
 
     // Trail用のレンダリングデータ構造体
     struct TrailRenderData
@@ -128,7 +108,6 @@ public:
     BlendMode currentBlendMode_ = kBlendModeNormal;
 
     // 描画可能な最大数
-    static const int32_t kMaxParticleCount;
     static const int32_t kMaxTrailCount;
     static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
 
@@ -137,12 +116,10 @@ public:
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
-    void CreateParticles();
     void CreateSkybox();
     void CreateTrails();
 
     // 実際の描画コマンド発行を行う内部関数
-    void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);
     void DrawTrails();
 
@@ -172,31 +149,12 @@ private:
     std::unique_ptr<ModelRenderer> modelRenderer_;
     std::unique_ptr<SpriteRenderer> spriteRenderer_;
     std::unique_ptr<LineRenderer> lineRenderer_;
+    std::unique_ptr<ParticleRenderer> particleRenderer_;
 
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
 
-    std::vector<RenderData> particles_;
-    std::vector<ParticleInstanceData> instanceData_;
-    int indexInstance_ = 0;
-    Mesh particleMesh_;
-    bool hasParticles_ = false;
-
-    // 定数フレームバッファ数
-    static constexpr int kFrameCount = 3;
-
-    // パーティクルインスタンスバッファ（フレーム毎）
-    Microsoft::WRL::ComPtr<ID3D12Resource> particleInstanceBuffer_[kFrameCount];
-    ParticleInstanceData* mappedInstanceData_[kFrameCount] = {};
-    int currentFrameIndex_ = 0;
-
-    // テクスチャ配列関連
-    D3D12_GPU_DESCRIPTOR_HANDLE textureArraySrvHandleGPU_{};
-    std::vector<TextureLoader::TextureResources> textures_;
     TextureLoader::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
-
-    // 各テクスチャIDごとにParticleInstanceDataの配列を持つ
-    std::map<BlendMode, std::map<uint32_t, std::vector<ParticleInstanceData>>> particleBatches_;
 
     // スカイボックス
     Mesh skyboxMesh_;
@@ -246,10 +204,8 @@ private:
     std::vector<GrassBatch> grassBatches_;
 
     // 現在カウント中
-    uint32_t indexParticle_ = 0;
     uint32_t indexTrail_ = 0;
 
     // 前フレームの最終カウント保存用
-    uint32_t prevParticleCount_ = 0;
     uint32_t prevTrailCount_ = 0;
 };
