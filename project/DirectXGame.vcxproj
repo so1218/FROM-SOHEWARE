@@ -184,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\LineRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\ModelRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\ParticleRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
@@ -308,6 +309,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\ModelRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\ParticleRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SpriteRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />

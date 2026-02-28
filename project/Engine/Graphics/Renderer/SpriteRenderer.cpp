@@ -44,11 +44,6 @@ void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, i
     prevCount_ = 0;
 }
 
-void SpriteRenderer::Finalize()
-{
-
-}
-
 void SpriteRenderer::BeginFrame()
 {
     // フレーム開始時にカウンタとキューをリセット

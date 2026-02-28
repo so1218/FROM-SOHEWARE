@@ -7,7 +7,6 @@ class SpriteRenderer
 {
 public:
     void Initialize(const RenderEnvironment& env, int clientWidth, int clientHeight);
-    void Finalize();
 
     void BeginFrame();
 

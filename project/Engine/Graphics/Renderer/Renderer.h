@@ -15,15 +15,16 @@ class SpriteRenderer;
 class LineRenderer;
 class ParticleRenderer;
 class TrailRenderer;
+class SkyboxRenderer;
 
 #include "Mesh.h"
 #include "RenderCommon.h" 
 #include "BlendMode.h" 
 #include "TextureLoader.h"
 #include "Structures.h"
-#include "ParticleDefinition.h"
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
+#include "ParticleDefinition.h"
 
 class Renderer
 {
@@ -102,14 +103,6 @@ public:
     bool isWireFrame_ = false;
 
 private:
-    // 描画用オブジェクト作成処理
-    void CreateObjects();
-    void CreateSkybox();
-
-    // 実際の描画コマンド発行を行う内部関数
-    void DrawSkybox(const ModelSubmission& sub);
-
-private:
     // Engineから受け取るポインタ
     GraphicsDevice* device_ = nullptr;
     CommandManager* commandManager_ = nullptr;
@@ -137,17 +130,12 @@ private:
     std::unique_ptr<LineRenderer> lineRenderer_;
     std::unique_ptr<ParticleRenderer> particleRenderer_;
     std::unique_ptr<TrailRenderer> trailRenderer_;
+    std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
 
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
 
     TextureLoader::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
-
-    // スカイボックス
-    Mesh skyboxMesh_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_;
-    TransformationMatrix* mappedSkyboxWvp_ = nullptr;
-    MaterialHandle skyboxMaterialHandle_;
 
     // 1バッチ（同じ草モデル・マテリアルの塊）ごとの管理
     struct GrassBatch

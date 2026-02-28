@@ -17,6 +17,7 @@
 #include "LineRenderer.h"
 #include "ParticleRenderer.h"
 #include "TrailRenderer.h"
+#include "SkyboxRenderer.h"
 
 Renderer::Renderer() {}
 Renderer::~Renderer() {}
@@ -62,12 +63,12 @@ void Renderer::Initialize(
 	particleRenderer_->Initialize(env_);
 	trailRenderer_ = std::make_unique<TrailRenderer>();
 	trailRenderer_->Initialize(env_);
+	skyboxRenderer_ = std::make_unique<SkyboxRenderer>();
+	skyboxRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
 	viewProjectionMatrix_ = Matrix4x4::MakeIdentity();
-
-	CreateObjects();
 
 	shadowMap_ = shadowMap;
 }
@@ -75,7 +76,6 @@ void Renderer::Initialize(
 void Renderer::Finalize()
 {
 	modelRenderer_->Finalize();
-	spriteRenderer_->Finalize();
 }
 
 void Renderer::BeginFrame()
@@ -85,11 +85,7 @@ void Renderer::BeginFrame()
 	if (lineRenderer_) { lineRenderer_->BeginFrame(); }
 	if (particleRenderer_) { particleRenderer_->BeginFrame(); }
 	if (trailRenderer_) { trailRenderer_->BeginFrame(); }
-}
-
-void Renderer::CreateObjects()
-{
-	CreateSkybox();
+	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 }
 
 void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -262,20 +258,9 @@ void Renderer::Draw3D()
 		modelRenderer_->Draw(env_, RenderGroup::Grid, isWireFrame_, shadowMap_);
 	}
 
-	// モデル以外のもの（スプライト、ライン等）を描画
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	for (const auto& sub : modelSubmissions_)
+	if (skyboxRenderer_)
 	{
-		// モデルは描画済みなのでスキップ
-		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
-
-		// 半透明系(Particle, Trail)は後で描画するのでスキップ
-		if (sub.group == RenderGroup::Transparent || sub.group == RenderGroup::Trail) continue;
-
-		switch (sub.type) 
-		{
-		case RenderType::Skybox: DrawSkybox(sub); break;
-		}
+		skyboxRenderer_->Draw(env_, viewMatrix_, projectionMatrix_);
 	}
 
 	if (lineRenderer_)
@@ -372,58 +357,6 @@ void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint
 	}
 }
 
-void Renderer::CreateSkybox()
-{
-	std::vector<VertexData> vertices;
-	std::vector<uint32_t> indices;
-
-	// ShapeGeneratorを使ってメッシュデータを生成
-	ShapeGenerator::SkyBoxGenerator(vertices, indices);
-
-	// メッシュを初期化 (GPUにデータを転送)
-	skyboxMesh_.Initialize(device_->GetDevice(), vertices, indices);
-
-	// WVP行列用のバッファを作成
-	skyboxWvpResource_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-	skyboxWvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedSkyboxWvp_));
-
-	// マテリアルバッファを作成
-	skyboxMaterialHandle_ = materialManager_->CreateMaterial(device_->GetDevice());
-
-	// スカイボックスのデフォルト色
-	skyboxMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-}
-
-void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
-{
-	// WVP行列の計算（カメラの位置を除去して回転のみ反映）
-	Matrix4x4 viewMatrix = viewMatrix_;
-	Matrix4x4 projectionMatrix = projectionMatrix_;
-	viewMatrix.m[3][0] = 0.0f;
-	viewMatrix.m[3][1] = 0.0f;
-	viewMatrix.m[3][2] = 0.0f;
-
-	Matrix4x4 worldMatrix = worldTransform.matWorld_;
-	Matrix4x4 wvpMatrix = worldMatrix * viewMatrix_ * projectionMatrix_;
-	memcpy(mappedSkyboxWvp_, &wvpMatrix, sizeof(TransformationMatrix));
-
-	// マテリアルカラー設定
-	skyboxMaterialHandle_.materialData->color = Math::Uint32ToColorVector(color);
-
-	// 描画キューに登録
-	ModelSubmission submission{};
-	submission.type = RenderType::Skybox;
-	submission.group = RenderGroup::Opaque;
-
-	// 深度を最大値にして必ず最後に描画
-	submission.depth = FLT_MAX;
-
-	// キューブテクスチャを指定
-	submission.textureHandle = cubeTextureSrvIndex;
-
-	modelSubmissions_.push_back(submission);
-}
-
 void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
 {
 	if (trailRenderer_) 
@@ -432,26 +365,12 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	}
 }
 
-void Renderer::DrawSkybox(const ModelSubmission& sub)
+void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
 {
-	auto* cmdList = commandManager_->GetCommandList();
-
-	// パイプライン設定
-	cmdList->SetPipelineState(psoManager_->GetPSO("Skybox"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Skybox"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// バッファ設定
-	cmdList->IASetVertexBuffers(0, 1, &skyboxMesh_.GetVertexBufferView());
-	cmdList->IASetIndexBuffer(&skyboxMesh_.GetIndexBufferView());
-
-	// 定数バッファ・SRV設定
-	cmdList->SetGraphicsRootConstantBufferView(0, skyboxMaterialHandle_.resource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
-
-	// 描画実行
-	cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+	if (skyboxRenderer_)
+	{
+		skyboxRenderer_->Submit(worldTransform, color, cubeTextureSrvIndex);
+	}
 }
 
 uint32_t Renderer::GetModelCount() const 

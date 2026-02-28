@@ -459,6 +459,9 @@
     <ClCompile Include="Engine\Graphics\Renderer\LineRenderer.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -765,6 +768,7 @@
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LineRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

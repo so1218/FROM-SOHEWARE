@@ -6,6 +6,7 @@ Ground::Ground(Engine* engine) : GameObject(engine)
 	SetTag("Ground");
 
 	model_ = GameObject::CreateModel("field");
+	skybox_ = std::make_unique<Skybox>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
 }
@@ -13,7 +14,7 @@ Ground::Ground(Engine* engine) : GameObject(engine)
 void Ground::Initialize()
 {
 	binder_->BindModel("Model", model_.get());
-	
+	skybox_->SetCubeTexture("redClunch");
 };
 
 void Ground::Update()
@@ -24,6 +25,7 @@ void Ground::Update()
 void Ground::Draw()
 {
 	model_->Draw();
+	skybox_->Draw();
 };
 
 void Ground::DebugDraw()
