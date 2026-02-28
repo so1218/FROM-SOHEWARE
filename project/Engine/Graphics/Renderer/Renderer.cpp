@@ -226,20 +226,6 @@ void Renderer::DrawSceneForShadow()
 
 void Renderer::Draw3D()
 {
-	// 描画順にソート（グループ→深度→UI順）
-	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
-		[](const ModelSubmission& a, const ModelSubmission& b)
-		{
-			if (a.group != b.group) return a.group < b.group;
-			switch (a.group)
-			{
-			case RenderGroup::Opaque: return a.depth < b.depth;
-			case RenderGroup::Grid: return a.depth < b.depth;
-			case RenderGroup::Transparent: return a.depth > b.depth;
-			default: return a.depth < b.depth;
-			}
-		});
-
 	auto* cmdList = commandManager_->GetCommandList();
 
 	// 共通設定
@@ -298,9 +284,6 @@ void Renderer::DrawUI()
 	{
 		spriteRenderer_->Draw(env_);
 	}
-
-	// 後処理
-	modelSubmissions_.clear();
 }
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,

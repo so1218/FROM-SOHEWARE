@@ -132,12 +132,9 @@ private:
     std::unique_ptr<TrailRenderer> trailRenderer_;
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
 
-    //// 描画リクエストを貯めるリスト
-    std::vector<ModelSubmission> modelSubmissions_;
-
     TextureLoader::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
 
-    // 1バッチ（同じ草モデル・マテリアルの塊）ごとの管理
+    // 1バッチごとの管理
     struct GrassBatch
     {
         const ModelData* modelData;
