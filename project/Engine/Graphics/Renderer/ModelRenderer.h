@@ -3,12 +3,6 @@
 #include "RenderCommon.h"
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
-#include <vector>
-#include <map>
-#include <string>
-#include <functional>
-#include <wrl/client.h>
-#include <d3d12.h>
 
 class ModelRenderer
 {

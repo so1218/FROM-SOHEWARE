@@ -1,14 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "RenderCommon.h"
-#include "ShadowMap.h"
 #include "RenderEnvironment.h"
-#include <vector>
-#include <map>
-#include <string>
-#include <functional>
-#include <wrl/client.h>
-#include <d3d12.h>
 
 class SpriteRenderer
 {
@@ -33,7 +26,8 @@ public:
 private:
     static const int32_t kMaxCount = 101;
 
-    struct SpriteData {
+    struct SpriteData 
+    {
         Mesh mesh;
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
         TransformationMatrix* mappedData = nullptr;

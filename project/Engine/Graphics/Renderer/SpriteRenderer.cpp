@@ -10,9 +10,6 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
-#include <algorithm>
-#include <cassert>
-
 void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, int clientHeight)
 {
     clientWidth_ = clientWidth;

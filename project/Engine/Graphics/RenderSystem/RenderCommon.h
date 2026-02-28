@@ -71,7 +71,7 @@ struct ModelSubmission
 
     const SkinCluster* skinCluster = nullptr; // スキニング情報
 
-    float depth;                      // 描画ソート用距離
+    float depth = 0.0f;                      // 描画ソート用距離
 
     CullMode cullMode;
     DepthMode depthMode;

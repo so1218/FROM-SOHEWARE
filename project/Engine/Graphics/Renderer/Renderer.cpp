@@ -102,7 +102,6 @@ void Renderer::BeginFrame()
 
 void Renderer::CreateObjects()
 {
-	//CreateSprites();
 	CreateLineBatch();
 	CreateParticles();
 	CreateSkybox();

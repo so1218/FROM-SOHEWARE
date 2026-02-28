@@ -10,9 +10,6 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
-#include <algorithm>
-#include <cassert>
-
 void ModelRenderer::Initialize(const RenderEnvironment& env)
 {
     device_ = env.device; 
@@ -276,8 +273,16 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
     std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
         [](const ModelSubmission& a, const ModelSubmission& b)
         {
-            if (a.group == RenderGroup::Opaque) return a.depth < b.depth;
-            return a.depth > b.depth;
+            // グループが違うなら、グループの番号順に
+            if (a.group != b.group) return a.group < b.group;
+
+            // 同じグループ内での比較
+            if (a.group == RenderGroup::Transparent) 
+            {
+                return a.depth > b.depth; // 半透明は奥から
+            }
+            // それ以外は手前から（昇順）
+            return a.depth < b.depth;
         });
 
     auto* cmdList = env.commandManager->GetCommandList();
