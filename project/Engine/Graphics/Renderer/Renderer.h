@@ -28,7 +28,9 @@ class PostEffectManager;
 #include "Structures.h"
 #include "ParticleDefinition.h"
 #include "ShadowMap.h"
+#include "RenderEnvironment.h"
 #include "ModelRenderer.h"
+#include "SpriteRenderer.h"
 
 class Renderer
 {
@@ -91,15 +93,20 @@ public:
 
     // 描画カウント取得
     uint32_t GetModelCount() const {
-        return modelRenderer_ ? modelRenderer_->GetModelCount() : 0;
+        return modelRenderer_ ? modelRenderer_->GetCount() : 0;
     }
-    uint32_t GetSpriteCount() const { return prevSpriteCount_; }
+    uint32_t GetSpriteCount() const {
+        return spriteRenderer_ ? spriteRenderer_->GetCount() : 0;
+    }
     uint32_t GetLineCount() const { return prevLineCount_; }
     uint32_t GetParticleCount() const { return prevParticleCount_; }
     uint32_t GetTrailCount() const { return prevTrailCount_; }
 
     uint32_t GetMaxModelCount() const {
-        return modelRenderer_ ? modelRenderer_->GetMaxModelCount() : 0;
+        return modelRenderer_ ? modelRenderer_->GetMaxCount() : 0;
+    }
+    uint32_t GetMaxSpriteCount() const {
+        return spriteRenderer_ ? spriteRenderer_->GetMaxCount() : 0;
     }
 
     // Trail用のレンダリングデータ構造体
@@ -118,7 +125,6 @@ public:
     BlendMode currentBlendMode_ = kBlendModeNormal;
 
     // 描画可能な最大数
-    static const int32_t kMaxSpriteCount;
     static const int32_t kMaxLineCount;
     static const int32_t kMaxLineVertices;
     static const int32_t kMaxParticleCount;
@@ -130,14 +136,12 @@ public:
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
-    void CreateSprites();
     void CreateLineBatch();
     void CreateParticles();
     void CreateSkybox();
     void CreateTrails();
 
     // 実際の描画コマンド発行を行う内部関数
-    void DrawSprite(const ModelSubmission& sub);
     void FlushLines();
     void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);
@@ -167,11 +171,12 @@ private:
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
     std::unique_ptr<ModelRenderer> modelRenderer_;
+    std::unique_ptr<SpriteRenderer> spriteRenderer_;
 
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
 
-    std::vector<RenderData> sprites_;
+    /*std::vector<RenderData> sprites_;*/
 
     std::vector<RenderData> lines_;
     // 線描画用のリソース
@@ -258,13 +263,13 @@ private:
     int clientHeight_ = 0;
 
     // 現在カウント中
-    uint32_t indexSprite_ = 0;
+    /*uint32_t indexSprite_ = 0;*/
     uint32_t indexLine_ = 0;
     uint32_t indexParticle_ = 0;
     uint32_t indexTrail_ = 0;
 
     // 前フレームの最終カウント保存用
-    uint32_t prevSpriteCount_ = 0;
+    /*uint32_t prevSpriteCount_ = 0;*/
     uint32_t prevLineCount_ = 0;
     uint32_t prevParticleCount_ = 0;
     uint32_t prevTrailCount_ = 0;

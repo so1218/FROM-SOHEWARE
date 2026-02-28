@@ -17,7 +17,7 @@ void ModelRenderer::Initialize(const RenderEnvironment& env)
 {
     device_ = env.device; 
 
-    perObjectBuffers_.resize(kMaxModelCount);
+    perObjectBuffers_.resize(kMaxCount);
     for (auto& buffer : perObjectBuffers_)
     {
         buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
@@ -32,7 +32,7 @@ void ModelRenderer::Finalize()
 
 void ModelRenderer::BeginFrame()
 {
-    prevModelCount_ = indexModel_;
+    prevCount_ = indexModel_;
     indexModel_ = 0;
     modelSubmissions_.clear();
 }
@@ -43,7 +43,7 @@ void ModelRenderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& viewP
     viewProjectionMatrix_ = viewProjection;
 }
 
-const std::vector<Mesh>& ModelRenderer::GetOrCreateModelBatch(const ModelData& modelData)
+const std::vector<Mesh>& ModelRenderer::GetOrCreateBatch(const ModelData& modelData)
 {
     auto it = meshCache_.find(&modelData);
     if (it != meshCache_.end()) return it->second.meshes;
@@ -62,12 +62,12 @@ const std::vector<Mesh>& ModelRenderer::GetOrCreateModelBatch(const ModelData& m
     return meshCache_[&modelData].meshes;
 }
 
-void ModelRenderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
+void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData& modelData,
     const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
     DepthMode depthMode, RenderGroup group, const Vector4& instanceColor)
 {
     // モデルに対応するGPUメッシュリストを取得
-    const auto& meshes = GetOrCreateModelBatch(modelData);
+    const auto& meshes = GetOrCreateBatch(modelData);
 
     // 再帰的にノードを巡回するラムダ関数
     std::function<void(const Node&, const Matrix4x4&)> Traverse =
@@ -77,7 +77,7 @@ void ModelRenderer::SubmitModel(const WorldTransform& worldTransform, const Mode
 
             for (unsigned int meshIndex : node.meshIndices)
             {
-                if (indexModel_ >= kMaxModelCount) return; // 安全対策
+                if (indexModel_ >= kMaxCount) return; // 安全対策
 
                 const auto& meshPart = modelData.meshes[meshIndex];
 
@@ -169,7 +169,7 @@ void ModelRenderer::SubmitModel(const WorldTransform& worldTransform, const Mode
     Traverse(modelData.rootNode, worldTransform.matWorld_);
 }
 
-void ModelRenderer::SubmitAnimationModel(
+void ModelRenderer::SubmitAnimation(
     const WorldTransform& worldTransform,
     const AnimatedModelData& instance,
     const SkinCluster& skinCluster,
@@ -180,11 +180,11 @@ void ModelRenderer::SubmitAnimationModel(
 {
     const ModelData* modelData = instance.modelData;
     // GPUメッシュ生成済みか確認
-    GetOrCreateModelBatch(*modelData);
+    GetOrCreateBatch(*modelData);
 
     for (size_t i = 0; i < modelData->meshes.size(); ++i)
     {
-        assert(indexModel_ < kMaxModelCount);
+        assert(indexModel_ < kMaxCount);
 
         const auto& meshPart = modelData->meshes[i];
         auto& buffer = perObjectBuffers_[indexModel_];
@@ -289,13 +289,13 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
     {
         if (sub.group != targetGroup) continue;
 
-        DrawModelCore(env, sub, isWireFrame, shadowMap);
+        DrawCore(env, sub, isWireFrame, shadowMap);
     }
 }
 
-void ModelRenderer::DrawModelCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap)
+void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap)
 {
-    const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
+    const std::vector<Mesh>& meshes = GetOrCreateBatch(*sub.modelData);
     assert(sub.meshIndex < meshes.size());
     const Mesh* mesh = &meshes[sub.meshIndex];
 
@@ -440,7 +440,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
         }
 
         // メッシュリストを取得して、正しいインデックスのMesh*を取り出す
-        const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
+        const std::vector<Mesh>& meshes = GetOrCreateBatch(*sub.modelData);
         assert(sub.meshIndex < meshes.size());
         const Mesh* mesh = &meshes[sub.meshIndex];
 

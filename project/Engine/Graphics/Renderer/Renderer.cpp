@@ -15,7 +15,6 @@
 #include "TimeManager.h"
 
 // 最大数の定義
-const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Renderer::kMaxLineCount = 4096;
 const int32_t Renderer::kMaxLineVertices = kMaxLineCount * 2;
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
@@ -63,6 +62,8 @@ void Renderer::Initialize(
 
 	modelRenderer_ = std::make_unique<ModelRenderer>();
 	modelRenderer_->Initialize(env_);
+	spriteRenderer_ = std::make_unique<SpriteRenderer>();
+	spriteRenderer_->Initialize(env_, clientWidth, clientHeight);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -76,17 +77,16 @@ void Renderer::Initialize(
 void Renderer::Finalize()
 {
 	modelRenderer_->Finalize();
+	spriteRenderer_->Finalize();
 }
 
 void Renderer::BeginFrame()
 {
-	prevSpriteCount_ = indexSprite_;
 	prevLineCount_ = indexLine_;
 	prevParticleCount_ = indexParticle_;
 	prevTrailCount_ = indexTrail_;
 
 	// 描画カウンタの初期化
-	indexSprite_ = 0;
 	indexLine_ = 0;
 	indexParticle_ = 0;
 	indexInstance_ = 0;
@@ -96,11 +96,15 @@ void Renderer::BeginFrame()
 	{
 		modelRenderer_->BeginFrame();
 	}
+	if (spriteRenderer_)
+	{
+		spriteRenderer_->BeginFrame();
+	}
 }
 
 void Renderer::CreateObjects()
 {
-	CreateSprites();
+	//CreateSprites();
 	CreateLineBatch();
 	CreateParticles();
 	CreateSkybox();
@@ -287,7 +291,6 @@ void Renderer::Draw3D()
 			case RenderGroup::Opaque: return a.depth < b.depth;
 			case RenderGroup::Grid: return a.depth < b.depth;
 			case RenderGroup::Transparent: return a.depth > b.depth;
-			case RenderGroup::UI: return a.layerOrder < b.layerOrder;
 			default: return a.depth < b.depth;
 			}
 		});
@@ -308,15 +311,11 @@ void Renderer::Draw3D()
 	// モデル以外のもの（スプライト、ライン等）を描画
 	for (const auto& sub : modelSubmissions_)
 	{
-		// UIグループはスキップ
-		if (sub.group == RenderGroup::UI) continue;
-
 		// モデルこのループ内では何もしない
 		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
 
 		switch (sub.type)
 		{
-		case RenderType::Sprite: DrawSprite(sub); break;
 		case RenderType::Particle: DrawParticles(); break;
 		case RenderType::Trail: DrawTrails(); break;
 		case RenderType::Skybox: DrawSkybox(sub); break;
@@ -343,20 +342,10 @@ void Renderer::DrawUI()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// UIのみ描画
-	for (const auto& sub : modelSubmissions_)
+	// UIの描画はSpriteRenderer
+	if (spriteRenderer_)
 	{
-		// UI以外はスキップ
-		if (sub.group != RenderGroup::UI)
-		{
-			continue;
-		}
-
-		switch (sub.type)
-		{
-		case RenderType::Sprite: DrawSprite(sub); break;
-			// Lineなども後で
-		}
+		spriteRenderer_->Draw(env_);
 	}
 
 	// 後処理
@@ -375,7 +364,7 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData
 {
 	if (modelRenderer_)
 	{
-		modelRenderer_->SubmitModel(worldTransform, modelData, materials, blendMode, cullMode, depthMode, group, instanceColor);
+		modelRenderer_->Submit(worldTransform, modelData, materials, blendMode, cullMode, depthMode, group, instanceColor);
 	}
 }
 
@@ -390,106 +379,22 @@ void Renderer::SubmitAnimationModel(
 {
 	if (modelRenderer_)
 	{
-		modelRenderer_->SubmitAnimationModel(
+		modelRenderer_->SubmitAnimation(
 			worldTransform, instance, skinCluster, materials, blendMode, group, instanceColor
 		);
 	}
-}
-
-void Renderer::CreateSprites()
-{
-	// スプライトの配列を確保
-	sprites_.resize(kMaxSpriteCount);
-
-	// 左上原点のスプライト用頂点データ
-	std::vector<VertexData> spriteVertices =
-	{
-		{{0.0f, 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // 左上
-		{{1.0f, 0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // 右上
-		{{0.0f, 1.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // 左下
-		{{1.0f, 1.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // 右下
-	};
-
-	// スプライト共通のインデックス
-	std::vector<uint32_t> spriteIndices = { 0, 1, 2, 1, 3, 2 };
-
-	// スプライト用メッシュとバッファを生成
-	for (size_t i = 0; i < kMaxSpriteCount; ++i)
-	{
-		sprites_[i].mesh.Initialize(device_->GetDevice(), spriteVertices, spriteIndices);
-
-		sprites_[i].wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		sprites_[i].wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&sprites_[i].mappedData));
-
-		sprites_[i].mesh.SetIndexCount(spriteIndices.size());
-	}
-
-	// 使用開始位置をリセット
-	indexSprite_ = 0;
 }
 
 void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform,
 	uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
 	const MaterialHandle& materialHandle)
 {
-	assert(indexSprite_ < kMaxSpriteCount);
-
-	RenderData& sprite = sprites_[indexSprite_];
-
-	// マテリアル設定
-	materialHandle.materialData->color = Math::Uint32ToColorVector(color);
-	materialHandle.materialData->enableLighting = false;
-
-	// UV変換行列設定
-	Matrix4x4 uvTransformMatrix = Matrix4x4::MakeScale(uvTransform.scale_);
-	uvTransformMatrix = (uvTransformMatrix * Matrix4x4::MakeRotateZ(uvTransform.rotation_.z)) * Matrix4x4::MakeTranslate(uvTransform.translation_);
-	materialHandle.materialData->uvTransform = uvTransformMatrix;
-
-	// 行列計算
-
-	// アンカーポイント分ずらす行列
-	Matrix4x4 anchorMatrix = Matrix4x4::MakeTranslate({ -anchorPoint.x, -anchorPoint.y, 0.0f });
-
-	// スケーリング行列
-	Matrix4x4 scaleMatrix = Matrix4x4::MakeScale({ size.x, size.y, 1.0f });
-
-	// 回転行列
-	Matrix4x4 rotationMatrix = Matrix4x4::MakeRotateZ(rotation);
-
-	// 平行移動行列
-	Matrix4x4 translateMatrix = Matrix4x4::MakeTranslate({ position.x, position.y, 0.0f });
-
-	// 全て合成してワールド行列を作る
-	sprite.worldMatrix = anchorMatrix * scaleMatrix * rotationMatrix * translateMatrix;
-
-	// 平行投影行列を作成
-	Matrix4x4 projectionMatrix = Matrix4x4::MakeOrthographic(
-		0.0f, 0.0f, float(clientWidth_), float(clientHeight_),
-		0.0f, 100.0f
-	);
-
-	Matrix4x4 wvpMatrix = sprite.worldMatrix * projectionMatrix;
-
-	// 定数バッファにコピー
-	sprite.mappedData->WVP = wvpMatrix;
-	sprite.mappedData->World = sprite.worldMatrix;
-
-	// 描画キューに登録
-	ModelSubmission submission{};
-	submission.type = RenderType::Sprite;
-	submission.group = RenderGroup::UI;
-	submission.instanceIndex = indexSprite_;
-	submission.textureHandle = textureHandle;
-	submission.dissolveTextureHandle = dissolveTextureHandle;
-	submission.materialHandle = materialHandle;
-	submission.color = color;
-	submission.worldMatrix = sprite.worldMatrix;
-	submission.depth = 0.0f;
-	submission.layerOrder = layerOrder;
-
-	modelSubmissions_.push_back(submission);
-
-	indexSprite_++;
+	if (spriteRenderer_) {
+		spriteRenderer_->Submit(
+			position, size, rotation, color, anchorPoint, uvTransform,
+			textureHandle, dissolveTextureHandle, layerOrder, materialHandle
+		);
+	}
 }
 
 void Renderer::CreateLineBatch()
@@ -864,29 +769,6 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	}
 
 	indexTrail_++;
-}
-
-
-
-void Renderer::DrawSprite(const ModelSubmission& sub)
-{
-	RenderData& sprite = sprites_[sub.instanceIndex];
-	auto* cmdList = commandManager_->GetCommandList();
-
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	cmdList->SetPipelineState(psoManager_->GetPSO("Sprite"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Sprite"));
-
-	cmdList->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
-	cmdList->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());
-
-	cmdList->SetGraphicsRootConstantBufferView(0, sub.materialHandle.resource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, sprite.wvpResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.textureHandle));
-	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
-
-	cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
 }
 
 void Renderer::FlushLines()

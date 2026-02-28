@@ -82,6 +82,15 @@ struct ModelSubmission
     int layerOrder = 0;               // 手動ソート用（UIや重ね順）
 };
 
+struct SpriteSubmission
+{
+    size_t instanceIndex;             // sprites_配列の何番目を使うか
+    uint32_t textureHandle;           // テクスチャ
+    uint32_t dissolveTextureHandle;   // ディゾルブ用テクスチャ
+    MaterialHandle materialHandle;    // マテリアル
+    int layerOrder;                   // 描画順（UIソート用）
+};
+
 struct RenderSettings
 {
     BlendMode blendMode = BlendMode::kBlendModeNone;
