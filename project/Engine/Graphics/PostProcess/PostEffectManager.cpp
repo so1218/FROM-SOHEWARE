@@ -20,7 +20,7 @@ void PostEffectManager::Initialize(
     rootSigManager_ = rootSigManager;
 
     // シーンカラー / 深度SRV
-    sceneTextureIndex_ = engine->offscreenRTVManager_->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Color));
+    sceneTextureIndex_ = engine->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Color));
     sceneDepthIndex_ = sceneDepthSrvIndex;
 
     // 輝度抽出
@@ -77,13 +77,13 @@ void PostEffectManager::Initialize(
     ssrPass_->Initialize(engine, width, height, psoManager);
 
     // ポストエフェクト定数バッファ
-    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
     cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
     // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
     auto [finalResource, finalRtvHandle, finalSrvIndex] =
-        engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+        engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
             width, height, Vector4(0, 0, 0, 1), DXGI_FORMAT_R16G16B16A16_FLOAT
         );
 
@@ -170,7 +170,7 @@ void PostEffectManager::ExecutePostEffects(
 {
     // 深度をポストエフェクト用に読み取り状態へ
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->offscreenDepthResource_.Get(),
+        engine_->GetOffscreenDepthResource(),
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
@@ -181,7 +181,7 @@ void PostEffectManager::ExecutePostEffects(
     cmdList->SetDescriptorHeaps(1, heaps);
 
     // SSAOの実行
-    uint32_t normalSrvIndex = engine_->offscreenRTVManager_->GetOffscreenSRVIndex(
+    uint32_t normalSrvIndex = engine_->GetOffscreenRTVManager()->GetOffscreenSRVIndex(
         static_cast<UINT>(GBufferIndex::Normal));
 
     auto normalSRV = srvManager_->GetSRVHandleGPU(normalSrvIndex);
@@ -211,7 +211,7 @@ void PostEffectManager::ExecutePostEffects(
     auto sceneSRV = srvManager_->GetSRVHandleGPU(sceneTextureIndex_);
 
     // マテリアル情報のSRVインデックスを取得
-    uint32_t materialSrvIndex = engine_->offscreenRTVManager_->GetOffscreenSRVIndex(
+    uint32_t materialSrvIndex = engine_->GetOffscreenRTVManager()->GetOffscreenSRVIndex(
         static_cast<UINT>(GBufferIndex::Material));
 
     // SSR の実行
@@ -229,10 +229,10 @@ void PostEffectManager::ExecutePostEffects(
 
     Vector3 lightColor = { 1.0f, 1.0f, 1.0f };
 
-    if (engine_->lightManager_)
+    if (engine_->GetLightManager())
     {
         // 0番目のDirectionalLightを取得
-        auto dirLights = engine_->lightManager_->GetDirectionalLightData();
+        auto dirLights = engine_->GetLightManager()->GetDirectionalLightData();
         // 有効なら計算
         if (dirLights[0].enable)
         {
@@ -296,7 +296,7 @@ void PostEffectManager::ExecutePostEffects(
 
     // 最終合成
     combinePass_->SetupInputViews(
-        engine_->graphicsDevice_->GetDevice(),
+        engine_->GetGraphicsDevice()->GetDevice(),
         srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_),
         srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
         srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
@@ -313,7 +313,7 @@ void PostEffectManager::ExecutePostEffects(
 
     // 深度を次フレーム用に書き込み状態へ戻す
     CD3DX12_RESOURCE_BARRIER barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->offscreenDepthResource_.Get(),
+        engine_->GetOffscreenDepthResource(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_DEPTH_WRITE
     );

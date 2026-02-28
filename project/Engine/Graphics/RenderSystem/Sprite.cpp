@@ -19,7 +19,7 @@ Sprite::Sprite(Engine* engine)
     textureHandle_ = texManager.Get(textureName_);
     dissolveTextureHandle_ = texManager.Get(dissolveTextureName_);
 
-    materialHandle_ = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
+    materialHandle_ = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 }
 
 void Sprite::SetTexture(const std::string& textureName)
@@ -43,7 +43,7 @@ void Sprite::Draw()
         return;
     }
 
-    engine_->rendererManager_->SubmitSprite(
+    engine_->GetRendererManager()->SubmitSprite(
         position_,
         size_,
         rotation_,

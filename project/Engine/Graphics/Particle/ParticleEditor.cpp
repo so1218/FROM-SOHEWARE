@@ -70,7 +70,7 @@ void ParticleEditor::ShowEditor()
                             }
 
                             // GPUハンドル取得
-                            auto gpuHandle = engine_->srvManager_->GetSRVHandleGPU(data.handle);
+                            auto gpuHandle = engine_->GetSRVManager()->GetSRVHandleGPU(data.handle);
                             ImTextureID imTexID = (ImTextureID)gpuHandle.ptr;
 
                             ImGui::PushID((int)i);

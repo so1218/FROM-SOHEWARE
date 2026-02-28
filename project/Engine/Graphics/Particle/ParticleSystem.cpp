@@ -31,7 +31,7 @@ void ParticleSystem::Initialize()
 void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget)
 {
     // 最大数を超える場合は生成しない
-    if (particles_.size() >= engine_->rendererManager_->GetMaxParticleCount()) return;
+    if (particles_.size() >= engine_->GetRendererManager()->GetMaxParticleCount()) return;
 
     // パーティクル設定を取得
     auto& config = GetConfig(presetName);
@@ -501,7 +501,7 @@ void ParticleSystem::Update()
         if (particle.age >= particle.lifetime) continue;
 
         particle.transform->UpdateMatrix();
-        engine_->rendererManager_->SubmitParticleInstance(
+        engine_->GetRendererManager()->SubmitParticleInstance(
             *particle.transform,
             Math::ColorVectorToUint32(particle.color),
             particle.textureHandle,
@@ -544,7 +544,7 @@ void ParticleSystem::Draw()
             drawPoints.push_back({ particle.transform->translation_, particle.transform->rotationQuaternion_, particle.age });
 
         // Rendererに登録
-        engine_->rendererManager_->SubmitTrail(drawPoints, particle.config.trail);
+        engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config.trail);
     }
 
     // ブレンドを元に戻す

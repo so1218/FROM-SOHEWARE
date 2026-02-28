@@ -6,7 +6,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     InitializeBase(engine, width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
     psoManager_ = psoManager;
 
-    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
     // 定数バッファ
     cbSSR_ = BufferManager::CreateBufferResource(device, sizeof(SSRSettings));
@@ -33,7 +33,7 @@ void SSRPass::Execute(
     D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE materialCPU)
 {
-    ID3D12Device* device = engine_->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
     UINT size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -48,7 +48,7 @@ void SSRPass::Execute(
 
     PreDraw(cmdList);
 
-    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("SSR"));
+    cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("SSR"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSR"));
 
     // Heap設定
@@ -57,7 +57,7 @@ void SSRPass::Execute(
 
     // 定数バッファ
     cmdList->SetGraphicsRootConstantBufferView(0, cbSSR_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
 
     // テクスチャテーブル 
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = passHeap_->GetGPUDescriptorHandleForHeapStart();

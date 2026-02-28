@@ -818,7 +818,7 @@ void PropertyBinder::BindTexture(
     items_[key] = [this, key, filterType, defaultName, onValueChanged](const std::string& label)
         {
             auto& texManager = TextureManager::GetInstance();
-            auto* srvManager = this->engine_->srvManager_.get();
+            auto* srvManager = this->engine_->GetSRVManager();
             GlobalVariables* gv = GlobalVariables::GetInstance();
 
             // 現在の値をGlobalVariablesから取得

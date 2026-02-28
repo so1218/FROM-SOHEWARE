@@ -8,7 +8,7 @@ void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* p
     psoManager_ = psoManager;
 
     // 定数バッファ生成
-    cbSSAO_ = BufferManager::CreateBufferResource(engine->graphicsDevice_->GetDevice(), sizeof(SSAOSettings));
+    cbSSAO_ = BufferManager::CreateBufferResource(engine->GetGraphicsDevice()->GetDevice(), sizeof(SSAOSettings));
     cbSSAO_->Map(0, nullptr, reinterpret_cast<void**>(&ssaoData_));
     *ssaoData_ = SSAOSettings();
 
@@ -29,11 +29,11 @@ void SSAOPass::Execute(
     PreDraw(cmdList);
 
     // SSAO用のルートシグネチャとPSOをセット
-    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("SSAO"));
+    cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("SSAO"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSAO"));
 
     cmdList->SetGraphicsRootConstantBufferView(0, cbSSAO_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootDescriptorTable(2, normalSRV);
     cmdList->SetGraphicsRootDescriptorTable(3, depthSRV);
 

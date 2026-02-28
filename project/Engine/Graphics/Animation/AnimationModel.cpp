@@ -26,7 +26,7 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
     materials_.reserve(animeModelData_.modelData->meshes.size());
     for (const auto& mesh : animeModelData_.modelData->meshes)
     {
-        MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
+        MaterialHandle newMaterial = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 
         auto& texManager = TextureManager::GetInstance();
 
@@ -50,10 +50,10 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
     // スケルトン・スキンクラスター生成
     skeleton_ = CreateSkeleton(animeModelData_.modelData->rootNode);
     skinCluster_ = CreateSkinCluster(
-        engine_->graphicsDevice_->GetDevice(),
+        engine_->GetGraphicsDevice()->GetDevice(),
         skeleton_,
         *animeModelData_.modelData,
-        engine_->srvManager_.get()
+        engine_->GetSRVManager()
     );
 
     // 初期状態の設定
@@ -64,9 +64,9 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
 AnimationModel::~AnimationModel()
 {
     // SRVの解放
-    if (engine_ && engine_->srvManager_)
+    if (engine_ && engine_->GetSRVManager())
     {
-        engine_->srvManager_->FreeSRV(skinCluster_.paletteSrvIndex);
+        engine_->GetSRVManager()->FreeSRV(skinCluster_.paletteSrvIndex);
     }
 }
 
@@ -131,7 +131,7 @@ void AnimationModel::Draw()
     // モデル自体のワールド行列更新
     transform_.UpdateMatrix();
 
-    engine_->rendererManager_->SubmitAnimationModel(
+    engine_->GetRendererManager()->SubmitAnimationModel(
         transform_,
         animeModelData_,
         skinCluster_,

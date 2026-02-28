@@ -4,9 +4,9 @@
 IPostEffect::~IPostEffect()
 {
     // SRV解放
-    if (engine_->srvManager_ && srvIndex_ != 0)
+    if (engine_->GetSRVManager() && srvIndex_ != 0)
     {
-        engine_->srvManager_->FreeSRV(srvIndex_);
+        engine_->GetSRVManager()->FreeSRV(srvIndex_);
         srvIndex_ = 0;
     }
 }
@@ -20,7 +20,7 @@ void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_F
 
     // tupleから3つの値（Resource, RTV, SRVIndex）を直接受け取る
     auto [resource, rtvHandle, srvIndex] =
-        engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+        engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
             width, height, clearColor, format
         );
 
@@ -37,8 +37,8 @@ void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_F
 D3D12_GPU_DESCRIPTOR_HANDLE IPostEffect::GetSRVHandleGPU()
 {
     // 出力SRV取得
-    return engine_->srvManager_
-        ? engine_->srvManager_->GetSRVHandleGPU(srvIndex_)
+    return engine_->GetSRVManager()
+        ? engine_->GetSRVManager()->GetSRVHandleGPU(srvIndex_)
         : D3D12_GPU_DESCRIPTOR_HANDLE{ 0 };
 }
 

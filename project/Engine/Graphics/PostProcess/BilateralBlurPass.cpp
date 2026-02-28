@@ -5,9 +5,9 @@
 BilateralBlurPass::~BilateralBlurPass()
 {
     // 中間バッファ用のSRVを解放
-    if (engine_->srvManager_ && intermediateSRVIndex_ != 0)
+    if (engine_->GetSRVManager() && intermediateSRVIndex_ != 0)
     {
-        engine_->srvManager_->FreeSRV(intermediateSRVIndex_);
+        engine_->GetSRVManager()->FreeSRV(intermediateSRVIndex_);
         intermediateSRVIndex_ = 0;
     }
 }
@@ -20,7 +20,7 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
 
     // 中間バッファ（横ブラー結果用）の生成
     Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    auto [resource, rtvHandle, srvIndex] = engine_->offscreenRTVManager_->CreateOffscreenRenderTarget(
+    auto [resource, rtvHandle, srvIndex] = engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
         width, height, clearColor, DXGI_FORMAT_R8_UNORM
     );
     intermediateResource_ = resource;
@@ -28,7 +28,7 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
     intermediateSRVIndex_ = srvIndex;
 
     // 定数バッファ生成
-    auto device = engine->graphicsDevice_->GetDevice();
+    auto device = engine->GetGraphicsDevice()->GetDevice();
     cbBlurX_ = BufferManager::CreateBufferResource(device, sizeof(BilateralBlurSettings));
     cbBlurX_->Map(0, nullptr, reinterpret_cast<void**>(&blurXData_));
 
@@ -60,9 +60,9 @@ void BilateralBlurPass::Execute(
     blurYData_->normalTolerance = settingsData_->normalTolerance;
 
     // ルートシグネチャとPSOをセット
-    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("BilateralBlur"));
+    cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("BilateralBlur"));
     cmdList->SetPipelineState(psoManager_->GetPSO("BilateralBlur"));
-    cmdList->SetGraphicsRootConstantBufferView(1, engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
 
     // 横方向のブラー (SSAO -> 中間バッファ)
 
@@ -102,7 +102,7 @@ void BilateralBlurPass::Execute(
 
     cmdList->SetGraphicsRootConstantBufferView(0, cbBlurY_->GetGPUVirtualAddress());
 
-    D3D12_GPU_DESCRIPTOR_HANDLE intermediateSRVHandle = engine_->srvManager_->GetSRVHandleGPU(intermediateSRVIndex_);
+    D3D12_GPU_DESCRIPTOR_HANDLE intermediateSRVHandle = engine_->GetSRVManager()->GetSRVHandleGPU(intermediateSRVIndex_);
     cmdList->SetGraphicsRootDescriptorTable(2, intermediateSRVHandle);
 
     cmdList->SetGraphicsRootDescriptorTable(3, depthSRV);

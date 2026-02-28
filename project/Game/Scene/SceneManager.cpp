@@ -87,7 +87,7 @@ void SceneManager::SetScene(BaseScene* newScene)
         currentScene_->Finalize();
     }
 
-    engine_->particleSystem_->Clear();
+    engine_->GetParticleSystem()->Clear();
     currentScene_ = newScene;
 
     // 新しいシーンの初期化処理

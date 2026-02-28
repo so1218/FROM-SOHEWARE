@@ -14,7 +14,7 @@ void BloomCombinePass::Initialize(
     psoManager_ = pso;
     srvManager_ = srvManager;
 
-    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
     // 合成用定数バッファ
     cb_ = BufferManager::CreateBufferResource(device, sizeof(CombineSettings));
@@ -145,7 +145,7 @@ void BloomCombinePass::Execute(
     // カメラ定数
     cmdList->SetGraphicsRootConstantBufferView(
         1,
-        engine_->globalConstants_
+        engine_->GetGlobalConstants()
         ->GetResource()
         ->GetGPUVirtualAddress()
     );

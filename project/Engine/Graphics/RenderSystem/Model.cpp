@@ -18,7 +18,7 @@ Model::Model(Engine* engine, const ModelData* modelData)
     for (const auto& mesh : modelData_->meshes)
     {
         // マテリアル作成
-        MaterialHandle newMaterial = engine_->materialManager_->CreateMaterial(engine_->graphicsDevice_->GetDevice());
+        MaterialHandle newMaterial = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 
         auto& texManager = TextureManager::GetInstance();
 
@@ -50,7 +50,7 @@ void Model::Draw()
     transform_.UpdateMatrix();
 
     // 描画命令発行
-    engine_->rendererManager_->SubmitModel(
+    engine_->GetRendererManager()->SubmitModel(
         transform_,
         *modelData_,
         materials_,

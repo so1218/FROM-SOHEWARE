@@ -9,7 +9,7 @@ void GodRayPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 
     // 設定用CB作成
     constantBuffer_ = BufferManager::CreateBufferResource(
-        engine->graphicsDevice_->GetDevice(), sizeof(GodRaySettings));
+        engine->GetGraphicsDevice()->GetDevice(), sizeof(GodRaySettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     // デフォルトパラメータ設定
@@ -23,7 +23,7 @@ void GodRayPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
     cbData_->sunRadius = 0.1f;
 
     // パス用SRVヒープ作成
-    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 2;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -48,7 +48,7 @@ void GodRayPass::Execute(ID3D12GraphicsCommandList* cmdList,
     cbData_->lightPosScreen = lightPosUV;
 
     // ディスクリプタをパス用ヒープに集約コピー
-    ID3D12Device* device = engine_->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -61,7 +61,7 @@ void GodRayPass::Execute(ID3D12GraphicsCommandList* cmdList,
     PreDraw(cmdList);
 
     cmdList->SetPipelineState(psoManager_->GetPSO("GodRay"));
-    cmdList->SetGraphicsRootSignature(engine_->rootSignatureManager_->GetRootSignature("PostProcess"));
+    cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("PostProcess"));
 
     // ヒープ設定
     ID3D12DescriptorHeap* heaps[] = { passHeap_.Get() };

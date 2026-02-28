@@ -24,12 +24,12 @@ TestSceneHori::TestSceneHori(Engine* engine)
 void TestSceneHori::OnInitialize()
 {
     // ライトの設定
-    engine_->lightManager_->GetDirectionalLightData()[0].enable = true;
-    engine_->lightManager_->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
-    engine_->lightManager_->GetDirectionalLightData()[0].intensity = 0.4f;
+    engine_->GetLightManager()->GetDirectionalLightData()[0].enable = true;
+    engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
+    engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
 
-    testSceneEmitter_ = engine_->particleSystem_->CreateEmitter("testScene");
-    engine_->particleSystem_->AddEmitter(std::move(testSceneEmitter_));
+    testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
+    engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
 }
 
 void TestSceneHori::OnUpdate()

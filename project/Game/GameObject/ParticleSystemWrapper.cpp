@@ -8,10 +8,10 @@ ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
 
 void ParticleSystemWrapper::Update()
 {
-    engine_->particleSystem_->Update();
+    engine_->GetParticleSystem()->Update();
 }
 
 void ParticleSystemWrapper::Draw()
 {
-    engine_->particleSystem_->Draw();
+    engine_->GetParticleSystem()->Draw();
 }

@@ -12,7 +12,7 @@ void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 
     // 定数バッファを作成
     constantBuffer_ = BufferManager::CreateBufferResource(
-        engine->graphicsDevice_->GetDevice(),
+        engine->GetGraphicsDevice()->GetDevice(),
         sizeof(BlurSettings)
     );
 
@@ -36,7 +36,7 @@ void DownsamplePass::Execute(
 
     // 共通SRVヒープを設定
     ID3D12DescriptorHeap* heaps[] = {
-        engine_->srvManager_->GetSRVHeap()
+        engine_->GetSRVManager()->GetSRVHeap()
     };
     cmdList->SetDescriptorHeaps(1, heaps);
 

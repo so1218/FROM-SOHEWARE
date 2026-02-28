@@ -53,7 +53,7 @@ void Player::Update()
 	
 	{
 		// 0番目のディレクショナルライトを取得
-		auto* dirLights = engine_->lightManager_->GetDirectionalLightData();
+		auto* dirLights = engine_->GetLightManager()->GetDirectionalLightData();
 		if (dirLights[0].enable)
 		{
 			// ライト方向を正規化
@@ -84,7 +84,7 @@ void Player::Update()
 			Matrix4x4 lightViewProj = lightView * lightProj;
 
 			// シャドウ行列をライトマネージャに更新
-			engine_->lightManager_->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
+			engine_->GetLightManager()->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
 		}
 	}
 }

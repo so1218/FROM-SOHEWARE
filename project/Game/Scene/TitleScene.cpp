@@ -25,8 +25,8 @@ void TitleScene::OnInitialize()
 
 	binder_->BindSprite("TitleSprite", titleSprite_.get());
 
-	titleSceneEmitter_ = engine_->particleSystem_->CreateEmitter("titleScene");
-	engine_->particleSystem_->AddEmitter(std::move(titleSceneEmitter_));
+	titleSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("titleScene");
+	engine_->GetParticleSystem()->AddEmitter(std::move(titleSceneEmitter_));
 }
 
 void TitleScene::OnUpdate()

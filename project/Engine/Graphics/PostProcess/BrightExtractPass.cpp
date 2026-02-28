@@ -8,7 +8,7 @@ void BrightExtractPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     psoManager_ = pso;
 
     // 定数バッファ作成
-    constantBuffer_ = BufferManager::CreateBufferResource(engine->graphicsDevice_->GetDevice(), sizeof(BrightExtractSettings));
+    constantBuffer_ = BufferManager::CreateBufferResource(engine->GetGraphicsDevice()->GetDevice(), sizeof(BrightExtractSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     // 初期値設定

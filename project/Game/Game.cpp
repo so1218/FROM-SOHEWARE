@@ -80,7 +80,7 @@ void Game::Update()
     // デバッグカメラの有効/無効切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_C))
     {
-        engine_->debugCamera_->SetEnabled(!engine_->debugCamera_->IsEnabled());
+        engine_->GetDebugCamera()->SetEnabled(!engine_->GetDebugCamera()->IsEnabled());
     }
 
     // グローバル変数更新
@@ -109,14 +109,14 @@ void Game::Update()
     Camera* sceneCamera = sceneManager_.GetCurrentScene()->GetActiveCamera();
 
 #ifdef IS_DEVELOPMENT
-    if (engine_->debugCamera_->IsEnabled())
+    if (engine_->GetDebugCamera()->IsEnabled())
     {
-        engine_->debugCamera_->Update();
+        engine_->GetDebugCamera()->Update();
 
         // デバッグカメラの行列を使用
-        viewMat = engine_->debugCamera_->GetViewMatrix();
-        projMat = engine_->debugCamera_->GetProjectionMatrix();
-        eyePos = engine_->debugCamera_->GetCameraWorldPosition();
+        viewMat = engine_->GetDebugCamera()->GetViewMatrix();
+        projMat = engine_->GetDebugCamera()->GetProjectionMatrix();
+        eyePos = engine_->GetDebugCamera()->GetCameraWorldPosition();
     }
     else 
     {
@@ -126,7 +126,7 @@ void Game::Update()
         eyePos = sceneCamera->GetTranslation();
     }
 
-    engine_->debugGuiManager_->Update(sceneCamera);
+    engine_->GetDebugGuiManager()->Update(sceneCamera);
 
 #else
     // リリース時は常にシーンカメラ
@@ -145,7 +145,7 @@ void Game::Update()
 
 #ifdef IS_DEVELOPMENT
     // ゲームカメラ視錐台を描画
-    if (engine_->debugCamera_->IsEnabled())
+    if (engine_->GetDebugCamera()->IsEnabled())
     {
         DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
     }
@@ -182,7 +182,7 @@ void Game::DebugDraw()
 
     sceneManager_.DebugDraw();
 
-    engine_->lightManager_->DrawDebugLights();
+    engine_->GetLightManager()->DrawDebugLights();
 #endif
 }
 

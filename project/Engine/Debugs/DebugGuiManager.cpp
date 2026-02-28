@@ -52,15 +52,15 @@ void DebugGuiManager::Update(Camera* targetCamera)
 #ifdef IS_DEVELOPMENT
 void DebugGuiManager::DrawRenderSettings()
 {
-    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->rendererManager_->isWireFrame_);
+    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->GetRendererManager()->isWireFrame_);
 }
 
 void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
 {
-    bool enabled = engine_->debugCamera_->IsEnabled();
+    bool enabled = engine_->GetDebugCamera()->IsEnabled();
     if (ImGui::Checkbox("デバッグカメラを有効化", &enabled))
     {
-        engine_->debugCamera_->SetEnabled(enabled);
+        engine_->GetDebugCamera()->SetEnabled(enabled);
     }
 
     if (targetCamera && ImGui::TreeNode("ターゲットカメラ (Scene)"))
@@ -787,11 +787,11 @@ void DebugGuiManager::DrawTimeSettings()
 void DebugGuiManager::DrawInformationDisplays()
 {
     // オブジェクト数
-    ImGui::Text("Models: %d / %d", engine_->rendererManager_->GetModelCount(), engine_->rendererManager_->GetMaxModelCount());
-    ImGui::Text("Sprites: %d / %d", engine_->rendererManager_->GetSpriteCount(), engine_->rendererManager_->GetMaxSpriteCount());
-    ImGui::Text("Lines: %d / %d", engine_->rendererManager_->GetLineCount(), engine_->rendererManager_->GetMaxLineCount());
-    ImGui::Text("Particles: %d / %d", engine_->rendererManager_->GetParticleCount(), engine_->rendererManager_->GetMaxParticleCount());
-    ImGui::Text("Trails: %d / %d", engine_->rendererManager_->GetTrailCount(), engine_->rendererManager_->GetMaxTrailCount());
+    ImGui::Text("Models: %d / %d", engine_->GetRendererManager()->GetModelCount(), engine_->GetRendererManager()->GetMaxModelCount());
+    ImGui::Text("Sprites: %d / %d", engine_->GetRendererManager()->GetSpriteCount(), engine_->GetRendererManager()->GetMaxSpriteCount());
+    ImGui::Text("Lines: %d / %d", engine_->GetRendererManager()->GetLineCount(), engine_->GetRendererManager()->GetMaxLineCount());
+    ImGui::Text("Particles: %d / %d", engine_->GetRendererManager()->GetParticleCount(), engine_->GetRendererManager()->GetMaxParticleCount());
+    ImGui::Text("Trails: %d / %d", engine_->GetRendererManager()->GetTrailCount(), engine_->GetRendererManager()->GetMaxTrailCount());
 }
 
 void DebugGuiManager::BeginSceneView(

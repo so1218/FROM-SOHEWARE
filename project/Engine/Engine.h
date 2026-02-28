@@ -57,6 +57,38 @@ public:
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
 
+
+    // ゲッター
+    // DirectX関連
+    ID3D12Resource * GetOffscreenDepthResource() const { return offscreenDepthResource_.Get(); }
+
+    // システム関連マネージャー
+    Window* GetWindow() const { return window_.get(); }
+    GraphicsDevice* GetGraphicsDevice() const { return graphicsDevice_.get(); }
+    CommandManager* GetCommandManager() const { return commandManager_.get(); }
+    SwapChain* GetSwapChain() const { return swapChain_.get(); }
+    RTVManager* GetRTVManager() const { return rtvManager_.get(); }
+    OffscreenRTVManager* GetOffscreenRTVManager() const { return offscreenRTVManager_.get(); }
+    DescriptorHeapManager* GetDescriptorManager() const { return descriptorManager_.get(); }
+    RenderContext* GetRenderContext() const { return renderContext_.get(); }
+    RenderCoordinator* GetRenderCoordinator() const { return renderCoordinator_.get(); }
+    RootSignatureManager* GetRootSignatureManager() const { return rootSignatureManager_.get(); }
+    ShaderManager* GetShaderManager() const { return shaderManager_.get(); }
+    PSOManager* GetPSOManager() const { return psoManager_.get(); }
+    MaterialManager* GetMaterialManager() const { return materialManager_.get(); }
+    TextureLoader* GetTextureLoader() const { return textureLoader_.get(); }
+    SRVManager* GetSRVManager() const { return srvManager_.get(); }
+    DSVManager* GetDSVManager() const { return dsvManager_.get(); }
+    LightManager* GetLightManager() const { return lightManager_.get(); }
+    DebugCamera* GetDebugCamera() const { return debugCamera_.get(); }
+    DebugGuiManager* GetDebugGuiManager() const { return debugGuiManager_.get(); }
+    ParticleSystem* GetParticleSystem() const { return particleSystem_.get(); }
+    GlobalConstants* GetGlobalConstants() const { return globalConstants_.get(); }
+    PostEffectManager* GetPostEffectManager() const { return postEffectManager_.get(); }
+    RendererManager* GetRendererManager() const { return rendererManager_.get(); }
+    FrameLimiter* GetFrameLimiter() const { return frameLimiter_.get(); }
+    ShadowMap* GetShadowMap() const { return shadowMap_.get(); }
+
 private:
     // 各種初期化処理
     void InitializeSystem();
@@ -68,7 +100,7 @@ private:
     void InitializeImGui();
     void InitializeAudio();
 
-public:
+private:
     uint64_t fenceValue_ = 0; // GPU同期用フェンス値
 
     // DirectX関連
@@ -80,6 +112,16 @@ public:
     Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_;
     Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
     HANDLE fenceEvent_ = nullptr;
+
+    // ウィンドウタイトル
+    static std::wstring windowTitle_;
+    // 固定FPS
+    static int kFixedFPS_;
+
+    // 現在設定されているカメラ行列
+    Matrix4x4 viewMatrix_;
+    Matrix4x4 projectionMatrix_;
+    Vector3 eyePos_;
 
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;
@@ -107,14 +149,4 @@ public:
     std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<ShadowMap> shadowMap_;
-
-	// ウィンドウタイトル
-    static std::wstring windowTitle_;
-    // 固定FPS
-    static int kFixedFPS_; 
-
-    // 現在設定されているカメラ行列
-    Matrix4x4 viewMatrix_;
-    Matrix4x4 projectionMatrix_;
-    Vector3 eyePos_;
 };

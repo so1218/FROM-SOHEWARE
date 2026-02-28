@@ -33,7 +33,7 @@ void Skybox::Draw()
     // トランスフォーム行列を更新
     transform_.UpdateMatrix();
 
-    engine_->rendererManager_->SubmitSkybox(
+    engine_->GetRendererManager()->SubmitSkybox(
         transform_,
         color_,
         cubeTextureHandle_

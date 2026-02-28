@@ -13,7 +13,7 @@ void BokehBlurPass::Initialize(Engine* engine,
     psoManager_ = psoManager;
 
     // DoF設定用定数バッファ
-    ID3D12Device* device = engine->graphicsDevice_->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(DoFSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
@@ -40,7 +40,7 @@ void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
 
     // PSO / RootSignature
     cmdList->SetGraphicsRootSignature(
-        engine_->rootSignatureManager_->GetRootSignature("BokehBlur"));
+        engine_->GetRootSignatureManager()->GetRootSignature("BokehBlur"));
     cmdList->SetPipelineState(
         psoManager_->GetPSO("BokehBlur"));
 
@@ -50,7 +50,7 @@ void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
 
     cmdList->SetGraphicsRootConstantBufferView(
         1,
-        engine_->globalConstants_->GetResource()->GetGPUVirtualAddress());
+        engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
 
     // SRV
     cmdList->SetGraphicsRootDescriptorTable(2, sceneSrvGPU);
