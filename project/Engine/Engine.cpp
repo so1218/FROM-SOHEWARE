@@ -65,7 +65,7 @@ void Engine::Finalize()
 	}
 
 	frameLimiter_->Finalize();
-	renderer_->Finalize();
+	rendererManager_->Finalize();
 
 	// srvManager_を使うクラスを先に解放
 	textureLoader_.reset();     
@@ -96,7 +96,7 @@ void Engine::SetCameraState(
 	globalConstants_->Update(view, projection, eyePos, nearClip, farClip, lightManager_->GetDirectionalLightData()[0]);
 
 	// Rendererにセット（描画パス用）
-	renderer_->SetCameraState(view, projection, eyePos);
+	rendererManager_->SetCameraState(view, projection, eyePos);
 }
 
 void Engine::BeginFrame()
@@ -117,7 +117,7 @@ void Engine::BeginFrame()
 	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
 	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);
 #endif
-	renderer_->BeginFrame();
+	rendererManager_->BeginFrame();
 }
 
 void Engine::EndFrame()
@@ -137,13 +137,13 @@ void Engine::EndFrame()
 	cmdList->RSSetViewports(1, &shadowVP);
 	cmdList->RSSetScissorRects(1, &shadowRect);
 
-	renderer_->DrawSceneForShadow();
+	rendererManager_->DrawSceneForShadow();
 	shadowMap_->TransitionToRead(cmdList);
 
 	// オフスクリーンレンダリングの準備開始
 	renderCoordinator_->BeginOffscreenRender();
 
-	renderer_->Draw3D();
+	rendererManager_->Draw3D();
 	renderCoordinator_->EndOffscreenRender();
 
 	// ポストエフェクト（Bloomなど）
@@ -171,9 +171,9 @@ void Engine::EndFrame()
 	D3D12_CPU_DESCRIPTOR_HANDLE finalRTV = postEffectManager_->GetFinalPassRTV();
 	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
 
-	renderer_->DrawFullScreenQuadWithOffscreenTexture();
+	rendererManager_->DrawFullScreenQuadWithOffscreenTexture();
 #ifdef IS_DEVELOPMENT
-	renderer_->DrawUI();
+	rendererManager_->DrawUI();
 #endif
 
 	// FinalBuffer：RenderTarget → SRV
@@ -419,8 +419,8 @@ void Engine::InitializeResources()
 	);
 
 	// レンダラー
-	renderer_ = std::make_unique<Renderer>();
-	renderer_->Initialize(
+	rendererManager_ = std::make_unique<RendererManager>();
+	rendererManager_->Initialize(
 		graphicsDevice_.get(),
 		commandManager_.get(),
 		psoManager_.get(),
@@ -440,13 +440,6 @@ void Engine::InitializeResources()
 	TextureManager::GetInstance().LoadAllTextures(this);
 	ModelManager::GetInstance().LoadFromCSV();
 	AnimationManager::GetInstance()->LoadFromCSV();
-
-	// テクスチャ配列
-	std::vector<std::string> texturePaths = {
-		"Assets/Textures/uvChecker.png",
-	};
-
-	LoadTextureArray(texturePaths);
 }
 
 void Engine::InitializeImGui()
@@ -462,7 +455,7 @@ void Engine::InitializeImGui()
 	);
 
 #ifdef IS_DEVELOPMENT
-	DebugDraw::Initialize(renderer_.get());
+	DebugDraw::Initialize(rendererManager_.get());
 #endif
 }
 
@@ -475,10 +468,5 @@ void Engine::InitializeAudio()
 
 int Engine::LoadTexture(const std::string& texturePath)
 {
-	return renderer_->LoadTexture(texturePath);
-}
-
-void Engine::LoadTextureArray(const std::vector<std::string>& texturePaths)
-{
-	renderer_->LoadTextureArray(texturePaths);
+	return rendererManager_->LoadTexture(texturePath);
 }

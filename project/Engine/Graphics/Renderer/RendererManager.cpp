@@ -1,4 +1,4 @@
-#include "Renderer.h"
+#include "RendererManager.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"
 #include "PSOManager.h"
@@ -19,10 +19,10 @@
 #include "TrailRenderer.h"
 #include "SkyboxRenderer.h"
 
-Renderer::Renderer() {}
-Renderer::~Renderer() {}
+RendererManager::RendererManager() {}
+RendererManager::~RendererManager() {}
 
-void Renderer::Initialize(
+void RendererManager::Initialize(
 	GraphicsDevice* device, CommandManager* commandManager,
 	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
 	TextureLoader* textureLoader, SRVManager* srvManager, LightManager* lightManager,
@@ -73,12 +73,12 @@ void Renderer::Initialize(
 	shadowMap_ = shadowMap;
 }
 
-void Renderer::Finalize()
+void RendererManager::Finalize()
 {
 	modelRenderer_->Finalize();
 }
 
-void Renderer::BeginFrame()
+void RendererManager::BeginFrame()
 {
 	if (modelRenderer_) { modelRenderer_->BeginFrame(); }
 	if (spriteRenderer_) { spriteRenderer_->BeginFrame(); }
@@ -88,7 +88,7 @@ void Renderer::BeginFrame()
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 }
 
-void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
+void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
 {
 	viewMatrix_ = view;
 	projectionMatrix_ = projection;
@@ -101,7 +101,7 @@ void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection
 	}
 }
 
-int Renderer::LoadTexture(const std::string& texturePath)
+int RendererManager::LoadTexture(const std::string& texturePath)
 {
 	// テクスチャをロード
 	DirectX::ScratchImage mipImages = TextureLoader::LoadTexture(texturePath);
@@ -113,17 +113,7 @@ int Renderer::LoadTexture(const std::string& texturePath)
 	return texResources.srvIndex;
 }
 
-void Renderer::LoadTextureArray(const std::vector<std::string>& texturePaths)
-{
-	// 複数テクスチャをロード
-	std::vector<DirectX::ScratchImage> images = textureLoader_->LoadMultipleTextures(texturePaths);
-
-	// Texture2DArray作成＆アップロード
-	textureLoader_->CreateAndUploadTexture2DArray(images, textureArrayResource_);
-
-}
-
-void Renderer::DrawFullScreenQuadWithOffscreenTexture()
+void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
@@ -170,7 +160,7 @@ void Renderer::DrawFullScreenQuadWithOffscreenTexture()
 }
 
 // 単純にテクスチャをそのまま画面に出すメソッド
-void Renderer::DrawFinalResult(uint32_t srvIndex)
+void RendererManager::DrawFinalResult(uint32_t srvIndex)
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
@@ -215,7 +205,7 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
-void Renderer::DrawSceneForShadow()
+void RendererManager::DrawSceneForShadow()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
@@ -224,7 +214,7 @@ void Renderer::DrawSceneForShadow()
 	modelRenderer_->DrawShadow(env_);
 }
 
-void Renderer::Draw3D()
+void RendererManager::Draw3D()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
@@ -271,7 +261,7 @@ void Renderer::Draw3D()
 	}
 }
 
-void Renderer::DrawUI()
+void RendererManager::DrawUI()
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
@@ -286,7 +276,7 @@ void Renderer::DrawUI()
 	}
 }
 
-void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
+void RendererManager::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
 	const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
 	DepthMode depthMode, RenderGroup group, const Vector4& instanceColor)
 {
@@ -296,7 +286,7 @@ void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData
 	}
 }
 
-void Renderer::SubmitAnimationModel(
+void RendererManager::SubmitAnimationModel(
 	const WorldTransform& worldTransform,
 	const AnimatedModelData& instance,
 	const SkinCluster& skinCluster,
@@ -313,7 +303,7 @@ void Renderer::SubmitAnimationModel(
 	}
 }
 
-void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform,
+void RendererManager::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform,
 	uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
 	const MaterialHandle& materialHandle)
 {
@@ -326,12 +316,12 @@ void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float ro
 	}
 }
 
-void Renderer::SubmitLine(const Vector3& start, const Vector3& end, uint32_t color)
+void RendererManager::SubmitLine(const Vector3& start, const Vector3& end, uint32_t color)
 {
 	if (lineRenderer_) { lineRenderer_->Submit(start, end, color); }
 }
 
-void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
+void RendererManager::SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
 	BlendMode blendMode, bool isBillboard, float intensity)
 {
 	if (particleRenderer_)
@@ -340,7 +330,7 @@ void Renderer::SubmitParticleInstance(const WorldTransform& worldTransform, uint
 	}
 }
 
-void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
+void RendererManager::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
 {
 	if (trailRenderer_) 
 	{
@@ -348,7 +338,7 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	}
 }
 
-void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
+void RendererManager::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex)
 {
 	if (skyboxRenderer_)
 	{
@@ -356,44 +346,44 @@ void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color
 	}
 }
 
-uint32_t Renderer::GetModelCount() const 
+uint32_t RendererManager::GetModelCount() const 
 {
 	return modelRenderer_ ? modelRenderer_->GetCount() : 0;
 }
-uint32_t Renderer::GetSpriteCount() const 
+uint32_t RendererManager::GetSpriteCount() const 
 {
 	return spriteRenderer_ ? spriteRenderer_->GetCount() : 0;
 }
-uint32_t Renderer::GetLineCount() const 
+uint32_t RendererManager::GetLineCount() const 
 {
 	return lineRenderer_ ? lineRenderer_->GetCount() : 0;
 }
-uint32_t Renderer::GetParticleCount() const
+uint32_t RendererManager::GetParticleCount() const
 { 
 	return particleRenderer_ ? particleRenderer_->GetCount() : 0;
 }
-uint32_t Renderer::GetTrailCount() const
+uint32_t RendererManager::GetTrailCount() const
 {
 	return trailRenderer_ ? trailRenderer_->GetCount() : 0;
 }
 
-uint32_t Renderer::GetMaxModelCount() const 
+uint32_t RendererManager::GetMaxModelCount() const 
 {
 	return modelRenderer_ ? modelRenderer_->GetMaxCount() : 0;
 }
-uint32_t Renderer::GetMaxSpriteCount() const 
+uint32_t RendererManager::GetMaxSpriteCount() const 
 {
 	return spriteRenderer_ ? spriteRenderer_->GetMaxCount() : 0;
 }
-uint32_t Renderer::GetMaxLineCount() const 
+uint32_t RendererManager::GetMaxLineCount() const 
 {
 	return lineRenderer_ ? lineRenderer_->GetMaxCount() : 0;
 }
-uint32_t Renderer::GetMaxParticleCount() const
+uint32_t RendererManager::GetMaxParticleCount() const
 {
 	return particleRenderer_ ? particleRenderer_->GetMaxCount() : 0;
 }
-uint32_t Renderer::GetMaxTrailCount() const
+uint32_t RendererManager::GetMaxTrailCount() const
 {
 	return trailRenderer_ ? trailRenderer_->GetMaxCount() : 0;
 }

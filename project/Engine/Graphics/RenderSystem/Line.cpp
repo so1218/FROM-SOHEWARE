@@ -24,5 +24,5 @@ void Line::Draw()
     Vector3 worldStart = transform_.matWorld_.Transform(localStart_);
     Vector3 worldEnd = transform_.matWorld_.Transform(localEnd_);
 
-    engine_->renderer_->SubmitLine(worldStart, worldEnd, color_);
+    engine_->rendererManager_->SubmitLine(worldStart, worldEnd, color_);
 }

@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdint>
 
-class Renderer;
+class RendererManager;
 class Camera;
 
 // デバッグ描画
@@ -13,7 +13,7 @@ class DebugDraw
 {
 public:
 #ifdef IS_DEVELOPMENT
-    static void Initialize(Renderer* renderer);
+    static void Initialize(RendererManager* rendererManager);
 
     // デバッグ用描画
     static void DrawLine(const Vector3& start, const Vector3& end, const Vector4& color);       // 線分
@@ -32,5 +32,5 @@ public:
 #endif
 
 private:
-    static Renderer* renderer_; 
+    static RendererManager* rendererManager_; 
 };

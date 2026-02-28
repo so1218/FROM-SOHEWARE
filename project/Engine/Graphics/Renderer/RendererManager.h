@@ -26,11 +26,11 @@ class SkyboxRenderer;
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 
-class Renderer
+class RendererManager
 {
 public:
-    Renderer();
-    ~Renderer();
+    RendererManager();
+    ~RendererManager();
 
     void Initialize(
         GraphicsDevice* device,
@@ -55,7 +55,6 @@ public:
 
     // テクスチャ読み込み
     int LoadTexture(const std::string& texturePath);
-    void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
@@ -73,7 +72,7 @@ public:
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
     void DrawFullScreenQuadWithOffscreenTexture();
-    // 単純にテクスチャをそのまま画面に出すメソッド
+    // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
     void DrawSceneForShadow();
     void Draw3D();
@@ -132,8 +131,6 @@ private:
     std::unique_ptr<TrailRenderer> trailRenderer_;
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
 
-    TextureLoader::TextureResources textureArrayResource_; // Texture2DArray本体とSRVの管理用
-
     // 1バッチごとの管理
     struct GrassBatch
     {
@@ -141,9 +138,9 @@ private:
         MaterialHandle materialHandle;
         uint32_t instanceCount = 0;
         uint32_t maxInstanceCount = 0;
-        Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer; // StructuredBuffer
+        Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer;
         GrassInstanceData* mappedData = nullptr;
-        uint32_t srvIndex = 0; // t10にバインドするSRVのインデックス
+        uint32_t srvIndex = 0; 
     };
     std::vector<GrassBatch> grassBatches_;
 

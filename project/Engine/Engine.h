@@ -21,7 +21,7 @@
 #include "GlobalConstants.h" 
 #include "PostEffectManager.h" 
 #include "AnimationLoader.h" 
-#include "Renderer.h" 
+#include "RendererManager.h" 
 #include "FrameLimiter.h" 
 #include "ShaderManager.h"
 #include "ShadowMap.h"
@@ -53,10 +53,9 @@ public:
 
     // テクスチャ読み込み
     int LoadTexture(const std::string& texturePath);
-    void LoadTextureArray(const std::vector<std::string>& texturePaths);
 
     // ブレンドモード設定
-    void SetBlendMode(BlendMode blendMode) { renderer_->currentBlendMode_ = blendMode; }
+    void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
 
 private:
     // 各種初期化処理
@@ -95,7 +94,7 @@ public:
     std::unique_ptr<ParticleSystem> particleSystem_;
     std::unique_ptr<GlobalConstants> globalConstants_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
-    std::unique_ptr<Renderer> renderer_;
+    std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<ShadowMap> shadowMap_;
 

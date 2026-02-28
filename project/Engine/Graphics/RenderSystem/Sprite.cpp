@@ -43,7 +43,7 @@ void Sprite::Draw()
         return;
     }
 
-    engine_->renderer_->SubmitSprite(
+    engine_->rendererManager_->SubmitSprite(
         position_,
         size_,
         rotation_,

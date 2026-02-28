@@ -1,6 +1,5 @@
 #include "Skybox.h"
 #include "Engine.h"
-#include "Renderer.h"
 #include "TextureManager.h"
 #include "Camera.h"
 
@@ -34,7 +33,7 @@ void Skybox::Draw()
     // トランスフォーム行列を更新
     transform_.UpdateMatrix();
 
-    engine_->renderer_->SubmitSkybox(
+    engine_->rendererManager_->SubmitSkybox(
         transform_,
         color_,
         cubeTextureHandle_

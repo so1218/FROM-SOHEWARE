@@ -197,7 +197,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
-    <ClCompile Include="Engine\Graphics\Renderer\Renderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
     <ClCompile Include="Engine\Resources\AudioManager.cpp" />
@@ -323,7 +323,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Bubble.h" />
     <ClInclude Include="Game\Global\WindowConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
-    <ClInclude Include="Engine\Graphics\Renderer\Renderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\RendererManager.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
     <ClInclude Include="Game\GameObject\GameObjectManager.h" />
     <ClInclude Include="Engine\Resources\AudioManager.h" />

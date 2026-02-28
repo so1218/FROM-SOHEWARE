@@ -2,23 +2,23 @@
 
 #ifdef IS_DEVELOPMENT
 
-#include "Renderer.h"
+#include "RendererManager.h"
 #include "Camera.h"
 #include "MathUtils.h" 
 
-Renderer* DebugDraw::renderer_ = nullptr;
+RendererManager* DebugDraw::rendererManager_ = nullptr;
 
-void DebugDraw::Initialize(Renderer* renderer)
+void DebugDraw::Initialize(RendererManager* rendererManager)
 {
-    renderer_ = renderer;
+    rendererManager_ = rendererManager;
 }
 
 void DebugDraw::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
-    if (!renderer_) return;
+    if (!rendererManager_) return;
 
     uint32_t colorU = Math::ColorVectorToUint32(color); 
-    renderer_->SubmitLine(start, end, colorU);
+    rendererManager_->SubmitLine(start, end, colorU);
 }
 
 void DebugDraw::DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color)

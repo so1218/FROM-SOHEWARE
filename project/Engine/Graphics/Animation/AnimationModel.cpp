@@ -131,7 +131,7 @@ void AnimationModel::Draw()
     // モデル自体のワールド行列更新
     transform_.UpdateMatrix();
 
-    engine_->renderer_->SubmitAnimationModel(
+    engine_->rendererManager_->SubmitAnimationModel(
         transform_,
         animeModelData_,
         skinCluster_,

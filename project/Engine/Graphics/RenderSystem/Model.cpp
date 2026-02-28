@@ -50,7 +50,7 @@ void Model::Draw()
     transform_.UpdateMatrix();
 
     // 描画命令発行
-    engine_->renderer_->SubmitModel(
+    engine_->rendererManager_->SubmitModel(
         transform_,
         *modelData_,
         materials_,

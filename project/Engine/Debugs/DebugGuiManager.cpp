@@ -52,7 +52,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
 #ifdef IS_DEVELOPMENT
 void DebugGuiManager::DrawRenderSettings()
 {
-    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->renderer_->isWireFrame_);
+    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->rendererManager_->isWireFrame_);
 }
 
 void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
@@ -787,11 +787,11 @@ void DebugGuiManager::DrawTimeSettings()
 void DebugGuiManager::DrawInformationDisplays()
 {
     // オブジェクト数
-    ImGui::Text("Models: %d / %d", engine_->renderer_->GetModelCount(), engine_->renderer_->GetMaxModelCount());
-    ImGui::Text("Sprites: %d / %d", engine_->renderer_->GetSpriteCount(), engine_->renderer_->GetMaxSpriteCount());
-    ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->GetMaxLineCount());
-    ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->GetMaxParticleCount());
-    ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->GetMaxTrailCount());
+    ImGui::Text("Models: %d / %d", engine_->rendererManager_->GetModelCount(), engine_->rendererManager_->GetMaxModelCount());
+    ImGui::Text("Sprites: %d / %d", engine_->rendererManager_->GetSpriteCount(), engine_->rendererManager_->GetMaxSpriteCount());
+    ImGui::Text("Lines: %d / %d", engine_->rendererManager_->GetLineCount(), engine_->rendererManager_->GetMaxLineCount());
+    ImGui::Text("Particles: %d / %d", engine_->rendererManager_->GetParticleCount(), engine_->rendererManager_->GetMaxParticleCount());
+    ImGui::Text("Trails: %d / %d", engine_->rendererManager_->GetTrailCount(), engine_->rendererManager_->GetMaxTrailCount());
 }
 
 void DebugGuiManager::BeginSceneView(
