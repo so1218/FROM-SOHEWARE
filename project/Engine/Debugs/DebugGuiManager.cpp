@@ -791,7 +791,7 @@ void DebugGuiManager::DrawInformationDisplays()
     ImGui::Text("Sprites: %d / %d", engine_->renderer_->GetSpriteCount(), engine_->renderer_->GetMaxSpriteCount());
     ImGui::Text("Lines: %d / %d", engine_->renderer_->GetLineCount(), engine_->renderer_->GetMaxLineCount());
     ImGui::Text("Particles: %d / %d", engine_->renderer_->GetParticleCount(), engine_->renderer_->GetMaxParticleCount());
-    ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->kMaxTrailCount);
+    ImGui::Text("Trails: %d / %d", engine_->renderer_->GetTrailCount(), engine_->renderer_->GetMaxTrailCount());
 }
 
 void DebugGuiManager::BeginSceneView(

@@ -16,10 +16,7 @@
 #include "SpriteRenderer.h"
 #include "LineRenderer.h"
 #include "ParticleRenderer.h"
-
-// 最大数の定義
-const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
-const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
+#include "TrailRenderer.h"
 
 Renderer::Renderer() {}
 Renderer::~Renderer() {}
@@ -63,6 +60,8 @@ void Renderer::Initialize(
 	lineRenderer_->Initialize(env_);
 	particleRenderer_ = std::make_unique<ParticleRenderer>();
 	particleRenderer_->Initialize(env_);
+	trailRenderer_ = std::make_unique<TrailRenderer>();
+	trailRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -81,21 +80,16 @@ void Renderer::Finalize()
 
 void Renderer::BeginFrame()
 {
-	prevTrailCount_ = indexTrail_;
-
-	// 描画カウンタの初期化
-	indexTrail_ = 0;
-
 	if (modelRenderer_) { modelRenderer_->BeginFrame(); }
 	if (spriteRenderer_) { spriteRenderer_->BeginFrame(); }
 	if (lineRenderer_) { lineRenderer_->BeginFrame(); }
 	if (particleRenderer_) { particleRenderer_->BeginFrame(); }
+	if (trailRenderer_) { trailRenderer_->BeginFrame(); }
 }
 
 void Renderer::CreateObjects()
 {
 	CreateSkybox();
-	CreateTrails();
 }
 
 void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -236,16 +230,6 @@ void Renderer::DrawSceneForShadow()
 
 void Renderer::Draw3D()
 {
-	// トレイル描画を登録
-	if (!trailBatch_.verticesCPU.empty())
-	{
-		ModelSubmission trailSubmission{};
-		trailSubmission.type = RenderType::Trail;
-		trailSubmission.group = RenderGroup::Trail; // 半透明グループ
-		trailSubmission.depth = 0.0f; // 深度
-		modelSubmissions_.push_back(trailSubmission);
-	}
-
 	// 描画順にソート（グループ→深度→UI順）
 	std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
 		[](const ModelSubmission& a, const ModelSubmission& b)
@@ -310,15 +294,9 @@ void Renderer::Draw3D()
 		particleRenderer_->Draw(env_);
 	}
 
-	for (const auto& sub : modelSubmissions_)
+	if (trailRenderer_) 
 	{
-		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
-
-		// ここでは半透明系のみを描画
-		switch (sub.type) 
-		{
-		case RenderType::Trail:    DrawTrails();    break;
-		}
+		trailRenderer_->Draw(env_, viewProjectionMatrix_);
 	}
 }
 
@@ -338,8 +316,6 @@ void Renderer::DrawUI()
 
 	// 後処理
 	modelSubmissions_.clear();
-	trailBatch_.verticesCPU.clear();
-	trailBatches_.clear();
 }
 
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
@@ -448,227 +424,11 @@ void Renderer::SubmitSkybox(const WorldTransform& worldTransform, uint32_t color
 	modelSubmissions_.push_back(submission);
 }
 
-void Renderer::CreateTrails()
-{
-	// 最大Trail数分の頂点を確保
-	const uint32_t kMaxTotalTrailVertices =
-		kMaxTrailCount * kMaxTrailVertices * 2;
-	trailBatch_.verticesCPU.reserve(kMaxTotalTrailVertices);
-
-	// GPU頂点バッファ確保（ダミー）
-	std::vector<VertexDataTrail> dummyVertices(kMaxTotalTrailVertices);
-	trailBatch_.mesh.InitializeVertexTrail(device_->GetDevice(), dummyVertices);
-
-	// マテリアルCB
-	uint32_t materialSize = sizeof(TrailMaterialData);
-	materialSize = (materialSize + 255) & ~255;
-
-	trailBatch_.materialResource =
-		BufferManager::CreateBufferResource(
-			device_->GetDevice(), materialSize * kMaxTrailCount);
-	trailBatch_.materialResource->Map(
-		0, nullptr,
-		reinterpret_cast<void**>(&trailBatch_.mappedMaterial));
-
-	// ViewProjectionのみ
-	trailBatch_.wvpResource =
-		BufferManager::CreateBufferResource(
-			device_->GetDevice(), sizeof(TransformationMatrix));
-	trailBatch_.wvpResource->Map(
-		0, nullptr,
-		reinterpret_cast<void**>(&trailBatch_.mappedWvp));
-}
-
 void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
 {
-	// 上限・最小チェック
-	if (indexTrail_ >= kMaxTrailCount) return;
-	if (points.size() < 2) return;
-
-	// テクスチャ取得
-	uint32_t textureHandle = TextureManager::GetInstance().Get(config.textureName);
-	uint32_t dissolveHandle = 0;
-	if (!config.dissolveTextureName.empty() && config.dissolveTextureName != "none") 
+	if (trailRenderer_) 
 	{
-		dissolveHandle = TextureManager::GetInstance().Get(config.dissolveTextureName);
-	}
-	else
-	{
-		dissolveHandle = TextureManager::GetInstance().Get("white1x1");
-	}
-
-	// マテリアル定数
-	TrailMaterialData currentMatData{};
-	currentMatData.scrollSpeed = config.scrollSpeed;
-	currentMatData.jitterStrength = config.jitterStrength;
-	currentMatData.jitterFrequency = config.jitterFrequency;
-	currentMatData.jitterSpeed = config.jitterSpeed;
-	currentMatData.jitterMode = static_cast<int>(config.jitterMode);
-	currentMatData.jitterPhase = config.jitterPhase;
-	currentMatData.isDissolveEnabled = (config.dissolveTextureName != "white1x1") ? 1 : 0;
-	currentMatData.emissiveIntensity = config.emissiveIntensity;
-
-	// バッチ切り替え判定
-	bool isNewBatch = trailBatches_.empty();
-	if (!isNewBatch)
-	{
-		const auto& last = trailBatches_.back();
-		// memcmp は危険な場合もありますが（パディング等）、とりあえずそのまま
-		isNewBatch =
-			last.textureHandle != textureHandle ||
-			last.dissolveHandle != dissolveHandle ||
-			std::memcmp(&last.materialData, &currentMatData, sizeof(TrailMaterialData)) != 0;
-	}
-
-	if (isNewBatch)
-	{
-		trailBatches_.push_back({
-			static_cast<uint32_t>(trailBatch_.verticesCPU.size()),
-			0,
-			textureHandle,
-			dissolveHandle,
-			currentMatData
-			});
-	}
-
-	// Tile用距離
-	std::vector<float> distances;
-	if (config.textureMode == TrailTextureMode::Tile)
-	{
-		distances.resize(points.size());
-		float total = 0.0f;
-		for (size_t i = 0; i < points.size() - 1; ++i)
-		{
-			distances[i] = total;
-			total += (points[i + 1].position - points[i].position).Length();
-		}
-		distances.back() = total;
-	}
-
-	Vector3 cameraPos = cameraPosition_;
-
-	// セグメント生成
-	for (size_t i = 0; i < points.size() - 1; ++i)
-	{
-		auto CalcVertex = [&](size_t idx, float& outU)
-			{
-				const Vector3& pos = points[idx].position;
-
-				Vector3 forward =
-					(idx < points.size() - 1)
-					? points[idx + 1].position - pos
-					: pos - points[idx - 1].position;
-				forward = forward.Normalize();
-
-				Vector3 right;
-				if (config.alignment == TrailAlignment::View)
-				{
-					Vector3 toCamera = (cameraPos - pos).Normalize();
-					right = Math::CrossProduct(toCamera, forward).Normalize();
-				}
-				else
-				{
-					Vector3 up = points[idx].rotationQuaternion.RotateVector({ 0,1,0 });
-					right = Math::CrossProduct(up, forward).Normalize();
-				}
-				if (right.LengthSq() < 0.001f)
-					right = Math::CrossProduct({ 0,1,0 }, forward).Normalize();
-
-				float t = static_cast<float>(idx) / (points.size() - 1);
-				float width = config.width *
-					std::lerp(config.tailWidthScale, config.headWidthScale, t);
-
-				outU = (config.textureMode == TrailTextureMode::Stretch)
-					? t * config.tiling.x
-					: distances[idx] * config.tiling.x;
-
-				return std::pair(
-					pos - right * (width * 0.5f),
-					pos + right * (width * 0.5f)
-				);
-			};
-
-		auto CalcColor = [&](size_t idx)
-			{
-				float t = static_cast<float>(idx) / (points.size() - 1);
-				return Vector4(
-					std::lerp(config.endColor.x, config.startColor.x, t),
-					std::lerp(config.endColor.y, config.startColor.y, t),
-					std::lerp(config.endColor.z, config.startColor.z, t),
-					std::lerp(config.endColor.w, config.startColor.w, t)
-				);
-			};
-
-		float u0, u1;
-		auto [l0, r0] = CalcVertex(i, u0);
-		auto [l1, r1] = CalcVertex(i + 1, u1);
-		Vector4 c0 = CalcColor(i);
-		Vector4 c1 = CalcColor(i + 1);
-
-		// Quad → TriangleList
-		trailBatch_.verticesCPU.push_back({ {l0.x,l0.y,l0.z,1}, {u0,0}, c0 });
-		trailBatch_.verticesCPU.push_back({ {l1.x,l1.y,l1.z,1}, {u1,0}, c1 });
-		trailBatch_.verticesCPU.push_back({ {r0.x,r0.y,r0.z,1}, {u0,1}, c0 });
-
-		trailBatch_.verticesCPU.push_back({ {r0.x,r0.y,r0.z,1}, {u0,1}, c0 });
-		trailBatch_.verticesCPU.push_back({ {l1.x,l1.y,l1.z,1}, {u1,0}, c1 });
-		trailBatch_.verticesCPU.push_back({ {r1.x,r1.y,r1.z,1}, {u1,1}, c1 });
-
-		trailBatches_.back().vertexCount += 6;
-	}
-
-	indexTrail_++;
-}
-
-void Renderer::DrawTrails()
-{
-	if (trailBatches_.empty() || trailBatch_.verticesCPU.empty()) return;
-
-	auto* cmdList = commandManager_->GetCommandList();
-
-	// 頂点データの転送
-	VertexDataTrail* mappedVertices = nullptr;
-	trailBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
-	memcpy(mappedVertices, trailBatch_.verticesCPU.data(), sizeof(VertexDataTrail) * trailBatch_.verticesCPU.size());
-	trailBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
-
-	D3D12_VERTEX_BUFFER_VIEW vbView = trailBatch_.mesh.GetVertexBufferView();
-	vbView.SizeInBytes = static_cast<UINT>(sizeof(VertexDataTrail) * trailBatch_.verticesCPU.size());
-	cmdList->IASetVertexBuffers(0, 1, &vbView);
-
-	// パイプライン設定
-	cmdList->SetPipelineState(psoManager_->GetPSO("Trail"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Trail"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// 全バッチ共通のWVP更新
-	trailBatch_.mappedWvp->WVP = viewProjectionMatrix_;
-	trailBatch_.mappedWvp->World = Matrix4x4::MakeIdentity();
-	cmdList->SetGraphicsRootConstantBufferView(0, trailBatch_.wvpResource->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
-
-	// バッチ描画
-	const uint32_t alignedSize = (sizeof(TrailMaterialData) + 255) & ~255;
-	D3D12_GPU_VIRTUAL_ADDRESS materialBaseAddr = trailBatch_.materialResource->GetGPUVirtualAddress();
-	uint8_t* mappedBasePtr = reinterpret_cast<uint8_t*>(trailBatch_.mappedMaterial);
-
-	for (size_t i = 0; i < trailBatches_.size(); ++i)
-	{
-		const auto& batch = trailBatches_[i];
-		if (batch.vertexCount == 0) continue;
-
-		const uint32_t offset = static_cast<uint32_t>(i) * alignedSize;
-
-		// マテリアル更新
-		memcpy(mappedBasePtr + offset, &batch.materialData, sizeof(TrailMaterialData));
-		cmdList->SetGraphicsRootConstantBufferView(1, materialBaseAddr + offset);
-
-		// テクスチャ・ディゾルブ設定
-		cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(batch.textureHandle));
-		uint32_t maskHandle = batch.materialData.isDissolveEnabled ? batch.dissolveHandle : batch.textureHandle;
-		cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(maskHandle));
-
-		cmdList->DrawInstanced(batch.vertexCount, 1, batch.startVertexIndex, 0);
+		trailRenderer_->Submit(points, config, cameraPosition_);
 	}
 }
 
@@ -710,7 +470,10 @@ uint32_t Renderer::GetParticleCount() const
 { 
 	return particleRenderer_ ? particleRenderer_->GetCount() : 0;
 }
-uint32_t Renderer::GetTrailCount() const { return prevTrailCount_; }
+uint32_t Renderer::GetTrailCount() const
+{
+	return trailRenderer_ ? trailRenderer_->GetCount() : 0;
+}
 
 uint32_t Renderer::GetMaxModelCount() const 
 {
@@ -727,4 +490,8 @@ uint32_t Renderer::GetMaxLineCount() const
 uint32_t Renderer::GetMaxParticleCount() const
 {
 	return particleRenderer_ ? particleRenderer_->GetMaxCount() : 0;
+}
+uint32_t Renderer::GetMaxTrailCount() const
+{
+	return trailRenderer_ ? trailRenderer_->GetMaxCount() : 0;
 }

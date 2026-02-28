@@ -14,6 +14,7 @@ class ModelRenderer;
 class SpriteRenderer;
 class LineRenderer;
 class ParticleRenderer;
+class TrailRenderer;
 
 #include "Mesh.h"
 #include "RenderCommon.h" 
@@ -91,25 +92,12 @@ public:
     uint32_t GetMaxSpriteCount() const;
     uint32_t GetMaxLineCount() const;
     uint32_t GetMaxParticleCount() const;
-
-    // Trail用のレンダリングデータ構造体
-    struct TrailRenderData
-    {
-        Mesh mesh; // 動的頂点バッファを持つメッシュ
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource; // 行列バッファ
-        TransformationMatrix* mappedWvp = nullptr; // 行列マップ用ポインタ
-        Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
-        TrailMaterialData* mappedMaterial = nullptr;
-    };
+    uint32_t GetMaxTrailCount() const;
 
     // デバッグ用
     void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
 
     BlendMode currentBlendMode_ = kBlendModeNormal;
-
-    // 描画可能な最大数
-    static const int32_t kMaxTrailCount;
-    static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
 
     bool isWireFrame_ = false;
 
@@ -117,11 +105,9 @@ private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
     void CreateSkybox();
-    void CreateTrails();
 
     // 実際の描画コマンド発行を行う内部関数
     void DrawSkybox(const ModelSubmission& sub);
-    void DrawTrails();
 
 private:
     // Engineから受け取るポインタ
@@ -150,6 +136,7 @@ private:
     std::unique_ptr<SpriteRenderer> spriteRenderer_;
     std::unique_ptr<LineRenderer> lineRenderer_;
     std::unique_ptr<ParticleRenderer> particleRenderer_;
+    std::unique_ptr<TrailRenderer> trailRenderer_;
 
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
@@ -161,34 +148,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> skyboxWvpResource_;
     TransformationMatrix* mappedSkyboxWvp_ = nullptr;
     MaterialHandle skyboxMaterialHandle_;
-
-    // トレイル用のバッチ構造体
-    struct TrailBatch
-    {
-        uint32_t startVertexIndex;  // このバッチの開始頂点インデックス
-        uint32_t vertexCount;       // 頂点数
-        uint32_t textureHandle;     // テクスチャ
-        uint32_t dissolveHandle;    // ディゾルブテクスチャ
-        TrailMaterialData materialData; // マテリアル設定（定数バッファ用）
-    };
-
-    // バッチ描画用リソース
-    struct TrailBatchResource
-    {
-        Mesh mesh; // 巨大な動的頂点バッファ
-        std::vector<VertexDataTrail> verticesCPU; // CPU側の一時バッファ
-
-        // マテリアル用定数バッファ
-        Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
-        TrailMaterialData* mappedMaterial = nullptr;
-
-        // WVP行列用
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-        TransformationMatrix* mappedWvp = nullptr;
-    } trailBatch_;
-
-    // 1フレーム中のバッチリスト
-    std::vector<TrailBatch> trailBatches_;
 
     // 1バッチ（同じ草モデル・マテリアルの塊）ごとの管理
     struct GrassBatch
@@ -203,9 +162,4 @@ private:
     };
     std::vector<GrassBatch> grassBatches_;
 
-    // 現在カウント中
-    uint32_t indexTrail_ = 0;
-
-    // 前フレームの最終カウント保存用
-    uint32_t prevTrailCount_ = 0;
 };
