@@ -26,7 +26,6 @@ public:
     void Draw();
 
     // パラメータ設定 (マテリアル)
-
     void SetTexture(const std::string& textureName);
     void SetColor(const Vector4& color);
 

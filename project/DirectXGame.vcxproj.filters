@@ -462,7 +462,10 @@
     <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\Grass.cpp">
+    <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\GrassField.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -772,7 +775,8 @@
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LineRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
-    <ClInclude Include="Engine\Graphics\RenderSystem\Grass.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
+    <ClInclude Include="Game\GameObject\GrassField.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

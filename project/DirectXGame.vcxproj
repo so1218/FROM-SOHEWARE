@@ -187,7 +187,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
-    <ClCompile Include="Engine\Graphics\RenderSystem\Grass.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
@@ -197,6 +197,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Resources\TextureManager.cpp" />
     <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Game\GameObject\GameObject.cpp" />
+    <ClCompile Include="Game\GameObject\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
@@ -313,7 +314,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SpriteRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
-    <ClInclude Include="Engine\Graphics\RenderSystem\Grass.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
@@ -323,6 +324,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
     <ClInclude Include="Game\GameObject\Bubble.h" />
+    <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Game\Global\WindowConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RendererManager.h" />

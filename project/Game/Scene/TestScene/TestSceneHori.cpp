@@ -5,6 +5,7 @@
 #include "Grid.h"
 #include "Ground.h"
 #include "Bubble.h"
+#include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
 
@@ -17,6 +18,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<Grid>(engine_);
     objectManager_.Create<Ground>(engine_);
     objectManager_.Create<Bubble>(engine_);
+    objectManager_.Create<GrassField>(engine_);
 
     player_->SetFollowCamera(followCamera_);
 }
