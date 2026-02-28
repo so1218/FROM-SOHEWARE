@@ -31,6 +31,7 @@ class PostEffectManager;
 #include "RenderEnvironment.h"
 #include "ModelRenderer.h"
 #include "SpriteRenderer.h"
+#include "LineRenderer.h"
 
 class Renderer
 {
@@ -88,9 +89,6 @@ public:
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
 
-    // メッシュキャッシュ取得・作成 
-    const std::vector<Mesh>& GetOrCreateModelBatch(const ModelData& modelData);
-
     // 描画カウント取得
     uint32_t GetModelCount() const {
         return modelRenderer_ ? modelRenderer_->GetCount() : 0;
@@ -98,7 +96,9 @@ public:
     uint32_t GetSpriteCount() const {
         return spriteRenderer_ ? spriteRenderer_->GetCount() : 0;
     }
-    uint32_t GetLineCount() const { return prevLineCount_; }
+    uint32_t GetLineCount() const {
+        return lineRenderer_ ? lineRenderer_->GetCount() : 0;
+    }
     uint32_t GetParticleCount() const { return prevParticleCount_; }
     uint32_t GetTrailCount() const { return prevTrailCount_; }
 
@@ -107,6 +107,9 @@ public:
     }
     uint32_t GetMaxSpriteCount() const {
         return spriteRenderer_ ? spriteRenderer_->GetMaxCount() : 0;
+    }
+    uint32_t GetMaxLineCount() const {
+        return lineRenderer_ ? lineRenderer_->GetMaxCount() : 0;
     }
 
     // Trail用のレンダリングデータ構造体
@@ -125,8 +128,6 @@ public:
     BlendMode currentBlendMode_ = kBlendModeNormal;
 
     // 描画可能な最大数
-    static const int32_t kMaxLineCount;
-    static const int32_t kMaxLineVertices;
     static const int32_t kMaxParticleCount;
     static const int32_t kMaxTrailCount;
     static const int32_t kMaxTrailVertices;// 1つのトレイルの最大頂点数
@@ -136,13 +137,11 @@ public:
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
-    void CreateLineBatch();
     void CreateParticles();
     void CreateSkybox();
     void CreateTrails();
 
     // 実際の描画コマンド発行を行う内部関数
-    void FlushLines();
     void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);
     void DrawTrails();
@@ -172,21 +171,10 @@ private:
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
     std::unique_ptr<ModelRenderer> modelRenderer_;
     std::unique_ptr<SpriteRenderer> spriteRenderer_;
+    std::unique_ptr<LineRenderer> lineRenderer_;
 
     //// 描画リクエストを貯めるリスト
     std::vector<ModelSubmission> modelSubmissions_;
-
-    std::vector<RenderData> lines_;
-    // 線描画用のリソース
-    struct LineBatchResource
-    {
-        Mesh mesh; // 動的頂点バッファ用のメッシュ
-        std::vector<LineVertex> verticesCPU; // CPU側の一時保管場所
-
-        // WVP行列は全ての線で共通なので1つ
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-        TransformationMatrix* mappedWvp = nullptr;
-    }lineBatch_;
 
     std::vector<RenderData> particles_;
     std::vector<ParticleInstanceData> instanceData_;
@@ -258,12 +246,10 @@ private:
     std::vector<GrassBatch> grassBatches_;
 
     // 現在カウント中
-    uint32_t indexLine_ = 0;
     uint32_t indexParticle_ = 0;
     uint32_t indexTrail_ = 0;
 
     // 前フレームの最終カウント保存用
-    uint32_t prevLineCount_ = 0;
     uint32_t prevParticleCount_ = 0;
     uint32_t prevTrailCount_ = 0;
 };

@@ -15,8 +15,6 @@
 #include "TimeManager.h"
 
 // 最大数の定義
-const int32_t Renderer::kMaxLineCount = 4096;
-const int32_t Renderer::kMaxLineVertices = kMaxLineCount * 2;
 const int32_t Renderer::kMaxParticleCount = 8000;// パーティクルの最大数
 const int32_t Renderer::kMaxTrailCount = 300; // 同時に描画できるトレイルの最大本数
 const int32_t Renderer::kMaxTrailVertices = 512; // 1つのトレイルの最大頂点数
@@ -62,6 +60,8 @@ void Renderer::Initialize(
 	modelRenderer_->Initialize(env_);
 	spriteRenderer_ = std::make_unique<SpriteRenderer>();
 	spriteRenderer_->Initialize(env_, clientWidth, clientHeight);
+	lineRenderer_ = std::make_unique<LineRenderer>();
+	lineRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -80,29 +80,21 @@ void Renderer::Finalize()
 
 void Renderer::BeginFrame()
 {
-	prevLineCount_ = indexLine_;
 	prevParticleCount_ = indexParticle_;
 	prevTrailCount_ = indexTrail_;
 
 	// 描画カウンタの初期化
-	indexLine_ = 0;
 	indexParticle_ = 0;
 	indexInstance_ = 0;
 	indexTrail_ = 0;
 
-	if (modelRenderer_) 
-	{
-		modelRenderer_->BeginFrame();
-	}
-	if (spriteRenderer_)
-	{
-		spriteRenderer_->BeginFrame();
-	}
+	if (modelRenderer_) { modelRenderer_->BeginFrame(); }
+	if (spriteRenderer_) { spriteRenderer_->BeginFrame(); }
+	if (lineRenderer_) { lineRenderer_->BeginFrame(); }
 }
 
 void Renderer::CreateObjects()
 {
-	CreateLineBatch();
 	CreateParticles();
 	CreateSkybox();
 	CreateTrails();
@@ -256,18 +248,6 @@ void Renderer::Draw3D()
 		modelSubmissions_.push_back(trailSubmission);
 	}
 
-	// ライン描画を登録
-	if (!lineBatch_.verticesCPU.empty())
-	{
-		ModelSubmission lineSubmission{};
-		lineSubmission.type = RenderType::Line;
-		lineSubmission.group = RenderGroup::Opaque;
-		lineSubmission.depth = 0.0f;
-		modelSubmissions_.push_back(lineSubmission);
-		indexLine_ = static_cast<uint32_t>(lineBatch_.verticesCPU.size()) / 2;
-	}
-	else indexLine_ = 0;
-
 	// パーティクル描画を登録
 	if (hasParticles_)
 	{
@@ -323,12 +303,12 @@ void Renderer::Draw3D()
 		switch (sub.type) 
 		{
 		case RenderType::Skybox: DrawSkybox(sub); break;
-		case RenderType::Line:
-			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-			FlushLines();
-			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			break;
 		}
+	}
+
+	if (lineRenderer_)
+	{
+		lineRenderer_->Draw(env_, viewProjectionMatrix_);
 	}
 
 	// 半透明モデルをまとめて描画
@@ -367,7 +347,6 @@ void Renderer::DrawUI()
 	// 後処理
 	modelSubmissions_.clear();
 	particleBatches_.clear();
-	lineBatch_.verticesCPU.clear();
 	trailBatch_.verticesCPU.clear();
 	trailBatches_.clear();
 	hasParticles_ = false;
@@ -405,7 +384,8 @@ void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float ro
 	uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
 	const MaterialHandle& materialHandle)
 {
-	if (spriteRenderer_) {
+	if (spriteRenderer_)
+	{
 		spriteRenderer_->Submit(
 			position, size, rotation, color, anchorPoint, uvTransform,
 			textureHandle, dissolveTextureHandle, layerOrder, materialHandle
@@ -413,33 +393,9 @@ void Renderer::SubmitSprite(const Vector2 position, const Vector2 size, float ro
 	}
 }
 
-void Renderer::CreateLineBatch()
-{
-	// 動的頂点バッファ作成
-	lineBatch_.mesh.CreateDynamicMesh(device_->GetDevice(), kMaxLineVertices, sizeof(LineVertex));
-
-	// CPU側配列を予約
-	lineBatch_.verticesCPU.reserve(kMaxLineVertices);
-
-	// WVP用定数バッファ作成
-	lineBatch_.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-	lineBatch_.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&lineBatch_.mappedWvp));
-	lineBatch_.mappedWvp->WVP = Matrix4x4::MakeIdentity();
-}
-
 void Renderer::SubmitLine(const Vector3& start, const Vector3& end, uint32_t color)
 {
-	if (lineBatch_.verticesCPU.size() >= kMaxLineVertices) return;
-
-	Vector4 colorVec = Math::Uint32ToColorVector(color);
-
-	// 頂点作成
-	LineVertex v1{ {start.x, start.y, start.z, 1.0f}, colorVec };
-	LineVertex v2{ {end.x, end.y, end.z, 1.0f}, colorVec };
-
-	// CPUバッファに追加
-	lineBatch_.verticesCPU.push_back(v1);
-	lineBatch_.verticesCPU.push_back(v2);
+	if (lineRenderer_) { lineRenderer_->Submit(start, end, color); }
 }
 
 void Renderer::CreateParticles()
@@ -785,37 +741,6 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	}
 
 	indexTrail_++;
-}
-
-void Renderer::FlushLines()
-{
-	// 線がなければ終了
-	if (lineBatch_.verticesCPU.empty()) return;
-
-	// カメラ行列更新
-	lineBatch_.mappedWvp->WVP = viewProjectionMatrix_;
-
-	// CPUデータをGPUバッファにコピー
-	LineVertex* gpuPtr = nullptr;
-	lineBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&gpuPtr));
-	std::memcpy(gpuPtr, lineBatch_.verticesCPU.data(), sizeof(LineVertex) * lineBatch_.verticesCPU.size());
-	lineBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
-
-	// 描画コマンド発行
-	auto* cmdList = commandManager_->GetCommandList();
-	cmdList->SetPipelineState(psoManager_->GetPSO("Line"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Line"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-
-	// 頂点バッファセット
-	D3D12_VERTEX_BUFFER_VIEW vbView = lineBatch_.mesh.GetVertexBufferView();
-	cmdList->IASetVertexBuffers(0, 1, &vbView);
-
-	// 定数バッファ(WVP)セット
-	cmdList->SetGraphicsRootConstantBufferView(0, lineBatch_.wvpResource->GetGPUVirtualAddress());
-
-	// 描画
-	cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
 }
 
 void Renderer::DrawTrails()
