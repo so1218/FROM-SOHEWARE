@@ -65,6 +65,7 @@ void Engine::Finalize()
 	}
 
 	frameLimiter_->Finalize();
+	renderer_->Finalize();
 
 	// srvManager_を使うクラスを先に解放
 	textureLoader_.reset();     

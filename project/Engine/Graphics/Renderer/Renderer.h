@@ -28,6 +28,7 @@ class PostEffectManager;
 #include "Structures.h"
 #include "ParticleDefinition.h"
 #include "ShadowMap.h"
+#include "ModelRenderer.h"
 
 class Renderer
 {
@@ -64,7 +65,6 @@ public:
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
         DepthMode depthMode, RenderGroup group, const Vector4& instanceColor);
-    void DrawSkeleton(const Skeleton& skeleton, uint32_t color);
     void SubmitAnimationModel(const WorldTransform& worldTransform,
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode,
@@ -76,7 +76,6 @@ public:
         BlendMode blendMode, bool isBillboard, float intensity);
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
-    void SubmitGrass(const WorldTransform& worldTransform, const ModelData& modelData, const MaterialHandle& material, const Vector4& color);
     void DrawFullScreenQuadWithOffscreenTexture();
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
@@ -86,18 +85,22 @@ public:
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
-    // BlendModeをPSO名に変換
-    std::string GetParticlePSOName(BlendMode mode);
 
     // メッシュキャッシュ取得・作成 
     const std::vector<Mesh>& GetOrCreateModelBatch(const ModelData& modelData);
 
     // 描画カウント取得
-    uint32_t GetModelCount() const { return prevModelCount_; }
+    uint32_t GetModelCount() const {
+        return modelRenderer_ ? modelRenderer_->GetModelCount() : 0;
+    }
     uint32_t GetSpriteCount() const { return prevSpriteCount_; }
     uint32_t GetLineCount() const { return prevLineCount_; }
     uint32_t GetParticleCount() const { return prevParticleCount_; }
     uint32_t GetTrailCount() const { return prevTrailCount_; }
+
+    uint32_t GetMaxModelCount() const {
+        return modelRenderer_ ? modelRenderer_->GetMaxModelCount() : 0;
+    }
 
     // Trail用のレンダリングデータ構造体
     struct TrailRenderData
@@ -115,7 +118,6 @@ public:
     BlendMode currentBlendMode_ = kBlendModeNormal;
 
     // 描画可能な最大数
-    static const int32_t kMaxModelCount;
     static const int32_t kMaxSpriteCount;
     static const int32_t kMaxLineCount;
     static const int32_t kMaxLineVertices;
@@ -128,7 +130,6 @@ public:
 private:
     // 描画用オブジェクト作成処理
     void CreateObjects();
-    void CreateModels();
     void CreateSprites();
     void CreateLineBatch();
     void CreateParticles();
@@ -137,7 +138,6 @@ private:
 
     // 実際の描画コマンド発行を行う内部関数
     void DrawSprite(const ModelSubmission& sub);
-    void DrawModel(const ModelSubmission& sub);
     void FlushLines();
     void DrawParticles();
     void DrawSkybox(const ModelSubmission& sub);
@@ -165,24 +165,11 @@ private:
     Vector3 cameraPosition_;
 
     // 描画インデックスと描画情報（各プリミティブ）
-    std::vector<RenderData> models_;
-    std::unordered_map<const ModelData*, size_t> modelDataToIndex_;
-    struct ModelBatch
-    {
-        std::vector<Mesh> meshes; // メッシュの配列
-    };
-    std::map<const ModelData*, ModelBatch> meshCache;
-    // 描画リクエストを貯めるリスト
-    std::vector<ModelSubmission> modelSubmissions_;
-    // 定数バッファリソースの配列
-    struct PerObjectBuffer
-    {
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-        TransformationMatrix* wvpMapped = nullptr;
+    RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
+    std::unique_ptr<ModelRenderer> modelRenderer_;
 
-        Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
-    };
-    std::vector<PerObjectBuffer> perObjectBuffers_;
+    //// 描画リクエストを貯めるリスト
+    std::vector<ModelSubmission> modelSubmissions_;
 
     std::vector<RenderData> sprites_;
 
@@ -255,7 +242,8 @@ private:
     std::vector<TrailBatch> trailBatches_;
 
     // 1バッチ（同じ草モデル・マテリアルの塊）ごとの管理
-    struct GrassBatch {
+    struct GrassBatch
+    {
         const ModelData* modelData;
         MaterialHandle materialHandle;
         uint32_t instanceCount = 0;
@@ -264,19 +252,18 @@ private:
         GrassInstanceData* mappedData = nullptr;
         uint32_t srvIndex = 0; // t10にバインドするSRVのインデックス
     };
+    std::vector<GrassBatch> grassBatches_;
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;
 
     // 現在カウント中
-    uint32_t indexModel_ = 0;
     uint32_t indexSprite_ = 0;
     uint32_t indexLine_ = 0;
     uint32_t indexParticle_ = 0;
     uint32_t indexTrail_ = 0;
 
     // 前フレームの最終カウント保存用
-    uint32_t prevModelCount_ = 0;
     uint32_t prevSpriteCount_ = 0;
     uint32_t prevLineCount_ = 0;
     uint32_t prevParticleCount_ = 0;

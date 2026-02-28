@@ -15,7 +15,6 @@
 #include "TimeManager.h"
 
 // 最大数の定義
-const int32_t Renderer::kMaxModelCount = 500; // モデルの最大数
 const int32_t Renderer::kMaxSpriteCount = 101; // スプライトの最大数
 const int32_t Renderer::kMaxLineCount = 4096;
 const int32_t Renderer::kMaxLineVertices = kMaxLineCount * 2;
@@ -51,6 +50,20 @@ void Renderer::Initialize(
 	clientHeight_ = clientHeight;
 	postEffectManager_ = postEffectManager;
 
+	env_.device = device_;
+	env_.commandManager = commandManager_;
+	env_.psoManager = psoManager_;
+	env_.rootSignatureManager = rootSignatureManager_;
+	env_.textureLoader = textureLoader_;
+	env_.srvManager = srvManager_;
+	env_.lightManager = lightManager_;
+	env_.globalConstants = globalConstants_;
+	env_.materialManager = materialManager_;
+	env_.postEffectManager = postEffectManager_;
+
+	modelRenderer_ = std::make_unique<ModelRenderer>();
+	modelRenderer_->Initialize(env_);
+
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
 	viewProjectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -62,29 +75,31 @@ void Renderer::Initialize(
 
 void Renderer::Finalize()
 {
-	meshCache.clear();
+	modelRenderer_->Finalize();
 }
 
 void Renderer::BeginFrame()
 {
-	prevModelCount_ = indexModel_;
 	prevSpriteCount_ = indexSprite_;
 	prevLineCount_ = indexLine_;
 	prevParticleCount_ = indexParticle_;
 	prevTrailCount_ = indexTrail_;
 
 	// 描画カウンタの初期化
-	indexModel_ = 0;
 	indexSprite_ = 0;
 	indexLine_ = 0;
 	indexParticle_ = 0;
 	indexInstance_ = 0;
 	indexTrail_ = 0;
+
+	if (modelRenderer_) 
+	{
+		modelRenderer_->BeginFrame();
+	}
 }
 
 void Renderer::CreateObjects()
 {
-	CreateModels();
 	CreateSprites();
 	CreateLineBatch();
 	CreateParticles();
@@ -98,6 +113,11 @@ void Renderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection
 	projectionMatrix_ = projection;
 	viewProjectionMatrix_ = view * projection;
 	cameraPosition_ = cameraPosition;
+
+	if (modelRenderer_)
+	{
+		modelRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
+	}
 }
 
 int Renderer::LoadTexture(const std::string& texturePath)
@@ -217,117 +237,10 @@ void Renderer::DrawFinalResult(uint32_t srvIndex)
 void Renderer::DrawSceneForShadow()
 {
 	auto* cmdList = commandManager_->GetCommandList();
-
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	// 通常モデル用の設定
-	cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// ライト行列をセット
-	cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-	for (const auto& sub : modelSubmissions_)
-	{
-		if (sub.type != RenderType::Model && sub.type != RenderType::Skinning)
-		{
-			continue;
-		}
-
-		if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI)
-		{
-			continue;
-		}
-
-		if (sub.materialHandle.materialData->color.w <= 0.0f)
-		{
-			continue; // 透明度0なら影を描かない
-		}
-
-		// メッシュリストを取得して、正しいインデックスのMesh*を取り出す
-		const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
-		assert(sub.meshIndex < meshes.size());
-		const Mesh* mesh = &meshes[sub.meshIndex];
-
-		auto& buffer = perObjectBuffers_[sub.instanceIndex];
-
-		bool isSkinning = (sub.skinCluster != nullptr);
-
-		bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
-			(sub.materialHandle.materialData->color.w < 1.0f);
-
-		// ディゾルブ・透明処理が必要な場合（重い処理）
-		if (needDissolve)
-		{
-			if (isSkinning)
-			{
-				// スキニング・ディゾルブ影
-				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinningDissolve"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinningDissolve"));
-
-				cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-				cmdList->SetGraphicsRootConstantBufferView(3, sub.materialHandle.resource->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
-
-				const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
-				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
-				cmdList->IASetVertexBuffers(0, 2, vbvs);
-			}
-			else
-			{
-				// 通常・ディゾルブ影
-				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapDissolve"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapDissolve"));
-
-				cmdList->SetGraphicsRootConstantBufferView(0, globalConstants_->GetResource()->GetGPUVirtualAddress()); 
-				cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());       
-				cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());              
-				cmdList->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootDescriptorTable(4, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));   
-
-				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			}
-		}
-		// 不透明の場合（高速処理）
-		else
-		{
-			if (isSkinning)
-			{
-				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMapSkinning"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMapSkinning"));
-
-				cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-				cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-
-				const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
-				D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
-				cmdList->IASetVertexBuffers(0, 2, vbvs);
-			}
-			else
-			{
-				cmdList->SetPipelineState(psoManager_->GetPSO("ShadowMap"));
-				cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("ShadowMap"));
-
-				cmdList->SetGraphicsRootConstantBufferView(0, globalConstants_->GetResource()->GetGPUVirtualAddress()); 
-				cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());      
-				cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());            
-				cmdList->SetGraphicsRootConstantBufferView(3, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-				cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			}
-
-			// オブジェクト行列
-			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-		}
-
-		// 描画
-		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	}
+	modelRenderer_->DrawShadow(env_);
 }
 
 void Renderer::Draw3D()
@@ -386,14 +299,20 @@ void Renderer::Draw3D()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// 登録モデルを描画
+	// 不透明モデルをまとめて描画
+	if (modelRenderer_)
+	{
+		modelRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
+	}
+
+	// モデル以外のもの（スプライト、ライン等）を描画
 	for (const auto& sub : modelSubmissions_)
 	{
-		// UIグループなら描画せずにスキップ
-		if (sub.group == RenderGroup::UI)
-		{
-			continue;
-		}
+		// UIグループはスキップ
+		if (sub.group == RenderGroup::UI) continue;
+
+		// モデルこのループ内では何もしない
+		if (sub.type == RenderType::Model || sub.type == RenderType::Skinning) continue;
 
 		switch (sub.type)
 		{
@@ -401,15 +320,18 @@ void Renderer::Draw3D()
 		case RenderType::Particle: DrawParticles(); break;
 		case RenderType::Trail: DrawTrails(); break;
 		case RenderType::Skybox: DrawSkybox(sub); break;
-		case RenderType::Model:
-		case RenderType::Skinning: DrawModel(sub); break;
-		case RenderType::Grass: DrawGrass(sub); break;
 		case RenderType::Line:
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 			FlushLines();
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			break;
 		}
+	}
+
+	// 半透明モデルをまとめて描画
+	if (modelRenderer_)
+	{
+		modelRenderer_->Draw(env_, RenderGroup::Transparent, isWireFrame_, shadowMap_);
 	}
 }
 
@@ -433,7 +355,7 @@ void Renderer::DrawUI()
 		switch (sub.type)
 		{
 		case RenderType::Sprite: DrawSprite(sub); break;
-			// Lineなども後でやる
+			// Lineなども後で
 		}
 	}
 
@@ -447,202 +369,13 @@ void Renderer::DrawUI()
 	currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-std::string Renderer::GetParticlePSOName(BlendMode mode)
-{
-	switch (mode)
-	{
-	case kBlendModeNone:     return "ParticleOpaque";
-	case kBlendModeNormal:   return "ParticleAlphaBlend";
-	case kBlendModeAdd:      return "ParticleAdditive";
-	case kBlendModeSubtract: return "ParticleSubtract";
-	case kBlendModeMultiply:  return "ParticleMultiply";
-	case kBlendModeScreen:   return "ParticleScreen";
-	case kBlendModeExclusion: return "ParticleExclusion";
-	default:
-		assert(false && "Unknown BlendMode");
-		return "ParticleOpaque"; // 不明な場合はOpaque
-	}
-}
-
-const std::vector<Mesh>& Renderer::GetOrCreateModelBatch(const ModelData& modelData)
-{
-	// キャッシュを検索
-	auto it = meshCache.find(&modelData);
-	if (it != meshCache.end())
-	{
-		return it->second.meshes;
-	}
-
-	// 新規作成
-	ModelBatch batch;
-	batch.meshes.resize(modelData.meshes.size());
-
-	for (size_t i = 0; i < modelData.meshes.size(); ++i)
-	{
-		// 各パーツ(MeshData)からGPUバッファ(Mesh)を生成
-		batch.meshes[i].Initialize(
-			device_->GetDevice(),
-			modelData.meshes[i].vertices,
-			modelData.meshes[i].indices
-		);
-		batch.meshes[i].SetVertexCount(static_cast<uint32_t>(modelData.meshes[i].vertices.size()));
-		batch.meshes[i].SetIndexCount(static_cast<uint32_t>(modelData.meshes[i].indices.size()));
-	}
-
-	// キャッシュに保存
-	meshCache[&modelData] = std::move(batch);
-	return meshCache[&modelData].meshes;
-}
-
-void Renderer::CreateModels()
-{
-	perObjectBuffers_.resize(kMaxModelCount);
-	for (auto& buffer : perObjectBuffers_)
-	{
-		// WVPバッファ作成
-		buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-		buffer.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.wvpMapped));
-	}
-}
-
 void Renderer::SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
 	const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
 	DepthMode depthMode, RenderGroup group, const Vector4& instanceColor)
 {
-	// モデルに対応するGPUメッシュリストを取得
-	const auto& meshes = GetOrCreateModelBatch(modelData);
-
-	// 再帰的にノードを巡回するラムダ関数
-	std::function<void(const Node&, const Matrix4x4&)> Traverse =
-		[&](const Node& node, const Matrix4x4& parentMatrix)
-		{
-			// 現在のノードのワールド行列を計算
-			Matrix4x4 currentWorldMatrix = node.localMatrix * parentMatrix;
-
-			// このノードが持つすべてのメッシュを描画登録
-			for (unsigned int meshIndex : node.meshIndices)
-			{
-				assert(indexModel_ < kMaxModelCount);
-
-				// 対象のメッシュデータとGPUメッシュを取得
-				const auto& meshPart = modelData.meshes[meshIndex];
-
-				// メッシュインデックスに対応するマテリアルを取り出す
-				MaterialHandle actualMaterialHandle;
-				if (meshIndex < materials.size())
-				{
-					actualMaterialHandle = materials[meshIndex];
-				}
-				else
-				{
-					// 万が一足りない場合は0番目かデフォルトを使う
-					actualMaterialHandle = materials.empty() ? meshPart.materialHandle : materials[0];
-				}
-
-				// マテリアルからテクスチャ情報を取得する
-				uint32_t actualTextureHandle = actualMaterialHandle.textureHandle;
-				if (actualTextureHandle == 0)
-				{
-					actualTextureHandle = meshPart.textureData.textureHandle;
-				}
-
-				auto& buffer = perObjectBuffers_[indexModel_];
-
-				// 行列計算 (ノードの階層を考慮した行列を使う)
-				Matrix4x4 wvp = currentWorldMatrix * viewProjectionMatrix_;
-				buffer.wvpMapped->WVP = wvp;
-				buffer.wvpMapped->World = currentWorldMatrix;
-				buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
-				buffer.wvpMapped->WorldColor = instanceColor;
-
-				// 描画キューに登録
-				ModelSubmission submission{};
-				submission.type = RenderType::Model;
-				submission.group = group;
-				submission.modelData = &modelData;     // 親のModelData
-				submission.meshIndex = meshIndex;      // 何番目のメッシュか
-				submission.materialHandle = actualMaterialHandle;
-				submission.textureHandle = actualTextureHandle;
-				submission.envMapSrvHandle = actualMaterialHandle.envMapHandle;
-				submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
-				submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
-				submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
-				submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
-				submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
-				submission.worldMatrix = currentWorldMatrix;
-				// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
-				if (actualMaterialHandle.materialData)
-				{
-					submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
-				}
-				else
-				{
-					submission.enableOutline = false;
-				}
-				submission.instanceIndex = indexModel_; // 定数バッファのインデックス
-				submission.blendMode = blendMode;
-				submission.cullMode = cullMode;
-				submission.depthMode = depthMode;
-
-				// アルファ判定
-				bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
-				bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
-
-				if (hasAlpha || isBlend)
-				{
-					submission.group = RenderGroup::Transparent;
-					if (submission.blendMode == BlendMode::kBlendModeNone)
-					{
-						submission.blendMode = BlendMode::kBlendModeNormal;
-					}
-				}
-				else
-				{
-					submission.group = group;
-				}
-
-				// 深度設定
-				Matrix4x4 worldView = currentWorldMatrix * viewMatrix_;
-				submission.depth = worldView.m[3][2];
-
-				modelSubmissions_.push_back(submission);
-				indexModel_++;
-			}
-
-			// 子ノードへ
-			for (const auto& child : node.children)
-			{
-				Traverse(child, currentWorldMatrix);
-			}
-		};
-
-	// ルートノードから探索開始
-	Traverse(modelData.rootNode, worldTransform.matWorld_);
-}
-
-void Renderer::DrawSkeleton(const Skeleton& skeleton, uint32_t color)
-{
-	for (const Joint& joint : skeleton.joints)
+	if (modelRenderer_)
 	{
-		for (int32_t childIndex : joint.children)
-		{
-			// 親の位置（行列の平行移動成分）
-			Vector3 parentPos = Vector3(
-				joint.skeletonSpaceMatrix.m[3][0],
-				joint.skeletonSpaceMatrix.m[3][1],
-				joint.skeletonSpaceMatrix.m[3][2]
-			);
-
-			// 子の位置
-			const Joint& child = skeleton.joints[childIndex];
-			Vector3 childPos = Vector3(
-				child.skeletonSpaceMatrix.m[3][0],
-				child.skeletonSpaceMatrix.m[3][1],
-				child.skeletonSpaceMatrix.m[3][2]
-			);
-
-			SubmitLine(parentPos, childPos, color);
-		}
+		modelRenderer_->SubmitModel(worldTransform, modelData, materials, blendMode, cullMode, depthMode, group, instanceColor);
 	}
 }
 
@@ -655,94 +388,11 @@ void Renderer::SubmitAnimationModel(
 	RenderGroup group,
 	const Vector4& instanceColor)
 {
-	const auto& modelData = instance.modelData;
-	// GPUメッシュ生成済みか確認
-	GetOrCreateModelBatch(*modelData);
-
-	for (size_t i = 0; i < modelData->meshes.size(); ++i)
+	if (modelRenderer_)
 	{
-		assert(indexModel_ < kMaxModelCount);
-
-		const auto& meshPart = modelData->meshes[i];
-		auto& buffer = perObjectBuffers_[indexModel_];
-
-		// 各パーツのWorld行列はモデル全体のWorldで統一される
-		Matrix4x4 world = worldTransform.matWorld_;
-		Matrix4x4 wvp = world * viewProjectionMatrix_;
-		buffer.wvpMapped->WVP = wvp;
-		buffer.wvpMapped->World = world;
-		buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
-		buffer.wvpMapped->WorldColor = instanceColor;
-
-		// マテリアル決定
-		MaterialHandle actualMaterialHandle;
-		if (i < materials.size())
-		{
-			actualMaterialHandle = materials[i];
-		}
-		else
-		{
-			// 万が一足りない場合は0番目かデフォルトを使う
-			actualMaterialHandle = materials.empty() ? meshPart.materialHandle : materials[0];
-		}
-
-		// マテリアルからテクスチャ情報を取得する
-		uint32_t actualTextureHandle = actualMaterialHandle.textureHandle;
-		if (actualTextureHandle == 0)
-		{
-			actualTextureHandle = meshPart.textureData.textureHandle;
-		}
-
-		// 描画キュー登録
-		ModelSubmission submission{};
-		submission.type = RenderType::Skinning;
-		submission.group = group;
-		submission.modelData = modelData;
-		submission.meshIndex = static_cast<uint32_t>(i); // 何番目のメッシュか指定
-		submission.materialHandle = actualMaterialHandle;
-		submission.textureHandle = actualTextureHandle;
-		submission.envMapSrvHandle = actualMaterialHandle.envMapHandle;
-		submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
-		submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
-		submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
-		submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
-		submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
-		submission.worldMatrix = world;
-		// マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
-		if (actualMaterialHandle.materialData)
-		{
-			submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
-		}
-		else {
-			submission.enableOutline = false;
-		}
-		submission.instanceIndex = indexModel_;
-		submission.skinCluster = &skinCluster;
-		submission.blendMode = blendMode;
-
-		// アルファ判定
-		bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
-		bool isBlend = submission.blendMode != BlendMode::kBlendModeNone;
-
-		if (hasAlpha || isBlend)
-		{
-			submission.group = RenderGroup::Transparent;
-			if (submission.blendMode == BlendMode::kBlendModeNone)
-			{
-				submission.blendMode = BlendMode::kBlendModeNormal;
-			}
-		}
-		else
-		{
-			submission.group = group;
-		}
-
-		// 深度設定
-		Matrix4x4 worldView = world * viewMatrix_;
-		submission.depth = worldView.m[3][2];
-
-		modelSubmissions_.push_back(submission);
-		indexModel_++;
+		modelRenderer_->SubmitAnimationModel(
+			worldTransform, instance, skinCluster, materials, blendMode, group, instanceColor
+		);
 	}
 }
 
@@ -1216,6 +866,8 @@ void Renderer::SubmitTrail(const std::vector<TrailPoint>& points, const TrailMod
 	indexTrail_++;
 }
 
+
+
 void Renderer::DrawSprite(const ModelSubmission& sub)
 {
 	RenderData& sprite = sprites_[sub.instanceIndex];
@@ -1235,150 +887,6 @@ void Renderer::DrawSprite(const ModelSubmission& sub)
 	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle));
 
 	cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
-}
-
-void Renderer::DrawModel(const ModelSubmission& sub)
-{
-	// モデルデータに対応するメッシュリストを取得
-	const std::vector<Mesh>& meshes = GetOrCreateModelBatch(*sub.modelData);
-
-	// 今回の描画コマンドで指定されたインデックスのメッシュを取得
-	assert(sub.meshIndex < meshes.size());
-	const Mesh* mesh = &meshes[sub.meshIndex];
-
-	auto& buffer = perObjectBuffers_[sub.instanceIndex];
-	auto* cmdList = commandManager_->GetCommandList();
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	bool isSkinning = (sub.skinCluster != nullptr);
-
-	std::string psoName;
-
-	// スキニングかどうかで分岐
-	if (isSkinning)
-	{
-		psoName = "Skinning";
-	}
-	else if (isWireFrame_)
-	{
-		psoName = "Wireframe";
-	}
-	else
-	{
-		// 通常モデル (ブレンドモードで分岐)
-		switch (sub.blendMode)
-		{
-		case BlendMode::kBlendModeAdd:      psoName = "Object3DAdd";         break;
-		case BlendMode::kBlendModeNormal:   psoName = "Object3DTransparent"; break;
-		case BlendMode::kBlendModeNone:
-		default:                            psoName = "Standard3D";          break;
-		}
-	}
-
-	// ワイヤーフレーム以外の場合、カリングとデプスの設定を名前に付与
-	if (psoName != "Wireframe")
-	{
-		// カリング設定の接尾辞追加
-		if (sub.cullMode == CullMode::None)
-		{
-			psoName += "_NoCull";
-		}
-		else if (sub.cullMode == CullMode::Front)
-		{
-			psoName += "_NoCull";
-		}
-
-		// デプス設定の接尾辞追加
-		if (sub.depthMode == DepthMode::ReadOnly)
-		{
-			psoName += "_DepthRead";
-		}
-		else if (sub.depthMode == DepthMode::None)
-		{
-			psoName += "_DepthOff";
-		}
-	}
-
-	// アウトライン描画
-	if (sub.enableOutline)
-	{
-		if (isSkinning)
-		{
-			cmdList->SetPipelineState(psoManager_->GetPSO("SkinningOutline"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("SkinningOutline"));
-
-			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-			cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(3, globalConstants_->GetResource()->GetGPUVirtualAddress());
-
-			const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
-			D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
-			cmdList->IASetVertexBuffers(0, 2, vbvs);
-		}
-		else
-		{
-			cmdList->SetPipelineState(psoManager_->GetPSO("Object3DOutline"));
-			cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("Outline"));
-
-			cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-			cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());
-			cmdList->SetGraphicsRootConstantBufferView(2, globalConstants_->GetResource()->GetGPUVirtualAddress());
-		}
-
-		cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-		cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
-	}
-
-	// PSOとRootSignatureの設定
-	ID3D12PipelineState* pso = psoManager_->GetPSO(psoName);
-	if (!pso) 
-	{
-		pso = psoManager_->GetPSO(isSkinning ? "Skinning" : "Standard3D"); 
-	}
-	cmdList->SetPipelineState(pso);
-	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature(isSkinning ? "Skinning" : "3D"));
-
-	// 頂点バッファとインデックスバッファの設定
-	if (isSkinning)
-	{
-		const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
-		D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
-		cmdList->IASetVertexBuffers(0, 2, vbvs);
-	}
-	else 
-	{
-		cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-	}
-	cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-
-	// 定数バッファ (CBV)
-	cmdList->SetGraphicsRootConstantBufferView(0, globalConstants_->GetResource()->GetGPUVirtualAddress());
-	cmdList->SetGraphicsRootConstantBufferView(1, lightManager_->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
-	cmdList->SetGraphicsRootConstantBufferView(2, lightManager_->GetPointLightResource()->GetGPUVirtualAddress()); 
-	cmdList->SetGraphicsRootConstantBufferView(3, lightManager_->GetSpotLightResource()->GetGPUVirtualAddress()); 
-	cmdList->SetGraphicsRootConstantBufferView(4, lightManager_->GetAreaLightResource()->GetGPUVirtualAddress()); 
-	cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress()); 
-	cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
-
-	// テクスチャ (SRV)
-	cmdList->SetGraphicsRootDescriptorTable(7, srvManager_->GetSRVHandleGPU(sub.textureHandle)); 
-	cmdList->SetGraphicsRootDescriptorTable(8, srvManager_->GetSRVHandleGPU(sub.envMapSrvHandle)); 
-	cmdList->SetGraphicsRootDescriptorTable(9, shadowMap_->GetSRVHandle()); 
-	cmdList->SetGraphicsRootDescriptorTable(10, srvManager_->GetSRVHandleGPU(sub.toonRampHandle)); 
-	cmdList->SetGraphicsRootDescriptorTable(11, srvManager_->GetSRVHandleGPU(sub.dissolveTextureHandle)); 
-	cmdList->SetGraphicsRootDescriptorTable(12, srvManager_->GetSRVHandleGPU(sub.normalMapHandle));
-	cmdList->SetGraphicsRootDescriptorTable(13, srvManager_->GetSRVHandleGPU(sub.rippleTextureHandle)); 
-	cmdList->SetGraphicsRootDescriptorTable(14, srvManager_->GetSRVHandleGPU(sub.puddleNoiseHandle)); 
-
-	if (isSkinning)
-	{
-		cmdList->SetGraphicsRootDescriptorTable(15, srvManager_->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-	}
-
-	// 描画コマンド発行
-	cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
 }
 
 void Renderer::FlushLines()
