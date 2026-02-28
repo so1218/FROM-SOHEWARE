@@ -26,7 +26,8 @@ enum class RenderType
     Trail,       // トレイル
     Particle,    // パーティクル
     Line,        // ライン
-    Skybox       // スカイボックス
+    Skybox,      // スカイボックス
+	Grass        // 草
 };
 
 // 描画グループ（描画順の優先度や用途で分類）

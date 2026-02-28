@@ -152,6 +152,15 @@ struct MaterialData
     
     float fresnelExponent;
     float3 paddingBubble;
+    
+    float grassWindSpeed; 
+    float grassWindAmplitude; 
+    float grassNormalBlend;
+    float grassTranslucency; 
+
+    float grassRootAO; 
+    float grassAlphaCutoff; 
+    float2 paddingGrass;
 };
 
 struct TrailMaterialData

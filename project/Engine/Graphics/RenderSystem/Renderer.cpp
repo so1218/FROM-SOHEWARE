@@ -403,6 +403,7 @@ void Renderer::Draw3D()
 		case RenderType::Skybox: DrawSkybox(sub); break;
 		case RenderType::Model:
 		case RenderType::Skinning: DrawModel(sub); break;
+		case RenderType::Grass: DrawGrass(sub); break;
 		case RenderType::Line:
 			cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 			FlushLines();

@@ -21,7 +21,6 @@ struct PixelInput
     float4 shadowCoord : SHADOW_COORD;
 };
 
-
 // シャドウ強度を計算
 float CalculateShadow(float4 shadowCoord, float3 normal);
 
@@ -29,50 +28,41 @@ PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
 
-    // テクスチャサンプリング
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
 
-    // アルファテスト (ここで草の形を切り抜く)
-    if (textureColor.a < 0.5f)
+    if (textureColor.a < gMaterial.grassAlphaCutoff)
     {
         discard;
     }
 
-    // ベースカラーの決定
     float3 baseColor = textureColor.rgb * gMaterial.color.rgb * input.color.rgb;
-
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float3 normal = normalize(input.normal);
 
-    // kore影の計算 (Shadow)
     float shadowFactor = 1.0f;
     if (gMaterial.addShadow != 0)
     {
         shadowFactor = CalculateShadow(input.shadowCoord, normal);
     }
 
-    // ライティング
     float NdotL = dot(normal, lightDir) * 0.5f + 0.5f;
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL * shadowFactor;
 
-    // 透過光 (Translucency) - 逆光で光る
+    // 透過光
     float viewDotLight = saturate(dot(toEye, -lightDir));
-    float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * 0.4f * shadowFactor;
+
+    float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
 
     float3 finalColor = diffuse + translucency + (baseColor * 0.2f); // 0.2fはAmbient
 
-    // 根元を暗くする (Root AO)
-    finalColor *= smoothstep(1.0f, 0.3f, input.texcoord.y);
+    finalColor *= smoothstep(1.0f, gMaterial.grassRootAO, input.texcoord.y);
 
-    // インスタンスカラーを適用
     finalColor *= input.color.rgb;
 
-    // G-Bufferへの出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
-    // 草はツヤツヤさせないのでラフネス高め(0.9)、メタルネスゼロ(0.0)に固定
-    output.material = float4(0.0f, 0.9f, 0.0f, 1.0f);
+    output.material = float4(gMaterial.metalness, gMaterial.roughness, 0.0f, 1.0f);
 
     return output;
 }

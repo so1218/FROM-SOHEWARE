@@ -76,6 +76,7 @@ public:
         BlendMode blendMode, bool isBillboard, float intensity);
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
+    void SubmitGrass(const WorldTransform& worldTransform, const ModelData& modelData, const MaterialHandle& material, const Vector4& color);
     void DrawFullScreenQuadWithOffscreenTexture();
     // 単純にテクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
@@ -252,6 +253,17 @@ private:
 
     // 1フレーム中のバッチリスト
     std::vector<TrailBatch> trailBatches_;
+
+    // 1バッチ（同じ草モデル・マテリアルの塊）ごとの管理
+    struct GrassBatch {
+        const ModelData* modelData;
+        MaterialHandle materialHandle;
+        uint32_t instanceCount = 0;
+        uint32_t maxInstanceCount = 0;
+        Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer; // StructuredBuffer
+        GrassInstanceData* mappedData = nullptr;
+        uint32_t srvIndex = 0; // t10にバインドするSRVのインデックス
+    };
 
     int clientWidth_ = 0;
     int clientHeight_ = 0;
