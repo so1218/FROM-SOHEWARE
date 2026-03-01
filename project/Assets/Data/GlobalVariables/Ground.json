@@ -2,34 +2,34 @@
     "Ground": {
         "ModelTree_Mat0_AddShadow": 0,
         "ModelTree_Mat0_AlbedoMap": "leaf",
-        "ModelTree_Mat0_AlphaThres": 0.5099999904632568,
+        "ModelTree_Mat0_AlphaThres": 0.5199999809265137,
         "ModelTree_Mat0_Color": [
             1.0,
             1.0,
             1.0,
             1.0
         ],
-        "ModelTree_Mat0_DiffuseRef": 4.0,
-        "ModelTree_Mat0_DisEnable": 0,
-        "ModelTree_Mat0_DisThres": 0.5,
-        "ModelTree_Mat0_DissolveTex": "white1x1",
+        "ModelTree_Mat0_DiffuseRef": 1.0,
+        "ModelTree_Mat0_DisEnable": 1,
+        "ModelTree_Mat0_DisThres": 0.17000000178813934,
+        "ModelTree_Mat0_DissolveTex": "noise_45",
         "ModelTree_Mat0_EdgeColor": [
             1.0,
             0.5,
             0.0
         ],
         "ModelTree_Mat0_EdgeInten": 2.0,
-        "ModelTree_Mat0_EdgeWidth": 0.05000000074505806,
-        "ModelTree_Mat0_Emissive": 1.0,
-        "ModelTree_Mat0_EnvMapInt": 0.0,
-        "ModelTree_Mat0_EnvMapTex": "skybox",
-        "ModelTree_Mat0_LightMode": 1,
+        "ModelTree_Mat0_EdgeWidth": 0.0,
+        "ModelTree_Mat0_Emissive": 17.700000762939453,
+        "ModelTree_Mat0_EnvMapInt": 0.20000000298023224,
+        "ModelTree_Mat0_EnvMapTex": "black_cube",
+        "ModelTree_Mat0_LightMode": 3,
         "ModelTree_Mat0_Lighting": 1,
-        "ModelTree_Mat0_Metalness": 0.0,
-        "ModelTree_Mat0_NormEnable": 0,
-        "ModelTree_Mat0_NormInten": 1.0,
+        "ModelTree_Mat0_Metalness": 0.5199999809265137,
+        "ModelTree_Mat0_NormEnable": 1,
+        "ModelTree_Mat0_NormInten": 1.149999976158142,
         "ModelTree_Mat0_NormTile": 1.0,
-        "ModelTree_Mat0_NormalMapTex": "white1x1",
+        "ModelTree_Mat0_NormalMapTex": "normal_22",
         "ModelTree_Mat0_OutlineColor": [
             0.0,
             0.0,
@@ -37,7 +37,7 @@
             1.0
         ],
         "ModelTree_Mat0_OutlineEnable": 0,
-        "ModelTree_Mat0_OutlineWidth": 1.0,
+        "ModelTree_Mat0_OutlineWidth": 0.699999988079071,
         "ModelTree_Mat0_PuddleColor": [
             0.4000000059604645,
             0.30000001192092896,
@@ -48,14 +48,14 @@
         "ModelTree_Mat0_PuddleScale": 0.10000000149011612,
         "ModelTree_Mat0_PuddleTint": 0.5,
         "ModelTree_Mat0_RimColor": [
-            1.0,
-            1.0,
-            1.0
+            0.0009613860165700316,
+            0.012658238410949707,
+            0.0
         ],
         "ModelTree_Mat0_RimEnable": 0,
-        "ModelTree_Mat0_RimInten": 1.0,
-        "ModelTree_Mat0_RimPower": 3.0,
-        "ModelTree_Mat0_RimUseDir": 0,
+        "ModelTree_Mat0_RimInten": 1.7999999523162842,
+        "ModelTree_Mat0_RimPower": 17.0,
+        "ModelTree_Mat0_RimUseDir": 1,
         "ModelTree_Mat0_RippleEnable": 0,
         "ModelTree_Mat0_RippleFreq": 1.0,
         "ModelTree_Mat0_RippleMap": "white1x1",
@@ -64,17 +64,17 @@
         "ModelTree_Mat0_RippleSize": 0.4000000059604645,
         "ModelTree_Mat0_RippleSpeed": 1.0,
         "ModelTree_Mat0_RippleStren": 0.05000000074505806,
-        "ModelTree_Mat0_Roughness": 0.5,
+        "ModelTree_Mat0_Roughness": 0.25999999046325684,
         "ModelTree_Mat0_ShadowBias": 0.0005000000237487257,
         "ModelTree_Mat0_ShadowDens": 0.800000011920929,
         "ModelTree_Mat0_ShadowEnv": 0.0,
         "ModelTree_Mat0_ShadowSoft": 0.0,
-        "ModelTree_Mat0_Shininess": 50.0,
+        "ModelTree_Mat0_Shininess": 254.1999969482422,
         "ModelTree_Mat0_SpecColor": [
             1.0,
             1.0,
-            1.0,
-            1.0
+            0.9450980424880981,
+            0.27450981736183167
         ],
         "ModelTree_Mat0_ToonRampTex": "toonRamp_01",
         "ModelTree_Mat0_UVRot": [
@@ -209,9 +209,9 @@
         "Model_AlbedoMap": "white1x1",
         "Model_AlphaThres": 0.009999999776482582,
         "Model_Color": [
-            0.14767932891845703,
-            0.14767932891845703,
-            0.14767932891845703,
+            0.27426159381866455,
+            0.21142004430294037,
+            0.12382274866104126,
             1.0
         ],
         "Model_DiffuseRef": 4.0,
@@ -314,6 +314,11 @@
         ],
         "Model_UsePuddle": 1,
         "Model_WetDarkness": 0.10999999940395355,
-        "Model_Wetness": 0.5699999928474426
+        "Model_Wetness": 0.5699999928474426,
+        "treeWindAmplitude": 0.14000000059604645,
+        "treeWindHeightScale": 0.5899999737739563,
+        "treeWindSpatialScale": 0.14000000059604645,
+        "treeWindSpeed": 6.360000133514404,
+        "treeWindVariation": 0.009999999776482582
     }
 }

@@ -16,10 +16,11 @@ struct VertexShaderOutput
 
 struct VertexShaderInput
 {
-    float4 position : POSITION;
-    float2 texcoord : TEXCOORD0;
-    float3 normal : NORMAL0;
-    float3 tangent : TANGENT;
+    float32_t4 position : POSITION0;
+    float32_t2 texcoord : TEXCOORD0;
+    float32_t3 normal : NORMAL0;
+    float32_t3 tangent : TANGENT0;
+    float32_t3 smoothNormal : TEXCOORD1;
 };
 
 struct PixelShaderInput

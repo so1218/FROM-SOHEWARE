@@ -164,7 +164,15 @@ struct MaterialData
     float interactStrength; 
     
     float3 playerPos;
-    float paddingGrass2;
+    int32_t enableTreeWind; 
+    
+    float treeWindSpeed;
+    float treeWindAmplitude; 
+    float treeWindSpatialScale;
+    float treeWindHeightScale;
+    
+    float treeWindVariation;
+    float3 paddingTree;
 };
 
 struct TrailMaterialData
