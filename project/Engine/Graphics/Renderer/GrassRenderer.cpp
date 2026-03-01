@@ -50,7 +50,7 @@ void GrassRenderer::BeginFrame()
 
 void GrassRenderer::Submit(const Matrix4x4& world, const Vector4& color)
 {
-    // 最大数を超えたら追加しない（安全対策）
+    // 最大数を超えたら追加しない
     if (instanceQueue_.size() >= kMaxInstances) return;
 
     GrassInstanceData data;

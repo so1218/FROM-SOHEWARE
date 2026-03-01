@@ -29,11 +29,13 @@ private:
     // 配置用のパラメータ
     int grassCount_ = 3000;         // 配置する数
     float spreadRadius_ = 20.0f;    // 配置する半径
+    int prevGrassCount_ = 50;
+    float prevSpreadRadius_ = 10.0f;
 
     // 全体のスケール
     float baseScale_ = 1.0f;
 
-    // 再生成（変更検知）用の記憶変数
+    // 再生成用の記憶変数
     Vector3 prevPosition_;
     float prevBaseScale_ = 1.0f;
 

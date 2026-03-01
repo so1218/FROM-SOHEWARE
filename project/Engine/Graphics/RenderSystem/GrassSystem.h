@@ -15,7 +15,7 @@ public:
 
     // インスタンス管理
 
-    // 草を1本追加する
+    // 草を1本追加
     void AddGrass(const Vector3& position, const Vector3& rotation = { 0,0,0 }, const Vector3& scale = { 1,1,1 }, const Vector4& color = { 1,1,1,1 });
     void AddGrass(const WorldTransform& transform, const Vector4& color = { 1,1,1,1 });
 
