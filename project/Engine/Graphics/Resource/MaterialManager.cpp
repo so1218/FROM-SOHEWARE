@@ -37,6 +37,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->rimColor = { 1.0f, 1.0f, 1.0f };
     handle.materialData->rimUseLightDir = false;
     handle.materialData->isArtGrid = false;
+    handle.materialData->alphaTestThreshold = 0.01f;
     handle.materialData->environmentMapIntensity = 0.0f;
     handle.materialData->diffuseReflection = 4.0;
     handle.materialData->emissiveIntensity = 1.0f;

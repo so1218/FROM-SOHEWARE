@@ -168,6 +168,7 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
                             Draw(matPrefix + "LightMode", "照明モード");
                             Draw(matPrefix + "EnvMapInt", "環境マップ強度");
                             Draw(matPrefix + "Emissive", "自己発光強度");
+                            Draw(matPrefix + "AlphaThres", "透過カット閾値(AlphaTest)");
 
                             ImGui::Separator();
                             ImGui::TextDisabled("テクスチャ");
@@ -1149,6 +1150,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     Bind(prefix + "Metalness", &matData->metalness, 0.0f, 0.01f, 0.0f, 1.0f);
     BindColor(prefix + "SpecColor", &matData->specularColor, { 1.0f, 1.0f, 1.0f, 1.0f });
     Bind(prefix + "Emissive", &matData->emissiveIntensity, 1.0f, 0.1f, 0.0f, 100.0f);
+    Bind(prefix + "AlphaThres", &matData->alphaTestThreshold, 0.01f, 0.01f, 0.0f, 1.0f);
 
     BindBool(prefix + "AddShadow", &matData->addShadow, true);
     Bind(prefix + "ShadowBias", &matData->shadowBias, 0.0005f, 0.0001f, 0.0f, 0.1f);

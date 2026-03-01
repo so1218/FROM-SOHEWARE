@@ -94,7 +94,7 @@ struct MaterialData
     float shadowSoftness;
     float shadowEnvStrength;
     int32_t isArtGrid;
-    float padding2;
+    float alphaTestThreshold;
 
     int enableRim;
     float rimPower;

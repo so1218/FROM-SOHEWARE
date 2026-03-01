@@ -2,11 +2,12 @@
     "Bubble": {
         "bubbleModel_AddShadow": 0,
         "bubbleModel_AlbedoMap": "white1x1",
+        "bubbleModel_AlphaThres": 0.009999999776482582,
         "bubbleModel_Color": [
             1.0,
             1.0,
             1.0,
-            0.7176470756530762
+            0.3686274588108063
         ],
         "bubbleModel_DiffuseRef": 4.0,
         "bubbleModel_DisEnable": 1,

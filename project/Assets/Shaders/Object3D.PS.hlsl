@@ -361,7 +361,7 @@ PixelShaderOutput main(PixelShaderInput input)
     output.color.a = textureColor.a * gMaterial.color.a;
   
     // ディザー透明処理
-    if (output.color.a <= 0.01f)
+    if (output.color.a <= gMaterial.alphaTestThreshold)
     {
         discard;
     }

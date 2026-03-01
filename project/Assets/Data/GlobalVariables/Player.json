@@ -3,6 +3,7 @@
         "PlayerModel_IsLoop": true,
         "PlayerModel_Mat0_AddShadow": 1,
         "PlayerModel_Mat0_AlbedoMap": "white1x1",
+        "PlayerModel_Mat0_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat0_Color": [
             1.0,
             1.0,
@@ -97,6 +98,7 @@
         "PlayerModel_Mat0_Wetness": 0.5,
         "PlayerModel_Mat1_AddShadow": 1,
         "PlayerModel_Mat1_AlbedoMap": "uvChecker",
+        "PlayerModel_Mat1_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat1_Color": [
             1.0,
             1.0,
@@ -191,6 +193,7 @@
         "PlayerModel_Mat1_Wetness": 0.5,
         "PlayerModel_Mat2_AddShadow": 1,
         "PlayerModel_Mat2_AlbedoMap": "white1x1",
+        "PlayerModel_Mat2_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat2_Color": [
             1.0,
             1.0,
@@ -285,6 +288,7 @@
         "PlayerModel_Mat2_Wetness": 0.5,
         "PlayerModel_Mat3_AddShadow": 1,
         "PlayerModel_Mat3_AlbedoMap": "white1x1",
+        "PlayerModel_Mat3_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat3_Color": [
             1.0,
             1.0,
@@ -379,6 +383,7 @@
         "PlayerModel_Mat3_Wetness": 0.5,
         "PlayerModel_Mat4_AddShadow": 1,
         "PlayerModel_Mat4_AlbedoMap": "white1x1",
+        "PlayerModel_Mat4_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat4_Color": [
             1.0,
             1.0,
@@ -473,6 +478,7 @@
         "PlayerModel_Mat4_Wetness": 0.5,
         "PlayerModel_Mat5_AddShadow": 1,
         "PlayerModel_Mat5_AlbedoMap": "white1x1",
+        "PlayerModel_Mat5_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat5_Color": [
             1.0,
             1.0,
@@ -567,6 +573,7 @@
         "PlayerModel_Mat5_Wetness": 0.5,
         "PlayerModel_Mat6_AddShadow": 1,
         "PlayerModel_Mat6_AlbedoMap": "white1x1",
+        "PlayerModel_Mat6_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat6_Color": [
             1.0,
             1.0,
@@ -661,6 +668,7 @@
         "PlayerModel_Mat6_Wetness": 0.5,
         "PlayerModel_Mat7_AddShadow": 1,
         "PlayerModel_Mat7_AlbedoMap": "white1x1",
+        "PlayerModel_Mat7_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat7_Color": [
             1.0,
             1.0,
@@ -755,6 +763,7 @@
         "PlayerModel_Mat7_Wetness": 0.5,
         "PlayerModel_Mat8_AddShadow": 1,
         "PlayerModel_Mat8_AlbedoMap": "white1x1",
+        "PlayerModel_Mat8_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat8_Color": [
             1.0,
             1.0,
@@ -849,6 +858,7 @@
         "PlayerModel_Mat8_Wetness": 0.5,
         "PlayerModel_Mat9_AddShadow": 1,
         "PlayerModel_Mat9_AlbedoMap": "white1x1",
+        "PlayerModel_Mat9_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat9_Color": [
             1.0,
             1.0,

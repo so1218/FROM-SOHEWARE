@@ -16,6 +16,7 @@ public:
 
 private:
     std::unique_ptr<Model> model_;
+    std::unique_ptr<Model> modelTree_;
     std::unique_ptr<Skybox> skybox_;
     std::unique_ptr<PropertyBinder> binder_;
 };
