@@ -71,10 +71,10 @@ void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
     // 自分が持っている全てのオブジェクトをループ
     for (const auto& object : objects_)
     {
-        // GameObject* を Collider* に動的キャスト
+        // GameObject*をCollider*に動的キャスト
         Collider* collider = dynamic_cast<Collider*>(object.get());
 
-        // キャストが成功し、Collider であれば登録
+        // キャストが成功し、Colliderであれば登録
         if (collider)
         {
             manager->AddCollider(collider);
