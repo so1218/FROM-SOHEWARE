@@ -24,7 +24,8 @@ WorldTransform::WorldTransform(const Vector3& scale, const Quaternion& rotation,
     UpdateMatrix();
 }
 
-WorldTransform::WorldTransform(const WorldTransform& other) {
+WorldTransform::WorldTransform(const WorldTransform& other)
+{
     scale_ = other.scale_;
     rotation_ = other.rotation_;
     translation_ = other.translation_;
@@ -33,8 +34,10 @@ WorldTransform::WorldTransform(const WorldTransform& other) {
     parent_ = nullptr; // コピーしない
 }
 
-WorldTransform& WorldTransform::operator=(const WorldTransform& other) {
-    if (this != &other) {
+WorldTransform& WorldTransform::operator=(const WorldTransform& other)
+{
+    if (this != &other)
+    {
         scale_ = other.scale_;
         rotation_ = other.rotation_;
         translation_ = other.translation_;
@@ -91,12 +94,11 @@ void WorldTransform::UpdateMatrix()
     );
 
     if (parent_ != nullptr) {
-        // 親が設定されている場合、親のワールド行列を乗算する
-        // 親のワールド行列は親のUpdateMatrixが先に呼ばれて更新されていることを前提とする
+        // 親が設定されている場合、親のワールド行列を乗算
         matWorld_ = localMat * parent_->matWorld_;
     }
     else {
-        // 親がいない場合は、ローカル行列がそのままワールド行列となる
+        // 親がいない場合は、ローカル行列がワールド行列となる
         matWorld_ = localMat;
     }
 }
@@ -141,24 +143,23 @@ void WorldTransform::UpdateLocalFromWorld()
     }
     else
     {
-        // 親なしならローカル=ワールドそのまま
+        // 親なしならローカル=ワールド
         Matrix4x4::Decompose(matWorld_, scale_, rotationQuaternion_, translation_);
     }
 }
 
 void WorldTransform::ApplyWorldMatrix()
 {
-    // ワールド行列が最新であることが前提
     // ワールド行列からローカル情報（スケール・回転・移動）を取り出す
     Matrix4x4 world = matWorld_;
 
     // 行列を分解（スケール・回転・位置を抽出）
     Matrix4x4::Decompose(world, scale_, rotationQuaternion_, translation_);
 
-    // 回転角（オイラー）も更新しておくとよい（あれば）
+    // 回転角（オイラー）も更新
     rotation_ = Quaternion::QuaternionToEuler(rotationQuaternion_);
 
-    // 親を外して独立させる
+    // 親を外して独立
     parent_ = nullptr;
 }
 

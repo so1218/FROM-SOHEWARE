@@ -17,5 +17,4 @@ private:
     BlurSettings* cbData_ = nullptr;
     PSOManager* psoManager_ = nullptr;
     bool isVertical_ = false; // 縦か横か
-
 };

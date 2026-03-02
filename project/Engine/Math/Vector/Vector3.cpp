@@ -29,8 +29,8 @@ Vector3& Vector3::operator*=(float scalar)
 
 Vector3& Vector3::operator/=(float scalar)
 {
-    // ゼロ除算を避けるための厳密な比較は、EPSILON値を使うのがより堅牢です
-    if (scalar != 0.0f && std::fabs(scalar) > 1e-6f) // 小さすぎる値も0とみなす
+    // ゼロ除算を避けるための厳密な比較は、EPSILON値を使いたい
+    if (scalar != 0.0f && std::fabs(scalar) > 1e-6f) // 小さすぎる値も0
     {
         x /= scalar;
         y /= scalar;
@@ -38,14 +38,13 @@ Vector3& Vector3::operator/=(float scalar)
     }
     else
     {
-        x = y = z = 0; // または例外を投げるなど、エラーハンドリングを検討
+        x = y = z = 0; 
     }
     return *this;
 }
 
 // 二項演算子の定義
-// 通常、複合代入演算子を利用して実装すると簡潔です。
-// 例: return Vector3(*this) += other;
+
 Vector3 Vector3::operator+(const Vector3& other) const
 {
     return Vector3{ x + other.x, y + other.y, z + other.z };
@@ -61,7 +60,8 @@ Vector3 Vector3::operator*(float scalar) const
     return Vector3(x * scalar, y * scalar, z * scalar);
 }
 
-Vector3 operator*(float scalar, const Vector3& vec) {
+Vector3 operator*(float scalar, const Vector3& vec)
+{
     return Vector3(vec.x * scalar, vec.y * scalar, vec.z * scalar);
 }
 
@@ -71,17 +71,19 @@ Vector3 Vector3::operator/(float scalar) const
 }
 
 // 単項マイナス演算子
-Vector3 Vector3::operator-() const {
+Vector3 Vector3::operator-() const
+{
     return Vector3(-x, -y, -z);
 }
 
 // 比較演算子の定義
-// 浮動小数点の比較は誤差を考慮すべきですが、ここでは厳密比較のまま
-bool Vector3::operator==(const Vector3& other) const {
+bool Vector3::operator==(const Vector3& other) const
+{
     return x == other.x && y == other.y && z == other.z;
 }
 
-bool Vector3::operator!=(const Vector3& other) const {
+bool Vector3::operator!=(const Vector3& other) const 
+{
     return !(*this == other);
 }
 
@@ -96,9 +98,11 @@ float Vector3::LengthSq() const
     return x * x + y * y + z * z;
 }
 
-Vector3 Vector3::Normalize() const {
+Vector3 Vector3::Normalize() const
+{
     float len = Length();
-    if (len == 0.0f) { // ゼロ除算防止
+    if (len == 0.0f) // ゼロ除算防止
+    {
         return Vector3(0, 0, 0);
     }
     return Vector3(x / len, y / len, z / len);
@@ -132,16 +136,18 @@ Vector3 Vector3::Slerp(const Vector3& start, const Vector3& end, float t) {
     Vector3 endN = end.Normalize();
 
     float dot = startN.Dot(endN);
-    dot = std::clamp(dot, -1.0f, 1.0f); // 浮動小数点誤差による問題を避ける
+    dot = std::clamp(dot, -1.0f, 1.0f); 
     float theta = std::acos(dot);
 
     const float EPSILON = 1e-6f;
-    if (theta < EPSILON) {
+    if (theta < EPSILON) 
+    {
         return startN * (1.0f - t) + endN * t; // 通常の線形補間にフォールバック
     }
 
     float sinTheta = std::sin(theta);
-    if (std::abs(sinTheta) < EPSILON) {
+    if (std::abs(sinTheta) < EPSILON)
+    {
         return startN * (1.0f - t) + endN * t; // sin(theta)がほぼ0の場合
     }
 
@@ -153,26 +159,28 @@ Vector3 Vector3::Slerp(const Vector3& start, const Vector3& end, float t) {
 
 Vector3 Vector3::Lerp(const Vector3& current, const Vector3& target, float maxDelta)
 {
-    Vector3 delta = target - current; // Vector3::operator- を使用
-    float distanceSq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z; // もしくは delta.LengthSq()
+    Vector3 delta = target - current;
+    float distanceSq = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z; 
 
     // maxDeltaよりも距離が小さいなら、目標地点に到達
-    if (distanceSq <= maxDelta * maxDelta) { // distanceSq == 0.0f もこの条件に含まれる
+    if (distanceSq <= maxDelta * maxDelta)
+    { 
         return target;
     }
 
-    // 距離に対して maxDelta 分だけ進めた位置を返す（正規化→スケーリング）
+    // 距離に対して maxDelta 分だけ進めた位置を返す
     float distance = std::sqrt(distanceSq);
     float scale = maxDelta / distance;
 
-    return current + delta * scale; // Vector3::operator+ と operator* を使用
+    return current + delta * scale; 
 }
 
 Vector3 Vector3::CatmullRomInterpolation(const std::vector<Vector3>& controlPoints, float t_global)
 {
     size_t count = controlPoints.size();
 
-    if (count < 4) {
+    if (count < 4) 
+    {
         return Vector3();
     }
 
@@ -180,7 +188,8 @@ Vector3 Vector3::CatmullRomInterpolation(const std::vector<Vector3>& controlPoin
 
     float totalT = t_global * segmentCount;
     size_t segment = static_cast<size_t>(totalT);
-    if (segment >= segmentCount) {
+    if (segment >= segmentCount)
+    {
         segment = segmentCount - 1;
     }
 
