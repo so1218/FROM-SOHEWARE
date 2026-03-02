@@ -110,12 +110,12 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     else
     {
         // まだSceneViewが出ていない等の場合はウィンドウ全体を使う
-        checkViewportSize = { kClientWidth, kClientHeight };
+        checkViewportSize = { (float)Engine::GetClientWidth(), (float)Engine::GetClientHeight()};
         checkMousePos = rawMousePos;
     }
 #else
     // リリース時は常にウィンドウ全体基準
-    checkViewportSize = { kClientWidth, kClientHeight };
+    checkViewportSize = { (float)Engine::GetClientWidth(), (float)Engine::GetClientHeight()};
     checkMousePos = rawMousePos;
 #endif
 

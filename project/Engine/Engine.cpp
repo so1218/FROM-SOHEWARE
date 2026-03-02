@@ -25,16 +25,21 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "winmm.lib")
 
-std::wstring Engine::windowTitle_ = L"FROM SOHEWARE";
-int Engine::kFixedFPS_ = 60;
+int32_t Engine::sClientWidth = 1280;
+int32_t Engine::sClientHeight = 720;
 
 Engine::~Engine()
 {
 	CoUninitialize();
 }
 
-void Engine::Initialize()
+void Engine::Initialize(const ProjectConfig& config)
 {
+	windowTitle_ = config.windowTitle;
+	kFixedFPS_ = config.targetFPS;
+	sClientWidth = config.width;
+	sClientHeight = config.height;
+
 	materialManager_ = std::make_unique<MaterialManager>();
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
@@ -243,7 +248,7 @@ void Engine::InitializeSystem()
 void Engine::InitializeWindow()
 {
 	// Windowクラスのインスタンス作成
-	window_ = std::make_unique<Window>(kClientWidth, kClientHeight);
+	window_ = std::make_unique<Window>(GetClientWidth(), GetClientHeight());
 	// Windowの作成
 	window_->Create(windowTitle_);
 }
@@ -278,7 +283,7 @@ void Engine::InitializeGraphics()
 	// スワップチェーンの初期化（画面表示用のバッファ管理）
 	swapChain_ = std::make_unique<SwapChain>();
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(),
-		kClientWidth, kClientHeight, 2, dxgiFactory_);
+		GetClientWidth(), GetClientHeight(), 2, dxgiFactory_);
 
 	// ディスクリプタヒープマネージャの作成
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
@@ -314,16 +319,16 @@ void Engine::InitializeRenderer()
 	// メイン深度ステンシル
 	D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle =
 		dsvManager_->CreateDepthStencilView(
-			kClientWidth,
-			kClientHeight,
+			GetClientWidth(),
+			GetClientHeight(),
 			depthStencilResource_
 		);
 
 	// オフスクリーン深度ステンシル
 	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle =
 		dsvManager_->CreateDepthStencilView(
-			kClientWidth,
-			kClientHeight,
+			GetClientWidth(),
+			GetClientHeight(),
 			offscreenDepthResource_
 		);
 
@@ -337,7 +342,7 @@ void Engine::InitializeRenderer()
 	assert(fenceEvent_ != nullptr);
 
 	// レンダリング制御クラス初期化
-	renderContext_ = std::make_unique<RenderContext>(kClientWidth, kClientHeight);
+	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight());
 	renderCoordinator_ = std::make_unique<RenderCoordinator>();
 	renderCoordinator_->Initialize(
 		swapChain_.get(),
@@ -391,8 +396,8 @@ void Engine::InitializeRenderer()
 	postEffectManager_ = std::make_unique<PostEffectManager>();
 	postEffectManager_->Initialize(
 		this,
-		kClientWidth,
-		kClientHeight,
+		GetClientWidth(),
+		GetClientHeight(),
 		rootSignatureManager_.get(),
 		psoManager_.get(),
 		srvManager_.get(),
@@ -434,8 +439,8 @@ void Engine::InitializeResources()
 		globalConstants_.get(),
 		materialManager_.get(),
 		postEffectManager_.get(),
-		kClientWidth,
-		kClientHeight,
+		GetClientWidth(),
+		GetClientHeight(),
 		shadowMap_.get()
 	);
 

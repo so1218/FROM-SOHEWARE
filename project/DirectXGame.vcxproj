@@ -325,7 +325,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Resources\TextureManager.h" />
     <ClInclude Include="Game\GameObject\Bubble.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
-    <ClInclude Include="Game\Global\WindowConfig.h" />
+    <ClInclude Include="Engine\Core\ProjectConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RendererManager.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />

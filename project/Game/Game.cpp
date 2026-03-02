@@ -8,11 +8,18 @@
 #include "TestSceneHori.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
+#include "ProjectConfig.h"
 
 Game::Game() 
     : engine_(std::make_unique<Engine>())
 {
-    engine_->Initialize();
+    ProjectConfig config;
+    config.windowTitle = L"FROM SOHEWARE"; 
+    config.width = 1280;
+    config.height = 720;
+    config.targetFPS = 60;
+
+    engine_->Initialize(config);
 
     // シーンマネージャーの初期化
     sceneManager_.Initialize(engine_.get());

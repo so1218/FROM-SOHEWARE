@@ -71,5 +71,5 @@ void GlobalConstants::Update(
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();
 
     frameData_->iResolution = Vector2(1, 1);
-    frameData_->screenResolution = Vector2(static_cast<float>(kClientWidth), static_cast<float>(kClientHeight));
+    frameData_->screenResolution = Vector2(static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()));
 }

@@ -762,7 +762,7 @@
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
-    <ClInclude Include="Game\Global\WindowConfig.h" />
+    <ClInclude Include="Engine\Core\ProjectConfig.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\SSAOPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\SSRPass.h" />

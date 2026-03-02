@@ -25,9 +25,7 @@
 #include "FrameLimiter.h" 
 #include "ShaderManager.h"
 #include "ShadowMap.h"
-
-constexpr int32_t kClientWidth = 1280;
-constexpr int32_t kClientHeight = 720;
+#include "ProjectConfig.h"
 
 class Engine
 {
@@ -35,7 +33,7 @@ public:
     ~Engine();
 
     // 初期化・終了
-    void Initialize();
+    void Initialize(const ProjectConfig& config);
     void Finalize();
 
     // 毎フレーム、描画直前にGameクラスから呼ばれる
@@ -56,7 +54,6 @@ public:
 
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
-
 
     // ゲッター
     // DirectX関連
@@ -89,6 +86,9 @@ public:
     FrameLimiter* GetFrameLimiter() const { return frameLimiter_.get(); }
     ShadowMap* GetShadowMap() const { return shadowMap_.get(); }
 
+    static int32_t GetClientWidth() { return sClientWidth; }
+    static int32_t GetClientHeight() { return sClientHeight; }
+
 private:
     // 各種初期化処理
     void InitializeSystem();
@@ -113,10 +113,10 @@ private:
     Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
     HANDLE fenceEvent_ = nullptr;
 
-    // ウィンドウタイトル
-    static std::wstring windowTitle_;
-    // 固定FPS
-    static int kFixedFPS_;
+    std::wstring windowTitle_;
+    int kFixedFPS_ = 60;
+    static int32_t sClientWidth;
+    static int32_t sClientHeight;
 
     // 現在設定されているカメラ行列
     Matrix4x4 viewMatrix_;

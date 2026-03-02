@@ -824,7 +824,7 @@ void DebugGuiManager::BeginSceneView(
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
     // ゲームの解像度のアスペクト比を計算
-    float targetAspect = static_cast<float>(kClientWidth) / static_cast<float>(kClientHeight);
+    float targetAspect = static_cast<float>(Engine::GetClientWidth()) / static_cast<float>(Engine::GetClientHeight());
 
     // ウィンドウのアスペクト比を計算
     float windowAspect = windowSize.x / windowSize.y;

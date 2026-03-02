@@ -19,7 +19,7 @@ void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
     // 定数バッファをCPUから更新できるようにマップ
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
-    cbData_->texelSize = { 1.0f / kClientWidth, 1.0f / kClientHeight };
+    cbData_->texelSize = { 1.0f / Engine::GetClientWidth(), 1.0f / Engine::GetClientHeight()};
     cbData_->blurStrength = 0.0f;
 }
 
