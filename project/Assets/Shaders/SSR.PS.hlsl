@@ -52,7 +52,6 @@ float4 main(VSOutput input) : SV_TARGET
     float viewFade = smoothstep(0.0f, 0.2f, reflectDir.z);
     if (viewFade <= 0.0f) return float4(0, 0, 0, 0);
 
-    // ジッター（ノイズ）
     // ピクセルごとにレイの開始位置をランダムにずらし、アーティファクトを防ぐ
     float jitter = Hash(input.uv);
     float bias = 0.05f; 
@@ -120,7 +119,7 @@ float4 main(VSOutput input) : SV_TARGET
             float2 fadeUV = smoothstep(0.0f, 0.1f, hitUV) * smoothstep(1.0f, 0.9f, hitUV);
             hitAlpha *= fadeUV.x * fadeUV.y;
 
-            // コンタクトフェード（ジッターを入れたので距離も少し補正）
+            // コンタクトフェード
             hitAlpha *= smoothstep(0.0f, gSSRSettings.stepSize * 1.5f, rayDistance);
 
             break;

@@ -46,7 +46,7 @@ PixelInput main(VertexInput input)
     // 先端ほど大きく動くウェイト
     float windWeight = 1.0f - input.texcoord.y;
     
-    // プレイヤーへの距離を風の計算より先に求める
+    // プレイヤーへの距離を風の計算より先に
     float3 diff = worldPos.xyz - gMaterial.playerPos;
     float distXZ = length(diff.xz);
     float interactWeight = 0.0f; // 踏まれている度合い

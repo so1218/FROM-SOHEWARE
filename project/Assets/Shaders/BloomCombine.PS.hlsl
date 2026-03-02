@@ -30,7 +30,7 @@ struct PSInput
     float2 texcoord : TEXCOORD0;
 };
 
-// Tent Filter (3x3近傍サンプリングで滑らかに拡大)
+// Tent Filter (3x3近傍サンプリングで拡大)
 float3 UpsampleTent(Texture2D tex, SamplerState s, float2 uv, float2 texelSize, float sampleScale)
 {
     // サンプリングオフセット
@@ -70,7 +70,7 @@ float GetFogNoise(float3 worldPos, float time)
     float2 uv = worldPos.xz * gCombineSettings.fogNoiseScale;
     float moveTime = time * gCombineSettings.fogNoiseSpeed;
     
-    // 2枚のサンプリング（速度を変えて干渉させる）
+    // 2枚のサンプリング
     float2 scroll1 = float2(moveTime * 1.0, moveTime * 0.4);
     float2 scroll2 = float2(moveTime * -0.6, moveTime * 0.8);
     
@@ -80,8 +80,7 @@ float GetFogNoise(float3 worldPos, float time)
     // 合成
     float combinedNoise = n1 * n2;
 
-    // コントラスト調整 (Blightboundのようなパキッとした霧にするため)
-    // 0.5を中心に、Contrast倍してsaturateする
+    // コントラスト調整
     combinedNoise = saturate((combinedNoise - 0.5) * gCombineSettings.fogNoiseContrast + 0.5);
     
     return combinedNoise;
@@ -113,20 +112,20 @@ float4 main(VSOutput input) : SV_TARGET
     float clipX = input.uv.x * 2.0f - 1.0f;
     float clipY = (1.0f - input.uv.y) * 2.0f - 1.0f;
 
-    // クリップ空間の座標を作成（ZにDepthを入れる）
+    // クリップ空間の座標を作成（ZにDepth）
     float4 clipPos = float4(clipX, clipY, depthVal, 1.0f);
 
     // 逆行列を掛けてワールド空間へ
     float4 worldPos = mul(clipPos, gFrameData.invViewProj);
-    worldPos /= worldPos.w; // W除算で座標を確定
+    worldPos /= worldPos.w; // W除算
 
-    // DoF未適用時はシーンカラーをそのまま使用
+    // DoF未適用時はシーンカラー
     float3 combinedScene = sceneColor.rgb;
 
     // 被写界深度の適用
     if (gCombineSettings.enableDoF != 0)
     {
-        // ピントが合っている場所はdofColor.aが0で、SceneColorが使われる
+        // ピントが合っている場所はSceneColor
         combinedScene = lerp(sceneColor.rgb, dofColor.rgb, dofColor.a);
     }
     

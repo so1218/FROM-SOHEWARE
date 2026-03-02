@@ -70,7 +70,7 @@ PixelShaderOutput main(PixelInput input)
     
     if (gMaterial.wetness > 0.0f)
     {
-        // カメラの少し上から光が出ている
+        // カメラの少し上から光
         float3 fakeLightDir = normalize(toEye + float3(0.0f, 0.5f, 0.0f));
         float3 H = normalize(fakeLightDir + toEye);
         

@@ -30,7 +30,7 @@ float4 main(VSOutput input) : SV_TARGET
     // 中心ピクセルの情報を取得
     float centerDepth = gDepthTexture.SampleLevel(gClampSampler, input.uv, 0);
     
-    // 背景ならそのまま白（影なし）を返す
+    // 背景ならそのまま白（影なし）
     if (centerDepth >= 1.0f)
         return float4(1.0f, 1.0f, 1.0f, 1.0f);
 

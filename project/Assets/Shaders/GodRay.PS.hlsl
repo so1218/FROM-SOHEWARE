@@ -15,7 +15,7 @@ float4 main(VSOutput input) : SV_TARGET
     float depth = gDepthTexture.Sample(gSampler, texCoord);
     float4 color = gSceneTexture.Sample(gSampler, texCoord);
     
-    // マスク処理(深度が1.0未満なら黒にする)
+    // マスク処理(深度が1.0未満なら黒に)
     if(depth<0.999f)
     {
         color = float4(0, 0, 0, 0);
@@ -66,7 +66,7 @@ float4 main(VSOutput input) : SV_TARGET
         }
         else
         {
-            // 暗いものは遮蔽物として黒にする
+            // 暗いものは遮蔽物として黒に
             sampleColor = float3(0, 0, 0);
         }
         
