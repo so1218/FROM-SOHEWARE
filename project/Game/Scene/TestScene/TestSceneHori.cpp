@@ -36,7 +36,6 @@ void TestSceneHori::OnInitialize()
 
 void TestSceneHori::OnUpdate()
 {
-    AudioPlayer::GetInstance().PlayUnique("titleSceneBGM");
 }
 
 void TestSceneHori::OnDraw()

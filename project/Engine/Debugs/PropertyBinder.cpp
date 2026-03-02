@@ -1186,11 +1186,11 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 
     Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
     Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
-    Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 5.0f);
 
     Bind(prefix + "PuddleScale", &matData->puddleScale, 0.1f, 0.01f, 0.001f, 10.0f);
     Bind(prefix + "PuddleFalloff", &matData->puddleFalloff, 0.1f, 0.005f, 0.001f, 0.5f);
-    Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 1.0f);
+    Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 5.0f);
     Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
     Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
 

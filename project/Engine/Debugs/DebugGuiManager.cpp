@@ -666,7 +666,7 @@ void DebugGuiManager::DrawPostEffectSettings()
             }
             else
             {
-                ImGui::TextColored(ImVec4(1, 0, 0, 1), "SSRSettings のポインタが null です");
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), "SSRSettingsのポインタがnull");
             }
 
             ImGui::Unindent();
