@@ -78,7 +78,6 @@ Vector3 Matrix3x3::TransformVector(const Vector3& v) const {
     };
 }
 
-// 修正された FromBasis メソッド
 Matrix3x3 Matrix3x3::FromBasis(const Vector3& right, const Vector3& up, const Vector3& forward)
 {
    float values[3][3] = {

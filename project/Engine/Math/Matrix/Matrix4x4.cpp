@@ -2,28 +2,37 @@
 #include "WorldTransform.h" 
 
 // コンストラクタ(初期化なし)
-Matrix4x4::Matrix4x4() {
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+Matrix4x4::Matrix4x4()
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
             m[i][j] = 0.0f;
         }
     }
 }
 
 // コンストラクタ(値を指定して初期化)
-Matrix4x4::Matrix4x4(float values[4][4]) {
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+Matrix4x4::Matrix4x4(float values[4][4]) 
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
             m[i][j] = values[i][j];
         }
     }
 }
 
 // 行列の加算
-Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const {
+Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const
+{
     Matrix4x4 result;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+    for (int i = 0; i < 4; ++i) 
+    {
+        for (int j = 0; j < 4; ++j)
+        {
             result.m[i][j] = m[i][j] + other.m[i][j];
         }
     }
@@ -31,12 +40,16 @@ Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const {
 }
 
 // 行列の乗算
-Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const {
+Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const 
+{
     Matrix4x4 result;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
             result.m[i][j] = 0;
-            for (int k = 0; k < 4; ++k) {
+            for (int k = 0; k < 4; ++k)
+            {
                 result.m[i][j] += m[i][k] * other.m[k][j];
             }
         }
@@ -45,10 +58,13 @@ Matrix4x4 Matrix4x4::operator*(const Matrix4x4& other) const {
 }
 
 // 行列の転置
-Matrix4x4 Matrix4x4::Transpose() const {
+Matrix4x4 Matrix4x4::Transpose() const 
+{
     Matrix4x4 result;
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
             result.m[j][i] = m[i][j];
         }
     }
@@ -56,7 +72,8 @@ Matrix4x4 Matrix4x4::Transpose() const {
 }
 
 // 単位行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeIdentity() {
+Matrix4x4 Matrix4x4::MakeIdentity() 
+{
     Matrix4x4 matrix = {}; // ゼロ初期化
     matrix.m[0][0] = 1.0f;
     matrix.m[1][1] = 1.0f;
@@ -66,7 +83,8 @@ Matrix4x4 Matrix4x4::MakeIdentity() {
 }
 
 // 平行移動行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeTranslate(const Vector3& translate) {
+Matrix4x4 Matrix4x4::MakeTranslate(const Vector3& translate) 
+{
     Matrix4x4 matrix = MakeIdentity(); // 単位行列で初期化
     matrix.m[3][0] = translate.x;
     matrix.m[3][1] = translate.y;
@@ -75,7 +93,8 @@ Matrix4x4 Matrix4x4::MakeTranslate(const Vector3& translate) {
 }
 
 // 拡大縮小行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeScale(const Vector3& scale) {
+Matrix4x4 Matrix4x4::MakeScale(const Vector3& scale)
+{
     Matrix4x4 matrix = MakeIdentity();
     matrix.m[0][0] = scale.x;
     matrix.m[1][1] = scale.y;
@@ -84,7 +103,8 @@ Matrix4x4 Matrix4x4::MakeScale(const Vector3& scale) {
 }
 
 // X軸回転行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeRotateX(float radian) {
+Matrix4x4 Matrix4x4::MakeRotateX(float radian)
+{
     Matrix4x4 matrix = MakeIdentity();
     float cosTheta = std::cos(radian);
     float sinTheta = std::sin(radian);
@@ -96,7 +116,8 @@ Matrix4x4 Matrix4x4::MakeRotateX(float radian) {
 }
 
 // Y軸回転行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeRotateY(float radian) {
+Matrix4x4 Matrix4x4::MakeRotateY(float radian)
+{
     Matrix4x4 matrix = MakeIdentity();
     float cosTheta = std::cos(radian);
     float sinTheta = std::sin(radian);
@@ -108,7 +129,8 @@ Matrix4x4 Matrix4x4::MakeRotateY(float radian) {
 }
 
 // Z軸回転行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeRotateZ(float radian) {
+Matrix4x4 Matrix4x4::MakeRotateZ(float radian)
+{
     Matrix4x4 matrix = MakeIdentity();
     float cosTheta = std::cos(radian);
     float sinTheta = std::sin(radian);
@@ -120,15 +142,17 @@ Matrix4x4 Matrix4x4::MakeRotateZ(float radian) {
 }
 
 // XYZ軸回転行列 (静的メンバ関数)
-Matrix4x4 Matrix4x4::MakeRotateXYZ(const Vector3& rotate) {
+Matrix4x4 Matrix4x4::MakeRotateXYZ(const Vector3& rotate)
+{
     Matrix4x4 rotateX = MakeRotateX(rotate.x);
     Matrix4x4 rotateY = MakeRotateY(rotate.y);
     Matrix4x4 rotateZ = MakeRotateZ(rotate.z);
-    return rotateX * rotateY * rotateZ; // 例: ZXY順
+    return rotateX * rotateY * rotateZ; 
 }
 
 // アフィン変換行列
-Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+{
     Matrix4x4 scaleM = MakeScale(scale);
     Matrix4x4 rotateM = MakeRotateXYZ(rotate);
     Matrix4x4 translateM = MakeTranslate(translate);
@@ -136,7 +160,8 @@ Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Vector3& rotate, con
 }
 
 // クォータニオンを使ったアフィン変換行列の生成
-Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& rotation, const Vector3& translation) {
+Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& rotation, const Vector3& translation) 
+{
     // 回転行列を生成
     Matrix4x4 rotMat = rotation.ToMatrix();
     // スケール行列
@@ -148,7 +173,8 @@ Matrix4x4 Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& rotation
 }
 
 // 正射影行列
-Matrix4x4 Matrix4x4::MakeOrthographic(float left, float top, float right, float bottom, float nearClip, float farClip) {
+Matrix4x4 Matrix4x4::MakeOrthographic(float left, float top, float right, float bottom, float nearClip, float farClip)
+{
     Matrix4x4 result = {}; // ゼロ初期化
     result.m[0][0] = 2.0f / (right - left);
     result.m[1][1] = 2.0f / (top - bottom);
@@ -170,7 +196,8 @@ Matrix4x4 Matrix4x4::MakeOrthographic(float width, float height, float nearClip,
 }
 
 // 透視投影行列
-Matrix4x4 Matrix4x4::MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip) {
+Matrix4x4 Matrix4x4::MakePerspectiveFov(float fovY, float aspectRatio, float nearClip, float farClip) 
+{
     Matrix4x4 matrix = {};
     float f = 1.0f / std::tanf(fovY * 0.5f);
     matrix.m[0][0] = f / aspectRatio;
@@ -182,7 +209,8 @@ Matrix4x4 Matrix4x4::MakePerspectiveFov(float fovY, float aspectRatio, float nea
 }
 
 // ビューポート変換行列
-Matrix4x4 Matrix4x4::MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth) {
+Matrix4x4 Matrix4x4::MakeViewport(float left, float top, float width, float height, float minDepth, float maxDepth)
+{
     Matrix4x4 result = {}; // ゼロ初期化
     result.m[0][0] = width / 2.0f;
     result.m[1][1] = -height / 2.0f;
@@ -195,7 +223,8 @@ Matrix4x4 Matrix4x4::MakeViewport(float left, float top, float width, float heig
 }
 
 // ルックアット行列
-Matrix4x4 Matrix4x4::MakeLookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
+Matrix4x4 Matrix4x4::MakeLookAt(const Vector3& eye, const Vector3& target, const Vector3& up)
+{
     Vector3 zAxis = (target - eye).Normalize(); // Z軸 (ターゲット方向)
     Vector3 xAxis = up.Cross(zAxis).Normalize();      // X軸 (右方向)
     Vector3 yAxis = zAxis.Cross(xAxis);             // Y軸 (上方向)
@@ -365,7 +394,8 @@ Matrix4x4 Matrix4x4::MakeWVPMatrix2D(const WorldTransform& worldTransform, float
 }
 
 // ベクトルの変換 (メンバ関数)
-Vector3 Matrix4x4::Transform(const Vector3& vec) const {
+Vector3 Matrix4x4::Transform(const Vector3& vec) const 
+{
     Vector3 result;
     result.x = vec.x * m[0][0] + vec.y * m[1][0] + vec.z * m[2][0] + 1.0f * m[3][0];
     result.y = vec.x * m[0][1] + vec.y * m[1][1] + vec.z * m[2][1] + 1.0f * m[3][1];
@@ -383,36 +413,36 @@ Vector3 Matrix4x4::Transform(const Vector3& vec) const {
 Vector4 Matrix4x4::Transform(const Vector4& vec) const
 {
     Vector4 result;
-    // vec.w をそのまま使用して行列計算を行う
+    // vec.wを使用して行列計算
     result.x = vec.x * m[0][0] + vec.y * m[1][0] + vec.z * m[2][0] + vec.w * m[3][0];
     result.y = vec.x * m[0][1] + vec.y * m[1][1] + vec.z * m[2][1] + vec.w * m[3][1];
     result.z = vec.x * m[0][2] + vec.y * m[1][2] + vec.z * m[2][2] + vec.w * m[3][2];
     result.w = vec.x * m[0][3] + vec.y * m[1][3] + vec.z * m[2][3] + vec.w * m[3][3];
 
-    // Vector4を返す変換では、通常ここで w 除算は行いません。
-    // クリップ空間の座標や、射影変換の逆変換などで w の値そのものが必要になるためです。
     return result;
 }
 
 // 法線ベクトルの変換
-Vector3 Matrix4x4::TransformNormal(const Vector3& v) const {
+Vector3 Matrix4x4::TransformNormal(const Vector3& v) const
+{
     Vector3 result;
     result.x = v.x * m[0][0] + v.y * m[1][0] + v.z * m[2][0];
     result.y = v.x * m[0][1] + v.y * m[1][1] + v.z * m[2][1];
     result.z = v.x * m[0][2] + v.y * m[1][2] + v.z * m[2][2];
-    return result.Normalize(); // 変換後に正規化する
+    return result.Normalize(); // 変換後に正規化
 }
 
 Vector3 Matrix4x4::TransformPoint(const Vector3& point) const
 {
-    // 4次元に拡張して行列と乗算する
+    // 4次元に拡張して行列と乗算
     float x = point.x * m[0][0] + point.y * m[1][0] + point.z * m[2][0] + m[3][0];
     float y = point.x * m[0][1] + point.y * m[1][1] + point.z * m[2][1] + m[3][1];
     float z = point.x * m[0][2] + point.y * m[1][2] + point.z * m[2][2] + m[3][2];
     float w = point.x * m[0][3] + point.y * m[1][3] + point.z * m[2][3] + m[3][3];
 
-    // wで除算（透視変換対応。w = 1 であれば何もしない）
-    if (w != 0.0f && w != 1.0f) {
+    // wで除算
+    if (w != 0.0f && w != 1.0f)
+    {
         x /= w;
         y /= w;
         z /= w;
@@ -474,7 +504,7 @@ void Matrix4x4::ExtractTranslationAndRotation(
     // 位置は行列の4行目
     outTranslation = Vector3(matrix.m[3][0], matrix.m[3][1], matrix.m[3][2]);
 
-    // 回転行列のみ抽出（スケーリングを前提に含まない）
+    // 回転行列のみ抽出
     Matrix4x4 rotMat;
     rotMat.m[0][0] = matrix.m[0][0]; rotMat.m[0][1] = matrix.m[0][1]; rotMat.m[0][2] = matrix.m[0][2];
     rotMat.m[1][0] = matrix.m[1][0]; rotMat.m[1][1] = matrix.m[1][1]; rotMat.m[1][2] = matrix.m[1][2];
@@ -488,7 +518,7 @@ Matrix4x4 Matrix4x4::RemoveScale(const Matrix4x4& mat)
 {
     Matrix4x4 result = mat;
 
-    // 各軸のスケーリング量を求める
+    // 各軸のスケーリング量
     float sx = Vector3{ mat.m[0][0], mat.m[0][1], mat.m[0][2] }.Length();
     float sy = Vector3{ mat.m[1][0], mat.m[1][1], mat.m[1][2] }.Length();
     float sz = Vector3{ mat.m[2][0], mat.m[2][1], mat.m[2][2] }.Length();
