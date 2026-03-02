@@ -157,13 +157,14 @@ float4 main(VSOutput input) : SV_TARGET
     {
         float3 rayVec = worldPos.xyz - gFrameData.cameraWorldPosition;
         float rayLength = length(rayVec);
-    
-        // ゼロ除算の防止
         float3 rayDir = rayVec / max(rayLength, 0.0001f);
 
-        // ノイズによる密度の変化
+        // ノイズを取得
         float noise = GetFogNoise(worldPos.xyz, gFrameData.gTime);
-        float animatedDensity = gCombineSettings.heightFogDensity * (0.5f + noise * 0.5f);
+
+        // ノイズの影響度を調整
+        float noiseFactor = lerp(1.0f, noise, gCombineSettings.fogNoiseStrength);
+        float animatedDensity = gCombineSettings.heightFogDensity * noiseFactor;
 
         float heightDiff = rayVec.y;
         // 微小値の扱いをより安全に

@@ -36,6 +36,7 @@ void BloomCombinePass::Initialize(
     combineData_->fogNoiseScale = 0.01f;
 	combineData_->fogNoiseContrast = 1.0f;
 	combineData_->fogNoiseSpeed = 1.0f;
+    combineData_->fogNoiseStrength = 1.0f;
 
     combineData_->godRayIntensity = 1.0f;
 

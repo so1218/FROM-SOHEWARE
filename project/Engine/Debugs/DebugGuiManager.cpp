@@ -729,6 +729,7 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::DragFloat("ノイズスケール", &combineSettingsData->fogNoiseScale, 0.001f, 0.0001f, 0.5f, "%.4f");
             ImGui::DragFloat("流れる速度", &combineSettingsData->fogNoiseSpeed, 0.001f, 0.0f, 2.0f, "%.3f");
             ImGui::SliderFloat("コントラスト(キレ)", &combineSettingsData->fogNoiseContrast, 0.0f, 10.0f, "%.2f");
+            ImGui::SliderFloat("ムラの強さ", &combineSettingsData->fogNoiseStrength, 0.0f, 1.0f, "%.2f");
 
             ImGui::Unindent();
         }

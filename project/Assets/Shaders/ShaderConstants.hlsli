@@ -288,11 +288,12 @@ struct CombineSettings
     float fogNoiseSpeed;
     float fogNoiseScale;
     float fogNoiseContrast; 
-    float godRayIntensity;
+    float fogNoiseStrength;
     
+    float godRayIntensity;
     int enableSSR;
     float ssrIntensity;
-    float _padding2[2]; 
+    float _padding2; 
 };
 
 struct GodRaySettings
