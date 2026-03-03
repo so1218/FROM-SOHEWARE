@@ -346,3 +346,10 @@ struct GrassInstanceData
     float4x4 world;
     float4 color;
 };
+
+struct Object3DInstanceData
+{
+    float4x4 World;
+    float4x4 WorldInverseTranspose;
+    float4 WorldColor;
+};

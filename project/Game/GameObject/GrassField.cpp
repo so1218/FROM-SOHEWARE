@@ -4,7 +4,6 @@
 #include <random>
 
 GrassField::GrassField(Engine* engine, Player* player) : GameObject(engine)
-
 {
     SetTag("GrassField");
 
