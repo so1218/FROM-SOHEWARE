@@ -350,7 +350,7 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
             }
         }
 
-        // 溜まった分を一気に描画
+        // 溜まった分を描画
         if (shouldFlush)
         {
             // DrawCoreに描画するインスタンス数と開始位置を渡す
@@ -361,7 +361,8 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
             instanceCount = 0;
 
             // 安全対策:バッファの最大数を超えないように
-            if (currentInstanceLocation_ >= kMaxInstances) {
+            if (currentInstanceLocation_ >= kMaxInstances) 
+            {
                 break;
             }
         }
@@ -428,29 +429,27 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
             const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
             D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
             cmdList->IASetVertexBuffers(0, 2, vbvs);
-        }
-        else if (isInstancing)
-        {
-            // インスタンシング用のアウトライン
-            // cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingOutline"));
-            // cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("InstancingOutline"));
-            // cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            // cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-            // cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), instanceCount, 0, 0, startInstanceLocation);
+
+            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+            cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
         }
         else
         {
-            cmdList->SetPipelineState(env.psoManager->GetPSO("Object3DOutline"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Outline"));
+            // 静的モデルをインスタンシング描画
+            cmdList->SetPipelineState(env.psoManager->GetPSO("Instancing3D_Outline"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-        }
+            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
-        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-        cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+            // インスタンシング用の共通定数とリソースをセット
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData
+            cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());         // b5: Material
+            cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);                                       // b7相当: インデックス
+            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));   // t15: SRV
+
+            cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
+        }
     }
 
     // メイン描画設定

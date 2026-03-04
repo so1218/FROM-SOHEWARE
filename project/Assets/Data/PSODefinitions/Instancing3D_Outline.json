@@ -1,8 +1,8 @@
 {
-  "RootSignature": "SkinningOutline",
-  "VertexShader": "Assets/Shaders/SkinningOutline.VS.hlsl",
+  "RootSignature": "Instancing3D",
+  "VertexShader": "Assets/Shaders/Instancing3D_Outline.VS.hlsl",
   "PixelShader": "Assets/Shaders/Instancing3D_Outline.PS.hlsl",
-  "InputLayout": "Skinning",
+  "InputLayout": "Default3D",
   "BlendState": "AlphaBlend",
   "RasterizerState": "FrontCullBias",
   "DepthStencilState": "Default",

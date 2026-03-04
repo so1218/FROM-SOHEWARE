@@ -1,9 +1,9 @@
 {
-  "RootSignature": "Outline",
-  "VertexShader": "Assets/Shaders/Object3DOutline.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Object3DOutline.PS.hlsl",
+  "RootSignature": "Instancing3D",
+  "VertexShader": "Assets/Shaders/Instancing3D_Outline.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Instancing3D_Outline.PS.hlsl",
   "InputLayout": "Default3D",
-  "BlendState": "AlphaBlend",
+  "BlendState": "Opaque",
   "RasterizerState": "FrontCullBias",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
