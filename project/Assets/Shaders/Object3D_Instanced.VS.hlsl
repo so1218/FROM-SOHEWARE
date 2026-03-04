@@ -9,6 +9,7 @@ cbuffer DirectionalLights : register(b1)
 };
 
 ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
@@ -26,15 +27,12 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
 {
     VertexShaderOutput output;
     
-    // ✨ この頂点が属するインスタンスのデータを取得
-    Object3DInstanceData instance = gInstanceData[input.instanceID];
+    // インスタンスのデータを取得(SV_InstanceIDにオフセットを足して正しいデータを取り出す)
+    uint index = input.instanceID + gInstanceOffset.gBaseInstanceIndex;
+    Object3DInstanceData instance = gInstanceData[index];
     
     float4 localPos = input.position;
 
-    // --- (バブルや木の揺れ処理はそのまま) ---
-    // ※ 揺れ計算内の gTransformationMatrix.World は instance.World に変えます
-    // ----------------------------------------
-    
     // バブルの揺れ処理
     if (gMaterial.isBubble != 0)
     {
@@ -50,10 +48,10 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     if (gMaterial.enableTreeWind != 0)
     {
         // 自身のワールド座標
-        float3 worldPos = mul(localPos, instance.World).xyz;
+        float3 windWorldPos = mul(localPos, instance.World).xyz;
         
         // 空間的なズレの計算
-        float phaseOffset = (worldPos.x + worldPos.z) * gMaterial.treeWindSpatialScale;
+        float phaseOffset = (windWorldPos.x + windWorldPos.z) * gMaterial.treeWindSpatialScale;
 
         // 時間軸の計算
         float time = gFrameData.gTime * gMaterial.treeWindSpeed + phaseOffset;
@@ -70,21 +68,21 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
         localPos.z += waveZ * gMaterial.treeWindAmplitude * heightWeight;
     }
 
-    // ✨ WVP行列は C++ から送るのをやめ、シェーダー内で「World × ViewProj」として計算します
+   // WVPは送らず、揺れ計算後のlocalPosを使って画面座標まで変換
     float4 worldPos = mul(localPos, instance.World);
     output.worldPosition = worldPos.xyz;
     
-    // ViewProjectionMatrix は gFrameData にあると仮定（なければ定数バッファで送る必要があります）
+    // ViewProjectionMatrixを掛けて最終的な画面上の座標へ
     output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
 
     output.texcoord = input.texcoord;
     
-    // ✨法線の変換もインスタンスごとの行列を使う
+    // 法線の変換
     output.normal = normalize(mul(input.normal, (float32_t3x3) instance.WorldInverseTranspose));
     output.tangent = normalize(mul(input.tangent, (float3x3) instance.World));
     
     output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
-    output.worldColor = instance.WorldColor; // ✨ インスタンスごとの色
+    output.worldColor = instance.WorldColor;
     
     return output;
 }

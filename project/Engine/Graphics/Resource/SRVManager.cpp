@@ -46,6 +46,27 @@ uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESO
     return index;
 }
 
+void SRVManager::CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resource, uint32_t numElements, uint32_t stride)
+{
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN; // 構造化バッファの場合UNKNOWN
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = numElements;      // kMaxInstances
+    srvDesc.Buffer.StructureByteStride = stride;   // sizeof
+    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+    // 指定されたインデックスのハンドルを取得
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleVisible = GetSRVHandleCPU_Visible(index);
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleCopy = GetSRVHandleCPU_ForCopying(index);
+
+    // SRVを作成（表と裏の両方のヒープに書き込む）
+    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleVisible);
+    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
+}
+
 void SRVManager::FreeSRV(uint32_t index)
 {
     // インデックスをアロケータに返却

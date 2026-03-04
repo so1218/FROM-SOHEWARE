@@ -1,5 +1,6 @@
 #include "Ground.h"
 #include "ImGuiManager.h"
+#include <random>
 
 Ground::Ground(Engine* engine) : GameObject(engine)
 {
@@ -30,7 +31,19 @@ void Ground::Initialize()
 	binder_->BindModel("Model", model_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
 	skybox_->SetCubeTexture("redClunch");
-	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
+	//modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
+
+	std::mt19937 randomEngine(1234); 
+	std::uniform_real_distribution<float> distPos(-10000.0f, 10000.0f);
+
+	for (int i = 0; i < 1000; ++i)
+	{
+		Vector3 pos;
+		pos.x = i * 5;
+		pos.y = 0.0f; // 地面の高さに合わせる
+		pos.z = i * 5;
+		treePositions_.push_back(pos);
+	}
 };
 
 void Ground::Update()
@@ -47,7 +60,12 @@ void Ground::Update()
 void Ground::Draw()
 {
 	model_->Draw();
-	modelTree_->Draw();
+	for (const auto& pos : treePositions_)
+	{
+		modelTree_->GetTransform().translation_ = pos;
+
+		modelTree_->Draw(); 
+	}
 	skybox_->Draw();
 };
 

@@ -353,3 +353,8 @@ struct Object3DInstanceData
     float4x4 WorldInverseTranspose;
     float4 WorldColor;
 };
+
+struct InstanceOffset
+{
+    int gBaseInstanceIndex;
+};

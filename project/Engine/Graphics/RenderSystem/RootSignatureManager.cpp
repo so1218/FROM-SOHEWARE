@@ -29,7 +29,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 {
     RootSignatureBuilder builder;
 
-    if (name == "3D" || name == "Skinning" || name == "3D_Instanced")
+    if (name == "3D" || name == "Skinning" || name == "Instancing3D")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);    
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);    
@@ -40,7 +40,11 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         if (name == "3D" || name == "Skinning")
         {
-            builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX); 
+            builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX);
+        }
+        else if (name == "Instancing3D")
+        {
+            builder.AddConstants(7, 1, D3D12_SHADER_VISIBILITY_VERTEX);
         }
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); 
@@ -57,7 +61,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
             builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
         }
 
-        if (name == "3D_Instanced")
+        if (name == "Instancing3D")
         {
             builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
         }

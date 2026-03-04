@@ -80,6 +80,10 @@ struct ModelSubmission
     RenderGroup group;                // 描画順グループ
 
     int layerOrder = 0;               // 手動ソート用（UIや重ね順）
+
+    Vector4 instancingColor;          // instanceColor用
+    Matrix4x4 wvpMatrix;             
+    Matrix4x4 worldInverseTranspose;
 };
 
 struct SpriteSubmission

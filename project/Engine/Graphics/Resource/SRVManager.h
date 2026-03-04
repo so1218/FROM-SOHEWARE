@@ -16,6 +16,9 @@ public:
     // リソースとSRV設定からSRVを作成し、ヒープ内のインデックスを返す
     uint32_t CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
 
+    // 構造化バッファ専用のSRV作成
+    void CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
+
     // 指定したインデックスのSRVを解放
     void FreeSRV(uint32_t index);
 
@@ -33,6 +36,8 @@ public:
 
     // コマンドリストにセットするためのSRVヒープを取得
     ID3D12DescriptorHeap* GetSRVHeap() const { return srvHeap_.Get(); }
+
+    uint32_t Allocate() { return allocator_->Allocate(); }
 
 private:
     ID3D12Device* device_ = nullptr;               

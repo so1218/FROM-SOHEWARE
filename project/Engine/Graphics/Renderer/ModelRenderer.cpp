@@ -19,6 +19,17 @@ void ModelRenderer::Initialize(const RenderEnvironment& env)
         buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
         buffer.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.wvpMapped));
     }
+
+    // インスタンシング用バッファの初期化
+    // StructuredBufferとして作成
+    instanceBuffer_.resource = BufferManager::CreateBufferResource(
+        device_->GetDevice(), sizeof(Object3DInstanceData) * kMaxInstances);
+    instanceBuffer_.resource->Map(0, nullptr, reinterpret_cast<void**>(&instanceBuffer_.mapped));
+
+    // SRVの作成
+    instanceBuffer_.srvIndex = env.srvManager->Allocate();
+    env.srvManager->CreateStructuredBufferSRV(
+        instanceBuffer_.srvIndex, instanceBuffer_.resource.Get(), kMaxInstances, sizeof(Object3DInstanceData));
 }
 
 void ModelRenderer::Finalize()
@@ -31,6 +42,7 @@ void ModelRenderer::BeginFrame()
     prevCount_ = indexModel_;
     indexModel_ = 0;
     modelSubmissions_.clear();
+    currentInstanceLocation_ = 0;
 }
 
 void ModelRenderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& viewProjection)
@@ -116,6 +128,9 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
                 submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
                 submission.worldMatrix = currentWorldMatrix;
+                submission.worldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
+                submission.instancingColor = instanceColor;
+                submission.wvpMatrix = wvp;
 
                 if (actualMaterialHandle.materialData)
                 {
@@ -227,12 +242,17 @@ void ModelRenderer::SubmitAnimation(
         submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
         submission.puddleNoiseHandle = actualMaterialHandle.puddleNoiseHandle;
         submission.worldMatrix = world;
+        submission.wvpMatrix = wvp;
+        submission.worldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+        submission.instancingColor = instanceColor;
+
         // マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
         if (actualMaterialHandle.materialData)
         {
             submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
         }
-        else {
+        else 
+        {
             submission.enableOutline = false;
         }
         submission.instanceIndex = indexModel_;
@@ -272,16 +292,24 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
     std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
         [](const ModelSubmission& a, const ModelSubmission& b)
         {
-            // グループが違うなら、グループの番号順に
+            // グループ順
             if (a.group != b.group) return a.group < b.group;
 
-            // 同じグループ内での比較
-            if (a.group == RenderGroup::Transparent) 
+            // 半透明は奥から手前へ
+            if (a.group == RenderGroup::Transparent)
             {
-                return a.depth > b.depth; // 半透明は奥から
+                return a.depth > b.depth;
             }
-            // それ以外は手前から（昇順）
-            return a.depth < b.depth;
+
+            // スキニングかどうか
+            if (a.type != b.type) return a.type < b.type;
+
+            // 同じモデル・メッシュ・マテリアルをまとめる 
+            if (a.modelData != b.modelData) return a.modelData < b.modelData;
+            if (a.meshIndex != b.meshIndex) return a.meshIndex < b.meshIndex;
+
+            // 最後にマテリアル
+            return a.materialHandle.materialData < b.materialHandle.materialData;
         });
 
     auto* cmdList = env.commandManager->GetCommandList();
@@ -289,15 +317,59 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    for (const auto& sub : modelSubmissions_)
+    uint32_t instanceCount = 0;
+
+    for (size_t i = 0; i < modelSubmissions_.size(); ++i)
     {
+        const auto& sub = modelSubmissions_[i];
         if (sub.group != targetGroup) continue;
 
-        DrawCore(env, sub, isWireFrame, shadowMap);
+        // インスタンスデータをバッファに書き込む
+        auto& instanceData = instanceBuffer_.mapped[currentInstanceLocation_ + instanceCount];
+        instanceData.World = sub.worldMatrix;
+        instanceData.WorldInverseTranspose = sub.worldInverseTranspose;
+        instanceData.WorldColor = sub.instancingColor;
+
+        instanceCount++;
+
+        // バッチを区切って描画するか判定
+        bool isLast = (i == modelSubmissions_.size() - 1);
+        bool shouldFlush = isLast;
+
+        if (!isLast)
+        {
+            const auto& nextSub = modelSubmissions_[i + 1];
+            // 次のSubmissionとモデル・メッシュ・マテリアル・描画タイプが違うなら区切る
+            if (sub.modelData != nextSub.modelData ||
+                sub.meshIndex != nextSub.meshIndex ||
+                sub.materialHandle.materialData != nextSub.materialHandle.materialData ||
+                sub.type != nextSub.type ||
+                sub.type == RenderType::Skinning) // スキニングは現状1つずつ描画
+            {
+                shouldFlush = true;
+            }
+        }
+
+        // 溜まった分を一気に描画
+        if (shouldFlush)
+        {
+            // DrawCoreに描画するインスタンス数と開始位置を渡す
+            DrawCore(env, sub, isWireFrame, shadowMap, instanceCount, currentInstanceLocation_);
+
+            // 次のバッチのためにリセット
+            currentInstanceLocation_ += instanceCount;
+            instanceCount = 0;
+
+            // 安全対策:バッファの最大数を超えないように
+            if (currentInstanceLocation_ >= kMaxInstances) {
+                break;
+            }
+        }
     }
 }
 
-void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap)
+void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap,
+    uint32_t instanceCount, uint32_t startInstanceLocation)
 {
     const std::vector<Mesh>& meshes = GetOrCreateBatch(*sub.modelData);
     assert(sub.meshIndex < meshes.size());
@@ -305,7 +377,12 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
     auto& buffer = perObjectBuffers_[sub.instanceIndex];
     auto* cmdList = env.commandManager->GetCommandList();
+    uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
+
+    // 3つの状態を定義
     bool isSkinning = (sub.skinCluster != nullptr);
+    bool isInstancing = (!isSkinning && instanceCount > 1); // 2個以上ならインスタンシング
+    bool isStandard = (!isSkinning && instanceCount == 1);  // 1個なら通常の描画
 
     std::string psoName;
 
@@ -352,6 +429,15 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
             D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
             cmdList->IASetVertexBuffers(0, 2, vbvs);
         }
+        else if (isInstancing)
+        {
+            // インスタンシング用のアウトライン
+            // cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingOutline"));
+            // cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("InstancingOutline"));
+            // cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+            // cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+            // cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), instanceCount, 0, 0, startInstanceLocation);
+        }
         else
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("Object3DOutline"));
@@ -369,23 +455,34 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
     // メイン描画設定
     ID3D12PipelineState* pso = env.psoManager->GetPSO(psoName);
-    if (!pso)
-    {
-        pso = env.psoManager->GetPSO(isSkinning ? "Skinning" : "Standard3D");
-    }
-    cmdList->SetPipelineState(pso);
-    cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature(isSkinning ? "Skinning" : "3D"));
+    if (!pso) { pso = env.psoManager->GetPSO(isSkinning ? "Skinning" : "Standard3D"); }
 
     if (isSkinning)
     {
+        cmdList->SetPipelineState(pso);
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Skinning"));
+
         const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
         D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
         cmdList->IASetVertexBuffers(0, 2, vbvs);
     }
-    else
+    else if (isInstancing)
     {
+        std::string instancingPsoName = "Instancing" + psoName;
+        ID3D12PipelineState* instancingPso = env.psoManager->GetPSO(instancingPsoName);
+        cmdList->SetPipelineState(instancingPso ? instancingPso : env.psoManager->GetPSO("InstancingStandard3D"));
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
+
         cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
     }
+    else 
+    {
+        cmdList->SetPipelineState(pso);
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("3D"));
+
+        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+    }
+
     cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
     // 定数バッファ
@@ -395,7 +492,6 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetAreaLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
 
     // テクスチャ
     cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
@@ -407,12 +503,27 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
     cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.puddleNoiseHandle));
 
+
     if (isSkinning)
     {
+        // スキニング用
+        cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+        cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
-
-    cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+    else if (isInstancing)
+    {
+        // インスタンシング用
+        cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);
+        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+        cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
+    }
+    else 
+    {
+        // 通常のモデル用
+        cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
+        cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
+    }
 }
 
 void ModelRenderer::DrawShadow(const RenderEnvironment& env)

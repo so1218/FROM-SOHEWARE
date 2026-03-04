@@ -19,5 +19,7 @@ private:
     std::unique_ptr<Model> modelTree_;
     std::unique_ptr<Skybox> skybox_;
     std::unique_ptr<PropertyBinder> binder_;
+
+    std::vector<Vector3> treePositions_;
 };
 

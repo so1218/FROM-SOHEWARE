@@ -52,14 +52,24 @@ private:
         Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
     };
 
+    struct InstanceBuffer
+    {
+        Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+        Object3DInstanceData* mapped = nullptr;
+        uint32_t srvIndex = 0; 
+    };
+
     // キャッシュ取得
     const std::vector<Mesh>& GetOrCreateBatch(const ModelData& modelData);
 
     // 実際の描画コマンド
-    void DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap);
+    void DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap,
+        uint32_t instanceCount, uint32_t startInstanceLocation);
 
 private:
-    static const int32_t kMaxCount = 500;
+    static const int32_t kMaxCount = 10000; // Submitの最大数
+    static constexpr uint32_t kMaxInstances = 10000; // インスタンシングの最大数
+    InstanceBuffer instanceBuffer_;
 
     // メッシュ生成用にデバイスだけは保持しておく
     GraphicsDevice* device_ = nullptr;
@@ -73,4 +83,6 @@ private:
 
     Matrix4x4 viewMatrix_;
     Matrix4x4 viewProjectionMatrix_;
+
+    uint32_t currentInstanceLocation_ = 0;
 };
