@@ -1,11 +1,10 @@
 {
-  "Name": "ShadowMapDissolve",
-  "RootSignature": "ShadowMapDissolve",
+  "RootSignature": "Instancing3D",
   "VertexShader": "Assets/Shaders/ShadowMap.VS.hlsl",
-  "PixelShader": "Assets/Shaders/ShadowMap.PS.hlsl",
+  "PixelShader": null,
   "InputLayout": "Default3D",
   "BlendState": "Opaque",
-  "RasterizerState": "BackCullSolid",
+  "RasterizerState": "FrontCullSolid",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
   "RTVFormats": [

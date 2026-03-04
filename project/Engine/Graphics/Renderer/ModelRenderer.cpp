@@ -43,6 +43,7 @@ void ModelRenderer::BeginFrame()
     indexModel_ = 0;
     modelSubmissions_.clear();
     currentInstanceLocation_ = 0;
+    batches_.clear();
 }
 
 void ModelRenderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& viewProjection)
@@ -287,85 +288,23 @@ void ModelRenderer::SubmitAnimation(
 
 void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, bool isWireFrame, ShadowMap* shadowMap)
 {
-    if (modelSubmissions_.empty()) return;
-
-    std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
-        [](const ModelSubmission& a, const ModelSubmission& b)
-        {
-            // グループ順
-            if (a.group != b.group) return a.group < b.group;
-
-            // 半透明は奥から手前へ
-            if (a.group == RenderGroup::Transparent)
-            {
-                return a.depth > b.depth;
-            }
-
-            // スキニングかどうか
-            if (a.type != b.type) return a.type < b.type;
-
-            // 同じモデル・メッシュ・マテリアルをまとめる 
-            if (a.modelData != b.modelData) return a.modelData < b.modelData;
-            if (a.meshIndex != b.meshIndex) return a.meshIndex < b.meshIndex;
-
-            // 最後にマテリアル
-            return a.materialHandle.materialData < b.materialHandle.materialData;
-        });
+    if (batches_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    uint32_t instanceCount = 0;
-
-    for (size_t i = 0; i < modelSubmissions_.size(); ++i)
+    // Submissionではなく「バッチ単位」で回す
+    for (const auto& batch : batches_)
     {
-        const auto& sub = modelSubmissions_[i];
+        const auto& sub = *batch.baseSubmission;
+
+        // 指定のグループじゃなければスキップ
         if (sub.group != targetGroup) continue;
 
-        // インスタンスデータをバッファに書き込む
-        auto& instanceData = instanceBuffer_.mapped[currentInstanceLocation_ + instanceCount];
-        instanceData.World = sub.worldMatrix;
-        instanceData.WorldInverseTranspose = sub.worldInverseTranspose;
-        instanceData.WorldColor = sub.instancingColor;
-
-        instanceCount++;
-
-        // バッチを区切って描画するか判定
-        bool isLast = (i == modelSubmissions_.size() - 1);
-        bool shouldFlush = isLast;
-
-        if (!isLast)
-        {
-            const auto& nextSub = modelSubmissions_[i + 1];
-            // 次のSubmissionとモデル・メッシュ・マテリアル・描画タイプが違うなら区切る
-            if (sub.modelData != nextSub.modelData ||
-                sub.meshIndex != nextSub.meshIndex ||
-                sub.materialHandle.materialData != nextSub.materialHandle.materialData ||
-                sub.type != nextSub.type ||
-                sub.type == RenderType::Skinning) // スキニングは現状1つずつ描画
-            {
-                shouldFlush = true;
-            }
-        }
-
-        // 溜まった分を描画
-        if (shouldFlush)
-        {
-            // DrawCoreに描画するインスタンス数と開始位置を渡す
-            DrawCore(env, sub, isWireFrame, shadowMap, instanceCount, currentInstanceLocation_);
-
-            // 次のバッチのためにリセット
-            currentInstanceLocation_ += instanceCount;
-            instanceCount = 0;
-
-            // 安全対策:バッファの最大数を超えないように
-            if (currentInstanceLocation_ >= kMaxInstances) 
-            {
-                break;
-            }
-        }
+        // バッチの情報を渡して描画コアを呼ぶだけ！
+        DrawCore(env, sub, isWireFrame, shadowMap, batch.instanceCount, batch.startInstanceLocation);
     }
 }
 
@@ -443,10 +382,10 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
             cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
             // インスタンシング用の共通定数とリソースをセット
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData
-            cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());         // b5: Material
-            cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);                                       // b7相当: インデックス
-            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));   // t15: SRV
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());       
+            cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);                                      
+            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));  
 
             cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
         }
@@ -528,49 +467,36 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 void ModelRenderer::DrawShadow(const RenderEnvironment& env)
 {
     auto* cmdList = env.commandManager->GetCommandList();
-
-    // 通常モデル用の設定
-    cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMap"));
-    cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMap"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-
-    for (const auto& sub : modelSubmissions_)
+    // 💡 変更点: modelSubmissions_ ではなく、作成済みの batches_ を回す
+    for (const auto& batch : batches_)
     {
-        if (sub.type != RenderType::Model && sub.type != RenderType::Skinning)
-        {
-            continue;
-        }
+        // バッチの基準となるデータを取得
+        const auto& sub = *batch.baseSubmission;
 
-        if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI)
-        {
-            continue;
-        }
+        // --- フィルタリング処理 ---
+        if (sub.type != RenderType::Model && sub.type != RenderType::Skinning) continue;
+        if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI) continue;
+        if (sub.materialHandle.materialData->color.w <= 0.0f) continue; // 透明度0なら影を描かない
 
-        if (sub.materialHandle.materialData->color.w <= 0.0f)
-        {
-            continue; // 透明度0なら影を描かない
-        }
-
-        // メッシュリストを取得して、正しいインデックスのMesh*を取り出す
         const std::vector<Mesh>& meshes = GetOrCreateBatch(*sub.modelData);
         assert(sub.meshIndex < meshes.size());
         const Mesh* mesh = &meshes[sub.meshIndex];
 
         auto& buffer = perObjectBuffers_[sub.instanceIndex];
-
         bool isSkinning = (sub.skinCluster != nullptr);
-
         bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
             (sub.materialHandle.materialData->color.w < 1.0f);
 
-        // ディゾルブ・透明処理が必要な場合（重い処理）
+        // =========================================================
+        // 1. ディゾルブ・透明処理が必要な場合
+        // =========================================================
         if (needDissolve)
         {
             if (isSkinning)
             {
-                // スキニング・ディゾルブ影
+                // 【スキニング・ディゾルブ影】（個別に描画）
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinningDissolve"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinningDissolve"));
 
@@ -583,27 +509,42 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
                 const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
+                cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+                // スキニングはバッチ化せず1つずつ（instanceCount = 1）
+                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
-                // 通常・ディゾルブ影
-                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapDissolve"));
-                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapDissolve"));
+                // ✨【静的モデル・ディゾルブ影 (インスタンシング)】✨
+                cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingShadowMapDissolve"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
+
+                // 💡 変更点: batch の情報を使用する
+                cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
+
+                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
+                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+                cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+                // 💡 変更点: batch の instanceCount と startInstanceLocation を使用して一括描画！
+                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, batch.startInstanceLocation);
             }
         }
-        // 不透明の場合（高速処理）
+        // =========================================================
+        // 2. 不透明の場合（高速処理）
+        // =========================================================
         else
         {
             if (isSkinning)
             {
+                // 【スキニング・通常影】（個別に描画）
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinning"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinning"));
 
@@ -614,23 +555,98 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
                 const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
+                cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+                // スキニングはバッチ化せず1つずつ
+                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
-                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMap"));
-                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMap"));
+                // ✨【静的モデル・通常影 (インスタンシング)】✨
+                cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingShadowMap"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, sub.materialHandle.resource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(2, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
+
+                // 💡 変更点: batch の情報を使用する
+                cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
+
+                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+                cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+                // 💡 変更点: batch の instanceCount と startInstanceLocation を使用して一括描画！
+                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, batch.startInstanceLocation);
+            }
+        }
+    }
+}
+
+void ModelRenderer::PrepareBatches()
+{
+    batches_.clear();
+    if (modelSubmissions_.empty()) return;
+
+    // 1. 全Submissionをソートする（Drawの中にあった処理をここに移動）
+    std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
+        [](const ModelSubmission& a, const ModelSubmission& b) {
+            if (a.group != b.group) return a.group < b.group;
+            if (a.group == RenderGroup::Transparent) return a.depth > b.depth;
+            if (a.type != b.type) return a.type < b.type;
+            if (a.modelData != b.modelData) return a.modelData < b.modelData;
+            if (a.meshIndex != b.meshIndex) return a.meshIndex < b.meshIndex;
+            return a.materialHandle.materialData < b.materialHandle.materialData;
+        });
+
+    // 2. バッチの作成とインスタンスバッファの構築
+    uint32_t instanceCount = 0;
+
+    for (size_t i = 0; i < modelSubmissions_.size(); ++i)
+    {
+        const auto& sub = modelSubmissions_[i];
+
+        // インスタンスデータをバッファに書き込む
+        auto& instanceData = instanceBuffer_.mapped[currentInstanceLocation_ + instanceCount];
+        instanceData.World = sub.worldMatrix;
+        instanceData.WorldInverseTranspose = sub.worldInverseTranspose;
+        instanceData.WorldColor = sub.instancingColor;
+
+        instanceCount++;
+
+        bool isLast = (i == modelSubmissions_.size() - 1);
+        bool shouldFlush = isLast;
+
+        if (!isLast)
+        {
+            const auto& nextSub = modelSubmissions_[i + 1];
+            // 描画条件が変わったらバッチを区切る
+            if (sub.modelData != nextSub.modelData ||
+                sub.meshIndex != nextSub.meshIndex ||
+                sub.materialHandle.materialData != nextSub.materialHandle.materialData ||
+                sub.type != nextSub.type ||
+                sub.type == RenderType::Skinning ||
+                sub.group != nextSub.group) // グループが変わっても区切る
+            {
+                shouldFlush = true;
             }
         }
 
-        // 描画
-        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-        cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+        if (shouldFlush)
+        {
+            // 🎉 バッチを登録！
+            RenderBatch batch;
+            batch.baseSubmission = &sub;
+            batch.instanceCount = instanceCount;
+            batch.startInstanceLocation = currentInstanceLocation_;
+            batches_.push_back(batch);
+
+            currentInstanceLocation_ += instanceCount;
+            instanceCount = 0;
+
+            if (currentInstanceLocation_ >= kMaxInstances) break;
+        }
     }
 }

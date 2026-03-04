@@ -2,10 +2,11 @@
 #include "ShaderConstants.hlsli" 
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<MaterialData> gMaterial : register(b5);
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 // ライト情報（今は配列先頭をバインドだが複数に対応したい）
-ConstantBuffer<DirectionalLight> gLight : register(b7);
+ConstantBuffer<DirectionalLight> gLight : register(b1);
+ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
+StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
 struct ShadowVSOutput
 {
@@ -13,31 +14,31 @@ struct ShadowVSOutput
     float2 texcoord : TEXCOORD0;
 };
 
-ShadowVSOutput main(VertexShaderInput input)
+ShadowVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
+    // 自分のインスタンスデータを取得
+    uint index = gInstanceOffset.gBaseInstanceIndex + instanceID;
+    float4x4 worldMatrix = gInstanceData[index].World;
+
     float4 localPos = input.position;
 
-    // メインパスと同じ計算で頂点を揺らす
+    // 揺らす処理 (Bubble)
     if (gMaterial.isBubble != 0)
     {
         float time = gFrameData.gTime * gMaterial.wobbleSpeed;
-        
         float wave = sin(time + localPos.y * 5.0f) +
                      cos(time + localPos.z * 5.0f) +
                      sin(time + localPos.x * 5.0f);
-        
         localPos.xyz += input.normal * wave * gMaterial.wobbleAmplitude;
     }
 
-    // 揺らしたあとのlocalPosを使う
-    float4 worldPos = mul(localPos, gTransformationMatrix.World);
+    // World行列を適用
+    float4 worldPos = mul(localPos, worldMatrix);
 
-    // ライト視点の射影行列を適用
+    // ライトビュープロジェクションを適用
     output.position = mul(worldPos, gLight.viewProj);
-    
-    // UVをパス
     output.texcoord = input.texcoord;
 
     return output;

@@ -86,6 +86,13 @@ struct ModelSubmission
     Matrix4x4 worldInverseTranspose;
 };
 
+struct RenderBatch
+{
+    const ModelSubmission* baseSubmission; // このバッチの基準となる先頭のSubmission
+    uint32_t instanceCount;                // 描画するインスタンス数
+    uint32_t startInstanceLocation;        // インスタンスバッファの開始位置
+};
+
 struct SpriteSubmission
 {
     size_t instanceIndex;             // sprites_配列の何番目を使うか

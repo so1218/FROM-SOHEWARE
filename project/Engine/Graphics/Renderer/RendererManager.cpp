@@ -210,6 +210,11 @@ void RendererManager::DrawFinalResult(uint32_t srvIndex)
 
 void RendererManager::DrawSceneForShadow()
 {
+	if (modelRenderer_)
+	{
+		modelRenderer_->PrepareBatches();
+	}
+
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);

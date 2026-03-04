@@ -36,6 +36,9 @@ public:
     // 影用パスの描画
     void DrawShadow(const RenderEnvironment& env);
 
+    // 描画前のバッチ準備（インスタンシングのためのデータ転送など）
+    void PrepareBatches();
+
     uint32_t GetCount() const { return prevCount_; }
     uint32_t GetMaxCount() const { return kMaxCount; }
 
@@ -85,4 +88,6 @@ private:
     Matrix4x4 viewProjectionMatrix_;
 
     uint32_t currentInstanceLocation_ = 0;
+
+    std::vector<RenderBatch> batches_;
 };
