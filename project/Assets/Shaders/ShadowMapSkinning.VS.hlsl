@@ -24,7 +24,7 @@ struct ShadowVSOutput
     float2 texcoord : TEXCOORD0;
 };
 
-// 位置のみをスキニングする
+// 位置のみをスキニング
 float4 SkinningPosition(float4 pos, float4 weight, int4 index)
 {
     float4 skinnedPos =
