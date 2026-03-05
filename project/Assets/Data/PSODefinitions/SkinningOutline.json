@@ -1,7 +1,7 @@
 {
   "RootSignature": "SkinningOutline",
-  "VertexShader": "Assets/Shaders/SkinningOutline.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Instancing3D_Outline.PS.hlsl",
+  "VertexShader": "Assets/Shaders/OutlineSkinning.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Outline.PS.hlsl",
   "InputLayout": "Skinning",
   "BlendState": "AlphaBlend",
   "RasterizerState": "FrontCullBias",
