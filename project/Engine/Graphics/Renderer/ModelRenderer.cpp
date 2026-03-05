@@ -496,7 +496,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
             else
             {
                 // 静的モデル・ディゾルブ影 (インスタンシング)
-                cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingShadowMapDissolve"));
+                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapDissolveInstanced"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
@@ -540,7 +540,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
             else
             {
                 // 静的モデル・通常影 (インスタンシング)
-                cmdList->SetPipelineState(env.psoManager->GetPSO("InstancingShadowMap"));
+                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapInstanced"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
