@@ -1,10 +1,9 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 
-
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 // ライトのビュー射影行列
-ConstantBuffer<DirectionalLight> gLight : register(b7);
+ConstantBuffer<DirectionalLight> gLight : register(b1);
+ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 
 // スキニング行列
 StructuredBuffer<Well> gMatrixPalette : register(t0);

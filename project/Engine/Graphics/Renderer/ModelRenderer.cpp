@@ -356,10 +356,10 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
             cmdList->SetPipelineState(env.psoManager->GetPSO("SkinningOutline"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("SkinningOutline"));
 
-            cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootDescriptorTable(1, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
             cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(3, buffer.wvpResource->GetGPUVirtualAddress());
 
             const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
             D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
@@ -450,7 +450,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
     auto* cmdList = env.commandManager->GetCommandList();
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // modelSubmissions_ではなく、作成済みのbatches_を回す
+    // 作成済みのbatches_を回す
     for (const auto& batch : batches_)
     {
         // バッチの基準となるデータを取得
@@ -479,8 +479,8 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinningDissolve"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinningDissolve"));
 
-                cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
                 cmdList->SetGraphicsRootConstantBufferView(3, sub.materialHandle.resource->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
@@ -525,8 +525,8 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinning"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinning"));
 
-                cmdList->SetGraphicsRootConstantBufferView(0, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
 
                 const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];

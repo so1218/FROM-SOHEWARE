@@ -17,10 +17,10 @@ struct OutlineVertexShaderOutput
     float32_t4 position : SV_POSITION;
 };
 
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
+ConstantBuffer<FrameData> gFrameData : register(b0);
+ConstantBuffer<MaterialData> gMaterialData : register(b5);
+ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 StructuredBuffer<Well> gMatrixPalette : register(t0);
-ConstantBuffer<MaterialData> gMaterialData : register(b1);
-ConstantBuffer<FrameData> gFrameData : register(b2);
 
 // スキニング計算関数
 Skinned Skinning(SkinningVertexShaderInput input)

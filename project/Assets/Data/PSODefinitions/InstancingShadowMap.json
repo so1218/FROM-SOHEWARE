@@ -1,6 +1,6 @@
 {
   "RootSignature": "Instancing3D",
-  "VertexShader": "Assets/Shaders/ShadowMap.VS.hlsl",
+  "VertexShader": "Assets/Shaders/ShadowMapInstanced.VS.hlsl",
   "PixelShader": null,
   "InputLayout": "Default3D",
   "BlendState": "Opaque",
