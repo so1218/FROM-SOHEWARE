@@ -353,8 +353,8 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         if (isSkinning)
         {
             auto& buffer = perObjectBuffers_[sub.instanceIndex]; 
-            cmdList->SetPipelineState(env.psoManager->GetPSO("SkinningOutline"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("SkinningOutline"));
+            cmdList->SetPipelineState(env.psoManager->GetPSO("OutlineSkinning"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("OutlineSkinning"));
 
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootDescriptorTable(1, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
@@ -371,7 +371,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         else
         {
             // 静的モデルをインスタンシング描画
-            cmdList->SetPipelineState(env.psoManager->GetPSO("Instancing3D_Outline"));
+            cmdList->SetPipelineState(env.psoManager->GetPSO("OutlineInstanced"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
