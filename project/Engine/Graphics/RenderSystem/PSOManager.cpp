@@ -39,15 +39,6 @@ void PSOManager::Initialize(
     };
     inputLayoutDescSkinning_ = { inputElementsSkinning_.data(), (UINT)inputElementsSkinning_.size() };
 
-    // Particle
-    inputElementsParticle_ =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,  0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-        { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-    };
-    inputLayoutDescParticle_ = { inputElementsParticle_.data(), (UINT)inputElementsParticle_.size() };
-
     // Depth 
     inputLayoutDescDepth_ = inputLayoutDescDefault_;
 
@@ -538,6 +529,10 @@ DXGI_FORMAT PSOManager::GetDSVFormat(const std::string& name)
 
 D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
 {
+    if (name == "None" || name == "")
+    {
+        return { nullptr, 0 };
+    }
     if (name == "Default3D")
     {
         return inputLayoutDescDefault_;
@@ -545,10 +540,6 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Skinning")
     {
         return inputLayoutDescSkinning_;
-    }
-    if (name == "Particle")
-    {
-        return inputLayoutDescParticle_;
     }
     if (name == "Skybox")
     {

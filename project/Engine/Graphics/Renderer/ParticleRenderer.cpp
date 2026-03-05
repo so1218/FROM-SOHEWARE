@@ -11,17 +11,6 @@
 
 void ParticleRenderer::Initialize(const RenderEnvironment& env)
 {
-    // 頂点・インデックス(1枚の板ポリ)
-    std::vector<VertexData> vertices = {
-        {{-0.5f, -0.5f, 0, 1}, {0, 1}, {0, 0, -1}},
-        {{ 0.5f, -0.5f, 0, 1}, {1, 1}, {0, 0, -1}},
-        {{-0.5f,  0.5f, 0, 1}, {0, 0}, {0, 0, -1}},
-        {{ 0.5f,  0.5f, 0, 1}, {1, 0}, {0, 0, -1}},
-    };
-    std::vector<uint32_t> indices = { 0, 1, 2, 1, 3, 2 };
-
-    mesh_.Initialize(env.device->GetDevice(), vertices, indices);
-
     // インスタンスバッファをフレーム数分リングで確保
     for (int i = 0; i < kFrameCount; ++i)
     {
@@ -31,100 +20,117 @@ void ParticleRenderer::Initialize(const RenderEnvironment& env)
 
         particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
     }
+
+    // 最大数分あらかじめ確保して、毎フレームのメモリ割り当てを防ぐ
+    requests_.reserve(kMaxCount);
 }
 
 void ParticleRenderer::BeginFrame()
 {
-    prevCount_ = index_;
-    index_ = 0;
-
-    for (auto& blendPair : batches_)
-    {
-        for (auto& texPair : blendPair.second)
-        {
-            texPair.second.clear(); // std::vectorの中身だけを空に
-        }
-    }
+    prevCount_ = static_cast<uint32_t>(requests_.size());
+    requests_.clear();
 
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
 void ParticleRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ, BlendMode blendMode, bool isBillboard, float intensity)
 {
-    if (index_ >= kMaxCount) return;
+    if (requests_.size() >= kMaxCount) return;
 
-    ParticleInstanceData data;
+    ParticleRequest req;
 
-    data.position = { worldTransform.matWorld_.m[3][0], worldTransform.matWorld_.m[3][1], worldTransform.matWorld_.m[3][2] };
+    req.data.position = { worldTransform.matWorld_.m[3][0], worldTransform.matWorld_.m[3][1], worldTransform.matWorld_.m[3][2] };
 
-    data.scale.x = sqrtf(worldTransform.matWorld_.m[0][0] * worldTransform.matWorld_.m[0][0] + worldTransform.matWorld_.m[0][1] * worldTransform.matWorld_.m[0][1] + worldTransform.matWorld_.m[0][2] * worldTransform.matWorld_.m[0][2]);
-    data.scale.y = sqrtf(worldTransform.matWorld_.m[1][0] * worldTransform.matWorld_.m[1][0] + worldTransform.matWorld_.m[1][1] * worldTransform.matWorld_.m[1][1] + worldTransform.matWorld_.m[1][2] * worldTransform.matWorld_.m[1][2]);
+    req.data.scale.x = sqrtf(worldTransform.matWorld_.m[0][0] * worldTransform.matWorld_.m[0][0] + worldTransform.matWorld_.m[0][1] * worldTransform.matWorld_.m[0][1] + worldTransform.matWorld_.m[0][2] * worldTransform.matWorld_.m[0][2]);
+    req.data.scale.y = sqrtf(worldTransform.matWorld_.m[1][0] * worldTransform.matWorld_.m[1][0] + worldTransform.matWorld_.m[1][1] * worldTransform.matWorld_.m[1][1] + worldTransform.matWorld_.m[1][2] * worldTransform.matWorld_.m[1][2]);
 
-    data.color = Math::Uint32ToColorVector(color);
-    data.textureIndex = textureIndex;
-    data.rotationZ = rotationZ;
-    data.isBillboard = isBillboard ? 1 : 0;
-    data.intensity = intensity;
+    req.data.color = Math::Uint32ToColorVector(color);
+    req.data.textureIndex = textureIndex;
+    req.data.rotationZ = rotationZ;
+    req.data.isBillboard = isBillboard ? 1 : 0;
+    req.data.intensity = intensity;
+    req.blendMode = blendMode;
+    req.textureIndex = textureIndex;
 
-    batches_[blendMode][textureIndex].push_back(data);
-    index_++;
+    requests_.push_back(req);
 }
 
 void ParticleRenderer::Draw(const RenderEnvironment& env)
 {
-    if (index_ == 0) return;
+    if (requests_.empty()) return;
 
+    std::sort(requests_.begin(), requests_.end());
+    // --- STEP 2: インスタンスデータの一括コピー ---
+    // 全パーティクルデータを一気にGPUバッファに送る (memcpyが1回で済む)
+    ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
+    for (size_t i = 0; i < requests_.size(); ++i) {
+        dstBase[i] = requests_[i].data;
+    }
+
+    // --- STEP 3: バッチ描画 ---
     auto* cmdList = env.commandManager->GetCommandList();
-
+    // 基本セットアップ
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Particle"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    cmdList->IASetIndexBuffer(&mesh_.GetIndexBufferView());
-    cmdList->IASetVertexBuffers(0, 1, &mesh_.GetVertexBufferView());
-
     cmdList->SetGraphicsRootConstantBufferView(1, env.globalConstants->GetResource()->GetGPUVirtualAddress());
 
-    ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
-    size_t currentOffset = 0;
+    // インスタンスバッファの開始地点を取得
+    D3D12_GPU_VIRTUAL_ADDRESS bufferGPUAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
 
-    for (auto& [blendMode, textureMap] : batches_)
+    BlendMode lastBlendMode = static_cast<BlendMode>(-1); // ありえない値で初期化
+    ID3D12PipelineState* currentPSO = nullptr;
+
+    size_t drawCallStart = 0; // 描画開始インデックス
+    while (drawCallStart < requests_.size()) {
+        const auto& startReq = requests_[drawCallStart];
+
+        // ブレンドモードが変わった時だけ PSO を再取得してセット
+        if (startReq.blendMode != lastBlendMode) {
+            currentPSO = env.psoManager->GetPSO(GetPSOName(startReq.blendMode));
+            if (currentPSO) {
+                cmdList->SetPipelineState(currentPSO);
+            }
+            lastBlendMode = startReq.blendMode;
+        }
+        
+        // 同じ「設定」がどこまで続くか探す
+        size_t drawCallEnd = drawCallStart + 1;
+        while (drawCallEnd < requests_.size()) {
+            if (requests_[drawCallEnd].blendMode != startReq.blendMode || 
+                requests_[drawCallEnd].textureIndex != startReq.textureIndex) {
+                break; // 設定が変わったのでここで区切る
+            }
+            drawCallEnd++;
+        }
+
+        // --- ここで1回描画 ---
+        uint32_t instanceCount = static_cast<uint32_t>(drawCallEnd - drawCallStart);
+
+        // テクスチャセット
+        cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(startReq.textureIndex));
+
+        // インスタンスバッファの「現在のオフセット」をセット
+        cmdList->SetGraphicsRootShaderResourceView(0, bufferGPUAddress + (sizeof(ParticleInstanceData) * drawCallStart));
+
+        // 描画！
+        cmdList->DrawInstanced(6, instanceCount, 0, 0);
+
+        // 次のバッチへ
+        drawCallStart = drawCallEnd;
+    }
+}
+
+std::string ParticleRenderer::GetPSOName(BlendMode blendMode)
+{
+    switch (blendMode)
     {
-        std::string psoName;
-        switch (blendMode)
-        {
-        case kBlendModeNone:      psoName = "ParticleOpaque"; break;
-        case kBlendModeAdd:       psoName = "ParticleAdditive"; break;
-        case kBlendModeSubtract:  psoName = "ParticleSubtract"; break;
-        case kBlendModeMultiply:  psoName = "ParticleMultiply"; break;
-        case kBlendModeScreen:    psoName = "ParticleScreen"; break;
-        case kBlendModeExclusion: psoName = "ParticleExclusion"; break;
-        case kBlendModeNormal:
-        default:                  psoName = "ParticleAlphaBlend"; break;
-        }
-
-        ID3D12PipelineState* pso = env.psoManager->GetPSO(psoName);
-        if (!pso) continue;
-        cmdList->SetPipelineState(pso);
-
-        for (auto& [textureIndex, instances] : textureMap)
-        {
-            if (instances.empty()) continue;
-
-            // CPUからGPUへコピー
-            ParticleInstanceData* dst = dstBase + currentOffset;
-            memcpy(dst, instances.data(), sizeof(ParticleInstanceData) * instances.size());
-
-            D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = env.srvManager->GetSRVHandleGPU(textureIndex);
-            cmdList->SetGraphicsRootDescriptorTable(3, srvHandle);
-
-            UINT64 gpuAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-            gpuAddress += sizeof(ParticleInstanceData) * currentOffset;
-            cmdList->SetGraphicsRootShaderResourceView(0, gpuAddress);
-
-            cmdList->DrawIndexedInstanced(
-                static_cast<UINT>(mesh_.GetIndexCount()),
-                static_cast<UINT>(instances.size()), 0, 0, 0);
-
-            currentOffset += instances.size();
-        }
+    case kBlendModeNone:      return "ParticleOpaque";
+    case kBlendModeAdd:       return "ParticleAdditive";
+    case kBlendModeSubtract:  return "ParticleSubtract";
+    case kBlendModeMultiply:  return "ParticleMultiply";
+    case kBlendModeScreen:    return "ParticleScreen";
+    case kBlendModeExclusion: return "ParticleExclusion";
+    case kBlendModeNormal:
+    default:                  return "ParticleAlphaBlend";
     }
 }

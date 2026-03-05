@@ -2,7 +2,7 @@
   "RootSignature": "Particle",
   "VertexShader": "Assets/Shaders/Particle.VS.hlsl",
   "PixelShader": "Assets/Shaders/Particle.PS.hlsl",
-  "InputLayout": "Particle",
+  "InputLayout": "None",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Default",

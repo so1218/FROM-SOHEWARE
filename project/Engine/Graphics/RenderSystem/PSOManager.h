@@ -64,7 +64,6 @@ private:
     // 入力レイアウト
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescDefault_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescSkinning_{};
-    D3D12_INPUT_LAYOUT_DESC inputLayoutDescParticle_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescDepth_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescSkybox_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescTrail_{};
@@ -74,7 +73,6 @@ private:
     // 入力要素（レイアウトを構成する配列の実データ）
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsDefault_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsSkinning_;
-    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsParticle_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsDepth_; 
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsSkybox_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsTrail_;
