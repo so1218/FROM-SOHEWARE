@@ -243,12 +243,16 @@ struct AreaLight
 
 struct ParticleInstanceData
 {
-    float4x4 worldMatrix;
-    float4 color;
-    uint32_t textureIndex;
+    float3 position;
     float rotationZ;
+    
+    float2 scale;
+    uint32_t textureIndex;
     int32_t isBillboard;
+    
+    float4 color;
     float intensity;
+    float3 padding;
 };
 
 struct BrightExtractSettings

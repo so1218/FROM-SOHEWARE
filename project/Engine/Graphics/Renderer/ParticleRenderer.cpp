@@ -37,7 +37,15 @@ void ParticleRenderer::BeginFrame()
 {
     prevCount_ = index_;
     index_ = 0;
-    batches_.clear();
+
+    for (auto& blendPair : batches_)
+    {
+        for (auto& texPair : blendPair.second)
+        {
+            texPair.second.clear(); // std::vectorの中身だけを空に
+        }
+    }
+
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
@@ -46,7 +54,12 @@ void ParticleRenderer::Submit(const WorldTransform& worldTransform, uint32_t col
     if (index_ >= kMaxCount) return;
 
     ParticleInstanceData data;
-    data.worldMatrix = worldTransform.matWorld_;
+
+    data.position = { worldTransform.matWorld_.m[3][0], worldTransform.matWorld_.m[3][1], worldTransform.matWorld_.m[3][2] };
+
+    data.scale.x = sqrtf(worldTransform.matWorld_.m[0][0] * worldTransform.matWorld_.m[0][0] + worldTransform.matWorld_.m[0][1] * worldTransform.matWorld_.m[0][1] + worldTransform.matWorld_.m[0][2] * worldTransform.matWorld_.m[0][2]);
+    data.scale.y = sqrtf(worldTransform.matWorld_.m[1][0] * worldTransform.matWorld_.m[1][0] + worldTransform.matWorld_.m[1][1] * worldTransform.matWorld_.m[1][1] + worldTransform.matWorld_.m[1][2] * worldTransform.matWorld_.m[1][2]);
+
     data.color = Math::Uint32ToColorVector(color);
     data.textureIndex = textureIndex;
     data.rotationZ = rotationZ;
