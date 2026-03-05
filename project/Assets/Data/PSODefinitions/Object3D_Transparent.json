@@ -1,10 +1,10 @@
 {
-  "RootSignature": "3D",
-  "VertexShader": "Assets/Shaders/Object3D.VS.hlsl",
+  "RootSignature": "Instancing3D",
+  "VertexShader": "Assets/Shaders/Object3D_Instanced.VS.hlsl",
   "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
   "InputLayout": "Default3D",
-  "BlendState": "Additive",
-  "RasterizerState": "NoCullSolid",
+  "BlendState": "AlphaBlend",
+  "RasterizerState": "BackCullSolid",
   "DepthStencilState": "ReadOnly",
   "Topology": "Triangle",
   "RTVFormats": [

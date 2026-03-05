@@ -315,37 +315,33 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     assert(sub.meshIndex < meshes.size());
     const Mesh* mesh = &meshes[sub.meshIndex];
 
-    auto& buffer = perObjectBuffers_[sub.instanceIndex];
     auto* cmdList = env.commandManager->GetCommandList();
     uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
-    // 3つの状態を定義
+    // 💡 変更点: 状態は2つだけ！
     bool isSkinning = (sub.skinCluster != nullptr);
-    bool isInstancing = (!isSkinning && instanceCount > 1); // 2個以上ならインスタンシング
-    bool isStandard = (!isSkinning && instanceCount == 1);  // 1個なら通常の描画
 
     std::string psoName;
-
     if (isSkinning)
     {
         psoName = "Skinning";
-    }
-    else if (isWireFrame)
-    {
-        psoName = "Wireframe";
     }
     else
     {
         switch (sub.blendMode)
         {
-        case BlendMode::kBlendModeAdd:      psoName = "Object3DAdd";         break;
-        case BlendMode::kBlendModeNormal:   psoName = "Object3DTransparent"; break;
+        case BlendMode::kBlendModeAdd:      psoName = "Object3D_Add";         break;
+        case BlendMode::kBlendModeNormal:   psoName = "Object3D_Transparent"; break;
         case BlendMode::kBlendModeNone:
-        default:                            psoName = "Standard3D";          break;
+        default:                            psoName = "Object3D_Opaque";          break;
         }
     }
 
-    if (psoName != "Wireframe")
+    if (isWireFrame)
+    {
+        psoName += "_Wireframe";
+    }
+    else
     {
         if (sub.cullMode == CullMode::None || sub.cullMode == CullMode::Front) psoName += "_NoCull";
         if (sub.depthMode == DepthMode::ReadOnly) psoName += "_DepthRead";
@@ -357,6 +353,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     {
         if (isSkinning)
         {
+            auto& buffer = perObjectBuffers_[sub.instanceIndex]; 
             cmdList->SetPipelineState(env.psoManager->GetPSO("SkinningOutline"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("SkinningOutline"));
 
@@ -391,12 +388,11 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         }
     }
 
-    // メイン描画設定
-    ID3D12PipelineState* pso = env.psoManager->GetPSO(psoName);
-    if (!pso) { pso = env.psoManager->GetPSO(isSkinning ? "Skinning" : "Standard3D"); }
-
     if (isSkinning)
     {
+        // スキニング用設定
+        ID3D12PipelineState* pso = env.psoManager->GetPSO(psoName);
+        if (!pso) { pso = env.psoManager->GetPSO("Skinning"); }
         cmdList->SetPipelineState(pso);
         cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Skinning"));
 
@@ -404,19 +400,12 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
         cmdList->IASetVertexBuffers(0, 2, vbvs);
     }
-    else if (isInstancing)
+    else
     {
-        std::string instancingPsoName = "Instancing" + psoName;
-        ID3D12PipelineState* instancingPso = env.psoManager->GetPSO(instancingPsoName);
-        cmdList->SetPipelineState(instancingPso ? instancingPso : env.psoManager->GetPSO("InstancingStandard3D"));
-        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
-
-        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-    }
-    else 
-    {
+        ID3D12PipelineState* pso = env.psoManager->GetPSO(psoName);
+        if (!pso) { pso = env.psoManager->GetPSO("Object3D_Opaque"); } // フォールバック
         cmdList->SetPipelineState(pso);
-        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("3D"));
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
 
         cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
     }
@@ -441,26 +430,19 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
     cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.puddleNoiseHandle));
 
-
     if (isSkinning)
     {
-        // スキニング用
+        auto& buffer = perObjectBuffers_[sub.instanceIndex]; // スキニングは個別バッファを使う
         cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
-    else if (isInstancing)
+    else
     {
-        // インスタンシング用
+        // ✨ 静的モデルは常にインスタンシング描画！（instanceCount が 1 でもこれでOK）
         cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);
         cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
         cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
-    }
-    else 
-    {
-        // 通常のモデル用
-        cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
-        cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
 }
 

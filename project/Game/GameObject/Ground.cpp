@@ -31,7 +31,7 @@ void Ground::Initialize()
 	binder_->BindModel("Model", model_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
 	skybox_->SetCubeTexture("redClunch");
-	//modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
+	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
 	std::mt19937 randomEngine(1234); 
 	std::uniform_real_distribution<float> distPos(-10000.0f, 10000.0f);

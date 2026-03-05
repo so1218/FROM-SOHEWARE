@@ -1,11 +1,11 @@
 {
-  "RootSignature": "3D",
-  "VertexShader": "Assets/Shaders/Object3D.VS.hlsl",
+  "RootSignature": "Skinning",
+  "VertexShader": "Assets/Shaders/SkinningObject3D.VS.hlsl",
   "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
-  "InputLayout": "Default3D",
+  "InputLayout": "Skinning",
   "BlendState": "AlphaBlend",
-  "RasterizerState": "BackCullSolid",
-  "DepthStencilState": "ReadOnly",
+  "RasterizerState": "Wireframe",
+  "DepthStencilState": "Default",
   "Topology": "Triangle",
   "RTVFormats": [
     "R16G16B16A16_FLOAT",
