@@ -10,7 +10,7 @@ public:
     // IPostEffectの純粋仮想関数（使わないので空実装）
     void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override {}
 
-    // Blur専用のExecute（SSAO結果、法線、深度を受け取る）
+    // Blur専用のExecute
     void Execute(
         ID3D12GraphicsCommandList* cmdList,
         D3D12_GPU_DESCRIPTOR_HANDLE ssaoSRV,
@@ -35,8 +35,7 @@ private:
     BilateralBlurSettings settingsDataTemp_;
     BilateralBlurSettings* settingsData_ = &settingsDataTemp_;
 
-    // --- 中間バッファ（横ブラー結果を一時保存するため） ---
-    // ※IPostEffectの基底が持つ変数とは別にもう1セット持ちます
+    // 中間バッファ（横ブラー結果を一時保存するため）
     Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource_;
     D3D12_CPU_DESCRIPTOR_HANDLE intermediateRTV_;
     uint32_t intermediateSRVIndex_ = 0;

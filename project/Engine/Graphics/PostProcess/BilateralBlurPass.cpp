@@ -89,7 +89,7 @@ void BilateralBlurPass::Execute(
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->DrawInstanced(3, 1, 0, 0);
 
-    // 中間バッファを RTV から SRV に戻す (IPostEffect::PostDrawと同じ処理)
+    // 中間バッファをRTVからSRVに
     auto barrierToSRV = CD3DX12_RESOURCE_BARRIER::Transition(
         intermediateResource_.Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET,
