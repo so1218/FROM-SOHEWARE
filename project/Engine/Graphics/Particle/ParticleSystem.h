@@ -39,6 +39,8 @@ public:
     void Clear();
 
 public:
+    bool ShouldSkipDraw(const ParticleState& particle) const;
+
     Engine* engine_;
     std::vector<std::unique_ptr<ParticleEmitter>> emitters_;
     std::unique_ptr<ParticleEditor> editor_;

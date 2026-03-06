@@ -418,7 +418,7 @@ void ParticleSystem::Update()
                 }
                 else
                 {
-                    // 3Dモデルの場合、XYZ全軸を回転させる
+                    // 3Dモデルの場合、XYZ全軸を回転
                     Vector3 velocityRadians =
                     {
                         Math::ToRadians(angularVelocity.x),
@@ -500,6 +500,9 @@ void ParticleSystem::Update()
     {
         if (particle.age >= particle.lifetime) continue;
 
+        // 描画不可ならスキップ
+        if (ShouldSkipDraw(particle)) continue;
+
         particle.transform->UpdateMatrix();
         engine_->GetRendererManager()->SubmitParticleInstance(
             *particle.transform,
@@ -566,4 +569,21 @@ void ParticleSystem::Clear()
 
     // 名前付きエミッターのマップをクリア
     namedEmitters_.clear();
+}
+
+bool ParticleSystem::ShouldSkipDraw(const ParticleState& particle) const
+{
+    const auto& config = particle.config;
+
+    // アルファ値のチェック
+    uint32_t startA = (config.colorOverLifetime.startColor >> 24) & 0xFF;
+    uint32_t endA = (config.colorOverLifetime.endColor >> 24) & 0xFF;
+    if (startA < 5 && endA < 5) return true;
+
+    // スケールのチェック
+    bool startZero = (config.sizeOverLifetime.startScale.x == 0.0f || config.sizeOverLifetime.startScale.y == 0.0f);
+    bool endZero = (config.sizeOverLifetime.endScale.x == 0.0f || config.sizeOverLifetime.endScale.y == 0.0f);
+    if (startZero && endZero) return true;
+
+    return false;
 }
