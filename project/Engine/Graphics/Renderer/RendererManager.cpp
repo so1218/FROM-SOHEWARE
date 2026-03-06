@@ -343,11 +343,12 @@ void RendererManager::SubmitParticleInstance(const WorldTransform& worldTransfor
 	}
 }
 
-void RendererManager::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config)
+void RendererManager::SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
+	float instanceSeed)
 {
 	if (trailRenderer_) 
 	{
-		trailRenderer_->Submit(points, config, cameraPosition_);
+		trailRenderer_->Submit(points, config, cameraPosition_, instanceSeed);
 	}
 }
 

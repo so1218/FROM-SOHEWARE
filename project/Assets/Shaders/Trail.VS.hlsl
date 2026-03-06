@@ -29,13 +29,15 @@ VertexShaderOutput main(VertexShaderInput input)
     // ジッター適用
     if (gTrailMaterial.jitterStrength > 0.0)
     {
-        float u = input.texcoord.x + gTrailMaterial.jitterPhase;
+        // uにinstanceSeedを足して波の開始位置をずらす
+        float u = input.texcoord.x + gTrailMaterial.jitterPhase + gTrailMaterial.instanceSeed;
+        
         float timeOffset = time * gTrailMaterial.jitterSpeed;
         float3 offset = float3(0, 0, 0);
 
         if (gTrailMaterial.jitterMode == 0)
         {
-            // Wave
+            // Wave (instanceSeedで波のうねり方が個別にずれる)
             offset.x = sin((u + timeOffset) * gTrailMaterial.jitterFrequency);
             offset.y = cos((u + timeOffset * 1.2) * gTrailMaterial.jitterFrequency);
             offset.z = sin((u + timeOffset * 0.8) * gTrailMaterial.jitterFrequency);
@@ -56,11 +58,12 @@ VertexShaderOutput main(VertexShaderInput input)
             // Lightning
             float uStep = floor(u * gTrailMaterial.jitterFrequency);
             float timeStep = floor(time * gTrailMaterial.jitterSpeed);
-            float seed = uStep + timeStep * 13.0;
+            
+            // ハッシュ関数に渡すシードにinstanceSeedを足す
+            float seed = uStep + timeStep * 13.0 + (gTrailMaterial.instanceSeed * 100.0);
             offset = hash31(seed);
         }
 
-        // 中心位置にジッターを適用
         pos += offset * gTrailMaterial.jitterStrength;
     }
 

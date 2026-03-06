@@ -130,6 +130,7 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     particle.presetName = presetName;
     particle.attractionTarget = attractionTarget;
     particle.vortexTarget = vortexTarget;
+    particle.trailSeed = Math::RandomFloat(0.0f, 1000.0f);
 
     // 生成したパーティクルを格納
     particles_.push_back(std::move(particle));
@@ -562,7 +563,7 @@ void ParticleSystem::Draw()
             drawPoints.push_back({ particle.transform->translation_, particle.transform->rotationQuaternion_, particle.age });
 
         // Rendererに登録
-        engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config.trail);
+        engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config.trail, particle.trailSeed);
     }
 
     // ブレンドを元に戻す

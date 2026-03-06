@@ -39,7 +39,8 @@ void TrailRenderer::BeginFrame()
     trailBatches_.clear();
 }
 
-void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailModule& config, const Vector3& cameraPosition)
+void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailModule& config, const Vector3& cameraPosition,         // 共通データ（カメラ位置）
+    float instanceSeed)
 {
     if (indexTrail_ >= kMaxTrailCount) return;
     if (points.size() < 2) return;
@@ -59,6 +60,7 @@ void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailMod
     currentMatData.jitterPhase = config.jitterPhase;
     currentMatData.isDissolveEnabled = (config.dissolveTextureName != "white1x1") ? 1 : 0;
     currentMatData.emissiveIntensity = config.emissiveIntensity;
+    currentMatData.instanceSeed = instanceSeed;
 
     bool isNewBatch = trailBatches_.empty();
     if (!isNewBatch)

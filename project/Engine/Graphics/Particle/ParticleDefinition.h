@@ -384,6 +384,7 @@ struct ParticleState
 
     // トレイル用の履歴バッファ
     std::deque<TrailPoint> trailHistory;
+    float trailSeed = 0.0f;
 
     ParticleConfig config;
 

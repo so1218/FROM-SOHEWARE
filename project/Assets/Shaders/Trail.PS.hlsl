@@ -21,8 +21,9 @@ PixelShaderOutput main(VertexShaderOutput input)
     if (gTrailMaterial.jitterMode == 2)
     {
         // 雷のチカチカ演出
-        float flicker = frac(sin(gFrameData.gTime * 60.0) * 43758.5453);
-        float flash = (flicker > 0.3) ? 1.0 : 0.2; 
+        float flickerTime = gFrameData.gTime * 60.0 + gTrailMaterial.instanceSeed;
+        float flicker = frac(sin(flickerTime) * 43758.5453);
+        float flash = (flicker > 0.3) ? 1.0 : 0.2;
         
         finalColor.rgb *= flash;
     }

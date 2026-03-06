@@ -71,7 +71,8 @@ public:
     void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
-    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config);
+    void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
+        float instanceSeed);
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
