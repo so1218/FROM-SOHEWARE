@@ -21,7 +21,7 @@ void ParticleRenderer::Initialize(const RenderEnvironment& env)
         particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
     }
 
-    // 最大数分あらかじめ確保して、毎フレームのメモリ割り当てを防ぐ
+    // 最大数分確保して、毎フレームのメモリ割り当てを防ぐ
     requests_.reserve(kMaxCount);
 }
 
@@ -60,14 +60,14 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
     if (requests_.empty()) return;
 
     std::sort(requests_.begin(), requests_.end());
-    // --- STEP 2: インスタンスデータの一括コピー ---
-    // 全パーティクルデータを一気にGPUバッファに送る (memcpyが1回で済む)
+    // インスタンスデータの一括コピー
+    // 全パーティクルデータを一気にGPUバッファに送る
     ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
     for (size_t i = 0; i < requests_.size(); ++i) {
         dstBase[i] = requests_[i].data;
     }
 
-    // --- STEP 3: バッチ描画 ---
+    // バッチ描画
     auto* cmdList = env.commandManager->GetCommandList();
     // 基本セットアップ
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Particle"));
@@ -77,42 +77,46 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
     // インスタンスバッファの開始地点を取得
     D3D12_GPU_VIRTUAL_ADDRESS bufferGPUAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
 
-    BlendMode lastBlendMode = static_cast<BlendMode>(-1); // ありえない値で初期化
+    BlendMode lastBlendMode = static_cast<BlendMode>(-1); // 初期化
     ID3D12PipelineState* currentPSO = nullptr;
 
     size_t drawCallStart = 0; // 描画開始インデックス
     while (drawCallStart < requests_.size()) {
         const auto& startReq = requests_[drawCallStart];
 
-        // ブレンドモードが変わった時だけ PSO を再取得してセット
-        if (startReq.blendMode != lastBlendMode) {
+        // ブレンドモードが変わった時だけPSOを再取得してセット
+        if (startReq.blendMode != lastBlendMode) 
+        {
             currentPSO = env.psoManager->GetPSO(GetPSOName(startReq.blendMode));
-            if (currentPSO) {
+            if (currentPSO)
+            {
                 cmdList->SetPipelineState(currentPSO);
             }
             lastBlendMode = startReq.blendMode;
         }
         
-        // 同じ「設定」がどこまで続くか探す
+        // 同じ設定がどこまで続くか探す
         size_t drawCallEnd = drawCallStart + 1;
-        while (drawCallEnd < requests_.size()) {
+        while (drawCallEnd < requests_.size()) 
+        {
             if (requests_[drawCallEnd].blendMode != startReq.blendMode || 
-                requests_[drawCallEnd].textureIndex != startReq.textureIndex) {
-                break; // 設定が変わったのでここで区切る
+                requests_[drawCallEnd].textureIndex != startReq.textureIndex) 
+            {
+                break; // 設定が変わったので区切る
             }
             drawCallEnd++;
         }
 
-        // --- ここで1回描画 ---
+        // 1回描画
         uint32_t instanceCount = static_cast<uint32_t>(drawCallEnd - drawCallStart);
 
         // テクスチャセット
         cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(startReq.textureIndex));
 
-        // インスタンスバッファの「現在のオフセット」をセット
+        // インスタンスバッファの現在のオフセットをセット
         cmdList->SetGraphicsRootShaderResourceView(0, bufferGPUAddress + (sizeof(ParticleInstanceData) * drawCallStart));
 
-        // 描画！
+        // 描画
         cmdList->DrawInstanced(6, instanceCount, 0, 0);
 
         // 次のバッチへ

@@ -45,6 +45,5 @@ private:
 
     std::vector<ParticleRequest> requests_;
 
-   /* uint32_t index_ = 0;*/
     uint32_t prevCount_ = 0;
 };

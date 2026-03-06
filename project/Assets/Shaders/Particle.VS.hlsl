@@ -24,20 +24,19 @@ VertexOut main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
     VertexOut vout;
     ParticleInstanceData inst = instanceBuffer[instID];
 
-    // 0~5の頂点番号から、板ポリゴンのUVとローカル座標を生成する
-    // 三角形2枚分 (0,1,2 と 1,3,2)
+    // 板ポリゴンのUVとローカル座標を生成
     float2 uvList[6] =
     {
-        float2(0, 1), // 左下 (idx 0)
-        float2(1, 1), // 右下 (idx 1)
-        float2(0, 0), // 左上 (idx 2)
-        float2(1, 1), // 右下 (idx 1)
-        float2(1, 0), // 右上 (idx 3)
-        float2(0, 0) // 左上 (idx 2)
+        float2(0, 1), // 左下 
+        float2(1, 1), // 右下
+        float2(0, 0), // 左上 
+        float2(1, 1), // 右下 
+        float2(1, 0), // 右上 
+        float2(0, 0) // 左上
     };
 
     float2 uv = uvList[vID];
-    // UV(0~1) から ローカル座標(-0.5~0.5) へ変換
+    // UVからローカル座標へ変換
     float2 localPos = float2(uv.x - 0.5f, 0.5f - uv.y);
 
     float3 worldPos;
