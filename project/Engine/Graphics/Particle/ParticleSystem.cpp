@@ -36,6 +36,16 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     // パーティクル設定を取得
     auto& config = GetConfig(presetName);
 
+    // アルファチェック（生成しない）
+    uint32_t startA = (config.colorOverLifetime.startColor) & 0xFF;
+    uint32_t endA = (config.colorOverLifetime.endColor) & 0xFF;
+    if (startA < 5 && endA < 5) return; 
+
+    // サイズチェック（生成しない）
+    bool startZero = (config.sizeOverLifetime.startScale.x <= 0.0f || config.sizeOverLifetime.startScale.y <= 0.0f);
+    bool endZero = (config.sizeOverLifetime.endScale.x <= 0.0f || config.sizeOverLifetime.endScale.y <= 0.0f);
+    if (startZero && endZero) return;
+
     ParticleState particle;
     particle.config = config;
 
@@ -576,8 +586,8 @@ bool ParticleSystem::ShouldSkipDraw(const ParticleState& particle) const
     const auto& config = particle.config;
 
     // アルファ値のチェック
-    uint32_t startA = (config.colorOverLifetime.startColor >> 24) & 0xFF;
-    uint32_t endA = (config.colorOverLifetime.endColor >> 24) & 0xFF;
+    uint32_t startA = (config.colorOverLifetime.startColor) & 0xFF;
+    uint32_t endA = (config.colorOverLifetime.endColor) & 0xFF;
     if (startA < 5 && endA < 5) return true;
 
     // スケールのチェック

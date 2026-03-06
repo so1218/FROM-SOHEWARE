@@ -31,7 +31,7 @@ Game::Game()
 
     // 初期シーンを設定
 #ifdef IS_DEVELOPMENT
-    sceneManager_.SetInitialScene(SceneID::TestHori);
+    sceneManager_.SetInitialScene(SceneID::Title);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
 #endif
