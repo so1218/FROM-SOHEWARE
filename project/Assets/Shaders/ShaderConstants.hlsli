@@ -188,7 +188,8 @@ struct TrailMaterialData
     
     int jitterMode;
     float emissiveIntensity;
-    float2 padding;
+    float instanceSeed;
+    float padding;
     
 };
 
