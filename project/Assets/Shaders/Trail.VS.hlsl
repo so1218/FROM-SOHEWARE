@@ -14,6 +14,15 @@ float3 hash31(float p)
     return frac((p3.xxy + p3.yzz) * p3.zyx) * 2.0 - 1.0;
 }
 
+float3 valueNoise31(float p)
+{
+    float i = floor(p);
+    float f = frac(p);
+    
+    f = f * f * (3.0 - 2.0 * f);
+    return lerp(hash31(i), hash31(i + 1.0), f);
+}
+
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
@@ -55,13 +64,20 @@ VertexShaderOutput main(VertexShaderInput input)
         }
         else
         {
-            // Lightning
-            float uStep = floor(u * gTrailMaterial.jitterFrequency);
             float timeStep = floor(time * gTrailMaterial.jitterSpeed);
+            float baseSeed = timeStep * 13.0 + (gTrailMaterial.instanceSeed * 100.0);
+ 
+            float noisePos = input.texcoord.x * gTrailMaterial.jitterFrequency;
+
+            float3 noise = valueNoise31(noisePos + baseSeed);
+       
+            float3 sharpNoise = abs(valueNoise31(noisePos * 2.5 - baseSeed * 1.5)) * 2.0 - 1.0;
             
-            // ハッシュ関数に渡すシードにinstanceSeedを足す
-            float seed = uStep + timeStep * 13.0 + (gTrailMaterial.instanceSeed * 100.0);
-            offset = hash31(seed);
+            offset = noise * 0.7 + sharpNoise * 0.3;
+            
+            float pinEnvelope = sin(input.texcoord.x * 3.14159265);
+            
+            offset *= pinEnvelope;
         }
 
         pos += offset * gTrailMaterial.jitterStrength;
