@@ -36,15 +36,20 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     // パーティクル設定を取得
     auto& config = GetConfig(presetName);
 
-    // アルファチェック（生成しない）
+    // 見えない状態かどうかのフラグ
     uint32_t startA = (config.colorOverLifetime.startColor) & 0xFF;
     uint32_t endA = (config.colorOverLifetime.endColor) & 0xFF;
-    if (startA < 5 && endA < 5) return; 
+    bool invisibleAlpha = (startA < 5 && endA < 5);
 
-    // サイズチェック（生成しない）
     bool startZero = (config.sizeOverLifetime.startScale.x <= 0.0f || config.sizeOverLifetime.startScale.y <= 0.0f);
     bool endZero = (config.sizeOverLifetime.endScale.x <= 0.0f || config.sizeOverLifetime.endScale.y <= 0.0f);
-    if (startZero && endZero) return;
+    bool invisibleScale = (startZero && endZero);
+
+    // トレイルが無効かつアルファかサイズで見えない状態の時だけ生成をキャンセル
+    if (!config.trail.enabled && (invisibleAlpha || invisibleScale))
+    {
+        return;
+    }
 
     ParticleState particle;
     particle.config = config;
