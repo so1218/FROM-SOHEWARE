@@ -300,8 +300,8 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
                                     Draw(matPrefix + "PuddleFalloff", "フチのボケ具合");
 
                                     ImGui::Spacing();
-                                    Draw(matPrefix + "PuddleColor", "水たまりの色");
-                                    Draw(matPrefix + "PuddleTint", "水の濁り具合(色の強さ)");
+                                    Draw(matPrefix + "PuddleColor", "水の色と濁り");
+                                    Draw(matPrefix + "PuddleEmission", "水の発光強度");
                                 }
                             }
                             ImGui::TreePop();
@@ -1182,7 +1182,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindBool(prefix + "UsePuddle", &matData->usePuddle, false);
 
     Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
-    Bind(prefix + "WetDarkness", &matData->wetDarkness, 0.5f, 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "PuddleEmission", &matData->puddleEmission, 0.0f, 0.1f, 0.0f, 50.0f);
 
     Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
     Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
@@ -1194,6 +1194,6 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
     Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
 
-    BindColor(prefix + "PuddleColor", &matData->puddleColor, { 0.4f, 0.3f, 0.2f }); 
+    BindColor(prefix + "PuddleColor", &matData->puddleColor, { 0.1f, 0.1f, 0.1f, 0.5f });
     Bind(prefix + "PuddleTint", &matData->puddleTint, 0.5f, 0.01f, 0.0f, 1.0f);
 }

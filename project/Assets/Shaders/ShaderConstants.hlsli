@@ -135,16 +135,18 @@ struct MaterialData
     float rippleStrength; 
     float puddleScale; 
     float puddleFalloff; 
-    float wetDarkness;
+    float puddleEmission;
     
     int32_t usePuddle;
     float rippleSize;
     float rippleFrequency;
     float rippleLayerMix;
     
-    float3 puddleColor;
-    float puddleTint;
+    float4 puddleColor;
     
+    float puddleTint;
+    float3 paddingPuddle;
+
     int32_t isBubble;
     float wobbleSpeed;
     float wobbleAmplitude;

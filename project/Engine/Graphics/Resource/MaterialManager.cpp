@@ -61,7 +61,8 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->rippleStrength = 0.05f;  
     handle.materialData->puddleScale = 0.1f;      
     handle.materialData->puddleFalloff = 0.1f;    
-    handle.materialData->wetDarkness = 0.5f;      
+    handle.materialData->puddleEmission = 0.1f;      
+    handle.materialData->puddleColor = { 0.1f, 0.1f, 0.1f, 0.5f };
     handle.materialData->usePuddle = 0;
     handle.materialData->rippleSize = 0.4f;
     handle.materialData->rippleFrequency = 1.0f;

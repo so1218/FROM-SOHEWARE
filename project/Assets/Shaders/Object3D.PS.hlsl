@@ -146,6 +146,9 @@ PixelShaderOutput main(PixelShaderInput input)
     float currentRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float currentMetalness = saturate(gMaterial.metalness);
     
+    // 水たまりの発光
+    float3 addedPuddleEmission = float3(0, 0, 0);
+    
     // 波紋と水たまりの処理
     if (gMaterial.enableRipple != 0 && gMaterial.wetness > 0.0f)
     {
@@ -168,19 +171,23 @@ PixelShaderOutput main(PixelShaderInput input)
         // 最終的な濡れ度
         float effectiveWetness = max(globalWetness, puddleDepth);
 
-       // 暗さ・ツヤを全体に適用
-        baseColor = lerp(baseColor, baseColor * gMaterial.wetDarkness, effectiveWetness);
-    
-        // 水たまり部分には水の色をブレンド
-        if (gMaterial.usePuddle != 0 && puddleDepth > 0.0f)
-        {
-            // 深いところほど強く色が乗るようにpuddleDepthを掛ける
-            float tintWeight = puddleDepth * gMaterial.puddleTint;
-            baseColor = lerp(baseColor, gMaterial.puddleColor, tintWeight);
-        }
+        // 濡れている部分の質感
         currentRoughness = lerp(currentRoughness, 0.01f, effectiveWetness);
 
-        // 波紋の計算
+        // 水たまりの色・透明度・発光の適用
+        if (gMaterial.usePuddle != 0 && puddleDepth > 0.0f)
+        {
+            // 最終的なブレンド率を決定
+            float blendWeight = puddleDepth * gMaterial.puddleColor.a;
+            
+            // 下地に水たまりの色をブレンド
+            baseColor = lerp(baseColor, gMaterial.puddleColor.rgb, blendWeight);
+            
+            // 発光成分の計算
+            addedPuddleEmission = gMaterial.puddleColor.rgb * gMaterial.puddleEmission * puddleDepth;
+        }
+
+        // 波紋の計算（省略：そのまま使用可能）
         float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
         float time = gFrameData.gTime * gMaterial.rippleSpeed;
         float3 combinedRipple = float3(0, 0, 0);
@@ -356,9 +363,20 @@ PixelShaderOutput main(PixelShaderInput input)
     
     // ディゾルブのエッジ発光を加算
     finalColor += dissolveEdgeEmission;
+    
+    // 水たまりの発光を加算
+    finalColor += addedPuddleEmission;
 
     output.color.rgb = finalColor;
-    output.color.a = textureColor.a * gMaterial.color.a;
+
+    if (gMaterial.isBubble != 0)
+    {
+        output.color.a = bubbleAlpha * gMaterial.color.a;
+    }
+    else
+    {
+        output.color.a = textureColor.a * gMaterial.color.a;
+    }
   
     // ディザー透明処理
     if (output.color.a <= gMaterial.alphaTestThreshold)
