@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 8,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 4.0,
+        "lifetime": 1.059999942779541,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -130,7 +130,7 @@
                 10.0,
                 10.0
             ],
-            "type": 0
+            "type": 3
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
@@ -149,7 +149,7 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "white1x1"
+            "textureName": "circle_05"
         },
         "trailModule": {
             "alignment": 0,
@@ -196,7 +196,7 @@
                 1.0,
                 0.0
             ],
-            "enabled": true,
+            "enabled": false,
             "randomDirection": true,
             "speed": 4.0
         },

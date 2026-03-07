@@ -28,7 +28,8 @@ public:
 
     void Initialize();
     void SpawnParticle(const WorldTransform& transform, const std::string& presetName, float lifetime,
-        const WorldTransform* attractionTarget, const WorldTransform* vortexTarget, const ModelData* emitterModelData = nullptr);
+        const WorldTransform* attractionTarget, const WorldTransform* vortexTarget, const ModelData* emitterModelData = nullptr,
+        const AnimationModel* emitterAnimModel = nullptr);
     void Update();
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);

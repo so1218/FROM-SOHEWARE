@@ -42,20 +42,19 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
         finalOffset.y *= offsetScale_.y;
         finalOffset.z *= offsetScale_.z;
 
-        Vector3 targetPos = targetToFollow_->translation_ + finalOffset;
+        Matrix4x4 targetMatrix = Matrix4x4::MakeAffine(
+            targetToFollow_->scale_,
+            targetToFollow_->rotationQuaternion_,
+            { 0.0f, 0.0f, 0.0f } // 回転とスケールだけ適用
+        );
 
-        if (followX_)
-        {
-            position_.x = targetPos.x;
-        }
-        if (followY_)
-        {
-            position_.y = targetPos.y;
-        }
-        if (followZ_)
-        {
-            position_.z = targetPos.z;
-        }
+        Vector3 rotatedOffset = targetMatrix.TransformVector(finalOffset);
+
+        Vector3 targetPos = targetToFollow_->translation_ + rotatedOffset;
+
+        if (followX_) position_.x = targetPos.x;
+        if (followY_) position_.y = targetPos.y;
+        if (followZ_) position_.z = targetPos.z;
 
     }
 
@@ -109,7 +108,8 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
             }
 
             // 1つのパーティクルを生成
-            particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_, currentModelData);
+            particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_,
+                currentModelData, targetAnimModel_);
         }
 
         timeSinceLastSpawn_ -= spawnInterval_;

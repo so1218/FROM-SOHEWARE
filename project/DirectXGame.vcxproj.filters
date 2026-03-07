@@ -468,6 +468,9 @@
     <ClCompile Include="Game\GameObject\GrassField.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">

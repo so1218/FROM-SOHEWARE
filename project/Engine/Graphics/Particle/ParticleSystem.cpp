@@ -29,7 +29,7 @@ void ParticleSystem::Initialize()
 }
 
 void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget
-    , const ModelData* emitterModelData)
+    , const ModelData* emitterModelData, const AnimationModel* emitterAnimModel)
 {
     // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->GetRendererManager()->GetMaxParticleCount()) return;
@@ -59,7 +59,7 @@ void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::s
     particle.transform = std::make_unique<WorldTransform>();
 
     // Shape
-    Vector3 localOffset = particle.config.shape.GetInitialPositionOffset(emitterModelData);
+    Vector3 localOffset = particle.config.shape.GetInitialPositionOffset(emitterModelData, emitterAnimModel);
 
     // 行列の作成
     Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(

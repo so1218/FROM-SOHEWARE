@@ -383,3 +383,41 @@ bool AnimationModel::IsValidMaterialIndex(size_t index) const
 {
     return index < materials_.size();
 }
+
+Vector3 AnimationModel::GetSkinnedVertexPosition(size_t meshIndex, size_t vertexIndex) const
+{
+    const auto& mesh = animeModelData_.modelData->meshes[meshIndex];
+
+    // オリジナルの頂点座標
+    const Vector4& origPos = mesh.vertices[vertexIndex].position;
+
+    // この頂点にかかるウェイト情報
+    const auto& influence = skinCluster_.meshInfluences[meshIndex].mappedInfluence[vertexIndex];
+
+    Vector3 skinnedPos = { 0.0f, 0.0f, 0.0f };
+
+    // 影響を受けるボーン（最大4つ）の計算を合成
+    for (int i = 0; i < kNumMaxInfluence; ++i)
+    {
+        float weight = influence.weights[i];
+        if (weight <= 0.0f) continue; // ウェイトが0なら計算をスキップ
+
+        int32_t jointIndex = influence.jointIndices[i];
+
+        // パレットから対象ボーンのスキニング用行列を取得
+        const Matrix4x4& jointMatrix = skinCluster_.mappedPalette[jointIndex].skeletonSpaceMatrix;
+
+        // 頂点座標に行列を掛ける
+        Vector3 transformedPos;
+        transformedPos.x = origPos.x * jointMatrix.m[0][0] + origPos.y * jointMatrix.m[1][0] + origPos.z * jointMatrix.m[2][0] + 1.0f * jointMatrix.m[3][0];
+        transformedPos.y = origPos.x * jointMatrix.m[0][1] + origPos.y * jointMatrix.m[1][1] + origPos.z * jointMatrix.m[2][1] + 1.0f * jointMatrix.m[3][1];
+        transformedPos.z = origPos.x * jointMatrix.m[0][2] + origPos.y * jointMatrix.m[1][2] + origPos.z * jointMatrix.m[2][2] + 1.0f * jointMatrix.m[3][2];
+
+        // ウェイトを掛けて足し合わせる
+        skinnedPos.x += transformedPos.x * weight;
+        skinnedPos.y += transformedPos.y * weight;
+        skinnedPos.z += transformedPos.z * weight;
+    }
+
+    return skinnedPos;
+}

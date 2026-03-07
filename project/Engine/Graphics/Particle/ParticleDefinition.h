@@ -4,10 +4,13 @@
 #include "MathUtils.h"
 #include "BlendMode.h"
 #include "TextureManager.h"
+#include "Structures.h"
 
 #include <memory>
 #include <string>
 #include <deque>
+
+class AnimationModel;
 
 struct ShapeModule
 {
@@ -26,101 +29,7 @@ struct ShapeModule
     Vector3 boxSize = { 20.0f, 20.0f, 20.0f }; // 各軸方向のサイズ
 
     // 初期位置オフセットを形状に基づいて計算
-    Vector3 GetInitialPositionOffset(const ModelData* overrideModelData = nullptr) const
-    {
-        switch (type)
-        {
-        case Type::Point:
-            return { 0.0f, 0.0f, 0.0f }; // 原点のみ
-
-        case Type::Box:
-            // ボックス内部のランダムな位置
-            return {
-                Math::RandomFloat(-boxSize.x / 2.0f, boxSize.x / 2.0f),
-                Math::RandomFloat(-boxSize.y / 2.0f, boxSize.y / 2.0f),
-                Math::RandomFloat(-boxSize.z / 2.0f, boxSize.z / 2.0f)
-            };
-
-        case Type::Sphere:
-        {
-            // 単位球上のランダムな点を生成
-            float phi = Math::RandomFloat(0.0f, 2.0f * 3.14159f);
-            float cosTheta = Math::RandomFloat(-1.0f, 1.0f);
-            float theta = acosf(cosTheta);
-
-            Vector3 unitSpherePoint = {
-                sinf(theta) * cosf(phi),
-                sinf(theta) * sinf(phi),
-                cosf(theta)
-            };
-
-            // 半径0の軸は0に固定
-            if (radius.x == 0.0f) unitSpherePoint.x = 0.0f;
-            if (radius.y == 0.0f) unitSpherePoint.y = 0.0f;
-            if (radius.z == 0.0f) unitSpherePoint.z = 0.0f;
-
-            // 単位ベクトル化（縁上に配置）
-            unitSpherePoint = unitSpherePoint.Normalize();
-
-            // 各軸に沿って拡大（楕円体化）
-            Vector3 ellipsoidPoint = {
-                unitSpherePoint.x * radius.x,
-                unitSpherePoint.y * radius.y,
-                unitSpherePoint.z * radius.z
-            };
-
-            // emitFromEdgeがfalseなら中心寄りに縮小
-            if (!emitFromEdge)
-                ellipsoidPoint = ellipsoidPoint * cbrtf(Math::RandomFloat(0.0f, 1.0f));
-
-            return ellipsoidPoint;
-        }
-        case Type::Mesh:
-        {
-            const ModelData* targetModelData = overrideModelData ? overrideModelData : sourceModelData;
-
-            // モデルデータが無い、またはメッシュが空の場合は原点を返す
-            if (!targetModelData || targetModelData->meshes.empty())
-            {
-                return { 0.0f, 0.0f, 0.0f };
-            }
-
-            // 複数のメッシュからランダムに1つ選ぶ
-            int randomMeshIndex = Math::RandomInt(0, (int)targetModelData->meshes.size() - 1);
-            const auto& mesh = targetModelData->meshes[randomMeshIndex];
-
-            if (mesh.indices.empty() || mesh.vertices.empty())
-            {
-                return { 0.0f, 0.0f, 0.0f };
-            }
-
-            // 選んだメッシュの中から、ランダムな三角形を選ぶ
-            int triangleCount = (int)mesh.indices.size() / 3;
-            int randomTri = Math::RandomInt(0, triangleCount - 1) * 3;
-
-            const Vector4& posA = mesh.vertices[mesh.indices[randomTri]].position;
-            const Vector4& posB = mesh.vertices[mesh.indices[randomTri + 1]].position;
-            const Vector4& posC = mesh.vertices[mesh.indices[randomTri + 2]].position;
-
-            Vector3 A = { posA.x, posA.y, posA.z };
-            Vector3 B = { posB.x, posB.y, posB.z };
-            Vector3 C = { posC.x, posC.y, posC.z };
-
-            // 重心座標系を使って、面上のランダムな点を計算
-            float r1 = sqrtf(Math::RandomFloat(0.0f, 1.0f));
-            float r2 = Math::RandomFloat(0.0f, 1.0f);
-
-            float u = 1.0f - r1;
-            float v = r1 * (1.0f - r2);
-            float w = r1 * r2;
-
-            // 面上のランダムな座標を返す
-            return (A * u) + (B * v) + (C * w);
-        }
-        }
-
-        return { 0.0f, 0.0f, 0.0f }; 
-    }
+    Vector3 GetInitialPositionOffset(const ModelData* overrideModelData = nullptr, const AnimationModel* overrideAnimModel = nullptr) const;
 };
 
 struct VelocityModule

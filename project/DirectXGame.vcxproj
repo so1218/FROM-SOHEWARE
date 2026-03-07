@@ -170,6 +170,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp" />

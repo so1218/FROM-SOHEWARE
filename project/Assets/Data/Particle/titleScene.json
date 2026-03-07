@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 2,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 4.0,
+        "lifetime": 1.940000057220459,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -76,11 +76,11 @@
         },
         "intensity": 1.0,
         "noiseModule": {
-            "enabled": false,
+            "enabled": true,
             "frequency": 1.0,
             "scrollSpeed": 1.0,
             "separateAxes": false,
-            "strength": 1.0
+            "strength": 9.600000381469727
         },
         "physicsModule": {
             "drag": 0.0,
@@ -126,11 +126,11 @@
             "emitFromEdge": false,
             "enabled": true,
             "radius": [
-                10.0,
-                10.0,
-                10.0
+                20.0,
+                0.0,
+                20.0
             ],
-            "type": 0
+            "type": 2
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
@@ -142,7 +142,7 @@
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                1.0,
+                0.0,
                 1.0,
                 1.0
             ]
@@ -154,40 +154,40 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 1.0,
-            "enabled": false,
+            "emissiveIntensity": 1.7999999523162842,
+            "enabled": true,
             "endColor": [
+                0.0,
                 1.0,
-                1.0,
-                1.0,
+                0.25316429138183594,
                 0.0
             ],
             "headWidthScale": 1.0,
             "jitterFrequency": 10.0,
             "jitterMode": 0,
             "jitterPhase": 0.0,
-            "jitterSpeed": 0.0,
-            "jitterStrength": 0.0,
-            "lifetime": 0.5,
-            "minVertexDistance": 0.10000000149011612,
+            "jitterSpeed": 1.600000023841858,
+            "jitterStrength": 0.20000000298023224,
+            "lifetime": 1.0,
+            "minVertexDistance": 0.33000001311302185,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
+                0.037974655628204346,
                 1.0,
-                1.0,
-                1.0,
+                0.1597498655319214,
                 1.0
             ],
             "tailWidthScale": 1.0,
             "textureMode": 0,
-            "textureName": "white1x1",
+            "textureName": "twirl_03",
             "tiling": [
                 1.0,
                 1.0
             ],
-            "width": 1.0
+            "width": 1.2000000476837158
         },
         "velocityModule": {
             "angleRange": 60.0,
@@ -198,7 +198,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 4.0
+            "speed": 16.639999389648438
         },
         "vortexModule": {
             "axis": [
@@ -211,14 +211,14 @@
                 0.0,
                 0.0
             ],
-            "enabled": false,
+            "enabled": true,
             "offset": [
                 0.0,
                 0.0,
                 0.0
             ],
-            "orbitalSpeed": 2.0,
-            "radialSpeed": 0.0
+            "orbitalSpeed": 55.099998474121094,
+            "radialSpeed": -73.69999694824219
         }
     }
 }

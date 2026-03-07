@@ -32,7 +32,7 @@ void TestSceneHori::OnInitialize()
     testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
-    auraEmitter_->SetTargetModel(bubble_->model_.get());
+    auraEmitter_->SetTargetAnimationModel(player_->animationPlayer_.get());
     engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 }
 

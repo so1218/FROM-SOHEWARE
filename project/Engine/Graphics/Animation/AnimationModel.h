@@ -127,6 +127,12 @@ public:
     float* GetSpeedScalePtr() { return &speedScale_; }
     bool* GetIsLoopPtr() { return &isLoop_; }
 
+    // ゲッターに追加
+    const ModelData* GetModelData() const { return animeModelData_.modelData; }
+
+    // スキニング後の頂点座標を取得する関数
+    Vector3 GetSkinnedVertexPosition(size_t meshIndex, size_t vertexIndex) const;
+
 private:
     // ヘルパー: インデックス検証
     bool IsValidMaterialIndex(size_t index) const;
