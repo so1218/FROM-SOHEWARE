@@ -76,7 +76,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     return shaderBlob;
 }
 
-IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* profile) 
+IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* profile)
 {
     // キャッシュキー（メモリ管理用）
     std::wstring cacheKey = filePath + L"_" + profile;
@@ -84,57 +84,62 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* 
         return it->second.Get();
     }
 
-    // キャッシュファイルの保存先を決定
     fs::path srcPath(filePath);
     std::wstring cacheFileName = srcPath.filename().wstring() + L"_" + profile + L".cso";
     std::wstring cachePath = srcPath.parent_path().wstring() + L"/Cache/" + cacheFileName;
 
-    bool shouldCompile = true;
+    Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
 
-    // タイムスタンプ比較
+#ifdef IS_DEVELOPMENT
+    // 開発モード .hlsl の更新を監視してコンパイル
+    bool shouldCompile = true;
     if (fs::exists(cachePath) && fs::exists(filePath))
     {
         auto srcTime = fs::last_write_time(filePath);
         auto cacheTime = fs::last_write_time(cachePath);
-
-        if (cacheTime > srcTime)
-        {
-            shouldCompile = false; // キャッシュの方が新しく、コンパイル不要
-        }
+        if (cacheTime > srcTime) shouldCompile = false;
     }
 
-    Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
-    if (shouldCompile) 
+    if (shouldCompile)
     {
         auto newBlob = CompileShader(filePath, profile);
-        if (newBlob)
-        {
-            // コンパイル成功
-            // 新しいBlobを使って保存
+        if (newBlob) {
             shaderBlob = newBlob;
             SaveBlob(cachePath, shaderBlob.Get());
         }
-        else
-        {
-            // コンパイル失敗
-            if (fs::exists(cachePath))
-            {
-                // 古いキャッシュが残っていれば、それを読んでゲームを止めない
+        else {
+            if (fs::exists(cachePath)) {
+                LOG_ERROR("コンパイル失敗！前回成功したキャッシュを使用します。");
+                MessageBeep(MB_ICONERROR);
                 shaderBlob = LoadBlob(cachePath, dxcUtils_);
             }
-            else 
-            {
-                // キャッシュも無い場合
+            else {
+                assert(false && "Shader compile failed and no cache exists.");
                 return nullptr;
             }
         }
     }
     else
     {
-        shaderBlob = LoadBlob(cachePath, dxcUtils_); // ディスクから一瞬でロード
+        shaderBlob = LoadBlob(cachePath, dxcUtils_);
     }
 
-    if (shaderBlob) 
+#else
+
+    // 製品モード.csoを読み込むだけ
+    // 製品版には.hlslが無いので、直接Cacheフォルダの.csoを読む
+    shaderBlob = LoadBlob(cachePath, dxcUtils_);
+
+    // 提出物に.csoを入れ忘れていた場合はエラー終了
+    if (!shaderBlob)
+    {
+        // 製品版でassertは消えることが多く、致命的エラーとして扱う処理を入れる
+        MessageBoxW(nullptr, L"シェーダーファイル(.cso)が見つかりません。", L"Fatal Error", MB_OK | MB_ICONERROR);
+        exit(1);
+    }
+#endif
+
+    if (shaderBlob)
     {
         shaderCache_[cacheKey] = shaderBlob;
         return shaderBlob.Get();

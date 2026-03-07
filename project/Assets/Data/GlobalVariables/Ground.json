@@ -38,12 +38,12 @@
         ],
         "ModelRock_OutlineEnable": 0,
         "ModelRock_OutlineWidth": 11.899999618530273,
-        "ModelRock_PuddleColor": [
-            0.10000000149011612,
-            0.10000000149011612,
-            0.10000000149011612,
-            0.5
-        ],
+      "ModelRock_PuddleColor": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.5
+      ],
         "ModelRock_PuddleEmission": 0.0,
         "ModelRock_PuddleFalloff": 0.10000000149011612,
         "ModelRock_PuddleNoise": "white1x1",
@@ -150,9 +150,10 @@
         "ModelTree_Mat0_OutlineEnable": 0,
         "ModelTree_Mat0_OutlineWidth": 0.699999988079071,
         "ModelTree_Mat0_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "ModelTree_Mat0_PuddleEmission": 0.0,
         "ModelTree_Mat0_PuddleFalloff": 0.10000000149011612,
@@ -246,9 +247,10 @@
         "ModelTree_Mat1_OutlineEnable": 0,
         "ModelTree_Mat1_OutlineWidth": 1.0,
         "ModelTree_Mat1_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "ModelTree_Mat1_PuddleEmission": 0.0,
         "ModelTree_Mat1_PuddleFalloff": 0.10000000149011612,
@@ -357,9 +359,10 @@
         "Model_OutlineEnable": 0,
         "Model_OutlineWidth": 1.0,
         "Model_PuddleColor": [
-            0.06393204629421234,
-            0.42900127172470093,
-            0.5611814260482788
+          0.06393204629421234,
+          0.42900127172470093,
+          0.5611814260482788,
+          0.5
         ],
         "Model_PuddleEmission": 0.0,
         "Model_PuddleFalloff": 0.38999998569488525,

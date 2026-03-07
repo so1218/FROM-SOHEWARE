@@ -40,9 +40,10 @@
         "PlayerModel_Mat0_OutlineEnable": 0,
         "PlayerModel_Mat0_OutlineWidth": 34.0,
         "PlayerModel_Mat0_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat0_PuddleEmission": 0.0,
         "PlayerModel_Mat0_PuddleFalloff": 0.10000000149011612,
@@ -136,9 +137,10 @@
         "PlayerModel_Mat1_OutlineEnable": 0,
         "PlayerModel_Mat1_OutlineWidth": 8.199999809265137,
         "PlayerModel_Mat1_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat1_PuddleEmission": 0.0,
         "PlayerModel_Mat1_PuddleFalloff": 0.10000000149011612,
@@ -232,9 +234,10 @@
         "PlayerModel_Mat2_OutlineEnable": 0,
         "PlayerModel_Mat2_OutlineWidth": 1.0,
         "PlayerModel_Mat2_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat2_PuddleEmission": 0.0,
         "PlayerModel_Mat2_PuddleFalloff": 0.10000000149011612,
@@ -328,9 +331,10 @@
         "PlayerModel_Mat3_OutlineEnable": 0,
         "PlayerModel_Mat3_OutlineWidth": 1.0,
         "PlayerModel_Mat3_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat3_PuddleEmission": 0.0,
         "PlayerModel_Mat3_PuddleFalloff": 0.10000000149011612,
@@ -424,9 +428,10 @@
         "PlayerModel_Mat4_OutlineEnable": 0,
         "PlayerModel_Mat4_OutlineWidth": 1.0,
         "PlayerModel_Mat4_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat4_PuddleEmission": 0.0,
         "PlayerModel_Mat4_PuddleFalloff": 0.10000000149011612,
@@ -520,9 +525,10 @@
         "PlayerModel_Mat5_OutlineEnable": 0,
         "PlayerModel_Mat5_OutlineWidth": 1.0,
         "PlayerModel_Mat5_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat5_PuddleEmission": 0.0,
         "PlayerModel_Mat5_PuddleFalloff": 0.10000000149011612,
@@ -616,9 +622,10 @@
         "PlayerModel_Mat6_OutlineEnable": 0,
         "PlayerModel_Mat6_OutlineWidth": 1.0,
         "PlayerModel_Mat6_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat6_PuddleEmission": 0.0,
         "PlayerModel_Mat6_PuddleFalloff": 0.10000000149011612,
@@ -712,9 +719,10 @@
         "PlayerModel_Mat7_OutlineEnable": 0,
         "PlayerModel_Mat7_OutlineWidth": 1.0,
         "PlayerModel_Mat7_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat7_PuddleEmission": 0.0,
         "PlayerModel_Mat7_PuddleFalloff": 0.10000000149011612,
@@ -808,9 +816,10 @@
         "PlayerModel_Mat8_OutlineEnable": 0,
         "PlayerModel_Mat8_OutlineWidth": 1.0,
         "PlayerModel_Mat8_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat8_PuddleEmission": 0.0,
         "PlayerModel_Mat8_PuddleFalloff": 0.10000000149011612,
@@ -904,9 +913,10 @@
         "PlayerModel_Mat9_OutlineEnable": 0,
         "PlayerModel_Mat9_OutlineWidth": 1.0,
         "PlayerModel_Mat9_PuddleColor": [
-            0.4000000059604645,
-            0.30000001192092896,
-            0.20000000298023224
+          0.4000000059604645,
+          0.30000001192092896,
+          0.20000000298023224,
+          0.5
         ],
         "PlayerModel_Mat9_PuddleEmission": 0.0,
         "PlayerModel_Mat9_PuddleFalloff": 0.10000000149011612,
