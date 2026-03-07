@@ -8,6 +8,7 @@ Ground::Ground(Engine* engine) : GameObject(engine)
 
 	model_ = GameObject::CreateModel("field");
 	modelTree_ = GameObject::CreateModel("tree");
+	modelRock_ = GameObject::CreateModel("rock1");
 	skybox_ = std::make_unique<Skybox>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
@@ -30,6 +31,7 @@ void Ground::Initialize()
 {
 	binder_->BindModel("Model", model_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
+	binder_->BindModel("ModelRock", modelRock_.get());
 	skybox_->SetCubeTexture("redClunch");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
@@ -66,6 +68,7 @@ void Ground::Draw()
 
 		modelTree_->Draw(); 
 	}
+	modelRock_->Draw();
 	skybox_->Draw();
 };
 
@@ -75,6 +78,7 @@ void Ground::DebugDraw()
 	ImGui::Begin("地面");
 	binder_->DrawModel("Model", "インスペクター");
 	binder_->DrawModel("ModelTree", "木インスペクター");
+	binder_->DrawModel("ModelRock", "岩インスペクター");
 
 	ImGui::Separator();
 	ImGui::Text("木の揺れ（葉っぱ）");

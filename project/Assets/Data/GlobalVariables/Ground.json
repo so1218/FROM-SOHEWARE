@@ -1,5 +1,116 @@
 {
     "Ground": {
+        "ModelRock_AddShadow": 0,
+        "ModelRock_AlbedoMap": "sky_sphere",
+        "ModelRock_AlphaThres": 0.019999999552965164,
+        "ModelRock_Color": [
+            0.6033755540847778,
+            0.7528283596038818,
+            1.0,
+            1.0
+        ],
+        "ModelRock_DiffuseRef": 4.0,
+        "ModelRock_DisEnable": 0,
+        "ModelRock_DisThres": 0.2199999988079071,
+        "ModelRock_DissolveTex": "noise_51",
+        "ModelRock_EdgeColor": [
+            0.0,
+            0.379746675491333,
+            1.0
+        ],
+        "ModelRock_EdgeInten": 5.699999809265137,
+        "ModelRock_EdgeWidth": 0.07500000298023224,
+        "ModelRock_Emissive": 0.5,
+        "ModelRock_EnvMapInt": 2.390000104904175,
+        "ModelRock_EnvMapTex": "redClunch",
+        "ModelRock_LightMode": 3,
+        "ModelRock_Lighting": 1,
+        "ModelRock_Metalness": 0.9200000166893005,
+        "ModelRock_NormEnable": 1,
+        "ModelRock_NormInten": 2.2799999713897705,
+        "ModelRock_NormTile": 1.5,
+        "ModelRock_NormalMapTex": "normal_20",
+        "ModelRock_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ModelRock_OutlineEnable": 0,
+        "ModelRock_OutlineWidth": 21.299999237060547,
+        "ModelRock_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "ModelRock_PuddleEmission": 0.0,
+        "ModelRock_PuddleFalloff": 0.10000000149011612,
+        "ModelRock_PuddleNoise": "white1x1",
+        "ModelRock_PuddleScale": 0.10000000149011612,
+        "ModelRock_PuddleTint": 0.5,
+        "ModelRock_RimColor": [
+            0.16592784225940704,
+            0.3107474446296692,
+            0.9831223487854004
+        ],
+        "ModelRock_RimEnable": 1,
+        "ModelRock_RimInten": 5.400000095367432,
+        "ModelRock_RimPower": 1.5,
+        "ModelRock_RimUseDir": 0,
+        "ModelRock_RippleEnable": 0,
+        "ModelRock_RippleFreq": 0.3100000023841858,
+        "ModelRock_RippleMap": "white1x1",
+        "ModelRock_RippleMix": 0.5,
+        "ModelRock_RippleScale": 6.599999904632568,
+        "ModelRock_RippleSize": 2.5,
+        "ModelRock_RippleSpeed": 5.400000095367432,
+        "ModelRock_RippleStren": 2.6700000762939453,
+        "ModelRock_Rot": [
+            0.75,
+            1.5099999904632568,
+            0.0
+        ],
+        "ModelRock_Roughness": 0.23000000417232513,
+        "ModelRock_Scale": [
+            10.0,
+            18.799999237060547,
+            4.099999904632568
+        ],
+        "ModelRock_ShadowBias": 0.0005000000237487257,
+        "ModelRock_ShadowDens": 0.800000011920929,
+        "ModelRock_ShadowEnv": 0.0,
+        "ModelRock_ShadowSoft": 0.0,
+        "ModelRock_Shininess": 50.0,
+        "ModelRock_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ModelRock_ToonRampTex": "toonRamp_2",
+        "ModelRock_Trans": [
+            -30.200000762939453,
+            4.599999904632568,
+            0.0
+        ],
+        "ModelRock_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ModelRock_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ModelRock_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ModelRock_UsePuddle": 0,
+        "ModelRock_Wetness": 0.5,
         "ModelTree_Mat0_AddShadow": 0,
         "ModelTree_Mat0_AlbedoMap": "leaf",
         "ModelTree_Mat0_AlphaThres": 0.5199999809265137,
@@ -43,6 +154,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "ModelTree_Mat0_PuddleEmission": 0.0,
         "ModelTree_Mat0_PuddleFalloff": 0.10000000149011612,
         "ModelTree_Mat0_PuddleNoise": "white1x1",
         "ModelTree_Mat0_PuddleScale": 0.10000000149011612,
@@ -138,6 +250,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "ModelTree_Mat1_PuddleEmission": 0.0,
         "ModelTree_Mat1_PuddleFalloff": 0.10000000149011612,
         "ModelTree_Mat1_PuddleNoise": "white1x1",
         "ModelTree_Mat1_PuddleScale": 0.10000000149011612,
@@ -248,6 +361,7 @@
             0.42900127172470093,
             0.5611814260482788
         ],
+        "Model_PuddleEmission": 0.0,
         "Model_PuddleFalloff": 0.38999998569488525,
         "Model_PuddleNoise": "noise_39",
         "Model_PuddleScale": 0.010999999940395355,

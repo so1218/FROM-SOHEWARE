@@ -44,6 +44,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat0_PuddleEmission": 0.0,
         "PlayerModel_Mat0_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat0_PuddleNoise": "white1x1",
         "PlayerModel_Mat0_PuddleScale": 0.10000000149011612,
@@ -139,6 +140,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat1_PuddleEmission": 0.0,
         "PlayerModel_Mat1_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat1_PuddleNoise": "white1x1",
         "PlayerModel_Mat1_PuddleScale": 0.10000000149011612,
@@ -234,6 +236,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat2_PuddleEmission": 0.0,
         "PlayerModel_Mat2_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat2_PuddleNoise": "white1x1",
         "PlayerModel_Mat2_PuddleScale": 0.10000000149011612,
@@ -329,6 +332,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat3_PuddleEmission": 0.0,
         "PlayerModel_Mat3_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat3_PuddleNoise": "white1x1",
         "PlayerModel_Mat3_PuddleScale": 0.10000000149011612,
@@ -424,6 +428,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat4_PuddleEmission": 0.0,
         "PlayerModel_Mat4_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat4_PuddleNoise": "white1x1",
         "PlayerModel_Mat4_PuddleScale": 0.10000000149011612,
@@ -519,6 +524,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat5_PuddleEmission": 0.0,
         "PlayerModel_Mat5_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat5_PuddleNoise": "white1x1",
         "PlayerModel_Mat5_PuddleScale": 0.10000000149011612,
@@ -614,6 +620,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat6_PuddleEmission": 0.0,
         "PlayerModel_Mat6_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat6_PuddleNoise": "white1x1",
         "PlayerModel_Mat6_PuddleScale": 0.10000000149011612,
@@ -709,6 +716,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat7_PuddleEmission": 0.0,
         "PlayerModel_Mat7_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat7_PuddleNoise": "white1x1",
         "PlayerModel_Mat7_PuddleScale": 0.10000000149011612,
@@ -804,6 +812,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat8_PuddleEmission": 0.0,
         "PlayerModel_Mat8_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat8_PuddleNoise": "white1x1",
         "PlayerModel_Mat8_PuddleScale": 0.10000000149011612,
@@ -899,6 +908,7 @@
             0.30000001192092896,
             0.20000000298023224
         ],
+        "PlayerModel_Mat9_PuddleEmission": 0.0,
         "PlayerModel_Mat9_PuddleFalloff": 0.10000000149011612,
         "PlayerModel_Mat9_PuddleNoise": "white1x1",
         "PlayerModel_Mat9_PuddleScale": 0.10000000149011612,
