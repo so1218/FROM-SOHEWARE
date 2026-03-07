@@ -39,9 +39,9 @@ void Ground::Initialize()
 	for (int i = 0; i < 1000; ++i)
 	{
 		Vector3 pos;
-		pos.x = i * 5;
+		pos.x = float(i * 5);
 		pos.y = 0.0f; // 地面の高さに合わせる
-		pos.z = i * 5;
+		pos.z = float(i * 5);
 		treePositions_.push_back(pos);
 	}
 };

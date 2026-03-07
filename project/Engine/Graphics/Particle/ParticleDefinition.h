@@ -11,7 +11,9 @@
 
 struct ShapeModule
 {
-    enum class Type { Point, Box, Sphere };
+    enum class Type { Point, Box, Sphere, Mesh };
+
+    const ModelData* sourceModelData = nullptr;
 
     bool enabled = true;      // モジュールが有効かどうか
     Type type = Type::Point;  // 形状の種類
@@ -24,7 +26,7 @@ struct ShapeModule
     Vector3 boxSize = { 20.0f, 20.0f, 20.0f }; // 各軸方向のサイズ
 
     // 初期位置オフセットを形状に基づいて計算
-    Vector3 GetInitialPositionOffset() const
+    Vector3 GetInitialPositionOffset(const ModelData* overrideModelData = nullptr) const
     {
         switch (type)
         {
@@ -72,6 +74,48 @@ struct ShapeModule
                 ellipsoidPoint = ellipsoidPoint * cbrtf(Math::RandomFloat(0.0f, 1.0f));
 
             return ellipsoidPoint;
+        }
+        case Type::Mesh:
+        {
+            const ModelData* targetModelData = overrideModelData ? overrideModelData : sourceModelData;
+
+            // モデルデータが無い、またはメッシュが空の場合は原点を返す
+            if (!targetModelData || targetModelData->meshes.empty())
+            {
+                return { 0.0f, 0.0f, 0.0f };
+            }
+
+            // 複数のメッシュからランダムに1つ選ぶ
+            int randomMeshIndex = Math::RandomInt(0, (int)targetModelData->meshes.size() - 1);
+            const auto& mesh = targetModelData->meshes[randomMeshIndex];
+
+            if (mesh.indices.empty() || mesh.vertices.empty())
+            {
+                return { 0.0f, 0.0f, 0.0f };
+            }
+
+            // 選んだメッシュの中から、ランダムな三角形を選ぶ
+            int triangleCount = (int)mesh.indices.size() / 3;
+            int randomTri = Math::RandomInt(0, triangleCount - 1) * 3;
+
+            const Vector4& posA = mesh.vertices[mesh.indices[randomTri]].position;
+            const Vector4& posB = mesh.vertices[mesh.indices[randomTri + 1]].position;
+            const Vector4& posC = mesh.vertices[mesh.indices[randomTri + 2]].position;
+
+            Vector3 A = { posA.x, posA.y, posA.z };
+            Vector3 B = { posB.x, posB.y, posB.z };
+            Vector3 C = { posC.x, posC.y, posC.z };
+
+            // 重心座標系を使って、面上のランダムな点を計算
+            float r1 = sqrtf(Math::RandomFloat(0.0f, 1.0f));
+            float r2 = Math::RandomFloat(0.0f, 1.0f);
+
+            float u = 1.0f - r1;
+            float v = r1 * (1.0f - r2);
+            float w = r1 * r2;
+
+            // 面上のランダムな座標を返す
+            return (A * u) + (B * v) + (C * w);
         }
         }
 

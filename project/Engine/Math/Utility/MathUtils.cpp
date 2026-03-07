@@ -59,7 +59,22 @@ namespace Math
 
     float RandomFloat(float min, float max)
     {
+        if (min >= max)
+        {
+            return min;
+        }
+
         return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
+    }
+
+    int RandomInt(int min, int max)
+    {
+        if (min >= max)
+        {
+            return min;
+        }
+
+        return min + (rand() % (max - min + 1));
     }
 
     float ToRadians(float degrees)

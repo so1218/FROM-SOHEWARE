@@ -28,7 +28,8 @@ void ParticleSystem::Initialize()
     configManager_->LoadAllParticleDefinitions();
 }
 
-void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget)
+void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget
+    , const ModelData* emitterModelData)
 {
     // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->GetRendererManager()->GetMaxParticleCount()) return;
@@ -54,10 +55,24 @@ void ParticleSystem::SpawnParticle(WorldTransform& transform, const std::string&
     ParticleState particle;
     particle.config = config;
 
-    // Shape
-    // エミッタ位置 + Shapeオフセットで初期座標を設定
+    // メモリを割り当てる
     particle.transform = std::make_unique<WorldTransform>();
-    particle.transform->translation_ = transform.translation_ + particle.config.shape.GetInitialPositionOffset();
+
+    // Shape
+    Vector3 localOffset = particle.config.shape.GetInitialPositionOffset(emitterModelData);
+
+    // 行列の作成
+    Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(
+        transform.scale_,
+        transform.rotationQuaternion_,
+        { 0.0f, 0.0f, 0.0f }
+    );
+
+    // ローカルオフセットを行列で変換（ワールド空間でのオフセット）
+    Vector3 worldOffset = transformMatrix.TransformVector(localOffset);
+
+    // 最終的なワールド座標を適用
+    particle.transform->translation_ = transform.translation_ + worldOffset;
 
     // Velocity 
     if (particle.config.velocity.enabled)

@@ -97,6 +97,8 @@ public:
 
     void ApplyRenderSettings(const RenderSettings& settings);
 
+    const ModelData* GetModelData() const { return modelData_; }
+
 private:
     // ヘルパー関数: 範囲チェック
     bool IsValidMaterialIndex(size_t index) const;

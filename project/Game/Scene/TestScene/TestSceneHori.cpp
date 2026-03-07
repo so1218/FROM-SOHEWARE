@@ -4,7 +4,6 @@
 #include "Input.h"
 #include "Grid.h"
 #include "Ground.h"
-#include "Bubble.h"
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
@@ -17,7 +16,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
     //objectManager_.Create<Grid>(engine_);
     objectManager_.Create<Ground>(engine_);
-    objectManager_.Create<Bubble>(engine_);
+    bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
 
     player_->SetFollowCamera(followCamera_);
@@ -32,6 +31,9 @@ void TestSceneHori::OnInitialize()
 
     testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
+    auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
+    auraEmitter_->SetTargetModel(bubble_->model_.get());
+    engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 }
 
 void TestSceneHori::OnUpdate()

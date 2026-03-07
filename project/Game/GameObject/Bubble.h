@@ -13,8 +13,8 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-private:
     std::unique_ptr<Model> model_;
+private:
     std::unique_ptr<PropertyBinder> binder_;
 };
 

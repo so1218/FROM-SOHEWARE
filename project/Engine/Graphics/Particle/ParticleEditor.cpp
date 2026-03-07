@@ -263,7 +263,7 @@ void ParticleEditor::ShowEditor()
                 {
                     auto& shape = config.shape;
 
-                    const char* shapeTypes[] = { "点", "ボックス", "球" };
+                    const char* shapeTypes[] = { "点", "ボックス", "球", "メッシュ" };
                     int currentShapeType = (int)shape.type;
 
                     if (ImGui::Combo("形状タイプ", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
@@ -281,6 +281,10 @@ void ParticleEditor::ShowEditor()
                         ImGui::Checkbox("縁から放出", &shape.emitFromEdge);
                         break;
                     case ShapeModule::Type::Point:
+                        break;
+                    case ShapeModule::Type::Mesh:
+                        ImGui::TextDisabled("メッシュ");
+                        ImGui::Text("モデルデータをセットして使用");
                         break;
                     }
 

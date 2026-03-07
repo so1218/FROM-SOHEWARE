@@ -25,6 +25,7 @@ namespace Math
 
     // 指定範囲の乱数生成
     float RandomFloat(float min, float max);
+    int RandomInt(int min, int max);
 
     // 度数法から弧度法への変換
     float ToRadians(float degrees);

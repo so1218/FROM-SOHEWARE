@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include "WorldTransform.h"
 #include "ParticleSystem.h"
+#include "Model.h"
 
 class ParticleEmitter
 {
@@ -26,6 +27,15 @@ public:
 
     void SetFollowAxes(bool x, bool y, bool z);
 
+    void SetTargetModel(const Model* model)
+    {
+        targetModel_ = model;
+        if (model)
+        {
+            SetTargetToFollow(const_cast<WorldTransform*>(&model->GetTransform()));
+        }
+    }
+
     Vector3 position_;
     float spawnInterval_;
     float lifetime_;
@@ -46,6 +56,8 @@ public:
 
     EmitterConfig emitterConfig_;
     ParticleConfig particleConfig_;
+
+    const Model* targetModel_ = nullptr;
 
     bool isDead_ = false;
 

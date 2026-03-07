@@ -87,14 +87,29 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
         // amount_の数だけループしてパーティクルを生成
         for (int i = 0; i < amount_; ++i)
         {
-            WorldTransform worldTransform =
+            // エミッター自身のTransformを作る際、ターゲットの回転とスケールを引き継ぐ
+            WorldTransform spawnTransform;
+            spawnTransform.translation_ = position_;
+            const ModelData* currentModelData = nullptr;
+
+            if (targetToFollow_)
             {
-                { 1.0f, 1.0f, 1.0f },
-                { 0.0f, 0.0f, 0.0f },
-                position_,
-            };
+                spawnTransform.scale_ = targetToFollow_->scale_;
+                spawnTransform.rotationQuaternion_ = targetToFollow_->rotationQuaternion_;
+
+                // ターゲットモデルがあればModelDataを取得
+                if (targetModel_)
+                {
+                    currentModelData = targetModel_->GetModelData();
+                }
+            }
+            else
+            {
+                spawnTransform.scale_ = { 1.0f, 1.0f, 1.0f };
+            }
+
             // 1つのパーティクルを生成
-            particleSystem.SpawnParticle(worldTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_);
+            particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_, currentModelData);
         }
 
         timeSinceLastSpawn_ -= spawnInterval_;
