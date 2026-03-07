@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <algorithm>
 #include <chrono>
@@ -18,6 +19,10 @@
 #include <iostream>     
 #include <functional>   
 #include <span>
+#include <format>       
+#include <queue>        
+#include <tuple>        
+#include <stdexcept>
 
 // Windows API関連
 #define NOMINMAX 
@@ -31,6 +36,8 @@
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <dxcapi.h>
+#include <d3dcompiler.h> 
+#include <DirectXMath.h>
 
 // DirectInputのバージョン指定はdinput.hの前に
 #define DIRECTINPUT_VERSION 0x0800
@@ -50,6 +57,8 @@
 
 // 外部ライブラリ
 #include <json.hpp>
+#include "externals/DirectXTex/d3dx12.h"      
+#include "externals/DirectXTex/DirectXTex.h"
 
 // デバッグビルド時のみ読み込む
 #ifdef IS_DEVELOPMENT
