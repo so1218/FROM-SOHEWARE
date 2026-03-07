@@ -109,7 +109,7 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* 
         }
         else {
             if (fs::exists(cachePath)) {
-                LOG_ERROR("コンパイル失敗！前回成功したキャッシュを使用します。");
+                LOG_ERROR("コンパイル失敗。前回成功したキャッシュを使用");
                 MessageBeep(MB_ICONERROR);
                 shaderBlob = LoadBlob(cachePath, dxcUtils_);
             }
@@ -134,7 +134,7 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* 
     if (!shaderBlob)
     {
         // 製品版でassertは消えることが多く、致命的エラーとして扱う処理を入れる
-        MessageBoxW(nullptr, L"シェーダーファイル(.cso)が見つかりません。", L"Fatal Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, L"シェーダーファイル(.cso)が見つからない", L"Fatal Error", MB_OK | MB_ICONERROR);
         exit(1);
     }
 #endif
