@@ -651,7 +651,7 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::Indent();
 
             ImGui::TextDisabled("合成設定");
-            ImGui::SliderFloat("反射強度", &combineSettingsData->ssrIntensity, 0.0f, 5.0f, "%.2f");
+            ImGui::DragFloat("反射強度", &combineSettingsData->ssrIntensity, 0.01f);
 
             ImGui::Separator();
 
