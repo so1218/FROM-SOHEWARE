@@ -32,11 +32,11 @@ public:
         // シーンごとの独自処理
         OnUpdate();
 
-        // 衝突判定
-        HandleCollisions();
-
         // 全オブジェクト更新
         objectManager_.Update();
+
+        // 衝突判定
+        HandleCollisions();
 
         // カメラの行列更新
         if (camera_)
