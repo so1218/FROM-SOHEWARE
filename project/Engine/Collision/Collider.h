@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Vector.h"
 
 enum class CollisionShapeType

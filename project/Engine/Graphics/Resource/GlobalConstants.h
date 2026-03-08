@@ -1,7 +1,5 @@
 #pragma once
-#include "Structures.h" 
-#include <wrl.h> 
-#include <memory>        
+#include "Structures.h"   
 
 class Camera;
 

@@ -6,10 +6,6 @@
 #include "TextureManager.h"
 #include "Structures.h"
 
-#include <memory>
-#include <string>
-#include <deque>
-
 class AnimationModel;
 
 struct ShapeModule

@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "RenderCoordinator.h"
 #include "Engine.h"
-#include <cassert>
 
 void RenderCoordinator::Initialize(
     SwapChain* swapChainManager,

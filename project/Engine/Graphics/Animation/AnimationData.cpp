@@ -4,10 +4,6 @@
 #include "BufferManager.h"
 #include "MathUtils.h"
 
-#include <assimp/Importer.hpp>  
-#include <assimp/scene.h>    
-#include <cassert>
-
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {
 	assert(!keyframes.empty()); // キーが無いものは返す値がわからないのでダメ

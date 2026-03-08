@@ -2,10 +2,6 @@
 #include "AudioManager.h"
 #include "AudioPlayer.h"
 #include "StringUtils.h"
-#include <fstream>
-#include <sstream>
-#include <cassert>
-#include <iostream>
 
 std::unordered_map<std::string, int> AudioManager::audioMap_;
 bool AudioManager::initialized_ = false;

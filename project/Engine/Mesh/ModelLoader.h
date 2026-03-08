@@ -3,17 +3,6 @@
 #include "Structures.h"
 #include "Engine.h"
 
-#include <fstream>
-#include <sstream>
-#include <string> 
-#include <vector> 
-#include <cassert>
-#include <cstdint>
-
-#include <assimp/Importer.hpp>   
-#include <assimp/scene.h>        
-#include <assimp/postprocess.h> 
-
 class ModelLoader
 {
 public:

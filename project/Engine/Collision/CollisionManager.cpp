@@ -3,7 +3,6 @@
 #include "CollisionManager.h"
 #include "Collision.h"
 #include "Vector3.h" 
-#include <algorithm>
 
 void CollisionManager::AddCollider(Collider* collider)
 {

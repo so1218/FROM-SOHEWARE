@@ -15,8 +15,6 @@
 #include "GlobalVariables.h"
 #include "DebugDraw.h"
 
-#include "externals/DirectXTex/d3dx12.h" 
-
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "Dbghelp.lib")

@@ -1,10 +1,6 @@
 #include "pch.h"
 #include "AnimationLoader.h"
 
-#include <assimp/Importer.hpp>  
-#include <assimp/scene.h>    
-#include <cassert>
-
 Animation LoadAnimationFile(const std::string& filePath)
 {
 	Animation animation;// 今回作るアニメーション

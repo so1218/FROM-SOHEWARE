@@ -1,8 +1,5 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d12.h>
-
 class CommandManager
 {
 public:

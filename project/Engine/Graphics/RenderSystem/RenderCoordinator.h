@@ -7,11 +7,6 @@
 #include "DSVManager.h"
 #include "GraphicsDevice.h"
 
-#include <d3d12.h>
-#include <dxgi1_6.h>   
-#include <wrl.h>  
-#include <memory>
-
 class Engine;
 
 class RenderCoordinator

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "DescriptorHeapManager.h"
 
-#include <string>
-
 // ディスクリプタヒープを作成
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(
     ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)

@@ -1,15 +1,5 @@
 #pragma once
-
-#define NOMINMAX 
-#include <windows.h>
-#include <cassert>
-#include <cstring>
-#define DIRECTINPUT_VERSION    0x0800
-#include <dinput.h>
-#include <Xinput.h>
-
 #define STICK_THRESHOLD 0x4000
-
 #include "Vector2.h"
 
 class Input

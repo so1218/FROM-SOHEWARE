@@ -1,11 +1,6 @@
 #include "pch.h"
 #include "DebugUtils.h"
 
-#include <wrl.h>
-#include <dxgidebug.h>
-#include <d3d12.h>
-#include <dxgi1_3.h> 
-
 D3DResourceLeakChecker::D3DResourceLeakChecker() {}
 
 D3DResourceLeakChecker::~D3DResourceLeakChecker()

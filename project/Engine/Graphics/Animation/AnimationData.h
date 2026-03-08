@@ -4,12 +4,6 @@
 #include "WorldTransform.h"
 #include "SRVManager.h"
 
-#include <vector>    
-#include <map>       
-#include <string>
-#include <optional>
-#include <array>
-
 static uint32_t constexpr kNumMaxInfluence = 4;
 
 template<typename tValue>

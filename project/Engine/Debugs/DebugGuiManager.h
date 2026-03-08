@@ -7,8 +7,6 @@
 #include "PostEffectManager.h"
 #include "DebugCamera.h"
 
-#include <chrono>
-
 class Engine;
 
 class DebugGuiManager

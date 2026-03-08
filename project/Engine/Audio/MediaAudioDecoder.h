@@ -1,16 +1,5 @@
 #pragma once
 
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <mftransform.h>
-#include <mfobjects.h>
-#include <mferror.h>
-#include <wrl.h>
-#include <comdef.h>
-#include <string>
-#include <vector>
-
 // 音声データ
 struct AudioData
 {

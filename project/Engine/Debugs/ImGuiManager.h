@@ -1,17 +1,5 @@
 #pragma once
 
-#include <d3d12.h>  
-#include <dxgi1_4.h>    
-#include <fstream>
-#include <iostream>
-
-#ifdef IS_DEVELOPMENT
-#include "imgui.h"
-#include "imgui_impl_dx12.h"
-#include "imgui_impl_win32.h"
-#include "ImGuizmo.h"
-#endif
-
 #include "Vector2.h"
 #include "Matrix4x4.h"
 

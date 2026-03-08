@@ -1,9 +1,6 @@
 #include "pch.h"
 #include "AnimationManager.h"
 #include "StringUtils.h"
-#include <fstream>
-#include <sstream>
-#include <cassert>
 
 AnimationManager* AnimationManager::GetInstance()
 {

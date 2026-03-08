@@ -11,7 +11,6 @@
 #include "BilateralBlurPass.h"
 #include "SSRPass.h"
 #include "Camera.h"
-#include <memory>
 
 class Engine;
 

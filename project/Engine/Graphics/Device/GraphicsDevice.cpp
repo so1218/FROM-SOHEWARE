@@ -3,8 +3,6 @@
 #include "Logger.h"
 #include "StringUtils.h"
 
-#include <format>
-
 void GraphicsDevice::Initialize()
 {
     // DXGIファクトリーの生成

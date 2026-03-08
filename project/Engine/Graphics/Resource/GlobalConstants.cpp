@@ -4,7 +4,6 @@
 #include "Camera.h"        
 #include "TimeManager.h"
 #include "Engine.h"
-#include <cassert>         
 
 void GlobalConstants::Initialize(ID3D12Device* device)
 {

@@ -1,7 +1,4 @@
 #pragma once
-#include <d3d12.h>
-#include <cassert>
-#include <iostream>
 
 enum BlendMode
 {

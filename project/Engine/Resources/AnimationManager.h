@@ -1,7 +1,4 @@
 #pragma once
-#include <string>
-#include <unordered_map>
-#include <cassert>
 #include "AnimationLoader.h" 
 
 class AnimationManager

@@ -2,18 +2,6 @@
 
 #include "StringUtils.h"
 
-#include <d3d12.h>
-#include <dxcapi.h>
-#include <string>
-#include <memory>
-#include <cassert>
-#include <iostream>
-#include <format>
-#include <wrl.h>
-#include <unordered_map>
-#include <fstream>
-#include <filesystem>
-
 namespace fs = std::filesystem;
 
 class ShaderManager

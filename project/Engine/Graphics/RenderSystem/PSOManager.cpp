@@ -3,10 +3,6 @@
 #include "ShaderManager.h"
 #include "RootSignatureManager.h"
 
-#include <fstream>
-#include <cassert>
-#include <json.hpp>
-
 void PSOManager::Initialize(
     ID3D12Device* device,
     ShaderManager* shaderManager,

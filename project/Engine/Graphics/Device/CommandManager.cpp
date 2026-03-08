@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "CommandManager.h"
 
-#include <cassert>
-
 void CommandManager::Initialize(ID3D12Device* device)
 {
     HRESULT hr;

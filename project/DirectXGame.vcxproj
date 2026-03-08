@@ -203,7 +203,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
-    <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp" />
+    <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Engine\Resources\AnimationManager.cpp" />
     <ClCompile Include="Engine\Resources\ModelManager.cpp" />
     <ClCompile Include="Engine\Resources\TextureManager.cpp" />
@@ -216,7 +220,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\GameObjectManager.cpp" />
     <ClCompile Include="Engine\Resources\AudioManager.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureManager.cpp" />
-    <ClCompile Include="externals\ImGuiFileDialog.cpp" />
+    <ClCompile Include="externals\ImGuiFileDialog.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Engine\Audio\AudioDevice.cpp" />
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />

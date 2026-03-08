@@ -2,9 +2,6 @@
 #include "BufferManager.h"
 #include "Structures.h"
 
-#include <wrl.h>
-#include <queue>
-
 constexpr int MAX_DIRECTIONAL_LIGHTS = 2;
 constexpr int MAX_POINT_LIGHTS = 100;
 constexpr int MAX_SPOT_LIGHTS = 2;

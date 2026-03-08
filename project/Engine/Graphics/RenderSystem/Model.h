@@ -1,8 +1,4 @@
 #pragma once
-
-#include <d3d12.h>
-#include <string>
-
 #include "WorldTransform.h"
 #include "Engine.h"
 

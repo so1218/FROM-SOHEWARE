@@ -1,10 +1,6 @@
 #pragma once
 #include "Collider.h"
 
-#include <list>
-#include <set>
-#include <utility>
-
 // コライダー同士の衝突判定を管理するクラス
 class CollisionManager
 {

@@ -1,12 +1,8 @@
 #pragma once
-
 #include "Matrix.h"
 #include "Vector.h"
 
-#include <algorithm>
-
 class WorldTransform;
-
 
 namespace Math
 {

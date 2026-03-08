@@ -2,11 +2,6 @@
 #include "ImGuiManager.h"
 
 #ifdef IS_DEVELOPMENT
-#include <filesystem>
-
-#include "imgui_internal.h"
-#include "externals/ImGuiFileDialog.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "externals/stb_image.h"
 #endif
