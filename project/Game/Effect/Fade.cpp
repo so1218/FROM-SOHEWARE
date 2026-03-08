@@ -4,8 +4,6 @@
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 
-#include <algorithm>
-
 Fade::Fade(Engine* engine)
 {
     engine_ = engine;

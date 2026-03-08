@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Collider.h"
 #include "AnimationModel.h"
 #include "GameObjectManager.h"

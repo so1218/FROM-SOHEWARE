@@ -2,8 +2,6 @@
 #include "NormalState.h"
 #include "FadeOutState.h"
 
-#include <memory> 
-
 void NormalState::Update(SceneManager* manager)
 {
     // 現在のシーンを更新

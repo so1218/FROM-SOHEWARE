@@ -1,5 +1,4 @@
 #pragma once
-
 #include <cstdint>
 
 // 衝突属性定義

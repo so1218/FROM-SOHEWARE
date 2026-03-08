@@ -5,12 +5,15 @@
 #include <cmath> 
 #include <cfloat>
 #include <limits>
+#include <random>
+#include <numbers>
 
 // C++標準ライブラリ
 #include <cstdint>
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <vector>
 #include <list>    

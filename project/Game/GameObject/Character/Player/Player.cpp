@@ -9,9 +9,6 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
-#include <numbers>
-#include <algorithm>
-
 Player::Player(Engine* engine, Camera* camera) : GameObject(engine, UpdateOrder::Player),
 	camera_(camera)
 {
