@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PSOManager.h"
 #include "ShaderManager.h"
 #include "RootSignatureManager.h"

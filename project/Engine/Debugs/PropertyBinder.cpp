@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PropertyBinder.h"
 #include "Model.h"
 #include "AnimationModel.h"

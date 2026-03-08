@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DebugUtils.h"
 
 #include <wrl.h>

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SkyboxRenderer.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"

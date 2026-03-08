@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Logger.h"
 #include <strsafe.h>
 #include <DbgHelp.h>

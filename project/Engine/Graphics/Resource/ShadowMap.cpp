@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "ShadowMap.h"
-#include "SRVManager.h" // SRVManagerの実装を含める
+#include "SRVManager.h" 
 #include <externals/DirectXTex/d3dx12.h>
 #include <cassert>
 

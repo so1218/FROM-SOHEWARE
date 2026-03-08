@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Window.h"
 
 #ifdef IS_DEVELOPMENT

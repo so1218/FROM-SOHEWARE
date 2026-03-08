@@ -1,5 +1,10 @@
 #pragma once
 
+// 数学定数
+#define _USE_MATH_DEFINES
+#include <cmath> 
+#include <cfloat>
+
 // C++標準ライブラリ
 #include <cstdint>
 #include <cassert>
@@ -39,7 +44,7 @@
 #include <d3dcompiler.h> 
 #include <DirectXMath.h>
 
-// DirectInputのバージョン指定はdinput.hの前に
+// DirectInput
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #include <Xinput.h>
@@ -60,7 +65,7 @@
 #include "externals/DirectXTex/d3dx12.h"      
 #include "externals/DirectXTex/DirectXTex.h"
 
-// デバッグビルド時のみ読み込む
+// デバッグビルド時のみ
 #ifdef IS_DEVELOPMENT
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Fade.h"
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"

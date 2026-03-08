@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "FadeOutState.h"
 #include "FadeInState.h"
 

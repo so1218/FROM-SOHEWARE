@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ShakeEffect.h"
 #include "MathUtils.h"
 #include "TimeManager.h"

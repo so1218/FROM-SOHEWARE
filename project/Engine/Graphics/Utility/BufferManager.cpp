@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BufferManager.h"
 
 Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(

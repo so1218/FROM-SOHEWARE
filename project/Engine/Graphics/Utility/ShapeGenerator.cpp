@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ShapeGenerator.h"
 
 void ShapeGenerator::SkyBoxGenerator(

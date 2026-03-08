@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "RenderCoordinator.h"
 #include "Engine.h"
 #include <cassert>

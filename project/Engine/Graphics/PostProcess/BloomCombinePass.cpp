@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BloomCombinePass.h"
 #include "BufferManager.h"
 #include "TimeManager.h"

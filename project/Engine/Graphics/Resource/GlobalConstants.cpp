@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GlobalConstants.h"
 #include "BufferManager.h" 
 #include "Camera.h"        

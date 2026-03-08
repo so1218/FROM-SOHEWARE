@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "StringUtils.h"
 #include <Windows.h>
 

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "AnimationData.h"
 #include "TimeManager.h"
 #include "BufferManager.h"

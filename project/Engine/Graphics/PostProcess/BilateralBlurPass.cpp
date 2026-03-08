@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BilateralBlurPass.h"
 #include "Engine.h"
 #include "RootSignatureManager.h"

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "FollowCamera.h"
 #include "Player.h"
 #include "Input.h"

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DebugLayerManager.h"
 
 DebugLayerManager::DebugLayerManager()

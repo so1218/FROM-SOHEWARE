@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "AudioPlayer.h"
 #include "AudioDevice.h"
-
-#include <algorithm>
 
 // ロード処理
 void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)

@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "AudioDevice.h"
 #include "AudioPlayer.h"
 
-#include <cassert>
 #include <mfapi.h>
 #include <mfplay.h>
 #include <mfreadwrite.h>

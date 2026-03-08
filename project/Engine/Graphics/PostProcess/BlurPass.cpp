@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BlurPass.h"
 #include "BufferManager.h"
 #include "Engine.h"

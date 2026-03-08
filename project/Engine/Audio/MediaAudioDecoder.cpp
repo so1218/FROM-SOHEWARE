@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "MediaAudioDecoder.h"
-
-#include <stdexcept>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
