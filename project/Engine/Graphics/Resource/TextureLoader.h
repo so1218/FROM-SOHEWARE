@@ -1,9 +1,5 @@
 #pragma once
-#include "StringUtils.h"
-#include "BufferManager.h"
-#include "CommandManager.h"
-#include "SRVManager.h"
-#include "GraphicsDevice.h"                         
+class SRVManager;
 
 class TextureLoader
 {

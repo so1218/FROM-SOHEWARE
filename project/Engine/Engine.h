@@ -26,9 +26,12 @@
 #include "ShadowMap.h"
 #include "ProjectConfig.h"
 
+class SRVManager;
+
 class Engine
 {
 public:
+    Engine();
     ~Engine();
 
     // 初期化・終了

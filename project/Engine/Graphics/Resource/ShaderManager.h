@@ -1,5 +1,4 @@
 #pragma once
-
 #include "StringUtils.h"
 
 namespace fs = std::filesystem;

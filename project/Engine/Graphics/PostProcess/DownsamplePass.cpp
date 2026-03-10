@@ -2,6 +2,7 @@
 #include "DownsamplePass.h"
 #include "BufferManager.h"
 #include "Engine.h"
+#include "SRVManager.h"
 
 void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {

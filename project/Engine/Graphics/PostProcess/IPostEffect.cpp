@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "IPostEffect.h"
 #include "Engine.h"
+#include "SRVManager.h"
 
 IPostEffect::~IPostEffect()
 {

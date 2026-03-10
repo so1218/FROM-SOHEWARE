@@ -4,6 +4,7 @@
 #include "AnimationModel.h"
 #include "Sprite.h"
 #include "Engine.h"
+#include "SRVManager.h"
 
 void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 {

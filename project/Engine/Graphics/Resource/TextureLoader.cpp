@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "TextureLoader.h"
+#include "StringUtils.h"
+#include "BufferManager.h"
+#include "SRVManager.h"
 
 TextureLoader::TextureLoader() {};
 

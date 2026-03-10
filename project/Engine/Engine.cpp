@@ -14,6 +14,7 @@
 #include "AnimationManager.h"
 #include "GlobalVariables.h"
 #include "DebugDraw.h"
+#include "SRVManager.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -26,6 +27,8 @@
 
 int32_t Engine::sClientWidth = 1280;
 int32_t Engine::sClientHeight = 720;
+
+Engine::Engine() = default;
 
 Engine::~Engine()
 {

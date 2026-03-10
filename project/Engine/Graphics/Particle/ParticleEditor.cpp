@@ -6,6 +6,7 @@
 #include "ParticleConfigManager.h" 
 #include "ParticleSystem.h"
 #include "Engine.h" 
+#include "SRVManager.h"
 
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
     : particleSystem_(particleSystem), engine_(engine)

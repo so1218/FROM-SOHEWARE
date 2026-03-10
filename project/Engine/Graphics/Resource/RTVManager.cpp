@@ -2,6 +2,8 @@
 #include "RTVManager.h"
 #include "DescriptorHeapManager.h"
 #include "Engine.h"
+#include "SwapChain.h"
+#include "SRVManager.h"
 
 void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, DescriptorHeapManager* descriptorManager)
 {

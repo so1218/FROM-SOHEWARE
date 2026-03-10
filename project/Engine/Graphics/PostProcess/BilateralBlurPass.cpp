@@ -2,6 +2,7 @@
 #include "BilateralBlurPass.h"
 #include "Engine.h"
 #include "RootSignatureManager.h"
+#include "SRVManager.h"
 
 BilateralBlurPass::~BilateralBlurPass()
 {

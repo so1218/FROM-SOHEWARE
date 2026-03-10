@@ -2,6 +2,7 @@
 #include "PostEffectManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
+#include "SRVManager.h"
 
 PostEffectManager::~PostEffectManager()
 {

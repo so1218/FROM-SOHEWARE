@@ -13,6 +13,7 @@
 #include "Camera.h"
 
 class Engine;
+class SRVManager;
 
 class PostEffectManager
 {

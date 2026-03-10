@@ -1,9 +1,9 @@
 #pragma once
-#include "DescriptorHeapManager.h"
-#include "SwapChain.h"
 #include "Vector.h"
-#include "SRVManager.h"
 
+class DescriptorHeapManager;
+class SwapChain;
+class SRVManager;
 class Engine;
 
 class RTVManager
