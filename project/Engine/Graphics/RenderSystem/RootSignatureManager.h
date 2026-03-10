@@ -1,6 +1,4 @@
 #pragma once
-        
-#include <assert.h>     
 
 using Microsoft::WRL::ComPtr;
 

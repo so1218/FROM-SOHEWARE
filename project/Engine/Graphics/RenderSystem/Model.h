@@ -1,6 +1,9 @@
 #pragma once
 #include "WorldTransform.h"
-#include "Engine.h"
+#include "BlendMode.h" 
+#include "RenderCommon.h" 
+
+class Engine;
 
 class Model
 {

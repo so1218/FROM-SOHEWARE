@@ -1,5 +1,11 @@
 #include "pch.h"
 #include "RenderCoordinator.h"
+#include "SwapChain.h"
+#include "RTVManager.h"
+#include "CommandManager.h"
+#include "RenderContext.h"
+#include "DSVManager.h"
+#include "GraphicsDevice.h"
 #include "Engine.h"
 
 void RenderCoordinator::Initialize(

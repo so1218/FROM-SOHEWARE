@@ -2,6 +2,7 @@
 #include "Model.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
+#include "Engine.h"
 
 Model::Model(Engine* engine, const std::string& modelName)
     : Model(engine, ModelManager::GetInstance().Get(modelName))

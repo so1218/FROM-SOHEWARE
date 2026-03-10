@@ -1,8 +1,8 @@
 #pragma once
 #include "BlendMode.h"
-#include "ShaderManager.h"
 
 class RootSignatureManager;
+class ShaderManager;
 
 // JSONで指定するPSO設定
 struct PSODescription

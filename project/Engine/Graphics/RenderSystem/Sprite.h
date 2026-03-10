@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Vector2.h"
 #include "WorldTransform.h"
 #include "Structures.h"

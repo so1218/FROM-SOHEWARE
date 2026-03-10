@@ -1,12 +1,11 @@
 #pragma once
 
-#include "SwapChain.h"
-#include "RTVManager.h"
-#include "CommandManager.h"
-#include "RenderContext.h"
-#include "DSVManager.h"
-#include "GraphicsDevice.h"
-
+class SwapChain;
+class RTVManager;
+class OffscreenRTVManager;
+class CommandManager;
+class RenderContext;
+class GraphicsDevice;
 class Engine;
 
 class RenderCoordinator

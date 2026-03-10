@@ -25,8 +25,11 @@
 #include "ShaderManager.h"
 #include "ShadowMap.h"
 #include "ProjectConfig.h"
+#include "GraphicsDevice.h"
+#include "CommandManager.h"
 
 class SRVManager;
+class DSVManager;
 
 class Engine
 {
