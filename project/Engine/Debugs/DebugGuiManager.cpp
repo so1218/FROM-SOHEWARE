@@ -3,6 +3,12 @@
 #include "Engine.h"
 #include "TimeManager.h"
 #include "ImGuiManager.h"
+#include "LightManager.h"
+#include "MaterialManager.h"
+#include "TextureLoader.h"
+#include "PostEffectManager.h"
+#include "DebugCamera.h"
+#include "SRVManager.h"
 
 void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
     TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera)

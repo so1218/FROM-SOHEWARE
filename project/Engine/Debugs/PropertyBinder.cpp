@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "AnimationModel.h"
 #include "Sprite.h"
+#include "Engine.h"
 
 void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 {

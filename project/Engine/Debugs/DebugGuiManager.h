@@ -1,13 +1,14 @@
 #pragma once
 #include "Vector.h"
-#include "Camera.h"
-#include "LightManager.h"
-#include "MaterialManager.h"
-#include "TextureLoader.h"
-#include "PostEffectManager.h"
-#include "DebugCamera.h"
 
+class Camera;
+class LightManager;
+class MaterialManager;
+class TextureLoader;
+class PostEffectManager;
+class DebugCamera;
 class Engine;
+class SRVManager;
 
 class DebugGuiManager
 {

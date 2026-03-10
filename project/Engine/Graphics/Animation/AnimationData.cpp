@@ -3,6 +3,7 @@
 #include "TimeManager.h"
 #include "BufferManager.h"
 #include "MathUtils.h"
+#include "SRVManager.h"
 
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {

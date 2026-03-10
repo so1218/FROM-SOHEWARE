@@ -2,7 +2,8 @@
 #include "Quaternion.h"
 #include "Structures.h"
 #include "WorldTransform.h"
-#include "SRVManager.h"
+
+class SRVManager;
 
 static uint32_t constexpr kNumMaxInfluence = 4;
 

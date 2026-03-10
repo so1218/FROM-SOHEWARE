@@ -1,5 +1,5 @@
 #pragma once
-#include "Collider.h"
+class Collider;
 
 // コライダー同士の衝突判定を管理するクラス
 class CollisionManager

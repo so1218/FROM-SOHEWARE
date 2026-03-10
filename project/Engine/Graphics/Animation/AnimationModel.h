@@ -1,7 +1,11 @@
 #pragma once
 #include "AnimationData.h" 
 #include "AnimationManager.h" 
-#include "Engine.h"
+#include "BlendMode.h" 
+#include "RenderCommon.h" 
+#include "Easing.h" 
+
+class Engine;
 
 class AnimationModel
 {

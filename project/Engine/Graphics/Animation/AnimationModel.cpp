@@ -4,6 +4,7 @@
 #include "ModelManager.h"
 #include "AnimationManager.h"
 #include "TextureManager.h"
+#include "Engine.h"
 
 AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
     : AnimationModel(engine,

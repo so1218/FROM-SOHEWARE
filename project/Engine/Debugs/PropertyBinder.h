@@ -1,14 +1,14 @@
 #pragma once
-#include <vector>
-#include <string>
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
-#include "Engine.h"
 #include "TextureManager.h"
+#include "MathUtils.h"
+#include "Structures.h"
 
 class Model;
 class AnimationModel;
 class Sprite;
+class Engine;
 
 // 変数の登録を行えば、GlobalVariablesの読み書きとImGuiの表示をしてくれる関数
 class PropertyBinder
