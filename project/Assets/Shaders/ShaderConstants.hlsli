@@ -175,6 +175,11 @@ struct MaterialData
     
     float treeWindVariation;
     float3 paddingTree;
+    
+    int32_t useTriplanar;
+    float triplanarScale; 
+    float triplanarBlendSharpness; 
+    float paddingTriplanar;
 };
 
 struct TrailMaterialData

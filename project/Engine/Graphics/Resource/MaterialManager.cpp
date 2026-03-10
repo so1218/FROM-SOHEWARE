@@ -68,6 +68,9 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->rippleSize = 0.4f;
     handle.materialData->rippleFrequency = 1.0f;
     handle.materialData->rippleLayerMix = 0.5f;
+    handle.materialData->useTriplanar = 0;                
+    handle.materialData->triplanarScale = 0.1f;           
+    handle.materialData->triplanarBlendSharpness = 4.0f;
 
     materials_.push_back(handle);
     return handle;
