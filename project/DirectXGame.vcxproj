@@ -336,6 +336,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Particle\ParticleEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Audio\AudioDefinition.h" />
     <ClInclude Include="Engine\Core\FrameLimiter.h" />
     <ClInclude Include="Engine\Core\pch.h" />
     <ClInclude Include="Engine\Debugs\DebugDraw.h" />

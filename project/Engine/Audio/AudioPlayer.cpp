@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "AudioPlayer.h"
 #include "AudioDevice.h"
+#include "MediaAudioDecoder.h"
 
 // ロード処理
 void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)

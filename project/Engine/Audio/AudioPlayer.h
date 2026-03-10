@@ -1,5 +1,7 @@
 #pragma once
-#include "MediaAudioDecoder.h"
+#include "AudioDefinition.h"
+
+class MediaAudioDecoder;
 
 /// @brief 再生中のインスタンス情報
 struct AudioInstance
