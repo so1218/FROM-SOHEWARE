@@ -1,15 +1,6 @@
 #pragma once
 
-class GraphicsDevice;
-class CommandManager;
-class PSOManager;
-class RootSignatureManager;
-class SRVManager;
-class LightManager;
-class GlobalConstants;
-class MaterialManager;
 class Camera;
-class PostEffectManager;
 class ModelRenderer;
 class SpriteRenderer;
 class LineRenderer;
