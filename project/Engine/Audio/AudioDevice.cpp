@@ -1,13 +1,7 @@
+#include "pch.h"
 #include "AudioDevice.h"
 #include "AudioPlayer.h"
 
-#include <cassert>
-#include <mfapi.h>
-#include <mfplay.h>
-#include <mfreadwrite.h>
-#include <mfobjects.h>
-#include <mfidl.h>
-#include <shlwapi.h> 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mf.lib")

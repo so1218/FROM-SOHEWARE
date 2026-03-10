@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GodRayPass.h"
 #include "BufferManager.h"
 #include "Engine.h"

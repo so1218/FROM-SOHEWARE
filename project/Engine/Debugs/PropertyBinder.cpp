@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "PropertyBinder.h"
 #include "Model.h"
 #include "AnimationModel.h"
@@ -154,9 +155,24 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
 
                         if (ImGui::TreeNode("UV Settings", "UV トランスフォーム"))
                         {
-                            Draw(matPrefix + "UVTrans", "UV 位置");
-                            Draw(matPrefix + "UVRot", "UV 回転");
-                            Draw(matPrefix + "UVScale", "UV スケール");
+                            Draw(matPrefix + "UseTriplanar", "トライプラナー有効 (ワールド座標投影)");
+
+                            if (gv->GetIntValue(groupPath_, matPrefix + "UseTriplanar") > 0)
+                            {
+                                ImGui::Spacing();
+                                ImGui::TextDisabled("トライプラナー設定 (通常のUVは無視)");
+                                Draw(matPrefix + "TriScale", "テクスチャスケール");
+                                Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
+                            }
+                            else
+                            {
+                                ImGui::Spacing();
+                                ImGui::TextDisabled("標準UV設定");
+                                Draw(matPrefix + "UVTrans", "UV 位置");
+                                Draw(matPrefix + "UVRot", "UV 回転");
+                                Draw(matPrefix + "UVScale", "UV スケール");
+                            }
+
                             ImGui::TreePop();
                         }
 
@@ -1138,6 +1154,10 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     Bind(prefix + "UVTrans", &handle->uvTransformData.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
     Bind(prefix + "UVRot", &handle->uvTransformData.rotation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
     Bind(prefix + "UVScale", &handle->uvTransformData.scale_, { 1.0f, 1.0f, 1.0f }, 0.01f, onUVChange);
+
+    BindBool(prefix + "UseTriplanar", &matData->useTriplanar, false);
+    Bind(prefix + "TriScale", &matData->triplanarScale, 0.1f, 0.005f, 0.001f, 10.0f);
+    Bind(prefix + "TriSharpness", &matData->triplanarBlendSharpness, 4.0f, 0.1f, 1.0f, 16.0f);
 
     BindColor(prefix + "Color", &matData->color, { 1.0f, 1.0f, 1.0f, 1.0f });
     BindBool(prefix + "Lighting", &matData->enableLighting, true);

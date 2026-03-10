@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "ShadowMap.h"
-#include "SRVManager.h" // SRVManagerの実装を含める
-#include <externals/DirectXTex/d3dx12.h>
-#include <cassert>
+#include "SRVManager.h" 
 
 void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManager* srvManager)
 {

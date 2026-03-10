@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SRVManager.h"
 #include "DescriptorHeapManager.h"
 #include "Logger.h"

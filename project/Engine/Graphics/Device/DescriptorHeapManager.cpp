@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "DescriptorHeapManager.h"
-
-#include <string>
 
 // ディスクリプタヒープを作成
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(

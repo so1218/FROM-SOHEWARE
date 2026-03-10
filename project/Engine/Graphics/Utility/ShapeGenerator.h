@@ -1,8 +1,5 @@
 #pragma once
-
-#define _USE_MATH_DEFINES
 #include "Structures.h"
-
 
 class ShapeGenerator
 {

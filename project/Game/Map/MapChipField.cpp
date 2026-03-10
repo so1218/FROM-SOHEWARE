@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "MapChipField.h"
-
-#include <map>
 
 namespace
 {

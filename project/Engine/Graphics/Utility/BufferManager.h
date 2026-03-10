@@ -1,10 +1,5 @@
 #pragma once
 
-#include <d3d12.h>                      
-#include <cassert>                
-#include <d3dcompiler.h> 
-#include <wrl.h> 
-
 class BufferManager
 {
 public:

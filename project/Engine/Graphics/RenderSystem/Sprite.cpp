@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Sprite.h"
 #include "Engine.h"
 #include "TextureManager.h"

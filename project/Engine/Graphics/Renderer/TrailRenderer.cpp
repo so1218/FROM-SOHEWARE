@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TrailRenderer.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"

@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "StringUtils.h"
-#include <Windows.h>
 
 // string->wstring
 std::wstring StringUtils::ConvertString(const std::string& str)

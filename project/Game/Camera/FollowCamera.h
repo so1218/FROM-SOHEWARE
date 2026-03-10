@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Engine.h"
 #include "ShakeEffect.h"
 #include "GameObject.h"

@@ -1,12 +1,4 @@
 #pragma once
-
-#include <wrl.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <cstdint>
-#include <vector>
-#include <tuple>
-
 #include "DescriptorHeapManager.h"
 #include "SwapChain.h"
 #include "Vector.h"

@@ -1,9 +1,6 @@
+#include "pch.h"
 #include "ModelLoader.h"
 #include "Logger.h"
-
-#include <filesystem> 
-#include <map>
-#include <tuple>
 
 ModelData ModelLoader::LoadModel(const std::string& filePath)
 {

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ParticleDefinition.h"
 #include "AnimationModel.h" 
 

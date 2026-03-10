@@ -1,15 +1,4 @@
 #pragma once
-#define NOMINMAX 
-#include <string>
-#include <ostream>
-#include <Windows.h>
-#include <fstream> 
-#include <source_location>
-#include <mutex>
-#include <chrono>
-#include <iostream>
-#include <filesystem>
-#include <format>
 
 // ログレベル
 enum class LogLevel 

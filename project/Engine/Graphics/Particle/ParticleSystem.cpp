@@ -1,5 +1,4 @@
-#define _USE_MATH_DEFINES
-
+#include "pch.h"
 #include "ParticleSystem.h"
 #include "Engine.h"
 #include "MathUtils.h"
@@ -9,7 +8,6 @@
 #include "ParticleConfigManager.h"
 #include "TextureManager.h"
 #include "ImGuiManager.h"
-#include "json.hpp"
 
 ParticleSystem::ParticleSystem(Engine* engine)
 {

@@ -6,13 +6,6 @@
 #include "Structures.h"
 #include "ParticleDefinition.h"
 
-#include <wrl.h>
-#include <d3d12.h>
-#include <vector>
-#include <array>
-#include <fstream>
-#include <map>
-
 class Engine;
 class ParticleEmitter;
 class ParticleEditor;

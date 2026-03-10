@@ -1,8 +1,6 @@
 #pragma once
 #include "WorldTransform.h"
 #include "Structures.h"
-#include <vector>
-#include <string>
 
 class Engine;
 

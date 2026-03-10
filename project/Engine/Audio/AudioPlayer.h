@@ -1,14 +1,7 @@
 #pragma once
+#include "AudioDefinition.h"
 
-#include "MediaAudioDecoder.h"
-
-#include <xaudio2.h>       
-#include <cassert>         
-#include <cstdint>  
-#include <vector>
-#include <functional>
-#include <algorithm>
-#include <map>
+class MediaAudioDecoder;
 
 /// @brief 再生中のインスタンス情報
 struct AudioInstance

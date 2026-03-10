@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "RenderContext.h"
 
 RenderContext::RenderContext(uint32_t width, uint32_t height)

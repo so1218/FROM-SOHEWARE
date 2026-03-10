@@ -1,6 +1,5 @@
-#include "Vector3.h"
-#include <algorithm>
-#include <cmath>     
+#include "pch.h"
+#include "Vector3.h"  
 
 // 複合代入演算子の定義
 Vector3& Vector3::operator+=(const Vector3& other)

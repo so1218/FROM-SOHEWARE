@@ -1,12 +1,5 @@
 #pragma once
 
-#include <wrl.h>           
-#include <dxgi1_6.h>              
-#include <cassert>                
-#include <windows.h> 
-#include <fstream>
-#include <d3d12.h>    
-
 class GraphicsDevice
 {
 public:

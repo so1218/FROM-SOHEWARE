@@ -1,12 +1,7 @@
+#include "pch.h"
 #include "Logger.h"
 #include <strsafe.h>
 #include <DbgHelp.h>
-        
-#include <filesystem>          
-#include <chrono>              
-#include <format>              
-#include <string> 
-#include <fstream> 
 
 #pragma comment(lib, "Dbghelp.lib")
 

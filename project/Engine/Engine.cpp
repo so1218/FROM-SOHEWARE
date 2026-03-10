@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Engine.h"
 #include "AudioDevice.h"
 #include "DebugLayerManager.h"
@@ -13,8 +14,6 @@
 #include "AnimationManager.h"
 #include "GlobalVariables.h"
 #include "DebugDraw.h"
-
-#include "externals/DirectXTex/d3dx12.h" 
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")

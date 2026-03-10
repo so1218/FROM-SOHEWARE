@@ -1,11 +1,6 @@
 #pragma once
-
-#include <d3d12.h>              
-#include <wrl/client.h>     
-#include <memory>
-
-#include "SRVAllocator.h"
-#include "externals/DirectXTex/DirectXTex.h"          
+          
+#include "SRVAllocator.h" 
 
 class SRVManager
 {

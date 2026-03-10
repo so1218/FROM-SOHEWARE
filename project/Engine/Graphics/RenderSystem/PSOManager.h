@@ -1,12 +1,4 @@
 #pragma once
-#include <d3d12.h>
-#include <wrl.h>
-#include <dxcapi.h>
-#include <memory>
-#include <vector>
-#include <unordered_map>  
-#include <string>
-
 #include "BlendMode.h"
 #include "ShaderManager.h"
 

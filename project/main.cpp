@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Game.h"
 
 // Windowsアプリでのエントリーポイント(main関数)

@@ -1,8 +1,7 @@
+#include "pch.h"
 #include "GraphicsDevice.h"
 #include "Logger.h"
 #include "StringUtils.h"
-
-#include <format>
 
 void GraphicsDevice::Initialize()
 {

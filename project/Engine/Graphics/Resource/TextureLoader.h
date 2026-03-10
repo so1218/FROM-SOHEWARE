@@ -1,20 +1,10 @@
 #pragma once
 
 #include "StringUtils.h"
-#include "externals/DirectXTex/d3dx12.h"
-#include "externals/DirectXTex/DirectXTex.h"    
 #include "BufferManager.h"
 #include "CommandManager.h"
 #include "SRVManager.h"
-#include "GraphicsDevice.h"
-
-#include <d3d12.h>                
-#include <wrl/client.h>           
-#include <DirectXMath.h>             
-#include <string>                 
-#include <cassert>                
-#include <vector>                 
-#include <d3dcompiler.h> 
+#include "GraphicsDevice.h"                         
 
 class TextureLoader
 {

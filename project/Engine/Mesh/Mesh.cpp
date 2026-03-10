@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "Mesh.h"
-#include <cstring>
 
 void Mesh::InitializeVertexOnly(ID3D12Device* device, const std::vector<VertexData>& vertices)
 {

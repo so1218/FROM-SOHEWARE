@@ -1,6 +1,4 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
-
+#include "pch.h"
 #include "Easing.h"
 
 // イージングの関数群

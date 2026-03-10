@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ParticleEmitter.h"
 #include "TimeManager.h"
 

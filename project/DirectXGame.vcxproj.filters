@@ -471,6 +471,9 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Core\pch.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -780,6 +783,7 @@
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
+    <ClInclude Include="Engine\Core\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

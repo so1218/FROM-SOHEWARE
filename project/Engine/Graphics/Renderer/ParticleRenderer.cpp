@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ParticleRenderer.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "RootSignatureBuilder.h"
 #include "Logger.h"
 

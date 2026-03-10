@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "Vector2.h"
-#include <cmath>
 
 // デフォルトコンストラクタ
 Vector2::Vector2() : x(0), y(0) {}

@@ -1,8 +1,6 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <functional>
-
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 #include "Engine.h"

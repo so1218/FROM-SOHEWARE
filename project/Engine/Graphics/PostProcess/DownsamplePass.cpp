@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DownsamplePass.h"
 #include "BufferManager.h"
 #include "Engine.h"

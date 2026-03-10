@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ParticleSystemWrapper.h" 
 
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)

@@ -3,13 +3,6 @@
 #include "WorldTransform.h"
 #include "ShaderConstants.hlsli"
 
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <d3d12.h> 
-#include <wrl.h> 
-#include <cstdint>
-#include <map>
 #include <span>
 
 struct VertexData

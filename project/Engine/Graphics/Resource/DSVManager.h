@@ -1,13 +1,5 @@
 #pragma once
-
-#include <d3d12.h>             
-#include <dxgi1_6.h>           
-#include <d3dcommon.h>               
-#include <assert.h>      
-#include <cstdint>
-#include <wrl.h>
-#include <vector>
-
+ 
 class DescriptorHeapManager;
 class SRVManager;
 

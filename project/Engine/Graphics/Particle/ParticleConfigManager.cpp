@@ -1,7 +1,5 @@
+#include "pch.h"
 #include "ParticleConfigManager.h" 
-#include "json.hpp"    
-
-#include <iostream>
 
 ParticleConfigManager::ParticleConfigManager(ParticleSystem* particleSystem)
     : particleSystem_(particleSystem)

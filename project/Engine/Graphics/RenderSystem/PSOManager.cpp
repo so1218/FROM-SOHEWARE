@@ -1,10 +1,7 @@
+#include "pch.h"
 #include "PSOManager.h"
 #include "ShaderManager.h"
 #include "RootSignatureManager.h"
-
-#include <fstream>
-#include <cassert>
-#include <json.hpp>
 
 void PSOManager::Initialize(
     ID3D12Device* device,

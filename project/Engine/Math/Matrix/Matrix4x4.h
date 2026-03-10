@@ -1,7 +1,4 @@
 #pragma once
-
-#include <cmath>
-
 #include "Vector.h"
 
 class WorldTransform;

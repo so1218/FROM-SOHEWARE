@@ -1,11 +1,8 @@
+#include "pch.h"
 #include "AnimationData.h"
 #include "TimeManager.h"
 #include "BufferManager.h"
 #include "MathUtils.h"
-
-#include <assimp/Importer.hpp>  
-#include <assimp/scene.h>    
-#include <cassert>
 
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BlendMode.h"
 
 D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode)

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SSAOPass.h"
 #include "Engine.h"
 #include "RootSignatureManager.h"

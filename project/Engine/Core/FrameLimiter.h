@@ -1,10 +1,5 @@
 #pragma once
 
-#include <chrono>
-#include <thread>
-#include <Windows.h> 
-#include <mmsystem.h>
-
 class FrameLimiter
 {
 public:

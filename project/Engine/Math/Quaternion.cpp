@@ -1,8 +1,6 @@
+#include "pch.h"
 #include "Quaternion.h"
 #include "MathUtils.h"
-#include <cmath>
-#include <algorithm>
-#include <limits>
 
 // 微小値定数（ゼロ除算防止用）
 static const float kEpsilon = 1e-6f;

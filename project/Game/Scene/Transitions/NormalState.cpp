@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "NormalState.h"
 #include "FadeOutState.h"
-
-#include <memory> 
 
 void NormalState::Update(SceneManager* manager)
 {

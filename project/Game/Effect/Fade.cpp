@@ -1,9 +1,8 @@
+#include "pch.h"
 #include "Fade.h"
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
-
-#include <algorithm>
 
 Fade::Fade(Engine* engine)
 {

@@ -1,12 +1,5 @@
 #pragma once
 
-#include <d3d12.h>
-#include <dxgi.h>
-#include <d3dcommon.h>
-#include <cassert>
-#include <cstdint>
-#include <wrl.h>
-
 class DescriptorHeapManager
 {
 public:

@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "GameObjectManager.h"
 #include "CollisionManager.h" 
 #include "Collider.h"
-#include <algorithm>
 
 void GameObjectManager::Initialize()
 {

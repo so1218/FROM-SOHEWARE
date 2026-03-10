@@ -62,13 +62,32 @@ float3 CalculatePBR(
 // 影の濃さを計算する関数
 float CalculateShadow(float4 shadowCoord, float3 normal);
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
+float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
+float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 
 PixelShaderOutput main(PixelShaderInput input)
 {
     PixelShaderOutput output;
 
+    // ベースとなるワールド法線をここで計算しておく
+    float3 worldNormal = normalize(input.normal);
+
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
-    float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    float4 textureColor;
+    
+    // トライプラナーのブレンド度合い（0ならデフォルトの4.0を使用）
+    float blendSharpness = gMaterial.triplanarBlendSharpness > 0.0f ? gMaterial.triplanarBlendSharpness : 4.0f;
+
+    // トライプラナー有効/無効でカラー取得を分岐
+    if (gMaterial.useTriplanar != 0)
+    {
+        textureColor = CalculateTriplanarColor(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
+    }
+    else
+    {
+        textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    }
+    
     float3 baseColor = textureColor.rgb;
 
     // ディゾルブ処理
@@ -135,11 +154,23 @@ PixelShaderOutput main(PixelShaderInput input)
     
     if (gMaterial.enableNormalMap != 0)
     {
-        normal = CalculateNormalFromMap(input, input.normal, transformedUV.xy);
+        if (gMaterial.useTriplanar != 0)
+        {
+            // トライプラナーで法線を計算
+            normal = CalculateTriplanarNormal(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
+            
+            // 法線の強さを適用してブレンド
+            normal = normalize(lerp(worldNormal, normal, gMaterial.normalIntensity));
+        }
+        else
+        {
+            // 従来のUVマッピングでの法線計算
+            normal = CalculateNormalFromMap(input, worldNormal, transformedUV.xy);
+        }
     }
     else
     {
-        normal = normalize(input.normal);
+        normal = worldNormal;
     }
     
     // 現在のラフネスとメタルネスを変数化
@@ -187,7 +218,7 @@ PixelShaderOutput main(PixelShaderInput input)
             addedPuddleEmission = gMaterial.puddleColor.rgb * gMaterial.puddleEmission * puddleDepth;
         }
 
-        // 波紋の計算（省略：そのまま使用可能）
+        // 波紋の計算
         float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
         float time = gFrameData.gTime * gMaterial.rippleSpeed;
         float3 combinedRipple = float3(0, 0, 0);
@@ -956,4 +987,51 @@ float3 CalculatePBR(
 
     // 最終合成
     return (kD * albedo / PI + specular) * lightColor * lightIntensity * NdotL;
+}
+
+// カラーテクスチャ用トライプラナーマッピング
+float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness)
+{
+    // 各軸のブレンド割合を計算
+    float3 blendWeights = abs(worldNormal);
+    blendWeights = pow(blendWeights, blendSharpness);
+    blendWeights /= max(blendWeights.x + blendWeights.y + blendWeights.z, 0.0001f); // 0除算防止
+
+    // 3方向のUVを計算
+    float2 uvX = worldPos.zy * texScale;
+    float2 uvY = worldPos.xz * texScale;
+    float2 uvZ = worldPos.xy * texScale;
+
+    // 3方向からサンプリング
+    float4 tX = gTexture.Sample(gSampler, uvX);
+    float4 tY = gTexture.Sample(gSampler, uvY);
+    float4 tZ = gTexture.Sample(gSampler, uvZ);
+
+    // ウェイトに基づいて合成
+    return tX * blendWeights.x + tY * blendWeights.y + tZ * blendWeights.z;
+}
+
+// ノーマルマップ用トライプラナーマッピング
+float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness)
+{
+    float3 blendWeights = abs(worldNormal);
+    blendWeights = pow(blendWeights, blendSharpness);
+    blendWeights /= max(blendWeights.x + blendWeights.y + blendWeights.z, 0.0001f);
+
+    float2 uvX = worldPos.zy * texScale;
+    float2 uvY = worldPos.xz * texScale;
+    float2 uvZ = worldPos.xy * texScale;
+
+    float3 tX = gNormalTexture.Sample(gSampler, uvX).xyz * 2.0f - 1.0f;
+    float3 tY = gNormalTexture.Sample(gSampler, uvY).xyz * 2.0f - 1.0f;
+    float3 tZ = gNormalTexture.Sample(gSampler, uvZ).xyz * 2.0f - 1.0f;
+
+    // ワールド空間の向きに合わせてアンパック
+    float3 nX = float3(tX.z * sign(worldNormal.x), tX.y, -tX.x);
+    float3 nY = float3(tY.x, tY.z * sign(worldNormal.y), -tY.y);
+    float3 nZ = float3(tZ.x, tZ.y, tZ.z * sign(worldNormal.z));
+
+    float3 finalNormal = nX * blendWeights.x + nY * blendWeights.y + nZ * blendWeights.z;
+
+    return normalize(finalNormal);
 }
