@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ParticleConfigManager.h" 
+#include "ParticleSystem.h" 
 
 ParticleConfigManager::ParticleConfigManager(ParticleSystem* particleSystem)
     : particleSystem_(particleSystem)

@@ -1,5 +1,4 @@
 #pragma once
-          
 #include "SRVAllocator.h" 
 
 class SRVManager

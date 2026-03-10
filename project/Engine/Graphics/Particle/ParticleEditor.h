@@ -1,7 +1,6 @@
 #pragma once
-#include "ParticleSystem.h"
-
 class Engine;
+class ParticleSystem;
 
 class ParticleEditor
 {

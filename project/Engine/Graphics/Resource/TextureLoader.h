@@ -1,5 +1,4 @@
 #pragma once
-
 #include "StringUtils.h"
 #include "BufferManager.h"
 #include "CommandManager.h"

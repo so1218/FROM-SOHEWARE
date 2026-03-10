@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Mesh.h"
+#include "BufferManager.h" 
 
 void Mesh::InitializeVertexOnly(ID3D12Device* device, const std::vector<VertexData>& vertices)
 {

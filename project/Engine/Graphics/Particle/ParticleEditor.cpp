@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "ParticleEmitter.h"
 #include "ParticleConfigManager.h" 
+#include "ParticleSystem.h"
 #include "Engine.h" 
 
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)

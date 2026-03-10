@@ -1,5 +1,5 @@
 #pragma once
-#include "ParticleSystem.h" 
+class ParticleSystem;
 
 class ParticleConfigManager
 {
