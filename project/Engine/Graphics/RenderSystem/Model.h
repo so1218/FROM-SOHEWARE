@@ -99,7 +99,7 @@ public:
     const ModelData* GetModelData() const { return modelData_; }
 
 private:
-    // ヘルパー関数: 範囲チェック
+    // 範囲チェック
     bool IsValidMaterialIndex(size_t index) const;
 
 private:

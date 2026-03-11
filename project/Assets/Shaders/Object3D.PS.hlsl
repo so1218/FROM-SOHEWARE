@@ -69,13 +69,13 @@ PixelShaderOutput main(PixelShaderInput input)
 {
     PixelShaderOutput output;
 
-    // ベースとなるワールド法線をここで計算しておく
+    // ベースとなるワールド法線を計算
     float3 worldNormal = normalize(input.normal);
 
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float4 textureColor;
     
-    // トライプラナーのブレンド度合い（0ならデフォルトの4.0を使用）
+    // トライプラナーのブレンド度合い
     float blendSharpness = gMaterial.triplanarBlendSharpness > 0.0f ? gMaterial.triplanarBlendSharpness : 4.0f;
 
     // トライプラナー有効/無効でカラー取得を分岐
