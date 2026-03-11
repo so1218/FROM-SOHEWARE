@@ -380,7 +380,7 @@ void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationM
     }
 
     Bind(prefix + "SpeedScale", model->GetSpeedScalePtr(), 1.0f, 0.1f, 0.0f, 5.0f);
-    BindBool(prefix + "IsLoop", model->GetIsLoopPtr(), true);
+    Bind(prefix + "IsLoop", model->GetIsLoopPtr(), true);
 }
 
 void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std::string& customLabel)
@@ -667,7 +667,7 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
         TextureType::Albedo             // フィルタ
     );
 
-    BindBool(prefix + "Visible", sprite->GetIsVisiblePtr(), true);
+    Bind(prefix + "Visible", sprite->GetIsVisiblePtr(), true);
     Bind(prefix + "Layer", sprite->GetLayerOrderPtr(), 0, 1.0f);
 
     auto onUVChange = [sprite]() {

@@ -23,133 +23,8 @@ public:
         GlobalVariables::GetInstance()->CreateGroup(groupPath_);
     }
 
-    //  汎用Bind関数
-    template <typename T>
-    void Bind(const std::string& key, T* ptr, const T& defaultValue, float speed = -1.0f, float min = 0.0f, float max = 0.0f)
-    {
-        // 実際に適用するスピード変数
-        float appliedSpeed = speed;
-
-        // 引数が省略された場合、型に応じたデフォルト値を設定
-        if (appliedSpeed <= 0.0f)
-        {
-            if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
-            {
-                appliedSpeed = 1.0f;
-            }
-            else
-            {
-                appliedSpeed = 0.01f;
-            }
-        }
-
-        // int32_t 
-        if constexpr (std::is_same_v<T, int32_t>)
-        {
-            BindInt(key, ptr, defaultValue, appliedSpeed, static_cast<int32_t>(min), static_cast<int32_t>(max));
-        }
-        // uint32_t
-        else if constexpr (std::is_same_v<T, uint32_t>)
-        {
-            BindUint(key, ptr, defaultValue, appliedSpeed, static_cast<uint32_t>(min), static_cast<uint32_t>(max));
-        }
-        // float
-        else if constexpr (std::is_same_v<T, float>)
-        {
-            BindFloat(key, ptr, defaultValue, appliedSpeed, min, max);
-        }
-        // bool 
-        else if constexpr (std::is_same_v<T, bool>)
-        {
-            BindBool(key, ptr, defaultValue);
-        }
-        // Vector2
-        else if constexpr (std::is_same_v<T, Vector2>)
-        {
-            BindVector2(key, ptr, defaultValue, appliedSpeed, min, max);
-        }
-        // Vector3
-        else if constexpr (std::is_same_v<T, Vector3>)
-        {
-            BindVector3(key, ptr, defaultValue, appliedSpeed, min, max);
-        }
-        // Vector4
-        else if constexpr (std::is_same_v<T, Vector4>)
-        {
-            BindVector4(key, ptr, defaultValue, appliedSpeed, min, max);
-        }
-    }
-
-    //  色用Bind関数
-    template <typename T>
-    void BindColor(const std::string& key, T* ptr, const T& defaultValue)
-    {
-        // Vector3の場合
-        if constexpr (std::is_same_v<T, Vector3>)
-        {
-            BindColorVector3(key, ptr, defaultValue);
-        }
-        // Vector4の場合
-        else if constexpr (std::is_same_v<T, Vector4>)
-        {
-            BindColorVector4(key, ptr, defaultValue);
-        }
-        // uint32_tの場合
-        else if constexpr (std::is_same_v<T, uint32_t>)
-        {
-            BindColor32(key, ptr, defaultValue);
-        }
-    }
-
-    void Draw(const std::string& key, const std::string& name = "")
-    {
-        // 指定されたキーが存在すれば実行
-        if (items_.count(key))
-        {
-            items_[key](name);
-        }
-    }
-
-    // 特殊系
-    // インスペクターのようなもの
-    void BindModel(const std::string& groupName, Model* model);
-    void DrawModel(const std::string& groupName, const std::string& customLabel = "");
-    void BindAnimationModel(const std::string& groupName, AnimationModel* model);
-    void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
-    void BindSprite(const std::string& groupName, Sprite* sprite);
-    void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
-
-    // Vector専用のBindオーバーロード (onChange対応版)
-    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
-    {
-        // コールバック付き
-        BindVector3(key, ptr, defaultValue, speed, 0.0f, 0.0f, onChange);
-    }
-
-    // int/uintをboolとして扱うための関数
-    void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
-    void BindBool(const std::string& key, uint32_t* ptr, bool defaultValue);
-
-    void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
-
-    // 回転専用のBind関数
-    void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
-
-private:
-    // 共通処理
-    template<typename T>
-    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr)
-    {
-        auto* gv = GlobalVariables::GetInstance();
-        // 重複登録防止
-        if (items_.find(key) == items_.end())
-        {
-            keys_.push_back(key); // 順序を記録
-            gv->AddItem(groupPath_, key, defaultValue);
-        }
-    }
-
-    void BindInt(const std::string& key, int32_t* ptr, int32_t defaultValue, float speed = 1.0f, int32_t min = 0, int32_t max = 0)
+    // 汎用Bind関数
+    void Bind(const std::string& key, int32_t* ptr, int32_t defaultValue, float speed = 1.0f, int32_t min = 0, int32_t max = 0)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -168,7 +43,7 @@ private:
 #endif
     }
 
-    void BindUint(const std::string& key, uint32_t* ptr, uint32_t defaultValue, float speed, uint32_t min, uint32_t max)
+    void Bind(const std::string& key, uint32_t* ptr, uint32_t defaultValue, float speed = 1.0f, uint32_t min = 0, uint32_t max = 0)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -191,7 +66,7 @@ private:
 #endif
     }
 
-    void BindFloat(const std::string& key, float* ptr, float defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
+    void Bind(const std::string& key, float* ptr, float defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -210,7 +85,7 @@ private:
 #endif
     }
 
-    void BindBool(const std::string& key, bool* ptr, bool defaultValue)
+    void Bind(const std::string& key, bool* ptr, bool defaultValue)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -229,7 +104,7 @@ private:
 #endif
     }
 
-    void BindVector2(const std::string& key, Vector2* ptr, const Vector2& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
+    void Bind(const std::string& key, Vector2* ptr, const Vector2& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -248,20 +123,25 @@ private:
 #endif
     }
 
-    void BindVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
+    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
     {
-        // 共通関数を呼ぶ
+        // 共通関数
         BindVector3Internal(key, ptr, defaultValue, speed, min, max, nullptr);
     }
 
-    // コールバックを受け取る版
-    void BindVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange)
+    // コールバックを受け取る版のVector3 
+    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange)
     {
-        // 共通関数を呼ぶ（コールバックを渡す）
         BindVector3Internal(key, ptr, defaultValue, speed, min, max, onChange);
     }
 
-    void BindVector4(const std::string& key, Vector4* ptr, const Vector4& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
+    // 省略版コールバック
+    void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, std::function<void()> onChange)
+    {
+        BindVector3Internal(key, ptr, defaultValue, speed, 0.0f, 0.0f, onChange);
+    }
+
+    void Bind(const std::string& key, Vector4* ptr, const Vector4& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -280,8 +160,28 @@ private:
 #endif
     }
 
+    // 色用Bind関数
+    void BindColor(const std::string& key, Vector3* ptr, const Vector3& defaultValue)
+    {
+        RegisterItem(key, defaultValue, ptr);
 
-    void BindColorVector4(const std::string& key, Vector4* ptr, const Vector4& defaultValue)
+        // 保存されているデータを反映
+        *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
+
+#ifdef IS_DEVELOPMENT
+        items_[key] = [=](const std::string& nameOverride)
+            {
+                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+
+                if (ImGui::ColorEdit3(label.c_str(), &ptr->x))
+                {
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                }
+            };
+#endif*/
+    }
+
+    void BindColor(const std::string& key, Vector4* ptr, const Vector4& defaultValue)
     {
         RegisterItem(key, defaultValue, ptr);
 
@@ -300,7 +200,7 @@ private:
 #endif
     }
 
-    void BindColor32(const std::string& key, uint32_t* ptr, uint32_t defaultValue)
+    void BindColor(const std::string& key, uint32_t* ptr, uint32_t defaultValue)
     {
         auto* gv = GlobalVariables::GetInstance();
         if (items_.find(key) == items_.end())
@@ -330,24 +230,45 @@ private:
 #endif
     }
 
-    void BindColorVector3(const std::string& key, Vector3* ptr, const Vector3& defaultValue)
+    void Draw(const std::string& key, const std::string& name = "")
     {
-        RegisterItem(key, defaultValue, ptr);
+        // 指定されたキーが存在すれば実行
+        if (items_.count(key))
+        {
+            items_[key](name);
+        }
+    }
 
-        // 保存されているデータを反映
-        *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
+    // 特殊系
+    // インスペクターのようなもの
+    void BindModel(const std::string& groupName, Model* model);
+    void DrawModel(const std::string& groupName, const std::string& customLabel = "");
+    void BindAnimationModel(const std::string& groupName, AnimationModel* model);
+    void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
+    void BindSprite(const std::string& groupName, Sprite* sprite);
+    void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
 
-#ifdef IS_DEVELOPMENT
-        items_[key] = [=](const std::string& nameOverride)
-            {
-                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+    // int/uintをboolとして扱うための関数
+    void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
+    void BindBool(const std::string& key, uint32_t* ptr, bool defaultValue);
 
-                if (ImGui::ColorEdit3(label.c_str(), &ptr->x))
-                {
-                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
-                }
-            };
-#endif
+    void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
+
+    // 回転専用のBind関数
+    void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
+
+private:
+    // 共通処理
+    template<typename T>
+    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr)
+    {
+        auto* gv = GlobalVariables::GetInstance();
+        // 重複登録防止
+        if (items_.find(key) == items_.end())
+        {
+            keys_.push_back(key); // 順序を記録
+            gv->AddItem(groupPath_, key, defaultValue);
+        }
     }
 
     // 共通実装
@@ -393,8 +314,6 @@ private:
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 
     Engine* engine_ = nullptr;
-
-    template <class T> static constexpr bool always_false = false;
 
     std::vector<std::string> groupPath_;
 
