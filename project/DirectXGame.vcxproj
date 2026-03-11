@@ -178,6 +178,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Debugs\DebugDraw.cpp" />
     <ClCompile Include="Engine\Debugs\DebugUtils.cpp" />
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
+    <ClCompile Include="Engine\Debugs\PropertyBinderObject.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />

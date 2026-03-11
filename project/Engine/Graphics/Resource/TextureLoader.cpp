@@ -8,17 +8,6 @@ TextureLoader::TextureLoader() {};
 
 TextureLoader::~TextureLoader()
 {
-    //// 確保したすべてのテクスチャリソースを解放する
-    //for (const TextureResources& resource : loadedTextures_)
-    //{
-    //    // Allocate で確保した srvIndex を解放する
-    //    srvManager_->FreeSRV(resource.srvIndex);
-    //}
-
-    //if (textureArraySrvIndex_ > 0)
-    //{
-    //    srvManager_->FreeSRV(textureArraySrvIndex_);
-    //}
 }
 
 void TextureLoader::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager)
@@ -130,7 +119,7 @@ TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
     barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     commandList_->ResourceBarrier(1, &barrier);
 
-    // SRVインデックスは「カラ」のまま返す
+    // SRVインデックスはカラのまま返す
     result.srvIndex = 0;
 
     return result;
@@ -138,7 +127,7 @@ TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
  
 Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
 {
-    // 1.metadataを基にResourceの設定
+    // metadataを基にResourceの設定
     D3D12_RESOURCE_DESC resourceDesc{};
     resourceDesc.Width = UINT(metadata.width);// Textureの幅
     resourceDesc.Height = UINT(metadata.height);// Textureの高さ
@@ -148,20 +137,20 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::CreateTextureResource(ID3D
     resourceDesc.SampleDesc.Count = 1;// サンプリングカウント。1固定
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);// Textureの次元数。普段使っているのは2次元
 
-    // 2.利用するHeapの設定。非常に特殊な運用。02_04exで一般的なケース版がある
+    // 利用するHeapの設定
     D3D12_HEAP_PROPERTIES heapProperties{};
     heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;// 細かい設定を行う
     heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;// 無効
     heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;// 無効
 
-    // 3.Resourceの生成
+    // Resourceの生成
     Microsoft::WRL::ComPtr <ID3D12Resource> resource = nullptr;
     HRESULT hr = device->CreateCommittedResource(
         &heapProperties,// Heapの設定
-        D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定。特になし
+        D3D12_HEAP_FLAG_NONE,//Heapの特殊な設定
         &resourceDesc,// Resourceの設定
         D3D12_RESOURCE_STATE_COPY_DEST,// データ転送される設定
-        nullptr,// Clear最適値。使わないのでnullptr
+        nullptr,// 使わないのでnullptr
         IID_PPV_ARGS(&resource));// 作成するResourceポインタへのポインタ
     assert(SUCCEEDED(hr));
     resource->SetName(L"TextureResource");
@@ -200,7 +189,7 @@ TextureLoader::TextureResources TextureLoader::UploadTexture(DirectX::ScratchIma
     result.texture = CreateTextureResource(device_, result.metadata);
     result.intermediate = UploadTextureData(result.texture.Get(), mipImages, device_, commandList_);
 
-    // シェーダーリソースビュー（SRV）の設定を構築
+    // SRVの設定を構築
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = result.metadata.format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
