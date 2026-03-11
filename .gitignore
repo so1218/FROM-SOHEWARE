@@ -333,3 +333,5 @@ imgui.ini
 imgui_layout.ini
 
 **/Assets/Shaders/Cache/
+
+*.pdb

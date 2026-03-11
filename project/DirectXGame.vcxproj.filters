@@ -336,9 +336,6 @@
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Stage\StageManager.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleEditor.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -736,7 +733,6 @@
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
-    <ClInclude Include="Game\Stage\StageManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
@@ -784,6 +780,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\pch.h" />
+    <ClInclude Include="Engine\Audio\AudioDefinition.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
