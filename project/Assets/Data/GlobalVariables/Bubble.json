@@ -94,6 +94,8 @@
             3.5999999046325684,
             4.599999904632568
         ],
+        "bubbleModel_TriScale": 0.10000000149011612,
+        "bubbleModel_TriSharpness": 4.0,
         "bubbleModel_UVRot": [
             0.0,
             0.0,
@@ -110,6 +112,7 @@
             0.0
         ],
         "bubbleModel_UsePuddle": 0,
+        "bubbleModel_UseTriplanar": 0,
         "bubbleModel_WetDarkness": 0.5,
         "bubbleModel_Wetness": 0.5,
         "fresnelExponent": 10.40999984741211,

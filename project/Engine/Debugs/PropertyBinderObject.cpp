@@ -45,301 +45,29 @@ void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 void PropertyBinder::DrawModel(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef IS_DEVELOPMENT
-    // 基本設定とラベルの準備
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
 
-    // マップから対象のモデルを取得
     Model* targetModel = nullptr;
-    if (modelBindMap_.find(groupName) != modelBindMap_.end())
-    {
+    if (modelBindMap_.find(groupName) != modelBindMap_.end()) {
         targetModel = modelBindMap_[groupName].model;
     }
 
-    // IDの衝突を防ぐためにPushID
     ImGui::PushID(groupName.c_str());
-
-    // ヘッダーの色設定
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.4f, 0.25f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.5f, 0.35f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.25f, 0.6f, 0.4f, 1.0f));
-
-    // メインの折りたたみヘッダー
-    bool isOpened = ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None);
-
-    ImGui::PopStyleColor(3);
-
-    if (isOpened)
+    if (ImGui::CollapsingHeader(displayLabel.c_str()))
     {
-        ImGui::Indent(20.0f);
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
-
-        // ツリーノードの共通フラグ
-        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Framed |
-            ImGuiTreeNodeFlags_FramePadding |
-            ImGuiTreeNodeFlags_SpanAvailWidth;
-
-        if (ImGui::TreeNodeEx("Transform", nodeFlags, "トランスフォーム"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "Trans", "位置");
-            Draw(prefix + "Rot", "回転");
-            Draw(prefix + "Scale", "スケール");
-            ImGui::TreePop();
-        }
+        ImGui::Spacing();
+        ImGui::SeparatorText("トランスフォーム");
+        Draw(prefix + "Trans", "位置");
+        Draw(prefix + "Rot", "回転");
+        Draw(prefix + "Scale", "スケール");
 
         ImGui::Spacing();
 
-        if (targetModel)
-        {
-            // 全てのマテリアル設定をまとめる親ノード
-            if (ImGui::TreeNodeEx("Materials", nodeFlags, "マテリアル設定"))
-            {
-                ImGui::Indent(10.0f);
-
-                if (ImGui::TreeNode("BatchSettings", "一括操作 (全適用)"))
-                {
-                    ImGui::Spacing();
-
-
-                    static Vector4 batchColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-                    ImGui::ColorEdit4("Batch Color", &batchColor.x);
-
-                    if (ImGui::Button("Apply Color to All Materials", ImVec2(-1, 0)))
-                    {
-                        targetModel->SetColor(batchColor);
-                    }
-
-                    ImGui::Spacing();
-
-                    static bool batchOutlineEnable = false;
-                    if (ImGui::Checkbox("Enable Outline All", &batchOutlineEnable))
-                    {
-                        targetModel->SetEnableOutline(batchOutlineEnable);
-                    }
-
-                    static float batchOutlineWidth = 1.0f;
-                    if (ImGui::DragFloat("Outline Width All", &batchOutlineWidth, 0.1f, 0.0f, 10.0f))
-                    {
-                        targetModel->SetOutlineWidth(batchOutlineWidth);
-                    }
-
-                    ImGui::TreePop();
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                size_t matCount = targetModel->GetMaterialCount();
-                for (size_t i = 0; i < matCount; ++i)
-                {
-                    std::string matPrefix;
-                    std::string matNodeName;
-
-                    // マテリアル数に応じて名前を変える
-                    if (matCount == 1)
-                    {
-                        matPrefix = prefix;
-                        matNodeName = "Material Property";
-                    }
-                    else
-                    {
-                        matPrefix = prefix + "Mat" + std::to_string(i) + "_";
-                        matNodeName = "Material " + std::to_string(i);
-                    }
-
-                    // マテリアルごとのツリー
-                    if (ImGui::TreeNodeEx(matNodeName.c_str(), ImGuiTreeNodeFlags_None))
-                    {
-                        ImGui::Indent(10.0f);
-
-                        if (ImGui::TreeNode("UV Settings", "UV トランスフォーム"))
-                        {
-                            Draw(matPrefix + "UseTriplanar", "トライプラナー有効 (ワールド座標投影)");
-
-                            if (gv->GetIntValue(groupPath_, matPrefix + "UseTriplanar") > 0)
-                            {
-                                ImGui::Spacing();
-                                ImGui::TextDisabled("トライプラナー設定 (通常のUVは無視)");
-                                Draw(matPrefix + "TriScale", "テクスチャスケール");
-                                Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
-                            }
-                            else
-                            {
-                                ImGui::Spacing();
-                                ImGui::TextDisabled("標準UV設定");
-                                Draw(matPrefix + "UVTrans", "UV 位置");
-                                Draw(matPrefix + "UVRot", "UV 回転");
-                                Draw(matPrefix + "UVScale", "UV スケール");
-                            }
-
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("BasicSettings", "基本設定"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "Color", "カラー");
-                            Draw(matPrefix + "Lighting", "ライティング有効");
-                            Draw(matPrefix + "LightMode", "照明モード");
-                            Draw(matPrefix + "EnvMapInt", "環境マップ強度");
-                            Draw(matPrefix + "Emissive", "自己発光強度");
-                            Draw(matPrefix + "AlphaThres", "透過カット閾値(AlphaTest)");
-
-                            ImGui::Separator();
-                            ImGui::TextDisabled("テクスチャ");
-                            Draw(matPrefix + "AlbedoMap", "メインテクスチャ");
-                            Draw(matPrefix + "EnvMapTex", "環境マップ");
-                            Draw(matPrefix + "ToonRampTex", "トゥーンランプ");
-
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Surface", "質感"))
-                        {
-                            ImGui::Spacing();
-                            int currentMode = gv->GetIntValue(groupPath_, matPrefix + "LightMode");
-                            bool isPBR = (currentMode == 3);
-
-                            if (isPBR)
-                            {
-                                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[ PBR設定 ]");
-                                Draw(matPrefix + "Roughness", "粗さ");
-                                Draw(matPrefix + "Metalness", "金属度");
-                            }
-                            else
-                            {
-                                ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "[ スタンダード設定 ]");
-                                Draw(matPrefix + "Shininess", "光沢度");
-                                Draw(matPrefix + "SpecColor", "スペキュラ色");
-                                Draw(matPrefix + "DiffuseRef", "拡散反射率");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Shadow", "影設定"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "AddShadow", "影を受ける");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
-                            {
-                                Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
-                                Draw(matPrefix + "ShadowEnv", "影の明るさ");
-                                Draw(matPrefix + "ShadowBias", "バイアス");
-                                Draw(matPrefix + "ShadowSoft", "柔らかさ");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("RimLight", "リムライト"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "RimEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "RimEnable") > 0)
-                            {
-                                Draw(matPrefix + "RimColor", "発光色");
-                                Draw(matPrefix + "RimInten", "強度");
-                                Draw(matPrefix + "RimPower", "鋭さ");
-                                Draw(matPrefix + "RimUseDir", "ライト方向依存");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("NormalMap", "法線マップ"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "NormEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "NormEnable") > 0)
-                            {
-                                Draw(matPrefix + "NormalMapTex", "テクスチャ");
-                                Draw(matPrefix + "NormInten", "凹凸の強さ");
-                                Draw(matPrefix + "NormTile", "タイリング");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Dissolve", "ディゾルブ"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "DisEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "DisEnable") > 0)
-                            {
-                                Draw(matPrefix + "DissolveTex", "ノイズマップ");
-                                Draw(matPrefix + "DisThres", "進行度");
-                                ImGui::Separator();
-                                Draw(matPrefix + "EdgeWidth", "エッジ幅");
-                                Draw(matPrefix + "EdgeInten", "エッジ強度");
-                                Draw(matPrefix + "EdgeColor", "エッジ色");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Outline", "アウトライン"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "OutlineEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "OutlineEnable") > 0)
-                            {
-                                Draw(matPrefix + "OutlineWidth", "線の太さ");
-                                Draw(matPrefix + "OutlineColor", "線の色");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("WaterEffects", "水たまり・波紋"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "RippleEnable", "有効化");
-
-                            if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
-                            {
-                                Draw(matPrefix + "UsePuddle", "水たまりを形成する");
-                                Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
-                                Draw(matPrefix + "WetDarkness", "濡れた所の暗さ");
-
-                                ImGui::Separator();
-                                ImGui::TextDisabled("波紋設定");
-                                Draw(matPrefix + "RippleMap", "波紋法線マップ");
-                                Draw(matPrefix + "RippleScale", "雨の密度 (格子数)");
-                                Draw(matPrefix + "RippleSize", "一粒の大きさ");
-                                Draw(matPrefix + "RippleFreq", "発生頻度");
-                                Draw(matPrefix + "RippleSpeed", "波の広がる速さ");
-                                Draw(matPrefix + "RippleStren", "波紋の高さ(強さ)");
-                                Draw(matPrefix + "RippleMix", "レイヤー合成比率");
-
-                                if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
-                                {
-                                    ImGui::Separator();
-                                    ImGui::TextDisabled("水たまり形状設定");
-                                    Draw(matPrefix + "PuddleNoise", "分布ノイズ");
-                                    Draw(matPrefix + "PuddleScale", "水たまりスケール");
-                                    Draw(matPrefix + "PuddleFalloff", "フチのボケ具合");
-
-                                    ImGui::Spacing();
-                                    Draw(matPrefix + "PuddleColor", "水の色と濁り");
-                                    Draw(matPrefix + "PuddleEmission", "水の発光強度");
-                                }
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        ImGui::Unindent(10.0f);
-                        ImGui::TreePop();
-                    }
-                }
-
-                ImGui::Unindent(10.0f);
-                ImGui::TreePop();
-            }
-        }
-
-        ImGui::Spacing();
-        ImGui::PopItemWidth();
-        ImGui::Unindent(20.0f);
+        // 共通関数を呼び出す
+        DrawMaterialUI(targetModel, prefix, gv, groupPath_);
     }
-
     ImGui::PopID();
 #endif
 }
@@ -386,256 +114,34 @@ void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationM
 void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef IS_DEVELOPMENT
-    // 基本設定とラベルの準備
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
 
-    // マップから対象のモデルを取得
     AnimationModel* targetModel = nullptr;
-    if (animationBindMap_.find(groupName) != animationBindMap_.end())
-    {
+    if (animationBindMap_.find(groupName) != animationBindMap_.end()) {
         targetModel = animationBindMap_[groupName].model;
     }
 
-    // IDの衝突を防ぐためにPushID
     ImGui::PushID(groupName.c_str());
-
-    // ヘッダーの色設定
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.4f, 0.25f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.5f, 0.35f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.25f, 0.6f, 0.4f, 1.0f));
-
-    // メインの折りたたみヘッダー
-    bool isOpened = ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None);
-
-    ImGui::PopStyleColor(3);
-
-    if (isOpened)
+    if (ImGui::CollapsingHeader(displayLabel.c_str()))
     {
-        ImGui::Indent(20.0f);
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+        ImGui::Spacing();
+        ImGui::SeparatorText("アニメーション設定");
+        Draw(prefix + "SpeedScale", "再生速度");
+        Draw(prefix + "IsLoop", "ループ再生");
 
-        // ツリーノードの共通フラグ
-        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Framed |
-            ImGuiTreeNodeFlags_FramePadding |
-            ImGuiTreeNodeFlags_SpanAvailWidth;
-
-        if (ImGui::TreeNodeEx("Animation", nodeFlags, "アニメーション設定"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "SpeedScale", "再生速度");
-            Draw(prefix + "IsLoop", "ループ再生");
-            ImGui::TreePop();
-        }
+        ImGui::Spacing();
+        ImGui::SeparatorText("トランスフォーム");
+        Draw(prefix + "Trans", "位置");
+        Draw(prefix + "Rot", "回転");
+        Draw(prefix + "Scale", "スケール");
 
         ImGui::Spacing();
 
-        if (ImGui::TreeNodeEx("Transform", nodeFlags, "トランスフォーム"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "Trans", "位置");
-            Draw(prefix + "Rot", "回転");
-            Draw(prefix + "Scale", "スケール");
-            ImGui::TreePop();
-        }
-        ImGui::Spacing();
-
-        if (targetModel)
-        {
-            // 親ノードで括る
-            if (ImGui::TreeNodeEx("Materials", nodeFlags, "マテリアル設定"))
-            {
-                ImGui::Indent(10.0f);
-
-                if (ImGui::TreeNode("BatchSettings", "一括操作 (全適用)"))
-                {
-                    ImGui::Spacing();
-
-                    static Vector4 batchColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-                    ImGui::ColorEdit4("Batch Color", &batchColor.x);
-
-                    if (ImGui::Button("Apply Color to All Materials", ImVec2(-1, 0)))
-                    {
-                        targetModel->SetColor(batchColor);
-                    }
-
-                    ImGui::Spacing();
-
-                    static bool batchOutlineEnable = false;
-                    if (ImGui::Checkbox("Enable Outline All", &batchOutlineEnable))
-                    {
-                        targetModel->SetEnableOutline(batchOutlineEnable);
-                    }
-
-                    static float batchOutlineWidth = 1.0f;
-                    if (ImGui::DragFloat("Outline Width All", &batchOutlineWidth, 0.1f, 0.0f, 10.0f))
-                    {
-                        targetModel->SetOutlineWidth(batchOutlineWidth);
-                    }
-
-                    ImGui::TreePop();
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                size_t matCount = targetModel->GetMaterialCount();
-                for (size_t i = 0; i < matCount; ++i)
-                {
-                    std::string matPrefix;
-                    std::string matNodeName;
-
-                    // マテリアル数に応じて名前を変える
-                    if (matCount == 1)
-                    {
-                        matPrefix = prefix;
-                        matNodeName = "Material Property";
-                    }
-                    else
-                    {
-                        matPrefix = prefix + "Mat" + std::to_string(i) + "_";
-                        matNodeName = "Material " + std::to_string(i);
-                    }
-
-                    // マテリアルごとのツリー
-                    if (ImGui::TreeNodeEx(matNodeName.c_str(), ImGuiTreeNodeFlags_None))
-                    {
-                        ImGui::Indent(10.0f);
-
-                        if (ImGui::TreeNode("UV Settings", "UV トランスフォーム"))
-                        {
-                            Draw(matPrefix + "UVTrans", "UV 位置");
-                            Draw(matPrefix + "UVRot", "UV 回転");
-                            Draw(matPrefix + "UVScale", "UV スケール");
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("BasicSettings", "基本設定"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "Color", "カラー");
-                            Draw(matPrefix + "Lighting", "ライティング有効");
-                            Draw(matPrefix + "LightMode", "照明モード");
-                            Draw(matPrefix + "EnvMapInt", "環境マップ強度");
-                            Draw(matPrefix + "Emissive", "自己発光強度");
-
-                            ImGui::Separator();
-                            ImGui::TextDisabled("テクスチャ");
-                            Draw(matPrefix + "AlbedoMap", "メインテクスチャ");
-                            Draw(matPrefix + "EnvMapTex", "環境マップ");
-                            Draw(matPrefix + "ToonRampTex", "トゥーンランプ");
-
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Surface", "質感"))
-                        {
-                            ImGui::Spacing();
-                            int currentMode = gv->GetIntValue(groupPath_, matPrefix + "LightMode");
-                            bool isPBR = (currentMode == 3);
-
-                            if (isPBR)
-                            {
-                                ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "[ PBR設定 ]");
-                                Draw(matPrefix + "Roughness", "粗さ");
-                                Draw(matPrefix + "Metalness", "金属度");
-                            }
-                            else
-                            {
-                                ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "[ スタンダード設定 ]");
-                                Draw(matPrefix + "Shininess", "光沢度");
-                                Draw(matPrefix + "SpecColor", "スペキュラ色");
-                                Draw(matPrefix + "DiffuseRef", "拡散反射率");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Shadow", "影設定"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "AddShadow", "影を受ける");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
-                            {
-                                Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
-                                Draw(matPrefix + "ShadowEnv", "影の明るさ");
-                                Draw(matPrefix + "ShadowBias", "バイアス");
-                                Draw(matPrefix + "ShadowSoft", "柔らかさ");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("RimLight", "リムライト"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "RimEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "RimEnable") > 0)
-                            {
-                                Draw(matPrefix + "RimColor", "発光色");
-                                Draw(matPrefix + "RimInten", "強度");
-                                Draw(matPrefix + "RimPower", "鋭さ");
-                                Draw(matPrefix + "RimUseDir", "ライト方向依存");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("NormalMap", "法線マップ"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "NormEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "NormEnable") > 0)
-                            {
-                                Draw(matPrefix + "NormalMapTex", "テクスチャ");
-                                Draw(matPrefix + "NormInten", "凹凸の強さ");
-                                Draw(matPrefix + "NormTile", "タイリング");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Dissolve", "ディゾルブ"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "DisEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "DisEnable") > 0)
-                            {
-                                Draw(matPrefix + "DissolveTex", "ノイズマップ");
-                                Draw(matPrefix + "DisThres", "進行度");
-                                ImGui::Separator();
-                                Draw(matPrefix + "EdgeWidth", "エッジ幅");
-                                Draw(matPrefix + "EdgeInten", "エッジ強度");
-                                Draw(matPrefix + "EdgeColor", "エッジ色");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        if (ImGui::TreeNode("Outline", "アウトライン"))
-                        {
-                            ImGui::Spacing();
-                            Draw(matPrefix + "OutlineEnable", "有効化");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "OutlineEnable") > 0)
-                            {
-                                Draw(matPrefix + "OutlineWidth", "線の太さ");
-                                Draw(matPrefix + "OutlineColor", "線の色");
-                            }
-                            ImGui::TreePop();
-                        }
-
-                        ImGui::Unindent(10.0f);
-                        ImGui::TreePop();
-                    }
-                }
-
-                ImGui::Unindent(10.0f);
-                ImGui::TreePop();
-            }
-        }
-
-        ImGui::Spacing();
-        ImGui::PopItemWidth();
-        ImGui::Unindent(20.0f);
+        // 共通関数を呼び出す
+        DrawMaterialUI(targetModel, prefix, gv, groupPath_);
     }
-
     ImGui::PopID();
 #endif
 }
@@ -696,8 +202,7 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
     BindColor(prefix + "EdgeColor", &mat->edgeColor, { 1.0f, 0.5f, 0.0f });
 }
 
-
-void PropertyBinder::DrawSprite(const std::string& groupName, const std::string& customLabel)
+void PropertyBinder::DrawSprite(const std::string & groupName, const std::string & customLabel)
 {
 #ifdef IS_DEVELOPMENT
     std::string prefix = groupName + "_";
@@ -706,63 +211,35 @@ void PropertyBinder::DrawSprite(const std::string& groupName, const std::string&
 
     ImGui::PushID(groupName.c_str());
 
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.4f, 0.25f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.5f, 0.35f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.25f, 0.6f, 0.4f, 1.0f));
-
     bool isOpened = ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None);
-
-    ImGui::PopStyleColor(3);
 
     if (isOpened)
     {
-        ImGui::Indent(20.0f);
+        ImGui::Indent(12.0f);
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
 
-        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Framed |
-            ImGuiTreeNodeFlags_FramePadding |
-            ImGuiTreeNodeFlags_SpanAvailWidth;
+        ImGui::Spacing();
+        ImGui::SeparatorText("基本設定");
+        Draw(prefix + "Visible", "表示");
+        Draw(prefix + "Layer", "描画順");
 
         ImGui::Spacing();
-        if (ImGui::TreeNodeEx("Settings", nodeFlags, "基本設定"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "Visible", "表示");
-
-            Draw(prefix + "Layer", "描画順");
-
-            ImGui::TreePop();
-        }
-        ImGui::Spacing();
-
-        if (ImGui::TreeNodeEx("Transform", nodeFlags, "トランスフォーム"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "Pos", "位置");
-            Draw(prefix + "Size", "スケール");
-            Draw(prefix + "Rot", "回転");
-
-            ImGui::Separator();
-
-            Draw(prefix + "Anchor", "アンカーポイント");
-            ImGui::TreePop();
-        }
+        ImGui::SeparatorText("トランスフォーム");
+        Draw(prefix + "Pos", "位置");
+        Draw(prefix + "Size", "スケール");
+        Draw(prefix + "Rot", "回転");
+        Draw(prefix + "Anchor", "アンカーポイント");
 
         ImGui::Spacing();
-
-        if (ImGui::TreeNodeEx("Appearance", nodeFlags, "見た目"))
-        {
-            ImGui::Spacing();
-            Draw(prefix + "Color", "カラー");
-
-            ImGui::Spacing();
-            ImGui::TextDisabled("テクスチャ");
-            Draw(prefix + "Tex", "メインテクスチャ");
-
-            ImGui::TreePop();
-        }
+        ImGui::SeparatorText("見た目");
+        Draw(prefix + "Color", "カラー");
+        Draw(prefix + "Tex", "メインテクスチャ");
 
         ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth;
 
         if (ImGui::TreeNodeEx("UVTransform", nodeFlags, "UV トランスフォーム"))
         {
@@ -772,8 +249,6 @@ void PropertyBinder::DrawSprite(const std::string& groupName, const std::string&
             Draw(prefix + "UVScale", "UV スケール");
             ImGui::TreePop();
         }
-
-        ImGui::Spacing();
 
         if (ImGui::TreeNodeEx("Dissolve", nodeFlags, "ディゾルブ"))
         {
@@ -797,7 +272,7 @@ void PropertyBinder::DrawSprite(const std::string& groupName, const std::string&
         }
 
         ImGui::PopItemWidth();
-        ImGui::Unindent(20.0f);
+        ImGui::Unindent(12.0f);
     }
 
     ImGui::PopID();
@@ -1119,4 +594,189 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 
     BindColor(prefix + "PuddleColor", &matData->puddleColor, { 0.1f, 0.1f, 0.1f, 0.5f });
     Bind(prefix + "PuddleTint", &matData->puddleTint, 0.5f, 0.01f, 0.0f, 1.0f);
+}
+
+template <typename ModelType>
+void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath)
+{
+    if (!targetModel) return;
+
+    size_t matCount = targetModel->GetMaterialCount();
+
+    // 一括操作
+    if (matCount > 1 && ImGui::TreeNodeEx("BatchOperations", ImGuiTreeNodeFlags_Framed, "一括操作 (全マテリアル適用)"))
+    {
+        static Vector4 batchColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        ImGui::ColorEdit4("カラー##BatchColor", &batchColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
+        ImGui::SameLine();
+        if (ImGui::Button("適用##ApplyBatchColor", ImVec2(60, 0))) { targetModel->SetColor(batchColor); }
+
+        ImGui::Separator();
+
+        static bool batchOutlineEnable = false;
+        static float batchOutlineWidth = 1.0f;
+        if (ImGui::Checkbox("アウトライン##BatchOutline", &batchOutlineEnable)) { targetModel->SetEnableOutline(batchOutlineEnable); }
+        ImGui::SameLine(130.0f);
+        ImGui::SetNextItemWidth(100.0f);
+        if (ImGui::DragFloat("太さ##BatchWidth", &batchOutlineWidth, 0.1f, 0.0f, 10.0f)) { targetModel->SetOutlineWidth(batchOutlineWidth); }
+
+        ImGui::TreePop();
+    }
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("マテリアル");
+
+    if (matCount > 0)
+    {
+        if (ImGui::BeginTabBar("MaterialTabs", ImGuiTabBarFlags_FittingPolicyScroll))
+        {
+            for (size_t i = 0; i < matCount; ++i)
+            {
+                std::string matPrefix = (matCount == 1) ? prefix : prefix + "Mat" + std::to_string(i) + "_";
+                std::string matTabName = (matCount == 1) ? "マテリアル" : "マテリアル " + std::to_string(i);
+
+                if (ImGui::BeginTabItem(matTabName.c_str()))
+                {
+                    ImGui::Spacing();
+
+                    ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "基本 & 質感");
+                    Draw(matPrefix + "Color", "カラー");
+                    Draw(matPrefix + "Lighting", "ライティング有効");
+                    Draw(matPrefix + "LightMode", "照明モード");
+
+                    int currentMode = gv->GetIntValue(groupPath, matPrefix + "LightMode");
+                    ImGui::Indent(10.0f);
+                    if (currentMode == 3)
+                    {
+                        Draw(matPrefix + "Roughness", "粗さ");
+                        Draw(matPrefix + "Metalness", "金属度");
+                    }
+                    else
+                    {
+                        Draw(matPrefix + "Shininess", "光沢度");
+                        Draw(matPrefix + "SpecColor", "スペキュラ色");
+                        Draw(matPrefix + "DiffuseRef", "拡散反射率");
+                    }
+                    ImGui::Unindent(10.0f);
+
+                    ImGui::Spacing();
+                    Draw(matPrefix + "EnvMapInt", "環境マップ強度");
+                    Draw(matPrefix + "Emissive", "自己発光強度");
+                    Draw(matPrefix + "AlphaThres", "透過カット閾値(アルファテスト)");
+
+                    ImGui::Spacing();
+                    ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "テクスチャマップ");
+                    Draw(matPrefix + "AlbedoMap", "メインテクスチャ");
+                    Draw(matPrefix + "EnvMapTex", "環境マップ");
+                    Draw(matPrefix + "ToonRampTex", "トゥーンランプ");
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGuiTreeNodeFlags optFlags = ImGuiTreeNodeFlags_Framed;
+
+                    if (ImGui::TreeNodeEx("ShadowSettings", optFlags, "影設定"))
+                    {
+                        Draw(matPrefix + "AddShadow", "影を受ける");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
+                        {
+                            Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
+                            Draw(matPrefix + "ShadowEnv", "影の明るさ");
+                            Draw(matPrefix + "ShadowBias", "バイアス");
+                            Draw(matPrefix + "ShadowSoft", "柔らかさ");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("NormalMapSettings", optFlags, "法線マップ"))
+                    {
+                        Draw(matPrefix + "NormEnable", "有効化");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "NormEnable") > 0)
+                        {
+                            Draw(matPrefix + "NormalMapTex", "テクスチャ");
+                            Draw(matPrefix + "NormInten", "凹凸の強さ");
+                            Draw(matPrefix + "NormTile", "タイリング");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("RimLightSettings", optFlags, "リムライト"))
+                    {
+                        Draw(matPrefix + "RimEnable", "有効化");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "RimEnable") > 0)
+                        {
+                            Draw(matPrefix + "RimColor", "発光色");
+                            Draw(matPrefix + "RimInten", "強度");
+                            Draw(matPrefix + "RimPower", "鋭さ");
+                            Draw(matPrefix + "RimUseDir", "ライト方向依存");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("EffectSettings", optFlags, "特殊エフェクト (アウトライン / ディゾルブ)"))
+                    {
+                        Draw(matPrefix + "OutlineEnable", "アウトライン有効");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "OutlineEnable") > 0)
+                        {
+                            Draw(matPrefix + "OutlineWidth", "線の太さ");
+                            Draw(matPrefix + "OutlineColor", "線の色");
+                        }
+                        ImGui::Separator();
+                        Draw(matPrefix + "DisEnable", "ディゾルブ有効");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "DisEnable") > 0)
+                        {
+                            Draw(matPrefix + "DissolveTex", "ノイズマップ");
+                            Draw(matPrefix + "DisThres", "進行度");
+                            Draw(matPrefix + "EdgeWidth", "エッジ幅");
+                            Draw(matPrefix + "EdgeInten", "エッジ強度");
+                            Draw(matPrefix + "EdgeColor", "エッジ色");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "水エフェクト (水たまり / 波紋)"))
+                    {
+                        Draw(matPrefix + "RippleEnable", "有効化");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
+                        {
+                            Draw(matPrefix + "UsePuddle", "水たまり形成");
+                            Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
+                            Draw(matPrefix + "RippleMap", "波紋法線マップ");
+                            Draw(matPrefix + "RippleScale", "雨の密度");
+                            Draw(matPrefix + "RippleStren", "波紋の強さ");
+
+                            if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
+                            {
+                                ImGui::Separator();
+                                Draw(matPrefix + "PuddleNoise", "分布ノイズ");
+                                Draw(matPrefix + "PuddleColor", "水の色と濁り");
+                            }
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("UVSettings", optFlags, "UV トランスフォーム"))
+                    {
+                        Draw(matPrefix + "UseTriplanar", "トライプラナー有効");
+                        if (gv->GetIntValue(groupPath_, matPrefix + "UseTriplanar") > 0)
+                        {
+                            Draw(matPrefix + "TriScale", "テクスチャスケール");
+                            Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
+                        }
+                        else
+                        {
+                            Draw(matPrefix + "UVTrans", "UV 位置");
+                            Draw(matPrefix + "UVRot", "UV 回転");
+                            Draw(matPrefix + "UVScale", "UV スケール");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    ImGui::EndTabItem();
+                }
+            }
+            ImGui::EndTabBar();
+        }
+    }
 }

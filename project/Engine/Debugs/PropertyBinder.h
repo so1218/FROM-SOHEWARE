@@ -117,6 +117,9 @@ private:
 
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 
+    template <typename ModelType>
+    void DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath);
+
     Engine* engine_ = nullptr;
 
     std::vector<std::string> groupPath_;

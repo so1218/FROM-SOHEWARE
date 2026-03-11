@@ -21,14 +21,14 @@
         "ModelRock_EdgeInten": 5.699999809265137,
         "ModelRock_EdgeWidth": 0.07500000298023224,
         "ModelRock_Emissive": 0.8999999761581421,
-        "ModelRock_EnvMapInt": 2.3499999046325684,
-        "ModelRock_EnvMapTex": "redClunch",
+        "ModelRock_EnvMapInt": 0.44999998807907104,
+        "ModelRock_EnvMapTex": "pureSky",
         "ModelRock_LightMode": 3,
         "ModelRock_Lighting": 1,
         "ModelRock_Metalness": 0.49000000953674316,
         "ModelRock_NormEnable": 1,
-        "ModelRock_NormInten": 4.360000133514404,
-        "ModelRock_NormTile": 1.600000023841858,
+        "ModelRock_NormInten": 7.849999904632568,
+        "ModelRock_NormTile": 5.400000095367432,
         "ModelRock_NormalMapTex": "normal_01",
         "ModelRock_OutlineColor": [
             0.27848100662231445,
@@ -94,6 +94,8 @@
             4.599999904632568,
             0.0
         ],
+        "ModelRock_TriScale": 0.19099999964237213,
+        "ModelRock_TriSharpness": 2.299999952316284,
         "ModelRock_UVRot": [
             0.0,
             0.0,
@@ -110,6 +112,7 @@
             0.0
         ],
         "ModelRock_UsePuddle": 0,
+        "ModelRock_UseTriplanar": 1,
         "ModelRock_Wetness": 0.5,
         "ModelTree_Mat0_AddShadow": 0,
         "ModelTree_Mat0_AlbedoMap": "leaf",
@@ -190,6 +193,8 @@
             0.27450981736183167
         ],
         "ModelTree_Mat0_ToonRampTex": "toonRamp_01",
+        "ModelTree_Mat0_TriScale": 0.10000000149011612,
+        "ModelTree_Mat0_TriSharpness": 4.0,
         "ModelTree_Mat0_UVRot": [
             0.0,
             0.0,
@@ -206,6 +211,7 @@
             0.0
         ],
         "ModelTree_Mat0_UsePuddle": 0,
+        "ModelTree_Mat0_UseTriplanar": 0,
         "ModelTree_Mat0_WetDarkness": 0.5,
         "ModelTree_Mat0_Wetness": 0.5,
         "ModelTree_Mat1_AddShadow": 0,
@@ -287,6 +293,8 @@
             1.0
         ],
         "ModelTree_Mat1_ToonRampTex": "toonRamp_01",
+        "ModelTree_Mat1_TriScale": 0.10000000149011612,
+        "ModelTree_Mat1_TriSharpness": 4.0,
         "ModelTree_Mat1_UVRot": [
             0.0,
             0.0,
@@ -303,6 +311,7 @@
             0.0
         ],
         "ModelTree_Mat1_UsePuddle": 0,
+        "ModelTree_Mat1_UseTriplanar": 0,
         "ModelTree_Mat1_WetDarkness": 0.5,
         "ModelTree_Mat1_Wetness": 0.5,
         "ModelTree_Rot": [
@@ -414,6 +423,8 @@
             0.10000000149011612,
             0.0
         ],
+        "Model_TriScale": 0.10000000149011612,
+        "Model_TriSharpness": 4.0,
         "Model_UVRot": [
             0.0,
             0.0,
@@ -430,6 +441,7 @@
             0.0
         ],
         "Model_UsePuddle": 1,
+        "Model_UseTriplanar": 0,
         "Model_WetDarkness": 0.10999999940395355,
         "Model_Wetness": 0.5699999928474426,
         "treeWindAmplitude": 0.14000000059604645,
