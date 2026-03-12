@@ -135,90 +135,46 @@ void Engine::EndFrame()
 	auto* cmdList = commandManager_->GetCommandList();
 
 	// シャドウパス
-	shadowMap_->TransitionToDepthWrite(cmdList);
-	D3D12_CPU_DESCRIPTOR_HANDLE shadowDSV = shadowMap_->GetDSVHandle();
-	cmdList->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
-	cmdList->ClearDepthStencilView(
-		shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr
-	);
-
-	D3D12_VIEWPORT shadowVP = { 0.0f, 0.0f, 2048.0f, 2048.0f, 0.0f, 1.0f };
-	D3D12_RECT shadowRect = { 0, 0, 2048, 2048 };
-	cmdList->RSSetViewports(1, &shadowVP);
-	cmdList->RSSetScissorRects(1, &shadowRect);
-
+	shadowMap_->BeginPass(cmdList);
 	rendererManager_->DrawSceneForShadow();
-	shadowMap_->TransitionToRead(cmdList);
+	shadowMap_->EndPass(cmdList);
 
-	// オフスクリーンレンダリングの準備開始
+	// G-Buffer / オフスクリーンパス
 	renderCoordinator_->BeginOffscreenRender();
-
 	rendererManager_->Draw3D();
 	renderCoordinator_->EndOffscreenRender();
 
-	// ポストエフェクト（Bloomなど）
-	postEffectManager_->ExecutePostEffects(
-		cmdList,
-		viewMatrix_,       
-		projectionMatrix_, 
-		eyePos_            
-	);
+	// ポストエフェクトパス
+	postEffectManager_->ExecutePostEffects(cmdList, viewMatrix_, projectionMatrix_, eyePos_);
 
-	// バックバッファ準備（直後に描画先は切り替える）
-	renderCoordinator_->BeginFrame();
+	// 最終合成・トーンマップパス
+	renderCoordinator_->BeginFrame(); // (バックバッファの準備など)
 
-	// FinalBuffer（SRV → RenderTarget）
-	{
-		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			postEffectManager_->GetFinalPassResource(),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET
-		);
-		cmdList->ResourceBarrier(1, &barrier);
-	}
-
-	// 最終合成・トーンマップ
-	D3D12_CPU_DESCRIPTOR_HANDLE finalRTV = postEffectManager_->GetFinalPassRTV();
-	cmdList->OMSetRenderTargets(1, &finalRTV, FALSE, nullptr);
-
+	postEffectManager_->BeginFinalComposite(cmdList);
 	rendererManager_->DrawFullScreenQuadWithOffscreenTexture();
 #ifdef IS_DEVELOPMENT
 	rendererManager_->DrawUI();
 #endif
+	postEffectManager_->EndFinalComposite(cmdList);
 
-	// FinalBuffer：RenderTarget → SRV
-	{
-		auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			postEffectManager_->GetFinalPassResource(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-		);
-		cmdList->ResourceBarrier(1, &barrier);
-	}
-
-	// バックバッファ出力
-	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV =
-		rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
+	// バックバッファへの転送
+	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
 	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
 #ifdef IS_DEVELOPMENT
-	// シーンウィンドウを閉じる
 	debugGuiManager_->EndSceneView();
 #else
 	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
 	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
-	// 最終結果をバックバッファへ描画
-	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
-	rendererManager_->DrawFinalResult(finalSrvIndex);
+	rendererManager_->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
 	rendererManager_->DrawUI();
 #endif
 
-	// ImGui描画
+	// UIとフレーム終了処理
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	ImGuiManager::EndFrame(cmdList);
 
-	// フレーム終了処理
 	renderCoordinator_->EndFrame();
 	frameLimiter_->WaitNextFrame();
 

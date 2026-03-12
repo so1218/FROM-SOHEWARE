@@ -321,3 +321,28 @@ void PostEffectManager::ExecutePostEffects(
     );
     cmdList->ResourceBarrier(1, &barrierBack);
 }
+
+void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)
+{
+    // SRVからRenderTargetへ遷移
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        finalPassResource_.Get(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_RENDER_TARGET
+    );
+    cmdList->ResourceBarrier(1, &barrier);
+
+    // レンダーターゲットをセット
+    cmdList->OMSetRenderTargets(1, &finalPassRTVHandle_, FALSE, nullptr);
+}
+
+void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
+{
+    // RenderTargetからSRVへ遷移 (バックバッファへ描画するため)
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        finalPassResource_.Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+    );
+    cmdList->ResourceBarrier(1, &barrier);
+}

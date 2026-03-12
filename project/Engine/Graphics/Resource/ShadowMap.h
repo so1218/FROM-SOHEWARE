@@ -17,10 +17,18 @@ public:
     void TransitionToDepthWrite(ID3D12GraphicsCommandList* commandList);
     void TransitionToRead(ID3D12GraphicsCommandList* commandList);
 
+    void BeginPass(ID3D12GraphicsCommandList* commandList);
+    void EndPass(ID3D12GraphicsCommandList* commandList);
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> shadowResource_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;
 
     SRVManager* srvManager_ = nullptr;
     uint32_t srvIndex_ = 0; // SRVManagerから割り当てられたインデックス
+
+    UINT width_ = 0;
+    UINT height_ = 0;
+    D3D12_VIEWPORT viewport_{};
+    D3D12_RECT scissorRect_{};
 };

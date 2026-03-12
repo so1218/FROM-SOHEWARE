@@ -307,6 +307,48 @@ void PropertyBinder::BindColor(const std::string& key, uint32_t* ptr, uint32_t d
 #endif
 }
 
+// 共通処理
+template<typename T>
+void PropertyBinder::RegisterItem(const std::string& key, const T& defaultValue, T* ptr)
+{
+    auto* gv = GlobalVariables::GetInstance();
+    // 重複登録防止
+    if (items_.find(key) == items_.end())
+    {
+        keys_.push_back(key); // 順序を記録
+        gv->AddItem(groupPath_, key, defaultValue);
+    }
+}
+
+// 共通実装
+void PropertyBinder::BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange)
+{
+    RegisterItem(key, defaultValue, ptr);
+
+    // 保存データを反映
+    *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
+
+#ifdef IS_DEVELOPMENT
+    // ラムダ式内でonChangeをキャプチャ
+    items_[key] = [=](const std::string& nameOverride)
+        {
+            std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+
+            // 値が変更されたら
+            if (ImGui::DragFloat3(label.c_str(), &ptr->x, speed, min, max))
+            {
+                GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+
+                // コールバックがあれば実行
+                if (onChange)
+                {
+                    onChange();
+                }
+            }
+        };
+#endif
+}
+
 void PropertyBinder::Draw(const std::string& key, const std::string& name)
 {
     // 指定されたキーが存在すれば実行

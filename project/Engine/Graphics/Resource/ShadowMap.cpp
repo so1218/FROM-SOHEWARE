@@ -6,6 +6,13 @@ void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManag
 {
     srvManager_ = srvManager;
 
+    width_ = static_cast<UINT>(width);
+    height_ = static_cast<UINT>(height);
+
+    // ビューポートとシザー矩形を事前計算
+    viewport_ = { 0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_), 0.0f, 1.0f };
+    scissorRect_ = { 0, 0, static_cast<LONG>(width_), static_cast<LONG>(height_) };
+
     // リソース設定 
     D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
         DXGI_FORMAT_R32_TYPELESS,
@@ -88,4 +95,27 @@ void ShadowMap::TransitionToRead(ID3D12GraphicsCommandList* commandList)
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
     commandList->ResourceBarrier(1, &barrier);
+}
+
+void ShadowMap::BeginPass(ID3D12GraphicsCommandList* cmdList)
+{
+    // 書き込み状態へバリア遷移
+    TransitionToDepthWrite(cmdList);
+
+    // レンダーターゲット(DSV)のセット
+    D3D12_CPU_DESCRIPTOR_HANDLE shadowDSV = GetDSVHandle();
+    cmdList->OMSetRenderTargets(0, nullptr, FALSE, &shadowDSV);
+
+    // クリア
+    cmdList->ClearDepthStencilView(shadowDSV, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+    // ビューポートとシザーをセット
+    cmdList->RSSetViewports(1, &viewport_);
+    cmdList->RSSetScissorRects(1, &scissorRect_);
+}
+
+void ShadowMap::EndPass(ID3D12GraphicsCommandList* cmdList)
+{
+    // 読み込み状態へバリア遷移
+    TransitionToRead(cmdList);
 }

@@ -72,6 +72,9 @@ public:
     const std::string& GetCurrentNoiseName() const { return currentNoiseName_; }
     void SetCurrentNoiseName(const std::string& name) { currentNoiseName_ = name; }
 
+    void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
+    void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
+
 private:
     // 依存オブジェクト
     Engine* engine_ = nullptr;
