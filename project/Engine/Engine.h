@@ -54,9 +54,6 @@ public:
     void BeginFrame();
     void EndFrame();
 
-    // テクスチャ読み込み
-    int LoadTexture(const std::string& texturePath);
-
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
 

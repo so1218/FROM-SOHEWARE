@@ -43,7 +43,7 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
                 data.type = DetectTypeFromPath(filePath);
 
                 // ロード
-                data.handle = engine->LoadTexture(data.fullPath);
+                data.handle = engine->GetTextureLoader()->Load(data.fullPath);
 
                 // 検索用マップには小文字化した名前で登録
                 if (nameToIndex_.count(stemLower) > 0)

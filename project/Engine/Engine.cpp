@@ -431,8 +431,3 @@ void Engine::InitializeAudio()
 	AudioDevice::GetInstance().Initialize();
 	AudioManager::Initialize();
 }
-
-int Engine::LoadTexture(const std::string& texturePath)
-{
-	return rendererManager_->LoadTexture(texturePath);
-}

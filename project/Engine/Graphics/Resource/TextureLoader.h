@@ -30,6 +30,9 @@ public:
 
     void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager);
 
+    // ゲーム側から呼ばれるメインのロード関数
+    uint32_t Load(const std::string& filePath);
+
     TextureResources UploadTexture(DirectX::ScratchImage& mipImages);
 
     TextureResources UploadTex(DirectX::ScratchImage& mipImages);
@@ -55,7 +58,6 @@ public:
         const std::vector<DirectX::ScratchImage>& images,
         TextureResources& outTextureArrayResource);
     
-
     // ゲッター
     const std::vector<UploadResourceEntry>& GetPendingUploadResources() const { return pendingUploadResources_; }
 
@@ -76,4 +78,7 @@ private:
 
     // 一時リスト (中間バッファのクリーンアップ用)
     std::vector<TextureResources> newUploads_;
+
+    // 読み込み済みのテクスチャを記録するキャッシュ
+    std::unordered_map<std::string, uint32_t> textureCache_;
 };

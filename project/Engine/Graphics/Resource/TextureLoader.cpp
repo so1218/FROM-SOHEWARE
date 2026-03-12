@@ -287,3 +287,26 @@ void TextureLoader::CreateAndUploadTexture2DArray(
     outTextureArrayResource.srvIndex = index;
     textureArraySrvIndex_ = index;
 }
+
+uint32_t TextureLoader::Load(const std::string& filePath)
+{
+    // キャッシュを検索(すでに同じパスのテクスチャがロードされているか)
+    auto it = textureCache_.find(filePath);
+    if (it != textureCache_.end())
+    {
+        // 既にロード済みなら、保存されているSRVインデックスをそのまま返す
+        return it->second;
+    }
+
+    // まだロードされていなければ、画像を読み込む 
+    DirectX::ScratchImage mipImages = LoadTexture(filePath);
+
+    // GPUへアップロード＆SRV作成 
+    TextureResources texResources = UploadTexture(mipImages);
+
+    // 次回のためにキャッシュに登録
+    textureCache_[filePath] = texResources.srvIndex;
+
+    // SRVインデックスを返す
+    return texResources.srvIndex;
+}

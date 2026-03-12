@@ -45,9 +45,6 @@ public:
     // このフレームで使うカメラ行列をセットする
     void SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition);
 
-    // テクスチャ読み込み
-    int LoadTexture(const std::string& texturePath);
-
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,

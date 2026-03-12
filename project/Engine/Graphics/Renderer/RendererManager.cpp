@@ -105,18 +105,6 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	}
 }
 
-int RendererManager::LoadTexture(const std::string& texturePath)
-{
-	// テクスチャをロード
-	DirectX::ScratchImage mipImages = TextureLoader::LoadTexture(texturePath);
-
-	// テクスチャをアップロード
-	TextureLoader::TextureResources texResources = textureLoader_->UploadTexture(mipImages);
-
-	// 保存したテクスチャのインデックスを返す
-	return texResources.srvIndex;
-}
-
 void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 {
 	auto* cmdList = commandManager_->GetCommandList();
