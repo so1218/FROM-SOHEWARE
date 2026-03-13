@@ -202,6 +202,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
@@ -365,6 +366,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -549,6 +551,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\VolumetricFog.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

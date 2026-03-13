@@ -72,6 +72,8 @@ struct FrameData
     
     float3 lightningFlashColor;
     float lightningFlashIntensity;
+    
+    float4x4 lightViewProj;
 };
 
 struct MaterialData
@@ -306,6 +308,11 @@ struct CombineSettings
     int enableSSR;
     float ssrIntensity;
     float _padding2; 
+
+    float volumetricFogDensity;
+    float volumetricFogMaxDistance;
+    float volumetricFogScatteringG;
+    int volumetricFogSteps;
 };
 
 struct GodRaySettings

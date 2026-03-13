@@ -1,12 +1,6 @@
 #include "ParticleCommon.hlsli" 
 #include "ShaderConstants.hlsli" 
 
-//struct VertexIn
-//{
-//    float4 position : POSITION; 
-//    float2 uv : TEXCOORD; 
-//};
-
 // インスタンシング用のデータを格納するためのバッファ
 StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);
 ConstantBuffer<FrameData> gFrameData : register(b0);

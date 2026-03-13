@@ -474,6 +474,9 @@
     <ClCompile Include="Engine\Debugs\PropertyBinderObject.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -784,6 +787,7 @@
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\pch.h" />
     <ClInclude Include="Engine\Audio\AudioDefinition.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -879,5 +883,6 @@
     <FxCompile Include="Assets\Shaders\SSR.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Grass.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Grass.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VolumetricFog.PS.hlsl" />
   </ItemGroup>
 </Project>

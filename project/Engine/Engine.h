@@ -9,9 +9,7 @@
 #include "PSOManager.h"
 #include "MaterialManager.h"
 #include "TextureLoader.h"
-#include "Mesh.h"
 #include "LightManager.h"
-#include "WorldTransform.h"
 #include "Camera.h"
 #include "DebugCamera.h"
 #include "RenderCommon.h"
@@ -27,6 +25,7 @@
 #include "ProjectConfig.h"
 #include "GraphicsDevice.h"
 #include "CommandManager.h"
+#include "RenderPipeline.h"
 
 class SRVManager;
 class DSVManager;
@@ -59,7 +58,9 @@ public:
 
     // ゲッター
     // DirectX関連
-    ID3D12Resource * GetOffscreenDepthResource() const { return offscreenDepthResource_.Get(); }
+    ID3D12Fence* GetFence() const { return fence_.Get(); }
+    HANDLE GetFenceEvent() const { return fenceEvent_; }
+    ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_.Get(); }
 
     // システム関連マネージャー
     Window* GetWindow() const { return window_.get(); }
@@ -70,7 +71,6 @@ public:
     OffscreenRTVManager* GetOffscreenRTVManager() const { return offscreenRTVManager_.get(); }
     DescriptorHeapManager* GetDescriptorManager() const { return descriptorManager_.get(); }
     RenderContext* GetRenderContext() const { return renderContext_.get(); }
-    RenderCoordinator* GetRenderCoordinator() const { return renderCoordinator_.get(); }
     RootSignatureManager* GetRootSignatureManager() const { return rootSignatureManager_.get(); }
     ShaderManager* GetShaderManager() const { return shaderManager_.get(); }
     PSOManager* GetPSOManager() const { return psoManager_.get(); }
@@ -83,10 +83,11 @@ public:
     DebugGuiManager* GetDebugGuiManager() const { return debugGuiManager_.get(); }
     ParticleSystem* GetParticleSystem() const { return particleSystem_.get(); }
     GlobalConstants* GetGlobalConstants() const { return globalConstants_.get(); }
-    PostEffectManager* GetPostEffectManager() const { return postEffectManager_.get(); }
     RendererManager* GetRendererManager() const { return rendererManager_.get(); }
     FrameLimiter* GetFrameLimiter() const { return frameLimiter_.get(); }
-    ShadowMap* GetShadowMap() const { return shadowMap_.get(); }
+    RenderCoordinator* GetRenderCoordinator() const { return renderPipeline_->GetRenderCoordinator(); }
+    PostEffectManager* GetPostEffectManager() const { return renderPipeline_->GetPostEffectManager(); }
+    ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
 
     static int32_t GetClientWidth() { return sClientWidth; }
     static int32_t GetClientHeight() { return sClientHeight; }
@@ -134,7 +135,6 @@ private:
     std::unique_ptr<OffscreenRTVManager> offscreenRTVManager_;
     std::unique_ptr<DescriptorHeapManager> descriptorManager_;
     std::unique_ptr<RenderContext> renderContext_;
-    std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;
     std::unique_ptr<ShaderManager> shaderManager_;
     std::unique_ptr<PSOManager> psoManager_;
@@ -147,8 +147,7 @@ private:
     std::unique_ptr<DebugGuiManager> debugGuiManager_;
     std::unique_ptr<ParticleSystem> particleSystem_;
     std::unique_ptr<GlobalConstants> globalConstants_;
-    std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
-    std::unique_ptr<ShadowMap> shadowMap_;
+    std::unique_ptr<RenderPipeline> renderPipeline_;
 };

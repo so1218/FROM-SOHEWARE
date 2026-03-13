@@ -39,6 +39,9 @@ void GlobalConstants::Update(
     Matrix4x4 invVP = Matrix4x4::Inverse(matViewProjection);
     Matrix4x4 invProj = Matrix4x4::Inverse(projectionMatrix);
 
+    // シャドウマップ用のライトVP行列を転送
+    frameData_->lightViewProj = mainLight.viewProj;
+
     // カメラ情報の転送
     frameData_->cameraWorldPosition = eyePos;
     frameData_->viewProjectionMatrix = matViewProjection;

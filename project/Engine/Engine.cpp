@@ -58,7 +58,7 @@ void Engine::Initialize(const ProjectConfig& config)
 	InitializeImGui();
 	InitializeAudio();
 	debugGuiManager_ = std::make_unique<DebugGuiManager>();
-	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), postEffectManager_.get(), debugCamera_.get());
+	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), GetPostEffectManager(), debugCamera_.get());
 	particleSystem_ = std::make_unique<ParticleSystem>(this);
 	particleSystem_->Initialize();
 }
@@ -81,7 +81,7 @@ void Engine::Finalize()
 
 	// srvManager_を使うクラスを先に解放
 	textureLoader_.reset();     
-	postEffectManager_.reset();  
+	renderPipeline_.reset();
 
 	srvManager_.reset();
 
@@ -121,10 +121,10 @@ void Engine::BeginFrame()
 	TimeManager::GetInstance()->Update();
 
 	// ポストエフェクトのパラメータ更新など
-	postEffectManager_->Update();
+	GetPostEffectManager()->Update();
 
 #ifdef IS_DEVELOPMENT
-	uint32_t finalSrvIndex = postEffectManager_->GetFinalPassSRVIndex();
+	uint32_t finalSrvIndex = GetPostEffectManager()->GetFinalPassSRVIndex();
 	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);
 #endif
 	rendererManager_->BeginFrame();
@@ -132,64 +132,21 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
-	auto* cmdList = commandManager_->GetCommandList();
+	// パイプラインに描画を丸投げ
+	RenderCameraState camState = { viewMatrix_, projectionMatrix_, eyePos_ };
+	renderPipeline_->Render(this, rendererManager_.get(), commandManager_.get(), camState);
 
-	// シャドウパス
-	shadowMap_->BeginPass(cmdList);
-	rendererManager_->DrawSceneForShadow();
-	shadowMap_->EndPass(cmdList);
-
-	// G-Buffer / オフスクリーンパス
-	renderCoordinator_->BeginOffscreenRender();
-	rendererManager_->Draw3D();
-	renderCoordinator_->EndOffscreenRender();
-
-	// ポストエフェクトパス
-	postEffectManager_->ExecutePostEffects(cmdList, viewMatrix_, projectionMatrix_, eyePos_);
-
-	// 最終合成・トーンマップパス
-	renderCoordinator_->BeginFrame(); // (バックバッファの準備など)
-
-	postEffectManager_->BeginFinalComposite(cmdList);
-	rendererManager_->DrawFullScreenQuadWithOffscreenTexture();
-#ifdef IS_DEVELOPMENT
-	rendererManager_->DrawUI();
-#endif
-	postEffectManager_->EndFinalComposite(cmdList);
-
-	// バックバッファへの転送
-	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV = rtvManager_->GetCurrentBackBufferRTVCPUHandle(swapChain_.get());
-	cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
-
-#ifdef IS_DEVELOPMENT
-	debugGuiManager_->EndSceneView();
-#else
-	cmdList->RSSetViewports(1, &renderContext_->GetViewport());
-	cmdList->RSSetScissorRects(1, &renderContext_->GetScissorRect());
-	rendererManager_->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
-	rendererManager_->DrawUI();
-#endif
-
-	// UIとフレーム終了処理
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-	ImGuiManager::EndFrame(cmdList);
-
-	renderCoordinator_->EndFrame();
+	// フレーム待機（システム処理）
 	frameLimiter_->WaitNextFrame();
 
-	// アップロードリソース管理
-	uint64_t completedFenceValue = renderCoordinator_->GetFenceValue();
+	// アップロードリソース管理（
+	uint64_t completedFenceValue = renderPipeline_->GetRenderCoordinator()->GetFenceValue();
 	for (auto& textureResource : textureLoader_->GetNewUploads())
 	{
-		textureLoader_->RegisterPendingUpload(
-			textureResource.intermediate, completedFenceValue
-		);
+		textureLoader_->RegisterPendingUpload(textureResource.intermediate, completedFenceValue);
 	}
 	textureLoader_->ClearNewUploads();
-	textureLoader_->CleanupCompletedUploads(
-		renderCoordinator_->GetFence()->GetCompletedValue()
-	);
+	textureLoader_->CleanupCompletedUploads(fence_->GetCompletedValue()); // ※適宜Fence修正
 }
 
 void Engine::InitializeSystem()
@@ -301,21 +258,6 @@ void Engine::InitializeRenderer()
 
 	// レンダリング制御クラス初期化
 	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight());
-	renderCoordinator_ = std::make_unique<RenderCoordinator>();
-	renderCoordinator_->Initialize(
-		swapChain_.get(),
-		rtvManager_.get(),
-		offscreenRTVManager_.get(),
-		commandManager_.get(),
-		renderContext_.get(),
-		fence_.Get(),
-		fenceEvent_,
-		graphicsDevice_.get(),
-		this,
-		mainDsvHandle,
-		offscreenDsvHandle,
-		offscreenDepthResource_.Get()
-	);
 
 	// DXC 初期化
 	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
@@ -346,32 +288,9 @@ void Engine::InitializeRenderer()
 		rootSignatureManager_.get()
 	);
 
-	// オフスクリーン深度の SRV インデックス
-	uint32_t offscreenDepthSrvIndex =
-		dsvManager_->GetDSVTextureSRVIndex(1);
-
-	// ポストエフェクト
-	postEffectManager_ = std::make_unique<PostEffectManager>();
-	postEffectManager_->Initialize(
-		this,
-		GetClientWidth(),
-		GetClientHeight(),
-		rootSignatureManager_.get(),
-		psoManager_.get(),
-		srvManager_.get(),
-		offscreenDepthSrvIndex
-	);
-
-	postEffectManager_->SetSceneDepthIndex(offscreenDepthSrvIndex);
-
-	// シャドウマップ
-	shadowMap_ = std::make_unique<ShadowMap>();
-	shadowMap_->Initialize(
-		graphicsDevice_->GetDevice(),
-		2048,
-		2048,
-		srvManager_.get()
-	);
+	// RenderPipelineを作成、初期化
+	renderPipeline_ = std::make_unique<RenderPipeline>();
+	renderPipeline_->Initialize(this, mainDsvHandle, offscreenDsvHandle);
 }
 
 void Engine::InitializeResources()
@@ -396,10 +315,10 @@ void Engine::InitializeResources()
 		lightManager_.get(),
 		globalConstants_.get(),
 		materialManager_.get(),
-		postEffectManager_.get(),
+		GetPostEffectManager(),
 		GetClientWidth(),
 		GetClientHeight(),
-		shadowMap_.get()
+		GetShadowMap()
 	);
 
 	// 共通ハンドル初期化
