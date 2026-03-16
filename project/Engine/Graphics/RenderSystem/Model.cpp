@@ -144,6 +144,52 @@ void Model::SetPuddleNoiseTexture(const std::string& textureName)
     for (auto& mat : materials_) mat.puddleNoiseHandle = handle;
 }
 
+void Model::CopyMaterialsFrom(const Model* sourceModel)
+{
+    if (!sourceModel) return;
+
+    // マテリアル数が違う場合はコピーしない（安全対策）
+    size_t count = GetMaterialCount();
+    if (count != sourceModel->GetMaterialCount()) return;
+
+    // ベースカラーのコピー
+    SetBaseColor(sourceModel->GetBaseColor());
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        MaterialData* myData = GetMaterialData(i);
+        const MaterialData* sourceData = sourceModel->GetMaterialData(i);
+
+        if (myData && sourceData)
+        {
+            // 構造体のコピー
+            *myData = *sourceData;
+        }
+
+        // テクスチャやハンドルの名前も同期する
+        MaterialHandle* myHandle = GetMaterialHandle(i);
+        MaterialHandle* sourceHandle = const_cast<Model*>(sourceModel)->GetMaterialHandle(i);
+
+        if (myHandle && sourceHandle)
+        {
+            myHandle->textureName = sourceHandle->textureName;
+            myHandle->textureHandle = sourceHandle->textureHandle;
+            myHandle->normalMapName = sourceHandle->normalMapName;
+            myHandle->normalMapHandle = sourceHandle->normalMapHandle;
+            myHandle->envMapName = sourceHandle->envMapName;
+            myHandle->envMapHandle = sourceHandle->envMapHandle;
+            myHandle->dissolveMapName = sourceHandle->dissolveMapName;
+            myHandle->dissolveMapHandle = sourceHandle->dissolveMapHandle;
+            myHandle->toonRampName = sourceHandle->toonRampName;
+            myHandle->toonRampHandle = sourceHandle->toonRampHandle;
+            myHandle->puddleNoiseName = sourceHandle->puddleNoiseName;
+            myHandle->puddleNoiseHandle = sourceHandle->puddleNoiseHandle;
+            myHandle->rippleTextureName = sourceHandle->rippleTextureName;
+            myHandle->rippleTextureHandle = sourceHandle->rippleTextureHandle;
+        }
+    }
+}
+
 void Model::SetColor(const Vector4& color)
 {
     for (auto& mat : materials_) {

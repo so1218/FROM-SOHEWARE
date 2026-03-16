@@ -177,6 +177,39 @@ void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4
     directionalLightData_[index].viewProj = viewProjection;
 }
 
+void LightManager::UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarget)
+{
+    auto* dirLights = GetDirectionalLightData();
+    if (!dirLights[lightIndex].enable) return;
+
+    // ライト方向を正規化
+    Vector3 lightDir = dirLights[lightIndex].direction;
+    lightDir = lightDir.Normalize();
+
+    // ライト位置を決定
+    float distance = 100.0f;
+    Vector3 lightPos = shadowTarget - (lightDir * distance);
+
+    // 上方向ベクトル
+    Vector3 up = { 0.0f, 1.0f, 0.0f };
+    if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+
+    // ライトのビュー行列を作成
+    Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
+
+    // 平行光源用の正射影行列を作成
+    float size = 100.0f;
+    float nearZ = -100.0f;
+    float farZ = 200.0f;
+    Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
+
+    // ビュー行列と射影行列を合成
+    Matrix4x4 lightViewProj = lightView * lightProj;
+
+    // シャドウ行列を更新
+    UpdateDirectionalLightShadowMatrix(lightIndex, lightViewProj);
+}
+
 void LightManager::DrawDebugLights()
 {
 #ifdef IS_DEVELOPMENT

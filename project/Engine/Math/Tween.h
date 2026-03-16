@@ -1,6 +1,7 @@
 #pragma once
 #include "Easing.h"
 #include "MathUtils.h"
+#include "TimeManager.h"
 
 template <typename T>
 class Tween

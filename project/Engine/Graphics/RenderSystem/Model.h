@@ -39,6 +39,9 @@ public:
     void SetRippleTexture(const std::string& textureName);
     void SetPuddleNoiseTexture(const std::string& textureName);
 
+    // 別のモデルからマテリアル情報をすべてコピーする関数
+    void CopyMaterialsFrom(const Model* sourceModel);
+
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);
 
@@ -99,7 +102,7 @@ public:
     const ModelData* GetModelData() const { return modelData_; }
 
 private:
-    // 範囲チェック
+    // ヘルパー関数: 範囲チェック
     bool IsValidMaterialIndex(size_t index) const;
 
 private:

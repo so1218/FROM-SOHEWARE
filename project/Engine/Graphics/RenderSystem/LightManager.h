@@ -48,6 +48,9 @@ public:
     // ディレクショナルライトの行列更新
     void UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection);
 
+    // シャドウ用の行列を計算して更新する関数
+    void UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarget);
+
     void DrawDebugLights();
 
 private:
