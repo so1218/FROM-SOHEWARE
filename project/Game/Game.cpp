@@ -10,6 +10,7 @@
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 #include "ProjectConfig.h"
+#include "Engine.h"
 
 Game::Game() 
     : engine_(std::make_unique<Engine>())

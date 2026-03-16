@@ -1,9 +1,8 @@
 #pragma once
-#include "Engine.h"
-#include "DebugCamera.h"
 #include "SceneManager.h"
-#include "DebugLayerManager.h"
 #include "DebugUtils.h"
+
+class Engine;
 
 class Game
 {

@@ -20,5 +20,6 @@ public:
 
 private:
     // メンバー変数
+    std::unique_ptr<ParticleEmitter> playSceneEmitter_ = nullptr;
 };
 
