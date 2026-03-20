@@ -740,17 +740,29 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         Draw(matPrefix + "RippleEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
                         {
-                            Draw(matPrefix + "UsePuddle", "水たまり形成");
                             Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
-                            Draw(matPrefix + "RippleMap", "波紋法線マップ");
-                            Draw(matPrefix + "RippleScale", "雨の密度");
-                            Draw(matPrefix + "RippleStren", "波紋の強さ");
 
+                            ImGui::Spacing();
+                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋 (Ripple) 設定");
+                            Draw(matPrefix + "RippleMap", "波紋法線マップ");
+                            Draw(matPrefix + "RippleScale", "雨の密度(スケール)");
+                            Draw(matPrefix + "RippleStren", "波紋の強さ(法線)");
+                            Draw(matPrefix + "RippleSpeed", "波紋の全体速度");
+                            Draw(matPrefix + "RippleSize", "波紋の広がりサイズ");
+                            Draw(matPrefix + "RippleFreq", "波紋の発生頻度");
+                            Draw(matPrefix + "RippleMix", "波紋のレイヤー合成率");
+
+                            ImGui::Spacing();
+                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "水たまり (Puddle) 設定");
+                            Draw(matPrefix + "UsePuddle", "水たまり形成");
                             if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
                             {
-                                ImGui::Separator();
-                                Draw(matPrefix + "PuddleNoise", "分布ノイズ");
-                                Draw(matPrefix + "PuddleColor", "水の色と濁り");
+                                Draw(matPrefix + "PuddleNoise", "分布ノイズマップ");
+                                Draw(matPrefix + "PuddleScale", "ノイズスケール");
+                                Draw(matPrefix + "PuddleFalloff", "エッジの滑らかさ");
+                                Draw(matPrefix + "PuddleColor", "水の色と濁り(Alpha)");
+                                Draw(matPrefix + "PuddleTint", "水の色合い調整");
+                                Draw(matPrefix + "PuddleEmission", "水たまりの発光強度");
                             }
                         }
                         ImGui::TreePop();
