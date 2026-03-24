@@ -87,7 +87,7 @@ void Game::Update()
 {
 #ifdef IS_DEVELOPMENT
     // デバッグカメラの有効/無効切り替え
-    if (Input::GetInstance().IsKeyTriggered(DIK_C))
+    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
         engine_->GetDebugCamera()->SetEnabled(!engine_->GetDebugCamera()->IsEnabled());
     }

@@ -681,8 +681,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         Draw(matPrefix + "AddShadow", "影を受ける");
                         if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
                         {
-                            Draw(matPrefix + "ShadowDens", "影のキレ(閾値)");
-                            Draw(matPrefix + "ShadowEnv", "影の明るさ");
+                            Draw(matPrefix + "ShadowDens", "影の濃さ(不透明度)");
+                            Draw(matPrefix + "ShadowEnv", "環境光の影の強さ");
                             Draw(matPrefix + "ShadowBias", "バイアス");
                             Draw(matPrefix + "ShadowSoft", "柔らかさ");
                         }

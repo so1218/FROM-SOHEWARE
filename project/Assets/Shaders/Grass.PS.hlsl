@@ -48,6 +48,14 @@ PixelShaderOutput main(PixelInput input)
     {
         shadowFactor = CalculateShadow(input.shadowCoord, normal);
     }
+    
+    // 雷フラッシュの計算
+    float flashIntensity = gFrameData.lightningFlashIntensity;
+    float3 flashColor = gFrameData.lightningFlashColor * flashIntensity;
+    float flashShadowCancel = saturate(flashIntensity);
+
+    // 雷が光っている間は影を打ち消す
+    shadowFactor = lerp(shadowFactor, 1.0f, flashShadowCancel);
 
     float NdotL = dot(normal, lightDir) * 0.5f + 0.5f;
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL * shadowFactor;
@@ -55,9 +63,12 @@ PixelShaderOutput main(PixelInput input)
     // 透過光
     float viewDotLight = saturate(dot(toEye, -lightDir));
     float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
+ 
+    // 環境光に雷の色を加算
+    float3 ambient = baseColor * (0.2f + flashColor);
     
     // ベースとなる草の色
-    float3 finalColor = diffuse + translucency + (baseColor * 0.2f);
+    float3 finalColor = diffuse + translucency + ambient;
 
     // 根本の影を適用
     finalColor *= smoothstep(1.0f, gMaterial.grassRootAO, input.texcoord.y);
@@ -95,6 +106,7 @@ PixelShaderOutput main(PixelInput input)
         specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity * shadowMask;
     }
 
+    // スペキュラを加算
     finalColor += specular;
 
     output.color = float4(finalColor, 1.0f);

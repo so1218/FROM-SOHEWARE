@@ -528,7 +528,6 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal,
 {
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
-    // PBRパラメータ準備
     float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float metalness = saturate(gMaterial.metalness);
 
@@ -537,26 +536,25 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal,
         if (gDirectionalLights[i].enable == 0)
             continue;
 
-        // ライト情報の取得
         float3 lightDir = normalize(-gDirectionalLights[i].direction);
         float3 lightColor = gDirectionalLights[i].color.rgb * gDirectionalLights[i].color.a;
         float lightIntensity = gDirectionalLights[i].intensity;
 
-        // 基本的な内積
         float NdotL = dot(normal, lightDir);
         float saturateNdotL = saturate(NdotL);
 
-        // ライティング計算の分岐 
+        // 自己陰(NdotL)と落ち影(shadowFactor)を合わせた明るさ
+        float combinedShadow = saturateNdotL;
+        if (i == 0)
+            combinedShadow *= shadowFactor;
+
         float3 radiance = float3(0.0f, 0.0f, 0.0f);
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            // PBR
             radiance = CalculatePBR(pbrAlbedo, normal, toEye, lightDir, lightColor, lightIntensity, roughness, metalness);
-            
-            // 影適用
             if (i == 0)
-                radiance *= shadowFactor;
+                radiance *= shadowFactor; // 影の濃さが適用済みの数値をそのまま掛ける
         }
         else
         {
@@ -566,32 +564,34 @@ float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal,
             if (gMaterial.lightMode == SHADING_MODEL_HALFLAMBERT)
             {
                 float halfLambert = pow(saturateNdotL * 0.5f + 0.5f, gMaterial.diffuseReflection);
+                if (i == 0)
+                    halfLambert *= shadowFactor;
+
                 diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
             }
             else if (gMaterial.lightMode == SHADING_MODEL_PHONG)
             {
-                diffuse = gMaterial.color.rgb * baseColor * lightColor * saturateNdotL * lightIntensity;
+                diffuse = gMaterial.color.rgb * baseColor * lightColor * combinedShadow * lightIntensity;
+
                 if (NdotL > 0.0f)
                 {
                     float3 halfVec = normalize(lightDir + toEye);
                     float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
                     specular = gMaterial.specularColor.rgb * lightColor * spec * lightIntensity;
+                    if (i == 0)
+                        specular *= shadowFactor;
                 }
             }
             else if (gMaterial.lightMode == SHADING_MODEL_TOON)
             {
                 float rampU = NdotL * 0.5f + 0.5f;
+                if (i == 0)
+                    rampU *= shadowFactor; // ランプUVに直接適用
+                
                 float3 rampColor = gToonRamp.Sample(gClampSampler, float2(rampU, 0.5f)).rgb;
                 diffuse = gMaterial.color.rgb * baseColor * rampColor * lightColor * lightIntensity;
             }
 
-            // 影適用
-            if (i == 0)
-            {
-                diffuse *= shadowFactor;
-                specular *= shadowFactor;
-            }
-            
             radiance = diffuse + specular;
         }
 
@@ -831,7 +831,7 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         return 1.0f;
     }
 
-    // PCF
+    // PCFによる柔らかさの計算
     float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
     float softness = max(gMaterial.shadowSoftness, 1.0f);
 
@@ -847,13 +847,13 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         );
     }
 
-    // 平均化（0.0が完全な影、1.0が完全な光）
+    // 平均化
     float shadowVisibility = shadow * (1.0f / 16.0f);
-
-    float densityLimit = min(gMaterial.shadowDensity, 0.99f);
     
-    // densityLimitが高いほど、薄いグレーの影が黒(0.0)に変換され、影が太くくっきりする
-    return smoothstep(densityLimit, 1.0f, shadowVisibility);
+    float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
+    
+    // minShadow ～ 1.0 の範囲に変換して返す
+    return lerp(minShadow, 1.0f, shadowVisibility);
 }
 
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
