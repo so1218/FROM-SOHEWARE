@@ -449,7 +449,7 @@ void ParticleEditor::ShowEditor()
 
                     if (attraction.enabled)
                     {
-                        ImGui::DragFloat("引力の強さ", &attraction.strength, 0.1f, 0.0f, 300.0f);
+                        ImGui::DragFloat("引力の強さ", &attraction.strength, 0.1f, -500.0f, 500.0f);
 
                         ImGui::Separator();
                         ImGui::Text("静的ターゲット (ターゲット未設定時)");

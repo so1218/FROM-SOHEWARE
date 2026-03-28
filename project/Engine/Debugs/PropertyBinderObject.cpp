@@ -599,6 +599,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 template <typename ModelType>
 void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath)
 {
+#ifdef IS_DEVELOPMENT
     if (!targetModel) return;
 
     size_t matCount = targetModel->GetMaterialCount();
@@ -791,4 +792,5 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
             ImGui::EndTabBar();
         }
     }
+#endif 
 }
