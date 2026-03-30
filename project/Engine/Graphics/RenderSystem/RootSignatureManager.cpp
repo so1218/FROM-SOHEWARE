@@ -3,6 +3,9 @@
 #include "RootSignatureBuilder.h"
 #include "Logger.h"
 
+namespace FE
+{
+
 void RootSignatureManager::Initialize(ID3D12Device* device)
 {
     device_ = device;
@@ -254,4 +257,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     LOG_ERROR("Unknown RootSignature: {}", name);
     assert(false && "Unknown RootSignature name.");
     return nullptr;
+}
+
 }

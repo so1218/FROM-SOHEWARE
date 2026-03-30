@@ -3,6 +3,8 @@
 #include "ImGuiManager.h"
 #include "Player.h"
 
+using namespace FE;
+
 GrassField::GrassField(Engine* engine, Player* player) : GameObject(engine)
 {
     SetTag("GrassField");

@@ -8,6 +8,9 @@
 #include "Engine.h" 
 #include "SRVManager.h"
 
+namespace FE
+{
+
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
     : particleSystem_(particleSystem), engine_(engine)
 {
@@ -617,4 +620,6 @@ void ParticleEditor::ApplyEmitterConfigToLiveEmitters(const std::string& presetN
                 emitter->Play();
         }
     }
+}
+
 }

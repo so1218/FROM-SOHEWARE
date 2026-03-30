@@ -3,6 +3,9 @@
 #include "Matrix.h"
 #include "Camera.h"
 
+namespace FE
+{
+
 /// デバッグカメラ
 class DebugCamera
 {
@@ -24,8 +27,8 @@ public:
 
     // ビュー射影行列取得
     Matrix4x4 GetViewMatrix();
-    Matrix4x4 GetProjectionMatrix(){ return Matrix4x4::MakePerspectiveFov(fovY_, aspectRatio_, nearClip_, farClip_); }
-    Matrix4x4 GetViewProjectionMatrix(){ return GetViewMatrix() * GetProjectionMatrix(); }
+    Matrix4x4 GetProjectionMatrix() { return Matrix4x4::MakePerspectiveFov(fovY_, aspectRatio_, nearClip_, farClip_); }
+    Matrix4x4 GetViewProjectionMatrix() { return GetViewMatrix() * GetProjectionMatrix(); }
 
     // カメラパラメータ設定
     void SetFovY(float fovY) { fovY_ = fovY; UpdateProjectionMatrix(); }
@@ -55,7 +58,7 @@ public:
     float GetRotateSpeed() { return rotateSpeed_; }
     float GetZoomSpeed() { return zoomSpeed_; }
 
-    void SetEnabled(bool enabled) { isEnabled_ = enabled;}
+    void SetEnabled(bool enabled) { isEnabled_ = enabled; }
     bool IsEnabled() const { return isEnabled_; }
 
     void SetDragSpeed(float speed) { dragSpeed_ = speed; }
@@ -101,8 +104,10 @@ private:
     float rotateSpeed_ = 1.0f;
     float zoomSpeed_ = 1.0f;
 
-	float minDistance_ = 1.0f; 
+    float minDistance_ = 1.0f;
 
     // デバッグカメラの有効/無効フラグ
     bool isEnabled_;
 };
+
+}

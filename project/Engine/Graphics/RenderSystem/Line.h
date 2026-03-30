@@ -2,6 +2,9 @@
 #include "WorldTransform.h"
 #include "MathUtils.h"
 
+namespace FE
+{
+
 class Engine;
 class Camera;
 
@@ -34,3 +37,5 @@ private:
 
     uint32_t color_ = 0xFFFFFFFF;
 };
+
+}

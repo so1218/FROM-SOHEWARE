@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "PropertyBinder.h"
 
+namespace FE
+{
+
 void PropertyBinder::BindBool(const std::string& key, int32_t* ptr, bool defaultValue)
 {
     // boolの初期値をintに変換
@@ -356,4 +359,6 @@ void PropertyBinder::Draw(const std::string& key, const std::string& name)
     {
         items_[key](name);
     }
+}
+
 }

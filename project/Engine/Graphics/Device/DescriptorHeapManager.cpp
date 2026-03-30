@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "DescriptorHeapManager.h"
 
+namespace FE
+{
+
 // ディスクリプタヒープを作成
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(
     ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
@@ -51,4 +54,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeapManager::GetGPUDescriptorHandle(
     D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
     handle.ptr += descriptorSize * index;
     return handle;
+}
+
 }

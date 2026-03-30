@@ -4,6 +4,9 @@
 #include "Engine.h"
 #include "ImGuiManager.h"
 
+namespace FE
+{
+
 // AABB同士の衝突判定
 bool IsCollision(const AABB& aabb1, const AABB& aabb2)
 {
@@ -144,4 +147,6 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     float dy = checkMousePos.y - screenY;
 
     return (dx * dx + dy * dy) <= radius * radius;
+}
+
 }

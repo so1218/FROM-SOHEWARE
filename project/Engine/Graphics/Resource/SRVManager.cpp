@@ -3,6 +3,9 @@
 #include "DescriptorHeapManager.h"
 #include "Logger.h"
 
+namespace FE
+{
+
 void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)
 {
     device_ = device;
@@ -105,4 +108,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE SRVManager::GetSRVHandleCPU(uint32_t index) const
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = srvHeap_->GetCPUDescriptorHandleForHeapStart();
     cpuHandle.ptr += (SIZE_T)index * srvDescriptorSize_;
     return cpuHandle;
+}
+
 }

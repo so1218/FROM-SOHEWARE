@@ -2,6 +2,9 @@
 #include "Matrix4x4.h" 
 #include "WorldTransform.h" 
 
+namespace FE
+{
+
 // コンストラクタ(初期化なし)
 Matrix4x4::Matrix4x4()
 {
@@ -533,4 +536,6 @@ Matrix4x4 Matrix4x4::RemoveScale(const Matrix4x4& mat)
     }
 
     return result;
+}
+
 }

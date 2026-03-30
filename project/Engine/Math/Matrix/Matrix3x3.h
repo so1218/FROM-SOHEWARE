@@ -1,6 +1,8 @@
 #pragma once
-
 #include "Vector3.h"
+
+namespace FE
+{
 
 class Matrix3x3
 {
@@ -27,3 +29,5 @@ public:
     static Matrix3x3 FromBasis(const Vector3& right, const Vector3& up, const Vector3& forward);
  
 };
+
+}

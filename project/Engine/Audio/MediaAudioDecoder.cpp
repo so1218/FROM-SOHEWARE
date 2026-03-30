@@ -6,6 +6,9 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
 
+namespace FE
+{
+
 AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
 {
     Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
@@ -67,4 +70,6 @@ AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
 
     CoTaskMemFree(pWaveFormat);
     return audioData;
+}
+
 }

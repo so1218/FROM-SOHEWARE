@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class Window
 {
 public:
@@ -26,4 +29,6 @@ private:
     int clientWidth_;
     int clientHeight_;
 };
+
+}
 

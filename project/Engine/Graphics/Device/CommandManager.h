@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class CommandManager
 {
 public:
@@ -15,3 +18,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator_;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList_;
 };
+
+}

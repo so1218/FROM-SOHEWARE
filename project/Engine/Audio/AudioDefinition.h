@@ -3,6 +3,9 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+namespace FE
+{
+
 // 音声データ
 struct AudioData
 {
@@ -11,3 +14,5 @@ struct AudioData
     // バッファの先頭アドレス
     std::vector<BYTE> buffer;
 };
+
+}

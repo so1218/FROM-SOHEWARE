@@ -2,6 +2,8 @@
 #include "Bubble.h"
 #include "ImGuiManager.h"
 
+using namespace FE;
+
 Bubble::Bubble(Engine* engine) : GameObject(engine)
 {
 	SetTag("Bubble");

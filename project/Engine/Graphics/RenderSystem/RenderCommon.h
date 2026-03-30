@@ -6,6 +6,9 @@
 #include "AnimationData.h"
 #include "BlendMode.h"
 
+namespace FE
+{
+
 struct RenderData
 {
     Mesh mesh;
@@ -111,39 +114,43 @@ struct RenderSettings
 
 namespace RenderingPreset
 {
-    // 通常 (不透明・裏面カリング・Z書き込み)
-    static const RenderSettings Standard =
-    {
-        BlendMode::kBlendModeNone, CullMode::Back, DepthMode::Write, RenderGroup::Opaque
-    };
 
-    // 草・マント (不透明・両面)
-    static const RenderSettings StandardNoCull =
-    {
-        BlendMode::kBlendModeNone, CullMode::None, DepthMode::Write, RenderGroup::Opaque
-    };
+// 通常 (不透明・裏面カリング・Z書き込み)
+static const RenderSettings Standard =
+{
+    BlendMode::kBlendModeNone, CullMode::Back, DepthMode::Write, RenderGroup::Opaque
+};
 
-    // ガラス・水 (半透明・裏面カリング)
-    static const RenderSettings Transparent =
-    {
-        BlendMode::kBlendModeNormal, CullMode::Back, DepthMode::ReadOnly, RenderGroup::Transparent
-    };
+// 草・マント (不透明・両面)
+static const RenderSettings StandardNoCull =
+{
+    BlendMode::kBlendModeNone, CullMode::None, DepthMode::Write, RenderGroup::Opaque
+};
 
-    // 魔法陣・爆発 (加算・両面・Z書き込みなし)
-    static const RenderSettings AddNoCull =
-    {
-        BlendMode::kBlendModeAdd, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
-    };
+// ガラス・水 (半透明・裏面カリング)
+static const RenderSettings Transparent =
+{
+    BlendMode::kBlendModeNormal, CullMode::Back, DepthMode::ReadOnly, RenderGroup::Transparent
+};
 
-    // UIや前面表示用 (カリングなし・深度無視)
-    static const RenderSettings UI =
-    {
-        BlendMode::kBlendModeNormal, CullMode::None, DepthMode::None, RenderGroup::Transparent
-    };
+// 魔法陣・爆発 (加算・両面・Z書き込みなし)
+static const RenderSettings AddNoCull =
+{
+    BlendMode::kBlendModeAdd, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
+};
 
-    // グリッド用 
-    static const RenderSettings Grid =
-    {
-        BlendMode::kBlendModeNormal, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
-    };
+// UIや前面表示用 (カリングなし・深度無視)
+static const RenderSettings UI =
+{
+    BlendMode::kBlendModeNormal, CullMode::None, DepthMode::None, RenderGroup::Transparent
+};
+
+// グリッド用 
+static const RenderSettings Grid =
+{
+    BlendMode::kBlendModeNormal, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
+};
+
+}
+
 }

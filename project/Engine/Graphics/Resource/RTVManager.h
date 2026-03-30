@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 class DescriptorHeapManager;
 class SwapChain;
 class SRVManager;
@@ -70,3 +73,5 @@ private:
 
     std::vector<uint32_t> offscreenSrvIndices_;
 };
+
+}

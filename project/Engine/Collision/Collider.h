@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 enum class CollisionShapeType
 {
 	Sphere, 
@@ -53,3 +56,4 @@ private:
 	Vector4 color_ = { 0.0f, 1.0f, 1.0f, 1.0f };
 };
 
+}

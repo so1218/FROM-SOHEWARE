@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class FrameLimiter
 {
 public:
@@ -16,3 +19,5 @@ private:
     const std::chrono::microseconds frameDuration_;
     std::chrono::steady_clock::time_point targetTime_;
 };
+
+}

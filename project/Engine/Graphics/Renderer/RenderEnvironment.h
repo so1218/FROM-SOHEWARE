@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class GraphicsDevice;
 class CommandManager;
 class PSOManager;
@@ -24,3 +27,5 @@ struct RenderEnvironment
     MaterialManager* materialManager = nullptr;
     PostEffectManager* postEffectManager = nullptr;
 };
+
+}

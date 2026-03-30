@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, int clientHeight)
 {
     clientWidth_ = clientWidth;
@@ -144,4 +147,6 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
 
         cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
     }
+}
+
 }

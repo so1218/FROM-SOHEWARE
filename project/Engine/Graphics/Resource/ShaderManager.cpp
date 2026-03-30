@@ -2,6 +2,9 @@
 #include "ShaderManager.h"
 #include "Logger.h"
 
+namespace FE
+{
+
 void ShaderManager::Initialize(
     IDxcUtils* dxcUtils,
     IDxcCompiler3* dxcCompiler,
@@ -146,4 +149,6 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* 
         return shaderBlob.Get();
     }
     return nullptr;
+}
+
 }

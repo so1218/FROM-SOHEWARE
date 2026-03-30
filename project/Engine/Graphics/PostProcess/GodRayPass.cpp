@@ -3,6 +3,9 @@
 #include "BufferManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void GodRayPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
     InitializeBase(engine, w, h);
@@ -78,4 +81,6 @@ void GodRayPass::Execute(ID3D12GraphicsCommandList* cmdList,
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

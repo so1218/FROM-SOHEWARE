@@ -10,6 +10,9 @@
 #include "SRVManager.h"
 #include "DSVManager.h"
 
+namespace FE
+{
+
 RenderPipeline::RenderPipeline() = default;
 RenderPipeline::~RenderPipeline() = default;
 
@@ -102,4 +105,6 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     ImGuiManager::EndFrame(cmdList);
 
     renderCoordinator_->EndFrame();
+}
+
 }

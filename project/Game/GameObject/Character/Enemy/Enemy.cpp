@@ -6,6 +6,8 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
+using namespace FE;
+
 Enemy::Enemy(Engine* engine) : GameObject(engine, 10)
 {
 	SetTag("Enemy");

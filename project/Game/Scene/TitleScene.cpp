@@ -7,6 +7,8 @@
 #include "TimeManager.h"
 #include "Grid.h"
 
+using namespace FE;
+
 TitleScene::TitleScene(Engine* engine)
     : BaseScene(engine)
 {

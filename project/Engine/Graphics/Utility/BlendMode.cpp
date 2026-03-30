@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "BlendMode.h"
 
+namespace FE
+{
+
 D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode)
 {
     D3D12_RENDER_TARGET_BLEND_DESC desc{};
@@ -53,4 +56,6 @@ D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode)
     }
 
     return desc;
+}
+
 }

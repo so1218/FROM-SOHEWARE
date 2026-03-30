@@ -6,6 +6,9 @@
 #include "Structures.h"
 #include "ParticleDefinition.h"
 
+namespace FE
+{
+
 class Engine;
 class ParticleEmitter;
 class ParticleEditor;
@@ -45,4 +48,4 @@ public:
     std::unordered_map<std::string, ParticleEmitter*> namedEmitters_;
 };
 
-
+}

@@ -2,7 +2,11 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
-class SSRPass : public IPostEffect {
+namespace FE
+{
+
+class SSRPass : public IPostEffect
+{
 public:
     void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
 
@@ -26,3 +30,5 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 };
+
+}

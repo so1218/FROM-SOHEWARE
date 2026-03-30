@@ -2,6 +2,9 @@
 #include "ParticleConfigManager.h" 
 #include "ParticleSystem.h" 
 
+namespace FE
+{
+
 ParticleConfigManager::ParticleConfigManager(ParticleSystem* particleSystem)
     : particleSystem_(particleSystem)
 {
@@ -555,4 +558,6 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
     }
 
     ofs << rootJson.dump(4); // 見やすくインデント付きで出力
+}
+
 }

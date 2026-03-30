@@ -5,6 +5,9 @@
 #include "SwapChain.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, DescriptorHeapManager* descriptorManager)
 {
     backBufferCount = bufferCount;
@@ -121,4 +124,6 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     offscreenSrvIndices_.push_back(srvIndex);
 
     return { texture, rtvHandle, srvIndex };
+}
+
 }

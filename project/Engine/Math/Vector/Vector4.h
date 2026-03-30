@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class Matrix4x4;
 
 class Vector4
@@ -39,3 +42,5 @@ struct Vector4Int
 };
 
 Vector4 operator*(const Matrix4x4& mat, const Vector4& vec);
+
+}

@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{
+
 class ParticleSystem;
 
 class ParticleConfigManager
@@ -16,3 +20,5 @@ private:
 
     ParticleSystem* particleSystem_;
 };
+
+}

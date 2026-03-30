@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "ShapeGenerator.h"
 
+namespace FE
+{
+
 void ShapeGenerator::SkyBoxGenerator(
     std::vector<VertexData>& vertices,
     std::vector<uint32_t>& indices
@@ -52,4 +55,6 @@ void ShapeGenerator::SkyBoxGenerator(
         std::begin(skyboxIndices),
         std::end(skyboxIndices)
     );
+}
+
 }

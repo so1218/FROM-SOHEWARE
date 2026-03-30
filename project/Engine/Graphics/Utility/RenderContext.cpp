@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "RenderContext.h"
 
+namespace FE
+{
+
 RenderContext::RenderContext(uint32_t width, uint32_t height)
 {
     // ビューポート
@@ -18,4 +21,6 @@ RenderContext::RenderContext(uint32_t width, uint32_t height)
     scissorRect_.right = width;
     scissorRect_.top = 0;
     scissorRect_.bottom = height;
+}
+
 }

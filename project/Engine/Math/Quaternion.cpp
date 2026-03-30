@@ -2,6 +2,9 @@
 #include "Quaternion.h"
 #include "MathUtils.h"
 
+namespace FE
+{
+
 // 微小値定数（ゼロ除算防止用）
 static const float kEpsilon = 1e-6f;
 
@@ -373,4 +376,6 @@ Matrix4x4 Quaternion::ToMatrix() const
     result.m[3][3] = 1.0f;
 
     return result;
+}
+
 }

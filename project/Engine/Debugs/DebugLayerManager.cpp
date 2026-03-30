@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "DebugLayerManager.h"
 
+namespace FE
+{
+
 DebugLayerManager::DebugLayerManager()
 #ifdef _DEBUG
     : debugController_(nullptr)
@@ -29,4 +32,6 @@ void DebugLayerManager::Initialize()
         debugController_->SetEnableGPUBasedValidation(TRUE);
     }
 #endif
+}
+
 }

@@ -3,6 +3,9 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
+namespace FE
+{
+
 template <typename T>
 class Tween
 {
@@ -60,4 +63,6 @@ void Tween<T>::Update()
     // Easing計算とLerpの適用をすべて実行
     float eased_t = Easing::Evaluate(type_, t);
     *target_ = Math::Lerp(startValue_, endValue_, eased_t);
+}
+
 }

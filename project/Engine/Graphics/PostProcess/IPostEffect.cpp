@@ -3,6 +3,9 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 IPostEffect::~IPostEffect()
 {
     // SRV解放
@@ -71,4 +74,6 @@ void IPostEffect::PostDraw(ID3D12GraphicsCommandList* cmdList)
         D3D12_RESOURCE_STATE_RENDER_TARGET,
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &barrier);
+}
+
 }

@@ -3,6 +3,9 @@
 #include "AudioPlayer.h"
 #include "StringUtils.h"
 
+namespace FE
+{
+
 std::unordered_map<std::string, int> AudioManager::audioMap_;
 bool AudioManager::initialized_ = false;
 
@@ -71,4 +74,6 @@ int AudioManager::Get(const std::string& name)
     }
 
     return it->second;
+}
+
 }

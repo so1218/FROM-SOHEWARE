@@ -3,6 +3,9 @@
 #include "Logger.h"
 #include "StringUtils.h"
 
+namespace FE
+{
+
 void GraphicsDevice::Initialize()
 {
     // DXGIファクトリーの生成
@@ -109,4 +112,6 @@ void GraphicsDevice::EnableDebugLayer()
        
     }
 #endif
+}
+
 }

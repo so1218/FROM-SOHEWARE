@@ -2,6 +2,9 @@
 #include "Vector2.h"
 #include "Matrix4x4.h"
 
+namespace FE
+{
+
 class WorldTransform;
 class Camera;
 
@@ -63,3 +66,4 @@ private:
 #endif
 };
 
+}

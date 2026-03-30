@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class SwapChain
 {
 public:
@@ -19,3 +22,5 @@ private:
 	Microsoft::WRL::ComPtr <IDXGISwapChain4> dxgiSwapChain_ = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_{};
 };
+
+}

@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void ModelRenderer::Initialize(const RenderEnvironment& env)
 {
     device_ = env.device; 
@@ -627,4 +630,6 @@ void ModelRenderer::PrepareBatches()
             if (currentInstanceLocation_ >= kMaxInstances) break;
         }
     }
+}
+
 }

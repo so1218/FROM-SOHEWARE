@@ -1,6 +1,9 @@
 #pragma once
 #include "GameObject.h"
 
+namespace FE
+{
+
 class CollisionManager;
 
 class GameObjectManager 
@@ -42,3 +45,5 @@ private:
     std::vector<std::unique_ptr<GameObject>> objects_;
     bool isSortNeeded_ = false; // 毎フレームソートしないためのフラグ
 };
+
+}

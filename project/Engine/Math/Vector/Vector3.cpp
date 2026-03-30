@@ -1,5 +1,8 @@
 #include "pch.h"
-#include "Vector3.h"  
+#include "Vector3.h"
+
+namespace FE
+{
 
 // 複合代入演算子の定義
 Vector3& Vector3::operator+=(const Vector3& other)
@@ -209,4 +212,6 @@ Vector3 Vector3::CatmullRomInterpolation(const std::vector<Vector3>& controlPoin
     result.z = 0.5f * ((2.0f * p1.z) + (-p0.z + p2.z) * t + (2.0f * p0.z - 5.0f * p1.z + 4.0f * p2.z - p3.z) * t2 + (-p0.z + 3.0f * p1.z - 3.0f * p2.z + p3.z) * t3);
 
     return result;
+}
+
 }

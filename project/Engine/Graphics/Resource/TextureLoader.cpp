@@ -4,6 +4,9 @@
 #include "BufferManager.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 TextureLoader::TextureLoader() {};
 
 TextureLoader::~TextureLoader()
@@ -309,4 +312,6 @@ uint32_t TextureLoader::Load(const std::string& filePath)
 
     // SRVインデックスを返す
     return texResources.srvIndex;
+}
+
 }

@@ -3,6 +3,9 @@
 #include "WorldTransform.h"
 #include "MathUtils.h"
 
+namespace FE
+{
+
 class Camera
 {
 public:
@@ -71,7 +74,7 @@ public:
     }
 
     // カメラの前方ベクトルを取得
-    Vector3 GetForward() const 
+    Vector3 GetForward() const
     {
         // ワールド行列のZ軸成分が前方ベクトル
         Vector3 forward;
@@ -130,3 +133,5 @@ private:
     Matrix4x4 matProjection_;
     Matrix4x4 matViewProjection_;
 };
+
+}

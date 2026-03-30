@@ -2,6 +2,9 @@
 #include "BufferManager.h"
 #include "Structures.h"
 
+namespace FE
+{
+
 constexpr int MAX_DIRECTIONAL_LIGHTS = 2;
 constexpr int MAX_POINT_LIGHTS = 100;
 constexpr int MAX_SPOT_LIGHTS = 2;
@@ -73,3 +76,4 @@ private:
     std::queue<int> availableAreaLightIndices_;
 };
 
+}

@@ -2,6 +2,9 @@
 #include "ShadowMap.h"
 #include "SRVManager.h" 
 
+namespace FE
+{
+
 void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManager* srvManager)
 {
     srvManager_ = srvManager;
@@ -118,4 +121,6 @@ void ShadowMap::EndPass(ID3D12GraphicsCommandList* cmdList)
 {
     // 読み込み状態へバリア遷移
     TransitionToRead(cmdList);
+}
+
 }

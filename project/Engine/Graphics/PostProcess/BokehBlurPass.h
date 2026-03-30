@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class BokehBlurPass : public IPostEffect
 {
 public:
@@ -28,3 +31,5 @@ private:
 
     PSOManager* psoManager_ = nullptr;
 };
+
+}

@@ -7,6 +7,9 @@
 #include "Model.h"
 #include "AnimationModel.h"
 
+namespace FE
+{ 
+
 namespace UpdateOrder
 {
     enum Priority
@@ -53,3 +56,5 @@ protected:
     int priority_ = 0;
     bool isDead_ = false;
 };
+
+}

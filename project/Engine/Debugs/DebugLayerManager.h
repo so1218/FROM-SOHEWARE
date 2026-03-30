@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class DebugLayerManager
 {
 public:
@@ -21,3 +24,5 @@ private:
     ID3D12Debug1* debugController_;
 #endif
 };
+
+}

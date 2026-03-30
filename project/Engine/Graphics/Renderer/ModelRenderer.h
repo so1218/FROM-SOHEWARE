@@ -4,6 +4,9 @@
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 class ModelRenderer
 {
 public:
@@ -91,3 +94,5 @@ private:
 
     std::vector<RenderBatch> batches_;
 };
+
+}

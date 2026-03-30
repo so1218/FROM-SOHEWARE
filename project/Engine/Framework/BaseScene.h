@@ -5,6 +5,9 @@
 #include "GameObjectManager.h"
 #include "ParticleSystemWrapper.h"
 
+namespace FE
+{
+
 class BaseScene
 {
 public:
@@ -91,3 +94,4 @@ protected:
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
 };
 
+}

@@ -3,6 +3,9 @@
 #include "Engine.h"
 #include "ModelManager.h"
 
+namespace FE
+{
+
 GrassSystem::GrassSystem(Engine* engine, const std::string& modelName, const std::string& textureName)
     : engine_(engine)
 {
@@ -83,3 +86,5 @@ void GrassSystem::SetTranslucency(float translucency) { materialData_.grassTrans
 void GrassSystem::SetRootAO(float ao) { materialData_.grassRootAO = ao; }
 void GrassSystem::SetAlphaCutoff(float cutoff) { materialData_.grassAlphaCutoff = cutoff; }
 void GrassSystem::SetEnableShadow(bool enable) { materialData_.addShadow = enable ? 1 : 0; }
+
+}

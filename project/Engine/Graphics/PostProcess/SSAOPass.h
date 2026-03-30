@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class SSAOPass : public IPostEffect 
 {
 public:
@@ -24,3 +27,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> cbSSAO_;
     SSAOSettings* ssaoData_ = nullptr;
 };
+
+}

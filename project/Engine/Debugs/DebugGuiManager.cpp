@@ -10,6 +10,9 @@
 #include "DebugCamera.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
     TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
 {
@@ -884,3 +887,5 @@ void DebugGuiManager::EndSceneView()
 }
 
 #endif
+
+}

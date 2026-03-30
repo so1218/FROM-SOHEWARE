@@ -3,6 +3,9 @@
 #include "BufferManager.h"
 #include "Engine.h" 
 
+namespace FE
+{
+
 void BokehBlurPass::Initialize(Engine* engine,
     UINT width,
     UINT height,
@@ -61,4 +64,6 @@ void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
 
     // RTをSRVに戻す
     PostDraw(cmdList);
+}
+
 }

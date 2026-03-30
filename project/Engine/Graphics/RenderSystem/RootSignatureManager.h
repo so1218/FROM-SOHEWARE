@@ -1,6 +1,7 @@
 #pragma once
 
-using Microsoft::WRL::ComPtr;
+namespace FE
+{
 
 class RootSignatureManager
 {
@@ -19,3 +20,5 @@ private:
     // 生成済みルートシグネチャのキャッシュ
     std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D12RootSignature>> rootSignatureCache_;
 };
+
+}

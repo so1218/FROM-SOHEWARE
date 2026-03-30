@@ -3,6 +3,9 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 class SpriteRenderer
 {
 public:
@@ -41,3 +44,5 @@ private:
     int clientWidth_ = 0;
     int clientHeight_ = 0;
 };
+
+}

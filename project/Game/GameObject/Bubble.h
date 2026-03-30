@@ -3,18 +3,18 @@
 #include "GameObject.h"
 #include "PropertyBinder.h"
 
-class Bubble : public GameObject
+class Bubble : public FE::GameObject
 {
 public:
-    Bubble(Engine* engine);
+    Bubble(FE::Engine* engine);
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugDraw() override;
 
-    std::unique_ptr<Model> model_;
+    std::unique_ptr<FE::Model> model_;
 private:
-    std::unique_ptr<PropertyBinder> binder_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
 };
 

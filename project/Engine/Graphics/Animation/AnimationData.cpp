@@ -5,6 +5,9 @@
 #include "MathUtils.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)
 {
 	assert(!keyframes.empty()); // キーが無いものは返す値がわからないのでダメ
@@ -244,4 +247,6 @@ void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
 		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
 			Matrix4x4::Inverse(skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix).Transpose();
 	}
+}
+
 }

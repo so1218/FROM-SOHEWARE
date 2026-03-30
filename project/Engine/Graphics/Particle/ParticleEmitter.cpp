@@ -2,6 +2,9 @@
 #include "ParticleEmitter.h"
 #include "TimeManager.h"
 
+namespace FE
+{
+
 void ParticleEmitter::Initialize(const EmitterConfig& config)
 {
     // EmitterConfigからすべての設定をコピー
@@ -140,4 +143,6 @@ void ParticleEmitter::SetFollowAxes(bool x, bool y, bool z)
     followX_ = x;
     followY_ = y;
     followZ_ = z;
+}
+
 }

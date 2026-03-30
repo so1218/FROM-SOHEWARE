@@ -3,6 +3,9 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 
+namespace FE
+{
+
 class RendererManager;
 class Camera;
 
@@ -32,3 +35,5 @@ public:
 private:
     static RendererManager* rendererManager_; 
 };
+
+}

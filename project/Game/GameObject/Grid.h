@@ -2,10 +2,10 @@
 #include "Engine.h"
 #include "GameObject.h"
 
-class Grid : public GameObject
+class Grid : public FE::GameObject
 {
 public:
-    Grid(Engine* engine);
+    Grid(FE::Engine* engine);
     ~Grid() override = default;
 
     void Initialize() override {};
@@ -13,6 +13,6 @@ public:
     void Draw() override;
 
 private:
-    std::unique_ptr<Model> model_;
+    std::unique_ptr<FE::Model> model_;
 
 };

@@ -4,10 +4,10 @@
 #include "Skybox.h"
 #include "PropertyBinder.h"
 
-class Ground : public GameObject
+class Ground : public FE::GameObject
 {
 public:
-    Ground(Engine* engine);
+    Ground(FE::Engine* engine);
 
     void Initialize() override;
     void Update() override;
@@ -15,12 +15,12 @@ public:
     void DebugDraw() override;
 
 private:
-    std::unique_ptr<Model> model_;
-    std::unique_ptr<Model> modelTree_;
-    std::unique_ptr<Model> modelRock_;
-    std::unique_ptr<Skybox> skybox_;
-    std::unique_ptr<PropertyBinder> binder_;
+    std::unique_ptr<FE::Model> model_;
+    std::unique_ptr<FE::Model> modelTree_;
+    std::unique_ptr<FE::Model> modelRock_;
+    std::unique_ptr<FE::Skybox> skybox_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
 
-    std::vector<Vector3> treePositions_;
+    std::vector<FE::Vector3> treePositions_;
 };
 

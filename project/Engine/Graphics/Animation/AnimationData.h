@@ -3,6 +3,9 @@
 #include "Structures.h"
 #include "WorldTransform.h"
 
+namespace FE
+{
+
 class SRVManager;
 
 static uint32_t constexpr kNumMaxInfluence = 4;
@@ -108,3 +111,5 @@ SkinCluster CreateSkinCluster(
     const ModelData& modelData,
     SRVManager* srvManager);
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton);
+
+}

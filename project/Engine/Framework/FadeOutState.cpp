@@ -2,6 +2,9 @@
 #include "FadeOutState.h"
 #include "FadeInState.h"
 
+namespace FE
+{
+
 void FadeOutState::Update(SceneManager* manager)
 {
     // フェードの更新
@@ -27,11 +30,13 @@ void FadeOutState::Update(SceneManager* manager)
     }
 }
 
-void FadeOutState::Draw(SceneManager* manager) 
+void FadeOutState::Draw(SceneManager* manager)
 {
     if (manager->GetCurrentScene())
     {
         manager->GetCurrentScene()->Draw();
     }
     manager->GetFade()->Draw();
+}
+
 }

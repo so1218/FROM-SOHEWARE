@@ -1,6 +1,9 @@
 #pragma once
 #include "AnimationLoader.h" 
 
+namespace FE
+{
+
 class AnimationManager
 {
 public:
@@ -26,3 +29,5 @@ private:
 
     std::unordered_map<std::string, Animation> animations_;
 };
+
+}

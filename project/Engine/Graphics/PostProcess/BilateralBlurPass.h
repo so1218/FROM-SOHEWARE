@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class BilateralBlurPass : public IPostEffect
 {
 public:
@@ -40,3 +43,5 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE intermediateRTV_;
     uint32_t intermediateSRVIndex_ = 0;
 };
+
+}

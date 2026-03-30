@@ -3,6 +3,9 @@
 #include "Engine.h"
 #include "RootSignatureManager.h"
 
+namespace FE
+{
+
 void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
 {
     InitializeBase(engine, width, height, DXGI_FORMAT_R8_UNORM);
@@ -43,4 +46,6 @@ void SSAOPass::Execute(
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

@@ -3,6 +3,9 @@
 #include "AudioDevice.h"
 #include "MediaAudioDecoder.h"
 
+namespace FE
+{
+
 // ロード処理
 void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)
 {
@@ -165,4 +168,6 @@ void AudioPlayer::StopUnique(const std::string& name)
         Stop(handle); // 実体を停止
         uniqueHandles_.erase(name); // 管理情報削除
     }
+}
+
 }

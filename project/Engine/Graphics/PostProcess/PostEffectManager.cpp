@@ -4,6 +4,9 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 PostEffectManager::~PostEffectManager()
 {
 }
@@ -345,4 +348,6 @@ void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
     cmdList->ResourceBarrier(1, &barrier);
+}
+
 }

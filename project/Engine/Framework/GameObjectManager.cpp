@@ -3,6 +3,9 @@
 #include "CollisionManager.h" 
 #include "Collider.h"
 
+namespace FE
+{
+
 void GameObjectManager::Initialize()
 {
     for (auto& obj : objects_)
@@ -106,4 +109,6 @@ std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(const std::string
         }
     }
     return result;
+}
+
 }

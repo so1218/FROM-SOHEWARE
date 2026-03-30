@@ -3,6 +3,9 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 // 1つのパーティクルの描画に必要な情報をまとめたもの
 struct ParticleRequest 
 {
@@ -47,3 +50,5 @@ private:
 
     uint32_t prevCount_ = 0;
 };
+
+}

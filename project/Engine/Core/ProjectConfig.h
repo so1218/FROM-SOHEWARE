@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 struct ProjectConfig
 {
     std::wstring windowTitle = L"FROM SOHEWARE";
@@ -7,3 +10,5 @@ struct ProjectConfig
     int32_t height = 720;
     int32_t targetFPS = 60;
 };
+
+}

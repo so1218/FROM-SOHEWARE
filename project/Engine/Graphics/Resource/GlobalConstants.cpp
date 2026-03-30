@@ -5,6 +5,9 @@
 #include "TimeManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void GlobalConstants::Initialize(ID3D12Device* device)
 {
     // 定数バッファを作成
@@ -75,4 +78,6 @@ void GlobalConstants::Update(
 
     frameData_->iResolution = Vector2(1, 1);
     frameData_->screenResolution = Vector2(static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()));
+}
+
 }

@@ -2,6 +2,9 @@
 #include "NormalState.h"
 #include "FadeOutState.h"
 
+namespace FE
+{
+
 void NormalState::Update(SceneManager* manager)
 {
     // 現在のシーンを更新
@@ -27,4 +30,6 @@ void NormalState::Draw(SceneManager* manager)
     {
         manager->GetCurrentScene()->Draw();
     }
+}
+
 }

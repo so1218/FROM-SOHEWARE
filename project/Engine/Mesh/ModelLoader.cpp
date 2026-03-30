@@ -3,6 +3,9 @@
 #include "Logger.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 ModelData ModelLoader::LoadModel(const std::string& filePath)
 {
     LOG_INFO("\n-------------------- ModelLoader::LoadModel Start --------------------");
@@ -300,4 +303,6 @@ void ModelLoader::CalculateSmoothNormals(std::vector<VertexData>& vertices)
         auto key = std::make_tuple(v.position.x, v.position.y, v.position.z);
         v.smoothNormal = normalMap[key];
     }
+}
+
 }

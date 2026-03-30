@@ -9,6 +9,8 @@
 #include "Input.h"
 #include "Grid.h"
 
+using namespace FE;
+
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine)
 {

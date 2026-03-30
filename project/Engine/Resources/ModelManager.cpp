@@ -3,6 +3,9 @@
 #include "ModelLoader.h"
 #include "StringUtils.h" 
 
+namespace FE
+{
+
 // CSV読み込み
 void ModelManager::LoadFromCSV(const std::string& csvPath)
 {
@@ -82,4 +85,6 @@ const ModelData* ModelManager::Get(const std::string& name) const
 void ModelManager::Clear()
 {
     models_.clear();
+}
+
 }

@@ -4,6 +4,9 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
+namespace FE
+{
+
 void SwapChain::Initialize(
     HWND hwnd,
     ID3D12CommandQueue* commandQueue,
@@ -35,4 +38,6 @@ void SwapChain::Initialize(
 void SwapChain::Present()
 {
     dxgiSwapChain_->Present(1, 0);
+}
+
 }

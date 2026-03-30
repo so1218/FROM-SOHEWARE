@@ -5,6 +5,9 @@
 #include "RenderCommon.h" 
 #include "Easing.h" 
 
+namespace FE
+{
+
 class Engine;
 
 class AnimationModel
@@ -169,3 +172,5 @@ private:
     BlendMode blendMode_ = BlendMode::kBlendModeNone;
     RenderGroup renderGroup_ = RenderGroup::Opaque;
 };
+
+}

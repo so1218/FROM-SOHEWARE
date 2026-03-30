@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class GodRayPass : public IPostEffect
 {
 public:
@@ -24,3 +27,5 @@ private:
     GodRaySettings* cbData_ = nullptr;
     PSOManager* psoManager_ = nullptr;
 };
+
+}

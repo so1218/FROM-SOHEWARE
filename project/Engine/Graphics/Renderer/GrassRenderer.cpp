@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void GrassRenderer::Initialize(const RenderEnvironment& env, const ModelData& grassModel)
 {
     // 草のメッシュを初期化
@@ -94,4 +97,6 @@ void GrassRenderer::Draw(const RenderEnvironment& env, uint32_t textureHandle, S
     cmdList->DrawIndexedInstanced(
         static_cast<UINT>(mesh_.GetIndexCount()),
         instanceCount, 0, 0, 0);
+}
+
 }

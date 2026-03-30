@@ -6,10 +6,10 @@
 
 class Player;
 
-class FollowCamera : public GameObject
+class FollowCamera : public FE::GameObject
 {
 public:
-    FollowCamera(Engine* engine, Camera* camera, Player* target);
+    FollowCamera(FE::Engine* engine, FE::Camera* camera, Player* target);
     void Initialize() override;
     void Update() override;
     void DebugDraw() override;
@@ -19,9 +19,9 @@ public:
 
 private:
     Player* target_ = nullptr;
-    Camera* camera_ = nullptr;
+    FE::Camera* camera_ = nullptr;
 
-    std::unique_ptr<PropertyBinder> binder_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
 
     // 目標値
     float targetYaw_ = 0.0f;
@@ -44,13 +44,13 @@ private:
     float positionLerpSpeed_ = 8.0f;  // ターゲット位置の追従速度
 
     // ターゲット位置の補間
-    Vector3 smoothedTargetPos_;   // 補間されたプレイヤー中心位置
-    Vector3 posVelocity_;         // 位置補間用速度
+    FE::Vector3 smoothedTargetPos_;   // 補間されたプレイヤー中心位置
+    FE::Vector3 posVelocity_;         // 位置補間用速度
 
     // カメラ制御
-    Quaternion currentCameraRot_; // 現在のカメラ回転
-    Vector3 lookAtOffset_ = { 0.0f, 1.5f, 0.0f }; // プレイヤーを見上げるオフセット
-    ShakeEffect shakeEffect_;     // カメラシェイク効果
+    FE::Quaternion currentCameraRot_; // 現在のカメラ回転
+    FE::Vector3 lookAtOffset_ = { 0.0f, 1.5f, 0.0f }; // プレイヤーを見上げるオフセット
+    FE::ShakeEffect shakeEffect_;     // カメラシェイク効果
 
     // 制限値
     float minPitch_ = -0.8f;

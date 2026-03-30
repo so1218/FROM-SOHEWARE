@@ -3,6 +3,9 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 class LineRenderer 
 {
 public:
@@ -38,3 +41,5 @@ private:
 
     uint32_t prevCount_ = 0;
 };
+
+}

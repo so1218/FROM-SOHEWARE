@@ -5,10 +5,10 @@
 #include "ParticleEmitter.h"
 #include "Bubble.h"
 
-class TestSceneHori : public BaseScene
+class TestSceneHori : public FE::BaseScene
 {
 public:
-    TestSceneHori(Engine* engine);
+    TestSceneHori(FE::Engine* engine);
 
     void OnInitialize() override;
     void OnUpdate() override;
@@ -22,7 +22,7 @@ private:
     Bubble* bubble_ = nullptr;
     FollowCamera* followCamera_ = nullptr;
 
-    std::unique_ptr<ParticleEmitter> testSceneEmitter_ = nullptr;
-    std::unique_ptr<ParticleEmitter> auraEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> testSceneEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
 };
 

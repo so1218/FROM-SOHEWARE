@@ -8,6 +8,9 @@
 #include "GraphicsDevice.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void RenderCoordinator::Initialize(
     SwapChain* swapChainManager,
     RTVManager* rtvManager,
@@ -174,4 +177,6 @@ void RenderCoordinator::EndOffscreenRender()
 
     // コマンドリストに3つのバリアをまとめて積む
     commandManager_->GetCommandList()->ResourceBarrier(3, barriers);
+}
+
 }

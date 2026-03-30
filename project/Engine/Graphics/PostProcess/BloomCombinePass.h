@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class BloomCombinePass : public IPostEffect
 {
 public:
@@ -51,3 +54,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
     UINT descriptorSize_ = 0;
 };
+
+}

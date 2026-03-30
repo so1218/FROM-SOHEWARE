@@ -2,6 +2,9 @@
 #include "WorldTransform.h"
 #include "Structures.h"
 
+namespace FE
+{
+
 class Engine;
 
 class GrassSystem
@@ -58,3 +61,5 @@ private:
     };
     std::vector<Instance> instances_;
 }; 
+
+}

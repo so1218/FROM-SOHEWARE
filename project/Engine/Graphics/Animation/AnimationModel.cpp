@@ -7,6 +7,9 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
     : AnimationModel(engine,
         ModelManager::GetInstance().Get(modelName),
@@ -423,4 +426,6 @@ Vector3 AnimationModel::GetSkinnedVertexPosition(size_t meshIndex, size_t vertex
     }
 
     return skinnedPos;
+}
+
 }

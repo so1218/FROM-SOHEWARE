@@ -12,6 +12,8 @@
 #include "ProjectConfig.h"
 #include "Engine.h"
 
+using namespace FE;
+
 Game::Game() 
     : engine_(std::make_unique<Engine>())
 {

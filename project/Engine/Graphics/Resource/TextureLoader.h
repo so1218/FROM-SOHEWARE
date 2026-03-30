@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{ 
+
 class SRVManager;
 
 class TextureLoader
@@ -82,3 +86,5 @@ private:
     // 読み込み済みのテクスチャを記録するキャッシュ
     std::unordered_map<std::string, uint32_t> textureCache_;
 };
+
+}

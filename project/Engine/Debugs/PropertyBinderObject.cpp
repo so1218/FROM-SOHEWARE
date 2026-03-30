@@ -6,6 +6,9 @@
 #include "SRVManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 {
     // モデル情報をマップに保存（拡張用）
@@ -793,4 +796,6 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
         }
     }
 #endif 
+}
+
 }

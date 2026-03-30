@@ -4,6 +4,9 @@
 #include "TextureManager.h"
 #include "Camera.h"
 
+namespace FE
+{
+
 Skybox::Skybox(Engine* engine)
 	: engine_(engine)
 {
@@ -39,4 +42,6 @@ void Skybox::Draw()
         color_,
         cubeTextureHandle_
     );
+}
+
 }

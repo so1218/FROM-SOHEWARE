@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 // ログレベル
 enum class LogLevel 
 {
@@ -106,13 +109,15 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
     SetConsoleColor(level);
 }
 
+}
+
 // 便利な呼び出しマクロ
 #ifdef IS_DEVELOPMENT
 
-#define LOG_DEBUG(...)   Logger::Instance().Log(LogLevel::Debug,   std::source_location::current(), __VA_ARGS__)
-#define LOG_INFO(...)    Logger::Instance().Log(LogLevel::Info,    std::source_location::current(), __VA_ARGS__)
-#define LOG_WARN(...)    Logger::Instance().Log(LogLevel::Warning, std::source_location::current(), __VA_ARGS__)
-#define LOG_ERROR(...)   Logger::Instance().Log(LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
+#define LOG_DEBUG(...)   FE::Logger::Instance().Log(FE::LogLevel::Debug,   std::source_location::current(), __VA_ARGS__)
+#define LOG_INFO(...)    FE::Logger::Instance().Log(FE::LogLevel::Info,    std::source_location::current(), __VA_ARGS__)
+#define LOG_WARN(...)    FE::Logger::Instance().Log(FE::LogLevel::Warning, std::source_location::current(), __VA_ARGS__)
+#define LOG_ERROR(...)   FE::Logger::Instance().Log(FE::LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
 
 #else 
 
@@ -120,6 +125,6 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
 #define LOG_DEBUG(...)   ((void)0)
 #define LOG_INFO(...)    ((void)0)
 #define LOG_WARN(...)    ((void)0)
-#define LOG_ERROR(...)   Logger::Instance().Log(LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
+#define LOG_ERROR(...)   FromEngine::Logger::Instance().Log(FromEngine::LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
 
 #endif

@@ -2,6 +2,9 @@
 #include "SSRPass.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
 {
     InitializeBase(engine, width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
@@ -75,4 +78,6 @@ void SSRPass::Execute(
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include "SRVAllocator.h" 
 
+namespace FE
+{
+
 class SRVManager
 {
 public:
@@ -41,3 +44,5 @@ private:
 
     std::unique_ptr<SRVAllocator> allocator_;       // SRV割り当て・解放管理
 };
+
+}

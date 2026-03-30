@@ -2,6 +2,8 @@
 #include "Skydome.h"
 #include "ImGuiManager.h"
 
+using namespace FE;
+
 Skydome::Skydome(Engine* engine) : GameObject(engine)
 {
 	SetTag("Skydome");

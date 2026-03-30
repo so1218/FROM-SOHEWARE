@@ -4,6 +4,9 @@
 #include "TextureManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 Model::Model(Engine* engine, const std::string& modelName)
     : Model(engine, ModelManager::GetInstance().Get(modelName))
 {
@@ -314,4 +317,6 @@ void Model::ApplyRenderSettings(const RenderSettings& settings)
     SetCullMode(settings.cullMode);
     SetDepthMode(settings.depthMode);
     SetRenderGroup(settings.renderGroup);
+}
+
 }

@@ -4,6 +4,9 @@
 #include "TimeManager.h"  
 #include "Engine.h" 
 
+namespace FE
+{
+
 MaterialManager::~MaterialManager()
 {
     materials_.clear();
@@ -86,4 +89,6 @@ void MaterialManager::SetGlobalLightMode(int32_t mode)
             handle.materialData->lightMode = mode;
         }
     }
+}
+
 }

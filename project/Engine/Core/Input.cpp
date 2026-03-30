@@ -6,6 +6,9 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "Xinput.lib")
 
+namespace FE
+{
+
 Input& Input::GetInstance()
 {
     static Input instance;
@@ -458,4 +461,6 @@ void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMo
 
     // タイマーをセット
     vibrationTimers_[controllerId] = durationSeconds;
+}
+
 }

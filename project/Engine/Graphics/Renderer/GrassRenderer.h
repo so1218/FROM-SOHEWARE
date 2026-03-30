@@ -4,6 +4,9 @@
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 class GrassRenderer 
 {
 public:
@@ -33,3 +36,5 @@ private:
     int currentFrameIndex_ = 0;
     std::vector<GrassInstanceData> instanceQueue_;
 };
+
+}

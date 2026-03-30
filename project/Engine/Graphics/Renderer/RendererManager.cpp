@@ -21,6 +21,9 @@
 #include "SkyboxRenderer.h"
 #include "GrassRenderer.h"
 
+namespace FE
+{
+
 RendererManager::RendererManager() {}
 RendererManager::~RendererManager() {}
 
@@ -411,4 +414,6 @@ uint32_t RendererManager::GetMaxParticleCount() const
 uint32_t RendererManager::GetMaxTrailCount() const
 {
 	return trailRenderer_ ? trailRenderer_->GetMaxCount() : 0;
+}
+
 }

@@ -2,7 +2,9 @@
 #include "PSOManager.h"
 #include "ShaderManager.h"
 #include "RootSignatureManager.h"
-#include "ShaderManager.h"
+
+namespace FE
+{
 
 void PSOManager::Initialize(
     ID3D12Device* device,
@@ -567,4 +569,6 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     // 未定義のレイアウト
     assert(false && "Unknown InputLayout name.");
     return inputLayoutDescDefault_;
+}
+
 }

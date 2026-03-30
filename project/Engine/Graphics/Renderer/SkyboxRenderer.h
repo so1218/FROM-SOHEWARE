@@ -3,6 +3,9 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
+namespace FE
+{
+
 class SkyboxRenderer
 {
 public:
@@ -26,3 +29,5 @@ private:
     uint32_t currentColor_ = 0xFFFFFFFF;
     uint32_t currentTextureIndex_ = 0;
 };
+
+}

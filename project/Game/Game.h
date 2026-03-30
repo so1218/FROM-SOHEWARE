@@ -2,7 +2,10 @@
 #include "SceneManager.h"
 #include "DebugUtils.h"
 
-class Engine;
+namespace FE
+{
+    class Engine;
+}
 
 class Game
 {
@@ -19,9 +22,9 @@ public:
 
 private:
     // エンジン
-    std::unique_ptr<Engine> engine_;
+    std::unique_ptr<FE::Engine> engine_;
 
     // シーン管理
-    SceneManager sceneManager_;
+    FE::SceneManager sceneManager_;
 };
 

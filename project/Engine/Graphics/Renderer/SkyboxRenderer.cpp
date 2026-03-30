@@ -12,6 +12,9 @@
 #include "ShapeGenerator.h"
 #include "MaterialManager.h"
 
+namespace FE
+{
+
 void SkyboxRenderer::Initialize(const RenderEnvironment& env)
 {
     std::vector<VertexData> vertices;
@@ -74,4 +77,6 @@ void SkyboxRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMat
     cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(currentTextureIndex_));
 
     cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+}
+
 }

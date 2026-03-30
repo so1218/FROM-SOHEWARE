@@ -3,6 +3,9 @@
 #include "ModelManager.h"
 #include "AnimationManager.h"
 
+namespace FE
+{
+
 GameObject::GameObject(Engine* engine, int priority)
     : engine_(engine), priority_(priority)
 {
@@ -50,4 +53,6 @@ std::unique_ptr<Sprite> GameObject::CreateSprite(const std::string& textureName)
     sprite->SetTexture(textureName);
 
     return sprite;
+}
+
 }
