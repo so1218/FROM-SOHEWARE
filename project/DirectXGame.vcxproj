@@ -475,7 +475,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\BaseScene.h" />
     <ClInclude Include="Engine\Framework\SceneManager.h" />
     <ClInclude Include="Game\Scene\TitleScene.h" />
-    <ClInclude Include="Game\Scene\Transitions\ISceneTransitionState.h" />
     <ClInclude Include="Game\GameObject\Ground.h" />
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
     <ClInclude Include="Engine\Framework\GameObject.h" />
