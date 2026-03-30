@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 enum BlendMode
 {
 	kBlendModeNone,   // ブレンドなし
@@ -15,5 +18,7 @@ enum BlendMode
 };
 
 D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode);
+
+}
 
 

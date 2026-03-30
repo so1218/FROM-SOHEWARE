@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class SwapChain;
 class RTVManager;
 class OffscreenRTVManager;
@@ -77,3 +80,5 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
 };
+
+}

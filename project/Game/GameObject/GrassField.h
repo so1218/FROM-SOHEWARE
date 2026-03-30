@@ -6,10 +6,10 @@
 
 class Player;
 
-class GrassField : public GameObject
+class GrassField : public FE::GameObject
 {
 public:
-    GrassField(Engine* engine, Player* player);
+    GrassField(FE::Engine* engine, Player* player);
 
     void Initialize() override;
     void Update() override;
@@ -23,8 +23,8 @@ private:
 private:
     Player* player_;
 
-    std::unique_ptr<GrassSystem> grassSystem_;
-    std::unique_ptr<PropertyBinder> binder_;
+    std::unique_ptr<FE::GrassSystem> grassSystem_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
 
     // 配置用のパラメータ
     int grassCount_ = 3000;         // 配置する数
@@ -36,8 +36,8 @@ private:
     float baseScale_ = 1.0f;
 
     // 再生成用の記憶変数
-    Vector3 prevPosition_;
+    FE::Vector3 prevPosition_;
     float prevBaseScale_ = 1.0f;
 
-	WorldTransform transform_;
+    FE::WorldTransform transform_;
 };

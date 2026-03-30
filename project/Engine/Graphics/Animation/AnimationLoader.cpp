@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "AnimationLoader.h"
 
+namespace FE
+{
+
 Animation LoadAnimationFile(const std::string& filePath)
 {
 	Animation animation;// 今回作るアニメーション
@@ -43,4 +46,6 @@ Animation LoadAnimationFile(const std::string& filePath)
 	}
 
 	return animation;
+}
+
 }

@@ -3,6 +3,8 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 
+using namespace FE;
+
 Grid::Grid(Engine* engine)
     : GameObject(engine)
 {

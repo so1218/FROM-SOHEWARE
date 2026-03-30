@@ -6,6 +6,8 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
+using namespace FE;
+
 FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
     : GameObject(engine, 100),
     target_(target), camera_(camera)

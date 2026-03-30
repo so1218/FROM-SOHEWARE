@@ -4,6 +4,9 @@
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 
+namespace FE
+{
+
 Fade::Fade(Engine* engine)
 {
     engine_ = engine;
@@ -182,4 +185,6 @@ bool Fade::IsFinished() const
     }
 
     return true;
+}
+
 }

@@ -25,6 +25,9 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "winmm.lib")
 
+namespace FE
+{
+
 int32_t Engine::sClientWidth = 1280;
 int32_t Engine::sClientHeight = 720;
 
@@ -349,4 +352,6 @@ void Engine::InitializeAudio()
 	// XAudioエンジン
 	AudioDevice::GetInstance().Initialize();
 	AudioManager::Initialize();
+}
+
 }

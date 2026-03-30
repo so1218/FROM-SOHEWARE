@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h"
 
+namespace FE
+{
+
 class Engine;
 class SRVManager;
 class OffscreenRTVManager;
@@ -48,3 +51,5 @@ protected:
     // 描画終了処理
     void PostDraw(ID3D12GraphicsCommandList* cmdList);
 };
+
+}

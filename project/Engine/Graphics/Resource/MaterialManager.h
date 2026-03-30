@@ -1,6 +1,9 @@
 #pragma once   
 #include "Structures.h"  
 
+namespace FE
+{
+
 class MaterialManager
 {
 public:
@@ -18,4 +21,6 @@ public:
 private:
     std::vector<MaterialHandle> materials_;
 };
+
+}
 

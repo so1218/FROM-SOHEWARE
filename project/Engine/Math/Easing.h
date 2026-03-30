@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 // イージングタイプの列挙クラス
 enum class EasingType
 {
@@ -109,3 +112,4 @@ private:
 
 };
 
+}

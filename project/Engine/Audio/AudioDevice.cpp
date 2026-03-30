@@ -7,6 +7,9 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "shlwapi.lib")
 
+namespace FE
+{
+
 /// @brief AudioDeviceの初期化
 void AudioDevice::Initialize()
 {
@@ -26,4 +29,6 @@ void AudioDevice::Finalize()
     // 音声データ開放
     AudioPlayer::GetInstance().StopAll();
     MFShutdown();
+}
+
 }

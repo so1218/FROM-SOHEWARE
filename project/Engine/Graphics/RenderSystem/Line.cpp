@@ -3,6 +3,9 @@
 #include "Engine.h" 
 #include "Math.h" 
 
+namespace FE
+{
+
 Line::Line(Engine* engine)
     : engine_(engine)
 {
@@ -26,4 +29,6 @@ void Line::Draw()
     Vector3 worldEnd = transform_.matWorld_.Transform(localEnd_);
 
     engine_->GetRendererManager()->SubmitLine(worldStart, worldEnd, color_);
+}
+
 }

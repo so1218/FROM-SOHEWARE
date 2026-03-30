@@ -2,6 +2,9 @@
 #include "ISceneTransitionState.h"
 #include "FadeOutState.h"
 
+namespace FE
+{
+
 class NormalState : public ISceneTransitionState
 {
 public:
@@ -9,3 +12,5 @@ public:
 
     void Draw(SceneManager* manager) override;
 };
+
+}

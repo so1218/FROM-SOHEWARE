@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Matrix3x3.h"
 
+namespace FE
+{
+
 // コンストラクタ(初期化なし)
 Matrix3x3::Matrix3x3()
 {
@@ -87,4 +90,6 @@ Matrix3x3 Matrix3x3::FromBasis(const Vector3& right, const Vector3& up, const Ve
        {right.z, up.z, forward.z}
    };
    return Matrix3x3(values);
+}
+
 }

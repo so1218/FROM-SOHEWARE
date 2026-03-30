@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class GraphicsDevice
 {
 public:
@@ -20,3 +23,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue_ = nullptr;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator_ = nullptr;
 };
+
+}

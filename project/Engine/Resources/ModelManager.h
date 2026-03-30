@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h" 
 
+namespace FE
+{
+
 class ModelManager
 {
 public:
@@ -34,3 +37,5 @@ private:
     // モデルデータの格納場所
     std::unordered_map<std::string, std::unique_ptr<ModelData>> models_;
 };
+
+}

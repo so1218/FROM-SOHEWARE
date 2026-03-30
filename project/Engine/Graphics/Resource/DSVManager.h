@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{
+
 class DescriptorHeapManager;
 class SRVManager;
 
@@ -53,3 +57,5 @@ private:
     // 深度テクスチャ用SRVインデックス
     std::vector<uint32_t> depthSrvIndices_;
 };
+
+}

@@ -2,6 +2,9 @@
 #include "Matrix4x4.h"
 #include "Vector3.h" 
 
+namespace FE
+{
+
 class Engine;
 class ShadowMap;
 class PostEffectManager;
@@ -50,3 +53,5 @@ private:
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
 };
+
+}

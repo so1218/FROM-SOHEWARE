@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 using json = nlohmann::json;
 
 // ゲームの設定値やパラメータをグループごとに管理するクラス
@@ -125,4 +128,6 @@ void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const s
 	{
 		current.items[key] = value;
 	}
+}
+
 }

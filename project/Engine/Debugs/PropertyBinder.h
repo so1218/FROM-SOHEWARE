@@ -5,6 +5,9 @@
 #include "MathUtils.h"
 #include "Structures.h"
 
+namespace FE
+{
+
 class Model;
 class AnimationModel;
 class Sprite;
@@ -109,4 +112,5 @@ private:
     std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
 };
 
+}
 

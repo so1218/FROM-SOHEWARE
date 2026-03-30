@@ -18,7 +18,7 @@ public:
 	void ResetMapChipData();
 	void LoadMapChipCsv(const std::string& filePath);
 	MapChipType GetMapChipTypeByIndex(uint32_t xIndex, uint32_t yIndex);
-	Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
+	FE::Vector3 GetMapChipPositionByIndex(uint32_t xIndex, uint32_t yIndex);
 
 	// ゲッター
 	static inline uint32_t GetNumBlockVirtical() { return kNumBlockVirtical; }
@@ -35,7 +35,7 @@ public:
 		uint32_t xIndex;
 		uint32_t yIndex;
 	};
-	IndexSet GetMapChipIndexSetByPosition(const Vector3& position);
+	IndexSet GetMapChipIndexSetByPosition(const FE::Vector3& position);
 
 	// 範囲矩形
 	struct Rect

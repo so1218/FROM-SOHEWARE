@@ -9,6 +9,9 @@
 #include "WorldTransform.h"
 #include "Camera.h"
 
+namespace FE
+{
+
 #ifdef IS_DEVELOPMENT
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
@@ -410,3 +413,4 @@ void ImGuiManager::SetSceneViewRect(const Vector2& min, const Vector2& size, boo
 #endif
 }
 
+}

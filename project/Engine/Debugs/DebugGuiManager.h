@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 class Camera;
 class LightManager;
 class MaterialManager;
@@ -41,3 +44,5 @@ private:
     void DrawTimeSettings();
     void DrawInformationDisplays();  
 };
+
+}

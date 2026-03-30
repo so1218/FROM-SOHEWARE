@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h"    
 
+namespace FE
+{
+
 class Mesh
 {
 public:
@@ -46,3 +49,5 @@ private:
     size_t vertexCount_ = 0;
     size_t indexCount_ = 0;
 };
+
+}

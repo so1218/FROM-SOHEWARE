@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector3.h"
 
+namespace FE
+{
+
 class ShakeEffect
 {
 public:
@@ -21,3 +24,5 @@ private:
     bool isActive_ = false;
     bool wasActive_ = false;
 };
+
+}

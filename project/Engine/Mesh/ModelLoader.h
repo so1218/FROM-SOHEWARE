@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h"
 
+namespace FE
+{
+
 class ModelLoader
 {
 public:
@@ -20,4 +23,6 @@ private:
 
     void CalculateSmoothNormals(std::vector<VertexData>& vertices);
 };
+
+}
 

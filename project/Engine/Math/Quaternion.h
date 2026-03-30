@@ -2,6 +2,9 @@
 #include "Vector.h"
 #include "Matrix.h"
 
+namespace FE
+{
+
 class Quaternion
 {
 public:
@@ -33,3 +36,5 @@ public:
     Vector3 RotateVector(const Vector3& v) const;
     Matrix4x4 ToMatrix() const;
 };
+
+}

@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class RenderContext
 {
 public:
@@ -12,4 +15,6 @@ private:
     D3D12_VIEWPORT viewport_{};
     D3D12_RECT scissorRect_{};
 };
+
+}
 

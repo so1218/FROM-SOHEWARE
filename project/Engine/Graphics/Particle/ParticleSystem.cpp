@@ -9,6 +9,9 @@
 #include "TextureManager.h"
 #include "ImGuiManager.h"
 
+namespace FE
+{
+
 ParticleSystem::ParticleSystem(Engine* engine)
 {
     engine_ = engine;
@@ -615,4 +618,6 @@ bool ParticleSystem::ShouldSkipDraw(const ParticleState& particle) const
     if (startZero && endZero) return true;
 
     return false;
+}
+
 }

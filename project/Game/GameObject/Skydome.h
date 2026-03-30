@@ -3,10 +3,10 @@
 #include "GameObject.h"
 
 // 天球
-class Skydome : public GameObject
+class Skydome : public FE::GameObject
 {
 public:
-    Skydome(Engine* engine);
+    Skydome(FE::Engine* engine);
 
     void Initialize() override;
     void Update() override;

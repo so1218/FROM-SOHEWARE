@@ -1,6 +1,9 @@
 #pragma once
 #include "SceneManager.h"
 
+namespace FE
+{
+
 // 遷移状態の基底クラス
 class ISceneTransitionState
 {
@@ -9,3 +12,5 @@ public:
     virtual void Update(SceneManager* manager) = 0;
     virtual void Draw(SceneManager* manager) = 0;
 };
+
+}

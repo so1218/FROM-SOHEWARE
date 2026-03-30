@@ -5,6 +5,9 @@
 
 #include <span>
 
+namespace FE
+{
+
 struct VertexData
 {
     Vector4 position;
@@ -139,27 +142,6 @@ struct VertexKey
     }
 };
 
-// ハッシュ関数の定義
-namespace std
-{
-    template <>
-    struct hash<VertexKey>
-    {
-        size_t operator()(const VertexKey& key) const {
-            size_t h = 0;
-            h ^= std::hash<float>()(key.position.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.position.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.position.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.position.w) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.texcoord.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.texcoord.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.normal.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.normal.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= std::hash<float>()(key.normal.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
-}
 
 struct AABB
 {
@@ -296,3 +278,30 @@ struct DepthExtractSettingsPS
     float farPlane;
     Vector2 padding;
 };
+
+}
+
+// ハッシュ関数の定義
+namespace std
+{
+
+template <>
+struct hash<FE::VertexKey>
+{
+    size_t operator()(const FE::VertexKey& key) const {
+        size_t h = 0;
+        h ^= std::hash<float>()(key.position.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.position.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.position.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.position.w) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.texcoord.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.texcoord.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.normal.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.normal.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= std::hash<float>()(key.normal.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+}
+

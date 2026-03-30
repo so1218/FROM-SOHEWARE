@@ -3,6 +3,9 @@
 #include "Input.h"
 #include "ImGuiManager.h"
 
+namespace FE
+{
+
 void DebugCamera::Initialize()
 {
     // ワールド変換の初期化
@@ -113,4 +116,6 @@ Matrix4x4 DebugCamera::GetViewMatrix()
 
     // ワールド行列の逆行列がビュー行列
     return Matrix4x4::Inverse(cameraMatrix);
+}
+
 }

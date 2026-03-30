@@ -2,6 +2,9 @@
 #include "AnimationManager.h"
 #include "StringUtils.h"
 
+namespace FE
+{
+
 AnimationManager* AnimationManager::GetInstance()
 {
     static AnimationManager instance;
@@ -76,4 +79,6 @@ const Animation* AnimationManager::Get(const std::string& name)
         return nullptr;
     }
     return &it->second;
+}
+
 }

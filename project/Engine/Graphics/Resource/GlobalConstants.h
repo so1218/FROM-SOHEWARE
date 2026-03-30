@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h"   
 
+namespace FE
+{
+
 class Camera;
 
 // シーン全体で共有する定数バッファの管理
@@ -38,3 +41,5 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     FrameData* frameData_ = nullptr;
 };
+
+}

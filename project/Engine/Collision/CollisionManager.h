@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{
+
 class Collider;
 
 // コライダー同士の衝突判定を管理するクラス
@@ -37,3 +41,5 @@ private:
     // 前フレームで衝突していたペアのリスト
     std::set<CollisionPair> previousCollisionPairs_;
 };
+
+}

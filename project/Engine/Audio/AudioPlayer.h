@@ -1,6 +1,9 @@
 #pragma once
 #include "AudioDefinition.h"
 
+namespace FE
+{
+
 class MediaAudioDecoder;
 
 /// @brief 再生中のインスタンス情報
@@ -79,3 +82,5 @@ public:
     void STDMETHODCALLTYPE OnLoopEnd(void*) override {}
     void STDMETHODCALLTYPE OnVoiceError(void*, HRESULT) override {}
 };
+
+}

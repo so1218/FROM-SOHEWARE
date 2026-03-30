@@ -203,6 +203,9 @@
     <ClCompile Include="Game\Scene\PlayScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Framework\SceneManager.cpp">
+      <Filter>Game\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Scene\TitleScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
@@ -247,9 +250,6 @@
     </ClCompile>
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp">
       <Filter>Engine\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Framework\Fade.cpp">
-      <Filter>Game\Effect</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Math\Easing.cpp">
       <Filter>Game\Effect</Filter>
@@ -314,14 +314,11 @@
     <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\GameObjectManager.cpp">
+    <ClCompile Include="Engine\Framework\GameObjectManager.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scene\TestScene\TestSceneHori.cpp">
       <Filter>Game\Scene\SampleScene</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Effect\ShakeEffect.cpp">
-      <Filter>Game\Effect</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Sprite.cpp">
@@ -399,16 +396,7 @@
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Framework\FadeOutState.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Framework\FadeInState.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Framework\NormalState.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\GameObject.cpp">
+    <ClCompile Include="Engine\Framework\GameObject.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp">
@@ -474,7 +462,19 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Framework\SceneManager.cpp">
+    <ClCompile Include="Engine\Effect\ShakeEffect.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Framework\Fade.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Framework\FadeInState.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Framework\FadeOutState.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Framework\NormalState.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -581,6 +581,12 @@
     <ClInclude Include="Game\Scene\PlayScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Framework\BaseScene.h">
+      <Filter>Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Framework\SceneManager.h">
+      <Filter>Game\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="Game\Scene\TitleScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
@@ -653,9 +659,6 @@
     <ClInclude Include="Engine\Audio\MediaAudioDecoder.h">
       <Filter>Engine\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Framework\Fade.h">
-      <Filter>Game\Effect</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Math\Easing.h">
       <Filter>Game\Effect</Filter>
     </ClInclude>
@@ -714,17 +717,14 @@
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\GameObjectManager.h">
+    <ClInclude Include="Engine\Framework\GameObjectManager.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\GameObject.h">
+    <ClInclude Include="Engine\Framework\GameObject.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scene\TestScene\TestSceneHori.h">
       <Filter>Game\Scene\SampleScene</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Effect\ShakeEffect.h">
-      <Filter>Game\Effect</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\Sprite.h">
       <Filter>Engine\Mesh</Filter>
@@ -756,10 +756,10 @@
     <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\GodRayPass.h" />
     <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
-    <ClInclude Include="Engine\Framework\ISceneTransitionState.h" />
-    <ClInclude Include="Engine\Framework\FadeOutState.h" />
-    <ClInclude Include="Engine\Framework\FadeInState.h" />
-    <ClInclude Include="Engine\Framework\NormalState.h" />
+    <ClInclude Include="Game\Scene\Transitions\ISceneTransitionState.h" />
+    <ClInclude Include="Game\Scene\Transitions\FadeOutState.h" />
+    <ClInclude Include="Game\Scene\Transitions\FadeInState.h" />
+    <ClInclude Include="Game\Scene\Transitions\NormalState.h" />
     <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
@@ -782,8 +782,12 @@
     <ClInclude Include="Engine\Core\pch.h" />
     <ClInclude Include="Engine\Audio\AudioDefinition.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
-    <ClInclude Include="Engine\Framework\SceneManager.h" />
-    <ClInclude Include="Engine\Framework\BaseScene.h" />
+    <ClInclude Include="Engine\Effect\ShakeEffect.h" />
+    <ClInclude Include="Engine\Framework\Fade.h" />
+    <ClInclude Include="Engine\Framework\FadeInState.h" />
+    <ClInclude Include="Engine\Framework\FadeOutState.h" />
+    <ClInclude Include="Engine\Framework\ISceneTransitionState.h" />
+    <ClInclude Include="Engine\Framework\NormalState.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

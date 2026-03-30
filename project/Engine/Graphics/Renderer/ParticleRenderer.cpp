@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void ParticleRenderer::Initialize(const RenderEnvironment& env)
 {
     // インスタンスバッファをフレーム数分リングで確保
@@ -138,4 +141,6 @@ std::string ParticleRenderer::GetPSOName(BlendMode blendMode)
     case kBlendModeNormal:
     default:                  return "ParticleAlphaBlend";
     }
+}
+
 }

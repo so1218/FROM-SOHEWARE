@@ -3,6 +3,9 @@
 #include "BaseScene.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 class ISceneTransitionState;
 
 // シーンを識別するためのID
@@ -79,3 +82,4 @@ private:
     std::unique_ptr<ISceneTransitionState> state_;
 };
 
+}

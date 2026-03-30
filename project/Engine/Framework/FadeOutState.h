@@ -1,6 +1,9 @@
 #pragma once
 #include "ISceneTransitionState.h"
 
+namespace FE
+{
+
 class FadeOutState : public ISceneTransitionState
 {
 public:
@@ -8,3 +11,5 @@ public:
 
     void Draw(SceneManager* manager) override;
 };
+
+}

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "StringUtils.h"
 
+namespace FE
+{
+
 // string->wstring
 std::wstring StringUtils::ConvertString(const std::string& str)
 {
@@ -48,3 +51,4 @@ std::string StringUtils::Trim(const std::string& str)
     return s.substr(first, (last - first + 1));
 }
 
+}

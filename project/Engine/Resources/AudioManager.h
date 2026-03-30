@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class AudioManager
 {
 public:
@@ -14,3 +17,5 @@ private:
     static std::unordered_map<std::string, int> audioMap_;
     static bool initialized_;
 };
+
+}

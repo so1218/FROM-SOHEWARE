@@ -3,6 +3,9 @@
 #include "BufferManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void BlurPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, bool isVertical)
 {
     InitializeBase(engine, w, h);
@@ -32,4 +35,6 @@ void BlurPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

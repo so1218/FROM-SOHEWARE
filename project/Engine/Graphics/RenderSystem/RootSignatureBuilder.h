@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 using Microsoft::WRL::ComPtr;
 
 class RootSignatureBuilder
@@ -57,3 +60,5 @@ private:
     std::vector<D3D12_STATIC_SAMPLER_DESC> staticSamplers_;       // 静的サンプラー一覧
     std::vector<std::vector<D3D12_DESCRIPTOR_RANGE>> descriptorRangeStorage_; // ディスクリプタ範囲ストレージ
 };
+
+}

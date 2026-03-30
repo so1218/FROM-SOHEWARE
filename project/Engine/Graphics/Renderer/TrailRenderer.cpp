@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void TrailRenderer::Initialize(const RenderEnvironment& env)
 {
     const uint32_t kMaxTotalTrailVertices = kMaxTrailCount * kMaxTrailVertices * 2;
@@ -190,4 +193,6 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
 
         cmdList->DrawInstanced(batch.vertexCount, 1, batch.startVertexIndex, 0);
     }
+}
+
 }

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Camera.h"
 
+namespace FE
+{
+
 void Camera::Initialize()
 {
     // 初期化処理
@@ -16,6 +19,8 @@ void Camera::Initialize()
     farClip_ = 500.0f;
 
     // 行列を初期化しておく
-    UpdateProjectionMatrix(); 
+    UpdateProjectionMatrix();
     UpdateViewProjectionMatrix();
+}
+
 }

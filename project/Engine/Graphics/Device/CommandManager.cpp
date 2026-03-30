@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "CommandManager.h"
 
+namespace FE
+{
+
 void CommandManager::Initialize(ID3D12Device* device)
 {
     HRESULT hr;
@@ -35,4 +38,6 @@ void CommandManager::Initialize(ID3D12Device* device)
     );
     // コマンドリストの生成がうまくいかなかったので起動できない
     assert(SUCCEEDED(hr));
+}
+
 }

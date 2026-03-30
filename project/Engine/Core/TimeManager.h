@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class TimeManager
 {
 public:
@@ -47,3 +50,5 @@ private:
     int frameCount_ = 0;
     float timeElapsedForFps_ = 0.0f;
 };
+
+}

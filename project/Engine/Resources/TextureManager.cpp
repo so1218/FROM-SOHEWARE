@@ -2,6 +2,9 @@
 #include "TextureManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 namespace fs = std::filesystem;
 
 void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDirectory)
@@ -136,4 +139,6 @@ std::vector<std::string> TextureManager::GetTextureNamesByType(TextureType type)
         }
     }
     return names;
+}
+
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include "Structures.h"
 
+namespace FE
+{
+
 // AABB同士の衝突判定
 bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 
@@ -17,3 +20,5 @@ Vector3 CalculatePenetrationVector(const AABB& a, const AABB& b);
 // マウスがオブジェクトにヒットしているか
 bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     const Matrix4x4& viewProjection);
+
+}

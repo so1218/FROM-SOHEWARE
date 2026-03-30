@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class BufferManager
 {
 public:
@@ -12,3 +15,5 @@ public:
         D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD // ヒープタイプ
     );
 };
+
+}

@@ -2,6 +2,9 @@
 #include "RootSignatureBuilder.h"
 #include "Logger.h"
 
+namespace FE
+{
+
 void RootSignatureBuilder::AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace)
 {
     D3D12_ROOT_PARAMETER param = {};
@@ -158,4 +161,6 @@ ComPtr<ID3D12RootSignature> RootSignatureBuilder::Build(
 
     // 成功
     return rootSignature;
+}
+
 }

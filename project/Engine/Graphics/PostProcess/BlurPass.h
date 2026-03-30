@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class BlurPass : public IPostEffect
 {
 public:
@@ -18,3 +21,5 @@ private:
     PSOManager* psoManager_ = nullptr;
     bool isVertical_ = false; // 縦か横か
 };
+
+}

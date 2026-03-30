@@ -2,6 +2,8 @@
 #include "Ground.h"
 #include "ImGuiManager.h"
 
+using namespace FE;
+
 Ground::Ground(Engine* engine) : GameObject(engine)
 {
 	SetTag("Ground");

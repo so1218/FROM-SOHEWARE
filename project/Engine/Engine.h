@@ -27,6 +27,9 @@
 #include "CommandManager.h"
 #include "RenderPipeline.h"
 
+namespace FE
+{
+
 class SRVManager;
 class DSVManager;
 
@@ -151,3 +154,5 @@ private:
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<RenderPipeline> renderPipeline_;
 };
+
+}

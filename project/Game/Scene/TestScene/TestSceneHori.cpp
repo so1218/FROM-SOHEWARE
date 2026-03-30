@@ -9,6 +9,8 @@
 #include "SceneManager.h"
 #include "AudioPlayer.h"
 
+using namespace FE;
+
 TestSceneHori::TestSceneHori(Engine* engine)
     : BaseScene(engine)
 {

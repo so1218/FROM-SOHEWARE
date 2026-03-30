@@ -2,6 +2,9 @@
 #include "Collider.h"
 #include "DebugDraw.h"
 
+namespace FE
+{ 
+
 // デバッグ用コライダー描画
 void Collider::DrawCollider()
 {
@@ -17,4 +20,6 @@ void Collider::DrawCollider()
     {
         DebugDraw::DrawAABB(center - size_, center + size_, color_);
     }
+}
+
 }

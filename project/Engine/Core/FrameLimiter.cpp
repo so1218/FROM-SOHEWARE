@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "FrameLimiter.h"
 
+namespace FE
+{
+
 FrameLimiter::FrameLimiter(int targetFPS)
     : targetFPS_(targetFPS),
     frameDuration_(1000000 / targetFPS)
@@ -38,4 +41,6 @@ void FrameLimiter::WaitNextFrame()
 
     // 次のフレームの基準時間を更新
     targetTime_ = std::chrono::steady_clock::now();
+}
+
 }

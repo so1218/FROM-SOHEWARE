@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class Vector2
 {
 public:
@@ -43,3 +46,5 @@ struct Vector2Int
     // 二項演算子オーバーロード
     Vector2Int operator+(const Vector2Int& other) const;
 };
+
+}

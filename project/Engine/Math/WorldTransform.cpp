@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "WorldTransform.h"
 
+namespace FE
+{
+
 // デフォルトコンストラクタ
 WorldTransform::WorldTransform()
     : scale_({ 1, 1, 1 }), rotation_({ 0, 0, 0 }), translation_({ 0, 0, 0 }),
@@ -186,4 +189,6 @@ void WorldTransform::SetRotation(const Quaternion& rotation)
 {
     rotationQuaternion_ = rotation;
     UpdateMatrix();
+}
+
 }

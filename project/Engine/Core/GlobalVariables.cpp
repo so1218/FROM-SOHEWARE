@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "GlobalVariables.h"
 
+namespace FE
+{
+
 GlobalVariables* GlobalVariables::GetInstance()
 {
 	static GlobalVariables instance;
@@ -559,4 +562,6 @@ void GlobalVariables::RemoveGroup(const std::string& groupName)
 	if (it != datas_.end()) {
 		datas_.erase(it);
 	}
+}
+
 }

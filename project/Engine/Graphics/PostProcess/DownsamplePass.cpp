@@ -4,6 +4,9 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
     // 親クラスで1/4サイズのRTV/SRVを作成
@@ -54,4 +57,6 @@ void DownsamplePass::Execute(
 
     // 描画後処理
     PostDraw(cmdList);
+}
+
 }

@@ -3,6 +3,9 @@
 #include "WorldTransform.h"
 #include "Structures.h"
 
+namespace FE
+{
+
 class Engine;
 
 class Sprite
@@ -96,3 +99,5 @@ private:
     bool isVisible_ = true;
     int layerOrder_ = 0;
 };
+
+}

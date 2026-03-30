@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "TimeManager.h"
 
+namespace FE
+{
+
 TimeManager* TimeManager::GetInstance()
 {
     static TimeManager instance;
@@ -97,4 +100,6 @@ void TimeManager::Reset()
     averageFps_ = 0.0f;
     frameCount_ = 0;
     timeElapsedForFps_ = 0.0f;
+}
+
 }

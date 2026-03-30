@@ -1,6 +1,9 @@
 #pragma once
 #include "StringUtils.h"
 
+namespace FE
+{
+
 namespace fs = std::filesystem;
 
 class ShaderManager
@@ -46,3 +49,5 @@ private:
     // シェーダーキャッシュ
     std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
 };
+
+}

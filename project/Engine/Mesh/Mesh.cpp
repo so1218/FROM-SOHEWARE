@@ -2,6 +2,9 @@
 #include "Mesh.h"
 #include "BufferManager.h" 
 
+namespace FE
+{
+
 void Mesh::InitializeVertexOnly(ID3D12Device* device, const std::vector<VertexData>& vertices)
 {
 	vertexCount_ = vertices.size();
@@ -86,4 +89,6 @@ void Mesh::CreateDynamicMesh(ID3D12Device* device, size_t maxVertexCount, size_t
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
 	vertexBufferView_.StrideInBytes = static_cast<UINT>(stride);
+}
+
 }

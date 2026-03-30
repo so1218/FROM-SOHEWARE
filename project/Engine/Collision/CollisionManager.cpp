@@ -4,6 +4,9 @@
 #include "Collision.h"
 #include "Collider.h"
 
+namespace FE
+{
+
 void CollisionManager::AddCollider(Collider* collider)
 {
     // 有効なコライダーのみ登録
@@ -136,4 +139,6 @@ void CollisionManager::CheckAllCollisions()
 
     // 履歴の更新
     previousCollisionPairs_ = currentCollisionPairs;
+}
+
 }

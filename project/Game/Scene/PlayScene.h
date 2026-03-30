@@ -5,10 +5,10 @@
 #include "FollowCamera.h"
 #include "Sprite.h"
 
-class PlayScene : public BaseScene
+class PlayScene : public FE::BaseScene
 {
 public:
-    PlayScene(Engine* engine);
+    PlayScene(FE::Engine* engine);
 
     ~PlayScene();
 
@@ -20,6 +20,6 @@ public:
 
 private:
     // メンバー変数
-    std::unique_ptr<ParticleEmitter> playSceneEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> playSceneEmitter_ = nullptr;
 };
 

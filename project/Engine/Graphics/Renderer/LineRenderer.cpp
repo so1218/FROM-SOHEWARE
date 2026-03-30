@@ -10,6 +10,9 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 
+namespace FE
+{
+
 void LineRenderer::Initialize(const RenderEnvironment& env)
 {
     // 動的頂点バッファ作成
@@ -62,4 +65,6 @@ void LineRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProje
     cmdList->SetGraphicsRootConstantBufferView(0, lineBatch_.wvpResource->GetGPUVirtualAddress());
 
     cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
+}
+
 }

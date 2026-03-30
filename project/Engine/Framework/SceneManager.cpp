@@ -4,6 +4,9 @@
 #include "FadeInState.h"
 #include "ISceneTransitionState.h"
 
+namespace FE
+{
+
 SceneManager::SceneManager() : currentScene_(nullptr)
 {}
 
@@ -116,4 +119,6 @@ void SceneManager::ChangeSceneActual()
         }
         nextSceneID_ = std::nullopt;
     }
+}
+
 }

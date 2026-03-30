@@ -3,6 +3,9 @@
 #include "Sprite.h"
 #include "PropertyBinder.h"
 
+namespace FE
+{
+
 class Fade
 {
 public:
@@ -60,3 +63,5 @@ public:
 
 	std::unique_ptr<PropertyBinder> binder_;
 };
+
+}

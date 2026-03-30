@@ -9,6 +9,8 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
+using namespace FE;
+
 Player::Player(Engine* engine, Camera* camera) : GameObject(engine, UpdateOrder::Player),
 	camera_(camera)
 {

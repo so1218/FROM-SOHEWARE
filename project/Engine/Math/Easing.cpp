@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Easing.h"
 
+namespace FE
+{
+
 // イージングの関数群
 float Easing::EaseLinear(const float& t) {
     return t;
@@ -161,4 +164,6 @@ float Easing::EaseInOutBounce(const float& t) {
     else {
         return 0.5f * EaseOutBounce(t * 2.0f - 1.0f) + 0.5f;
     }
+}
+
 }

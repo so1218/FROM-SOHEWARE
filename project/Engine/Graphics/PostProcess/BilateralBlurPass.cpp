@@ -4,6 +4,9 @@
 #include "RootSignatureManager.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 BilateralBlurPass::~BilateralBlurPass()
 {
     // 中間バッファ用のSRVを解放
@@ -113,4 +116,6 @@ void BilateralBlurPass::Execute(
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

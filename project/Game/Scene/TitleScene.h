@@ -4,10 +4,10 @@
 #include "ParticleEmitter.h"
 #include "PropertyBinder.h"
 
-class TitleScene : public BaseScene
+class TitleScene : public FE::BaseScene
 {
 public:
-    TitleScene(Engine* engine);
+    TitleScene(FE::Engine* engine);
 
     void OnInitialize() override;
     void OnUpdate() override;
@@ -17,9 +17,9 @@ public:
 
 private:
     // メンバー変数
-    std::unique_ptr<Sprite> titleSprite_;
+    std::unique_ptr<FE::Sprite> titleSprite_;
 
-    std::unique_ptr<ParticleEmitter> titleSceneEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> titleSceneEmitter_ = nullptr;
 
-    std::unique_ptr<PropertyBinder> binder_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
 };

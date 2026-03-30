@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class Engine;
 
 enum class TextureType
@@ -50,3 +53,5 @@ private:
     std::unordered_map<std::string, size_t> nameToIndex_;
     uint32_t errorHandle_ = 0;
 };
+
+}

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "FadeInState.h"
 
+namespace FE
+{
+
 void FadeInState::Update(SceneManager* manager)
 {
     // シーンとフェードの更新
@@ -29,4 +32,6 @@ void FadeInState::Draw(SceneManager* manager)
         manager->GetCurrentScene()->Draw();
     }
     manager->GetFade()->Draw();
+}
+
 }

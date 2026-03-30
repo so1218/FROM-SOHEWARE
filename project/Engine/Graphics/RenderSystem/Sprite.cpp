@@ -3,6 +3,9 @@
 #include "Engine.h"
 #include "TextureManager.h"
 
+namespace FE
+{
+
 Sprite::Sprite(Engine* engine)
     : engine_(engine)
 {
@@ -56,4 +59,6 @@ void Sprite::Draw()
         layerOrder_,
         materialHandle_
     );
+}
+
 }

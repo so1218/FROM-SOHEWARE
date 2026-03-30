@@ -1,14 +1,5 @@
 #pragma once
 
-class Camera;
-class ModelRenderer;
-class SpriteRenderer;
-class LineRenderer;
-class ParticleRenderer;
-class TrailRenderer;
-class SkyboxRenderer;
-class GrassRenderer;
-
 #include "Mesh.h"
 #include "RenderCommon.h" 
 #include "BlendMode.h" 
@@ -17,6 +8,18 @@ class GrassRenderer;
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
+
+namespace FE
+{
+
+class Camera;
+class ModelRenderer;
+class SpriteRenderer;
+class LineRenderer;
+class ParticleRenderer;
+class TrailRenderer;
+class SkyboxRenderer;
+class GrassRenderer;
 
 class RendererManager
 {
@@ -129,3 +132,5 @@ private:
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
 };
+
+}

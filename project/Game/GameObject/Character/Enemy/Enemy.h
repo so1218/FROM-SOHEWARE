@@ -5,10 +5,10 @@
 
 class Player;
 
-class Enemy : public Collider, public GameObject
+class Enemy : public FE::Collider, public FE::GameObject
 {
 public:
-    Enemy(Engine* engine);
+    Enemy(FE::Engine* engine);
     ~Enemy();
 
     // 初期化処理
@@ -24,5 +24,5 @@ public:
     void DebugDraw() override;
 
 private:
-    std::unique_ptr<AnimationModel> animationEnemy_;
+    std::unique_ptr<FE::AnimationModel> animationEnemy_;
 };

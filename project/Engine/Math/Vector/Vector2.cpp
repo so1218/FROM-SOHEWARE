@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Vector2.h"
 
+namespace FE
+{
+
 // デフォルトコンストラクタ
 Vector2::Vector2() : x(0), y(0) {}
 
@@ -103,4 +106,6 @@ float Vector2::Distance(const Vector2& v1, const Vector2& v2)
 Vector2Int Vector2Int::operator+(const Vector2Int& other) const
 {
     return Vector2Int(x + other.x, y + other.y);
+}
+
 }

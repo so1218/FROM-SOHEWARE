@@ -3,6 +3,9 @@
 #include "Structures.h"
 #include "DebugDraw.h"
 
+namespace FE
+{
+
 void LightManager::Initialize(ID3D12Device* device)
 {
     // Directional Light
@@ -365,4 +368,6 @@ void LightManager::DrawDebugLights()
     }
 
 #endif
+}
+
 }

@@ -3,6 +3,9 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
+namespace FE
+{
+
 void ShakeEffect::Start(float duration, float intensity)
 {
     duration_ = duration;
@@ -50,4 +53,6 @@ Vector3 ShakeEffect::GetOffset() const
         Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation,
         Math::RandomFloat(-1.0f, 1.0f) * intensity_ * attenuation
     };
+}
+
 }

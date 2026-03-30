@@ -2,6 +2,9 @@
 #define STICK_THRESHOLD 0x4000
 #include "Vector2.h"
 
+namespace FE
+{
+
 class Input
 {
 public:
@@ -123,3 +126,5 @@ private:
     bool controllerConnected_[4];
     float vibrationTimers_[4];
 };
+
+}

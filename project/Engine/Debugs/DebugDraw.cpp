@@ -7,6 +7,9 @@
 #include "Camera.h"
 #include "MathUtils.h" 
 
+namespace FE
+{
+
 RendererManager* DebugDraw::rendererManager_ = nullptr;
 
 void DebugDraw::Initialize(RendererManager* rendererManager)
@@ -129,6 +132,8 @@ void DebugDraw::DrawFrustum(const Matrix4x4& viewProj, const Vector4& color)
     DrawLine(wpts[1], wpts[5], color);
     DrawLine(wpts[2], wpts[6], color); 
     DrawLine(wpts[3], wpts[7], color);
+}
+
 }
 
 #endif

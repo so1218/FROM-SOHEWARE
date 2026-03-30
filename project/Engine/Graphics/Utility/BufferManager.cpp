@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "BufferManager.h"
 
+namespace FE
+{
+
 Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(
     ID3D12Device* device,
     size_t sizeInBytes,
@@ -45,4 +48,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(
     }
 
     return bufferResource;
+}
+
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class SRVAllocator
 {
 public:
@@ -63,3 +66,5 @@ private:
     std::queue<uint32_t> freeIndices_;
     std::unordered_set<uint32_t> usedIndices_;
 };
+
+}

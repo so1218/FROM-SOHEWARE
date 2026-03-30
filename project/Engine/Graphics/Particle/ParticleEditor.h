@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{
+
 class Engine;
 class ParticleSystem;
 
@@ -26,4 +30,6 @@ private:
     // 保存メッセージの表示残り時間
     float saveMessageTimer_ = 0.0f;
 };
+
+}
 

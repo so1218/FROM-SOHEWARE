@@ -4,6 +4,9 @@
 #include "TimeManager.h"
 #include "Engine.h"
 
+namespace FE
+{
+
 void BloomCombinePass::Initialize(
     Engine* engine,
     UINT w,
@@ -165,4 +168,6 @@ void BloomCombinePass::Execute(
     cmdList->DrawInstanced(3, 1, 0, 0);
 
     PostDraw(cmdList);
+}
+
 }

@@ -3,10 +3,10 @@
 #include "Engine.h" 
 #include "Camera.h" 
 
-class ParticleSystemWrapper : public GameObject
+class ParticleSystemWrapper : public FE::GameObject
 {
 public:
-    ParticleSystemWrapper(Engine* engine);
+    ParticleSystemWrapper(FE::Engine* engine);
 
     void Update() override;
 

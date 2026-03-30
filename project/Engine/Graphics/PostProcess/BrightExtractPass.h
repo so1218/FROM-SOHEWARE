@@ -2,6 +2,9 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
+namespace FE
+{
+
 class BrightExtractPass : public IPostEffect
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
@@ -15,3 +18,5 @@ public:
 
     BrightExtractSettings* GetSettings() { return cbData_; }
 };
+
+}

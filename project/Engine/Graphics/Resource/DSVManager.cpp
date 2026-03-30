@@ -4,6 +4,9 @@
 #include "Logger.h"
 #include "SRVManager.h"
 
+namespace FE
+{
+
 void DSVManager::Initialize(
     ID3D12Device* device,
     DescriptorHeapManager* descriptorManager,
@@ -108,4 +111,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
 
     // 作成したDSVのCPUハンドルを返す
     return dsvHandle;
+}
+
 }

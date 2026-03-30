@@ -3,6 +3,9 @@
 #include "BlendMode.h" 
 #include "RenderCommon.h" 
 
+namespace FE
+{
+
 class Engine;
 
 class Model
@@ -124,3 +127,5 @@ private:
     CullMode cullMode_ = CullMode::Back;
     DepthMode depthMode_ = DepthMode::Write;
 };
+
+}

@@ -1,6 +1,9 @@
 #pragma once
 #include "Vector.h"
 
+namespace FE
+{
+
 class WorldTransform;
 class Quaternion;
 
@@ -55,3 +58,4 @@ public:
     static Matrix4x4 RemoveScale(const Matrix4x4& mat);
 };
 
+}

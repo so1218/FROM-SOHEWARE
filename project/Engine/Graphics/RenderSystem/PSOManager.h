@@ -1,6 +1,9 @@
 #pragma once
 #include "BlendMode.h"
 
+namespace FE
+{
+
 class RootSignatureManager;
 class ShaderManager;
 
@@ -71,3 +74,5 @@ private:
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsLine_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsGrass_;
 };
+
+}

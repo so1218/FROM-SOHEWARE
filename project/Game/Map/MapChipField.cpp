@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MapChipField.h"
 
+using namespace FE;
+
 namespace
 {
     std::map<std::string, MapChipType> mapChipTable =

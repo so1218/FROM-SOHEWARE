@@ -5,6 +5,9 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
+namespace FE
+{
+
 // ウィンドウプロシージャ
 LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -85,4 +88,6 @@ void Window::Create(std::wstring windowTitle_)
 
     // ウィンドウを表示する
     ShowWindow(hwnd_, SW_SHOW);
+}
+
 }

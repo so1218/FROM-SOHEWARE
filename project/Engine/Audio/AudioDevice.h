@@ -1,5 +1,8 @@
 #pragma once         
 
+namespace FE
+{
+
 class AudioDevice
 {
 public:
@@ -25,3 +28,5 @@ private:
     Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
     IXAudio2MasteringVoice* masterVoice_ = nullptr;
 };
+
+}

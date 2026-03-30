@@ -12,6 +12,9 @@
 #include "SSRPass.h"
 #include "Camera.h"
 
+namespace FE
+{
+
 class Engine;
 class SRVManager;
 
@@ -122,3 +125,5 @@ private:
     std::string currentLutName_ = "LUT_Neutral_32";
     std::string currentNoiseName_ = "normal_00";
 };
+
+}

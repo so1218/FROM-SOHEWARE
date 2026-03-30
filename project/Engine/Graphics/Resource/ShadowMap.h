@@ -1,4 +1,8 @@
 #pragma once
+
+namespace FE
+{
+
 class SRVManager; 
 
 class ShadowMap
@@ -32,3 +36,5 @@ private:
     D3D12_VIEWPORT viewport_{};
     D3D12_RECT scissorRect_{};
 };
+
+}

@@ -4,6 +4,9 @@
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 
+namespace FE
+{
+
 class TrailRenderer
 {
 public:
@@ -46,3 +49,5 @@ private:
     uint32_t indexTrail_ = 0;
     uint32_t prevTrailCount_ = 0;
 };
+
+}

@@ -1,6 +1,9 @@
 #pragma once
 #include "AudioDefinition.h"
 
+namespace FE
+{
+
 class MediaAudioDecoder
 {
 public:
@@ -10,3 +13,6 @@ private:
     Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader_;
     WAVEFORMATEX waveFormat_;
 };
+
+}
+

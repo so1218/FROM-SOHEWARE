@@ -5,6 +5,9 @@
 
 #pragma comment(lib, "Dbghelp.lib")
 
+namespace FE
+{
+
 void Logger::Initialize()
 {
     // 未処理例外のハンドラを登録
@@ -133,4 +136,6 @@ std::string Logger::GetAnsiColorCode(LogLevel level)
     case LogLevel::Debug:   return "\x1B[96m"; // 明るいシアン
     default:                return "\x1B[37m"; // デフォルト (白)
     }
+}
+
 }

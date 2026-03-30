@@ -3,6 +3,9 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 
+namespace FE
+{
+
 class WorldTransform
 {
 public:
@@ -66,3 +69,5 @@ public:
     void SetRotation(const Quaternion& rotation);
 
 };
+
+}

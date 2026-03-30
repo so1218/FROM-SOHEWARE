@@ -5,6 +5,9 @@
 #include "Model.h"
 #include "AnimationModel.h"
 
+namespace FE
+{
+
 class ParticleEmitter
 {
 public:
@@ -77,6 +80,6 @@ public:
     bool followZ_ = true;
 };
 
-
+}
 
 

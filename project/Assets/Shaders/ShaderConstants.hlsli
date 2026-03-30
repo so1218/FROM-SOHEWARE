@@ -2,10 +2,10 @@
 #include "MathUtils.h" 
 #include "WorldTransform.h"
 
-#define float4x4 Matrix4x4
-#define float4 Vector4
-#define float3 Vector3
-#define float2 Vector2
+#define float4x4 FE::Matrix4x4
+#define float4 FE::Vector4
+#define float3 FE::Vector3
+#define float2 FE::Vector2
 #define float32_t float
 
 #else
@@ -43,7 +43,7 @@ struct TransformationMatrix
 
 struct FrameData
 {
-    float4x4 viewMatrix; 
+    float4x4 viewMatrix;
     float4x4 projectionMatrix;
     
     float4x4 viewProjectionMatrix;
@@ -57,9 +57,9 @@ struct FrameData
     float3 cameraUp;
     float padding2;
 
-    float3 mainLightDirection; 
+    float3 mainLightDirection;
     float paddingLight0;
-    float3 mainLightColor; 
+    float3 mainLightColor;
     float paddingLight1;
 
     float2 iResolution;
@@ -130,13 +130,13 @@ struct MaterialData
     float2 paddingOutline;
 
     int32_t enableRipple;
-    float wetness; 
-    float rippleScale; 
+    float wetness;
+    float rippleScale;
     float rippleSpeed;
     
-    float rippleStrength; 
-    float puddleScale; 
-    float puddleFalloff; 
+    float rippleStrength;
+    float puddleScale;
+    float puddleFalloff;
     float puddleEmission;
     
     int32_t usePuddle;
@@ -157,21 +157,21 @@ struct MaterialData
     float fresnelExponent;
     float3 paddingBubble;
     
-    float grassWindSpeed; 
-    float grassWindAmplitude; 
+    float grassWindSpeed;
+    float grassWindAmplitude;
     float grassNormalBlend;
-    float grassTranslucency; 
+    float grassTranslucency;
 
-    float grassRootAO; 
-    float grassAlphaCutoff; 
-    float interactRadius; 
-    float interactStrength; 
+    float grassRootAO;
+    float grassAlphaCutoff;
+    float interactRadius;
+    float interactStrength;
     
     float3 playerPos;
-    int32_t enableTreeWind; 
+    int32_t enableTreeWind;
     
     float treeWindSpeed;
-    float treeWindAmplitude; 
+    float treeWindAmplitude;
     float treeWindSpatialScale;
     float treeWindHeightScale;
     
@@ -179,8 +179,8 @@ struct MaterialData
     float3 paddingTree;
     
     int32_t useTriplanar;
-    float triplanarScale; 
-    float triplanarBlendSharpness; 
+    float triplanarScale;
+    float triplanarBlendSharpness;
     float paddingTriplanar;
 };
 
@@ -296,23 +296,18 @@ struct CombineSettings
     
     float heightFogFalloff;
     float heightFogBaseHeight;
-    float distanceFogStart;                              
+    float distanceFogStart;
     float distanceFogEnd;
     
     float fogNoiseSpeed;
     float fogNoiseScale;
-    float fogNoiseContrast; 
+    float fogNoiseContrast;
     float fogNoiseStrength;
     
     float godRayIntensity;
     int enableSSR;
     float ssrIntensity;
-    float _padding2; 
-
-    float volumetricFogDensity;
-    float volumetricFogMaxDistance;
-    float volumetricFogScatteringG;
-    int volumetricFogSteps;
+    float _padding2;
 };
 
 struct GodRaySettings
@@ -332,13 +327,13 @@ struct GodRaySettings
 
 struct SSAOSettings
 {
-    float radius; 
-    float intensity; 
-    float bias; 
+    float radius;
+    float intensity;
+    float bias;
     int sampleCount;
 
-    float fadeStart; 
-    float fadeEnd; 
+    float fadeStart;
+    float fadeEnd;
     float padding[2];
 };
 
@@ -355,9 +350,9 @@ struct BilateralBlurSettings
 struct SSRSettings
 {
     float maxDistance;
-    float stepSize; 
-    int maxSteps; 
-    float thickness; 
+    float stepSize;
+    int maxSteps;
+    float thickness;
 };
 
 struct GrassInstanceData
@@ -376,4 +371,15 @@ struct Object3DInstanceData
 struct InstanceOffset
 {
     int gBaseInstanceIndex;
+};
+
+struct VolumetricFogSettings
+{
+    float density;
+    float maxDistance;
+    float scatteringG;
+    int steps;
+    
+    float intensity;
+    float3 padding;
 };

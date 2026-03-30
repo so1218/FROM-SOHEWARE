@@ -6,6 +6,9 @@
 #include "TextureManager.h"
 #include "Structures.h"
 
+namespace FE
+{
+
 class AnimationModel;
 
 struct ShapeModule
@@ -363,3 +366,5 @@ struct ParticleDefinition
     ParticleConfig particleConfig;
     EmitterConfig emitterConfig;
 };
+
+}

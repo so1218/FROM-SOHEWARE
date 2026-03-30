@@ -1,5 +1,8 @@
 #pragma once
 
+namespace FE
+{
+
 class Vector3
 {
 public:
@@ -59,4 +62,6 @@ struct Vector3Int
 {
     int x, y, z;
 };
+
+}
 

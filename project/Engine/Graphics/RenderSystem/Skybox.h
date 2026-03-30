@@ -1,6 +1,9 @@
 #pragma once
 #include "WorldTransform.h"
 
+namespace FE
+{
+
 class Engine;
 class Camera; 
 
@@ -24,3 +27,5 @@ private:
     uint32_t cubeTextureHandle_ = 0; 
     uint32_t color_ = 0xFFFFFFFF;
 };
+
+}
