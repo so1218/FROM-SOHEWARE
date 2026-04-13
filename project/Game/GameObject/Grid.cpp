@@ -6,11 +6,13 @@
 using namespace FE;
 
 Grid::Grid(Engine* engine)
-    : GameObject(engine)
+    : GameObject()
 {
     SetTag("Grid");
 
-    model_ = GameObject::CreateModel("field");
+    engine_ = engine;
+
+    model_ = std::make_unique<Model>(engine_, "field");
 	model_->ApplyRenderSettings(RenderingPreset::Grid);
 	model_->GetTransform().scale_ = { 10000.0f, 1.0f,10000.0f };
     model_->GetMaterialHandle()->materialData->isArtGrid = true;

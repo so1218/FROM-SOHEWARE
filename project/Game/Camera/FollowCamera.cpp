@@ -9,10 +9,12 @@
 using namespace FE;
 
 FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
-    : GameObject(engine, 100),
+    : GameObject(),
     target_(target), camera_(camera)
 {
     SetTag("FollowCamera");
+
+    engine_ = engine;
 }
 
 void FollowCamera::Initialize()

@@ -12,5 +12,8 @@ public:
     void Update() override;
     void Draw() override;
     void DebugDraw() override;
+
+private:
+    FE::Engine* engine_;
 };
 

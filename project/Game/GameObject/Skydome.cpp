@@ -4,9 +4,11 @@
 
 using namespace FE;
 
-Skydome::Skydome(Engine* engine) : GameObject(engine)
+Skydome::Skydome(Engine* engine) : GameObject()
 {
 	SetTag("Skydome");
+
+	engine_ = engine;
 }
 
 void Skydome::Initialize()

@@ -11,13 +11,15 @@
 
 using namespace FE;
 
-Player::Player(Engine* engine, Camera* camera) : GameObject(engine, UpdateOrder::Player),
+Player::Player(Engine* engine, Camera* camera) : GameObject(),
 	camera_(camera)
 {
 	SetTag("Player");
 
+	engine_ = engine;
+
 	// アニメーションモデルを生成
-	animationPlayer_ = CreateAnimationModel("playerMesh", "playerWalk");
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_, "playerMesh", "playerWalk");
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 }

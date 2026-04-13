@@ -353,7 +353,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioDefinition.h" />
     <ClInclude Include="Engine\Camera\CameraPath.h" />
-    <ClInclude Include="Engine\Camera\TrackCamra.h" />
+    <ClInclude Include="Engine\Camera\TrackCamera.h" />
     <ClInclude Include="Engine\Collision\Collider.h" />
     <ClInclude Include="Engine\Core\FrameLimiter.h" />
     <ClInclude Include="Engine\Core\pch.h" />

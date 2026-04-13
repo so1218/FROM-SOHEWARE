@@ -18,6 +18,7 @@ public:
     void StartShake(float duration, float intensity);
 
 private:
+    FE::Engine* engine_;
     Player* target_ = nullptr;
     FE::Camera* camera_ = nullptr;
 

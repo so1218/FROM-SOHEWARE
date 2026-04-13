@@ -5,9 +5,11 @@
 
 using namespace FE;
 
-GrassField::GrassField(Engine* engine, Player* player) : GameObject(engine)
+GrassField::GrassField(Engine* engine, Player* player) : GameObject()
 {
     SetTag("GrassField");
+
+    engine_ = engine;
 
     grassSystem_ = std::make_unique<GrassSystem>(engine_, "grass", "white1x1");
 

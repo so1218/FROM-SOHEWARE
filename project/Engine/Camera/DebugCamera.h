@@ -6,7 +6,7 @@
 namespace FE
 {
 
-/// デバッグカメラ
+// デバッグカメラ
 class DebugCamera
 {
 public:

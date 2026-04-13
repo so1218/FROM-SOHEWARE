@@ -44,7 +44,7 @@ public:
 	std::unique_ptr<FE::AnimationModel> animationPlayer_;
 
 private:
-
+	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
 	FollowCamera* followCamera_;
 

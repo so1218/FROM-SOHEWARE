@@ -8,9 +8,11 @@
 
 using namespace FE;
 
-Enemy::Enemy(Engine* engine) : GameObject(engine, 10)
+Enemy::Enemy(Engine* engine) : GameObject()
 {
 	SetTag("Enemy");
+
+	engine_ = engine;
 }
 
 Enemy::~Enemy()

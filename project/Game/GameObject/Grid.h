@@ -13,6 +13,7 @@ public:
     void Draw() override;
 
 private:
+    FE::Engine* engine_;
     std::unique_ptr<FE::Model> model_;
 
 };

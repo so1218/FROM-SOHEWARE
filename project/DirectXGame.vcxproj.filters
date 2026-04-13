@@ -922,6 +922,6 @@
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
     <ClInclude Include="Engine\Camera\CameraPath.h" />
-    <ClInclude Include="Engine\Camera\TrackCamra.h" />
+    <ClInclude Include="Engine\Camera\TrackCamera.h" />
   </ItemGroup>
 </Project>

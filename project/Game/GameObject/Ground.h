@@ -15,6 +15,8 @@ public:
     void DebugDraw() override;
 
 private:
+    FE::Engine* engine_;
+
     std::unique_ptr<FE::Model> model_;
     std::unique_ptr<FE::Model> modelTree_;
     std::unique_ptr<FE::Model> modelRock_;

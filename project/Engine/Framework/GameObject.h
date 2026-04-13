@@ -25,7 +25,7 @@ namespace UpdateOrder
 class GameObject 
 {
 public:
-    GameObject(Engine* engine, int priority = UpdateOrder::Default);
+    GameObject();
     virtual ~GameObject() = default;
 
     virtual void Initialize() {}
@@ -46,14 +46,11 @@ public:
 
     int GetUpdatePriority() const { return priority_; }
 
-protected:
-    std::unique_ptr<Model> CreateModel(const std::string& modelName);
-    std::unique_ptr<AnimationModel> CreateAnimationModel(const std::string& modelName, const std::string& animationName);
-    std::unique_ptr<Sprite> CreateSprite(const std::string& textureName);
+    WorldTransform transform_;
 
-    Engine* engine_ = nullptr;
+protected:
     std::string tag_ = "None";
-    int priority_ = 0;
+    int priority_ = UpdateOrder::Default;
     bool isDead_ = false;
 };
 

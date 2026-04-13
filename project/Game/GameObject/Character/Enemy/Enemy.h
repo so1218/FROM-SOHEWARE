@@ -24,5 +24,6 @@ public:
     void DebugDraw() override;
 
 private:
+    FE::Engine* engine_;
     std::unique_ptr<FE::AnimationModel> animationEnemy_;
 };

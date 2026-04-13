@@ -13,4 +13,5 @@ public:
     void Draw() override;
 
 private:
+    FE::Engine* engine_;
 };

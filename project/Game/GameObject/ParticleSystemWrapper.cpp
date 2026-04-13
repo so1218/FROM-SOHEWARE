@@ -4,9 +4,11 @@
 using namespace FE;
 
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
-    : GameObject(engine)
+    : GameObject()
 {
 	SetTag("ParticleSystemWrapper");
+
+    engine_ = engine;
 }
 
 void ParticleSystemWrapper::Update()

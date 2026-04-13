@@ -4,10 +4,13 @@
 
 using namespace FE;
 
-Bubble::Bubble(Engine* engine) : GameObject(engine)
+Bubble::Bubble(Engine* engine) : GameObject()
 {
 	SetTag("Bubble");
-	model_ = GameObject::CreateModel("sphere");
+
+	engine_ = engine;
+
+	model_ = std::make_unique<Model>(engine_, "sphere");
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Bubble");
 }

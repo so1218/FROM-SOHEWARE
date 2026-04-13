@@ -21,6 +21,7 @@ private:
     void GenerateGrass();
 
 private:
+    FE::Engine* engine_;
     Player* player_;
 
     std::unique_ptr<FE::GrassSystem> grassSystem_;

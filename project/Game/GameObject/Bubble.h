@@ -15,6 +15,8 @@ public:
 
     std::unique_ptr<FE::Model> model_;
 private:
+    FE::Engine* engine_;
+
     std::unique_ptr<FE::PropertyBinder> binder_;
 };
 
