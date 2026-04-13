@@ -74,6 +74,7 @@ inline float Grad(int hash, float x, float y, float z) {
     return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
+
 inline float PerlinNoise(float x, float y, float z)
 {
     static const int p[512] = { 
