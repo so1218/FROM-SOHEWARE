@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine.h"
 #include "GameObject.h"
+#include "Model.h"
 
 class Grid : public FE::GameObject
 {

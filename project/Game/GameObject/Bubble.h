@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "GameObject.h"
 #include "PropertyBinder.h"
+#include "Model.h"
 
 class Bubble : public FE::GameObject
 {

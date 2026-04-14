@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Skybox.h"
 #include "PropertyBinder.h"
+#include "Model.h"
 
 class Ground : public FE::GameObject
 {
