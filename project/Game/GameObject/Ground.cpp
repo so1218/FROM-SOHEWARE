@@ -6,8 +6,6 @@ using namespace FE;
 
 Ground::Ground(Engine* engine) : GameObject()
 {
-	SetTag("Ground");
-
 	engine_ = engine;
 
 	model_ = std::make_unique<Model>(engine_, "field");

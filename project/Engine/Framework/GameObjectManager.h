@@ -16,8 +16,6 @@ public:
 
     void AddObject(std::unique_ptr<GameObject> obj);
 
-    void AddAllCollidersToManager(CollisionManager* manager);
-
     // 生成関数
     template <typename T, typename... Args>
     T* Create(Args&&... args)
@@ -26,24 +24,27 @@ public:
         auto obj = std::make_unique<T>(std::forward<Args>(args)...);
         T* ptr = obj.get();
 
-        // リストに追加
-        objects_.push_back(std::move(obj));
-
-        // ソートが必要フラグを立てる
-        isSortNeeded_ = true;
+        // あとの処理は全てAddObjectに
+        AddObject(std::move(obj));
 
         return ptr;
     }
 
     // 特定のタグを持つオブジェクトを1つ探す
-    GameObject* FindObjectWithTag(const std::string& tag);
+    GameObject* FindObjectWithTag(uint32_t tag);
 
     // 特定のタグを持つオブジェクトを全てリストアップ
-    std::vector<GameObject*> FindObjectsWithTag(const std::string& tag);
+    std::vector<GameObject*> FindObjectsWithTag(uint32_t tag);
+
+    void SetCollisionManager(CollisionManager* cm) { collisionManager_ = cm; }
+    CollisionManager* GetCollisionManager() const { return collisionManager_; }
 
 private:
     std::vector<std::unique_ptr<GameObject>> objects_;
+    std::vector<std::unique_ptr<GameObject>> pendingObjects_; // 追加待機リスト
+    bool isUpdating_ = false; // 現在Updateループ中かどうかのフラグ
     bool isSortNeeded_ = false; // 毎フレームソートしないためのフラグ
+    CollisionManager* collisionManager_ = nullptr;
 };
 
 }

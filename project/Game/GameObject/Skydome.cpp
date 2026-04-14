@@ -6,8 +6,6 @@ using namespace FE;
 
 Skydome::Skydome(Engine* engine) : GameObject()
 {
-	SetTag("Skydome");
-
 	engine_ = engine;
 }
 

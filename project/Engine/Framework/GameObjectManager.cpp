@@ -16,6 +16,8 @@ void GameObjectManager::Initialize()
 
 void GameObjectManager::Update()
 {
+    isUpdating_ = true; // ループ開始前に
+
     if (isSortNeeded_)
     {
         std::sort(objects_.begin(), objects_.end(),
@@ -30,9 +32,18 @@ void GameObjectManager::Update()
     {
         if (!objects_[i]->IsDead())
         {
-            objects_[i]->Update();
+            objects_[i]->Update ();
         }
     }
+
+    isUpdating_ = false;
+
+    // ループが終わったので、待機していたオブジェクトを合流
+    for (auto& newObj : pendingObjects_) {
+        objects_.push_back(std::move(newObj));
+        isSortNeeded_ = true;
+    }
+    pendingObjects_.clear();
 
     // 削除処理
     auto it = std::remove_if(objects_.begin(), objects_.end(),
@@ -65,27 +76,19 @@ void GameObjectManager::DebugDraw()
 
 void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj)
 {
-    objects_.push_back(std::move(obj));
-    isSortNeeded_ = true;
-}
-
-void GameObjectManager::AddAllCollidersToManager(CollisionManager* manager)
-{
-    // 自分が持っている全てのオブジェクトをループ
-    for (const auto& object : objects_)
+    obj->SetManager(this);
+    if (isUpdating_)
     {
-        // GameObject*をCollider*に動的キャスト
-        Collider* collider = dynamic_cast<Collider*>(object.get());
-
-        // キャストが成功し、Colliderであれば登録
-        if (collider)
-        {
-            manager->AddCollider(collider);
-        }
+        pendingObjects_.push_back(std::move(obj)); // ループ中は待機列へ
+    }
+    else 
+    {
+        objects_.push_back(std::move(obj)); // それ以外は直接追加
+        isSortNeeded_ = true;
     }
 }
 
-GameObject* GameObjectManager::FindObjectWithTag(const std::string& tag)
+GameObject* GameObjectManager::FindObjectWithTag(uint32_t tag)
 {
     for (auto& obj : objects_)
     {
@@ -97,7 +100,7 @@ GameObject* GameObjectManager::FindObjectWithTag(const std::string& tag)
     return nullptr;
 }
 
-std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(const std::string& tag)
+std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(uint32_t tag)
 {
     std::vector<GameObject*> result;
     for (auto& obj : objects_)

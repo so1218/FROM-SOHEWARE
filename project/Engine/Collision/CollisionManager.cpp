@@ -7,12 +7,32 @@
 namespace FE
 {
 
+void CollisionManager::ClearColliders()
+{
+    // リストを空にする前に、全コライダーのマネージャー参照を切る
+    for (Collider* collider : colliders_)
+    {
+        collider->SetManager(nullptr);
+    }
+
+    colliders_.clear();
+}
+
+void CollisionManager::Reset()
+{
+    ClearColliders();
+    previousCollisionPairs_.clear();
+}
+
 void CollisionManager::AddCollider(Collider* collider)
 {
     // 有効なコライダーのみ登録
     if (collider)
     {
         colliders_.push_back(collider);
+
+        // コライダーに自分のマネージャーを教える
+        collider->SetManager(this);
     }
 }
 
@@ -97,28 +117,8 @@ void CollisionManager::CheckAllCollisions()
         // 今回のリストに存在しない
         if (currentCollisionPairs.find(pair) == currentCollisionPairs.end())
         {
-            // ポインタが有効かチェックする
-            // colliders_リストの中にポインタがあれば、まだdeleteされていない
-            bool isAliveA = false;
-            bool isAliveB = false;
-
-            // リストを検索して生存確認
-            for (Collider* collider : colliders_)
-            {
-                if (collider == pair.first) isAliveA = true;
-                if (collider == pair.second) isAliveB = true;
-            }
-
-            // Aが生きていればExitを呼ぶ
-            if (isAliveA)
-            {
-                pair.first->OnCollisionExit(pair.second);
-            }
-            // Bが生きていればExitを呼ぶ
-            if (isAliveB)
-            {
-                pair.second->OnCollisionExit(pair.first);
-            }
+            pair.first->OnCollisionExit(pair.second);
+            pair.second->OnCollisionExit(pair.first);
         }
     }
 
@@ -139,6 +139,30 @@ void CollisionManager::CheckAllCollisions()
 
     // 履歴の更新
     previousCollisionPairs_ = currentCollisionPairs;
+}
+
+void CollisionManager::RemoveCollider(Collider* collider)
+{
+    if (!collider) return;
+
+    // 現在のリストから削除
+    colliders_.remove(collider);
+
+    // 前フレームの衝突履歴から削除（クラッシュ防止）
+    for (auto it = previousCollisionPairs_.begin(); it != previousCollisionPairs_.end(); )
+    {
+        if (it->first == collider || it->second == collider)
+        {
+            it = previousCollisionPairs_.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    // コライダーのマネージャー参照を切る（二重削除防止）
+    collider->SetManager(nullptr);
 }
 
 }

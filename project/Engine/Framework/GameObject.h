@@ -10,17 +10,8 @@
 namespace FE
 { 
 
-namespace UpdateOrder
-{
-    enum Priority
-    {
-        Field = 10,
-        Player = 30,
-        Default = 30,
-        Effect = 60,
-        UI = 90,
-    };
-}
+class Collider;
+class GameObjectManager;
 
 class GameObject 
 {
@@ -37,21 +28,34 @@ public:
     bool IsDead() const { return isDead_; }
     void Destroy() { isDead_ = true; }
 
-    // タグの取得と設定
-    void SetTag(const std::string& tag) { tag_ = tag; }
-    const std::string& GetTag() const { return tag_; }
+    // タグ
+    void SetTag(uint32_t tag) { tag_ = tag; }
+    uint32_t GetTag() const { return tag_; }
+    bool CompareTag(uint32_t tag) const { return tag_ == tag; }
 
-    // 特定のタグかどうか判定する関数
-    bool CompareTag(std::string_view tag) const { return tag_ == tag; }
+    // 優先度
+    void SetUpdatePriority(int priority) { updatePriority_ = priority; }
+    int GetUpdatePriority() const { return updatePriority_; }
 
-    int GetUpdatePriority() const { return priority_; }
+    // Transform
+    WorldTransform& GetTransform() { return transform_; }
+    const WorldTransform& GetTransform() const { return transform_; }
 
+    // 衝突コールバック
+    virtual void OnCollisionEnter(Collider* mine, Collider* other) {}
+    virtual void OnCollisionStay(Collider* mine, Collider* other) {}
+    virtual void OnCollisionExit(Collider* mine, Collider* other) {}
+
+    // マネージャー
+    void SetManager(GameObjectManager* manager) { manager_ = manager; }
+    GameObjectManager* GetManager() const { return manager_; }
+
+private:
     WorldTransform transform_;
-
-protected:
-    std::string tag_ = "None";
-    int priority_ = UpdateOrder::Default;
+    uint32_t tag_ = 0;
+    int updatePriority_ = 50;
     bool isDead_ = false;
+    GameObjectManager* manager_ = nullptr;
 };
 
 }

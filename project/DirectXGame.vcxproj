@@ -468,6 +468,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Game\GameObject\Skydome.h" />

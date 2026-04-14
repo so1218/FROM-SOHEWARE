@@ -8,8 +8,6 @@ using namespace FE;
 Grid::Grid(Engine* engine)
     : GameObject()
 {
-    SetTag("Grid");
-
     engine_ = engine;
 
     model_ = std::make_unique<Model>(engine_, "field");

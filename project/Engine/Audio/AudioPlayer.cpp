@@ -103,7 +103,8 @@ void AudioPlayer::StopAll()
 {
     for (auto& pair : activeVoices_)
     {
-        if (pair.second.voice) {
+        if (pair.second.voice)
+        {
             pair.second.voice->Stop(0);
             pair.second.voice->FlushSourceBuffers();
             pair.second.voice->DestroyVoice();

@@ -6,8 +6,6 @@ using namespace FE;
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
     : GameObject()
 {
-	SetTag("ParticleSystemWrapper");
-
     engine_ = engine;
 }
 

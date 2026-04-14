@@ -5,7 +5,7 @@
 
 class Player;
 
-class Enemy : public FE::Collider, public FE::GameObject
+class Enemy : public FE::GameObject
 {
 public:
     Enemy(FE::Engine* engine);
@@ -23,7 +23,11 @@ public:
     // デバッグ描画処理
     void DebugDraw() override;
 
+    // 衝突を検出したら呼び出されるコールバック関数
+    void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+
 private:
     FE::Engine* engine_;
     std::unique_ptr<FE::AnimationModel> animationEnemy_;
+    std::unique_ptr<FE::Collider> collider_;
 };

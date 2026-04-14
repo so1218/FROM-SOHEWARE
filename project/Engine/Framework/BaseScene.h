@@ -15,8 +15,8 @@ public:
         : engine_(engine)
     {
         collisionManager_ = std::make_unique<CollisionManager>();
+        objectManager_.SetCollisionManager(collisionManager_.get());
         camera_ = std::make_unique<Camera>();
-
         objectManager_.Create<ParticleSystemWrapper>(engine);
     }
     virtual ~BaseScene() = default;
@@ -37,7 +37,7 @@ public:
         objectManager_.Update();
 
         // 衝突判定
-        HandleCollisions();
+        collisionManager_->CheckAllCollisions();
 
         // カメラの行列更新
         if (camera_)
@@ -60,6 +60,8 @@ public:
 
     virtual void Finalize() final
     {
+        collisionManager_->ClearColliders();
+
         OnFinalize();
     }
 
@@ -75,13 +77,6 @@ protected:
     virtual void OnDraw() {}
     virtual void OnDebugDraw() {}
     virtual void OnFinalize() {}
-
-    void HandleCollisions()
-    {
-        collisionManager_->ClearColliders();
-        objectManager_.AddAllCollidersToManager(collisionManager_.get());
-        collisionManager_->CheckAllCollisions();
-    }
 
 protected:
     // メンバ変数

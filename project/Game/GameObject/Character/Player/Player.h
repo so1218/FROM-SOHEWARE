@@ -7,7 +7,7 @@
 
 class PlayScene;
 
-class Player : public FE::Collider, public FE::GameObject
+class Player : public FE::GameObject
 {
 public:
 	Player(FE::Engine* engine, FE::Camera* camera);
@@ -25,13 +25,10 @@ public:
 	void DebugDraw() override;
 
 	// 衝突を検出したら呼び出されるコールバック関数
-	void OnCollisionEnter(FE::Collider* other) override;
+	void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
 
 	// 移動処理
 	void Move();
-
-	// ワールド座標を取得
-	FE::Vector3 GetWorldPosition() const override;
 
 	FE::Vector3 GetMoveDirection();
 
@@ -47,6 +44,8 @@ private:
 	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
 	FollowCamera* followCamera_;
+
+	std::unique_ptr<FE::Collider> collider_;
 
 	std::unique_ptr<FE::PropertyBinder> binder_;
 	

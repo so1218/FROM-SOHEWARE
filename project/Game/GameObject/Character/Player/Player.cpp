@@ -8,13 +8,14 @@
 #include "Collision.h"   
 #include "TimeManager.h"
 #include "AudioPlayer.h"
+#include "GameDefine.h"
 
 using namespace FE;
 
 Player::Player(Engine* engine, Camera* camera) : GameObject(),
 	camera_(camera)
 {
-	SetTag("Player");
+	SetTag(ObjectTag::Player);
 
 	engine_ = engine;
 
@@ -22,6 +23,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(),
 	animationPlayer_ = std::make_unique<AnimationModel>(engine_, "playerMesh", "playerWalk");
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
+	collider_ = std::make_unique<FE::Collider>(this);
 }
 
 void Player::Initialize()
@@ -36,8 +38,8 @@ void Player::Initialize()
 	animationPlayer_->Play("playerWalk");
 
 	// 衝突判定の属性設定
-	SetCollisionAttribute(kCollisionAttributePlayer);
-	SetCollisionMask(kCollisionAttributeEnemy);
+	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
+	collider_->SetCollisionMask(kCollisionAttributeEnemy);
 
 	binder_->BindAnimationModel("PlayerModel", animationPlayer_.get());
 }
@@ -63,7 +65,7 @@ void Player::Update()
 			lightDir = lightDir.Normalize();
 
 			// 影を落とす対象の中心座標
-			Vector3 shadowTarget = animationPlayer_->GetTransform().translation_;
+			Vector3 shadowTarget = GetTransform().translation_;
 
 			// ライト位置を決定
 			float distance = 100.0f;
@@ -89,6 +91,8 @@ void Player::Update()
 			engine_->GetLightManager()->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
 		}
 	}
+
+	animationPlayer_->GetTransform() = GetTransform();
 }
 
 void Player::Move()
@@ -109,15 +113,15 @@ void Player::Move()
 		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
 		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
-		Quaternion currentRotation = animationPlayer_->GetTransform().rotationQuaternion_;
+		Quaternion currentRotation = GetTransform().rotationQuaternion_;
 		float slerpFactor = Math::Clamp(rotationSpeed_ * deltaTime, 0.0f, 1.0f);
 		Quaternion newRotation = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
 
-		animationPlayer_->GetTransform().rotationQuaternion_ = newRotation;
+		GetTransform().rotationQuaternion_ = newRotation;
 	}
 
 	// 実際の位置更新
-	animationPlayer_->GetTransform().translation_ += moveDirection_ * moveSpeed_;
+	GetTransform().translation_ += moveDirection_ * moveSpeed_;
 }
 
 // 入力から移動方向を取得
@@ -168,27 +172,26 @@ Vector3 Player::GetMoveDirection()
 	return dir;
 }
 
-void Player::OnCollisionEnter(Collider* other)
+void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 {
-	if (other->GetCollisionAttribute() & kCollisionAttributeEnemy)
-	{
-	
-	}
-}
+	// 相手の親を取得
+	FE::GameObject* hitObject = other->GetOwner();
+	if (!hitObject) return;
 
-Vector3 Player::GetWorldPosition() const
-{
-	Vector3 worldPos;
-	worldPos.x = animationPlayer_->GetTransform().matWorld_.m[3][0];
-	worldPos.y = animationPlayer_->GetTransform().matWorld_.m[3][1];
-	worldPos.z = animationPlayer_->GetTransform().matWorld_.m[3][2];
-	return worldPos;
+	if (mine == collider_.get())
+	{
+		/*if (auto* enemy = dynamic_cast<Enemy*>(hitObject))
+		{
+			float damage = enemy->GetAttackPower();
+			hp_ -= damage;
+		}*/
+	}
 }
 
 void Player::Draw()
 {
 	animationPlayer_->Draw();
-	DrawCollider();
+	collider_->DrawCollider();
 }
 
 void Player::DebugDraw()
@@ -200,6 +203,6 @@ void Player::DebugDraw()
 
 	ImGui::End();
 
-	/*ImGuiManager::DrawGizmo(animationPlayer_->GetTransform());*/
+	/*ImGuiManager::DrawGizmo(transform_);*/
 #endif
 }

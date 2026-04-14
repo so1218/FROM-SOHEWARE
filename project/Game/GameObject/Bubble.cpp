@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "Bubble.h"
 #include "ImGuiManager.h"
+#include "GameDefine.h"
 
 using namespace FE;
 
 Bubble::Bubble(Engine* engine) : GameObject()
 {
-	SetTag("Bubble");
+	SetTag(ObjectTag::None);
 
 	engine_ = engine;
 

@@ -12,8 +12,6 @@ FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
     : GameObject(),
     target_(target), camera_(camera)
 {
-    SetTag("FollowCamera");
-
     engine_ = engine;
 }
 
@@ -46,7 +44,7 @@ void FollowCamera::Initialize()
     // 初期位置計算（ターゲットが存在する場合）
     if (target_)
     {
-        Vector3 targetPos = target_->GetWorldPosition();
+        Vector3 targetPos = target_->GetTransform().GetWorldPosition();
         smoothedTargetPos_ = targetPos;
 
         float horizontalDistance = std::cos(currentPitch_) * distance_;
@@ -104,7 +102,7 @@ void FollowCamera::Update()
     currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
     // ターゲット位置のスムージング
-    Vector3 actualPlayerPos = target_->GetWorldPosition();
+    Vector3 actualPlayerPos = target_->GetTransform().GetWorldPosition();
     float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 
