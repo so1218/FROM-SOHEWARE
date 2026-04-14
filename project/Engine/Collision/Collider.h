@@ -33,11 +33,6 @@ public:
 	uint32_t GetCollisionAttribute() const { return collisionAttribute_; }
 	uint32_t GetCollisionMask() const { return collisionMask_; }
 
-	// デバッグ描画用カラー
-	void SetColor(const Vector4& color) { color_ = color; }
-	// コライダー描画（デバッグ用）
-	void DrawCollider();
-
 	// 中心座標からのズレ
 	void SetCenterOffset(const Vector3& offset) { centerOffset_ = offset; }
 
@@ -51,6 +46,11 @@ public:
 	void OnCollisionEnter(Collider* other);
 	void OnCollisionStay(Collider* other);
 	void OnCollisionExit(Collider* other);
+
+	// デバッグ描画用カラー
+	void SetColor(const Vector4& color) { color_ = color; }
+	// コライダー描画（デバッグ用）
+	void DrawCollider();
 
 private:
 	GameObject* owner_ = nullptr; // 自分を持っている親

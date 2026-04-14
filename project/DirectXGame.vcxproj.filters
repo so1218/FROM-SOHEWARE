@@ -916,13 +916,14 @@
     <ClInclude Include="Game\Scene\TestScene\TestSceneHori.h">
       <Filter>Game\Scene\TestScene</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Camera\CameraPath.cpp" />
-    <ClCompile Include="Engine\Camera\TrackCamera.cpp" />
+    <ClCompile Include="Engine\Camera\CameraRail.cpp" />
+    <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
-    <ClInclude Include="Engine\Camera\CameraPath.h" />
-    <ClInclude Include="Engine\Camera\TrackCamera.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
+    <ClInclude Include="Engine\Camera\ICameraController.h" />
+    <ClInclude Include="Engine\Camera\CameraRail.h" />
+    <ClInclude Include="Engine\Camera\SplineCameraController.h" />
   </ItemGroup>
 </Project>
