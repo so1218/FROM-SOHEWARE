@@ -10,6 +10,12 @@ class SplineCameraController : public ICameraController
 public:
     void Play(CameraRail* rail);
     void UpdateCamera(Camera* camera) override;
+    void DebugDraw() override;
+
+    void Draw() override
+    {
+        if (currentRail_) currentRail_->DrawDebugSpline();
+    }
 
 private:
     CameraRail* currentRail_ = nullptr;

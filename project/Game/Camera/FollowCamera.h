@@ -1,26 +1,25 @@
 #pragma once
 #include "Engine.h"
 #include "ShakeEffect.h"
-#include "GameObject.h"
+#include "ICameraController.h"
 #include "PropertyBinder.h"
 
 class Player;
 
-class FollowCamera : public FE::GameObject
+class FollowCamera : public FE::ICameraController
 {
 public:
-    FollowCamera(FE::Engine* engine, FE::Camera* camera, Player* target);
-    void Initialize() override;
-    void Update() override;
-    void DebugDraw() override;
-    void Draw() override {}
+    FollowCamera(FE::Engine* engine, const FE::WorldTransform* target);
+    void Initialize();
+    void UpdateCamera(FE::Camera* camera) override;
+    void DebugDraw() override; 
+    void Reset(FE::Camera* camera) override;
    
-    void StartShake(float duration, float intensity);
+    void StartShake(float duration, float intensity) override;
 
 private:
     FE::Engine* engine_;
-    Player* target_ = nullptr;
-    FE::Camera* camera_ = nullptr;
+    const FE::WorldTransform* target_ = nullptr;
 
     std::unique_ptr<FE::PropertyBinder> binder_;
 

@@ -8,9 +8,8 @@
 
 using namespace FE;
 
-FollowCamera::FollowCamera(Engine* engine, Camera* camera, Player* target)
-    : GameObject(),
-    target_(target), camera_(camera)
+FollowCamera::FollowCamera(FE::Engine* engine, const FE::WorldTransform* target)
+    : target_(target)
 {
     engine_ = engine;
 }
@@ -44,7 +43,7 @@ void FollowCamera::Initialize()
     // 初期位置計算（ターゲットが存在する場合）
     if (target_)
     {
-        Vector3 targetPos = target_->GetTransform().GetWorldPosition();
+        Vector3 targetPos = target_->GetWorldPosition();
         smoothedTargetPos_ = targetPos;
 
         float horizontalDistance = std::cos(currentPitch_) * distance_;
@@ -62,15 +61,13 @@ void FollowCamera::Initialize()
         Vector3 cameraForward = (cameraTarget - cameraPos).Normalize();
         Quaternion cameraRot = Quaternion::LookRotation(cameraForward, cameraUp);
 
-        camera_->SetTranslation(cameraPos);
-        camera_->SetRotation(cameraRot);
         currentCameraRot_ = cameraRot;
     }
 }
 
-void FollowCamera::Update()
+void FollowCamera::UpdateCamera(Camera* camera)
 {
-    if (!target_ || !camera_) return;
+    if (!target_ || !camera) return;
 
     float dt = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     shakeEffect_.Update();
@@ -102,7 +99,7 @@ void FollowCamera::Update()
     currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
     // ターゲット位置のスムージング
-    Vector3 actualPlayerPos = target_->GetTransform().GetWorldPosition();
+    Vector3 actualPlayerPos = target_->GetWorldPosition();
     float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 
@@ -123,9 +120,8 @@ void FollowCamera::Update()
     currentCameraRot_ = Quaternion::LookRotation(finalCameraForward, { 0.0f, 1.0f, 0.0f });
     Vector3 shakeOffset = shakeEffect_.GetOffset();
 
-    camera_->SetTranslation(finalCameraPos + shakeOffset);
-    camera_->SetRotation(currentCameraRot_);
-    camera_->UpdateViewProjectionMatrix();
+    camera->SetTranslation(finalCameraPos + shakeOffset);
+    camera->SetRotation(currentCameraRot_);
 }
 
 void FollowCamera::DebugDraw()
@@ -168,6 +164,26 @@ void FollowCamera::DebugDraw()
 void FollowCamera::StartShake(float duration, float intensity)
 {
     shakeEffect_.Start(duration, intensity);
+}
+
+void FollowCamera::Reset(Camera* camera)
+{
+    if (!target_ || !camera) return;
+
+    // 補間中の値を全て目標値で上書き
+    currentYaw_ = targetYaw_;
+    currentPitch_ = targetPitch_;
+    distance_ = targetDistance_;
+    smoothedTargetPos_ = target_->GetWorldPosition();
+
+    // 速度もゼロにリセットして、止める
+    yawVelocity_ = 0.0f;
+    pitchVelocity_ = 0.0f;
+    distanceVelocity_ = 0.0f;
+    posVelocity_ = { 0.0f, 0.0f, 0.0f };
+
+    // その状態で一度計算を走らせてカメラに適用
+    UpdateCamera(camera);
 }
 
 float FollowCamera::SmoothDamp(float current, float target, float& currentVelocity,

@@ -180,6 +180,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Camera\CameraManager.cpp" />
     <ClCompile Include="Engine\Camera\CameraRail.cpp" />
     <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
     <ClCompile Include="Engine\Collision\Collider.cpp" />
@@ -352,6 +353,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\AudioDefinition.h" />
+    <ClInclude Include="Engine\Camera\CameraManager.h" />
     <ClInclude Include="Engine\Camera\CameraRail.h" />
     <ClInclude Include="Engine\Camera\ICameraController.h" />
     <ClInclude Include="Engine\Camera\SplineCameraController.h" />

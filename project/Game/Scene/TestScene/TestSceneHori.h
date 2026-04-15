@@ -20,7 +20,7 @@ private:
     // メンバー変数
     Player* player_ = nullptr;
     Bubble* bubble_ = nullptr;
-    FollowCamera* followCamera_ = nullptr;
+    std::unique_ptr<FollowCamera> followCamera_;
 
     std::unique_ptr<FE::ParticleEmitter> testSceneEmitter_ = nullptr;
     std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;

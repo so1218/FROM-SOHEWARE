@@ -918,6 +918,7 @@
     </ClInclude>
     <ClCompile Include="Engine\Camera\CameraRail.cpp" />
     <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
+    <ClCompile Include="Engine\Camera\CameraManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -925,5 +926,6 @@
     <ClInclude Include="Engine\Camera\ICameraController.h" />
     <ClInclude Include="Engine\Camera\CameraRail.h" />
     <ClInclude Include="Engine\Camera\SplineCameraController.h" />
+    <ClInclude Include="Engine\Camera\CameraManager.h" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 #include "FollowCamera.h"
 #include "Line.h"
 #include "PropertyBinder.h"
+#include "GameObject.h"
 
 class PlayScene;
 

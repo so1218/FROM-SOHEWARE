@@ -16,13 +16,13 @@ TestSceneHori::TestSceneHori(Engine* engine)
 {
 	// ゲームオブジェクトの生成・登録
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
-    followCamera_ = objectManager_.Create<FollowCamera>(engine_, camera_.get(), player_);
+    followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
     //objectManager_.Create<Grid>(engine_);
     objectManager_.Create<Ground>(engine_);
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
 
-    player_->SetFollowCamera(followCamera_);
+    //player_->SetFollowCamera(followCamera_);
 }
 
 void TestSceneHori::OnInitialize()
@@ -36,6 +36,9 @@ void TestSceneHori::OnInitialize()
     engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
     engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+
+    followCamera_->Initialize();
+    cameraManager_->ChangeController(followCamera_.get());
 }
 
 void TestSceneHori::OnUpdate()

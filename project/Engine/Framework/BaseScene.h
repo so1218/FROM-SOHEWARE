@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "Camera.h"
 #include "CollisionManager.h"
+#include "CameraManager.h"
 #include "GameObjectManager.h"
 #include "ParticleSystemWrapper.h"
 
@@ -16,7 +17,10 @@ public:
     {
         collisionManager_ = std::make_unique<CollisionManager>();
         objectManager_.SetCollisionManager(collisionManager_.get());
+
         camera_ = std::make_unique<Camera>();
+        cameraManager_ = std::make_unique<CameraManager>(camera_.get());
+
         objectManager_.Create<ParticleSystemWrapper>(engine);
     }
     virtual ~BaseScene() = default;
@@ -35,6 +39,12 @@ public:
 
         // 全オブジェクト更新
         objectManager_.Update();
+
+        // カメラを更新
+        if (cameraManager_)
+        {
+            cameraManager_->Update();
+        }
 
         // 衝突判定
         collisionManager_->CheckAllCollisions();
@@ -55,6 +65,10 @@ public:
     virtual void DebugDraw() final
     {
         objectManager_.DebugDraw();
+        if (cameraManager_)
+        {
+            cameraManager_->DebugDraw();
+        }
         OnDebugDraw();
     }
 
@@ -85,6 +99,7 @@ protected:
     SceneManager* sceneManager_ = nullptr;
 
     GameObjectManager objectManager_;
+    std::unique_ptr<CameraManager> cameraManager_;
     std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
 };

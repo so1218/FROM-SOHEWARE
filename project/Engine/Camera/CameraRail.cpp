@@ -77,6 +77,18 @@ CameraKeyframe CameraRail::Evaluate(float currentTime) const
     return result;
 }
 
+float CameraRail::GetTotalTime() const 
+{
+    float total = 0.0f;
+    if (keyframes_.empty()) return 0.0f;
+    // 最後のキーフレームを除いた時間の合計
+    for (size_t i = 0; i < keyframes_.size() - 1; ++i) 
+    {
+        total += keyframes_[i].time;
+    }
+    return total;
+}
+
 void CameraRail::DrawDebugSpline() const
 {
     if (keyframes_.size() < 2) return;

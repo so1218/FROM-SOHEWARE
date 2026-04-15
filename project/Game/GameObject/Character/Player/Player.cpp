@@ -93,6 +93,7 @@ void Player::Update()
 	}
 
 	animationPlayer_->GetTransform() = GetTransform();
+	GetTransform().UpdateMatrix();
 }
 
 void Player::Move()

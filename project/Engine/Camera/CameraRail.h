@@ -21,6 +21,9 @@ public:
     // 全体の進行時間を与えると、現在いるべき座標や回転を返す関数
     CameraKeyframe Evaluate(float currentTime) const;
 
+    // レールの全長（秒数）
+    float GetTotalTime() const;
+
     // エディター用のデバッグ線
     void DrawDebugSpline() const;
 

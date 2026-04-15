@@ -36,6 +36,15 @@ void GameObjectManager::Update()
         }
     }
 
+    // 全オブジェクトの行列を更新
+    for (size_t i = 0; i < objects_.size(); ++i)
+    {
+        if (!objects_[i]->IsDead())
+        {
+            objects_[i]->GetTransform().UpdateMatrix();
+        }
+    }
+
     isUpdating_ = false;
 
     // ループが終わったので、待機していたオブジェクトを合流
