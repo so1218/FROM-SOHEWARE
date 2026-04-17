@@ -333,6 +333,7 @@ void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_RENDER_TARGET
     );
+
     cmdList->ResourceBarrier(1, &barrier);
 
     // レンダーターゲットをセット

@@ -15,7 +15,8 @@ struct CameraKeyframe
     Quaternion rotation;
     Vector3 euler;
     float fov = 0.45f;
-    float time = 1.0f;   // 次の点に到達するまでの時間
+    float time = 1.0f;      // 次の点への移動時間
+    float waitTime = 0.0f;
 };
 
 class CameraRail

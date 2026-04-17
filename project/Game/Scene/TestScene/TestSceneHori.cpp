@@ -54,18 +54,14 @@ void TestSceneHori::OnUpdate()
 {
     if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
     {
-        cameraManager_->ChangeController(followCamera_.get());
+        // マネージャーに名前を伝える
+        cameraManager_->PlayRail("Opening");
     }
 }
 
 void TestSceneHori::OnDraw()
 {
-    auto* rail = cameraManager_->GetRail("Opening");
-    if (rail)
-    {
-        // 常に曲線と基準点を表示
-        rail->DrawDebugSpline();
-    }
+   
 }
 
 void TestSceneHori::OnDebugDraw()

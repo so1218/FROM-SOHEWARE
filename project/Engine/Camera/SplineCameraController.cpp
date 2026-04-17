@@ -17,16 +17,19 @@ void SplineCameraController::Play(CameraRail* rail)
 
 void SplineCameraController::UpdateCamera(Camera* camera) 
 {
-    if (!isPlaying_ || !currentRail_ || !camera) return;
+    if (!currentRail_ || !camera) return;
 
-    float dt = TimeManager::GetInstance()->GetDeltaTime();
-    currentPlayTime_ += dt;
-
-    float total = currentRail_->GetTotalTime();
-    if (currentPlayTime_ >= total)
+    if (isPlaying_)
     {
-        currentPlayTime_ = total; // 最後にクランプ
-        isPlaying_ = false;      // 再生終了
+        float dt = TimeManager::GetInstance()->GetDeltaTime();
+        currentPlayTime_ += dt;
+
+        float total = currentRail_->GetTotalTime();
+        if (currentPlayTime_ >= total)
+        {
+            currentPlayTime_ = total; // 最後の時間で止める
+            isPlaying_ = false;       // 再生は終了
+        }
     }
 
     CameraKeyframe frame = currentRail_->Evaluate(currentPlayTime_);
@@ -48,7 +51,7 @@ void SplineCameraController::DebugDraw()
         // レール側のUIを表示し、もしPlay Railが押されたら
         if (currentRail_->DebugDraw())
         {
-            // Controller 自身に再生開始を命令
+            // Controller自身に再生開始を命令
             Play(currentRail_);
         }
     }
