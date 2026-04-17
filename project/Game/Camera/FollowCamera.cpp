@@ -70,7 +70,6 @@ void FollowCamera::UpdateCamera(Camera* camera)
     if (!target_ || !camera) return;
 
     float dt = TimeManager::GetInstance()->GetUnscaledDeltaTime();
-    shakeEffect_.Update();
 
     // 左右キーでカメラを回転
     if (Input::GetInstance().IsKeyPressed(DIK_LEFT) || Input::GetInstance().IsLeftOnStick(0, Input::RightStick))
@@ -118,9 +117,8 @@ void FollowCamera::UpdateCamera(Camera* camera)
     // カメラ回転とシェイク適用
     Vector3 finalCameraForward = (desiredCameraTarget - finalCameraPos).Normalize();
     currentCameraRot_ = Quaternion::LookRotation(finalCameraForward, { 0.0f, 1.0f, 0.0f });
-    Vector3 shakeOffset = shakeEffect_.GetOffset();
 
-    camera->SetTranslation(finalCameraPos + shakeOffset);
+    camera->SetTranslation(finalCameraPos);
     camera->SetRotation(currentCameraRot_);
 }
 
@@ -159,11 +157,6 @@ void FollowCamera::DebugDraw()
 
     ImGui::End();
 #endif
-}
-
-void FollowCamera::StartShake(float duration, float intensity)
-{
-    shakeEffect_.Start(duration, intensity);
 }
 
 void FollowCamera::Reset(Camera* camera)

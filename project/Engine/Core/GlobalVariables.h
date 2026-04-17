@@ -81,6 +81,9 @@ public:
 
 	void RemoveGroup(const std::string& groupName);
 
+	// グループの内容をすべてクリアする関数
+	void ClearGroup(const std::vector<std::string>& groupPath);
+
 private:
 	// コンストラクタをprivateにし、外部からの直接生成を禁止
 	GlobalVariables() = default;

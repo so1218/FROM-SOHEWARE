@@ -35,4 +35,24 @@ void SplineCameraController::UpdateCamera(Camera* camera)
     camera->SetFov(frame.fov);
 }
 
+void SplineCameraController::Draw()
+{
+    if (currentRail_) currentRail_->DrawDebugSpline();
+}
+
+void SplineCameraController::DebugDraw()
+{
+#ifdef IS_DEVELOPMENT
+    if (currentRail_)
+    {
+        // レール側のUIを表示し、もしPlay Railが押されたら
+        if (currentRail_->DebugDraw())
+        {
+            // Controller 自身に再生開始を命令
+            Play(currentRail_);
+        }
+    }
+#endif  
+}
+
 }

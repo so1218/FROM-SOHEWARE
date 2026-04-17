@@ -59,6 +59,10 @@ public:
     virtual void Draw() final
     {
         objectManager_.Draw();
+        if (cameraManager_)
+        {
+            cameraManager_->Draw();
+        }
         OnDraw();
     }
 

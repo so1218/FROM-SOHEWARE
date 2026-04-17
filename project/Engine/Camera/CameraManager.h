@@ -1,6 +1,9 @@
 #pragma once
 #include "Camera.h"
 #include "ICameraController.h"
+#include "CameraRail.h"
+#include "SplineCameraController.h"
+#include "ShakeEffect.h"
 
 namespace FE
 {
@@ -8,10 +11,15 @@ namespace FE
 class CameraManager
 {
 public:
-    CameraManager(Camera* mainCamera) : mainCamera_(mainCamera) {}
+    CameraManager(Camera* camera);
 
     // コントローラーを切り替える
     void ChangeController(ICameraController* newController);
+
+    // レールの登録
+    void AddRail(const std::string& name, std::unique_ptr<CameraRail> rail);
+
+    void PlayRail(const std::string& name);
 
     // 更新処理
     void Update();
@@ -21,12 +29,22 @@ public:
     void DebugDraw();
     void Draw();
 
-    // 現在のコントローラーを取得（デバッグ描画などで使う用）
-    ICameraController* GetActiveController() const { return activeController_; }
+    Camera* GetMainCamera() const { return mainCamera_; }
+
+    CameraRail* GetRail(const std::string& name);
 
 private:
     Camera* mainCamera_ = nullptr;
-    ICameraController* activeController_ = nullptr;
+    ICameraController* currentController_ = nullptr;
+
+    // 演出が終わった後に戻るための普段のカメラを記憶しておくポインタ
+    ICameraController* defaultController_ = nullptr;
+
+    // レール機能の管理
+    std::unordered_map<std::string, std::unique_ptr<CameraRail>> rails_;
+    std::unique_ptr<SplineCameraController> splineController_;
+
+    ShakeEffect shake_;
 };
 
 }

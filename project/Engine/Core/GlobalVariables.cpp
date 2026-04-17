@@ -557,11 +557,34 @@ void GlobalVariables::LoadGroupRecursive(const std::vector<std::string>& groupPa
 
 void GlobalVariables::RemoveGroup(const std::string& groupName)
 {
-	// メモリ(datas_)から該当するグループを削除する
+	// datas_から該当するグループを削除
 	auto it = datas_.find(groupName);
 	if (it != datas_.end()) {
 		datas_.erase(it);
 	}
+}
+
+void GlobalVariables::ClearGroup(const std::vector<std::string>& groupPath)
+{
+	if (groupPath.empty()) return;
+
+	// トップレベルの検索
+	auto itTop = datas_.find(groupPath[0]);
+	if (itTop == datas_.end()) return; // 存在しなければ何もしない
+
+	Group* current = &itTop->second;
+
+	// 指定された階層まで潜る
+	for (size_t i = 1; i < groupPath.size(); ++i)
+	{
+		auto itSub = current->subGroups.find(groupPath[i]);
+		if (itSub == current->subGroups.end()) return; // 途中で見つからなければ終了
+		current = &itSub->second;
+	}
+
+	// 対象グループの中身（変数とサブグループ）をすべて消去
+	current->items.clear();
+	current->subGroups.clear();
 }
 
 }

@@ -22,6 +22,10 @@ TestSceneHori::TestSceneHori(Engine* engine)
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
 
+    // カメラレールの設
+    openingRail_ = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
+
+
     //player_->SetFollowCamera(followCamera_);
 }
 
@@ -37,17 +41,31 @@ void TestSceneHori::OnInitialize()
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
     engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
+    openingRail_->Initialize();
+
+    cameraManager_->AddRail("Opening", std::move(openingRail_));
+
+    // デフォルトカメラの設定
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
 }
 
 void TestSceneHori::OnUpdate()
 {
+    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+    {
+        cameraManager_->ChangeController(followCamera_.get());
+    }
 }
 
 void TestSceneHori::OnDraw()
 {
-   
+    auto* rail = cameraManager_->GetRail("Opening");
+    if (rail)
+    {
+        // 常に曲線と基準点を表示
+        rail->DrawDebugSpline();
+    }
 }
 
 void TestSceneHori::OnDebugDraw()

@@ -18,7 +18,7 @@ Game::Game()
     : engine_(std::make_unique<Engine>())
 {
     ProjectConfig config;
-    config.windowTitle = L"FROM SOHEWARE"; 
+    config.windowTitle = L"MIST SOHEWARE"; 
     config.width = 1280;
     config.height = 720;
     config.targetFPS = 60;
@@ -35,7 +35,7 @@ Game::Game()
 
     // 初期シーンを設定
 #ifdef IS_DEVELOPMENT
-    sceneManager_.SetInitialScene(SceneID::Play);
+    sceneManager_.SetInitialScene(SceneID::TestHori);
 #else
     sceneManager_.SetInitialScene(SceneID::Title);
 #endif

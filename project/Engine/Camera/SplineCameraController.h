@@ -11,11 +11,10 @@ public:
     void Play(CameraRail* rail);
     void UpdateCamera(Camera* camera) override;
     void DebugDraw() override;
+    void Draw() override;
 
-    void Draw() override
-    {
-        if (currentRail_) currentRail_->DrawDebugSpline();
-    }
+    // 再生中かどうか
+    bool IsPlaying() const { return isPlaying_; }
 
 private:
     CameraRail* currentRail_ = nullptr;

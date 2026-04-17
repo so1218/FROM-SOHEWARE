@@ -1,6 +1,5 @@
 #pragma once
 #include "Engine.h"
-#include "ShakeEffect.h"
 #include "ICameraController.h"
 #include "PropertyBinder.h"
 
@@ -15,8 +14,6 @@ public:
     void DebugDraw() override; 
     void Reset(FE::Camera* camera) override;
    
-    void StartShake(float duration, float intensity) override;
-
 private:
     FE::Engine* engine_;
     const FE::WorldTransform* target_ = nullptr;
@@ -50,7 +47,6 @@ private:
     // カメラ制御
     FE::Quaternion currentCameraRot_; // 現在のカメラ回転
     FE::Vector3 lookAtOffset_ = { 0.0f, 1.5f, 0.0f }; // プレイヤーを見上げるオフセット
-    FE::ShakeEffect shakeEffect_;     // カメラシェイク効果
 
     // 制限値
     float minPitch_ = -0.8f;

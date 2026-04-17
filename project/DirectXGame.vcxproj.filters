@@ -277,9 +277,6 @@
     <ClInclude Include="Engine\Debugs\Logger.h">
       <Filter>Engine\Debugs</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Debugs\PropertyBinder.cpp">
-      <Filter>Engine\Debugs</Filter>
-    </ClCompile>
     <ClInclude Include="Engine\Debugs\PropertyBinder.h">
       <Filter>Engine\Debugs</Filter>
     </ClInclude>
@@ -919,6 +916,7 @@
     <ClCompile Include="Engine\Camera\CameraRail.cpp" />
     <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
     <ClCompile Include="Engine\Camera\CameraManager.cpp" />
+    <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />

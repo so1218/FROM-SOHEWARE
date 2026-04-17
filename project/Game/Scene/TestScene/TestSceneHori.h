@@ -2,6 +2,7 @@
 #include "BaseScene.h"
 #include "Player.h"
 #include "FollowCamera.h"
+#include "CameraRail.h"
 #include "ParticleEmitter.h"
 #include "Bubble.h"
 
@@ -21,6 +22,7 @@ private:
     Player* player_ = nullptr;
     Bubble* bubble_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
+    std::unique_ptr<FE::CameraRail> openingRail_;
 
     std::unique_ptr<FE::ParticleEmitter> testSceneEmitter_ = nullptr;
     std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;

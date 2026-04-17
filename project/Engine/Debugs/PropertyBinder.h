@@ -64,6 +64,10 @@ public:
     // 回転専用のBind関数
     void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
 
+    void Clear();
+
+    const std::vector<std::string>& GetGroupPath() const { return groupPath_; }
+
 private:
     // 共通処理
     template<typename T>

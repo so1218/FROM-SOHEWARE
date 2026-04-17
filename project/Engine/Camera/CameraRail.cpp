@@ -1,13 +1,59 @@
 #include "pch.h"
 #include "CameraRail.h"
 #include "DebugDraw.h"
+#include "CameraManager.h"
 
 namespace FE
 {
 
-void CameraRail::AddKeyframe(const CameraKeyframe& keyframe)
+CameraRail::CameraRail(Engine* engine, Camera* targetCamera, const std::string& railName) :
+    engine_(engine), targetCamera_(targetCamera), railName_(railName)
 {
-    keyframes_.push_back(keyframe);
+    binder_ = std::make_unique<PropertyBinder>(engine_, "CameraRail_" + railName_);
+}
+
+void CameraRail::Initialize()
+{
+    binder_->Bind("FrameCount", &frameCount_, 0);
+
+    if (frameCount_ > 0)
+    {
+        keyframes_.resize(frameCount_);
+        for (int i = 0; i < frameCount_; ++i)
+        {
+            std::string prefix = "Keyframe_" + std::to_string(i);
+
+            binder_->Bind(prefix + "_Pos", &keyframes_[i].position, { 0,0,0 });
+            binder_->BindRotation(prefix + "_Rot", &keyframes_[i].euler, &keyframes_[i].rotation);
+            binder_->Bind(prefix + "_Time", &keyframes_[i].time, 1.0f);
+            binder_->Bind(prefix + "_FOV", &keyframes_[i].fov, 0.45f);
+        }
+    }
+}
+
+void CameraRail::AddKeyframe(const CameraKeyframe& kf) 
+{
+    // 1. ベクターに追加
+    keyframes_.push_back(kf);
+    frameCount_ = (int32_t)keyframes_.size();
+
+    // 2. ベクターのメモリ再配置（お引越し）が起きた可能性があるので、古いバインドを全てリセット
+    binder_->Clear();
+
+    // 3. 全ての住所（ポインタ）を最初から教え直す
+    binder_->Bind("FrameCount", &frameCount_, 0);
+
+    for (size_t i = 0; i < keyframes_.size(); ++i)
+    {
+        std::string prefix = "Keyframe_" + std::to_string(i);
+
+        // ※ここで第3引数（初期値）に keyframes_[i].position 自身を渡すことで、
+        // 既存の値を維持したままアドレスだけを再登録できます。
+        binder_->Bind(prefix + "_Pos", &keyframes_[i].position, keyframes_[i].position);
+        binder_->BindRotation(prefix + "_Rot", &keyframes_[i].euler, &keyframes_[i].rotation);
+        binder_->Bind(prefix + "_Time", &keyframes_[i].time, keyframes_[i].time);
+        binder_->Bind(prefix + "_FOV", &keyframes_[i].fov, keyframes_[i].fov);
+    }
 }
 
 CameraKeyframe CameraRail::Evaluate(float currentTime) const
@@ -89,6 +135,113 @@ float CameraRail::GetTotalTime() const
     return total;
 }
 
+bool CameraRail::DebugDraw()
+{
+    bool playRequested = false;
+#ifdef IS_DEVELOPMENT
+    ImGui::Begin("Camera Rail Editor");
+    ImGui::Text("Rail: %s", railName_.c_str());
+
+    // プレビュー/シークバー
+    static float previewTime = 0.0f;
+    float totalTime = GetTotalTime();
+    ImGui::SliderFloat("Seek Timeline", &previewTime, 0.0f, totalTime);
+
+    if (ImGui::Button("Apply Seek to Camera"))
+    {
+        CameraKeyframe kf = Evaluate(previewTime);
+        targetCamera_->SetTranslation(kf.position);
+        targetCamera_->SetRotation(kf.rotation);
+        targetCamera_->SetFov(kf.fov);
+    }
+
+    ImGui::Separator();
+    if (ImGui::Button("Add Keyframe at Current Camera"))
+    {
+        if (targetCamera_)
+        {
+            CameraKeyframe kf;
+            kf.position = targetCamera_->GetTranslation();
+            kf.rotation = targetCamera_->GetRotation();
+            kf.euler = targetCamera_->GetWorldRotationEuler();
+            kf.fov = targetCamera_->GetFov();
+            kf.time = 2.0f; // デフォルト2秒
+
+            AddKeyframe(kf);
+
+            // JSONに現在の個数を保存
+            GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "FrameCount", frameCount_);
+        }
+    }
+
+    ImGui::Separator();
+
+    // ループの前に宣言しておく
+    int deleteIndex = -1;
+
+    for (size_t i = 0; i < keyframes_.size(); ++i)
+    {
+        std::string label = "Frame " + std::to_string(i);
+        if (ImGui::CollapsingHeader(label.c_str())) {
+            std::string prefix = "Keyframe_" + std::to_string(i);
+            binder_->Draw(prefix + "_Pos", "座標");
+            binder_->Draw(prefix + "_Rot", "回転");
+            binder_->Draw(prefix + "_Time", "次の点への時間");
+            binder_->Draw(prefix + "_FOV", "画角");
+
+            // 削除ボタンが押されたら、消す番号を記録するだけ
+            if (ImGui::Button(("Delete " + label).c_str()))
+            {
+                deleteIndex = (int)i;
+            }
+        }
+    }
+
+    // ループを抜けた後で、削除と再構築を実行
+    if (deleteIndex != -1)
+    {
+        // C++の配列から該当のフレームを削除
+        keyframes_.erase(keyframes_.begin() + deleteIndex);
+        frameCount_ = (int32_t)keyframes_.size();
+
+        // 古いデータをImGuiとGlobalVariablesから完全に消し去る
+        binder_->Clear();
+
+        // 再構築
+        binder_->Bind("FrameCount", &frameCount_, 0);
+
+        // 残ったキーフレームを0番から順番にBindし直す
+        for (size_t i = 0; i < keyframes_.size(); ++i)
+        {
+            std::string prefix = "Keyframe_" + std::to_string(i);
+
+            binder_->Bind(prefix + "_Pos", &keyframes_[i].position, { 0,0,0 });
+            binder_->BindRotation(prefix + "_Rot", &keyframes_[i].euler, &keyframes_[i].rotation);
+            binder_->Bind(prefix + "_Time", &keyframes_[i].time, 1.0f);
+            binder_->Bind(prefix + "_FOV", &keyframes_[i].fov, 0.45f);
+        }
+
+        // 新しい状態でJSONを上書き保存し、ゴーストデータを消滅
+        GlobalVariables::GetInstance()->SaveFile(binder_->GetGroupPath());
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Button("Play Rail"))
+    {
+        // ボタンが押されたらフラグを立てる
+        if (keyframes_.size() >= 2)
+        {
+            playRequested = true;
+        }
+    }
+
+    ImGui::End();
+#endif
+
+    return playRequested;
+}
+
 void CameraRail::DrawDebugSpline() const
 {
     if (keyframes_.size() < 2) return;
@@ -118,7 +271,7 @@ void CameraRail::DrawDebugSpline() const
         prevPos = currentPos;
     }
 
-    // ループの端数のズレを防ぐため、最後の隙間をきっちり結ぶ
+    // ループの端数のズレを防ぐため、最後の隙間を結ぶ
     Vector3 lastPos = Evaluate(totalTime).position;
     DebugDraw::DrawLine(prevPos, lastPos, lineColor);
 

@@ -21,9 +21,6 @@ public:
 
     // カメラの状態をリセット（切り替え時やワープ時に使用）
     virtual void Reset(Camera* camera) {}
-
-    // カメラシェイク
-    virtual void StartShake(float duration, float intensity) {}
 };
 
 }
