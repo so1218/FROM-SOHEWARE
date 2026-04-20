@@ -12,7 +12,6 @@ CameraManager::CameraManager(Camera* camera) : mainCamera_(camera)
 
 void CameraManager::ChangeController(ICameraController* controller)
 {
-
     if (controller != splineController_.get()) {
         defaultController_ = controller;
     }
