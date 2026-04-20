@@ -38,13 +38,13 @@ void CameraManager::Update()
 {
     if (!currentController_ || !mainCamera_) return;
 
-    // 1. 各コントローラーに基本位置を決めさせる（FollowCamera や SplineCamera）
+    // 各コントローラーに基本位置を決めさせる
     currentController_->UpdateCamera(mainCamera_);
 
-    // 2. シェイクを更新
+    // シェイクを更新
     shake_.Update();
 
-    // 3. 最終的な座標にシェイクのオフセットを「上乗せ」する
+    // 最終的な座標にシェイクのオフセットを上乗せ
     if (shake_.IsActive())
     {
         Vector3 currentPos = mainCamera_->GetTranslation();
