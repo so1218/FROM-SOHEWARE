@@ -75,7 +75,7 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     renderCoordinator_->EndOffscreenRender();
 
     // ポストエフェクトパス
-    postEffectManager_->ExecutePostEffects(cmdList, cameraState.view, cameraState.projection, cameraState.eyePos);
+    postEffectManager_->ExecutePostEffects(cmdList);
 
     // 最終合成・トーンマップパス
     renderCoordinator_->BeginFrame();

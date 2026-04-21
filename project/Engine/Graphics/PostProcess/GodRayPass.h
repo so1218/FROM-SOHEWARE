@@ -4,20 +4,21 @@
 
 namespace FE
 {
+class LightManager;
 
 class GodRayPass : public IPostEffect
 {
 public:
     void Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso);
 
-    // IPostEffect（未使用）
-    void Execute(ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override;
+    void Update(const Vector3& cameraPosition,
+        const Matrix4x4& viewMatrix,
+        const Matrix4x4& projectionMatrix,
+        LightManager* lightManager);
 
-    void Execute(ID3D12GraphicsCommandList* cmdList,
-        D3D12_CPU_DESCRIPTOR_HANDLE sceneHandleCPU,
-        D3D12_CPU_DESCRIPTOR_HANDLE depthHandleCPU,
-        const Vector2& lightPosUV);
+    // IPostEffect
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context
+        , D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     GodRaySettings* GetSettings() { return cbData_; }
 

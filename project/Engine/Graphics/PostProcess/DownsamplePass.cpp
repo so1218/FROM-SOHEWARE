@@ -28,11 +28,13 @@ void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
     cbData_->blurStrength = 0.0f;
 }
 
-void DownsamplePass::Execute(
-    ID3D12GraphicsCommandList* cmdList,
-    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV
-)
+void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
+        ? overrideInput
+        : context.GetGPUHandle(context.sceneColorSrvIndex);
+
     // 描画前処理
     PreDraw(cmdList);
 

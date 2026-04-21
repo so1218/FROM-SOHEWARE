@@ -10,15 +10,9 @@ class SSAOPass : public IPostEffect
 public:
     void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
 
-    // IPostEffectの純粋仮想関数（使わないので空実装）
-    void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override {}
-
-    // SSAO専用のExecute（法線と深度を受け取る）
-    void Execute(
-        ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
-        D3D12_GPU_DESCRIPTOR_HANDLE depthSRV
-    );
+    // IPostEffectの純粋仮想関数
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     SSAOSettings* GetSettings() { return ssaoData_; }
 

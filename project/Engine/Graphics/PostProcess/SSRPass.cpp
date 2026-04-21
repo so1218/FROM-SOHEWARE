@@ -30,13 +30,14 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_));
 }
 
-void SSRPass::Execute(
-    ID3D12GraphicsCommandList* cmdList,
-    D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU,
-    D3D12_CPU_DESCRIPTOR_HANDLE normalCPU,
-    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
-    D3D12_CPU_DESCRIPTOR_HANDLE materialCPU)
+void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU = context.GetCPUHandle(context.sceneColorSrvIndex);
+    D3D12_CPU_DESCRIPTOR_HANDLE normalCPU = context.GetCPUHandle(context.normalSrvIndex);
+    D3D12_CPU_DESCRIPTOR_HANDLE depthCPU = context.GetCPUHandle(context.sceneDepthSrvIndex);
+    D3D12_CPU_DESCRIPTOR_HANDLE materialCPU = context.GetCPUHandle(context.materialSrvIndex);
+
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
     UINT size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -52,7 +53,7 @@ void SSRPass::Execute(
 
     PreDraw(cmdList);
 
-    cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("SSR"));
+    cmdList->SetGraphicsRootSignature(context.rootSigManager->GetRootSignature("SSR"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSR"));
 
     // Heap設定
@@ -66,13 +67,13 @@ void SSRPass::Execute(
     // テクスチャテーブル 
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
-    cmdList->SetGraphicsRootDescriptorTable(2, gpuHandle); 
+    cmdList->SetGraphicsRootDescriptorTable(2, gpuHandle);
     gpuHandle.ptr += size;
-    cmdList->SetGraphicsRootDescriptorTable(3, gpuHandle); 
+    cmdList->SetGraphicsRootDescriptorTable(3, gpuHandle);
     gpuHandle.ptr += size;
-    cmdList->SetGraphicsRootDescriptorTable(4, gpuHandle); 
+    cmdList->SetGraphicsRootDescriptorTable(4, gpuHandle);
     gpuHandle.ptr += size;
-    cmdList->SetGraphicsRootDescriptorTable(5, gpuHandle); 
+    cmdList->SetGraphicsRootDescriptorTable(5, gpuHandle);
 
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->DrawInstanced(3, 1, 0, 0);

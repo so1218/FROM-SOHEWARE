@@ -124,7 +124,7 @@ void Engine::BeginFrame()
 	TimeManager::GetInstance()->Update();
 
 	// ポストエフェクトのパラメータ更新など
-	GetPostEffectManager()->Update();
+	GetPostEffectManager()->Update(viewMatrix_, projectionMatrix_, eyePos_);
 
 #ifdef IS_DEVELOPMENT
 	uint32_t finalSrvIndex = GetPostEffectManager()->GetFinalPassSRVIndex();

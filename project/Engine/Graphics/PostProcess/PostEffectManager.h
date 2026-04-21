@@ -31,14 +31,10 @@ public:
         uint32_t sceneDepthSrvIndex);
 
     // 更新処理
-    void Update();
+    void Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition);
 
     // ポストエフェクト実行
-    void ExecutePostEffects(
-        ID3D12GraphicsCommandList* cmdListconst,
-        const Matrix4x4& viewMatrix,
-        const Matrix4x4& projectionMatrix,
-        const Vector3& cameraPosition);
+    void ExecutePostEffects(ID3D12GraphicsCommandList* cmdList);
 
     // 設定アクセス（ImGui用）
     BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }
@@ -124,6 +120,8 @@ private:
 
     std::string currentLutName_ = "LUT_Neutral_32";
     std::string currentNoiseName_ = "normal_00";
+
+    PostEffectContext context_;
 };
 
 }

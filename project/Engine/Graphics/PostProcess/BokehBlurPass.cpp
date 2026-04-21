@@ -29,16 +29,12 @@ void BokehBlurPass::Initialize(Engine* engine,
     cbData_->bokehHighlightIntensity = 50.0f;
 }
 
-void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
-    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV)
+void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    assert(false && "Use Execute(sceneSRV, depthSRV)");
-}
+    D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU = context.GetGPUHandle(context.sceneColorSrvIndex);
+    D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU = context.GetGPUHandle(context.sceneDepthSrvIndex);
 
-void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList,
-    D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU,
-    D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU)
-{
     // RTを描画状態へ
     PreDraw(cmdList);
 

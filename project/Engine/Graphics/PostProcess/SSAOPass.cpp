@@ -25,11 +25,12 @@ void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* p
     ssaoData_->fadeEnd = 100.0f;
 }
 
-void SSAOPass::Execute(
-    ID3D12GraphicsCommandList* cmdList,
-    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
-    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV)
+void SSAOPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV = context.GetGPUHandle(context.normalSrvIndex);
+    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV = context.GetGPUHandle(context.sceneDepthSrvIndex);
+
     PreDraw(cmdList);
 
     // SSAO用のルートシグネチャとPSOをセット

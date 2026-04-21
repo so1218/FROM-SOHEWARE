@@ -52,12 +52,15 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
     blurYData_->direction = { 0.0f, 1.0f }; // 縦パス
 }
 
-void BilateralBlurPass::Execute(
-    ID3D12GraphicsCommandList* cmdList,
-    D3D12_GPU_DESCRIPTOR_HANDLE ssaoSRV,
-    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
-    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV)
+void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
+        ? overrideInput
+        : context.GetGPUHandle(context.sceneColorSrvIndex);
+    D3D12_GPU_DESCRIPTOR_HANDLE depthSRV = context.GetGPUHandle(context.sceneDepthSrvIndex);
+    D3D12_GPU_DESCRIPTOR_HANDLE normalSRV = context.GetGPUHandle(context.normalSrvIndex);
+
     // 定数バッファに反映
     blurXData_->depthTolerance = settingsData_->depthTolerance;
     blurXData_->normalTolerance = settingsData_->normalTolerance;
@@ -87,7 +90,7 @@ void BilateralBlurPass::Execute(
 
     cmdList->SetGraphicsRootConstantBufferView(0, cbBlurX_->GetGPUVirtualAddress());
 
-    cmdList->SetGraphicsRootDescriptorTable(2, ssaoSRV);  
+    cmdList->SetGraphicsRootDescriptorTable(2, inputSRV);
     cmdList->SetGraphicsRootDescriptorTable(3, depthSRV); 
     cmdList->SetGraphicsRootDescriptorTable(4, normalSRV); 
 

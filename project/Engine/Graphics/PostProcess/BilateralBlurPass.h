@@ -10,16 +10,9 @@ class BilateralBlurPass : public IPostEffect
 public:
     void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
 
-    // IPostEffectの純粋仮想関数（使わないので空実装）
-    void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override {}
-
-    // Blur専用のExecute
-    void Execute(
-        ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE ssaoSRV,
-        D3D12_GPU_DESCRIPTOR_HANDLE normalSRV,
-        D3D12_GPU_DESCRIPTOR_HANDLE depthSRV
-    );
+    // IPostEffectの純粋仮想関数
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput) override;
 
     BilateralBlurSettings* GetSettings() { return settingsData_; }
 

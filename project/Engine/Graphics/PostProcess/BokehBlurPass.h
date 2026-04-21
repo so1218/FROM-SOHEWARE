@@ -11,14 +11,9 @@ public:
     // 初期化
     void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
 
-    // IPostEffect（未使用）
-    void Execute(ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override;
-
-    // BokehBlur実行
-    void Execute(ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU,
-        D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU);
+    // IPostEffect
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     DoFSettings* GetSettings() const { return cbData_; }
 

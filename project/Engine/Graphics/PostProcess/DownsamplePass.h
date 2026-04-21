@@ -16,7 +16,8 @@ class DownsamplePass : public IPostEffect
 
 public:
     void Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso);
-    void Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) override;
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput) override;
 };
 
 }

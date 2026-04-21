@@ -21,8 +21,14 @@ void BlurPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, bool 
     cbData_->blurStrength = 2.0f;
 }
 
-void BlurPass::Execute(ID3D12GraphicsCommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE inputSRV) 
+void BlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+    D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    // 入力が指定されていればそれを使う、なければデフォルトのSceneColorを使う
+    D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
+        ? overrideInput
+        : context.GetGPUHandle(context.sceneColorSrvIndex);
+
     PreDraw(cmdList);
 
     // 縦横でPSOを切り替え

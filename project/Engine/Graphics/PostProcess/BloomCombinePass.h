@@ -30,10 +30,8 @@ public:
     );
 
     // 合成パス実行
-    void Execute(
-        ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE /* 未使用 */
-    ) override;
+    void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     // 合成設定取得
     CombineSettings* GetSettings() const { return combineData_; }

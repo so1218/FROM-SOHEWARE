@@ -1,11 +1,11 @@
 #pragma once
+#include "PostEffectContext.h"
 #include "Structures.h"
 
 namespace FE
 {
 
 class Engine;
-class SRVManager;
 class OffscreenRTVManager;
 
 // ポストエフェクト基底クラス
@@ -35,10 +35,8 @@ public:
     );
 
     // ポストエフェクト実行
-    virtual void Execute(
-        ID3D12GraphicsCommandList* cmdList,
-        D3D12_GPU_DESCRIPTOR_HANDLE inputSRV
-    ) = 0;
+    virtual void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, 
+        D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) = 0;
 
     // 出力SRV取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU();
