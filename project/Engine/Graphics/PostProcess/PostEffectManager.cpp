@@ -145,136 +145,142 @@ void PostEffectManager::Initialize(
 	postEffectData_->radialBlurCenter = Vector2(0.5f, 0.5f);
 	postEffectData_->radialBlurStrength = 0.3f; 
 }
-
 void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition)
 {
-    // 時間依存エフェクト用
+    // 時間依存データの更新
     if (postEffectData_)
     {
-        postEffectData_->totalTime =
-            static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+        postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     }
 
-    // バイラテラルブラーのパラメータを縦・横で同期する処理
+    // バイラテラルブラーのパラメータ同期
     if (horizontalBilateralPass_ && verticalBilateralPass_)
     {
         auto* hSettings = horizontalBilateralPass_->GetSettings();
         auto* vSettings = verticalBilateralPass_->GetSettings();
 
-        // 許容度だけ同期
         vSettings->depthTolerance = hSettings->depthTolerance;
         vSettings->normalTolerance = hSettings->normalTolerance;
     }
 
+    // 各パスの更新
     godRayPass_->Update(cameraPosition, viewMatrix, projectionMatrix, engine_->GetLightManager());
 }
 
+
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
-    // 1. Contextのセットアップ
+    // Contextセットアップとリソースバリア
+    auto* offscreenRTV = engine_->GetOffscreenRTVManager();
     context_.srvManager = srvManager_;
     context_.rootSigManager = rootSigManager_;
     context_.sceneColorSrvIndex = sceneTextureIndex_;
     context_.sceneDepthSrvIndex = sceneDepthIndex_;
-    context_.normalSrvIndex = engine_->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Normal));
-    context_.materialSrvIndex = engine_->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Material));
+    context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Normal));
+    context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Material));
 
-    // 深度をポストエフェクト用に読み取り状態へ
-    CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    // 深度バッファを読み取り用に遷移
+    CD3DX12_RESOURCE_BARRIER depthToSrvBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->GetOffscreenDepthResource(),
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
-    cmdList->ResourceBarrier(1, &barrier);
+    cmdList->ResourceBarrier(1, &depthToSrvBarrier);
 
-    // SRVヒープとルートシグネチャ設定
+    // 共通ヒープの設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    // ==========================================
-    // 各種ポストエフェクトの実行
-    // ==========================================
+    // エフェクト実行
 
-    // SSAOの実行
-    // SSAO: デフォルトのシーン/深度/法線を使用
-    ssaoPass_->Execute(cmdList, context_);
-
-    // バイラテラルブラー: SSAOの出力を明示的に渡す
-    horizontalBilateralPass_->Execute(cmdList, context_, ssaoPass_->GetSRVHandleGPU());
-    verticalBilateralPass_->Execute(cmdList, context_, horizontalBilateralPass_->GetSRVHandleGPU());
-
-    // SSR / GodRay: デフォルトのシーン画像を使用
-    cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
-    ssrPass_->Execute(cmdList, context_);
-    godRayPass_->Execute(cmdList, context_);
-
-    // Bloom生成: 
-    // BrightPass はシーンから輝度抽出
-    brightPass_->Execute(cmdList, context_);
-    // Downsample は BrightPass の結果を縮小
-    downsamplePass_->Execute(cmdList, context_, brightPass_->GetSRVHandleGPU());
-
-    // Bloomのブラー連鎖: 前のパスの結果を次へ渡す
-    D3D12_GPU_DESCRIPTOR_HANDLE bloomInput = downsamplePass_->GetSRVHandleGPU();
-    for (int i = 0; i < 4; ++i)
+    // SSAO & Bilateral Blur
     {
-        verticalBlurPass_->Execute(cmdList, context_, bloomInput);
-        horizontalBlurPass_->Execute(cmdList, context_, verticalBlurPass_->GetSRVHandleGPU());
-        bloomInput = horizontalBlurPass_->GetSRVHandleGPU();
+        ssaoPass_->Execute(cmdList, context_);
+
+        // 横ブラー → 縦ブラー の順で適用
+        horizontalBilateralPass_->Execute(cmdList, context_, ssaoPass_->GetSRVHandleGPU());
+        verticalBilateralPass_->Execute(cmdList, context_, horizontalBilateralPass_->GetSRVHandleGPU());
     }
 
-    // DoF: デフォルトのシーン画像を使用
-    bokehPass_->Execute(cmdList, context_);
+    // SSR & GodRay
+    {
+        cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
+        ssrPass_->Execute(cmdList, context_);
+        godRayPass_->Execute(cmdList, context_);
+    }
 
-    // ==========================================
-    // 最終合成 (Combine)
-    // ==========================================
-    cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
+    // Bloom
+    {
+        brightPass_->Execute(cmdList, context_);
+        downsamplePass_->Execute(cmdList, context_, brightPass_->GetSRVHandleGPU());
 
-    // 最終合成用のビューセットアップ
-    combinePass_->SetupInputViews(
-        engine_->GetGraphicsDevice()->GetDevice(),
-        srvManager_->GetSRVHandleCPU_ForCopying(sceneTextureIndex_),
-        srvManager_->GetSRVHandleCPU_ForCopying(horizontalBlurPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(bokehPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(sceneDepthIndex_),
-        srvManager_->GetSRVHandleCPU_ForCopying(godRayPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(horizontalBilateralPass_->GetSRVIndex()), 
-        srvManager_->GetSRVHandleCPU_ForCopying(ssrPass_->GetSRVIndex()),
-        srvManager_->GetSRVHandleCPU_ForCopying(TextureManager::GetInstance().Get(currentNoiseName_))
-    );
+        D3D12_GPU_DESCRIPTOR_HANDLE bloomInput = downsamplePass_->GetSRVHandleGPU();
+        const int BLUR_ITERATIONS = 4; // 定数化してわかりやすく
 
-    combinePass_->Execute(cmdList, context_);
+        for (int i = 0; i < BLUR_ITERATIONS; ++i)
+        {
+            verticalBlurPass_->Execute(cmdList, context_, bloomInput);
+            horizontalBlurPass_->Execute(cmdList, context_, verticalBlurPass_->GetSRVHandleGPU());
+            bloomInput = horizontalBlurPass_->GetSRVHandleGPU();
+        }
+    }
 
-    cmdList->SetDescriptorHeaps(1, heaps);
+    // Depth of Field
+    {
+        bokehPass_->Execute(cmdList, context_);
+    }
 
-    // 深度を次フレーム用に書き込み状態へ戻す
-    CD3DX12_RESOURCE_BARRIER barrierBack = CD3DX12_RESOURCE_BARRIER::Transition(
+    // 最終合成
+    {
+        cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
+
+        auto GetCPUHandle = [&](uint32_t index) {
+            return srvManager_->GetSRVHandleCPU_ForCopying(index);
+            };
+
+        combinePass_->SetupInputViews(
+            engine_->GetGraphicsDevice()->GetDevice(),
+            GetCPUHandle(sceneTextureIndex_),
+            GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
+            GetCPUHandle(bokehPass_->GetSRVIndex()),
+            GetCPUHandle(sceneDepthIndex_),
+            GetCPUHandle(godRayPass_->GetSRVIndex()),
+            GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
+            GetCPUHandle(ssrPass_->GetSRVIndex()),
+            GetCPUHandle(TextureManager::GetInstance().Get(currentNoiseName_))
+        );
+
+        combinePass_->Execute(cmdList, context_);
+        cmdList->SetDescriptorHeaps(1, heaps);
+    }
+
+    // リソースバリアを戻す
+    CD3DX12_RESOURCE_BARRIER depthToWriteBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->GetOffscreenDepthResource(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_DEPTH_WRITE
     );
-    cmdList->ResourceBarrier(1, &barrierBack);
+    cmdList->ResourceBarrier(1, &depthToWriteBarrier);
 }
+
 
 void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)
 {
-    // SRVからRenderTargetへ遷移
+    // SRV → RenderTarget (書き込み用)
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         finalPassResource_.Get(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_RENDER_TARGET
     );
-
     cmdList->ResourceBarrier(1, &barrier);
 
-    // レンダーターゲットをセット
     cmdList->OMSetRenderTargets(1, &finalPassRTVHandle_, FALSE, nullptr);
 }
 
+
 void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
 {
-    // RenderTargetからSRVへ遷移 (バックバッファへ描画するため)
+    // RenderTarget → SRV (バックバッファ等の描画リソースとして使う用)
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         finalPassResource_.Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET,
@@ -282,5 +288,4 @@ void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
     );
     cmdList->ResourceBarrier(1, &barrier);
 }
-
 }

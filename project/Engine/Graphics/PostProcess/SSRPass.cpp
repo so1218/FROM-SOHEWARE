@@ -14,13 +14,13 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
 
     // 定数バッファ
     cbSSR_ = BufferManager::CreateBufferResource(device, sizeof(SSRSettings));
-    cbSSR_->Map(0, nullptr, reinterpret_cast<void**>(&ssaoData_));
-    *ssaoData_ = SSRSettings();
+    cbSSR_->Map(0, nullptr, reinterpret_cast<void**>(&ssrData_));
+    *ssrData_ = SSRSettings();
 
-    ssaoData_->maxDistance = 50.0f;  
-    ssaoData_->stepSize = 0.1f;  
-    ssaoData_->maxSteps = 128; 
-    ssaoData_->thickness = 0.1f;
+    ssrData_->maxDistance = 50.0f;  
+    ssrData_->stepSize = 0.1f;  
+    ssrData_->maxSteps = 128; 
+    ssrData_->thickness = 0.1f;
 
     // 入力用DescriptorHeap
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};

@@ -22,10 +22,6 @@ TestSceneHori::TestSceneHori(Engine* engine)
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
 
-    // カメラレールの設
-    openingRail_ = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
-
-
     //player_->SetFollowCamera(followCamera_);
 }
 
@@ -41,9 +37,12 @@ void TestSceneHori::OnInitialize()
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
     engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
-    openingRail_->Initialize();
+    // ★修正：ここでローカルの unique_ptr として生成・初期化する
+    auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
+    openingRail->Initialize();
 
-    cameraManager_->AddRail("Opening", std::move(openingRail_));
+    // ★修正：ローカル変数をムーブして CameraManager に渡す
+    cameraManager_->AddRail("Opening", std::move(openingRail));
 
     // デフォルトカメラの設定
     followCamera_->Initialize();
