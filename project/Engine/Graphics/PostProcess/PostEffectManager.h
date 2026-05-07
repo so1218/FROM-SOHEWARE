@@ -6,10 +6,10 @@
 #include "BlurPass.h"
 #include "BokehBlurPass.h"
 #include "BloomCombinePass.h"
-#include "GodRayPass.h"
 #include "SSAOPass.h"
 #include "BilateralBlurPass.h"
 #include "SSRPass.h"
+#include "VolumetricFogPass.h"
 #include "Camera.h"
 
 namespace FE
@@ -41,11 +41,11 @@ public:
     BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
     BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
     CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
-    GodRaySettings* GetGodRaySettings() const { return godRayPass_->GetSettings(); }
     DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
     SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
+    VolumetricFogSettings* GetVolumetricFogSettings() const { return volumetricFogPass_->GetSettings(); }
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
@@ -59,11 +59,7 @@ public:
 
     void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
 
-    // 光源位置をセットする関数
-    void SetLightPosition(const Vector3& pos) { lightPosition_ = pos; }
-
-    // GodRay結果のSRVインデックスを取得する関数
-    uint32_t GetGodRaySRVIndex() const { return godRayPass_->GetSRVIndex(); }
+    uint32_t GetVolumetricFogSRVIndex() const { return volumetricFogPass_->GetSRVIndex(); }
 
     const std::string& GetCurrentLutName() const { return currentLutName_; }
     void SetCurrentLutName(const std::string& name) { currentLutName_ = name; }
@@ -93,14 +89,14 @@ private:
 
     std::unique_ptr<BloomCombinePass> combinePass_;
 
-    std::unique_ptr<GodRayPass> godRayPass_;
-
     std::unique_ptr<SSAOPass> ssaoPass_;
 
     std::unique_ptr<SSRPass> ssrPass_;
 
     std::unique_ptr<BilateralBlurPass> horizontalBilateralPass_;
     std::unique_ptr<BilateralBlurPass> verticalBilateralPass_;
+
+    std::unique_ptr<VolumetricFogPass> volumetricFogPass_;
 
     // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;

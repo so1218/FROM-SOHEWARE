@@ -5,7 +5,7 @@ Texture2D gSceneTexture : register(t0); // 元のシーン
 Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)
 Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
 Texture2D<float> gDepthTexture : register(t3); // 深度マップ
-Texture2D gGodRayTexture : register(t4);
+Texture2D gVolumetricFogTexture : register(t4);
 Texture2D gSSAOTexture : register(t5); // SSAOマップ
 Texture2D gSSRTexture : register(t6); // SSRマップ
 Texture2D gNoiseTexture : register(t7); // Noise(フォグの揺らぎ用)
@@ -92,18 +92,10 @@ float4 main(VSOutput input) : SV_TARGET
     float4 sceneColor = gSceneTexture.Sample(gSampler, input.uv);
     float4 dofColor = gDoFTexture.Sample(gSampler, input.uv);
     float depthVal = gDepthTexture.Sample(gSampler, input.uv);
-
-    // BloomテクスチャをTentフィルタでアップサンプル
-    uint width, height;
-    gBloomTexture.GetDimensions(width, height);
-    float2 bloomTexelSize =
-        float2(1.0f / float(width), 1.0f / float(height));
-
-    float3 bloomColor =
-        UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
+    float4 vFogData = gVolumetricFogTexture.Sample(gSampler, input.uv);
     
-    // GodRayサンプリング
-    float3 godRayColor = gGodRayTexture.Sample(gSampler, input.uv).rgb;
+    float3 vFogIllumination = vFogData.rgb; // 霧によって散乱して届く光
+    float vFogTransmittance = vFogData.a; // 霧を通り抜けてくる背景の透過率
 
     // 深度をリニア化
     float linearDepth = LinearizeDepth(depthVal);
@@ -147,10 +139,21 @@ float4 main(VSOutput input) : SV_TARGET
         combinedScene += ssrColor.rgb * ssrColor.a * gCombineSettings.ssrIntensity;
     }
 
-    // BloomとGodRayの加算
-    float3 result = combinedScene +
-                    (bloomColor * gCombineSettings.bloomIntensity) +
-                    (godRayColor * gCombineSettings.godRayIntensity);
+   // Bloomの加算
+    uint width, height;
+    gBloomTexture.GetDimensions(width, height);
+    float2 bloomTexelSize = float2(1.0f / float(width), 1.0f / float(height));
+    float3 bloomColor = UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
+    
+    // シーンの色を確定
+    float3 result = combinedScene + (bloomColor * gCombineSettings.bloomIntensity);
+
+    // Volumetric Fog の適用 (物理合成)
+    if (gCombineSettings.enableVolumetricFog != 0)
+    {
+    // 背景（result）を透過率で暗くし、霧の光を加算する
+        result = result * vFogTransmittance + vFogIllumination;
+    }
 
     // フォグの適用
     if (gCombineSettings.enableFog != 0)
@@ -194,10 +197,12 @@ float4 main(VSOutput input) : SV_TARGET
                                    max(gCombineSettings.distanceFogEnd - gCombineSettings.distanceFogStart, 0.0001f));
         distFogFactor = smoothstep(0.0, 1.0, distFogFactor);
 
-        float finalFogFactor = max(heightFogFactor, distFogFactor);
-
-        // 最終合成
-        result = lerp(result, fogColor, finalFogFactor);
+        float finalAnalyticalFactor = max(heightFogFactor, distFogFactor);
+        
+        // 【プロの調整】
+        // Volumetric Fogがある場合は、遠方の背景を馴染ませる程度に弱めて重ねる
+        // もしくは、Volumetric FogのMaxDistance以降のみ適用するように linearDepth で制限をかける
+        result = lerp(result, fogColor, finalAnalyticalFactor * 0.5f);
     }
 
     // NaN対策
@@ -206,11 +211,8 @@ float4 main(VSOutput input) : SV_TARGET
         result = float3(0.0, 0.0, 0.0);
     }
 
-    // トーンマッピング前のクランプ
-    result = clamp(result, 0.0, 65504.0);
-
-    // トーンマッピング
-    result = ACESFilm(result);
+   // 6. 最終出力処理 (トーンマップ等)
+    result = ACESFilm(clamp(result, 0.0, 65504.0));
 
     return float4(result, 1.0f);
 }

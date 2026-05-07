@@ -276,7 +276,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();
     BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
     CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
-    GodRaySettings* godRaySettings = postEffectManager_->GetGodRaySettings();
+    VolumetricFogSettings* volFogSettings = postEffectManager_->GetVolumetricFogSettings();
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
     SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
@@ -600,30 +600,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
-    // ゴッドレイ設定
-    if (ImGui::TreeNode("ゴッドレイ"))
-    {
-        ImGui::TextDisabled("合成設定");
-        ImGui::SliderFloat("最終強度", &combineSettingsData->godRayIntensity, 0.0f, 5.0f);
-
-        if (godRaySettings)
-        {
-            ImGui::Separator();
-            ImGui::TextDisabled("生成パラメータ");
-            ImGui::SliderFloat("輝度しきい値", &godRaySettings->threshold, 0.0f, 1.0f);
-            ImGui::SliderFloat("密度", &godRaySettings->density, 0.0f, 2.0f);
-            ImGui::DragFloat("減衰率", &godRaySettings->decay, 0.001f, 0.8f, 0.999f, "%.4f");
-            ImGui::SliderFloat("重み", &godRaySettings->weight, 0.0f, 1.0f);
-            ImGui::SliderFloat("露出", &godRaySettings->exposure, 0.0f, 5.0f);
-
-            int samples = godRaySettings->numSamples;
-            if (ImGui::SliderInt("サンプル数", &samples, 16, 128)) {
-                godRaySettings->numSamples = samples;
-            }
-        }
-        ImGui::TreePop();
-    }
-
     // 被写界深度 (DoF)
     if (ImGui::TreeNode("被写界深度 (DoF)"))
     {
@@ -685,6 +661,46 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // フォグ設定
+    if (ImGui::TreeNode("ボリュメトリックフォグ"))
+    {
+        bool volFogFlag = (combineSettingsData->enableVolumetricFog != 0);
+        if (ImGui::Checkbox("ボリュメトリックフォグを有効にする", &volFogFlag))
+        {
+            combineSettingsData->enableVolumetricFog = volFogFlag ? 1 : 0;
+        }
+
+        if (volFogFlag && volFogSettings)
+        {
+            ImGui::Indent(); 
+
+            ImGui::Separator();
+            ImGui::TextDisabled("基本パラメータ");
+            ImGui::DragFloat("濃度 (Density)", &volFogSettings->density, 0.001f, 0.0f, 1.0f, "%.4f");
+            ImGui::SliderFloat("散乱 (Scattering G)", &volFogSettings->scatteringG, -0.99f, 0.99f, "%.2f");
+            ImGui::DragFloat("距離 (Max Distance)", &volFogSettings->maxDistance, 1.0f, 10.0f, 2000.0f, "%.1f m");
+            ImGui::SliderInt("分割数 (Steps)", &volFogSettings->steps, 8, 128);
+            ImGui::SliderFloat("強度 (Intensity)", &volFogSettings->intensity, 0.0f, 10.0f, "%.2f");
+            ImGui::ColorEdit3("霧の色 (Albedo)", &volFogSettings->fogColor.x);
+            ImGui::SliderFloat("環境光の影響度", &volFogSettings->ambientFactor, 0.0f, 1.0f);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::TextDisabled("高品質化 (高さ・ノイズ)");
+
+            // 高さ減衰
+            ImGui::DragFloat("基準の高さ (Base Height)", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
+            ImGui::DragFloat("高さ減衰 (Height Falloff)", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
+
+            // ノイズ設定
+            ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -10.0f, 10.0f, "%.2f");
+            ImGui::SliderFloat("ノイズ閾値", &volFogSettings->noiseThreshold, 0.0f, 1.0f, "%.2f");
+
+            ImGui::Unindent(); 
+        }
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("ハイブリッドフォグ設定"))
     {
         bool fogFlag = (combineSettingsData->enableFog != 0);

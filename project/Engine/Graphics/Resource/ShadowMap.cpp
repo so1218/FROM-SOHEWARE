@@ -75,6 +75,12 @@ D3D12_GPU_DESCRIPTOR_HANDLE ShadowMap::GetSRVHandle() const
     return srvManager_->GetSRVHandleGPU(srvIndex_);
 }
 
+// コピー用のCPUハンドルを返す
+D3D12_CPU_DESCRIPTOR_HANDLE ShadowMap::GetSRVHandleCPU() const
+{
+    return srvManager_->GetSRVHandleCPU_ForCopying(srvIndex_);
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE ShadowMap::GetDSVHandle() const
 {
     return dsvHeap_->GetCPUDescriptorHandleForHeapStart();

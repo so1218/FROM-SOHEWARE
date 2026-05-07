@@ -304,25 +304,10 @@ struct CombineSettings
     float fogNoiseContrast;
     float fogNoiseStrength;
     
-    float godRayIntensity;
     int enableSSR;
     float ssrIntensity;
-    float _padding2;
-};
-
-struct GodRaySettings
-{
-    float2 lightPosScreen;
-    float density;
-    float decay;
-    
-    float weight;
-    float exposure;
-    float threshold;
-    int numSamples;
-    
-    float3 lightColor;
-    float sunRadius;
+    int enableVolumetricFog; 
+    float _padding;
 };
 
 struct SSAOSettings
@@ -375,11 +360,21 @@ struct InstanceOffset
 
 struct VolumetricFogSettings
 {
-    float density;
+    float density; 
     float maxDistance;
-    float scatteringG;
-    int steps;
-    
-    float intensity;
-    float3 padding;
+    float scatteringG; 
+    int steps; 
+
+    float intensity; 
+    float baseHeight;
+    float heightFalloff;
+    float noiseScale; 
+
+    float windSpeed; 
+    float noiseThreshold; 
+    float ambientFactor; 
+    float padding1;
+
+    float3 fogColor;
+    float padding2;
 };

@@ -64,12 +64,12 @@ void Ground::Update()
 void Ground::Draw()
 {
 	model_->Draw();
-	for (const auto& pos : treePositions_)
+	/*for (const auto& pos : treePositions_)
 	{
 		modelTree_->GetTransform().translation_ = pos;
 
 		modelTree_->Draw(); 
-	}
+	}*/
 	modelRock_->Draw();
 	skybox_->Draw();
 };

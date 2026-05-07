@@ -27,6 +27,11 @@ void BrightExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
 
     PreDraw(cmdList);
 
+    ID3D12DescriptorHeap* heaps[] = { context.srvManager->GetSRVHeap() };
+    cmdList->SetDescriptorHeaps(1, heaps);
+
+    cmdList->SetGraphicsRootSignature(context.rootSigManager->GetRootSignature("PostProcess"));
+
     cmdList->SetPipelineState(psoManager_->GetPSO("BrightnessExtract"));
     cmdList->SetGraphicsRootDescriptorTable(2, sceneSrvGPU);
     cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress()); 

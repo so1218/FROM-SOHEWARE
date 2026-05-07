@@ -57,12 +57,6 @@ void PostEffectManager::Initialize(
     combinePass_ = std::make_unique<BloomCombinePass>();
     combinePass_->Initialize(engine, width, height, psoManager, srvManager);
 
-    // GodRay初期化
-    UINT godRayW = Math::MyMax(1u, width / 2);
-    UINT godRayH = Math::MyMax(1u, height / 2);
-    godRayPass_ = std::make_unique<GodRayPass>();
-    godRayPass_->Initialize(engine, godRayW, godRayH, psoManager);
-
     // SSAO初期化
     ssaoPass_ = std::make_unique<SSAOPass>();
     ssaoPass_->Initialize(engine, width, height, psoManager);
@@ -80,6 +74,12 @@ void PostEffectManager::Initialize(
     // SSR初期化
     ssrPass_ = std::make_unique<SSRPass>();
     ssrPass_->Initialize(engine, width, height, psoManager);
+
+    // VolumetricFog初期化
+    UINT volFogW = Math::MyMax(1u, width / 2);
+    UINT volFogH = Math::MyMax(1u, height / 2);
+    volumetricFogPass_ = std::make_unique<VolumetricFogPass>();
+    volumetricFogPass_->Initialize(engine, volFogW, volFogH, psoManager);
 
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
@@ -145,6 +145,7 @@ void PostEffectManager::Initialize(
 	postEffectData_->radialBlurCenter = Vector2(0.5f, 0.5f);
 	postEffectData_->radialBlurStrength = 0.3f; 
 }
+
 void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition)
 {
     // 時間依存データの更新
@@ -162,11 +163,7 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
         vSettings->depthTolerance = hSettings->depthTolerance;
         vSettings->normalTolerance = hSettings->normalTolerance;
     }
-
-    // 各パスの更新
-    godRayPass_->Update(cameraPosition, viewMatrix, projectionMatrix, engine_->GetLightManager());
 }
-
 
 void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 {
@@ -202,11 +199,10 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         verticalBilateralPass_->Execute(cmdList, context_, horizontalBilateralPass_->GetSRVHandleGPU());
     }
 
-    // SSR & GodRay
+    // SSR
     {
         cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
         ssrPass_->Execute(cmdList, context_);
-        godRayPass_->Execute(cmdList, context_);
     }
 
     // Bloom
@@ -230,6 +226,11 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         bokehPass_->Execute(cmdList, context_);
     }
 
+    // Volumetric Fog
+    {
+        volumetricFogPass_->Execute(cmdList, context_);
+    }
+
     // 最終合成
     {
         cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
@@ -244,7 +245,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
             GetCPUHandle(bokehPass_->GetSRVIndex()),
             GetCPUHandle(sceneDepthIndex_),
-            GetCPUHandle(godRayPass_->GetSRVIndex()),
+            GetCPUHandle(volumetricFogPass_->GetSRVIndex()),
             GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
             GetCPUHandle(ssrPass_->GetSRVIndex()),
             GetCPUHandle(TextureManager::GetInstance().Get(currentNoiseName_))
@@ -262,7 +263,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     );
     cmdList->ResourceBarrier(1, &depthToWriteBarrier);
 }
-
 
 void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)
 {
@@ -288,4 +288,5 @@ void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
     );
     cmdList->ResourceBarrier(1, &barrier);
 }
+
 }

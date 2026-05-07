@@ -14,8 +14,14 @@ public:
     // SRV用（メイン描画パスでテクスチャとして使うとき）
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandle() const;
 
+    // パス用のヒープにコピーするためのCPUハンドル取得
+    D3D12_CPU_DESCRIPTOR_HANDLE GetSRVHandleCPU() const;
+
     // DSV用（シャドウ生成パスで書き込み先として使うとき）
     D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle() const;
+
+    // SRVのインデックス自体が必要になった時用
+    uint32_t GetSRVIndex() const { return srvIndex_; }
 
     // リソースバリア（書き込みモード ⇄ 読み取りモード）
     void TransitionToDepthWrite(ID3D12GraphicsCommandList* commandList);
