@@ -41,8 +41,8 @@ public:
     void Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, UINT rtvDescriptorCount);
 
     // オフスクリーンレンダーターゲットを作成し、リソースとRTVハンドルを返す
-    std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t>
-        CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format);
+    std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t, uint32_t>
+        CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format, bool enableUAV = false);
 
     // RTVヒープの取得
     ID3D12DescriptorHeap* GetRTVDescriptorHeap() const { return rtvDescriptorHeap_.Get(); }
@@ -55,6 +55,13 @@ public:
     {
         assert(index < offscreenSrvIndices_.size());
         return offscreenSrvIndices_[index];
+    }
+
+    // UAVのインデックスを取得する関数
+    uint32_t GetOffscreenUAVIndex(UINT index) const
+    {
+        assert(index < offscreenUavIndices_.size());
+        return offscreenUavIndices_[index];
     }
 
 private:
@@ -72,6 +79,9 @@ private:
     SRVManager* srvManager_ = nullptr;
 
     std::vector<uint32_t> offscreenSrvIndices_;
+
+    // UAVのインデックスを保存する配列
+    std::vector<uint32_t> offscreenUavIndices_;
 };
 
 }

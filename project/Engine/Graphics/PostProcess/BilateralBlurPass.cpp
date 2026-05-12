@@ -25,7 +25,7 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
 
     // 中間バッファ（横ブラー結果用）の生成
     Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    auto [resource, rtvHandle, srvIndex] = engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
+    auto [resource, rtvHandle, srvIndex, uavIndex] = engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
         width, height, clearColor, DXGI_FORMAT_R8_UNORM
     );
     intermediateResource_ = resource;

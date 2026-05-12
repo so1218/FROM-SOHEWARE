@@ -923,4 +923,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectContext.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
+  </ItemGroup>
 </Project>

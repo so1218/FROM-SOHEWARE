@@ -96,15 +96,37 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
 {
     // JSON 読み込み
     PSODescription desc = LoadPSODefinition(psoName);
+    ID3D12RootSignature* rootSig = rootSignatureManager_->GetRootSignature(desc.RootSignature);
 
-    // シェーダ・ルートシグネチャ取得
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
+
+    // ========================================================
+    // ★ 分岐A：コンピュートPSO（ComputeShaderが指定されている場合）
+    // ========================================================
+    if (!desc.ComputeShader.empty())
+    {
+        std::wstring csPath(desc.ComputeShader.begin(), desc.ComputeShader.end());
+        IDxcBlob* csBlob = shaderManager_->GetShader(csPath, L"cs_6_0"); // プロファイルは cs_6_0
+
+        D3D12_COMPUTE_PIPELINE_STATE_DESC computeDesc{};
+        computeDesc.pRootSignature = rootSig;
+        computeDesc.CS = { csBlob->GetBufferPointer(), csBlob->GetBufferSize() };
+        computeDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+        HRESULT hr = device_->CreateComputePipelineState(&computeDesc, IID_PPV_ARGS(&pso));
+        assert(SUCCEEDED(hr));
+
+        return pso; // ここで完了
+    }
+
+    // ========================================================
+    // ★ 分岐B：グラフィックスPSO（既存の処理）
+    // ========================================================
     std::wstring vsPath(desc.VertexShader.begin(), desc.VertexShader.end());
     std::wstring psPath(desc.PixelShader.begin(), desc.PixelShader.end());
     IDxcBlob* vsBlob = shaderManager_->GetShader(vsPath, L"vs_6_0");
     IDxcBlob* psBlob = psPath.empty() ? nullptr : shaderManager_->GetShader(psPath, L"ps_6_0");
-    ID3D12RootSignature* rootSig = rootSignatureManager_->GetRootSignature(desc.RootSignature);
 
-    // JSON の文字列 → D3D12 設定へ反映
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
     psoDesc.pRootSignature = rootSig;
     psoDesc.VS = { vsBlob->GetBufferPointer(), vsBlob->GetBufferSize() };
@@ -140,7 +162,6 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
     psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 
     // PSO 生成
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
     HRESULT hr = device_->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso));
     assert(SUCCEEDED(hr));
     return pso;
@@ -159,19 +180,25 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
 
     PSODescription desc;   // 既定値入り
 
-    // 必須キー
+    // 1. まず共通の必須キーを処理
     assert(json.contains("RootSignature") && "Missing RootSignature");
-    assert(json.contains("VertexShader") && "Missing VertexShader");
     desc.RootSignature = json["RootSignature"];
-    desc.VertexShader = json["VertexShader"];
 
-    if (json.contains("PixelShader") && !json["PixelShader"].is_null())
+    // ComputeShaderがあるかどうか
+    desc.ComputeShader = json.value("ComputeShader", "");
+
+    // 必須キー
+    if (desc.ComputeShader.empty())
     {
-        desc.PixelShader = json["PixelShader"].get<std::string>();
-    }
-    else
-    {
-        desc.PixelShader = ""; // null または未定義なら空文字
+        // --- グラフィックスPSO用の必須チェック ---
+        assert(json.contains("VertexShader") && "Missing VertexShader");
+        desc.VertexShader = json["VertexShader"];
+
+        // PixelShaderは任意（null許容）
+        if (json.contains("PixelShader") && !json["PixelShader"].is_null())
+        {
+            desc.PixelShader = json["PixelShader"].get<std::string>();
+        }
     }
 
     // 任意キー（無ければ既定値）

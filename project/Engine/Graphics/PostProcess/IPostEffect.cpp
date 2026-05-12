@@ -16,7 +16,7 @@ IPostEffect::~IPostEffect()
     }
 }
 
-void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_FORMAT format)
+void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_FORMAT format, bool isCompute)
 {
     engine_ = engine;
 
@@ -24,15 +24,16 @@ void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_F
     Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // tupleから3つの値（Resource, RTV, SRVIndex）を直接受け取る
-    auto [resource, rtvHandle, srvIndex] =
+    auto [resource, rtvHandle, srvIndex, uavIndex] =
         engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
-            width, height, clearColor, format
+            width, height, clearColor, format, isCompute
         );
 
     // 取得した値をメンバ変数に保存
     textureResource_ = resource;
     rtvHandle_ = rtvHandle;
     srvIndex_ = srvIndex; // CreateOffscreenRenderTargetで作ったSRVをそのまま使う
+    uavIndex_ = uavIndex;
 
     // 描画設定
     viewport_ = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };

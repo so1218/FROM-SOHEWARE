@@ -13,6 +13,7 @@ struct PSODescription
     std::string RootSignature;
     std::string VertexShader;
     std::string PixelShader;
+    std::string ComputeShader;
     std::string InputLayout;
     std::string BlendState;
     std::string RasterizerState;

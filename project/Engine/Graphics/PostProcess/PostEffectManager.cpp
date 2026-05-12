@@ -87,7 +87,7 @@ void PostEffectManager::Initialize(
     cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
 
     // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
-    auto [finalResource, finalRtvHandle, finalSrvIndex] =
+    auto [finalResource, finalRtvHandle, finalSrvIndex, uavIndex] =
         engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
             width, height, Vector4(0, 0, 0, 1), DXGI_FORMAT_R16G16B16A16_FLOAT
         );

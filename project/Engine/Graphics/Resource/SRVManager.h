@@ -16,6 +16,9 @@ public:
     // 構造化バッファ専用のSRV作成
     void CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
 
+    // UAVを作成してインデックスを返す
+    uint32_t CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc);
+
     // 指定したインデックスのSRVを解放
     void FreeSRV(uint32_t index);
 

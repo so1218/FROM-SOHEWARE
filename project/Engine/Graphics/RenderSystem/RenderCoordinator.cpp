@@ -43,19 +43,19 @@ void RenderCoordinator::Initialize(
     offscreenDepthResource_ = offscreenDepthResource;
 
     // カラー用
-    auto [texColor, rtvColor, srvColor] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+    auto [texColor, rtvColor, srvColor, uavIndexColor] = offscreenRTVManager_->CreateOffscreenRenderTarget(
         Engine::GetClientWidth(), Engine::GetClientHeight(), offscreenRTVManager_->GetClearColor(), DXGI_FORMAT_R16G16B16A16_FLOAT);
     offscreenTexColor_ = texColor;
     offscreenRtvColor_ = rtvColor;
 
     // 法線用
-    auto [texNormal, rtvNormal, srvNormal] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+    auto [texNormal, rtvNormal, srvNormal, uavIndexNormal] = offscreenRTVManager_->CreateOffscreenRenderTarget(
         Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R16G16B16A16_FLOAT);
     offscreenTexNormal_ = texNormal;
     offscreenRtvNormal_ = rtvNormal;
 
     // 材質用
-    auto [texMaterial, rtvMaterial, srvMaterial] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+    auto [texMaterial, rtvMaterial, srvMaterial, uavIndexMaterial] = offscreenRTVManager_->CreateOffscreenRenderTarget(
         Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R8G8B8A8_UNORM);
     offscreenTexMaterial_ = texMaterial;
     offscreenRtvMaterial_ = rtvMaterial;

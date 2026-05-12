@@ -71,6 +71,21 @@ void SRVManager::CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resou
     device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
 }
 
+uint32_t SRVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc)
+{
+    uint32_t index = allocator_->Allocate();
+
+    // 可視ヒープ
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleVisible = GetSRVHandleCPU_Visible(index);
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, cpuHandleVisible);
+
+    // コピー用ヒープ
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleCopy = GetSRVHandleCPU_ForCopying(index);
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, cpuHandleCopy);
+
+    return index;
+}
+
 void SRVManager::FreeSRV(uint32_t index)
 {
     // インデックスをアロケータに返却

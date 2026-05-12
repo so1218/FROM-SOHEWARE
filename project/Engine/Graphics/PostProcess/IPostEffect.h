@@ -16,6 +16,10 @@ protected:
     Microsoft::WRL::ComPtr<ID3D12Resource> textureResource_;
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle_;
     uint32_t srvIndex_ = 0;
+    uint32_t uavIndex_ = 0; // CS用にUAVインデックス保持
+
+    // 内部的なリソース状態管理用
+    D3D12_RESOURCE_STATES currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
     // 描画設定
     D3D12_VIEWPORT viewport_;
@@ -31,7 +35,8 @@ public:
         Engine* engine,
         UINT width,
         UINT height,
-        DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT
+        DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT,
+        bool isCompute = false 
     );
 
     // ポストエフェクト実行
@@ -41,6 +46,24 @@ public:
     // 出力SRV取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU();
     uint32_t GetSRVIndex() const { return srvIndex_; }
+
+    // CS用バリア：SRV -> UAV
+    void PreCompute(ID3D12GraphicsCommandList* cmdList) {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            textureResource_.Get(),
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        cmdList->ResourceBarrier(1, &barrier);
+    }
+
+    // CS用バリア：UAV -> SRV
+    void PostCompute(ID3D12GraphicsCommandList* cmdList) {
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            textureResource_.Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        cmdList->ResourceBarrier(1, &barrier);
+    }
 
 protected:
     // 描画開始処理

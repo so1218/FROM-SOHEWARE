@@ -66,8 +66,8 @@ void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManage
     clearColor_ = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
 }
 
-std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t>
-OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format)
+std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t, uint32_t>
+OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format, bool enableUAV)
 {
     UINT rtvIndex = createdRTVCount_;
     assert(rtvIndex < rtvDescriptorCount_);
@@ -83,6 +83,12 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     texDesc.Format = format;
     texDesc.SampleDesc.Count = 1;
     texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+    // フラグがtrueの場合のみUAV許可
+    if (enableUAV)
+    {
+        texDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    }
 
     D3D12_CLEAR_VALUE clearValue = {};
     clearValue.Format = format;
@@ -123,7 +129,18 @@ OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector
     // メンバ変数の配列に保存しておく
     offscreenSrvIndices_.push_back(srvIndex);
 
-    return { texture, rtvHandle, srvIndex };
+    // UAVの作成分岐
+    uint32_t uavIndex = 0; // 使わない場合は0
+    if (enableUAV)
+    {
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+        uavDesc.Format = format;
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        uavIndex = srvManager_->CreateUAV(texture.Get(), uavDesc);
+        offscreenUavIndices_.push_back(uavIndex);
+    }
+
+    return { texture, rtvHandle, srvIndex, uavIndex };
 }
 
 }

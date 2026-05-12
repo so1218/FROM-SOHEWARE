@@ -125,6 +125,6 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
 #define LOG_DEBUG(...)   ((void)0)
 #define LOG_INFO(...)    ((void)0)
 #define LOG_WARN(...)    ((void)0)
-#define LOG_ERROR(...)   FromEngine::Logger::Instance().Log(FromEngine::LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
+#define LOG_ERROR(...)   FE::Logger::Instance().Log(FE::LogLevel::Error,   std::source_location::current(), __VA_ARGS__)
 
 #endif
