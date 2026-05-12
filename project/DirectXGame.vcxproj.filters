@@ -912,6 +912,7 @@
     <ClCompile Include="Engine\Camera\CameraManager.cpp" />
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -922,8 +923,10 @@
     <ClInclude Include="Engine\Camera\CameraManager.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectContext.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
   </ItemGroup>
 </Project>

@@ -47,6 +47,8 @@ public:
     SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
     VolumetricFogSettings* GetVolumetricFogSettings() const { return volumetricFogPass_->GetSettings(); }
 
+    VolumetricFogPass* GetVolumetricFogPass() const { return volumetricFogPass_.get(); }
+
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
     PostEffectData* GetPostEffectData() const { return postEffectData_; }

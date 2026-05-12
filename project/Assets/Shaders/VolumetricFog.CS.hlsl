@@ -3,6 +3,7 @@
 // --- 入力リソース ---
 Texture2D<float> gDepthTexture : register(t0);
 Texture2D<float> gShadowMap : register(t1);
+Texture3D<float> gNoiseVolume : register(t2);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
@@ -76,14 +77,21 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float rayLength = length(rayVec);
     float3 rayDir = rayVec / max(rayLength, 0.0001f);
 
-    // 最大距離とステップ数をパラメータから取得
+   // ★修正：1歩の長さを「最大距離 ÷ 最大ステップ数」で完全に固定する
+    float stepSize = gFogSettings.maxDistance / max((float) gFogSettings.steps, 1.0f);
+    
+    // ★修正：このピクセルが「何歩進んだら物体にぶつかるか」を計算する
     float marchLength = min(rayLength, gFogSettings.maxDistance);
-    int steps = gFogSettings.steps;
-    float stepSize = marchLength / max((float) steps, 1.0f); // 0割り防止
+    int actualSteps = min(gFogSettings.steps, (int) ceil(marchLength / stepSize));
     
     // ディザリング
-    float dither = frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453) * stepSize;
-    float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * dither);
+   // ディザリング（BayerマトリクスやInterleaved Gradient Noiseなどを使うと綺麗です）
+// 今回は少し質の良い擬似乱数(IGN)に変更
+    float dither = frac(52.9829189f * frac(dot(DTid.xy, float2(0.06711056f, 0.00583715f))));
+
+// ★超重要：レイの開始位置を、ステップサイズの範囲でランダムにズラす
+// これにより、隣のピクセルと「層」の位置がズレて円形が消えます
+    float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * (stepSize * dither));
 
     float3 volumetricIllumination = float3(0, 0, 0);
     // 光の方向ベクトルを反転させて太陽の方向に向ける
@@ -98,7 +106,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 ambientLight = float3(0.05f, 0.05f, 0.07f); // 暗い影の中を照らす環境光
 
     // レイマーチング・ループ
-    for (int i = 0; i < steps; ++i)
+    for (int i = 0; i < actualSteps; ++i)
     {
         // (1. シャドウ判定は既存の通り)
         float4 shadowCoord = mul(float4(currentPos, 1.0f), gFrameData.lightViewProj);
@@ -113,9 +121,35 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         // (2. 高さ・3. ノイズ・4. 濃度の計算は既存の通り)
         float heightFalloff = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
-        float noiseVal = SimpleCloudNoise(currentPos * gFogSettings.noiseScale + (float3(gFrameData.gTime * gFogSettings.windSpeed, 0, 0)));
-        noiseVal = smoothstep(gFogSettings.noiseThreshold, 1.0f, noiseVal);
-        float stepDensity = gFogSettings.density * heightFalloff * noiseVal;
+
+// -----------------------------------------------------
+        // ★ 修正：エロージョン（浸食）によるモクモク感の強調
+        // -----------------------------------------------------
+        // 1層目（ベースとなる大きな霧の塊）
+        float3 uvw1 = currentPos * gFogSettings.noiseScale;
+        uvw1 += float3(gFrameData.gTime * 0.05f, 0.0f, gFrameData.gTime * 0.02f);
+        float noise1 = gNoiseVolume.SampleLevel(gSampler, frac(uvw1), 0).r;
+
+        // 2層目（輪郭を削るための細かなディテール）
+        float3 uvw2 = currentPos * (gFogSettings.noiseScale * 3.0f); // スケールを少し大きめ(細かく)する
+        uvw2 += float3(-gFrameData.gTime * 0.08f, gFrameData.gTime * 0.03f, 0.0f);
+        float noise2 = gNoiseVolume.SampleLevel(gSampler, frac(uvw2), 0).r;
+
+        // ★変更点1：足し算ではなく、ベースの塊からディテールを「引いて削る」
+        // これにより、カリフラワーのような凹凸のある輪郭が生まれます
+        float combinedNoise = saturate(noise1 - (1.0f - noise2) * 0.3f);
+
+        // ★変更点2：境界を「鋭く」切り落とす
+        // smoothstep(閾値, 1.0f, x) だとグラデーションが広すぎるので、
+        // 上限を (閾値 + 0.1f) くらいに狭めることで、エッジの効いた塊になります
+        float edgeSoftness = 0.15f; // 値が小さいほど輪郭がクッキリする（0.05〜0.2くらいがおすすめ）
+        float noiseVal = smoothstep(gFogSettings.noiseThreshold, gFogSettings.noiseThreshold + edgeSoftness, combinedNoise);
+
+        // ★変更点3：塊の中身を「強烈に濃く」する
+        // モクモク感を出すには、少し進んだだけで光が遮断されるほどの密度が必要です
+        // noiseVal が 0.0 より大きい部分（霧が存在する部分）の密度を跳ね上げます
+        float densityMultiplier = 5.0f; // ★ ここを 2.0 ～ 10.0 などで調整してみてください
+        float stepDensity = gFogSettings.density * densityMultiplier * heightFalloff * noiseVal;
 
         // -----------------------------------------------------
         // ★ ここからが超重要：色の計算

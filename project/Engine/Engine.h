@@ -26,6 +26,7 @@
 #include "GraphicsDevice.h"
 #include "CommandManager.h"
 #include "RenderPipeline.h"
+#include "NoiseTextureGenerator.h"
 
 namespace FE
 {
@@ -153,6 +154,7 @@ private:
     std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<RenderPipeline> renderPipeline_;
+    std::unique_ptr<NoiseTextureGenerator> noiseTextureGenerator_;
 };
 
 }

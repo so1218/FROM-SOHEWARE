@@ -1,0 +1,4 @@
+{
+  "RootSignature": "Generate3DNoiseCS",
+  "ComputeShader": "Assets/Shaders/Generate3DNoise.CS.hlsl"
+}

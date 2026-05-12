@@ -30,6 +30,8 @@ public:
     void BeginPass(ID3D12GraphicsCommandList* commandList);
     void EndPass(ID3D12GraphicsCommandList* commandList);
 
+    ID3D12Resource* GetResource() const { return shadowResource_.Get(); }
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> shadowResource_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;

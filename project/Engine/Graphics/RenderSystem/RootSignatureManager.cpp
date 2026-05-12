@@ -273,9 +273,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+        // ★ここを修正：SRVの数を 2 から 3 に変更 (t0: Depth, t1: Shadow, t2: 3DNoise)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 書き込み用テクスチャ
+        // 書き込み用テクスチャ (u0)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
         // サンプラー
@@ -295,6 +296,25 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
             D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 
         return builder.Build(device_, csFlags, "VolumetricFogCS");
+    }
+
+    else if (name == "Generate3DNoiseCS")
+    {
+        RootSignatureBuilder builder;
+
+        // 今回のCSは入力(SRV/CBV/Sampler)が一切不要なので、
+        // 出力先である「書き込み用テクスチャ (u0)」のUAVのみを登録します。
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // フラグの指定 (CS専用なので他のステージからのアクセスを拒否)
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags =
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+        return builder.Build(device_, csFlags, "Generate3DNoiseCS");
     }
 
     // どれにも該当しない
