@@ -55,6 +55,14 @@ class MYADDON_OT_export_scene(bpy.types.Operator, bpy_extras.io_utils.ExportHelp
     #出力するファイルの拡張子
     filename_ext=".scene"
 
+    def write_and_print(self, file, text):
+
+        # コンソール出力
+        print(text)
+
+        # ファイル出力
+        file.write(text + "\n")
+
     def parse_scene_recursive(self, file, object, level):
         """シーン解析用再帰関数"""
 
@@ -65,13 +73,14 @@ class MYADDON_OT_export_scene(bpy.types.Operator, bpy_extras.io_utils.ExportHelp
 
         # オブジェクト名書き込み
         self.write_and_print(file, indent + object.type + " - " + object.name)
+        
         trans, rot, scale=object.matrix_local.decompose()
         #回転を Quaternion から Euler (3軸での回転角)　に変換
         rot=rot.to_euler()
         #ラジアンから度数法に変換
         rot.x=math.degrees(rot.x)
         rot.y=math.degrees(rot.y)
-        rot.x=math.degrees(rot.x)
+        rot.z=math.degrees(rot.z)
         #トランスフォーム情報を表示
         self.write_and_print(file, indent + "Trans(%f,%f,%f)" % (trans.x, trans.y, trans.z))
         self.write_and_print(file, indent + "Rot(%f,%f,%f)" % (rot.x, rot.y, rot.z))
@@ -96,11 +105,11 @@ class MYADDON_OT_export_scene(bpy.types.Operator, bpy_extras.io_utils.ExportHelp
             for obj in bpy.context.scene.objects:
 
                 #親オブジェクトがあるものはスキップ（代わりに親から呼び出すから）
-                if(object.parent):
+                if(obj.parent):
                     continue
 
                 #シーン直下のオブジェクトをルートノード(深さ0)とし、再帰関数で走査
-                self.parse_scene_recursive(file, object, 0)
+                self.parse_scene_recursive(file, obj, 0)
 
                 # オブジェクト名
                 file.write(obj.type + " _ " + obj.name + "\n")
