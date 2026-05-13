@@ -272,6 +272,8 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL); // b3: PointLights
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); // b4: SpotLights
 
         // ★ここを修正：SRVの数を 2 から 3 に変更 (t0: Depth, t1: Shadow, t2: 3DNoise)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);

@@ -81,14 +81,16 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
 
     // Param 1: FogSettings (b2)
     cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(2, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress());
 
     // Param 2: SRV Table (t0, t1)
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = passHeap_->GetGPUDescriptorHandleForHeapStart();
-    cmdList->SetComputeRootDescriptorTable(2, gpuHandle);
+    cmdList->SetComputeRootDescriptorTable(4, gpuHandle);
 
     // Param 3: UAV Table (u0)
     gpuHandle.ptr += handleSize * 3; // t0, t1, t2 の3つ分スキップ
-    cmdList->SetComputeRootDescriptorTable(3, gpuHandle);
+    cmdList->SetComputeRootDescriptorTable(5, gpuHandle);
 
     // --- 2. リソースバリア (SRV -> UAV) ---
         // 2. CS用の状態遷移

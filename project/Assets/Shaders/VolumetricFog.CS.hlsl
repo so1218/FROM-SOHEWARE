@@ -1,4 +1,5 @@
 #include "ShaderConstants.hlsli"
+#include "Object3D.hlsli"
 
 // --- 入力リソース ---
 Texture2D<float> gDepthTexture : register(t0);
@@ -14,6 +15,15 @@ RWTexture2D<float4> gOutput : register(u0);
 // --- 定数バッファ ---
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
+
+cbuffer PointLights : register(b3)
+{
+    PointLight gPointLights[MAX_POINT_LIGHTS];
+};
+cbuffer SpotLights : register(b4)
+{
+    SpotLight gSpotLights[MAX_SPOT_LIGHTS];
+};
 
 // Henyey-Greenstein 位相関数 (光の散乱)
 float PhaseFunctionHG(float cosTheta, float g)
@@ -122,21 +132,35 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // (2. 高さ・3. ノイズ・4. 濃度の計算は既存の通り)
         float heightFalloff = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
 
-// -----------------------------------------------------
-        // ★ 修正：エロージョン（浸食）によるモクモク感の強調
-        // -----------------------------------------------------
-        // 1層目（ベースとなる大きな霧の塊）
-        float3 uvw1 = currentPos * gFogSettings.noiseScale;
+// --- ループ内、ノイズ計算部分の改造例 ---
+// 1. 座標を歪ませるためのベースUVW
+        float3 warpUVW = currentPos * (gFogSettings.noiseScale * 0.5f);
+        warpUVW += float3(gFrameData.gTime * 0.02f, gFrameData.gTime * 0.01f, gFrameData.gTime * 0.015f);
+
+// 2. 1チャンネルのテクスチャから、座標をズラして3回サンプリング
+// ※ 0.33などのテキトーな値を足すことで、XYZそれぞれ違う動きに見せます
+        float dx = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW), 0);
+        float dy = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.33f), 0);
+        float dz = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.67f), 0);
+
+// 3. 3つの値を組み合わせて float3（歪みベクトル）を作る
+        float3 distortion = float3(dx, dy, dz);
+
+// 4. これを使って座標を歪ませる
+        float3 distortedPos = currentPos + (distortion * 2.0f - 1.0f) * 0.2f;
+
+// 3. 歪んだ座標を使って、メインのノイズをサンプリング
+// 1層目（ベース）
+        float3 uvw1 = distortedPos * gFogSettings.noiseScale;
         uvw1 += float3(gFrameData.gTime * 0.05f, 0.0f, gFrameData.gTime * 0.02f);
         float noise1 = gNoiseVolume.SampleLevel(gSampler, frac(uvw1), 0).r;
 
-        // 2層目（輪郭を削るための細かなディテール）
-        float3 uvw2 = currentPos * (gFogSettings.noiseScale * 3.0f); // スケールを少し大きめ(細かく)する
+// 2層目（ディテール）も歪んだ座標を使うか、あるいは別の歪ませ方をする
+        float3 uvw2 = distortedPos * (gFogSettings.noiseScale * 3.0f);
         uvw2 += float3(-gFrameData.gTime * 0.08f, gFrameData.gTime * 0.03f, 0.0f);
         float noise2 = gNoiseVolume.SampleLevel(gSampler, frac(uvw2), 0).r;
 
-        // ★変更点1：足し算ではなく、ベースの塊からディテールを「引いて削る」
-        // これにより、カリフラワーのような凹凸のある輪郭が生まれます
+// --- 以下、結合処理などはそのまま ---
         float combinedNoise = saturate(noise1 - (1.0f - noise2) * 0.3f);
 
         // ★変更点2：境界を「鋭く」切り落とす
@@ -145,31 +169,92 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float edgeSoftness = 0.15f; // 値が小さいほど輪郭がクッキリする（0.05〜0.2くらいがおすすめ）
         float noiseVal = smoothstep(gFogSettings.noiseThreshold, gFogSettings.noiseThreshold + edgeSoftness, combinedNoise);
 
-        // ★変更点3：塊の中身を「強烈に濃く」する
-        // モクモク感を出すには、少し進んだだけで光が遮断されるほどの密度が必要です
-        // noiseVal が 0.0 より大きい部分（霧が存在する部分）の密度を跳ね上げます
-        float densityMultiplier = 5.0f; // ★ ここを 2.0 ～ 10.0 などで調整してみてください
+      // ★変更点3：塊の中身を「強烈に濃く」する
+        float densityMultiplier = 5.0f;
         float stepDensity = gFogSettings.density * densityMultiplier * heightFalloff * noiseVal;
 
-        // -----------------------------------------------------
-        // ★ ここからが超重要：色の計算
-        // -----------------------------------------------------
-
-        // このステップでの減衰率
+        // ==========================================
+        // ★ 復活させる部分（太陽光と環境光のベース計算）
+        // ==========================================
         float stepAttenuation = exp(-stepDensity * stepSize);
 
         // a. 太陽からの直接光 (shadowVisibilityが効く)
         float3 directLight = shadowVisibility * phase * gFrameData.mainLightColor.rgb;
 
-        // b. 環境光 (アンビエント) 
-        // 固定値ではなく、UIから渡された fogColor と ambientFactor を使う
-        // さらに、メインライトが当たっていない場所(影)の環境光を少し弱めることで立体感を出す
+        // b. 環境光
         float ambientOcclusion = lerp(0.4f, 1.0f, shadowVisibility);
         float3 ambientColor = gFogSettings.fogColor * gFogSettings.ambientFactor * ambientOcclusion;
 
-        // c. 最終的な散乱光
-        // fogColorを全体に掛けることで、ピンクにしたら全体がピンクのトーンになる
-        float3 scatteringLight = (directLight * gFogSettings.fogColor + ambientColor);
+       // ==========================================
+        // ★ ローカルライト（Point & Spot）の計算
+        // ==========================================
+        float3 localLightScattering = float3(0, 0, 0);
+        
+        // ★プロのテクニック: 霧専用の光量ブースト（ここで強引に存在感を出します）
+        float volumetricScatteringMultiplier = 10.0f; // 調整してください
+
+        // ------------------------------------------
+        // 1. ポイントライトの計算
+        // ------------------------------------------
+        for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
+        {
+            if (gPointLights[p].enable == 0)
+                continue;
+
+            float3 lightVec = gPointLights[p].position - currentPos;
+            float dist = length(lightVec);
+            if (dist > gPointLights[p].radius)
+                continue;
+
+            float3 lDir = lightVec / dist;
+            float distRatio = saturate(1.0f - (dist / gPointLights[p].radius));
+            float attenuation = pow(distRatio, gPointLights[p].decay);
+
+            // ★修正: 太陽のgではなく、横からでも見えるように低いg(0.3)でDualPhaseを使う
+            float cosThetaLocal = dot(rayDir, lDir);
+            float phaseLocal = DualPhaseHG(cosThetaLocal, 0.3f);
+
+            localLightScattering += gPointLights[p].color.rgb * gPointLights[p].intensity * volumetricScatteringMultiplier * attenuation * phaseLocal;
+        }
+
+        // ------------------------------------------
+        // 2. スポットライトの計算
+        // ------------------------------------------
+        for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
+        {
+            if (gSpotLights[s].enable == 0)
+                continue;
+
+            float3 lightVec = gSpotLights[s].position - currentPos;
+            float dist = length(lightVec);
+            if (dist > gSpotLights[s].distance)
+                continue;
+
+            float3 lDir = lightVec / dist;
+            float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
+            if (currentCos < gSpotLights[s].cosAngle)
+                continue;
+
+            // ★修正: Object3D側の計算式（pow 2.0f）に合わせてコントラストを高める
+            float angleFalloff = saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle));
+            angleFalloff = pow(angleFalloff, 2.0f);
+            
+            float distRatio = saturate(1.0f - (dist / gSpotLights[s].distance));
+            float distFalloff = pow(distRatio, gSpotLights[s].decay);
+            float attenuation = angleFalloff * distFalloff;
+
+            // ★修正: こちらも低いgで横からの視認性を確保
+            float cosThetaLocal = dot(rayDir, lDir);
+            float phaseLocal = DualPhaseHG(cosThetaLocal, 0.3f);
+
+            // ★将来的には、ここに Spotlight 用のシャドウ判定 (shadowVisibilitySpot) を掛けるのが真のAAA級です！
+            localLightScattering += gSpotLights[s].color.rgb * gSpotLights[s].intensity * volumetricScatteringMultiplier * attenuation * phaseLocal;
+        }
+
+        // ==========================================
+
+        // c. 最終的な散乱光（太陽 ＋ 環境光 ＋ ローカルライト）
+        float3 scatteringLight = (directLight * gFogSettings.fogColor) + ambientColor + localLightScattering;
     
         // -----------------------------------------------------
 
