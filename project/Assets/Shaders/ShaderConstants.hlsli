@@ -33,6 +33,8 @@
 #define RADIAL_BLUR         (1 << 17)
 #define COLOR_GRADING_LUT   (1 << 18)
 
+#define MAX_FOG_EFFECTORS 4
+
 struct TransformationMatrix
 {
     float4x4 WVP;
@@ -378,3 +380,13 @@ struct VolumetricFogSettings
     float3 fogColor;
     float padding2;
 };
+
+struct FogEffector
+{
+    float3 position;
+    float radius;
+    
+    float3 velosity;
+    float pushStrength;
+};
+

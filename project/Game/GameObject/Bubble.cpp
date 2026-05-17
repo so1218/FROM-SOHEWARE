@@ -30,7 +30,7 @@ void Bubble::Initialize()
 
 void Bubble::Update()
 {
-
+	
 };
 
 void Bubble::Draw()

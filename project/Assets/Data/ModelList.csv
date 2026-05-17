@@ -3,6 +3,7 @@ Name,Path
 cube,Primitives/Cube/normalCube.obj
 sphere,Primitives/Sphere/sphere.obj
 plane,Primitives/Plane/plane.obj
+volumetricFog,Primitives/VolumetricFog/VolumetricFog.gltf
 
 # Characters
 playerMesh,Characters/Player/playerClear.gltf

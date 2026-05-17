@@ -10,7 +10,7 @@ Ground::Ground(Engine* engine) : GameObject()
 
 	model_ = std::make_unique<Model>(engine_, "field");
 	modelTree_ = std::make_unique<Model>(engine_, "tree");
-	modelRock_ = std::make_unique<Model>(engine_, "rock1");
+	modelRock_ = std::make_unique<Model>(engine_, "volumetricFog");
 	skybox_ = std::make_unique<Skybox>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
@@ -71,7 +71,7 @@ void Ground::Draw()
 		modelTree_->Draw(); 
 	}*/
 	modelRock_->Draw();
-	skybox_->Draw();
+	/*skybox_->Draw();*/
 };
 
 void Ground::DebugDraw()
