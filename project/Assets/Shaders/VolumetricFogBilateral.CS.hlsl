@@ -1,9 +1,13 @@
+#include "ShaderConstants.hlsli"
+
 Texture2D<float4> gRawFogTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
 
 // --- 出力リソース (UAV) ---
 // ぼかし処理が終わった最終結果
 RWTexture2D<float4> gFilteredFog : register(u0);
+
+ConstantBuffer<FogBilateralSettings> gFogBilateralSettings : register(b0);
 
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -21,16 +25,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 resultColor = float4(0, 0, 0, 0);
     float totalWeight = 0.0f;
 
-    // ぼかし半径（固定値でテストする場合は 2 に設定）
-    int radius = 2;
+    // ★ 修正点: 定数バッファ (gFogBilateralSettings) から値を取得する
+    int radius = gFogBilateralSettings.blurRadius;
     
     // 空間ウェイト計算用の定数
-    float spatialCoeff = 1.0f / (2.0f * 2.0f * 2.0f); // sigma = 2.0 の場合
+    float spatialCoeff = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
     
-    // 深度ウェイト計算用の定数（Zバッファの値は非線形なので、非常に小さな値にする必要があります）
-    float depthCoeff = 1.0f / (2.0f * 0.001f * 0.001f); // sigma = 0.001 の場合
+    // 深度ウェイト計算用の定数（0割り防止のため、念のため微小な下限値を設ける）
+    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, 0.00001f);
+    float depthCoeff = 1.0f / (2.0f * safeDepthSigma * safeDepthSigma);
 
-    // 2. 周辺ピクセルをサンプリングして合成（5x5のカーネル）
+    // 2. 周辺ピクセルをサンプリングして合成
     for (int y = -radius; y <= radius; ++y)
     {
         for (int x = -radius; x <= radius; ++x)

@@ -213,6 +213,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\SSAOPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\SSRPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\GrassRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LineRenderer.cpp" />
@@ -384,6 +385,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectContext.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\SSAOPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\SSRPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
     <ClInclude Include="Engine\Graphics\Renderer\GrassRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LineRenderer.h" />
@@ -527,6 +529,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

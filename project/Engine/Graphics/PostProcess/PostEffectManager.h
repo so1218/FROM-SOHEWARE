@@ -10,6 +10,7 @@
 #include "BilateralBlurPass.h"
 #include "SSRPass.h"
 #include "VolumetricFogPass.h"
+#include "VolumetricFogBilateralPass.h"
 #include "Camera.h"
 
 namespace FE
@@ -46,6 +47,7 @@ public:
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
     SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
     VolumetricFogSettings* GetVolumetricFogSettings() const { return volumetricFogPass_->GetSettings(); }
+    FogBilateralSettings* GetFogBilateralSettings() const { return volumetricFogBilateralPass_->GetSettings(); }
 
     VolumetricFogPass* GetVolumetricFogPass() const { return volumetricFogPass_.get(); }
 
@@ -99,6 +101,7 @@ private:
     std::unique_ptr<BilateralBlurPass> verticalBilateralPass_;
 
     std::unique_ptr<VolumetricFogPass> volumetricFogPass_;
+    std::unique_ptr<VolumetricFogBilateralPass> volumetricFogBilateralPass_;
 
     // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;

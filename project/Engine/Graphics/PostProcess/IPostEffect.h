@@ -65,6 +65,8 @@ public:
         cmdList->ResourceBarrier(1, &barrier);
     }
 
+    ID3D12Resource* GetResource() const { return textureResource_.Get(); }
+
 protected:
     // 描画開始処理
     void PreDraw(ID3D12GraphicsCommandList* cmdList);

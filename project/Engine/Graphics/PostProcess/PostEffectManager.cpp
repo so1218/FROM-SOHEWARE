@@ -81,6 +81,9 @@ void PostEffectManager::Initialize(
     volumetricFogPass_ = std::make_unique<VolumetricFogPass>();
     volumetricFogPass_->Initialize(engine, volFogW, volFogH, psoManager);
 
+    volumetricFogBilateralPass_ = std::make_unique<VolumetricFogBilateralPass>();
+    volumetricFogBilateralPass_->Initialize(engine, volFogW, volFogH, psoManager);
+
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
     cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
@@ -228,7 +231,15 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     // Volumetric Fog
     {
+        // 1. 生のフォグを生成
         volumetricFogPass_->Execute(cmdList, context_);
+
+        // 2. フィルターパスに生フォグの情報を渡して実行
+        volumetricFogBilateralPass_->SetRawFogInput(
+            volumetricFogPass_->GetResource(),   // リソースポインタ (バリア用)
+            volumetricFogPass_->GetSRVIndex()    // SRVインデックス (コピー用)
+        );
+        volumetricFogBilateralPass_->Execute(cmdList, context_);
     }
 
     // 最終合成
@@ -245,7 +256,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
             GetCPUHandle(bokehPass_->GetSRVIndex()),
             GetCPUHandle(sceneDepthIndex_),
-            GetCPUHandle(volumetricFogPass_->GetSRVIndex()),
+            GetCPUHandle(volumetricFogBilateralPass_->GetSRVIndex()),
             GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
             GetCPUHandle(ssrPass_->GetSRVIndex()),
             GetCPUHandle(TextureManager::GetInstance().Get(currentNoiseName_))
@@ -276,7 +287,6 @@ void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)
 
     cmdList->OMSetRenderTargets(1, &finalPassRTVHandle_, FALSE, nullptr);
 }
-
 
 void PostEffectManager::EndFinalComposite(ID3D12GraphicsCommandList* cmdList)
 {

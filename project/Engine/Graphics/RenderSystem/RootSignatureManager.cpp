@@ -325,10 +325,11 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         // 1. 定数バッファ (b0: FilterSettings)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 2. 読み込み用テクスチャ (SRVの数を2に設定)
-        // t0: gRawFogTexture (Pass1の出力結果)
-        // t1: gDepthTexture  (深度バッファ)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+        // ★修正点：t0 と t1 を別々のテーブルとして登録する
+           // パラメータ1: t0 (RawFogTexture)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+        // パラメータ2: t1 (DepthTexture)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
 
         // 3. 書き込み用テクスチャ (u0: gFilteredFog)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);

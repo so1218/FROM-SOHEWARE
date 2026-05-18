@@ -277,6 +277,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
     CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
     VolumetricFogSettings* volFogSettings = postEffectManager_->GetVolumetricFogSettings();
+    FogBilateralSettings* fogBilateralSettings = postEffectManager_->GetFogBilateralSettings();
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
     SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
@@ -671,16 +672,16 @@ void DebugGuiManager::DrawPostEffectSettings()
 
         if (volFogFlag && volFogSettings)
         {
-            ImGui::Indent(); 
+            ImGui::Indent();
 
             ImGui::Separator();
             ImGui::TextDisabled("基本パラメータ");
-            ImGui::DragFloat("濃度 (Density)", &volFogSettings->density, 0.001f, 0.0f, 1.0f, "%.4f");
-            ImGui::SliderFloat("散乱 (Scattering G)", &volFogSettings->scatteringG, -0.99f, 0.99f, "%.2f");
-            ImGui::DragFloat("距離 (Max Distance)", &volFogSettings->maxDistance, 1.0f, 10.0f, 2000.0f, "%.1f m");
-            ImGui::SliderInt("分割数 (Steps)", &volFogSettings->steps, 8, 128);
-            ImGui::SliderFloat("強度 (Intensity)", &volFogSettings->intensity, 0.0f, 10.0f, "%.2f");
-            ImGui::ColorEdit3("霧の色 (Albedo)", &volFogSettings->fogColor.x);
+            ImGui::DragFloat("濃度", &volFogSettings->density, 0.001f, 0.0f, 1.0f, "%.4f");
+            ImGui::SliderFloat("散乱", &volFogSettings->scatteringG, -0.99f, 0.99f, "%.2f");
+            ImGui::DragFloat("距離", &volFogSettings->maxDistance, 1.0f, 10.0f, 2000.0f, "%.1f m");
+            ImGui::SliderInt("分割数", &volFogSettings->steps, 8, 128);
+            ImGui::SliderFloat("強度", &volFogSettings->intensity, 0.0f, 10.0f, "%.2f");
+            ImGui::ColorEdit3("霧の色", &volFogSettings->fogColor.x);
             ImGui::SliderFloat("環境光の影響度", &volFogSettings->ambientFactor, 0.0f, 1.0f);
 
             ImGui::Spacing();
@@ -688,15 +689,32 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::TextDisabled("高品質化 (高さ・ノイズ)");
 
             // 高さ減衰
-            ImGui::DragFloat("基準の高さ (Base Height)", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
-            ImGui::DragFloat("高さ減衰 (Height Falloff)", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
+            ImGui::DragFloat("基準の高さ", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
+            ImGui::DragFloat("高さ減衰", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
 
             // ノイズ設定
             ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
             ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -10.0f, 10.0f, "%.2f");
             ImGui::SliderFloat("ノイズ閾値", &volFogSettings->noiseThreshold, 0.0f, 1.0f, "%.2f");
 
-            ImGui::Unindent(); 
+            // バイラテラルフィルターの設定
+            if (fogBilateralSettings)
+            {
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::TextDisabled("ノイズ除去 (バイラテラルフィルター)");
+
+                ImGui::SliderInt("ぼかし半径 (大きくしすぎると重くなる)", &fogBilateralSettings->blurRadius, 1, 5);
+
+                // 空間ウェイト (値が大きいほど遠くまでぼける)
+                ImGui::DragFloat("空間ウェイト (値が大きいほど遠くまでぼける)", &fogBilateralSettings->spatialSigma, 0.1f, 0.1f, 10.0f, "%.2f");
+
+                // 深度ウェイト (値が小さいほど輪郭を厳格に守る。非常に小さい値になるのでステップ幅を細かく)
+                // ※ ImGui::DragFloat のフォーマットを "%.5f" にして細かく見れるようにします
+                ImGui::DragFloat("深度ウェイト (Depth Sigma)", &fogBilateralSettings->depthSigma, 0.0001f, 0.00001f, 0.1f, "%.5f");
+            }
+
+            ImGui::Unindent();
         }
         ImGui::TreePop();
     }

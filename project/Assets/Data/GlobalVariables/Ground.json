@@ -4,9 +4,9 @@
         "ModelRock_AlbedoMap": "white1x1",
         "ModelRock_AlphaThres": 0.019999999552965164,
         "ModelRock_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.37130802869796753,
+            0.37130802869796753,
+            0.37130802869796753,
             1.0
         ],
         "ModelRock_DiffuseRef": 4.0,
@@ -1313,7 +1313,7 @@
         "ModelRock_Mat9_UseTriplanar": 0,
         "ModelRock_Mat9_Wetness": 0.5,
         "ModelRock_Metalness": 0.3499999940395355,
-        "ModelRock_NormEnable": 0,
+        "ModelRock_NormEnable": 1,
         "ModelRock_NormInten": 1.9900000095367432,
         "ModelRock_NormTile": 5.5,
         "ModelRock_NormalMapTex": "normal_26",

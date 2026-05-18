@@ -913,6 +913,7 @@
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -924,6 +925,7 @@
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectContext.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
