@@ -66,7 +66,6 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     readBarriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
     // 2. RawFog (PIXEL_SHADER -> NON_PIXEL_SHADER)
-    // ※VolumetricFogPassのPostComputeでPIXEL_SHADER_RESOURCEになっているはずなので
     readBarriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     readBarriers[1].Transition.pResource = rawFogResource_;
     readBarriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
