@@ -71,7 +71,7 @@ void Ground::Draw()
 		modelTree_->Draw(); 
 	}*/
 	modelRock_->Draw();
-	/*skybox_->Draw();*/
+	skybox_->Draw();
 };
 
 void Ground::DebugDraw()

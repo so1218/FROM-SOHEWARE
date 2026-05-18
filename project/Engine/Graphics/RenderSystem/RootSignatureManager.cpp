@@ -318,6 +318,33 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "Generate3DNoiseCS");
     }
+    else if (name == "VolumetricFogBilateralCS")
+    {
+        RootSignatureBuilder builder;
+
+        // 1. 定数バッファ (b0: FilterSettings)
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 2. 読み込み用テクスチャ (SRVの数を2に設定)
+        // t0: gRawFogTexture (Pass1の出力結果)
+        // t1: gDepthTexture  (深度バッファ)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 3. 書き込み用テクスチャ (u0: gFilteredFog)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // ※ Load() を使うため、StaticSamplerの登録は不要です！
+
+        // フラグの指定 (CS専用なので他ステージからのアクセスを拒否)
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags =
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+        return builder.Build(device_, csFlags, "VolumetricFogBilateralCS");
+    }
 
     // どれにも該当しない
     LOG_ERROR("Unknown RootSignature: {}", name);

@@ -1,0 +1,4 @@
+{
+  "RootSignature": "VolumetricFogBilateralCS",
+  "ComputeShader": "Assets/Shaders/VolumetricFogBilateral.CS.hlsl"
+}

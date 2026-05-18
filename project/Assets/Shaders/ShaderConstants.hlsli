@@ -390,3 +390,11 @@ struct FogEffector
     float pushStrength;
 };
 
+struct FilterSettings
+{
+    int gBlurRadius; 
+    float gSpatialSigma; 
+    float gDepthSigma;
+    float padding;
+};
+

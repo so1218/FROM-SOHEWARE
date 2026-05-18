@@ -10,7 +10,7 @@
             1.0,
             1.0
         ],
-        "PlayerModel_Mat0_DiffuseRef": 4.0,
+        "PlayerModel_Mat0_DiffuseRef": 1.0,
         "PlayerModel_Mat0_DisEnable": 0,
         "PlayerModel_Mat0_DisThres": 0.5,
         "PlayerModel_Mat0_DissolveTex": "white1x1",
@@ -121,7 +121,7 @@
         ],
         "PlayerModel_Mat1_EdgeInten": 2.0,
         "PlayerModel_Mat1_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat1_Emissive": 6.400000095367432,
+        "PlayerModel_Mat1_Emissive": 3.5999999046325684,
         "PlayerModel_Mat1_EnvMapInt": 1.559999942779541,
         "PlayerModel_Mat1_EnvMapTex": "skybox",
         "PlayerModel_Mat1_LightMode": 3,

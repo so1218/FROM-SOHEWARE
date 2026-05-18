@@ -928,5 +928,6 @@
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VolumetricFogBilateral.CS.hlsl" />
   </ItemGroup>
 </Project>
