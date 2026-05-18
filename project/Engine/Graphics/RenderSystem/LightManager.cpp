@@ -298,7 +298,7 @@ void LightManager::DrawDebugLights()
         color.w = 1.0f;
 
         Vector3 startPos = spotLightData_[i].position;
-        Vector3 dir = -spotLightData_[i].direction;
+        Vector3 dir = spotLightData_[i].direction;
         float dist = spotLightData_[i].distance;
         float angleCos = spotLightData_[i].cosAngle;
 
