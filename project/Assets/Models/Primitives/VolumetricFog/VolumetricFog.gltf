@@ -34,9 +34,9 @@
 			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.004",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					0.5455541610717773,
-					0.8000074625015259,
-					0,
+					0.800054669380188,
+					0.049301475286483765,
+					0.5337560772895813,
 					1
 				],
 				"metallicFactor":0,
@@ -52,9 +52,10 @@
 					"attributes":{
 						"POSITION":0,
 						"NORMAL":1,
-						"TEXCOORD_0":2
+						"TEXCOORD_0":2,
+						"TEXCOORD_1":3
 					},
-					"indices":3,
+					"indices":4,
 					"material":0
 				}
 			]
@@ -64,67 +65,79 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":456,
+			"count":506,
 			"max":[
-				1.0531336069107056,
-				1.0000019073486328,
-				33.79188537597656
+				1.053133487701416,
+				3.839107036590576,
+				33.7918815612793
 			],
 			"min":[
-				-1.0048906803131104,
-				-29.20839500427246,
-				-3.553314208984375
+				-1.0048905611038208,
+				-29.208393096923828,
+				-3.5533127784729004
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":456,
+			"count":506,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":456,
+			"count":506,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
+			"componentType":5126,
+			"count":506,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":4,
 			"componentType":5123,
-			"count":684,
+			"count":756,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":5472,
+			"byteLength":6072,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5472,
-			"byteOffset":5472,
+			"byteLength":6072,
+			"byteOffset":6072,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":3648,
-			"byteOffset":10944,
+			"byteLength":4048,
+			"byteOffset":12144,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":1368,
-			"byteOffset":14592,
+			"byteLength":4048,
+			"byteOffset":16192,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":1512,
+			"byteOffset":20240,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":15960,
+			"byteLength":21752,
 			"uri":"VolumetricFog.bin"
 		}
 	]

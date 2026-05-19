@@ -32,10 +32,10 @@ void TestSceneHori::OnInitialize()
     engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { -0.05f,-1.45f,1.4f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
 
-    testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
-    engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
-    auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
-    engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+    //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
+    //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
+    //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
+    //engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
     // ★修正：ここでローカルの unique_ptr として生成・初期化する
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");

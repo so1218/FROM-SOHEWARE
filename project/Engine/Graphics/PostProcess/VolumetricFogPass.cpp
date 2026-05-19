@@ -26,10 +26,19 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->baseHeight = 0.0f;       // 地面(Y=0)を基準に
     cbData_->heightFalloff = 0.05f;   // 緩やかに上空で薄くする
     cbData_->noiseScale = 0.1f;       // ノイズのスケール
-    cbData_->windSpeed = 1.0f;        // 風の強さ
     cbData_->noiseThreshold = 0.0f;
-    cbData_->ambientFactor = 0.1f;
     cbData_->fogColor = { 1.0f, 1.0f, 1.0f };
+
+    cbData_->windSpeed = 0.2f;      
+    cbData_->ambientFactor = 0.02f;   
+    cbData_->baseAirDensity = 0.05f;  
+
+    cbData_->phaseBase = 0.15f;
+
+    cbData_->objectPos = { 0.0f, 0.0f, 0.0f };
+    cbData_->objectRadius = 2.0f;            
+    cbData_->objectVelocity = { 0.0f, 0.0f, 0.0f };
+    cbData_->interactionPower = 10.0f;
 
     // ★パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
