@@ -2,14 +2,18 @@
 #include "Collider.h"
 #include "AnimationModel.h"
 #include "FollowCamera.h"
-#include "Line.h"
 #include "PropertyBinder.h"
 #include "GameObject.h"
+#include "StateMachine.h"
 
-class PlayScene;
+class PlayerStateNormal; 
+class PlayerStateRoll;
 
 class Player : public FE::GameObject
 {
+	friend class PlayerStateNormal;
+	friend class PlayerStateRoll;
+
 public:
 	Player(FE::Engine* engine, FE::Camera* camera);
 
@@ -39,6 +43,8 @@ public:
 
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
 
+	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
+
 	std::unique_ptr<FE::AnimationModel> animationPlayer_;
 
 private:
@@ -53,11 +59,28 @@ private:
 	FE::Vector3 moveDirection_;
 	float moveSpeed_;
 
-	float rotationSpeed_ = 10.0f;
-
 	FE::Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
 
-	// HP/ダメージ関連の変数
+	std::unique_ptr<StateMachine<Player>> stateMachine_;
+
+	// 無敵フラグ（ローリング用）
+	bool isInvincible_ = false;
+
+	// 調整用パラメータ
+	float runSpeed_ = 0.2f;
+	float dashSpeed_ = 0.4f;
+	float rotationSpeed_ = 10.0f;
+
+	float maxStamina_ = 100.0f;
+	float stamina_ = 100.0f;
+	float staminaRecoveryRate_ = 30.0f;
+	float rollStaminaCost_ = 15.0f;
+	float dashStaminaCost_ = 20.0f;
+
+	float rollDuration_ = 0.4f;
+	float rollSpeed_ = 0.5f;
+
+	// HPなど
 	float maxHp_ = 100.0f;
 	float hp_ = 100.0f;
 

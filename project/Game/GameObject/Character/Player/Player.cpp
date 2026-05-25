@@ -9,6 +9,8 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "GameDefine.h"
+#include "PlayerStateNormal.h"
+#include "PlayerStateRoll.h"
 
 using namespace FE;
 
@@ -42,6 +44,23 @@ void Player::Initialize()
 	collider_->SetCollisionMask(kCollisionAttributeEnemy);
 
 	binder_->BindAnimationModel("PlayerModel", animationPlayer_.get());
+	binder_->Bind("RunSpeed", &runSpeed_, 0.01f);
+	binder_->Bind("DashSpeed", &dashSpeed_, 0.01f);
+	binder_->Bind("RotationSpeed", &rotationSpeed_, 0.1f);
+
+	binder_->Bind("MaxStamina", &maxStamina_, 1.0f);
+	binder_->Bind("Stamina", &stamina_, 1.0f); 
+	binder_->Bind("StaminaRecovery", &staminaRecoveryRate_, 0.5f);
+	binder_->Bind("RollCost", &rollStaminaCost_, 1.0f);
+	binder_->Bind("DashCost", &dashStaminaCost_, 1.0f);
+
+	binder_->Bind("RollDuration", &rollDuration_, 0.01f);
+	binder_->Bind("RollSpeed", &rollSpeed_, 0.01f);
+
+	binder_->Bind("HP", &hp_, 1.0f);
+
+	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
+	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 }
 
 // 更新処理
@@ -49,11 +68,8 @@ void Player::Update()
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	// 移動処理
-	Move();
-
-	// アニメーション更新
-	animationPlayer_->Update();
+	// 毎フレーム、現在のステートのUpdateが呼ばれる
+	stateMachine_->Update();
 	
 	{
 		// 0番目のディレクショナルライトを取得
@@ -92,6 +108,8 @@ void Player::Update()
 		}
 	}
 
+	// 最終的な行列更新
+	animationPlayer_->Update();
 	animationPlayer_->GetTransform() = GetTransform();
 	GetTransform().UpdateMatrix();
 }
@@ -201,6 +219,40 @@ void Player::DebugDraw()
 	ImGui::Begin("プレイヤー");
 
 	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
+
+	ImGui::Separator();
+
+	if (ImGui::CollapsingHeader("ステータス", ImGuiTreeNodeFlags_DefaultOpen)) 
+	{
+		ImGui::ProgressBar(hp_ / maxHp_, ImVec2(-1, 0), "HP");
+		ImGui::ProgressBar(stamina_ / maxStamina_, ImVec2(-1, 0), "Stamina");
+
+		binder_->Draw("HP", "現在のHP");
+		binder_->Draw("Stamina", "現在のスタミナ");
+	}
+
+	if (ImGui::CollapsingHeader("動き"))
+	{
+		binder_->Draw("RunSpeed", "走り速度");
+		binder_->Draw("DashSpeed", "ダッシュ速度");
+		binder_->Draw("RotationSpeed", "回転の速さ");
+	}
+
+	if (ImGui::CollapsingHeader("スタミナ"))
+	{
+		binder_->Draw("MaxStamina", "最大スタミナ");
+		binder_->Draw("StaminaRecovery", "回復速度/秒");
+		binder_->Draw("RollCost", "回避消費量");
+		binder_->Draw("DashCost", "ダッシュ消費量/秒");
+	}
+
+	if (ImGui::CollapsingHeader("回避")) 
+	{
+		binder_->Draw("RollDuration", "回避時間(秒)");
+		binder_->Draw("RollSpeed", "回避移動速度");
+	}
+
+	ImGui::Separator();
 
 	ImGui::End();
 

@@ -8,6 +8,7 @@
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
+#include "Boss.h"
 
 using namespace FE;
 
@@ -21,6 +22,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<Ground>(engine_);
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
+    objectManager_.Create<Boss>(engine_, player_);
 
     //player_->SetFollowCamera(followCamera_);
 }
@@ -37,7 +39,7 @@ void TestSceneHori::OnInitialize()
     //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
     //engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
-    // ★修正：ここでローカルの unique_ptr として生成・初期化する
+    // ★修正：ここでローカルの unique_ptr として生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
     openingRail->Initialize();
 
@@ -51,7 +53,7 @@ void TestSceneHori::OnInitialize()
 
 void TestSceneHori::OnUpdate()
 {
-    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+    if (Input::GetInstance().IsKeyTriggered(DIK_I))
     {
         // マネージャーに名前を伝える
         cameraManager_->PlayRail("Opening");

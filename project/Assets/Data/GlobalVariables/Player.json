@@ -1,5 +1,9 @@
 {
     "Player": {
+        "DashCost": 1.0,
+        "DashSpeed": 1.2999999523162842,
+        "HP": 9.819999694824219,
+        "MaxStamina": 9.0,
         "PlayerModel_IsLoop": true,
         "PlayerModel_Mat0_AddShadow": 1,
         "PlayerModel_Mat0_AlbedoMap": "white1x1",
@@ -1016,6 +1020,13 @@
             0.0,
             0.0,
             0.0
-        ]
+        ],
+        "RollCost": 0.5699999928474426,
+        "RollDuration": 0.009999999776482582,
+        "RollSpeed": 3.4700000286102295,
+        "RotationSpeed": 3.3399999141693115,
+        "RunSpeed": 0.23999999463558197,
+        "Stamina": 4.550000190734863,
+        "StaminaRecovery": 0.5
     }
 }

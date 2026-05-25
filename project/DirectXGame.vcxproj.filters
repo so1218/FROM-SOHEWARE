@@ -914,6 +914,12 @@
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateRoll.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Boss\Boss.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Boss\BossStateIdle.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Boss\BossStateApproach.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Boss\BossStateJumpAttack.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -926,6 +932,13 @@
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
+    <ClInclude Include="Engine\Framework\StateMachine.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateRoll.h" />
+    <ClInclude Include="Game\GameObject\Character\Boss\Boss.h" />
+    <ClInclude Include="Game\GameObject\Character\Boss\BossStateIdle.h" />
+    <ClInclude Include="Game\GameObject\Character\Boss\BossStateApproach.h" />
+    <ClInclude Include="Game\GameObject\Character\Boss\BossStateJumpAttack.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
