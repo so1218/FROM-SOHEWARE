@@ -30,35 +30,27 @@ float KarisAverage(float3 col)
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
+    float2 t = texelSize;
 
-    // 周辺4点と中心をサンプリング
-    float4 d =
-        texelSize.xyxy * float4(-1.0, -1.0, 1.0, 1.0);
+    // 13点のサンプリング
+    float3 a = tex.Sample(samLinear, uv + float2(-2 * t.x, 2 * t.y)).rgb;
+    float3 b = tex.Sample(samLinear, uv + float2(0, 2 * t.y)).rgb;
+    float3 c = tex.Sample(samLinear, uv + float2(2 * t.x, 2 * t.y)).rgb;
+    float3 d = tex.Sample(samLinear, uv + float2(-t.x, t.y)).rgb;
+    float3 e = tex.Sample(samLinear, uv + float2(t.x, t.y)).rgb;
+    float3 f = tex.Sample(samLinear, uv + float2(-2 * t.x, 0)).rgb;
+    float3 g = tex.Sample(samLinear, uv + float2(0, 0)).rgb;
+    float3 h = tex.Sample(samLinear, uv + float2(2 * t.x, 0)).rgb;
+    float3 i = tex.Sample(samLinear, uv + float2(-t.x, -t.y)).rgb;
+    float3 j = tex.Sample(samLinear, uv + float2(t.x, -t.y)).rgb;
+    float3 k = tex.Sample(samLinear, uv + float2(-2 * t.x, -2 * t.y)).rgb;
+    float3 l = tex.Sample(samLinear, uv + float2(0, -2 * t.y)).rgb;
+    float3 m = tex.Sample(samLinear, uv + float2(2 * t.x, -2 * t.y)).rgb;
 
-    float3 s1 = tex.Sample(samLinear, uv + d.xy).rgb;
-    float3 s2 = tex.Sample(samLinear, uv + d.zy).rgb;
-    float3 s3 = tex.Sample(samLinear, uv + d.xw).rgb;
-    float3 s4 = tex.Sample(samLinear, uv + d.zw).rgb;
-    float3 s5 = tex.Sample(samLinear, uv).rgb;
+    // 重み付け（中心付近を厚く）
+    float3 result = (a + c + k + m) * 0.03125 + (b + f + h + l) * 0.0625 + (d + e + i + j) * 0.125 + g * 0.125;
 
-    // 各サンプルの重みを計算
-    float w1 = KarisAverage(s1);
-    float w2 = KarisAverage(s2);
-    float w3 = KarisAverage(s3);
-    float w4 = KarisAverage(s4);
-    float w5 = KarisAverage(s5);
-
-    // 重み付きで合成
-    float3 result =
-        (s1 * w1) +
-        (s2 * w2) +
-        (s3 * w3) +
-        (s4 * w4) +
-        (s5 * w5);
-
-    // 正規化
-    float totalWeight = w1 + w2 + w3 + w4 + w5;
-    result /= max(totalWeight, 0.0001f);
-
-    return float4(result, 1.0f);
+    // KarisAverageを適用（Fireflies対策）
+    float w = 1.0f / (1.0f + RGBToLuminance(result));
+    return float4(result * w, 1.0f);
 }

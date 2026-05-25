@@ -33,8 +33,8 @@ void PostEffectManager::Initialize(
     brightPass_->Initialize(engine, width, height, psoManager);
 
     // 縮小サイズ
-    UINT smallW = Math::MyMax(1u, width / 4);
-    UINT smallH = Math::MyMax(1u, height / 4);
+    UINT smallW = Math::MyMax(1u, width / 2);
+    UINT smallH = Math::MyMax(1u, height / 2);
 
     // Bloom
     downsamplePass_ = std::make_unique<DownsamplePass>();

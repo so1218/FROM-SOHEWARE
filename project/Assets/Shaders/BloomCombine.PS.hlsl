@@ -140,10 +140,7 @@ float4 main(VSOutput input) : SV_TARGET
     }
 
    // Bloomの加算
-    uint width, height;
-    gBloomTexture.GetDimensions(width, height);
-    float2 bloomTexelSize = float2(1.0f / float(width), 1.0f / float(height));
-    float3 bloomColor = UpsampleTent(gBloomTexture, gSampler, input.uv, bloomTexelSize, 1.0f);
+    float3 bloomColor = gBloomTexture.Sample(gSampler, input.uv).rgb;
     
     // シーンの色を確定
     float3 result = combinedScene + (bloomColor * gCombineSettings.bloomIntensity);
@@ -151,7 +148,7 @@ float4 main(VSOutput input) : SV_TARGET
     // Volumetric Fog の適用 (物理合成)
     if (gCombineSettings.enableVolumetricFog != 0)
     {
-    // 背景（result）を透過率で暗くし、霧の光を加算する
+        // 背景（result）を透過率で暗くし、霧の光を加算する
         result = result * vFogTransmittance + vFogIllumination;
     }
 
@@ -199,9 +196,6 @@ float4 main(VSOutput input) : SV_TARGET
 
         float finalAnalyticalFactor = max(heightFogFactor, distFogFactor);
         
-        // 【プロの調整】
-        // Volumetric Fogがある場合は、遠方の背景を馴染ませる程度に弱めて重ねる
-        // もしくは、Volumetric FogのMaxDistance以降のみ適用するように linearDepth で制限をかける
         result = lerp(result, fogColor, finalAnalyticalFactor * 0.5f);
     }
 
