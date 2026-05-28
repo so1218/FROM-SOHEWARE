@@ -76,6 +76,11 @@ struct FrameData
     float lightningFlashIntensity;
     
     float4x4 lightViewProj;
+    
+    float4x4 prevViewProj;
+    
+    uint32_t frameIndex;
+    float3 paddingTemporal;
 };
 
 struct MaterialData

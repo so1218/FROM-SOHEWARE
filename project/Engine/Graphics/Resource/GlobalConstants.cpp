@@ -37,6 +37,9 @@ void GlobalConstants::Update(
     const DirectionalLight& mainLight
 )
 {
+    // 新しいVP行列を計算・上書きする前に、現在のVP行列を過去として退避
+    frameData_->prevViewProj = frameData_->viewProjectionMatrix;
+
     // VP行列の計算
     Matrix4x4 matViewProjection = viewMatrix * projectionMatrix;
     Matrix4x4 invVP = Matrix4x4::Inverse(matViewProjection);
@@ -78,6 +81,10 @@ void GlobalConstants::Update(
 
     frameData_->iResolution = Vector2(1, 1);
     frameData_->screenResolution = Vector2(static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()));
+
+    // フレームインデックスを進める
+    // 巨大な数字になりすぎないよう、1000でループ
+    frameData_->frameIndex = (frameData_->frameIndex + 1) % 1000;
 }
 
 }

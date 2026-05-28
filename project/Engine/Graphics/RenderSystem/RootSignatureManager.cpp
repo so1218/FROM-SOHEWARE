@@ -346,6 +346,62 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "VolumetricFogBilateralCS");
     }
+    if (name == "VolumetricFogInjectionCS")
+    {
+        // 定数バッファ (b0: Frame, b2: Fog, b3: PointLight, b4: SpotLight)
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL);
+
+        // SRV (t0: Depth, t1: Shadow, t2: 3DNoise)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
+
+        // UAV (u0: VoxelInject 3Dテクスチャ)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // サンプラー (s0: リニア, s1: シャドウ用比較)
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL);
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS /* 他のフラグも同様に */;
+        return builder.Build(device_, csFlags, "VolumetricFogInjectionCS");
+    }
+    if (name == "VolumetricFogAccumulationCS")
+    {
+        // 定数バッファ (b2: FogSettings のみ)
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+
+        // SRV (t0: Injectionパスの出力 3Dテクスチャ)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // UAV (u0: Accumulateパスの出力 3Dテクスチャ)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // サンプラーは不要 (Load関数で直接ピクセルを読むため)
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS /* 他のフラグも同様に */;
+        return builder.Build(device_, csFlags, "VolumetricFogAccumulationCS");
+    }
+    if (name == "VolumetricFogResolveCS")
+    {
+        // b0: GlobalConstants, b2: VolumetricFogSettings
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+
+        // ★修正：SRVは t0, t1, t2 の「3つ」必要
+        // t0: Depth, t1: VoxelAccumulate, t2: History(prev)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
+
+        // u0: 最終出力兼履歴(curr)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // s0: Linear Sampler
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
+    }
 
     // どれにも該当しない
     LOG_ERROR("Unknown RootSignature: {}", name);

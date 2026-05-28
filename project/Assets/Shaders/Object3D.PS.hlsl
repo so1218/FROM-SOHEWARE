@@ -807,10 +807,21 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
 {
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
-    // 法線ベースのバイアス
+    // ライトの方向と法線の内積（N dot L）を計算
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float biasScale = saturate(1.0f - dot(normal, lightDir));
+    float NdotL = dot(normal, lightDir);
 
+    // 影の最低値（最も暗い状態）
+    float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
+
+    // 光源から見て完全に裏側（NdotLが0以下）なら、影に
+    if (NdotL <= 0.0f)
+    {
+        return minShadow;
+    }
+
+    // 法線ベースのバイアス
+    float biasScale = saturate(1.0f - NdotL);
     float depthBias = gMaterial.shadowBias;
     float normalBias = 0.002f * biasScale;
 
@@ -823,7 +834,7 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
 
     float currentDepth = projCoords.z - depthBias;
 
-    // 範囲外
+    // 範囲外のクリッピング処理
     if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
         projCoords.x < 0.0f || projCoords.x > 1.0f ||
         projCoords.y < 0.0f || projCoords.y > 1.0f)
@@ -849,8 +860,6 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
 
     // 平均化
     float shadowVisibility = shadow * (1.0f / 16.0f);
-    
-    float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
     
     // minShadow ～ 1.0 の範囲に変換して返す
     return lerp(minShadow, 1.0f, shadowVisibility);

@@ -56,23 +56,13 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     // --- 2. リソースバリア (CS用の状態遷移) ---
     PreCompute(cmdList); // 自らの出力をUAVへ
 
-    D3D12_RESOURCE_BARRIER readBarriers[2] = {};
+    // Depth は前のパスの最後で PIXEL_SHADER_RESOURCE に戻されているはずなので遷移が必要
+    D3D12_RESOURCE_BARRIER depthBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        engine_->GetOffscreenDepthResource(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
-    // 1. Depth (PIXEL_SHADER -> NON_PIXEL_SHADER)
-    readBarriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    readBarriers[0].Transition.pResource = engine_->GetOffscreenDepthResource();
-    readBarriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    readBarriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-    // 2. RawFog (PIXEL_SHADER -> NON_PIXEL_SHADER)
-    readBarriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    readBarriers[1].Transition.pResource = rawFogResource_;
-    readBarriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    readBarriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-    cmdList->ResourceBarrier(2, readBarriers);
+    cmdList->ResourceBarrier(1, &depthBarrier);
 
     // --- 3. Compute Pipeline 設定 ---
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogBilateralCS"));
@@ -103,16 +93,11 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     UINT dispatchY = (static_cast<UINT>(viewport_.Height) + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
-    // --- 6. 状態を元に戻す ---
-    readBarriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    depthBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+    depthBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+    cmdList->ResourceBarrier(1, &depthBarrier);
 
-    readBarriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-
-    cmdList->ResourceBarrier(2, readBarriers);
-
-    PostCompute(cmdList); // 自らの出力をSRVへ
+    PostCompute(cmdList);
 }
 
 }
