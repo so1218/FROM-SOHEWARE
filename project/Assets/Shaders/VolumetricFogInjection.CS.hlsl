@@ -64,11 +64,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float viewZ1 = nearZ * pow(farZ / nearZ, zSlice1);
     float voxelThickness = viewZ1 - viewZ0;
 
-    float clipX = (float(DTid.x) + 0.5f) / float(width) * 2.0f - 1.0f;
-    float clipY = (1.0f - (float(DTid.y) + 0.5f) / float(height)) * 2.0f - 1.0f;
+    float screenU = (float(DTid.x) + 0.5f) / float(width);
+    float screenV = (float(DTid.y) + 0.5f) / float(height);
+    float clipX = screenU * 2.0f - 1.0f;
+    float clipY = (1.0f - screenV) * 2.0f - 1.0f;
+    
     float4 worldTarget = mul(float4(clipX, clipY, 1.0f, 1.0f), gFrameData.invViewProj);
     float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
     
+    // =========================================================
+    // 【追加】シーンの深度（Depth）を取得し、カメラからの距離を計算
+    // =========================================================
+    float hwDepth = gDepthTexture.SampleLevel(gSampler, float2(screenU, screenV), 0).r;
+    float4 sceneWorld = mul(float4(clipX, clipY, hwDepth, 1.0f), gFrameData.invViewProj);
+    sceneWorld.xyz /= sceneWorld.w;
+    float sceneDist = length(sceneWorld.xyz - gFrameData.cameraWorldPosition);
+
+    // ボクセルの手前側が既にオブジェクトの裏側（地中や壁の裏）にある場合、
+    // まるごと計算をスキップして処理を軽くする＆リークを防ぐ
+    if (viewZ0 > sceneDist)
+    {
+        gVoxelInject[DTid.xyz] = float4(0, 0, 0, 0);
+        return;
+    }
+    // =========================================================
+
     float noiseJitter = InterleavedGradientNoise(float2(DTid.xy), gFrameData.frameIndex);
     
     float3 accumScattering = 0;
@@ -80,19 +100,27 @@ void main(uint3 DTid : SV_DispatchThreadID)
     {
         float t = (float(i) + noiseJitter) / float(NUM_SAMPLES);
         float sampleViewZ = viewZ0 + voxelThickness * t;
+
+        // 【追加】サンプリング点がオブジェクトの裏側に食い込んだら計算を無視する
+        if (sampleViewZ > sceneDist)
+        {
+            continue;
+        }
+
         float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * sampleViewZ);
 
         // --- シャドウ ---
         float4 shadowCoord = mul(float4(currentPos, 1.0f), gFrameData.lightViewProj);
         shadowCoord.xyz /= shadowCoord.w;
         float2 shadowUV = shadowCoord.xy * float2(0.5f, -0.5f) + 0.5f;
-        float shadowVisibility = 1.0f;
+        float shadowVisibility = 1.0f; // 範囲外はデフォルトで影
         if (all(shadowUV >= 0.0f) && all(shadowUV <= 1.0f) && shadowCoord.z >= 0.0f && shadowCoord.z <= 1.0f)
         {
-            shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.001f);
+            // バイアスを極小に調整（リーク対策）
+            shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
         }
 
-        // --- 流体フェイク（変更なし） ---
+        // --- 流体フェイク ---
         float objRadius = max(gFogSettings.objectRadius, 0.001f);
         float3 vecToPos = currentPos - gFogSettings.objectPos;
         float distToObj = length(vecToPos);
@@ -112,7 +140,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 noiseSamplePos = currentPos + pushWarp + swirlWarp - wakeWarp;
         float coreMask = lerp(0.8f, 1.0f, smoothstep(objRadius * 0.4f, objRadius * 0.9f, distToObj));
 
-        // --- ノイズサンプリング（変更なし） ---
+        // --- ノイズサンプリング ---
         float3 timeOffset = float3(1.0f, 0.5f, 0.8f) * (gFrameData.gTime * gFogSettings.windSpeed);
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
         float3 distortion = float3(
@@ -128,19 +156,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float combinedNoise = saturate(noise1 - (1.0f - noise2) * 0.3f);
         float noiseVal = smoothstep(gFogSettings.noiseThreshold, gFogSettings.noiseThreshold + 0.15f, combinedNoise);
 
-        // =========================================================
-        // 【修正版】純粋な物理計算モデル
-        // =========================================================
-        
-        // 1. 密度の計算（霧の量）
+        // 1. 密度の計算
         float heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
         float particleDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor * noiseVal * coreMask);
 
-        // 2. 光学プロパティ（密度が0の場所では光の散乱も遮蔽も発生しないように修正）
+        // 2. 光学プロパティ
         float3 sigma_s = gFogSettings.scatteringColor * particleDensity * gFogSettings.scatteringIntensity;
         float sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
 
-        // 3. 空間に降り注ぐ光（Incident Light）の計算
+        // 3. 空間に降り注ぐ光
         float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
         float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
 
@@ -148,7 +172,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 incidentLight = shadowVisibility * phase * gFrameData.mainLightColor.rgb;
         incidentLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, shadowVisibility);
 
-        // ローカルライトの加算
+        // ローカルライト
         float3 stepLocal = 0;
         for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
         {
@@ -192,7 +216,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             stepLocal += gSpotLights[s].color.rgb * gSpotLights[s].intensity * angleFalloff * distFalloff * phaseLocal;
         }
 
-        // 光 × 散乱係数（ここで初めて色が乗る）
+        // 光 × 散乱係数
         float3 stepScattering = (incidentLight + stepLocal) * sigma_s;
 
         accumScattering += stepScattering;
@@ -203,7 +227,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 avgScattering = accumScattering / float(NUM_SAMPLES);
     float avgExtinction = accumExtinction / float(NUM_SAMPLES);
 
-    // ボクセル内の減衰を正確に計算する積分式
+    // ボクセル内の減衰
     float extinctionToPass = avgExtinction * voxelThickness;
     float3 finalScattering = avgScattering * ((1.0f - exp(-extinctionToPass)) / max(avgExtinction, 0.00001f));
 
