@@ -665,7 +665,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     if (ImGui::TreeNode("ボリュメトリックフォグ"))
     {
         bool volFogFlag = (combineSettingsData->enableVolumetricFog != 0);
-        if (ImGui::Checkbox("ボリュメトリックフォグを有効にする", &volFogFlag))
+        if (ImGui::Checkbox("有効にする", &volFogFlag))
         {
             combineSettingsData->enableVolumetricFog = volFogFlag ? 1 : 0;
         }
@@ -674,57 +674,52 @@ void DebugGuiManager::DrawPostEffectSettings()
         {
             ImGui::Indent();
 
-            ImGui::Separator();
-            ImGui::TextDisabled("基本パラメータ");
-            ImGui::DragFloat("濃度 (雲)", &volFogSettings->density, 0.001f, 0.0f, 1.0f, "%.4f");
-            ImGui::DragFloat("散乱 (光源方向の眩しさ)", &volFogSettings->scatteringG, 0.01f, -0.99f, 0.99f, "%.2f");
-            ImGui::DragFloat("距離", &volFogSettings->maxDistance, 1.0f, 10.0f, 2000.0f, "%.1f m");
-            ImGui::DragInt("分割数", &volFogSettings->steps, 1.0f, 8, 128);
-            ImGui::DragFloat("全体強度", &volFogSettings->intensity, 0.05f, 0.0f, 10.0f, "%.2f");
-            ImGui::ColorEdit3("霧の色", &volFogSettings->fogColor.x);
-            ImGui::DragFloat("環境光の影響度", &volFogSettings->ambientFactor, 0.001f, 0.0f, 1.0f, "%.3f");
-
-            // ゴッドレイ設定
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::TextDisabled("光の筋 (ゴッドレイ)");
-            ImGui::DragFloat("ベース空気密度 (筋の濃さ)", &volFogSettings->baseAirDensity, 0.001f, 0.0f, 1.0f, "%.3f");
-            ImGui::DragFloat("ベース散乱 (横から見たときの強さ)", &volFogSettings->phaseBase, 0.001f, 0.0f, 1.0f, "%.3f");
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::TextDisabled("高品質化 (高さ・ノイズ)");
-
-            // 高さ減衰
-            ImGui::DragFloat("基準の高さ", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
-            ImGui::DragFloat("高さ減衰", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
-
-            // ノイズ設定
-            ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
-            ImGui::DragFloat("風速 (チリの流れる速度)", &volFogSettings->windSpeed, 0.01f, -10.0f, 10.0f, "%.2f");
-            ImGui::DragFloat("ノイズ閾値", &volFogSettings->noiseThreshold, 0.01f, 0.0f, 1.0f, "%.2f");
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::TextDisabled("オブジェクト干渉 (押し退け・ウェイク)");
-
-            // （テスト用）
-            ImGui::DragFloat3("オブジェクト座標", &volFogSettings->objectPos.x, 0.1f);
-            ImGui::DragFloat3("オブジェクト速度", &volFogSettings->objectVelocity.x, 0.01f);
-
-            ImGui::DragFloat("干渉半径 (押し退け)", &volFogSettings->objectRadius, 0.1f, 0.0f, 20.0f, "%.1f m");
-            ImGui::DragFloat("ウェイク強度 (引きずり)", &volFogSettings->interactionPower, 0.1f, 0.0f, 50.0f, "%.1f");
-
-            // バイラテラルフィルターの設定
-            if (fogBilateralSettings)
+            if (ImGui::CollapsingHeader("PBR 光学特性 (Lighting & Optical)", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::TextDisabled("ノイズ除去 (バイラテラルフィルター)");
+                ImGui::ColorEdit3("散乱色 (GodRay Color)", &volFogSettings->scatteringColor.x);
+                ImGui::DragFloat("散乱の強さ (Scattering Intensity)", &volFogSettings->scatteringIntensity, 0.5f, 0.0f, 200.0f, "%.1f");
+                ImGui::DragFloat("光の減衰スケール (Extinction)", &volFogSettings->extinctionScale, 0.01f, 0.0f, 10.0f, "%.2f");
+                ImGui::SliderFloat("前方散乱・光の筋 (Anisotropy)", &volFogSettings->anisotropy, -0.99f, 0.99f, "%.2f");
 
-                ImGui::DragInt("ぼかし半径 (大きくしすぎると重くなる)", &fogBilateralSettings->blurRadius, 0.1f, 1, 5);
-                ImGui::DragFloat("空間ウェイト (値が大きいほど遠くまでぼける)", &fogBilateralSettings->spatialSigma, 0.1f, 0.1f, 10.0f, "%.2f");
-                ImGui::DragFloat("深度ウェイト (Depth Sigma)", &fogBilateralSettings->depthSigma, 0.0001f, 0.00001f, 0.1f, "%.5f");
+                ImGui::Separator();
+                ImGui::ColorEdit3("環境光 (Ambient Light)", &volFogSettings->ambientLight.x);
+            }
+
+            if (ImGui::CollapsingHeader("密度と形状 (Density & Shape)", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::DragFloat("空間全体のベース密度", &volFogSettings->globalDensity, 0.001f, 0.0f, 1.0f, "%.3f");
+                ImGui::DragFloat("高さフォグ(雲)の最大密度", &volFogSettings->heightDensity, 0.01f, 0.0f, 5.0f, "%.2f");
+                ImGui::DragFloat("基準高さ (Y)", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
+                ImGui::DragFloat("高さ減衰率", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
+            }
+
+            if (ImGui::CollapsingHeader("ノイズ設定 (Noise)"))
+            {
+                ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
+                ImGui::SliderFloat("ノイズ閾値", &volFogSettings->noiseThreshold, 0.0f, 1.0f, "%.2f");
+                ImGui::SliderFloat("ノイズ歪み", &volFogSettings->noiseDistortion, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -5.0f, 5.0f, "%.2f");
+            }
+
+            if (ImGui::CollapsingHeader("オブジェクト干渉 (Interaction)"))
+            {
+                ImGui::DragFloat("干渉半径", &volFogSettings->objectRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
+                ImGui::DragFloat("引きずり強度", &volFogSettings->interactionPower, 0.1f, 0.0f, 50.0f, "%.1f");
+                ImGui::InputFloat3("Debug: ObjPos", &volFogSettings->objectPos.x);
+            }
+
+            if (ImGui::CollapsingHeader("システム・TAA (System)"))
+            {
+                ImGui::DragFloat("最大描画距離", &volFogSettings->maxDistance, 1.0f, 10.0f, 5000.0f, "%.0f m");
+                ImGui::SliderFloat("TAA蓄積ウェイト", &volFogSettings->temporalWeight, 0.01f, 0.5f, "%.3f");
+                ImGui::Text("ボクセル解像度 (Z): %.0f", volFogSettings->depthSliceCount);
+            }
+
+            if (fogBilateralSettings && ImGui::CollapsingHeader("ノイズ除去 (Denoise)"))
+            {
+                ImGui::DragInt("半径", &fogBilateralSettings->blurRadius, 1, 1, 5);
+                ImGui::DragFloat("Spatial Sigma", &fogBilateralSettings->spatialSigma, 0.1f, 0.1f, 10.0f);
+                ImGui::DragFloat("Depth Sigma", &fogBilateralSettings->depthSigma, 0.0001f, 0.00001f, 0.1f, "%.5f");
             }
 
             ImGui::Unindent();

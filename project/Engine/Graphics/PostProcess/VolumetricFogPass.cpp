@@ -16,29 +16,35 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(VolumetricFogSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
-    // デフォルトパラメータ設定 (好みに合わせて調整)
-    cbData_->density = 0.05f;
-    cbData_->scatteringG = 0.7f;   // 0より大きいと光源方向に強く散乱する(Mie散乱)
-    cbData_->maxDistance = 150.0f; // 描画限界距離
-    cbData_->steps = 32;           // 多いほど綺麗だが重い
-    cbData_->intensity = 1.5f;
+    // --- PBRベースの光学特性 ---
+    cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f }; // 散乱色（1.0以上にして明るさを稼ぐことも可能）
+    cbData_->scatteringIntensity = 150.0f;                 // 空間全体のうっすらとした散乱（ゴッドレイのベース）
+    cbData_->extinctionScale = 0.2f;                 // 減衰スケール（標準は1.0。光の遮りやすさ）
+    cbData_->anisotropy = 0.7f;                      // 位相関数G値（0.7前後で太陽方向に綺麗な筋が出る）
 
-    cbData_->baseHeight = 0.0f;       // 地面(Y=0)を基準に
-    cbData_->heightFalloff = 0.05f;   // 緩やかに上空で薄くする
-    cbData_->noiseScale = 0.1f;       // ノイズのスケール
-    cbData_->noiseThreshold = 0.0f;
-    cbData_->fogColor = { 1.0f, 1.0f, 1.0f };
+    // --- 密度と高さ ---
+    cbData_->globalDensity = 0.005f;                  // 全体的な空間の基本密度
+    cbData_->heightDensity = 0.0f;                   // 高さフォグ（雲）の最大密度
+    cbData_->baseHeight = 0.0f;                      // 基準の高さ
+    cbData_->heightFalloff = 0.1f;                   // 高さによる減衰率
 
-    cbData_->windSpeed = 0.2f;      
-    cbData_->ambientFactor = 0.02f;   
-    cbData_->baseAirDensity = 0.05f;  
+    // --- 環境光とシステム ---
+    cbData_->ambientLight = { 0.0f, 0.0f, 0.0f }; // 日陰やフォグ全体に乗る環境光（少し青みを入れると自然）
+    cbData_->temporalWeight = 0.05f;                 // TAAの蓄積率
+    cbData_->maxDistance = 150.0f;                   // 描画限界
+    cbData_->depthSliceCount = 64.0f;                // Z解像度
 
-    cbData_->phaseBase = 0.15f;
+    // --- ノイズ制御 ---
+    cbData_->noiseScale = 0.08f;
+    cbData_->noiseThreshold = 0.35f;                 // 0.3~0.5あたりが雲らしくなる
+    cbData_->noiseDistortion = 0.15f;                // ノイズの歪み
+    cbData_->windSpeed = 0.2f;
 
+    // --- インタラクション (Object) ---
     cbData_->objectPos = { 0.0f, 0.0f, 0.0f };
-    cbData_->objectRadius = 2.0f;            
+    cbData_->objectRadius = 2.0f;
     cbData_->objectVelocity = { 0.0f, 0.0f, 0.0f };
-    cbData_->interactionPower = 10.0f;
+    cbData_->interactionPower = 5.0f;
 
     // ★パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};

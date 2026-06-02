@@ -9,8 +9,7 @@ RWTexture2D<float4> gOutput : register(u0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
-// ディザリング用の高速な疑似乱数ノイズ（Interleaved Gradient Noise）
-// ディザリング用の高速な疑似乱数ノイズ（Interleaved Gradient Noise）
+// ディザリング用の高速な疑似乱数ノイズ
 float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
     pixelCoord += float2(frameIndex * 5.588238f, frameIndex * 5.588238f);
@@ -56,7 +55,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 2. ジッタ付きサンプリング (バンディング対策)
     // ------------------------------------------------------------------------
     float dither = InterleavedGradientNoise(DTid.xy, gFrameData.frameIndex);
-    float sliceRes = 64.0f; // ※将来的に定数バッファからの取得を推奨
+    float sliceRes = gFogSettings.depthSliceCount;
     float linearStep = log2(clampedDistance / nearZ) / log2(farZ / nearZ);
     float zSlice = saturate(linearStep + (dither - 0.5f) * (1.0f / sliceRes));
     
@@ -111,7 +110,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 5. 履歴の棄却判定とウェイト計算
     // ------------------------------------------------------------------------
     bool isOffscreen = any(prevUV < 0.0f) || any(prevUV > 1.0f);
-    float blendAlpha = isOffscreen ? 1.0f : 0.05f;
+    float blendAlpha = isOffscreen ? 1.0f : gFogSettings.temporalWeight;
 
     // ------------------------------------------------------------------------
     // 6. 最終合成 (Karis Average: Fireflies/チリチリ対策)

@@ -38,7 +38,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float stepTransmittance = exp(-extinction);
 
         // 【修正】二重積分をやめ、単に透過率を掛けて足すだけにする
-        float3 stepScattering = S * gFogSettings.intensity;
+        float3 stepScattering = S;
         
         volumetricIllumination += stepScattering * transmittance;
         transmittance *= stepTransmittance;

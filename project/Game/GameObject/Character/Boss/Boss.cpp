@@ -54,7 +54,7 @@ void Boss::Update()
 // --- 描画処理 ---
 void Boss::Draw()
 {
-    animation_->Draw();
+    /*animation_->Draw();*/
 }
 
 // --- デバッグ描画 ---

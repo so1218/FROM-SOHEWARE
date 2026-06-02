@@ -60,54 +60,79 @@ float PerlinNoise3D_Seamless(float3 p, float period)
 // =======================================================
 // 3. フラクタル・ノイズ (fBm) の生成 (0.0 ～ 1.0)
 // =======================================================
+// --- 3. 改良されたフラクタル・ノイズ (fBm) ---
 float CalculateComplexPerlinNoise(float3 uvw)
 {
     float noise = 0.0f;
-    float amplitude = 0.5f; // 影響力（最初は50%）
-    float frequency = 4.0f; // テクスチャ全体の繰り返し回数（初期4回）
-    float maxAmplitude = 0.0f; // 正規化用
-    
-    const int OCTAVES = 4; // ノイズを重ねる回数（4回で十分綺麗です）
+    float amplitude = 0.5f;
+    float frequency = 4.0f;
+    float maxAmplitude = 0.0f;
 
+    // ★改善1: オフセット用のテーブル（適当な大きな素数に近い値）
+    float3 offsets[4] =
+    {
+        float3(0.0f, 0.0f, 0.0f),
+        float3(135.31f, 250.74f, 180.11f),
+        float3(311.13f, 15.25f, 95.82f),
+        float3(67.91f, 340.21f, 210.56f)
+    };
+
+    // ★改善2: ドメイン・ワーピング (座標をノイズで歪ませる)
+    // これを入れるだけで「雲」や「煙」の質感が劇的に向上します
+    float3 warp = float3(
+        PerlinNoise3D_Seamless(uvw * 2.0f, 2.0f),
+        PerlinNoise3D_Seamless(uvw * 2.0f + 15.3f, 2.0f),
+        PerlinNoise3D_Seamless(uvw * 2.0f + 31.1f, 2.0f)
+    );
+    // 歪み具合を調整 (0.1f ～ 0.2f 程度が自然)
+    uvw += warp * 0.15f;
+
+    const int OCTAVES = 4;
     for (int i = 0; i < OCTAVES; i++)
     {
-        // PerlinNoiseは -1～1 で返ってくるので、0～1 に直して加算
-        float perlin = PerlinNoise3D_Seamless(uvw * frequency, frequency);
-        noise += (perlin * 0.5f + 0.5f) * amplitude;
+        // ★改善3: 軸の入れ替えとオフセットの適用
+        // 周期(frequency)でシームレス性を保ちつつ、座標をバラバラにする
+        float3 p = uvw * frequency + offsets[i];
         
+        // オクターブごとに軸を回転させてパターンの重なりを壊す
+        if (i == 1)
+            p = p.yzx;
+        if (i == 2)
+            p = p.zxy;
+        if (i == 3)
+            p = p.yxz;
+
+        float perlin = PerlinNoise3D_Seamless(p, frequency);
+        
+        // 振幅の加算
+        noise += (perlin * 0.5f + 0.5f) * amplitude;
         maxAmplitude += amplitude;
         
-        // 次のループに向けて、影響力を半分にし、細かさを倍にする
         amplitude *= 0.5f;
         frequency *= 2.0f;
     }
     
-    // 全体を 0.0 ～ 1.0 に収めて返す
     return noise / maxAmplitude;
 }
 
-// =======================================================
-// エントリーポイント
-// =======================================================
-[numthreads(8, 8, 8)] // ★3DなのでZ方向も8スレッド
+// --- エントリーポイント ---
+[numthreads(8, 8, 8)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    // テクスチャのサイズを取得（例: 64x64x64）
     uint width, height, depth;
     gOutputNoise.GetDimensions(width, height, depth);
-    
     if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
         return;
 
-    // 現在のピクセル位置を 0.0 ～ 1.0 のUV座標(UVW)に変換
     float3 uvw = float3(DTid) / float3(width, height, depth);
 
-    // 複雑なノイズを計算
+    // ノイズ計算
     float noiseValue = CalculateComplexPerlinNoise(uvw);
     
-    // 少しコントラストをつけてメリハリを出す（お好みで調整可）
-    noiseValue = smoothstep(0.2f, 0.8f, noiseValue);
+    // ★改善4: メリハリの付け方（Bias & Gain）
+    // 単なるsmoothstepより、べき乗(pow)を組み合わせると「濃い部分」が強調されます
+    noiseValue = pow(noiseValue, 1.2f); // 少し暗い部分を増やす
+    noiseValue = smoothstep(0.15f, 0.85f, noiseValue);
 
-    // 3Dテクスチャに書き込み
     gOutputNoise[DTid] = noiseValue;
 }

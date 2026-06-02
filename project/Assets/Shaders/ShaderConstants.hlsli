@@ -367,28 +367,37 @@ struct InstanceOffset
 
 struct VolumetricFogSettings
 {
-    float density; // モクモクの雲の密度
-    float maxDistance; // 描画限界距離
-    float scatteringG; // 太陽方向の眩しさ（前方散乱）
-    int steps; // レイマーチングの分割数
-
-    float intensity; // 最終的な明るさの倍率
-    float baseHeight; // 霧の基準の高さ
-    float heightFalloff; // 高さによる減衰率
-    float noiseScale; // ノイズの大きさ
-
-    float windSpeed; // 風の速さ（ノイズの移動速度）
-    float noiseThreshold; // ノイズの閾値
-    float ambientFactor; // 環境光の強さ（影の明るさ）
-    float baseAirDensity; // 空間全体の均一なチリの量（ゴッドレイの濃さ）
-
-    float3 fogColor; // 霧の色
-    float phaseBase; // 横から見たときの光の筋の強さ（全方位散乱）
+    float3 scatteringColor;
+    float scatteringIntensity;
     
-    float3 objectPos; // オブジェクトの現在のワールド座標
-    float objectRadius; // 霧を押し退ける半径
-    float3 objectVelocity; // オブジェクトの移動ベクトル（現在の位置 - 前フレームの位置）
-    float interactionPower; // 霧を引っ張る強さ
+    float extinctionScale;
+    float anisotropy;
+    float globalDensity;
+    float heightDensity;
+    
+    float baseHeight;
+    float heightFalloff;
+    float pad1; 
+    float pad2; 
+    
+    float3 ambientLight;
+    float temporalWeight;
+    
+    float maxDistance;
+    float depthSliceCount;
+    float noiseScale;
+    float noiseThreshold;
+    
+    float noiseDistortion;
+    float windSpeed;
+    float pad3; 
+    float pad4; 
+    
+    float3 objectPos;
+    float objectRadius;
+    
+    float3 objectVelocity;
+    float interactionPower;
 };
 
 struct FogEffector
