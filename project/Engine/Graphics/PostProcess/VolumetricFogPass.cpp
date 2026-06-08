@@ -16,6 +16,18 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(VolumetricFogSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
+    // ====================================================================
+    // 【追加】配置式フォグ用CB作成
+    // ====================================================================
+    volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogVolumeBuffer));
+    volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
+    // 【ベストプラクティス】
+    // まず構造体全体のメモリをゼロクリアしてゴミデータを消す
+    memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
+
+    // その上で count を 0 に明示（memsetで既に0になっていますが、意図を示すため）
+    volumeCbData_->volumeCount = 0;
+
     // --- PBRベースの光学特性 ---
     cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f }; // 散乱色（1.0以上にして明るさを稼ぐことも可能）
     cbData_->scatteringIntensity = 150.0f;                 // 空間全体のうっすらとした散乱（ゴッドレイのベース）
@@ -209,6 +221,42 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = passHeap_->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE destGPU = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
+    // ========================================================
+      // 【修正】GPUへ送るための配列変換（毎フレームローカルで作るのが安全）
+      // ========================================================
+    std::vector<FogVolume> gpuVolumes; // ローカル変数にするか、メンバ変数の場合はここで clear() する
+
+    for (const auto& volData : editorVolumes_) // editorVolumes_ を回す
+    {
+        FogVolume gpuData = {};
+
+        // 1. スケール、回転、平行移動から Local To World 行列を作成
+        Matrix4x4 scaleMat = Matrix4x4::MakeScale(volData.type == 0 ? Vector3{ volData.scale.x, volData.scale.x, volData.scale.x } : volData.scale);
+        Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({ Math::ToRadians(volData.rotation.x), Math::ToRadians(volData.rotation.y), Math::ToRadians(volData.rotation.z) });
+        Matrix4x4 transMat = Matrix4x4::MakeTranslate(volData.position);
+
+        Matrix4x4 localToWorld = scaleMat * rotMat * transMat;
+
+        // 2. その逆行列 (World To Local) を作ってGPU構造体に入れる
+        Matrix4x4 worldToLocal = Matrix4x4::Inverse(localToWorld);
+
+        gpuData.worldToLocal = worldToLocal; // ←★代入を忘れないように注意
+        gpuData.type = volData.type;
+        gpuData.color = { volData.color.x, volData.color.y, volData.color.z };
+        gpuData.density = volData.density;
+        gpuData.noiseScale = volData.noiseScale;
+        gpuData.noiseIntensity = volData.noiseIntensity;
+        gpuData.windDirection = volData.windDirection;
+        gpuData.windSpeed = volData.windSpeed;
+        gpuData.noiseThreshold = volData.noiseThreshold;
+        gpuData.anisotropy = volData.anisotropy;
+        gpuData.blendDistance = volData.blendDistance;
+
+        gpuVolumes.push_back(gpuData);
+    }
+
+    // 自身の関数を呼んでCBにデータをコピー
+    SetFogVolumes(gpuVolumes);
 
     // ========================================================
     // [1] Injection パス (3D空間に光と密度を計算)
@@ -233,9 +281,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
         cmdList->SetComputeRootConstantBufferView(2, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); // b3
         cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); // b4
+        cmdList->SetComputeRootConstantBufferView(4, volumeConstantBuffer_->GetGPUVirtualAddress()); // b5
 
-        cmdList->SetComputeRootDescriptorTable(4, destGPU); // t0, t1, t2 のテーブル
-        cmdList->SetComputeRootDescriptorTable(5, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize)); // u0
+        cmdList->SetComputeRootDescriptorTable(5, destGPU); // t0, t1, t2 のテーブル
+        cmdList->SetComputeRootDescriptorTable(6, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize)); // u0
 
         // --- Dispatch ---
         UINT injectX = (froxelW + 7) / 8;

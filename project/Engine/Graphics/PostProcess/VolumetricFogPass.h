@@ -19,6 +19,45 @@ public:
     // ノイズデータを受け取って保持する関数
     void SetNoiseData(const GeneratedTextureData& data) { noise3DData_ = data; }
 
+    // 【追加】外部からボリュームのリストを受け取る関数
+    void SetFogVolumes(const std::vector<FogVolume>& volumes)
+    {
+        if (!volumeCbData_) return;
+
+        volumeCbData_->volumeCount = Math::MyMin(static_cast<uint32_t>(volumes.size()), static_cast<uint32_t>(MAX_FOG_VOLUMES));
+        for (uint32_t i = 0; i < volumeCbData_->volumeCount; ++i) 
+        {
+            volumeCbData_->volumes[i] = volumes[i];
+        }
+    }
+
+    // エディタ（C++）で管理するための構造体
+    struct FogVolumeData
+    {
+        int type = 0; // 0: Sphere, 1: Box
+        Vector3 position = { 0.0f, 0.0f, 0.0f };
+        Vector3 rotation = { 0.0f, 0.0f, 0.0f };
+        Vector3 scale = { 10.0f, 10.0f, 10.0f };
+
+        Vector3 color = { 1.0f, 1.0f, 1.0f };
+        float density = 1.0f;
+
+        Vector3 noiseScale = { 0.1f, 0.1f, 0.1f };
+        float noiseIntensity = 0.5f;
+
+        // ★追加パラメータ
+        Vector3 windDirection = { 1.0f, 0.0f, 0.0f }; // 風の向き
+        float windSpeed = 0.2f;                       // 流れる速度
+        float noiseThreshold = 0.2f;                  // モクモク感
+        float anisotropy = 0.7f;                      // 光の筋
+
+        float blendDistance = 0.2f; // ★単位をメートルから「割合(0.0~1.0)」に変更
+
+        bool isVisible = true;
+    };
+
+    std::vector<FogVolumeData>& GetFogVolumesData() { return editorVolumes_; }
+
 private:
     // --- Froxel用の中間リソース ---
     // 1. 各セルの光と密度 (Injection用)
@@ -52,6 +91,14 @@ private:
     uint32_t historyUavIndices_[2];
 
     uint32_t frameCounter_ = 0; // フレーム入れ替え用
+
+    // 【追加】配置式フォグ用のリソースとポインタ
+    Microsoft::WRL::ComPtr<ID3D12Resource> volumeConstantBuffer_;
+    FogVolumeBuffer* volumeCbData_ = nullptr;
+
+    // 【追加】エディタで編集する用の生データ配列
+    std::vector<FogVolumeData> editorVolumes_;
+
 };
 
 }

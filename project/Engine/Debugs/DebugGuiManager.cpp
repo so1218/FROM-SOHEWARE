@@ -9,6 +9,7 @@
 #include "PostEffectManager.h"
 #include "DebugCamera.h"
 #include "SRVManager.h"
+#include "DebugDraw.h"
 
 namespace FE
 {
@@ -282,6 +283,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
     SSRSettings* ssrSettings = postEffectManager_->GetSSRSettings();
+    std::vector<VolumetricFogPass::FogVolumeData>& volumes = postEffectManager_->GetVolumetricFogPass()->GetFogVolumesData();
 
     // カラー・色調系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
@@ -720,6 +722,75 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragInt("半径", &fogBilateralSettings->blurRadius, 1, 1, 5);
                 ImGui::DragFloat("Spatial Sigma", &fogBilateralSettings->spatialSigma, 0.1f, 0.1f, 10.0f);
                 ImGui::DragFloat("Depth Sigma", &fogBilateralSettings->depthSigma, 0.0001f, 0.00001f, 0.1f, "%.5f");
+            }
+
+            if (ImGui::CollapsingHeader("配置式フォグ (Fog Volumes)"))
+            {
+                if (ImGui::Button("ボリュームを追加")) {
+                    if (volumes.size() < MAX_FOG_VOLUMES) volumes.push_back(VolumetricFogPass::FogVolumeData());
+                }
+
+                for (int i = 0; i < volumes.size(); ++i)
+                {
+                    auto& vol = volumes[i];
+                    ImGui::PushID(static_cast<int>(i));
+
+                    if (ImGui::TreeNode(("Volume " + std::to_string(i)).c_str()))
+                    {
+                        // --- ImGuiのパラメータ編集部分に追加・修正 ---
+                        ImGui::Checkbox("デバッグ描画", &vol.isVisible);
+                        ImGui::Combo("タイプ", &vol.type, "Sphere\0Box\0");
+
+                        ImGui::DragFloat3("位置 (Position)", &vol.position.x, 0.1f);
+                        ImGui::DragFloat3("回転 (Rotation)", &vol.rotation.x, 1.0f);
+                        if (vol.type == 0) {
+                            ImGui::DragFloat("半径 (Radius)", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
+                        }
+                        else {
+                            ImGui::DragFloat3("サイズ (Scale)", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
+                        }
+
+                        ImGui::ColorEdit3("色 (Color)", &vol.color.x);
+                        ImGui::DragFloat("密度 (Density)", &vol.density, 0.01f, 0.0f, 10.0f);
+
+                        // ★ 0.0(パキッと) ～ 1.0(中心までグラデーション) の割合に変更
+                        ImGui::SliderFloat("境界ボカシ (Blend)", &vol.blendDistance, 0.0f, 1.0f);
+
+                        ImGui::Separator();
+                        ImGui::Text("Volume 専用光学特性");
+                        ImGui::SliderFloat("光の筋 (Anisotropy)", &vol.anisotropy, -0.99f, 0.99f);
+                        ImGui::DragFloat3("風向き (Wind Dir)", &vol.windDirection.x, 0.1f, -1.0f, 1.0f);
+                        ImGui::DragFloat("風速 (Wind Speed)", &vol.windSpeed, 0.01f, -5.0f, 5.0f);
+                        ImGui::DragFloat3("ノイズスケール", &vol.noiseScale.x, 0.01f);
+                        ImGui::SliderFloat("ノイズ強度", &vol.noiseIntensity, 0.0f, 1.0f);
+                        ImGui::SliderFloat("ノイズ閾値 (モクモク感)", &vol.noiseThreshold, 0.0f, 1.0f);
+
+                        ImGui::TreePop();
+                    }
+                    ImGui::PopID();
+
+                    // --- デバッグ描画の実行 ---
+                    if (vol.isVisible)
+                    {
+                        Vector4 drawColor = { vol.color.x, vol.color.y, vol.color.z, 1.0f };
+
+                        if (vol.type == 0) // Sphere
+                        {
+                            DebugDraw::DrawSphere(vol.position, vol.scale.x, drawColor);
+                        }
+                        else if (vol.type == 1) // Box
+                        {
+                            // Boxの場合は回転行列を作ってOBBとして描画
+                            Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({
+                                Math::ToRadians(vol.rotation.x),
+                                Math::ToRadians(vol.rotation.y),
+                                Math::ToRadians(vol.rotation.z) }
+                            );
+                            // DrawOBB(中心, サイズ(縦横奥の全長), 回転, 色)
+                            DebugDraw::DrawOBB(vol.position, vol.scale, rotMat, drawColor);
+                        }
+                    }
+                }
             }
 
             ImGui::Unindent();

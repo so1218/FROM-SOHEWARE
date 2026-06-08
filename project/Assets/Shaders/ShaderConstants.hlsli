@@ -34,6 +34,7 @@
 #define COLOR_GRADING_LUT   (1 << 18)
 
 #define MAX_FOG_EFFECTORS 4
+#define MAX_FOG_VOLUMES 8
 
 struct TransformationMatrix
 {
@@ -417,3 +418,29 @@ struct FogBilateralSettings
     float padding;
 };
 
+struct FogVolume
+{
+    float4x4 worldToLocal;
+    
+    float3 color;
+    float density;
+    
+    float3 noiseScale;
+    float noiseIntensity;
+    
+    float3 windDirection; // ★追加：風の方向
+    float windSpeed; // ★追加：風の強さ
+    
+    float noiseThreshold; // ★追加：雲らしいモクモク感の調整
+    float anisotropy; // ★追加：光の筋の強さ（-0.99～0.99）
+    float blendDistance; // (※0.0～1.0の割合として扱う)
+    int type;
+};
+
+struct FogVolumeBuffer
+{
+    FogVolume volumes[MAX_FOG_VOLUMES];
+    
+    uint32_t volumeCount;
+    float3 pad; 
+};
