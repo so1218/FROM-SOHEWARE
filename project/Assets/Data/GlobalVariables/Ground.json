@@ -1620,9 +1620,9 @@
         "Model_AlbedoMap": "white1x1",
         "Model_AlphaThres": 0.009999999776482582,
         "Model_Color": [
-            0.13924050331115723,
-            0.814773440361023,
-            1.0,
+            0.5166397094726563,
+            0.5232067108154297,
+            0.00441528158262372,
             1.0
         ],
         "Model_DiffuseRef": 4.0,
@@ -1641,11 +1641,11 @@
         "Model_EnvMapTex": "pureSky",
         "Model_LightMode": 3,
         "Model_Lighting": 1,
-        "Model_Metalness": 0.9700000286102295,
+        "Model_Metalness": 0.12999999523162842,
         "Model_NormEnable": 1,
-        "Model_NormInten": 1.090000033378601,
-        "Model_NormTile": 37.20000076293945,
-        "Model_NormalMapTex": "normal_26",
+        "Model_NormInten": 1.3799999952316284,
+        "Model_NormTile": 28.299999237060547,
+        "Model_NormalMapTex": "normal_30",
         "Model_OutlineColor": [
             0.0,
             0.0,
@@ -1687,7 +1687,7 @@
             0.0,
             0.0
         ],
-        "Model_Roughness": 0.23999999463558197,
+        "Model_Roughness": 0.46000000834465027,
         "Model_Scale": [
             1000.0,
             1.0,
@@ -1731,6 +1731,9 @@
         "Model_UseTriplanar": 0,
         "Model_WetDarkness": 0.10999999940395355,
         "Model_Wetness": 0.5699999928474426,
+        "TreeBaseScale": 2.109999895095825,
+        "TreeCount": 17,
+        "TreeSpreadRadius": 100.0,
         "treeWindAmplitude": 0.14000000059604645,
         "treeWindHeightScale": 0.5899999737739563,
         "treeWindSpatialScale": 0.14000000059604645,

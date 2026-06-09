@@ -20,7 +20,7 @@ Boss::Boss(FE::Engine* engine, Player* player)
     binder_ = std::make_unique<FE::PropertyBinder>(engine, "Boss");
 }
 
-// --- 初期化 ---
+// 初期化
 void Boss::Initialize()
 {
     // アニメーションをバインド
@@ -39,7 +39,7 @@ void Boss::Initialize()
     stateMachine_->ChangeState(BossStateIdle::GetInstance());
 }
 
-// --- 更新処理 ---
+// 更新処理
 void Boss::Update()
 {
     // 現在のステートを更新（IdleやApproachなどが呼ばれる）
@@ -51,13 +51,13 @@ void Boss::Update()
     GetTransform().UpdateMatrix();
 }
 
-// --- 描画処理 ---
+// 描画処理
 void Boss::Draw()
 {
-    /*animation_->Draw();*/
+    animation_->Draw();
 }
 
-// --- デバッグ描画 ---
+// デバッグ描画
 void Boss::DebugDraw()
 {
 #ifdef IS_DEVELOPMENT
@@ -91,13 +91,13 @@ void Boss::DebugDraw()
 #endif
 }
 
-// --- プレイヤーへの方向ベクトルを取得 ---
+// プレイヤーへの方向ベクトルを取得
 FE::Vector3 Boss::GetDirectionToPlayer()
 {
     if (!player_) return { 0.0f, 0.0f, 1.0f };
 
     FE::Vector3 dir = player_->GetTransform().translation_ - GetTransform().translation_;
-    dir.y = 0.0f; // 高低差を無視して水平方向のみにする
+    dir.y = 0.0f; 
 
     if (dir.Length() > 0.001f) {
         return dir.Normalize();
@@ -105,17 +105,17 @@ FE::Vector3 Boss::GetDirectionToPlayer()
     return GetTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
 }
 
-// --- プレイヤーとの距離を取得 ---
+// プレイヤーとの距離を取得
 float Boss::GetDistanceToPlayer()
 {
-    if (!player_) return 9999.0f; // プレイヤーがいない場合は無限遠扱い
+    if (!player_) return 9999.0f; 
 
     FE::Vector3 diff = player_->GetTransform().translation_ - GetTransform().translation_;
     diff.y = 0.0f; // 水平距離で測る
     return diff.Length();
 }
 
-// --- 旋回処理 ---
+// 旋回処理
 void Boss::RotateTowards(const FE::Vector3& direction, float speed)
 {
     if (direction.Length() < 0.001f) return;

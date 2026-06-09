@@ -1,18 +1,18 @@
 {
     "GrassField": {
         "AlphaCutoff": 0.10000000149011612,
-        "BaseScale": 2.9000000953674316,
+        "BaseScale": 2.799999952316284,
         "Color": [
-            0.4731007218360901,
-            0.47679322957992554,
-            0.185084268450737,
+            0.5345405340194702,
+            0.7763713002204895,
+            0.06879240274429321,
             1.0
         ],
-        "GrassCount": 50,
+        "GrassCount": 770,
         "InteractRadius": 3.8399999141693115,
         "InteractStrength": 5.699999809265137,
         "Metalness": 0.949999988079071,
-        "NormalBlend": -0.2800000011920929,
+        "NormalBlend": 0.75,
         "Position": [
             0.0,
             0.0,
@@ -21,9 +21,9 @@
         "RootAO": 0.5,
         "Roughness": 0.15000000596046448,
         "ShadowDensity": 4.010000228881836,
-        "SpreadRadius": 10.0,
+        "SpreadRadius": 100.0,
         "Translucency": 0.4699999988079071,
-        "Wetness": 0.09000000357627869,
+        "Wetness": 0.6200000047683716,
         "WindAmplitude": 0.3100000023841858,
         "WindSpeed": 4.650000095367432
     }

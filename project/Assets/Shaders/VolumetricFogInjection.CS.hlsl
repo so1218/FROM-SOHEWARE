@@ -99,25 +99,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float t = (float(i) + noiseJitter) / float(NUM_SAMPLES);
         float sampleViewZ = viewZ0 + voxelThickness * t;
 
-        // サンプリング点がオブジェクトの裏側に食い込んだら計算を無視する
-        if (sampleViewZ > sceneDist)
-        {
-            continue;
-        }
-
         float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * sampleViewZ);
 
-        // --- 1. シャドウの計算 ---
+        // シャドウの計算
         float4 shadowCoord = mul(float4(currentPos, 1.0f), gFrameData.lightViewProj);
         shadowCoord.xyz /= shadowCoord.w;
         float2 shadowUV = shadowCoord.xy * float2(0.5f, -0.5f) + 0.5f;
-        float shadowVisibility = 1.0f; // 範囲外はデフォルトで日向
+        float shadowVisibility = 1.0f;
         if (all(shadowUV >= 0.0f) && all(shadowUV <= 1.0f) && shadowCoord.z >= 0.0f && shadowCoord.z <= 1.0f)
         {
             shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
         }
 
-        // --- 2. 流体フェイク ＆ ノイズの計算 ---
+        // 流体フェイク ＆ ノイズの計算
         float objRadius = max(gFogSettings.objectRadius, 0.001f);
         float3 vecToPos = currentPos - gFogSettings.objectPos;
         float distToObj = length(vecToPos);
@@ -152,11 +146,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float combinedNoise = saturate(noise1 - (1.0f - noise2) * 0.3f);
         float noiseVal = smoothstep(gFogSettings.noiseThreshold, gFogSettings.noiseThreshold + 0.15f, combinedNoise);
 
-        // --- 3. この地点における「受光量（全ライトの合計）」を先に計算 ---
+        // 受光量の計算
         float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
         float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
         
-        // メインライト + 環境光
         float3 totalLight = shadowVisibility * phase * gFrameData.mainLightColor.rgb;
         totalLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, shadowVisibility);
 
@@ -205,14 +198,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
             stepLocal += gSpotLights[s].color.rgb * gSpotLights[s].intensity * angleFalloff * distFalloff * phaseLocal;
         }
         
-        // 全てのライトを合算
         totalLight += stepLocal;
 
-        // --- 4. グローバルフォグ（背景全体）の計算 ---
+        // グローバルフォグの計算
         float heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
         float particleDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor * noiseVal * coreMask);
 
-        // 最大距離フェード
         float fadeStart = farZ * 0.8f;
         float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, 0.001f));
         particleDensity *= distanceFade;
@@ -220,7 +211,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 global_sigma_s = gFogSettings.scatteringColor * particleDensity * gFogSettings.scatteringIntensity;
         float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
 
-        // --- 5. 配置式フォグボリュームの計算 ---
+        // 配置式フォグボリュームの計算
         float3 volumeScattering = 0;
         float volumeExtinction = 0;
 
@@ -228,9 +219,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         {
             FogVolume vol = gFogVolumeBuffer.volumes[v];
             float3 localPos = mul(float4(currentPos, 1.0f), vol.worldToLocal).xyz;
-    
-    // 【Boxがおかしくなる問題の修正】
-    // ローカル空間(-1.0 ~ 1.0)として、エッジからの距離を正しくフェード(0.0~1.0)させる
+            
             float volumeMask = 0.0f;
             if (vol.type == 1) // Box型
             {
@@ -252,36 +241,38 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
             if (volumeMask > 0.0f)
             {
-        // --- ★独立したノイズ計算 ---
                 float3 volTimeOffset = normalize(vol.windDirection + 0.001f) * (gFrameData.gTime * vol.windSpeed);
                 float3 volNoisePos = currentPos * vol.noiseScale + volTimeOffset;
                 float rawNoise = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePos), 0).r;
-        
-        // 専用の閾値でモクモク感を出す
+                
                 float volNoise = smoothstep(vol.noiseThreshold, vol.noiseThreshold + 0.15f, rawNoise);
                 float finalVolDensity = vol.density * lerp(1.0f, volNoise, vol.noiseIntensity) * volumeMask;
 
-        // --- ★独立したライティング（位相関数）の再計算 ---
-        // メインライトに対して、このボリューム専用の光の筋(Anisotropy)を計算
                 float phaseVol = DualPhaseHG(cosTheta, vol.anisotropy);
                 float3 volLight = shadowVisibility * phaseVol * gFrameData.mainLightColor.rgb;
-        
-        // 環境光とローカルライト(stepLocal)は共通のものを足す
+                
                 volLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, shadowVisibility);
                 volLight += stepLocal;
 
-        // このボリュームの吸収と散乱を加算
                 volumeExtinction += finalVolDensity * gFogSettings.extinctionScale;
                 volumeScattering += vol.color * finalVolDensity * gFogSettings.scatteringIntensity * volLight;
             }
         }
 
-        // --- 6. グローバルとボリュームの合算・累積 ---
-        accumScattering += (totalLight * global_sigma_s) + volumeScattering;
-        accumExtinction += global_sigma_e + volumeExtinction;
+        // グローバルとボリュームの合算・累積
+        float3 sampleScattering = (totalLight * global_sigma_s) + volumeScattering;
+        float sampleExtinction = global_sigma_e + volumeExtinction;
+
+        // ソフト・クリッピングの計算
+        float fadeRange = max(voxelThickness * 1.0f, 0.1f);
+        float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
+
+        // 重みを適用して安全に累積
+        accumScattering += sampleScattering * depthWeight;
+        accumExtinction += sampleExtinction * depthWeight;
     }
 
-    // --- 平均化と解析的積分 ---
+    // 平均化と解析的積分
     float3 avgScattering = accumScattering / float(NUM_SAMPLES);
     float avgExtinction = accumExtinction / float(NUM_SAMPLES);
 

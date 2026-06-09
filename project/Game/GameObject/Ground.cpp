@@ -34,24 +34,47 @@ void Ground::Initialize()
 	binder_->BindModel("Model", model_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
 	binder_->BindModel("ModelRock", modelRock_.get());
+
+	binder_->Bind("TreeCount", &treeCount_, 100);
+	binder_->Bind("TreeSpreadRadius", &treeSpreadRadius_, 50.0f);
+	binder_->Bind("TreeBaseScale", &treeBaseScale_, 1.0f);
+
 	skybox_->SetCubeTexture("redClunch");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
-	std::mt19937 randomEngine(1234); 
-	std::uniform_real_distribution<float> distPos(-10000.0f, 10000.0f);
+	GenerateTrees();
+};
 
-	for (int i = 0; i < 1000; ++i)
+void Ground::GenerateTrees()
+{
+	treePositions_.clear(); 
+
+	std::mt19937 randomEngine(std::random_device{}());
+	std::uniform_real_distribution<float> distPos(-treeSpreadRadius_, treeSpreadRadius_);
+
+	for (int i = 0; i < treeCount_; ++i)
 	{
 		Vector3 pos;
-		pos.x = float(i * 5);
-		pos.y = 0.0f; // 地面の高さに合わせる
-		pos.z = float(i * 5);
+		pos.x = distPos(randomEngine);
+		pos.y = 0.0f; 
+		pos.z = distPos(randomEngine);
 		treePositions_.push_back(pos);
 	}
-};
+}
 
 void Ground::Update()
 {
+	if (treeCount_ != prevTreeCount_ ||
+		treeSpreadRadius_ != prevTreeSpreadRadius_ ||
+		treeBaseScale_ != prevTreeBaseScale_)
+	{
+		GenerateTrees();
+
+		prevTreeCount_ = treeCount_;
+		prevTreeSpreadRadius_ = treeSpreadRadius_;
+		prevTreeBaseScale_ = treeBaseScale_;
+	}
+
 	auto* leafMat = modelTree_->GetMaterialData();
 	auto* leafMat2 = modelTree_->GetMaterialData(1);
 	leafMat2->treeWindSpeed = leafMat->treeWindSpeed;
@@ -64,12 +87,13 @@ void Ground::Update()
 void Ground::Draw()
 {
 	model_->Draw();
-	/*for (const auto& pos : treePositions_)
+	for (const auto& pos : treePositions_)
 	{
 		modelTree_->GetTransform().translation_ = pos;
-
-		modelTree_->Draw(); 
-	}*/
+		modelTree_->GetTransform().scale_ = { treeBaseScale_, treeBaseScale_, treeBaseScale_ };
+		modelTree_->GetTransform().UpdateMatrix();
+		modelTree_->Draw();
+	}
 	modelRock_->Draw();
 	/*skybox_->Draw();*/
 };
@@ -79,8 +103,17 @@ void Ground::DebugDraw()
 #ifdef IS_DEVELOPMENT
 	ImGui::Begin("地面");
 	binder_->DrawModel("Model", "インスペクター");
-	binder_->DrawModel("ModelTree", "木インスペクター");
 	binder_->DrawModel("ModelRock", "岩インスペクター");
+
+	binder_->DrawModel("ModelTree", "木インスペクター");
+	binder_->Draw("TreeCount", "木の数");
+	binder_->Draw("TreeSpreadRadius", "配置範囲");
+	binder_->Draw("TreeBaseScale", "全体の大きさ");
+
+	if (ImGui::Button("木をランダム再生成"))
+	{
+		GenerateTrees();
+	}
 
 	ImGui::Separator();
 	ImGui::Text("木の揺れ（葉っぱ）");

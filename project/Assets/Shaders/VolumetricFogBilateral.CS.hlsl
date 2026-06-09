@@ -3,7 +3,6 @@
 Texture2D<float4> gRawFogTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
 
-// --- 出力リソース (UAV) ---
 // ぼかし処理が終わった最終結果
 RWTexture2D<float4> gFilteredFog : register(u0);
 
@@ -25,7 +24,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 resultColor = float4(0, 0, 0, 0);
     float totalWeight = 0.0f;
 
-    // ★ 修正点: 定数バッファ (gFogBilateralSettings) から値を取得する
+    // 定数バッファから値を取得
     int radius = gFogBilateralSettings.blurRadius;
     
     // 空間ウェイト計算用の定数

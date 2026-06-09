@@ -89,8 +89,8 @@ void GrassField::DebugDraw()
     binder_->Draw("Position", "中心座標");
     binder_->Draw("BaseScale", "全体の大きさ");
 
-    ImGui::DragInt("草の数", &grassCount_, 1, 1, 10000);
-    ImGui::DragFloat("配置範囲", &spreadRadius_, 0.5f, 1.0f, 100.0f);
+    binder_->Draw("GrassCount", "草の数");
+    binder_->Draw("SpreadRadius", "配置範囲");
 
     if (ImGui::Button("ランダム再生成"))
     {

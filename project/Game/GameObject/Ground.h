@@ -25,5 +25,15 @@ private:
     std::unique_ptr<FE::PropertyBinder> binder_;
 
     std::vector<FE::Vector3> treePositions_;
+
+    int treeCount_ = 100;
+    float treeSpreadRadius_ = 50.0f;
+    float treeBaseScale_ = 1.0f;
+
+    int prevTreeCount_ = -1;
+    float prevTreeSpreadRadius_ = -1.0f;
+    float prevTreeBaseScale_ = -1.0f;
+
+    void GenerateTrees();
 };
 
