@@ -31,7 +31,7 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     resDesc.Height = height;
     resDesc.DepthOrArraySize = depth;
     resDesc.MipLevels = 1;
-    resDesc.Format = DXGI_FORMAT_R16_FLOAT; // ノイズ濃度だけなのでR16で十分
+    resDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // ノイズ濃度だけなのでR16で十分
     resDesc.SampleDesc.Count = 1;
     resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
     resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; // ★UAVとして書き込むためのフラグ

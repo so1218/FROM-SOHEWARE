@@ -7,7 +7,7 @@ namespace FE
 
 void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
-    // ★重要：アルファチャンネル(透過率)も必要＆HDR値が入るのでFP16を指定
+    // アルファチャンネル(透過率)も必要＆HDR値が入るのでFP16を指定
     InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
     psoManager_ = pso;
 
@@ -16,19 +16,17 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(VolumetricFogSettings));
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
-    // ====================================================================
-    // 【追加】配置式フォグ用CB作成
-    // ====================================================================
+    // 配置式フォグ用CB作成
     volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogVolumeBuffer));
     volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
-    // 【ベストプラクティス】
-    // まず構造体全体のメモリをゼロクリアしてゴミデータを消す
+
+    // 構造体全体のメモリをゼロクリアしてゴミデータを消す
     memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
 
-    // その上で count を 0 に明示（memsetで既に0になっていますが、意図を示すため）
+    // count を 0 に明示
     volumeCbData_->volumeCount = 0;
 
-    // --- PBRベースの光学特性 ---
+    // PBRベースの光学特性
     cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f }; // 散乱色（1.0以上にして明るさを稼ぐことも可能）
     cbData_->scatteringIntensity = 150.0f;                 // 空間全体のうっすらとした散乱（ゴッドレイのベース）
     cbData_->extinctionScale = 0.2f;                 // 減衰スケール（標準は1.0。光の遮りやすさ）
@@ -48,9 +46,14 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     // --- ノイズ制御 ---
     cbData_->noiseScale = 0.08f;
-    cbData_->noiseThreshold = 0.35f;                 // 0.3~0.5あたりが雲らしくなる
     cbData_->noiseDistortion = 0.15f;                // ノイズの歪み
+    cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
     cbData_->windSpeed = 0.2f;
+
+    cbData_->coverage = 0.75f;
+    cbData_->worleyWeight = 0.8f;
+    cbData_->erosion = 0.4f;
+    cbData_->noiseFeather = 0.3f;
 
     // --- インタラクション (Object) ---
     cbData_->objectPos = { 0.0f, 0.0f, 0.0f };
@@ -240,7 +243,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         // 2. その逆行列 (World To Local) を作ってGPU構造体に入れる
         Matrix4x4 worldToLocal = Matrix4x4::Inverse(localToWorld);
 
-        gpuData.worldToLocal = worldToLocal; // ←★代入を忘れないように注意
+        gpuData.worldToLocal = worldToLocal;
         gpuData.type = volData.type;
         gpuData.color = { volData.color.x, volData.color.y, volData.color.z };
         gpuData.density = volData.density;
@@ -248,9 +251,14 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         gpuData.noiseIntensity = volData.noiseIntensity;
         gpuData.windDirection = volData.windDirection;
         gpuData.windSpeed = volData.windSpeed;
-        gpuData.noiseThreshold = volData.noiseThreshold;
         gpuData.anisotropy = volData.anisotropy;
         gpuData.blendDistance = volData.blendDistance;
+
+        // ★追加した4つの高度なノイズパラメータをGPUデータへコピー
+        gpuData.coverage = volData.coverage;
+        gpuData.worleyWeight = volData.worleyWeight;
+        gpuData.erosion = volData.erosion;
+        gpuData.noiseFeather = volData.noiseFeather;
 
         gpuVolumes.push_back(gpuData);
     }

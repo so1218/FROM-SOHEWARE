@@ -31,7 +31,7 @@ void TestSceneHori::OnInitialize()
 {
     // ライトの設定
     engine_->GetLightManager()->GetDirectionalLightData()[0].enable = true;
-    engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-0.1f,1.4f };
+    engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-1.0f,1.4f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].color = { 1.0f,193.0f / 255.0f,96.0f / 255.0f,1.0f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
 

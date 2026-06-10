@@ -387,18 +387,26 @@ struct VolumetricFogSettings
     float maxDistance;
     float depthSliceCount;
     float noiseScale;
-    float noiseThreshold;
+    float pad5;
     
     float noiseDistortion;
     float windSpeed;
-    float pad3; 
-    float pad4; 
+    float coverage; 
+    float worleyWeight; 
+    
+    float erosion;
+    float noiseFeather; 
+    float pad7; 
+    float pad8;
     
     float3 objectPos;
     float objectRadius;
     
     float3 objectVelocity;
     float interactionPower;
+    
+    float3 windDirection;
+    float pad6;
 };
 
 struct FogEffector
@@ -420,22 +428,28 @@ struct FogBilateralSettings
 
 struct FogVolume
 {
-    float4x4 worldToLocal;
-    
+    float4x4 worldToLocal; 
+
     float3 color;
-    float density;
-    
+    float density; 
+
     float3 noiseScale;
-    float noiseIntensity;
-    
-    float3 windDirection; // ★追加：風の方向
-    float windSpeed; // ★追加：風の強さ
-    
-    float noiseThreshold; // ★追加：雲らしいモクモク感の調整
-    float anisotropy; // ★追加：光の筋の強さ（-0.99～0.99）
-    float blendDistance; // (※0.0～1.0の割合として扱う)
+    float noiseIntensity; 
+
+    float3 windDirection;
+    float windSpeed; 
+
+    float coverage; 
+    float anisotropy;
+    float blendDistance;
     int type;
+
+    float worleyWeight;
+    float erosion; 
+    float noiseFeather; 
+    float pad0; 
 };
+
 
 struct FogVolumeBuffer
 {

@@ -698,9 +698,23 @@ void DebugGuiManager::DrawPostEffectSettings()
             if (ImGui::CollapsingHeader("ノイズ設定 (Noise)"))
             {
                 ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
-                ImGui::SliderFloat("ノイズ閾値", &volFogSettings->noiseThreshold, 0.0f, 1.0f, "%.2f");
                 ImGui::SliderFloat("ノイズ歪み", &volFogSettings->noiseDistortion, 0.0f, 1.0f, "%.2f");
+                ImGui::DragFloat3("風向き (Wind Dir)", &volFogSettings->windDirection.x, 0.1f, -1.0f, 1.0f);
                 ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -5.0f, 5.0f, "%.2f");
+                ImGui::Separator();
+                ImGui::Text("形状コントロール (Shape & Detail)");
+
+                // coverage は 0.0～1.0 の直感的なスライダーに
+                ImGui::SliderFloat("霧の量 (Coverage)", &volFogSettings->coverage, 0.0f, 1.0f, "%.2f");
+
+                // WorleyWeight も 0.0(モヤモヤ) ～ 1.0(モコモコ) のスライダーに
+                ImGui::SliderFloat("雲の塊感 (Worley Weight)", &volFogSettings->worleyWeight, 0.0f, 1.0f, "%.2f");
+
+                // Erosion はディテールを削り取る強さ
+                ImGui::SliderFloat("削り取り強度 (Erosion)", &volFogSettings->erosion, 0.0f, 1.0f, "%.2f");
+
+                // Feather は 0.0 になるとエラーやジャギが出るため、最小値を 0.001 に設定
+                ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");
             }
 
             if (ImGui::CollapsingHeader("オブジェクト干渉 (Interaction)"))
@@ -763,7 +777,14 @@ void DebugGuiManager::DrawPostEffectSettings()
                         ImGui::DragFloat("風速 (Wind Speed)", &vol.windSpeed, 0.01f, -5.0f, 5.0f);
                         ImGui::DragFloat3("ノイズスケール", &vol.noiseScale.x, 0.01f);
                         ImGui::SliderFloat("ノイズ強度", &vol.noiseIntensity, 0.0f, 1.0f);
-                        ImGui::SliderFloat("ノイズ閾値 (モクモク感)", &vol.noiseThreshold, 0.0f, 1.0f);
+
+                        ImGui::Separator();
+                        ImGui::Text("Volume 形状コントロール");
+                        // ★古い noiseThreshold を消して、新しい4パラメータを追加
+                        ImGui::SliderFloat("霧の量 (Coverage)", &vol.coverage, 0.0f, 1.0f);
+                        ImGui::SliderFloat("雲の塊感 (Worley Weight)", &vol.worleyWeight, 0.0f, 1.0f);
+                        ImGui::SliderFloat("削り取り強度 (Erosion)", &vol.erosion, 0.0f, 1.0f);
+                        ImGui::DragFloat("境界のボケ具合 (Feather)", &vol.noiseFeather, 0.01f, 0.001f, 2.0f);
 
                         ImGui::TreePop();
                     }

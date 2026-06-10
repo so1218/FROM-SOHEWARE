@@ -45,13 +45,17 @@ public:
         Vector3 noiseScale = { 0.1f, 0.1f, 0.1f };
         float noiseIntensity = 0.5f;
 
-        // ★追加パラメータ
         Vector3 windDirection = { 1.0f, 0.0f, 0.0f }; // 風の向き
         float windSpeed = 0.2f;                       // 流れる速度
-        float noiseThreshold = 0.2f;                  // モクモク感
         float anisotropy = 0.7f;                      // 光の筋
 
-        float blendDistance = 0.2f; // ★単位をメートルから「割合(0.0~1.0)」に変更
+        float blendDistance = 0.2f; // 割合(0.0~1.0)
+
+        // ★新ノイズ合成用のパラメータ（旧 noiseThreshold は削除）
+        float coverage = 0.5f;       // 霧の量 (0.0~1.0)
+        float worleyWeight = 0.5f;   // 雲の塊感/モコモコ感 (0.0~1.0)
+        float erosion = 0.2f;        // 削り取り強度 (0.0~1.0)
+        float noiseFeather = 0.3f;   // 境界のボケ具合 (0.001~2.0)
 
         bool isVisible = true;
     };

@@ -3,7 +3,7 @@
 
 Texture2D<float> gDepthTexture : register(t0);
 Texture2D<float> gShadowMap : register(t1);
-Texture3D<float> gNoiseVolume : register(t2);
+Texture3D<float4> gNoiseVolume : register(t2);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
@@ -74,13 +74,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 worldTarget = mul(float4(clipX, clipY, 1.0f, 1.0f), gFrameData.invViewProj);
     float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
     
-    // シーンの深度（Depth）を取得し、カメラからの距離を計算
     float hwDepth = gDepthTexture.SampleLevel(gSampler, float2(screenU, screenV), 0).r;
     float4 sceneWorld = mul(float4(clipX, clipY, hwDepth, 1.0f), gFrameData.invViewProj);
     sceneWorld.xyz /= sceneWorld.w;
     float sceneDist = length(sceneWorld.xyz - gFrameData.cameraWorldPosition);
 
-    // ボクセルの手前側が既にオブジェクトの裏側にある場合、まるごと計算をスキップ
     if (viewZ0 > sceneDist)
     {
         gVoxelInject[DTid.xyz] = float4(0, 0, 0, 0);
@@ -111,7 +109,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
         }
 
-        // 流体フェイク ＆ ノイズの計算
+        // 流体フェイクの計算
         float objRadius = max(gFogSettings.objectRadius, 0.001f);
         float3 vecToPos = currentPos - gFogSettings.objectPos;
         float distToObj = length(vecToPos);
@@ -130,22 +128,33 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         float3 noiseSamplePos = currentPos + pushWarp + swirlWarp - wakeWarp;
         float coreMask = lerp(0.8f, 1.0f, smoothstep(objRadius * 0.4f, objRadius * 0.9f, distToObj));
+        
+        // ★修正：グローバル風向き（windDirection）を反映してオフセットを計算
+        float3 timeOffset = normalize(gFogSettings.windDirection + 0.001f) * (gFrameData.gTime * gFogSettings.windSpeed);
 
-        float3 timeOffset = float3(1.0f, 0.5f, 0.8f) * (gFrameData.gTime * gFogSettings.windSpeed);
+        // 流体用歪みの計算
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
         float3 distortion = float3(
             gNoiseVolume.SampleLevel(gSampler, frac(warpUVW), 0).r,
             gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.33f), 0).r,
             gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.67f), 0).r
         );
-        
         float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * (gFogSettings.noiseDistortion + wakeFactor * 0.5f);
-        float noise1 = gNoiseVolume.SampleLevel(gSampler, frac(distortedPos * gFogSettings.noiseScale + timeOffset), 0).r;
-        float noise2 = gNoiseVolume.SampleLevel(gSampler, frac(distortedPos * (gFogSettings.noiseScale * 3.0f) - timeOffset * 0.8f), 0).r;
+        
+        // --- グローバルフォグの多重ノイズ合成 ---
+        float3 uvwA = distortedPos * gFogSettings.noiseScale + timeOffset;
+        float basePerlin = gNoiseVolume.SampleLevel(gSampler, frac(uvwA), 0).r;
 
-        float combinedNoise = saturate(noise1 - (1.0f - noise2) * 0.3f);
-        float noiseVal = smoothstep(gFogSettings.noiseThreshold, gFogSettings.noiseThreshold + 0.15f, combinedNoise);
+        float3 uvwB = distortedPos.zxy * (gFogSettings.noiseScale * 2.5f) - (timeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
+        float detailWorley = gNoiseVolume.SampleLevel(gSampler, frac(uvwB), 0).r;
 
+        float combinedNoise = lerp(basePerlin, 1.0f - detailWorley, gFogSettings.worleyWeight);
+        combinedNoise = saturate(combinedNoise - (detailWorley * gFogSettings.erosion));
+
+        float cutoff = 1.0f - gFogSettings.coverage;
+        float feather = max(gFogSettings.noiseFeather, 0.001f);
+        float noiseVal = smoothstep(cutoff, cutoff + feather, combinedNoise);
+        
         // 受光量の計算
         float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
         float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
@@ -200,7 +209,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         totalLight += stepLocal;
 
-        // グローバルフォグの計算
+        // グローバルフォグの密度計算
         float heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
         float particleDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor * noiseVal * coreMask);
 
@@ -241,13 +250,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
             if (volumeMask > 0.0f)
             {
+                // ★個別ボリュームの風とスケールを適用
                 float3 volTimeOffset = normalize(vol.windDirection + 0.001f) * (gFrameData.gTime * vol.windSpeed);
-                float3 volNoisePos = currentPos * vol.noiseScale + volTimeOffset;
-                float rawNoise = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePos), 0).r;
+                float3 volNoisePosA = currentPos * vol.noiseScale + volTimeOffset;
                 
-                float volNoise = smoothstep(vol.noiseThreshold, vol.noiseThreshold + 0.15f, rawNoise);
-                float finalVolDensity = vol.density * lerp(1.0f, volNoise, vol.noiseIntensity) * volumeMask;
+                // 【軽量多重ノイズ合成】※Distortion(歪み)処理は負荷軽減のためカット
+                // 1層目：Perlinノイズベース形状
+                float volBasePerlin = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePosA), 0).r;
 
+                // 2層目：Worleyによるディテール
+                float3 volNoisePosB = volNoisePosA.zxy * 2.5f - (volTimeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
+                float volDetailWorley = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePosB), 0).r;
+
+                // 各ボリューム独自のパラメータで高度な形状合成
+                float volCombinedNoise = lerp(volBasePerlin, 1.0f - volDetailWorley, vol.worleyWeight);
+                volCombinedNoise = saturate(volCombinedNoise - (volDetailWorley * vol.erosion));
+
+                // 個別のCoverage / Featherを適用
+                float volCutoff = 1.0f - vol.coverage;
+                float volFeather = max(vol.noiseFeather, 0.001f);
+                float volNoiseVal = smoothstep(volCutoff, volCutoff + volFeather, volCombinedNoise);
+
+                // 最終密度の算出
+                float finalVolDensity = vol.density * lerp(1.0f, volNoiseVal, vol.noiseIntensity) * volumeMask;
+
+                // ライティングの計算
                 float phaseVol = DualPhaseHG(cosTheta, vol.anisotropy);
                 float3 volLight = shadowVisibility * phaseVol * gFrameData.mainLightColor.rgb;
                 
@@ -263,11 +290,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 sampleScattering = (totalLight * global_sigma_s) + volumeScattering;
         float sampleExtinction = global_sigma_e + volumeExtinction;
 
-        // ソフト・クリッピングの計算
         float fadeRange = max(voxelThickness * 1.0f, 0.1f);
         float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
 
-        // 重みを適用して安全に累積
         accumScattering += sampleScattering * depthWeight;
         accumExtinction += sampleExtinction * depthWeight;
     }

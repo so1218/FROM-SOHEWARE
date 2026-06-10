@@ -1,5 +1,5 @@
 // 書き込み用の3Dテクスチャ
-RWTexture3D<float> gOutputNoise : register(u0);
+RWTexture3D<float4> gOutputNoise : register(u0);
 
 // =======================================================
 // 1. 乱数生成関数 (Hash)
@@ -114,8 +114,38 @@ float CalculateComplexPerlinNoise(float3 uvw)
     
     return noise / maxAmplitude;
 }
+// =======================================================
+// 新設: シームレスな 3D Worley Noise (0.0 ～ 1.0)
+// =======================================================
+float WorleyNoise3D_Seamless(float3 p, float period)
+{
+    float3 pi = floor(p);
+    float3 pf = p - pi;
+    float minDist = 1.0f;
 
-// --- エントリーポイント ---
+    // 周囲27個のセルを探索
+    for (int z = -1; z <= 1; z++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                float3 offset = float3(x, y, z);
+                // 周期でラップしてシームレス化（負の数対策で + period）
+                float3 cell = fmod(pi + offset + period, period);
+                
+                // セル内のランダムな中心点 (0.0 ～ 1.0)
+                float3 cellPoint = hash33(cell) * 0.5f + 0.5f;
+                
+                float3 diff = offset + cellPoint - pf;
+                float dist = length(diff);
+                minDist = min(minDist, dist);
+            }
+        }
+    }
+    return saturate(minDist);
+}
+
 [numthreads(8, 8, 8)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -126,13 +156,23 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float3 uvw = float3(DTid) / float3(width, height, depth);
 
-    // ノイズ計算
-    float noiseValue = CalculateComplexPerlinNoise(uvw);
-    
-    // ★改善4: メリハリの付け方（Bias & Gain）
-    // 単なるsmoothstepより、べき乗(pow)を組み合わせると「濃い部分」が強調されます
-    noiseValue = pow(noiseValue, 1.2f); // 少し暗い部分を増やす
-    noiseValue = smoothstep(0.15f, 0.85f, noiseValue);
+    // 1. Rチャンネル: 既存のPerlin(fBm)ノイズ
+    float perlinValue = CalculateComplexPerlinNoise(uvw);
+    perlinValue = pow(perlinValue, 1.2f);
+    perlinValue = smoothstep(0.15f, 0.85f, perlinValue);
 
-    gOutputNoise[DTid] = noiseValue;
+    // 2. Gチャンネル: Worleyノイズ（密度の削り・もこもこディテール用）
+    float worley1 = WorleyNoise3D_Seamless(uvw * 4.0f, 4.0f);
+    float worley2 = WorleyNoise3D_Seamless(uvw * 8.0f, 8.0f);
+    
+    // ★修正：反転（1.0 - W）させて「もこもこの塊」にしてから合成し、最後にまた反転して戻す
+    // これにより、クレーターの底（0.0）が綺麗に維持され、かつ細かいディテールが刻まれます
+    float fbmWorley = (1.0f - worley1) * 0.6f + (1.0f - worley2) * 0.4f;
+    float worleyValue = saturate(1.0f - fbmWorley);
+
+    // ※もし上記でもフォグが薄すぎる場合は、より谷がハッキリ残る「min合成」を試してください
+    // float worleyValue = saturate(min(worley1, worley2 * 1.5f));
+
+    // RGBAテクスチャに別々に保存！
+    gOutputNoise[DTid] = float4(perlinValue, worleyValue, 0.0f, 1.0f);
 }
