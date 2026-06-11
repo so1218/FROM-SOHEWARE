@@ -78,6 +78,7 @@ void GlobalConstants::Update(
 
     // カメラ以外のデータも更新
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();
+    frameData_->deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     frameData_->iResolution = Vector2(1, 1);
     frameData_->screenResolution = Vector2(static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()));

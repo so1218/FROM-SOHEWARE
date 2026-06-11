@@ -403,6 +403,40 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
     }
+    else if (name == "FluidSimulationCS")
+    {
+        RootSignatureBuilder builder;
+
+        // 1. 定数バッファ (b0: FluidSettings) - Advection と Injection で使用
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 2. SRV (読み込み用テクスチャ)
+        // t0: VelocityRead, PressureRead など
+        // t1: DensityRead, Divergence など
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 3. UAV (書き込み用テクスチャ)
+        // u0: VelocityWrite, PressureWrite, Divergence など
+        // u1: DensityWrite など
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 4. サンプラー (s0: バイリニア・クランプ) - Advection のタイリング防止に必須
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
+
+        // CS専用フラグ
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags =
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+        return builder.Build(device_, csFlags, "FluidSimulationCS");
+    }
 
     // どれにも該当しない
     LOG_ERROR("Unknown RootSignature: {}", name);

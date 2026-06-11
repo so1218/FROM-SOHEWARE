@@ -260,6 +260,11 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         gpuData.erosion = volData.erosion;
         gpuData.noiseFeather = volData.noiseFeather;
 
+        gpuData.distortionAmount = volData.distortionAmount;
+        gpuData.densityOffset = volData.densityOffset;
+        gpuData.noiseContrast = volData.noiseContrast;
+        gpuData.heightFalloff = volData.heightFalloff;
+
         gpuVolumes.push_back(gpuData);
     }
 

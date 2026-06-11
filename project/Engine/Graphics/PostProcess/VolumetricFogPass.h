@@ -57,6 +57,12 @@ public:
         float erosion = 0.2f;        // 削り取り強度 (0.0~1.0)
         float noiseFeather = 0.3f;   // 境界のボケ具合 (0.001~2.0)
 
+        // ★新規拡張パラメータ（プロ仕様）
+        float distortionAmount = 0.15f; // ほどよく流体っぽくウネる歪み強さ
+        float densityOffset = 0.0f;  // 密度の底上げ（マイナスにすると千切れ雲になります）
+        float noiseContrast = 1.0f;  // コントラスト等倍（上げるとパキパキした形状になります）
+        float heightFalloff = 0.0f;  // 高さ減衰（0.0でボリューム全体に霧が満ちる）
+
         bool isVisible = true;
     };
 

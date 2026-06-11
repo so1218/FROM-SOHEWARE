@@ -920,6 +920,7 @@
     <ClCompile Include="Game\GameObject\Character\Boss\BossStateIdle.cpp" />
     <ClCompile Include="Game\GameObject\Character\Boss\BossStateApproach.cpp" />
     <ClCompile Include="Game\GameObject\Character\Boss\BossStateJumpAttack.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\FluidSimulationPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -939,6 +940,7 @@
     <ClInclude Include="Game\GameObject\Character\Boss\BossStateIdle.h" />
     <ClInclude Include="Game\GameObject\Character\Boss\BossStateApproach.h" />
     <ClInclude Include="Game\GameObject\Character\Boss\BossStateJumpAttack.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\FluidSimulationPass.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
@@ -947,5 +949,10 @@
     <FxCompile Include="Assets\Shaders\VolumetricFogInjection.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogAccumulation.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogResolve.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidAdvection.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidInjection.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidDivergence.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidJacobi.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
   </ItemGroup>
 </Project>

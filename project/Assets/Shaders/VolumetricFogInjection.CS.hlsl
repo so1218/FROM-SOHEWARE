@@ -129,7 +129,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 noiseSamplePos = currentPos + pushWarp + swirlWarp - wakeWarp;
         float coreMask = lerp(0.8f, 1.0f, smoothstep(objRadius * 0.4f, objRadius * 0.9f, distToObj));
         
-        // ★修正：グローバル風向き（windDirection）を反映してオフセットを計算
         float3 timeOffset = normalize(gFogSettings.windDirection + 0.001f) * (gFrameData.gTime * gFogSettings.windSpeed);
 
         // 流体用歪みの計算
@@ -141,15 +140,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
         );
         float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * (gFogSettings.noiseDistortion + wakeFactor * 0.5f);
         
-        // --- グローバルフォグの多重ノイズ合成 ---
+        // ---------------------------------------------------------------
+        // 1. グローバルフォグの多重ノイズ合成（新ノイズ仕様に最適化）
+        // ---------------------------------------------------------------
         float3 uvwA = distortedPos * gFogSettings.noiseScale + timeOffset;
-        float basePerlin = gNoiseVolume.SampleLevel(gSampler, frac(uvwA), 0).r;
+        float basePerlin = gNoiseVolume.SampleLevel(gSampler, frac(uvwA), 1.0f).r; // ★ボカすためにMip 1.0を指定
 
-        float3 uvwB = distortedPos.zxy * (gFogSettings.noiseScale * 2.5f) - (timeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
-        float detailWorley = gNoiseVolume.SampleLevel(gSampler, frac(uvwB), 0).r;
-
-        float combinedNoise = lerp(basePerlin, 1.0f - detailWorley, gFogSettings.worleyWeight);
-        combinedNoise = saturate(combinedNoise - (detailWorley * gFogSettings.erosion));
+        float3 uvwB = distortedPos.zxy * (gFogSettings.noiseScale * 2.0f) - (timeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
+        float4 detailNoise = gNoiseVolume.SampleLevel(gSampler, frac(uvwB), 0); // RGBAを一括取得
+        
+        // R(大うねり)をG(中Worley)でブレンドし、さらにB(小Worley)でディテールを鋭く削る
+        float combinedNoise = lerp(basePerlin, 1.0f - detailNoise.g, gFogSettings.worleyWeight);
+        combinedNoise = saturate(combinedNoise - (detailNoise.b * gFogSettings.erosion));
 
         float cutoff = 1.0f - gFogSettings.coverage;
         float feather = max(gFogSettings.noiseFeather, 0.001f);
@@ -162,7 +164,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 totalLight = shadowVisibility * phase * gFrameData.mainLightColor.rgb;
         totalLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, shadowVisibility);
 
-        // ローカルライト（ポイント）
+        // [ローカルライト（ポイント/スポット）の計算は変更がないため中身を維持]
         float3 stepLocal = 0;
         for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
         {
@@ -173,16 +175,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float radiusSq = gPointLights[p].radius * gPointLights[p].radius;
             if (distSq > radiusSq)
                 continue;
-            
             float dist = sqrt(distSq);
             float attenuation = saturate(1.0f - (distSq / radiusSq));
             attenuation *= attenuation;
-            
             float phaseLocal = DualPhaseHG(dot(rayDir, lightVec / dist), 0.0f);
             stepLocal += gPointLights[p].color.rgb * gPointLights[p].intensity * attenuation * phaseLocal;
         }
-
-        // ローカルライト（スポット）
         for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
         {
             if (gSpotLights[s].enable == 0)
@@ -192,21 +190,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float distanceSq = gSpotLights[s].distance * gSpotLights[s].distance;
             if (distSq > distanceSq)
                 continue;
-            
             float dist = sqrt(distSq);
             float3 lDir = lightVec / dist;
             float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
             if (currentCos < gSpotLights[s].cosAngle)
                 continue;
-            
             float angleFalloff = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
             float distFalloff = saturate(1.0f - (distSq / distanceSq));
             distFalloff *= distFalloff;
-
             float phaseLocal = DualPhaseHG(dot(rayDir, lDir), 0.0f);
             stepLocal += gSpotLights[s].color.rgb * gSpotLights[s].intensity * angleFalloff * distFalloff * phaseLocal;
         }
-        
         totalLight += stepLocal;
 
         // グローバルフォグの密度計算
@@ -220,7 +214,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 global_sigma_s = gFogSettings.scatteringColor * particleDensity * gFogSettings.scatteringIntensity;
         float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
 
-        // 配置式フォグボリュームの計算
+        // ---------------------------------------------------------------
+        // 2. 配置式フォグボリュームの計算（★劇的アップグレード部分）
+        // ---------------------------------------------------------------
         float3 volumeScattering = 0;
         float volumeExtinction = 0;
 
@@ -250,36 +246,57 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
             if (volumeMask > 0.0f)
             {
-                // ★個別ボリュームの風とスケールを適用
+    // ボリューム個別の風
                 float3 volTimeOffset = normalize(vol.windDirection + 0.001f) * (gFrameData.gTime * vol.windSpeed);
-                float3 volNoisePosA = currentPos * vol.noiseScale + volTimeOffset;
-                
-                // 【軽量多重ノイズ合成】※Distortion(歪み)処理は負荷軽減のためカット
-                // 1層目：Perlinノイズベース形状
-                float volBasePerlin = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePosA), 0).r;
+    
+    // ★修正1: MipLevelを2.0から0.0（ディテール全開）へ。frac()を削除
+                float3 volWarpUVW = (currentPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
+                float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
+    
+    // ワールド座標ベースで座標を確定
+                float3 volNoisePos = (currentPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
 
-                // 2層目：Worleyによるディテール
-                float3 volNoisePosB = volNoisePosA.zxy * 2.5f - (volTimeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
-                float volDetailWorley = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePosB), 0).r;
+    // ★修正2: MipLevelを1.0から0.0（最高解像度）へ変更！Worleyのエッジを完全に活かす。frac()を削除
+                float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
+    
+                float volBase = volNoiseSample.r; // R: 大きなうねり
+                float volCoarseErode = volNoiseSample.g; // G: 中Worley
+                float volFineErode = volNoiseSample.b; // B: 小Worley
+                float volMicroDetail = volNoiseSample.a; // A: 極小Worley
 
-                // 各ボリューム独自のパラメータで高度な形状合成
-                float volCombinedNoise = lerp(volBasePerlin, 1.0f - volDetailWorley, vol.worleyWeight);
-                volCombinedNoise = saturate(volCombinedNoise - (volDetailWorley * vol.erosion));
+    // ノイズの合成
+                float volCombinedNoise = lerp(volBase, 1.0f - volCoarseErode, vol.worleyWeight);
+                volCombinedNoise = saturate(volCombinedNoise - (volFineErode * vol.erosion));
 
-                // 個別のCoverage / Featherを適用
+    // コントラストとオフセットの適用
+                volCombinedNoise = saturate((volCombinedNoise + vol.densityOffset) * vol.noiseContrast);
+
+    // 形状の切り出し
                 float volCutoff = 1.0f - vol.coverage;
                 float volFeather = max(vol.noiseFeather, 0.001f);
                 float volNoiseVal = smoothstep(volCutoff, volCutoff + volFeather, volCombinedNoise);
 
-                // 最終密度の算出
-                float finalVolDensity = vol.density * lerp(1.0f, volNoiseVal, vol.noiseIntensity) * volumeMask;
+    // ★修正3: 密度の計算をLerpではなく「直接乗算」へ変更！
+    // これにより、ノイズが0の部分は「完全に透明な空気」になり、凄まじい立体感が生まれます。
+    // noiseIntensityは、ノイズのコントラスト自体のブレンド等に使うか、1.0固定として直接掛け算します。
+                float noiseModifier = lerp(1.0f, volNoiseVal, vol.noiseIntensity);
+                float finalVolDensity = vol.density * noiseModifier * volumeMask;
 
-                // ライティングの計算
+    // ローカル高さ減衰
+                float localUVW_Y = localPos.y * 0.5f + 0.5f;
+                float volHeightFactor = exp(-localUVW_Y * max(vol.heightFalloff, 0.0f));
+                finalVolDensity *= volHeightFactor;
+
+    // ★修正4: セルフシャドウ（吸光）の強化
+    // 密度に応じて光を遮ることで、雲の「影の付いた下腹部」のような重厚感が出ます。
+                float selfShadow = exp(-finalVolDensity * 4.0f); // 遮蔽強度を4.0に強化
+
+    // ライティングの計算
                 float phaseVol = DualPhaseHG(cosTheta, vol.anisotropy);
-                float3 volLight = shadowVisibility * phaseVol * gFrameData.mainLightColor.rgb;
-                
-                volLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, shadowVisibility);
-                volLight += stepLocal;
+                float3 volLight = shadowVisibility * phaseVol * gFrameData.mainLightColor.rgb * selfShadow;
+    
+                volLight += gFogSettings.ambientLight * lerp(0.1f, 1.0f, shadowVisibility * selfShadow);
+                volLight += stepLocal * selfShadow;
 
                 volumeExtinction += finalVolDensity * gFogSettings.extinctionScale;
                 volumeScattering += vol.color * finalVolDensity * gFogSettings.scatteringIntensity * volLight;

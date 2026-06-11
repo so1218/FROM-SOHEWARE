@@ -71,7 +71,7 @@ struct FrameData
     float gTime;
     float nearClip;
     float farClip;
-    float padding3;
+    float deltaTime;
     
     float3 lightningFlashColor;
     float lightningFlashIntensity;
@@ -428,26 +428,31 @@ struct FogBilateralSettings
 
 struct FogVolume
 {
-    float4x4 worldToLocal; 
+    float4x4 worldToLocal; // 64バイト (累計 64)
 
-    float3 color;
-    float density; 
+    float3 color; // 12バイト
+    float density; // 4バイト  (計16 / 累計 80)
 
-    float3 noiseScale;
-    float noiseIntensity; 
+    float3 noiseScale; // 12バイト
+    float noiseIntensity; // 4バイト  (計16 / 累計 96)
 
-    float3 windDirection;
-    float windSpeed; 
+    float3 windDirection; // 12バイト
+    float windSpeed; // 4バイト  (計16 / 累計 112)
 
-    float coverage; 
-    float anisotropy;
-    float blendDistance;
-    int type;
+    float coverage; // 4バイト
+    float anisotropy; // 4バイト
+    float blendDistance; // 4バイト
+    int type; // 4バイト  (計16 / 累計 128)
 
-    float worleyWeight;
-    float erosion; 
-    float noiseFeather; 
-    float pad0; 
+    float worleyWeight; // 4バイト
+    float erosion; // 4バイト
+    float noiseFeather; // 4バイト
+    float distortionAmount; // 4バイト  (計16 / 累計 144) ★追加：流体歪み強さ
+
+    float densityOffset; // 4バイト  (計4)     ★追加：密度の底上げ/引き算
+    float noiseContrast; // 4バイト  (計8)     ★追加：ノイズのコントラスト
+    float heightFalloff; // 4バイト  (計12)    ★追加：ボリューム内高さ減衰
+    float pad0; // 4バイト  (計16 / 累計 160) アライメント微調整用
 };
 
 
@@ -457,4 +462,32 @@ struct FogVolumeBuffer
     
     uint32_t volumeCount;
     float3 pad; 
+};
+
+struct FluidSettings
+{
+    // ==========================================
+    // Advection（移流）用パラメータ
+    // ==========================================
+    float velocityDissipation; // 速度の減衰率（例: 0.99f）
+    float densityDissipation; // 密度の減衰率（例: 0.95f）
+    float gridScale; // シミュレーショングリッドの物理スケール
+    float paddingFluid1; // アラインメント用
+
+    // ==========================================
+    // Injection（外力）用パラメータ
+    // ==========================================
+    // ※ float3 と float を組み合わせることで、ピッタリ16バイトに収めています
+    
+    float3 gridMin; // 流体ボックスの最小ワールド座標
+    float interactionRadius; // プレイヤーが空気を押し出す半径
+
+    float3 gridMax; // 流体ボックスの最大ワールド座標
+    float injectionStrength; // 押し出す力の強さ（乗数）
+
+    float3 objectPos; // プレイヤーのワールド座標
+    float densityAmount; // 動いた場所に出す霧の量
+
+    float3 objectVelocity; // プレイヤーの移動速度ベクトル
+    float paddingFluid2; // アラインメント用
 };

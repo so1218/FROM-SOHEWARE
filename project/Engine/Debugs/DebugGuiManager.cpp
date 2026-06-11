@@ -786,6 +786,13 @@ void DebugGuiManager::DrawPostEffectSettings()
                         ImGui::SliderFloat("削り取り強度 (Erosion)", &vol.erosion, 0.0f, 1.0f);
                         ImGui::DragFloat("境界のボケ具合 (Feather)", &vol.noiseFeather, 0.01f, 0.001f, 2.0f);
 
+                        ImGui::Separator();
+                        ImGui::Text("Volume ディテール制御");
+                        ImGui::SliderFloat("流体歪み強さ (Distortion)", &vol.distortionAmount, 0.0f, 1.0f);
+                        ImGui::SliderFloat("密度の底上げ (Density Offset)", &vol.densityOffset, -1.0f, 1.0f);
+                        ImGui::DragFloat("コントラスト (Contrast)", &vol.noiseContrast, 0.05f, 0.0f, 10.0f);
+                        ImGui::DragFloat("ローカル高さ減衰 (Height Falloff)", &vol.heightFalloff, 0.05f, 0.0f, 10.0f);
+
                         ImGui::TreePop();
                     }
                     ImGui::PopID();
