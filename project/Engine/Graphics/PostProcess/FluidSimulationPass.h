@@ -14,7 +14,7 @@ public:
     FluidSimulationPass() = default;
     ~FluidSimulationPass();
 
-    // 初期化（解像度は 64x64x64 などが一般的です）
+    // 初期化
     void Initialize(Engine* engine, PSOManager* psoManager, UINT gridWidth = 64, UINT gridHeight = 64, UINT gridDepth = 64);
 
     // 実行（5つのCSを順番にDispatchする）
@@ -24,23 +24,9 @@ public:
     uint32_t GetCurrentDensitySRVIndex() const { return densitySrvIndices_[readIndex_]; }
     uint32_t GetCurrentVelocitySRVIndex() const { return velocitySrvIndices_[readIndex_]; }
 
-    ID3D12Resource* GetCurrentDensityResource() const { return densityRes_[readIndex_].Get(); }
+    D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const { return constantBuffer_->GetGPUVirtualAddress(); }
 
-private:
-    // 3Dテクスチャ（UAV/SRVのペア）を作成するヘルパー関数
-    void CreateFluidTexture3D(
-        ID3D12Device* device,
-        DXGI_FORMAT format,
-        const wchar_t* debugName,
-        Microsoft::WRL::ComPtr<ID3D12Resource>& outResource,
-        uint32_t& outUavIndex,
-        uint32_t& outSrvIndex
-    );
-
-    // Ping-Pongバッファのインデックスを反転させる
-    void SwapBuffers() {
-        std::swap(readIndex_, writeIndex_);
-    }
+    FluidSettings* GetSettings() const { return cbData_; }
 
 private:
     Engine* engine_ = nullptr;
@@ -51,9 +37,13 @@ private:
     UINT height_ = 64;
     UINT depth_ = 64;
 
-    // Ping-Pong 管理用インデックス (0 or 1)
+    // フレーム進行とPing-Pong管理用
+    uint32_t frameCounter_ = 0;
     uint32_t readIndex_ = 0;
     uint32_t writeIndex_ = 1;
+
+    // このパス専用のディスクリプタヒープ
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_[2];
 
     // --- 流体用 3Dリソース群 (2枚ずつ) ---
     Microsoft::WRL::ComPtr<ID3D12Resource> velocityRes_[2];
@@ -75,7 +65,7 @@ private:
 
     // 定数バッファ (b1: FluidSettings)
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    FluidSettings* cbData_ = nullptr;
+    FluidSettings* cbData_ = nullptr; // ※FluidSettings構造体はEngine側で定義されている想定
 };
 
 }

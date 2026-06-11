@@ -466,19 +466,12 @@ struct FogVolumeBuffer
 
 struct FluidSettings
 {
-    // ==========================================
-    // Advection（移流）用パラメータ
-    // ==========================================
     float velocityDissipation; // 速度の減衰率（例: 0.99f）
     float densityDissipation; // 密度の減衰率（例: 0.95f）
     float gridScale; // シミュレーショングリッドの物理スケール
     float paddingFluid1; // アラインメント用
 
-    // ==========================================
-    // Injection（外力）用パラメータ
-    // ==========================================
-    // ※ float3 と float を組み合わせることで、ピッタリ16バイトに収めています
-    
+
     float3 gridMin; // 流体ボックスの最小ワールド座標
     float interactionRadius; // プレイヤーが空気を押し出す半径
 

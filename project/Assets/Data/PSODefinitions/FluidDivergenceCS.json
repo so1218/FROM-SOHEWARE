@@ -1,4 +1,4 @@
 {
   "RootSignature": "FluidSimulationCS",
-  "ComputeShader": "Assets/Shaders/FluidDivergenceCS.hlsl"
+  "ComputeShader": "Assets/Shaders/FluidDivergence.CS.hlsl"
 }

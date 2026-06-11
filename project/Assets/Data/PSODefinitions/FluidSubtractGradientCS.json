@@ -1,4 +1,4 @@
 {
   "RootSignature": "FluidSimulationCS",
-  "ComputeShader": "Assets/Shaders/FluidSubtractGradientCS.hlsl"
+  "ComputeShader": "Assets/Shaders/FluidSubtractGradient.CS.hlsl"
 }

@@ -1,4 +1,4 @@
 {
   "RootSignature": "FluidSimulationCS",
-  "ComputeShader": "Assets/Shaders/FluidJacobiCS.hlsl"
+  "ComputeShader": "Assets/Shaders/FluidJacobi.CS.hlsl"
 }

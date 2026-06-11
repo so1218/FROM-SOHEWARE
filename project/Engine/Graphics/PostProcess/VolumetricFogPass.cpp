@@ -63,7 +63,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     // ★パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 10;// 2 -> 3 に増やす
+    heapDesc.NumDescriptors = 16; // 10 -> 16 に増やす (流体リソース追加による枯渇を防ぐため)
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -274,42 +274,51 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // ========================================================
     // [1] Injection パス (3D空間に光と密度を計算)
     // ========================================================
-    {
-        // --- ディスクリプタのコピー (必要なものをヒープの先頭に集約) ---
+    // --- ディスクリプタのコピー ---
         // t0: Depth
-        device->CopyDescriptorsSimple(1, destCPU, context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // t1: Shadow
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), engine_->GetShadowMap()->GetSRVHandleCPU(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // t2: Noise3D
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(noise3DData_.srvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // u0: VoxelInject UAV
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 3, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    device->CopyDescriptorsSimple(1, destCPU, context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // t1: Shadow
+    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), engine_->GetShadowMap()->GetSRVHandleCPU(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // t2: Noise3D
+    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(noise3DData_.srvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // t3: Fluid Density
+    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 3, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidDensitySrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        // --- パイプライン設定 ---
-        cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogInjectionCS"));
-        cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogInjectionCS"));
+    // =========================================================
+    // ★修正★ t4: Fluid Velocity（Contextから取得してコピー！）
+    // =========================================================
+    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 4, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidVelocitySrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        // --- ルートパラメータのバインド (Injection用RootSignatureに合わせる) ---
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
-        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
-        cmdList->SetComputeRootConstantBufferView(2, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); // b3
-        cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); // b4
-        cmdList->SetComputeRootConstantBufferView(4, volumeConstantBuffer_->GetGPUVirtualAddress()); // b5
+    // ★修正★ u0: VoxelInject UAV (※t4が増えたため、オフセットが4から「5」にズレます！)
+    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 5, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        cmdList->SetComputeRootDescriptorTable(5, destGPU); // t0, t1, t2 のテーブル
-        cmdList->SetComputeRootDescriptorTable(6, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize)); // u0
+    // --- パイプライン設定 ---
+    cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogInjectionCS"));
+    cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogInjectionCS"));
 
-        // --- Dispatch ---
-        UINT injectX = (froxelW + 7) / 8;
-        UINT injectY = (froxelH + 7) / 8;
-        UINT injectZ = (froxelD + 3) / 4;
+    // --- ルートパラメータのバインド ---
+    cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
+    cmdList->SetComputeRootConstantBufferView(1, context.fluidSettingsCBAddress); // b1
+    cmdList->SetComputeRootConstantBufferView(2, constantBuffer_->GetGPUVirtualAddress()); // b2
+    cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); // b3
+    cmdList->SetComputeRootConstantBufferView(4, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); // b4
+    cmdList->SetComputeRootConstantBufferView(5, volumeConstantBuffer_->GetGPUVirtualAddress()); // b5
 
-        cmdList->Dispatch(injectX, injectY, injectZ);
+    // t0 ~ t4 のテーブル (前回のルートシグネチャ変更により、t0~t4がひと繋ぎのテーブルになっています)
+    cmdList->SetComputeRootDescriptorTable(6, destGPU);
 
-        // ★重要：書き込みが終わった Injection の 3Dテクスチャを UAV から SRV (読み込み用) に遷移
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrier);
-    }
+    // ★修正★ u0 のテーブル (※オフセットが4から「5」にズレます！)
+    cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 5, handleSize));
+
+    // --- Dispatch ---
+    UINT injectX = (froxelW + 7) / 8;
+    UINT injectY = (froxelH + 7) / 8;
+    UINT injectZ = (froxelD + 3) / 4;
+
+    cmdList->Dispatch(injectX, injectY, injectZ);
+
+    auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    cmdList->ResourceBarrier(1, &barrier);
 
 
     // ========================================================
@@ -318,9 +327,9 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     {
         // --- ディスクリプタのコピー (オフセット4から書き込み) ---
         // t0: VoxelInject SRV (先ほど作ったもの)
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 4, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 5, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         // u0: VoxelAccumulate UAV
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 5, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 6, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         // --- パイプライン設定 ---
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogAccumulationCS"));
@@ -329,8 +338,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         // --- ルートパラメータのバインド (Accumulation用) ---
         cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress()); // b2
 
-        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 4, handleSize)); // t0
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 5, handleSize)); // u0
+        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 5, handleSize)); // t0
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize)); // u0
 
         // --- Dispatch ---
         UINT accumX = (froxelW + 7) / 8;
@@ -350,12 +359,12 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     {
         // ヒープへのコピー
         // t0: Depth
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 6, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 8, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[prevIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 8, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 9, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[prevIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         // u0: HistoryCurr
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 9, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historyUavIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 10, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historyUavIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         // --- パイプライン設定 ---
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogResolveCS"));
@@ -365,8 +374,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
 
         // Descriptor Table (t0, t1, t2)
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize));
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 7, handleSize));
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 10, handleSize));
 
         UINT clientWidth = Engine::GetClientWidth();  // エンジンの画面幅取得関数に合わせてください
         UINT clientHeight = Engine::GetClientHeight();

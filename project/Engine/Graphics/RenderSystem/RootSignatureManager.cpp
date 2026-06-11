@@ -350,22 +350,24 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         // 定数バッファ (b0: Frame, b2: Fog, b3: PointLight, b4: SpotLight)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL); 
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);
 
-        // SRV (t0: Depth, t1: Shadow, t2: 3DNoise)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
+        // --- SRV テーブル (t0 ~ t4 の計5つのリソースをバインド可能にする) ---
+             // ★修正：第3引数（ディスクリプタの数）を 4 から 5 に変更しました
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_ALL);
 
-        // UAV (u0: VoxelInject 3Dテクスチャ)
+        // --- UAV テーブル (u0: VoxelInject 3Dテクスチャ) ---
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // サンプラー (s0: リニア, s1: シャドウ用比較)
+        // --- 静的サンプラー (s0, s1) ---
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL);
 
-        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS /* 他のフラグも同様に */;
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogInjectionCS");
     }
     if (name == "VolumetricFogAccumulationCS")
@@ -403,27 +405,25 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
     }
-    else if (name == "FluidSimulationCS")
+    else if (name == "FluidSimulationCS") 
     {
         RootSignatureBuilder builder;
 
-        // 1. 定数バッファ (b0: FluidSettings) - Advection と Injection で使用
+        // 0. 定数バッファ (b0: FrameData)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+
+        // 1. 定数バッファ (b1: FluidSettings)
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 2. SRV (読み込み用テクスチャ)
-        // t0: VelocityRead, PressureRead など
-        // t1: DensityRead, Divergence など
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
+        // 2. SRVテーブル (t0, t1 を1つのパラメータにまとめる) -> Root Parameter 2
+        // ★ ベースレジスタ0から、連続する2個のディスクリプタを許可する
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 3. UAV (書き込み用テクスチャ)
-        // u0: VelocityWrite, PressureWrite, Divergence など
-        // u1: DensityWrite など
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
+        // 3. UAVテーブル (u0, u1 を1つのパラメータにまとめる) -> Root Parameter 3
+        // ★ ベースレジスタ0から、連続する2個のディスクリプタを許可する
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 4. サンプラー (s0: バイリニア・クランプ) - Advection のタイリング防止に必須
+        // 4. サンプラー (s0: バイリニア・クランプ) -> Root Parameter 4 ではなく、静的サンプラーとして埋め込み
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -435,7 +435,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
             D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
             D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 
-        return builder.Build(device_, csFlags, "FluidSimulationCS");
+        return builder.Build(device_, csFlags, "FluidComputeRS");
     }
 
     // どれにも該当しない

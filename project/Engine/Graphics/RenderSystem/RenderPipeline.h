@@ -16,6 +16,7 @@ class RTVManager;
 class SwapChain;
 class RenderContext;
 class DebugGuiManager;
+class FluidSimulationPass;
 
 // カメラ情報をまとめる構造体
 struct RenderCameraState 
@@ -46,12 +47,14 @@ public:
     ShadowMap* GetShadowMap() const { return shadowMap_.get(); }
     PostEffectManager* GetPostEffectManager() const { return postEffectManager_.get(); }
     RenderCoordinator* GetRenderCoordinator() const { return renderCoordinator_.get(); }
+    FluidSimulationPass* GetFluidSimulationPass() const { return fluidSimulationPass_.get(); }
 
 private:
     // 描画手順に特化したマネージャー群
     std::unique_ptr<ShadowMap> shadowMap_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
+    std::unique_ptr<FluidSimulationPass> fluidSimulationPass_;
 };
 
 }

@@ -9,6 +9,7 @@
 #include "ImGuiManager.h"
 #include "SRVManager.h"
 #include "DSVManager.h"
+#include "FluidSimulationPass.h"
 
 namespace FE
 {
@@ -58,11 +59,18 @@ void RenderPipeline::Initialize(Engine* engine,
         2048, 2048,
         engine->GetSRVManager()
     );
+
+    // 流体パスの初期化
+    fluidSimulationPass_ = std::make_unique<FluidSimulationPass>();
+    fluidSimulationPass_->Initialize(engine, engine->GetPSOManager());
 }
 
 void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, CommandManager* commandManager, const RenderCameraState& cameraState)
 {
     auto* cmdList = commandManager->GetCommandList();
+
+    // 流体シミュレーションの実行
+    fluidSimulationPass_->Execute(cmdList);
 
     // シャドウパス
     shadowMap_->BeginPass(cmdList);
@@ -73,6 +81,12 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     renderCoordinator_->BeginOffscreenRender();
     rendererManager->Draw3D();
     renderCoordinator_->EndOffscreenRender();
+
+    postEffectManager_->SetFluidData(
+        fluidSimulationPass_->GetCurrentDensitySRVIndex(),
+        fluidSimulationPass_->GetCurrentVelocitySRVIndex(),
+        fluidSimulationPass_->GetConstantBufferAddress()
+    );
 
     // ポストエフェクトパス
     postEffectManager_->ExecutePostEffects(cmdList);

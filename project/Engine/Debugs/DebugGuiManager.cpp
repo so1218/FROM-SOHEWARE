@@ -284,6 +284,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
     SSRSettings* ssrSettings = postEffectManager_->GetSSRSettings();
     std::vector<VolumetricFogPass::FogVolumeData>& volumes = postEffectManager_->GetVolumetricFogPass()->GetFogVolumesData();
+    FluidSettings* fluidSettings = engine_->GetFluidSimulationPass() ? engine_->GetFluidSimulationPass()->GetSettings() : nullptr;
 
     // カラー・色調系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
@@ -722,6 +723,34 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragFloat("干渉半径", &volFogSettings->objectRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
                 ImGui::DragFloat("引きずり強度", &volFogSettings->interactionPower, 0.1f, 0.0f, 50.0f, "%.1f");
                 ImGui::InputFloat3("Debug: ObjPos", &volFogSettings->objectPos.x);
+            }
+
+            // ★ 追加：流体シミュレーションのパラメータ UI
+            if (fluidSettings && ImGui::CollapsingHeader("流体シミュレーション (Fluid Dynamics)"))
+            {
+                ImGui::Text("基本設定 (Base Settings)");
+                // 0.99 などの細かい値の調整が多いため、DragFloatのステップ(第3引数)を小さくしています
+                ImGui::DragFloat("速度の減衰率 (Velocity Dissipation)", &fluidSettings->velocityDissipation, 0.001f, 0.0f, 1.0f, "%.3f");
+                ImGui::DragFloat("密度の減衰率 (Density Dissipation)", &fluidSettings->densityDissipation, 0.001f, 0.0f, 1.0f, "%.3f");
+                ImGui::DragFloat("グリッドスケール (Grid Scale)", &fluidSettings->gridScale, 0.1f, 0.1f, 100.0f, "%.1f m");
+
+                ImGui::Separator();
+                ImGui::Text("グリッド範囲 (Grid Bounds)");
+                ImGui::DragFloat3("最小座標 (Grid Min)", &fluidSettings->gridMin.x, 1.0f);
+                ImGui::DragFloat3("最大座標 (Grid Max)", &fluidSettings->gridMax.x, 1.0f);
+
+                ImGui::Separator();
+                ImGui::Text("外力・干渉 (Injection & Interaction)");
+                ImGui::DragFloat("干渉半径 (Interaction Radius)", &fluidSettings->interactionRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
+                ImGui::DragFloat("押し出す力 (Injection Strength)", &fluidSettings->injectionStrength, 0.1f, 0.0f, 100.0f, "%.1f");
+                ImGui::DragFloat("発生する霧の量 (Density Amount)", &fluidSettings->densityAmount, 0.1f, 0.0f, 100.0f, "%.1f");
+
+                ImGui::Separator();
+                ImGui::Text("デバッグ用オブジェクト情報 (Debug Object Info)");
+                // 通常はプレイヤーキャラの座標を毎フレーム上書きするはずですが、
+                // UIから手動でテストできるようにもしておきます。
+                ImGui::DragFloat3("オブジェクト座標 (Object Pos)", &fluidSettings->objectPos.x, 0.1f);
+                ImGui::DragFloat3("オブジェクト速度 (Object Velocity)", &fluidSettings->objectVelocity.x, 0.1f);
             }
 
             if (ImGui::CollapsingHeader("システム・TAA (System)"))
