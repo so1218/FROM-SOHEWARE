@@ -397,7 +397,7 @@ struct VolumetricFogSettings
     float erosion;
     float noiseFeather; 
     float erosionStrength;
-    float pad8;
+    float noiseIntensity;
     
     float3 objectPos;
     float objectRadius;

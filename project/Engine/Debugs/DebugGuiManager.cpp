@@ -679,7 +679,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
             if (ImGui::CollapsingHeader("PBR 光学特性 (Lighting & Optical)", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::ColorEdit3("散乱色 (GodRay Color)", &volFogSettings->scatteringColor.x);
+                ImGui::ColorEdit3("散乱色", &volFogSettings->scatteringColor.x);
                 ImGui::DragFloat("散乱の強さ (Scattering Intensity)", &volFogSettings->scatteringIntensity, 0.5f, 0.0f, 200.0f, "%.1f");
                 ImGui::DragFloat("光の減衰スケール (Extinction)", &volFogSettings->extinctionScale, 0.01f, 0.0f, 10.0f, "%.2f");
                 ImGui::SliderFloat("前方散乱・光の筋 (Anisotropy)", &volFogSettings->anisotropy, -0.99f, 0.99f, "%.2f");
@@ -716,6 +716,8 @@ void DebugGuiManager::DrawPostEffectSettings()
 
                 // ★追加: 流体の境界をノイズで侵食して千切る強さ
                 ImGui::SliderFloat("流体との融合削り強度 (Erosion Strength)", &volFogSettings->erosionStrength, 0.0f, 2.0f, "%.2f");
+
+                ImGui::SliderFloat("全体ノイズ適用度 (Noise Intensity)", &volFogSettings->noiseIntensity, 0.0f, 1.0f, "%.2f");
 
                 // Feather は 0.0 になるとエラーやジャギが出るため、最小値を 0.001 に設定
                 ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");

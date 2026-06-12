@@ -107,7 +107,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
         }
         
-        // ===============================================================
+      // ===============================================================
         // ★流体データの取得
         // ===============================================================
         float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
@@ -117,11 +117,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 advectedFluidUVW = fluidUVW; // デフォルトは歪みなしのUVW
         
         float fluidShadowMass = 0.0f;
+        float edgeFade = 0.0f; // ★ループ外でも使えるようにここで宣言
 
         if (all(fluidUVW >= 0.0f) && all(fluidUVW <= 1.0f))
         {
             float3 edgeDist = min(fluidUVW, 1.0f - fluidUVW);
-            float edgeFade = smoothstep(0.0f, 0.1f, min(min(edgeDist.x, edgeDist.y), edgeDist.z));
+            edgeFade = smoothstep(0.0f, 0.1f, min(min(edgeDist.x, edgeDist.y), edgeDist.z));
 
             realFluidVelocity = gFluidVelocity.SampleLevel(gSampler, fluidUVW, 0).xyz * edgeFade;
             fluidMass = max(gFluidDensity.SampleLevel(gSampler, fluidUVW, 0).r, 0.0f) * edgeFade;
@@ -132,7 +133,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
             // ===============================================================
             // ★大改造4: 疑似ボリューメトリック・セルフシャドウ（直方体バグ修正版）
             // ===============================================================
-            // ★修正：ワールド空間で正しく光の方向に「2ボクセル分」進めてから、一括でUVW空間に変換する
             float3 shadowOffsetWorld = normalize(-gFrameData.mainLightDirection) * (2.0f * gFluidSettings.gridScale);
             float3 shadowUVW = fluidUVW + (shadowOffsetWorld / fluidSize);
             
@@ -145,13 +145,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 風による時間のオフセット
         float3 timeOffset = normalize(gFogSettings.windDirection + 0.001f) * (gFrameData.gTime * gFogSettings.windSpeed);
 
-        // ===============================================================
+      // ===============================================================
         // ★大改造1: 流速(Velocity)ではなく、蓄積されたUVWによる「本物の流体移流」
         // ===============================================================
-        // ★修正：蓄積された移流UVWから、流体によって歪められた仮想のワールド座標を復元します。
-        // これにより、キャラが通り過ぎて速度が0に戻った後も、空間の歪み（渦）が綺麗に残り続けます。
         float3 fluidDistortedPos = gFluidSettings.gridMin + advectedFluidUVW * fluidSize;
-        float3 noiseSamplePos = lerp(currentPos, fluidDistortedPos, fluidMass > 0.0f ? 1.0f : 0.0f);
+        
+        // 【★修正1】不連続バグの解消
+        // 密度(fluidMass)ベースの3項演算子をやめ、グリッドの境界フェード(edgeFade)で滑らかに座標をブレンドします。
+        // これにより、グリッドの内外でノイズのサンプリング位置がジャンプする現象が完全に消え、滑らかに繋がります。
+        // また、煙の密度が0になっても「空間の歪み（過去の渦）」がグリッド内に正しく残り続けるようになります。
+        float3 noiseSamplePos = lerp(currentPos, fluidDistortedPos, edgeFade);
 
         // 微細な歪み（既存の3Dノイズボリュームによる揺らぎ）
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
@@ -171,23 +174,59 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float combinedNoise = lerp(basePerlin, 1.0f - detailNoise.g, gFogSettings.worleyWeight);
         combinedNoise = saturate(combinedNoise - (detailNoise.b * gFogSettings.erosion));
-// ===============================================================
+
+       // ===============================================================
         // ★大改造2: 流体密度(マクロ) × ノイズ(ミクロ) の完全融合
         // ===============================================================
         float cutoff = 1.0f - gFogSettings.coverage;
         float feather = max(gFogSettings.noiseFeather, 0.001f);
         
-        // ノイズによる微細なエッジの削り出し（Coverage）
-        float noiseDetail = smoothstep(cutoff, cutoff + feather, combinedNoise);
+        // 1. 先に高さ減衰（Height Factor）を計算
+        float heightFactor = 1.0f;
+        if (gFogSettings.heightFalloff > 0.0f)
+        {
+            heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
+        }
+        
+        // ===============================================================
+        // ★大改造: Unreal / Frostbite基準の「密度合成（Density Compositing）」
+        // ===============================================================
 
-        // ★追加: 影の質量にもノイズを適用（影のエッジもノイズで削る）
-        float dynamicShadowFog = fluidShadowMass * noiseDetail;
+        // 1. マクロな形状（Base Density）を別々に計算する
+        float globalBaseDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor);
+        float fluidBaseDensity = fluidMass;
+
+        // 2. 密度の合成（Compositing）
+        float blendWeight = saturate(fluidMass * edgeFade);
+        float macroDensity = lerp(globalBaseDensity, max(globalBaseDensity, fluidBaseDensity), blendWeight);
+
+        // 3. ミクロなディテール（Noise / Erosion）の適用
+        float noiseCoverage = smoothstep(cutoff, cutoff + feather, combinedNoise);
+        
+        // 【★Unreal Engine基準の修正】：減算型から「乗算（比率）型」のエロージョンに変更
+        // combinedNoise(0～1) に応じて、ベース密度をどれだけの割合削るかを計算します。
+        // これにより、密度の高い流体内部も、密度の低い外側も、同じコントラストで均一に削り出されます。
+        float erosionFactor = saturate(1.0f - (1.0f - combinedNoise) * gFogSettings.erosionStrength);
+        
+   // ★【修正】ノイズの効果を1つにまとめ、Intensityで「1.0（無地）」とブレンドする
+        float combinedNoiseEffect = erosionFactor * noiseCoverage;
+        float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, gFogSettings.noiseIntensity);
+        
+        // 4. 最終的なパーティクル密度
+        // finalNoiseModifierが1.0なら、macroDensityがそのまま出力され完全なのっぺりフォグになる
+        float particleDensity = macroDensity * finalNoiseModifier;
+
+        // 【シャドウの計算連動】セルフシャドウ用の密度も同様に比率で計算
+        float combinedShadowBase = lerp(globalBaseDensity, max(globalBaseDensity, fluidShadowMass), saturate(fluidShadowMass * edgeFade));
+        float dynamicShadowFog = combinedShadowBase * erosionFactor * noiseCoverage;
+
 
         // ===============================================================
-        // ★大改造5: 光の減衰（Beer-Lambert則）の適用
+        // ★大改造5: 光の減衰（Beer-Lambert則）の適用 と ライティング
+        // 【修正】密度が確定した後に、受光量を計算する！
         // ===============================================================
-        // 光の方向にある煙の濃度に応じて、光を指数関数的に減衰させる（セルフシャドウ）
-        // 4.0f の部分は影の濃さ（Absorption）です。好みに応じて調整してください。
+        
+        // 直上で合成・計算した dynamicShadowFog を使って遮蔽率を出す
         float fluidSelfShadow = exp(-dynamicShadowFog * 4.0f);
 
         // 受光量の計算（地形シャドウ × 流体セルフシャドウ を合成）
@@ -196,7 +235,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
         float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
         
-        // ★ finalShadowVisibility を使うように変更
         float3 totalLight = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb;
         totalLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
 
@@ -240,20 +278,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         totalLight += stepLocal;
         
 // ===============================================================
-        // 1. グローバルフォグの基本密度を計算
-        // ===============================================================
-        float heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
-        float noisyGlobalDensity = gFogSettings.globalDensity * noiseDetail;
-
-        // ===============================================================
-        // ★大改造3: 流体密度(マクロ) × ノイズ(ミクロ) の完全融合
-        // ===============================================================
-        float edgeErosion = saturate(1.0f - fluidMass);
-        float dynamicFluidFog = saturate(fluidMass - (combinedNoise * edgeErosion * gFogSettings.erosionStrength));
-
-        float particleDensity = noisyGlobalDensity + (dynamicFluidFog * gFogSettings.heightDensity * heightFactor);
-
-        // ===============================================================
         // 3. 最後に距離フェードなどをかける
         // ===============================================================
         float fadeStart = farZ * 0.8f;

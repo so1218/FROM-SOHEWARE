@@ -62,6 +62,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->interactionPower = 5.0f;
 
     cbData_->erosionStrength = 1.0f;
+    cbData_->noiseIntensity = 1.0f;
 
     // ★パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};

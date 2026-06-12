@@ -35,6 +35,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 advectedVelocity = gVelocityRead.SampleLevel(gLinearClampSampler, backtraceUVW, 0).xyz;
     float advectedDensity = gDensityRead.SampleLevel(gLinearClampSampler, backtraceUVW, 0).r;
     
+   // =======================================================
+    // ★修正：UEスタイルの物理ベース減衰 (Exponential Decay)
+    // =======================================================
+    // gFluidSettings.densityDissipation は 0.5f ～ 3.0f 程度で調整します。
+    // 値が大きいほど早く煙が消えます。引き算による不自然な消失を防ぎます。
+    float decay = exp(-gFluidSettings.densityDissipation * gFrameData.deltaTime);
+    advectedDensity *= decay;
+    // もし微小なゴミが残り続ける場合は、非常に小さな線形減衰を組み合わせる
+    advectedDensity = max(0.0f, advectedDensity - 0.005f * gFrameData.deltaTime);
+
     // =======================================================
     // ★大改造1: UVW座標自体の移流
     // =======================================================
