@@ -141,6 +141,9 @@ void Player::Move()
 
 	// 実際の位置更新
 	GetTransform().translation_ += moveDirection_ * moveSpeed_;
+
+	engine_->GetFluidSimulationPass()->GetSettings()->objectPos = GetTransform().translation_;
+	engine_->GetFluidSimulationPass()->GetSettings()->objectVelocity = moveDirection_ * moveSpeed_;
 }
 
 // 入力から移動方向を取得

@@ -28,6 +28,8 @@ public:
 
     FluidSettings* GetSettings() const { return cbData_; }
 
+    uint32_t GetCurrentUVWSRVIndex() const { return uvwSrvIndices_[readIndex_]; }
+
 private:
     Engine* engine_ = nullptr;
     PSOManager* psoManager_ = nullptr;
@@ -66,6 +68,10 @@ private:
     // 定数バッファ (b1: FluidSettings)
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     FluidSettings* cbData_ = nullptr; // ※FluidSettings構造体はEngine側で定義されている想定
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> uvwRes_[2];
+    uint32_t uvwUavIndices_[2];
+    uint32_t uvwSrvIndices_[2];
 };
 
 }

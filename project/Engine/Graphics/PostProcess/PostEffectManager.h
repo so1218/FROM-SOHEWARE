@@ -75,10 +75,11 @@ public:
     void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
 
     // ★追加：流体シミュレーションの結果を受け取る専用の窓口
-    void SetFluidData(uint32_t densitySrvIndex, uint32_t velocitySrvIndex, D3D12_GPU_VIRTUAL_ADDRESS cbAddress)
+    void SetFluidData(uint32_t densitySrvIndex, uint32_t velocitySrvIndex, uint32_t uvwSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS cbAddress)
     {
         context_.fluidDensitySrvIndex = densitySrvIndex;
-        context_.fluidVelocitySrvIndex = velocitySrvIndex; // ★追加
+        context_.fluidVelocitySrvIndex = velocitySrvIndex;
+        context_.fluidUVWSrvIndex = uvwSrvIndex; // ★追加
         context_.fluidSettingsCBAddress = cbAddress;
     }
 

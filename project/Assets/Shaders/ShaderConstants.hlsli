@@ -396,7 +396,7 @@ struct VolumetricFogSettings
     
     float erosion;
     float noiseFeather; 
-    float pad7; 
+    float erosionStrength;
     float pad8;
     
     float3 objectPos;
@@ -469,7 +469,7 @@ struct FluidSettings
     float velocityDissipation; // 速度の減衰率（例: 0.99f）
     float densityDissipation; // 密度の減衰率（例: 0.95f）
     float gridScale; // シミュレーショングリッドの物理スケール
-    float paddingFluid1; // アラインメント用
+    float vorticityStrength;
 
 
     float3 gridMin; // 流体ボックスの最小ワールド座標
@@ -482,5 +482,9 @@ struct FluidSettings
     float densityAmount; // 動いた場所に出す霧の量
 
     float3 objectVelocity; // プレイヤーの移動速度ベクトル
-    float paddingFluid2; // アラインメント用
+    float dragStrength; // ★新規追加 (paddingFluid2を置き換え): 移動方向へ引きずる力
+
+    float pushStrength; // ★新規追加: 外側へ押し退ける力
+    float uvwRelaxation; // ★新規追加: UVW座標の伸びを元に戻す力（ストレッチ防止）
+    float2 paddingFluid3; // アラインメント用
 };

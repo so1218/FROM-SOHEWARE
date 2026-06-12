@@ -954,5 +954,7 @@
     <FxCompile Include="Assets\Shaders\FluidDivergence.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidJacobi.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidVorticity.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidInitUVW.CS.hlsl" />
   </ItemGroup>
 </Project>

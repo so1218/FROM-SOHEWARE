@@ -714,6 +714,9 @@ void DebugGuiManager::DrawPostEffectSettings()
                 // Erosion はディテールを削り取る強さ
                 ImGui::SliderFloat("削り取り強度 (Erosion)", &volFogSettings->erosion, 0.0f, 1.0f, "%.2f");
 
+                // ★追加: 流体の境界をノイズで侵食して千切る強さ
+                ImGui::SliderFloat("流体との融合削り強度 (Erosion Strength)", &volFogSettings->erosionStrength, 0.0f, 2.0f, "%.2f");
+
                 // Feather は 0.0 になるとエラーやジャギが出るため、最小値を 0.001 に設定
                 ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");
             }
@@ -734,6 +737,12 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragFloat("密度の減衰率 (Density Dissipation)", &fluidSettings->densityDissipation, 0.001f, 0.0f, 1.0f, "%.3f");
                 ImGui::DragFloat("グリッドスケール (Grid Scale)", &fluidSettings->gridScale, 0.1f, 0.1f, 100.0f, "%.1f m");
 
+                // ★追加: 渦巻きを強調する力（Vorticity Confinement）
+                ImGui::DragFloat("渦の強さ (Vorticity Strength)", &fluidSettings->vorticityStrength, 0.01f, 0.0f, 5.0f, "%.2f");
+
+                // ★追加: UVW座標が無限に伸びて破綻するのを防ぐ復元力
+                ImGui::DragFloat("UVW復元力 (UVW Relaxation)", &fluidSettings->uvwRelaxation, 0.01f, 0.0f, 1.0f, "%.2f");
+
                 ImGui::Separator();
                 ImGui::Text("グリッド範囲 (Grid Bounds)");
                 ImGui::DragFloat3("最小座標 (Grid Min)", &fluidSettings->gridMin.x, 1.0f);
@@ -742,13 +751,16 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::Separator();
                 ImGui::Text("外力・干渉 (Injection & Interaction)");
                 ImGui::DragFloat("干渉半径 (Interaction Radius)", &fluidSettings->interactionRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
-                ImGui::DragFloat("押し出す力 (Injection Strength)", &fluidSettings->injectionStrength, 0.1f, 0.0f, 100.0f, "%.1f");
+
+                // ★追加: キャラクターの動きに対する空気の反応
+                ImGui::DragFloat("引きずる力 (Drag Strength)", &fluidSettings->dragStrength, 0.1f, 0.0f, 50.0f, "%.1f");
+                ImGui::DragFloat("押し退ける力 (Push Strength)", &fluidSettings->pushStrength, 0.1f, 0.0f, 50.0f, "%.1f");
+
+                ImGui::DragFloat("全体的な力の倍率 (Injection Strength)", &fluidSettings->injectionStrength, 0.1f, 0.0f, 100.0f, "%.1f");
                 ImGui::DragFloat("発生する霧の量 (Density Amount)", &fluidSettings->densityAmount, 0.1f, 0.0f, 100.0f, "%.1f");
 
                 ImGui::Separator();
                 ImGui::Text("デバッグ用オブジェクト情報 (Debug Object Info)");
-                // 通常はプレイヤーキャラの座標を毎フレーム上書きするはずですが、
-                // UIから手動でテストできるようにもしておきます。
                 ImGui::DragFloat3("オブジェクト座標 (Object Pos)", &fluidSettings->objectPos.x, 0.1f);
                 ImGui::DragFloat3("オブジェクト速度 (Object Velocity)", &fluidSettings->objectVelocity.x, 0.1f);
             }

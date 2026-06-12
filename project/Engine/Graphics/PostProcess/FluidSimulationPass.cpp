@@ -19,6 +19,10 @@ FluidSimulationPass::~FluidSimulationPass()
         if (densityUavIndices_[i] != 0)  srvManager->FreeSRV(densityUavIndices_[i]);
         if (pressureSrvIndices_[i] != 0) srvManager->FreeSRV(pressureSrvIndices_[i]);
         if (pressureUavIndices_[i] != 0) srvManager->FreeSRV(pressureUavIndices_[i]);
+
+        // ★ 追加：UVWのディスクリプタを解放
+        if (uvwSrvIndices_[i] != 0)      srvManager->FreeSRV(uvwSrvIndices_[i]);
+        if (uvwUavIndices_[i] != 0)      srvManager->FreeSRV(uvwUavIndices_[i]);
     }
     if (divergenceSrvIndex_ != 0) srvManager->FreeSRV(divergenceSrvIndex_);
     if (divergenceUavIndex_ != 0) srvManager->FreeSRV(divergenceUavIndex_);
@@ -46,7 +50,7 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
     cbData_->velocityDissipation = 0.98f;  // 速度の減衰率
     cbData_->densityDissipation = 0.99f;  // 密度の減衰率（元の dissipation）
     cbData_->gridScale = 1.0f;   // グリッドの物理サイズ（1マス何メートルか）
-    cbData_->paddingFluid1 = 0.0f;   // パディング（未使用）
+    cbData_->vorticityStrength = 0.5f;
 
     // ==========================================
     // Injection（外力）用パラメータ
@@ -61,12 +65,15 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
     cbData_->densityAmount = 1.0f;                     // 発生させる霧の量
 
     cbData_->objectVelocity = { 0.0f, 0.0f, 0.0f };     // プレイヤーの初期速度
-    cbData_->paddingFluid2 = 0.0f;
+
+    cbData_->dragStrength = 2.0f;         // プレイヤーの移動速度の何倍で空気を引きずるか
+    cbData_->pushStrength = 3.0f;         // プレイヤーが空気を外側に押し退ける力の強さ
+    cbData_->uvwRelaxation = 0.15f;
 
     // 2. ディスクリプタヒープの作成（ダブルバッファリング対応）
     for (int i = 0; i < 2; ++i) {
         D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-        heapDesc.NumDescriptors = 128; // 1フレーム96個消費なので128で十分かつ安全
+        heapDesc.NumDescriptors = 256; // 1フレーム96個消費なので128で十分かつ安全
         heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_[i]));
@@ -106,6 +113,9 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
         CreateFluidTexture(densityRes_[i], DXGI_FORMAT_R16_FLOAT, L"Fluid_Density", densityUavIndices_[i], densitySrvIndices_[i]);
         CreateFluidTexture(velocityRes_[i], DXGI_FORMAT_R16G16B16A16_FLOAT, L"Fluid_Velocity", velocityUavIndices_[i], velocitySrvIndices_[i]);
         CreateFluidTexture(pressureRes_[i], DXGI_FORMAT_R16_FLOAT, L"Fluid_Pressure", pressureUavIndices_[i], pressureSrvIndices_[i]);
+
+        // ★ 追加：UVW座標用バッファの生成
+        CreateFluidTexture(uvwRes_[i], DXGI_FORMAT_R16G16B16A16_FLOAT, L"Fluid_UVW", uvwUavIndices_[i], uvwSrvIndices_[i]);
     }
     // Divergenceは1枚
     CreateFluidTexture(divergenceRes_, DXGI_FORMAT_R16_FLOAT, L"Fluid_Divergence", divergenceUavIndex_, divergenceSrvIndex_);
@@ -120,62 +130,75 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
     readIndex_ = frameCounter_ % 2;
     writeIndex_ = (frameCounter_ + 1) % 2;
 
-    // ★修正：フレームに応じて使用するディスクリプタヒープを切り替える（ハザードを完全に防止）
+    // フレームに応じて使用するディスクリプタヒープを切り替える
     UINT heapIndex = frameCounter_ % 2;
     ID3D12DescriptorHeap* heaps[] = { passHeap_[heapIndex].Get() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    // ★修正：今フレーム専用のヒープの先頭からポインタを進める
     D3D12_CPU_DESCRIPTOR_HANDLE currentCPU = passHeap_[heapIndex]->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE currentGPU = passHeap_[heapIndex]->GetGPUDescriptorHandleForHeapStart();
 
-    // スレッドグループの計算 (8x8x8スレッドを想定)
+    // スレッドグループの計算
     UINT dispatchX = (width_ + 7) / 8;
     UINT dispatchY = (height_ + 7) / 8;
     UINT dispatchZ = (depth_ + 7) / 8;
 
-    // ★ 改善版ヘルパー：複数のSRV/UAVを連続コピーして、1つのDescriptor Tableとしてバインドする
+    // ディスクリプタバインド用ヘルパー
     auto BindDescriptorTable = [&](const std::vector<uint32_t>& srvOrUavIndices, int rootParamIndex) {
         if (srvOrUavIndices.empty()) return;
 
-        // このテーブルの先頭GPUハンドルを記録
         D3D12_GPU_DESCRIPTOR_HANDLE tableStartGPU = currentGPU;
+        const uint32_t EXPECTED_SIZE = 3;
 
-        // 要素数が1つの場合は、同じインデックスを2回並べてサイズ2に揃える
-        uint32_t idx0 = srvOrUavIndices[0];
-        uint32_t idx1 = (srvOrUavIndices.size() > 1) ? srvOrUavIndices[1] : idx0;
-
-        uint32_t indices[2] = { idx0, idx1 };
-        for (uint32_t index : indices) {
+        for (uint32_t i = 0; i < EXPECTED_SIZE; ++i) {
+            uint32_t index = (i < srvOrUavIndices.size()) ? srvOrUavIndices[i] : srvOrUavIndices.back();
             device->CopyDescriptorsSimple(1, currentCPU, engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(index), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
             currentCPU.ptr += handleSize;
             currentGPU.ptr += handleSize;
         }
 
-        // ルートパラメータにバインド
         cmdList->SetComputeRootDescriptorTable(rootParamIndex, tableStartGPU);
         };
 
     // ====================================================================
-    // [0] 初回フレームの特殊処理：UAVとして生成されたリソースを前提のSRV状態に遷移
+    // ★修正1：パイプラインの共通バインドを関数の先頭に移動
     // ====================================================================
-    if (frameCounter_ == 0) {
-        D3D12_RESOURCE_BARRIER initBarriers[6] = {
+    // 初回フレームの初期化Dispatchよりも前に定数バッファ(b0, b1)を確実に結びつけます
+    cmdList->SetComputeRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("FluidSimulationCS"));
+    cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
+
+
+    // ====================================================================
+    // [0] 初回フレームの特殊処理
+    // ====================================================================
+    if (frameCounter_ == 0)
+    {
+        // パイプラインを初期化用に切り替え
+        cmdList->SetPipelineState(psoManager_->GetPSO("FluidInitUVWCS"));
+
+        // ★修正2：UVWのUAV(u0) と 密度のUAV(u1) を両方とも渡す！
+        // uvwRes_[0] と densityRes_[0] の初期化
+        BindDescriptorTable({ uvwUavIndices_[0], densityUavIndices_[0] }, 3);
+        cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
+
+        // uvwRes_[1] と densityRes_[1] の初期化
+        BindDescriptorTable({ uvwUavIndices_[1], densityUavIndices_[1] }, 3);
+        cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
+
+        // 各リソースを初期状態（UAV）から運用状態（SRV）へ遷移
+        D3D12_RESOURCE_BARRIER initBarriers[8] = {
             CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[0].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[0].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(pressureRes_[0].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-            CD3DX12_RESOURCE_BARRIER::Transition(pressureRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+            CD3DX12_RESOURCE_BARRIER::Transition(pressureRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[0].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
         };
-        cmdList->ResourceBarrier(6, initBarriers);
+        cmdList->ResourceBarrier(8, initBarriers);
     }
-
-    // パイプラインの共通バインド (b0: グローバル定数, b1: 流体設定定数)
-    cmdList->SetComputeRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("FluidSimulationCS"));
-    cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
-
 
     // ====================================================================
     // [1] Source Injection パス (外部の力・密度を空間に注入)
@@ -210,26 +233,52 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
     // [2] Advection パス (自己移流：速度と密度を速度場に従って移動させる)
     // ====================================================================
     {
-        // 移流先となる readIndex_ 側を UAV 状態へ遷移
-        D3D12_RESOURCE_BARRIER preBarriers[2] = {
+        // ★ 修正：UVWの書き込み先 (readIndex_) も UAV 状態へ遷移させる
+        D3D12_RESOURCE_BARRIER preBarriers[3] = {
             CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS) // 追加
         };
-        cmdList->ResourceBarrier(2, preBarriers);
+        cmdList->ResourceBarrier(3, preBarriers);
 
-        // ★修正：PSOを1つにし、速度と密度を同時に処理する
         cmdList->SetPipelineState(psoManager_->GetPSO("FluidAdvectionCS"));
 
-        // t0: 速度場(前パスの出力), t1: 密度場(前パスの出力)
-        BindDescriptorTable({ velocitySrvIndices_[writeIndex_], densitySrvIndices_[writeIndex_] }, 2);
-        // u0: 移流先速度, u1: 移流先密度
-        BindDescriptorTable({ velocityUavIndices_[readIndex_], densityUavIndices_[readIndex_] }, 3);
+        // ★ 修正：t0, t1, t2 にそれぞれ割り当て
+        BindDescriptorTable({ velocitySrvIndices_[writeIndex_], densitySrvIndices_[writeIndex_], uvwSrvIndices_[writeIndex_] }, 2);
+        // ★ 修正：u0, u1, u2 にそれぞれ割り当て
+        BindDescriptorTable({ velocityUavIndices_[readIndex_], densityUavIndices_[readIndex_], uvwUavIndices_[readIndex_] }, 3);
 
         cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
 
-        // 速度だけ次の「発散計算」のために SRV に遷移（密度はUAVのままキープし、これが今フレームの最終結果になる）
+        // 速度は次へ、密度は最終結果、UVWは描画や次フレームへ回すためSRV状態に戻す
+        D3D12_RESOURCE_BARRIER postBarriers[2] = {
+            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE) // 追加
+        };
+        cmdList->ResourceBarrier(2, postBarriers);
+    }
+
+    // ====================================================================
+    // [2.5] 新設：Vorticity パス (渦度閉じ込め)
+    // ====================================================================
+    {
+        // 移流後の最新速度は readIndex_ に入っている。これを元に計算し、writeIndex_ に書き込む
+        D3D12_RESOURCE_BARRIER preBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        cmdList->ResourceBarrier(1, &preBarrier);
+
+        cmdList->SetPipelineState(psoManager_->GetPSO("FluidVorticityCS")); // ★追加したPSO名に合わせてください
+
+        // t0: 移流後の速度場 (readIndex_)
+        BindDescriptorTable({ velocitySrvIndices_[readIndex_] }, 2);
+        // u0: 渦の力が加算された新しい速度場 (writeIndex_)
+        BindDescriptorTable({ velocityUavIndices_[writeIndex_] }, 3);
+
+        cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
+
+        // 次の Divergence のために SRV に遷移（これで最新の速度場は writeIndex_ になる）
         D3D12_RESOURCE_BARRIER postBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+            velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         cmdList->ResourceBarrier(1, &postBarrier);
     }
 
@@ -239,8 +288,8 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
     // ====================================================================
     {
         cmdList->SetPipelineState(psoManager_->GetPSO("FluidDivergenceCS"));
-        BindDescriptorTable({ velocitySrvIndices_[readIndex_] }, 2); // t0: 移流後の速度場
-        BindDescriptorTable({ divergenceUavIndex_ }, 3);             // u0: 発散結果目標
+        BindDescriptorTable({ velocitySrvIndices_[writeIndex_] }, 2);
+        BindDescriptorTable({ divergenceUavIndex_ }, 3);
         cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
 
         // 次のヤコビ反復で読み込むため、発散バッファを SRV に遷移
@@ -290,46 +339,59 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
     // [5] Projection パス (圧力勾配を速度から引き算し、質量保存を満たす速度場にする)
     // ====================================================================
     {
-        uint32_t finalPressureIdx = 0;
+        uint32_t finalPressureIdx = 0; // 反復回数が偶数なら0が最新
 
         D3D12_RESOURCE_BARRIER preBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         cmdList->ResourceBarrier(1, &preBarrier);
 
         cmdList->SetPipelineState(psoManager_->GetPSO("FluidSubtractGradientCS"));
 
-        BindDescriptorTable({ velocitySrvIndices_[readIndex_], pressureSrvIndices_[finalPressureIdx] }, 2);
-        BindDescriptorTable({ velocityUavIndices_[writeIndex_] }, 3);
+        // 読み込み先: writeIndex_
+        BindDescriptorTable({ velocitySrvIndices_[writeIndex_], pressureSrvIndices_[finalPressureIdx] }, 2);
+        // 書き込み先: readIndex_
+        BindDescriptorTable({ velocityUavIndices_[readIndex_] }, 3);
+
         cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
 
         // ====================================================================
-        // ★修正★ 最新の速度 (writeIndex_) を 密度の位置 (readIndex_) に同期させる
+        // ★修正：最新の 速度、UVW、さらに【密度】も 待機側 (writeIndex_) に同期コピーさせる
         // ====================================================================
-        D3D12_RESOURCE_BARRIER copyBarriers[2] = {
-            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
-            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST)
-        };
-        cmdList->ResourceBarrier(2, copyBarriers);
+        D3D12_RESOURCE_BARRIER copyBarriers[6] = {
+            // Velocity
+            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
 
-        // writeIndex_ の内容を readIndex_ へ丸ごと高速コピー
-        cmdList->CopyResource(velocityRes_[readIndex_].Get(), velocityRes_[writeIndex_].Get());
+            // UVW
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST),
 
-        // コピー完了後、両方を NON_PIXEL_SHADER_RESOURCE (SRVとして読める状態) に戻す
-        D3D12_RESOURCE_BARRIER postBarriers[2] = {
-            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+            // ★ 追加：Density（Advectionパス以降、readIndex_側がUAV状態のまま維持されている）
+            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST)
         };
-        cmdList->ResourceBarrier(2, postBarriers);
+        cmdList->ResourceBarrier(6, copyBarriers);
+
+        // コピーの実行（すべてをダブルバッファ間で完全同期）
+        cmdList->CopyResource(velocityRes_[writeIndex_].Get(), velocityRes_[readIndex_].Get());
+        cmdList->CopyResource(uvwRes_[writeIndex_].Get(), uvwRes_[readIndex_].Get());
+        cmdList->CopyResource(densityRes_[writeIndex_].Get(), densityRes_[readIndex_].Get()); // ★ 追加
+
+        // コピー完了後、すべてを NON_PIXEL_SHADER_RESOURCE (SRV) に戻す
+        D3D12_RESOURCE_BARRIER postBarriers[6] = {
+            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+
+            // ★ 追加：これで密度も安全にSRV化される
+            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+            CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
+        };
+        cmdList->ResourceBarrier(6, postBarriers);
     }
 
-
-    // ====================================================================
-    // [6] 最終処理：VolumetricFogPass が密度をテクスチャサンプリングできるようにする
-    // ====================================================================
-    // 現在の最終的な流体密度は densityRes_[readIndex_] (UAV状態) に残っているため、SRVへ遷移
-    D3D12_RESOURCE_BARRIER finalDensityBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    cmdList->ResourceBarrier(1, &finalDensityBarrier);
 
     // これにより、ゲッター GetCurrentDensitySRVIndex() が返す densitySrvIndices_[readIndex_] が
     // VolumetricFogPass のインジェクションCS等から安全に読み込めるようになります。

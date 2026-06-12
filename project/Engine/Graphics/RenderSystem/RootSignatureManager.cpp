@@ -358,7 +358,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         // --- SRV テーブル (t0 ~ t4 の計5つのリソースをバインド可能にする) ---
              // ★修正：第3引数（ディスクリプタの数）を 4 から 5 に変更しました
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 6, D3D12_SHADER_VISIBILITY_ALL);
 
         // --- UAV テーブル (u0: VoxelInject 3Dテクスチャ) ---
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
@@ -415,13 +415,11 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         // 1. 定数バッファ (b1: FluidSettings)
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 2. SRVテーブル (t0, t1 を1つのパラメータにまとめる) -> Root Parameter 2
-        // ★ ベースレジスタ0から、連続する2個のディスクリプタを許可する
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+        // ★ 修正：2個から3個のディスクリプタを許可する (t0, t1, t2)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 3. UAVテーブル (u0, u1 を1つのパラメータにまとめる) -> Root Parameter 3
-        // ★ ベースレジスタ0から、連続する2個のディスクリプタを許可する
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+        // ★ 修正：2個から3個のディスクリプタを許可する (u0, u1, u2)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
 
         // 4. サンプラー (s0: バイリニア・クランプ) -> Root Parameter 4 ではなく、静的サンプラーとして埋め込み
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,

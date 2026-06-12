@@ -85,6 +85,7 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     postEffectManager_->SetFluidData(
         fluidSimulationPass_->GetCurrentDensitySRVIndex(),
         fluidSimulationPass_->GetCurrentVelocitySRVIndex(),
+        fluidSimulationPass_->GetCurrentUVWSRVIndex(),
         fluidSimulationPass_->GetConstantBufferAddress()
     );
 

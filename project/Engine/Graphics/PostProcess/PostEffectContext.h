@@ -23,6 +23,7 @@ struct PostEffectContext
     // 流体シミュレーションの結果を受け取る変数
     uint32_t fluidDensitySrvIndex = 0;
     uint32_t fluidVelocitySrvIndex = 0; // ★追加：速度用のSRVインデックス
+    uint32_t fluidUVWSrvIndex = 0;
     D3D12_GPU_VIRTUAL_ADDRESS fluidSettingsCBAddress = 0;
 
     // CPUハンドルの取得
