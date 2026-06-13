@@ -255,43 +255,94 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 totalLight = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb;
         totalLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
 
-        // [ローカルライト（ポイント/スポット）の計算は変更がないため中身を維持]
+        // ローカルライトの累積用
         float3 stepLocal = 0;
+
+        // ★追加：ローカルライト用のボクセル疑似セルフシャドウ（煙の中での減衰）
+        // densityが大きい（煙が濃い）ほど、ローカルライトの光も届きにくくなる
+        float localFogAttenuation = exp(-particleDensity * 2.0f);
+
         for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
         {
             if (gPointLights[p].enable == 0)
                 continue;
+            
             float3 lightVec = gPointLights[p].position - currentPos;
             float distSq = dot(lightVec, lightVec);
             float radiusSq = gPointLights[p].radius * gPointLights[p].radius;
+            
             if (distSq > radiusSq)
                 continue;
+            
             float dist = sqrt(distSq);
-            float attenuation = saturate(1.0f - (distSq / radiusSq));
-            attenuation *= attenuation;
-            float phaseLocal = DualPhaseHG(dot(rayDir, lightVec / dist), 0.0f);
-            stepLocal += gPointLights[p].color.rgb * gPointLights[p].intensity * attenuation * phaseLocal;
+
+            // 【AAA修正①】Windowed Inverse Square Falloff (物理ベース減衰)
+            // 1.0 / (d^2 + 1) で逆2乗の法則を作り、端を滑らかに切り落とす
+            float distanceFalloff = 1.0f / (max(distSq, 0.01f) + 1.0f);
+            float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
+            float attenuation = distanceFalloff * (windowing * windowing);
+
+            // 【AAA修正②】異方性（Anisotropy）の適用
+            // 0.0f ではなく、フォグ全体の異方性パラメータを適用して「光の芯」を作る
+            float phaseLocal = DualPhaseHG(dot(rayDir, lightVec / dist), gFogSettings.anisotropy);
+
+            // 【AAA修正③】疑似ボクセルシャドウの適用
+            stepLocal += gPointLights[p].color.rgb * gPointLights[p].intensity * attenuation * phaseLocal * localFogAttenuation;
         }
+
         for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
         {
             if (gSpotLights[s].enable == 0)
                 continue;
+            
             float3 lightVec = gSpotLights[s].position - currentPos;
-            float distSq = dot(lightVec, lightVec);
-            float distanceSq = gSpotLights[s].distance * gSpotLights[s].distance;
-            if (distSq > distanceSq)
+            
+            // サーフェイス側と同じく、まずはシンプルに距離を計算
+            float distance = length(lightVec);
+            
+            if (distance > gSpotLights[s].distance)
                 continue;
-            float dist = sqrt(distSq);
-            float3 lDir = lightVec / dist;
+            
+            float3 lDir = lightVec / distance; // ボクセルから光源への方向
             float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
+            
             if (currentCos < gSpotLights[s].cosAngle)
                 continue;
-            float angleFalloff = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
-            float distFalloff = saturate(1.0f - (distSq / distanceSq));
-            distFalloff *= distFalloff;
-            float phaseLocal = DualPhaseHG(dot(rayDir, lDir), 0.0f);
-            stepLocal += gSpotLights[s].color.rgb * gSpotLights[s].intensity * angleFalloff * distFalloff * phaseLocal;
+            
+            // ===============================================================
+            // ★完全一致1: 距離減衰 (Distance Falloff)
+            // サーフェイス側の ApplySpotLights と全く同じ計算式に修正
+            // ===============================================================
+            float distanceAtt = gSpotLights[s].distance > 0.0001f
+                ? pow(saturate(1.0f - distance / gSpotLights[s].distance), gSpotLights[s].decay)
+                : 1.0f;
+            
+            // ===============================================================
+            // ★完全一致2: 角度減衰 (Angle Falloff)
+            // サーフェイス側の ApplySpotLights と全く同じ 2.0f の乗数に修正
+            // ===============================================================
+            float angleAtt = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
+            
+            float attenuation = distanceAtt * angleAtt;
+            
+            // ===============================================================
+            // ★フォグ特有の処理 (Phase Function & Intensity)
+            // ===============================================================
+            // 位相関数：光を見る角度によって霧がどう光るか（ここはフォグ専用の処理として残します）
+            float phaseLocal = DualPhaseHG(dot(rayDir, lDir), gFogSettings.anisotropy);
+            
+            // ボリューム専用の輝度ブースト（サーフェイスと光り方を合わせるための係数）
+            // ※とりあえず 1.0f にして、サーフェイスと同じ明るさになるか確認してください。
+            // 暗ければ 2.0f や 4.0f に上げます。
+            float volumetricScatteringIntensity = 1.0f;
+            
+            // 煙の濃さによる光の遮蔽（強すぎる場合は 1.0f などに弱めてください）
+            float localFogAttenuation = exp(-particleDensity * 1.0f);
+
+            // 最終合成
+            stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity) * attenuation * phaseLocal * localFogAttenuation;
         }
+
         totalLight += stepLocal;
         
 // ===============================================================
