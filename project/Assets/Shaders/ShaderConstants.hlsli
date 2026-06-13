@@ -81,7 +81,7 @@ struct FrameData
     float4x4 prevViewProj;
     
     uint32_t frameIndex;
-    float3 paddingTemporal;
+    float3 prevCameraWorldPosition;
 };
 
 struct MaterialData

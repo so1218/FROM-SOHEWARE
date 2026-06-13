@@ -1,0 +1,4 @@
+{
+  "RootSignature": "VolumetricFogVoxelTemporalFilterCS",
+  "ComputeShader": "Assets/Shaders/VolumetricFogVoxelTemporalFilter.CS.hlsl"
+}

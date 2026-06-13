@@ -39,6 +39,7 @@ void GlobalConstants::Update(
 {
     // 新しいVP行列を計算・上書きする前に、現在のVP行列を過去として退避
     frameData_->prevViewProj = frameData_->viewProjectionMatrix;
+    frameData_->prevCameraWorldPosition = frameData_->cameraWorldPosition;
 
     // VP行列の計算
     Matrix4x4 matViewProjection = viewMatrix * projectionMatrix;

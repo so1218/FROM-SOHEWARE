@@ -392,11 +392,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ★修正：SRVは t0, t1, t2 の「3つ」必要
-        // t0: Depth, t1: VoxelAccumulate, t2: History(prev)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
+        // ★修正：SRVは t0(Depth) と t1(VoxelAccumulate) の「2つ」に変更
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
 
-        // u0: 最終出力兼履歴(curr)
+        // u0: 最終出力
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
         // s0: Linear Sampler
@@ -404,6 +403,26 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
+    }
+    if (name == "VolumetricFogVoxelTemporalFilterCS")
+    {
+        // 定数バッファ (b0: FrameData, b2: VolumetricFogSettings)
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+
+        // SRV (t0: Injection Current, t1: Injection History)
+        // 2つのテクスチャを使用するため範囲は 2
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+
+        // UAV (u0: Filtered Output)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        // サンプラー (s0: Linear Sampler)
+        // 3Dテクスチャのリプロジェクション（UVサンプリング）用なので CLAMP が安全です
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "VolumetricFogTemporalFilterCS");
     }
     else if (name == "FluidSimulationCS") 
     {

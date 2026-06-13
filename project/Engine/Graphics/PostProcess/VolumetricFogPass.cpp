@@ -137,12 +137,6 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     accumSrvIndex_ = srvManager->Allocate();
     device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_)); // ★変更
 
-    // --- テンポラル用2Dテクスチャ（履歴バッファ）を2枚作成 ---
-    CD3DX12_RESOURCE_DESC texDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16G16B16A16_FLOAT, w, h, 1, 1, 1, 0,
-        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-    );
-
     // ★修正ポイント1: 2D用のUAV/SRV定義
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc2D = {};
     uavDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -156,26 +150,47 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     srvDesc2D.Texture2D.MostDetailedMip = 0;
     srvDesc2D.Texture2D.MipLevels = 1;
 
+    // ====================================================================
+ // ★修正: テンポラル用履歴バッファを "3Dテクスチャ" として2枚作成
+ // ====================================================================
     for (int i = 0; i < 2; ++i) {
-        // ★修正ポイント2: 初期状態を COMMON にして互換性を高める
         device->CreateCommittedResource(
-            &heapProps, D3D12_HEAP_FLAG_NONE, &texDesc,
-            D3D12_RESOURCE_STATE_COMMON, // 初期状態
-            nullptr, IID_PPV_ARGS(&historyRes_[i]));
+            &heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, // tex3DDesc (160x90x64) を使用
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr, IID_PPV_ARGS(&history3DRes_[i])); // 変数名を history3DRes_ 等に変更推奨
 
-        // 名前付け（デバッグ用）
-        historyRes_[i]->SetName(i == 0 ? L"FogHistory_0" : L"FogHistory_1");
+        history3DRes_[i]->SetName(i == 0 ? L"VoxelHistory_0" : L"VoxelHistory_1");
 
-        // UAV作成
         historyUavIndices_[i] = srvManager->Allocate();
-        device->CreateUnorderedAccessView(historyRes_[i].Get(), nullptr, &uavDesc2D,
+        device->CreateUnorderedAccessView(history3DRes_[i].Get(), nullptr, &uavDesc, // uavDesc (3D用) を使用
             srvManager->GetSRVHandleCPU_ForCopying(historyUavIndices_[i]));
 
-        // SRV作成
         historySrvIndices_[i] = srvManager->Allocate();
-        device->CreateShaderResourceView(historyRes_[i].Get(), &srvDesc2D,
+        device->CreateShaderResourceView(history3DRes_[i].Get(), &srvDesc, // srvDesc (3D用) を使用
             srvManager->GetSRVHandleCPU_ForCopying(historySrvIndices_[i]));
     }
+
+    // ====================================================================
+    // ★新規追加: Resolve パス(2D合成) の最終出力先テクスチャ
+    // ====================================================================
+    CD3DX12_RESOURCE_DESC resolveTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(
+        DXGI_FORMAT_R16G16B16A16_FLOAT, w, h, 1, 1, 1, 0,
+        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+    );
+
+    device->CreateCommittedResource(
+        &heapProps, D3D12_HEAP_FLAG_NONE, &resolveTexDesc,
+        D3D12_RESOURCE_STATE_COMMON,
+        nullptr, IID_PPV_ARGS(&resolveOutputRes_));
+    resolveOutputRes_->SetName(L"VolumetricFog_ResolveOutput");
+
+    resolveOutputUavIndex_ = srvManager->Allocate();
+    device->CreateUnorderedAccessView(resolveOutputRes_.Get(), nullptr, &uavDesc2D, // 元の2D用UAVDesc
+        srvManager->GetSRVHandleCPU_ForCopying(resolveOutputUavIndex_));
+
+    resolveOutputSrvIndex_ = srvManager->Allocate();
+    device->CreateShaderResourceView(resolveOutputRes_.Get(), &srvDesc2D, // 元の2D用SRVDesc
+        srvManager->GetSRVHandleCPU_ForCopying(resolveOutputSrvIndex_));
 }
 
 void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
@@ -192,15 +207,20 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
 
     // 書き込み先 (currIdx) を UAV に
     D3D12_RESOURCE_STATES currStateBefore = (frameCounter_ == 0) ? D3D12_RESOURCE_STATE_COMMON : D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    temporalBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(historyRes_[currIdx].Get(), currStateBefore, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    temporalBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[currIdx].Get(), currStateBefore, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
     // 読み込み元 (prevIdx) を SRV に (初回フレームのみ COMMON から遷移)
     int barrierCount = 1;
     if (frameCounter_ == 0) {
-        temporalBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(historyRes_[prevIdx].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        temporalBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[prevIdx].Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
         barrierCount = 2;
     }
+    // Resolve出力用バリア
+    D3D12_RESOURCE_BARRIER resolveBarrier = CD3DX12_RESOURCE_BARRIER::Transition(resolveOutputRes_.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    if (frameCounter_ > 0) resolveBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
     cmdList->ResourceBarrier(barrierCount, temporalBarriers);
+    cmdList->ResourceBarrier(1, &resolveBarrier);
 
     // ====================================================================
     // [0] 前準備：リソース状態の遷移 (SRV -> UAV / PIXEL_SHADER -> NON_PIXEL_SHADER)
@@ -327,36 +347,60 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &barrier);
 
+    // ========================================================
+// ★新規追加: [1.5] Temporal Filter パス (3D TAA)
+// ========================================================
+    {
+        // t0: Injection Current (オフセット 7)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // t1: Injection History [prev] (オフセット 8)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 8, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[prevIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // u0: Filtered Output [curr] (オフセット 9)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 9, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historyUavIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogVoxelTemporalFilterCS"));
+        cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogVoxelTemporalFilterCS"));
+
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
+
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 7, handleSize)); // t0, t1
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize)); // u0
+
+        cmdList->Dispatch(injectX, injectY, injectZ); // Injectionと同じ3DサイズでDispatch
+
+        // 書き込み終わった履歴[curr]をSRVに遷移（Accumulationの入力にするため）
+        auto tfBarrier = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[currIdx].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        cmdList->ResourceBarrier(1, &tfBarrier);
+    }
+
 
     // ========================================================
     // [2] Accumulation パス (手前から奥へ積分)
     // ========================================================
     {
-        // --- ディスクリプタのコピー (オフセット4から書き込み) ---
-        // t0: VoxelInject SRV (先ほど作ったもの)
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // u0: VoxelAccumulate UAV
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 8, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-        // --- パイプライン設定 ---
-        cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogAccumulationCS"));
-        cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogAccumulationCS"));
-
-        // --- ルートパラメータのバインド (Accumulation用) ---
-        cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress()); // b2
-
-        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 7, handleSize)); // t0
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 8, handleSize)); // u0
-
-        // --- Dispatch ---
+        // ★これを追加：FroxelのXY解像度に対するディスパッチサイズ
         UINT accumX = (froxelW + 7) / 8;
         UINT accumY = (froxelH + 7) / 8;
 
+        // t0 を Filter済みの history3DRes_[currIdx] に変更 (オフセット 10)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 10, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // u0: VoxelAccumulate UAV (オフセット 11)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 11, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogAccumulationCS"));
+        cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogAccumulationCS"));
+
+        cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
+
+        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 10, handleSize)); // t0
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); // u0
+
+        // ★ここで使用する
         cmdList->Dispatch(accumX, accumY, 1);
 
-        // ★重要：書き込みが終わった Accumulate の 3Dテクスチャを UAV から SRV に遷移
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelAccumulateRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-        cmdList->ResourceBarrier(1, &barrier);
+        auto accBarrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelAccumulateRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        cmdList->ResourceBarrier(1, &accBarrier);
     }
 
 
@@ -364,33 +408,25 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [3] Resolve パス (2D画面解像度へ引き伸ばし合成)
     // ========================================================
     {
-        // ヒープへのコピー
-        // t0: Depth
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 9, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 10, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 11, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[prevIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // t0: Depth (オフセット 12)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 12, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // t1: VoxelAccumulate (オフセット 13)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 13, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // ★変更: u0 を ResolveOutput に変更 (オフセット 14)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 14, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(resolveOutputUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        // u0: HistoryCurr
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 12, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historyUavIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-        // --- パイプライン設定 ---
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogResolveCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogResolveCS"));
 
         cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
         cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
 
-        // Descriptor Table (t0, t1, t2)
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize));
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize)); // t0, t1
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 14, handleSize)); // u0
 
-        UINT clientWidth = Engine::GetClientWidth();  // エンジンの画面幅取得関数に合わせてください
+        UINT clientWidth = Engine::GetClientWidth();
         UINT clientHeight = Engine::GetClientHeight();
-        UINT dispatchX = (clientWidth + 7) / 8;
-        UINT dispatchY = (clientHeight + 7) / 8;
-
-        // Dispatch
-        cmdList->Dispatch(dispatchX, dispatchY, 1);
+        cmdList->Dispatch((clientWidth + 7) / 8, (clientHeight + 7) / 8, 1);
     }
 
 
@@ -412,14 +448,14 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
 
     // 3. 後処理：今回の書き込み結果を SRV に戻す（次フレームで履歴として使うため ＆ 後続パスのため）
     auto finalBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        historyRes_[currIdx].Get(),
+        resolveOutputRes_.Get(),
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &finalBarrier);
 
     // IPostEffectの結果として公開
-    this->textureResource_ = historyRes_[currIdx];
-    this->srvIndex_ = historySrvIndices_[currIdx];
+    this->textureResource_ = resolveOutputRes_;        // [currIdx] を削除
+    this->srvIndex_ = resolveOutputSrvIndex_;
 
     frameCounter_++;
 }

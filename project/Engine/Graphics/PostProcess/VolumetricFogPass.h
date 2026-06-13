@@ -96,9 +96,12 @@ private:
 
     // --- テンポラル用リソース ---
     // Resolveの結果を保存する2Dテクスチャ（2枚）
-    Microsoft::WRL::ComPtr<ID3D12Resource> historyRes_[2];
+    Microsoft::WRL::ComPtr<ID3D12Resource> history3DRes_[2];
     uint32_t historySrvIndices_[2];
     uint32_t historyUavIndices_[2];
+    Microsoft::WRL::ComPtr<ID3D12Resource> resolveOutputRes_;
+    uint32_t resolveOutputSrvIndex_;
+    uint32_t resolveOutputUavIndex_;
 
     uint32_t frameCounter_ = 0; // フレーム入れ替え用
 

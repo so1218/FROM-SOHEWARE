@@ -2,7 +2,7 @@
 
 // --- 入出力リソース ---
 // 第1パス(Injection)で作った「各ボクセル単体の光と密度」
-Texture3D<float4> gVoxelInject : register(t0);
+Texture3D<float4> gVoxelFiltered : register(t0);
 
 // 今回の出力先。手前から奥へ蓄積された「最終的な光と透過率」
 RWTexture3D<float4> gVoxelAccumulate : register(u0);
@@ -14,7 +14,7 @@ ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint width, height, depth;
-    gVoxelInject.GetDimensions(width, height, depth);
+    gVoxelFiltered.GetDimensions(width, height, depth);
 
     // 画面外なら終了
     if (DTid.x >= width || DTid.y >= height)
@@ -28,7 +28,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     for (uint z = 0; z < depth; ++z)
     {
         uint3 voxelCoord = uint3(DTid.x, DTid.y, z);
-        float4 stepData = gVoxelInject.Load(int4(voxelCoord, 0));
+        float4 stepData = gVoxelFiltered.Load(int4(voxelCoord, 0));
         
         // Injectionパスで既に積分済みの散乱光
         float3 S = stepData.rgb;

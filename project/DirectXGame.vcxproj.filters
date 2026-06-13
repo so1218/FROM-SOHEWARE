@@ -956,5 +956,6 @@
     <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidVorticity.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidInitUVW.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VolumetricFogVoxelTemporalFilter.CS.hlsl" />
   </ItemGroup>
 </Project>
