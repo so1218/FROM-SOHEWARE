@@ -154,25 +154,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float3 shadowOffsetWorld = normalize(-gFrameData.mainLightDirection) * (2.0f * gFluidSettings.gridScale);
             float3 shadowSamplePos = currentPos + shadowOffsetWorld;
 
-// シャドウサンプリング点も、スナップされたグリッドの境界内部にいるか厳密にチェック
-            if (all(shadowSamplePos >= gFluidSettings.gridMin) && all(shadowSamplePos <= gFluidSettings.gridMax))
-            {
-    // ★【バグ修正】：データがgridMin～gridMaxに対応してローテーションしているため、
-    // 必ず shadowSamplePos から gridMin を引いてからサイズで割ってください！
-                float3 shadowUVWRaw = (shadowSamplePos - gFluidSettings.gridMin) / fluidSize;
-    
-    // Wrapサンプラーを使うので、0.0～1.0の範囲に収めるためのfloorラップを適用
-                float3 shadowUVW = shadowUVWRaw - floor(shadowUVWRaw);
-    
-    // シャドウ位置用のエッジフェード
-                float3 sDistToMin = shadowSamplePos - gFluidSettings.gridMin;
-                float3 sDistToMax = gFluidSettings.gridMax - shadowSamplePos;
-                float3 sMinDist = min(sDistToMin, sDistToMax);
-                float shadowEdgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(sMinDist.x, sMinDist.y), sMinDist.z));
+// ★修正：if文の境界チェックを撤廃！外に出てもfloorによるToroidal Wrapで安全にループサンプリングする
+            float3 shadowUVWRaw = (shadowSamplePos - gFluidSettings.gridMin) / fluidSize;
+            float3 shadowUVW = shadowUVWRaw - floor(shadowUVWRaw);
+            
+            // シャドウ用のフェードは、元セルのedgeFadeを流用するか、shadowSamplePosベースで安全に計算する
+            float3 sDistToMin = shadowSamplePos - gFluidSettings.gridMin;
+            float3 sDistToMax = gFluidSettings.gridMax - shadowSamplePos;
+            float3 sMinDist = min(sDistToMin, sDistToMax);
+            float shadowEdgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(sMinDist.x, sMinDist.y), sMinDist.z));
 
-    // ここも Wrap サンプラーを使用！
-                fluidShadowMass = max(gFluidDensity.SampleLevel(gSampler, shadowUVW, 0).r, 0.0f) * shadowEdgeFade;
-            }
+            fluidShadowMass = max(gFluidDensity.SampleLevel(gSampler, shadowUVW, 0).r, 0.0f) * shadowEdgeFade;
         }
 
         // 風による時間のオフセット
@@ -184,9 +176,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 微細な歪み（既存の3Dノイズボリュームによる揺らぎ）
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
         float3 distortion = float3(
-            gNoiseVolume.SampleLevel(gSampler, frac(warpUVW), 0).r,
-            gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.33f), 0).r,
-            gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.67f), 0).r
+            gNoiseVolume.SampleLevel(gSampler, warpUVW, 0).r,
+            gNoiseVolume.SampleLevel(gSampler, warpUVW + 0.33f, 0).r,
+            gNoiseVolume.SampleLevel(gSampler, warpUVW + 0.67f, 0).r
         );
 
         float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;

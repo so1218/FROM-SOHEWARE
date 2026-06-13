@@ -44,14 +44,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float prevZSlice = log2(prevViewZ / nearZ) / log2(farZ / nearZ);
     float3 prevUVW = float3(prevUV, prevZSlice);
 
-    // 3. 画面外またはFrustum外の判定
+ // === 修正：サンプラーによる画面外のゴミ混入を防ぐため、安全にクランプ ===
+    float3 clampedPrevUVW = saturate(prevUVW);
     bool isOffscreen = any(prevUVW < 0.0f) || any(prevUVW > 1.0f);
-    float blendAlpha = isOffscreen ? 1.0f : 0.05f; // UEのデフォは 5% current, 95% history など
 
-    // 4. 過去の3Dボクセルをサンプリング
-    float4 historyFog = gVoxelInjectHistory.SampleLevel(gLinearSampler, prevUVW, 0);
+    // 【★AAAハック】：完全に1.0にして履歴を捨てると生ジッターが爆発するので、
+    // 画面外（初登場）でも30%程度に抑え、クランプした過去の滑らかなフォグと強引に混ぜる！
+    float blendAlpha = isOffscreen ? 0.3f : 0.05f;
 
-    // 5. ブレンド（3DなのでVariance Clipping等の複雑な処理は不要。単純な指数移動平均で十分綺麗になります）
+    // 4. 過去の3Dボクセルをサンプリング（必ずクランプされたUVWを使う）
+    float4 historyFog = gVoxelInjectHistory.SampleLevel(gLinearSampler, clampedPrevUVW, 0);
+
+    // 5. ブレンド
     float4 result = lerp(historyFog, currentFog, blendAlpha);
 
     gVoxelInjectFiltered[DTid] = result;
