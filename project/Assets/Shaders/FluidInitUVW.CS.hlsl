@@ -10,5 +10,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
         return;
     gUVWWrite[DTid] = float4((float3(DTid) + 0.5f) / float3(w, h, d), 0.0f);
     
-    gDensity[DTid] = 1.0f;
+    gDensity[DTid] = 0.0f;
 }

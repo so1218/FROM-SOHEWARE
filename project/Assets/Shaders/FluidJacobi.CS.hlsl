@@ -14,19 +14,32 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // ★修正：ノイマン境界条件。壁の外は「自分自身の圧力」として扱う
-    float pCenter = gPressureRead[DTid];
-    float pL = (DTid.x == 0) ? pCenter : gPressureRead[DTid - uint3(1, 0, 0)];
-    float pR = (DTid.x == width - 1) ? pCenter : gPressureRead[DTid + uint3(1, 0, 0)];
-    float pB = (DTid.y == 0) ? pCenter : gPressureRead[DTid - uint3(0, 1, 0)];
-    float pT = (DTid.y == height - 1) ? pCenter : gPressureRead[DTid + uint3(0, 1, 0)];
-    float pD = (DTid.z == 0) ? pCenter : gPressureRead[DTid - uint3(0, 0, 1)];
-    float pU = (DTid.z == depth - 1) ? pCenter : gPressureRead[DTid + uint3(0, 0, 1)];
+    // ★修正: ループ(Wrap)座標の計算
+    uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
+    uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
+    uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
+    uint yT = (DTid.y == height - 1) ? 0 : DTid.y + 1;
+    uint zD = (DTid.z == 0) ? depth - 1 : DTid.z - 1;
+    uint zU = (DTid.z == depth - 1) ? 0 : DTid.z + 1;
+
+    // ★修正: ノイマン境界条件を廃止し、反対側の圧力を取得する
+    float pL = gPressureRead[uint3(xL, DTid.y, DTid.z)];
+    float pR = gPressureRead[uint3(xR, DTid.y, DTid.z)];
+    float pB = gPressureRead[uint3(DTid.x, yB, DTid.z)];
+    float pT = gPressureRead[uint3(DTid.x, yT, DTid.z)];
+    float pD = gPressureRead[uint3(DTid.x, DTid.y, zD)];
+    float pU = gPressureRead[uint3(DTid.x, DTid.y, zU)];
 
     float div = gDivergence[DTid];
     float dxSq = gFluidSettings.gridScale * gFluidSettings.gridScale;
     
     float newPressure = (pL + pR + pB + pT + pD + pU - div * dxSq) / 6.0f;
+    
+    // ★ドリフト防止の罠解除: 基準点（例: 端のマス）の圧力を常に強制ゼロ、あるいは微小に減衰させる
+    if (all(DTid == uint3(0, 0, 0)))
+    {
+        newPressure = 0.0f;
+    }
 
     gPressureWrite[DTid] = newPressure;
 }

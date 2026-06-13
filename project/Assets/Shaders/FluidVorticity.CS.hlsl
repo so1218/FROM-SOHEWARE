@@ -1,6 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 Texture3D<float4> gVelocityRead : register(t0);
+Texture3D<float> gDensityRead : register(t1);
 RWTexture3D<float4> gVelocityWrite : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
@@ -14,39 +15,52 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
+    // 隣接セルのインデックス取得（Toroidal Wrap）
+    uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
+    uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
+    uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
+    uint yT = (DTid.y == height - 1) ? 0 : DTid.y + 1;
+    uint zD = (DTid.z == 0) ? depth - 1 : DTid.z - 1;
+    uint zU = (DTid.z == depth - 1) ? 0 : DTid.z + 1;
+
+    // --- 1. 自身のテクセルのCurlを計算 ---
+    float3 vL = gVelocityRead[uint3(xL, DTid.y, DTid.z)].xyz;
+    float3 vR = gVelocityRead[uint3(xR, DTid.y, DTid.z)].xyz;
+    float3 vB = gVelocityRead[uint3(DTid.x, yB, DTid.z)].xyz;
+    float3 vT = gVelocityRead[uint3(DTid.x, yT, DTid.z)].xyz;
+    float3 vD = gVelocityRead[uint3(DTid.x, DTid.y, zD)].xyz;
+    float3 vU = gVelocityRead[uint3(DTid.x, DTid.y, zU)].xyz;
+
     float halfInvDx = 0.5f / gFluidSettings.gridScale;
+    float3 centerCurl;
+    centerCurl.x = ((vT.z - vB.z) - (vU.y - vD.y)) * halfInvDx;
+    centerCurl.y = ((vU.x - vD.x) - (vR.z - vL.z)) * halfInvDx;
+    centerCurl.z = ((vR.y - vL.y) - (vT.x - vB.x)) * halfInvDx;
+    float centerCurlMag = length(centerCurl);
 
-    // 1. 上下左右前後の速度を取得
-    float3 vL = gVelocityRead[max(DTid - uint3(1, 0, 0), 0)].xyz;
-    float3 vR = gVelocityRead[min(DTid + uint3(1, 0, 0), uint3(width - 1, height - 1, depth - 1))].xyz;
-    float3 vB = gVelocityRead[max(DTid - uint3(0, 1, 0), 0)].xyz;
-    float3 vT = gVelocityRead[min(DTid + uint3(0, 1, 0), uint3(width - 1, height - 1, depth - 1))].xyz;
-    float3 vD = gVelocityRead[max(DTid - uint3(0, 0, 1), 0)].xyz;
-    float3 vU = gVelocityRead[min(DTid + uint3(0, 0, 1), uint3(width - 1, height - 1, depth - 1))].xyz;
+    // --- 2. 【物理的修正】周囲6セルの「Curlの大きさ」を簡易取得して勾配（N）を作る ---
+    // ※本来は周囲のCurlを真面目に計算すべきですが、負荷低減のため「速度の差分」から簡易的に勾配を近似します
+    // または、以下のように周囲のCurlの大きさを求めます。
+    float magL = length(gVelocityRead[uint3(xL, DTid.y, DTid.z)].xyz);
+    float magR = length(gVelocityRead[uint3(xR, DTid.y, DTid.z)].xyz);
+    float magB = length(gVelocityRead[uint3(DTid.x, yB, DTid.z)].xyz);
+    float magT = length(gVelocityRead[uint3(DTid.x, yT, DTid.z)].xyz);
+    float magD = length(gVelocityRead[uint3(DTid.x, DTid.y, zD)].xyz);
+    float magU = length(gVelocityRead[uint3(DTid.x, DTid.y, zU)].xyz);
 
-    // 2. 速度場の回転（Curl / Vorticity）を計算
-    // カールはベクトル場における「渦の強さと回転軸」を表します
-    float3 curl;
-    curl.x = ((vT.z - vB.z) - (vU.y - vD.y)) * halfInvDx;
-    curl.y = ((vU.x - vD.x) - (vR.z - vL.z)) * halfInvDx;
-    curl.z = ((vR.y - vL.y) - (vT.x - vB.x)) * halfInvDx;
+    float3 N = float3(magR - magL, magT - magB, magU - magD) * halfInvDx;
+    float lenN = length(N);
+    N = lenN > 0.0001f ? (N / lenN) : float3(0.0f, 0.0f, 0.0f);
 
-    // 渦の強さ（大きさ）
-    float curlMag = length(curl);
+// --- 3. 正しいVorticity Confinementの適用 ---
+    float3 vorticityForce = cross(N, centerCurl) * gFluidSettings.vorticityStrength;
 
-    // =======================================================
-    // ※厳密にはここで隣接ボクセルの「curlMag」を取得して勾配(Gradient)を
-    // 計算しますが、リアルタイム向けの高速化として、近似的な力場を適用します
-    // =======================================================
-    
-    // 現在の速度を取得
+// 【AAAハック】: 自身のセルの密度（Density）に応じて渦の強さをマスクする
+// これにより、煙の「輪郭」や「濃い部分」だけが激しくブレて、何もない空間は静的に保たれます
+    float densityMask = saturate(gDensityRead[DTid].r * 2.0f);
+    vorticityForce *= densityMask;
+ 
     float3 currentVel = gVelocityRead[DTid].xyz;
-
-    // 渦の回転軸に対して垂直な方向にエネルギー（速度）を再注入する
-    // gFluidSettings.vorticityStrength は 0.1 ～ 2.0 程度で調整
-    float3 vorticityForce = cross(curl, currentVel) * gFluidSettings.vorticityStrength;
-     
-    // 新しい速度として書き込み（密度の更新は不要なのでVelocityのみ）
     float3 newVel = currentVel + (vorticityForce * gFrameData.deltaTime);
     
     gVelocityWrite[DTid] = float4(newVel, 0.0f);

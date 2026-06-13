@@ -487,4 +487,7 @@ struct FluidSettings
     float pushStrength; // ★新規追加: 外側へ押し退ける力
     float uvwRelaxation; // ★新規追加: UVW座標の伸びを元に戻す力（ストレッチ防止）
     float2 paddingFluid3; // アラインメント用
+    
+    float3 voxelDelta;
+    float pad1;
 };

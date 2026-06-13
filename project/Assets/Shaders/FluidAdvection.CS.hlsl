@@ -7,6 +7,8 @@ Texture3D<float4> gUVWRead : register(t2);
 
 // サンプラー（※必ず「Clamp」設定のバイリニア/トリリニアサンプラーを使用すること）
 SamplerState gLinearClampSampler : register(s0);
+// ★追加：s1: Toroidal（オープンワールド）移流計算用のWrapサンプラー
+SamplerState gLinearWrapSampler : register(s1);
 
 // 書き込み用（今のフレームの新しい流体状態）
 RWTexture3D<float4> gVelocityWrite : register(u0);
@@ -25,42 +27,60 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
         return;
 
+    // テクスチャ内のローカルUV（0.0 ～ 1.0）
+    // Toroidal環境では、これがワールドの frac(currentPos / fluidSize) に相当します。
     float3 uvw = (float3(DTid) + 0.5f) / float3(width, height, depth);
-    float3 currentVelocity = gVelocityRead.SampleLevel(gLinearClampSampler, uvw, 0).xyz;
-
-    // セミ・ラグランジュ法
-    float3 backtraceUVW = uvw - (currentVelocity * gFrameData.deltaTime * gFluidSettings.gridScale);
-
-    // 速度と密度の移流
-    float3 advectedVelocity = gVelocityRead.SampleLevel(gLinearClampSampler, backtraceUVW, 0).xyz;
-    float advectedDensity = gDensityRead.SampleLevel(gLinearClampSampler, backtraceUVW, 0).r;
     
-   // =======================================================
-    // ★修正：UEスタイルの物理ベース減衰 (Exponential Decay)
+    // ★修正1: サンプラーは必ず Wrap(Repeat) を使用する
+    float3 currentVelocity = gVelocityRead.SampleLevel(gLinearWrapSampler, uvw, 0).xyz;
+
+ // === 従来のバックトレース ===
+    float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
+    float3 deltaUVW = (currentVelocity * gFrameData.deltaTime / fluidSize);
+    float3 backtraceUVW = uvw - deltaUVW;
+
+// 1. 後ろに移動した位置の速度をサンプリング（仮の速度）
+    float3 velSemiLag = gVelocityRead.SampleLevel(gLinearWrapSampler, backtraceUVW, 0).xyz;
+
+// 2. 【BFECCの肝】そこから逆に「前」へトレースし直す
+    float3 forwardUVW = backtraceUVW + (velSemiLag * gFrameData.deltaTime / fluidSize);
+
+// 3. 元の座標（uvw）とのズレ（エラー）を計算し、サンプリング座標を補正する
+    float3 errorCorrection = uvw - forwardUVW;
+    float3 bfeccUVW = backtraceUVW + errorCorrection * 0.5f; // エラーを半分補正
+
+// 4. 補正されたUVWを使って本番のサンプリング！
+    float3 advectedVelocity = gVelocityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).xyz;
+    float advectedDensity = gDensityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).r;
+    
     // =======================================================
-    // gFluidSettings.densityDissipation は 0.5f ～ 3.0f 程度で調整します。
-    // 値が大きいほど早く煙が消えます。引き算による不自然な消失を防ぎます。
-    float decay = exp(-gFluidSettings.densityDissipation * gFrameData.deltaTime);
-    advectedDensity *= decay;
-    // もし微小なゴミが残り続ける場合は、非常に小さな線形減衰を組み合わせる
-    advectedDensity = max(0.0f, advectedDensity - 0.005f * gFrameData.deltaTime);
-
+    // UVW座標自体の移流 (空間の歪み) と ★Toroidal Lerp
     // =======================================================
-    // ★大改造1: UVW座標自体の移流
-    // =======================================================
-    // 過去の位置のUVW座標を取得する
-    float3 advectedUVW = gUVWRead.SampleLevel(gLinearClampSampler, backtraceUVW, 0).xyz;
+    float3 advectedUVW = gUVWRead.SampleLevel(gLinearWrapSampler, backtraceUVW, 0).xyz;
 
-    // 【重要】無限に引き伸ばされる（ストレッチ）のを防ぐための緩和処理
-    // わずかに元のグリッド座標(uvw)に戻すことで、ノイズの破綻を防ぎます。
-    // gFluidSettings.uvwRelaxation は 0.1f ～ 0.5f 程度で調整。
-    advectedUVW = lerp(advectedUVW, uvw, gFluidSettings.uvwRelaxation * gFrameData.deltaTime);
+    // 【AAA基準の修正】: 単純なlerpではなく、トーラス境界を跨いだ最短経路で緩和(Relaxation)する
+    float3 diff = advectedUVW - uvw;
+    
+    // 差分を -0.5 ～ 0.5 の範囲にラップし、最短経路のベクトルにする
+    diff = diff - floor(diff + 0.5f);
+    
+    // 緩和係数を適用して、元のuvwに足し戻す
+    float relaxationFactor = gFluidSettings.uvwRelaxation * gFrameData.deltaTime;
+    float3 relaxedUVW = uvw + diff * (1.0f - relaxationFactor);
+    
+    // 最後に再び 0.0 ～ 1.0 の範囲に安全にラップする
+    advectedUVW = relaxedUVW - floor(relaxedUVW);
+    
+  // 速度の大きさを取得
+    float velLength = length(advectedVelocity);
 
-    advectedVelocity *= gFluidSettings.velocityDissipation;
+// 速度が速いほど減衰しにくく、遅いほど一気に消散させるハック
+    float dynamicDissipation = lerp(gFluidSettings.velocityDissipation * 0.95f, gFluidSettings.velocityDissipation, saturate(velLength * 0.2f));
 
+    advectedVelocity *= dynamicDissipation;
+
+    // 書き込み
     gVelocityWrite[DTid.xyz] = float4(advectedVelocity, 0.0f);
     gDensityWrite[DTid.xyz] = advectedDensity;
-    
-    // 移流したUVWを書き込む
     gUVWWrite[DTid.xyz] = float4(advectedUVW, 0.0f);
 }

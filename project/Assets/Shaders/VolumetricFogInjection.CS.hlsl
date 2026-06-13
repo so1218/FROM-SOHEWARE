@@ -111,50 +111,75 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // ★流体データの取得
         // ===============================================================
         float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
-        float3 fluidUVW = (currentPos - gFluidSettings.gridMin) / fluidSize;
+
+        // 【AAA基準の修正①】：objectPos からの計算をやめ、C++側でスナップされた正確なシミュレーション境界で判定
+        // これにより、プレイヤーが移動したときのフォグのガタつき（ジッター）が100%消滅します。
+        bool isInsideFluidGrid = all(currentPos >= gFluidSettings.gridMin) && all(currentPos <= gFluidSettings.gridMax);
+
         float3 realFluidVelocity = 0.0f;
         float fluidMass = 0.0f;
-        float3 advectedFluidUVW = fluidUVW; // デフォルトは歪みなしのUVW
-        
+        float3 advectedFluidPos = currentPos; // 初期値は歪みなし
         float fluidShadowMass = 0.0f;
-        float edgeFade = 0.0f; // ★ループ外でも使えるようにここで宣言
+        float edgeFade = 0.0f;
 
-        if (all(fluidUVW >= 0.0f) && all(fluidUVW <= 1.0f))
+        if (isInsideFluidGrid)
         {
-            float3 edgeDist = min(fluidUVW, 1.0f - fluidUVW);
-            edgeFade = smoothstep(0.0f, 0.1f, min(min(edgeDist.x, edgeDist.y), edgeDist.z));
+            // 境界付近で煙がプツッと消えないようにするための3軸フェード
+            float3 distToMin = currentPos - gFluidSettings.gridMin;
+            float3 distToMax = gFluidSettings.gridMax - currentPos;
+            float3 minDist = min(distToMin, distToMax);
+            edgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(minDist.x, minDist.y), minDist.z));
 
+            // 【AAA基準の修正②】：負のワールド座標（原点よりマイナス方向）でも絶対に破綻しないトーラスマッピング
+            float3 uvwRaw = currentPos / fluidSize;
+            float3 fluidUVW = uvwRaw - floor(uvwRaw); // HLSLのfracではなく、数学的に正しい0.0～1.0へのWrap
+
+            // 明示的にWrapサンプラー（境界をループ補間するサンプラー）を使用してサンプリング
             realFluidVelocity = gFluidVelocity.SampleLevel(gSampler, fluidUVW, 0).xyz * edgeFade;
             fluidMass = max(gFluidDensity.SampleLevel(gSampler, fluidUVW, 0).r, 0.0f) * edgeFade;
 
-            // ★修正：C++側で毎フレームシミュレーションした「移流蓄積されたUVW座標」をサンプリング
-            advectedFluidUVW = gFluidUVW.SampleLevel(gSampler, fluidUVW, 0).xyz;
+// 移流（Advection）されたUVW（テクスチャ内の位置）を取得
+            float3 advectedUVW = gFluidUVW.SampleLevel(gSampler, fluidUVW, 0).xyz;
+            float3 uvwOffset = advectedUVW - fluidUVW;
 
-            // ===============================================================
-            // ★大改造4: 疑似ボリューメトリック・セルフシャドウ（直方体バグ修正版）
-            // ===============================================================
+// ★これが大活躍します！トーラスラップの境界をまたいだ際の巨大なオフセットを最短経路補正
+            uvwOffset = uvwOffset - floor(uvwOffset + 0.5f);
+
+// オフセットから歪んだワールド座標を算出
+            advectedFluidPos = currentPos + (uvwOffset * fluidSize);
+
+// ===============================================================
+// セルフシャドウ用サンプリング（Toroidal完全対応版）
+// ===============================================================
             float3 shadowOffsetWorld = normalize(-gFrameData.mainLightDirection) * (2.0f * gFluidSettings.gridScale);
-            float3 shadowUVW = fluidUVW + (shadowOffsetWorld / fluidSize);
-            
-            if (all(shadowUVW >= 0.0f) && all(shadowUVW <= 1.0f))
+            float3 shadowSamplePos = currentPos + shadowOffsetWorld;
+
+// シャドウサンプリング点も、スナップされたグリッドの境界内部にいるか厳密にチェック
+            if (all(shadowSamplePos >= gFluidSettings.gridMin) && all(shadowSamplePos <= gFluidSettings.gridMax))
             {
-                fluidShadowMass = max(gFluidDensity.SampleLevel(gSampler, shadowUVW, 0).r, 0.0f) * edgeFade;
+    // ★【バグ修正】：データがgridMin～gridMaxに対応してローテーションしているため、
+    // 必ず shadowSamplePos から gridMin を引いてからサイズで割ってください！
+                float3 shadowUVWRaw = (shadowSamplePos - gFluidSettings.gridMin) / fluidSize;
+    
+    // Wrapサンプラーを使うので、0.0～1.0の範囲に収めるためのfloorラップを適用
+                float3 shadowUVW = shadowUVWRaw - floor(shadowUVWRaw);
+    
+    // シャドウ位置用のエッジフェード
+                float3 sDistToMin = shadowSamplePos - gFluidSettings.gridMin;
+                float3 sDistToMax = gFluidSettings.gridMax - shadowSamplePos;
+                float3 sMinDist = min(sDistToMin, sDistToMax);
+                float shadowEdgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(sMinDist.x, sMinDist.y), sMinDist.z));
+
+    // ここも Wrap サンプラーを使用！
+                fluidShadowMass = max(gFluidDensity.SampleLevel(gSampler, shadowUVW, 0).r, 0.0f) * shadowEdgeFade;
             }
         }
 
         // 風による時間のオフセット
         float3 timeOffset = normalize(gFogSettings.windDirection + 0.001f) * (gFrameData.gTime * gFogSettings.windSpeed);
 
-      // ===============================================================
-        // ★大改造1: 流速(Velocity)ではなく、蓄積されたUVWによる「本物の流体移流」
-        // ===============================================================
-        float3 fluidDistortedPos = gFluidSettings.gridMin + advectedFluidUVW * fluidSize;
-        
-        // 【★修正1】不連続バグの解消
-        // 密度(fluidMass)ベースの3項演算子をやめ、グリッドの境界フェード(edgeFade)で滑らかに座標をブレンドします。
-        // これにより、グリッドの内外でノイズのサンプリング位置がジャンプする現象が完全に消え、滑らかに繋がります。
-        // また、煙の密度が0になっても「空間の歪み（過去の渦）」がグリッド内に正しく残り続けるようになります。
-        float3 noiseSamplePos = lerp(currentPos, fluidDistortedPos, edgeFade);
+     // 最終的なノイズサンプリング用の座標（外側は currentPos、内側は流体に歪められた座標）
+        float3 noiseSamplePos = lerp(currentPos, advectedFluidPos, edgeFade);
 
         // 微細な歪み（既存の3Dノイズボリュームによる揺らぎ）
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;

@@ -13,29 +13,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // 隣り合うボクセルの速度を取得
-    float3 vL = gVelocity[max(DTid - uint3(1, 0, 0), 0)].xyz;
-    float3 vR = gVelocity[min(DTid + uint3(1, 0, 0), uint3(width - 1, height - 1, depth - 1))].xyz;
-    float3 vB = gVelocity[max(DTid - uint3(0, 1, 0), 0)].xyz;
-    float3 vT = gVelocity[min(DTid + uint3(0, 1, 0), uint3(width - 1, height - 1, depth - 1))].xyz;
-    float3 vD = gVelocity[max(DTid - uint3(0, 0, 1), 0)].xyz;
-    float3 vU = gVelocity[min(DTid + uint3(0, 0, 1), uint3(width - 1, height - 1, depth - 1))].xyz;
+    // ★修正: Clampではなくループ(Wrap)させる
+    uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
+    uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
+    uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
+    uint yT = (DTid.y == height - 1) ? 0 : DTid.y + 1;
+    uint zD = (DTid.z == 0) ? depth - 1 : DTid.z - 1;
+    uint zU = (DTid.z == depth - 1) ? 0 : DTid.z + 1;
 
-    // ★高品質化：境界条件（壁の外からは風は吹かない、壁にぶつかった風は止まる）の適用
-    if (DTid.x == 0)
-        vL.x = -vR.x; // 左の壁：速度を反転（または 0）
-    if (DTid.x == width - 1)
-        vR.x = -vL.x; // 右の壁
-    if (DTid.y == 0)
-        vB.y = -vT.y; // 下の壁
-    if (DTid.y == height - 1)
-        vT.y = -vB.y; // 上の壁
-    if (DTid.z == 0)
-        vD.z = -vU.z; // 手前の壁
-    if (DTid.z == depth - 1)
-        vU.z = -vD.z; // 奥の壁
+    // 隣り合うボクセルの速度をループ空間で取得
+    float3 vL = gVelocity[uint3(xL, DTid.y, DTid.z)].xyz;
+    float3 vR = gVelocity[uint3(xR, DTid.y, DTid.z)].xyz;
+    float3 vB = gVelocity[uint3(DTid.x, yB, DTid.z)].xyz;
+    float3 vT = gVelocity[uint3(DTid.x, yT, DTid.z)].xyz;
+    float3 vD = gVelocity[uint3(DTid.x, DTid.y, zD)].xyz;
+    float3 vU = gVelocity[uint3(DTid.x, DTid.y, zU)].xyz;
 
-    // ボクセルサイズ(dx)を考慮した発散の計算
+    // ※壁の反射処理（vL.x = -vR.xなど）は完全に削除！
+
     float halfInvDx = 0.5f / gFluidSettings.gridScale;
     float divergence = halfInvDx * ((vR.x - vL.x) + (vT.y - vB.y) + (vU.z - vD.z));
     

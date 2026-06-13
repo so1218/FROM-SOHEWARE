@@ -15,14 +15,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint width, height, depth;
     gVelocityWrite.GetDimensions(width, height, depth);
-
     if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
         return;
 
     float3 uvw = (float3(DTid) + 0.5f) / float3(width, height, depth);
-    float3 voxelWorldPos = lerp(gFluidSettings.gridMin, gFluidSettings.gridMax, uvw);
-    
-    // キャラクターからボクセルへの方向ベクトルと距離
+    float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
+
+    float3 rawWorldPos = uvw * fluidSize;
+    float3 boxOffset = floor((gFluidSettings.gridMax - rawWorldPos) / fluidSize) * fluidSize;
+    float3 voxelWorldPos = rawWorldPos + boxOffset;
+
     float3 outwardVector = voxelWorldPos - gFluidSettings.objectPos;
     float dist = length(outwardVector);
     float3 outwardDir = dist > 0.001f ? (outwardVector / dist) : float3(0.0f, 1.0f, 0.0f);
@@ -31,31 +33,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float3 currentVel = gVelocityRead[DTid.xyz].xyz;
     float currentDen = gDensityRead[DTid.xyz];
-    
-// =========================================================
-    // ★大改造2：押し退ける力（Push）と引きずる力（Drag）の合成
-    // =========================================================
+
     if (influence > 0.0f)
     {
-        // 1. Drag (引きずる力) : オブジェクトの移動方向
-        float3 dragForce = gFluidSettings.objectVelocity * gFluidSettings.dragStrength;
-
-        // 2. Push (押し退ける力) : オブジェクトの中心から外側へ向かう方向
-        // オブジェクトの移動速度の大きさに比例して、空気を押し退ける
+        // 【Niagara Fluid方式】: Force(加算)ではなく、目標となる速度(Target)を作る
+        float3 dragVelocity = gFluidSettings.objectVelocity * gFluidSettings.dragStrength;
         float speed = length(gFluidSettings.objectVelocity);
-        float3 pushForce = outwardDir * speed * gFluidSettings.pushStrength;
-
-        // 合成した力を注入
-        float3 addedVel = (dragForce + pushForce) * influence * gFrameData.deltaTime;
+        float3 pushVelocity = outwardDir * speed * gFluidSettings.pushStrength;
         
-        gVelocityWrite[DTid.xyz] = float4(currentVel + addedVel, 0.0f);
+        float3 targetVel = dragVelocity + pushVelocity;
 
-        // 【おまけ】もし「キャラから煙を出したい」ならここでDensityも足す
-        // gDensityWrite[DTid.xyz] = currentDen + (influence * 5.0f * gFrameData.deltaTime);
+        // ★AAAハック: キャラクターの移動に合わせて「渦（Vorticity）」を直接ブレンドする
+        // 擬似的なカールノイズのように、外側に向かうベクトルを少し回転させる
+        float3 curlComponent = cross(outwardDir, float3(0.0f, 1.0f, 0.0f)) * speed * gFluidSettings.vorticityStrength;
+        targetVel += curlComponent;
+
+        // deltaTimeを掛けずに、influenceの強さで直接速度を「補間（上書き）」する！
+        // これにより、圧ソルバに消される前に1フレームで完璧にキャラに追従します
+        float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f); // 60fps基準
+        gVelocityWrite[DTid.xyz] = float4(lerp(currentVel, targetVel, blendRate), 0.0f);
+
+        // 【バグ修正】: 影響範囲内でも、元々あった密度を必ず維持して書き込む！
+        gDensityWrite[DTid.xyz] = currentDen;
     }
     else
     {
-        // 影響範囲外はそのままパススルー（Ping-Pong用）
         gVelocityWrite[DTid.xyz] = float4(currentVel, 0.0f);
         gDensityWrite[DTid.xyz] = currentDen;
     }

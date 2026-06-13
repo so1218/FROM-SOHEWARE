@@ -72,6 +72,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> uvwRes_[2];
     uint32_t uvwUavIndices_[2];
     uint32_t uvwSrvIndices_[2];
+
+    int previousGridX_ = 0;
+    int previousGridY_ = 0;
+    int previousGridZ_ = 0;
 };
 
 }
