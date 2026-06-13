@@ -339,43 +339,60 @@ void main(uint3 DTid : SV_DispatchThreadID)
             {
                 float3 volTimeOffset = normalize(vol.windDirection + 0.001f) * (gFrameData.gTime * vol.windSpeed);
                 
-                // ★修正：配置式フォグにも流体の本物の歪み（noiseSamplePos）を適用
+                // 1. サンプリング座標の計算（ワールド空間ベースにすることでグローバルとの連続性を保つ）
                 float3 baseVolPos = lerp(currentPos, noiseSamplePos, vol.distortionAmount);
-
                 float3 volWarpUVW = (baseVolPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
-                float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
-    
+                float3 volWarp = gNoiseVolume.SampleLevel(gSampler, frac(volWarpUVW), 0.0f).rgb * 2.0f - 1.0f;
                 float3 volNoisePos = (baseVolPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
 
-                float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
-    
+                float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePos), 0.0f);
                 float volBase = volNoiseSample.r;
                 float volCoarseErode = volNoiseSample.g;
                 float volFineErode = volNoiseSample.b;
 
-                float volCombinedNoise = lerp(volBase, 1.0f - volCoarseErode, vol.worleyWeight);
-                volCombinedNoise = saturate(volCombinedNoise - (volFineErode * vol.erosion));
-                volCombinedNoise = saturate((volCombinedNoise + vol.densityOffset) * vol.noiseContrast);
+                // ===============================================================
+                // ★大改造: UE基準の「マスク主導型エロージョン (Mask-Driven Erosion)」
+                // ===============================================================
+                
+                // ① ベースノイズの合成
+                float vNoise = lerp(volBase, 1.0f - volCoarseErode, vol.worleyWeight);
+                vNoise = saturate(vNoise - (1.0f - vNoise) * volFineErode * vol.erosion);
 
-                float volCutoff = 1.0f - vol.coverage;
+                // ② 【重要】形状マスクを密度ではなく「ノイズの閾値（カバレッジ）」に作用させる
+                // volumeMask が 1.0（中心）の時は通常のカバレッジ。
+                // volumeMask が 0.0（境界）に近づくほど、強制的にノイズが削り取られて千切れるようになる。
+                float volCutoff = 1.0f - (vol.coverage * volumeMask); // マスクでカバレッジを絞る
                 float volFeather = max(vol.noiseFeather, 0.001f);
-                float volNoiseVal = smoothstep(volCutoff, volCutoff + volFeather, volCombinedNoise);
+                
+                // オフセットを足してから切り出す
+                float shiftedNoise = vNoise + vol.densityOffset;
+                float volCoverage = smoothstep(volCutoff, volCutoff + volFeather, shiftedNoise);
 
-                float noiseModifier = lerp(1.0f, volNoiseVal, vol.noiseIntensity);
-                float finalVolDensity = vol.density * noiseModifier * volumeMask;
+                // ③ グローバルフォグと同じ「乗算型エロージョン」を採用し質感を完全に一致させる
+                float erosionFactor = saturate(1.0f - (1.0f - shiftedNoise) * max(vol.noiseContrast, 1.0f));
+                float combinedNoiseEffect = erosionFactor * volCoverage;
+                
+                // インテンシティによる最終変調
+                float noiseModifier = lerp(1.0f, combinedNoiseEffect, vol.noiseIntensity);
 
+                // ④ 最終密度の決定（volumeMask は既にカバレッジで使ったので、ここでは掛けない！）
                 float localUVW_Y = localPos.y * 0.5f + 0.5f;
                 float volHeightFactor = exp(-localUVW_Y * max(vol.heightFalloff, 0.0f));
-                finalVolDensity *= volHeightFactor;
+                
+                float finalVolDensity = vol.density * volHeightFactor * noiseModifier;
 
-                float selfShadow = exp(-finalVolDensity * 4.0f);
+                // ===============================================================
+                // ★ライティング（グローバルと減衰率を一致させる）
+                // ===============================================================
+                // グローバルの 4.0f に合わせる、もしくは vol.shadowDensityMultiplier などの変数にする
+                float volSelfShadow = exp(-finalVolDensity * 4.0f);
+                float finalVolShadowVis = shadowVisibility * volSelfShadow;
 
                 float phaseVol = DualPhaseHG(cosTheta, vol.anisotropy);
-                float3 volLight = shadowVisibility * phaseVol * gFrameData.mainLightColor.rgb * selfShadow;
+                float3 volLight = finalVolShadowVis * phaseVol * gFrameData.mainLightColor.rgb;
     
-                // ★修正：環境光・ローカルライトの遮蔽計算にバグが出ないようセルフシャドウを正しく乗算
-                volLight += gFogSettings.ambientLight * lerp(0.1f, 1.0f, shadowVisibility * selfShadow);
-                volLight += stepLocal * selfShadow;
+                volLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalVolShadowVis);
+                volLight += stepLocal;
 
                 volumeExtinction += finalVolDensity * gFogSettings.extinctionScale;
                 volumeScattering += vol.color * finalVolDensity * gFogSettings.scatteringIntensity * volLight;
