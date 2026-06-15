@@ -29,6 +29,7 @@ cbuffer SpotLights : register(b4)
 ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
 
 // 位相関数
+// 光が霧の粒子にぶつかった時に、どの方向にどのくらい散乱するか
 float PhaseFunctionHG(float cosTheta, float g)
 {
     float g2 = g * g;
@@ -43,6 +44,7 @@ float DualPhaseHG(float cosTheta, float g)
     return lerp(backward, forward, 0.9f);
 }
 
+// レイマーチングのアーティファクトを消すためのノイズ関数
 float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
     // フレームごとにピクセル座標をズラしてノイズを変える
@@ -365,7 +367,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         for (uint v = 0; v < gFogVolumeBuffer.volumeCount; ++v)
         {
             FogVolume vol = gFogVolumeBuffer.volumes[v];
-            float3 localPos = mul(float4(currentPos, 1.0f), vol.worldToLocal).xyz;
+            float3 distortedWorldPos = lerp(currentPos, advectedFluidPos, vol.distortionAmount);
+            float3 localPos = mul(float4(distortedWorldPos, 1.0f), vol.worldToLocal).xyz;
             
             float volumeMask = 0.0f;
             if (vol.type == 1) // Box型
@@ -430,7 +433,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
                 float localUVW_Y = localPos.y * 0.5f + 0.5f;
                 float volHeightFactor = exp(-localUVW_Y * max(vol.heightFalloff, 0.0f));
                 
-                float finalVolDensity = vol.density * volHeightFactor * noiseModifier;
+                float finalVolDensity = vol.density * volHeightFactor * noiseModifier * volumeMask;
 
                 // ===============================================================
                 // ★ライティング（グローバルと減衰率を一致させる）

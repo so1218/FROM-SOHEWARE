@@ -64,7 +64,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->erosionStrength = 1.0f;
     cbData_->noiseIntensity = 1.0f;
 
-    // ★パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
+    // パス用SRV/UAVヒープ作成（Depth, ShadowMap, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 16; // 10 -> 16 に増やす (流体リソース追加による枯渇を防ぐため)
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -151,7 +151,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     srvDesc2D.Texture2D.MipLevels = 1;
 
     // ====================================================================
- // ★修正: テンポラル用履歴バッファを "3Dテクスチャ" として2枚作成
+ // テンポラル用履歴バッファを "3Dテクスチャ" として2枚作成
  // ====================================================================
     for (int i = 0; i < 2; ++i) {
         device->CreateCommittedResource(
@@ -171,7 +171,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     }
 
     // ====================================================================
-    // ★新規追加: Resolve パス(2D合成) の最終出力先テクスチャ
+    // Resolve パス(2D合成) の最終出力先テクスチャ
     // ====================================================================
     CD3DX12_RESOURCE_DESC resolveTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(
         DXGI_FORMAT_R16G16B16A16_FLOAT, w, h, 1, 1, 1, 0,

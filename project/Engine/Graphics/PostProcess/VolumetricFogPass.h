@@ -19,7 +19,7 @@ public:
     // ノイズデータを受け取って保持する関数
     void SetNoiseData(const GeneratedTextureData& data) { noise3DData_ = data; }
 
-    // 【追加】外部からボリュームのリストを受け取る関数
+    // 外部からボリュームのリストを受け取る関数
     void SetFogVolumes(const std::vector<FogVolume>& volumes)
     {
         if (!volumeCbData_) return;
@@ -31,7 +31,7 @@ public:
         }
     }
 
-    // エディタ（C++）で管理するための構造体
+    // エディタで管理するための構造体
     struct FogVolumeData
     {
         int type = 0; // 0: Sphere, 1: Box
