@@ -723,13 +723,6 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");
             }
 
-            if (ImGui::CollapsingHeader("オブジェクト干渉 (Interaction)"))
-            {
-                ImGui::DragFloat("干渉半径", &volFogSettings->objectRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
-                ImGui::DragFloat("引きずり強度", &volFogSettings->interactionPower, 0.1f, 0.0f, 50.0f, "%.1f");
-                ImGui::InputFloat3("Debug: ObjPos", &volFogSettings->objectPos.x);
-            }
-
             // ★ 追加：流体シミュレーションのパラメータ UI
             if (fluidSettings && ImGui::CollapsingHeader("流体シミュレーション (Fluid Dynamics)"))
             {

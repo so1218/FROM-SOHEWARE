@@ -13,7 +13,11 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     // 設定用CB作成
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(VolumetricFogSettings));
+    UINT cbSizeAligned = (sizeof(VolumetricFogSettings) + 255) & ~255;
+
+    // サイズ指定を sizeof() ではなく、アライメント済みの cbSizeAligned に変更
+    constantBuffer_ = BufferManager::CreateBufferResource(device, cbSizeAligned);
+
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     // 配置式フォグ用CB作成
@@ -54,12 +58,6 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->worleyWeight = 0.8f;
     cbData_->erosion = 0.4f;
     cbData_->noiseFeather = 0.3f;
-
-    // --- インタラクション (Object) ---
-    cbData_->objectPos = { 0.0f, 0.0f, 0.0f };
-    cbData_->objectRadius = 2.0f;
-    cbData_->objectVelocity = { 0.0f, 0.0f, 0.0f };
-    cbData_->interactionPower = 5.0f;
 
     cbData_->erosionStrength = 1.0f;
     cbData_->noiseIntensity = 1.0f;

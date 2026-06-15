@@ -378,8 +378,7 @@ struct VolumetricFogSettings
     
     float baseHeight;
     float heightFalloff;
-    float pad1; 
-    float pad2; 
+    float2 pad1; 
     
     float3 ambientLight;
     float temporalWeight;
@@ -387,7 +386,7 @@ struct VolumetricFogSettings
     float maxDistance;
     float depthSliceCount;
     float noiseScale;
-    float pad5;
+    float pad2;
     
     float noiseDistortion;
     float windSpeed;
@@ -399,23 +398,8 @@ struct VolumetricFogSettings
     float erosionStrength;
     float noiseIntensity;
     
-    float3 objectPos;
-    float objectRadius;
-    
-    float3 objectVelocity;
-    float interactionPower;
-    
     float3 windDirection;
-    float pad6;
-};
-
-struct FogEffector
-{
-    float3 position;
-    float radius;
-    
-    float3 velosity;
-    float pushStrength;
+    float pad3;
 };
 
 struct FogBilateralSettings
@@ -428,31 +412,31 @@ struct FogBilateralSettings
 
 struct FogVolume
 {
-    float4x4 worldToLocal; // 64バイト (累計 64)
+    float4x4 worldToLocal;
 
-    float3 color; // 12バイト
-    float density; // 4バイト  (計16 / 累計 80)
+    float3 color;
+    float density;
 
-    float3 noiseScale; // 12バイト
-    float noiseIntensity; // 4バイト  (計16 / 累計 96)
+    float3 noiseScale; 
+    float noiseIntensity;
 
-    float3 windDirection; // 12バイト
-    float windSpeed; // 4バイト  (計16 / 累計 112)
+    float3 windDirection; 
+    float windSpeed; 
 
-    float coverage; // 4バイト
-    float anisotropy; // 4バイト
-    float blendDistance; // 4バイト
-    int type; // 4バイト  (計16 / 累計 128)
+    float coverage; 
+    float anisotropy; 
+    float blendDistance; 
+    int type; 
 
-    float worleyWeight; // 4バイト
-    float erosion; // 4バイト
-    float noiseFeather; // 4バイト
-    float distortionAmount; // 4バイト  (計16 / 累計 144) ★追加：流体歪み強さ
+    float worleyWeight; 
+    float erosion; 
+    float noiseFeather; 
+    float distortionAmount; 
 
-    float densityOffset; // 4バイト  (計4)     ★追加：密度の底上げ/引き算
-    float noiseContrast; // 4バイト  (計8)     ★追加：ノイズのコントラスト
-    float heightFalloff; // 4バイト  (計12)    ★追加：ボリューム内高さ減衰
-    float pad0; // 4バイト  (計16 / 累計 160) アライメント微調整用
+    float densityOffset; 
+    float noiseContrast; 
+    float heightFalloff; 
+    float pad0; 
 };
 
 
