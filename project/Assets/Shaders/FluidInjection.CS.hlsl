@@ -43,14 +43,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float3 targetVel = dragVelocity + pushVelocity;
 
-        // ★AAAハック: キャラクターの移動に合わせて「渦（Vorticity）」を直接ブレンドする
-        // 擬似的なカールノイズのように、外側に向かうベクトルを少し回転させる
-        float3 curlComponent = cross(outwardDir, float3(0.0f, 1.0f, 0.0f)) * speed * gFluidSettings.vorticityStrength;
-        targetVel += curlComponent;
+// =======================================================
+// ★AAA改修: サブグリッド・タービュランスの注入
+// =======================================================
+// 空間座標と時間からCurl Noiseをサンプリング（gNoiseVolume等を流用）
+// ※Curl Noiseは「発散ゼロ（Divergence-Free）」であることが保証されているノイズです
+        float noiseScale = 0.5f;
+        float3 noiseUVW = voxelWorldPos * noiseScale + gFrameData.gTime * 0.2f;
+        float3 curlNoiseVel = SampleCurlNoise(gLinearWrapSampler, noiseUVW); // ※別途Curl Noise関数/テクスチャを用意
 
-        // deltaTimeを掛けずに、influenceの強さで直接速度を「補間（上書き）」する！
-        // これにより、圧ソルバに消される前に1フレームで完璧にキャラに追従します
-        float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f); // 60fps基準
+// キャラクターが動いた時（influence > 0）だけ、その周囲に微細な乱気流を発生させる
+        targetVel += curlNoiseVel * (speed * 0.5f);
+
+        float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f);
         gVelocityWrite[DTid.xyz] = float4(lerp(currentVel, targetVel, blendRate), 0.0f);
 
         // 【バグ修正】: 影響範囲内でも、元々あった密度を必ず維持して書き込む！

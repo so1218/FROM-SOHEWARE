@@ -52,6 +52,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
 // 4. 補正されたUVWを使って本番のサンプリング！
     float3 advectedVelocity = gVelocityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).xyz;
     float advectedDensity = gDensityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).r;
+
+// =======================================================
+// ★AAA改修: MacCormack Clamping (オーバーシュート防止)
+// =======================================================
+// バックトレース先の位置（backtraceUVW）の周囲のテクセルからMin/Maxを取得
+    float3 texelSize = 1.0f / float3(width, height, depth);
+    float minDensity = 9999.0f;
+    float maxDensity = -9999.0f;
+
+// 簡易的なクロスサンプリング（負荷と精度のバランス）
+    float3 offsets[4] =
+    {
+        float3(texelSize.x, 0, 0), float3(-texelSize.x, 0, 0),
+    float3(0, texelSize.y, 0), float3(0, -texelSize.y, 0)
+    };
+
+    for (int i = 0; i < 4; ++i)
+    {
+        float sampleD = gDensityRead.SampleLevel(gLinearWrapSampler, backtraceUVW + offsets[i], 0).r;
+        minDensity = min(minDensity, sampleD);
+        maxDensity = max(maxDensity, sampleD);
+    }
+
+// BFECCの結果が周囲の現実的な値を超えていたら、安全な1次移流（velSemiLagやバックトレース先のDensity）にフォールバック、またはクランプする
+    advectedDensity = clamp(advectedDensity, minDensity, maxDensity);
     
     // =======================================================
     // UVW座標自体の移流 (空間の歪み) と ★Toroidal Lerp
