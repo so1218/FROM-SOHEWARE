@@ -15,7 +15,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // ★修正: ループ(Wrap)座標の計算
+    // ループ(Wrap)座標の計算
     uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
     uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
     uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
@@ -23,7 +23,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint zD = (DTid.z == 0) ? depth - 1 : DTid.z - 1;
     uint zU = (DTid.z == depth - 1) ? 0 : DTid.z + 1;
 
-    // ★修正: 反対側の圧力を取得
+    // 反対側の圧力を取得
     float pL = gPressure[uint3(xL, DTid.y, DTid.z)];
     float pR = gPressure[uint3(xR, DTid.y, DTid.z)];
     float pB = gPressure[uint3(DTid.x, yB, DTid.z)];

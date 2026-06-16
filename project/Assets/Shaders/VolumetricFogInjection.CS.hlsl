@@ -109,58 +109,53 @@ void main(uint3 DTid : SV_DispatchThreadID)
             shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
         }
         
-      // ===============================================================
-        // ★流体データの取得
-        // ===============================================================
+        // 流体データの取得
         float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
 
-        // 【AAA基準の修正①】：objectPos からの計算をやめ、C++側でスナップされた正確なシミュレーション境界で判定
-        // これにより、プレイヤーが移動したときのフォグのガタつき（ジッター）が100%消滅します。
+        // スナップされたシミュレーション境界で判定
         bool isInsideFluidGrid = all(currentPos >= gFluidSettings.gridMin) && all(currentPos <= gFluidSettings.gridMax);
 
         float3 realFluidVelocity = 0.0f;
         float fluidMass = 0.0f;
-        float3 advectedFluidPos = currentPos; // 初期値は歪みなし
+        float3 advectedFluidPos = currentPos;
         float fluidShadowMass = 0.0f;
         float edgeFade = 0.0f;
 
         if (isInsideFluidGrid)
         {
-            // 境界付近で煙がプツッと消えないようにするための3軸フェード
+            // 境界付近の3軸フェード
             float3 distToMin = currentPos - gFluidSettings.gridMin;
             float3 distToMax = gFluidSettings.gridMax - currentPos;
             float3 minDist = min(distToMin, distToMax);
             edgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(minDist.x, minDist.y), minDist.z));
 
-            // 【AAA基準の修正②】：負のワールド座標（原点よりマイナス方向）でも絶対に破綻しないトーラスマッピング
+            // 負の座標に対応したトーラスマッピング (0.0～1.0へのWrap)
             float3 uvwRaw = currentPos / fluidSize;
-            float3 fluidUVW = uvwRaw - floor(uvwRaw); // HLSLのfracではなく、数学的に正しい0.0～1.0へのWrap
+            float3 fluidUVW = uvwRaw - floor(uvwRaw);
 
-            // 明示的にWrapサンプラー（境界をループ補間するサンプラー）を使用してサンプリング
+            // Wrapサンプラーでサンプリング
             realFluidVelocity = gFluidVelocity.SampleLevel(gSampler, fluidUVW, 0).xyz * edgeFade;
             fluidMass = max(gFluidDensity.SampleLevel(gSampler, fluidUVW, 0).r, 0.0f) * edgeFade;
 
-// 移流（Advection）されたUVW（テクスチャ内の位置）を取得
+            // 移流（Advection）されたUVWを取得
             float3 advectedUVW = gFluidUVW.SampleLevel(gSampler, fluidUVW, 0).xyz;
             float3 uvwOffset = advectedUVW - fluidUVW;
 
-// ★これが大活躍します！トーラスラップの境界をまたいだ際の巨大なオフセットを最短経路補正
+            // トーラスラップ境界のオフセットを最短経路補正
             uvwOffset = uvwOffset - floor(uvwOffset + 0.5f);
 
-// オフセットから歪んだワールド座標を算出
+            // オフセットから歪んだワールド座標を算出
             advectedFluidPos = currentPos + (uvwOffset * fluidSize);
 
-// ===============================================================
-// セルフシャドウ用サンプリング（Toroidal完全対応版）
-// ===============================================================
+            // セルフシャドウ用サンプリング
             float3 shadowOffsetWorld = normalize(-gFrameData.mainLightDirection) * (2.0f * gFluidSettings.gridScale);
             float3 shadowSamplePos = currentPos + shadowOffsetWorld;
 
-// ★修正：if文の境界チェックを撤廃！外に出てもfloorによるToroidal Wrapで安全にループサンプリングする
+            // floorによるToroidal Wrapでループサンプリング
             float3 shadowUVWRaw = (shadowSamplePos - gFluidSettings.gridMin) / fluidSize;
             float3 shadowUVW = shadowUVWRaw - floor(shadowUVWRaw);
             
-            // シャドウ用のフェードは、元セルのedgeFadeを流用するか、shadowSamplePosベースで安全に計算する
+            // シャドウ用フェードの計算
             float3 sDistToMin = shadowSamplePos - gFluidSettings.gridMin;
             float3 sDistToMax = gFluidSettings.gridMax - shadowSamplePos;
             float3 sMinDist = min(sDistToMin, sDistToMax);
@@ -172,80 +167,78 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 風による時間のオフセット
         float3 timeOffset = normalize(gFogSettings.windDirection + 0.001f) * (gFrameData.gTime * gFogSettings.windSpeed);
 
-     // 最終的なノイズサンプリング用の座標（外側は currentPos、内側は流体に歪められた座標）
+        // ノイズサンプリング座標
         float3 noiseSamplePos = lerp(currentPos, advectedFluidPos, edgeFade);
-
-        // 微細な歪み（既存の3Dノイズボリュームによる揺らぎ）
-        float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
+        
+        // 3Dノイズによる微細な歪み
+        float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.43f) + timeOffset * 0.35f;
         float3 distortion = float3(
             gNoiseVolume.SampleLevel(gSampler, warpUVW, 0).r,
-            gNoiseVolume.SampleLevel(gSampler, warpUVW + 0.33f, 0).r,
-            gNoiseVolume.SampleLevel(gSampler, warpUVW + 0.67f, 0).r
+            gNoiseVolume.SampleLevel(gSampler, warpUVW + float3(131.0f, 73.0f, 191.0f), 0).r,
+            gNoiseVolume.SampleLevel(gSampler, warpUVW + float3(43.0f, 269.0f, 113.0f), 0).r
         );
 
+        // 歪みを与えた最終的なワールド座標
         float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
         
         // 多重ノイズの合成
+        // ベースとなる大きな雲（低周波）
         float3 uvwA = distortedPos * gFogSettings.noiseScale + timeOffset;
-        float basePerlin = gNoiseVolume.SampleLevel(gSampler, frac(uvwA), 1.0f).r;
-        float3 uvwB = distortedPos.zxy * (gFogSettings.noiseScale * 2.0f) - (timeOffset * 0.7f) + float3(0.31f, 0.74f, 0.12f);
-        float4 detailNoise = gNoiseVolume.SampleLevel(gSampler, frac(uvwB), 0);
-        
-        float combinedNoise = lerp(basePerlin, 1.0f - detailNoise.g, gFogSettings.worleyWeight);
-        combinedNoise = saturate(combinedNoise - (detailNoise.b * gFogSettings.erosion));
+        float4 noiseLayer1 = gNoiseVolume.SampleLevel(gSampler, uvwA, 0);
+        float basePerlin1 = noiseLayer1.r; // Perlin
 
-       // ===============================================================
-        // ★大改造2: 流体密度(マクロ) × ノイズ(ミクロ) の完全融合
-        // ===============================================================
+        // 別のスケールと別の速度で動く大きな雲（中周波）
+        float3 uvwB = distortedPos * (gFogSettings.noiseScale * 0.37f) + (timeOffset * 1.41f) + float3(411.0f, 823.0f, 157.0f);
+        float4 noiseLayer2 = gNoiseVolume.SampleLevel(gSampler, uvwB, 0);
+        float basePerlin2 = noiseLayer2.r; // 別周期のPerlin
+
+        // 2つの異なる周期のPerlinを掛け合わせる
+        float combinedPerlin = basePerlin1 * basePerlin2 * 1.5f;
+
+        // ディテールとエロージョン
+        float gWorley = noiseLayer1.g; // 粗いディテール
+        float bWorley = noiseLayer1.b; // 細かいディテール
+
+        // Perlinのブレンド結果に対してWorleyによるモコモコ感と削りを適用
+        float combinedNoise = lerp(combinedPerlin, 1.0f - gWorley, gFogSettings.worleyWeight);
+        combinedNoise = saturate(combinedNoise - (bWorley * gFogSettings.erosion));
+
+        // 流体密度とノイズの融合
         float cutoff = 1.0f - gFogSettings.coverage;
         float feather = max(gFogSettings.noiseFeather, 0.001f);
         
-        // 1. 先に高さ減衰（Height Factor）を計算
+        // 高さ減衰を計算
         float heightFactor = 1.0f;
         if (gFogSettings.heightFalloff > 0.0f)
         {
             heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
         }
         
-        // ===============================================================
-        // ★大改造: Unreal / Frostbite基準の「密度合成（Density Compositing）」
-        // ===============================================================
-
-        // 1. マクロな形状（Base Density）を別々に計算する
+        // 密度のブレンド
         float globalBaseDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor);
         float fluidBaseDensity = fluidMass;
 
-        // 2. 密度の合成（Compositing）
         float blendWeight = saturate(fluidMass * edgeFade);
         float macroDensity = lerp(globalBaseDensity, max(globalBaseDensity, fluidBaseDensity), blendWeight);
 
-        // 3. ミクロなディテール（Noise / Erosion）の適用
+        // ミクロディテール(Noise/Erosion)の適用
         float noiseCoverage = smoothstep(cutoff, cutoff + feather, combinedNoise);
         
-        // 【★Unreal Engine基準の修正】：減算型から「乗算（比率）型」のエロージョンに変更
-        // combinedNoise(0～1) に応じて、ベース密度をどれだけの割合削るかを計算します。
-        // これにより、密度の高い流体内部も、密度の低い外側も、同じコントラストで均一に削り出されます。
+        // 乗算型のエロージョン計算
         float erosionFactor = saturate(1.0f - (1.0f - combinedNoise) * gFogSettings.erosionStrength);
         
-   // ★【修正】ノイズの効果を1つにまとめ、Intensityで「1.0（無地）」とブレンドする
+        // ノイズ効果のまとめとブレンド
         float combinedNoiseEffect = erosionFactor * noiseCoverage;
         float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, gFogSettings.noiseIntensity);
         
-        // 4. 最終的なパーティクル密度
-        // finalNoiseModifierが1.0なら、macroDensityがそのまま出力され完全なのっぺりフォグになる
+        // 最終的なパーティクル密度の決定
         float particleDensity = macroDensity * finalNoiseModifier;
 
-        // 【シャドウの計算連動】セルフシャドウ用の密度も同様に比率で計算
+        // セルフシャドウ用密度の計算
         float combinedShadowBase = lerp(globalBaseDensity, max(globalBaseDensity, fluidShadowMass), saturate(fluidShadowMass * edgeFade));
         float dynamicShadowFog = combinedShadowBase * erosionFactor * noiseCoverage;
 
-
-        // ===============================================================
-        // ★大改造5: 光の減衰（Beer-Lambert則）の適用 と ライティング
-        // 【修正】密度が確定した後に、受光量を計算する！
-        // ===============================================================
-        
-        // 直上で合成・計算した dynamicShadowFog を使って遮蔽率を出す
+        // 光の減衰とライティング計算
         float fluidSelfShadow = exp(-dynamicShadowFog * 4.0f);
 
         // 受光量の計算（地形シャドウ × 流体セルフシャドウ を合成）
@@ -260,8 +253,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // ローカルライトの累積用
         float3 stepLocal = 0;
 
-        // ★追加：ローカルライト用のボクセル疑似セルフシャドウ（煙の中での減衰）
-        // densityが大きい（煙が濃い）ほど、ローカルライトの光も届きにくくなる
+        // ローカルライト用の煙による減衰
         float localFogAttenuation = exp(-particleDensity * 2.0f);
 
         for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
@@ -278,17 +270,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
             
             float dist = sqrt(distSq);
 
-            // 【AAA修正①】Windowed Inverse Square Falloff (物理ベース減衰)
-            // 1.0 / (d^2 + 1) で逆2乗の法則を作り、端を滑らかに切り落とす
+            // 物理ベースの距離減衰
             float distanceFalloff = 1.0f / (max(distSq, 0.01f) + 1.0f);
             float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
             float attenuation = distanceFalloff * (windowing * windowing);
 
-            // 【AAA修正②】異方性（Anisotropy）の適用
-            // 0.0f ではなく、フォグ全体の異方性パラメータを適用して「光の芯」を作る
+            // 異方性の適用
             float phaseLocal = DualPhaseHG(dot(rayDir, lightVec / dist), gFogSettings.anisotropy);
 
-            // 【AAA修正③】疑似ボクセルシャドウの適用
+            // ライトの適用
             stepLocal += gPointLights[p].color.rgb * gPointLights[p].intensity * attenuation * phaseLocal * localFogAttenuation;
         }
 
@@ -299,7 +289,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             
             float3 lightVec = gSpotLights[s].position - currentPos;
             
-            // サーフェイス側と同じく、まずはシンプルに距離を計算
+            // 距離計算
             float distance = length(lightVec);
             
             if (distance > gSpotLights[s].distance)
@@ -311,58 +301,42 @@ void main(uint3 DTid : SV_DispatchThreadID)
             if (currentCos < gSpotLights[s].cosAngle)
                 continue;
             
-            // ===============================================================
-            // ★完全一致1: 距離減衰 (Distance Falloff)
-            // サーフェイス側の ApplySpotLights と全く同じ計算式に修正
-            // ===============================================================
+            // 距離減衰
             float distanceAtt = gSpotLights[s].distance > 0.0001f
                 ? pow(saturate(1.0f - distance / gSpotLights[s].distance), gSpotLights[s].decay)
                 : 1.0f;
             
-            // ===============================================================
-            // ★完全一致2: 角度減衰 (Angle Falloff)
-            // サーフェイス側の ApplySpotLights と全く同じ 2.0f の乗数に修正
-            // ===============================================================
+            // 角度減衰
             float angleAtt = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
             
             float attenuation = distanceAtt * angleAtt;
             
-            // ===============================================================
-            // ★フォグ特有の処理 (Phase Function & Intensity)
-            // ===============================================================
-            // 位相関数：光を見る角度によって霧がどう光るか（ここはフォグ専用の処理として残します）
+            // フォグの位相関数
             float phaseLocal = DualPhaseHG(dot(rayDir, lDir), gFogSettings.anisotropy);
             
-            // ボリューム専用の輝度ブースト（サーフェイスと光り方を合わせるための係数）
-            // ※とりあえず 1.0f にして、サーフェイスと同じ明るさになるか確認してください。
-            // 暗ければ 2.0f や 4.0f に上げます。
+            // ボリューム用輝度ブースト
             float volumetricScatteringIntensity = 1.0f;
             
-            // 煙の濃さによる光の遮蔽（強すぎる場合は 1.0f などに弱めてください）
-            float localFogAttenuation = exp(-particleDensity * 1.0f);
+            // 煙による遮蔽
+            float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
             // 最終合成
-            stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity) * attenuation * phaseLocal * localFogAttenuation;
+            stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity) * attenuation * phaseLocal * spotLocalFogAttenuation;
         }
 
         totalLight += stepLocal;
         
-// ===============================================================
-        // 3. 最後に距離フェードなどをかける
-        // ===============================================================
+        // 距離フェードの適用
         float fadeStart = farZ * 0.8f;
         float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, 0.001f));
         particleDensity *= distanceFade;
 
         float3 global_sigma_s = gFogSettings.scatteringColor * particleDensity * gFogSettings.scatteringIntensity;
         float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
-
-        // ---------------------------------------------------------------
-        // 2. 配置式フォグボリュームの計算
-        // ---------------------------------------------------------------
+        
+        // 配置式フォグボリュームの計算
         float3 volumeScattering = 0;
         float volumeExtinction = 0;
-       
 
         for (uint v = 0; v < gFogVolumeBuffer.volumeCount; ++v)
         {
@@ -393,7 +367,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             {
                 float3 volTimeOffset = normalize(vol.windDirection + 0.001f) * (gFrameData.gTime * vol.windSpeed);
                 
-                // 1. サンプリング座標の計算（ワールド空間ベースにすることでグローバルとの連続性を保つ）
+                // サンプリング座標の計算
                 float3 baseVolPos = lerp(currentPos, noiseSamplePos, vol.distortionAmount);
                 float3 volWarpUVW = (baseVolPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
                 float3 volWarp = gNoiseVolume.SampleLevel(gSampler, frac(volWarpUVW), 0.0f).rgb * 2.0f - 1.0f;
@@ -404,41 +378,34 @@ void main(uint3 DTid : SV_DispatchThreadID)
                 float volCoarseErode = volNoiseSample.g;
                 float volFineErode = volNoiseSample.b;
 
-                // ===============================================================
-                // ★大改造: UE基準の「マスク主導型エロージョン (Mask-Driven Erosion)」
-                // ===============================================================
+                // マスク主導型エロージョン
                 
-                // ① ベースノイズの合成
+                // ベースノイズ合成
                 float vNoise = lerp(volBase, 1.0f - volCoarseErode, vol.worleyWeight);
                 vNoise = saturate(vNoise - (1.0f - vNoise) * volFineErode * vol.erosion);
 
-                // ② 【重要】形状マスクを密度ではなく「ノイズの閾値（カバレッジ）」に作用させる
-                // volumeMask が 1.0（中心）の時は通常のカバレッジ。
-                // volumeMask が 0.0（境界）に近づくほど、強制的にノイズが削り取られて千切れるようになる。
-                float volCutoff = 1.0f - (vol.coverage * volumeMask); // マスクでカバレッジを絞る
+                // カバレッジ計算
+                float volCutoff = 1.0f - (vol.coverage * volumeMask);
                 float volFeather = max(vol.noiseFeather, 0.001f);
                 
                 // オフセットを足してから切り出す
                 float shiftedNoise = vNoise + vol.densityOffset;
                 float volCoverage = smoothstep(volCutoff, volCutoff + volFeather, shiftedNoise);
 
-                // ③ グローバルフォグと同じ「乗算型エロージョン」を採用し質感を完全に一致させる
+                // 乗算型エロージョン
                 float erosionFactor = saturate(1.0f - (1.0f - shiftedNoise) * max(vol.noiseContrast, 1.0f));
                 float combinedNoiseEffect = erosionFactor * volCoverage;
                 
                 // インテンシティによる最終変調
                 float noiseModifier = lerp(1.0f, combinedNoiseEffect, vol.noiseIntensity);
 
-                // ④ 最終密度の決定（volumeMask は既にカバレッジで使ったので、ここでは掛けない！）
+                // 最終密度の決定
                 float localUVW_Y = localPos.y * 0.5f + 0.5f;
                 float volHeightFactor = exp(-localUVW_Y * max(vol.heightFalloff, 0.0f));
                 
                 float finalVolDensity = vol.density * volHeightFactor * noiseModifier * volumeMask;
 
-                // ===============================================================
-                // ★ライティング（グローバルと減衰率を一致させる）
-                // ===============================================================
-                // グローバルの 4.0f に合わせる、もしくは vol.shadowDensityMultiplier などの変数にする
+                // ボリュームのライティング
                 float volSelfShadow = exp(-finalVolDensity * 4.0f);
                 float finalVolShadowVis = shadowVisibility * volSelfShadow;
 

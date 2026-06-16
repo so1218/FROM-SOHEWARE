@@ -1,20 +1,15 @@
 // 書き込み用の3Dテクスチャ
 RWTexture3D<float4> gOutputNoise : register(u0);
 
-// =======================================================
-// 1. 乱数生成関数 (Hash)
-// =======================================================
-float3 hash33(float3 p)
+// 乱数生成関数 (Hash)
+float3 hash33(float3 p3)
 {
-    p = float3(dot(p, float3(127.1f, 311.7f, 74.7f)),
-               dot(p, float3(269.5f, 183.3f, 246.1f)),
-               dot(p, float3(113.5f, 271.9f, 124.6f)));
-    return -1.0f + 2.0f * frac(sin(p) * 43758.5453123f);
+    p3 = frac(p3 * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz + 33.33);
+    return -1.0f + 2.0f * frac((p3.xxy + p3.yxx) * p3.zyx);
 }
 
-// =======================================================
-// 2. シームレスな 3D Perlin Noise (-1.0 ～ 1.0)
-// =======================================================
+// シームレスな 3D Perlin Noise (-1.0 ～ 1.0)
 float PerlinNoise3D_Seamless(float3 p, float period)
 {
     float3 pi = floor(p);
@@ -51,15 +46,12 @@ float PerlinNoise3D_Seamless(float3 p, float period)
     return lerp(y0, y1, w.z);
 }
 
-// =======================================================
-// 3. フラクタル・ノイズ (fBm) の生成 (0.0 ～ 1.0)
-// =======================================================
+// フラクタル・ノイズ (fBm) の生成 (0.0 ～ 1.0)
 float CalculateComplexPerlinNoise(float3 uvw)
 {
     float noise = 0.0f;
     float amplitude = 0.5f;
     
-    // ★改善：初期周波数を 4.0 から 1.5 に引き下げ（ゆったりした大きなうねりを作る）
     float frequency = 1.5f;
     float maxAmplitude = 0.0f;
 
@@ -103,9 +95,7 @@ float CalculateComplexPerlinNoise(float3 uvw)
     return noise / maxAmplitude;
 }
 
-// =======================================================
-// 4. シームレスな 3D Worley Noise (0.0 ～ 1.0)
-// =======================================================
+// シームレスな 3D Worley Noise (0.0 ～ 1.0)
 float WorleyNoise3D_Seamless(float3 p, float period)
 {
     float3 pi = floor(p);
@@ -131,9 +121,6 @@ float WorleyNoise3D_Seamless(float3 p, float period)
     return saturate(minDist);
 }
 
-// =======================================================
-// メイン・エントリーポイント
-// =======================================================
 [numthreads(8, 8, 8)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -144,11 +131,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float3 uvw = float3(DTid) / float3(width, height, depth);
 
-    // ---------------------------------------------------------------
-    // 【プロ仕様：マルチスケール・チャンネル設計】
-    // 各チャンネルに「明確に役割（解像度）の違うノイズ」を単体で独立して焼く！
-    // ---------------------------------------------------------------
-    
     // R: マクロ形状（ゆったりとした大きな雲のベース）
     float rPerlin = CalculateComplexPerlinNoise(uvw);
     rPerlin = smoothstep(0.1f, 0.9f, pow(rPerlin, 1.2f));
@@ -162,6 +144,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // A: 超細かいディテール（煙のような細密なザラつき、ミクロな空気感）
     float aWorley = WorleyNoise3D_Seamless(uvw * 16.0f, 16.0f);
 
-    // 4つの独立したパーツとしてテクスチャに完全保存！
-    gOutputNoise[DTid] = float4(rPerlin, gWorley, bWorley, aWorley);
+    // 4つの独立したパーツとしてテクスチャに保存
+    gOutputNoise[DTid] = float4(rPerlin, 1.0f - gWorley, 1.0f - bWorley, 1.0f - aWorley);
 }

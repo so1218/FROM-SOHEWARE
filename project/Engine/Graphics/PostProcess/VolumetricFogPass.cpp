@@ -73,7 +73,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     passHeap_->SetName(L"VolumetricFog_Heap");
 
     // ====================================================================
-    // ★追加：Froxel用 3Dテクスチャ（Injection / Accumulation）の生成
+    // Froxel用 3Dテクスチャ（Injection / Accumulation）の生成
     // ====================================================================
 
     // 1. 3Dテクスチャの定義 (160 x 90 x 64, FP16, UAV許可)
@@ -101,7 +101,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     voxelAccumulateRes_->SetName(L"VoxelAccumulateResource");
 
     // ====================================================================
-    // ★追加：ディスクリプタヒープ(SRV/UAV)への登録
+    // ディスクリプタヒープ(SRV/UAV)への登録
     // ====================================================================
     auto* srvManager = engine->GetSRVManager();
 
@@ -123,19 +123,19 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     // 4. Inject用のインデックス確保とビュー作成
     injectUavIndex_ = srvManager->Allocate();
-    device->CreateUnorderedAccessView(voxelInjectRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(injectUavIndex_)); // ★変更
+    device->CreateUnorderedAccessView(voxelInjectRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(injectUavIndex_));
 
     injectSrvIndex_ = srvManager->Allocate();
-    device->CreateShaderResourceView(voxelInjectRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(injectSrvIndex_)); // ★変更
+    device->CreateShaderResourceView(voxelInjectRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(injectSrvIndex_)); 
 
     // 5. Accumulate用のインデックス確保とビュー作成
     accumUavIndex_ = srvManager->Allocate();
-    device->CreateUnorderedAccessView(voxelAccumulateRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(accumUavIndex_)); // ★変更
+    device->CreateUnorderedAccessView(voxelAccumulateRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(accumUavIndex_)); 
 
     accumSrvIndex_ = srvManager->Allocate();
-    device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_)); // ★変更
+    device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_));
 
-    // ★修正ポイント1: 2D用のUAV/SRV定義
+    // 2D用のUAV/SRV定義
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc2D = {};
     uavDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     uavDesc2D.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
@@ -149,8 +149,8 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     srvDesc2D.Texture2D.MipLevels = 1;
 
     // ====================================================================
- // テンポラル用履歴バッファを "3Dテクスチャ" として2枚作成
- // ====================================================================
+    // テンポラル用履歴バッファを "3Dテクスチャ" として2枚作成
+    // ====================================================================
     for (int i = 0; i < 2; ++i) {
         device->CreateCommittedResource(
             &heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, // tex3DDesc (160x90x64) を使用
@@ -220,9 +220,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     cmdList->ResourceBarrier(barrierCount, temporalBarriers);
     cmdList->ResourceBarrier(1, &resolveBarrier);
 
-    // ====================================================================
-    // [0] 前準備：リソース状態の遷移 (SRV -> UAV / PIXEL_SHADER -> NON_PIXEL_SHADER)
-    // ====================================================================
+    // [0] 前準備：リソース状態の遷移
 
     D3D12_RESOURCE_BARRIER readBarriers[2] = {};
     readBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -245,9 +243,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = passHeap_->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE destGPU = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
-    // ========================================================
-      // 【修正】GPUへ送るための配列変換（毎フレームローカルで作るのが安全）
-      // ========================================================
+      // GPUへ送るための配列変換
     std::vector<FogVolume> gpuVolumes; // ローカル変数にするか、メンバ変数の場合はここで clear() する
 
     for (const auto& volData : editorVolumes_) // editorVolumes_ を回す
@@ -275,7 +271,6 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         gpuData.anisotropy = volData.anisotropy;
         gpuData.blendDistance = volData.blendDistance;
 
-        // ★追加した4つの高度なノイズパラメータをGPUデータへコピー
         gpuData.coverage = volData.coverage;
         gpuData.worleyWeight = volData.worleyWeight;
         gpuData.erosion = volData.erosion;
@@ -292,9 +287,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // 自身の関数を呼んでCBにデータをコピー
     SetFogVolumes(gpuVolumes);
 
-    // ========================================================
     // [1] Injection パス (3D空間に光と密度を計算)
-    // ========================================================
     // --- ディスクリプタのコピー ---
    // t0: Depth
     device->CopyDescriptorsSimple(1, destCPU, context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -307,14 +300,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // t4: Fluid Velocity
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 4, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidVelocitySrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // =========================================================
-    // ★追加★ t5: Fluid UVW（Context等から適切にインデックスを取得）
-    // =========================================================
+    // t5: Fluid UVW（Context等から適切にインデックスを取得）
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 5, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidUVWSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // =========================================================
-    // ★再修正★ u0: VoxelInject UAV (t5が増えたのでオフセットを「6」に変更)
-    // =========================================================
+    // u0: VoxelInject UAV
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 6, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // --- パイプライン設定 ---
@@ -332,10 +321,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // t0 ~ t4 のテーブル (前回のルートシグネチャ変更により、t0~t4がひと繋ぎのテーブルになっています)
     cmdList->SetComputeRootDescriptorTable(6, destGPU);
 
-    // ★修正★ u0 のテーブル (※オフセットが4から「5」にズレます！)
+    // u0 のテーブル (※オフセットが4から「5」にズレます！)
     cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize));
 
-    // --- Dispatch ---
+    // Dispatch
     UINT injectX = (froxelW + 7) / 8;
     UINT injectY = (froxelH + 7) / 8;
     UINT injectZ = (froxelD + 3) / 4;
@@ -345,9 +334,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &barrier);
 
-    // ========================================================
-// ★新規追加: [1.5] Temporal Filter パス (3D TAA)
-// ========================================================
+    // [1.5] Temporal Filter パス (3D TAA)
     {
         // t0: Injection Current (オフセット 7)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -377,7 +364,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [2] Accumulation パス (手前から奥へ積分)
     // ========================================================
     {
-        // ★これを追加：FroxelのXY解像度に対するディスパッチサイズ
+        // FroxelのXY解像度に対するディスパッチサイズ
         UINT accumX = (froxelW + 7) / 8;
         UINT accumY = (froxelH + 7) / 8;
 
@@ -394,7 +381,6 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 10, handleSize)); // t0
         cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); // u0
 
-        // ★ここで使用する
         cmdList->Dispatch(accumX, accumY, 1);
 
         auto accBarrier = CD3DX12_RESOURCE_BARRIER::Transition(voxelAccumulateRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -406,11 +392,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [3] Resolve パス (2D画面解像度へ引き伸ばし合成)
     // ========================================================
     {
-        // t0: Depth (オフセット 12)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 12, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // t1: VoxelAccumulate (オフセット 13)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 13, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(accumSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        // ★変更: u0 を ResolveOutput に変更 (オフセット 14)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 14, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(resolveOutputUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogResolveCS"));

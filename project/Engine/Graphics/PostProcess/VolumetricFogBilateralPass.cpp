@@ -21,7 +21,7 @@ void VolumetricFogBilateralPass::Initialize(Engine* engine, UINT w, UINT h, PSOM
     cbData_->spatialSigma = 2.0f;
     cbData_->depthSigma = 0.001f;
 
-    // ★パス用SRV/UAVヒープ作成（RawFog, Depth, OutputUAV の 3つ分）
+    // パス用SRV/UAVヒープ作成（RawFog, Depth, OutputUAV の 3つ分）
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 3;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;

@@ -1,6 +1,6 @@
 #include "ShaderConstants.hlsli"
 
-// ★修正：ダブルバッファリング用に読み込み(t0, t1)と書き込み(u0, u1)を分ける
+// ダブルバッファリング用に読み込み(t0, t1)と書き込み(u0, u1)を分ける
 Texture3D<float4> gVelocityRead : register(t0);
 Texture3D<float> gDensityRead : register(t1);
 
@@ -9,6 +9,8 @@ RWTexture3D<float> gDensityWrite : register(u1);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<FluidSettings> gFluidSettings : register(b1);
+
+SamplerState gLinearWrapSampler : register(s1);
 
 [numthreads(8, 8, 8)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -43,22 +45,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float3 targetVel = dragVelocity + pushVelocity;
 
-// =======================================================
-// ★AAA改修: サブグリッド・タービュランスの注入
-// =======================================================
-// 空間座標と時間からCurl Noiseをサンプリング（gNoiseVolume等を流用）
-// ※Curl Noiseは「発散ゼロ（Divergence-Free）」であることが保証されているノイズです
+　       // =======================================================
+        // サブグリッド・タービュランスの注入
+        // =======================================================
+        // 空間座標と時間からCurl Noiseをサンプリング（gNoiseVolume等を流用）
+
         float noiseScale = 0.5f;
         float3 noiseUVW = voxelWorldPos * noiseScale + gFrameData.gTime * 0.2f;
         float3 curlNoiseVel = SampleCurlNoise(gLinearWrapSampler, noiseUVW); // ※別途Curl Noise関数/テクスチャを用意
 
-// キャラクターが動いた時（influence > 0）だけ、その周囲に微細な乱気流を発生させる
+        // キャラクターが動いた時（influence > 0）だけ、その周囲に微細な乱気流を発生させる
         targetVel += curlNoiseVel * (speed * 0.5f);
 
         float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f);
         gVelocityWrite[DTid.xyz] = float4(lerp(currentVel, targetVel, blendRate), 0.0f);
 
-        // 【バグ修正】: 影響範囲内でも、元々あった密度を必ず維持して書き込む！
+        // 影響範囲内でも、元々あった密度を必ず維持して書き込む
         gDensityWrite[DTid.xyz] = currentDen;
     }
     else

@@ -954,9 +954,10 @@
     <FxCompile Include="Assets\Shaders\FluidDivergence.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidJacobi.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidVorticity.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidInitUVW.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogVoxelTemporalFilter.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidScrollAndClear.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidComputeCurl.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FluidApplyVorticity.CS.hlsl" />
   </ItemGroup>
 </Project>

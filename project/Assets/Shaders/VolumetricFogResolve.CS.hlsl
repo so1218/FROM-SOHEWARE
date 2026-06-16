@@ -1,20 +1,14 @@
 #include "ShaderConstants.hlsli"
 
-// --- 入力リソース ---
 Texture2D<float> gDepthTexture : register(t0);
 // 既にTAAされて綺麗になった、蓄積済みの3Dフォグ
 Texture3D<float4> gVoxelAccumulate : register(t1);
 SamplerState gLinearSampler : register(s0);
 
-// --- 出力リソース ---
 RWTexture2D<float4> gOutput : register(u0);
 
-// --- 定数バッファ ---
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
-
-// 【注意】ディザリング関数(InterleavedGradientNoise)などは削除します。
-// 3D空間で既に綺麗になっているため、ここでジッターを入れると逆にノイズになります。
 
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -42,7 +36,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float clampedDistance = clamp(rayLength, nearZ, farZ);
     
     // 3. 距離から3DテクスチャのZスライス（深度UV）を計算
-    // Exponential(指数)分布にしている前提の計算式です
     float zSlice = log2(clampedDistance / nearZ) / log2(farZ / nearZ);
     zSlice = saturate(zSlice);
     
@@ -50,6 +43,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 sampleUVW = float3(uv, zSlice);
     float4 finalFog = gVoxelAccumulate.SampleLevel(gLinearSampler, sampleUVW, 0);
     
-    // 5. そのまま出力（この後、ポストプロセスなどで背景とアルファブレンドします）
+    // 5. 出力
     gOutput[DTid.xy] = finalFog;
 }

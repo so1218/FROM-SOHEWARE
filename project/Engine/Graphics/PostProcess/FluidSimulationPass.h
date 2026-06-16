@@ -51,6 +51,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> velocityRes_[2];
     uint32_t velocitySrvIndices_[2]{};
     uint32_t velocityUavIndices_[2]{};
+    // ★ 2-Pass Vorticity 用の一時バッファ
+    Microsoft::WRL::ComPtr<ID3D12Resource> curlRes_;
+    uint32_t curlSrvIndex_ = 0;
+    uint32_t curlUavIndex_ = 0;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> densityRes_[2];
     uint32_t densitySrvIndices_[2]{};

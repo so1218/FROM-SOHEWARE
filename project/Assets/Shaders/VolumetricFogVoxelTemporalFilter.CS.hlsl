@@ -44,15 +44,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float prevZSlice = log2(prevViewZ / nearZ) / log2(farZ / nearZ);
     float3 prevUVW = float3(prevUV, prevZSlice);
 
- // === 修正：サンプラーによる画面外のゴミ混入を防ぐため、安全にクランプ ===
+    // サンプラーによる画面外のゴミ混入を防ぐため、安全にクランプ ===
     float3 clampedPrevUVW = saturate(prevUVW);
     bool isOffscreen = any(prevUVW < 0.0f) || any(prevUVW > 1.0f);
 
-    // 【★AAAハック】：完全に1.0にして履歴を捨てると生ジッターが爆発するので、
-    // 画面外（初登場）でも30%程度に抑え、クランプした過去の滑らかなフォグと強引に混ぜる！
+    // 完全に1.0にして履歴を捨てると生ジッターが爆発するので、
+    // 画面外（初登場）でも30%程度に抑え、クランプした過去の滑らかなフォグと強引に混ぜる
     float blendAlpha = isOffscreen ? 0.3f : 0.05f;
 
-    // 4. 過去の3Dボクセルをサンプリング（必ずクランプされたUVWを使う）
+    // 4. 過去の3Dボクセルをサンプリング
     float4 historyFog = gVoxelInjectHistory.SampleLevel(gLinearSampler, clampedPrevUVW, 0);
 
     // 5. ブレンド

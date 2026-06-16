@@ -1,0 +1,4 @@
+{
+  "RootSignature": "FluidSimulationCS",
+  "ComputeShader": "Assets/Shaders/FluidApplyVorticity.CS.hlsl"
+}

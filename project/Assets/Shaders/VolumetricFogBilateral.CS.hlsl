@@ -49,12 +49,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
             // --- ウェイト（重み）の計算 ---
             
-            // A. 空間ウェイト（中心から遠いピクセルほど影響力を下げる）
+            // 空間ウェイト（中心から遠いピクセルほど影響力を下げる）
             float distSq = (float) (x * x + y * y);
             float spatialWeight = exp(-distSq * spatialCoeff);
 
-            // B. 深度ウェイト（中心ピクセルと深度が離れているほど影響力をゼロに近づける）
-            // これにより、キャラクターの輪郭と背景の空が混ざる「光漏れ」を防ぎます
+            // 深度ウェイト（中心ピクセルと深度が離れているほど影響力をゼロに近づける）
             float depthDiff = abs(centerDepth - sampleDepth);
             float depthWeight = exp(-(depthDiff * depthDiff) * depthCoeff);
 
@@ -67,6 +66,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // 3. 総ウェイトで割って平均化し、出力テクスチャに書き込む
+    // 総ウェイトで割って平均化し、出力テクスチャに書き込む
     gFilteredFog[DTid.xy] = resultColor / max(totalWeight, 0.00001f);
 }
