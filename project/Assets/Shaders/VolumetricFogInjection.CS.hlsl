@@ -413,9 +413,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // 不透明オブジェクトによるディープシールド（深度ウェイト）の簡易適用
+   // 不透明オブジェクトによるディープシールド（深度ウェイト）の簡易適用
     float fadeRange = max(voxelThickness * 1.0f, 0.1f);
     float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
+
+    // ====================================================================
+    // ★ RDR2 / AAAエンジン必須の「Near Fade (手前フェード)」の実装
+    // カメラの直前にあるボクセルを強制的に透明にすることで、
+    // ノイズの塊がカメラレンズを突き抜ける際の「輝度爆発・チカチカ」を完全に防ぐ。
+    // ====================================================================
+    float nearFadeStart = 0.5f; // フェード開始（0.5mまでは完全に透明）
+    float nearFadeEnd = 3.0f; // フェード終了（3.0mで通常の濃さに戻る）
+    float nearFade = smoothstep(nearFadeStart, nearFadeEnd, sampleViewZ);
+    
+    // Near Fade を全体のウェイトに乗算する
+    depthWeight *= nearFade;
+    // ====================================================================
 
     // 最終的な散乱光と消散係数の算出
     float3 scattering = ((totalLight * global_sigma_s) + volumeScattering) * depthWeight;
