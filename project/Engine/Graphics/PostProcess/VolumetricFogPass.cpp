@@ -5,164 +5,164 @@
 namespace FE
 {
 
-    void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
-    {
-        // アルファチャンネル(透過率)も必要＆HDR値が入るのでFP16を指定
-        InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
-        psoManager_ = pso;
+void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+{
+    // アルファチャンネル(透過率)も必要＆HDR値が入るのでFP16を指定
+    InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
+    psoManager_ = pso;
 
-        ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
+    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
-        // ====================================================================
-        // 定数バッファ (CBV) の生成と初期化（重複をすべて排除）
-        // ====================================================================
-        UINT cbSizeAligned = (sizeof(VolumetricFogSettings) + 255) & ~255;
-        constantBuffer_ = BufferManager::CreateBufferResource(device, cbSizeAligned);
-        constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    // ====================================================================
+    // 定数バッファ (CBV) の生成と初期化（重複をすべて排除）
+    // ====================================================================
+    UINT cbSizeAligned = (sizeof(VolumetricFogSettings) + 255) & ~255;
+    constantBuffer_ = BufferManager::CreateBufferResource(device, cbSizeAligned);
+    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
-        // PBRベースの光学特性初期値設定
-        cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f };
-        cbData_->scatteringIntensity = 150.0f;
-        cbData_->extinctionScale = 0.2f;
-        cbData_->anisotropy = 0.7f;
+    // PBRベースの光学特性初期値設定
+    cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f };
+    cbData_->scatteringIntensity = 150.0f;
+    cbData_->extinctionScale = 0.2f;
+    cbData_->anisotropy = 0.7f;
 
-        // --- 密度と高さ ---
-        cbData_->globalDensity = 0.005f;
-        cbData_->heightDensity = 0.0f;
-        cbData_->baseHeight = 0.0f;
-        cbData_->heightFalloff = 0.1f;
+    // --- 密度と高さ ---
+    cbData_->globalDensity = 0.005f;
+    cbData_->heightDensity = 0.0f;
+    cbData_->baseHeight = 0.0f;
+    cbData_->heightFalloff = 0.1f;
 
-        // --- 環境光とシステム ---
-        cbData_->ambientLight = { 0.0f, 0.0f, 0.0f };
-        cbData_->temporalWeight = 0.05f;                 // ※この値を動的に調整することで残像感を制御します
-        cbData_->maxDistance = 150.0f;
-        cbData_->depthSliceCount = 64.0f;
+    // --- 環境光とシステム ---
+    cbData_->ambientLight = { 0.0f, 0.0f, 0.0f };
+    cbData_->temporalWeight = 0.05f;                 // ※この値を動的に調整することで残像感を制御します
+    cbData_->maxDistance = 150.0f;
+    cbData_->depthSliceCount = 64.0f;
 
-        // --- ノイズ制御 ---
-        cbData_->noiseScale = 0.08f;
-        cbData_->noiseDistortion = 0.15f;
-        cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
-        cbData_->windSpeed = 0.2f;
+    // --- ノイズ制御 ---
+    cbData_->noiseScale = 0.08f;
+    cbData_->noiseDistortion = 0.15f;
+    cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
+    cbData_->windSpeed = 0.2f;
 
-        cbData_->coverage = 0.75f;
-        cbData_->worleyWeight = 0.8f;
-        cbData_->erosion = 0.4f;
-        cbData_->noiseFeather = 0.3f;
+    cbData_->coverage = 0.75f;
+    cbData_->worleyWeight = 0.8f;
+    cbData_->erosion = 0.4f;
+    cbData_->noiseFeather = 0.3f;
 
-        cbData_->erosionStrength = 1.0f;
-        cbData_->noiseIntensity = 1.0f;
+    cbData_->erosionStrength = 1.0f;
+    cbData_->noiseIntensity = 1.0f;
 
-        // 配置式フォグ用CB作成
-        volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogVolumeBuffer));
-        volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
-        memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
-        volumeCbData_->volumeCount = 0;
+    // 配置式フォグ用CB作成
+    volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogVolumeBuffer));
+    volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
+    memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
+    volumeCbData_->volumeCount = 0;
 
-        // ====================================================================
-        // ディスクリプタヒープの作成
-        // ====================================================================
-        D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-        heapDesc.NumDescriptors = 32;
-        heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_));
-        passHeap_->SetName(L"VolumetricFog_Heap");
+    // ====================================================================
+    // ディスクリプタヒープの作成
+    // ====================================================================
+    D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+    heapDesc.NumDescriptors = 32;
+    heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_));
+    passHeap_->SetName(L"VolumetricFog_Heap");
 
-        // ====================================================================
-        // Froxel用 3Dテクスチャ（Injection / Filtered / Accumulation）の生成
-        // ====================================================================
-        CD3DX12_RESOURCE_DESC tex3DDesc = CD3DX12_RESOURCE_DESC::Tex3D(
-            DXGI_FORMAT_R16G16B16A16_FLOAT, froxelW, froxelH, froxelD, 1,
-            D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-        );
-        CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+    // ====================================================================
+    // Froxel用 3Dテクスチャ（Injection / Filtered / Accumulation）の生成
+    // ====================================================================
+    CD3DX12_RESOURCE_DESC tex3DDesc = CD3DX12_RESOURCE_DESC::Tex3D(
+        DXGI_FORMAT_R16G16B16A16_FLOAT, froxelW, froxelH, froxelD, 1,
+        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+    );
+    CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
-        // [1] VoxelInject (生データ用)
-        device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectRes_));
-        voxelInjectRes_->SetName(L"VoxelInjectResource");
+    // [1] VoxelInject (生データ用)
+    device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectRes_));
+    voxelInjectRes_->SetName(L"VoxelInjectResource");
 
-        // [2] VoxelInjectFiltered (空間フィルタ後の中間バッファ：超重要！)
-        device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectFilteredRes_));
-        voxelInjectFilteredRes_->SetName(L"VoxelInjectFilteredResource");
+    // [2] VoxelInjectFiltered (空間フィルタ後の中間バッファ：超重要！)
+    device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectFilteredRes_));
+    voxelInjectFilteredRes_->SetName(L"VoxelInjectFilteredResource");
 
-        // [3] VoxelAccumulate (最終積分レイマーチ用ポート)
-        device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelAccumulateRes_));
-        voxelAccumulateRes_->SetName(L"VoxelAccumulateResource");
+    // [3] VoxelAccumulate (最終積分レイマーチ用ポート)
+    device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelAccumulateRes_));
+    voxelAccumulateRes_->SetName(L"VoxelAccumulateResource");
 
-        // ====================================================================
-        // ビュー(SRV/UAV)の登録
-        // ====================================================================
-        auto* srvManager = engine->GetSRVManager();
+    // ====================================================================
+    // ビュー(SRV/UAV)の登録
+    // ====================================================================
+    auto* srvManager = engine->GetSRVManager();
 
-        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-        uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-        uavDesc.Texture3D.MipSlice = 0;
-        uavDesc.Texture3D.FirstWSlice = 0;
-        uavDesc.Texture3D.WSize = froxelD;
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+    uavDesc.Texture3D.MipSlice = 0;
+    uavDesc.Texture3D.FirstWSlice = 0;
+    uavDesc.Texture3D.WSize = froxelD;
 
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.Texture3D.MostDetailedMip = 0;
-        srvDesc.Texture3D.MipLevels = 1;
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Texture3D.MostDetailedMip = 0;
+    srvDesc.Texture3D.MipLevels = 1;
 
-        // Inject ビュー作成
-        injectUavIndex_ = srvManager->Allocate();
-        device->CreateUnorderedAccessView(voxelInjectRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(injectUavIndex_));
-        injectSrvIndex_ = srvManager->Allocate();
-        device->CreateShaderResourceView(voxelInjectRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(injectSrvIndex_));
+    // Inject ビュー作成
+    injectUavIndex_ = srvManager->Allocate();
+    device->CreateUnorderedAccessView(voxelInjectRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(injectUavIndex_));
+    injectSrvIndex_ = srvManager->Allocate();
+    device->CreateShaderResourceView(voxelInjectRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(injectSrvIndex_));
 
-        // Filtered ビュー作成 (絶対に削らない)
-        filteredUavIndex_ = srvManager->Allocate();
-        device->CreateUnorderedAccessView(voxelInjectFilteredRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(filteredUavIndex_));
-        filteredSrvIndex_ = srvManager->Allocate();
-        device->CreateShaderResourceView(voxelInjectFilteredRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(filteredSrvIndex_));
+    // Filtered ビュー作成 (絶対に削らない)
+    filteredUavIndex_ = srvManager->Allocate();
+    device->CreateUnorderedAccessView(voxelInjectFilteredRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(filteredUavIndex_));
+    filteredSrvIndex_ = srvManager->Allocate();
+    device->CreateShaderResourceView(voxelInjectFilteredRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(filteredSrvIndex_));
 
-        // Accumulate ビュー作成 (accumUavIndex_ は書き込みに必須)
-        accumUavIndex_ = srvManager->Allocate();
-        device->CreateUnorderedAccessView(voxelAccumulateRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(accumUavIndex_));
-        accumSrvIndex_ = srvManager->Allocate();
-        device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_));
+    // Accumulate ビュー作成 (accumUavIndex_ は書き込みに必須)
+    accumUavIndex_ = srvManager->Allocate();
+    device->CreateUnorderedAccessView(voxelAccumulateRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(accumUavIndex_));
+    accumSrvIndex_ = srvManager->Allocate();
+    device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_));
 
-        // ====================================================================
-        // テンポラル用履歴ピンポンバッファ
-        // ====================================================================
-        for (int i = 0; i < 2; ++i) {
-            device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&history3DRes_[i]));
-            history3DRes_[i]->SetName(i == 0 ? L"VoxelHistory_0" : L"VoxelHistory_1");
+    // ====================================================================
+    // テンポラル用履歴ピンポンバッファ
+    // ====================================================================
+    for (int i = 0; i < 2; ++i) {
+        device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&history3DRes_[i]));
+        history3DRes_[i]->SetName(i == 0 ? L"VoxelHistory_0" : L"VoxelHistory_1");
 
-            historyUavIndices_[i] = srvManager->Allocate();
-            device->CreateUnorderedAccessView(history3DRes_[i].Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(historyUavIndices_[i]));
-            historySrvIndices_[i] = srvManager->Allocate();
-            device->CreateShaderResourceView(history3DRes_[i].Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(historySrvIndices_[i]));
-        }
-
-        // ====================================================================
-        // Resolve パス(2D合成) の最終出力先テクスチャ
-        // ====================================================================
-        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc2D = {};
-        uavDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        uavDesc2D.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-        uavDesc2D.Texture2D.MipSlice = 0;
-
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2D = {};
-        srvDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-        srvDesc2D.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc2D.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc2D.Texture2D.MostDetailedMip = 0;
-        srvDesc2D.Texture2D.MipLevels = 1;
-
-        CD3DX12_RESOURCE_DESC resolveTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, w, h, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-        device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resolveTexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resolveOutputRes_));
-        resolveOutputRes_->SetName(L"VolumetricFog_ResolveOutput");
-
-        resolveOutputUavIndex_ = srvManager->Allocate();
-        device->CreateUnorderedAccessView(resolveOutputRes_.Get(), nullptr, &uavDesc2D, srvManager->GetSRVHandleCPU_ForCopying(resolveOutputUavIndex_));
-        resolveOutputSrvIndex_ = srvManager->Allocate();
-        device->CreateShaderResourceView(resolveOutputRes_.Get(), &srvDesc2D, srvManager->GetSRVHandleCPU_ForCopying(resolveOutputSrvIndex_));
+        historyUavIndices_[i] = srvManager->Allocate();
+        device->CreateUnorderedAccessView(history3DRes_[i].Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(historyUavIndices_[i]));
+        historySrvIndices_[i] = srvManager->Allocate();
+        device->CreateShaderResourceView(history3DRes_[i].Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(historySrvIndices_[i]));
     }
+
+    // ====================================================================
+    // Resolve パス(2D合成) の最終出力先テクスチャ
+    // ====================================================================
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc2D = {};
+    uavDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    uavDesc2D.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+    uavDesc2D.Texture2D.MipSlice = 0;
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2D = {};
+    srvDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    srvDesc2D.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc2D.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc2D.Texture2D.MostDetailedMip = 0;
+    srvDesc2D.Texture2D.MipLevels = 1;
+
+    CD3DX12_RESOURCE_DESC resolveTexDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, w, h, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+    device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resolveTexDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resolveOutputRes_));
+    resolveOutputRes_->SetName(L"VolumetricFog_ResolveOutput");
+
+    resolveOutputUavIndex_ = srvManager->Allocate();
+    device->CreateUnorderedAccessView(resolveOutputRes_.Get(), nullptr, &uavDesc2D, srvManager->GetSRVHandleCPU_ForCopying(resolveOutputUavIndex_));
+    resolveOutputSrvIndex_ = srvManager->Allocate();
+    device->CreateShaderResourceView(resolveOutputRes_.Get(), &srvDesc2D, srvManager->GetSRVHandleCPU_ForCopying(resolveOutputSrvIndex_));
+}
 
 void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
@@ -321,9 +321,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetPipelineState(psoManager_->GetPSO("VoxelTemporalResolveCS"));
 
         cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));  // t0, t1 テーブル
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); // u0 テーブル
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));  // t0, t1 テーブル
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); // u0 テーブル
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 
@@ -389,11 +390,12 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [6] 後片付け＆次フレームの準備
     // ====================================================================
     // 中間3Dテクスチャを次フレームの計算（UAV）のために初期状態へ戻す
-    D3D12_RESOURCE_BARRIER resetBarriers[3] = {};
+    D3D12_RESOURCE_BARRIER resetBarriers[4] = {};
     resetBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectRes_.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     resetBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(voxelInjectFilteredRes_.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     resetBarriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(voxelAccumulateRes_.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    cmdList->ResourceBarrier(3, resetBarriers);
+    resetBarriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[currIdx].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    cmdList->ResourceBarrier(4, resetBarriers);
 
     // 外部リソース（Depth / ShadowMap）をピクセルシェーダー読込（元の状態）に復帰
     readBarriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;

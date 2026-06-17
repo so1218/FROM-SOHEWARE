@@ -364,6 +364,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     if (name == "VoxelTemporalResolveCS")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
 
