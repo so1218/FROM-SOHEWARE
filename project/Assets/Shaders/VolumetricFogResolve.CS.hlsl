@@ -43,6 +43,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 sampleUVW = float3(uv, zSlice);
     float4 finalFog = gVoxelAccumulate.SampleLevel(gLinearSampler, sampleUVW, 0);
     
-    // 5. 出力
+    // 出力
     gOutput[DTid.xy] = finalFog;
 }

@@ -60,7 +60,7 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
     // Injection（外力）用パラメータ
     // ==========================================
     cbData_->gridMin = { -50.0f, 0.0f, -50.0f }; // 最小座標
-    cbData_->interactionRadius = 2.0f;                     // プレイヤーの影響半径（例: 2.0m）
+    cbData_->interactionRadius = 0.0f;                     // プレイヤーの影響半径（例: 2.0m）
 
     cbData_->gridMax = { 50.0f, 50.0f,  50.0f }; // 最大座標
     cbData_->injectionStrength = 1.0f;                     // 力の強さの倍率

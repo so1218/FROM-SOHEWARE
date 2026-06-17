@@ -1,4 +1,0 @@
-{
-  "RootSignature": "VolumetricFogAccumulationCS",
-  "ComputeShader": "Assets/Shaders/VolumetricFogAccumulation.CS.hlsl"
-}

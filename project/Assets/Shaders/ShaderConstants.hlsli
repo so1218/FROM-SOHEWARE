@@ -269,6 +269,7 @@ struct ParticleInstanceData
     int32_t isBillboard;
     
     float4 color;
+    
     float intensity;
     float3 padding;
 };

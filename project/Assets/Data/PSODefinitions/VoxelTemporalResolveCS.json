@@ -1,0 +1,4 @@
+{
+  "RootSignature": "VoxelTemporalResolveCS",
+  "ComputeShader": "Assets/Shaders/VoxelTemporalResolve.CS.hlsl"
+}

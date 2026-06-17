@@ -272,16 +272,13 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL); // b3: PointLights
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); // b4: SpotLights
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ★ここを修正：SRVの数を 2 から 3 に変更 (t0: Depth, t1: Shadow, t2: 3DNoise)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 書き込み用テクスチャ (u0)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // サンプラー
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -289,7 +286,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL,
             D3D12_COMPARISON_FUNC_LESS_EQUAL);
 
-        // フラグの指定
         D3D12_ROOT_SIGNATURE_FLAGS csFlags =
             D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
             D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -304,11 +300,8 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         RootSignatureBuilder builder;
 
-        // 今回のCSは入力(SRV/CBV/Sampler)が一切不要なので、
-        // 出力先である「書き込み用テクスチャ (u0)」のUAVのみを登録します。
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // フラグの指定 (CS専用なので他のステージからのアクセスを拒否)
         D3D12_ROOT_SIGNATURE_FLAGS csFlags =
             D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
             D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -322,21 +315,12 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         RootSignatureBuilder builder;
 
-        // 1. 定数バッファ (b0: FilterSettings)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ★修正点：t0 と t1 を別々のテーブルとして登録する
-           // パラメータ1: t0 (RawFogTexture)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-        // パラメータ2: t1 (DepthTexture)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
-
-        // 3. 書き込み用テクスチャ (u0: gFilteredFog)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ※ Load() を使うため、StaticSamplerの登録は不要です！
-
-        // フラグの指定 (CS専用なので他ステージからのアクセスを拒否)
         D3D12_ROOT_SIGNATURE_FLAGS csFlags =
             D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
             D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -348,7 +332,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "VolumetricFogInjectionCS")
     {
-        // 定数バッファ (b0: Frame, b2: Fog, b3: PointLight, b4: SpotLight)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL); 
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
@@ -356,98 +339,82 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);
 
-        // --- SRV テーブル (t0 ~ t4 の計5つのリソースをバインド可能にする) ---
-             // ★修正：第3引数（ディスクリプタの数）を 4 から 5 に変更しました
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 6, D3D12_SHADER_VISIBILITY_ALL);
-
-        // --- UAV テーブル (u0: VoxelInject 3Dテクスチャ) ---
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // --- 静的サンプラー (s0, s1) ---
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL);
 
         D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogInjectionCS");
     }
-    if (name == "VolumetricFogAccumulationCS")
+    if (name == "VoxelSpatialFilterCS")
     {
-        // 定数バッファ (b2: FogSettings のみ)
-        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
-
-        // SRV (t0: Injectionパスの出力 3Dテクスチャ)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-
-        // UAV (u0: Accumulateパスの出力 3Dテクスチャ)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-
-        // サンプラーは不要 (Load関数で直接ピクセルを読むため)
-
-        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS /* 他のフラグも同様に */;
-        return builder.Build(device_, csFlags, "VolumetricFogAccumulationCS");
-    }
-    if (name == "VolumetricFogResolveCS")
-    {
-        // b0: GlobalConstants, b2: VolumetricFogSettings
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ★修正：SRVは t0(Depth) と t1(VoxelAccumulate) の「2つ」に変更
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // u0: 最終出力
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // s0: Linear Sampler
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "VoxelSpatialFilterCS");
+    }
+
+    if (name == "VoxelTemporalResolveCS")
+    {
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "VoxelTemporalResolveCS");
+    }
+
+    if (name == "VoxelIntegrateCS")
+    {
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "VoxelIntegrateCS");
+    }
+    if (name == "VolumetricFogResolveCS")
+    {
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
 
         D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
         return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
     }
-    if (name == "VolumetricFogVoxelTemporalFilterCS")
-    {
-        // 定数バッファ (b0: FrameData, b2: VolumetricFogSettings)
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
-
-        // SRV (t0: Injection Current, t1: Injection History)
-        // 2つのテクスチャを使用するため範囲は 2
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2, D3D12_SHADER_VISIBILITY_ALL);
-
-        // UAV (u0: Filtered Output)
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-
-        // サンプラー (s0: Linear Sampler)
-        // 3Dテクスチャのリプロジェクション（UVサンプリング）用なので CLAMP が安全です
-        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
-
-        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
-        return builder.Build(device_, csFlags, "VolumetricFogTemporalFilterCS");
-    }
+    
     else if (name == "FluidSimulationCS") 
     {
         RootSignatureBuilder builder;
 
-        // 0. 定数バッファ (b0: FrameData)
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
-
-        // 1. 定数バッファ (b1: FluidSettings)
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // ★ 修正：2個から3個のディスクリプタを許可する (t0, t1, t2)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
-
-        // ★ 修正：2個から3個のディスクリプタを許可する (u0, u1, u2)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
 
-        // 4. サンプラー (s0: バイリニア・クランプ) -> Root Parameter 4 ではなく、静的サンプラーとして埋め込み
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
 
         builder.AddStaticSampler(1, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
 
-        // CS専用フラグ
         D3D12_ROOT_SIGNATURE_FLAGS csFlags =
             D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
             D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |

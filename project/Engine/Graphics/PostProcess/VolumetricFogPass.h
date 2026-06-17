@@ -75,11 +75,15 @@ private:
     // 2. 蓄積された光と透過率 (Accumulation用)
     Microsoft::WRL::ComPtr<ID3D12Resource> voxelAccumulateRes_;
 
+    Microsoft::WRL::ComPtr<ID3D12Resource> voxelInjectFilteredRes_;
+
     // 各パス用のUAV/SRVインデックス（SRVManagerから取得したもの）
     uint32_t injectUavIndex_;
     uint32_t injectSrvIndex_;
     uint32_t accumUavIndex_;
     uint32_t accumSrvIndex_;
+    uint32_t filteredUavIndex_;
+    uint32_t filteredSrvIndex_;
 
     // 設定用
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;

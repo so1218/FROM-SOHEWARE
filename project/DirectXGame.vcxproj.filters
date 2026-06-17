@@ -947,7 +947,7 @@
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogBilateral.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogInjection.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VolumetricFogAccumulation.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VoxelIntegrate.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidAdvection.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidInjection.CS.hlsl" />
@@ -955,9 +955,10 @@
     <FxCompile Include="Assets\Shaders\FluidJacobi.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidInitUVW.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VolumetricFogVoxelTemporalFilter.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VoxelSpatialFilter.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidScrollAndClear.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidComputeCurl.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidApplyVorticity.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
   </ItemGroup>
 </Project>
