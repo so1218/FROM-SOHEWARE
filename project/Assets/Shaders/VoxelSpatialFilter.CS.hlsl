@@ -24,13 +24,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 sum = center;
     float totalWeight = 1.0f;
     
-    // RDR2アプローチ：Z方向を含む効率的なサンプリング（星型3Dカーネル）
+    // Z方向を含む効率的なサンプリング
     // 自身の周囲（前後・左右・上下）をきっちりスムーズにぼかす
     int3 offsets[6] =
     {
         int3(-1, 0, 0), int3(1, 0, 0), // 左右
         int3(0, -1, 0), int3(0, 1, 0), // 上下
-        int3(0, 0, -1), int3(0, 0, 1) // 前後（Z軸チカチカ撲滅用）
+        int3(0, 0, -1), int3(0, 0, 1) // 前後
     };
     
     for (int i = 0; i < 6; ++i)
@@ -45,9 +45,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float4 neighbor = gVoxelInjectCurrent.Load(int4(neighborCoord, 0));
         
         // エッジ保存ウェイト（カラー差ベースのバイラテラル）
-        // 差が激しい部分はボカさない（ライトのクッキリしたエッジやゴッドレイの筋を守る）
+        // 差が激しい部分はボカさない
         float colorDiff = length(center.rgb - neighbor.rgb) + abs(center.a - neighbor.a);
-        float weight = exp(-colorDiff * 2.0f); // 減衰感度は調整してください
+        float weight = exp(-colorDiff * 2.0f); 
         
         sum += neighbor * weight;
         totalWeight += weight;

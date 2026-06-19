@@ -13,7 +13,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // ★修正: Clampではなくループ(Wrap)させる
+    // Clampではなくループ(Wrap)
     uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
     uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
     uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
@@ -28,8 +28,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 vT = gVelocity[uint3(DTid.x, yT, DTid.z)].xyz;
     float3 vD = gVelocity[uint3(DTid.x, DTid.y, zD)].xyz;
     float3 vU = gVelocity[uint3(DTid.x, DTid.y, zU)].xyz;
-
-    // ※壁の反射処理（vL.x = -vR.xなど）は完全に削除！
 
     float halfInvDx = 0.5f / gFluidSettings.gridScale;
     float divergence = halfInvDx * ((vR.x - vL.x) + (vT.y - vB.y) + (vU.z - vD.z));

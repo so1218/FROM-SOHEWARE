@@ -2,7 +2,7 @@
 
 Texture3D<float4> gVelocityRead : register(t0);
 Texture3D<float> gPressure : register(t1);
-// u0: 書き込み先速度場（サイズ2に合わせるため、ダミーがu1にバインドされますがHLSL側はu0のみ使用でOK）
+// 書き込み先速度場
 RWTexture3D<float4> gVelocityWrite : register(u0);
 
 ConstantBuffer<FluidSettings> gFluidSettings : register(b1);

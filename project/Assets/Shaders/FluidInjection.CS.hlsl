@@ -1,6 +1,5 @@
 #include "ShaderConstants.hlsli"
 
-// ダブルバッファリング用に読み込み(t0, t1)と書き込み(u0, u1)を分ける
 Texture3D<float4> gVelocityRead : register(t0);
 Texture3D<float> gDensityRead : register(t1);
 Texture3D<float4> gNoiseVolume : register(t2);
@@ -13,16 +12,13 @@ ConstantBuffer<FluidSettings> gFluidSettings : register(b1);
 
 SamplerState gLinearWrapSampler : register(s1);
 
-// ====================================================================
-// ★追加：3Dノイズテクスチャの有限差分から「発散ゼロの渦ベクトル」を生成する関数
-// ====================================================================
+// 3Dノイズテクスチャの有限差分から発散ゼロの渦ベクトルを生成する関数
 float3 SampleCurlNoise(SamplerState texSampler, float3 uvw)
 {
-    // 有限差分のステップ幅（ノイズの細かさ。テクスチャサイズが64^3なら 1.0/64.0 程度）
+    // 有限差分のステップ幅
     const float delta = 0.015625f;
     
-    // 3Dノイズの R, G, B にはそれぞれ異なる周期のノイズ（Perlin等）が入っている前提で、
-    // 各軸を微小にずらしてサンプリングし、空間の「傾き（勾配）」を調べる
+    // 各軸を微小にずらしてサンプリングし、空間の傾き（勾配）を調べる
     float3 pX = gNoiseVolume.SampleLevel(texSampler, uvw + float3(delta, 0.0f, 0.0f), 0).rgb;
     float3 nX = gNoiseVolume.SampleLevel(texSampler, uvw - float3(delta, 0.0f, 0.0f), 0).rgb;
     
@@ -32,14 +28,13 @@ float3 SampleCurlNoise(SamplerState texSampler, float3 uvw)
     float3 pZ = gNoiseVolume.SampleLevel(texSampler, uvw + float3(0.0f, 0.0f, delta), 0).rgb;
     float3 nZ = gNoiseVolume.SampleLevel(texSampler, uvw - float3(0.0f, 0.0f, delta), 0).rgb;
     
-    // 回転（Curl = ∇ × Psi）の数式を解く
-    // これにより、数学的に「絶対に体積が潰れない・爆発しない滑らかな渦」が生まれる
+    // 回転の数式を解く
     float3 curl;
     curl.x = (pY.z - nY.z) - (pZ.y - nZ.y);
     curl.y = (pZ.x - nZ.x) - (pX.z - nX.z);
     curl.z = (pX.y - nX.y) - (pY.x - nY.x);
     
-    // 微小差分を実用的な速度ベクトル（-1.0 ～ 1.0）のスケールに調整して返す
+    // 微小差分を実用的な速度ベクトルのスケールに調整して返す
     return curl * (0.5f / delta);
 }
 
@@ -69,7 +64,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     if (influence > 0.0f)
     {
-        // Force(加算)ではなく、目標となる速度(Target)を作る
+        // Forceではなく、目標となる速度を作る
         float3 dragVelocity = gFluidSettings.objectVelocity * gFluidSettings.dragStrength;
         float speed = length(gFluidSettings.objectVelocity);
         float3 pushVelocity = outwardDir * speed * gFluidSettings.pushStrength;
@@ -82,7 +77,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 noiseUVW = voxelWorldPos * noiseScale + gFrameData.gTime * 0.2f;
         float3 curlNoiseVel = SampleCurlNoise(gLinearWrapSampler, noiseUVW); // ※別途Curl Noise関数/テクスチャを用意
 
-        // キャラクターが動いた時（influence > 0）だけ、その周囲に微細な乱気流を発生させる
+        // キャラクターが動いた時だけ、その周囲に微細な乱気流を発生させる
         targetVel += curlNoiseVel * (speed * 0.5f);
 
         float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f);

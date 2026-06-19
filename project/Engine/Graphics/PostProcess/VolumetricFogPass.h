@@ -34,7 +34,7 @@ public:
     // エディタで管理するための構造体
     struct FogVolumeData
     {
-        int type = 0; // 0: Sphere, 1: Box
+        int type = 0; 
         Vector3 position = { 0.0f, 0.0f, 0.0f };
         Vector3 rotation = { 0.0f, 0.0f, 0.0f };
         Vector3 scale = { 10.0f, 10.0f, 10.0f };
@@ -45,23 +45,21 @@ public:
         Vector3 noiseScale = { 0.1f, 0.1f, 0.1f };
         float noiseIntensity = 0.5f;
 
-        Vector3 windDirection = { 1.0f, 0.0f, 0.0f }; // 風の向き
-        float windSpeed = 0.2f;                       // 流れる速度
-        float anisotropy = 0.7f;                      // 光の筋
+        Vector3 windDirection = { 1.0f, 0.0f, 0.0f }; 
+        float windSpeed = 0.2f;                       
+        float anisotropy = 0.7f;                      
 
-        float blendDistance = 0.2f; // 割合(0.0~1.0)
+        float blendDistance = 0.2f; 
 
-        // ★新ノイズ合成用のパラメータ（旧 noiseThreshold は削除）
-        float coverage = 0.5f;       // 霧の量 (0.0~1.0)
-        float worleyWeight = 0.5f;   // 雲の塊感/モコモコ感 (0.0~1.0)
-        float erosion = 0.2f;        // 削り取り強度 (0.0~1.0)
-        float noiseFeather = 0.3f;   // 境界のボケ具合 (0.001~2.0)
+        float coverage = 0.5f;      
+        float worleyWeight = 0.5f;   
+        float erosion = 0.2f;        
+        float noiseFeather = 0.3f;  
 
-        // ★新規拡張パラメータ（プロ仕様）
-        float distortionAmount = 0.15f; // ほどよく流体っぽくウネる歪み強さ
-        float densityOffset = 0.0f;  // 密度の底上げ（マイナスにすると千切れ雲になります）
-        float noiseContrast = 1.0f;  // コントラスト等倍（上げるとパキパキした形状になります）
-        float heightFalloff = 0.0f;  // 高さ減衰（0.0でボリューム全体に霧が満ちる）
+        float distortionAmount = 0.15f; 
+        float densityOffset = 0.0f;  
+        float noiseContrast = 1.0f; 
+        float heightFalloff = 0.0f; 
 
         bool isVisible = true;
     };
@@ -69,15 +67,15 @@ public:
     std::vector<FogVolumeData>& GetFogVolumesData() { return editorVolumes_; }
 
 private:
-    // --- Froxel用の中間リソース ---
-    // 1. 各セルの光と密度 (Injection用)
+    // Froxel用の中間リソース
+    // 各セルの光と密度 (Injection用)
     Microsoft::WRL::ComPtr<ID3D12Resource> voxelInjectRes_;
-    // 2. 蓄積された光と透過率 (Accumulation用)
+    // 蓄積された光と透過率 (Accumulation用)
     Microsoft::WRL::ComPtr<ID3D12Resource> voxelAccumulateRes_;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> voxelInjectFilteredRes_;
 
-    // 各パス用のUAV/SRVインデックス（SRVManagerから取得したもの）
+    // 各パス用のUAV/SRVインデックス
     uint32_t injectUavIndex_;
     uint32_t injectSrvIndex_;
     uint32_t accumUavIndex_;
@@ -93,13 +91,12 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 
-    // Froxelの解像度（画面の1/8〜1/16程度が一般的）
+    // Froxelの解像度
     const uint32_t froxelW = 160;
     const uint32_t froxelH = 90;
     const uint32_t froxelD = 64;
 
-    // --- テンポラル用リソース ---
-    // Resolveの結果を保存する2Dテクスチャ（2枚）
+    // テンポラル用リソース
     Microsoft::WRL::ComPtr<ID3D12Resource> history3DRes_[2];
     uint32_t historySrvIndices_[2];
     uint32_t historyUavIndices_[2];
@@ -109,11 +106,11 @@ private:
 
     uint32_t frameCounter_ = 0; // フレーム入れ替え用
 
-    // 【追加】配置式フォグ用のリソースとポインタ
+    // 配置式フォグ用のリソースとポインタ
     Microsoft::WRL::ComPtr<ID3D12Resource> volumeConstantBuffer_;
     FogVolumeBuffer* volumeCbData_ = nullptr;
 
-    // 【追加】エディタで編集する用の生データ配列
+    // エディタで編集する用の生データ配列
     std::vector<FogVolumeData> editorVolumes_;
 
 };

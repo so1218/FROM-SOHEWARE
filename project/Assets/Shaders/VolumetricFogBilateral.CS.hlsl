@@ -16,15 +16,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= width || DTid.y >= height)
         return;
 
-    // 1. 中心ピクセルの情報を取得
+    // 中心ピクセルの情報を取得
     int3 centerPos = int3(DTid.xy, 0);
     float4 centerFog = gRawFogTexture.Load(centerPos);
     float centerDepth = gDepthTexture.Load(centerPos).r;
 
     float4 resultColor = float4(0, 0, 0, 0);
     float totalWeight = 0.0f;
-
-    // 定数バッファから値を取得
+    
     int radius = gFogBilateralSettings.blurRadius;
     
     // 空間ウェイト計算用の定数
@@ -34,7 +33,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float safeDepthSigma = max(gFogBilateralSettings.depthSigma, 0.00001f);
     float depthCoeff = 1.0f / (2.0f * safeDepthSigma * safeDepthSigma);
 
-    // 2. 周辺ピクセルをサンプリングして合成
+    // 周辺ピクセルをサンプリングして合成
     for (int y = -radius; y <= radius; ++y)
     {
         for (int x = -radius; x <= radius; ++x)
@@ -47,7 +46,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float4 sampleFog = gRawFogTexture.Load(samplePos);
             float sampleDepth = gDepthTexture.Load(samplePos).r;
 
-            // --- ウェイト（重み）の計算 ---
+            // ウェイト（重み）の計算
             
             // 空間ウェイト（中心から遠いピクセルほど影響力を下げる）
             float distSq = (float) (x * x + y * y);

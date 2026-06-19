@@ -13,9 +13,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
-    // ====================================================================
-    // 定数バッファ (CBV) の生成と初期化（重複をすべて排除）
-    // ====================================================================
+    // 定数バッファの生成と初期化
     UINT cbSizeAligned = (sizeof(VolumetricFogSettings) + 255) & ~255;
     constantBuffer_ = BufferManager::CreateBufferResource(device, cbSizeAligned);
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
@@ -26,19 +24,16 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->extinctionScale = 0.2f;
     cbData_->anisotropy = 0.7f;
 
-    // --- 密度と高さ ---
     cbData_->globalDensity = 0.005f;
     cbData_->heightDensity = 0.0f;
     cbData_->baseHeight = 0.0f;
     cbData_->heightFalloff = 0.1f;
 
-    // --- 環境光とシステム ---
     cbData_->ambientLight = { 0.0f, 0.0f, 0.0f };
-    cbData_->temporalWeight = 0.05f;                 // ※この値を動的に調整することで残像感を制御します
+    cbData_->temporalWeight = 0.05f;               
     cbData_->maxDistance = 150.0f;
     cbData_->depthSliceCount = 64.0f;
 
-    // --- ノイズ制御 ---
     cbData_->noiseScale = 0.08f;
     cbData_->noiseDistortion = 0.15f;
     cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
@@ -58,9 +53,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
     volumeCbData_->volumeCount = 0;
 
-    // ====================================================================
     // ディスクリプタヒープの作成
-    // ====================================================================
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 32;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -68,20 +61,18 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_));
     passHeap_->SetName(L"VolumetricFog_Heap");
 
-    // ====================================================================
-    // Froxel用 3Dテクスチャ（Injection / Filtered / Accumulation）の生成
-    // ====================================================================
+    // Froxel用 3Dテクスチャの生成
     CD3DX12_RESOURCE_DESC tex3DDesc = CD3DX12_RESOURCE_DESC::Tex3D(
         DXGI_FORMAT_R16G16B16A16_FLOAT, froxelW, froxelH, froxelD, 1,
         D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
     );
     CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
-    // [1] VoxelInject (生データ用)
+    // VoxelInject
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectRes_));
     voxelInjectRes_->SetName(L"VoxelInjectResource");
 
-    // [2] VoxelInjectFiltered (空間フィルタ後の中間バッファ：超重要！)
+    // [2] VoxelInjectFiltered (空間フィルタ後の中間バッファ)
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectFilteredRes_));
     voxelInjectFilteredRes_->SetName(L"VoxelInjectFilteredResource");
 
@@ -169,7 +160,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // 現在フレームのインデックス管理（ピンポン）
+    // 現在フレームのインデックス管理
     uint32_t currIdx = frameCounter_ % 2;
     uint32_t prevIdx = (frameCounter_ + 1) % 2;
 
@@ -201,7 +192,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = passHeap_->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE destGPU = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
-    // --- FogVolume データのCPUからGPUへの構築・転送 ---
+    // FogVolume データのCPUからGPUへの構築・転送
     std::vector<FogVolume> gpuVolumes;
     for (const auto& volData : editorVolumes_)
     {

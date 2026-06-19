@@ -29,7 +29,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float4 current = gVoxelInjectFiltered.Load(int4(DTid, 0));
 
-    // 1. 周囲のクランプボックス算出 (これは今のままでOK)
+    // 周囲のクランプボックス算出 
     float4 boxMin = current;
     float4 boxMax = current;
     int3 offsets[6] =
@@ -45,10 +45,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         boxMin = min(boxMin, neighbor);
         boxMax = max(boxMax, neighbor);
     }
-
-    // ====================================================================
-    // 2. RDR2方式：カメラの移動を考慮したリプロジェクション（履歴座標の逆算）
-    // ====================================================================
+    
+    // カメラの移動を考慮したリプロジェクション（履歴座標の逆算）
     float nearZ = max(gFrameData.nearClip, 0.1f);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
     
@@ -61,12 +59,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float clipX = u * 2.0f - 1.0f;
     float clipY = (1.0f - v) * 2.0f - 1.0f;
     
-    // 現在のボクセルの「ワールド空間座標」を復元
+    // 現在のボクセルのワールド空間座標を復元
     float4 worldTarget = mul(float4(clipX, clipY, 1.0f, 1.0f), gFrameData.invViewProj);
     float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
     float3 worldPos = gFrameData.cameraWorldPosition + (rayDir * viewZ);
     
-    // 復元したワールド座標を「前フレームのカメラ画面空間」に投影
+    // 復元したワールド座標を前フレームのカメラ画面空間に投影
     float4 prevClip = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
     prevClip.xyz /= prevClip.w;
     
@@ -74,10 +72,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float2 prevUV = prevClip.xy * float2(0.5f, -0.5f) + 0.5f;
     
     // 前フレームのカメラから見たビュー空間Zを計算
-    // （前フレームのカメラ位置からの距離、または前フレームのビュー行列のZ軸への射影）
-    // 簡易的には距離で近似、または前フレームのView行列があるならそれを使用
-    float3 prevCamToPos = worldPos - gFrameData.prevCameraWorldPosition; // ※C++から前フレームカメラ位置も貰うと正確
-    float prevViewZ = length(prevCamToPos); // 簡易的な距離ベース。あるいは前View行列でのZ
+    float3 prevCamToPos = worldPos - gFrameData.prevCameraWorldPosition; 
+    float prevViewZ = length(prevCamToPos); 
     
     // 前フレームのボクセルテクスチャ上のインデックス(XYZ)に変換
     int3 historyCoord;
@@ -85,7 +81,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     historyCoord.y = int(prevUV.y * float(height));
     historyCoord.z = int(GetSliceFromViewZ(prevViewZ, float(depth), nearZ, farZ));
 
-    // 画面外や描画限界外にはみ出た場合は、クランプするか現フレームを強制採用する
+    // 画面外や描画限界外にはみ出た場合は、クランプするか現フレームを強制採用
     float4 history = current;
     if (historyCoord.x >= 0 && historyCoord.x < int(width) &&
         historyCoord.y >= 0 && historyCoord.y < int(height) &&
@@ -94,9 +90,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 過去の正しいワールド位置からデータをロード
         history = gVoxelHistory.Load(int4(historyCoord, 0));
     }
-    // ====================================================================
 
-    // 強力なカラークランピング（位置が同期したため、動いても不必要に削られなくなります）
+    // カラークランピング
     history = clamp(history, boxMin, boxMax);
 
     // ブレンド率（TAAウェイト）の動的制御

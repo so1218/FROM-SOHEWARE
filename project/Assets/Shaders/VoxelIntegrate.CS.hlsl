@@ -4,7 +4,6 @@ Texture3D<float4> gVoxelTemporalOut : register(t0);
 RWTexture3D<float4> gVoxelAccumulate : register(u0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
-// スレッドはXとYにしか展開しない
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {

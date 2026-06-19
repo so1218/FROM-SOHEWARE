@@ -1,4 +1,3 @@
-// 書き込み用の3Dテクスチャ
 RWTexture3D<float4> gOutputNoise : register(u0);
 
 // 乱数生成関数 (Hash)

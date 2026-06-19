@@ -18,15 +18,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // 1. プレイヤーの移動と「逆方向」にデータをシフトするためのサンプリング座標を計算
+    // プレイヤーの移動と逆方向にデータをシフトするためのサンプリング座標を計算
     int3 srcCoord = (int3) DTid + gFluidSettings.voxelDelta;
 
-    // 2. Toroidal Wrap (テクスチャサイズ内でループさせる算術)
+    // Toroidal Wrap (テクスチャサイズ内でループさせる)
     srcCoord.x = (srcCoord.x % (int) width + (int) width) % (int) width;
     srcCoord.y = (srcCoord.y % (int) height + (int) height) % (int) height;
     srcCoord.z = (srcCoord.z % (int) depth + (int) depth) % (int) depth;
 
-    // 3. プレイヤーが移動したことによって「新しく箱の中に進入してきた領域」かどうかを判定する
+    // プレイヤーが移動したことによって新しく箱の中に進入してきた領域かどうかを判定
     bool isNewArea = false;
 
     // X軸の進入判定
@@ -65,7 +65,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             isNewArea = true;
     }
 
-    // 4. 書き込み処理
+    // 書き込み処理
     if (isNewArea)
     {
         // 新しく入ってきた領域は、古い回り込みデータを消すためにゼロクリア

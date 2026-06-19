@@ -2,7 +2,7 @@
 
 Texture3D<float4> gVelocityRead : register(t0);
 Texture3D<float> gDensityRead : register(t1);
-Texture3D<float4> gCurlRead : register(t2); // パス1で作ったCurlテクスチャを入力
+Texture3D<float4> gCurlRead : register(t2); 
 RWTexture3D<float4> gVelocityWrite : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
@@ -49,7 +49,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ゼロ除算を防止しつつ正規化
     N = lenN > 0.0001f ? (N / lenN) : float3(0.0f, 0.0f, 0.0f);
 
-    // Vorticity Confinementの力を計算（N方向 × Curlベクトル）
+    // Vorticity Confinementの力を計算
     float3 vorticityForce = cross(N, centerCurl) * gFluidSettings.vorticityStrength;
 
     // 密度の濃い部分を中心に乱気流を発生させるためのマスク
