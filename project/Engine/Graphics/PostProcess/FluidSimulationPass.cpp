@@ -20,14 +20,14 @@ FluidSimulationPass::~FluidSimulationPass()
         if (pressureSrvIndices_[i] != 0) srvManager->FreeSRV(pressureSrvIndices_[i]);
         if (pressureUavIndices_[i] != 0) srvManager->FreeSRV(pressureUavIndices_[i]);
 
-        // ★ 追加：UVWのディスクリプタを解放
+        // UVWのディスクリプタを解放
         if (uvwSrvIndices_[i] != 0)      srvManager->FreeSRV(uvwSrvIndices_[i]);
         if (uvwUavIndices_[i] != 0)      srvManager->FreeSRV(uvwUavIndices_[i]);
     }
     if (divergenceSrvIndex_ != 0) srvManager->FreeSRV(divergenceSrvIndex_);
     if (divergenceUavIndex_ != 0) srvManager->FreeSRV(divergenceUavIndex_);
 
-    // ★ 追加：Curlテクスチャのディスクリプタを解放
+    // Curlテクスチャのディスクリプタを解放
     if (curlSrvIndex_ != 0) srvManager->FreeSRV(curlSrvIndex_);
     if (curlUavIndex_ != 0) srvManager->FreeSRV(curlUavIndex_);
 }
@@ -118,13 +118,13 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
         CreateFluidTexture(velocityRes_[i], DXGI_FORMAT_R16G16B16A16_FLOAT, L"Fluid_Velocity", velocityUavIndices_[i], velocitySrvIndices_[i]);
         CreateFluidTexture(pressureRes_[i], DXGI_FORMAT_R16_FLOAT, L"Fluid_Pressure", pressureUavIndices_[i], pressureSrvIndices_[i]);
 
-        // ★ 追加：UVW座標用バッファの生成
+        // UVW座標用バッファの生成
         CreateFluidTexture(uvwRes_[i], DXGI_FORMAT_R16G16B16A16_FLOAT, L"Fluid_UVW", uvwUavIndices_[i], uvwSrvIndices_[i]);
     }
     // Divergenceは1枚
     CreateFluidTexture(divergenceRes_, DXGI_FORMAT_R16_FLOAT, L"Fluid_Divergence", divergenceUavIndex_, divergenceSrvIndex_);
 
-    // ★ 追加：Curlバッファの生成 (1フレーム内で完結するため1枚でOK)
+    // Curlバッファの生成 (1フレーム内で完結するため1枚でOK)
     CreateFluidTexture(curlRes_, DXGI_FORMAT_R16G16B16A16_FLOAT, L"Fluid_Curl", curlUavIndex_, curlSrvIndex_);
 }
 
@@ -204,7 +204,7 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
               CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[0].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
               CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[1].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 
-              // ★ 追加：Curlテクスチャの初回バリア遷移
+              // Curlテクスチャの初回バリア遷移
               CD3DX12_RESOURCE_BARRIER::Transition(curlRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
         };
         cmdList->ResourceBarrier(9, initBarriers);
@@ -283,9 +283,15 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
 
         cmdList->SetPipelineState(psoManager_->GetPSO("FluidInjectionCS"));
 
-        // t0: velocity(read), t1: density(read)
-        BindDescriptorTable({ velocitySrvIndices_[readIndex_], densitySrvIndices_[readIndex_] }, 2);
+        // ★修正：t0: velocity, t1: density, t2: noise3D (追加)
+        BindDescriptorTable({
+            velocitySrvIndices_[readIndex_],
+            densitySrvIndices_[readIndex_],
+            noise3DData_.srvIndex // ← これを追加
+            }, 2);
+
         // u0: velocity(write), u1: density(write)
+        // ※ UAV側は要素が2つなので、配列には2つだけ渡します
         BindDescriptorTable({ velocityUavIndices_[writeIndex_], densityUavIndices_[writeIndex_] }, 3);
 
         cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);

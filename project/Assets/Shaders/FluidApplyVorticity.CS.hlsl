@@ -31,10 +31,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
     int3 pos = int3(DTid);
     float halfInvDx = 0.5f / gFluidSettings.gridScale;
 
-    // 1. 自身のテクセルのCurlベクトルを取得（RGB成分）
+    // 自身のテクセルのCurlベクトルを取得（RGB成分）
     float3 centerCurl = gCurlRead[pos].xyz;
 
-    // 2. 周囲6マスの「Curlの大きさ」を事前計算テクスチャから取得（W成分）
+    // 周囲6マスのCurlの大きさを事前計算テクスチャから取得（W成分）
     float magL = gCurlRead[Wrap(pos + int3(-1, 0, 0), size)].w;
     float magR = gCurlRead[Wrap(pos + int3(1, 0, 0), size)].w;
     float magB = gCurlRead[Wrap(pos + int3(0, -1, 0), size)].w;
@@ -42,21 +42,21 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float magD = gCurlRead[Wrap(pos + int3(0, 0, -1), size)].w;
     float magU = gCurlRead[Wrap(pos + int3(0, 0, 1), size)].w;
 
-    // 3. 渦の強さの勾配（N）を作る
+    // 渦の強さの勾配を作る
     float3 N = float3(magR - magL, magT - magB, magU - magD) * halfInvDx;
     float lenN = length(N);
     
     // ゼロ除算を防止しつつ正規化
     N = lenN > 0.0001f ? (N / lenN) : float3(0.0f, 0.0f, 0.0f);
 
-    // 4. Vorticity Confinementの力を計算（N方向 × Curlベクトル）
+    // Vorticity Confinementの力を計算（N方向 × Curlベクトル）
     float3 vorticityForce = cross(N, centerCurl) * gFluidSettings.vorticityStrength;
 
     // 密度の濃い部分を中心に乱気流を発生させるためのマスク
     float densityMask = saturate(gDensityRead[pos].r * 2.0f);
     vorticityForce *= densityMask;
  
-    // 5. 速度の更新と書き込み
+    // 速度の更新と書き込み
     float3 currentVel = gVelocityRead[pos].xyz;
     float3 newVel = currentVel + (vorticityForce * gFrameData.deltaTime);
     

@@ -14,7 +14,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // ★修正: ループ(Wrap)座標の計算
+    // ループ(Wrap)座標の計算
     uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
     uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
     uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;
@@ -22,7 +22,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint zD = (DTid.z == 0) ? depth - 1 : DTid.z - 1;
     uint zU = (DTid.z == depth - 1) ? 0 : DTid.z + 1;
 
-    // ★修正: ノイマン境界条件を廃止し、反対側の圧力を取得する
+    // ノイマン境界条件を廃止し、反対側の圧力を取得
     float pL = gPressureRead[uint3(xL, DTid.y, DTid.z)];
     float pR = gPressureRead[uint3(xR, DTid.y, DTid.z)];
     float pB = gPressureRead[uint3(DTid.x, yB, DTid.z)];
@@ -35,7 +35,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     float newPressure = (pL + pR + pB + pT + pD + pU - div * dxSq) / 6.0f;
     
-    // ★ドリフト防止の罠解除: 基準点（例: 端のマス）の圧力を常に強制ゼロ、あるいは微小に減衰させる
+    // 基準点の圧力を常に強制ゼロ、あるいは微小に減衰
     if (all(DTid == uint3(0, 0, 0)))
     {
         newPressure = 0.0f;

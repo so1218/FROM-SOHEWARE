@@ -1,6 +1,7 @@
 #pragma once
 #include "PSOManager.h"
 #include "Structures.h"
+#include "NoiseTextureGenerator.h"
 
 namespace FE
 {
@@ -29,6 +30,9 @@ public:
     FluidSettings* GetSettings() const { return cbData_; }
 
     uint32_t GetCurrentUVWSRVIndex() const { return uvwSrvIndices_[readIndex_]; }
+
+    // ノイズデータを受け取って保持する関数
+    void SetNoiseData(const GeneratedTextureData& data) { noise3DData_ = data; }
 
 private:
     Engine* engine_ = nullptr;
@@ -80,6 +84,9 @@ private:
     int previousGridX_ = 0;
     int previousGridY_ = 0;
     int previousGridZ_ = 0;
+
+    // ノイズテクスチャ保持用
+    GeneratedTextureData noise3DData_;
 };
 
 }

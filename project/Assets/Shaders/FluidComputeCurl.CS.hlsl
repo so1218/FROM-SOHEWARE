@@ -36,13 +36,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 vD = gVelocityRead[Wrap(pos + int3(0, 0, -1), size)].xyz;
     float3 vU = gVelocityRead[Wrap(pos + int3(0, 0, 1), size)].xyz;
 
-    // Curl（渦ベクトル）の計算
+    // 渦ベクトルの計算
     float3 curl;
     curl.x = ((vT.z - vB.z) - (vU.y - vD.y)) * halfInvDx;
     curl.y = ((vU.x - vD.x) - (vR.z - vL.z)) * halfInvDx;
     curl.z = ((vR.y - vL.y) - (vT.x - vB.x)) * halfInvDx;
 
-    // Curlの大きさ（Magnitude）
+    // Curlの大きさ
     float curlMag = length(curl);
 
     // RGBに渦ベクトル、Alphaに渦の大きさを保存

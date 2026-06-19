@@ -346,6 +346,7 @@ void Engine::InitializeResources()
 		// 4. VolumetricFogPassに直接データを渡す（ComPtrの所有権が移動し、リソースが維持される）
 		// ※ GetPostEffectManager() から VolumetricFogPass を取得できる想定です
 		GetPostEffectManager()->GetVolumetricFogPass()->SetNoiseData(noiseData);
+		GetFluidSimulationPass()->SetNoiseData(noiseData);
 	}
 }
 

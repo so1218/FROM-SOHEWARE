@@ -28,10 +28,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         // 現在のボクセルステップ単体の透過率
         float stepTransmittance = exp(-extinction);
-
-        // --- RDR2 / モダンエンジン必須の積分修正 ---
-        // 散乱光(S)に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを正しく乗算する
-        // 積分公式: S_int = S * (1 - exp(-extinction)) / extinction
+        
+        // 散乱光(S)に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを正しく乗算
         float3 integratedScattering = S * (1.0f - stepTransmittance) / extinction;
         
         // 全体の透過率を考慮して累積

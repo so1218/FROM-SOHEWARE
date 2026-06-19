@@ -49,19 +49,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 errorCorrection = uvw - forwardUVW;
     float3 bfeccUVW = backtraceUVW + errorCorrection * 0.5f; // エラーを半分補正
 
-// 4. 補正されたUVWを使って本番のサンプリング！
+    // 補正されたUVWを使って本番のサンプリング！
     float3 advectedVelocity = gVelocityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).xyz;
     float advectedDensity = gDensityRead.SampleLevel(gLinearWrapSampler, bfeccUVW, 0).r;
 
-// =======================================================
-// ★AAA改修: MacCormack Clamping (オーバーシュート防止)
-// =======================================================
-// バックトレース先の位置（backtraceUVW）の周囲のテクセルからMin/Maxを取得
+    // =======================================================
+    // MacCormack Clamping (オーバーシュート防止)
+    // =======================================================
+    // バックトレース先の位置（backtraceUVW）の周囲のテクセルからMin/Maxを取得
     float3 texelSize = 1.0f / float3(width, height, depth);
     float minDensity = 9999.0f;
     float maxDensity = -9999.0f;
 
-// 簡易的なクロスサンプリング（負荷と精度のバランス）
+    // 簡易的なクロスサンプリング（負荷と精度のバランス）
     float3 offsets[4] =
     {
         float3(texelSize.x, 0, 0), float3(-texelSize.x, 0, 0),
@@ -75,15 +75,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
         maxDensity = max(maxDensity, sampleD);
     }
 
-// BFECCの結果が周囲の現実的な値を超えていたら、安全な1次移流（velSemiLagやバックトレース先のDensity）にフォールバック、またはクランプする
+    // BFECCの結果が周囲の現実的な値を超えていたら、安全な1次移流にフォールバック、またはクランプする
     advectedDensity = clamp(advectedDensity, minDensity, maxDensity);
     
-    // =======================================================
-    // UVW座標自体の移流 (空間の歪み) と ★Toroidal Lerp
-    // =======================================================
+    // UVW座標自体の移流 と Toroidal Lerp
     float3 advectedUVW = gUVWRead.SampleLevel(gLinearWrapSampler, backtraceUVW, 0).xyz;
 
-    // 【AAA基準の修正】: 単純なlerpではなく、トーラス境界を跨いだ最短経路で緩和(Relaxation)する
+    // lerpではなく、トーラス境界を跨いだ最短経路で緩和
     float3 diff = advectedUVW - uvw;
     
     // 差分を -0.5 ～ 0.5 の範囲にラップし、最短経路のベクトルにする
@@ -96,10 +94,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 最後に再び 0.0 ～ 1.0 の範囲に安全にラップする
     advectedUVW = relaxedUVW - floor(relaxedUVW);
     
-  // 速度の大きさを取得
+    // 速度の大きさを取得
     float velLength = length(advectedVelocity);
 
-// 速度が速いほど減衰しにくく、遅いほど一気に消散させるハック
+    // 速度が速いほど減衰しにくく、遅いほど一気に消散させるハック
     float dynamicDissipation = lerp(gFluidSettings.velocityDissipation * 0.95f, gFluidSettings.velocityDissipation, saturate(velLength * 0.2f));
 
     advectedVelocity *= dynamicDissipation;
