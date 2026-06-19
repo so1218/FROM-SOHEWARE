@@ -36,7 +36,7 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // --- 1. ディスクリプタの集約コピー ---
+    // ディスクリプタの集約コピー
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
 
     // t0: RawFog (前パスの出力)
@@ -45,7 +45,6 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
 
     // t1: Depth
     destHandle.ptr += handleSize;
-    // ※VolumetricFogPassでのDepth取得方法に合わせています
     device->CopyDescriptorsSimple(1, destHandle, context.srvManager->GetSRVHandleCPU_ForCopying(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // u0: Output (自分自身のテクスチャのUAV)
@@ -53,10 +52,10 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     D3D12_CPU_DESCRIPTOR_HANDLE uavHandleCPU = engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(uavIndex_);
     device->CopyDescriptorsSimple(1, destHandle, uavHandleCPU, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // --- 2. リソースバリア (CS用の状態遷移) ---
+    // リソースバリア (CS用の状態遷移)
     PreCompute(cmdList); // 自らの出力をUAVへ
 
-    // Depth は前のパスの最後で PIXEL_SHADER_RESOURCE に戻されているはずなので遷移が必要
+    // Depth は前のパスの最後で PIXEL_SHADER_RESOURCE に戻されているので遷移が必要
     D3D12_RESOURCE_BARRIER depthBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         engine_->GetOffscreenDepthResource(),
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
@@ -64,31 +63,25 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
 
     cmdList->ResourceBarrier(1, &depthBarrier);
 
-    // --- 3. Compute Pipeline 設定 ---
+    // Compute Pipeline 設定
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogBilateralCS"));
     cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogBilateralCS"));
 
     ID3D12DescriptorHeap* heaps[] = { passHeap_.Get() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    // --- 4. ルートパラメータ設定 ---
+    // ルートパラメータ設定
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
-    // Param 0: 定数バッファ (b0)
     cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
-
-    // Param 1: t0 (RawFog)
     cmdList->SetComputeRootDescriptorTable(1, gpuHandle);
-
-    // Param 2: t1 (Depth)
     gpuHandle.ptr += handleSize;
     cmdList->SetComputeRootDescriptorTable(2, gpuHandle);
 
-    // Param 3: u0 (Filtered Fog)
     gpuHandle.ptr += handleSize;
     cmdList->SetComputeRootDescriptorTable(3, gpuHandle);
 
-    // --- 5. Dispatch 実行 ---
+    // Dispatch 実行
     UINT dispatchX = (static_cast<UINT>(viewport_.Width) + 7) / 8;
     UINT dispatchY = (static_cast<UINT>(viewport_.Height) + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);

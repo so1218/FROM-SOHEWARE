@@ -210,7 +210,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     }
     
     // 密度のブレンド
-    float globalBaseDensity = gFogSettings.globalDensity + (gFogSettings.heightDensity * heightFactor);
+    float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
     float fluidBaseDensity = fluidMass;
 
     float blendWeight = saturate(fluidMass * edgeFade);
@@ -326,7 +326,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, 0.001f));
     particleDensity *= distanceFade;
 
-    float3 global_sigma_s = gFogSettings.scatteringColor * particleDensity * gFogSettings.scatteringIntensity;
+    float3 global_sigma_s = gFogSettings.albedo * particleDensity * gFogSettings.scatteringIntensity;
     float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
     
     // 配置式フォグボリュームの計算

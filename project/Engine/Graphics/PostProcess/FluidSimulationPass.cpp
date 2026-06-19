@@ -461,7 +461,7 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
             CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(uvwRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
 
-            // 密度も安全にSRV化
+            // 密度もSRV化
             CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
             CD3DX12_RESOURCE_BARRIER::Transition(densityRes_[writeIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)
         };

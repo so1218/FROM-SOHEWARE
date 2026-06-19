@@ -75,9 +75,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         float noiseScale = 0.5f;
         float3 noiseUVW = voxelWorldPos * noiseScale + gFrameData.gTime * 0.2f;
-        float3 curlNoiseVel = SampleCurlNoise(gLinearWrapSampler, noiseUVW); // ※別途Curl Noise関数/テクスチャを用意
+        float3 curlNoiseVel = SampleCurlNoise(gLinearWrapSampler, noiseUVW); 
 
-        // キャラクターが動いた時だけ、その周囲に微細な乱気流を発生させる
+        // キャラクターが動いた時だけ、その周囲に微細な乱気流を発生
         targetVel += curlNoiseVel * (speed * 0.5f);
 
         float blendRate = influence * saturate(gFrameData.deltaTime * 60.0f);

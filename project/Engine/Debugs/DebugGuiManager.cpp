@@ -679,7 +679,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
             if (ImGui::CollapsingHeader("PBR 光学特性 (Lighting & Optical)", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::ColorEdit3("散乱色", &volFogSettings->scatteringColor.x);
+                ImGui::ColorEdit3("散乱色", &volFogSettings->albedo.x);
                 ImGui::DragFloat("散乱の強さ (Scattering Intensity)", &volFogSettings->scatteringIntensity, 0.5f, 0.0f, 200.0f, "%.1f");
                 ImGui::DragFloat("光の減衰スケール (Extinction)", &volFogSettings->extinctionScale, 0.01f, 0.0f, 10.0f, "%.2f");
                 ImGui::SliderFloat("前方散乱・光の筋 (Anisotropy)", &volFogSettings->anisotropy, -0.99f, 0.99f, "%.2f");
@@ -690,7 +690,7 @@ void DebugGuiManager::DrawPostEffectSettings()
 
             if (ImGui::CollapsingHeader("密度と形状 (Density & Shape)", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ImGui::DragFloat("空間全体のベース密度", &volFogSettings->globalDensity, 0.001f, 0.0f, 1.0f, "%.3f");
+                ImGui::DragFloat("空間全体のベース密度", &volFogSettings->extinction, 0.001f, 0.0f, 1.0f, "%.3f");
                 ImGui::DragFloat("高さフォグ(雲)の最大密度", &volFogSettings->heightDensity, 0.01f, 0.0f, 5.0f, "%.2f");
                 ImGui::DragFloat("基準高さ (Y)", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
                 ImGui::DragFloat("高さ減衰率", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");

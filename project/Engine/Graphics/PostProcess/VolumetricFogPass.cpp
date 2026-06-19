@@ -19,12 +19,12 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
 
     // PBRベースの光学特性初期値設定
-    cbData_->scatteringColor = { 0.8f, 0.8f, 0.8f };
+    cbData_->albedo = { 0.8f, 0.8f, 0.8f };
     cbData_->scatteringIntensity = 150.0f;
     cbData_->extinctionScale = 0.2f;
     cbData_->anisotropy = 0.7f;
 
-    cbData_->globalDensity = 0.005f;
+    cbData_->extinction = 0.005f;
     cbData_->heightDensity = 0.0f;
     cbData_->baseHeight = 0.0f;
     cbData_->heightFalloff = 0.1f;

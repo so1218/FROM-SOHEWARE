@@ -369,12 +369,12 @@ struct InstanceOffset
 
 struct VolumetricFogSettings
 {
-    float3 scatteringColor;
+    float3 albedo;
     float scatteringIntensity;
     
     float extinctionScale;
     float anisotropy;
-    float globalDensity;
+    float extinction;
     float heightDensity;
     
     float baseHeight;
@@ -451,27 +451,27 @@ struct FogVolumeBuffer
 
 struct FluidSettings
 {
-    float velocityDissipation; // 速度の減衰率（例: 0.99f）
-    float densityDissipation; // 密度の減衰率（例: 0.95f）
-    float gridScale; // シミュレーショングリッドの物理スケール
+    float velocityDissipation; 
+    float densityDissipation;
+    float gridScale;
     float vorticityStrength;
 
 
-    float3 gridMin; // 流体ボックスの最小ワールド座標
-    float interactionRadius; // プレイヤーが空気を押し出す半径
+    float3 gridMin; 
+    float interactionRadius; 
 
-    float3 gridMax; // 流体ボックスの最大ワールド座標
-    float injectionStrength; // 押し出す力の強さ（乗数）
+    float3 gridMax; 
+    float injectionStrength;
 
-    float3 objectPos; // プレイヤーのワールド座標
-    float densityAmount; // 動いた場所に出す霧の量
+    float3 objectPos; 
+    float densityAmount; 
 
-    float3 objectVelocity; // プレイヤーの移動速度ベクトル
-    float dragStrength; // ★新規追加 (paddingFluid2を置き換え): 移動方向へ引きずる力
+    float3 objectVelocity; 
+    float dragStrength; 
 
-    float pushStrength; // ★新規追加: 外側へ押し退ける力
-    float uvwRelaxation; // ★新規追加: UVW座標の伸びを元に戻す力（ストレッチ防止）
-    float2 paddingFluid3; // アラインメント用
+    float pushStrength;
+    float uvwRelaxation; 
+    float2 paddingFluid3;
     
     float3 voxelDelta;
     float pad1;
