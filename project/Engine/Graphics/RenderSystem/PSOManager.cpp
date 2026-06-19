@@ -100,9 +100,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
 
     Microsoft::WRL::ComPtr<ID3D12PipelineState> pso;
 
-    // ========================================================
-    // ★ 分岐A：コンピュートPSO（ComputeShaderが指定されている場合）
-    // ========================================================
+    // コンピュートPSO（ComputeShaderが指定されている場合）
     if (!desc.ComputeShader.empty())
     {
         std::wstring csPath(desc.ComputeShader.begin(), desc.ComputeShader.end());
@@ -116,12 +114,10 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
         HRESULT hr = device_->CreateComputePipelineState(&computeDesc, IID_PPV_ARGS(&pso));
         assert(SUCCEEDED(hr));
 
-        return pso; // ここで完了
+        return pso; 
     }
 
-    // ========================================================
-    // ★ 分岐B：グラフィックスPSO（既存の処理）
-    // ========================================================
+    // グラフィックスPSO
     std::wstring vsPath(desc.VertexShader.begin(), desc.VertexShader.end());
     std::wstring psPath(desc.PixelShader.begin(), desc.PixelShader.end());
     IDxcBlob* vsBlob = shaderManager_->GetShader(vsPath, L"vs_6_0");

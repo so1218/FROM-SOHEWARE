@@ -15,7 +15,7 @@ public:
 
     FogBilateralSettings* GetSettings() { return cbData_; }
 
-    // ★追加: 前パス（生のフォグ）のリソースとSRVインデックスを受け取る
+    // 前パス（生のフォグ）のリソースとSRVインデックスを受け取る
     void SetRawFogInput(ID3D12Resource* resource, uint32_t srvIndex) {
         rawFogResource_ = resource;
         rawFogSrvIndex_ = srvIndex;
@@ -23,7 +23,7 @@ public:
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_; // ★追加: 専用ヒープ
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
     FogBilateralSettings* cbData_ = nullptr;
     PSOManager* psoManager_ = nullptr;
 

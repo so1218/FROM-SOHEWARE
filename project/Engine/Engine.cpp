@@ -329,22 +329,19 @@ void Engine::InitializeResources()
 	ModelManager::GetInstance().LoadFromCSV();
 	AnimationManager::GetInstance()->LoadFromCSV();
 
-	// =======================================================
-	// ★追加: ここで 3Dノイズ を生成して VolumetricFog に渡す
-	// =======================================================
+	// 3Dノイズ を生成して VolumetricFog に渡す
 	{
-		// 1. ローカル変数としてジェネレーターを作成
+		// ローカル変数としてジェネレーターを作成
 		NoiseTextureGenerator noiseGen;
 		noiseGen.Initialize(this);
 
-		// 2. ロード処理で使っている共通のコマンドリストを取得
+		// ロード処理で使っている共通のコマンドリストを取得
 		ID3D12GraphicsCommandList* cmdList = commandManager_->GetCommandList();
 
-		// 3. コマンドリストにノイズ生成処理(CS)を積む (例: 64x64x64)
+		// コマンドリストにノイズ生成処理(CS)を積む
 		GeneratedTextureData noiseData = noiseGen.Generate3DPerlinNoise(cmdList, 64, 64, 64);
 
-		// 4. VolumetricFogPassに直接データを渡す（ComPtrの所有権が移動し、リソースが維持される）
-		// ※ GetPostEffectManager() から VolumetricFogPass を取得できる想定です
+		// VolumetricFogPassに直接データを渡す
 		GetPostEffectManager()->GetVolumetricFogPass()->SetNoiseData(noiseData);
 		GetFluidSimulationPass()->SetNoiseData(noiseData);
 	}

@@ -704,38 +704,23 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -5.0f, 5.0f, "%.2f");
                 ImGui::Separator();
                 ImGui::Text("形状コントロール (Shape & Detail)");
-
-                // coverage は 0.0～1.0 の直感的なスライダーに
                 ImGui::SliderFloat("霧の量 (Coverage)", &volFogSettings->coverage, 0.0f, 1.0f, "%.2f");
-
-                // WorleyWeight も 0.0(モヤモヤ) ～ 1.0(モコモコ) のスライダーに
                 ImGui::SliderFloat("雲の塊感 (Worley Weight)", &volFogSettings->worleyWeight, 0.0f, 1.0f, "%.2f");
-
-                // Erosion はディテールを削り取る強さ
                 ImGui::SliderFloat("削り取り強度 (Erosion)", &volFogSettings->erosion, 0.0f, 1.0f, "%.2f");
-
-                // ★追加: 流体の境界をノイズで侵食して千切る強さ
                 ImGui::SliderFloat("流体との融合削り強度 (Erosion Strength)", &volFogSettings->erosionStrength, 0.0f, 2.0f, "%.2f");
-
                 ImGui::SliderFloat("全体ノイズ適用度 (Noise Intensity)", &volFogSettings->noiseIntensity, 0.0f, 1.0f, "%.2f");
-
-                // Feather は 0.0 になるとエラーやジャギが出るため、最小値を 0.001 に設定
                 ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");
             }
 
-            // ★ 追加：流体シミュレーションのパラメータ UI
             if (fluidSettings && ImGui::CollapsingHeader("流体シミュレーション (Fluid Dynamics)"))
             {
                 ImGui::Text("基本設定 (Base Settings)");
-                // 0.99 などの細かい値の調整が多いため、DragFloatのステップ(第3引数)を小さくしています
                 ImGui::DragFloat("速度の減衰率 (Velocity Dissipation)", &fluidSettings->velocityDissipation, 0.001f, 0.0f, 1.0f, "%.3f");
                 ImGui::DragFloat("密度の減衰率 (Density Dissipation)", &fluidSettings->densityDissipation, 0.001f, 0.0f, 1.0f, "%.3f");
                 ImGui::DragFloat("グリッドスケール (Grid Scale)", &fluidSettings->gridScale, 0.1f, 0.1f, 100.0f, "%.1f m");
 
-                // ★追加: 渦巻きを強調する力（Vorticity Confinement）
                 ImGui::DragFloat("渦の強さ (Vorticity Strength)", &fluidSettings->vorticityStrength, 0.01f, 0.0f, 5.0f, "%.2f");
 
-                // ★追加: UVW座標が無限に伸びて破綻するのを防ぐ復元力
                 ImGui::DragFloat("UVW復元力 (UVW Relaxation)", &fluidSettings->uvwRelaxation, 0.01f, 0.0f, 1.0f, "%.2f");
 
                 ImGui::Separator();
@@ -746,8 +731,6 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::Separator();
                 ImGui::Text("外力・干渉 (Injection & Interaction)");
                 ImGui::DragFloat("干渉半径 (Interaction Radius)", &fluidSettings->interactionRadius, 0.1f, 0.1f, 50.0f, "%.1f m");
-
-                // ★追加: キャラクターの動きに対する空気の反応
                 ImGui::DragFloat("引きずる力 (Drag Strength)", &fluidSettings->dragStrength, 0.1f, 0.0f, 50.0f, "%.1f");
                 ImGui::DragFloat("押し退ける力 (Push Strength)", &fluidSettings->pushStrength, 0.1f, 0.0f, 50.0f, "%.1f");
 
@@ -787,7 +770,6 @@ void DebugGuiManager::DrawPostEffectSettings()
 
                     if (ImGui::TreeNode(("Volume " + std::to_string(i)).c_str()))
                     {
-                        // --- ImGuiのパラメータ編集部分に追加・修正 ---
                         ImGui::Checkbox("デバッグ描画", &vol.isVisible);
                         ImGui::Combo("タイプ", &vol.type, "Sphere\0Box\0");
 
@@ -803,7 +785,6 @@ void DebugGuiManager::DrawPostEffectSettings()
                         ImGui::ColorEdit3("色 (Color)", &vol.color.x);
                         ImGui::DragFloat("密度 (Density)", &vol.density, 0.01f, 0.0f, 10.0f);
 
-                        // ★ 0.0(パキッと) ～ 1.0(中心までグラデーション) の割合に変更
                         ImGui::SliderFloat("境界ボカシ (Blend)", &vol.blendDistance, 0.0f, 1.0f);
 
                         ImGui::Separator();
@@ -816,7 +797,6 @@ void DebugGuiManager::DrawPostEffectSettings()
 
                         ImGui::Separator();
                         ImGui::Text("Volume 形状コントロール");
-                        // ★古い noiseThreshold を消して、新しい4パラメータを追加
                         ImGui::SliderFloat("霧の量 (Coverage)", &vol.coverage, 0.0f, 1.0f);
                         ImGui::SliderFloat("雲の塊感 (Worley Weight)", &vol.worleyWeight, 0.0f, 1.0f);
                         ImGui::SliderFloat("削り取り強度 (Erosion)", &vol.erosion, 0.0f, 1.0f);
@@ -833,24 +813,21 @@ void DebugGuiManager::DrawPostEffectSettings()
                     }
                     ImGui::PopID();
 
-                    // --- デバッグ描画の実行 ---
                     if (vol.isVisible)
                     {
                         Vector4 drawColor = { vol.color.x, vol.color.y, vol.color.z, 1.0f };
 
-                        if (vol.type == 0) // Sphere
+                        if (vol.type == 0) 
                         {
                             DebugDraw::DrawSphere(vol.position, vol.scale.x, drawColor);
                         }
-                        else if (vol.type == 1) // Box
+                        else if (vol.type == 1) 
                         {
-                            // Boxの場合は回転行列を作ってOBBとして描画
                             Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({
                                 Math::ToRadians(vol.rotation.x),
                                 Math::ToRadians(vol.rotation.y),
                                 Math::ToRadians(vol.rotation.z) }
                             );
-                            // DrawOBB(中心, サイズ(縦横奥の全長), 回転, 色)
                             DebugDraw::DrawOBB(vol.position, vol.scale, rotMat, drawColor);
                         }
                     }

@@ -51,11 +51,11 @@ private:
     // このパス専用のディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_[2];
 
-    // --- 流体用 3Dリソース群 (2枚ずつ) ---
+    // 流体用 3Dリソース群 (2枚ずつ)
     Microsoft::WRL::ComPtr<ID3D12Resource> velocityRes_[2];
     uint32_t velocitySrvIndices_[2]{};
     uint32_t velocityUavIndices_[2]{};
-    // ★ 2-Pass Vorticity 用の一時バッファ
+    // 2-Pass Vorticity 用の一時バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> curlRes_;
     uint32_t curlSrvIndex_ = 0;
     uint32_t curlUavIndex_ = 0;
@@ -68,14 +68,14 @@ private:
     uint32_t pressureSrvIndices_[2]{};
     uint32_t pressureUavIndices_[2]{};
 
-    // --- 1枚だけで良いリソース ---
+    // 1枚だけで良いリソース
     Microsoft::WRL::ComPtr<ID3D12Resource> divergenceRes_;
     uint32_t divergenceSrvIndex_ = 0;
     uint32_t divergenceUavIndex_ = 0;
 
-    // 定数バッファ (b1: FluidSettings)
+    // 定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    FluidSettings* cbData_ = nullptr; // ※FluidSettings構造体はEngine側で定義されている想定
+    FluidSettings* cbData_ = nullptr;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> uvwRes_[2];
     uint32_t uvwUavIndices_[2];

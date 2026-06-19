@@ -80,9 +80,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelAccumulateRes_));
     voxelAccumulateRes_->SetName(L"VoxelAccumulateResource");
 
-    // ====================================================================
     // ビュー(SRV/UAV)の登録
-    // ====================================================================
     auto* srvManager = engine->GetSRVManager();
 
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -105,7 +103,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     injectSrvIndex_ = srvManager->Allocate();
     device->CreateShaderResourceView(voxelInjectRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(injectSrvIndex_));
 
-    // Filtered ビュー作成 (絶対に削らない)
+    // Filtered ビュー作成
     filteredUavIndex_ = srvManager->Allocate();
     device->CreateUnorderedAccessView(voxelInjectFilteredRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(filteredUavIndex_));
     filteredSrvIndex_ = srvManager->Allocate();
@@ -117,9 +115,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     accumSrvIndex_ = srvManager->Allocate();
     device->CreateShaderResourceView(voxelAccumulateRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(accumSrvIndex_));
 
-    // ====================================================================
     // テンポラル用履歴ピンポンバッファ
-    // ====================================================================
     for (int i = 0; i < 2; ++i) {
         device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&history3DRes_[i]));
         history3DRes_[i]->SetName(i == 0 ? L"VoxelHistory_0" : L"VoxelHistory_1");
@@ -130,9 +126,7 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
         device->CreateShaderResourceView(history3DRes_[i].Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(historySrvIndices_[i]));
     }
 
-    // ====================================================================
     // Resolve パス(2D合成) の最終出力先テクスチャ
-    // ====================================================================
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc2D = {};
     uavDesc2D.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
     uavDesc2D.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
@@ -164,7 +158,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     uint32_t currIdx = frameCounter_ % 2;
     uint32_t prevIdx = (frameCounter_ + 1) % 2;
 
-    // --- 外部リソース（Depth / Shadow）を Compute で読むためのバリア遷移 ---
+    // 外部リソース（Depth / Shadow）を Compute で読むためのバリア遷移
     D3D12_RESOURCE_BARRIER readBarriers[2] = {};
     readBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(engine_->GetOffscreenDepthResource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     readBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(engine_->GetShadowMap()->GetResource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);

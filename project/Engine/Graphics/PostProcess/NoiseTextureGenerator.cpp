@@ -8,8 +8,6 @@ namespace FE
 void NoiseTextureGenerator::Initialize(Engine* engine)
 {
     engine_ = engine;
-
-    // ※ここでノイズ生成CS用の RootSignature と PSO を作成（または PSOManager から取得）します
 }
 
 GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
@@ -21,20 +19,20 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
 
     GeneratedTextureData result;
 
-    // --- 1. 3Dテクスチャリソースの作成 ---
+    // 3Dテクスチャリソースの作成
     D3D12_HEAP_PROPERTIES heapProps = {};
-    heapProps.Type = D3D12_HEAP_TYPE_DEFAULT; // GPU上の高速なメモリ
+    heapProps.Type = D3D12_HEAP_TYPE_DEFAULT; 
 
     D3D12_RESOURCE_DESC resDesc = {};
-    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D; // ★3Dテクスチャ
+    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
     resDesc.Width = width;
     resDesc.Height = height;
     resDesc.DepthOrArraySize = depth;
     resDesc.MipLevels = 1;
-    resDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; // ノイズ濃度だけなのでR16で十分
+    resDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT; 
     resDesc.SampleDesc.Count = 1;
     resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS; // ★UAVとして書き込むためのフラグ
+    resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
     device->CreateCommittedResource(
         &heapProps,
@@ -46,7 +44,7 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     );
     result.resource->SetName(L"3D_PerlinNoise_Texture");
 
-    // --- 2. SRVManager を使って UAV と SRV を作成 ---
+    // UAV と SRV を作成
 
     // UAV (書き込み用)
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
@@ -61,12 +59,12 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = resDesc.Format;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D; // ★3D
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
     srvDesc.Texture3D.MipLevels = 1;
     srvDesc.Texture3D.MostDetailedMip = 0;
     result.srvIndex = srvManager->CreateSRV(result.resource.Get(), srvDesc);
 
-    // --- 3. Compute Shader で書き込み (焼き付け) ---
+    // Compute Shader で書き込み 
 
     // ノイズ生成用のPSOとRootSignatureをセット
     cmdList->SetComputeRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("Generate3DNoiseCS"));
@@ -85,8 +83,8 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     UINT dispatchZ = (depth + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
 
-    // --- 4. リソースバリア (UAV -> SRV) ---
-    // 書き込みが終わったので、フォグから読み込めるように状態遷移させる
+    // リソースバリア (UAV -> SRV)
+    // 書き込みが終わったので、フォグから読み込めるように状態遷移
     D3D12_RESOURCE_BARRIER barrier = {};
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
     barrier.Transition.pResource = result.resource.Get();
