@@ -921,6 +921,10 @@
     <ClCompile Include="Game\GameObject\Character\Boss\BossStateApproach.cpp" />
     <ClCompile Include="Game\GameObject\Character\Boss\BossStateJumpAttack.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\FluidSimulationPass.cpp" />
+    <ClCompile Include="Engine\Debugs\AssetBrowserWindow.cpp" />
+    <ClCompile Include="Engine\Debugs\IEditorCommand.cpp" />
+    <ClCompile Include="Game\EditorCommands\PlaceModelCommand.cpp" />
+    <ClCompile Include="Game\EditorCommands\MoveModelCommand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -941,6 +945,10 @@
     <ClInclude Include="Game\GameObject\Character\Boss\BossStateApproach.h" />
     <ClInclude Include="Game\GameObject\Character\Boss\BossStateJumpAttack.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\FluidSimulationPass.h" />
+    <ClInclude Include="Engine\Debugs\AssetBrowserWindow.h" />
+    <ClInclude Include="Engine\Debugs\IEditorCommand.h" />
+    <ClInclude Include="Game\EditorCommands\PlaceModelCommand.h" />
+    <ClInclude Include="Game\EditorCommands\MoveModelCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />

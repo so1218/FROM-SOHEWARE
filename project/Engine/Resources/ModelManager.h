@@ -27,6 +27,9 @@ public:
     // 名前でモデルデータを取得
     const ModelData* Get(const std::string& name) const;
 
+    // 読み込み済みのモデル名一覧を取得
+    std::vector<std::string> GetLoadedModelNames() const;
+
 private:
     ModelManager() = default;
     ~ModelManager() = default;

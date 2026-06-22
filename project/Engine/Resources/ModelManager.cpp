@@ -82,6 +82,17 @@ const ModelData* ModelManager::Get(const std::string& name) const
     return it->second.get();
 }
 
+std::vector<std::string> ModelManager::GetLoadedModelNames() const
+{
+    std::vector<std::string> names;
+    // unordered_mapからキー（名前）だけを抽出
+    for (const auto& pair : models_)
+    {
+        names.push_back(pair.first);
+    }
+    return names;
+}
+
 void ModelManager::Clear()
 {
     models_.clear();

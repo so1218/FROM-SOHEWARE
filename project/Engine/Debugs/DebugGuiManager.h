@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector.h"
+#include "AssetBrowserWindow.h"
 
 namespace FE
 {
@@ -23,6 +24,9 @@ public:
     void BeginSceneView(SRVManager* srvManager, uint32_t srvIndexToShow);
     void EndSceneView();
 
+    // シーン側からドロップされた名前を受け取る関数
+    std::string ConsumeDroppedModelName();
+
 private:
     Engine* engine_; 
     LightManager* lightManager_;
@@ -36,6 +40,11 @@ private:
     Vector3 directionalLightDirection_ = { 0.0f, -1.0f, 0.0f };
     Vector4 directionalLightColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     float directionalLightIntensity_ = 1.0f;
+
+    // ドロップされたモデル名を一時的に保存しておく変数
+    std::string droppedModelName_ = "";
+
+    AssetBrowserWindow assetBrowserWindow_;
 
     void DrawRenderSettings();
     void DrawCameraSettings(Camera* targetCamera);
