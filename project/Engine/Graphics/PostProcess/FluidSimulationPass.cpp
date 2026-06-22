@@ -432,7 +432,7 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
 
         cmdList->Dispatch(dispatchX, dispatchY, depth_);
 
-        // 最新の 速度、UVW、密度も 待機側 (writeIndex_) に同期コピーさせる
+        // 最新の 速度、UVW、密度も 待機側 (writeIndex_) に同期コピー
         D3D12_RESOURCE_BARRIER copyBarriers[6] = {
             // Velocity
             CD3DX12_RESOURCE_BARRIER::Transition(velocityRes_[readIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE),

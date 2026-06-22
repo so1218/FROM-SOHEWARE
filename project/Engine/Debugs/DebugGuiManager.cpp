@@ -849,7 +849,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         {
             ImGui::Indent();
 
-            // 共通設定
             ImGui::ColorEdit3("フォグの色", &combineSettingsData->fogColor.x);
 
             ImGui::Spacing();
