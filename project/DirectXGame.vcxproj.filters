@@ -925,6 +925,7 @@
     <ClCompile Include="Engine\Debugs\IEditorCommand.cpp" />
     <ClCompile Include="Game\EditorCommands\PlaceModelCommand.cpp" />
     <ClCompile Include="Game\EditorCommands\MoveModelCommand.cpp" />
+    <ClCompile Include="Game\GameObject\Orb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -949,6 +950,7 @@
     <ClInclude Include="Engine\Debugs\IEditorCommand.h" />
     <ClInclude Include="Game\EditorCommands\PlaceModelCommand.h" />
     <ClInclude Include="Game\EditorCommands\MoveModelCommand.h" />
+    <ClInclude Include="Game\GameObject\Orb.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />

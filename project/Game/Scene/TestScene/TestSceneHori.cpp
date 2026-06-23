@@ -8,7 +8,7 @@
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
-#include "Boss.h"
+#include "Orb.h"
 #include "IEditorCommand.h"
 #include "PlaceModelCommand.h"
 #include "MoveModelCommand.h"
@@ -25,7 +25,10 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<Ground>(engine_);
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
-    objectManager_.Create<Boss>(engine_, player_);
+    for (int i = 0; i < 3; ++i)
+    {
+        objectManager_.Create<Orb>(engine_, i);
+    }
 
     //player_->SetFollowCamera(followCamera_);
 }
@@ -37,13 +40,14 @@ void TestSceneHori::OnInitialize()
     engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-1.0f,1.4f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].color = { 1.0f,193.0f / 255.0f,96.0f / 255.0f,1.0f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
-
+    engine_->GetPostEffectManager()->GetCombineSettings()->enableVolumetricFog = true;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
     //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
     //engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
-    // ここでローカルの unique_ptr として生成・初期化
+    // 生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
     openingRail->Initialize();
 

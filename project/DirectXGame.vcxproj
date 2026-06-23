@@ -343,6 +343,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
+    <ClCompile Include="Game\GameObject\Orb.cpp" />
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Game\Map\MapChipField.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
@@ -498,6 +499,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
+    <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Game\Map\MapChipField.h" />

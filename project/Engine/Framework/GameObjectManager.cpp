@@ -49,6 +49,8 @@ void GameObjectManager::Update()
 
     // ループが終わったので、待機していたオブジェクトを合流
     for (auto& newObj : pendingObjects_) {
+        newObj->Initialize();
+
         objects_.push_back(std::move(newObj));
         isSortNeeded_ = true;
     }

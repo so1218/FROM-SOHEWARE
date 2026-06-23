@@ -122,14 +122,15 @@ void GlobalVariables::AddItem(const std::vector<std::string>& groupPath, const s
 {
 	if (groupPath.empty()) return;
 
-	Group& current = datas_[groupPath[0]];
+	Group* current = &datas_[groupPath[0]];
+
 	for (size_t i = 1; i < groupPath.size(); ++i) {
-		current = current.subGroups[groupPath[i]];
+		current = &current->subGroups[groupPath[i]];
 	}
 
-	if (current.items.find(key) == current.items.end())
+	if (current->items.find(key) == current->items.end())
 	{
-		current.items[key] = value;
+		current->items[key] = value;
 	}
 }
 
