@@ -615,13 +615,22 @@ float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float
         
         // ベクトル計算
         float3 lightVec = gPointLights[i].position - worldPos;
-        float distance = length(lightVec);
-        float3 lightDir = normalize(lightVec); // 光源へのベクトル
+        float distSq = dot(lightVec, lightVec); // 距離の2乗をそのまま使う
+        float radiusSq = gPointLights[i].radius * gPointLights[i].radius;
+        
+       // ライトの半径を超えていたら計算をスキップ
+        if (distSq > radiusSq)
+            continue;
 
-        // 距離減衰
-        float attenuation = gPointLights[i].radius > 0.001f
-            ? pow(saturate(1.0f - distance / gPointLights[i].radius), gPointLights[i].decay)
-            : 1.0f;
+        float distance = sqrt(distSq);
+        float3 lightDir = lightVec / distance;
+        
+        // 物理ベースの逆二乗減衰
+        float distanceFalloff = 1.0f / (max(distSq, 0.0001f));
+        
+        // ライトの境界線を滑らかにゼロにするためのウィンドウ関数
+        float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
+        float attenuation = distanceFalloff * (windowing * windowing);
 
         float3 lightColor = gPointLights[i].color.rgb;
         float lightIntensity = gPointLights[i].intensity;
@@ -670,19 +679,24 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
         
         // ベクトル計算
         float3 lightVecFromLight = worldPos - gSpotLights[i].position;
-        float distance = length(lightVecFromLight);
-        float3 dirFromLight = normalize(lightVecFromLight); // 光源からサーフェイスへの向き
+        float distSq = dot(lightVecFromLight, lightVecFromLight);
+        float radiusSq = gSpotLights[i].distance * gSpotLights[i].distance;
+        
+        // ライトの距離を超えていたらスキップ
+        if (distSq > radiusSq)
+            continue;
 
-        // 距離減衰
-        float distanceAtt = gSpotLights[i].distance > 0.0001f
-            ? pow(saturate(1.0f - distance / gSpotLights[i].distance), gSpotLights[i].decay)
-            : 1.0f;
+        float distance = sqrt(distSq);
+        float3 dirFromLight = (distance > 0.001f) ? (lightVecFromLight / distance) : normalize(gSpotLights[i].direction);
+
+        // 物理ベースの距離減衰
+        float distanceFalloff = 1.0f / (max(distSq, 0.0001f));
+        float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
+        float distanceAtt = distanceFalloff * (windowing * windowing);
 
         // 角度減衰
         float coneDot = dot(normalize(gSpotLights[i].direction), dirFromLight);
-        float angleAtt = (coneDot > gSpotLights[i].cosAngle)
-            ? pow(saturate((coneDot - gSpotLights[i].cosAngle) / (1.0f - gSpotLights[i].cosAngle)), 2.0f)
-            : 0.0f;
+        float angleAtt = smoothstep(gSpotLights[i].cosAngle, 1.0f, coneDot);
 
         float attenuation = distanceAtt * angleAtt;
         float3 lightColor = gSpotLights[i].color.rgb;

@@ -264,17 +264,28 @@ void main(uint3 DTid : SV_DispatchThreadID)
             continue;
         
         float dist = sqrt(distSq);
+        float3 lightDir = lightVec / dist; // ボクセルから光源への方向
 
-        // 物理ベースの距離減衰
-        float distanceFalloff = 1.0f / (max(distSq, 0.01f) + 1.0f);
+        // メッシュと同期した物理ベースの距離減衰
+        float sourceRadius = 0.2f; // 例: 光源の半径を20cmとする（定数バッファから渡すのが理想）
+        float distanceFalloff = 1.0f / max(distSq + (sourceRadius * sourceRadius), 0.0001f);
         float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
         float attenuation = distanceFalloff * (windowing * windowing);
 
-        // 異方性の適用
-        float phaseLocal = DualPhaseHG(dot(rayDir, lightVec / dist), gFogSettings.anisotropy);
+        // 異方性（フェーズ関数）の計算
+        float phaseLocal = DualPhaseHG(dot(rayDir, lightDir), gFogSettings.anisotropy);
+
+        // 距離依存ローカル消散近似
+        float currentExtinction = particleDensity * gFogSettings.extinctionScale;
+        float localFogAttenuation = exp(-dist * currentExtinction);
+
+        // ボリューム用輝度ブースト
+        // ※ライト構造体にこのパラメータを追加したら、1.0f をそれに置き換え
+        float volumetricScatteringIntensity = 1.0f;
 
         // ライトの適用
-        stepLocal += gPointLights[p].color.rgb * gPointLights[p].intensity * attenuation * phaseLocal * localFogAttenuation;
+        stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * volumetricScatteringIntensity)
+                     * attenuation * phaseLocal * localFogAttenuation;
     }
 
     for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
