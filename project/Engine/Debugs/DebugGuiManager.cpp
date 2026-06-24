@@ -212,6 +212,7 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::DragFloat("強度", &pointLights[i].intensity, 0.01f);
                 ImGui::DragFloat("影響半径", &pointLights[i].radius, 0.1f);
                 ImGui::DragFloat("減衰", &pointLights[i].decay, 0.01f);
+                ImGui::DragFloat("ボリュームフォグ輝度", &pointLights[i].VolumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
                 ImGui::TreePop();
             }
         }
@@ -238,6 +239,7 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
                 ImGui::DragFloat("減衰", &spotLights[i].decay, 0.01f);
                 ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
+                ImGui::DragFloat("ボリュームフォグ輝度", &spotLights[i].VolumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
                 ImGui::TreePop();
             }
         }
@@ -831,7 +833,8 @@ void DebugGuiManager::DrawPostEffectSettings()
                                 Math::ToRadians(vol.rotation.y),
                                 Math::ToRadians(vol.rotation.z) }
                             );
-                            DebugDraw::DrawOBB(vol.position, vol.scale, rotMat, drawColor);
+                            Vector3 fullSize = { vol.scale.x * 2.0f, vol.scale.y * 2.0f, vol.scale.z * 2.0f };
+                            DebugDraw::DrawOBB(vol.position, fullSize, rotMat, drawColor);
                         }
                     }
                 }

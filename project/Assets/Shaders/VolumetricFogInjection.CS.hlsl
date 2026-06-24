@@ -265,8 +265,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
       
         float3 lightDir = (distance > 0.001f) ? (lightVec / distance) : float3(0.0f, 1.0f, 0.0f);
         
-        // スポットライトと共通の、ノイズが出ない滑らかな pow 減衰に統一
-        float decay = 2.0f; // 2.0で物理ベースに近い綺麗なグラデーションになります
+        // ノイズが出ない滑らかなpow減衰に統一
+        float decay = 2.0f; // 物理ベースに近い綺麗なグラデーションになる
         float attenuation = pow(saturate(1.0f - distance / radius), decay);
 
         // 異方性（フェーズ関数）の計算
@@ -275,7 +275,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
         // ボリューム用輝度ブースト
-        float volumetricScatteringIntensity = 1.0f;
+        float volumetricScatteringIntensity = gPointLights[p].VolumetricScatteringIntensity;
 
         // ライトの適用
         stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * volumetricScatteringIntensity)
@@ -299,26 +299,26 @@ void main(uint3 DTid : SV_DispatchThreadID)
         if (currentCos < gSpotLights[s].cosAngle)
             continue;
         
-    // 距離減衰（境界線で滑らかに0へ着地するためノイズが出ない）
+        // 距離減衰（境界線で滑らかに0へ着地するためノイズが出ない）
         float distanceAtt = gSpotLights[s].distance > 0.0001f
         ? pow(saturate(1.0f - distance / gSpotLights[s].distance), gSpotLights[s].decay)
         : 1.0f;
         
-    // 角度減衰（コーンの外周に向かって放物線を描いてなだらかに0になる）
+        // 角度減衰（コーンの外周に向かって放物線を描いてなだらかに0になる）
         float angleAtt = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
         
         float attenuation = distanceAtt * angleAtt;
         
-    // フォグの位相関数
+        // フォグの位相関数
         float phaseLocal = DualPhaseHG(dot(rayDir, lDir), gFogSettings.anisotropy);
         
-    // ボリューム用輝度ブースト
-        float volumetricScatteringIntensity = 8.0f;
+        // ボリューム用輝度ブースト
+        float volumetricScatteringIntensity = gSpotLights[s].VolumetricScatteringIntensity;
         
-    // 煙による遮蔽
+        // 煙による遮蔽
         float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
-    // 最終合成
+        // 最終合成
         stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity)
                  * attenuation * phaseLocal * spotLocalFogAttenuation;
     }

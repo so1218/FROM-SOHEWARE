@@ -225,25 +225,30 @@ struct DirectionalLight
 struct PointLight
 {
     float4 color;
+    
     float3 position;
     float intensity;
+    
     float radius;
     float decay;
     int32_t enable;
-    float padding;
+    float VolumetricScatteringIntensity;
 };
 
 struct SpotLight
 {
     float4 color;
+    
     float3 position;
     float intensity;
+    
     float3 direction;
     float distance;
+    
     float decay;
     float cosAngle;
     int32_t enable;
-    float padding;
+    float VolumetricScatteringIntensity;
 };
 
 struct AreaLight

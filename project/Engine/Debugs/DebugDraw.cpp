@@ -68,7 +68,7 @@ void DebugDraw::DrawOBB(const Vector3& center, const Vector3& size, const Matrix
         {-half.x, half.y,-half.z},{ half.x, half.y,-half.z},
         { half.x, half.y, half.z},{-half.x, half.y, half.z}
     };
-    for (int i = 0; i < 8; ++i) v[i] = rotationMat.TransformNormal(v[i]) + center;
+    for (int i = 0; i < 8; ++i) v[i] = rotationMat.TransformVector(v[i]) + center;
 
     // 線を描画
     DrawLine(v[0], v[1], color);

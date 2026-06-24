@@ -34,6 +34,7 @@ void LightManager::Initialize(ID3D12Device* device)
         pointLightData_[i].intensity = 5.0f;
         pointLightData_[i].radius = 10.0f;
         pointLightData_[i].decay = 3.0f;
+        pointLightData_[i].VolumetricScatteringIntensity = 1.0f;
     }
 
     // Spot Light
@@ -51,6 +52,7 @@ void LightManager::Initialize(ID3D12Device* device)
         spotLightData_[i].distance = 20.0f;
         spotLightData_[i].decay = 3.0f;
         spotLightData_[i].cosAngle = 0.866f;
+        spotLightData_[i].VolumetricScatteringIntensity = 8.0f;
     }
 
     // Area Light
