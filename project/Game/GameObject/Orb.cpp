@@ -24,7 +24,7 @@ void Orb::Initialize()
 
 void Orb::Update()
 {
-    // モデルとコライダーの座標を Transform に追従
+    // モデルとコライダーの座標をTransformに追従
     // model_->SetTransform(GetTransform());
     // collider_->SetPosition(GetTransform().translation_);
 }

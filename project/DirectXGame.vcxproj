@@ -243,10 +243,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\EditorCommands\PlaceModelCommand.cpp" />
     <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Engine\Framework\GameObject.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\Boss.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateApproach.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateIdle.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateJumpAttack.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateRoll.cpp" />
     <ClCompile Include="Game\GameObject\GrassField.cpp" />
@@ -338,14 +334,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Game\Camera\FollowCamera.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\Player.cpp" />
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\GameObject\Orb.cpp" />
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
-    <ClCompile Include="Game\Map\MapChipField.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Game\GameObject\Skydome.cpp" />
     <ClCompile Include="Engine\Collision\Collision.cpp" />
@@ -425,10 +419,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\EditorCommands\MoveModelCommand.h" />
     <ClInclude Include="Game\EditorCommands\PlaceModelCommand.h" />
     <ClInclude Include="Game\GameObject\Bubble.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\Boss.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateApproach.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateIdle.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateJumpAttack.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateRoll.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
@@ -493,7 +483,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Game\Camera\FollowCamera.h" />
-    <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\GameObject\Character\Player\Player.h" />
     <ClInclude Include="Engine\Math\Easing.h" />
     <ClInclude Include="Game\Game.h" />
@@ -502,7 +491,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
-    <ClInclude Include="Game\Map\MapChipField.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Game\GameObject\Skydome.h" />
     <ClInclude Include="Engine\Collision\Collision.h" />

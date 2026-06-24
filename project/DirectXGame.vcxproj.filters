@@ -868,12 +868,6 @@
     <ClInclude Include="Game\GameObject\Skydome.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp">
-      <Filter>Game\GameObject\Character\Enemy</Filter>
-    </ClCompile>
-    <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h">
-      <Filter>Game\GameObject\Character\Enemy</Filter>
-    </ClInclude>
     <ClCompile Include="Game\GameObject\Character\Player\Player.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -882,12 +876,6 @@
     </ClInclude>
     <ClInclude Include="Game\Global\CollisionConfig.h">
       <Filter>Game\Global</Filter>
-    </ClInclude>
-    <ClCompile Include="Game\Map\MapChipField.cpp">
-      <Filter>Game\Map</Filter>
-    </ClCompile>
-    <ClInclude Include="Game\Map\MapChipField.h">
-      <Filter>Game\Map</Filter>
     </ClInclude>
     <ClCompile Include="Game\Scene\PlayScene.cpp">
       <Filter>Game\Scene</Filter>
@@ -916,10 +904,6 @@
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateRoll.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\Boss.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateIdle.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateApproach.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Boss\BossStateJumpAttack.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\FluidSimulationPass.cpp" />
     <ClCompile Include="Engine\Debugs\AssetBrowserWindow.cpp" />
     <ClCompile Include="Engine\Debugs\IEditorCommand.cpp" />
@@ -941,10 +925,6 @@
     <ClInclude Include="Engine\Framework\StateMachine.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateRoll.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\Boss.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateIdle.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateApproach.h" />
-    <ClInclude Include="Game\GameObject\Character\Boss\BossStateJumpAttack.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\FluidSimulationPass.h" />
     <ClInclude Include="Engine\Debugs\AssetBrowserWindow.h" />
     <ClInclude Include="Engine\Debugs\IEditorCommand.h" />

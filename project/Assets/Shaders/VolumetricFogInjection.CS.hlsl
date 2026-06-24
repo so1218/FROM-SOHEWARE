@@ -255,37 +255,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
     {
         if (gPointLights[p].enable == 0)
             continue;
-        
+      
         float3 lightVec = gPointLights[p].position - currentPos;
-        float distSq = dot(lightVec, lightVec);
-        float radiusSq = gPointLights[p].radius * gPointLights[p].radius;
-        
-        if (distSq > radiusSq)
+        float distance = length(lightVec);
+        float radius = gPointLights[p].radius;
+      
+        if (distance > radius)
             continue;
+      
+        float3 lightDir = (distance > 0.001f) ? (lightVec / distance) : float3(0.0f, 1.0f, 0.0f);
         
-        float dist = sqrt(distSq);
-        float3 lightDir = lightVec / dist; // ボクセルから光源への方向
-
-        // メッシュと同期した物理ベースの距離減衰
-        float sourceRadius = 0.2f; // 例: 光源の半径を20cmとする（定数バッファから渡すのが理想）
-        float distanceFalloff = 1.0f / max(distSq + (sourceRadius * sourceRadius), 0.0001f);
-        float windowing = saturate(1.0f - pow(distSq / radiusSq, 2.0f));
-        float attenuation = distanceFalloff * (windowing * windowing);
+        // スポットライトと共通の、ノイズが出ない滑らかな pow 減衰に統一
+        float decay = 2.0f; // 2.0で物理ベースに近い綺麗なグラデーションになります
+        float attenuation = pow(saturate(1.0f - distance / radius), decay);
 
         // 異方性（フェーズ関数）の計算
         float phaseLocal = DualPhaseHG(dot(rayDir, lightDir), gFogSettings.anisotropy);
 
-        // 距離依存ローカル消散近似
-        float currentExtinction = particleDensity * gFogSettings.extinctionScale;
-        float localFogAttenuation = exp(-dist * currentExtinction);
+        float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
         // ボリューム用輝度ブースト
-        // ※ライト構造体にこのパラメータを追加したら、1.0f をそれに置き換え
         float volumetricScatteringIntensity = 1.0f;
 
         // ライトの適用
         stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * volumetricScatteringIntensity)
-                     * attenuation * phaseLocal * localFogAttenuation;
+                 * attenuation * phaseLocal * pointLocalFogAttenuation;
     }
 
     for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
@@ -294,8 +288,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
             continue;
         
         float3 lightVec = gSpotLights[s].position - currentPos;
-        
-        // 距離計算
         float distance = length(lightVec);
         
         if (distance > gSpotLights[s].distance)
@@ -307,27 +299,28 @@ void main(uint3 DTid : SV_DispatchThreadID)
         if (currentCos < gSpotLights[s].cosAngle)
             continue;
         
-        // 距離減衰
+    // 距離減衰（境界線で滑らかに0へ着地するためノイズが出ない）
         float distanceAtt = gSpotLights[s].distance > 0.0001f
-            ? pow(saturate(1.0f - distance / gSpotLights[s].distance), gSpotLights[s].decay)
-            : 1.0f;
+        ? pow(saturate(1.0f - distance / gSpotLights[s].distance), gSpotLights[s].decay)
+        : 1.0f;
         
-        // 角度減衰
+    // 角度減衰（コーンの外周に向かって放物線を描いてなだらかに0になる）
         float angleAtt = pow(saturate((currentCos - gSpotLights[s].cosAngle) / (1.0f - gSpotLights[s].cosAngle)), 2.0f);
         
         float attenuation = distanceAtt * angleAtt;
         
-        // フォグの位相関数
+    // フォグの位相関数
         float phaseLocal = DualPhaseHG(dot(rayDir, lDir), gFogSettings.anisotropy);
         
-        // ボリューム用輝度ブースト
-        float volumetricScatteringIntensity = 1.0f;
+    // ボリューム用輝度ブースト
+        float volumetricScatteringIntensity = 8.0f;
         
-        // 煙による遮蔽
+    // 煙による遮蔽
         float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
-        // 最終合成
-        stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity) * attenuation * phaseLocal * spotLocalFogAttenuation;
+    // 最終合成
+        stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity)
+                 * attenuation * phaseLocal * spotLocalFogAttenuation;
     }
 
     totalLight += stepLocal;
