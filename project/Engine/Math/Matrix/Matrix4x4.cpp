@@ -538,4 +538,41 @@ Matrix4x4 Matrix4x4::RemoveScale(const Matrix4x4& mat)
     return result;
 }
 
+// 3つの軸と位置から行列を合成する（エリアライト用）
+Matrix4x4 Matrix4x4::MakeFromAxes(const Vector3& right, const Vector3& up, const Vector3& forward, const Vector3& translation)
+{
+    Matrix4x4 result = MakeIdentity();
+
+    // X軸 (Right)
+    result.m[0][0] = right.x;     result.m[0][1] = right.y;     result.m[0][2] = right.z;
+    // Y軸 (Up)
+    result.m[1][0] = up.x;        result.m[1][1] = up.y;        result.m[1][2] = up.z;
+    // Z軸 (Forward)
+    result.m[2][0] = forward.x;   result.m[2][1] = forward.y;   result.m[2][2] = forward.z;
+    // 平行移動 (Translation)
+    result.m[3][0] = translation.x; result.m[3][1] = translation.y; result.m[3][2] = translation.z;
+
+    return result;
+}
+
+// 前方ベクトル(向き)と位置から行列を合成する（スポットライト / ディレクショナルライト用）
+Matrix4x4 Matrix4x4::MakeFromDirection(const Vector3& direction, const Vector3& translation)
+{
+    // 方向ベクトルを正規化してZ軸（Forward）とする
+    Vector3 forward = direction.Normalize();
+
+    // 仮の上方向ベクトルを設定（真上を向いている時のジンバルロックを回避）
+    Vector3 tempUp = Vector3::Up();
+    if (fabsf(forward.y) > 0.99f) {
+        tempUp = Vector3::Right();
+    }
+
+    // 外積を使って右ベクトル(X軸)と正しい上ベクトル(Y軸)を算出
+    Vector3 right = tempUp.Cross(forward).Normalize();
+    Vector3 up = forward.Cross(right);
+
+    // 算出した軸を使って行列を作成
+    return MakeFromAxes(right, up, forward, translation);
+}
+
 }

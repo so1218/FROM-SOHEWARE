@@ -348,9 +348,19 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform)
     if (ImGui::IsKeyPressed(ImGuiKey_2)) gizmoOperation_ = ImGuizmo::ROTATE;
     if (ImGui::IsKeyPressed(ImGuiKey_3)) gizmoOperation_ = ImGuizmo::SCALE;
 
-    // 行列の準備
-    const Matrix4x4& viewMatrix = gizmoViewMatrix_;
-    const Matrix4x4& projMatrix = gizmoProjMatrix_;
+    // 左手系を右手系にするため、View行列のZ列を反転
+    Matrix4x4 rhViewMatrix = gizmoViewMatrix_;
+    rhViewMatrix.m[0][2] = -rhViewMatrix.m[0][2];
+    rhViewMatrix.m[1][2] = -rhViewMatrix.m[1][2];
+    rhViewMatrix.m[2][2] = -rhViewMatrix.m[2][2];
+    rhViewMatrix.m[3][2] = -rhViewMatrix.m[3][2];
+
+    // 左手系を右手系にするため、Proj行列のZ列を反転
+    Matrix4x4 rhProjMatrix = gizmoProjMatrix_;
+    rhProjMatrix.m[2][0] = -rhProjMatrix.m[2][0];
+    rhProjMatrix.m[2][1] = -rhProjMatrix.m[2][1];
+    rhProjMatrix.m[2][2] = -rhProjMatrix.m[2][2];
+    rhProjMatrix.m[2][3] = -rhProjMatrix.m[2][3];
 
     // Transform -> Matrix
     Matrix4x4 worldMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, transform.translation_);
@@ -361,8 +371,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform)
 
     // Gizmo表示
     ImGuizmo::Manipulate(
-        &viewMatrix.m[0][0],
-        &projMatrix.m[0][0],
+        &rhViewMatrix.m[0][0],
+        &rhProjMatrix.m[0][0],
         (ImGuizmo::OPERATION)gizmoOperation_,
         ImGuizmo::WORLD,
         &worldMatrix.m[0][0]
@@ -394,6 +404,45 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform)
 
     ImGui::PopID();
 #endif
+}
+
+bool ImGuiManager::DrawGizmoMatrix(Matrix4x4& worldMatrix)
+{
+#ifdef IS_DEVELOPMENT
+    // 操作モードの切り替え
+    if (ImGui::IsKeyPressed(ImGuiKey_1)) gizmoOperation_ = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_2)) gizmoOperation_ = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(ImGuiKey_3)) gizmoOperation_ = ImGuizmo::SCALE;
+
+    // 左手系を右手系にするため、View行列のZ列を反転
+    Matrix4x4 rhViewMatrix = gizmoViewMatrix_;
+    rhViewMatrix.m[0][2] = -rhViewMatrix.m[0][2];
+    rhViewMatrix.m[1][2] = -rhViewMatrix.m[1][2];
+    rhViewMatrix.m[2][2] = -rhViewMatrix.m[2][2];
+    rhViewMatrix.m[3][2] = -rhViewMatrix.m[3][2];
+
+    // 左手系を右手系にするため、Proj行列のZ列を反転
+    Matrix4x4 rhProjMatrix = gizmoProjMatrix_;
+    rhProjMatrix.m[2][0] = -rhProjMatrix.m[2][0];
+    rhProjMatrix.m[2][1] = -rhProjMatrix.m[2][1];
+    rhProjMatrix.m[2][2] = -rhProjMatrix.m[2][2];
+    rhProjMatrix.m[2][3] = -rhProjMatrix.m[2][3];
+
+    bool isEdited = false;
+    ImGuizmo::Manipulate(
+        &rhViewMatrix.m[0][0],
+        &rhProjMatrix.m[0][0],
+        (ImGuizmo::OPERATION)gizmoOperation_,
+        ImGuizmo::WORLD,
+        &worldMatrix.m[0][0]
+    );
+
+    if (ImGuizmo::IsUsing()) {
+        isEdited = true;
+    }
+    return isEdited;
+#endif
+    return false;
 }
 
 void ImGuiManager::SetGizmoCamera(const Matrix4x4& view, const Matrix4x4& proj)

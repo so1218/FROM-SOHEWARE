@@ -33,6 +33,11 @@
 #define RADIAL_BLUR         (1 << 17)
 #define COLOR_GRADING_LUT   (1 << 18)
 
+#define MAX_DIRECTIONAL_LIGHTS 2
+#define MAX_POINT_LIGHTS 4
+#define MAX_SPOT_LIGHTS 2
+#define MAX_AREA_LIGHTS 2
+
 #define MAX_FOG_EFFECTORS 4
 #define MAX_FOG_VOLUMES 8
 

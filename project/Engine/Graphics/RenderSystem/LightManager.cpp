@@ -2,6 +2,7 @@
 #include "LightManager.h"
 #include "Structures.h"
 #include "DebugDraw.h"
+#include "ImGuiManager.h"
 
 namespace FE
 {
@@ -19,6 +20,7 @@ void LightManager::Initialize(ID3D12Device* device)
         directionalLightData_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
         directionalLightData_[i].direction = { 0.0f, -1.0f, 1.25f };
         directionalLightData_[i].intensity = 1.0f;
+        directionalLightPositions_[i] = { 0.0f, 10.0f, 0.0f };
     }
 
     // Point Light
@@ -227,20 +229,16 @@ void LightManager::DrawDebugLights()
         color.w = 1.0f;
 
         // 仮想的な位置（太陽の位置）
-        Vector3 virtualPos = { float(i) * 3.0f, 10.0f, 0.0f };
+        Vector3 virtualPos = directionalLightPositions_[i];
 
         // 方向ベクトルの正規化
-        Vector3 dir = directionalLightData_[i].direction;
-        float len = sqrtf(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-        if (len != 0.0f) {
-            dir = { dir.x / len, dir.y / len, dir.z / len };
-        }
+        Vector3 dir = directionalLightData_[i].direction.Normalize();
 
         // 座標軸の作成
         Vector3 up = { 0.0f, 1.0f, 0.0f };
         if (fabsf(dir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
         Vector3 right = Math::CrossProduct(up, dir);
-        up = Math::CrossProduct(dir, right);
+        up = Math::CrossProduct(dir, right).Normalize();
 
         // 描画パラメータ
         float sunRadius = 0.5f;   // 中心の球の大きさ
@@ -318,7 +316,7 @@ void LightManager::DrawDebugLights()
         Vector3 up = { 0, 1, 0 };
         if (fabsf(dir.y) > 0.99f) up = { 1, 0, 0 }; 
         Vector3 right = Math::CrossProduct(up, dir); 
-        up = Math::CrossProduct(dir, right); 
+        up = Math::CrossProduct(dir, right).Normalize();
 
         // 円を描画
         const int segments = 16;
@@ -369,6 +367,84 @@ void LightManager::DrawDebugLights()
         Vector3 normal = Math::CrossProduct(right, up); 
     }
 
+#endif
+}
+
+void LightManager::DrawSelectedLightGizmo()
+{
+#ifdef IS_DEVELOPMENT
+    if (selectedLightType_ == SelectedLightType::None || selectedLightIndex_ < 0) return;
+
+    Matrix4x4 lightMat;
+    Vector3 scale = { 1, 1, 1 };
+    Vector3 rot = { 0, 0, 0 };
+    Vector3 pos = { 0, 0, 0 };
+
+    // 現在のライトの値からダミーの行列を作る
+    if (selectedLightType_ == SelectedLightType::Point) {
+        PointLight& light = pointLightData_[selectedLightIndex_];
+        pos = light.position;
+        scale = { light.radius, light.radius, light.radius }; // スケールを半径に
+        lightMat = Matrix4x4::MakeAffine(scale, rot, pos);
+    }
+    else if (selectedLightType_ == SelectedLightType::Spot) {
+        SpotLight& light = spotLightData_[selectedLightIndex_];
+        pos = light.position;
+        lightMat = Matrix4x4::MakeFromDirection(light.direction, pos);
+    }
+    else if (selectedLightType_ == SelectedLightType::Area) {
+        AreaLight& light = areaLightData_[selectedLightIndex_];
+        pos = light.position;
+        // 右と上のベクトルから行列を構築
+        Vector3 forward = Math::CrossProduct(light.right, light.up);
+        lightMat = Matrix4x4::MakeFromAxes(light.right, light.up, forward, pos);
+    }
+    else if (selectedLightType_ == SelectedLightType::Directional) {
+        DirectionalLight& light = directionalLightData_[selectedLightIndex_];
+        Vector3 pos = directionalLightPositions_[selectedLightIndex_];
+        lightMat = Matrix4x4::MakeFromDirection(light.direction, pos);
+    }
+
+    // Gizmoを描画・操作
+    if (ImGuiManager::DrawGizmoMatrix(lightMat))
+    {
+        // 操作された場合、行列を分解してライトに書き戻す
+        Vector3 outPos, outRotDeg, outScale;
+        ImGuizmo::DecomposeMatrixToComponents(&lightMat.m[0][0], &outPos.x, &outRotDeg.x, &outScale.x);
+
+        if (selectedLightType_ == SelectedLightType::Point) {
+            PointLight& light = pointLightData_[selectedLightIndex_];
+            light.position = outPos; // Translateの適用
+            // Scaleの適用（X,Y,Zの平均値を半径にする）
+            light.radius = std::max(0.1f, (outScale.x + outScale.y + outScale.z) / 3.0f);
+        }
+        else if (selectedLightType_ == SelectedLightType::Spot) {
+            SpotLight& light = spotLightData_[selectedLightIndex_];
+            light.position = outPos;
+
+            // Rotateの適用：行列のZ軸成分（m[2][0], m[2][1], m[2][2]）が前方ベクトル(Direction)
+            Vector3 newDir = { lightMat.m[2][0], lightMat.m[2][1], lightMat.m[2][2] };
+            light.direction = newDir.Normalize();
+        }
+        else if (selectedLightType_ == SelectedLightType::Area) {
+            AreaLight& light = areaLightData_[selectedLightIndex_];
+            light.position = outPos;
+
+            // Rotate/Scaleの適用：行列のX軸とY軸のベクトルをそのままRight/Upに使う
+            light.right = { lightMat.m[0][0], lightMat.m[0][1], lightMat.m[0][2] };
+            light.up = { lightMat.m[1][0], lightMat.m[1][1], lightMat.m[1][2] };
+        }
+        else if (selectedLightType_ == SelectedLightType::Directional) {
+            DirectionalLight& light = directionalLightData_[selectedLightIndex_];
+
+            // 仮想位置を更新
+            directionalLightPositions_[selectedLightIndex_] = outPos;
+
+            // 回転結果の行列のZ軸(Forward)から新しい向きを計算
+            Vector3 newDir = { lightMat.m[2][0], lightMat.m[2][1], lightMat.m[2][2] };
+            light.direction = newDir.Normalize();
+        }
+    }
 #endif
 }
 

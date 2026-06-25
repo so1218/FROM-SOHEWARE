@@ -5,10 +5,15 @@
 namespace FE
 {
 
-constexpr int MAX_DIRECTIONAL_LIGHTS = 2;
-constexpr int MAX_POINT_LIGHTS = 100;
-constexpr int MAX_SPOT_LIGHTS = 2;
-constexpr int MAX_AREA_LIGHTS = 2;
+// ライトの種類を表す列挙型
+enum class SelectedLightType 
+{
+    None,
+    Directional,
+    Point,
+    Spot,
+    Area
+};
 
 class LightManager
 {
@@ -56,6 +61,17 @@ public:
 
     void DrawDebugLights();
 
+    void DrawSelectedLightGizmo();
+
+    // 選択状態のGetter/Setter
+    void SetSelectedLight(SelectedLightType type, int index)
+    {
+        selectedLightType_ = type;
+        selectedLightIndex_ = index;
+    }
+    SelectedLightType GetSelectedLightType() const { return selectedLightType_; }
+    int GetSelectedLightIndex() const { return selectedLightIndex_; }
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;
@@ -74,6 +90,13 @@ private:
 
     std::queue<int> availablePointLightIndices_;
     std::queue<int> availableAreaLightIndices_;
+
+    // 現在選択されているライトの情報
+    SelectedLightType selectedLightType_ = SelectedLightType::None;
+    int selectedLightIndex_ = -1;
+
+    // ディレクショナルライトのエディタ表示用の仮想位置
+    Vector3 directionalLightPositions_[MAX_DIRECTIONAL_LIGHTS];
 };
 
 }

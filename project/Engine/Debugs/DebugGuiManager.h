@@ -24,6 +24,8 @@ public:
     void BeginSceneView(SRVManager* srvManager, uint32_t srvIndexToShow);
     void EndSceneView();
 
+    void DrawSelectedLightGizmo();
+
     // シーン側からドロップされた名前を受け取る関数
     std::string ConsumeDroppedModelName();
 

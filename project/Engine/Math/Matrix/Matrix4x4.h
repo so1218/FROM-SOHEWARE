@@ -56,6 +56,8 @@ public:
         Quaternion& outRotation
     );
     static Matrix4x4 RemoveScale(const Matrix4x4& mat);
+    static Matrix4x4 MakeFromAxes(const Vector3& right, const Vector3& up, const Vector3& forward, const Vector3& translation);
+    static Matrix4x4 MakeFromDirection(const Vector3& direction, const Vector3& translation);
 };
 
 }

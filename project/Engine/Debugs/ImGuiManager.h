@@ -37,6 +37,8 @@ public:
     // Gizmoを出せるようにする関数
     static void DrawGizmo(WorldTransform& transform);
 
+    static bool DrawGizmoMatrix(Matrix4x4& worldMatrix);
+
     // シーンビューの情報をセットする
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
 
