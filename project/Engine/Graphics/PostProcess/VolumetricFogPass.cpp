@@ -331,10 +331,11 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VoxelIntegrateCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VoxelIntegrateCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress()); // b2
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
 
-        cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize)); // t0
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 13, handleSize)); // u0
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize)); // t0
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 13, handleSize)); // u0
 
         // Z軸方向は1つのスレッドグループ内でループ積分するため、グループサイズは XY のみ
         cmdList->Dispatch(dispatch3DX, dispatch3DY, 1);

@@ -24,8 +24,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 sum = center;
     float totalWeight = 1.0f;
     
-    // Z方向を含む効率的なサンプリング
-    // 自身の周囲（前後・左右・上下）をきっちりスムーズにぼかす
+    // 【追加】遠方に行くほど（DTid.zが大きいほど）エッジ保存の感度を下げる
+    // 手前（zLinear=0）はクッキリ（2.0）、奥（zLinear=1）は強制全ボカシ（0.02）
+    float zLinear = float(DTid.z) / float(depth - 1);
+    float bilateralSensitivity = lerp(2.0f, 0.02f, smoothstep(0.1f, 0.7f, zLinear));
+    
     int3 offsets[6] =
     {
         int3(-1, 0, 0), int3(1, 0, 0), // 左右
@@ -37,17 +40,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
     {
         int3 neighborCoord = int3(DTid) + offsets[i];
         
-        // 境界クランプ
         neighborCoord.x = clamp(neighborCoord.x, 0, int(width) - 1);
         neighborCoord.y = clamp(neighborCoord.y, 0, int(height) - 1);
         neighborCoord.z = clamp(neighborCoord.z, 0, int(depth) - 1);
         
         float4 neighbor = gVoxelInjectCurrent.Load(int4(neighborCoord, 0));
         
-        // エッジ保存ウェイト（カラー差ベースのバイラテラル）
-        // 差が激しい部分はボカさない
         float colorDiff = length(center.rgb - neighbor.rgb) + abs(center.a - neighbor.a);
-        float weight = exp(-colorDiff * 2.0f); 
+        
+        // 【変更】遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならなくなる
+        float weight = exp(-colorDiff * bilateralSensitivity);
         
         sum += neighbor * weight;
         totalWeight += weight;

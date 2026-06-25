@@ -126,7 +126,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         // 負の座標に対応したトーラスマッピング (0.0～1.0へのWrap)
         float3 uvwRaw = currentPos / fluidSize;
-        float3 fluidUVW = uvwRaw - floor(uvwRaw);
+        float3 fluidUVW = frac(uvwRaw);
 
         // Wrapサンプラーでサンプリング
         realFluidVelocity = gFluidVelocity.SampleLevel(gSampler, fluidUVW, 0).xyz * edgeFade;
@@ -194,11 +194,23 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float gWorley = noiseLayer1.g; // 粗いディテール
     float bWorley = noiseLayer1.b; // 細かいディテール
 
-    // Perlinのブレンド結果に対してWorleyによるモコモコ感と削りを適用
-    float combinedNoise = lerp(combinedPerlin, 1.0f - gWorley, gFogSettings.worleyWeight);
-    combinedNoise = saturate(combinedNoise - (bWorley * gFogSettings.erosion));
+// -------------------------------------------------------------
+    // 【追加】遠方のエイリアシング（チラつき）を防ぐためのディテールフェード
+    float linearDistanceRatio = saturate(sampleViewZ / farZ);
+    float detailFade = smoothstep(0.1f, 0.6f, linearDistanceRatio); // 実際の距離の10%〜60%でフェード
 
-    // 流体密度とノイズの融合
+// 遠方ほどWorley（モコモコ）とErosion（削り）のウェイトをゼロに落とす
+    float activeWorleyWeight = lerp(gFogSettings.worleyWeight, 0.0f, detailFade);
+    float activeErosion = lerp(gFogSettings.erosion, 0.0f, detailFade);
+    float activeNoiseIntensity = lerp(gFogSettings.noiseIntensity, gFogSettings.noiseIntensity * 0.2f, detailFade);
+    // -------------------------------------------------------------
+
+    // 【変更】gFogSettings の代わりに上記の active~ 変数を使用する
+    // Perlinのブレンド結果に対してWorleyによるモコモコ感と削りを適用
+    float combinedNoise = lerp(combinedPerlin, 1.0f - gWorley, activeWorleyWeight);
+    combinedNoise = saturate(combinedNoise - (bWorley * activeErosion));
+
+    // ミクロディテール(Noise/Erosion)の適用
     float cutoff = 1.0f - gFogSettings.coverage;
     float feather = max(gFogSettings.noiseFeather, 0.001f);
     
@@ -214,37 +226,31 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 密度の決定
     float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
 
-    if (gFogSettings.heightFalloff > 0.0f)
-    {
-        // 谷の底に向かって自然に霧が濃くなる
-        float relativeHeight = currentPos.y - gFogSettings.baseHeight;
-        float heightFactor = exp(-relativeHeight * gFogSettings.heightFalloff);
-        
-        // 高さによる密度をブレンドではなく、加算（または乗算）する
-        globalBaseDensity += gFogSettings.heightDensity * heightFactor;
-    }
-    
-    float fluidBaseDensity = fluidMass;
-
-    float blendWeight = saturate(fluidMass * edgeFade);
-    float macroDensity = lerp(globalBaseDensity, max(globalBaseDensity, fluidBaseDensity), blendWeight);
-
-    // ミクロディテール(Noise/Erosion)の適用
+    // 1. ミクロディテール(Noise/Erosion)の適用（グローバルフォグ専用）
     float noiseCoverage = smoothstep(cutoff, cutoff + feather, combinedNoise);
-    
-    // 乗算型のエロージョン計算
     float erosionFactor = saturate(1.0f - (1.0f - combinedNoise) * gFogSettings.erosionStrength);
     
-    // ノイズ効果のまとめとブレンド
     float combinedNoiseEffect = erosionFactor * noiseCoverage;
-    float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, gFogSettings.noiseIntensity);
+    float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, activeNoiseIntensity);
     
-    // 最終的なパーティクル密度の決定
-    float particleDensity = macroDensity * finalNoiseModifier;
+    // グローバルフォグの最終密度
+    float finalGlobalDensity = globalBaseDensity * finalNoiseModifier;
 
+    // 2. 流体の密度（fluidMassには既に上の方でedgeFadeが掛かっています）
+    float finalFluidDensity = fluidMass;
+
+    // 3. 最終的なパーティクル密度の決定（グローバルと流体を合成）
+    // maxを取るか、加算(finalGlobalDensity + finalFluidDensity)するかはお好みで調整してください。
+    float particleDensity = max(finalGlobalDensity, finalFluidDensity);
+
+    // ---------------------------------------------------------
     // セルフシャドウ用密度の計算
-    float combinedShadowBase = lerp(globalBaseDensity, max(globalBaseDensity, fluidShadowMass), saturate(fluidShadowMass * edgeFade));
-    float dynamicShadowFog = combinedShadowBase * erosionFactor * noiseCoverage;
+    // ---------------------------------------------------------
+    // シャドウ側も同様に、グローバルフォグと流体を分けてから合成します
+    float finalGlobalShadowDensity = globalBaseDensity * combinedNoiseEffect;
+    float finalFluidShadowDensity = fluidShadowMass; // これもshadowEdgeFade適用済み
+    
+    float dynamicShadowFog = max(finalGlobalShadowDensity, finalFluidShadowDensity);
 
     // 光の減衰とライティング計算
     float fluidSelfShadow = exp(-dynamicShadowFog * 4.0f);
@@ -411,10 +417,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
             // サンプリング座標の計算
             float3 baseVolPos = lerp(currentPos, noiseSamplePos, vol.distortionAmount);
             float3 volWarpUVW = (baseVolPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
-            float3 volWarp = gNoiseVolume.SampleLevel(gSampler, frac(volWarpUVW), 0.0f).rgb * 2.0f - 1.0f;
+            float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
             float3 volNoisePos = (baseVolPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
 
-            float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, frac(volNoisePos), 0.0f);
+            float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
             float volBase = volNoiseSample.r;
             float volCoarseErode = volNoiseSample.g;
             float volFineErode = volNoiseSample.b;
@@ -474,7 +480,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     // 最終的な散乱光と消散係数の算出
     float3 scattering = ((totalLight * global_sigma_s) + volumeScattering) * depthWeight;
-    float extinction = (global_sigma_e + volumeExtinction) * voxelThickness * depthWeight;
+    float extinction = (global_sigma_e + volumeExtinction) * depthWeight; 
 
     // UAVへ書き込み
     gVoxelInject[DTid.xyz] = float4(scattering, extinction);
