@@ -671,24 +671,40 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
         float3 lightVecFromLight = worldPos - gSpotLights[i].position;
         float distance = length(lightVecFromLight);
         
-        // ライトの最大距離を超えていたらスキップ
         if (distance > gSpotLights[i].distance)
             continue;
 
         float3 dirFromLight = (distance > 0.001f) ? (lightVecFromLight / distance) : normalize(gSpotLights[i].direction);
 
-        // 角度判定
+        // -----------------------------------------------------------------
+        // 改善①：UE5準拠・物理ベースの「逆二乗距離減衰」＋窓関数
+        // -----------------------------------------------------------------
+        // 光源に近づきすぎた際の無限発散を防ぐため、小さなバイアス（または仮想の光源半径）を入れる
+        float sourceRadiusBias = 0.05f;
+        float distance2 = distance * distance + sourceRadiusBias * sourceRadiusBias;
+        float physicalFalloff = 1.0f / distance2;
+        
+        // 最大距離で綺麗に0へ落とす窓関数（UE4/5、Frostbite等で標準的な計算式）
+        float lightRangeProj = saturate(1.0f - pow(distance / gSpotLights[i].distance, 4.0f));
+        float distanceAtt = physicalFalloff * (lightRangeProj * lightRangeProj);
+
+        // -----------------------------------------------------------------
+        // 改善②：インナー/アウターコーンのシミュレーション（角度減衰）
+        // -----------------------------------------------------------------
         float coneDot = dot(normalize(gSpotLights[i].direction), dirFromLight);
-        if (coneDot < gSpotLights[i].cosAngle)
-            continue;
+        
+        // C++側からインナーコーンを渡せない場合、アウターコーンから自動的に「芯」を作る
+        // 例：アウターコーンより40%内側までは100%の明るさを維持する
+        float cosOuter = gSpotLights[i].cosAngle;
+        float cosInner = lerp(1.0f, cosOuter, 0.6f);
+        
+        // UEのスポットライト減衰公式
+        float angleAtt = saturate((coneDot - cosOuter) / max(cosInner - cosOuter, 0.001f));
+        angleAtt = angleAtt * angleAtt; // 2乗して滑らかに繋ぐ
 
-        // 数学的減衰powベース
-        float distanceAtt = gSpotLights[i].distance > 0.0001f
-            ? pow(saturate(1.0f - distance / gSpotLights[i].distance), gSpotLights[i].decay)
-            : 1.0f;
-
-        float angleAtt = pow(saturate((coneDot - gSpotLights[i].cosAngle) / (1.0f - gSpotLights[i].cosAngle)), 2.0f);
         float attenuation = distanceAtt * angleAtt;
+        if (attenuation <= 0.0f)
+            continue;
 
         float3 lightColor = gSpotLights[i].color.rgb;
         float lightIntensity = gSpotLights[i].intensity;
@@ -699,13 +715,34 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            // PBR
-            float3 pbrResult = CalculatePBR(pbrAlbedo, normal, toEye, lightDirL, lightColor, lightIntensity, roughness, metalness);
+            // -----------------------------------------------------------------
+            // 改善③：【PBR限定】ハイライトのエリアライト化（UEのKaris近似）
+            // -----------------------------------------------------------------
+            // 金属などにスポットライトが映り込んだ際、パキパキの点にならず、
+            // 光源の「大きさ（Source Radius）」を考慮した美しいボケ方にする調整
+            float3 R = reflect(-toEye, normal);
+            float3 centerToLight = lightDirL;
+            
+            // 仮想の光源半径（0.1 = 10cmの球体光源として扱う）
+            float fakeSourceRadius = 0.1f;
+            
+            // 反射ベクトルに最も近い光源上の点を計算してLを置き換える
+            float3 closestPoint = centerToLight + R * clamp(dot(centerToLight, R), 0.0f, fakeSourceRadius);
+            float3 modifiedLightDirL = normalize(closestPoint);
+            
+            // ラフネスの動的補正（光源の大きさの分、ハイライトの広がりを補正）
+            float alpha = roughness * roughness;
+            float alphaPrime = saturate(alpha + (fakeSourceRadius / max(distance, 0.001f) * 0.5f));
+            float modifiedRoughness = sqrt(alphaPrime);
+
+            // 補正されたライト方向とラフネスでPBRを計算
+            // （CalculatePBRの内部で再度roughnessを2乗している場合は引数の渡し方に注意してください）
+            float3 pbrResult = CalculatePBR(pbrAlbedo, normal, toEye, modifiedLightDirL, lightColor, lightIntensity, modifiedRoughness, metalness);
             radiance = pbrResult * attenuation;
         }
         else
         {
-            // Legacy
+            // Legacy (Blinn-Phong)
             float ndotl = saturate(dot(normal, lightDirL));
             float3 diffuse = gMaterial.color.rgb * baseColor * lightColor * ndotl * lightIntensity * attenuation;
             

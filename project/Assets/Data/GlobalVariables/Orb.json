@@ -306,9 +306,9 @@
             ],
             "orbModel_Roughness": 0.20000000298023224,
             "orbModel_Scale": [
-                0.5,
-                0.5,
-                0.5
+                1.0,
+                1.0,
+                1.0
             ],
             "orbModel_ShadowBias": 0.0005000000237487257,
             "orbModel_ShadowDens": 0.800000011920929,
