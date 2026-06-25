@@ -206,11 +206,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float heightFactor = 1.0f;
     if (gFogSettings.heightFalloff > 0.0f)
     {
-        heightFactor = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
+        // baseHeightより下（進入時）は 0 になり、exp(0)=1.0。上に行くほど薄くなる。
+        float heightDiff = max(currentPos.y - gFogSettings.baseHeight, 0.0f);
+        heightFactor = exp(-heightDiff * gFogSettings.heightFalloff);
+    }
+
+    // 密度の決定
+    float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
+
+    if (gFogSettings.heightFalloff > 0.0f)
+    {
+        // 谷の底に向かって自然に霧が濃くなる
+        float relativeHeight = currentPos.y - gFogSettings.baseHeight;
+        float heightFactor = exp(-relativeHeight * gFogSettings.heightFalloff);
+        
+        // 高さによる密度をブレンドではなく、加算（または乗算）する
+        globalBaseDensity += gFogSettings.heightDensity * heightFactor;
     }
     
-    // 密度のブレンド
-    float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
     float fluidBaseDensity = fluidMass;
 
     float blendWeight = saturate(fluidMass * edgeFade);
@@ -260,26 +273,26 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float distance = length(lightVec);
         float radius = gPointLights[p].radius;
       
-        if (distance > radius)
+        // ボクセルの厚みに応じて距離測定をスムージング
+        float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
+
+        // ハードカット(continue)の判定にもボクセル的なバッファ(1.1倍)を持たせる
+        if (smoothDistance > radius * 1.1f)
             continue;
       
         float3 lightDir = (distance > 0.001f) ? (lightVec / distance) : float3(0.0f, 1.0f, 0.0f);
         
-        // ノイズが出ない滑らかなpow減衰に統一
-        float decay = 2.0f; // 物理ベースに近い綺麗なグラデーションになる
-        float attenuation = pow(saturate(1.0f - distance / radius), decay);
+        // 境界をスパッと切らず、smoothstepで外周を滑らかにゼロへフェードアウト
+        float baseAttenuate = pow(saturate(1.0f - smoothDistance / radius), 2.0f);
+        float edgeFadeOut = smoothstep(radius * 1.1f, radius * 0.95f, smoothDistance);
+        float attenuation = baseAttenuate * edgeFadeOut;
 
-        // 異方性（フェーズ関数）の計算
         float phaseLocal = DualPhaseHG(dot(rayDir, lightDir), gFogSettings.anisotropy);
-
         float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
-
-        // ボリューム用輝度ブースト
         float volumetricScatteringIntensity = gPointLights[p].VolumetricScatteringIntensity;
 
-        // ライトの適用
         stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * volumetricScatteringIntensity)
-                 * attenuation * phaseLocal * pointLocalFogAttenuation;
+                  * attenuation * phaseLocal * pointLocalFogAttenuation;
     }
 
     for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
@@ -290,15 +303,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 lightVec = gSpotLights[s].position - currentPos;
         float distance = length(lightVec);
         
-      // -----------------------------------------------------------------
-      // 対策①：ボクセルサイズに応じた【距離減衰のスムージング】
-      // -----------------------------------------------------------------
+        // ボクセルサイズに応じた距離減衰のスムージング
         float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
         
         if (smoothDistance > gSpotLights[s].distance * 1.2f)
             continue;
         
-      // 光源の根元での方向ベクトルの暴れ防止
+        // 光源の根元での方向ベクトルの暴れ防止
         float3 lDir = lightVec / max(distance, 0.001f);
         if (distance < 0.2f)
         {
@@ -308,9 +319,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
         
-      // -----------------------------------------------------------------
-      // 対策②：コーン境界の外側への動的拡張フェード（ノイズ対策）
-      // -----------------------------------------------------------------
+        // コーン境界の外側への動的拡張フェード（ノイズ対策）
         float voxelCosWidth = voxelThickness / max(distance, 0.5f);
         float softMargin = max(0.04f, voxelCosWidth * 0.35f);
         
@@ -320,11 +329,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         if (currentCos < extendedCosAngle)
             continue;
         
-      // =================================================================
-      // ★改善①：ボリューム側も物理ベースの距離減衰（逆二乗）へ統一
-      // =================================================================
+        // 物理ベースの距離減衰（逆二乗）へ統一
         float sourceRadiusBias = 0.05f;
-      // smoothDistanceのおかげで、光の根元でも1/d^2が無限大に爆発しません
         float distance2 = smoothDistance * smoothDistance + sourceRadiusBias * sourceRadiusBias;
         float physicalFalloff = 1.0f / distance2;
         
@@ -332,32 +338,20 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float lightRangeProj = saturate(1.0f - pow(smoothDistance / safeMaxDist, 4.0f));
         float distanceAtt = physicalFalloff * (lightRangeProj * lightRangeProj);
         
-      // =================================================================
-      // ★改善②：ボリューム側もインナー/アウターコーンで「芯」を作る
-      // =================================================================
-     // インナーコーン（一番明るい芯の部分）は本来の設定通りに保つ
+        // ボリューム側もインナー/アウターコーンで芯を作る
         float cosInner = lerp(1.0f, cosOuter, 0.6f);
 
-  // インナーから拡張マージン（extendedCosAngle）までのベースの減衰
+        // インナーから拡張マージンまでのベースの減衰
         float rawAngleAtt = saturate((currentCos - extendedCosAngle) / max(cosInner - extendedCosAngle, 0.001f));
-  
- // -----------------------------------------------------------------
-    // ★修正の核心：角度ブレの激しさ（voxelCosWidth）に応じた動的 thinness
-    // -----------------------------------------------------------------
-    // 空間が十分に広く、解像度が足りている場所では狙い通りの鋭さ「6.0f」を出し、
-    // 光源の根元など「細く尖ってノイズが出やすい危険地帯」では、
-    // 自動的にカーブを「2.0f」などの滑らかな設定まで落としてノイズを完全に封じ込めます。
-        float dynamicThinness = lerp(6.0f, 2.0f, saturate(voxelCosWidth * 3.0f));
+    
+        // 角度ブレの激しさ（voxelCosWidth）に応じたthinness
+        float dynamicThinness = lerp(8.0f, 4.0f, saturate(voxelCosWidth * 3.0f));
     
         float angleAtt = pow(rawAngleAtt, dynamicThinness);
     
-    // ※単一の式でフェードアウトが完了したため、 coneEdgeFade の計算は不要です。
-        
         float attenuation = distanceAtt * angleAtt;
         
-      // -----------------------------------------------------------------
-      // 対策③：遠方での【フェーズ関数（DualPhaseHG）のアンチエイリアシング】
-      // -----------------------------------------------------------------
+        // 遠方でのフェーズ関数（DualPhaseHG）のアンチエイリアシング
         float phaseSmoothing = saturate(1.0f - (voxelThickness / max(distance, 0.5f)));
         float blurredAnisotropy = gFogSettings.anisotropy * phaseSmoothing;
         
@@ -366,7 +360,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float volumetricScatteringIntensity = gSpotLights[s].VolumetricScatteringIntensity;
         float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
-      // 最終合成
+        // 最終合成
         stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity)
                * attenuation * phaseLocal * spotLocalFogAttenuation;
     }
