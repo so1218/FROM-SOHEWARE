@@ -35,7 +35,6 @@ void LightManager::Initialize(ID3D12Device* device)
         pointLightData_[i].position = { -4.0f + i * 2.0f, 5.0f, 0.0f };
         pointLightData_[i].intensity = 5.0f;
         pointLightData_[i].radius = 10.0f;
-        pointLightData_[i].decay = 3.0f;
         pointLightData_[i].VolumetricScatteringIntensity = 1.0f;
     }
 
@@ -52,7 +51,6 @@ void LightManager::Initialize(ID3D12Device* device)
         spotLightData_[i].intensity = 5.0f;
         spotLightData_[i].direction = { 0.0f, -1.0f, 0.0f };
         spotLightData_[i].distance = 20.0f;
-        spotLightData_[i].decay = 3.0f;
         spotLightData_[i].cosAngle = 0.866f;
         spotLightData_[i].VolumetricScatteringIntensity = 8.0f;
     }
@@ -158,7 +156,6 @@ void LightManager::UpdatePointLightProperties(int index, const Vector4& color, f
     pointLightData_[index].color = color;
     pointLightData_[index].intensity = intensity;
     pointLightData_[index].radius = radius;
-    pointLightData_[index].decay = decay;
 }
 
 void LightManager::UpdateAreaLightProperties(int index, const Vector4& color, float intensity,
