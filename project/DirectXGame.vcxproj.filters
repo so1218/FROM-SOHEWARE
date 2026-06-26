@@ -862,12 +862,6 @@
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClCompile Include="Game\GameObject\Skydome.cpp">
-      <Filter>Game\GameObject</Filter>
-    </ClCompile>
-    <ClInclude Include="Game\GameObject\Skydome.h">
-      <Filter>Game\GameObject</Filter>
-    </ClInclude>
     <ClCompile Include="Game\GameObject\Character\Player\Player.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -910,6 +904,8 @@
     <ClCompile Include="Game\EditorCommands\PlaceModelCommand.cpp" />
     <ClCompile Include="Game\EditorCommands\MoveModelCommand.cpp" />
     <ClCompile Include="Game\GameObject\Orb.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -931,6 +927,8 @@
     <ClInclude Include="Game\EditorCommands\PlaceModelCommand.h" />
     <ClInclude Include="Game\EditorCommands\MoveModelCommand.h" />
     <ClInclude Include="Game\GameObject\Orb.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
@@ -950,5 +948,7 @@
     <FxCompile Include="Assets\Shaders\FluidComputeCurl.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\FluidApplyVorticity.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
   </ItemGroup>
 </Project>

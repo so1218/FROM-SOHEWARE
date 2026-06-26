@@ -20,6 +20,7 @@ class ParticleRenderer;
 class TrailRenderer;
 class SkyboxRenderer;
 class GrassRenderer;
+class SkydomeRenderer;
 
 class RendererManager
 {
@@ -65,6 +66,7 @@ public:
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
         float instanceSeed);
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
+    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
@@ -131,6 +133,7 @@ private:
     std::unique_ptr<TrailRenderer> trailRenderer_;
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
+    std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
 };
 
 }

@@ -1620,9 +1620,9 @@
         "Model_AlbedoMap": "white1x1",
         "Model_AlphaThres": 0.009999999776482582,
         "Model_Color": [
-            0.17175447940826416,
-            0.39240509271621704,
-            0.021524300798773766,
+            0.09336740523576736,
+            0.18565398454666138,
+            0.007833496667444706,
             1.0
         ],
         "Model_DiffuseRef": 4.0,
@@ -1636,16 +1636,16 @@
         ],
         "Model_EdgeInten": 2.0,
         "Model_EdgeWidth": 0.05000000074505806,
-        "Model_Emissive": 2.700000047683716,
-        "Model_EnvMapInt": 0.05000000074505806,
+        "Model_Emissive": 100.0,
+        "Model_EnvMapInt": 0.0,
         "Model_EnvMapTex": "redClunch",
         "Model_LightMode": 3,
         "Model_Lighting": 1,
-        "Model_Metalness": 0.07999999821186066,
+        "Model_Metalness": 0.05999999865889549,
         "Model_NormEnable": 1,
-        "Model_NormInten": 4.409999847412109,
-        "Model_NormTile": 36.400001525878906,
-        "Model_NormalMapTex": "normal_32",
+        "Model_NormInten": 7.519999980926514,
+        "Model_NormTile": 32.29999923706055,
+        "Model_NormalMapTex": "normal_26",
         "Model_OutlineColor": [
             0.0,
             0.0,
@@ -1671,7 +1671,7 @@
             1.0
         ],
         "Model_RimEnable": 0,
-        "Model_RimInten": 1.0,
+        "Model_RimInten": 0.10000000149011612,
         "Model_RimPower": 3.0,
         "Model_RimUseDir": 0,
         "Model_RippleEnable": 0,
@@ -1687,15 +1687,15 @@
             0.0,
             0.0
         ],
-        "Model_Roughness": 0.8700000047683716,
+        "Model_Roughness": 0.14000000059604645,
         "Model_Scale": [
             1000.0,
             1.0,
             1000.0
         ],
         "Model_ShadowBias": 0.0005000000237487257,
-        "Model_ShadowDens": 0.800000011920929,
-        "Model_ShadowEnv": 0.3700000047683716,
+        "Model_ShadowDens": 0.7900000214576721,
+        "Model_ShadowEnv": 0.49000000953674316,
         "Model_ShadowSoft": 0.0,
         "Model_Shininess": 50.0,
         "Model_SpecColor": [

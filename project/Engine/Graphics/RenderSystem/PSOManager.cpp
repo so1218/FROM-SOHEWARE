@@ -74,6 +74,14 @@ void PSOManager::Initialize(
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescGrass_ = { inputElementsGrass_.data(), (UINT)inputElementsGrass_.size() };
+
+    // Skydome
+    inputElementsSkydome_ =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+    inputLayoutDescSkydome_ = { inputElementsSkydome_.data(), (UINT)inputElementsSkydome_.size() };
 }
 
 ID3D12PipelineState* PSOManager::GetPSO(const std::string& psoName)
@@ -587,6 +595,10 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Grass")
     {
         return inputLayoutDescGrass_;
+    }
+    if (name == "Skydome")
+    {
+        return inputLayoutDescSkydome_;
     }
 
     // 未定義のレイアウト

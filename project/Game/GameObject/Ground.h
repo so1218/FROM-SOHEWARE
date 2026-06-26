@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "GameObject.h"
 #include "Skybox.h"
+#include "Skydome.h"
 #include "PropertyBinder.h"
 #include "Model.h"
 
@@ -22,6 +23,7 @@ private:
     std::unique_ptr<FE::Model> modelTree_;
     std::unique_ptr<FE::Model> modelRock_;
     std::unique_ptr<FE::Skybox> skybox_;
+    std::unique_ptr<FE::Skydome> skydome_;
     std::unique_ptr<FE::PropertyBinder> binder_;
 
     std::vector<FE::Vector3> treePositions_;

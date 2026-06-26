@@ -1,0 +1,14 @@
+{
+  "RootSignature": "Skydome",
+  "VertexShader": "Assets/Shaders/Skydome.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Skydome.PS.hlsl",
+  "InputLayout": "Skydome",
+  "BlendState": "Opaque",
+  "RasterizerState": "BackCullSolid",
+  "DepthStencilState": "ReadOnly",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "R16G16B16A16_FLOAT"
+  ],
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

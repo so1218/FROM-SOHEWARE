@@ -20,6 +20,7 @@
 #include "TrailRenderer.h"
 #include "SkyboxRenderer.h"
 #include "GrassRenderer.h"
+#include "SkydomeRenderer.h"
 
 namespace FE
 {
@@ -71,6 +72,8 @@ void RendererManager::Initialize(
 	skyboxRenderer_ = std::make_unique<SkyboxRenderer>();
 	skyboxRenderer_->Initialize(env_);
 	grassRenderer_ = std::make_unique<GrassRenderer>();
+	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
+	skydomeRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -93,6 +96,7 @@ void RendererManager::BeginFrame()
 	if (trailRenderer_) { trailRenderer_->BeginFrame(); }
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
+	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 }
 
 void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -249,6 +253,11 @@ void RendererManager::Draw3D()
 		lineRenderer_->Draw(env_, viewProjectionMatrix_);
 	}
 
+	if (skydomeRenderer_)
+	{
+		skydomeRenderer_->Draw(env_, viewMatrix_, projectionMatrix_);
+	}
+
 	// 半透明モデルをまとめて描画
 	if (modelRenderer_)
 	{
@@ -371,6 +380,14 @@ void RendererManager::SubmitGrass(const Matrix4x4& world, const Vector4& color)
 	if (grassRenderer_)
 	{
 		grassRenderer_->Submit(world, color);
+	}
+}
+
+void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex)
+{
+	if (skydomeRenderer_)
+	{
+		skydomeRenderer_->Submit(worldTransform, color, skyCubeSrvIndex, cloudNoiseSrvIndex);
 	}
 }
 

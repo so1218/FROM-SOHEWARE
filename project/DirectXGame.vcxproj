@@ -223,12 +223,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\ModelRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\ParticleRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
@@ -341,7 +343,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Orb.cpp" />
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
-    <ClCompile Include="Game\GameObject\Skydome.cpp" />
     <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
@@ -403,12 +404,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\ParticleRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SpriteRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
     <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -492,7 +495,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
-    <ClInclude Include="Game\GameObject\Skydome.h" />
     <ClInclude Include="Engine\Collision\Collision.h" />
     <ClInclude Include="Game\Global\CollisionConfig.h" />
     <ClInclude Include="Engine\Collision\CollisionManager.h" />
@@ -617,6 +619,22 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
