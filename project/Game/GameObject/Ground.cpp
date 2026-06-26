@@ -39,7 +39,7 @@ void Ground::Initialize()
 	binder_->Bind("TreeSpreadRadius", &treeSpreadRadius_, 50.0f);
 	binder_->Bind("TreeBaseScale", &treeBaseScale_, 1.0f);
 
-	skybox_->SetCubeTexture("redClunch");
+	skybox_->SetCubeTexture("skybox");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
 	GenerateTrees();
@@ -95,7 +95,7 @@ void Ground::Draw()
 		modelTree_->Draw();
 	}
 	modelRock_->Draw();
-	/*skybox_->Draw();*/
+	skybox_->Draw();
 };
 
 void Ground::DebugDraw()
