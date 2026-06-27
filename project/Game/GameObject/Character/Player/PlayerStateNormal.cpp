@@ -39,16 +39,14 @@ void PlayerStateNormal::Update(Player* p)
     {
         p->moveSpeed_ = p->dashSpeed_;
         p->stamina_ -= p->dashStaminaCost_ * deltaTime;
-        p->animationPlayer_->Play("playerDash"); // アニメーション復活
+
     }
     else if (isMoving)
     {
         p->moveSpeed_ = p->runSpeed_;
-        p->animationPlayer_->Play("playerRun");  // アニメーション復活
     }
     else
     {
-        p->animationPlayer_->Play("playerIdle");
     }
 
     if (input.IsKeyTriggered(DIK_SPACE) || input.IsControllerButtonTriggered(0, input.ButtonA))

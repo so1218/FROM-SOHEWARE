@@ -22,7 +22,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(),
 	engine_ = engine;
 
 	// アニメーションモデルを生成
-	animationPlayer_ = std::make_unique<AnimationModel>(engine_, "playerMesh", "playerWalk");
+	animationPlayer_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = std::make_unique<FE::Collider>(this);
@@ -37,7 +37,7 @@ void Player::Initialize()
 	// ステータス初期化
 	hp_ = maxHp_;
 
-	animationPlayer_->Play("playerWalk");
+	animationPlayer_->Play("humanRun");
 
 	// 衝突判定の属性設定
 	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
@@ -112,7 +112,8 @@ void Player::Update()
 
 	// 最終的な行列更新
 	animationPlayer_->Update();
-	animationPlayer_->GetTransform() = GetTransform();
+	animationPlayer_->GetTransform().translation_ = GetTransform().translation_;
+	animationPlayer_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
 	GetTransform().UpdateMatrix();
 }
 

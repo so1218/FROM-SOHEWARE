@@ -10,7 +10,7 @@ void PlayerStateRoll::Enter(Player* p)
     timer_ = 0.0f;
     p->stamina_ -= p->rollStaminaCost_; // ローリングの消費スタミナ
     p->isInvincible_ = true;
-    p->animationPlayer_->Play("playerRoll", false); // ループさせない
+    p->animationPlayer_->Play("playerRoll"); // ループさせない
 
     // ローリング方向の決定（入力があればその方向、なければ向いている方向）
     rollDirection_ = p->GetMoveDirection();
