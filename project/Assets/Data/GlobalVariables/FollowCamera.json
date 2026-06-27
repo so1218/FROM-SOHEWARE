@@ -1,6 +1,6 @@
 {
     "FollowCamera": {
-        "Max Distance": 76.5,
+        "Max Distance": 105.5,
         "Max Pitch": 0.9900000095367432,
         "Min Distance": 5.0,
         "Min Pitch": -0.1899999976158142,
@@ -8,7 +8,7 @@
         "Rotate Speed Pitch": 0.6800000071525574,
         "Rotate Speed Yaw": 2.0,
         "Rotation Smooth Time": 0.11999999731779099,
-        "Target Distance": 42.70000076293945,
+        "Target Distance": 70.5,
         "Target Pitch": 0.1899999976158142,
         "Target Yaw": 0.6980000138282776,
         "Zoom Smooth Time": 0.3499999940395355

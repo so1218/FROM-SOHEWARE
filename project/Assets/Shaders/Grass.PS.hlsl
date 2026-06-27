@@ -31,17 +31,21 @@ PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
 
+    // ★修正ポイント1: discard（アルファテスト）を完全に削除
+    // テクスチャはアルファマスクではなく、純粋なカラーグラデーションとして使用します
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-
-    if (textureColor.a < gMaterial.grassAlphaCutoff)
-    {
-        discard;
-    }
 
     float3 baseColor = textureColor.rgb * gMaterial.color.rgb * input.color.rgb;
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
+    
+    // ★修正ポイント2: 両面描画対策（法線の反転をDiffuse計算の前に行う）
     float3 normal = normalize(input.normal);
+    if (dot(normal, toEye) < 0.0f)
+    {
+        normal = -normal;
+    }
+
+    float3 lightDir = normalize(-gDirectionalLights[0].direction);
 
     float shadowFactor = 1.0f;
     if (gMaterial.addShadow != 0)
@@ -53,60 +57,41 @@ PixelShaderOutput main(PixelInput input)
     float flashIntensity = gFrameData.lightningFlashIntensity;
     float3 flashColor = gFrameData.lightningFlashColor * flashIntensity;
     float flashShadowCancel = saturate(flashIntensity);
-
-    // 雷が光っている間は影を打ち消す
     shadowFactor = lerp(shadowFactor, 1.0f, flashShadowCancel);
 
-    float NdotL = dot(normal, lightDir) * 0.5f + 0.5f;
+    // 光の計算（反転処理済みの法線を使用するため、裏から見ても綺麗に光が当たります）
+    float NdotL = dot(normal, lightDir) * 0.5f + 0.5f; // ハーフランバートで柔らかく
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL * shadowFactor;
 
-    // 透過光
+    // 透過光 (モデルベースでも非常に効果的です)
     float viewDotLight = saturate(dot(toEye, -lightDir));
     float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
  
-    // 環境光に雷の色を加算
     float3 ambient = baseColor * (0.2f + flashColor);
     
-    // ベースとなる草の色
     float3 finalColor = diffuse + translucency + ambient;
 
-    // 根本の影を適用
+    // 根本の影を適用（V座標をそのまま利用）
     finalColor *= smoothstep(1.0f, gMaterial.grassRootAO, input.texcoord.y);
-
-    // 頂点カラー適用
-    finalColor *= input.color.rgb;
 
     // 濡れたときのハイライト計算
     float3 specular = float3(0.0f, 0.0f, 0.0f);
-    
     if (gMaterial.wetness > 0.0f)
     {
-        // カメラの少し上から光
         float3 fakeLightDir = normalize(toEye + float3(0.0f, 0.5f, 0.0f));
         float3 H = normalize(fakeLightDir + toEye);
         
-        // 両面描画の対策
-        float3 fixedNormal = normal;
-        if (dot(normal, toEye) < 0.0f)
-        {
-            fixedNormal = -normal;
-        }
-       
-        float3 wetNormal = normalize(fixedNormal + float3(0.0f, 0.3f, 0.0f));
-        
+        // すでに法線は反転済みなのでそのまま使用
+        float3 wetNormal = normalize(normal + float3(0.0f, 0.3f, 0.0f));
         float NdotH = saturate(dot(wetNormal, H));
         
         float shininess = lerp(30.0f, 150.0f, gMaterial.wetness);
-        
-        // ハイライトの強さ
         float specIntensity = pow(NdotH, shininess) * gMaterial.wetness;
-        
         float shadowMask = lerp(0.3f, 1.0f, shadowFactor);
         
         specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity * shadowMask;
     }
 
-    // スペキュラを加算
     finalColor += specular;
 
     output.color = float4(finalColor, 1.0f);

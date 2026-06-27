@@ -52,6 +52,8 @@ public:
 	// コライダー描画（デバッグ用）
 	void DrawCollider();
 
+	void RegisterToManager();
+
 private:
 	GameObject* owner_ = nullptr; // 自分を持っている親
 	Vector3 centerOffset_ = { 0.0f, 0.0f, 0.0f }; // ローカルオフセット

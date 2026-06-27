@@ -41,6 +41,7 @@ void Ground::Initialize()
 	binder_->Bind("TreeBaseScale", &treeBaseScale_, 1.0f);
 
 	skybox_->SetCubeTexture("skybox");
+	skydome_->Initialize();
 	skydome_->SetSkyCubeTexture("skybox");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
@@ -128,4 +129,6 @@ void Ground::DebugDraw()
 	binder_->Draw("treeWindVariation", "揺れの複雑さ");
 	ImGui::End();
 #endif
+
+	skydome_->DebugDraw();
 }

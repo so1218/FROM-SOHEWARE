@@ -61,6 +61,8 @@ void Player::Initialize()
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+
+	collider_->RegisterToManager();
 }
 
 // 更新処理

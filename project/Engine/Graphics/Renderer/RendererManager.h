@@ -66,7 +66,7 @@ public:
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
         float instanceSeed);
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
-    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex);
+    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);

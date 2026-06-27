@@ -383,11 +383,11 @@ void RendererManager::SubmitGrass(const Matrix4x4& world, const Vector4& color)
 	}
 }
 
-void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex)
+void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather)
 {
 	if (skydomeRenderer_)
 	{
-		skydomeRenderer_->Submit(worldTransform, color, skyCubeSrvIndex, cloudNoiseSrvIndex);
+		skydomeRenderer_->Submit(worldTransform, color, skyCubeSrvIndex, cloudNoiseSrvIndex, weather);
 	}
 }
 

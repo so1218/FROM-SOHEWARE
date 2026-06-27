@@ -94,6 +94,7 @@ void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj)
     }
     else 
     {
+        obj->Initialize();
         objects_.push_back(std::move(obj)); // それ以外は直接追加
         isSortNeeded_ = true;
     }

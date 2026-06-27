@@ -36,6 +36,7 @@ public:
     // Transform
     WorldTransform& GetTransform() { return transform_; }
     const WorldTransform& GetTransform() const { return transform_; }
+    void SetTransform(const WorldTransform& transform) { transform_ = transform; }
 
     // 衝突コールバック
     virtual void OnCollisionEnter(Collider* mine, Collider* other) {}

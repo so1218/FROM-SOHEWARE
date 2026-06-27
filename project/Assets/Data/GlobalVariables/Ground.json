@@ -1405,9 +1405,9 @@
         "ModelTree_Mat0_AlbedoMap": "leaf",
         "ModelTree_Mat0_AlphaThres": 0.5199999809265137,
         "ModelTree_Mat0_Color": [
+            0.5938151478767395,
             1.0,
-            1.0,
-            1.0,
+            0.17721521854400635,
             1.0
         ],
         "ModelTree_Mat0_DiffuseRef": 1.0,
@@ -1421,8 +1421,8 @@
         ],
         "ModelTree_Mat0_EdgeInten": 2.0,
         "ModelTree_Mat0_EdgeWidth": 0.0,
-        "ModelTree_Mat0_Emissive": 17.700000762939453,
-        "ModelTree_Mat0_EnvMapInt": 0.20000000298023224,
+        "ModelTree_Mat0_Emissive": 79.9000015258789,
+        "ModelTree_Mat0_EnvMapInt": 0.800000011920929,
         "ModelTree_Mat0_EnvMapTex": "black_cube",
         "ModelTree_Mat0_LightMode": 3,
         "ModelTree_Mat0_Lighting": 1,
@@ -1620,9 +1620,9 @@
         "Model_AlbedoMap": "white1x1",
         "Model_AlphaThres": 0.009999999776482582,
         "Model_Color": [
-            0.09336740523576736,
-            0.18565398454666138,
-            0.007833496667444706,
+            0.3680500388145447,
+            1.0,
+            0.02109706401824951,
             1.0
         ],
         "Model_DiffuseRef": 4.0,
@@ -1636,14 +1636,14 @@
         ],
         "Model_EdgeInten": 2.0,
         "Model_EdgeWidth": 0.05000000074505806,
-        "Model_Emissive": 100.0,
+        "Model_Emissive": 32.70000076293945,
         "Model_EnvMapInt": 0.0,
         "Model_EnvMapTex": "redClunch",
         "Model_LightMode": 3,
         "Model_Lighting": 1,
-        "Model_Metalness": 0.05999999865889549,
+        "Model_Metalness": 0.0,
         "Model_NormEnable": 1,
-        "Model_NormInten": 7.519999980926514,
+        "Model_NormInten": 0.8500000238418579,
         "Model_NormTile": 32.29999923706055,
         "Model_NormalMapTex": "normal_26",
         "Model_OutlineColor": [
@@ -1687,7 +1687,7 @@
             0.0,
             0.0
         ],
-        "Model_Roughness": 0.14000000059604645,
+        "Model_Roughness": 0.7400000095367432,
         "Model_Scale": [
             1000.0,
             1.0,

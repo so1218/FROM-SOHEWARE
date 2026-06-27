@@ -18,7 +18,7 @@ public:
     void DebugDraw() override;
 
     // 衝突時のコールバック
-    void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+    void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
 
 private:
     FE::Engine* engine_;

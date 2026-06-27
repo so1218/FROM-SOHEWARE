@@ -10,15 +10,7 @@ namespace FE
 
 Collider::Collider(GameObject* owner) : owner_(owner)
 {
-    // 親が存在し、かつ親がマネージャーを知っていれば自動登録
-    if (owner_ && owner_->GetManager())
-    {
-        manager_ = owner_->GetManager()->GetCollisionManager();
-        if (manager_)
-        {
-            manager_->AddCollider(this);
-        }
-    }
+
 }
 
 Collider::~Collider()
@@ -90,6 +82,15 @@ void Collider::DrawCollider()
     else if (type_ == CollisionShapeType::AABB)
     {
         DebugDraw::DrawAABB(center - size_, center + size_, color_);
+    }
+}
+
+void Collider::RegisterToManager()
+{
+    if (owner_ && owner_->GetManager())
+    {
+        manager_ = owner_->GetManager()->GetCollisionManager();
+        if (manager_) manager_->AddCollider(this);
     }
 }
 

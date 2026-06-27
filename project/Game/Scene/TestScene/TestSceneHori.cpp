@@ -42,6 +42,9 @@ void TestSceneHori::OnInitialize()
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->GetPostEffectManager()->GetCombineSettings()->enableVolumetricFog = true;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 5.0f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");

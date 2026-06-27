@@ -44,10 +44,11 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
 float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight);
 
-float3 F_Schlick(float cosTheta, float3 F0);
 float D_GGX(float3 N, float3 H, float roughness);
 float G_SchlickGGX(float NdotV, float roughness);
 float G_Smith(float3 N, float3 V, float3 L, float roughness);
+float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness);
+
 float3 CalculatePBR(
     float3 albedo,
     float3 N,
@@ -321,7 +322,7 @@ PixelShaderOutput main(PixelShaderInput input)
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
             // 拡散反射
-            float3 kS = F_Schlick(max(dot(normal, toEye), 0.0f), float3(0.04f, 0.04f, 0.04f));
+            float3 kS = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), float3(0.04f, 0.04f, 0.04f), currentRoughness);
             float3 kD = 1.0f - kS;
             kD *= (1.0f - currentMetalness);
             
@@ -342,7 +343,7 @@ PixelShaderOutput main(PixelShaderInput input)
             envColor += flashColor;
     
             float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, currentMetalness);
-            float3 F_env = F_Schlick(max(dot(normal, toEye), 0.0f), F0);
+            float3 F_env = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), F0, currentRoughness);
             float3 ambientSpecular = envColor * F_env;
 
             // 拡散反射と鏡面反射の合成
@@ -951,14 +952,6 @@ float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
     return normalize(transformedNormal);
 }
 
-
-// Fresnel(角度による反射率の変化)
-// F0: 正面から見たときの反射率（金属ならAlbedo、非金属なら0.04）
-float3 F_Schlick(float cosTheta, float3 F0)
-{
-    return F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
-}
-
 // Distribution(ハイライトの形状と強さ)
 // N: 法線, H: ハーフベクトル, roughness: 粗さ
 float D_GGX(float3 N, float3 H, float roughness)
@@ -998,6 +991,16 @@ float G_Smith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
+// 粗さを考慮したFresnel
+float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    // 粗い材質ほど、最大反射率（F90）を下げる
+    float maxReflectance = 1.0f - roughness;
+    float3 F90 = max(float3(maxReflectance, maxReflectance, maxReflectance), F0);
+    
+    return F0 + (F90 - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
+}
+
 // 単一のライトに対するPBR計算
 float3 CalculatePBR(
     float3 albedo,
@@ -1007,8 +1010,7 @@ float3 CalculatePBR(
     float3 lightColor,
     float lightIntensity,
     float roughness,
-    float metalness
-)
+    float metalness)
 {
     float3 H = normalize(V + L); // ハーフベクトル
 
@@ -1019,7 +1021,9 @@ float3 CalculatePBR(
     // BRDF項の計算
     float NDF = D_GGX(N, H, roughness);
     float G = G_Smith(N, V, L, roughness);
-    float3 F = F_Schlick(max(dot(H, V), 0.0f), F0);
+    
+    // F_SchlickRoughnessに置き換え、roughnessを渡す
+    float3 F = F_SchlickRoughness(max(dot(H, V), 0.0f), F0, roughness);
        
     // スペキュラの計算
     float3 numerator = NDF * G * F;
@@ -1036,7 +1040,7 @@ float3 CalculatePBR(
     kD *= 1.0f - metalness;
 
     // 最終合成
-    return (kD * albedo / PI + specular) * lightColor * lightIntensity * NdotL;
+    return (kD * albedo / 3.14159265f + specular) * lightColor * lightIntensity * NdotL;
 }
 
 // カラーテクスチャ用トライプラナーマッピング

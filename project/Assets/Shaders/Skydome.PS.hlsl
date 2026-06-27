@@ -25,6 +25,7 @@ cbuffer DirectionalLights : register(b1)
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
 ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<WeatherData> gWeather : register(b6);
 
 PixelShaderOutput main(SkydomeVertexShaderOutput input)
 {
@@ -37,16 +38,18 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     // 1. ベースの空の色
     float3 skyColor = gSkyTexture.Sample(gSampler, viewDir).rgb * gMaterial.color.rgb;
     
-  // ==========================================
+    // ==========================================
     // 2. プロの技：FBMと視差スクロール（立体的な雲の形成）
     // ==========================================
     float viewY = max(viewDir.y, 0.05f);
-    float2 cloudUV = (viewDir.xz / viewY) * 0.3f;
     
-    // スピードとスケールを散らす（視差効果で立体感を出す）
-    float2 speed1 = float2(0.006f, 0.003f);
-    float2 speed2 = float2(-0.003f, 0.009f);
-    float2 speed3 = float2(0.004f, -0.002f);
+    // ★ C++から受け取ったスケールを適用
+    float2 cloudUV = (viewDir.xz / viewY) * gWeather.cloudScale;
+    
+    // ★ C++から受け取った風向きをベースに、レイヤーごとの視差効果（微小なズレ）を加算して立体感を出す
+    float2 speed1 = gWeather.windVelocity;
+    float2 speed2 = gWeather.windVelocity * 1.5f + float2(-0.003f, 0.009f);
+    float2 speed3 = gWeather.windVelocity * 2.0f + float2(0.004f, -0.002f);
     
     // レイヤーごとにUVのスケール（細かさ）を変える
     float2 uv1 = cloudUV + speed1 * gFrameData.gTime;
@@ -61,41 +64,50 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     // FBM合成：ベースの形（大）に、ディテール（中・小）を重ねてフチを複雑にする
     float combinedNoise = (noise1 * 0.6f) + (noise2 * 0.3f) + (noise3 * 0.1f);
     
-    // 雲の基本密度（アルファ）
-    float cloudAlpha = smoothstep(0.35f, 0.7f, combinedNoise);
+    // ★ C++から受け取った雲量（閾値）を適用
+    float cloudAlpha = smoothstep(gWeather.cloudCoverage.x, gWeather.cloudCoverage.y, combinedNoise);
     float horizonFade = smoothstep(0.05f, 0.25f, viewDir.y);
     cloudAlpha *= horizonFade;
     
-  // ==========================================
+    // ==========================================
     // 新3. 疑似ボリュメトリック陰影（コントラストと立体感の復活）
     // ==========================================
-    // ① 影の境界を再調整（少しメリハリを持たせて、モクモクした形を際立たせる）
-    float cloudThickness = smoothstep(0.3f, 0.85f, combinedNoise);
+    // ★ 影の境界も雲量に連動させる（少し広げることで厚みを維持）
+    float cloudThickness = smoothstep(max(0.0f, gWeather.cloudCoverage.x - 0.05f), min(1.0f, gWeather.cloudCoverage.y + 0.15f), combinedNoise);
     
-    // ② 影の色：空の色を環境光として使いつつ、しっかりと暗さを出す（0.85 -> 0.4にダウン）
-    // ほんの少しだけライトの逆色（青紫系）を混ぜると、さらに空気感が出ます
-    float3 shadowColor = skyColor * 0.6f;
+    // ★ C++から受け取った影の濃さを適用
+    float3 shadowColor = skyColor * gWeather.cloudShadowDensity;
     
-    // ③ 光が当たる表面：純白とライトカラーのミックス（ここは維持）
+    // ③ 光が当たる表面：純白とライトカラーのミックス
     float3 litColor = lerp(gDirectionalLights[0].color.rgb, float3(1.0f, 1.0f, 1.0f), 0.6f) * 1.2f;
     
-    // ④ 陰影の合成：厚みがある部分はしっかり影を落とす（リミッターを 0.7 -> 0.9 に引き上げ）
+    // ④ 陰影の合成：完全に影の色（1.0）になりきらないよう、リミッター（* 0.7f）をかける
     float shadowMix = cloudThickness * 0.7f;
     float3 baseCloudColor = lerp(litColor, shadowColor, shadowMix);
     
     // ==========================================
-    // 4. 太陽の計算（そのまま維持）
+    // 4. 太陽の計算（大気散乱フェイクによる夕焼け自動化）
     // ==========================================
     float sunDot = saturate(dot(viewDir, sunDir));
     
+    // 太陽の高さ（Y方向）を取得。1.0=真上、0.0=水平線
+    float sunHeight = saturate(sunDir.y);
+    
+    // 太陽が沈むにつれて赤みがかる「大気透過率」をフェイク計算
+    // 高さ0.2以下から急激に赤・オレンジになる
+    float3 sunsetTint = lerp(float3(1.0f, 0.3f, 0.05f), float3(1.0f, 1.0f, 1.0f), smoothstep(0.0f, 0.2f, sunHeight));
+
+    // コア（昼は真っ白、夕方は少しオレンジ）
     float sunCore = pow(sunDot, 8000.0f);
-    float3 coreColor = float3(1.0f, 0.99f, 0.98f) * 300.0f;
+    float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 600.0f;
     
+    // グロウ（昼は黄色、夕方は強烈な赤外色）
     float sunGlow = pow(sunDot, 1000.0f);
-    float3 glowColor = float3(1.0f, 0.9f, 0.7f) * 30.0f;
+    float3 glowColor = lerp(float3(1.0f, 0.1f, 0.0f), float3(1.0f, 0.9f, 0.7f), sunHeight) * sunsetTint * 60.0f;
     
-    float sunHalo = pow(sunDot, 150.0f);
-    float3 haloColor = float3(1.0f, 0.75f, 0.45f) * 4.0f;
+    // ハロー（光の広がり）
+    float sunHalo = pow(sunDot, 400.0f);
+    float3 haloColor = lerp(float3(0.8f, 0.2f, 0.0f), float3(1.0f, 0.75f, 0.45f), sunHeight) * sunsetTint * 4.0f;
 
     float3 totalSun = (sunCore * coreColor) + (sunGlow * glowColor) + (sunHalo * haloColor);
     
@@ -105,7 +117,6 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float silverLining = pow(sunDot, 64.0f) * 10.0f;
     float translucency = (1.0f - cloudThickness) * cloudAlpha;
     
-    // ★修正：オレンジを消し、ピュアホワイト（1.0, 1.0, 1.0）の強烈な光にする
     float3 finalCloudColor = baseCloudColor + (float3(1.0f, 1.0f, 1.0f) * silverLining * translucency);
     
     float3 skyWithClouds = lerp(skyColor, finalCloudColor, cloudAlpha);
