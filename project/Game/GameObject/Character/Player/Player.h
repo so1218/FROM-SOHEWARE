@@ -45,7 +45,7 @@ public:
 
 	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
 
-	std::unique_ptr<FE::AnimationModel> animationPlayer_;
+	std::unique_ptr<FE::AnimationModel> animationModel_;
 
 private:
 	FE::Engine* engine_;
@@ -63,26 +63,12 @@ private:
 
 	std::unique_ptr<StateMachine<Player>> stateMachine_;
 
-	// 無敵フラグ（ローリング用）
-	bool isInvincible_ = false;
-
 	// 調整用パラメータ
 	float runSpeed_ = 0.2f;
-	float dashSpeed_ = 0.4f;
 	float rotationSpeed_ = 10.0f;
 
-	float maxStamina_ = 100.0f;
-	float stamina_ = 100.0f;
-	float staminaRecoveryRate_ = 30.0f;
-	float rollStaminaCost_ = 15.0f;
-	float dashStaminaCost_ = 20.0f;
-
-	float rollDuration_ = 0.4f;
-	float rollSpeed_ = 0.5f;
-
-	// HPなど
-	float maxHp_ = 100.0f;
-	float hp_ = 100.0f;
-
+	// コライダー調整用の変数
+	FE::Vector3 colliderOffset_ = { 0.0f, 1.0f, 0.0f };
+	FE::Vector3 colliderSize_ = { 0.5f, 1.0f, 0.5f };
 };
 

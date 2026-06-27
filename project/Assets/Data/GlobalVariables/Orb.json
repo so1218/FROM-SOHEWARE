@@ -74,9 +74,9 @@
             ],
             "orbModel_Roughness": 0.2199999988079071,
             "orbModel_Scale": [
-                0.5,
-                0.5,
-                0.5
+                1.5,
+                1.5,
+                1.5
             ],
             "orbModel_ShadowBias": 0.0005000000237487257,
             "orbModel_ShadowDens": 0.800000011920929,
@@ -91,9 +91,9 @@
             ],
             "orbModel_ToonRampTex": "toonRamp_01",
             "orbModel_Trans": [
-                6.099999904632568,
-                2.700000047683716,
-                0.0
+                65.30000305175781,
+                6.0,
+                -38.900001525878906
             ],
             "orbModel_TriScale": 0.10000000149011612,
             "orbModel_TriSharpness": 4.0,
@@ -190,9 +190,9 @@
             ],
             "orbModel_Roughness": 0.1899999976158142,
             "orbModel_Scale": [
-                0.5,
-                0.5,
-                0.5
+                1.5,
+                1.5,
+                1.5
             ],
             "orbModel_ShadowBias": 0.0005000000237487257,
             "orbModel_ShadowDens": 0.800000011920929,
@@ -207,9 +207,9 @@
             ],
             "orbModel_ToonRampTex": "toonRamp_01",
             "orbModel_Trans": [
-                0.0,
-                3.200000047683716,
-                0.0
+                -37.599998474121094,
+                6.0,
+                -61.900001525878906
             ],
             "orbModel_TriScale": 0.10000000149011612,
             "orbModel_TriSharpness": 4.0,
@@ -237,9 +237,9 @@
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
             "orbModel_Color": [
-                0.14767932891845703,
                 1.0,
-                0.14767932891845703,
+                0.8918976783752441,
+                0.2236286997795105,
                 1.0
             ],
             "orbModel_DiffuseRef": 4.0,
@@ -306,9 +306,9 @@
             ],
             "orbModel_Roughness": 0.20000000298023224,
             "orbModel_Scale": [
-                1.0,
-                1.0,
-                1.0
+                1.5,
+                1.5,
+                1.5
             ],
             "orbModel_ShadowBias": 0.0005000000237487257,
             "orbModel_ShadowDens": 0.800000011920929,
@@ -323,9 +323,9 @@
             ],
             "orbModel_ToonRampTex": "toonRamp_01",
             "orbModel_Trans": [
-                0.0,
-                5.5,
-                0.0
+                -64.69999694824219,
+                6.0,
+                46.900001525878906
             ],
             "orbModel_TriScale": 0.10000000149011612,
             "orbModel_TriSharpness": 4.0,

@@ -43,8 +43,30 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetCombineSettings()->enableVolumetricFog = true;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 5.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 9.0f / 255.0f,9.0f / 255.0f,9.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->maxDistance = 500.0f;
+    
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().push_back(VolumetricFogPass::FogVolumeData());
+    
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].type = 1;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].position = { 50.0f,20.0f,-50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].scale = { 50.0f,20.0f,50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].color = { 65.0f / 255.0f,164.0f / 255.0f,252.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].density = 0.5f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].blendDistance = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windDirection = { 1.0f,-0.2f,0.7f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windSpeed = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].coverage = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].worleyWeight = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseIntensity = 0.9f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseScale = { 0.06f,0.06f,0.06f };
     engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
+    engine_->GetPostEffectManager()->GetCombineSettings()->enableDoF = true;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 100.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 33.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 45.0f;
     //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");

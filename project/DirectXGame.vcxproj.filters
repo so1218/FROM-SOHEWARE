@@ -897,7 +897,6 @@
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
-    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateRoll.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\FluidSimulationPass.cpp" />
     <ClCompile Include="Engine\Debugs\AssetBrowserWindow.cpp" />
     <ClCompile Include="Engine\Debugs\IEditorCommand.cpp" />
@@ -920,7 +919,6 @@
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Framework\StateMachine.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
-    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateRoll.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\FluidSimulationPass.h" />
     <ClInclude Include="Engine\Debugs\AssetBrowserWindow.h" />
     <ClInclude Include="Engine\Debugs\IEditorCommand.h" />
@@ -950,5 +948,8 @@
     <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

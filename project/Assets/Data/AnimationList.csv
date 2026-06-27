@@ -3,3 +3,4 @@ Name,Path
 playerIdle,Characters/Player/playerIdle.gltf
 playerWalk,Characters/Player/playerWalk.gltf
 humanRun,Characters/Human/humanRun.gltf
+humanIdle,Characters/Human/humanIdle.gltf

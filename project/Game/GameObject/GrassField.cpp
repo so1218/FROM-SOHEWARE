@@ -70,7 +70,7 @@ void GrassField::Update()
 
     if (player_)
     {
-        grassSystem_->GetMaterialData()->playerPos = player_->animationPlayer_->GetTransform().translation_;
+        grassSystem_->GetMaterialData()->playerPos = player_->animationModel_->GetTransform().translation_;
     }
 }
 

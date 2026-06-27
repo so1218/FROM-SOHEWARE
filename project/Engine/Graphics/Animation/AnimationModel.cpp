@@ -185,11 +185,20 @@ void AnimationModel::Play(const Animation* animation, bool isLoop, float speedSc
     // ポインタが無効なら無視
     if (!animation) return;
 
+    // すでに同じアニメーションが指定されている場合は、リセットせずに処理を抜ける
+    if (animeModelData_.currentAnimation == animation)
+    {
+        isLoop_ = isLoop;        
+        speedScale_ = speedScale; 
+        isPlaying_ = true;       
+        return;                   
+    }
+
     animeModelData_.currentAnimation = animation;
     isLoop_ = isLoop;
     speedScale_ = speedScale;
 
-    ResetAnimation();
+    ResetAnimation(); // 新しいアニメーションの時だけリセットがかかる
     isPlaying_ = true;
 }
 
