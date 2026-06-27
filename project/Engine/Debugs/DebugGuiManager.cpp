@@ -271,7 +271,7 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::ColorEdit4("色", &pointLights[i].color.x);
                 ImGui::DragFloat("強度", &pointLights[i].intensity, 0.01f);
                 ImGui::DragFloat("影響半径", &pointLights[i].radius, 0.1f);
-                ImGui::DragFloat("ボリュームフォグ輝度", &pointLights[i].VolumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
+                ImGui::DragFloat("ボリュームフォグ輝度", &pointLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
 
                 ImGui::TreePop();
             }
@@ -320,7 +320,7 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::DragFloat3("向き", &spotLights[i].direction.x, 0.05f);
                 ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
                 ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("ボリュームフォグ輝度", &spotLights[i].VolumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
+                ImGui::DragFloat("ボリュームフォグ輝度", &spotLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
                 ImGui::TreePop();
             }
         }

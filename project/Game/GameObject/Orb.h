@@ -10,7 +10,7 @@ class Orb : public FE::GameObject
 
 public:
     Orb(FE::Engine* engine, int id);
-    ~Orb() override = default;
+    ~Orb() override;
 
     void Initialize() override;
     void Update() override;
@@ -27,4 +27,11 @@ private:
     std::unique_ptr<FE::PropertyBinder> binder_;
 
     int id_;
+
+    // ポイントライト
+    int pointLightIndex_ = -1;
+    FE::Vector4 lightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
+    float lightIntensity_ = 5.0f;
+    float lightRadius_ = 10.0f;
+    float lightVolumetricScatteringIntensity_ = 1.0f;
 };

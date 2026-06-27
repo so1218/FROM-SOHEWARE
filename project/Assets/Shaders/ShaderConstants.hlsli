@@ -247,7 +247,7 @@ struct PointLight
     float radius;
     float padding;
     int32_t enable;
-    float VolumetricScatteringIntensity;
+    float volumetricScatteringIntensity;
 };
 
 struct SpotLight
@@ -263,7 +263,7 @@ struct SpotLight
     float padding;
     float cosAngle;
     int32_t enable;
-    float VolumetricScatteringIntensity;
+    float volumetricScatteringIntensity;
 };
 
 struct AreaLight

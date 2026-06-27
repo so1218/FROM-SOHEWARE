@@ -1,6 +1,15 @@
 {
     "Orb": {
         "0": {
+            "LightColor": [
+                1.0,
+                0.03375530242919922,
+                0.03375530242919922,
+                1.0
+            ],
+            "LightIntensity": 4.949999809265137,
+            "LightRadius": 17.329999923706055,
+            "LightVolumetricScatteringIntensity": 8.850000381469727,
             "orbModel_AddShadow": 0,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -117,6 +126,15 @@
             "orbModel_Wetness": 0.5
         },
         "1": {
+            "LightColor": [
+                0.29845649003982544,
+                1.0,
+                0.2194092869758606,
+                1.0
+            ],
+            "LightIntensity": 5.130000114440918,
+            "LightRadius": 26.010000228881836,
+            "LightVolumetricScatteringIntensity": 12.140000343322754,
             "orbModel_AddShadow": 0,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -233,6 +251,15 @@
             "orbModel_Wetness": 0.5
         },
         "2": {
+            "LightColor": [
+                0.9831223487854004,
+                0.747147798538208,
+                0.09540852159261703,
+                1.0
+            ],
+            "LightIntensity": 5.619999885559082,
+            "LightRadius": 26.040000915527344,
+            "LightVolumetricScatteringIntensity": 3.549999952316284,
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,

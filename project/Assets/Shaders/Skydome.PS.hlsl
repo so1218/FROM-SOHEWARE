@@ -102,11 +102,11 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 300.0f;
     
     // グロウ（昼は黄色、夕方は強烈な赤外色）
-    float sunGlow = pow(sunDot, 1000.0f);
+    float sunGlow = pow(sunDot, 3000.0f);
     float3 glowColor = lerp(float3(1.0f, 0.1f, 0.0f), float3(1.0f, 0.9f, 0.7f), sunHeight) * sunsetTint * 60.0f;
     
     // ハロー（光の広がり）
-    float sunHalo = pow(sunDot, 400.0f);
+    float sunHalo = pow(sunDot, 1000.0f);
     float3 haloColor = lerp(float3(0.8f, 0.2f, 0.0f), float3(1.0f, 0.75f, 0.45f), sunHeight) * sunsetTint * 4.0f;
 
     float3 totalSun = (sunCore * coreColor) + (sunGlow * glowColor) + (sunHalo * haloColor);

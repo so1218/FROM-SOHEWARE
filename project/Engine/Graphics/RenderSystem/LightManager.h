@@ -48,7 +48,7 @@ public:
     void UpdatePointLightPosition(int index, const Vector3& position);
 
     // 特定のポイントライトのパラメータを更新する
-    void UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float decay);
+    void UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float volumetricScatteringIntensity);
     void UpdateAreaLightProperties(int index, const Vector4& color, float intensity,
         const Vector3& position, const Vector3& right, const Vector3& up,
         float range, float decay);

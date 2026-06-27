@@ -295,7 +295,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         float phaseLocal = DualPhaseHG(dot(rayDir, lightDir), gFogSettings.anisotropy);
         float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
-        float volumetricScatteringIntensity = gPointLights[p].VolumetricScatteringIntensity;
+        float volumetricScatteringIntensity = gPointLights[p].volumetricScatteringIntensity;
 
         stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * volumetricScatteringIntensity)
                   * attenuation * phaseLocal * pointLocalFogAttenuation;
@@ -363,7 +363,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float phaseLocal = DualPhaseHG(dot(rayDir, lDir), blurredAnisotropy);
         
-        float volumetricScatteringIntensity = gSpotLights[s].VolumetricScatteringIntensity;
+        float volumetricScatteringIntensity = gSpotLights[s].volumetricScatteringIntensity;
         float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
         // 最終合成

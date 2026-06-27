@@ -13,6 +13,16 @@ Orb::Orb(Engine* engine, int id) : engine_(engine), id_(id)
     collider_ = std::make_unique<Collider>(this);
 }
 
+Orb::~Orb()
+{
+    // オーブが破棄される際、ライトを借りていればLightManagerに返却
+    if (pointLightIndex_ != -1)
+    {
+        engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
+        pointLightIndex_ = -1;
+    }
+}
+
 void Orb::Initialize()
 {
 
@@ -22,14 +32,45 @@ void Orb::Initialize()
     SetTag(ObjectTag::Orb);
 
     binder_->BindModel("orbModel", model_.get());
+
+    binder_->BindColor("LightColor", &lightColor_, { 0.2f, 0.6f, 1.0f, 1.0f });
+    binder_->Bind("LightIntensity", &lightIntensity_, 5.0f);
+    binder_->Bind("LightRadius", &lightRadius_, 10.0f);
+    binder_->Bind("LightVolumetricScatteringIntensity", &lightVolumetricScatteringIntensity_, 1.0f);
+
+    // ポイントライトの空きを要求
+    pointLightIndex_ = engine_->GetLightManager()->RequestPointLight();
+
+    if (pointLightIndex_ != -1)
+    {
+        engine_->GetLightManager()->UpdatePointLightProperties(
+            pointLightIndex_,
+            lightColor_,
+            lightIntensity_,
+            lightRadius_,
+            lightVolumetricScatteringIntensity_
+        );
+    }
 }
 
 void Orb::Update()
 {
-    //if (model_)
-    //{
-    //    model_->SetTransform(GetTransform());
-    //}
+    // オーブの現在座標にライトを追従
+    if (pointLightIndex_ != -1)
+    {
+        Vector3 currentPos = model_->GetTransform().translation_;
+
+        engine_->GetLightManager()->UpdatePointLightPosition(pointLightIndex_, currentPos);
+
+        engine_->GetLightManager()->UpdatePointLightProperties(
+            pointLightIndex_,
+            lightColor_,
+            lightIntensity_,
+            lightRadius_,
+            lightVolumetricScatteringIntensity_
+        );
+    }
+
     SetTransform(model_->GetTransform());
 }
 
@@ -52,6 +93,13 @@ void Orb::DebugDraw()
     std::string label = "オーブ " + std::to_string(id_) + " のインスペクター";
 
     binder_->DrawModel("orbModel", label);
+
+    ImGui::Separator();
+    ImGui::Text("ライト設定");
+    binder_->Draw("LightColor", "ライトの色");
+    binder_->Draw("LightIntensity", "明るさ");
+    binder_->Draw("LightRadius", "影響範囲");
+    binder_->Draw("LightVolumetricScatteringIntensity", "ボリュームフォグ輝度");
 
     ImGui::PopID();
 
