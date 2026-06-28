@@ -905,6 +905,9 @@
     <ClCompile Include="Game\GameObject\Orb.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
+    <ClCompile Include="Game\GameObject\OrbManager.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -927,6 +930,9 @@
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
+    <ClInclude Include="Game\GameObject\OrbManager.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />

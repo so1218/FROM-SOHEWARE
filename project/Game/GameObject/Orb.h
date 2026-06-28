@@ -3,13 +3,12 @@
 #include "Model.h"
 #include "Collider.h"
 #include "PropertyBinder.h"
+#include "ParticleEmitter.h"
 
 class Orb : public FE::GameObject
 {
-	Orb(FE::Engine engine_);
-
 public:
-    Orb(FE::Engine* engine, int id);
+    Orb(FE::Engine* engine, int id, const std::string& parentGroupName);
     ~Orb() override;
 
     void Initialize() override;
@@ -17,18 +16,24 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    // 衝突時のコールバック
+    void Sleep(); // プレイヤーに拾われた時に呼ぶ
+    bool IsPicked() const { return isPicked_; }
+
     void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
 
 private:
     FE::Engine* engine_;
-    std::unique_ptr<FE::Model> model_;       // オーブの見た目
-    std::unique_ptr<FE::Collider> collider_; // オーブの当たり判定
+    std::unique_ptr<FE::Model> model_;
+    std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
 
-    int id_;
+    std::unique_ptr<FE::ParticleEmitter> hitEmitter_ = nullptr;
+    FE::ParticleEmitter* hitEmitterPtr_ = nullptr;
 
-    // ポイントライト
+    int id_;
+    bool isPicked_ = false; // 拾われたかどうかのフラグ
+
+    // ポイントライト設定
     int pointLightIndex_ = -1;
     FE::Vector4 lightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
     float lightIntensity_ = 5.0f;

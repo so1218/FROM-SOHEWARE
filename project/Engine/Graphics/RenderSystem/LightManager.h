@@ -38,17 +38,21 @@ public:
     // ポイントライトのスロットを要求する
     // 成功すればインデックス(0 ~ MAX-1)を、失敗すれば-1を返す
     int RequestPointLight();
+    int RequestSpotLight();
     int RequestAreaLight();
 
     // ポイントライトのスロットを返却する
     void ReturnPointLight(int index);
+    void ReturnSpotLight(int index);
     void ReturnAreaLight(int index);
 
     // 特定のポイントライトの位置を更新する
     void UpdatePointLightPosition(int index, const Vector3& position);
+    void UpdateSpotLightTransform(int index, const Vector3& position, const Vector3& direction);
 
     // 特定のポイントライトのパラメータを更新する
     void UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float volumetricScatteringIntensity);
+    void UpdateSpotLightProperties(int index, const Vector4& color, float intensity, float distance, float cosAngle, float volumetricScatteringIntensity);
     void UpdateAreaLightProperties(int index, const Vector4& color, float intensity,
         const Vector3& position, const Vector3& right, const Vector3& up,
         float range, float decay);
@@ -89,6 +93,7 @@ private:
     int areaLightCount_ = MAX_AREA_LIGHTS;
 
     std::queue<int> availablePointLightIndices_;
+    std::queue<int> availableSpotLightIndices_;
     std::queue<int> availableAreaLightIndices_;
 
     // 現在選択されているライトの情報

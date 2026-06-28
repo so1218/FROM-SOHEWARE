@@ -8,7 +8,8 @@
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
-#include "Orb.h"
+#include "OrbManager.h"
+#include "EnemyManager.h"
 #include "IEditorCommand.h"
 #include "PlaceModelCommand.h"
 #include "MoveModelCommand.h"
@@ -25,6 +26,8 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<Ground>(engine_);
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
+    objectManager_.Create<OrbManager>(engine_, "GameOrb");
+    objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
 
     //player_->SetFollowCamera(followCamera_);
 }
@@ -73,11 +76,11 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     engine_->GetPostEffectManager()->GetCombineSettings()->enableDoF = true;
-    engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 100.0f;
-    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 33.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 90.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 43.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 45.0f;
-    engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 1.5f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
     //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
     //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
     //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
@@ -86,11 +89,6 @@ void TestSceneHori::OnInitialize()
     // 生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
     openingRail->Initialize();
-
-    for (int i = 0; i < 3; ++i)
-    {
-        objectManager_.Create<Orb>(engine_, i);
-    }
 
     // ローカル変数をムーブして CameraManager に渡す
     cameraManager_->AddRail("Opening", std::move(openingRail));
@@ -135,7 +133,7 @@ void TestSceneHori::OnDraw()
     for (const auto& model : placedModels_)
     {
         model->Draw();
-
+#ifdef IS_DEVELOPMENT
         // ギズモ処理前の座標を退避
         Vector3 posBeforeGizmo = model->GetTransform().translation_;
 
@@ -187,6 +185,7 @@ void TestSceneHori::OnDraw()
                 gizmoTargetModel_ = nullptr;
             }
         }
+#endif
     }
 }
 

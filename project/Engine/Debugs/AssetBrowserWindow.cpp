@@ -7,6 +7,7 @@ namespace FE
 
 void AssetBrowserWindow::Draw()
 {
+#ifdef IS_DEVELOPMENT
     ImGui::Begin("Assets");
 
     // ModelManagerからロード済みのモデル名一覧を取得
@@ -31,6 +32,7 @@ void AssetBrowserWindow::Draw()
     }
 
     ImGui::End();
+#endif
 }
 
 }

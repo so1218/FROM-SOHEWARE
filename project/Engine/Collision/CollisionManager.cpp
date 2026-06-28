@@ -3,6 +3,7 @@
 #include "CollisionManager.h"
 #include "Collision.h"
 #include "Collider.h"
+#include "GameObject.h"
 
 namespace FE
 {
@@ -87,12 +88,26 @@ void CollisionManager::CheckAllCollisions()
 
     for (auto itrA = colliders_.begin(); itrA != colliders_.end(); ++itrA)
     {
+        Collider* colliderA = *itrA;
+
+        // Aがコライダー自体無効、または親オブジェクトが非アクティブならスキップ
+        if (!colliderA->IsEnable() || (colliderA->GetOwner() && !colliderA->GetOwner()->IsActive()))
+        {
+            continue;
+        }
+
         auto itrB = itrA;
         ++itrB;
         for (; itrB != colliders_.end(); ++itrB)
         {
             Collider* colliderA = *itrA;
             Collider* colliderB = *itrB;
+
+            // Bがコライダー自体無効、または親オブジェクトが非アクティブならスキップ
+            if (!colliderB->IsEnable() || (colliderB->GetOwner() && !colliderB->GetOwner()->IsActive()))
+            {
+                continue;
+            }
 
             // フィルタリング
             if (((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0) ||

@@ -245,6 +245,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\EditorCommands\PlaceModelCommand.cpp" />
     <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Engine\Framework\GameObject.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
@@ -340,6 +342,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
     <ClCompile Include="Game\GameObject\Orb.cpp" />
+    <ClCompile Include="Game\GameObject\OrbManager.cpp" />
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Engine\Collision\Collision.cpp" />
@@ -421,6 +424,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\EditorCommands\MoveModelCommand.h" />
     <ClInclude Include="Game\EditorCommands\PlaceModelCommand.h" />
     <ClInclude Include="Game\GameObject\Bubble.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\ProjectConfig.h" />
@@ -490,6 +495,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
     <ClInclude Include="Game\GameObject\Orb.h" />
+    <ClInclude Include="Game\GameObject\OrbManager.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />

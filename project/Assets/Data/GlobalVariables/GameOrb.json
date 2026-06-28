@@ -1,272 +1,23 @@
 {
-    "Orb": {
-        "0": {
+    "GameOrb": {
+        "OrbCount": 3,
+        "Orb_0": {
             "LightColor": [
                 1.0,
-                0.03375530242919922,
-                0.03375530242919922,
+                0.06751054525375366,
+                0.7285158634185791,
                 1.0
             ],
-            "LightIntensity": 4.949999809265137,
-            "LightRadius": 17.329999923706055,
-            "LightVolumetricScatteringIntensity": 8.850000381469727,
-            "orbModel_AddShadow": 0,
-            "orbModel_AlbedoMap": "white1x1",
-            "orbModel_AlphaThres": 0.009999999776482582,
-            "orbModel_Color": [
-                1.0,
-                0.029535889625549316,
-                0.029535889625549316,
-                1.0
-            ],
-            "orbModel_DiffuseRef": 4.0,
-            "orbModel_DisEnable": 0,
-            "orbModel_DisThres": 0.5,
-            "orbModel_DissolveTex": "white1x1",
-            "orbModel_EdgeColor": [
-                1.0,
-                0.5,
-                0.0
-            ],
-            "orbModel_EdgeInten": 2.0,
-            "orbModel_EdgeWidth": 0.05000000074505806,
-            "orbModel_Emissive": 27.799999237060547,
-            "orbModel_EnvMapInt": 0.5,
-            "orbModel_EnvMapTex": "pureSky",
-            "orbModel_LightMode": 3,
-            "orbModel_Lighting": 1,
-            "orbModel_Metalness": 0.699999988079071,
-            "orbModel_NormEnable": 1,
-            "orbModel_NormInten": 2.2899999618530273,
-            "orbModel_NormTile": 6.599999904632568,
-            "orbModel_NormalMapTex": "normal_25",
-            "orbModel_OutlineColor": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "orbModel_OutlineEnable": 0,
-            "orbModel_OutlineWidth": 1.0,
-            "orbModel_PuddleColor": [
-                0.10000000149011612,
-                0.10000000149011612,
-                0.10000000149011612,
-                0.5
-            ],
-            "orbModel_PuddleEmission": 0.0,
-            "orbModel_PuddleFalloff": 0.10000000149011612,
-            "orbModel_PuddleNoise": "white1x1",
-            "orbModel_PuddleScale": 0.10000000149011612,
-            "orbModel_PuddleTint": 0.5,
-            "orbModel_RimColor": [
-                0.9831223487854004,
-                0.14933504164218903,
-                0.0
-            ],
-            "orbModel_RimEnable": 0,
-            "orbModel_RimInten": 1.899999976158142,
-            "orbModel_RimPower": 3.0,
-            "orbModel_RimUseDir": 0,
-            "orbModel_RippleEnable": 0,
-            "orbModel_RippleFreq": 1.0,
-            "orbModel_RippleMap": "white1x1",
-            "orbModel_RippleMix": 0.5,
-            "orbModel_RippleScale": 2.0,
-            "orbModel_RippleSize": 0.4000000059604645,
-            "orbModel_RippleSpeed": 1.0,
-            "orbModel_RippleStren": 0.05000000074505806,
-            "orbModel_Rot": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_Roughness": 0.2199999988079071,
-            "orbModel_Scale": [
-                1.5,
-                1.5,
-                1.5
-            ],
-            "orbModel_ShadowBias": 0.0005000000237487257,
-            "orbModel_ShadowDens": 0.800000011920929,
-            "orbModel_ShadowEnv": 0.0,
-            "orbModel_ShadowSoft": 0.0,
-            "orbModel_Shininess": 50.0,
-            "orbModel_SpecColor": [
-                1.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "orbModel_ToonRampTex": "toonRamp_01",
-            "orbModel_Trans": [
-                65.30000305175781,
-                6.0,
-                -38.900001525878906
-            ],
-            "orbModel_TriScale": 0.10000000149011612,
-            "orbModel_TriSharpness": 4.0,
-            "orbModel_UVRot": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_UVScale": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "orbModel_UVTrans": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_UsePuddle": 0,
-            "orbModel_UseTriplanar": 0,
-            "orbModel_Wetness": 0.5
-        },
-        "1": {
-            "LightColor": [
-                0.29845649003982544,
-                1.0,
-                0.2194092869758606,
-                1.0
-            ],
-            "LightIntensity": 5.130000114440918,
-            "LightRadius": 26.010000228881836,
-            "LightVolumetricScatteringIntensity": 12.140000343322754,
-            "orbModel_AddShadow": 0,
-            "orbModel_AlbedoMap": "white1x1",
-            "orbModel_AlphaThres": 0.009999999776482582,
-            "orbModel_Color": [
-                0.3045181334018707,
-                0.9535865187644958,
-                0.08449502289295197,
-                1.0
-            ],
-            "orbModel_DiffuseRef": 4.0,
-            "orbModel_DisEnable": 0,
-            "orbModel_DisThres": 0.5,
-            "orbModel_DissolveTex": "white1x1",
-            "orbModel_EdgeColor": [
-                1.0,
-                0.5,
-                0.0
-            ],
-            "orbModel_EdgeInten": 2.0,
-            "orbModel_EdgeWidth": 0.05000000074505806,
-            "orbModel_Emissive": 7.699999809265137,
-            "orbModel_EnvMapInt": 1.0700000524520874,
-            "orbModel_EnvMapTex": "pureSky",
-            "orbModel_LightMode": 3,
-            "orbModel_Lighting": 1,
-            "orbModel_Metalness": 1.0,
-            "orbModel_NormEnable": 1,
-            "orbModel_NormInten": 4.570000171661377,
-            "orbModel_NormTile": 2.9000000953674316,
-            "orbModel_NormalMapTex": "normal_25",
-            "orbModel_OutlineColor": [
-                0.0,
-                0.0,
-                0.0,
-                1.0
-            ],
-            "orbModel_OutlineEnable": 0,
-            "orbModel_OutlineWidth": 6.5,
-            "orbModel_PuddleColor": [
-                0.10000000149011612,
-                0.10000000149011612,
-                0.10000000149011612,
-                0.5
-            ],
-            "orbModel_PuddleEmission": 0.0,
-            "orbModel_PuddleFalloff": 0.10000000149011612,
-            "orbModel_PuddleNoise": "white1x1",
-            "orbModel_PuddleScale": 0.10000000149011612,
-            "orbModel_PuddleTint": 0.5,
-            "orbModel_RimColor": [
-                0.1603909730911255,
-                0.9746835231781006,
-                0.964375913143158
-            ],
-            "orbModel_RimEnable": 0,
-            "orbModel_RimInten": 1.0,
-            "orbModel_RimPower": 3.0,
-            "orbModel_RimUseDir": 0,
-            "orbModel_RippleEnable": 0,
-            "orbModel_RippleFreq": 1.0,
-            "orbModel_RippleMap": "white1x1",
-            "orbModel_RippleMix": 0.5,
-            "orbModel_RippleScale": 2.0,
-            "orbModel_RippleSize": 0.4000000059604645,
-            "orbModel_RippleSpeed": 1.0,
-            "orbModel_RippleStren": 0.05000000074505806,
-            "orbModel_Rot": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_Roughness": 0.1899999976158142,
-            "orbModel_Scale": [
-                1.5,
-                1.5,
-                1.5
-            ],
-            "orbModel_ShadowBias": 0.0005000000237487257,
-            "orbModel_ShadowDens": 0.800000011920929,
-            "orbModel_ShadowEnv": 0.0,
-            "orbModel_ShadowSoft": 0.0,
-            "orbModel_Shininess": 50.0,
-            "orbModel_SpecColor": [
-                1.0,
-                1.0,
-                1.0,
-                1.0
-            ],
-            "orbModel_ToonRampTex": "toonRamp_01",
-            "orbModel_Trans": [
-                -35.400001525878906,
-                6.0,
-                -28.100000381469727
-            ],
-            "orbModel_TriScale": 0.10000000149011612,
-            "orbModel_TriSharpness": 4.0,
-            "orbModel_UVRot": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_UVScale": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "orbModel_UVTrans": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbModel_UsePuddle": 0,
-            "orbModel_UseTriplanar": 0,
-            "orbModel_Wetness": 0.5
-        },
-        "2": {
-            "LightColor": [
-                0.9831223487854004,
-                0.747147798538208,
-                0.09540852159261703,
-                1.0
-            ],
-            "LightIntensity": 5.619999885559082,
-            "LightRadius": 26.040000915527344,
-            "LightVolumetricScatteringIntensity": 3.549999952316284,
+            "LightIntensity": 7.849999904632568,
+            "LightRadius": 26.889999389648438,
+            "LightVolumetricScatteringIntensity": 1.0,
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
             "orbModel_Color": [
                 1.0,
-                0.8918976783752441,
-                0.2236286997795105,
+                1.0,
+                1.0,
                 1.0
             ],
             "orbModel_DiffuseRef": 4.0,
@@ -280,16 +31,16 @@
             ],
             "orbModel_EdgeInten": 2.0,
             "orbModel_EdgeWidth": 0.05000000074505806,
-            "orbModel_Emissive": 39.29999923706055,
-            "orbModel_EnvMapInt": 1.0099999904632568,
-            "orbModel_EnvMapTex": "pureSky",
+            "orbModel_Emissive": 1.899999976158142,
+            "orbModel_EnvMapInt": 0.18000000715255737,
+            "orbModel_EnvMapTex": "skybox",
             "orbModel_LightMode": 3,
             "orbModel_Lighting": 1,
-            "orbModel_Metalness": 1.0,
+            "orbModel_Metalness": 0.8899999856948853,
             "orbModel_NormEnable": 1,
-            "orbModel_NormInten": 5.170000076293945,
-            "orbModel_NormTile": 4.5,
-            "orbModel_NormalMapTex": "normal_25",
+            "orbModel_NormInten": 3.4800000190734863,
+            "orbModel_NormTile": 2.0999999046325684,
+            "orbModel_NormalMapTex": "normal_32",
             "orbModel_OutlineColor": [
                 0.0,
                 0.0,
@@ -311,12 +62,12 @@
             "orbModel_PuddleTint": 0.5,
             "orbModel_RimColor": [
                 1.0,
-                1.0,
-                1.0
+                0.3129305839538574,
+                0.18987339735031128
             ],
-            "orbModel_RimEnable": 0,
-            "orbModel_RimInten": 1.0,
-            "orbModel_RimPower": 3.0,
+            "orbModel_RimEnable": 1,
+            "orbModel_RimInten": 9.199999809265137,
+            "orbModel_RimPower": 5.0,
             "orbModel_RimUseDir": 0,
             "orbModel_RippleEnable": 0,
             "orbModel_RippleFreq": 1.0,
@@ -331,7 +82,7 @@
                 0.0,
                 0.0
             ],
-            "orbModel_Roughness": 0.20000000298023224,
+            "orbModel_Roughness": 0.14000000059604645,
             "orbModel_Scale": [
                 1.5,
                 1.5,
@@ -350,9 +101,259 @@
             ],
             "orbModel_ToonRampTex": "toonRamp_01",
             "orbModel_Trans": [
-                -64.69999694824219,
+                35.20000076293945,
                 6.0,
-                46.900001525878906
+                -28.700000762939453
+            ],
+            "orbModel_TriScale": 0.10000000149011612,
+            "orbModel_TriSharpness": 4.0,
+            "orbModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_UsePuddle": 0,
+            "orbModel_UseTriplanar": 0,
+            "orbModel_Wetness": 0.5
+        },
+        "Orb_1": {
+            "LightColor": [
+                0.2377825379371643,
+                1.0,
+                0.10126584768295288,
+                1.0
+            ],
+            "LightIntensity": 4.860000133514404,
+            "LightRadius": 15.4399995803833,
+            "LightVolumetricScatteringIntensity": 12.989999771118164,
+            "orbModel_AddShadow": 1,
+            "orbModel_AlbedoMap": "white1x1",
+            "orbModel_AlphaThres": 0.009999999776482582,
+            "orbModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_DiffuseRef": 4.0,
+            "orbModel_DisEnable": 0,
+            "orbModel_DisThres": 0.5,
+            "orbModel_DissolveTex": "white1x1",
+            "orbModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "orbModel_EdgeInten": 2.0,
+            "orbModel_EdgeWidth": 0.05000000074505806,
+            "orbModel_Emissive": 1.5,
+            "orbModel_EnvMapInt": 0.0,
+            "orbModel_EnvMapTex": "skybox",
+            "orbModel_LightMode": 3,
+            "orbModel_Lighting": 1,
+            "orbModel_Metalness": 0.9399999976158142,
+            "orbModel_NormEnable": 1,
+            "orbModel_NormInten": 4.800000190734863,
+            "orbModel_NormTile": 1.0,
+            "orbModel_NormalMapTex": "normal_32",
+            "orbModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "orbModel_OutlineEnable": 0,
+            "orbModel_OutlineWidth": 1.0,
+            "orbModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "orbModel_PuddleEmission": 0.0,
+            "orbModel_PuddleFalloff": 0.10000000149011612,
+            "orbModel_PuddleNoise": "white1x1",
+            "orbModel_PuddleScale": 0.10000000149011612,
+            "orbModel_PuddleTint": 0.5,
+            "orbModel_RimColor": [
+                0.384393572807312,
+                1.0,
+                0.04641348123550415
+            ],
+            "orbModel_RimEnable": 1,
+            "orbModel_RimInten": 1.0,
+            "orbModel_RimPower": 3.0,
+            "orbModel_RimUseDir": 0,
+            "orbModel_RippleEnable": 0,
+            "orbModel_RippleFreq": 1.0,
+            "orbModel_RippleMap": "white1x1",
+            "orbModel_RippleMix": 0.5,
+            "orbModel_RippleScale": 2.0,
+            "orbModel_RippleSize": 0.4000000059604645,
+            "orbModel_RippleSpeed": 1.0,
+            "orbModel_RippleStren": 0.05000000074505806,
+            "orbModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_Roughness": 0.28999999165534973,
+            "orbModel_Scale": [
+                1.5,
+                1.5,
+                1.5
+            ],
+            "orbModel_ShadowBias": 0.0005000000237487257,
+            "orbModel_ShadowDens": 0.800000011920929,
+            "orbModel_ShadowEnv": 0.0,
+            "orbModel_ShadowSoft": 0.0,
+            "orbModel_Shininess": 50.0,
+            "orbModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_ToonRampTex": "toonRamp_01",
+            "orbModel_Trans": [
+                -33.099998474121094,
+                6.0,
+                -28.399999618530273
+            ],
+            "orbModel_TriScale": 0.10000000149011612,
+            "orbModel_TriSharpness": 4.0,
+            "orbModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_UsePuddle": 0,
+            "orbModel_UseTriplanar": 0,
+            "orbModel_Wetness": 0.5
+        },
+        "Orb_2": {
+            "LightColor": [
+                0.19999998807907104,
+                0.7873418927192688,
+                1.0,
+                1.0
+            ],
+            "LightIntensity": 4.960000038146973,
+            "LightRadius": 15.380000114440918,
+            "LightVolumetricScatteringIntensity": 4.110000133514404,
+            "orbModel_AddShadow": 1,
+            "orbModel_AlbedoMap": "white1x1",
+            "orbModel_AlphaThres": 0.009999999776482582,
+            "orbModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_DiffuseRef": 4.0,
+            "orbModel_DisEnable": 0,
+            "orbModel_DisThres": 0.5,
+            "orbModel_DissolveTex": "white1x1",
+            "orbModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "orbModel_EdgeInten": 2.0,
+            "orbModel_EdgeWidth": 0.05000000074505806,
+            "orbModel_Emissive": 1.0,
+            "orbModel_EnvMapInt": 0.07999999821186066,
+            "orbModel_EnvMapTex": "skybox",
+            "orbModel_LightMode": 3,
+            "orbModel_Lighting": 1,
+            "orbModel_Metalness": 0.8999999761581421,
+            "orbModel_NormEnable": 1,
+            "orbModel_NormInten": 4.829999923706055,
+            "orbModel_NormTile": 1.0,
+            "orbModel_NormalMapTex": "normal_32",
+            "orbModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "orbModel_OutlineEnable": 0,
+            "orbModel_OutlineWidth": 1.0,
+            "orbModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "orbModel_PuddleEmission": 0.0,
+            "orbModel_PuddleFalloff": 0.10000000149011612,
+            "orbModel_PuddleNoise": "white1x1",
+            "orbModel_PuddleScale": 0.10000000149011612,
+            "orbModel_PuddleTint": 0.5,
+            "orbModel_RimColor": [
+                0.0,
+                0.14516916871070862,
+                0.6371307969093323
+            ],
+            "orbModel_RimEnable": 1,
+            "orbModel_RimInten": 10.0,
+            "orbModel_RimPower": 2.5999999046325684,
+            "orbModel_RimUseDir": 0,
+            "orbModel_RippleEnable": 0,
+            "orbModel_RippleFreq": 1.0,
+            "orbModel_RippleMap": "white1x1",
+            "orbModel_RippleMix": 0.5,
+            "orbModel_RippleScale": 2.0,
+            "orbModel_RippleSize": 0.4000000059604645,
+            "orbModel_RippleSpeed": 1.0,
+            "orbModel_RippleStren": 0.05000000074505806,
+            "orbModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "orbModel_Roughness": 0.17000000178813934,
+            "orbModel_Scale": [
+                1.5,
+                1.5,
+                1.5
+            ],
+            "orbModel_ShadowBias": 0.0005000000237487257,
+            "orbModel_ShadowDens": 0.800000011920929,
+            "orbModel_ShadowEnv": 0.0,
+            "orbModel_ShadowSoft": 0.0,
+            "orbModel_Shininess": 50.0,
+            "orbModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "orbModel_ToonRampTex": "toonRamp_01",
+            "orbModel_Trans": [
+                -62.599998474121094,
+                6.0,
+                41.79999923706055
             ],
             "orbModel_TriScale": 0.10000000149011612,
             "orbModel_TriSharpness": 4.0,

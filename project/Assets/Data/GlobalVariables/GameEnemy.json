@@ -1,0 +1,1664 @@
+{
+    "GameEnemy": {
+        "EnemyCount": 3,
+        "Enemy_0": {
+            "Amplitude": [
+                80.0,
+                0.0,
+                80.0
+            ],
+            "BasePosition": [
+                0.0,
+                20.0,
+                0.0
+            ],
+            "ColliderOffset": [
+                0.0,
+                -18.260000228881836,
+                0.0
+            ],
+            "ColliderRadius": 9.09000015258789,
+            "Frequency": [
+                0.20000000298023224,
+                0.0,
+                0.20000000298023224
+            ],
+            "Phase": [
+                0.0,
+                0.0,
+                90.0
+            ],
+            "SpotAngle": 28.1299991607666,
+            "SpotColor": [
+                0.07594937086105347,
+                0.21631181240081787,
+                1.0,
+                1.0
+            ],
+            "SpotDirection": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "SpotDistance": 23.969999313354492,
+            "SpotIntensity": 30.850000381469727,
+            "SpotVolumetric": 25.549999237060547,
+            "enemyModel_AddShadow": 1,
+            "enemyModel_AlbedoMap": "white1x1",
+            "enemyModel_AlphaThres": 0.009999999776482582,
+            "enemyModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_DiffuseRef": 4.0,
+            "enemyModel_DisEnable": 0,
+            "enemyModel_DisThres": 0.5,
+            "enemyModel_DissolveTex": "white1x1",
+            "enemyModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_EdgeInten": 2.0,
+            "enemyModel_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Emissive": 1.0,
+            "enemyModel_EnvMapInt": 0.0,
+            "enemyModel_EnvMapTex": "skybox",
+            "enemyModel_LightMode": 1,
+            "enemyModel_Lighting": 1,
+            "enemyModel_Mat0_AddShadow": 1,
+            "enemyModel_Mat0_AlbedoMap": "white1x1",
+            "enemyModel_Mat0_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_DiffuseRef": 4.0,
+            "enemyModel_Mat0_DisEnable": 0,
+            "enemyModel_Mat0_DisThres": 0.5,
+            "enemyModel_Mat0_DissolveTex": "white1x1",
+            "enemyModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat0_EdgeInten": 2.0,
+            "enemyModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat0_Emissive": 1.0,
+            "enemyModel_Mat0_EnvMapInt": 0.0,
+            "enemyModel_Mat0_EnvMapTex": "skybox",
+            "enemyModel_Mat0_LightMode": 3,
+            "enemyModel_Mat0_Lighting": 1,
+            "enemyModel_Mat0_Metalness": 0.0,
+            "enemyModel_Mat0_NormEnable": 0,
+            "enemyModel_Mat0_NormInten": 1.0,
+            "enemyModel_Mat0_NormTile": 1.0,
+            "enemyModel_Mat0_NormalMapTex": "white1x1",
+            "enemyModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat0_OutlineEnable": 0,
+            "enemyModel_Mat0_OutlineWidth": 1.0,
+            "enemyModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat0_PuddleEmission": 0.0,
+            "enemyModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleNoise": "white1x1",
+            "enemyModel_Mat0_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleTint": 0.5,
+            "enemyModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_RimEnable": 0,
+            "enemyModel_Mat0_RimInten": 1.0,
+            "enemyModel_Mat0_RimPower": 3.0,
+            "enemyModel_Mat0_RimUseDir": 0,
+            "enemyModel_Mat0_RippleEnable": 0,
+            "enemyModel_Mat0_RippleFreq": 1.0,
+            "enemyModel_Mat0_RippleMap": "white1x1",
+            "enemyModel_Mat0_RippleMix": 0.5,
+            "enemyModel_Mat0_RippleScale": 2.0,
+            "enemyModel_Mat0_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat0_RippleSpeed": 1.0,
+            "enemyModel_Mat0_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat0_Roughness": 0.5,
+            "enemyModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat0_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat0_ShadowEnv": 0.0,
+            "enemyModel_Mat0_ShadowSoft": 0.0,
+            "enemyModel_Mat0_Shininess": 50.0,
+            "enemyModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat0_TriScale": 0.10000000149011612,
+            "enemyModel_Mat0_TriSharpness": 4.0,
+            "enemyModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UsePuddle": 0,
+            "enemyModel_Mat0_UseTriplanar": 0,
+            "enemyModel_Mat0_Wetness": 0.5,
+            "enemyModel_Mat1_AddShadow": 1,
+            "enemyModel_Mat1_AlbedoMap": "white1x1",
+            "enemyModel_Mat1_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_DiffuseRef": 4.0,
+            "enemyModel_Mat1_DisEnable": 0,
+            "enemyModel_Mat1_DisThres": 0.5,
+            "enemyModel_Mat1_DissolveTex": "white1x1",
+            "enemyModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat1_EdgeInten": 2.0,
+            "enemyModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat1_Emissive": 11.100000381469727,
+            "enemyModel_Mat1_EnvMapInt": 0.07000000029802322,
+            "enemyModel_Mat1_EnvMapTex": "skybox",
+            "enemyModel_Mat1_LightMode": 3,
+            "enemyModel_Mat1_Lighting": 1,
+            "enemyModel_Mat1_Metalness": 1.0,
+            "enemyModel_Mat1_NormEnable": 0,
+            "enemyModel_Mat1_NormInten": 1.0,
+            "enemyModel_Mat1_NormTile": 1.0,
+            "enemyModel_Mat1_NormalMapTex": "normal_30",
+            "enemyModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat1_OutlineEnable": 0,
+            "enemyModel_Mat1_OutlineWidth": 1.0,
+            "enemyModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat1_PuddleEmission": 0.0,
+            "enemyModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleNoise": "white1x1",
+            "enemyModel_Mat1_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleTint": 0.5,
+            "enemyModel_Mat1_RimColor": [
+                0.9704641103744507,
+                0.410826176404953,
+                0.22111842036247253
+            ],
+            "enemyModel_Mat1_RimEnable": 1,
+            "enemyModel_Mat1_RimInten": 0.4000000059604645,
+            "enemyModel_Mat1_RimPower": 10.300000190734863,
+            "enemyModel_Mat1_RimUseDir": 0,
+            "enemyModel_Mat1_RippleEnable": 0,
+            "enemyModel_Mat1_RippleFreq": 1.0,
+            "enemyModel_Mat1_RippleMap": "white1x1",
+            "enemyModel_Mat1_RippleMix": 0.5,
+            "enemyModel_Mat1_RippleScale": 2.0,
+            "enemyModel_Mat1_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat1_RippleSpeed": 1.0,
+            "enemyModel_Mat1_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat1_Roughness": 0.2199999988079071,
+            "enemyModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat1_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat1_ShadowEnv": 0.0,
+            "enemyModel_Mat1_ShadowSoft": 0.0,
+            "enemyModel_Mat1_Shininess": 50.0,
+            "enemyModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat1_TriScale": 0.10000000149011612,
+            "enemyModel_Mat1_TriSharpness": 4.0,
+            "enemyModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UsePuddle": 0,
+            "enemyModel_Mat1_UseTriplanar": 0,
+            "enemyModel_Mat1_Wetness": 0.5,
+            "enemyModel_Mat2_AddShadow": 1,
+            "enemyModel_Mat2_AlbedoMap": "white1x1",
+            "enemyModel_Mat2_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat2_Color": [
+                0.3333333134651184,
+                0.3333333134651184,
+                0.3333333134651184,
+                1.0
+            ],
+            "enemyModel_Mat2_DiffuseRef": 4.0,
+            "enemyModel_Mat2_DisEnable": 0,
+            "enemyModel_Mat2_DisThres": 0.5,
+            "enemyModel_Mat2_DissolveTex": "white1x1",
+            "enemyModel_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat2_EdgeInten": 2.0,
+            "enemyModel_Mat2_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat2_Emissive": 15.300000190734863,
+            "enemyModel_Mat2_EnvMapInt": 0.10999999940395355,
+            "enemyModel_Mat2_EnvMapTex": "skybox",
+            "enemyModel_Mat2_LightMode": 3,
+            "enemyModel_Mat2_Lighting": 1,
+            "enemyModel_Mat2_Metalness": 1.0,
+            "enemyModel_Mat2_NormEnable": 0,
+            "enemyModel_Mat2_NormInten": 1.0,
+            "enemyModel_Mat2_NormTile": 1.0,
+            "enemyModel_Mat2_NormalMapTex": "white1x1",
+            "enemyModel_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat2_OutlineEnable": 0,
+            "enemyModel_Mat2_OutlineWidth": 1.0,
+            "enemyModel_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat2_PuddleEmission": 0.0,
+            "enemyModel_Mat2_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleNoise": "white1x1",
+            "enemyModel_Mat2_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleTint": 0.5,
+            "enemyModel_Mat2_RimColor": [
+                0.13502109050750732,
+                0.24451220035552979,
+                1.0
+            ],
+            "enemyModel_Mat2_RimEnable": 1,
+            "enemyModel_Mat2_RimInten": 3.0999999046325684,
+            "enemyModel_Mat2_RimPower": 4.400000095367432,
+            "enemyModel_Mat2_RimUseDir": 0,
+            "enemyModel_Mat2_RippleEnable": 0,
+            "enemyModel_Mat2_RippleFreq": 1.0,
+            "enemyModel_Mat2_RippleMap": "white1x1",
+            "enemyModel_Mat2_RippleMix": 0.5,
+            "enemyModel_Mat2_RippleScale": 2.0,
+            "enemyModel_Mat2_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat2_RippleSpeed": 1.0,
+            "enemyModel_Mat2_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat2_Roughness": 0.23999999463558197,
+            "enemyModel_Mat2_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat2_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat2_ShadowEnv": 0.0,
+            "enemyModel_Mat2_ShadowSoft": 0.0,
+            "enemyModel_Mat2_Shininess": 50.0,
+            "enemyModel_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat2_TriScale": 0.10000000149011612,
+            "enemyModel_Mat2_TriSharpness": 4.0,
+            "enemyModel_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UsePuddle": 0,
+            "enemyModel_Mat2_UseTriplanar": 0,
+            "enemyModel_Mat2_Wetness": 0.5,
+            "enemyModel_Mat3_AddShadow": 1,
+            "enemyModel_Mat3_AlbedoMap": "white1x1",
+            "enemyModel_Mat3_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat3_Color": [
+                0.0,
+                1.0,
+                0.15189862251281738,
+                1.0
+            ],
+            "enemyModel_Mat3_DiffuseRef": 4.0,
+            "enemyModel_Mat3_DisEnable": 0,
+            "enemyModel_Mat3_DisThres": 0.5,
+            "enemyModel_Mat3_DissolveTex": "white1x1",
+            "enemyModel_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat3_EdgeInten": 2.0,
+            "enemyModel_Mat3_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat3_Emissive": 7.5,
+            "enemyModel_Mat3_EnvMapInt": 0.03999999910593033,
+            "enemyModel_Mat3_EnvMapTex": "skybox",
+            "enemyModel_Mat3_LightMode": 1,
+            "enemyModel_Mat3_Lighting": 0,
+            "enemyModel_Mat3_Metalness": 0.0,
+            "enemyModel_Mat3_NormEnable": 0,
+            "enemyModel_Mat3_NormInten": 1.0,
+            "enemyModel_Mat3_NormTile": 1.0,
+            "enemyModel_Mat3_NormalMapTex": "white1x1",
+            "enemyModel_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat3_OutlineEnable": 0,
+            "enemyModel_Mat3_OutlineWidth": 1.0,
+            "enemyModel_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat3_PuddleEmission": 0.0,
+            "enemyModel_Mat3_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleNoise": "white1x1",
+            "enemyModel_Mat3_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleTint": 0.5,
+            "enemyModel_Mat3_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_RimEnable": 0,
+            "enemyModel_Mat3_RimInten": 1.0,
+            "enemyModel_Mat3_RimPower": 3.0,
+            "enemyModel_Mat3_RimUseDir": 0,
+            "enemyModel_Mat3_RippleEnable": 0,
+            "enemyModel_Mat3_RippleFreq": 1.0,
+            "enemyModel_Mat3_RippleMap": "white1x1",
+            "enemyModel_Mat3_RippleMix": 0.5,
+            "enemyModel_Mat3_RippleScale": 2.0,
+            "enemyModel_Mat3_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat3_RippleSpeed": 1.0,
+            "enemyModel_Mat3_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat3_Roughness": 0.5,
+            "enemyModel_Mat3_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat3_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat3_ShadowEnv": 0.0,
+            "enemyModel_Mat3_ShadowSoft": 0.0,
+            "enemyModel_Mat3_Shininess": 50.0,
+            "enemyModel_Mat3_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat3_TriScale": 0.10000000149011612,
+            "enemyModel_Mat3_TriSharpness": 4.0,
+            "enemyModel_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UsePuddle": 0,
+            "enemyModel_Mat3_UseTriplanar": 0,
+            "enemyModel_Mat3_Wetness": 0.5,
+            "enemyModel_Metalness": 0.0,
+            "enemyModel_NormEnable": 0,
+            "enemyModel_NormInten": 1.0,
+            "enemyModel_NormTile": 1.0,
+            "enemyModel_NormalMapTex": "white1x1",
+            "enemyModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_OutlineEnable": 0,
+            "enemyModel_OutlineWidth": 1.0,
+            "enemyModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_PuddleEmission": 0.0,
+            "enemyModel_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_PuddleNoise": "white1x1",
+            "enemyModel_PuddleScale": 0.10000000149011612,
+            "enemyModel_PuddleTint": 0.5,
+            "enemyModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_RimEnable": 0,
+            "enemyModel_RimInten": 1.0,
+            "enemyModel_RimPower": 3.0,
+            "enemyModel_RimUseDir": 0,
+            "enemyModel_RippleEnable": 0,
+            "enemyModel_RippleFreq": 1.0,
+            "enemyModel_RippleMap": "white1x1",
+            "enemyModel_RippleMix": 0.5,
+            "enemyModel_RippleScale": 2.0,
+            "enemyModel_RippleSize": 0.4000000059604645,
+            "enemyModel_RippleSpeed": 1.0,
+            "enemyModel_RippleStren": 0.05000000074505806,
+            "enemyModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Roughness": 0.5,
+            "enemyModel_Scale": [
+                2.0,
+                2.0,
+                2.0
+            ],
+            "enemyModel_ShadowBias": 0.0005000000237487257,
+            "enemyModel_ShadowDens": 0.800000011920929,
+            "enemyModel_ShadowEnv": 0.0,
+            "enemyModel_ShadowSoft": 0.0,
+            "enemyModel_Shininess": 50.0,
+            "enemyModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_ToonRampTex": "toonRamp_01",
+            "enemyModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_TriScale": 0.10000000149011612,
+            "enemyModel_TriSharpness": 4.0,
+            "enemyModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UsePuddle": 0,
+            "enemyModel_UseTriplanar": 0,
+            "enemyModel_Wetness": 0.5
+        },
+        "Enemy_1": {
+            "Amplitude": [
+                57.130001068115234,
+                0.0,
+                10.0
+            ],
+            "BasePosition": [
+                -13.390000343322754,
+                20.0,
+                56.59000015258789
+            ],
+            "ColliderOffset": [
+                0.0,
+                -18.010000228881836,
+                0.0
+            ],
+            "ColliderRadius": 9.050000190734863,
+            "Frequency": [
+                0.23000000417232513,
+                1.0,
+                0.10000000149011612
+            ],
+            "Phase": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "SpotAngle": 29.299999237060547,
+            "SpotColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "SpotDirection": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "SpotDistance": 23.149999618530273,
+            "SpotIntensity": 10.619999885559082,
+            "SpotVolumetric": 4.0,
+            "enemyModel_AddShadow": 1,
+            "enemyModel_AlbedoMap": "white1x1",
+            "enemyModel_AlphaThres": 0.009999999776482582,
+            "enemyModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_DiffuseRef": 4.0,
+            "enemyModel_DisEnable": 0,
+            "enemyModel_DisThres": 0.5,
+            "enemyModel_DissolveTex": "white1x1",
+            "enemyModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_EdgeInten": 2.0,
+            "enemyModel_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Emissive": 1.0,
+            "enemyModel_EnvMapInt": 0.0,
+            "enemyModel_EnvMapTex": "skybox",
+            "enemyModel_LightMode": 1,
+            "enemyModel_Lighting": 1,
+            "enemyModel_Mat0_AddShadow": 1,
+            "enemyModel_Mat0_AlbedoMap": "white1x1",
+            "enemyModel_Mat0_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_DiffuseRef": 4.0,
+            "enemyModel_Mat0_DisEnable": 0,
+            "enemyModel_Mat0_DisThres": 0.5,
+            "enemyModel_Mat0_DissolveTex": "white1x1",
+            "enemyModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat0_EdgeInten": 2.0,
+            "enemyModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat0_Emissive": 1.0,
+            "enemyModel_Mat0_EnvMapInt": 0.0,
+            "enemyModel_Mat0_EnvMapTex": "skybox",
+            "enemyModel_Mat0_LightMode": 1,
+            "enemyModel_Mat0_Lighting": 1,
+            "enemyModel_Mat0_Metalness": 0.0,
+            "enemyModel_Mat0_NormEnable": 0,
+            "enemyModel_Mat0_NormInten": 1.0,
+            "enemyModel_Mat0_NormTile": 1.0,
+            "enemyModel_Mat0_NormalMapTex": "white1x1",
+            "enemyModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat0_OutlineEnable": 0,
+            "enemyModel_Mat0_OutlineWidth": 1.0,
+            "enemyModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat0_PuddleEmission": 0.0,
+            "enemyModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleNoise": "white1x1",
+            "enemyModel_Mat0_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleTint": 0.5,
+            "enemyModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_RimEnable": 0,
+            "enemyModel_Mat0_RimInten": 1.0,
+            "enemyModel_Mat0_RimPower": 3.0,
+            "enemyModel_Mat0_RimUseDir": 0,
+            "enemyModel_Mat0_RippleEnable": 0,
+            "enemyModel_Mat0_RippleFreq": 1.0,
+            "enemyModel_Mat0_RippleMap": "white1x1",
+            "enemyModel_Mat0_RippleMix": 0.5,
+            "enemyModel_Mat0_RippleScale": 2.0,
+            "enemyModel_Mat0_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat0_RippleSpeed": 1.0,
+            "enemyModel_Mat0_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat0_Roughness": 0.5,
+            "enemyModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat0_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat0_ShadowEnv": 0.0,
+            "enemyModel_Mat0_ShadowSoft": 0.0,
+            "enemyModel_Mat0_Shininess": 50.0,
+            "enemyModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat0_TriScale": 0.10000000149011612,
+            "enemyModel_Mat0_TriSharpness": 4.0,
+            "enemyModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UsePuddle": 0,
+            "enemyModel_Mat0_UseTriplanar": 0,
+            "enemyModel_Mat0_Wetness": 0.5,
+            "enemyModel_Mat1_AddShadow": 1,
+            "enemyModel_Mat1_AlbedoMap": "white1x1",
+            "enemyModel_Mat1_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_DiffuseRef": 4.0,
+            "enemyModel_Mat1_DisEnable": 0,
+            "enemyModel_Mat1_DisThres": 0.5,
+            "enemyModel_Mat1_DissolveTex": "white1x1",
+            "enemyModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat1_EdgeInten": 2.0,
+            "enemyModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat1_Emissive": 1.0,
+            "enemyModel_Mat1_EnvMapInt": 0.0,
+            "enemyModel_Mat1_EnvMapTex": "skybox",
+            "enemyModel_Mat1_LightMode": 1,
+            "enemyModel_Mat1_Lighting": 1,
+            "enemyModel_Mat1_Metalness": 0.0,
+            "enemyModel_Mat1_NormEnable": 0,
+            "enemyModel_Mat1_NormInten": 1.0,
+            "enemyModel_Mat1_NormTile": 1.0,
+            "enemyModel_Mat1_NormalMapTex": "white1x1",
+            "enemyModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat1_OutlineEnable": 0,
+            "enemyModel_Mat1_OutlineWidth": 1.0,
+            "enemyModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat1_PuddleEmission": 0.0,
+            "enemyModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleNoise": "white1x1",
+            "enemyModel_Mat1_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleTint": 0.5,
+            "enemyModel_Mat1_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_RimEnable": 0,
+            "enemyModel_Mat1_RimInten": 1.0,
+            "enemyModel_Mat1_RimPower": 3.0,
+            "enemyModel_Mat1_RimUseDir": 0,
+            "enemyModel_Mat1_RippleEnable": 0,
+            "enemyModel_Mat1_RippleFreq": 1.0,
+            "enemyModel_Mat1_RippleMap": "white1x1",
+            "enemyModel_Mat1_RippleMix": 0.5,
+            "enemyModel_Mat1_RippleScale": 2.0,
+            "enemyModel_Mat1_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat1_RippleSpeed": 1.0,
+            "enemyModel_Mat1_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat1_Roughness": 0.5,
+            "enemyModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat1_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat1_ShadowEnv": 0.0,
+            "enemyModel_Mat1_ShadowSoft": 0.0,
+            "enemyModel_Mat1_Shininess": 50.0,
+            "enemyModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat1_TriScale": 0.10000000149011612,
+            "enemyModel_Mat1_TriSharpness": 4.0,
+            "enemyModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UsePuddle": 0,
+            "enemyModel_Mat1_UseTriplanar": 0,
+            "enemyModel_Mat1_Wetness": 0.5,
+            "enemyModel_Mat2_AddShadow": 1,
+            "enemyModel_Mat2_AlbedoMap": "white1x1",
+            "enemyModel_Mat2_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat2_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_DiffuseRef": 4.0,
+            "enemyModel_Mat2_DisEnable": 0,
+            "enemyModel_Mat2_DisThres": 0.5,
+            "enemyModel_Mat2_DissolveTex": "white1x1",
+            "enemyModel_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat2_EdgeInten": 2.0,
+            "enemyModel_Mat2_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat2_Emissive": 1.0,
+            "enemyModel_Mat2_EnvMapInt": 0.0,
+            "enemyModel_Mat2_EnvMapTex": "skybox",
+            "enemyModel_Mat2_LightMode": 1,
+            "enemyModel_Mat2_Lighting": 1,
+            "enemyModel_Mat2_Metalness": 0.0,
+            "enemyModel_Mat2_NormEnable": 0,
+            "enemyModel_Mat2_NormInten": 1.0,
+            "enemyModel_Mat2_NormTile": 1.0,
+            "enemyModel_Mat2_NormalMapTex": "white1x1",
+            "enemyModel_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat2_OutlineEnable": 0,
+            "enemyModel_Mat2_OutlineWidth": 1.0,
+            "enemyModel_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat2_PuddleEmission": 0.0,
+            "enemyModel_Mat2_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleNoise": "white1x1",
+            "enemyModel_Mat2_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleTint": 0.5,
+            "enemyModel_Mat2_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_RimEnable": 0,
+            "enemyModel_Mat2_RimInten": 1.0,
+            "enemyModel_Mat2_RimPower": 3.0,
+            "enemyModel_Mat2_RimUseDir": 0,
+            "enemyModel_Mat2_RippleEnable": 0,
+            "enemyModel_Mat2_RippleFreq": 1.0,
+            "enemyModel_Mat2_RippleMap": "white1x1",
+            "enemyModel_Mat2_RippleMix": 0.5,
+            "enemyModel_Mat2_RippleScale": 2.0,
+            "enemyModel_Mat2_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat2_RippleSpeed": 1.0,
+            "enemyModel_Mat2_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat2_Roughness": 0.5,
+            "enemyModel_Mat2_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat2_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat2_ShadowEnv": 0.0,
+            "enemyModel_Mat2_ShadowSoft": 0.0,
+            "enemyModel_Mat2_Shininess": 50.0,
+            "enemyModel_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat2_TriScale": 0.10000000149011612,
+            "enemyModel_Mat2_TriSharpness": 4.0,
+            "enemyModel_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UsePuddle": 0,
+            "enemyModel_Mat2_UseTriplanar": 0,
+            "enemyModel_Mat2_Wetness": 0.5,
+            "enemyModel_Mat3_AddShadow": 1,
+            "enemyModel_Mat3_AlbedoMap": "white1x1",
+            "enemyModel_Mat3_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_DiffuseRef": 4.0,
+            "enemyModel_Mat3_DisEnable": 0,
+            "enemyModel_Mat3_DisThres": 0.5,
+            "enemyModel_Mat3_DissolveTex": "white1x1",
+            "enemyModel_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat3_EdgeInten": 2.0,
+            "enemyModel_Mat3_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat3_Emissive": 1.0,
+            "enemyModel_Mat3_EnvMapInt": 0.0,
+            "enemyModel_Mat3_EnvMapTex": "skybox",
+            "enemyModel_Mat3_LightMode": 1,
+            "enemyModel_Mat3_Lighting": 1,
+            "enemyModel_Mat3_Metalness": 0.0,
+            "enemyModel_Mat3_NormEnable": 0,
+            "enemyModel_Mat3_NormInten": 1.0,
+            "enemyModel_Mat3_NormTile": 1.0,
+            "enemyModel_Mat3_NormalMapTex": "white1x1",
+            "enemyModel_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat3_OutlineEnable": 0,
+            "enemyModel_Mat3_OutlineWidth": 1.0,
+            "enemyModel_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat3_PuddleEmission": 0.0,
+            "enemyModel_Mat3_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleNoise": "white1x1",
+            "enemyModel_Mat3_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleTint": 0.5,
+            "enemyModel_Mat3_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_RimEnable": 0,
+            "enemyModel_Mat3_RimInten": 1.0,
+            "enemyModel_Mat3_RimPower": 3.0,
+            "enemyModel_Mat3_RimUseDir": 0,
+            "enemyModel_Mat3_RippleEnable": 0,
+            "enemyModel_Mat3_RippleFreq": 1.0,
+            "enemyModel_Mat3_RippleMap": "white1x1",
+            "enemyModel_Mat3_RippleMix": 0.5,
+            "enemyModel_Mat3_RippleScale": 2.0,
+            "enemyModel_Mat3_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat3_RippleSpeed": 1.0,
+            "enemyModel_Mat3_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat3_Roughness": 0.5,
+            "enemyModel_Mat3_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat3_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat3_ShadowEnv": 0.0,
+            "enemyModel_Mat3_ShadowSoft": 0.0,
+            "enemyModel_Mat3_Shininess": 50.0,
+            "enemyModel_Mat3_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat3_TriScale": 0.10000000149011612,
+            "enemyModel_Mat3_TriSharpness": 4.0,
+            "enemyModel_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UsePuddle": 0,
+            "enemyModel_Mat3_UseTriplanar": 0,
+            "enemyModel_Mat3_Wetness": 0.5,
+            "enemyModel_Metalness": 0.0,
+            "enemyModel_NormEnable": 0,
+            "enemyModel_NormInten": 1.0,
+            "enemyModel_NormTile": 1.0,
+            "enemyModel_NormalMapTex": "white1x1",
+            "enemyModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_OutlineEnable": 0,
+            "enemyModel_OutlineWidth": 1.0,
+            "enemyModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_PuddleEmission": 0.0,
+            "enemyModel_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_PuddleNoise": "white1x1",
+            "enemyModel_PuddleScale": 0.10000000149011612,
+            "enemyModel_PuddleTint": 0.5,
+            "enemyModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_RimEnable": 0,
+            "enemyModel_RimInten": 1.0,
+            "enemyModel_RimPower": 3.0,
+            "enemyModel_RimUseDir": 0,
+            "enemyModel_RippleEnable": 0,
+            "enemyModel_RippleFreq": 1.0,
+            "enemyModel_RippleMap": "white1x1",
+            "enemyModel_RippleMix": 0.5,
+            "enemyModel_RippleScale": 2.0,
+            "enemyModel_RippleSize": 0.4000000059604645,
+            "enemyModel_RippleSpeed": 1.0,
+            "enemyModel_RippleStren": 0.05000000074505806,
+            "enemyModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Roughness": 0.5,
+            "enemyModel_Scale": [
+                2.0,
+                2.0,
+                2.0
+            ],
+            "enemyModel_ShadowBias": 0.0005000000237487257,
+            "enemyModel_ShadowDens": 0.800000011920929,
+            "enemyModel_ShadowEnv": 0.0,
+            "enemyModel_ShadowSoft": 0.0,
+            "enemyModel_Shininess": 50.0,
+            "enemyModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_ToonRampTex": "toonRamp_01",
+            "enemyModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_TriScale": 0.10000000149011612,
+            "enemyModel_TriSharpness": 4.0,
+            "enemyModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UsePuddle": 0,
+            "enemyModel_UseTriplanar": 0,
+            "enemyModel_Wetness": 0.5
+        },
+        "Enemy_2": {
+            "Amplitude": [
+                57.7400016784668,
+                3.4600000381469727,
+                16.670000076293945
+            ],
+            "BasePosition": [
+                0.0,
+                20.0,
+                -58.150001525878906
+            ],
+            "ColliderOffset": [
+                0.0,
+                -18.690000534057617,
+                0.0
+            ],
+            "ColliderRadius": 7.380000114440918,
+            "Frequency": [
+                0.1899999976158142,
+                1.1399999856948853,
+                0.49000000953674316
+            ],
+            "Phase": [
+                0.0,
+                90.0,
+                0.0
+            ],
+            "SpotAngle": 21.530000686645508,
+            "SpotColor": [
+                0.16877639293670654,
+                1.0,
+                0.37921249866485596,
+                1.0
+            ],
+            "SpotDirection": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "SpotDistance": 29.309999465942383,
+            "SpotIntensity": 18.84000015258789,
+            "SpotVolumetric": 16.459999084472656,
+            "enemyModel_AddShadow": 1,
+            "enemyModel_AlbedoMap": "white1x1",
+            "enemyModel_AlphaThres": 0.009999999776482582,
+            "enemyModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_DiffuseRef": 4.0,
+            "enemyModel_DisEnable": 0,
+            "enemyModel_DisThres": 0.5,
+            "enemyModel_DissolveTex": "white1x1",
+            "enemyModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_EdgeInten": 2.0,
+            "enemyModel_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Emissive": 1.0,
+            "enemyModel_EnvMapInt": 0.0,
+            "enemyModel_EnvMapTex": "skybox",
+            "enemyModel_LightMode": 1,
+            "enemyModel_Lighting": 1,
+            "enemyModel_Mat0_AddShadow": 1,
+            "enemyModel_Mat0_AlbedoMap": "white1x1",
+            "enemyModel_Mat0_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_DiffuseRef": 4.0,
+            "enemyModel_Mat0_DisEnable": 0,
+            "enemyModel_Mat0_DisThres": 0.5,
+            "enemyModel_Mat0_DissolveTex": "white1x1",
+            "enemyModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat0_EdgeInten": 2.0,
+            "enemyModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat0_Emissive": 1.0,
+            "enemyModel_Mat0_EnvMapInt": 0.0,
+            "enemyModel_Mat0_EnvMapTex": "skybox",
+            "enemyModel_Mat0_LightMode": 1,
+            "enemyModel_Mat0_Lighting": 1,
+            "enemyModel_Mat0_Metalness": 0.0,
+            "enemyModel_Mat0_NormEnable": 0,
+            "enemyModel_Mat0_NormInten": 1.0,
+            "enemyModel_Mat0_NormTile": 1.0,
+            "enemyModel_Mat0_NormalMapTex": "white1x1",
+            "enemyModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat0_OutlineEnable": 0,
+            "enemyModel_Mat0_OutlineWidth": 1.0,
+            "enemyModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat0_PuddleEmission": 0.0,
+            "enemyModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleNoise": "white1x1",
+            "enemyModel_Mat0_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat0_PuddleTint": 0.5,
+            "enemyModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_RimEnable": 0,
+            "enemyModel_Mat0_RimInten": 1.0,
+            "enemyModel_Mat0_RimPower": 3.0,
+            "enemyModel_Mat0_RimUseDir": 0,
+            "enemyModel_Mat0_RippleEnable": 0,
+            "enemyModel_Mat0_RippleFreq": 1.0,
+            "enemyModel_Mat0_RippleMap": "white1x1",
+            "enemyModel_Mat0_RippleMix": 0.5,
+            "enemyModel_Mat0_RippleScale": 2.0,
+            "enemyModel_Mat0_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat0_RippleSpeed": 1.0,
+            "enemyModel_Mat0_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat0_Roughness": 0.5,
+            "enemyModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat0_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat0_ShadowEnv": 0.0,
+            "enemyModel_Mat0_ShadowSoft": 0.0,
+            "enemyModel_Mat0_Shininess": 50.0,
+            "enemyModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat0_TriScale": 0.10000000149011612,
+            "enemyModel_Mat0_TriSharpness": 4.0,
+            "enemyModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat0_UsePuddle": 0,
+            "enemyModel_Mat0_UseTriplanar": 0,
+            "enemyModel_Mat0_Wetness": 0.5,
+            "enemyModel_Mat1_AddShadow": 1,
+            "enemyModel_Mat1_AlbedoMap": "white1x1",
+            "enemyModel_Mat1_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_DiffuseRef": 4.0,
+            "enemyModel_Mat1_DisEnable": 0,
+            "enemyModel_Mat1_DisThres": 0.5,
+            "enemyModel_Mat1_DissolveTex": "white1x1",
+            "enemyModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat1_EdgeInten": 2.0,
+            "enemyModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat1_Emissive": 1.0,
+            "enemyModel_Mat1_EnvMapInt": 0.0,
+            "enemyModel_Mat1_EnvMapTex": "skybox",
+            "enemyModel_Mat1_LightMode": 1,
+            "enemyModel_Mat1_Lighting": 1,
+            "enemyModel_Mat1_Metalness": 0.0,
+            "enemyModel_Mat1_NormEnable": 0,
+            "enemyModel_Mat1_NormInten": 1.0,
+            "enemyModel_Mat1_NormTile": 1.0,
+            "enemyModel_Mat1_NormalMapTex": "white1x1",
+            "enemyModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat1_OutlineEnable": 0,
+            "enemyModel_Mat1_OutlineWidth": 1.0,
+            "enemyModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat1_PuddleEmission": 0.0,
+            "enemyModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleNoise": "white1x1",
+            "enemyModel_Mat1_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat1_PuddleTint": 0.5,
+            "enemyModel_Mat1_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_RimEnable": 0,
+            "enemyModel_Mat1_RimInten": 1.0,
+            "enemyModel_Mat1_RimPower": 3.0,
+            "enemyModel_Mat1_RimUseDir": 0,
+            "enemyModel_Mat1_RippleEnable": 0,
+            "enemyModel_Mat1_RippleFreq": 1.0,
+            "enemyModel_Mat1_RippleMap": "white1x1",
+            "enemyModel_Mat1_RippleMix": 0.5,
+            "enemyModel_Mat1_RippleScale": 2.0,
+            "enemyModel_Mat1_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat1_RippleSpeed": 1.0,
+            "enemyModel_Mat1_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat1_Roughness": 0.5,
+            "enemyModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat1_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat1_ShadowEnv": 0.0,
+            "enemyModel_Mat1_ShadowSoft": 0.0,
+            "enemyModel_Mat1_Shininess": 50.0,
+            "enemyModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat1_TriScale": 0.10000000149011612,
+            "enemyModel_Mat1_TriSharpness": 4.0,
+            "enemyModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat1_UsePuddle": 0,
+            "enemyModel_Mat1_UseTriplanar": 0,
+            "enemyModel_Mat1_Wetness": 0.5,
+            "enemyModel_Mat2_AddShadow": 1,
+            "enemyModel_Mat2_AlbedoMap": "white1x1",
+            "enemyModel_Mat2_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat2_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_DiffuseRef": 4.0,
+            "enemyModel_Mat2_DisEnable": 0,
+            "enemyModel_Mat2_DisThres": 0.5,
+            "enemyModel_Mat2_DissolveTex": "white1x1",
+            "enemyModel_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat2_EdgeInten": 2.0,
+            "enemyModel_Mat2_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat2_Emissive": 1.0,
+            "enemyModel_Mat2_EnvMapInt": 0.0,
+            "enemyModel_Mat2_EnvMapTex": "skybox",
+            "enemyModel_Mat2_LightMode": 1,
+            "enemyModel_Mat2_Lighting": 1,
+            "enemyModel_Mat2_Metalness": 0.0,
+            "enemyModel_Mat2_NormEnable": 0,
+            "enemyModel_Mat2_NormInten": 1.0,
+            "enemyModel_Mat2_NormTile": 1.0,
+            "enemyModel_Mat2_NormalMapTex": "white1x1",
+            "enemyModel_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat2_OutlineEnable": 0,
+            "enemyModel_Mat2_OutlineWidth": 1.0,
+            "enemyModel_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat2_PuddleEmission": 0.0,
+            "enemyModel_Mat2_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleNoise": "white1x1",
+            "enemyModel_Mat2_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat2_PuddleTint": 0.5,
+            "enemyModel_Mat2_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_RimEnable": 0,
+            "enemyModel_Mat2_RimInten": 1.0,
+            "enemyModel_Mat2_RimPower": 3.0,
+            "enemyModel_Mat2_RimUseDir": 0,
+            "enemyModel_Mat2_RippleEnable": 0,
+            "enemyModel_Mat2_RippleFreq": 1.0,
+            "enemyModel_Mat2_RippleMap": "white1x1",
+            "enemyModel_Mat2_RippleMix": 0.5,
+            "enemyModel_Mat2_RippleScale": 2.0,
+            "enemyModel_Mat2_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat2_RippleSpeed": 1.0,
+            "enemyModel_Mat2_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat2_Roughness": 0.5,
+            "enemyModel_Mat2_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat2_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat2_ShadowEnv": 0.0,
+            "enemyModel_Mat2_ShadowSoft": 0.0,
+            "enemyModel_Mat2_Shininess": 50.0,
+            "enemyModel_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat2_TriScale": 0.10000000149011612,
+            "enemyModel_Mat2_TriSharpness": 4.0,
+            "enemyModel_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat2_UsePuddle": 0,
+            "enemyModel_Mat2_UseTriplanar": 0,
+            "enemyModel_Mat2_Wetness": 0.5,
+            "enemyModel_Mat3_AddShadow": 1,
+            "enemyModel_Mat3_AlbedoMap": "white1x1",
+            "enemyModel_Mat3_AlphaThres": 0.009999999776482582,
+            "enemyModel_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_DiffuseRef": 4.0,
+            "enemyModel_Mat3_DisEnable": 0,
+            "enemyModel_Mat3_DisThres": 0.5,
+            "enemyModel_Mat3_DissolveTex": "white1x1",
+            "enemyModel_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "enemyModel_Mat3_EdgeInten": 2.0,
+            "enemyModel_Mat3_EdgeWidth": 0.05000000074505806,
+            "enemyModel_Mat3_Emissive": 1.0,
+            "enemyModel_Mat3_EnvMapInt": 0.0,
+            "enemyModel_Mat3_EnvMapTex": "skybox",
+            "enemyModel_Mat3_LightMode": 1,
+            "enemyModel_Mat3_Lighting": 1,
+            "enemyModel_Mat3_Metalness": 0.0,
+            "enemyModel_Mat3_NormEnable": 0,
+            "enemyModel_Mat3_NormInten": 1.0,
+            "enemyModel_Mat3_NormTile": 1.0,
+            "enemyModel_Mat3_NormalMapTex": "white1x1",
+            "enemyModel_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_Mat3_OutlineEnable": 0,
+            "enemyModel_Mat3_OutlineWidth": 1.0,
+            "enemyModel_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_Mat3_PuddleEmission": 0.0,
+            "enemyModel_Mat3_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleNoise": "white1x1",
+            "enemyModel_Mat3_PuddleScale": 0.10000000149011612,
+            "enemyModel_Mat3_PuddleTint": 0.5,
+            "enemyModel_Mat3_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_RimEnable": 0,
+            "enemyModel_Mat3_RimInten": 1.0,
+            "enemyModel_Mat3_RimPower": 3.0,
+            "enemyModel_Mat3_RimUseDir": 0,
+            "enemyModel_Mat3_RippleEnable": 0,
+            "enemyModel_Mat3_RippleFreq": 1.0,
+            "enemyModel_Mat3_RippleMap": "white1x1",
+            "enemyModel_Mat3_RippleMix": 0.5,
+            "enemyModel_Mat3_RippleScale": 2.0,
+            "enemyModel_Mat3_RippleSize": 0.4000000059604645,
+            "enemyModel_Mat3_RippleSpeed": 1.0,
+            "enemyModel_Mat3_RippleStren": 0.05000000074505806,
+            "enemyModel_Mat3_Roughness": 0.5,
+            "enemyModel_Mat3_ShadowBias": 0.0005000000237487257,
+            "enemyModel_Mat3_ShadowDens": 0.800000011920929,
+            "enemyModel_Mat3_ShadowEnv": 0.0,
+            "enemyModel_Mat3_ShadowSoft": 0.0,
+            "enemyModel_Mat3_Shininess": 50.0,
+            "enemyModel_Mat3_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_ToonRampTex": "toonRamp_01",
+            "enemyModel_Mat3_TriScale": 0.10000000149011612,
+            "enemyModel_Mat3_TriSharpness": 4.0,
+            "enemyModel_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Mat3_UsePuddle": 0,
+            "enemyModel_Mat3_UseTriplanar": 0,
+            "enemyModel_Mat3_Wetness": 0.5,
+            "enemyModel_Metalness": 0.0,
+            "enemyModel_NormEnable": 0,
+            "enemyModel_NormInten": 1.0,
+            "enemyModel_NormTile": 1.0,
+            "enemyModel_NormalMapTex": "white1x1",
+            "enemyModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "enemyModel_OutlineEnable": 0,
+            "enemyModel_OutlineWidth": 1.0,
+            "enemyModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "enemyModel_PuddleEmission": 0.0,
+            "enemyModel_PuddleFalloff": 0.10000000149011612,
+            "enemyModel_PuddleNoise": "white1x1",
+            "enemyModel_PuddleScale": 0.10000000149011612,
+            "enemyModel_PuddleTint": 0.5,
+            "enemyModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_RimEnable": 0,
+            "enemyModel_RimInten": 1.0,
+            "enemyModel_RimPower": 3.0,
+            "enemyModel_RimUseDir": 0,
+            "enemyModel_RippleEnable": 0,
+            "enemyModel_RippleFreq": 1.0,
+            "enemyModel_RippleMap": "white1x1",
+            "enemyModel_RippleMix": 0.5,
+            "enemyModel_RippleScale": 2.0,
+            "enemyModel_RippleSize": 0.4000000059604645,
+            "enemyModel_RippleSpeed": 1.0,
+            "enemyModel_RippleStren": 0.05000000074505806,
+            "enemyModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_Roughness": 0.5,
+            "enemyModel_Scale": [
+                2.0,
+                2.0,
+                2.0
+            ],
+            "enemyModel_ShadowBias": 0.0005000000237487257,
+            "enemyModel_ShadowDens": 0.800000011920929,
+            "enemyModel_ShadowEnv": 0.0,
+            "enemyModel_ShadowSoft": 0.0,
+            "enemyModel_Shininess": 50.0,
+            "enemyModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_ToonRampTex": "toonRamp_01",
+            "enemyModel_Trans": [
+                12.983499526977539,
+                2.316999912261963,
+                10.0
+            ],
+            "enemyModel_TriScale": 0.10000000149011612,
+            "enemyModel_TriSharpness": 4.0,
+            "enemyModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "enemyModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "enemyModel_UsePuddle": 0,
+            "enemyModel_UseTriplanar": 0,
+            "enemyModel_Wetness": 0.5
+        }
+    }
+}

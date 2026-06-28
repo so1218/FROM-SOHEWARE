@@ -22,6 +22,7 @@ void FollowCamera::Initialize()
     binder_->Bind("Target Yaw", &targetYaw_, Math::PI, 0.01f, -Math::PI, Math::PI);
     binder_->Bind("Target Pitch", &targetPitch_, 0.3f, 0.01f, -1.57f, 1.57f);
     binder_->Bind("Target Distance", &targetDistance_, 50.0f, 0.1f, 5.0f, 200.0f);
+    binder_->Bind("LookAt Offset", &lookAtOffset_, { 0.0f, 1.5f, 0.0f });
     binder_->Bind("Rotation Smooth Time", &rotationSmoothTime_, 0.1f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("Zoom Smooth Time", &zoomSmoothTime_, 0.2f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("Position Lerp Speed", &positionLerpSpeed_, 5.0f, 0.1f, 0.0f, 20.0f);
@@ -132,6 +133,7 @@ void FollowCamera::DebugDraw()
         binder_->Draw("Target Yaw", "目標ヨー角");
         binder_->Draw("Target Pitch", "目標ピッチ角");
         binder_->Draw("Target Distance", "目標距離");
+        binder_->Draw("LookAt Offset", "注視点オフセット");
     }
 
     if (ImGui::CollapsingHeader("スムージング設定", ImGuiTreeNodeFlags_DefaultOpen))

@@ -54,6 +54,14 @@ public:
 
 	void RegisterToManager();
 
+	// コライダー単体の有効/無効
+	void SetEnable(bool isEnable) { isEnable_ = isEnable; }
+	bool IsEnable() const { return isEnable_; }
+
+	// オフセットに親の回転を適用するかどうか
+	void SetApplyRotation(bool apply) { applyRotation_ = apply; }
+	bool IsApplyRotation() const { return applyRotation_; }
+
 private:
 	GameObject* owner_ = nullptr; // 自分を持っている親
 	Vector3 centerOffset_ = { 0.0f, 0.0f, 0.0f }; // ローカルオフセット
@@ -74,6 +82,10 @@ private:
 	uint32_t collisionMask_ = 0xffffffff;
 	// デバッグ表示色
 	Vector4 color_ = { 0.0f, 1.0f, 1.0f, 1.0f };
+
+	bool isEnable_ = true; 
+
+	bool applyRotation_ = true;
 };
 
 }

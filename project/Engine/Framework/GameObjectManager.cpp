@@ -16,7 +16,7 @@ void GameObjectManager::Initialize()
 
 void GameObjectManager::Update()
 {
-    isUpdating_ = true; // ループ開始前に
+    isUpdating_ = true;
 
     if (isSortNeeded_)
     {
@@ -30,16 +30,16 @@ void GameObjectManager::Update()
 
     for (size_t i = 0; i < objects_.size(); ++i)
     {
-        if (!objects_[i]->IsDead())
+        if (!objects_[i]->IsDead() && objects_[i]->IsActive())
         {
-            objects_[i]->Update ();
+            objects_[i]->Update();
         }
     }
 
-    // 全オブジェクトの行列を更新
+    // 行列更新
     for (size_t i = 0; i < objects_.size(); ++i)
     {
-        if (!objects_[i]->IsDead())
+        if (!objects_[i]->IsDead() && objects_[i]->IsActive())
         {
             objects_[i]->GetTransform().UpdateMatrix();
         }
@@ -47,10 +47,9 @@ void GameObjectManager::Update()
 
     isUpdating_ = false;
 
-    // ループが終わったので、待機していたオブジェクトを合流
+    // 待機オブジェクトの合流
     for (auto& newObj : pendingObjects_) {
         newObj->Initialize();
-
         objects_.push_back(std::move(newObj));
         isSortNeeded_ = true;
     }
@@ -58,10 +57,7 @@ void GameObjectManager::Update()
 
     // 削除処理
     auto it = std::remove_if(objects_.begin(), objects_.end(),
-        [](const std::unique_ptr<GameObject>& obj)
-        {
-            return obj->IsDead();
-        });
+        [](const std::unique_ptr<GameObject>& obj) { return obj->IsDead(); });
 
     if (it != objects_.end())
     {
@@ -69,11 +65,14 @@ void GameObjectManager::Update()
     }
 }
 
-void GameObjectManager::Draw() 
+void GameObjectManager::Draw()
 {
     for (auto& obj : objects_)
     {
-        obj->Draw();
+        if (obj->IsActive() && !obj->IsDead())
+        {
+            obj->Draw();
+        }
     }
 }
 
@@ -81,7 +80,10 @@ void GameObjectManager::DebugDraw()
 {
     for (auto& obj : objects_)
     {
-        obj->DebugDraw();
+        if (obj->IsActive() && !obj->IsDead())
+        {
+            obj->DebugDraw();
+        }
     }
 }
 
@@ -103,7 +105,7 @@ GameObject* GameObjectManager::FindObjectWithTag(uint32_t tag)
 {
     for (auto& obj : objects_)
     {
-        if (!obj->IsDead() && obj->CompareTag(tag))
+        if (!obj->IsDead() && obj->IsActive() && obj->CompareTag(tag))
         {
             return obj.get();
         }
@@ -117,7 +119,7 @@ std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(uint32_t tag)
     for (auto& obj : objects_)
     {
         // 生きていて、かつタグが一致するものをリストに追加
-        if (!obj->IsDead() && obj->CompareTag(tag))
+        if (!obj->IsDead() && obj->IsActive() && obj->CompareTag(tag))
         {
             result.push_back(obj.get());
         }

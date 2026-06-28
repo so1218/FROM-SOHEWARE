@@ -80,9 +80,17 @@ void LightManager::Initialize(ID3D12Device* device)
         pointLightData_[i].enable = false; // 全てのライトを非アクティブで初期化
     }
 
+    availableSpotLightIndices_ = {};
+    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
+    {
+        availableSpotLightIndices_.push(i);
+        spotLightData_[i].enable = false; // 初期状態はすべてオフ
+    }
+
     // Area Light のキュー初期化
     availableAreaLightIndices_ = {}; // キューをクリア
-    for (int i = 0; i < MAX_AREA_LIGHTS; ++i) {
+    for (int i = 0; i < MAX_AREA_LIGHTS; ++i) 
+    {
         availableAreaLightIndices_.push(i);
         areaLightData_[i].enable = false; // 全て非アクティブで初期化
     }
@@ -115,6 +123,17 @@ int LightManager::RequestAreaLight()
     return index;
 }
 
+int LightManager::RequestSpotLight()
+{
+    if (availableSpotLightIndices_.empty()) return -1;
+
+    int index = availableSpotLightIndices_.front();
+    availableSpotLightIndices_.pop();
+
+    spotLightData_[index].enable = true;
+    return index;
+}
+
 void LightManager::ReturnPointLight(int index)
 {
     if (index < 0 || index >= pointLightCount_)
@@ -129,6 +148,18 @@ void LightManager::ReturnPointLight(int index)
     pointLightData_[index].intensity = 0.0f;
 
     availablePointLightIndices_.push(index); // キューに戻す
+}
+
+void LightManager::ReturnSpotLight(int index)
+{
+    if (index < 0 || index >= spotLightCount_) return;
+    if (!spotLightData_[index].enable) return;
+
+    spotLightData_[index].enable = false;
+    spotLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+    spotLightData_[index].intensity = 0.0f;
+
+    availableSpotLightIndices_.push(index);
 }
 
 void LightManager::ReturnAreaLight(int index)
@@ -150,6 +181,15 @@ void LightManager::UpdatePointLightPosition(int index, const Vector3& position)
     pointLightData_[index].position = position;
 }
 
+void LightManager::UpdateSpotLightTransform(int index, const Vector3& position, const Vector3& direction)
+{
+    if (index < 0 || index >= spotLightCount_ || !spotLightData_[index].enable) return;
+
+    spotLightData_[index].position = position;
+    // 方向ベクトルは必ず正規化（長さを1に）して代入
+    spotLightData_[index].direction = direction;
+}
+
 void LightManager::UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float volumetricScatteringIntensity)
 {
     if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
@@ -157,6 +197,17 @@ void LightManager::UpdatePointLightProperties(int index, const Vector4& color, f
     pointLightData_[index].intensity = intensity;
     pointLightData_[index].radius = radius;
     pointLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
+}
+
+void LightManager::UpdateSpotLightProperties(int index, const Vector4& color, float intensity, float distance, float cosAngle, float volumetricScatteringIntensity)
+{
+    if (index < 0 || index >= spotLightCount_ || !spotLightData_[index].enable) return;
+
+    spotLightData_[index].color = color;
+    spotLightData_[index].intensity = intensity;
+    spotLightData_[index].distance = distance;
+    spotLightData_[index].cosAngle = cosAngle;
+    spotLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
 }
 
 void LightManager::UpdateAreaLightProperties(int index, const Vector4& color, float intensity,

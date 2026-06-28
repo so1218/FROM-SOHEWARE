@@ -48,7 +48,10 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->noiseIntensity = 1.0f;
 
     // 配置式フォグ用CB作成
-    volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogVolumeBuffer));
+    UINT cbVolumeSizeAligned = (sizeof(FogVolumeBuffer) + 255) & ~255;
+
+    volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, cbVolumeSizeAligned);
+
     volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
     memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
     volumeCbData_->volumeCount = 0;

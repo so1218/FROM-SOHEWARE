@@ -1,16 +1,21 @@
 {
     "FollowCamera": {
+        "LookAt Offset": [
+            0.0,
+            11.680000305175781,
+            0.0
+        ],
         "Max Distance": 105.5,
-        "Max Pitch": 0.9900000095367432,
+        "Max Pitch": 0.8399999737739563,
         "Min Distance": 5.0,
-        "Min Pitch": -0.1899999976158142,
+        "Min Pitch": 0.019999999552965164,
         "Position Lerp Speed": 40.0,
         "Rotate Speed Pitch": 0.6800000071525574,
         "Rotate Speed Yaw": 2.0,
         "Rotation Smooth Time": 0.11999999731779099,
-        "Target Distance": 87.69999694824219,
+        "Target Distance": 73.0,
         "Target Pitch": 0.35199999809265137,
-        "Target Yaw": 1.1419999599456787,
+        "Target Yaw": 1.0720000267028809,
         "Zoom Smooth Time": 0.3499999940395355
     }
 }

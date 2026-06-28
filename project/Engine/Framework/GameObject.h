@@ -47,11 +47,15 @@ public:
     void SetManager(GameObjectManager* manager) { manager_ = manager; }
     GameObjectManager* GetManager() const { return manager_; }
 
+    bool IsActive() const { return isActive_; }
+    void SetActive(bool active) { isActive_ = active; }
+
 private:
     WorldTransform transform_;
     uint32_t tag_ = 0;
     int updatePriority_ = 50;
     bool isDead_ = false;
+    bool isActive_ = true;
     GameObjectManager* manager_ = nullptr;
 };
 

@@ -31,8 +31,7 @@ private:
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<FE::CameraRail> openingRail_;
 
-    std::unique_ptr<FE::ParticleEmitter> testSceneEmitter_ = nullptr;
-    std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> grassFieldEmitter_ = nullptr;
 
     // エディタ（ドラッグ＆ドロップ）で配置されたモデルのリスト
     std::vector<std::unique_ptr<FE::Model>> placedModels_;

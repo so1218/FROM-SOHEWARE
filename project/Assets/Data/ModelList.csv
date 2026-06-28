@@ -8,6 +8,7 @@ volumetricFog,Primitives/VolumetricFog/VolumetricFog.gltf
 # Characters
 playerMesh,Characters/Player/playerClear.gltf
 humanMesh,Characters/Human/humanMesh.gltf
+enemy,Characters/Enemy/Enemy.gltf
 
 # Environment
 skydome,Environment/Skydome/skydome.gltf

@@ -4,12 +4,12 @@
 
 using namespace FE;
 
-Orb::Orb(Engine* engine, int id) : engine_(engine), id_(id)
+Orb::Orb(Engine* engine, int id, const std::string& parentGroupName)
+    : engine_(engine), id_(id)
 {
     model_ = std::make_unique<Model>(engine_, "sphere");
-
-    binder_ = std::make_unique<PropertyBinder>(engine_, "Orb", std::to_string(id_));
-
+    std::string childGroupName = "Orb_" + std::to_string(id_);
+    binder_ = std::make_unique<PropertyBinder>(engine_, parentGroupName, childGroupName);
     collider_ = std::make_unique<Collider>(this);
 }
 
@@ -25,7 +25,6 @@ Orb::~Orb()
 
 void Orb::Initialize()
 {
-
     collider_->RegisterToManager();
 
     // 自分にオーブタグを設定
@@ -51,10 +50,16 @@ void Orb::Initialize()
             lightVolumetricScatteringIntensity_
         );
     }
+    hitEmitter_ = engine_->GetParticleSystem()->CreateEmitter("orbHit");
+    hitEmitter_->SetTargetToFollow(&model_->GetTransform());
+    hitEmitterPtr_ = hitEmitter_.get();
+    engine_->GetParticleSystem()->AddEmitter(std::move(hitEmitter_));
 }
 
 void Orb::Update()
 {
+    if (isPicked_) return;
+
     // オーブの現在座標にライトを追従
     if (pointLightIndex_ != -1)
     {
@@ -76,6 +81,8 @@ void Orb::Update()
 
 void Orb::Draw()
 {
+    if (isPicked_) return;
+
     if (model_)
     {
         model_->Draw();
@@ -86,7 +93,6 @@ void Orb::Draw()
 void Orb::DebugDraw()
 {
 #ifdef IS_DEVELOPMENT
-    ImGui::Begin("オーブ");
 
     ImGui::PushID(id_);
 
@@ -103,7 +109,6 @@ void Orb::DebugDraw()
 
     ImGui::PopID();
 
-    ImGui::End();
 #endif
 }
 
@@ -113,7 +118,26 @@ void Orb::OnCollisionStay(Collider* mine, Collider* other)
 
     if (hitObject && hitObject->CompareTag(ObjectTag::Player))
     {
-        // プレイヤーとぶつかったら自分を消滅
-        Destroy();
+        Sleep(); 
+
+        if (hitEmitterPtr_)
+        {
+            hitEmitterPtr_->Play();
+        }
+    }
+}
+
+void Orb::Sleep()
+{
+    isPicked_ = true;
+
+    SetActive(false);
+
+    // ライトを見えなくする
+    if (pointLightIndex_ != -1)
+    {
+        engine_->GetLightManager()->UpdatePointLightProperties(
+            pointLightIndex_, lightColor_, 0.0f, 0.0f, 0.0f
+        );
     }
 }

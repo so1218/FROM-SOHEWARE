@@ -308,14 +308,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float3 lightVec = gSpotLights[s].position - currentPos;
         float distance = length(lightVec);
-        
-        // ボクセルサイズに応じた距離減衰のスムージング
         float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
         
         if (smoothDistance > gSpotLights[s].distance * 1.2f)
             continue;
         
-        // 光源の根元での方向ベクトルの暴れ防止
         float3 lDir = lightVec / max(distance, 0.001f);
         if (distance < 0.2f)
         {
@@ -324,43 +321,44 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
         
         float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
-        
-        // コーン境界の外側への動的拡張フェード（ノイズ対策）
-        float voxelCosWidth = voxelThickness / max(distance, 0.5f);
-        float softMargin = max(0.04f, voxelCosWidth * 0.35f);
-        
         float cosOuter = gSpotLights[s].cosAngle;
-        float extendedCosAngle = cosOuter - softMargin;
         
-        if (currentCos < extendedCosAngle)
+        // 【改善】コーン境界の判定（無駄な太さを撤廃）
+        // ボクセルのカクつき（エイリアシング）を隠すためのごく僅かなマージン。
+        // 以前の 0.04 という固定値は大きすぎて光を強制的に太らせていたため、動的かつ最小限にします。
+        float voxelSmoothing = (voxelThickness / max(distance, 1.0f)) * 0.15f;
+        
+        // 完全にコーンの外側なら早期スキップ
+        if (currentCos < cosOuter - voxelSmoothing)
             continue;
         
-        // 物理ベースの距離減衰（逆二乗）へ統一
-        float sourceRadiusBias = 0.05f;
-        float distance2 = smoothDistance * smoothDistance + sourceRadiusBias * sourceRadiusBias;
-        float physicalFalloff = 1.0f / distance2;
-        
+        // -----------------------------------------------------------------
+        // 【修正1】距離減衰（前回と同じ、UE準拠の扱いやすい減衰）
+        // -----------------------------------------------------------------
         float safeMaxDist = max(gSpotLights[s].distance, 0.0001f);
-        float lightRangeProj = saturate(1.0f - pow(smoothDistance / safeMaxDist, 4.0f));
-        float distanceAtt = physicalFalloff * (lightRangeProj * lightRangeProj);
+        float distanceRatio = saturate(smoothDistance / safeMaxDist);
+        float distanceAtt = pow(saturate(1.0f - distanceRatio), 2.0f);
         
-        // ボリューム側もインナー/アウターコーンで芯を作る
-        float cosInner = lerp(1.0f, cosOuter, 0.6f);
-
-        // インナーから拡張マージンまでのベースの減衰
-        float rawAngleAtt = saturate((currentCos - extendedCosAngle) / max(cosInner - extendedCosAngle, 0.001f));
-    
-        // 角度ブレの激しさ（voxelCosWidth）に応じたthinness
-        float dynamicThinness = lerp(8.0f, 4.0f, saturate(voxelCosWidth * 3.0f));
-    
-        float angleAtt = pow(rawAngleAtt, dynamicThinness);
-    
+        // -----------------------------------------------------------------
+        // 【修正2】角度減衰（UE方式のクッキリしたサーチライト）
+        // -----------------------------------------------------------------
+        // UEでは InnerCone と OuterCone の差で輪郭のシャープさを決めます。
+        // ここでは cosOuter より「ほんの僅かに内側」を Inner に設定し、シャープな境界線を作ります。
+        float cosInner = min(cosOuter + 0.02f + voxelSmoothing, 1.0f);
+        
+        // UE標準式: 外側(Outer)から内側(Inner)へ線形に立ち上げ、それを2乗(Square)する
+        // smoothstepよりも中心の芯が強く残り、輪郭がパキッと引き締まります。
+        float rawAngleAtt = saturate((currentCos - (cosOuter - voxelSmoothing)) / max(cosInner - (cosOuter - voxelSmoothing), 0.0001f));
+        float angleAtt = rawAngleAtt * rawAngleAtt;
+        
         float attenuation = distanceAtt * angleAtt;
         
-        // 遠方でのフェーズ関数（DualPhaseHG）のアンチエイリアシング
+        if (attenuation <= 0.0f)
+            continue;
+        
+        // フェーズ関数（光の散乱方向）
         float phaseSmoothing = saturate(1.0f - (voxelThickness / max(distance, 0.5f)));
         float blurredAnisotropy = gFogSettings.anisotropy * phaseSmoothing;
-        
         float phaseLocal = DualPhaseHG(dot(rayDir, lDir), blurredAnisotropy);
         
         float volumetricScatteringIntensity = gSpotLights[s].volumetricScatteringIntensity;
@@ -368,7 +366,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         // 最終合成
         stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * volumetricScatteringIntensity)
-               * attenuation * phaseLocal * spotLocalFogAttenuation;
+                   * attenuation * phaseLocal * spotLocalFogAttenuation;
     }
 
     totalLight += stepLocal;
