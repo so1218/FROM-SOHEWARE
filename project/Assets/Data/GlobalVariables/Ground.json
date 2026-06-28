@@ -1734,10 +1734,11 @@
         "TreeBaseScale": 4.739999771118164,
         "TreeCount": 3,
         "TreeSpreadRadius": 100.0,
-        "treeWindAmplitude": 0.14000000059604645,
-        "treeWindHeightScale": 0.5899999737739563,
+        "treeWindAmplitude": 0.8899999856948853,
+        "treeWindHeightScale": 0.09000000357627869,
         "treeWindSpatialScale": 0.14000000059604645,
-        "treeWindSpeed": 6.360000133514404,
+        "treeWindSpeed": 6.199999809265137,
+        "treeWindThresholdHeight": 0.2800000011920929,
         "treeWindVariation": 0.009999999776482582
     }
 }

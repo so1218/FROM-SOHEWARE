@@ -189,7 +189,8 @@ struct MaterialData
     float treeWindHeightScale;
     
     float treeWindVariation;
-    float3 paddingTree;
+    float treeWindThresholdHeight;
+    float2 paddingTree;
     
     int32_t useTriplanar;
     float triplanarScale;

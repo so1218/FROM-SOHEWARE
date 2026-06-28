@@ -59,13 +59,16 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
         // 複雑な揺れの生成
         float waveX = sin(time) * cos(time * 0.45f + phaseOffset);
         float waveZ = cos(time * 0.75f) * sin(time * 0.25f + phaseOffset);
-
-        // 高さによるウェイト
-        float heightWeight = max(0.0f, localPos.y * gMaterial.treeWindHeightScale);
         
+        // 揺れ始める高さのしきい値
+        float thresholdHeight = gMaterial.treeWindThresholdHeight;
+        
+        // localPos.y からしきい値を引く
+        float normalizedHeight = max(0.0f, (localPos.y - thresholdHeight) * gMaterial.treeWindHeightScale);
+  
         // 最終的な座標オフセット
-        localPos.x += waveX * gMaterial.treeWindAmplitude * heightWeight;
-        localPos.z += waveZ * gMaterial.treeWindAmplitude * heightWeight;
+        localPos.x += waveX * gMaterial.treeWindAmplitude * normalizedHeight;
+        localPos.z += waveZ * gMaterial.treeWindAmplitude * normalizedHeight;
     }
 
    // WVPは送らず、揺れ計算後のlocalPosを使って画面座標まで変換

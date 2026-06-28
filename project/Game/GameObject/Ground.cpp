@@ -26,7 +26,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	binder_->Bind("treeWindSpatialScale", &leafMat->treeWindSpatialScale, 0.01f);
 	binder_->Bind("treeWindHeightScale", &leafMat->treeWindHeightScale, 0.01f);
 	binder_->Bind("treeWindVariation", &leafMat->treeWindVariation, 0.01f);
-	leafMat2->enableTreeWind = leafMat->enableTreeWind;
+	binder_->Bind("treeWindThresholdHeight", &leafMat->treeWindThresholdHeight, 5.0f);
 
 }
 
@@ -85,6 +85,7 @@ void Ground::Update()
 	leafMat2->treeWindSpatialScale = leafMat->treeWindSpatialScale;
 	leafMat2->treeWindHeightScale = leafMat->treeWindHeightScale;
 	leafMat2->treeWindVariation = leafMat->treeWindVariation;
+	leafMat2->treeWindThresholdHeight = leafMat->treeWindThresholdHeight;
 };
 
 void Ground::Draw()
@@ -127,6 +128,7 @@ void Ground::DebugDraw()
 	binder_->Draw("treeWindSpatialScale", "位置によるズレ");
 	binder_->Draw("treeWindHeightScale", "高さの影響度");
 	binder_->Draw("treeWindVariation", "揺れの複雑さ");
+	binder_->Draw("treeWindThresholdHeight", "揺れ始める高さ");
 	ImGui::End();
 #endif
 

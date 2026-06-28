@@ -139,9 +139,9 @@
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
             "orbModel_Color": [
-                0.18565398454666138,
-                0.22688674926757813,
-                1.0,
+                0.3045181334018707,
+                0.9535865187644958,
+                0.08449502289295197,
                 1.0
             ],
             "orbModel_DiffuseRef": 4.0,
@@ -225,9 +225,9 @@
             ],
             "orbModel_ToonRampTex": "toonRamp_01",
             "orbModel_Trans": [
-                -37.599998474121094,
+                -35.400001525878906,
                 6.0,
-                -61.900001525878906
+                -28.100000381469727
             ],
             "orbModel_TriScale": 0.10000000149011612,
             "orbModel_TriSharpness": 4.0,
