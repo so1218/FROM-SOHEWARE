@@ -26,6 +26,8 @@ private:
     std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
 
+    std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
+
     int id_;
 
     // --- 波の動き（サイン波）用パラメーター ---

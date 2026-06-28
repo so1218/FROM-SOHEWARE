@@ -566,8 +566,8 @@
         "PlayerModel_Mat5_PuddleTint": 0.5,
         "PlayerModel_Mat5_RimColor": [
             0.18095387518405914,
-            0.6230311393737793,
-            0.9746835231781006
+            0.9746835231781006,
+            0.7636920213699341
         ],
         "PlayerModel_Mat5_RimEnable": 1,
         "PlayerModel_Mat5_RimInten": 10.0,

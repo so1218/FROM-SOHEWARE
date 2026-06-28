@@ -4,14 +4,14 @@
         "ModelRock_AlbedoMap": "white1x1",
         "ModelRock_AlphaThres": 0.019999999552965164,
         "ModelRock_Color": [
-            0.5274261236190796,
-            0.2676427662372589,
-            0.1402018666267395,
+            0.4261603355407715,
+            0.40066763758659363,
+            0.023375878110527992,
             1.0
         ],
         "ModelRock_DiffuseRef": 4.0,
         "ModelRock_DisEnable": 0,
-        "ModelRock_DisThres": 0.2199999988079071,
+        "ModelRock_DisThres": 0.009999999776482582,
         "ModelRock_DissolveTex": "noise_51",
         "ModelRock_EdgeColor": [
             0.0,
@@ -19,9 +19,9 @@
             1.0
         ],
         "ModelRock_EdgeInten": 5.699999809265137,
-        "ModelRock_EdgeWidth": 0.07500000298023224,
-        "ModelRock_Emissive": 1.100000023841858,
-        "ModelRock_EnvMapInt": 0.5199999809265137,
+        "ModelRock_EdgeWidth": 0.27000001072883606,
+        "ModelRock_Emissive": 2.0999999046325684,
+        "ModelRock_EnvMapInt": 0.7099999785423279,
         "ModelRock_EnvMapTex": "pureSky",
         "ModelRock_LightMode": 3,
         "ModelRock_Lighting": 1,
@@ -1312,9 +1312,9 @@
         "ModelRock_Mat9_UsePuddle": 0,
         "ModelRock_Mat9_UseTriplanar": 0,
         "ModelRock_Mat9_Wetness": 0.5,
-        "ModelRock_Metalness": 0.14000000059604645,
+        "ModelRock_Metalness": 0.9900000095367432,
         "ModelRock_NormEnable": 1,
-        "ModelRock_NormInten": 4.550000190734863,
+        "ModelRock_NormInten": 2.7899999618530273,
         "ModelRock_NormTile": 13.600000381469727,
         "ModelRock_NormalMapTex": "normal_30",
         "ModelRock_OutlineColor": [
@@ -1337,9 +1337,9 @@
         "ModelRock_PuddleScale": 0.10000000149011612,
         "ModelRock_PuddleTint": 0.5,
         "ModelRock_RimColor": [
-            0.16592784225940704,
-            0.47625473141670227,
-            0.9831223487854004
+            1.0,
+            0.32703089714050293,
+            0.29113924503326416
         ],
         "ModelRock_RimEnable": 0,
         "ModelRock_RimInten": 2.299999952316284,
@@ -1358,7 +1358,7 @@
             4.599999904632568,
             0.0
         ],
-        "ModelRock_Roughness": 1.0,
+        "ModelRock_Roughness": 0.25,
         "ModelRock_Scale": [
             3.4000000953674316,
             5.800000190734863,

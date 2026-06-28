@@ -51,6 +51,10 @@ void Player::Initialize()
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 
 	collider_->RegisterToManager();
+
+	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
+	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
+	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 }
 
 // 更新処理

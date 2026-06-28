@@ -81,10 +81,11 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 45.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
-    //testSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("testScene");
-    //engine_->GetParticleSystem()->AddEmitter(std::move(testSceneEmitter_));
-    //auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("aura");
-    //engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+    engine_->GetPostEffectManager()->GetCombineSettings()->enableSSAO = true;
+    engine_->GetPostEffectManager()->GetSSAOSettings()->intensity = 7.0f;
+    grassFieldEmitter_ = engine_->GetParticleSystem()->CreateEmitter("grassField");
+    grassFieldEmitter_->SetTargetToFollow(&player_->GetTransform());
+    engine_->GetParticleSystem()->AddEmitter(std::move(grassFieldEmitter_));
 
     // 生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");

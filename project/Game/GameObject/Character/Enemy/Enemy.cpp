@@ -57,6 +57,10 @@ void Enemy::Initialize()
     collider_->SetApplyRotation(false);
     collider_->SetRadius(colliderRadius_);
     collider_->SetCenterOffset(colliderOffset_);
+
+    auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
+    auraEmitter_->SetTargetToFollow(&model_->GetTransform());
+    engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 }
 
 void Enemy::Update()

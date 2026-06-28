@@ -5,6 +5,7 @@
 #include "PropertyBinder.h"
 #include "GameObject.h"
 #include "StateMachine.h"
+#include "ParticleEmitter.h"
 
 class PlayerStateNormal; 
 class PlayerStateRoll;
@@ -55,6 +56,8 @@ private:
 	std::unique_ptr<FE::Collider> collider_;
 
 	std::unique_ptr<FE::PropertyBinder> binder_;
+
+	std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
 	
 	FE::Vector3 moveDirection_;
 	float moveSpeed_;
