@@ -397,10 +397,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ---------------------------------------------------------
     // 各光源の計算時にすでに倍率（Intensity）を掛けたので、ここでは純粋なアルベドと密度だけにする
 // 1. まず、フォグの総合的な濃さ（光を遮る強さ）を計算する
-    float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
+float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
 
 // 2. その濃さのうち、アルベドの割合だけが光を散乱させる
-    float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
+float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
     
     // 配置式フォグボリュームの計算
     float3 volumeScattering = 0;

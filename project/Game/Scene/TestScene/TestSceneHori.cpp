@@ -53,14 +53,14 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().push_back(VolumetricFogPass::FogVolumeData());
     
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].type = 1;
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].position = { 50.0f,20.0f,-50.0f };
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].scale = { 50.0f,20.0f,50.0f };
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].color = { 65.0f / 255.0f,164.0f / 255.0f,252.0f / 255.0f };
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].density = 0.5f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].position = { 50.0f,22.0f,-50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].scale = { 50.0f,24.0f,50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].color = { 24.0f / 255.0f,194.0f / 255.0f,252.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].density = 0.2f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].blendDistance = 0.3f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windDirection = { 1.0f,-0.2f,0.7f };
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windSpeed = 0.3f;
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].coverage = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].coverage = 0.55f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].worleyWeight = 0.95f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseIntensity = 0.9f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseScale = { 0.06f,0.06f,0.06f };
