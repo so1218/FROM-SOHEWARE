@@ -20,7 +20,7 @@
         ],
         "bubbleModel_EdgeInten": 2.0,
         "bubbleModel_EdgeWidth": 0.05000000074505806,
-        "bubbleModel_Emissive": 60.20000076293945,
+        "bubbleModel_Emissive": 12.800000190734863,
         "bubbleModel_EnvMapInt": 0.6200000047683716,
         "bubbleModel_EnvMapTex": "skybox",
         "bubbleModel_LightMode": 3,
@@ -90,9 +90,9 @@
         ],
         "bubbleModel_ToonRampTex": "toonRamp_01",
         "bubbleModel_Trans": [
-            5.599999904632568,
-            3.5999999046325684,
-            4.599999904632568
+            -5.300000190734863,
+            6.300000190734863,
+            87.69999694824219
         ],
         "bubbleModel_TriScale": 0.10000000149011612,
         "bubbleModel_TriSharpness": 4.0,

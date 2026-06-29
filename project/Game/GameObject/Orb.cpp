@@ -27,7 +27,6 @@ void Orb::Initialize()
 {
     collider_->RegisterToManager();
 
-    // 自分にオーブタグを設定
     SetTag(ObjectTag::Orb);
 
     binder_->BindModel("orbModel", model_.get());

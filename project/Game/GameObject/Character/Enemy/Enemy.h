@@ -30,10 +30,10 @@ private:
 
     int id_;
 
-    // --- 波の動き（サイン波）用パラメーター ---
-    FE::Vector3 basePosition_; // 基準となる位置（エディタで配置する位置）
-    FE::Vector3 amplitude_;    // 振幅（どれくらい揺れるか。例: x=5なら左右に5m）
-    FE::Vector3 frequency_;    // 周波数（揺れる速さ）
+    // 波の動き用パラメーター
+    FE::Vector3 basePosition_; // 基準となる位置
+    FE::Vector3 amplitude_;    // 振幅
+    FE::Vector3 frequency_;    // 周波数
     float time_ = 0.0f;        // 経過時間
     FE::Vector3 phase_;
 
@@ -41,10 +41,10 @@ private:
     FE::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
 
     int spotLightIndex_ = -1;
-    FE::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f }; // 少し電球っぽい色
+    FE::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f }; 
     float spotIntensity_ = 8.0f;
     float spotDistance_ = 20.0f;
-    float spotAngleDeg_ = 30.0f; // エディタ側は分かりやすく「度数法（例: 30度）」で管理
+    float spotAngleDeg_ = 30.0f; 
     float spotVolumetric_ = 4.0f;
     FE::Vector3 spotDirection_ = { 0.0f, -1.0f, 0.0f };
 };

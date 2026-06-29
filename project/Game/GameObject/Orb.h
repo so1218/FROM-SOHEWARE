@@ -16,7 +16,7 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    void Sleep(); // プレイヤーに拾われた時に呼ぶ
+    void Sleep(); 
     bool IsPicked() const { return isPicked_; }
 
     void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;

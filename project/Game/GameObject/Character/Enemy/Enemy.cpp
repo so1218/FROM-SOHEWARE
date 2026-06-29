@@ -6,12 +6,9 @@
 using namespace FE;
 
 Enemy::Enemy(Engine* engine, int id, const std::string& parentGroupName)
-    : engine_(engine), id_(id) // ★親クラスのコンストラクタを忘れずに
+    : engine_(engine), id_(id) 
 {
-    model_ = std::make_unique<FE::Model>(engine_, "enemy"); // モデル名は任意
-
-    // 初期配置が重ならないようにズラす
-    basePosition_ = { static_cast<float>(id) * 5.0f, 2.0f, 10.0f };
+    model_ = std::make_unique<FE::Model>(engine_, "enemy"); 
 
     std::string childGroupName = "Enemy_" + std::to_string(id_);
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName, childGroupName);
@@ -35,8 +32,6 @@ void Enemy::Initialize()
 
     binder_->Bind("BasePosition", &basePosition_, basePosition_);
 
-    // 振幅と速さもエディタで調整できるようにする
-    // デフォルト: Y軸(上下)に2m, 速さ1.0。X軸(左右)に3m, 速さ0.5
     binder_->Bind("Amplitude", &amplitude_, { 3.0f, 2.0f, 0.0f });
     binder_->Bind("Frequency", &frequency_, { 0.5f, 1.0f, 0.0f });
     binder_->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
@@ -67,10 +62,9 @@ void Enemy::Update()
 {
     if (IsDead()) return;
 
-    // 1フレームあたりの経過時間を足す
     time_ += TimeManager::GetInstance()->GetDeltaTime();
 
-    // サイン波を使ってオフセット（ズレ）を計算
+    // サイン波を使ってオフセットを計算
     constexpr float radian = Math::PI / 180.0f;
 
     // サイン波に Phase（位相）を足してオフセットを計算
@@ -82,10 +76,7 @@ void Enemy::Update()
 
     FE::Vector3 currentPos = basePosition_ + offset;
 
-    // -----------------------------------------------------------------
-    // 【追加】進行方向の計算と回転の適用
-    // -----------------------------------------------------------------
-    // 新しい座標を代入する前の translation_ は「1フレーム前の座標」
+    // 進行方向の計算と回転の適用
     FE::Vector3 prevPos = model_->GetTransform().translation_;
     FE::Vector3 velocity = {
         currentPos.x - prevPos.x,
@@ -93,33 +84,28 @@ void Enemy::Update()
         currentPos.z - prevPos.z
     };
 
-    // 移動量がゼロの時（最初のフレームなど）に計算がバグるのを防ぐ
+    // 移動量がゼロの時に計算がバグるのを防ぐ
     float speedSq = velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z;
     if (speedSq > 0.000001f)
     {
-        // ベクトルを正規化（長さを1にする）して Forward（前方向）を作る
+        // ベクトルを正規化して Forward を作る
         float speed = std::sqrt(speedSq);
         FE::Vector3 forward = { velocity.x / speed, velocity.y / speed, velocity.z / speed };
 
-        // 上方向を定義（Yアップ）
         FE::Vector3 up = { 0.0f, 1.0f, 0.0f };
 
-        // LookRotation を使って「指定した方向を向くクォータニオン」を生成
+        // 指定した方向を向くクォータニオンを生成
         FE::Quaternion targetRotation = FE::Quaternion::LookRotation(-forward, up);
 
-        // 回転を適用
         model_->GetTransform().SetRotation(targetRotation);
     }
-    // -----------------------------------------------------------------
 
-    // 座標の更新
     model_->GetTransform().translation_ = currentPos;
     SetTransform(model_->GetTransform());
 
     // スポットライトの追従と更新
     if (spotLightIndex_ != -1)
     {
-        // 略 (元のコードのまま)
         engine_->GetLightManager()->UpdateSpotLightTransform(spotLightIndex_, currentPos, spotDirection_);
 
         float cosAngle = std::cos(spotAngleDeg_ * radian);
@@ -183,10 +169,9 @@ void Enemy::DebugDraw()
 
 void Enemy::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 {
-    // プレイヤーに当たったらダメージ処理などを行う
     FE::GameObject* hitObject = other->GetOwner();
     if (hitObject && hitObject->CompareTag(ObjectTag::Player))
     {
-        // プレイヤーにダメージを与えたり、爆発エフェクトを出したりする
+        
     }
 }

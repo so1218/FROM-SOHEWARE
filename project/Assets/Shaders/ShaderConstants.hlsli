@@ -223,7 +223,17 @@ struct WeatherData
     
     float cloudScale;
     float cloudShadowDensity;
-    float2 weatherPadding;
+    float skyGradientExponent; 
+    float sunAtmosphereGlow; 
+    
+    float3 zenithColor; 
+    float pad1;
+    
+    float3 horizonColor; 
+    float pad2; 
+    
+    float3 groundColor; 
+    float pad3;
 };
 
 struct DirectionalLight

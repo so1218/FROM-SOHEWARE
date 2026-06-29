@@ -29,6 +29,11 @@ void Skydome::Initialize()
     binder_->Bind("WindVelocity", &weatherData_.windVelocity, { 0.006f, 0.003f }, 0.001f, -0.1f, 0.1f);
     binder_->Bind("CloudScale", &weatherData_.cloudScale, 0.3f, 0.01f, 0.01f, 2.0f);
     binder_->Bind("CloudShadowDensity", &weatherData_.cloudShadowDensity, 0.6f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("SkyGradientExp", &weatherData_.skyGradientExponent, 0.6f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind("SunAtmoGlow", &weatherData_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->BindColor("ZenithColor", &weatherData_.zenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("HorizonColor", &weatherData_.horizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->BindColor("GroundColor", &weatherData_.groundColor, { 0.2f, 0.2f, 0.2f });
 }
 
 void Skydome::SetSkyCubeTexture(const std::string& textureName) {
@@ -65,6 +70,13 @@ void Skydome::DebugDraw()
         binder_->Draw("WindVelocity", "風向きと強さ");
         binder_->Draw("CloudScale", "雲のスケール");
         binder_->Draw("CloudShadowDensity", "雲の影の濃さ");
+
+        ImGui::Text("空のグラデーション設定");
+        binder_->Draw("ZenithColor", "天頂の色");
+        binder_->Draw("HorizonColor", "地平線の色");
+        binder_->Draw("GroundColor", "地面の色");
+        binder_->Draw("SkyGradientExp", "グラデーションのカーブ");
+        binder_->Draw("SunAtmoGlow", "大気散乱の強さ(地平線の光)");
 
         ImGui::Separator();
     }

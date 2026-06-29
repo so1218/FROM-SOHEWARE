@@ -15,7 +15,7 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    void AddOrb(); // ImGuiのエディタからオーブを追加する用
+    void AddOrb(); 
 
 private:
     FE::Engine* engine_;

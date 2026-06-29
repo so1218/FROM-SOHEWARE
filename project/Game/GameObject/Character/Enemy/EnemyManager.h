@@ -15,7 +15,7 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    void AddEnemy(); // ImGuiのエディタから追加する用
+    void AddEnemy(); 
 
 private:
     FE::Engine* engine_;

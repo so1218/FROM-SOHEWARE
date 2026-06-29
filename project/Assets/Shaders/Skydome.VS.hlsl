@@ -19,10 +19,10 @@ SkydomeVertexShaderOutput main(VertexShaderInput input)
 {
     SkydomeVertexShaderOutput output;
     
-    // xywwで深度を画面の最奥（1.0）に固定
+    // xywwで深度を画面の最奥に固定
     output.position = mul(float4(input.position, 1.0f), gTransform.WVP).xyww;
 
-    // ローカルの頂点位置（中心からの方向）がそのまま視線方向ベクトル
+    // ローカルの中心からの方向がそのまま視線方向ベクトル
     output.viewDir = input.position.xyz;
     
     // 雲用のUVをピクセルシェーダーに渡す

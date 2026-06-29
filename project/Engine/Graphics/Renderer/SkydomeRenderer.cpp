@@ -38,11 +38,16 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
         weatherResource_[i] = BufferManager::CreateBufferResource(env.device->GetDevice(), weatherSize);
         weatherResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedWeather_[i]));
 
-        // 天候の初期値を設定しておく
+        // 天候の初期値
         mappedWeather_[i]->cloudCoverage = { 0.35f, 0.7f };
         mappedWeather_[i]->windVelocity = { 0.006f, 0.003f };
         mappedWeather_[i]->cloudScale = 0.3f;
         mappedWeather_[i]->cloudShadowDensity = 0.6f;
+        mappedWeather_[i]->skyGradientExponent = 0.6f;
+        mappedWeather_[i]->sunAtmosphereGlow = 0.5f;
+        mappedWeather_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
+        mappedWeather_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
+        mappedWeather_[i]->groundColor = { 0.2f, 0.2f, 0.2f };
     }
 }
 

@@ -60,7 +60,6 @@ void OrbManager::DebugDraw()
 
     ImGui::Separator();
 
-    // 個別のオーブのインスペクターを表示
     for (auto& orb : orbs_)
     {
         orb->DebugDraw();

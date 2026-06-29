@@ -24,7 +24,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 sum = center;
     float totalWeight = 1.0f;
     
-    // 【追加】遠方に行くほど（DTid.zが大きいほど）エッジ保存の感度を下げる
+    // 遠方に行くほどエッジ保存の感度を下げる
     // 手前（zLinear=0）はクッキリ（2.0）、奥（zLinear=1）は強制全ボカシ（0.02）
     float zLinear = float(DTid.z) / float(depth - 1);
     float bilateralSensitivity = lerp(2.0f, 0.02f, smoothstep(0.1f, 0.7f, zLinear));
@@ -48,7 +48,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float colorDiff = length(center.rgb - neighbor.rgb) + abs(center.a - neighbor.a);
         
-        // 【変更】遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならなくなる
+        // 遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならなくなる
         float weight = exp(-colorDiff * bilateralSensitivity);
         
         sum += neighbor * weight;

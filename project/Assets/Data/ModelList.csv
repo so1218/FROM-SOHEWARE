@@ -3,16 +3,14 @@ Name,Path
 cube,Primitives/Cube/normalCube.obj
 sphere,Primitives/Sphere/sphere.obj
 plane,Primitives/Plane/plane.obj
-volumetricFog,Primitives/VolumetricFog/VolumetricFog.gltf
 
 # Characters
-playerMesh,Characters/Player/playerClear.gltf
 humanMesh,Characters/Human/humanMesh.gltf
 enemy,Characters/Enemy/Enemy.gltf
 
 # Environment
-skydome,Environment/Skydome/skydome.gltf
 field,Environment/Field/field.obj
 grass,Environment/Grass/NewGrass.gltf
 tree,Environment/Tree/tree.gltf
 rock1,Environment/Rocks/rock1.gltf
+volumetricFog,Environment/VolumetricFog/VolumetricFog.gltf

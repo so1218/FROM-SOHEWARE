@@ -154,11 +154,11 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 8.300000190734863,
+            "emissiveIntensity": 4.800000190734863,
             "enabled": true,
             "endColor": [
                 1.0,
-                0.25316452980041504,
+                0.15189874172210693,
                 0.0,
                 0.0
             ],
@@ -167,7 +167,7 @@
             "jitterMode": 2,
             "jitterPhase": 0.0,
             "jitterSpeed": 3.799999952316284,
-            "jitterStrength": 0.4000000059604645,
+            "jitterStrength": 0.5,
             "lifetime": 0.5,
             "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
@@ -176,7 +176,7 @@
             ],
             "startColor": [
                 1.0,
-                0.07594937086105347,
+                0.0,
                 0.0,
                 1.0
             ],
