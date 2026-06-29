@@ -130,6 +130,8 @@ void BloomCombinePass::SetupInputViews(
 void BloomCombinePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bloom Combine Pass");
+
     PreDraw(cmdList);
 
     // パイプライン

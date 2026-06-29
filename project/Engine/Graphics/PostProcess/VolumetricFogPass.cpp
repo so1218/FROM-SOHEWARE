@@ -154,6 +154,8 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 
 void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Volumetric Fog Pass");
+
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -232,6 +234,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [1] Injection パス (1点Ditherサンプリング、光と密度の注入)
     // ========================================================
     {
+        PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "1. Injection");
+
         // t0 ~ t5 の連続SRVテーブル作成
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 0, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), engine_->GetShadowMap()->GetSRVHandleCPU(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -268,6 +272,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [2] VoxelSpatialFilter パス (3x3x1 XY空間ノイズのぼかし)
     // ========================================================
     {
+        PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "2. Spatial Filter");
+
         // t0: VoxelInjectCurrent (オフセット 7)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 7, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         // u0: VoxelInjectFiltered UAV (オフセット 8)
@@ -294,6 +300,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [3] VoxelTemporalResolve パス (TAA + Clamping)
     // ========================================================
     {
+        PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "3. Temporal Resolve");
+
         // 履歴の書き込み先（currIdx）をあらかじめ UAV 状態に遷移
         D3D12_RESOURCE_BARRIER currHistBarrier = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[currIdx].Get(), (frameCounter_ == 0) ? D3D12_RESOURCE_STATE_COMMON : D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         cmdList->ResourceBarrier(1, &currHistBarrier);
@@ -326,6 +334,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [4] VoxelIntegrate パス (手前から奥へボリュームレイマーチ積算)
     // ========================================================
     {
+        PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "4. Integrate");
+
         // t0: VoxelTemporalOut (上でSRV遷移した history3DRes_[currIdx] を指定 / オフセット 12)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 12, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(historySrvIndices_[currIdx]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         // u0: VoxelAccumulate UAV (オフセット 13)
@@ -353,6 +363,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     // [5] VolumetricFogResolve パス (最終2D画面へのアップサンプル合成)
     // ========================================================
     {
+        PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "5. Resolve 2D");
+
         // t0: Depth (オフセット 14)
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 14, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         // t1: gVoxelAccumulate (オフセット 15)

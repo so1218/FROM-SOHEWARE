@@ -128,14 +128,14 @@
         },
         "Orb_1": {
             "LightColor": [
-                0.2377825379371643,
                 1.0,
+                0.10126584768295288,
                 0.10126584768295288,
                 1.0
             ],
             "LightIntensity": 4.860000133514404,
-            "LightRadius": 15.4399995803833,
-            "LightVolumetricScatteringIntensity": 12.989999771118164,
+            "LightRadius": 25.25,
+            "LightVolumetricScatteringIntensity": 21.06999969482422,
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,

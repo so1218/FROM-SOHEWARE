@@ -28,6 +28,8 @@ void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* p
 void SSAOPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "SSAO Pass");
+
     D3D12_GPU_DESCRIPTOR_HANDLE normalSRV = context.GetGPUHandle(context.normalSrvIndex);
     D3D12_GPU_DESCRIPTOR_HANDLE depthSRV = context.GetGPUHandle(context.sceneDepthSrvIndex);
 

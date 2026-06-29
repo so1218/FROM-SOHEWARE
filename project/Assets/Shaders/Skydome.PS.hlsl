@@ -37,23 +37,21 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     
     // プロシージャルな空のベースグラデーション
     
-// 【改良1】グラデーションの制御を smoothstep に変更
-    // skyGradientExponent を「ブレンドが完了する高さ」として扱います。
-    // 例: 0.3 に設定すると、地平線から少し見上げただけで、一気に完全な天頂の色になります。
-    // これにより、地平線の白っぽさが上空を汚すのを防ぎます。
-    float skyBlend = smoothstep(0.0f, gWeather.skyGradientExponent, max(viewDir.y, 0.0f));
-    
+    // 基本のグラデーション（地平線〜天頂）
+    // powを使うことで、単なる線形補間ではなく、空らしい丸みを帯びたカーブになる
+    float skyBlend = pow(max(viewDir.y, 0.0f), gWeather.skyGradientExponent);
     float3 skyColor = lerp(gWeather.horizonColor, gWeather.zenithColor, skyBlend);
     
-    // 地平線より下の処理
+    // 地平線より下の処理（カメラが下を向いた時に破綻しないようにする）
     float groundBlend = smoothstep(0.0f, -0.1f, viewDir.y);
     skyColor = lerp(skyColor, gWeather.groundColor, groundBlend);
     
-    // 【改良2】大気散乱の簡易シミュレーション
-    // 太陽の周りだけを白く/オレンジにする。全体の青空を壊さないように影響範囲を絞る
+    // 大気散乱の簡易シミュレーション
+    // 太陽の方向かつ、地平線に近いほど空がフワッと明るくなる
     float sunDotBase = saturate(dot(viewDir, sunDir));
-    float atmosphereScattering = pow(sunDotBase, 16.0f) * gWeather.sunAtmosphereGlow * smoothstep(0.5f, 0.0f, viewDir.y);
-    skyColor = lerp(skyColor, gWeather.horizonColor, saturate(atmosphereScattering));
+    float atmosphereScattering = pow(sunDotBase, 4.0f) * gWeather.sunAtmosphereGlow * max(1.0f - viewDir.y, 0.0f);
+    // 地平線の色を足すことで、夕焼け時には太陽の周りがオレンジに光るようになる
+    skyColor += gWeather.horizonColor * atmosphereScattering;
     
     // プロの技：FBMと視差スクロール（立体的な雲の形成）
     float viewY = max(viewDir.y, 0.05f);

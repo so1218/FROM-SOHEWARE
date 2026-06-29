@@ -77,6 +77,8 @@ void GlobalConstants::Update(
         mainLight.color.z * mainLight.intensity
     };
 
+    frameData_->mainLightVolumetricScatteringIntensity = mainLight.volumetricScatteringIntensity;
+
     // カメラ以外のデータも更新
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();
     frameData_->deltaTime = TimeManager::GetInstance()->GetDeltaTime();

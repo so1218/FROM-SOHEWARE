@@ -229,6 +229,7 @@ void DebugGuiManager::DrawLightSettings()
                 ImGui::DragFloat3("向き", &dirLights[i].direction.x, 0.05f);
                 ImGui::ColorEdit4("色", &dirLights[i].color.x);
                 ImGui::DragFloat("強度", &dirLights[i].intensity, 0.01f, 0.0f, 100.0f);
+                ImGui::DragFloat("ボリュメトリック散乱強度", &dirLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
                 ImGui::TreePop();
             }
         }

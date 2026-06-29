@@ -31,6 +31,8 @@ void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Downsample Pass");
+
     D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
         ? overrideInput
         : context.GetGPUHandle(context.sceneColorSrvIndex);

@@ -33,7 +33,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
 void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(0, 255, 128), "SSR Pass");
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "SSR Pass");
 
     D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU = context.GetCPUHandle(context.sceneColorSrvIndex);
     D3D12_CPU_DESCRIPTOR_HANDLE normalCPU = context.GetCPUHandle(context.normalSrvIndex);

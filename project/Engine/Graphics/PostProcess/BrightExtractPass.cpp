@@ -23,6 +23,8 @@ void BrightExtractPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
 void BrightExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bright Extract Pass");
+
     D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU = context.GetGPUHandle(context.sceneColorSrvIndex);
 
     PreDraw(cmdList);

@@ -39,9 +39,11 @@ void TestSceneHori::OnInitialize()
     engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-0.4f,1.4f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].color = { 1.0f,193.0f / 255.0f,96.0f / 255.0f,1.0f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
+    engine_->GetLightManager()->GetDirectionalLightData()[0].volumetricScatteringIntensity = 13.0f;
     engine_->GetPostEffectManager()->GetCombineSettings()->enableVolumetricFog = true;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
-    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 5.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 10.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.3f;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 9.0f / 255.0f,9.0f / 255.0f,9.0f / 255.0f };
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->maxDistance = 500.0f;
 

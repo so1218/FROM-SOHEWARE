@@ -258,11 +258,27 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 受光量の計算（地形シャドウ × 流体セルフシャドウ を合成）
     float finalShadowVisibility = shadowVisibility * fluidSelfShadow;
 
+   // ---------------------------------------------------------
+    // 【修正】主光源（太陽）と環境光の分離
+    // ---------------------------------------------------------
     float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
-    float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
     
-    float3 totalLight = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb;
-    totalLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
+    // 主光源（ゴッドレイ）のフェーズ関数。前方散乱を強くする（anisotropy = 0.7 ~ 0.8推奨）
+    float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
+
+// フォグ全体の設定ではなく、ディレクショナルライト自身が持つボリュメトリック用倍率を使用する
+    float directionalScatteringMultiplier = gFrameData.mainLightVolumetricScatteringIntensity;
+
+// 1. 太陽からの直接光（ゴッドレイの源）
+    float3 mainLightContrib = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb * directionalScatteringMultiplier;
+
+    // 2. 環境光（影の中を柔らかく照らす。強烈な倍率は掛けない）
+    // ambientLight自体は (0.1, 0.15, 0.2) などの低い現実的な値を使用します。
+    // lerp(0.3, 1.0, shadow) は「Sky Occlusion（遮蔽）」の疑似表現として非常に優秀です。
+    float3 ambientContrib = gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
+
+    // 3. ローカルライトを含める前のベースライト
+    float3 totalLight = mainLightContrib + ambientContrib;
 
     // ローカルライトの累積用
     float3 stepLocal = 0;
@@ -376,8 +392,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, 0.001f));
     particleDensity *= distanceFade;
 
-    float3 global_sigma_s = gFogSettings.albedo * particleDensity * gFogSettings.scatteringIntensity;
+    // ---------------------------------------------------------
+    // 【修正】global_sigma_s から scatteringIntensity を外す
+    // ---------------------------------------------------------
+    // 各光源の計算時にすでに倍率（Intensity）を掛けたので、ここでは純粋なアルベドと密度だけにする
+// 1. まず、フォグの総合的な濃さ（光を遮る強さ）を計算する
     float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
+
+// 2. その濃さのうち、アルベドの割合だけが光を散乱させる
+    float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
     
     // 配置式フォグボリュームの計算
     float3 volumeScattering = 0;

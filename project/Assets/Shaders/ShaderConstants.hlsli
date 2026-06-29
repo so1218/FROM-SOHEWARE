@@ -67,8 +67,9 @@ struct FrameData
 
     float3 mainLightDirection;
     float paddingLight0;
+    
     float3 mainLightColor;
-    float paddingLight1;
+    float mainLightVolumetricScatteringIntensity;
 
     float2 iResolution;
     float2 screenResolution;
@@ -245,7 +246,8 @@ struct DirectionalLight
     float4x4 viewProj;
     
     int32_t enable;
-    float3 padding;
+    float volumetricScatteringIntensity;
+    float2 padding;
 };
 
 struct PointLight

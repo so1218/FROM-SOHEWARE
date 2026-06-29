@@ -20,6 +20,7 @@ void LightManager::Initialize(ID3D12Device* device)
         directionalLightData_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
         directionalLightData_[i].direction = { 0.0f, -1.0f, 1.25f };
         directionalLightData_[i].intensity = 1.0f;
+        directionalLightData_[i].volumetricScatteringIntensity = 5.0f;
         directionalLightPositions_[i] = { 0.0f, 10.0f, 0.0f };
     }
 

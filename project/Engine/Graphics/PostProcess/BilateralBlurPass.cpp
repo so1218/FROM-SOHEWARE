@@ -55,6 +55,8 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
 void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bilateral Blur Pass");
+
     D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
         ? overrideInput
         : context.GetGPUHandle(context.sceneColorSrvIndex);
