@@ -71,7 +71,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].blendDistance = 0.3f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].windDirection = { 1.0f,-0.2f,0.7f };
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].windSpeed = 0.3f;
-    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].coverage = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].coverage = 0.55f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].worleyWeight = 0.95f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseIntensity = 0.9f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };

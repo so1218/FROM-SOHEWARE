@@ -37,7 +37,7 @@ public:
     void Draw(const RenderEnvironment& env, RenderGroup group, bool isWireFrame, ShadowMap* shadowMap);
 
     // 影用パスの描画
-    void DrawShadow(const RenderEnvironment& env);
+    void DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex);
 
     // 描画前のバッチ準備（インスタンシングのためのデータ転送など）
     void PrepareBatches();

@@ -28,7 +28,6 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
-    float4 shadowCoord : SHADOW_COORD;
 };
 
 PixelInput main(VertexInput input)
@@ -90,7 +89,6 @@ PixelInput main(VertexInput input)
     }
 
     output.position = mul(float4(worldPos.xyz, 1.0f), gFrameData.viewProjectionMatrix);
-    output.shadowCoord = mul(float4(worldPos.xyz, 1.0f), gDirectionalLights[0].viewProj);
     output.worldPosition = worldPos.xyz;
     output.texcoord = input.texcoord;
     

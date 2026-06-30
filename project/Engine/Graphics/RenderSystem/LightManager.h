@@ -29,6 +29,7 @@ public:
     ID3D12Resource* GetPointLightResource() { return pointLightResource_.Get(); }
     ID3D12Resource* GetSpotLightResource() { return spotLightResource_.Get(); }
     ID3D12Resource* GetAreaLightResource() { return areaLightResource_.Get(); }
+    ID3D12Resource* GetShadowDataResource() { return shadowDataResource_.Get(); }
 
     int GetDirectionalLightCount() const { return directionalLightCount_; }
     int GetPointLightCount() const { return pointLightCount_; }
@@ -62,6 +63,8 @@ public:
 
     // シャドウ用の行列を計算して更新する関数
     void UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarget);
+    // 毎フレーム呼ばれるCSM計算用関数（メインカメラの情報を渡す）
+    void UpdateCascadedShadows(const Vector3& lightDir, const Matrix4x4& cameraView, const Matrix4x4& cameraProj, float cameraNear, float cameraFar);
 
     void DrawDebugLights();
 
@@ -81,11 +84,13 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> areaLightResource_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> shadowDataResource_;
 
     DirectionalLight* directionalLightData_ = nullptr;
     PointLight* pointLightData_ = nullptr;
     SpotLight* spotLightData_ = nullptr;
     AreaLight* areaLightData_ = nullptr;
+    ShadowData* shadowData_ = nullptr;
 
     int directionalLightCount_ = MAX_DIRECTIONAL_LIGHTS;
     int pointLightCount_ = MAX_POINT_LIGHTS;

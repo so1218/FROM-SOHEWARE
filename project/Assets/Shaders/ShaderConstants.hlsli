@@ -197,6 +197,9 @@ struct MaterialData
     float triplanarScale;
     float triplanarBlendSharpness;
     float paddingTriplanar;
+    
+    float shadowNormalBias;
+    float3 paddingCSM;
 };
 
 struct TrailMaterialData
@@ -508,4 +511,15 @@ struct FluidSettings
     
     float3 voxelDelta;
     float pad1;
+};
+
+struct ShadowData
+{
+    float4x4 cascadeLightViewProj[4]; // 4枚分のカスケード行列
+    float4 cascadeSplits; // カスケードの切り替わり距離 (x, y, z, w)
+};
+
+struct CascadeConstant
+{
+    uint32_t cascadeIndex;
 };

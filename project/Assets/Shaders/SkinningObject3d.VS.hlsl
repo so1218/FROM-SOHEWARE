@@ -64,9 +64,6 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
     // ワールド座標を計算
     float4 worldPos = mul(skinned.position, gTransformationMatrix.World);
     output.worldPosition = worldPos.xyz;
-
-    // シャドウマップ用のライト空間座標
-    output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
     
     output.worldColor = gTransformationMatrix.WorldColor;
 

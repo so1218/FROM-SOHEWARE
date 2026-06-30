@@ -31,7 +31,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float3 S = stepData.rgb;
         float extinction = max(stepData.a, 0.00001f);
         
-        // ここで現在のスライス（z）の「物理的な厚み」を都度計算する
+        // 現在のスライス（z）の物理的な厚みを都度計算
         float zSlice0 = float(z) / float(depth);
         float zSlice1 = float(z + 1.0f) / float(depth);
         float viewZ0 = nearZ * pow(farZ / nearZ, zSlice0);
@@ -41,8 +41,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 消散係数にボクセルの厚みを掛けて、このステップの正確な透過率を出す
         float stepTransmittance = exp(-extinction * voxelThickness);
         
-        // 散乱光(S)に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを正しく乗算
-        // （※数学的に積分を解くと、S側にvoxelThicknessを掛ける必要はなく、この式のままで完璧に成立します）
+        // 散乱光(S)に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを乗算
         float3 integratedScattering = S * (1.0f - stepTransmittance) / extinction;
         
         // 全体の透過率を考慮して累積

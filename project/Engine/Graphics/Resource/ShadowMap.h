@@ -8,6 +8,10 @@ class SRVManager;
 class ShadowMap
 {
 public:
+
+    // カスケード数を定義
+    static const uint32_t kNumCascades = 4;
+
     // 初期化
     void Initialize(ID3D12Device* device, int width, int height, SRVManager* srvManager);
 
@@ -18,7 +22,7 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE GetSRVHandleCPU() const;
 
     // DSV用（シャドウ生成パスで書き込み先として使うとき）
-    D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle() const;
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle(uint32_t cascadeIndex) const;
 
     // SRVのインデックス自体が必要になった時用
     uint32_t GetSRVIndex() const { return srvIndex_; }
@@ -27,10 +31,10 @@ public:
     void TransitionToDepthWrite(ID3D12GraphicsCommandList* commandList);
     void TransitionToRead(ID3D12GraphicsCommandList* commandList);
 
-    void BeginPass(ID3D12GraphicsCommandList* commandList);
-    void EndPass(ID3D12GraphicsCommandList* commandList);
+    void BeginPass(ID3D12GraphicsCommandList* commandList, uint32_t cascadeIndex);
 
     ID3D12Resource* GetResource() const { return shadowResource_.Get(); }
+
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> shadowResource_;
@@ -43,6 +47,8 @@ private:
     UINT height_ = 0;
     D3D12_VIEWPORT viewport_{};
     D3D12_RECT scissorRect_{};
+
+    uint32_t dsvDescriptorSize_ = 0;
 };
 
 }

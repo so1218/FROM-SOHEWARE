@@ -4,7 +4,6 @@ struct VertexShaderOutput
     float32_t2 texcoord : TEXCOORD0;
     float32_t3 normal : NORMAL0;
     float32_t3 worldPosition : POSITION1;
-    float4 shadowCoord : POSITION2;
     float3 tangent : TANGENT;
     float32_t4 worldColor : COLOR0;
 };
@@ -24,7 +23,6 @@ struct PixelShaderInput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 worldPosition : POSITION1;
-    float4 shadowCoord : POSITION2;
     float3 tangent : TANGENT;
     float4 worldColor : COLOR0;
 };

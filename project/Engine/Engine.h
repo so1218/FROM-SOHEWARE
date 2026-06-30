@@ -131,6 +131,8 @@ private:
     Matrix4x4 viewMatrix_;
     Matrix4x4 projectionMatrix_;
     Vector3 eyePos_;
+    float nearClip_;
+    float farClip_;
 
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;

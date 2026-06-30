@@ -2,7 +2,7 @@
 #include "Object3D.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
-Texture2D<float> gShadowMap : register(t1);
+Texture2DArray<float> gShadowMap : register(t1);
 Texture3D<float4> gNoiseVolume : register(t2);
 Texture3D<float> gFluidDensity : register(t3);
 Texture3D<float4> gFluidVelocity : register(t4);
@@ -27,6 +27,7 @@ cbuffer SpotLights : register(b4)
 };
 
 ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
+ConstantBuffer<ShadowData> gShadowData : register(b6);
 
 // 位相関数
 // 光が霧の粒子にぶつかった時に、どの方向にどのくらい散乱するか
@@ -88,20 +89,34 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Dithered Lookups: 毎フレーム、インターリーブグラジエントノイズでサンプリング位置をずらす
     float noiseJitter = InterleavedGradientNoise(DTid.xy, gFrameData.frameIndex);
     
-    // ループを完全に撤廃し、この1点のみを評価する
+    // ループを完全に撤廃し、この1点のみを評価
     float t = noiseJitter;
     float sampleViewZ = viewZ0 + voxelThickness * t;
 
     float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * sampleViewZ);
 
     // シャドウの計算
-    float4 shadowCoord = mul(float4(currentPos, 1.0f), gFrameData.lightViewProj);
+    // カスケードの判定（sampleViewZ は既に計算済みのカメラからのビュー深度）
+    uint cascadeIndex = 0;
+    if (sampleViewZ > gShadowData.cascadeSplits[1])
+        cascadeIndex = 2;
+    else if (sampleViewZ > gShadowData.cascadeSplits[0])
+        cascadeIndex = 1;
+
+    // 判定したカスケードの行列を使ってシャドウ座標を計算
+    float4 shadowCoord = mul(float4(currentPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     shadowCoord.xyz /= shadowCoord.w;
     float2 shadowUV = shadowCoord.xy * float2(0.5f, -0.5f) + 0.5f;
+    
     float shadowVisibility = 1.0f;
     if (all(shadowUV >= 0.0f) && all(shadowUV <= 1.0f) && shadowCoord.z >= 0.0f && shadowCoord.z <= 1.0f)
     {
-        shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, shadowCoord.z - 0.0001f);
+    // float3(shadowUV.x, shadowUV.y, cascadeIndex) としてサンプリング
+        shadowVisibility = gShadowMap.SampleCmpLevelZero(
+        gShadowSampler,
+        float3(shadowUV, cascadeIndex),
+        shadowCoord.z - 0.0001f
+    );
     }
     
     // 流体データの取得
@@ -193,19 +208,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ディテールとエロージョン
     float gWorley = noiseLayer1.g; // 粗いディテール
     float bWorley = noiseLayer1.b; // 細かいディテール
-
-// -------------------------------------------------------------
-    // 【追加】遠方のエイリアシング（チラつき）を防ぐためのディテールフェード
+    
+    // 遠方のエイリアシング（チラつき）を防ぐためのディテールフェード
     float linearDistanceRatio = saturate(sampleViewZ / farZ);
     float detailFade = smoothstep(0.1f, 0.6f, linearDistanceRatio); // 実際の距離の10%〜60%でフェード
 
-// 遠方ほどWorley（モコモコ）とErosion（削り）のウェイトをゼロに落とす
+    // 遠方ほどWorley（モコモコ）とErosion（削り）のウェイトをゼロに落とす
     float activeWorleyWeight = lerp(gFogSettings.worleyWeight, 0.0f, detailFade);
     float activeErosion = lerp(gFogSettings.erosion, 0.0f, detailFade);
     float activeNoiseIntensity = lerp(gFogSettings.noiseIntensity, gFogSettings.noiseIntensity * 0.2f, detailFade);
-    // -------------------------------------------------------------
 
-    // 【変更】gFogSettings の代わりに上記の active~ 変数を使用する
+    
     // Perlinのブレンド結果に対してWorleyによるモコモコ感と削りを適用
     float combinedNoise = lerp(combinedPerlin, 1.0f - gWorley, activeWorleyWeight);
     combinedNoise = saturate(combinedNoise - (bWorley * activeErosion));
@@ -226,7 +239,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 密度の決定
     float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
 
-    // 1. ミクロディテール(Noise/Erosion)の適用（グローバルフォグ専用）
+    // ミクロディテール(Noise/Erosion)の適用（グローバルフォグ専用）
     float noiseCoverage = smoothstep(cutoff, cutoff + feather, combinedNoise);
     float erosionFactor = saturate(1.0f - (1.0f - combinedNoise) * gFogSettings.erosionStrength);
     
@@ -236,19 +249,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // グローバルフォグの最終密度
     float finalGlobalDensity = globalBaseDensity * finalNoiseModifier;
 
-    // 2. 流体の密度（fluidMassには既に上の方でedgeFadeが掛かっています）
+    // 流体の密度
     float finalFluidDensity = fluidMass;
 
-    // 3. 最終的なパーティクル密度の決定（グローバルと流体を合成）
-    // maxを取るか、加算(finalGlobalDensity + finalFluidDensity)するかはお好みで調整してください。
+    // 最終的なパーティクル密度の決定（グローバルと流体を合成）
     float particleDensity = max(finalGlobalDensity, finalFluidDensity);
 
     // ---------------------------------------------------------
     // セルフシャドウ用密度の計算
     // ---------------------------------------------------------
-    // シャドウ側も同様に、グローバルフォグと流体を分けてから合成します
+    // グローバルフォグと流体を分けてから合成
     float finalGlobalShadowDensity = globalBaseDensity * combinedNoiseEffect;
-    float finalFluidShadowDensity = fluidShadowMass; // これもshadowEdgeFade適用済み
+    float finalFluidShadowDensity = fluidShadowMass; 
     
     float dynamicShadowFog = max(finalGlobalShadowDensity, finalFluidShadowDensity);
 
@@ -257,27 +269,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     // 受光量の計算（地形シャドウ × 流体セルフシャドウ を合成）
     float finalShadowVisibility = shadowVisibility * fluidSelfShadow;
-
-   // ---------------------------------------------------------
-    // 【修正】主光源（太陽）と環境光の分離
-    // ---------------------------------------------------------
+    
+    // 太陽と環境光の分離
     float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
     
-    // 主光源（ゴッドレイ）のフェーズ関数。前方散乱を強くする（anisotropy = 0.7 ~ 0.8推奨）
+    // 主光源（ゴッドレイ）のフェーズ関数。前方散乱を強くする
     float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
-
-// フォグ全体の設定ではなく、ディレクショナルライト自身が持つボリュメトリック用倍率を使用する
+    
     float directionalScatteringMultiplier = gFrameData.mainLightVolumetricScatteringIntensity;
 
-// 1. 太陽からの直接光（ゴッドレイの源）
+    // 太陽からの直接光
     float3 mainLightContrib = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb * directionalScatteringMultiplier;
 
-    // 2. 環境光（影の中を柔らかく照らす。強烈な倍率は掛けない）
-    // ambientLight自体は (0.1, 0.15, 0.2) などの低い現実的な値を使用します。
-    // lerp(0.3, 1.0, shadow) は「Sky Occlusion（遮蔽）」の疑似表現として非常に優秀です。
+    // 環境光
     float3 ambientContrib = gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
 
-    // 3. ローカルライトを含める前のベースライト
+    // ローカルライトを含める前のベースライト
     float3 totalLight = mainLightContrib + ambientContrib;
 
     // ローカルライトの累積用
@@ -339,31 +346,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
         float cosOuter = gSpotLights[s].cosAngle;
         
-        // 【改善】コーン境界の判定（無駄な太さを撤廃）
-        // ボクセルのカクつき（エイリアシング）を隠すためのごく僅かなマージン。
-        // 以前の 0.04 という固定値は大きすぎて光を強制的に太らせていたため、動的かつ最小限にします。
+        // コーン境界の判定。
         float voxelSmoothing = (voxelThickness / max(distance, 1.0f)) * 0.15f;
         
         // 完全にコーンの外側なら早期スキップ
         if (currentCos < cosOuter - voxelSmoothing)
             continue;
         
-        // -----------------------------------------------------------------
-        // 【修正1】距離減衰（前回と同じ、UE準拠の扱いやすい減衰）
-        // -----------------------------------------------------------------
+        // 距離減衰
         float safeMaxDist = max(gSpotLights[s].distance, 0.0001f);
         float distanceRatio = saturate(smoothDistance / safeMaxDist);
         float distanceAtt = pow(saturate(1.0f - distanceRatio), 2.0f);
         
-        // -----------------------------------------------------------------
-        // 【修正2】角度減衰（UE方式のクッキリしたサーチライト）
-        // -----------------------------------------------------------------
-        // UEでは InnerCone と OuterCone の差で輪郭のシャープさを決めます。
-        // ここでは cosOuter より「ほんの僅かに内側」を Inner に設定し、シャープな境界線を作ります。
+        // 角度減衰
         float cosInner = min(cosOuter + 0.02f + voxelSmoothing, 1.0f);
         
-        // UE標準式: 外側(Outer)から内側(Inner)へ線形に立ち上げ、それを2乗(Square)する
-        // smoothstepよりも中心の芯が強く残り、輪郭がパキッと引き締まります。
+        // 中心の芯が強く残り、輪郭もパキッとする
         float rawAngleAtt = saturate((currentCos - (cosOuter - voxelSmoothing)) / max(cosInner - (cosOuter - voxelSmoothing), 0.0001f));
         float angleAtt = rawAngleAtt * rawAngleAtt;
         
@@ -391,16 +389,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float fadeStart = farZ * 0.8f;
     float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, 0.001f));
     particleDensity *= distanceFade;
-
-    // ---------------------------------------------------------
-    // 【修正】global_sigma_s から scatteringIntensity を外す
-    // ---------------------------------------------------------
-    // 各光源の計算時にすでに倍率（Intensity）を掛けたので、ここでは純粋なアルベドと密度だけにする
-// 1. まず、フォグの総合的な濃さ（光を遮る強さ）を計算する
-float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
-
-// 2. その濃さのうち、アルベドの割合だけが光を散乱させる
-float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
+    
+    // フォグの総合的な濃さ（光を遮る強さ）を計算
+    float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
+    
+    // その濃さのうち、アルベドの割合だけが光を散乱させる
+    float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
     
     // 配置式フォグボリュームの計算
     float3 volumeScattering = 0;
@@ -491,9 +485,9 @@ float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
     float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
     
     // Near Fade (手前フェード)
-    // カメラの直前にあるボクセルを強制的に透明にする
+    // カメラの直前にあるボクセルを強制的に透明に
     float nearFadeStart = 0.5f; // フェード開始（0.5mまでは完全に透明）
-    float nearFadeEnd = 3.0f; // フェード終了（3.0mで通常の濃さに戻る）
+    float nearFadeEnd = 3.0f; // フェード終了（3.0mで通常の濃さに）
     float nearFade = smoothstep(nearFadeStart, nearFadeEnd, sampleViewZ);
     
     // Near Fade を全体のウェイトに乗算する

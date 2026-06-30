@@ -104,6 +104,8 @@ void Engine::SetCameraState(
 	viewMatrix_ = view;
 	projectionMatrix_ = projection;
 	eyePos_ = eyePos;
+	nearClip_ = nearClip;
+	farClip_ = farClip;
 
 	// GlobalConstantsを更新
 	globalConstants_->Update(view, projection, eyePos, nearClip, farClip, lightManager_->GetDirectionalLightData()[0]);
@@ -136,7 +138,7 @@ void Engine::BeginFrame()
 void Engine::EndFrame()
 {
 	// パイプラインに描画を丸投げ
-	RenderCameraState camState = { viewMatrix_, projectionMatrix_, eyePos_ };
+	RenderCameraState camState = { viewMatrix_, projectionMatrix_, eyePos_, nearClip_, farClip_ };
 	renderPipeline_->Render(this, rendererManager_.get(), commandManager_.get(), camState);
 
 	// フレーム待機（システム処理）

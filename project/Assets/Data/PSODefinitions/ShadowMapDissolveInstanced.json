@@ -1,6 +1,6 @@
 {
-  "Name": "InstancingShadowMapDissolve",
-  "RootSignature": "Instancing3D",
+  "Name": "ShadowMapDissolveInstanced",
+  "RootSignature": "ShadowMapDissolveInstanced",
   "VertexShader": "Assets/Shaders/ShadowMapInstanced.VS.hlsl",
   "PixelShader": "Assets/Shaders/ShadowMap.PS.hlsl",
   "InputLayout": "Default3D",

@@ -1,5 +1,5 @@
 {
-  "RootSignature": "Instancing3D",
+  "RootSignature": "ShadowMapInstanced",
   "VertexShader": "Assets/Shaders/ShadowMapInstanced.VS.hlsl",
   "PixelShader": null,
   "InputLayout": "Default3D",

@@ -24,6 +24,8 @@ struct RenderCameraState
     Matrix4x4 view;
     Matrix4x4 projection;
     Vector3 eyePos;
+    float nearClip;
+    float farClip;
 };
 
 class RenderPipeline

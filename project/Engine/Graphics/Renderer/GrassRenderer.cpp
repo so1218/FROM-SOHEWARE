@@ -82,12 +82,13 @@ void GrassRenderer::Draw(const RenderEnvironment& env, uint32_t textureHandle, S
     cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(textureHandle));
-    cmdList->SetGraphicsRootShaderResourceView(4, instanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(textureHandle));
+    cmdList->SetGraphicsRootShaderResourceView(5, instanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
 
-    if (shadowMap) 
+    if (shadowMap)
     {
-        cmdList->SetGraphicsRootDescriptorTable(5, shadowMap->GetSRVHandle());
+        cmdList->SetGraphicsRootDescriptorTable(6, shadowMap->GetSRVHandle());
     }
 
     // インスタンス描画実行

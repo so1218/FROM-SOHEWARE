@@ -69,13 +69,35 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 {
     auto* cmdList = commandManager->GetCommandList();
 
+    auto* lightManager = engine->GetLightManager();
+
+    // ライトの方向を取得 
+    Vector3 lightDir = lightManager->GetDirectionalLightData()[0].direction;
+
+    // カスケード行列の計算・更新
+    lightManager->UpdateCascadedShadows(
+        lightDir,
+        cameraState.view,       
+        cameraState.projection, 
+        cameraState.nearClip,        
+        cameraState.farClip          
+    );
+
+
     // 流体シミュレーションの実行
     fluidSimulationPass_->Execute(cmdList);
 
     // シャドウパス
-    shadowMap_->BeginPass(cmdList);
-    rendererManager->DrawSceneForShadow();
-    shadowMap_->EndPass(cmdList);
+    shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア
+
+    for (uint32_t i = 0; i < ShadowMap::kNumCascades; ++i)
+    {
+        shadowMap_->BeginPass(cmdList, i);
+
+        rendererManager->DrawSceneForShadow(i);
+    }
+
+    shadowMap_->TransitionToRead(cmdList); // ループの後に1回だけバリア
 
     // G-Buffer / オフスクリーンパス
     renderCoordinator_->BeginOffscreenRender();

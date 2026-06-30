@@ -204,7 +204,7 @@ void RendererManager::DrawFinalResult(uint32_t srvIndex)
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
-void RendererManager::DrawSceneForShadow()
+void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 {
 	if (modelRenderer_)
 	{
@@ -215,7 +215,7 @@ void RendererManager::DrawSceneForShadow()
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
-	modelRenderer_->DrawShadow(env_);
+	modelRenderer_->DrawShadow(env_, cascadeIndex);
 }
 
 void RendererManager::Draw3D()

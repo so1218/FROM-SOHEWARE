@@ -256,9 +256,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); // b3
         cmdList->SetComputeRootConstantBufferView(4, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); // b4
         cmdList->SetComputeRootConstantBufferView(5, volumeConstantBuffer_->GetGPUVirtualAddress()); // b5
+        cmdList->SetComputeRootConstantBufferView(6, engine_->GetLightManager()->GetShadowDataResource()->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(6, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); // t0 ~ t5 Table
-        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize)); // u0 Table
+        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); // t0 ~ t5 Table
+        cmdList->SetComputeRootDescriptorTable(8, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize)); // u0 Table
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 

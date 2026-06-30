@@ -6,6 +6,8 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<DirectionalLight> gLight : register(b1);
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
+ConstantBuffer<ShadowData> gShadowData : register(b8);
+ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
 struct ShadowVSOutput
@@ -38,7 +40,7 @@ ShadowVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
     float4 worldPos = mul(localPos, worldMatrix);
 
     // ライトビュープロジェクションを適用
-    output.position = mul(worldPos, gLight.viewProj);
+    output.position = mul(worldPos, gShadowData.cascadeLightViewProj[gCascadeConstant.cascadeIndex]);
     output.texcoord = input.texcoord;
 
     return output;

@@ -385,7 +385,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
             cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());       
             cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);                                      
-            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));  
+            cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));  
 
             cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
         }
@@ -422,34 +422,35 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetAreaLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
     // テクスチャ
-    cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
-    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
-    cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
-    cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.toonRampHandle));
-    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
-    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
-    cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
-    cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.puddleNoiseHandle));
+    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
+    cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
+    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.toonRampHandle));
+    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
+    cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.puddleNoiseHandle));
 
     if (isSkinning)
     {
         auto& buffer = perObjectBuffers_[sub.instanceIndex]; // スキニングは個別バッファ
         cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
     else
     {
         // 静的モデルはインスタンシング描画
         cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);
-        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
         cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
     }
 }
 
-void ModelRenderer::DrawShadow(const RenderEnvironment& env)
+void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex)
 {
     auto* cmdList = env.commandManager->GetCommandList();
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -479,87 +480,86 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env)
         {
             if (isSkinning)
             {
-                // スキニング・ディゾルブ影（個別に描画）
+                // スキニング・ディゾルブ影
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinningDissolve"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinningDissolve"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-                cmdList->SetGraphicsRootConstantBufferView(3, sub.materialHandle.resource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
+
+                cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstant(3, cascadeIndex, 0);
+
+                cmdList->SetGraphicsRootConstantBufferView(4, sub.materialHandle.resource->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
 
                 const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-                // スキニングはバッチ化せず1つずつ
                 cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
-                // 静的モデル・ディゾルブ影 (インスタンシング)
+                // 静的モデル・ディゾルブ影 
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapDissolveInstanced"));
-                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapDissolveInstanced"));
 
-                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRoot32BitConstant(3, batch.startInstanceLocation, 0); 
+                cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRoot32BitConstant(5, cascadeIndex, 0);
+                cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); 
 
-                // batchの情報を使用
-                cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
-
-                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
-                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+                // ディゾルブテクスチャ
+                cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle)); 
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-                // batchのinstanceCountとstartInstanceLocationを使用して一括描画
                 cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, batch.startInstanceLocation);
             }
         }
-        // 不透明（高速処理）
         else
         {
             if (isSkinning)
             {
-                // スキニング・通常影（個別に描画）
+                // スキニング・通常影
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapSkinning"));
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinning"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+
+                cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstant(3, cascadeIndex, 0);
+
+                cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
 
                 const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-                // バッチ化せず1つずつ
                 cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
-                // 静的モデル・通常影 (インスタンシング)
+                // 静的モデル・通常影
                 cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapInstanced"));
-                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapInstanced"));
 
-                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
-
-                // batchの情報を使用
-                cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
-
-                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRoot32BitConstant(3, batch.startInstanceLocation, 0); 
+                cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); 
+                cmdList->SetGraphicsRoot32BitConstant(5, cascadeIndex, 0); 
+                cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); 
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-                // batchのinstanceCountとstartInstanceLocationを使用して一括描画
                 cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, batch.startInstanceLocation);
             }
         }

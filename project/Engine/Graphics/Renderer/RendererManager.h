@@ -70,7 +70,7 @@ public:
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
-    void DrawSceneForShadow();
+    void DrawSceneForShadow(uint32_t cascadeIndex);
     void Draw3D();
     void DrawUI();
 

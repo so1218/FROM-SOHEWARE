@@ -84,7 +84,6 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     output.normal = normalize(mul(input.normal, (float32_t3x3) instance.WorldInverseTranspose));
     output.tangent = normalize(mul(input.tangent, (float3x3) instance.World));
     
-    output.shadowCoord = mul(worldPos, gDirectionalLights[0].viewProj);
     output.worldColor = instance.WorldColor;
     
     return output;

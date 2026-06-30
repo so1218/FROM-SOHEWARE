@@ -7,9 +7,10 @@ cbuffer DirectionalLights : register(b1)
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
 ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0);
-Texture2D<float> gShadowMap : register(t1);
+Texture2DArray<float> gShadowMapArray : register(t2);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -21,17 +22,16 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
-    float4 shadowCoord : SHADOW_COORD;
 };
 
 // シャドウ強度を計算
-float CalculateShadow(float4 shadowCoord, float3 normal);
+float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
 PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
 
-    // ★修正ポイント1: discard（アルファテスト）を完全に削除
+    // discard（アルファテスト）を完全に削除
     // テクスチャはアルファマスクではなく、純粋なカラーグラデーションとして使用します
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
 
@@ -50,7 +50,9 @@ PixelShaderOutput main(PixelInput input)
     float shadowFactor = 1.0f;
     if (gMaterial.addShadow != 0)
     {
-        shadowFactor = CalculateShadow(input.shadowCoord, normal);
+        // カメラからの距離を測って CSM の関数を呼ぶ
+        float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
+        shadowFactor = CalculateShadowCSM(input.worldPosition, normal, viewDepth);
     }
     
     // 雷フラッシュの計算
@@ -121,27 +123,37 @@ static const float2 poissonDisk[16] =
     float2(0.14383161, -0.14100790)
 };
 
-float CalculateShadow(float4 shadowCoord, float3 normal)
+float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
+    float3 lightDir = normalize(-gDirectionalLights[0].direction);
+    float NdotL = dot(normal, lightDir);
+    float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
+
+    if (NdotL <= 0.0f)
+    {
+        return minShadow;
+    }
+
+    uint cascadeIndex = 0;
+    if (viewDepth > gShadowData.cascadeSplits.x)
+        cascadeIndex = 1;
+    if (viewDepth > gShadowData.cascadeSplits.y)
+        cascadeIndex = 2;
+    if (viewDepth > gShadowData.cascadeSplits.z)
+        cascadeIndex = 3;
+
+    float biasScale = saturate(1.0f - NdotL);
+    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
+    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
+
+    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
-    // 法線ベースのバイアス
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float biasScale = saturate(1.0f - dot(normal, lightDir));
-
-    float depthBias = gMaterial.shadowBias;
-    float normalBias = 0.002f * biasScale;
-
-    // NDC→UV
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
-    // 法線オフセット
-    projCoords.xy += normal.xy * normalBias;
+    float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    float currentDepth = projCoords.z - depthBias;
-
-    // 範囲外
     if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
         projCoords.x < 0.0f || projCoords.x > 1.0f ||
         projCoords.y < 0.0f || projCoords.y > 1.0f)
@@ -149,26 +161,21 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         return 1.0f;
     }
 
-    // PCF
-    float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
+    float2 texelSize = 1.0f / 2048.0f;
     float softness = max(gMaterial.shadowSoftness, 1.0f);
-
     float shadow = 0.0f;
+
     [unroll]
     for (int i = 0; i < 16; ++i)
     {
         float2 offset = poissonDisk[i] * texelSize * softness;
-        shadow += gShadowMap.SampleCmpLevelZero(
+        shadow += gShadowMapArray.SampleCmpLevelZero(
             gShadowSampler,
-            projCoords.xy + offset,
+            float3(projCoords.xy + offset, cascadeIndex),
             currentDepth
         );
     }
 
-    // 平均化
     float shadowVisibility = shadow * (1.0f / 16.0f);
-
-    float densityLimit = min(gMaterial.shadowDensity, 0.99f);
-    
-    return smoothstep(densityLimit, 1.0f, shadowVisibility);
+    return lerp(minShadow, 1.0f, shadowVisibility);
 }

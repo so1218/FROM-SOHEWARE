@@ -35,25 +35,24 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 viewDir = normalize(input.viewDir);
     float3 sunDir = normalize(-gDirectionalLights[0].direction);
     
-    // プロシージャルな空のベースグラデーション
+    // 空のベースグラデーション
     
     // 基本のグラデーション（地平線〜天頂）
-    // powを使うことで、単なる線形補間ではなく、空らしい丸みを帯びたカーブになる
     float skyBlend = pow(max(viewDir.y, 0.0f), gWeather.skyGradientExponent);
     float3 skyColor = lerp(gWeather.horizonColor, gWeather.zenithColor, skyBlend);
     
-    // 地平線より下の処理（カメラが下を向いた時に破綻しないようにする）
+    // 地平線より下の処理（カメラが下を向いた時に破綻しないように）
     float groundBlend = smoothstep(0.0f, -0.1f, viewDir.y);
     skyColor = lerp(skyColor, gWeather.groundColor, groundBlend);
     
     // 大気散乱の簡易シミュレーション
-    // 太陽の方向かつ、地平線に近いほど空がフワッと明るくなる
+    // 太陽の方向かつ、地平線に近いほど空が明るく
     float sunDotBase = saturate(dot(viewDir, sunDir));
     float atmosphereScattering = pow(sunDotBase, 4.0f) * gWeather.sunAtmosphereGlow * max(1.0f - viewDir.y, 0.0f);
-    // 地平線の色を足すことで、夕焼け時には太陽の周りがオレンジに光るようになる
+    // 夕焼け時には太陽の周りがオレンジに
     skyColor += gWeather.horizonColor * atmosphereScattering;
     
-    // プロの技：FBMと視差スクロール（立体的な雲の形成）
+    // FBMと視差スクロール（立体的な雲の形成）
     float viewY = max(viewDir.y, 0.05f);
     
     float2 cloudUV = (viewDir.xz / viewY) * gWeather.cloudScale;
@@ -73,7 +72,7 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float noise2 = gCloudTexture.Sample(gSampler, uv2).r;
     float noise3 = gCloudTexture.Sample(gSampler, uv3).r;
     
-    // FBM合成：ベースの形（大）に、ディテール（中・小）を重ねてフチを複雑にする
+    // FBM合成：ベースの形（大）に、ディテール（中・小）を重ねてフチを複雑に
     float combinedNoise = (noise1 * 0.6f) + (noise2 * 0.3f) + (noise3 * 0.1f);
     
     // 雲量を適用
@@ -103,7 +102,7 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     
     // 太陽が沈むにつれて赤みがかる大気透過率を計算
     float3 sunsetTint = lerp(float3(1.0f, 0.3f, 0.05f), float3(1.0f, 1.0f, 1.0f), smoothstep(0.0f, 0.2f, sunHeight));
-
+    
     // コア
     float sunCore = pow(sunDot, 8000.0f);
     float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 300.0f;

@@ -4,6 +4,8 @@
 // ライトのビュー射影行列
 ConstantBuffer<DirectionalLight> gLight : register(b1);
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
+ConstantBuffer<ShadowData> gShadowData : register(b8);
+ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);
 
 // スキニング行列
 StructuredBuffer<Well> gMatrixPalette : register(t0);
@@ -47,7 +49,7 @@ ShadowVSOutput main(SkinningVertexShaderInput input)
     float4 worldPos = mul(skinnedPos, gTransformationMatrix.World);
 
     // ライト空間へ変換
-    output.position = mul(worldPos, gLight.viewProj);
+    output.position = mul(worldPos, gShadowData.cascadeLightViewProj[gCascadeConstant.cascadeIndex]);
     
     // UVをパス
     output.texcoord = input.texcoord;

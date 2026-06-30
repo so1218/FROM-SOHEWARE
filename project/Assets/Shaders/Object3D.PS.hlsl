@@ -19,10 +19,12 @@ cbuffer AreaLightsBuffer : register(b4)
     AreaLight gAreaLights[MAX_AREA_LIGHTS];
 };
 ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
-Texture2D<float> gShadowMap : register(t2);
+//Texture2D<float> gShadowMap : register(t2);
+Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
 Texture2D<float3> gNormalTexture : register(t5);
@@ -61,7 +63,7 @@ float3 CalculatePBR(
 );
 
 // 影の濃さを計算する関数
-float CalculateShadow(float4 shadowCoord, float3 normal);
+float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
@@ -141,12 +143,17 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     
     // 影の計算 
+   // 影の計算 
     float shadowFactor = 1.0f;
     
     // 0番目のライトが有効なら影を計算
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
-        shadowFactor = CalculateShadow(input.shadowCoord, normalize(input.normal));
+        // カメラ座標から現在のピクセルまでの距離（深度）を計算
+        float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
+        
+        // 新しい関数を呼び出す
+        shadowFactor = CalculateShadowCSM(input.worldPosition, normalize(input.normal), viewDepth);
     }
     
     // ライティング処理
@@ -822,38 +829,41 @@ static const float2 poissonDisk[16] =
 };
 
 // シャドウ強度を計算
-float CalculateShadow(float4 shadowCoord, float3 normal)
+float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
-    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
-
-    // ライトの方向と法線の内積（N dot L）を計算
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
-
-    // 影の最低値（最も暗い状態）
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光源から見て完全に裏側（NdotLが0以下）なら、影に
     if (NdotL <= 0.0f)
     {
         return minShadow;
     }
 
-    // 法線ベースのバイアス
+    // カメラからの距離を見て、どのカスケード（0〜3）を使うか判定
+    uint cascadeIndex = 0;
+    if (viewDepth > gShadowData.cascadeSplits.x)
+        cascadeIndex = 1;
+    if (viewDepth > gShadowData.cascadeSplits.y)
+        cascadeIndex = 2;
+    if (viewDepth > gShadowData.cascadeSplits.z)
+        cascadeIndex = 3;
+
+    // ワールド空間でのNormal Offset Bias（シャドウアクネ対策）
     float biasScale = saturate(1.0f - NdotL);
-    float depthBias = gMaterial.shadowBias;
-    float normalBias = 0.002f * biasScale;
+    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
+    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
+
+    // 選択されたカスケードの行列を使って、ライト空間へ変換
+    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
+    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
     // NDC→UV
     projCoords.x = projCoords.x * 0.5f + 0.5f;
     projCoords.y = -projCoords.y * 0.5f + 0.5f;
 
-    // 法線オフセット
-    projCoords.xy += normal.xy * normalBias;
+    float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    float currentDepth = projCoords.z - depthBias;
-
-    // 範囲外のクリッピング処理
     if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
         projCoords.x < 0.0f || projCoords.x > 1.0f ||
         projCoords.y < 0.0f || projCoords.y > 1.0f)
@@ -861,26 +871,25 @@ float CalculateShadow(float4 shadowCoord, float3 normal)
         return 1.0f;
     }
 
-    // PCFによる柔らかさの計算
-    float2 texelSize = 1.0f / float2(2048.0f, 2048.0f);
+    float2 texelSize = 1.0f / 2048.0f; // テクスチャ解像度
     float softness = max(gMaterial.shadowSoftness, 1.0f);
-
     float shadow = 0.0f;
+
+    // 配列テクスチャからのPCFサンプリング
     [unroll]
     for (int i = 0; i < 16; ++i)
     {
         float2 offset = poissonDisk[i] * texelSize * softness;
-        shadow += gShadowMap.SampleCmpLevelZero(
+        
+        // SampleCmpLevelZeroの第2引数を float3 にし、Z成分に cascadeIndex を渡す
+        shadow += gShadowMapArray.SampleCmpLevelZero(
             gShadowSampler,
-            projCoords.xy + offset,
+            float3(projCoords.xy + offset, cascadeIndex),
             currentDepth
         );
     }
 
-    // 平均化
     float shadowVisibility = shadow * (1.0f / 16.0f);
-    
-    // minShadow ～ 1.0 の範囲に変換して返す
     return lerp(minShadow, 1.0f, shadowVisibility);
 }
 
