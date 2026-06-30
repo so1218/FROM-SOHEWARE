@@ -129,13 +129,13 @@
         "Orb_1": {
             "LightColor": [
                 1.0,
-                0.10126584768295288,
-                0.10126584768295288,
+                0.2067510485649109,
+                0.2067510485649109,
                 1.0
             ],
             "LightIntensity": 4.860000133514404,
-            "LightRadius": 25.25,
-            "LightVolumetricScatteringIntensity": 21.06999969482422,
+            "LightRadius": 26.040000915527344,
+            "LightVolumetricScatteringIntensity": 50.0,
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -186,13 +186,13 @@
             "orbModel_PuddleScale": 0.10000000149011612,
             "orbModel_PuddleTint": 0.5,
             "orbModel_RimColor": [
-                0.384393572807312,
-                1.0,
-                0.04641348123550415
+                0.9831223487854004,
+                0.4821883738040924,
+                0.10370491445064545
             ],
             "orbModel_RimEnable": 1,
-            "orbModel_RimInten": 1.0,
-            "orbModel_RimPower": 3.0,
+            "orbModel_RimInten": 3.4000000953674316,
+            "orbModel_RimPower": 7.800000190734863,
             "orbModel_RimUseDir": 0,
             "orbModel_RippleEnable": 0,
             "orbModel_RippleFreq": 1.0,
@@ -253,8 +253,8 @@
         },
         "Orb_2": {
             "LightColor": [
-                0.19999998807907104,
-                0.7873418927192688,
+                0.18143457174301147,
+                0.7824071645736694,
                 1.0,
                 1.0
             ],
