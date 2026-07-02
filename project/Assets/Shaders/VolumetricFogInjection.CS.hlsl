@@ -231,7 +231,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float heightFactor = 1.0f;
     if (gFogSettings.heightFalloff > 0.0f)
     {
-        // baseHeightより下（進入時）は 0 になり、exp(0)=1.0。上に行くほど薄くなる。
+        // baseHeightより下（進入時）は 0 になり、exp(0)=1.0。上に行くほど薄くなる
         float heightDiff = max(currentPos.y - gFogSettings.baseHeight, 0.0f);
         heightFactor = exp(-heightDiff * gFogSettings.heightFalloff);
     }

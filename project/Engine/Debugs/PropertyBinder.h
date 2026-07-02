@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "MathUtils.h"
 #include "Structures.h"
+#include "ModelManager.h"
 
 namespace FE
 {
@@ -64,9 +65,64 @@ public:
     // 回転専用のBind関数
     void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
 
-    void Clear();
+    void Clear(bool eraseData = false);
 
     const std::vector<std::string>& GetGroupPath() const { return groupPath_; }
+
+    void BindModelName(
+        const std::string& key,
+        std::string* currentModelName,
+        const std::string& defaultName,
+        std::function<void(const std::string&)> onChange)
+    {
+        auto* gv = GlobalVariables::GetInstance();
+
+        // GlobalVariablesから保存されたモデル名を取得
+        std::string loadedName = gv->GetStringValue(groupPath_, key);
+        if (!loadedName.empty()) {
+            *currentModelName = loadedName;
+        }
+        else {
+            *currentModelName = defaultName;
+            gv->SetValue(groupPath_, key, defaultName);
+        }
+
+        keys_.push_back(key);
+        items_[key] = [this, currentModelName, onChange, key](const std::string& label)
+            {
+                // ModelManagerからロード済みのモデル名一覧を自動取得
+                std::vector<std::string> modelNames = ModelManager::GetInstance().GetLoadedModelNames();
+                if (modelNames.empty()) return;
+
+                // 現在のモデル名が何番目にあるか検索
+                int currentIndex = 0;
+                for (int i = 0; i < modelNames.size(); ++i) {
+                    if (modelNames[i] == *currentModelName) {
+                        currentIndex = i;
+                        break;
+                    }
+                }
+
+                // ImGui用の文字列ポインタ配列を作成
+                std::vector<const char*> items(modelNames.size());
+                for (size_t i = 0; i < modelNames.size(); ++i) {
+                    items[i] = modelNames[i].c_str();
+                }
+
+                std::string displayLabel = label.empty() ? key : label;
+                if (ImGui::Combo(displayLabel.c_str(), &currentIndex, items.data(), static_cast<int>(items.size())))
+                {
+                    // 変更されたら変数を更新し、JSONへ保存
+                    *currentModelName = modelNames[currentIndex];
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *currentModelName);
+
+                    // 通知コールバックを発火
+                    if (onChange) {
+                        onChange(*currentModelName);
+                    }
+                }
+            };
+    }
 
 private:
     // 共通処理

@@ -248,6 +248,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
+    <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
+    <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
     <ClCompile Include="Game\GameObject\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
@@ -348,8 +350,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
-    <ClCompile Include="Game\GameObject\Rock.cpp" />
-    <ClCompile Include="Game\GameObject\RockManager.cpp" />
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TitleScene.cpp" />
@@ -429,6 +429,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
+    <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
+    <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\ProjectConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
@@ -499,8 +501,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Game\GameObject\OrbManager.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
-    <ClInclude Include="Game\GameObject\Rock.h" />
-    <ClInclude Include="Game\GameObject\RockManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Engine\Collision\Collision.h" />

@@ -39,7 +39,7 @@ void CameraRail::AddKeyframe(const CameraKeyframe& kf)
     frameCount_ = (int32_t)keyframes_.size();
 
     // ベクターのメモリ再配置が起きた可能性があるので、古いバインドを全てリセット
-    binder_->Clear();
+    binder_->Clear(true);
 
     // 全ての住所（ポインタ）を最初から教え直す
     binder_->Bind("FrameCount", &frameCount_, 0);
@@ -225,7 +225,7 @@ bool CameraRail::DebugDraw()
         frameCount_ = (int32_t)keyframes_.size();
 
         // 古いデータをImGuiとGlobalVariablesから完全に消し去る
-        binder_->Clear();
+        binder_->Clear(true);
 
         // 再構築
         binder_->Bind("FrameCount", &frameCount_, 0);

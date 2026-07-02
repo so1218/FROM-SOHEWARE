@@ -13,6 +13,7 @@
 #include "IEditorCommand.h"
 #include "PlaceModelCommand.h"
 #include "MoveModelCommand.h"
+#include "EnvironmentPropManager.h"
 
 using namespace FE;
 
@@ -28,6 +29,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<GrassField>(engine_, player_);
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
+    objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
 
     //player_->SetFollowCamera(followCamera_);
 }
@@ -88,6 +90,8 @@ void TestSceneHori::OnInitialize()
     grassFieldEmitter_ = engine_->GetParticleSystem()->CreateEmitter("grassField");
     grassFieldEmitter_->SetTargetToFollow(&player_->GetTransform());
     engine_->GetParticleSystem()->AddEmitter(std::move(grassFieldEmitter_));
+    fireEmitter_ = engine_->GetParticleSystem()->CreateEmitter("fire");
+    engine_->GetParticleSystem()->AddEmitter(std::move(fireEmitter_));
 
     // 生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");

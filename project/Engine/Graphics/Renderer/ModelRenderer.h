@@ -93,6 +93,8 @@ private:
     uint32_t currentInstanceLocation_ = 0;
 
     std::vector<RenderBatch> batches_;
+
+    int totalDrawCalls = 0;
 };
 
 }

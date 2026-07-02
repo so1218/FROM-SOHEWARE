@@ -1,0 +1,90 @@
+#pragma once
+#include "GameObject.h"
+#include "PropertyBinder.h"
+#include "Collider.h"
+#include "Model.h"
+#include "ParticleEmitter.h"
+
+enum class PropBehavior 
+{
+    None = 0,         // 何もしない
+    Disappear = 1,    // 拾って消える
+};
+
+class EnvironmentProp : public FE::GameObject
+{
+public:
+    EnvironmentProp(FE::Engine* engine, int id, const std::string& parentGroupName);
+    ~EnvironmentProp() override; // シーン切り替え時のライト自動返却を保証
+
+    void Initialize() override;
+    void Update() override;
+    void Draw() override;
+    void DebugDraw() override;
+    void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+    void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
+    void OnCollisionExit(FE::Collider* mine, FE::Collider* other) override;
+
+    // 設定が変更された際に、コライダーやライトの有効/無効を再構築
+    void ApplySettings();
+
+    FE::Model* GetModel() { return model_.get(); };
+
+    // ★追加: IDを振り直し、JSONの保存先を更新する関数
+    void ReassignID(int newID);
+
+    // カスタム名が空ならモデル名（cubeなど）を返し、設定されていればカスタム名を返す
+    std::string GetDisplayName() const {
+        return propCustomName_.empty() ? modelName_ : propCustomName_;
+    }
+
+    // ギズモ操作のために、モデルのTransformの「参照」を返すゲッター
+    FE::WorldTransform& GetTransformRef() {
+        return model_->GetTransform();
+    }
+
+    void SetCustomName(const std::string& newName) {
+        propCustomName_ = newName;
+        FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "CustomName", propCustomName_);
+    }
+
+    void SyncMaterialsToJSON();
+
+    std::string propCustomName_ = ""; // ユーザーが自由に付けられる名前
+
+private:
+    FE::Engine* engine_;
+    int id_;
+    std::string parentGroupName_;
+
+    std::unique_ptr<FE::Model> model_;
+    std::unique_ptr<FE::Collider> collider_;
+    std::unique_ptr<FE::PropertyBinder> binder_;
+
+    // PropertyBinderで保存・変更するパラメータ
+    int propBehavior_ = 0;
+    bool hasCollider_ = true;
+
+    int colliderType_ = 0; 
+    float colliderRadius_ = 1.0f;
+    FE::Vector3 colliderSize_ = { 0.5f, 0.5f, 0.5f };
+    FE::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
+
+    // ライト設定関連
+    bool hasLight_ = false;
+    int pointLightIndex_ = -1;
+    FE::Vector4 lightColor_ = { 1.0f, 0.5f, 0.0f, 1.0f }; 
+    float lightIntensity_ = 5.0f;
+    float lightRadius_ = 10.0f;
+    float lightVolumetricScatteringIntensity_ = 1.0f;
+
+    std::string modelName_ = "cube";
+    bool isNeedReconstruct_ = false; // 再構築が必要かどうかのフラグ
+
+    void SetupProperties(); // プロパティの登録をひとまとめにする関数
+
+    bool hasParticle_ = false;
+    std::string particleName_ = "enemyAura";
+    FE::ParticleEmitter* activeEmitter_ = nullptr;
+    bool isParticleFollowing_ = true; // 追従するかどうかのフラグ
+};

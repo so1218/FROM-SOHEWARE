@@ -23,7 +23,6 @@ ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0);
 TextureCube<float4> gEnvironmentTexture : register(t1);
-//Texture2D<float> gShadowMap : register(t2);
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
@@ -89,6 +88,13 @@ PixelShaderOutput main(PixelShaderInput input)
     else
     {
         textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    }
+    
+        
+    // ディザー透明処理
+    if (textureColor.a * gMaterial.color.a <= gMaterial.alphaTestThreshold)
+    {
+        discard; // これ以降の重いライティング計算をスキップ！
     }
     
     float3 baseColor = textureColor.rgb;
@@ -416,12 +422,6 @@ PixelShaderOutput main(PixelShaderInput input)
     {
         output.color.a = textureColor.a * gMaterial.color.a;
     }
-  
-    // ディザー透明処理
-    if (output.color.a <= gMaterial.alphaTestThreshold)
-    {
-        discard;
-    }
     
     // G-Bufferへの情報書き込み
 
@@ -630,8 +630,8 @@ float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float
 
         float3 lightDir = (distance > 0.001f) ? (lightVec / distance) : float3(0.0f, 1.0f, 0.0f);
         
-        // フォグ側と完全に同期させた数学的減衰（powベース）
-        float decay = 2.0f; // フォグ側と一致
+        // 数学的減衰（powベース）
+        float decay = 2.0f; 
         float attenuation = pow(saturate(1.0f - distance / radius), decay);
 
         float3 lightColor = gPointLights[i].color.rgb;
@@ -683,22 +683,17 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
             continue;
 
         float3 dirFromLight = (distance > 0.001f) ? (lightVecFromLight / distance) : normalize(gSpotLights[i].direction);
-
-        // -----------------------------------------------------------------
-        // 【修正1】距離減衰（Point Lightとスケールを完全に一致させる）
-        // UE風の距離ベースの減衰。強度(Intensity)の基準がPointと揃います。
-        // -----------------------------------------------------------------
+        
+        // 距離減衰
         float distanceRatio = distance / gSpotLights[i].distance;
         float distanceAtt = pow(saturate(1.0f - distanceRatio), 2.0f);
-
-        // -----------------------------------------------------------------
-        // 【修正2】角度減衰（インナーコーンとアウターコーンの美しいボケ味）
-        // -----------------------------------------------------------------
+        
+        // 角度減衰
         float coneDot = dot(normalize(gSpotLights[i].direction), dirFromLight);
         float cosOuter = gSpotLights[i].cosAngle;
-        float cosInner = lerp(1.0f, cosOuter, 0.8f); // 芯を広め(0.8)にとることでクッキリさせる
+        float cosInner = lerp(1.0f, cosOuter, 0.8f);
         
-        // UE5でもよく使われる smoothstep を使った滑らかな角度減衰
+        // smoothstep を使った滑らかな角度減衰
         float angleAtt = smoothstep(cosOuter, cosInner, coneDot);
 
         float attenuation = distanceAtt * angleAtt;
@@ -712,7 +707,7 @@ float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            // PBR用ハイライトのエリアライト化 (変更なし)
+            // PBR用ハイライトのエリアライト化
             float3 R = reflect(-toEye, normal);
             float fakeSourceRadius = 0.1f;
             float3 closestPoint = lightDirL + R * clamp(dot(lightDirL, R), 0.0f, fakeSourceRadius);

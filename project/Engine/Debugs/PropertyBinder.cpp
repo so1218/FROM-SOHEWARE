@@ -80,12 +80,17 @@ namespace FE
         );
     }
 
-    void PropertyBinder::Clear()
+    void PropertyBinder::Clear(bool eraseData)
     {
         keys_.clear();
         items_.clear();
-        // 必要なら GlobalVariables 側でこの groupPath_ の中身も消去するよう呼び出す
-        GlobalVariables::GetInstance()->ClearGroup(groupPath_);
+        modelBindMap_.clear();
+        animationBindMap_.clear();
+        // 引数が true の場合のみ、JSON（GlobalVariables）のデータも完全に消去する
+        if (eraseData)
+        {
+            GlobalVariables::GetInstance()->ClearGroup(groupPath_);
+        }
     }
 
     void PropertyBinder::BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items)

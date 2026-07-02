@@ -10,7 +10,7 @@ Ground::Ground(Engine* engine) : GameObject()
 
 	model_ = std::make_unique<Model>(engine_, "field");
 	modelTree_ = std::make_unique<Model>(engine_, "tree");
-	modelRock_ = std::make_unique<Model>(engine_, "volumetricFog");
+	modelBuilding_ = std::make_unique<Model>(engine_, "volumetricFog");
 	skybox_ = std::make_unique<Skybox>(engine);
 	skydome_ = std::make_unique<Skydome>(engine);
 
@@ -34,7 +34,7 @@ void Ground::Initialize()
 {
 	binder_->BindModel("Model", model_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
-	binder_->BindModel("ModelRock", modelRock_.get());
+	binder_->BindModel("ModelBuilding", modelBuilding_.get());
 
 	binder_->Bind("TreeCount", &treeCount_, 100);
 	binder_->Bind("TreeSpreadRadius", &treeSpreadRadius_, 50.0f);
@@ -98,7 +98,7 @@ void Ground::Draw()
 		modelTree_->GetTransform().UpdateMatrix();
 		modelTree_->Draw();
 	}
-	modelRock_->Draw();
+	modelBuilding_->Draw();
 	/*skybox_->Draw();*/
 	skydome_->Draw();
 };
@@ -108,7 +108,7 @@ void Ground::DebugDraw()
 #ifdef IS_DEVELOPMENT
 	ImGui::Begin("地面");
 	binder_->DrawModel("Model", "インスペクター");
-	binder_->DrawModel("ModelRock", "岩インスペクター");
+	binder_->DrawModel("ModelBuilding", "建物インスペクター");
 
 	binder_->DrawModel("ModelTree", "木インスペクター");
 	binder_->Draw("TreeCount", "木の数");
