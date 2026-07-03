@@ -30,7 +30,7 @@ public:
 
     FE::Model* GetModel() { return model_.get(); };
 
-    // ★追加: IDを振り直し、JSONの保存先を更新する関数
+    // IDを振り直し、JSONの保存先を更新する関数
     void ReassignID(int newID);
 
     // カスタム名が空ならモデル名（cubeなど）を返し、設定されていればカスタム名を返す
@@ -38,7 +38,7 @@ public:
         return propCustomName_.empty() ? modelName_ : propCustomName_;
     }
 
-    // ギズモ操作のために、モデルのTransformの「参照」を返すゲッター
+    // ギズモ操作のために、モデルのTransformの参照を返すゲッター
     FE::WorldTransform& GetTransformRef() {
         return model_->GetTransform();
     }

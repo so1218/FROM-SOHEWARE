@@ -231,10 +231,10 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     // Volumetric Fog
     {
-        // 1. 生のフォグを生成
+        // 生のフォグを生成
         volumetricFogPass_->Execute(cmdList, context_);
 
-        // 2. フィルターパスに生フォグの情報を渡して実行
+        // フィルターパスに生フォグの情報を渡して実行
         volumetricFogBilateralPass_->SetRawFogInput(
             volumetricFogPass_->GetResource(),   // リソースポインタ (バリア用)
             volumetricFogPass_->GetSRVIndex()    // SRVインデックス (コピー用)

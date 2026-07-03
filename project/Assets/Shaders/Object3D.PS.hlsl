@@ -94,7 +94,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // ディザー透明処理
     if (textureColor.a * gMaterial.color.a <= gMaterial.alphaTestThreshold)
     {
-        discard; // これ以降の重いライティング計算をスキップ！
+        discard; // これ以降の重いライティング計算をスキップ
     }
     
     float3 baseColor = textureColor.rgb;
@@ -823,6 +823,53 @@ static const float2 poissonDisk[16] =
     float2(0.19984126, 0.78641367), float2(0.14383161, -0.14100790)
 };
 
+// 特定の1つのカスケードから影の濃さを取得するヘルパー関数
+float SampleSingleCascade(float3 worldPos, float3 normal, uint cascadeIndex)
+{
+    float3 lightDir = normalize(-gDirectionalLights[0].direction);
+    float NdotL = dot(normal, lightDir);
+    
+    // バイアス計算
+    float biasScale = saturate(1.0f - NdotL);
+    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
+    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
+
+    // ライト空間への変換
+    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
+    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
+
+    projCoords.x = projCoords.x * 0.5f + 0.5f;
+    projCoords.y = -projCoords.y * 0.5f + 0.5f;
+
+    float currentDepth = projCoords.z - gMaterial.shadowBias;
+
+    // 範囲外判定
+    if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
+        projCoords.x < 0.0f || projCoords.x > 1.0f ||
+        projCoords.y < 0.0f || projCoords.y > 1.0f)
+    {
+        return 1.0f; // 影なし
+    }
+
+    float2 texelSize = 1.0f / 2048.0f;
+    float softness = max(gMaterial.shadowSoftness, 1.0f);
+    float shadow = 0.0f;
+
+    // 16回のPCFサンプリング
+    [unroll]
+    for (int i = 0; i < 16; ++i)
+    {
+        float2 offset = poissonDisk[i] * texelSize * softness;
+        shadow += gShadowMapArray.SampleCmpLevelZero(
+            gShadowSampler,
+            float3(projCoords.xy + offset, cascadeIndex),
+            currentDepth
+        );
+    }
+
+    return shadow * (1.0f / 16.0f);
+}
+
 // シャドウ強度を計算
 float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
@@ -831,60 +878,53 @@ float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
     if (NdotL <= 0.0f)
-    {
         return minShadow;
-    }
 
-    // カメラからの距離を見て、どのカスケード（0〜3）を使うか判定
     uint cascadeIndex = 0;
-    if (viewDepth > gShadowData.cascadeSplits.x)
-        cascadeIndex = 1;
-    if (viewDepth > gShadowData.cascadeSplits.y)
-        cascadeIndex = 2;
+    float nextSplitDist = 0.0f;
+
+    // どのカスケードに属しているか判定しつつ、次の境界線の距離も取得
     if (viewDepth > gShadowData.cascadeSplits.z)
+    {
         cascadeIndex = 3;
-
-    // ワールド空間でのNormal Offset Bias（シャドウアクネ対策）
-    float biasScale = saturate(1.0f - NdotL);
-    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
-    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
-
-    // 選択されたカスケードの行列を使って、ライト空間へ変換
-    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
-    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
-
-    // NDC→UV
-    projCoords.x = projCoords.x * 0.5f + 0.5f;
-    projCoords.y = -projCoords.y * 0.5f + 0.5f;
-
-    float currentDepth = projCoords.z - gMaterial.shadowBias;
-
-    if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
-        projCoords.x < 0.0f || projCoords.x > 1.0f ||
-        projCoords.y < 0.0f || projCoords.y > 1.0f)
+        nextSplitDist = 999999.0f; // これ以上奥はないのでブレンドしない
+    }
+    else if (viewDepth > gShadowData.cascadeSplits.y)
     {
-        return 1.0f;
+        cascadeIndex = 2;
+        nextSplitDist = gShadowData.cascadeSplits.z;
+    }
+    else if (viewDepth > gShadowData.cascadeSplits.x)
+    {
+        cascadeIndex = 1;
+        nextSplitDist = gShadowData.cascadeSplits.y;
+    }
+    else
+    {
+        cascadeIndex = 0;
+        nextSplitDist = gShadowData.cascadeSplits.x;
     }
 
-    float2 texelSize = 1.0f / 2048.0f; // テクスチャ解像度
-    float softness = max(gMaterial.shadowSoftness, 1.0f);
-    float shadow = 0.0f;
+    // メインとなる現在のカスケードから影を取得
+    float shadowVisibility = SampleSingleCascade(worldPos, normal, cascadeIndex);
 
-    // 配列テクスチャからのPCFサンプリング
-    [unroll]
-    for (int i = 0; i < 16; ++i)
+    // カスケードシーム（ブレンド）処理
+    // 境界線を跨ぐブレンド幅
+    float blendBand = 2.0f;
+
+    // 次の境界線にどれくらい近いかを 0.0 〜 1.0で計算
+    float blendFactor = smoothstep(nextSplitDist - blendBand, nextSplitDist, viewDepth);
+
+    // もし境界線付近（0.0より大きい）で、かつ次のカスケードが存在するなら
+    if (blendFactor > 0.0f && cascadeIndex < 3)
     {
-        float2 offset = poissonDisk[i] * texelSize * softness;
+        // 次のカスケード（荒い影）も取得
+        float nextShadowVisibility = SampleSingleCascade(worldPos, normal, cascadeIndex + 1);
         
-        // SampleCmpLevelZeroの第2引数を float3 にし、Z成分に cascadeIndex を渡す
-        shadow += gShadowMapArray.SampleCmpLevelZero(
-            gShadowSampler,
-            float3(projCoords.xy + offset, cascadeIndex),
-            currentDepth
-        );
+        // 現在の影と次の影を滑らかにブレンド
+        shadowVisibility = lerp(shadowVisibility, nextShadowVisibility, blendFactor);
     }
 
-    float shadowVisibility = shadow * (1.0f / 16.0f);
     return lerp(minShadow, 1.0f, shadowVisibility);
 }
 
@@ -982,7 +1022,7 @@ float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness)
     return F0 + (F90 - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
 }
 
-// 単一のライトに対するPBR計算
+// 単一のライトに対するPBR計算（Cook-Torrance BRDF）
 float3 CalculatePBR(
     float3 albedo,
     float3 N,

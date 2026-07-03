@@ -23,7 +23,7 @@ void EnvironmentPropManager::Initialize()
         props_.push_back(std::move(prop));
     }
 
-    // もしJSON上の数が減っていた場合、末尾から安全に削除する
+    // もしJSON上の数が減っていた場合、末尾から安全に削除
     while (props_.size() > propCount_)
     {
         props_.pop_back();
@@ -68,22 +68,21 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int index)
 {
     if (index >= 0 && index < props_.size())
     {
-        // 1. JSON上の「一番最後」のデータを消去する
-        // （全体の数が1つ減るため、最後尾のキーが不要になる）
+        // JSON上の一番最後のデータを消去する
         int lastIndex = static_cast<int>(props_.size()) - 1;
         std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
         FE::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
 
-        // 2. ベクターから指定された要素を削除（ここでデストラクタが呼ばれる）
+        // ベクターから指定された要素を削除
         props_.erase(props_.begin() + index);
 
-        // 3. 削除された場所以降の要素のIDを振り直し、JSONを上書き保存させる
+        // 削除された場所以降の要素のIDを振り直し、JSONを上書き保存
         for (int i = index; i < props_.size(); ++i)
         {
             props_[i]->ReassignID(i);
         }
 
-        // 4. 全体の数を更新
+        // 全体の数を更新
         propCount_ = static_cast<int>(props_.size());
         FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
     }
@@ -97,16 +96,16 @@ void EnvironmentPropManager::DebugDraw()
     ImGui::Text("全体の数: %d", propCount_);
     ImGui::Separator();
 
-    // ★ 修正: マテリアルの手動コピーUI
+    // マテリアルの手動コピーUI
     ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "マテリアル手動コピー機能");
 
-    // static変数にして、フレーム間でも入力値を保持する
+    // static変数にして、フレーム間でも入力値を保持
     static int sourcePropID = 0;
     static int targetPropID = 0;
 
     ImGui::InputInt("コピー元 Prop ID", &sourcePropID);
 
-    // 1. 特定のPropへコピーするボタン
+    // 特定のPropへコピーするボタン
     ImGui::InputInt("コピー先 Prop ID", &targetPropID);
     if (ImGui::Button("指定したPropにマテリアルをコピー"))
     {
@@ -117,12 +116,12 @@ void EnvironmentPropManager::DebugDraw()
         {
             props_[targetPropID]->GetModel()->CopyMaterialsFrom(props_[sourcePropID]->GetModel());
 
-            // ★追加: コピーした結果を JSON のメモリデータに同期！
+            // コピーした結果を JSON のメモリデータに同期
             props_[targetPropID]->SyncMaterialsToJSON();
         }
     }
 
-    // 2. すべてのPropへ一括コピーするボタン
+    // すべてのPropへ一括コピーするボタン
     if (ImGui::Button("すべてのPropにマテリアルをコピー"))
     {
         if (sourcePropID >= 0 && sourcePropID < props_.size())
@@ -133,7 +132,7 @@ void EnvironmentPropManager::DebugDraw()
                 {
                     props_[i]->GetModel()->CopyMaterialsFrom(props_[sourcePropID]->GetModel());
 
-                    // ★追加: コピーした結果を JSON のメモリデータに同期！
+                    // コピーした結果を JSON のメモリデータに同期
                     props_[i]->SyncMaterialsToJSON();
                 }
             }
@@ -142,7 +141,6 @@ void EnvironmentPropManager::DebugDraw()
 
     ImGui::Separator();
 
-    // ★ 修正: AddProp() 時のコピー機能は消すため、シンプルな追加ボタンに変更
     if (ImGui::Button("新しいPropを最後尾に追加"))
     {
         AddProp();
@@ -157,21 +155,21 @@ void EnvironmentPropManager::DebugDraw()
     {
         ImGui::PushID(i);
 
-        // ★ 修正1: ヘッダー名に「Prop [0] : cube」などのわかりやすい名前を表示する
+        // ヘッダー名に名前を表示
         std::string displayName = props_[i]->GetDisplayName();
         std::string headerName = "Prop [" + std::to_string(i) + "] : " + displayName;
 
-        // ★ 修正2: TreeNodeに選択状態（Selectedフラグ）を持たせる
+        // TreeNodeに選択状態を持たせる
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
         if (selectedPropIndex_ == i)
         {
-            flags |= ImGuiTreeNodeFlags_Selected; // 選択中ならハイライトする
+            flags |= ImGuiTreeNodeFlags_Selected;
         }
 
         // TreeNodeExを使ってフラグを適用
         bool isOpen = ImGui::TreeNodeEx(headerName.c_str(), flags);
 
-        // ★ 修正3: TreeNode自体（行全体）がクリックされたら、このPropを選択状態にする
+        // TreeNode自体がクリックされたら、このPropを選択状態にする
         if (ImGui::IsItemClicked())
         {
             selectedPropIndex_ = i;
@@ -179,15 +177,13 @@ void EnvironmentPropManager::DebugDraw()
 
         if (isOpen)
         {
-            // ▼▼ 修正: std::string を直接いじらず、char配列を介して安全に入力させる ▼▼
             char nameBuf[256];
             // 現在の名前をバッファにコピー
             strncpy_s(nameBuf, sizeof(nameBuf), props_[i]->GetDisplayName().c_str(), _TRUNCATE);
 
-            // 入力があった場合だけ、先ほど作った SetCustomName で更新＆保存
+            // 入力があった場合だけ、SetCustomName で更新＆保存
             if (ImGui::InputText("エディタ表示名", nameBuf, sizeof(nameBuf)))
             {
-                // ここで作成した関数を呼ぶ
                 props_[i]->SetCustomName(nameBuf);
             }
 
@@ -209,12 +205,12 @@ void EnvironmentPropManager::DebugDraw()
     {
         RemoveEnvironmentProp(deleteIndex);
 
-        // ★ 追加: 選択中のオブジェクトを消した場合は、選択状態をリセットする
+        // 選択中のオブジェクトを消した場合は、選択状態をリセット
         if (selectedPropIndex_ == deleteIndex)
         {
             selectedPropIndex_ = -1;
         }
-        // 消した対象より後ろを選択していた場合は、インデックスがずれるので調整する
+        // 消した対象より後ろを選択していた場合は、インデックスがずれるので調整
         else if (selectedPropIndex_ > deleteIndex)
         {
             selectedPropIndex_--;
@@ -223,19 +219,19 @@ void EnvironmentPropManager::DebugDraw()
 
     ImGui::End();
 
-    // ★ 修正4: 選択されているPropが存在すれば、そのTransformに対してGizmoを描画する
+    // 選択されているPropが存在すれば、そのTransformに対してGizmoを描画
     if (selectedPropIndex_ >= 0 && selectedPropIndex_ < props_.size())
     {
-        // 1. ギズモ操作前のTransformを記録
+        // ギズモ操作前のTransformを記録
         auto& targetTransform = props_[selectedPropIndex_]->GetTransformRef();
         FE::Vector3 oldPos = targetTransform.translation_;
         FE::Vector3 oldRot = targetTransform.rotation_;
         FE::Vector3 oldScale = targetTransform.scale_;
 
-        // 2. ギズモの描画（マウス操作で targetTransform の中身が直接書き換わる）
+        // ギズモの描画
         FE::ImGuiManager::DrawGizmo(targetTransform);
 
-        // 3. 操作前と操作後で値が変わっているかチェック
+        // 操作前と操作後で値が変わっているかチェック
         bool isChanged = false;
         if (oldPos.x != targetTransform.translation_.x || oldPos.y != targetTransform.translation_.y || oldPos.z != targetTransform.translation_.z) isChanged = true;
         if (oldRot.x != targetTransform.rotation_.x || oldRot.y != targetTransform.rotation_.y || oldRot.z != targetTransform.rotation_.z) isChanged = true;

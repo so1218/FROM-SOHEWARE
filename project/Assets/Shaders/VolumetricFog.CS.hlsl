@@ -91,8 +91,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float compareDepth = shadowCoord.z - 0.001f;
             shadowVisibility = gShadowMap.SampleCmpLevelZero(gShadowSampler, shadowUV, compareDepth);
         }
-
-       // --- 1.5 オブジェクトとのインタラクション（流体力学フェイク: Domain Warping） ---
+        
         float objRadius = max(gFogSettings.objectRadius, 0.001f);
         float3 vecToPos = currentPos - gFogSettings.objectPos;
         float distToObj = length(vecToPos);
@@ -100,51 +99,37 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float speed = length(gFogSettings.objectVelocity);
         float3 velDir = speed > 0.0001f ? (gFogSettings.objectVelocity / speed) : float3(0, 1.0f, 0);
-
-        // ① 押し出しによる「圧縮（Compression）」
-        // 密度を0にするのではなく、ノイズを読み取る座標を外側に押し出す。
-        // これにより、オブジェクトの周囲の霧がギュッと濃くなり、流体が退けられた感が出ます。
+        
         float pushFactor = smoothstep(objRadius * 2.0f, 0.0f, distToObj);
         float3 pushWarp = dirToPos * (pushFactor * objRadius * 1.5f);
 
-        // ② 巻き込みによる「渦（Vortex / Curl）」
-        // 進行方向ベクトルと、中心から外に向かうベクトルの外積（Cross）を取ることで、
-        // オブジェクトの周囲をぐるぐると回るような「ねじれ」のベクトルを作ります。
-        // これが流体特有の「もわっ」としたまとわりつきを生みます。
         float3 swirlAxis = normalize(cross(velDir, dirToPos) + float3(0.001f, 0.001f, 0.001f));
-        float swirlFactor = pushFactor * speed * 0.8f; // 動いている時だけ強く渦巻く
+        float swirlFactor = pushFactor * speed * 0.8f;
         float3 swirlWarp = swirlAxis * swirlFactor;
-
-        // ③ 後方の「乱気流と引きずり（Wake Turbulence）」
-        // オブジェクトの後方に円柱状の範囲を定義し、そこだけ空間を進行方向に引っ張ります。
-        float distAlongWake = dot(vecToPos, -velDir); // 後方ならプラスの値になる
+        
+        float distAlongWake = dot(vecToPos, -velDir);
         float distFromWakeCenter = length(vecToPos - (-velDir * distAlongWake));
         
-        float wakeLength = max(speed * 3.0f, objRadius * 2.0f); // 速度に応じて尾を長く
+        float wakeLength = max(speed * 3.0f, objRadius * 2.0f);
         float wakeFactor = smoothstep(wakeLength, 0.0f, max(distAlongWake, 0.0f))
                          * smoothstep(objRadius * 1.5f, 0.0f, distFromWakeCenter);
         
         float3 wakeWarp = velDir * (wakeFactor * speed * gFogSettings.interactionPower);
-
-        // 最終的なサンプリング座標の合成（元の座標 + 押し出し + 渦 - 引きずり）
+        
         float3 noiseSamplePos = currentPos + pushWarp + swirlWarp - wakeWarp;
         
-        // キャラクターのど真ん中（絶対領域）だけはカメラが見えなくなるので少し霧を消す
         float coreMask = smoothstep(objRadius * 0.4f, objRadius * 0.9f, distToObj);
 
-
-        // --- 2. 密度とノイズの計算 ---
+        
         float heightFalloff = exp(-max(currentPos.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
         float3 timeOffset = float3(1.0f, 0.5f, 0.8f) * (gFrameData.gTime * gFogSettings.windSpeed);
         
-        // 【重要】currentPos ではなく、空間を歪めた noiseSamplePos を使ってノイズを読む
         float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.5f) + timeOffset * 0.5f;
         float dx = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW), 0);
         float dy = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.33f), 0);
         float dz = gNoiseVolume.SampleLevel(gSampler, frac(warpUVW + 0.67f), 0);
         float3 distortion = float3(dx, dy, dz);
         
-        // 更にウェイク（後方）部分には高周波な乱れを足して、霧が崩れる感じを出す
         float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * (0.2f + wakeFactor * 0.5f);
         
         float3 uvw1 = distortedPos * gFogSettings.noiseScale + timeOffset;
@@ -157,25 +142,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         float fogDensity = (gFogSettings.baseAirDensity + (gFogSettings.density * 5.0f * noiseVal)) * heightFalloff;
         
-        // 密度マスクは一番中心だけ適用（霧が全く無い不自然な穴を防ぐ）
         fogDensity *= coreMask;
 
         float stepAttenuation = exp(-fogDensity * stepSize);
-
-        // --- 3. 散乱ブースト係数の定義 ---
+        
         float directScattering = fogDensity * 50.0f;
         float ambientScattering = fogDensity;
-
-        // --- 4. 太陽光の計算 ---
         float3 sunColor = gFrameData.mainLightColor.rgb;
         float3 stepDirect = shadowVisibility * (phasePhysical + phaseBase) * sunColor * directScattering;
-
-        // --- 5. 環境光の計算 ---
+        
         float ambientOcclusion = lerp(0.4f, 1.0f, shadowVisibility);
         float3 ambientColor = gFogSettings.fogColor * gFogSettings.ambientFactor * ambientOcclusion;
         float3 stepAmbient = ambientColor * ambientScattering;
-
-        // --- 6. ローカルライトの計算 ---
+        
         float3 stepLocal = float3(0, 0, 0);
 
         for (int p = 0; p < MAX_POINT_LIGHTS; ++p)

@@ -32,7 +32,6 @@ private:
     std::unique_ptr<FE::CameraRail> openingRail_;
 
     std::unique_ptr<FE::ParticleEmitter> grassFieldEmitter_ = nullptr;
-    std::unique_ptr<FE::ParticleEmitter> fireEmitter_ = nullptr;
 
     // エディタ（ドラッグ＆ドロップ）で配置されたモデルのリスト
     std::vector<std::unique_ptr<FE::Model>> placedModels_;

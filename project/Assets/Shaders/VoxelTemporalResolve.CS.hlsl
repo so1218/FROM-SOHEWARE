@@ -1,7 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 Texture3D<float4> gVoxelInjectFiltered : register(t0); // Spatial Filter後の今フレームのデータ
-Texture3D<float4> gVoxelHistory : register(t1); // 前フレームのTemporal Resolve結果（歴史）
+Texture3D<float4> gVoxelHistory : register(t1); // 前フレームのTemporal Resolve結果
 RWTexture3D<float4> gVoxelTemporalOut : register(u0); // Temporal Resolveの出力（次の積算パスへ渡す）
 
 ConstantBuffer<FrameData> gFrameData : register(b0);

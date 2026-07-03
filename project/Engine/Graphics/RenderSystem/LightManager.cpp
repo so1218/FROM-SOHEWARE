@@ -286,7 +286,7 @@ void LightManager::UpdateCascadedShadows(
     float cameraNear,
     float cameraFar)
 {
-    // 0. シャドウマップの解像度（テクセルスナップ用。お使いのShadowMapの解像度に合わせてください）
+    // シャドウマップの解像度（テクセルスナップ用。お使いのShadowMapの解像度に合わせてください）
     const float shadowMapResolution = 2048.0f;
 
     // 正規化したライトの方向
@@ -295,12 +295,12 @@ void LightManager::UpdateCascadedShadows(
     // カメラの逆ViewProjection行列を計算（NDC空間からワールド空間へ戻すため）
     Matrix4x4 invCamViewProj = Matrix4x4::Inverse(cameraView * cameraProj);
 
-    // 1. カスケードの分割距離の計算 (Practical Split Scheme)
+    // カスケードの分割距離の計算 
     float splits[5];
     splits[0] = cameraNear;
     splits[4] = cameraFar;
 
-    // lambda: 0.0で完全線形、1.0で完全対数分割。UEのデフォルトに近い 0.5〜0.7 がおすすめ
+    // lambda: 0.0で完全線形、1.0で完全対数分割。UEのデフォルトに近い 0.5〜0.7 
     const float lambda = 0.5f;
 
     for (int i = 1; i < 4; ++i)
@@ -318,14 +318,14 @@ void LightManager::UpdateCascadedShadows(
     // シェーダー（ピクセルシェーダーでの境界判定）にビュー空間のZ距離を送る
     shadowData_->cascadeSplits = Vector4{ splits[1], splits[2], splits[3], splits[4] };
 
-    // 2. 各カスケードの行列を計算
+    // 各カスケードの行列を計算
     for (int i = 0; i < 4; ++i)
     {
         float nearDist = splits[i];
         float farDist = splits[i + 1];
 
         // 各カスケード（サブ視錐台）のプロジェクション空間でのNear/FarのZ値を求める
-        // DirectX12の標準的な深度 [0, 1] へのマッピング
+        // 深度 [0, 1] へのマッピング
         float m22 = cameraProj.m[2][2];
         float m32 = cameraProj.m[3][2];
         float minZ = (nearDist * m22 + m32) / nearDist;
@@ -337,7 +337,7 @@ void LightManager::UpdateCascadedShadows(
             { -1.0f,  1.0f, maxZ }, {  1.0f,  1.0f, maxZ }, {  1.0f, -1.0f, maxZ }, { -1.0f, -1.0f, maxZ }
         };
 
-        // 8頂点をワールド空間に変換し、その中心（重心）を求める
+        // 8頂点をワールド空間に変換し、その中心を求める
         Vector3 center{ 0.0f, 0.0f, 0.0f };
         for (int j = 0; j < 8; ++j)
         {
@@ -346,8 +346,8 @@ void LightManager::UpdateCascadedShadows(
         }
         center = center * (1.0f / 8.0f);
 
-        // 【高品質化①：チラツキ防止】外接球（Bounding Sphere）の半径を計算
-        // これにより、カメラが回転してもライトの投影エリアのサイズが変化しなくなり、影のチラツキが消えます
+        // 【チラツキ防止】外接球（Bounding Sphere）の半径を計算
+        // カメラが回転してもライトの投影エリアのサイズが変化しなくなり、影のチラツキが消える
         float radius = 0.0f;
         for (int j = 0; j < 8; ++j)
         {
@@ -365,8 +365,8 @@ void LightManager::UpdateCascadedShadows(
         Vector3 lightPos = center - (normLightDir * radius);
         Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, center, up);
 
-        // 【高品質化②：チラツキ防止】テクセルスナップ（Texel Snapping）
-        // カメラが移動したときに、影の輪郭がテクセル単位でカチッと固定されるように位置を丸めます
+        // 【チラツキ防止】テクセルスナップ
+        // カメラが移動したときに、影の輪郭がテクセル単位でカチッと固定されるように位置を丸める
         Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, 0.0f, radius * 2.0f);
         Matrix4x4 shadowViewProj = lightView * shadowProj;
 
@@ -382,11 +382,11 @@ void LightManager::UpdateCascadedShadows(
         // 再び元のスケールに戻す
         roundOffset = roundOffset * (2.0f / shadowMapResolution);
 
-        // 正射影行列のズレを補正する（これがUE等で行われているスナップ処理の正体です）
+        // 正射影行列のズレを補正する（スナップ処理）
         shadowProj.m[3][0] += roundOffset.x;
         shadowProj.m[3][1] += roundOffset.y;
 
-        // 3. 最終的な行列を確定させて保存
+        // 最終的な行列を確定させて保存
         shadowData_->cascadeLightViewProj[i] = lightView * shadowProj;
     }
 }

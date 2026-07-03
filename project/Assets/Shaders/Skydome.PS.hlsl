@@ -104,16 +104,16 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 sunsetTint = lerp(float3(1.0f, 0.3f, 0.05f), float3(1.0f, 1.0f, 1.0f), smoothstep(0.0f, 0.2f, sunHeight));
     
     // コア
-    float sunCore = pow(sunDot, 8000.0f);
-    float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 300.0f;
+    float sunCore = pow(sunDot, 10000.0f);
+    float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 600.0f;
     
     // グロウ
-    float sunGlow = pow(sunDot, 3000.0f);
-    float3 glowColor = lerp(float3(1.0f, 0.1f, 0.0f), float3(1.0f, 0.9f, 0.7f), sunHeight) * sunsetTint * 60.0f;
+    float sunGlow = pow(sunDot, 5000.0f);
+    float3 glowColor = lerp(float3(1.0f, 0.1f, 0.0f), float3(1.0f, 0.9f, 0.7f), sunHeight) * sunsetTint * 240.0f;
     
     // ハロー
-    float sunHalo = pow(sunDot, 1000.0f);
-    float3 haloColor = lerp(float3(0.8f, 0.2f, 0.0f), float3(1.0f, 0.75f, 0.45f), sunHeight) * sunsetTint * 4.0f;
+    float sunHalo = pow(sunDot, 3000.0f);
+    float3 haloColor = lerp(float3(0.8f, 0.2f, 0.0f), float3(1.0f, 0.75f, 0.45f), sunHeight) * sunsetTint * 20.0f;
 
     float3 totalSun = (sunCore * coreColor) + (sunGlow * glowColor) + (sunHalo * haloColor);
     

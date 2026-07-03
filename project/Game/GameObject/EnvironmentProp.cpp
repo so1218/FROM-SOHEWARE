@@ -7,20 +7,20 @@ using namespace FE;
 EnvironmentProp::EnvironmentProp(FE::Engine* engine, int id, const std::string& parentGroupName)
     : engine_(engine), id_(id), parentGroupName_(parentGroupName)
 {
-    // 初期状態として仮のモデル（cubeなど）を生成しておく（BindModelで上書きされます）
+    // 初期状態として生成
     model_ = std::make_unique<FE::Model>(engine_, "cube");
 }
 
 EnvironmentProp::~EnvironmentProp()
 {
-    // ★重要: シーン切り替えやオブジェクト破棄の際、ライトを借りていればLightManagerに確実に返却する
+    // シーン切り替えやオブジェクト破棄の際、ライトを借りていればLightManagerに確実に返却
     if (pointLightIndex_ != -1)
     {
         engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
         pointLightIndex_ = -1;
     }
 
-    // ★追加: 自身が破棄されるなら、パーティクルも安全に破棄する
+    // 自身が破棄されるなら、パーティクルも安全に破棄
     if (activeEmitter_)
     {
         activeEmitter_->Destroy();
@@ -33,8 +33,8 @@ void EnvironmentProp::Initialize()
     std::string childGroupName = "Prop_" + std::to_string(id_);
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
-    // 最初に「モデル名」だけをバインドする
-    // モデル名が変わったら、即座に変えずに「次のフレームで再構築してね」とフラグを立てる
+    // モデル名だけをバインドする
+    // モデル名が変わったら、フラグを立てる
     binder_->BindModelName("ModelName", &modelName_, "cube", [this](const std::string& newName) {
         isNeedReconstruct_ = true;
         });
@@ -42,23 +42,23 @@ void EnvironmentProp::Initialize()
     // 初回のプロパティ構築
     SetupProperties();
 
-    // ロードされた初期設定を適用（ライトの要求やコライダーの登録を行う）
+    // ロードされた初期設定を適用
     ApplySettings();
 }
 
 void EnvironmentProp::SetupProperties()
 {
-    // ★追加: 予期せぬ2重生成を防ぐため、モデル再構築の際も古いエミッターは確実に破棄する
+    // 古いエミッターは確実に破棄する
     if (activeEmitter_)
     {
         activeEmitter_->Destroy();
         activeEmitter_ = nullptr;
     }
 
-    // 1. 一度バインダーに登録された古いメモリ番地（ポインタ）をすべてリセット
+    // 一度バインダーに登録された古いポインタをすべてリセット
     binder_->Clear();
 
-    // ※モデル名選択のUIだけは消えてほしくないので再バインド
+    // 再バインド
     binder_->BindModelName("ModelName", &modelName_, "cube", [this](const std::string& newName) {
         isNeedReconstruct_ = true;
         });
@@ -73,10 +73,10 @@ void EnvironmentProp::SetupProperties()
         gv->SetValue(binder_->GetGroupPath(), "CustomName", propCustomName_);
     }
 
-    // 2. 新しいモデルを完全に作り直す
+    // 新しいモデルを完全に作り直す
     model_ = std::make_unique<FE::Model>(engine_, modelName_);
 
-    // 3. 新しく生成された正しいメモリ番地で再バインドする
+    // 新しく生成された正しいポインタで再バインド
     binder_->BindModel ("Model", model_.get());
     binder_->Bind("Behavior", &propBehavior_, 0);
     binder_->Bind("HasCollider", &hasCollider_, true);
@@ -94,7 +94,7 @@ void EnvironmentProp::SetupProperties()
 
     // パーティクルのON/OFFフラグと追従フラグ
     binder_->Bind("HasParticle", &hasParticle_, false);
-    binder_->Bind("IsParticleFollowing", &isParticleFollowing_, true); // ★ここでのバインドはOK
+    binder_->Bind("IsParticleFollowing", &isParticleFollowing_, true); 
 
     // JSONからパーティクル名を読み込む;
     std::string loadedParticle = gv->GetStringValue(binder_->GetGroupPath(), "ParticleName");
@@ -111,7 +111,7 @@ void EnvironmentProp::SetupProperties()
 
 void EnvironmentProp::ApplySettings()
 {
-    // 1. コライダーのリアルタイムON/OFF制御
+    // コライダーのリアルタイムON/OFF制御
     if (hasCollider_) {
         if (!collider_) collider_ = std::make_unique<FE::Collider>(this);
         collider_->RegisterToManager();
@@ -120,9 +120,9 @@ void EnvironmentProp::ApplySettings()
         if (collider_) collider_.reset(); // 不要ならメモリ解放
     }
 
-    // 2. ライトのリアルタイムON/OFF制御
+    // ライトのリアルタイムON/OFF制御
     if (hasLight_) {
-        // ライトが必要かつ、まだ要求していなければ要求する
+        // ライトが必要かつ、まだ要求していなければ要求
         if (pointLightIndex_ == -1) {
             pointLightIndex_ = engine_->GetLightManager()->RequestPointLight();
         }
@@ -146,7 +146,7 @@ void EnvironmentProp::ApplySettings()
         }
     }
 
-    // 3. パーティクルのリアルタイムON/OFF制御
+    // パーティクルのリアルタイムON/OFF制御
     if (hasParticle_)
     {
         if (!activeEmitter_)
@@ -154,14 +154,14 @@ void EnvironmentProp::ApplySettings()
             auto emitter = engine_->GetParticleSystem()->CreateEmitter(particleName_);
             if (emitter)
             {
-                // ★修正: 追従フラグによって処理を分岐
+                // 追従フラグによって処理を分岐
                 if (isParticleFollowing_)
                 {
                     emitter->SetTargetToFollow(const_cast<FE::WorldTransform*>(&model_->GetTransform()));
                 }
                 else
                 {
-                    // 追従しない場合は、その瞬間のオブジェクトの位置に座標を固定する
+                    // 追従しない場合は、その瞬間のオブジェクトの位置に座標を固定
                     emitter->SetPosition(model_->GetTransform().translation_);
                 }
 
@@ -186,7 +186,7 @@ void EnvironmentProp::Update()
 {
     if (!IsActive()) return;
 
-    // ★ 冒頭でチェック：モデルの変更要求が来ていたら、安全なタイミングで再構築する
+    // モデルの変更要求が来ていたら、安全なタイミングで再構築
     if (isNeedReconstruct_)
     {
         SetupProperties();
@@ -242,11 +242,11 @@ void EnvironmentProp::DebugDraw()
 
         ImGui::Combo("接触時の挙動", &propBehavior_, "なし（通常の障害物）\0拾って消える（アイテム）\0");
 
-        // 1. 各種変更検知用のフラグをローカルに保存
+        // 各種変更検知用のフラグをローカルに保存
         bool prevCollider = hasCollider_;
         bool prevLight = hasLight_;
         bool prevParticle = hasParticle_;
-        bool prevParticleFollow = isParticleFollowing_; // ★追加
+        bool prevParticleFollow = isParticleFollowing_; 
 
         binder_->Draw("HasCollider", "当たり判定（コライダー）");
 
@@ -272,7 +272,7 @@ void EnvironmentProp::DebugDraw()
             ImGui::Unindent();
         }
 
-        // --- パーティクル設定セクション ---
+        // パーティクル設定セクション
         binder_->Draw("HasParticle", "パーティクルを発生させる");
 
         if (hasParticle_)
@@ -285,28 +285,26 @@ void EnvironmentProp::DebugDraw()
             char nameBuf[256];
             strncpy_s(nameBuf, sizeof(nameBuf), particleName_.c_str(), _TRUNCATE);
 
-            // 1. Enterフラグを外し、入力されるたびに文字列とJSON「だけ」を更新する（軽い処理）
+            // 入力されるたびに文字列とJSONだけを更新
             if (ImGui::InputText("エフェクト名", nameBuf, sizeof(nameBuf)))
             {
                 particleName_ = nameBuf;
                 FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ParticleName", particleName_);
             }
 
-            // 2. Enterキーを押した、または別の場所をクリックして入力が【確定】したかを検知
+            // 入力が確定したかを検知
             bool applyRequested = ImGui::IsItemDeactivatedAfterEdit();
 
             ImGui::SameLine();
 
-            // 3. 「適用」ボタンが押された場合も確定扱いにする
             if (ImGui::Button("適用##ApplyParticle"))
             {
                 applyRequested = true;
             }
 
-            // 4. 確定アクションがあった瞬間だけ、古いパーティクルを壊して再生成する（重い処理）
+            // 確定アクションがあった瞬間だけ、古いパーティクルを壊して再生成
             if (applyRequested)
             {
-                // ここには particleName_ = nameBuf; を書かなくてOK（上で既に更新されているため）
                 if (activeEmitter_) {
                     activeEmitter_->Destroy();
                     activeEmitter_ = nullptr;
@@ -344,7 +342,7 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
         {
             SetActive(false); // 非アクティブにして描画と更新を止める
 
-            // オブジェクトが消えたので、ライトの輝度を即座に0にして消灯する
+            // オブジェクトが消えたので、ライトの輝度を即座に0にして消灯
             if (pointLightIndex_ != -1)
             {
                 engine_->GetLightManager()->UpdatePointLightProperties(

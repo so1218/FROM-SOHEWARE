@@ -205,7 +205,7 @@ float4 main(VSOutput input) : SV_TARGET
         result = float3(0.0, 0.0, 0.0);
     }
 
-   // 6. 最終出力処理 (トーンマップ等)
+   // 最終出力処理 (トーンマップ等)
     result = ACESFilm(clamp(result, 0.0, 65504.0));
 
     return float4(result, 1.0f);

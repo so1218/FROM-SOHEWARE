@@ -90,8 +90,6 @@ void TestSceneHori::OnInitialize()
     grassFieldEmitter_ = engine_->GetParticleSystem()->CreateEmitter("grassField");
     grassFieldEmitter_->SetTargetToFollow(&player_->GetTransform());
     engine_->GetParticleSystem()->AddEmitter(std::move(grassFieldEmitter_));
-    fireEmitter_ = engine_->GetParticleSystem()->CreateEmitter("fire");
-    engine_->GetParticleSystem()->AddEmitter(std::move(fireEmitter_));
 
     // 生成・初期化
     auto openingRail = std::make_unique<CameraRail>(engine_, camera_.get(), "HoriScene_Opening");
@@ -126,7 +124,7 @@ void TestSceneHori::OnUpdate()
         transform.translation_ = { 0.0f, 0.0f, 0.0f };
         newModel->SetTransform(transform);
 
-        // 直接 vector に push せず、コマンドを介して安全に生成・登録
+        // コマンドを介して安全に生成・登録
         auto command = std::make_unique<PlaceModelCommand>(this, std::move(newModel));
         EditorHistoryManager::GetInstance().AddAndExecute(std::move(command));
 

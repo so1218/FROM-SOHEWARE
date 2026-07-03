@@ -1180,7 +1180,7 @@
             "Model_RippleStren": 0.05000000074505806,
             "Model_Rot": [
                 0.5300000309944153,
-                -0.0,
+                3.309999942779541,
                 0.6136953830718994
             ],
             "Model_Roughness": 1.0,
@@ -1227,7 +1227,6 @@
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
             "ParticleName": "enemyAura"
-        },
-        "Prop_3": null
+        }
     }
 }
