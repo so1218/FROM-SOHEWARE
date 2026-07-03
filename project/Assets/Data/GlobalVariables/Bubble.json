@@ -7,7 +7,7 @@
             1.0,
             1.0,
             1.0,
-            0.3686274588108063
+            1.0
         ],
         "bubbleModel_DiffuseRef": 4.0,
         "bubbleModel_DisEnable": 1,
@@ -27,8 +27,8 @@
         "bubbleModel_Lighting": 1,
         "bubbleModel_Metalness": 1.0,
         "bubbleModel_NormEnable": 1,
-        "bubbleModel_NormInten": 0.05000000074505806,
-        "bubbleModel_NormTile": 9.199999809265137,
+        "bubbleModel_NormInten": 0.6000000238418579,
+        "bubbleModel_NormTile": 5.699999809265137,
         "bubbleModel_NormalMapTex": "normal_18",
         "bubbleModel_OutlineColor": [
             0.0,
@@ -60,18 +60,18 @@
         "bubbleModel_RimUseDir": 0,
         "bubbleModel_RippleEnable": 0,
         "bubbleModel_RippleFreq": 1.0,
-        "bubbleModel_RippleMap": "white1x1",
+        "bubbleModel_RippleMap": "normal_31",
         "bubbleModel_RippleMix": 0.5,
-        "bubbleModel_RippleScale": 2.0,
+        "bubbleModel_RippleScale": 0.4000000059604645,
         "bubbleModel_RippleSize": 0.4000000059604645,
-        "bubbleModel_RippleSpeed": 1.0,
+        "bubbleModel_RippleSpeed": 8.800000190734863,
         "bubbleModel_RippleStren": 0.05000000074505806,
         "bubbleModel_Rot": [
             0.0,
             0.0,
             0.0
         ],
-        "bubbleModel_Roughness": 0.11999999731779099,
+        "bubbleModel_Roughness": 0.25,
         "bubbleModel_Scale": [
             3.0,
             3.0,
@@ -90,9 +90,9 @@
         ],
         "bubbleModel_ToonRampTex": "toonRamp_01",
         "bubbleModel_Trans": [
-            -5.300000190734863,
-            6.300000190734863,
-            87.69999694824219
+            4.0,
+            3.299999952316284,
+            71.30000305175781
         ],
         "bubbleModel_TriScale": 0.10000000149011612,
         "bubbleModel_TriSharpness": 4.0,

@@ -18,7 +18,7 @@ Game::Game()
     : engine_(std::make_unique<Engine>())
 {
     ProjectConfig config;
-    config.windowTitle = L"MIST SOHEWARE"; 
+    config.windowTitle = L"FROM SOHEWARE"; 
     config.width = 1280;
     config.height = 720;
     config.targetFPS = 60;

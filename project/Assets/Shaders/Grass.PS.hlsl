@@ -30,15 +30,14 @@ float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
-
-    // discard（アルファテスト）を完全に削除
-    // テクスチャはアルファマスクではなく、純粋なカラーグラデーションとして使用します
+    
+    // テクスチャは純粋なカラーグラデーションとして使用
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
 
     float3 baseColor = textureColor.rgb * gMaterial.color.rgb * input.color.rgb;
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     
-    // ★修正ポイント2: 両面描画対策（法線の反転をDiffuse計算の前に行う）
+    // 両面描画対策（法線の反転をDiffuse計算の前に行う）
     float3 normal = normalize(input.normal);
     if (dot(normal, toEye) < 0.0f)
     {
@@ -61,11 +60,11 @@ PixelShaderOutput main(PixelInput input)
     float flashShadowCancel = saturate(flashIntensity);
     shadowFactor = lerp(shadowFactor, 1.0f, flashShadowCancel);
 
-    // 光の計算（反転処理済みの法線を使用するため、裏から見ても綺麗に光が当たります）
+    // 光の計算
     float NdotL = dot(normal, lightDir) * 0.5f + 0.5f; // ハーフランバートで柔らかく
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL * shadowFactor;
 
-    // 透過光 (モデルベースでも非常に効果的です)
+    // 透過光
     float viewDotLight = saturate(dot(toEye, -lightDir));
     float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
  

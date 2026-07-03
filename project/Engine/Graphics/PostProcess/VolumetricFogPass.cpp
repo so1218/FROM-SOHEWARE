@@ -7,7 +7,7 @@ namespace FE
 
 void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
-    // アルファチャンネル(透過率)も必要＆HDR値が入るのでFP16を指定
+    // HDR値が入るのでFP16を指定
     InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
     psoManager_ = pso;
 
