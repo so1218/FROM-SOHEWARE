@@ -962,6 +962,7 @@
     <FxCompile Include="Assets\Shaders\SSRRaycast.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\SSRResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\SSRSpatialDenoise.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSRTemporal.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
