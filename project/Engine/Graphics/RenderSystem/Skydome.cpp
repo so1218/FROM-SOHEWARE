@@ -34,6 +34,10 @@ void Skydome::Initialize()
     binder_->BindColor("ZenithColor", &weatherData_.zenithColor, { 0.05f, 0.15f, 0.4f });
     binder_->BindColor("HorizonColor", &weatherData_.horizonColor, { 0.4f, 0.6f, 0.8f });
     binder_->BindColor("GroundColor", &weatherData_.groundColor, { 0.2f, 0.2f, 0.2f });
+    binder_->Bind("CloudBumpScale", &weatherData_.cloudBumpScale, 0.15f, 0.005f, 0.01f, 1.0f);
+    binder_->Bind("CloudEdgeSoftness", &weatherData_.cloudEdgeSoftness, 0.15f, 0.01f, 0.01f, 0.5f);
+    binder_->Bind("CloudAbsorption", &weatherData_.cloudAbsorption, 0.7f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("CloudAmbientColor", &weatherData_.cloudAmbientColor, { 0.08f, 0.12f, 0.2f });
 }
 
 void Skydome::SetSkyCubeTexture(const std::string& textureName) {
@@ -66,17 +70,28 @@ void Skydome::DebugDraw()
 
     if (ImGui::CollapsingHeader("スカイドーム", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        binder_->Draw("CloudCoverage", "雲の発生量 (Min/Max)");
+        ImGui::Text("雲の形状・アニメーション設定");
+        binder_->Draw("CloudCoverage", "雲の発生量 (下限/上限)");
+        binder_->Draw("CloudScale", "雲のサイズ");
         binder_->Draw("WindVelocity", "風向きと強さ");
-        binder_->Draw("CloudScale", "雲のスケール");
-        binder_->Draw("CloudShadowDensity", "雲の影の濃さ");
+        binder_->Draw("CloudEdgeSoftness", "雲の輪郭の柔らかさ");
+        binder_->Draw("CloudBumpScale", "雲の凹凸の強さ (モクモク感)");
 
-        ImGui::Text("空のグラデーション設定");
+        ImGui::Separator();
+
+        ImGui::Text("雲のライティング・陰影設定");
+        binder_->Draw("CloudShadowDensity", "雲全体の影の濃さ");
+        binder_->Draw("CloudAbsorption", "雲の厚みによる光の遮蔽率");
+        binder_->Draw("CloudAmbientColor", "雲の環境光 (影の色)");
+
+        ImGui::Separator();
+
+        ImGui::Text("空のグラデーション・大気設定");
         binder_->Draw("ZenithColor", "天頂の色");
         binder_->Draw("HorizonColor", "地平線の色");
-        binder_->Draw("GroundColor", "地面の色");
+        binder_->Draw("GroundColor", "地面 (地平線下) の色");
         binder_->Draw("SkyGradientExp", "グラデーションのカーブ");
-        binder_->Draw("SunAtmoGlow", "大気散乱の強さ(地平線の光)");
+        binder_->Draw("SunAtmoGlow", "大気散乱 (太陽周辺の明るさ)");
 
         ImGui::Separator();
     }

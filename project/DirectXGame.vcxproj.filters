@@ -958,6 +958,10 @@
     <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\HiZDownsample.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSRRaycast.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSRResolve.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSRSpatialDenoise.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

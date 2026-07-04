@@ -222,22 +222,25 @@ struct TrailMaterialData
 
 struct WeatherData
 {
-    float2 cloudCoverage;
+    float2 cloudCoverage; 
     float2 windVelocity;
     
     float cloudScale;
-    float cloudShadowDensity;
-    float skyGradientExponent; 
-    float sunAtmosphereGlow; 
+    float cloudShadowDensity; 
+    float skyGradientExponent;
+    float sunAtmosphereGlow;
     
-    float3 zenithColor; 
-    float pad1;
+    float3 zenithColor;
+    float cloudBumpScale;
     
-    float3 horizonColor; 
-    float pad2; 
+    float3 horizonColor;
+    float cloudEdgeSoftness;
     
-    float3 groundColor; 
-    float pad3;
+    float3 groundColor;
+    float cloudAbsorption;
+
+    float3 cloudAmbientColor; 
+    float pad4;
 };
 
 struct DirectionalLight

@@ -48,6 +48,10 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
         mappedWeather_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
         mappedWeather_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
         mappedWeather_[i]->groundColor = { 0.2f, 0.2f, 0.2f };
+        mappedWeather_[i]->cloudBumpScale = 0.15f;        
+        mappedWeather_[i]->cloudEdgeSoftness = 0.15f;    
+        mappedWeather_[i]->cloudAbsorption = 0.7f;       
+        mappedWeather_[i]->cloudAmbientColor = { 0.08f, 0.12f, 0.2f };
     }
 }
 

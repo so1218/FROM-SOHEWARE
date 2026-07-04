@@ -6,7 +6,7 @@ RWTexture3D<float4> gVoxelTemporalOut : register(u0); // Temporal Resolveの出�
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
-// 深度（スライス）からビュー空間のZ（奥方向の距離）を逆算する関数（Injectionと同じロジック）
+// 深度（スライス）からビュー空間のZ（奥方向の距離）を逆算する関数
 float GetViewZFromSlice(float slice, float depthCount, float nearZ, float farZ)
 {
     float zSlice = slice / depthCount;
