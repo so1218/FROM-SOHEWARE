@@ -92,11 +92,16 @@ struct SkinCluster
     };
     std::vector<MeshInfluence> meshInfluences; // メッシュの数だけ用意する
 
-    // モデル全体で共通のデータ
+    // 現在のフレーム用
     std::vector<Matrix4x4> inverseBindPoseMatrices;
     Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
     std::span<WellForGPU> mappedPalette;
     uint32_t paletteSrvIndex;
+
+    // 1フレーム前のパレット用データ
+    Microsoft::WRL::ComPtr<ID3D12Resource> prevPaletteResource;
+    std::span<WellForGPU> prevMappedPalette;
+    uint32_t prevPaletteSrvIndex;
 };
 
 Skeleton CreateSkeleton(const Node& rootNode);

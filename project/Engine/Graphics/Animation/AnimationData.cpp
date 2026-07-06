@@ -127,16 +127,15 @@ SkinCluster CreateSkinCluster(
 	const ModelData& modelData,
 	SRVManager* srvManager)
 {
-	// palette用のResourceを確保
 	SkinCluster skinCluster;
+
+	// 現在フレームのパレット作成
 	skinCluster.paletteResource = BufferManager::CreateBufferResource(
-		device.Get(),
-		sizeof(WellForGPU) * skeleton.joints.size());
+		device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
 	WellForGPU* mappedPalette = nullptr;
 	skinCluster.paletteResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedPalette));
-	skinCluster.mappedPalette = { mappedPalette,skeleton.joints.size() };
+	skinCluster.mappedPalette = { mappedPalette, skeleton.joints.size() };
 
-	// palette用のSRVを作成。structuredBufferでアクセスできるようにする
 	D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc = {};
 	paletteSrvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	paletteSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -146,14 +145,24 @@ SkinCluster CreateSkinCluster(
 	paletteSrvDesc.Buffer.NumElements = static_cast<UINT>(skeleton.joints.size());
 	paletteSrvDesc.Buffer.StructureByteStride = sizeof(WellForGPU);
 
-	// CreateSRVで作成し、インデックスをもらう
 	skinCluster.paletteSrvIndex = srvManager->CreateSRV(
-		skinCluster.paletteResource.Get(),
-		paletteSrvDesc
-	);
+		skinCluster.paletteResource.Get(), paletteSrvDesc);
+
+	// 過去フレームのパレット作成
+	skinCluster.prevPaletteResource = BufferManager::CreateBufferResource(
+		device.Get(), sizeof(WellForGPU) * skeleton.joints.size());
+	WellForGPU* prevMappedPalette = nullptr;
+	skinCluster.prevPaletteResource->Map(0, nullptr, reinterpret_cast<void**>(&prevMappedPalette));
+	skinCluster.prevMappedPalette = { prevMappedPalette, skeleton.joints.size() };
+
+	// SRVの作成 
+	skinCluster.prevPaletteSrvIndex = srvManager->CreateSRV(
+		skinCluster.prevPaletteResource.Get(), paletteSrvDesc);
+
+	// 初期化として、現在のパレットの中身を過去パレットにもコピーしておく(0フレーム目の暴れ防止)
+	std::copy(skinCluster.mappedPalette.begin(), skinCluster.mappedPalette.end(), skinCluster.prevMappedPalette.begin());
 
 	// InverseBindPoseMatrixの初期化
-
 	skinCluster.inverseBindPoseMatrices.resize(skeleton.joints.size());
 	std::generate(skinCluster.inverseBindPoseMatrices.begin(),
 		skinCluster.inverseBindPoseMatrices.end(), []() { return Matrix4x4::MakeIdentity(); });
@@ -239,6 +248,12 @@ SkinCluster CreateSkinCluster(
 
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
 {
+	// 新しい行列を計算して上書きする前に、今の状態を過去パレットに退避
+	std::copy(skinCluster.mappedPalette.begin(),
+		skinCluster.mappedPalette.end(),
+		skinCluster.prevMappedPalette.begin());
+
+	// 最新の行列計算
 	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
 	{
 		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());

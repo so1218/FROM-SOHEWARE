@@ -86,6 +86,7 @@ struct ModelSubmission
     Vector4 instancingColor;          // instanceColor用
     Matrix4x4 wvpMatrix;             
     Matrix4x4 worldInverseTranspose;
+    Matrix4x4 prevWorldMatrix;
 };
 
 struct RenderBatch

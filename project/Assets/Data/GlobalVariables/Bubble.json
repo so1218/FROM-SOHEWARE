@@ -27,7 +27,7 @@
         "bubbleModel_Lighting": 1,
         "bubbleModel_Metalness": 1.0,
         "bubbleModel_NormEnable": 1,
-        "bubbleModel_NormInten": 0.6000000238418579,
+        "bubbleModel_NormInten": 0.25,
         "bubbleModel_NormTile": 5.699999809265137,
         "bubbleModel_NormalMapTex": "normal_18",
         "bubbleModel_OutlineColor": [

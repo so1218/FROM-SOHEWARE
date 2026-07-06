@@ -22,6 +22,8 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
+    float4 currentClipPos : POSITION1; 
+    float4 prevClipPos : POSITION2;
 };
 
 // シャドウ強度を計算
@@ -98,6 +100,12 @@ PixelShaderOutput main(PixelInput input)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
     output.material = float4(gMaterial.metalness, gMaterial.roughness, 0.0f, 1.0f);
+
+    // NDC（正規化デバイス座標）に変換して差分を計算
+    float2 ndcCurrent = input.currentClipPos.xy / input.currentClipPos.w;
+    float2 ndcPrev = input.prevClipPos.xy / input.prevClipPos.w;
+
+    output.velocity = (ndcCurrent - ndcPrev) * float2(0.5f, -0.5f);
 
     return output;
 }

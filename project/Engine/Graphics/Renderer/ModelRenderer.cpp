@@ -83,10 +83,12 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
     const auto& meshes = GetOrCreateBatch(modelData);
 
     // 再帰的にノードを巡回するラムダ関数
-    std::function<void(const Node&, const Matrix4x4&)> Traverse =
-        [&](const Node& node, const Matrix4x4& parentMatrix)
+    std::function<void(const Node&, const Matrix4x4&, const Matrix4x4&)> Traverse =
+        [&](const Node& node, const Matrix4x4& parentMatrix, const Matrix4x4& parentPrevMatrix)
         {
             Matrix4x4 currentWorldMatrix = node.localMatrix * parentMatrix;
+            // ローカル行列がアニメーションしない前提なら、過去の親行列を掛けるだけで過去のWorldになります
+            Matrix4x4 currentPrevWorldMatrix = node.localMatrix * parentPrevMatrix;
 
             for (unsigned int meshIndex : node.meshIndices)
             {
@@ -118,6 +120,7 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 buffer.wvpMapped->World = currentWorldMatrix;
                 buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
                 buffer.wvpMapped->WorldColor = instanceColor;
+                buffer.wvpMapped->PrevWorld = currentPrevWorldMatrix;
 
                 ModelSubmission submission{};
                 submission.type = RenderType::Model;
@@ -136,6 +139,7 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 submission.worldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
                 submission.instancingColor = instanceColor;
                 submission.wvpMatrix = wvp;
+                submission.prevWorldMatrix = currentPrevWorldMatrix;
 
                 if (actualMaterialHandle.materialData)
                 {
@@ -178,11 +182,11 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
 
             for (const auto& child : node.children)
             {
-                Traverse(child, currentWorldMatrix);
+                Traverse(child, currentWorldMatrix, currentPrevWorldMatrix);
             }
         };
 
-    Traverse(modelData.rootNode, worldTransform.matWorld_);
+        Traverse(modelData.rootNode, worldTransform.matWorld_, worldTransform.matWorldPrev_);
 }
 
 void ModelRenderer::SubmitAnimation(
@@ -207,11 +211,13 @@ void ModelRenderer::SubmitAnimation(
 
         // 各パーツのWorld行列はモデル全体のWorldで統一
         Matrix4x4 world = worldTransform.matWorld_;
+        Matrix4x4 prevWorld = worldTransform.matWorldPrev_;
         Matrix4x4 wvp = world * viewProjectionMatrix_;
         buffer.wvpMapped->WVP = wvp;
         buffer.wvpMapped->World = world;
         buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
         buffer.wvpMapped->WorldColor = instanceColor;
+        buffer.wvpMapped->PrevWorld = prevWorld;
 
         // マテリアル決定
         MaterialHandle actualMaterialHandle;
@@ -250,6 +256,7 @@ void ModelRenderer::SubmitAnimation(
         submission.wvpMatrix = wvp;
         submission.worldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
         submission.instancingColor = instanceColor;
+        submission.prevWorldMatrix = prevWorld;
 
         // マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
         if (actualMaterialHandle.materialData)
@@ -439,6 +446,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         auto& buffer = perObjectBuffers_[sub.instanceIndex]; // スキニングは個別バッファ
         cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(17, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
     else
@@ -594,6 +602,7 @@ void ModelRenderer::PrepareBatches()
         instanceData.World = sub.worldMatrix;
         instanceData.WorldInverseTranspose = sub.worldInverseTranspose;
         instanceData.WorldColor = sub.instancingColor;
+        instanceData.PrevWorld = sub.prevWorldMatrix;
 
         instanceCount++;
 

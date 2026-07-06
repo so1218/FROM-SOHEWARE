@@ -88,6 +88,8 @@ public:
         }
 
         keys_.push_back(key);
+
+#ifdef IS_DEVELOPMENT
         items_[key] = [this, currentModelName, onChange, key](const std::string& label)
             {
                 // ModelManagerからロード済みのモデル名一覧を自動取得
@@ -122,6 +124,7 @@ public:
                     }
                 }
             };
+#endif
     }
 
 private:

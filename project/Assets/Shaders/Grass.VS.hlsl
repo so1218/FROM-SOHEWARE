@@ -28,6 +28,8 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
+    float4 currentClipPos : POSITION1;
+    float4 prevClipPos : POSITION2;
 };
 
 PixelInput main(VertexInput input)
@@ -89,6 +91,12 @@ PixelInput main(VertexInput input)
     }
 
     output.position = mul(float4(worldPos.xyz, 1.0f), gFrameData.viewProjectionMatrix);
+    output.currentClipPos = output.position;
+    
+    float3 prevWorldPos = worldPos.xyz;
+
+    output.prevClipPos = mul(float4(prevWorldPos.xyz, 1.0f), gFrameData.prevViewProj);
+    
     output.worldPosition = worldPos.xyz;
     output.texcoord = input.texcoord;
     

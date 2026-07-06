@@ -522,6 +522,10 @@ DXGI_FORMAT PSOManager::GetRTVFormat(const std::string& name)
     {
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     }
+    if (name == "R16G16_FLOAT")
+    {
+        return DXGI_FORMAT_R16G16_FLOAT;
+    }
     if (name == "R8G8B8A8_UNORM")
     { 
         return DXGI_FORMAT_R8G8B8A8_UNORM;

@@ -135,34 +135,68 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 判定（標準Depth: 値が小さいほど手前）
         if (rayRaycastDepth < cellDepth)
         {
-            // レイは遮蔽物よりも手前（空域）にいる -> 衝突の可能性ゼロ
-            // 安心してMipレベルを上げ、次のループで大きく進む
+            // レイは遮蔽物よりも手前（空域）にいる -> 安心してMipを上げる
             currentMip = min(currentMip + 1.0f, maxMipLevel);
         }
         else
         {
-            // レイが遮蔽物よりも奥に入り込んだ -> 衝突した可能性あり
             if (currentMip > 0.0f)
             {
-                // まだ大雑把なMipなので、レイを1歩戻してMipを下げ、細かくやり直す
+                // レイを1歩戻してMipを下げ、細かくやり直す
                 rayPos -= reflectDir * currentStep;
                 rayDistance -= currentStep;
                 currentMip -= 1.0f;
             }
             else
             {
-                // 最精細（Mip 0）で裏に入り込んだ＝衝突！
-                // ただし、オブジェクトの厚みを突き抜けた背景の空中である可能性を排除
-                float depthDiff = rayRaycastDepth - cellDepth;
+                // 最精細（Mip 0）で裏に入り込んだ＝衝突の可能性あり！
                 
-                // ビュー空間の線形な厚み制限に変換（簡易的に設定値と比較）
-                if (depthDiff > 0.0f && depthDiff < gSSRSettings.thickness)
+                // ▼ 修正点1: 非線形深度(Z)を、リニアなビュー空間のZ(実距離)に変換して厚みを比較する
+                float rayLinearZ = GetViewPos(sampleUV, rayRaycastDepth).z;
+                float cellLinearZ = GetViewPos(sampleUV, cellDepth).z;
+                float linearDepthDiff = rayLinearZ - cellLinearZ;
+                
+                // thickness を「メートル単位（例: 0.2f = 20cm）」として判定可能になる
+                if (linearDepthDiff > 0.0f && linearDepthDiff < gSSRSettings.thickness)
                 {
-                    // 衝突面の法線チェック（裏面カリング）
-                    // ※本来はResolveパスで行っても良いが、ここで弾くと精度が上がる
-                    hitUV = sampleUV;
+                    // ▼ 修正点2: 二分探索 (Binary Search) で正確な交点を求める
+                    // 行き過ぎた現在位置(max)と、1歩手前の位置(min)の間を行き来して境界を探る
+                    float3 minPos = rayPos - reflectDir * currentStep;
+                    float3 maxPos = rayPos;
+                    float3 currentMidPos;
+                    float2 currentMidUV = sampleUV;
+
+                    [unroll] // ループ展開して最適化
+                    for (int b = 0; b < 5; ++b) // 5回程度の探索で十分な精度が出ます
+                    {
+                        currentMidPos = lerp(minPos, maxPos, 0.5f);
+                        
+                        // 中間地点を画面空間に投影
+                        float4 midProj = mul(float4(currentMidPos, 1.0f), gFrameData.projectionMatrix);
+                        midProj.xyz /= midProj.w;
+                        currentMidUV = float2(midProj.x * 0.5f + 0.5f, 1.0f - (midProj.y * 0.5f + 0.5f));
+
+                        // 中間地点での深度比較
+                        float midCellDepth = gHiZTexture.SampleLevel(gPointSampler, currentMidUV, 0);
+                        float midRayLinearZ = GetViewPos(currentMidUV, midProj.z).z;
+                        float midCellLinearZ = GetViewPos(currentMidUV, midCellDepth).z;
+
+                        if (midRayLinearZ > midCellLinearZ)
+                        {
+                            // まだ壁の裏側にいる -> 最大値を手前に寄せる
+                            maxPos = currentMidPos;
+                        }
+                        else
+                        {
+                            // 壁より手前に出た -> 最小値を奥に寄せる
+                            minPos = currentMidPos;
+                        }
+                    }
+
+                    // 二分探索で見つけた高精度なUVを採用する
+                    hitUV = currentMidUV;
                     hitAlpha = smoothstep(0.0f, gSSRSettings.stepSize * 2.0f, rayDistance);
-                    break;
+                    break; // ループを抜けてフェード処理へ
                 }
             }
         }

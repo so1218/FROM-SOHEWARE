@@ -75,10 +75,12 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexColor_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexNormal_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexMaterial_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexVelocity_;
 
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvColor_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
+    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvVelocity_;
 };
 
 }

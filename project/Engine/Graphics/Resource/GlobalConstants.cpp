@@ -80,6 +80,7 @@ void GlobalConstants::Update(
     frameData_->mainLightVolumetricScatteringIntensity = mainLight.volumetricScatteringIntensity;
 
     // カメラ以外のデータも更新
+    frameData_->prevTime = frameData_->gTime;
     frameData_->gTime = TimeManager::GetInstance()->GetTotalTime();
     frameData_->deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 

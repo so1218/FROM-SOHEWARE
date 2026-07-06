@@ -178,6 +178,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     context_.sceneDepthSrvIndex = sceneDepthIndex_;
     context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Normal));
     context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Material));
+    context_.velocitySrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Velocity));
 
     // 深度バッファを読み取り用に遷移
     CD3DX12_RESOURCE_BARRIER depthToSrvBarrier = CD3DX12_RESOURCE_BARRIER::Transition(

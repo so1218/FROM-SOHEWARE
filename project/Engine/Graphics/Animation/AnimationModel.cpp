@@ -73,6 +73,7 @@ AnimationModel::~AnimationModel()
     if (engine_ && engine_->GetSRVManager())
     {
         engine_->GetSRVManager()->FreeSRV(skinCluster_.paletteSrvIndex);
+        engine_->GetSRVManager()->FreeSRV(skinCluster_.prevPaletteSrvIndex);
     }
 }
 

@@ -17,6 +17,8 @@ public:
     Vector3 translation_;
     // ワールド行列
     Matrix4x4 matWorld_;
+    // 1フレーム前のワールド行列
+    Matrix4x4 matWorldPrev_ = Matrix4x4::MakeIdentity();
     // 回転を保持するクォータニオン
     Quaternion rotationQuaternion_;
 

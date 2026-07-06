@@ -19,6 +19,7 @@ struct PostEffectContext
     uint32_t sceneDepthSrvIndex = 0;
     uint32_t normalSrvIndex = 0;
     uint32_t materialSrvIndex = 0;
+    uint32_t velocitySrvIndex = 0;
 
     // 流体シミュレーションの結果を受け取る変数
     uint32_t fluidDensitySrvIndex = 0;

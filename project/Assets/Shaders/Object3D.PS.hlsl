@@ -149,7 +149,6 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     
     // 影の計算 
-   // 影の計算 
     float shadowFactor = 1.0f;
     
     // 0番目のライトが有効なら影を計算
@@ -431,6 +430,21 @@ PixelShaderOutput main(PixelShaderInput input)
     // 材質情報
     // R=メタルネス, G=ラフネス
     output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
+    
+    // モーションベクトルの計算
+    // W除算を行ってNDC空間（-1 ～ 1）へ変換
+    float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
+    float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
+
+    // NDCからUV空間（0 ～ 1）へ変換 (Y軸の反転に注意)
+    float2 currentUV = currentNDC * float2(0.5f, -0.5f) + 0.5f;
+    float2 prevUV = prevNDC * float2(0.5f, -0.5f) + 0.5f;
+
+    // 移動量の算出（現在のUV - 1フレーム前のUV）
+    output.velocity = currentUV - prevUV;
+    
+    // ※注意: TAAのカメラジッター（微細なズレ）を入れている場合、
+    // ここで計算する行列からはジッターを抜いておくか、Velocityからジッター分を引く必要がある
     
     return output;
 }

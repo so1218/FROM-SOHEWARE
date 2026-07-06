@@ -59,6 +59,12 @@ void RenderCoordinator::Initialize(
         Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R8G8B8A8_UNORM);
     offscreenTexMaterial_ = texMaterial;
     offscreenRtvMaterial_ = rtvMaterial;
+
+    // 速度用
+    auto [texVelocity, rtvVelocity, srvVelocity, uavIndexVelocity] = offscreenRTVManager_->CreateOffscreenRenderTarget(
+        Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R16G16_FLOAT);
+    offscreenTexVelocity_ = texVelocity;
+    offscreenRtvVelocity_ = rtvVelocity;
 }
 
 void RenderCoordinator::BeginFrame()
@@ -124,16 +130,17 @@ void RenderCoordinator::BeginOffscreenRender()
 {
     auto* cmdList = commandManager_->GetCommandList();
 
-    // 3枚のテクスチャを同時にRENDER_TARGET状態へ遷移
-    D3D12_RESOURCE_BARRIER barriers[3];
+    // 4枚のテクスチャを同時にRENDER_TARGET状態へ遷移
+    D3D12_RESOURCE_BARRIER barriers[4];
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
     barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
     barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    cmdList->ResourceBarrier(3, barriers);
+    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    cmdList->ResourceBarrier(4, barriers);
 
-    // 3枚のRTVハンドルを配列にしてセット
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[3] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_ };
-    cmdList->OMSetRenderTargets(3, rtvHandles, FALSE, &offscreenDsvHandle_);
+    // 4枚のRTVハンドルを配列にしてセット
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[4] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_, offscreenRtvVelocity_ };
+    cmdList->OMSetRenderTargets(4, rtvHandles, FALSE, &offscreenDsvHandle_);
 
     // それぞれをクリアする
     Vector4 cc = offscreenRTVManager_->GetClearColor();
@@ -143,6 +150,7 @@ void RenderCoordinator::BeginOffscreenRender()
     cmdList->ClearRenderTargetView(offscreenRtvColor_, clearColorDefault, 0, nullptr);
     cmdList->ClearRenderTargetView(offscreenRtvNormal_, clearColorZero, 0, nullptr);
     cmdList->ClearRenderTargetView(offscreenRtvMaterial_, clearColorZero, 0, nullptr);
+    cmdList->ClearRenderTargetView(offscreenRtvVelocity_, clearColorZero, 0, nullptr);
     cmdList->ClearDepthStencilView(offscreenDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // ビューポートとシザーを設定
@@ -152,7 +160,7 @@ void RenderCoordinator::BeginOffscreenRender()
 
 void RenderCoordinator::EndOffscreenRender()
 {
-    D3D12_RESOURCE_BARRIER barriers[3];
+    D3D12_RESOURCE_BARRIER barriers[4];
 
     // カラー
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -175,8 +183,12 @@ void RenderCoordinator::EndOffscreenRender()
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
     );
 
-    // コマンドリストに3つのバリアをまとめて積む
-    commandManager_->GetCommandList()->ResourceBarrier(3, barriers);
+    // 速度
+    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(
+        offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    // コマンドリストに4つのバリアをまとめて積む
+    commandManager_->GetCommandList()->ResourceBarrier(4, barriers);
 }
 
 }

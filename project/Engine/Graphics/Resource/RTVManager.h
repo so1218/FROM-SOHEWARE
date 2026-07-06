@@ -32,7 +32,8 @@ enum class GBufferIndex : UINT
 {
     Color = 0,
     Normal = 1,
-    Material = 2
+    Material = 2,
+    Velocity = 3
 };
 
 class OffscreenRTVManager

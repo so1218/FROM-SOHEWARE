@@ -6,8 +6,10 @@ cbuffer DirectionalLights : register(b1)
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
 
+ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 StructuredBuffer<Well> gMatrixPalette : register(t8);
+StructuredBuffer<Well> gPrevMatrixPalette : register(t9);
 
 struct SkinningVertexShaderInput
 {
@@ -55,16 +57,33 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
     VertexShaderOutput output;
     Skinned skinned = Skinning(input);
 
-    // スキニング結果で変換
+    // 現在の座標系計算
     output.position = mul(skinned.position, gTransformationMatrix.WVP);
-    output.texcoord = input.texcoord;
-    output.normal = normalize(mul(skinned.normal, (float3x3) gTransformationMatrix.WorldInverseTranspose));
-    output.tangent = normalize(mul(skinned.tangent, (float3x3) gTransformationMatrix.WorldInverseTranspose));
+    output.currentClipPos = output.position; // 現在のクリップ座標を保存
 
     // ワールド座標を計算
     float4 worldPos = mul(skinned.position, gTransformationMatrix.World);
     output.worldPosition = worldPos.xyz;
     
+    // 1フレーム前の座標系計算
+    // 過去のボーン行列を使って、1フレーム前のローカル座標を計算（位置のみ）
+    float4 prevLocalPos =
+        mul(input.position, gPrevMatrixPalette[input.index.x].skeletonSpaceMatrix) * input.weight.x +
+        mul(input.position, gPrevMatrixPalette[input.index.y].skeletonSpaceMatrix) * input.weight.y +
+        mul(input.position, gPrevMatrixPalette[input.index.z].skeletonSpaceMatrix) * input.weight.z +
+        mul(input.position, gPrevMatrixPalette[input.index.w].skeletonSpaceMatrix) * input.weight.w;
+    prevLocalPos.w = 1.0f;
+
+    // 過去のローカル座標 × 過去のワールド行列
+    float4 prevWorldPos = mul(prevLocalPos, gTransformationMatrix.PrevWorld);
+    
+    // 過去のワールド座標 × 過去のビュープロジェクション行列
+    output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
+
+    // その他データの出力
+    output.texcoord = input.texcoord;
+    output.normal = normalize(mul(skinned.normal, (float3x3) gTransformationMatrix.WorldInverseTranspose));
+    output.tangent = normalize(mul(skinned.tangent, (float3x3) gTransformationMatrix.WorldInverseTranspose));
     output.worldColor = gTransformationMatrix.WorldColor;
 
     return output;

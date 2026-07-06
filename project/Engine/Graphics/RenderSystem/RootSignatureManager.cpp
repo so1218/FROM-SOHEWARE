@@ -64,6 +64,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         if (name == "Skinning")
         {
             builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
+            builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 1, D3D12_SHADER_VISIBILITY_VERTEX);
         }
 
         if (name == "Instancing3D")

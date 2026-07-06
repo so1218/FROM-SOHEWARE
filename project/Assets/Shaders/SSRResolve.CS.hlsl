@@ -73,11 +73,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 fresnel = FresnelSchlick(NdotV, f0);
 
     // ヒット先のカラーを取得 (Linearサンプリングで滑らかに)
-    // ※本来は前のフレームのカラー(History Buffer)を使うのがベストです
+    // ※本来は前のフレームのカラー(History Buffer)を使うのがベスト
     float3 hitColor = gSceneTexture.SampleLevel(gLinearSampler, hitUV, 0).rgb;
 
     // 最終カラー = 取得した色 * フレネル * マスク(Alpha)
-    // ※Stochastic SSRの場合、ここの出力はノイズだらけになります（それが正常です）
+    // Stochastic SSRの場合、ここの出力はノイズだらけ（それが正常）
     float3 finalReflection = hitColor * fresnel * hitAlpha;
 
     gOutReflection[DTid.xy] = float4(finalReflection, hitAlpha);

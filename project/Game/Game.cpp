@@ -37,7 +37,7 @@ Game::Game()
 #ifdef IS_DEVELOPMENT
     sceneManager_.SetInitialScene(SceneID::TestHori);
 #else
-    sceneManager_.SetInitialScene(SceneID::Title);
+    sceneManager_.SetInitialScene(SceneID::TestHori);
 #endif
 }
 

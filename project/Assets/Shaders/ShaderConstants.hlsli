@@ -47,6 +47,7 @@ struct TransformationMatrix
     float4x4 World;
     float4x4 WorldInverseTranspose;
     float4 WorldColor;
+    float4x4 PrevWorld;
 };
 
 struct FrameData
@@ -59,9 +60,11 @@ struct FrameData
     float4x4 invProjMatrix;
 
     float3 cameraWorldPosition;
-    float padding0;
+    float prevTime;
+    
     float3 cameraRight;
     float padding1;
+    
     float3 cameraUp;
     float padding2;
 
@@ -399,6 +402,7 @@ struct Object3DInstanceData
     float4x4 World;
     float4x4 WorldInverseTranspose;
     float4 WorldColor;
+    float4x4 PrevWorld;
 };
 
 struct InstanceOffset

@@ -55,7 +55,7 @@ ShadowVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
         // 揺れ始める高さのしきい値
         float thresholdHeight = gMaterial.treeWindThresholdHeight;
         
-        // localPos.y からしきい値を引く
+        // localPos.yからしきい値を引く
         float normalizedHeight = max(0.0f, (localPos.y - thresholdHeight) * gMaterial.treeWindHeightScale);
   
         // 最終的な座標オフセット

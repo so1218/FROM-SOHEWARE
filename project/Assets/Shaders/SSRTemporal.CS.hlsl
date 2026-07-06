@@ -17,47 +17,64 @@ void main(uint3 DTid : SV_DispatchThreadID)
         return;
 
     float2 uv = (float2(DTid.xy) + 0.5f) / float2(width, height);
-
-    // 1. 今フレームのカラーを取得
     float4 currentColor = gCurrentSSR.Load(int3(DTid.xy, 0));
-
-    // 2. モーションベクトルを取得して、前フレームのUVを計算
     float2 velocity = gVelocityTexture.Load(int3(DTid.xy, 0));
-    float2 prevUV = uv - velocity; // 今のUVから移動量を引いて過去のUVへ
+    float2 prevUV = uv - velocity;
 
-    // 画面外に出ていれば、履歴を使わずに今の色を出力して終了
     if (any(prevUV < 0.0f) || any(prevUV > 1.0f))
     {
         gOutTemporalSSR[DTid.xy] = currentColor;
         return;
     }
 
-    // 3. 過去のカラーを取得 (リニアサンプリングで滑らかに)
     float4 historyColor = gHistorySSR.SampleLevel(gLinearSampler, prevUV, 0);
 
-    // 4. Neighborhood Clamping (残像・ゴースト軽減)
-    // Fogのコードと同様に、現在のピクセルの周囲3x3の最大色・最小色を求め、過去の色をクランプする
-    float4 boxMin = currentColor;
-    float4 boxMax = currentColor;
+   // ▼ 修正点: Variance Clipping (分散クリッピング)
+    // 3x3ピクセルの色を集計して、平均値と分散（ばらつき）を計算する
+    float4 m1 = float4(0, 0, 0, 0); // 色の合計
+    float4 m2 = float4(0, 0, 0, 0); // 色の二乗の合計
     
-    // ※軽量化のために十字(5タップ)や3x3(9タップ)を使用
-    int2 offsets[4] = { int2(-1, 0), int2(1, 0), int2(0, -1), int2(0, 1) };
-    for (int i = 0; i < 4; ++i)
+  [unroll]
+    for (int y = -1; y <= 1; ++y)
     {
-        int2 neighborCoord = clamp(int2(DTid.xy) + offsets[i], int2(0, 0), int2(width - 1, height - 1));
-        float4 neighbor = gCurrentSSR.Load(int3(neighborCoord, 0));
-        boxMin = min(boxMin, neighbor);
-        boxMax = max(boxMax, neighbor);
+        [unroll]
+        for (int x = -1; x <= 1; ++x)
+        {
+            int2 neighborCoord = clamp(int2(DTid.xy) + int2(x, y), int2(0, 0), int2(width - 1, height - 1));
+            float4 neighbor = gCurrentSSR.Load(int3(neighborCoord, 0));
+            
+            m1 += neighbor;
+            m2 += neighbor * neighbor;
+        }
     }
     
-    // 過去の色が、現在の周囲の色から突飛に離れていたらクランプ（ゴーストを消す）
+    // 平均 (Mean)
+    float4 mean = m1 / 9.0f;
+    // 分散 (Variance) = 二乗の平均 - 平均の二乗
+    float4 variance = max(m2 / 9.0f - mean * mean, 0.0f);
+    // 標準偏差 (Standard Deviation)
+    float4 stddev = sqrt(variance);
+
+    // ガンマ値（1.0〜1.5程度。値が大きいほど履歴を許容し残像が出やすいがノイズは減る）
+    float gamma = 1.0f;
+    
+    // 統計学的に「正しい色の範囲」を定義
+    float4 boxMin = mean - gamma * stddev;
+    float4 boxMax = mean + gamma * stddev;
+    
+    // 履歴カラーを統計的な範囲内に収める（フリッカーが激減する）
     historyColor = clamp(historyColor, boxMin, boxMax);
 
-    // 5. ブレンド (TAAウェイト)
-    // 基本は過去を強く(90%〜95%)信じて蓄積し、滑らかにする
-    float blendAlpha = 0.1f;
+    // アルファの乖離チェック (History Validation)
+    float blendAlpha = 0.1f; // 基本は過去を90%信頼
+    float alphaDiff = abs(currentColor.a - historyColor.a);
     
-    float4 finalSSR = lerp(historyColor, currentColor, blendAlpha);
+    // 反射が急に出現・消失した場所（差が50%以上）は履歴を信用せず今フレームを採用
+    if (alphaDiff > 0.5f)
+    {
+        blendAlpha = 1.0f;
+    }
 
+    float4 finalSSR = lerp(historyColor, currentColor, blendAlpha);
     gOutTemporalSSR[DTid.xy] = finalSSR;
 }
