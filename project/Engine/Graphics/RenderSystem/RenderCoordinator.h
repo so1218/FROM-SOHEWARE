@@ -81,6 +81,9 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvVelocity_;
+
+    // 現在のオフスクリーンのリソースステートを追跡
+    D3D12_RESOURCE_STATES currentOffscreenState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 };
 
 }

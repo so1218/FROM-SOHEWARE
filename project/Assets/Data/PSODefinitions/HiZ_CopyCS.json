@@ -1,0 +1,4 @@
+{
+  "RootSignature": "HiZ_CopyCS",
+  "ComputeShader": "Assets/Shaders/HiZ_Copy.CS.hlsl"
+}

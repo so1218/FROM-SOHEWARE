@@ -130,12 +130,11 @@ void RenderCoordinator::BeginOffscreenRender()
 {
     auto* cmdList = commandManager_->GetCommandList();
 
-    // 4枚のテクスチャを同時にRENDER_TARGET状態へ遷移
     D3D12_RESOURCE_BARRIER barriers[4];
-    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
     cmdList->ResourceBarrier(4, barriers);
 
     // 4枚のRTVハンドルを配列にしてセット
@@ -162,33 +161,17 @@ void RenderCoordinator::EndOffscreenRender()
 {
     D3D12_RESOURCE_BARRIER barriers[4];
 
-    // カラー
-    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexColor_.Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-    );
+    // 両方のシェーダーで読めるステートを定義
+    D3D12_RESOURCE_STATES readState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
-    // 法線
-    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexNormal_.Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-    );
+    barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
+    barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
+    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
+    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
 
-    // 材質
-    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexMaterial_.Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-    );
-
-    // 速度
-    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-
-    // コマンドリストに4つのバリアをまとめて積む
     commandManager_->GetCommandList()->ResourceBarrier(4, barriers);
-}
 
+    // 次のフレームの BeginOffscreenRender のためにステートを更新
+    currentOffscreenState_ = readState;
+}
 }

@@ -1,0 +1,4 @@
+{
+  "RootSignature": "SSR_ResolveCS",
+  "ComputeShader": "Assets/Shaders/SSR_Resolve.CS.hlsl"
+}

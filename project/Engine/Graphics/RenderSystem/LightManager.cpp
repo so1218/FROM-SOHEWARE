@@ -286,7 +286,7 @@ void LightManager::UpdateCascadedShadows(
     float cameraNear,
     float cameraFar)
 {
-    // シャドウマップの解像度（テクセルスナップ用。お使いのShadowMapの解像度に合わせてください）
+    // シャドウマップの解像度（テクセルスナップ用。ShadowMapの解像度に合わせる）
     const float shadowMapResolution = 2048.0f;
 
     // 正規化したライトの方向
