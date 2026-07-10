@@ -1,12 +1,22 @@
 #include "pch.h"
 #include "Ground.h"
 #include "ImGuiManager.h"
+#include "TerrainChunk.h"
 
 using namespace FE;
 
 Ground::Ground(Engine* engine) : GameObject()
 {
 	engine_ = engine;
+
+	// Terrain の生成
+	terrain_ = std::make_unique<FE::Terrain>(engine_);
+
+	// 2. ハイトマップ画像の読み込みとメッシュ生成（ここで内部的にチャンク分割される）
+	// 引数: テクスチャ名, 最大の高さ, 1チャンクのマス目数(例: 64), 1マスのサイズ(例: 1.0f)
+	int chunkSize = 64;
+	float cellSize = 1.0f;
+	terrain_->LoadFromHeightmap("noise_39", chunkSize, cellSize);
 
 	model_ = std::make_unique<Model>(engine_, "field");
 	modelTree_ = std::make_unique<Model>(engine_, "tree");
@@ -33,6 +43,7 @@ Ground::Ground(Engine* engine) : GameObject()
 void Ground::Initialize()
 {
 	binder_->BindModel("Model", model_.get());
+	binder_->BindTerrain("Terrain", terrain_.get());
 	binder_->BindModel("ModelTree", modelTree_.get());
 	binder_->BindModel("ModelBuilding", modelBuilding_.get());
 
@@ -59,7 +70,12 @@ void Ground::GenerateTrees()
 	{
 		Vector3 pos;
 		pos.x = distPos(randomEngine);
-		pos.y = 0.0f; 
+		if (terrain_) {
+			pos.y = terrain_->GetHeightAt(pos.x, pos.z);
+		}
+		else {
+			pos.y = 0.0f;
+		}
 		pos.z = distPos(randomEngine);
 		treePositions_.push_back(pos);
 	}
@@ -90,7 +106,11 @@ void Ground::Update()
 
 void Ground::Draw()
 {
-	model_->Draw();
+	if (terrain_) {
+		terrain_->Draw();
+	}
+
+	/*model_->Draw();*/
 	for (const auto& pos : treePositions_)
 	{
 		modelTree_->GetTransform().translation_ = pos;
@@ -100,13 +120,14 @@ void Ground::Draw()
 	}
 	modelBuilding_->Draw();
 	/*skybox_->Draw();*/
-	skydome_->Draw();
+	/*skydome_->Draw();*/
 };
 
 void Ground::DebugDraw()
 {
 #ifdef IS_DEVELOPMENT
 	ImGui::Begin("地面");
+	binder_->DrawTerrain("Terrain", "地形エディタ");
 	binder_->DrawModel("Model", "インスペクター");
 	binder_->DrawModel("ModelBuilding", "建物インスペクター");
 

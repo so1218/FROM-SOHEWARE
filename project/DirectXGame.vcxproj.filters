@@ -910,6 +910,10 @@
     <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
+    <ClCompile Include="Engine\Framework\TerrainChunk.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\TerrainRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Terrain.cpp" />
+    <ClCompile Include="Engine\Collision\Frustum.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -937,6 +941,10 @@
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
     <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
+    <ClInclude Include="Engine\Framework\TerrainChunk.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\TerrainRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Terrain.h" />
+    <ClInclude Include="Engine\Collision\Frustum.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
@@ -962,6 +970,8 @@
     <FxCompile Include="Assets\Shaders\SSR_Raycast.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\SSR_Resolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\HiZ_Copy.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

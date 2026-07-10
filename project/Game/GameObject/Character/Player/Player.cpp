@@ -142,6 +142,19 @@ void Player::Move()
 
 	engine_->GetFluidSimulationPass()->GetSettings()->objectPos = GetTransform().translation_;
 	engine_->GetFluidSimulationPass()->GetSettings()->objectVelocity = moveDirection_ * moveSpeed_;
+
+	// 移動後、地形の高さを取得してY座標を補正（スナップ）する
+	if (terrain_)
+	{
+		// プレイヤーの現在位置の地面の高さを取得
+		float groundHeight = terrain_->GetHeightAt(
+			GetTransform().translation_.x,
+			GetTransform().translation_.z
+		);
+
+		// プレイヤーのY座標を地面の高さに合わせる
+		GetTransform().translation_.y = groundHeight;
+	}
 }
 
 // 入力から移動方向を取得

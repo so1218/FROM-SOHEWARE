@@ -4,6 +4,7 @@
 #include "AnimationModel.h"
 #include "Sprite.h"
 #include "SRVManager.h"
+#include "Terrain.h"
 #include "Engine.h"
 
 namespace FE
@@ -503,6 +504,66 @@ void PropertyBinder::BindTexture(
         defaultName,      // デフォルト値
         filterType        // フィルタ
     );
+}
+
+void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
+{
+    if (!terrain) return;
+    terrainBindMap_[groupName] = { terrain };
+
+    std::string prefix = groupName + "_";
+
+    // 1. トランスフォームのバインド
+    auto* transform = &terrain->GetTransform();
+    Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
+    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
+    Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
+
+    // 2. 地形形状変化用のコールバック
+    auto onTerrainShapeChanged = [terrain]() {
+        terrain->RebuildMesh(); // スライダーを動かすたびにこれが爆速で実行される
+        };
+
+    // 地形パラメータのバインド
+    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, onTerrainShapeChanged);
+    /*Bind(prefix + "UVScale", &terrain->GetParams().uvScale, 0.1f, 0.005f, 0.001f, 10.0f, onTerrainShapeChanged);*/
+
+    // 3. マテリアルのバインド（既存の実装をそのまま利用）
+    BindMaterialProperties(prefix, terrain->GetMaterialHandle());
+}
+
+void PropertyBinder::DrawTerrain(const std::string& groupName, const std::string& customLabel)
+{
+#ifdef IS_DEVELOPMENT
+    std::string prefix = groupName + "_";
+    auto* gv = GlobalVariables::GetInstance();
+    std::string displayLabel = customLabel.empty() ? groupName : customLabel;
+
+    Terrain* targetTerrain = nullptr;
+    if (terrainBindMap_.find(groupName) != terrainBindMap_.end()) {
+        targetTerrain = terrainBindMap_[groupName].terrain;
+    }
+
+    ImGui::PushID(groupName.c_str());
+    if (ImGui::CollapsingHeader(displayLabel.c_str()))
+    {
+        ImGui::Spacing();
+        ImGui::SeparatorText("トランスフォーム");
+        Draw(prefix + "Trans", "位置");
+        Draw(prefix + "Rot", "回転");
+        Draw(prefix + "Scale", "スケール");
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("地形パラメータ");
+        Draw(prefix + "MaxHeight", "地形の最大高さ");
+        Draw(prefix + "UVScale", "テクスチャタイリング幅");
+
+        ImGui::Spacing();
+        // 既存の優秀なマテリアルUI描画処理をそのまま流用
+        DrawMaterialUI(targetTerrain, prefix, gv, groupPath_);
+    }
+    ImGui::PopID();
+#endif
 }
 
 // マテリアルのプロパティを登録する関数

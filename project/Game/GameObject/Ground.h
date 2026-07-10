@@ -5,6 +5,7 @@
 #include "Skydome.h"
 #include "PropertyBinder.h"
 #include "Model.h"
+#include "Terrain.h"
 
 class Ground : public FE::GameObject
 {
@@ -15,6 +16,8 @@ public:
     void Update() override;
     void Draw() override;
     void DebugDraw() override;
+
+    FE::Terrain* GetTerrain() const { return terrain_.get(); }
 
 private:
     FE::Engine* engine_;
@@ -37,5 +40,7 @@ private:
     float prevTreeBaseScale_ = -1.0f;
 
     void GenerateTrees();
+
+    std::unique_ptr<FE::Terrain> terrain_;
 };
 

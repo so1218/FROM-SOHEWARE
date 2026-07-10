@@ -12,6 +12,7 @@ namespace FE
 class Model;
 class AnimationModel;
 class Sprite;
+class Terrain;
 class Engine;
 
 // 変数の登録を行えば、GlobalVariablesの読み書きとImGuiの表示をしてくれる関数
@@ -31,6 +32,7 @@ public:
     void Bind(const std::string& key, int32_t* ptr, int32_t defaultValue, float speed = 1.0f, int32_t min = 0, int32_t max = 0);
     void Bind(const std::string& key, uint32_t* ptr, uint32_t defaultValue, float speed = 1.0f, uint32_t min = 0, uint32_t max = 0);
     void Bind(const std::string& key, float* ptr, float defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f);
+    void Bind(const std::string& key, float* ptr, float defaultValue, float speed, float min, float max, std::function<void()> onChange);
     void Bind(const std::string& key, bool* ptr, bool defaultValue);
     void Bind(const std::string& key, Vector2* ptr, const Vector2& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f);
     void Bind(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed = 0.01f, float min = 0.0f, float max = 0.0f);
@@ -55,6 +57,9 @@ public:
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void BindSprite(const std::string& groupName, Sprite* sprite);
     void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
+
+    void BindTerrain(const std::string& groupName, Terrain* terrain);
+    void DrawTerrain(const std::string& groupName, const std::string& customLabel = "");
 
     // int/uintをboolとして扱うための関数
     void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
@@ -173,6 +178,11 @@ private:
         AnimationModel* model = nullptr;
     };
     std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
+
+    struct TerrainBindInfo {
+        Terrain* terrain = nullptr;
+    };
+    std::unordered_map<std::string, TerrainBindInfo> terrainBindMap_;
 };
 
 }

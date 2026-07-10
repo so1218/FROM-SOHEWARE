@@ -1,0 +1,17 @@
+{
+  "RootSignature": "Terrain",
+  "VertexShader": "Assets/Shaders/Terrain.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
+  "InputLayout": "Terrain",
+  "BlendState": "Opaque",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "R16G16B16A16_FLOAT",
+    "R16G16B16A16_FLOAT",
+    "R8G8B8A8_UNORM",
+    "R16G16_FLOAT"
+  ],
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

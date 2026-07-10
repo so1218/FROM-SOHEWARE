@@ -184,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Camera\CameraRail.cpp" />
     <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
     <ClCompile Include="Engine\Collision\Collider.cpp" />
+    <ClCompile Include="Engine\Collision\Frustum.cpp" />
     <ClCompile Include="Engine\Core\FrameLimiter.cpp" />
     <ClCompile Include="Engine\Core\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Create</PrecompiledHeader>
@@ -201,6 +202,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Framework\FadeInState.cpp" />
     <ClCompile Include="Engine\Framework\FadeOutState.cpp" />
     <ClCompile Include="Engine\Framework\NormalState.cpp" />
+    <ClCompile Include="Engine\Framework\TerrainChunk.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
@@ -225,12 +227,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\TerrainRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\Terrain.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
@@ -371,6 +375,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Camera\ICameraController.h" />
     <ClInclude Include="Engine\Camera\SplineCameraController.h" />
     <ClInclude Include="Engine\Collision\Collider.h" />
+    <ClInclude Include="Engine\Collision\Frustum.h" />
     <ClInclude Include="Engine\Core\FrameLimiter.h" />
     <ClInclude Include="Engine\Core\pch.h" />
     <ClInclude Include="Engine\Debugs\AssetBrowserWindow.h" />
@@ -385,6 +390,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\ISceneTransitionState.h" />
     <ClInclude Include="Engine\Framework\NormalState.h" />
     <ClInclude Include="Engine\Framework\StateMachine.h" />
+    <ClInclude Include="Engine\Framework\TerrainChunk.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
@@ -410,12 +416,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SpriteRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\TerrainRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\Terrain.h" />
     <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -653,6 +661,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -687,6 +703,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

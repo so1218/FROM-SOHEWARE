@@ -1,0 +1,14 @@
+{
+  "RootSignature": "ShadowMapTerrain",
+  "VertexShader": "Assets/Shaders/ShadowMapTerrain.VS.hlsl",
+  "PixelShader": null,
+  "InputLayout": "Terrain",
+  "BlendState": "Opaque",
+  "RasterizerState": "BackCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "UNKNOWN"
+  ],
+  "DSVFormat": "D32_FLOAT"
+}

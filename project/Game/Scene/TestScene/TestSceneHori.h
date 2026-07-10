@@ -5,6 +5,7 @@
 #include "CameraRail.h"
 #include "ParticleEmitter.h"
 #include "Bubble.h"
+#include "Ground.h"
 
 class TestSceneHori : public FE::BaseScene
 {
@@ -28,6 +29,7 @@ private:
     // メンバー変数
     Player* player_ = nullptr;
     Bubble* bubble_ = nullptr;
+    Ground* ground_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<FE::CameraRail> openingRail_;
 

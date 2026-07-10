@@ -21,6 +21,8 @@ class TrailRenderer;
 class SkyboxRenderer;
 class GrassRenderer;
 class SkydomeRenderer;
+class TerrainRenderer;
+class TerrainChunk;
 
 class RendererManager
 {
@@ -67,6 +69,8 @@ public:
         float instanceSeed);
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
+    void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+        const MaterialHandle& material, const Vector4& instanceColor);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);
@@ -134,6 +138,7 @@ private:
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
+    std::unique_ptr<TerrainRenderer> terrainRenderer_;
 };
 
 }

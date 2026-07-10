@@ -97,6 +97,8 @@ public:
 
     static int32_t GetClientWidth() { return sClientWidth; }
     static int32_t GetClientHeight() { return sClientHeight; }
+    const Matrix4x4& GetViewMatrix() const { return viewMatrix_; }
+    const Matrix4x4& GetProjectionMatrix() const { return projectionMatrix_; }
 
 private:
     // 各種初期化処理

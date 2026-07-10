@@ -21,6 +21,8 @@
 #include "SkyboxRenderer.h"
 #include "GrassRenderer.h"
 #include "SkydomeRenderer.h"
+#include "TerrainRenderer.h"
+#include "TerrainChunk.h"
 
 namespace FE
 {
@@ -74,6 +76,8 @@ void RendererManager::Initialize(
 	grassRenderer_ = std::make_unique<GrassRenderer>();
 	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
 	skydomeRenderer_->Initialize(env_);
+	terrainRenderer_ = std::make_unique<TerrainRenderer>();
+	terrainRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -84,7 +88,8 @@ void RendererManager::Initialize(
 
 void RendererManager::Finalize()
 {
-	modelRenderer_->Finalize();
+	if (modelRenderer_) { modelRenderer_->Finalize(); }
+	if (terrainRenderer_) { terrainRenderer_->Finalize(); }
 }
 
 void RendererManager::BeginFrame()
@@ -97,6 +102,7 @@ void RendererManager::BeginFrame()
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
+	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 }
 
 void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -109,6 +115,11 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	if (modelRenderer_)
 	{
 		modelRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
+	}
+
+	if (terrainRenderer_)
+	{
+		terrainRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
 	}
 }
 
@@ -215,6 +226,12 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
+	if (terrainRenderer_)
+	{
+		terrainRenderer_->PrepareBatches();
+		terrainRenderer_->DrawShadow(env_, cascadeIndex);
+	}
+
 	modelRenderer_->DrawShadow(env_, cascadeIndex);
 }
 
@@ -228,10 +245,17 @@ void RendererManager::Draw3D()
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// 不透明モデルをまとめて描画
+	// 不透明オブジェクトの最序盤にTerrainを描画 (Early-Z最適化)
+	if (terrainRenderer_)
+	{
+		terrainRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
+	}
+
 	if (modelRenderer_)
 	{
 		modelRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
 	}
+
 
 	if (grassRenderer_) 
 	{
@@ -388,6 +412,15 @@ void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32
 	if (skydomeRenderer_)
 	{
 		skydomeRenderer_->Submit(worldTransform, color, skyCubeSrvIndex, cloudNoiseSrvIndex, weather);
+	}
+}
+
+void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+	const MaterialHandle& material, const Vector4& instanceColor)
+{
+	if (terrainRenderer_)
+	{
+		terrainRenderer_->Submit(worldTransform, chunk, material, instanceColor);
 	}
 }
 

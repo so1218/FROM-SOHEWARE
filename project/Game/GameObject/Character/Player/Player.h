@@ -6,14 +6,13 @@
 #include "GameObject.h"
 #include "StateMachine.h"
 #include "ParticleEmitter.h"
+#include "Terrain.h"
 
 class PlayerStateNormal; 
-class PlayerStateRoll;
 
 class Player : public FE::GameObject
 {
 	friend class PlayerStateNormal;
-	friend class PlayerStateRoll;
 
 public:
 	Player(FE::Engine* engine, FE::Camera* camera);
@@ -48,9 +47,13 @@ public:
 
 	std::unique_ptr<FE::AnimationModel> animationModel_;
 
+	// 地形情報をセットする関数を追加
+	void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+
 private:
 	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
+	FE::Terrain* terrain_ = nullptr;
 	FollowCamera* followCamera_;
 
 	std::unique_ptr<FE::Collider> collider_;

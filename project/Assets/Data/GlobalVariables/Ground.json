@@ -1731,6 +1731,121 @@
         "Model_UseTriplanar": 0,
         "Model_WetDarkness": 0.10999999940395355,
         "Model_Wetness": 0.5699999928474426,
+        "Terrain_AddShadow": 1,
+        "Terrain_AlbedoMap": "white1x1",
+        "Terrain_AlphaThres": 0.009999999776482582,
+        "Terrain_Color": [
+            0.32423534989356995,
+            0.5147679448127747,
+            0.3192864656448364,
+            1.0
+        ],
+        "Terrain_DiffuseRef": 4.0,
+        "Terrain_DisEnable": 0,
+        "Terrain_DisThres": 0.5,
+        "Terrain_DissolveTex": "white1x1",
+        "Terrain_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "Terrain_EdgeInten": 2.0,
+        "Terrain_EdgeWidth": 0.05000000074505806,
+        "Terrain_Emissive": 6.900000095367432,
+        "Terrain_EnvMapInt": 0.03999999910593033,
+        "Terrain_EnvMapTex": "skybox",
+        "Terrain_LightMode": 3,
+        "Terrain_Lighting": 1,
+        "Terrain_MaxHeight": 9.399999618530273,
+        "Terrain_Metalness": 0.0,
+        "Terrain_NormEnable": 1,
+        "Terrain_NormInten": 1.0,
+        "Terrain_NormTile": 1.0,
+        "Terrain_NormalMapTex": "normal_21",
+        "Terrain_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "Terrain_OutlineEnable": 0,
+        "Terrain_OutlineWidth": 1.0,
+        "Terrain_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "Terrain_PuddleEmission": 0.0,
+        "Terrain_PuddleFalloff": 0.10000000149011612,
+        "Terrain_PuddleNoise": "white1x1",
+        "Terrain_PuddleScale": 0.10000000149011612,
+        "Terrain_PuddleTint": 0.5,
+        "Terrain_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Terrain_RimEnable": 0,
+        "Terrain_RimInten": 1.0,
+        "Terrain_RimPower": 3.0,
+        "Terrain_RimUseDir": 0,
+        "Terrain_RippleEnable": 0,
+        "Terrain_RippleFreq": 1.0,
+        "Terrain_RippleMap": "white1x1",
+        "Terrain_RippleMix": 0.5,
+        "Terrain_RippleScale": 2.0,
+        "Terrain_RippleSize": 0.4000000059604645,
+        "Terrain_RippleSpeed": 1.0,
+        "Terrain_RippleStren": 0.05000000074505806,
+        "Terrain_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Terrain_Roughness": 0.949999988079071,
+        "Terrain_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Terrain_ShadowBias": 0.0005000000237487257,
+        "Terrain_ShadowDens": 0.7400000095367432,
+        "Terrain_ShadowEnv": 0.10999999940395355,
+        "Terrain_ShadowSoft": 0.25999999046325684,
+        "Terrain_Shininess": 50.0,
+        "Terrain_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Terrain_ToonRampTex": "toonRamp_01",
+        "Terrain_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Terrain_TriScale": 0.10000000149011612,
+        "Terrain_TriSharpness": 4.0,
+        "Terrain_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Terrain_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Terrain_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Terrain_UsePuddle": 0,
+        "Terrain_UseTriplanar": 0,
+        "Terrain_Wetness": 0.5,
         "TreeBaseScale": 2.5,
         "TreeCount": 5,
         "TreeSpreadRadius": 100.0,

@@ -66,6 +66,7 @@ private:
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescLine_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescGrass_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescSkydome_{};
+    D3D12_INPUT_LAYOUT_DESC inputLayoutDescTerrain_{};
 
     // 入力要素（レイアウトを構成する配列の実データ）
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsDefault_;
@@ -76,6 +77,7 @@ private:
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsLine_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsGrass_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsSkydome_;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsTerrain_;
 };
 
 }

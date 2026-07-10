@@ -4,7 +4,6 @@
 #include "TimeManager.h"
 #include "Input.h"
 #include "Grid.h"
-#include "Ground.h"
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
@@ -24,7 +23,8 @@ TestSceneHori::TestSceneHori(Engine* engine)
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
     //objectManager_.Create<Grid>(engine_);
-    objectManager_.Create<Ground>(engine_);
+    ground_ = objectManager_.Create<Ground>(engine_);
+    player_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<GrassField>(engine_, player_);
     objectManager_.Create<OrbManager>(engine_, "GameOrb");

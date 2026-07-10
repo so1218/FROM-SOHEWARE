@@ -178,6 +178,33 @@ namespace FE
 #endif
     }
 
+    void PropertyBinder::Bind(const std::string& key, float* ptr, float defaultValue, float speed, float min, float max, std::function<void()> onChange)
+    {
+        RegisterItem(key, defaultValue, ptr);
+
+        // 保存されているデータを反映
+        *ptr = GlobalVariables::GetInstance()->GetFloatValue(groupPath_, key);
+
+#ifdef IS_DEVELOPMENT
+        items_[key] = [=](const std::string& nameOverride)
+            {
+                std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
+
+                // ImGuiのスライダー等で値が変更されたら
+                if (ImGui::DragFloat(label.c_str(), ptr, speed, min, max))
+                {
+                    GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+
+                    // コールバックがあれば実行する（ここで地形の RebuildMesh が走る）
+                    if (onChange)
+                    {
+                        onChange();
+                    }
+                }
+            };
+#endif
+    }
+
     void PropertyBinder::Bind(const std::string& key, bool* ptr, bool defaultValue)
     {
         RegisterItem(key, defaultValue, ptr);
