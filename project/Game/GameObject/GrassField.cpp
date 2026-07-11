@@ -138,6 +138,13 @@ void GrassField::GenerateGrass()
         pos.x += posDist(randEngine);
         pos.z += posDist(randEngine);
 
+        if (terrain_) {
+            pos.y = terrain_->GetHeight(pos.x, pos.z);
+        }
+        else {
+            pos.y = 0.0f;
+        }
+
         Vector3 rot = { 0.0f, rotDist(randEngine), 0.0f };
 
         float finalScale = scaleDist(randEngine) * baseScale_;

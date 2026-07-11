@@ -67,7 +67,7 @@ private:
     };
 
 private:
-    static const int32_t kMaxCount = 1000; // 想定されるチャンクの最大数
+    static const int32_t kMaxCount = 5000; // 想定されるチャンクの最大数
 
     GraphicsDevice* device_ = nullptr;
 

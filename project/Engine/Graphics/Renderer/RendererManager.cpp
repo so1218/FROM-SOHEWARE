@@ -229,7 +229,7 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 	if (terrainRenderer_)
 	{
 		terrainRenderer_->PrepareBatches();
-		/*terrainRenderer_->DrawShadow(env_, cascadeIndex);*/
+		terrainRenderer_->DrawShadow(env_, cascadeIndex);
 	}
 
 	modelRenderer_->DrawShadow(env_, cascadeIndex);

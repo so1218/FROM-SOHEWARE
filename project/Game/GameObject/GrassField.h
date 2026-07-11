@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "PropertyBinder.h"
 #include "GrassSystem.h"
+#include "Terrain.h"
 
 class Player;
 
@@ -16,6 +17,8 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
+    void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+
 private:
     // 草を指定数、ランダムに再配置する関数
     void GenerateGrass();
@@ -23,6 +26,7 @@ private:
 private:
     FE::Engine* engine_;
     Player* player_;
+    FE::Terrain* terrain_ = nullptr;
 
     std::unique_ptr<FE::GrassSystem> grassSystem_;
     std::unique_ptr<FE::PropertyBinder> binder_;

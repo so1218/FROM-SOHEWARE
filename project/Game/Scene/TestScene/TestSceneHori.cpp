@@ -24,9 +24,10 @@ TestSceneHori::TestSceneHori(Engine* engine)
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
     //objectManager_.Create<Grid>(engine_);
     ground_ = objectManager_.Create<Ground>(engine_);
+    grassField_ = objectManager_.Create<GrassField>(engine_, player_);
+    grassField_->SetTerrain(ground_->GetTerrain());
     player_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
-    objectManager_.Create<GrassField>(engine_, player_);
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");

@@ -1,11 +1,14 @@
 #include "ShaderConstants.hlsli"
 
-// 地形用のワールド行列
-ConstantBuffer<TransformationMatrix> gTransform : register(b6);
 // シャドウ用データ（ライトのビュープロジェクション行列など）
 ConstantBuffer<ShadowData> gShadowData : register(b8);
-
 ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);
+
+// ★ 追加: インスタンスデータ(t9) と 地形パラメータ(b10)、ハイトマップ(t8)
+StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t9);
+ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10);
+Texture2D<float> gHeightMap : register(t8);
+SamplerState gSampler : register(s0);
 
 struct TerrainVSInput
 {
@@ -19,14 +22,22 @@ struct ShadowVSOutput
     float2 texcoord : TEXCOORD0;
 };
 
-ShadowVSOutput main(TerrainVSInput input)
+// ★ SV_InstanceID を受け取るように修正
+ShadowVSOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // 地形の頂点をワールド空間へ変換
-    float4 worldPos = mul(input.position, gTransform.World);
+    // ★ インスタンスデータの取得
+    TerrainInstanceData inst = gTerrainInstances[instanceID];
     
-    // ライト視点のクリップ空間へ変換（これがシャドウマップに書き込まれる深度になります）
+    // ★ VTF: ハイトマップから高さを取得し、通常描画と完全に一致させる
+    float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
+    input.position.y = heightRatio * gTerrainSettings.maxHeight;
+    
+    // 地形の頂点をワールド空間へ変換
+    float4 worldPos = mul(input.position, inst.World);
+    
+    // ライト視点のクリップ空間へ変換
     output.position = mul(worldPos, gShadowData.cascadeLightViewProj[gCascadeConstant.cascadeIndex]);
     
     output.texcoord = input.texcoord;

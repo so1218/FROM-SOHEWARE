@@ -191,9 +191,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(3, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_PIXEL);  
-        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX); 
         builder.AddCBV(8, D3D12_SHADER_VISIBILITY_ALL);    
         builder.AddCBV(10, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddSRV(9, D3D12_SHADER_VISIBILITY_VERTEX);
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -245,7 +246,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddConstants(9, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
 
-        // PS用 (ディゾルブテクスチャ)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 1, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_PIXEL);
 
@@ -279,10 +279,14 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "ShadowMapTerrain")
     {
-        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX); 
-        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_VERTEX); 
-
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddConstants(9, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddSRV(9, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddCBV(10, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_VERTEX);
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, name);
     }

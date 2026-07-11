@@ -4,14 +4,9 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10); 
 
-struct InstanceBuffer
-{
-    TerrainInstanceData data[300];
-};
-ConstantBuffer<InstanceBuffer> gTerrainInstances : register(b6);
-
 // ハイトマップテクスチャ
 Texture2D<float> gHeightMap : register(t8);
+StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t9);
 SamplerState gSampler : register(s0);
 
 struct TerrainVSInput
@@ -26,7 +21,7 @@ struct TerrainVSInput
 VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     VertexShaderOutput output;
-    TerrainInstanceData inst = gTerrainInstances.data[instanceID];
+    TerrainInstanceData inst = gTerrainInstances[instanceID];
     
     // VTF: ハイトマップから高さを取得し、定数バッファの maxHeight を掛ける
     float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
