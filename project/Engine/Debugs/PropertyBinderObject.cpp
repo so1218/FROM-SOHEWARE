@@ -481,24 +481,31 @@ void PropertyBinder::BindTexture(
     std::string* currentNamePtr,
     uint32_t* currentHandlePtr,
     const std::string& defaultName,
-    TextureType filterType)
+    TextureType filterType,
+    std::function<void()> callback) 
 {
     // ポインタがnullなら何もしない（安全対策）
     if (!currentNamePtr || !currentHandlePtr) return;
 
-    // 自動的にラムダ式を作成して渡す
+    // 自動的にラムダ式を作成して内部のBindTextureへ渡す
     BindTexture(
         key,              // キー
         *currentNamePtr,  // 現在の値
 
-        // 変更があった時の処理を定義
-        [currentNamePtr, currentHandlePtr](const std::string& newName)
+        // callbackをキャプチャ [=] や [..., callback] で取り込む
+        [currentNamePtr, currentHandlePtr, callback](const std::string& newName)
         {
             // ポインタ先の変数を更新
             *currentNamePtr = newName;
 
             // ハンドル更新
             *currentHandlePtr = TextureManager::GetInstance().Get(newName);
+
+            // テクスチャが変更されたら、登録されたコールバックを実行
+            if (callback)
+            {
+                callback();
+            }
         },
 
         defaultName,      // デフォルト値
@@ -513,22 +520,41 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
 
     std::string prefix = groupName + "_";
 
-    // 1. トランスフォームのバインド
-    auto* transform = &terrain->GetTransform();
-    Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
-    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
-    Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
+    // 1. 【変更】トランスフォームのバインドはすっきり削除！
 
-    // 2. 地形形状変化用のコールバック
+    // 2. 地形形状・パラメータ変化用のコールバック
     auto onTerrainShapeChanged = [terrain]() {
-        terrain->RebuildMesh(); // スライダーを動かすたびにこれが爆速で実行される
+        terrain->RebuildMesh();
         };
 
-    // 地形パラメータのバインド
-    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, onTerrainShapeChanged);
-    /*Bind(prefix + "UVScale", &terrain->GetParams().uvScale, 0.1f, 0.005f, 0.001f, 10.0f, onTerrainShapeChanged);*/
+    // 3. ハイトマップがインスペクターで変更されたときのコールバック
+    // ※既存の BindTexture にコールバック引数がない場合は、ハイトマップ用にコールバックが乗るように
+    //   PropertyBinder側を調整するか、テクスチャ名(std::string)のBind関数を利用してください。
+    auto onHeightmapChanged = [terrain]() {
+        // 現在の設定値を維持したまま、新しいハイトマップ画像からメッシュを再生成
+        terrain->LoadFromHeightmap(
+            terrain->GetHeightmapName(),
+            terrain->GetChunkSize(),
+            terrain->GetParams().cellSize
+        );
+        };
 
-    // 3. マテリアルのバインド（既存の実装をそのまま利用）
+    // 4. 各種地形パラメータのバインド
+    // ハイトマップテクスチャのバインド（変更されたらonHeightmapChangedが走る）
+    // ※第2引数に &terrain->heightmapTexName_、第3引数に &terrain->heightMapHandle_ が渡せるようゲッターを整備するか、
+    //   メンバポインタを渡せるようにしてください（今回は簡易的にアクセスできる想定で記載します）
+    BindTexture(prefix + "Heightmap", terrain->GetHeightmapNamePtr(), terrain->GetHeightmapHandlePtr(), "white1x1", TextureType::Noise, onHeightmapChanged);
+
+    // 最大高さの変更
+    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, onTerrainShapeChanged);
+
+    // 【復活】UVタイリング幅（マテリアル側のタイリングとは別に、頂点ベースのUVスケールをリアルタイム変更）
+    //Bind(prefix + "UVScale", &terrain->GetParams().uvScale, 0.1f, 0.005f, 0.001f, 10.0f, onTerrainShapeChanged);
+
+    // 【追加】1マスのサイズ（これを大きくすると地形全体が巨大化する）
+    Bind(prefix + "CellSize", &terrain->GetParams().cellSize, 1.0f, 0.05f, 0.1f, 50.0f, onTerrainShapeChanged);
+
+    // 5. マテリアルのバインド
     BindMaterialProperties(prefix, terrain->GetMaterialHandle());
 }
 
@@ -547,19 +573,20 @@ void PropertyBinder::DrawTerrain(const std::string& groupName, const std::string
     ImGui::PushID(groupName.c_str());
     if (ImGui::CollapsingHeader(displayLabel.c_str()))
     {
-        ImGui::Spacing();
-        ImGui::SeparatorText("トランスフォーム");
-        Draw(prefix + "Trans", "位置");
-        Draw(prefix + "Rot", "回転");
-        Draw(prefix + "Scale", "スケール");
+        // トランスフォームの描画項目は綺麗に削除
 
         ImGui::Spacing();
         ImGui::SeparatorText("地形パラメータ");
+
+        // ★ ハイトマップの変更UIを最上部に配置
+        Draw(prefix + "Heightmap", "ハイトマップ画像");
+
         Draw(prefix + "MaxHeight", "地形の最大高さ");
-        Draw(prefix + "UVScale", "テクスチャタイリング幅");
+      /*  Draw(prefix + "UVScale", "頂点UVタイリング幅");*/
+        Draw(prefix + "CellSize", "1セルの大きさ (CellSize)"); // ★追加
 
         ImGui::Spacing();
-        // 既存の優秀なマテリアルUI描画処理をそのまま流用
+        // マテリアルUI描画
         DrawMaterialUI(targetTerrain, prefix, gv, groupPath_);
     }
     ImGui::PopID();

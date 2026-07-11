@@ -195,7 +195,7 @@ namespace FE
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
 
-                    // コールバックがあれば実行する（ここで地形の RebuildMesh が走る）
+                    // コールバックがあれば実行
                     if (onChange)
                     {
                         onChange();

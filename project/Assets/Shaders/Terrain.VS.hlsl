@@ -2,43 +2,57 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<TransformationMatrix> gTransform : register(b6); // 地形専用の変換行列
+ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10); 
+
+struct InstanceBuffer
+{
+    TerrainInstanceData data[300];
+};
+ConstantBuffer<InstanceBuffer> gTerrainInstances : register(b6);
+
+// ハイトマップテクスチャ
+Texture2D<float> gHeightMap : register(t8);
+SamplerState gSampler : register(s0);
 
 struct TerrainVSInput
 {
     float4 position : POSITION0;
     float2 texcoord : TEXCOORD0;
-    float3 normal : NORMAL0;
-    float3 tangent : TANGENT0; 
 };
 
-VertexShaderOutput main(TerrainVSInput input)
+// ==========================================
+// 通常描画用 頂点シェーダー
+// ==========================================
+VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     VertexShaderOutput output;
+    TerrainInstanceData inst = gTerrainInstances.data[instanceID];
     
-    // 1. ワールド座標およびクリップ空間への変換
-    float4 worldPos = mul(input.position, gTransform.World);
+    // VTF: ハイトマップから高さを取得し、定数バッファの maxHeight を掛ける
+    float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
+    input.position.y = heightRatio * gTerrainSettings.maxHeight;
+
+    // ワールド・クリップ座標計算
+    float4 worldPos = mul(input.position, inst.World);
     output.worldPosition = worldPos.xyz;
     output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
-    
-    // 地形は静的オブジェクト（毎フレーム動かない）ため、過去のクリップ座標も現在と同じにする
-    // これにより、速度バッファ（Velocity）の計算でブレが起きず、モーションブラーが綺麗にかかります
     output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
-
-    // 2. テクスチャ座標のコピー
     output.texcoord = input.texcoord;
     
-    // 3. 法線（Normal）の変換
-    // スケールや回転に対応するため、WorldInverseTranspose の 3x3 部分を掛けます
-    output.normal = normalize(mul(input.normal, (float3x3) gTransform.WorldInverseTranspose));
+   // ★ 法線のGPU計算の修正
+    float offset = gTerrainSettings.texelSize;
+    float hL = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(-offset, 0), 0).r * gTerrainSettings.maxHeight;
+    float hR = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(offset, 0), 0).r * gTerrainSettings.maxHeight;
+    float hD = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, offset), 0).r * gTerrainSettings.maxHeight;
+    float hU = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, -offset), 0).r * gTerrainSettings.maxHeight;
     
-    // 4. タンジェント（Tangent）の変換
-    // 接線ベクトルには通常の World 行列の 3x3 部分を掛けてワールド空間に変換します
-    output.tangent = normalize(mul(input.tangent, (float3x3) gTransform.World));
+    // Y成分(高さ)の変化に対するX/Z方向の距離は 2.0 * cellSize になります
+    float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));
     
-    // 5. インスタンスカラー（マテリアルカラー等）の反映
-    output.worldColor = gTransform.WorldColor;
+    output.normal = normalize(mul(localNormal, (float3x3) inst.WorldInverseTranspose));
+    output.tangent = float3(1, 0, 0);
+    output.worldColor = inst.WorldColor;
     
     return output;
 }

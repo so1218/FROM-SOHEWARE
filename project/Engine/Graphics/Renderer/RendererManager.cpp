@@ -229,7 +229,7 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 	if (terrainRenderer_)
 	{
 		terrainRenderer_->PrepareBatches();
-		terrainRenderer_->DrawShadow(env_, cascadeIndex);
+		/*terrainRenderer_->DrawShadow(env_, cascadeIndex);*/
 	}
 
 	modelRenderer_->DrawShadow(env_, cascadeIndex);
@@ -248,7 +248,7 @@ void RendererManager::Draw3D()
 	// 不透明オブジェクトの最序盤にTerrainを描画 (Early-Z最適化)
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
+		terrainRenderer_->Draw(env_, RenderGroup::Opaque, shadowMap_);
 	}
 
 	if (modelRenderer_)
@@ -416,11 +416,12 @@ void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32
 }
 
 void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-	const MaterialHandle& material, const Vector4& instanceColor)
+	const MaterialHandle& material, const Vector4& instanceColor,
+	const Terrain::Parameters& params, uint32_t heightMapHandle)
 {
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Submit(worldTransform, chunk, material, instanceColor);
+		terrainRenderer_->Submit(worldTransform, chunk, material, instanceColor, params, heightMapHandle);
 	}
 }
 

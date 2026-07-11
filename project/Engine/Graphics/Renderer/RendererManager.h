@@ -8,6 +8,7 @@
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
+#include "Terrain.h"
 
 namespace FE
 {
@@ -70,7 +71,8 @@ public:
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-        const MaterialHandle& material, const Vector4& instanceColor);
+        const MaterialHandle& material, const Vector4& instanceColor,
+        const Terrain::Parameters& params, uint32_t heightMapHandle);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);

@@ -530,3 +530,19 @@ struct CascadeConstant
 {
     uint32_t cascadeIndex;
 };
+
+struct TerrainSettings
+{
+    float maxHeight; 
+    float texelSize;
+    float cellSize;
+    float padding;
+};
+
+struct TerrainInstanceData
+{
+    float4x4 WVP;
+    float4x4 World;
+    float4x4 WorldInverseTranspose;
+    float4 WorldColor;
+};

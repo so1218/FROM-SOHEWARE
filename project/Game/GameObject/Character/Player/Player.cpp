@@ -147,7 +147,7 @@ void Player::Move()
 	if (terrain_)
 	{
 		// プレイヤーの現在位置の地面の高さを取得
-		float groundHeight = terrain_->GetHeightAt(
+		float groundHeight = terrain_->GetHeight(
 			GetTransform().translation_.x,
 			GetTransform().translation_.z
 		);

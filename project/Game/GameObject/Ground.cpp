@@ -71,7 +71,7 @@ void Ground::GenerateTrees()
 		Vector3 pos;
 		pos.x = distPos(randomEngine);
 		if (terrain_) {
-			pos.y = terrain_->GetHeightAt(pos.x, pos.z);
+			pos.y = terrain_->GetHeight(pos.x, pos.z);
 		}
 		else {
 			pos.y = 0.0f;

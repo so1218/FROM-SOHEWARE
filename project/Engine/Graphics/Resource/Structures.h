@@ -38,6 +38,12 @@ struct LineVertex
     Vector4 color;
 };
 
+struct TerrainVertexData 
+{
+    Vector4 position; 
+    Vector2 texcoord; 
+};
+
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;

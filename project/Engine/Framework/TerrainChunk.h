@@ -8,9 +8,10 @@ class Engine;
 class TerrainChunk
 {
 public:
-    TerrainChunk(Engine* engine, int startX, int startZ, int numCellsX, int numCellsZ, float cellSize, float offsetX, float offsetZ);
+    TerrainChunk(Engine* engine, int startX, int startZ, int numCellsX, int numCellsZ, float cellSize, float offsetX, float offsetZ,
+        float totalVertsX, float totalVertsZ);
 
-    float GetHeightAt(float worldX, float worldZ) const;
+    bool GetHeightAt(float targetX, float targetZ, float& outHeight) const;
 
     // ゲッター群
     uint32_t GetHeightmapTextureHandle() const { return heightmapTextureHandle_; }
@@ -62,6 +63,9 @@ private:
 
     float offsetX_ = 0.0f;
     float offsetZ_ = 0.0f;
+
+    float totalVertsX_ = 0.0f;
+    float totalVertsZ_ = 0.0f;
 
     Vector3 aabbMin_;
     Vector3 aabbMax_;

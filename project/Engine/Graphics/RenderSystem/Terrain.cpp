@@ -14,6 +14,12 @@ Terrain::Terrain(Engine* engine)
 {
     if (!engine_) return;
 
+    // ★ 追加: transform_ を初期状態(Identity)で確定させておく
+    transform_.translation_ = { 0.0f, 0.0f, 0.0f };
+    transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
+    transform_.scale_ = { 1.0f, 1.0f, 1.0f };
+    transform_.UpdateMatrix();
+
     // マテリアルの作成
     material_ = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 
@@ -36,12 +42,13 @@ Terrain::Terrain(Engine* engine)
 void Terrain::Draw()
 {
     if (chunks_.empty() || !engine_) return;
-    transform_.UpdateMatrix();
+
+    // ★ 排除: 固定値なので毎フレームの行列更新は不要
+    // transform_.UpdateMatrix(); 
 
     // ViewとProjectionを取得
     const Matrix4x4& view = engine_->GetViewMatrix();
     const Matrix4x4& proj = engine_->GetProjectionMatrix();
-
     Matrix4x4 vp = view * proj;
 
     // フラスタムの構築
@@ -51,27 +58,35 @@ void Terrain::Draw()
     // チャンクごとに視界判定を行い、見えているものだけ描画キューに送る
     for (const auto& chunk : chunks_)
     {
-        // チャンクのローカルAABBを取得
+        // チャンクのローカルAABBを取得（すでに原点中心に配置されている）
         Vector3 aabbMin = chunk->GetAABBMin();
         Vector3 aabbMax = chunk->GetAABBMax();
 
-        // transform_ の移動とスケールを適用してワールド座標のAABBに変換
-        aabbMin.x = (aabbMin.x * transform_.scale_.x) + transform_.translation_.x;
-        aabbMin.y = (aabbMin.y * transform_.scale_.y) + transform_.translation_.y;
-        aabbMin.z = (aabbMin.z * transform_.scale_.z) + transform_.translation_.z;
+        // ワールド座標用の Min / Max を用意
+        Vector3 worldMin, worldMax;
 
-        aabbMax.x = (aabbMax.x * transform_.scale_.x) + transform_.translation_.x;
-        aabbMax.y = (aabbMax.y * transform_.scale_.y) + transform_.translation_.y;
-        aabbMax.z = (aabbMax.z * transform_.scale_.z) + transform_.translation_.z;
+        // ★ 修正・排除: transform_ は固定（位置0, スケール1）なので、
+        // スケール乗算や translation の足し算はすべて不要になりました。
+        worldMin.x = aabbMin.x;
+        worldMax.x = aabbMax.x;
+        worldMin.z = aabbMin.z;
+        worldMax.z = aabbMax.z;
 
-        // ★ ワールド座標に変換したAABBで判定する
-        if (frustum.IntersectsAABB(aabbMin, aabbMax))
+        // ★ 修正: 地形は原点(0,0,0)基準で中心化されているため、
+        // Y軸の範囲は単純に [-maxHeight, +maxHeight] で固定されます。
+        worldMin.y = -params_.maxHeight;
+        worldMax.y = params_.maxHeight;
+
+        // ワールド座標（＝ローカル座標）に変換したAABBで判定する
+        if (frustum.IntersectsAABB(worldMin, worldMax))
         {
             engine_->GetRendererManager()->SubmitTerrain(
-                transform_,
+                transform_,         // 中身は初期値（Identity）のまま渡す
                 chunk.get(),
                 material_,
-                baseColor_
+                baseColor_,
+                params_,
+                heightMapHandle_
             );
         }
     }
@@ -81,9 +96,9 @@ void Terrain::RebuildMesh()
 {
     if (rawHeightRatios_.empty()) return;
 
-    // ★ 全体の幅と奥行きを計算し、その半分をオフセットとする
-    float totalWidth = (totalVertsX_ - 1) * cellSize_;
-    float totalDepth = (totalVertsZ_ - 1) * cellSize_;
+    // ★ cellSize_ ではなく params_.cellSize を使うように修正！
+    float totalWidth = (totalVertsX_ - 1) * params_.cellSize;
+    float totalDepth = (totalVertsZ_ - 1) * params_.cellSize;
     float offsetX = totalWidth * 0.5f;
     float offsetZ = totalDepth * 0.5f;
 
@@ -105,9 +120,10 @@ void Terrain::RebuildMesh()
                 int numCellsX = std::min(chunkSize_, totalCellsX - startX);
                 int numCellsZ = std::min(chunkSize_, totalCellsZ - startZ);
 
-                // ★ コンストラクタに offsetX, offsetZ を渡す
+                // ★ params_.cellSize を渡す
                 chunks_.push_back(std::make_unique<TerrainChunk>(
-                    engine_, startX, startZ, numCellsX, numCellsZ, cellSize_, offsetX, offsetZ
+                    engine_, startX, startZ, numCellsX, numCellsZ, params_.cellSize, offsetX, offsetZ,
+                    (float)totalVertsX_, (float)totalVertsZ_
                 ));
             }
         }
@@ -128,11 +144,9 @@ void Terrain::RebuildMesh()
                 int globalZ = std::min(chunk->GetStartZ() + z, totalVertsZ_ - 1);
                 int globalIndex = globalZ * totalVertsX_ + globalX;
 
-                // ★ Y軸の中心化
-                // 0.0 ~ 1.0 の比率から 0.5 を引いて、-0.5 ~ +0.5 に変換。
-                // これにより、中間グレーが高さ0(平地)となり、maxHeightを変えても平地の高さが維持されます。
-                float centeredRatio = rawHeightRatios_[globalIndex] - 0.5f;
-                localHeights[z * numVertsX + x] = centeredRatio * params_.maxHeight;
+                // Y軸の中心化
+                float ratio = rawHeightRatios_[globalIndex] - 0.5f;
+                localHeights[z * numVertsX + x] = ratio;
             }
         }
 
@@ -144,7 +158,6 @@ void Terrain::RebuildMesh()
 
 bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, int chunkSize, float cellSize)
 {
-    // ★ maxHeight は引数から削除し、params_.maxHeight を使います
     auto& texManager = TextureManager::GetInstance();
     const TextureHandleData* meta = texManager.GetMetaData(heightmapTexName);
     if (!meta) return false;
@@ -156,10 +169,12 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, int chunkSi
 
     totalVertsX_ = static_cast<int>(metadata.width);
     totalVertsZ_ = static_cast<int>(metadata.height);
-    chunkSize_ = chunkSize;
-    cellSize_ = cellSize;
 
-    // 比率データを保存する配列をリサイズ
+    params_.cellSize = cellSize;
+    params_.texelSize = 1.0f / static_cast<float>(totalVertsX_);
+
+    heightMapHandle_ = TextureManager::GetInstance().Get(heightmapTexName);
+
     rawHeightRatios_.resize(totalVertsX_ * totalVertsZ_);
     size_t pixelSize = DirectX::BitsPerPixel(metadata.format) / 8;
 
@@ -177,17 +192,15 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, int chunkSi
                 normalizedHeight = static_cast<float>(pixelPtr[0]) / 255.0f;
             }
 
-            // ★ ここでは params_.maxHeight を掛けず、純粋な 0.0 ~ 1.0 の比率だけを保存する！
             rawHeightRatios_[index] = normalizedHeight;
         }
     }
 
-    // ★ transform_ をマイナス移動させていた処理はもう不要なので「削除」し、
-      // 確実に初期状態(0,0,0)にしておく
-    transform_.translation_ = { 0.0f, 0.0f, 0.0f };
-    transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
-    transform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    transform_.UpdateMatrix();
+    // ★ 排除: コンストラクタで初期化されていれば、ここで毎回リセット・行列更新する必要はありません
+    // transform_.translation_ = { 0.0f, 0.0f, 0.0f };
+    // transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
+    // transform_.scale_ = { 1.0f, 1.0f, 1.0f };
+    // transform_.UpdateMatrix();
 
     chunks_.clear();
     RebuildMesh();
@@ -292,33 +305,20 @@ Vector4* Terrain::GetMaterialColorPtr()
     return nullptr;
 }
 
-float Terrain::GetHeightAt(float worldX, float worldZ) const
+float Terrain::GetHeight(float worldX, float worldZ) const
 {
-    if (chunks_.empty()) return 0.0f;
-
-    // 1. ワールド座標を Terrain 全体のローカル座標に変換
-    float localX = (worldX - transform_.translation_.x) / transform_.scale_.x;
-    float localZ = (worldZ - transform_.translation_.z) / transform_.scale_.z;
-
-    // 2. どのチャンクに乗っているか探す
+    float heightRatio = 0.0f;
     for (const auto& chunk : chunks_)
     {
-        Vector3 aabbMin = chunk->GetAABBMin();
-        Vector3 aabbMax = chunk->GetAABBMax();
-
-        // XとZがこのチャンクの範囲内か判定（Yは高さなので無視）
-        if (localX >= aabbMin.x && localX <= aabbMax.x &&
-            localZ >= aabbMin.z && localZ <= aabbMax.z)
+        // チャンクからは -0.5 ~ 0.5 の比率が返ってくる
+        if (chunk->GetHeightAt(worldX, worldZ, heightRatio))
         {
-            // 一致するチャンクが見つかったら高さを計算して返す
-            float localHeight = chunk->GetHeightAt(localX, localZ);
-            return (localHeight * transform_.scale_.y) + transform_.translation_.y;
+            // ここで最新の maxHeight を掛ける
+            return heightRatio * params_.maxHeight;
         }
     }
-
-    return 0.0f; // どのチャンクの範囲外だった場合
+    return 0.0f;
 }
-
 
 void Terrain::SetEnableOutline(bool enable)
 {

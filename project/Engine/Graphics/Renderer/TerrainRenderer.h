@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
+#include "Terrain.h"
 
 namespace FE
 {
@@ -21,10 +22,11 @@ public:
 
     // 地形描画登録
     void Submit(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-        const MaterialHandle& material, const Vector4& instanceColor);
+        const MaterialHandle& material, const Vector4& instanceColor,
+        const Terrain::Parameters& params, uint32_t heightMapHandle);
 
     // 描画実行
-    void Draw(const RenderEnvironment& env, RenderGroup group, bool isWireFrame, ShadowMap* shadowMap);
+    void Draw(const RenderEnvironment& env, RenderGroup group, ShadowMap* shadowMap);
 
     // 影用パスの描画
     void DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex);
@@ -52,6 +54,9 @@ private:
         CullMode cullMode = CullMode::Back;
         DepthMode depthMode = DepthMode::Write;
         float depth = 0.0f; // Zソート用
+
+        Terrain::Parameters params;
+        uint32_t heightMapHandle;
     };
 
     // 地形はインスタンシングしないため、チャンクごとに1つの定数バッファを持つ
@@ -74,6 +79,13 @@ private:
 
     Matrix4x4 viewMatrix_;
     Matrix4x4 viewProjectionMatrix_;
+
+    // バッファリソースとマッピング用ポインタ
+    Microsoft::WRL::ComPtr<ID3D12Resource> terrainSettingsBuffer_;
+    TerrainSettings* terrainSettingsMapped_ = nullptr;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer_;
+    TerrainInstanceData* instanceMapped_ = nullptr;
 };
 
 }

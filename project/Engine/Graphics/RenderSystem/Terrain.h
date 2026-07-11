@@ -27,7 +27,7 @@ public:
     void UpdateUV();
 
     // ========================================================================
-    // 基本トランスフォーム
+    // 基本トランスフォーム（※UIからは非表示にしますが、内部の描画計算に必須なため維持）
     // ========================================================================
     void SetTransform(const WorldTransform& transform) { transform_ = transform; }
     const WorldTransform& GetTransform() const { return transform_; }
@@ -54,6 +54,7 @@ public:
 
     // マテリアルは触らず、地形自体の色を変える
     void SetBaseColor(const Vector4& color) { baseColor_ = color; }
+    const Vector4& GetBaseColor() const { return baseColor_; }
     void SetBaseColor(uint32_t color);
 
     // アウトライン
@@ -68,7 +69,7 @@ public:
     size_t GetMaterialCount() const { return 1; }
 
     // ========================================================================
-    // ゲッター
+    // ゲッター・セッター
     // ========================================================================
     WorldTransform* GetUVTransform();
 
@@ -76,45 +77,51 @@ public:
     const MaterialData* GetMaterialData() const;
 
     MaterialHandle* GetMaterialHandle();
-
-    const Vector4& GetBaseColor() const { return baseColor_; }
     Vector4* GetMaterialColorPtr();
 
     // 高さを取得するヘルパー
-    float GetHeightAt(float worldX, float worldZ) const;
+    float GetHeight(float worldX, float worldZ) const;
 
     // リアルタイムに調整したいパラメータを構造体として定義
     struct Parameters {
         float maxHeight = 20.0f;
         float uvScale = 0.1f;
-       
+        float texelSize = 1.0f / 512.0f;
+        float cellSize = 1.0f;
     };
 
     Parameters& GetParams() { return params_; }
     const Parameters& GetParams() const { return params_; }
 
+    // ------------------------------------------------------------------------
+    // ★ ハイトマップ関連の各種ゲッター（PropertyBinder用ポインタ拡張）
+    // ------------------------------------------------------------------------
+    std::string* GetHeightmapNamePtr() { return &heightmapTexName_; }
+    const std::string& GetHeightmapName() const { return heightmapTexName_; }
+
+    uint32_t* GetHeightmapHandlePtr() { return &heightMapHandle_; }
+    uint32_t GetHeightmapHandle() const { return heightMapHandle_; }
+
+    int GetChunkSize() const { return chunkSize_; }
+
 private:
     Engine* engine_ = nullptr;
     std::vector<std::unique_ptr<TerrainChunk>> chunks_;
     MaterialHandle material_;
-    WorldTransform transform_;
+    WorldTransform transform_; // ★ 内部システムで使い続けるため残します
     Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    // === リアルタイム調整のために追加するメンバ変数 ===
+    // === リアルタイム調整用メンバ変数 ===
     std::string heightmapTexName_;
     int chunkSize_ = 16;
-    float cellSize_ = 1.0f;
 
-    // リアルタイムに変動させたいパラメータと、元の比率データを保持
-    // インスペクターで直接書き換える変数（デフォルト値を入れておく）
     Parameters params_;
-
-    // ハイトマップ画像から読み込んだ「0.0〜1.0」の純粋な高さデータ（全頂点分）
-    // これを保存しておくことで、maxHeight_が変わったときに再計算できます
     std::vector<float> rawHeightRatios_;
 
     int totalVertsX_ = 0;
     int totalVertsZ_ = 0;
+
+    uint32_t heightMapHandle_ = 0;
 };
 
 }
