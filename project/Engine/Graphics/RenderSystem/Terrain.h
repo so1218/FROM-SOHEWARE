@@ -21,7 +21,7 @@ public:
     // パラメータが変わったときにメッシュを再構成する関数
     void RebuildMesh();
 
-    bool LoadFromHeightmap(const std::string& heightmapTexName, int chunkSize, float cellSize);
+    bool LoadFromHeightmap(const std::string& heightmapTexName, float cellSize);
 
     // UV情報の更新
     void UpdateUV();

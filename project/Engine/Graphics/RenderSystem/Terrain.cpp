@@ -156,7 +156,7 @@ void Terrain::RebuildMesh()
     }
 }
 
-bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, int chunkSize, float cellSize)
+bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, float cellSize)
 {
     auto& texManager = TextureManager::GetInstance();
     const TextureHandleData* meta = texManager.GetMetaData(heightmapTexName);
@@ -170,7 +170,6 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, int chunkSi
     totalVertsX_ = static_cast<int>(metadata.width);
     totalVertsZ_ = static_cast<int>(metadata.height);
 
-    params_.cellSize = cellSize;
     params_.texelSize = 1.0f / static_cast<float>(totalVertsX_);
 
     heightMapHandle_ = TextureManager::GetInstance().Get(heightmapTexName);

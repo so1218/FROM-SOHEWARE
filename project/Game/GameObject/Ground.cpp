@@ -16,7 +16,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	// 引数: テクスチャ名, 最大の高さ, 1チャンクのマス目数(例: 64), 1マスのサイズ(例: 1.0f)
 	int chunkSize = 64;
 	float cellSize = 1.0f;
-	terrain_->LoadFromHeightmap("noise_39", chunkSize, cellSize);
+	terrain_->LoadFromHeightmap("noise_39", cellSize);
 
 	model_ = std::make_unique<Model>(engine_, "field");
 	modelTree_ = std::make_unique<Model>(engine_, "tree");
@@ -120,7 +120,7 @@ void Ground::Draw()
 	}
 	modelBuilding_->Draw();
 	/*skybox_->Draw();*/
-	/*skydome_->Draw();*/
+	skydome_->Draw();
 };
 
 void Ground::DebugDraw()

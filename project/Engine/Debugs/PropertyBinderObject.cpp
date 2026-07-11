@@ -534,7 +534,6 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
         // 現在の設定値を維持したまま、新しいハイトマップ画像からメッシュを再生成
         terrain->LoadFromHeightmap(
             terrain->GetHeightmapName(),
-            terrain->GetChunkSize(),
             terrain->GetParams().cellSize
         );
         };

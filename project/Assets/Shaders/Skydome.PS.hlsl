@@ -108,13 +108,14 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     // さらに雲自体の「厚み」による自己遮蔽（Self-Occlusion）を乗算し、奥まった部分を暗くする
     baseCloudColor *= lerp(1.0f, 1.0f - gWeather.cloudAbsorption, cloudThickness);
     
-    // -------------------------------------------------------------
+// -------------------------------------------------------------
     // 4. 太陽・シルバーライニング・最終合成（微調整）
     // -------------------------------------------------------------
     float sunDot = saturate(dot(viewDir, sunDir));
     float sunHeight = saturate(sunDir.y);
     float3 sunsetTint = lerp(float3(1.0f, 0.3f, 0.05f), float3(1.0f, 1.0f, 1.0f), smoothstep(0.0f, 0.2f, sunHeight));
     
+    // 太陽本体の描画（変更なし）
     float sunCore = pow(sunDot, 10000.0f);
     float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 600.0f;
     float sunGlow = pow(sunDot, 5000.0f);
@@ -123,17 +124,30 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 haloColor = lerp(float3(0.8f, 0.2f, 0.0f), float3(1.0f, 0.75f, 0.45f), sunHeight) * sunsetTint * 20.0f;
     float3 totalSun = (sunCore * coreColor) + (sunGlow * glowColor) + (sunHalo * haloColor);
     
-    // シルバーライニング（太陽を背にしたときの輪郭の光り）
-    float silverLining = pow(sunDot, 64.0f) * 10.0f;
+    // ★追加: Henyey-Greenstein 位相関数による散乱計算
+    // g の値（0.0〜0.99）を変えることで、光の鋭さを調整できます（0.8〜0.9が雲に最適）
+    float g = 0.85f;
+    float g2 = g * g;
+    float hgDenom = 1.0f + g2 - 2.0f * g * sunDot;
+    // ゼロ除算や極端な値を防ぐために max を噛ませる
+    float hgPhase = (1.0f - g2) / pow(max(hgDenom, 0.001f), 1.5f);
+    
+    // ★修正: pow から HGベースのシルバーライニングに変更
+    // 係数(2.0f)はお好みで調整してください
+    float silverLining = hgPhase * 2.0f;
     float translucency = (1.0f - cloudThickness) * cloudAlpha;
     
+    // 雲の色にシルバーライニング（前方散乱）を足す
     float3 finalCloudColor = baseCloudColor + (float3(1.0f, 1.0f, 1.0f) * silverLining * translucency);
     
+    // 背景の空と雲をブレンド
     float3 skyWithClouds = lerp(skyColor, finalCloudColor, cloudAlpha);
     
+    // 雲の厚みに応じて太陽自体を遮蔽
     float sunOcclusion = lerp(1.0f, 0.0f, cloudAlpha * cloudThickness);
     totalSun *= sunOcclusion;
     
+    // 最終合成
     float3 finalColor = skyWithClouds + totalSun;
     
     output.color = float4(finalColor, 1.0f);

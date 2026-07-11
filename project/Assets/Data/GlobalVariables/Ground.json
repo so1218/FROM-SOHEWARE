@@ -1736,9 +1736,9 @@
         "Terrain_AlphaThres": 0.07999999821186066,
         "Terrain_CellSize": 1.0,
         "Terrain_Color": [
-            0.4177215099334717,
-            0.4177215099334717,
-            0.4177215099334717,
+            0.40365707874298096,
+            0.8101266026496887,
+            0.3930993974208832,
             1.0
         ],
         "Terrain_DiffuseRef": 4.0,
@@ -1789,7 +1789,7 @@
             0.39662444591522217
         ],
         "Terrain_RimEnable": 0,
-        "Terrain_RimInten": 0.20000000298023224,
+        "Terrain_RimInten": 0.10000000149011612,
         "Terrain_RimPower": 20.0,
         "Terrain_RimUseDir": 1,
         "Terrain_RippleEnable": 0,
