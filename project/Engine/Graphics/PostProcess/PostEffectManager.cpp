@@ -204,10 +204,10 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     }
 
     // SSR
-    {
+ /*   {
         cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
         ssrPass_->Execute(cmdList, context_);
-    }
+    }*/
 
     // Bloom
     {

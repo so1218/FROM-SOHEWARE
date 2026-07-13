@@ -66,7 +66,7 @@ inline T Lerp(const T& a, const T& b, float t)
 
 // 簡易的な擬似乱数ノイズ
 inline float Fade(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }
-inline float Lerp(float t, float a, float b) { return a + t * (b - a); }
+inline float NoiseLerp(float t, float a, float b) { return a + t * (b - a); }
 inline float Grad(int hash, float x, float y, float z) {
     int h = hash & 15;
     float u = h < 8 ? x : y;
@@ -113,10 +113,10 @@ inline float PerlinNoise(float x, float y, float z)
     int AAA = simpleHash(X, Y + 1, Z + 1);
     int BAA = simpleHash(X + 1, Y + 1, Z + 1);
 
-    return Lerp(w, Lerp(v, Lerp(u, Grad(A, x, y, z), Grad(B, x - 1, y, z)),
-        Lerp(u, Grad(AA, x, y - 1, z), Grad(BA, x - 1, y - 1, z))),
-        Lerp(v, Lerp(u, Grad(AB, x, y, z - 1), Grad(BB, x - 1, y, z - 1)),
-            Lerp(u, Grad(AAA, x, y - 1, z - 1), Grad(BAA, x - 1, y - 1, z - 1))));
+    return NoiseLerp(w, NoiseLerp(v, NoiseLerp(u, Grad(A, x, y, z), Grad(B, x - 1, y, z)),
+        NoiseLerp(u, Grad(AA, x, y - 1, z), Grad(BA, x - 1, y - 1, z))),
+        NoiseLerp(v, NoiseLerp(u, Grad(AB, x, y, z - 1), Grad(BB, x - 1, y, z - 1)),
+            NoiseLerp(u, Grad(AAA, x, y - 1, z - 1), Grad(BAA, x - 1, y - 1, z - 1))));
 }
 
 }

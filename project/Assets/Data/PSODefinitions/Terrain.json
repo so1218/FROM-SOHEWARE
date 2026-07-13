@@ -4,7 +4,7 @@
   "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
   "InputLayout": "Terrain",
   "BlendState": "Opaque",
-  "RasterizerState": "NoCullSolid",
+  "RasterizerState": "BackCullSolid",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
   "RTVFormats": [

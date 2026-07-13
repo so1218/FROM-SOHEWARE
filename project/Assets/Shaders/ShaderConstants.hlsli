@@ -243,7 +243,10 @@ struct WeatherData
     float cloudAbsorption;
 
     float3 cloudAmbientColor; 
-    float pad4;
+    float pad1;
+    
+    float3 sunDirection;
+    float pad2;
 };
 
 struct DirectionalLight

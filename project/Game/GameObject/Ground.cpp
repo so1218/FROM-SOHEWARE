@@ -2,6 +2,7 @@
 #include "Ground.h"
 #include "ImGuiManager.h"
 #include "TerrainChunk.h"
+#include "EnvironmentManager.h"
 
 using namespace FE;
 
@@ -12,9 +13,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	// Terrain の生成
 	terrain_ = std::make_unique<FE::Terrain>(engine_);
 
-	// 2. ハイトマップ画像の読み込みとメッシュ生成（ここで内部的にチャンク分割される）
-	// 引数: テクスチャ名, 最大の高さ, 1チャンクのマス目数(例: 64), 1マスのサイズ(例: 1.0f)
-	int chunkSize = 64;
+	// ハイトマップ画像の読み込みとメッシュ生成
 	float cellSize = 1.0f;
 	terrain_->LoadFromHeightmap("noise_39", cellSize);
 
@@ -55,6 +54,8 @@ void Ground::Initialize()
 	skydome_->Initialize();
 	skydome_->SetSkyCubeTexture("skybox");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
+
+	EnvironmentManager::GetInstance()->Initialize(engine_);
 
 	GenerateTrees();
 };
@@ -102,6 +103,10 @@ void Ground::Update()
 	leafMat2->treeWindHeightScale = leafMat->treeWindHeightScale;
 	leafMat2->treeWindVariation = leafMat->treeWindVariation;
 	leafMat2->treeWindThresholdHeight = leafMat->treeWindThresholdHeight;
+
+	EnvironmentManager::GetInstance()->Update(engine_->GetLightManager());
+
+	skydome_->Update();
 };
 
 void Ground::Draw()
@@ -153,5 +158,6 @@ void Ground::DebugDraw()
 	ImGui::End();
 #endif
 
+	EnvironmentManager::GetInstance()->DebugDraw();
 	skydome_->DebugDraw();
 }

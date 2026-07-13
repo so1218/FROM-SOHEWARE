@@ -17,7 +17,7 @@ public:
     uint32_t GetHeightmapTextureHandle() const { return heightmapTextureHandle_; }
     uint32_t GetGroundTextureHandle() const { return groundTextureHandle_; }
 
-    // 描画用メッシュを生成する関数（LoadFromHeightmapの最後で呼ぶ）
+    // 描画用メッシュを生成する関数
     bool CreateMesh();
 
     // 親の Terrain クラスから、抽出した高さデータを流し込んでもらう
@@ -73,8 +73,7 @@ private:
     // 法線を自動計算するヘルパー関数
     void ComputeNormals(std::vector<VertexData>& vertices, int numVertsX, int numVertsZ);
 
-private:
-    float uvScale_ = 0.1f; // 追加
+    float uvScale_ = 0.1f; 
 };
 
 }

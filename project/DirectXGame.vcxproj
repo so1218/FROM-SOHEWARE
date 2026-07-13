@@ -198,6 +198,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
     <ClCompile Include="Engine\Debugs\PropertyBinderObject.cpp" />
     <ClCompile Include="Engine\Effect\ShakeEffect.cpp" />
+    <ClCompile Include="Engine\Framework\EnvironmentManager.cpp" />
     <ClCompile Include="Engine\Framework\Fade.cpp" />
     <ClCompile Include="Engine\Framework\FadeInState.cpp" />
     <ClCompile Include="Engine\Framework\FadeOutState.cpp" />
@@ -384,6 +385,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Debugs\IEditorCommand.h" />
     <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
     <ClInclude Include="Engine\Effect\ShakeEffect.h" />
+    <ClInclude Include="Engine\Framework\EnvironmentManager.h" />
     <ClInclude Include="Engine\Framework\Fade.h" />
     <ClInclude Include="Engine\Framework\FadeInState.h" />
     <ClInclude Include="Engine\Framework\FadeOutState.h" />

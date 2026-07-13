@@ -1,0 +1,144 @@
+{
+    "Environment": {
+        "Cloudy_AtmoDim": 0.5,
+        "Cloudy_CloudMax": 0.6700000166893005,
+        "Cloudy_CloudMin": 0.14000000059604645,
+        "Cloudy_CloudShadow": 0.10999999940395355,
+        "Cloudy_LightDim": 0.12999999523162842,
+        "Cloudy_Wetness": 0.0,
+        "Day_AtmoGlow": 0.5,
+        "Day_CloudAmbient": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+        ],
+        "Day_GroundColor": [
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
+        ],
+        "Day_HorizonColor": [
+            0.4000000059604645,
+            0.6000000238418579,
+            0.800000011920929
+        ],
+        "Day_LightColor": [
+            1.0,
+            0.700421929359436,
+            0.40084385871887207
+        ],
+        "Day_LightIntensity": 1.0,
+        "Day_ZenithColor": [
+            0.05000000074505806,
+            0.15000000596046448,
+            0.4000000059604645
+        ],
+        "Night_AtmoGlow": 0.49000000953674316,
+        "Night_CloudAmbient": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Night_GroundColor": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Night_HorizonColor": [
+            0.025316476821899414,
+            0.025316476821899414,
+            0.025316476821899414
+        ],
+        "Night_LightColor": [
+            0.29957807064056396,
+            0.3705069422721863,
+            1.0
+        ],
+        "Night_LightIntensity": 0.25,
+        "Night_ZenithColor": [
+            0.0,
+            0.015488981269299984,
+            0.12236285209655762
+        ],
+        "Rain_AtmoDim": 0.20000000298023224,
+        "Rain_CloudMax": 0.5,
+        "Rain_CloudMin": 0.09000000357627869,
+        "Rain_CloudShadow": 0.6499999761581421,
+        "Rain_LightDim": 0.11999999731779099,
+        "Rain_Wetness": 1.0,
+        "Snow_AtmoDim": 0.30000001192092896,
+        "Snow_CloudMax": 0.6299999952316284,
+        "Snow_CloudMin": 0.09000000357627869,
+        "Snow_CloudShadow": 0.699999988079071,
+        "Snow_LightDim": 0.4099999964237213,
+        "Snow_Wetness": 0.20000000298023224,
+        "Sunny_AtmoDim": 1.0,
+        "Sunny_CloudMax": 0.800000011920929,
+        "Sunny_CloudMin": 0.550000011920929,
+        "Sunny_CloudShadow": 0.36000001430511475,
+        "Sunny_LightDim": 1.0,
+        "Sunny_Wetness": 0.0,
+        "Sunrise_AtmoGlow": 2.0,
+        "Sunrise_CloudAmbient": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+        ],
+        "Sunrise_GroundColor": [
+            0.2067510485649109,
+            0.10468407720327377,
+            0.0
+        ],
+        "Sunrise_HorizonColor": [
+            0.37974685430526733,
+            0.13459381461143494,
+            0.0
+        ],
+        "Sunrise_LightColor": [
+            1.0,
+            0.37750357389450073,
+            0.2194092869758606
+        ],
+        "Sunrise_LightIntensity": 0.5,
+        "Sunrise_ZenithColor": [
+            0.10126584768295288,
+            0.943118155002594,
+            1.0
+        ],
+        "Sunset_AtmoGlow": 2.0,
+        "Sunset_CloudAmbient": [
+            0.800000011920929,
+            0.800000011920929,
+            0.800000011920929
+        ],
+        "Sunset_GroundColor": [
+            0.40084385871887207,
+            0.13192330300807953,
+            0.0
+        ],
+        "Sunset_HorizonColor": [
+            0.8016877770423889,
+            0.32751742005348206,
+            0.03720907121896744
+        ],
+        "Sunset_LightColor": [
+            1.0,
+            0.37285691499710083,
+            0.13080167770385742
+        ],
+        "Sunset_LightIntensity": 0.5,
+        "Sunset_ZenithColor": [
+            0.047428302466869354,
+            0.21229830384254456,
+            0.6244726181030273
+        ],
+        "Thunder_AtmoDim": 0.10000000149011612,
+        "Thunder_CloudMax": 1.0,
+        "Thunder_CloudMin": 0.800000011920929,
+        "Thunder_CloudShadow": 0.949999988079071,
+        "Thunder_LightDim": 0.15000000596046448,
+        "Thunder_Wetness": 1.0,
+        "TimeOfDay": 12.0,
+        "TimeSpeedMultiplier": 0.0
+    }
+}

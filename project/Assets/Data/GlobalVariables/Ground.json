@@ -1736,9 +1736,9 @@
         "Terrain_AlphaThres": 0.07999999821186066,
         "Terrain_CellSize": 1.0,
         "Terrain_Color": [
-            0.40365707874298096,
-            0.8101266026496887,
-            0.3930993974208832,
+            0.0,
+            0.8481012582778931,
+            0.15029634535312653,
             1.0
         ],
         "Terrain_DiffuseRef": 4.0,
@@ -1759,9 +1759,9 @@
         "Terrain_LightMode": 3,
         "Terrain_Lighting": 1,
         "Terrain_MaxHeight": 27.600000381469727,
-        "Terrain_Metalness": 0.2199999988079071,
+        "Terrain_Metalness": 0.10999999940395355,
         "Terrain_NormEnable": 1,
-        "Terrain_NormInten": 1.0,
+        "Terrain_NormInten": 3.3399999141693115,
         "Terrain_NormTile": 7.400000095367432,
         "Terrain_NormalMapTex": "normal_20",
         "Terrain_OutlineColor": [
@@ -1785,11 +1785,11 @@
         "Terrain_PuddleTint": 0.5,
         "Terrain_RimColor": [
             1.0,
-            0.7021310329437256,
-            0.39662444591522217
+            0.9500080347061157,
+            0.8987341523170471
         ],
         "Terrain_RimEnable": 0,
-        "Terrain_RimInten": 0.10000000149011612,
+        "Terrain_RimInten": 0.30000001192092896,
         "Terrain_RimPower": 20.0,
         "Terrain_RimUseDir": 1,
         "Terrain_RippleEnable": 0,
@@ -1805,7 +1805,7 @@
             0.0,
             0.0
         ],
-        "Terrain_Roughness": 0.9700000286102295,
+        "Terrain_Roughness": 1.0,
         "Terrain_Scale": [
             1.0,
             1.0,

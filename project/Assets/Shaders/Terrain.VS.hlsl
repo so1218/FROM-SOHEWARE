@@ -15,15 +15,12 @@ struct TerrainVSInput
     float2 texcoord : TEXCOORD0;
 };
 
-// ==========================================
-// 通常描画用 頂点シェーダー
-// ==========================================
 VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     VertexShaderOutput output;
     TerrainInstanceData inst = gTerrainInstances[instanceID];
     
-    // VTF: ハイトマップから高さを取得し、定数バッファの maxHeight を掛ける
+    // ハイトマップから高さを取得し、maxHeight を掛ける
     float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
     input.position.y = heightRatio * gTerrainSettings.maxHeight;
 
@@ -35,14 +32,14 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
     
-   // ★ 法線のGPU計算の修正
+   // 法線のGPU計算
     float offset = gTerrainSettings.texelSize;
     float hL = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(-offset, 0), 0).r * gTerrainSettings.maxHeight;
     float hR = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(offset, 0), 0).r * gTerrainSettings.maxHeight;
     float hD = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, offset), 0).r * gTerrainSettings.maxHeight;
     float hU = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, -offset), 0).r * gTerrainSettings.maxHeight;
     
-    // Y成分(高さ)の変化に対するX/Z方向の距離は 2.0 * cellSize になります
+    // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize に
     float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));
     
     output.normal = normalize(mul(localNormal, (float3x3) inst.WorldInverseTranspose));

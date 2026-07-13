@@ -29,7 +29,7 @@ bool TerrainChunk::GetHeightAt(float targetX, float targetZ, float& outHeight) c
     int cellX = static_cast<int>(std::floor(localX));
     int cellZ = static_cast<int>(std::floor(localZ));
 
-    // ★★★ 修正箇所: 範囲外の場合は 0 ではなく false を返す ★★★
+    // 範囲外の場合は 0 ではなく false を返す
     if (cellX < 0 || cellX >= numCellsX_ || cellZ < 0 || cellZ >= numCellsZ_) {
         return false;
     }
@@ -52,7 +52,6 @@ bool TerrainChunk::GetHeightAt(float targetX, float targetZ, float& outHeight) c
         outHeight = h11 + (h01 - h11) * (1.0f - u) + (h10 - h11) * (1.0f - v);
     }
 
-    // ★★★ 取得成功したことを知らせる ★★★
     return true;
 }
 
@@ -69,8 +68,7 @@ bool TerrainChunk::CreateMesh()
     float maxGlobalW = static_cast<float>(totalVertsX_);
     float maxGlobalH = static_cast<float>(totalVertsZ_);
 
-    // ★★★ 修正箇所1: ループ前にAABBを初期化する ★★★
-    // これをやらないと、前回の値や0が基準になって巨大な箱ができてしまいます
+    // ループ前にAABBを初期化
     aabbMin_ = { FLT_MAX, FLT_MAX, FLT_MAX };
     aabbMax_ = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -83,7 +81,7 @@ bool TerrainChunk::CreateMesh()
             float localX = (startX_ + x) * cellSize_ - offsetX_;
             float localZ = (startZ_ + z) * cellSize_ - offsetZ_;
 
-            // 頂点バッファのY座標自体はShader(VTF)で上げるので0のままでOK
+            // 頂点バッファのY座標自体はShaderで上げるので0のまま
             float localY = 0.0f;
             vertices[index].position = { localX, localY, localZ, 1.0f };
 
@@ -95,21 +93,21 @@ bool TerrainChunk::CreateMesh()
                 (globalZ + 0.5f) / maxGlobalH
             };
 
-            // ★★★ 修正箇所2: AABBの高さを実際の地形データから取得する ★★★
-            // CPU側での視界判定用に、箱の高さ(Y)を実際の地形で更新します
+            // AABBの高さを実際の地形データから取得する
+            // CPU側での視界判定用に、箱の高さを実際の地形で更新
             float realHeight = heightData_[index];
 
             aabbMin_.x = std::min(aabbMin_.x, localX);
-            aabbMin_.y = std::min(aabbMin_.y, realHeight); // 追加: 高さの最小値
+            aabbMin_.y = std::min(aabbMin_.y, realHeight);
             aabbMin_.z = std::min(aabbMin_.z, localZ);
 
             aabbMax_.x = std::max(aabbMax_.x, localX);
-            aabbMax_.y = std::max(aabbMax_.y, realHeight); // 追加: 高さの最大値
+            aabbMax_.y = std::max(aabbMax_.y, realHeight); 
             aabbMax_.z = std::max(aabbMax_.z, localZ);
         }
     }
 
-    // ★ 追加: カメラ接近時のフラスタムカリング誤判定を防ぐため、AABBに余白を持たせる
+    // カメラ接近時のフラスタムカリング誤判定を防ぐため、AABBに余白を持たせる
     float padding = cellSize_ * 2.0f; // 安全圏としてセル2つ分の余白を持たせる
 
     aabbMin_.x -= padding;
