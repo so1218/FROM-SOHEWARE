@@ -71,6 +71,7 @@ public:
     void SubmitGrass(const Matrix4x4& world, const Vector4& color);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+        const Vector4& uvTransform,
         const MaterialHandle& material, const Vector4& instanceColor,
         const Terrain::Parameters& params, uint32_t heightMapHandle);
     void DrawFullScreenQuadWithOffscreenTexture();

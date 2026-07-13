@@ -25,15 +25,23 @@ ShadowVSOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // インスタンスデータの取得
-    TerrainInstanceData inst = gTerrainInstances[instanceID];
+    // ★ 改善1: 構造体全体を読み込まず、必要なプロパティだけを直接フェッチする
+    float4 uvTransform = gTerrainInstances[instanceID].uvTransform;
     
-    // ハイトマップから高さを取得し、通常描画と完全に一致
-    float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
+    // (修正) メイン描画と同じようにUVオフセットを適用
+    float2 globalUV = input.texcoord * uvTransform.xy + uvTransform.zw;
+    float heightRatio = gHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
     input.position.y = heightRatio * gTerrainSettings.maxHeight;
     
-    // 地形の頂点をワールド空間へ変換
-    float4 worldPos = mul(input.position, inst.World);
+    // ★ 改善2: 行列(World)を丸ごと読み込まず、平行移動成分(4行目)だけを読み込んで足す
+    // ※地形が回転・スケールしない前提の超高速化
+    float3 offset = float3(
+        gTerrainInstances[instanceID].World._m30,
+        gTerrainInstances[instanceID].World._m31,
+        gTerrainInstances[instanceID].World._m32
+    );
+    float4 worldPos = input.position;
+    worldPos.xyz += offset;
     
     // ライト視点のクリップ空間へ変換
     output.position = mul(worldPos, gShadowData.cascadeLightViewProj[gCascadeConstant.cascadeIndex]);

@@ -416,12 +416,13 @@ void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32
 }
 
 void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+	const Vector4& uvTransform,
 	const MaterialHandle& material, const Vector4& instanceColor,
 	const Terrain::Parameters& params, uint32_t heightMapHandle)
 {
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Submit(worldTransform, chunk, material, instanceColor, params, heightMapHandle);
+		terrainRenderer_->Submit(worldTransform, chunk, uvTransform, material, instanceColor, params, heightMapHandle);
 	}
 }
 

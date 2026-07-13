@@ -43,46 +43,57 @@ void Terrain::Draw()
 {
     if (chunks_.empty() || !engine_) return;
 
-    // ★ 排除: 固定値なので毎フレームの行列更新は不要
-    // transform_.UpdateMatrix(); 
-
-    // ViewとProjectionを取得
     const Matrix4x4& view = engine_->GetViewMatrix();
     const Matrix4x4& proj = engine_->GetProjectionMatrix();
-    Matrix4x4 vp = view * proj;
-
-    // フラスタムの構築
     FE::Frustum frustum;
-    frustum.ExtractFromMatrix(vp);
+    frustum.ExtractFromMatrix(view * proj);
 
-    // チャンクごとに視界判定を行い、見えているものだけ描画キューに送る
+    // 全ての描画で使い回すための「代表メッシュ」として、最初のチャンクを取得
+    TerrainChunk* sharedMesh = chunks_[0].get();
+
+    // チャンク全体のオフセット（中心化用）
+    float offsetX = (totalVertsX_ - 1) * params_.cellSize * 0.5f;
+    float offsetZ = (totalVertsZ_ - 1) * params_.cellSize * 0.5f;
+
     for (const auto& chunk : chunks_)
     {
-        // チャンクのローカルAABBを取得（すでに原点中心に配置されている）
+        // チャンクのワールド位置を計算し、専用の Transform を作成
+        WorldTransform chunkTransform;
+        chunkTransform.translation_ = {
+            chunk->GetStartX() * params_.cellSize - offsetX,
+            0.0f,
+            chunk->GetStartZ() * params_.cellSize - offsetZ
+        };
+        chunkTransform.UpdateMatrix();
+
+        // チャンクのUVトランスフォームを計算
+        float uvScaleX = static_cast<float>(chunk->GetNumCellsX()) / totalVertsX_;
+        float uvScaleZ = static_cast<float>(chunk->GetNumCellsZ()) / totalVertsZ_;
+        float uvOffsetX = static_cast<float>(chunk->GetStartX()) / totalVertsX_;
+        float uvOffsetZ = static_cast<float>(chunk->GetStartZ()) / totalVertsZ_;
+        Vector4 uvTransform = { uvScaleX, uvScaleZ, uvOffsetX, uvOffsetZ };
+
+        // AABBもワールド座標に合わせて移動させる（これがないとカリングがバグります）
         Vector3 aabbMin = chunk->GetAABBMin();
         Vector3 aabbMax = chunk->GetAABBMax();
+        Vector3 worldMin = {
+            aabbMin.x + chunkTransform.translation_.x,
+            aabbMin.y * params_.maxHeight, // 実際の地形の最低の高さ
+            aabbMin.z + chunkTransform.translation_.z
+        };
+        Vector3 worldMax = {
+            aabbMax.x + chunkTransform.translation_.x,
+            aabbMax.y * params_.maxHeight, // 実際の地形の最高の高さ
+            aabbMax.z + chunkTransform.translation_.z
+        };
 
-        // ワールド座標用の Min / Max を用意
-        Vector3 worldMin, worldMax;
-
-        // ★ 修正・排除: transform_ は固定（位置0, スケール1）なので、
-        // スケール乗算や translation の足し算はすべて不要になりました。
-        worldMin.x = aabbMin.x;
-        worldMax.x = aabbMax.x;
-        worldMin.z = aabbMin.z;
-        worldMax.z = aabbMax.z;
-
-        // ★ 修正: 地形は原点(0,0,0)基準で中心化されているため、
-        // Y軸の範囲は単純に [-maxHeight, +maxHeight] で固定されます。
-        worldMin.y = -params_.maxHeight;
-        worldMax.y = params_.maxHeight;
-
-        // ワールド座標（＝ローカル座標）に変換したAABBで判定する
+        // 視界判定
         if (frustum.IntersectsAABB(worldMin, worldMax))
         {
             engine_->GetRendererManager()->SubmitTerrain(
-                transform_,         // 中身は初期値（Identity）のまま渡す
-                chunk.get(),
+                chunkTransform, // 動的に作った「ズレた位置」の行列を渡す
+                sharedMesh,     // chunk.get() ではなく、必ず共通のメッシュを渡す！
+                uvTransform,    // 追加した引数
                 material_,
                 baseColor_,
                 params_,
@@ -129,8 +140,10 @@ void Terrain::RebuildMesh()
         }
     }
 
-    for (auto& chunk : chunks_)
+    for (size_t i = 0; i < chunks_.size(); ++i)
     {
+        auto& chunk = chunks_[i];
+
         int numVertsX = chunk->GetNumCellsX() + 1;
         int numVertsZ = chunk->GetNumCellsZ() + 1;
 
@@ -152,7 +165,13 @@ void Terrain::RebuildMesh()
 
         chunk->SetUVScale(params_.uvScale);
         chunk->SetHeightData(localHeights);
-        chunk->CreateMesh();
+
+        // 頂点バッファを作らなくても、AABBだけは全チャンクで必ず計算
+        chunk->CalculateAABB();
+        if (i == 0)
+        {
+            chunk->CreateMesh();
+        }
     }
 }
 

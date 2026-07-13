@@ -53,6 +53,7 @@ void TerrainRenderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& vie
 }
 
 void TerrainRenderer::Submit(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+    const Vector4& uvTransform,
     const MaterialHandle& material, const Vector4& instanceColor,
     const Terrain::Parameters& params, uint32_t heightMapHandle)
 {
@@ -66,6 +67,7 @@ void TerrainRenderer::Submit(const WorldTransform& worldTransform, const Terrain
     submission.worldInverseTranspose = Matrix4x4::Inverse(submission.worldMatrix.Transpose());
     submission.instancingColor = instanceColor;
     submission.group = RenderGroup::Opaque;
+    submission.uvTransform = uvTransform;
 
     // 渡された地形パラメータとハイトマップを保存
     submission.params = params;
@@ -101,6 +103,7 @@ void TerrainRenderer::PrepareBatches()
         instanceMapped_[i].World = submissions_[i].worldMatrix;
         instanceMapped_[i].WorldInverseTranspose = submissions_[i].worldInverseTranspose;
         instanceMapped_[i].WorldColor = submissions_[i].instancingColor;
+        instanceMapped_[i].uvTransform = submissions_[i].uvTransform;
         submissions_[i].instanceIndex = static_cast<uint32_t>(i);
     }
 }

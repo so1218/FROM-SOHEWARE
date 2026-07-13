@@ -486,7 +486,6 @@ struct FogVolume
     float pad0; 
 };
 
-
 struct FogVolumeBuffer
 {
     FogVolume volumes[MAX_FOG_VOLUMES];
@@ -548,4 +547,5 @@ struct TerrainInstanceData
     float4x4 World;
     float4x4 WorldInverseTranspose;
     float4 WorldColor;
+    float4 uvTransform;
 };

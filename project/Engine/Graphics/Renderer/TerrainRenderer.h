@@ -22,6 +22,7 @@ public:
 
     // 地形描画登録
     void Submit(const WorldTransform& worldTransform, const TerrainChunk* chunk,
+        const Vector4& uvTransform,
         const MaterialHandle& material, const Vector4& instanceColor,
         const Terrain::Parameters& params, uint32_t heightMapHandle);
 
@@ -48,6 +49,7 @@ private:
         Matrix4x4 wvpMatrix;
         Matrix4x4 worldInverseTranspose;
         Vector4 instancingColor;
+        Vector4 uvTransform;
 
         uint32_t instanceIndex = 0;
         BlendMode blendMode = BlendMode::kBlendModeNone;

@@ -20,6 +20,9 @@ public:
     // 描画用メッシュを生成する関数
     bool CreateMesh();
 
+    // AABBの計算
+    void CalculateAABB();
+
     // 親の Terrain クラスから、抽出した高さデータを流し込んでもらう
     void SetHeightData(const std::vector<float>& localHeightData);
 
@@ -38,6 +41,8 @@ public:
     int GetStartZ() const { return startZ_; }
     int GetNumCellsX() const { return numCellsX_; }
     int GetNumCellsZ() const { return numCellsZ_; }
+    float GetTotalVertsX() const { return totalVertsX_; }
+    float GetTotalVertsZ() const { return totalVertsZ_; }
 
 private:
     Engine* engine_;

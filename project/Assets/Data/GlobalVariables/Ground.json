@@ -1736,9 +1736,9 @@
         "Terrain_AlphaThres": 0.07999999821186066,
         "Terrain_CellSize": 1.0,
         "Terrain_Color": [
+            0.07605625689029694,
+            0.7510548830032349,
             0.0,
-            0.8481012582778931,
-            0.15029634535312653,
             1.0
         ],
         "Terrain_DiffuseRef": 4.0,
@@ -1761,8 +1761,8 @@
         "Terrain_MaxHeight": 27.600000381469727,
         "Terrain_Metalness": 0.10999999940395355,
         "Terrain_NormEnable": 1,
-        "Terrain_NormInten": 3.3399999141693115,
-        "Terrain_NormTile": 7.400000095367432,
+        "Terrain_NormInten": 10.0,
+        "Terrain_NormTile": 1.0,
         "Terrain_NormalMapTex": "normal_20",
         "Terrain_OutlineColor": [
             0.0,

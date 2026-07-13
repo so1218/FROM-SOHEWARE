@@ -19,9 +19,12 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     VertexShaderOutput output;
     TerrainInstanceData inst = gTerrainInstances[instanceID];
+
+    // インスタンスごとのオフセットを適用し、共通ハイトマップ上のUVを計算
+    float2 globalUV = input.texcoord * inst.uvTransform.xy + inst.uvTransform.zw;
     
     // ハイトマップから高さを取得し、maxHeight を掛ける
-    float heightRatio = gHeightMap.SampleLevel(gSampler, input.texcoord, 0).r - 0.5f;
+    float heightRatio = gHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
     input.position.y = heightRatio * gTerrainSettings.maxHeight;
 
     // ワールド・クリップ座標計算
@@ -34,10 +37,10 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     
    // 法線のGPU計算
     float offset = gTerrainSettings.texelSize;
-    float hL = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(-offset, 0), 0).r * gTerrainSettings.maxHeight;
-    float hR = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(offset, 0), 0).r * gTerrainSettings.maxHeight;
-    float hD = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, offset), 0).r * gTerrainSettings.maxHeight;
-    float hU = gHeightMap.SampleLevel(gSampler, input.texcoord + float2(0, -offset), 0).r * gTerrainSettings.maxHeight;
+    float hL = gHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r * gTerrainSettings.maxHeight;
+    float hR = gHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r * gTerrainSettings.maxHeight;
+    float hD = gHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r * gTerrainSettings.maxHeight;
+    float hU = gHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r * gTerrainSettings.maxHeight;
     
     // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize に
     float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));

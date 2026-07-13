@@ -65,58 +65,23 @@ bool TerrainChunk::CreateMesh()
 
     std::vector<TerrainVertexData> vertices(vertexCount);
 
-    float maxGlobalW = static_cast<float>(totalVertsX_);
-    float maxGlobalH = static_cast<float>(totalVertsZ_);
-
-    // ループ前にAABBを初期化
-    aabbMin_ = { FLT_MAX, FLT_MAX, FLT_MAX };
-    aabbMax_ = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
     for (int z = 0; z < numVertsZ; ++z)
     {
         for (int x = 0; x < numVertsX; ++x)
         {
             int index = z * numVertsX + x;
 
-            float localX = (startX_ + x) * cellSize_ - offsetX_;
-            float localZ = (startZ_ + z) * cellSize_ - offsetZ_;
-
-            // 頂点バッファのY座標自体はShaderで上げるので0のまま
+            float localX = x * cellSize_;
             float localY = 0.0f;
+            float localZ = z * cellSize_;
             vertices[index].position = { localX, localY, localZ, 1.0f };
 
-            float globalX = static_cast<float>(startX_ + x);
-            float globalZ = static_cast<float>(startZ_ + z);
-
             vertices[index].texcoord = {
-                (globalX + 0.5f) / maxGlobalW,
-                (globalZ + 0.5f) / maxGlobalH
+              static_cast<float>(x) / numCellsX_,
+              static_cast<float>(z) / numCellsZ_
             };
-
-            // AABBの高さを実際の地形データから取得する
-            // CPU側での視界判定用に、箱の高さを実際の地形で更新
-            float realHeight = heightData_[index];
-
-            aabbMin_.x = std::min(aabbMin_.x, localX);
-            aabbMin_.y = std::min(aabbMin_.y, realHeight);
-            aabbMin_.z = std::min(aabbMin_.z, localZ);
-
-            aabbMax_.x = std::max(aabbMax_.x, localX);
-            aabbMax_.y = std::max(aabbMax_.y, realHeight); 
-            aabbMax_.z = std::max(aabbMax_.z, localZ);
         }
     }
-
-    // カメラ接近時のフラスタムカリング誤判定を防ぐため、AABBに余白を持たせる
-    float padding = cellSize_ * 2.0f; // 安全圏としてセル2つ分の余白を持たせる
-
-    aabbMin_.x -= padding;
-    aabbMin_.y -= padding;
-    aabbMin_.z -= padding;
-
-    aabbMax_.x += padding;
-    aabbMax_.y += padding;
-    aabbMax_.z += padding;
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
 
@@ -165,6 +130,48 @@ bool TerrainChunk::CreateMesh()
     ibView_.Format = DXGI_FORMAT_R32_UINT;
 
     return true;
+}
+
+void TerrainChunk::CalculateAABB()
+{
+    aabbMin_ = { FLT_MAX, FLT_MAX, FLT_MAX };
+    aabbMax_ = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+    int numVertsX = numCellsX_ + 1;
+    int numVertsZ = numCellsZ_ + 1;
+
+    for (int z = 0; z < numVertsZ; ++z)
+    {
+        for (int x = 0; x < numVertsX; ++x)
+        {
+            int index = z * numVertsX + x;
+            float localX = x * cellSize_;
+            float localZ = z * cellSize_;
+
+            // heightData_ には ratio (-0.5 ～ 0.5) が入っている
+            float heightRatio = heightData_[index];
+
+            aabbMin_.x = std::min(aabbMin_.x, localX);
+            aabbMin_.y = std::min(aabbMin_.y, heightRatio);
+            aabbMin_.z = std::min(aabbMin_.z, localZ);
+
+            aabbMax_.x = std::max(aabbMax_.x, localX);
+            aabbMax_.y = std::max(aabbMax_.y, heightRatio);
+            aabbMax_.z = std::max(aabbMax_.z, localZ);
+        }
+    }
+
+    // カメラ接近時のフラスタムカリング誤判定を防ぐための余白
+    float paddingXZ = cellSize_ * 2.0f; // XZはセル2つ分
+    float paddingY = 0.05f;             // Yは比率として5%程度のマージン
+
+    aabbMin_.x -= paddingXZ;
+    aabbMin_.y -= paddingY;
+    aabbMin_.z -= paddingXZ;
+
+    aabbMax_.x += paddingXZ;
+    aabbMax_.y += paddingY;
+    aabbMax_.z += paddingXZ;
 }
 
 void TerrainChunk::SetHeightData(const std::vector<float>& localHeightData)
