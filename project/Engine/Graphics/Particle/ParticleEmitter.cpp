@@ -54,7 +54,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
 
         Vector3 rotatedOffset = targetMatrix.TransformVector(finalOffset);
 
-        Vector3 targetPos = targetToFollow_->translation_ + rotatedOffset;
+        Vector3 targetPos = targetToFollow_->translation_ + followOffset_;
 
         if (followX_) position_.x = targetPos.x;
         if (followY_) position_.y = targetPos.y;
@@ -122,9 +122,12 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
 
 void ParticleEmitter::Play()
 {
-    isPlaying_ = true;
-    elapsedTime_ = 0.0f;
-    timeSinceLastSpawn_ = 0.0f; // 放出タイミングリセット
+    if (!isPlaying_)
+    {
+        elapsedTime_ = 0.0f;
+        timeSinceLastSpawn_ = 0.0f; // 放出タイミングリセット
+        isPlaying_ = true;
+    }
 }
 
 void ParticleEmitter::Stop()

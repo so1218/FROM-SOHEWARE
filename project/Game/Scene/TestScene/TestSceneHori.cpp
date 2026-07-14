@@ -13,6 +13,7 @@
 #include "PlaceModelCommand.h"
 #include "MoveModelCommand.h"
 #include "EnvironmentPropManager.h"
+#include "WeatherEffectManager.h"
 
 using namespace FE;
 
@@ -28,6 +29,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     grassField_->SetTerrain(ground_->GetTerrain());
     player_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
+    objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");

@@ -494,7 +494,7 @@
             "Model_RippleStren": 0.05000000074505806,
             "Model_Rot": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "Model_Roughness": 0.5,
@@ -516,9 +516,9 @@
             ],
             "Model_ToonRampTex": "toonRamp_01",
             "Model_Trans": [
-                51.70000076293945,
-                0.6000000238418579,
-                -54.0
+                37.161781311035156,
+                9.05885124206543,
+                -54.14961624145508
             ],
             "Model_TriScale": 0.10000000149011612,
             "Model_TriSharpness": 4.0,
@@ -563,13 +563,13 @@
             "IsParticleFollowing": true,
             "LightColor": [
                 1.0,
-                0.7848101258277893,
+                0.1012657880783081,
                 0.0,
                 1.0
             ],
             "LightIntensity": 7.170000076293945,
             "LightRadius": 21.889999389648438,
-            "LightVolumetricScatteringIntensity": 100.0,
+            "LightVolumetricScatteringIntensity": 50.0,
             "ModelName": "bonFire",
             "Model_AddShadow": 1,
             "Model_AlbedoMap": "white1x1",
@@ -1035,7 +1035,7 @@
             "Model_RippleStren": 0.05000000074505806,
             "Model_Rot": [
                 0.0,
-                0.0,
+                -0.0,
                 0.0
             ],
             "Model_Roughness": 0.5,
@@ -1057,9 +1057,9 @@
             ],
             "Model_ToonRampTex": "toonRamp_01",
             "Model_Trans": [
-                23.44921875,
-                0.20000000298023224,
-                49.56414031982422
+                36.847328186035156,
+                8.808576583862305,
+                63.36332321166992
             ],
             "Model_TriScale": 0.10000000149011612,
             "Model_TriSharpness": 4.0,
@@ -1116,9 +1116,9 @@
             "Model_AlbedoMap": "white1x1",
             "Model_AlphaThres": 0.009999999776482582,
             "Model_Color": [
-                0.7257384061813354,
-                0.7673984169960022,
-                1.0,
+                0.42744216322898865,
+                0.4592936933040619,
+                0.6371307969093323,
                 1.0
             ],
             "Model_DiffuseRef": 4.0,

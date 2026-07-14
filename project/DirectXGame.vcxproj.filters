@@ -915,6 +915,7 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\Terrain.cpp" />
     <ClCompile Include="Engine\Collision\Frustum.cpp" />
     <ClCompile Include="Engine\Framework\EnvironmentManager.cpp" />
+    <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -947,6 +948,7 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\Terrain.h" />
     <ClInclude Include="Engine\Collision\Frustum.h" />
     <ClInclude Include="Engine\Framework\EnvironmentManager.h" />
+    <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />

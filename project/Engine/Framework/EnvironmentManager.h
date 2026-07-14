@@ -82,6 +82,8 @@ public:
     // Skydome側から現在の天候プロファイルを取得するための関数
     const WeatherProfile& GetCurrentWeatherProfile() const { return currentWeatherProfile_; }
 
+    WeatherState GetCurrentWeather() const { return currentWeather_; }
+
 private:
     EnvironmentManager() = default;
     ~EnvironmentManager() = default;
