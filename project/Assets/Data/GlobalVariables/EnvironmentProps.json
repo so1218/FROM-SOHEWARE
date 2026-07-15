@@ -1227,6 +1227,151 @@
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
             "ParticleName": "enemyAura"
+        },
+        "Prop_3": {
+            "Behavior": 0,
+            "ColliderOffset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "ColliderType": 0,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "IsParticleFollowing": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ModelName": "cube",
+            "Model_AddShadow": 1,
+            "Model_AlbedoMap": "white1x1",
+            "Model_AlphaThres": 0.009999999776482582,
+            "Model_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_DiffuseRef": 4.0,
+            "Model_DisEnable": 0,
+            "Model_DisThres": 0.5,
+            "Model_DissolveTex": "white1x1",
+            "Model_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_EdgeInten": 2.0,
+            "Model_EdgeWidth": 0.05000000074505806,
+            "Model_Emissive": 1.0,
+            "Model_EnvMapInt": 0.0,
+            "Model_EnvMapTex": "skybox",
+            "Model_LightMode": 1,
+            "Model_Lighting": 1,
+            "Model_Metalness": 0.0,
+            "Model_NormEnable": 0,
+            "Model_NormInten": 1.0,
+            "Model_NormTile": 1.0,
+            "Model_NormalMapTex": "white1x1",
+            "Model_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_OutlineEnable": 0,
+            "Model_OutlineWidth": 1.0,
+            "Model_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_PuddleEmission": 0.0,
+            "Model_PuddleFalloff": 0.10000000149011612,
+            "Model_PuddleNoise": "white1x1",
+            "Model_PuddleScale": 0.10000000149011612,
+            "Model_PuddleTint": 0.5,
+            "Model_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_RimEnable": 0,
+            "Model_RimInten": 1.0,
+            "Model_RimPower": 3.0,
+            "Model_RimUseDir": 0,
+            "Model_RippleEnable": 0,
+            "Model_RippleFreq": 1.0,
+            "Model_RippleMap": "white1x1",
+            "Model_RippleMix": 0.5,
+            "Model_RippleScale": 2.0,
+            "Model_RippleSize": 0.4000000059604645,
+            "Model_RippleSpeed": 1.0,
+            "Model_RippleStren": 0.05000000074505806,
+            "Model_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Roughness": 0.5,
+            "Model_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ShadowBias": 0.0005000000237487257,
+            "Model_ShadowDens": 0.800000011920929,
+            "Model_ShadowEnv": 0.0,
+            "Model_ShadowSoft": 0.0,
+            "Model_Shininess": 50.0,
+            "Model_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ToonRampTex": "toonRamp_01",
+            "Model_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_TriScale": 0.10000000149011612,
+            "Model_TriSharpness": 4.0,
+            "Model_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UsePuddle": 0,
+            "Model_UseTriplanar": 0,
+            "Model_Wetness": 0.5,
+            "ParticleName": "enemyAura"
         }
     }
 }

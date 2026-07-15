@@ -1,0 +1,13 @@
+{
+    "WeatherEffect": {
+        "FlashColor": [
+            0.9201517105102539,
+            1.0,
+            0.5147679448127747
+        ],
+        "FlashDuration": 1.100000023841858,
+        "MaxFlashIntensity": 4.5,
+        "ThunderMaxInterval": 2.9000000953674316,
+        "ThunderMinInterval": 3.0
+    }
+}

@@ -34,13 +34,13 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->maxDistance = 150.0f;
     cbData_->depthSliceCount = 64.0f;
 
-    cbData_->noiseScale = 0.08f;
+    cbData_->noiseScale = 0.01f;
     cbData_->noiseDistortion = 0.15f;
     cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
-    cbData_->windSpeed = 0.2f;
+    cbData_->windSpeed = 0.1f;
 
-    cbData_->coverage = 0.75f;
-    cbData_->worleyWeight = 0.8f;
+    cbData_->coverage = 0.85f;
+    cbData_->worleyWeight = 0.9f;
     cbData_->erosion = 0.4f;
     cbData_->noiseFeather = 0.3f;
 

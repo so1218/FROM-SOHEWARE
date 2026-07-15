@@ -1,6 +1,6 @@
 {
     "EmitterConfig": {
-        "amount": 4,
+        "amount": 6,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
@@ -74,9 +74,9 @@
             "startColor": 4294967295,
             "startColor2": 4294967295
         },
-        "intensity": 19.100000381469727,
+        "intensity": 27.299999237060547,
         "noiseModule": {
-            "enabled": false,
+            "enabled": true,
             "frequency": 1.0,
             "scrollSpeed": 1.0,
             "separateAxes": false,
@@ -119,9 +119,9 @@
         },
         "shapeModule": {
             "boxSize": [
-                70.0,
+                100.0,
                 0.0,
-                70.0
+                100.0
             ],
             "emitFromEdge": false,
             "enabled": true,
@@ -135,15 +135,15 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.20000000298023224,
-                0.20000000298023224,
+                0.10000000149011612,
+                0.10000000149011612,
                 0.0
             ],
             "frequency": 1.2000000476837158,
-            "oscillate": false,
+            "oscillate": true,
             "startScale": [
-                0.20000000298023224,
-                0.20000000298023224,
+                0.10000000149011612,
+                0.10000000149011612,
                 1.0
             ]
         },
