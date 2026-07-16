@@ -26,6 +26,11 @@ void WeatherEffectManager::Initialize()
     rainParticleEmitterPtr_ = rainParticleEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(rainParticleEmitter_));
 
+    thunderRainParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("thunderRain");
+    thunderRainParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
+    thunderRainParticleEmitterPtr_ = thunderRainParticleEmitter_.get();
+    engine_->GetParticleSystem()->AddEmitter(std::move(thunderRainParticleEmitter_));
+
     snowParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("snow");
     snowParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
     snowParticleEmitterPtr_ = snowParticleEmitter_.get();
@@ -54,7 +59,6 @@ void WeatherEffectManager::Update()
 
     if (current == WeatherState::Rain || current == WeatherState::Thunderstorm)
     {
-        rainParticleEmitterPtr_->Play();
         snowParticleEmitterPtr_->Stop();
 
         terrain_->GetMaterialData()->metalness = 0.9f;
@@ -87,6 +91,7 @@ void WeatherEffectManager::Update()
     {
         snowParticleEmitterPtr_->Play();
         rainParticleEmitterPtr_->Stop();
+        thunderRainParticleEmitterPtr_->Stop();
 
         terrain_->GetMaterialData()->metalness = 0.13f;
         terrain_->GetMaterialData()->roughness = 1.00f;
@@ -111,6 +116,7 @@ void WeatherEffectManager::Update()
     {
         rainParticleEmitterPtr_->Stop();
         snowParticleEmitterPtr_->Stop();
+        thunderRainParticleEmitterPtr_->Stop();
 
         terrain_->GetMaterialData()->metalness = 0.15f;
         terrain_->GetMaterialData()->roughness = 1.00f;
@@ -161,6 +167,14 @@ void WeatherEffectManager::Update()
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
         }
+
+        thunderRainParticleEmitterPtr_->Play();
+        rainParticleEmitterPtr_->Stop();
+    }
+    else if (current == WeatherState::Rain)
+    {
+        rainParticleEmitterPtr_->Play();
+        thunderRainParticleEmitterPtr_->Stop();
     }
 }
 

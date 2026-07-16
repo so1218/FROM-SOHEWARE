@@ -28,6 +28,8 @@ private:
     // エフェクトのポインタを保持
     std::unique_ptr<FE::ParticleEmitter> rainParticleEmitter_ = nullptr;
     FE::ParticleEmitter* rainParticleEmitterPtr_;
+    std::unique_ptr<FE::ParticleEmitter> thunderRainParticleEmitter_ = nullptr;
+    FE::ParticleEmitter* thunderRainParticleEmitterPtr_;
     std::unique_ptr<FE::ParticleEmitter> snowParticleEmitter_ = nullptr;
     FE::ParticleEmitter* snowParticleEmitterPtr_;
     
