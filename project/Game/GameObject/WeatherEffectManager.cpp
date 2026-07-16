@@ -15,6 +15,7 @@ WeatherEffectManager::WeatherEffectManager(FE::Engine* engine, FE::Camera* camer
     std::random_device seedGen;
     randomEngine_.seed(seedGen());
 
+    lightningSystem_ = std::make_unique<LightningSystem>(engine_);
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, "WeatherEffect");
 }
 
@@ -30,16 +31,13 @@ void WeatherEffectManager::Initialize()
     snowParticleEmitterPtr_ = snowParticleEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(snowParticleEmitter_));
 
-    thunderParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("thunder");
-    thunderParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
-    thunderParticleEmitterPtr_ = thunderParticleEmitter_.get();
-    engine_->GetParticleSystem()->AddEmitter(std::move(thunderParticleEmitter_));
+    lightningSystem_->Initialize();
 
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
     binder_->Bind("ThunderMaxInterval", &thunderMaxInterval_, 8.0f, 0.1f, 1.0f, 60.0f);
-    binder_->BindColor("FlashColor", &flashColor_, { 0.9f, 0.95f, 1.0f });
-    binder_->Bind("FlashDuration", &flashDuration_, 0.4f, 0.05f, 0.05f, 3.0f);
-    binder_->Bind("MaxFlashIntensity", &maxFlashIntensity_, 10.0f, 0.5f, 0.0f, 100.0f);
+    binder_->Bind("StrikeRadiusMin", &strikeRadiusMin_, 30.0f, 1.0f, 5.0f, 100.0f);
+    binder_->Bind("StrikeRadiusMax", &strikeRadiusMax_, 100.0f, 1.0f, 30.0f, 500.0f);
+    binder_->Bind("StrikeHeight", &strikeHeight_, 250.0f, 5.0f, 50.0f, 1000.0f);
 }
 
 void WeatherEffectManager::Update()
@@ -48,6 +46,11 @@ void WeatherEffectManager::Update()
     WeatherState current = env->GetCurrentWeather();
 
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+
+    if (lightningSystem_)
+    {
+        lightningSystem_->Update();
+    }
 
     if (current == WeatherState::Rain || current == WeatherState::Thunderstorm)
     {
@@ -131,48 +134,33 @@ void WeatherEffectManager::Update()
         // タイマーが0以下になったら雷を落とす
         if (thunderIntervalTimer_ <= 0.0f)
         {
-            thunderParticleEmitterPtr_->Play();
-            isFlashing_ = true;                 
-            flashTimer_ = 0.0f;               
+            // プレイヤーの位置を中心にランダムな発生座標を計算
+            Vector3 playerPos = player_->GetTransform().translation_;
 
-            // 次の雷までの時間
+            // 角度(0～360度)と距離(Min～Max)をランダムに決定
+            std::uniform_real_distribution<float> distAngle(0.0f, 3.14159265f * 2.0f);
+            std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
+
+            float angle = distAngle(randomEngine_);
+            float radius = distRadius(randomEngine_);
+
+            float targetX = playerPos.x + std::cos(angle) * radius;
+            float targetZ = playerPos.z + std::sin(angle) * radius;
+
+            // 地面の高さを取得
+            float groundY = terrain_->GetHeight(targetX, targetZ); 
+
+            // 発生地点（上空）と、目標地点（地面）
+            Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
+            Vector3 endPos(targetX, groundY, targetZ);
+
+            // 雷を生成
+            lightningSystem_->SpawnStrike(startPos, endPos);
+
+            // 次の雷までの時間を再設定
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
         }
-    }
-    else
-    {
-        // 雷雨以外の天候になったら雷を強制停止
-        thunderParticleEmitterPtr_->Stop();
-        isFlashing_ = false;
-        flashTimer_ = 0.0f;
-    }
-
-    // 画面全体のフラッシュ
-    auto globalConsts = engine_->GetGlobalConstants();
-
-    if (isFlashing_)
-    {
-        flashTimer_ += deltaTime;
-
-        if (flashTimer_ >= flashDuration_)
-        {
-            // フラッシュ終了
-            isFlashing_ = false;
-            globalConsts->SetLightningFlash({ 1.0f, 1.0f, 1.0f }, 0.0f);
-        }
-        else
-        {
-            float normalizedTime = flashTimer_ / flashDuration_;
-            float currentIntensity = std::sin(normalizedTime * Math::PI) * maxFlashIntensity_;
-
-            globalConsts->SetLightningFlash(flashColor_, currentIntensity);
-        }
-    }
-    else
-    {
-        // フラッシュしていない時は確実に強さを 0.0 にしておく
-        globalConsts->SetLightningFlash({ 1.0f, 1.0f, 1.0f }, 0.0f);
     }
 }
 
@@ -181,7 +169,7 @@ void WeatherEffectManager::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("環境設定");
 
-    if (ImGui::CollapsingHeader("雷（Thunderstorm）パラメータ", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("雷（Thunderstorm）発生設定", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
@@ -191,12 +179,23 @@ void WeatherEffectManager::DebugDraw()
             thunderMaxInterval_ = thunderMinInterval_;
         }
 
-        binder_->Draw("FlashColor", "フラッシュの色");
-        binder_->Draw("FlashDuration", "フラッシュの時間 (秒)");
-        binder_->Draw("MaxFlashIntensity", "フラッシュの最大強度");
+        ImGui::Separator();
+        ImGui::Text("落雷の発生範囲");
+        binder_->Draw("StrikeRadiusMin", "最小発生距離");
+        binder_->Draw("StrikeRadiusMax", "最大発生距離");
+        binder_->Draw("StrikeHeight", "雷雲の高さ(Y)");
+
+        if (strikeRadiusMin_ > strikeRadiusMax_) {
+            strikeRadiusMax_ = strikeRadiusMin_;
+        }
     }
 
     ImGui::End();
 #endif
+
+    if (lightningSystem_)
+    {
+        lightningSystem_->DebugDraw();
+    }
 }
 

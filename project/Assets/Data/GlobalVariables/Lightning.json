@@ -1,0 +1,38 @@
+{
+    "Lightning": {
+        "BranchLengthScale": 0.30000001192092896,
+        "BranchProbability": 0.30000001192092896,
+        "CoreColor": [
+            0.38818567991256714,
+            0.46563076972961426,
+            1.0
+        ],
+        "CorePower": 7.699999809265137,
+        "CoreThickness": 0.2199999988079071,
+        "Displacement": 100.0,
+        "DurationMax": 3.0,
+        "DurationMin": 1.0,
+        "EmissiveIntensity": 15.0,
+        "FlickerMax": 1.149999976158142,
+        "FlickerMin": 0.30000001192092896,
+        "FlickerSpeed": 29.0,
+        "FractalDepth": 7,
+        "FringeColor": [
+            0.0,
+            0.05063295364379883,
+            1.0
+        ],
+        "GlowPower": 10.0,
+        "LightColor": [
+            0.17299580574035645,
+            0.3195536136627197,
+            1.0,
+            1.0
+        ],
+        "LightHeightOffset": 20.5,
+        "LightIntensityMax": 22.0,
+        "LightRadius": 1000.0,
+        "Thickness": 6.099999904632568,
+        "VolumetricScattering": 3.5999999046325684
+    }
+}

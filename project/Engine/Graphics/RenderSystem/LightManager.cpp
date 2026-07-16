@@ -315,7 +315,7 @@ void LightManager::UpdateCascadedShadows(
         splits[i] = lambda * logSplit + (1.0f - lambda) * linSplit;
     }
 
-    // シェーダー（ピクセルシェーダーでの境界判定）にビュー空間のZ距離を送る
+    // ピクセルシェーダーでの境界判定にビュー空間のZ距離を送る
     shadowData_->cascadeSplits = Vector4{ splits[1], splits[2], splits[3], splits[4] };
 
     // 各カスケードの行列を計算
@@ -324,7 +324,7 @@ void LightManager::UpdateCascadedShadows(
         float nearDist = splits[i];
         float farDist = splits[i + 1];
 
-        // 各カスケード（サブ視錐台）のプロジェクション空間でのNear/FarのZ値を求める
+        // 各カスケードのプロジェクション空間でのNear/FarのZ値を求める
         // 深度 [0, 1] へのマッピング
         float m22 = cameraProj.m[2][2];
         float m32 = cameraProj.m[3][2];
@@ -346,7 +346,7 @@ void LightManager::UpdateCascadedShadows(
         }
         center = center * (1.0f / 8.0f);
 
-        // 【チラツキ防止】外接球（Bounding Sphere）の半径を計算
+        // 外接球の半径を計算
         // カメラが回転してもライトの投影エリアのサイズが変化しなくなり、影のチラツキが消える
         float radius = 0.0f;
         for (int j = 0; j < 8; ++j)
@@ -365,7 +365,7 @@ void LightManager::UpdateCascadedShadows(
         Vector3 lightPos = center - (normLightDir * radius);
         Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, center, up);
 
-        // 【チラツキ防止】テクセルスナップ
+        // テクセルスナップ
         // カメラが移動したときに、影の輪郭がテクセル単位でカチッと固定されるように位置を丸める
         Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, 0.0f, radius * 2.0f);
         Matrix4x4 shadowViewProj = lightView * shadowProj;

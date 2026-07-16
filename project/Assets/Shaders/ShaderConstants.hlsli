@@ -549,3 +549,21 @@ struct TerrainInstanceData
     float4 WorldColor;
     float4 uvTransform;
 };
+
+struct LightningMaterial
+{
+    float3 coreColor; // 芯の色
+    float coreThickness; // 芯の太さ (例: 0.15)
+    
+    float3 fringeColor; // 滲みの色 (例: 青/紫)
+    float corePower; // 芯の鋭さ (例: 4.0)
+    
+    float glowPower; // 滲みの柔らかさ (例: 2.5)
+    float flickerSpeed; // 明滅スピード (例: 60.0)
+    float flickerMin; // 明滅の最も暗い時の倍率 (例: 0.4)
+    float flickerMax; // 明滅の最も明るい時の倍率 (例: 1.2)
+    
+    float emissiveIntensity; // 最終的な発光強度 (例: 50.0)
+    float instanceSeed; // 雷ごとの明滅タイミングをずらすシード値 (4byte)
+    float2 padding; // 16バイトアライメント調整用の本当のダミー (8byte)
+};

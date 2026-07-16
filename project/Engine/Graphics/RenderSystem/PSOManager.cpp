@@ -90,6 +90,14 @@ void PSOManager::Initialize(
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
     inputLayoutDescTerrain_ = { inputElementsTerrain_.data(), (UINT)inputElementsTerrain_.size() };
+
+    inputElementsLightning_ =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+    inputLayoutDescLightning_ = { inputElementsLightning_.data(), (UINT)inputElementsLightning_.size() };
 }
 
 ID3D12PipelineState* PSOManager::GetPSO(const std::string& psoName)
@@ -615,6 +623,10 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Terrain")
     {
         return inputLayoutDescTerrain_;
+    }
+    if (name == "Lightning")
+    {
+        return inputLayoutDescLightning_;
     }
 
     // 未定義のレイアウト

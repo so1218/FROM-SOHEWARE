@@ -916,6 +916,8 @@
     <ClCompile Include="Engine\Collision\Frustum.cpp" />
     <ClCompile Include="Engine\Framework\EnvironmentManager.cpp" />
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -949,6 +951,8 @@
     <ClInclude Include="Engine\Collision\Frustum.h" />
     <ClInclude Include="Engine\Framework\EnvironmentManager.h" />
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
@@ -976,6 +980,8 @@
     <FxCompile Include="Assets\Shaders\HiZ_Copy.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Lightning.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

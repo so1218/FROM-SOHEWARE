@@ -44,6 +44,13 @@ struct TerrainVertexData
     Vector2 texcoord; 
 };
 
+struct LightningVertex
+{
+    Vector4 position;
+    Vector2 texcoord;
+    Vector4 color;
+};
+
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
@@ -283,6 +290,32 @@ struct DepthExtractSettingsPS
     float nearPlane;
     float farPlane;
     Vector2 padding;
+};
+
+// シェーダーに送る雷の見た目パラメータ
+struct LightningConfig
+{
+    Vector3 coreColor = { 1.0f, 1.0f, 1.0f };       // 芯の色
+    float coreThickness = 0.15f;                    // 芯の太さ
+    Vector3 fringeColor = { 0.1f, 0.5f, 1.0f };     // 滲みの色
+    float corePower = 4.0f;                         // 芯の鋭さ
+    float glowPower = 2.5f;                         // 滲みの広がり
+    float emissiveIntensity = 50.0f;                // ブルームの強さ
+    float flickerSpeed = 60.0f;                     // 明滅スピード
+    float displacement = 20.0f;                     // ジグザグの荒ぶる幅
+    float durationMin = 0.08f;                      // 最小表示時間
+    float durationMax = 0.35f;                      // 最大表示時間
+    float lightIntensityMax = 150.0f;               // 落雷時の最大輝度（かなり強めが良い）
+    float lightRadius = 100.0f;                     // 光の届く範囲（メートル）
+    float lightHeightOffset = 10.0f;                // 落雷地点(地面)からどれくらい浮かせた位置にライトを置くか
+    float volumetricScattering = 5.0f;              // ボリュメトリックフォグへの影響（空気を光らせる）
+    Vector4 lightColor = { 0.7f, 0.85f, 1.0f, 1.0f };
+    float thickness = 0.5f;      // メッシュ自体の太さ(ワールド空間)
+    float flickerMin = 0.4f;     // 明滅の最も暗い時の倍率
+    float flickerMax = 1.2f;     // 明滅の最も明るい時の倍率
+    int fractalDepth = 6;        // ジグザグの分割数（6=64分割、7=128分割）
+    float branchProbability = 0.3f; // 枝分かれが発生する確率 (0.0〜1.0)
+    float branchLengthScale = 0.6f; // 枝の長さ（本流に対する割合）
 };
 
 }

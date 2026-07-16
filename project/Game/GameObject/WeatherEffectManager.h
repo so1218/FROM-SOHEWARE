@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "Terrain.h"
 #include "PropertyBinder.h"
+#include "LightningSystem.h"
 
 class WeatherEffectManager : public FE::GameObject
 {
@@ -29,8 +30,7 @@ private:
     FE::ParticleEmitter* rainParticleEmitterPtr_;
     std::unique_ptr<FE::ParticleEmitter> snowParticleEmitter_ = nullptr;
     FE::ParticleEmitter* snowParticleEmitterPtr_;
-    std::unique_ptr<FE::ParticleEmitter> thunderParticleEmitter_ = nullptr;
-    FE::ParticleEmitter* thunderParticleEmitterPtr_;
+    
 
     // 雷雨用の制御タイマー
     float thunderIntervalTimer_ = 0.0f; 
@@ -44,4 +44,11 @@ private:
     float maxFlashIntensity_ = 10.0f;  
 
     std::mt19937 randomEngine_;
+
+    std::unique_ptr<FE::LightningSystem> lightningSystem_;
+
+    // 落雷の発生範囲
+    float strikeRadiusMin_ = 30.0f;
+    float strikeRadiusMax_ = 100.0f;
+    float strikeHeight_ = 250.0f;  // 空の高さ
 };

@@ -1,0 +1,14 @@
+{
+  "RootSignature": "Lightning",
+  "VertexShader": "Assets/Shaders/Lightning.VS.hlsl",
+  "PixelShader": "Assets/Shaders/Lightning.PS.hlsl",
+  "InputLayout": "Lightning",
+  "BlendState": "Additive",
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "ReadOnly",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "R16G16B16A16_FLOAT"
+  ],
+  "DSVFormat": "D24_UNORM_S8_UINT"
+}

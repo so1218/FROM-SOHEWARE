@@ -24,6 +24,7 @@ class GrassRenderer;
 class SkydomeRenderer;
 class TerrainRenderer;
 class TerrainChunk;
+class LightningRenderer;
 
 class RendererManager
 {
@@ -107,6 +108,12 @@ public:
     void InitializeGrass(const ModelData& grassModel);
     void SetGrassRenderingParams(uint32_t textureHandle, const MaterialData& materialData);
 
+    // 雷を発生させる
+    void SpawnLightning(const Vector3& start, const Vector3& end, float duration);
+    void UpdateLightnings();
+
+    void SetLightningConfig(const LightningConfig& config);
+
 private:
     // Engineから受け取るポインタ
     GraphicsDevice* device_ = nullptr;
@@ -142,6 +149,7 @@ private:
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
+    std::unique_ptr<LightningRenderer> lightningRenderer_;
 };
 
 }

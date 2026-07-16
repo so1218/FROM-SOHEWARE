@@ -23,6 +23,7 @@
 #include "SkydomeRenderer.h"
 #include "TerrainRenderer.h"
 #include "TerrainChunk.h"
+#include "LightningRenderer.h"
 
 namespace FE
 {
@@ -78,6 +79,8 @@ void RendererManager::Initialize(
 	skydomeRenderer_->Initialize(env_);
 	terrainRenderer_ = std::make_unique<TerrainRenderer>();
 	terrainRenderer_->Initialize(env_);
+	lightningRenderer_ = std::make_unique<LightningRenderer>();
+	lightningRenderer_->Initialize(env_);
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -103,6 +106,7 @@ void RendererManager::BeginFrame()
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
+	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
 }
 
 void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -297,6 +301,11 @@ void RendererManager::Draw3D()
 	{
 		trailRenderer_->Draw(env_, viewProjectionMatrix_);
 	}
+
+	if (lightningRenderer_)
+	{
+		lightningRenderer_->Draw(env_, viewMatrix_, projectionMatrix_, cameraPosition_);
+	}
 }
 
 void RendererManager::DrawUI()
@@ -423,6 +432,30 @@ void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const 
 	if (terrainRenderer_)
 	{
 		terrainRenderer_->Submit(worldTransform, chunk, uvTransform, material, instanceColor, params, heightMapHandle);
+	}
+}
+
+void RendererManager::SpawnLightning(const Vector3& start, const Vector3& end, float duration)
+{
+	if (lightningRenderer_)
+	{
+		lightningRenderer_->SpawnLightning(start, end, duration);
+	}
+}
+
+void RendererManager::UpdateLightnings()
+{
+	if (lightningRenderer_)
+	{
+		lightningRenderer_->Update();
+	}
+}
+
+void RendererManager::SetLightningConfig(const LightningConfig& config)
+{
+	if (lightningRenderer_)
+	{
+		lightningRenderer_->SetConfig(config);
 	}
 }
 
