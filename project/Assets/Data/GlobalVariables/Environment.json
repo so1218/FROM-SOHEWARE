@@ -16,6 +16,7 @@
             0.16877639293670654,
             0.16877639293670654
         ],
+        "Cloudy_TransitionSpeed": 0.49000000953674316,
         "Cloudy_Wetness": 0.0,
         "Day_AtmoGlow": 0.5,
         "Day_CloudAmbient": [
@@ -87,6 +88,7 @@
             0.05063289403915405,
             0.05063289403915405
         ],
+        "Rain_TransitionSpeed": 0.15000000596046448,
         "Rain_Wetness": 1.0,
         "Snow_AtmoDim": 0.30000001192092896,
         "Snow_CloudMax": 0.6299999952316284,
@@ -104,6 +106,7 @@
             0.08016878366470337,
             0.08016878366470337
         ],
+        "Snow_TransitionSpeed": 0.15000000596046448,
         "Snow_Wetness": 0.20000000298023224,
         "Sunny_AtmoDim": 1.0,
         "Sunny_CloudMax": 0.800000011920929,
@@ -121,6 +124,7 @@
             0.15000000596046448,
             0.4000000059604645
         ],
+        "Sunny_TransitionSpeed": 0.4000000059604645,
         "Sunny_Wetness": 0.0,
         "Sunrise_AtmoGlow": 2.0,
         "Sunrise_CloudAmbient": [
@@ -192,9 +196,10 @@
             0.0,
             0.0
         ],
+        "Thunder_TransitionSpeed": 0.15000000596046448,
         "Thunder_Wetness": 1.0,
-        "TimeOfDay": 14.199999809265137,
+        "TimeOfDay": 17.299999237060547,
         "TimeSpeedMultiplier": 0.0,
-        "WeatherTransitionSpeed": 0.8050000071525574
+        "WeatherTransitionSpeed": 0.15000000596046448
     }
 }

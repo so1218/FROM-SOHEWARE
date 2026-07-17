@@ -43,6 +43,7 @@ struct WeatherProfile
     Vector3 skyZenithColor;      // この天候のときの天頂の色
     Vector3 skyHorizonColor;     // この天候のときの地平線の色
     float skyColorBlendWeight;
+    float transitionSpeed;
 };
 
 // プロファイル同士をブレンドする関数
@@ -83,6 +84,11 @@ public:
     const WeatherProfile& GetCurrentWeatherProfile() const { return currentWeatherProfile_; }
 
     WeatherState GetCurrentWeather() const { return currentWeather_; }
+    WeatherState GetTargetWeather() const { return targetWeather_; }
+    float GetWeatherTransitionProgress() const { return weatherTransitionT_; }
+
+    // 現在の遷移状態に応じたスピードを返す
+    float GetCurrentTransitionSpeed() const;
 
 private:
     EnvironmentManager() = default;
@@ -114,7 +120,6 @@ private:
     WeatherState currentWeather_ = WeatherState::Sunny;
     WeatherState targetWeather_ = WeatherState::Sunny;
     float weatherTransitionT_ = 1.0f; 
-    float transitionSpeed_ = 0.1f; // 遷移の速さ
 
     WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileSnow_, profileThunder_;
     WeatherProfile currentWeatherProfile_;

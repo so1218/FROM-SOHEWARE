@@ -48,92 +48,111 @@ void WeatherEffectManager::Initialize()
 void WeatherEffectManager::Update()
 {
     auto env = EnvironmentManager::GetInstance();
-    WeatherState current = env->GetCurrentWeather();
-
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-    if (lightningSystem_)
-    {
+    WeatherState current = env->GetCurrentWeather();
+    WeatherState target = env->GetTargetWeather();
+    float t = env->GetWeatherTransitionProgress();
+    const WeatherProfile& profile = env->GetCurrentWeatherProfile();
+    float wetness = profile.wetness;
+
+    // === パラメータの取得とブレンド ===
+    WeatherVisualParams currentP = GetWeatherVisualParams(current);
+    WeatherVisualParams targetP = GetWeatherVisualParams(target);
+
+    // Terrainのマテリアル設定適用
+    auto* mat = terrain_->GetMaterialData();
+    mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
+    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);
+    mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);
+    mat->rippleSize = FE::Math::Lerp(currentP.rippleSize, targetP.rippleSize, t);
+    mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
+    mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
+
+    mat->color = {
+        FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
+        FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
+        FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
+        1.0f
+    };
+
+    // bool値や固定値の設定
+    mat->enableRipple = (wetness > 0.1f);
+    mat->rippleScale = 0.4f;
+    mat->rippleStrength = 10.0f;
+    mat->rippleSpeed = 0.4f;
+    mat->rippleFrequency = 6.0f;
+    terrain_->SetRippleTexture("normal_31");
+
+    // Volumetric Fogの設定適用
+    auto* fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
+    fog->scatteringIntensity = FE::Math::Lerp(currentP.scatteringIntensity, targetP.scatteringIntensity, t);
+    fog->noiseScale = FE::Math::Lerp(currentP.noiseScale, targetP.noiseScale, t);
+    fog->noiseIntensity = targetP.noiseIntensity;
+    fog->heightDensity = targetP.heightDensity;
+    fog->heightFalloff = targetP.heightFalloff;
+    fog->extinction = FE::Math::Lerp(currentP.extinction, targetP.extinction, t);
+    fog->erosion = FE::Math::Lerp(currentP.erosion, targetP.erosion, t);
+    fog->windSpeed = targetP.windSpeed;
+
+    fog->ambientLight = {
+        FE::Math::Lerp(currentP.ambientLight.x, targetP.ambientLight.x, t),
+        FE::Math::Lerp(currentP.ambientLight.y, targetP.ambientLight.y, t),
+        FE::Math::Lerp(currentP.ambientLight.z, targetP.ambientLight.z, t)
+    };
+
+    fog->windDirection = targetP.windDirection;
+    // === パーティクルと雷の制御（ON/OFFやタイマー） ===
+
+    // 1. 各天候の「パーティクルの強さ (0.0 ～ 1.0)」を計算
+    auto CalculateIntensity = [&](WeatherState checkState) -> float {
+        bool isTarget = (target == checkState);
+        bool isCurrent = (current == checkState);
+
+        if (isTarget && !isCurrent) return t;           // 降り始め（徐々に強く）
+        if (!isTarget && isCurrent) return 1.0f - t;    // 止み始め（徐々に弱く）
+        if (isTarget && isCurrent)  return 1.0f;        // 完全に降っている
+        return 0.0f;                                    // 降っていない
+        };
+
+    float rainIntensity = CalculateIntensity(WeatherState::Rain);
+    float thunderRainIntensity = CalculateIntensity(WeatherState::Thunderstorm);
+    float snowIntensity = CalculateIntensity(WeatherState::Snow);
+
+    // 2. 雨パーティクルの制御
+    if (rainIntensity > 0.0f) {
+        rainParticleEmitterPtr_->Play();
+        rainParticleEmitterPtr_->SetEmissionRateMultiplier(rainIntensity);
+    }
+    else {
+        rainParticleEmitterPtr_->Stop();
+    }
+
+    // 3. 雷雨パーティクルの制御
+    if (thunderRainIntensity > 0.0f) {
+        thunderRainParticleEmitterPtr_->Play();
+        thunderRainParticleEmitterPtr_->SetEmissionRateMultiplier(thunderRainIntensity);
+    }
+    else {
+        thunderRainParticleEmitterPtr_->Stop();
+    }
+
+    // 4. 雪パーティクルの制御
+    if (snowIntensity > 0.0f) {
+        snowParticleEmitterPtr_->Play();
+        snowParticleEmitterPtr_->SetEmissionRateMultiplier(snowIntensity);
+    }
+    else {
+        snowParticleEmitterPtr_->Stop();
+    }
+
+    // 5. 落雷の制御
+    if (lightningSystem_) {
         lightningSystem_->Update();
     }
 
-    if (current == WeatherState::Rain || current == WeatherState::Thunderstorm)
-    {
-        snowParticleEmitterPtr_->Stop();
-
-        terrain_->GetMaterialData()->metalness = 0.9f;
-        terrain_->GetMaterialData()->roughness = 0.25f;
-        terrain_->GetMaterialData()->environmentMapIntensity = 0.05f;
-        terrain_->GetMaterialData()->enableRipple = true;
-        terrain_->GetMaterialData()->rippleScale = 0.4f;
-        terrain_->GetMaterialData()->rippleStrength = 10.0f;
-        terrain_->GetMaterialData()->rippleSpeed = 0.4f;
-        terrain_->GetMaterialData()->rippleSize = 1.2f;
-        terrain_->GetMaterialData()->rippleFrequency = 6.0f;
-        terrain_->SetRippleTexture("normal_31");
-
-        terrain_->GetMaterialData()->normalIntensity = 1.7f;
-        terrain_->GetMaterialData()->color = { 94.0f / 255.0f,165.0f / 255.0f,86.0f / 255.0f,1.0f };
-        terrain_->GetMaterialData()->emissiveIntensity = 12.0f;
-
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 1.5f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseScale = 0.03f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 1.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->heightDensity = 1.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->heightFalloff = 0.3f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 85.0f / 255.0f,110.0f / 255.0f,190.0f / 255.0f };
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinction = 0.02f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->erosion = 0.4f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->windSpeed = 0.15f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->windDirection = { 1.0f,1.0f,1.0f };
-    }
-    else if (current == WeatherState::Snow)
-    {
-        snowParticleEmitterPtr_->Play();
-        rainParticleEmitterPtr_->Stop();
-        thunderRainParticleEmitterPtr_->Stop();
-
-        terrain_->GetMaterialData()->metalness = 0.13f;
-        terrain_->GetMaterialData()->roughness = 1.00f;
-        terrain_->GetMaterialData()->environmentMapIntensity = 0.0f;
-        terrain_->GetMaterialData()->enableRipple = false;
-        terrain_->GetMaterialData()->normalIntensity = 0.2f;
-        terrain_->GetMaterialData()->color = { 1.0f,1.0f,1.0f,1.0f };
-        terrain_->GetMaterialData()->emissiveIntensity = 10.0f;
-
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 1.5f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseScale = 0.03f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 1.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->heightDensity = 0.1f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->heightFalloff = 0.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 85.0f / 255.0f,110.0f / 255.0f,190.0f / 255.0f };
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinction = 0.005f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->erosion = 0.8f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->windSpeed = 0.3f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->windDirection = { 1.0f,0.0f,0.5f };
-    }
-    else
-    {
-        rainParticleEmitterPtr_->Stop();
-        snowParticleEmitterPtr_->Stop();
-        thunderRainParticleEmitterPtr_->Stop();
-
-        terrain_->GetMaterialData()->metalness = 0.15f;
-        terrain_->GetMaterialData()->roughness = 1.00f;
-        terrain_->GetMaterialData()->environmentMapIntensity = 0.0f;
-        terrain_->GetMaterialData()->enableRipple = false;
-        terrain_->GetMaterialData()->normalIntensity = 1.7f;
-        terrain_->GetMaterialData()->color = { 94.0f / 255.0f,165.0f / 255.0f,86.0f / 255.0f,1.0f };
-        terrain_->GetMaterialData()->emissiveIntensity = 6.0f;
-
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 10.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->heightDensity = 0.0f;
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 10.0f / 255.0f,10.0f / 255.0f,10.0f / 255.0f };
-        engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinction = 0.005f;
-    }
-
-    if (current == WeatherState::Thunderstorm)
+    // 雷は「現在が雷雨」または「雷雨へ遷移中（t が0.5以上）」で発生させる
+    if (current == WeatherState::Thunderstorm || (target == WeatherState::Thunderstorm && t > 0.5f))
     {
         thunderIntervalTimer_ -= deltaTime;
 
@@ -154,7 +173,7 @@ void WeatherEffectManager::Update()
             float targetZ = playerPos.z + std::sin(angle) * radius;
 
             // 地面の高さを取得
-            float groundY = terrain_->GetHeight(targetX, targetZ); 
+            float groundY = terrain_->GetHeight(targetX, targetZ);
 
             // 発生地点（上空）と、目標地点（地面）
             Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
@@ -167,14 +186,6 @@ void WeatherEffectManager::Update()
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
         }
-
-        thunderRainParticleEmitterPtr_->Play();
-        rainParticleEmitterPtr_->Stop();
-    }
-    else if (current == WeatherState::Rain)
-    {
-        rainParticleEmitterPtr_->Play();
-        thunderRainParticleEmitterPtr_->Stop();
     }
 }
 
@@ -213,3 +224,79 @@ void WeatherEffectManager::DebugDraw()
     }
 }
 
+inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
+{
+    WeatherVisualParams p;
+
+    switch (state)
+    {
+    case FE::WeatherState::Rain:
+    case FE::WeatherState::Thunderstorm:
+        // Terrain
+        p.metalness = 0.9f;
+        p.roughness = 0.25f;
+        p.environmentMapIntensity = 0.05f;
+        p.rippleSize = 1.2f;
+        p.normalIntensity = 1.7f;
+        p.color = { 94.0f / 255.0f, 165.0f / 255.0f, 86.0f / 255.0f, 1.0f };
+        p.emissiveIntensity = 12.0f;
+        // Fog
+        p.scatteringIntensity = 1.5f;
+        p.noiseScale = 0.03f;
+        p.noiseIntensity = 1.0f;
+        p.heightDensity = 1.0f;
+        p.heightFalloff = 0.3f;
+        p.ambientLight = { 85.0f / 255.0f, 110.0f / 255.0f, 190.0f / 255.0f };
+        p.extinction = 0.02f;
+        p.erosion = 0.4f;
+        p.windSpeed = 0.15f;
+        p.windDirection = { 1.0f, 1.0f, 1.0f };
+        break;
+
+    case FE::WeatherState::Snow:
+        // Terrain
+        p.metalness = 0.13f;
+        p.roughness = 1.00f;
+        p.environmentMapIntensity = 0.0f;
+        p.rippleSize = 0.0f;
+        p.normalIntensity = 0.2f;
+        p.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+        p.emissiveIntensity = 10.0f;
+        // Fog
+        p.scatteringIntensity = 1.5f;
+        p.noiseScale = 0.03f;
+        p.noiseIntensity = 1.0f;
+        p.heightDensity = 0.1f;
+        p.heightFalloff = 0.0f;
+        p.ambientLight = { 85.0f / 255.0f, 110.0f / 255.0f, 190.0f / 255.0f };
+        p.extinction = 0.005f;
+        p.erosion = 0.8f;
+        p.windSpeed = 0.3f;
+        p.windDirection = { 1.0f, 0.0f, 0.5f };
+        break;
+
+    default: // Sunny, Cloudy
+        // Terrain
+        p.metalness = 0.15f;
+        p.roughness = 1.00f;
+        p.environmentMapIntensity = 0.0f;
+        p.rippleSize = 0.0f;
+        p.normalIntensity = 1.7f;
+        p.color = { 94.0f / 255.0f, 165.0f / 255.0f, 86.0f / 255.0f, 1.0f };
+        p.emissiveIntensity = 6.0f;
+        // Fog
+        p.scatteringIntensity = 10.0f;
+        p.noiseScale = 0.03f; // 晴れでもスケールは維持しておくと遷移が綺麗
+        p.noiseIntensity = 0.0f;
+        p.heightDensity = 0.0f;
+        p.heightFalloff = 0.0f;
+        p.ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
+        p.extinction = 0.005f;
+        p.erosion = 0.0f;
+        p.windSpeed = 0.1f;
+        p.windDirection = { 1.0f, 1.0f, 1.0f };
+        break;
+    }
+
+    return p;
+}

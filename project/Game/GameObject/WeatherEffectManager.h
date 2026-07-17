@@ -6,6 +6,7 @@
 #include "Terrain.h"
 #include "PropertyBinder.h"
 #include "LightningSystem.h"
+#include "EnvironmentManager.h"
 
 class WeatherEffectManager : public FE::GameObject
 {
@@ -54,3 +55,28 @@ private:
     float strikeRadiusMax_ = 100.0f;
     float strikeHeight_ = 250.0f;  // 空の高さ
 };
+
+struct WeatherVisualParams {
+    // Terrain
+    float metalness;
+    float roughness;
+    float environmentMapIntensity;
+    float rippleSize;
+    float normalIntensity;
+    FE::Vector4 color;
+    float emissiveIntensity;
+
+    // Volumetric Fog
+    float scatteringIntensity;
+    float noiseScale;
+    float noiseIntensity;
+    float heightDensity;
+    float heightFalloff;
+    FE::Vector3 ambientLight;
+    float extinction;
+    float erosion;
+    float windSpeed;
+    FE::Vector3 windDirection;
+};
+
+WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state);

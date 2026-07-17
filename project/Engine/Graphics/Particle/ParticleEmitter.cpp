@@ -7,6 +7,8 @@ namespace FE
 
 void ParticleEmitter::Initialize(const EmitterConfig& config)
 {
+    emitterConfig_ = config;
+
     // EmitterConfigからすべての設定をコピー
     position_ = config.position;
     spawnInterval_ = config.spawnInterval;
@@ -146,6 +148,20 @@ void ParticleEmitter::SetFollowAxes(bool x, bool y, bool z)
     followX_ = x;
     followY_ = y;
     followZ_ = z;
+}
+
+void ParticleEmitter::SetEmissionRateMultiplier(float multiplier)
+{
+    // 倍率がほぼ 0 以下の場合は、発生間隔を極端に長くして実質ストップ
+    if (multiplier <= 0.001f)
+    {
+        spawnInterval_ = 999999.0f;
+    }
+    else
+    {
+        // JSONで設定された本来の生成間隔を倍率で割る
+        spawnInterval_ = emitterConfig_.spawnInterval / multiplier;
+    }
 }
 
 }

@@ -30,6 +30,8 @@ public:
     void Destroy();
 
     void SetFollowAxes(bool x, bool y, bool z);
+    // 発生量の倍率を設定
+    void SetEmissionRateMultiplier(float multiplier);
 
     void SetTargetModel(const Model* model)
     {
