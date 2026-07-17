@@ -246,7 +246,7 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         p.noiseIntensity = 1.0f;
         p.heightDensity = 1.0f;
         p.heightFalloff = 0.3f;
-        p.ambientLight = { 85.0f / 255.0f, 110.0f / 255.0f, 190.0f / 255.0f };
+        p.ambientLight = { 40.0f / 255.0f, 70.0f / 255.0f, 160.0f / 255.0f };
         p.extinction = 0.02f;
         p.erosion = 0.4f;
         p.windSpeed = 0.15f;

@@ -1,9 +1,9 @@
 {
     "Environment": {
         "Cloudy_AtmoDim": 0.5,
-        "Cloudy_CloudMax": 0.6700000166893005,
-        "Cloudy_CloudMin": 0.14000000059604645,
-        "Cloudy_CloudShadow": 0.10999999940395355,
+        "Cloudy_CloudMax": 0.6399999856948853,
+        "Cloudy_CloudMin": 0.029999999329447746,
+        "Cloudy_CloudShadow": 0.3799999952316284,
         "Cloudy_LightDim": 0.3400000035762787,
         "Cloudy_SkyBlendWeight": 0.6000000238418579,
         "Cloudy_SkyHorizon": [
@@ -109,9 +109,9 @@
         "Snow_TransitionSpeed": 0.15000000596046448,
         "Snow_Wetness": 0.20000000298023224,
         "Sunny_AtmoDim": 1.0,
-        "Sunny_CloudMax": 0.800000011920929,
-        "Sunny_CloudMin": 0.550000011920929,
-        "Sunny_CloudShadow": 0.36000001430511475,
+        "Sunny_CloudMax": 0.0,
+        "Sunny_CloudMin": 0.46000000834465027,
+        "Sunny_CloudShadow": 0.3400000035762787,
         "Sunny_LightDim": 1.0,
         "Sunny_SkyBlendWeight": 0.0,
         "Sunny_SkyHorizon": [
@@ -198,7 +198,7 @@
         ],
         "Thunder_TransitionSpeed": 0.15000000596046448,
         "Thunder_Wetness": 1.0,
-        "TimeOfDay": 17.299999237060547,
+        "TimeOfDay": 14.600000381469727,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

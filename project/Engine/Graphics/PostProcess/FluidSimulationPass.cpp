@@ -165,7 +165,7 @@ void FluidSimulationPass::Execute(ID3D12GraphicsCommandList* cmdList)
         };
 
     // ====================================================================
-    // 💡 共通バインドはすべてのDispatchの「大前提」として先頭で行う
+    // 共通バインドはすべてのDispatchの「大前提」として先頭で行う
     // ====================================================================
     cmdList->SetComputeRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("FluidSimulationCS"));
     cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
