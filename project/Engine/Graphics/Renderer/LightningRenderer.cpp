@@ -23,26 +23,11 @@ void LightningRenderer::Initialize(const RenderEnvironment& env)
 {
     auto device = env.device->GetDevice();
 
-    // 頂点/インデックスバッファのサイズ計算
-    UINT vertexBufferSize = kMaxVertices * sizeof(LightningVertex);
-    UINT indexBufferSize = kMaxIndices * sizeof(uint32_t);
-
-    // 定数バッファのサイズ計算
-    UINT materialSize = (sizeof(LightningMaterial) + 255) & ~255;
-
     for (int i = 0; i < kFrameCount; ++i)
     {
-        // 動的頂点バッファの作成とマップ
-        vertexBuffer_[i] = BufferManager::CreateBufferResource(device, vertexBufferSize);
-        vertexBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices_[i]));
-
-        // 動的インデックスバッファの作成とマップ
-        indexBuffer_[i] = BufferManager::CreateBufferResource(device, indexBufferSize);
-        indexBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedIndices_[i]));
-
-        // マテリアルバッファの作成とマップ
-        materialResource_[i] = BufferManager::CreateBufferResource(device, materialSize);
-        materialResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedMaterial_[i]));
+        vertexBuffer_[i] = BufferManager::CreateMappedBuffer(device, kMaxVertices, &mappedVertices_[i]);
+        indexBuffer_[i] = BufferManager::CreateMappedBuffer(device, kMaxIndices, &mappedIndices_[i]);
+        materialResource_[i] = BufferManager::CreateMappedConstantBuffer(device, &mappedMaterial_[i]);
 
         // マテリアルの初期値セット
         mappedMaterial_[i]->coreColor = { 1.0f, 1.0f, 1.0f };       // 芯は純白
