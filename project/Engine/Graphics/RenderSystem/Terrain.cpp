@@ -14,7 +14,7 @@ Terrain::Terrain(Engine* engine)
 {
     if (!engine_) return;
 
-    // ★ 追加: transform_ を初期状態(Identity)で確定させておく
+    // transform_ を初期状態で確定
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
     transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
@@ -60,30 +60,37 @@ void Terrain::Draw()
         // チャンクのワールド位置を計算し、専用の Transform を作成
         WorldTransform chunkTransform;
         chunkTransform.translation_ = {
-            chunk->GetStartX() * params_.cellSize - offsetX,
-            0.0f,
-            chunk->GetStartZ() * params_.cellSize - offsetZ
+            (chunk->GetStartX() * params_.cellSize - offsetX) + transform_.translation_.x, // ←追加
+            transform_.translation_.y,
+            (chunk->GetStartZ() * params_.cellSize - offsetZ) + transform_.translation_.z  // ←追加
         };
         chunkTransform.UpdateMatrix();
 
         // チャンクのUVトランスフォームを計算
-        float uvScaleX = static_cast<float>(chunk->GetNumCellsX()) / totalVertsX_;
-        float uvScaleZ = static_cast<float>(chunk->GetNumCellsZ()) / totalVertsZ_;
-        float uvOffsetX = static_cast<float>(chunk->GetStartX()) / totalVertsX_;
-        float uvOffsetZ = static_cast<float>(chunk->GetStartZ()) / totalVertsZ_;
+        // 修正後（頂点数で割り、0.5ピクセル分のオフセットを足す）
+        float totalVertsX_f = static_cast<float>(totalVertsX_);
+        float totalVertsZ_f = static_cast<float>(totalVertsZ_);
+
+        // チャンクのUVスケール
+        float uvScaleX = static_cast<float>(chunk->GetNumCellsX()) / totalVertsX_f;
+        float uvScaleZ = static_cast<float>(chunk->GetNumCellsZ()) / totalVertsZ_f;
+
+        // 0.5ピクセル分ずらして、正確にピクセルの中央をサンプリングさせる
+        float uvOffsetX = (static_cast<float>(chunk->GetStartX()) + 0.5f) / totalVertsX_f;
+        float uvOffsetZ = (static_cast<float>(chunk->GetStartZ()) + 0.5f) / totalVertsZ_f;
         Vector4 uvTransform = { uvScaleX, uvScaleZ, uvOffsetX, uvOffsetZ };
 
         // AABBもワールド座標に合わせて移動させる（これがないとカリングがバグります）
         Vector3 aabbMin = chunk->GetAABBMin();
         Vector3 aabbMax = chunk->GetAABBMax();
         Vector3 worldMin = {
-            aabbMin.x + chunkTransform.translation_.x,
-            aabbMin.y * params_.maxHeight, // 実際の地形の最低の高さ
-            aabbMin.z + chunkTransform.translation_.z
+              aabbMin.x + chunkTransform.translation_.x,
+              (aabbMin.y * params_.maxHeight) + transform_.translation_.y, 
+              aabbMin.z + chunkTransform.translation_.z
         };
         Vector3 worldMax = {
             aabbMax.x + chunkTransform.translation_.x,
-            aabbMax.y * params_.maxHeight, // 実際の地形の最高の高さ
+            (aabbMax.y * params_.maxHeight) + transform_.translation_.y, 
             aabbMax.z + chunkTransform.translation_.z
         };
 
@@ -325,14 +332,16 @@ Vector4* Terrain::GetMaterialColorPtr()
 
 float Terrain::GetHeight(float worldX, float worldZ) const
 {
+    float localX = worldX - transform_.translation_.x;
+    float localZ = worldZ - transform_.translation_.z;
     float heightRatio = 0.0f;
     for (const auto& chunk : chunks_)
     {
         // チャンクからは -0.5 ~ 0.5 の比率が返ってくる
-        if (chunk->GetHeightAt(worldX, worldZ, heightRatio))
+        if (chunk->GetHeightAt(localX, localZ, heightRatio))
         {
-            // ここで最新の maxHeight を掛ける
-            return heightRatio * params_.maxHeight;
+            // (比率 * maxHeight) に、地形全体のY座標を足したものが本当のワールド高さ
+            return (heightRatio * params_.maxHeight) + transform_.translation_.y;
         }
     }
     return 0.0f;

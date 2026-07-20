@@ -149,14 +149,14 @@ void TerrainChunk::CalculateAABB()
             float localZ = z * cellSize_;
 
             // heightData_ には ratio (-0.5 ～ 0.5) が入っている
-            float heightRatio = heightData_[index];
+            float actualHeight = heightData_[index];
 
             aabbMin_.x = std::min(aabbMin_.x, localX);
-            aabbMin_.y = std::min(aabbMin_.y, heightRatio);
+            aabbMin_.y = std::min(aabbMin_.y, actualHeight);
             aabbMin_.z = std::min(aabbMin_.z, localZ);
 
             aabbMax_.x = std::max(aabbMax_.x, localX);
-            aabbMax_.y = std::max(aabbMax_.y, heightRatio);
+            aabbMax_.y = std::max(aabbMax_.y, actualHeight);
             aabbMax_.z = std::max(aabbMax_.z, localZ);
         }
     }

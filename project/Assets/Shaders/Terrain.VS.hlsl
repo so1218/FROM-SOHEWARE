@@ -37,10 +37,10 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     
    // 法線のGPU計算
     float offset = gTerrainSettings.texelSize;
-    float hL = gHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r * gTerrainSettings.maxHeight;
-    float hR = gHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r * gTerrainSettings.maxHeight;
-    float hD = gHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r * gTerrainSettings.maxHeight;
-    float hU = gHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r * gTerrainSettings.maxHeight;
+    float hL = (gHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hR = (gHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hD = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hU = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     
     // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize に
     float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));

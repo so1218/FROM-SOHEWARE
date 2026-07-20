@@ -1758,7 +1758,7 @@
         "Terrain_Heightmap": "noise_39",
         "Terrain_LightMode": 3,
         "Terrain_Lighting": 1,
-        "Terrain_MaxHeight": 27.600000381469727,
+        "Terrain_MaxHeight": 18.399999618530273,
         "Terrain_Metalness": 0.12999999523162842,
         "Terrain_NormEnable": 1,
         "Terrain_NormInten": 1.6799999475479126,
@@ -1772,6 +1772,11 @@
         ],
         "Terrain_OutlineEnable": 0,
         "Terrain_OutlineWidth": 1.0,
+        "Terrain_Position": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "Terrain_PuddleColor": [
             0.10000000149011612,
             0.10000000149011612,
