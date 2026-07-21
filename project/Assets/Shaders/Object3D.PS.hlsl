@@ -443,7 +443,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // 移動量の算出（現在のUV - 1フレーム前のUV）
     output.velocity = currentUV - prevUV;
     
-    // ※注意: TAAのカメラジッター（微細なズレ）を入れている場合、
+    // TAAのカメラジッター（微細なズレ）を入れている場合、
     // ここで計算する行列からはジッターを抜いておくか、Velocityからジッター分を引く必要がある
     
     return output;

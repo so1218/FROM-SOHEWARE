@@ -48,7 +48,7 @@ void LightningRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-// 中点変位法（フラクタル）による再帰的な経路生成
+// 中点変位法による再帰的な経路生成
 void LightningRenderer::GenerateFractalPath(
     LightningInstance& inst,
     std::vector<Vector3>& points,
@@ -69,7 +69,7 @@ void LightningRenderer::GenerateFractalPath(
     std::uniform_real_distribution<float> dist(-0.5f, 0.5f);
 
     float randX = dist(randomEngine_) * displacement;
-    float randY = dist(randomEngine_) * displacement * 0.2f; // Yは逆行を防ぐため控えめに
+    float randY = dist(randomEngine_) * displacement * 0.05f; // Yは逆行を防ぐため控えめに
     float randZ = dist(randomEngine_) * displacement;
 
     mid = mid + Vector3(randX, randY, randZ);
@@ -100,7 +100,7 @@ void LightningRenderer::GenerateFractalPath(
         inst.paths.push_back(branchPath);
     }
 
-    // 3. 後半のパスを生成
+    // 後半のパスを生成
     GenerateFractalPath(inst, points, mid, end, depth - 1, displacement * 0.5f, currentThickness);
 }
 
@@ -113,7 +113,7 @@ void LightningRenderer::SpawnLightning(const Vector3& start, const Vector3& end,
     inst.lifeTime = duration;
 
     std::uniform_real_distribution<float> seedDist(0.0f, 10000.0f);
-    inst.seed = seedDist(randomEngine_);
+    inst.seed = (uint32_t)seedDist(randomEngine_);
 
     // メインのパス（幹）を作成
     LightningPath mainPath;

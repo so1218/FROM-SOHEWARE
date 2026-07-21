@@ -1,15 +1,15 @@
 {
     "Lightning": {
         "BranchLengthScale": 0.30000001192092896,
-        "BranchProbability": 0.3499999940395355,
+        "BranchProbability": 0.25,
         "CoreColor": [
             0.38818567991256714,
             0.46563076972961426,
             1.0
         ],
-        "CorePower": 7.699999809265137,
-        "CoreThickness": 0.2199999988079071,
-        "Displacement": 76.0,
+        "CorePower": 12.100000381469727,
+        "CoreThickness": 0.5,
+        "Displacement": 91.0,
         "DurationMax": 2.5,
         "DurationMin": 1.0,
         "EmissiveIntensity": 15.0,
