@@ -2,7 +2,7 @@
   "RootSignature": "Grass",
   "VertexShader": "Assets/Shaders/Grass.VS.hlsl",
   "PixelShader": "Assets/Shaders/Grass.PS.hlsl",
-  "InputLayout": "Grass",
+  "InputLayout": "None",
   "BlendState": "AlphaBlend",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Default",

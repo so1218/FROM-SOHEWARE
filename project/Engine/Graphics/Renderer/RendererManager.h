@@ -69,7 +69,7 @@ public:
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
         float instanceSeed);
-    void SubmitGrass(const Matrix4x4& world, const Vector4& color);
+    void SubmitGrass(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform,
@@ -105,8 +105,8 @@ public:
 
     bool isWireFrame_ = false;
 
-    void InitializeGrass(const ModelData& grassModel);
-    void SetGrassRenderingParams(uint32_t textureHandle, const MaterialData& materialData);
+    void InitializeGrass();
+    void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData);
 
     // 雷を発生させる
     void SpawnLightning(const Vector3& start, const Vector3& end, float duration);
@@ -136,7 +136,7 @@ private:
     Vector3 cameraPosition_;
 
     uint32_t grassTextureHandle_ = 0;
-    MaterialData grassMaterialData_ = {};
+    GrassMaterialData grassMaterialData_ = {};
 
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体

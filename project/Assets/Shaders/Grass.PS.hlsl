@@ -6,13 +6,11 @@ cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
-Texture2D<float4> gTexture : register(t0);
 Texture2DArray<float> gShadowMapArray : register(t2);
 
-SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
 struct PixelInput
@@ -20,6 +18,7 @@ struct PixelInput
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
     float4 currentClipPos : POSITION1; 
@@ -27,120 +26,101 @@ struct PixelInput
 };
 
 // シャドウ強度を計算
-float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
+float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
 PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
     
-    // テクスチャは純粋なカラーグラデーションとして使用
-    float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    float t = input.texcoord.y; // 0.0(根本) ~ 1.0(先端)
+    float gustMask = input.color.a;
 
-    float3 baseColor = textureColor.rgb * gMaterial.color.rgb * input.color.rgb;
+    // --- 1. ベースカラーグラデーション ---
+    float3 grassColor = lerp(gMaterial.rootColor, gMaterial.tipColor, t);
+    float3 baseColor = input.color.rgb * grassColor;
+
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    
-    // 両面描画対策（法線の反転をDiffuse計算の前に行う）
-    float3 normal = normalize(input.normal);
-    if (dot(normal, toEye) < 0.0f)
-    {
-        normal = -normal;
-    }
-
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
-
-    float shadowFactor = 1.0f;
-    if (gMaterial.addShadow != 0)
-    {
-        // カメラからの距離を測って CSM の関数を呼ぶ
-        float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
-        shadowFactor = CalculateShadowCSM(input.worldPosition, normal, viewDepth);
-    }
     
-    // 雷フラッシュの計算
-    float flashIntensity = gFrameData.lightningFlashIntensity;
-    float3 flashColor = gFrameData.lightningFlashColor * flashIntensity;
-    float flashShadowCancel = saturate(flashIntensity);
-    shadowFactor = lerp(shadowFactor, 1.0f, flashShadowCancel);
+    // ★ AAAの重要アプローチ：個々の法線を「空(0,1,0)」へブレンドしてチラツキを防止！
+    float3 bladeNormal = normalize(input.normal);
+    float3 globalUpNormal = float3(0.0f, 1.0f, 0.0f);
+    float3 normal = normalize(lerp(bladeNormal, globalUpNormal, gMaterial.grassNormalBlend));
 
-    // 光の計算
-    float NdotL = dot(normal, lightDir) * 0.5f + 0.5f; // ハーフランバートで柔らかく
-    float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL * shadowFactor;
+    // --- 2. 影の計算 ---
+    float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
+    float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
+    float flashIntensity = saturate(gFrameData.lightningFlashIntensity);
+    shadowFactor = lerp(shadowFactor, 1.0f, flashIntensity);
 
-    // 透過光
-    float viewDotLight = saturate(dot(toEye, -lightDir));
-    float3 translucency = baseColor * pow(viewDotLight, 3.0f) * gDirectionalLights[0].color.rgb * gMaterial.grassTranslucency * shadowFactor;
- 
-    float3 ambient = baseColor * (0.2f + flashColor);
-    
+    // --- 3. Foliage Light (Wrap Diffuse & SSS) ---
+    // ① Wrap Diffuse (光の柔らかい回り込み)
+    float wrap = 0.5f;
+    float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
+    float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL;
+
+    // ② Subsurface Scattering (透過光)
+    // 逆光時に葉を透過する美しい光 (先端 t ほど強く透ける)
+    float sssDot = saturate(dot(-lightDir, toEye + bladeNormal * 0.2f));
+    float sssFade = pow(sssDot, 2.5f) * t;
+    float3 translucency = gMaterial.sssColor * sssFade * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
+
+    diffuse *= shadowFactor;
+    translucency *= shadowFactor;
+
+    // ③ Ambient & 根本のAO
+    float ao = lerp(gMaterial.grassRootAO, 1.0f, t);
+    float skyLight = saturate(normal.y * 0.5f + 0.5f);
+    float3 ambient = baseColor * (0.15f + skyLight * 0.2f + gFrameData.lightningFlashColor * flashIntensity) * ao;
+
     float3 finalColor = diffuse + translucency + ambient;
 
-    // 根本の影を適用（V座標をそのまま利用）
-    finalColor *= smoothstep(1.0f, gMaterial.grassRootAO, input.texcoord.y);
+    // --- 4. 暴れない上品なスペキュラ (Tsushima Satin Specular) ---
+    float3 H = normalize(lightDir + toEye);
+    
+    // Kajiya-Kay 風の縦方向異方性ハイライト
+    float3 tangent = normalize(input.tangent);
+    float TdotH = dot(tangent, H);
+    float sinTH = sqrt(1.0f - saturate(TdotH * TdotH));
+    
+    float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
+    float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength;
+    
+    // 光の表面だけで反応するようシャドウとNdotLでマスク
+    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor;
 
-    // 濡れたときのハイライト計算
-    float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (gMaterial.wetness > 0.0f)
-    {
-        float3 fakeLightDir = normalize(toEye + float3(0.0f, 0.5f, 0.0f));
-        float3 H = normalize(fakeLightDir + toEye);
-        
-        // すでに法線は反転済みなのでそのまま使用
-        float3 wetNormal = normalize(normal + float3(0.0f, 0.3f, 0.0f));
-        float NdotH = saturate(dot(wetNormal, H));
-        
-        float shininess = lerp(30.0f, 150.0f, gMaterial.wetness);
-        float specIntensity = pow(NdotH, shininess) * gMaterial.wetness;
-        float shadowMask = lerp(0.3f, 1.0f, shadowFactor);
-        
-        specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity * shadowMask;
-    }
+    // ★ 風による「サテン光沢（シルバーライニング）」の自然な補正
+    // 直接色を乗算・加算して発光させるのではなく、風が吹く場所のスペキュラ幅をわずかに引き締める
+    float windBoost = 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
+    specIntensity *= windBoost;
 
+    float3 specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity;
     finalColor += specular;
 
+    // 出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
-    output.material = float4(gMaterial.metalness, gMaterial.roughness, 0.0f, 1.0f);
-
-    // NDC（正規化デバイス座標）に変換して差分を計算
+    output.material = float4(0.0f, 0.8f - (gMaterial.wetness * 0.6f), 0.0f, 1.0f);
+    
     float2 ndcCurrent = input.currentClipPos.xy / input.currentClipPos.w;
     float2 ndcPrev = input.prevClipPos.xy / input.prevClipPos.w;
-
     output.velocity = (ndcCurrent - ndcPrev) * float2(0.5f, -0.5f);
 
     return output;
 }
 
-static const float2 poissonDisk[16] =
-{
-    float2(-0.94201624, -0.39906216),
-    float2(0.94558609, -0.76890725),
-    float2(-0.094184101, -0.92938870),
-    float2(0.34495938, 0.29387760),
-    float2(-0.91588581, 0.45771432),
-    float2(-0.81544232, -0.87912464),
-    float2(-0.38277543, 0.27676845),
-    float2(0.97484398, 0.75648379),
-    float2(0.44323325, -0.97511554),
-    float2(0.53742981, -0.47373420),
-    float2(-0.26496911, -0.41893023),
-    float2(0.79197514, 0.19090188),
-    float2(-0.24188840, 0.99706507),
-    float2(-0.81409955, 0.91437590),
-    float2(0.19984126, 0.78641367),
-    float2(0.14383161, -0.14100790)
-};
-
-float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
+// 草専用の超軽量シャドウ計算 (1タップ)
+float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
+    // 光の裏側なら即座に暗くする（サンプリングすらしない）
     if (NdotL <= 0.0f)
-    {
         return minShadow;
-    }
 
+    // カスケード判定
     uint cascadeIndex = 0;
     if (viewDepth > gShadowData.cascadeSplits.x)
         cascadeIndex = 1;
@@ -149,6 +129,7 @@ float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     if (viewDepth > gShadowData.cascadeSplits.z)
         cascadeIndex = 3;
 
+    // シャドウバイアス
     float biasScale = saturate(1.0f - NdotL);
     float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
     float3 biasedWorldPos = worldPos + normal * worldNormalBias;
@@ -168,21 +149,12 @@ float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
         return 1.0f;
     }
 
-    float2 texelSize = 1.0f / 2048.0f;
-    float softness = max(gMaterial.shadowSoftness, 1.0f);
-    float shadow = 0.0f;
+    // ハードウェアPCF（SampleCmpLevelZero 1回で2x2の補間シャドウが得られる）
+    float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
+        gShadowSampler,
+        float3(projCoords.xy, cascadeIndex),
+        currentDepth
+    );
 
-    [unroll]
-    for (int i = 0; i < 16; ++i)
-    {
-        float2 offset = poissonDisk[i] * texelSize * softness;
-        shadow += gShadowMapArray.SampleCmpLevelZero(
-            gShadowSampler,
-            float3(projCoords.xy + offset, cascadeIndex),
-            currentDepth
-        );
-    }
-
-    float shadowVisibility = shadow * (1.0f / 16.0f);
     return lerp(minShadow, 1.0f, shadowVisibility);
 }

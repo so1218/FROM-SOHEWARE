@@ -6,51 +6,22 @@
 namespace FE
 {
 
-GrassSystem::GrassSystem(Engine* engine, const std::string& modelName, const std::string& textureName)
+GrassSystem::GrassSystem(Engine* engine, const std::string& windMapTextureName)
     : engine_(engine)
 {
-    const ModelData* modelData = ModelManager::GetInstance().Get(modelName);
-    if (modelData) {
-        engine_->GetRendererManager()->InitializeGrass(*modelData);
-    }
-
-    // テクスチャの設定
-    SetTexture(textureName);
-
-    // マテリアルの初期値設定
-    materialData_.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    materialData_.grassWindSpeed = 1.0f;
-    materialData_.grassWindAmplitude = 0.5f;
-    materialData_.grassNormalBlend = 0.5f;
-    materialData_.grassTranslucency = 0.5f;
-    materialData_.grassRootAO = 0.5f;
-    materialData_.grassAlphaCutoff = 0.1f;
-    materialData_.addShadow = 1;
+    // メッシュの初期化は不要。レンダラー側のバッファ初期化のみ呼ぶ
+    engine_->GetRendererManager()->InitializeGrass();
+    SetWindMapTexture(windMapTextureName);
 }
 
-void GrassSystem::AddGrass(const Vector3& position, const Vector3& rotation, const Vector3& scale, const Vector4& color)
+void GrassSystem::AddGrass(const Vector3& position, float height, float rotationY, float width, const Vector4& color)
 {
-    WorldTransform tempTransform;
-    tempTransform.translation_ = position;
-    tempTransform.rotation_ = rotation;
-    tempTransform.scale_ = scale;
-    tempTransform.UpdateMatrix();
-
     Instance inst;
-    inst.worldMatrix = tempTransform.matWorld_;
-    inst.color = color;
-
-    instances_.push_back(inst);
-}
-
-void GrassSystem::AddGrass(const WorldTransform& transform, const Vector4& color)
-{
-    WorldTransform tempTransform = transform;
-    tempTransform.UpdateMatrix();
-
-    Instance inst;
-    inst.worldMatrix = tempTransform.matWorld_; 
-    inst.color = color;
+    inst.position = position;
+    inst.height = height;
+    inst.rotationY = rotationY;
+    inst.width = width;
+    inst.packedColor = PackColor(color);
 
     instances_.push_back(inst);
 }
@@ -65,26 +36,28 @@ void GrassSystem::Draw()
     if (instances_.empty() || !engine_) return;
 
     auto* rendererManager = engine_->GetRendererManager();
-    rendererManager->SetGrassRenderingParams(textureHandle_, materialData_);
+
+    // マテリアルとテクスチャの設定をマネージャーに伝達
+    rendererManager->SetGrassRenderingParams(windMapTextureHandle_, materialData_);
 
     for (const auto& inst : instances_)
     {
-        rendererManager->SubmitGrass(inst.worldMatrix, inst.color);
+        rendererManager->SubmitGrass(inst.position, inst.height, inst.rotationY, inst.width, inst.packedColor);
     }
 }
 
-void GrassSystem::SetTexture(const std::string& textureName)
+void GrassSystem::SetWindMapTexture(const std::string& textureName)
 {
-    textureHandle_ = TextureManager::GetInstance().Get(textureName);
+    windMapTextureHandle_ = TextureManager::GetInstance().Get(textureName);
 }
 
-void GrassSystem::SetColor(const Vector4& color) { materialData_.color = color; }
-void GrassSystem::SetWindSpeed(float speed) { materialData_.grassWindSpeed = speed; }
-void GrassSystem::SetWindAmplitude(float amplitude) { materialData_.grassWindAmplitude = amplitude; }
-void GrassSystem::SetNormalBlend(float blend) { materialData_.grassNormalBlend = blend; }
-void GrassSystem::SetTranslucency(float translucency) { materialData_.grassTranslucency = translucency; }
-void GrassSystem::SetRootAO(float ao) { materialData_.grassRootAO = ao; }
-void GrassSystem::SetAlphaCutoff(float cutoff) { materialData_.grassAlphaCutoff = cutoff; }
-void GrassSystem::SetEnableShadow(bool enable) { materialData_.addShadow = enable ? 1 : 0; }
+uint32_t GrassSystem::PackColor(const Vector4& c)
+{
+    uint8_t r = static_cast<uint8_t>(std::clamp(c.x * 255.0f, 0.0f, 255.0f));
+    uint8_t g = static_cast<uint8_t>(std::clamp(c.y * 255.0f, 0.0f, 255.0f));
+    uint8_t b = static_cast<uint8_t>(std::clamp(c.z * 255.0f, 0.0f, 255.0f));
+    uint8_t a = static_cast<uint8_t>(std::clamp(c.w * 255.0f, 0.0f, 255.0f));
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
 
 }

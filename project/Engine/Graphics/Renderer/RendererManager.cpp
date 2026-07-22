@@ -261,9 +261,13 @@ void RendererManager::Draw3D()
 	}
 
 
-	if (grassRenderer_) 
+	if (grassRenderer_)
 	{
+		// 内部で TRIANGLESTRIP に変更して描画
 		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_);
+
+		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
+		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	if (modelRenderer_) 
@@ -394,25 +398,25 @@ void RendererManager::SubmitSkybox(const WorldTransform& worldTransform, uint32_
 	}
 }
 
-void RendererManager::InitializeGrass(const ModelData& grassModel)
+void RendererManager::InitializeGrass()
 {
 	if (grassRenderer_)
 	{
-		grassRenderer_->Initialize(env_, grassModel);
+		grassRenderer_->Initialize(env_);
 	}
 }
 
-void RendererManager::SetGrassRenderingParams(uint32_t textureHandle, const MaterialData& materialData)
+void RendererManager::SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData)
 {
-	grassTextureHandle_ = textureHandle;
+	grassTextureHandle_ = windMapHandle;
 	grassMaterialData_ = materialData;
 }
 
-void RendererManager::SubmitGrass(const Matrix4x4& world, const Vector4& color)
+void RendererManager::SubmitGrass(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor)
 {
 	if (grassRenderer_)
 	{
-		grassRenderer_->Submit(world, color);
+		grassRenderer_->Submit(position, height, rotationY, width, packedColor);
 	}
 }
 

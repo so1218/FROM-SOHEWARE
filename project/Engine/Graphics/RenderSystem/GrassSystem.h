@@ -11,14 +11,13 @@ class GrassSystem
 {
 public:
     // コンストラクタ
-    GrassSystem(Engine* engine, const std::string& modelName, const std::string& textureName);
+    GrassSystem(Engine* engine, const std::string& windMapTextureName);
     ~GrassSystem() = default;
 
     // インスタンス管理
 
     // 草を1本追加
-    void AddGrass(const Vector3& position, const Vector3& rotation = { 0,0,0 }, const Vector3& scale = { 1,1,1 }, const Vector4& color = { 1,1,1,1 });
-    void AddGrass(const WorldTransform& transform, const Vector4& color = { 1,1,1,1 });
+    void AddGrass(const Vector3& position, float height, float rotationY, float width, const Vector4& color = { 1, 1, 1, 1 });
 
     // 配置した草をすべてリセット
     void Clear();
@@ -27,39 +26,26 @@ public:
     void Draw();
 
     // パラメータ設定 (マテリアル)
-    void SetTexture(const std::string& textureName);
-    void SetColor(const Vector4& color);
-
-    // 風の設定
-    void SetWindSpeed(float speed);
-    void SetWindAmplitude(float amplitude);
-
-    // 質感の設定
-    void SetNormalBlend(float blend);
-    void SetTranslucency(float translucency);
-    void SetRootAO(float ao);
-    void SetAlphaCutoff(float cutoff);
-
-    // 影の設定
-    void SetEnableShadow(bool enable);
-
-    // パラメータのポインタ取得（ImGui等用）
-    MaterialData* GetMaterialData() { return &materialData_; }
+    void SetWindMapTexture(const std::string& textureName);
+    GrassMaterialData* GetMaterialData() { return &materialData_; }
 
 private:
     Engine* engine_ = nullptr;
+    GrassMaterialData materialData_{};
+    uint32_t windMapTextureHandle_ = 0;
 
-    // 草専用のマテリアルデータ
-    MaterialData materialData_{};
-    uint32_t textureHandle_ = 0;
-
-    // 草のインスタンス情報
-    struct Instance 
+    struct Instance
     {
-        Matrix4x4 worldMatrix;
-        Vector4 color;
+        Vector3 position;
+        float height;
+        float rotationY;
+        float width;
+        uint32_t packedColor; // Vector4 を uint32 に圧縮して保持
     };
     std::vector<Instance> instances_;
+
+    // 色の圧縮用ヘルパー
+    static uint32_t PackColor(const Vector4& color);
 }; 
 
 }

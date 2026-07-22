@@ -13,20 +13,11 @@
 namespace FE
 {
 
-void GrassRenderer::Initialize(const RenderEnvironment& env, const ModelData& grassModel)
+void GrassRenderer::Initialize(const RenderEnvironment& env)
 {
-    // 草のメッシュを初期化
-    if (!grassModel.meshes.empty())
-    {
-        const auto& targetMesh = grassModel.meshes[0];
-        mesh_.Initialize(env.device->GetDevice(), targetMesh.vertices, targetMesh.indices);
-        mesh_.SetVertexCount(static_cast<uint32_t>(targetMesh.vertices.size()));
-        mesh_.SetIndexCount(static_cast<uint32_t>(targetMesh.indices.size()));
-    }
+    // メッシュ初期化は不要（頂点シェーダーで生成するため）
+    UINT materialBufferSize = (sizeof(GrassMaterialData) + 255) & ~255;
 
-    UINT materialBufferSize = (sizeof(MaterialData) + 255) & ~255;
-
-    // インスタンスバッファとマテリアルバッファをフレーム数分リングで確保
     for (int i = 0; i < kFrameCount; ++i)
     {
         // インスタンスバッファ 
@@ -47,57 +38,59 @@ void GrassRenderer::Initialize(const RenderEnvironment& env, const ModelData& gr
 
 void GrassRenderer::BeginFrame()
 {
-    // キューをクリアして、次のフレームのインデックスへ進める
     instanceQueue_.clear();
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-void GrassRenderer::Submit(const Matrix4x4& world, const Vector4& color)
+void GrassRenderer::Submit(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor)
 {
-    // 最大数を超えたら追加しない
     if (instanceQueue_.size() >= kMaxInstances) return;
 
     GrassInstanceData data;
-    data.world = world;
-    data.color = color;
+    data.posAndHeight = Vector4(position.x, position.y, position.z, height);
+
+    // uintのカラービットパターンをそのままfloatに再解釈して渡す
+    float colorAsFloat;
+    std::memcpy(&colorAsFloat, &packedColor, sizeof(float));
+
+    data.rotWidthColor = Vector4(rotationY, width, colorAsFloat, 0.0f);
 
     instanceQueue_.push_back(data);
 }
 
-void GrassRenderer::Draw(const RenderEnvironment& env, uint32_t textureHandle, ShadowMap* shadowMap, const MaterialData& materialData)
+void GrassRenderer::Draw(const RenderEnvironment& env, uint32_t windMapTextureHandle, ShadowMap* shadowMap, const GrassMaterialData& materialData)
 {
     if (instanceQueue_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
     uint32_t instanceCount = static_cast<uint32_t>(Math::MyMin((size_t)kMaxInstances, instanceQueue_.size()));
 
-    // データのコピー 
+    // 定数バッファ・インスタンスバッファへ転送
     memcpy(mappedInstanceData_[currentFrameIndex_], instanceQueue_.data(), sizeof(GrassInstanceData) * instanceCount);
-    memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(MaterialData));
+    memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(GrassMaterialData));
 
-    // パイプライン設定
+    // パイプライン・ルートシグネチャ設定
     cmdList->SetPipelineState(env.psoManager->GetPSO("Grass"));
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Grass"));
 
+    // プロシージャル生成(7頂点)のため Triangle Strip を使用
+    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+    // Root Parameters の設定
     cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(textureHandle));
-    cmdList->SetGraphicsRootShaderResourceView(5, instanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+
+    cmdList->SetGraphicsRootShaderResourceView(4, instanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
 
     if (shadowMap)
     {
         cmdList->SetGraphicsRootDescriptorTable(6, shadowMap->GetSRVHandle());
     }
 
-    // インスタンス描画実行
-    cmdList->IASetVertexBuffers(0, 1, &mesh_.GetVertexBufferView());
-    cmdList->IASetIndexBuffer(&mesh_.GetIndexBufferView());
-
-    cmdList->DrawIndexedInstanced(
-        static_cast<UINT>(mesh_.GetIndexCount()),
-        instanceCount, 0, 0, 0);
+    cmdList->DrawInstanced(7, instanceCount, 0, 0);
 }
 
 }

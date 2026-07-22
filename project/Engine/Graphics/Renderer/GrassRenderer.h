@@ -10,14 +10,14 @@ namespace FE
 class GrassRenderer 
 {
 public:
-    void Initialize(const RenderEnvironment& env, const ModelData& grassModel);
+    void Initialize(const RenderEnvironment& env);
     void BeginFrame();
 
     // 描画リクエストの受付
-    void Submit(const Matrix4x4& world, const Vector4& color);
+    void Submit(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor);
 
     // 描画実行
-    void Draw(const RenderEnvironment& env, uint32_t textureHandle, ShadowMap* shadowMap, const MaterialData& materialData);
+    void Draw(const RenderEnvironment& env, uint32_t windMapTextureHandle, ShadowMap* shadowMap, const GrassMaterialData& materialData);
 
 private:
     static const int32_t kMaxInstances = 10000; 

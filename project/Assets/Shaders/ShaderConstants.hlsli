@@ -396,8 +396,55 @@ struct SSRSettings
 
 struct GrassInstanceData
 {
-    float4x4 world;
-    float4 color;
+    // x, y, z: ワールド座標, w: 高さスケール
+    float4 posAndHeight;
+    
+    // Y軸の回転角(ラジアン), y: 幅スケール (Width), z: パックされたカラー(uintをfloatにキャスト), w: 予備
+    float4 rotWidthColor;
+};
+
+struct GrassMaterialData
+{
+    // --- Block 1 (16 Bytes) ---
+    float3 playerPos; // プレイヤー座標
+    float interactStrength; // かき分ける強さ
+
+    // --- Block 2 (16 Bytes) ---
+    float3 rootColor; // 根本の色 (暗い深緑など)
+    float grassRootAO; // 根本の暗さ (0.0~1.0)
+
+    // --- Block 3 (16 Bytes) ---
+    float3 tipColor; // 先端の色 (明るい緑)
+    float grassNormalBlend; // 法線を上向き(空)へ向ける割合 (群生感の要！0.6~0.8推奨)
+
+    // --- Block 4 (16 Bytes) ---
+    float3 sssColor; // 透過光の色 (太陽に透けた時の黄緑色など)
+    float sssStrength; // 透過光(SSS)の強さ
+
+    // --- Block 5 (16 Bytes) ---
+    float2 windDir; // 風の方向 (X, Z)
+    float windSpeed; // 風の移動速度
+    float baseWindStrength; // 常時吹いているそよ風の強さ
+
+    // --- Block 6 (16 Bytes) ---
+    float gustScale; // 突風ノイズの解像度(スケール)
+    float gustStrength; // 突風の強さ
+    float flutterAmount; // 葉先の細かな揺れの強さ
+    float windHighlightStrength; // 風による光沢変化の強さ (0.0~1.0で微調整)
+
+    // --- Block 7 (16 Bytes) ---
+    float specularStrength; // ハイライトの基本強度 (小さめ 0.1~0.3 推奨)
+    float specularShininess; // ハイライトの鋭さ (20.0~100.0)
+    float wetness; // 濡れ具合
+    float interactRadius; // プレイヤーの干渉半径
+
+    // --- Block 8 (16 Bytes) ---
+    float shadowDensity; // 影の濃さ
+    float shadowNormalBias; // 影の法線バイアス
+    float shadowBias; // 影の深度バイアス
+    float colorVariation; // 草原全体の色ムラ・ランダム感 (0.0~1.0)
+    
+    float windFlattenStrength;
 };
 
 struct Object3DInstanceData
@@ -552,18 +599,18 @@ struct TerrainInstanceData
 
 struct LightningMaterial
 {
-    float3 coreColor; // 芯の色
-    float coreThickness; // 芯の太さ (例: 0.15)
+    float3 coreColor; 
+    float coreThickness;
     
-    float3 fringeColor; // 滲みの色 (例: 青/紫)
-    float corePower; // 芯の鋭さ (例: 4.0)
+    float3 fringeColor; 
+    float corePower;
     
-    float glowPower; // 滲みの柔らかさ (例: 2.5)
-    float flickerSpeed; // 明滅スピード (例: 60.0)
-    float flickerMin; // 明滅の最も暗い時の倍率 (例: 0.4)
-    float flickerMax; // 明滅の最も明るい時の倍率 (例: 1.2)
+    float glowPower; 
+    float flickerSpeed; 
+    float flickerMin; 
+    float flickerMax; 
     
-    float emissiveIntensity; // 最終的な発光強度 (例: 50.0)
-    float instanceSeed; // 雷ごとの明滅タイミングをずらすシード値 (4byte)
-    float2 padding; // 16バイトアライメント調整用の本当のダミー (8byte)
+    float emissiveIntensity; 
+    float instanceSeed;
+    float2 padding;
 };
