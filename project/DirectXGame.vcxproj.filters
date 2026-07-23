@@ -918,6 +918,7 @@
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -953,6 +954,7 @@
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\VolumetricFog.CS.hlsl" />
@@ -983,6 +985,7 @@
     <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Lightning.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\GrassCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Particle.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
