@@ -264,7 +264,7 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		// 内部で TRIANGLESTRIP に変更して描画
-		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_);
+		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_, grassCullingData_);
 
 		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -406,10 +406,11 @@ void RendererManager::InitializeGrass()
 	}
 }
 
-void RendererManager::SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData)
+void RendererManager::SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData)
 {
 	grassTextureHandle_ = windMapHandle;
 	grassMaterialData_ = materialData;
+	grassCullingData_ = cullingData; 
 }
 
 void RendererManager::SubmitGrass(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor)

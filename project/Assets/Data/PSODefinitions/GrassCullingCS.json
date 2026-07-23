@@ -1,0 +1,4 @@
+{
+  "RootSignature": "GrassCullingCS",
+  "ComputeShader": "Assets/Shaders/GrassCulling.CS.hlsl"
+}

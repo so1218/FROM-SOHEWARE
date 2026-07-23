@@ -106,7 +106,7 @@ public:
     bool isWireFrame_ = false;
 
     void InitializeGrass();
-    void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData);
+    void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);
 
     // 雷を発生させる
     void SpawnLightning(const Vector3& start, const Vector3& end, float duration);
@@ -137,6 +137,7 @@ private:
 
     uint32_t grassTextureHandle_ = 0;
     GrassMaterialData grassMaterialData_ = {};
+    GrassCullingData grassCullingData_{};
 
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体

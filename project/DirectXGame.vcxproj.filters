@@ -982,6 +982,7 @@
     <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Lightning.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\GrassCulling.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

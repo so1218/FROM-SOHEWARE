@@ -18,11 +18,13 @@ GrassField::GrassField(FE::Engine* engine, Player* player) : FE::GameObject()
 void GrassField::Initialize()
 {
     auto* grassMat = grassSystem_->GetMaterialData();
+    auto* cullingData = grassSystem_->GetCullingData();
 
     // ==========================================
      // 配置設定
      // ==========================================
     binder_->Bind("GrassCount", &grassCount_, 3000);
+    binder_->Bind("GridSpacing", &gridSpacing_, 0.5f, 0.01f, 0.1f, 2.0f);
     binder_->Bind("SpreadRadius", &spreadRadius_, 20.0f);
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("BaseScale", &baseScale_, 1.0f);
@@ -74,8 +76,20 @@ void GrassField::Initialize()
     binder_->Bind("ShadowBias", &grassMat->shadowBias, 0.005f, 0.001f, 0.0f, 0.05f);
     binder_->Bind("ShadowNormalBias", &grassMat->shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.1f);
 
+    // ==========================================
+ // カリングとLOD
+ // ==========================================
+    binder_->Bind("MaxDrawDistance", &cullingData->maxDrawDistance, 150.0f, 1.0f, 10.0f, 1000.0f);
+    binder_->Bind("ThinStartDistance", &cullingData->thinStartDistance, 50.0f, 1.0f, 10.0f, 500.0f);
+    binder_->Bind("MaxThinningRate", &cullingData->maxThinningRate, 0.8f, 0.05f, 0.0f, 0.99f);
+    binder_->Bind("MaxWidthMultiplier", &cullingData->maxWidthMultiplier, 2.5f, 0.1f, 1.0f, 5.0f);
+
+    binder_->Bind("LodDistance1", &cullingData->lodDistance1, 20.0f, 1.0f, 5.0f, 100.0f);
+    binder_->Bind("LodDistance2", &cullingData->lodDistance2, 50.0f, 1.0f, 10.0f, 200.0f);
+
     // 初期状態を記憶
     prevGrassCount_ = grassCount_;
+    prevGridSpacing_ = gridSpacing_;
     prevSpreadRadius_ = spreadRadius_;
     prevPosition_ = transform_.translation_;
     prevBaseScale_ = baseScale_;
@@ -95,6 +109,7 @@ void GrassField::Update()
         baseScale_ != prevBaseScale_ ||
         grassCount_ != prevGrassCount_ ||
         spreadRadius_ != prevSpreadRadius_ ||
+        prevGridSpacing_ != gridSpacing_ ||
         baseWidth_ != prevBaseWidth_ ||               
         baseHeight_ != prevBaseHeight_ ||             
         baseGrassColor_.x != prevBaseGrassColor_.x || 
@@ -105,6 +120,7 @@ void GrassField::Update()
 
         // 記憶を更新
         prevGrassCount_ = grassCount_;
+        prevGridSpacing_ = gridSpacing_;
         prevSpreadRadius_ = spreadRadius_;
         prevPosition_ = transform_.translation_;
         prevBaseScale_ = baseScale_;
@@ -137,6 +153,7 @@ void GrassField::DebugDraw()
         binder_->Draw("BaseHeight", "草の高さ");
         binder_->Draw("BaseWidth", "草の太さ");
         binder_->Draw("GrassCount", "草の数");
+        binder_->Draw("GridSpacing", "草の間隔 (小さいほど高密度)");
         binder_->Draw("SpreadRadius", "配置範囲");
 
         if (ImGui::Button("ランダム再生成"))
@@ -198,6 +215,20 @@ void GrassField::DebugDraw()
         binder_->Draw("ShadowNormalBias", "法線バイアス");
     }
 
+    if (ImGui::CollapsingHeader("カリング・LOD設定"))
+    {
+        binder_->Draw("MaxDrawDistance", "最大描画距離 (これより遠い草は消去)");
+
+        ImGui::Separator();
+        binder_->Draw("ThinStartDistance", "間引き開始距離");
+        binder_->Draw("MaxThinningRate", "最大間引き率 (1.0に近いほど消える)");
+        binder_->Draw("MaxWidthMultiplier", "間引き時の太さ補正倍率");
+
+        ImGui::Separator();
+        binder_->Draw("LodDistance1", "LOD1の距離 (高ポリ境界)");
+        binder_->Draw("LodDistance2", "LOD2の距離 (中ポリ境界)");
+    }
+
 
     ImGui::End();
 #endif
@@ -205,33 +236,42 @@ void GrassField::DebugDraw()
 
 void GrassField::GenerateGrass()
 {
+    // ★重要: 古い草を消して更新フラグを立てる
     grassSystem_->Clear();
 
     std::mt19937 randEngine(std::random_device{}());
-    std::uniform_real_distribution<float> posDist(-spreadRadius_, spreadRadius_);
     std::uniform_real_distribution<float> scaleDist(0.8f, 1.2f);
     std::uniform_real_distribution<float> rotDist(0.0f, 6.283185f); // 0 ~ 2π
 
     FE::Vector3 basePos = transform_.translation_;
 
-    for (int i = 0; i < grassCount_; ++i)
+    // ★ ローカル変数の float gridSpacing = 0.5f; を削除し、メンバ変数 gridSpacing_ を使用する
+    float jitterAmount = gridSpacing_ * 0.45f;
+    std::uniform_real_distribution<float> jitterDist(-jitterAmount, jitterAmount);
+
+    // spreadRadius_ を一辺の半分とした正方形の範囲にグリッド状に配置
+    for (float z = -spreadRadius_; z <= spreadRadius_; z += gridSpacing_)
     {
-        FE::Vector3 pos = basePos;
-        pos.x += posDist(randEngine);
-        pos.z += posDist(randEngine);
+        for (float x = -spreadRadius_; x <= spreadRadius_; x += gridSpacing_)
+        {
+            FE::Vector3 pos = basePos;
+            // グリッドの基本位置 + ランダムなズレ
+            pos.x += x + jitterDist(randEngine);
+            pos.z += z + jitterDist(randEngine);
 
-        if (terrain_) {
-            pos.y = terrain_->GetHeight(pos.x, pos.z);
+            if (terrain_) {
+                pos.y = terrain_->GetHeight(pos.x, pos.z);
+            }
+            else {
+                pos.y = 0.0f;
+            }
+
+            float rotY = rotDist(randEngine);
+            float finalScale = scaleDist(randEngine) * baseScale_;
+            float height = finalScale * baseHeight_;
+            float width = finalScale * baseWidth_;
+
+            grassSystem_->AddGrass(pos, height, rotY, width, baseGrassColor_);
         }
-        else {
-            pos.y = 0.0f;
-        }
-
-        float rotY = rotDist(randEngine);
-        float finalScale = scaleDist(randEngine) * baseScale_;
-        float height = finalScale * baseHeight_;
-        float width = finalScale * baseWidth_;
-
-        grassSystem_->AddGrass(pos, height, rotY, width, baseGrassColor_);
     }
 }

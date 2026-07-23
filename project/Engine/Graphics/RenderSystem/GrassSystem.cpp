@@ -38,7 +38,7 @@ void GrassSystem::Draw()
     auto* rendererManager = engine_->GetRendererManager();
 
     // マテリアルとテクスチャの設定をマネージャーに伝達
-    rendererManager->SetGrassRenderingParams(windMapTextureHandle_, materialData_);
+    rendererManager->SetGrassRenderingParams(windMapTextureHandle_, materialData_, cullingData_);
 
     for (const auto& inst : instances_)
     {

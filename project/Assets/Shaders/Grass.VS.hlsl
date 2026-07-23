@@ -3,6 +3,7 @@
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
+ConstantBuffer<GrassCullingData> gGrassCullingData : register(b6);
 StructuredBuffer<GrassInstanceData> gInstanceData : register(t10);
 
 Texture2D<float> gWindMap : register(t11); // 風の強さを表すグレースケールノイズ画像
@@ -71,6 +72,8 @@ struct PixelInput
 PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
     PixelInput output;
+    
+    // CSを生き残ったインスタンスデータを取得
     GrassInstanceData instance = gInstanceData[instanceID];
     
     float3 rootPos = instance.posAndHeight.xyz;
@@ -79,38 +82,71 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float grassWidth = instance.rotWidthColor.y;
     float4 instanceColor = UnpackColor(asuint(instance.rotWidthColor.z));
 
+    float distToCam = distance(rootPos, gFrameData.cameraWorldPosition);
+
+    // ==========================================
+    // ★ 1. 遠景の太さ自動補正 (Width Expansion)
+    // ==========================================
+    // CSで間引かれた分、遠くの草を太くしてシルエットの隙間（ハゲ）を埋める
+    float thinFactor = saturate((distToCam - gGrassCullingData.thinStartDistance) / (gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance));
+    float widthMultiplier = lerp(1.0f, gGrassCullingData.maxWidthMultiplier, thinFactor);
+    grassWidth *= widthMultiplier;
+
     // 草の根本の基底ベクトル
     float s, c;
     sincos(rotationY, s, c);
-    float3 baseRight = float3(c, 0.0f, -s);
+    float3 randomRight = float3(c, 0.0f, -s);
+
+    // カメラ対面ビルボード処理
+    float3 toCamera = gFrameData.cameraWorldPosition - rootPos;
+    toCamera.y = 0.0f;
+    toCamera = normalize(toCamera);
+    float3 faceCameraRight = normalize(cross(toCamera, float3(0.0f, 1.0f, 0.0f)));
+
+    float cameraBias = 0.6f;
+    float3 baseRight = normalize(lerp(randomRight, faceCameraRight, cameraBias));
 
     uint vertexIdx = vertexID % NUM_VERTICES_PER_BLADE;
+    
+    // ==========================================
+    // ★ 2. 距離ベースのポリゴン縮退 LOD (Degenerate LOD)
+    // ==========================================
+    // 遠くの草の中間セグメント頂点を先端 (t=1.0) に押し潰すことで、
+    // 描画結果を三角形から面積ゼロの直線へ縮退させ、ラスタライザでピクセル描画をスキップさせる
     float t = (vertexIdx / 2) / (float) ((NUM_VERTICES_PER_BLADE / 2) - 1);
+
+    if (distToCam > gGrassCullingData.lodDistance2)
+    {
+        // LOD 2 (遠距離): 1セグメント化（頂点2以降をすべて先端 t=1.0 に集約）
+        if (vertexIdx >= 2)
+            t = 1.0f;
+    }
+    else if (distToCam > gGrassCullingData.lodDistance1)
+    {
+        // LOD 1 (中距離): 2セグメント化（頂点4以降を先端 t=1.0 に集約）
+        if (vertexIdx >= 4)
+            t = 1.0f;
+        else if (vertexIdx >= 2)
+            t = 0.5f;
+    }
+
     float sideOffset = (vertexIdx % 2 == 0) ? -0.5f : 0.5f;
 
-    // ==========================================
-    // 1. 風の計算 (Fluid Wind Field)
-    // ==========================================
+    // --- 3. 風とインタラクションの計算 ---
     float2 windDir = normalize(gMaterial.windDir);
     float windTime = gFrameData.gTime * gMaterial.windSpeed;
     
-    // Gust (突風の滑らかなうねり)
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     
-    // Flutter (高周波な細かな揺れ)
     float flutterPhase = rootPos.x * 1.7f + rootPos.z * 2.3f;
     float flutter = sin(gFrameData.gTime * 10.0f + flutterPhase) * gMaterial.flutterAmount;
     
-    // 合計の風力ベクトル
     float totalWindMag = gMaterial.baseWindStrength + (gustMask * gMaterial.gustStrength) + flutter;
     float flattenForce = totalWindMag * gMaterial.windFlattenStrength;
     float3 windForce = float3(windDir.x * totalWindMag, -flattenForce, windDir.y * totalWindMag);
 
-    // ==========================================
-    // 2. プレイヤーの押し倒し (Interaction)
-    // ==========================================
     float3 diff = rootPos - gMaterial.playerPos;
     float distXZ = length(diff.xz);
     float3 pushForce = float3(0.0f, 0.0f, 0.0f);
@@ -119,27 +155,20 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     {
         float weight = 1.0f - saturate(distXZ / gMaterial.interactRadius);
         weight = smoothstep(0.0f, 1.0f, weight);
-        
         float3 pushDir = normalize(float3(diff.x, -0.6f, diff.z));
         pushForce = pushDir * weight * gMaterial.interactStrength;
-        
-        // 押し倒された部分は風の力を減衰
         windForce *= (1.0f - weight);
     }
 
-    // ==========================================
-    // 3. ベジェ曲線＆長さの保持 (Length Preservation)
-    // ==========================================
+    // --- 4. ベジェ曲線＆座標・法線算出 ---
     float3 p0 = rootPos;
     float3 p1 = rootPos + float3(0.0f, grassHeight * 0.35f, 0.0f);
-    
     float3 totalForce = windForce + pushForce;
-    totalForce.y -= 0.15f; // 自重による下方向の垂れ下がり
+    totalForce.y -= 0.15f;
     
     float3 p2 = rootPos + float3(0.0f, grassHeight * 0.7f, 0.0f) + totalForce * (grassHeight * 0.5f);
     float3 p3 = rootPos + float3(0.0f, grassHeight, 0.0f) + totalForce * grassHeight;
 
-    // 伸びすぎ防止のスケール補正
     float curveLength = distance(p0, p1) + distance(p1, p2) + distance(p2, p3);
     float preserveScale = grassHeight / max(curveLength, 0.001f);
     
@@ -147,9 +176,6 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     p2 = p1 + (p2 - p1) * preserveScale;
     p3 = p2 + (p3 - p2) * preserveScale;
 
-    // ==========================================
-    // 4. メッシュ・法線の構築
-    // ==========================================
     float3 centerPos = EvaluateCubicBezier(p0, p1, p2, p3, t);
     float3 tangent = EvaluateCubicBezierTangent(p0, p1, p2, p3, t);
     
@@ -161,22 +187,18 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     
     float3 worldPos = centerPos + trueRight * (sideOffset * currentWidth);
 
-    // 円柱フェイク法線 (極端になり過ぎないよう 0.25f に抑制)
     float normalBend = sideOffset * 2.0f;
     proceduralNormal = normalize(proceduralNormal + trueRight * normalBend * 0.25f);
 
-    // 草原全体の色ムラ (World-space Color Variation)
     float randVal = Hash12(rootPos.xz * 0.1f);
     float3 baseColor = instanceColor.rgb * lerp(1.0f, 0.85f + randVal * 0.3f, gMaterial.colorVariation);
 
-    // 出力設定
+    // --- 出力書き込み ---
     output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.worldPosition = worldPos;
     output.texcoord = float2(sideOffset + 0.5f, t);
     output.normal = proceduralNormal;
     output.tangent = tangent;
-    
-    // Alpha に「突風の強度 (gustMask)」を乗せて PS に渡す
     output.color = float4(baseColor, gustMask);
     
     output.currentClipPos = output.position;

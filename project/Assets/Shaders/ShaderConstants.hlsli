@@ -396,55 +396,58 @@ struct SSRSettings
 
 struct GrassInstanceData
 {
-    // x, y, z: ワールド座標, w: 高さスケール
-    float4 posAndHeight;
-    
-    // Y軸の回転角(ラジアン), y: 幅スケール (Width), z: パックされたカラー(uintをfloatにキャスト), w: 予備
-    float4 rotWidthColor;
+    float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
+    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー(uint), w: 予備
 };
 
 struct GrassMaterialData
 {
-    // --- Block 1 (16 Bytes) ---
-    float3 playerPos; // プレイヤー座標
-    float interactStrength; // かき分ける強さ
-
-    // --- Block 2 (16 Bytes) ---
-    float3 rootColor; // 根本の色 (暗い深緑など)
-    float grassRootAO; // 根本の暗さ (0.0~1.0)
-
-    // --- Block 3 (16 Bytes) ---
-    float3 tipColor; // 先端の色 (明るい緑)
-    float grassNormalBlend; // 法線を上向き(空)へ向ける割合 (群生感の要！0.6~0.8推奨)
-
-    // --- Block 4 (16 Bytes) ---
-    float3 sssColor; // 透過光の色 (太陽に透けた時の黄緑色など)
-    float sssStrength; // 透過光(SSS)の強さ
-
-    // --- Block 5 (16 Bytes) ---
-    float2 windDir; // 風の方向 (X, Z)
-    float windSpeed; // 風の移動速度
-    float baseWindStrength; // 常時吹いているそよ風の強さ
-
-    // --- Block 6 (16 Bytes) ---
-    float gustScale; // 突風ノイズの解像度(スケール)
-    float gustStrength; // 突風の強さ
-    float flutterAmount; // 葉先の細かな揺れの強さ
-    float windHighlightStrength; // 風による光沢変化の強さ (0.0~1.0で微調整)
-
-    // --- Block 7 (16 Bytes) ---
-    float specularStrength; // ハイライトの基本強度 (小さめ 0.1~0.3 推奨)
-    float specularShininess; // ハイライトの鋭さ (20.0~100.0)
-    float wetness; // 濡れ具合
-    float interactRadius; // プレイヤーの干渉半径
-
-    // --- Block 8 (16 Bytes) ---
-    float shadowDensity; // 影の濃さ
-    float shadowNormalBias; // 影の法線バイアス
-    float shadowBias; // 影の深度バイアス
-    float colorVariation; // 草原全体の色ムラ・ランダム感 (0.0~1.0)
+    float3 playerPos; 
+    float interactStrength; 
+    
+    float3 rootColor;
+    float grassRootAO; 
+    
+    float3 tipColor;
+    float grassNormalBlend; 
+    
+    float3 sssColor;
+    float sssStrength;
+    
+    float2 windDir;
+    float windSpeed;
+    float baseWindStrength;
+    
+    float gustScale; 
+    float gustStrength; 
+    float flutterAmount; 
+    float windHighlightStrength; 
+    
+    float specularStrength; 
+    float specularShininess;
+    float wetness; 
+    float interactRadius; 
+    
+    float shadowDensity; 
+    float shadowNormalBias; 
+    float shadowBias; 
+    float colorVariation; 
     
     float windFlattenStrength;
+};
+
+struct GrassCullingData
+{
+    float4 frustumPlanes[6]; 
+    
+    float maxDrawDistance; 
+    float thinStartDistance; 
+    float maxThinningRate; 
+    float maxWidthMultiplier; 
+    
+    float lodDistance1; 
+    float lodDistance2;
+    int totalInstanceCount;
 };
 
 struct Object3DInstanceData

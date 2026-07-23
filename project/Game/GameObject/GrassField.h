@@ -52,4 +52,7 @@ private:
     float baseHeight_ = 1.0f;
     float prevBaseHeight_ = 1.0f;
     FE::Vector4 baseGrassColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    float gridSpacing_ = 0.5f;
+    float prevGridSpacing_ = 0.5f;
 };

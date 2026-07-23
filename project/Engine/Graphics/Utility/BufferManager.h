@@ -15,6 +15,8 @@ public:
         D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_UPLOAD // ヒープタイプ
     );
 
+    static Microsoft::WRL::ComPtr<ID3D12Resource> CreateUAVBufferResource(ID3D12Device* device, size_t size);
+
     // 汎用バッファ（頂点バッファ・インデックスバッファなど）の作成とマップを同時に行う
     template <typename T>
     static Microsoft::WRL::ComPtr<ID3D12Resource> CreateMappedBuffer(

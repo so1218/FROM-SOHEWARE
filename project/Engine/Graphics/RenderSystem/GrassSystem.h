@@ -28,10 +28,12 @@ public:
     // パラメータ設定 (マテリアル)
     void SetWindMapTexture(const std::string& textureName);
     GrassMaterialData* GetMaterialData() { return &materialData_; }
+    GrassCullingData* GetCullingData() { return &cullingData_; }
 
 private:
     Engine* engine_ = nullptr;
     GrassMaterialData materialData_{};
+    GrassCullingData cullingData_{};
     uint32_t windMapTextureHandle_ = 0;
 
     struct Instance

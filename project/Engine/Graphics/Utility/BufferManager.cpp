@@ -50,4 +50,33 @@ Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateBufferResource(
     return bufferResource;
 }
 
+Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateUAVBufferResource(ID3D12Device* device, size_t size)
+{
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+
+    // UAVバッファは通常GPUのみが読み書きするため DEFAULT ヒープを指定
+    CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
+
+    // ALLOW_UNORDERED_ACCESS フラグを立てるのが最重要
+    CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(
+        size,
+        D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+    );
+
+    HRESULT hr = device->CreateCommittedResource(
+        &heapProps,
+        D3D12_HEAP_FLAG_NONE,
+        &desc,
+        D3D12_RESOURCE_STATE_COMMON, // または D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+        nullptr,
+        IID_PPV_ARGS(&resource)
+    );
+
+    if (FAILED(hr)) {
+        // エラーハンドリング
+    }
+
+    return resource;
+}
+
 }
