@@ -161,20 +161,55 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     }
 
     // --- 4. ベジェ曲線＆座標・法線算出 ---
-    float3 p0 = rootPos;
-    float3 p1 = rootPos + float3(0.0f, grassHeight * 0.35f, 0.0f);
-    float3 totalForce = windForce + pushForce;
-    totalForce.y -= 0.15f;
+// --- 追加: 個体ごとのランダム化と初期の傾斜 ---
     
-    float3 p2 = rootPos + float3(0.0f, grassHeight * 0.7f, 0.0f) + totalForce * (grassHeight * 0.5f);
-    float3 p3 = rootPos + float3(0.0f, grassHeight, 0.0f) + totalForce * grassHeight;
+    // 草が向いている「正面」のベクトルを算出 (randomRightが c,0,-s なので正面は s,0,c)
+    float3 randomForward = float3(s, 0.0f, c);
+    
+    // 個体ごとの乱数を2つ生成
+    float randShape1 = Hash12(rootPos.xz * 1.13f);
+    float randShape2 = Hash12(rootPos.zx * 2.71f);
 
-    float curveLength = distance(p0, p1) + distance(p1, p2) + distance(p2, p3);
+    // ① 初期の傾き（Base Tilt）: 草を正面方向へランダムに倒す
+    // 0.1(少し倒れる) 〜 0.7(かなり垂れ下がる) の間で個体差を作る
+    float tiltAmount = lerp(0.1f, 0.4f, randShape1);
+    float3 tiltForce = randomForward * tiltAmount;
+
+    // ② しなり具合（Stiffness）: コントロールポイントの高さをずらす
+    // 従来の固定値(0.35, 0.7)ではなく、個体ごとに曲がる位置を変える
+    float cp1Height = lerp(0.2f, 0.5f, randShape2);
+    float cp2Height = lerp(0.5f, 0.8f, randShape1);
+
+
+// --- 4. ベジェ曲線＆座標・法線算出 ---
+    float3 p0 = rootPos;
+    
+    // 真上ではなく、tiltForceを加えて最初から曲げておく
+    float3 p1 = rootPos + float3(0.0f, grassHeight * cp1Height, 0.0f) + tiltForce * (grassHeight * 0.2f);
+    
+    float3 totalForce = windForce + pushForce;
+    
+    // 重力(下方向への垂れ)も個体ごとに差をつける
+    totalForce.y -= lerp(0.1f, 0.3f, randShape2);
+    
+    // 総フォースにtiltForceを足して、風と初期の傾きを合成する
+    float3 p2 = rootPos + float3(0.0f, grassHeight * cp2Height, 0.0f) + (totalForce + tiltForce) * (grassHeight * 0.5f);
+    float3 p3 = rootPos + float3(0.0f, grassHeight, 0.0f) + (totalForce + tiltForce) * grassHeight;
+
+    // ==========================================
+    // ★ 修正箇所：ベクトルを先にキャッシュして正しく長さを維持する
+    // ==========================================
+    float3 v1 = p1 - p0;
+    float3 v2 = p2 - p1;
+    float3 v3 = p3 - p2;
+
+    float curveLength = length(v1) + length(v2) + length(v3);
     float preserveScale = grassHeight / max(curveLength, 0.001f);
     
-    p1 = p0 + (p1 - p0) * preserveScale;
-    p2 = p1 + (p2 - p1) * preserveScale;
-    p3 = p2 + (p3 - p2) * preserveScale;
+    // 古い座標ではなく、キャッシュしたベクトルを使って新しい座標を決定
+    p1 = p0 + v1 * preserveScale;
+    p2 = p1 + v2 * preserveScale;
+    p3 = p2 + v3 * preserveScale;
 
     float3 centerPos = EvaluateCubicBezier(p0, p1, p2, p3, t);
     float3 tangent = EvaluateCubicBezierTangent(p0, p1, p2, p3, t);

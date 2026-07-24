@@ -30,34 +30,52 @@ void main(uint3 DTid : SV_DispatchThreadID)
     GrassInstanceData grass = gInputGrassData[instanceIndex];
     float3 pos = grass.posAndHeight.xyz;
 
-    // 1. 距離カリング (Distance Culling)
+   // --- カリング判定 ---
+    bool isVisible = true;
+
+    // 1. 距離カリング
     float distToCam = distance(pos, gFrameData.cameraWorldPosition);
     if (distToCam > gGrassCullingData.maxDrawDistance)
-        return;
+        isVisible = false;
 
-    // 2. フラストゥムカリング (Frustum Culling)
-    // 草のバウンディングスフィア（高さに応じた球体）で判定
+    // 2. フラストゥムカリング
     float boundsRadius = grass.posAndHeight.w * 1.2f;
     for (int i = 0; i < 6; ++i)
     {
         if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
-            return; // 視界外
+            isVisible = false;
     }
 
-    // 3. 確率的間引き (Stochastic Thinning)
-    // 遠くに行くほど一定の確率で草を非表示にする
+    // 3. 確率的間引き
     float thinFactor = saturate((distToCam - gGrassCullingData.thinStartDistance) / (gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance));
-    
     float randomVal = Hash12(pos.xz);
     if (thinFactor > 0.0f && randomVal < (thinFactor * gGrassCullingData.maxThinningRate))
     {
-        return; // 間引き対象
+        isVisible = false;
     }
 
-    // --- カリングを通過した草のみをストリーミングバッファへ書き込み ---
-    uint appendIndex;
-    // IndirectDrawArgs の ByteOffset 4 (InstanceCount) をアトミック加算
-    gIndirectDrawArgs.InterlockedAdd(4, 1, appendIndex);
+    // ==========================================
+    // ★ Wave Intrinsics による超高速アトミック加算
+    // ==========================================
+    
+    // Wave（64スレッド）の中で、isVisible が true になっているスレッド数をカウント
+    uint waveCount = WaveActiveCountBits(isVisible);
+    uint waveOffset = 0;
 
-    gOutputGrassData[appendIndex] = grass;
+    // Wave内の「先頭の有効なスレッド」だけが、まとめてアトミック加算を行う
+    if (WaveIsFirstLane() && waveCount > 0)
+    {
+        gIndirectDrawArgs.InterlockedAdd(4, waveCount, waveOffset);
+    }
+
+    // 取得したベースとなるインデックス（waveOffset）を、Wave内の全スレッドに共有
+    waveOffset = WaveReadLaneFirst(waveOffset);
+
+    // 生き残った草だけをバッファに書き込む
+    if (isVisible)
+    {
+        // WavePrefixCountBits は「自分より若いIDのスレッドで true になっている数」を返す
+        uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
+        gOutputGrassData[appendIndex] = grass;
+    }
 }
