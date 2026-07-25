@@ -42,7 +42,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     float hD = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     float hU = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     
-    // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize に
+    // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize 
     float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));
     
     output.normal = normalize(mul(localNormal, (float3x3) inst.WorldInverseTranspose));
