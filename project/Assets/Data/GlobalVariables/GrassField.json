@@ -18,7 +18,7 @@
             1.0
         ],
         "ColorVariation": 0.0,
-        "DensityMap": "noise_00",
+        "DensityMap": "noise_44",
         "FlutterAmount": 0.019999999552965164,
         "GrassCount": 5,
         "GrassNormalBlend": 0.699999988079071,
@@ -73,8 +73,8 @@
         "SpreadRadius": 500.0,
         "TerrainCenterX": 0.0,
         "TerrainCenterZ": 0.0,
-        "TerrainDepth": 1022.0,
-        "TerrainWidth": 1022.0,
+        "TerrainDepth": 1024.0,
+        "TerrainWidth": 1024.0,
         "ThinStartDistance": 150.0,
         "TipColor": [
             0.5553386211395264,
@@ -104,14 +104,14 @@
         "WindGustStrength": 35.09000015258789,
         "WindGustThreshold": 0.49000000953674316,
         "WindHighlightStrength": 1.0,
-        "WindMap": "noise_39",
+        "WindMap": "noise_44",
         "WindMapScale": 0.009999999776482582,
         "WindScSpeed": 2.5,
         "WindScrollSpeed": [
             1.4600000381469727,
             0.8600000143051147
         ],
-        "WindSpeed": 0.8999999761581421,
+        "WindSpeed": 1.5,
         "WindTurbulence": 0.0,
         "WindWaveScale": 0.009999999776482582,
         "WindWaveStrength": 0.4000000059604645

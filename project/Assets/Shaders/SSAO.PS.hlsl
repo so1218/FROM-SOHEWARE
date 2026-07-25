@@ -75,7 +75,7 @@ float4 main(VSOutput input) : SV_TARGET
             continue;
 
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, sampleUV, 0);
-        float sampleZ = GetViewPos(sampleUV, sampleDepth).z;
+        float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
 
         // 距離に基づく正確な減衰（Haloアーティファクトの防止）
         float distance = abs(viewPos.z - sampleZ);

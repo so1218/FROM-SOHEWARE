@@ -59,7 +59,7 @@ float4 main(VSOutput input) : SV_TARGET
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, offset, 0);
         float3 sampleNormal = gNormalTexture.SampleLevel(gClampSampler, offset, 0).xyz;
         float sampleLinearDepth = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
-        float sampleZ = GetViewPos(offset, sampleDepth).z;
+        float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
 
         // 重みの計算
 

@@ -41,6 +41,9 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
     if (DTid.x >= gGenerationData.maxGrassPerChunk)
         return;
+    // 1. カメラ（terrainCenter）の位置をグリッドのサイズでスナップして固定化する
+    // これにより、カメラが少し動いても、一定距離進むまで基準位置がピタッと固定されます。
+    float2 snappedCenter = floor(gGenerationData.terrainCenter / gGenerationData.gridSpacing) * gGenerationData.gridSpacing;
 
     // グリッド計算
     uint gridSizeX = (uint) ceil(gGenerationData.terrainWidth / gGenerationData.gridSpacing);
@@ -51,17 +54,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
     uint gridZ = DTid.x / gridSizeX;
     float2 localPos = float2(gridX * gGenerationData.gridSpacing, gridZ * gGenerationData.gridSpacing);
     
-    // 地形の「中心」を基準にするオフセット
     float offsetX = -gGenerationData.terrainWidth * 0.5f;
     float offsetZ = -gGenerationData.terrainDepth * 0.5f;
 
-    float2 jitter = Hash22(localPos) * (gGenerationData.gridSpacing * 0.5f);
+    // 2. スナップされた中心座標を基準に、草の基本となるワールド座標を計算
+    float baseWorldX = snappedCenter.x + offsetX + localPos.x;
+    float baseWorldZ = snappedCenter.y + offsetZ + localPos.y;
+
+    // 3. 乱数のシード（Jitter）は、完全に固定された baseWorld 座標を元に計算する（ここが一番重要）
+    float2 jitter = Hash22(float2(baseWorldX, baseWorldZ)) * (gGenerationData.gridSpacing * 0.5f);
     
-    float worldX = gGenerationData.terrainCenter.x + offsetX + localPos.x + jitter.x;
-    float worldZ = gGenerationData.terrainCenter.y + offsetZ + localPos.y + jitter.y;
-
+    // 4. 最終的な草のワールド座標
+    float worldX = baseWorldX + jitter.x;
+    float worldZ = baseWorldZ + jitter.y;
+    
     float2 globalUV = CalculateTerrainUV(worldX, worldZ);
-
+    
     // ==========================================
     // ★修正: 途中で return せず、isValid フラグで管理する
     // ==========================================
@@ -78,6 +86,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (isValid)
     {
         float density = gDensityMap.SampleLevel(gLinearSampler, globalUV, 0).r;
+        
+        // ★追加: step関数を使って、グレーを完全な白(1.0)か黒(0.0)に二値化する
+        // 値が 0.5 より大きければ 1.0(草が生える)、小さければ 0.0(生えない) になる
+        density = step(0.5f, density);
+
         if (randomVal > density)
         {
             isValid = false;
