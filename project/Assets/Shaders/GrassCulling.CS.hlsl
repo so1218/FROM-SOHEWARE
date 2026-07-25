@@ -11,6 +11,8 @@ RWStructuredBuffer<GrassInstanceData> gOutputGrassData : register(u0);
 // 生き残った草の数
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
 
+static const uint THREADS_PER_ROW = 1024 * 64;
+
 float Hash12(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031f);
@@ -21,7 +23,7 @@ float Hash12(float2 p)
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    uint instanceIndex = DTid.x;
+    uint instanceIndex = DTid.y * THREADS_PER_ROW + DTid.x;
     
     // バッファオーバーフロー防止
     if (instanceIndex >= gGrassCullingData.totalInstanceCount)

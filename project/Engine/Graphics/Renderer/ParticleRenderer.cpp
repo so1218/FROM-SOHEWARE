@@ -18,11 +18,11 @@ void ParticleRenderer::Initialize(const RenderEnvironment& env)
     // インスタンスバッファをフレーム数分リングで確保
     for (int i = 0; i < kFrameCount; ++i)
     {
-        particleInstanceBuffer_[i] = BufferManager::CreateBufferResource(
+        particleInstanceBuffer_[i] = BufferManager::CreateMappedBuffer(
             env.device->GetDevice(),
-            sizeof(ParticleInstanceData) * kMaxCount);
-
-        particleInstanceBuffer_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceData_[i]));
+            kMaxCount,
+            &mappedInstanceData_[i]
+        );
     }
 
     // 最大数分確保して、毎フレームのメモリ割り当てを防ぐ

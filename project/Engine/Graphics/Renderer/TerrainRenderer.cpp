@@ -19,8 +19,10 @@ void TerrainRenderer::Initialize(const RenderEnvironment& env)
     device_ = env.device;
 
     // 地形パラメータ用バッファ
-    terrainSettingsBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TerrainSettings));
-    terrainSettingsBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&terrainSettingsMapped_));
+    terrainSettingsBuffer_ = BufferManager::CreateMappedConstantBuffer(
+        device_->GetDevice(),
+        &terrainSettingsMapped_
+    );
 
     // 初期値をセット 
     terrainSettingsMapped_->maxHeight = 100.0f;
@@ -29,9 +31,11 @@ void TerrainRenderer::Initialize(const RenderEnvironment& env)
 
     // インスタンス配列用バッファ
     // 最大数分のInstanceDataを格納できる大きなバッファを1つだけ作る
-    size_t instanceBufferSize = sizeof(TerrainInstanceData) * kMaxCount;
-    instanceBuffer_ = BufferManager::CreateBufferResource(device_->GetDevice(), instanceBufferSize);
-    instanceBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&instanceMapped_));
+    instanceBuffer_ = BufferManager::CreateMappedBuffer(
+        device_->GetDevice(),
+        kMaxCount,
+        &instanceMapped_
+    );
 }
 
 void TerrainRenderer::Finalize()

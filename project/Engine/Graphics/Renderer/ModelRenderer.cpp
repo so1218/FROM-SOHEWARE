@@ -20,15 +20,19 @@ void ModelRenderer::Initialize(const RenderEnvironment& env)
     perObjectBuffers_.resize(kMaxCount);
     for (auto& buffer : perObjectBuffers_)
     {
-        buffer.wvpResource = BufferManager::CreateBufferResource(device_->GetDevice(), sizeof(TransformationMatrix));
-        buffer.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&buffer.wvpMapped));
+        buffer.wvpResource = BufferManager::CreateMappedConstantBuffer(
+            device_->GetDevice(),
+            &buffer.wvpMapped
+        );
     }
 
     // インスタンシング用バッファの初期化
     // StructuredBufferとして作成
-    instanceBuffer_.resource = BufferManager::CreateBufferResource(
-        device_->GetDevice(), sizeof(Object3DInstanceData) * kMaxInstances);
-    instanceBuffer_.resource->Map(0, nullptr, reinterpret_cast<void**>(&instanceBuffer_.mapped));
+    instanceBuffer_.resource = BufferManager::CreateMappedBuffer(
+        device_->GetDevice(),
+        kMaxInstances,
+        &instanceBuffer_.mapped
+    );
 
     // SRVの作成
     instanceBuffer_.srvIndex = env.srvManager->Allocate();

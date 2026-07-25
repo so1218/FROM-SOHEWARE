@@ -125,8 +125,10 @@ void GrassRenderer::GenerateGrass(
     cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_)); // u0: OutputGrass
 
     // Dispatch 実行
-    UINT dispatchCount = (genData.maxGrassPerChunk + 63) / 64;
-    cmdList->Dispatch(dispatchCount, 1, 1);
+    UINT totalGroups = (genData.maxGrassPerChunk + 63) / 64;
+    UINT groupX = 1024; 
+    UINT groupY = (totalGroups + groupX - 1) / groupX;
+    cmdList->Dispatch(groupX, groupY, 1);
 
     // 4. バッファを SRV ステートに戻す（CullingCS読み込み用）
     barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -213,8 +215,10 @@ void GrassRenderer::Draw(
     cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize)); // u0
     cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize)); // u1
 
-    UINT dispatchCount = (totalGeneratedCount_ + 63) / 64;
-    cmdList->Dispatch(dispatchCount, 1, 1);
+    UINT totalGroups = (totalGeneratedCount_ + 63) / 64;
+    UINT groupX = 1024;
+    UINT groupY = (totalGroups + groupX - 1) / groupX;
+    cmdList->Dispatch(groupX, groupY, 1);
 
     // ==========================================================
     // 4. 実際の描画 (ExecuteIndirect)

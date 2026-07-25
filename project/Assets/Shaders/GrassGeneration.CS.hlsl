@@ -11,6 +11,9 @@ SamplerState gLinearSampler : register(s0);
 // 出力用バッファ
 RWStructuredBuffer<GrassInstanceData> gOutputGrass : register(u0);
 
+// ★追加: C++側の groupX (1024) * numthreads (64)
+static const uint THREADS_PER_ROW = 1024 * 64;
+
 // ワールド座標(x, z)から地形全体のUVを計算する関数
 float2 CalculateTerrainUV(float x, float z)
 {
@@ -39,7 +42,9 @@ float2 Hash22(float2 p)
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= gGenerationData.maxGrassPerChunk)
+    uint instanceIndex = DTid.y * THREADS_PER_ROW + DTid.x;
+    
+    if (instanceIndex >= gGenerationData.maxGrassPerChunk)
         return;
     // 1. カメラ（terrainCenter）の位置をグリッドのサイズでスナップして固定化する
     // これにより、カメラが少し動いても、一定距離進むまで基準位置がピタッと固定されます。
@@ -50,8 +55,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (gridSizeX == 0)
         gridSizeX = 1;
 
-    uint gridX = DTid.x % gridSizeX;
-    uint gridZ = DTid.x / gridSizeX;
+    uint gridX = instanceIndex % gridSizeX;
+    uint gridZ = instanceIndex / gridSizeX;
     float2 localPos = float2(gridX * gGenerationData.gridSpacing, gridZ * gGenerationData.gridSpacing);
     
     float offsetX = -gGenerationData.terrainWidth * 0.5f;
@@ -101,7 +106,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (!isValid)
     {
         GrassInstanceData emptyGrass = (GrassInstanceData) 0;
-        gOutputGrass[DTid.x] = emptyGrass;
+        gOutputGrass[instanceIndex] = emptyGrass;
         return;
     }
 
@@ -120,5 +125,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
     grass.posAndHeight = float4(worldX, worldY, worldZ, randomHeight);
     grass.rotWidthColor = float4(randomRotY, randomWidth, packedColor, 0.0f);
 
-    gOutputGrass[DTid.x] = grass;
+    gOutputGrass[instanceIndex] = grass;
 }

@@ -25,18 +25,19 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
     skydomeMaterialHandle_ = env.materialManager->CreateMaterial(env.device->GetDevice());
     skydomeMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    UINT wvpSize = (sizeof(TransformationMatrix) + 255) & ~255;
-    UINT weatherSize = (sizeof(WeatherData) + 255) & ~255;
-
     for (int i = 0; i < kFrameCount; ++i)
     {
         // WVPバッファの生成
-        wvpResource_[i] = BufferManager::CreateBufferResource(env.device->GetDevice(), wvpSize);
-        wvpResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedWvp_[i]));
+        wvpResource_[i] = BufferManager::CreateMappedConstantBuffer(
+            env.device->GetDevice(),
+            &mappedWvp_[i]
+        );
 
         // 天候バッファの生成
-        weatherResource_[i] = BufferManager::CreateBufferResource(env.device->GetDevice(), weatherSize);
-        weatherResource_[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedWeather_[i]));
+        weatherResource_[i] = BufferManager::CreateMappedConstantBuffer(
+            env.device->GetDevice(),
+            &mappedWeather_[i]
+        );
 
         // 天候の初期値
         mappedWeather_[i]->cloudCoverage = { 0.35f, 0.7f };
