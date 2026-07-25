@@ -10,6 +10,7 @@ cbuffer DirectionalLights : register(b1)
 
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
+
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
 struct Object3DVSInputInstanced

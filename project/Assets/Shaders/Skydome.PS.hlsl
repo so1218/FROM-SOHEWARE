@@ -49,7 +49,7 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     PixelShaderOutput output;
     float3 viewDir = normalize(input.viewDir);
     
-    // --- 1. 光源ベクトル ---
+    // 光源ベクトル
     float3 activeLightDir = normalize(-gDirectionalLights[0].direction);
     float3 sunVisualDir = normalize(-gWeather.sunDirection);
     float3 moonVisualDir = -sunVisualDir;

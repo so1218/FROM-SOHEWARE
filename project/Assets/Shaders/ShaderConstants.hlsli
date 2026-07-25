@@ -130,50 +130,41 @@ struct MaterialData
     float dissolveThreshold;
     float edgeWidth;
     float edgeIntensity;
-    float padding3;
-    
     int32_t enableNormalMap;
+    
     float normalTiling;
     float normalIntensity;
-    float padding4;
-    
     float roughness;
     float metalness;
-    float2 paddingMetalness;
     
     float4 outlineColor;
     
     float outlineWidth;
     int32_t enableOutline;
-    float2 paddingOutline;
-
     int32_t enableRipple;
     float wetness;
+    
     float rippleScale;
     float rippleSpeed;
-    
     float rippleStrength;
     float puddleScale;
+    
     float puddleFalloff;
     float puddleEmission;
-    
     int32_t usePuddle;
     float rippleSize;
-    float rippleFrequency;
-    float rippleLayerMix;
     
     float4 puddleColor;
     
+    float rippleFrequency;
+    float rippleLayerMix;
     float puddleTint;
-    float3 paddingPuddle;
-
     int32_t isBubble;
+    
     float wobbleSpeed;
     float wobbleAmplitude;
     float rainbowIntensity;
-    
     float fresnelExponent;
-    float3 paddingBubble;
    
     int32_t enableTreeWind;
     float treeWindSpeed;
@@ -188,7 +179,11 @@ struct MaterialData
     float triplanarScale;
     float triplanarBlendSharpness;
     float shadowNormalBias;
-    float paddingCSM;
+    float enablePOM;
+    
+    float heightScale; 
+    float pomMinSteps; 
+    float pomMaxSteps; 
 };
 
 struct TrailMaterialData

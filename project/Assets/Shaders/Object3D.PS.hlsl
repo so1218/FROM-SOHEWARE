@@ -29,6 +29,7 @@ Texture2D<float4> gDissolveTexture : register(t4);
 Texture2D<float3> gNormalTexture : register(t5);
 Texture2D<float3> gRippleTexture : register(t6);
 Texture2D<float> gPuddleNoiseTexture : register(t7);
+Texture2D<float> gHeightMap : register(t8); // ハイトマップ
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -141,7 +142,6 @@ PixelShaderOutput main(PixelShaderInput input)
 
         output.color.rgb = DrawArtGridColor(input);
         output.color.a = 1.0;
-        // グリッドの法線は上、材質は適当な値
         output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
         output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
         

@@ -23,7 +23,7 @@ OutlineVertexShaderOutput main(VertexShaderInput input, uint instanceID : SV_Ins
     // 頂点位置をクリップ空間へ
     float4 clipPos = mul(input.position, wvp);
 
-    // 法線の計算（インスタンスごとのWorld行列を使用）
+    // 法線の計算
     float3 normal = normalize(input.smoothNormal);
     float4 clipNormal = mul(float4(normal, 0.0f), wvp);
 

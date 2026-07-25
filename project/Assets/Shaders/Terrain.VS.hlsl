@@ -35,7 +35,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
     
-   // 法線のGPU計算
+    // 法線のGPU計算
     float offset = gTerrainSettings.texelSize;
     float hL = (gHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     float hR = (gHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;

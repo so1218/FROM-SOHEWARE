@@ -20,7 +20,6 @@ ShadowVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // 自分のインスタンスデータを取得
     uint index = gInstanceOffset.gBaseInstanceIndex + instanceID;
     float4x4 worldMatrix = gInstanceData[index].World;
 

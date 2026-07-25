@@ -10,7 +10,7 @@ ConstantBuffer<MaterialData> gMaterialData : register(b5);
 PixelShaderOutput main()
 {
     PixelShaderOutput output;
-    // アウトラインの色
+    
     output.color = gMaterialData.outlineColor;
     return output;
 }

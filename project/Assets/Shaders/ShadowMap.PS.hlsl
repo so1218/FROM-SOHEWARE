@@ -43,7 +43,7 @@ void main(ShadowVSOutput input)
     // Alpha値によるディザリング
     float alpha = gMaterial.color.a;
 
-    // もしアルファが1.0(完全不透明)未満なら、ディザリング
+    // もしアルファが1.0未満なら、ディザリング
     if (alpha < 1.0f)
     {
         // 画面上のピクセル位置に基づいて閾値を取得 
