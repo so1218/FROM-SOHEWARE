@@ -29,29 +29,46 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     GrassInstanceData grass = gInputGrassData[instanceIndex];
     float3 pos = grass.posAndHeight.xyz;
+    float height = grass.posAndHeight.w;
 
-   // --- カリング判定 ---
+ // --- カリング判定 ---
     bool isVisible = true;
 
-    // 1. 距離カリング
-    float distToCam = distance(pos, gFrameData.cameraWorldPosition);
-    if (distToCam > gGrassCullingData.maxDrawDistance)
-        isVisible = false;
-
-    // 2. フラストゥムカリング
-    float boundsRadius = grass.posAndHeight.w * 1.2f;
-    for (int i = 0; i < 6; ++i)
+// ★追加: 高さが0（生成時に間引かれた無効な草）なら即座に除外
+    if (height <= 0.001f)
     {
-        if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
-            isVisible = false;
+        isVisible = false;
     }
-
-    // 3. 確率的間引き
-    float thinFactor = saturate((distToCam - gGrassCullingData.thinStartDistance) / (gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance));
-    float randomVal = Hash12(pos.xz);
-    if (thinFactor > 0.0f && randomVal < (thinFactor * gGrassCullingData.maxThinningRate))
+    else
     {
-        isVisible = false;
+// 1. 距離カリング
+        float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
+        
+        if (distToCamXZ > gGrassCullingData.maxDrawDistance)
+        {
+            isVisible = false;
+        }
+
+// 2. フラストゥムカリング (高さが有効な場合のみ計算)
+        float boundsRadius = height * 1.2f;
+        for (int i = 0; i < 6; ++i)
+        {
+            if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
+                isVisible = false;
+        }
+
+// 3. 確率的間引き
+        if (isVisible)
+        {
+            // ゼロ除算を防止しつつ、XZ距離でフェード割合を計算
+            float fadeRange = max(1.0f, gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance);
+            float thinFactor = saturate((distToCamXZ - gGrassCullingData.thinStartDistance) / fadeRange);
+            
+            if (thinFactor > 0.0f && Hash12(pos.xz) < (thinFactor * gGrassCullingData.maxThinningRate))
+            {
+                isVisible = false;
+            }
+        }
     }
 
     // ==========================================

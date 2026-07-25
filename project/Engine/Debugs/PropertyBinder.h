@@ -132,14 +132,6 @@ public:
 #endif
     }
 
-private:
-    // 共通処理
-    template<typename T>
-    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr);
-
-    // 共通実装
-    void BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange);
-
     void BindTexture(
         const std::string& key,
         const std::string& initialValue,
@@ -150,6 +142,14 @@ private:
 
     // テクスチャID用バインド関数
     void BindTexture(const std::string& key, std::string* currentTextureName, uint32_t* currentHandlePtr, const std::string& defaultName, TextureType filterType = TextureType::Albedo, std::function<void()> callback = nullptr);
+
+private:
+    // 共通処理
+    template<typename T>
+    void RegisterItem(const std::string& key, const T& defaultValue, T* ptr);
+
+    // 共通実装
+    void BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange);
 
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 

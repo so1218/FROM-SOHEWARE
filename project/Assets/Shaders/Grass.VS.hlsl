@@ -225,8 +225,19 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float normalBend = sideOffset * 2.0f;
     proceduralNormal = normalize(proceduralNormal + trueRight * normalBend * 0.25f);
 
+// ==========================================
+    // ★ カラー計算（根元から先端へのグラデーション）
+    // ==========================================
+    // 個体ごとの色のばらつき（明暗差）を計算
     float randVal = Hash12(rootPos.xz * 0.1f);
-    float3 baseColor = instanceColor.rgb * lerp(1.0f, 0.85f + randVal * 0.3f, gMaterial.colorVariation);
+    float colorVar = lerp(1.0f, 0.8f + randVal * 0.4f, gMaterial.colorVariation);
+
+    // t は現在の頂点の高さ (0.0 = 根元, 1.0 = 先端)
+    // 根元の色と先端の色を t でブレンドして美しいグラデーションを作る
+    float3 bladeColor = lerp(gMaterial.rootColor, gMaterial.tipColor, t);
+
+    // 色のばらつきを掛け合わせて最終的な色にする
+    float3 finalColor = bladeColor * colorVar;
 
     // --- 出力書き込み ---
     output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
@@ -234,7 +245,9 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     output.texcoord = float2(sideOffset + 0.5f, t);
     output.normal = proceduralNormal;
     output.tangent = tangent;
-    output.color = float4(baseColor, gustMask);
+    
+    // 最終カラーを出力（風のマスクをアルファに入れておく）
+    output.color = float4(finalColor, gustMask);
     
     output.currentClipPos = output.position;
     output.prevClipPos = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);

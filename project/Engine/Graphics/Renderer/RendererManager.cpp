@@ -413,11 +413,21 @@ void RendererManager::SetGrassRenderingParams(uint32_t windMapHandle, const Gras
 	grassCullingData_ = cullingData; 
 }
 
-void RendererManager::SubmitGrass(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor)
+void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle)
 {
-	if (grassRenderer_)
+	// 両方のレンダラーが存在しているか確認
+	if (grassRenderer_ && terrainRenderer_)
 	{
-		grassRenderer_->Submit(position, height, rotationY, width, packedColor);
+		// TerrainRendererから地形設定のアドレスをもらい、GrassRendererに渡す
+		D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddr = terrainRenderer_->GetSettingsBuffer()->GetGPUVirtualAddress();
+
+		grassRenderer_->GenerateGrass(
+			env_,
+			genData,
+			heightMapSrvHandle,
+			densityMapSrvHandle,
+			terrainSettingsAddr
+		);
 	}
 }
 

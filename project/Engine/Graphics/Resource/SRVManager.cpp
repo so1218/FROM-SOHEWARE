@@ -50,25 +50,61 @@ uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESO
     return index;
 }
 
-void SRVManager::CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resource, uint32_t numElements, uint32_t stride)
+uint32_t SRVManager::CreateStructuredBufferSRV(ID3D12Resource* resource, uint32_t numElements, uint32_t stride)
 {
+    uint32_t index = allocator_->Allocate();
+
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = DXGI_FORMAT_UNKNOWN; // 構造化バッファの場合UNKNOWN
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
     srvDesc.Buffer.FirstElement = 0;
-    srvDesc.Buffer.NumElements = numElements;      // kMaxInstances
-    srvDesc.Buffer.StructureByteStride = stride;   // sizeof
+    srvDesc.Buffer.NumElements = numElements;
+    srvDesc.Buffer.StructureByteStride = stride;
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    // 指定されたインデックスのハンドルを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleVisible = GetSRVHandleCPU_Visible(index);
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandleCopy = GetSRVHandleCPU_ForCopying(index);
+    // 表と裏の両方に作成！
+    device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_Visible(index));
+    device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_ForCopying(index));
 
-    // SRVを作成（表と裏の両方のヒープに書き込む）
-    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleVisible);
-    device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
+    return index;
+}
+
+// 構造化バッファ専用のUAV作成
+uint32_t SRVManager::CreateStructuredBufferUAV(ID3D12Resource* resource, uint32_t numElements, uint32_t stride)
+{
+    uint32_t index = allocator_->Allocate();
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Buffer.NumElements = numElements;
+    uavDesc.Buffer.StructureByteStride = stride;
+
+    // 表と裏の両方に作成！
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, GetSRVHandleCPU_Visible(index));
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, GetSRVHandleCPU_ForCopying(index));
+
+    return index;
+}
+
+// ExecuteIndirect用など、Rawバッファ専用のUAV作成
+uint32_t SRVManager::CreateRawBufferUAV(ID3D12Resource* resource, uint32_t sizeInBytes)
+{
+    uint32_t index = allocator_->Allocate();
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.NumElements = sizeInBytes / 4;
+    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+
+    // 表と裏の両方に作成！
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, GetSRVHandleCPU_Visible(index));
+    device_->CreateUnorderedAccessView(resource, nullptr, &uavDesc, GetSRVHandleCPU_ForCopying(index));
+
+    return index;
 }
 
 uint32_t SRVManager::CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc)

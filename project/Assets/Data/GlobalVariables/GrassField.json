@@ -8,7 +8,7 @@
             1.0
         ],
         "BaseHeight": 0.5,
-        "BaseScale": 13.479999542236328,
+        "BaseScale": 5.0,
         "BaseWidth": 0.05000000074505806,
         "BaseWindStrength": 0.0,
         "Color": [
@@ -18,22 +18,29 @@
             1.0
         ],
         "ColorVariation": 0.0,
+        "DensityMap": "noise_00",
         "FlutterAmount": 0.019999999552965164,
         "GrassCount": 5,
         "GrassNormalBlend": 0.699999988079071,
         "GrassRootAO": 1.0,
         "GrassStiffness": 0.3400000035762787,
-        "GridSpacing": 1.0,
+        "GridSpacing": 1.2599999904632568,
         "GustScale": 0.0010000000474974513,
         "GustStrength": 0.6000000238418579,
+        "HeightMap": "noise_39",
         "InteractRadius": 5.0,
         "InteractStrength": 2.619999885559082,
         "LodDistance1": 100.0,
         "LodDistance2": 150.0,
         "MaxDrawDistance": 500.0,
+        "MaxGrassCount": 5000000,
+        "MaxHeight": 1.6799999475479126,
         "MaxThinningRate": 0.9900000095367432,
-        "MaxWidthMultiplier": 10.0,
+        "MaxWidth": 0.1599999964237213,
+        "MaxWidthMultiplier": 15.0,
         "Metalness": 0.949999988079071,
+        "MinHeight": 1.309999942779541,
+        "MinWidth": 0.10000000149011612,
         "NormalBlend": 1.0499999523162842,
         "Position": [
             0.0,
@@ -42,9 +49,9 @@
         ],
         "RootAO": 0.550000011920929,
         "RootColor": [
-            0.021660806611180305,
-            0.04219406843185425,
-            0.011394178494811058
+            0.11926506459712982,
+            0.26582276821136475,
+            0.045986223965883255
         ],
         "RootColorMultiplier": [
             0.10000000149011612,
@@ -53,22 +60,26 @@
         ],
         "Roughness": 0.15000000596046448,
         "SSSColor": [
-            0.3319268524646759,
-            0.49789029359817505,
+            0.5457102060317993,
+            0.8185653686523438,
             0.0
         ],
         "SSSStrength": 1.2000000476837158,
         "ShadowBias": 0.0010000000474974513,
         "ShadowDensity": 1.0,
         "ShadowNormalBias": 0.009999999776482582,
-        "SpecularShininess": 45.0,
-        "SpecularStrength": 0.3400000035762787,
+        "SpecularShininess": 129.0,
+        "SpecularStrength": 0.25,
         "SpreadRadius": 500.0,
+        "TerrainCenterX": 0.0,
+        "TerrainCenterZ": 0.0,
+        "TerrainDepth": 1022.0,
+        "TerrainWidth": 1022.0,
         "ThinStartDistance": 150.0,
         "TipColor": [
-            1.0,
-            1.0,
-            1.0
+            0.5553386211395264,
+            0.7510548830032349,
+            0.37394294142723083
         ],
         "Translucency": 0.4699999988079071,
         "Wetness": 0.0,
@@ -79,6 +90,8 @@
             1.0,
             0.800000011920929
         ],
+        "WindDirX": 1.0,
+        "WindDirY": 0.800000011920929,
         "WindDirection": [
             1.0,
             0.5
@@ -91,6 +104,7 @@
         "WindGustStrength": 35.09000015258789,
         "WindGustThreshold": 0.49000000953674316,
         "WindHighlightStrength": 1.0,
+        "WindMap": "noise_39",
         "WindMapScale": 0.009999999776482582,
         "WindScSpeed": 2.5,
         "WindScrollSpeed": [

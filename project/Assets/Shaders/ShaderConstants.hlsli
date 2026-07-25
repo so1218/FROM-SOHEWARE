@@ -447,7 +447,23 @@ struct GrassCullingData
     
     float lodDistance1; 
     float lodDistance2;
-    int totalInstanceCount;
+    uint32_t totalInstanceCount;
+};
+
+struct GrassGenerationData
+{
+    float2 chunkBasePos;
+    float2 terrainCenter;
+    
+    float terrainWidth;
+    float terrainDepth;
+    uint32_t maxGrassPerChunk;
+    float gridSpacing;
+  
+    float minHeight;
+    float maxHeight;
+    float minWidth;
+    float maxWidth;
 };
 
 struct Object3DInstanceData

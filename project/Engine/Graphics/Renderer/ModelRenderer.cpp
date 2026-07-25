@@ -32,8 +32,11 @@ void ModelRenderer::Initialize(const RenderEnvironment& env)
 
     // SRVの作成
     instanceBuffer_.srvIndex = env.srvManager->Allocate();
-    env.srvManager->CreateStructuredBufferSRV(
-        instanceBuffer_.srvIndex, instanceBuffer_.resource.Get(), kMaxInstances, sizeof(Object3DInstanceData));
+    instanceBuffer_.srvIndex = env.srvManager->CreateStructuredBufferSRV(
+        instanceBuffer_.resource.Get(),
+        kMaxInstances,
+        sizeof(Object3DInstanceData)
+    );
 }
 
 void ModelRenderer::Finalize()

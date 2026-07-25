@@ -69,7 +69,10 @@ public:
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
         float instanceSeed);
-    void SubmitGrass(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor);
+    void GenerateGrass(
+        const GrassGenerationData& genData,
+        uint32_t heightMapSrvHandle,
+        uint32_t densityMapSrvHandle);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform,

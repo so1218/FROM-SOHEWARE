@@ -35,6 +35,8 @@ public:
     // 描画前のバッチ準備（Zソートやグループ化）
     void PrepareBatches();
 
+    ID3D12Resource* GetSettingsBuffer() const { return terrainSettingsBuffer_.Get(); }
+
     uint32_t GetCount() const { return prevCount_; }
     uint32_t GetMaxCount() const { return kMaxCount; }
 

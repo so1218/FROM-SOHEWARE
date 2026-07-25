@@ -13,8 +13,14 @@ public:
     // リソースとSRV設定からSRVを作成し、ヒープ内のインデックスを返す
     uint32_t CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
 
-    // 構造化バッファ専用のSRV作成
-    void CreateStructuredBufferSRV(uint32_t index, ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
+    // 構造化バッファ専用のSRV作成 
+    uint32_t CreateStructuredBufferSRV(ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
+
+    // 構造化バッファ専用のUAV作成
+    uint32_t CreateStructuredBufferUAV(ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
+
+    // ExecuteIndirect用など、Rawバッファ専用のUAV作成
+    uint32_t CreateRawBufferUAV(ID3D12Resource* resource, uint32_t sizeInBytes);
 
     // UAVを作成してインデックスを返す
     uint32_t CreateUAV(ID3D12Resource* resource, const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc);

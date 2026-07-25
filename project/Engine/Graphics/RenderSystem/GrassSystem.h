@@ -14,16 +14,11 @@ public:
     GrassSystem(Engine* engine, const std::string& windMapTextureName);
     ~GrassSystem() = default;
 
-    // インスタンス管理
+    // 初期化時(またはマップ切り替え時)に1回だけ呼ぶ、GPUへの自動生成命令
+    void Generate(const GrassGenerationData& genData, const std::string& heightMapName, const std::string& densityMapName);
 
-    // 草を1本追加
-    void AddGrass(const Vector3& position, float height, float rotationY, float width, const Vector4& color = { 1, 1, 1, 1 });
-
-    // 配置した草をすべてリセット
-    void Clear();
-
-    // 毎フレームの描画登録
-    void Draw();
+    // 毎フレームのパラメータ転送
+    void Update();
 
     // パラメータ設定 (マテリアル)
     void SetWindMapTexture(const std::string& textureName);
@@ -36,18 +31,6 @@ private:
     GrassCullingData cullingData_{};
     uint32_t windMapTextureHandle_ = 0;
 
-    struct Instance
-    {
-        Vector3 position;
-        float height;
-        float rotationY;
-        float width;
-        uint32_t packedColor; // Vector4 を uint32 に圧縮して保持
-    };
-    std::vector<Instance> instances_;
-
-    // 色の圧縮用ヘルパー
-    static uint32_t PackColor(const Vector4& color);
-}; 
+};
 
 }

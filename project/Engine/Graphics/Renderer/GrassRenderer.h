@@ -7,50 +7,59 @@
 namespace FE
 {
 
-class GrassRenderer 
+class GrassRenderer
 {
 public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
 
-    // 描画リクエストの受付
-    void Submit(const Vector3& position, float height, float rotationY, float width, uint32_t packedColor);
+    // ★追加: GPU上でハイトマップ・密度マップから草を全自動生成する
+    void GenerateGrass(
+        const RenderEnvironment& env,
+        const GrassGenerationData& genData,
+        uint32_t heightMapSrvHandle,
+        uint32_t densityMapSrvHandle,
+        D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress);
 
-    // 描画実行
-    void Draw(const RenderEnvironment& env, uint32_t windMapTextureHandle, ShadowMap* shadowMap, const GrassMaterialData& materialData, const GrassCullingData& cullingData);
-
-    // 明示的にデータを消去する関数を追加
-    void ClearInstances();
+    // 毎フレームの描画実行（CullingCS -> ExecuteIndirect）
+    void Draw(
+        const RenderEnvironment& env,
+        uint32_t windMapTextureHandle,
+        ShadowMap* shadowMap,
+        const GrassMaterialData& materialData,
+        const GrassCullingData& cullingData);
 
 private:
     static const int32_t kMaxInstances = 1500000;
     static constexpr int kFrameCount = 3;
 
-    Mesh mesh_;
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cullingHeap_;
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> generationHeap_;
 
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
+    // [GPU内保持] GenerationCSが生成した全草の基本バッファ (Default Heap)
+    Microsoft::WRL::ComPtr<ID3D12Resource> generatedGrassBuffer_;
 
-    // [入力] CPUから全草を転送するバッファ (SRVとしてCSに渡す)
-    Microsoft::WRL::ComPtr<ID3D12Resource> inputInstanceBuffer_[kFrameCount];
-    GrassInstanceData* mappedInputData_[kFrameCount] = {};
-
-    // [出力] CSが生き残った草を書き込むバッファ (UAVとしてCSへ、SRVとしてVSへ渡す)
+    // [出力] CullingCSが生き残った草を書き込むバッファ (Default Heap)
     Microsoft::WRL::ComPtr<ID3D12Resource> outputInstanceBuffer_[kFrameCount];
 
-    // [間接描画引数] CSがインスタンス数をカウントアップするバッファ (UAV)
+    // [間接描画引数] CullingCSがカウントアップするバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsBuffer_[kFrameCount];
 
     // [リセット用] 間接描画引数を初期化するためのアップロードバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsUploadBuffer_;
 
-    // マテリアル & カリング設定用バッファ
+    // 定数バッファ
+    Microsoft::WRL::ComPtr<ID3D12Resource> generationDataResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_[kFrameCount];
     Microsoft::WRL::ComPtr<ID3D12Resource> cullingDataResource_[kFrameCount];
+
+    GrassGenerationData* mappedGenData_ = nullptr;
     GrassMaterialData* mappedMaterial_[kFrameCount] = {};
     GrassCullingData* mappedCullingData_[kFrameCount] = {};
 
-    // SRV/UAVのヒープインデックス管理
-    uint32_t inputSrvIndex_[kFrameCount];
+    // SRV/UAVインデックス
+    uint32_t generatedSrvIndex_;
+    uint32_t generatedUavIndex_;
     uint32_t outputUavIndex_[kFrameCount];
     uint32_t outputSrvIndex_[kFrameCount];
     uint32_t indirectUavIndex_[kFrameCount];
@@ -59,10 +68,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12CommandSignature> commandSignature_;
 
     int currentFrameIndex_ = 0;
-    std::vector<GrassInstanceData> instanceQueue_;
-
-    // kFrameCount(通常2〜3)フレーム分、全バッファを更新するためのカウンター
-    int dirtyFrames_ = 0;
+    uint32_t totalGeneratedCount_ = 0; // GPU側で生成された草の総数
 };
 
 }
