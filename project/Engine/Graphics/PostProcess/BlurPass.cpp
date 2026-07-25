@@ -13,8 +13,10 @@ void BlurPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, bool 
     psoManager_ = pso;
     isVertical_ = isVertical;
 
-    constantBuffer_ = BufferManager::CreateBufferResource(engine->GetGraphicsDevice()->GetDevice(), sizeof(BlurSettings));
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<BlurSettings>(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &cbData_
+    );
 
     // テクセルサイズ計算
     cbData_->texelSize = { 1.0f / w, 1.0f / h };

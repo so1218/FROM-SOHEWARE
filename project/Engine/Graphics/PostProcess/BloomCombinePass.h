@@ -34,15 +34,15 @@ public:
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     // 合成設定取得
-    CombineSettings* GetSettings() const { return combineData_; }
+    CombineSettings* GetSettings() const { return cbData_; }
 
     // このパス専用のディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
 
 private:
     // 合成用定数バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> cb_;
-    CombineSettings* combineData_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
+    CombineSettings* cbData_ = nullptr;
 
     // 依存オブジェクト
     PSOManager* psoManager_ = nullptr;

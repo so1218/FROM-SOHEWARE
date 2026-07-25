@@ -17,9 +17,10 @@ void BokehBlurPass::Initialize(Engine* engine,
     psoManager_ = psoManager;
 
     // DoF設定用定数バッファ
-    ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(DoFSettings));
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<DoFSettings>(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &cbData_
+    );
 
     cbData_->focusDistance = 10.0f;
     cbData_->focusRange = 5.0f;

@@ -33,17 +33,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 pos = grass.posAndHeight.xyz;
     float height = grass.posAndHeight.w;
 
- // --- カリング判定 ---
+    // --- カリング判定 ---
     bool isVisible = true;
 
-// ★追加: 高さが0（生成時に間引かれた無効な草）なら即座に除外
+    // 高さが0（生成時に間引かれた無効な草）なら即座に除外
     if (height <= 0.001f)
     {
         isVisible = false;
     }
     else
     {
-// 1. 距離カリング
+        // 1. 距離カリング
         float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
         
         if (distToCamXZ > gGrassCullingData.maxDrawDistance)
@@ -51,7 +51,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             isVisible = false;
         }
 
-// 2. フラストゥムカリング (高さが有効な場合のみ計算)
+        // 2. フラストゥムカリング (高さが有効な場合のみ計算)
         float boundsRadius = height * 1.2f;
         for (int i = 0; i < 6; ++i)
         {
@@ -59,7 +59,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
                 isVisible = false;
         }
 
-// 3. 確率的間引き
+        // 3. 確率的間引き
         if (isVisible)
         {
             // ゼロ除算を防止しつつ、XZ距離でフェード割合を計算

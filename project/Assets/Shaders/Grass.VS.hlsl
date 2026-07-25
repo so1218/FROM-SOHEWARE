@@ -85,7 +85,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float distToCam = distance(rootPos, gFrameData.cameraWorldPosition);
 
     // ==========================================
-    // ★ 1. 遠景の太さ自動補正 (Width Expansion)
+    // 遠景の太さ自動補正 
     // ==========================================
     // CSで間引かれた分、遠くの草を太くしてシルエットの隙間（ハゲ）を埋める
     float thinFactor = saturate((distToCam - gGrassCullingData.thinStartDistance) / (gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance));
@@ -109,7 +109,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     uint vertexIdx = vertexID % NUM_VERTICES_PER_BLADE;
     
     // ==========================================
-    // ★ 2. 距離ベースのポリゴン縮退 LOD (Degenerate LOD)
+    // 2. 距離ベースのポリゴン縮退 LOD
     // ==========================================
     // 遠くの草の中間セグメント頂点を先端 (t=1.0) に押し潰すことで、
     // 描画結果を三角形から面積ゼロの直線へ縮退させ、ラスタライザでピクセル描画をスキップさせる
@@ -181,7 +181,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float cp2Height = lerp(0.5f, 0.8f, randShape1);
 
 
-// --- 4. ベジェ曲線＆座標・法線算出 ---
+    // --- ベジェ曲線＆座標・法線算出 ---
     float3 p0 = rootPos;
     
     // 真上ではなく、tiltForceを加えて最初から曲げておく
@@ -197,7 +197,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float3 p3 = rootPos + float3(0.0f, grassHeight, 0.0f) + (totalForce + tiltForce) * grassHeight;
 
     // ==========================================
-    // ★ 修正箇所：ベクトルを先にキャッシュして正しく長さを維持する
+    // ベクトルを先にキャッシュして正しく長さを維持する
     // ==========================================
     float3 v1 = p1 - p0;
     float3 v2 = p2 - p1;
@@ -225,10 +225,10 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float normalBend = sideOffset * 2.0f;
     proceduralNormal = normalize(proceduralNormal + trueRight * normalBend * 0.25f);
 
-// ==========================================
-    // ★ カラー計算（根元から先端へのグラデーション）
     // ==========================================
-    // 個体ごとの色のばらつき（明暗差）を計算
+    // カラー計算（根元から先端へのグラデーション）
+    // ==========================================
+    // 個体ごとの色のばらつきを計算
     float randVal = Hash12(rootPos.xz * 0.1f);
     float colorVar = lerp(1.0f, 0.8f + randVal * 0.4f, gMaterial.colorVariation);
 

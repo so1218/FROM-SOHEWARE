@@ -15,13 +15,14 @@ MaterialManager::~MaterialManager()
 MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
 {
     MaterialHandle handle;
-    handle.resource = BufferManager::CreateBufferResource(device, sizeof(MaterialData));
+    handle.resource = BufferManager::CreateMappedConstantBuffer<MaterialData>(
+        device,
+        &handle.materialData
+    );
 
     static int s_materialId = 0;
     std::wstring debugName = L"MaterialResource_" + std::to_wstring(s_materialId++);
     handle.resource->SetName(debugName.c_str());
-
-    handle.resource->Map(0, nullptr, reinterpret_cast<void**>(&handle.materialData));
 
     // materialDataを初期化
     handle.materialData->color = Vector4(1, 1, 1, 1);

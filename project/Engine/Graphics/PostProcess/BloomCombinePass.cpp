@@ -21,31 +21,33 @@ void BloomCombinePass::Initialize(
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
     // 合成用定数バッファ
-    cb_ = BufferManager::CreateBufferResource(device, sizeof(CombineSettings));
-    cb_->Map(0, nullptr, reinterpret_cast<void**>(&combineData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<CombineSettings>(
+        device,
+        &cbData_
+    );
 
-    combineData_->bloomIntensity = 0.8f;
+    cbData_->bloomIntensity = 0.8f;
 
-    combineData_->fogColor = Vector3(0.6f, 0.7f, 0.8f);
-    combineData_->distanceFogStart = 10.0f;
-    combineData_->distanceFogEnd = 30.0f;
-    combineData_->heightFogBaseHeight = 0.0f;
-    combineData_->heightFogDensity = 0.05f;
-    combineData_->heightFogFalloff = 0.5f;
-    combineData_->enableSSAO = false;
+    cbData_->fogColor = Vector3(0.6f, 0.7f, 0.8f);
+    cbData_->distanceFogStart = 10.0f;
+    cbData_->distanceFogEnd = 30.0f;
+    cbData_->heightFogBaseHeight = 0.0f;
+    cbData_->heightFogDensity = 0.05f;
+    cbData_->heightFogFalloff = 0.5f;
+    cbData_->enableSSAO = false;
 
-    combineData_->enableDoF = false;
-    combineData_->enableFog = false;
+    cbData_->enableDoF = false;
+    cbData_->enableFog = false;
 
-    combineData_->fogNoiseScale = 0.01f;
-	combineData_->fogNoiseContrast = 1.0f;
-	combineData_->fogNoiseSpeed = 1.0f;
-    combineData_->fogNoiseStrength = 1.0f;
+    cbData_->fogNoiseScale = 0.01f;
+	cbData_->fogNoiseContrast = 1.0f;
+	cbData_->fogNoiseSpeed = 1.0f;
+    cbData_->fogNoiseStrength = 1.0f;
 
-    combineData_->enableSSR = false;  
-    combineData_->ssrIntensity = 1.0f;
+    cbData_->enableSSR = false;  
+    cbData_->ssrIntensity = 1.0f;
 
-    combineData_->enableVolumetricFog = false;
+    cbData_->enableVolumetricFog = false;
 
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
@@ -145,7 +147,7 @@ void BloomCombinePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEff
 
     // 合成設定
     cmdList->SetGraphicsRootConstantBufferView(
-        0, cb_->GetGPUVirtualAddress()
+        0, constantBuffer_->GetGPUVirtualAddress()
     );
 
     // カメラ定数
