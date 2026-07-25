@@ -93,6 +93,7 @@ struct FrameData
     float3 prevCameraWorldPosition;
 };
 
+
 struct MaterialData
 {
     float4x4 uvTransform;
@@ -173,36 +174,21 @@ struct MaterialData
     
     float fresnelExponent;
     float3 paddingBubble;
-    
-    float grassWindSpeed;
-    float grassWindAmplitude;
-    float grassNormalBlend;
-    float grassTranslucency;
-
-    float grassRootAO;
-    float grassAlphaCutoff;
-    float interactRadius;
-    float interactStrength;
-    
-    float3 playerPos;
+   
     int32_t enableTreeWind;
-    
     float treeWindSpeed;
     float treeWindAmplitude;
     float treeWindSpatialScale;
-    float treeWindHeightScale;
     
+    float treeWindHeightScale;
     float treeWindVariation;
     float treeWindThresholdHeight;
-    float2 paddingTree;
-    
     int32_t useTriplanar;
+    
     float triplanarScale;
     float triplanarBlendSharpness;
-    float paddingTriplanar;
-    
     float shadowNormalBias;
-    float3 paddingCSM;
+    float paddingCSM;
 };
 
 struct TrailMaterialData

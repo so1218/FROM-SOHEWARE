@@ -123,7 +123,7 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 moonColorBase = float3(0.6f, 0.8f, 1.0f);
     float3 totalMoon = (moonCore * 2.0f + moonGlow) * moonColorBase;
     
-    // --- 6. シルバーライニング (Henyey-Greenstein) ---
+    // --- シルバーライニング ---
     float g = 0.85f;
     float g2 = g * g;
     float hgTranslucency = (1.0f - cloudThickness) * cloudAlpha;
