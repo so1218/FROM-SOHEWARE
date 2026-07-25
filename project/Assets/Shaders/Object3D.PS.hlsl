@@ -29,7 +29,7 @@ Texture2D<float4> gDissolveTexture : register(t4);
 Texture2D<float3> gNormalTexture : register(t5);
 Texture2D<float3> gRippleTexture : register(t6);
 Texture2D<float> gPuddleNoiseTexture : register(t7);
-Texture2D<float> gHeightMap : register(t8); // ハイトマップ
+Texture2D<float> gPOMHeightMap : register(t8);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -68,14 +68,64 @@ float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 
+float2 CalculateParallaxOcclusionMapping(float2 texCoords, float3 viewDirTS, float2 dx, float2 dy, out float parallaxHeight);
+float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialHeight, float2 dx, float2 dy);
+
 PixelShaderOutput main(PixelShaderInput input)
 {
     PixelShaderOutput output;
 
-    // ベースとなるワールド法線を計算
-    float3 worldNormal = normalize(input.normal);
+    // カメラへの視線ベクトル (ワールド空間)
+    float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
 
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
+    float2 finalUV = transformedUV.xy;
+
+    // --------------------------------------------------------
+    // POM (Parallax Occlusion Mapping) の適用
+    // --------------------------------------------------------
+    float pomSelfShadow = 1.0f;
+    
+    // トライプラナーマッピング時はPOMの計算が極めて重く複雑になるため除外する設計が一般的です
+    if (gMaterial.enablePOM != 0 && gMaterial.useTriplanar == 0)
+    {
+        // 1. 接空間(Tangent Space)を構築するためのTBN行列を作成
+        // ※理想は頂点シェーダーから Tangent/Binormal を渡すことですが、
+        // ない場合は ddx/ddy を用いて擬似的に接空間を構築します。
+        // （入力に tangent がある場合は入力値を使用してください）
+        float3 N = normalize(input.normal);
+        float3 T = normalize(input.tangent);
+// B(従法線)はNとTの外積で求められます
+        float3 B = normalize(cross(N, T)); // ※エンジンによっては cross(T, N) になる場合があります
+
+        float3x3 TBN = float3x3(T, B, N);
+
+        // ワールド空間の視線ベクトルを接空間に変換
+        float3 toEyeTS = mul(TBN, toEyeWorld);
+        
+        // SampleGrad用の微小変化量をループ外で取得 (必須)
+        float2 dx = ddx(finalUV);
+        float2 dy = ddy(finalUV);
+
+        float parallaxHeight = 0.0f;
+        // UV座標を視差に応じてオフセット
+        finalUV = CalculateParallaxOcclusionMapping(finalUV, toEyeTS, dx, dy, parallaxHeight);
+
+        // UVが0〜1の範囲外に出た場合はDiscardする処理 (オプション。エッジの切れ目対策)
+        // if (finalUV.x < 0.0 || finalUV.x > 1.0 || finalUV.y < 0.0 || finalUV.y > 1.0) discard;
+
+        // 自己シャドウの計算 (DirectionalLight[0] がある場合)
+        if (gDirectionalLights[0].enable != 0)
+        {
+            float3 lightDirWorld = normalize(-gDirectionalLights[0].direction);
+            float3 lightDirTS = mul(TBN, lightDirWorld);
+            pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, finalUV, parallaxHeight, dx, dy);
+        }
+    }
+    
+    // ベースとなるワールド法線を計算
+    float3 worldNormal = normalize(input.normal);
+    
     float4 textureColor;
     
     // トライプラナーのブレンド度合い
@@ -88,7 +138,7 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     else
     {
-        textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+        textureColor = gTexture.Sample(gSampler, finalUV);
     }
     
         
@@ -107,7 +157,7 @@ PixelShaderOutput main(PixelShaderInput input)
     if (gMaterial.enableDissolve != 0)
     {
         // ノイズテクスチャをサンプリング
-        float noiseValue = gDissolveTexture.Sample(gSampler, transformedUV.xy).r;
+        float noiseValue = gDissolveTexture.Sample(gSampler, finalUV).r;
 
         // ノイズの値が閾値より低ければピクセルを捨てる
         if (noiseValue <= gMaterial.dissolveThreshold)
@@ -148,17 +198,15 @@ PixelShaderOutput main(PixelShaderInput input)
         return output;
     }
     
-    // 影の計算 
+    // 影の計算への適用
     float shadowFactor = 1.0f;
-    
-    // 0番目のライトが有効なら影を計算
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
-        // カメラ座標から現在のピクセルまでの距離（深度）を計算
         float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
-        
-        // 新しい関数を呼び出す
         shadowFactor = CalculateShadowCSM(input.worldPosition, normalize(input.normal), viewDepth);
+        
+        // CSMの影にPOMの自己影を合成する (最も暗い方を採用)
+        shadowFactor = min(shadowFactor, pomSelfShadow);
     }
     
     // ライティング処理
@@ -178,7 +226,7 @@ PixelShaderOutput main(PixelShaderInput input)
         else
         {
             // 従来のUVマッピングでの法線計算
-            normal = CalculateNormalFromMap(input, worldNormal, transformedUV.xy);
+            normal = CalculateNormalFromMap(input, worldNormal, finalUV);
         }
     }
     else
@@ -962,9 +1010,6 @@ float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
 
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
 {
-    // UVタイリング補正
-    float2 tiledUV = uv * gMaterial.normalTiling;
-
     // ノーマルマップから法線をサンプリング
     float3 mapSample = gNormalTexture.Sample(gSampler, tiledUV);
     float3 mapNormal = mapSample;
@@ -1123,4 +1168,128 @@ float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texSc
     float3 finalNormal = nX * blendWeights.x + nY * blendWeights.y + nZ * blendWeights.z;
 
     return normalize(finalNormal);
+}
+
+float2 CalculateParallaxOcclusionMapping(
+    float2 texCoords,
+    float3 viewDirTS,
+    float2 dx,
+    float2 dy,
+    out float parallaxHeight)
+{
+    viewDirTS = normalize(viewDirTS);
+
+    if (viewDirTS.z <= 0.0f)
+    {
+        parallaxHeight = 0.0f;
+        return texCoords;
+    }
+
+    float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, texCoords);
+
+    // 【防御1】ハイトスケールの強制クランプとUVスケール補正
+    // どんなに大きな値が来ても、UV空間上で最大10%（0.1）以上のズレを許容しない。
+    // ※ 0.1 でもPOMとしてはかなり深いです。
+    float safeHeightScale = clamp(gMaterial.pomHeightScale, 0.0f, 0.1f);
+    
+    // 【防御2】UVタイリングによるスケーリングを相殺
+    // dx, dy の長さからUVがどれくらい縮小/拡大されているかを概算し、
+    // タイリングされている場合はPOMのスケールも小さくして破綻を防ぐ
+    float uvScale = length(float2(dx.x, dy.y)) * 1024.0f; // 基準サイズに対する倍率
+    safeHeightScale /= max(uvScale, 1.0f);
+
+    // 【防御3】スケールに応じた動的ステップ数のブースト
+    // 浅ければ少ないループで軽くし、深く設定されたら自動でループを増やして突き抜けを防ぐ
+    float scaleFactor = (safeHeightScale / 0.05f); // 0.05を基準(1.0)とする
+    float maxSteps = clamp(gMaterial.pomMaxSteps * scaleFactor, 16.0f, 128.0f);
+    float minSteps = clamp(gMaterial.pomMinSteps * scaleFactor, 8.0f, 64.0f);
+
+    float numSteps = lerp(maxSteps, minSteps, viewDirTS.z);
+    float stepSize = 1.0f / numSteps;
+
+    float2 parallaxDir = viewDirTS.xy / max(viewDirTS.z, 0.01f);
+    
+    // Max Ratio Clamping
+    float maxRatio = 1.5f;
+    float currentRatio = length(parallaxDir);
+    if (currentRatio > maxRatio)
+    {
+        parallaxDir *= (maxRatio / currentRatio);
+    }
+
+    // 安全なスケール値を使用
+    float2 p = parallaxDir * safeHeightScale;
+    float2 deltaTexCoords = p * stepSize;
+
+    float referencePlane = 0.0f;
+    float2 currentTexCoords = texCoords + (p * referencePlane);
+    
+    float currentLayerDepth = 0.0f;
+    float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
+
+    [unroll(128)] // ブーストに合わせてunroll上限を開放 (※エラーが出る場合は手動で固定値を入れてください)
+    while (currentLayerDepth < currentDepthMapValue)
+    {
+        currentTexCoords -= deltaTexCoords;
+        currentLayerDepth += stepSize;
+        currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
+    }
+
+    float2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    float afterDepth = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = (1.0f - gPOMHeightMap.SampleLevel(gSampler, prevTexCoords, mipLevel).r) - currentLayerDepth + stepSize;
+
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0f - weight);
+
+    parallaxHeight = currentLayerDepth - stepSize * (1.0f - weight);
+
+    return finalTexCoords;
+}
+
+
+// POMによるソフト自己影の計算 (メインPOMと全く同じMax Ratio制限を入れる)
+float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialHeight, float2 dx, float2 dy)
+{
+    lightDirTS = normalize(lightDirTS); // 光源ベクトルも念のため正規化
+
+    if (lightDirTS.z <= 0.0f)
+        return 0.0f;
+
+    float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, initialUV);
+
+    float numSteps = lerp(gMaterial.pomMaxSteps, gMaterial.pomMinSteps, lightDirTS.z);
+    float stepSize = 1.0f / numSteps;
+
+    // シャドウ側も同様に最大長を制限する
+    float2 parallaxDir = lightDirTS.xy / max(lightDirTS.z, 0.01f);
+    float maxRatio = 1.5f;
+    float currentRatio = length(parallaxDir);
+    if (currentRatio > maxRatio)
+    {
+        parallaxDir *= (maxRatio / currentRatio);
+    }
+
+    float2 p = parallaxDir * gMaterial.pomHeightScale;
+    float2 deltaTexCoords = p * stepSize;
+
+    float2 currentTexCoords = initialUV;
+    float currentLayerDepth = initialHeight - stepSize;
+    float shadowMultiplier = 1.0f;
+
+    [unroll(32)]
+    while (currentLayerDepth > 0.0f)
+    {
+        currentTexCoords += deltaTexCoords;
+        float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
+        
+        if (currentDepthMapValue < currentLayerDepth)
+        {
+            float currentShadow = (currentLayerDepth - currentDepthMapValue) * 4.0f;
+            shadowMultiplier = min(shadowMultiplier, 1.0f - currentShadow);
+        }
+        currentLayerDepth -= stepSize;
+    }
+
+    return saturate(shadowMultiplier);
 }

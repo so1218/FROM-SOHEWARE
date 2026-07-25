@@ -43,10 +43,10 @@ Skinned Skinning(SkinningVertexShaderInput input)
     
     // タンジェントのスキニング
     skinned.tangent =
-        mul(input.tangent, (float3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x +
-        mul(input.tangent, (float3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y +
-        mul(input.tangent, (float3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z +
-        mul(input.tangent, (float3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.x].skeletonSpaceMatrix) * input.weight.x +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.y].skeletonSpaceMatrix) * input.weight.y +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.z].skeletonSpaceMatrix) * input.weight.z +
+        mul(input.tangent, (float3x3) gMatrixPalette[input.index.w].skeletonSpaceMatrix) * input.weight.w;
     skinned.tangent = normalize(skinned.tangent);
 
     return skinned;
@@ -83,7 +83,7 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
     // その他データの出力
     output.texcoord = input.texcoord;
     output.normal = normalize(mul(skinned.normal, (float3x3) gTransformationMatrix.WorldInverseTranspose));
-    output.tangent = normalize(mul(skinned.tangent, (float3x3) gTransformationMatrix.WorldInverseTranspose));
+    output.tangent = normalize(mul(skinned.tangent, (float3x3) gTransformationMatrix.World));
     output.worldColor = gTransformationMatrix.WorldColor;
 
     return output;

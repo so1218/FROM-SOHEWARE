@@ -9,6 +9,7 @@ enum class TextureType
 {
     Albedo,
     Normal,
+    Height,
     Toon,
     Noise,
     CubeMap,

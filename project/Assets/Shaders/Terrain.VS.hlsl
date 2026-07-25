@@ -5,8 +5,8 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10); 
 
 // ハイトマップテクスチャ
-Texture2D<float> gHeightMap : register(t8);
-StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t9);
+Texture2D<float> gTerrainHeightMap : register(t9);
+StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t10);
 SamplerState gSampler : register(s0);
 
 struct TerrainVSInput
@@ -24,7 +24,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     float2 globalUV = input.texcoord * inst.uvTransform.xy + inst.uvTransform.zw;
     
     // ハイトマップから高さを取得し、maxHeight を掛ける
-    float heightRatio = gHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
+    float heightRatio = gTerrainHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
     input.position.y = heightRatio * gTerrainSettings.maxHeight;
 
     // ワールド・クリップ座標計算
@@ -37,10 +37,10 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     
     // 法線のGPU計算
     float offset = gTerrainSettings.texelSize;
-    float hL = (gHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hR = (gHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hD = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hU = (gHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hL = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hR = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hD = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
+    float hU = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     
     // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize 
     float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));

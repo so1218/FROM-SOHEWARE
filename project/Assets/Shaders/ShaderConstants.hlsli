@@ -179,9 +179,9 @@ struct MaterialData
     float triplanarScale;
     float triplanarBlendSharpness;
     float shadowNormalBias;
-    float enablePOM;
+    int32_t enablePOM;
     
-    float heightScale; 
+    float pomHeightScale;
     float pomMinSteps; 
     float pomMaxSteps; 
 };

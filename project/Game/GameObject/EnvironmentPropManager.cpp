@@ -282,6 +282,7 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "AlbedoMap", handle->textureName);
         gv->SetValue(groupPath, matPrefix + "EnvMapTex", handle->envMapName);
         gv->SetValue(groupPath, matPrefix + "NormalMapTex", handle->normalMapName);
+        gv->SetValue(groupPath, matPrefix + "HeightMapTex", handle->heightMapName);
         gv->SetValue(groupPath, matPrefix + "DissolveTex", handle->dissolveMapName);
         gv->SetValue(groupPath, matPrefix + "ToonRampTex", handle->toonRampName);
         gv->SetValue(groupPath, matPrefix + "RippleMap", handle->rippleTextureName);
@@ -342,6 +343,12 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "NormEnable", matData->enableNormalMap);
         gv->SetValue(groupPath, matPrefix + "NormTile", matData->normalTiling);
         gv->SetValue(groupPath, matPrefix + "NormInten", matData->normalIntensity);
+
+        // POMハイトマップ設定
+        gv->SetValue(groupPath, matPrefix + "POMEnable", matData->enablePOM);
+        gv->SetValue(groupPath, matPrefix + "POMHeightScale", matData->pomHeightScale);
+        gv->SetValue(groupPath, matPrefix + "POMMinSteps", matData->pomMinSteps);
+        gv->SetValue(groupPath, matPrefix + "pomMaxSteps", matData->pomMaxSteps);
 
         // アウトライン設定
         gv->SetValue(groupPath, matPrefix + "OutlineEnable", matData->enableOutline);

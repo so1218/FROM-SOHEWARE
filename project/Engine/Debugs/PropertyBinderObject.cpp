@@ -588,6 +588,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindTexture(prefix + "ToonRampTex", &handle->toonRampName, &handle->toonRampHandle, "toonRamp_01", TextureType::Toon);
     BindTexture(prefix + "RippleMap", &handle->rippleTextureName, &handle->rippleTextureHandle, "normal_00", TextureType::Normal);
     BindTexture(prefix + "PuddleNoise", &handle->puddleNoiseName, &handle->puddleNoiseHandle, "noise_00", TextureType::Noise);
+    BindTexture(prefix + "HeightMapTex", &handle->heightMapName, &handle->heightMapHandle, "white1x1", TextureType::Height);
 
     auto onUVChange = [handle]()
         {
@@ -643,6 +644,11 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindBool(prefix + "NormEnable", &matData->enableNormalMap, false);
     Bind(prefix + "NormTile", &matData->normalTiling, 1.0f, 0.1f, 0.1f, 50.0f);
     Bind(prefix + "NormInten", &matData->normalIntensity, 1.0f, 0.01f, 0.0f, 10.0f);
+
+    BindBool(prefix + "POMEnable", &matData->enablePOM, false);
+    Bind(prefix + "POMHeightScale", &matData->pomHeightScale, 0.05f, 0.001f, 0.0f, 0.5f);
+    Bind(prefix + "POMMinSteps", &matData->pomMinSteps, 8.0f, 1.0f, 1.0f, 64.0f);
+    Bind(prefix + "POMMaxSteps", &matData->pomMaxSteps, 32.0f, 1.0f, 1.0f, 128.0f);
 
     BindBool(prefix + "OutlineEnable", &matData->enableOutline, false);
     Bind(prefix + "OutlineWidth", &matData->outlineWidth, 1.0f, 0.1f, 0.0f, 50.0f);
@@ -770,6 +776,20 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                             Draw(matPrefix + "NormalMapTex", "テクスチャ");
                             Draw(matPrefix + "NormInten", "凹凸の強さ");
                             Draw(matPrefix + "NormTile", "タイリング");
+                        }
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("POMSettings", optFlags, "視差マッピング (POM)"))
+                    {
+                        Draw(matPrefix + "POMEnable", "有効化");
+
+                        if (gv->GetIntValue(groupPath_, matPrefix + "POMEnable") > 0)
+                        {
+                            Draw(matPrefix + "HeightMapTex", "ハイトマップ");
+                            Draw(matPrefix + "POMHeightScale", "高さスケール");
+                            Draw(matPrefix + "POMMinSteps", "最小ステップ数 (正面)");
+                            Draw(matPrefix + "POMMaxSteps", "最大ステップ数 (斜角)");
                         }
                         ImGui::TreePop();
                     }
