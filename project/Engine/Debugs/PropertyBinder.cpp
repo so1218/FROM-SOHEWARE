@@ -71,7 +71,6 @@ namespace FE
                 //オイラー角からクォータニオンへ変換
                 *quatPtr = Quaternion::QuaternionFromEuler(*eulerPtr);
 
-                // 追加の処理
                 if (onChange)
                 {
                     onChange();

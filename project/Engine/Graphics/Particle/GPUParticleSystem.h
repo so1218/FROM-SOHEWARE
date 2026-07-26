@@ -13,10 +13,9 @@ struct EmitterData {
     DirectX::XMFLOAT3 emitterPos;
     float deltaTime;
     float time;
-    float padding[3]; // 16バイトアライメント用パディング
+    float padding[3]; 
 };
 
-// 新しいGPU専用パーティクルシステム
 class GPUParticleSystem {
 public:
     static constexpr uint32_t kMaxParticles = 10000;
@@ -26,11 +25,9 @@ public:
     void Draw(ID3D12GraphicsCommandList* commandList);
 
 private:
-    Microsoft::WRL::ComPtr<ID3D12Resource> particleBuffer_; // StructuredBuffer (UAV & SRV)
-    Microsoft::WRL::ComPtr<ID3D12Resource> emitterBuffer_;  // ConstantBuffer
+    Microsoft::WRL::ComPtr<ID3D12Resource> particleBuffer_; 
+    Microsoft::WRL::ComPtr<ID3D12Resource> emitterBuffer_;  
 
-    // ※パイプラインステートやディスクリプタヒープはエンジン共通のもの、
-    // または独自で保持しているものをセットしてください
     ID3D12PipelineState* computePSO_ = nullptr;
     ID3D12PipelineState* graphicsPSO_ = nullptr;
     ID3D12RootSignature* computeRootSignature_ = nullptr;
