@@ -20,33 +20,50 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     VertexShaderOutput output;
     TerrainInstanceData inst = gTerrainInstances[instanceID];
 
-    // インスタンスごとのオフセットを適用して、共通ハイトマップ上のUVを計算
+    // ---------------------------------------------------------
+    // ハイトマップサンプリングと頂点変位
+    // ---------------------------------------------------------
     float2 globalUV = input.texcoord * inst.uvTransform.xy + inst.uvTransform.zw;
     
-    // ハイトマップから高さを取得し、maxHeight を掛ける
-    float heightRatio = gTerrainHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
-    input.position.y = heightRatio * gTerrainSettings.maxHeight;
+    // 0, 1 のテクスチャ値を -0.5, 0.5 へリマップし、基準面を中心とした高さを算出
+    float rawHeight = gTerrainHeightMap.SampleLevel(gSampler, globalUV, 0).r;
+    input.position.y = (rawHeight - 0.5f) * gTerrainSettings.maxHeight;
 
-    // ワールド・クリップ座標計算
+    // ---------------------------------------------------------
+    // 座標変換とVelocity Bufferのプロパティ計算
+    // ---------------------------------------------------------
     float4 worldPos = mul(input.position, inst.World);
     output.worldPosition = worldPos.xyz;
+    
     output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
     output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
+    
     output.texcoord = input.texcoord;
     
-    // 法線のGPU計算
+    // ---------------------------------------------------------
+    // ハイトマップからの法線動的生成 
+    // ---------------------------------------------------------
     float offset = gTerrainSettings.texelSize;
-    float hL = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hR = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hD = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0, offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
-    float hU = (gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0, -offset), 0).r - 0.5f) * gTerrainSettings.maxHeight;
     
-    // 高さの変化に対するX/Z方向の距離は 2.0 * cellSize 
-    float3 localNormal = normalize(float3(hL - hR, 2.0f * gTerrainSettings.cellSize, hD - hU));
+    // 差分計算においてベースの高さオフセットは相殺されるため、生の値をフェッチ
+    float hL = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0.0f), 0).r;
+    float hR = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0.0f), 0).r;
+    float hD = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, offset), 0).r;
+    float hU = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, -offset), 0).r;
     
+    // サンプリング後に1度だけ maxHeight を乗算し、演算命令数を削減
+    float dx = (hL - hR) * gTerrainSettings.maxHeight;
+    float dz = (hD - hU) * gTerrainSettings.maxHeight;
+    
+    float3 localNormal = normalize(float3(dx, 2.0f * gTerrainSettings.cellSize, dz));
+    
+    // インスタンスの非均等スケールを考慮し、法線は逆転置行列で変換
     output.normal = normalize(mul(localNormal, (float3x3) inst.WorldInverseTranspose));
-    output.tangent = float3(1, 0, 0);
+    
+    // 接ベクトルもローカル空間の固定値ではなく、ワールド行列で回転
+    output.tangent = normalize(mul(float3(1.0f, 0.0f, 0.0f), (float3x3) inst.World));
+    
     output.worldColor = inst.WorldColor;
     
     return output;
