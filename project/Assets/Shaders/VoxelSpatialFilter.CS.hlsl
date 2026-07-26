@@ -6,10 +6,28 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
 // 輝度を計算するヘルパー関数
+// Rec. 709 (sRGB) の輝度係数を使用し、人間の視覚特性に合わせた重み付けを行う
 float CalculateLuminance(float3 color)
 {
     return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
 }
+
+// 隣接ボクセルへのオフセットはグローバル定数化してレジスタ消費を抑える
+static const int3 kNeighborOffsets[6] =
+{
+    int3(-1, 0, 0), int3(1, 0, 0), // 左右
+    int3(0, -1, 0), int3(0, 1, 0), // 上下
+    int3(0, 0, -1), int3(0, 0, 1) // 前後
+};
+
+// バイラテラルフィルターのLOD調整用定数
+// 手前のボクセルはエッジを保持してクッキリさせる（感度高）
+static const float kEdgeSensitivityNear = 2.0f;
+// 奥のボクセルはアーティファクトを消すため強制的にボカす（感度低）
+static const float kEdgeSensitivityFar = 0.02f;
+// フェードを開始/終了するZ深度の割合
+static const float kFadeStartRatio = 0.1f;
+static const float kFadeEndRatio = 0.7f;
 
 [numthreads(8, 8, 4)]
 void main(uint3 DTid : SV_DispatchThreadID)
@@ -24,31 +42,28 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 sum = center;
     float totalWeight = 1.0f;
     
-    // 遠方に行くほどエッジ保存の感度を下げる
-    // 手前（zLinear=0）はクッキリ（2.0）、奥（zLinear=1）は強制全ボカシ（0.02）
+    // Z深度に応じてエッジ保存の感度を下げる
     float zLinear = float(DTid.z) / float(depth - 1);
-    float bilateralSensitivity = lerp(2.0f, 0.02f, smoothstep(0.1f, 0.7f, zLinear));
+    float lodFade = smoothstep(kFadeStartRatio, kFadeEndRatio, zLinear);
+    float bilateralSensitivity = lerp(kEdgeSensitivityNear, kEdgeSensitivityFar, lodFade);
     
-    int3 offsets[6] =
-    {
-        int3(-1, 0, 0), int3(1, 0, 0), // 左右
-        int3(0, -1, 0), int3(0, 1, 0), // 上下
-        int3(0, 0, -1), int3(0, 0, 1) // 前後
-    };
+    float centerLuma = CalculateLuminance(center.rgb);
     
     for (int i = 0; i < 6; ++i)
     {
-        int3 neighborCoord = int3(DTid) + offsets[i];
+        int3 neighborCoord = int3(DTid) + kNeighborOffsets[i];
         
+        // 境界外アクセスを防ぐクランプ
         neighborCoord.x = clamp(neighborCoord.x, 0, int(width) - 1);
         neighborCoord.y = clamp(neighborCoord.y, 0, int(height) - 1);
         neighborCoord.z = clamp(neighborCoord.z, 0, int(depth) - 1);
         
         float4 neighbor = gVoxelInjectCurrent.Load(int4(neighborCoord, 0));
         
-        float colorDiff = length(center.rgb - neighbor.rgb) + abs(center.a - neighbor.a);
+        // 色の差分と密度の差分でウェイトを計算
+        float neighborLuma = CalculateLuminance(neighbor.rgb);
+        float colorDiff = abs(centerLuma - neighborLuma) + abs(center.a - neighbor.a);
         
-        // 遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならない
         float weight = exp(-colorDiff * bilateralSensitivity);
         
         sum += neighbor * weight;

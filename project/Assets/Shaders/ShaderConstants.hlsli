@@ -42,7 +42,8 @@
 #define MAX_FOG_VOLUMES 8
 
 static const float PI = 3.1415926535f;
-static const float EXTINCTION_EPSILON = 1e-5f; // ゼロ除算回避用
+static const float kMinNearClip = 0.1f;
+static const float kExtinctionEpsilon = 1e-5f;
 
 struct TransformationMatrix
 {

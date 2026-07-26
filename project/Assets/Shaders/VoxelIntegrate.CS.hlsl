@@ -5,8 +5,6 @@ RWTexture3D<float4> gVoxelAccumulate : register(u0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
-static const float MIN_NEAR_Z = 0.1f; // 指数深度計算のためのニアクリップ下限
-
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -19,7 +17,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 volumetricIllumination = float3(0, 0, 0);
     float transmittance = 1.0f;
 
-    float nearZ = max(gFrameData.nearClip, MIN_NEAR_Z);
+    float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
 
     // Zスライスの等比倍率をループ外で事前計算
@@ -35,7 +33,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float4 stepData = gVoxelTemporalOut.Load(int4(voxelCoord, 0));
         
         float3 S = stepData.rgb;
-        float extinction = max(stepData.a, EXTINCTION_EPSILON);
+        float extinction = max(stepData.a, kExtinctionEpsilon);
         
         // 現在のボクセルの厚みを計算し、次の深度を更新 
         float nextViewZ = currentViewZ * sliceRatio;

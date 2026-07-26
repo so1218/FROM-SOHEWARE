@@ -16,55 +16,46 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= width || DTid.y >= height)
         return;
 
-    // 中心ピクセルの情報を取得
     int3 centerPos = int3(DTid.xy, 0);
     float4 centerFog = gRawFogTexture.Load(centerPos);
     float centerDepth = gDepthTexture.Load(centerPos).r;
 
-    float4 resultColor = float4(0, 0, 0, 0);
+    float4 resultColor = 0.0f;
     float totalWeight = 0.0f;
     
     int radius = gFogBilateralSettings.blurRadius;
     
-    // 空間ウェイト計算用の定数
+    // Gauss関数の指数部係数: 1.0 / (2.0 * sigma^2)
     float spatialCoeff = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
     
-    // 深度ウェイト計算用の定数（0割り防止のため、念のため微小な下限値を設ける）
-    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, 0.00001f);
+    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, kExtinctionEpsilon);
     float depthCoeff = 1.0f / (2.0f * safeDepthSigma * safeDepthSigma);
 
-    // 周辺ピクセルをサンプリングして合成
     for (int y = -radius; y <= radius; ++y)
     {
         for (int x = -radius; x <= radius; ++x)
         {
-            // サンプル座標の計算（画面外にはみ出さないようにクランプ）
-            int2 sampleCoord = clamp(int2(DTid.x + x, DTid.y + y), int2(0, 0), int2(width - 1, height - 1));
+            // サンプル座標を画面内にクランプ
+            int2 sampleCoord = clamp(int2(DTid.x + x, DTid.y + y), 0, int2(width - 1, height - 1));
             int3 samplePos = int3(sampleCoord, 0);
 
-            // 周辺ピクセルの情報を取得
             float4 sampleFog = gRawFogTexture.Load(samplePos);
             float sampleDepth = gDepthTexture.Load(samplePos).r;
 
-            // ウェイトの計算
-            
-            // 空間ウェイト（中心から遠いピクセルほど影響力を下げる）
-            float distSq = (float) (x * x + y * y);
+            // 空間ウェイト計算
+            float distSq = float(x * x + y * y);
             float spatialWeight = exp(-distSq * spatialCoeff);
 
-            // 深度ウェイト（中心ピクセルと深度が離れているほど影響力をゼロに近づける）
-            float depthDiff = abs(centerDepth - sampleDepth);
+            // 深度ウェイト計算（エッジ保持）
+            float depthDiff = centerDepth - sampleDepth;
             float depthWeight = exp(-(depthDiff * depthDiff) * depthCoeff);
 
-            // 最終的なウェイト
             float weight = spatialWeight * depthWeight;
 
-            // 結果に加算
             resultColor += sampleFog * weight;
             totalWeight += weight;
         }
     }
 
-    // 総ウェイトで割って平均化し、出力テクスチャに書き込む
-    gFilteredFog[DTid.xy] = resultColor / max(totalWeight, 0.00001f);
+    gFilteredFog[DTid.xy] = resultColor / max(totalWeight, kExtinctionEpsilon);
 }
