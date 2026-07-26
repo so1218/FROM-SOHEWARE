@@ -18,7 +18,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     if (DTid.x >= width || DTid.y >= height)
         return;
-
+    
+    // ピクセル中心をサンプリングするためのハーフピクセルオフセット
     float2 texelSize = 1.0f / float2(width, height);
     float2 uv = (float2(DTid.xy) + 0.5f) * texelSize;
     
@@ -30,12 +31,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 worldPosFull = mul(clipPos, gFrameData.invViewProj);
     float3 worldPos = worldPosFull.xyz / worldPosFull.w;
 
-    float nearZ = max(gFrameData.nearClip, 0.1f);
+    // log2のゼロ除算によるNaNを防ぐための最小Nearクリップ値
+    static const float kMinNearClip = 0.1f;
+    float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
     float rayLength = length(worldPos - gFrameData.cameraWorldPosition);
     float clampedDistance = clamp(rayLength, nearZ, farZ);
     
-    // 距離から3DテクスチャのZスライスを計算
+   // ---------------------------------------------------------
+    // Froxel の深度スライス計算
+    // --------------------------------------------------------
+    // Z軸を等間隔ではなく、手前ほど高解像度・奥ほど低解像度になるように
+    // 指数関数的にマッピングする標準式
     float zSlice = log2(clampedDistance / nearZ) / log2(farZ / nearZ);
     zSlice = saturate(zSlice);
     

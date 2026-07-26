@@ -5,6 +5,8 @@ RWTexture3D<float4> gVoxelAccumulate : register(u0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
+static const float MIN_NEAR_Z = 0.1f; // 指数深度計算のためのニアクリップ下限
+
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
@@ -17,9 +19,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 volumetricIllumination = float3(0, 0, 0);
     float transmittance = 1.0f;
 
-    // 定数バッファからカメラのニア・ファークリップを取得
-    float nearZ = max(gFrameData.nearClip, 0.1f);
+    float nearZ = max(gFrameData.nearClip, MIN_NEAR_Z);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
+
+    // Zスライスの等比倍率をループ外で事前計算
+    float sliceRatio = pow(farZ / nearZ, 1.0f / float(depth));
+    
+    // 最初のスライスの深度
+    float currentViewZ = nearZ;
 
     // 手前から奥に向かって積分レイマーチング
     for (uint z = 0; z < depth; ++z)
@@ -27,30 +34,23 @@ void main(uint3 DTid : SV_DispatchThreadID)
         uint3 voxelCoord = uint3(DTid.x, DTid.y, z);
         float4 stepData = gVoxelTemporalOut.Load(int4(voxelCoord, 0));
         
-        // 注入フェーズで厚みを掛けずに保存した単位長さあたりの純粋な値
         float3 S = stepData.rgb;
-        float extinction = max(stepData.a, 0.00001f);
+        float extinction = max(stepData.a, EXTINCTION_EPSILON);
         
-        // 現在のスライス（z）の物理的な厚みを都度計算
-        float zSlice0 = float(z) / float(depth);
-        float zSlice1 = float(z + 1.0f) / float(depth);
-        float viewZ0 = nearZ * pow(farZ / nearZ, zSlice0);
-        float viewZ1 = nearZ * pow(farZ / nearZ, zSlice1);
-        float voxelThickness = viewZ1 - viewZ0;
+        // 現在のボクセルの厚みを計算し、次の深度を更新 
+        float nextViewZ = currentViewZ * sliceRatio;
+        float voxelThickness = nextViewZ - currentViewZ;
+        currentViewZ = nextViewZ;
 
-        // 消散係数にボクセルの厚みを掛けて、このステップの正確な透過率を出す
+        // ボクセル内の解析的積分
         float stepTransmittance = exp(-extinction * voxelThickness);
-        
-        // 散乱光に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを乗算
         float3 integratedScattering = S * (1.0f - stepTransmittance) / extinction;
         
         // 全体の透過率を考慮して累積
         volumetricIllumination += integratedScattering * transmittance;
-        
-        // 次のステップへ透過率を更新
         transmittance *= stepTransmittance;
 
-        // 最終結果を書き込み
+        // 結果を書き込み
         gVoxelAccumulate[voxelCoord] = float4(volumetricIllumination, transmittance);
     }
 }
