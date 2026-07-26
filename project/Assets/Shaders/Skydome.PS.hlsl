@@ -1,10 +1,6 @@
-#include "ShaderConstants.hlsli" 
+#include "ShaderConstants.hlsli"
 
-// 空用キューブマップ
-TextureCube<float4> gSkyTexture : register(t0);
-// 雲用のシームレスな2Dノイズテクスチャ
-Texture2D<float4> gCloudTexture : register(t1);
-
+Texture2D<float4> gCloudTexture : register(t0); // 雲用シームレスノイズ (FBM用)
 SamplerState gSampler : register(s0);
 
 struct SkydomeVertexShaderOutput
@@ -20,13 +16,15 @@ struct PixelShaderOutput
 };
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
+ConstantBuffer<WeatherData> gWeather : register(b6);
+
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-ConstantBuffer<MaterialData> gMaterial : register(b5);
-ConstantBuffer<WeatherData> gWeather : register(b6);
-// FBMによる雲の高さを一元管理する関数
+
+// 雲のFBM (Fractal Brownian Motion)
+// 風速ベクトルで各オクターブをスクロールさせ、時間変化を伴う雲のハイトマップを生成
 float GetCloudHeight(float2 baseUV)
 {
     float2 speed1 = gWeather.windVelocity;
@@ -49,69 +47,63 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     PixelShaderOutput output;
     float3 viewDir = normalize(input.viewDir);
     
-    // 光源ベクトル
     float3 activeLightDir = normalize(-gDirectionalLights[0].direction);
     float3 sunVisualDir = normalize(-gWeather.sunDirection);
     float3 moonVisualDir = -sunVisualDir;
     
-    // --- 2. 空のベースカラーと大気散乱 ---
+    // 空のグラデーションと大気散乱
     float skyBlend = pow(max(viewDir.y, 0.0f), gWeather.skyGradientExponent);
     float3 skyColor = lerp(gWeather.horizonColor, gWeather.zenithColor, skyBlend);
     
     float groundBlend = smoothstep(0.0f, -0.1f, viewDir.y);
     skyColor = lerp(skyColor, gWeather.groundColor, groundBlend);
     
+    // レイリー散乱の簡易近似による太陽方向へのグロウ
     float sunDotBase = saturate(dot(viewDir, sunVisualDir));
     float atmosphereScattering = pow(sunDotBase, 4.0f) * gWeather.sunAtmosphereGlow * max(1.0f - viewDir.y, 0.0f);
     skyColor += gWeather.horizonColor * atmosphereScattering;
     
-    // --- 3. 雲のUV計算 (★地球の曲率を擬似計算して形を良くする) ---
-    // 単純な viewY 割り算ではなく、ドーム状になるようにカーブさせる
+    // 雲の形状と法線
+    // 擬似的な地球の曲率を適用し、地平線付近のUVの極端な伸びを抑制
     float viewY = max(viewDir.y, 0.0f);
-    float curvedY = sqrt(viewY * viewY + 0.02f); // 地平線付近の極端な伸びを防ぐ
+    float curvedY = sqrt(viewY * viewY + 0.02f);
     float2 cloudUV = (viewDir.xz / curvedY) * gWeather.cloudScale;
     
-    // 雲の高さと法線
     float cloudHeight = GetCloudHeight(cloudUV);
     float2 offset = float2(0.005f, 0.0f);
     float heightR = GetCloudHeight(cloudUV + offset.xy);
     float heightU = GetCloudHeight(cloudUV + offset.yx);
     float3 cloudNormal = normalize(float3(cloudHeight - heightR, gWeather.cloudBumpScale, cloudHeight - heightU));
     
-    // 雲のアルファ（形状）と厚み
+    // カバレッジベースの形状決定と地平線フェード
     float cloudAlpha = smoothstep(gWeather.cloudCoverage.x, gWeather.cloudCoverage.x + gWeather.cloudEdgeSoftness, cloudHeight);
     float horizonFade = smoothstep(0.05f, 0.2f, viewDir.y);
     cloudAlpha *= horizonFade;
     
     float cloudThickness = smoothstep(max(0.0f, gWeather.cloudCoverage.x - 0.05f), min(1.0f, gWeather.cloudCoverage.y + 0.15f), cloudHeight);
     
-    // --- 4. 立体的なライティング (★雷雨で暗くするための改善) ---
+    // 雲のライティングと疑似SSS
     float NdotL = dot(cloudNormal, activeLightDir);
     float halfLambert = saturate(NdotL * 0.5f + 0.5f);
     
-    // 太陽(ディレクショナルライト)の実際の色と強さを使用
     float3 directLightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
-    
-    // 環境光 (cloudShadowDensity で全体の暗さをコントロール)
     float3 ambientLight = gWeather.cloudAmbientColor * gWeather.cloudShadowDensity;
     
-    // 光の透過率 (Beer-Lambert則の近似)
-    // 雲が厚いほど、また absorption(吸収率) が高いほど太陽光を通さず底が真っ黒になる
+    // Beer-Lambert則の近似: 吸収率を用いて積乱雲特有の暗い底面を表現
     float transmittance = exp(-cloudThickness * gWeather.cloudAbsorption * 3.0f);
-    
-    // NdotLが高い(太陽側)は透過した光、低い部分は環境光
     float3 baseCloudColor = lerp(ambientLight, directLightColor * transmittance, halfLambert);
     
-    // 雲のフチ（エッジ）部分だけ光を透けさせる (擬似サブサーフェススキャタリング)
+    // 雲のエッジ部分の擬似SSS (Subsurface Scattering)
     float edgeTranslucency = pow(1.0f - cloudThickness, 2.0f) * cloudAlpha;
     baseCloudColor += directLightColor * edgeTranslucency * 0.5f;
 
-    // --- 5. 太陽と月の描画 ---
+    // 天体（太陽と月）の描画
     float sunDot = saturate(dot(viewDir, sunVisualDir));
     float moonDot = saturate(dot(viewDir, moonVisualDir));
     
     float sunHeight = saturate(sunVisualDir.y);
     float3 sunsetTint = lerp(float3(1.0f, 0.3f, 0.05f), float3(1.0f, 1.0f, 1.0f), smoothstep(0.0f, 0.2f, sunHeight));
+    
     float sunCore = pow(sunDot, 10000.0f);
     float3 coreColor = lerp(float3(1.0f, 0.8f, 0.5f), float3(1.0f, 0.99f, 0.98f), sunHeight) * 600.0f;
     float sunGlow = pow(sunDot, 5000.0f);
@@ -123,14 +115,14 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     float3 moonColorBase = float3(0.6f, 0.8f, 1.0f);
     float3 totalMoon = (moonCore * 2.0f + moonGlow) * moonColorBase;
     
-    // --- シルバーライニング ---
+    // シルバーライニング
+    // Henyey-Greenstein位相関数を用いた前方散乱の近似計算
     float g = 0.85f;
     float g2 = g * g;
     float hgTranslucency = (1.0f - cloudThickness) * cloudAlpha;
 
     float hgDenomSun = 1.0f + g2 - 2.0f * g * sunDot;
     float hgPhaseSun = (1.0f - g2) / pow(max(hgDenomSun, 0.001f), 1.5f);
-    // 太陽の強さに依存させる
     float3 sunSilverLining = directLightColor * (hgPhaseSun * 1.5f) * hgTranslucency;
 
     float hgDenomMoon = 1.0f + g2 - 2.0f * g * moonDot;
@@ -139,9 +131,10 @@ PixelShaderOutput main(SkydomeVertexShaderOutput input)
     
     float3 finalCloudColor = baseCloudColor + sunSilverLining + moonSilverLining;
     
-    // --- 7. 合成 ---
+    // 合成
     float3 skyWithClouds = lerp(skyColor, finalCloudColor, cloudAlpha);
     
+    // 雲の厚みに応じた天体のオクルージョン
     float skyOcclusion = lerp(1.0f, 0.0f, cloudAlpha * cloudThickness);
     totalSun *= skyOcclusion;
     totalMoon *= skyOcclusion;

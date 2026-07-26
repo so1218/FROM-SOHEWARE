@@ -23,6 +23,7 @@
         "bubbleModel_Emissive": 12.800000190734863,
         "bubbleModel_EnvMapInt": 0.6200000047683716,
         "bubbleModel_EnvMapTex": "skybox",
+        "bubbleModel_HeightMapTex": "white1x1",
         "bubbleModel_LightMode": 3,
         "bubbleModel_Lighting": 1,
         "bubbleModel_Metalness": 1.0,
@@ -38,6 +39,10 @@
         ],
         "bubbleModel_OutlineEnable": 0,
         "bubbleModel_OutlineWidth": 1.0,
+        "bubbleModel_POMEnable": 0,
+        "bubbleModel_POMHeightScale": 0.05000000074505806,
+        "bubbleModel_POMMaxSteps": 32.0,
+        "bubbleModel_POMMinSteps": 8.0,
         "bubbleModel_PuddleColor": [
             0.4000000059604645,
             0.30000001192092896,

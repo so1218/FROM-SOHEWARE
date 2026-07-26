@@ -12,7 +12,7 @@ public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
     // 天候データを受け取るように引数を追加
-    void Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
+    void Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void Draw(const RenderEnvironment& env, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
 private:
     static constexpr int kFrameCount = 3;
@@ -28,7 +28,6 @@ private:
     bool isSubmitted_ = false;
     WorldTransform currentTransform_;
     uint32_t currentColor_ = 0xFFFFFFFF;
-    uint32_t skyTextureIndex_ = 0;
     uint32_t cloudTextureIndex_ = 0;
     WeatherData currentWeatherData_; // Submitで受け取ったデータを保持
 };

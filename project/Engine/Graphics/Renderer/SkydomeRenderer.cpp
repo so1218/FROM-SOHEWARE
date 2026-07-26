@@ -62,11 +62,10 @@ void SkydomeRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather)
+void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather)
 {
     currentTransform_ = worldTransform;
     currentColor_ = color;
-    skyTextureIndex_ = skyCubeSrvIndex;
     cloudTextureIndex_ = cloudNoiseSrvIndex;
     currentWeatherData_ = weather;
     isSubmitted_ = true;
@@ -105,8 +104,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     cmdList->SetGraphicsRootConstantBufferView(4, weatherResource_[currentFrameIndex_]->GetGPUVirtualAddress());
 
     // SRVのバインド
-    cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(skyTextureIndex_));
-    cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));
+    cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));
 
     // 描画
     cmdList->DrawIndexedInstanced(static_cast<UINT>(skydomeMesh_.GetIndexCount()), 1, 0, 0, 0);

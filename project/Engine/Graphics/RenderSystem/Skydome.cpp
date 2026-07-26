@@ -17,7 +17,6 @@ Skydome::Skydome(Engine* engine)
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
 
     // デフォルトテクスチャの読み込み
-    skyCubeHandle_ = TextureManager::GetInstance().Get("black_cube");
     cloudNoiseHandle_ = TextureManager::GetInstance().Get("noise_59");
 
     binder_ = std::make_unique<PropertyBinder>(engine_, "Skydome");
@@ -56,9 +55,6 @@ void Skydome::Update()
     weatherData_.cloudShadowDensity = weather.cloudShadowDensity;
 }
 
-void Skydome::SetSkyCubeTexture(const std::string& textureName) {
-    skyCubeHandle_ = TextureManager::GetInstance().Get(textureName);
-}
 void Skydome::SetCloudNoiseTexture(const std::string& textureName) {
     cloudNoiseHandle_ = TextureManager::GetInstance().Get(textureName);
 }
@@ -73,7 +69,6 @@ void Skydome::Draw()
     engine_->GetRendererManager()->SubmitSkydome(
         transform_,
         color_,
-        skyCubeHandle_,
         cloudNoiseHandle_,
         weatherData_
     );

@@ -25,7 +25,6 @@ private:
     std::unique_ptr<FE::Model> model_;
     std::unique_ptr<FE::Model> modelTree_;
     std::unique_ptr<FE::Model> modelBuilding_;
-    std::unique_ptr<FE::Skybox> skybox_;
     std::unique_ptr<FE::Skydome> skydome_;
     std::unique_ptr<FE::PropertyBinder> binder_;
 

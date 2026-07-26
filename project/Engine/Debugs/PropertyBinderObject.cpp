@@ -753,7 +753,7 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                     ImGui::Separator();
                     ImGui::Spacing();
 
-                    ImGuiTreeNodeFlags optFlags = ImGuiTreeNodeFlags_Framed;
+                    ImGuiTreeNodeFlags optFlags = ImGuiTreeNodeFlags_SpanAvailWidth;
 
                     if (ImGui::TreeNodeEx("ShadowSettings", optFlags, "影設定"))
                     {
@@ -768,6 +768,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         ImGui::TreePop();
                     }
 
+                    ImGui::Separator();
+
                     if (ImGui::TreeNodeEx("NormalMapSettings", optFlags, "法線マップ"))
                     {
                         Draw(matPrefix + "NormEnable", "有効化");
@@ -779,6 +781,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         }
                         ImGui::TreePop();
                     }
+
+                    ImGui::Separator();
 
                     if (ImGui::TreeNodeEx("POMSettings", optFlags, "視差マッピング (POM)"))
                     {
@@ -794,6 +798,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         ImGui::TreePop();
                     }
 
+                    ImGui::Separator();
+
                     if (ImGui::TreeNodeEx("RimLightSettings", optFlags, "リムライト"))
                     {
                         Draw(matPrefix + "RimEnable", "有効化");
@@ -806,6 +812,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         }
                         ImGui::TreePop();
                     }
+
+                    ImGui::Separator();
 
                     if (ImGui::TreeNodeEx("EffectSettings", optFlags, "特殊エフェクト (アウトライン / ディゾルブ)"))
                     {
@@ -828,7 +836,9 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         ImGui::TreePop();
                     }
 
-                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "水エフェクト (水たまり / 波紋)"))
+                    ImGui::Separator();
+
+                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "水たまり / 波紋エフェクト"))
                     {
                         Draw(matPrefix + "RippleEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
@@ -836,7 +846,7 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                             Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
 
                             ImGui::Spacing();
-                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋 (Ripple) 設定");
+                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋設定");
                             Draw(matPrefix + "RippleMap", "波紋法線マップ");
                             Draw(matPrefix + "RippleScale", "雨の密度(スケール)");
                             Draw(matPrefix + "RippleStren", "波紋の強さ(法線)");
@@ -861,6 +871,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         ImGui::TreePop();
                     }
 
+                    ImGui::Separator();
+
                     if (ImGui::TreeNodeEx("UVSettings", optFlags, "UV トランスフォーム"))
                     {
                         Draw(matPrefix + "UseTriplanar", "トライプラナー有効");
@@ -877,6 +889,8 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         }
                         ImGui::TreePop();
                     }
+
+                    ImGui::Separator();
 
                     ImGui::EndTabItem();
                 }

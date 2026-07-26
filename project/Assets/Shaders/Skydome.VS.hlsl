@@ -3,14 +3,14 @@
 struct VertexShaderInput
 {
     float3 position : POSITION;
-    float2 uv : TEXCOORD0; // 天球メッシュが持つ雲用の2D UV座標
+    float2 uv : TEXCOORD0; 
 };
 
 struct SkydomeVertexShaderOutput
 {
     float4 position : SV_Position;
-    float3 viewDir : TEXCOORD0; // ピクセルシェーダーでの太陽計算用
-    float2 uv : TEXCOORD1; // 雲のスクロール用
+    float3 viewDir : TEXCOORD0; 
+    float2 uv : TEXCOORD1; 
 };
 
 ConstantBuffer<TransformationMatrix> gTransform : register(b0);

@@ -86,8 +86,7 @@ void PostEffectManager::Initialize(
 
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
-    cbPostEffect_ = BufferManager::CreateBufferResource(device, sizeof(PostEffectData));
-    cbPostEffect_->Map(0, nullptr, reinterpret_cast<void**>(&postEffectData_));
+    cbPostEffect_ = BufferManager::CreateMappedConstantBuffer(device, &postEffectData_);
 
     // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
     auto [finalResource, finalRtvHandle, finalSrvIndex, uavIndex] =

@@ -2,15 +2,16 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
+
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
+
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2DArray<float> gShadowMapArray : register(t2);
-
 SamplerComparisonState gShadowSampler : register(s1);
 
 struct PixelInput
@@ -21,46 +22,46 @@ struct PixelInput
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
-    float4 currentClipPos : POSITION1; 
+    float4 currentClipPos : POSITION1;
     float4 prevClipPos : POSITION2;
 };
 
-// シャドウ強度を計算
+// 前方宣言
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
 PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
     
-    float t = input.texcoord.y; // 0.0(根本) ~ 1.0(先端)
+    float t = input.texcoord.y;
     float gustMask = input.color.a;
 
-    // --- 1. ベースカラーグラデーション ---
+    // 頂点カラーに焼き付けたベースカラーとの合成
     float3 grassColor = lerp(gMaterial.rootColor, gMaterial.tipColor, t);
     float3 baseColor = input.color.rgb * grassColor;
 
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
-    // AAAの重要アプローチ：個々の法線を「空(0,1,0)」へブレンドしてチラツキを防止！
+    // Normal Flattening
+    // Foliage特有の高周波な法線によるピクセル単位のチラツキを抑えるため、
+    // 上方向(0,1,0)へ法線をブレンドし、面全体で柔らかく光を受けるように補正
     float3 bladeNormal = normalize(input.normal);
-    float3 globalUpNormal = float3(0.0f, 1.0f, 0.0f);
-    float3 normal = normalize(lerp(bladeNormal, globalUpNormal, gMaterial.grassNormalBlend));
+    float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
 
-    // --- 2. 影の計算 ---
     float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
-    float flashIntensity = saturate(gFrameData.lightningFlashIntensity);
-    shadowFactor = lerp(shadowFactor, 1.0f, flashIntensity);
 
-    // --- 3. Foliage Light (Wrap Diffuse & SSS) ---
-    // ① Wrap Diffuse (光の柔らかい回り込み)
+    // -------------------------------------------------------------------------
+    // Foliage Shading (Diffuse & SSS)
+    // -------------------------------------------------------------------------
+    // Wrap Diffuse: 葉の円柱的な構造を近似し、陰への光の回り込みを表現
     float wrap = 0.5f;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL;
 
-    // ② Subsurface Scattering (透過光)
-    // 逆光時に葉を透過する美しい光 (先端 t ほど強く透ける)
+    // View-dependent SSS: 逆光時に葉を透過する光の近似
+    // 根本(t=0)は厚みがあるとして減衰させ、先端(t=1)ほど強く透過
     float sssDot = saturate(dot(-lightDir, toEye + bladeNormal * 0.2f));
     float sssFade = pow(sssDot, 2.5f) * t;
     float3 translucency = gMaterial.sssColor * sssFade * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
@@ -68,40 +69,42 @@ PixelShaderOutput main(PixelInput input)
     diffuse *= shadowFactor;
     translucency *= shadowFactor;
 
-    // ③ Ambient & 根本のAO
+    // 環境光と疑似AO (根本を暗くして接地感を出す)
     float ao = lerp(gMaterial.grassRootAO, 1.0f, t);
     float skyLight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambient = baseColor * (0.15f + skyLight * 0.2f + gFrameData.lightningFlashColor * flashIntensity) * ao;
+    float3 ambient = baseColor * (0.15f + skyLight * 0.2f) * ao;
 
     float3 finalColor = diffuse + translucency + ambient;
 
-    // --- 4. 暴れない上品なスペキュラ (Tsushima Satin Specular) ---
+    // -------------------------------------------------------------------------
+    // Specular
+    // -------------------------------------------------------------------------
+    // 接線(Tangent)ベースの縦方向ハイライト
     float3 H = normalize(lightDir + toEye);
-    
-    // Kajiya-Kay 風の縦方向異方性ハイライト
     float3 tangent = normalize(input.tangent);
+    
     float TdotH = dot(tangent, H);
     float sinTH = sqrt(1.0f - saturate(TdotH * TdotH));
     
     float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
     float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength;
-    
-    // 光の表面だけで反応するようシャドウとNdotLでマスク
-    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor;
+    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor; // 陰部分のハイライト遮蔽
 
-    // ★ 風による「サテン光沢（シルバーライニング）」の自然な補正
-    // 直接色を乗算・加算して発光させるのではなく、風が吹く場所のスペキュラ幅をわずかに引き締める
-    float windBoost = 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
-    specIntensity *= windBoost;
+    // Wind Specular Modulation
+    // 突風マスクを利用し、風が強く当たる領域のスペキュラ輝度を引き上げる
+    // 草が風になびいた瞬間に面が揃って白く光る現象を低負荷で近似
+    specIntensity *= 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
 
-    float3 specular = gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity;
-    finalColor += specular;
+    finalColor += gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity;
 
     // 出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
+    
+    // G-Buffer : 濡れ表現でRoughnessを下げる
     output.material = float4(0.0f, 0.8f - (gMaterial.wetness * 0.6f), 0.0f, 1.0f);
     
+    // Motion Vector (TAA / Motion Blur用)
     float2 ndcCurrent = input.currentClipPos.xy / input.currentClipPos.w;
     float2 ndcPrev = input.prevClipPos.xy / input.prevClipPos.w;
     output.velocity = (ndcCurrent - ndcPrev) * float2(0.5f, -0.5f);
@@ -109,18 +112,21 @@ PixelShaderOutput main(PixelInput input)
     return output;
 }
 
-// 草専用の超軽量シャドウ計算 (1タップ)
+// -----------------------------------------------------------------------------
+// Foliage向け 軽量CSMフェッチ
+// -----------------------------------------------------------------------------
+// 膨大なピクセル面積を占める草描画の帯域幅を節約するため、1-Tap PCFで済ませる
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光の裏側なら即座に暗くする（サンプリングすらしない）
+    // [Early-out] 光の裏側（セルフシャドウ領域）はテクスチャフェッチ自体をスキップ
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // カスケード判定
+    // CSM カスケード選択
     uint cascadeIndex = 0;
     if (viewDepth > gShadowData.cascadeSplits.x)
         cascadeIndex = 1;
@@ -129,10 +135,9 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     if (viewDepth > gShadowData.cascadeSplits.z)
         cascadeIndex = 3;
 
-    // シャドウバイアス
+    // Normal Bias (シャドウアクネ軽減)
     float biasScale = saturate(1.0f - NdotL);
-    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
-    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
+    float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
     float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
@@ -142,14 +147,13 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
-        projCoords.x < 0.0f || projCoords.x > 1.0f ||
-        projCoords.y < 0.0f || projCoords.y > 1.0f)
+    // Frustum外のクリップ判定
+    if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
     }
 
-    // ハードウェアPCF（SampleCmpLevelZero 1回で2x2の補間シャドウが得られる）
+    // Hardware PCF (SampleCmpLevelZero 1回で 2x2 bilinear 補間された結果を取得)
     float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
         float3(projCoords.xy, cascadeIndex),

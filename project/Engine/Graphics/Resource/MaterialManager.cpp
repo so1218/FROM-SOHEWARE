@@ -54,7 +54,7 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->enableNormalMap = false;
     handle.materialData->normalTiling = 1.0f;
     handle.materialData->normalIntensity = 1.0f;
-    handle.materialData->enablePOM = 0.0f;     
+    handle.materialData->enablePOM = false;     
     handle.materialData->pomHeightScale = 0.05f;
     handle.materialData->pomMinSteps = 8.0f;   
     handle.materialData->pomMaxSteps = 32.0f;

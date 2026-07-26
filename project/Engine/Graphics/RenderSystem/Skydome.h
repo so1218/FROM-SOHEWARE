@@ -20,7 +20,6 @@ public:
     void Draw();
     void DebugDraw();  // ImGui描画用
 
-    void SetSkyCubeTexture(const std::string& textureName);
     void SetCloudNoiseTexture(const std::string& textureName);
     void SetColor(uint32_t color);
 
@@ -31,7 +30,6 @@ private:
     std::unique_ptr<PropertyBinder> binder_;
 
     WorldTransform transform_;
-    uint32_t skyCubeHandle_ = 0;
     uint32_t cloudNoiseHandle_ = 0;
     uint32_t color_ = 0xFFFFFFFF;
 

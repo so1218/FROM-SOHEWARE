@@ -73,7 +73,7 @@ public:
         const GrassGenerationData& genData,
         uint32_t heightMapSrvHandle,
         uint32_t densityMapSrvHandle);
-    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t skyCubeSrvIndex, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
+    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform,
         const MaterialHandle& material, const Vector4& instanceColor,

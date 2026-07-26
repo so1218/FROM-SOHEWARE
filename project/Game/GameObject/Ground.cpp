@@ -20,7 +20,6 @@ Ground::Ground(Engine* engine) : GameObject()
 	model_ = std::make_unique<Model>(engine_, "field");
 	modelTree_ = std::make_unique<Model>(engine_, "tree");
 	modelBuilding_ = std::make_unique<Model>(engine_, "volumetricFog");
-	skybox_ = std::make_unique<Skybox>(engine);
 	skydome_ = std::make_unique<Skydome>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
@@ -50,9 +49,7 @@ void Ground::Initialize()
 	binder_->Bind("TreeSpreadRadius", &treeSpreadRadius_, 50.0f);
 	binder_->Bind("TreeBaseScale", &treeBaseScale_, 1.0f);
 
-	skybox_->SetCubeTexture("skybox");
 	skydome_->Initialize();
-	skydome_->SetSkyCubeTexture("skybox");
 	modelTree_->ApplyRenderSettings(RenderingPreset::StandardNoCull);
 
 	EnvironmentManager::GetInstance()->Initialize(engine_);
