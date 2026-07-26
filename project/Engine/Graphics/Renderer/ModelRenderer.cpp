@@ -94,7 +94,6 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
         [&](const Node& node, const Matrix4x4& parentMatrix, const Matrix4x4& parentPrevMatrix)
         {
             Matrix4x4 currentWorldMatrix = node.localMatrix * parentMatrix;
-            // ローカル行列がアニメーションしない前提なら、過去の親行列を掛けるだけで過去のWorldになります
             Matrix4x4 currentPrevWorldMatrix = node.localMatrix * parentPrevMatrix;
 
             for (unsigned int meshIndex : node.meshIndices)

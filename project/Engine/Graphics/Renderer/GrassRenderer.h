@@ -13,7 +13,7 @@ public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
 
-    // ★追加: GPU上でハイトマップ・密度マップから草を全自動生成する
+    // GPU上でハイトマップ・密度マップから草を全自動生成
     void GenerateGrass(
         const RenderEnvironment& env,
         const GrassGenerationData& genData,
@@ -21,7 +21,6 @@ public:
         uint32_t densityMapSrvHandle,
         D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress);
 
-    // 毎フレームの描画実行（CullingCS -> ExecuteIndirect）
     void Draw(
         const RenderEnvironment& env,
         uint32_t windMapTextureHandle,
@@ -36,16 +35,16 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cullingHeap_;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> generationHeap_;
 
-    // [GPU内保持] GenerationCSが生成した全草の基本バッファ (Default Heap)
+    // GenerationCSが生成した全草の基本バッファ (Default Heap)
     Microsoft::WRL::ComPtr<ID3D12Resource> generatedGrassBuffer_;
 
-    // [出力] CullingCSが生き残った草を書き込むバッファ (Default Heap)
+    // CullingCSが生き残った草を書き込むバッファ (Default Heap)
     Microsoft::WRL::ComPtr<ID3D12Resource> outputInstanceBuffer_[kFrameCount];
 
-    // [間接描画引数] CullingCSがカウントアップするバッファ
+    // CullingCSがカウントアップするバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsBuffer_[kFrameCount];
 
-    // [リセット用] 間接描画引数を初期化するためのアップロードバッファ
+    // 間接描画引数を初期化するためのアップロードバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsUploadBuffer_;
 
     // 定数バッファ

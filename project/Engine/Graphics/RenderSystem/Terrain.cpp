@@ -14,13 +14,13 @@ Terrain::Terrain(Engine* engine)
 {
     if (!engine_) return;
 
-    // transform_ を初期状態で確定
+    // Transform の初期化
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
     transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
     transform_.UpdateMatrix();
 
-    // マテリアルの作成
+    // 描画用マテリアルの構築とテクスチャ割り当て
     material_ = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 
     auto& texManager = TextureManager::GetInstance();
@@ -31,7 +31,7 @@ Terrain::Terrain(Engine* engine)
     material_.dissolveMapHandle = texManager.Get("white1x1");
     material_.normalMapHandle = texManager.Get("white1x1");
 
-    // UVトランスフォームの初期化と定数バッファへの反映
+    // テクスチャ座標の変換行列を初期化し、定数バッファへ反映
     material_.uvTransformData.Initialize();
     if (material_.materialData)
     {
@@ -48,39 +48,39 @@ void Terrain::Draw()
     FE::Frustum frustum;
     frustum.ExtractFromMatrix(view * proj);
 
-    // 全ての描画で使い回すための「代表メッシュ」として、最初のチャンクを取得
+    // VRAM消費を抑えるため、全チャンクで共通の頂点バッファ（代表メッシュ）を使い回す
     TerrainChunk* sharedMesh = chunks_[0].get();
 
-    // チャンク全体のオフセット（中心化用）
+    // 地形全体を原点中心に配置するためのオフセット値
     float offsetX = (totalVertsX_ - 1) * params_.cellSize * 0.5f;
     float offsetZ = (totalVertsZ_ - 1) * params_.cellSize * 0.5f;
 
     for (const auto& chunk : chunks_)
     {
-        // チャンクのワールド位置を計算し、専用の Transform を作成
+        // 各チャンクのワールド座標を算出し、個別の Transform を作成
         WorldTransform chunkTransform;
         chunkTransform.translation_ = {
-            (chunk->GetStartX() * params_.cellSize - offsetX) + transform_.translation_.x, // ←追加
+            (chunk->GetStartX() * params_.cellSize - offsetX) + transform_.translation_.x, 
             transform_.translation_.y,
-            (chunk->GetStartZ() * params_.cellSize - offsetZ) + transform_.translation_.z  // ←追加
+            (chunk->GetStartZ() * params_.cellSize - offsetZ) + transform_.translation_.z  
         };
         chunkTransform.UpdateMatrix();
 
         // チャンクのUVトランスフォームを計算
-        // 修正後（頂点数で割り、0.5ピクセル分のオフセットを足す）
         float totalVertsX_f = static_cast<float>(totalVertsX_);
         float totalVertsZ_f = static_cast<float>(totalVertsZ_);
 
-        // チャンクのUVスケール
+        // 頂点シェーダーでのハイトマップ参照用スケール
         float uvScaleX = static_cast<float>(chunk->GetNumCellsX()) / totalVertsX_f;
         float uvScaleZ = static_cast<float>(chunk->GetNumCellsZ()) / totalVertsZ_f;
 
-        // 0.5ピクセル分ずらして、正確にピクセルの中央をサンプリングさせる
+        // ハイトマップサンプリング時のテクセルずれを防ぐため、半ピクセル分のオフセットを加算
         float uvOffsetX = (static_cast<float>(chunk->GetStartX()) + 0.5f) / totalVertsX_f;
         float uvOffsetZ = (static_cast<float>(chunk->GetStartZ()) + 0.5f) / totalVertsZ_f;
         Vector4 uvTransform = { uvScaleX, uvScaleZ, uvOffsetX, uvOffsetZ };
 
-        // AABBもワールド座標に合わせて移動させる（これがないとカリングがバグります）
+        // 視界判定用の AABB をワールド空間へ変換
+        // 高さはハイトマップの最大適用値を乗算してスケールを合わせる
         Vector3 aabbMin = chunk->GetAABBMin();
         Vector3 aabbMax = chunk->GetAABBMax();
         Vector3 worldMin = {
@@ -94,13 +94,13 @@ void Terrain::Draw()
             aabbMax.z + chunkTransform.translation_.z
         };
 
-        // 視界判定
+        // カメラの視界内に入るチャンクのみを描画キューに登録
         if (frustum.IntersectsAABB(worldMin, worldMax))
         {
             engine_->GetRendererManager()->SubmitTerrain(
-                chunkTransform, // 動的に作った「ズレた位置」の行列を渡す
-                sharedMesh,     // chunk.get() ではなく、必ず共通のメッシュを渡す！
-                uvTransform,    // 追加した引数
+                chunkTransform, 
+                sharedMesh,     
+                uvTransform,    
                 material_,
                 baseColor_,
                 params_,
@@ -114,12 +114,12 @@ void Terrain::RebuildMesh()
 {
     if (rawHeightRatios_.empty()) return;
 
-    // ★ cellSize_ ではなく params_.cellSize を使うように修正！
     float totalWidth = (totalVertsX_ - 1) * params_.cellSize;
     float totalDepth = (totalVertsZ_ - 1) * params_.cellSize;
     float offsetX = totalWidth * 0.5f;
     float offsetZ = totalDepth * 0.5f;
 
+    // 初回構築時のみチャンク分割を実施
     if (chunks_.empty())
     {
         int totalCellsX = totalVertsX_ - 1;
@@ -138,15 +138,15 @@ void Terrain::RebuildMesh()
                 int numCellsX = std::min(chunkSize_, totalCellsX - startX);
                 int numCellsZ = std::min(chunkSize_, totalCellsZ - startZ);
 
-                // ★ params_.cellSize を渡す
                 chunks_.push_back(std::make_unique<TerrainChunk>(
                     engine_, startX, startZ, numCellsX, numCellsZ, params_.cellSize, offsetX, offsetZ,
-                    (float)totalVertsX_, (float)totalVertsZ_
+                    static_cast<float>(totalVertsX_), static_cast<float>(totalVertsZ_)
                 ));
             }
         }
     }
 
+    // 各チャンクにローカルの高さデータを割り当て、AABB を更新
     for (size_t i = 0; i < chunks_.size(); ++i)
     {
         auto& chunk = chunks_[i];
@@ -164,7 +164,7 @@ void Terrain::RebuildMesh()
                 int globalZ = std::min(chunk->GetStartZ() + z, totalVertsZ_ - 1);
                 int globalIndex = globalZ * totalVertsX_ + globalX;
 
-                // Y軸の中心化
+                // 地形の基準となる高さをゼロにするための中心化補正
                 float ratio = rawHeightRatios_[globalIndex] - 0.5f;
                 localHeights[z * numVertsX + x] = ratio;
             }
@@ -173,7 +173,8 @@ void Terrain::RebuildMesh()
         chunk->SetUVScale(params_.uvScale);
         chunk->SetHeightData(localHeights);
 
-        // 頂点バッファを作らなくても、AABBだけは全チャンクで必ず計算
+        // カリング用途の AABB は全チャンクで計算するが、
+        // 頂点バッファの実体化は共通メッシュとなる先頭チャンクのみ行う
         chunk->CalculateAABB();
         if (i == 0)
         {
@@ -188,14 +189,15 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, float cellS
     const TextureHandleData* meta = texManager.GetMetaData(heightmapTexName);
     if (!meta) return false;
 
+    // ハイトマップ画像をCPU側のメモリ領域へ展開し、直接ピクセルデータへアクセス
     DirectX::ScratchImage mipImages = TextureLoader::LoadTexture(meta->fullPath);
     const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
     const DirectX::Image* img = mipImages.GetImage(0, 0, 0);
     if (!img || !img->pixels) return false;
 
+    // 画像サイズから地形の頂点解像度を決定し、サンプリング用のテクセルサイズを算出
     totalVertsX_ = static_cast<int>(metadata.width);
     totalVertsZ_ = static_cast<int>(metadata.height);
-
     params_.texelSize = 1.0f / static_cast<float>(totalVertsX_);
 
     heightMapHandle_ = TextureManager::GetInstance().Get(heightmapTexName);
@@ -203,16 +205,24 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, float cellS
     rawHeightRatios_.resize(totalVertsX_ * totalVertsZ_);
     size_t pixelSize = DirectX::BitsPerPixel(metadata.format) / 8;
 
-    for (int z = 0; z < totalVertsZ_; ++z) {
-        for (int x = 0; x < totalVertsX_; ++x) {
+    // 全ピクセルを走査し、0.0〜1.0の範囲に正規化した高さ情報を抽出
+    for (int z = 0; z < totalVertsZ_; ++z) 
+    {
+        for (int x = 0; x < totalVertsX_; ++x)
+        {
             int index = z * totalVertsX_ + x;
             float normalizedHeight = 0.0f;
 
-            if (metadata.format == DXGI_FORMAT_R16_UNORM) {
+            // 地形特有の段差を回避するため、16bitグレースケール精度の読み込みに対応
+            if (metadata.format == DXGI_FORMAT_R16_UNORM) 
+            {
                 const uint16_t* srcPixels = reinterpret_cast<const uint16_t*>(img->pixels);
                 normalizedHeight = static_cast<float>(srcPixels[index]) / 65535.0f;
             }
-            else {
+            else 
+            {
+                // 8bitフォーマットの場合は赤チャンネルの値を高さとして採用
+                // メモリのアライメント（行パディング）によるズレを防ぐため、rowPitchを用いて正確なアドレスを計算
                 const uint8_t* pixelPtr = img->pixels + (z * img->rowPitch) + (x * pixelSize);
                 normalizedHeight = static_cast<float>(pixelPtr[0]) / 255.0f;
             }
@@ -221,12 +231,7 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, float cellS
         }
     }
 
-    // ★ 排除: コンストラクタで初期化されていれば、ここで毎回リセット・行列更新する必要はありません
-    // transform_.translation_ = { 0.0f, 0.0f, 0.0f };
-    // transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
-    // transform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    // transform_.UpdateMatrix();
-
+    // 更新された高さ情報に基づいて、地形チャンクとカリング用 AABB を再構築
     chunks_.clear();
     RebuildMesh();
 
@@ -332,18 +337,22 @@ Vector4* Terrain::GetMaterialColorPtr()
 
 float Terrain::GetHeight(float worldX, float worldZ) const
 {
+    // 入力されたワールド空間の座標を地形のローカル空間へ変換
     float localX = worldX - transform_.translation_.x;
     float localZ = worldZ - transform_.translation_.z;
     float heightRatio = 0.0f;
+
     for (const auto& chunk : chunks_)
     {
-        // チャンクからは -0.5 ~ 0.5 の比率が返ってくる
+        // チャンク内で座標がヒットした場合、4点補間された高さの比率（-0.5 〜 0.5）を取得
         if (chunk->GetHeightAt(localX, localZ, heightRatio))
         {
-            // (比率 * maxHeight) に、地形全体のY座標を足したものが本当のワールド高さ
+            // 最大スケールを乗算し、地形全体のワールド基準高さを加算して最終的なワールドY座標を返す
             return (heightRatio * params_.maxHeight) + transform_.translation_.y;
         }
     }
+
+    // 範囲外の場合は基準となる高さを返す
     return 0.0f;
 }
 

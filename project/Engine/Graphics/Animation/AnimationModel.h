@@ -133,7 +133,6 @@ public:
     float* GetSpeedScalePtr() { return &speedScale_; }
     bool* GetIsLoopPtr() { return &isLoop_; }
 
-    // ゲッターに追加
     const ModelData* GetModelData() const { return animeModelData_.modelData; }
 
     // スキニング後の頂点座標を取得する関数

@@ -200,7 +200,7 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
 
     PSODescription desc;   // 既定値入り
 
-    // 1. まず共通の必須キーを処理
+    // 共通の必須キーを処理
     assert(json.contains("RootSignature") && "Missing RootSignature");
     desc.RootSignature = json["RootSignature"];
 
@@ -210,7 +210,7 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
     // 必須キー
     if (desc.ComputeShader.empty())
     {
-        // --- グラフィックスPSO用の必須チェック ---
+        // グラフィックスPSO用の必須チェック
         assert(json.contains("VertexShader") && "Missing VertexShader");
         desc.VertexShader = json["VertexShader"];
 
@@ -229,7 +229,7 @@ PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
     desc.Topology = json.value("Topology", desc.Topology);
     if (json.contains("RTVFormats") && json["RTVFormats"].is_array())
     {
-        // "RTVFormats" : ["Format1", "Format2"] のように配列で指定された場合
+        // "RTVFormats" : 配列で指定された場合
         for (const auto& fmt : json["RTVFormats"])
         {
             desc.RTVFormats.push_back(fmt.get<std::string>());

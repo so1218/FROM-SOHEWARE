@@ -32,7 +32,7 @@ void GrassSystem::Update()
 
     auto* rendererManager = engine_->GetRendererManager();
 
-    // 現在のマテリアル(風の影響など)とカリング情報だけをマネージャーに伝達
+    // 現在のマテリアルとカリング情報だけをマネージャーに伝達
     rendererManager->SetGrassRenderingParams(windMapTextureHandle_, materialData_, cullingData_);
 }
 

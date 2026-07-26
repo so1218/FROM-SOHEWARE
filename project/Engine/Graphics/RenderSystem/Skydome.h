@@ -15,10 +15,10 @@ public:
     Skydome(Engine* engine);
     ~Skydome() = default;
 
-    void Initialize(); // 初期化処理をまとめる
+    void Initialize(); 
     void Update();
     void Draw();
-    void DebugDraw();  // ImGui描画用
+    void DebugDraw();  
 
     void SetCloudNoiseTexture(const std::string& textureName);
     void SetColor(uint32_t color);

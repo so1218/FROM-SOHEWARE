@@ -16,9 +16,9 @@ struct LightningPath
 // 1本の雷のデータを管理する構造体
 struct LightningInstance
 {
-    Vector3 startPos;       // 始点（雲）
-    Vector3 endPos;         // 終点（地面）
-    float lifeTime;         // 残り寿命（0になったら消滅）
+    Vector3 startPos;       // 始点
+    Vector3 endPos;         // 終点
+    float lifeTime;         // 残り寿命
     float maxLifeTime;      // 最大寿命
     uint32_t seed;          // 分岐や明滅パターンのシード値
     // 複数の経路を持つリスト
@@ -61,7 +61,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_[kFrameCount];
     LightningVertex* mappedVertices_[kFrameCount] = {};
 
-    // 動的インデックスバッファ（追加）
+    // 動的インデックスバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_[kFrameCount];
     uint32_t* mappedIndices_[kFrameCount] = {};
 
@@ -69,7 +69,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_[kFrameCount];
     TransformationMatrix* mappedWvp_[kFrameCount] = {};
 
-    // マテリアル定数バッファ（追加）
+    // マテリアル定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_[kFrameCount];
     LightningMaterial* mappedMaterial_[kFrameCount] = {};
 

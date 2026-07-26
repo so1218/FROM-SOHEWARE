@@ -10,7 +10,6 @@ class Engine;
 class GrassSystem
 {
 public:
-    // コンストラクタ
     GrassSystem(Engine* engine, const std::string& windMapTextureName);
     ~GrassSystem() = default;
 

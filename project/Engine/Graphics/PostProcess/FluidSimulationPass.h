@@ -18,10 +18,10 @@ public:
     // 初期化
     void Initialize(Engine* engine, PSOManager* psoManager, UINT gridWidth = 64, UINT gridHeight = 64, UINT gridDepth = 64);
 
-    // 実行（5つのCSを順番にDispatchする）
+    // 実行
     void Execute(ID3D12GraphicsCommandList* cmdList);
 
-    // 外部（VolumetricFogPassなど）に計算結果を渡すためのゲッター
+    // 外部に計算結果を渡すためのゲッター
     uint32_t GetCurrentDensitySRVIndex() const { return densitySrvIndices_[readIndex_]; }
     uint32_t GetCurrentVelocitySRVIndex() const { return velocitySrvIndices_[readIndex_]; }
 

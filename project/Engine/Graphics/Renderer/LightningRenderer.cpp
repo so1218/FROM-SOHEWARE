@@ -30,16 +30,16 @@ void LightningRenderer::Initialize(const RenderEnvironment& env)
         materialResource_[i] = BufferManager::CreateMappedConstantBuffer(device, &mappedMaterial_[i]);
 
         // マテリアルの初期値セット
-        mappedMaterial_[i]->coreColor = { 1.0f, 1.0f, 1.0f };       // 芯は純白
-        mappedMaterial_[i]->coreThickness = 0.15f;                  // 芯の細さ
-        mappedMaterial_[i]->fringeColor = { 0.1f, 0.5f, 1.0f };     // 青紫の滲み
-        mappedMaterial_[i]->corePower = 4.0f;                       // 芯の飛び具合
-        mappedMaterial_[i]->glowPower = 2.5f;                       // 滲みの広がり
-        mappedMaterial_[i]->flickerSpeed = 60.0f;                   // 激しい明滅
+        mappedMaterial_[i]->coreColor = { 1.0f, 1.0f, 1.0f };      
+        mappedMaterial_[i]->coreThickness = 0.15f;                 
+        mappedMaterial_[i]->fringeColor = { 0.1f, 0.5f, 1.0f };    
+        mappedMaterial_[i]->corePower = 4.0f;                      
+        mappedMaterial_[i]->glowPower = 2.5f;                      
+        mappedMaterial_[i]->flickerSpeed = 60.0f;                  
         mappedMaterial_[i]->flickerMin = 0.4f;
         mappedMaterial_[i]->flickerMax = 1.2f;
-        mappedMaterial_[i]->emissiveIntensity = 50.0f;              // ブルームを反応させる異常値
-        mappedMaterial_[i]->instanceSeed = 0.0f;                    // 描画時に上書きされる
+        mappedMaterial_[i]->emissiveIntensity = 50.0f;             
+        mappedMaterial_[i]->instanceSeed = 0.0f;                   
     }
 }
 

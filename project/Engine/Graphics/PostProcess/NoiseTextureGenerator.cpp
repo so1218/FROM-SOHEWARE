@@ -74,7 +74,7 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     ID3D12DescriptorHeap* heaps[] = { srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    // UAVをRootParameterにセット (GPUハンドルを取得して渡す)
+    // UAVをRootParameterにセット
     cmdList->SetComputeRootDescriptorTable(0, srvManager->GetSRVHandleGPU(uavIndex));
 
     // Dispatch (8x8x8 スレッドで処理)

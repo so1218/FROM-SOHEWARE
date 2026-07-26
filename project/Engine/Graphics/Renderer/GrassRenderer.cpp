@@ -18,13 +18,14 @@ void GrassRenderer::Initialize(const RenderEnvironment& env)
     ID3D12Device* device = env.device->GetDevice();
     auto* srvManager = env.srvManager;
 
-    // 1. 間接描画引数の初期化バッファ作成 (VertexCount=8, InstanceCount=0, StartVertex=0, StartInstance=0)
+    // GPU-Driven Rendering 用リソース
+    // ExecuteIndirectの引数初期値 (頂点数8=ビルボード1枚分。InstanceCountはカリングCS側で動的決定)
     D3D12_DRAW_ARGUMENTS drawArgs = { 8, 0, 0, 0 };
     D3D12_DRAW_ARGUMENTS* mappedArgs = nullptr;
     indirectArgsUploadBuffer_ = BufferManager::CreateMappedBuffer<D3D12_DRAW_ARGUMENTS>(device, 1, &mappedArgs);
     *mappedArgs = drawArgs;
 
-    // 2. GPU内で全草データを保持するマスターバッファ (Default Heap + UAV/SRV)
+    // GPU上でプロシージャル生成した全草データを保持するバッファ
     generatedGrassBuffer_ = BufferManager::CreateUAVBufferResource(
         device, sizeof(GrassInstanceData) * kMaxInstances);
 
@@ -33,47 +34,41 @@ void GrassRenderer::Initialize(const RenderEnvironment& env)
     generatedUavIndex_ = srvManager->CreateStructuredBufferUAV(
         generatedGrassBuffer_.Get(), kMaxInstances, sizeof(GrassInstanceData));
 
-    // 草生成用パラメータの定数バッファ作成
     generationDataResource_ = BufferManager::CreateMappedConstantBuffer<GrassGenerationData>(
         device, &mappedGenData_);
 
-    // 3. ダブルバッファリング用リソース & ビューの作成
+    // フレームリソース (Double Buffering)
     for (int i = 0; i < kFrameCount; ++i)
     {
-        // Output Instance Buffer (Default Heap)
+        // カリングを通過した可視インスタンスのみを格納するバッファ
         outputInstanceBuffer_[i] = BufferManager::CreateUAVBufferResource(
             device, sizeof(GrassInstanceData) * kMaxInstances);
 
-        // Indirect Draw Args Buffer (Default Heap)
+        // カリングCS内で有効数をアトミック加算して書き込む引数バッファ
         indirectArgsBuffer_[i] = BufferManager::CreateUAVBufferResource(
             device, sizeof(D3D12_DRAW_ARGUMENTS));
 
-        // Constant Buffers
         materialResource_[i] = BufferManager::CreateMappedConstantBuffer<GrassMaterialData>(
             device, &mappedMaterial_[i]);
-
         cullingDataResource_[i] = BufferManager::CreateMappedConstantBuffer<GrassCullingData>(
             device, &mappedCullingData_[i]);
 
-        // ビュー作成
         outputUavIndex_[i] = srvManager->CreateStructuredBufferUAV(
             outputInstanceBuffer_[i].Get(), kMaxInstances, sizeof(GrassInstanceData));
-
         outputSrvIndex_[i] = srvManager->CreateStructuredBufferSRV(
             outputInstanceBuffer_[i].Get(), kMaxInstances, sizeof(GrassInstanceData));
-
         indirectUavIndex_[i] = srvManager->CreateRawBufferUAV(
             indirectArgsBuffer_[i].Get(), sizeof(D3D12_DRAW_ARGUMENTS));
     }
 
-    // 4. CullingCS用 ディスクリプタヒープ
+    // CullingCS用 ローカルディスクリプタヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 16 * kFrameCount;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&cullingHeap_));
 
-    // 5. ExecuteIndirect用 コマンドシグネチャ作成
+    // ExecuteIndirect用 コマンドシグネチャ (DrawInstanced用)
     D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
 
@@ -81,7 +76,6 @@ void GrassRenderer::Initialize(const RenderEnvironment& env)
     cmdSigDesc.ByteStride = sizeof(D3D12_DRAW_ARGUMENTS);
     cmdSigDesc.NumArgumentDescs = 1;
     cmdSigDesc.pArgumentDescs = &argDesc;
-
     device->CreateCommandSignature(&cmdSigDesc, nullptr, IID_PPV_ARGS(&commandSignature_));
 }
 
@@ -90,7 +84,6 @@ void GrassRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-// ★ GPU上でGrassGenerationCSを実行し、草データを全自動生成する関数
 void GrassRenderer::GenerateGrass(
     const RenderEnvironment& env,
     const GrassGenerationData& genData,
@@ -100,37 +93,37 @@ void GrassRenderer::GenerateGrass(
 {
     auto* cmdList = env.commandManager->GetCommandList();
 
-    // 1. 生成パラメータの更新
     memcpy(mappedGenData_, &genData, sizeof(GrassGenerationData));
 
-    // 2. バッファを UAV ステートへ遷移
+    // 生成先バッファを UAV ステートへ遷移
     D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         generatedGrassBuffer_.Get(),
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     cmdList->ResourceBarrier(1, &barrier);
 
-    // 3. Generation CS のセットアップ
+    // Grass Generation Compute Shader
+    // ハイトマップ・密度マップを参照し、GPU上で草のインスタンスデータをプロシージャルに事前生成
     cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("GrassGenerationCS"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("GrassGenerationCS"));
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
-    cmdList->SetComputeRootConstantBufferView(0, generationDataResource_->GetGPUVirtualAddress()); // b0: GrassGenerationData
+    cmdList->SetComputeRootConstantBufferView(0, generationDataResource_->GetGPUVirtualAddress());
     cmdList->SetComputeRootConstantBufferView(1, terrainSettingsAddress);
 
-    cmdList->SetComputeRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(heightMapSrvHandle)); // t0: HeightMap
-    cmdList->SetComputeRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(densityMapSrvHandle)); // t1: DensityMap
-    cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_)); // u0: OutputGrass
+    cmdList->SetComputeRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(heightMapSrvHandle));
+    cmdList->SetComputeRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(densityMapSrvHandle));
+    cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_));
 
-    // Dispatch 実行
+    // スレッドグループの算出 (1グループ = 64スレッド)
     UINT totalGroups = (genData.maxGrassPerChunk + 63) / 64;
-    UINT groupX = 1024; 
+    UINT groupX = 1024;
     UINT groupY = (totalGroups + groupX - 1) / groupX;
     cmdList->Dispatch(groupX, groupY, 1);
 
-    // 4. バッファを SRV ステートに戻す（CullingCS読み込み用）
+    // 次のカリングフェーズで読み込むため SRV ステートへ遷移
     barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         generatedGrassBuffer_.Get(),
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
@@ -152,18 +145,14 @@ void GrassRenderer::Draw(
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();
 
-    // ==========================================================
-    // 1. 定数バッファのコピー
-    // ==========================================================
+    // 描画およびカリングパラメータの更新
     memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(GrassMaterialData));
 
     GrassCullingData actualCullingData = cullingData;
     actualCullingData.totalInstanceCount = totalGeneratedCount_;
     memcpy(mappedCullingData_[currentFrameIndex_], &actualCullingData, sizeof(GrassCullingData));
 
-    // ==========================================================
-    // 2. 間接描画引数バッファのリセット (InstanceCount を 0 にリセット)
-    // ==========================================================
+    // カリング実行前に間接描画のインスタンス数をゼロに初期化
     D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         indirectArgsBuffer_[currentFrameIndex_].Get(),
         D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
@@ -175,9 +164,8 @@ void GrassRenderer::Draw(
         indirectArgsUploadBuffer_.Get(), 0,
         sizeof(D3D12_DRAW_ARGUMENTS));
 
-    // ==========================================================
-    // 3. GrassCullingCS (GPUカリング処理)
-    // ==========================================================
+    // コンピュートシェーダーによるGPU駆動カリング
+    // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
     D3D12_RESOURCE_BARRIER csBarriers[2] = {};
     csBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
         outputInstanceBuffer_[currentFrameIndex_].Get(),
@@ -195,8 +183,8 @@ void GrassRenderer::Draw(
     ID3D12DescriptorHeap* heaps[] = { cullingHeap_.Get() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
+    // フレーム毎にディスクリプタの書き込み位置をずらし、GPU実行中のリソース競合を防止
     UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    // コピー先のインデックスをフレームごとにずらす (1フレームあたり3つ使用するので 3 * currentFrameIndex_)
     UINT destOffset = 3 * currentFrameIndex_;
 
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
@@ -209,20 +197,18 @@ void GrassRenderer::Draw(
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(outputUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(indirectUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
-    cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress()); 
-    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); 
-    cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize)); 
-    cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize)); 
+    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
+    cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize));
+    cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize));
 
     UINT totalGroups = (totalGeneratedCount_ + 63) / 64;
     UINT groupX = 1024;
     UINT groupY = (totalGroups + groupX - 1) / groupX;
     cmdList->Dispatch(groupX, groupY, 1);
 
-    // ==========================================================
-    // 4. 実際の描画 (ExecuteIndirect)
-    // ==========================================================
+    // カリングを通過した可視インスタンスの一括描画
     D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
     drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
         outputInstanceBuffer_[currentFrameIndex_].Get(),
@@ -247,7 +233,7 @@ void GrassRenderer::Draw(
     cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
-    // CSが出力した Output Buffer を VS の SRV として設定
+    // コンピュートシェーダーが構築した出力バッファを頂点シェーダーへバインド
     cmdList->SetGraphicsRootShaderResourceView(5, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
 
     cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));

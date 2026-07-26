@@ -27,20 +27,20 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
     uint32_t frameCounter_ = 0;
 
-    // --- 中間テクスチャリソース ---
+    // 中間テクスチャリソース
     Microsoft::WRL::ComPtr<ID3D12Resource> hiZRes_;
     Microsoft::WRL::ComPtr<ID3D12Resource> hitResultRes_;
     Microsoft::WRL::ComPtr<ID3D12Resource> resolveRes_;
-    // 変更後：Ping-Pong用に2つのバッファを用意する
+    // Ping-Pong用に2つのバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> spatialRes_[2];
-    Microsoft::WRL::ComPtr<ID3D12Resource> temporalRes_[2]; // Ping-Pong用
+    Microsoft::WRL::ComPtr<ID3D12Resource> temporalRes_[2]; 
 
-    // --- SRV / UAV インデックス ---
+    // SRV / UAV インデックス
     uint32_t hiZSrvIndex_;
-    std::vector<uint32_t> hiZUavIndices_; // Hi-ZはMipごとにUAVが必要
+    std::vector<uint32_t> hiZUavIndices_;
     uint32_t spatialUavIndices_[2];
     uint32_t spatialSrvIndices_[2];
-    // 【追加】Hi-Zダウンサンプルの入力用 (各Mip単体のSRV)
+    // Hi-Zダウンサンプルの入力用 (各Mip単体のSRV)
     std::vector<uint32_t> hiZMipSrvIndices_;
 
     uint32_t hitResultUavIndex_, hitResultSrvIndex_;

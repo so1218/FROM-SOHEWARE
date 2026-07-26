@@ -15,7 +15,6 @@ public:
     Terrain(Engine* engine);
     ~Terrain() = default;
 
-    // 描画処理
     void Draw();
 
     // パラメータが変わったときにメッシュを再構成する関数
@@ -26,16 +25,12 @@ public:
     // UV情報の更新
     void UpdateUV();
 
-    // ========================================================================
-    // 基本トランスフォーム（※UIからは非表示にしますが、内部の描画計算に必須なため維持）
-    // ========================================================================
+    // 基本トランスフォーム
     void SetTransform(const WorldTransform& transform) { transform_ = transform; }
     const WorldTransform& GetTransform() const { return transform_; }
     WorldTransform& GetTransform() { return transform_; }
 
-    // ========================================================================
     // マテリアル・テクスチャ設定
-    // ========================================================================
     void SetTexture(const std::string& textureName);
     void SetEnvironmentMapTexture(const std::string& textureName);
     void SetToonRampTexture(const std::string& textureName);
@@ -68,9 +63,7 @@ public:
 
     size_t GetMaterialCount() const { return 1; }
 
-    // ========================================================================
     // ゲッター・セッター
-    // ========================================================================
     WorldTransform* GetUVTransform();
 
     MaterialData* GetMaterialData();
@@ -93,9 +86,7 @@ public:
     Parameters& GetParams() { return params_; }
     const Parameters& GetParams() const { return params_; }
 
-    // ------------------------------------------------------------------------
-    // ★ ハイトマップ関連の各種ゲッター（PropertyBinder用ポインタ拡張）
-    // ------------------------------------------------------------------------
+    // ゲッター（PropertyBinder用ポインタ拡張）
     std::string* GetHeightmapNamePtr() { return &heightmapTexName_; }
     const std::string& GetHeightmapName() const { return heightmapTexName_; }
 
@@ -108,10 +99,10 @@ private:
     Engine* engine_ = nullptr;
     std::vector<std::unique_ptr<TerrainChunk>> chunks_;
     MaterialHandle material_;
-    WorldTransform transform_; // ★ 内部システムで使い続けるため残します
+    WorldTransform transform_; 
     Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-    // === リアルタイム調整用メンバ変数 ===
+    // リアルタイム調整用メンバ変数
     std::string heightmapTexName_;
     int chunkSize_ = 16;
 

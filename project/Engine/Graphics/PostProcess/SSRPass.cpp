@@ -13,7 +13,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
     auto* srvManager = engine->GetSRVManager();
 
-    // 定数バッファ (SSRSettings)
+    // 定数バッファ
     cbSSR_ = BufferManager::CreateBufferResource(device, (sizeof(SSRSettings) + 255) & ~255);
     cbSSR_->Map(0, nullptr, reinterpret_cast<void**>(&ssrData_));
     *ssrData_ = SSRSettings();
@@ -28,7 +28,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
         cbHiZSettings_[i]->Map(0, nullptr, &hiZData_[i]);
     }
 
-    // DescriptorHeap (パスが多くコピーが頻繁なため多めに確保)
+    // DescriptorHeap
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 64;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -36,11 +36,11 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_));
     passHeap_->SetName(L"SSR_Heap");
 
-    // --- 中間リソースの共通定義 ---
+    // 中間リソースの共通定義
     CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
     auto texDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16G16B16A16_FLOAT, width, height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-    // 1. Hi-Z (R32_FLOAT推奨、Mipmapあり)
+    // Hi-Z 
     auto hizDesc = texDesc;
     hizDesc.Format = DXGI_FORMAT_R32_FLOAT;
     hizDesc.MipLevels = maxHiZMipLevels_;
@@ -48,20 +48,20 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     hizDesc.Height = height;
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &hizDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&hiZRes_));
 
-    // 2. HitResult / 3. Resolve / 4. Spatial
+    // HitResult / Resolve / Spatial
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &texDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&hitResultRes_));
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &texDesc, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&resolveRes_));
     for (int i = 0; i < 2; ++i) {
-        // 最初のバリア遷移が安全に成功するように NON_PIXEL_SHADER_RESOURCE で初期化します
+        // 最初のバリア遷移が安全に成功するように NON_PIXEL_SHADER_RESOURCE で初期化
         device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &texDesc, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&spatialRes_[i]));
     }
 
-    // 5. Temporal (Ping-Pong 2枚)
+    // Temporal (Ping-Pong 2枚)
     for (int i = 0; i < 2; ++i) {
         device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &texDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&temporalRes_[i]));
     }
 
-    // 1. 全MipをカバーするSRV (Pass 2 SSR Raycast用)
+    // 全MipをカバーするSRV (Pass 2 SSR Raycast用)
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -72,7 +72,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     hiZSrvIndex_ = srvManager->Allocate();
     device->CreateShaderResourceView(hiZRes_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(hiZSrvIndex_));
 
-    // 【追加】2. 各MipごとのSRV (Pass 1 ダウンサンプルの入力用)
+    // 各MipごとのSRV (Pass 1 ダウンサンプルの入力用)
     for (UINT i = 0; i < maxHiZMipLevels_; ++i) {
         D3D12_SHADER_RESOURCE_VIEW_DESC mipSrvDesc = srvDesc;
         mipSrvDesc.Texture2D.MipLevels = 1;      // 1つのMipだけを読む
@@ -82,7 +82,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
         device->CreateShaderResourceView(hiZRes_.Get(), &mipSrvDesc, srvManager->GetSRVHandleCPU_ForCopying(hiZMipSrvIndices_.back()));
     }
 
-    // 3. 各MipごとのUAV (そのまま)
+    // 各MipごとのUAV
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
     uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
     uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
@@ -92,7 +92,7 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
         device->CreateUnorderedAccessView(hiZRes_.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(hiZUavIndices_.back()));
     }
 
-    // その他リソースのビュー作成 (マクロ的に処理)
+    // その他リソースのビュー作成
     auto CreateViews = [&](auto res, uint32_t& uavIdx, uint32_t& srvIdx) {
         srvDesc.Format = uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
         srvDesc.Texture2D.MipLevels = 1; uavDesc.Texture2D.MipSlice = 0;
@@ -121,7 +121,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     uint32_t currIdx = frameCounter_ % 2;
     uint32_t prevIdx = (frameCounter_ + 1) % 2;
 
-    // --- 1. バリア設定 (GBuffer -> Compute SRV) ---
+    // バリア設定 (GBuffer -> Compute SRV)
     std::vector<D3D12_RESOURCE_BARRIER> barriers;
 
     // DepthバッファをCompute(SRV)で読めるように遷移
@@ -130,7 +130,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
     ));
-    // ⭕【追加】resolveRes_ を読み込み用(SRV) から 書き込み用(UAV) に遷移
+    // resolveRes_ を読み込み用(SRV) から 書き込み用(UAV) に遷移
     barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(
         resolveRes_.Get(),
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
@@ -153,15 +153,14 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     UINT mipHeight = engine_->GetClientHeight();
 
     // ==========================================
-    // Pass 1-A: Mip 0 に元深度を等倍コピー
+    // 1: Mip 0 に元深度を等倍コピー
     // ==========================================
-    cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("HiZ_CopyCS")); // コピー用のRootSig
+    cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("HiZ_CopyCS")); 
     cmdList->SetPipelineState(psoManager_->GetPSO("HiZ_CopyCS"));
 
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, offset, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, offset + 1, handleSize), srvManager->GetSRVHandleCPU_ForCopying(hiZUavIndices_[0]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // ※ RootParameterのインデックスは実際の設計に合わせてください (ここでは 0:SRV, 1:UAV と仮定)
     cmdList->SetComputeRootDescriptorTable(0, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize));
     cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 1, handleSize));
 
@@ -169,7 +168,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     offset += 2;
 
     // ==========================================
-    // Pass 1-B: Mip 1 以降のダウンサンプル (ループは i = 1 から開始！)
+    // 1: Mip 1 以降のダウンサンプル
     // ==========================================
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("HiZ_DownsampleCS"));
     cmdList->SetPipelineState(psoManager_->GetPSO("HiZ_DownsampleCS"));
@@ -190,7 +189,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
         settings.inSize[0] = mipWidth;
         settings.inSize[1] = mipHeight;
 
-        // ここで初めて解像度を半分にする
+        // 解像度を半分にする
         mipWidth = std::max(1u, mipWidth / 2);
         mipHeight = std::max(1u, mipHeight / 2);
 
@@ -212,7 +211,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
         offset += 2;
     }
 
-    // 【修正】最後に、ループで遷移されなかった一番最後のMipをSRVへ遷移させ、テクスチャ全体を揃える
+    // ループで遷移されなかった一番最後のMipをSRVへ遷移させ、テクスチャ全体を揃える
     auto lastMipBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         hiZRes_.Get(),
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
@@ -222,7 +221,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     cmdList->ResourceBarrier(1, &lastMipBarrier);
 
     // ==========================================
-    // Pass 2: SSR Raycast
+    // 2: SSR Raycast
     // ==========================================
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("SSR_RaycastCS"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSR_RaycastCS"));
@@ -234,8 +233,8 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
 
     cmdList->SetComputeRootConstantBufferView(0, cbSSR_->GetGPUVirtualAddress());
     cmdList->SetComputeRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize)); // t0-t2
-    cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 3, handleSize)); // u0
+    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize)); 
+    cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 3, handleSize)); 
 
     cmdList->Dispatch(DispatchSize(engine_->GetClientWidth(), 8), DispatchSize(engine_->GetClientHeight(), 8), 1);
     offset += 4;
@@ -244,7 +243,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     cmdList->ResourceBarrier(1, &hitBarrier);
 
     // ==========================================
-    // Pass 3: SSR Resolve
+    // 3: SSR Resolve
     // ==========================================
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("SSR_ResolveCS"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSR_ResolveCS"));
@@ -257,8 +256,8 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, offset + 5, handleSize), srvManager->GetSRVHandleCPU_ForCopying(resolveUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize)); // t0-t4
-    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 5, handleSize)); // u0
+    cmdList->SetComputeRootDescriptorTable(1, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize)); 
+    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 5, handleSize)); 
 
     cmdList->Dispatch(DispatchSize(engine_->GetClientWidth(), 8), DispatchSize(engine_->GetClientHeight(), 8), 1);
     offset += 6;
@@ -269,7 +268,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     // ==========================================
     // 終了処理とエクスポート
     // ==========================================
-    // リソースを元に戻す (UAV -> SRV など)
+    // リソースを元に戻す
     D3D12_RESOURCE_BARRIER resetBarriers[3] = {};
     resetBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(engine_->GetOffscreenDepthResource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
     resetBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(hiZRes_.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -277,11 +276,10 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
 
     cmdList->ResourceBarrier(3, resetBarriers);
 
-    // 次のポストエフェクトパスがこの結果を参照できるようにする
+    // 次のポストエフェクトパスがこの結果を参照できるように
     this->textureResource_ = resolveRes_;
     this->srvIndex_ = resolveSrvIndex_;
 
-    /*frameCounter_++;*/
 }
 
 }

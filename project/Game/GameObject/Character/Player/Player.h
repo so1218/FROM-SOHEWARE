@@ -47,7 +47,7 @@ public:
 
 	std::unique_ptr<FE::AnimationModel> animationModel_;
 
-	// 地形情報をセットする関数を追加
+	// 地形情報をセットする関数
 	void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
 
 private:

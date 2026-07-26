@@ -320,7 +320,6 @@ void RendererManager::DrawUI()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	// UIの描画はSpriteRenderer
 	if (spriteRenderer_)
 	{
 		spriteRenderer_->Draw(env_);

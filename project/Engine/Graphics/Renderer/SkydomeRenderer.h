@@ -11,7 +11,6 @@ class SkydomeRenderer
 public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
-    // 天候データを受け取るように引数を追加
     void Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather);
     void Draw(const RenderEnvironment& env, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix);
 private:

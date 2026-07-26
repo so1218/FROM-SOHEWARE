@@ -82,13 +82,13 @@ void LightningSystem::Update()
                 // 残り時間によるリニアなフェードアウト (1.0 -> 0.0)
                 float t = it->currentDuration / it->maxDuration;
 
-                // 雷ポリゴンの明滅と完全にシンクロさせるためのノイズ/サイン波
+                // 雷ポリゴンの明滅のノイズ/サイン波
                 float flicker = 1.0f;
                 if (config_.flickerSpeed > 0.0f)
                 {
                     float totalTime = TimeManager::GetInstance()->GetTotalTime();
                     flicker = std::sin(totalTime * config_.flickerSpeed + it->seed);
-                    // サイン波 [-1.0 ~ 1.0] を [0.4 ~ 1.2] のような明滅幅にマッピング
+                    // サイン波 -1.0 ~ 1.0 を 0.4 ~ 1.2 にマッピング
                     flicker = 0.4f + (flicker + 1.0f) * 0.5f * (1.2f - 0.4f);
                 }
 
