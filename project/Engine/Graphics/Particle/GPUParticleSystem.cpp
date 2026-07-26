@@ -3,124 +3,74 @@
 
 void GPUParticleSystem::Initialize(ID3D12Device* device)
 {
-    // A. StructuredBuffer (パーティクル本体) のリソース作成
-    uint64_t bufferSize = sizeof(Particle) * kMaxParticles;
+    // particleBuffer_, emitterBuffer_作成処理
 
-    D3D12_HEAP_PROPERTIES defaultHeapProps = {};
-    defaultHeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+    // C. FreeListバッファ (UAV) の作成
+    uint64_t freeListSize = sizeof(uint32_t) * kMaxParticles;
+    D3D12_HEAP_PROPERTIES defaultHeap = { D3D12_HEAP_TYPE_DEFAULT };
+    D3D12_RESOURCE_DESC uavDesc = {};
+    uavDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+    uavDesc.Width = freeListSize;
+    uavDesc.Height = 1;
+    uavDesc.DepthOrArraySize = 1;
+    uavDesc.MipLevels = 1;
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.SampleDesc.Count = 1;
+    uavDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    uavDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-    D3D12_RESOURCE_DESC bufferDesc = {};
-    bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    bufferDesc.Width = bufferSize;
-    bufferDesc.Height = 1;
-    bufferDesc.DepthOrArraySize = 1;
-    bufferDesc.MipLevels = 1;
-    bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
-    bufferDesc.SampleDesc.Count = 1;
-    bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    // Compute Shaderでの書き込み(UAV)を許可
-    bufferDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+    device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &uavDesc,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&freeListBuffer_));
 
-    device->CreateCommittedResource(
-        &defaultHeapProps,
-        D3D12_HEAP_FLAG_NONE,
-        &bufferDesc,
-        D3D12_RESOURCE_STATE_COMMON,
-        nullptr,
-        IID_PPV_ARGS(&particleBuffer_)
-    );
+    // D. FreeListCounterバッファ (UAV) の作成
+    uavDesc.Width = sizeof(uint32_t);
+    device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &uavDesc,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&freeListCounter_));
 
-    // B. EmitterData (定数バッファ) のリソース作成
-    D3D12_HEAP_PROPERTIES uploadHeapProps = {};
-    uploadHeapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-    D3D12_RESOURCE_DESC cbDesc = {};
-    cbDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    cbDesc.Width = (sizeof(EmitterData) + 255) & ~255; // 256バイトアライメント
-    cbDesc.Height = 1;
-    cbDesc.DepthOrArraySize = 1;
-    cbDesc.MipLevels = 1;
-    cbDesc.Format = DXGI_FORMAT_UNKNOWN;
-    cbDesc.SampleDesc.Count = 1;
-    cbDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-    device->CreateCommittedResource(
-        &uploadHeapProps,
-        D3D12_HEAP_FLAG_NONE,
-        &cbDesc,
-        D3D12_RESOURCE_STATE_GENERIC_READ,
-        nullptr,
-        IID_PPV_ARGS(&emitterBuffer_)
-    );
-
-    // ※必要に応じてここで CreateUnorderedAccessView (UAV) や 
-    // CreateShaderResourceView (SRV) をディスクリプタヒープに作成します
+    // ここで初期化用ComputeShaderを走らせて、
+    // freeListBuffer_[i] = i; と freeListCounter_[0] = kMaxParticles; を設定
 }
 
-// ---------------------------------------------------------
-// 2. Update (Compute Shader実行)
-// ---------------------------------------------------------
-void GPUParticleSystem::Update(ID3D12GraphicsCommandList* commandList, float deltaTime, DirectX::XMFLOAT3 emitterPos)
+// Emit (FreeListからインデックスを消費してパーティクル発生)
+void GPUParticleSystem::Emit(ID3D12GraphicsCommandList* commandList, uint32_t emitCount, DirectX::XMFLOAT3 emitterPos)
 {
-    totalTime_ += deltaTime;
-
-    // A. 定数バッファの更新
     EmitterData cbData = {};
     cbData.emitterPos = emitterPos;
-    cbData.deltaTime = deltaTime;
     cbData.time = totalTime_;
+    cbData.emitCount = emitCount;
 
     void* mappedPtr = nullptr;
     emitterBuffer_->Map(0, nullptr, &mappedPtr);
     memcpy(mappedPtr, &cbData, sizeof(EmitterData));
     emitterBuffer_->Unmap(0, nullptr);
 
-    // B. リソースバリア: 描画参照(SRV)から書き込み(UAV)へ遷移
-    D3D12_RESOURCE_BARRIER barrierToUAV = {};
-    barrierToUAV.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrierToUAV.Transition.pResource = particleBuffer_.Get();
-    barrierToUAV.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    barrierToUAV.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    barrierToUAV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    commandList->ResourceBarrier(1, &barrierToUAV);
-
-    // C. Compute ShaderのセットとDispatch
     commandList->SetComputeRootSignature(computeRootSignature_);
-    commandList->SetPipelineState(computePSO_);
-
-    // 定数バッファとUAVのバインド (エンジンのルートパラメーター設定に依存)
+    commandList->SetPipelineState(computePSO_Emit_); // Emit用シェーダーをセット
     commandList->SetComputeRootConstantBufferView(0, emitterBuffer_->GetGPUVirtualAddress());
-    // commandList->SetComputeRootDescriptorTable(...) などでUAVをバインド
 
-    // スレッドグループのディスパッチ (10000個 / 64スレッド = 157グループ)
-    UINT groupCountX = (kMaxParticles + 63) / 64;
+    // スレッドグループのディスパッチ (発生させる数に合わせてDispatch)
+    UINT groupCountX = (emitCount + 63) / 64;
     commandList->Dispatch(groupCountX, 1, 1);
-
-    // D. リソースバリア: 書き込み(UAV)から描画参照(SRV)へ戻す
-    D3D12_RESOURCE_BARRIER barrierToSRV = {};
-    barrierToSRV.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrierToSRV.Transition.pResource = particleBuffer_.Get();
-    barrierToSRV.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    barrierToSRV.Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    barrierToSRV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    commandList->ResourceBarrier(1, &barrierToSRV);
 }
 
-// ---------------------------------------------------------
-// 3. Draw (Graphics Shader実行)
-// ---------------------------------------------------------
-void GPUParticleSystem::Draw(ID3D12GraphicsCommandList* commandList)
+// Update (寿命計算とFreeListへの返却のみ行う)
+void GPUParticleSystem::Update(ID3D12GraphicsCommandList* commandList, float deltaTime)
 {
-    // A. パイプライン・ルートシグネチャのセット
-    commandList->SetGraphicsRootSignature(graphicsRootSignature_);
-    commandList->SetPipelineState(graphicsPSO_);
+    totalTime_ += deltaTime;
 
-    // B. SRVバッファ（更新されたパーティクルデータ）を頂点シェーダー用にバインド
-    // commandList->SetGraphicsRootDescriptorTable(...) または SetGraphicsRootShaderResourceView(...)
+    EmitterData cbData = {};
+    cbData.deltaTime = deltaTime;
 
-    // C. プリミティブトポロジの設定 (1パーティクルあたり板ポリ = 6頂点)
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    void* mappedPtr = nullptr;
+    emitterBuffer_->Map(0, nullptr, &mappedPtr);
+    memcpy(mappedPtr, &cbData, sizeof(EmitterData));
+    emitterBuffer_->Unmap(0, nullptr);
 
-    // D. GPU Instancing 描画 (6頂点 x 10000インスタンス)
-    commandList->DrawInstanced(6, kMaxParticles, 0, 0);
+    commandList->SetComputeRootSignature(computeRootSignature_);
+    commandList->SetPipelineState(computePSO_Update_); // Update用シェーダーをセット
+    commandList->SetComputeRootConstantBufferView(0, emitterBuffer_->GetGPUVirtualAddress());
+
+    // 全パーティクルを検査して寿命更新＆回収 (10000 / 64)
+    UINT groupCountX = (kMaxParticles + 63) / 64;
+    commandList->Dispatch(groupCountX, 1, 1);
 }

@@ -2,60 +2,91 @@ struct Particle
 {
     float3 position;
     float3 velocity;
-    float life; // 現在の寿命
-    float maxLife; // 最大寿命
+    float life;
+    float maxLife;
 };
 
-// 読み書き可能なパーティクルバッファ
+// バッファの定義
 RWStructuredBuffer<Particle> gParticles : register(u0);
+RWStructuredBuffer<uint> gFreeList : register(u1); // 空きインデックスのスタック
+RWStructuredBuffer<uint> gFreeListCounter : register(u2); // 現在の空き要素数
 
-// C++から毎フレーム送る定数バッファ
 cbuffer EmitterData : register(b0)
 {
-    float3 gEmitterPos; // パーティクルの発生源
-    float gDeltaTime; // フレーム間の時間
-    float gTime; // 乱数用の時間シード
+    float3 gEmitterPos;
+    float gDeltaTime;
+    float gTime;
+    uint gEmitCount; // 今回発生させる数
 };
 
-// 簡易的な疑似乱数生成関数
 float Random(float2 uv)
 {
     return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
 }
 
+// Update (寿命を減らし、死んだらFreeListに返す)
 [numthreads(64, 1, 1)]
-void main(uint3 dtid : SV_DispatchThreadID)
+void UpdateCS(uint3 dtid : SV_DispatchThreadID)
 {
     uint idx = dtid.x;
-    
-    // 配列外アクセス防止（パーティクル最大数に合わせる。ここでは例として10000）
     if (idx >= 10000)
         return;
 
     Particle p = gParticles[idx];
 
-    // 1. 寿命を減らす
-    p.life -= gDeltaTime;
-
-    // 2. 寿命が尽きたら「リサイクル（再生成）」する
-    if (p.life <= 0.0f)
+    // 生きているパーティクルのみ処理
+    if (p.life > 0.0f)
     {
-        p.position = gEmitterPos; // 発生源に戻す
+        p.life -= gDeltaTime;
+
+        if (p.life <= 0.0f)
+        {
+            // 寿命が尽きたら FreeList にインデックスを返却 (Push)
+            uint freeIdx;
+            InterlockedAdd(gFreeListCounter[0], 1, freeIdx);
+            gFreeList[freeIdx] = idx;
+        }
+        else
+        {
+            // 移動処理
+            p.position += p.velocity * gDeltaTime;
+        }
+        gParticles[idx] = p;
+    }
+}
+
+// Emit (FreeListから取り出して発生させる)
+[numthreads(64, 1, 1)]
+void EmitCS(uint3 dtid : SV_DispatchThreadID)
+{
+    uint emitIdx = dtid.x;
+    if (emitIdx >= gEmitCount)
+        return;
+
+    // FreeListからインデックスを取得 (Pop)
+    uint currentCount;
+    InterlockedAdd(gFreeListCounter[0], -1, currentCount);
+
+    if (currentCount > 0)
+    {
+        uint particleIdx = gFreeList[currentCount - 1]; // 取得したインデックス
+
+        Particle p;
+        p.position = gEmitterPos;
         
-        // 乱数を使って適当に散らす
-        float randX = Random(float2(idx, gTime)) * 2.0f - 1.0f;
-        float randY = Random(float2(idx, gTime + 1.0f)); // 上方向に飛ばす
-        float randZ = Random(float2(idx, gTime + 2.0f)) * 2.0f - 1.0f;
+        float randX = Random(float2(emitIdx, gTime)) * 2.0f - 1.0f;
+        float randY = Random(float2(emitIdx, gTime + 1.0f));
+        float randZ = Random(float2(emitIdx, gTime + 2.0f)) * 2.0f - 1.0f;
         
         p.velocity = normalize(float3(randX, randY, randZ)) * 2.0f;
-        
-        p.maxLife = 1.0f + Random(float2(idx, gTime + 3.0f)) * 2.0f; // 寿命1~3秒
+        p.maxLife = 1.0f + Random(float2(emitIdx, gTime + 3.0f)) * 2.0f;
         p.life = p.maxLife;
+
+        gParticles[particleIdx] = p;
     }
-
-    // 3. 移動（位置の更新）
-    p.position += p.velocity * gDeltaTime;
-
-    // 結果をバッファに書き戻す
-    gParticles[idx] = p;
+    else
+    {
+        // FreeListが空だった場合（発生上限）、カウンタを元に戻す
+        InterlockedAdd(gFreeListCounter[0], 1);
+    }
 }
