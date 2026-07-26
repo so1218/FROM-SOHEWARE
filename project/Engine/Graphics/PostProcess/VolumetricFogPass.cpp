@@ -7,7 +7,6 @@ namespace FE
 
 void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
 {
-    // HDR値が入るのでFP16を指定
     InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
     psoManager_ = pso;
 
@@ -75,11 +74,11 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectRes_));
     voxelInjectRes_->SetName(L"VoxelInjectResource");
 
-    // [2] VoxelInjectFiltered (空間フィルタ後の中間バッファ)
+    // VoxelInjectFiltered (空間フィルタ後の中間バッファ)
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelInjectFilteredRes_));
     voxelInjectFilteredRes_->SetName(L"VoxelInjectFilteredResource");
 
-    // [3] VoxelAccumulate (最終積分レイマーチ用ポート)
+    // VoxelAccumulate (最終積分レイマーチ用ポート)
     device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &tex3DDesc, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, nullptr, IID_PPV_ARGS(&voxelAccumulateRes_));
     voxelAccumulateRes_->SetName(L"VoxelAccumulateResource");
 
@@ -250,16 +249,16 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogInjectionCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogInjectionCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
-        cmdList->SetComputeRootConstantBufferView(1, context.fluidSettingsCBAddress); // b1
-        cmdList->SetComputeRootConstantBufferView(2, constantBuffer_->GetGPUVirtualAddress()); // b2
-        cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); // b3
-        cmdList->SetComputeRootConstantBufferView(4, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); // b4
-        cmdList->SetComputeRootConstantBufferView(5, volumeConstantBuffer_->GetGPUVirtualAddress()); // b5
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); 
+        cmdList->SetComputeRootConstantBufferView(1, context.fluidSettingsCBAddress); 
+        cmdList->SetComputeRootConstantBufferView(2, constantBuffer_->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); 
+        cmdList->SetComputeRootConstantBufferView(4, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); 
+        cmdList->SetComputeRootConstantBufferView(5, volumeConstantBuffer_->GetGPUVirtualAddress());
         cmdList->SetComputeRootConstantBufferView(6, engine_->GetLightManager()->GetShadowDataResource()->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); // t0 ~ t5 Table
-        cmdList->SetComputeRootDescriptorTable(8, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize)); // u0 Table
+        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); 
+        cmdList->SetComputeRootDescriptorTable(8, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize));
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 
@@ -283,11 +282,11 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VoxelSpatialFilterCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VoxelSpatialFilterCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
-        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); 
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); 
 
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 7, handleSize)); // t0
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 8, handleSize)); // u0
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 7, handleSize));
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 8, handleSize)); 
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 
@@ -317,11 +316,11 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VoxelTemporalResolveCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VoxelTemporalResolveCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); 
         cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));  // t0, t1 テーブル
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); // u0 テーブル
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 9, handleSize));  
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 11, handleSize)); 
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 
@@ -346,10 +345,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetPipelineState(psoManager_->GetPSO("VoxelIntegrateCS"));
 
         cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
-        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); 
 
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize)); // t0
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 13, handleSize)); // u0
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 12, handleSize)); 
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 13, handleSize)); 
 
         // Z軸方向は1つのスレッドグループ内でループ積分するため、グループサイズは XY のみ
         cmdList->Dispatch(dispatch3DX, dispatch3DY, 1);
@@ -376,11 +375,11 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogResolveCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogResolveCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
-        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); // b2
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); 
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress()); 
 
-        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 14, handleSize)); // t0, t1 テーブル
-        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 16, handleSize)); // u0 テーブル
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 14, handleSize)); 
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 16, handleSize)); 
 
         UINT clientWidth = Engine::GetClientWidth();
         UINT clientHeight = Engine::GetClientHeight();

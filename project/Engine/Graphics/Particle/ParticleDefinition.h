@@ -48,12 +48,12 @@ struct VelocityModule
 
             // d_normと直交する2つのベクトル(u, v)を生成し、局所的な座標系を作る
             Vector3 up = { 0.0f, 1.0f, 0.0f };
-            // 中心軸がY軸とほぼ平行な場合は、別のベクトルを使って外積を計算する
+            // 中心軸がY軸とほぼ平行な場合は、別のベクトルを使って外積を計算
             if (abs(d_norm.y) > 0.999f) {
                 up = { 1.0f, 0.0f, 0.0f };
             }
             Vector3 u = Math::CrossProduct(d_norm, up).Normalize();
-            Vector3 v = Math::CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化される
+            Vector3 v = Math::CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化
 
             // 円錐状に広がるためのランダムな角度を2つ生成
             float phi = Math::RandomFloat(0.0f, 2.0f * Math::PI);

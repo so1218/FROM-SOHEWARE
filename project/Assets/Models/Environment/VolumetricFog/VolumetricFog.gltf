@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v5.1.19",
+		"generator":"Khronos glTF Blender I/O v5.2.39",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -15,17 +15,7 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"Cube.019",
-			"scale":[
-				5.019414901733398,
-				0.1734524965286255,
-				0.2592218816280365
-			],
-			"translation":[
-				-0.2667001485824585,
-				4.890998840332031,
-				-3.9074041843414307
-			]
+			"name":"Cube.019"
 		}
 	],
 	"materials":[
@@ -53,9 +43,10 @@
 						"POSITION":0,
 						"NORMAL":1,
 						"TEXCOORD_0":2,
-						"TEXCOORD_1":3
+						"TEXCOORD_1":3,
+						"TANGENT":4
 					},
-					"indices":4,
+					"indices":5,
 					"material":0
 				}
 			]
@@ -65,39 +56,45 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":506,
+			"count":508,
 			"max":[
-				1.053133487701416,
-				3.839107036590576,
-				33.7918815612793
+				5.019413471221924,
+				5.556901454925537,
+				4.852190971374512
 			],
 			"min":[
-				-1.0048905611038208,
-				-29.208393096923828,
-				-3.5533127784729004
+				-5.310662746429443,
+				-0.17527008056640625,
+				-4.828500747680664
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":506,
+			"count":508,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":506,
+			"count":508,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":506,
+			"count":508,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":4,
+			"componentType":5126,
+			"count":508,
+			"type":"VEC4"
+		},
+		{
+			"bufferView":5,
 			"componentType":5123,
 			"count":756,
 			"type":"SCALAR"
@@ -106,38 +103,44 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":6072,
+			"byteLength":6096,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":6072,
-			"byteOffset":6072,
+			"byteLength":6096,
+			"byteOffset":6096,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4048,
-			"byteOffset":12144,
+			"byteLength":4064,
+			"byteOffset":12192,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4048,
-			"byteOffset":16192,
+			"byteLength":4064,
+			"byteOffset":16256,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":8128,
+			"byteOffset":20320,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1512,
-			"byteOffset":20240,
+			"byteOffset":28448,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":21752,
+			"byteLength":29960,
 			"uri":"VolumetricFog.bin"
 		}
 	]

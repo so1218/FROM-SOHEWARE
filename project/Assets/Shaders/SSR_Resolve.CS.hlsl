@@ -2,19 +2,17 @@
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
-// 入力テクスチャ
-Texture2D<float4> gHitResultTexture : register(t0);
+// G-Buffer & SSR Input
+Texture2D<float4> gHitResultTexture : register(t0); 
 Texture2D<float4> gSceneTexture : register(t1);
 Texture2D<float4> gNormalTexture : register(t2);
 Texture2D<float> gDepthTexture : register(t3);
-Texture2D<float4> gMaterialTexture : register(t4);
+Texture2D<float4> gMaterialTexture : register(t4); // R=Metalness, G=Roughness
 
-// 出力テクスチャ
 RWTexture2D<float4> gOutReflection : register(u0);
 SamplerState gLinearSampler : register(s0);
 
-// --- ユーティリティ関数 ---
-
+// クリップ空間からビュー空間への座標復元
 float3 GetViewPos(float2 uv, float depth)
 {
     float x = uv.x * 2.0f - 1.0f;
@@ -24,10 +22,6 @@ float3 GetViewPos(float2 uv, float depth)
     return viewPos.xyz / viewPos.w;
 }
 
-// ============================================================================
-// BRDF LUTの解析的近似関数 (Karis, 2014)
-// テクスチャを使わずに、数式で (Scale, Bias) を高速に近似計算
-// ============================================================================
 float2 EnvBRDFApprox(float roughness, float NdotV)
 {
     const float4 c0 = float4(-1.0f, -0.0275f, -0.572f, 0.022f);
@@ -35,7 +29,7 @@ float2 EnvBRDFApprox(float roughness, float NdotV)
     float4 r = roughness * c0 + c1;
     float a004 = min(r.x * r.x, exp2(-9.28f * NdotV)) * r.x + r.y;
     float2 AB = float2(-1.04f, 1.04f) * a004 + r.zw;
-    return AB; // x = Scale (F0への乗数), y = Bias (加算値)
+    return AB;
 }
 
 [numthreads(8, 8, 1)]
@@ -52,12 +46,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float2 hitUV = hitData.xy;
     float hitAlpha = hitData.z;
 
+    // トレース失敗、または完全にフェードアウト済みの場合はスキップ
     if (hitAlpha <= 0.0f)
     {
         gOutReflection[DTid.xy] = float4(0, 0, 0, 0);
         return;
     }
 
+    // マテリアルとジオメトリ情報の復元
     float depth = gDepthTexture.Load(int3(DTid.xy, 0));
     float4 material = gMaterialTexture.Load(int3(DTid.xy, 0));
     float metalness = material.r;
@@ -70,34 +66,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     float NdotV = max(dot(N, V), 0.001f);
 
+    // 基本反射率 (F0) の算出
     float3 albedo = gSceneTexture.Load(int3(DTid.xy, 0)).rgb;
     float3 f0 = lerp(float3(0.04f, 0.04f, 0.04f), albedo, metalness);
 
+    // 粗さに応じたミップレベルからサンプリングし、光沢のぼやけを表現
     float maxSceneMip = 5.0f;
     float mipLevel = roughness * maxSceneMip;
     float3 hitColor = gSceneTexture.SampleLevel(gLinearSampler, hitUV, mipLevel).rgb;
-
-    // ========================================================================
-    // TODO: 【品質向上のための技術的負債】
-    // 現在は処理を簡略化するため、BRDF LUTテクスチャのサンプリングを
-    // EnvBRDFApprox() 関数による数式近似で代用しています。
-    // 
-    // 後日、エンジン初期化時にCSで事前計算した 256x256 の BRDF LUT テクスチャを
-    // 生成・バインドする仕組みを構築し、以下の処理を置き換えてください。
-    // 
-    // [置き換え予定のコード]
-    // float2 brdfLUT = gBrdfLutTexture.SampleLevel(gLinearSampler, float2(NdotV, roughness), 0).rg;
-    // ========================================================================
     
-    // 近似関数を使用してScaleとBiasを取得
     float2 brdfLUT = EnvBRDFApprox(roughness, NdotV);
     
+    // Split-Sum Approximation による最終的なスペキュラ反射率の合成
     float3 specularReflectance = f0 * brdfLUT.x + brdfLUT.y;
-
-    // 最終反射カラーの計算
     float3 finalReflection = hitColor * specularReflectance;
 
-    // ファイアフライ（高輝度ノイズ）除去
+    // Firefly (極端な高輝度ピクセルのノイズ) の伝播を防ぐためのハードクランプ
     finalReflection = min(finalReflection, float3(10.0f, 10.0f, 10.0f));
 
     gOutReflection[DTid.xy] = float4(finalReflection * hitAlpha, hitAlpha);

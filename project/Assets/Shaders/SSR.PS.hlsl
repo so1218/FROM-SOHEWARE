@@ -52,7 +52,7 @@ float4 main(VSOutput input) : SV_TARGET
     float2 hitUV = 0;
     float hitAlpha = 0;
 
-// レイマーチング部
+    // レイマーチング部
     for (int i = 0; i < gSSRSettings.maxSteps; ++i)
     {
         float3 lastRayPos = rayPos; // 今の位置を1歩前として保存
@@ -125,7 +125,7 @@ float4 main(VSOutput input) : SV_TARGET
     if (hitAlpha <= 0.0f)
         return float4(0, 0, 0, 0);
 
-    // MipMapを 11.0f (2048px想定) 等に設定
+    // MipMapを 11.0f (2048px想定) 
     float reflectionMip = roughness * 5.0f;
     float3 reflectionColor = gSceneTexture.SampleLevel(gClampSampler, hitUV, reflectionMip).rgb;
 

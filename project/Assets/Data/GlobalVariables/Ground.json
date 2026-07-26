@@ -5,7 +5,7 @@
         "ModelBuilding_AlphaThres": 0.019999999552965164,
         "ModelBuilding_Color": [
             0.4135020971298218,
-            0.3885457515716553,
+            0.26875537633895874,
             0.01919207163155079,
             1.0
         ],
@@ -20,10 +20,10 @@
         ],
         "ModelBuilding_EdgeInten": 5.699999809265137,
         "ModelBuilding_EdgeWidth": 0.27000001072883606,
-        "ModelBuilding_Emissive": 8.600000381469727,
-        "ModelBuilding_EnvMapInt": 0.03999999910593033,
-        "ModelBuilding_EnvMapTex": "pureSky",
-        "ModelBuilding_HeightMapTex": "white1x1",
+        "ModelBuilding_Emissive": 11.899999618530273,
+        "ModelBuilding_EnvMapInt": 0.009999999776482582,
+        "ModelBuilding_EnvMapTex": "skybox",
+        "ModelBuilding_HeightMapTex": "height_33",
         "ModelBuilding_LightMode": 3,
         "ModelBuilding_Lighting": 1,
         "ModelBuilding_Mat0_AddShadow": 1,
@@ -1313,10 +1313,10 @@
         "ModelBuilding_Mat9_UsePuddle": 0,
         "ModelBuilding_Mat9_UseTriplanar": 0,
         "ModelBuilding_Mat9_Wetness": 0.5,
-        "ModelBuilding_Metalness": 1.0,
+        "ModelBuilding_Metalness": 0.5199999809265137,
         "ModelBuilding_NormEnable": 1,
-        "ModelBuilding_NormInten": 2.7899999618530273,
-        "ModelBuilding_NormTile": 10.0,
+        "ModelBuilding_NormInten": 2.7100000381469727,
+        "ModelBuilding_NormTile": 1.5,
         "ModelBuilding_NormalMapTex": "normal_33",
         "ModelBuilding_OutlineColor": [
             0.27848100662231445,
@@ -1326,8 +1326,8 @@
         ],
         "ModelBuilding_OutlineEnable": 0,
         "ModelBuilding_OutlineWidth": 11.899999618530273,
-        "ModelBuilding_POMEnable": 0,
-        "ModelBuilding_POMHeightScale": 0.05000000074505806,
+        "ModelBuilding_POMEnable": 1,
+        "ModelBuilding_POMHeightScale": 1.0,
         "ModelBuilding_POMMaxSteps": 32.0,
         "ModelBuilding_POMMinSteps": 8.0,
         "ModelBuilding_PuddleColor": [
@@ -1363,7 +1363,7 @@
             4.599999904632568,
             0.0
         ],
-        "ModelBuilding_Roughness": 0.25,
+        "ModelBuilding_Roughness": 0.9200000166893005,
         "ModelBuilding_Scale": [
             3.4000000953674316,
             5.800000190734863,
@@ -1404,7 +1404,7 @@
             0.0
         ],
         "ModelBuilding_UsePuddle": 0,
-        "ModelBuilding_UseTriplanar": 1,
+        "ModelBuilding_UseTriplanar": 0,
         "ModelBuilding_Wetness": 0.5,
         "ModelTree_Mat0_AddShadow": 0,
         "ModelTree_Mat0_AlbedoMap": "leaf",
@@ -1775,7 +1775,7 @@
         "Terrain_Emissive": 5.800000190734863,
         "Terrain_EnvMapInt": 0.0,
         "Terrain_EnvMapTex": "skybox",
-        "Terrain_HeightMapTex": "white1x1",
+        "Terrain_HeightMapTex": "height_32",
         "Terrain_Heightmap": "noise_39",
         "Terrain_LightMode": 3,
         "Terrain_Lighting": 1,
@@ -1784,7 +1784,7 @@
         "Terrain_NormEnable": 1,
         "Terrain_NormInten": 1.6799999475479126,
         "Terrain_NormTile": 1.0,
-        "Terrain_NormalMapTex": "normal_20",
+        "Terrain_NormalMapTex": "normal_32",
         "Terrain_OutlineColor": [
             0.0,
             0.0,
@@ -1794,7 +1794,7 @@
         "Terrain_OutlineEnable": 0,
         "Terrain_OutlineWidth": 1.0,
         "Terrain_POMEnable": 0,
-        "Terrain_POMHeightScale": 0.05000000074505806,
+        "Terrain_POMHeightScale": 0.0,
         "Terrain_POMMaxSteps": 32.0,
         "Terrain_POMMinSteps": 8.0,
         "Terrain_Position": [

@@ -69,6 +69,7 @@ PixelShaderOutput main(PixelShaderInput input)
     
     // POM
     float pomSelfShadow = 1.0f;
+    float2 pomUV = finalUV * gMaterial.normalTiling;
     
     // 負荷対策: Triplanar時の3軸サンプリングとPOMの併用は極端に重いため排他制御
     if (gMaterial.enablePOM != 0 && gMaterial.useTriplanar == 0)
@@ -79,18 +80,29 @@ PixelShaderOutput main(PixelShaderInput input)
         float3x3 TBN = float3x3(T, B, N);
         float3 toEyeTS = mul(TBN, toEyeWorld);
         
-        // SampleGradの警告回避とループ内の冗長計算を防ぐため事前計算
-        float2 dx = ddx(finalUV);
-        float2 dy = ddy(finalUV);
+        // SampleGrad用：pomUVを使って計算する
+        float2 dx = ddx(pomUV);
+        float2 dy = ddy(pomUV);
 
         float parallaxHeight = 0.0f;
-        finalUV = CalculateParallaxOcclusionMapping(finalUV, toEyeTS, dx, dy, parallaxHeight);
+        // POMの計算には pomUV を渡す
+        float2 newPomUV = CalculateParallaxOcclusionMapping(pomUV, toEyeTS, dx, dy, parallaxHeight);
+
+        // POMによってズレた移動量（オフセット）を計算
+        float2 pomOffset = newPomUV - pomUV;
+        pomUV = newPomUV;
+
+        // アルベド用のUV(finalUV)にも、スケールを補正してズレを適用する
+        // ※ 0割り回避のために max() を使用
+        float2 safeTiling = max(gMaterial.normalTiling, 0.0001f);
+        finalUV += pomOffset / safeTiling;
 
         // POMセルフシャドウ (メインライトのみ適用)
         if (gDirectionalLights[0].enable != 0)
         {
             float3 lightDirTS = mul(TBN, normalize(-gDirectionalLights[0].direction));
-            pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, finalUV, parallaxHeight, dx, dy);
+            // シャドウ計算にも pomUV を渡す
+            pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, pomUV, parallaxHeight, dx, dy);
         }
     }
     
@@ -172,7 +184,7 @@ PixelShaderOutput main(PixelShaderInput input)
         }
         else
         {
-            normal = CalculateNormalFromMap(input, worldNormal, finalUV);
+            normal = CalculateNormalFromMap(input, worldNormal, pomUV);
         }
     }
     
@@ -1049,6 +1061,7 @@ float2 CalculateParallaxOcclusionMapping(
 {
     viewDirTS = normalize(viewDirTS);
 
+    // カメラがサーフェスの裏側にある場合は早期リターン
     if (viewDirTS.z <= 0.0f)
     {
         parallaxHeight = 0.0f;
@@ -1057,20 +1070,17 @@ float2 CalculateParallaxOcclusionMapping(
 
     float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, texCoords);
 
-    // ハイトスケールの強制クランプとUVスケール補正
-    // どんなに大きな値が来ても、UV空間上で最大10%（0.1）以上のズレを許容しない。
-    // ※ 0.1 でもPOMとしてはかなり深いです。
+    // パラメータの安全化
+    // アーティファクト防止のため、UV空間での最大オフセット量をクランプ
     float safeHeightScale = clamp(gMaterial.pomHeightScale, 0.0f, 0.1f);
     
-    // UVタイリングによるスケーリングを相殺
-    // dx, dy の長さからUVがどれくらい縮小/拡大されているかを概算し、
-    // タイリングされている場合はPOMのスケールも小さくして破綻を防ぐ
-    float uvScale = length(float2(dx.x, dy.y)) * 1024.0f; // 基準サイズに対する倍率
+    // ddx/ddyからUVのタイリング率を概算し、ハイトスケールを自動補正して破綻を防ぐ
+    float uvScale = length(float2(dx.x, dy.y)) * 1024.0f;
     safeHeightScale /= max(uvScale, 1.0f);
 
-    // 【防御3】スケールに応じた動的ステップ数のブースト
-    // 浅ければ少ないループで軽くし、深く設定されたら自動でループを増やして突き抜けを防ぐ
-    float scaleFactor = (safeHeightScale / 0.05f); // 0.05を基準(1.0)とする
+    // レイマーチングのステップ数決定
+    // 適用する深度と視線角度(V.z)に応じてステップ数を動的に増減し、負荷と品質を両立
+    float scaleFactor = safeHeightScale / 0.05f;
     float maxSteps = clamp(gMaterial.pomMaxSteps * scaleFactor, 16.0f, 128.0f);
     float minSteps = clamp(gMaterial.pomMinSteps * scaleFactor, 8.0f, 64.0f);
 
@@ -1079,7 +1089,7 @@ float2 CalculateParallaxOcclusionMapping(
 
     float2 parallaxDir = viewDirTS.xy / max(viewDirTS.z, 0.01f);
     
-    // Max Ratio Clamping
+    // 浅い視射角での極端なテクスチャの歪みを制限
     float maxRatio = 1.5f;
     float currentRatio = length(parallaxDir);
     if (currentRatio > maxRatio)
@@ -1087,17 +1097,16 @@ float2 CalculateParallaxOcclusionMapping(
         parallaxDir *= (maxRatio / currentRatio);
     }
 
-    // 安全なスケール値を使用
     float2 p = parallaxDir * safeHeightScale;
     float2 deltaTexCoords = p * stepSize;
-
-    float referencePlane = 0.0f;
-    float2 currentTexCoords = texCoords + (p * referencePlane);
+    float2 currentTexCoords = texCoords;
     
+    // 深度は 0(表面) 〜 1(底) 
     float currentLayerDepth = 0.0f;
     float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
 
-    [unroll(128)] // ブーストに合わせてunroll上限を開放 
+    // レイマーチング探索
+    [unroll(128)]
     while (currentLayerDepth < currentDepthMapValue)
     {
         currentTexCoords -= deltaTexCoords;
@@ -1105,6 +1114,8 @@ float2 CalculateParallaxOcclusionMapping(
         currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
     }
 
+    // 交差位置のサブピクセル補間
+    // 衝突前後の深度差分を用いて線形補間し、段階的なサンプリングによる階層状のアーティファクトを解消
     float2 prevTexCoords = currentTexCoords + deltaTexCoords;
     float afterDepth = currentDepthMapValue - currentLayerDepth;
     float beforeDepth = (1.0f - gPOMHeightMap.SampleLevel(gSampler, prevTexCoords, mipLevel).r) - currentLayerDepth + stepSize;
