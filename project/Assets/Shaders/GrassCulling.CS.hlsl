@@ -9,9 +9,13 @@ RWStructuredBuffer<GrassInstanceData> gOutputGrassData : register(u0);
 // Indirect ArgsのInstanceCount(オフセット4バイト目)をインクリメントして描画数を動的決定
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
 
-static const uint THREADS_PER_ROW = 1024 * 64;
+static const uint kThreadsPerRow = 65536; // Dispatch(X)上限(65535)回避用2D展開幅
+static const uint kIndirectInstanceCountOffset = 4; // IndirectArgsバッファ内のInstanceCountオフセット(Byte)
+static const uint kFrustumPlaneCount = 6;
+static const float kMinValidHeight = 0.001f;
+static const float kBoundsRadiusScale = 1.2f; // 判定バウンディングスフィアの余裕持たせ
 
-// 疑似乱数 (Hash)
+// 擬似乱数 (Hash12)
 float Hash12(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031f);
@@ -22,7 +26,8 @@ float Hash12(float2 p)
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    uint instanceIndex = DTid.y * THREADS_PER_ROW + DTid.x;
+    // 2Dスレッドインデックスから1DのインスタンスIDを復元
+    uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
     
     if (instanceIndex >= gGrassCullingData.totalInstanceCount)
         return;
@@ -31,34 +36,41 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 pos = grass.posAndHeight.xyz;
     float height = grass.posAndHeight.w;
 
-    // カリング判定 (距離 / 視錐台 / 確率的間引き)
+    // ---------------------------------------------------------
+    // カリング判定 (早期リジェクト)
+    // ---------------------------------------------------------
     bool isVisible = true;
 
-    // 生成フェーズで間引かれた無効インスタンスの早期リジェクト
-    if (height <= 0.001f)
+    // 非アクティブ（高さゼロ）草の早期除外
+    if (height <= kMinValidHeight)
     {
         isVisible = false;
     }
     else
     {
-        // 距離カリング
+        // 距離カリング (XZ平面)
         float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
         if (distToCamXZ > gGrassCullingData.maxDrawDistance)
         {
             isVisible = false;
         }
 
-        // 視錐台カリング
-        float boundsRadius = height * 1.2f;
-        for (int i = 0; i < 6; ++i)
+        // 視錐台カリング (球判定)
+        if (isVisible)
         {
-            if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
+            float boundsRadius = height * kBoundsRadiusScale;
+            
+            for (uint i = 0; i < kFrustumPlaneCount; ++i)
             {
-                isVisible = false;
+                if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
+                {
+                    isVisible = false;
+                    break; // 1平面でも外側なら確定で離脱
+                }
             }
         }
 
-        // 確率的カリング: 遠景の密度を下げてLOD遷移を滑らかにする
+        // 確率的ディザカリング (遠景LODフェードアウト & 密度調整)
         if (isVisible)
         {
             float fadeRange = max(1.0f, gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance);
@@ -71,23 +83,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // Wave IntrinsicsによるAppend最適化
-    // 競合を減らすため、Wave内の有効スレッド数をまとめてアトミック加算
+    // ---------------------------------------------------------
+    // Wave Intrinsics による Append 競合緩和
+    // ---------------------------------------------------------
+    // レーン単位ではなく、Wave(レーン群)全体でまとめてアトミック加算してバスボトルネックを回避
     uint waveCount = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
 
-    // Waveの先頭スレッドが代表してグローバルバッファを更新
     if (WaveIsFirstLane() && waveCount > 0)
     {
-        gIndirectDrawArgs.InterlockedAdd(4, waveCount, waveOffset);
+        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, waveCount, waveOffset);
     }
 
-    // 取得したベースオフセットをWave内の全スレッドへブロードキャスト
+    // 代表スレッドが取得した書き込み開始アドレスをWave内へブロードキャスト
     waveOffset = WaveReadLaneFirst(waveOffset);
 
     if (isVisible)
     {
-        // プレフィックスサムを用いて各スレッドの出力先インデックスを決定
+        // Wave内プレフィックスサムで自身の出力インデックスを決定
         uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
         gOutputGrassData[appendIndex] = grass;
     }

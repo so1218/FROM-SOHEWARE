@@ -177,7 +177,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float3 p2 = rootPos + float3(0.0f, grassHeight * cp2Height, 0.0f) + (totalForce + tiltForce) * (grassHeight * 0.5f);
     float3 p3 = rootPos + float3(0.0f, grassHeight, 0.0f) + (totalForce + tiltForce) * grassHeight;
 
-    // 長さの維持 (Length Preservation)
+    // 長さの維持
     // 外力によってコントロールポイントが引っ張られた際、草がゴムのように伸びるのを防ぐため
     // セグメントごとの長さを算出し、元のgrassHeightを基準に再配置
     float3 v1 = p1 - p0;

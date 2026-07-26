@@ -26,7 +26,6 @@ struct PixelInput
     float4 prevClipPos : POSITION2;
 };
 
-// 前方宣言
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
 PixelShaderOutput main(PixelInput input)
