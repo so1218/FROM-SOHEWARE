@@ -8,7 +8,7 @@ using namespace FE;
 GrassField::GrassField(FE::Engine* engine, Player* player) : FE::GameObject()
 {
     engine_ = engine;
-    // 第2引数は風のノイズテクスチャ
+
     grassSystem_ = std::make_unique<FE::GrassSystem>(engine_, "noise_39");
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, "GrassField");
     player_ = player;
@@ -19,9 +19,6 @@ void GrassField::Initialize()
     auto* grassMat = grassSystem_->GetMaterialData();
     auto* cullingData = grassSystem_->GetCullingData();
 
-    // ==========================================
-    // 配置・生成設定 (変更時にGPUで再生成されるもの)
-    // ==========================================
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("BaseScale", &baseScale_, 1.0f, 0.01f, 0.1f, 5.0f);
     binder_->Bind("MaxGrassCount", &maxGrassPerChunk_, 300000, 1000, 1000, 2000000);
@@ -37,9 +34,6 @@ void GrassField::Initialize()
     binder_->Bind("TerrainWidth", &terrainWidth_, 500.0f, 1.0f, 10.0f, 5000.0f);
     binder_->Bind("TerrainDepth", &terrainDepth_, 500.0f, 1.0f, 10.0f, 5000.0f);
 
-    // ==========================================
-    // 色とライティング (ここからは毎フレーム自動反映。再生成不要！)
-    // ==========================================
     binder_->BindColor("RootColor", &grassMat->rootColor, { 0.1f, 0.2f, 0.05f });
     binder_->Bind("GrassRootAO", &grassMat->grassRootAO, 0.3f, 0.05f, 0.0f, 1.0f);
 
@@ -54,9 +48,6 @@ void GrassField::Initialize()
     binder_->Bind("SpecularShininess", &grassMat->specularShininess, 40.0f, 1.0f, 10.0f, 200.0f);
     binder_->Bind("Wetness", &grassMat->wetness, 0.0f, 0.05f, 0.0f, 1.0f);
 
-    // ==========================================
-    // 風の挙動
-    // ==========================================
     binder_->Bind("WindDirX", &grassMat->windDir.x, 1.0f, 0.05f, -1.0f, 1.0f);
     binder_->Bind("WindDirY", &grassMat->windDir.y, 0.8f, 0.05f, -1.0f, 1.0f);
     binder_->Bind("WindSpeed", &grassMat->windSpeed, 1.5f, 0.1f, 0.0f, 10.0f);
@@ -67,18 +58,12 @@ void GrassField::Initialize()
     binder_->Bind("FlutterAmount", &grassMat->flutterAmount, 0.15f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("WindHighlightStrength", &grassMat->windHighlightStrength, 0.4f, 0.05f, 0.0f, 1.0f);
 
-    // ==========================================
-    // インタラクションと影
-    // ==========================================
     binder_->Bind("InteractRadius", &grassMat->interactRadius, 1.2f, 0.1f, 0.1f, 5.0f);
     binder_->Bind("InteractStrength", &grassMat->interactStrength, 1.0f, 0.1f, 0.0f, 3.0f);
     binder_->Bind("ShadowDensity", &grassMat->shadowDensity, 0.8f, 0.05f, 0.0f, 1.0f);
     binder_->Bind("ShadowBias", &grassMat->shadowBias, 0.005f, 0.001f, 0.0f, 0.05f);
     binder_->Bind("ShadowNormalBias", &grassMat->shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.1f);
 
-    // ==========================================
-    // カリングとLOD
-    // ==========================================
     binder_->Bind("MaxDrawDistance", &cullingData->maxDrawDistance, 150.0f, 1.0f, 10.0f, 1000.0f);
     binder_->Bind("ThinStartDistance", &cullingData->thinStartDistance, 50.0f, 1.0f, 10.0f, 500.0f);
     binder_->Bind("MaxThinningRate", &cullingData->maxThinningRate, 0.8f, 0.05f, 0.0f, 0.99f);
@@ -89,10 +74,8 @@ void GrassField::Initialize()
     binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", TextureType::Noise);
     binder_->BindTexture("DensityMap", &densityMapName_, &densityMapHandle_, "white1x1", TextureType::Noise);
 
-    // ==========================================
-    // テクスチャの設定 (風) -> 毎フレーム反映可能なので再生成は不要
-    // ==========================================
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() {
+    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() 
+        {
         // 風のテクスチャが変更されたら、GrassSystemに新しいテクスチャを通知
         grassSystem_->SetWindMapTexture(windMapName_);
         });
@@ -121,7 +104,7 @@ void GrassField::Initialize()
 
 void GrassField::Update()
 {
-    // ★ 形状や配置に関するパラメータが変わった時だけGPUに再生成を命令する
+    // 形状や配置に関するパラメータが変わった時だけ再生成
     if (transform_.translation_.x != prevPosition_.x ||
         transform_.translation_.y != prevPosition_.y ||
         transform_.translation_.z != prevPosition_.z ||
@@ -156,10 +139,9 @@ void GrassField::Update()
         prevTerrainDepth_ = terrainDepth_;
     }
 
-    // プレイヤー座標をマテリアルに伝える（インタラクション用）
+    // プレイヤー座標をマテリアルに伝える
     if (player_)
     {
-        // 構造体の float3 playerPos に代入
         auto pos = player_->animationModel_->GetTransform().translation_;
         grassSystem_->GetMaterialData()->playerPos = { pos.x, pos.y, pos.z };
     }
@@ -177,11 +159,6 @@ void GrassField::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("草むら");
 
-    // ==========================================
-    // 配置設定
-    // ※Update()内で監視しているため、ここのスライダーを
-    // 動かすと自動的にGenerateGrass()が走り、即座に反映されます！
-    // ==========================================
     if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("Position", "中心座標");
@@ -207,16 +184,12 @@ void GrassField::DebugDraw()
         binder_->Draw("HeightMap", "ハイトマップ(高さ)");
         binder_->Draw("DensityMap", "密度マップ(生える場所)");
 
-        // 自動再生成されますが、手動トリガーも残しておきます
         if (ImGui::Button("強制再生成 (Generate)"))
         {
             GenerateGrass();
         }
     }
 
-    // ==========================================
-    // 質感・ライティング (ここからは毎フレーム即座にGPUに反映)
-    // ==========================================
     if (ImGui::CollapsingHeader("質感・ライティング"))
     {
         binder_->Draw("RootColor", "根本の色");
@@ -227,13 +200,11 @@ void GrassField::DebugDraw()
         binder_->Draw("ColorVariation", "草原全体の色ムラ");
 
         ImGui::Separator();
-        // ライティング
         binder_->Draw("GrassNormalBlend", "法線の上向きブレンド (最重要)");
         binder_->Draw("SSSColor", "透過光(SSS)の色");
         binder_->Draw("SSSStrength", "透過光(SSS)の強さ");
 
         ImGui::Separator();
-        // スペキュラ・濡れ
         binder_->Draw("SpecularStrength", "ハイライトの基本強度");
         binder_->Draw("SpecularShininess", "ハイライトの鋭さ");
         binder_->Draw("Wetness", "濡れ具合");
@@ -244,7 +215,6 @@ void GrassField::DebugDraw()
         ImGui::Text("風テクスチャ");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
         ImGui::Separator();
-        // Vector2だったものをX, Y(Z)に分けてバインドしたので個別に表示
         binder_->Draw("WindDirX", "風向き X");
         binder_->Draw("WindDirY", "風向き Z(Y)");
 
@@ -295,7 +265,7 @@ void GrassField::GenerateGrass()
     // GPUで草を一括生成するための設定データを作成
     GrassGenerationData genData{};
 
-    // ★修正1: 指定された範囲を敷き詰めるために必要な草の総数を自動計算
+    // 指定された範囲を敷き詰めるために必要な草の総数を自動計算
     uint32_t gridX = static_cast<uint32_t>(std::ceil(terrainWidth_ / gridSpacing_));
     uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / gridSpacing_));
     uint32_t neededGrassCount = gridX * gridZ;
@@ -321,6 +291,5 @@ void GrassField::GenerateGrass()
     genData.terrainWidth = terrainWidth_;
     genData.terrainDepth = terrainDepth_;
 
-    // 以前の2重ループは完全に消滅し、GPUに1発命令を送るだけ！
     grassSystem_->Generate(genData, heightMapName_, densityMapName_);
 }

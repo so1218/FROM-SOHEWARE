@@ -25,16 +25,15 @@ ShadowVSOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // 構造体全体を読み込まず、必要なプロパティだけを直接フェッチする
+    // 構造体全体を読み込まず、必要なプロパティだけを直接フェッチ
     float4 uvTransform = gTerrainInstances[instanceID].uvTransform;
     
-    // (修正) メイン描画と同じようにUVオフセットを適用
+    // メイン描画と同じようにUVオフセットを適用
     float2 globalUV = input.texcoord * uvTransform.xy + uvTransform.zw;
     float heightRatio = gHeightMap.SampleLevel(gSampler, globalUV, 0).r - 0.5f;
     input.position.y = heightRatio * gTerrainSettings.maxHeight;
     
-    // ★ 改善2: 行列(World)を丸ごと読み込まず、平行移動成分(4行目)だけを読み込んで足す
-    // ※地形が回転・スケールしない前提の超高速化
+    // 行列を丸ごと読み込まず、平行移動成分だけを読み込んで足す
     float3 offset = float3(
         gTerrainInstances[instanceID].World._m30,
         gTerrainInstances[instanceID].World._m31,
