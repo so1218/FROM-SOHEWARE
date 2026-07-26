@@ -29,30 +29,38 @@ cbuffer SpotLights : register(b4)
 ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b6);
 
-// 位相関数
-// 光が霧の粒子にぶつかった時に、どの方向にどのくらい散乱するか
+// Henyey-Greenstein 位相関数
+// 光の非対称な散乱確率を計算する標準モデル
 float PhaseFunctionHG(float cosTheta, float g)
 {
     float g2 = g * g;
     float denom = 1.0f + g2 - 2.0f * g * cosTheta;
-    return (1.0f - g2) / (4.0f * 3.14159265f * pow(max(denom, 0.0001f), 1.5f));
+    return (1.0f - g2) / (4.0f * PI * pow(max(denom, 0.0001f), 1.5f));
 }
 
-float DualPhaseHG(float cosTheta, float g)
+// 二重 Henyey-Greenstein 位相関数
+// 実際の霧で発生する強い前方散乱と弱い後方散乱を近似するための標準アプローチ
+float DualPhaseHG(float cosTheta, float gForward)
 {
-    float forward = PhaseFunctionHG(cosTheta, g);
-    float backward = PhaseFunctionHG(cosTheta, -0.2f);
-    return lerp(backward, forward, 0.9f);
+    // 一般的な大気・雲の散乱近似パラメータ
+    static const float kBackScatterG = -0.2f; // 後方散乱の非対称性
+    static const float kBlendRatio = 0.9f; // 前方散乱の優先度 (90% 前方, 10% 後方)
+
+    float forward = PhaseFunctionHG(cosTheta, gForward);
+    float backward = PhaseFunctionHG(cosTheta, kBackScatterG);
+    return lerp(backward, forward, kBlendRatio);
 }
 
 // レイマーチングのアーティファクトを消すためのノイズ関数
+// IGN論文の公式
 float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
-    // フレームごとにピクセル座標をズラしてノイズを変える
-    pixelCoord += float2(frameIndex * 5.588238f, frameIndex * 5.588238f);
+    // TAA や時間軸のジッターに対応させるため、フレーム単位でオフセット
+    static const float kTemporalGoldenRatio = 5.588238f;
+    pixelCoord += float2(frameIndex * kTemporalGoldenRatio, frameIndex * kTemporalGoldenRatio);
     
-    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(pixelCoord, magic.xy)));
+    static const float3 kIGNMagic = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    return frac(kIGNMagic.z * frac(dot(pixelCoord, kIGNMagic.xy)));
 }
 
 [numthreads(8, 8, 4)]

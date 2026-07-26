@@ -61,5 +61,4 @@ struct Skinned
 #define LIGHT_POINT 4
 #define LIGHT_SPOT 5
 
-static const float PI = 3.14159265359f;
 static const float EPSILON = 0.00001f;

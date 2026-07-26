@@ -8,15 +8,15 @@ struct Particle
 
 // バッファの定義
 RWStructuredBuffer<Particle> gParticles : register(u0);
-RWStructuredBuffer<uint> gFreeList : register(u1); // 空きインデックスのスタック
-RWStructuredBuffer<uint> gFreeListCounter : register(u2); // 現在の空き要素数
+RWStructuredBuffer<uint> gFreeList : register(u1); 
+RWStructuredBuffer<uint> gFreeListCounter : register(u2);
 
 cbuffer EmitterData : register(b0)
 {
     float3 gEmitterPos;
     float gDeltaTime;
     float gTime;
-    uint gEmitCount; // 今回発生させる数
+    uint gEmitCount;
 };
 
 float Random(float2 uv)
@@ -24,7 +24,6 @@ float Random(float2 uv)
     return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
 }
 
-// Update (寿命を減らし、死んだらFreeListに返す)
 [numthreads(64, 1, 1)]
 void UpdateCS(uint3 dtid : SV_DispatchThreadID)
 {
@@ -33,15 +32,13 @@ void UpdateCS(uint3 dtid : SV_DispatchThreadID)
         return;
 
     Particle p = gParticles[idx];
-
-    // 生きているパーティクルのみ処理
+    
     if (p.life > 0.0f)
     {
         p.life -= gDeltaTime;
 
         if (p.life <= 0.0f)
         {
-            // 寿命が尽きたら FreeList にインデックスを返却 (Push)
             uint freeIdx;
             InterlockedAdd(gFreeListCounter[0], 1, freeIdx);
             gFreeList[freeIdx] = idx;
@@ -55,21 +52,19 @@ void UpdateCS(uint3 dtid : SV_DispatchThreadID)
     }
 }
 
-// Emit (FreeListから取り出して発生させる)
 [numthreads(64, 1, 1)]
 void EmitCS(uint3 dtid : SV_DispatchThreadID)
 {
     uint emitIdx = dtid.x;
     if (emitIdx >= gEmitCount)
         return;
-
-    // FreeListからインデックスを取得 (Pop)
+    
     uint currentCount;
     InterlockedAdd(gFreeListCounter[0], -1, currentCount);
 
     if (currentCount > 0)
     {
-        uint particleIdx = gFreeList[currentCount - 1]; // 取得したインデックス
+        uint particleIdx = gFreeList[currentCount - 1]; 
 
         Particle p;
         p.position = gEmitterPos;
@@ -86,7 +81,6 @@ void EmitCS(uint3 dtid : SV_DispatchThreadID)
     }
     else
     {
-        // FreeListが空だった場合（発生上限）、カウンタを元に戻す
         InterlockedAdd(gFreeListCounter[0], 1);
     }
 }
