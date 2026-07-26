@@ -48,7 +48,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         float colorDiff = length(center.rgb - neighbor.rgb) + abs(center.a - neighbor.a);
         
-        // 遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならなくなる
+        // 遠方は sensitivity が極小になるため、差が激しくても weight が 0 にならない
         float weight = exp(-colorDiff * bilateralSensitivity);
         
         sum += neighbor * weight;

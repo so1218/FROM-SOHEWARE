@@ -42,7 +42,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float magD = gCurlRead[Wrap(pos + int3(0, 0, -1), size)].w;
     float magU = gCurlRead[Wrap(pos + int3(0, 0, 1), size)].w;
 
-    // 渦の強さの勾配を作る
+    // 渦の強さの勾配
     float3 N = float3(magR - magL, magT - magB, magU - magD) * halfInvDx;
     float lenN = length(N);
     

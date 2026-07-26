@@ -67,6 +67,7 @@ OutlineVertexShaderOutput main(SkinningVertexShaderInput input)
 
     // ワールド→クリップ空間変換
     float4 clipPos = mul(skinned.position, gTransformationMatrix.WVP);
+    
     // 法線を正規化してクリップ空間へ変換
     float3 normal = normalize(skinned.smoothNormal);
     float4 clipNormal = mul(float4(normal, 0.0f), gTransformationMatrix.WVP);

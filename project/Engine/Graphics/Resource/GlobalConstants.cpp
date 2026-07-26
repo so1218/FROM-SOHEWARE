@@ -23,9 +23,6 @@ void GlobalConstants::Initialize(ID3D12Device* device)
     frameData_->nearClip = 0.1f;
     frameData_->farClip = 1000.0f;
     frameData_->viewProjectionMatrix = Matrix4x4::MakeIdentity();
-
-    frameData_->lightningFlashColor = { 0.3f, 0.5f, 1.0f };
-    frameData_->lightningFlashIntensity = 0.0f;
 }
 
 void GlobalConstants::Update(

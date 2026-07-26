@@ -46,7 +46,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float4 sampleFog = gRawFogTexture.Load(samplePos);
             float sampleDepth = gDepthTexture.Load(samplePos).r;
 
-            // ウェイト（重み）の計算
+            // ウェイトの計算
             
             // 空間ウェイト（中心から遠いピクセルほど影響力を下げる）
             float distSq = (float) (x * x + y * y);

@@ -6,7 +6,6 @@ ConstantBuffer<DirectionalLight> gLight : register(b1);
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);
-
 // スキニング行列
 StructuredBuffer<Well> gMatrixPalette : register(t0);
 

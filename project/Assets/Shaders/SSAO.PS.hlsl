@@ -51,7 +51,7 @@ float4 main(VSOutput input) : SV_TARGET
     float occlusion = 0.0f;
     int sampleCount = gSSAOSettings.sampleCount;
 
-    [unroll(32)] // サンプル数が固定ならアンロールして高速化
+    [unroll(32)] // サンプル数が固定ならばアンロールして高速化
     for (int i = 0; i < sampleCount; ++i)
     {
         float u = (float(i) + 0.5f) / float(sampleCount);

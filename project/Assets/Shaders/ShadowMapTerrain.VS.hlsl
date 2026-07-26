@@ -25,7 +25,7 @@ ShadowVSOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // ★ 改善1: 構造体全体を読み込まず、必要なプロパティだけを直接フェッチする
+    // 構造体全体を読み込まず、必要なプロパティだけを直接フェッチする
     float4 uvTransform = gTerrainInstances[instanceID].uvTransform;
     
     // (修正) メイン描画と同じようにUVオフセットを適用

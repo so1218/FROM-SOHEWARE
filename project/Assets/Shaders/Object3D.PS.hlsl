@@ -36,7 +36,6 @@ SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gClampSampler : register(s2);
 
 float DitherThreshold4x4(int2 position);
-
 float3 DrawArtGridColor(PixelShaderInput input);
 bool ShouldDiscardArtGrid(PixelShaderInput input);
 
@@ -51,18 +50,7 @@ float G_SchlickGGX(float NdotV, float roughness);
 float G_Smith(float3 N, float3 V, float3 L, float roughness);
 float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness);
 
-float3 CalculatePBR(
-    float3 albedo,
-    float3 N,
-    float3 V,
-    float3 L,
-    float3 lightColor,
-    float lightIntensity,
-    float roughness,
-    float metalness
-);
-
-// 影の濃さを計算する関数
+float3 CalculatePBR(float3 albedo, float3 N, float3 V, float3 L, float3 lightColor, float lightIntensity, float roughness, float metalness);
 float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
@@ -74,64 +62,45 @@ float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialH
 PixelShaderOutput main(PixelShaderInput input)
 {
     PixelShaderOutput output;
-
-    // カメラへの視線ベクトル (ワールド空間)
+    
     float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float2 finalUV = transformedUV.xy;
-
-    // --------------------------------------------------------
-    // POM (Parallax Occlusion Mapping) の適用
-    // --------------------------------------------------------
+    
+    // POM
     float pomSelfShadow = 1.0f;
     
-    // トライプラナーマッピング時はPOMの計算が極めて重く複雑になるため除外する設計が一般的です
+    // 負荷対策: Triplanar時の3軸サンプリングとPOMの併用は極端に重いため排他制御
     if (gMaterial.enablePOM != 0 && gMaterial.useTriplanar == 0)
     {
-        // 1. 接空間(Tangent Space)を構築するためのTBN行列を作成
-        // ※理想は頂点シェーダーから Tangent/Binormal を渡すことですが、
-        // ない場合は ddx/ddy を用いて擬似的に接空間を構築します。
-        // （入力に tangent がある場合は入力値を使用してください）
         float3 N = normalize(input.normal);
         float3 T = normalize(input.tangent);
-// B(従法線)はNとTの外積で求められます
-        float3 B = normalize(cross(N, T)); // ※エンジンによっては cross(T, N) になる場合があります
-
+        float3 B = normalize(cross(N, T));
         float3x3 TBN = float3x3(T, B, N);
-
-        // ワールド空間の視線ベクトルを接空間に変換
         float3 toEyeTS = mul(TBN, toEyeWorld);
         
-        // SampleGrad用の微小変化量をループ外で取得 (必須)
+        // SampleGradの警告回避とループ内の冗長計算を防ぐため事前計算
         float2 dx = ddx(finalUV);
         float2 dy = ddy(finalUV);
 
         float parallaxHeight = 0.0f;
-        // UV座標を視差に応じてオフセット
         finalUV = CalculateParallaxOcclusionMapping(finalUV, toEyeTS, dx, dy, parallaxHeight);
 
-        // UVが0〜1の範囲外に出た場合はDiscardする処理 (オプション。エッジの切れ目対策)
-        // if (finalUV.x < 0.0 || finalUV.x > 1.0 || finalUV.y < 0.0 || finalUV.y > 1.0) discard;
-
-        // 自己シャドウの計算 (DirectionalLight[0] がある場合)
+        // POMセルフシャドウ (メインライトのみ適用)
         if (gDirectionalLights[0].enable != 0)
         {
-            float3 lightDirWorld = normalize(-gDirectionalLights[0].direction);
-            float3 lightDirTS = mul(TBN, lightDirWorld);
+            float3 lightDirTS = mul(TBN, normalize(-gDirectionalLights[0].direction));
             pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, finalUV, parallaxHeight, dx, dy);
         }
     }
     
-    // ベースとなるワールド法線を計算
+    // --------------------------------------------------------
+    // Albedo & Alpha Test
+    // --------------------------------------------------------
     float3 worldNormal = normalize(input.normal);
-    
     float4 textureColor;
-    
-    // トライプラナーのブレンド度合い
     float blendSharpness = gMaterial.triplanarBlendSharpness > 0.0f ? gMaterial.triplanarBlendSharpness : 4.0f;
 
-    // トライプラナー有効/無効でカラー取得を分岐
     if (gMaterial.useTriplanar != 0)
     {
         textureColor = CalculateTriplanarColor(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
@@ -140,359 +109,260 @@ PixelShaderOutput main(PixelShaderInput input)
     {
         textureColor = gTexture.Sample(gSampler, finalUV);
     }
-    
         
-    // ディザー透明処理
+    // 早期カリング
     if (textureColor.a * gMaterial.color.a <= gMaterial.alphaTestThreshold)
-    {
-        discard; // これ以降の重いライティング計算をスキップ
-    }
+        discard;
     
     float3 baseColor = textureColor.rgb;
 
-    // ディゾルブ処理
-    float3 dissolveEdgeEmission = float3(0, 0, 0);
-
-    // マテリアル設定でディゾルブが有効、かつ閾値が0より大きい場合のみ計算
+    // --------------------------------------------------------
+    // Dissolve エフェクト
+    // --------------------------------------------------------
+    float3 dissolveEdgeEmission = 0.0f.xxx;
     if (gMaterial.enableDissolve != 0)
     {
-        // ノイズテクスチャをサンプリング
+        // TODO: 負荷が高ければ頂点シェーダ側でのサンプリングに逃がすか検討
         float noiseValue = gDissolveTexture.Sample(gSampler, finalUV).r;
-
-        // ノイズの値が閾値より低ければピクセルを捨てる
         if (noiseValue <= gMaterial.dissolveThreshold)
-        {
             discard;
-        }
 
-        // 境界線の発光
         float difference = noiseValue - gMaterial.dissolveThreshold;
-        
-        // エッジ幅の範囲内なら発光
         if (difference < gMaterial.edgeWidth)
         {
-            // differenceが小さいほど1.0に近づくように反転
-            float t = 1.0f - (difference / gMaterial.edgeWidth);
-
-            // グラデーションを滑らかに
-            t = smoothstep(0.0f, 1.0f, t);
-
-            // 高輝度カラーの計算
+            float t = smoothstep(0.0f, 1.0f, 1.0f - (difference / gMaterial.edgeWidth));
             dissolveEdgeEmission = gMaterial.edgeColor * t * gMaterial.edgeIntensity;
         }
     }
 
-    // グリッド適用
+    // --------------------------------------------------------
+    // Debug: Art Grid
+    // --------------------------------------------------------
     if (gMaterial.isArtGrid)
     {
         if (ShouldDiscardArtGrid(input))
-        {
             discard;
-        }
 
-        output.color.rgb = DrawArtGridColor(input);
-        output.color.a = 1.0;
+        output.color = float4(DrawArtGridColor(input), 1.0f);
+        
+        // G-Bufferの破綻防止
         output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
         output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
-        
         return output;
     }
     
-    // 影の計算への適用
+    // --------------------------------------------------------
+    // Shadow & Normal
+    // --------------------------------------------------------
     float shadowFactor = 1.0f;
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
         float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
-        shadowFactor = CalculateShadowCSM(input.worldPosition, normalize(input.normal), viewDepth);
-        
-        // CSMの影にPOMの自己影を合成する (最も暗い方を採用)
-        shadowFactor = min(shadowFactor, pomSelfShadow);
+        shadowFactor = CalculateShadowCSM(input.worldPosition, worldNormal, viewDepth);
+        shadowFactor = min(shadowFactor, pomSelfShadow); // CSMとPOM影の暗い方を採用
     }
     
-    // ライティング処理
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-    float3 normal;
-    
+    float3 normal = worldNormal;
     if (gMaterial.enableNormalMap != 0)
     {
         if (gMaterial.useTriplanar != 0)
         {
-            // トライプラナーで法線を計算
-            normal = CalculateTriplanarNormal(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
-            
-            // 法線の強さを適用してブレンド
-            normal = normalize(lerp(worldNormal, normal, gMaterial.normalIntensity));
+            float3 triNormal = CalculateTriplanarNormal(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
+            normal = normalize(lerp(worldNormal, triNormal, gMaterial.normalIntensity));
         }
         else
         {
-            // 従来のUVマッピングでの法線計算
             normal = CalculateNormalFromMap(input, worldNormal, finalUV);
         }
     }
-    else
-    {
-        normal = worldNormal;
-    }
     
-    // 現在のラフネスとメタルネスを変数化
     float currentRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float currentMetalness = saturate(gMaterial.metalness);
     
-    // 水たまりの発光
-    float3 addedPuddleEmission = float3(0, 0, 0);
-    
-    // 波紋と水たまりの処理
+    // --------------------------------------------------------
+    // Wetness & Ripple (雨・水たまり表現)
+    // --------------------------------------------------------
+    float3 addedPuddleEmission = 0.0f.xxx;
     if (gMaterial.enableRipple != 0 && gMaterial.wetness > 0.0f)
     {
-        // 基本的な全体の濡れ具合
         float globalWetness = gMaterial.wetness;
-        float puddleDepth = 0.0f; // 水たまりの深さ
+        float puddleDepth = 0.0f;
 
-        // 水たまりマスクの計算
         if (gMaterial.usePuddle != 0)
         {
-            // ノイズに基づいて水が溜まる場所を特定
             float2 puddleUV = input.worldPosition.xz * gMaterial.puddleScale;
             float noiseVal = gPuddleNoiseTexture.Sample(gSampler, puddleUV).r;
             float edgeSoftness = max(gMaterial.puddleFalloff, 0.001f);
-            
-            // 水たまりの深さ
             puddleDepth = smoothstep(gMaterial.wetness, gMaterial.wetness - edgeSoftness, noiseVal);
         }
 
-        // 最終的な濡れ度
         float effectiveWetness = max(globalWetness, puddleDepth);
-
-        // 濡れている部分の質感
+        // 水濡れによるラフネスの平滑化
         currentRoughness = lerp(currentRoughness, 0.01f, effectiveWetness);
 
-        // 水たまりの色・透明度・発光の適用
         if (gMaterial.usePuddle != 0 && puddleDepth > 0.0f)
         {
-            // 最終的なブレンド率を決定
             float blendWeight = puddleDepth * gMaterial.puddleColor.a;
-            
-            // 下地に水たまりの色をブレンド
             baseColor = lerp(baseColor, gMaterial.puddleColor.rgb, blendWeight);
-            
-            // 発光成分の計算
             addedPuddleEmission = gMaterial.puddleColor.rgb * gMaterial.puddleEmission * puddleDepth;
         }
 
-        // 波紋の計算
+        // 3レイヤーのUVをずらしてサンプリングし、不規則な波紋アニメーションを作る
         float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
         float time = gFrameData.gTime * gMaterial.rippleSpeed;
-        float3 combinedRipple = float3(0, 0, 0);
+        float3 combinedRipple = 0.0f.xxx;
 
+        [unroll]
         for (int i = 0; i < 3; i++)
         {
-            float2 offset = float2(i * 0.33, i * 0.71);
+            float2 offset = float2(i * 0.33f, i * 0.71f);
             float2 p = rippleUV + offset;
             float2 gridID = floor(p);
             float2 f = frac(p);
 
+            // セルごとのランダムシード生成
             float3 seed = float3(gridID, float(i));
-            float rand = frac(sin(dot(seed.xy + seed.z, float2(12.9898, 78.233))) * 43758.5453);
-            
+            float rand = frac(sin(dot(seed.xy + seed.z, float2(12.9898f, 78.233f))) * 43758.5453f);
             float localTime = frac(time * gMaterial.rippleFrequency + rand);
 
-            float spread = localTime * gMaterial.rippleSize + 0.0001;
-            float2 animatedUV = (f - 0.5) / spread + 0.5;
+            float spread = localTime * gMaterial.rippleSize + 0.0001f;
+            float2 animatedUV = (f - 0.5f) / spread + 0.5f;
 
-            float3 r = float3(0, 0, 0);
-            if (animatedUV.x >= 0.0 && animatedUV.x <= 1.0 && animatedUV.y >= 0.0 && animatedUV.y <= 1.0)
+            float3 r = 0.0f.xxx;
+            if (animatedUV.x >= 0.0f && animatedUV.x <= 1.0f && animatedUV.y >= 0.0f && animatedUV.y <= 1.0f)
             {
                 r = gRippleTexture.Sample(gSampler, animatedUV).xyz * 2.0f - 1.0f;
             }
 
-            float mask = smoothstep(1.0, 0.0, localTime);
-            float edgeMask = smoothstep(0.5, 0.4, length(f - 0.5));
-
+            float mask = smoothstep(1.0f, 0.0f, localTime);
+            float edgeMask = smoothstep(0.5f, 0.4f, length(f - 0.5f));
             combinedRipple += r * mask * edgeMask;
         }
 
-        // 波紋の強さは全体の濡れ具合に合わせて掛ける
         float3 rippleNormal = combinedRipple * gMaterial.rippleStrength * effectiveWetness;
 
-        // 法線の合成
         if (gMaterial.usePuddle != 0)
         {
-            // 水が溜まっている部分だけ地面を平坦に
-            float3 flatNormal = float3(0, 1, 0);
-            // puddleDepthが高いほど平らに
+            // 水たまり部分はベース法線を水平化してから波紋を適用
+            float3 flatNormal = float3(0.0f, 1.0f, 0.0f);
             float3 baseN = normalize(lerp(normal, flatNormal, puddleDepth * 0.9f));
-            
-            // 平らにした地面の上に、全体に降っている波紋を乗せる
             normal = normalize(baseN + float3(rippleNormal.x, 0.0f, rippleNormal.y));
         }
         else
         {
-            // 元の法線を維持して波紋だけ乗せる
             normal = normalize(normal + float3(rippleNormal.x, 0.0f, rippleNormal.y));
         }
     }
     
+    // --------------------------------------------------------
+    // Bubble (薄膜干渉)
+    // --------------------------------------------------------
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    
-    // バブル処理
     float bubbleAlpha = textureColor.a;
+    
     if (gMaterial.isBubble != 0)
     {
         float3 bubbleNormal = normalize(input.normal);
         float NdotV = saturate(dot(bubbleNormal, toEye));
         float fresnel = 1.0f - NdotV;
 
-        // 虹色の計算
+        // コサインパレットによる色相シフト表現
         float t = fresnel + gFrameData.gTime * (gMaterial.wobbleSpeed * 0.1f);
-        float3 a = float3(0.5, 0.5, 0.5);
-        float3 b = float3(0.5, 0.5, 0.5);
-        float3 c = float3(1.0, 1.0, 1.0);
-        float3 d = float3(0.00, 0.33, 0.67);
-        float3 rainbowColor = a + b * cos(6.28318 * (c * t + d));
+        float3 a = 0.5f.xxx;
+        float3 b = 0.5f.xxx;
+        float3 c = 1.0f.xxx;
+        float3 d = float3(0.00f, 0.33f, 0.67f);
+        float3 rainbowColor = a + b * cos(6.28318f * (c * t + d));
 
-        // ベースカラーに虹色を乗せる
         baseColor += rainbowColor * fresnel * gMaterial.rainbowIntensity;
-        
-        // 縁を不透明にする
         bubbleAlpha = lerp(0.1f, 1.0f, pow(fresnel, gMaterial.fresnelExponent));
     }
 
+    // --------------------------------------------------------
+    // Lighting & IBL
+    // --------------------------------------------------------
+    float3 finalColor = 0.0f.xxx;
+    
     if (gMaterial.enableLighting != 0)
     {
-        float3 pbrAlbedo = baseColor * pow(gMaterial.color.rgb, 2.2f);
+        // ガンマ補正 (sRGB -> Linear)
+        float3 pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f);
         
-        // Directional Light
         finalColor += ApplyDirectionalLights(baseColor, pbrAlbedo, normal, toEye, shadowFactor);
-
-        // Point Light
         finalColor += ApplyPointLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
-
-        // Spot Light
         finalColor += ApplySpotLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
-        
-        // Area Light
         finalColor += ApplyAreaLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
-        
-        // 雷フラッシュの共通準備
-        float flashIntensity = gFrameData.lightningFlashIntensity;
-        float3 flashColor = gFrameData.lightningFlashColor * flashIntensity;
-        float flashShadowCancel = saturate(flashIntensity);
 
-        // 環境マップ処理
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            // 拡散反射
-            float3 kS = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), float3(0.04f, 0.04f, 0.04f), currentRoughness);
-            float3 kD = 1.0f - kS;
-            kD *= (1.0f - currentMetalness);
+            float3 kS = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), 0.04f.xxx, currentRoughness);
+            float3 kD = (1.0f.xxx - kS) * (1.0f - currentMetalness);
             
-            float3 baseAmbient = float3(0.03f, 0.03f, 0.03f);
-            
-            // 影の計算（フラッシュ時は影を打ち消す）
+            float3 baseAmbient = 0.03f.xxx;
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
-            ambientOcclusion = lerp(ambientOcclusion, 1.0f, flashShadowCancel);
 
-            // アンビエントディフューズにフラッシュを加算
-            float3 ambientDiffuse = kD * pbrAlbedo * (baseAmbient + flashColor);
+            float3 ambientDiffuse = kD * pbrAlbedo * baseAmbient;
 
-            // 鏡面反射
+            // IBL の計算。ラフネスに基づいてミップレベルを変える近似
             float3 reflectionVector = reflect(-toEye, normal);
             float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, currentRoughness * 6.0f).rgb;
-            
-            // 空の反射（環境マップ）自体をフラッシュで発光
-            envColor += flashColor;
     
-            float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), pbrAlbedo, currentMetalness);
+            float3 F0 = lerp(0.04f.xxx, pbrAlbedo, currentMetalness);
             float3 F_env = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), F0, currentRoughness);
             float3 ambientSpecular = envColor * F_env;
 
-            // 拡散反射と鏡面反射の合成
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
-     
             finalColor += ambient * ambientOcclusion;
         }
         else
         {
-            // 単純な環境マッピング
+            // トゥーン等、非PBR時の環境マップフォールバック
             float3 reflectionVector = reflect(-toEye, normal);
             float4 envColor = gEnvironmentTexture.Sample(gSampler, reflectionVector);
-
-            // 影の計算（フラッシュ時は影を打ち消す）
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
-            ambientOcclusion = lerp(ambientOcclusion, 1.0f, flashShadowCancel);
 
-            // 環境光の加算
             finalColor += envColor.rgb * gMaterial.environmentMapIntensity * ambientOcclusion;
-
-            // ベースカラーに対して、フラッシュの色と強さをそのまま乗せる
-            finalColor += baseColor * gMaterial.color.rgb * flashColor;
         }
         
         if (gMaterial.enableRim != 0)
         {
-            // メインライトの方向を取得
-            float3 toLight = float3(0, 1, 0);
+            float3 toLight = float3(0.0f, 1.0f, 0.0f);
             if (gDirectionalLights[0].enable != 0)
-            {
-                // ライトの向きの逆ベクトル（光源へのベクトル）
                 toLight = normalize(-gDirectionalLights[0].direction);
-            }
-
-            // ライト方向を渡す
+            
             finalColor += ApplyRimLight(normal, toEye, toLight);
         }
-       
     }
     else
     {
+        // Unlit
         finalColor = baseColor * gMaterial.color.rgb;
     }
     
     finalColor *= input.worldColor.rgb;
-    
-     // 自己発光を加算
     finalColor *= gMaterial.emissiveIntensity;
-    
-    // ディゾルブのエッジ発光を加算
     finalColor += dissolveEdgeEmission;
-    
-    // 水たまりの発光を加算
     finalColor += addedPuddleEmission;
 
+    // --------------------------------------------------------
+    // G-Buffer Output
+    // --------------------------------------------------------
     output.color.rgb = finalColor;
-
-    if (gMaterial.isBubble != 0)
-    {
-        output.color.a = bubbleAlpha * gMaterial.color.a;
-    }
-    else
-    {
-        output.color.a = textureColor.a * gMaterial.color.a;
-    }
-    
-    // G-Bufferへの情報書き込み
-
-    // 法線情報
+    output.color.a = (gMaterial.isBubble != 0) ? (bubbleAlpha * gMaterial.color.a) : (textureColor.a * gMaterial.color.a);
     output.normal = float4(normal, 1.0f);
-
-    // 材質情報
-    // R=メタルネス, G=ラフネス
+    
+    // R: Metalness, G: Roughness (遅延レンダリング用マテリアル情報)
     output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
     
-    // モーションベクトルの計算
-    // W除算を行ってNDC空間（-1 ～ 1）へ変換
+    // Velocity出力 (モーションブラー / TAA のReprojection用)
+    // クリップ空間座標からNDCを求め、UV空間(Y反転)へ変換してフレーム間差分を計算
     float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
     float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
 
-    // NDCからUV空間（0 ～ 1）へ変換 (Y軸の反転に注意)
     float2 currentUV = currentNDC * float2(0.5f, -0.5f) + 0.5f;
     float2 prevUV = prevNDC * float2(0.5f, -0.5f) + 0.5f;
 
-    // 移動量の算出（現在のUV - 1フレーム前のUV）
     output.velocity = currentUV - prevUV;
-    
-    // TAAのカメラジッター（微細なズレ）を入れている場合、
-    // ここで計算する行列からはジッターを抜いておくか、Velocityからジッター分を引く必要がある
     
     return output;
 }
@@ -1011,7 +881,7 @@ float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
 {
     // ノーマルマップから法線をサンプリング
-    float3 mapSample = gNormalTexture.Sample(gSampler, tiledUV);
+    float3 mapSample = gNormalTexture.Sample(gSampler, uv);
     float3 mapNormal = mapSample;
     
     // (0,1)を(-1,1)に変換
@@ -1187,12 +1057,12 @@ float2 CalculateParallaxOcclusionMapping(
 
     float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, texCoords);
 
-    // 【防御1】ハイトスケールの強制クランプとUVスケール補正
+    // ハイトスケールの強制クランプとUVスケール補正
     // どんなに大きな値が来ても、UV空間上で最大10%（0.1）以上のズレを許容しない。
     // ※ 0.1 でもPOMとしてはかなり深いです。
     float safeHeightScale = clamp(gMaterial.pomHeightScale, 0.0f, 0.1f);
     
-    // 【防御2】UVタイリングによるスケーリングを相殺
+    // UVタイリングによるスケーリングを相殺
     // dx, dy の長さからUVがどれくらい縮小/拡大されているかを概算し、
     // タイリングされている場合はPOMのスケールも小さくして破綻を防ぐ
     float uvScale = length(float2(dx.x, dy.y)) * 1024.0f; // 基準サイズに対する倍率
@@ -1227,7 +1097,7 @@ float2 CalculateParallaxOcclusionMapping(
     float currentLayerDepth = 0.0f;
     float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
 
-    [unroll(128)] // ブーストに合わせてunroll上限を開放 (※エラーが出る場合は手動で固定値を入れてください)
+    [unroll(128)] // ブーストに合わせてunroll上限を開放 
     while (currentLayerDepth < currentDepthMapValue)
     {
         currentTexCoords -= deltaTexCoords;
@@ -1248,10 +1118,10 @@ float2 CalculateParallaxOcclusionMapping(
 }
 
 
-// POMによるソフト自己影の計算 (メインPOMと全く同じMax Ratio制限を入れる)
+// POMによるソフト自己影の計算
 float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialHeight, float2 dx, float2 dy)
 {
-    lightDirTS = normalize(lightDirTS); // 光源ベクトルも念のため正規化
+    lightDirTS = normalize(lightDirTS);
 
     if (lightDirTS.z <= 0.0f)
         return 0.0f;
@@ -1261,7 +1131,7 @@ float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialH
     float numSteps = lerp(gMaterial.pomMaxSteps, gMaterial.pomMinSteps, lightDirTS.z);
     float stepSize = 1.0f / numSteps;
 
-    // シャドウ側も同様に最大長を制限する
+    // シャドウ側も同様に最大長を制限
     float2 parallaxDir = lightDirTS.xy / max(lightDirTS.z, 0.01f);
     float maxRatio = 1.5f;
     float currentRatio = length(parallaxDir);

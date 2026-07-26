@@ -490,7 +490,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float nearFadeEnd = 3.0f; // フェード終了（3.0mで通常の濃さに）
     float nearFade = smoothstep(nearFadeStart, nearFadeEnd, sampleViewZ);
     
-    // Near Fade を全体のウェイトに乗算する
+    // Near Fade を全体のウェイトに乗算
     depthWeight *= nearFade;
 
     // 最終的な散乱光と消散係数の算出

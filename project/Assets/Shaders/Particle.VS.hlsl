@@ -53,7 +53,7 @@ VertexOut main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
     }
 
     vout.svpos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
-    vout.uv = uv; // 計算したUVを渡す
+    vout.uv = uv; 
     vout.color = inst.color;
     vout.color.rgb *= inst.intensity;
     vout.textureIndex = inst.textureIndex;

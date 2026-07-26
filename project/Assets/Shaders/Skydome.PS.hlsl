@@ -26,7 +26,7 @@ cbuffer DirectionalLights : register(b1)
 };
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<WeatherData> gWeather : register(b6);
-// FBMによる雲の高さを一元管理する関数（風のアニメーションもここで一括処理）
+// FBMによる雲の高さを一元管理する関数
 float GetCloudHeight(float2 baseUV)
 {
     float2 speed1 = gWeather.windVelocity;

@@ -20,7 +20,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     VertexShaderOutput output;
     TerrainInstanceData inst = gTerrainInstances[instanceID];
 
-    // インスタンスごとのオフセットを適用し、共通ハイトマップ上のUVを計算
+    // インスタンスごとのオフセットを適用して、共通ハイトマップ上のUVを計算
     float2 globalUV = input.texcoord * inst.uvTransform.xy + inst.uvTransform.zw;
     
     // ハイトマップから高さを取得し、maxHeight を掛ける

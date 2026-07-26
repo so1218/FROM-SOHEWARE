@@ -46,7 +46,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         boxMax = max(boxMax, neighbor);
     }
     
-    // カメラの移動を考慮したリプロジェクション（履歴座標の逆算）
+    // カメラの移動を考慮したリプロジェクション
     float nearZ = max(gFrameData.nearClip, 0.1f);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
     

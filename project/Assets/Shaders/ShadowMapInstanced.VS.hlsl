@@ -2,7 +2,6 @@
 #include "ShaderConstants.hlsli" 
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-// ライト情報（今は配列先頭をバインドだが複数に対応したい）
 ConstantBuffer<DirectionalLight> gLight : register(b1);
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);

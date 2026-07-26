@@ -41,7 +41,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 消散係数にボクセルの厚みを掛けて、このステップの正確な透過率を出す
         float stepTransmittance = exp(-extinction * voxelThickness);
         
-        // 散乱光(S)に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを乗算
+        // 散乱光に対して、このボクセルステップ内でどれだけ光が残り、どれだけ消散したかを乗算
         float3 integratedScattering = S * (1.0f - stepTransmittance) / extinction;
         
         // 全体の透過率を考慮して累積

@@ -35,7 +35,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float rayLength = length(worldPos - gFrameData.cameraWorldPosition);
     float clampedDistance = clamp(rayLength, nearZ, farZ);
     
-    // 距離から3DテクスチャのZスライス（深度UV）を計算
+    // 距離から3DテクスチャのZスライスを計算
     float zSlice = log2(clampedDistance / nearZ) / log2(farZ / nearZ);
     zSlice = saturate(zSlice);
     

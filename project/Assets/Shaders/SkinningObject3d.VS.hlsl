@@ -66,7 +66,7 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
     output.worldPosition = worldPos.xyz;
     
     // 1フレーム前の座標系計算
-    // 過去のボーン行列を使って、1フレーム前のローカル座標を計算（位置のみ）
+    // 過去のボーン行列を使って、1フレーム前のローカル座標を計算
     float4 prevLocalPos =
         mul(input.position, gPrevMatrixPalette[input.index.x].skeletonSpaceMatrix) * input.weight.x +
         mul(input.position, gPrevMatrixPalette[input.index.y].skeletonSpaceMatrix) * input.weight.y +

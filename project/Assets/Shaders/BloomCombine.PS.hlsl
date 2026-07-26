@@ -177,7 +177,7 @@ float4 main(VSOutput input) : SV_TARGET
         // falloffが0の場合のクラッシュ防止
         float falloff = max(gCombineSettings.heightFogFalloff, 0.0001f);
 
-        // ハイトフォグの公式
+        // ハイトフォグ
         float fogAmount = (exp(-falloff * camHeight) - exp(-falloff * pixHeight)) / (falloff * heightDiff);
         float heightFogFactor = saturate(1.0f - exp(-animatedDensity * fogAmount * rayLength));
 

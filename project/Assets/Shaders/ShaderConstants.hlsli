@@ -63,13 +63,13 @@ struct FrameData
     float prevTime;
     
     float3 cameraRight;
-    float padding1;
+    float nearClip;
     
     float3 cameraUp;
-    float padding2;
+    float farClip;
 
     float3 mainLightDirection;
-    float paddingLight0;
+    float gTime;
     
     float3 mainLightColor;
     float mainLightVolumetricScatteringIntensity;
@@ -77,20 +77,14 @@ struct FrameData
     float2 iResolution;
     float2 screenResolution;
     
-    float gTime;
-    float nearClip;
-    float farClip;
-    float deltaTime;
-    
-    float3 lightningFlashColor;
-    float lightningFlashIntensity;
-    
     float4x4 lightViewProj;
     
     float4x4 prevViewProj;
     
     uint32_t frameIndex;
     float3 prevCameraWorldPosition;
+    
+    float deltaTime;
 };
 
 

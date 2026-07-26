@@ -81,7 +81,6 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     }
     
     // 座標の最終決定とクリップ空間への変換
-    
     // 現在の座標計算
     float4 worldPos = mul(localPos, instance.World);
     output.worldPosition = worldPos.xyz;
@@ -91,7 +90,7 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     // 1フレーム前の座標計算
     float4 prevWorldPos = mul(prevLocalPos, instance.PrevWorld);
     output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
-
+    
     output.texcoord = input.texcoord;
     output.normal = normalize(mul(input.normal, (float32_t3x3) instance.WorldInverseTranspose));
     output.tangent = normalize(mul(input.tangent, (float3x3) instance.World));

@@ -29,8 +29,6 @@ float Hash(float2 uv)
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    //return float4(1.0f, 0.0f, 0.0f, 0.0f);
-    
     float depth = gDepthTexture.SampleLevel(gClampSampler, input.uv, 0);
     if (depth >= 1.0f)
         return float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -111,7 +109,7 @@ float4 main(VSOutput input) : SV_TARGET
                 hitUV = finalUV;
                 // コンタクトフェード（足元のノイズ消し）
                 hitAlpha = smoothstep(0.0f, gSSRSettings.stepSize * 2.0f, rayDistance);
-                break; // ループを抜ける
+                break; 
             }
         }
     }

@@ -34,7 +34,7 @@ float3 SampleCurlNoise(SamplerState texSampler, float3 uvw)
     curl.y = (pZ.x - nZ.x) - (pX.z - nX.z);
     curl.z = (pX.y - nX.y) - (pY.x - nY.x);
     
-    // 微小差分を実用的な速度ベクトルのスケールに調整して返す
+    // 微小差分を実用的な速度ベクトルのスケールに調整
     return curl * (0.5f / delta);
 }
 

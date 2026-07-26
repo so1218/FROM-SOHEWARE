@@ -102,7 +102,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // ★無効な場合は、必ずバッファを0で上書きして古いゴミデータを消す
+    // 無効な場合は、必ずバッファを0で上書きして古いゴミデータを消す
     if (!isValid)
     {
         GrassInstanceData emptyGrass = (GrassInstanceData) 0;

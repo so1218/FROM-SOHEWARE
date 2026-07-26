@@ -43,7 +43,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     }
     else
     {
-        // 1. 距離カリング
+        // 距離カリング
         float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
         
         if (distToCamXZ > gGrassCullingData.maxDrawDistance)

@@ -83,7 +83,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float relaxationFactor = gFluidSettings.uvwRelaxation * gFrameData.deltaTime;
     float3 relaxedUVW = uvw + diff * (1.0f - relaxationFactor);
     
-    // 最後に再び 0.0 ～ 1.0 の範囲に安全にラップする
+    // 最後に再び 0.0 ～ 1.0 の範囲に安全にラップ
     advectedUVW = relaxedUVW - floor(relaxedUVW);
     
     // 速度の大きさを取得

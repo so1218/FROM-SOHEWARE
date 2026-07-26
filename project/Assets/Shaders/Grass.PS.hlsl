@@ -42,7 +42,7 @@ PixelShaderOutput main(PixelInput input)
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
-    // ★ AAAの重要アプローチ：個々の法線を「空(0,1,0)」へブレンドしてチラツキを防止！
+    // AAAの重要アプローチ：個々の法線を「空(0,1,0)」へブレンドしてチラツキを防止！
     float3 bladeNormal = normalize(input.normal);
     float3 globalUpNormal = float3(0.0f, 1.0f, 0.0f);
     float3 normal = normalize(lerp(bladeNormal, globalUpNormal, gMaterial.grassNormalBlend));

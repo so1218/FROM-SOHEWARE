@@ -168,7 +168,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
                 if (linearDepthDiff > 0.0f && linearDepthDiff < dynamicThickness)
                 {
                     // 二分探索の精度向上 (4回 -> 8回)
-                    // 浅い角度での縞々を消すためには回数が命
                     float tMin = t_prev;
                     float tMax = t;
                     

@@ -15,7 +15,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid >= uint3(width, height, depth)))
         return;
 
-    // ループ(Wrap)座標の計算
+    // ループ座標の計算
     uint xL = (DTid.x == 0) ? width - 1 : DTid.x - 1;
     uint xR = (DTid.x == width - 1) ? 0 : DTid.x + 1;
     uint yB = (DTid.y == 0) ? height - 1 : DTid.y - 1;

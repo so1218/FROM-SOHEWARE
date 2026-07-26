@@ -62,7 +62,6 @@ float4 main(VSOutput input) : SV_TARGET
         float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
 
         // 重みの計算
-
         // 距離による重み（遠いピクセルほど影響を小さく）
         float spatialW = spatialWeights[abs(i)];
 

@@ -36,7 +36,7 @@ float4 main(VertexOutput input) : SV_Target
     
     // 高輝度化
     finalColor *= gLightningMaterial.emissiveIntensity;
-    
+  
     float alpha = glow * input.color.a * flicker;
     if (alpha < 0.01f)
         discard;

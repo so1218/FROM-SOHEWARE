@@ -109,7 +109,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     uint vertexIdx = vertexID % NUM_VERTICES_PER_BLADE;
     
     // ==========================================
-    // 2. 距離ベースのポリゴン縮退 LOD
+    // 距離ベースのポリゴン縮退 LOD
     // ==========================================
     // 遠くの草の中間セグメント頂点を先端 (t=1.0) に押し潰すことで、
     // 描画結果を三角形から面積ゼロの直線へ縮退させ、ラスタライザでピクセル描画をスキップさせる

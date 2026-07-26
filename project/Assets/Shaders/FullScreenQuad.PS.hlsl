@@ -439,7 +439,7 @@ float4 ApplyDissolve(float4 currentColor, float2 uv)
         // 閾値に近いほど強く発光させる係数
         float t = 1.0f - ((noise - dissolveThreshold) / dissolveEdgeWidth);
         
-        // 芯が白く飛び、周囲がカラーになり、Bloomっぽくする
+        // 芯が白く飛び、周囲がカラーになり、Bloomっぽく
         float glowFactor = pow(t, 2.5f) * dissolveEdgeIntensity;
         
         // 加算合成
