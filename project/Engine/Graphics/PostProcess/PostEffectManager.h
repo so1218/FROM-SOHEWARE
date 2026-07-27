@@ -53,8 +53,8 @@ public:
 
     // 出力リソース取得
     D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
-    PostEffectData* GetPostEffectData() const { return postEffectData_; }
-    D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return cbPostEffect_->GetGPUVirtualAddress(); }
+    PostEffectData* GetPostEffectData() const { return cbData_; }
+    D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return constantBuffer_->GetGPUVirtualAddress(); }
 
     uint32_t GetBloomCombineSRVIndex() const { return combinePass_ ? combinePass_->GetSRVIndex() : 0; }
     uint32_t GetFinalPassSRVIndex() const { return finalPassSRVIndex_; }
@@ -110,8 +110,8 @@ private:
     std::unique_ptr<VolumetricFogBilateralPass> volumetricFogBilateralPass_;
 
     // 定数バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbPostEffect_;
-    PostEffectData* postEffectData_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
+    PostEffectData* cbData_ = nullptr;
 
     // シーン入力
     uint32_t sceneTextureIndex_ = 0;

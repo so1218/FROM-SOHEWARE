@@ -400,8 +400,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "カラー・色調");
 
     // グレースケール
-    if (ImGui::CheckboxFlags("グレースケール", &postEffectData->modeFlags[0], GRAYSCALE)) {}
-    if (postEffectData->modeFlags[0] & GRAYSCALE)
+    if (ImGui::CheckboxFlags("グレースケール", &postEffectData->flag[0], GRAYSCALE)) {}
+    if (postEffectData->flag[0] & GRAYSCALE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("適用量##Gray", &postEffectData->grayscaleColorAmount, 0.0f, 1.0f);
@@ -409,8 +409,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // セピア
-    if (ImGui::CheckboxFlags("セピア", &postEffectData->modeFlags[0], SEPIA)) {}
-    if (postEffectData->modeFlags[0] & SEPIA)
+    if (ImGui::CheckboxFlags("セピア", &postEffectData->flag[0], SEPIA)) {}
+    if (postEffectData->flag[0] & SEPIA)
     {
         ImGui::Indent();
         ImGui::SliderFloat("適用量##Sepia", &postEffectData->sepiaColorAmount, 0.0f, 1.0f);
@@ -418,8 +418,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // カラーティント (色合い調整)
-    if (ImGui::CheckboxFlags("カラーティント", &postEffectData->modeFlags[0], COLOR_TINT)) {}
-    if (postEffectData->modeFlags[0] & COLOR_TINT)
+    if (ImGui::CheckboxFlags("カラーティント", &postEffectData->flag[0], COLOR_TINT)) {}
+    if (postEffectData->flag[0] & COLOR_TINT)
     {
         ImGui::Indent();
         ImGui::ColorEdit3("着色カラー", &postEffectData->tintColor.x);
@@ -430,8 +430,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // ヴィネット
-    if (ImGui::CheckboxFlags("ビネット", &postEffectData->modeFlags[0], VIGNETTE)) {}
-    if (postEffectData->modeFlags[0] & VIGNETTE)
+    if (ImGui::CheckboxFlags("ビネット", &postEffectData->flag[0], VIGNETTE)) {}
+    if (postEffectData->flag[0] & VIGNETTE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("強度", &postEffectData->vignetteAmount, 0.0f, 10.0f);
@@ -443,8 +443,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // 色収差
-    if (ImGui::CheckboxFlags("色収差", &postEffectData->modeFlags[0], CHROM_ABERRATION)) {}
-    if (postEffectData->modeFlags[0] & CHROM_ABERRATION)
+    if (ImGui::CheckboxFlags("色収差", &postEffectData->flag[0], CHROM_ABERRATION)) {}
+    if (postEffectData->flag[0] & CHROM_ABERRATION)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ズレ幅", &postEffectData->chromaOffset, 0.0f, 10.0f);
@@ -452,8 +452,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // RGBずらし
-    if (ImGui::CheckboxFlags("RGBずらし", &postEffectData->modeFlags[0], RGB_SPLIT)) {}
-    if (postEffectData->modeFlags[0] & RGB_SPLIT)
+    if (ImGui::CheckboxFlags("RGBずらし", &postEffectData->flag[0], RGB_SPLIT)) {}
+    if (postEffectData->flag[0] & RGB_SPLIT)
     {
         ImGui::Indent();
         ImGui::SliderFloat("オフセット量", &postEffectData->rgbSplitOffset, 0.0f, 0.05f);
@@ -466,8 +466,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "形状・歪み");
 
     // ドット化
-    if (ImGui::CheckboxFlags("ドット化", &postEffectData->modeFlags[0], PIXELATION)) {}
-    if (postEffectData->modeFlags[0] & PIXELATION)
+    if (ImGui::CheckboxFlags("ドット化", &postEffectData->flag[0], PIXELATION)) {}
+    if (postEffectData->flag[0] & PIXELATION)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ドットサイズ", &postEffectData->pixelationSize, 1.0f, 64.0f);
@@ -475,8 +475,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // 画面の波紋
-    if (ImGui::CheckboxFlags("画面の波紋 (Wave)", &postEffectData->modeFlags[0], SCREEN_WAVE)) {}
-    if (postEffectData->modeFlags[0] & SCREEN_WAVE)
+    if (ImGui::CheckboxFlags("画面の波紋 (Wave)", &postEffectData->flag[0], SCREEN_WAVE)) {}
+    if (postEffectData->flag[0] & SCREEN_WAVE)
     {
         ImGui::Indent();
         const char* waveDirOptions[] = { "水平のみ", "垂直のみ", "両方向" };
@@ -488,8 +488,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // 魚眼レンズ
-    if (ImGui::CheckboxFlags("魚眼レンズ", &postEffectData->modeFlags[0], FISHEYE)) {}
-    if (postEffectData->modeFlags[0] & FISHEYE)
+    if (ImGui::CheckboxFlags("魚眼レンズ", &postEffectData->flag[0], FISHEYE)) {}
+    if (postEffectData->flag[0] & FISHEYE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("歪み強度", &postEffectData->fisheyeDistortion, 0.0f, 2.0f);
@@ -497,8 +497,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // ヒートヘイズ
-    if (ImGui::CheckboxFlags("ヒートヘイズ (陽炎)", &postEffectData->modeFlags[0], HEAT_HAZE)) {}
-    if (postEffectData->modeFlags[0] & HEAT_HAZE)
+    if (ImGui::CheckboxFlags("ヒートヘイズ (陽炎)", &postEffectData->flag[0], HEAT_HAZE)) {}
+    if (postEffectData->flag[0] & HEAT_HAZE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("歪み強度", &postEffectData->heatDistortionStrength, 0.0f, 0.05f);
@@ -508,8 +508,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // 水面屈折
-    if (ImGui::CheckboxFlags("水面屈折", &postEffectData->modeFlags[0], WATER_REFRACTION)) {}
-    if (postEffectData->modeFlags[0] & WATER_REFRACTION)
+    if (ImGui::CheckboxFlags("水面屈折", &postEffectData->flag[0], WATER_REFRACTION)) {}
+    if (postEffectData->flag[0] & WATER_REFRACTION)
     {
         ImGui::Indent();
         ImGui::SliderFloat("乱流強度", &postEffectData->turbulentStrength, 0.0f, 0.1f);
@@ -519,8 +519,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // ラディアルブラー
-    if (ImGui::CheckboxFlags("ラディアルブラー", &postEffectData->modeFlags[0], RADIAL_BLUR)) {}
-    if (postEffectData->modeFlags[0] & RADIAL_BLUR)
+    if (ImGui::CheckboxFlags("ラディアルブラー", &postEffectData->flag[0], RADIAL_BLUR)) {}
+    if (postEffectData->flag[0] & RADIAL_BLUR)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ブラー強度", &postEffectData->radialBlurStrength, 0.0f, 0.2f);
@@ -534,8 +534,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "特殊効果・ノイズ");
 
     // 走査線
-    if (ImGui::CheckboxFlags("走査線 (Scanline)", &postEffectData->modeFlags[0], SCANLINE)) {}
-    if (postEffectData->modeFlags[0] & SCANLINE)
+    if (ImGui::CheckboxFlags("走査線 (Scanline)", &postEffectData->flag[0], SCANLINE)) {}
+    if (postEffectData->flag[0] & SCANLINE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("強度", &postEffectData->scanlineIntensity, 0.0f, 1.0f);
@@ -548,8 +548,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // スクリーンノイズ
-    if (ImGui::CheckboxFlags("スクリーンノイズ (砂嵐)", &postEffectData->modeFlags[0], SCREEN_NOISE)) {}
-    if (postEffectData->modeFlags[0] & SCREEN_NOISE)
+    if (ImGui::CheckboxFlags("スクリーンノイズ (砂嵐)", &postEffectData->flag[0], SCREEN_NOISE)) {}
+    if (postEffectData->flag[0] & SCREEN_NOISE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ノイズ量", &postEffectData->noiseAmount, 0.0f, 1.0f);
@@ -559,8 +559,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // ブロックノイズ
-    if (ImGui::CheckboxFlags("ブロックノイズ", &postEffectData->modeFlags[0], BLOCK_NOISE)) {}
-    if (postEffectData->modeFlags[0] & BLOCK_NOISE)
+    if (ImGui::CheckboxFlags("ブロックノイズ", &postEffectData->flag[0], BLOCK_NOISE)) {}
+    if (postEffectData->flag[0] & BLOCK_NOISE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ノイズ量", &postEffectData->blockNoiseAmount, 0.0f, 1.0f);
@@ -570,8 +570,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // フィルムグレイン
-    if (ImGui::CheckboxFlags("フィルムグレイン (粒子)", &postEffectData->modeFlags[0], FILM_GRAIN)) {}
-    if (postEffectData->modeFlags[0] & FILM_GRAIN)
+    if (ImGui::CheckboxFlags("フィルムグレイン (粒子)", &postEffectData->flag[0], FILM_GRAIN)) {}
+    if (postEffectData->flag[0] & FILM_GRAIN)
     {
         ImGui::Indent();
         ImGui::SliderFloat("粒子強度", &postEffectData->filmGrainIntensity, 0.0f, 1.0f);
@@ -579,8 +579,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // グリッチ
-    if (ImGui::CheckboxFlags("グリッチエフェクト", &postEffectData->modeFlags[0], GLITCH)) {}
-    if (postEffectData->modeFlags[0] & GLITCH)
+    if (ImGui::CheckboxFlags("グリッチエフェクト", &postEffectData->flag[0], GLITCH)) {}
+    if (postEffectData->flag[0] & GLITCH)
     {
         ImGui::Indent();
         ImGui::SliderFloat("ブロックの高さ", &postEffectData->glitchBlockHeight, 0.01f, 0.2f);
@@ -590,8 +590,8 @@ void DebugGuiManager::DrawPostEffectSettings()
     }
 
     // ディゾルブ
-    if (ImGui::CheckboxFlags("ディゾルブ", &postEffectData->modeFlags[0], DISSOLVE)) {}
-    if (postEffectData->modeFlags[0] & DISSOLVE)
+    if (ImGui::CheckboxFlags("ディゾルブ", &postEffectData->flag[0], DISSOLVE)) {}
+    if (postEffectData->flag[0] & DISSOLVE)
     {
         ImGui::Indent();
         ImGui::SliderFloat("進行度", &postEffectData->dissolveThreshold, 0.0f, 1.0f);
@@ -601,8 +601,8 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::Unindent();
     }
 
-    if (ImGui::CheckboxFlags("カラーグレーディング (LUT)", &postEffectData->modeFlags[0], COLOR_GRADING_LUT)) {}
-    if (postEffectData->modeFlags[0] & COLOR_GRADING_LUT)
+    if (ImGui::CheckboxFlags("カラーグレーディング (LUT)", &postEffectData->flag[0], COLOR_GRADING_LUT)) {}
+    if (postEffectData->flag[0] & COLOR_GRADING_LUT)
     {
         ImGui::Indent();
 

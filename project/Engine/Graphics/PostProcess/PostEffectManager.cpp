@@ -86,7 +86,10 @@ void PostEffectManager::Initialize(
 
     // ポストエフェクト定数バッファ
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
-    cbPostEffect_ = BufferManager::CreateMappedConstantBuffer(device, &postEffectData_);
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<PostEffectData>(
+        device,
+        &cbData_
+    );
 
     // 最終出力用オフスクリーンRT（Create後にSRVIndexが更新される）
     auto [finalResource, finalRtvHandle, finalSrvIndex, uavIndex] =
@@ -99,61 +102,61 @@ void PostEffectManager::Initialize(
     finalPassSRVIndex_ = finalSrvIndex;
 
     // パラメータの初期値を設定
-    postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-    postEffectData_->pixelationSize = 2.386f;
-    postEffectData_->screenResolution = Vector2(float(width), float(height));
-    postEffectData_->grayscaleColorAmount = 1.0f;
-    postEffectData_->sepiaColorAmount = 1.0f;
-    postEffectData_->tintMulColorAmount = 1.0f;
-    postEffectData_->tintAddColorAmount = 1.0f;
-    postEffectData_->tintScreenColorAmount = 1.0f;
-    postEffectData_->tintColor = Vector3(1.0f, 1.0f, 1.0f);
-    postEffectData_->vignetteAmount = 0.294f;
-    postEffectData_->vignetteRadius = 0.148f;
-    postEffectData_->vignetteSoftness = 0.3f;
-    postEffectData_->vignetteEllipseScale = Vector2(1.2f, 1.0f);
-    postEffectData_->noiseAmount = 0.05f;
-    postEffectData_->noiseSpeed = 1.0f;
-    postEffectData_->noiseScale = 0.2f;
-    postEffectData_->waveAmplitude = 0.01f;
-    postEffectData_->waveFrequency = 15.0f;
-    postEffectData_->waveDirection = 0;
-    postEffectData_->waveSpeed = 2.0f;
-    postEffectData_->fisheyeDistortion = 0.2f;
-    postEffectData_->scanlineScrollSpeed = 0.2f;
-    postEffectData_->scanlineColor = { 0.0f, 0.0f, 0.0f };
-    postEffectData_->scanlineDirection = 0;
-    postEffectData_->blockNoiseAmount = 0.5f;
-    postEffectData_->blockNoiseSize = 16.0f;
-    postEffectData_->noiseSpeed = 1.0f;
-    postEffectData_->rgbSplitOffset = 0.003f;
-    postEffectData_->filmGrainIntensity = 0.5f;
-    postEffectData_->glitchBlockHeight = 0.5f;
-    postEffectData_->glitchAmount = 0.1f;
-    postEffectData_->glitchNoiseIntensity = 0.2f;
-    postEffectData_->heatDistortionStrength = 0.02f;
-    postEffectData_->heatNoiseScale = 20.0f;
-    postEffectData_->heatSpeed = 5.0f;
-    postEffectData_->vignetteColor = Vector3(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
-    postEffectData_->turbulentStrength = 0.2f;
-    postEffectData_->turbulentFrequency = 10.0f;
-    postEffectData_->turbulentSpeed = 3.0f;
-    postEffectData_->modeFlags[0] = 0;
-    postEffectData_->modeFlags[1] = 0;
-    postEffectData_->dissolveThreshold = 0.0f;     
-    postEffectData_->dissolveEdgeWidth = 0.04f;    
-    postEffectData_->dissolveEdgeIntensity = 4.0f; 
-    postEffectData_->dissolveEdgeColor = Vector3(1.0f, 0.4f, 0.1f);
-	postEffectData_->radialBlurCenter = Vector2(0.5f, 0.5f);
-	postEffectData_->radialBlurStrength = 0.3f; 
+    cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+    cbData_->pixelationSize = 2.386f;
+    cbData_->screenResolution = Vector2(float(width), float(height));
+    cbData_->grayscaleColorAmount = 1.0f;
+    cbData_->sepiaColorAmount = 1.0f;
+    cbData_->tintMulColorAmount = 1.0f;
+    cbData_->tintAddColorAmount = 1.0f;
+    cbData_->tintScreenColorAmount = 1.0f;
+    cbData_->tintColor = Vector3(1.0f, 1.0f, 1.0f);
+    cbData_->vignetteAmount = 0.294f;
+    cbData_->vignetteRadius = 0.148f;
+    cbData_->vignetteSoftness = 0.3f;
+    cbData_->vignetteEllipseScale = Vector2(1.2f, 1.0f);
+    cbData_->noiseAmount = 0.05f;
+    cbData_->noiseSpeed = 1.0f;
+    cbData_->noiseScale = 0.2f;
+    cbData_->waveAmplitude = 0.01f;
+    cbData_->waveFrequency = 15.0f;
+    cbData_->waveDirection = 0;
+    cbData_->waveSpeed = 2.0f;
+    cbData_->fisheyeDistortion = 0.2f;
+    cbData_->scanlineScrollSpeed = 0.2f;
+    cbData_->scanlineColor = { 0.0f, 0.0f, 0.0f };
+    cbData_->scanlineDirection = 0;
+    cbData_->blockNoiseAmount = 0.5f;
+    cbData_->blockNoiseSize = 16.0f;
+    cbData_->noiseSpeed = 1.0f;
+    cbData_->rgbSplitOffset = 0.003f;
+    cbData_->filmGrainIntensity = 0.5f;
+    cbData_->glitchBlockHeight = 0.5f;
+    cbData_->glitchAmount = 0.1f;
+    cbData_->glitchNoiseIntensity = 0.2f;
+    cbData_->heatDistortionStrength = 0.02f;
+    cbData_->heatNoiseScale = 20.0f;
+    cbData_->heatSpeed = 5.0f;
+    cbData_->vignetteColor = Vector3(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
+    cbData_->turbulentStrength = 0.2f;
+    cbData_->turbulentFrequency = 10.0f;
+    cbData_->turbulentSpeed = 3.0f;
+    cbData_->flag[0] = 0;
+    cbData_->flag[1] = 0;
+    cbData_->dissolveThreshold = 0.0f;     
+    cbData_->dissolveEdgeWidth = 0.04f;    
+    cbData_->dissolveEdgeIntensity = 4.0f; 
+    cbData_->dissolveEdgeColor = Vector3(1.0f, 0.4f, 0.1f);
+	cbData_->radialBlurCenter = Vector2(0.5f, 0.5f);
+	cbData_->radialBlurStrength = 0.3f; 
 }
 
 void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition)
 {
     // 時間依存データの更新
-    if (postEffectData_)
+    if (cbData_)
     {
-        postEffectData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
+        cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     }
 
     // バイラテラルブラーのパラメータ同期

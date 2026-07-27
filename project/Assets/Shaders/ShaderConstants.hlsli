@@ -91,7 +91,6 @@ struct FrameData
     float deltaTime;
 };
 
-
 struct MaterialData
 {
     float4x4 uvTransform;
@@ -296,6 +295,99 @@ struct ParticleInstanceData
     
     float intensity;
     float3 padding;
+};
+
+
+struct PostEffectData
+{
+    float pixelationSize;
+    float3 _padding0;
+
+    float2 screenResolution;
+    float grayscaleColorAmount;
+    float sepiaColorAmount;
+
+    float tintMulColorAmount;
+    float tintAddColorAmount;
+    float tintScreenColorAmount;
+    float _padding1;
+
+    float3 tintColor;
+    float totalTime;
+
+    float vignetteAmount;
+    float vignetteRadius;
+    float vignetteSoftness;
+    float padding_1;
+
+    float2 vignetteEllipseScale;
+    float2 padding_2;
+
+    float noiseAmount;
+    float noiseSpeed;
+    float noiseScale;
+    float _padding2;
+
+    float chromaOffset;
+    float waveAmplitude;
+    float waveFrequency;
+    float _paddingWave;
+
+    int waveDirection;
+    float waveSpeed;
+    float fisheyeDistortion;
+    float _paddingFisheye;
+
+    float scanlineIntensity;
+    float scanlineFrequency;
+    int scanlineDirection;
+    float _padding3;
+
+    float3 scanlineColor;
+    float scanlineScrollSpeed;
+
+    float blockNoiseAmount;
+    float blockNoiseSize;
+    float blockNoiseSpeed;
+    float _padding4;
+
+    float rgbSplitOffset;
+    float filmGrainIntensity;
+    float _padding5;
+    float _padding6;
+
+    float glitchBlockHeight;
+    float glitchAmount;
+    float glitchNoiseIntensity;
+    float _padding7;
+
+    float heatDistortionStrength;
+    float heatSpeed;
+    float heatNoiseScale;
+    float _padding8;
+
+    float3 vignetteColor;
+    float _padding9;
+
+    float turbulentStrength;
+    float turbulentFrequency;
+    float turbulentSpeed;
+    float _paddingTurbulence;
+
+    int32_t flag[2];
+    float2 _paddingGlow2;
+
+    float dissolveThreshold;
+    float dissolveEdgeWidth;
+    float dissolveEdgeIntensity;
+    float _paddingDissolve;
+
+    float3 dissolveEdgeColor;
+    float _paddingDissolve2;
+
+    float radialBlurStrength;
+    float2 radialBlurCenter;
+    float _paddingRadial;
 };
 
 struct BrightExtractSettings
@@ -551,7 +643,6 @@ struct FluidSettings
     float2 paddingFluid3;
     
     float3 voxelDelta;
-    float pad1;
 };
 
 struct ShadowData
@@ -570,7 +661,6 @@ struct TerrainSettings
     float maxHeight; 
     float texelSize;
     float cellSize;
-    float padding;
 };
 
 struct TerrainInstanceData
@@ -597,5 +687,4 @@ struct LightningMaterial
     
     float emissiveIntensity; 
     float instanceSeed;
-    float2 padding;
 };
