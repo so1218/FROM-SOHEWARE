@@ -950,66 +950,6 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("ハイブリッドフォグ設定"))
-    {
-        bool fogFlag = (combineSettingsData->enableFog != 0);
-        if (ImGui::Checkbox("フォグを有効にする", &fogFlag))
-            combineSettingsData->enableFog = fogFlag ? 1 : 0;
-
-        if (fogFlag)
-        {
-            ImGui::Indent();
-
-            ImGui::ColorEdit3("フォグの色", &combineSettingsData->fogColor.x);
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Text("距離フォグ");
-
-            ImGui::DragFloat("霧の開始距離", &combineSettingsData->distanceFogStart, 0.5f, 0.0f, 500.0f, "%.1f m");
-            ImGui::DragFloat("完全に真っ白になる距離", &combineSettingsData->distanceFogEnd, 0.5f, 0.0f, 1000.0f, "%.1f m");
-
-            if (combineSettingsData->distanceFogStart > combineSettingsData->distanceFogEnd)
-                combineSettingsData->distanceFogStart = combineSettingsData->distanceFogEnd;
-
-
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Text("ハイトフォグ");
-
-            ImGui::DragFloat("基準の高さ", &combineSettingsData->heightFogBaseHeight, 0.1f, -100.0f, 100.0f, "%.1f m");
-            ImGui::DragFloat("足元の霧の濃さ", &combineSettingsData->heightFogDensity, 0.001f, 0.0f, 1.0f, "%.4f");
-            ImGui::DragFloat("高さによる減衰率", &combineSettingsData->heightFogFalloff, 0.01f, 0.001f, 5.0f, "%.3f");
-
-            ImGui::Text("ノイズ設定");
-            std::vector<std::string> noiseNames = TextureManager::GetInstance().GetTextureNamesByType(TextureType::Noise);
-
-            if (noiseNames.empty()) {
-                ImGui::TextColored(ImVec4(1, 0, 0, 1), "Noiseテクスチャが読み込まれていない");
-            }
-            else {
-                std::string currentNoise = postEffectManager_->GetCurrentNoiseName();
-                if (ImGui::BeginCombo("フォグノイズ", currentNoise.c_str())) {
-                    for (const auto& name : noiseNames) {
-                        bool isSelected = (currentNoise == name);
-                        if (ImGui::Selectable(name.c_str(), isSelected)) {
-                            postEffectManager_->SetCurrentNoiseName(name);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-            }
-
-            ImGui::DragFloat("ノイズスケール", &combineSettingsData->fogNoiseScale, 0.001f, 0.0001f, 0.5f, "%.4f");
-            ImGui::DragFloat("流れる速度", &combineSettingsData->fogNoiseSpeed, 0.001f, 0.0f, 2.0f, "%.3f");
-            ImGui::SliderFloat("コントラスト(キレ)", &combineSettingsData->fogNoiseContrast, 0.0f, 10.0f, "%.2f");
-            ImGui::SliderFloat("ムラの強さ", &combineSettingsData->fogNoiseStrength, 0.0f, 1.0f, "%.2f");
-
-            ImGui::Unindent();
-        }
-        ImGui::TreePop();
-    }
-
     ImGui::Separator();
 }
 

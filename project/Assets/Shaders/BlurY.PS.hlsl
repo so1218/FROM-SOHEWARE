@@ -7,7 +7,6 @@ cbuffer BlurSettings : register(b0)
 {
     float2 texelSize;
     float blurStrength; 
-    float _padding;
 }
 
 static const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };

@@ -322,25 +322,10 @@ struct CombineSettings
     float bloomIntensity;
     int enableDoF;
     int enableSSAO;
-    int enableFog;
-    
-    float3 fogColor;
-    float heightFogDensity;
-    
-    float heightFogFalloff;
-    float heightFogBaseHeight;
-    float distanceFogStart;
-    float distanceFogEnd;
-    
-    float fogNoiseSpeed;
-    float fogNoiseScale;
-    float fogNoiseContrast;
-    float fogNoiseStrength;
-    
     int enableSSR;
+    
     float ssrIntensity;
     int enableVolumetricFog; 
-    float _padding;
 };
 
 struct SSAOSettings

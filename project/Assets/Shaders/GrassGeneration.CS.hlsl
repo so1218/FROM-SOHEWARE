@@ -10,7 +10,7 @@ SamplerState gLinearSampler : register(s0);
 RWStructuredBuffer<GrassInstanceData> gOutputGrass : register(u0);
 
 // C++側の Dispatch(1024, 1, 1) と numthreads(64, 1, 1) の総数
-static const uint THREADS_PER_ROW = 1024 * 64;
+static const uint kThreadsPerRow = 1024 * 64;
 
 // ワールド座標から地形全体の0-1 UVへのマッピング
 float2 CalculateTerrainUV(float x, float z)
@@ -38,7 +38,7 @@ float2 Hash22(float2 p)
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-    uint instanceIndex = DTid.y * THREADS_PER_ROW + DTid.x;
+    uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
     
     if (instanceIndex >= gGenerationData.maxGrassPerChunk)
         return;
@@ -102,7 +102,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 各種ランダムパラメータの生成
     float randomHeight = lerp(gGenerationData.minHeight, gGenerationData.maxHeight, Hash12(float2(worldZ, worldX)));
     float randomWidth = lerp(gGenerationData.minWidth, gGenerationData.maxWidth, Hash12(float2(worldX, worldZ)));
-    float randomRotY = Hash12(float2(worldX, worldZ)) * 3.14159265f * 2.0f;
+    float randomRotY = Hash12(float2(worldX, worldZ)) * PI * 2.0f;
     
     uint packedColor = 0xFFFFFFFF; // 初期値
 

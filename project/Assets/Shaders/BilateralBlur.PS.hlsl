@@ -4,9 +4,9 @@
 ConstantBuffer<BilateralBlurSettings> gBilateralBlurSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
 
-Texture2D<float> gSSAOTexture : register(t0); // SSAO
-Texture2D<float> gDepthTexture : register(t1); // 深度バッファ
-Texture2D<float4> gNormalTexture : register(t2); // 法線バッファ
+Texture2D<float> gSSAOTexture : register(t0); 
+Texture2D<float> gDepthTexture : register(t1); 
+Texture2D<float4> gNormalTexture : register(t2); 
 
 SamplerState gClampSampler : register(s0);
 

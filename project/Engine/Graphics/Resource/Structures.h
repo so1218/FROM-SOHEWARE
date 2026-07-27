@@ -164,22 +164,6 @@ struct AABB
     Vector3 max;
 };
 
-struct BloomSettingsCPU {
-    float brightnessThreshold;
-    float padding[3];
-
-};
-
-struct CombineSettingsCPU {
-    float bloomIntensity;
-    float padding[3];
-};
-
-struct BlurSettingsCPU {
-    Vector2 texelSize;
-    float padding[2];
-};
-
 struct PostEffectData
 {
     float pixelationSize;
@@ -276,48 +260,32 @@ struct BlurSettings
 {
     Vector2 texelSize = { 1.0f / 1280.0f, 1.0f / 720.0f };
     float blurStrength = 1.0f;
-    float padding;
-};
-
-struct DepthExtractSettingsVS
-{
-    float nearPlane;
-    float farPlane;
-    Vector2 padding;
-    Matrix4x4 invViewProjection;
-};
-
-struct DepthExtractSettingsPS
-{
-    float nearPlane;
-    float farPlane;
-    Vector2 padding;
 };
 
 // シェーダーに送る雷の見た目パラメータ
 struct LightningConfig
 {
-    Vector3 coreColor = { 1.0f, 1.0f, 1.0f };       // 芯の色
-    float coreThickness = 0.15f;                    // 芯の太さ
-    Vector3 fringeColor = { 0.1f, 0.5f, 1.0f };     // 滲みの色
-    float corePower = 4.0f;                         // 芯の鋭さ
-    float glowPower = 2.5f;                         // 滲みの広がり
-    float emissiveIntensity = 50.0f;                // ブルームの強さ
-    float flickerSpeed = 60.0f;                     // 明滅スピード
-    float displacement = 20.0f;                     // ジグザグの荒ぶる幅
-    float durationMin = 0.08f;                      // 最小表示時間
-    float durationMax = 0.35f;                      // 最大表示時間
-    float lightIntensityMax = 150.0f;               // 落雷時の最大輝度（かなり強めが良い）
-    float lightRadius = 100.0f;                     // 光の届く範囲（メートル）
-    float lightHeightOffset = 10.0f;                // 落雷地点(地面)からどれくらい浮かせた位置にライトを置くか
-    float volumetricScattering = 5.0f;              // ボリュメトリックフォグへの影響（空気を光らせる）
+    Vector3 coreColor = { 1.0f, 1.0f, 1.0f };     
+    float coreThickness = 0.15f;                  
+    Vector3 fringeColor = { 0.1f, 0.5f, 1.0f };   
+    float corePower = 4.0f;                       
+    float glowPower = 2.5f;                       
+    float emissiveIntensity = 50.0f;              
+    float flickerSpeed = 60.0f;                   
+    float displacement = 20.0f;                   
+    float durationMin = 0.08f;                    
+    float durationMax = 0.35f;                    
+    float lightIntensityMax = 150.0f;             
+    float lightRadius = 100.0f;                   
+    float lightHeightOffset = 10.0f;              
+    float volumetricScattering = 5.0f;            
     Vector4 lightColor = { 0.7f, 0.85f, 1.0f, 1.0f };
-    float thickness = 0.5f;      // メッシュ自体の太さ(ワールド空間)
-    float flickerMin = 0.4f;     // 明滅の最も暗い時の倍率
-    float flickerMax = 1.2f;     // 明滅の最も明るい時の倍率
-    int fractalDepth = 6;        // ジグザグの分割数（6=64分割、7=128分割）
-    float branchProbability = 0.3f; // 枝分かれが発生する確率 (0.0〜1.0)
-    float branchLengthScale = 0.6f; // 枝の長さ（本流に対する割合）
+    float thickness = 0.5f;     
+    float flickerMin = 0.4f;    
+    float flickerMax = 1.2f;    
+    int fractalDepth = 6;       
+    float branchProbability = 0.3f; 
+    float branchLengthScale = 0.6f; 
 };
 
 }

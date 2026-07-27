@@ -1,20 +1,25 @@
 #include "FullScreenQuad.hlsli"
 #include "ShaderConstants.hlsli"
 
-Texture2D gSceneTexture : register(t0); // 元のシーン
+Texture2D gSceneTexture : register(t0); 
 Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)
 Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
-Texture2D<float> gDepthTexture : register(t3); // 深度マップ
+Texture2D<float> gDepthTexture : register(t3);
 Texture2D gVolumetricFogTexture : register(t4);
-Texture2D gSSAOTexture : register(t5); // SSAOマップ
-Texture2D gSSRTexture : register(t6); // SSRマップ
-Texture2D gNoiseTexture : register(t7); // Noise(フォグの揺らぎ用)
+Texture2D gSSAOTexture : register(t5);
+Texture2D gSSRTexture : register(t6); 
 
 SamplerState gSampler : register(s0);
 SamplerState gWrapSampler : register(s1);
 
 ConstantBuffer<CombineSettings> gCombineSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
+
+struct PSInput
+{
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
+};
 
 // 深度リニア化関数
 float LinearizeDepth(float d)
@@ -24,11 +29,6 @@ float LinearizeDepth(float d)
 
     return (n * f) / (f - d * (f - n));
 }
-struct PSInput
-{
-    float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD0;
-};
 
 // Tent Filter (3x3近傍サンプリングで拡大)
 float3 UpsampleTent(Texture2D tex, SamplerState s, float2 uv, float2 texelSize, float sampleScale)
@@ -62,28 +62,6 @@ float3 ACESFilm(float3 x)
     float d = 0.59f;
     float e = 0.14f;
     return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
-}
-
-float GetFogNoise(float3 worldPos, float time)
-{
-    // パラメータに基づいたスケーリング
-    float2 uv = worldPos.xz * gCombineSettings.fogNoiseScale;
-    float moveTime = time * gCombineSettings.fogNoiseSpeed;
-    
-    // 2枚のサンプリング
-    float2 scroll1 = float2(moveTime * 1.0, moveTime * 0.4);
-    float2 scroll2 = float2(moveTime * -0.6, moveTime * 0.8);
-    
-    float n1 = gNoiseTexture.Sample(gWrapSampler, uv + scroll1).r;
-    float n2 = gNoiseTexture.Sample(gWrapSampler, uv + scroll2).r;
-    
-    // 合成
-    float combinedNoise = n1 * n2;
-
-    // コントラスト調整
-    combinedNoise = saturate((combinedNoise - 0.5) * gCombineSettings.fogNoiseContrast + 0.5);
-    
-    return combinedNoise;
 }
 
 float4 main(VSOutput input) : SV_TARGET
@@ -151,54 +129,7 @@ float4 main(VSOutput input) : SV_TARGET
         // 背景（result）を透過率で暗くし、霧の光を加算する
         result = result * vFogTransmittance + vFogIllumination;
     }
-
-    // フォグの適用
-    if (gCombineSettings.enableFog != 0)
-    {
-        float3 rayVec = worldPos.xyz - gFrameData.cameraWorldPosition;
-        float rayLength = length(rayVec);
-        float3 rayDir = rayVec / max(rayLength, 0.0001f);
-
-        // ノイズを取得
-        float noise = GetFogNoise(worldPos.xyz, gFrameData.gTime);
-
-        // ノイズの影響度を調整
-        float noiseFactor = lerp(1.0f, noise, gCombineSettings.fogNoiseStrength);
-        float animatedDensity = gCombineSettings.heightFogDensity * noiseFactor;
-
-        float heightDiff = rayVec.y;
-        // 微小値の扱いをより安全に
-        if (abs(heightDiff) < 0.001f)
-            heightDiff = (heightDiff >= 0) ? 0.001f : -0.001f;
-
-        float camHeight = gFrameData.cameraWorldPosition.y - gCombineSettings.heightFogBaseHeight;
-        float pixHeight = worldPos.y - gCombineSettings.heightFogBaseHeight;
     
-        // falloffが0の場合のクラッシュ防止
-        float falloff = max(gCombineSettings.heightFogFalloff, 0.0001f);
-
-        // ハイトフォグ
-        float fogAmount = (exp(-falloff * camHeight) - exp(-falloff * pixHeight)) / (falloff * heightDiff);
-        float heightFogFactor = saturate(1.0f - exp(-animatedDensity * fogAmount * rayLength));
-
-        // 太陽光による散乱 
-        float3 lightDir = normalize(gFrameData.mainLightDirection);
-        float scattering = pow(saturate(dot(rayDir, lightDir)), 4.0f);
-    
-        // 太陽の色を少し強めにしてフォグに乗せる
-        float3 scatteringColor = gFrameData.mainLightColor.rgb * 2.0f;
-        float3 fogColor = lerp(gCombineSettings.fogColor.rgb, scatteringColor, scattering);
-
-        // 距離フォグ
-        float distFogFactor = saturate((linearDepth - gCombineSettings.distanceFogStart) /
-                                   max(gCombineSettings.distanceFogEnd - gCombineSettings.distanceFogStart, 0.0001f));
-        distFogFactor = smoothstep(0.0, 1.0, distFogFactor);
-
-        float finalAnalyticalFactor = max(heightFogFactor, distFogFactor);
-        
-        result = lerp(result, fogColor, finalAnalyticalFactor * 0.5f);
-    }
-
     // NaN対策
     if (any(isnan(result)))
     {

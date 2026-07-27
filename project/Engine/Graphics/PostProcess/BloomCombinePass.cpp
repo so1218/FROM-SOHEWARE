@@ -27,31 +27,15 @@ void BloomCombinePass::Initialize(
     );
 
     cbData_->bloomIntensity = 0.8f;
-
-    cbData_->fogColor = Vector3(0.6f, 0.7f, 0.8f);
-    cbData_->distanceFogStart = 10.0f;
-    cbData_->distanceFogEnd = 30.0f;
-    cbData_->heightFogBaseHeight = 0.0f;
-    cbData_->heightFogDensity = 0.05f;
-    cbData_->heightFogFalloff = 0.5f;
     cbData_->enableSSAO = false;
-
     cbData_->enableDoF = false;
-    cbData_->enableFog = false;
-
-    cbData_->fogNoiseScale = 0.01f;
-	cbData_->fogNoiseContrast = 1.0f;
-	cbData_->fogNoiseSpeed = 1.0f;
-    cbData_->fogNoiseStrength = 1.0f;
-
     cbData_->enableSSR = false;  
     cbData_->ssrIntensity = 1.0f;
-
     cbData_->enableVolumetricFog = false;
 
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 8;
+    heapDesc.NumDescriptors = 7;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -76,8 +60,7 @@ void BloomCombinePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE volumetricFogSRV,
     D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE ssrSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE noiseSRV
+    D3D12_CPU_DESCRIPTOR_HANDLE ssrSRV
 )
 {
     // 専用ヒープの先頭
@@ -124,9 +107,6 @@ void BloomCombinePass::SetupInputViews(
     // SSR
     device->CopyDescriptorsSimple(1, destHandle, ssrSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     destHandle.ptr += descriptorSize;
-
-    // Noise
-    device->CopyDescriptorsSimple(1, destHandle, noiseSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void BloomCombinePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,

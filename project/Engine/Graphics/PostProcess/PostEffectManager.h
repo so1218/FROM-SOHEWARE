@@ -68,9 +68,6 @@ public:
     const std::string& GetCurrentLutName() const { return currentLutName_; }
     void SetCurrentLutName(const std::string& name) { currentLutName_ = name; }
 
-    const std::string& GetCurrentNoiseName() const { return currentNoiseName_; }
-    void SetCurrentNoiseName(const std::string& name) { currentNoiseName_ = name; }
-
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
     void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
 
@@ -129,7 +126,6 @@ private:
     Vector3 lightPosition_ = { 0, 100, 100 };
 
     std::string currentLutName_ = "LUT_Neutral_32";
-    std::string currentNoiseName_ = "normal_00";
 
     PostEffectContext context_;
 };

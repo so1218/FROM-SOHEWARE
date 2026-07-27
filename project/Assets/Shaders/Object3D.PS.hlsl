@@ -88,12 +88,11 @@ PixelShaderOutput main(PixelShaderInput input)
         // POMの計算には pomUV を渡す
         float2 newPomUV = CalculateParallaxOcclusionMapping(pomUV, toEyeTS, dx, dy, parallaxHeight);
 
-        // POMによってズレた移動量（オフセット）を計算
+        // POMによってズレた移動量を計算
         float2 pomOffset = newPomUV - pomUV;
         pomUV = newPomUV;
 
-        // アルベド用のUV(finalUV)にも、スケールを補正してズレを適用する
-        // ※ 0割り回避のために max() を使用
+        // アルベド用のUV(finalUV)にも、スケールを補正してズレを適用
         float2 safeTiling = max(gMaterial.normalTiling, 0.0001f);
         finalUV += pomOffset / safeTiling;
 

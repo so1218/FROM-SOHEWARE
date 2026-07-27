@@ -258,8 +258,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             GetCPUHandle(sceneDepthIndex_),
             GetCPUHandle(volumetricFogBilateralPass_->GetSRVIndex()),
             GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
-            GetCPUHandle(ssrPass_->GetSRVIndex()),
-            GetCPUHandle(TextureManager::GetInstance().Get(currentNoiseName_))
+            GetCPUHandle(ssrPass_->GetSRVIndex())
         );
 
         combinePass_->Execute(cmdList, context_);
