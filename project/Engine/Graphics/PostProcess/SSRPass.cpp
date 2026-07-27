@@ -14,9 +14,11 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     auto* srvManager = engine->GetSRVManager();
 
     // 定数バッファ
-    cbSSR_ = BufferManager::CreateBufferResource(device, (sizeof(SSRSettings) + 255) & ~255);
-    cbSSR_->Map(0, nullptr, reinterpret_cast<void**>(&ssrData_));
-    *ssrData_ = SSRSettings();
+    cbSSR_ = BufferManager::CreateMappedConstantBuffer<SSRSettings>(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &ssrData_
+    );
+
     ssrData_->maxDistance = 50.0f;
     ssrData_->stepSize = 0.1f;
     ssrData_->maxSteps = 128;

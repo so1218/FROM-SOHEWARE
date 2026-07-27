@@ -160,7 +160,7 @@ void LightningRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& view
 
     uint32_t vertexCount = 0;
     uint32_t indexCount = 0;
-    LightningVertex* vMap = mappedVertices_[currentFrameIndex_];
+    LightningVertexData* vMap = mappedVertices_[currentFrameIndex_];
     uint32_t* iMap = mappedIndices_[currentFrameIndex_];
 
     for (const auto& inst : activeLightnings_)
@@ -259,8 +259,8 @@ void LightningRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& view
     // 頂点/インデックスバッファビューの設定
     D3D12_VERTEX_BUFFER_VIEW vbv{};
     vbv.BufferLocation = vertexBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-    vbv.SizeInBytes = vertexCount * sizeof(LightningVertex);
-    vbv.StrideInBytes = sizeof(LightningVertex);
+    vbv.SizeInBytes = vertexCount * sizeof(LightningVertexData);
+    vbv.StrideInBytes = sizeof(LightningVertexData);
     commandList->IASetVertexBuffers(0, 1, &vbv);
 
     D3D12_INDEX_BUFFER_VIEW ibv{};

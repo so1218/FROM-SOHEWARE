@@ -37,7 +37,7 @@ private:
     struct TrailBatchResource
     {
         Mesh mesh;
-        std::vector<VertexDataTrail> verticesCPU;
+        std::vector<TrailVertexData> verticesCPU;
         Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
         TrailMaterialData* mappedMaterial = nullptr;
         Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;

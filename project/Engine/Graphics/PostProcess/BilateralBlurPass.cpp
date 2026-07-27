@@ -34,11 +34,16 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
 
     // 定数バッファ生成
     auto device = engine->GetGraphicsDevice()->GetDevice();
-    cbBlurX_ = BufferManager::CreateBufferResource(device, sizeof(BilateralBlurSettings));
-    cbBlurX_->Map(0, nullptr, reinterpret_cast<void**>(&blurXData_));
+   
+    cbBlurX_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
+        device,
+        &blurXData_
+    );
 
-    cbBlurY_ = BufferManager::CreateBufferResource(device, sizeof(BilateralBlurSettings));
-    cbBlurY_->Map(0, nullptr, reinterpret_cast<void**>(&blurYData_));
+    cbBlurY_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
+        device,
+        &blurYData_
+    );
 
     // パラメータの初期化
     settingsData_->texelSize = { 1.0f / width, 1.0f / height };

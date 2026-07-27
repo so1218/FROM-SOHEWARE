@@ -59,7 +59,7 @@ private:
 
     // 動的頂点バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_[kFrameCount];
-    LightningVertex* mappedVertices_[kFrameCount] = {};
+    LightningVertexData* mappedVertices_[kFrameCount] = {};
 
     // 動的インデックスバッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_[kFrameCount];

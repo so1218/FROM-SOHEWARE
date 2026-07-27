@@ -43,8 +43,10 @@ void FluidSimulationPass::Initialize(Engine* engine, PSOManager* psoManager, UIN
     auto* srvManager = engine->GetSRVManager();
 
     // GPUに渡すシミュレーション設定パラメータの初期化
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FluidSettings));
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<FluidSettings>(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &cbData_
+    );
 
     // 移流・減衰パラメータ
     cbData_->velocityDissipation = 0.98f;

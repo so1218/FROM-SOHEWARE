@@ -12,9 +12,10 @@ void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* p
     psoManager_ = psoManager;
 
     // 定数バッファ生成
-    cbSSAO_ = BufferManager::CreateBufferResource(engine->GetGraphicsDevice()->GetDevice(), sizeof(SSAOSettings));
-    cbSSAO_->Map(0, nullptr, reinterpret_cast<void**>(&ssaoData_));
-    *ssaoData_ = SSAOSettings();
+    cbSSAO_ = BufferManager::CreateMappedConstantBuffer<SSAOSettings>(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &ssaoData_
+    );
 
     ssaoData_->radius = 1.0f;
     ssaoData_->intensity = 2.5f;

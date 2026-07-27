@@ -302,7 +302,12 @@ struct BrightExtractSettings
 {
     float threshold;
     float intensity;
-    float2 _padding;
+};
+
+struct BlurSettings
+{
+    float2 texelSize;
+    float blurStrength;
 };
 
 struct DoFSettings
@@ -314,7 +319,6 @@ struct DoFSettings
     
     float bokehHighlightThreshold;
     float bokehHighlightIntensity;
-    float2 padding;
 };
 
 struct CombineSettings
@@ -337,7 +341,6 @@ struct SSAOSettings
 
     float fadeStart;
     float fadeEnd;
-    float padding[2];
 };
 
 struct BilateralBlurSettings
@@ -347,7 +350,6 @@ struct BilateralBlurSettings
     
     float depthTolerance;
     float normalTolerance;
-    float2 padding;
 };
 
 struct SSRSettings

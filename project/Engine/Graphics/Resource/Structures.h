@@ -3,8 +3,6 @@
 #include "WorldTransform.h"
 #include "ShaderConstants.hlsli"
 
-#include <span>
-
 namespace FE
 {
 
@@ -19,10 +17,10 @@ struct VertexData
 };
 
 // Trail専用の頂点構造体
-struct VertexDataTrail
+struct TrailVertexData
 {
-    Vector4 pos;
-    Vector2 tex;
+    Vector4 position;
+    Vector2 texcoord;
     Vector4 color;
 };
 
@@ -32,7 +30,7 @@ struct TextureData
     uint32_t textureHandle = 0;
 };
 
-struct LineVertex
+struct LineVertexData
 {
     Vector4 position;
     Vector4 color;
@@ -44,7 +42,7 @@ struct TerrainVertexData
     Vector2 texcoord; 
 };
 
-struct LightningVertex
+struct LightningVertexData
 {
     Vector4 position;
     Vector2 texcoord;
@@ -136,27 +134,6 @@ enum class DepthMode
     ReadOnly,   // 書き込みなし・テストあり (半透明・エフェクト)
     None        // テストも書き込みもなし (UI・常に最前面)
 };
-
-struct VertexKey
-{
-    Vector4 position;
-    Vector2 texcoord;
-    Vector3 normal;
-
-    bool operator==(const VertexKey& other) const
-    {
-        return position.x == other.position.x &&
-            position.y == other.position.y &&
-            position.z == other.position.z &&
-            position.w == other.position.w &&
-            texcoord.x == other.texcoord.x &&
-            texcoord.y == other.texcoord.y &&
-            normal.x == other.normal.x &&
-            normal.y == other.normal.y &&
-            normal.z == other.normal.z;
-    }
-};
-
 
 struct AABB
 {
@@ -256,12 +233,6 @@ struct PostEffectData
     float _paddingRadial;
 };
 
-struct BlurSettings
-{
-    Vector2 texelSize = { 1.0f / 1280.0f, 1.0f / 720.0f };
-    float blurStrength = 1.0f;
-};
-
 // シェーダーに送る雷の見た目パラメータ
 struct LightningConfig
 {
@@ -289,28 +260,3 @@ struct LightningConfig
 };
 
 }
-
-// ハッシュ関数の定義
-namespace std
-{
-
-template <>
-struct hash<FE::VertexKey>
-{
-    size_t operator()(const FE::VertexKey& key) const {
-        size_t h = 0;
-        h ^= std::hash<float>()(key.position.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.position.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.position.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.position.w) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.texcoord.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.texcoord.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.normal.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.normal.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= std::hash<float>()(key.normal.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
-    }
-};
-
-}
-

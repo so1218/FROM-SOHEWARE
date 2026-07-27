@@ -18,7 +18,7 @@ void TrailRenderer::Initialize(const RenderEnvironment& env)
     const uint32_t kMaxTotalTrailVertices = kMaxTrailCount * kMaxTrailVertices * 2;
     trailBatch_.verticesCPU.reserve(kMaxTotalTrailVertices);
 
-    std::vector<VertexDataTrail> dummyVertices(kMaxTotalTrailVertices);
+    std::vector<TrailVertexData> dummyVertices(kMaxTotalTrailVertices);
     trailBatch_.mesh.InitializeVertexTrail(env.device->GetDevice(), dummyVertices);
 
     uint32_t materialSize = sizeof(TrailMaterialData);
@@ -154,13 +154,13 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    VertexDataTrail* mappedVertices = nullptr;
+    TrailVertexData* mappedVertices = nullptr;
     trailBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
-    memcpy(mappedVertices, trailBatch_.verticesCPU.data(), sizeof(VertexDataTrail) * trailBatch_.verticesCPU.size());
+    memcpy(mappedVertices, trailBatch_.verticesCPU.data(), sizeof(TrailVertexData) * trailBatch_.verticesCPU.size());
     trailBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
 
     D3D12_VERTEX_BUFFER_VIEW vbView = trailBatch_.mesh.GetVertexBufferView();
-    vbView.SizeInBytes = static_cast<UINT>(sizeof(VertexDataTrail) * trailBatch_.verticesCPU.size());
+    vbView.SizeInBytes = static_cast<UINT>(sizeof(TrailVertexData) * trailBatch_.verticesCPU.size());
     cmdList->IASetVertexBuffers(0, 1, &vbView);
 
     cmdList->SetPipelineState(env.psoManager->GetPSO("Trail"));
