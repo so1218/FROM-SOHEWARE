@@ -14,15 +14,15 @@ void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* ps
     auto* srvManager = engine->GetSRVManager();
 
     // 定数バッファ
-    cbSSR_ = BufferManager::CreateMappedConstantBuffer<SSRSettings>(
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<SSRSettings>(
         engine->GetGraphicsDevice()->GetDevice(),
-        &ssrData_
+        &cbData_
     );
 
-    ssrData_->maxDistance = 50.0f;
-    ssrData_->stepSize = 0.1f;
-    ssrData_->maxSteps = 128;
-    ssrData_->thickness = 0.2f;
+    cbData_->maxDistance = 50.0f;
+    cbData_->stepSize = 0.1f;
+    cbData_->maxSteps = 128;
+    cbData_->thickness = 0.2f;
 
     // Hi-Z用の定数バッファ (パスごとにサイズが違うためMip数分作成)
     for (UINT i = 0; i < maxHiZMipLevels_; ++i) {
@@ -233,7 +233,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, offset + 2, handleSize), context.GetCPUHandle(context.materialSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, offset + 3, handleSize), srvManager->GetSRVHandleCPU_ForCopying(hitResultUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    cmdList->SetComputeRootConstantBufferView(0, cbSSR_->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
     cmdList->SetComputeRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
     cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset, handleSize)); 
     cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, offset + 3, handleSize)); 

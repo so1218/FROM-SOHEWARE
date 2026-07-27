@@ -23,10 +23,10 @@ private:
     PSOManager* psoManager_ = nullptr;
 
     // 横パス用と縦パス用の定数バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbBlurX_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbBlurY_;
-    BilateralBlurSettings* blurXData_ = nullptr;
-    BilateralBlurSettings* blurYData_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBufferBlurX_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBufferBlurY_;
+    BilateralBlurSettings* cbDataBlurX_ = nullptr;
+    BilateralBlurSettings* cbDataBlurY_ = nullptr;
 
     BilateralBlurSettings settingsDataTemp_;
     BilateralBlurSettings* settingsData_ = &settingsDataTemp_;

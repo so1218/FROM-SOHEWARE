@@ -13,12 +13,12 @@ public:
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
-    SSRSettings* GetSettings() { return ssrData_; }
+    SSRSettings* GetSettings() { return cbData_; }
 
 private:
     PSOManager* psoManager_ = nullptr;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbSSR_;
-    SSRSettings* ssrData_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
+    SSRSettings* cbData_ = nullptr;
 
     // Hi-Zダウンサンプル用の設定定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> cbHiZSettings_[6];

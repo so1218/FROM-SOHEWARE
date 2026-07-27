@@ -14,12 +14,12 @@ public:
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
-    SSAOSettings* GetSettings() { return ssaoData_; }
+    SSAOSettings* GetSettings() { return cbData_; }
 
 private:
     PSOManager* psoManager_ = nullptr;
-    Microsoft::WRL::ComPtr<ID3D12Resource> cbSSAO_;
-    SSAOSettings* ssaoData_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
+    SSAOSettings* cbData_ = nullptr;
 };
 
 }

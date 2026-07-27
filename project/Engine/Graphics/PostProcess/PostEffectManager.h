@@ -84,7 +84,7 @@ private:
     // 依存オブジェクト
     Engine* engine_ = nullptr;
     SRVManager* srvManager_ = nullptr;
-    RootSignatureManager* rootSigManager_ = nullptr;
+    RootSignatureManager* rootSignatureManager_ = nullptr;
 
     // ポストエフェクトパス
     std::unique_ptr<BrightExtractPass> brightPass_;

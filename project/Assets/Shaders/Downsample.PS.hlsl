@@ -1,18 +1,10 @@
+#include "ShaderConstants.hlsli"
 #include "FullScreenQuad.hlsli"
 
 Texture2D tex : register(t0);
 SamplerState samLinear : register(s0);
 
-cbuffer BlurSettings : register(b0)
-{
-    // 1ピクセルあたりのUVサイズ
-    float2 texelSize;
-
-    // ブラー強度
-    float blurStrength;
-
-    float _padding;
-}
+ConstantBuffer<BlurSettings> gBlurSettings : register(b0);
 
 // 輝度を計算
 float RGBToLuminance(float3 col)
@@ -30,7 +22,7 @@ float KarisAverage(float3 col)
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
-    float2 t = texelSize;
+    float2 t = gBlurSettings.texelSize;
 
     // 13点のサンプリング
     float3 a = tex.Sample(samLinear, uv + float2(-2 * t.x, 2 * t.y)).rgb;

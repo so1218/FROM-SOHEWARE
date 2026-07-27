@@ -1,5 +1,5 @@
-#include "FullScreenQuad.hlsli"
 #include "ShaderConstants.hlsli"
+#include "FullScreenQuad.hlsli"
 
 // シーンカラー
 Texture2D gSceneTexture : register(t0);

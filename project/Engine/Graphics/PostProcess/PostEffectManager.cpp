@@ -22,7 +22,7 @@ void PostEffectManager::Initialize(
 {
     engine_ = engine;
     srvManager_ = srvManager;
-    rootSigManager_ = rootSigManager;
+    rootSignatureManager_ = rootSigManager;
 
     // シーンカラー / 深度SRV
     sceneTextureIndex_ = engine->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Color));
@@ -172,7 +172,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     // Contextセットアップとリソースバリア
     auto* offscreenRTV = engine_->GetOffscreenRTVManager();
     context_.srvManager = srvManager_;
-    context_.rootSigManager = rootSigManager_;
+    context_.rootSigManager = rootSignatureManager_;
     context_.sceneColorSrvIndex = sceneTextureIndex_;
     context_.sceneDepthSrvIndex = sceneDepthIndex_;
     context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Normal));
@@ -244,7 +244,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     // 最終合成
     {
-        cmdList->SetGraphicsRootSignature(rootSigManager_->GetRootSignature("PostProcess"));
+        cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("PostProcess"));
 
         auto GetCPUHandle = [&](uint32_t index) {
             return srvManager_->GetSRVHandleCPU_ForCopying(index);

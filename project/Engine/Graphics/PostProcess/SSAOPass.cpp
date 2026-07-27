@@ -12,18 +12,18 @@ void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* p
     psoManager_ = psoManager;
 
     // 定数バッファ生成
-    cbSSAO_ = BufferManager::CreateMappedConstantBuffer<SSAOSettings>(
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<SSAOSettings>(
         engine->GetGraphicsDevice()->GetDevice(),
-        &ssaoData_
+        &cbData_
     );
 
-    ssaoData_->radius = 1.0f;
-    ssaoData_->intensity = 2.5f;
-    ssaoData_->bias = 0.025f;      
-    ssaoData_->sampleCount = 32;    
+    cbData_->radius = 1.0f;
+    cbData_->intensity = 2.5f;
+    cbData_->bias = 0.025f;      
+    cbData_->sampleCount = 32;    
 
-    ssaoData_->fadeStart = 50.0f;  
-    ssaoData_->fadeEnd = 100.0f;
+    cbData_->fadeStart = 50.0f;  
+    cbData_->fadeEnd = 100.0f;
 }
 
 void SSAOPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
@@ -40,7 +40,7 @@ void SSAOPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectConte
     cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("SSAO"));
     cmdList->SetPipelineState(psoManager_->GetPSO("SSAO"));
 
-    cmdList->SetGraphicsRootConstantBufferView(0, cbSSAO_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(0, constantBuffer_->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(1, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootDescriptorTable(2, normalSRV);
     cmdList->SetGraphicsRootDescriptorTable(3, depthSRV);

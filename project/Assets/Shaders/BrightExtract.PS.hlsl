@@ -1,14 +1,14 @@
 #include "FullScreenQuad.hlsli"
 #include "ShaderConstants.hlsli"
 
-Texture2D tex : register(t0);
+Texture2D gTexture : register(t0);
 SamplerState samLinear : register(s0);
 
 ConstantBuffer<BrightExtractSettings> gBrightExtractSettings : register(b0);
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    float3 color = tex.Sample(samLinear, input.uv).rgb;
+    float3 color = gTexture.Sample(samLinear, input.uv).rgb;
 
     float brightness = max(color.r, max(color.g, color.b));
     float threshold = gBrightExtractSettings.threshold;

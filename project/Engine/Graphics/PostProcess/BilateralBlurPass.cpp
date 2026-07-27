@@ -35,14 +35,14 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
     // 定数バッファ生成
     auto device = engine->GetGraphicsDevice()->GetDevice();
    
-    cbBlurX_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
+    constantBufferBlurX_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
         device,
-        &blurXData_
+        &cbDataBlurX_
     );
 
-    cbBlurY_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
+    constantBufferBlurY_ = BufferManager::CreateMappedConstantBuffer<BilateralBlurSettings>(
         device,
-        &blurYData_
+        &cbDataBlurY_
     );
 
     // パラメータの初期化
@@ -50,11 +50,11 @@ void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOM
     settingsData_->depthTolerance = 1.0f;
     settingsData_->normalTolerance = 16.0f;
 
-    *blurXData_ = *settingsData_;
-    blurXData_->direction = { 1.0f, 0.0f }; // 横パス
+    *cbDataBlurX_ = *settingsData_;
+    cbDataBlurX_->direction = { 1.0f, 0.0f }; // 横パス
 
-    *blurYData_ = *settingsData_;
-    blurYData_->direction = { 0.0f, 1.0f }; // 縦パス
+    *cbDataBlurY_ = *settingsData_;
+    cbDataBlurY_->direction = { 0.0f, 1.0f }; // 縦パス
 }
 
 void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
@@ -69,10 +69,10 @@ void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     D3D12_GPU_DESCRIPTOR_HANDLE normalSRV = context.GetGPUHandle(context.normalSrvIndex);
 
     // 定数バッファに反映
-    blurXData_->depthTolerance = settingsData_->depthTolerance;
-    blurXData_->normalTolerance = settingsData_->normalTolerance;
-    blurYData_->depthTolerance = settingsData_->depthTolerance;
-    blurYData_->normalTolerance = settingsData_->normalTolerance;
+    cbDataBlurX_->depthTolerance = settingsData_->depthTolerance;
+    cbDataBlurX_->normalTolerance = settingsData_->normalTolerance;
+    cbDataBlurY_->depthTolerance = settingsData_->depthTolerance;
+    cbDataBlurY_->normalTolerance = settingsData_->normalTolerance;
 
     // ルートシグネチャとPSOをセット
     cmdList->SetGraphicsRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("BilateralBlur"));
@@ -95,7 +95,7 @@ void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     const float clearCol[] = { 0, 0, 0, 1 };
     cmdList->ClearRenderTargetView(intermediateRTV_, clearCol, 0, nullptr);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, cbBlurX_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(0, constantBufferBlurX_->GetGPUVirtualAddress());
 
     cmdList->SetGraphicsRootDescriptorTable(2, inputSRV);
     cmdList->SetGraphicsRootDescriptorTable(3, depthSRV); 
@@ -115,7 +115,7 @@ void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
 
     PreDraw(cmdList);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, cbBlurY_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(0, constantBufferBlurY_->GetGPUVirtualAddress());
 
     D3D12_GPU_DESCRIPTOR_HANDLE intermediateSRVHandle = engine_->GetSRVManager()->GetSRVHandleGPU(intermediateSRVIndex_);
     cmdList->SetGraphicsRootDescriptorTable(2, intermediateSRVHandle);
