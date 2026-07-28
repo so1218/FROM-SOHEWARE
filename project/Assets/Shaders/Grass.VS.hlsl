@@ -13,10 +13,6 @@ SamplerState gLinearWrapSampler : register(s2);
 // ブレード1本あたりの頂点数 (TriangleStrip描画: 8頂点 = 3セグメント)
 #define NUM_VERTICES_PER_BLADE 8
 
-// -----------------------------------------------------------------------------
-// Math & Utility
-// -----------------------------------------------------------------------------
-
 // 3次ベジェ曲線の座標評価
 float3 EvaluateCubicBezier(float3 p0, float3 p1, float3 p2, float3 p3, float t)
 {

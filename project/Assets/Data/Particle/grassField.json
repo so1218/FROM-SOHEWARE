@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 3,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
-            0.0,
+            -0.699999988079071,
             0.0
         ],
-        "lifetime": 3.390000104904175,
+        "lifetime": 1.9800000190734863,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -68,13 +68,13 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 469712383,
+            "endColor": 261423359,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 1056909055,
+            "startColor": 1389035775,
             "startColor2": 4294967295
         },
-        "intensity": 35.900001525878906,
+        "intensity": 1.100000023841858,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -126,11 +126,11 @@
             "emitFromEdge": false,
             "enabled": true,
             "radius": [
-                10.0,
-                10.0,
-                10.0
+                100.0,
+                0.0,
+                100.0
             ],
-            "type": 1
+            "type": 2
         },
         "sizeOverLifetimeModule": {
             "enabled": true,
@@ -142,8 +142,8 @@
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                1.0,
-                1.0,
+                2.5,
+                2.5,
                 1.0
             ]
         },
@@ -190,7 +190,7 @@
             "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 60.0,
+            "angleRange": 110.0,
             "direction": [
                 0.0,
                 1.0,
@@ -198,7 +198,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 5.130000114440918
+            "speed": 9.369999885559082
         },
         "vortexModule": {
             "axis": [

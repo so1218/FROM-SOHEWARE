@@ -54,7 +54,7 @@ PixelShaderOutput main(PixelInput input)
     // -------------------------------------------------------------------------
     // Foliage Shading (Diffuse & SSS)
     // -------------------------------------------------------------------------
-    // Wrap Diffuse: 葉の円柱的な構造を近似し、陰への光の回り込みを表現
+    // 葉の円柱的な構造を近似し、陰への光の回り込みを表現
     float wrap = 0.5f;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL;
