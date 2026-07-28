@@ -13,8 +13,10 @@ void VolumetricFogBilateralPass::Initialize(Engine* engine, UINT w, UINT h, PSOM
 
     // 定数バッファの作成とマッピング
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
-    constantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(FogBilateralSettings));
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer(
+        device,
+        &cbData_
+    );
 
     // 初期値設定
     cbData_->blurRadius = 5;

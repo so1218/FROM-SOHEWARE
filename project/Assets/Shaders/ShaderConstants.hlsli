@@ -524,6 +524,40 @@ struct GrassGenerationData
     float maxWidth;
 };
 
+struct TreeInstanceData
+{
+    float4x4 worldMatrix; 
+    float4 colorVariation; 
+    float lodFade; 
+};
+
+struct LeafMaterialData
+{
+    float2 windDir; 
+    float windSpeed; 
+    float gustScale;
+    
+    float baseWindStrength;
+    float gustStrength; 
+    float trunkFlexibility;
+    float branchFlexibility; 
+    
+    float leafFlutterAmount; 
+    float backfaceFlatten; 
+    float diffuseWrap; 
+    float transmissionDistortion; 
+    
+    float transmissionPower; 
+    float sssStrength; 
+    float alphaCutoff; 
+    float shadowDensity; 
+    
+    float3 sssColor; 
+    float shadowNormalBias; 
+    
+    float shadowBias; 
+};
+
 struct Object3DInstanceData
 {
     float4x4 World;

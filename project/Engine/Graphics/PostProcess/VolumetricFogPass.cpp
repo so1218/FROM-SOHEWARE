@@ -13,9 +13,10 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
     // 定数バッファの生成と初期化
-    UINT cbSizeAligned = (sizeof(VolumetricFogSettings) + 255) & ~255;
-    constantBuffer_ = BufferManager::CreateBufferResource(device, cbSizeAligned);
-    constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&cbData_));
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &cbData_
+    );
 
     // PBRベースの光学特性初期値設定
     cbData_->albedo = { 0.8f, 0.8f, 0.8f };
@@ -47,11 +48,10 @@ void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* p
     cbData_->noiseIntensity = 1.0f;
 
     // 配置式フォグ用CB作成
-    UINT cbVolumeSizeAligned = (sizeof(FogVolumeBuffer) + 255) & ~255;
-
-    volumeConstantBuffer_ = BufferManager::CreateBufferResource(device, cbVolumeSizeAligned);
-
-    volumeConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&volumeCbData_));
+    volumeConstantBuffer_ = BufferManager::CreateMappedConstantBuffer(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &volumeCbData_
+    );
     memset(volumeCbData_, 0, sizeof(FogVolumeBuffer));
     volumeCbData_->volumeCount = 0;
 
