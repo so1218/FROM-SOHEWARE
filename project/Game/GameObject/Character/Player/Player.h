@@ -76,5 +76,10 @@ private:
 	// コライダー調整用の変数
 	FE::Vector3 colliderOffset_ = { 0.0f, 1.0f, 0.0f };
 	FE::Vector3 colliderSize_ = { 0.5f, 1.0f, 0.5f };
+
+	float idleAnimSpeed_ = 1.0f;       
+	float runAnimSpeed_ = 1.0f;        
+	float idleToRunBlendTime_ = 0.15f; 
+	float runToIdleBlendTime_ = 0.20f; 
 };
 

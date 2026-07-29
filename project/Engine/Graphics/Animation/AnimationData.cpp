@@ -4,6 +4,7 @@
 #include "BufferManager.h"
 #include "MathUtils.h"
 #include "SRVManager.h"
+#include "WorldTransform.h"
 
 namespace FE
 {
@@ -101,6 +102,38 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 			joint.transform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
 			joint.transform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, animationTime);
 		}
+	}
+}
+
+void ApplyBlendAnimation(
+	Skeleton& skeleton,
+	const Animation& prevAnimation, float prevTime,
+	const Animation& currentAnimation, float currentTime,
+	float blendFactor) 
+{
+	for (Joint& joint : skeleton.joints)
+	{
+		WorldTransform prevTransform = joint.transform;
+		if (auto it = prevAnimation.nodeAnimations.find(joint.name); it != prevAnimation.nodeAnimations.end())
+		{
+			const NodeAnimation& nodeAnimation = it->second;
+			prevTransform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, prevTime);
+			prevTransform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, prevTime);
+			prevTransform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, prevTime);
+		}
+
+		WorldTransform currentTransform = joint.transform;
+		if (auto it = currentAnimation.nodeAnimations.find(joint.name); it != currentAnimation.nodeAnimations.end())
+		{
+			const NodeAnimation& nodeAnimation = it->second;
+			currentTransform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, currentTime);
+			currentTransform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, currentTime);
+			currentTransform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, currentTime);
+		}
+
+		joint.transform.translation_ = Math::Lerp(prevTransform.translation_, currentTransform.translation_, blendFactor);
+		joint.transform.rotationQuaternion_ = Quaternion::Slerp(prevTransform.rotationQuaternion_, currentTransform.rotationQuaternion_, blendFactor);
+		joint.transform.scale_ = Math::Lerp(prevTransform.scale_, currentTransform.scale_, blendFactor);
 	}
 }
 

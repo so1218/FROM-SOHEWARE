@@ -79,7 +79,6 @@ AnimationModel::~AnimationModel()
 
 void AnimationModel::Update()
 {
-    // アニメーションが無効、またはデータ不正なら姿勢更新のみして終了
     if (!animeModelData_.currentAnimation || animeModelData_.currentAnimation->duration <= 0.0f)
     {
         UpdateSkeleton(skeleton_);
@@ -87,46 +86,73 @@ void AnimationModel::Update()
         return;
     }
 
-    // 再生中の場合、時間を進める
     if (isPlaying_ && !isFinished_)
     {
+        // 実際の時間と、アニメーション用の時間を分ける
+        float realDeltaTime = TimeManager::GetInstance()->GetDeltaTime();
+        float animDeltaTime = realDeltaTime * speedScale_;
+
+        // 新しいアニメーションの時間を進める
         float duration = animeModelData_.currentAnimation->duration;
+        animationTime_ += animDeltaTime; 
 
-        // 経過時間を加算
-        animationTime_ += TimeManager::GetInstance()->GetDeltaTime() * speedScale_;
-
-        // 進行度の計算
         float rawT = animationTime_ / duration;
-
         if (isLoop_)
         {
-            // ループ処理: 範囲内に収める
             rawT = std::fmod(rawT, 1.0f);
-            if (rawT < 0.0f) rawT += 1.0f; // 逆再生対応
-
-            // 時間変数も範囲内に戻しておく
+            if (rawT < 0.0f) rawT += 1.0f;
             animationTime_ = rawT * duration;
         }
-        else
+        else if (rawT >= 1.0f)
         {
-            // 非ループ: 終了判定
-            if (rawT >= 1.0f)
-            {
-                rawT = 1.0f;
-                animationTime_ = duration;
-                isFinished_ = true;
-            }
+            rawT = 1.0f;
+            animationTime_ = duration;
+            isFinished_ = true;
         }
 
-        // イージング適用
         float easedT = Easing::Evaluate(easingType_, rawT);
         float playbackTime = easedT * duration;
 
-        // アニメーションをボーンに適用
-        ApplyAnimation(skeleton_, *animeModelData_.currentAnimation, playbackTime);
+        // ブレンド中の処理
+        if (isBlending_ && prevAnimation_)
+        {
+            // ブレンドタイマーに realDeltaTime を足す
+            blendTimer_ += realDeltaTime;
+            float blendFactor = blendTimer_ / blendDuration_;
+
+            // 旧アニメーションの時間更新
+            prevAnimationTime_ += animDeltaTime;
+            if (prevAnimation_->duration > 0.0f)
+            {
+                prevAnimationTime_ = std::fmod(prevAnimationTime_, prevAnimation_->duration);
+            }
+
+            if (blendFactor >= 1.0f)
+            {
+                // ブレンド完了
+                isBlending_ = false;
+                prevAnimation_ = nullptr;
+            }
+            else
+            {
+                // ブレンド中
+                ApplyBlendAnimation(
+                    skeleton_,
+                    *prevAnimation_, prevAnimationTime_,
+                    *animeModelData_.currentAnimation, playbackTime,
+                    blendFactor
+                );
+            }
+        }
+
+        // 通常時
+        if (!isBlending_)
+        {
+            ApplyAnimation(skeleton_, *animeModelData_.currentAnimation, playbackTime);
+        }
     }
 
-    // 行列更新
+    // 行列更新とスキニング更新はそのまま実行
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
 }
@@ -153,20 +179,48 @@ void AnimationModel::Draw()
 // アニメーション制御
 // ========================================================================
 
-void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale)
+void AnimationModel::Play(const std::string& animationName, bool isLoop, float speedScale, float blendTime)
 {
-    // Managerから検索
     const Animation* anim = AnimationManager::GetInstance()->Get(animationName);
-
-    // 見つかればポインタ版のPlayに投げる
     if (anim)
     {
-        Play(anim, isLoop, speedScale);
+        Play(anim, isLoop, speedScale, blendTime);
+    }
+}
+
+void AnimationModel::Play(const Animation* animation, bool isLoop, float speedScale, float blendTime)
+{
+    if (!animation) return;
+
+    // すでに同じアニメーションが再生中の場合はパラメータのみ更新
+    if (animeModelData_.currentAnimation == animation)
+    {
+        isLoop_ = isLoop;
+        speedScale_ = speedScale;
+        isPlaying_ = true;
+        return;
+    }
+
+    // ブレンド時間が指定されており、現在アニメーションが再生されている場合はブレンドを開始
+    if (blendTime > 0.0f && animeModelData_.currentAnimation != nullptr)
+    {
+        prevAnimation_ = animeModelData_.currentAnimation;
+        prevAnimationTime_ = animationTime_; // 遷移開始時点の時間を保持
+        blendDuration_ = blendTime;
+        blendTimer_ = 0.0f;
+        isBlending_ = true;
     }
     else
     {
-        // エラーログ
+        isBlending_ = false;
     }
+
+    animeModelData_.currentAnimation = animation;
+    isLoop_ = isLoop;
+    speedScale_ = speedScale;
+
+    ResetAnimation(); // 新しいアニメーションの時間を0にリセット
+    isPlaying_ = true;
 }
 
 void AnimationModel::SetAnimation(const std::string& animationName)
@@ -179,28 +233,6 @@ void AnimationModel::SetAnimation(const std::string& animationName)
     {
         SetAnimation(anim);
     }
-}
-
-void AnimationModel::Play(const Animation* animation, bool isLoop, float speedScale)
-{
-    // ポインタが無効なら無視
-    if (!animation) return;
-
-    // すでに同じアニメーションが指定されている場合は、リセットせずに処理を抜ける
-    if (animeModelData_.currentAnimation == animation)
-    {
-        isLoop_ = isLoop;        
-        speedScale_ = speedScale; 
-        isPlaying_ = true;       
-        return;                   
-    }
-
-    animeModelData_.currentAnimation = animation;
-    isLoop_ = isLoop;
-    speedScale_ = speedScale;
-
-    ResetAnimation(); // 新しいアニメーションの時だけリセットがかかる
-    isPlaying_ = true;
 }
 
 void AnimationModel::SetAnimation(const Animation* animation)

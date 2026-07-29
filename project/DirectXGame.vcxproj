@@ -207,7 +207,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationModel.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationData.cpp" />
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp" />
@@ -401,7 +405,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationModel.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
-    <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />

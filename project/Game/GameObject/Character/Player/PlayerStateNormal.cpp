@@ -15,15 +15,27 @@ void PlayerStateNormal::Update(Player* p)
 
     if (isMoving)
     {
-        // 移動キーが入力されている時は走る
         p->moveSpeed_ = p->runSpeed_;
-        p->animationModel_->Play("humanRun");
+
+        // 走りアニメーションの再生
+        p->animationModel_->Play(
+            "humanRun",
+            true,
+            p->runAnimSpeed_,
+            p->idleToRunBlendTime_
+        );
     }
     else
     {
-        // 入力がない時は止まる
         p->moveSpeed_ = 0.0f;
-        p->animationModel_->Play("humanIdle");
+
+        // 待機アニメーションの再生
+        p->animationModel_->Play(
+            "humanIdle",
+            true,
+            p->idleAnimSpeed_,
+            p->runToIdleBlendTime_
+        );
     }
 
     // 実際の座標・回転更新処理

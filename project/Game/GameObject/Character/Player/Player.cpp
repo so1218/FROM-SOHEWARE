@@ -44,6 +44,11 @@ void Player::Initialize()
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
 	binder_->Bind("RunSpeed", &runSpeed_, 0.01f);
 	binder_->Bind("RotationSpeed", &rotationSpeed_, 0.1f);
+	binder_->Bind("IdleAnimSpeed", &idleAnimSpeed_, 0.05f);
+	binder_->Bind("RunAnimSpeed", &runAnimSpeed_, 0.05f);
+	binder_->Bind("IdleToRunBlendTime", &idleToRunBlendTime_, 0.01f);
+	binder_->Bind("RunToIdleBlendTime", &runToIdleBlendTime_, 0.01f);
+
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
 	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
 
@@ -230,6 +235,14 @@ void Player::DebugDraw()
 		binder_->Draw("RotationSpeed", "回転の速さ");
 	}
 
+	if (ImGui::CollapsingHeader("アニメーション調整"))
+	{
+		binder_->Draw("IdleAnimSpeed", "待機アニメ速度");
+		binder_->Draw("RunAnimSpeed", "走りアニメ速度");
+		binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間(秒)");
+		binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間(秒)");
+	}
+
 	if (ImGui::CollapsingHeader("コライダー"))
 	{
 		binder_->Draw("ColliderOffset", "位置オフセット");
@@ -240,7 +253,6 @@ void Player::DebugDraw()
 
 	ImGui::End();
 
-	/*ImGuiManager::DrawGizmo(transform_);*/
 	collider_->DrawCollider();
 #endif
 }

@@ -109,6 +109,11 @@ Skeleton CreateSkeleton(const Node& rootNode);
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time);
 Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+void ApplyBlendAnimation(
+    Skeleton& skeleton,
+    const Animation& prevAnimation, float prevTime,
+    const Animation& currentAnimation, float currentTime,
+    float blendFactor);
 void UpdateSkeleton(Skeleton& skeleton);
 SkinCluster CreateSkinCluster(
     const Microsoft::WRL::ComPtr<ID3D12Device>& device,

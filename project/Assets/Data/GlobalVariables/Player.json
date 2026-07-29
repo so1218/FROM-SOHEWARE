@@ -13,6 +13,8 @@
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,
         "HP": 9.819999694824219,
+        "IdleAnimSpeed": 1.0,
+        "IdleToRunBlendTime": 0.25,
         "MaxStamina": 9.0,
         "PlayerModel_IsLoop": true,
         "PlayerModel_Mat0_AddShadow": 1,
@@ -1065,7 +1067,9 @@
         "RollDuration": 0.009999999776482582,
         "RollSpeed": 3.4700000286102295,
         "RotationSpeed": 3.3399999141693115,
+        "RunAnimSpeed": 1.0,
         "RunSpeed": 0.6200000047683716,
+        "RunToIdleBlendTime": 0.25,
         "Stamina": 4.550000190734863,
         "StaminaRecovery": 0.5
     }
