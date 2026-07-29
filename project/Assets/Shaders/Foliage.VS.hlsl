@@ -32,7 +32,6 @@ struct PixelInput
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
-    bool isFrontFace : SV_IsFrontFace;
 };
 
 PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
@@ -41,10 +40,12 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     TreeInstanceData instance = gInstanceData[instanceID];
     
     float4x4 worldMat = instance.worldMatrix;
-    float3 localPos = input.position;
+    float3 origLocalPos = input.position; // 元のローカル座標を保持
     float3 rootPos = float3(worldMat[0][3], worldMat[1][3], worldMat[2][3]);
     
-    // 風の計算
+    // -------------------------------------------------------------------------
+    // 1. 風の強度とウェイト計算
+    // -------------------------------------------------------------------------
     float2 windDir = normalize(gMaterial.windDir);
     float windTime = gFrameData.gTime * gMaterial.windSpeed;
     
@@ -55,30 +56,55 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
 
     float treePhase = dot(rootPos.xz, float2(0.1f, 0.1f)) + instance.colorVariation.x * 10.0f;
     
+    // -------------------------------------------------------------------------
+    // 2. オフセット計算とストレッチ防止 (Arc Preservation)
+    // -------------------------------------------------------------------------
     float trunkWave = sin(windTime * 1.2f + treePhase);
     float3 trunkOffset = float3(windDir.x, 0.0f, windDir.y) * trunkWave * input.color.r * gMaterial.trunkFlexibility * totalWind;
     
-    float branchWave = sin(windTime * 3.5f + treePhase + localPos.y);
+    float branchWave = sin(windTime * 3.5f + treePhase + origLocalPos.y);
     float3 branchOffset = float3(windDir.x, -0.2f, windDir.y) * branchWave * input.color.g * gMaterial.branchFlexibility * totalWind;
     
-    float flutterWave = sin(windTime * 15.0f + localPos.x * 3.0f + localPos.z * 3.0f);
-    float3 flutterOffset = input.normal * flutterWave * input.color.b * gMaterial.leafFlutterAmount * totalWind;
-
-    localPos += trunkOffset + branchOffset + flutterOffset;
+    // まず幹と枝の大きな揺れを適用
+    float3 displacedPos = origLocalPos + trunkOffset + branchOffset;
     
-    // 座標変換
-    float4 worldPos = mul(worldMat, float4(localPos, 1.0f));
+    // 【追加】長さの維持（根元からの距離を保つことで、伸びるのではなく「曲がる」ようにする）
+    float origLen = length(origLocalPos);
+    if (origLen > 0.001f)
+    {
+        displacedPos = normalize(displacedPos) * origLen;
+    }
+    
+    // 葉のバタつきは局所的な変形なので長さ補正の後に加算
+    float flutterWave = sin(windTime * 15.0f + origLocalPos.x * 3.0f + origLocalPos.z * 3.0f);
+    float3 flutterOffset = input.normal * flutterWave * input.color.b * gMaterial.leafFlutterAmount * totalWind;
+    
+    float3 finalLocalPos = displacedPos + flutterOffset;
+
+    // -------------------------------------------------------------------------
+    // 3. 法線・接線の回転補正 (Normal Tilt)
+    // -------------------------------------------------------------------------
+    // 【追加】頂点がどれだけ移動したか（デルタ）を算出し、その方向へ法線を少し傾ける
+    float3 posDelta = finalLocalPos - origLocalPos;
+    
+    // 行列を使わない軽量なフェイク回転。0.5f は傾き具合の調整用係数
+    float3 tiltedLocalNormal = normalize(input.normal + posDelta * 0.5f);
+    float3 tiltedLocalTangent = normalize(input.tangent.xyz + posDelta * 0.5f);
+
+    // -------------------------------------------------------------------------
+    // 4. ワールド変換と出力
+    // -------------------------------------------------------------------------
+    float4 worldPos = mul(worldMat, float4(finalLocalPos, 1.0f));
     output.position = mul(gFrameData.viewProjectionMatrix, worldPos);
     output.worldPosition = worldPos.xyz;
     output.texcoord = input.texcoord;
     
-    output.normal = normalize(mul((float3x3) worldMat, input.normal));
-    output.tangent = normalize(mul((float3x3) worldMat, input.tangent.xyz));
+    // 傾けた法線をワールド空間へ変換
+    output.normal = normalize(mul((float3x3) worldMat, tiltedLocalNormal));
+    output.tangent = normalize(mul((float3x3) worldMat, tiltedLocalTangent));
     output.bitangent = cross(output.normal, output.tangent) * input.tangent.w;
     
     output.color = float4(input.color.rgb, gustMask);
-    
-    // 個体ごとの色ブレとフェード値をPSへ渡す
     output.instanceTint = instance.colorVariation.yzw;
     output.lodFade = instance.lodFade;
 

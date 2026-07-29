@@ -387,7 +387,6 @@ struct PostEffectData
 
     float radialBlurStrength;
     float2 radialBlurCenter;
-    float _paddingRadial;
 };
 
 struct BrightExtractSettings
@@ -556,6 +555,9 @@ struct LeafMaterialData
     float shadowNormalBias; 
     
     float shadowBias; 
+    float roughnessScale;
+    float baseAO; 
+    float baseThickness;
 };
 
 struct Object3DInstanceData

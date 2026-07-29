@@ -14,7 +14,7 @@ StructuredBuffer<TreeInstanceData> gInstanceData : register(t10);
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gAlbedoAlphaTex : register(t12);
 Texture2D<float3> gNormalTex : register(t13);
-Texture2D<float3> gMasksTex : register(t14); // R: Roughness, G: AO, B: Thickness (透けにくさ)
+Texture2D<float4> gMetallicRoughnessTex : register(t14);
 
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gAnisoSampler : register(s3);
@@ -40,23 +40,31 @@ PixelShaderOutput main(PixelInput input)
     PixelShaderOutput output;
     
     // LODディザリング (クロスフェード用)
-    // dither(Bayer)マトリクスを使うか、簡易的なノイズでピクセルを間引く
-    // ※インポスター(ビルボード)と切り替わる境界のチラツキを消します
     float dither = frac(sin(dot(input.position.xy, float2(12.9898f, 78.233f))) * 43758.5453f);
     clip(input.lodFade - dither);
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     
-    // 完全な透明領域のみ早めにClipし、エッジは後段のA2Cに任せる
+    // アルファテスト
     clip(albedoAlpha.a - 0.05f);
     
     // 木ごとの色ブレを適用
     albedoAlpha.rgb *= input.instanceTint;
 
-    float3 mask = gMasksTex.Sample(gAnisoSampler, input.texcoord);
-    float roughness = mask.r;
-    float ao = mask.g * input.color.a;
-    float thickness = mask.b;
+    // -------------------------------------------------------------------------
+    // マテリアル値の取得（metallicRoughness.png 対応）
+    // -------------------------------------------------------------------------
+    float4 mrTex = gMetallicRoughnessTex.Sample(gAnisoSampler, input.texcoord);
+    
+    // glTF規格に拠り、Gチャンネルから Roughness を取得してスケールをかける
+    float roughness = mrTex.g * gMaterial.roughnessScale;
+    
+    // AO: テクスチャのRチャンネルにAOが入っていればそれを使い、無ければ baseAO を使用
+    float texAO = (mrTex.r > 0.001f) ? mrTex.r : 1.0f;
+    float ao = texAO * gMaterial.baseAO * input.color.a;
+
+    // Thickness (透けにくさ): 定数バッファの手動設定値を使用
+    float thickness = gMaterial.baseThickness;
 
     // 両面描画の法線対応
     float3 N = normalize(input.normal);
@@ -68,7 +76,6 @@ PixelShaderOutput main(PixelInput input)
         N = -N;
         T = -T;
         B = -B;
-        // 裏面の法線を少し平坦化して、不自然な陰影を防ぐ
         N = normalize(lerp(N, input.normal, gMaterial.backfaceFlatten));
     }
     
@@ -76,7 +83,7 @@ PixelShaderOutput main(PixelInput input)
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 normal = normalize(mul(tangentNormal, TBN));
 
-    // ライティング
+    // ライティング計算
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
@@ -89,7 +96,7 @@ PixelShaderOutput main(PixelInput input)
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedoAlpha.rgb * lightColor * NdotL;
 
-    // Transmission (透過光)
+    // Transmission (透過光 / Subsurface Scattering)
     float3 h = normalize(lightDir + normal * gMaterial.transmissionDistortion);
     float VdotH = saturate(dot(toEye, -h));
     float transmissionProfile = pow(VdotH, gMaterial.transmissionPower);
@@ -109,8 +116,6 @@ PixelShaderOutput main(PixelInput input)
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(normal, halfVector));
     
-    // TAAが無い場合、高周波なノーマルマップによるスペキュラエイリアシングが目立ちます。
-    // 対策として、奥に行くほどラフネスを上げてハイライトを散らす(Roughness Mip)アプローチが有効です。
     float distanceRoughness = saturate(roughness + (viewDepth * 0.002f));
     
     float alpha = distanceRoughness * distanceRoughness;
@@ -124,8 +129,7 @@ PixelShaderOutput main(PixelInput input)
 
     float3 finalColor = diffuse + transmission + ambient + specular;
 
-    // Alpha-to-Coverage (A2C) 用の高品位アルファ算出
-    // 単純なclipより、エッジが滑らかにMSAAとブレンドされます
+    // Alpha-to-Coverage (A2C)
     float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), 0.0001f) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
@@ -134,7 +138,6 @@ PixelShaderOutput main(PixelInput input)
 
     return output;
 }
-
 
 // -----------------------------------------------------------------------------
 // Foliage向け 軽量CSMフェッチ

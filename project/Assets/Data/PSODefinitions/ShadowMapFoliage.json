@@ -1,0 +1,14 @@
+{
+  "RootSignature": "ShadowMapFoliage",
+  "VertexShader": "Assets/Shaders/ShadowMapFoliage.VS.hlsl",
+  "PixelShader": "Assets/Shaders/ShadowMapFoliage.PS.hlsl",
+  "InputLayout": "Default3D",
+  "BlendState": "Opaque",
+  "RasterizerState": "NoneCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "UNKNOWN"
+  ],
+  "DSVFormat": "D32_FLOAT"
+}

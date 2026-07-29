@@ -918,6 +918,7 @@
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -953,6 +954,7 @@
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
@@ -986,8 +988,10 @@
     <FxCompile Include="Assets\Shaders\GrassGeneration.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\ShadowMapFoliage.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Assets\Shaders\ShadowMapFoliage.PS.hlsl" />
   </ItemGroup>
 </Project>

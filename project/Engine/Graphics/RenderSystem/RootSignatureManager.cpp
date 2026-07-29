@@ -402,6 +402,51 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "GrassGenerationCS");
     }
+    if (name == "Foliage")
+    {
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);  
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);  
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);  
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 11, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 12, 1, D3D12_SHADER_VISIBILITY_PIXEL); 
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 13, 1, D3D12_SHADER_VISIBILITY_PIXEL); 
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 14, 1, D3D12_SHADER_VISIBILITY_PIXEL); 
+
+        builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL,
+            D3D12_COMPARISON_FUNC_LESS_EQUAL);
+
+        builder.AddStaticSampler(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddStaticSampler(3, D3D12_FILTER_ANISOTROPIC,
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_PIXEL);
+
+        return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Foliage_Leaf");
+    }
+    if (name == "ShadowMapFoliage")
+    {
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);                
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);                
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_ALL);                
+        builder.AddConstants(9, 1, D3D12_SHADER_VISIBILITY_VERTEX);     
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 11, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 12, 1, D3D12_SHADER_VISIBILITY_PIXEL); 
+
+        builder.AddStaticSampler(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddStaticSampler(3, D3D12_FILTER_ANISOTROPIC,
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_PIXEL);
+
+        return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "LeafShadow");
+    }
     else if (name == "Generate3DNoiseCS")
     {
         RootSignatureBuilder builder;
