@@ -919,6 +919,7 @@
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -955,6 +956,7 @@
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />

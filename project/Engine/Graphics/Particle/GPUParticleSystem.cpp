@@ -25,6 +25,25 @@ void GPUParticleSystem::Initialize(ID3D12Device* device)
 
 }
 
+void GPUParticleSystem::Init(ID3D12GraphicsCommandList* commandList)
+{
+    commandList->SetComputeRootSignature(computeRootSignature_);
+    commandList->SetPipelineState(computePSO_Init_);
+
+    // 10000 インデックス分 Dispatch (64スレッド/グループ)
+    UINT groupCountX = (kMaxParticles + 63) / 64;
+    commandList->Dispatch(groupCountX, 1, 1);
+
+    // 初期化完了を担保するための UAV バリアを設定
+    D3D12_RESOURCE_BARRIER uavBarriers[2] = {};
+    uavBarriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    uavBarriers[0].UAV.pResource = freeListBuffer_.Get();
+    uavBarriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    uavBarriers[1].UAV.pResource = freeListCounter_.Get();
+
+    commandList->ResourceBarrier(2, uavBarriers);
+}
+
 void GPUParticleSystem::Emit(ID3D12GraphicsCommandList* commandList, uint32_t emitCount, DirectX::XMFLOAT3 emitterPos)
 {
     EmitterData cbData = {};

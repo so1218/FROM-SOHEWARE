@@ -11,6 +11,11 @@ RWStructuredBuffer<Particle> gParticles : register(u0);
 RWStructuredBuffer<uint> gFreeList : register(u1); 
 RWStructuredBuffer<uint> gFreeListCounter : register(u2);
 
+// ---------------------------------------------------------
+// 定数定義
+// ---------------------------------------------------------
+static const uint kMaxParticles = 10000;
+
 cbuffer EmitterData : register(b0)
 {
     float3 gEmitterPos;
@@ -82,5 +87,22 @@ void EmitCS(uint3 dtid : SV_DispatchThreadID)
     else
     {
         InterlockedAdd(gFreeListCounter[0], 1);
+    }
+}
+
+[numthreads(64, 1, 1)]
+void InitCS(uint3 dtid : SV_DispatchThreadID)
+{
+    uint idx = dtid.x;
+    if (idx >= kMaxParticles)
+        return;
+
+    // 1. FreeList を 0 〜 (kMaxParticles - 1) の連番で初期化
+    gFreeList[idx] = idx;
+
+    // 2. カウンターを最大パーティクル数 (10000) で初期化 (代表して1スレッドのみ実行)
+    if (idx == 0)
+    {
+        gFreeListCounter[0] = kMaxParticles;
     }
 }
