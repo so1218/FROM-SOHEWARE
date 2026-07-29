@@ -22,6 +22,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(),
 
 	// アニメーションモデルを生成
 	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
+	weaponModel_ = std::make_unique<Model>(engine_, "rock1");
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = std::make_unique<FE::Collider>(this);
@@ -42,6 +43,7 @@ void Player::Initialize()
 	collider_->SetCollisionMask(kCollisionAttributeEnemy);
 
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
+	binder_->BindModel("WeaponModel", weaponModel_.get());
 	binder_->Bind("RunSpeed", &runSpeed_, 0.01f);
 	binder_->Bind("RotationSpeed", &rotationSpeed_, 0.1f);
 	binder_->Bind("IdleAnimSpeed", &idleAnimSpeed_, 0.05f);
@@ -60,6 +62,8 @@ void Player::Initialize()
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
 	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
 	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+
+	weaponModel_->GetTransform().SetParent(&rightHandTransform_);
 }
 
 // 更新処理
@@ -115,6 +119,12 @@ void Player::Update()
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 	animationModel_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
 	GetTransform().UpdateMatrix();
+
+	// 右手のワールド行列を取得
+	Matrix4x4 rightHandWorldMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
+
+	// 武器に右手の行列をそのままセットする
+	rightHandTransform_.matWorld_ = rightHandWorldMatrix;
 }
 
 void Player::Move()
@@ -218,6 +228,7 @@ void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 void Player::Draw()
 {
 	animationModel_->Draw();
+	weaponModel_->Draw();
 }
 
 void Player::DebugDraw()
@@ -226,6 +237,7 @@ void Player::DebugDraw()
 	ImGui::Begin("プレイヤー");
 
 	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
+	binder_->DrawModel("WeaponModel", "武器インスペクター");
 
 	ImGui::Separator();
 

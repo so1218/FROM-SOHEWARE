@@ -115,6 +115,9 @@ public:
     // スケルトン取得
     const Skeleton& GetSkeleton() const { return skeleton_; }
 
+    // 指定した名前のボーンのワールド行列を取得
+    Matrix4x4 GetJointWorldMatrix(const std::string& jointName) const;
+
     // マテリアル関連
     MaterialData* GetMaterialData(size_t index = 0);
     const MaterialData* GetMaterialData(size_t index = 0) const;

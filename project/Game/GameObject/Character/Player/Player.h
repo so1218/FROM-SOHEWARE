@@ -56,6 +56,11 @@ private:
 	FE::Terrain* terrain_ = nullptr;
 	FollowCamera* followCamera_;
 
+	std::unique_ptr<FE::Model> weaponModel_;
+	// 武器を持たせるためのTransform
+	FE::WorldTransform rightHandTransform_;
+	FE::Vector3 weaponOffsetPos_ = { 0.0f, 0.1f, 0.0f };
+
 	std::unique_ptr<FE::Collider> collider_;
 
 	std::unique_ptr<FE::PropertyBinder> binder_;

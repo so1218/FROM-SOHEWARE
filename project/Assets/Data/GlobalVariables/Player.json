@@ -21,9 +21,9 @@
         "PlayerModel_Mat0_AlbedoMap": "white1x1",
         "PlayerModel_Mat0_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat0_Color": [
-            0.2320675253868103,
-            0.19387918710708618,
-            0.19387918710708618,
+            1.0,
+            1.0,
+            1.0,
             1.0
         ],
         "PlayerModel_Mat0_DiffuseRef": 1.0,
@@ -73,11 +73,11 @@
         "PlayerModel_Mat0_PuddleTint": 0.5,
         "PlayerModel_Mat0_RimColor": [
             1.0,
-            1.0,
-            1.0
+            0.7848101258277893,
+            0.0
         ],
         "PlayerModel_Mat0_RimEnable": 0,
-        "PlayerModel_Mat0_RimInten": 1.0,
+        "PlayerModel_Mat0_RimInten": 5.599999904632568,
         "PlayerModel_Mat0_RimPower": 3.0,
         "PlayerModel_Mat0_RimUseDir": 0,
         "PlayerModel_Mat0_RippleEnable": 0,
@@ -126,9 +126,9 @@
         "PlayerModel_Mat1_AlbedoMap": "white1x1",
         "PlayerModel_Mat1_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat1_Color": [
-            0.24971900880336761,
-            0.08381848782300949,
-            0.902953565120697,
+            0.0,
+            0.0,
+            0.0,
             1.0
         ],
         "PlayerModel_Mat1_DiffuseRef": 4.0,
@@ -142,14 +142,14 @@
         ],
         "PlayerModel_Mat1_EdgeInten": 2.0,
         "PlayerModel_Mat1_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat1_Emissive": 1.2000000476837158,
-        "PlayerModel_Mat1_EnvMapInt": 0.9900000095367432,
+        "PlayerModel_Mat1_Emissive": 3.0,
+        "PlayerModel_Mat1_EnvMapInt": 0.0,
         "PlayerModel_Mat1_EnvMapTex": "pureSky",
         "PlayerModel_Mat1_HeightMapTex": "white1x1",
         "PlayerModel_Mat1_LightMode": 3,
         "PlayerModel_Mat1_Lighting": 1,
-        "PlayerModel_Mat1_Metalness": 0.9399999976158142,
-        "PlayerModel_Mat1_NormEnable": 1,
+        "PlayerModel_Mat1_Metalness": 0.11999999731779099,
+        "PlayerModel_Mat1_NormEnable": 0,
         "PlayerModel_Mat1_NormInten": 0.6000000238418579,
         "PlayerModel_Mat1_NormTile": 6.800000190734863,
         "PlayerModel_Mat1_NormalMapTex": "normal_07",
@@ -177,13 +177,13 @@
         "PlayerModel_Mat1_PuddleScale": 0.10000000149011612,
         "PlayerModel_Mat1_PuddleTint": 0.5,
         "PlayerModel_Mat1_RimColor": [
-            0.9050895571708679,
-            0.0,
-            0.9662446975708008
+            0.9662446975708008,
+            0.4158521592617035,
+            0.0
         ],
         "PlayerModel_Mat1_RimEnable": 1,
-        "PlayerModel_Mat1_RimInten": 9.899999618530273,
-        "PlayerModel_Mat1_RimPower": 3.0,
+        "PlayerModel_Mat1_RimInten": 1.0,
+        "PlayerModel_Mat1_RimPower": 3.0999999046325684,
         "PlayerModel_Mat1_RimUseDir": 0,
         "PlayerModel_Mat1_RippleEnable": 0,
         "PlayerModel_Mat1_RippleFreq": 1.0,
@@ -193,7 +193,7 @@
         "PlayerModel_Mat1_RippleSize": 0.4000000059604645,
         "PlayerModel_Mat1_RippleSpeed": 1.0,
         "PlayerModel_Mat1_RippleStren": 0.05000000074505806,
-        "PlayerModel_Mat1_Roughness": 0.11999999731779099,
+        "PlayerModel_Mat1_Roughness": 1.0,
         "PlayerModel_Mat1_ShadowBias": 0.0005000000237487257,
         "PlayerModel_Mat1_ShadowDens": 0.5799999833106995,
         "PlayerModel_Mat1_ShadowEnv": 0.0,
@@ -231,9 +231,9 @@
         "PlayerModel_Mat2_AlbedoMap": "white1x1",
         "PlayerModel_Mat2_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat2_Color": [
-            0.2109704613685608,
-            0.2109704613685608,
-            0.2109704613685608,
+            0.0,
+            0.0,
+            0.0,
             1.0
         ],
         "PlayerModel_Mat2_DiffuseRef": 4.0,
@@ -247,13 +247,13 @@
         ],
         "PlayerModel_Mat2_EdgeInten": 2.0,
         "PlayerModel_Mat2_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat2_Emissive": 0.6000000238418579,
-        "PlayerModel_Mat2_EnvMapInt": 2.0799999237060547,
+        "PlayerModel_Mat2_Emissive": 3.0,
+        "PlayerModel_Mat2_EnvMapInt": 0.6600000262260437,
         "PlayerModel_Mat2_EnvMapTex": "skybox",
         "PlayerModel_Mat2_HeightMapTex": "white1x1",
         "PlayerModel_Mat2_LightMode": 3,
         "PlayerModel_Mat2_Lighting": 1,
-        "PlayerModel_Mat2_Metalness": 1.0,
+        "PlayerModel_Mat2_Metalness": 0.20999999344348907,
         "PlayerModel_Mat2_NormEnable": 0,
         "PlayerModel_Mat2_NormInten": 1.0,
         "PlayerModel_Mat2_NormTile": 1.0,
@@ -282,11 +282,11 @@
         "PlayerModel_Mat2_PuddleScale": 0.10000000149011612,
         "PlayerModel_Mat2_PuddleTint": 0.5,
         "PlayerModel_Mat2_RimColor": [
-            1.0,
-            1.0,
-            1.0
+            0.9324894547462463,
+            0.2596805989742279,
+            0.0
         ],
-        "PlayerModel_Mat2_RimEnable": 0,
+        "PlayerModel_Mat2_RimEnable": 1,
         "PlayerModel_Mat2_RimInten": 5.099999904632568,
         "PlayerModel_Mat2_RimPower": 3.0,
         "PlayerModel_Mat2_RimUseDir": 0,
@@ -298,7 +298,7 @@
         "PlayerModel_Mat2_RippleSize": 0.4000000059604645,
         "PlayerModel_Mat2_RippleSpeed": 1.0,
         "PlayerModel_Mat2_RippleStren": 0.05000000074505806,
-        "PlayerModel_Mat2_Roughness": 0.4099999964237213,
+        "PlayerModel_Mat2_Roughness": 1.0,
         "PlayerModel_Mat2_ShadowBias": 0.0005000000237487257,
         "PlayerModel_Mat2_ShadowDens": 0.800000011920929,
         "PlayerModel_Mat2_ShadowEnv": 0.0,
@@ -336,9 +336,9 @@
         "PlayerModel_Mat3_AlbedoMap": "white1x1",
         "PlayerModel_Mat3_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat3_Color": [
-            0.037974655628204346,
-            0.037974655628204346,
-            0.037974655628204346,
+            0.39240509271621704,
+            0.39240509271621704,
+            0.39240509271621704,
             1.0
         ],
         "PlayerModel_Mat3_DiffuseRef": 4.0,
@@ -391,7 +391,7 @@
             1.0,
             0.8842599987983704
         ],
-        "PlayerModel_Mat3_RimEnable": 1,
+        "PlayerModel_Mat3_RimEnable": 0,
         "PlayerModel_Mat3_RimInten": 2.299999952316284,
         "PlayerModel_Mat3_RimPower": 3.0,
         "PlayerModel_Mat3_RimUseDir": 0,
@@ -441,9 +441,9 @@
         "PlayerModel_Mat4_AlbedoMap": "white1x1",
         "PlayerModel_Mat4_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat4_Color": [
-            0.9620253443717957,
             0.0,
-            0.5601668953895569,
+            0.0,
+            0.0,
             1.0
         ],
         "PlayerModel_Mat4_DiffuseRef": 4.0,
@@ -546,9 +546,9 @@
         "PlayerModel_Mat5_AlbedoMap": "white1x1",
         "PlayerModel_Mat5_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat5_Color": [
-            0.18145239353179932,
-            0.1833743005990982,
-            0.2194092869758606,
+            1.0,
+            1.0,
+            1.0,
             1.0
         ],
         "PlayerModel_Mat5_DiffuseRef": 4.0,
@@ -562,13 +562,13 @@
         ],
         "PlayerModel_Mat5_EdgeInten": 2.0,
         "PlayerModel_Mat5_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat5_Emissive": 10.399999618530273,
+        "PlayerModel_Mat5_Emissive": 100.0,
         "PlayerModel_Mat5_EnvMapInt": 0.0,
         "PlayerModel_Mat5_EnvMapTex": "skybox",
         "PlayerModel_Mat5_HeightMapTex": "white1x1",
         "PlayerModel_Mat5_LightMode": 3,
         "PlayerModel_Mat5_Lighting": 1,
-        "PlayerModel_Mat5_Metalness": 0.7300000190734863,
+        "PlayerModel_Mat5_Metalness": 0.949999988079071,
         "PlayerModel_Mat5_NormEnable": 0,
         "PlayerModel_Mat5_NormInten": 1.0,
         "PlayerModel_Mat5_NormTile": 1.0,
@@ -601,7 +601,7 @@
             0.9746835231781006,
             0.7636920213699341
         ],
-        "PlayerModel_Mat5_RimEnable": 1,
+        "PlayerModel_Mat5_RimEnable": 0,
         "PlayerModel_Mat5_RimInten": 10.0,
         "PlayerModel_Mat5_RimPower": 4.199999809265137,
         "PlayerModel_Mat5_RimUseDir": 0,
@@ -1059,9 +1059,9 @@
         ],
         "PlayerModel_SpeedScale": 1.0,
         "PlayerModel_Trans": [
-            0.0,
-            0.0,
-            0.0
+            1.7940000295639038,
+            -0.49203750491142273,
+            1.2177706956863403
         ],
         "RollCost": 0.5699999928474426,
         "RollDuration": 0.009999999776482582,
@@ -1071,6 +1071,130 @@
         "RunSpeed": 0.6200000047683716,
         "RunToIdleBlendTime": 0.25,
         "Stamina": 4.550000190734863,
-        "StaminaRecovery": 0.5
+        "StaminaRecovery": 0.5,
+        "WeaponModel_AddShadow": 1,
+        "WeaponModel_AlbedoMap": "white1x1",
+        "WeaponModel_AlphaThres": 0.009999999776482582,
+        "WeaponModel_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "WeaponModel_DiffuseRef": 4.0,
+        "WeaponModel_DisEnable": 0,
+        "WeaponModel_DisThres": 0.5,
+        "WeaponModel_DissolveTex": "white1x1",
+        "WeaponModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "WeaponModel_EdgeInten": 2.0,
+        "WeaponModel_EdgeWidth": 0.05000000074505806,
+        "WeaponModel_Emissive": 10.199999809265137,
+        "WeaponModel_EnvMapInt": 0.18000000715255737,
+        "WeaponModel_EnvMapTex": "skybox",
+        "WeaponModel_HeightMapTex": "white1x1",
+        "WeaponModel_LightMode": 3,
+        "WeaponModel_Lighting": 1,
+        "WeaponModel_Metalness": 1.0,
+        "WeaponModel_NormEnable": 0,
+        "WeaponModel_NormInten": 1.0,
+        "WeaponModel_NormTile": 1.0,
+        "WeaponModel_NormalMapTex": "normal_33",
+        "WeaponModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "WeaponModel_OutlineEnable": 0,
+        "WeaponModel_OutlineWidth": 1.0,
+        "WeaponModel_POMEnable": 0,
+        "WeaponModel_POMHeightScale": 0.05000000074505806,
+        "WeaponModel_POMMaxSteps": 32.0,
+        "WeaponModel_POMMinSteps": 8.0,
+        "WeaponModel_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "WeaponModel_PuddleEmission": 0.0,
+        "WeaponModel_PuddleFalloff": 0.10000000149011612,
+        "WeaponModel_PuddleNoise": "white1x1",
+        "WeaponModel_PuddleScale": 0.10000000149011612,
+        "WeaponModel_PuddleTint": 0.5,
+        "WeaponModel_RimColor": [
+            1.0,
+            0.12658226490020752,
+            0.0
+        ],
+        "WeaponModel_RimEnable": 1,
+        "WeaponModel_RimInten": 2.700000047683716,
+        "WeaponModel_RimPower": 5.599999904632568,
+        "WeaponModel_RimUseDir": 0,
+        "WeaponModel_RippleEnable": 0,
+        "WeaponModel_RippleFreq": 1.0,
+        "WeaponModel_RippleMap": "white1x1",
+        "WeaponModel_RippleMix": 0.5,
+        "WeaponModel_RippleScale": 2.0,
+        "WeaponModel_RippleSize": 0.4000000059604645,
+        "WeaponModel_RippleSpeed": 1.0,
+        "WeaponModel_RippleStren": 0.05000000074505806,
+        "WeaponModel_Rot": [
+            0.0,
+            0.949999988079071,
+            0.0
+        ],
+        "WeaponModel_Roughness": 0.14000000059604645,
+        "WeaponModel_Scale": [
+            10.0,
+            10.0,
+            67.0
+        ],
+        "WeaponModel_ShadowBias": 0.0005000000237487257,
+        "WeaponModel_ShadowDens": 0.800000011920929,
+        "WeaponModel_ShadowEnv": 0.0,
+        "WeaponModel_ShadowSoft": 0.0,
+        "WeaponModel_Shininess": 50.0,
+        "WeaponModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "WeaponModel_ToonRampTex": "toonRamp_01",
+        "WeaponModel_Trans": [
+            -34.5,
+            10.100000381469727,
+            -21.5
+        ],
+        "WeaponModel_TriScale": 0.10000000149011612,
+        "WeaponModel_TriSharpness": 4.0,
+        "WeaponModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "WeaponModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "WeaponModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "WeaponModel_UsePuddle": 0,
+        "WeaponModel_UseTriplanar": 0,
+        "WeaponModel_Wetness": 0.5,
+        "WeaponOffsetPos": [
+            0.0,
+            0.0,
+            0.0
+        ]
     }
 }

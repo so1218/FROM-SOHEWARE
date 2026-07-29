@@ -155,14 +155,14 @@ void AnimationModel::Update()
     // 行列更新とスキニング更新はそのまま実行
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
+
+    // モデル自体のワールド行列更新
+    transform_.UpdateMatrix();
 }
 
 void AnimationModel::Draw()
 {
     if (!engine_ || !animeModelData_.modelData) return;
-
-    // モデル自体のワールド行列更新
-    transform_.UpdateMatrix();
 
     engine_->GetRendererManager()->SubmitAnimationModel(
         transform_,
@@ -399,6 +399,27 @@ void AnimationModel::SetMaterialColor(size_t index, const Vector4& color)
 void AnimationModel::SetMaterialColor(size_t index, uint32_t color)
 {
     SetMaterialColor(index, Math::Uint32ToColorVector(color));
+}
+
+Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const
+{
+    // ボーンの名前でマップを検索
+    auto it = skeleton_.jointMap.find(jointName);
+
+    // 見つかった場合
+    if (it != skeleton_.jointMap.end())
+    {
+        size_t jointIndex = (*it).second; // ボーンの配列インデックス
+
+        // ボーンのモデル空間での行列を取得
+        Matrix4x4 boneSkeletonSpaceMatrix = skeleton_.joints[jointIndex].skeletonSpaceMatrix;
+
+        // ボーン行列 × モデルのワールド行列 = ボーンのワールド行列
+        return boneSkeletonSpaceMatrix * transform_.matWorld_;
+    }
+
+    // 見つからなかった場合の安全対策として、モデルの行列をそのまま返す
+    return transform_.matWorld_;
 }
 
 MaterialData* AnimationModel::GetMaterialData(size_t index)

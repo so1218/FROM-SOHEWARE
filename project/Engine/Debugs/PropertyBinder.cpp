@@ -77,6 +77,8 @@ namespace FE
                 }
             }
         );
+
+        *quatPtr = Quaternion::QuaternionFromEuler(*eulerPtr);
     }
 
     void PropertyBinder::Clear(bool eraseData)
