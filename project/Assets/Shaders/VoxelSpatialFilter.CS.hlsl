@@ -38,7 +38,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         return;
 
     float4 center = gVoxelInjectCurrent.Load(int4(DTid, 0));
-    
     float4 sum = center;
     float totalWeight = 1.0f;
     

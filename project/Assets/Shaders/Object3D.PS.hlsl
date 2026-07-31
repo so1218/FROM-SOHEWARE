@@ -346,7 +346,7 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     else
     {
-        // Unlit
+            // Unlit
         finalColor = baseColor * gMaterial.color.rgb;
     }
     

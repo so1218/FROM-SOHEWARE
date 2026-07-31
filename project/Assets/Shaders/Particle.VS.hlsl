@@ -1,4 +1,3 @@
-#include "ParticleCommon.hlsli" 
 #include "ShaderConstants.hlsli" 
 
 // インスタンシング用のデータを格納するためのバッファ

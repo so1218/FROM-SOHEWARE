@@ -21,16 +21,16 @@ void TrailRenderer::Initialize(const RenderEnvironment& env)
     std::vector<TrailVertexData> dummyVertices(kMaxTotalTrailVertices);
     trailBatch_.mesh.InitializeVertexTrail(env.device->GetDevice(), dummyVertices);
 
-    uint32_t materialSize = sizeof(TrailMaterialData);
-    materialSize = (materialSize + 255) & ~255;
+    trailBatch_.materialResource = BufferManager::CreateMappedConstantBufferArray(
+        env.device->GetDevice(),
+        kMaxTrailCount,
+        &trailBatch_.mappedMaterial
+    );
 
-    trailBatch_.materialResource = BufferManager::CreateBufferResource(
-        env.device->GetDevice(), materialSize * kMaxTrailCount);
-    trailBatch_.materialResource->Map(0, nullptr, reinterpret_cast<void**>(&trailBatch_.mappedMaterial));
-
-    trailBatch_.wvpResource = BufferManager::CreateBufferResource(
-        env.device->GetDevice(), sizeof(TransformationMatrix));
-    trailBatch_.wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&trailBatch_.mappedWvp));
+    trailBatch_.wvpResource = BufferManager::CreateMappedConstantBuffer(
+        env.device->GetDevice(),
+        &trailBatch_.mappedWvp
+    );
 }
 
 void TrailRenderer::BeginFrame()

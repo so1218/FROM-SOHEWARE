@@ -31,7 +31,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     {
         uint3 voxelCoord = uint3(DTid.x, DTid.y, z);
         float4 stepData = gVoxelTemporalOut.Load(int4(voxelCoord, 0));
-        
         float3 S = stepData.rgb;
         float extinction = max(stepData.a, kExtinctionEpsilon);
         

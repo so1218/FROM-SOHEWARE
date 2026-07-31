@@ -18,7 +18,7 @@ static const int3 kNeighborOffsets[6] =
 // TAAブレンド用パラメータ (ゴーストとノイズの調整用)
 static const float kBlendAlphaMin = 0.05f; // 静止時のブレンド率（履歴を95%信用しノイズを消去）
 static const float kBlendAlphaMax = 0.4f; // 変化検出時のブレンド率（最新を40%採用し残像を防ぐ）
-static const float kColorDiffThreshold = 2.0f; // この値以上の色差が発生したらブレンド率をMaxにする
+static const float kColorDiffThreshold = 2.0f; // この値以上の色差が発生したらブレンド率をMaxに
 
 // 深度からビュー空間のZを逆算する関数
 float GetViewZFromSlice(float slice, float depthCount, float nearZ, float farZ)

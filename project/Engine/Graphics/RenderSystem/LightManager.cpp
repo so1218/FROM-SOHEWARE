@@ -97,9 +97,8 @@ void LightManager::Initialize(ID3D12Device* device)
     }
 
     // ShadowData
-    shadowDataResource_ = BufferManager::CreateBufferResource(
-        device, (sizeof(ShadowData) + 0xff) & ~0xff);
-    shadowDataResource_->Map(0, nullptr, reinterpret_cast<void**>(&shadowData_));
+    shadowDataResource_ = BufferManager::CreateMappedConstantBuffer(
+        device, &shadowData_);
 
     // 初期化
     for (int i = 0; i < 4; ++i)

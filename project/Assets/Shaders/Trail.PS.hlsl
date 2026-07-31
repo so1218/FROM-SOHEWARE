@@ -48,7 +48,6 @@ PixelShaderOutput main(VertexShaderOutput input)
     }
 
     output.color = finalColor;
-    
     output.color *= gTrailMaterial.emissiveIntensity;
     
     // 完全に透明なら描画しない

@@ -41,7 +41,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
    // ---------------------------------------------------------
     // Froxel の深度スライス計算
     // --------------------------------------------------------
-    // Z軸を等間隔ではなく、手前ほど高解像度・奥ほど低解像度になるように
+    // 手前ほど高解像度・奥ほど低解像度になるように
     // 指数関数的にマッピングする標準式
     float zSlice = log2(clampedDistance / nearZ) / log2(farZ / nearZ);
     zSlice = saturate(zSlice);

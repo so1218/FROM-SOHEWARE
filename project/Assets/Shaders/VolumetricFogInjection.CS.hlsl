@@ -218,7 +218,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float combinedPerlin = noiseLayer1.r * noiseLayer2.r * 1.5f;
 
-    // 遠景でのサンプリングエイリアス（チラつき）を防ぐため、距離に応じて高周波ノイズを減衰させる
+    // 遠景でのサンプリングエイリアス（チラつき）を防ぐため、距離に応じて高周波ノイズを減衰
     float linearDistanceRatio = saturate(sampleViewZ / farZ);
     float detailFade = smoothstep(0.1f, 0.6f, linearDistanceRatio);
 

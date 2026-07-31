@@ -42,7 +42,6 @@ PixelShaderOutput main(PixelInput input)
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
-    // Normal Flattening
     // Foliage特有の高周波な法線によるピクセル単位のチラツキを抑えるため、
     // 上方向(0,1,0)へ法線をブレンドし、面全体で柔らかく光を受けるように補正
     float3 bladeNormal = normalize(input.normal);

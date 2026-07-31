@@ -45,6 +45,44 @@ public:
         buffer->Map(0, nullptr, reinterpret_cast<void**>(outMappedPtr));
         return buffer;
     }
+
+    // 定数バッファの配列を作成しマップ（1要素ごとに256バイトアライメント）
+    template <typename T>
+    static Microsoft::WRL::ComPtr<ID3D12Resource> CreateMappedConstantBufferArray(
+        ID3D12Device* device,
+        size_t elementCount,
+        T** outMappedPtr)
+    {
+        // 1要素あたりのサイズを256バイトの倍数に切り上げ
+        size_t alignedSizePerElement = (sizeof(T) + 255) & ~255;
+        // 必要なトータルサイズを計算
+        size_t totalSizeInBytes = alignedSizePerElement * elementCount;
+
+        auto buffer = CreateBufferResource(device, totalSizeInBytes);
+
+        // マップ
+        buffer->Map(0, nullptr, reinterpret_cast<void**>(outMappedPtr));
+        return buffer;
+    }
+
+    // cbuffer内の配列用：要素間は詰めつつ、全体サイズを256バイトアライメントして作成・マップ
+    template <typename T>
+    static Microsoft::WRL::ComPtr<ID3D12Resource> CreateMappedConstantBufferArrayPacked(
+        ID3D12Device* device,
+        size_t elementCount,
+        T** outMappedPtr)
+    {
+        // 配列全体のデータサイズを計算
+        size_t totalSize = sizeof(T) * elementCount;
+        // バッファ全体のサイズを256バイトの倍数に切り上げ 
+        size_t alignedTotalSize = (totalSize + 255) & ~255;
+
+        auto buffer = CreateBufferResource(device, alignedTotalSize);
+
+        // マップ
+        buffer->Map(0, nullptr, reinterpret_cast<void**>(outMappedPtr));
+        return buffer;
+    }
 };
 
 }

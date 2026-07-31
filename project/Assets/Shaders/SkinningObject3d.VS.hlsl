@@ -76,7 +76,6 @@ VertexShaderOutput main(SkinningVertexShaderInput input)
 
     // 過去のローカル座標 × 過去のワールド行列
     float4 prevWorldPos = mul(prevLocalPos, gTransformationMatrix.PrevWorld);
-    
     // 過去のワールド座標 × 過去のビュープロジェクション行列
     output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
 

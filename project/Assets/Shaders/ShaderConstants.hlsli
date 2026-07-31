@@ -197,8 +197,6 @@ struct TrailMaterialData
     int jitterMode;
     float emissiveIntensity;
     float instanceSeed;
-    float padding;
-    
 };
 
 struct WeatherData
@@ -224,7 +222,6 @@ struct WeatherData
     float pad1;
     
     float3 sunDirection;
-    float pad2;
 };
 
 struct DirectionalLight
@@ -296,7 +293,6 @@ struct ParticleInstanceData
     float intensity;
     float3 padding;
 };
-
 
 struct PostEffectData
 {
@@ -606,7 +602,6 @@ struct VolumetricFogSettings
     float noiseIntensity;
     
     float3 windDirection;
-    float pad3;
 };
 
 struct FogBilateralSettings
@@ -614,7 +609,6 @@ struct FogBilateralSettings
     int blurRadius; 
     float spatialSigma; 
     float depthSigma;
-    float padding;
 };
 
 struct FogVolume

@@ -46,7 +46,7 @@ VertexShaderOutput main(VertexShaderInput input)
 
         if (gTrailMaterial.jitterMode == 0)
         {
-            // Wave (instanceSeedで波のうねり方が個別にずれる)
+            // Wave
             offset.x = sin((u + timeOffset) * gTrailMaterial.jitterFrequency);
             offset.y = cos((u + timeOffset * 1.2) * gTrailMaterial.jitterFrequency);
             offset.z = sin((u + timeOffset * 0.8) * gTrailMaterial.jitterFrequency);
