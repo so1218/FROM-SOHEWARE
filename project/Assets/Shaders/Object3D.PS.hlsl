@@ -1,5 +1,8 @@
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
+#include "GridUtils.hlsli"
+#include "ShadowUtils.hlsli"
+#include "LightingUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)
@@ -35,15 +38,10 @@ SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gClampSampler : register(s2);
 
-float DitherThreshold4x4(int2 position);
-float3 DrawArtGridColor(PixelShaderInput input);
-bool ShouldDiscardArtGrid(PixelShaderInput input);
-
 float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 toEye, float shadowFactor);
 float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
-float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight);
 
 float D_GGX(float3 N, float3 H, float roughness);
 float G_SchlickGGX(float NdotV, float roughness);
@@ -51,7 +49,6 @@ float G_Smith(float3 N, float3 V, float3 L, float roughness);
 float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness);
 
 float3 CalculatePBR(float3 albedo, float3 N, float3 V, float3 L, float3 lightColor, float lightIntensity, float roughness, float metalness);
-float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
@@ -66,6 +63,7 @@ PixelShaderOutput main(PixelShaderInput input)
     float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
     float2 finalUV = transformedUV.xy;
+    float3 normalizedInputNormal = normalize(input.normal);
     
     // POM
     float pomSelfShadow = 1.0f;
@@ -74,7 +72,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // 負荷対策: Triplanar時の3軸サンプリングとPOMの併用は極端に重いため排他制御
     if (gMaterial.enablePOM != 0 && gMaterial.useTriplanar == 0)
     {
-        float3 N = normalize(input.normal);
+        float3 N = normalizedInputNormal;
         float3 T = normalize(input.tangent);
         float3 B = normalize(cross(N, T));
         float3x3 TBN = float3x3(T, B, N);
@@ -108,7 +106,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // --------------------------------------------------------
     // Albedo & Alpha Test
     // --------------------------------------------------------
-    float3 worldNormal = normalize(input.normal);
+    float3 worldNormal = normalizedInputNormal;
     float4 textureColor;
     float blendSharpness = gMaterial.triplanarBlendSharpness > 0.0f ? gMaterial.triplanarBlendSharpness : 4.0f;
 
@@ -151,10 +149,10 @@ PixelShaderOutput main(PixelShaderInput input)
     // --------------------------------------------------------
     if (gMaterial.isArtGrid)
     {
-        if (ShouldDiscardArtGrid(input))
+        if (ShouldDiscardArtGrid(input.texcoord))
             discard;
 
-        output.color = float4(DrawArtGridColor(input), 1.0f);
+        output.color = float4(DrawArtGridColor(input.texcoord, gFrameData.iResolution), 1.0f);
         
         // G-Bufferの破綻防止
         output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -169,7 +167,13 @@ PixelShaderOutput main(PixelShaderInput input)
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
         float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
-        shadowFactor = CalculateShadowCSM(input.worldPosition, worldNormal, viewDepth);
+        float3 lightDir = normalize(-gDirectionalLights[0].direction);
+        shadowFactor = CalculateShadowCSM(input.worldPosition, worldNormal, viewDepth, lightDir,
+            gMaterial.shadowDensity, gShadowData.cascadeSplits,
+            gMaterial.shadowNormalBias, gMaterial.shadowBias, gMaterial.shadowSoftness,
+            gShadowData.cascadeLightViewProj, 
+            gShadowMapArray, 
+            gShadowSampler);
         shadowFactor = min(shadowFactor, pomSelfShadow); // CSMとPOM影の暗い方を採用
     }
     
@@ -341,7 +345,10 @@ PixelShaderOutput main(PixelShaderInput input)
             if (gDirectionalLights[0].enable != 0)
                 toLight = normalize(-gDirectionalLights[0].direction);
             
-            finalColor += ApplyRimLight(normal, toEye, toLight);
+            finalColor += ApplyRimLight(
+                normal, toEye, toLight,
+                gMaterial.rimPower, gMaterial.rimUseLightDir,
+                gMaterial.rimColor, gMaterial.rimIntensity);
         }
     }
     else
@@ -376,103 +383,6 @@ PixelShaderOutput main(PixelShaderInput input)
     output.velocity = currentUV - prevUV;
     
     return output;
-}
-
-float DitherThreshold4x4(int2 position)
-{
-    int2 pos = position % 4;
-
-    float bayer4x4[16] =
-    {
-        0.0 / 16.0, 8.0 / 16.0, 2.0 / 16.0, 10.0 / 16.0,
-        12.0 / 16.0, 4.0 / 16.0, 14.0 / 16.0, 6.0 / 16.0,
-        3.0 / 16.0, 11.0 / 16.0, 1.0 / 16.0, 9.0 / 16.0,
-        15.0 / 16.0, 7.0 / 16.0, 13.0 / 16.0, 5.0 / 16.0,
-    };
-
-    return bayer4x4[pos.y * 4 + pos.x];
-}
-
-float gridLine(float2 uv, float scale, float thickness)
-{
-    float2 grid = abs(frac(uv * scale - 0.5) - 0.5) / fwidth(uv * scale);
-    float line1 = min(grid.x, grid.y);
-    return smoothstep(0.0, thickness, line1);
-}
-
-float3 DrawArtGridColor(PixelShaderInput input)
-{
-    // 画面解像度を考慮したフラグメント座標
-    float2 fragCoord = input.texcoord * gFrameData.iResolution;
-
-    // UVの中心を原点に変換
-    float2 uv = input.texcoord - 0.5;
-
-    // グリッド用のワールドスケールに変換
-    uv *= 10000.0;
-
-    // 通常グリッド線の設定
-    float scale = 1.0;
-    float thickness = 1.5;
-
-    float normalLine = gridLine(uv, scale, thickness);
-    float gridMask = 1.0 - normalLine;
-
-    // 一定間隔ごとの太線グリッド
-    float majorLineThickness = 1.5;
-    float majorInterval = 10.0;
-
-    float2 majorUV = uv / majorInterval;
-    float majorLine = gridLine(majorUV, 1.0, majorLineThickness);
-    float majorMask = 1.0 - majorLine;
-
-    // 太線を優先して合成
-    float finalGridMask = max(gridMask, majorMask);
-
-    // 背景とグリッドの基本色
-    float3 bgColor = float3(0.05, 0.05, 0.05);
-    float3 lineColor = float3(0.07, 0.07, 0.07);
-    float3 majorLineColor = float3(0.20, 0.20, 0.20);
-
-    // 通常線と太線をブレンド
-    float3 col = lerp(bgColor, lineColor, gridMask);
-    col = lerp(col, majorLineColor, majorMask);
-
-    // 原点軸の強調表示
-    float axisThickness = 2.0;
-
-    // Z軸を表示
-    float zAxis =
-        smoothstep(0.0, 1.0,
-            abs(uv.x) / (fwidth(uv.x) * axisThickness));
-    col = lerp(col, float3(0.1, 0.6, 0.1), 1.0 - zAxis);
-
-    // X軸を表示
-    float xAxis =
-        smoothstep(0.0, 1.0,
-            abs(uv.y) / (fwidth(uv.y) * axisThickness));
-    col = lerp(col, float3(0.6, 0.1, 0.1), 1.0 - xAxis);
-
-    return col;
-}
-
-bool ShouldDiscardArtGrid(PixelShaderInput input)
-{
-    float2 uv = (input.texcoord - 0.5f) * 10000.0;
-    float zAxis = smoothstep(0.0, 1.0, abs(uv.x) / (fwidth(uv.x) * 2.0));
-    float xAxis = smoothstep(0.0, 1.0, abs(uv.y) / (fwidth(uv.y) * 2.0));
-
-    float normalLine = gridLine(uv, 1.0, 2.0);
-    float gridMask = 1.0 - normalLine;
-
-    float majorLine = gridLine(uv / 10.0, 1.0, 2.0);
-    float majorMask = 1.0 - majorLine;
-
-    float gridAlpha = max(gridMask, majorMask);
-    gridAlpha = max(gridAlpha, 1.0 - zAxis);
-    gridAlpha = max(gridAlpha, 1.0 - xAxis);
-
-    return gridAlpha < 1e-8;
 }
 
 float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 toEye, float shadowFactor)
@@ -752,141 +662,6 @@ float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
     }
 
     return finalColor;
-}
-
-static const float2 poissonDisk[16] =
-{
-    float2(-0.94201624, -0.39906216), float2(0.94558609, -0.76890725),
-    float2(-0.094184101, -0.92938870), float2(0.34495938, 0.29387760),
-    float2(-0.91588581, 0.45771432), float2(-0.81544232, -0.87912464),
-    float2(-0.38277543, 0.27676845), float2(0.97484398, 0.75648379),
-    float2(0.44323325, -0.97511554), float2(0.53742981, -0.47373420),
-    float2(-0.26496911, -0.41893023), float2(0.79197514, 0.19090188),
-    float2(-0.24188840, 0.99706507), float2(-0.81409955, 0.91437590),
-    float2(0.19984126, 0.78641367), float2(0.14383161, -0.14100790)
-};
-
-// 特定の1つのカスケードから影の濃さを取得するヘルパー関数
-float SampleSingleCascade(float3 worldPos, float3 normal, uint cascadeIndex)
-{
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float NdotL = dot(normal, lightDir);
-    
-    // バイアス計算
-    float biasScale = saturate(1.0f - NdotL);
-    float worldNormalBias = gMaterial.shadowNormalBias * biasScale;
-    float3 biasedWorldPos = worldPos + normal * worldNormalBias;
-
-    // ライト空間への変換
-    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
-    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
-
-    projCoords.x = projCoords.x * 0.5f + 0.5f;
-    projCoords.y = -projCoords.y * 0.5f + 0.5f;
-
-    float currentDepth = projCoords.z - gMaterial.shadowBias;
-
-    // 範囲外判定
-    if (projCoords.z < 0.0f || projCoords.z > 1.0f ||
-        projCoords.x < 0.0f || projCoords.x > 1.0f ||
-        projCoords.y < 0.0f || projCoords.y > 1.0f)
-    {
-        return 1.0f; // 影なし
-    }
-
-    float2 texelSize = 1.0f / 2048.0f;
-    float softness = max(gMaterial.shadowSoftness, 1.0f);
-    float shadow = 0.0f;
-
-    // 16回のPCFサンプリング
-    [unroll]
-    for (int i = 0; i < 16; ++i)
-    {
-        float2 offset = poissonDisk[i] * texelSize * softness;
-        shadow += gShadowMapArray.SampleCmpLevelZero(
-            gShadowSampler,
-            float3(projCoords.xy + offset, cascadeIndex),
-            currentDepth
-        );
-    }
-
-    return shadow * (1.0f / 16.0f);
-}
-
-// シャドウ強度を計算
-float CalculateShadowCSM(float3 worldPos, float3 normal, float viewDepth)
-{
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float NdotL = dot(normal, lightDir);
-    float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
-
-    if (NdotL <= 0.0f)
-        return minShadow;
-
-    uint cascadeIndex = 0;
-    float nextSplitDist = 0.0f;
-
-    // どのカスケードに属しているか判定しつつ、次の境界線の距離も取得
-    if (viewDepth > gShadowData.cascadeSplits.z)
-    {
-        cascadeIndex = 3;
-        nextSplitDist = 999999.0f; // これ以上奥はないのでブレンドしない
-    }
-    else if (viewDepth > gShadowData.cascadeSplits.y)
-    {
-        cascadeIndex = 2;
-        nextSplitDist = gShadowData.cascadeSplits.z;
-    }
-    else if (viewDepth > gShadowData.cascadeSplits.x)
-    {
-        cascadeIndex = 1;
-        nextSplitDist = gShadowData.cascadeSplits.y;
-    }
-    else
-    {
-        cascadeIndex = 0;
-        nextSplitDist = gShadowData.cascadeSplits.x;
-    }
-
-    // メインとなる現在のカスケードから影を取得
-    float shadowVisibility = SampleSingleCascade(worldPos, normal, cascadeIndex);
-
-    // カスケードシーム（ブレンド）処理
-    // 境界線を跨ぐブレンド幅
-    float blendBand = 2.0f;
-
-    // 次の境界線にどれくらい近いかを 0.0 〜 1.0で計算
-    float blendFactor = smoothstep(nextSplitDist - blendBand, nextSplitDist, viewDepth);
-
-    // もし境界線付近（0.0より大きい）で、かつ次のカスケードが存在するなら
-    if (blendFactor > 0.0f && cascadeIndex < 3)
-    {
-        // 次のカスケード（荒い影）も取得
-        float nextShadowVisibility = SampleSingleCascade(worldPos, normal, cascadeIndex + 1);
-        
-        // 現在の影と次の影を滑らかにブレンド
-        shadowVisibility = lerp(shadowVisibility, nextShadowVisibility, blendFactor);
-    }
-
-    return lerp(minShadow, 1.0f, shadowVisibility);
-}
-
-float3 ApplyRimLight(float3 normal, float3 toEye, float3 toLight)
-{
-    // 基本のリムライト
-    float NdotV = saturate(dot(normal, toEye));
-    float rim = 1.0f - NdotV;
-    rim = pow(rim, max(gMaterial.rimPower, 0.001f));
-
-    // ライト方向によるマスク処理
-    if (gMaterial.rimUseLightDir != 0)
-    {
-        // ライトが当たっている面 (NdotL) の強さを掛ける
-        float NdotL = saturate(dot(normal, toLight));
-        rim *= NdotL;
-    }
-
-    return gMaterial.rimColor * rim * gMaterial.rimIntensity;
 }
 
 float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)

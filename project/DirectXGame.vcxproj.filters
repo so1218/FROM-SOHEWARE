@@ -995,5 +995,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Assets\Shaders\ShadowMapFoliage.PS.hlsl" />
+    <None Include="Assets\Shaders\GridUtils.hlsli" />
+    <None Include="Assets\Shaders\ShadowUtils.hlsli" />
   </ItemGroup>
 </Project>
