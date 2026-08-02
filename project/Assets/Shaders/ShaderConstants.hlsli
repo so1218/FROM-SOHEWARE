@@ -1,3 +1,6 @@
+#ifndef SHADER_CONSTANTS_HLSLI
+#define SHADER_CONSTANTS_HLSLI
+
 #ifdef __cplusplus
 #include "MathUtils.h" 
 #include "WorldTransform.h"
@@ -718,3 +721,5 @@ struct LightningMaterial
     float emissiveIntensity; 
     float instanceSeed;
 };
+
+#endif 

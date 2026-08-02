@@ -3,6 +3,8 @@
 #include "GridUtils.hlsli"
 #include "ShadowUtils.hlsli"
 #include "LightingUtils.hlsli"
+#include "NormalUtils.hlsli"
+#include "PBRUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)
@@ -29,8 +31,8 @@ TextureCube<float4> gEnvironmentTexture : register(t1);
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
-Texture2D<float3> gNormalTexture : register(t5);
-Texture2D<float3> gRippleTexture : register(t6);
+Texture2D<float4> gNormalTexture : register(t5);
+Texture2D<float4> gRippleTexture : register(t6);
 Texture2D<float> gPuddleNoiseTexture : register(t7);
 Texture2D<float> gPOMHeightMap : register(t8);
 
@@ -43,13 +45,6 @@ float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float
 float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
 float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
 
-float D_GGX(float3 N, float3 H, float roughness);
-float G_SchlickGGX(float NdotV, float roughness);
-float G_Smith(float3 N, float3 V, float3 L, float roughness);
-float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness);
-
-float3 CalculatePBR(float3 albedo, float3 N, float3 V, float3 L, float3 lightColor, float lightIntensity, float roughness, float metalness);
-float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv);
 float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
 
@@ -187,7 +182,7 @@ PixelShaderOutput main(PixelShaderInput input)
         }
         else
         {
-            normal = CalculateNormalFromMap(input, worldNormal, pomUV);
+            normal = CalculateNormalFromMap(worldNormal, input.tangent, pomUV, gMaterial.normalIntensity, gNormalTexture, gSampler);
         }
     }
     
@@ -222,7 +217,7 @@ PixelShaderOutput main(PixelShaderInput input)
             addedPuddleEmission = gMaterial.puddleColor.rgb * gMaterial.puddleEmission * puddleDepth;
         }
 
-        // 3レイヤーのUVをずらしてサンプリングし、不規則な波紋アニメーションを作る
+        // レイヤーのUVをずらしてサンプリングし、不規則な波紋アニメーションを作る
         float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
         float time = gFrameData.gTime * gMaterial.rippleSpeed;
         float3 combinedRipple = 0.0f.xxx;
@@ -662,121 +657,6 @@ float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3
     }
 
     return finalColor;
-}
-
-float3 CalculateNormalFromMap(PixelShaderInput input, float3 normal, float2 uv)
-{
-    // ノーマルマップから法線をサンプリング
-    float3 mapSample = gNormalTexture.Sample(gSampler, uv);
-    float3 mapNormal = mapSample;
-    
-    // (0,1)を(-1,1)に変換
-    mapNormal = mapNormal * 2.0f - 1.0f;
-
-    // 法線の強度調整
-    mapNormal.xy *= gMaterial.normalIntensity;
-
-    // BN行列の構築と変換
-    float3 N = normalize(normal);
-    // グラム・シュミットの直交化
-    float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
-    float3 B = cross(N, T);
-
-    float3x3 TBN = float3x3(T, B, N);
-    float3 transformedNormal = mul(mapNormal, TBN);
-
-    return normalize(transformedNormal);
-}
-
-// Distribution(ハイライトの形状と強さ)
-// N: 法線, H: ハーフベクトル, roughness: 粗さ
-float D_GGX(float3 N, float3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = max(dot(N, H), 0.0f);
-    float NdotH2 = NdotH * NdotH;
-
-    float nom = a2;
-    float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
-    denom = PI * denom * denom;
-
-    return nom / max(denom, EPSILON);
-}
-
-// Geometry表面の微細な凹凸による遮蔽
-// N: 法線, V: 視線, L: ライト方向, roughness: 粗さ
-float G_SchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0f);
-    float k = (r * r) / 8.0f;
-
-    float nom = NdotV;
-    float denom = NdotV * (1.0f - k) + k;
-
-    return nom / max(denom, EPSILON);
-}
-
-float G_Smith(float3 N, float3 V, float3 L, float roughness)
-{
-    float NdotV = max(dot(N, V), 0.0f);
-    float NdotL = max(dot(N, L), 0.0f);
-    float ggx1 = G_SchlickGGX(NdotV, roughness);
-    float ggx2 = G_SchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
-}
-
-// 粗さを考慮したFresnel
-float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness)
-{
-    // 粗い材質ほど、最大反射率（F90）を下げる
-    float maxReflectance = 1.0f - roughness;
-    float3 F90 = max(float3(maxReflectance, maxReflectance, maxReflectance), F0);
-    
-    return F0 + (F90 - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
-}
-
-// 単一のライトに対するPBR計算（Cook-Torrance BRDF）
-float3 CalculatePBR(
-    float3 albedo,
-    float3 N,
-    float3 V,
-    float3 L,
-    float3 lightColor,
-    float lightIntensity,
-    float roughness,
-    float metalness)
-{
-    float3 H = normalize(V + L); // ハーフベクトル
-
-    // PBRパラメータの準備
-    float3 F0 = float3(0.04f, 0.04f, 0.04f);
-    F0 = lerp(F0, albedo, metalness);
-
-    // BRDF項の計算
-    float NDF = D_GGX(N, H, roughness);
-    float G = G_Smith(N, V, L, roughness);
-    
-    // F_SchlickRoughnessに置き換え、roughnessを渡す
-    float3 F = F_SchlickRoughness(max(dot(H, V), 0.0f), F0, roughness);
-       
-    // スペキュラの計算
-    float3 numerator = NDF * G * F;
-    float NdotL = max(dot(N, L), 0.0f);
-    float NdotV = max(dot(N, V), 0.0f);
-    float denominator = 4.0f * NdotV * NdotL + 0.0001f;
-    float3 specular = numerator / denominator;
-    
-    // エネルギー保存則
-    float3 kS = F;
-    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
-    
-    // 金属は拡散反射を持たない
-    kD *= 1.0f - metalness;
-
-    // 最終合成
-    return (kD * albedo / 3.14159265f + specular) * lightColor * lightIntensity * NdotL;
 }
 
 // カラーテクスチャ用トライプラナーマッピング
