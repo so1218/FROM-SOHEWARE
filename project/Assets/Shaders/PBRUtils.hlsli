@@ -1,3 +1,6 @@
+#ifndef PBR_UTILS_HLSLI
+#define PBR_UTILS_HLSLI
+
 #include "ShaderConstants.hlsli"
 
 // Distribution (ハイライトの形状と強さ)
@@ -86,3 +89,5 @@ float3 CalculatePBR(
     // 最終合成
     return (kD * albedo / PI + specular) * lightColor * lightIntensity * NdotL;
 }
+
+#endif

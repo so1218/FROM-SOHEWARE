@@ -53,12 +53,3 @@ struct Skinned
     float32_t3 smoothNormal;
 };
 
-// Light types
-#define SHADING_MODEL_HALFLAMBERT 0
-#define SHADING_MODEL_PHONG 1
-#define SHADING_MODEL_TOON 2
-#define SHADING_MODEL_PBR 3
-#define LIGHT_POINT 4
-#define LIGHT_SPOT 5
-
-static const float EPSILON = 0.00001f;

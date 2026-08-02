@@ -40,17 +40,6 @@ SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gClampSampler : register(s2);
 
-float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 toEye, float shadowFactor);
-float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
-float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
-float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye);
-
-float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
-float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness);
-
-float2 CalculateParallaxOcclusionMapping(float2 texCoords, float3 viewDirTS, float2 dx, float2 dy, out float parallaxHeight);
-float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialHeight, float2 dx, float2 dy);
-
 PixelShaderOutput main(PixelShaderInput input)
 {
     PixelShaderOutput output;
@@ -79,7 +68,9 @@ PixelShaderOutput main(PixelShaderInput input)
 
         float parallaxHeight = 0.0f;
         // POMの計算には pomUV を渡す
-        float2 newPomUV = CalculateParallaxOcclusionMapping(pomUV, toEyeTS, dx, dy, parallaxHeight);
+        float2 newPomUV = CalculateParallaxOcclusionMapping(pomUV, toEyeTS, dx, dy, gMaterial.pomHeightScale, gMaterial.pomMaxSteps, gMaterial.pomMinSteps,
+            gPOMHeightMap, gSampler,
+            parallaxHeight);
 
         // POMによってズレた移動量を計算
         float2 pomOffset = newPomUV - pomUV;
@@ -94,7 +85,9 @@ PixelShaderOutput main(PixelShaderInput input)
         {
             float3 lightDirTS = mul(TBN, normalize(-gDirectionalLights[0].direction));
             // シャドウ計算にも pomUV を渡す
-            pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, pomUV, parallaxHeight, dx, dy);
+            pomSelfShadow = CalculatePOMSoftShadow(lightDirTS, pomUV, parallaxHeight, dx, dy,
+                gMaterial.pomHeightScale, gMaterial.pomMaxSteps, gMaterial.pomMinSteps,
+                gPOMHeightMap, gSampler);
         }
     }
     
@@ -107,7 +100,8 @@ PixelShaderOutput main(PixelShaderInput input)
 
     if (gMaterial.useTriplanar != 0)
     {
-        textureColor = CalculateTriplanarColor(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
+        textureColor = CalculateTriplanarColor(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness,
+            gTexture, gSampler);
     }
     else
     {
@@ -177,7 +171,8 @@ PixelShaderOutput main(PixelShaderInput input)
     {
         if (gMaterial.useTriplanar != 0)
         {
-            float3 triNormal = CalculateTriplanarNormal(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness);
+            float3 triNormal = CalculateTriplanarNormal(input.worldPosition, worldNormal, gMaterial.triplanarScale, blendSharpness,
+                gNormalTexture, gSampler);
             normal = normalize(lerp(worldNormal, triNormal, gMaterial.normalIntensity));
         }
         else
@@ -298,10 +293,14 @@ PixelShaderOutput main(PixelShaderInput input)
         // ガンマ補正 (sRGB -> Linear)
         float3 pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f);
         
-        finalColor += ApplyDirectionalLights(baseColor, pbrAlbedo, normal, toEye, shadowFactor);
-        finalColor += ApplyPointLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
-        finalColor += ApplySpotLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
-        finalColor += ApplyAreaLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye);
+        finalColor += ApplyDirectionalLights(baseColor, pbrAlbedo, normal, toEye, shadowFactor,
+                                        gMaterial,gDirectionalLights, gToonRamp, gClampSampler);
+        finalColor += ApplyPointLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
+                                        gMaterial, gPointLights);
+        finalColor += ApplySpotLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
+                                        gMaterial, gSpotLights);
+        finalColor += ApplyAreaLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
+                                        gMaterial, gAreaLights);
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
@@ -378,453 +377,4 @@ PixelShaderOutput main(PixelShaderInput input)
     output.velocity = currentUV - prevUV;
     
     return output;
-}
-
-float3 ApplyDirectionalLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 toEye, float shadowFactor)
-{
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-
-    float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-    float metalness = saturate(gMaterial.metalness);
-
-    for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
-    {
-        if (gDirectionalLights[i].enable == 0)
-            continue;
-
-        float3 lightDir = normalize(-gDirectionalLights[i].direction);
-        float3 lightColor = gDirectionalLights[i].color.rgb * gDirectionalLights[i].color.a;
-        float lightIntensity = gDirectionalLights[i].intensity;
-
-        float NdotL = dot(normal, lightDir);
-        float saturateNdotL = saturate(NdotL);
-
-        // 自己陰(NdotL)と落ち影(shadowFactor)を合わせた明るさ
-        float combinedShadow = saturateNdotL;
-        if (i == 0)
-            combinedShadow *= shadowFactor;
-
-        float3 radiance = float3(0.0f, 0.0f, 0.0f);
-
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            radiance = CalculatePBR(pbrAlbedo, normal, toEye, lightDir, lightColor, lightIntensity, roughness, metalness);
-            if (i == 0)
-                radiance *= shadowFactor; // 影の濃さが適用済みの数値をそのまま掛ける
-        }
-        else
-        {
-            float3 diffuse = float3(0.0f, 0.0f, 0.0f);
-            float3 specular = float3(0.0f, 0.0f, 0.0f);
-
-            if (gMaterial.lightMode == SHADING_MODEL_HALFLAMBERT)
-            {
-                float halfLambert = pow(saturateNdotL * 0.5f + 0.5f, gMaterial.diffuseReflection);
-                if (i == 0)
-                    halfLambert *= shadowFactor;
-
-                diffuse = gMaterial.color.rgb * baseColor * lightColor * halfLambert * lightIntensity;
-            }
-            else if (gMaterial.lightMode == SHADING_MODEL_PHONG)
-            {
-                diffuse = gMaterial.color.rgb * baseColor * lightColor * combinedShadow * lightIntensity;
-
-                if (NdotL > 0.0f)
-                {
-                    float3 halfVec = normalize(lightDir + toEye);
-                    float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-                    specular = gMaterial.specularColor.rgb * lightColor * spec * lightIntensity;
-                    if (i == 0)
-                        specular *= shadowFactor;
-                }
-            }
-            else if (gMaterial.lightMode == SHADING_MODEL_TOON)
-            {
-                float rampU = NdotL * 0.5f + 0.5f;
-                if (i == 0)
-                    rampU *= shadowFactor; // ランプUVに直接適用
-                
-                float3 rampColor = gToonRamp.Sample(gClampSampler, float2(rampU, 0.5f)).rgb;
-                diffuse = gMaterial.color.rgb * baseColor * rampColor * lightColor * lightIntensity;
-            }
-
-            radiance = diffuse + specular;
-        }
-
-        finalColor += radiance;
-    }
-
-    return finalColor;
-}
-
-float3 ApplyPointLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye)
-{
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-
-    float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-    float metalness = saturate(gMaterial.metalness);
-
-    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
-    {
-        if (gPointLights[i].enable == 0)
-            continue;
-        
-        float3 lightVec = gPointLights[i].position - worldPos;
-        float distance = length(lightVec);
-        float radius = gPointLights[i].radius;
-        
-        if (distance > radius)
-            continue;
-
-        float3 lightDir = (distance > 0.001f) ? (lightVec / distance) : float3(0.0f, 1.0f, 0.0f);
-        
-        // 数学的減衰（powベース）
-        float decay = 2.0f; 
-        float attenuation = pow(saturate(1.0f - distance / radius), decay);
-
-        float3 lightColor = gPointLights[i].color.rgb;
-        float3 radiance = float3(0.0f, 0.0f, 0.0f);
-
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            // PBR
-            radiance = CalculatePBR(pbrAlbedo, normal, toEye, lightDir, lightColor, gPointLights[i].intensity, roughness, metalness) * attenuation;
-        }
-        else
-        {
-            // Legacy
-            float ndotl = saturate(dot(normal, lightDir));
-            float3 diffuse = gMaterial.color.rgb * baseColor * lightColor * ndotl * gPointLights[i].intensity * attenuation;
-            
-            float3 specular = float3(0, 0, 0);
-            if (ndotl > 0.0f)
-            {
-                float3 halfVec = normalize(lightDir + toEye);
-                float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-                specular = gMaterial.specularColor.rgb * lightColor * gPointLights[i].intensity * spec * attenuation;
-            }
-            radiance = diffuse + specular;
-        }
-
-        finalColor += radiance;
-    }
-
-    return finalColor;
-}
-
-float3 ApplySpotLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye)
-{
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-
-    float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-    float metalness = saturate(gMaterial.metalness);
-
-    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
-    {
-        if (gSpotLights[i].enable == 0)
-            continue;
-        
-        float3 lightVecFromLight = worldPos - gSpotLights[i].position;
-        float distance = length(lightVecFromLight);
-        
-        if (distance > gSpotLights[i].distance)
-            continue;
-
-        float3 dirFromLight = (distance > 0.001f) ? (lightVecFromLight / distance) : normalize(gSpotLights[i].direction);
-        
-        // 距離減衰
-        float distanceRatio = distance / gSpotLights[i].distance;
-        float distanceAtt = pow(saturate(1.0f - distanceRatio), 2.0f);
-        
-        // 角度減衰
-        float coneDot = dot(normalize(gSpotLights[i].direction), dirFromLight);
-        float cosOuter = gSpotLights[i].cosAngle;
-        float cosInner = lerp(1.0f, cosOuter, 0.8f);
-        
-        // smoothstep を使った滑らかな角度減衰
-        float angleAtt = smoothstep(cosOuter, cosInner, coneDot);
-
-        float attenuation = distanceAtt * angleAtt;
-        if (attenuation <= 0.0f)
-            continue;
-
-        float3 lightColor = gSpotLights[i].color.rgb;
-        float lightIntensity = gSpotLights[i].intensity;
-        float3 lightDirL = -dirFromLight;
-        float3 radiance = float3(0.0f, 0.0f, 0.0f);
-
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            // PBR用ハイライトのエリアライト化
-            float3 R = reflect(-toEye, normal);
-            float fakeSourceRadius = 0.1f;
-            float3 closestPoint = lightDirL + R * clamp(dot(lightDirL, R), 0.0f, fakeSourceRadius);
-            float3 modifiedLightDirL = normalize(closestPoint);
-            
-            float alpha = roughness * roughness;
-            float alphaPrime = saturate(alpha + (fakeSourceRadius / max(distance, 0.001f) * 0.5f));
-            float modifiedRoughness = sqrt(alphaPrime);
-
-            float3 pbrResult = CalculatePBR(pbrAlbedo, normal, toEye, modifiedLightDirL, lightColor, lightIntensity, modifiedRoughness, metalness);
-            radiance = pbrResult * attenuation;
-        }
-        else
-        {
-            // Legacy (Blinn-Phong)
-            float ndotl = saturate(dot(normal, lightDirL));
-            float3 diffuse = gMaterial.color.rgb * baseColor * lightColor * ndotl * lightIntensity * attenuation;
-            
-            float3 specular = float3(0, 0, 0);
-            if (ndotl > 0.0f)
-            {
-                float3 halfVec = normalize(lightDirL + toEye);
-                float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-                specular = gMaterial.specularColor.rgb * lightColor * lightIntensity * spec * attenuation;
-            }
-            radiance = diffuse + specular;
-        }
-
-        finalColor += radiance;
-    }
-
-    return finalColor;
-}
-
-float3 ApplyAreaLights(float3 baseColor, float3 pbrAlbedo, float3 normal, float3 worldPos, float3 toEye)
-{
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-
-    float roughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-    float metalness = saturate(gMaterial.metalness);
-
-    for (int i = 0; i < MAX_AREA_LIGHTS; ++i)
-    {
-        if (gAreaLights[i].enable == 0)
-            continue;
-
-        // 代表点近似 (Representative Point)
-        float3 vecToPixel = worldPos - gAreaLights[i].position;
-        float3 rightDir = normalize(gAreaLights[i].right);
-        float3 upDir = normalize(gAreaLights[i].up);
-        float halfWidth = length(gAreaLights[i].right);
-        float halfHeight = length(gAreaLights[i].up);
-
-        float projRight = dot(vecToPixel, rightDir);
-        float projUp = dot(vecToPixel, upDir);
-        float clampedRight = clamp(projRight, -halfWidth, halfWidth);
-        float clampedUp = clamp(projUp, -halfHeight, halfHeight);
-
-        float3 closestPointOnLight = gAreaLights[i].position + rightDir * clampedRight + upDir * clampedUp;
-
-        // ベクトル計算
-        float3 lightVec = closestPointOnLight - worldPos;
-        float distance = length(lightVec);
-        float3 lightDir = normalize(lightVec); // L
-
-        // 減衰
-        float attenuation = gAreaLights[i].range > 0.001f
-            ? pow(saturate(1.0f - distance / gAreaLights[i].range), gAreaLights[i].decay)
-            : 1.0f;
-
-        float3 lightColor = gAreaLights[i].color.rgb;
-        float lightIntensity = gAreaLights[i].intensity;
-
-        float3 radiance = float3(0.0f, 0.0f, 0.0f);
-
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            // PBR
-            float3 pbrResult = CalculatePBR(pbrAlbedo, normal, toEye, lightDir, lightColor, lightIntensity, roughness, metalness);
-            radiance = pbrResult * attenuation;
-        }
-        else
-        {
-            // Legacy
-            float ndotl = saturate(dot(normal, lightDir));
-            float3 diffuse = gMaterial.color.rgb * baseColor * lightColor * ndotl * lightIntensity * attenuation;
-            
-            float3 specular = float3(0, 0, 0);
-            if (ndotl > 0.0f)
-            {
-                float3 halfVec = normalize(lightDir + toEye);
-                float spec = pow(saturate(dot(normal, halfVec)), gMaterial.shininess);
-                specular = gMaterial.specularColor.rgb * lightColor * lightIntensity * spec * attenuation;
-            }
-            radiance = diffuse + specular;
-        }
-
-        finalColor += radiance;
-    }
-
-    return finalColor;
-}
-
-// カラーテクスチャ用トライプラナーマッピング
-float4 CalculateTriplanarColor(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness)
-{
-    // 各軸のブレンド割合を計算
-    float3 blendWeights = abs(worldNormal);
-    blendWeights = pow(blendWeights, blendSharpness);
-    blendWeights /= max(blendWeights.x + blendWeights.y + blendWeights.z, 0.0001f); // 0除算防止
-
-    // 3方向のUVを計算
-    float2 uvX = worldPos.zy * texScale;
-    float2 uvY = worldPos.xz * texScale;
-    float2 uvZ = worldPos.xy * texScale;
-
-    // 3方向からサンプリング
-    float4 tX = gTexture.Sample(gSampler, uvX);
-    float4 tY = gTexture.Sample(gSampler, uvY);
-    float4 tZ = gTexture.Sample(gSampler, uvZ);
-
-    // ウェイトに基づいて合成
-    return tX * blendWeights.x + tY * blendWeights.y + tZ * blendWeights.z;
-}
-
-// ノーマルマップ用トライプラナーマッピング
-float3 CalculateTriplanarNormal(float3 worldPos, float3 worldNormal, float texScale, float blendSharpness)
-{
-    float3 blendWeights = abs(worldNormal);
-    blendWeights = pow(blendWeights, blendSharpness);
-    blendWeights /= max(blendWeights.x + blendWeights.y + blendWeights.z, 0.0001f);
-
-    float2 uvX = worldPos.zy * texScale;
-    float2 uvY = worldPos.xz * texScale;
-    float2 uvZ = worldPos.xy * texScale;
-
-    float3 tX = gNormalTexture.Sample(gSampler, uvX).xyz * 2.0f - 1.0f;
-    float3 tY = gNormalTexture.Sample(gSampler, uvY).xyz * 2.0f - 1.0f;
-    float3 tZ = gNormalTexture.Sample(gSampler, uvZ).xyz * 2.0f - 1.0f;
-
-    // ワールド空間の向きに合わせてアンパック
-    float3 nX = float3(tX.z * sign(worldNormal.x), tX.y, -tX.x);
-    float3 nY = float3(tY.x, tY.z * sign(worldNormal.y), -tY.y);
-    float3 nZ = float3(tZ.x, tZ.y, tZ.z * sign(worldNormal.z));
-
-    float3 finalNormal = nX * blendWeights.x + nY * blendWeights.y + nZ * blendWeights.z;
-
-    return normalize(finalNormal);
-}
-
-float2 CalculateParallaxOcclusionMapping(
-    float2 texCoords,
-    float3 viewDirTS,
-    float2 dx,
-    float2 dy,
-    out float parallaxHeight)
-{
-    viewDirTS = normalize(viewDirTS);
-
-    // カメラがサーフェスの裏側にある場合は早期リターン
-    if (viewDirTS.z <= 0.0f)
-    {
-        parallaxHeight = 0.0f;
-        return texCoords;
-    }
-
-    float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, texCoords);
-
-    // パラメータの安全化
-    // アーティファクト防止のため、UV空間での最大オフセット量をクランプ
-    float safeHeightScale = clamp(gMaterial.pomHeightScale, 0.0f, 0.1f);
-    
-    // ddx/ddyからUVのタイリング率を概算し、ハイトスケールを自動補正して破綻を防ぐ
-    float uvScale = length(float2(dx.x, dy.y)) * 1024.0f;
-    safeHeightScale /= max(uvScale, 1.0f);
-
-    // レイマーチングのステップ数決定
-    // 適用する深度と視線角度(V.z)に応じてステップ数を動的に増減し、負荷と品質を両立
-    float scaleFactor = safeHeightScale / 0.05f;
-    float maxSteps = clamp(gMaterial.pomMaxSteps * scaleFactor, 16.0f, 128.0f);
-    float minSteps = clamp(gMaterial.pomMinSteps * scaleFactor, 8.0f, 64.0f);
-
-    float numSteps = lerp(maxSteps, minSteps, viewDirTS.z);
-    float stepSize = 1.0f / numSteps;
-
-    float2 parallaxDir = viewDirTS.xy / max(viewDirTS.z, 0.01f);
-    
-    // 浅い視射角での極端なテクスチャの歪みを制限
-    float maxRatio = 1.5f;
-    float currentRatio = length(parallaxDir);
-    if (currentRatio > maxRatio)
-    {
-        parallaxDir *= (maxRatio / currentRatio);
-    }
-
-    float2 p = parallaxDir * safeHeightScale;
-    float2 deltaTexCoords = p * stepSize;
-    float2 currentTexCoords = texCoords;
-    
-    // 深度は 0(表面) 〜 1(底) 
-    float currentLayerDepth = 0.0f;
-    float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
-
-    // レイマーチング探索
-    [unroll(128)]
-    while (currentLayerDepth < currentDepthMapValue)
-    {
-        currentTexCoords -= deltaTexCoords;
-        currentLayerDepth += stepSize;
-        currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
-    }
-
-    // 交差位置のサブピクセル補間
-    // 衝突前後の深度差分を用いて線形補間し、段階的なサンプリングによる階層状のアーティファクトを解消
-    float2 prevTexCoords = currentTexCoords + deltaTexCoords;
-    float afterDepth = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = (1.0f - gPOMHeightMap.SampleLevel(gSampler, prevTexCoords, mipLevel).r) - currentLayerDepth + stepSize;
-
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0f - weight);
-
-    parallaxHeight = currentLayerDepth - stepSize * (1.0f - weight);
-
-    return finalTexCoords;
-}
-
-
-// POMによるソフト自己影の計算
-float CalculatePOMSoftShadow(float3 lightDirTS, float2 initialUV, float initialHeight, float2 dx, float2 dy)
-{
-    lightDirTS = normalize(lightDirTS);
-
-    if (lightDirTS.z <= 0.0f)
-        return 0.0f;
-
-    float mipLevel = gPOMHeightMap.CalculateLevelOfDetail(gSampler, initialUV);
-
-    float numSteps = lerp(gMaterial.pomMaxSteps, gMaterial.pomMinSteps, lightDirTS.z);
-    float stepSize = 1.0f / numSteps;
-
-    // シャドウ側も同様に最大長を制限
-    float2 parallaxDir = lightDirTS.xy / max(lightDirTS.z, 0.01f);
-    float maxRatio = 1.5f;
-    float currentRatio = length(parallaxDir);
-    if (currentRatio > maxRatio)
-    {
-        parallaxDir *= (maxRatio / currentRatio);
-    }
-
-    float2 p = parallaxDir * gMaterial.pomHeightScale;
-    float2 deltaTexCoords = p * stepSize;
-
-    float2 currentTexCoords = initialUV;
-    float currentLayerDepth = initialHeight - stepSize;
-    float shadowMultiplier = 1.0f;
-
-    [unroll(32)]
-    while (currentLayerDepth > 0.0f)
-    {
-        currentTexCoords += deltaTexCoords;
-        float currentDepthMapValue = 1.0f - gPOMHeightMap.SampleLevel(gSampler, currentTexCoords, mipLevel).r;
-        
-        if (currentDepthMapValue < currentLayerDepth)
-        {
-            float currentShadow = (currentLayerDepth - currentDepthMapValue) * 4.0f;
-            shadowMultiplier = min(shadowMultiplier, 1.0f - currentShadow);
-        }
-        currentLayerDepth -= stepSize;
-    }
-
-    return saturate(shadowMultiplier);
 }
