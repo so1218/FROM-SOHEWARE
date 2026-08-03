@@ -122,8 +122,14 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     // =========================================================================
     // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
     // =========================================================================
+   // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
     float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
-    float flutterWave = sin(windTime * 14.0f + flutterPhase) * cos(windTime * 9.0f + flutterPhase * 0.5f);
+
+// ★ windTime に周波数倍率 (leafFlutterFrequency) を掛ける
+    float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
+
+// 固定値だった 14.0f や 9.0f に flutterSpeed を使う
+    float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
     
     float3 flutterOffset = worldNormal
                          * flutterWave

@@ -598,7 +598,7 @@ struct LeafMaterialData
     float albedoMultiplier;
     
     float3 colorTint; 
-    float pad2;
+    float leafFlutterFrequency;
 };
 
 struct TrunkMaterialData

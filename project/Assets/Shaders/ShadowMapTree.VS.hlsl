@@ -44,9 +44,9 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     ShadowVSOutput output;
     
     // 1. オフセットを加算してインスタンスデータを取得
-    uint actualIndex = instanceID + gBaseInstanceIndex;
+    uint actualIndex = instanceID + gTreeInstanceOffset.baseInstanceIndex;
     TreeInstanceData instance = gInstanceData[actualIndex];
-    float isLeaf = (float) gIsLeaf;
+    float isLeaf = (float) gTreeInstanceOffset.isLeaf;
     
     float3 origLocalPos = input.position.xyz;
     float4 localPos = float4(origLocalPos, 1.0f);
@@ -93,8 +93,14 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     // =========================================================================
     // ★ 3次風: 葉のチラつき (シャドウでは法線が不要なため、ローカル座標ベースで簡略化計算でもOKです)
     // =========================================================================
+  // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
     float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
-    float flutterWave = sin(windTime * 14.0f + flutterPhase) * cos(windTime * 9.0f + flutterPhase * 0.5f);
+
+// ★ windTime に周波数倍率 (leafFlutterFrequency) を掛ける
+    float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
+
+// 固定値だった 14.0f や 9.0f に flutterSpeed を使う
+    float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
   // 【修正】仮のベクトルではなく、正確なワールド法線を計算する
     float3 worldNormal = normalize(mul(input.normal, (float3x3) instance.worldMatrix));
     

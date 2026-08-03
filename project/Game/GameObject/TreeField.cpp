@@ -64,6 +64,7 @@ void TreeField::Initialize()
     binder_->Bind("TrunkFlex", &trunkFlexibility_, 0.1f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BranchFlex", &branchFlexibility_, 0.3f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("LeafFlutter", &leafFlutterAmount_, 0.2f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("LeafFlutterFreq", &leafFlutterFrequency_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("BackfaceFlatten", &backfaceFlatten_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("DiffuseWrap", &diffuseWrap_, 0.2f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TransDistortion", &transmissionDistortion_, 0.1f, 0.01f, 0.0f, 1.0f);
@@ -209,6 +210,7 @@ void TreeField::UpdateMaterials()
     leafData.baseThickness = baseThickness_;
     leafData.albedoMultiplier = leafAlbedoMultiplier_;
     leafData.colorTint = leafColorTint_;
+    leafData.leafFlutterFrequency = leafFlutterFrequency_;
 
     treeSystem_->UpdateLeafMaterial(treeMaterialHandle_, leafData);
 
@@ -345,6 +347,7 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkFlex", "幹のしなりやすさ");
         binder_->Draw("BranchFlex", "枝のしなりやすさ");
         binder_->Draw("LeafFlutter", "葉のバタつき");
+        binder_->Draw("LeafFlutterFreq", "葉の揺れ速度(周波数)");
 
         ImGui::Separator();
         ImGui::Text("[ 質感・透過 (PS) ]");

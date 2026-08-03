@@ -85,6 +85,7 @@ private:
     float baseThickness_ = 0.1f;
     FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f }; // 型は環境に合わせてください (Math::Vector3 など)
     float leafAlbedoMultiplier_ = 1.0f;
+    float leafFlutterFrequency_ = 1.0f;
 
     // ==========================================
     // 幹 (TrunkMaterialData) パラメータ
