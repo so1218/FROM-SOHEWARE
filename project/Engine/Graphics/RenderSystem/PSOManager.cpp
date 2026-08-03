@@ -396,6 +396,20 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
         return blendDesc;
     }
 
+    // 葉っぱ用（不透明だが、アルファ値を使って輪郭を滑らかにする）
+    if (name == "OpaqueA2C")
+    {
+        D3D12_BLEND_DESC blendDesc{};
+        blendDesc.AlphaToCoverageEnable = TRUE; 
+        blendDesc.IndependentBlendEnable = FALSE;
+
+        // RenderTarget[0] はブレンドしない (FALSEのまま = Zソート不要)
+        blendDesc.RenderTarget[0].BlendEnable = FALSE;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+        return blendDesc;
+    }
+
 
     // 不透明
     D3D12_BLEND_DESC blendDesc{};

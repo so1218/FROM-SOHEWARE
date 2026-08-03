@@ -100,7 +100,7 @@ void TreeRenderer::Submit(
 
                 // ★判定：マテリアル/メッシュIndex 0 を「葉」、1以降を「幹」として判定
                 // （マテリアルデータ自体に isLeaf フラグや名前識別がある場合はそちらを利用）
-                sub.isLeaf = (meshIndex == 0);
+                sub.isLeaf = (meshIndex == 1);
 
                 submissions_.push_back(sub);
             }
@@ -209,10 +209,10 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             cmdList->SetGraphicsRootConstantBufferView(5, batch.materialHandle.resource->GetGPUVirtualAddress()); // b5: LeafMaterialData
             cmdList->SetGraphicsRootConstantBufferView(8, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); // b8: ShadowData
 
-            // SRVs (すべて MaterialHandle と 引数 からスマートに取得)
-            cmdList->SetGraphicsRootDescriptorTable(2, shadowMap->GetSRVHandle());                                                  // t2: Cascade Shadow Map
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));                 // t10: TreeInstanceData
-            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                          // t11: 引数の風マップ
+            // SRVs
+            cmdList->SetGraphicsRootDescriptorTable(2, shadowMap->GetSRVHandle());                                         // t2: Cascade Shadow Map
+            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));        // t10: TreeInstanceData
+            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                 // t11: 風マップ
             cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));        // t12: Albedo / Alpha
             cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.materialHandle.normalMapHandle));      // t13: Normal Map
             cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(batch.materialHandle.metallicRoughnessHandle));// t14: MetallicRoughness
@@ -225,23 +225,26 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         else
         {
             // -----------------------------------------------------------------
-            // 幹（Trunk）描画パス（通常モデルのインスタンシング描画）
+            // ★修正箇所：幹（Trunk）描画パス（汎用シェーダーから幹専用シェーダーへ）
             // -----------------------------------------------------------------
-            cmdList->SetPipelineState(env.psoManager->GetPSO("Object3D_Opaque"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Instancing3D"));
+            // 幹も風の影響（たわみなど）を受けるため、基本的に葉っぱと同じリソースをバインドします
+            cmdList->SetPipelineState(env.psoManager->GetPSO("TreeTrunk"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeTrunk"));
 
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetAreaLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(5, batch.materialHandle.resource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            // ConstantBuffers
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData
+            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1: Directional Light
+            // 幹の揺れ計算（trunkFlexibilityなど）のために同じマテリアル定数バッファを渡す
+            cmdList->SetGraphicsRootConstantBufferView(5, batch.materialHandle.resource->GetGPUVirtualAddress()); // b5: LeafMaterialData
+            cmdList->SetGraphicsRootConstantBufferView(8, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); // b8: ShadowData
 
-            cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));
-            cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
-            cmdList->SetGraphicsRootDescriptorTable(17, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            // SRVs
+            cmdList->SetGraphicsRootDescriptorTable(2, shadowMap->GetSRVHandle());                                         // t2: Cascade Shadow Map
+            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));        // t10: TreeInstanceData
+            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                 // t11: 風マップ
+            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));        // t12: Albedo
+            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.materialHandle.normalMapHandle));      // t13: Normal Map
+            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(batch.materialHandle.metallicRoughnessHandle));// t14: MetallicRoughness
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
             cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
@@ -269,23 +272,17 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         {
             // =================================================================
             // 【葉（Leaf）の影】
-            // 風の揺れ + アルファテスト（葉の打ち抜き）が必要なため専用PSOを使用
             // =================================================================
-            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapFoliage"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapFoliage"));
-
-            // 定数バッファ
+            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeFoliage"));
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, batch.materialHandle.resource->GetGPUVirtualAddress()); // LeafMaterialData
-            cmdList->SetGraphicsRoot32BitConstant(3, batch.startInstanceLocation, 0);
-            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(5, cascadeIndex, 0);
-
-            // テクスチャ / SRV
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                       // 風マップ
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));   // アルファ抜き用テクスチャ
+            cmdList->SetGraphicsRootConstantBufferView(1, batch.materialHandle.resource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
+            cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
             cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
@@ -295,20 +292,18 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         else
         {
             // =================================================================
-            // 【幹（Trunk）の影】
-            // ModelRenderer の「静的モデル・通常影」と全く同じ PSO / RootSignature を流用！
+            // 【幹（Trunk）の影
             // =================================================================
-            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapInstanced"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapInstanced"));
+            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeTrunk"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeTrunk"));
 
-            // ModelRenderer と完全に一致させる
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, batch.materialHandle.resource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(3, batch.startInstanceLocation, 0);
-            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(5, cascadeIndex, 0);
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootConstantBufferView(1, batch.materialHandle.resource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
+            cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
             cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());

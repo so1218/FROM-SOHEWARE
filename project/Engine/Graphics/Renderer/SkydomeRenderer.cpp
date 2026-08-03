@@ -34,25 +34,25 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
         );
 
         // 天候バッファの生成
-        weatherResource_[i] = BufferManager::CreateMappedConstantBuffer(
+        AtmosphereSkyResource_[i] = BufferManager::CreateMappedConstantBuffer(
             env.device->GetDevice(),
-            &mappedWeather_[i]
+            &mappedAtmosphereSky_[i]
         );
 
         // 天候の初期値
-        mappedWeather_[i]->cloudCoverage = { 0.35f, 0.7f };
-        mappedWeather_[i]->windVelocity = { 0.006f, 0.003f };
-        mappedWeather_[i]->cloudScale = 0.3f;
-        mappedWeather_[i]->cloudShadowDensity = 0.6f;
-        mappedWeather_[i]->skyGradientExponent = 0.6f;
-        mappedWeather_[i]->sunAtmosphereGlow = 0.5f;
-        mappedWeather_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
-        mappedWeather_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
-        mappedWeather_[i]->groundColor = { 0.2f, 0.2f, 0.2f };
-        mappedWeather_[i]->cloudBumpScale = 0.15f;        
-        mappedWeather_[i]->cloudEdgeSoftness = 0.15f;    
-        mappedWeather_[i]->cloudAbsorption = 0.7f;       
-        mappedWeather_[i]->cloudAmbientColor = { 0.08f, 0.12f, 0.2f };
+        mappedAtmosphereSky_[i]->cloudCoverage = { 0.35f, 0.7f };
+        mappedAtmosphereSky_[i]->windVelocity = { 0.006f, 0.003f };
+        mappedAtmosphereSky_[i]->cloudScale = 0.3f;
+        mappedAtmosphereSky_[i]->cloudShadowDensity = 0.6f;
+        mappedAtmosphereSky_[i]->skyGradientExponent = 0.6f;
+        mappedAtmosphereSky_[i]->sunAtmosphereGlow = 0.5f;
+        mappedAtmosphereSky_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
+        mappedAtmosphereSky_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
+        mappedAtmosphereSky_[i]->groundColor = { 0.2f, 0.2f, 0.2f };
+        mappedAtmosphereSky_[i]->cloudBumpScale = 0.15f;        
+        mappedAtmosphereSky_[i]->cloudEdgeSoftness = 0.15f;    
+        mappedAtmosphereSky_[i]->cloudAbsorption = 0.7f;       
+        mappedAtmosphereSky_[i]->cloudAmbientColor = { 0.08f, 0.12f, 0.2f };
     }
 }
 
@@ -62,12 +62,12 @@ void SkydomeRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather)
+void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather)
 {
     currentTransform_ = worldTransform;
     currentColor_ = color;
     cloudTextureIndex_ = cloudNoiseSrvIndex;
-    currentWeatherData_ = weather;
+    currentAtmosphereSkyData_ = weather;
     isSubmitted_ = true;
 }
 
@@ -84,7 +84,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     memcpy(mappedWvp_[currentFrameIndex_], &wvpMatrix, sizeof(TransformationMatrix));
 
     // 天候データの更新（現在のフレーム用バッファへ）
-    memcpy(mappedWeather_[currentFrameIndex_], &currentWeatherData_, sizeof(WeatherData));
+    memcpy(mappedAtmosphereSky_[currentFrameIndex_], &currentAtmosphereSkyData_, sizeof(AtmosphereSkyData));
 
     // マテリアルカラーの更新
     skydomeMaterialHandle_.materialData->color = Math::Uint32ToColorVector(currentColor_);
@@ -101,7 +101,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     cmdList->SetGraphicsRootConstantBufferView(1, wvpResource_[currentFrameIndex_]->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(3, skydomeMaterialHandle_.resource->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, weatherResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(4, AtmosphereSkyResource_[currentFrameIndex_]->GetGPUVirtualAddress());
 
     // SRVのバインド
     cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));

@@ -16,7 +16,7 @@ struct PixelShaderOutput
 };
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<WeatherData> gWeather : register(b6);
+ConstantBuffer<AtmosphereSkyData> gWeather : register(b6);
 
 cbuffer DirectionalLights : register(b1)
 {

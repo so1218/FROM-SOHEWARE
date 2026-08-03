@@ -34,7 +34,7 @@ private:
     uint32_t color_ = 0xFFFFFFFF;
 
     // 天候パラメータ
-    WeatherData weatherData_;
+    AtmosphereSkyData atmosphereSkyData_;
 };
 
 }

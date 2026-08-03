@@ -430,7 +430,7 @@ void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t
 	}
 }
 
-void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const WeatherData& weather)
+void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather)
 {
 	if (skydomeRenderer_)
 	{

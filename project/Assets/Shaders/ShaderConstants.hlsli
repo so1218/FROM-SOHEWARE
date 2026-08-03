@@ -223,7 +223,7 @@ struct TrailMaterialData
     float instanceSeed;
 };
 
-struct WeatherData
+struct AtmosphereSkyData
 {
     float2 cloudCoverage; 
     float2 windVelocity;

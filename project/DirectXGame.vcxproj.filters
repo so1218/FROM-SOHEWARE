@@ -990,11 +990,11 @@
     <FxCompile Include="Assets\Shaders\GrassGeneration.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\TreeFoliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Tree.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\ShadowMapFoliage.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\ShadowMapTree.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Assets\Shaders\ShadowMapFoliage.PS.hlsl" />
+    <None Include="Assets\Shaders\ShadowMapTreeFoliage.PS.hlsl" />
     <None Include="Assets\Shaders\GridUtils.hlsli" />
     <None Include="Assets\Shaders\ShadowUtils.hlsli" />
   </ItemGroup>

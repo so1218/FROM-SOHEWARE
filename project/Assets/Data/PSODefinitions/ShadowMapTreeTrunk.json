@@ -1,0 +1,14 @@
+{
+  "RootSignature": "ShadowMapTreeTrunk",
+  "VertexShader": "Assets/Shaders/ShadowMapTree.VS.hlsl",
+  "PixelShader": null,
+  "InputLayout": "Tree",
+  "BlendState": "Opaque",
+  "RasterizerState": "BackCullSolid",
+  "DepthStencilState": "Default",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "UNKNOWN"
+  ],
+  "DSVFormat": "D32_FLOAT"
+}

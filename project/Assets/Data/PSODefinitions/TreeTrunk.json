@@ -1,10 +1,10 @@
 {
-  "RootSignature": "TreeFoliage",
+  "RootSignature": "TreeTrunk",
   "VertexShader": "Assets/Shaders/Tree.VS.hlsl",
-  "PixelShader": "Assets/Shaders/TreeFoliage.PS.hlsl",
+  "PixelShader": "Assets/Shaders/TreeTrunk.PS.hlsl",
   "InputLayout": "Tree",
-  "BlendState": "OpaqueA2C",
-  "RasterizerState": "NoCullSolid",
+  "BlendState": "Opaque",
+  "RasterizerState": "BackCullSolid",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
   "RTVFormats": [
