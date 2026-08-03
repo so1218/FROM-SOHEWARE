@@ -8,8 +8,16 @@
 namespace FE
 {
 
+EnvironmentManager::EnvironmentManager() = default;
+EnvironmentManager::~EnvironmentManager() = default;
+
 void EnvironmentManager::Initialize(Engine* engine)
 {
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer(
+        engine->GetGraphicsDevice()->GetDevice(),
+        &cbData_
+    );
+
     if (!binder_)
     {
         binder_ = std::make_unique<PropertyBinder>(engine, "Environment");
@@ -57,6 +65,10 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Sunny_LightDim", &profileSunny_.lightDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Sunny_AtmoDim", &profileSunny_.atmosphereGlowDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Sunny_Wetness", &profileSunny_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Sunny_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Sunny_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+        binder_->Bind("Sunny_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+        binder_->Bind("Sunny_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
         binder_->BindColor("Sunny_SkyZenith", &profileSunny_.skyZenithColor, { 0.05f, 0.15f, 0.4f });
         binder_->BindColor("Sunny_SkyHorizon", &profileSunny_.skyHorizonColor, { 0.4f, 0.6f, 0.8f });
         binder_->Bind("Sunny_SkyBlendWeight", &profileSunny_.skyColorBlendWeight, 0.00f, 0.01f, 0.0f, 1.0f);
@@ -68,6 +80,10 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Cloudy_LightDim", &profileCloudy_.lightDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Cloudy_AtmoDim", &profileCloudy_.atmosphereGlowDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Cloudy_Wetness", &profileCloudy_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Cloudy_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Cloudy_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+        binder_->Bind("Cloudy_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+        binder_->Bind("Cloudy_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
         binder_->BindColor("Cloudy_SkyZenith", &profileCloudy_.skyZenithColor, { 0.2f, 0.25f, 0.3f });
         binder_->BindColor("Cloudy_SkyHorizon", &profileCloudy_.skyHorizonColor, { 0.4f, 0.42f, 0.45f });
         binder_->Bind("Cloudy_SkyBlendWeight", &profileCloudy_.skyColorBlendWeight, 0.40f, 0.01f, 0.0f, 1.0f);
@@ -90,6 +106,10 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Snow_LightDim", &profileSnow_.lightDimmer, 0.40f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Snow_AtmoDim", &profileSnow_.atmosphereGlowDimmer, 0.30f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Snow_Wetness", &profileSnow_.wetness, 0.20f, 0.01f, 0.0f, 1.0f); 
+        binder_->Bind("Snow_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Snow_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+        binder_->Bind("Snow_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+        binder_->Bind("Snow_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
         binder_->BindColor("Snow_SkyZenith", &profileSnow_.skyZenithColor, { 0.35f, 0.38f, 0.4f });
         binder_->BindColor("Snow_SkyHorizon", &profileSnow_.skyHorizonColor, { 0.55f, 0.58f, 0.6f });
         binder_->Bind("Snow_SkyBlendWeight", &profileSnow_.skyColorBlendWeight, 0.60f, 0.01f, 0.0f, 1.0f);
@@ -101,6 +121,10 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Thunder_LightDim", &profileThunder_.lightDimmer, 0.15f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_AtmoDim", &profileThunder_.atmosphereGlowDimmer, 0.10f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 1.00f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Thunder_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Thunder_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+        binder_->Bind("Thunder_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+        binder_->Bind("Thunder_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
         binder_->BindColor("Thunder_SkyZenith", &profileThunder_.skyZenithColor, { 0.04f, 0.05f, 0.08f });
         binder_->BindColor("Thunder_SkyHorizon", &profileThunder_.skyHorizonColor, { 0.15f, 0.14f, 0.18f });
         binder_->Bind("Thunder_SkyBlendWeight", &profileThunder_.skyColorBlendWeight, 0.85f, 0.01f, 0.0f, 1.0f);
@@ -178,9 +202,20 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentWeatherProfile_.lightDimmer = FE::Math::Lerp(currentW.lightDimmer, targetW.lightDimmer, weatherTransitionT_);
     currentWeatherProfile_.atmosphereGlowDimmer = FE::Math::Lerp(currentW.atmosphereGlowDimmer, targetW.atmosphereGlowDimmer, weatherTransitionT_);
     currentWeatherProfile_.wetness = FE::Math::Lerp(currentW.wetness, targetW.wetness, weatherTransitionT_);
+    currentWeatherProfile_.rainIntensity = FE::Math::Lerp(currentW.rainIntensity, targetW.rainIntensity, weatherTransitionT_);
+    currentWeatherProfile_.windSpeed = FE::Math::Lerp(currentW.windSpeed, targetW.windSpeed, weatherTransitionT_);
+    currentWeatherProfile_.windTurbulence = FE::Math::Lerp(currentW.windTurbulence, targetW.windTurbulence, weatherTransitionT_);
     currentWeatherProfile_.skyZenithColor = FE::Math::Lerp(currentW.skyZenithColor, targetW.skyZenithColor, weatherTransitionT_);
     currentWeatherProfile_.skyHorizonColor = FE::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
     currentWeatherProfile_.skyColorBlendWeight = FE::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
+
+    Vector2 dirT = {
+        FE::Math::Lerp(currentW.windDirection.x, targetW.windDirection.x, weatherTransitionT_),
+        FE::Math::Lerp(currentW.windDirection.y, targetW.windDirection.y, weatherTransitionT_)
+    };
+    float len = std::sqrtf(dirT.x * dirT.x + dirT.y * dirT.y);
+    if (len > 0.0001f) { dirT.x /= len; dirT.y /= len; }
+    currentWeatherProfile_.windDirection = dirT;
 
     // 時間帯 × 天候 の最終合成
     float finalLightIntensity = currentProfile_.directionalLightIntensity * currentWeatherProfile_.lightDimmer;
@@ -203,6 +238,15 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
     // 大気散乱のGlow強さも天候によって減衰
     currentProfile_.sunAtmosphereGlow *= currentWeatherProfile_.atmosphereGlowDimmer;
+
+    if (cbData_)
+    {
+        cbData_->wetness = currentWeatherProfile_.wetness;
+        cbData_->rainIntensity = currentWeatherProfile_.rainIntensity;
+        cbData_->windDirection = currentWeatherProfile_.windDirection;
+        cbData_->windSpeed = currentWeatherProfile_.windSpeed;
+        cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
+    }
 }
 
 void EnvironmentManager::DebugDraw()
@@ -307,6 +351,13 @@ void EnvironmentManager::DebugDraw()
                     binder_->Draw((p + "_LightDim").c_str(), "太陽/月の光の強さ倍率");
                     binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の強さ倍率");
                     binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ具合");
+
+                    ImGui::Separator();
+                    ImGui::Text("雨と風の環境設定");
+                    binder_->Draw((p + "_RainIntens").c_str(), "雨(雪)の強さ");
+                    binder_->Draw((p + "_WindDir").c_str(), "風向き");
+                    binder_->Draw((p + "_WindSpeed").c_str(), "風速");
+                    binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");
 
                     ImGui::Separator();
                     ImGui::Text("天候固有の空の色設定");

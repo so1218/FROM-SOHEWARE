@@ -24,6 +24,7 @@
 #include "TerrainRenderer.h"
 #include "TerrainChunk.h"
 #include "LightningRenderer.h"
+#include "TreeRenderer.h"
 
 namespace FE
 {
@@ -75,6 +76,8 @@ void RendererManager::Initialize(
 	skyboxRenderer_ = std::make_unique<SkyboxRenderer>();
 	skyboxRenderer_->Initialize(env_);
 	grassRenderer_ = std::make_unique<GrassRenderer>();
+	treeRenderer_ = std::make_unique<TreeRenderer>();
+	treeRenderer_->Initialize(env_);
 	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
 	skydomeRenderer_->Initialize(env_);
 	terrainRenderer_ = std::make_unique<TerrainRenderer>();
@@ -104,6 +107,7 @@ void RendererManager::BeginFrame()
 	if (trailRenderer_) { trailRenderer_->BeginFrame(); }
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
+	if (treeRenderer_) { treeRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
@@ -226,6 +230,11 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 		modelRenderer_->PrepareBatches();
 	}
 
+	if (treeRenderer_)
+	{
+		treeRenderer_->PrepareBatches();
+	}
+
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -234,6 +243,11 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 	{
 		terrainRenderer_->PrepareBatches();
 		terrainRenderer_->DrawShadow(env_, cascadeIndex);
+	}
+
+	if (treeRenderer_)
+	{
+		treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
 	}
 
 	modelRenderer_->DrawShadow(env_, cascadeIndex);
@@ -253,6 +267,11 @@ void RendererManager::Draw3D()
 	if (terrainRenderer_)
 	{
 		terrainRenderer_->Draw(env_, RenderGroup::Opaque, shadowMap_);
+	}
+
+	if (treeRenderer_)
+	{
+		treeRenderer_->Draw(env_, shadowMap_, windMapSrvIndex_);
 	}
 
 	if (modelRenderer_)
@@ -427,6 +446,15 @@ void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t
 			densityMapSrvHandle,
 			terrainSettingsAddr
 		);
+	}
+}
+
+void RendererManager::SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
+	const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade)
+{
+	if (treeRenderer_)
+	{
+		treeRenderer_->Submit(worldTransform, modelData, treeMaterial, colorVariation, lodFade);
 	}
 }
 

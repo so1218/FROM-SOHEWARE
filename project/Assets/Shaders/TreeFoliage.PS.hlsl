@@ -6,15 +6,15 @@ cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4); // ★ 追加：Wetness等が入った環境バッファ
 ConstantBuffer<LeafMaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
-StructuredBuffer<TreeInstanceData> gInstanceData : register(t10);
 
-// 風マップとテクスチャ群
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gAlbedoAlphaTex : register(t12);
 Texture2D<float3> gNormalTex : register(t13);
 Texture2D<float4> gMetallicRoughnessTex : register(t14);
+TextureCube<float4> gEnvironmentTexture : register(t1); // ★ 追加：IBL用環境マップ
 
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gAnisoSampler : register(s3);
@@ -38,99 +38,115 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
     
-    // LODディザリング
+    // 1. LODディザリング
     float dither = frac(sin(dot(input.position.xy, float2(12.9898f, 78.233f))) * 43758.5453f);
     clip(input.lodFade - dither);
 
+    // 2. テクスチャ取得
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     clip(albedoAlpha.a - 0.05f);
     albedoAlpha.rgb *= input.instanceTint;
 
     float4 mrTex = gMetallicRoughnessTex.Sample(gAnisoSampler, input.texcoord);
-    float roughness = mrTex.g * gMaterial.roughnessScale;
-    
-    // ==========================================
-    // 【修正】AOの計算
-    // テクスチャにAOがある場合はそれを使用し、
-    // VSで計算した「擬似的な頂点AO (input.color.a)」を掛け合わせる
-    // ==========================================
+    float baseRoughness = mrTex.g * gMaterial.roughnessScale;
     float texAO = (mrTex.r > 0.001f) ? mrTex.r : 1.0f;
-    float pseudoAO = input.color.a; // VSから受け取ったハックAO
-    float ao = texAO * gMaterial.baseAO * pseudoAO;
+    float ao = texAO * gMaterial.baseAO * input.color.a;
 
-    float thickness = gMaterial.baseThickness;
+    // -------------------------------------------------------------------------
+    // ★【RDR2 / Tsushima 級】濡れ (Wetness) による物理プロパティ変化
+    // -------------------------------------------------------------------------
+    // ① Porosity (多孔性): 水が染み込むと吸光され、ベースカラーが暗く鮮やかになる
+    float3 wetAlbedo = albedoAlpha.rgb * 0.45f;
+    albedoAlpha.rgb = lerp(albedoAlpha.rgb, wetAlbedo, gEnvironmentData.wetness);
 
-    // 両面描画の法線対応
+    // ② Roughness: 濡れると水膜で超平滑（0.03～0.08）になる。これによってハイライトが激変！
+    float roughness = lerp(baseRoughness, 0.05f, gEnvironmentData.wetness);
+
+    // 法線計算
     float3 N = normalize(input.normal);
     float3 T = normalize(input.tangent);
     float3 B = normalize(input.bitangent);
-    
     if (!isFrontFace)
     {
         N = -N;
         T = -T;
         B = -B;
-        N = normalize(lerp(N, input.normal, gMaterial.backfaceFlatten));
+        // ゼロベクトル化を防ぎつつ上向き(input.normal)に補正する
+        float3 flatN = lerp(N, input.normal, gMaterial.backfaceFlatten);
+        float len = length(flatN);
+        N = (len > 0.0001f) ? flatN / len : input.normal;
     }
-    
     float3x3 TBN = float3x3(T, B, N);
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 normal = normalize(mul(tangentNormal, TBN));
 
-    // ライティング計算
+    // ライティング基本ベクトル
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
-    
     float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
 
-    // Diffuse (Wrap)
+    // --- Diffuse & Transmission ---
     float wrap = gMaterial.diffuseWrap;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
-    float3 diffuse = albedoAlpha.rgb * lightColor * NdotL;
+    float3 diffuse = albedoAlpha.rgb * lightColor * NdotL * shadowFactor;
 
-    // Transmission (透過光)
-    float3 h = normalize(lightDir + normal * gMaterial.transmissionDistortion);
-    float VdotH = saturate(dot(toEye, -h));
-    float transmissionProfile = pow(VdotH, gMaterial.transmissionPower);
-    float sssIntensity = transmissionProfile * (1.0f - thickness) * gMaterial.sssStrength;
-    float3 transmissionColor = albedoAlpha.rgb * gMaterial.sssColor;
-    float3 transmission = transmissionColor * lightColor * sssIntensity;
+    // 透過光 (SSS)
+    float3 hTransmission = normalize(lightDir + normal * gMaterial.transmissionDistortion);
+    float VdotH_trans = saturate(dot(toEye, -hTransmission));
+    float sssIntensity = pow(VdotH_trans, gMaterial.transmissionPower) * (1.0f - gMaterial.baseThickness) * gMaterial.sssStrength;
+    float3 transmission = (albedoAlpha.rgb * gMaterial.sssColor) * lightColor * sssIntensity * shadowFactor;
 
-    diffuse *= shadowFactor;
-    transmission *= shadowFactor;
-
-    // Ambient
-    float skyLight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambient = albedoAlpha.rgb * (0.1f + skyLight * 0.25f) * ao;
-
-    // Specular (PBR)
+    // -------------------------------------------------------------------------
+    // ★【完全PBR仕様】太陽光によるハイライト (Direct Specular)
+    // -------------------------------------------------------------------------
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(normal, halfVector));
-    float distanceRoughness = saturate(roughness + (viewDepth * 0.002f));
+    float NdotV = saturate(dot(normal, toEye));
     
-    float alpha = distanceRoughness * distanceRoughness;
+    // GGX NDF 計算
+    float alpha = roughness * roughness;
     float alpha2 = alpha * alpha;
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
-    float d = alpha2 / (3.14159f * denom * denom);
-    
-    float3 specular = d * lightColor * shadowFactor * 0.1f;
-    
-    // ==========================================
-    // 【修正】Gust(突風)によるスペキュラの強調
-    // ==========================================
-    float gustMask = input.color.r; // VSから受け取ったGustMask
-    specular *= 1.0f + (gustMask * 2.0f); // 風が吹くと葉が裏返り、光沢が強くなる表現
+    float D = alpha2 / (3.14159265f * denom * denom + 0.00001f);
 
-    float3 finalColor = diffuse + transmission + ambient + specular;
+    // Fresnel (Schlick) : 水のF0 = 0.02, 葉のF0 = 0.04。濡れ具合で過渡
+    float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
+    float3 F = F0 + (1.0f.xxx - F0) * pow(1.0f - saturate(dot(halfVector, toEye)), 5.0f);
 
-    // Alpha-to-Coverage (A2C)
+    // 鏡面反射 (0.1fの固定乗算を排除し、物理的に正しい輝度を出す)
+    float gustMask = input.color.r;
+    float3 directSpecular = (D * F) * lightColor * NdotL * shadowFactor * (1.0f + gustMask * 2.0f);
+
+    // -------------------------------------------------------------------------
+    // ★【雨の日に最も重要な光】環境マップからの鏡面反射 (IBL Specular)
+    // -------------------------------------------------------------------------
+    // 雨の日は太陽光が弱く雲で覆われるため、空全体の反射（IBL）が濡れ感のキーになります
+    float3 reflectDir = reflect(-toEye, normal);
+    // Roughnessに応じてMipMapレベルを選択サンプリング
+    float3 envSkyColor = gEnvironmentTexture.SampleLevel(gAnisoSampler, reflectDir, roughness * 6.0f).rgb;
+    
+    // フレネル(環境光用)
+    float3 F_env = F0 + (max(1.0f.xxx - roughness, F0) - F0) * pow(1.0f - NdotV, 5.0f);
+    float3 ambientSpecular = envSkyColor * F_env * ao;
+
+    // Ambient Diffuse
+    float skyLight = saturate(normal.y * 0.5f + 0.5f);
+    float3 ambientDiffuse = albedoAlpha.rgb * (0.1f + skyLight * 0.25f) * ao;
+
+    // -------------------------------------------------------------------------
+    // 最終カラー合成
+    // -------------------------------------------------------------------------
+    float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
+
+    // Alpha-to-Coverage
     float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), 0.0001f) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
     output.normal = float4(normal, 1.0f);
-    output.material = float4(distanceRoughness, 0.0f, 0.0f, 1.0f);
+    output.material = float4(0.0f, roughness, 0.0f, 1.0f); // Metalnessは常に0.0！
+    output.velocity = float2(0.0f, 0.0f);
 
     return output;
 }

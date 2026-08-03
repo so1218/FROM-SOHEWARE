@@ -207,20 +207,15 @@ struct MaterialData
     float pomMaxSteps; 
 };
 
-struct TrailMaterialData
+struct GlobalEnvironmentData
 {
-    float2 scrollSpeed;
-    float jitterStrength;
-    float jitterFrequency;
+    float wetness;
+    float rainIntensity;
+    float2 windDirection; 
     
-    float jitterSpeed;
-    float jitterPhase;
-    float dissolveThreshold;
-    int isDissolveEnabled;
-    
-    int jitterMode;
-    float emissiveIntensity;
-    float instanceSeed;
+    float windSpeed; 
+    float windTurbulence; 
+    float2 pad;
 };
 
 struct AtmosphereSkyData
@@ -246,6 +241,22 @@ struct AtmosphereSkyData
     float pad1;
     
     float3 sunDirection;
+};
+
+struct TrailMaterialData
+{
+    float2 scrollSpeed;
+    float jitterStrength;
+    float jitterFrequency;
+    
+    float jitterSpeed;
+    float jitterPhase;
+    float dissolveThreshold;
+    int isDissolveEnabled;
+    
+    int jitterMode;
+    float emissiveIntensity;
+    float instanceSeed;
 };
 
 struct DirectionalLight
@@ -552,37 +563,59 @@ struct TreeInstanceData
 
 struct LeafMaterialData
 {
-    float2 windDir; 
-    float windSpeed; 
     float gustScale;
-    
     float baseWindStrength;
     float gustStrength; 
     float trunkFlexibility;
-    float branchFlexibility; 
     
+    float branchFlexibility; 
     float leafFlutterAmount; 
     float backfaceFlatten; 
     float diffuseWrap; 
-    float transmissionDistortion; 
     
+    float transmissionDistortion; 
     float transmissionPower; 
     float sssStrength; 
     float alphaCutoff; 
+    
     float shadowDensity; 
-    
     float3 sssColor; 
-    float shadowNormalBias; 
     
+    float shadowNormalBias; 
     float treeHeight; 
     float treeRadius; 
     float isLeaf; 
-    float windTurbulence;
     
     float shadowBias; 
     float roughnessScale;
     float baseAO; 
     float baseThickness;
+};
+
+struct TrunkMaterialData
+{
+    float4 color;
+    float4 specularColor;
+
+    int enableLighting;
+    int lightMode;
+    int enableNormalMap;
+    int addShadow;
+
+    float roughness;
+    float metalness;
+    float shininess;
+    float diffuseReflection;
+
+    float shadowDensity;
+    float shadowBias;
+    float shadowNormalBias;
+    float shadowSoftness;
+
+    float environmentMapIntensity;
+    float shadowEnvStrength;
+    float normalIntensity;
+    float pad; 
 };
 
 struct Object3DInstanceData

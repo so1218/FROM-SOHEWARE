@@ -113,13 +113,13 @@ void Ground::Draw()
 	}
 
 	/*model_->Draw();*/
-	for (const auto& pos : treePositions_)
+	/*for (const auto& pos : treePositions_)
 	{
 		modelTree_->GetTransform().translation_ = pos;
 		modelTree_->GetTransform().scale_ = { treeBaseScale_, treeBaseScale_, treeBaseScale_ };
 		modelTree_->GetTransform().UpdateMatrix();
 		modelTree_->Draw();
-	}
+	}*/
 	modelBuilding_->Draw();
 	/*skybox_->Draw();*/
 	skydome_->Draw();

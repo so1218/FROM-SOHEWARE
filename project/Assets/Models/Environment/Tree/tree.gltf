@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v5.0.21",
+		"generator":"Khronos glTF Blender I/O v5.2.39",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -8,47 +8,151 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				4,
+				11
 			]
 		}
 	],
 	"nodes":[
 		{
+			"name":"Tree_1"
+		},
+		{
+			"children":[
+				0
+			],
+			"name":"Tree_0"
+		},
+		{
+			"children":[
+				1
+			],
+			"name":"RootNode"
+		},
+		{
+			"children":[
+				2
+			],
+			"name":"Pine.fbx",
+			"rotation":[
+				0.70710688829422,
+				0,
+				0,
+				0.7071066498756409
+			],
+			"scale":[
+				0.009999999776482582,
+				0.010000000707805157,
+				0.010000000707805157
+			]
+		},
+		{
+			"children":[
+				3
+			],
+			"name":"Sketchfab_model",
+			"rotation":[
+				-0.70710688829422,
+				0,
+				0,
+				0.7071066498756409
+			]
+		},
+		{
 			"mesh":0,
-			"name":"\u5e73\u9762.117"
+			"name":"Tree_0_Tree_0Mat_0"
+		},
+		{
+			"mesh":1,
+			"name":"Tree_1_Tree_1Mat_0"
+		},
+		{
+			"children":[
+				6
+			],
+			"name":"Tree_1.001"
+		},
+		{
+			"children":[
+				5,
+				7
+			],
+			"name":"Tree_0.001"
+		},
+		{
+			"children":[
+				8
+			],
+			"name":"RootNode.001"
+		},
+		{
+			"children":[
+				9
+			],
+			"name":"Pine.fbx.001",
+			"rotation":[
+				0.70710688829422,
+				0,
+				0,
+				0.7071066498756409
+			],
+			"scale":[
+				0.009999999776482582,
+				0.010000000707805157,
+				0.010000000707805157
+			]
+		},
+		{
+			"children":[
+				10
+			],
+			"name":"Sketchfab_model.001",
+			"rotation":[
+				-0.70710688829422,
+				0,
+				0,
+				0.7071066498756409
+			]
 		}
 	],
 	"materials":[
 		{
-			"alphaMode":"BLEND",
-			"doubleSided":true,
-			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.001",
+			"name":"Tree_0Mat.001",
+			"normalTexture":{
+				"index":0
+			},
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":0
+					"index":1
 				},
 				"metallicFactor":0,
-				"roughnessFactor":0.5
+				"metallicRoughnessTexture":{
+					"index":2
+				}
 			}
 		},
 		{
+			"alphaCutoff":0.20798662304878235,
+			"alphaMode":"MASK",
 			"doubleSided":true,
-			"name":"\u30de\u30c6\u30ea\u30a2\u30eb",
+			"name":"Tree_1Mat.001",
+			"normalTexture":{
+				"index":3
+			},
 			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.025842342525720596,
-					0.013603989034891129,
-					0.0032749795354902744,
-					1
-				],
+				"baseColorTexture":{
+					"index":4
+				},
 				"metallicFactor":0,
-				"roughnessFactor":0.5
+				"metallicRoughnessTexture":{
+					"index":5
+				}
 			}
 		}
 	],
 	"meshes":[
 		{
-			"name":"\u5e73\u9762",
+			"name":"Tree_0_Tree_0Mat_0.001",
 			"primitives":[
 				{
 					"attributes":{
@@ -58,7 +162,12 @@
 					},
 					"indices":3,
 					"material":0
-				},
+				}
+			]
+		},
+		{
+			"name":"Tree_1_Tree_1Mat_0.001",
+			"primitives":[
 				{
 					"attributes":{
 						"POSITION":4,
@@ -75,132 +184,177 @@
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":1
+		},
+		{
+			"sampler":0,
+			"source":2
+		},
+		{
+			"sampler":0,
+			"source":3
+		},
+		{
+			"sampler":0,
+			"source":4
+		},
+		{
+			"sampler":0,
+			"source":5
 		}
 	],
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"leaf",
-			"uri":"leaf.png"
+			"name":"Tree_0Mat_normal",
+			"uri":"Tree_0Mat_normal.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Tree_0Mat_baseColor",
+			"uri":"Tree_0Mat_baseColor.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Tree_0Mat_metallicRoughness",
+			"uri":"Tree_0Mat_metallicRoughness.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Tree_1Mat_normal",
+			"uri":"Tree_1Mat_normal.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Tree_1Mat_baseColor",
+			"uri":"Tree_1Mat_baseColor.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Tree_1Mat_metallicRoughness",
+			"uri":"Tree_1Mat_metallicRoughness.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":1352,
+			"count":3004,
 			"max":[
-				9.75965404510498,
-				20.47266387939453,
-				8.586980819702148
+				69.4262466430664,
+				481.18365478515625,
+				69.42398071289062
 			],
 			"min":[
-				-11.346546173095703,
-				1.0253219604492188,
-				-10.439281463623047
+				-65.84308624267578,
+				0,
+				-63.81229019165039
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":1352,
+			"count":3004,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":1352,
+			"count":3004,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":2028,
+			"count":13617,
 			"type":"SCALAR"
 		},
 		{
 			"bufferView":4,
 			"componentType":5126,
-			"count":1556,
+			"count":1088,
 			"max":[
-				5.568212509155273,
-				15.999383926391602,
-				3.613957166671753
+				110.62384033203125,
+				531.5150756835938,
+				111.54609680175781
 			],
 			"min":[
-				-7.460943222045898,
-				-0.08297348022460938,
-				-5.561666011810303
+				-107.67622375488281,
+				202.52426147460938,
+				-105.10630798339844
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":5,
 			"componentType":5126,
-			"count":1556,
+			"count":1088,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":6,
 			"componentType":5126,
-			"count":1556,
+			"count":1088,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":7,
 			"componentType":5123,
-			"count":2436,
+			"count":3264,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":16224,
+			"byteLength":36048,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":16224,
-			"byteOffset":16224,
+			"byteLength":36048,
+			"byteOffset":36048,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":10816,
-			"byteOffset":32448,
+			"byteLength":24032,
+			"byteOffset":72096,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4056,
-			"byteOffset":43264,
+			"byteLength":27234,
+			"byteOffset":96128,
 			"target":34963
 		},
 		{
 			"buffer":0,
-			"byteLength":18672,
-			"byteOffset":47320,
+			"byteLength":13056,
+			"byteOffset":123364,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":18672,
-			"byteOffset":65992,
+			"byteLength":13056,
+			"byteOffset":136420,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":12448,
-			"byteOffset":84664,
+			"byteLength":8704,
+			"byteOffset":149476,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4872,
-			"byteOffset":97112,
+			"byteLength":6528,
+			"byteOffset":158180,
 			"target":34963
 		}
 	],
@@ -212,7 +366,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":101984,
+			"byteLength":164708,
 			"uri":"tree.bin"
 		}
 	]

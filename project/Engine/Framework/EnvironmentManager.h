@@ -1,5 +1,6 @@
 #pragma once
 #include "MathUtils.h"
+#include "Structures.h"
 
 namespace FE
 {
@@ -39,7 +40,11 @@ struct WeatherProfile
     float cloudShadowDensity;    // 雲の影の濃さ
     float lightDimmer;           // 太陽/月の光をどれくらい遮るか (1.0 = そのまま, 0.2 = 暗い)
     float atmosphereGlowDimmer;  // 大気散乱の減衰
-    float wetness;               // 地面の濡れ具合 (0.0 = 乾, 1.0 = 濡れ)
+    float wetness;
+    float rainIntensity;
+    Vector2 windDirection;
+    float windSpeed;
+    float windTurbulence;
     Vector3 skyZenithColor;      // この天候のときの天頂の色
     Vector3 skyHorizonColor;     // この天候のときの地平線の色
     float skyColorBlendWeight;
@@ -90,9 +95,11 @@ public:
     // 現在の遷移状態に応じたスピードを返す
     float GetCurrentTransitionSpeed() const;
 
+    ID3D12Resource* GetGlobalEnvironmentResource() const { return constantBuffer_.Get(); }
+
 private:
-    EnvironmentManager() = default;
-    ~EnvironmentManager() = default;
+    EnvironmentManager();
+    ~EnvironmentManager();
 
     // コピー禁止
     EnvironmentManager(const EnvironmentManager&) = delete;
@@ -126,6 +133,9 @@ private:
 
     WeatherState pendingWeather_ = WeatherState::Sunny;
     bool hasPendingWeather_ = false;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
+    GlobalEnvironmentData* cbData_ = nullptr;
 };
 
 }

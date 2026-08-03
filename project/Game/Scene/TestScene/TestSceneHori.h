@@ -7,6 +7,7 @@
 #include "Bubble.h"
 #include "Ground.h"
 #include "GrassField.h"
+#include "TreeField.h"
 
 class TestSceneHori : public FE::BaseScene
 {
@@ -32,6 +33,7 @@ private:
     Bubble* bubble_ = nullptr;
     Ground* ground_ = nullptr;
     GrassField* grassField_ = nullptr;
+    TreeField* treeField_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<FE::CameraRail> openingRail_;
 

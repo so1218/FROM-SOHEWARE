@@ -5,6 +5,7 @@
         "Cloudy_CloudMin": 0.029999999329447746,
         "Cloudy_CloudShadow": 0.3799999952316284,
         "Cloudy_LightDim": 0.3400000035762787,
+        "Cloudy_RainIntens": 0.0,
         "Cloudy_SkyBlendWeight": 0.6000000238418579,
         "Cloudy_SkyHorizon": [
             0.0042016091756522655,
@@ -18,6 +19,12 @@
         ],
         "Cloudy_TransitionSpeed": 0.49000000953674316,
         "Cloudy_Wetness": 0.0,
+        "Cloudy_WindDir": [
+            1.0,
+            0.0
+        ],
+        "Cloudy_WindSpeed": 1.0,
+        "Cloudy_WindTurbul": 0.20000000298023224,
         "Day_AtmoGlow": 0.5,
         "Day_CloudAmbient": [
             0.800000011920929,
@@ -95,6 +102,7 @@
         "Snow_CloudMin": 0.09000000357627869,
         "Snow_CloudShadow": 0.699999988079071,
         "Snow_LightDim": 0.41999998688697815,
+        "Snow_RainIntens": 0.0,
         "Snow_SkyBlendWeight": 0.949999988079071,
         "Snow_SkyHorizon": [
             0.017449578270316124,
@@ -108,11 +116,18 @@
         ],
         "Snow_TransitionSpeed": 0.15000000596046448,
         "Snow_Wetness": 0.20000000298023224,
+        "Snow_WindDir": [
+            1.0,
+            0.0
+        ],
+        "Snow_WindSpeed": 1.0,
+        "Snow_WindTurbul": 0.20000000298023224,
         "Sunny_AtmoDim": 1.0,
         "Sunny_CloudMax": 0.0,
         "Sunny_CloudMin": 0.46000000834465027,
         "Sunny_CloudShadow": 0.3400000035762787,
         "Sunny_LightDim": 1.0,
+        "Sunny_RainIntens": 0.0,
         "Sunny_SkyBlendWeight": 0.0,
         "Sunny_SkyHorizon": [
             0.4000000059604645,
@@ -126,6 +141,12 @@
         ],
         "Sunny_TransitionSpeed": 0.4000000059604645,
         "Sunny_Wetness": 0.0,
+        "Sunny_WindDir": [
+            1.0,
+            0.0
+        ],
+        "Sunny_WindSpeed": 1.0,
+        "Sunny_WindTurbul": 0.20000000298023224,
         "Sunrise_AtmoGlow": 2.0,
         "Sunrise_CloudAmbient": [
             0.800000011920929,
@@ -185,6 +206,7 @@
         "Thunder_CloudMin": 0.14000000059604645,
         "Thunder_CloudShadow": 0.5099999904632568,
         "Thunder_LightDim": 0.14000000059604645,
+        "Thunder_RainIntens": 0.0,
         "Thunder_SkyBlendWeight": 1.0,
         "Thunder_SkyHorizon": [
             0.0,
@@ -198,7 +220,13 @@
         ],
         "Thunder_TransitionSpeed": 0.15000000596046448,
         "Thunder_Wetness": 1.0,
-        "TimeOfDay": 9.699999809265137,
+        "Thunder_WindDir": [
+            1.0,
+            0.0
+        ],
+        "Thunder_WindSpeed": 1.0,
+        "Thunder_WindTurbul": 0.20000000298023224,
+        "TimeOfDay": 17.799999237060547,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

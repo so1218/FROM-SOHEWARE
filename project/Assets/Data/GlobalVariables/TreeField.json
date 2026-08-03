@@ -1,0 +1,73 @@
+{
+    "TreeField": {
+        "AlphaCutoff": 0.5,
+        "AreaCenterX": 0.0,
+        "AreaCenterZ": 0.0,
+        "AreaDepth": 1000.0,
+        "AreaWidth": 1000.0,
+        "BackfaceFlatten": 0.5,
+        "BaseAO": 1.0,
+        "BaseThickness": 0.10000000149011612,
+        "BaseWindStrength": 0.20000000298023224,
+        "BranchFlex": 0.30000001192092896,
+        "ColorRandomness": 0.15000000596046448,
+        "DiffuseWrap": 0.20000000298023224,
+        "EnvMap": "pureSky",
+        "GustScale": 0.05000000074505806,
+        "GustStrength": 1.0,
+        "LeafFlutter": 0.20000000298023224,
+        "LeafNormal": "Tree_1Mat_normal",
+        "LeafRoughness": "Tree_1Mat_metallicRoughness",
+        "LeafShadowBias": 0.004999999888241291,
+        "LeafShadowDensity": 0.800000011920929,
+        "LeafShadowNormBias": 0.019999999552965164,
+        "LeafTexture": "Tree_1Mat_baseColor",
+        "MaxScale": 15.0,
+        "MinScale": 10.0,
+        "Position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "RoughnessScale": 1.0,
+        "SSSColor": [
+            0.5,
+            0.699999988079071,
+            0.20000000298023224
+        ],
+        "SSSStrength": 1.0,
+        "ToonRamp": "toonRamp_01",
+        "TransDistortion": 0.10000000149011612,
+        "TransPower": 5.0,
+        "TreeCount": 435,
+        "TreeHeight": 10.0,
+        "TreeRadius": 5.0,
+        "TrunkColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TrunkDiffReflect": 1.0,
+        "TrunkEnvMapInt": 5.0,
+        "TrunkFlex": 0.10000000149011612,
+        "TrunkMetalness": 0.0,
+        "TrunkNormal": "Tree_0Mat_normal",
+        "TrunkNormalInt": 5.0,
+        "TrunkRoughness": 0.800000011920929,
+        "TrunkShadowBias": 0.004999999888241291,
+        "TrunkShadowDens": 0.800000011920929,
+        "TrunkShadowEnvStr": 0.5,
+        "TrunkShadowNBias": 0.019999999552965164,
+        "TrunkShadowSoft": 1.0,
+        "TrunkShininess": 10.0,
+        "TrunkSpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TrunkTexture": "Tree_0Mat_baseColor",
+        "WindMap": "noise_39"
+    }
+}

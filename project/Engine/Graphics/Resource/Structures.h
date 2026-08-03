@@ -79,6 +79,23 @@ struct MaterialHandle
     WorldTransform uvTransformData;
 };
 
+struct TreeMaterialHandle
+{
+    Microsoft::WRL::ComPtr<ID3D12Resource> leafMaterialBuffer; 
+    LeafMaterialData* mappedLeafData = nullptr;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> trunkMaterialBuffer; 
+    TrunkMaterialData* mappedTrunkData = nullptr;
+
+    uint32_t trunkTextureHandle = 0;       // 幹アルベド
+    uint32_t trunkNormalMapHandle = 0;     // 幹ノーマル
+    uint32_t leafTextureHandle = 0;        // 葉アルベド
+    uint32_t leafNormalMapHandle = 0;      // 葉ノーマル
+    uint32_t leafMetallicRoughnessHandle = 0;
+    uint32_t envMapHandle = 0;
+    uint32_t toonRampHandle = 0;
+};
+
 struct VertexWeightData
 {
     float weight;

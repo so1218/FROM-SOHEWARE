@@ -17,7 +17,7 @@ public:
     void Submit(
         const WorldTransform& worldTransform,
         const ModelData& modelData,
-        const std::vector<MaterialHandle>& materials,
+        const TreeMaterialHandle& treeMaterial,
         const Vector4& colorVariation,
         float lodFade = 1.0f
     );
@@ -46,8 +46,11 @@ private:
     {
         const ModelData* modelData = nullptr;
         uint32_t meshIndex = 0;
-        MaterialHandle materialHandle;
+        TreeMaterialHandle treeMaterial;
         bool isLeaf = false; // 葉っぱか幹かの判定フラグ
+
+        uint32_t envMapSrvHandle = 0;
+        uint32_t toonRampHandle = 0;
 
         Matrix4x4 worldMatrix;
         Vector4 colorVariation;
@@ -58,8 +61,11 @@ private:
     {
         const ModelData* modelData = nullptr;
         uint32_t meshIndex = 0;
-        MaterialHandle materialHandle;
+        TreeMaterialHandle treeMaterial;
         bool isLeaf = false;
+
+        uint32_t envMapSrvHandle = 0;
+        uint32_t toonRampHandle = 0;
 
         uint32_t instanceCount = 0;
         uint32_t startInstanceLocation = 0;

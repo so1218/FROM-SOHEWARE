@@ -244,6 +244,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Terrain.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\TreeSystem.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
@@ -363,6 +364,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
+    <ClCompile Include="Game\GameObject\TreeField.cpp" />
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
@@ -443,6 +445,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Terrain.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\TreeSystem.h" />
     <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -528,6 +531,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Game\GameObject\OrbManager.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\GameObject\TreeField.h" />
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />

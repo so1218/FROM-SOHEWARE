@@ -2,7 +2,12 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
 ConstantBuffer<LeafMaterialData> gMaterial : register(b5);
+cbuffer InstanceOffset : register(b9)
+{
+    uint gBaseInstanceIndex;
+};
 StructuredBuffer<TreeInstanceData> gInstanceData : register(t10);
 
 Texture2D<float> gWindMap : register(t11);
@@ -10,10 +15,10 @@ SamplerState gLinearWrapSampler : register(s2);
 
 struct VertexInput
 {
-    float3 position : POSITION;
-    float3 normal : NORMAL;
-    float4 tangent : TANGENT;
-    float2 texcoord : TEXCOORD;
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT0;
 };
 
 struct PixelInput
@@ -32,104 +37,87 @@ struct PixelInput
 PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
 {
     PixelInput output;
-    TreeInstanceData instance = gInstanceData[instanceID];
     
-    float4x4 worldMat = instance.worldMatrix;
-    float3 origLocalPos = input.position;
-    float3 rootPos = float3(worldMat[0][3], worldMat[1][3], worldMat[2][3]);
+    uint actualIndex = instanceID + gBaseInstanceIndex;
+    TreeInstanceData instance = gInstanceData[actualIndex];
     
-    // -------------------------------------------------------------------------
-    // 【ハック】ローカル座標から風ウェイトと擬似AOを生成
-    // -------------------------------------------------------------------------
-    // 幹のウェイト: 根元は0、上に行くほど1。pow(x, 1.5)で根元を硬く、先端を柔らかくしならせる。
-    float trunkWeight = pow(saturate(origLocalPos.y / gMaterial.treeHeight), 1.5f);
+    // input.position は float4 なので .xyz を取得
+    float3 origLocalPos = input.position.xyz;
+    float4 localPos = float4(origLocalPos, 1.0f);
     
-    // 枝のウェイト: 幹の中心(X=0, Z=0)から離れるほど1。
-    float branchWeight = saturate(length(origLocalPos.xz) / max(gMaterial.treeRadius, 0.001f));
+    // ★ ModelRenderer と同じ乗算順序 (localPos * World)
+    float4 baseWorldPos = mul(localPos, instance.worldMatrix);
     
-    // 葉のウェイト: 定数バッファのフラグを使用
+    // ★ 修正点2: 平行移動成分は 4 行目 (index 3) から取得
+    float3 rootPos = instance.worldMatrix[3].xyz;
+    
+    // 高さと風のウェイト計算
+    float currentHeight = baseWorldPos.y - rootPos.y;
+    
+    // ウェイト計算（ローカル座標ではなく、ワールドの高さや広がりベースにするのが安全）
+    float trunkWeight = pow(saturate(currentHeight / max(gMaterial.treeHeight, 0.1f)), 1.5f);
+    float branchWeight = saturate(length(baseWorldPos.xz - rootPos.xz) / max(gMaterial.treeRadius, 0.001f));
     float leafWeight = gMaterial.isLeaf;
+    float pseudoAO = lerp(0.3f, 1.0f, saturate(currentHeight / max(gMaterial.treeHeight * 0.5f, 0.1f)));
 
-    // 擬似的な頂点AO (根元ほど暗く、幹の内側ほど暗くする)
-    float pseudoAO = lerp(0.3f, 1.0f, saturate(origLocalPos.y / (gMaterial.treeHeight * 0.5f)));
-
-    // -------------------------------------------------------------------------
-    // 1. 風の全体的な強度とマップサンプリング
-    // -------------------------------------------------------------------------
-    float2 windDir = normalize(gMaterial.windDir);
-    float windTime = gFrameData.gTime * gMaterial.windSpeed;
+    // 風の計算
+    float2 windDir = normalize(gEnvironmentData.windDirection);
+    float windTime = gFrameData.gTime * gEnvironmentData.windSpeed;
     
-    // マップからGust(突風)を取得。ワールド空間で流すことで、森全体を波が走るようにする
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     float totalWind = gMaterial.baseWindStrength + (gustMask * gMaterial.gustStrength);
-
-    // 木ごとの固有の位相 (同期して揺れるのを防ぐ)
     float treePhase = dot(rootPos.xz, float2(0.1f, 0.1f)) + instance.colorVariation.x * 10.0f;
     
     // -------------------------------------------------------------------------
-    // 2. AAA級 オフセット計算 (Global -> Branch -> Flutter)
+    // ★ ワールド空間でのオフセット計算
     // -------------------------------------------------------------------------
-    
-    // [Layer 1: Global Bending] 幹全体のしなり
-    // 一定方向への押し込み ＋ ゆっくりとした揺り返し
-    float globalWave = sin(windTime * 1.0f + treePhase) * 0.5f + 0.5f; // 0.0 ~ 1.0
+    float globalWave = sin(windTime * 1.0f + treePhase) * 0.5f + 0.5f;
     float3 trunkOffset = float3(windDir.x, 0.0f, windDir.y) * globalWave * trunkWeight * gMaterial.trunkFlexibility * totalWind;
     
-    // [Layer 2: Branch Bending] 枝の独立した揺れ
-    // ローカル座標を位相に混ぜることで、枝ごとに揺れるタイミングをずらす（Turbulence）
     float branchPhase = origLocalPos.x * 0.5f + origLocalPos.y * 0.5f + origLocalPos.z * 0.5f;
-    float branchWave = sin(windTime * 2.5f * gMaterial.windTurbulence + treePhase + branchPhase);
-    
-    // 枝は風に押されるだけでなく、上下（Y軸）にもバウンドするようにする
+    float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + treePhase + branchPhase);
     float3 branchDir = normalize(float3(windDir.x, -0.5f, windDir.y));
     float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind;
     
-    // 幹と枝の揺れを合成
-    float3 displacedPos = origLocalPos + trunkOffset + branchOffset;
-    
-    // [Arc Preservation] 長さの維持（伸びるのを防ぎ、曲がるようにする）
-    float origLen = length(origLocalPos);
-    if (origLen > 0.001f)
-    {
-        displacedPos = normalize(displacedPos) * origLen;
-    }
-    
-    // [Layer 3: Leaf Flutter] 葉っぱの高速なバタつき
-    // マテリアルが「葉」の場合のみ適用。細かいノイズ的な動き。
     float flutterPhase = dot(origLocalPos, float3(3.0f, 3.0f, 3.0f));
     float flutterWave = sin(windTime * 15.0f + flutterPhase) * cos(windTime * 11.0f + flutterPhase * 0.5f);
     
-    // 葉は法線方向に細かく震える
-    float3 flutterOffset = input.normal * flutterWave * leafWeight * gMaterial.leafFlutterAmount * totalWind;
+    // 法線はワールド空間に変換してからバタつきに使用する
+    float3 worldNormal = normalize(mul(input.normal, (float3x3) instance.worldMatrix));
+    float3 flutterOffset = worldNormal * flutterWave * leafWeight * gMaterial.leafFlutterAmount * totalWind;
     
-    float3 finalLocalPos = displacedPos + flutterOffset;
+    // すべてのオフセットをワールド空間で加算
+    float3 totalOffset = trunkOffset + branchOffset + flutterOffset;
+    
+    // ★ Arc Preservation の修正（X, Zの移動量に応じてYを少し下げて長さを維持する簡易計算）
+    float offsetLengthXZ = length(totalOffset.xz);
+    totalOffset.y -= offsetLengthXZ * currentHeight * 0.1f; // 曲がった分だけ下がる
+    
+    float3 finalWorldPos = baseWorldPos.xyz + totalOffset;
 
     // -------------------------------------------------------------------------
-    // 3. 法線・接線の回転補正 (Normal Tilt)
+    // 法線・接線の計算
     // -------------------------------------------------------------------------
-    float3 posDelta = finalLocalPos - origLocalPos;
+    float3 worldTangent = normalize(mul(input.tangent.xyz, (float3x3) instance.worldMatrix));
     
-    // 風による変位量から、法線を少し「風下」へ傾ける。これでライティングが動的に変化し、揺れが強調される。
-    float3 tiltedLocalNormal = normalize(input.normal + posDelta * 0.8f);
-    float3 tiltedLocalTangent = normalize(input.tangent.xyz + posDelta * 0.8f);
+    // 風の影響で法線を少し傾ける（強すぎると黒くなるのでスケールを下げる）
+    float3 tiltedWorldNormal = normalize(worldNormal + totalOffset * 0.1f);
+    float3 tiltedWorldTangent = normalize(worldTangent + totalOffset * 0.1f);
 
     // -------------------------------------------------------------------------
-    // 4. ワールド変換と出力
+    // 出力
     // -------------------------------------------------------------------------
-    float4 worldPos = mul(worldMat, float4(finalLocalPos, 1.0f));
-    output.position = mul(gFrameData.viewProjectionMatrix, worldPos);
-    output.worldPosition = worldPos.xyz;
+    output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
+    output.worldPosition = finalWorldPos;
     output.texcoord = input.texcoord;
     
-    output.normal = normalize(mul((float3x3) worldMat, tiltedLocalNormal));
-    output.tangent = normalize(mul((float3x3) worldMat, tiltedLocalTangent));
-    output.bitangent = cross(output.normal, output.tangent) * input.tangent.w;
+    output.normal = tiltedWorldNormal;
+    output.tangent = tiltedWorldTangent;
     
-    // ピクセルシェーダーに GustMask と 擬似AO を渡すために color を再利用
-    // r: gustMask (Specularの強調などに使用)
-    // a: pseudoAO (頂点AOの代わり)
+    output.bitangent = cross(output.normal, output.tangent);
+    
     output.color = float4(gustMask, 0.0f, 0.0f, pseudoAO);
     output.instanceTint = instance.colorVariation.yzw;
     output.lodFade = instance.lodFade;

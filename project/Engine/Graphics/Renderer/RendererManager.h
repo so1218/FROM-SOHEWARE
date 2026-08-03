@@ -25,6 +25,7 @@ class SkydomeRenderer;
 class TerrainRenderer;
 class TerrainChunk;
 class LightningRenderer;
+class TreeRenderer;
 
 class RendererManager
 {
@@ -73,6 +74,8 @@ public:
         const GrassGenerationData& genData,
         uint32_t heightMapSrvHandle,
         uint32_t densityMapSrvHandle);
+    void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
+        const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform,
@@ -111,6 +114,8 @@ public:
     void InitializeGrass();
     void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);
 
+    void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
+
     // 雷を発生させる
     void SpawnLightning(const Vector3& start, const Vector3& end, float duration);
     void UpdateLightnings();
@@ -142,6 +147,8 @@ private:
     GrassMaterialData grassMaterialData_ = {};
     GrassCullingData grassCullingData_{};
 
+    uint32_t windMapSrvIndex_ = 0;
+
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体
     std::unique_ptr<ModelRenderer> modelRenderer_;
@@ -151,6 +158,7 @@ private:
     std::unique_ptr<TrailRenderer> trailRenderer_;
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
+    std::unique_ptr<TreeRenderer> treeRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
     std::unique_ptr<LightningRenderer> lightningRenderer_;

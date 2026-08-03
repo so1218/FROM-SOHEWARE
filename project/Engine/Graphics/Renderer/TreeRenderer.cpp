@@ -8,6 +8,7 @@
 #include "GlobalConstants.h"
 #include "CommandManager.h"
 #include "GraphicsDevice.h"
+#include "EnvironmentManager.h"
 
 namespace FE
 {
@@ -61,14 +62,13 @@ const std::vector<Mesh>& TreeRenderer::GetOrCreateBatch(const ModelData& modelDa
 void TreeRenderer::Submit(
     const WorldTransform& worldTransform,
     const ModelData& modelData,
-    const std::vector<MaterialHandle>& materials,
+    const TreeMaterialHandle& treeMaterial,
     const Vector4& colorVariation,
     float lodFade)
 {
     // メッシュバッチの登録・キャッシュ
     GetOrCreateBatch(modelData);
 
-    // ノード階層を巡回
     std::function<void(const Node&, const Matrix4x4&)> Traverse =
         [&](const Node& node, const Matrix4x4& parentMatrix)
         {
@@ -78,29 +78,16 @@ void TreeRenderer::Submit(
             {
                 if (submissions_.size() >= kMaxInstances) return;
 
-                const auto& meshPart = modelData.meshes[meshIndex];
-
-                MaterialHandle actualMaterial;
-                if (meshIndex < materials.size())
-                {
-                    actualMaterial = materials[meshIndex];
-                }
-                else
-                {
-                    actualMaterial = materials.empty() ? meshPart.materialHandle : materials[0];
-                }
-
                 TreeSubmission sub{};
                 sub.modelData = &modelData;
                 sub.meshIndex = meshIndex;
-                sub.materialHandle = actualMaterial;
+                sub.treeMaterial = treeMaterial; 
                 sub.worldMatrix = currentWorld;
                 sub.colorVariation = colorVariation;
                 sub.lodFade = lodFade;
 
-                // ★判定：マテリアル/メッシュIndex 0 を「葉」、1以降を「幹」として判定
-                // （マテリアルデータ自体に isLeaf フラグや名前識別がある場合はそちらを利用）
-                sub.isLeaf = (meshIndex == 1);
+                // ★判定：メッシュIndex 0 を「幹」、1以降を「葉」として判定
+                sub.isLeaf = (meshIndex >= 1);
 
                 submissions_.push_back(sub);
             }
@@ -119,13 +106,18 @@ void TreeRenderer::PrepareBatches()
     batches_.clear();
     if (submissions_.empty()) return;
 
-    // バッチ最適化のためのソート
+    // ソート条件の更新
     std::sort(submissions_.begin(), submissions_.end(),
         [](const TreeSubmission& a, const TreeSubmission& b) {
             if (a.isLeaf != b.isLeaf) return a.isLeaf < b.isLeaf;
             if (a.modelData != b.modelData) return a.modelData < b.modelData;
             if (a.meshIndex != b.meshIndex) return a.meshIndex < b.meshIndex;
-            return a.materialHandle.materialData < b.materialHandle.materialData;
+            // 定数バッファのポインタでマテリアルの違いを判定
+            if (a.treeMaterial.leafMaterialBuffer.Get() != b.treeMaterial.leafMaterialBuffer.Get())
+                return a.treeMaterial.leafMaterialBuffer.Get() < b.treeMaterial.leafMaterialBuffer.Get();
+            if (a.treeMaterial.trunkMaterialBuffer.Get() != b.treeMaterial.trunkMaterialBuffer.Get())
+                return a.treeMaterial.trunkMaterialBuffer.Get() < b.treeMaterial.trunkMaterialBuffer.Get();
+            return false;
         });
 
     uint32_t instanceCount = 0;
@@ -134,26 +126,24 @@ void TreeRenderer::PrepareBatches()
     for (size_t i = 0; i < submissions_.size(); ++i)
     {
         const auto& sub = submissions_[i];
-
-        // StructuredBuffer へ転送するインスタンスデータ
         auto& instanceGPU = instanceBuffer_.mapped[currentInstanceLocation_ + instanceCount];
         instanceGPU.worldMatrix = sub.worldMatrix;
         instanceGPU.colorVariation = sub.colorVariation;
         instanceGPU.lodFade = sub.lodFade;
 
         instanceCount++;
-
         bool isLast = (i == submissions_.size() - 1);
         bool shouldFlush = isLast;
 
         if (!isLast)
         {
             const auto& nextSub = submissions_[i + 1];
-            // 描画ステート・モデル・メッシュ・マテリアル・葉/幹の切り替わりでバッチを分割
+            // バッチ分割条件の更新
             if (sub.isLeaf != nextSub.isLeaf ||
                 sub.modelData != nextSub.modelData ||
                 sub.meshIndex != nextSub.meshIndex ||
-                sub.materialHandle.materialData != nextSub.materialHandle.materialData)
+                sub.treeMaterial.leafMaterialBuffer.Get() != nextSub.treeMaterial.leafMaterialBuffer.Get() ||
+                sub.treeMaterial.trunkMaterialBuffer.Get() != nextSub.treeMaterial.trunkMaterialBuffer.Get())
             {
                 shouldFlush = true;
             }
@@ -164,7 +154,7 @@ void TreeRenderer::PrepareBatches()
             TreeBatch batch{};
             batch.modelData = sub.modelData;
             batch.meshIndex = sub.meshIndex;
-            batch.materialHandle = sub.materialHandle;
+            batch.treeMaterial = sub.treeMaterial; 
             batch.isLeaf = sub.isLeaf;
             batch.instanceCount = instanceCount;
             batch.startInstanceLocation = currentInstanceLocation_;
@@ -173,7 +163,6 @@ void TreeRenderer::PrepareBatches()
 
             currentInstanceLocation_ += instanceCount;
             instanceCount = 0;
-
             if (currentInstanceLocation_ >= kMaxInstances) break;
         }
     }
@@ -191,66 +180,60 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     for (const auto& batch : batches_)
     {
         const auto& meshes = GetOrCreateBatch(*batch.modelData);
-        assert(batch.meshIndex < meshes.size());
         const Mesh* mesh = &meshes[batch.meshIndex];
         uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
         if (batch.isLeaf)
         {
-            // -----------------------------------------------------------------
-            // 葉（Foliage）描画パス
-            // -----------------------------------------------------------------
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeFoliage"));
 
-            // ConstantBuffers
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1: Directional Light
-            cmdList->SetGraphicsRootConstantBufferView(5, batch.materialHandle.resource->GetGPUVirtualAddress()); // b5: LeafMaterialData
-            cmdList->SetGraphicsRootConstantBufferView(8, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); // b8: ShadowData
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(3, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
-            // SRVs
-            cmdList->SetGraphicsRootDescriptorTable(2, shadowMap->GetSRVHandle());                                         // t2: Cascade Shadow Map
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));        // t10: TreeInstanceData
-            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                 // t11: 風マップ
-            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));        // t12: Albedo / Alpha
-            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.materialHandle.normalMapHandle));      // t13: Normal Map
-            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(batch.materialHandle.metallicRoughnessHandle));// t14: MetallicRoughness
+            cmdList->SetGraphicsRoot32BitConstant(5, batch.startInstanceLocation, 0);
 
-            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-            cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, batch.startInstanceLocation);
+            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
+            cmdList->SetGraphicsRootDescriptorTable(7, shadowMap->GetSRVHandle());
+            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            // ★葉のテクスチャ
+            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
+            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
+            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafMetallicRoughnessHandle));
         }
         else
         {
-            // -----------------------------------------------------------------
-            // ★修正箇所：幹（Trunk）描画パス（汎用シェーダーから幹専用シェーダーへ）
-            // -----------------------------------------------------------------
-            // 幹も風の影響（たわみなど）を受けるため、基本的に葉っぱと同じリソースをバインドします
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeTrunk"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeTrunk"));
 
-            // ConstantBuffers
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1: Directional Light
-            // 幹の揺れ計算（trunkFlexibilityなど）のために同じマテリアル定数バッファを渡す
-            cmdList->SetGraphicsRootConstantBufferView(5, batch.materialHandle.resource->GetGPUVirtualAddress()); // b5: LeafMaterialData
-            cmdList->SetGraphicsRootConstantBufferView(8, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); // b8: ShadowData
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
 
-            // SRVs
-            cmdList->SetGraphicsRootDescriptorTable(2, shadowMap->GetSRVHandle());                                         // t2: Cascade Shadow Map
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));        // t10: TreeInstanceData
-            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));                 // t11: 風マップ
-            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));        // t12: Albedo
-            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.materialHandle.normalMapHandle));      // t13: Normal Map
-            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(batch.materialHandle.metallicRoughnessHandle));// t14: MetallicRoughness
+            cmdList->SetGraphicsRootConstantBufferView(5, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
-            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+            cmdList->SetGraphicsRoot32BitConstant(8, batch.startInstanceLocation, 0);
 
-            cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, batch.startInstanceLocation);
+            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
+            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
+            cmdList->SetGraphicsRootDescriptorTable(11, shadowMap->GetSRVHandle());
+            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle));
+            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
+            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
         }
+
+        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+        cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, 0);
     }
 }
 
@@ -264,52 +247,44 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     for (const auto& batch : batches_)
     {
         const auto& meshes = GetOrCreateBatch(*batch.modelData);
-        assert(batch.meshIndex < meshes.size());
         const Mesh* mesh = &meshes[batch.meshIndex];
         uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
         if (batch.isLeaf)
         {
-            // =================================================================
-            // 【葉（Leaf）の影】
-            // =================================================================
             cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeFoliage"));
+
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, batch.materialHandle.resource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
             cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
-            cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(batch.materialHandle.textureHandle));
+            cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
 
-            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-            cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, batch.startInstanceLocation);
+            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
         }
         else
         {
-            // =================================================================
-            // 【幹（Trunk）の影
-            // =================================================================
             cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeTrunk"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeTrunk"));
 
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, batch.materialHandle.resource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
             cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
-            cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
 
-            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-            cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, batch.startInstanceLocation);
+            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
         }
+
+        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+        cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, 0);
     }
 }
 

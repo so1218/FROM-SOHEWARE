@@ -10,7 +10,7 @@ struct ShadowVSOutput
     float2 texcoord : TEXCOORD0;
 };
 
-void TreeFoliageShadowPS(ShadowVSOutput input)
+void main(ShadowVSOutput input)
 {
     float alpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord).a;
     
