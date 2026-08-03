@@ -306,7 +306,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddConstants(3, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddConstants(3, 2, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddConstants(5, 1, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -323,7 +323,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_VERTEX);
-        builder.AddConstants(3, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddConstants(3, 2, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddConstants(5, 1, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX);
@@ -443,7 +443,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL);
 
-        builder.AddConstants(9, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddConstants(9, 2, D3D12_SHADER_VISIBILITY_VERTEX);
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -476,7 +476,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(6, D3D12_SHADER_VISIBILITY_PIXEL);
         builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL);
 
-        builder.AddConstants(9, 1, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddConstants(9, 2, D3D12_SHADER_VISIBILITY_VERTEX);
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);

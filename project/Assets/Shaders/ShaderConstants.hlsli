@@ -561,6 +561,12 @@ struct TreeInstanceData
     float lodFade; 
 };
 
+struct TreeInstanceOffset
+{
+    uint32_t baseInstanceIndex;
+    uint32_t isLeaf;
+};
+
 struct LeafMaterialData
 {
     float gustScale;
@@ -584,12 +590,15 @@ struct LeafMaterialData
     float shadowNormalBias; 
     float treeHeight; 
     float treeRadius; 
-    float isLeaf; 
-    
     float shadowBias; 
+    
     float roughnessScale;
     float baseAO; 
     float baseThickness;
+    float albedoMultiplier;
+    
+    float3 colorTint; 
+    float pad2;
 };
 
 struct TrunkMaterialData
@@ -615,7 +624,7 @@ struct TrunkMaterialData
     float environmentMapIntensity;
     float shadowEnvStrength;
     float normalIntensity;
-    float pad; 
+    float albedoMultiplier;
 };
 
 struct Object3DInstanceData

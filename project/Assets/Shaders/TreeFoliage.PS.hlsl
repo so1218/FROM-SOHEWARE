@@ -45,7 +45,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     // 2. テクスチャ取得
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     clip(albedoAlpha.a - 0.05f);
-    albedoAlpha.rgb *= input.instanceTint;
+    albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
 
     float4 mrTex = gMetallicRoughnessTex.Sample(gAnisoSampler, input.texcoord);
     float baseRoughness = mrTex.g * gMaterial.roughnessScale;

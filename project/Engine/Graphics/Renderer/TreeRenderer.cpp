@@ -183,6 +183,11 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         const Mesh* mesh = &meshes[batch.meshIndex];
         uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
+        // ★ 1. HLSLへ送るルート定数(Push Constants)データを作成
+        TreeInstanceOffset offsetData{};
+        offsetData.baseInstanceIndex = batch.startInstanceLocation;
+        offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
+
         if (batch.isLeaf)
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
@@ -194,7 +199,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             cmdList->SetGraphicsRootConstantBufferView(3, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
-            cmdList->SetGraphicsRoot32BitConstant(5, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRoot32BitConstants(5, 2, &offsetData, 0);
 
             cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
             cmdList->SetGraphicsRootDescriptorTable(7, shadowMap->GetSRVHandle());
@@ -220,7 +225,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
-            cmdList->SetGraphicsRoot32BitConstant(8, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRoot32BitConstants(8, 2, &offsetData, 0);
 
             cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
             cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
@@ -250,6 +255,11 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         const Mesh* mesh = &meshes[batch.meshIndex];
         uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
+        // ★ 1. HLSLへ送るルート定数データを作成
+        TreeInstanceOffset offsetData{};
+        offsetData.baseInstanceIndex = batch.startInstanceLocation;
+        offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
+
         if (batch.isLeaf)
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
@@ -257,7 +267,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
 
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
             cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
             cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
@@ -273,7 +283,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
 
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(2, batch.startInstanceLocation, 0);
+            cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
             cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
             cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());

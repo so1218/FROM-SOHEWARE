@@ -56,7 +56,8 @@ PixelShaderOutput main(PixelInput input)
 
     // 2. テクスチャサンプリング
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-    float3 baseColor = textureColor.rgb * input.instanceTint;
+    float3 baseColor = textureColor.rgb * input.instanceTint *
+    gMaterial.color.rgb * max(gMaterial.albedoMultiplier, 0.0f);
 
     // =========================================================================
     // ★ 濡れ (Wetness) による物理的変化
@@ -99,7 +100,7 @@ PixelShaderOutput main(PixelInput input)
 
     // 5. SurfaceData構築
     SurfaceData surface;
-    surface.albedo = baseColor * gMaterial.color.rgb;
+    surface.albedo = baseColor;
     surface.pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f);
     surface.specularColor = gMaterial.specularColor.rgb;
     surface.normal = normal;

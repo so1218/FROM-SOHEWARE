@@ -56,6 +56,8 @@ void TreeField::Initialize()
         });
 
     // --- 葉(Leaf) の設定 ---
+    binder_->BindColor("LeafColorTint", &leafColorTint_, { 1.0f, 1.0f, 1.0f });
+    binder_->Bind("LeafAlbedoMult", &leafAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("GustScale", &gustScale_, 0.05f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("BaseWindStrength", &baseWindStrength_, 0.2f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("GustStrength", &gustStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
@@ -80,6 +82,7 @@ void TreeField::Initialize()
 
     // --- 幹(Trunk) の設定 ---
     binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
+    binder_->Bind("TrunkAlbedoMult", &trunkAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->BindColor("TrunkSpecColor", &trunkSpecularColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkRoughness", &trunkRoughness_, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TrunkMetalness", &trunkMetalness_, 0.0f, 0.01f, 0.0f, 1.0f);
@@ -200,11 +203,12 @@ void TreeField::UpdateMaterials()
     leafData.shadowNormalBias = leafShadowNormalBias_;
     leafData.treeHeight = treeHeight_;
     leafData.treeRadius = treeRadius_;
-    leafData.isLeaf = 1.0f; // 固定
     leafData.shadowBias = leafShadowBias_;
     leafData.roughnessScale = roughnessScale_;
     leafData.baseAO = baseAO_;
     leafData.baseThickness = baseThickness_;
+    leafData.albedoMultiplier = leafAlbedoMultiplier_;
+    leafData.colorTint = leafColorTint_;
 
     treeSystem_->UpdateLeafMaterial(treeMaterialHandle_, leafData);
 
@@ -227,7 +231,7 @@ void TreeField::UpdateMaterials()
     trunkData.environmentMapIntensity = trunkEnvironmentMapIntensity_;
     trunkData.shadowEnvStrength = trunkShadowEnvStrength_;
     trunkData.normalIntensity = trunkNormalIntensity_;
-    trunkData.pad = 0.0f;
+    trunkData.albedoMultiplier = trunkAlbedoMultiplier_;
 
     treeSystem_->UpdateTrunkMaterial(treeMaterialHandle_, trunkData);
 }
@@ -328,6 +332,10 @@ void TreeField::DebugDraw()
         binder_->Draw("LeafRoughness", "メタリック/ラフネス (Roughness)");
 
         ImGui::Separator();
+        binder_->Draw("LeafColorTint", "色味 (Color Tint)");
+        binder_->Draw("LeafAlbedoMult", "明るさ倍率 (Albedo Multiplier)");
+
+        ImGui::Separator();
         ImGui::Text("[ 風・揺れ (VS) ]");
         binder_->Draw("TreeHeight", "木の高さ (基準)");
         binder_->Draw("TreeRadius", "木の半径 (基準)");
@@ -367,6 +375,7 @@ void TreeField::DebugDraw()
         ImGui::Separator();
         ImGui::Text("[ 質感 (PS) ]");
         binder_->Draw("TrunkColor", "カラー");
+        binder_->Draw("TrunkAlbedoMult", "明るさ倍率");
         binder_->Draw("TrunkSpecColor", "スペキュラカラー");
         binder_->Draw("TrunkRoughness", "ラフネス");
         binder_->Draw("TrunkMetalness", "メタルネス");

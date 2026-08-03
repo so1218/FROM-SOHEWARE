@@ -83,6 +83,8 @@ private:
     float roughnessScale_ = 1.0f;
     float baseAO_ = 1.0f;
     float baseThickness_ = 0.1f;
+    FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f }; // 型は環境に合わせてください (Math::Vector3 など)
+    float leafAlbedoMultiplier_ = 1.0f;
 
     // ==========================================
     // 幹 (TrunkMaterialData) パラメータ
@@ -104,6 +106,7 @@ private:
     float trunkEnvironmentMapIntensity_ = 1.0f;
     float trunkShadowEnvStrength_ = 0.5f;
     float trunkNormalIntensity_ = 1.0f;
+    float trunkAlbedoMultiplier_ = 1.0f;
 
     // 葉 (Leaf)
     std::string leafTextureName_ = "white1x1";
