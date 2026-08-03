@@ -402,7 +402,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "GrassGenerationCS");
     }
-    if (name == "Foliage")
+    if (name == "TreeFoliage")
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);  
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);

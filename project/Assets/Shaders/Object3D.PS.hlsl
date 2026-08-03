@@ -282,6 +282,18 @@ PixelShaderOutput main(PixelShaderInput input)
         baseColor += rainbowColor * fresnel * gMaterial.rainbowIntensity;
         bubbleAlpha = lerp(0.1f, 1.0f, pow(fresnel, gMaterial.fresnelExponent));
     }
+    
+    // SurfaceData の構築
+    SurfaceData surface;
+    surface.albedo = baseColor * gMaterial.color.rgb;
+    surface.pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f); // ガンマ補正
+    surface.specularColor = gMaterial.specularColor.rgb;
+    surface.normal = normal;
+    surface.roughness = currentRoughness;
+    surface.metalness = currentMetalness;
+    surface.shininess = gMaterial.shininess;
+    surface.diffuseReflection = gMaterial.diffuseReflection;
+    surface.lightMode = gMaterial.lightMode;
 
     // --------------------------------------------------------
     // Lighting & IBL
@@ -290,34 +302,27 @@ PixelShaderOutput main(PixelShaderInput input)
     
     if (gMaterial.enableLighting != 0)
     {
-        // ガンマ補正 (sRGB -> Linear)
-        float3 pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f);
-        
-        finalColor += ApplyDirectionalLights(baseColor, pbrAlbedo, normal, toEye, shadowFactor,
-                                        gMaterial,gDirectionalLights, gToonRamp, gClampSampler);
-        finalColor += ApplyPointLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
-                                        gMaterial, gPointLights);
-        finalColor += ApplySpotLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
-                                        gMaterial, gSpotLights);
-        finalColor += ApplyAreaLights(baseColor, pbrAlbedo, normal, input.worldPosition, toEye,
-                                        gMaterial, gAreaLights);
+        finalColor += ApplyDirectionalLights(surface, toEyeWorld, shadowFactor, gDirectionalLights, gToonRamp, gClampSampler);
+        finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
+        finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
+        finalColor += ApplyAreaLights(surface, input.worldPosition, toEyeWorld, gAreaLights);
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            float3 kS = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), 0.04f.xxx, currentRoughness);
-            float3 kD = (1.0f.xxx - kS) * (1.0f - currentMetalness);
+            float3 kS = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), 0.04f.xxx, surface.roughness);
+            float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
             
             float3 baseAmbient = 0.03f.xxx;
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
 
-            float3 ambientDiffuse = kD * pbrAlbedo * baseAmbient;
+            float3 ambientDiffuse = kD * surface.pbrAlbedo * baseAmbient;
 
             // IBL の計算。ラフネスに基づいてミップレベルを変える近似
-            float3 reflectionVector = reflect(-toEye, normal);
-            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, currentRoughness * 6.0f).rgb;
+            float3 reflectionVector = reflect(-toEyeWorld, surface.normal);
+            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, surface.roughness * 6.0f).rgb;
     
-            float3 F0 = lerp(0.04f.xxx, pbrAlbedo, currentMetalness);
-            float3 F_env = F_SchlickRoughness(max(dot(normal, toEye), 0.0f), F0, currentRoughness);
+            float3 F0 = lerp(0.04f.xxx, surface.pbrAlbedo, surface.metalness);
+            float3 F_env = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), F0, surface.roughness);
             float3 ambientSpecular = envColor * F_env;
 
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
@@ -326,7 +331,7 @@ PixelShaderOutput main(PixelShaderInput input)
         else
         {
             // トゥーン等、非PBR時の環境マップフォールバック
-            float3 reflectionVector = reflect(-toEye, normal);
+            float3 reflectionVector = reflect(-toEyeWorld, surface.normal);
             float4 envColor = gEnvironmentTexture.Sample(gSampler, reflectionVector);
             float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
 
@@ -340,15 +345,15 @@ PixelShaderOutput main(PixelShaderInput input)
                 toLight = normalize(-gDirectionalLights[0].direction);
             
             finalColor += ApplyRimLight(
-                normal, toEye, toLight,
+                surface.normal, toEyeWorld, toLight,
                 gMaterial.rimPower, gMaterial.rimUseLightDir,
                 gMaterial.rimColor, gMaterial.rimIntensity);
         }
     }
     else
     {
-            // Unlit
-        finalColor = baseColor * gMaterial.color.rgb;
+        // Unlit
+        finalColor = surface.albedo;
     }
     
     finalColor *= input.worldColor.rgb;

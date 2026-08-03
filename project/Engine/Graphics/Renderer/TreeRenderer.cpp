@@ -200,8 +200,8 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             // -----------------------------------------------------------------
             // 葉（Foliage）描画パス
             // -----------------------------------------------------------------
-            cmdList->SetPipelineState(env.psoManager->GetPSO("Foliage"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Foliage"));
+            cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
+            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeFoliage"));
 
             // ConstantBuffers
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0: FrameData

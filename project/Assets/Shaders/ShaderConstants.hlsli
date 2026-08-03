@@ -102,6 +102,19 @@ struct FrameData
     float deltaTime;
 };
 
+struct SurfaceData
+{
+    float3 albedo; 
+    float3 pbrAlbedo; 
+    float3 specularColor; 
+    float3 normal; 
+    float roughness; 
+    float metalness; 
+    float shininess; 
+    float diffuseReflection;
+    uint32_t lightMode; 
+};
+
 struct MaterialData
 {
     float4x4 uvTransform;
@@ -560,6 +573,11 @@ struct LeafMaterialData
     
     float3 sssColor; 
     float shadowNormalBias; 
+    
+    float treeHeight; 
+    float treeRadius; 
+    float isLeaf; 
+    float windTurbulence;
     
     float shadowBias; 
     float roughnessScale;

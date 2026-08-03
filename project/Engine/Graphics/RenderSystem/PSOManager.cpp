@@ -75,6 +75,15 @@ void PSOManager::Initialize(
     };
     inputLayoutDescGrass_ = { inputElementsGrass_.data(), (UINT)inputElementsGrass_.size() };
 
+    inputElementsTree_ =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    };
+    inputLayoutDescTree_ = { inputElementsTree_.data(), (UINT)inputElementsTree_.size() };
+
     // Skydome
     inputElementsSkydome_ =
     {
@@ -615,6 +624,10 @@ D3D12_INPUT_LAYOUT_DESC PSOManager::GetInputLayout(const std::string& name)
     if (name == "Grass")
     {
         return inputLayoutDescGrass_;
+    }
+    if (name == "Tree")
+    {
+        return inputLayoutDescTree_;
     }
     if (name == "Skydome")
     {

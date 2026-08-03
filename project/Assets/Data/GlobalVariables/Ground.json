@@ -4,23 +4,23 @@
         "ModelBuilding_AlbedoMap": "white1x1",
         "ModelBuilding_AlphaThres": 0.019999999552965164,
         "ModelBuilding_Color": [
-            0.4135020971298218,
-            0.26875537633895874,
-            0.01919207163155079,
+            0.949367105960846,
+            1.0,
+            0.9955135583877563,
             1.0
         ],
         "ModelBuilding_DiffuseRef": 4.0,
-        "ModelBuilding_DisEnable": 0,
-        "ModelBuilding_DisThres": 0.009999999776482582,
+        "ModelBuilding_DisEnable": 1,
+        "ModelBuilding_DisThres": 0.0,
         "ModelBuilding_DissolveTex": "noise_51",
         "ModelBuilding_EdgeColor": [
-            0.0,
-            0.379746675491333,
-            1.0
+            1.0,
+            0.202531635761261,
+            0.0
         ],
         "ModelBuilding_EdgeInten": 5.699999809265137,
-        "ModelBuilding_EdgeWidth": 0.27000001072883606,
-        "ModelBuilding_Emissive": 11.899999618530273,
+        "ModelBuilding_EdgeWidth": 0.23000000417232513,
+        "ModelBuilding_Emissive": 3.700000047683716,
         "ModelBuilding_EnvMapInt": 0.009999999776482582,
         "ModelBuilding_EnvMapTex": "skybox",
         "ModelBuilding_HeightMapTex": "height_33",
@@ -1313,7 +1313,7 @@
         "ModelBuilding_Mat9_UsePuddle": 0,
         "ModelBuilding_Mat9_UseTriplanar": 0,
         "ModelBuilding_Mat9_Wetness": 0.5,
-        "ModelBuilding_Metalness": 0.5199999809265137,
+        "ModelBuilding_Metalness": 1.0,
         "ModelBuilding_NormEnable": 1,
         "ModelBuilding_NormInten": 2.7100000381469727,
         "ModelBuilding_NormTile": 1.5,
@@ -1329,7 +1329,7 @@
         "ModelBuilding_POMEnable": 1,
         "ModelBuilding_POMHeightScale": 1.0,
         "ModelBuilding_POMMaxSteps": 32.0,
-        "ModelBuilding_POMMinSteps": 8.0,
+        "ModelBuilding_POMMinSteps": 29.0,
         "ModelBuilding_PuddleColor": [
             0.10000000149011612,
             0.10000000149011612,
@@ -1343,12 +1343,12 @@
         "ModelBuilding_PuddleTint": 0.5,
         "ModelBuilding_RimColor": [
             1.0,
-            0.32703089714050293,
+            0.9551353454589844,
             0.29113924503326416
         ],
         "ModelBuilding_RimEnable": 0,
-        "ModelBuilding_RimInten": 2.299999952316284,
-        "ModelBuilding_RimPower": 5.0,
+        "ModelBuilding_RimInten": 1.399999976158142,
+        "ModelBuilding_RimPower": 4.199999809265137,
         "ModelBuilding_RimUseDir": 0,
         "ModelBuilding_RippleEnable": 0,
         "ModelBuilding_RippleFreq": 0.20999999344348907,
@@ -1363,7 +1363,7 @@
             4.599999904632568,
             0.0
         ],
-        "ModelBuilding_Roughness": 0.9200000166893005,
+        "ModelBuilding_Roughness": 0.5,
         "ModelBuilding_Scale": [
             3.4000000953674316,
             5.800000190734863,

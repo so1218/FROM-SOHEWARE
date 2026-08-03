@@ -30,40 +30,34 @@ struct PixelInput
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
-    bool isFrontFace : SV_IsFrontFace;
 };
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
-PixelShaderOutput main(PixelInput input)
+PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
     
-    // LODディザリング (クロスフェード用)
+    // LODディザリング
     float dither = frac(sin(dot(input.position.xy, float2(12.9898f, 78.233f))) * 43758.5453f);
     clip(input.lodFade - dither);
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
-    
-    // アルファテスト
     clip(albedoAlpha.a - 0.05f);
-    
-    // 木ごとの色ブレを適用
     albedoAlpha.rgb *= input.instanceTint;
 
-    // -------------------------------------------------------------------------
-    // マテリアル値の取得（metallicRoughness.png 対応）
-    // -------------------------------------------------------------------------
     float4 mrTex = gMetallicRoughnessTex.Sample(gAnisoSampler, input.texcoord);
-    
-    // glTF規格に拠り、Gチャンネルから Roughness を取得してスケールをかける
     float roughness = mrTex.g * gMaterial.roughnessScale;
     
-    // AO: テクスチャのRチャンネルにAOが入っていればそれを使い、無ければ baseAO を使用
+    // ==========================================
+    // 【修正】AOの計算
+    // テクスチャにAOがある場合はそれを使用し、
+    // VSで計算した「擬似的な頂点AO (input.color.a)」を掛け合わせる
+    // ==========================================
     float texAO = (mrTex.r > 0.001f) ? mrTex.r : 1.0f;
-    float ao = texAO * gMaterial.baseAO * input.color.a;
+    float pseudoAO = input.color.a; // VSから受け取ったハックAO
+    float ao = texAO * gMaterial.baseAO * pseudoAO;
 
-    // Thickness (透けにくさ): 定数バッファの手動設定値を使用
     float thickness = gMaterial.baseThickness;
 
     // 両面描画の法線対応
@@ -71,7 +65,7 @@ PixelShaderOutput main(PixelInput input)
     float3 T = normalize(input.tangent);
     float3 B = normalize(input.bitangent);
     
-    if (!input.isFrontFace)
+    if (!isFrontFace)
     {
         N = -N;
         T = -T;
@@ -96,11 +90,10 @@ PixelShaderOutput main(PixelInput input)
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedoAlpha.rgb * lightColor * NdotL;
 
-    // Transmission (透過光 / Subsurface Scattering)
+    // Transmission (透過光)
     float3 h = normalize(lightDir + normal * gMaterial.transmissionDistortion);
     float VdotH = saturate(dot(toEye, -h));
     float transmissionProfile = pow(VdotH, gMaterial.transmissionPower);
-    
     float sssIntensity = transmissionProfile * (1.0f - thickness) * gMaterial.sssStrength;
     float3 transmissionColor = albedoAlpha.rgb * gMaterial.sssColor;
     float3 transmission = transmissionColor * lightColor * sssIntensity;
@@ -115,7 +108,6 @@ PixelShaderOutput main(PixelInput input)
     // Specular (PBR)
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(normal, halfVector));
-    
     float distanceRoughness = saturate(roughness + (viewDepth * 0.002f));
     
     float alpha = distanceRoughness * distanceRoughness;
@@ -124,8 +116,12 @@ PixelShaderOutput main(PixelInput input)
     float d = alpha2 / (3.14159f * denom * denom);
     
     float3 specular = d * lightColor * shadowFactor * 0.1f;
-    float gustMask = input.color.a;
-    specular *= 1.0f + (gustMask * 2.0f);
+    
+    // ==========================================
+    // 【修正】Gust(突風)によるスペキュラの強調
+    // ==========================================
+    float gustMask = input.color.r; // VSから受け取ったGustMask
+    specular *= 1.0f + (gustMask * 2.0f); // 風が吹くと葉が裏返り、光沢が強くなる表現
 
     float3 finalColor = diffuse + transmission + ambient + specular;
 

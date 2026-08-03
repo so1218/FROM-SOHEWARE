@@ -1,8 +1,8 @@
 {
-  "RootSignature": "Foliage",
-  "VertexShader": "Assets/Shaders/Foliage.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Foliage.PS.hlsl",
-  "InputLayout": "Default3D",
+  "RootSignature": "TreeFoliage",
+  "VertexShader": "Assets/Shaders/Tree.VS.hlsl",
+  "PixelShader": "Assets/Shaders/TreeFoliage.PS.hlsl",
+  "InputLayout": "Tree",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Default",
