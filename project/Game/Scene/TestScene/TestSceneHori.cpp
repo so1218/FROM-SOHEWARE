@@ -91,7 +91,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 45.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
     engine_->GetPostEffectManager()->GetCombineSettings()->enableSSAO = true;
-    engine_->GetPostEffectManager()->GetSSAOSettings()->intensity = 7.0f;
+    engine_->GetPostEffectManager()->GetSSAOSettings()->intensity = 3.5f;
     grassFieldEmitter_ = engine_->GetParticleSystem()->CreateEmitter("grassField");
     grassFieldEmitter_->SetTargetToFollow(&player_->GetTransform());
     engine_->GetParticleSystem()->AddEmitter(std::move(grassFieldEmitter_));
