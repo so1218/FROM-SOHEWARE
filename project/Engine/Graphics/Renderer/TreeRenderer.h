@@ -92,7 +92,7 @@ private:
     const std::vector<Mesh>& GetOrCreateBatch(const ModelData& modelData);
 
 private:
-    static constexpr uint32_t kMaxInstances = 10000; // 最大インスタンス数
+    static constexpr uint32_t kMaxInstances =  2000; // 最大インスタンス数
     static constexpr uint32_t kMaxBatches = 256;      // 想定される最大バッチ数
     static constexpr uint32_t kFrameCount = 2;
     static constexpr uint32_t kMaxPasses = 5;

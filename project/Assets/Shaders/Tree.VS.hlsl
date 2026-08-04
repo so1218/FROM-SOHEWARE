@@ -31,11 +31,18 @@ struct PixelInput
     float lodFade : BLENDWEIGHT;
 };
 
-float3 RotateAboutAxis(float3 pos, float3 axis, float angle)
+// 軸と角度から3x3回転行列を作成する高速関数 (RotateAboutAxis 3回分の代わり)
+float3x3 AngleAxisTo3x3(float3 axis, float angle)
 {
-    float s = sin(angle);
-    float c = cos(angle);
-    return pos * c + cross(axis, pos) * s + axis * dot(axis, pos) * (1.0f - c);
+    float s, c;
+    sincos(angle, s, c);
+    float oc = 1.0f - c;
+    
+    return float3x3(
+        oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+        oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+        oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c
+    );
 }
 
 PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
@@ -46,106 +53,65 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     TreeInstanceData instance = gInstanceData[realInstanceIndex];
     
     float3 origLocalPos = input.position.xyz;
-    float4 localPos = float4(origLocalPos, 1.0f);
-    
-    float4 baseWorldPos = mul(localPos, instance.worldMatrix);
-    float3 rootPos = instance.worldMatrix[3].xyz; // 木の根元座標
-    
-    // 高さと高さ比率（0.0～1.0）
+    float4 baseWorldPos = mul(float4(origLocalPos, 1.0f), instance.worldMatrix);
+    float3 rootPos = instance.worldMatrix[3].xyz;
+
     float currentHeight = max(0.0f, baseWorldPos.y - rootPos.y);
     float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, 0.1f));
     
-    // 葉フラグ (0.0 = 幹, 1.0 = 葉)
     float isLeaf = (float) gTreeInstanceOffset.isLeaf;
-
-    // 擬似AO
     float pseudoAO = lerp(0.3f, 1.0f, saturate(heightRatio * 2.0f));
 
     // 風の基本計算
     float2 windDir = normalize(gEnvironmentData.windDirection);
     float windTime = gFrameData.gTime * gEnvironmentData.windSpeed;
     
-    // ノイズマップから陣風を取得
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     float totalWind = gMaterial.baseWindStrength + (gustMask * gMaterial.gustStrength);
     
-    // 木ごとの位相
     float treePhase = dot(rootPos.xz, float2(0.13f, 0.17f)) + instance.colorVariation.x * 12.34f;
 
-    // =========================================================================
-    // ★ 1次風: 幹の「ピボット回転しなり」（Trunk Bending via Pivot Rotation）
-    // =========================================================================
-    // 風の進行方向に対して垂直な「回転軸」を算出
+    // 1次風: 幹の「ピボット回転しなり」
     float3 rotAxis = normalize(float3(-windDir.y, 0.0f, windDir.x));
-    
-    // 根元から上に行くほど大きく曲がる角度（ラジアン）
-    // 2乗カーブにより根元付近はほぼ固定され、先端に行くほど綺麗にしなる
     float trunkWeight = heightRatio * heightRatio;
     
-    float mainSway = sin(windTime * 1.0f + treePhase) * 0.3f + 0.7f; // 主風
-    float subSway = sin(windTime * 1.8f + treePhase * 1.5f) * 0.2f; // 揺れ戻り
-    
-    // 曲げ角度 (最大約15度～20度程度に制限)
+    float mainSway = sin(windTime * 1.0f + treePhase) * 0.3f + 0.7f;
+    float subSway = sin(windTime * 1.8f + treePhase * 1.5f) * 0.2f;
     float bendAngle = (mainSway + subSway) * trunkWeight * gMaterial.trunkFlexibility * totalWind * 0.15f;
     
-    // 根元からの相対ベクトルを算出
     float3 relWorldPos = baseWorldPos.xyz - rootPos;
     
-    // 【最重要】位置だけでなく、法線・接線も同じ軸で回転させることでライティングの破綻を防ぐ
-    float3 bentRelPos = RotateAboutAxis(relWorldPos, rotAxis, bendAngle);
+    // ★ 最適化: RotateAboutAxis を3回呼ぶのではなく、回転行列を1つ作って一括乗算
+    float3x3 rotMatrix = AngleAxisTo3x3(rotAxis, bendAngle);
+    
+    float3 bentRelPos = mul(relWorldPos, rotMatrix);
     float3 worldNormal = normalize(mul(input.normal, (float3x3) instance.worldMatrix));
     float3 worldTangent = normalize(mul(input.tangent, (float3x3) instance.worldMatrix));
     
-    worldNormal = RotateAboutAxis(worldNormal, rotAxis, bendAngle);
-    worldTangent = RotateAboutAxis(worldTangent, rotAxis, bendAngle);
+    worldNormal = mul(worldNormal, rotMatrix);
+    worldTangent = mul(worldTangent, rotMatrix);
 
-    // =========================================================================
-    // ★ 2次風: 枝のうねり（Branch Oscillation） - 葉メッシュのみ
-    // =========================================================================
+    // 2次風: 枝のうねり
     float branchDist = length(origLocalPos.xz);
     float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
-    
     float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
     float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + branchPhase);
     float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
     
-    float3 branchOffset = branchDir
-                        * branchWave
-                        * branchWeight
-                        * trunkWeight
-                        * gMaterial.branchFlexibility 
-                        * totalWind
-                        * isLeaf;
+    float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * isLeaf;
 
-    // =========================================================================
-    // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
-    // =========================================================================
-   // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
+    // 3次風: 葉のチラつき
     float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
-
-// ★ windTime に周波数倍率 (leafFlutterFrequency) を掛ける
     float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
-
-// 固定値だった 14.0f や 9.0f に flutterSpeed を使う
     float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
     
-    float3 flutterOffset = worldNormal
-                         * flutterWave
-                         * gMaterial.leafFlutterAmount 
-                         * totalWind
-                         * isLeaf;
+    float3 flutterOffset = worldNormal * flutterWave * gMaterial.leafFlutterAmount * totalWind * isLeaf;
 
-    // =========================================================================
-    // 最終位置の合成 (幹の回転位置 + 枝の揺れ + 葉のバタつき)
-    // 幹と葉で「幹の回転位置 (rootPos + bentRelPos)」を完全に共有するため、一切分解しません！
-    // =========================================================================
+    // 最終位置の合成
     float3 finalWorldPos = rootPos + bentRelPos + branchOffset + flutterOffset;
 
-    // -------------------------------------------------------------------------
-    // 出力
-    // -------------------------------------------------------------------------
     output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.worldPosition = finalWorldPos;
     output.texcoord = input.texcoord;
