@@ -211,6 +211,9 @@ struct GlobalEnvironmentData
     float windSpeed; 
     float windTurbulence; 
     float2 pad;
+    
+    float4 skyColor; 
+    float4 groundColor;
 };
 
 struct AtmosphereSkyData
@@ -595,7 +598,7 @@ struct LeafMaterialData
     float treeRadius; 
     float shadowBias; 
     
-    float roughnessScale;
+    float baseRoughness;
     float baseAO; 
     float baseThickness;
     float albedoMultiplier;

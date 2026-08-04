@@ -91,8 +91,6 @@ struct TreeMaterialHandle
     uint32_t trunkNormalMapHandle = 0;     // 幹ノーマル
     uint32_t leafTextureHandle = 0;        // 葉アルベド
     uint32_t leafNormalMapHandle = 0;      // 葉ノーマル
-    uint32_t leafMetallicRoughnessHandle = 0;
-    uint32_t envMapHandle = 0;
     uint32_t toonRampHandle = 0;
 };
 

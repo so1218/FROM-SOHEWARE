@@ -24,7 +24,6 @@ struct PixelInput
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR0; // GustMask と 擬似AO をPSに渡すために使用
     float3 instanceTint : COLOR1;
@@ -59,7 +58,7 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     float currentHeight = max(0.0f, baseWorldPos.y - rootPos.y);
     float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, 0.1f));
     
-    float isLeaf = (float) gTreeInstanceOffset.isLeaf;
+    bool isLeaf = (gTreeInstanceOffset.isLeaf != 0);
     float pseudoAO = lerp(0.3f, 1.0f, saturate(heightRatio * 2.0f));
 
     // 風の基本計算
@@ -73,7 +72,7 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     
     float treePhase = dot(rootPos.xz, float2(0.13f, 0.17f)) + instance.colorVariation.x * 12.34f;
 
-    // 1次風: 幹の「ピボット回転しなり」
+    // 1次風: 幹の「ピボット回転しなり」（幹・葉共通）
     float3 rotAxis = normalize(float3(-windDir.y, 0.0f, windDir.x));
     float trunkWeight = heightRatio * heightRatio;
     
@@ -82,8 +81,6 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     float bendAngle = (mainSway + subSway) * trunkWeight * gMaterial.trunkFlexibility * totalWind * 0.15f;
     
     float3 relWorldPos = baseWorldPos.xyz - rootPos;
-    
-    // ★ 最適化: RotateAboutAxis を3回呼ぶのではなく、回転行列を1つ作って一括乗算
     float3x3 rotMatrix = AngleAxisTo3x3(rotAxis, bendAngle);
     
     float3 bentRelPos = mul(relWorldPos, rotMatrix);
@@ -93,21 +90,26 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     worldNormal = mul(worldNormal, rotMatrix);
     worldTangent = mul(worldTangent, rotMatrix);
 
-    // 2次風: 枝のうねり
-    float branchDist = length(origLocalPos.xz);
-    float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
-    float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
-    float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + branchPhase);
-    float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
-    
-    float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * isLeaf;
+    // ★ 2次・3次風: 葉（Leaf）の場合のみ計算（幹の描画時はスキップ）
+    float3 branchOffset = 0.0f.xxx;
+    float3 flutterOffset = 0.0f.xxx;
 
-    // 3次風: 葉のチラつき
-    float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
-    float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
-    float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
-    
-    float3 flutterOffset = worldNormal * flutterWave * gMaterial.leafFlutterAmount * totalWind * isLeaf;
+    if (isLeaf)
+    {
+        // 2次風: 枝のうねり
+        float branchDist = length(origLocalPos.xz);
+        float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
+        float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
+        float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + branchPhase);
+        float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
+        branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind;
+
+        // 3次風: 葉のチラつき
+        float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
+        float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
+        float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
+        flutterOffset = worldNormal * flutterWave * gMaterial.leafFlutterAmount * totalWind;
+    }
 
     // 最終位置の合成
     float3 finalWorldPos = rootPos + bentRelPos + branchOffset + flutterOffset;
@@ -118,7 +120,7 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     
     output.normal = worldNormal;
     output.tangent = worldTangent;
-    output.bitangent = cross(output.normal, output.tangent);
+    // ★ bitangent の出力を削除（修正完了）
     
     output.color = float4(gustMask, 0.0f, 0.0f, pseudoAO);
     output.instanceTint = instance.colorVariation.yzw;

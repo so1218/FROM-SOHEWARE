@@ -7,6 +7,8 @@ RWTexture3D<float4> gVoxelTemporalOut : register(u0); // Temporal Resolveの出�
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
+SamplerState gLinearClampSampler : register(s0);
+
 // TAA用 隣接ボクセルへのオフセット
 static const int3 kNeighborOffsets[6] =
 {
@@ -43,72 +45,80 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float4 current = gVoxelInjectFiltered.Load(int4(DTid, 0));
 
-    // 周囲のボクセルから最小/最大の許容色を算出
-    float4 boxMin = current;
-    float4 boxMax = current;
-    
-    for (int i = 0; i < 6; ++i)
+    // -------------------------------------------------------------------------
+    // 1. 3x3x3 近傍 Variance Clipping
+    // -------------------------------------------------------------------------
+    float4 m1 = 0.0f;
+    float4 m2 = 0.0f;
+
+    for (int z = -1; z <= 1; ++z)
     {
-        int3 neighborCoord = clamp(int3(DTid) + kNeighborOffsets[i], int3(0, 0, 0), int3(width - 1, height - 1, depth - 1));
-        float4 neighbor = gVoxelInjectFiltered.Load(int4(neighborCoord, 0));
-        boxMin = min(boxMin, neighbor);
-        boxMax = max(boxMax, neighbor);
+        for (int y = -1; y <= 1; ++y)
+        {
+            for (int x = -1; x <= 1; ++x)
+            {
+                int3 neighborCoord = clamp(int3(DTid) + int3(x, y, z), int3(0, 0, 0), int3(width - 1, height - 1, depth - 1));
+                float4 neighbor = gVoxelInjectFiltered.Load(int4(neighborCoord, 0));
+                m1 += neighbor;
+                m2 += neighbor * neighbor;
+            }
+        }
     }
-    
-    // カメラの移動を考慮したリプロジェクション
+
+    float4 mean = m1 / 27.0f;
+    float4 stddev = sqrt(max(m2 / 27.0f - mean * mean, 0.0f));
+
+    // ★ IGNノイズを受け入れるため gamma を 2.2f に広げる (時間蓄積を正常化)
+    float gamma = 2.2f;
+    float4 boxMin = mean - gamma * stddev;
+    float4 boxMax = mean + gamma * stddev;
+
+    // -------------------------------------------------------------------------
+    // 2. リプロジェクション
+    // -------------------------------------------------------------------------
     float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
-    
-    // 現在のボクセル中心の画面UVとビューZを計算
+
     float u = (float(DTid.x) + 0.5f) / float(width);
     float v = (float(DTid.y) + 0.5f) / float(height);
     float viewZ = GetViewZFromSlice(float(DTid.z) + 0.5f, float(depth), nearZ, farZ);
-    
-    // クリップ空間のXY
+
     float clipX = u * 2.0f - 1.0f;
     float clipY = (1.0f - v) * 2.0f - 1.0f;
-    
-    // 現在のワールド空間座標を復元
+
     float4 worldTarget = mul(float4(clipX, clipY, 1.0f, 1.0f), gFrameData.invViewProj);
     float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
     float3 worldPos = gFrameData.cameraWorldPosition + (rayDir * viewZ);
-    
-    // 復元したワールド座標を前フレームのクリップ空間に投影
+
     float4 prevClip = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
     prevClip.xyz /= prevClip.w;
-    
-    // 前フレームの画面UVに変換
+
     float2 prevUV = prevClip.xy * float2(0.5f, -0.5f) + 0.5f;
-    
-    // 前フレームのカメラから見た距離を計算
     float3 prevCamToPos = worldPos - gFrameData.prevCameraWorldPosition;
     float prevViewZ = length(prevCamToPos);
-    
-    // 前フレームのボクセルテクスチャ上のインデックスに変換
-    int3 historyCoord;
-    historyCoord.x = int(prevUV.x * float(width));
-    historyCoord.y = int(prevUV.y * float(height));
-    historyCoord.z = int(GetSliceFromViewZ(prevViewZ, float(depth), nearZ, farZ));
 
-    // 履歴フェッチ (画面外や限界外にはみ出た場合は現フレームを強制採用)
+    float prevSlice = GetSliceFromViewZ(prevViewZ, float(depth), nearZ, farZ);
+    
+    // ★【修正点】+0.5f の二重加算を削除！正しく prevSlice / depth で正規化する
+    float3 prevUVW = float3(prevUV.x, prevUV.y, prevSlice / float(depth));
+
+    // -------------------------------------------------------------------------
+    // 3. 履歴フェッチ & クランプ
+    // -------------------------------------------------------------------------
     float4 history = current;
-    if (historyCoord.x >= 0 && historyCoord.x < int(width) &&
-        historyCoord.y >= 0 && historyCoord.y < int(height) &&
-        historyCoord.z >= 0 && historyCoord.z < int(depth))
+
+    if (all(prevUVW >= 0.0f) && all(prevUVW <= 1.0f))
     {
-        history = gVoxelHistory.Load(int4(historyCoord, 0));
+        history = gVoxelHistory.SampleLevel(gLinearClampSampler, prevUVW, 0);
     }
 
-    // カラークランピング（ゴースト除去の要）
-    // 過去の色が現在の周囲の色から逸脱している場合、強制的に現在の範囲に収める
     history = clamp(history, boxMin, boxMax);
 
-    // ブレンド率（TAAウェイト）の動的制御
-    // 色の差分が大きい（動的オブジェクトの通過など）場合は履歴を捨てて残像を防ぐ
+    // -------------------------------------------------------------------------
+    // 4. ブレンド
+    // -------------------------------------------------------------------------
     float diff = length(current.rgb - history.rgb);
     float blendAlpha = lerp(kBlendAlphaMin, kBlendAlphaMax, saturate(diff / kColorDiffThreshold));
 
-    float4 resolved = lerp(history, current, blendAlpha);
-
-    gVoxelTemporalOut[DTid] = resolved;
+    gVoxelTemporalOut[DTid] = lerp(history, current, blendAlpha);
 }

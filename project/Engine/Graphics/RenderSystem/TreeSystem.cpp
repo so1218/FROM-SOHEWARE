@@ -73,8 +73,7 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
     const LeafMaterialData& leafData,
     const TrunkMaterialData& trunkData,
     uint32_t leafTex, uint32_t trunkTex,
-    uint32_t leafNormal, uint32_t trunkNormal,
-    uint32_t envMap, uint32_t toonRamp)
+    uint32_t leafNormal, uint32_t trunkNormal, uint32_t toonRamp)
 {
     TreeMaterialHandle handle{};
     auto* device = engine_->GetGraphicsDevice()->GetDevice();
@@ -100,7 +99,6 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
     handle.trunkTextureHandle = trunkTex;
     handle.leafNormalMapHandle = leafNormal;
     handle.trunkNormalMapHandle = trunkNormal;
-    handle.envMapHandle = envMap;
     handle.toonRampHandle = toonRamp;
 
     // 寿命管理用リストに保持

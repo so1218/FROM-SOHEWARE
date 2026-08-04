@@ -390,49 +390,42 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeFoliage"));
 
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
             cmdList->SetGraphicsRootConstantBufferView(3, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); 
 
-            cmdList->SetGraphicsRoot32BitConstants(5, 2, &offsetData, 0);
+            cmdList->SetGraphicsRoot32BitConstants(5, 2, &offsetData, 0); 
 
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
-            cmdList->SetGraphicsRootDescriptorTable(7, shadowMap->GetSRVHandle());
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-            // ★葉のテクスチャ
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
-            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
-            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafMetallicRoughnessHandle));
-
+            cmdList->SetGraphicsRootDescriptorTable(6, shadowMap->GetSRVHandle()); 
+            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex)); 
+            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle)); 
+            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
         }
         else
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeTrunk"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeTrunk"));
 
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
-
-            cmdList->SetGraphicsRootConstantBufferView(5, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(5, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress()); 
+            cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); 
 
             cmdList->SetGraphicsRoot32BitConstants(8, 2, &offsetData, 0);
 
             cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.envMapHandle));
-            cmdList->SetGraphicsRootDescriptorTable(11, shadowMap->GetSRVHandle());
-            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle));
-            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
-            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-
+            cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle()); 
+            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle)); 
+            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle)); 
+            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(windMapSrvIndex)); 
         }
         cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());

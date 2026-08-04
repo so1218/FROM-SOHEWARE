@@ -19,7 +19,7 @@ void VolumetricFogBilateralPass::Initialize(Engine* engine, UINT w, UINT h, PSOM
     );
 
     // 初期値設定
-    cbData_->blurRadius = 5;
+    cbData_->blurRadius = 2;
     cbData_->spatialSigma = 2.0f;
     cbData_->depthSigma = 0.001f;
 

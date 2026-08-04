@@ -24,7 +24,6 @@ ConstantBuffer<TrunkMaterialData> gMaterial : register(b6); // 幹用のマテ�
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0); // 幹のアルベド
-TextureCube<float4> gEnvironmentTexture : register(t1);
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gNormalTexture : register(t5); // 幹のノーマルマップ
@@ -39,53 +38,63 @@ struct PixelInput
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR0; // GustMask と 擬似AO をPSに渡すために使用
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
 };
 
+// 高速 IGN (sin不使用のディザリング)
+float InterleavedGradientNoise(float2 pixelPos)
+{
+    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    return frac(magic.z * frac(dot(pixelPos, magic.xy)));
+}
+
 PixelShaderOutput main(PixelInput input)
 {
     PixelShaderOutput output;
     
-    // 1. LODディザリング
-    float dither = frac(sin(dot(input.position.xy, float2(12.9898f, 78.233f))) * 43758.5453f);
+    // -------------------------------------------------------------------------
+    // 1. LODディザリング (IGN化)
+    // -------------------------------------------------------------------------
+    float dither = InterleavedGradientNoise(input.position.xy);
     clip(input.lodFade - dither);
 
-    // 2. テクスチャサンプリング
+    // -------------------------------------------------------------------------
+    // 2. アルベド & 濡れ (Wetness) 演算
+    // -------------------------------------------------------------------------
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-    float3 baseColor = textureColor.rgb * input.instanceTint *
-    gMaterial.color.rgb * max(gMaterial.albedoMultiplier, 0.0f);
+    float3 baseColor = textureColor.rgb * input.instanceTint * gMaterial.color.rgb * max(gMaterial.albedoMultiplier, 0.0f);
 
-    // =========================================================================
-    // ★ 濡れ (Wetness) による物理的変化
-    // =========================================================================
     float wetness = gEnvironmentData.wetness;
+    
+    // ① 樹皮の吸光 (Porosity: 濡れると暗く・重みが増す)
+    baseColor = lerp(baseColor, baseColor * 0.55f, wetness);
 
-    // ① アルベドの暗化 (Porosity: 幹は水を吸うため色が暗く・濃くなる)
-    float porosity = 0.6f; // 水を吸い込む度合い
-    float3 wetColor = baseColor * (1.0f - porosity * 0.5f);
-    baseColor = lerp(baseColor, wetColor, wetness);
-
-    // ② ラフネスの低下 (水膜によってツヤが出る)
+    // ② ラフネス低下 (水膜でのツヤ)
     float baseRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
-    // 濡れきった幹はラフネスが0.15付近まで下がり、周囲の光を反射するようになる
-    float wetRoughness = lerp(baseRoughness, 0.15f, wetness);
-    // =========================================================================
+    float roughness = lerp(baseRoughness, 0.2f, wetness);
 
+    // -------------------------------------------------------------------------
+    // 3. 法線計算 (Bitangentの動的算出)
+    // -------------------------------------------------------------------------
     float3 worldNormal = normalize(input.normal);
-    float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
+    float3 worldTangent = normalize(input.tangent);
+    float3 worldBitangent = cross(worldNormal, worldTangent); // PSで動的復元
 
-    // 3. Normal Map
     float3 normal = worldNormal;
     if (gMaterial.enableNormalMap != 0)
     {
-        normal = CalculateNormalFromMap(worldNormal, input.tangent, input.texcoord, gMaterial.normalIntensity, gNormalTexture, gSampler);
+        // ノーマルマップから法線生成 (Bitangentは関数内で動的補正される前提)
+        normal = CalculateNormalFromMap(worldNormal, worldTangent, input.texcoord, gMaterial.normalIntensity, gNormalTexture, gSampler);
     }
 
-    // 4. Shadow
+    float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
+
+    // -------------------------------------------------------------------------
+    // 4. シャドウ計算
+    // -------------------------------------------------------------------------
     float shadowFactor = 1.0f;
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
@@ -98,53 +107,54 @@ PixelShaderOutput main(PixelInput input)
             gShadowData.cascadeLightViewProj, gShadowMapArray, gShadowSampler);
     }
 
+    // -------------------------------------------------------------------------
     // 5. SurfaceData構築
+    // -------------------------------------------------------------------------
     SurfaceData surface;
     surface.albedo = baseColor;
-    surface.pbrAlbedo = baseColor * pow(abs(gMaterial.color.rgb), 2.2f);
+    surface.pbrAlbedo = baseColor * baseColor; // pow(x, 2.2) の代わりの高速ガンマ近似
     surface.specularColor = gMaterial.specularColor.rgb;
     surface.normal = normal;
-    
-    // ★ 計算した濡れラフネスを適用
-    surface.roughness = wetRoughness;
-    // ★ メタルネスは絶対にそのまま (水は非金属)
+    surface.roughness = roughness;
     surface.metalness = saturate(gMaterial.metalness);
-    
     surface.shininess = gMaterial.shininess;
     surface.diffuseReflection = gMaterial.diffuseReflection;
     surface.lightMode = gMaterial.lightMode;
 
-    // 6. Lighting & PBR
+    // -------------------------------------------------------------------------
+    // 6. ライティング & 数式環境光 (CubeMapサンプリングゼロ)
+    // -------------------------------------------------------------------------
     float3 finalColor = 0.0f.xxx;
     if (gMaterial.enableLighting != 0)
     {
-        // ★ gToonRamp と gClampSampler を渡すことでエラー解消
         finalColor += ApplyDirectionalLights(surface, toEyeWorld, shadowFactor, gDirectionalLights, gToonRamp, gClampSampler);
         finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
         finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
-            float3 kS = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), 0.04f.xxx, surface.roughness);
-            float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
+            float NdotV = max(dot(surface.normal, toEyeWorld), 0.0f);
             
-            float3 baseAmbient = 0.03f.xxx;
-            
-            // テクスチャのAOと、Tree.VSで計算した「擬似AO (input.color.a)」を合成
-            float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.color.a;
-
-            float3 ambientDiffuse = kD * surface.pbrAlbedo * baseAmbient;
-
-            // IBL (ここで下がったroughnessが使われるため、濡れた時に空の反射が強くなる)
-            float3 reflectionVector = reflect(-toEyeWorld, surface.normal);
-            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, surface.roughness * 6.0f).rgb;
-            
-            // ★ 水のF0(0.02)を考慮 (濡れるとF0が水の値に近づく)
+            // F0 (濡れに応じて水のF0=0.02へ遷移)
             float3 baseF0 = lerp(0.04f.xxx, surface.pbrAlbedo, surface.metalness);
             float3 F0 = lerp(baseF0, 0.02f.xxx, wetness);
             
-            float3 F_env = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), F0, surface.roughness);
-            float3 ambientSpecular = envColor * F_env;
+            float3 kS = F_SchlickRoughness(NdotV, F0, surface.roughness);
+            float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
+
+            float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.color.a;
+
+            // ★ CubeMapサンプリングの代わりに「天空光/地面光の半球ライティング」を使用
+            float3 reflectDir = reflect(-toEyeWorld, surface.normal);
+            float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
+            float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
+
+            // 環境光Specular
+            float3 ambientSpecular = envSkyColor * kS;
+
+            // 環境光Diffuse
+            float skyLight = saturate(surface.normal.y * 0.5f + 0.5f);
+            float3 ambientDiffuse = kD * surface.pbrAlbedo * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight);
 
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
             
@@ -156,12 +166,11 @@ PixelShaderOutput main(PixelInput input)
         finalColor = surface.albedo;
     }
 
-    // 7. G-Buffer Output
-    output.color.rgb = finalColor;
-    output.color.a = 1.0f;
+    // -------------------------------------------------------------------------
+    // 7. 出力
+    // -------------------------------------------------------------------------
+    output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
-    
-    // G-Buffer等に書き出す際も、メタルネスは維持し、濡れラフネスを書き出す
     output.material = float4(surface.metalness, surface.roughness, 0.0f, 1.0f);
     output.velocity = float2(0.0f, 0.0f);
     

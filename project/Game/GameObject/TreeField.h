@@ -80,7 +80,7 @@ private:
     float treeHeight_ = 10.0f;
     float treeRadius_ = 5.0f;
     float leafShadowBias_ = 0.005f;      // 葉用
-    float roughnessScale_ = 1.0f;
+    float baseRoughness_ = 1.0f;
     float baseAO_ = 1.0f;
     float baseThickness_ = 0.1f;
     FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f }; // 型は環境に合わせてください (Math::Vector3 など)
@@ -116,8 +116,6 @@ private:
     uint32_t    leafTextureHandle_ = 0;
     std::string leafNormalName_ = "white1x1";
     uint32_t    leafNormalHandle_ = 0;
-    std::string leafRoughnessName_ = "white1x1";
-    uint32_t    leafRoughnessHandle_ = 0;
 
     // 幹 (Trunk)
     std::string trunkTextureName_ = "white1x1";
@@ -126,8 +124,6 @@ private:
     uint32_t    trunkNormalHandle_ = 0;
 
     // 共通 (Env / Toon)
-    std::string envMapName_ = "black_cube";
-    uint32_t    envMapHandle_ = 0;
     std::string toonRampName_ = "toonRamp_01";
     uint32_t    toonRampHandle_ = 0;
 };

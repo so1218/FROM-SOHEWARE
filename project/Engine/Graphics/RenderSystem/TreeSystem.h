@@ -45,8 +45,7 @@ public:
         const LeafMaterialData& leafData,
         const TrunkMaterialData& trunkData,
         uint32_t leafTex, uint32_t trunkTex,
-        uint32_t leafNormal = 0, uint32_t trunkNormal = 0,
-        uint32_t envMap = 0, uint32_t toonRamp = 0
+        uint32_t leafNormal = 0, uint32_t trunkNormal = 0, uint32_t toonRamp = 0
     );
 
     // ★追加: マテリアルのパラメータを後から動的に更新する関数（時間帯の変化などに対応）
