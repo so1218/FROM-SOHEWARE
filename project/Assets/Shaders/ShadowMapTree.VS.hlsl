@@ -1,7 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<LeafMaterialData> gMaterial : register(b2); // ★シャドウのバインドスロットに合わせて調整(例:b2)
+ConstantBuffer<LeafMaterialData> gMaterial : register(b2); 
 ConstantBuffer<TreeInstanceOffset> gTreeInstanceOffset : register(b3);
 ConstantBuffer<ShadowData> gShadowData : register(b4);
 cbuffer cbCascadeIndex : register(b5)
@@ -35,10 +35,6 @@ float3 RotateAboutAxis(float3 pos, float3 axis, float angle)
     return pos * c + cross(axis, pos) * s + axis * dot(axis, pos) * (1.0f - c);
 }
 
-// ==============================================================================
-// 頂点シェーダー (葉・幹 共通)
-// メインのVSと「全く同じ」揺れ計算を行います。
-// ==============================================================================
 ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;

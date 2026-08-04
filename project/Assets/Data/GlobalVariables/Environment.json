@@ -142,11 +142,11 @@
         "Sunny_TransitionSpeed": 0.4000000059604645,
         "Sunny_Wetness": 0.0,
         "Sunny_WindDir": [
-            1.0,
+            -1.0,
             0.0
         ],
-        "Sunny_WindSpeed": 1.0,
-        "Sunny_WindTurbul": 0.20000000298023224,
+        "Sunny_WindSpeed": 0.8999999761581421,
+        "Sunny_WindTurbul": 0.7599999904632568,
         "Sunrise_AtmoGlow": 2.0,
         "Sunrise_CloudAmbient": [
             0.800000011920929,
