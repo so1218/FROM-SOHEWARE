@@ -48,7 +48,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         
         for (uint i = 0; i < kFrustumPlaneCount; ++i)
         {
-            if (dot(gFrameData.frustumPlanes[i].xyz, sphereCenter) + gFrameData.frustumPlanes[i].w < -boundsRadius)
+            if (dot(gTreeCullingData.frustumPlanes[i].xyz, sphereCenter) + gTreeCullingData.frustumPlanes[i].w < -boundsRadius)
             {
                 isVisible = false;
                 break;

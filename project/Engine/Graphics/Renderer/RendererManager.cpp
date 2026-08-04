@@ -129,6 +129,11 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	{
 		terrainRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
 	}
+
+	if (treeRenderer_)
+	{
+		treeRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
+	}
 }
 
 void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
@@ -245,10 +250,10 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 		terrainRenderer_->DrawShadow(env_, cascadeIndex);
 	}
 
-	//if (treeRenderer_)
-	//{
-	//	treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
-	//}
+	if (treeRenderer_)
+	{
+		treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
+	}
 
 	modelRenderer_->DrawShadow(env_, cascadeIndex);
 }

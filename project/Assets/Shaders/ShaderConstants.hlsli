@@ -566,6 +566,8 @@ struct TreeCullingData
     float approxTreeHeight; 
     float approxTreeRadius; 
     uint32_t totalInstanceCount; 
+    
+    float4 frustumPlanes[6];
 };
 
 struct LeafMaterialData

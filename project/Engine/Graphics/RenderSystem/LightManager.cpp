@@ -366,7 +366,9 @@ void LightManager::UpdateCascadedShadows(
 
         // テクセルスナップ
         // カメラが移動したときに、影の輪郭がテクセル単位でカチッと固定されるように位置を丸める
-        Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, 0.0f, radius * 2.0f);
+        float shadowNearZ = -radius * 2.0f; // 手前の木が入るように負の値に拡張
+        float shadowFarZ = radius * 2.0f;
+        Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, shadowNearZ, shadowFarZ);
         Matrix4x4 shadowViewProj = lightView * shadowProj;
 
         // 原点(0,0,0)をライトのViewProj空間に変換

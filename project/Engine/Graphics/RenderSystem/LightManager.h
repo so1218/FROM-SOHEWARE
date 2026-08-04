@@ -79,6 +79,8 @@ public:
     SelectedLightType GetSelectedLightType() const { return selectedLightType_; }
     int GetSelectedLightIndex() const { return selectedLightIndex_; }
 
+    const ShadowData* GetShadowData() const { return shadowData_; }
+
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource_;

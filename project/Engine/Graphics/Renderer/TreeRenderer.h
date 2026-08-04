@@ -34,6 +34,11 @@ public:
     uint32_t GetCount() const { return static_cast<uint32_t>(submissions_.size()); }
     uint32_t GetMaxCount() const { return kMaxInstances; }
 
+    void SetCameraState(const Matrix4x4& view, const Matrix4x4& viewProjection)
+    {
+        viewMatrix_ = view;
+        viewProjectionMatrix_ = viewProjection;
+    }
 private:
 
     struct InstanceBuffer
@@ -90,8 +95,8 @@ private:
     static constexpr uint32_t kMaxInstances = 10000; // 最大インスタンス数
     static constexpr uint32_t kMaxBatches = 256;      // 想定される最大バッチ数
     static constexpr uint32_t kFrameCount = 2;
+    static constexpr uint32_t kMaxPasses = 5;
 
-    InstanceBuffer instanceBuffer_;
     std::vector<TreeSubmission> submissions_;
     std::vector<TreeBatch> batches_;
     std::map<const ModelData*, ModelBatch> meshCache_;
@@ -99,13 +104,10 @@ private:
     GraphicsDevice* device_ = nullptr;
     uint32_t currentInstanceLocation_ = 0;
 
-    // ▼ 追加: GPU駆動カリング用のリソース群 ▼
     Microsoft::WRL::ComPtr<ID3D12CommandSignature> commandSignature_;
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cullingHeap_; // CS用の動的ディスクリプタ
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cullingHeap_;
 
-    // ExecuteIndirect用引数バッファ
-    Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsUploadBuffer_;
-    AlignedDrawIndexedArguments* mappedIndirectArgs_ = nullptr;
+    // ★削除: クラス直下の indirectArgsUploadBuffer_ と mappedIndirectArgs_ は FrameResource に移動します
 
     // フレームごとのリソース
     struct FrameResource
@@ -114,16 +116,28 @@ private:
         Microsoft::WRL::ComPtr<ID3D12Resource> outputInstanceBuffer;
         Microsoft::WRL::ComPtr<ID3D12Resource> cullingDataBuffer;
 
+        // ★追加: CPU側のUploadバッファもフレーム/パスごとに分離
+        Microsoft::WRL::ComPtr<ID3D12Resource> indirectArgsUploadBuffer;
+        AlignedDrawIndexedArguments* mappedIndirectArgs = nullptr;
+
         TreeCullingData* mappedCullingData = nullptr;
-        uint32_t outputSrvIndex = 0; // 描画時の全体SRV
+        uint32_t outputSrvIndex = 0;
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> inputInstanceBuffer;
+        TreeInstanceData* mappedInputInstanceData = nullptr;
     };
     FrameResource frameRes_[kFrameCount];
 
     uint32_t currentFrameIndex_ = 0;
+    // ★追加: 現在のフレーム内で何回目の描画パスかをカウントする
+    uint32_t currentPassIndex_ = 0;
 
     float currentMaxDrawDistance_ = 1000.0f;
     float currentTreeHeight_ = 10.0f;
     float currentTreeRadius_ = 2.0f;
+
+    Matrix4x4 viewMatrix_{};
+    Matrix4x4 viewProjectionMatrix_{};
 };
 
 }
