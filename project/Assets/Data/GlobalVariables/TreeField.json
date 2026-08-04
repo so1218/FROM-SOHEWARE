@@ -7,6 +7,7 @@
         "AreaWidth": 1000.0,
         "BackfaceFlatten": 0.5,
         "BaseAO": 1.0,
+        "BaseRoughness": 0.5,
         "BaseThickness": 0.10000000149011612,
         "BaseWindStrength": 1.350000023841858,
         "BranchFlex": 0.8100000023841858,
@@ -31,7 +32,7 @@
         "LeafTexture": "leaf1_baseColor",
         "MaxDrawDistance": 500.0,
         "MaxScale": 38.400001525878906,
-        "MinScale": 26.75,
+        "MinScale": 19.799999237060547,
         "Position": [
             0.0,
             0.0,
