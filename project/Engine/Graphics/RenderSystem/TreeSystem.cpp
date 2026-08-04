@@ -2,6 +2,7 @@
 #include "TreeSystem.h"
 #include "Engine.h"
 #include "TextureManager.h"
+#include "TreeRenderer.h"
 
 namespace FE 
 {
@@ -120,6 +121,15 @@ void TreeSystem::UpdateTrunkMaterial(TreeMaterialHandle& handle, const TrunkMate
 {
     if (handle.mappedTrunkData) {
         *handle.mappedTrunkData = data; // 高速コピー
+    }
+}
+
+void TreeSystem::SetCullingParameters(float maxDrawDistance, float treeHeight, float treeRadius)
+{
+    // TreeRenderer にパラメータを渡す
+    if (engine_ && engine_->GetRendererManager()->GetTreeRenderer())
+    {
+        engine_->GetRendererManager()->GetTreeRenderer()->SetCullingParameters(maxDrawDistance, treeHeight, treeRadius);
     }
 }
 

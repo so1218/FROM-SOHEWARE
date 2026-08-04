@@ -245,10 +245,10 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 		terrainRenderer_->DrawShadow(env_, cascadeIndex);
 	}
 
-	if (treeRenderer_)
-	{
-		treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
-	}
+	//if (treeRenderer_)
+	//{
+	//	treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
+	//}
 
 	modelRenderer_->DrawShadow(env_, cascadeIndex);
 }

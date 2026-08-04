@@ -42,8 +42,8 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
 {
     PixelInput output;
     
-    uint actualIndex = instanceID + gTreeInstanceOffset.baseInstanceIndex;
-    TreeInstanceData instance = gInstanceData[actualIndex];
+    uint realInstanceIndex = instanceID + gTreeInstanceOffset.baseInstanceIndex;
+    TreeInstanceData instance = gInstanceData[realInstanceIndex];
     
     float3 origLocalPos = input.position.xyz;
     float4 localPos = float4(origLocalPos, 1.0f);

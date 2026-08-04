@@ -62,7 +62,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             
             for (uint i = 0; i < kFrustumPlaneCount; ++i)
             {
-                if (dot(gGrassCullingData.frustumPlanes[i].xyz, pos) + gGrassCullingData.frustumPlanes[i].w < -boundsRadius)
+                if (dot(gFrameData.frustumPlanes[i].xyz, pos) + gFrameData.frustumPlanes[i].w < -boundsRadius)
                 {
                     isVisible = false;
                     break; // 1平面でも外側なら確定で離脱

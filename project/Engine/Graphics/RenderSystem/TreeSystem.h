@@ -52,6 +52,7 @@ public:
     // ★追加: マテリアルのパラメータを後から動的に更新する関数（時間帯の変化などに対応）
     void UpdateLeafMaterial(TreeMaterialHandle& handle, const LeafMaterialData& data);
     void UpdateTrunkMaterial(TreeMaterialHandle& handle, const TrunkMaterialData& data);
+    void SetCullingParameters(float maxDrawDistance, float treeHeight, float treeRadius);
 
     uint32_t GetInstanceCount() const { return static_cast<uint32_t>(instances_.size()); }
 

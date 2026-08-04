@@ -100,6 +100,10 @@ struct FrameData
     float3 prevCameraWorldPosition;
     
     float deltaTime;
+    float3 pad;
+    
+    float4 frustumPlanes[6];
+    
 };
 
 struct SurfaceData
@@ -517,8 +521,6 @@ struct GrassMaterialData
 
 struct GrassCullingData
 {
-    float4 frustumPlanes[6]; 
-    
     float maxDrawDistance; 
     float thinStartDistance; 
     float maxThinningRate; 
@@ -556,6 +558,14 @@ struct TreeInstanceOffset
 {
     uint32_t baseInstanceIndex;
     uint32_t isLeaf;
+};
+
+struct TreeCullingData
+{
+    float maxDrawDistance; 
+    float approxTreeHeight; 
+    float approxTreeRadius; 
+    uint32_t totalInstanceCount; 
 };
 
 struct LeafMaterialData

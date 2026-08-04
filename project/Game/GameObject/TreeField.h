@@ -109,6 +109,8 @@ private:
     float trunkNormalIntensity_ = 1.0f;
     float trunkAlbedoMultiplier_ = 1.0f;
 
+    float maxDrawDistance_ = 300.0f;
+
     // 葉 (Leaf)
     std::string leafTextureName_ = "white1x1";
     uint32_t    leafTextureHandle_ = 0;

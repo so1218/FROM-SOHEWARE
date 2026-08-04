@@ -97,6 +97,8 @@ void TreeField::Initialize()
     binder_->Bind("TrunkShadowSoft", &trunkShadowSoftness_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkShadowEnvStr", &trunkShadowEnvStrength_, 0.5f, 0.01f, 0.0f, 1.0f);
 
+    binder_->Bind("MaxDrawDistance", &maxDrawDistance_, 300.0f, 5.0f, 50.0f, 2000.0f);
+
     // ==========================================
     // テクスチャの BindTexture 設定
     // ==========================================
@@ -236,6 +238,7 @@ void TreeField::UpdateMaterials()
     trunkData.albedoMultiplier = trunkAlbedoMultiplier_;
 
     treeSystem_->UpdateTrunkMaterial(treeMaterialHandle_, trunkData);
+    treeSystem_->SetCullingParameters(maxDrawDistance_, treeHeight_, treeRadius_);
 }
 
 void TreeField::GenerateTrees()
@@ -310,7 +313,8 @@ void TreeField::DebugDraw()
         binder_->Draw("AreaDepth", "配置範囲 (奥行 Z)");
         binder_->Draw("AreaCenterX", "配置中心 X");
         binder_->Draw("AreaCenterZ", "配置中心 Z");
-
+        ImGui::Separator();
+        binder_->Draw("MaxDrawDistance", "最大描画距離");
         ImGui::Separator();
         binder_->Draw("MinScale", "最小スケール");
         binder_->Draw("MaxScale", "最大スケール");

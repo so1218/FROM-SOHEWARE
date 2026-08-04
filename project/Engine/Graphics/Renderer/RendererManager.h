@@ -104,6 +104,8 @@ public:
     uint32_t GetMaxParticleCount() const;
     uint32_t GetMaxTrailCount() const;
 
+    TreeRenderer* GetTreeRenderer() const { return treeRenderer_.get(); }
+
     // デバッグ用
     void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
 

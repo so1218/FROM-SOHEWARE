@@ -126,7 +126,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float sideOffset = (vertexIdx % 2 == 0) ? -0.5f : 0.5f;
 
     // -------------------------------------------------------------------------
-    // 風・インタラクション (外力の計算)
+    // 風・インタラクション
     // -------------------------------------------------------------------------
     float2 windDir = normalize(gMaterial.windDir);
     float windTime = gFrameData.gTime * gMaterial.windSpeed;

@@ -52,6 +52,18 @@ void GlobalConstants::Update(
     frameData_->invViewProj = invVP;
     frameData_->invProjMatrix = invProj;
 
+    Frustum frustum;
+    frustum.ExtractFromMatrix(matViewProjection);
+    for (int i = 0; i < 6; ++i)
+    {
+        frameData_->frustumPlanes[i] = {
+            frustum.planes[i].a,
+            frustum.planes[i].b,
+            frustum.planes[i].c,
+            frustum.planes[i].d
+        };
+    }
+
     frameData_->viewMatrix = viewMatrix;
     frameData_->projectionMatrix = projectionMatrix;
 

@@ -2,6 +2,7 @@
 #include "Structures.h"
 #include "WorldTransform.h"
 #include "MathUtils.h"
+#include "Frustum.h"
 
 namespace FE
 {
@@ -73,6 +74,9 @@ public:
         UpdateViewProjectionMatrix();
     }
 
+    // フラスタムの平面情報を配列として取得
+    const Plane* GetFrustumPlanes() const { return frustum_.planes; }
+
     // カメラの前方ベクトルを取得
     Vector3 GetForward() const
     {
@@ -119,6 +123,7 @@ public:
         UpdateViewMatrix();
         UpdateProjectionMatrix();
         matViewProjection_ = matView_ * matProjection_;
+        frustum_.ExtractFromMatrix(matViewProjection_);
     }
 
 private:
@@ -132,6 +137,8 @@ private:
     Matrix4x4 matView_;
     Matrix4x4 matProjection_;
     Matrix4x4 matViewProjection_;
+
+    Frustum frustum_;
 };
 
 }
