@@ -127,6 +127,7 @@ private:
     WeatherState currentWeather_ = WeatherState::Sunny;
     WeatherState targetWeather_ = WeatherState::Sunny;
     float weatherTransitionT_ = 1.0f; 
+    float accumulatedWindTime_ = 0.0f;
 
     WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileSnow_, profileThunder_;
     WeatherProfile currentWeatherProfile_;

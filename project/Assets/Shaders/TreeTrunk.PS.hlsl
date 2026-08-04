@@ -44,7 +44,7 @@ struct PixelInput
     float lodFade : BLENDWEIGHT;
 };
 
-// 高速 IGN (sin不使用のディザリング)
+// 高速 IGN 
 float InterleavedGradientNoise(float2 pixelPos)
 {
     float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);

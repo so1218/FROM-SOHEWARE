@@ -56,7 +56,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     clip(input.lodFade - dither);
 
     // -------------------------------------------------------------------------
-    // 2. アルベド & アルファサンプリング (Early Exit)
+    // 2. アルベド & アルファサンプリング
     // -------------------------------------------------------------------------
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     clip(albedoAlpha.a - 0.05f); // ピクセル破棄時はここで即時離脱

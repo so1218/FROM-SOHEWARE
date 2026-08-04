@@ -63,7 +63,7 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
 
     // 風の基本計算
     float2 windDir = normalize(gEnvironmentData.windDirection);
-    float windTime = gFrameData.gTime * gEnvironmentData.windSpeed;
+    float windTime = gEnvironmentData.windTime;
     
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;

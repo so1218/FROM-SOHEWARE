@@ -210,7 +210,8 @@ struct GlobalEnvironmentData
     
     float windSpeed; 
     float windTurbulence; 
-    float2 pad;
+    float windTime;
+    float pad;
     
     float4 skyColor; 
     float4 groundColor;

@@ -254,12 +254,15 @@ void EnvironmentManager::Update(LightManager* lightManager)
     // 大気散乱のGlow強さも天候によって減衰
     currentProfile_.sunAtmosphereGlow *= currentWeatherProfile_.atmosphereGlowDimmer;
 
+    // 風専用の累積時間を更新 (deltaTime × 現在の補間済み風速)
+    accumulatedWindTime_ += deltaTime * currentWeatherProfile_.windSpeed;
+
     if (cbData_)
     {
         cbData_->wetness = currentWeatherProfile_.wetness;
         cbData_->rainIntensity = currentWeatherProfile_.rainIntensity;
         cbData_->windDirection = currentWeatherProfile_.windDirection;
-        cbData_->windSpeed = currentWeatherProfile_.windSpeed;
+        cbData_->windTime = accumulatedWindTime_;
         cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
         cbData_->skyColor = { currentProfile_.zenithColor.x, currentProfile_.zenithColor.y, currentProfile_.zenithColor.z, 1.0f };
         cbData_->groundColor = { currentProfile_.groundColor.x, currentProfile_.groundColor.y, currentProfile_.groundColor.z, 1.0f };
