@@ -2,7 +2,7 @@
 
 ConstantBuffer<LeafMaterialData> gMaterial : register(b2);
 Texture2D<float4> gAlbedoAlphaTex : register(t8);
-SamplerState gAnisoSampler : register(s3);
+SamplerState gPointSampler : register(s3);
 
 struct ShadowVSOutput
 {
@@ -12,7 +12,7 @@ struct ShadowVSOutput
 
 void main(ShadowVSOutput input)
 {
-    float alpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord).a;
+    float alpha = gAlbedoAlphaTex.Sample(gPointSampler, input.texcoord).a;
     
     // アルファカットオフ以下のピクセルは影を落とさない
     clip(alpha - gMaterial.alphaCutoff);
