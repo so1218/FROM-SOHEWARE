@@ -48,38 +48,6 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
         prevLocalPos.xyz += input.normal * pWave * gMaterial.wobbleAmplitude;
     }
     
-    // 木の揺れ処理
-    if (gMaterial.enableTreeWind != 0)
-    {
-        // 揺れ始める高さのしきい値
-        float thresholdHeight = gMaterial.treeWindThresholdHeight;
-
-        // 現在の計算
-        float3 windWorldPos = mul(localPos, instance.World).xyz;
-        float phaseOffset = (windWorldPos.x + windWorldPos.z) * gMaterial.treeWindSpatialScale;
-        float time = gFrameData.gTime * gMaterial.treeWindSpeed + phaseOffset;
-
-        float waveX = sin(time) * cos(time * 0.45f + phaseOffset);
-        float waveZ = cos(time * 0.75f) * sin(time * 0.25f + phaseOffset);
-        float normalizedHeight = max(0.0f, (localPos.y - thresholdHeight) * gMaterial.treeWindHeightScale);
-  
-        localPos.x += waveX * gMaterial.treeWindAmplitude * normalizedHeight;
-        localPos.z += waveZ * gMaterial.treeWindAmplitude * normalizedHeight;
-
-        // 過去の計算
-        // 風の空間的なズレは過去のワールド座標に依存するため、instance.PrevWorld を使用
-        float3 prevWindWorldPos = mul(prevLocalPos, instance.PrevWorld).xyz;
-        float prevPhaseOffset = (prevWindWorldPos.x + prevWindWorldPos.z) * gMaterial.treeWindSpatialScale;
-        float pTime = gFrameData.prevTime * gMaterial.treeWindSpeed + prevPhaseOffset;
-
-        float pWaveX = sin(pTime) * cos(pTime * 0.45f + prevPhaseOffset);
-        float pWaveZ = cos(pTime * 0.75f) * sin(pTime * 0.25f + prevPhaseOffset);
-        float pNormalizedHeight = max(0.0f, (prevLocalPos.y - thresholdHeight) * gMaterial.treeWindHeightScale);
-  
-        prevLocalPos.x += pWaveX * gMaterial.treeWindAmplitude * pNormalizedHeight;
-        prevLocalPos.z += pWaveZ * gMaterial.treeWindAmplitude * pNormalizedHeight;
-    }
-    
     // 座標の最終決定とクリップ空間への変換
     // 現在の座標計算
     float4 worldPos = mul(localPos, instance.World);

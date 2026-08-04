@@ -41,7 +41,7 @@ Skinned Skinning(SkinningVertexShaderInput input)
     skinned.normal += mul(input.normal, (float32_t3x3) gMatrixPalette[input.index.w].skeletonSpaceInverseTransposeMatrix) * input.weight.w;
     skinned.normal = normalize(skinned.normal);
     
-    // 接線の計算(ノーマルマップ)
+    // 接線の計算
     skinned.tangent = mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.x].skeletonSpaceInverseTransposeMatrix) * input.weight.x;
     skinned.tangent += mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.y].skeletonSpaceInverseTransposeMatrix) * input.weight.y;
     skinned.tangent += mul(input.tangent, (float32_t3x3) gMatrixPalette[input.index.z].skeletonSpaceInverseTransposeMatrix) * input.weight.z;

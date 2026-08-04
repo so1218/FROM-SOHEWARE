@@ -5,6 +5,7 @@ struct PixelInput
     float4 position : SV_POSITION;
     float4 color : COLOR; 
 };
+
 ConstantBuffer<MaterialData> gMaterial : register(b0);
 
 float4 main(PixelInput input) : SV_Target

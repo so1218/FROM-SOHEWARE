@@ -45,6 +45,7 @@ PixelShaderOutput main(PixelShaderInput input)
         {
             discard;
         }
+        
         // エッジ発光処理
         float width = gMaterial.edgeWidth;
         float thresholdEdge = threshold + width;

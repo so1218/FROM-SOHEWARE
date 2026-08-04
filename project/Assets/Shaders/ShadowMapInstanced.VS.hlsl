@@ -33,33 +33,6 @@ ShadowVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
                      sin(time + localPos.x * 5.0f);
         localPos.xyz += input.normal * wave * gMaterial.wobbleAmplitude;
     }
-    
-    // 揺らす処理 (Tree)
-    if (gMaterial.enableTreeWind != 0)
-    {
-        // 自身のワールド座標
-        float3 windWorldPos = mul(localPos, worldMatrix).xyz;
-        
-        // 空間的なズレの計算
-        float phaseOffset = (windWorldPos.x + windWorldPos.z) * gMaterial.treeWindSpatialScale;
-
-        // 時間軸の計算
-        float time = gFrameData.gTime * gMaterial.treeWindSpeed + phaseOffset;
-
-        // 複雑な揺れの生成
-        float waveX = sin(time) * cos(time * 0.45f + phaseOffset);
-        float waveZ = cos(time * 0.75f) * sin(time * 0.25f + phaseOffset);
-        
-        // 揺れ始める高さのしきい値
-        float thresholdHeight = gMaterial.treeWindThresholdHeight;
-        
-        // localPos.yからしきい値を引く
-        float normalizedHeight = max(0.0f, (localPos.y - thresholdHeight) * gMaterial.treeWindHeightScale);
-  
-        // 最終的な座標オフセット
-        localPos.x += waveX * gMaterial.treeWindAmplitude * normalizedHeight;
-        localPos.z += waveZ * gMaterial.treeWindAmplitude * normalizedHeight;
-    }
 
     // World行列を適用
     float4 worldPos = mul(localPos, worldMatrix);

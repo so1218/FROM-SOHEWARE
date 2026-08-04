@@ -12,5 +12,6 @@ PixelShaderOutput main()
     PixelShaderOutput output;
     
     output.color = gMaterialData.outlineColor;
+    
     return output;
 }

@@ -62,7 +62,7 @@ PixelShaderOutput main(PixelShaderInput input)
         float3x3 TBN = float3x3(T, B, N);
         float3 toEyeTS = mul(TBN, toEyeWorld);
         
-        // SampleGrad用：pomUVを使って計算する
+        // SampleGrad用：pomUVを使って計算
         float2 dx = ddx(pomUV);
         float2 dy = ddy(pomUV);
 

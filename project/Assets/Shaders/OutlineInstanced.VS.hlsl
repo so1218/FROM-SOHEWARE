@@ -30,7 +30,6 @@ OutlineVertexShaderOutput main(VertexShaderInput input, uint instanceID : SV_Ins
     float2 offsetDir = normalize(clipNormal.xy);
     float2 ndcPixelSize = float2(2.0f, 2.0f) / gFrameData.screenResolution;
     float depthScale = min(clipPos.w, 20.0f);
-
     float2 offset = offsetDir * ndcPixelSize * gMaterialData.outlineWidth * depthScale;
 
     output.position = clipPos;

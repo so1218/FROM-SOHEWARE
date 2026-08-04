@@ -187,21 +187,12 @@ struct MaterialData
     float rainbowIntensity;
     float fresnelExponent;
    
-    int32_t enableTreeWind;
-    float treeWindSpeed;
-    float treeWindAmplitude;
-    float treeWindSpatialScale;
-    
-    float treeWindHeightScale;
-    float treeWindVariation;
-    float treeWindThresholdHeight;
     int32_t useTriplanar;
-    
     float triplanarScale;
     float triplanarBlendSharpness;
     float shadowNormalBias;
-    int32_t enablePOM;
     
+    int32_t enablePOM;
     float pomHeightScale;
     float pomMinSteps; 
     float pomMaxSteps; 

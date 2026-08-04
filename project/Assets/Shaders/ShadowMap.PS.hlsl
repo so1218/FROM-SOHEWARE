@@ -48,8 +48,7 @@ void main(ShadowVSOutput input)
     {
         // 画面上のピクセル位置に基づいて閾値を取得 
         float threshold = DitherThreshold4x4(input.position.xy);
-
-        // アルファ値が閾値より低ければ捨てる
+        
         if (alpha < threshold)
         {
             discard;
