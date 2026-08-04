@@ -342,6 +342,17 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
         {
             SetActive(false); // 非アクティブにして描画と更新を止める
 
+            if (pointLightIndex_ != -1) {
+                engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
+                pointLightIndex_ = -1;
+            }
+
+            if (activeEmitter_)
+            {
+                activeEmitter_->Destroy();
+                activeEmitter_ = nullptr;
+            }
+
             // オブジェクトが消えたので、ライトの輝度を即座に0にして消灯
             if (pointLightIndex_ != -1)
             {

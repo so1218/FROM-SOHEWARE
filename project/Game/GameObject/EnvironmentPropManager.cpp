@@ -55,7 +55,8 @@ void EnvironmentPropManager::AddProp()
 
     if (!props_.empty() && currentTemplateIndex_ >= 0 && currentTemplateIndex_ < props_.size())
     {
-        newProp->GetModel()->CopyMaterialsFrom(props_[currentTemplateIndex_]->GetModel());
+        newProp->GetModel()->ShareModelDataFrom(props_[currentTemplateIndex_]->GetModel());
+        newProp->GetModel()->ShareMaterialsFrom(props_[currentTemplateIndex_]->GetModel());
     }
 
     props_.push_back(std::move(newProp));
@@ -114,7 +115,8 @@ void EnvironmentPropManager::DebugDraw()
             targetPropID >= 0 && targetPropID < props_.size() &&
             sourcePropID != targetPropID)
         {
-            props_[targetPropID]->GetModel()->CopyMaterialsFrom(props_[sourcePropID]->GetModel());
+            props_[targetPropID]->GetModel()->ShareModelDataFrom(props_[sourcePropID]->GetModel());
+            props_[targetPropID]->GetModel()->ShareMaterialsFrom(props_[sourcePropID]->GetModel());
 
             // コピーした結果を JSON のメモリデータに同期
             props_[targetPropID]->SyncMaterialsToJSON();
@@ -130,7 +132,8 @@ void EnvironmentPropManager::DebugDraw()
             {
                 if (i != sourcePropID)
                 {
-                    props_[i]->GetModel()->CopyMaterialsFrom(props_[sourcePropID]->GetModel());
+                    props_[i]->GetModel()->ShareModelDataFrom(props_[sourcePropID]->GetModel());
+                    props_[i]->GetModel()->ShareMaterialsFrom(props_[sourcePropID]->GetModel());
 
                     // コピーした結果を JSON のメモリデータに同期
                     props_[i]->SyncMaterialsToJSON();

@@ -44,6 +44,8 @@ public:
 
     // 別のモデルからマテリアル情報をすべてコピーする関数
     void CopyMaterialsFrom(const Model* sourceModel);
+    void ShareMaterialsFrom(const Model* sourceModel);
+    void ShareModelDataFrom(const Model* sourceModel);
 
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);

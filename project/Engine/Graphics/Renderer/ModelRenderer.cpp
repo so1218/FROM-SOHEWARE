@@ -463,7 +463,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         // 静的モデルはインスタンシング描画
         cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);
         cmdList->SetGraphicsRootDescriptorTable(17, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
-        cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
+        cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
     }
 }
 
@@ -577,7 +577,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, batch.startInstanceLocation);
+                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
             }
         }
     }

@@ -193,6 +193,22 @@ void Model::CopyMaterialsFrom(const Model* sourceModel)
     }
 }
 
+void Model::ShareMaterialsFrom(const Model* sourceModel)
+{
+    if (!sourceModel) return;
+
+    // そのままコピーすることで、同じ MaterialData を参照
+    this->materials_ = sourceModel->materials_;
+}
+
+void Model::ShareModelDataFrom(const Model* sourceModel)
+{
+    if (!sourceModel) return;
+
+    // 頂点データなどの実体ポインタをコピーして、同じアドレスを参照
+    this->modelData_ = sourceModel->modelData_;
+}
+
 void Model::SetColor(const Vector4& color)
 {
     for (auto& mat : materials_) {
