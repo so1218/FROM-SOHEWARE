@@ -270,13 +270,14 @@ void TreeField::GenerateTrees()
         }
 
         float scale = Math::RandomFloat(minScale_, maxScale_);
-        float rotY = Math::RandomFloat(0.0f, Math::PI * 2.0f);
+        float rotY = Math::RandomFloat(0.0f, 360.0f);
 
         WorldTransform treeTransform{};
-        treeTransform.translation_ = { rx, ry, rz };
-        treeTransform.rotation_ = { 0.0f, rotY, 0.0f };
-        treeTransform.scale_ = { scale, scale, scale };
-        treeTransform.UpdateMatrix();
+        treeTransform.UpdateMatrix(
+            Vector3(scale, scale, scale),
+            Vector3(0.0f, rotY, 0.0f),
+            Vector3(rx, ry, rz)
+        );
 
         // 色ムラ
         Vector4 colorVar = { 1.0f, 1.0f, 1.0f, 1.0f };
