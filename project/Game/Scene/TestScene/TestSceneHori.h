@@ -20,13 +20,6 @@ public:
     void OnDebugDraw() override;
     void OnFinalize() override;
 
-    void AddPlacedModel(std::unique_ptr<FE::Model> model)
-    {
-        placedModels_.push_back(std::move(model));
-    }
-
-    std::unique_ptr<FE::Model> RemovePlacedModel(FE::Model* targetPtr);
-
 private:
     // メンバー変数
     Player* player_ = nullptr;
@@ -39,12 +32,5 @@ private:
 
     std::unique_ptr<FE::ParticleEmitter> grassFieldEmitter_ = nullptr;
 
-    // エディタ（ドラッグ＆ドロップ）で配置されたモデルのリスト
-    std::vector<std::unique_ptr<FE::Model>> placedModels_;
-
-    // ギズモの移動履歴記録用
-    bool isGizmoUsingLastFrame_ = false;
-    FE::Vector3 gizmoOldTranslation_ = { 0.0f, 0.0f, 0.0f };
-    FE::Model* gizmoTargetModel_ = nullptr;
 };
 

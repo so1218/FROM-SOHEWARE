@@ -314,24 +314,24 @@ void TreeField::DebugDraw()
         ImGui::Text("[ 環境ノイズ ]");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
 
-        if (ImGui::Button("強制再生成 (Re-Generate)"))
+        if (ImGui::Button("強制再生成"))
         {
             GenerateTrees();
         }
     }
 
-    if (ImGui::CollapsingHeader("葉 (Leaf) パラメータ"))
+    if (ImGui::CollapsingHeader("葉パラメータ"))
     {
         ImGui::Text("[ テクスチャ ]");
-        binder_->Draw("LeafTexture", "アルベド (Albedo)");
-        binder_->Draw("LeafNormal", "ノーマルマップ (Normal)");
+        binder_->Draw("LeafTexture", "アルベド");
+        binder_->Draw("LeafNormal", "ノーマルマップ");
 
         ImGui::Separator();
-        binder_->Draw("LeafColorTint", "色味 (Color Tint)");
-        binder_->Draw("LeafAlbedoMult", "明るさ倍率 (Albedo Multiplier)");
+        binder_->Draw("LeafColorTint", "色味");
+        binder_->Draw("LeafAlbedoMult", "明るさ倍率");
 
         ImGui::Separator();
-        ImGui::Text("[ 風・揺れ (VS) ]");
+        ImGui::Text("[ 風・揺れ ]");
         binder_->Draw("TreeHeight", "木の高さ (基準)");
         binder_->Draw("TreeRadius", "木の半径 (基準)");
         binder_->Draw("GustScale", "突風ノイズスケール");
@@ -343,7 +343,7 @@ void TreeField::DebugDraw()
         binder_->Draw("LeafFlutterFreq", "葉の揺れ速度(周波数)");
 
         ImGui::Separator();
-        ImGui::Text("[ 質感・透過 (PS) ]");
+        ImGui::Text("[ 質感・透過 ]");
         binder_->Draw("BackfaceFlatten", "裏面法線の平坦化");
         binder_->Draw("DiffuseWrap", "ディフューズラップ");
         binder_->Draw("TransDistortion", "透過光の歪み");
@@ -362,14 +362,14 @@ void TreeField::DebugDraw()
         binder_->Draw("LeafShadowBias", "シャドウ深度バイアス");
     }
 
-    if (ImGui::CollapsingHeader("幹 (Trunk) パラメータ"))
+    if (ImGui::CollapsingHeader("幹パラメータ"))
     {
         ImGui::Text("[ テクスチャ ]");
-        binder_->Draw("TrunkTexture", "アルベド (Albedo)");
-        binder_->Draw("TrunkNormal", "ノーマルマップ (Normal)");
+        binder_->Draw("TrunkTexture", "アルベド");
+        binder_->Draw("TrunkNormal", "ノーマルマップ");
 
         ImGui::Separator();
-        ImGui::Text("[ 質感 (PS) ]");
+        ImGui::Text("[ 質感 ]");
         binder_->Draw("TrunkColor", "カラー");
         binder_->Draw("TrunkAlbedoMult", "明るさ倍率");
         binder_->Draw("TrunkSpecColor", "スペキュラカラー");
@@ -381,7 +381,7 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
 
         ImGui::Separator();
-        ImGui::Text("[ 影 (Shadow) ]");
+        ImGui::Text("[ 影 ]");
         binder_->Draw("TrunkShadowDens", "影の濃さ");
         binder_->Draw("TrunkShadowBias", "シャドウ深度バイアス");
         binder_->Draw("TrunkShadowNBias", "シャドウノーマルバイアス");
@@ -389,11 +389,10 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkShadowEnvStr", "環境マップの影への影響");
     }
 
-    // 環境・シェーディング共通のヘッダーを新設
     if (ImGui::CollapsingHeader("環境・シェーディング共通"))
     {
         ImGui::Text("[ グローバルテクスチャ ]");
-        binder_->Draw("ToonRamp", "トゥーンランプ (Toon)");
+        binder_->Draw("ToonRamp", "トゥーンランプ");
     }
 
     ImGui::Separator();

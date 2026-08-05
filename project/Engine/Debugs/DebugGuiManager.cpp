@@ -58,8 +58,6 @@ void DebugGuiManager::Update(Camera* targetCamera)
 
     ImGui::End();
 
-    assetBrowserWindow_.Draw();
-
     if (lightManager_)
     {
         lightManager_->DrawSelectedLightGizmo();
@@ -1082,30 +1080,12 @@ void DebugGuiManager::BeginSceneView(
         Vector2(vMax.x - vMin.x, vMax.y - vMin.y),
         isHovered
     );
-
-    if (ImGui::BeginDragDropTarget())
-    {
-        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_MODEL"))
-        {
-            // ドロップされたら、メンバ変数に保存するだけ！
-            droppedModelName_ = static_cast<const char*>(payload->Data);
-        }
-        ImGui::EndDragDropTarget();
-    }
 }
 
 void DebugGuiManager::EndSceneView()
 {
     // ウィンドウを閉じるだけ
     ImGui::End();
-}
-
-// 保存された名前を返し、一度返したら空に戻す
-std::string DebugGuiManager::ConsumeDroppedModelName()
-{
-    std::string name = droppedModelName_;
-    droppedModelName_.clear(); // 取得済みフラグとして空にする
-    return name;
 }
 
 #endif

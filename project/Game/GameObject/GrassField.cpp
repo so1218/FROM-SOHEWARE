@@ -167,7 +167,7 @@ void GrassField::DebugDraw()
         binder_->Draw("GridSpacing", "草の間隔 (小さいほど高密度)");
 
         ImGui::Separator();
-        ImGui::Text("【地形フィッティング】");
+        ImGui::Text("地形フィッティング");
         binder_->Draw("TerrainWidth", "地形の幅 (Xサイズ)");
         binder_->Draw("TerrainDepth", "地形の奥行き (Zサイズ)");
         binder_->Draw("TerrainCenterX", "地形の中心 X");
