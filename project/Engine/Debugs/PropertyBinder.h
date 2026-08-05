@@ -47,12 +47,12 @@ public:
     void BindColor(const std::string& key, Vector4* ptr, const Vector4& defaultValue);
     void BindColor(const std::string& key, uint32_t* ptr, uint32_t defaultValue);
 
-    void Draw(const std::string& key, const std::string& name = "");
+    bool Draw(const std::string& key, const std::string& name = "");
 
     // 特殊系
     // インスペクターのようなもの
     void BindModel(const std::string& groupName, Model* model);
-    void DrawModel(const std::string& groupName, const std::string& customLabel = "");
+    bool DrawModel(const std::string& groupName, const std::string& customLabel = "");
     void BindAnimationModel(const std::string& groupName, AnimationModel* model);
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void BindSprite(const std::string& groupName, Sprite* sprite);
@@ -95,11 +95,11 @@ public:
         keys_.push_back(key);
 
 #ifdef IS_DEVELOPMENT
-        items_[key] = [this, currentModelName, onChange, key](const std::string& label)
+        items_[key] = [this, currentModelName, onChange, key](const std::string& label) 
             {
                 // ModelManagerからロード済みのモデル名一覧を自動取得
                 std::vector<std::string> modelNames = ModelManager::GetInstance().GetLoadedModelNames();
-                if (modelNames.empty()) return;
+                if (modelNames.empty()) return false; 
 
                 // 現在のモデル名が何番目にあるか検索
                 int currentIndex = 0;
@@ -123,11 +123,13 @@ public:
                     *currentModelName = modelNames[currentIndex];
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *currentModelName);
 
-                    // 通知コールバックを発火
+                    // 通知コールバック
                     if (onChange) {
                         onChange(*currentModelName);
                     }
+                    return true; 
                 }
+                return false; 
             };
 #endif
     }
@@ -154,7 +156,7 @@ private:
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 
     template <typename ModelType>
-    void DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath);
+    bool DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath);
 
     Engine* engine_ = nullptr;
 
@@ -164,7 +166,7 @@ private:
     std::vector<std::string> keys_;
 
     // キーと描画処理を紐付けるマップ
-    std::unordered_map<std::string, std::function<void(const std::string&)>> items_;
+    std::unordered_map<std::string, std::function<bool(const std::string&)>> items_;
 
     // 内部で管理するためのヘルパー
     struct ModelBindInfo

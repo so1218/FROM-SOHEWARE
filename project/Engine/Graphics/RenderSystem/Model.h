@@ -96,6 +96,9 @@ public:
     // マテリアルハンドル取得
     MaterialHandle* GetMaterialHandle(size_t index = 0);
 
+    // モデル名を取得
+    const std::string& GetName() const { return name_; }
+
     const Vector4& GetBaseColor() const { return baseColor_; }
 
     // 色ポインタ取得 (ImGui等で直接編集する場合に使用)
@@ -115,6 +118,7 @@ private:
 private:
     Engine* engine_ = nullptr;
     const ModelData* modelData_ = nullptr;
+    std::string name_;
 
     // マテリアルとは別に、モデル自体が持つ色
     Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };

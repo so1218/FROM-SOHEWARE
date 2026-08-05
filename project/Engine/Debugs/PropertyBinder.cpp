@@ -28,7 +28,9 @@ namespace FE
                     // チェック結果を0 or 1に戻して保存
                     *ptr = isChecked ? 1 : 0;
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -57,7 +59,9 @@ namespace FE
                 {
                     *ptr = isChecked ? 1 : 0;
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, static_cast<int32_t>(*ptr));
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -112,7 +116,9 @@ namespace FE
                 {
                     // 変更があったら保存
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -132,7 +138,9 @@ namespace FE
                 if (ImGui::DragInt(label.c_str(), ptr, speed, min, max))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -146,7 +154,8 @@ namespace FE
         *ptr = static_cast<uint32_t>(val);
 
 #ifdef IS_DEVELOPMENT
-        items_[key] = [=](const std::string& nameOverride) {
+        items_[key] = [=](const std::string& nameOverride)
+            { 
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
 
             int val = static_cast<int>(*ptr);
@@ -155,7 +164,9 @@ namespace FE
             {
                 *ptr = static_cast<uint32_t>(val);
                 GlobalVariables::GetInstance()->SetValue(groupPath_, key, val);
+                return true; 
             }
+            return false; 
             };
 #endif
     }
@@ -174,7 +185,9 @@ namespace FE
                 if (ImGui::DragFloat(label.c_str(), ptr, speed, min, max))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -201,7 +214,9 @@ namespace FE
                     {
                         onChange();
                     }
+                    return true; 
                 }
+                return false;
             };
 #endif
     }
@@ -220,7 +235,9 @@ namespace FE
                 if (ImGui::Checkbox(label.c_str(), ptr))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -239,7 +256,9 @@ namespace FE
                 if (ImGui::DragFloat2(label.c_str(), &ptr->x, speed, min, max))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -276,7 +295,9 @@ namespace FE
                 if (ImGui::DragFloat4(label.c_str(), &ptr->x, speed, min, max))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -297,7 +318,9 @@ namespace FE
                 if (ImGui::ColorEdit3(label.c_str(), &ptr->x))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -316,7 +339,9 @@ namespace FE
                 if (ImGui::ColorEdit4(label.c_str(), &ptr->x))
                 {
                     GlobalVariables::GetInstance()->SetValue(groupPath_, key, *ptr);
+                    return true;
                 }
+                return false;
             };
 #endif
     }
@@ -336,7 +361,8 @@ namespace FE
 
 #ifdef IS_DEVELOPMENT
         // 描画処理の登録
-        items_[key] = [=](const std::string& nameOverride) {
+        items_[key] = [=](const std::string& nameOverride)
+            {
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
 
             Vector4 tempColor = Math::Uint32ToColorVector(*ptr);
@@ -346,7 +372,9 @@ namespace FE
                 *ptr = Math::ColorVectorToUint32(tempColor);
 
                 GlobalVariables::GetInstance()->SetValue(groupPath_, key, tempColor);
+                return true; 
             }
+            return false; 
             };
 #endif
     }
@@ -388,18 +416,21 @@ namespace FE
                     {
                         onChange();
                     }
+                    return true;
                 }
+                return false; 
             };
 #endif
     }
 
-    void PropertyBinder::Draw(const std::string& key, const std::string& name)
+    bool PropertyBinder::Draw(const std::string& key, const std::string& name)
     {
-        // 指定されたキーが存在すれば実行
+        // 指定されたキーが存在すれば実行し、その描画結果(bool)を返す
         if (items_.count(key))
         {
-            items_[key](name);
+            return items_[key](name);
         }
+        return false;
     }
 
 }

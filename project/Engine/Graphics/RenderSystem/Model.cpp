@@ -10,6 +10,7 @@ namespace FE
 Model::Model(Engine* engine, const std::string& modelName)
     : Model(engine, ModelManager::GetInstance().Get(modelName))
 {
+    name_ = modelName;
 }
 
 Model::Model(Engine* engine, const ModelData* modelData)

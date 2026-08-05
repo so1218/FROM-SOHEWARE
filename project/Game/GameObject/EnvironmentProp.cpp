@@ -33,17 +33,17 @@ void EnvironmentProp::Initialize()
     std::string childGroupName = "Prop_" + std::to_string(id_);
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
-    // モデル名だけをバインドする
-    // モデル名が変わったら、フラグを立てる
-    binder_->BindModelName("ModelName", &modelName_, "cube", [this](const std::string& newName) {
-        isNeedReconstruct_ = true;
-        });
+    // 自分専用のモデルを作るのではなく、マスターをコピー
+    if (masterModel_ != nullptr)
+    {
+        modelName_ = masterModel_->GetName();
+        model_ = std::make_unique<FE::Model>(engine_, masterModel_->GetName());
+        model_->ShareModelDataFrom(masterModel_);
+        model_->ShareMaterialsFrom(masterModel_);
+    }
 
     // 初回のプロパティ構築
     SetupProperties();
-
-    // ロードされた初期設定を適用
-    ApplySettings();
 }
 
 void EnvironmentProp::SetupProperties()
@@ -58,11 +58,6 @@ void EnvironmentProp::SetupProperties()
     // 一度バインダーに登録された古いポインタをすべてリセット
     binder_->Clear();
 
-    // 再バインド
-    binder_->BindModelName("ModelName", &modelName_, "cube", [this](const std::string& newName) {
-        isNeedReconstruct_ = true;
-        });
-
     auto* gv = FE::GlobalVariables::GetInstance();
     std::string loadedCustomName = gv->GetStringValue(binder_->GetGroupPath(), "CustomName");
     // もしJSONにデータがあればそれを使い、無ければ空文字をJSONにセット
@@ -73,11 +68,11 @@ void EnvironmentProp::SetupProperties()
         gv->SetValue(binder_->GetGroupPath(), "CustomName", propCustomName_);
     }
 
-    // 新しいモデルを完全に作り直す
-    model_ = std::make_unique<FE::Model>(engine_, modelName_);
+    binder_->Bind("Position", &model_->GetTransform().translation_, { 0.0f, 0.0f, 0.0f });
+    binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, &model_->GetTransform().rotationQuaternion_, 0.01f);
+    binder_->Bind("Scale", &model_->GetTransform().scale_, { 1.0f, 1.0f, 1.0f });
+    binder_->BindColor("BaseColor", &baseColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-    // 新しく生成された正しいポインタで再バインド
-    binder_->BindModel ("Model", model_.get());
     binder_->Bind("Behavior", &propBehavior_, 0);
     binder_->Bind("HasCollider", &hasCollider_, true);
 
@@ -186,12 +181,7 @@ void EnvironmentProp::Update()
 {
     if (!IsActive()) return;
 
-    // モデルの変更要求が来ていたら、安全なタイミングで再構築
-    if (isNeedReconstruct_)
-    {
-        SetupProperties();
-        isNeedReconstruct_ = false;
-    }
+    model_->SetBaseColor(baseColor_);
 
     // コライダーの同期
     if (hasCollider_ && collider_)
@@ -237,16 +227,17 @@ void EnvironmentProp::DebugDraw()
     std::string label = "オブジェクト [" + std::to_string(id_) + "] の設定";
     if (ImGui::CollapsingHeader(label.c_str()))
     {
-        binder_->Draw("ModelName", "3Dモデルのアセット選択");
-        binder_->DrawModel("Model", "インスペクター");
+        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "個別トランスフォーム");
+        binder_->Draw("Position", "位置");
+        binder_->Draw("Rotation", "回転");
+        binder_->Draw("Scale", "スケール");
+        ImGui::Separator();
+
+        ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "個別カラー");
+        binder_->Draw("BaseColor", "基本色（マテリアルに乗算）");
+        ImGui::Separator();
 
         ImGui::Combo("接触時の挙動", &propBehavior_, "なし（通常の障害物）\0拾って消える（アイテム）\0");
-
-        // 各種変更検知用のフラグをローカルに保存
-        bool prevCollider = hasCollider_;
-        bool prevLight = hasLight_;
-        bool prevParticle = hasParticle_;
-        bool prevParticleFollow = isParticleFollowing_; 
 
         binder_->Draw("HasCollider", "当たり判定（コライダー）");
 

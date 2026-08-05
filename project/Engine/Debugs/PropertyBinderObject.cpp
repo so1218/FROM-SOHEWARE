@@ -46,7 +46,7 @@ void PropertyBinder::BindModel(const std::string& groupName, Model* model)
     }
 }
 
-void PropertyBinder::DrawModel(const std::string& groupName, const std::string& customLabel)
+bool PropertyBinder::DrawModel(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef IS_DEVELOPMENT
     std::string prefix = groupName + "_";
@@ -58,21 +58,27 @@ void PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
         targetModel = modelBindMap_[groupName].model;
     }
 
+    bool isChanged = false; // 変更検知用
+
     ImGui::PushID(groupName.c_str());
     if (ImGui::CollapsingHeader(displayLabel.c_str()))
     {
         ImGui::Spacing();
         ImGui::SeparatorText("トランスフォーム");
-        Draw(prefix + "Trans", "位置");
-        Draw(prefix + "Rot", "回転");
-        Draw(prefix + "Scale", "スケール");
+        isChanged |= Draw(prefix + "Trans", "位置");
+        isChanged |= Draw(prefix + "Rot", "回転");
+        isChanged |= Draw(prefix + "Scale", "スケール");
 
         ImGui::Spacing();
 
-        // 共通関数を呼び出す
-        DrawMaterialUI(targetModel, prefix, gv, groupPath_);
+        // 共通関数を呼び出し、マテリアル等の変更結果を取得
+        isChanged |= DrawMaterialUI(targetModel, prefix, gv, groupPath_);
     }
     ImGui::PopID();
+
+    return isChanged;
+#else
+    return false;
 #endif
 }
 
@@ -311,7 +317,6 @@ void PropertyBinder::BindTexture(
         }
     }
 
-
     // 描画処理の登録 (ラムダ式)
     items_[key] = [this, key, filterType, defaultName, onValueChanged](const std::string& label)
         {
@@ -471,7 +476,11 @@ void PropertyBinder::BindTexture(
                 {
                     onValueChanged(newName);
                 }
+                return true; 
             }
+            return false; 
+#else
+            return false;
 #endif
         };
 }
@@ -675,11 +684,12 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 }
 
 template <typename ModelType>
-void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath)
+bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath)
 {
 #ifdef IS_DEVELOPMENT
-    if (!targetModel) return;
+    if (!targetModel) return false;
 
+    bool isChanged = false; // 変更検知用フラグ
     size_t matCount = targetModel->GetMaterialCount();
 
     // 一括操作
@@ -688,16 +698,25 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
         static Vector4 batchColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         ImGui::ColorEdit4("カラー##BatchColor", &batchColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
         ImGui::SameLine();
-        if (ImGui::Button("適用##ApplyBatchColor", ImVec2(60, 0))) { targetModel->SetColor(batchColor); }
+        if (ImGui::Button("適用##ApplyBatchColor", ImVec2(60, 0))) {
+            targetModel->SetColor(batchColor);
+            isChanged = true; // ボタン押下で変更あり
+        }
 
         ImGui::Separator();
 
         static bool batchOutlineEnable = false;
         static float batchOutlineWidth = 1.0f;
-        if (ImGui::Checkbox("アウトライン##BatchOutline", &batchOutlineEnable)) { targetModel->SetEnableOutline(batchOutlineEnable); }
+        if (ImGui::Checkbox("アウトライン##BatchOutline", &batchOutlineEnable)) {
+            targetModel->SetEnableOutline(batchOutlineEnable);
+            isChanged = true;
+        }
         ImGui::SameLine(130.0f);
         ImGui::SetNextItemWidth(100.0f);
-        if (ImGui::DragFloat("太さ##BatchWidth", &batchOutlineWidth, 0.1f, 0.0f, 10.0f)) { targetModel->SetOutlineWidth(batchOutlineWidth); }
+        if (ImGui::DragFloat("太さ##BatchWidth", &batchOutlineWidth, 0.1f, 0.0f, 10.0f)) {
+            targetModel->SetOutlineWidth(batchOutlineWidth);
+            isChanged = true;
+        }
 
         ImGui::TreePop();
     }
@@ -719,35 +738,35 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                     ImGui::Spacing();
 
                     ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "基本 & 質感");
-                    Draw(matPrefix + "Color", "カラー");
-                    Draw(matPrefix + "Lighting", "ライティング有効");
-                    Draw(matPrefix + "LightMode", "照明モード");
+                    isChanged |= Draw(matPrefix + "Color", "カラー");
+                    isChanged |= Draw(matPrefix + "Lighting", "ライティング有効");
+                    isChanged |= Draw(matPrefix + "LightMode", "照明モード");
 
                     int currentMode = gv->GetIntValue(groupPath, matPrefix + "LightMode");
                     ImGui::Indent(10.0f);
                     if (currentMode == 3)
                     {
-                        Draw(matPrefix + "Roughness", "粗さ");
-                        Draw(matPrefix + "Metalness", "金属度");
+                        isChanged |= Draw(matPrefix + "Roughness", "粗さ");
+                        isChanged |= Draw(matPrefix + "Metalness", "金属度");
                     }
                     else
                     {
-                        Draw(matPrefix + "Shininess", "光沢度");
-                        Draw(matPrefix + "SpecColor", "スペキュラ色");
-                        Draw(matPrefix + "DiffuseRef", "拡散反射率");
+                        isChanged |= Draw(matPrefix + "Shininess", "光沢度");
+                        isChanged |= Draw(matPrefix + "SpecColor", "スペキュラ色");
+                        isChanged |= Draw(matPrefix + "DiffuseRef", "拡散反射率");
                     }
                     ImGui::Unindent(10.0f);
 
                     ImGui::Spacing();
-                    Draw(matPrefix + "EnvMapInt", "環境マップ強度");
-                    Draw(matPrefix + "Emissive", "自己発光強度");
-                    Draw(matPrefix + "AlphaThres", "透過カット閾値(アルファテスト)");
+                    isChanged |= Draw(matPrefix + "EnvMapInt", "環境マップ強度");
+                    isChanged |= Draw(matPrefix + "Emissive", "自己発光強度");
+                    isChanged |= Draw(matPrefix + "AlphaThres", "透過カット閾値(アルファテスト)");
 
                     ImGui::Spacing();
                     ImGui::TextColored(ImVec4(0.8f, 0.8f, 1.0f, 1.0f), "テクスチャマップ");
-                    Draw(matPrefix + "AlbedoMap", "メインテクスチャ");
-                    Draw(matPrefix + "EnvMapTex", "環境マップ");
-                    Draw(matPrefix + "ToonRampTex", "トゥーンランプ");
+                    isChanged |= Draw(matPrefix + "AlbedoMap", "メインテクスチャ");
+                    isChanged |= Draw(matPrefix + "EnvMapTex", "環境マップ");
+                    isChanged |= Draw(matPrefix + "ToonRampTex", "トゥーンランプ");
 
                     ImGui::Spacing();
                     ImGui::Separator();
@@ -757,13 +776,13 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("ShadowSettings", optFlags, "影設定"))
                     {
-                        Draw(matPrefix + "AddShadow", "影を受ける");
+                        isChanged |= Draw(matPrefix + "AddShadow", "影を受ける");
                         if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
                         {
-                            Draw(matPrefix + "ShadowDens", "影の濃さ(不透明度)");
-                            Draw(matPrefix + "ShadowEnv", "環境光の影の強さ");
-                            Draw(matPrefix + "ShadowBias", "バイアス");
-                            Draw(matPrefix + "ShadowSoft", "柔らかさ");
+                            isChanged |= Draw(matPrefix + "ShadowDens", "影の濃さ(不透明度)");
+                            isChanged |= Draw(matPrefix + "ShadowEnv", "環境光の影の強さ");
+                            isChanged |= Draw(matPrefix + "ShadowBias", "バイアス");
+                            isChanged |= Draw(matPrefix + "ShadowSoft", "柔らかさ");
                         }
                         ImGui::TreePop();
                     }
@@ -772,12 +791,12 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("NormalMapSettings", optFlags, "法線マップ"))
                     {
-                        Draw(matPrefix + "NormEnable", "有効化");
+                        isChanged |= Draw(matPrefix + "NormEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "NormEnable") > 0)
                         {
-                            Draw(matPrefix + "NormalMapTex", "テクスチャ");
-                            Draw(matPrefix + "NormInten", "凹凸の強さ");
-                            Draw(matPrefix + "NormTile", "タイリング");
+                            isChanged |= Draw(matPrefix + "NormalMapTex", "テクスチャ");
+                            isChanged |= Draw(matPrefix + "NormInten", "凹凸の強さ");
+                            isChanged |= Draw(matPrefix + "NormTile", "タイリング");
                         }
                         ImGui::TreePop();
                     }
@@ -786,14 +805,14 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("POMSettings", optFlags, "視差マッピング (POM)"))
                     {
-                        Draw(matPrefix + "POMEnable", "有効化");
+                        isChanged |= Draw(matPrefix + "POMEnable", "有効化");
 
                         if (gv->GetIntValue(groupPath_, matPrefix + "POMEnable") > 0)
                         {
-                            Draw(matPrefix + "HeightMapTex", "ハイトマップ");
-                            Draw(matPrefix + "POMHeightScale", "高さスケール");
-                            Draw(matPrefix + "POMMinSteps", "最小ステップ数 (正面)");
-                            Draw(matPrefix + "POMMaxSteps", "最大ステップ数 (斜角)");
+                            isChanged |= Draw(matPrefix + "HeightMapTex", "ハイトマップ");
+                            isChanged |= Draw(matPrefix + "POMHeightScale", "高さスケール");
+                            isChanged |= Draw(matPrefix + "POMMinSteps", "最小ステップ数 (正面)");
+                            isChanged |= Draw(matPrefix + "POMMaxSteps", "最大ステップ数 (斜角)");
                         }
                         ImGui::TreePop();
                     }
@@ -802,13 +821,13 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("RimLightSettings", optFlags, "リムライト"))
                     {
-                        Draw(matPrefix + "RimEnable", "有効化");
+                        isChanged |= Draw(matPrefix + "RimEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "RimEnable") > 0)
                         {
-                            Draw(matPrefix + "RimColor", "発光色");
-                            Draw(matPrefix + "RimInten", "強度");
-                            Draw(matPrefix + "RimPower", "鋭さ");
-                            Draw(matPrefix + "RimUseDir", "ライト方向依存");
+                            isChanged |= Draw(matPrefix + "RimColor", "発光色");
+                            isChanged |= Draw(matPrefix + "RimInten", "強度");
+                            isChanged |= Draw(matPrefix + "RimPower", "鋭さ");
+                            isChanged |= Draw(matPrefix + "RimUseDir", "ライト方向依存");
                         }
                         ImGui::TreePop();
                     }
@@ -817,21 +836,21 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("EffectSettings", optFlags, "特殊エフェクト (アウトライン / ディゾルブ)"))
                     {
-                        Draw(matPrefix + "OutlineEnable", "アウトライン有効");
+                        isChanged |= Draw(matPrefix + "OutlineEnable", "アウトライン有効");
                         if (gv->GetIntValue(groupPath_, matPrefix + "OutlineEnable") > 0)
                         {
-                            Draw(matPrefix + "OutlineWidth", "線の太さ");
-                            Draw(matPrefix + "OutlineColor", "線の色");
+                            isChanged |= Draw(matPrefix + "OutlineWidth", "線の太さ");
+                            isChanged |= Draw(matPrefix + "OutlineColor", "線の色");
                         }
                         ImGui::Separator();
-                        Draw(matPrefix + "DisEnable", "ディゾルブ有効");
+                        isChanged |= Draw(matPrefix + "DisEnable", "ディゾルブ有効");
                         if (gv->GetIntValue(groupPath_, matPrefix + "DisEnable") > 0)
                         {
-                            Draw(matPrefix + "DissolveTex", "ノイズマップ");
-                            Draw(matPrefix + "DisThres", "進行度");
-                            Draw(matPrefix + "EdgeWidth", "エッジ幅");
-                            Draw(matPrefix + "EdgeInten", "エッジ強度");
-                            Draw(matPrefix + "EdgeColor", "エッジ色");
+                            isChanged |= Draw(matPrefix + "DissolveTex", "ノイズマップ");
+                            isChanged |= Draw(matPrefix + "DisThres", "進行度");
+                            isChanged |= Draw(matPrefix + "EdgeWidth", "エッジ幅");
+                            isChanged |= Draw(matPrefix + "EdgeInten", "エッジ強度");
+                            isChanged |= Draw(matPrefix + "EdgeColor", "エッジ色");
                         }
                         ImGui::TreePop();
                     }
@@ -840,32 +859,32 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("WaterSettings", optFlags, "水たまり / 波紋エフェクト"))
                     {
-                        Draw(matPrefix + "RippleEnable", "有効化");
+                        isChanged |= Draw(matPrefix + "RippleEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
                         {
-                            Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
+                            isChanged |= Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
 
                             ImGui::Spacing();
                             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋設定");
-                            Draw(matPrefix + "RippleMap", "波紋法線マップ");
-                            Draw(matPrefix + "RippleScale", "雨の密度(スケール)");
-                            Draw(matPrefix + "RippleStren", "波紋の強さ(法線)");
-                            Draw(matPrefix + "RippleSpeed", "波紋の全体速度");
-                            Draw(matPrefix + "RippleSize", "波紋の広がりサイズ");
-                            Draw(matPrefix + "RippleFreq", "波紋の発生頻度");
-                            Draw(matPrefix + "RippleMix", "波紋のレイヤー合成率");
+                            isChanged |= Draw(matPrefix + "RippleMap", "波紋法線マップ");
+                            isChanged |= Draw(matPrefix + "RippleScale", "雨の密度(スケール)");
+                            isChanged |= Draw(matPrefix + "RippleStren", "波紋の強さ(法線)");
+                            isChanged |= Draw(matPrefix + "RippleSpeed", "波紋の全体速度");
+                            isChanged |= Draw(matPrefix + "RippleSize", "波紋の広がりサイズ");
+                            isChanged |= Draw(matPrefix + "RippleFreq", "波紋の発生頻度");
+                            isChanged |= Draw(matPrefix + "RippleMix", "波紋のレイヤー合成率");
 
                             ImGui::Spacing();
                             ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "水たまり (Puddle) 設定");
-                            Draw(matPrefix + "UsePuddle", "水たまり形成");
+                            isChanged |= Draw(matPrefix + "UsePuddle", "水たまり形成");
                             if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
                             {
-                                Draw(matPrefix + "PuddleNoise", "分布ノイズマップ");
-                                Draw(matPrefix + "PuddleScale", "ノイズスケール");
-                                Draw(matPrefix + "PuddleFalloff", "エッジの滑らかさ");
-                                Draw(matPrefix + "PuddleColor", "水の色と濁り(Alpha)");
-                                Draw(matPrefix + "PuddleTint", "水の色合い調整");
-                                Draw(matPrefix + "PuddleEmission", "水たまりの発光強度");
+                                isChanged |= Draw(matPrefix + "PuddleNoise", "分布ノイズマップ");
+                                isChanged |= Draw(matPrefix + "PuddleScale", "ノイズスケール");
+                                isChanged |= Draw(matPrefix + "PuddleFalloff", "エッジの滑らかさ");
+                                isChanged |= Draw(matPrefix + "PuddleColor", "水の色と濁り(Alpha)");
+                                isChanged |= Draw(matPrefix + "PuddleTint", "水の色合い調整");
+                                isChanged |= Draw(matPrefix + "PuddleEmission", "水たまりの発光強度");
                             }
                         }
                         ImGui::TreePop();
@@ -875,17 +894,17 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("UVSettings", optFlags, "UV トランスフォーム"))
                     {
-                        Draw(matPrefix + "UseTriplanar", "トライプラナー有効");
+                        isChanged |= Draw(matPrefix + "UseTriplanar", "トライプラナー有効");
                         if (gv->GetIntValue(groupPath_, matPrefix + "UseTriplanar") > 0)
                         {
-                            Draw(matPrefix + "TriScale", "テクスチャスケール");
-                            Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
+                            isChanged |= Draw(matPrefix + "TriScale", "テクスチャスケール");
+                            isChanged |= Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
                         }
                         else
                         {
-                            Draw(matPrefix + "UVTrans", "UV 位置");
-                            Draw(matPrefix + "UVRot", "UV 回転");
-                            Draw(matPrefix + "UVScale", "UV スケール");
+                            isChanged |= Draw(matPrefix + "UVTrans", "UV 位置");
+                            isChanged |= Draw(matPrefix + "UVRot", "UV 回転");
+                            isChanged |= Draw(matPrefix + "UVScale", "UV スケール");
                         }
                         ImGui::TreePop();
                     }
@@ -898,7 +917,11 @@ void PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
             ImGui::EndTabBar();
         }
     }
-#endif 
+
+    return isChanged;
+#else
+    return false;
+#endif
 }
 
 }

@@ -7,86 +7,198 @@ EnvironmentPropManager::EnvironmentPropManager(FE::Engine* engine, const std::st
     : engine_(engine), managerGroupName_(groupName)
 {}
 
+void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const std::string& fallbackModelName)
+{
+    if (groups_.find(prefabName) != groups_.end()) return;
+
+    PropGroup newGroup;
+    newGroup.prefabName = prefabName;
+
+    // マスターの設定を保存するJSONグループ名
+    std::string masterGroupName = "Master_" + prefabName;
+    auto* gv = FE::GlobalVariables::GetInstance();
+
+    // JSONから「このプレハブがどの3Dモデルを使うか」を取得
+    std::string loadedModel = gv->GetStringValue({ managerGroupName_, masterGroupName }, "ModelName");
+    if (!loadedModel.empty()) {
+        newGroup.modelName = loadedModel;
+    }
+    else {
+        newGroup.modelName = fallbackModelName;
+        // 新規作成時はJSONにモデル名を書き込む
+        gv->SetValue({ managerGroupName_, masterGroupName }, "ModelName", newGroup.modelName);
+    }
+
+    newGroup.masterModel = std::make_unique<FE::Model>(engine_, newGroup.modelName);
+
+    // マスター専用のバインダー
+    newGroup.binder = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
+
+    // モデル差し替え用のバインダー登録
+    newGroup.binder->BindModelName("ModelName", &newGroup.modelName, newGroup.modelName,
+        [this, prefabName](const std::string& newName) {
+            // ImGui描画中での即時再構築を避けるため、予約変数に保存
+            this->pendingModelChangePrefab_ = prefabName;
+            this->pendingModelChangeNewName_ = newName;
+        });
+
+    newGroup.binder->BindModel("MasterModel", newGroup.masterModel.get());
+
+    groups_[prefabName] = std::move(newGroup);
+}
+
 void EnvironmentPropManager::Initialize()
 {
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("PropCount", &propCount_, 0);
 
-    // 足りない分だけ生成することで、データの意図しない初期化を防ぐ
-    while (props_.size() < propCount_)
+    auto* gv = FE::GlobalVariables::GetInstance();
+
+    for (int i = 0; i < propCount_; ++i)
     {
-        int newIndex = static_cast<int>(props_.size());
-        auto prop = std::make_unique<EnvironmentProp>(engine_, newIndex, managerGroupName_);
+        std::string childGroupName = "Prop_" + std::to_string(i);
+
+        // ★変更: 「ModelName」ではなく「PrefabName」を読み込む
+        std::string prefabName = gv->GetStringValue({ managerGroupName_, childGroupName }, "PrefabName");
+        std::string fallbackModel = prefabName;
+
+        if (prefabName.empty()) {
+            // ※以前のセーブデータとの互換性対応
+            prefabName = gv->GetStringValue({ managerGroupName_, childGroupName }, "ModelName");
+            if (prefabName.empty()) prefabName = "cube";
+            fallbackModel = prefabName;
+        }
+
+        // グループが無ければ作成（既存プレハブの場合はフォールバックは使われない）
+        CreateGroup(prefabName, fallbackModel);
+
+        auto prop = std::make_unique<EnvironmentProp>(engine_, i, managerGroupName_);
+        prop->SetPrefabName(prefabName); // ★追加
+        prop->SetMasterModel(groups_[prefabName].masterModel.get());
         prop->SetManager(this->GetManager());
         prop->Initialize();
 
-        props_.push_back(std::move(prop));
-    }
-
-    // もしJSON上の数が減っていた場合、末尾から安全に削除
-    while (props_.size() > propCount_)
-    {
-        props_.pop_back();
+        groups_[prefabName].instances.push_back(std::move(prop));
     }
 }
 
 void EnvironmentPropManager::Update()
 {
-    for (auto& prop : props_)
-    {
-        if (prop->IsActive()) prop->Update();
+    // すべてのグループの実体をUpdate
+    for (auto& [prefabName, group] : groups_) {
+        for (auto& prop : group.instances) {
+            if (prop->IsActive()) prop->Update();
+        }
     }
 }
 
 void EnvironmentPropManager::Draw()
 {
-    for (auto& prop : props_)
-    {
-        if (prop->IsActive()) prop->Draw();
+    for (auto& [prefabName, group] : groups_) {
+        for (auto& prop : group.instances) {
+            if (prop->IsActive()) prop->Draw();
+        }
     }
 }
 
-void EnvironmentPropManager::AddProp()
+void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
 {
-    int newIndex = static_cast<int>(props_.size());
+    int newIndex = propCount_;
+
+    // グループが無いことはないはずだが念のため
+    CreateGroup(prefabName, "cube");
+
     auto newProp = std::make_unique<EnvironmentProp>(engine_, newIndex, managerGroupName_);
+    newProp->SetPrefabName(prefabName); // ★追加
+    newProp->SetMasterModel(groups_[prefabName].masterModel.get());
     newProp->SetManager(this->GetManager());
     newProp->Initialize();
 
-    if (!props_.empty() && currentTemplateIndex_ >= 0 && currentTemplateIndex_ < props_.size())
-    {
-        newProp->GetModel()->ShareModelDataFrom(props_[currentTemplateIndex_]->GetModel());
-        newProp->GetModel()->ShareMaterialsFrom(props_[currentTemplateIndex_]->GetModel());
-    }
+    // ★変更: 「ModelName」ではなく「PrefabName」を保存
+    FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_, "Prop_" + std::to_string(newIndex) }, "PrefabName", prefabName);
 
-    props_.push_back(std::move(newProp));
-    propCount_ = static_cast<int>(props_.size());
+    groups_[prefabName].instances.push_back(std::move(newProp));
 
+    propCount_++;
     FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
 }
 
-void EnvironmentPropManager::RemoveEnvironmentProp(int index)
+void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
 {
-    if (index >= 0 && index < props_.size())
-    {
-        // JSON上の一番最後のデータを消去する
-        int lastIndex = static_cast<int>(props_.size()) - 1;
-        std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
-        FE::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
+    // 1. JSON上の一番最後のデータを消去
+    int lastIndex = propCount_ - 1;
+    std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
+    FE::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
 
-        // ベクターから指定された要素を削除
-        props_.erase(props_.begin() + index);
+    // 2. targetId を持つインスタンスを探して削除
+    for (auto& [prefabName, group] : groups_) {
+        auto it = std::remove_if(group.instances.begin(), group.instances.end(),
+            [targetId](const std::unique_ptr<EnvironmentProp>& p) { return p->GetID() == targetId; });
 
-        // 削除された場所以降の要素のIDを振り直し、JSONを上書き保存
-        for (int i = index; i < props_.size(); ++i)
-        {
-            props_[i]->ReassignID(i);
+        if (it != group.instances.end()) {
+            group.instances.erase(it, group.instances.end());
+            break;
         }
-
-        // 全体の数を更新
-        propCount_ = static_cast<int>(props_.size());
-        FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
     }
+
+    // 3. 削除したIDより大きいIDを持つプロップのIDを -1 して詰める
+    for (auto& [prefabName, group] : groups_) {
+        for (auto& prop : group.instances) {
+            if (prop->GetID() > targetId) {
+                prop->ReassignID(prop->GetID() - 1);
+
+                // ★ 変更: "ModelName" ではなく "PrefabName" として保存し直す
+                FE::GlobalVariables::GetInstance()->SetValue(
+                    { managerGroupName_, "Prop_" + std::to_string(prop->GetID()) },
+                    "PrefabName",
+                    prefabName
+                );
+            }
+        }
+    }
+
+    propCount_--;
+    FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
+
+    // もし削除したプロップを選択中だったら解除
+    if (selectedProp_ != nullptr && selectedProp_->GetID() == targetId) {
+        selectedProp_ = nullptr;
+    }
+}
+
+void EnvironmentPropManager::ExecutePrefabModelChange()
+{
+    if (pendingModelChangePrefab_.empty() || pendingModelChangeNewName_.empty()) return;
+
+    auto it = groups_.find(pendingModelChangePrefab_);
+    if (it != groups_.end())
+    {
+        auto& group = it->second;
+        group.modelName = pendingModelChangeNewName_;
+
+        // マスターモデルを作り直す
+        group.masterModel = std::make_unique<FE::Model>(engine_, group.modelName);
+
+        // バインダーをクリアして再登録（古いモデルへのポインタを無効化するため）
+        group.binder->Clear();
+
+        group.binder->BindModelName("ModelName", &group.modelName, group.modelName,
+            [this](const std::string& newName) {
+                this->pendingModelChangePrefab_ = pendingModelChangePrefab_;
+                this->pendingModelChangeNewName_ = newName;
+            });
+        group.binder->BindModel("MasterModel", group.masterModel.get());
+
+        // このPrefabに属するすべてのインスタンスに新しいマスターを適用
+        for (auto& prop : group.instances)
+        {
+            prop->ChangeMasterModel(group.masterModel.get());
+        }
+    }
+
+    // 予約をクリア
+    pendingModelChangePrefab_ = "";
+    pendingModelChangeNewName_ = "";
 }
 
 void EnvironmentPropManager::DebugDraw()
@@ -94,147 +206,106 @@ void EnvironmentPropManager::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("環境オブジェクトマネージャー");
 
-    ImGui::Text("全体の数: %d", propCount_);
-    ImGui::Separator();
+    int deleteRequestID = -1; // 削除予約用
 
-    // マテリアルの手動コピーUI
-    ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "マテリアル手動コピー機能");
-
-    // static変数にして、フレーム間でも入力値を保持
-    static int sourcePropID = 0;
-    static int targetPropID = 0;
-
-    ImGui::InputInt("コピー元 Prop ID", &sourcePropID);
-
-    // 特定のPropへコピーするボタン
-    ImGui::InputInt("コピー先 Prop ID", &targetPropID);
-    if (ImGui::Button("指定したPropにマテリアルをコピー"))
+    for (auto& [prefabName, group] : groups_)
     {
-        // 範囲外アクセス防止と、自分自身へのコピーを弾く安全対策
-        if (sourcePropID >= 0 && sourcePropID < props_.size() &&
-            targetPropID >= 0 && targetPropID < props_.size() &&
-            sourcePropID != targetPropID)
-        {
-            props_[targetPropID]->GetModel()->ShareModelDataFrom(props_[sourcePropID]->GetModel());
-            props_[targetPropID]->GetModel()->ShareMaterialsFrom(props_[sourcePropID]->GetModel());
+        ImGui::PushID(prefabName.c_str());
 
-            // コピーした結果を JSON のメモリデータに同期
-            props_[targetPropID]->SyncMaterialsToJSON();
-        }
-    }
+        std::string groupHeader = prefabName + " (" + std::to_string(group.instances.size()) + "個)";
 
-    // すべてのPropへ一括コピーするボタン
-    if (ImGui::Button("すべてのPropにマテリアルをコピー"))
-    {
-        if (sourcePropID >= 0 && sourcePropID < props_.size())
+        if (ImGui::CollapsingHeader(groupHeader.c_str()))
         {
-            for (int i = 0; i < props_.size(); ++i)
+            ImGui::Indent();
+
+            if (ImGui::TreeNode("共通マテリアル設定 (Prefab)"))
             {
-                if (i != sourcePropID)
+                group.binder->Draw("ModelName", "ベース3Dモデル");
+
+                // バインダーを経由してマスターモデルを描画
+                bool isMaterialChanged = group.binder->DrawModel("MasterModel", "マテリアル");
+
+                // 変更を検知したら即座に適用
+                if (isMaterialChanged)
                 {
-                    props_[i]->GetModel()->ShareModelDataFrom(props_[sourcePropID]->GetModel());
-                    props_[i]->GetModel()->ShareMaterialsFrom(props_[sourcePropID]->GetModel());
-
-                    // コピーした結果を JSON のメモリデータに同期
-                    props_[i]->SyncMaterialsToJSON();
+                    for (auto& inst : group.instances) {
+                        inst->GetModel()->ShareMaterialsFrom(group.masterModel.get());
+                    }
                 }
+                ImGui::TreePop();
             }
-        }
-    }
-
-    ImGui::Separator();
-
-    if (ImGui::Button("新しいPropを最後尾に追加"))
-    {
-        AddProp();
-    }
-
-    ImGui::Separator();
-
-    int deleteIndex = -1; // 削除予約用
-
-    // 各Propの詳細設定
-    for (int i = 0; i < props_.size(); ++i)
-    {
-        ImGui::PushID(i);
-
-        // ヘッダー名に名前を表示
-        std::string displayName = props_[i]->GetDisplayName();
-        std::string headerName = "Prop [" + std::to_string(i) + "] : " + displayName;
-
-        // TreeNodeに選択状態を持たせる
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        if (selectedPropIndex_ == i)
-        {
-            flags |= ImGuiTreeNodeFlags_Selected;
-        }
-
-        // TreeNodeExを使ってフラグを適用
-        bool isOpen = ImGui::TreeNodeEx(headerName.c_str(), flags);
-
-        // TreeNode自体がクリックされたら、このPropを選択状態にする
-        if (ImGui::IsItemClicked())
-        {
-            selectedPropIndex_ = i;
-        }
-
-        if (isOpen)
-        {
-            char nameBuf[256];
-            // 現在の名前をバッファにコピー
-            strncpy_s(nameBuf, sizeof(nameBuf), props_[i]->GetDisplayName().c_str(), _TRUNCATE);
-
-            // 入力があった場合だけ、SetCustomName で更新＆保存
-            if (ImGui::InputText("エディタ表示名", nameBuf, sizeof(nameBuf)))
-            {
-                props_[i]->SetCustomName(nameBuf);
-            }
-
-            props_[i]->DebugDraw();
 
             ImGui::Separator();
+            ImGui::Text("配置済みインスタンス一覧");
 
-            if (ImGui::Button("このPropを削除", ImVec2(-1, 0)))
+            for (int i = 0; i < group.instances.size(); ++i)
             {
-                deleteIndex = i;
+                auto& prop = group.instances[i];
+                ImGui::PushID(prop->GetID());
+
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+                if (selectedProp_ == prop.get()) flags |= ImGuiTreeNodeFlags_Selected;
+
+                std::string instName = "Prop [" + std::to_string(prop->GetID()) + "] : " + prop->GetDisplayName();
+                bool isOpen = ImGui::TreeNodeEx(instName.c_str(), flags);
+
+                if (ImGui::IsItemClicked()) {
+                    selectedProp_ = prop.get();
+                }
+
+                if (isOpen)
+                {
+                    prop->DebugDraw();
+
+                    if (ImGui::Button("このPropを削除", ImVec2(-1, 0))) {
+                        deleteRequestID = prop->GetID();
+                    }
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
             }
 
-            ImGui::TreePop();
+            if (ImGui::Button("+ この種類のPropを追加", ImVec2(-1, 0)))
+            {
+                AddPropToGroup(prefabName);
+            }
+
+            ImGui::Unindent();
         }
         ImGui::PopID();
     }
 
-    if (deleteIndex != -1)
-    {
-        RemoveEnvironmentProp(deleteIndex);
+    // 削除処理の実行
+    if (deleteRequestID != -1) {
+        RemoveEnvironmentProp(deleteRequestID);
+    }
 
-        // 選択中のオブジェクトを消した場合は、選択状態をリセット
-        if (selectedPropIndex_ == deleteIndex)
-        {
-            selectedPropIndex_ = -1;
-        }
-        // 消した対象より後ろを選択していた場合は、インデックスがずれるので調整
-        else if (selectedPropIndex_ > deleteIndex)
-        {
-            selectedPropIndex_--;
-        }
+    ImGui::Separator();
+
+    ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "新しいPrefabの作成");
+    static char newPrefabName[128] = "MyNewPrefab";
+    static char baseModelName[128] = "cube";
+    ImGui::InputText("Prefab名", newPrefabName, sizeof(newPrefabName));
+    ImGui::InputText("ベースの3Dモデル名", baseModelName, sizeof(baseModelName));
+
+    if (ImGui::Button("この設定でPrefabを作成", ImVec2(-1, 0))) {
+        CreateGroup(newPrefabName, baseModelName);
     }
 
     ImGui::End();
 
-    // 選択されているPropが存在すれば、そのTransformに対してGizmoを描画
-    if (selectedPropIndex_ >= 0 && selectedPropIndex_ < props_.size())
+    // ==========================================
+    // ギズモ描画 (ポインタ基準に変更)
+    // ==========================================
+    if (selectedProp_ != nullptr)
     {
-        // ギズモ操作前のTransformを記録
-        auto& targetTransform = props_[selectedPropIndex_]->GetTransformRef();
+        auto& targetTransform = selectedProp_->GetTransformRef();
         FE::Vector3 oldPos = targetTransform.translation_;
         FE::Vector3 oldRot = targetTransform.rotation_;
         FE::Vector3 oldScale = targetTransform.scale_;
 
-        // ギズモの描画
         FE::ImGuiManager::DrawGizmo(targetTransform);
 
-        // 操作前と操作後で値が変わっているかチェック
         bool isChanged = false;
         if (oldPos.x != targetTransform.translation_.x || oldPos.y != targetTransform.translation_.y || oldPos.z != targetTransform.translation_.z) isChanged = true;
         if (oldRot.x != targetTransform.rotation_.x || oldRot.y != targetTransform.rotation_.y || oldRot.z != targetTransform.rotation_.z) isChanged = true;
@@ -243,16 +314,15 @@ void EnvironmentPropManager::DebugDraw()
         if (isChanged)
         {
             auto* gv = FE::GlobalVariables::GetInstance();
+            std::vector<std::string> groupPath = { managerGroupName_, "Prop_" + std::to_string(selectedProp_->GetID()) };
 
-            // 例: "EnvironmentPropManager/Prop_0" のようなグループパスを生成
-            std::vector<std::string> groupPath = { managerGroupName_, "Prop_" + std::to_string(selectedPropIndex_) };
-
-            // BindModelで設定されたキー名に合わせてメモリ上のデータを更新
-            gv->SetValue(groupPath, "Model_Trans", targetTransform.translation_);
-            gv->SetValue(groupPath, "Model_Rot", targetTransform.rotation_);
-            gv->SetValue(groupPath, "Model_Scale", targetTransform.scale_);
+            gv->SetValue(groupPath, "Position", targetTransform.translation_);
+            gv->SetValue(groupPath, "Rotation", targetTransform.rotation_);
+            gv->SetValue(groupPath, "Scale", targetTransform.scale_);
         }
     }
+
+    ExecutePrefabModelChange();
 
 #endif
 }
@@ -374,4 +444,28 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "PuddleColor", matData->puddleColor);
         gv->SetValue(groupPath, matPrefix + "PuddleTint", matData->puddleTint);
     }
+}
+
+
+void EnvironmentProp::ChangeMasterModel(FE::Model* newMaster)
+{
+    masterModel_ = newMaster;
+
+    // 現在の座標・回転・スケールを退避
+    auto currentTransform = model_->GetTransform();
+
+    // モデルを再生成
+    modelName_ = masterModel_->GetName();
+    model_ = std::make_unique<FE::Model>(engine_, modelName_);
+
+    // 新しいマスターモデルからデータとマテリアルを共有
+    model_->ShareModelDataFrom(masterModel_);
+    model_->ShareMaterialsFrom(masterModel_);
+
+    // 退避したトランスフォームを復元
+    model_->SetTransform(currentTransform);
+
+    // モデルが再生成されポインタアドレスが変わったため、
+    // PropertyBinder の登録をすべてやり直す
+    SetupProperties();
 }

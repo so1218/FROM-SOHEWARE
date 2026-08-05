@@ -33,9 +33,12 @@ public:
     // IDを振り直し、JSONの保存先を更新する関数
     void ReassignID(int newID);
 
-    // カスタム名が空ならモデル名（cubeなど）を返し、設定されていればカスタム名を返す
+    // 自分のIDを返す関数
+    int GetID() const { return id_; }
+
+    // カスタム名が空なら Prefab 名を返し、設定されていればカスタム名を返す場合
     std::string GetDisplayName() const {
-        return propCustomName_.empty() ? modelName_ : propCustomName_;
+        return propCustomName_.empty() ? prefabName_ : propCustomName_;
     }
 
     // ギズモ操作のために、モデルのTransformの参照を返すゲッター
@@ -43,17 +46,19 @@ public:
         return model_->GetTransform();
     }
 
-    void SetCustomName(const std::string& newName) {
-        propCustomName_ = newName;
-        FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "CustomName", propCustomName_);
-    }
+    void SetMasterModel(FE::Model* master) { masterModel_ = master; }
 
     void SyncMaterialsToJSON();
 
-    std::string propCustomName_ = ""; // ユーザーが自由に付けられる名前
+    // 自分が属するプレハブ名を保持
+    void SetPrefabName(const std::string& name) { prefabName_ = name; }
+    const std::string& GetPrefabName() const { return prefabName_; }
+
+    void ChangeMasterModel(FE::Model* newMaster);
 
 private:
     FE::Engine* engine_;
+    FE::Model* masterModel_ = nullptr;
     int id_;
     std::string parentGroupName_;
 
@@ -79,7 +84,7 @@ private:
     float lightVolumetricScatteringIntensity_ = 1.0f;
 
     std::string modelName_ = "cube";
-    bool isNeedReconstruct_ = false; // 再構築が必要かどうかのフラグ
+    std::string propCustomName_ = ""; // ユーザーが自由に付けられる名前
 
     void SetupProperties(); // プロパティの登録をひとまとめにする関数
 
@@ -87,4 +92,7 @@ private:
     std::string particleName_ = "enemyAura";
     FE::ParticleEmitter* activeEmitter_ = nullptr;
     bool isParticleFollowing_ = true; // 追従するかどうかのフラグ
+
+    std::string prefabName_;
+    FE::Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
