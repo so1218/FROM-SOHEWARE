@@ -53,8 +53,9 @@ void TreeField::Initialize()
     // --- 葉(Leaf) の設定 ---
     binder_->BindColor("LeafColorTint", &leafColorTint_, { 1.0f, 1.0f, 1.0f });
     binder_->Bind("LeafAlbedoMult", &leafAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("WindSpeedMult", &windSpeedMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("WindStrengthMult", &windStrengthMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("GustScale", &gustScale_, 0.05f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("BaseWindStrength", &baseWindStrength_, 0.2f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("GustStrength", &gustStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkFlex", &trunkFlexibility_, 0.1f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BranchFlex", &branchFlexibility_, 0.3f, 0.01f, 0.0f, 2.0f);
@@ -181,7 +182,8 @@ void TreeField::UpdateMaterials()
     // 葉のパラメータ更新
     LeafMaterialData leafData{};
     leafData.gustScale = gustScale_;
-    leafData.baseWindStrength = baseWindStrength_;
+    leafData.windSpeedMultiplier = windSpeedMultiplier_;
+    leafData.windStrengthMultiplier = windStrengthMultiplier_;
     leafData.gustStrength = gustStrength_;
     leafData.trunkFlexibility = trunkFlexibility_;
     leafData.branchFlexibility = branchFlexibility_;
@@ -334,8 +336,9 @@ void TreeField::DebugDraw()
         ImGui::Text("[ 風・揺れ ]");
         binder_->Draw("TreeHeight", "木の高さ (基準)");
         binder_->Draw("TreeRadius", "木の半径 (基準)");
+        binder_->Draw("WindSpeedMult", "風の速さ(揺れ)倍率");
+        binder_->Draw("WindStrengthMult", "風の強さ(曲がり)倍率");
         binder_->Draw("GustScale", "突風ノイズスケール");
-        binder_->Draw("BaseWindStrength", "基本の風の強さ");
         binder_->Draw("GustStrength", "突風の強さ");
         binder_->Draw("TrunkFlex", "幹のしなりやすさ");
         binder_->Draw("BranchFlex", "枝のしなりやすさ");

@@ -50,7 +50,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     PixelShaderOutput output;
 
     // -------------------------------------------------------------------------
-    // 1. LODディザリング (超軽量IGN)
+    // LODディザリング (超軽量IGN)
     // -------------------------------------------------------------------------
     float dither = InterleavedGradientNoise(input.position.xy);
     clip(input.lodFade - dither);

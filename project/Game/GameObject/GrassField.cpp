@@ -48,10 +48,8 @@ void GrassField::Initialize()
     binder_->Bind("SpecularShininess", &grassMat->specularShininess, 40.0f, 1.0f, 10.0f, 200.0f);
     binder_->Bind("Wetness", &grassMat->wetness, 0.0f, 0.05f, 0.0f, 1.0f);
 
-    binder_->Bind("WindDirX", &grassMat->windDir.x, 1.0f, 0.05f, -1.0f, 1.0f);
-    binder_->Bind("WindDirY", &grassMat->windDir.y, 0.8f, 0.05f, -1.0f, 1.0f);
-    binder_->Bind("WindSpeed", &grassMat->windSpeed, 1.5f, 0.1f, 0.0f, 10.0f);
-    binder_->Bind("BaseWindStrength", &grassMat->baseWindStrength, 0.3f, 0.05f, 0.0f, 2.0f);
+    binder_->Bind("WindSpeedMult", &grassMat->windSpeedMultiplier, 1.0f, 0.05f, 0.0f, 5.0f);
+    binder_->Bind("WindStrengthMult", &grassMat->windStrengthMultiplier, 1.0f, 0.05f, 0.0f, 5.0f);
     binder_->Bind("GustScale", &grassMat->gustScale, 0.03f, 0.005f, 0.001f, 0.5f);
     binder_->Bind("GustStrength", &grassMat->gustStrength, 1.2f, 0.1f, 0.0f, 5.0f);
     binder_->Bind("WindFlattenStrength", &grassMat->windFlattenStrength, 1.0f, 0.05f, 0.0f, 3.0f);
@@ -215,11 +213,8 @@ void GrassField::DebugDraw()
         ImGui::Text("風テクスチャ");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
         ImGui::Separator();
-        binder_->Draw("WindDirX", "風向き X");
-        binder_->Draw("WindDirY", "風向き Z(Y)");
-
-        binder_->Draw("WindSpeed", "風の移動速度");
-        binder_->Draw("BaseWindStrength", "常時吹くそよ風の強さ");
+        binder_->Draw("WindSpeedMult", "風の速さ(揺れ)倍率");
+        binder_->Draw("WindStrengthMult", "風の強さ(曲がり)倍率");
 
         ImGui::Separator();
         binder_->Draw("GustScale", "突風ノイズのスケール");

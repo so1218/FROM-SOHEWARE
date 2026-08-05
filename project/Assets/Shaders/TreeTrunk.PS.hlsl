@@ -39,7 +39,7 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
-    float4 color : COLOR0; // GustMask と 擬似AO をPSに渡すために使用
+    float4 color : COLOR0; 
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
 };

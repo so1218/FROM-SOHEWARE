@@ -501,25 +501,23 @@ struct GrassMaterialData
     float3 sssColor;
     float sssStrength;
     
-    float2 windDir;
-    float windSpeed;
-    float baseWindStrength;
-    
+    float windSpeedMultiplier; 
+    float windStrengthMultiplier;
     float gustScale; 
     float gustStrength; 
+    
     float flutterAmount; 
     float windHighlightStrength; 
-    
     float specularStrength; 
     float specularShininess;
+    
     float wetness; 
     float interactRadius; 
-    
     float shadowDensity; 
     float shadowNormalBias; 
+    
     float shadowBias; 
     float colorVariation; 
-    
     float windFlattenStrength;
 };
 
@@ -576,35 +574,37 @@ struct TreeCullingData
 
 struct LeafMaterialData
 {
+    float windSpeedMultiplier; 
+    float windStrengthMultiplier;
     float gustScale;
-    float baseWindStrength;
     float gustStrength; 
-    float trunkFlexibility;
     
+    float trunkFlexibility;
     float branchFlexibility; 
     float leafFlutterAmount; 
     float backfaceFlatten; 
-    float diffuseWrap; 
     
+    float diffuseWrap; 
     float transmissionDistortion; 
     float transmissionPower; 
     float sssStrength; 
+    
     float alphaCutoff; 
-    
     float shadowDensity; 
+    float shadowNormalBias;
+    float treeHeight;
+    
     float3 sssColor; 
-    
-    float shadowNormalBias; 
-    float treeHeight; 
     float treeRadius; 
-    float shadowBias; 
     
+    float shadowBias; 
     float baseRoughness;
     float baseAO; 
     float baseThickness;
-    float albedoMultiplier;
     
+    float albedoMultiplier;
     float3 colorTint; 
+    
     float leafFlutterFrequency;
 };
 

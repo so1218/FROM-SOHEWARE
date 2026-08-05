@@ -378,6 +378,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL); 
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);   
         builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX);
+        builder.AddCBV(7, D3D12_SHADER_VISIBILITY_VERTEX);
         builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL); 
 
         builder.AddSRV(10, D3D12_SHADER_VISIBILITY_VERTEX); 

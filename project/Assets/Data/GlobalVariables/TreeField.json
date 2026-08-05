@@ -78,6 +78,8 @@
             1.0
         ],
         "TrunkTexture": "bark1_baseColor",
-        "WindMap": "noise_39"
+        "WindMap": "noise_39",
+        "WindSpeedMult": 1.0800000429153442,
+        "WindStrengthMult": 1.9299999475479126
     }
 }

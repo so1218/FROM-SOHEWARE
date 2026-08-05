@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "EnvironmentManager.h"
 
 namespace FE
 {
@@ -231,15 +232,16 @@ void GrassRenderer::Draw(
     cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
     // コンピュートシェーダーが構築した出力バッファを頂点シェーダーへバインド
-    cmdList->SetGraphicsRootShaderResourceView(5, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootShaderResourceView(6, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
 
-    cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
     if (shadowMap)
     {
-        cmdList->SetGraphicsRootDescriptorTable(7, shadowMap->GetSRVHandle());
+        cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
     }
 
     cmdList->ExecuteIndirect(

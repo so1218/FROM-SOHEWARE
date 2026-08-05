@@ -63,12 +63,13 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
 
     // 風の基本計算
     float2 windDir = normalize(gEnvironmentData.windDirection);
-    float windTime = gEnvironmentData.windTime;
+    float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
+    float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
-    float totalWind = gMaterial.baseWindStrength + (gustMask * gMaterial.gustStrength);
+    float totalWind = currentWindMag + (gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed);
     
     float treePhase = dot(rootPos.xz, float2(0.13f, 0.17f)) + instance.colorVariation.x * 12.34f;
 

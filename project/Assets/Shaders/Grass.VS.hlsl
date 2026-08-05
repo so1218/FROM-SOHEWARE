@@ -4,9 +4,10 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
 ConstantBuffer<GrassCullingData> gGrassCullingData : register(b6);
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
 StructuredBuffer<GrassInstanceData> gInstanceData : register(t10);
 
-// 風の強度マップ (グレースケールノイズ)
+// 風の強度マップ
 Texture2D<float> gWindMap : register(t11);
 SamplerState gLinearWrapSampler : register(s2);
 
@@ -128,16 +129,18 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     // -------------------------------------------------------------------------
     // 風・インタラクション
     // -------------------------------------------------------------------------
-    float2 windDir = normalize(gMaterial.windDir);
-    float windTime = gFrameData.gTime * gMaterial.windSpeed;
+    float2 windDir = normalize(gEnvironmentData.windDirection);
+    float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
+    float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
     // 低周波ノイズによる風のうねりと、位置ベースの高周波な揺らぎの合成
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     
-    float flutter = sin(gFrameData.gTime * 10.0f + (rootPos.x * 1.7f + rootPos.z * 2.3f)) * gMaterial.flutterAmount;
-    float totalWindMag = gMaterial.baseWindStrength + (gustMask * gMaterial.gustStrength) + flutter;
+    float flutter = sin(gFrameData.gTime * 10.0f + (rootPos.x * 1.7f + rootPos.z * 2.3f))
+                    * gMaterial.flutterAmount * gEnvironmentData.windSpeed;
+    float totalWindMag = currentWindMag + (gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed) + flutter;
     
     float3 windForce = float3(windDir.x * totalWindMag, -totalWindMag * gMaterial.windFlattenStrength, windDir.y * totalWindMag);
 

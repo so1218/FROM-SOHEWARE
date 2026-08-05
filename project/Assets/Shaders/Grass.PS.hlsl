@@ -77,7 +77,7 @@ PixelShaderOutput main(PixelInput input)
     // -------------------------------------------------------------------------
     // Specular
     // -------------------------------------------------------------------------
-    // 接線(Tangent)ベースの縦方向ハイライト
+    // 接線ベースの縦方向ハイライト
     float3 H = normalize(lightDir + toEye);
     float3 tangent = normalize(input.tangent);
     

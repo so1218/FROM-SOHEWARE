@@ -1,7 +1,9 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<LeafMaterialData> gMaterial : register(b2);
+
 Texture2D<float4> gAlbedoAlphaTex : register(t8);
+
 SamplerState gPointSampler : register(s3);
 
 struct ShadowVSOutput

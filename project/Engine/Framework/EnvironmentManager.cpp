@@ -262,6 +262,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
         cbData_->wetness = currentWeatherProfile_.wetness;
         cbData_->rainIntensity = currentWeatherProfile_.rainIntensity;
         cbData_->windDirection = currentWeatherProfile_.windDirection;
+        cbData_->windSpeed = currentWeatherProfile_.windSpeed;
         cbData_->windTime = accumulatedWindTime_;
         cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
         cbData_->skyColor = { currentProfile_.zenithColor.x, currentProfile_.zenithColor.y, currentProfile_.zenithColor.z, 1.0f };

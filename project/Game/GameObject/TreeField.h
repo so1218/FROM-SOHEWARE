@@ -63,7 +63,8 @@ private:
     // 葉 (LeafMaterialData) パラメータ
     // ==========================================
     float gustScale_ = 0.05f;
-    float baseWindStrength_ = 0.2f;
+    float windSpeedMultiplier_ = 1.0f;
+    float windStrengthMultiplier_ = 1.0f;
     float gustStrength_ = 1.0f;
     float trunkFlexibility_ = 0.1f;
     float branchFlexibility_ = 0.3f;

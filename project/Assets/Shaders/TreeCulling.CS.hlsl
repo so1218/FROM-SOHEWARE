@@ -30,7 +30,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     bool isVisible = true;
 
-    // 1. 距離カリング
+    // 距離カリング
     float distToCam = distance(rootPos, gFrameData.cameraWorldPosition);
     if (distToCam > gTreeCullingData.maxDrawDistance)
     {

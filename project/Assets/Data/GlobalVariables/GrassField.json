@@ -19,14 +19,14 @@
         ],
         "ColorVariation": 0.0,
         "DensityMap": "noise_44",
-        "FlutterAmount": 0.019999999552965164,
+        "FlutterAmount": 0.009999999776482582,
         "GrassCount": 5,
-        "GrassNormalBlend": 0.699999988079071,
+        "GrassNormalBlend": 0.75,
         "GrassRootAO": 1.0,
         "GrassStiffness": 0.3400000035762787,
         "GridSpacing": 1.2599999904632568,
         "GustScale": 0.0010000000474974513,
-        "GustStrength": 0.6000000238418579,
+        "GustStrength": 1.0,
         "HeightMap": "noise_39",
         "InteractRadius": 5.0,
         "InteractStrength": 2.619999885559082,
@@ -49,9 +49,9 @@
         ],
         "RootAO": 0.550000011920929,
         "RootColor": [
-            0.11926506459712982,
-            0.26582276821136475,
-            0.045986223965883255
+            0.1068916842341423,
+            0.3206751346588135,
+            0.0
         ],
         "RootColorMultiplier": [
             0.10000000149011612,
@@ -96,7 +96,7 @@
             1.0,
             0.5
         ],
-        "WindFlattenStrength": 0.800000011920929,
+        "WindFlattenStrength": 0.20000000298023224,
         "WindFlutterSpeed": 6.0,
         "WindFlutterStrength": 1.340000033378601,
         "WindGustExponent": 3.0399999618530273,
@@ -104,7 +104,7 @@
         "WindGustStrength": 35.09000015258789,
         "WindGustThreshold": 0.49000000953674316,
         "WindHighlightStrength": 0.0,
-        "WindMap": "noise_44",
+        "WindMap": "noise_19",
         "WindMapScale": 0.009999999776482582,
         "WindScSpeed": 2.5,
         "WindScrollSpeed": [
@@ -112,6 +112,8 @@
             0.8600000143051147
         ],
         "WindSpeed": 1.5,
+        "WindSpeedMult": 1.0,
+        "WindStrengthMult": 0.0,
         "WindTurbulence": 0.0,
         "WindWaveScale": 0.009999999776482582,
         "WindWaveStrength": 0.4000000059604645
