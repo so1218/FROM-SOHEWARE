@@ -33,6 +33,7 @@ void Player::Initialize()
 	// プレイヤーの基本情報を設定
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
 	moveSpeed_ = 0.2f;
+	weaponModel_->MakeMaterialUnique();
 
 	collider_->SetType(CollisionShapeType::AABB);
 
