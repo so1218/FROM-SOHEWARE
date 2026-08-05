@@ -11,6 +11,16 @@
             "LightIntensity": 7.849999904632568,
             "LightRadius": 26.889999389648438,
             "LightVolumetricScatteringIntensity": 1.0,
+            "Position": [
+                30.200000762939453,
+                12.300000190734863,
+                -26.649999618530273
+            ],
+            "Scale": [
+                1.5,
+                1.5,
+                1.5
+            ],
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -141,6 +151,16 @@
             "LightIntensity": 4.860000133514404,
             "LightRadius": 26.040000915527344,
             "LightVolumetricScatteringIntensity": 50.0,
+            "Position": [
+                -1.409999966621399,
+                6.380000114440918,
+                8.59000015258789
+            ],
+            "Scale": [
+                1.5,
+                1.5,
+                1.5
+            ],
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -271,6 +291,16 @@
             "LightIntensity": 4.960000038146973,
             "LightRadius": 15.380000114440918,
             "LightVolumetricScatteringIntensity": 4.110000133514404,
+            "Position": [
+                -49.619998931884766,
+                0.38999998569488525,
+                45.7400016784668
+            ],
+            "Scale": [
+                1.5,
+                1.5,
+                1.5
+            ],
             "orbModel_AddShadow": 1,
             "orbModel_AlbedoMap": "white1x1",
             "orbModel_AlphaThres": 0.009999999776482582,
@@ -390,6 +420,126 @@
             "orbModel_UsePuddle": 0,
             "orbModel_UseTriplanar": 0,
             "orbModel_Wetness": 0.5
-        }
+        },
+        "RainbowSpeed": 0.20000000298023224,
+        "SharedOrbModel_AddShadow": 1,
+        "SharedOrbModel_AlbedoMap": "white1x1",
+        "SharedOrbModel_AlphaThres": 0.009999999776482582,
+        "SharedOrbModel_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_DiffuseRef": 4.0,
+        "SharedOrbModel_DisEnable": 0,
+        "SharedOrbModel_DisThres": 0.5,
+        "SharedOrbModel_DissolveTex": "white1x1",
+        "SharedOrbModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedOrbModel_EdgeInten": 2.0,
+        "SharedOrbModel_EdgeWidth": 0.05000000074505806,
+        "SharedOrbModel_Emissive": 1.0,
+        "SharedOrbModel_EnvMapInt": 0.11999999731779099,
+        "SharedOrbModel_EnvMapTex": "pureSky",
+        "SharedOrbModel_HeightMapTex": "white1x1",
+        "SharedOrbModel_LightMode": 3,
+        "SharedOrbModel_Lighting": 1,
+        "SharedOrbModel_Metalness": 1.0,
+        "SharedOrbModel_NormEnable": 1,
+        "SharedOrbModel_NormInten": 2.680000066757202,
+        "SharedOrbModel_NormTile": 1.0,
+        "SharedOrbModel_NormalMapTex": "normal_21",
+        "SharedOrbModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedOrbModel_OutlineEnable": 0,
+        "SharedOrbModel_OutlineWidth": 1.0,
+        "SharedOrbModel_POMEnable": 0,
+        "SharedOrbModel_POMHeightScale": 0.05000000074505806,
+        "SharedOrbModel_POMMaxSteps": 32.0,
+        "SharedOrbModel_POMMinSteps": 8.0,
+        "SharedOrbModel_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedOrbModel_PuddleEmission": 0.0,
+        "SharedOrbModel_PuddleFalloff": 0.10000000149011612,
+        "SharedOrbModel_PuddleNoise": "white1x1",
+        "SharedOrbModel_PuddleScale": 0.10000000149011612,
+        "SharedOrbModel_PuddleTint": 0.5,
+        "SharedOrbModel_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_RimEnable": 1,
+        "SharedOrbModel_RimInten": 9.600000381469727,
+        "SharedOrbModel_RimPower": 18.399999618530273,
+        "SharedOrbModel_RimUseDir": 0,
+        "SharedOrbModel_RippleEnable": 0,
+        "SharedOrbModel_RippleFreq": 1.0,
+        "SharedOrbModel_RippleMap": "white1x1",
+        "SharedOrbModel_RippleMix": 0.5,
+        "SharedOrbModel_RippleScale": 2.0,
+        "SharedOrbModel_RippleSize": 0.4000000059604645,
+        "SharedOrbModel_RippleSpeed": 1.0,
+        "SharedOrbModel_RippleStren": 0.05000000074505806,
+        "SharedOrbModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_Roughness": 0.14000000059604645,
+        "SharedOrbModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_ShadowBias": 0.0005000000237487257,
+        "SharedOrbModel_ShadowDens": 0.800000011920929,
+        "SharedOrbModel_ShadowEnv": 0.0,
+        "SharedOrbModel_ShadowSoft": 0.0,
+        "SharedOrbModel_Shininess": 50.0,
+        "SharedOrbModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_ToonRampTex": "toonRamp_01",
+        "SharedOrbModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_TriScale": 0.10000000149011612,
+        "SharedOrbModel_TriSharpness": 4.0,
+        "SharedOrbModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_UsePuddle": 0,
+        "SharedOrbModel_UseTriplanar": 0,
+        "SharedOrbModel_Wetness": 0.5
     }
 }

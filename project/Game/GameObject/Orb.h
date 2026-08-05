@@ -21,6 +21,8 @@ public:
 
     void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
 
+    FE::Model* GetModel() const { return model_.get(); }
+
 private:
     FE::Engine* engine_;
     std::unique_ptr<FE::Model> model_;

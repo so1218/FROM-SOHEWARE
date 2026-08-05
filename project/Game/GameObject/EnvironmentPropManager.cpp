@@ -247,7 +247,7 @@ void EnvironmentPropManager::DebugDraw()
             // 例: "EnvironmentPropManager/Prop_0" のようなグループパスを生成
             std::vector<std::string> groupPath = { managerGroupName_, "Prop_" + std::to_string(selectedPropIndex_) };
 
-            // BindModelで設定されたキー名に合わせてメモリ上のデータを更新！
+            // BindModelで設定されたキー名に合わせてメモリ上のデータを更新
             gv->SetValue(groupPath, "Model_Trans", targetTransform.translation_);
             gv->SetValue(groupPath, "Model_Rot", targetTransform.rotation_);
             gv->SetValue(groupPath, "Model_Scale", targetTransform.scale_);

@@ -29,7 +29,8 @@ void Orb::Initialize()
 
     SetTag(ObjectTag::Orb);
 
-    binder_->BindModel("orbModel", model_.get());
+    binder_->Bind("Position", &model_->GetTransform().translation_, { 0.0f, 0.0f, 0.0f });
+    binder_->Bind("Scale", &model_->GetTransform().scale_, { 1.0f, 1.0f, 1.0f });
 
     binder_->BindColor("LightColor", &lightColor_, { 0.2f, 0.6f, 1.0f, 1.0f });
     binder_->Bind("LightIntensity", &lightIntensity_, 5.0f);
@@ -95,16 +96,27 @@ void Orb::DebugDraw()
 
     ImGui::PushID(id_);
 
-    std::string label = "オーブ " + std::to_string(id_) + " のインスペクター";
+    std::string headerName = "オーブ " + std::to_string(id_);
 
-    binder_->DrawModel("orbModel", label);
+    if (ImGui::CollapsingHeader(headerName.c_str()))
+    {
+        ImGui::Indent(); 
 
-    ImGui::Separator();
-    ImGui::Text("ライト設定");
-    binder_->Draw("LightColor", "ライトの色");
-    binder_->Draw("LightIntensity", "明るさ");
-    binder_->Draw("LightRadius", "影響範囲");
-    binder_->Draw("LightVolumetricScatteringIntensity", "ボリュームフォグ輝度");
+        ImGui::Text("基本設定");
+        binder_->Draw("Position", "座標");
+        binder_->Draw("Scale", "スケール");
+
+        ImGui::Separator();
+
+        ImGui::Text("ライト設定");
+        binder_->Draw("LightColor", "ライトの色");
+        binder_->Draw("LightIntensity", "明るさ");
+        binder_->Draw("LightRadius", "影響範囲");
+        binder_->Draw("LightVolumetricScatteringIntensity", "ボリュームフォグ輝度");
+
+        ImGui::Unindent(); 
+        ImGui::Spacing();  
+    }
 
     ImGui::PopID();
 

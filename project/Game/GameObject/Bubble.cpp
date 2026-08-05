@@ -18,6 +18,8 @@ Bubble::Bubble(Engine* engine) : GameObject()
 
 void Bubble::Initialize()
 {
+	model_->MakeMaterialUnique();
+
 	binder_->BindModel("bubbleModel", model_.get());
 	auto* bubbleMat = model_->GetMaterialData();
 	binder_->Bind("wobbleAmplitude", &bubbleMat->wobbleAmplitude, 1.0f);

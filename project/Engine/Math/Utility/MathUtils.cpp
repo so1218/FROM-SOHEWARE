@@ -57,6 +57,32 @@ uint32_t ColorVectorToUint32(const Vector4& color)
     return (r << 24) | (g << 16) | (b << 8) | a;
 }
 
+Vector4 HSVToRGB(float h, float s, float v, float alpha)
+{
+    float r = 0.0f, g = 0.0f, b = 0.0f;
+
+    // Hを0.0~1.0の範囲に安全にループさせる
+    h = std::fmod(h, 1.0f);
+    if (h < 0.0f) h += 1.0f;
+
+    int i = static_cast<int>(h * 6);
+    float f = h * 6 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - f * s);
+    float t = v * (1 - (1 - f) * s);
+
+    switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+    }
+
+    return { r, g, b, alpha };
+}
+
 float RandomFloat(float min, float max)
 {
     if (min >= max)
