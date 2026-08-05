@@ -93,6 +93,11 @@ private:
     FE::ParticleEmitter* activeEmitter_ = nullptr;
     bool isParticleFollowing_ = true; // 追従するかどうかのフラグ
 
+    bool hasParticle2_ = false;
+    std::string particleName2_ = "enemyAura";
+    FE::ParticleEmitter* activeEmitter2_ = nullptr;
+    bool isParticleFollowing2_ = true;
+
     std::string prefabName_;
     FE::Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 };

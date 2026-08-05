@@ -26,6 +26,12 @@ EnvironmentProp::~EnvironmentProp()
         activeEmitter_->Destroy();
         activeEmitter_ = nullptr;
     }
+
+    if (activeEmitter2_)
+    {
+        activeEmitter2_->Destroy();
+        activeEmitter2_ = nullptr;
+    }
 }
 
 void EnvironmentProp::Initialize()
@@ -53,6 +59,11 @@ void EnvironmentProp::SetupProperties()
     {
         activeEmitter_->Destroy();
         activeEmitter_ = nullptr;
+    }
+    if (activeEmitter2_) 
+    {
+        activeEmitter2_->Destroy();
+        activeEmitter2_ = nullptr;
     }
 
     // 一度バインダーに登録された古いポインタをすべてリセット
@@ -100,6 +111,16 @@ void EnvironmentProp::SetupProperties()
         gv->SetValue(binder_->GetGroupPath(), "ParticleName", particleName_);
     }
 
+    binder_->Bind("HasParticle2", &hasParticle2_, false);
+    binder_->Bind("IsParticleFollowing2", &isParticleFollowing2_, true);
+
+    std::string loadedParticle2 = gv->GetStringValue(binder_->GetGroupPath(), "ParticleName2");
+    if (!loadedParticle2.empty()) {
+        particleName2_ = loadedParticle2;
+    }
+    else {
+        gv->SetValue(binder_->GetGroupPath(), "ParticleName2", particleName2_);
+    }
     // ライトやコライダーの再適用
     ApplySettings();
 }
@@ -173,6 +194,24 @@ void EnvironmentProp::ApplySettings()
             // 不要になったらDestroyを呼ぶ
             activeEmitter_->Destroy();
             activeEmitter_ = nullptr;
+        }
+    }
+
+    if (hasParticle2_) {
+        if (!activeEmitter2_) {
+            auto emitter = engine_->GetParticleSystem()->CreateEmitter(particleName2_);
+            if (emitter) {
+                if (isParticleFollowing2_) emitter->SetTargetToFollow(const_cast<FE::WorldTransform*>(&model_->GetTransform()));
+                else emitter->SetPosition(model_->GetTransform().translation_);
+                activeEmitter2_ = emitter.get();
+                engine_->GetParticleSystem()->AddEmitter(std::move(emitter));
+            }
+        }
+    }
+    else {
+        if (activeEmitter2_) {
+            activeEmitter2_->Destroy();
+            activeEmitter2_ = nullptr;
         }
     }
 }
@@ -263,47 +302,59 @@ void EnvironmentProp::DebugDraw()
             ImGui::Unindent();
         }
 
-        // パーティクル設定セクション
-        binder_->Draw("HasParticle", "パーティクルを発生させる");
+        ImGui::Separator();
+        ImGui::TextColored(ImVec4(0.5f, 1.0f, 1.0f, 1.0f), "パーティクル設定");
 
-        if (hasParticle_)
-        {
-            ImGui::Indent();
-            ImGui::TextColored(ImVec4(0.5f, 1.0f, 1.0f, 1.0f), "パーティクルの詳細設定");
+        // パーティクルUI描画用の共通処理
+        auto drawParticleUI = [&](const char* label, bool& hasPart, bool& isFollow, std::string& partName, FE::ParticleEmitter*& activeEmit, const char* bindHas, const char* bindFollow, const char* jsonKey, const char* btnId) {
 
-            binder_->Draw("IsParticleFollowing", "モデルに追従させる");
+            bool changedHas = binder_->Draw(bindHas, label);
 
-            char nameBuf[256];
-            strncpy_s(nameBuf, sizeof(nameBuf), particleName_.c_str(), _TRUNCATE);
-
-            // 入力されるたびに文字列とJSONだけを更新
-            if (ImGui::InputText("エフェクト名", nameBuf, sizeof(nameBuf)))
+            if (hasPart)
             {
-                particleName_ = nameBuf;
-                FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ParticleName", particleName_);
-            }
+                ImGui::Indent();
 
-            // 入力が確定したかを検知
-            bool applyRequested = ImGui::IsItemDeactivatedAfterEdit();
+                bool changedFollow = binder_->Draw(bindFollow, "モデルに追従させる");
 
-            ImGui::SameLine();
+                char nameBuf[256];
+                strncpy_s(nameBuf, sizeof(nameBuf), partName.c_str(), _TRUNCATE);
 
-            if (ImGui::Button("適用##ApplyParticle"))
-            {
-                applyRequested = true;
-            }
+                std::string inputLabel = "エフェクト名##" + std::string(btnId);
+                std::string btnLabel = "適用##" + std::string(btnId);
 
-            // 確定アクションがあった瞬間だけ、古いパーティクルを壊して再生成
-            if (applyRequested)
-            {
-                if (activeEmitter_) {
-                    activeEmitter_->Destroy();
-                    activeEmitter_ = nullptr;
+                ImGui::InputText(inputLabel.c_str(), nameBuf, sizeof(nameBuf));
+
+                bool applyRequested = ImGui::IsItemDeactivatedAfterEdit();
+
+                if (partName != nameBuf) {
+                    partName = nameBuf;
+                    FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
                 }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button(btnLabel.c_str())) {
+                    applyRequested = true;
+                }
+
+                if (applyRequested || changedFollow) {
+                    if (activeEmit) {
+                        activeEmit->Destroy();
+                        activeEmit = nullptr;
+                    }
+                    ApplySettings();
+                }
+
+                ImGui::Unindent();
+            }
+
+            if (changedHas) {
                 ApplySettings();
             }
-            ImGui::Unindent();
-        }
+            };
+
+        drawParticleUI("パーティクル1 を発生させる", hasParticle_, isParticleFollowing_, particleName_, activeEmitter_, "HasParticle", "IsParticleFollowing", "ParticleName", "P1");
+        drawParticleUI("パーティクル2 を発生させる", hasParticle2_, isParticleFollowing2_, particleName2_, activeEmitter2_, "HasParticle2", "IsParticleFollowing2", "ParticleName2", "P2");
     }
 
     ImGui::PopID();
@@ -342,6 +393,11 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
             {
                 activeEmitter_->Destroy();
                 activeEmitter_ = nullptr;
+            }
+
+            if (activeEmitter2_) {
+                activeEmitter2_->Destroy();
+                activeEmitter2_ = nullptr;
             }
 
             // オブジェクトが消えたので、ライトの輝度を即座に0にして消灯

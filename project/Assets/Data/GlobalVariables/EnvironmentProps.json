@@ -997,7 +997,9 @@
             "HasCollider": true,
             "HasLight": true,
             "HasParticle": true,
+            "HasParticle2": true,
             "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
             "LightColor": [
                 1.0,
                 0.1012657880783081,
@@ -1539,6 +1541,7 @@
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
             "ParticleName": "fire",
+            "ParticleName2": "bonfireSmoke",
             "Position": [
                 16.65053939819336,
                 2.168199062347412,
@@ -1579,7 +1582,9 @@
             "HasCollider": true,
             "HasLight": true,
             "HasParticle": true,
+            "HasParticle2": true,
             "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
             "LightColor": [
                 1.0,
                 0.025316476821899414,
@@ -2125,6 +2130,7 @@
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
             "ParticleName": "fire",
+            "ParticleName2": "bonfireSmoke",
             "Position": [
                 37.25941467285156,
                 8.526481628417969,
@@ -2165,7 +2171,9 @@
             "HasCollider": true,
             "HasLight": false,
             "HasParticle": false,
+            "HasParticle2": false,
             "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
             "LightColor": [
                 1.0,
                 0.5,
@@ -2296,6 +2304,7 @@
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
             "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
             "Position": [
                 -101.71337890625,
                 5.505036354064941,
