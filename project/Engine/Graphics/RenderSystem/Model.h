@@ -46,6 +46,8 @@ public:
     void CopyMaterialsFrom(const Model* sourceModel);
     void ShareMaterialsFrom(const Model* sourceModel);
     void ShareModelDataFrom(const Model* sourceModel);
+    // マテリアルを共有状態から切り離し、自分専用のクローンにする
+    void MakeMaterialUnique();
 
     // UV
     void SetUVTransform(const WorldTransform& uvTransform);
@@ -119,6 +121,8 @@ private:
 
     // メッシュごとのマテリアルリスト
     std::vector<MaterialHandle> materials_;
+    // 現在のマテリアルが自分専用（独立）かどうか
+    bool isMaterialsUnique_ = false;
 
     // モデル自体のトランスフォーム
     WorldTransform transform_;

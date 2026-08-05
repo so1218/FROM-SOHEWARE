@@ -10,25 +10,30 @@ EnemyManager::EnemyManager(Engine* engine, const std::string& groupName)
 void EnemyManager::Initialize()
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, managerGroupName_);
-
     binder_->Bind("EnemyCount", &enemyCount_, 3);
-
     enemies_.clear();
 
     for (int i = 0; i < enemyCount_; ++i)
     {
         auto enemy = std::make_unique<Enemy>(engine_, i, managerGroupName_);
-
         enemy->SetManager(this->GetManager());
-
         enemy->Initialize();
+        enemies_.push_back(std::move(enemy));
+    }
 
-        if (i > 0 && !enemies_.empty())
+    if (!enemies_.empty())
+    {
+        // 1体目のマテリアルを敵グループ専用として独立
+        enemies_[0]->GetModel()->MakeMaterialUnique();
+
+        // 2体目以降は、Shareで1体目のマテリアルを共有
+        for (size_t i = 1; i < enemies_.size(); ++i)
         {
-            enemy->GetModel()->CopyMaterialsFrom(enemies_[0]->GetModel());
+            enemies_[i]->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
         }
 
-        enemies_.push_back(std::move(enemy));
+        // マネージャーのインスペクターに代表として1体目のモデルを登録
+        binder_->BindModel("sharedEnemyModel", enemies_[0]->GetModel());
     }
 }
 
@@ -51,7 +56,7 @@ void EnemyManager::AddEnemy()
 
     if (!enemies_.empty())
     {
-        newEnemy->GetModel()->CopyMaterialsFrom(enemies_[0]->GetModel());
+        newEnemy->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
     }
 
     enemies_.push_back(std::move(newEnemy));
@@ -69,6 +74,17 @@ void EnemyManager::DebugDraw()
         AddEnemy();
     }
 
+    ImGui::Separator();
+
+    if (!enemies_.empty())
+    {
+        binder_->DrawModel("sharedEnemyModel", "敵共通モデルインスペクター");
+
+        for (size_t i = 1; i < enemies_.size(); ++i)
+        {
+            enemies_[i]->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
+        }
+    }
     ImGui::Separator();
 
     for (auto& enemy : enemies_)

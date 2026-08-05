@@ -17,34 +17,8 @@ Model::Model(Engine* engine, const ModelData* modelData)
 {
     if (!modelData_ || !engine_) return;
 
-    // メッシュの数だけマテリアルを確保する
-    materials_.reserve(modelData_->meshes.size());
-
-    for (const auto& mesh : modelData_->meshes)
-    {
-        // マテリアル作成
-        MaterialHandle newMaterial = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
-
-        auto& texManager = TextureManager::GetInstance();
-
-        // デフォルト設定
-        newMaterial.textureHandle = texManager.Get("white1x1");
-        newMaterial.envMapHandle = texManager.Get("skybox");
-        newMaterial.toonRampHandle = texManager.Get("toonRamp_01");
-        newMaterial.dissolveMapHandle = texManager.Get("white1x1");
-        newMaterial.normalMapHandle = texManager.Get("white1x1");
-
-        // UVトランスフォーム初期化
-        newMaterial.uvTransformData.Initialize();
-
-        // 初期値をGPUバッファへ反映
-        if (newMaterial.materialData)
-        {
-            newMaterial.materialData->uvTransform = newMaterial.uvTransformData.matWorld_;
-        }
-
-        materials_.push_back(newMaterial);
-    }
+    materials_ = modelData_->defaultMaterials;
+    isMaterialsUnique_ = false;
 }
 
 void Model::Draw()
@@ -88,6 +62,8 @@ void Model::UpdateUV()
 
 void Model::SetUVTransform(const WorldTransform& uvTransform)
 {
+    MakeMaterialUnique();
+
     for (auto& mat : materials_)
     {
         mat.uvTransformData.translation_ = uvTransform.translation_;
@@ -104,6 +80,8 @@ void Model::SetUVTransform(const WorldTransform& uvTransform)
 
 void Model::SetTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     // 文字列からGPUハンドルを検索して取得
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
 
@@ -113,36 +91,48 @@ void Model::SetTexture(const std::string& textureName)
 
 void Model::SetEnvironmentMapTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.envMapHandle = handle;
 }
 
 void Model::SetToonRampTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.toonRampHandle = handle;
 }
 
 void Model::SetDissolveTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.dissolveMapHandle = handle;
 }
 
 void Model::SetNormalMapTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 
 void Model::SetRippleTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.rippleTextureHandle = handle;
 }
 
 void Model::SetPuddleNoiseTexture(const std::string& textureName)
 {
+    MakeMaterialUnique();
+
     uint32_t handle = TextureManager::GetInstance().Get(textureName);
     for (auto& mat : materials_) mat.puddleNoiseHandle = handle;
 }
@@ -154,6 +144,8 @@ void Model::CopyMaterialsFrom(const Model* sourceModel)
     // マテリアル数が違う場合はコピーしない（安全対策）
     size_t count = GetMaterialCount();
     if (count != sourceModel->GetMaterialCount()) return;
+
+    MakeMaterialUnique();
 
     // ベースカラーのコピー
     SetBaseColor(sourceModel->GetBaseColor());
@@ -199,6 +191,8 @@ void Model::ShareMaterialsFrom(const Model* sourceModel)
 
     // そのままコピーすることで、同じ MaterialData を参照
     this->materials_ = sourceModel->materials_;
+
+    this->isMaterialsUnique_ = false;
 }
 
 void Model::ShareModelDataFrom(const Model* sourceModel)
@@ -209,8 +203,55 @@ void Model::ShareModelDataFrom(const Model* sourceModel)
     this->modelData_ = sourceModel->modelData_;
 }
 
+void Model::MakeMaterialUnique()
+{
+    if (isMaterialsUnique_) return;
+
+    std::vector<MaterialHandle> newMaterials;
+    newMaterials.reserve(materials_.size());
+
+    for (const auto& oldMat : materials_)
+    {
+        MaterialHandle newMat = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
+
+        // ハンドルと同時に、文字列（名前）も忘れずにコピーする
+        newMat.textureName = oldMat.textureName;
+        newMat.textureHandle = oldMat.textureHandle;
+        newMat.envMapName = oldMat.envMapName;
+        newMat.envMapHandle = oldMat.envMapHandle;
+        newMat.toonRampName = oldMat.toonRampName;
+        newMat.toonRampHandle = oldMat.toonRampHandle;
+        newMat.dissolveMapName = oldMat.dissolveMapName;
+        newMat.dissolveMapHandle = oldMat.dissolveMapHandle;
+        newMat.normalMapName = oldMat.normalMapName;
+        newMat.normalMapHandle = oldMat.normalMapHandle;
+        newMat.heightMapName = oldMat.heightMapName;
+        newMat.heightMapHandle = oldMat.heightMapHandle;
+        newMat.rippleTextureName = oldMat.rippleTextureName;
+        newMat.rippleTextureHandle = oldMat.rippleTextureHandle;
+        newMat.puddleNoiseName = oldMat.puddleNoiseName;
+        newMat.puddleNoiseHandle = oldMat.puddleNoiseHandle;
+
+        // UVトランスフォームの設定値を引き継ぐ
+        newMat.uvTransformData = oldMat.uvTransformData;
+
+        // GPUに送る定数バッファの中身をコピー
+        if (newMat.materialData && oldMat.materialData)
+        {
+            *(newMat.materialData) = *(oldMat.materialData);
+        }
+
+        newMaterials.push_back(newMat);
+    }
+
+    materials_ = newMaterials;
+    isMaterialsUnique_ = true;
+}
+
 void Model::SetColor(const Vector4& color)
 {
+    MakeMaterialUnique();
+
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->color = color;
     }
@@ -218,6 +259,8 @@ void Model::SetColor(const Vector4& color)
 
 void Model::SetColor(uint32_t color)
 {
+    MakeMaterialUnique();
+
     SetColor(Math::Uint32ToColorVector(color));
 }
 
@@ -225,6 +268,8 @@ void Model::SetBaseColor(uint32_t color) { baseColor_ = Math::Uint32ToColorVecto
 
 void Model::SetEmissiveIntensity(float intensity)
 {
+    MakeMaterialUnique();
+
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->emissiveIntensity = intensity;
     }
@@ -232,6 +277,8 @@ void Model::SetEmissiveIntensity(float intensity)
 
 void Model::SetEnableOutline(bool enable)
 {
+    MakeMaterialUnique();
+
     int flag = enable ? 1 : 0;
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->enableOutline = flag;
@@ -240,6 +287,8 @@ void Model::SetEnableOutline(bool enable)
 
 void Model::SetOutlineWidth(float width)
 {
+    MakeMaterialUnique();
+
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->outlineWidth = width;
     }
@@ -247,6 +296,8 @@ void Model::SetOutlineWidth(float width)
 
 void Model::SetOutlineColor(const Vector4& color)
 {
+    MakeMaterialUnique();
+
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->outlineColor = color;
     }
@@ -259,6 +310,8 @@ void Model::SetOutlineColor(uint32_t color)
 
 void Model::SetEnableDissolve(bool enable)
 {
+    MakeMaterialUnique();
+
     int flag = enable ? 1 : 0; // bool -> int/uint変換を明示
     for (auto& mat : materials_) {
         if (mat.materialData) mat.materialData->enableDissolve = flag;
@@ -271,6 +324,8 @@ void Model::SetEnableDissolve(bool enable)
 
 void Model::SetMaterialColor(size_t index, const Vector4& color)
 {
+    MakeMaterialUnique();
+
     if (IsValidMaterialIndex(index) && materials_[index].materialData) {
         materials_[index].materialData->color = color;
     }

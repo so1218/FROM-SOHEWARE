@@ -9,6 +9,7 @@
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 #include "Terrain.h"
+#include "Frustum.h"
 
 namespace FE
 {
@@ -105,6 +106,7 @@ public:
     uint32_t GetMaxTrailCount() const;
 
     TreeRenderer* GetTreeRenderer() const { return treeRenderer_.get(); }
+    const Frustum& GetCameraFrustum() const { return cameraFrustum_; }
 
     // デバッグ用
     void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
@@ -142,8 +144,8 @@ private:
     Matrix4x4 viewMatrix_;
     Matrix4x4 projectionMatrix_;
     Matrix4x4 viewProjectionMatrix_;
-    // カメラのワールド座標
     Vector3 cameraPosition_;
+    Frustum cameraFrustum_;
 
     uint32_t grassTextureHandle_ = 0;
     GrassMaterialData grassMaterialData_ = {};

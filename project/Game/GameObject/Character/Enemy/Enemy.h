@@ -32,6 +32,7 @@ private:
 
     // 波の動き用パラメーター
     FE::Vector3 basePosition_; // 基準となる位置
+    FE::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
     FE::Vector3 amplitude_;    // 振幅
     FE::Vector3 frequency_;    // 周波数
     float time_ = 0.0f;        // 経過時間

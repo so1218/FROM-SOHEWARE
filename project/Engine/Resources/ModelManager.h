@@ -4,6 +4,8 @@
 namespace FE
 {
 
+class Engine;
+
 class ModelManager
 {
 public:
@@ -19,7 +21,7 @@ public:
     ModelManager& operator=(const ModelManager&) = delete;
 
     // CSVから一括ロード
-    void LoadFromCSV(const std::string& csvPath = "Assets/Data/ModelList.csv");
+    void LoadFromCSV(Engine* engine, const std::string& csvPath = "Assets/Data/ModelList.csv");
 
     // 単体ロード（外部から個別に読み込みたい場合用）
     void Load(const std::string& name, const std::string& path);
@@ -36,6 +38,8 @@ private:
 
     // 終了処理
     void Clear();
+
+    Engine* engine_ = nullptr;
 
     // モデルデータの格納場所
     std::unordered_map<std::string, std::unique_ptr<ModelData>> models_;

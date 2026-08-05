@@ -2,13 +2,17 @@
 #include "ModelManager.h"
 #include "ModelLoader.h"
 #include "StringUtils.h" 
+#include "TextureManager.h" 
+#include "Engine.h" 
 
 namespace FE
 {
 
 // CSV読み込み
-void ModelManager::LoadFromCSV(const std::string& csvPath)
+void ModelManager::LoadFromCSV(Engine* engine, const std::string& csvPath)
 {
+    engine_ = engine;
+
     std::ifstream file(csvPath);
     if (!file.is_open())
     {
@@ -66,6 +70,26 @@ void ModelManager::Load(const std::string& name, const std::string& path)
 
     // ModelLoaderの実装に合わせて呼び出し
     ModelData data = loader.LoadModel(path.c_str());
+
+    // ロードした直後に、1回だけマテリアルを作ってキャッシュしておく
+    auto& texManager = TextureManager::GetInstance();
+    for (size_t i = 0; i < data.meshes.size(); ++i)
+    {
+        // 1回だけ作成
+        MaterialHandle defMat = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
+
+        defMat.textureHandle = texManager.Get("white1x1");
+        defMat.envMapHandle = texManager.Get("skybox");
+        defMat.toonRampHandle = texManager.Get("toonRamp_01");
+        defMat.dissolveMapHandle = texManager.Get("white1x1");
+        defMat.normalMapHandle = texManager.Get("white1x1");
+
+        if (defMat.materialData) {
+            defMat.materialData->uvTransform = defMat.uvTransformData.matWorld_;
+        }
+
+        data.defaultMaterials.push_back(defMat);
+    }
 
     // 所有権をunique_ptrに移譲して登録
     models_[name] = std::make_unique<ModelData>(std::move(data));

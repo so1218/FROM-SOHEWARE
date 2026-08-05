@@ -57,7 +57,6 @@ struct MaterialHandle
     std::string textureName = "white1x1";       // アルベド
     std::string envMapName = "skybox";  // 環境マップ
     std::string normalMapName = "white1x1";       // 法線マップ
-    std::string metallicRoughnessName = "white1x1"; // メタリックラフネス
     std::string heightMapName = "white1x1";       // POMハイトマップ
     std::string dissolveMapName = "white1x1";       // ディゾルブマップ
     std::string toonRampName = "toonRamp_01";       // トゥーンランプ
@@ -68,7 +67,6 @@ struct MaterialHandle
     uint32_t textureHandle = 0;     
     uint32_t envMapHandle = 0;      
     uint32_t normalMapHandle = 0;  
-    uint32_t metallicRoughnessHandle = 0;
     uint32_t heightMapHandle = 0;
     uint32_t dissolveMapHandle = 0; 
     uint32_t toonRampHandle = 0;    
@@ -131,8 +129,11 @@ struct MeshData
 
 struct ModelData
 {
-    // 複数のメッシュ（パーツ）を持つリストに変更
+    // 複数のメッシュを持つリストに変更
     std::vector<MeshData> meshes;
+
+    // デフォルトの共有マテリアル
+    std::vector<MaterialHandle> defaultMaterials;
 
     // スケルトン階層はモデル全体で1つ共有
     Node rootNode;

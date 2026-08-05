@@ -28,9 +28,9 @@ void Enemy::Initialize()
 {
     collider_->RegisterToManager();
     SetTag(ObjectTag::Enemy);
-    binder_->BindModel("enemyModel", model_.get());
 
     binder_->Bind("BasePosition", &basePosition_, basePosition_);
+    binder_->Bind("Scale", &scale_, { 1.0f, 1.0f, 1.0f });
 
     binder_->Bind("Amplitude", &amplitude_, { 3.0f, 2.0f, 0.0f });
     binder_->Bind("Frequency", &frequency_, { 0.5f, 1.0f, 0.0f });
@@ -75,6 +75,8 @@ void Enemy::Update()
     };
 
     FE::Vector3 currentPos = basePosition_ + offset;
+
+    model_->GetTransform().scale_ = scale_;
 
     // 進行方向の計算と回転の適用
     FE::Vector3 prevPos = model_->GetTransform().translation_;
@@ -135,11 +137,11 @@ void Enemy::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::PushID(id_);
     std::string headerName = "敵" + std::to_string(id_) + " の設定";
-    std::string label = "敵 " + std::to_string(id_) + " のインスペクター";
 
-    binder_->DrawModel("enemyModel", label);
     if (ImGui::CollapsingHeader(headerName.c_str()))
     {
+        ImGui::Text("基本設定");
+        binder_->Draw("Scale", "スケール");
         ImGui::Text("移動設定");
         binder_->Draw("BasePosition", "基準座標 (中心)");
         binder_->Draw("Amplitude", "移動幅 (X, Y, Z)");

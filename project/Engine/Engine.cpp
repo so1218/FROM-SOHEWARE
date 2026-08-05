@@ -328,7 +328,7 @@ void Engine::InitializeResources()
 
 	// 共通ハンドル初期化
 	TextureManager::GetInstance().LoadAllTextures(this);
-	ModelManager::GetInstance().LoadFromCSV();
+	ModelManager::GetInstance().LoadFromCSV(this);
 	AnimationManager::GetInstance()->LoadFromCSV();
 
 	// 3Dノイズ を生成して VolumetricFog に渡す
