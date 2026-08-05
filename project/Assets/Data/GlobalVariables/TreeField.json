@@ -7,7 +7,7 @@
         "AreaWidth": 1000.0,
         "BackfaceFlatten": 0.5,
         "BaseAO": 1.0,
-        "BaseRoughness": 0.5,
+        "BaseRoughness": 1.0,
         "BaseThickness": 0.10000000149011612,
         "BaseWindStrength": 0.9800000190734863,
         "BranchFlex": 1.190000057220459,
@@ -18,9 +18,9 @@
         "GustStrength": 0.800000011920929,
         "LeafAlbedoMult": 1.7400000095367432,
         "LeafColorTint": [
-            0.6313091516494751,
-            1.0,
-            0.25316452980041504
+            0.36735567450523376,
+            0.7637130618095398,
+            0.0
         ],
         "LeafFlutter": 1.3300000429153442,
         "LeafFlutterFreq": 0.1599999964237213,
@@ -40,9 +40,9 @@
         ],
         "RoughnessScale": 1.0,
         "SSSColor": [
-            0.5,
-            0.699999988079071,
-            0.20000000298023224
+            0.5999999046325684,
+            1.0,
+            0.0
         ],
         "SSSStrength": 1.0,
         "ToonRamp": "toonRamp_01",
