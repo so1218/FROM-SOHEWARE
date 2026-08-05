@@ -83,13 +83,15 @@
             "strength": 1.0
         },
         "physicsModule": {
-            "drag": 0.0,
+            "affectedByWind": true,
+            "drag": 0.10000000149011612,
             "enabled": true,
             "gravity": [
                 0.0,
                 0.0,
-                9.100000381469727
-            ]
+                3.9000000953674316
+            ],
+            "windInfluence": 10.0
         },
         "rotationModule": {
             "enabled": true,
@@ -198,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 16.709999084472656
+            "speed": 17.479999542236328
         },
         "vortexModule": {
             "axis": [

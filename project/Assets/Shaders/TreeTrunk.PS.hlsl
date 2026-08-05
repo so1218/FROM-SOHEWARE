@@ -20,7 +20,7 @@ cbuffer SpotLights : register(b3)
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
-ConstantBuffer<TrunkMaterialData> gMaterial : register(b6); // 幹用のマテリアルデータ
+ConstantBuffer<TrunkMaterialData> gMaterial : register(b6); 
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0); // 幹のアルベド

@@ -97,6 +97,10 @@ public:
 
     ID3D12Resource* GetGlobalEnvironmentResource() const { return constantBuffer_.Get(); }
 
+    // 現在の風のパラメータを取得するゲッター
+    Vector2 GetWindDirection() const { return currentWeatherProfile_.windDirection; }
+    float GetWindSpeed() const { return currentWeatherProfile_.windSpeed; }
+
 private:
     EnvironmentManager();
     ~EnvironmentManager();
@@ -128,6 +132,7 @@ private:
     WeatherState targetWeather_ = WeatherState::Sunny;
     float weatherTransitionT_ = 1.0f; 
     float accumulatedWindTime_ = 0.0f;
+    Vector2 windOffset_ = { 0.0f, 0.0f };
 
     WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileSnow_, profileThunder_;
     WeatherProfile currentWeatherProfile_;

@@ -130,11 +130,11 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     // 風・インタラクション
     // -------------------------------------------------------------------------
     float2 windDir = normalize(gEnvironmentData.windDirection);
-    float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
+    float2 windOffset = gEnvironmentData.windOffset * gMaterial.windSpeedMultiplier;
     float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
     // 低周波ノイズによる風のうねりと、位置ベースの高周波な揺らぎの合成
-    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
+    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windOffset * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     

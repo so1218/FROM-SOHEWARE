@@ -66,7 +66,8 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
     float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
-    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
+    float2 windOffset = gEnvironmentData.windOffset * gMaterial.windSpeedMultiplier;
+    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windOffset * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     float totalWind = currentWindMag + (gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed);
@@ -101,11 +102,17 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
         float branchDist = length(origLocalPos.xz);
         float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
         float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
-        float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + branchPhase);
+        
+        // ▼修正: windTurbulence を sin() の中から外す
+        float branchWave = sin(windTime * 2.5f + branchPhase);
         float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
-        branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind;
+        
+        // ▼修正: windTurbulence は揺れの「大きさ（振幅）」として掛け算する
+        // （乱気流が強いほど、枝が大きく揺れるようになる）
+        float turbulenceAmp = max(gEnvironmentData.windTurbulence, 0.5f);
+        branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * turbulenceAmp;
 
-        // 3次風: 葉のチラつき
+        // 3次風: 葉のチラつき（※こちらは定数 leafFlutterFrequency を掛けているだけなので安全です）
         float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
         float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
         float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
@@ -121,8 +128,6 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     
     output.normal = worldNormal;
     output.tangent = worldTangent;
-    // ★ bitangent の出力を削除（修正完了）
-    
     output.color = float4(gustMask, 0.0f, 0.0f, pseudoAO);
     output.instanceTint = instance.colorVariation.yzw;
     output.lodFade = instance.lodFade;

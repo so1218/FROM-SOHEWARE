@@ -224,13 +224,21 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentWeatherProfile_.skyHorizonColor = FE::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
     currentWeatherProfile_.skyColorBlendWeight = FE::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
 
-    Vector2 dirT = {
-        FE::Math::Lerp(currentW.windDirection.x, targetW.windDirection.x, weatherTransitionT_),
-        FE::Math::Lerp(currentW.windDirection.y, targetW.windDirection.y, weatherTransitionT_)
-    };
-    float len = std::sqrtf(dirT.x * dirT.x + dirT.y * dirT.y);
-    if (len > 0.0001f) { dirT.x /= len; dirT.y /= len; }
-    currentWeatherProfile_.windDirection = dirT;
+    // --- 変更後 ---
+ // 現在の風向きと目標の風向きを角度(ラジアン)に変換
+    float currentAngle = std::atan2(currentW.windDirection.y, currentW.windDirection.x);
+    float targetAngle = std::atan2(targetW.windDirection.y, targetW.windDirection.x);
+
+    // 角度の差分を計算（最短距離で回転させるための処理）
+    float deltaAngle = targetAngle - currentAngle;
+    while (deltaAngle > Math::PI)  deltaAngle -= Math::PI * 2.0f;
+    while (deltaAngle < -Math::PI) deltaAngle += Math::PI * 2.0f;
+
+    // 角度を線形補間
+    float lerpedAngle = currentAngle + deltaAngle * weatherTransitionT_;
+
+    // 補間された角度から新しい方向ベクトルを作成（すでに長さは1になります）
+    currentWeatherProfile_.windDirection = { std::cos(lerpedAngle), std::sin(lerpedAngle) };
 
     // 時間帯 × 天候 の最終合成
     float finalLightIntensity = currentProfile_.directionalLightIntensity * currentWeatherProfile_.lightDimmer;
@@ -255,7 +263,9 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentProfile_.sunAtmosphereGlow *= currentWeatherProfile_.atmosphereGlowDimmer;
 
     // 風専用の累積時間を更新 (deltaTime × 現在の補間済み風速)
-    accumulatedWindTime_ += deltaTime * currentWeatherProfile_.windSpeed;
+    accumulatedWindTime_ += currentWeatherProfile_.windSpeed * deltaTime;
+    windOffset_.x += currentWeatherProfile_.windDirection.x * currentWeatherProfile_.windSpeed * deltaTime;
+    windOffset_.y += currentWeatherProfile_.windDirection.y * currentWeatherProfile_.windSpeed * deltaTime;
 
     if (cbData_)
     {
@@ -264,6 +274,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
         cbData_->windDirection = currentWeatherProfile_.windDirection;
         cbData_->windSpeed = currentWeatherProfile_.windSpeed;
         cbData_->windTime = accumulatedWindTime_;
+        cbData_->windOffset = windOffset_;
         cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
         cbData_->skyColor = { currentProfile_.zenithColor.x, currentProfile_.zenithColor.y, currentProfile_.zenithColor.z, 1.0f };
         cbData_->groundColor = { currentProfile_.groundColor.x, currentProfile_.groundColor.y, currentProfile_.groundColor.z, 1.0f };

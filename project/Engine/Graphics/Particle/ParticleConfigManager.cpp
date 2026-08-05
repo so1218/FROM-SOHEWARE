@@ -79,6 +79,8 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                         };
                     }
                     config.physics.drag = physJson.value("drag", 0.0f);
+                    config.physics.affectedByWind = physJson.value("affectedByWind", false);
+                    config.physics.windInfluence = physJson.value("windInfluence", 1.0f);
                 }
 
                 // RotationOverLifetimeModuleの読み込み
@@ -390,7 +392,9 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         {
             { "enabled", config.physics.enabled },
             { "gravity", { config.physics.gravity.x, config.physics.gravity.y, config.physics.gravity.z }},
-            { "drag", config.physics.drag }
+            { "drag", config.physics.drag },
+            { "affectedByWind", config.physics.affectedByWind },
+            { "windInfluence", config.physics.windInfluence }
         }},
         { "rotationModule",
         {

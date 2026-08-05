@@ -8,6 +8,7 @@
 #include "ParticleConfigManager.h"
 #include "TextureManager.h"
 #include "ImGuiManager.h"
+#include "EnvironmentManager.h"
 
 namespace FE
 {
@@ -197,6 +198,18 @@ void ParticleSystem::Update()
 
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
+    // グローバル環境から風のパラメータを取得
+    auto envManager = EnvironmentManager::GetInstance();
+    Vector2 globalWindDir = envManager->GetWindDirection();
+    float globalWindSpeed = envManager->GetWindSpeed();
+
+    // ワールド空間における基本風速度ベクトル
+    Vector3 baseWindVelocity = {
+        globalWindDir.x * globalWindSpeed,
+        0.0f,
+        globalWindDir.y * globalWindSpeed
+    };
+
     // パーティクルの更新
     for (auto particle = particles_.begin(); particle != particles_.end(); )
     {
@@ -269,7 +282,19 @@ void ParticleSystem::Update()
             // Physics Module
             if (config.physics.enabled)
             {
+                // 重力の適用
                 particleState.velocity += config.physics.gravity * deltaTime;
+
+                // 風の適用 
+                if (config.physics.affectedByWind && globalWindSpeed > 0.0f)
+                {
+                    Vector3 finalWindForce = baseWindVelocity;
+
+                    // 風による加速度の付加 
+                    particleState.velocity += finalWindForce * config.physics.windInfluence * deltaTime;
+                }
+
+                // 空気抵抗による減速
                 particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
             }
 

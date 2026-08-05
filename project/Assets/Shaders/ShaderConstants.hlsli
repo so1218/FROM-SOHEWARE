@@ -208,13 +208,14 @@ struct GlobalEnvironmentData
     float rainIntensity;
     float2 windDirection; 
     
-    float windSpeed; 
-    float windTurbulence; 
-    float windTime;
-    float pad;
-    
     float4 skyColor; 
     float4 groundColor;
+    
+    float windSpeed;
+    float windTurbulence;
+    float2 windOffset;
+    
+    float windTime;
 };
 
 struct AtmosphereSkyData

@@ -84,7 +84,7 @@
         "Rain_CloudMin": 0.25,
         "Rain_CloudShadow": 0.5099999904632568,
         "Rain_LightDim": 0.12999999523162842,
-        "Rain_RainIntens": 0.800000011920929,
+        "Rain_RainIntens": 0.8399999737739563,
         "Rain_SkyBlendWeight": 0.9399999976158142,
         "Rain_SkyHorizon": [
             0.08153964579105377,
@@ -99,10 +99,10 @@
         "Rain_TransitionSpeed": 0.15000000596046448,
         "Rain_Wetness": 1.0,
         "Rain_WindDir": [
-            1.0,
-            0.0
+            -0.6000000238418579,
+            -0.800000011920929
         ],
-        "Rain_WindSpeed": 3.0,
+        "Rain_WindSpeed": 1.399999976158142,
         "Rain_WindTurbul": 0.5,
         "Snow_AtmoDim": 0.30000001192092896,
         "Snow_CloudMax": 0.6299999952316284,
@@ -150,7 +150,7 @@
         "Sunny_Wetness": 0.0,
         "Sunny_WindDir": [
             -1.0,
-            0.0
+            0.5
         ],
         "Sunny_WindSpeed": 0.8999999761581421,
         "Sunny_WindTurbul": 0.7599999904632568,
@@ -231,7 +231,7 @@
             1.0,
             0.0
         ],
-        "Thunder_WindSpeed": 1.0,
+        "Thunder_WindSpeed": 1.2000000476837158,
         "Thunder_WindTurbul": 0.20000000298023224,
         "TimeOfDay": 17.700000762939453,
         "TimeSpeedMultiplier": 0.0,

@@ -227,6 +227,14 @@ void ParticleEditor::ShowEditor()
                     ImGui::Checkbox("有効##Physics", &phys.enabled);
                     ImGui::DragFloat3("重力", &phys.gravity.x, 0.1f);
                     ImGui::DragFloat("空気抵抗", &phys.drag, 0.001f, 0.0f, 1.0f);
+
+                    ImGui::Separator();
+                    ImGui::Checkbox("風の影響を受ける", &phys.affectedByWind);
+                    if (phys.affectedByWind)
+                    {
+                        ImGui::DragFloat("風の影響度", &phys.windInfluence, 0.01f, 0.0f, 10.0f);
+                    }
+
                     ImGui::TreePop();
                 }
 

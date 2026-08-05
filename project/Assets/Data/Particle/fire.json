@@ -83,13 +83,15 @@
             "strength": 4.400000095367432
         },
         "physicsModule": {
+            "affectedByWind": true,
             "drag": 0.0,
-            "enabled": false,
+            "enabled": true,
             "gravity": [
                 0.0,
-                -9.800000190734863,
+                0.0,
                 0.0
-            ]
+            ],
+            "windInfluence": 0.7900000214576721
         },
         "rotationModule": {
             "enabled": true,

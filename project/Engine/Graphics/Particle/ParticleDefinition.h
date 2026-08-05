@@ -82,6 +82,9 @@ struct PhysicsModule
     bool enabled = false;               // モジュールの有効/無効
     Vector3 gravity = { 0.0f, -9.8f, 0.0f }; // 重力加速度
     float drag = 0.0f;                  // 空気抵抗 (0.01 = 1% 減速)
+
+    bool affectedByWind = false;            // 風の影響を受けるか
+    float windInfluence = 1.0f;             // 風の影響度（0.0=影響なし, 1.0=等倍, 2.0=軽くて激しく流される）
 };
 
 struct RotationOverLifetimeModule

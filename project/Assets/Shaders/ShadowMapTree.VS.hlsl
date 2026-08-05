@@ -58,7 +58,8 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
     float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
-    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windDir * windTime * 0.05f;
+    float2 windOffset = gEnvironmentData.windOffset * gMaterial.windSpeedMultiplier;
+    float2 windUV = (rootPos.xz * gMaterial.gustScale) - windOffset * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     float totalWind = currentWindMag + (gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed);
@@ -83,10 +84,15 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     float branchDist = length(origLocalPos.xz);
     float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
     float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
-    float branchWave = sin(windTime * 2.5f * gEnvironmentData.windTurbulence + branchPhase);
+    
+    // ▼修正: windTurbulence を sin() の中から外す（メインシェーダーと完全に一致させる）
+    float branchWave = sin(windTime * 2.5f + branchPhase);
     float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
     
-    float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * isLeaf;
+    // ▼修正: windTurbulence は振幅として掛け算する
+    float turbulenceAmp = max(gEnvironmentData.windTurbulence, 0.5f);
+    
+    float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * turbulenceAmp * isLeaf;
     
     // =========================================================================
     // ★ 3次風: 葉のチラつき (シャドウでは法線が不要なため、ローカル座標ベースで簡略化計算でもOKです)
