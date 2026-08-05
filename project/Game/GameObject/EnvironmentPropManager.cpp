@@ -182,11 +182,13 @@ void EnvironmentPropManager::ExecutePrefabModelChange()
         // バインダーをクリアして再登録（古いモデルへのポインタを無効化するため）
         group.binder->Clear();
 
+        std::string targetPrefab = group.prefabName;
         group.binder->BindModelName("ModelName", &group.modelName, group.modelName,
-            [this](const std::string& newName) {
-                this->pendingModelChangePrefab_ = pendingModelChangePrefab_;
+            [this, targetPrefab](const std::string& newName) {
+                this->pendingModelChangePrefab_ = targetPrefab;
                 this->pendingModelChangeNewName_ = newName;
             });
+
         group.binder->BindModel("MasterModel", group.masterModel.get());
 
         // このPrefabに属するすべてのインスタンスに新しいマスターを適用
