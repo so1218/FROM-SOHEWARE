@@ -15,6 +15,7 @@
 #include "GlobalVariables.h"
 #include "DebugDraw.h"
 #include "SRVManager.h"
+#include "EnvironmentManager.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -68,6 +69,9 @@ void Engine::Initialize(const ProjectConfig& config)
 
 void Engine::Finalize()
 {
+	ModelManager::GetInstance().Clear();
+	EnvironmentManager::GetInstance()->Finalize();
+
 	ImGuiManager::Finalize();
 
 	// Fence待機

@@ -79,6 +79,8 @@ public:
     void Update(LightManager* lightManager);
     void DebugDraw();
 
+    void Finalize();
+
     float GetTimeOfDay() const { return timeOfDay_; }
     void SetTimeOfDay(float time) { timeOfDay_ = time; }
     Vector3 GetSunDirection() const { return sunDirection_; }

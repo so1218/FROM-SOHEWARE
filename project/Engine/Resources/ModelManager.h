@@ -32,12 +32,12 @@ public:
     // 読み込み済みのモデル名一覧を取得
     std::vector<std::string> GetLoadedModelNames() const;
 
+    // 終了処理
+    void Clear();
+
 private:
     ModelManager() = default;
     ~ModelManager() = default;
-
-    // 終了処理
-    void Clear();
 
     Engine* engine_ = nullptr;
 

@@ -408,6 +408,12 @@ void EnvironmentManager::DebugDraw()
 #endif
 }
 
+void EnvironmentManager::Finalize()
+{
+    // ComPtr をすべて明示的に解放する
+    constantBuffer_.Reset();
+}
+
 void EnvironmentManager::RequestWeatherChange(WeatherState nextWeather)
 {
     // 晴れから直接雨・雪・雷に行こうとした場合
