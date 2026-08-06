@@ -226,14 +226,14 @@
             0.0
         ],
         "Thunder_TransitionSpeed": 0.15000000596046448,
-        "Thunder_Wetness": 1.0,
+        "Thunder_Wetness": 0.5699999928474426,
         "Thunder_WindDir": [
             1.0,
             0.0
         ],
         "Thunder_WindSpeed": 1.2000000476837158,
         "Thunder_WindTurbul": 0.20000000298023224,
-        "TimeOfDay": 17.700000762939453,
+        "TimeOfDay": 11.600000381469727,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

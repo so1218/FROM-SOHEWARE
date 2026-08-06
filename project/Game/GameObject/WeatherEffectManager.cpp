@@ -62,19 +62,19 @@ void WeatherEffectManager::Update()
 
     // Terrainのマテリアル設定適用
     auto* mat = terrain_->GetMaterialData();
-    mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
-    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);
-    mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);
+   /* mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
+    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);*/
+   /* mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);*/
     mat->rippleSize = FE::Math::Lerp(currentP.rippleSize, targetP.rippleSize, t);
-    mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
-    mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
+    //mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
+    //mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
 
-    mat->color = {
-        FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
-        FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
-        FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
-        1.0f
-    };
+    //mat->color = {
+    //    FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
+    //    FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
+    //    FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
+    //    1.0f
+    //};
 
     // bool値や固定値の設定
     mat->enableRipple = (wetness > 0.1f);
@@ -238,7 +238,7 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         p.environmentMapIntensity = 0.05f;
         p.rippleSize = 1.2f;
         p.normalIntensity = 1.7f;
-        p.color = { 94.0f / 255.0f, 165.0f / 255.0f, 86.0f / 255.0f, 1.0f };
+        p.color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
         p.emissiveIntensity = 12.0f;
         // Fog
         p.scatteringIntensity = 1.5f;
@@ -279,11 +279,11 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         // Terrain
         p.metalness = 0.15f;
         p.roughness = 1.00f;
-        p.environmentMapIntensity = 0.0f;
+        p.environmentMapIntensity = 0.5f;
         p.rippleSize = 0.0f;
         p.normalIntensity = 1.7f;
-        p.color = { 94.0f / 255.0f, 165.0f / 255.0f, 86.0f / 255.0f, 1.0f };
-        p.emissiveIntensity = 6.0f;
+        p.color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
+        p.emissiveIntensity = 3.5f;
         // Fog
         p.scatteringIntensity = 10.0f;
         p.noiseScale = 0.03f; // 晴れでもスケールは維持しておくと遷移が綺麗

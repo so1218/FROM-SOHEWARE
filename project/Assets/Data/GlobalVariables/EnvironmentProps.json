@@ -436,11 +436,11 @@
         },
         "Master_rock1": {
             "MasterModel_AddShadow": 1,
-            "MasterModel_AlbedoMap": "white1x1",
+            "MasterModel_AlbedoMap": "1_rock_baseColor",
             "MasterModel_AlphaThres": 0.009999999776482582,
             "MasterModel_Color": [
-                0.7637130618095398,
-                0.9192436933517456,
+                0.6835442781448364,
+                0.7236020565032959,
                 1.0,
                 1.0
             ],
@@ -455,8 +455,8 @@
             ],
             "MasterModel_EdgeInten": 2.0,
             "MasterModel_EdgeWidth": 0.05000000074505806,
-            "MasterModel_Emissive": 9.600000381469727,
-            "MasterModel_EnvMapInt": 0.019999999552965164,
+            "MasterModel_Emissive": 5.900000095367432,
+            "MasterModel_EnvMapInt": 0.03999999910593033,
             "MasterModel_EnvMapTex": "skybox",
             "MasterModel_HeightMapTex": "height_32",
             "MasterModel_LightMode": 3,
@@ -877,11 +877,11 @@
             "MasterModel_Mat3_UsePuddle": 0,
             "MasterModel_Mat3_UseTriplanar": 0,
             "MasterModel_Mat3_Wetness": 0.5,
-            "MasterModel_Metalness": 0.5400000214576721,
+            "MasterModel_Metalness": 0.03999999910593033,
             "MasterModel_NormEnable": 1,
-            "MasterModel_NormInten": 3.700000047683716,
-            "MasterModel_NormTile": 24.5,
-            "MasterModel_NormalMapTex": "normal_01",
+            "MasterModel_NormInten": 1.2699999809265137,
+            "MasterModel_NormTile": 1.0,
+            "MasterModel_NormalMapTex": "1_rock_normal",
             "MasterModel_OutlineColor": [
                 0.0,
                 0.0,
@@ -891,7 +891,7 @@
             "MasterModel_OutlineEnable": 0,
             "MasterModel_OutlineWidth": 1.0,
             "MasterModel_POMEnable": 0,
-            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMHeightScale": 0.11299999803304672,
             "MasterModel_POMMaxSteps": 32.0,
             "MasterModel_POMMinSteps": 8.0,
             "MasterModel_PuddleColor": [
@@ -927,7 +927,7 @@
                 0.0,
                 0.0
             ],
-            "MasterModel_Roughness": 0.9100000262260437,
+            "MasterModel_Roughness": 0.8500000238418579,
             "MasterModel_Scale": [
                 1.0,
                 1.0,
@@ -972,7 +972,7 @@
             "MasterModel_Wetness": 0.5,
             "ModelName": "rock1"
         },
-        "PropCount": 3,
+        "PropCount": 4,
         "Prop_0": {
             "BaseColor": [
                 1.0,
@@ -2306,22 +2306,28 @@
             "ParticleName": "enemyAura",
             "ParticleName2": "enemyAura",
             "Position": [
-                -101.71337890625,
-                5.505036354064941,
-                69.9026107788086
+                -103.85462951660156,
+                4.095241546630859,
+                68.9308090209961
             ],
             "Rotation": [
-                0.7139734625816345,
-                -0.0,
-                0.34346649050712585
+                1.167420506477356,
+                -1.05403733253479,
+                -1.1144816875457764
             ],
             "Scale": [
-                21.687467575073242,
-                19.014375686645508,
-                21.810129165649414
+                6.728643417358398,
+                4.362847328186035,
+                5.604976177215576
             ]
         },
         "Prop_3": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
             "Behavior": 0,
             "ColliderOffset": [
                 0.0,
@@ -2339,7 +2345,9 @@
             "HasCollider": true,
             "HasLight": false,
             "HasParticle": false,
+            "HasParticle2": false,
             "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
             "LightColor": [
                 1.0,
                 0.5,
@@ -2464,7 +2472,24 @@
             "Model_UsePuddle": 0,
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
-            "ParticleName": "enemyAura"
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                59.82355880737305,
+                7.104019641876221,
+                48.57733154296875
+            ],
+            "PrefabName": "rock1",
+            "Rotation": [
+                0.7648232579231262,
+                -0.0,
+                1.1193594932556152
+            ],
+            "Scale": [
+                4.77000093460083,
+                4.769998550415039,
+                4.7699995040893555
+            ]
         }
     }
 }

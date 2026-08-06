@@ -1145,14 +1145,14 @@
         "WeaponModel_RippleStren": 0.05000000074505806,
         "WeaponModel_Rot": [
             0.0,
-            0.949999988079071,
+            1.2000000476837158,
             0.0
         ],
         "WeaponModel_Roughness": 0.14000000059604645,
         "WeaponModel_Scale": [
-            10.0,
-            10.0,
-            67.0
+            1.399999976158142,
+            2.299999952316284,
+            30.899999618530273
         ],
         "WeaponModel_ShadowBias": 0.0005000000237487257,
         "WeaponModel_ShadowDens": 0.800000011920929,
@@ -1167,9 +1167,9 @@
         ],
         "WeaponModel_ToonRampTex": "toonRamp_01",
         "WeaponModel_Trans": [
-            -34.5,
-            10.100000381469727,
-            -21.5
+            -28.100000381469727,
+            7.199999809265137,
+            -9.5
         ],
         "WeaponModel_TriScale": 0.10000000149011612,
         "WeaponModel_TriSharpness": 4.0,

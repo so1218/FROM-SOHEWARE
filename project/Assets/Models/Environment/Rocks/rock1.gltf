@@ -1,6 +1,6 @@
 {
 	"asset":{
-		"generator":"Khronos glTF Blender I/O v5.0.21",
+		"generator":"Khronos glTF Blender I/O v5.2.39",
 		"version":"2.0"
 	},
 	"scene":0,
@@ -8,36 +8,51 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0,
-				1
+				0
 			]
 		}
 	],
 	"nodes":[
 		{
-			"name":"Cube_UV_Mesh"
-		},
-		{
 			"mesh":0,
-			"name":"Cube"
+			"name":"19_rock_19_rock_0",
+			"rotation":[
+				-0.70710688829422,
+				0,
+				0,
+				0.7071066498756409
+			],
+			"scale":[
+				100,
+				100.00003814697266,
+				100.00003814697266
+			],
+			"translation":[
+				199.7840576171875,
+				0,
+				150.00003051757812
+			]
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
-			"name":"Material.002",
+			"name":"19_rock",
+			"normalTexture":{
+				"index":0
+			},
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":0
+					"index":1
 				},
-				"metallicFactor":0,
-				"roughnessFactor":0.5
+				"metallicFactor":0.05000000074505806,
+				"roughnessFactor":0.5987654328346252
 			}
 		}
 	],
 	"meshes":[
 		{
-			"name":"Cube.003",
+			"name":"19_rock_19_rock_0",
 			"primitives":[
 				{
 					"attributes":{
@@ -55,74 +70,83 @@
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":1
 		}
 	],
 	"images":[
 		{
-			"mimeType":"image/png",
-			"name":"white2x2",
-			"uri":"white2x2.png"
+			"mimeType":"image/jpeg",
+			"name":"1_rock_normal",
+			"uri":"1_rock_normal.jpg"
+		},
+		{
+			"mimeType":"image/jpeg",
+			"name":"1_rock_baseColor",
+			"uri":"1_rock_baseColor.jpg"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":546,
+			"count":378,
 			"max":[
-				0.4423983097076416,
-				0.3872160315513611,
-				0.9268172979354858
+				-1.9590812921524048,
+				1.5189751386642456,
+				0.023467816412448883
 			],
 			"min":[
-				-0.48068490624427795,
-				-0.3859773278236389,
-				-0.8448399305343628
+				-2.020167112350464,
+				1.4790433645248413,
+				-0.007677416782826185
 			],
 			"type":"VEC3"
 		},
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":546,
+			"count":378,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":546,
+			"count":378,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":558,
+			"count":1500,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":6552,
+			"byteLength":4536,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":6552,
-			"byteOffset":6552,
+			"byteLength":4536,
+			"byteOffset":4536,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":4368,
-			"byteOffset":13104,
+			"byteLength":3024,
+			"byteOffset":9072,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":1116,
-			"byteOffset":17472,
+			"byteLength":3000,
+			"byteOffset":12096,
 			"target":34963
 		}
 	],
@@ -134,7 +158,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":18588,
+			"byteLength":15096,
 			"uri":"rock1.bin"
 		}
 	]
