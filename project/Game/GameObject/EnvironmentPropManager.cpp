@@ -11,7 +11,8 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
 {
     if (groups_.find(prefabName) != groups_.end()) return;
 
-    PropGroup newGroup;
+    // ★ 修正: 先に map 内に要素を作成し、その参照を取得する
+    auto& newGroup = groups_[prefabName];
     newGroup.prefabName = prefabName;
 
     // マスターの設定を保存するJSONグループ名
@@ -34,7 +35,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     // マスター専用のバインダー
     newGroup.binder = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
 
-    // モデル差し替え用のバインダー登録
+    // ★ 修正: map内に確定した &newGroup.modelName の安全なアドレスが渡される
     newGroup.binder->BindModelName("ModelName", &newGroup.modelName, newGroup.modelName,
         [this, prefabName](const std::string& newName) {
             // ImGui描画中での即時再構築を避けるため、予約変数に保存
@@ -43,8 +44,6 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
         });
 
     newGroup.binder->BindModel("MasterModel", newGroup.masterModel.get());
-
-    groups_[prefabName] = std::move(newGroup);
 }
 
 void EnvironmentPropManager::Initialize()

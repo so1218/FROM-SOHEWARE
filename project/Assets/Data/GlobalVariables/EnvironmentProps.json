@@ -434,6 +434,336 @@
             ],
             "ModelName": "bonFire"
         },
+        "Master_house1": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "white1x1",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 0,
+            "MasterModel_DisThres": 0.5,
+            "MasterModel_DissolveTex": "white1x1",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 2.0,
+            "MasterModel_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Emissive": 1.0,
+            "MasterModel_EnvMapInt": 0.0,
+            "MasterModel_EnvMapTex": "skybox",
+            "MasterModel_HeightMapTex": "white1x1",
+            "MasterModel_LightMode": 1,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Mat0_AddShadow": 1,
+            "MasterModel_Mat0_AlbedoMap": "house1_baseColor",
+            "MasterModel_Mat0_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_DiffuseRef": 4.0,
+            "MasterModel_Mat0_DisEnable": 0,
+            "MasterModel_Mat0_DisThres": 0.5,
+            "MasterModel_Mat0_DissolveTex": "white1x1",
+            "MasterModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat0_EdgeInten": 2.0,
+            "MasterModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat0_Emissive": 3.299999952316284,
+            "MasterModel_Mat0_EnvMapInt": 0.17000000178813934,
+            "MasterModel_Mat0_EnvMapTex": "skybox",
+            "MasterModel_Mat0_HeightMapTex": "white1x1",
+            "MasterModel_Mat0_LightMode": 3,
+            "MasterModel_Mat0_Lighting": 1,
+            "MasterModel_Mat0_Metalness": 0.5899999737739563,
+            "MasterModel_Mat0_NormEnable": 1,
+            "MasterModel_Mat0_NormInten": 1.0,
+            "MasterModel_Mat0_NormTile": 1.0,
+            "MasterModel_Mat0_NormalMapTex": "house1_normal",
+            "MasterModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat0_OutlineEnable": 0,
+            "MasterModel_Mat0_OutlineWidth": 1.0,
+            "MasterModel_Mat0_POMEnable": 0,
+            "MasterModel_Mat0_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat0_POMMaxSteps": 32.0,
+            "MasterModel_Mat0_POMMinSteps": 8.0,
+            "MasterModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat0_PuddleEmission": 0.0,
+            "MasterModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleNoise": "white1x1",
+            "MasterModel_Mat0_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleTint": 0.5,
+            "MasterModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_RimEnable": 0,
+            "MasterModel_Mat0_RimInten": 1.0,
+            "MasterModel_Mat0_RimPower": 3.0,
+            "MasterModel_Mat0_RimUseDir": 0,
+            "MasterModel_Mat0_RippleEnable": 0,
+            "MasterModel_Mat0_RippleFreq": 1.0,
+            "MasterModel_Mat0_RippleMap": "white1x1",
+            "MasterModel_Mat0_RippleMix": 0.5,
+            "MasterModel_Mat0_RippleScale": 2.0,
+            "MasterModel_Mat0_RippleSize": 0.4000000059604645,
+            "MasterModel_Mat0_RippleSpeed": 1.0,
+            "MasterModel_Mat0_RippleStren": 0.05000000074505806,
+            "MasterModel_Mat0_Roughness": 0.6899999976158142,
+            "MasterModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat0_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat0_ShadowEnv": 0.0,
+            "MasterModel_Mat0_ShadowSoft": 0.0,
+            "MasterModel_Mat0_Shininess": 50.0,
+            "MasterModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat0_TriScale": 0.10000000149011612,
+            "MasterModel_Mat0_TriSharpness": 4.0,
+            "MasterModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UsePuddle": 0,
+            "MasterModel_Mat0_UseTriplanar": 0,
+            "MasterModel_Mat0_Wetness": 0.5,
+            "MasterModel_Mat1_AddShadow": 1,
+            "MasterModel_Mat1_AlbedoMap": "house1_baseColor",
+            "MasterModel_Mat1_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_DiffuseRef": 4.0,
+            "MasterModel_Mat1_DisEnable": 0,
+            "MasterModel_Mat1_DisThres": 0.5,
+            "MasterModel_Mat1_DissolveTex": "white1x1",
+            "MasterModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat1_EdgeInten": 2.0,
+            "MasterModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat1_Emissive": 4.199999809265137,
+            "MasterModel_Mat1_EnvMapInt": 0.7400000095367432,
+            "MasterModel_Mat1_EnvMapTex": "skybox",
+            "MasterModel_Mat1_HeightMapTex": "white1x1",
+            "MasterModel_Mat1_LightMode": 3,
+            "MasterModel_Mat1_Lighting": 1,
+            "MasterModel_Mat1_Metalness": 0.14000000059604645,
+            "MasterModel_Mat1_NormEnable": 1,
+            "MasterModel_Mat1_NormInten": 1.0,
+            "MasterModel_Mat1_NormTile": 1.0,
+            "MasterModel_Mat1_NormalMapTex": "house1_normal",
+            "MasterModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat1_OutlineEnable": 0,
+            "MasterModel_Mat1_OutlineWidth": 1.0,
+            "MasterModel_Mat1_POMEnable": 0,
+            "MasterModel_Mat1_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat1_POMMaxSteps": 32.0,
+            "MasterModel_Mat1_POMMinSteps": 8.0,
+            "MasterModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat1_PuddleEmission": 0.0,
+            "MasterModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleNoise": "white1x1",
+            "MasterModel_Mat1_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleTint": 0.5,
+            "MasterModel_Mat1_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_RimEnable": 0,
+            "MasterModel_Mat1_RimInten": 1.0,
+            "MasterModel_Mat1_RimPower": 3.0,
+            "MasterModel_Mat1_RimUseDir": 0,
+            "MasterModel_Mat1_RippleEnable": 0,
+            "MasterModel_Mat1_RippleFreq": 1.0,
+            "MasterModel_Mat1_RippleMap": "white1x1",
+            "MasterModel_Mat1_RippleMix": 0.5,
+            "MasterModel_Mat1_RippleScale": 2.0,
+            "MasterModel_Mat1_RippleSize": 0.4000000059604645,
+            "MasterModel_Mat1_RippleSpeed": 1.0,
+            "MasterModel_Mat1_RippleStren": 0.05000000074505806,
+            "MasterModel_Mat1_Roughness": 1.0,
+            "MasterModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat1_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat1_ShadowEnv": 0.0,
+            "MasterModel_Mat1_ShadowSoft": 0.0,
+            "MasterModel_Mat1_Shininess": 50.0,
+            "MasterModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat1_TriScale": 0.10000000149011612,
+            "MasterModel_Mat1_TriSharpness": 4.0,
+            "MasterModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UsePuddle": 0,
+            "MasterModel_Mat1_UseTriplanar": 0,
+            "MasterModel_Mat1_Wetness": 0.5,
+            "MasterModel_Metalness": 0.0,
+            "MasterModel_NormEnable": 0,
+            "MasterModel_NormInten": 1.0,
+            "MasterModel_NormTile": 1.0,
+            "MasterModel_NormalMapTex": "white1x1",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 1.0,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_RippleEnable": 0,
+            "MasterModel_RippleFreq": 1.0,
+            "MasterModel_RippleMap": "white1x1",
+            "MasterModel_RippleMix": 0.5,
+            "MasterModel_RippleScale": 2.0,
+            "MasterModel_RippleSize": 0.4000000059604645,
+            "MasterModel_RippleSpeed": 1.0,
+            "MasterModel_RippleStren": 0.05000000074505806,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.5,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "MasterModel_Wetness": 0.5,
+            "ModelName": "house1"
+        },
         "Master_rock1": {
             "MasterModel_AddShadow": 1,
             "MasterModel_AlbedoMap": "1_rock_baseColor",
@@ -972,7 +1302,7 @@
             "MasterModel_Wetness": 0.5,
             "ModelName": "rock1"
         },
-        "PropCount": 4,
+        "PropCount": 5,
         "Prop_0": {
             "BaseColor": [
                 1.0,
@@ -2489,6 +2819,61 @@
                 4.77000093460083,
                 4.769998550415039,
                 4.7699995040893555
+            ]
+        },
+        "Prop_4": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 0,
+            "ColliderOffset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "ColliderType": 0,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                124.36329650878906,
+                -7.544990539550781,
+                13.0987548828125
+            ],
+            "PrefabName": "house1",
+            "Rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Scale": [
+                7.244999885559082,
+                7.244999885559082,
+                7.244999885559082
             ]
         }
     }

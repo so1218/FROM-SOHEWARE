@@ -13,4 +13,5 @@ field,Environment/Field/field.obj
 tree,Environment/Tree/oakTree1.gltf
 rock1,Environment/Rocks/rock1.gltf
 bonFire,Environment/BonFire/bonFire.gltf
+house1,Environment/House/house1.gltf
 volumetricFog,Environment/VolumetricFog/VolumetricFog.gltf
