@@ -85,7 +85,7 @@ void EnvironmentProp::SetupProperties()
     binder_->BindColor("BaseColor", &baseColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
 
     binder_->Bind("Behavior", &propBehavior_, 0);
-    binder_->Bind("HasCollider", &hasCollider_, true);
+    binder_->Bind("HasCollider", &hasCollider_, false);
 
     binder_->Bind("ColliderType", &colliderType_, 0);
     binder_->Bind("ColliderRadius", &colliderRadius_, 1.0f);
@@ -98,7 +98,6 @@ void EnvironmentProp::SetupProperties()
     binder_->Bind("LightRadius", &lightRadius_, 10.0f);
     binder_->Bind("LightVolumetricScatteringIntensity", &lightVolumetricScatteringIntensity_, 1.0f);
 
-    // パーティクルのON/OFFフラグと追従フラグ
     binder_->Bind("HasParticle", &hasParticle_, false);
     binder_->Bind("IsParticleFollowing", &isParticleFollowing_, true); 
 

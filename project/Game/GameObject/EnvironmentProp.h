@@ -68,7 +68,7 @@ private:
 
     // PropertyBinderで保存・変更するパラメータ
     int propBehavior_ = 0;
-    bool hasCollider_ = true;
+    bool hasCollider_ = false;
 
     int colliderType_ = 0; 
     float colliderRadius_ = 1.0f;

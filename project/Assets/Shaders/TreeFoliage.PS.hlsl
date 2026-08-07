@@ -64,7 +64,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
 
     // -------------------------------------------------------------------------
-    // 3. 物理プロパティ & 濡れ (Wetness) 計算
+    // 物理プロパティ & 濡れ (Wetness) 計算
     // -------------------------------------------------------------------------
     float ao = gMaterial.baseAO * input.color.a;
 
@@ -75,7 +75,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     float roughness = lerp(gMaterial.baseRoughness, 0.05f, gEnvironmentData.wetness);
 
     // -------------------------------------------------------------------------
-    // 4. 法線計算 (Bitangent動的算出 & ブランチレス裏面処理)
+    // 法線計算 (Bitangent動的算出 & ブランチレス裏面処理)
     // -------------------------------------------------------------------------
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);
