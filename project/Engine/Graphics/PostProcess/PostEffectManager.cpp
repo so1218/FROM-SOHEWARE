@@ -59,16 +59,16 @@ void PostEffectManager::Initialize(
 
     // SSAO初期化
     ssaoPass_ = std::make_unique<SSAOPass>();
-    ssaoPass_->Initialize(engine, width, height, psoManager);
+    ssaoPass_->Initialize(engine, halfW, halfH, psoManager);
 
     // BilateralBlur初期化 (横)
     horizontalBilateralPass_ = std::make_unique<BilateralBlurPass>();
-    horizontalBilateralPass_->Initialize(engine, width, height, psoManager);
-    horizontalBilateralPass_->GetSettings()->direction = { 1.0f, 0.0f }; 
+    horizontalBilateralPass_->Initialize(engine, halfW, halfH, psoManager);
+    horizontalBilateralPass_->GetSettings()->direction = { 1.0f, 0.0f };
 
     // BilateralBlur初期化 (縦)
     verticalBilateralPass_ = std::make_unique<BilateralBlurPass>();
-    verticalBilateralPass_->Initialize(engine, width, height, psoManager);
+    verticalBilateralPass_->Initialize(engine, halfW, halfH, psoManager);
     verticalBilateralPass_->GetSettings()->direction = { 0.0f, 1.0f };
 
     // SSR初期化

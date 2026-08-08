@@ -136,10 +136,6 @@ void ParticleEditor::ShowEditor()
                     "None",
                     "Normal",
                     "Add",
-                    "Subtract",
-                    "Multiply",
-                    "Screen",
-                    "Exclusion"
                 };
 
                 int currentBlendMode = static_cast<int>(config.blendMode);

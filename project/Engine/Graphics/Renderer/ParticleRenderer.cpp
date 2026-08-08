@@ -63,7 +63,9 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
 {
     if (requests_.empty()) return;
 
-    std::sort(requests_.begin(), requests_.end());
+    std::stable_sort(requests_.begin(), requests_.end(), [](const ParticleRequest& a, const ParticleRequest& b) {
+        return a.blendMode < b.blendMode;
+        });
     // インスタンスデータの一括コピー
     // 全パーティクルデータを一気にGPUバッファに送る
     ParticleInstanceData* dstBase = mappedInstanceData_[currentFrameIndex_];
@@ -77,19 +79,20 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Particle"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->SetGraphicsRootConstantBufferView(1, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(0));
 
     // インスタンスバッファの開始地点を取得
     D3D12_GPU_VIRTUAL_ADDRESS bufferGPUAddress = particleInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
 
-    BlendMode lastBlendMode = static_cast<BlendMode>(-1); // 初期化
+    BlendMode lastBlendMode = static_cast<BlendMode>(-1);
     ID3D12PipelineState* currentPSO = nullptr;
 
-    size_t drawCallStart = 0; // 描画開始インデックス
+    size_t drawCallStart = 0;
     while (drawCallStart < requests_.size()) {
         const auto& startReq = requests_[drawCallStart];
 
-        // ブレンドモードが変わった時だけPSOを再取得してセット
-        if (startReq.blendMode != lastBlendMode) 
+        // ブレンドモードが変わった時だけPSOをセット
+        if (startReq.blendMode != lastBlendMode)
         {
             currentPSO = env.psoManager->GetPSO(GetPSOName(startReq.blendMode));
             if (currentPSO)
@@ -98,24 +101,18 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
             }
             lastBlendMode = startReq.blendMode;
         }
-        
-        // 同じ設定がどこまで続くか探す
+
         size_t drawCallEnd = drawCallStart + 1;
-        while (drawCallEnd < requests_.size()) 
+        while (drawCallEnd < requests_.size())
         {
-            if (requests_[drawCallEnd].blendMode != startReq.blendMode || 
-                requests_[drawCallEnd].textureIndex != startReq.textureIndex) 
+            if (requests_[drawCallEnd].blendMode != startReq.blendMode)
             {
-                break; // 設定が変わったので区切る
+                break; // ブレンドモードが変わったので区切る
             }
             drawCallEnd++;
         }
 
-        // 1回描画
         uint32_t instanceCount = static_cast<uint32_t>(drawCallEnd - drawCallStart);
-
-        // テクスチャセット
-        cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(startReq.textureIndex));
 
         // インスタンスバッファの現在のオフセットをセット
         cmdList->SetGraphicsRootShaderResourceView(0, bufferGPUAddress + (sizeof(ParticleInstanceData) * drawCallStart));
@@ -123,7 +120,6 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
         // 描画
         cmdList->DrawInstanced(6, instanceCount, 0, 0);
 
-        // 次のバッチへ
         drawCallStart = drawCallEnd;
     }
 }
@@ -134,10 +130,6 @@ std::string ParticleRenderer::GetPSOName(BlendMode blendMode)
     {
     case kBlendModeNone:      return "ParticleOpaque";
     case kBlendModeAdd:       return "ParticleAdditive";
-    case kBlendModeSubtract:  return "ParticleSubtract";
-    case kBlendModeMultiply:  return "ParticleMultiply";
-    case kBlendModeScreen:    return "ParticleScreen";
-    case kBlendModeExclusion: return "ParticleExclusion";
     case kBlendModeNormal:
     default:                  return "ParticleAlphaBlend";
     }

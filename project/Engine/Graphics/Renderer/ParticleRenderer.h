@@ -13,11 +13,10 @@ struct ParticleRequest
     BlendMode blendMode;
     uint32_t textureIndex;
 
-    // ソート用の比較演算子 (BlendMode->TextureIndexの順で並べる)
     bool operator<(const ParticleRequest& other) const
     {
-        if (blendMode != other.blendMode) return blendMode < other.blendMode;
-        return textureIndex < other.textureIndex;
+        // ブレンドモードだけで並び替える
+        return blendMode < other.blendMode;
     }
 };
 

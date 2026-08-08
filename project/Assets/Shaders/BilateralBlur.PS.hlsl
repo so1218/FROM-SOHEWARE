@@ -34,7 +34,7 @@ float4 main(VSOutput input) : SV_TARGET
     if (centerDepth >= 1.0f)
         return float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    float centerZ = GetViewPos(input.uv, centerDepth).z;
+    float centerZ = LinearizeDepth(centerDepth, gFrameData.nearClip, gFrameData.farClip);
     float3 centerNormal = gNormalTexture.SampleLevel(gClampSampler, input.uv, 0).xyz;
     float centerColor = gSSAOTexture.SampleLevel(gClampSampler, input.uv, 0);
 
@@ -58,9 +58,8 @@ float4 main(VSOutput input) : SV_TARGET
         float sampleColor = gSSAOTexture.SampleLevel(gClampSampler, offset, 0);
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, offset, 0);
         float3 sampleNormal = gNormalTexture.SampleLevel(gClampSampler, offset, 0).xyz;
-        float sampleLinearDepth = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
         float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
-
+        
         // 重みの計算
         // 距離による重み（遠いピクセルほど影響を小さく）
         float spatialW = spatialWeights[abs(i)];

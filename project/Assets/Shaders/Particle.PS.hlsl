@@ -6,13 +6,14 @@ struct VertexOut
     float textureIndex : TEXCOORD1;
 };
 
-Texture2DArray diffuseMapArray : register(t1);
+Texture2D<float4> gTextures[] : register(t1);
 SamplerState sampler0 : register(s0);
 
 float4 main(VertexOut vin) : SV_TARGET
 {
+    uint texID = (uint) (vin.textureIndex + 0.5f);
     // テクスチャを使う場合
-    float4 texColor = diffuseMapArray.Sample(sampler0, float3(vin.uv, int(vin.textureIndex + 0.5)));
+    float4 texColor = gTextures[NonUniformResourceIndex(texID)].Sample(sampler0, vin.uv);
     float4 finalColor = texColor * vin.color;
 
     // アルファが小さければ描画しない
