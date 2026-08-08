@@ -83,6 +83,10 @@ ModelData ModelLoader::LoadModel(const std::string& filePath)
 
 void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, MeshData& outMeshData, bool isGLTF)
 {
+    // AABB計算用の初期値（floatの最大・最小値）
+    Vector3 minPos = { FLT_MAX, FLT_MAX, FLT_MAX };
+    Vector3 maxPos = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
     // 頂点を追加
     for (unsigned int i = 0; i < mesh->mNumVertices; ++i)
     {
@@ -94,6 +98,14 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, MeshData& outM
         vertex.position.w = 1.0f;
 
         vertex.position.x *= -1;
+
+        // AABBの更新（反転後の座標）
+        minPos.x = (std::min)(minPos.x, vertex.position.x);
+        minPos.y = (std::min)(minPos.y, vertex.position.y);
+        minPos.z = (std::min)(minPos.z, vertex.position.z);
+        maxPos.x = (std::max)(maxPos.x, vertex.position.x);
+        maxPos.y = (std::max)(maxPos.y, vertex.position.y);
+        maxPos.z = (std::max)(maxPos.z, vertex.position.z);
 
         if (mesh->HasNormals())
         {
@@ -141,6 +153,10 @@ void ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene, MeshData& outM
 
         outMeshData.vertices.push_back(vertex);
     }
+
+    // 計算したAABBをメッシュデータに保存
+    outMeshData.localAABB.min = minPos;
+    outMeshData.localAABB.max = maxPos;
 
     // インデックスを追加（vertexOffsetを足す）
     for (unsigned int i = 0; i < mesh->mNumFaces; ++i)

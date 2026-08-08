@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "AnimationData.h"
 #include "BlendMode.h"
+#include "Frustum.h"
 
 namespace FE
 {
@@ -88,6 +89,9 @@ struct ModelSubmission
     Matrix4x4 wvpMatrix;             
     Matrix4x4 worldInverseTranspose;
     Matrix4x4 prevWorldMatrix;    
+
+    bool isVisibleCamera = true;
+    bool isVisibleShadow = true;
 };
 
 struct RenderBatch

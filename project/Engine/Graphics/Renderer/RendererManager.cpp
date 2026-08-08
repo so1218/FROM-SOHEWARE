@@ -136,6 +136,23 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	}
 }
 
+void RendererManager::UpdateCullingFrustums()
+{
+	// カメラのフラスタムを更新
+	cameraFrustum_.ExtractFromMatrix(viewProjectionMatrix_);
+
+	// 影用のフラスタム（カスケード4段分）を更新
+	shadowFrustums_.resize(4);
+	if (lightManager_)
+	{
+		const ShadowData* shadowData = lightManager_->GetShadowData();
+		for (int i = 0; i < 4; ++i)
+		{
+			shadowFrustums_[i].ExtractFromMatrix(shadowData->cascadeLightViewProj[i]);
+		}
+	}
+}
+
 void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 {
 	auto* cmdList = commandManager_->GetCommandList();
@@ -356,7 +373,11 @@ void RendererManager::SubmitModel(const WorldTransform& worldTransform, const Mo
 {
 	if (modelRenderer_)
 	{
-		modelRenderer_->Submit(worldTransform, modelData, materials, blendMode, cullMode, depthMode, group, instanceColor);
+		// キャッシュされたフラスタム情報を渡す
+		modelRenderer_->Submit(
+			worldTransform, modelData, materials, blendMode, cullMode, depthMode, group, instanceColor,
+			cameraFrustum_, shadowFrustums_ 
+		);
 	}
 }
 

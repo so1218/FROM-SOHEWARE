@@ -785,7 +785,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         {
             ImGui::Indent();
 
-            if (ImGui::CollapsingHeader("PBR 光学特性 (Lighting & Optical)", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("PBR 光学特性", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::ColorEdit3("散乱色", &volFogSettings->albedo.x);
                 ImGui::DragFloat("散乱の強さ (Scattering Intensity)", &volFogSettings->scatteringIntensity, 0.5f, 0.0f, 200.0f, "%.1f");

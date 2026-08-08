@@ -3,6 +3,7 @@
 #include "RenderCommon.h"
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
+#include "Frustum.h"
 
 namespace FE
 {
@@ -21,7 +22,8 @@ public:
     // モデル描画登録
     void Submit(const WorldTransform& worldTransform, const ModelData& modelData,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
-        DepthMode depthMode, RenderGroup group, const Vector4& instanceColor);
+        DepthMode depthMode, RenderGroup group, const Vector4& instanceColor,
+        const Frustum& cameraFrustum, const std::vector<Frustum>& shadowFrustums);
 
     // アニメーションモデル描画登録
     void SubmitAnimation(

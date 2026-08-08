@@ -49,6 +49,12 @@ struct LightningVertexData
     Vector4 color;
 };
 
+struct AABB
+{
+    Vector3 min;
+    Vector3 max;
+};
+
 struct MaterialHandle
 {
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
@@ -125,6 +131,8 @@ struct MeshData
 
     // スキニング情報（このメッシュの頂点に対するウェイト）
     std::map<std::string, JointWeightData> skinClusterData;
+
+    AABB localAABB;
 };
 
 struct ModelData
@@ -151,12 +159,6 @@ enum class DepthMode
     Write,      // 書き込みあり (通常)
     ReadOnly,   // 書き込みなし・テストあり (半透明・エフェクト)
     None        // テストも書き込みもなし (UI・常に最前面)
-};
-
-struct AABB
-{
-    Vector3 min;
-    Vector3 max;
 };
 
 // シェーダーに送る雷の見た目パラメータ

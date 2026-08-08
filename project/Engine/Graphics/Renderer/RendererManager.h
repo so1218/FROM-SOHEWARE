@@ -9,7 +9,6 @@
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 #include "Terrain.h"
-#include "Frustum.h"
 
 namespace FE
 {
@@ -54,6 +53,7 @@ public:
 
     // このフレームで使うカメラ行列をセットする
     void SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition);
+    void UpdateCullingFrustums();
 
     // 描画関数
     void SubmitModel(const WorldTransform& worldTransform, const ModelData& modelData,
@@ -145,13 +145,16 @@ private:
     Matrix4x4 projectionMatrix_;
     Matrix4x4 viewProjectionMatrix_;
     Vector3 cameraPosition_;
-    Frustum cameraFrustum_;
 
     uint32_t grassTextureHandle_ = 0;
     GrassMaterialData grassMaterialData_ = {};
     GrassCullingData grassCullingData_{};
 
     uint32_t windMapSrvIndex_ = 0;
+
+    // カリング用のキャッシュ
+    Frustum cameraFrustum_;
+    std::vector<Frustum> shadowFrustums_;
 
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体

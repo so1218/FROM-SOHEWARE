@@ -83,6 +83,8 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
         cameraState.farClip          
     );
 
+    // カリング用フラスタムを更新
+    rendererManager->UpdateCullingFrustums();
 
     // 流体シミュレーションの実行
     fluidSimulationPass_->Execute(cmdList);

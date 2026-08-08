@@ -84,7 +84,8 @@ const std::vector<Mesh>& ModelRenderer::GetOrCreateBatch(const ModelData& modelD
 
 void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData& modelData,
     const std::vector<MaterialHandle>& materials, BlendMode blendMode, CullMode cullMode,
-    DepthMode depthMode, RenderGroup group, const Vector4& instanceColor)
+    DepthMode depthMode, RenderGroup group, const Vector4& instanceColor,
+    const Frustum& cameraFrustum, const std::vector<Frustum>& shadowFrustums)
 {
     // モデルに対応するGPUメッシュリストを取得
     const auto& meshes = GetOrCreateBatch(modelData);
@@ -101,6 +102,47 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 if (indexModel_ >= kMaxCount) return; // 安全対策
 
                 const auto& meshPart = modelData.meshes[meshIndex];
+
+                // カリング判定（AABBのワールド変換と交差判定）
+                Vector3 localCenter = {
+                    (meshPart.localAABB.min.x + meshPart.localAABB.max.x) * 0.5f,
+                    (meshPart.localAABB.min.y + meshPart.localAABB.max.y) * 0.5f,
+                    (meshPart.localAABB.min.z + meshPart.localAABB.max.z) * 0.5f
+                };
+                Vector3 localExtents = {
+                    (meshPart.localAABB.max.x - meshPart.localAABB.min.x) * 0.5f,
+                    (meshPart.localAABB.max.y - meshPart.localAABB.min.y) * 0.5f,
+                    (meshPart.localAABB.max.z - meshPart.localAABB.min.z) * 0.5f
+                };
+
+                Vector3 worldCenter = currentWorldMatrix.TransformPoint(localCenter);
+
+                // 行列のスケール・回転を適用した広がりを計算（絶対値）
+                Vector3 worldExtents;
+                worldExtents.x = std::abs(currentWorldMatrix.m[0][0]) * localExtents.x + std::abs(currentWorldMatrix.m[1][0]) * localExtents.y + std::abs(currentWorldMatrix.m[2][0]) * localExtents.z;
+                worldExtents.y = std::abs(currentWorldMatrix.m[0][1]) * localExtents.x + std::abs(currentWorldMatrix.m[1][1]) * localExtents.y + std::abs(currentWorldMatrix.m[2][1]) * localExtents.z;
+                worldExtents.z = std::abs(currentWorldMatrix.m[0][2]) * localExtents.x + std::abs(currentWorldMatrix.m[1][2]) * localExtents.y + std::abs(currentWorldMatrix.m[2][2]) * localExtents.z;
+
+                Vector3 worldMin = { worldCenter.x - worldExtents.x, worldCenter.y - worldExtents.y, worldCenter.z - worldExtents.z };
+                Vector3 worldMax = { worldCenter.x + worldExtents.x, worldCenter.y + worldExtents.y, worldCenter.z + worldExtents.z };
+
+                // カメラ・影フラスタムとの判定
+                bool isVisibleCamera = cameraFrustum.IntersectsAABB(worldMin, worldMax);
+                bool isVisibleShadow = false;
+                for (const auto& shadowFrustum : shadowFrustums)
+                {
+                    if (shadowFrustum.IntersectsAABB(worldMin, worldMax))
+                    {
+                        isVisibleShadow = true;
+                        break;
+                    }
+                }
+
+                // 両方から見えない場合は描画対象から除外（カリング）
+                if (!isVisibleCamera && !isVisibleShadow)
+                {
+                    continue;
+                }
 
                 MaterialHandle actualMaterialHandle;
                 if (meshIndex < materials.size())
@@ -161,6 +203,8 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 submission.blendMode = blendMode;
                 submission.cullMode = cullMode;
                 submission.depthMode = depthMode;
+                submission.isVisibleCamera = isVisibleCamera;
+                submission.isVisibleShadow = isVisibleShadow;
 
                 // アルファ判定
                 bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
