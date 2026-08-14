@@ -15,36 +15,14 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"19_rock_19_rock_0",
-			"rotation":[
-				-0.70710688829422,
-				0,
-				0,
-				0.7071066498756409
-			],
-			"scale":[
-				100,
-				100.00003814697266,
-				100.00003814697266
-			],
-			"translation":[
-				199.7840576171875,
-				0,
-				150.00003051757812
-			]
+			"name":"19_rock_19_rock_0"
 		}
 	],
 	"materials":[
 		{
 			"doubleSided":true,
 			"name":"19_rock",
-			"normalTexture":{
-				"index":0
-			},
 			"pbrMetallicRoughness":{
-				"baseColorTexture":{
-					"index":1
-				},
 				"metallicFactor":0.05000000074505806,
 				"roughnessFactor":0.5987654328346252
 			}
@@ -66,42 +44,20 @@
 			]
 		}
 	],
-	"textures":[
-		{
-			"sampler":0,
-			"source":0
-		},
-		{
-			"sampler":0,
-			"source":1
-		}
-	],
-	"images":[
-		{
-			"mimeType":"image/jpeg",
-			"name":"1_rock_normal",
-			"uri":"1_rock_normal.jpg"
-		},
-		{
-			"mimeType":"image/jpeg",
-			"name":"1_rock_baseColor",
-			"uri":"1_rock_baseColor.jpg"
-		}
-	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
 			"count":378,
 			"max":[
-				-1.9590812921524048,
-				1.5189751386642456,
-				0.023467816412448883
+				3.4439544677734375,
+				3.085052967071533,
+				2.09564208984375
 			],
 			"min":[
-				-2.020167112350464,
-				1.4790433645248413,
-				-0.007677416782826185
+				-2.6646270751953125,
+				-0.02947145700454712,
+				-1.8975372314453125
 			],
 			"type":"VEC3"
 		},
@@ -148,12 +104,6 @@
 			"byteLength":3000,
 			"byteOffset":12096,
 			"target":34963
-		}
-	],
-	"samplers":[
-		{
-			"magFilter":9729,
-			"minFilter":9987
 		}
 	],
 	"buffers":[

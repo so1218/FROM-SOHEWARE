@@ -229,6 +229,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\LineRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\ModelRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\ParticleRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\PebbleRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkyboxRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp" />
@@ -238,6 +239,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\PebbleSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RenderPipeline.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
@@ -360,6 +362,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
+    <ClCompile Include="Game\GameObject\PebbleField.cpp" />
     <ClCompile Include="Game\GameObject\TreeField.cpp" />
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
@@ -425,6 +428,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\LineRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\ModelRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\ParticleRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\PebbleRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkyboxRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
@@ -435,6 +439,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\PebbleSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RenderPipeline.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\RootSignatureBuilder.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
@@ -523,6 +528,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Game\GameObject\OrbManager.h" />
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\GameObject\PebbleField.h" />
     <ClInclude Include="Game\GameObject\TreeField.h" />
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
@@ -548,6 +554,44 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\Shaders\Pebble.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\Pebble.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\PebbleCulling.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\PebbleGeneration.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Assets\Shaders\FluidAdvection.CS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>

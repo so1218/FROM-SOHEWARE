@@ -1,0 +1,4 @@
+{
+  "RootSignature": "PebbleCullingCS",
+  "ComputeShader": "Assets/Shaders/PebbleCulling.CS.hlsl"
+}

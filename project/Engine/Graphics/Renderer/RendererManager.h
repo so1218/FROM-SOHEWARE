@@ -21,11 +21,12 @@ class ParticleRenderer;
 class TrailRenderer;
 class SkyboxRenderer;
 class GrassRenderer;
+class TreeRenderer;
+class PebbleRenderer;
 class SkydomeRenderer;
 class TerrainRenderer;
 class TerrainChunk;
 class LightningRenderer;
-class TreeRenderer;
 
 class RendererManager
 {
@@ -77,6 +78,10 @@ public:
         uint32_t densityMapSrvHandle);
     void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
         const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade);
+    void GeneratePebbles(
+        const PebbleGenerationData& genData,
+        uint32_t heightMapSrvHandle,
+        uint32_t densityMapSrvHandle);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform,
@@ -118,6 +123,15 @@ public:
     void InitializeGrass();
     void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);
 
+    void InitializePebble();
+    void SetPebbleRenderingParams(
+        uint32_t skyboxSrvHandle,
+        uint32_t albedoSrvHandle,
+        uint32_t normalSrvHandle,
+        const Mesh& pebbleMesh,
+        const PebbleMaterialData& materialData,
+        const PebbleCullingData& cullingData);
+
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 
     // 雷を発生させる
@@ -152,6 +166,13 @@ private:
 
     uint32_t windMapSrvIndex_ = 0;
 
+    uint32_t pebbleSkyboxSrvHandle_ = 0;
+    uint32_t pebbleAlbedoSrvHandle_ = 0;
+    uint32_t pebbleNormalSrvHandle_ = 0;
+    Mesh pebbleMesh_;
+    PebbleMaterialData pebbleMaterialData_ = {};
+    PebbleCullingData pebbleCullingData_ = {};
+
     // カリング用のキャッシュ
     Frustum cameraFrustum_;
     std::vector<Frustum> shadowFrustums_;
@@ -166,6 +187,7 @@ private:
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<TreeRenderer> treeRenderer_;
+    std::unique_ptr<PebbleRenderer> pebbleRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
     std::unique_ptr<LightningRenderer> lightningRenderer_;

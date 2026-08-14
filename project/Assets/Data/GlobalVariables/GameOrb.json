@@ -421,7 +421,7 @@
             "orbModel_UseTriplanar": 0,
             "orbModel_Wetness": 0.5
         },
-        "RainbowSpeed": 0.47999998927116394,
+        "RainbowSpeed": 0.5099999904632568,
         "SharedOrbModel_AddShadow": 1,
         "SharedOrbModel_AlbedoMap": "white1x1",
         "SharedOrbModel_AlphaThres": 0.009999999776482582,
@@ -482,8 +482,8 @@
             1.0
         ],
         "SharedOrbModel_RimEnable": 1,
-        "SharedOrbModel_RimInten": 9.600000381469727,
-        "SharedOrbModel_RimPower": 18.399999618530273,
+        "SharedOrbModel_RimInten": 10.0,
+        "SharedOrbModel_RimPower": 3.200000047683716,
         "SharedOrbModel_RimUseDir": 0,
         "SharedOrbModel_RippleEnable": 0,
         "SharedOrbModel_RippleFreq": 1.0,

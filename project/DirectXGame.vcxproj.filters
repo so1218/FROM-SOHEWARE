@@ -918,6 +918,9 @@
     <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\TreeSystem.cpp" />
     <ClCompile Include="Game\GameObject\TreeField.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\PebbleRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\PebbleSystem.cpp" />
+    <ClCompile Include="Game\GameObject\PebbleField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -953,6 +956,9 @@
     <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\TreeSystem.h" />
     <ClInclude Include="Game\GameObject\TreeField.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\PebbleRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\PebbleSystem.h" />
+    <ClInclude Include="Game\GameObject\PebbleField.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
@@ -987,6 +993,10 @@
     <FxCompile Include="Assets\Shaders\TreeFoliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Tree.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\ShadowMapTree.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Pebble.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Pebble.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PebbleCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PebbleGeneration.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

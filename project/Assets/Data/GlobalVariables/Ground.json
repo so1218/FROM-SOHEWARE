@@ -9244,9 +9244,9 @@
         "Terrain_AlphaThres": 0.07999999821186066,
         "Terrain_CellSize": 1.0,
         "Terrain_Color": [
-            0.7876408696174622,
-            1.0,
-            0.7637130618095398,
+            0.6159495115280151,
+            0.6877636909484863,
+            0.35403871536254883,
             1.0
         ],
         "Terrain_DiffuseRef": 4.0,
@@ -9268,10 +9268,10 @@
         "Terrain_LightMode": 3,
         "Terrain_Lighting": 1,
         "Terrain_MaxHeight": 20.200000762939453,
-        "Terrain_Metalness": 0.12999999523162842,
+        "Terrain_Metalness": 0.09000000357627869,
         "Terrain_NormEnable": 1,
-        "Terrain_NormInten": 1.5499999523162842,
-        "Terrain_NormTile": 1.0,
+        "Terrain_NormInten": 2.5999999046325684,
+        "Terrain_NormTile": 29.899999618530273,
         "Terrain_NormalMapTex": "forrest_ground_01_nor_dx_1k",
         "Terrain_OutlineColor": [
             0.0,

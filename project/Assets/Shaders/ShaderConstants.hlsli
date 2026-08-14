@@ -635,6 +635,68 @@ struct TrunkMaterialData
     float albedoMultiplier;
 };
 
+struct PebbleInstanceData
+{
+    float4 posAndScale; // xyz: ワールド座標, w: スケール
+    float4 rotationQuat; // x, y, z, w: 姿勢(クォータニオン)
+    float4 anisoAndEmbed; // 16バイト (x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0)
+    float3 colorVariation; // 12バイト (RGB 色ムラ)
+    float padding;
+};
+
+struct PebbleMaterialData
+{
+    float4 baseColor;
+    
+    float roughness;
+    float metalness;
+    float normalIntensity;
+    float shadowDensity;
+    
+    float shadowNormalBias;
+    float shadowBias;
+    float shadowSoftness;
+    float shadowEnvStrength;
+    
+    float environmentMapIntensity;
+    float shininess;
+    float diffuseReflection;
+    float padding;
+};
+
+struct PebbleGenerationData
+{
+    float2 chunkBasePos;
+    float2 terrainCenter;
+    
+    float terrainWidth;
+    float terrainDepth;
+    uint32_t maxInstancesPerChunk;
+    float gridSpacing;
+    
+    float minScale;
+    float maxScale; 
+    float2 heightMapTexelSize;
+  
+    float3 minAnisoScale; 
+    float padding1;
+    
+    float3 maxAnisoScale; 
+    float padding2;
+};
+
+struct PebbleCullingData
+{
+    float maxDrawDistance;
+    float thinStartDistance;
+    float maxThinningRate;
+    float modelRadius; 
+    
+    float modelCenterYOffset; 
+    uint32_t totalInstanceCount;
+    float2 padding;
+};
+
 struct Object3DInstanceData
 {
     float4x4 World;

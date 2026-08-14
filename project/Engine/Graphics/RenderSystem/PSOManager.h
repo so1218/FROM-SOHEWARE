@@ -66,6 +66,7 @@ private:
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescLine_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescGrass_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescTree_{};
+    D3D12_INPUT_LAYOUT_DESC inputLayoutDescPebble_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescSkydome_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescTerrain_{};
     D3D12_INPUT_LAYOUT_DESC inputLayoutDescLightning_{};
@@ -79,6 +80,7 @@ private:
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsLine_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsGrass_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsTree_;
+    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsPebble_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsSkydome_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsTerrain_;
     std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementsLightning_;

@@ -11,6 +11,7 @@
 #include "EnemyManager.h"
 #include "EnvironmentPropManager.h"
 #include "WeatherEffectManager.h"
+#include "PebbleField.h"
 
 using namespace FE;
 
@@ -31,6 +32,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
+    objectManager_.Create<PebbleField>(engine_);
 }
 
 void TestSceneHori::OnInitialize()

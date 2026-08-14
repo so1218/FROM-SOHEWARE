@@ -39,7 +39,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     output.currentClipPos = output.position;
     output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
     
-    output.texcoord = input.texcoord;
+    output.texcoord = globalUV;
     
     // ---------------------------------------------------------
     // ハイトマップからの法線動的生成 
