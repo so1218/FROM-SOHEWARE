@@ -11,7 +11,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
 {
     if (groups_.find(prefabName) != groups_.end()) return;
 
-    // ★ 修正: 先に map 内に要素を作成し、その参照を取得する
+    // 先に map 内に要素を作成し、その参照を取得
     auto& newGroup = groups_[prefabName];
     newGroup.prefabName = prefabName;
 
@@ -19,7 +19,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     std::string masterGroupName = "Master_" + prefabName;
     auto* gv = FE::GlobalVariables::GetInstance();
 
-    // JSONから「このプレハブがどの3Dモデルを使うか」を取得
+    // JSONからプレハブがどの3Dモデルを使うかを取得
     std::string loadedModel = gv->GetStringValue({ managerGroupName_, masterGroupName }, "ModelName");
     if (!loadedModel.empty()) {
         newGroup.modelName = loadedModel;
@@ -35,7 +35,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     // マスター専用のバインダー
     newGroup.binder = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
 
-    // ★ 修正: map内に確定した &newGroup.modelName の安全なアドレスが渡される
+    // map内に確定した &newGroup.modelName の安全なアドレスが渡される
     newGroup.binder->BindModelName("ModelName", &newGroup.modelName, newGroup.modelName,
         [this, prefabName](const std::string& newName) {
             // ImGui描画中での即時再構築を避けるため、予約変数に保存
@@ -57,12 +57,12 @@ void EnvironmentPropManager::Initialize()
     {
         std::string childGroupName = "Prop_" + std::to_string(i);
 
-        // ★変更: 「ModelName」ではなく「PrefabName」を読み込む
+        // PrefabNameを読み込む
         std::string prefabName = gv->GetStringValue({ managerGroupName_, childGroupName }, "PrefabName");
         std::string fallbackModel = prefabName;
 
         if (prefabName.empty()) {
-            // ※以前のセーブデータとの互換性対応
+            // 以前のセーブデータとの互換性対応
             prefabName = gv->GetStringValue({ managerGroupName_, childGroupName }, "ModelName");
             if (prefabName.empty()) prefabName = "cube";
             fallbackModel = prefabName;
@@ -72,7 +72,7 @@ void EnvironmentPropManager::Initialize()
         CreateGroup(prefabName, fallbackModel);
 
         auto prop = std::make_unique<EnvironmentProp>(engine_, i, managerGroupName_);
-        prop->SetPrefabName(prefabName); // ★追加
+        prop->SetPrefabName(prefabName); 
         prop->SetMasterModel(groups_[prefabName].masterModel.get());
         prop->SetManager(this->GetManager());
         prop->Initialize();
@@ -108,12 +108,12 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
     CreateGroup(prefabName, "cube");
 
     auto newProp = std::make_unique<EnvironmentProp>(engine_, newIndex, managerGroupName_);
-    newProp->SetPrefabName(prefabName); // ★追加
+    newProp->SetPrefabName(prefabName); 
     newProp->SetMasterModel(groups_[prefabName].masterModel.get());
     newProp->SetManager(this->GetManager());
     newProp->Initialize();
 
-    // ★変更: 「ModelName」ではなく「PrefabName」を保存
+    // PrefabName を保存
     FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_, "Prop_" + std::to_string(newIndex) }, "PrefabName", prefabName);
 
     groups_[prefabName].instances.push_back(std::move(newProp));
@@ -124,12 +124,12 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
 
 void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
 {
-    // 1. JSON上の一番最後のデータを消去
+    // JSON上の一番最後のデータを消去
     int lastIndex = propCount_ - 1;
     std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
     FE::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
 
-    // 2. targetId を持つインスタンスを探して削除
+    // targetId を持つインスタンスを探して削除
     for (auto& [prefabName, group] : groups_) {
         auto it = std::remove_if(group.instances.begin(), group.instances.end(),
             [targetId](const std::unique_ptr<EnvironmentProp>& p) { return p->GetID() == targetId; });
@@ -140,13 +140,13 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
         }
     }
 
-    // 3. 削除したIDより大きいIDを持つプロップのIDを -1 して詰める
+    // 削除したIDより大きいIDを持つプロップのIDを -1 して詰める
     for (auto& [prefabName, group] : groups_) {
         for (auto& prop : group.instances) {
             if (prop->GetID() > targetId) {
                 prop->ReassignID(prop->GetID() - 1);
 
-                // ★ 変更: "ModelName" ではなく "PrefabName" として保存し直す
+                // PrefabName として保存し直す
                 FE::GlobalVariables::GetInstance()->SetValue(
                     { managerGroupName_, "Prop_" + std::to_string(prop->GetID()) },
                     "PrefabName",
@@ -295,9 +295,7 @@ void EnvironmentPropManager::DebugDraw()
 
     ImGui::End();
 
-    // ==========================================
-    // ギズモ描画 (ポインタ基準に変更)
-    // ==========================================
+    // ギズモ描画
     if (selectedProp_ != nullptr)
     {
         auto& targetTransform = selectedProp_->GetTransformRef();
@@ -350,9 +348,7 @@ void EnvironmentProp::SyncMaterialsToJSON()
 
         if (!handle || !matData) continue;
 
-        // ---------------------------------------------------------
-        // 1. テクスチャ名の同期 (MaterialHandle から)
-        // ---------------------------------------------------------
+        // テクスチャ名
         gv->SetValue(groupPath, matPrefix + "AlbedoMap", handle->textureName);
         gv->SetValue(groupPath, matPrefix + "EnvMapTex", handle->envMapName);
         gv->SetValue(groupPath, matPrefix + "NormalMapTex", handle->normalMapName);
@@ -362,16 +358,11 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "RippleMap", handle->rippleTextureName);
         gv->SetValue(groupPath, matPrefix + "PuddleNoise", handle->puddleNoiseName);
 
-        // ---------------------------------------------------------
-        // 2. UVトランスフォームの同期
-        // ---------------------------------------------------------
+        // UVトランスフォーム
         gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation_);
         gv->SetValue(groupPath, matPrefix + "UVRot", handle->uvTransformData.rotation_);
         gv->SetValue(groupPath, matPrefix + "UVScale", handle->uvTransformData.scale_);
 
-        // ---------------------------------------------------------
-        // 3. マテリアルプロパティの同期 (MaterialData から)
-        // ---------------------------------------------------------
         // トライプランナー設定
         gv->SetValue(groupPath, matPrefix + "UseTriplanar", matData->useTriplanar);
         gv->SetValue(groupPath, matPrefix + "TriScale", matData->triplanarScale);
@@ -452,7 +443,6 @@ void EnvironmentProp::ChangeMasterModel(FE::Model* newMaster)
 {
     masterModel_ = newMaster;
 
-    // 現在の座標・回転・スケールを退避
     auto currentTransform = model_->GetTransform();
 
     // モデルを再生成

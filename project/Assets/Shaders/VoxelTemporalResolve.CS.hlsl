@@ -45,9 +45,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float4 current = gVoxelInjectFiltered.Load(int4(DTid, 0));
 
-    // -------------------------------------------------------------------------
-    // 1. 3x3x3 近傍 Variance Clipping
-    // -------------------------------------------------------------------------
+    // 時間蓄積時のゴースト(残像)を抑制するため、3x3x3近傍の平均と分散からカラー境界(AABB)を算出。
+    // ※現状27回のLoadはL1キャッシュに依存しているため、将来的にGroupSharedMemory(LDS)への移行余地あり。
     float4 m1 = 0.0f;
     float4 m2 = 0.0f;
 
@@ -68,14 +67,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 mean = m1 / 27.0f;
     float4 stddev = sqrt(max(m2 / 27.0f - mean * mean, 0.0f));
 
-    // ★ IGNノイズを受け入れるため gamma を 2.2f に広げる (時間蓄積を正常化)
+    // 注入ノイズ(IGN等)の高周波成分を誤ってクリップしないよう、gamma を広めに設定
     float gamma = 2.2f;
     float4 boxMin = mean - gamma * stddev;
     float4 boxMax = mean + gamma * stddev;
 
-    // -------------------------------------------------------------------------
-    // 2. リプロジェクション
-    // -------------------------------------------------------------------------
+    // 現在のボクセルからワールド座標を逆算し、前フレームのカメラ行列を用いてリプロジェクション
     float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
 
@@ -90,6 +87,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
     float3 worldPos = gFrameData.cameraWorldPosition + (rayDir * viewZ);
 
+    // 前フレームのUVWを計算し履歴をフェッチ
     float4 prevClip = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
     prevClip.xyz /= prevClip.w;
 
@@ -98,25 +96,18 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float prevViewZ = length(prevCamToPos);
 
     float prevSlice = GetSliceFromViewZ(prevViewZ, float(depth), nearZ, farZ);
-    
-    // ★【修正点】+0.5f の二重加算を削除！正しく prevSlice / depth で正規化する
     float3 prevUVW = float3(prevUV.x, prevUV.y, prevSlice / float(depth));
 
-    // -------------------------------------------------------------------------
-    // 3. 履歴フェッチ & クランプ
-    // -------------------------------------------------------------------------
     float4 history = current;
 
+    // 履歴が有効範囲内であればサンプリングし、Variance Clippingで境界内に収める (色滲みの防止)
     if (all(prevUVW >= 0.0f) && all(prevUVW <= 1.0f))
     {
         history = gVoxelHistory.SampleLevel(gLinearClampSampler, prevUVW, 0);
     }
-
     history = clamp(history, boxMin, boxMax);
 
-    // -------------------------------------------------------------------------
-    // 4. ブレンド
-    // -------------------------------------------------------------------------
+    // 輝度の変化量(動的オブジェクトの移動や急な照明変化)に応じてブレンド率を適応的に上げ、残像を逃がす
     float diff = length(current.rgb - history.rgb);
     float blendAlpha = lerp(kBlendAlphaMin, kBlendAlphaMax, saturate(diff / kColorDiffThreshold));
 

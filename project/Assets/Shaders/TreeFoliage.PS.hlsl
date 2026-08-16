@@ -6,7 +6,7 @@ cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4); // ★ 追加：Wetness等が入った環境バッファ
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4); 
 ConstantBuffer<LeafMaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
@@ -29,7 +29,7 @@ struct PixelInput
     float lodFade : BLENDWEIGHT;
 };
 
-// 高速 Interleaved Gradient Noise (sin/cos不使用)
+// 高速 Interleaved Gradient Noise
 float InterleavedGradientNoise(float2 pixelPos)
 {
     float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
@@ -49,70 +49,52 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
 
-    // -------------------------------------------------------------------------
-    // LODディザリング (超軽量IGN)
-    // -------------------------------------------------------------------------
+    // 半透明のオーバードローを避けるため、IGNを用いたディザリングでLODのクロスフェードを実装
     float dither = InterleavedGradientNoise(input.position.xy);
     clip(input.lodFade - dither);
 
-    // -------------------------------------------------------------------------
-    // アルベド & アルファサンプリング
-    // -------------------------------------------------------------------------
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
-    clip(albedoAlpha.a - 0.05f); // ピクセル破棄時はここで即時離脱
+    
+    // 完全透明なピクセルは早期に破棄し、以降の重いPBR計算をスキップ
+    clip(albedoAlpha.a - 0.05f);
 
     albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
-
-    // -------------------------------------------------------------------------
-    // 物理プロパティ & 濡れ (Wetness) 計算
-    // -------------------------------------------------------------------------
     float ao = gMaterial.baseAO * input.color.a;
 
-    // ① Porosity (濡れると吸光して暗く鮮やかになる)
+    // 天候パラメータからの動的Wetness反映。多孔質の吸光(暗色化)と水膜による平滑化を近似
     albedoAlpha.rgb = lerp(albedoAlpha.rgb, albedoAlpha.rgb * 0.45f, gEnvironmentData.wetness);
-    
-    // ② Roughness (濡れると水膜でツルツルになる)
     float roughness = lerp(gMaterial.baseRoughness, 0.05f, gEnvironmentData.wetness);
 
-    // -------------------------------------------------------------------------
-    // 法線計算 (Bitangent動的算出 & ブランチレス裏面処理)
-    // -------------------------------------------------------------------------
+    // 頂点シェーダからのVarying補間帯域を節約するため、BitangentはPS側で復元。
+    // 群葉などの両面ポリゴン向けに、SV_IsFrontFaceを用いて法線を反転
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);
     float3 T = normalize(input.tangent * faceSign);
-    float3 B = cross(N, T); // 頂点補間帯域を削るためPS側でクロス積計算
+    float3 B = cross(N, T);
 
     float3x3 TBN = float3x3(T, B, N);
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 normal = normalize(mul(tangentNormal, TBN));
 
-    // -------------------------------------------------------------------------
-    // 5. ライティング基本ベクトル & 光の共通減衰
-    // -------------------------------------------------------------------------
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
     float3 toEye = cameraDiff / max(viewDepth, 0.0001f);
-
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
+
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
-    
-    // 共通光強度（シャドウ適用済み）を先打ち計算
     float3 attenuatedLight = (gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity) * shadowFactor;
 
-    // --- Diffuse ---
+    // Diffuse (Half-LambertライクなWrapを適用し、葉の柔らかな陰影を表現)
     float wrap = gMaterial.diffuseWrap;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedoAlpha.rgb * attenuatedLight * NdotL;
 
-    // --- 高速 Subsurface Scattering (SSS / 透過光) ---
-    // 逆光(Backlight)成分の評価
+    // Fast SSS: ジオメトリの厚みを考慮しつつ、逆光時の透過光(Backlight)を軽量に評価
     float backLight = saturate(dot(-normal, lightDir));
     float sssIntensity = Pow5(backLight) * (1.0f - gMaterial.baseThickness) * gMaterial.sssStrength;
     float3 transmission = (albedoAlpha.rgb * gMaterial.sssColor) * attenuatedLight * sssIntensity;
 
-    // -------------------------------------------------------------------------
-    // 6. Direct Specular (GGX + Pow5最適化)
-    // -------------------------------------------------------------------------
+    // Direct Specular (GGX)
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(normal, halfVector));
     float NdotV = saturate(dot(normal, toEye));
@@ -122,36 +104,29 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
     float D = alpha2 / (3.14159265f * denom * denom + 0.00001f);
 
-    // 水のF0 = 0.02, 葉のF0 = 0.04
     float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
     float3 F = F0 + (1.0f.xxx - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
 
+    // 頂点カラー(R)に格納したWind Gustマスクを利用し、風に煽られた際のハイライトを強調
     float gustMask = input.color.r;
     float3 directSpecular = (D * F) * attenuatedLight * NdotL * (1.0f + gustMask * 2.0f);
 
-    // -------------------------------------------------------------------------
-    // 7. IBL Specular & Ambient (CubeMap不要の数式近似)
-    // -------------------------------------------------------------------------
+    // IBL Specular & Ambient:
+    // 屋外の群葉描画においてCubeMapフェッチは帯域のボトルネックになるため、反射ベクトルのY成分から解析的に環境光を合成
     float3 reflectDir = reflect(-toEye, normal);
-
-    // 反射ベクトルのY成分(高さ)から空色と地面色を直接補間
     float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
     float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
-    envSkyColor *= (1.0f - roughness * 0.5f); // ラフネスに応じた減衰
+    envSkyColor *= (1.0f - roughness * 0.5f);
 
-    // フレネル (環境光用)
     float3 F_env = F0 + (max(1.0f.xxx - roughness, F0) - F0) * Pow5(1.0f - NdotV);
     float3 ambientSpecular = envSkyColor * F_env * ao;
 
-    // ディフューズ環境光 (法線Y成分による半球ライティング)
     float skyLight = saturate(normal.y * 0.5f + 0.5f);
     float3 ambientDiffuse = albedoAlpha.rgb * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight) * ao;
 
-    // -------------------------------------------------------------------------
-    // 最終カラー合成 & Alpha-to-Coverage
-    // -------------------------------------------------------------------------
     float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
 
+    // Alpha-to-Coverageのジャギーを軽減するため、偏微分を用いてアルファエッジをアンチエイリアス補正
     float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), 0.0001f) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
@@ -162,24 +137,21 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
     return output;
 }
 
-// -----------------------------------------------------------------------------
-// 高速 CSM 
-// -----------------------------------------------------------------------------
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光の裏側（セルフシャドウ領域）はフェッチを完全スキップ
+    // セルフシャドウはシャドウマップのサンプリング自体をスキップし帯域を節約
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // ブランチ無しのカスケード選択
+    // カスケードインデックスを並列解決
     float4 cascadeSplits = gShadowData.cascadeSplits;
     uint cascadeIndex = (uint) dot(step(cascadeSplits.xyz, viewDepth.xxx), float3(1.0f, 1.0f, 1.0f));
 
-    // Normal Bias
+    // シャドウアクネ対策
     float biasScale = saturate(1.0f - NdotL);
     float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
@@ -191,6 +163,7 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
+    // フラストム外は遮蔽なしとして扱う
     if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
