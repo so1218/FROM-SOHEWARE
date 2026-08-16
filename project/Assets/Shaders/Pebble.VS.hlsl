@@ -2,7 +2,7 @@
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
-// Pebble専用のインスタンスデータ (CSが出力したバッファをそのまま受け取る)
+// NOTE: ComputeShaderでカリング・トランスフォーム計算済みのバッファを直接バインドする
 StructuredBuffer<PebbleInstanceData> gInstanceData : register(t10);
 
 struct PebbleVSInput
@@ -16,19 +16,17 @@ struct PebbleVSInput
 
 struct VertexShaderOutput
 {
-    float4 position : SV_POSITION; // クリップ空間座標 (ラスタライザ用)
-    float3 worldPosition : POSITION0; // ワールド空間位置 (ライティング/距離フォグ用)
-    float2 texcoord : TEXCOORD0; // UV座標
-    float3 normal : NORMAL0; // ワールド空間法線
-    float3 tangent : TANGENT0; // ワールド空間接線
-    float2 velocity : TEXCOORD1; // TAA/モーションブラー用 Velocity (VSで事前計算)
+    float4 position : SV_POSITION;
+    float3 worldPosition : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT0;
+    float2 velocity : TEXCOORD1;
     nointerpolation float3 colorVariation : COLOR0;
     float heightFactor : TEXCOORD2;
 };
 
-// ==========================================
-// クォータニオンによるベクトル回転関数 (高速版)
-// ==========================================
+// ハミルトン積に基づくクォータニオン回転の最適化実装
 float3 RotateVectorByQuat(float3 v, float4 q)
 {
     float3 t = 2.0f * cross(q.xyz, v);
@@ -44,40 +42,40 @@ VertexShaderOutput main(PebbleVSInput input)
     float baseScale = instance.posAndScale.w;
     float4 quat = instance.rotationQuat;
     
-    // anisoAndEmbed: xyz = 非等方スケール, w = embedRatio (埋め込み率)
     float3 anisoScale = instance.anisoAndEmbed.xyz;
     float embedRatio = instance.anisoAndEmbed.w;
 
     float3 localPos = input.position.xyz;
 
-    // ★ 1. 高さ割合の計算 (0.0 = 底面, 1.0 = 天頂)
-    // メッシュの原点が中央(Y=0)にあリ、-0.5~0.5 の範囲と仮定
+    // NOTE: メッシュのローカルY座標が [-0.5, 0.5] の範囲でモデリングされている前提。
+    // 0.0(底面) ~ 1.0(天頂) にマッピングし、PSでのプロシージャルなコケや汚れのブレンドウェイトに使用する
     output.heightFactor = saturate(localPos.y + 0.5f);
 
-    // ★ 2. スケール適用
     localPos *= (baseScale * anisoScale);
 
-    // ★ 3. 埋め込み処理 (embedRatio に応じて小石の高さをY軸マイナス方向へ押し込む)
+    // 接地感を出すためのオフセット（斜面配置時の浮きを防止）
     float pebbleHeight = baseScale * anisoScale.y;
     localPos.y -= (embedRatio * pebbleHeight);
 
-    // 回転・ワールド移動
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
     float3 worldPos = rotatedPos + pos;
 
     output.worldPosition = worldPos;
     output.texcoord = input.texcoord;
     
-    // 法線・接線の計算
+    // 非等方スケール（XYZで異なる倍率）による法線・接線の歪みを補正
+    // TODO: スケール値が極端に0に近づく場合のゼロ除算対策 (現状は max 0.001f でクリップして回避)
     float3 localNormal = normalize(input.normal / max(anisoScale, 0.001f));
     float3 localTangent = normalize(input.tangent / max(anisoScale, 0.001f));
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
-    // クリップ座標変換
+    // TAAおよびモーションブラー用のVelocity計算 (現在と前フレームのNDC空間の差分)
     float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
     float4 prevClipPos = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
+    
     output.position = clipPos;
+    
     float2 currentNDC = clipPos.xy / clipPos.w;
     float2 prevNDC = prevClipPos.xy / prevClipPos.w;
     output.velocity = (currentNDC - prevNDC) * float2(0.5f, -0.5f);

@@ -2,26 +2,24 @@
 
 ConstantBuffer<PebbleGenerationData> gGenerationData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b1);
+
 Texture2D<float> gHeightMap : register(t0);
 Texture2D<float> gDensityMap : register(t1);
 SamplerState gLinearSampler : register(s0);
+
 RWStructuredBuffer<PebbleInstanceData> gOutputPebble : register(u0);
 
 static const uint kThreadsPerRow = 1024 * 64;
 
-// ワールド座標から地形全体の0-1 UVへのマッピング
+// ワールド空間から地形UV空間(0.0 - 1.0)へのマッピング
 float2 CalculateTerrainUV(float x, float z)
 {
     float u = (x - gGenerationData.terrainCenter.x) / gGenerationData.terrainWidth + 0.5f;
-    // DirectXのテクスチャV軸（上が0, 下が1）とワールドZ軸の向きを一致させる場合、反転が必要になるケースがあります
     float v = (z - gGenerationData.terrainCenter.y) / gGenerationData.terrainDepth + 0.5f;
-    
-    // ★ 地形シェーダーの uvTransform (xy: Scale, zw: Offset) を考慮する場合はここに乗算・加算します
-    // (通常デフォルトは float4(1, 1, 0, 0) です)
     return float2(u, v);
 }
 
-// 疑似乱数 (Hash)
+// 座標ベースの決定論的ハッシュ（乱数生成用）
 float Hash12(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031f);
@@ -36,21 +34,22 @@ float2 Hash22(float2 p)
     return frac((p3.xx + p3.yz) * p3.zy);
 }
 
-// 2つのベクトルから回転クォータニオンを生成する関数
+// 2ベクトル間の最短回転を表すクォータニオンを算出
 float4 QuatFromVectors(float3 u, float3 v)
 {
     float cosTheta = dot(u, v);
+    
+    // 平行・反平行時の特異点(ジンバルロック)回避
     if (cosTheta > 0.9999f)
         return float4(0, 0, 0, 1);
     if (cosTheta < -0.9999f)
-        return float4(1, 0, 0, 0); // 180度反転
+        return float4(1, 0, 0, 0);
     
     float3 axis = cross(u, v);
     float4 q = float4(axis, 1.0f + cosTheta);
     return normalize(q);
 }
 
-// 軸と角度からクォータニオンを生成する関数
 float4 QuatFromAxisAngle(float3 axis, float angle)
 {
     float s, c;
@@ -58,7 +57,6 @@ float4 QuatFromAxisAngle(float3 axis, float angle)
     return float4(axis * s, c);
 }
 
-// クォータニオンの乗算
 float4 QuatMultiply(float4 q1, float4 q2)
 {
     return float4(
@@ -76,6 +74,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (instanceIndex >= gGenerationData.maxInstancesPerChunk)
         return;
 
+    // グリッドベースで基本位置を決定し、ジッターで散らす
     float gridSpacing = gGenerationData.gridSpacing;
     float2 snappedCenter = floor(gGenerationData.terrainCenter / gridSpacing) * gridSpacing;
 
@@ -96,36 +95,27 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     float2 globalUV = CalculateTerrainUV(worldX, worldZ);
     
-    // 範囲外チェック
     if (any(globalUV < 0.0f) || any(globalUV > 1.0f))
     {
         gOutputPebble[instanceIndex] = (PebbleInstanceData) 0;
         return;
     }
 
-    // 密度マップによる生成判定
+    // 密度マップによるカリング
     float density = gDensityMap.SampleLevel(gLinearSampler, globalUV, 0).r;
     if (Hash12(float2(baseWorldX, baseWorldZ)) > density)
     {
         gOutputPebble[instanceIndex] = (PebbleInstanceData) 0;
         return;
     }
-
-    // =========================================================
-    // 1. 地形シェーダーと100%同一の高さ計算
-    // =========================================================
-    float rawHeight = gHeightMap.SampleLevel(gLinearSampler, globalUV, 0).r;
     
-    // 地形頂点シェーダーとまったく同じリマップ式
+    // NOTE: 地形側の頂点シェーダーとハイト・法線の計算ロジックを完全に一致させること
+    float rawHeight = gHeightMap.SampleLevel(gLinearSampler, globalUV, 0).r;
     float localY = (rawHeight - 0.5f) * gTerrainSettings.maxHeight;
     
-    // 地形自体のワールド座標(Y軸移動)がある場合、ここに加算する
-    // 例: float worldY = localY + gGenerationData.terrainPositionY;
+    // TODO: 地形全体にY軸のワールドオフセットが入る場合はここで加算
     float worldY = localY;
-
-    // =========================================================
-    // 2. 地形シェーダーと100%同一の法線計算（斜面への自動適応）
-    // =========================================================
+    
     float offset = gTerrainSettings.texelSize;
     float hL = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(-offset, 0.0f), 0).r;
     float hR = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(offset, 0.0f), 0).r;
@@ -134,36 +124,24 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     float dx = (hL - hR) * gTerrainSettings.maxHeight;
     float dz = (hD - hU) * gTerrainSettings.maxHeight;
-    
-    // 地形のローカル法線 (TerrainVSの式と同じ)
     float3 terrainNormal = normalize(float3(dx, 2.0f * gTerrainSettings.cellSize, dz));
 
-    // =========================================================
-    // 3. 回転クォータニオンの構築 (地形の法線に傾けつつ、Y軸ランダム回転)
-    // =========================================================
-    // (A) 真上 (0,1,0) から地形の法線ベクトルへ傾ける回転
+    // 地面の傾斜に追従させつつ、Y軸でランダムに回転させて不規則性を出す
     float4 alignQuat = QuatFromVectors(float3(0.0f, 1.0f, 0.0f), terrainNormal);
-
-    // (B) Y軸まわりのランダム回転（小石の向きをばらけさせる）
     float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * 3.14159265f * 2.0f;
     float4 randomYRotQuat = QuatFromAxisAngle(float3(0.0f, 1.0f, 0.0f), randomAngle);
-
-    // 回転を合成 (ランダム回転したあと、地形の斜面に沿って傾ける)
     float4 finalQuat = QuatMultiply(alignQuat, randomYRotQuat);
 
-    // =========================================================
-    // 4. スケールと埋め込み（Embed）
-    // =========================================================
+    // スケールの非均等化とカラーのジッター
     float randomScale = lerp(gGenerationData.minScale, gGenerationData.maxScale, Hash12(float2(worldZ, worldX)));
     float scaleX = lerp(gGenerationData.minAnisoScale.x, gGenerationData.maxAnisoScale.x, Hash12(float2(worldX * 1.1f, worldZ * 0.9f)));
     float scaleY = lerp(gGenerationData.minAnisoScale.y, gGenerationData.maxAnisoScale.y, Hash12(float2(worldX * 1.5f, worldZ * 1.2f)));
     float scaleZ = lerp(gGenerationData.minAnisoScale.z, gGenerationData.maxAnisoScale.z, Hash12(float2(worldX * 0.8f, worldZ * 1.7f)));
+    float colorJitter = lerp(0.8f, 1.0f, Hash12(float2(worldX, worldZ)));
     
-    // ★ 地面に小石の底を自然になじませる埋め込み量 (例: 小石の高さの30%地面に沈める)
+    // 接地感を出すための沈み込み量(30%)
     float embedRatio = 0.3f;
     
-    float colorJitter = lerp(0.8f, 1.0f, Hash12(float2(worldX, worldZ)));
-
     PebbleInstanceData pebble = (PebbleInstanceData) 0;
     pebble.posAndScale = float4(worldX, worldY, worldZ, randomScale);
     pebble.rotationQuat = finalQuat;

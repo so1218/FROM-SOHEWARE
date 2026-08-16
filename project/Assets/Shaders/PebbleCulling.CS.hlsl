@@ -33,14 +33,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     bool isVisible = true;
 
-    // ★ 非アクティブの除外 (Grassの早期リジェクト相当)
+    // 非アクティブの除外
     if (scale <= 0.001f)
     {
         isVisible = false;
     }
     else
     {
-        // 1. 距離カリング
+        // 距離カリング
         float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
         
         if (distToCamXZ > gCullingData.maxDrawDistance)
@@ -48,14 +48,14 @@ void main(uint3 DTid : SV_DispatchThreadID)
             isVisible = false;
         }
 
-        // 2. 視錐台カリング (Grassと同一の球判定)
+        // 視錐台カリング
         if (isVisible)
         {
-            // ★修正: 画面端で不自然に消えるのを防ぐため、異方性スケールの最大値を取り、安全マージンを掛ける
+            // 画面端で不自然に消えるのを防ぐ
             float maxAniso = max(max(pebble.anisoAndEmbed.x, pebble.anisoAndEmbed.y), pebble.anisoAndEmbed.z);
             float boundsRadius = gCullingData.modelRadius * scale * maxAniso * 1.5f;
             
-            // ピボット位置(pos)からY軸中心へオフセット
+            // ピボット位置からY軸中心へオフセット
             float3 boundsCenter = pos + float3(0.0f, gCullingData.modelCenterYOffset * scale * pebble.anisoAndEmbed.y, 0.0f);
             
             for (uint i = 0; i < kFrustumPlaneCount; ++i)
@@ -68,7 +68,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             }
         }
 
-        // 3. 確率的ディザカリング (Grassと完全同一)
+        // 確率的ディザカリング
         if (isVisible)
         {
             float fadeRange = max(1.0f, gCullingData.maxDrawDistance - gCullingData.thinStartDistance);
@@ -80,10 +80,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
             }
         }
     }
-
-    // ==========================================
+    
     // Wave Intrinsics による Append
-    // ==========================================
     uint waveCount = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
 

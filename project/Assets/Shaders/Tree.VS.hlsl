@@ -5,9 +5,10 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
 ConstantBuffer<LeafMaterialData> gMaterial : register(b5);
 ConstantBuffer<TreeInstanceOffset> gTreeInstanceOffset : register(b9);
-StructuredBuffer<TreeInstanceData> gInstanceData : register(t10);
 
+StructuredBuffer<TreeInstanceData> gInstanceData : register(t10);
 Texture2D<float> gWindMap : register(t11);
+
 SamplerState gLinearWrapSampler : register(s2);
 
 struct VertexInput
@@ -25,12 +26,14 @@ struct PixelInput
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
-    float4 color : COLOR0; // GustMask と 擬似AO をPSに渡すために使用
+    
+    // x: GustMask (PSでのスペキュラ制御用), w: PseudoAO (根元の暗さ)
+    float4 color : COLOR0;
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
 };
 
-// 軸と角度から3x3回転行列を作成する高速関数 (RotateAboutAxis 3回分の代わり)
+// 共通の3x3回転行列を一度だけ生成して一括適用
 float3x3 AngleAxisTo3x3(float3 axis, float angle)
 {
     float s, c;
@@ -59,24 +62,32 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, 0.1f));
     
     bool isLeaf = (gTreeInstanceOffset.isLeaf != 0);
+
+    // 根元付近の環境光遮蔽を高さから動的に算出
     float pseudoAO = lerp(0.3f, 1.0f, saturate(heightRatio * 2.0f));
 
-    // 風の基本計算
+    // -------------------------------------------------------------------------
+    // Global Wind & 突風マッピング
+    // -------------------------------------------------------------------------
     float2 windDir = normalize(gEnvironmentData.windDirection);
     float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
     float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
     
+    // 広域な風のムラを低解像度のノイズテクスチャからサンプリングし、突風の強弱を判定
     float2 windOffset = gEnvironmentData.windOffset * gMaterial.windSpeedMultiplier;
     float2 windUV = (rootPos.xz * gMaterial.gustScale) - windOffset * 0.05f;
     float gustNoise = gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r;
     float gustMask = smoothstep(0.2f, 0.8f, gustNoise);
     float totalWind = currentWindMag + (gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed);
     
+    // 同一モデル群が同時に同じ揺れ方をしないよう、ワールド座標をシードに位相をずらす
     float treePhase = dot(rootPos.xz, float2(0.13f, 0.17f)) + instance.colorVariation.x * 12.34f;
 
-    // 1次風: 幹の「ピボット回転しなり」（幹・葉共通）
+    // -------------------------------------------------------------------------
+    // 1次風: 幹全体のしなり
+    // -------------------------------------------------------------------------
     float3 rotAxis = normalize(float3(-windDir.y, 0.0f, windDir.x));
-    float trunkWeight = heightRatio * heightRatio;
+    float trunkWeight = heightRatio * heightRatio; // 根元は固定し、上部ほど大きく曲げる
     
     float mainSway = sin(windTime * 1.0f + treePhase) * 0.3f + 0.7f;
     float subSway = sin(windTime * 1.8f + treePhase * 1.5f) * 0.2f;
@@ -92,34 +103,35 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     worldNormal = mul(worldNormal, rotMatrix);
     worldTangent = mul(worldTangent, rotMatrix);
 
-    // ★ 2次・3次風: 葉（Leaf）の場合のみ計算（幹の描画時はスキップ）
+    // -------------------------------------------------------------------------
+    // 2次・3次風: 枝葉の微細な揺れ
+    // -------------------------------------------------------------------------
     float3 branchOffset = 0.0f.xxx;
     float3 flutterOffset = 0.0f.xxx;
 
+    // 幹と葉のシェーダーバリアントを統合してステート切り替えのCPU負荷を削減しつつ、
+    // 幹の描画時は重い微細振動の計算を動的分岐でスキップしALUを節約
     if (isLeaf)
     {
-        // 2次風: 枝のうねり
+        // 2次風 (枝のうねり)
         float branchDist = length(origLocalPos.xz);
         float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
         float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
         
-        // ▼修正: windTurbulence を sin() の中から外す
         float branchWave = sin(windTime * 2.5f + branchPhase);
         float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
         
-        // ▼修正: windTurbulence は揺れの「大きさ（振幅）」として掛け算する
-        // （乱気流が強いほど、枝が大きく揺れるようになる）
+        // 乱気流パラメーターはsinの周波数ではなく振幅に乗算し、高周波による破綻を防ぐ
         float turbulenceAmp = max(gEnvironmentData.windTurbulence, 0.5f);
         branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * turbulenceAmp;
 
-        // 3次風: 葉のチラつき（※こちらは定数 leafFlutterFrequency を掛けているだけなので安全です）
+        // 3次風 (葉のちらつき)
         float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
         float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
         float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
         flutterOffset = worldNormal * flutterWave * gMaterial.leafFlutterAmount * totalWind;
     }
 
-    // 最終位置の合成
     float3 finalWorldPos = rootPos + bentRelPos + branchOffset + flutterOffset;
 
     output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
@@ -128,6 +140,8 @@ PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
     
     output.normal = worldNormal;
     output.tangent = worldTangent;
+    
+    // GustMaskをPSへ渡し、強風時のスペキュラ強度の制御に再利用
     output.color = float4(gustMask, 0.0f, 0.0f, pseudoAO);
     output.instanceTint = instance.colorVariation.yzw;
     output.lodFade = instance.lodFade;

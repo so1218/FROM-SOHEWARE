@@ -2,10 +2,8 @@
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
-
 ConstantBuffer<FoliageMaterialData> gMaterial : register(b5);
 
-// ★ インスタンスデータ (位置、回転、マテリアルIDなど)
 StructuredBuffer<FoliageInstanceData> gInstanceData : register(t10);
 
 struct FoliageVSInput
@@ -24,30 +22,30 @@ struct VertexShaderOutput
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float4 color : COLOR0; // PSでの Gust Mask (突風マスク) 等に使用
-    float3 instanceTint : COLOR1; // RGB 色ムラ
+    float4 color : COLOR0;
+    float3 instanceTint : COLOR1;
     float2 velocity : TEXCOORD1;
 };
 
-// クォータニオン回転
 float3 RotateVectorByQuat(float3 v, float4 q)
 {
     float3 t = 2.0f * cross(q.xyz, v);
     return v + q.w * t + cross(q.xyz, t);
 }
 
-// -----------------------------------------------------------------------------
-// ★ 高速なプロシージャル風計算
-// -----------------------------------------------------------------------------
+// テクスチャフェッチ(WindMap)を用いず、ワールド座標と時間をベースにした合成サイン波で風を近似する。
+// メモリ帯域を節約しつつ、Sway(全体的な揺れ)、Flutter(葉の微振動)、Gust(突風)のレイヤーを重ねて自然な動きを表現。
 float3 CalculateWindDisplacement(float3 worldPos, float windWeight, float3 basePos)
 {
     float3 windDir = normalize(float3(gEnvironmentData.windDirection.x, 0.0f, gEnvironmentData.windDirection.y));
     float windSpeed = gEnvironmentData.windSpeed;
 
+    // インスタンスごとに位相をずらすため、基準座標(basePos)を用いて位相オフセットを計算
     float phase = dot(basePos.xz, float2(0.1f, 0.1f)) + (gEnvironmentData.windTime * windSpeed);
     
-    // 定数バッファの gMaterial を直接使用
+    // 根元は硬く、先端にいくほど柔らかく曲がるように累乗でカーブを付ける
     float bentWeight = pow(windWeight, gMaterial.stiffness);
+    
     float sway = sin(phase) * 0.5f + 0.5f;
     float flutter = sin(phase * gMaterial.flutterSpeed * 3.1415f) * gMaterial.flutterScale;
     
@@ -70,25 +68,21 @@ VertexShaderOutput main(FoliageVSInput input)
     float4 quat = instance.rotationQuat;
     float3 localPos = input.position.xyz;
     
-    // ==========================================================
-    // ★ 変更部分: 頂点カラーではなく、ローカルの高さから揺れウェイトを自動生成
-    // ==========================================================
-    // 例: input.position.y が 0.0(根元) ～ 1.0(先端) の場合、plantHeight が 1.0 なら
-    // windWeight は 0.0 ～ 1.0 のグラデーションになる。
+    // DCCツール側で「揺れやすさ」を頂点カラーとしてペイントするアーティストの工数を削減するため、
+    // ローカルのY座標からプロシージャルに揺れウェイトを算出。
+    // plantHeightを基準にすることで、草のスケールに関わらず0.0(根元)～1.0(先端)のグラデーションを得る。
     float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, 0.001f));
-    
-    // (オプション) もし揺れ方をカーブさせたい場合は累乗する
-    // windWeight = pow(windWeight, 1.5f); 
 
     localPos *= scale;
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
     float3 worldPos = basePos + rotatedPos;
 
-    // 引数から mat を削除（関数内でグローバルCBを参照）
     float3 windDisp = CalculateWindDisplacement(worldPos, windWeight, basePos);
     worldPos += windDisp;
 
-    // 長さ維持
+    // 長さの維持 (Length Preservation)
+    // 単純なベクトル加算で頂点をオフセットすると、草が不自然に伸びてしまう(スケールしてしまう)。
+    // これを避けるため、ピボット(basePos)からの距離を元の長さに正規化し、弧を描いて曲がるように補正する。
     float currentLen = length(worldPos - basePos);
     float originalLen = length(rotatedPos);
     if (currentLen > 0.001f)
@@ -104,6 +98,9 @@ VertexShaderOutput main(FoliageVSInput input)
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
     float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
+    
+    // TAA (Temporal Anti-Aliasing) やモーションブラー向けに Velocity(Motion Vector) を計算。
+    // 負荷軽減のため、風による微細なフレーム間頂点移動は無視し、カメラインプットの差分のみで近似している。
     float4 prevClipPos = mul(float4(basePos + rotatedPos, 1.0f), gFrameData.prevViewProj);
     
     output.position = clipPos;

@@ -163,7 +163,7 @@ PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
 }
 
 // -----------------------------------------------------------------------------
-// 高速 CSM フェッチ (ブランチレス化)
+// 高速 CSM 
 // -----------------------------------------------------------------------------
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
@@ -175,7 +175,7 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // ブランチ(if文)無しのカスケード選択
+    // ブランチ無しのカスケード選択
     float4 cascadeSplits = gShadowData.cascadeSplits;
     uint cascadeIndex = (uint) dot(step(cascadeSplits.xyz, viewDepth.xxx), float3(1.0f, 1.0f, 1.0f));
 

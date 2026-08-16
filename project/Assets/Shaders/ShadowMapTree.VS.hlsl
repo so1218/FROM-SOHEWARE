@@ -1,7 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<LeafMaterialData> gMaterial : register(b2); 
+ConstantBuffer<LeafMaterialData> gMaterial : register(b2);
 ConstantBuffer<TreeInstanceOffset> gTreeInstanceOffset : register(b3);
 ConstantBuffer<ShadowData> gShadowData : register(b4);
 cbuffer cbCascadeIndex : register(b5)
@@ -12,6 +12,7 @@ ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b6);
 
 StructuredBuffer<TreeInstanceData> gInstanceData : register(t6);
 Texture2D<float> gWindMap : register(t7);
+
 SamplerState gLinearWrapSampler : register(s2);
 
 struct ShadowVSInput
@@ -19,7 +20,6 @@ struct ShadowVSInput
     float4 position : POSITION0;
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
-    float3 tangent : TANGENT0;
 };
 
 struct ShadowVSOutput
@@ -28,32 +28,39 @@ struct ShadowVSOutput
     float2 texcoord : TEXCOORD0;
 };
 
-float3 RotateAboutAxis(float3 pos, float3 axis, float angle)
+// メインパスと共通の回転行列生成関数
+float3x3 AngleAxisTo3x3(float3 axis, float angle)
 {
-    float s = sin(angle);
-    float c = cos(angle);
-    return pos * c + cross(axis, pos) * s + axis * dot(axis, pos) * (1.0f - c);
+    float s, c;
+    sincos(angle, s, c);
+    float oc = 1.0f - c;
+    
+    return float3x3(
+        oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+        oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+        oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c
+    );
 }
 
 ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
 {
     ShadowVSOutput output;
     
-    // 1. オフセットを加算してインスタンスデータを取得
     uint actualIndex = instanceID + gTreeInstanceOffset.baseInstanceIndex;
     TreeInstanceData instance = gInstanceData[actualIndex];
-    float isLeaf = (float) gTreeInstanceOffset.isLeaf;
     
     float3 origLocalPos = input.position.xyz;
-    float4 localPos = float4(origLocalPos, 1.0f);
-    float4 baseWorldPos = mul(localPos, instance.worldMatrix);
+    float4 baseWorldPos = mul(float4(origLocalPos, 1.0f), instance.worldMatrix);
     float3 rootPos = instance.worldMatrix[3].xyz;
     
-    // 高さと高さ比率
     float currentHeight = max(0.0f, baseWorldPos.y - rootPos.y);
     float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, 0.1f));
     
-    // 風の全体的な強度とマップサンプリング
+    bool isLeaf = (gTreeInstanceOffset.isLeaf != 0);
+    
+    // -------------------------------------------------------------------------
+    // 風のグローバルパラメーター取得
+    // -------------------------------------------------------------------------
     float2 windDir = normalize(gEnvironmentData.windDirection);
     float windTime = gEnvironmentData.windTime * gMaterial.windSpeedMultiplier;
     float currentWindMag = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier;
@@ -66,61 +73,54 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     
     float treePhase = dot(rootPos.xz, float2(0.13f, 0.17f)) + instance.colorVariation.x * 12.34f;
     
-    // =========================================================================
-    // 1次風: 幹の「ピボット回転しなり」（メインVSと完全一致）
-    // =========================================================================
+    // -------------------------------------------------------------------------
+    // 1次風: 幹全体のしなり
+    // -------------------------------------------------------------------------
     float3 rotAxis = normalize(float3(-windDir.y, 0.0f, windDir.x));
     float trunkWeight = heightRatio * heightRatio;
+    
     float mainSway = sin(windTime * 1.0f + treePhase) * 0.3f + 0.7f;
     float subSway = sin(windTime * 1.8f + treePhase * 1.5f) * 0.2f;
-    
     float bendAngle = (mainSway + subSway) * trunkWeight * gMaterial.trunkFlexibility * totalWind * 0.15f;
+    
     float3 relWorldPos = baseWorldPos.xyz - rootPos;
-    float3 bentRelPos = RotateAboutAxis(relWorldPos, rotAxis, bendAngle);
+    float3x3 rotMatrix = AngleAxisTo3x3(rotAxis, bendAngle);
+    float3 bentRelPos = mul(relWorldPos, rotMatrix);
 
-    // =========================================================================
-    // ★ 2次風: 枝のうねり
-    // =========================================================================
-    float branchDist = length(origLocalPos.xz);
-    float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
-    float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
-    
-    // ▼修正: windTurbulence を sin() の中から外す（メインシェーダーと完全に一致させる）
-    float branchWave = sin(windTime * 2.5f + branchPhase);
-    float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
-    
-    // ▼修正: windTurbulence は振幅として掛け算する
-    float turbulenceAmp = max(gEnvironmentData.windTurbulence, 0.5f);
-    
-    float3 branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * turbulenceAmp * isLeaf;
-    
-    // =========================================================================
-    // ★ 3次風: 葉のチラつき (シャドウでは法線が不要なため、ローカル座標ベースで簡略化計算でもOKです)
-    // =========================================================================
-  // ★ 3次風: 葉のチラつき（Leaf Flutter / Rustle） - 葉メッシュのみ
-    float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
+    // -------------------------------------------------------------------------
+    // 2次・3次風: 枝葉の微細な揺れ
+    // -------------------------------------------------------------------------
+    float3 branchOffset = 0.0f.xxx;
+    float3 flutterOffset = 0.0f.xxx;
 
-// ★ windTime に周波数倍率 (leafFlutterFrequency) を掛ける
-    float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
+    // isLeaf を用いた分岐で幹描画時の不要な波計算を完全にスキップ
+    if (isLeaf)
+    {
+        // 枝のうねり
+        float branchDist = length(origLocalPos.xz);
+        float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
+        float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
+        
+        float branchWave = sin(windTime * 2.5f + branchPhase);
+        float3 branchDir = normalize(float3(windDir.x, -0.2f, windDir.y));
+        float turbulenceAmp = max(gEnvironmentData.windTurbulence, 0.5f);
+        
+        branchOffset = branchDir * branchWave * branchWeight * trunkWeight * gMaterial.branchFlexibility * totalWind * turbulenceAmp;
+        
+        // 葉のチラつき
+        // メインパスと同一の頂点変位を適用
+        float3 worldNormal = normalize(mul(input.normal, (float3x3) instance.worldMatrix));
+        worldNormal = mul(worldNormal, rotMatrix);
 
-// 固定値だった 14.0f や 9.0f に flutterSpeed を使う
-    float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
-  // 【修正】仮のベクトルではなく、正確なワールド法線を計算する
-    float3 worldNormal = normalize(mul(input.normal, (float3x3) instance.worldMatrix));
-    
-    // 幹の回転（1次風）に合わせて法線も回転させる（本体と影の座標を100%一致させるため）
-    worldNormal = RotateAboutAxis(worldNormal, rotAxis, bendAngle);
+        float flutterPhase = dot(origLocalPos, float3(3.5f, 4.2f, 2.8f)) + treePhase;
+        float flutterSpeed = windTime * max(gMaterial.leafFlutterFrequency, 0.0f);
+        float flutterWave = sin(flutterSpeed * 14.0f + flutterPhase) * cos(flutterSpeed * 9.0f + flutterPhase * 0.5f);
+        
+        flutterOffset = worldNormal * flutterWave * gMaterial.leafFlutterAmount * totalWind;
+    }
 
-    float3 flutterOffset = worldNormal
-                         * flutterWave
-                         * gMaterial.leafFlutterAmount 
-                         * totalWind
-                         * isLeaf;
-
-    // 最終的なワールド座標
     float3 finalWorldPos = rootPos + bentRelPos + branchOffset + flutterOffset;
 
-    // 影用の行列変換
     output.position = mul(float4(finalWorldPos, 1.0f), gShadowData.cascadeLightViewProj[gCascadeIndex]);
     output.texcoord = input.texcoord;
 

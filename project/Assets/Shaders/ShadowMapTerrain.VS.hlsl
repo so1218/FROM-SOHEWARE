@@ -1,6 +1,5 @@
 #include "ShaderConstants.hlsli"
 
-// シャドウ用データ
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);
 

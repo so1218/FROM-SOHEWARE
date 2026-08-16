@@ -3,22 +3,18 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<FoliageCullingData> gCullingData : register(b1);
 
-// ★ 読み込み元（Generation CSで生成されたバッファ）
 StructuredBuffer<FoliageInstanceData> gInputFoliage : register(t0);
 
-// ★ 追加：GenerationCSで記録された「実際の」インスタンス数（Appendカウンタ）
+// GenerationCSのAppendカウンタ(u0)から直接値を読み取る
 ByteAddressBuffer gInstanceCounter : register(t1);
 
-// ★ 書き込み先（カリングを生き残った描画用バッファ）
 RWStructuredBuffer<FoliageInstanceData> gOutputFoliage : register(u0);
-// ★ 間接描画の引数バッファ
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
 
 static const uint kThreadsPerRow = 65536;
-static const uint kIndirectInstanceCountOffset = 4; // DrawInstancedIndirect の InstanceCount の位置
+static const uint kIndirectInstanceCountOffset = 4;
 static const uint kFrustumPlaneCount = 6;
 
-// 擬似乱数 (Hash12)
 float Hash12(float2 p)
 {
     float3 p3 = frac(float3(p.xyx) * 0.1031f);
@@ -31,27 +27,20 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
     
-// ★ 修正：GPU上にあるカウンタバッファから実際の生成数を取得
+    // CPU側でのディスパッチ数の無駄をカバーするため、GPU側の実生成数で早期リターン
     uint totalGeneratedCount = gInstanceCounter.Load(0);
-    
     if (instanceIndex >= totalGeneratedCount)
-        return; // 生成された数以上のスレッドは即座に終了
+        return;
     
     FoliageInstanceData foliage = gInputFoliage[instanceIndex];
-    
     float3 pos = foliage.posAndScale.xyz;
     float scale = foliage.posAndScale.w;
 
-    bool isVisible = true;
+    bool isVisible = (scale > 0.001f);
 
-    // 1. スケールによる安全なリジェクト
-    if (scale <= 0.001f)
+    if (isVisible)
     {
-        isVisible = false;
-    }
-    else
-    {
-        // 2. 距離カリング
+        // XZ平面のみで距離計算
         float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
         
         if (distToCamXZ > gCullingData.maxDrawDistance)
@@ -59,13 +48,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
             isVisible = false;
         }
 
-        // 3. 視錐台カリング (Foliage専用の最適化)
         if (isVisible)
         {
-            // ★ FoliageはPebbleのような「非等方スケール(Aniso)」を持たないため、計算を簡略化して軽量化
             float boundsRadius = gCullingData.modelRadius * scale;
             
-            // ★ 植物のピボット（根元）から、モデルの中心（葉っぱのあたり）へオフセットする
+            // 植物モデルの原点は根元(Y=0)にあるため、カリング用スフィアの中心を葉の重心付近へ持ち上げる
             float3 boundsCenter = pos + float3(0.0f, gCullingData.modelCenterYOffset * scale, 0.0f);
             
             for (uint i = 0; i < kFrustumPlaneCount; ++i)
@@ -78,7 +65,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             }
         }
 
-        // 4. 確率的ディザカリング (遠景の密度を間引いて負荷を下げる)
+        // 遠景のオーバードローおよび、サブピクセル級ポリゴンによるラスタライザの処理落ちを防ぐ
         if (isVisible)
         {
             float fadeRange = max(1.0f, gCullingData.maxDrawDistance - gCullingData.thinStartDistance);
@@ -91,9 +78,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // ==========================================
-    // ★ Wave Intrinsics による超高速 Append
-    // ==========================================
+    // ----------------------------------------------------------------------
+    // Wave Intrinsics によるアトミック操作の最適化 (Atomic Contention の回避)
+    // ----------------------------------------------------------------------
+    // 全スレッドが個別に InterlockedAdd を呼ぶと、VRAMへのアクセス競合で大渋滞を起こす。
+    // そのため、Wave(SIMDグループ)内で生き残った数を集計し、最初の1スレッドだけがメモリアクセスを行う。
     uint waveCount = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
 
@@ -101,11 +90,13 @@ void main(uint3 DTid : SV_DispatchThreadID)
     {
         gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, waveCount, waveOffset);
     }
+    
+    // リーダースレッドが取得した書き込み開始位置を、Wave内の全スレッドへ共有
     waveOffset = WaveReadLaneFirst(waveOffset);
 
     if (isVisible)
     {
-        // このウェーブ内での自分の書き込み位置をプレフィックスサムで取得
+        // プレフィックスサムを用いて、このWave内での自身の相対的な書き込みインデックスを決定
         uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
         gOutputFoliage[appendIndex] = foliage;
     }

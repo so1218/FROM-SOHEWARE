@@ -8,7 +8,7 @@ RWStructuredBuffer<TreeInstanceData> gOutputTreeData : register(u0);
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
 
 static const uint kThreadsPerRow = 65536;
-static const uint kIndirectInstanceCountOffset = 4; // InstanceCountのオフセット
+static const uint kIndirectInstanceCountOffset = 4;
 static const uint kFrustumPlaneCount = 6;
 
 [numthreads(64, 1, 1)]
@@ -21,29 +21,25 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     TreeInstanceData tree = gInputTreeData[instanceIndex];
     
-    // 行列からワールド座標(根元)を抽出
+    // トランスフォーム行列の平行移動成分から直接ワールド座標を取得
     float3 rootPos = tree.worldMatrix[3].xyz;
     
-    // 木のおおよその高さと半径（定数バッファから取得、または行列のスケールから計算）
     float treeHeight = gTreeCullingData.approxTreeHeight;
     float treeRadius = gTreeCullingData.approxTreeRadius;
 
     bool isVisible = true;
 
-    // 距離カリング
     float distToCam = distance(rootPos, gFrameData.cameraWorldPosition);
     if (distToCam > gTreeCullingData.maxDrawDistance)
     {
         isVisible = false;
     }
 
-    // 2. 視錐台(フラスタム)カリング
     if (isVisible)
     {
-        // 木の根元ではなく、木の中央を球の中心にする
+        // 樹木の形状を内包するためのバウンディングスフィア近似
+        // 重心をY軸方向へオフセットした球判定に落とし込んで計算を軽量化
         float3 sphereCenter = rootPos + float3(0.0f, treeHeight * 0.5f, 0.0f);
-        
-        // 球の半径（高さの半分と半径の大きい方 + 余裕をもたせる）
         float boundsRadius = max(treeHeight * 0.5f, treeRadius) * 1.2f;
         
         for (uint i = 0; i < kFrustumPlaneCount; ++i)
@@ -56,20 +52,22 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // 3. LOD フェード値の動的計算 (オプション)
-    // 遠くの木ほど lodFade を下げていき、VSやPSでディザリング・アルファ抜きに使う
+    // ---------------------------------------------------------
+    // Smooth LOD Transition 用のフェード値算出
+    // ---------------------------------------------------------
+    // 遠景でモデルが急に消える（Pop-out）のを防ぐためのディザリング用アルファを計算
+    // 頂点ごとの計算で済むよう、コンピュートシェーダーで事前計算しインスタンスデータに乗せておく
     if (isVisible)
     {
         float fadeStart = gTreeCullingData.maxDrawDistance * 0.8f;
         float fadeRange = gTreeCullingData.maxDrawDistance - fadeStart;
-        
-        // 1.0(完全表示) ～ 0.0(消える) の値を instanceData に書き込む
-        tree.lodFade = 1.0f - saturate((distToCam - fadeStart) / fadeRange);
+        tree.lodFade = saturate(1.0f - ((distToCam - fadeStart) / fadeRange));
     }
 
     // ---------------------------------------------------------
-    // Wave Intrinsics によるアトミック競合の回避 (Grassと同じ)
+    // VRAMアクセス競合の回避 (Wave Intrinsics)
     // ---------------------------------------------------------
+    // Wave 内で可視インスタンス数を集計し、代表の1スレッドのみがアトミック加算
     uint waveCount = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
 
@@ -82,8 +80,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     if (isVisible)
     {
+        // Wave内での自身の書き込みオフセットをプレフィックスサムで決定し、バッファを詰めて出力
         uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
-        // 更新した lodFade を含めて出力バッファへ書き込み
         gOutputTreeData[appendIndex] = tree;
     }
 }
