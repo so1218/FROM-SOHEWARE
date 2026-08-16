@@ -17,12 +17,10 @@ void FoliageField::Initialize()
         SetupBinderForLayer(i);
     }
 
-    // 1. 全体共通パラメータのバインド
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("TerrainWidth", &terrainWidth_, 1024.0f, 1.0f, 10.0f, 5000.0f);
     binder_->Bind("TerrainDepth", &terrainDepth_, 1024.0f, 1.0f, 10.0f, 5000.0f);
 
-    // カリング設定のバインド
     binder_->Bind("MaxDrawDistance", &cullingData_.maxDrawDistance, 300.0f, 1.0f, 10.0f, 2000.0f);
     binder_->Bind("ThinStartDistance", &cullingData_.thinStartDistance, 150.0f, 1.0f, 10.0f, 2000.0f);
     binder_->Bind("MaxThinningRate", &cullingData_.maxThinningRate, 0.95f, 0.01f, 0.0f, 1.0f);
@@ -30,7 +28,6 @@ void FoliageField::Initialize()
     auto onResourceChanged = [this]() { ReloadResources(); };
     binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", FE::TextureType::Noise, onResourceChanged);
 
-    // ★ 追加: 複数レイヤーの中で最大のAABBサイズを求めるための変数
     float maxRadius = 0.0f;
     float maxYOffset = 0.0f;
 
@@ -43,7 +40,7 @@ void FoliageField::Initialize()
             const auto& meshPart = modelData->meshes[0];
 
             // ==========================================
-            // ★ 追加: メッシュのAABBからカリングサイズを計算
+            // メッシュのAABBからカリングサイズを計算
             // ==========================================
             FE::Vector3 minPos = meshPart.localAABB.min;
             FE::Vector3 maxPos = meshPart.localAABB.max;
@@ -52,7 +49,7 @@ void FoliageField::Initialize()
             FE::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
             float currentRadius = std::sqrt(size.x * size.x + size.y * size.y + size.z * size.z) * 0.5f;
 
-            // 複数のレイヤーがある場合は一番大きいモデルを基準にする
+            // 複数のレイヤーがある場合は一番大きいモデルを基準
             if (currentRadius > maxRadius)
             {
                 maxRadius = currentRadius;
@@ -66,13 +63,13 @@ void FoliageField::Initialize()
         }
     }
 
-    // ★ 追加: 計算したカリング用サイズを設定 (小さすぎる場合は最低1.0fを担保)
+    // 計算したカリング用サイズを設定 (小さすぎる場合は最低1.0f)
     cullingData_.modelRadius = std::max(maxRadius, 1.0f);
     cullingData_.modelCenterYOffset = maxYOffset;
 
     foliageSystem_->InitializeRenderer();
 
-    // 全ての準備が終わったらフラグをtrueにする
+    // 全ての準備が終わったらフラグをtrue
     isInitialized_ = true;
 
     GenerateFoliage();
@@ -101,7 +98,7 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
 void FoliageField::SetupBinderForLayer(size_t index)
 {
     auto& layer = layers_[index];
-    std::string prefix = layer.name + "_"; // "Grass_" などの接頭辞を作る
+    std::string prefix = layer.name + "_"; 
 
     // パラメータが変更されたら再生成・再ロードするコールバック
     auto onGenChanged = [this]() {
@@ -111,13 +108,11 @@ void FoliageField::SetupBinderForLayer(size_t index)
         if (isInitialized_) needReloadResources_ = true;
         };
 
-    // 生成パラメータ
     binder_->Bind(prefix + "MaxInstances", &layer.uiMaxInstances, 50000, 1000, 1000, 500000);
     binder_->Bind(prefix + "GridSpacing", &layer.genData.gridSpacing, 0.5f, 0.01f, 0.05f, 10.0f);
     binder_->Bind(prefix + "MinScale", &layer.genData.minScale, 0.8f, 0.01f, 0.1f, 5.0f);
     binder_->Bind(prefix + "MaxScale", &layer.genData.maxScale, 1.2f, 0.01f, 0.1f, 5.0f);
 
-    // マテリアル
     binder_->Bind(prefix + "Roughness", &layer.material.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "AlphaCutoff", &layer.material.alphaCutoff, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "WindResponse", &layer.material.windResponse, 1.0f, 0.01f, 0.0f, 5.0f);
@@ -128,13 +123,11 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "FlutterScale", &layer.material.flutterScale, 0.1f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "PlantHeight", &layer.material.plantHeight, 1.0f, 0.1f, 0.1f, 10.0f);
 
-    // シャドウ設定も調整できると便利
     binder_->Bind(prefix + "ShadowDensity", &layer.material.shadowDensity, 1.0f, 0.01f, 0.0f, 1.0f);
 
     layer.material.shadowNormalBias = 0.005f;
     layer.material.shadowBias = 0.001f;
 
-    // テクスチャ
     binder_->BindColor(prefix + "BaseColor", &layer.material.baseColor, { 1.0f, 1.0f, 1.0f });
     binder_->BindTexture(prefix + "DensityMap", &layer.densityMapName, &layer.densityMapHandle, "white1x1", FE::TextureType::Noise, onGenChanged);
     binder_->BindTexture(prefix + "Albedo", &layer.albedoName, &layer.albedoHandle, "white1x1", FE::TextureType::Albedo, onResChanged);
@@ -153,14 +146,12 @@ void FoliageField::GenerateFoliage()
         layer.genData.terrainWidth = terrainWidth_;
         layer.genData.terrainDepth = terrainDepth_;
 
-        // =======================================================
-        // ★ 追加: 地形の面積から必要な最大インスタンス数を計算して上限を設ける
-        // =======================================================
+        // 地形の面積から必要な最大インスタンス数を計算して上限を設ける
         uint32_t gridX = static_cast<uint32_t>(std::ceil(terrainWidth_ / layer.genData.gridSpacing));
         uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / layer.genData.gridSpacing));
         uint32_t neededFoliageCount = gridX * gridZ;
 
-        // UI設定値(maxInstancesPerChunk)と必要数のうち、小さい方を採用
+        // maxInstancesPerChunk と必要数のうち、小さい方を採用
         layer.genData.maxInstancesPerChunk = std::min(
             static_cast<uint32_t>(layer.uiMaxInstances),
             neededFoliageCount
@@ -205,7 +196,7 @@ void FoliageField::Update()
         prevTerrainDepth_ = terrainDepth_;
         prevHeightMapName_ = heightMapName_;
     }
-    // 2. ★ 追加: 各レイヤーの生成パラメータ変更監視
+    // 各レイヤーの生成パラメータ変更監視
     for (auto& layer : layers_)
     {
         if (layer.uiMaxInstances != layer.prevMaxInstances ||
@@ -230,7 +221,7 @@ void FoliageField::Update()
     }
 
     // ==========================================
-    // 3. ★ 修正: マテリアル等の変更をGPUに反映
+    // マテリアル等の変更をGPUに反映
     // ==========================================
     for (size_t i = 0; i < layers_.size(); ++i) {
         auto* matPtr = foliageSystem_->GetMaterialData(i);
@@ -240,7 +231,7 @@ void FoliageField::Update()
     auto* cullPtr = foliageSystem_->GetCullingData();
     if (cullPtr) *cullPtr = cullingData_;
 
-    // ★ これを毎フレーム呼ぶことで、風の強さやラフネスのUI変更がリアルタイムに反映されます
+    // 毎フレーム呼ぶことで、風の強さやラフネスのUI変更がリアルタイムに反映
     foliageSystem_->UpdateConfigs(layers_);
 
     // カリングデータの転送など
@@ -272,13 +263,12 @@ void FoliageField::DebugDraw()
         }
     }
 
-    // 各レイヤーごとのUIを生成
     for (size_t i = 0; i < layers_.size(); ++i)
     {
         auto& layer = layers_[i];
         std::string prefix = layer.name + "_";
 
-        ImGui::PushID(static_cast<int>(i)); // ID被り防止
+        ImGui::PushID(static_cast<int>(i)); 
         if (ImGui::CollapsingHeader((layer.name + " の設定").c_str()))
         {
             ImGui::Text("【 配置・スケール 】");

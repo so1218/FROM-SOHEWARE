@@ -60,7 +60,7 @@ private:
     float prevColorRandomness_ = 0.0f;
 
     // ==========================================
-    // 葉 (LeafMaterialData) パラメータ
+    // 葉パラメータ
     // ==========================================
     float gustScale_ = 0.05f;
     float windSpeedMultiplier_ = 1.0f;
@@ -75,21 +75,21 @@ private:
     float transmissionPower_ = 5.0f;
     float sssStrength_ = 1.0f;
     float alphaCutoff_ = 0.5f;
-    float leafShadowDensity_ = 0.8f;     // 葉用
+    float leafShadowDensity_ = 0.8f;     
     FE::Vector3 sssColor_ = { 0.5f, 0.7f, 0.2f };
-    float leafShadowNormalBias_ = 0.02f; // 葉用
+    float leafShadowNormalBias_ = 0.02f; 
     float treeHeight_ = 10.0f;
     float treeRadius_ = 5.0f;
-    float leafShadowBias_ = 0.005f;      // 葉用
+    float leafShadowBias_ = 0.005f;   
     float baseRoughness_ = 1.0f;
     float baseAO_ = 1.0f;
     float baseThickness_ = 0.1f;
-    FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f }; // 型は環境に合わせてください (Math::Vector3 など)
+    FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f };
     float leafAlbedoMultiplier_ = 1.0f;
     float leafFlutterFrequency_ = 1.0f;
 
     // ==========================================
-    // 幹 (TrunkMaterialData) パラメータ
+    // 幹パラメータ
     // ==========================================
     FE::Vector4 trunkColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     FE::Vector4 trunkSpecularColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -101,9 +101,9 @@ private:
     float trunkMetalness_ = 0.0f;
     float trunkShininess_ = 10.0f;
     float trunkDiffuseReflection_ = 1.0f;
-    float trunkShadowDensity_ = 0.8f;     // 幹用
-    float trunkShadowBias_ = 0.005f;      // 幹用
-    float trunkShadowNormalBias_ = 0.02f; // 幹用
+    float trunkShadowDensity_ = 0.8f;    
+    float trunkShadowBias_ = 0.005f;    
+    float trunkShadowNormalBias_ = 0.02f; 
     float trunkShadowSoftness_ = 1.0f;
     float trunkEnvironmentMapIntensity_ = 1.0f;
     float trunkShadowEnvStrength_ = 0.5f;
@@ -112,19 +112,19 @@ private:
 
     float maxDrawDistance_ = 300.0f;
 
-    // 葉 (Leaf)
+    // 葉
     std::string leafTextureName_ = "white1x1";
     uint32_t    leafTextureHandle_ = 0;
     std::string leafNormalName_ = "white1x1";
     uint32_t    leafNormalHandle_ = 0;
 
-    // 幹 (Trunk)
+    // 幹 
     std::string trunkTextureName_ = "white1x1";
     uint32_t    trunkTextureHandle_ = 0;
     std::string trunkNormalName_ = "white1x1";
     uint32_t    trunkNormalHandle_ = 0;
 
-    // 共通 (Env / Toon)
+    // 共通
     std::string toonRampName_ = "toonRamp_01";
     uint32_t    toonRampHandle_ = 0;
 };

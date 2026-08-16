@@ -46,14 +46,10 @@ void TreeSystem::AddInstance(
 
 void TreeSystem::Update()
 {
-    if (!engine_) return;
-
     auto* rendererManager = engine_->GetRendererManager();
 
-    // 風テクスチャを RendererManager に登録
     rendererManager->SetWindMap(windMapTextureHandle_);
 
-    // 登録されたすべての木を RendererManager に Submit
     for (const auto& inst : instances_)
     {
         if (inst.modelData)
@@ -78,7 +74,6 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
     TreeMaterialHandle handle{};
     auto* device = engine_->GetGraphicsDevice()->GetDevice();
 
-    // 1. 葉用定数バッファ（風のパラメータ含む）の生成
     handle.leafMaterialBuffer = BufferManager::CreateMappedConstantBuffer(
         device, &handle.mappedLeafData
     );
@@ -86,7 +81,6 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
         *handle.mappedLeafData = leafData;
     }
 
-    // 2. 幹用定数バッファの生成
     handle.trunkMaterialBuffer = BufferManager::CreateMappedConstantBuffer(
         device, &handle.mappedTrunkData
     );
@@ -94,14 +88,12 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
         *handle.mappedTrunkData = trunkData;
     }
 
-    // 3. テクスチャハンドルの設定
     handle.leafTextureHandle = leafTex;
     handle.trunkTextureHandle = trunkTex;
     handle.leafNormalMapHandle = leafNormal;
     handle.trunkNormalMapHandle = trunkNormal;
     handle.toonRampHandle = toonRamp;
 
-    // 寿命管理用リストに保持
     materialBuffers_.push_back(handle.leafMaterialBuffer);
     materialBuffers_.push_back(handle.trunkMaterialBuffer);
 
@@ -110,15 +102,17 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
 
 void TreeSystem::UpdateLeafMaterial(TreeMaterialHandle& handle, const LeafMaterialData& data)
 {
-    if (handle.mappedLeafData) {
-        *handle.mappedLeafData = data; // 高速コピー
+    if (handle.mappedLeafData)
+    {
+        *handle.mappedLeafData = data; 
     }
 }
 
 void TreeSystem::UpdateTrunkMaterial(TreeMaterialHandle& handle, const TrunkMaterialData& data)
 {
-    if (handle.mappedTrunkData) {
-        *handle.mappedTrunkData = data; // 高速コピー
+    if (handle.mappedTrunkData)
+    {
+        *handle.mappedTrunkData = data; 
     }
 }
 

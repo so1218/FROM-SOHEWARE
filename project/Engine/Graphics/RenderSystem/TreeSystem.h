@@ -20,13 +20,12 @@ struct TreeInstance
 class TreeSystem
 {
 public:
-    TreeSystem(Engine* engine, const std::string& windMapTextureName = "noise_39");
+    explicit TreeSystem(Engine* engine, const std::string& windMapTextureName = "noise_39");
     ~TreeSystem() = default;
 
-    // 風テクスチャの設定
+    // 頂点シェーダで群葉の揺れ（Windアニメーション）を計算するためのグローバルノイズマップ
     void SetWindMapTexture(const std::string& textureName);
 
-    // インスタンスのクリアと追加
     void Clear();
     void AddInstance(const TreeInstance& instance);
     void AddInstance(
@@ -37,30 +36,30 @@ public:
         float lodFade = 1.0f
     );
 
-    // 毎フレーム呼び出し：風設定を伝えつつ、登録されている木を全件 Submit する
+    // 登録されたインスタンス群をレンダラキューへ積む
     void Update();
 
-    // ★追加: 幹・葉のマテリアルを生成するヘルパー関数
-    TreeMaterialHandle CreateTreeMaterial(
+    // 葉(と幹で分離された専用マテリアルバッファを生成し、ライフサイクルを管理
+    [[nodiscard]] TreeMaterialHandle CreateTreeMaterial(
         const LeafMaterialData& leafData,
         const TrunkMaterialData& trunkData,
         uint32_t leafTex, uint32_t trunkTex,
         uint32_t leafNormal = 0, uint32_t trunkNormal = 0, uint32_t toonRamp = 0
     );
 
-    // ★追加: マテリアルのパラメータを後から動的に更新する関数（時間帯の変化などに対応）
+    // 時間帯変化や天候に応じた動的パラメータ更新用
     void UpdateLeafMaterial(TreeMaterialHandle& handle, const LeafMaterialData& data);
     void UpdateTrunkMaterial(TreeMaterialHandle& handle, const TrunkMaterialData& data);
+
     void SetCullingParameters(float maxDrawDistance, float treeHeight, float treeRadius);
 
-    uint32_t GetInstanceCount() const { return static_cast<uint32_t>(instances_.size()); }
+    [[nodiscard]] uint32_t GetInstanceCount() const { return static_cast<uint32_t>(instances_.size()); }
 
 private:
     Engine* engine_ = nullptr;
     std::vector<TreeInstance> instances_;
     uint32_t windMapTextureHandle_ = 0;
 
-    // 定数バッファリソースの寿命管理用リスト
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> materialBuffers_;
 };
 

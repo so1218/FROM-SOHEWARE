@@ -17,12 +17,14 @@ void FoliageSystem::AddFoliageType(
     const FoliageMaterialData& defaultMaterial,
     const FoliageGenerationData& defaultGenData)
 {
+    // アセットの追加は初期化フェーズに限定し、動的なバッファ再確保の複雑化を避ける
+    assert(!isRendererInitialized_ && "Cannot add foliage types after renderer initialization.");
+
     FoliageTypeInfo info;
     info.albedoSrvHandle = TextureManager::GetInstance().Get(albedoTextureName);
     info.normalSrvHandle = TextureManager::GetInstance().Get(normalTextureName);
     info.densityMapSrvHandle = TextureManager::GetInstance().Get(densityMapName);
 
-    // メッシュの初期化
     auto* device = engine_->GetGraphicsDevice()->GetDevice();
     info.mesh = std::make_unique<Mesh>();
     info.mesh->Initialize(device, meshData.vertices, meshData.indices);
@@ -34,19 +36,19 @@ void FoliageSystem::AddFoliageType(
 
     foliageTypes_.push_back(std::move(info));
 }
-
 void FoliageSystem::InitializeRenderer()
 {
     if (!engine_ || foliageTypes_.empty()) return;
 
-    // RendererManager に渡すための Config 配列を構築
     std::vector<FoliageTypeConfig> configs;
     configs.reserve(foliageTypes_.size());
 
+    // レンダラー側にはポインタ経由でメッシュやテクスチャハンドルを参照させ、
+    // 実リソースの管理責任をSystem側に明確に分離する
     for (const auto& typeInfo : foliageTypes_)
     {
         FoliageTypeConfig config;
-        config.mesh = typeInfo.mesh.get(); // ポインタを渡す
+        config.mesh = typeInfo.mesh.get();
         config.albedoSrvHandle = typeInfo.albedoSrvHandle;
         config.normalSrvHandle = typeInfo.normalSrvHandle;
         config.densityMapSrvHandle = typeInfo.densityMapSrvHandle;
@@ -55,10 +57,7 @@ void FoliageSystem::InitializeRenderer()
         configs.push_back(config);
     }
 
-    auto* rendererManager = engine_->GetRendererManager();
-    // ★ RendererManager に追加した初期化関数を呼ぶ
-    rendererManager->InitializeFoliage(configs);
-
+    engine_->GetRendererManager()->InitializeFoliage(configs);
     isRendererInitialized_ = true;
 }
 
@@ -66,45 +65,37 @@ void FoliageSystem::Generate(
     const std::string& heightMapName,
     UINT terrainWidth, UINT terrainDepth)
 {
+    assert(isRendererInitialized_ && "Foliage renderer is not initialized.");
     if (!engine_ || !isRendererInitialized_) return;
 
-    auto* rendererManager = engine_->GetRendererManager();
-
     uint32_t heightMapHandle = TextureManager::GetInstance().Get(heightMapName);
-
-    rendererManager->GenerateFoliage(heightMapHandle, terrainWidth, terrainDepth);
+    engine_->GetRendererManager()->GenerateFoliage(heightMapHandle, terrainWidth, terrainDepth);
 }
 
 void FoliageSystem::Update()
 {
     if (!engine_ || !isRendererInitialized_) return;
-
-    auto* rendererManager = engine_->GetRendererManager();
-
-    // 毎フレームカリング情報を更新
-    rendererManager->SetFoliageRenderingParams(cullingData_);
-
+    engine_->GetRendererManager()->SetFoliageRenderingParams(cullingData_);
 }
 
 void FoliageSystem::UpdateConfigs(const std::vector<FoliageLayer>& layers)
 {
     if (!isRendererInitialized_) return;
 
+    size_t count = std::min(foliageTypes_.size(), layers.size());
     std::vector<FoliageTypeConfig> configs;
-    configs.reserve(foliageTypes_.size());
+    configs.reserve(count);
 
-    // UIで変更された最新のテクスチャ名から、ハンドルを取り直してConfigを作る
-    for (size_t i = 0; i < foliageTypes_.size(); ++i)
+    // エディタ側でのテクスチャ差し替えや密度調整を即座に反映
+    // メッシュトポロジの変更は伴わない前提のため、リソースの再構築はスキップ
+    for (size_t i = 0; i < count; ++i)
     {
         const auto& layer = layers[i];
         auto& typeInfo = foliageTypes_[i];
 
-        // 最新のハンドルを取得
         typeInfo.albedoSrvHandle = TextureManager::GetInstance().Get(layer.albedoName);
         typeInfo.normalSrvHandle = TextureManager::GetInstance().Get(layer.normalName);
         typeInfo.densityMapSrvHandle = TextureManager::GetInstance().Get(layer.densityMapName);
-
-        // ※必要であればメッシュの更新処理もここに入れます
 
         FoliageTypeConfig config;
         config.mesh = typeInfo.mesh.get();
@@ -117,7 +108,6 @@ void FoliageSystem::UpdateConfigs(const std::vector<FoliageLayer>& layers)
         configs.push_back(config);
     }
 
-    // レンダラーマネージャー経由で Renderer に新しい設定を送る
     engine_->GetRendererManager()->UpdateFoliageConfigs(configs);
 }
 

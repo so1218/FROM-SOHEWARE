@@ -17,18 +17,23 @@ TreeField::TreeField(Engine* engine) : GameObject()
 
 void TreeField::Initialize()
 {
-    if (model_) {
+    if (model_) 
+    {
         // メッシュ0: 幹
-        if (model_->GetMaterialCount() > 0) {
-            if (auto* m0 = model_->GetMaterialHandle(0)) {
+        if (model_->GetMaterialCount() > 0)
+        {
+            if (auto* m0 = model_->GetMaterialHandle(0))
+            {
                 trunkTextureName_ = m0->textureName;
                 trunkNormalName_ = m0->normalMapName;
                 toonRampName_ = m0->toonRampName;
             }
         }
         // メッシュ1: 葉
-        if (model_->GetMaterialCount() > 1) {
-            if (auto* m1 = model_->GetMaterialHandle(1)) {
+        if (model_->GetMaterialCount() > 1) 
+        {
+            if (auto* m1 = model_->GetMaterialHandle(1))
+            {
                 leafTextureName_ = m1->textureName;
                 leafNormalName_ = m1->normalMapName;
             }
@@ -49,8 +54,7 @@ void TreeField::Initialize()
         {
             treeSystem_->SetWindMapTexture(windMapName_);
         });
-
-    // --- 葉(Leaf) の設定 ---
+    
     binder_->BindColor("LeafColorTint", &leafColorTint_, { 1.0f, 1.0f, 1.0f });
     binder_->Bind("LeafAlbedoMult", &leafAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("WindSpeedMult", &windSpeedMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
@@ -76,8 +80,7 @@ void TreeField::Initialize()
     binder_->Bind("BaseRoughness", &baseRoughness_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("BaseAO", &baseAO_, 1.0f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseThickness", &baseThickness_, 0.1f, 0.01f, 0.0f, 1.0f);
-
-    // --- 幹(Trunk) の設定 ---
+    
     binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkAlbedoMult", &trunkAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->BindColor("TrunkSpecColor", &trunkSpecularColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
@@ -95,10 +98,8 @@ void TreeField::Initialize()
 
     binder_->Bind("MaxDrawDistance", &maxDrawDistance_, 300.0f, 5.0f, 50.0f, 2000.0f);
 
-    // ==========================================
-    // テクスチャの BindTexture 設定
-    // ==========================================
-    auto OnTextureChanged = [this]() {
+    auto OnTextureChanged = [this]() 
+        {
         // テクスチャが変更されたら GPU 側の TreeMaterialHandle を更新
         if (treeMaterialHandle_.leafMaterialBuffer) {
             treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
@@ -109,20 +110,16 @@ void TreeField::Initialize()
         }
         };
 
-    // 1. 風ノイズ (Noise)
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() {
         treeSystem_->SetWindMapTexture(windMapName_);
         });
 
-    // 2. 葉 (Leaf)
     binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, FE::TextureType::Albedo, OnTextureChanged);
     binder_->BindTexture("LeafNormal", &leafNormalName_, &leafNormalHandle_, leafNormalName_, FE::TextureType::Normal, OnTextureChanged);
 
-    // 3. 幹 (Trunk)
     binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, FE::TextureType::Albedo, OnTextureChanged);
     binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, FE::TextureType::Normal, OnTextureChanged);
 
-    // 4. 共通 (Env / Toon)
     binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, FE::TextureType::Toon, OnTextureChanged);
 
     // 初期化値の記憶
@@ -171,7 +168,7 @@ void TreeField::Update()
     // 毎フレーム UIなどの変更を定数バッファに流し込む
     UpdateMaterials();
 
-    // TreeSystem の Update（Submit処理）を実行
+    // TreeSystem の Update を実行
     treeSystem_->Update();
 }
 
@@ -244,7 +241,7 @@ void TreeField::GenerateTrees()
     if (!modelData) return;
 
     // ========================================================
-    // ★ 共有マテリアルハンドルの生成（初回または更新時）
+    // 共有マテリアルハンドルの生成（初回または更新時）
     // ========================================================
     if (!treeMaterialHandle_.leafMaterialBuffer)
     {
@@ -255,7 +252,6 @@ void TreeField::GenerateTrees()
             leafNormalHandle_, trunkNormalHandle_
         );
 
-        // その他の拡張ハンドルを設定
         treeMaterialHandle_.toonRampHandle = toonRampHandle_;
     }
 
@@ -287,7 +283,7 @@ void TreeField::GenerateTrees()
         colorVar.y += Math::RandomFloat(-colorRandomness_, colorRandomness_);
         colorVar.z += Math::RandomFloat(-colorRandomness_, colorRandomness_);
 
-        // TreeSystem に追加（古い std::vector<MaterialHandle> から treeMaterialHandle_ に変更！）
+        // TreeSystem に追加
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_, colorVar, 1.0f);
     }
 }
@@ -313,7 +309,7 @@ void TreeField::DebugDraw()
         binder_->Draw("ColorRandomness", "色のバリエーション幅");
 
         ImGui::Separator();
-        ImGui::Text("[ 環境ノイズ ]");
+        ImGui::Text("環境ノイズ");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
 
         if (ImGui::Button("強制再生成"))
@@ -324,7 +320,7 @@ void TreeField::DebugDraw()
 
     if (ImGui::CollapsingHeader("葉パラメータ"))
     {
-        ImGui::Text("[ テクスチャ ]");
+        ImGui::Text("テクスチャ");
         binder_->Draw("LeafTexture", "アルベド");
         binder_->Draw("LeafNormal", "ノーマルマップ");
 
@@ -333,7 +329,7 @@ void TreeField::DebugDraw()
         binder_->Draw("LeafAlbedoMult", "明るさ倍率");
 
         ImGui::Separator();
-        ImGui::Text("[ 風・揺れ ]");
+        ImGui::Text("風・揺れ");
         binder_->Draw("TreeHeight", "木の高さ (基準)");
         binder_->Draw("TreeRadius", "木の半径 (基準)");
         binder_->Draw("WindSpeedMult", "風の速さ(揺れ)倍率");
@@ -346,7 +342,7 @@ void TreeField::DebugDraw()
         binder_->Draw("LeafFlutterFreq", "葉の揺れ速度(周波数)");
 
         ImGui::Separator();
-        ImGui::Text("[ 質感・透過 ]");
+        ImGui::Text("質感・透過");
         binder_->Draw("BackfaceFlatten", "裏面法線の平坦化");
         binder_->Draw("DiffuseWrap", "ディフューズラップ");
         binder_->Draw("TransDistortion", "透過光の歪み");
@@ -359,7 +355,7 @@ void TreeField::DebugDraw()
         binder_->Draw("BaseThickness", "葉の厚み");
 
         ImGui::Separator();
-        ImGui::Text("[ 影 (Shadow) ]");
+        ImGui::Text("影");
         binder_->Draw("LeafShadowDensity", "影の濃さ");
         binder_->Draw("LeafShadowNormBias", "シャドウノーマルバイアス");
         binder_->Draw("LeafShadowBias", "シャドウ深度バイアス");
@@ -367,12 +363,12 @@ void TreeField::DebugDraw()
 
     if (ImGui::CollapsingHeader("幹パラメータ"))
     {
-        ImGui::Text("[ テクスチャ ]");
+        ImGui::Text("テクスチャ");
         binder_->Draw("TrunkTexture", "アルベド");
         binder_->Draw("TrunkNormal", "ノーマルマップ");
 
         ImGui::Separator();
-        ImGui::Text("[ 質感 ]");
+        ImGui::Text("質感");
         binder_->Draw("TrunkColor", "カラー");
         binder_->Draw("TrunkAlbedoMult", "明るさ倍率");
         binder_->Draw("TrunkSpecColor", "スペキュラカラー");
@@ -384,7 +380,7 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
 
         ImGui::Separator();
-        ImGui::Text("[ 影 ]");
+        ImGui::Text("影");
         binder_->Draw("TrunkShadowDens", "影の濃さ");
         binder_->Draw("TrunkShadowBias", "シャドウ深度バイアス");
         binder_->Draw("TrunkShadowNBias", "シャドウノーマルバイアス");
@@ -394,7 +390,7 @@ void TreeField::DebugDraw()
 
     if (ImGui::CollapsingHeader("環境・シェーディング共通"))
     {
-        ImGui::Text("[ グローバルテクスチャ ]");
+        ImGui::Text("グローバルテクスチャ");
         binder_->Draw("ToonRamp", "トゥーンランプ");
     }
 

@@ -15,7 +15,6 @@ void PebbleField::Initialize()
     auto* mat = pebbleSystem_->GetMaterialData();
     auto* cull = pebbleSystem_->GetCullingData();
 
-    // 1. 生成パラメータのバインド
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("MaxPebbles", &maxPebblesPerChunk_, 100000, 1000, 1000, 1000000);
     binder_->Bind("GridSpacing", &gridSpacing_, 1.0f, 0.01f, 0.1f, 10.0f);
@@ -27,7 +26,6 @@ void PebbleField::Initialize()
     binder_->Bind("TerrainWidth", &terrainWidth_, 1024.0f, 1.0f, 10.0f, 5000.0f);
     binder_->Bind("TerrainDepth", &terrainDepth_, 1024.0f, 1.0f, 10.0f, 5000.0f);
 
-    // 2. マテリアルのバインド
     binder_->BindColor("BaseColor", &mat->baseColor, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("Roughness", &mat->roughness, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("Metalness", &mat->metalness, 0.0f, 0.01f, 0.0f, 1.0f);
@@ -42,12 +40,11 @@ void PebbleField::Initialize()
     mat->shininess = 32.0f;
     mat->diffuseReflection = 1.0f;
 
-    // 3. カリングのバインド
     binder_->Bind("MaxDrawDistance", &cull->maxDrawDistance, 150.0f, 1.0f, 10.0f, 1000.0f);
     binder_->Bind("ThinStartDistance", &cull->thinStartDistance, 100.0f, 1.0f, 10.0f, 1000.0f);
     binder_->Bind("MaxThinningRate", &cull->maxThinningRate, 0.9f, 0.01f, 0.0f, 1.0f);
 
-    // 4. テクスチャリソースのバインド (変更時にコールバック発火)
+    // テクスチャリソースのバインド (変更時にコールバック)
     auto onResourceChanged = [this]() { ReloadResources(); };
     binder_->BindTexture("Skybox", &skyboxName_, &skyboxHandle_, "Skybox", TextureType::CubeMap, onResourceChanged);
     binder_->BindTexture("AlbedoMap", &albedoMapName_, &albedoMapHandle_, "white1x1", TextureType::Albedo, onResourceChanged);
@@ -73,8 +70,8 @@ void PebbleField::Update()
         gridSpacing_ != prevGridSpacing_ ||
         minScale_ != prevMinScale_ ||
         maxScale_ != prevMaxScale_ ||
-        minAnisoScale_ != prevMinAnisoScale_ || // ★ 追加
-        maxAnisoScale_ != prevMaxAnisoScale_ || // ★ 追加
+        minAnisoScale_ != prevMinAnisoScale_ || 
+        maxAnisoScale_ != prevMaxAnisoScale_ || 
         terrainWidth_ != prevTerrainWidth_ ||
         heightMapName_ != prevHeightMapName_ ||
         densityMapName_ != prevDensityMapName_)
@@ -87,18 +84,18 @@ void PebbleField::Update()
         prevGridSpacing_ = gridSpacing_;
         prevMinScale_ = minScale_;
         prevMaxScale_ = maxScale_;
-        prevMinAnisoScale_ = minAnisoScale_; // ★ 追加
-        prevMaxAnisoScale_ = maxAnisoScale_; // ★ 追加
+        prevMinAnisoScale_ = minAnisoScale_; 
+        prevMaxAnisoScale_ = maxAnisoScale_; 
         prevTerrainWidth_ = terrainWidth_;
         prevHeightMapName_ = heightMapName_;
         prevDensityMapName_ = densityMapName_;
     }
 
-    // 毎フレームのマテリアル・カリングデータを System -> Manager へ送信
+    // 毎フレームのマテリアル・カリングデータを送信
     pebbleSystem_->Update();
 }
 
-void PebbleField::Draw() {} // PebbleはRendererManagerが描画するので空でOK
+void PebbleField::Draw() {} 
 
 void PebbleField::DebugDraw()
 {
@@ -159,7 +156,7 @@ void PebbleField::ReloadResources()
     {
         const auto& meshPart = modelData->meshes[0];
 
-        // 1. メッシュを PebbleSystem にセット
+        // メッシュを PebbleSystem にセット
         pebbleSystem_->SetResources(
             skyboxName_,
             albedoMapName_,
@@ -167,7 +164,7 @@ void PebbleField::ReloadResources()
             meshPart
         );
 
-        // 2. ★ AABB から Bounds (Radius & Center Y Offset) を自動計算 ★
+        // AABB から Bounds を自動計算
         auto* cull = pebbleSystem_->GetCullingData();
 
         FE::Vector3 minPos = meshPart.localAABB.min;
@@ -176,11 +173,11 @@ void PebbleField::ReloadResources()
         // Y中心オフセット
         cull->modelCenterYOffset = (minPos.y + maxPos.y) * 0.5f;
 
-        // 半径 (AABB の対角線長の半分)
+        // 半径
         FE::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
         cull->modelRadius = std::sqrt(size.x * size.x + size.y * size.y + size.z * size.z) * 0.5f;
 
-        // 万が一モデルの AABB が小さすぎたり0だった場合の安全対策
+        // モデルの AABB が小さすぎたり0だった場合の安全対策
         if (cull->modelRadius < 0.01f)
         {
             cull->modelRadius = 1.0f;
@@ -196,9 +193,7 @@ void PebbleField::GeneratePebbles()
 {
     PebbleGenerationData genData{};
 
-    // =======================================================
-    // ★ 修正: Grassと全く同じロジックで必要なインスタンス数を計算する
-    // =======================================================
+    // 必要なインスタンス数を計算
     uint32_t gridX = static_cast<uint32_t>(std::ceil(terrainWidth_ / gridSpacing_));
     uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / gridSpacing_));
     uint32_t neededPebbleCount = gridX * gridZ;
@@ -211,7 +206,7 @@ void PebbleField::GeneratePebbles()
     genData.terrainCenter = { terrainCenter_.x, terrainCenter_.y };
     genData.terrainWidth = terrainWidth_;
     genData.terrainDepth = terrainDepth_;
-    genData.gridSpacing = gridSpacing_; // ★ C++側で設定した正しい間隔をそのまま渡す
+    genData.gridSpacing = gridSpacing_; 
 
     // スケール設定
     genData.minScale = minScale_;

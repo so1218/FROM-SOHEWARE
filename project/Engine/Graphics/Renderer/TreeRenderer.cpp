@@ -20,47 +20,40 @@ void TreeRenderer::Initialize(const RenderEnvironment& env)
     auto* device = device_->GetDevice();
     auto* srvManager = env.srvManager;
 
-    // 2. フレームリソースの確保
+    const uint32_t maxTotalInstances = kMaxInstances * kMaxPasses;
+    const uint32_t maxTotalBatches = kMaxBatches * kMaxPasses;
+
     for (int i = 0; i < kFrameCount; ++i)
     {
-        // ★修正: kMaxInstances * kMaxPasses にサイズを拡張
+        // CPUから毎フレーム全インスタンスのトランスフォームを流し込むためのUploadバッファ
         frameRes_[i].inputInstanceBuffer = BufferManager::CreateMappedBuffer<TreeInstanceData>(
-            device, kMaxInstances * kMaxPasses, &frameRes_[i].mappedInputInstanceData);
+            device, maxTotalInstances, &frameRes_[i].mappedInputInstanceData);
 
-        // ★追加: outputInstanceBuffer の生成処理 (欠落していた部分)
+        // ComputeShaderによるカリング結果を格納するUAV
         frameRes_[i].outputInstanceBuffer = BufferManager::CreateUAVBufferResource(
-            device, sizeof(TreeInstanceData) * kMaxInstances * kMaxPasses);
+            device, sizeof(TreeInstanceData) * maxTotalInstances);
 
-        // SRV生成 (outputInstanceBuffer を生成した後に実行)
         frameRes_[i].outputSrvIndex = srvManager->CreateStructuredBufferSRV(
-            frameRes_[i].outputInstanceBuffer.Get(), kMaxInstances * kMaxPasses, sizeof(TreeInstanceData));
+            frameRes_[i].outputInstanceBuffer.Get(), maxTotalInstances, sizeof(TreeInstanceData));
 
-        // 間接描画引数バッファ (UAV)
+        // GPU Driven Rendering用の間接引数バッファ
         frameRes_[i].indirectArgsBuffer = BufferManager::CreateUAVBufferResource(
-            device, sizeof(AlignedDrawIndexedArguments) * kMaxBatches * kMaxPasses);
+            device, sizeof(AlignedDrawIndexedArguments) * maxTotalBatches);
 
-        // ExecuteIndirect用引数のUploadバッファ (CPU書き込み用・フレームリソース内に作成)
         frameRes_[i].indirectArgsUploadBuffer = BufferManager::CreateMappedBuffer<AlignedDrawIndexedArguments>(
-            device, kMaxBatches * kMaxPasses, &frameRes_[i].mappedIndirectArgs);
+            device, maxTotalBatches, &frameRes_[i].mappedIndirectArgs);
 
-        // カリング用定数バッファ
-        UINT alignedCullingSize = (sizeof(TreeCullingData) + 255) & ~255;
-        UINT totalCullingBufferSize = alignedCullingSize * kMaxBatches * kMaxPasses;
-
-        // バッファサイズをバイト数で明示的に指定して生成する関数を使用する
         frameRes_[i].cullingDataBuffer = BufferManager::CreateMappedConstantBufferArray<TreeCullingData>(
-            device, kMaxBatches * kMaxPasses, &frameRes_[i].mappedCullingData);
+            device, maxTotalBatches, &frameRes_[i].mappedCullingData);
     }
 
-    // 3. Culling CS用ローカルヒープ
-    // ★1パスあたり (バッチ数 × 3)、それが kMaxPasses 回分必要になるため容量を拡張
+    // カリング用CSで消費するディスクリプタヒープを事前確保
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = kMaxBatches * 3 * kMaxPasses * kFrameCount;
+    heapDesc.NumDescriptors = maxTotalBatches * 3 * kFrameCount;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&cullingHeap_));
 
-    // 4. コマンドシグネチャの作成 (変更なし)
     D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
 
@@ -76,8 +69,10 @@ void TreeRenderer::BeginFrame()
     submissions_.clear();
     batches_.clear();
     currentInstanceLocation_ = 0;
-    currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
     currentPassIndex_ = 0;
+
+    // 非同期実行中のGPUが使用しているリソースを上書きしないようフレームをインクリメント
+    currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
 const std::vector<Mesh>& TreeRenderer::GetOrCreateBatch(const ModelData& modelData)
@@ -88,6 +83,7 @@ const std::vector<Mesh>& TreeRenderer::GetOrCreateBatch(const ModelData& modelDa
     ModelBatch batch;
     batch.meshes.resize(modelData.meshes.size());
 
+    // ジオメトリデータの初期化
     for (size_t i = 0; i < modelData.meshes.size(); ++i)
     {
         batch.meshes[i].Initialize(device_->GetDevice(), modelData.meshes[i].vertices, modelData.meshes[i].indices);
@@ -106,9 +102,9 @@ void TreeRenderer::Submit(
     const Vector4& colorVariation,
     float lodFade)
 {
-    // メッシュバッチの登録・キャッシュ
     GetOrCreateBatch(modelData);
 
+    // 再帰的にノード階層を走査し、ワールド行列を展開しつつリストとして抽出
     std::function<void(const Node&, const Matrix4x4&)> Traverse =
         [&](const Node& node, const Matrix4x4& parentMatrix)
         {
@@ -121,12 +117,12 @@ void TreeRenderer::Submit(
                 TreeSubmission sub{};
                 sub.modelData = &modelData;
                 sub.meshIndex = meshIndex;
-                sub.treeMaterial = treeMaterial; 
+                sub.treeMaterial = treeMaterial;
                 sub.worldMatrix = currentWorld;
                 sub.colorVariation = colorVariation;
                 sub.lodFade = lodFade;
 
-                // ★判定：メッシュIndex 0 を「幹」、1以降を「葉」として判定
+                // メッシュIndex 0 を幹、1以降を葉
                 sub.isLeaf = (meshIndex >= 1);
 
                 submissions_.push_back(sub);
@@ -146,51 +142,52 @@ void TreeRenderer::PrepareBatches()
     batches_.clear();
     if (submissions_.empty()) return;
 
-    // ソート条件の更新
+    // ステート切り替えコストを最小化するためのソート
+    // 優先度: PSO(幹/葉) -> モデル -> メッシュ -> マテリアル
     std::sort(submissions_.begin(), submissions_.end(),
         [](const TreeSubmission& a, const TreeSubmission& b) {
             if (a.isLeaf != b.isLeaf) return a.isLeaf < b.isLeaf;
             if (a.modelData != b.modelData) return a.modelData < b.modelData;
             if (a.meshIndex != b.meshIndex) return a.meshIndex < b.meshIndex;
+
             if (a.treeMaterial.leafMaterialBuffer.Get() != b.treeMaterial.leafMaterialBuffer.Get())
                 return a.treeMaterial.leafMaterialBuffer.Get() < b.treeMaterial.leafMaterialBuffer.Get();
-            if (a.treeMaterial.trunkMaterialBuffer.Get() != b.treeMaterial.trunkMaterialBuffer.Get())
-                return a.treeMaterial.trunkMaterialBuffer.Get() < b.treeMaterial.trunkMaterialBuffer.Get();
-            return false;
+
+            return a.treeMaterial.trunkMaterialBuffer.Get() < b.treeMaterial.trunkMaterialBuffer.Get();
         });
 
     uint32_t instanceCount = 0;
     currentInstanceLocation_ = 0;
-
     auto& curRes = frameRes_[currentFrameIndex_];
 
+    // ソート済みの Submission を走査し、ステートが切り替わる境界でバッチを区切る（Instancingの準備）
     for (size_t i = 0; i < submissions_.size(); ++i)
     {
         const auto& sub = submissions_[i];
 
-        // ★ 1パス分の最大インスタンス数を超えないように安全チェック
         if (currentInstanceLocation_ + instanceCount >= kMaxInstances) break;
 
+        // GPUに転送するための Upload バッファへ直接書き込む
         auto& instanceGPU = curRes.mappedInputInstanceData[currentInstanceLocation_ + instanceCount];
         instanceGPU.worldMatrix = sub.worldMatrix;
         instanceGPU.colorVariation = sub.colorVariation;
         instanceGPU.lodFade = sub.lodFade;
 
         instanceCount++;
+
         bool isLast = (i == submissions_.size() - 1);
         bool shouldFlush = isLast;
 
         if (!isLast)
         {
             const auto& nextSub = submissions_[i + 1];
-            if (sub.isLeaf != nextSub.isLeaf ||
+            shouldFlush = (
+                sub.isLeaf != nextSub.isLeaf ||
                 sub.modelData != nextSub.modelData ||
                 sub.meshIndex != nextSub.meshIndex ||
                 sub.treeMaterial.leafMaterialBuffer.Get() != nextSub.treeMaterial.leafMaterialBuffer.Get() ||
-                sub.treeMaterial.trunkMaterialBuffer.Get() != nextSub.treeMaterial.trunkMaterialBuffer.Get())
-            {
-                shouldFlush = true;
-            }
+                sub.treeMaterial.trunkMaterialBuffer.Get() != nextSub.treeMaterial.trunkMaterialBuffer.Get()
+                );
         }
 
         if (shouldFlush)
@@ -218,15 +215,16 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     auto* cmdList = env.commandManager->GetCommandList();
     auto& curRes = frameRes_[currentFrameIndex_];
 
+    // 同一フレーム内でシャドウパス等とUAV/SRVが競合しないよう、パス単位でバッファ領域を分割
     uint32_t passIndex = currentPassIndex_++;
     uint32_t instanceOffset = passIndex * kMaxInstances;
     uint32_t batchOffset = passIndex * kMaxBatches;
 
-    // 0. メインカメラの視錐台抽出
+    // GPUフラストゥムカリング用。カメラの視錐台6平面を抽出
     Frustum cameraFrustum;
     cameraFrustum.ExtractFromMatrix(viewProjectionMatrix_);
 
-    // 1. カリングフェーズの準備
+    // CBV要件である256バイトアライメントの計算
     UINT alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
     uint8_t* ptr = reinterpret_cast<uint8_t*>(curRes.mappedCullingData) + (batchOffset * alignedSize);
     AlignedDrawIndexedArguments* mappedArgs = curRes.mappedIndirectArgs + batchOffset;
@@ -239,6 +237,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         const Mesh* mesh = &meshes[batch.meshIndex];
 
         mappedArgs[i].args.IndexCountPerInstance = static_cast<UINT>(mesh->GetIndexCount());
+        // CS内でInterlockedAddを使って可視インスタンスを積むため、描画前に必ず0クリア
         mappedArgs[i].args.InstanceCount = 0;
         mappedArgs[i].args.StartIndexLocation = 0;
         mappedArgs[i].args.BaseVertexLocation = 0;
@@ -261,6 +260,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         *reinterpret_cast<TreeCullingData*>(ptr + i * alignedSize) = cullingData;
     }
 
+    // CPU側のUploadバッファから間接引数バッファへ初期値を転送
     D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         curRes.indirectArgsBuffer.Get(),
         D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
@@ -272,6 +272,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         curRes.indirectArgsUploadBuffer.Get(), batchOffset * sizeof(AlignedDrawIndexedArguments),
         sizeof(AlignedDrawIndexedArguments) * batches_.size());
 
+    // カリングCSの実行に向けて、引数バッファと出力バッファをUAVステートへ遷移
     D3D12_RESOURCE_BARRIER csBarriers[2] = {
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.indirectArgsBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.outputInstanceBuffer.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
@@ -279,7 +280,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     cmdList->ResourceBarrier(2, csBarriers);
 
     // ==========================================
-    // 2. カリングの実行 (Root SRV / Root UAV 使用)
+    // カリングの実行
     // ==========================================
     cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
@@ -290,21 +291,18 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     {
         const auto& batch = batches_[i];
 
-        // CBV: b1
+        // DescriptorHeapの動的アロケーションを避けるため、Root CBV / Root SRV / Root UAV で直接アドレスをバインド
         D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
         cmdList->SetComputeRootConstantBufferView(1, cbAddress);
 
-        // Root SRV: t0 (入力インスタンスバッファ)
         D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
             + (batch.startInstanceLocation * sizeof(TreeInstanceData));
         cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
 
-        // Root UAV: u0 (出力インスタンスバッファ)
         D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
             + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
         cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
 
-        // Root UAV: u1 (間接引数バッファ)
         D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
             + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
@@ -314,8 +312,9 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     }
 
     // ==========================================
-    // 3. 描画フェーズ (ExecuteIndirect)
+    // 描画
     // ==========================================
+    // CSの書き込み完了を待ち、PSから参照可能なSRVと間接引数用ステートへバリアを張る
     D3D12_RESOURCE_BARRIER drawBarriers[2] = {
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.outputInstanceBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.indirectArgsBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
@@ -336,6 +335,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
         offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
 
+        // 幹と葉でアルファテストや揺らぎの負荷が異なるため、最適なPSOへ切り替え
         if (batch.isLeaf)
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
@@ -382,10 +382,13 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
+        // CPU側でドローコールごとの可視インスタンス数を関知せず、直接GPUへ描画をキック
         UINT argsOffset = static_cast<UINT>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
     }
 }
+
+
 void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex, uint32_t windMapSrvIndex)
 {
     if (batches_.empty() || currentPassIndex_ >= kMaxPasses) return;
@@ -397,12 +400,11 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     uint32_t instanceOffset = passIndex * kMaxInstances;
     uint32_t batchOffset = passIndex * kMaxBatches;
 
-    // 0. ライトの視錐台抽出
+    // カスケードレベルに応じたライト視錐台を抽出し、シャドウ領域外の木を間引く
     const ShadowData* shadowData = env.lightManager->GetShadowData();
     Frustum lightFrustum;
     lightFrustum.ExtractFromMatrix(shadowData->cascadeLightViewProj[cascadeIndex]);
 
-    // 1. カリングフェーズの準備
     UINT alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
     uint8_t* cullingPtr = reinterpret_cast<uint8_t*>(curRes.mappedCullingData) + (batchOffset * alignedSize);
     AlignedDrawIndexedArguments* mappedArgs = curRes.mappedIndirectArgs + batchOffset;
@@ -451,7 +453,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     cmdList->ResourceBarrier(2, csBarriers);
 
     // ==========================================
-    // 2. カリング CS 実行 (Root SRV / Root UAV 使用)
+    // カリング CS 実行
     // ==========================================
     cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
@@ -465,17 +467,14 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
         cmdList->SetComputeRootConstantBufferView(1, cbAddress);
 
-        // Root SRV: 入力バッファ
         D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
             + (batch.startInstanceLocation * sizeof(TreeInstanceData));
         cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
 
-        // Root UAV: 出力インスタンスバッファ
         D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
             + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
         cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
 
-        // Root UAV: 間接描画引数バッファ
         D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
             + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
@@ -485,7 +484,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     }
 
     // ==========================================
-    // 3. 描画フェーズへのバリア
+    // 描画フェーズへのバリア
     // ==========================================
     D3D12_RESOURCE_BARRIER drawBarriers[2] = {
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.outputInstanceBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
@@ -498,7 +497,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // ==========================================
-    // 4. シャドウマップ描画
+    // シャドウマップ描画
     // ==========================================
     for (size_t i = 0; i < batches_.size(); ++i)
     {
@@ -510,6 +509,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
         offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
 
+        // シャドウパスはカラーやライティング計算が不要なため、専用の軽量なPSOへ切り替え
         if (batch.isLeaf)
         {
             cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
@@ -524,6 +524,8 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
 
             cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
             cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+
+            // 葉の影はアルファテストが必要なためテクスチャをバインド
             cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
         }
         else
