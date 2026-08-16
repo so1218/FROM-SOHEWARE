@@ -13,6 +13,10 @@ void FoliageField::Initialize()
     AddFoliageLayer("Flower_01", "flower_01");
     AddFoliageLayer("Foliage_01", "foliage_01");
 
+    for (size_t i = 0; i < layers_.size(); ++i) {
+        SetupBinderForLayer(i);
+    }
+
     // 1. 全体共通パラメータのバインド
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("TerrainWidth", &terrainWidth_, 1024.0f, 1.0f, 10.0f, 5000.0f);
@@ -89,7 +93,6 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
     layer.material.shadowDensity = 1.0f;
 
     layers_.push_back(layer);
-    SetupBinderForLayer(layers_.size() - 1);
 }
 
 void FoliageField::SetupBinderForLayer(size_t index)
@@ -125,6 +128,7 @@ void FoliageField::SetupBinderForLayer(size_t index)
     layer.material.shadowBias = 0.001f;
 
     // テクスチャ
+    binder_->BindColor(prefix + "BaseColor", &layer.material.baseColor, { 1.0f, 1.0f, 1.0f });
     binder_->BindTexture(prefix + "DensityMap", &layer.densityMapName, &layer.densityMapHandle, "white1x1", FE::TextureType::Noise, onGenChanged);
     binder_->BindTexture(prefix + "Albedo", &layer.albedoName, &layer.albedoHandle, "white1x1", FE::TextureType::Albedo, onResChanged);
     binder_->BindTexture(prefix + "Normal", &layer.normalName, &layer.normalHandle, "white1x1", FE::TextureType::Normal, onResChanged);
@@ -267,6 +271,8 @@ void FoliageField::DebugDraw()
             binder_->Draw(prefix + "Albedo", "アルベド");
             binder_->Draw(prefix + "Normal", "ノーマル");
             binder_->Draw(prefix + "DensityMap", "密度マップ (Density)"); 
+
+            binder_->Draw(prefix + "BaseColor", "基本色");
 
             binder_->Draw(prefix + "Roughness", "粗さ");
             binder_->Draw(prefix + "AlphaCutoff", "抜き透過 (Alpha Cutoff)");

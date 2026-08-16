@@ -707,17 +707,19 @@ struct FoliageInstanceData
 
 struct FoliageMaterialData
 {
+    float3 baseColor;
     float roughness;
+    
     float alphaCutoff;
     float sssStrength;
     float windResponse; 
-    
     float stiffness; 
+    
     float flutterSpeed; 
     float flutterScale; 
     float plantHeight;
-    
     float shadowDensity;
+    
     float shadowBias;
     float shadowNormalBias;
 };

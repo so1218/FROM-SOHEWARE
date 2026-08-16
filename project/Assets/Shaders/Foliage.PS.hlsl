@@ -54,7 +54,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     clip(albedoAlpha.a - 0.05f);
 
     // インスタンスごとの色ムラ（花畑の自然なばらつき）
-    albedoAlpha.rgb *= input.instanceTint;
+    albedoAlpha.rgb *= gMaterial.baseColor * input.instanceTint;
 
     // -------------------------------------------------------------------------
     // RDR2手法: 根元のグラデーションブレンド (Mud & Wetness)
@@ -64,11 +64,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     // ① 濡れによる吸光 (Porosity)
     albedoAlpha.rgb = lerp(albedoAlpha.rgb, albedoAlpha.rgb * 0.45f, gEnvironmentData.wetness);
-
-    // ② 泥ブレンド
-    float3 mudColor = albedoAlpha.rgb * float3(0.3f, 0.25f, 0.2f);
-    float mudIntensity = rootMask * (0.3f + gEnvironmentData.wetness * 0.7f);
-    albedoAlpha.rgb = lerp(albedoAlpha.rgb, mudColor, mudIntensity);
 
     // ③ ラフネス
     float currentRoughness = lerp(gMaterial.roughness, 0.1f, gEnvironmentData.wetness * (1.0f - rootMask));
@@ -113,7 +108,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
     
     float3 sssColor = albedoAlpha.rgb * 1.5f;
-    float3 transmission = sssColor * attenuatedLight * sssIntensity;
+    float3 transmission = (albedoAlpha.rgb * 1.5f) * attenuatedLight * sssIntensity;
 
     // -------------------------------------------------------------------------
     // GoT手法: Wind Gust Mask を用いた Direct Specular

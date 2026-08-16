@@ -84,7 +84,7 @@ VertexShaderOutput main(FoliageVSInput input)
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
     float3 worldPos = basePos + rotatedPos;
 
-    // ★ 引数から mat を削除（関数内でグローバルCBを参照）
+    // 引数から mat を削除（関数内でグローバルCBを参照）
     float3 windDisp = CalculateWindDisplacement(worldPos, windWeight, basePos);
     worldPos += windDisp;
 
