@@ -88,7 +88,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>/ignore:4049 /ignore:4048 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/ignore:4049 /ignore:4048 /ignore:4204 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(ProjectDir)externals\DirectXTex\lib\$(Configuration);$(ProjectDir)externals\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mtd.lib</AdditionalDependencies>
     </Link>
@@ -127,6 +127,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)externals\DirectXTex\lib\$(Configuration);$(ProjectDir)externals\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4049 /ignore:4048 /ignore:4204 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
@@ -166,6 +167,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalLibraryDirectories>$(ProjectDir)externals\DirectXTex\lib\$(Configuration);$(ProjectDir)externals\assimp\lib\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DirectXTex.lib;assimp-vc143-mt.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalOptions>/ignore:4049 /ignore:4048 /ignore:4204 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"

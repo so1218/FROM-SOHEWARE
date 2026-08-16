@@ -271,14 +271,14 @@ void FoliageField::DebugDraw()
         ImGui::PushID(static_cast<int>(i)); 
         if (ImGui::CollapsingHeader((layer.name + " の設定").c_str()))
         {
-            ImGui::Text("【 配置・スケール 】");
+            ImGui::Text("配置・スケール");
             binder_->Draw(prefix + "MaxInstances", "最大生成数");
             binder_->Draw(prefix + "GridSpacing", "配置間隔 (密度)");
             binder_->Draw(prefix + "MinScale", "最小スケール");
             binder_->Draw(prefix + "MaxScale", "最大スケール");
 
             ImGui::Separator();
-            ImGui::Text("【 テクスチャ・マテリアル 】");
+            ImGui::Text("テクスチャ・マテリアル");
             binder_->Draw(prefix + "Albedo", "アルベド");
             binder_->Draw(prefix + "Normal", "ノーマル");
             binder_->Draw(prefix + "DensityMap", "密度マップ (Density)"); 
@@ -290,7 +290,7 @@ void FoliageField::DebugDraw()
 
             binder_->Draw(prefix + "SSSStrength", "透過光 (SSS Strength)");
 
-            ImGui::Text("【 風の揺れ・シャドウ 】");
+            ImGui::Text("風の揺れ・シャドウ");
             binder_->Draw(prefix + "WindResponse", "風の影響度");
             binder_->Draw(prefix + "Stiffness", "硬さ (揺れにくさ)");
             binder_->Draw(prefix + "FlutterSpeed", "細かな揺れの速度");

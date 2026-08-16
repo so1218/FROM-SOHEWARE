@@ -265,7 +265,7 @@ void GrassField::GenerateGrass()
     uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / gridSpacing_));
     uint32_t neededGrassCount = gridX * gridZ;
 
-    // バッファの上限 (maxGrassPerChunk_) を超えないように制限
+    // バッファの上限を超えないように制限
     genData.maxGrassPerChunk = FE::Math::MyMin((int)neededGrassCount, maxGrassPerChunk_);
 
     // 配置のオフセット
