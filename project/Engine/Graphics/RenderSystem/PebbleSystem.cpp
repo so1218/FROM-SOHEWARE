@@ -25,7 +25,7 @@ void PebbleSystem::SetResources(
     pebbleMesh_.Initialize(device, pebbleMeshData.vertices, pebbleMeshData.indices);
     pebbleMesh_.SetVertexCount(static_cast<uint32_t>(pebbleMeshData.vertices.size()));
     pebbleMesh_.SetIndexCount(static_cast<uint32_t>(pebbleMeshData.indices.size()));
-    uint32_t indexCount = pebbleMesh_.GetIndexCount();
+    uint32_t indexCount = static_cast<uint32_t>(pebbleMesh_.GetIndexCount());
 }
 
 void PebbleSystem::Update()

@@ -157,7 +157,7 @@ void PebbleRenderer::Draw(
 
     // 1. 引数のセットアップ (Map/Unmapは不要になり、フレーム固有バッファに直書き)
     D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-    drawArgs.IndexCountPerInstance = pebbleMesh.GetIndexCount();
+    drawArgs.IndexCountPerInstance = static_cast<UINT>(pebbleMesh.GetIndexCount());
     drawArgs.InstanceCount = 0; // ★ CSで加算されるので必ず 0 初期化
     drawArgs.StartIndexLocation = 0;
     drawArgs.BaseVertexLocation = 0;

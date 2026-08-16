@@ -163,7 +163,7 @@ void FoliageField::GenerateFoliage()
     // Systemのポインタ経由で最新データを送る
     foliageSystem_->UpdateConfigs(layers_);
 
-    foliageSystem_->Generate(heightMapName_, terrainWidth_, terrainDepth_);
+    foliageSystem_->Generate(heightMapName_, static_cast<UINT>(terrainWidth_), static_cast<UINT>(terrainDepth_));
 }
 
 void FoliageField::Update()

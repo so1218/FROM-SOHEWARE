@@ -253,7 +253,7 @@ void FoliageRenderer::Draw(
 
         // ★修正: メッシュのインデックス数は res.config.mesh から取得
         D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-        drawArgs.IndexCountPerInstance = res.config.mesh->GetIndexCount();
+        drawArgs.IndexCountPerInstance = static_cast<UINT>(res.config.mesh->GetIndexCount());
         drawArgs.InstanceCount = 0;
         *res.mappedArgs[currentFrameIndex_] = drawArgs;
 
@@ -275,7 +275,7 @@ void FoliageRenderer::Draw(
 
         // ディスクリプタのバインド
         // ★修正: 1タイプ・1フレームあたりに使用するディスクリプタ数が [t0, u0, u1] の3個から、[t0, t1, u0, u1] の 4個 に増えます
-        UINT slotOffset = (currentFrameIndex_ * numTypes + typeIdx) * 4;
+        UINT slotOffset = static_cast<UINT>((currentFrameIndex_ * numTypes + typeIdx) * 4);
         D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
         destGPU.ptr += slotOffset * handleSize;
 
