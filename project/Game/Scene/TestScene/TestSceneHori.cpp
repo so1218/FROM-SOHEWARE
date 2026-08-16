@@ -51,7 +51,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.3f;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 9.0f / 255.0f,9.0f / 255.0f,9.0f / 255.0f };
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->maxDistance = 500.0f;
-    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.7f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.5f;
 
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().clear();
     

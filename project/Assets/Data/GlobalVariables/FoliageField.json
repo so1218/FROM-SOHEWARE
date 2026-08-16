@@ -42,6 +42,27 @@
         "Foliage_01_ShadowDensity": 1.0,
         "Foliage_01_Stiffness": 0.3799999952316284,
         "Foliage_01_WindResponse": 2.1600000858306885,
+        "Foliage_02_Albedo": "foliage_02_baseColor",
+        "Foliage_02_AlphaCutoff": 0.7799999713897705,
+        "Foliage_02_BaseColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Foliage_02_DensityMap": "noise_44",
+        "Foliage_02_FlutterScale": 0.10000000149011612,
+        "Foliage_02_FlutterSpeed": 2.0,
+        "Foliage_02_GridSpacing": 5.25,
+        "Foliage_02_MaxInstances": 50000,
+        "Foliage_02_MaxScale": 3.8299999237060547,
+        "Foliage_02_MinScale": 4.039999961853027,
+        "Foliage_02_Normal": "white1x1",
+        "Foliage_02_PlantHeight": 1.0,
+        "Foliage_02_Roughness": 0.800000011920929,
+        "Foliage_02_SSSStrength": 0.5,
+        "Foliage_02_ShadowDensity": 1.0,
+        "Foliage_02_Stiffness": 1.0,
+        "Foliage_02_WindResponse": 1.0,
         "HeightMap": "noise_39",
         "MaxDrawDistance": 400.0,
         "MaxThinningRate": 0.949999988079071,
@@ -52,6 +73,6 @@
         ],
         "TerrainDepth": 1024.0,
         "TerrainWidth": 1024.0,
-        "ThinStartDistance": 300.0
+        "ThinStartDistance": 250.0
     }
 }

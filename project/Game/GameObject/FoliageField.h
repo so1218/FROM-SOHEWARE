@@ -48,4 +48,8 @@ private:
     float prevTerrainWidth_ = 0.0f;
     float prevTerrainDepth_ = 0.0f;
     std::string prevHeightMapName_;
+
+    bool needRegenerate_ = false;
+    bool needReloadResources_ = false;
+    bool isInitialized_ = false; // 初期化が完了したかどうかのフラグ
 };

@@ -72,6 +72,9 @@ void FoliageField::Initialize()
 
     foliageSystem_->InitializeRenderer();
 
+    // 全ての準備が終わったらフラグをtrueにする
+    isInitialized_ = true;
+
     GenerateFoliage();
 }
 
@@ -101,8 +104,12 @@ void FoliageField::SetupBinderForLayer(size_t index)
     std::string prefix = layer.name + "_"; // "Grass_" などの接頭辞を作る
 
     // パラメータが変更されたら再生成・再ロードするコールバック
-    auto onGenChanged = [this]() { GenerateFoliage(); };
-    auto onResChanged = [this]() { ReloadResources(); };
+    auto onGenChanged = [this]() {
+        if (isInitialized_) needRegenerate_ = true;
+        };
+    auto onResChanged = [this]() {
+        if (isInitialized_) needReloadResources_ = true;
+        };
 
     // 生成パラメータ
     binder_->Bind(prefix + "MaxInstances", &layer.uiMaxInstances, 50000, 1000, 1000, 500000);
@@ -168,6 +175,20 @@ void FoliageField::GenerateFoliage()
 
 void FoliageField::Update()
 {
+    // リソースの再ロード要求があれば1回だけ実行
+    if (needReloadResources_)
+    {
+        ReloadResources();
+        needReloadResources_ = false;
+    }
+
+    // 地形・配置の再生成要求があれば1回だけ実行
+    if (needRegenerate_)
+    {
+        GenerateFoliage();
+        needRegenerate_ = false;
+    }
+
     bool needsGenerate = false;
 
     // パラメータ変更の監視
