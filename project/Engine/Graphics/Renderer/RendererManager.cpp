@@ -81,6 +81,7 @@ void RendererManager::Initialize(
 	treeRenderer_->Initialize(env_);
 	pebbleRenderer_ = std::make_unique<PebbleRenderer>();
 	pebbleRenderer_->Initialize(env_);
+	foliageRenderer_ = std::make_unique<FoliageRenderer>();
 	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
 	skydomeRenderer_->Initialize(env_);
 	terrainRenderer_ = std::make_unique<TerrainRenderer>();
@@ -112,6 +113,7 @@ void RendererManager::BeginFrame()
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 	if (treeRenderer_) { treeRenderer_->BeginFrame(); }
 	if (pebbleRenderer_) { pebbleRenderer_->BeginFrame(); }
+	if (foliageRenderer_) { foliageRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
@@ -308,6 +310,11 @@ void RendererManager::Draw3D()
 			pebbleCullingData_
 		);
 
+	}
+
+	if (foliageRenderer_)
+	{
+		foliageRenderer_->Draw(env_, shadowMap_, foliageCullingData_);
 	}
 
 	if (treeRenderer_)
@@ -544,6 +551,46 @@ void RendererManager::GeneratePebbles(
 			heightMapSrvHandle,
 			densityMapSrvHandle,
 			terrainSettingsAddr
+		);
+	}
+}
+
+void RendererManager::InitializeFoliage(const std::vector<FoliageTypeConfig>& configs)
+{
+	if (foliageRenderer_)
+	{
+		foliageRenderer_->Initialize(env_, configs);
+	}
+}
+
+void RendererManager::SetFoliageRenderingParams(const FoliageCullingData& cullingData)
+{
+	foliageCullingData_ = cullingData;
+}
+
+void RendererManager::UpdateFoliageConfigs(const std::vector<FoliageTypeConfig>& configs)
+{
+	if (foliageRenderer_)
+	{
+		foliageRenderer_->UpdateConfigs(configs);
+	}
+}
+
+void RendererManager::GenerateFoliage(
+	uint32_t heightMapSrvHandle,
+	UINT terrainWidth, UINT terrainDepth)
+{
+	// TerrainRendererから地形バッファのGPUアドレスを取得してFoliageRendererへ渡す
+	if (foliageRenderer_ && terrainRenderer_)
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddr =
+			terrainRenderer_->GetSettingsBuffer()->GetGPUVirtualAddress();
+
+		foliageRenderer_->GenerateFoliage(
+			env_,
+			heightMapSrvHandle,
+			terrainSettingsAddr,
+			terrainWidth, terrainDepth
 		);
 	}
 }

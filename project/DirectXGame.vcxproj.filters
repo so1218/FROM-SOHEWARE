@@ -921,6 +921,9 @@
     <ClCompile Include="Engine\Graphics\Renderer\PebbleRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\PebbleSystem.cpp" />
     <ClCompile Include="Game\GameObject\PebbleField.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\FoliageRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\FoliageSystem.cpp" />
+    <ClCompile Include="Game\GameObject\FoliageField.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -959,6 +962,9 @@
     <ClInclude Include="Engine\Graphics\Renderer\PebbleRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\PebbleSystem.h" />
     <ClInclude Include="Game\GameObject\PebbleField.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\FoliageRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\FoliageSystem.h" />
+    <ClInclude Include="Game\GameObject\FoliageField.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
@@ -997,6 +1003,10 @@
     <FxCompile Include="Assets\Shaders\Pebble.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\PebbleCulling.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\PebbleGeneration.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FoliageGeneration.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\FoliageCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

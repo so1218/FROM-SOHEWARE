@@ -2,14 +2,14 @@
     "PebbleField": {
         "AlbedoMap": "1_rock_baseColor",
         "BaseColor": [
-            0.7679324746131897,
-            0.7599344253540039,
-            0.13608932495117188,
+            1.0,
+            0.9968487620353699,
+            0.7510548830032349,
             1.0
         ],
         "DensityMap": "noise_23",
-        "EnvMapIntensity": 0.18000000715255737,
-        "GridSpacing": 4.150000095367432,
+        "EnvMapIntensity": 0.23000000417232513,
+        "GridSpacing": 3.4700000286102295,
         "HeightMap": "noise_39",
         "MaxAnisoScale": [
             2.3499999046325684,
@@ -26,7 +26,7 @@
             0.7799999713897705,
             0.41999998688697815
         ],
-        "MinScale": 0.10999999940395355,
+        "MinScale": 0.15000000596046448,
         "NormalIntensity": 2.609999895095825,
         "NormalMap": "1_rock_normal",
         "Position": [

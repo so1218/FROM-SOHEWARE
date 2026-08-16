@@ -224,6 +224,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostProcess\SSRPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\FoliageRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\GrassRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LineRenderer.cpp" />
@@ -236,6 +237,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\TerrainRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\FoliageSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Line.cpp" />
@@ -262,6 +264,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
+    <ClCompile Include="Game\GameObject\FoliageField.cpp" />
     <ClCompile Include="Game\GameObject\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
@@ -423,6 +426,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostProcess\SSRPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\FoliageRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\GrassRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LineRenderer.h" />
@@ -436,6 +440,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\TerrainRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\FoliageSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Line.h" />
@@ -458,6 +463,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
     <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
+    <ClInclude Include="Game\GameObject\FoliageField.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\ProjectConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />
@@ -554,6 +560,44 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\FoliageCulling.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\FoliageGeneration.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Assets\Shaders\Pebble.PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

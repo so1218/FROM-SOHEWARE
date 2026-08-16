@@ -639,8 +639,8 @@ struct PebbleInstanceData
 {
     float4 posAndScale; // xyz: ワールド座標, w: スケール
     float4 rotationQuat; // x, y, z, w: 姿勢(クォータニオン)
-    float4 anisoAndEmbed; // 16バイト (x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0)
-    float3 colorVariation; // 12バイト (RGB 色ムラ)
+    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0
+    float3 colorVariation; // RGB 色ムラ
     float padding;
 };
 
@@ -694,6 +694,55 @@ struct PebbleCullingData
     
     float modelCenterYOffset; 
     uint32_t totalInstanceCount;
+    float2 padding;
+};
+
+struct FoliageInstanceData
+{
+    float4 posAndScale;
+    float4 rotationQuat;
+    float3 colorVariation;
+    uint32_t padding;
+};
+
+struct FoliageMaterialData
+{
+    float roughness;
+    float alphaCutoff;
+    float sssStrength;
+    float windResponse; 
+    
+    float stiffness; 
+    float flutterSpeed; 
+    float flutterScale; 
+    float plantHeight;
+    
+    float shadowDensity;
+    float shadowBias;
+    float shadowNormalBias;
+};
+
+struct FoliageGenerationData
+{
+    float2 terrainCenter;
+    float terrainWidth;
+    float terrainDepth;
+    
+    uint32_t maxInstancesPerChunk;
+    float gridSpacing;
+    float minScale; 
+    float maxScale;
+};
+
+struct FoliageCullingData
+{
+    float maxDrawDistance; 
+    float thinStartDistance; 
+    float maxThinningRate;
+    float modelRadius;
+    
+    float modelCenterYOffset; 
+    uint32_t totalInstanceCount; 
     float2 padding;
 };
 

@@ -89,6 +89,46 @@ uint32_t SRVManager::CreateStructuredBufferUAV(ID3D12Resource* resource, uint32_
     return index;
 }
 
+uint32_t SRVManager::CreateAppendStructuredBufferUAV(ID3D12Resource* resource, ID3D12Resource* counterResource, uint32_t numElements, uint32_t stride)
+{
+    uint32_t index = allocator_->Allocate();
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Buffer.NumElements = numElements;
+    uavDesc.Buffer.StructureByteStride = stride;
+    uavDesc.Buffer.CounterOffsetInBytes = 0;
+    uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+    // 表と裏の両方に作成
+    device_->CreateUnorderedAccessView(resource, counterResource, &uavDesc, GetSRVHandleCPU_Visible(index));
+    device_->CreateUnorderedAccessView(resource, counterResource, &uavDesc, GetSRVHandleCPU_ForCopying(index));
+
+    return index;
+}
+
+uint32_t SRVManager::CreateRawBufferSRV(ID3D12Resource* resource, uint32_t sizeInBytes)
+{
+    uint32_t index = allocator_->Allocate();
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;         
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = sizeInBytes / 4;      
+    srvDesc.Buffer.StructureByteStride = 0;           
+    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;  
+
+    // 表と裏の両方に作成
+    device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_Visible(index));
+    device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_ForCopying(index));
+
+    return index;
+}
+
 // ExecuteIndirect用など、Rawバッファ専用のUAV作成
 uint32_t SRVManager::CreateRawBufferUAV(ID3D12Resource* resource, uint32_t sizeInBytes)
 {

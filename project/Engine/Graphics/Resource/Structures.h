@@ -187,4 +187,32 @@ struct LightningConfig
     float branchLengthScale = 0.6f; 
 };
 
+struct FoliageLayer
+{
+    std::string name; 
+
+    std::string modelName;
+    std::string albedoName = "white1x1";
+    uint32_t albedoHandle = 0;
+
+    std::string normalName = "white1x1";
+    uint32_t normalHandle = 0;
+
+    std::string densityMapName = "white1x1"; 
+    uint32_t densityMapHandle = 0;
+
+    FoliageMaterialData material{};
+    FoliageGenerationData genData{};
+
+    // ★ 追加: UIで設定した本来の「最大生成数」を保持する変数 (上書き防止用)
+    int uiMaxInstances = 50000;
+
+    // ★ 追加: 変更検知のための前回値キャッシュ
+    float prevGridSpacing = 0.0f;
+    float prevMinScale = 0.0f;
+    float prevMaxScale = 0.0f;
+    int prevMaxInstances = 0;
+
+};
+
 }

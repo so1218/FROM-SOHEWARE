@@ -19,6 +19,12 @@ public:
     // 構造化バッファ専用のUAV作成
     uint32_t CreateStructuredBufferUAV(ID3D12Resource* resource, uint32_t numElements, uint32_t stride);
 
+    // Append / Consumeバッファ用（カウンタ付き）UAV作成
+    uint32_t CreateAppendStructuredBufferUAV(ID3D12Resource* resource, ID3D12Resource* counterResource, uint32_t numElements, uint32_t stride);
+
+    // ExecuteIndirect用など、Rawバッファ専用のSRV作成
+    uint32_t CreateRawBufferSRV(ID3D12Resource* resource, uint32_t sizeInBytes);
+
     // ExecuteIndirect用など、Rawバッファ専用のUAV作成
     uint32_t CreateRawBufferUAV(ID3D12Resource* resource, uint32_t sizeInBytes);
 

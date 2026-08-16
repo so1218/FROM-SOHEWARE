@@ -9,6 +9,7 @@
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 #include "Terrain.h"
+#include "FoliageRenderer.h"
 
 namespace FE
 {
@@ -132,6 +133,16 @@ public:
         const PebbleMaterialData& materialData,
         const PebbleCullingData& cullingData);
 
+    // 初期化 (構成のリストを渡す)
+    void InitializeFoliage(const std::vector<FoliageTypeConfig>& configs);
+    // 毎フレームのカリング設定などを渡す
+    void SetFoliageRenderingParams(const FoliageCullingData& cullingData);
+    void UpdateFoliageConfigs(const std::vector<FoliageTypeConfig>& configs);
+    // 地形生成・配置
+    void GenerateFoliage(
+        uint32_t heightMapSrvHandle,
+        UINT terrainWidth, UINT terrainDepth);
+
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 
     // 雷を発生させる
@@ -173,6 +184,8 @@ private:
     PebbleMaterialData pebbleMaterialData_ = {};
     PebbleCullingData pebbleCullingData_ = {};
 
+    FoliageCullingData foliageCullingData_ = {};
+
     // カリング用のキャッシュ
     Frustum cameraFrustum_;
     std::vector<Frustum> shadowFrustums_;
@@ -188,6 +201,7 @@ private:
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<TreeRenderer> treeRenderer_;
     std::unique_ptr<PebbleRenderer> pebbleRenderer_;
+    std::unique_ptr<FoliageRenderer> foliageRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
     std::unique_ptr<LightningRenderer> lightningRenderer_;

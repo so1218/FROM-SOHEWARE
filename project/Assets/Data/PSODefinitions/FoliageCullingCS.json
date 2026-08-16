@@ -1,0 +1,4 @@
+{
+  "RootSignature": "FoliageCullingCS",
+  "ComputeShader": "Assets/Shaders/FoliageCulling.CS.hlsl"
+}
