@@ -15,31 +15,17 @@
 	"nodes":[
 		{
 			"mesh":0,
-			"name":"tall_bush_3_phong3_0",
-			"rotation":[
-				-0.7031583786010742,
-				0.07462111860513687,
-				0.07462115585803986,
-				0.7031583189964294
-			],
-			"translation":[
-				72.99671173095703,
-				0,
-				-59.649688720703125
-			]
+			"name":"tall_bush_3_phong3_0"
 		}
 	],
 	"materials":[
 		{
 			"alphaMode":"BLEND",
 			"doubleSided":true,
-			"name":"phong3",
-			"occlusionTexture":{
-				"index":0
-			},
+			"name":"phong3.001",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":1
+					"index":0
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -48,7 +34,7 @@
 	],
 	"meshes":[
 		{
-			"name":"tall_bush_3_phong3_0",
+			"name":"tall_bush_3_phong3_0.001",
 			"primitives":[
 				{
 					"attributes":{
@@ -68,18 +54,9 @@
 		{
 			"sampler":0,
 			"source":0
-		},
-		{
-			"sampler":0,
-			"source":1
 		}
 	],
 	"images":[
-		{
-			"mimeType":"image/png",
-			"name":"phong3_metallicRoughness",
-			"uri":"phong3_metallicRoughness.png"
-		},
 		{
 			"mimeType":"image/png",
 			"name":"foliage_02_baseColor",
@@ -92,14 +69,14 @@
 			"componentType":5126,
 			"count":231,
 			"max":[
-				-82.38818359375,
-				-41.14670944213867,
-				4.629181861877441
+				1.6171722412109375,
+				4.62917947769165,
+				1.3790512084960938
 			],
 			"min":[
-				-85.4840087890625,
-				-44.512298583984375,
-				-0.05788278579711914
+				-1.5323257446289062,
+				-0.05788449943065643,
+				-1.8088455200195312
 			],
 			"type":"VEC3"
 		},

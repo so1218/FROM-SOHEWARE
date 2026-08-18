@@ -86,7 +86,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ---------------------------------------------------------
     // Wave Intrinsics による Append 競合緩和
     // ---------------------------------------------------------
-    // レーン単位ではなく、Wave(レーン群)全体でまとめてアトミック加算してバスボトルネックを回避
+    // レーン単位ではなく、Wave 全体でまとめてアトミック加算してバスボトルネックを回避
     uint waveCount = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
 

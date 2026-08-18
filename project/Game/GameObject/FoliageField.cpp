@@ -12,6 +12,7 @@ void FoliageField::Initialize()
 {
     AddFoliageLayer("Flower_01", "flower_01");
     AddFoliageLayer("Foliage_01", "foliage_01");
+    AddFoliageLayer("Foliage_02", "foliage_02");
 
     for (size_t i = 0; i < layers_.size(); ++i) {
         SetupBinderForLayer(i);
