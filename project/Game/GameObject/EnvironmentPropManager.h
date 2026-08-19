@@ -34,7 +34,7 @@ private:
     std::string managerGroupName_;
     std::unordered_map<std::string, PropGroup> groups_;
 
-    // 新しいグループ（Prefab）を作る関数
+    // 新しい Prefab を作る関数
     void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);
 
     // モデル差し替えの遅延実行用

@@ -104,7 +104,7 @@ void WeatherEffectManager::Update()
     fog->windDirection = targetP.windDirection;
     // === パーティクルと雷の制御（ON/OFFやタイマー） ===
 
-    // 1. 各天候の「パーティクルの強さ (0.0 ～ 1.0)」を計算
+    // 各天候の「パーティクルの強さ (0.0 ～ 1.0)」を計算
     auto CalculateIntensity = [&](WeatherState checkState) -> float {
         bool isTarget = (target == checkState);
         bool isCurrent = (current == checkState);
@@ -119,7 +119,7 @@ void WeatherEffectManager::Update()
     float thunderRainIntensity = CalculateIntensity(WeatherState::Thunderstorm);
     float snowIntensity = CalculateIntensity(WeatherState::Snow);
 
-    // 2. 雨パーティクルの制御
+    // 雨パーティクルの制御
     if (rainIntensity > 0.0f) {
         rainParticleEmitterPtr_->Play();
         rainParticleEmitterPtr_->SetEmissionRateMultiplier(rainIntensity);
@@ -128,7 +128,7 @@ void WeatherEffectManager::Update()
         rainParticleEmitterPtr_->Stop();
     }
 
-    // 3. 雷雨パーティクルの制御
+    // 雷雨パーティクルの制御
     if (thunderRainIntensity > 0.0f) {
         thunderRainParticleEmitterPtr_->Play();
         thunderRainParticleEmitterPtr_->SetEmissionRateMultiplier(thunderRainIntensity);
@@ -137,7 +137,7 @@ void WeatherEffectManager::Update()
         thunderRainParticleEmitterPtr_->Stop();
     }
 
-    // 4. 雪パーティクルの制御
+    // 雪パーティクルの制御
     if (snowIntensity > 0.0f) {
         snowParticleEmitterPtr_->Play();
         snowParticleEmitterPtr_->SetEmissionRateMultiplier(snowIntensity);
@@ -146,12 +146,12 @@ void WeatherEffectManager::Update()
         snowParticleEmitterPtr_->Stop();
     }
 
-    // 5. 落雷の制御
+    // 落雷の制御
     if (lightningSystem_) {
         lightningSystem_->Update();
     }
 
-    // 雷は「現在が雷雨」または「雷雨へ遷移中（t が0.5以上）」で発生させる
+    // 雷は現在が雷雨または雷雨へ遷移中（t が0.5以上）で発生
     if (current == WeatherState::Thunderstorm || (target == WeatherState::Thunderstorm && t > 0.5f))
     {
         thunderIntervalTimer_ -= deltaTime;
@@ -194,7 +194,7 @@ void WeatherEffectManager::DebugDraw()
 #ifdef IS_DEVELOPMENT
     ImGui::Begin("環境設定");
 
-    if (ImGui::CollapsingHeader("雷（Thunderstorm）発生設定", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("雷発生設定", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
