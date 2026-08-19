@@ -13,7 +13,7 @@ class Camera;
 class DebugDraw
 {
 public:
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_DRAW
     static void Initialize(RendererManager* rendererManager);
 
     // デバッグ用描画

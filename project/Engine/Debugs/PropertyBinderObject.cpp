@@ -48,7 +48,7 @@ void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 
 bool PropertyBinder::DrawModel(const std::string& groupName, const std::string& customLabel)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
@@ -123,7 +123,7 @@ void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationM
 
 void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std::string& customLabel)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
@@ -214,7 +214,7 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
 
 void PropertyBinder::DrawSprite(const std::string & groupName, const std::string & customLabel)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
@@ -335,7 +335,7 @@ void PropertyBinder::BindTexture(
             const TextureHandleData* currentMeta = texManager.GetMetaData(currentTextureName);
             bool isCurrentCubeMap = (currentMeta && currentMeta->type == TextureType::CubeMap);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
             // ラベル表示
             std::string displayLabel = label.empty() ? key : label;
             ImGui::Text("%s", displayLabel.c_str());
@@ -554,7 +554,7 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
 
 void PropertyBinder::DrawTerrain(const std::string& groupName, const std::string& customLabel)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
     auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
@@ -686,7 +686,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 template <typename ModelType>
 bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (!targetModel) return false;
 
     bool isChanged = false; // 変更検知用フラグ

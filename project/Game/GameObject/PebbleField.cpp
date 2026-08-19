@@ -99,7 +99,7 @@ void PebbleField::Draw() {}
 
 void PebbleField::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("小石プロシージャル");
 
     if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))

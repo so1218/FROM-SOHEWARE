@@ -42,7 +42,7 @@ void Bubble::Draw()
 
 void Bubble::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 	ImGui::Begin("バブル");
 
 	binder_->DrawModel("bubbleModel", "インスペクター");

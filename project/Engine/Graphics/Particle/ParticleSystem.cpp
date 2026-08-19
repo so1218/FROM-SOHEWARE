@@ -610,7 +610,7 @@ void ParticleSystem::Draw()
     // ブレンドを元に戻す
     engine_->SetBlendMode(BlendMode::kBlendModeNormal);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     // デバッグ用エディタ表示
     editor_->ShowEditor();
 #endif

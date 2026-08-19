@@ -15,7 +15,7 @@ namespace FE
         // セーブデータから値を読み込む
         *ptr = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -48,7 +48,7 @@ namespace FE
         int32_t loadedVal = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
         *ptr = static_cast<uint32_t>(loadedVal);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -104,7 +104,7 @@ namespace FE
         RegisterItem(key, defaultValue, ptr);
         *ptr = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         // 描画関数の登録
         items_[key] = [=](const std::string& nameOverride)
             {
@@ -131,7 +131,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -153,7 +153,7 @@ namespace FE
         int32_t val = GlobalVariables::GetInstance()->GetIntValue(groupPath_, key);
         *ptr = static_cast<uint32_t>(val);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             { 
             std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -178,7 +178,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetFloatValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -199,7 +199,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetFloatValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -228,7 +228,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetBoolValue(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -249,7 +249,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetVector2Value(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -288,7 +288,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetVector4Value(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -310,7 +310,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -332,7 +332,7 @@ namespace FE
         // 保存されているデータを反映
         *ptr = GlobalVariables::GetInstance()->GetVector4Value(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         items_[key] = [=](const std::string& nameOverride)
             {
                 std::string label = (nameOverride.empty() ? key : nameOverride) + "###" + key;
@@ -359,7 +359,7 @@ namespace FE
         Vector4 savedVec = gv->GetVector4Value(groupPath_, key);
         *ptr = Math::ColorVectorToUint32(savedVec);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         // 描画処理の登録
         items_[key] = [=](const std::string& nameOverride)
             {
@@ -400,7 +400,7 @@ namespace FE
         // 保存データを反映
         *ptr = GlobalVariables::GetInstance()->GetVector3Value(groupPath_, key);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
         // ラムダ式内でonChangeをキャプチャ
         items_[key] = [=](const std::string& nameOverride)
             {

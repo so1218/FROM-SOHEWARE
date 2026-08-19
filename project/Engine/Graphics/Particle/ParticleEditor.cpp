@@ -18,7 +18,7 @@ ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)
 
 void ParticleEditor::ShowEditor()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (ImGui::Begin("パーティクルエディター"))
     {
         // プリセット名リスト生成

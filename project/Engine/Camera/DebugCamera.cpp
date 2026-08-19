@@ -24,7 +24,7 @@ void DebugCamera::Initialize()
     rotateSpeed_ = 0.001f;
     zoomSpeed_ = 0.03f;
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_CAMERA
     isEnabled_ = true;
 #else
     isEnabled_ = false;
@@ -39,7 +39,7 @@ void DebugCamera::Update()
     if (!isEnabled_) return;
 
     bool canInput = true;
-#ifdef IS_DEVELOPMENT
+#if ENABLE_IMGUI && ENABLE_DEBUG_CAMERA
     // マウスがScene Viewの上にないなら操作しない
     // Gizmoをドラッグ中ならカメラ操作はしない
     if (!ImGuiManager::IsSceneHovered() || ImGuizmo::IsUsing())

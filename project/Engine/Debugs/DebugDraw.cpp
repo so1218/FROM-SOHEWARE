@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DebugDraw.h"
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_DRAW
 
 #include "RendererManager.h"
 #include "Camera.h"

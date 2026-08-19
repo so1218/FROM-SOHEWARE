@@ -19,7 +19,7 @@ Grid::Grid(Engine* engine)
 
 void Grid::Draw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 
     model_->Draw();
 

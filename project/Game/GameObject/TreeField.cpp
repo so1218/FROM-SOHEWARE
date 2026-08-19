@@ -290,7 +290,7 @@ void TreeField::GenerateTrees()
 
 void TreeField::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("森林");
 
     if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))

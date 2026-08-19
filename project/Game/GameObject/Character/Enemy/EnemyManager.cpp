@@ -65,7 +65,7 @@ void EnemyManager::AddEnemy()
 
 void EnemyManager::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("敵マネージャー");
     binder_->Draw("EnemyCount", "敵の数");
 

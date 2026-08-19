@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Window.h"
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
@@ -11,7 +11,7 @@ namespace FE
 // ウィンドウプロシージャ
 LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
     {
         return true;

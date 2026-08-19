@@ -43,7 +43,7 @@ public:
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
 
     // 外部から情報を取る用
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     static bool IsSceneHovered() { return isSceneHovered_; }
     static Vector2 GetSceneViewportMin() { return sceneRectMin_; }
     static Vector2 GetSceneViewportSize() { return sceneRectSize_; }
@@ -53,7 +53,7 @@ public:
     static bool resetSceneSize_;
 
 private:
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     // 操作モードを保持する変数
     static int gizmoOperation_;
 

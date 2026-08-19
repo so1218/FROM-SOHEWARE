@@ -204,7 +204,7 @@ void EnvironmentPropManager::ExecutePrefabModelChange()
 
 void EnvironmentPropManager::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("環境オブジェクトマネージャー");
 
     int deleteRequestID = -1; // 削除予約用

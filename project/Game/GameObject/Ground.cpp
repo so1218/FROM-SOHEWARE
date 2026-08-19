@@ -53,7 +53,7 @@ void Ground::Draw()
 
 void Ground::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 	ImGui::Begin("地面");
 	binder_->DrawTerrain("Terrain", "地形エディタ");
 	binder_->DrawModel("ModelBuilding", "建物インスペクター");

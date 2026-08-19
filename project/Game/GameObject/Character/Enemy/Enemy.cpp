@@ -134,7 +134,7 @@ void Enemy::Draw()
 
 void Enemy::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::PushID(id_);
     std::string headerName = "敵" + std::to_string(id_) + " の設定";
 

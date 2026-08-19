@@ -88,7 +88,7 @@
 #include <assimp/postprocess.h>
 
 // デバッグビルド時のみ
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_internal.h"
 #include "externals/imgui/imgui_impl_dx12.h"

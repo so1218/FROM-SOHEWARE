@@ -27,7 +27,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
         L"-Zpr", // row-major
     };
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEV_TOOLS
     arguments.push_back(L"-Zi");          // デバッグ情報
     arguments.push_back(L"-Qembed_debug");
     arguments.push_back(L"-Od");          // 最適化無効
@@ -94,7 +94,7 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* 
 
     Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEV_TOOLS
     // 開発モード .hlsl の更新を監視してコンパイル
     bool shouldCompile = true;
     if (fs::exists(cachePath) && fs::exists(filePath))

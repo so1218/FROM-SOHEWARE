@@ -120,7 +120,10 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     renderCoordinator_->BeginFrame();
     postEffectManager_->BeginFinalComposite(cmdList);
     rendererManager->DrawFullScreenQuadWithOffscreenTexture();
-#ifdef IS_DEVELOPMENT
+
+#ifdef ENABLE_IMGUI
+    // ImGui有効時ゲーム画面はエディタ内の1ウィンドウとして描画されるため、
+    // オフスクリーンテクスチャ合成時でゲーム内UIを乗せる
     rendererManager->DrawUI();
 #endif
     postEffectManager_->EndFinalComposite(cmdList);
@@ -129,19 +132,23 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     D3D12_CPU_DESCRIPTOR_HANDLE backBufferRTV = engine->GetRTVManager()->GetCurrentBackBufferRTVCPUHandle(engine->GetSwapChain());
     cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
+    // ImGuiのSceneViewウィンドウの転送と、ImGui自体の描画終了処理
     engine->GetDebugGuiManager()->EndSceneView();
+
+    ID3D12DescriptorHeap* heaps[] = { engine->GetSRVManager()->GetSRVHeap() };
+    cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+    ImGuiManager::EndFrame(cmdList); 
+
 #else
+    // 製品版(リリース時)画面全体に描画結果を転送し、
+    // その上に直接ゲーム内UIを描画
     cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetViewport());
     cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetScissorRect());
     rendererManager->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
-    rendererManager->DrawUI();
-#endif
 
-    // UIとフレーム終了処理
-    ID3D12DescriptorHeap* heaps[] = { engine->GetSRVManager()->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-    ImGuiManager::EndFrame(cmdList);
+    rendererManager->DrawUI(); // 製品版のゲームUI
+#endif
 
     renderCoordinator_->EndFrame();
 }

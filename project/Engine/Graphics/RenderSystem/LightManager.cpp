@@ -394,7 +394,7 @@ void LightManager::UpdateCascadedShadows(
 
 void LightManager::DrawDebugLights()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_DRAW
     // Directional Lightの描画
     for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
     {
@@ -547,7 +547,7 @@ void LightManager::DrawDebugLights()
 
 void LightManager::DrawSelectedLightGizmo()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (selectedLightType_ == SelectedLightType::None || selectedLightIndex_ < 0) return;
 
     Matrix4x4 lightMat;

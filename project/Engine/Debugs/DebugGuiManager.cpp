@@ -27,7 +27,7 @@ void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, Mat
 
 void DebugGuiManager::Update(Camera* targetCamera)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     // メインのデバッグウィンドウ
     ImGui::Begin("全体のデバッグ情報・設定");
 
@@ -66,7 +66,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
 #endif
 }
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 void DebugGuiManager::DrawRenderSettings()
 {
     ImGui::Checkbox("ワイヤーフレーム描画", &engine_->GetRendererManager()->isWireFrame_);

@@ -243,7 +243,7 @@ void FoliageField::Draw() {}
 
 void FoliageField::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("植物プロシージャル");
 
     if (ImGui::CollapsingHeader("全体設定 (地形・カリング)", ImGuiTreeNodeFlags_DefaultOpen))

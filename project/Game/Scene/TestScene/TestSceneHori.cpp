@@ -124,7 +124,7 @@ void TestSceneHori::OnDraw()
 
 void TestSceneHori::OnDebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
  
 #endif
 }

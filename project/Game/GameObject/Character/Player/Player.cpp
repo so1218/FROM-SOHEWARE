@@ -234,7 +234,7 @@ void Player::Draw()
 
 void Player::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 	ImGui::Begin("プレイヤー");
 
 	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
@@ -265,7 +265,7 @@ void Player::DebugDraw()
 	ImGui::Separator();
 
 	ImGui::End();
+#endif
 
 	collider_->DrawCollider();
-#endif
 }

@@ -50,7 +50,7 @@ void TitleScene::OnDraw()
 
 void TitleScene::OnDebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("タイトルシーン");
 	binder_->DrawSprite("TitleSprite", "タイトルスプライトインスペクター");
     ImGui::End();

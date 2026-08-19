@@ -34,7 +34,7 @@ Game::Game()
     sceneManager_.RegisterScene(SceneID::TestHori, std::make_unique<TestSceneHori>(engine_.get()));
 
     // 初期シーンを設定
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEV_TOOLS
     sceneManager_.SetInitialScene(SceneID::TestHori);
 #else
     sceneManager_.SetInitialScene(SceneID::TestHori);
@@ -87,23 +87,17 @@ void Game::Run()
 
 void Game::Update()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_CAMERA
     // デバッグカメラの有効/無効切り替え
     if (Input::GetInstance().IsKeyTriggered(DIK_Y))
     {
         engine_->GetDebugCamera()->SetEnabled(!engine_->GetDebugCamera()->IsEnabled());
     }
+#endif
 
+#ifdef ENABLE_IMGUI
     // グローバル変数更新
     GlobalVariables::GetInstance()->Update();
-
-    // ゲーム一時停止切り替え
-    if (Input::GetInstance().IsKeyTriggered(DIK_P))
-    {
-        auto timeManager = TimeManager::GetInstance();
-        if (timeManager->IsPaused()) timeManager->Resume();
-        else timeManager->Pause();
-    }
 #endif
 
     // ゲームシーン更新
@@ -119,7 +113,7 @@ void Game::Update()
     // 現在のシーンからカメラを取得
     Camera* sceneCamera = sceneManager_.GetCurrentScene()->GetActiveCamera();
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_CAMERA
     if (engine_->GetDebugCamera()->IsEnabled())
     {
         engine_->GetDebugCamera()->Update();
@@ -137,14 +131,14 @@ void Game::Update()
         eyePos = sceneCamera->GetTranslation();
     }
 
-    engine_->GetDebugGuiManager()->Update(sceneCamera);
-
 #else
     // リリース時は常にシーンカメラ
     viewMat = sceneCamera->GetViewMatrix();
     projMat = sceneCamera->GetProjectionMatrix();
     eyePos = sceneCamera->GetTranslation();
 #endif
+
+    engine_->GetDebugGuiManager()->Update(sceneCamera);
 
     // 決定したカメラ情報をEngineに転送
     engine_->SetCameraState(
@@ -154,15 +148,18 @@ void Game::Update()
         sceneCamera->GetNearClip(), 
         sceneCamera->GetFarClip());
 
-#ifdef IS_DEVELOPMENT
+#if ENABLE_DEBUG_CAMERA && ENABLE_DEBUG_DRAW
+
     // ゲームカメラ視錐台を描画
     if (engine_->GetDebugCamera()->IsEnabled())
     {
         DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
     }
 
-    ImGuiManager::SetGizmoCamera(viewMat, projMat);
+#endif
 
+#ifdef ENABLE_IMGUI
+    ImGuiManager::SetGizmoCamera(viewMat, projMat);
 #endif
 }
 
@@ -173,7 +170,7 @@ void Game::Draw()
 
 void Game::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (ImGui::Begin("シーンの選択"))
     {
         if (ImGui::Button("タイトルシーン"))
@@ -190,9 +187,11 @@ void Game::DebugDraw()
         }
     }
     ImGui::End();
+#endif
 
     sceneManager_.DebugDraw();
 
+#ifdef ENABLE_DEBUG_DRAW
     engine_->GetLightManager()->DrawDebugLights();
 #endif
 }

@@ -283,7 +283,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
 void EnvironmentManager::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("時間帯・ライティングプロファイル", ImGuiTreeNodeFlags_DefaultOpen))

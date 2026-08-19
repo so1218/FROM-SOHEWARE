@@ -75,7 +75,7 @@ void OrbManager::AddOrb()
 
 void OrbManager::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("オーブマネージャー");
     binder_->Draw("OrbCount", "オーブの数");
     binder_->Draw("RainbowSpeed", "虹色の遷移スピード");

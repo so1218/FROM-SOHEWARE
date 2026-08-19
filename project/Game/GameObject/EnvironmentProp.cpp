@@ -259,7 +259,7 @@ void EnvironmentProp::Draw()
 
 void EnvironmentProp::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::PushID(id_);
 
     std::string label = "オブジェクト [" + std::to_string(id_) + "] の設定";

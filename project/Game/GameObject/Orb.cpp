@@ -92,7 +92,7 @@ void Orb::Draw()
 
 void Orb::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 
     ImGui::PushID(id_);
 

@@ -112,7 +112,7 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
 }
 
 // 便利な呼び出しマクロ
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEV_TOOLS
 
 #define LOG_DEBUG(...)   FE::Logger::Instance().Log(FE::LogLevel::Debug,   std::source_location::current(), __VA_ARGS__)
 #define LOG_INFO(...)    FE::Logger::Instance().Log(FE::LogLevel::Info,    std::source_location::current(), __VA_ARGS__)

@@ -132,9 +132,8 @@ void Engine::BeginFrame()
 	// ポストエフェクトのパラメータ更新など
 	GetPostEffectManager()->Update(viewMatrix_, projectionMatrix_, eyePos_);
 
-#ifdef IS_DEVELOPMENT
-	uint32_t finalSrvIndex = GetPostEffectManager()->GetFinalPassSRVIndex();
-	debugGuiManager_->BeginSceneView(srvManager_.get(), finalSrvIndex);
+#ifdef ENABLE_IMGUI
+	debugGuiManager_->BeginSceneView(srvManager_.get(), GetPostEffectManager()->GetFinalPassSRVIndex());
 #endif
 	rendererManager_->BeginFrame();
 }
@@ -365,7 +364,7 @@ void Engine::InitializeImGui()
 		srvHeap->GetGPUDescriptorHandleForHeapStart()
 	);
 
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_DEBUG_DRAW
 	DebugDraw::Initialize(rendererManager_.get());
 #endif
 }

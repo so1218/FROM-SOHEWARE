@@ -156,7 +156,7 @@ float CameraRail::GetTotalTime() const
 bool CameraRail::DebugDraw()
 {
     bool playRequested = false;
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("カメラレールエディタ");
     ImGui::Text("編集中のレール: %s", railName_.c_str());
 

@@ -50,7 +50,7 @@ void PlayScene::OnDraw()
 
 void PlayScene::OnDebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("プレイシーン");
 
     ImGui::End();

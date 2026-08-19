@@ -45,7 +45,7 @@ void SplineCameraController::Draw()
 
 void SplineCameraController::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     if (currentRail_)
     {
         // レール側のUIを表示し、もしPlay Railが押されたら

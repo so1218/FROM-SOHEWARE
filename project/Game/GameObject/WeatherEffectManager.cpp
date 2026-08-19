@@ -191,7 +191,7 @@ void WeatherEffectManager::Update()
 
 void WeatherEffectManager::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("雷発生設定", ImGuiTreeNodeFlags_DefaultOpen))

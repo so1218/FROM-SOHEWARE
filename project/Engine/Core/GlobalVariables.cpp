@@ -12,7 +12,7 @@ GlobalVariables* GlobalVariables::GetInstance()
 
 void GlobalVariables::Update()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 	if (!ImGui::Begin("グローバル変数###GlobalVariables"))
 	{
 		ImGui::End();
@@ -55,7 +55,7 @@ void GlobalVariables::Update()
 
 void GlobalVariables::DrawGroupRecursive(const std::vector<std::string>& groupPath, Group& group)
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
 	// groupPathの末尾が現在のグループ名
 	const std::string& groupName = groupPath.back();
 

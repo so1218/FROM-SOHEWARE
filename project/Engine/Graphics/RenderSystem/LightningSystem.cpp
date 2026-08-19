@@ -160,7 +160,7 @@ void LightningSystem::TriggerSingleStrike(const Vector3& start, const Vector3& e
 
 void LightningSystem::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("雷エフェクト", ImGuiTreeNodeFlags_DefaultOpen))

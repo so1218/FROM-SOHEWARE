@@ -125,7 +125,7 @@ void FollowCamera::UpdateCamera(Camera* camera)
 
 void FollowCamera::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("追従カメラ");
 
     if (ImGui::CollapsingHeader("初期カメラ設定", ImGuiTreeNodeFlags_DefaultOpen))

@@ -124,7 +124,7 @@ void Fade::Draw()
 
 void Fade::DebugDraw()
 {
-#ifdef IS_DEVELOPMENT
+#ifdef ENABLE_IMGUI
     ImGui::Begin("フェード設定");
 
     if (ImGui::CollapsingHeader("基本設定", ImGuiTreeNodeFlags_DefaultOpen))
