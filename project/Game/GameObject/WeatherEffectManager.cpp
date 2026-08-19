@@ -56,25 +56,25 @@ void WeatherEffectManager::Update()
     const WeatherProfile& profile = env->GetCurrentWeatherProfile();
     float wetness = profile.wetness;
 
-    // === パラメータの取得とブレンド ===
+    // パラメータの取得とブレンド
     WeatherVisualParams currentP = GetWeatherVisualParams(current);
     WeatherVisualParams targetP = GetWeatherVisualParams(target);
 
     // Terrainのマテリアル設定適用
     auto* mat = terrain_->GetMaterialData();
-   /* mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
-    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);*/
-   /* mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);*/
+    mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
+    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);
+    mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);
     mat->rippleSize = FE::Math::Lerp(currentP.rippleSize, targetP.rippleSize, t);
-    //mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
-    //mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
+    mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
+    mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
 
-    //mat->color = {
-    //    FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
-    //    FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
-    //    FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
-    //    1.0f
-    //};
+    mat->color = {
+        FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
+        FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
+        FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
+        1.0f
+    };
 
     // bool値や固定値の設定
     mat->enableRipple = (wetness > 0.1f);
@@ -102,9 +102,9 @@ void WeatherEffectManager::Update()
     };
 
     fog->windDirection = targetP.windDirection;
-    // === パーティクルと雷の制御（ON/OFFやタイマー） ===
+    // パーティクルと雷の制御
 
-    // 各天候の「パーティクルの強さ (0.0 ～ 1.0)」を計算
+    // 各天候のパーティクルの強さを計算
     auto CalculateIntensity = [&](WeatherState checkState) -> float {
         bool isTarget = (target == checkState);
         bool isCurrent = (current == checkState);
@@ -162,7 +162,7 @@ void WeatherEffectManager::Update()
             // プレイヤーの位置を中心にランダムな発生座標を計算
             Vector3 playerPos = player_->GetTransform().translation_;
 
-            // 角度(0～360度)と距離(Min～Max)をランダムに決定
+            // 角度と距離をランダムに決定
             std::uniform_real_distribution<float> distAngle(0.0f, 3.14159265f * 2.0f);
             std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
 
@@ -175,7 +175,7 @@ void WeatherEffectManager::Update()
             // 地面の高さを取得
             float groundY = terrain_->GetHeight(targetX, targetZ);
 
-            // 発生地点（上空）と、目標地点（地面）
+            // 発生地点と目標地点
             Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
             Vector3 endPos(targetX, groundY, targetZ);
 
@@ -199,7 +199,6 @@ void WeatherEffectManager::DebugDraw()
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
 
-        // 最小値が最大値を超えないように調整する安全柵
         if (thunderMinInterval_ > thunderMaxInterval_) {
             thunderMaxInterval_ = thunderMinInterval_;
         }
@@ -235,7 +234,7 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         // Terrain
         p.metalness = 0.9f;
         p.roughness = 0.25f;
-        p.environmentMapIntensity = 0.05f;
+        p.environmentMapIntensity = 0.01f;
         p.rippleSize = 1.2f;
         p.normalIntensity = 1.7f;
         p.color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
@@ -286,7 +285,7 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         p.emissiveIntensity = 3.5f;
         // Fog
         p.scatteringIntensity = 10.0f;
-        p.noiseScale = 0.03f; // 晴れでもスケールは維持しておくと遷移が綺麗
+        p.noiseScale = 0.03f; 
         p.noiseIntensity = 0.0f;
         p.heightDensity = 0.0f;
         p.heightFalloff = 0.0f;
