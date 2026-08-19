@@ -155,7 +155,7 @@ void Engine::EndFrame()
 		textureLoader_->RegisterPendingUpload(textureResource.intermediate, completedFenceValue);
 	}
 	textureLoader_->ClearNewUploads();
-	textureLoader_->CleanupCompletedUploads(fence_->GetCompletedValue()); // ※適宜Fence修正
+	textureLoader_->CleanupCompletedUploads(fence_->GetCompletedValue()); 
 }
 
 void Engine::InitializeSystem()
