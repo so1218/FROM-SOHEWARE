@@ -267,6 +267,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
     <ClCompile Include="Game\GameObject\FoliageField.cpp" />
+    <ClCompile Include="Game\GameObject\GameUI.cpp" />
     <ClCompile Include="Game\GameObject\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
@@ -466,6 +467,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
     <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
     <ClInclude Include="Game\GameObject\FoliageField.h" />
+    <ClInclude Include="Game\GameObject\GameUI.h" />
     <ClInclude Include="Game\GameObject\GrassField.h" />
     <ClInclude Include="Engine\Core\ProjectConfig.h" />
     <ClInclude Include="Game\GameObject\Grid.h" />

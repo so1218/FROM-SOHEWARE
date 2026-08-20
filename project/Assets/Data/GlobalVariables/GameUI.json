@@ -1,0 +1,380 @@
+{
+    "GameUI": {
+        "SpriteCameraSwitch_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteCameraSwitch_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteCameraSwitch_DisEnable": 0,
+        "SpriteCameraSwitch_DisTex": "white1x1",
+        "SpriteCameraSwitch_DisThres": 0.5,
+        "SpriteCameraSwitch_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteCameraSwitch_EdgeInten": 2.0,
+        "SpriteCameraSwitch_EdgeWidth": 0.05000000074505806,
+        "SpriteCameraSwitch_Layer": 0,
+        "SpriteCameraSwitch_Pos": [
+            20.0,
+            510.0
+        ],
+        "SpriteCameraSwitch_Rot": 0.0,
+        "SpriteCameraSwitch_Size": [
+            295.0,
+            20.0
+        ],
+        "SpriteCameraSwitch_Tex": "ui_cameraSwitch",
+        "SpriteCameraSwitch_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteCameraSwitch_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteCameraSwitch_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteCameraSwitch_Visible": true,
+        "SpriteDebugCameraMode_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraMode_Color": [
+            1.0,
+            1.0,
+            0.3921568691730499,
+            0.5882353186607361
+        ],
+        "SpriteDebugCameraMode_DisEnable": 0,
+        "SpriteDebugCameraMode_DisTex": "white1x1",
+        "SpriteDebugCameraMode_DisThres": 0.5,
+        "SpriteDebugCameraMode_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteDebugCameraMode_EdgeInten": 2.0,
+        "SpriteDebugCameraMode_EdgeWidth": 0.05000000074505806,
+        "SpriteDebugCameraMode_Layer": 0,
+        "SpriteDebugCameraMode_Pos": [
+            20.0,
+            600.0
+        ],
+        "SpriteDebugCameraMode_Rot": 0.0,
+        "SpriteDebugCameraMode_Size": [
+            122.0,
+            20.0
+        ],
+        "SpriteDebugCameraMode_Tex": "ui_debugCameraMode",
+        "SpriteDebugCameraMode_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraMode_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteDebugCameraMode_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraMode_Visible": true,
+        "SpriteDebugCameraRotate_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraRotate_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteDebugCameraRotate_DisEnable": 0,
+        "SpriteDebugCameraRotate_DisTex": "white1x1",
+        "SpriteDebugCameraRotate_DisThres": 0.5,
+        "SpriteDebugCameraRotate_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteDebugCameraRotate_EdgeInten": 2.0,
+        "SpriteDebugCameraRotate_EdgeWidth": 0.05000000074505806,
+        "SpriteDebugCameraRotate_Layer": 0,
+        "SpriteDebugCameraRotate_Pos": [
+            20.0,
+            660.0
+        ],
+        "SpriteDebugCameraRotate_Rot": 0.0,
+        "SpriteDebugCameraRotate_Size": [
+            329.0,
+            20.0
+        ],
+        "SpriteDebugCameraRotate_Tex": "ui_debugCameraRotate",
+        "SpriteDebugCameraRotate_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraRotate_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteDebugCameraRotate_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraRotate_Visible": true,
+        "SpriteDebugCameraTranslate_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraTranslate_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteDebugCameraTranslate_DisEnable": 0,
+        "SpriteDebugCameraTranslate_DisTex": "white1x1",
+        "SpriteDebugCameraTranslate_DisThres": 0.5,
+        "SpriteDebugCameraTranslate_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteDebugCameraTranslate_EdgeInten": 2.0,
+        "SpriteDebugCameraTranslate_EdgeWidth": 0.05000000074505806,
+        "SpriteDebugCameraTranslate_Layer": 0,
+        "SpriteDebugCameraTranslate_Pos": [
+            20.0,
+            630.0
+        ],
+        "SpriteDebugCameraTranslate_Rot": 0.0,
+        "SpriteDebugCameraTranslate_Size": [
+            405.0,
+            20.0
+        ],
+        "SpriteDebugCameraTranslate_Tex": "ui_debugCameraTranslate",
+        "SpriteDebugCameraTranslate_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraTranslate_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteDebugCameraTranslate_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraTranslate_Visible": true,
+        "SpriteDebugCameraZoom_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraZoom_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteDebugCameraZoom_DisEnable": 0,
+        "SpriteDebugCameraZoom_DisTex": "white1x1",
+        "SpriteDebugCameraZoom_DisThres": 0.5,
+        "SpriteDebugCameraZoom_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteDebugCameraZoom_EdgeInten": 2.0,
+        "SpriteDebugCameraZoom_EdgeWidth": 0.05000000074505806,
+        "SpriteDebugCameraZoom_Layer": 0,
+        "SpriteDebugCameraZoom_Pos": [
+            20.0,
+            690.0
+        ],
+        "SpriteDebugCameraZoom_Rot": 0.0,
+        "SpriteDebugCameraZoom_Size": [
+            223.0,
+            20.0
+        ],
+        "SpriteDebugCameraZoom_Tex": "ui_debugCameraZoom",
+        "SpriteDebugCameraZoom_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraZoom_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteDebugCameraZoom_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteDebugCameraZoom_Visible": true,
+        "SpriteMainCameraMode_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMode_Color": [
+            1.0,
+            1.0,
+            0.3921568691730499,
+            0.5882353186607361
+        ],
+        "SpriteMainCameraMode_DisEnable": 0,
+        "SpriteMainCameraMode_DisTex": "white1x1",
+        "SpriteMainCameraMode_DisThres": 0.5,
+        "SpriteMainCameraMode_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteMainCameraMode_EdgeInten": 2.0,
+        "SpriteMainCameraMode_EdgeWidth": 0.05000000074505806,
+        "SpriteMainCameraMode_Layer": 0,
+        "SpriteMainCameraMode_Pos": [
+            20.0,
+            540.0
+        ],
+        "SpriteMainCameraMode_Rot": 0.0,
+        "SpriteMainCameraMode_Size": [
+            98.0,
+            20.0
+        ],
+        "SpriteMainCameraMode_Tex": "ui_mainCameraMode",
+        "SpriteMainCameraMode_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMode_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteMainCameraMode_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMode_Visible": true,
+        "SpriteMainCameraMove_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMove_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteMainCameraMove_DisEnable": 0,
+        "SpriteMainCameraMove_DisTex": "white1x1",
+        "SpriteMainCameraMove_DisThres": 0.5,
+        "SpriteMainCameraMove_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteMainCameraMove_EdgeInten": 2.0,
+        "SpriteMainCameraMove_EdgeWidth": 0.05000000074505806,
+        "SpriteMainCameraMove_Layer": 0,
+        "SpriteMainCameraMove_Pos": [
+            20.0,
+            570.0
+        ],
+        "SpriteMainCameraMove_Rot": 0.0,
+        "SpriteMainCameraMove_Size": [
+            181.0,
+            20.0
+        ],
+        "SpriteMainCameraMove_Tex": "ui_mainCameraMove",
+        "SpriteMainCameraMove_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMove_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteMainCameraMove_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMainCameraMove_Visible": true,
+        "SpriteMove_Anchor": [
+            0.0,
+            0.0
+        ],
+        "SpriteMove_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.5882353186607361
+        ],
+        "SpriteMove_DisEnable": 0,
+        "SpriteMove_DisTex": "white1x1",
+        "SpriteMove_DisThres": 0.5,
+        "SpriteMove_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SpriteMove_EdgeInten": 2.0,
+        "SpriteMove_EdgeWidth": 0.05000000074505806,
+        "SpriteMove_Layer": 0,
+        "SpriteMove_Pos": [
+            20.0,
+            480.0
+        ],
+        "SpriteMove_Rot": 0.0,
+        "SpriteMove_Size": [
+            180.0,
+            20.0
+        ],
+        "SpriteMove_Tex": "ui_move",
+        "SpriteMove_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMove_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SpriteMove_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SpriteMove_Visible": true
+    }
+}

@@ -180,7 +180,7 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
             sprite->SetTexture(newName);
         },
         "white1x1",                     // デフォルト名
-        TextureType::Albedo             // フィルタ
+        TextureType::UI             // フィルタ
     );
 
     Bind(prefix + "Visible", sprite->GetIsVisiblePtr(), true);
