@@ -269,7 +269,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
     if (cbData_)
     {
-        cbData_->wetness = currentWeatherProfile_.wetness;
+       /* cbData_->wetness = currentWeatherProfile_.wetness;*/
         cbData_->rainIntensity = currentWeatherProfile_.rainIntensity;
         cbData_->windDirection = currentWeatherProfile_.windDirection;
         cbData_->windSpeed = currentWeatherProfile_.windSpeed;
