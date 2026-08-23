@@ -3,9 +3,13 @@
 Texture2D<float> gInputDepth : register(t0); // 読み込み元 (親Mip)
 RWTexture2D<float> gOutputDepth : register(u0); // 書き込み先 (子Mip)
 
+// Point + Clamp サンプラー (C++側で Static Sampler等で設定しておく)
+SamplerState gPointClampSampler : register(s0);
+
 cbuffer HiZSettings : register(b0)
 {
-    uint2 gInputSize;
+    // uint2 のサイズの代わりに、UV計算用の逆数 (1.0 / InputSize) を渡す
+    float2 gInvInputSize;
     uint2 gOutputSize;
 };
 
@@ -16,23 +20,17 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (any(DTid.xy >= gOutputSize))
         return;
 
-    // 親Mipにおける2x2ピクセルブロックの基準座標
-    uint2 baseCoord = DTid.xy * 2;
+    // 2x2ピクセルブロックの「中心座標」のUVを計算
+    // 例: DTid=(0,0) の場合、親の (1.0, 1.0) ピクセルの位置を指す
+    float2 uv = (DTid.xy * 2.0f + 1.0f) * gInvInputSize;
 
-    // 奇数解像度からのダウンサンプリング時に生じる境界外アクセスをクランプで防止
-    uint2 coord00 = min(baseCoord + uint2(0, 0), gInputSize - 1);
-    uint2 coord10 = min(baseCoord + uint2(1, 0), gInputSize - 1);
-    uint2 coord01 = min(baseCoord + uint2(0, 1), gInputSize - 1);
-    uint2 coord11 = min(baseCoord + uint2(1, 1), gInputSize - 1);
+    // GatherRed命令: 指定したUVの周囲2x2ピクセルの赤チャンネルを1命令で取得する
+    // (戻り値 float4 の x, y, z, w にそれぞれ左上、右上、左下、右下の値が入る)
+    // 境界のクランプは gPointClampSampler がハードウェアレベルで自動処理してくれる
+    float4 depths = gInputDepth.GatherRed(gPointClampSampler, uv);
 
-    float d00 = gInputDepth.Load(int3(coord00, 0));
-    float d10 = gInputDepth.Load(int3(coord10, 0));
-    float d01 = gInputDepth.Load(int3(coord01, 0));
-    float d11 = gInputDepth.Load(int3(coord11, 0));
-
-    // オクルージョンカリング用の深度構築
-    // オブジェクトが隠蔽されるか保守的に判定するため、2x2内で最も手前の深度を残す (Near:0.0, Far:1.0)
-    float minDepth = min(min(d00, d10), min(d01, d11));
+    // 2x2内で最も手前の深度を残す
+    float minDepth = min(min(depths.x, depths.y), min(depths.z, depths.w));
 
     gOutputDepth[DTid.xy] = minDepth;
 }

@@ -988,9 +988,6 @@
     <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\HiZ_Downsample.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\SSR_Raycast.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\SSR_Resolve.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\HiZ_Copy.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
@@ -1009,6 +1006,7 @@
     <FxCompile Include="Assets\Shaders\FoliageCulling.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\SSR.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

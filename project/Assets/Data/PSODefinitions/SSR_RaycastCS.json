@@ -1,4 +1,0 @@
-{
-  "RootSignature": "SSR_RaycastCS",
-  "ComputeShader": "Assets/Shaders/SSR_Raycast.CS.hlsl"
-}
