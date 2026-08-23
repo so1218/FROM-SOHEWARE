@@ -614,8 +614,8 @@
             "SpotAngle": 29.299999237060547,
             "SpotColor": [
                 1.0,
-                1.0,
-                1.0,
+                0.2362869381904602,
+                0.2362869381904602,
                 1.0
             ],
             "SpotDirection": [
@@ -623,9 +623,9 @@
                 -1.0,
                 0.0
             ],
-            "SpotDistance": 23.149999618530273,
-            "SpotIntensity": 10.619999885559082,
-            "SpotVolumetric": 4.0,
+            "SpotDistance": 35.369998931884766,
+            "SpotIntensity": 12.1899995803833,
+            "SpotVolumetric": 28.31999969482422,
             "enemyModel_AddShadow": 1,
             "enemyModel_AlbedoMap": "white1x1",
             "enemyModel_AlphaThres": 0.009999999776482582,

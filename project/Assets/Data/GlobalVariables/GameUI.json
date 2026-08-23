@@ -1,5 +1,6 @@
 {
     "GameUI": {
+        "IsVisible": true,
         "SpriteCameraSwitch_Anchor": [
             0.0,
             0.0
