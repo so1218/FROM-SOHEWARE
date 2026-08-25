@@ -1,0 +1,7 @@
+{
+    "WorldInteraction": {
+        "TrailDuration": 5.0,
+        "TrailFadeRate": 0.009999999776482582,
+        "WorldSize": 150.0
+    }
+}

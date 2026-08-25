@@ -29,6 +29,13 @@ class TerrainRenderer;
 class TerrainChunk;
 class LightningRenderer;
 
+// インタラクションデータ保持用の構造体
+struct WorldInteractionData {
+    uint32_t srvIndex = 0;
+    float worldSize = 40.0f;
+    Vector2 centerWorldPos = { 0.0f, 0.0f };
+};
+
 class RendererManager
 {
 public:
@@ -151,6 +158,35 @@ public:
 
     void SetLightningConfig(const LightningConfig& config);
 
+    // 地形ハイトマップSRVインデックスのゲッター
+    uint32_t GetTerrainHeightMapSRVIndex() const { return terrainHeightMapSrvIndex_; }
+
+    // ワールドインタラクションデータの設定
+    void SetWorldInteractionData(uint32_t srvIndex, float worldSize, const Vector2& centerPos) {
+        interactionData_.srvIndex = srvIndex;
+        interactionData_.worldSize = worldSize;
+        interactionData_.centerWorldPos = Vector2(centerPos.x, centerPos.y);
+    }
+    // インタラクション対象の登録
+    void SubmitInteractionEntity(const InteractionEntity& entity) {
+        if (interactionEntities_.size() < 64) { // kMaxEntities 上限チェック
+            interactionEntities_.push_back(entity);
+        }
+    }
+    // エンティティリストのゲッター (Scene等から集約したリストを返す)
+    const std::vector<InteractionEntity>& GetInteractionEntities() const { return interactionEntities_; }
+    void SetInteractionEntities(const std::vector<InteractionEntity>& entities) { interactionEntities_ = entities; }
+    // ワールドインタラクションパラメータの送信
+    void SubmitWorldInteractionParams(const InteractionConstants& constants) {
+        interactionConstants_ = constants;
+    }
+    // パス参照用ゲッター
+    const InteractionConstants& GetWorldInteractionConstants() const { return interactionConstants_; }
+    uint32_t GetWorldInteractionSRVIndex() const { return interactionData_.srvIndex; }
+    // ゲーム側から追従対象の座標を受け取る関数
+    void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
+    Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
+
 private:
     // Engineから受け取るポインタ
     GraphicsDevice* device_ = nullptr;
@@ -189,6 +225,12 @@ private:
     // カリング用のキャッシュ
     Frustum cameraFrustum_;
     std::vector<Frustum> shadowFrustums_;
+
+    WorldInteractionData interactionData_{};
+    uint32_t terrainHeightMapSrvIndex_ = 0;
+    std::vector<InteractionEntity> interactionEntities_;
+    InteractionConstants interactionConstants_{};
+    Vector2 interactionCenter_{ 0.0f, 0.0f }; // デフォルト値
 
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体

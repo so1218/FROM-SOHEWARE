@@ -925,6 +925,8 @@
     <ClCompile Include="Engine\Graphics\RenderSystem\FoliageSystem.cpp" />
     <ClCompile Include="Game\GameObject\FoliageField.cpp" />
     <ClCompile Include="Game\GameObject\GameUI.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\WorldInteractionPass.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -967,6 +969,8 @@
     <ClInclude Include="Engine\Graphics\RenderSystem\FoliageSystem.h" />
     <ClInclude Include="Game\GameObject\FoliageField.h" />
     <ClInclude Include="Game\GameObject\GameUI.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\WorldInteractionPass.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
@@ -1007,6 +1011,7 @@
     <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\SSR.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\WorldInteraction.CS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

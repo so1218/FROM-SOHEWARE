@@ -21,7 +21,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	skydome_ = std::make_unique<Skydome>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
-
+	interactionSystem_ = std::make_unique<WorldInteractionSystem>(engine_);
 }
 
 void Ground::Initialize()
@@ -32,6 +32,9 @@ void Ground::Initialize()
 	skydome_->Initialize();
 
 	EnvironmentManager::GetInstance()->Initialize(engine_);
+
+	interactionSystem_->Initialize();
+	interactionSystem_->SetTerrain(terrain_.get());
 };
 
 void Ground::Update()
@@ -39,6 +42,7 @@ void Ground::Update()
 	EnvironmentManager::GetInstance()->Update(engine_->GetLightManager());
 
 	skydome_->Update();
+	interactionSystem_->Update();
 };
 
 void Ground::Draw()
@@ -49,6 +53,7 @@ void Ground::Draw()
 
 	modelBuilding_->Draw();
 	skydome_->Draw();
+	interactionSystem_->Draw();
 };
 
 void Ground::DebugDraw()
@@ -63,4 +68,5 @@ void Ground::DebugDraw()
 
 	EnvironmentManager::GetInstance()->DebugDraw();
 	skydome_->DebugDraw();
+	interactionSystem_->DebugDraw();
 }

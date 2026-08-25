@@ -226,6 +226,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostProcess\SSRPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\WorldInteractionPass.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\FoliageRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\GrassRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
@@ -249,6 +250,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Terrain.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\TreeSystem.cpp" />
+    <ClCompile Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\GlobalConstants.cpp" />
     <ClCompile Include="Engine\Graphics\Resource\ShadowMap.cpp" />
     <ClCompile Include="externals\ImGuizmo\ImGuizmo.cpp">
@@ -429,6 +431,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostProcess\SSRPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\WorldInteractionPass.h" />
     <ClInclude Include="Engine\Graphics\Renderer\FoliageRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\GrassRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
@@ -453,6 +456,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Terrain.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\TreeSystem.h" />
+    <ClInclude Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.h" />
     <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
     <ClInclude Include="Engine\Math\Tween.h" />
@@ -930,6 +934,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Assets\Shaders\WorldInteraction.CS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>

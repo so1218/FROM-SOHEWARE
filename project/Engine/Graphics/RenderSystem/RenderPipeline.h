@@ -17,6 +17,7 @@ class SwapChain;
 class RenderContext;
 class DebugGuiManager;
 class FluidSimulationPass;
+class WorldInteractionPass;
 
 // カメラ情報をまとめる構造体
 struct RenderCameraState 
@@ -50,6 +51,10 @@ public:
     PostEffectManager* GetPostEffectManager() const { return postEffectManager_.get(); }
     RenderCoordinator* GetRenderCoordinator() const { return renderCoordinator_.get(); }
     FluidSimulationPass* GetFluidSimulationPass() const { return fluidSimulationPass_.get(); }
+    WorldInteractionPass* GetWorldInteractionPass() const { return worldInteractionPass_.get(); }
+
+    uint32_t GetWorldInteractionSRVIndex() const;
+    float GetWorldInteractionSize() const;
 
 private:
     // 描画手順に特化したマネージャー群
@@ -57,6 +62,7 @@ private:
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<FluidSimulationPass> fluidSimulationPass_;
+    std::unique_ptr<WorldInteractionPass> worldInteractionPass_;
 };
 
 }

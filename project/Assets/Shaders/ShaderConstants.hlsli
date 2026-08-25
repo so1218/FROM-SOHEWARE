@@ -482,6 +482,34 @@ struct SSRSettings
     float thickness;
 };
 
+struct InteractionEntity
+{
+    float3 position; // ワールド位置
+    float radius; // 影響半径
+    
+    float3 velocity; // 移動速度ベクトル
+    float maxVerticalDist; // 影響を及ぼす最大垂直距離
+    
+    uint32_t entityType; // 0: 人間, 1: 大型/車両, 2: 衝撃波/爆発
+    float forceMultiplier; // 力の倍率
+    float2 padding;
+};
+
+struct InteractionConstants
+{
+    uint32_t entityCount; // 有効なエンティティ数
+    float worldSize; // カバーするワールド範囲(m)
+    float2 centerWorldPos; // 今フレームのテクスチャ中心ワールドXZ
+    float2 prevCenterWorldPos; // 前フレームのテクスチャ中心ワールドXZ ★追加
+    
+    float2 terrainCenter; // ハイトマップ原点(ワールドXZ) ★追加
+    float2 terrainSize; // ハイトマップ全体のサイズ(m) ★追加
+    
+    float trailDuration; // 足跡の減衰速度
+    float terrainHeightScale; // ハイトマップの高さスケール
+    float2 padding;
+};
+
 struct GrassInstanceData
 {
     float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール

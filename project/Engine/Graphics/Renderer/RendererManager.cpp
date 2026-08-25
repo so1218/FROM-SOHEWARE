@@ -117,6 +117,8 @@ void RendererManager::BeginFrame()
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
+
+	interactionEntities_.clear(); // フレーム開始時にリストをクリア
 }
 
 void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& projection, const Vector3& cameraPosition)
@@ -608,6 +610,8 @@ void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const 
 	const MaterialHandle& material, const Vector4& instanceColor,
 	const Terrain::Parameters& params, uint32_t heightMapHandle)
 {
+	terrainHeightMapSrvIndex_ = heightMapHandle;
+
 	if (terrainRenderer_)
 	{
 		terrainRenderer_->Submit(worldTransform, chunk, uvTransform, material, instanceColor, params, heightMapHandle);

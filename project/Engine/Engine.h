@@ -94,6 +94,7 @@ public:
     PostEffectManager* GetPostEffectManager() const { return renderPipeline_->GetPostEffectManager(); }
     ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
     FluidSimulationPass* GetFluidSimulationPass() const { return renderPipeline_->GetFluidSimulationPass(); }
+    RenderPipeline* GetRenderPipeline() const { return renderPipeline_.get(); }
 
     static int32_t GetClientWidth() { return sClientWidth; }
     static int32_t GetClientHeight() { return sClientHeight; }

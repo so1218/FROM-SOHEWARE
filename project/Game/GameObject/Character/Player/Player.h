@@ -86,5 +86,11 @@ private:
 	float runAnimSpeed_ = 1.0f;        
 	float idleToRunBlendTime_ = 0.15f; 
 	float runToIdleBlendTime_ = 0.20f; 
+
+	// ワールドインタラクション調整用パラメータ
+	FE::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f }; // 速度計算用
+	float interactionRadius_ = 1.5f;        
+	float interactionForce_ = 1.0f;        
+	float maxVerticalDist_ = 2.0f;
 };
 
