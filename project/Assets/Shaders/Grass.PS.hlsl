@@ -102,7 +102,7 @@ PixelShaderOutput main(PixelInput input)
     // G-Buffer : 濡れ表現でRoughnessを下げる
     output.material = float4(0.0f, 0.8f - (gMaterial.wetness * 0.6f), 0.0f, 1.0f);
     
-    // Motion Vector (TAA / Motion Blur用)
+    // Motion Vector
     float2 ndcCurrent = input.currentClipPos.xy / input.currentClipPos.w;
     float2 ndcPrev = input.prevClipPos.xy / input.prevClipPos.w;
     output.velocity = (ndcCurrent - ndcPrev) * float2(0.5f, -0.5f);

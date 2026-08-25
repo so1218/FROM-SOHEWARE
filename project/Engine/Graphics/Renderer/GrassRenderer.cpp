@@ -137,6 +137,7 @@ void GrassRenderer::GenerateGrass(
 void GrassRenderer::Draw(
     const RenderEnvironment& env,
     uint32_t windMapTextureHandle,
+    uint32_t interactionMapTextureHandle,
     ShadowMap* shadowMap,
     const GrassMaterialData& materialData,
     const GrassCullingData& cullingData)
@@ -243,6 +244,8 @@ void GrassRenderer::Draw(
     {
         cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
     }
+
+    cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(interactionMapTextureHandle));
 
     cmdList->ExecuteIndirect(
         commandSignature_.Get(),

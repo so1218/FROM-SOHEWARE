@@ -186,6 +186,7 @@ public:
     // ゲーム側から追従対象の座標を受け取る関数
     void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
     Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
+    float GetWorldInteractionSize() const { return interactionData_.worldSize; }
 
 private:
     // Engineから受け取るポインタ

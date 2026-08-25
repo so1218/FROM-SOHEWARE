@@ -333,7 +333,7 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		// 内部で TRIANGLESTRIP に変更して描画
-		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_, grassCullingData_);
+		grassRenderer_->Draw(env_, grassTextureHandle_, interactionData_.srvIndex, shadowMap_, grassMaterialData_, grassCullingData_);
 
 		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

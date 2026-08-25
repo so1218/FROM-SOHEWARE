@@ -518,9 +518,6 @@ struct GrassInstanceData
 
 struct GrassMaterialData
 {
-    float3 playerPos; 
-    float interactStrength; 
-    
     float3 rootColor;
     float grassRootAO; 
     
@@ -530,21 +527,26 @@ struct GrassMaterialData
     float3 sssColor;
     float sssStrength;
     
+    float interactStrength;
+    float2 interactionCenterWorldPos;
+    float interactionWorldSize;
+    
+    float flattenFactor;
+    float trailFlattenWeight;
     float windSpeedMultiplier; 
     float windStrengthMultiplier;
+    
     float gustScale; 
     float gustStrength; 
-    
     float flutterAmount; 
     float windHighlightStrength; 
+    
     float specularStrength; 
     float specularShininess;
-    
     float wetness; 
-    float interactRadius; 
     float shadowDensity; 
-    float shadowNormalBias; 
     
+    float shadowNormalBias; 
     float shadowBias; 
     float colorVariation; 
     float windFlattenStrength;

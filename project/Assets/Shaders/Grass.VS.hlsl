@@ -9,7 +9,11 @@ StructuredBuffer<GrassInstanceData> gInstanceData : register(t10);
 
 // 風の強度マップ
 Texture2D<float> gWindMap : register(t11);
+// インタラクションマップ
+Texture2D<float4> gInteractionMap : register(t12);
+
 SamplerState gLinearWrapSampler : register(s2);
+SamplerState gLinearClampSampler : register(s3);
 
 // ブレード1本あたりの頂点数 (TriangleStrip描画: 8頂点 = 3セグメント)
 #define NUM_VERTICES_PER_BLADE 8
@@ -144,16 +148,37 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     
     float3 windForce = float3(windDir.x * totalWindMag, -totalWindMag * gMaterial.windFlattenStrength, windDir.y * totalWindMag);
 
-    // プレイヤー干渉 (接近時に放射状へ押し倒す)
-    float3 diff = rootPos - gMaterial.playerPos;
-    float distXZ = length(diff.xz);
-    float3 pushForce = 0.0f;
-    
-    if (distXZ < gMaterial.interactRadius)
+    // -------------------------------------------------------------------------
+    // エンティティ干渉
+    // -------------------------------------------------------------------------
+    float3 pushForce = float3(0, 0, 0);
+    float totalInteractWeight = 0.0f;
+
+    // ワールド座標から InteractionMap の UV 座標を算出
+    float2 interactUV = (rootPos.xz - gMaterial.interactionCenterWorldPos) / gMaterial.interactionWorldSize + 0.5f;
+
+    // テクスチャ範囲内の場合のみ処理
+    if (all(interactUV >= 0.0f) && all(interactUV <= 1.0f))
     {
-        float weight = smoothstep(0.0f, 1.0f, 1.0f - saturate(distXZ / gMaterial.interactRadius));
-        pushForce = normalize(float3(diff.x, -0.6f, diff.z)) * weight * gMaterial.interactStrength;
-        windForce *= (1.0f - weight); // 踏まれている間は風の影響を減衰
+        // テクスチャサンプリング
+        float4 interactData = gInteractionMap.SampleLevel(gLinearClampSampler, interactUV, 0);
+
+        // 2D押し出し方向のデコード (0.0~1.0 -> -1.0~1.0)
+        float2 pushDirXZ = (interactData.rg * 2.0f) - 1.0f;
+        float dirLen = length(pushDirXZ);
+        pushDirXZ = (dirLen > 0.001f) ? (pushDirXZ / dirLen) : float2(0, 0);
+
+        // 瞬間的な力(.b) と 時間経過の痕跡(.a) をハイブリッド合成
+        float instantPower = interactData.b;
+        float trailPower = interactData.a * gMaterial.trailFlattenWeight;
+        totalInteractWeight = max(instantPower, trailPower);
+
+        // 3D押し倒しベクトルの生成 (水平方向の拡散 + 地面への強烈なY軸押し潰し)
+        float3 pushDir = float3(pushDirXZ.x, -gMaterial.flattenFactor, pushDirXZ.y);
+        pushForce = normalize(pushDir) * totalInteractWeight * gMaterial.interactStrength;
+
+        // 草が踏まれて倒れている間は風の影響を抑制
+        windForce *= (1.0f - saturate(totalInteractWeight * 1.5f));
     }
 
     // -------------------------------------------------------------------------
