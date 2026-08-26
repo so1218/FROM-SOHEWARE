@@ -33,7 +33,9 @@ public:
     void Draw(
         const RenderEnvironment& env,
         ShadowMap* shadowMap,
-        const FoliageCullingData& cullingData);
+        const FoliageCullingData& cullingData,
+        D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress, 
+        D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
 
     void UpdateConfigs(const std::vector<FoliageTypeConfig>& configs);
 

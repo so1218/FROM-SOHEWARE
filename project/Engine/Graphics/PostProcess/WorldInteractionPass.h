@@ -28,6 +28,10 @@ public:
     void SetConstants(const InteractionConstants& constants);
 
     uint32_t GetCurrentSRVIndex() const { return latestSrvIndex_; }
+    D3D12_GPU_VIRTUAL_ADDRESS GetConstantBufferAddress() const 
+    {
+        return constantBuffer_ ? constantBuffer_->GetGPUVirtualAddress() : 0;
+    }
 
 private:
     Engine* engine_ = nullptr;

@@ -5,6 +5,7 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
 ConstantBuffer<GrassCullingData> gGrassCullingData : register(b6);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
+ConstantBuffer<InteractionConstants> gInteractionData : register(b8);
 StructuredBuffer<GrassInstanceData> gInstanceData : register(t10);
 
 // 風の強度マップ
@@ -155,7 +156,7 @@ PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float totalInteractWeight = 0.0f;
 
     // ワールド座標から InteractionMap の UV 座標を算出
-    float2 interactUV = (rootPos.xz - gMaterial.interactionCenterWorldPos) / gMaterial.interactionWorldSize + 0.5f;
+    float2 interactUV = (rootPos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
 
     // テクスチャ範囲内の場合のみ処理
     if (all(interactUV >= 0.0f) && all(interactUV <= 1.0f))

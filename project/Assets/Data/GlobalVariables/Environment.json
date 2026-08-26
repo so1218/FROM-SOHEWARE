@@ -43,8 +43,8 @@
         ],
         "Day_LightColor": [
             1.0,
-            0.7414944171905518,
-            0.6286919713020325
+            0.7848101258277893,
+            0.6666666269302368
         ],
         "Day_LightIntensity": 1.0,
         "Day_ZenithColor": [
@@ -172,8 +172,8 @@
         ],
         "Sunrise_LightColor": [
             1.0,
-            0.42797625064849854,
-            0.28270041942596436
+            0.2496393918991089,
+            0.05907171964645386
         ],
         "Sunrise_LightIntensity": 0.5,
         "Sunrise_ZenithColor": [
@@ -199,8 +199,8 @@
         ],
         "Sunset_LightColor": [
             1.0,
-            0.37285691499710083,
-            0.13080167770385742
+            0.202531635761261,
+            0.0
         ],
         "Sunset_LightIntensity": 0.5,
         "Sunset_ZenithColor": [
@@ -233,7 +233,7 @@
         ],
         "Thunder_WindSpeed": 1.2000000476837158,
         "Thunder_WindTurbul": 0.20000000298023224,
-        "TimeOfDay": 16.600000381469727,
+        "TimeOfDay": 12.300000190734863,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

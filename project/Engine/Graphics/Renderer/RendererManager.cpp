@@ -316,7 +316,13 @@ void RendererManager::Draw3D()
 
 	if (foliageRenderer_)
 	{
-		foliageRenderer_->Draw(env_, shadowMap_, foliageCullingData_);
+		foliageRenderer_->Draw(
+			env_,
+			shadowMap_,
+			foliageCullingData_,
+			interactionData_.cbAddress,
+			srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex())
+		);
 	}
 
 	if (treeRenderer_)
@@ -333,7 +339,8 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		// 内部で TRIANGLESTRIP に変更して描画
-		grassRenderer_->Draw(env_, grassTextureHandle_, interactionData_.srvIndex, shadowMap_, grassMaterialData_, grassCullingData_);
+		grassRenderer_->Draw(env_, grassTextureHandle_, interactionData_.srvIndex, shadowMap_, grassMaterialData_, grassCullingData_,
+			interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
 		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

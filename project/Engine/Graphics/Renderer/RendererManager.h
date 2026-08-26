@@ -14,6 +14,15 @@
 namespace FE
 {
 
+// インタラクションデータ保持用の構造体
+struct WorldInteractionData 
+{
+    uint32_t srvIndex = 0;
+    float worldSize = 40.0f;
+    Vector2 centerWorldPos = { 0.0f, 0.0f };
+    D3D12_GPU_VIRTUAL_ADDRESS cbAddress = 0;
+};
+
 class Camera;
 class ModelRenderer;
 class SpriteRenderer;
@@ -28,13 +37,6 @@ class SkydomeRenderer;
 class TerrainRenderer;
 class TerrainChunk;
 class LightningRenderer;
-
-// インタラクションデータ保持用の構造体
-struct WorldInteractionData {
-    uint32_t srvIndex = 0;
-    float worldSize = 40.0f;
-    Vector2 centerWorldPos = { 0.0f, 0.0f };
-};
 
 class RendererManager
 {
@@ -162,10 +164,12 @@ public:
     uint32_t GetTerrainHeightMapSRVIndex() const { return terrainHeightMapSrvIndex_; }
 
     // ワールドインタラクションデータの設定
-    void SetWorldInteractionData(uint32_t srvIndex, float worldSize, const Vector2& centerPos) {
+    void SetWorldInteractionData(uint32_t srvIndex, float worldSize, const Vector2& centerPos, D3D12_GPU_VIRTUAL_ADDRESS cbAddress)
+    {
         interactionData_.srvIndex = srvIndex;
         interactionData_.worldSize = worldSize;
         interactionData_.centerWorldPos = Vector2(centerPos.x, centerPos.y);
+        interactionData_.cbAddress = cbAddress;
     }
     // インタラクション対象の登録
     void SubmitInteractionEntity(const InteractionEntity& entity) {
@@ -186,7 +190,6 @@ public:
     // ゲーム側から追従対象の座標を受け取る関数
     void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
     Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
-    float GetWorldInteractionSize() const { return interactionData_.worldSize; }
 
 private:
     // Engineから受け取るポインタ

@@ -3,8 +3,12 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
 ConstantBuffer<FoliageMaterialData> gMaterial : register(b5);
+ConstantBuffer<InteractionConstants> gInteractionData : register(b6);
 
 StructuredBuffer<FoliageInstanceData> gInstanceData : register(t10);
+
+Texture2D<float4> gInteractionMap : register(t3);
+SamplerState gLinearClampSampler : register(s0);
 
 struct FoliageVSInput
 {
@@ -72,17 +76,44 @@ VertexShaderOutput main(FoliageVSInput input)
     // ローカルのY座標からプロシージャルに揺れウェイトを算出。
     // plantHeightを基準にすることで、草のスケールに関わらず0.0(根元)～1.0(先端)のグラデーションを得る。
     float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, 0.001f));
-
     localPos *= scale;
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
     float3 worldPos = basePos + rotatedPos;
 
+    // 風による変位を計算
     float3 windDisp = CalculateWindDisplacement(worldPos, windWeight, basePos);
-    worldPos += windDisp;
+    
+    // インタラクションによる変位を計算
+    float3 pushDisp = float3(0, 0, 0);
+    float2 interactUV = (basePos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
+    
+    if (all(interactUV >= 0.0f) && all(interactUV <= 1.0f))
+    {
+        float4 interactData = gInteractionMap.SampleLevel(gLinearClampSampler, interactUV, 0);
+        
+        float2 pushDirXZ = (interactData.rg * 2.0f) - 1.0f;
+        float dirLen = length(pushDirXZ);
+        pushDirXZ = (dirLen > 0.001f) ? (pushDirXZ / dirLen) : float2(0, 0);
 
-    // 長さの維持 (Length Preservation)
-    // 単純なベクトル加算で頂点をオフセットすると、草が不自然に伸びてしまう(スケールしてしまう)。
-    // これを避けるため、ピボット(basePos)からの距離を元の長さに正規化し、弧を描いて曲がるように補正する。
+        // 瞬間的な力と、痕跡(Trail)の合成
+        float instantPower = interactData.b;
+        float trailPower = interactData.a * gMaterial.trailFlattenWeight; // 植物ごとのウェイトを適用
+        float totalInteractWeight = max(instantPower, trailPower);
+
+        // 押し出し方向 (flattenFactor が低いほど横に逃げるだけになる)
+        float3 pushDir = float3(pushDirXZ.x, -gMaterial.flattenFactor, pushDirXZ.y);
+        
+        // 根元は動かさず、先端ほど強く押し出されるように windWeight を掛ける
+        pushDisp = normalize(pushDir) * totalInteractWeight * gMaterial.interactStrength * windWeight;
+        
+        // 干渉されている間は風の揺れを抑える
+        windDisp *= saturate(1.0f - (totalInteractWeight * 1.5f));
+    }
+
+    // 風とインタラクションの変位を合成
+    worldPos += (windDisp + pushDisp);
+
+    // 長さの維持
     float currentLen = length(worldPos - basePos);
     float originalLen = length(rotatedPos);
     if (currentLen > 0.001f)

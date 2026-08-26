@@ -93,6 +93,10 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
     layer.material.windResponse = 1.0f;
     layer.material.shadowDensity = 1.0f;
 
+    layer.material.interactStrength = 1.0f;
+    layer.material.flattenFactor = 0.5f;
+    layer.material.trailFlattenWeight = 0.8f;
+
     layers_.push_back(layer);
 }
 
@@ -125,6 +129,10 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "PlantHeight", &layer.material.plantHeight, 1.0f, 0.1f, 0.1f, 10.0f);
 
     binder_->Bind(prefix + "ShadowDensity", &layer.material.shadowDensity, 1.0f, 0.01f, 0.0f, 1.0f);
+
+    binder_->Bind(prefix + "InteractStrength", &layer.material.interactStrength, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind(prefix + "FlattenFactor", &layer.material.flattenFactor, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind(prefix + "TrailFlattenWeight", &layer.material.trailFlattenWeight, 0.8f, 0.01f, 0.0f, 1.0f);
 
     layer.material.shadowNormalBias = 0.005f;
     layer.material.shadowBias = 0.001f;
@@ -298,6 +306,12 @@ void FoliageField::DebugDraw()
             binder_->Draw(prefix + "FlutterScale", "細かな揺れの幅");
             binder_->Draw(prefix + "PlantHeight", "植物の高さ基準");
             binder_->Draw(prefix + "ShadowDensity", "影の濃さ");
+
+            ImGui::Separator();
+            ImGui::Text("インタラクション");
+            binder_->Draw(prefix + "InteractStrength", "物理干渉強度 (しなり)");
+            binder_->Draw(prefix + "FlattenFactor", "押しつぶされ率 (倒れ)");
+            binder_->Draw(prefix + "TrailFlattenWeight", "軌跡/足跡の押しつぶし影響度");
         }
         ImGui::PopID();
     }

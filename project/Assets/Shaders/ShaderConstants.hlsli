@@ -497,16 +497,16 @@ struct InteractionEntity
 
 struct InteractionConstants
 {
-    uint32_t entityCount; // 有効なエンティティ数
-    float worldSize; // カバーするワールド範囲(m)
-    float2 centerWorldPos; // 今フレームのテクスチャ中心ワールドXZ
-    float2 prevCenterWorldPos; // 前フレームのテクスチャ中心ワールドXZ ★追加
+    uint32_t entityCount; 
+    float worldSize;
+    float2 centerWorldPos; 
+    float2 prevCenterWorldPos;
     
-    float2 terrainCenter; // ハイトマップ原点(ワールドXZ) ★追加
-    float2 terrainSize; // ハイトマップ全体のサイズ(m) ★追加
+    float2 terrainCenter; 
+    float2 terrainSize; 
     
-    float trailDuration; // 足跡の減衰速度
-    float terrainHeightScale; // ハイトマップの高さスケール
+    float trailDuration; 
+    float terrainHeightScale; 
     float2 padding;
 };
 
@@ -528,27 +528,25 @@ struct GrassMaterialData
     float sssStrength;
     
     float interactStrength;
-    float2 interactionCenterWorldPos;
-    float interactionWorldSize;
-    
     float flattenFactor;
     float trailFlattenWeight;
     float windSpeedMultiplier; 
-    float windStrengthMultiplier;
     
+    float windStrengthMultiplier;
     float gustScale; 
     float gustStrength; 
     float flutterAmount; 
-    float windHighlightStrength; 
     
+    float windHighlightStrength; 
     float specularStrength; 
     float specularShininess;
     float wetness; 
-    float shadowDensity; 
     
+    float shadowDensity; 
     float shadowNormalBias; 
     float shadowBias; 
     float colorVariation; 
+    
     float windFlattenStrength;
 };
 
@@ -752,6 +750,10 @@ struct FoliageMaterialData
     
     float shadowBias;
     float shadowNormalBias;
+    float interactStrength; 
+    float flattenFactor; 
+    
+    float trailFlattenWeight;
 };
 
 struct FoliageGenerationData

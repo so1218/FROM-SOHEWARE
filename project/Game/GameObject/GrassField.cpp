@@ -137,8 +137,6 @@ void GrassField::Update()
     }
 
     grassSystem_->Update();
-    grassSystem_->GetMaterialData()->interactionCenterWorldPos = engine_->GetRendererManager()->GetWorldInteractionCenter();
-    grassSystem_->GetMaterialData()->interactionWorldSize = engine_->GetRendererManager()->GetWorldInteractionSize();
 }
 
 void GrassField::Draw()

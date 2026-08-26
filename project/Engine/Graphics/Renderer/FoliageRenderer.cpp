@@ -195,7 +195,9 @@ void FoliageRenderer::GenerateFoliage(
 void FoliageRenderer::Draw(
     const RenderEnvironment& env,
     ShadowMap* shadowMap,
-    const FoliageCullingData& cullingData)
+    const FoliageCullingData& cullingData,
+    D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
+    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();
@@ -271,14 +273,18 @@ void FoliageRenderer::Draw(
     ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, mainHeaps);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(4, interactionCBAddress); 
 
-    if (shadowMap) {
-        cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
+    if (shadowMap) 
+    {
+        cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
     }
+
+    cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
 
     for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
     {
@@ -290,10 +296,10 @@ void FoliageRenderer::Draw(
         };
         cmdList->ResourceBarrier(2, drawBarriers);
 
-        cmdList->SetGraphicsRootConstantBufferView(3, res.materialResource[currentFrameIndex_]->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootShaderResourceView(5, res.outputInstanceBuffer[currentFrameIndex_]->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(res.config.albedoSrvHandle));
-        cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(res.config.normalSrvHandle));
+        cmdList->SetGraphicsRootConstantBufferView(3, res.materialResource[currentFrameIndex_]->GetGPUVirtualAddress()); 
+        cmdList->SetGraphicsRootShaderResourceView(6, res.outputInstanceBuffer[currentFrameIndex_]->GetGPUVirtualAddress()); 
+        cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(res.config.albedoSrvHandle)); 
+        cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(res.config.normalSrvHandle)); 
 
         cmdList->IASetVertexBuffers(0, 1, &res.config.mesh->GetVertexBufferView());
         cmdList->IASetIndexBuffer(&res.config.mesh->GetIndexBufferView());

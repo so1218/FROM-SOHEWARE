@@ -87,8 +87,7 @@ PixelShaderOutput main(PixelInput input)
     float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
     float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength;
     specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor; // 陰部分のハイライト遮蔽
-
-    // Wind Specular Modulation
+    
     // 突風マスクを利用し、風が強く当たる領域のスペキュラ輝度を引き上げる
     // 草が風になびいた瞬間に面が揃って白く光る現象を低負荷で近似
     specIntensity *= 1.0f + (gustMask * gMaterial.windHighlightStrength * t);

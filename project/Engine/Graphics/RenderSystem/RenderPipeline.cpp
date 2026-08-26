@@ -109,7 +109,8 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     rendererManager->SetWorldInteractionData(
         worldInteractionPass_->GetCurrentSRVIndex(),
         worldInteractionPass_->GetWorldSize(),
-        interactionCenterXZ
+        interactionCenterXZ,
+        worldInteractionPass_->GetConstantBufferAddress()
     );
 
     // シャドウパス
