@@ -243,6 +243,27 @@ struct AtmosphereSkyData
     float3 sunDirection;
 };
 
+struct WaterMaterialData
+{
+    float4 shallowColor; // RGB: 浅瀬の色, A: アルファ上限 (例: 0.15, 0.55, 0.5, 1.0)
+    float4 deepColor; // RGB: 深い場所の色, A: 未使用 (例: 0.02, 0.08, 0.2, 1.0)
+    float absorption; // 濁り・光の吸光度 (例: 0.4)
+    float refractionAmount; // 屈折の歪み強度 (例: 0.03)
+    float2 waveTiling; // 波法線マップのタイリング (例: float2(0.08, 0.15))
+
+    // 波のアニメーション
+    float waveSpeed; // 波の移動速度 (例: 1.0)
+    float roughness; // 水面の基本ラフネス (例: 0.02)
+    float specularIntensity; // 太陽やライトのハイライト強度 (例: 1.0)
+    float padding0;
+
+    // 雨の波紋 (Ripple)
+    float rainIntensity; // 雨の強さ (0.0で波紋なし, 1.0で大雨)
+    float rippleScale; // 波紋の密度・スケール (例: 0.5)
+    float rippleSpeed; // 波紋の拡散速度 (例: 1.0)
+    float rippleStrength; // 波紋の法線の強さ (例: 0.5)
+};
+
 struct TrailMaterialData
 {
     float2 scrollSpeed;
