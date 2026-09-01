@@ -46,7 +46,6 @@ uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESO
     cpuHandleCopy.ptr += (SIZE_T)index * srvDescriptorSize_;
     device_->CreateShaderResourceView(resource, &srvDesc, cpuHandleCopy);
 
-   /* LOG_INFO("SRV Created at Index: {}", index);*/
     return index;
 }
 
@@ -63,7 +62,7 @@ uint32_t SRVManager::CreateStructuredBufferSRV(ID3D12Resource* resource, uint32_
     srvDesc.Buffer.StructureByteStride = stride;
     srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-    // 表と裏の両方に作成！
+    // 表と裏の両方に作成
     device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_Visible(index));
     device_->CreateShaderResourceView(resource, &srvDesc, GetSRVHandleCPU_ForCopying(index));
 

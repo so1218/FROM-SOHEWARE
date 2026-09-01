@@ -915,7 +915,6 @@
     <ClCompile Include="Engine\Graphics\Renderer\LightningRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp" />
-    <ClCompile Include="Engine\Graphics\Particle\GPUParticleSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\TreeSystem.cpp" />
     <ClCompile Include="Game\GameObject\TreeField.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\PebbleRenderer.cpp" />
@@ -959,7 +958,6 @@
     <ClInclude Include="Engine\Graphics\Renderer\LightningRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h" />
-    <ClInclude Include="Engine\Graphics\Particle\GPUParticleSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\TreeSystem.h" />
     <ClInclude Include="Game\GameObject\TreeField.h" />
     <ClInclude Include="Engine\Graphics\Renderer\PebbleRenderer.h" />
