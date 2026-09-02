@@ -1,6 +1,6 @@
 #include "ShaderConstants.hlsli"
 
-struct PixelInput
+struct LinePSInput
 {
     float4 position : SV_POSITION;
     float4 color : COLOR; 
@@ -8,7 +8,7 @@ struct PixelInput
 
 ConstantBuffer<MaterialData> gMaterial : register(b0);
 
-float4 main(PixelInput input) : SV_Target
+float4 main(LinePSInput input) : SV_Target
 {
     return input.color;
 }

@@ -14,7 +14,7 @@ ConstantBuffer<ShadowData> gShadowData : register(b8);
 Texture2DArray<float> gShadowMapArray : register(t2);
 SamplerComparisonState gShadowSampler : register(s1);
 
-struct PixelInput
+struct GrassPSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -28,7 +28,7 @@ struct PixelInput
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
-PixelShaderOutput main(PixelInput input)
+PixelShaderOutput main(GrassPSInput input)
 {
     PixelShaderOutput output;
     

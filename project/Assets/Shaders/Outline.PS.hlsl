@@ -2,7 +2,7 @@
 
 struct PixelShaderOutput
 {
-    float32_t4 color : SV_TARGET0;
+    float4 color : SV_TARGET0;
 };
 
 ConstantBuffer<MaterialData> gMaterialData : register(b5);

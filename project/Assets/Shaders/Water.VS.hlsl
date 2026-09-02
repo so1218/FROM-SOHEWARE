@@ -31,7 +31,7 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     float4 localPos = input.position;
     float4 prevLocalPos = input.position;
 
-    // 頂点変位 (Gerstner Wave)
+    // 頂点変位
     float time = gFrameData.gTime;
     float pTime = gFrameData.prevTime;
 

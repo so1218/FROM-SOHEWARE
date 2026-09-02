@@ -64,7 +64,7 @@ float Hash12(float2 p)
     return frac((p3.x + p3.y) * p3.z);
 }
 
-struct PixelInput
+struct GrassPSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -76,9 +76,9 @@ struct PixelInput
     float4 prevClipPos : POSITION2;
 };
 
-PixelInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
+GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
-    PixelInput output;
+    GrassPSInput output;
     
     // CSのカリングパスを通過した有効なインスタンスのみ
     GrassInstanceData instance = gInstanceData[instanceID];

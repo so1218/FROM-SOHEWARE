@@ -11,7 +11,7 @@ Texture2D<float> gWindMap : register(t11);
 
 SamplerState gLinearWrapSampler : register(s2);
 
-struct VertexInput
+struct TreeVSInput
 {
     float4 position : POSITION0;
     float2 texcoord : TEXCOORD0;
@@ -19,7 +19,7 @@ struct VertexInput
     float3 tangent : TANGENT0;
 };
 
-struct PixelInput
+struct TreePSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -27,7 +27,7 @@ struct PixelInput
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
     
-    // x: GustMask (PSでのスペキュラ制御用), w: PseudoAO (根元の暗さ)
+    // x: GustMask, w: PseudoAO (根元の暗さ)
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
@@ -47,9 +47,9 @@ float3x3 AngleAxisTo3x3(float3 axis, float angle)
     );
 }
 
-PixelInput main(VertexInput input, uint instanceID : SV_InstanceID)
+TreePSInput main(TreeVSInput input, uint instanceID : SV_InstanceID)
 {
-    PixelInput output;
+    TreePSInput output;
     
     uint realInstanceIndex = instanceID + gTreeInstanceOffset.baseInstanceIndex;
     TreeInstanceData instance = gInstanceData[realInstanceIndex];

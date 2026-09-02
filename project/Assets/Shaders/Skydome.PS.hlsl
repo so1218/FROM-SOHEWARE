@@ -1,16 +1,17 @@
 #include "ShaderConstants.hlsli"
 
-Texture2D<float4> gCloudTexture : register(t0); // 雲用シームレスノイズ (FBM用)
+Texture2D<float4> gCloudTexture : register(t0); 
+
 SamplerState gSampler : register(s0);
 
-struct SkydomeVertexShaderOutput
+struct SkydomeVSOutput
 {
     float4 position : SV_Position;
     float3 viewDir : TEXCOORD0;
     float2 uv : TEXCOORD1;
 };
 
-struct PixelShaderOutput
+struct SkydomePSOutput
 {
     float4 color : SV_Target;
 };
@@ -42,9 +43,9 @@ float GetCloudHeight(float2 baseUV)
     return (noise1 * 0.6f) + (noise2 * 0.3f) + (noise3 * 0.1f);
 }
 
-PixelShaderOutput main(SkydomeVertexShaderOutput input)
+SkydomePSOutput main(SkydomeVSOutput input)
 {
-    PixelShaderOutput output;
+    SkydomePSOutput output;
     float3 viewDir = normalize(input.viewDir);
     
     float3 activeLightDir = normalize(-gDirectionalLights[0].direction);

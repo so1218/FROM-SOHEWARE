@@ -17,7 +17,7 @@ Texture2D<float3> gNormalTex : register(t13);
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gAnisoSampler : register(s3);
 
-struct PixelInput
+struct TreeFoliagePSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -36,7 +36,7 @@ float InterleavedGradientNoise(float2 pixelPos)
     return frac(magic.z * frac(dot(pixelPos, magic.xy)));
 }
 
-// 高速 5乗計算 (pow命令の排除)
+// 高速 5乗計算
 float Pow5(float x)
 {
     float x2 = x * x;
@@ -45,7 +45,7 @@ float Pow5(float x)
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
-PixelShaderOutput main(PixelInput input, bool isFrontFace : SV_IsFrontFace)
+PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
 

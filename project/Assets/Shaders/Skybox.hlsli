@@ -1,6 +1,6 @@
-struct VertexShaderOutput
+struct SkyboxVSOutput
 {
-    float32_t4 position : SV_Position;
-    float32_t3 texcoord : TEXCOORD0;
+    float4 position : SV_Position;
+    float3 texcoord : TEXCOORD0;
     float3 worldPosition : TEXCOORD1;
 };

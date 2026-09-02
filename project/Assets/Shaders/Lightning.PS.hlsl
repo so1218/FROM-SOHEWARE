@@ -4,7 +4,7 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<LightningMaterial> gLightningMaterial : register(b1);
 SamplerState gSampler : register(s0);
 
-struct VertexOutput
+struct LightningVSOutput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -19,7 +19,7 @@ static const float kPrngHashMultiplier = 43758.5453f;
 // アルファテストの閾値（この値未満の透明度のピクセルは描画を破棄）
 static const float kAlphaClipThreshold = 0.01f;
 
-float4 main(VertexOutput input) : SV_Target
+float4 main(LightningVSOutput input) : SV_Target
 {
     // UVのX座標(0.0 ~ 1.0)を、中心(0.5)からの距離(1.0 ~ 0.0 ~ 1.0)に変換
     float distFromCenter = abs(input.texcoord.x - 0.5f) * 2.0f;

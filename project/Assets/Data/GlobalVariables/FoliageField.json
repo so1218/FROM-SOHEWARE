@@ -25,7 +25,7 @@
         "Flower_01_TrailFlattenWeight": 1.0,
         "Flower_01_WindResponse": 1.3600000143051147,
         "Foliage_01_Albedo": "foliage_01_baseColor",
-        "Foliage_01_AlphaCutoff": 0.2800000011920929,
+        "Foliage_01_AlphaCutoff": 0.3400000035762787,
         "Foliage_01_BaseColor": [
             0.3291139602661133,
             1.0,
@@ -41,7 +41,7 @@
         "Foliage_01_MaxScale": 10.0,
         "Foliage_01_MinScale": 8.0,
         "Foliage_01_Normal": "white1x1",
-        "Foliage_01_PlantHeight": 1.399999976158142,
+        "Foliage_01_PlantHeight": 0.8999999761581421,
         "Foliage_01_Roughness": 1.0,
         "Foliage_01_SSSStrength": 0.8799999952316284,
         "Foliage_01_ShadowDensity": 1.0,

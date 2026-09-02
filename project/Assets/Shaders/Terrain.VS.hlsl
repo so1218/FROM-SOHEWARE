@@ -4,9 +4,9 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10); 
 
-// ハイトマップテクスチャ
 Texture2D<float> gTerrainHeightMap : register(t9);
 StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t10);
+
 SamplerState gSampler : register(s0);
 
 struct TerrainVSInput

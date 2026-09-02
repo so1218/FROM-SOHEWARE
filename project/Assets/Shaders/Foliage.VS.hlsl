@@ -19,7 +19,7 @@ struct FoliageVSInput
     uint instanceID : SV_InstanceID;
 };
 
-struct VertexShaderOutput
+struct FoliageVSOutput
 {
     float4 position : SV_POSITION;
     float3 worldPosition : WORLD_POSITION;
@@ -61,9 +61,9 @@ float3 CalculateWindDisplacement(float3 worldPos, float windWeight, float3 baseP
     return windDir * totalDisplacement;
 }
 
-VertexShaderOutput main(FoliageVSInput input)
+FoliageVSOutput main(FoliageVSInput input)
 {
-    VertexShaderOutput output;
+    FoliageVSOutput output;
     
     FoliageInstanceData instance = gInstanceData[input.instanceID];
     

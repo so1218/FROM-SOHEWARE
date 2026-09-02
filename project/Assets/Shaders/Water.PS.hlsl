@@ -21,7 +21,7 @@ cbuffer SpotLights : register(b3)
 // 専用マテリアルバッファ
 ConstantBuffer<WaterMaterialData> gWaterMaterial : register(b5);
 
-// --- Textures & Samplers ---
+// Textures & Samplers
 Texture2D<float4> gSceneColorTexture : register(t0); // バックバッファコピー
 Texture2D<float> gSceneDepthTexture : register(t1); // 深度バッファコピー
 TextureCube<float4> gEnvironmentTexture : register(t2); // IBL/スカイ反射
@@ -37,6 +37,37 @@ float LinearizeDepth(float ndcDepth)
     float nearP = gFrameData.nearClip;
     float farP = gFrameData.farClip;
     return (nearP * farP) / (farP - ndcDepth * (farP - nearP));
+}
+
+float4 RaycastWaterSSR(float3 rayOriginView, float3 rayDirView)
+{
+    // ステップ幅を広げ、距離に応じて可変にするかステップ数を調整
+    float3 stepVec = rayDirView * 1.0f;
+    float3 currentPos = rayOriginView + stepVec;
+
+    for (int i = 0; i < 16; ++i)
+    {
+        float4 clipPos = mul(float4(currentPos, 1.0f), gFrameData.projectionMatrix);
+        float2 uv = clipPos.xy / clipPos.w * float2(0.5f, -0.5f) + 0.5f;
+
+        if (any(uv < 0.0f) || any(uv > 1.0f))
+            break;
+
+        float sceneLinearZ = LinearizeDepth(gSceneDepthTexture.SampleLevel(gSampler, uv, 0).r);
+
+        // 遮蔽判定
+        if (currentPos.z > sceneLinearZ && (currentPos.z - sceneLinearZ) < 1.5f)
+        {
+            // 画面端に行くほどアルファを落としてカットオフを防ぐ
+            float2 edgeFade = min(uv, 1.0f - uv) * 10.0f;
+            float alpha = saturate(edgeFade.x) * saturate(edgeFade.y);
+
+            float3 color = gSceneColorTexture.SampleLevel(gSampler, uv, 0).rgb;
+            return float4(color, alpha); // 色とヒットアルファを一緒に返す
+        }
+        currentPos += stepVec;
+    }
+    return float4(0.0f, 0.0f, 0.0f, 0.0f); // ヒット失敗 (Alpha = 0)
 }
 
 PixelShaderOutput main(PixelShaderInput input)
@@ -157,16 +188,33 @@ PixelShaderOutput main(PixelShaderInput input)
     directSpecular += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
 
     // --------------------------------------------------------
-    // 7. フレネル & 環境マップ反射 (IBL Reflection)
+    // 7. フレネル & 反射 (SSR + IBL Reflection)
+    // --------------------------------------------------------
+   // --------------------------------------------------------
+    // 7. フレネル & 反射 (Water-Space SSR + IBL Reflection)
     // --------------------------------------------------------
     float NdotV = saturate(dot(worldNormal, toEyeWorld));
     float fresnel = 0.02f + (1.0f - 0.02f) * pow(1.0f - NdotV, 5.0f);
 
+    // スカイ反射（フォールバック）
     float3 reflectVector = reflect(-toEyeWorld, worldNormal);
     float3 skyReflection = gEnvironmentTexture.SampleLevel(gSampler, reflectVector, surface.roughness * 6.0f).rgb;
 
-    // 最終カラー計算: (屈折背景光 + スカイ反射) + 各種ライトのハイライト
-    float3 finalColor = lerp(refractedLight, skyReflection, fresnel) + directSpecular;
+    // View空間での水面レイマーチ準備
+    float3 viewPos = mul(float4(input.worldPosition, 1.0f), gFrameData.viewMatrix).xyz;
+    float3 viewNormal = normalize(mul(worldNormal, (float3x3) gFrameData.viewMatrix));
+    float3 viewDir = normalize(viewPos);
+    float3 reflectDirView = reflect(viewDir, viewNormal);
+
+    // 水面からのリアルタイムSSRの実行
+    float3 ssrColor = RaycastWaterSSR(viewPos, reflectDirView, worldNormal);
+    
+    // レイがヒットした場合はSSR、画面外などはスカイ反射へフォールバック
+    float ssrMask = saturate(length(ssrColor));
+    float3 combinedReflection = lerp(skyReflection, ssrColor, ssrMask);
+
+    // 最終カラー合成 (1回のみフレネルを適用)
+    float3 finalColor = lerp(refractedLight, combinedReflection, fresnel) + directSpecular;
 
     // 岸辺 (waterDepth == 0) のアルファ溶け込み
     float edgeAlpha = smoothstep(0.0f, 0.15f, waterDepth) * gWaterMaterial.shallowColor.a;

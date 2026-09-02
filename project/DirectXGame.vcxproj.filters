@@ -994,7 +994,6 @@
     <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Lightning.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\GrassCulling.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Particle.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\GrassGeneration.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\TreeFoliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Tree.VS.hlsl" />

@@ -1,12 +1,12 @@
 #include "ShaderConstants.hlsli"
 
-struct VertexInput
+struct LineVSInput
 {
     float4 position : POSITION;
     float4 color : COLOR; 
 };
 
-struct VertexOutput
+struct LineVSOutput
 {
     float4 position : SV_POSITION;
     float4 color : COLOR; 
@@ -14,9 +14,9 @@ struct VertexOutput
 
 ConstantBuffer<TransformationMatrix> gTransform : register(b0);
 
-VertexOutput main(VertexInput input)
+LineVSOutput main(LineVSInput input)
 {
-    VertexOutput output;
+    LineVSOutput output;
     output.position = mul(input.position, gTransform.WVP);
     output.color = input.color;
     return output;

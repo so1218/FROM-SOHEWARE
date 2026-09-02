@@ -34,7 +34,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     float2 uv = (pixelPos + 0.5f) / float2(width, height);
 
     // -------------------------------------------------------------------------
-    // 1. 高速アーリーアウト (不要なピクセルを即死させてGPU負荷をゼロにする)
+    // 高速アーリーアウト (不要なピクセルを即死させてGPU負荷をゼロにする)
     // -------------------------------------------------------------------------
     float depth = gDepthTexture.SampleLevel(gClampSampler, uv, 0);
     if (depth >= 1.0f) // 背景・空
@@ -55,7 +55,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     }
 
     // -------------------------------------------------------------------------
-    // 2. 座標変換とレイの準備
+    // 座標変換とレイの準備
     // -------------------------------------------------------------------------
     float3 viewPos = GetViewPos(uv, depth);
     float3 worldNormal = gNormalTexture.SampleLevel(gClampSampler, uv, 0).xyz;
@@ -64,7 +64,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     float3 reflectDir = reflect(viewDir, viewNormal);
 
     // -------------------------------------------------------------------------
-    // 3. DDA用: ループ外でUV空間の移動量を一括計算 (行列計算をループから排除)
+    // DDA用: ループ外でUV空間の移動量を一括計算 (行列計算をループから排除)
     // -------------------------------------------------------------------------
     float3 viewStart = viewPos + viewNormal * 0.02f;
     float3 viewEnd = viewStart + reflectDir * gSSRSettings.maxDistance;
@@ -86,7 +86,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     float rayDistance = 0.0f;
 
     // -------------------------------------------------------------------------
-    // 4. 超高速レイマーチング (ループ内はただの足し算)
+    // 超高速レイマーチング (ループ内はただの足し算)
     // -------------------------------------------------------------------------
     for (int i = 0; i < gSSRSettings.maxSteps; ++i)
     {
@@ -139,7 +139,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     }
 
     // -------------------------------------------------------------------------
-    // 5. フェード処理と出力
+    // フェード処理と出力
     // -------------------------------------------------------------------------
     float2 edgeFade = min(hitUV, 1.0f - hitUV) * 10.0f;
     hitAlpha *= saturate(edgeFade.x) * saturate(edgeFade.y);

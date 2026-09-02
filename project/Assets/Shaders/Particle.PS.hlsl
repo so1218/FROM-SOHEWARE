@@ -1,4 +1,4 @@
-struct VertexOut
+struct ParticleVSOutput
 {
     float4 svpos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -9,7 +9,7 @@ struct VertexOut
 Texture2D<float4> gTextures[] : register(t1);
 SamplerState sampler0 : register(s0);
 
-float4 main(VertexOut vin) : SV_TARGET
+float4 main(ParticleVSOutput vin) : SV_TARGET
 {
     uint texID = (uint) (vin.textureIndex + 0.5f);
     // テクスチャを使う場合

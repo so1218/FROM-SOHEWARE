@@ -24,7 +24,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float totalWeight = 0.0f;
     int radius = gFogBilateralSettings.blurRadius;
     
-    // Gauss関数の指数部係数: 1.0 / (2.0 * sigma^2)
+    // Gauss関数の指数部係数
     float spatialCoeff = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
    
     float safeDepthSigma = max(gFogBilateralSettings.depthSigma, kExtinctionEpsilon);

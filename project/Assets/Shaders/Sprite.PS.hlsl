@@ -3,25 +3,26 @@
 ConstantBuffer<MaterialData> gMaterial : register(b0);
 
 // 通常テクスチャ
-Texture2D<float32_t4> gTexture : register(t0);
+Texture2D<float4> gTexture : register(t0);
 // ディソルブ用ノイズテクスチャ
-Texture2D<float32_t4> gDissolveTexture : register(t1);
+Texture2D<float4> gDissolveTexture : register(t1);
+
 SamplerState gSampler : register(s0);
 
-struct PixelShaderOutput
+struct SpritePSOutput
 {
-    float32_t4 color : SV_TARGET0;
+    float4 color : SV_TARGET0;
 };
 
-struct PixelShaderInput
+struct SpritePSInput
 {
-    float32_t4 position : SV_POSITION;
-    float32_t2 texcoord : TEXCOORD0;
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
 };
 
-PixelShaderOutput main(PixelShaderInput input)
+SpritePSOutput main(SpritePSInput input)
 {
-    PixelShaderOutput output;
+    SpritePSOutput output;
 
     // UV座標の変換
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);

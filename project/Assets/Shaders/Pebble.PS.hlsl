@@ -36,7 +36,7 @@ Texture2D<float4> gNormalMap : register(t3);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
-struct VertexShaderOutput
+struct PebbleVSOutput
 {
     float4 position : SV_POSITION;
     float3 worldPosition : POSITION0;
@@ -48,7 +48,7 @@ struct VertexShaderOutput
     float heightFactor : TEXCOORD2;
 };
 
-struct PixelShaderOutput
+struct PebblePSOutput
 {
     float4 color : SV_Target0;
     float4 normal : SV_Target1;
@@ -56,9 +56,9 @@ struct PixelShaderOutput
     float2 velocity : SV_Target3;
 };
 
-PixelShaderOutput main(VertexShaderOutput input)
+PebblePSOutput main(PebbleVSOutput input)
 {
-    PixelShaderOutput output;
+    PebblePSOutput output;
 
     // TODO: 現在はインデックス0固定だが、CS/VSからマテリアルIDを渡し、
     // 苔むした石や乾いた石など、複数種類のプロパティを出し分けられるようにする

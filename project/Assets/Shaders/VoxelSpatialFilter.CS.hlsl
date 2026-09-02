@@ -6,7 +6,7 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
 // 輝度を計算するヘルパー関数
-// Rec. 709 (sRGB) の輝度係数を使用し、人間の視覚特性に合わせた重み付けを行う
+// sRGB の輝度係数を使用し、人間の視覚特性に合わせた重み付けを行う
 float CalculateLuminance(float3 color)
 {
     return dot(color, float3(0.2126f, 0.7152f, 0.0722f));

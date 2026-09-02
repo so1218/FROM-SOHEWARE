@@ -1,11 +1,3 @@
-前回までの最適化の文脈を引き継ぎ、 不要な装飾やチュートリアル感を排除しました。
-
-「
-なぜその数式や近似を使っているのか」「 メモリ帯域や処理負荷をどうやって抑えているのか」
-という、 実務のグラフィックスプログラマが最も気にするポイントに絞ってコメントを記述しています。
-
-High-
-level shaderlanguage
 #include "Object3D.hlsli"
 #include "ShaderConstants.hlsli"
 #include "ShadowUtils.hlsli"
@@ -43,7 +35,7 @@ SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gClampSampler : register(s2);
 
-struct PixelInput
+struct TreeTrunkPSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -62,7 +54,7 @@ float InterleavedGradientNoise(float2 pixelPos)
     return frac(magic.z * frac(dot(pixelPos, magic.xy)));
 }
 
-PixelShaderOutput main(PixelInput input)
+PixelShaderOutput main(TreeTrunkPSInput input)
 {
     PixelShaderOutput output;
     
@@ -90,8 +82,7 @@ PixelShaderOutput main(PixelInput input)
 
     // -------------------------------------------------------------------------
     // 法線構築
-    // -------------------------------------------------------------------------
-    // 頂点レイアウトのサイズ削減のため、Bitangentは頂点ストリームに含めず、
+    // -------------------------------------------------------------------------、
     // ピクセルシェーダー内でNormalとTangentの外積から動的に復元
     float3 worldNormal = normalize(input.normal);
     float3 worldTangent = normalize(input.tangent);

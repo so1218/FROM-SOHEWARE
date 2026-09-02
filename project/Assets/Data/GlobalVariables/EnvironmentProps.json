@@ -489,9 +489,9 @@
             "MasterModel_Mat0_Lighting": 1,
             "MasterModel_Mat0_Metalness": 0.5899999737739563,
             "MasterModel_Mat0_NormEnable": 1,
-            "MasterModel_Mat0_NormInten": 1.0,
-            "MasterModel_Mat0_NormTile": 1.0,
-            "MasterModel_Mat0_NormalMapTex": "house1_normal",
+            "MasterModel_Mat0_NormInten": 0.1599999964237213,
+            "MasterModel_Mat0_NormTile": 16.0,
+            "MasterModel_Mat0_NormalMapTex": "normal_23",
             "MasterModel_Mat0_OutlineColor": [
                 0.0,
                 0.0,

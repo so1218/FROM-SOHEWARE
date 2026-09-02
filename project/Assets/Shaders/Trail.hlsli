@@ -4,17 +4,17 @@ ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 ConstantBuffer<TrailMaterialData> gTrailMaterial : register(b1);
 ConstantBuffer<FrameData> gFrameData : register(b2);
 
-struct VertexShaderInput
+struct TrailVSInput
 {
-    float32_t4 position : POSITION0;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t4 color : COLOR0; 
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float4 color : COLOR0; 
 };
 
-struct VertexShaderOutput
+struct TrailVSOutput
 {
-    float32_t4 position : SV_POSITION;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t4 color : COLOR0;
-    float32_t2 texcoordRaw : TEXCOORD1;
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
+    float4 color : COLOR0;
+    float2 texcoordRaw : TEXCOORD1;
 };

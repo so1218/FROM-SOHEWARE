@@ -97,7 +97,7 @@
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":714,
+			"count":715,
 			"max":[
 				1.1454715728759766,
 				1.0837538242340088,
@@ -113,19 +113,19 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":714,
+			"count":715,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":714,
+			"count":715,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5126,
-			"count":714,
+			"count":715,
 			"type":"VEC2"
 		},
 		{
@@ -138,32 +138,32 @@
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":8568,
+			"byteLength":8580,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":8568,
-			"byteOffset":8568,
+			"byteLength":8580,
+			"byteOffset":8580,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5712,
-			"byteOffset":17136,
+			"byteLength":5720,
+			"byteOffset":17160,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":5712,
-			"byteOffset":22848,
+			"byteLength":5720,
+			"byteOffset":22880,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":4320,
-			"byteOffset":28560,
+			"byteOffset":28600,
 			"target":34963
 		}
 	],
@@ -175,7 +175,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":32880,
+			"byteLength":32920,
 			"uri":"foliage_01.bin"
 		}
 	]

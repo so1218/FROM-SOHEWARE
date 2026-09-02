@@ -26,25 +26,25 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     if (pixelPos.x >= width || pixelPos.y >= height)
         return;
 
-    // 1. カレントピクセルのワールドXZ座標の算出
+    // カレントピクセルのワールドXZ座標の算出
     float2 uv = (pixelPos + 0.5f) / float2(width, height);
     float2 worldXZ = gInteractionConstants.centerWorldPos + (uv - 0.5f) * gInteractionConstants.worldSize;
 
-    // 2. 草生成と同じロジックでハイトマップUVと高さを正確に取得 ★修正
+    // ハイトマップUVと高さを正確に取得
     float2 terrainUV = CalculateTerrainUV(worldXZ);
     
     // UVが領域外の場合は高さを0（または範囲外処理）
     float rawHeight = gTerrainHeightMap.SampleLevel(gLinearSampler, terrainUV, 0).r;
     float terrainHeight = (rawHeight - 0.5f) * gInteractionConstants.terrainHeightScale;
 
-    // 3. 前フレーム足跡のサンプリング
+    // 前フレーム足跡のサンプリング
     float2 worldDelta = gInteractionConstants.centerWorldPos - gInteractionConstants.prevCenterWorldPos;
     float2 prevUV = uv + (worldDelta / gInteractionConstants.worldSize);
 
     float fadedTrail = 0.0f;
     if (all(prevUV >= 0.0f) && all(prevUV <= 1.0f))
     {
-        // ★バイリニアブラーによる急速消滅を防ぐため gPointSampler を使用
+        // バイリニアブラーによる急速消滅を防ぐため gPointSampler を使用
         float4 prevData = gPrevInteractionMap.SampleLevel(gPointSampler, prevUV, 0);
         fadedTrail = max(0.0f, prevData.a - (gFrameData.deltaTime / gInteractionConstants.trailDuration));
     }
@@ -57,14 +57,14 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     {
         InteractionEntity entity = gEntities[i];
 
-        // --- Y軸（高さ）判定 ---
+        // Y軸（高さ）判定
         float yDiff = abs(entity.position.y - terrainHeight);
         if (yDiff > entity.maxVerticalDist)
             continue;
 
         float verticalFactor = smoothstep(0.0f, 1.0f, 1.0f - saturate(yDiff / entity.maxVerticalDist));
 
-        // --- XZ軸（平面距離）判定 ---
+        // XZ軸（平面距離）判定
         float2 diffXZ = worldXZ - entity.position.xz;
         float distXZ = length(diffXZ);
 
@@ -78,7 +78,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
                 maxCurrentStrength = strength;
             }
 
-            // --- entityType に応じた方向・挙動の分岐 ★機能拡張 ---
+            // entityType に応じた方向・挙動の分岐
             float2 entityPushDir = float2(0, 0);
             float2 radialDir = (distXZ > 0.001f) ? normalize(diffXZ) : float2(0, 1);
 
@@ -92,7 +92,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
                 float speed = length(entity.velocity.xz);
                 float2 moveDir = (speed > 0.1f) ? normalize(entity.velocity.xz) : radialDir;
 
-                // 高速移動時は「V字型の引き波 (Wake)」を作るため斜め後ろに拡散
+                // 高速移動時はV字型の引き波 (Wake)を作るため斜め後ろに拡散
                 float2 wakeDir = normalize(moveDir * 0.4f + radialDir * 0.6f);
                 entityPushDir = wakeDir * strength;
             }

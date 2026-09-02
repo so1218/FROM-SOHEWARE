@@ -2,16 +2,17 @@
 
 Texture2D<float4> gTexture : register(t0);
 Texture2D<float4> gDissolveTexture : register(t1);
+
 SamplerState gSampler : register(s0);
 
-struct PixelShaderOutput
+struct TrailPSOutput
 {
     float4 color : SV_TARGET0;
 };
 
-PixelShaderOutput main(VertexShaderOutput input)
+TrailPSOutput main(TrailVSOutput input)
 {
-    PixelShaderOutput output;
+    TrailPSOutput output;
 
     // メインテクスチャと頂点カラーを掛け合わせ
     float4 texColor = gTexture.Sample(gSampler, input.texcoord);

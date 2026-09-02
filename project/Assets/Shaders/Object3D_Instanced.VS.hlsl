@@ -60,7 +60,7 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
     
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float32_t3x3) instance.WorldInverseTranspose));
+    output.normal = normalize(mul(input.normal, (float3x3) instance.WorldInverseTranspose));
     output.tangent = normalize(mul(input.tangent, (float3x3) instance.World));
     output.worldColor = instance.WorldColor;
     
