@@ -6,19 +6,19 @@ ConstantBuffer<MaterialData> gMaterialData : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
-struct OutlineVertexShaderOutput
+struct OutlineVSOutput
 {
-    float32_t4 position : SV_POSITION;
+    float4 position : SV_POSITION;
 };
 
-OutlineVertexShaderOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
+OutlineVSOutput main(VertexShaderInput input, uint instanceID : SV_InstanceID)
 {
-    OutlineVertexShaderOutput output;
+    OutlineVSOutput output;
 
     // 自分のインスタンスデータを取得
     uint index = gInstanceOffset.gBaseInstanceIndex + instanceID;
-    float32_t4x4 worldMatrix = gInstanceData[index].World;
-    float32_t4x4 wvp = mul(worldMatrix, gFrameData.viewProjectionMatrix); 
+    float4x4 worldMatrix = gInstanceData[index].World;
+    float4x4 wvp = mul(worldMatrix, gFrameData.viewProjectionMatrix); 
 
     // 頂点位置をクリップ空間へ
     float4 clipPos = mul(input.position, wvp);

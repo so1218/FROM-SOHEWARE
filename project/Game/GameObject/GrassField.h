@@ -5,12 +5,10 @@
 #include "GrassSystem.h"
 #include "Terrain.h"
 
-class Player;
-
 class GrassField : public FE::GameObject
 {
 public:
-    GrassField(FE::Engine* engine, Player* player);
+    GrassField(FE::Engine* engine);
 
     void Initialize() override;
     void Update() override;
@@ -24,7 +22,6 @@ private:
 
 private:
     FE::Engine* engine_;
-    Player* player_;
     FE::Terrain* terrain_ = nullptr;
 
     std::unique_ptr<FE::GrassSystem> grassSystem_;

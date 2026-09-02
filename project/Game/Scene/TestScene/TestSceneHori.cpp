@@ -24,7 +24,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
     ground_ = objectManager_.Create<Ground>(engine_);
-    grassField_ = objectManager_.Create<GrassField>(engine_, player_);
+    grassField_ = objectManager_.Create<GrassField>(engine_);
     grassField_->SetTerrain(ground_->GetTerrain());
     treeField_ = objectManager_.Create<TreeField>(engine_);
     treeField_->SetTerrain(ground_->GetTerrain());

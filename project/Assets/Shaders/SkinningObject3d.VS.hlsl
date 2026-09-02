@@ -5,23 +5,23 @@ cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b6);
+
 StructuredBuffer<Well> gMatrixPalette : register(t8);
 StructuredBuffer<Well> gPrevMatrixPalette : register(t9);
 
-struct SkinningVertexShaderInput
+struct SkinningVSInput
 {
-    float32_t4 position : POSITION0;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
-    float32_t4 weight : WEIGHT0;
-    int32_t4 index : INDEX0;
-    float32_t3 tangent : TANGENT;
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float4 weight : WEIGHT0;
+    int4 index : INDEX0;
+    float3 tangent : TANGENT;
 };
 
-Skinned Skinning(SkinningVertexShaderInput input)
+Skinned Skinning(SkinningVSInput input)
 {
     Skinned skinned;
 
@@ -52,7 +52,7 @@ Skinned Skinning(SkinningVertexShaderInput input)
     return skinned;
 }
 
-VertexShaderOutput main(SkinningVertexShaderInput input)
+VertexShaderOutput main(SkinningVSInput input)
 {
     VertexShaderOutput output;
     Skinned skinned = Skinning(input);

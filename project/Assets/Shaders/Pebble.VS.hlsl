@@ -14,7 +14,7 @@ struct PebbleVSInput
     uint instanceID : SV_InstanceID;
 };
 
-struct VertexShaderOutput
+struct PebbleVSOutput
 {
     float4 position : SV_POSITION;
     float3 worldPosition : POSITION0;
@@ -33,9 +33,9 @@ float3 RotateVectorByQuat(float3 v, float4 q)
     return v + q.w * t + cross(q.xyz, t);
 }
 
-VertexShaderOutput main(PebbleVSInput input)
+PebbleVSOutput main(PebbleVSInput input)
 {
-    VertexShaderOutput output;
+    PebbleVSOutput output;
     
     PebbleInstanceData instance = gInstanceData[input.instanceID];
     float3 pos = instance.posAndScale.xyz;

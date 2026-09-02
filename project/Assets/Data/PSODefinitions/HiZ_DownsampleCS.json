@@ -1,4 +1,0 @@
-{
-  "RootSignature": "HiZ_DownsampleCS",
-  "ComputeShader": "Assets/Shaders/HiZ_Downsample.CS.hlsl"
-}

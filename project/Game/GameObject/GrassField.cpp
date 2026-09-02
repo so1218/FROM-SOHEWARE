@@ -1,17 +1,15 @@
 #include "pch.h"
 #include "GrassField.h"
 #include "ImGuiManager.h"
-#include "Player.h"
 
 using namespace FE;
 
-GrassField::GrassField(FE::Engine* engine, Player* player) : FE::GameObject()
+GrassField::GrassField(FE::Engine* engine) : FE::GameObject()
 {
     engine_ = engine;
 
     grassSystem_ = std::make_unique<FE::GrassSystem>(engine_, "noise_39");
     binder_ = std::make_unique<FE::PropertyBinder>(engine_, "GrassField");
-    player_ = player;
 }
 
 void GrassField::Initialize()
@@ -56,8 +54,9 @@ void GrassField::Initialize()
     binder_->Bind("FlutterAmount", &grassMat->flutterAmount, 0.15f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("WindHighlightStrength", &grassMat->windHighlightStrength, 0.4f, 0.05f, 0.0f, 1.0f);
 
-    binder_->Bind("InteractRadius", &grassMat->interactRadius, 1.2f, 0.1f, 0.1f, 5.0f);
-    binder_->Bind("InteractStrength", &grassMat->interactStrength, 1.0f, 0.1f, 0.0f, 3.0f);
+    binder_->Bind("InteractStrength", &grassMat->interactStrength, 1.0f, 0.1f, 0.0f, 5.0f);
+    binder_->Bind("FlattenFactor", &grassMat->flattenFactor, 2.0f, 0.1f, 0.0f, 5.0f);
+    binder_->Bind("TrailFlattenWeight", &grassMat->trailFlattenWeight, 0.8f, 0.05f, 0.0f, 1.0f);
     binder_->Bind("ShadowDensity", &grassMat->shadowDensity, 0.8f, 0.05f, 0.0f, 1.0f);
     binder_->Bind("ShadowBias", &grassMat->shadowBias, 0.005f, 0.001f, 0.0f, 0.05f);
     binder_->Bind("ShadowNormalBias", &grassMat->shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.1f);
@@ -135,13 +134,6 @@ void GrassField::Update()
         prevTerrainCenter_ = terrainCenter_;
         prevTerrainWidth_ = terrainWidth_;
         prevTerrainDepth_ = terrainDepth_;
-    }
-
-    // プレイヤー座標をマテリアルに伝える
-    if (player_)
-    {
-        auto pos = player_->animationModel_->GetTransform().translation_;
-        grassSystem_->GetMaterialData()->playerPos = { pos.x, pos.y, pos.z };
     }
 
     grassSystem_->Update();
@@ -226,8 +218,9 @@ void GrassField::DebugDraw()
 
     if (ImGui::CollapsingHeader("インタラクション"))
     {
-        binder_->Draw("InteractRadius", "かき分ける半径");
-        binder_->Draw("InteractStrength", "押し倒す強さ");
+        binder_->Draw("InteractStrength", "押し倒す全体の強さ");
+        binder_->Draw("FlattenFactor", "地面への押し潰し強度 (Y軸)");
+        binder_->Draw("TrailFlattenWeight", "足跡痕跡による倒れ維持率");
     }
 
     if (ImGui::CollapsingHeader("影の設定"))

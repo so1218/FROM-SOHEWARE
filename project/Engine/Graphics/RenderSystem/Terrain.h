@@ -95,6 +95,21 @@ public:
 
     int GetChunkSize() const { return chunkSize_; }
 
+    // 高さスケールの取得
+    float GetHeightScale() const { return params_.maxHeight; }
+
+    // ワールドXZ原点の取得 (Transformの平行移動量を基準にする場合)
+    Vector2 GetOriginXZ() const {
+        return Vector2(transform_.translation_.x, transform_.translation_.z);
+    }
+
+    // 地形全体のワールドサイズの計算取得
+    Vector2 GetSizeXZ() const {
+        float width = (totalVertsX_ > 0 ? totalVertsX_ - 1 : 0) * params_.cellSize * transform_.scale_.x;
+        float depth = (totalVertsZ_ > 0 ? totalVertsZ_ - 1 : 0) * params_.cellSize * transform_.scale_.z;
+        return Vector2(width, depth);
+    }
+
 private:
     Engine* engine_ = nullptr;
     std::vector<std::unique_ptr<TerrainChunk>> chunks_;

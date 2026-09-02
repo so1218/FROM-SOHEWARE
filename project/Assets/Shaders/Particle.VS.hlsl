@@ -4,7 +4,7 @@
 StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
-struct VertexOut
+struct ParticleVSOutput
 {
     float4 svpos : SV_POSITION;
     float2 uv : TEXCOORD;
@@ -12,9 +12,9 @@ struct VertexOut
     float textureIndex : TEXCOORD1;
 };
 
-VertexOut main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
+ParticleVSOutput main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
 {
-    VertexOut vout;
+    ParticleVSOutput vout;
     ParticleInstanceData inst = instanceBuffer[instID];
 
     // 板ポリゴンのUVとローカル座標を生成

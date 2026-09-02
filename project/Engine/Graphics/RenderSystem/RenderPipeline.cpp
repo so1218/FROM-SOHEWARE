@@ -10,6 +10,7 @@
 #include "SRVManager.h"
 #include "DSVManager.h"
 #include "FluidSimulationPass.h"
+#include "WorldInteractionPass.h"
 
 namespace FE
 {
@@ -63,6 +64,10 @@ void RenderPipeline::Initialize(Engine* engine,
     // 流体パスの初期化
     fluidSimulationPass_ = std::make_unique<FluidSimulationPass>();
     fluidSimulationPass_->Initialize(engine, engine->GetPSOManager());
+
+    // ワールドインタラクションパスの初期化
+    worldInteractionPass_ = std::make_unique<WorldInteractionPass>();
+    worldInteractionPass_->Initialize(engine, engine->GetPSOManager());
 }
 
 void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, CommandManager* commandManager, const RenderCameraState& cameraState)
@@ -89,6 +94,25 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     // 流体シミュレーションの実行
     fluidSimulationPass_->Execute(cmdList);
 
+    // WorldInteractionSystem から渡された定数パラメータを Pass に渡す
+    worldInteractionPass_->SetConstants(rendererManager->GetWorldInteractionConstants());
+
+    // エンティティリストの転送
+    worldInteractionPass_->UpdateEntities(rendererManager->GetInteractionEntities());
+
+    // ワールドインタラクションパスの実行 (Draw3Dより前に実行してSRVを更新)
+    Vector2 interactionCenterXZ = rendererManager->GetWorldInteractionCenter();
+
+    worldInteractionPass_->Execute(cmdList, rendererManager->GetTerrainHeightMapSRVIndex(), interactionCenterXZ);
+
+    // 描画側(Draw3D)に最新のインタラクションテクスチャのSRVインデックスを渡す
+    rendererManager->SetWorldInteractionData(
+        worldInteractionPass_->GetCurrentSRVIndex(),
+        worldInteractionPass_->GetWorldSize(),
+        interactionCenterXZ,
+        worldInteractionPass_->GetConstantBufferAddress()
+    );
+
     // シャドウパス
     shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア
 
@@ -103,6 +127,7 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     // G-Buffer / オフスクリーンパス
     renderCoordinator_->BeginOffscreenRender();
+
     rendererManager->Draw3D();
     renderCoordinator_->EndOffscreenRender();
 
@@ -151,6 +176,16 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 #endif
 
     renderCoordinator_->EndFrame();
+}
+
+uint32_t RenderPipeline::GetWorldInteractionSRVIndex() const 
+{ 
+    return worldInteractionPass_->GetCurrentSRVIndex();
+}
+
+float RenderPipeline::GetWorldInteractionSize() const 
+{ 
+    return worldInteractionPass_->GetWorldSize();
 }
 
 }

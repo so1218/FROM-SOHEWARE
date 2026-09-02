@@ -14,7 +14,7 @@ ConstantBuffer<ShadowData> gShadowData : register(b8);
 Texture2DArray<float> gShadowMapArray : register(t2);
 SamplerComparisonState gShadowSampler : register(s1);
 
-struct PixelInput
+struct GrassPSInput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
@@ -28,7 +28,7 @@ struct PixelInput
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
-PixelShaderOutput main(PixelInput input)
+PixelShaderOutput main(GrassPSInput input)
 {
     PixelShaderOutput output;
     
@@ -87,8 +87,7 @@ PixelShaderOutput main(PixelInput input)
     float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
     float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength;
     specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor; // 陰部分のハイライト遮蔽
-
-    // Wind Specular Modulation
+    
     // 突風マスクを利用し、風が強く当たる領域のスペキュラ輝度を引き上げる
     // 草が風になびいた瞬間に面が揃って白く光る現象を低負荷で近似
     specIntensity *= 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
@@ -102,7 +101,7 @@ PixelShaderOutput main(PixelInput input)
     // G-Buffer : 濡れ表現でRoughnessを下げる
     output.material = float4(0.0f, 0.8f - (gMaterial.wetness * 0.6f), 0.0f, 1.0f);
     
-    // Motion Vector (TAA / Motion Blur用)
+    // Motion Vector
     float2 ndcCurrent = input.currentClipPos.xy / input.currentClipPos.w;
     float2 ndcPrev = input.prevClipPos.xy / input.prevClipPos.w;
     output.velocity = (ndcCurrent - ndcPrev) * float2(0.5f, -0.5f);

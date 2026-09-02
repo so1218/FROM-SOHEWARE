@@ -1,23 +1,23 @@
 #include "ShaderConstants.hlsli"
 
-struct VertexShaderInput
+ConstantBuffer<TransformationMatrix> gTransform : register(b0);
+
+struct SkydomeVSInput
 {
     float3 position : POSITION;
     float2 uv : TEXCOORD0; 
 };
 
-struct SkydomeVertexShaderOutput
+struct SkydomeVSOutput
 {
     float4 position : SV_Position;
     float3 viewDir : TEXCOORD0; 
     float2 uv : TEXCOORD1; 
 };
 
-ConstantBuffer<TransformationMatrix> gTransform : register(b0);
-
-SkydomeVertexShaderOutput main(VertexShaderInput input)
+SkydomeVSOutput main(SkydomeVSInput input)
 {
-    SkydomeVertexShaderOutput output;
+    SkydomeVSOutput output;
     
     // xywwで深度を画面の最奥に固定
     output.position = mul(float4(input.position, 1.0f), gTransform.WVP).xyww;

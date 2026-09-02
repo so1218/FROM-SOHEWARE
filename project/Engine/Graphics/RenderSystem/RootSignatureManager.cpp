@@ -358,39 +358,54 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "BilateralBlur");
     }
-    if (name == "SSR")
+    if (name == "SSR_CS")
     {
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+        RootSignatureBuilder builder;
+
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 4, D3D12_SHADER_VISIBILITY_ALL);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL);
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
 
-        return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "SSR");
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags =
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+            D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+        return builder.Build(device_, csFlags, "SSR_CS");
     }
     if (name == "Grass")
     {
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);   
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL); 
-        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);   
-        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX);
-        builder.AddCBV(7, D3D12_SHADER_VISIBILITY_VERTEX);
-        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL); 
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);    
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);  
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);    
+        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddCBV(7, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL);  
 
-        builder.AddSRV(10, D3D12_SHADER_VISIBILITY_VERTEX); 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 11, 1, D3D12_SHADER_VISIBILITY_VERTEX);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+        builder.AddSRV(10, D3D12_SHADER_VISIBILITY_VERTEX);
+
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 11, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);   
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 12, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
 
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL,
             D3D12_COMPARISON_FUNC_LESS_EQUAL);
-
         builder.AddStaticSampler(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_VERTEX);
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_VERTEX); 
+        builder.AddStaticSampler(3, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_VERTEX);
+
         return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_NONE, name);
     }
     if (name == "GrassCullingCS")
@@ -597,16 +612,23 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         RootSignatureBuilder builder;
 
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL, 0);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL, 0);
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0);
-        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL, 0);
-        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL, 0);
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL, 0);    
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL, 0);  
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL, 0);    
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL, 0);    
+        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_VERTEX, 0); 
+        builder.AddCBV(8, D3D12_SHADER_VISIBILITY_PIXEL, 0);  
+
         builder.AddSRV(10, D3D12_SHADER_VISIBILITY_VERTEX, 0);
 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL);  
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL);  
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);  
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 1, D3D12_SHADER_VISIBILITY_VERTEX); 
+
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_VERTEX,
+            D3D12_COMPARISON_FUNC_NEVER, D3D12_FLOAT32_MAX);
 
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
             D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL,
@@ -801,55 +823,25 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "FluidComputeRS");
     }
-
-    D3D12_ROOT_SIGNATURE_FLAGS csFlags =
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-        D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-
-    if (name == "HiZ_DownsampleCS")
+    if (name == "WorldInteractionCS") 
     {
-        RootSignatureBuilder builder;
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL); 
-        return builder.Build(device_, csFlags, "HiZ_DownsampleCS");
-    }
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
 
-    if (name == "HiZ_CopyCS")
-    {
-        RootSignatureBuilder builder;
-
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
-
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        return builder.Build(device_, csFlags, "HiZ_CopyCS");
-    }
+        builder.AddStaticSampler(
+            0,
+            D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
+            D3D12_SHADER_VISIBILITY_ALL
+        );
 
-    if (name == "SSR_RaycastCS")
-    {
-        RootSignatureBuilder builder;
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddStaticSampler(1, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
 
-        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
-        return builder.Build(device_, csFlags, "SSR_RaycastCS");
-    }
-
-    if (name == "SSR_ResolveCS")
-    {
-        RootSignatureBuilder builder;
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 5, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL); 
-
-        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
-        return builder.Build(device_, csFlags, "SSR_ResolveCS");
+        D3D12_ROOT_SIGNATURE_FLAGS csFlags = D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS;
+        return builder.Build(device_, csFlags, "WorldInteractionCS");
     }
 
     // どれにも該当しない

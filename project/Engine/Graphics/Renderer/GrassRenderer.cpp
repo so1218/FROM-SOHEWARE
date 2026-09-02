@@ -137,9 +137,12 @@ void GrassRenderer::GenerateGrass(
 void GrassRenderer::Draw(
     const RenderEnvironment& env,
     uint32_t windMapTextureHandle,
+    uint32_t interactionMapTextureHandle,
     ShadowMap* shadowMap,
     const GrassMaterialData& materialData,
-    const GrassCullingData& cullingData)
+    const GrassCullingData& cullingData,
+    D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
+    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
     if (totalGeneratedCount_ == 0) return;
 
@@ -228,21 +231,22 @@ void GrassRenderer::Draw(
     ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, mainHeaps);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
     cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress);
 
-    // コンピュートシェーダーが構築した出力バッファを頂点シェーダーへバインド
-    cmdList->SetGraphicsRootShaderResourceView(6, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
-
-    cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
     if (shadowMap)
     {
-        cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
+        cmdList->SetGraphicsRootConstantBufferView(6, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle()); 
     }
+
+    cmdList->SetGraphicsRootShaderResourceView(7, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapTextureHandle)); 
+    cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle); 
 
     cmdList->ExecuteIndirect(
         commandSignature_.Get(),

@@ -1,7 +1,7 @@
 #include "ShaderConstants.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
-// 既にTAAされて綺麗になった、蓄積済みの3Dフォグ
+// TAAされて綺麗になった、蓄積済みの3Dフォグ
 Texture3D<float4> gVoxelAccumulate : register(t1);
 SamplerState gLinearSampler : register(s0);
 

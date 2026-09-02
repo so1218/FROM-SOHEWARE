@@ -16,7 +16,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     
     float3 volumetricIllumination = float3(0, 0, 0);
     float transmittance = 1.0f;
-
     float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
 

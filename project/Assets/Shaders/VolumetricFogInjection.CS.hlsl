@@ -128,7 +128,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * sampleViewZ);
 
     // ---------------------------------------------------------
-    // カスケードシャドウの評価
+    // カスケードシャドウ
     // ---------------------------------------------------------
     uint cascadeIndex = 0;
     if (sampleViewZ > gShadowData.cascadeSplits[1])

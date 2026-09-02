@@ -12,12 +12,12 @@ struct Plane
     float a, b, c, d;
 };
 
-// 視界錐台 (Frustum)
+// 視界錐台
 struct Frustum
 {
     Plane planes[6];
 
-    // ビュープロジェクション行列からフラスタム（6つの平面）を抽出
+    // ビュープロジェクション行列からフラスタムを抽出
     void ExtractFromMatrix(const Matrix4x4& vp)
     {
         // 左
@@ -44,7 +44,7 @@ struct Frustum
         }
     }
 
-    // AABB（軸並行境界箱）が視界に入っているか判定
+    // AABB が視界に入っているか判定
     bool IntersectsAABB(const Vector3& min, const Vector3& max) const
     {
         for (int i = 0; i < 6; ++i) 
@@ -61,7 +61,7 @@ struct Frustum
                 return false;
             }
         }
-        return true; // どの平面の外側にも完全には出ていない＝視界内（または交差）
+        return true; // どの平面の外側にも完全には出ていない（視界内または交差）
     }
 };
 

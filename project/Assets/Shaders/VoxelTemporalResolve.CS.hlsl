@@ -45,7 +45,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float4 current = gVoxelInjectFiltered.Load(int4(DTid, 0));
 
-    // 時間蓄積時のゴースト(残像)を抑制するため、3x3x3近傍の平均と分散からカラー境界(AABB)を算出。
+    // 時間蓄積時のゴーストを抑制するため、3x3x3近傍の平均と分散からカラー境界(AABB)を算出。
     // ※現状27回のLoadはL1キャッシュに依存しているため、将来的にGroupSharedMemory(LDS)への移行余地あり。
     float4 m1 = 0.0f;
     float4 m2 = 0.0f;

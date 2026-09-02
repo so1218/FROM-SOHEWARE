@@ -10,6 +10,7 @@
 #define float3 FE::Vector3
 #define float2 FE::Vector2
 #define float32_t float
+#define uint uint32_t
 
 #else
 
@@ -96,7 +97,7 @@ struct FrameData
     
     float4x4 prevViewProj;
     
-    uint32_t frameIndex;
+    uint frameIndex;
     float3 prevCameraWorldPosition;
     
     float deltaTime;
@@ -116,7 +117,7 @@ struct SurfaceData
     float metalness; 
     float shininess; 
     float diffuseReflection;
-    uint32_t lightMode; 
+    uint lightMode;
 };
 
 struct MaterialData
@@ -124,21 +125,21 @@ struct MaterialData
     float4x4 uvTransform;
     float4 color;
 
-    int32_t enableLighting;
-    int32_t lightMode;
+    int enableLighting;
+    int lightMode;
     float shininess;
     float environmentMapIntensity;
     
     float4 specularColor;
     
     float diffuseReflection;
-    int32_t addShadow;
+    int addShadow;
     float shadowBias;
     float shadowDensity;
     
     float shadowSoftness;
     float shadowEnvStrength;
-    int32_t isArtGrid;
+    int isArtGrid;
     float alphaTestThreshold;
 
     int enableRim;
@@ -147,15 +148,15 @@ struct MaterialData
     float emissiveIntensity;
     
     float3 rimColor;
-    int32_t rimUseLightDir;
+    int rimUseLightDir;
 
-    int32_t enableDissolve;
+    int enableDissolve;
     float3 edgeColor;
 
     float dissolveThreshold;
     float edgeWidth;
     float edgeIntensity;
-    int32_t enableNormalMap;
+    int enableNormalMap;
     
     float normalTiling;
     float normalIntensity;
@@ -165,8 +166,8 @@ struct MaterialData
     float4 outlineColor;
     
     float outlineWidth;
-    int32_t enableOutline;
-    int32_t enableRipple;
+    int enableOutline;
+    int enableRipple;
     float wetness;
     
     float rippleScale;
@@ -176,7 +177,7 @@ struct MaterialData
     
     float puddleFalloff;
     float puddleEmission;
-    int32_t usePuddle;
+    int usePuddle;
     float rippleSize;
     
     float4 puddleColor;
@@ -184,19 +185,19 @@ struct MaterialData
     float rippleFrequency;
     float rippleLayerMix;
     float puddleTint;
-    int32_t isBubble;
+    int isBubble;
     
     float wobbleSpeed;
     float wobbleAmplitude;
     float rainbowIntensity;
     float fresnelExponent;
    
-    int32_t useTriplanar;
+    int useTriplanar;
     float triplanarScale;
     float triplanarBlendSharpness;
     float shadowNormalBias;
     
-    int32_t enablePOM;
+    int enablePOM;
     float pomHeightScale;
     float pomMinSteps; 
     float pomMaxSteps; 
@@ -243,6 +244,27 @@ struct AtmosphereSkyData
     float3 sunDirection;
 };
 
+struct WaterMaterialData
+{
+    float4 shallowColor; // RGB: 浅瀬の色, A: アルファ上限 (例: 0.15, 0.55, 0.5, 1.0)
+    float4 deepColor; // RGB: 深い場所の色, A: 未使用 (例: 0.02, 0.08, 0.2, 1.0)
+    float absorption; // 濁り・光の吸光度 (例: 0.4)
+    float refractionAmount; // 屈折の歪み強度 (例: 0.03)
+    float2 waveTiling; // 波法線マップのタイリング (例: float2(0.08, 0.15))
+
+    // 波のアニメーション
+    float waveSpeed; // 波の移動速度 (例: 1.0)
+    float roughness; // 水面の基本ラフネス (例: 0.02)
+    float specularIntensity; // 太陽やライトのハイライト強度 (例: 1.0)
+    float padding0;
+
+    // 雨の波紋 (Ripple)
+    float rainIntensity; // 雨の強さ (0.0で波紋なし, 1.0で大雨)
+    float rippleScale; // 波紋の密度・スケール (例: 0.5)
+    float rippleSpeed; // 波紋の拡散速度 (例: 1.0)
+    float rippleStrength; // 波紋の法線の強さ (例: 0.5)
+};
+
 struct TrailMaterialData
 {
     float2 scrollSpeed;
@@ -267,7 +289,7 @@ struct DirectionalLight
     
     float4x4 viewProj;
     
-    int32_t enable;
+    int enable;
     float volumetricScatteringIntensity;
     float2 padding;
 };
@@ -281,7 +303,7 @@ struct PointLight
     
     float radius;
     float padding;
-    int32_t enable;
+    int enable;
     float volumetricScatteringIntensity;
 };
 
@@ -297,7 +319,7 @@ struct SpotLight
     
     float padding;
     float cosAngle;
-    int32_t enable;
+    int enable;
     float volumetricScatteringIntensity;
 };
 
@@ -310,7 +332,7 @@ struct AreaLight
     float range;
     float3 up;
     float decay;
-    int32_t enable;
+    int enable;
     float3 padding;
 };
 
@@ -320,8 +342,8 @@ struct ParticleInstanceData
     float rotationZ;
     
     float2 scale;
-    uint32_t textureIndex;
-    int32_t isBillboard;
+    uint textureIndex;
+    int isBillboard;
     
     float4 color;
     
@@ -405,7 +427,7 @@ struct PostEffectData
     float turbulentSpeed;
     float _paddingTurbulence;
 
-    int32_t flag[2];
+    int flag[2];
     float2 _paddingGlow2;
 
     float dissolveThreshold;
@@ -482,6 +504,34 @@ struct SSRSettings
     float thickness;
 };
 
+struct InteractionEntity
+{
+    float3 position; // ワールド位置
+    float radius; // 影響半径
+    
+    float3 velocity; // 移動速度ベクトル
+    float maxVerticalDist; // 影響を及ぼす最大垂直距離
+    
+    uint entityType; // 0: 人間, 1: 大型/車両, 2: 衝撃波/爆発
+    float forceMultiplier; // 力の倍率
+    float2 padding;
+};
+
+struct InteractionConstants
+{
+    uint entityCount;
+    float worldSize;
+    float2 centerWorldPos; 
+    float2 prevCenterWorldPos;
+    
+    float2 terrainCenter; 
+    float2 terrainSize; 
+    
+    float trailDuration; 
+    float terrainHeightScale; 
+    float2 padding;
+};
+
 struct GrassInstanceData
 {
     float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
@@ -490,9 +540,6 @@ struct GrassInstanceData
 
 struct GrassMaterialData
 {
-    float3 playerPos; 
-    float interactStrength; 
-    
     float3 rootColor;
     float grassRootAO; 
     
@@ -502,23 +549,26 @@ struct GrassMaterialData
     float3 sssColor;
     float sssStrength;
     
+    float interactStrength;
+    float flattenFactor;
+    float trailFlattenWeight;
     float windSpeedMultiplier; 
+    
     float windStrengthMultiplier;
     float gustScale; 
     float gustStrength; 
-    
     float flutterAmount; 
+    
     float windHighlightStrength; 
     float specularStrength; 
     float specularShininess;
-    
     float wetness; 
-    float interactRadius; 
+    
     float shadowDensity; 
     float shadowNormalBias; 
-    
     float shadowBias; 
     float colorVariation; 
+    
     float windFlattenStrength;
 };
 
@@ -531,7 +581,7 @@ struct GrassCullingData
     
     float lodDistance1; 
     float lodDistance2;
-    uint32_t totalInstanceCount;
+    uint totalInstanceCount;
 };
 
 struct GrassGenerationData
@@ -541,7 +591,7 @@ struct GrassGenerationData
     
     float terrainWidth;
     float terrainDepth;
-    uint32_t maxGrassPerChunk;
+    uint maxGrassPerChunk;
     float gridSpacing;
   
     float minHeight;
@@ -559,8 +609,8 @@ struct TreeInstanceData
 
 struct TreeInstanceOffset
 {
-    uint32_t baseInstanceIndex;
-    uint32_t isLeaf;
+    uint baseInstanceIndex;
+    uint isLeaf;
 };
 
 struct TreeCullingData
@@ -568,7 +618,7 @@ struct TreeCullingData
     float maxDrawDistance; 
     float approxTreeHeight; 
     float approxTreeRadius; 
-    uint32_t totalInstanceCount; 
+    uint totalInstanceCount;
     
     float4 frustumPlanes[6];
 };
@@ -671,7 +721,7 @@ struct PebbleGenerationData
     
     float terrainWidth;
     float terrainDepth;
-    uint32_t maxInstancesPerChunk;
+    uint maxInstancesPerChunk;
     float gridSpacing;
     
     float minScale;
@@ -693,7 +743,7 @@ struct PebbleCullingData
     float modelRadius; 
     
     float modelCenterYOffset; 
-    uint32_t totalInstanceCount;
+    uint totalInstanceCount;
     float2 padding;
 };
 
@@ -702,7 +752,7 @@ struct FoliageInstanceData
     float4 posAndScale;
     float4 rotationQuat;
     float3 colorVariation;
-    uint32_t padding;
+    uint padding;
 };
 
 struct FoliageMaterialData
@@ -722,6 +772,10 @@ struct FoliageMaterialData
     
     float shadowBias;
     float shadowNormalBias;
+    float interactStrength; 
+    float flattenFactor; 
+    
+    float trailFlattenWeight;
 };
 
 struct FoliageGenerationData
@@ -730,7 +784,7 @@ struct FoliageGenerationData
     float terrainWidth;
     float terrainDepth;
     
-    uint32_t maxInstancesPerChunk;
+    uint maxInstancesPerChunk;
     float gridSpacing;
     float minScale; 
     float maxScale;
@@ -744,7 +798,7 @@ struct FoliageCullingData
     float modelRadius;
     
     float modelCenterYOffset; 
-    uint32_t totalInstanceCount; 
+    uint totalInstanceCount;
     float2 padding;
 };
 
@@ -836,7 +890,7 @@ struct FogVolumeBuffer
 {
     FogVolume volumes[MAX_FOG_VOLUMES];
     
-    uint32_t volumeCount;
+    uint volumeCount;
     float3 pad; 
 };
 
@@ -875,7 +929,7 @@ struct ShadowData
 
 struct CascadeConstant
 {
-    uint32_t cascadeIndex;
+    uint cascadeIndex;
 };
 
 struct TerrainSettings

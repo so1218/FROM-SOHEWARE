@@ -3,8 +3,10 @@
 
 ConstantBuffer<SSAOSettings> gSSAOSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
+
 Texture2D<float4> gNormalTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
+
 SamplerState gClampSampler : register(s0);
 
 float LinearizeDepth(float depth, float nearClip, float farClip)

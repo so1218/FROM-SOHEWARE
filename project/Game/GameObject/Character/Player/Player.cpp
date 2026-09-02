@@ -55,6 +55,10 @@ void Player::Initialize()
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
 	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
 
+	binder_->Bind("InteractionRadius", &interactionRadius_, 0.1f);
+	binder_->Bind("InteractionForce", &interactionForce_, 0.1f);
+	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 0.1f);
+
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 
@@ -126,6 +130,28 @@ void Player::Update()
 
 	// 武器に右手の行列をそのままセットする
 	rightHandTransform_.matWorld_ = rightHandWorldMatrix;
+
+	// ---------------------------------------------------------
+	// ワールドインタラクション用データの作成と送信
+	// ---------------------------------------------------------
+	Vector3 currentPos = GetTransform().translation_;
+
+	Vector3 velocity = { 0.0f, 0.0f, 0.0f };
+	if (deltaTime > 0.0001f) {
+		velocity = (currentPos - prevPosition_) / deltaTime;
+	}
+	prevPosition_ = currentPos;
+
+	InteractionEntity entity{};
+	entity.position = currentPos;
+	entity.radius = interactionRadius_;         
+	entity.velocity = velocity;
+	entity.maxVerticalDist = maxVerticalDist_;  
+	entity.entityType = 0;
+	entity.forceMultiplier = interactionForce_; 
+
+	engine_->GetRendererManager()->SubmitInteractionEntity(entity);
+	engine_->GetRendererManager()->SetWorldInteractionCenter({ currentPos.x, currentPos.z });
 }
 
 void Player::Move()
@@ -260,6 +286,13 @@ void Player::DebugDraw()
 	{
 		binder_->Draw("ColliderOffset", "位置オフセット");
 		binder_->Draw("ColliderSize", "ハーフサイズ");
+	}
+
+	if (ImGui::CollapsingHeader("環境インタラクション"))
+	{
+		binder_->Draw("InteractionRadius", "干渉半径");
+		binder_->Draw("InteractionForce", "押し出し強度");
+		binder_->Draw("MaxVerticalDist", "有効高低差");
 	}
 
 	ImGui::Separator();

@@ -7,6 +7,7 @@ float hash11(float p)
     p *= p + p;
     return frac(p);
 }
+
 float3 hash31(float p)
 {
     float3 p3 = frac(float3(p, p, p) * float3(.1031, .1030, .0973));
@@ -23,9 +24,9 @@ float3 valueNoise31(float p)
     return lerp(hash31(i), hash31(i + 1.0), f);
 }
 
-VertexShaderOutput main(VertexShaderInput input)
+TrailVSOutput main(TrailVSInput input)
 {
-    VertexShaderOutput output;
+    TrailVSOutput output;
 
     // UVスクロール
     float time = gFrameData.gTime;

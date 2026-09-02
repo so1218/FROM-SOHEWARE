@@ -1,22 +1,22 @@
 struct VertexShaderOutput
 {
-    float32_t4 position : SV_POSITION;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
-    float32_t3 worldPosition : POSITION1;
+    float4 position : SV_POSITION;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 worldPosition : POSITION1;
     float3 tangent : TANGENT;
-    float32_t4 worldColor : COLOR0;
+    float4 worldColor : COLOR0;
     float4 currentClipPos : POSITION2;
     float4 prevClipPos : POSITION3;
 };
 
 struct VertexShaderInput
 {
-    float32_t4 position : POSITION0;
-    float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
-    float32_t3 tangent : TANGENT0;
-    float32_t3 smoothNormal : TEXCOORD1;
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT0;
+    float3 smoothNormal : TEXCOORD1;
 };
 
 struct PixelShaderInput
@@ -41,15 +41,15 @@ struct PixelShaderOutput
 
 struct Well
 {
-    float32_t4x4 skeletonSpaceMatrix;
-    float32_t4x4 skeletonSpaceInverseTransposeMatrix;
+    float4x4 skeletonSpaceMatrix;
+    float4x4 skeletonSpaceInverseTransposeMatrix;
 };
 
 struct Skinned
 {
-    float32_t4 position;
-    float32_t3 normal;
-    float32_t3 tangent;
-    float32_t3 smoothNormal;
+    float4 position;
+    float3 normal;
+    float3 tangent;
+    float3 smoothNormal;
 };
 

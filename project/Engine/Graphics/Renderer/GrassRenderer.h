@@ -24,9 +24,12 @@ public:
     void Draw(
         const RenderEnvironment& env,
         uint32_t windMapTextureHandle,
+        uint32_t interactionMapTextureHandle,
         ShadowMap* shadowMap,
         const GrassMaterialData& materialData,
-        const GrassCullingData& cullingData);
+        const GrassCullingData& cullingData,
+        D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,  
+        D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
 
 private:
     static const int32_t kMaxInstances = 1500000;
