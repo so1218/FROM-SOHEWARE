@@ -894,33 +894,6 @@ struct FogVolumeBuffer
     float3 pad; 
 };
 
-struct FluidSettings
-{
-    float velocityDissipation; 
-    float densityDissipation;
-    float gridScale;
-    float vorticityStrength;
-
-
-    float3 gridMin; 
-    float interactionRadius; 
-
-    float3 gridMax; 
-    float injectionStrength;
-
-    float3 objectPos; 
-    float densityAmount; 
-
-    float3 objectVelocity; 
-    float dragStrength; 
-
-    float pushStrength;
-    float uvwRelaxation; 
-    float2 paddingFluid3;
-    
-    float3 voxelDelta;
-};
-
 struct ShadowData
 {
     float4x4 cascadeLightViewProj[4]; // 4枚分のカスケード行列

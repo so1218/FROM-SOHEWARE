@@ -27,7 +27,6 @@
 #include "CommandManager.h"
 #include "RenderPipeline.h"
 #include "NoiseTextureGenerator.h"
-#include "FluidSimulationPass.h"
 
 namespace FE
 {

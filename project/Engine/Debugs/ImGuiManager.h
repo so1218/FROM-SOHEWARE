@@ -39,7 +39,7 @@ public:
 
     static bool DrawGizmoMatrix(Matrix4x4& worldMatrix);
 
-    // シーンビューの情報をセットする
+    // シーンビューの情報をセット
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
 
     // 外部から情報を取る用

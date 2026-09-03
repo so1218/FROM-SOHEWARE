@@ -897,7 +897,6 @@
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
-    <ClCompile Include="Engine\Graphics\PostProcess\FluidSimulationPass.cpp" />
     <ClCompile Include="Game\GameObject\Orb.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
@@ -940,7 +939,6 @@
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Framework\StateMachine.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
-    <ClInclude Include="Engine\Graphics\PostProcess\FluidSimulationPass.h" />
     <ClInclude Include="Game\GameObject\Orb.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
@@ -976,13 +974,7 @@
     <FxCompile Include="Assets\Shaders\VolumetricFogInjection.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VoxelIntegrate.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VolumetricFogResolve.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidInjection.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidDivergence.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidJacobi.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidSubtractGradient.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidInitUVW.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VoxelSpatialFilter.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FluidScrollAndClear.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
