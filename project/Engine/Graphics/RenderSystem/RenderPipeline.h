@@ -50,7 +50,6 @@ public:
     ShadowMap* GetShadowMap() const { return shadowMap_.get(); }
     PostEffectManager* GetPostEffectManager() const { return postEffectManager_.get(); }
     RenderCoordinator* GetRenderCoordinator() const { return renderCoordinator_.get(); }
-    FluidSimulationPass* GetFluidSimulationPass() const { return fluidSimulationPass_.get(); }
     WorldInteractionPass* GetWorldInteractionPass() const { return worldInteractionPass_.get(); }
 
     uint32_t GetWorldInteractionSRVIndex() const;
@@ -61,7 +60,6 @@ private:
     std::unique_ptr<ShadowMap> shadowMap_;
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
-    std::unique_ptr<FluidSimulationPass> fluidSimulationPass_;
     std::unique_ptr<WorldInteractionPass> worldInteractionPass_;
 };
 

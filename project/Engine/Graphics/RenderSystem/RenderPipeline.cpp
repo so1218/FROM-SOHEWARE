@@ -61,10 +61,6 @@ void RenderPipeline::Initialize(Engine* engine,
         engine->GetSRVManager()
     );
 
-    // 流体パスの初期化
-    fluidSimulationPass_ = std::make_unique<FluidSimulationPass>();
-    fluidSimulationPass_->Initialize(engine, engine->GetPSOManager());
-
     // ワールドインタラクションパスの初期化
     worldInteractionPass_ = std::make_unique<WorldInteractionPass>();
     worldInteractionPass_->Initialize(engine, engine->GetPSOManager());
@@ -90,9 +86,6 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     // カリング用フラスタムを更新
     rendererManager->UpdateCullingFrustums();
-
-    // 流体シミュレーションの実行
-    fluidSimulationPass_->Execute(cmdList);
 
     // WorldInteractionSystem から渡された定数パラメータを Pass に渡す
     worldInteractionPass_->SetConstants(rendererManager->GetWorldInteractionConstants());
@@ -130,13 +123,6 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     rendererManager->Draw3D();
     renderCoordinator_->EndOffscreenRender();
-
-    postEffectManager_->SetFluidData(
-        fluidSimulationPass_->GetCurrentDensitySRVIndex(),
-        fluidSimulationPass_->GetCurrentVelocitySRVIndex(),
-        fluidSimulationPass_->GetCurrentUVWSRVIndex(),
-        fluidSimulationPass_->GetConstantBufferAddress()
-    );
 
     // ポストエフェクトパス
     postEffectManager_->ExecutePostEffects(cmdList);

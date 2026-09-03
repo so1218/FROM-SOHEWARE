@@ -721,17 +721,22 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "VolumetricFogInjectionCS")
     {
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL); 
-        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_ALL);
+        // --- CBV (定数バッファ) ---
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); // [0] b0: FrameData
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL); // [1] b2: VolumetricFogSettings
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL); // [2] b3: PointLights
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); // [3] b4: SpotLights
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL); // [4] b5: FogVolumeBuffer
+        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_ALL); // [5] b6: ShadowData
 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 6, D3D12_SHADER_VISIBILITY_ALL);
+        // --- Descriptor Tables ---
+        // [6] SRV: t0 ~ t2 (Depth, ShadowMap, NoiseVolume の3つ)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
+
+        // [7] UAV: u0 (VoxelInject の1つ)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
+        // --- Static Samplers ---
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL);
 

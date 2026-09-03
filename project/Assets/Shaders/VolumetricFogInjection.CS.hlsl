@@ -4,9 +4,6 @@
 Texture2D<float> gDepthTexture : register(t0);
 Texture2DArray<float> gShadowMap : register(t1);
 Texture3D<float4> gNoiseVolume : register(t2);
-Texture3D<float> gFluidDensity : register(t3);
-Texture3D<float4> gFluidVelocity : register(t4);
-Texture3D<float4> gFluidUVW : register(t5);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
@@ -14,7 +11,6 @@ SamplerComparisonState gShadowSampler : register(s1);
 RWTexture3D<float4> gVoxelInject : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<FluidSettings> gFluidSettings : register(b1);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
 cbuffer PointLights : register(b3)
@@ -30,7 +26,6 @@ ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b6);
 
 // Henyey-Greenstein 位相関数
-// 光の非対称な散乱確率を計算する標準モデル
 float PhaseFunctionHG(float cosTheta, float g)
 {
     float g2 = g * g;
@@ -39,12 +34,10 @@ float PhaseFunctionHG(float cosTheta, float g)
 }
 
 // 二重 Henyey-Greenstein 位相関数
-// 実際の霧で発生する強い前方散乱と弱い後方散乱を近似するための標準アプローチ
 float DualPhaseHG(float cosTheta, float gForward)
 {
-    // 一般的な大気・雲の散乱近似パラメータ
-    static const float kBackScatterG = -0.2f; // 後方散乱の非対称性
-    static const float kBlendRatio = 0.9f; // 前方散乱の優先度 (90% 前方, 10% 後方)
+    static const float kBackScatterG = -0.2f;
+    static const float kBlendRatio = 0.9f;
 
     float forward = PhaseFunctionHG(cosTheta, gForward);
     float backward = PhaseFunctionHG(cosTheta, kBackScatterG);
@@ -52,10 +45,8 @@ float DualPhaseHG(float cosTheta, float gForward)
 }
 
 // レイマーチングのアーティファクトを消すためのノイズ関数
-// IGN論文の公式
 float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
-    // TAA や時間軸のジッターに対応させるため、フレーム単位でオフセット
     static const float kTemporalGoldenRatio = 5.588238f;
     pixelCoord += float2(frameIndex * kTemporalGoldenRatio, frameIndex * kTemporalGoldenRatio);
     
@@ -81,7 +72,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
         return;
 
-    // 指数関数的なZスライスにより、手前側の解像度を高めに確保
     float nearZ = max(gFrameData.nearClip, kMinNearClip);
     float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
 
@@ -104,7 +94,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     sceneWorld.xyz /= sceneWorld.w;
     float sceneDist = length(sceneWorld.xyz - gFrameData.cameraWorldPosition);
 
-    // TAAでの時間的蓄積を前提とし、IGN(Interleaved Gradient Noise)で深度方向にレイをずらす
     float noiseJitter = InterleavedGradientNoise(DTid.xy, gFrameData.frameIndex);
     float sampleViewZ = viewZ0 + voxelThickness * noiseJitter;
 
@@ -113,14 +102,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ---------------------------------------------------------
     float fadeRange = max(voxelThickness * 1.0f, 0.1f);
     
-    // 深度バッファを参照し、不透明ジオメトリの裏側に完全に隠れるボクセルは処理を打ち切る
     if (sampleViewZ > sceneDist + fadeRange)
     {
         gVoxelInject[DTid.xyz] = float4(0.0f, 0.0f, 0.0f, 0.0f);
         return;
     }
 
-    // 地形との交差部でハードエッジが出ないよう、fadeRange区間で徐々にウェイトを落とす
     float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
     float nearFade = smoothstep(kCameraNearFadeStart, kCameraNearFadeEnd, sampleViewZ);
     depthWeight *= nearFade;
@@ -151,65 +138,19 @@ void main(uint3 DTid : SV_DispatchThreadID)
     }
 
     // ---------------------------------------------------------
-    // 流体ボリュームの移流と境界処理
-    // ---------------------------------------------------------
-    float3 fluidSize = gFluidSettings.gridMax - gFluidSettings.gridMin;
-    bool isInsideFluidGrid = all(currentPos >= gFluidSettings.gridMin) && all(currentPos <= gFluidSettings.gridMax);
-
-    float fluidMass = 0.0f;
-    float3 advectedFluidPos = currentPos;
-    float fluidShadowMass = 0.0f;
-    float edgeFade = 0.0f;
-
-    if (isInsideFluidGrid)
-    {
-        // 領域外で密度がパキッと途切れないよう、境界の10%でフェードアウト
-        float3 distToMin = currentPos - gFluidSettings.gridMin;
-        float3 distToMax = gFluidSettings.gridMax - currentPos;
-        float3 minDist = min(distToMin, distToMax);
-        edgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(minDist.x, minDist.y), minDist.z));
-
-        // Toroidal Wrap境界を前提としたサンプリング
-        float3 fluidUVW = frac(currentPos / fluidSize);
-        fluidMass = max(gFluidDensity.SampleLevel(gSampler, fluidUVW, 0).r, 0.0f) * edgeFade;
-
-        // 移流ベクトルから歪んだワールド座標を算出（最短経路補正を含む）
-        float3 advectedUVW = gFluidUVW.SampleLevel(gSampler, fluidUVW, 0).xyz;
-        float3 uvwOffset = advectedUVW - fluidUVW;
-        uvwOffset = uvwOffset - floor(uvwOffset + 0.5f);
-        advectedFluidPos = currentPos + (uvwOffset * fluidSize);
-
-        // ボリューム自身のセルフシャドウ近似用に、光源方向へ少しオフセットして密度を再評価
-        float3 shadowOffsetWorld = normalize(-gFrameData.mainLightDirection) * (2.0f * gFluidSettings.gridScale);
-        float3 shadowSamplePos = currentPos + shadowOffsetWorld;
-
-        float3 shadowUVWRaw = (shadowSamplePos - gFluidSettings.gridMin) / fluidSize;
-        float3 shadowUVW = shadowUVWRaw - floor(shadowUVWRaw);
-
-        float3 sDistToMin = shadowSamplePos - gFluidSettings.gridMin;
-        float3 sDistToMax = gFluidSettings.gridMax - shadowSamplePos;
-        float3 sMinDist = min(sDistToMin, sDistToMax);
-        float shadowEdgeFade = smoothstep(0.0f, fluidSize.x * 0.1f, min(min(sMinDist.x, sMinDist.y), sMinDist.z));
-
-        fluidShadowMass = max(gFluidDensity.SampleLevel(gSampler, shadowUVW, 0).r, 0.0f) * shadowEdgeFade;
-    }
-
-    // ---------------------------------------------------------
     // ボリューメトリックノイズの合成
     // ---------------------------------------------------------
     float3 timeOffset = normalize(gFogSettings.windDirection + kMinSafeDistance) * (gFrameData.gTime * gFogSettings.windSpeed);
-    float3 noiseSamplePos = lerp(currentPos, advectedFluidPos, edgeFade);
 
-    float3 warpUVW = noiseSamplePos * (gFogSettings.noiseScale * 0.43f) + timeOffset * 0.35f;
+    float3 warpUVW = currentPos * (gFogSettings.noiseScale * 0.43f) + timeOffset * 0.35f;
     float3 distortion = float3(
         gNoiseVolume.SampleLevel(gSampler, warpUVW, 0).r,
         gNoiseVolume.SampleLevel(gSampler, warpUVW + kNoiseOffsetA, 0).r,
         gNoiseVolume.SampleLevel(gSampler, warpUVW + kNoiseOffsetB, 0).r
     );
 
-    float3 distortedPos = noiseSamplePos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
+    float3 distortedPos = currentPos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
 
-    // Perlinによる基本骨格 (低・中周波) の合成
     float3 uvwA = distortedPos * gFogSettings.noiseScale + timeOffset;
     float4 noiseLayer1 = gNoiseVolume.SampleLevel(gSampler, uvwA, 0);
     
@@ -218,7 +159,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float combinedPerlin = noiseLayer1.r * noiseLayer2.r * 1.5f;
 
-    // 遠景でのサンプリングエイリアス（チラつき）を防ぐため、距離に応じて高周波ノイズを減衰
     float linearDistanceRatio = saturate(sampleViewZ / farZ);
     float detailFade = smoothstep(0.1f, 0.6f, linearDistanceRatio);
 
@@ -226,7 +166,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float activeErosion = lerp(gFogSettings.erosion, 0.0f, detailFade);
     float activeNoiseIntensity = lerp(gFogSettings.noiseIntensity, gFogSettings.noiseIntensity * 0.2f, detailFade);
 
-    // Worleyノイズを用いてカリフラワー状のディテールを削り出す
     float combinedNoise = lerp(combinedPerlin, 1.0f - noiseLayer1.g, activeWorleyWeight);
     combinedNoise = saturate(combinedNoise - (noiseLayer1.b * activeErosion));
 
@@ -246,17 +185,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float combinedNoiseEffect = erosionFactor * noiseCoverage;
     float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, activeNoiseIntensity);
 
-    float finalGlobalDensity = globalBaseDensity * finalNoiseModifier;
-    float particleDensity = max(finalGlobalDensity, fluidMass);
+    float particleDensity = globalBaseDensity * finalNoiseModifier;
 
     // ---------------------------------------------------------
-    // ライティングと光の減衰 (位相関数を含む)
+    // ライティングと光の減衰
     // ---------------------------------------------------------
-    float dynamicShadowFog = max(globalBaseDensity * combinedNoiseEffect, fluidShadowMass);
-    float fluidSelfShadow = exp(-dynamicShadowFog * 4.0f);
-    float finalShadowVisibility = shadowVisibility * fluidSelfShadow;
+    float dynamicShadowFog = globalBaseDensity * combinedNoiseEffect;
+    float fogSelfShadow = exp(-dynamicShadowFog * 4.0f);
+    float finalShadowVisibility = shadowVisibility * fogSelfShadow;
 
-    // Dual-Lobe Henyey-Greenstein を用いてMie散乱（前方への強い散乱）をシミュレート
     float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
     float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
 
@@ -275,7 +212,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float distance = length(lightVec);
         float radius = gPointLights[p].radius;
 
-        // ボクセルの粗さに起因するブロックノイズを防ぐため、厚みベースで距離を補正
         float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
         if (smoothDistance > radius * 1.1f)
             continue;
@@ -289,7 +225,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
 
         stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * gPointLights[p].volumetricScatteringIntensity)
-                  * (baseAttenuate * edgeFadeOut) * phaseLocal * pointLocalFogAttenuation;
+                   * (baseAttenuate * edgeFadeOut) * phaseLocal * pointLocalFogAttenuation;
     }
 
     for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
@@ -306,7 +242,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         float3 lDir = lightVec / max(distance, kMinSafeDistance);
         
-        // 光源中心における特異点（極端な白飛び）を回避するためのブレンド処理
         if (distance < 0.2f)
         {
             float blend = smoothstep(0.0f, 0.2f, distance);
@@ -356,10 +291,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     for (uint v = 0; v < gFogVolumeBuffer.volumeCount; ++v)
     {
         FogVolume vol = gFogVolumeBuffer.volumes[v];
-        float3 distortedWorldPos = lerp(currentPos, advectedFluidPos, vol.distortionAmount);
         
-        // 逆行列を用いてボリュームのローカル空間に変換し、判定を簡略化
-        float3 localPos = mul(float4(distortedWorldPos, 1.0f), vol.worldToLocal).xyz;
+        float3 localPos = mul(float4(currentPos, 1.0f), vol.worldToLocal).xyz;
 
         float volumeMask = 0.0f;
         if (vol.type == 1) // Box
@@ -381,11 +314,10 @@ void main(uint3 DTid : SV_DispatchThreadID)
         if (volumeMask > 0.0f)
         {
             float3 volTimeOffset = normalize(vol.windDirection + kMinSafeDistance) * (gFrameData.gTime * vol.windSpeed);
-            float3 baseVolPos = lerp(currentPos, noiseSamplePos, vol.distortionAmount);
 
-            float3 volWarpUVW = (baseVolPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
+            float3 volWarpUVW = (currentPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
             float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
-            float3 volNoisePos = (baseVolPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
+            float3 volNoisePos = (currentPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
 
             float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
 
@@ -417,7 +349,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ---------------------------------------------------------
     // ボクセルへの書き込み
     // ---------------------------------------------------------
-    // 次段のレイマーチング用に、散乱光と消散係数をパック
     float3 scattering = ((totalLight * global_sigma_s) + volumeScattering) * depthWeight;
     float extinction = (global_sigma_e + volumeExtinction) * depthWeight;
 

@@ -348,7 +348,6 @@ void Engine::InitializeResources()
 
 		// VolumetricFogPassに直接データを渡す
 		GetPostEffectManager()->GetVolumetricFogPass()->SetNoiseData(noiseData);
-		GetFluidSimulationPass()->SetNoiseData(noiseData);
 	}
 }
 

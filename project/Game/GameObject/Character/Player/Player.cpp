@@ -182,9 +182,6 @@ void Player::Move()
 	// 実際の位置更新
 	GetTransform().translation_ += moveDirection_ * moveSpeed_;
 
-	engine_->GetFluidSimulationPass()->GetSettings()->objectPos = GetTransform().translation_;
-	engine_->GetFluidSimulationPass()->GetSettings()->objectVelocity = moveDirection_ * moveSpeed_;
-
 	// 移動後、地形の高さを取得してY座標を補正（スナップ）する
 	if (terrain_)
 	{

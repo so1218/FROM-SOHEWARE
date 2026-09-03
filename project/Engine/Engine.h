@@ -93,7 +93,6 @@ public:
     RenderCoordinator* GetRenderCoordinator() const { return renderPipeline_->GetRenderCoordinator(); }
     PostEffectManager* GetPostEffectManager() const { return renderPipeline_->GetPostEffectManager(); }
     ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
-    FluidSimulationPass* GetFluidSimulationPass() const { return renderPipeline_->GetFluidSimulationPass(); }
     RenderPipeline* GetRenderPipeline() const { return renderPipeline_.get(); }
 
     static int32_t GetClientWidth() { return sClientWidth; }
