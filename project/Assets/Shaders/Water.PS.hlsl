@@ -188,9 +188,6 @@ PixelShaderOutput main(PixelShaderInput input)
     directSpecular += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
 
     // --------------------------------------------------------
-    // 7. フレネル & 反射 (SSR + IBL Reflection)
-    // --------------------------------------------------------
-   // --------------------------------------------------------
     // 7. フレネル & 反射 (Water-Space SSR + IBL Reflection)
     // --------------------------------------------------------
     float NdotV = saturate(dot(worldNormal, toEyeWorld));
