@@ -234,6 +234,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Renderer\TerrainRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TrailRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\WaterRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\FoliageSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\GrassSystem.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\LightningSystem.cpp" />
@@ -366,6 +367,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
     <ClCompile Include="Game\GameObject\PebbleField.cpp" />
     <ClCompile Include="Game\GameObject\TreeField.cpp" />
+    <ClCompile Include="Game\GameObject\WaterManager.cpp" />
+    <ClCompile Include="Game\GameObject\WaterObject.cpp" />
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
     <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
@@ -434,6 +437,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Renderer\TerrainRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TrailRenderer.h" />
     <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\WaterRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\FoliageSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\GrassSystem.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\LightningSystem.h" />
@@ -532,6 +536,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\GameObject\PebbleField.h" />
     <ClInclude Include="Game\GameObject\TreeField.h" />
+    <ClInclude Include="Game\GameObject\WaterManager.h" />
+    <ClInclude Include="Game\GameObject\WaterObject.h" />
     <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />

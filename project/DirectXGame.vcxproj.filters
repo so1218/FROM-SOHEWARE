@@ -925,6 +925,9 @@
     <ClCompile Include="Game\GameObject\GameUI.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\WorldInteractionPass.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.cpp" />
+    <ClCompile Include="Engine\Graphics\Renderer\WaterRenderer.cpp" />
+    <ClCompile Include="Game\GameObject\WaterObject.cpp" />
+    <ClCompile Include="Game\GameObject\WaterManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -967,6 +970,9 @@
     <ClInclude Include="Game\GameObject\GameUI.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\WorldInteractionPass.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.h" />
+    <ClInclude Include="Engine\Graphics\Renderer\WaterRenderer.h" />
+    <ClInclude Include="Game\GameObject\WaterObject.h" />
+    <ClInclude Include="Game\GameObject\WaterManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />

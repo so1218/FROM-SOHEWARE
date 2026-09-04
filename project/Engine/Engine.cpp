@@ -324,6 +324,7 @@ void Engine::InitializeResources()
 		globalConstants_.get(),
 		materialManager_.get(),
 		GetPostEffectManager(),
+		renderPipeline_->GetRenderCoordinator(),
 		GetClientWidth(),
 		GetClientHeight(),
 		GetShadowMap()

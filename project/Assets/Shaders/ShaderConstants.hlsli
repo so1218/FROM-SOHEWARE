@@ -246,27 +246,53 @@ struct AtmosphereSkyData
 
 struct WaterMaterialData
 {
-    DirectX::XMFLOAT4 shallowColor; // RGB: 浅瀬の色, A: アルファ上限
-    DirectX::XMFLOAT4 deepColor; // RGB: 深い場所の色
-    float absorption; // 濁り・光の吸光度 (例: 0.4)
-    float refractionAmount; // 屈折の歪み強度 (例: 0.03)
-    DirectX::XMFLOAT2 waveTiling; // 波法線マップのタイリング (例: XMFLOAT2(0.08, 0.15))
+    // --------------------------------------------------------
+    // ★ 直感的な波のグローバル設定（風・物理ベース）
+    // --------------------------------------------------------
+    float2 windDirection; // 風向き (例: [1.0, 0.5] の正規化ベクトル) (8 bytes)
+    float baseWaveLength; // 主な波の長さ・メートル (例: 15.0m) (4 bytes)
+    float baseAmplitude; // 主な波の高さ・メートル (例: 0.8m) (4 bytes)
 
-    // 波のアニメーション
-    float waveSpeed; // 波の移動速度 (例: 1.0)
-    float roughness; // 水面の基本ラフネス (例: 0.02)
-    float specularIntensity; // ハイライト強度 (例: 1.0)
-    
-    // コースティクス (Caustics) パラメータ
-    float causticsScale; // コースティクスのスケール (例: 0.15)
-    float causticsIntensity; // コースティクスの明るさ (例: 2.5)
+    float baseSteepness; // 波のトガり具合 (0.0:滑らか 〜 1.0:鋭い) (4 bytes)
+    float waveSpeed; // 全体の波の進行速度倍率 (例: 1.0) (4 bytes)
+    float wavePersistence; // 小さい波の減衰率 (オクターブ持続性: 推奨 0.45〜0.55) (4 bytes)
+    float waveLacunarity; // 小さい波の周波数倍率 (オクターブ隙間率: 推奨 2.0〜2.2) (4 bytes)
 
-    // 雨の波紋 (Ripple)
-    float rainIntensity; // 雨の強さ (0.0〜1.0)
-    float rippleScale; // 波紋の密度 (例: 0.5)
-    float rippleSpeed; // 波紋の拡散速度 (例: 1.0)
-    float rippleStrength; // 波紋の法線の強さ (例: 0.5)
-    float padding0;
+    float waveDirectionSpread; // 子波の風向きからの拡散角度 (例: 0.3 = 約17度) (4 bytes)
+    float waveChop; // 水平方向への引き寄せ強度 (0.0〜1.5) (4 bytes)
+    float2 paddingWave; // 16バイトアライメント調整 (8 bytes)
+
+    // --------------------------------------------------------
+    // レンダリング・カラー設定 (PS用)
+    // --------------------------------------------------------
+    float4 shallowColor; // 浅瀬の色
+    float4 deepColor; // 深い場所の色
+    float4 scatterColor; // 水中散乱光の色
+    float4 foamColor; // 泡の色
+
+    float absorption; // 吸光度
+    float refractionAmount; // 屈折強度
+    float2 waveTiling; // 法線タイリング
+
+    float roughness; // ラフネス
+    float specularIntensity; // ハイライト強度
+    float envReflectionIntensity; // 環境マップ反射の明るさ
+    float causticsScale; // コースティクススケール
+
+    float causticsIntensity; // コースティクス明るさ
+    float causticsFadeDepth; // コースティクス消滅深度
+    float chromaticAberration; // 色収差強度
+    float foamScale; // 泡スケール
+
+    float foamThreshold; // 泡発生閾値
+    float foamIntensity; // 泡強度
+    float rainIntensity; // 雨の強さ
+    float rippleScale; // 波紋スケール
+
+    float rippleSpeed; // 波紋速度
+    float rippleStrength; // 波紋強度
+    float ssrIntensity; // SSR反射強度 (0.0:無効 〜 1.0:完全有効)
+    float ssrThickness;
 };
 
 struct TrailMaterialData

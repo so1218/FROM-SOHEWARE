@@ -40,6 +40,9 @@ void RenderPipeline::Initialize(Engine* engine,
 
     // PostEffectManagerの初期化
     uint32_t offscreenDepthSrvIndex = engine->GetDSVManager()->GetDSVTextureSRVIndex(1);
+    // RenderCoordinator に深度 SRV インデックスを設定
+    renderCoordinator_->SetOffscreenDepthSRVIndex(offscreenDepthSrvIndex);
+    
     postEffectManager_ = std::make_unique<PostEffectManager>();
     postEffectManager_->Initialize(
         engine,
@@ -117,10 +120,15 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     shadowMap_->TransitionToRead(cmdList); // ループの後に1回だけバリア
 
+    // RendererManager に深度リソースのポインタを渡す
+    rendererManager->SetOffscreenDepthResource(renderCoordinator_->GetOffscreenDepthResource());
+    rendererManager->SetOffscreenColorResource(renderCoordinator_->GetOffscreenColorResource());
+
     // G-Buffer / オフスクリーンパス
     renderCoordinator_->BeginOffscreenRender();
 
     rendererManager->Draw3D();
+
     renderCoordinator_->EndOffscreenRender();
 
     // ポストエフェクトパス

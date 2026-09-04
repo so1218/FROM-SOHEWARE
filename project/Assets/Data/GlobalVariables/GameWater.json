@@ -1,0 +1,83 @@
+{
+    "GameWater": {
+        "WaterCount": 1,
+        "Water_0": {
+            "Absorption": 0.23999999463558197,
+            "BaseAmplitude": 0.25999999046325684,
+            "BaseSteepness": 0.10999999940395355,
+            "BaseWaveLength": 18.299999237060547,
+            "CausticsFadeDepth": 0.10000000149011612,
+            "CausticsIntensity": 0.0,
+            "CausticsScale": 0.10000000149011612,
+            "ChromaticAberration": 1.7000000476837158,
+            "DeepColor": [
+                0.0,
+                0.1681806892156601,
+                0.3019607961177826,
+                0.9607843160629272
+            ],
+            "EnvMap": "pureSky",
+            "EnvReflectionIntensity": 0.10000000149011612,
+            "FoamColor": [
+                0.8999999761581421,
+                0.949999988079071,
+                1.0,
+                0.800000011920929
+            ],
+            "FoamIntensity": 1.100000023841858,
+            "FoamScale": 0.009999999776482582,
+            "FoamThreshold": 0.5600000023841858,
+            "NormalMap": "normal_23",
+            "Position": [
+                236.80999755859375,
+                -1.7899999618530273,
+                38.970001220703125
+            ],
+            "RainIntensity": 1.0,
+            "RefractionAmount": 0.02500000037252903,
+            "RippleScale": 5.0,
+            "RippleSpeed": 2.0,
+            "RippleStrength": 0.20000000298023224,
+            "RippleTexture": "noise_56",
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Roughness": 0.7200000286102295,
+            "SSRIntensity": 0.0,
+            "SSRThickness": 5.0,
+            "Scale": [
+                64.48999786376953,
+                0.7300000190734863,
+                49.630001068115234
+            ],
+            "ScatterColor": [
+                0.0,
+                0.4000000059604645,
+                0.30000001192092896,
+                1.0
+            ],
+            "ShallowColor": [
+                0.746835470199585,
+                1.0,
+                0.9006569385528564,
+                1.0
+            ],
+            "SpecularIntensity": 1.0,
+            "WaveChop": 1.0,
+            "WaveDirectionSpread": 0.30000001192092896,
+            "WaveLacunarity": 2.0999999046325684,
+            "WavePersistence": 0.11999999731779099,
+            "WaveSpeed": 1.350000023841858,
+            "WaveTiling": [
+                2.5799999237060547,
+                1.5199999809265137
+            ],
+            "WindDirection": [
+                1.0,
+                0.5
+            ]
+        }
+    }
+}

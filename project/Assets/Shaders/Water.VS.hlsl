@@ -2,62 +2,71 @@
 #include "ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<WaterMaterialData> gWaterMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
-struct GerstnerWave
+// 風と物理法則から多重 Gerstner 波をプロシージャル自動計算
+float3 CalculateAutoGerstnerWorld(float3 worldPos, float time, out float3 outNormal, out float3 outTangent)
 {
-    float2 direction;
-    float waveLength;
-    float amplitude;
-    float speed;
-    float steepness;
-};
+    static const int OCTAVES = 4;
+    static const float GRAVITY = 9.81f;
 
-// Gerstner波の合成計算 (位置と法線・接線変位)
-float3 CalculateMultiGerstner(float3 pos, float time, out float3 outNormal, out float3 outTangent)
-{
-    static const int WAVE_COUNT = 4;
-    GerstnerWave waves[WAVE_COUNT] =
-    {
-        { normalize(float2(1.0f, 0.3f)), 16.0f, 0.12f, 1.2f, 0.6f },
-        { normalize(float2(-0.4f, 0.8f)), 8.0f, 0.06f, 1.8f, 0.5f },
-        { normalize(float2(0.2f, -1.0f)), 4.0f, 0.03f, 2.4f, 0.4f },
-        { normalize(float2(-0.8f, -0.5f)), 2.0f, 0.01f, 3.1f, 0.3f }
-    };
-
-    float3 waveOffset = 0.0f.xxx;
+    float3 waveOffset = float3(0.0f, 0.0f, 0.0f);
     float3 tangent = float3(1.0f, 0.0f, 0.0f);
     float3 binormal = float3(0.0f, 0.0f, 1.0f);
 
-    [unroll]
-    for (int i = 0; i < WAVE_COUNT; ++i)
-    {
-        float w = 2.0f * PI / waves[i].waveLength;
-        float phi = waves[i].speed * w;
-        float proj = dot(waves[i].direction, pos.xz);
-        float phase = w * proj + phi * time;
+    float currentAmplitude = gWaterMaterial.baseAmplitude;
+    float currentLength = max(gWaterMaterial.baseWaveLength, 0.1f);
+    float2 mainDir = normalize(gWaterMaterial.windDirection);
 
+    float spreadAngle = gWaterMaterial.waveDirectionSpread;
+    float cosAngle = cos(spreadAngle);
+    float sinAngle = sin(spreadAngle);
+    float2x2 rotMatrix = float2x2(cosAngle, -sinAngle, sinAngle, cosAngle);
+
+    float2 currentDir = mainDir;
+
+    [unroll]
+    for (int i = 0; i < OCTAVES; ++i)
+    {
+        float k = (2.0f * PI) / currentLength;
+        float w = sqrt(GRAVITY * k) * gWaterMaterial.waveSpeed;
+
+        float phase = k * dot(currentDir, worldPos.xz) + w * time;
         float c = cos(phase);
         float s = sin(phase);
-        float q = waves[i].steepness / (w * waves[i].amplitude * (float) WAVE_COUNT);
 
-        waveOffset.x += waves[i].direction.x * (waves[i].amplitude * c);
-        waveOffset.y += waves[i].amplitude * s;
-        waveOffset.z += waves[i].direction.y * (waves[i].amplitude * c);
+        float q = (gWaterMaterial.baseSteepness / (k * currentAmplitude * (float) OCTAVES)) * gWaterMaterial.waveChop;
 
+        waveOffset.x += currentDir.x * (q * currentAmplitude * c);
+        waveOffset.y += currentAmplitude * s;
+        waveOffset.z += currentDir.y * (q * currentAmplitude * c);
+
+        float wa = k * currentAmplitude;
         tangent += float3(
-            -waves[i].direction.x * waves[i].direction.x * q * s,
-            waves[i].direction.x * c * (w * waves[i].amplitude),
-            -waves[i].direction.x * waves[i].direction.y * q * s
+            -currentDir.x * currentDir.x * (q * wa * s),
+             currentDir.x * (wa * c),
+            -currentDir.x * currentDir.y * (q * wa * s)
         );
 
         binormal += float3(
-            -waves[i].direction.x * waves[i].direction.y * q * s,
-            waves[i].direction.y * c * (w * waves[i].amplitude),
-            -waves[i].direction.y * waves[i].direction.y * q * s
+            -currentDir.x * currentDir.y * (q * wa * s),
+             currentDir.y * (wa * c),
+            -currentDir.y * currentDir.y * (q * wa * s)
         );
+
+        currentAmplitude *= gWaterMaterial.wavePersistence;
+        currentLength /= gWaterMaterial.waveLacunarity;
+        
+        if (i % 2 == 0)
+        {
+            currentDir = mul(rotMatrix, currentDir);
+        }
+        else
+        {
+            currentDir = mul(transpose(rotMatrix), currentDir);
+        }
     }
 
     outNormal = normalize(cross(binormal, tangent));
@@ -72,8 +81,8 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     uint index = input.instanceID + gInstanceOffset.gBaseInstanceIndex;
     Object3DInstanceData instance = gInstanceData[index];
 
-    float4 localPos = input.position;
-    float4 prevLocalPos = input.position;
+    float4 baseWorldPos = mul(input.position, instance.World);
+    float4 prevBaseWorldPos = mul(input.position, instance.PrevWorld);
 
     float time = gFrameData.gTime;
     float pTime = gFrameData.prevTime;
@@ -81,24 +90,20 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     float3 waveNormal, waveTangent;
     float3 prevWaveNormal, prevWaveTangent;
 
-    float3 waveOffset = CalculateMultiGerstner(localPos.xyz, time, waveNormal, waveTangent);
-    float3 prevWaveOffset = CalculateMultiGerstner(prevLocalPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
+    // ワールド座標と風の物理法則から波の頂点変形を計算
+    float3 waveOffset = CalculateAutoGerstnerWorld(baseWorldPos.xyz, time, waveNormal, waveTangent);
+    float3 prevWaveOffset = CalculateAutoGerstnerWorld(prevBaseWorldPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
 
-    localPos.xyz += waveOffset;
-    prevLocalPos.xyz += prevWaveOffset;
+    float3 finalWorldPos = baseWorldPos.xyz + waveOffset;
+    float3 prevFinalWorldPos = prevBaseWorldPos.xyz + prevWaveOffset;
 
-    // 座標変換 & Velocity構築
-    float4 worldPos = mul(localPos, instance.World);
-    output.worldPosition = worldPos.xyz;
-    output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
+    output.worldPosition = finalWorldPos;
+    output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
 
-    float4 prevWorldPos = mul(prevLocalPos, instance.PrevWorld);
-    output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
-
+    output.prevClipPos = mul(float4(prevFinalWorldPos, 1.0f), gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
     
-    // 変位後の波の頂点法線・接線を使用
     float3x3 worldInvTranspose = (float3x3) instance.WorldInverseTranspose;
     output.normal = normalize(mul(waveNormal, worldInvTranspose));
     output.tangent = normalize(mul(waveTangent, (float3x3) instance.World));

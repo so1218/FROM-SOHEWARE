@@ -16,8 +16,27 @@ struct VertexData
     Vector4 color;
 };
 
-// Trail専用の頂点構造体
 struct TrailVertexData
+{
+    Vector4 position;
+    Vector2 texcoord;
+    Vector4 color;
+};
+
+struct LineVertexData
+{
+    Vector4 position;
+    Vector4 color;
+};
+
+struct TerrainVertexData
+{
+    Vector4 position;
+    Vector2 texcoord;
+};
+
+
+struct LightningVertexData
 {
     Vector4 position;
     Vector2 texcoord;
@@ -28,25 +47,6 @@ struct TextureData
 {
     std::string textureFilePath;
     uint32_t textureHandle = 0;
-};
-
-struct LineVertexData
-{
-    Vector4 position;
-    Vector4 color;
-};
-
-struct TerrainVertexData 
-{
-    Vector4 position; 
-    Vector2 texcoord; 
-};
-
-struct LightningVertexData
-{
-    Vector4 position;
-    Vector2 texcoord;
-    Vector4 color;
 };
 
 struct AABB
@@ -60,14 +60,14 @@ struct MaterialHandle
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;
     MaterialData* materialData;
 
-    std::string textureName = "white1x1";       // アルベド
-    std::string envMapName = "skybox";  // 環境マップ
-    std::string normalMapName = "white1x1";       // 法線マップ
-    std::string heightMapName = "white1x1";       // POMハイトマップ
-    std::string dissolveMapName = "white1x1";       // ディゾルブマップ
-    std::string toonRampName = "toonRamp_01";       // トゥーンランプ
-    std::string rippleTextureName = "white1x1";     // 波紋用テクスチャ
-    std::string puddleNoiseName = "white1x1";        // 水たまり用ノイズ
+    std::string textureName = "white1x1";      
+    std::string envMapName = "skybox";  
+    std::string normalMapName = "white1x1";      
+    std::string heightMapName = "white1x1";      
+    std::string dissolveMapName = "white1x1";      
+    std::string toonRampName = "toonRamp_01";      
+    std::string rippleTextureName = "white1x1";     
+    std::string puddleNoiseName = "white1x1";      
 
     // マテリアルごとのテクスチャハンドル
     uint32_t textureHandle = 0;     
@@ -91,10 +91,10 @@ struct TreeMaterialHandle
     Microsoft::WRL::ComPtr<ID3D12Resource> trunkMaterialBuffer; 
     TrunkMaterialData* mappedTrunkData = nullptr;
 
-    uint32_t trunkTextureHandle = 0;       // 幹アルベド
-    uint32_t trunkNormalMapHandle = 0;     // 幹ノーマル
-    uint32_t leafTextureHandle = 0;        // 葉アルベド
-    uint32_t leafNormalMapHandle = 0;      // 葉ノーマル
+    uint32_t trunkTextureHandle = 0;       
+    uint32_t trunkNormalMapHandle = 0;    
+    uint32_t leafTextureHandle = 0;       
+    uint32_t leafNormalMapHandle = 0;      
     uint32_t toonRampHandle = 0;
 };
 
@@ -149,9 +149,9 @@ struct ModelData
 
 enum class CullMode
 {
-    Back,   // 通常 (裏面カリング)
+    Back,   // 裏面カリング
     Front,  // 前面カリング
-    None    // カリングなし (両面描画)
+    None    // カリングなし
 };
 
 enum class DepthMode

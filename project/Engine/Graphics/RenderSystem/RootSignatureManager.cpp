@@ -685,7 +685,38 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
 
         return builder.Build(device_, csFlags, "FoliageCullingCS");
     }
-    else if (name == "Generate3DNoiseCS")
+    if (name == "Water")
+    {
+        // 定数バッファ (CBV)
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);    // b0: gFrameData (VS/PS)
+        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);  // b1: gDirectionalLights (PS)
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_PIXEL);  // b2: gPointLights (PS)
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_PIXEL);  // b3: gSpotLights (PS)
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);    // b5: gWaterMaterial (VS/PS両方で使用)
+        builder.AddConstants(7, 1, D3D12_SHADER_VISIBILITY_VERTEX); // b7: gInstanceOffset (VS)
+
+        // ピクセルシェーダー用テクスチャ (SRV)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t0: gSceneColorTexture
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t1: gSceneDepthTexture
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t2: gEnvironmentTexture
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 3, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t3: gWaterNormalMap
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 1, D3D12_SHADER_VISIBILITY_PIXEL); // t4: gRippleTexture
+
+        // 頂点シェーダー用インスタンシングデータ (SRV)
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 1, D3D12_SHADER_VISIBILITY_VERTEX); // t10: gInstanceData
+
+        // スタティックサンプラー
+        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_PIXEL);   // s0: gSampler
+        builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL,
+            D3D12_COMPARISON_FUNC_LESS_EQUAL);
+        builder.AddStaticSampler(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_PIXEL);  // s2: gClampSampler
+
+        return builder.Build(device_, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, "Water");
+    }
+    if (name == "Generate3DNoiseCS")
     {
         RootSignatureBuilder builder;
 
@@ -721,22 +752,16 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     }
     if (name == "VolumetricFogInjectionCS")
     {
-        // --- CBV (定数バッファ) ---
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); // [0] b0: FrameData
-        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL); // [1] b2: VolumetricFogSettings
-        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL); // [2] b3: PointLights
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); // [3] b4: SpotLights
-        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL); // [4] b5: FogVolumeBuffer
-        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_ALL); // [5] b6: ShadowData
+        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(2, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(3, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(6, D3D12_SHADER_VISIBILITY_ALL); 
 
-        // --- Descriptor Tables ---
-        // [6] SRV: t0 ~ t2 (Depth, ShadowMap, NoiseVolume の3つ)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
-
-        // [7] UAV: u0 (VoxelInject の1つ)
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
-        // --- Static Samplers ---
         builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddStaticSampler(1, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL, D3D12_COMPARISON_FUNC_LESS_EQUAL);
 
@@ -803,31 +828,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         return builder.Build(device_, csFlags, "VolumetricFogResolveCS");
     }
     
-    else if (name == "FluidSimulationCS") 
-    {
-        RootSignatureBuilder builder;
-
-        builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
-
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
-
-        builder.AddStaticSampler(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-            D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_SHADER_VISIBILITY_ALL);
-
-        builder.AddStaticSampler(1, D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-            D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_SHADER_VISIBILITY_ALL);
-
-        D3D12_ROOT_SIGNATURE_FLAGS csFlags =
-            D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
-            D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-            D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-            D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-            D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-
-        return builder.Build(device_, csFlags, "FluidComputeRS");
-    }
     if (name == "WorldInteractionCS") 
     {
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);

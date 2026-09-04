@@ -23,7 +23,7 @@ public:
     explicit TreeSystem(Engine* engine, const std::string& windMapTextureName = "noise_39");
     ~TreeSystem() = default;
 
-    // 頂点シェーダで群葉の揺れ（Windアニメーション）を計算するためのグローバルノイズマップ
+    // 頂点シェーダで群葉の Wind アニメーションを計算するためのグローバルノイズマップ
     void SetWindMapTexture(const std::string& textureName);
 
     void Clear();
@@ -39,7 +39,7 @@ public:
     // 登録されたインスタンス群をレンダラキューへ積む
     void Update();
 
-    // 葉(と幹で分離された専用マテリアルバッファを生成し、ライフサイクルを管理
+    // 葉と幹で分離された専用マテリアルバッファを生成し、ライフサイクルを管理
     [[nodiscard]] TreeMaterialHandle CreateTreeMaterial(
         const LeafMaterialData& leafData,
         const TrunkMaterialData& trunkData,
