@@ -11,7 +11,7 @@ void DSVManager::Initialize(
     ID3D12Device* device,
     DescriptorHeapManager* descriptorManager,
     SRVManager* srvManager,
-    UINT dsvCount
+    uint32_t dsvCount
 )
 {
     device_ = device;
@@ -35,8 +35,8 @@ void DSVManager::Initialize(
 
 // 深度ステンシル用リソースとDSVを作成
 D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
-    UINT width,
-    UINT height,
+    uint32_t width,
+    uint32_t height,
     Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
 )
 {
@@ -89,7 +89,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     depthTextures_.push_back(outResource);
 
     // DSVの書き込み先ハンドルを計算
-    UINT dsvIndex = createdDSVCount_++;
+    uint32_t dsvIndex = createdDSVCount_++;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeapStart_;
     dsvHandle.ptr +=
         static_cast<SIZE_T>(dsvIndex) * dsvDescriptorSize_;

@@ -5,7 +5,7 @@
 namespace FE
 {
 
-void RootSignatureBuilder::AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace)
+void RootSignatureBuilder::AddCBV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace)
 {
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -16,7 +16,7 @@ void RootSignatureBuilder::AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY v
     parameters_.push_back(param);
 }
 
-void RootSignatureBuilder::AddSRV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace)
+void RootSignatureBuilder::AddSRV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace)
 {
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -27,7 +27,7 @@ void RootSignatureBuilder::AddSRV(UINT shaderRegister, D3D12_SHADER_VISIBILITY v
     parameters_.push_back(param);
 }
 
-void RootSignatureBuilder::AddUAV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace)
+void RootSignatureBuilder::AddUAV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace)
 {
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
@@ -38,7 +38,7 @@ void RootSignatureBuilder::AddUAV(UINT shaderRegister, D3D12_SHADER_VISIBILITY v
     parameters_.push_back(param);
 }
 
-void RootSignatureBuilder::AddConstants(UINT shaderRegister, UINT num32BitValues, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace)
+void RootSignatureBuilder::AddConstants(uint32_t shaderRegister, uint32_t num32BitValues, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace)
 {
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
@@ -52,10 +52,10 @@ void RootSignatureBuilder::AddConstants(UINT shaderRegister, UINT num32BitValues
 
 void RootSignatureBuilder::AddDescriptorTableRange(
     D3D12_DESCRIPTOR_RANGE_TYPE type,
-    UINT baseShaderRegister,
-    UINT numDescriptors,
+    uint32_t baseShaderRegister,
+    uint32_t numDescriptors,
     D3D12_SHADER_VISIBILITY visibility,
-    UINT registerSpace)
+    uint32_t registerSpace)
 {
     // 単一のデスクリプタレンジを作成してテーブルに追加
     D3D12_DESCRIPTOR_RANGE range = {};
@@ -77,14 +77,14 @@ void RootSignatureBuilder::AddDescriptorTable(const std::vector<D3D12_DESCRIPTOR
     D3D12_ROOT_PARAMETER param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
     param.ShaderVisibility = visibility;
-    param.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(descriptorRangeStorage_.back().size());
+    param.DescriptorTable.NumDescriptorRanges = static_cast<uint32_t>(descriptorRangeStorage_.back().size());
     param.DescriptorTable.pDescriptorRanges = descriptorRangeStorage_.back().data();
 
     parameters_.push_back(param);
 }
 
 void RootSignatureBuilder::AddStaticSampler(
-    UINT shaderRegister,
+    uint32_t shaderRegister,
     D3D12_FILTER filter,
     D3D12_TEXTURE_ADDRESS_MODE addressModeAll,
     D3D12_SHADER_VISIBILITY visibility,
@@ -125,9 +125,9 @@ ComPtr<ID3D12RootSignature> RootSignatureBuilder::Build(
 {
     D3D12_ROOT_SIGNATURE_DESC desc = {};
     desc.Flags = flags;
-    desc.NumParameters = static_cast<UINT>(parameters_.size());
+    desc.NumParameters = static_cast<uint32_t>(parameters_.size());
     desc.pParameters = parameters_.data(); 
-    desc.NumStaticSamplers = static_cast<UINT>(staticSamplers_.size());
+    desc.NumStaticSamplers = static_cast<uint32_t>(staticSamplers_.size());
     desc.pStaticSamplers = staticSamplers_.data();
 
     // シリアライズ

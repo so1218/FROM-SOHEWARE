@@ -6,7 +6,7 @@
 namespace FE
 {
 
-void BrightExtractPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+void BrightExtractPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)
 {
     InitializeBase(engine, w, h); 
     psoManager_ = pso;

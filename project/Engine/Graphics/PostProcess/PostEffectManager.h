@@ -26,7 +26,7 @@ public:
 
     // 初期化
     void Initialize(
-        Engine* engine, UINT width, UINT height,
+        Engine* engine, uint32_t width, uint32_t height,
         RootSignatureManager* rootSigManager, PSOManager* psoManager,
         SRVManager* srvManager,
         uint32_t sceneDepthSrvIndex);

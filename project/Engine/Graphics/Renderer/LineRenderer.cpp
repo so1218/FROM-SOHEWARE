@@ -64,7 +64,7 @@ void LineRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProje
     cmdList->IASetVertexBuffers(0, 1, &vbView);
     cmdList->SetGraphicsRootConstantBufferView(0, lineBatch_.wvpResource->GetGPUVirtualAddress());
 
-    cmdList->DrawInstanced(static_cast<UINT>(lineBatch_.verticesCPU.size()), 1, 0, 0);
+    cmdList->DrawInstanced(static_cast<uint32_t>(lineBatch_.verticesCPU.size()), 1, 0, 0);
 }
 
 }

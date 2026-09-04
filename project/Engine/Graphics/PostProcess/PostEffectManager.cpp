@@ -13,8 +13,8 @@ PostEffectManager::~PostEffectManager()
 
 void PostEffectManager::Initialize(
     Engine* engine,
-    UINT width,
-    UINT height,
+    uint32_t width,
+    uint32_t height,
     RootSignatureManager* rootSigManager,
     PSOManager* psoManager,
     SRVManager* srvManager,
@@ -25,7 +25,7 @@ void PostEffectManager::Initialize(
     rootSignatureManager_ = rootSigManager;
 
     // シーンカラー / 深度SRV
-    sceneTextureIndex_ = engine->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Color));
+    sceneTextureIndex_ = engine->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Color));
     sceneDepthIndex_ = sceneDepthSrvIndex;
 
     // 輝度抽出
@@ -33,8 +33,8 @@ void PostEffectManager::Initialize(
     brightPass_->Initialize(engine, width, height, psoManager);
 
     // 縮小サイズ
-    UINT smallW = Math::MyMax(1u, width / 2);
-    UINT smallH = Math::MyMax(1u, height / 2);
+    uint32_t smallW = Math::MyMax(1u, width / 2);
+    uint32_t smallH = Math::MyMax(1u, height / 2);
 
     // Bloom
     downsamplePass_ = std::make_unique<DownsamplePass>();
@@ -47,8 +47,8 @@ void PostEffectManager::Initialize(
     horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
 
     // DOF(Bokeh)の初期化
-    UINT halfW = Math::MyMax(1u, width / 2);
-    UINT halfH = Math::MyMax(1u, height / 2);
+    uint32_t halfW = Math::MyMax(1u, width / 2);
+    uint32_t halfH = Math::MyMax(1u, height / 2);
 
     bokehPass_ = std::make_unique<BokehBlurPass>();
     bokehPass_->Initialize(engine, halfW, halfH, psoManager);
@@ -76,8 +76,8 @@ void PostEffectManager::Initialize(
     ssrPass_->Initialize(engine, width, height, psoManager);
 
     // VolumetricFog初期化
-    UINT volFogW = Math::MyMax(1u, width / 2);
-    UINT volFogH = Math::MyMax(1u, height / 2);
+    uint32_t volFogW = Math::MyMax(1u, width / 2);
+    uint32_t volFogH = Math::MyMax(1u, height / 2);
     volumetricFogPass_ = std::make_unique<VolumetricFogPass>();
     volumetricFogPass_->Initialize(engine, volFogW, volFogH, psoManager);
 
@@ -178,9 +178,9 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     context_.rootSigManager = rootSignatureManager_;
     context_.sceneColorSrvIndex = sceneTextureIndex_;
     context_.sceneDepthSrvIndex = sceneDepthIndex_;
-    context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Normal));
-    context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Material));
-    context_.velocitySrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<UINT>(GBufferIndex::Velocity));
+    context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Normal));
+    context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Material));
+    context_.velocitySrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Velocity));
 
     // 深度バッファを読み取り用に遷移
     CD3DX12_RESOURCE_BARRIER depthToSrvBarrier = CD3DX12_RESOURCE_BARRIER::Transition(

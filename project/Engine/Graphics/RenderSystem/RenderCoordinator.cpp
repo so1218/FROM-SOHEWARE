@@ -70,7 +70,7 @@ void RenderCoordinator::Initialize(
 void RenderCoordinator::BeginFrame()
 {
     // バックバッファを取得し、描画可能状態に遷移
-    UINT backBufferIndex = swapChain_->GetSwapChain()->GetCurrentBackBufferIndex();
+    uint32_t backBufferIndex = swapChain_->GetSwapChain()->GetCurrentBackBufferIndex();
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         rtvManager_->swapChainResources[backBufferIndex].Get(),
         D3D12_RESOURCE_STATE_PRESENT,
@@ -94,7 +94,7 @@ void RenderCoordinator::BeginFrame()
 void RenderCoordinator::EndFrame()
 {
     // バックバッファをプレゼント状態に遷移
-    UINT backBufferIndex = swapChain_->GetSwapChain()->GetCurrentBackBufferIndex();
+    uint32_t backBufferIndex = swapChain_->GetSwapChain()->GetCurrentBackBufferIndex();
     CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
         rtvManager_->swapChainResources[backBufferIndex].Get(),
         D3D12_RESOURCE_STATE_RENDER_TARGET,

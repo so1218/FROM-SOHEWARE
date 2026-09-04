@@ -45,12 +45,12 @@ void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, ui
 
 D3D12_CPU_DESCRIPTOR_HANDLE RTVManager::GetCurrentBackBufferRTVCPUHandle(SwapChain* swapChainManager)
 {
-    UINT backBufferIndex = swapChainManager->GetSwapChain()->GetCurrentBackBufferIndex();
+    uint32_t backBufferIndex = swapChainManager->GetSwapChain()->GetCurrentBackBufferIndex();
     assert(backBufferIndex < rtvHandles.size());
     return rtvHandles[backBufferIndex];
 }
 
-void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, UINT rtvDescriptorCount)
+void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, uint32_t rtvDescriptorCount)
 {
     device_ = device;
     srvManager_ = srvManager;
@@ -67,9 +67,9 @@ void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManage
 }
 
 std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t, uint32_t>
-OffscreenRTVManager::CreateOffscreenRenderTarget(UINT width, UINT height, Vector4 clearColor, DXGI_FORMAT format, bool enableUAV)
+OffscreenRTVManager::CreateOffscreenRenderTarget(uint32_t width, uint32_t height, Vector4 clearColor, DXGI_FORMAT format, bool enableUAV)
 {
-    UINT rtvIndex = createdRTVCount_;
+    uint32_t rtvIndex = createdRTVCount_;
     assert(rtvIndex < rtvDescriptorCount_);
     createdRTVCount_++;
 

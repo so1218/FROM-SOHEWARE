@@ -2,14 +2,14 @@
 #include "Window.h"
 
 #ifdef ENABLE_IMGUI
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 #endif
 
 namespace FE
 {
 
 // ウィンドウプロシージャ
-LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::WindowProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
 {
 #ifdef ENABLE_IMGUI
     if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))

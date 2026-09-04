@@ -107,7 +107,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));
 
     // 描画
-    cmdList->DrawIndexedInstanced(static_cast<UINT>(skydomeMesh_.GetIndexCount()), 1, 0, 0, 0);
+    cmdList->DrawIndexedInstanced(static_cast<uint32_t>(skydomeMesh_.GetIndexCount()), 1, 0, 0, 0);
 }
 
 }

@@ -13,16 +13,6 @@ ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
-struct Object3DVSInputInstanced
-{
-    float4 position : POSITION0;
-    float2 texcoord : TEXCOORD0;
-    float3 normal : NORMAL0;
-    float3 tangent : TANGENT0;
-    float3 smoothNormal : TEXCOORD1;
-    uint instanceID : SV_InstanceID;
-};
-
 VertexShaderOutput main(Object3DVSInputInstanced input)
 {
     VertexShaderOutput output;

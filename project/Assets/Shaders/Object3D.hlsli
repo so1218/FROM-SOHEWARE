@@ -39,6 +39,17 @@ struct PixelShaderOutput
     float2 velocity : SV_TARGET3;
 };
 
+
+struct Object3DVSInputInstanced
+{
+    float4 position : POSITION0;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT0;
+    float3 smoothNormal : TEXCOORD1;
+    uint instanceID : SV_InstanceID;
+};
+
 struct Well
 {
     float4x4 skeletonSpaceMatrix;

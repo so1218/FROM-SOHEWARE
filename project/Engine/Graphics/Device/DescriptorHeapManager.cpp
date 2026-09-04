@@ -6,7 +6,7 @@ namespace FE
 
 // ディスクリプタヒープを作成
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DescriptorHeapManager::DescriptorHeapManager::CreateDescriptorHeap(
-    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
+    ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t numDescriptors, bool shaderVisible)
 {
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
 

@@ -7,8 +7,8 @@ namespace FE
 {
 
 void BokehBlurPass::Initialize(Engine* engine,
-    UINT width,
-    UINT height,
+    uint32_t width,
+    uint32_t height,
     PSOManager* psoManager)
 {
     InitializeBase(engine, width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);

@@ -150,7 +150,7 @@ public:
     // 地形生成・配置
     void GenerateFoliage(
         uint32_t heightMapSrvHandle,
-        UINT terrainWidth, UINT terrainDepth);
+        uint32_t terrainWidth, uint32_t terrainDepth);
 
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 

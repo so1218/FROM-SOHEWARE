@@ -5,7 +5,7 @@
 namespace FE
 {
 
-void SSRPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
+void SSRPass::Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager)
 {
     InitializeBase(engine, width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
     psoManager_ = psoManager;
@@ -64,7 +64,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     PIXScopedEvent(cmdList, PIX_COLOR(50, 150, 255), "SSR Compute Pass");
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     auto* srvManager = engine_->GetSRVManager();
 
     // ==========================================
@@ -84,7 +84,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS
     ));
-    cmdList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+    cmdList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
 
     // ==========================================
     // 2. パイプライン設定
@@ -119,8 +119,8 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
     cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); // [2] SRV Table (t0~t3)
     cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 4, handleSize)); // [3] UAV Table (u0)
 
-    UINT width = engine_->GetClientWidth();
-    UINT height = engine_->GetClientHeight();
+    uint32_t width = engine_->GetClientWidth();
+    uint32_t height = engine_->GetClientHeight();
 
     // シェーダーの numthreads(8, 8, 1) に合わせてスレッドグループを計算
     cmdList->Dispatch((width + 7) / 8, (height + 7) / 8, 1);
@@ -141,7 +141,7 @@ void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContex
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
     ));
-    cmdList->ResourceBarrier(static_cast<UINT>(resetBarriers.size()), resetBarriers.data());
+    cmdList->ResourceBarrier(static_cast<uint32_t>(resetBarriers.size()), resetBarriers.data());
 
     // 次のポストエフェクトパスがこのSSR結果(テクスチャ)を参照できるようにセット
     this->textureResource_ = outputRes_;

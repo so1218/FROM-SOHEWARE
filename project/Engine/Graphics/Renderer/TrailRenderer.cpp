@@ -160,7 +160,7 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
     trailBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
 
     D3D12_VERTEX_BUFFER_VIEW vbView = trailBatch_.mesh.GetVertexBufferView();
-    vbView.SizeInBytes = static_cast<UINT>(sizeof(TrailVertexData) * trailBatch_.verticesCPU.size());
+    vbView.SizeInBytes = static_cast<uint32_t>(sizeof(TrailVertexData) * trailBatch_.verticesCPU.size());
     cmdList->IASetVertexBuffers(0, 1, &vbView);
 
     cmdList->SetPipelineState(env.psoManager->GetPSO("Trail"));

@@ -17,7 +17,7 @@ BilateralBlurPass::~BilateralBlurPass()
     }
 }
 
-void BilateralBlurPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
+void BilateralBlurPass::Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager)
 {
     // 縦ブラー結果（最終出力）用のバッファを初期化
     InitializeBase(engine, width, height, DXGI_FORMAT_R8_UNORM);

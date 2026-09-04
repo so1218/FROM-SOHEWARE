@@ -33,7 +33,7 @@ AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
 
     // 波形フォーマット取得
     WAVEFORMATEX* pWaveFormat = nullptr;
-    UINT32 size = 0;
+    uint32_t size = 0;
     MFCreateWaveFormatExFromMFMediaType(nativeType.Get(), &pWaveFormat, &size);
 
     std::vector<BYTE> pcmBuffer;

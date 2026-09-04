@@ -28,7 +28,7 @@ void GraphicsDevice::SelectAdapter()
     // 使用するアダプタ用の変数。最初にnullptrを入れておく
    
     // いい順にアダプタを頼む
-    for (UINT i = 0; dxgiFactory_->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter_)) != DXGI_ERROR_NOT_FOUND; i++)
+    for (uint32_t i = 0; dxgiFactory_->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter_)) != DXGI_ERROR_NOT_FOUND; i++)
     {
         // アダプタの情報を取得する
         DXGI_ADAPTER_DESC3 adapterDesc{};

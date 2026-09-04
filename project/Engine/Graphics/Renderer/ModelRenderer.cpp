@@ -559,7 +559,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
@@ -580,7 +580,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
             }
         }
         else
@@ -603,7 +603,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), 1, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), 1, 0, 0, 0);
             }
             else
             {
@@ -621,7 +621,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(UINT(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
             }
         }
     }

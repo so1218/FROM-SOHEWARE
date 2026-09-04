@@ -96,7 +96,7 @@ bool TerrainChunk::CreateMesh()
     vertexBuffer_->Unmap(0, nullptr);
 
     vbView_.BufferLocation = vertexBuffer_->GetGPUVirtualAddress();
-    vbView_.SizeInBytes = static_cast<UINT>(vbSizeInBytes);
+    vbView_.SizeInBytes = static_cast<uint32_t>(vbSizeInBytes);
     vbView_.StrideInBytes = sizeof(TerrainVertexData);
 
     // インデックスバッファの生成 (初回のみ)
@@ -114,7 +114,7 @@ bool TerrainChunk::CreateMesh()
             indices.push_back(i10); indices.push_back(i01); indices.push_back(i11);
         }
     }
-    indexCount_ = static_cast<UINT>(indices.size());
+    indexCount_ = static_cast<uint32_t>(indices.size());
     size_t ibSizeInBytes = sizeof(uint32_t) * indices.size();
 
     indexBuffer_ = BufferManager::CreateBufferResource(device, ibSizeInBytes);
@@ -126,7 +126,7 @@ bool TerrainChunk::CreateMesh()
     indexBuffer_->Unmap(0, nullptr);
 
     ibView_.BufferLocation = indexBuffer_->GetGPUVirtualAddress();
-    ibView_.SizeInBytes = static_cast<UINT>(ibSizeInBytes);
+    ibView_.SizeInBytes = static_cast<uint32_t>(ibSizeInBytes);
     ibView_.Format = DXGI_FORMAT_R32_UINT;
 
     return true;

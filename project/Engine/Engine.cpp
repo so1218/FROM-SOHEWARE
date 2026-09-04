@@ -29,8 +29,8 @@
 namespace FE
 {
 
-int32_t Engine::sClientWidth = 1280;
-int32_t Engine::sClientHeight = 720;
+uint32_t Engine::sClientWidth = 1280;
+uint32_t Engine::sClientHeight = 720;
 
 Engine::Engine() = default;
 

@@ -32,7 +32,7 @@ public:
     // シームレスロード時の裏読みなど、非同期実行に対応できる設計を想定
     void Generate(
         const std::string& heightMapName,
-        UINT terrainWidth, UINT terrainDepth);
+        uint32_t terrainWidth, uint32_t terrainDepth);
 
     // 視錐台やLOD算出用のカリング定数をGPUへ送出
     void Update();

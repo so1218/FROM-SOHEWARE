@@ -156,7 +156,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Volumetric Fog Pass");
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // 現在フレームのインデックス管理
     uint32_t currIdx = frameCounter_ % 2;
@@ -224,10 +224,9 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     SetFogVolumes(gpuVolumes);
 
     // スレッドグループ算出用共通変数
-    UINT dispatch3DX = (froxelW + 7) / 8;
-    UINT dispatch3DY = (froxelH + 7) / 8;
-    UINT dispatch3DZ = (froxelD + 3) / 4;
-
+    uint32_t dispatch3DX = (froxelW + 7) / 8;
+    uint32_t dispatch3DY = (froxelH + 7) / 8;
+    uint32_t dispatch3DZ = (froxelD + 3) / 4;
 
     // ========================================================
     // [1] Injection パス (1点Ditherサンプリング、光と密度の注入)
@@ -382,8 +381,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 14, handleSize)); 
         cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 16, handleSize)); 
 
-        UINT clientWidth = Engine::GetClientWidth();
-        UINT clientHeight = Engine::GetClientHeight();
+        uint32_t clientWidth = Engine::GetClientWidth();
+        uint32_t clientHeight = Engine::GetClientHeight();
         cmdList->Dispatch((clientWidth + 7) / 8, (clientHeight + 7) / 8, 1);
     }
 

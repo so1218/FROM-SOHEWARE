@@ -33,12 +33,12 @@ void FoliageRenderer::Initialize(const RenderEnvironment& env, const std::vector
     // カリングCSのバインドに必要なディスクリプタを連続領域として確保
     // レイアウト: [t0: Input, t1: Counter, u0: Output, u1: IndirectArgs] * 種類数 * フレーム数
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 4 * static_cast<UINT>(numTypes) * kFrameCount;
+    heapDesc.NumDescriptors = 4 * static_cast<uint32_t>(numTypes) * kFrameCount;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&cullingHeap_));
 
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
 
     for (int i = 0; i < kFrameCount; ++i)
@@ -113,7 +113,7 @@ void FoliageRenderer::GenerateFoliage(
     const RenderEnvironment& env,
     uint32_t heightMapSrvHandle,
     D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress,
-    UINT terrainWidth, UINT terrainDepth)
+    uint32_t terrainWidth, uint32_t terrainDepth)
 {
     if (types_.empty()) return;
 
@@ -138,7 +138,7 @@ void FoliageRenderer::GenerateFoliage(
     }
 
     if (!barriers.empty()) {
-        cmdList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+        cmdList->ResourceBarrier(static_cast<uint32_t>(barriers.size()), barriers.data());
     }
 
     // AppendStructuredBufferのカウンタをCPUをストールさせずにGPU上でゼロクリア
@@ -151,7 +151,7 @@ void FoliageRenderer::GenerateFoliage(
         counterBarriers2[i] = CD3DX12_RESOURCE_BARRIER::Transition(
             types_[i].appendCounterBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     }
-    cmdList->ResourceBarrier(static_cast<UINT>(numTypes), counterBarriers2.data());
+    cmdList->ResourceBarrier(static_cast<uint32_t>(numTypes), counterBarriers2.data());
 
     cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("FoliageGenerationCS"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("FoliageGenerationCS"));
@@ -162,8 +162,8 @@ void FoliageRenderer::GenerateFoliage(
     cmdList->SetComputeRootConstantBufferView(1, terrainSettingsAddress);
     cmdList->SetComputeRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(heightMapSrvHandle));
 
-    UINT dispatchX = (terrainWidth + 7) / 8;
-    UINT dispatchY = (terrainDepth + 7) / 8;
+    uint32_t dispatchX = (terrainWidth + 7) / 8;
+    uint32_t dispatchY = (terrainDepth + 7) / 8;
 
     // 種類ごとに固有のDensityMapとパラメータをバインドし、地形上にインスタンスを動的生成
     for (size_t i = 0; i < numTypes; ++i)
@@ -186,7 +186,7 @@ void FoliageRenderer::GenerateFoliage(
         readBarriers[i * 2 + 1] = CD3DX12_RESOURCE_BARRIER::Transition(
             types_[i].appendCounterBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     }
-    cmdList->ResourceBarrier(static_cast<UINT>(readBarriers.size()), readBarriers.data());
+    cmdList->ResourceBarrier(static_cast<uint32_t>(readBarriers.size()), readBarriers.data());
 
     isGenerated_ = true;
 }
@@ -204,7 +204,7 @@ void FoliageRenderer::Draw(
     size_t numTypes = types_.size();
 
     memcpy(mappedCullingData_[currentFrameIndex_], &cullingData, sizeof(FoliageCullingData));
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // -----------------------------------------------------------
     // Pass 1: GPUカリング
@@ -223,7 +223,7 @@ void FoliageRenderer::Draw(
 
         // ExecuteIndirect用の引数バッファ初期化。InstanceCountは後段のCS内で可視判定に通過した数だけインクリメントされる
         D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-        drawArgs.IndexCountPerInstance = static_cast<UINT>(res.config.mesh->GetIndexCount());
+        drawArgs.IndexCountPerInstance = static_cast<uint32_t>(res.config.mesh->GetIndexCount());
         drawArgs.InstanceCount = 0;
         *res.mappedArgs[currentFrameIndex_] = drawArgs;
 
@@ -243,7 +243,7 @@ void FoliageRenderer::Draw(
         cmdList->ResourceBarrier(2, csBarriers);
 
         // カリング専用に事前構築したDescriptorHeap上の連続領域を直接参照し、動的なバインドコストを回避
-        UINT slotOffset = static_cast<UINT>((currentFrameIndex_ * numTypes + typeIdx) * 4);
+        uint32_t slotOffset = static_cast<uint32_t>((currentFrameIndex_ * numTypes + typeIdx) * 4);
         D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
         destGPU.ptr += slotOffset * handleSize;
 
@@ -256,9 +256,9 @@ void FoliageRenderer::Draw(
         cmdList->SetComputeRootDescriptorTable(5, destGPU);
 
         // 巨大な地形でインスタンス数が超過した場合の安全策としてDispatchの上限をクリップ
-        UINT maxGroupsX = 1024;
-        UINT dispatchX = std::min((UINT)(kMaxInstances + 63) / 64, maxGroupsX);
-        UINT dispatchY = ((UINT)kMaxInstances + 65535) / 65536;
+        uint32_t maxGroupsX = 1024;
+        uint32_t dispatchX = std::min((uint32_t)(kMaxInstances + 63) / 64, maxGroupsX);
+        uint32_t dispatchY = ((uint32_t)kMaxInstances + 65535) / 65536;
         cmdList->Dispatch(dispatchX, dispatchY, 1);
     }
 

@@ -28,7 +28,7 @@ public:
         const RenderEnvironment& env,
         uint32_t heightMapSrvHandle,
         D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress,
-        UINT terrainWidth, UINT terrainDepth);
+        uint32_t terrainWidth, uint32_t terrainDepth);
 
     void Draw(
         const RenderEnvironment& env,

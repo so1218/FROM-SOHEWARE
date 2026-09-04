@@ -12,7 +12,7 @@ class BrightExtractPass : public IPostEffect
     PSOManager* psoManager_ = nullptr;
 
 public:
-    void Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso);
+    void Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso);
 
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;

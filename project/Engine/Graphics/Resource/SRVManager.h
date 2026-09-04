@@ -55,7 +55,7 @@ private:
     ID3D12Device* device_ = nullptr;               
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;    // GPU可視用SRVヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeapCPU_; // CPU操作用SRVヒープ
-    UINT srvDescriptorSize_ = 0;                     // SRVディスクリプタのサイズ
+    uint32_t srvDescriptorSize_ = 0;                     // SRVディスクリプタのサイズ
 
     std::unique_ptr<SRVAllocator> allocator_;       // SRV割り当て・解放管理
 };

@@ -63,7 +63,7 @@ void FoliageSystem::InitializeRenderer()
 
 void FoliageSystem::Generate(
     const std::string& heightMapName,
-    UINT terrainWidth, UINT terrainDepth)
+    uint32_t terrainWidth, uint32_t terrainDepth)
 {
     assert(isRendererInitialized_ && "Foliage renderer is not initialized.");
     if (!engine_ || !isRendererInitialized_) return;

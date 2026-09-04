@@ -33,7 +33,7 @@ public:
     // 描画用ゲッター
     const D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() const { return vbView_; }
     const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() const { return ibView_; }
-    UINT GetIndexCount() const { return indexCount_; }
+    uint32_t GetIndexCount() const { return indexCount_; }
 
     void SetUVScale(float scale) { uvScale_ = scale; }
 
@@ -61,7 +61,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_;
     D3D12_VERTEX_BUFFER_VIEW vbView_{};
     D3D12_INDEX_BUFFER_VIEW ibView_{};
-    UINT indexCount_ = 0;
+    uint32_t indexCount_ = 0;
 
     int startX_; // 全体マップにおけるXの開始オフセット
     int startZ_; // 全体マップにおけるZの開始オフセット

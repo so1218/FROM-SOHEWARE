@@ -18,31 +18,31 @@ public:
     RootSignatureBuilder& operator=(RootSignatureBuilder&&) = delete;
 
     // 定数バッファビューを追加
-    void AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace = 0);
+    void AddCBV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace = 0);
 
     // シェーダーリソースビューを追加
-    void AddSRV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace = 0);
+    void AddSRV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace = 0);
 
     // UAVを追加
-    void AddUAV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace = 0);
+    void AddUAV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace = 0);
 
     // 32ビット定数を追加
-    void AddConstants(UINT shaderRegister, UINT num32BitValues, D3D12_SHADER_VISIBILITY visibility, UINT registerSpace = 0);
+    void AddConstants(uint32_t shaderRegister, uint32_t num32BitValues, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace = 0);
 
     // ディスクリプタテーブル範囲を追加
     void AddDescriptorTableRange(
         D3D12_DESCRIPTOR_RANGE_TYPE type,
-        UINT baseShaderRegister,
-        UINT numDescriptors,
+        uint32_t baseShaderRegister,
+        uint32_t numDescriptors,
         D3D12_SHADER_VISIBILITY visibility,
-        UINT registerSpace = 0);
+        uint32_t registerSpace = 0);
 
     // ディスクリプタテーブルを追加
     void AddDescriptorTable(const std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY visibility);
 
     // 静的サンプラーを追加
     void AddStaticSampler(
-        UINT shaderRegister,
+        uint32_t shaderRegister,
         D3D12_FILTER filter,
         D3D12_TEXTURE_ADDRESS_MODE addressModeAll,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_PIXEL,

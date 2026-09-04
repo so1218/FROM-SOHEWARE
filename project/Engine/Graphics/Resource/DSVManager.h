@@ -14,14 +14,14 @@ public:
         ID3D12Device* device,
         DescriptorHeapManager* descriptorManager,
         SRVManager* srvManager,
-        UINT dsvCount
+        uint32_t dsvCount
     );
 
     // 深度ステンシル用リソースとDSVを作成
     // 作成したリソースとCPUハンドルを返す
     D3D12_CPU_DESCRIPTOR_HANDLE CreateDepthStencilView(
-        UINT width,
-        UINT height,
+        uint32_t width,
+        uint32_t height,
         Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
     );
 
@@ -29,7 +29,7 @@ public:
     ID3D12DescriptorHeap* GetHeap() const { return dsvHeap_.Get(); }
 
     // 指定したDSVに対応するSRVのインデックスを取得
-    uint32_t GetDSVTextureSRVIndex(UINT dsvIndex) const
+    uint32_t GetDSVTextureSRVIndex(uint32_t dsvIndex) const
     {
         if (dsvIndex < depthSrvIndices_.size())
         {
@@ -44,12 +44,12 @@ private:
 
     // DSV用ディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap_;
-    UINT dsvDescriptorSize_ = 0;
+    uint32_t dsvDescriptorSize_ = 0;
     D3D12_CPU_DESCRIPTOR_HANDLE dsvHeapStart_{};
 
     // DSVの作成状況管理
-    UINT createdDSVCount_ = 0;
-    UINT maxDSVCount_ = 0;
+    uint32_t createdDSVCount_ = 0;
+    uint32_t maxDSVCount_ = 0;
 
     // 深度ステンシル用テクスチャの保持
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthTextures_;

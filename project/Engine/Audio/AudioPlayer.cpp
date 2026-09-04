@@ -43,7 +43,7 @@ int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
 
     // バッファ設定
     XAUDIO2_BUFFER buffer = { 0 };
-    buffer.AudioBytes = static_cast<UINT32>(audioData.buffer.size());
+    buffer.AudioBytes = static_cast<uint32_t>(audioData.buffer.size());
     buffer.pAudioData = audioData.buffer.data();
     buffer.Flags = XAUDIO2_END_OF_STREAM;
     buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;

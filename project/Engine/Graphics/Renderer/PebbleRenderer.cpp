@@ -33,7 +33,7 @@ void PebbleRenderer::Initialize(const RenderEnvironment& env)
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&cullingHeap_));
 
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     for (int i = 0; i < kFrameCount; ++i)
     {
@@ -53,7 +53,7 @@ void PebbleRenderer::Initialize(const RenderEnvironment& env)
 
         // ドローコール時の CPU オーバーヘッドをゼロにするため、
         // 初期化フェーズで予め全フレーム分のディスクリプタをヒープに焼いておく
-        UINT slotOffset = i * 3;
+        uint32_t slotOffset = i * 3;
         D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
         destCPU.ptr += slotOffset * handleSize;
 
@@ -109,10 +109,10 @@ void PebbleRenderer::GeneratePebbles(
     cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_));
 
     // D3D12のDispatchのX最大値を超える大量のインスタンス生成に対応
-    UINT totalThreads = genData.maxInstancesPerChunk;
-    UINT maxGroupsX = 1024; 
-    UINT dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
-    UINT dispatchY = (totalThreads + 65535) / 65536;
+    uint32_t totalThreads = genData.maxInstancesPerChunk;
+    uint32_t maxGroupsX = 1024;
+    uint32_t dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
+    uint32_t dispatchY = (totalThreads + 65535) / 65536;
 
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
@@ -150,12 +150,12 @@ void PebbleRenderer::Draw(
 
     ID3D12DescriptorHeap* cullingHeaps[] = { cullingHeap_.Get() };
     cmdList->SetDescriptorHeaps(1, cullingHeaps);
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // IndirectDrawのインスタンス数はCS側で加算するため、
     // 毎フレーム描画前に必ず 0 に初期化しておく
     D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-    drawArgs.IndexCountPerInstance = static_cast<UINT>(pebbleMesh.GetIndexCount());
+    drawArgs.IndexCountPerInstance = static_cast<uint32_t>(pebbleMesh.GetIndexCount());
     drawArgs.InstanceCount = 0;
     drawArgs.StartIndexLocation = 0;
     drawArgs.BaseVertexLocation = 0;
@@ -193,7 +193,7 @@ void PebbleRenderer::Draw(
 
     // 毎フレームの Descriptor Table の書き込みを排除し、
     // 初期化時にベイク済みの専用ディスクリプタヒープ領域のGPUハンドルを直接指定
-    UINT slotOffset = currentFrameIndex_ * 3;
+    uint32_t slotOffset = currentFrameIndex_ * 3;
     D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
     destGPU.ptr += slotOffset * handleSize;
 
@@ -205,10 +205,10 @@ void PebbleRenderer::Draw(
     destGPU.ptr += handleSize;
     cmdList->SetComputeRootDescriptorTable(4, destGPU);
 
-    UINT totalThreads = totalGeneratedCount_;
-    UINT maxGroupsX = 1024;
-    UINT dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
-    UINT dispatchY = (totalThreads + 65535) / 65536;
+    uint32_t totalThreads = totalGeneratedCount_;
+    uint32_t maxGroupsX = 1024;
+    uint32_t dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
+    uint32_t dispatchY = (totalThreads + 65535) / 65536;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
     // ==========================================
