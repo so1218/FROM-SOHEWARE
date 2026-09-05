@@ -5,7 +5,7 @@
 #include "DownsamplePass.h"
 #include "BlurPass.h"
 #include "BokehBlurPass.h"
-#include "BloomCombinePass.h"
+#include "FinalCompositePass.h"
 #include "SSAOPass.h"
 #include "BilateralBlurPass.h"
 #include "SSRPass.h"
@@ -41,7 +41,7 @@ public:
     BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }
     BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
     BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
-    CombineSettings* GetCombineSettings() const { return combinePass_->GetSettings(); }
+    FinalCompositeSettings* GetCompositeSettings() const { return compositePass_->GetSettings(); }
     DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
@@ -52,11 +52,11 @@ public:
     VolumetricFogPass* GetVolumetricFogPass() const { return volumetricFogPass_.get(); }
 
     // 出力リソース取得
-    D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return combinePass_->GetSRVHandleGPU(); }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetBloomCombineSRVHandle() const { return compositePass_->GetSRVHandleGPU(); }
     PostEffectData* GetPostEffectData() const { return cbData_; }
     D3D12_GPU_VIRTUAL_ADDRESS GetPostEffectDataAddress() const { return constantBuffer_->GetGPUVirtualAddress(); }
 
-    uint32_t GetBloomCombineSRVIndex() const { return combinePass_ ? combinePass_->GetSRVIndex() : 0; }
+    uint32_t GetFinalCompositeSRVIndex() const { return compositePass_ ? compositePass_->GetSRVIndex() : 0; }
     uint32_t GetFinalPassSRVIndex() const { return finalPassSRVIndex_; }
     D3D12_CPU_DESCRIPTOR_HANDLE GetFinalPassRTV() const { return finalPassRTVHandle_; }
     ID3D12Resource* GetFinalPassResource() const { return finalPassResource_.Get(); }
@@ -88,7 +88,7 @@ private:
     // DoF用
     std::unique_ptr<BokehBlurPass> bokehPass_;
 
-    std::unique_ptr<BloomCombinePass> combinePass_;
+    std::unique_ptr<FinalCompositePass> compositePass_;
 
     std::unique_ptr<SSAOPass> ssaoPass_;
 

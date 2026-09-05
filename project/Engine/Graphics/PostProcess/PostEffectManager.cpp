@@ -54,8 +54,8 @@ void PostEffectManager::Initialize(
     bokehPass_->Initialize(engine, halfW, halfH, psoManager);
 
     // 最終合成
-    combinePass_ = std::make_unique<BloomCombinePass>();
-    combinePass_->Initialize(engine, width, height, psoManager, srvManager);
+    compositePass_ = std::make_unique<FinalCompositePass>();
+    compositePass_->Initialize(engine, width, height, psoManager, srvManager);
 
     // SSAO初期化
     ssaoPass_ = std::make_unique<SSAOPass>();
@@ -253,7 +253,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             return srvManager_->GetSRVHandleCPU_ForCopying(index);
             };
 
-        combinePass_->SetupInputViews(
+        compositePass_->SetupInputViews(
             engine_->GetGraphicsDevice()->GetDevice(),
             GetCPUHandle(sceneTextureIndex_),
             GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
@@ -264,7 +264,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             GetCPUHandle(ssrPass_->GetSRVIndex())
         );
 
-        combinePass_->Execute(cmdList, context_);
+        compositePass_->Execute(cmdList, context_);
         cmdList->SetDescriptorHeaps(1, heaps);
     }
 

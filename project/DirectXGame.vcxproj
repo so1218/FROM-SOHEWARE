@@ -209,7 +209,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\Animation\AnimationLoader.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleDefinition.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp" />
-    <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\FinalCompositePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BokehBlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BrightExtractPass.cpp" />
@@ -410,7 +410,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Animation\AnimationData.h" />
     <ClInclude Include="Engine\Graphics\Animation\AnimationLoader.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
-    <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\FinalCompositePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />

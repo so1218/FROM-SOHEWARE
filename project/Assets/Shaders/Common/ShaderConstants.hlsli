@@ -507,7 +507,7 @@ struct DoFSettings
     float bokehHighlightIntensity;
 };
 
-struct CombineSettings
+struct FinalCompositeSettings
 {
     float bloomIntensity;
     int enableDoF;

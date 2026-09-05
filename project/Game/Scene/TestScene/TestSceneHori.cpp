@@ -49,7 +49,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetLightManager()->GetDirectionalLightData()[0].color = { 1.0f,193.0f / 255.0f,96.0f / 255.0f,1.0f };
     engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
     engine_->GetLightManager()->GetDirectionalLightData()[0].volumetricScatteringIntensity = 13.0f;
-    engine_->GetPostEffectManager()->GetCombineSettings()->enableVolumetricFog = true;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableVolumetricFog = true;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 10.0f;
     engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.3f;
@@ -87,13 +87,13 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };
     engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
-    engine_->GetPostEffectManager()->GetCombineSettings()->enableDoF = true;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 43.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 65.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
-    engine_->GetPostEffectManager()->GetCombineSettings()->enableSSAO = true;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableSSAO = true;
     engine_->GetPostEffectManager()->GetSSAOSettings()->intensity = 3.5f;
     grassFieldEmitter_ = engine_->GetParticleSystem()->CreateEmitter("grassField");
     grassFieldEmitter_->SetTargetToFollow(&player_->GetTransform());

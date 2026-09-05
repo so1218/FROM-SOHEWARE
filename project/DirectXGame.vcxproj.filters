@@ -415,10 +415,10 @@
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Graphics\PostProcess\BloomCombinePass.cpp">
+    <ClCompile Include="Engine\Graphics\PostProcess\FinalCompositePass.cpp">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClCompile>
-    <ClInclude Include="Engine\Graphics\PostProcess\BloomCombinePass.h">
+    <ClInclude Include="Engine\Graphics\PostProcess\FinalCompositePass.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
     <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp">

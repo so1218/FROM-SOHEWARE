@@ -193,7 +193,7 @@ void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 	);
 
 	// 最終入力テクスチャ（Bloom合成結果）
-	uint32_t finalImageIndex = postEffectManager_->GetBloomCombineSRVIndex();
+	uint32_t finalImageIndex = postEffectManager_->GetFinalCompositeSRVIndex();
 	cmdList->SetGraphicsRootDescriptorTable(
 		1,
 		srvManager_->GetSRVHandleGPU(finalImageIndex)

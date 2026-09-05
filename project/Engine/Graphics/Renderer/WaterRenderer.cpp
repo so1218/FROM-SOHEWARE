@@ -235,7 +235,7 @@ void WaterRenderer::Draw(const RenderEnvironment& env)
         // 頂点/インデックスバッファセットして描画
         cmdList->IASetVertexBuffers(0, 1, &mesh.GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh.GetIndexBufferView());
-        cmdList->DrawIndexedInstanced(mesh.GetIndexCount(), batch.instanceCount, 0, 0, 0);
+        cmdList->DrawIndexedInstanced(uint32_t(mesh.GetIndexCount()), batch.instanceCount, 0, 0, 0);
     }
 }
 
