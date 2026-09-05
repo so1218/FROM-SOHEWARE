@@ -1,7 +1,7 @@
 {
   "RootSignature": "Instancing3D",
-  "VertexShader": "Assets/Shaders/Object3D_Instanced.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
+  "VertexShader": "Object3D_Instanced.VS.hlsl",
+  "PixelShader": "Object3D.PS.hlsl",
   "InputLayout": "Default3D",
   "BlendState": "AlphaBlend",
   "RasterizerState": "Wireframe",

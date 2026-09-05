@@ -976,12 +976,12 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VolumetricFogBilateral.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VolumetricFogInjection.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VoxelIntegrate.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VolumetricFogResolve.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VoxelSpatialFilter.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\VoxelTemporalResolve.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogBilateral.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogInjection.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VoxelIntegrate.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogResolve.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VoxelSpatialFilter.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\VoxelTemporalResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl" />

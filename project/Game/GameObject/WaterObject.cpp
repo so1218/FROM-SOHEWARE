@@ -18,7 +18,6 @@ void WaterObject::Initialize()
         &mappedMaterialData_
     );
 
-
     // 2. プロパティのバインドを実行 (★ここで呼び出す必要があります)
     BindProperties();
 }

@@ -1,7 +1,7 @@
 {
   "RootSignature": "Foliage",
-  "VertexShader": "Assets/Shaders/Foliage.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Foliage.PS.hlsl",
+  "VertexShader": "Foliage.VS.hlsl",
+  "PixelShader": "Foliage.PS.hlsl",
   "InputLayout": "Tree",
   "BlendState": "OpaqueA2C",
   "RasterizerState": "NoCullSolid",

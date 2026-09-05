@@ -1,7 +1,7 @@
 {
   "RootSignature": "Terrain",
-  "VertexShader": "Assets/Shaders/Terrain.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Object3D.PS.hlsl",
+  "VertexShader": "Terrain.VS.hlsl",
+  "PixelShader": "Object3D.PS.hlsl",
   "InputLayout": "Terrain",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

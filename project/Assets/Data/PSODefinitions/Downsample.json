@@ -1,7 +1,7 @@
 {
   "RootSignature": "PostProcess",
-  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Downsample.PS.hlsl",
+  "VertexShader": "FullScreenQuad.VS.hlsl",
+  "PixelShader": "Downsample.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",

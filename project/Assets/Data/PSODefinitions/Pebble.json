@@ -1,7 +1,7 @@
 {
   "RootSignature": "Pebble",
-  "VertexShader": "Assets/Shaders/Pebble.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Pebble.PS.hlsl",
+  "VertexShader": "Pebble.VS.hlsl",
+  "PixelShader": "Pebble.PS.hlsl",
   "InputLayout": "Pebble",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

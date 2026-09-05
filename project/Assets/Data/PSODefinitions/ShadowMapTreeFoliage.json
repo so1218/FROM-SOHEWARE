@@ -1,7 +1,7 @@
 {
   "RootSignature": "ShadowMapTreeFoliage",
-  "VertexShader": "Assets/Shaders/ShadowMapTree.VS.hlsl",
-  "PixelShader": "Assets/Shaders/ShadowMapTreeFoliage.PS.hlsl",
+  "VertexShader": "ShadowMapTree.VS.hlsl",
+  "PixelShader": "ShadowMapTreeFoliage.PS.hlsl",
   "InputLayout": "Tree",
   "BlendState": "Opaque",
   "RasterizerState": "NoneCullSolid",

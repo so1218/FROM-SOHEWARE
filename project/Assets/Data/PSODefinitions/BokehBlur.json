@@ -1,7 +1,7 @@
 {
   "RootSignature": "BokehBlur",
-  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
-  "PixelShader": "Assets/Shaders/BokehBlur.PS.hlsl",
+  "VertexShader": "FullScreenQuad.VS.hlsl",
+  "PixelShader": "BokehBlur.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Off",
   "RasterizerState": "NoCullSolid",

@@ -1,8 +1,7 @@
 {
-  "Name": "ShadowMapSkinningDissolve",
   "RootSignature": "ShadowMapSkinningDissolve",
-  "VertexShader": "Assets/Shaders/ShadowMapSkinning.VS.hlsl",
-  "PixelShader": "Assets/Shaders/ShadowMap.PS.hlsl",
+  "VertexShader": "ShadowMapSkinning.VS.hlsl",
+  "PixelShader": "ShadowMap.PS.hlsl",
   "InputLayout": "Skinning",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

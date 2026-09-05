@@ -25,6 +25,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
         L"-E", L"main",
         L"-T", profile,
         L"-Zpr", // row-major
+        L"-I", L"Assets/Shaders",
+        L"-I", L"Assets/Shaders/Common"
     };
 
 #ifdef ENABLE_DEV_TOOLS
@@ -80,45 +82,52 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     return shaderBlob;
 }
 
-IDxcBlob* ShaderManager::GetShader(const std::wstring& filePath, const wchar_t* profile)
+IDxcBlob* ShaderManager::GetShader(const std::wstring& relativePath, const wchar_t* profile)
 {
-    // キャッシュキー（メモリ管理用）
-    std::wstring cacheKey = filePath + L"_" + profile;
+    // キャッシュキーは受け取った相対パスで管理
+    std::wstring cacheKey = relativePath + L"_" + profile;
     if (auto it = shaderCache_.find(cacheKey); it != shaderCache_.end()) {
         return it->second.Get();
     }
 
-    fs::path srcPath(filePath);
-    std::wstring cacheFileName = srcPath.filename().wstring() + L"_" + profile + L".cso";
-    std::wstring cachePath = srcPath.parent_path().wstring() + L"/Cache/" + cacheFileName;
+    // ベースパスの結合
+    std::wstring fullPath = L"Assets/Shaders/" + relativePath;
+
+    // パス区切り文字を置換してキャッシュ名の衝突を防ぐ
+    std::wstring safeFileName = relativePath;
+    for (auto& ch : safeFileName) {
+        if (ch == L'/' || ch == L'\\') ch = L'_';
+    }
+    std::wstring cacheFileName = safeFileName + L"_" + profile + L".cso";
+    std::wstring cachePath = L"Assets/Shaders/Cache/" + cacheFileName;
 
     Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
 
 #ifdef ENABLE_DEV_TOOLS
     // 開発モード .hlsl の更新を監視してコンパイル
     bool shouldCompile = true;
-    if (fs::exists(cachePath) && fs::exists(filePath))
+    if (fs::exists(cachePath) && fs::exists(fullPath))
     {
-        auto srcTime = fs::last_write_time(filePath);
+        auto srcTime = fs::last_write_time(fullPath);
         auto cacheTime = fs::last_write_time(cachePath);
         if (cacheTime > srcTime) shouldCompile = false;
     }
 
     if (shouldCompile)
     {
-        auto newBlob = CompileShader(filePath, profile);
+        auto newBlob = CompileShader(fullPath, profile);
         if (newBlob) {
             shaderBlob = newBlob;
             SaveBlob(cachePath, shaderBlob.Get());
         }
         else {
             if (fs::exists(cachePath)) {
-                LOG_ERROR("コンパイル失敗。前回成功したキャッシュを使用");
+                LOG_ERROR("コンパイル失敗。前回成功したキャッシュを使用: {}", StringUtils::ConvertString(relativePath));
                 MessageBeep(MB_ICONERROR);
                 shaderBlob = LoadBlob(cachePath, dxcUtils_);
             }
             else {
-                assert(false && "Shader compile failed and no cache exists.");
+                LOG_ERROR("コンパイルに失敗し、キャッシュも存在しません: {}", StringUtils::ConvertString(relativePath));
                 return nullptr;
             }
         }

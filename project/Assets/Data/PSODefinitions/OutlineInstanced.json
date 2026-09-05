@@ -1,7 +1,7 @@
 {
   "RootSignature": "Instancing3D",
-  "VertexShader": "Assets/Shaders/OutlineInstanced.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Outline.PS.hlsl",
+  "VertexShader": "OutlineInstanced.VS.hlsl",
+  "PixelShader": "Outline.PS.hlsl",
   "InputLayout": "Default3D",
   "BlendState": "AlphaBlend",
   "RasterizerState": "FrontCullBias",

@@ -1,7 +1,7 @@
 {
   "RootSignature": "Skybox",
-  "VertexShader": "Assets/Shaders/Skybox.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Skybox.PS.hlsl",
+  "VertexShader": "Skybox.VS.hlsl",
+  "PixelShader": "Skybox.PS.hlsl",
   "InputLayout": "Skybox",
   "BlendState": "Opaque",
   "RasterizerState": "FrontCullSolid",
