@@ -35,10 +35,10 @@ void WaterObject::BindProperties()
 
     // テクスチャ
     binder_->BindTexture("NormalMap", &normalMapName_, &normalMapHandle_, "white1x1", TextureType::Normal);
-    binder_->BindTexture("RippleTexture", &rippleTextureName_, &rippleTextureHandle_, "white1x1", TextureType::Noise);
+    binder_->BindTexture("RippleTexture", &rippleTextureName_, &rippleTextureHandle_, "white1x1", TextureType::Normal);
     binder_->BindTexture("EnvMap", &envMapName_, &envMapSrvHandle_, "pureSky", TextureType::CubeMap);
 
-    // 1. 風・頂点波パラメータ (Global Gerstner Waves)
+    // 1. 風・波設定
     binder_->Bind("WindDirection", &materialData_.windDirection, Vector2(1.0f, 0.5f));
     binder_->Bind("BaseWaveLength", &materialData_.baseWaveLength, 15.0f, 0.1f, 0.5f, 100.0f);
     binder_->Bind("BaseAmplitude", &materialData_.baseAmplitude, 0.5f, 0.01f, 0.0f, 5.0f);
@@ -48,12 +48,14 @@ void WaterObject::BindProperties()
     binder_->Bind("WaveLacunarity", &materialData_.waveLacunarity, 2.1f, 0.05f, 1.0f, 4.0f);
     binder_->Bind("WaveDirectionSpread", &materialData_.waveDirectionSpread, 0.3f, 0.01f, 0.0f, 1.57f);
     binder_->Bind("WaveChop", &materialData_.waveChop, 1.0f, 0.05f, 0.0f, 2.0f);
+    binder_->Bind("NormalIntensity", &materialData_.normalIntensity, 0.7f, 0.05f, 0.0f, 1.0f); // ★
+    binder_->Bind("WaveFoamThreshold", &materialData_.waveFoamThreshold, 0.25f, 0.01f, 0.01f, 1.0f); // ★
 
-    // 2. カラー & 光学設定
+    // 2. カラー設定
     binder_->BindColor("ShallowColor", &materialData_.shallowColor, Vector4(0.1f, 0.6f, 0.8f, 0.8f));
     binder_->BindColor("DeepColor", &materialData_.deepColor, Vector4(0.0f, 0.1f, 0.3f, 1.0f));
     binder_->BindColor("ScatterColor", &materialData_.scatterColor, Vector4(0.0f, 0.4f, 0.3f, 1.0f));
-    binder_->BindColor("FoamColor", &materialData_.foamColor, Vector4(0.9f, 0.95f, 1.0f, 0.8f));
+    binder_->BindColor("FoamColor", &materialData_.foamColor, Vector4(0.95f, 0.98f, 1.0f, 0.9f));
 
     // 3. ライティング・反射・屈折
     binder_->Bind("Absorption", &materialData_.absorption, 0.5f, 0.01f, 0.0f, 5.0f);
@@ -65,15 +67,20 @@ void WaterObject::BindProperties()
     binder_->Bind("EnvReflectionIntensity", &materialData_.envReflectionIntensity, 1.0f, 0.05f, 0.0f, 10.0f);
     binder_->Bind("SSRIntensity", &materialData_.ssrIntensity, 1.0f, 0.05f, 0.0f, 2.0f);
     binder_->Bind("SSRThickness", &materialData_.ssrThickness, 0.5f, 0.01f, 0.05f, 5.0f);
+    binder_->Bind("SSRStepSize", &materialData_.ssrStepSize, 0.15f, 0.01f, 0.01f, 1.0f);
+    binder_->Bind("SSRMaxDistance", &materialData_.ssrMaxDistance, 50.0f, 1.0f, 5.0f, 200.0f);
 
-    // 4. コースティクス・泡・雨
+    // 4. コースティクス・泡
     binder_->Bind("CausticsScale", &materialData_.causticsScale, 1.0f, 0.05f, 0.1f, 10.0f);
     binder_->Bind("CausticsIntensity", &materialData_.causticsIntensity, 0.5f, 0.05f, 0.0f, 5.0f);
     binder_->Bind("CausticsFadeDepth", &materialData_.causticsFadeDepth, 3.0f, 0.1f, 0.1f, 20.0f);
+    binder_->Bind("CausticsSpeed", &materialData_.causticsSpeed, 0.05f, 0.01f, 0.0f, 0.5f);
+    binder_->Bind("CausticsDistortion", &materialData_.causticsDistortion, 0.5f, 0.05f, 0.0f, 2.0f);
     binder_->Bind("FoamScale", &materialData_.foamScale, 0.5f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("FoamThreshold", &materialData_.foamThreshold, 0.3f, 0.01f, 0.01f, 2.0f);
     binder_->Bind("FoamIntensity", &materialData_.foamIntensity, 1.0f, 0.05f, 0.0f, 5.0f);
 
+    // 5. 雨・波紋
     binder_->Bind("RainIntensity", &materialData_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("RippleScale", &materialData_.rippleScale, 5.0f, 0.1f, 0.1f, 50.0f);
     binder_->Bind("RippleSpeed", &materialData_.rippleSpeed, 2.0f, 0.1f, 0.0f, 10.0f);
@@ -139,17 +146,19 @@ void WaterObject::DebugDraw()
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("波・風の設定 (頂点シミュレーション)"))
+
+        if (ImGui::TreeNode("波・風・法線設定"))
         {
             binder_->Draw("WindDirection", "風向き");
             binder_->Draw("BaseWaveLength", "基本波長 (m)");
-            binder_->Draw("BaseAmplitude", "基本振幅 (高さ)");
+            binder_->Draw("BaseAmplitude", "基本振幅");
             binder_->Draw("BaseSteepness", "波の鋭さ");
-            binder_->Draw("WaveSpeed", "進行速度倍率");
-            binder_->Draw("WavePersistence", "小波減衰率 (Persistence)");
-            binder_->Draw("WaveLacunarity", "小波周波数倍率 (Lacunarity)");
+            binder_->Draw("WaveSpeed", "進行速度");
+            binder_->Draw("WavePersistence", "小波減衰率");
+            binder_->Draw("WaveLacunarity", "小波周波数倍率");
             binder_->Draw("WaveDirectionSpread", "子波拡散角度");
             binder_->Draw("WaveChop", "水平引き寄せ強度");
+            binder_->Draw("NormalIntensity", "法線マップ適用強度");
             ImGui::TreePop();
         }
 
@@ -170,9 +179,11 @@ void WaterObject::DebugDraw()
             binder_->Draw("WaveTiling", "法線タイリング");
             binder_->Draw("Roughness", "ラフネス");
             binder_->Draw("SpecularIntensity", "ハイライト強度");
-            binder_->Draw("EnvReflectionIntensity", "環境反射の明るさ");
+            binder_->Draw("EnvReflectionIntensity", "環境反射強度");
             binder_->Draw("SSRIntensity", "SSR反射強度");
-            binder_->Draw("SSRThickness", "SSR交差判定厚み");
+            binder_->Draw("SSRThickness", "SSR判定厚み");
+            binder_->Draw("SSRStepSize", "SSRレイ初期ステップ幅");
+            binder_->Draw("SSRMaxDistance", "SSR最大描画距離");
             ImGui::TreePop();
         }
 
@@ -181,8 +192,11 @@ void WaterObject::DebugDraw()
             binder_->Draw("CausticsScale", "コースティクス・スケール");
             binder_->Draw("CausticsIntensity", "コースティクス・強度");
             binder_->Draw("CausticsFadeDepth", "コースティクス消滅深度");
+            binder_->Draw("CausticsSpeed", "コースティクス揺らぎ速度");
+            binder_->Draw("CausticsDistortion", "コースティクス屈折歪み");
             binder_->Draw("FoamScale", "泡ノイズ・スケール");
-            binder_->Draw("FoamThreshold", "泡発生水深閾値");
+            binder_->Draw("FoamThreshold", "岸辺の泡の範囲");
+            binder_->Draw("WaveFoamThreshold", "波頭の泡の発生しきい値");
             binder_->Draw("FoamIntensity", "泡の濃さ");
             ImGui::TreePop();
         }
