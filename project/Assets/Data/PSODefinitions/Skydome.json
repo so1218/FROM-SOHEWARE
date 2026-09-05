@@ -1,7 +1,7 @@
 {
   "RootSignature": "Skydome",
-  "VertexShader": "Skydome.VS.hlsl",
-  "PixelShader": "Skydome.PS.hlsl",
+  "VertexShader": "Environment/Skydome.VS.hlsl",
+  "PixelShader": "Environment/Skydome.PS.hlsl",
   "InputLayout": "Skydome",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

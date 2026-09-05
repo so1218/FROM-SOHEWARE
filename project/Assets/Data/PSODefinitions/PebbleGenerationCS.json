@@ -1,4 +1,4 @@
 {
   "RootSignature": "PebbleGenerationCS",
-  "ComputeShader": "PebbleGeneration.CS.hlsl"
+  "ComputeShader": "Environment/PebbleGeneration.CS.hlsl"
 }

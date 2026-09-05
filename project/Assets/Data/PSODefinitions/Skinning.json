@@ -1,7 +1,7 @@
 {
   "RootSignature": "Skinning",
-  "VertexShader": "SkinningObject3D.VS.hlsl",
-  "PixelShader": "Object3D.PS.hlsl",
+  "VertexShader": "Objects/SkinningObject3D.VS.hlsl",
+  "PixelShader": "Objects/Object3D.PS.hlsl",
   "InputLayout": "Skinning",
   "BlendState": "AlphaBlend",
   "RasterizerState": "BackCullSolid",

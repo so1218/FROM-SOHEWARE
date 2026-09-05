@@ -975,40 +975,40 @@
     <ClInclude Include="Game\GameObject\WaterManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\Shaders\Generate3DNoise.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogBilateral.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogInjection.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VoxelIntegrate.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VolumetricFogResolve.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VoxelSpatialFilter.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Volumetric\VoxelTemporalResolve.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Skydome.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Skydome.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Terrain.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\ShadowMapTerrain.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Lightning.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Lightning.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\GrassCulling.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\GrassGeneration.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\TreeFoliage.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Tree.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\ShadowMapTree.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Pebble.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Pebble.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\PebbleCulling.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\PebbleGeneration.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FoliageGeneration.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\FoliageCulling.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Skydome.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Skydome.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Terrain.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Shadow\ShadowMapTerrain.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Effects\Lightning.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Effects\Lightning.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\GrassCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\GrassGeneration.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\TreeFoliage.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Tree.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Shadow\ShadowMapTree.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Pebble.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Pebble.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\PebbleCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\PebbleGeneration.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\FoliageGeneration.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\FoliageCulling.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Foliage.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Foliage.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\PostProcess\SSR.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\WorldInteraction.CS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Water.VS.hlsl" />
-    <FxCompile Include="Assets\Shaders\Water.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\WorldInteraction.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Water.VS.hlsl" />
+    <FxCompile Include="Assets\Shaders\Environment\Water.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Assets\Shaders\ShadowMapTreeFoliage.PS.hlsl" />
+    <None Include="Assets\Shaders\Shadow\ShadowMapTreeFoliage.PS.hlsl" />
     <None Include="Assets\Shaders\Common\GridUtils.hlsli" />
     <None Include="Assets\Shaders\Common\ShadowUtils.hlsli" />
   </ItemGroup>
