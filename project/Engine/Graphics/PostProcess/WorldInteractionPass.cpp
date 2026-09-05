@@ -2,6 +2,7 @@
 #include "WorldInteractionPass.h"
 #include "Engine.h"
 #include "PSOManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {

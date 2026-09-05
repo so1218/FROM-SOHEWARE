@@ -973,6 +973,7 @@
     <ClInclude Include="Engine\Graphics\Renderer\WaterRenderer.h" />
     <ClInclude Include="Game\GameObject\WaterObject.h" />
     <ClInclude Include="Game\GameObject\WaterManager.h" />
+    <ClInclude Include="Engine\Graphics\Common\PIXColors.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />
