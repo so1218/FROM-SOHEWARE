@@ -1,7 +1,7 @@
 {
   "RootSignature": "BilateralBlur",
-  "VertexShader": "FullScreenQuad.VS.hlsl",
-  "PixelShader": "BilateralBlur.PS.hlsl",
+  "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
+  "PixelShader": "PostProcess/BilateralBlur.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Off",
   "RasterizerState": "NoCullSolid",

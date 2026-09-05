@@ -1,5 +1,5 @@
-#include "FullScreenQuad.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/FullScreenQuad.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture2D gTexture : register(t0);
 Texture2D gDissolveTexture : register(t1);

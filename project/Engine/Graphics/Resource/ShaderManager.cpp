@@ -19,14 +19,16 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     const std::wstring& filePath,
     const wchar_t* profile)
 {
+    // Assets/Shaders の絶対パスを取得
+    std::wstring absoluteShaderDir = fs::absolute(L"Assets/Shaders").wstring();
+
     // 引数の動的な構築
     std::vector<LPCWSTR> arguments = {
         filePath.c_str(),
         L"-E", L"main",
         L"-T", profile,
         L"-Zpr", // row-major
-        L"-I", L"Assets/Shaders",
-        L"-I", L"Assets/Shaders/Common"
+        L"-I", absoluteShaderDir.c_str() // 絶対パスでインクルード検索ルートを指定
     };
 
 #ifdef ENABLE_DEV_TOOLS

@@ -1,7 +1,7 @@
 #pragma once
 #include "MathUtils.h"
 #include "WorldTransform.h"
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 namespace FE
 {

@@ -1,4 +1,4 @@
-#include "FullScreenQuad.hlsli"
+#include "Common/FullScreenQuad.hlsli"
 
 VSOutput main(uint vertexID : SV_VertexID)
 {

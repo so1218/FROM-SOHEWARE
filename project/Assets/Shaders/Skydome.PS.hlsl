@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture2D<float4> gCloudTexture : register(t0); 
 

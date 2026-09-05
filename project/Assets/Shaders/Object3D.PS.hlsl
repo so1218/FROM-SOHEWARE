@@ -1,10 +1,10 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
-#include "GridUtils.hlsli"
-#include "ShadowUtils.hlsli"
-#include "LightingUtils.hlsli"
-#include "NormalUtils.hlsli"
-#include "PBRUtils.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
+#include "Common/GridUtils.hlsli"
+#include "Common/ShadowUtils.hlsli"
+#include "Common/LightingUtils.hlsli"
+#include "Common/NormalUtils.hlsli"
+#include "Common/PBRUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)

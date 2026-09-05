@@ -1,4 +1,4 @@
-#include "Trail.hlsli"
+#include "Common/Trail.hlsli"
 
 float hash11(float p)
 {

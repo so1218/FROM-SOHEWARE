@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<MaterialData> gMaterial : register(b0);
 

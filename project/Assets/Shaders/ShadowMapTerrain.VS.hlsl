@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 ConstantBuffer<CascadeConstant> gCascadeConstant : register(b9);

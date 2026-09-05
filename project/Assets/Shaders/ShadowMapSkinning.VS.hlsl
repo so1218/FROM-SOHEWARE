@@ -1,5 +1,5 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 // ライトのビュー射影行列
 ConstantBuffer<DirectionalLight> gLight : register(b1);

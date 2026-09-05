@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture3D<float4> gVoxelTemporalOut : register(t0);
 RWTexture3D<float4> gVoxelAccumulate : register(u0);

@@ -1,5 +1,5 @@
-#include "FullScreenQuad.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/FullScreenQuad.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<BilateralBlurSettings> gBilateralBlurSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);

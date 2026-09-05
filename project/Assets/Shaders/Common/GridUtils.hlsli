@@ -1,4 +1,3 @@
-
 float gridLine(float2 uv, float scale, float thickness)
 {
     float2 grid = abs(frac(uv * scale - 0.5) - 0.5) / fwidth(uv * scale);

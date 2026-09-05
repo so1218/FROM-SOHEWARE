@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture2D<float4> gRawFogTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);

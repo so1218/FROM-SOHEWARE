@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture3D<float4> gVoxelInjectCurrent : register(t0);
 RWTexture3D<float4> gVoxelInjectFiltered : register(u0);

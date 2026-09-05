@@ -1,5 +1,5 @@
-#include "Skybox.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/Skybox.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 struct SkyboxVSInput
 {

@@ -1,5 +1,5 @@
-#include "ShaderConstants.hlsli"
-#include "FullScreenQuad.hlsli"
+#include "Common/ShaderConstants.hlsli"
+#include "Common/FullScreenQuad.hlsli"
 
 Texture2D tex : register(t0);
 SamplerState samLinear : register(s0);

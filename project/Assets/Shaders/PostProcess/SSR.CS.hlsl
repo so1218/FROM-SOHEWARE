@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<SSRSettings> gSSRSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);

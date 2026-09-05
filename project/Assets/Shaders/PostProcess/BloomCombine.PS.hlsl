@@ -1,5 +1,5 @@
-#include "FullScreenQuad.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/FullScreenQuad.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 Texture2D gSceneTexture : register(t0); 
 Texture2D gBloomTexture : register(t1); // Bloom用 (光のみボケ)

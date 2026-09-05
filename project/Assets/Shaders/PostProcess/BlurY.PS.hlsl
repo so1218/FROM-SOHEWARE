@@ -1,5 +1,5 @@
-#include "ShaderConstants.hlsli"
-#include "FullScreenQuad.hlsli"
+#include "Common/ShaderConstants.hlsli"
+#include "Common/FullScreenQuad.hlsli"
 
 Texture2D gTexture : register(t0);
 SamplerState samLinear : register(s0);
@@ -16,7 +16,7 @@ float4 main(VSOutput input) : SV_TARGET
     
     for (int i = 1; i < 3; ++i)
     {
-        float2 offsetUV = float2(offset[i] * gBlurSettings.texelSize.x * gBlurSettings.blurStrength, 0.0);
+        float2 offsetUV = float2(0.0, offset[i] * gBlurSettings.texelSize.y * gBlurSettings.blurStrength);
 
         color += gTexture.Sample(samLinear, input.uv + offsetUV) * weight[i];
         color += gTexture.Sample(samLinear, input.uv - offsetUV) * weight[i];

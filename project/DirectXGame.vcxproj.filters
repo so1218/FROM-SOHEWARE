@@ -1001,7 +1001,7 @@
     <FxCompile Include="Assets\Shaders\FoliageCulling.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Foliage.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\SSR.CS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PostProcess\SSR.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\WorldInteraction.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Water.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Water.PS.hlsl" />
@@ -1009,7 +1009,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Assets\Shaders\ShadowMapTreeFoliage.PS.hlsl" />
-    <None Include="Assets\Shaders\GridUtils.hlsli" />
-    <None Include="Assets\Shaders\ShadowUtils.hlsli" />
+    <None Include="Assets\Shaders\Common\GridUtils.hlsli" />
+    <None Include="Assets\Shaders\Common\ShadowUtils.hlsli" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<GrassGenerationData> gGenerationData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b1);

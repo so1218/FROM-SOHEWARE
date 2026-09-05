@@ -1,5 +1,5 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 cbuffer DirectionalLights : register(b1)
 {

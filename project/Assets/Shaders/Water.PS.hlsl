@@ -1,7 +1,7 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
-#include "LightingUtils.hlsli"
-#include "PBRUtils.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
+#include "Common/LightingUtils.hlsli"
+#include "Common/PBRUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 

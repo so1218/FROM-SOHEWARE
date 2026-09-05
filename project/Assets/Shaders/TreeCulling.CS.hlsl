@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<TreeCullingData> gTreeCullingData : register(b1);
