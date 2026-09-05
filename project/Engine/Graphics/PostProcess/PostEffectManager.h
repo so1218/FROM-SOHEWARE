@@ -4,7 +4,7 @@
 #include "BrightExtractPass.h"
 #include "DownsamplePass.h"
 #include "BlurPass.h"
-#include "BokehBlurPass.h"
+#include "DoFPass.h"
 #include "FinalCompositePass.h"
 #include "SSAOPass.h"
 #include "BilateralBlurPass.h"
@@ -42,7 +42,7 @@ public:
     BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
     BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
     FinalCompositeSettings* GetCompositeSettings() const { return compositePass_->GetSettings(); }
-    DoFSettings* GetDoFSettings() const { return bokehPass_->GetSettings(); }
+    DoFSettings* GetDoFSettings() const { return dofPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
     SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
@@ -86,7 +86,7 @@ private:
     std::unique_ptr<BlurPass> horizontalBlurPass_;
 
     // DoF用
-    std::unique_ptr<BokehBlurPass> bokehPass_;
+    std::unique_ptr<DoFPass> dofPass_;
 
     std::unique_ptr<FinalCompositePass> compositePass_;
 

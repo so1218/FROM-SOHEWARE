@@ -1,12 +1,12 @@
 #include "pch.h"
-#include "BokehBlurPass.h"
+#include "DoFPass.h"
 #include "BufferManager.h"
 #include "Engine.h" 
 
 namespace FE
 {
 
-void BokehBlurPass::Initialize(Engine* engine,
+void DoFPass::Initialize(Engine* engine,
     uint32_t width,
     uint32_t height,
     PSOManager* psoManager)
@@ -30,10 +30,10 @@ void BokehBlurPass::Initialize(Engine* engine,
     cbData_->bokehHighlightIntensity = 50.0f;
 }
 
-void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+void DoFPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bokeh Blur Pass");
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Depth Of Field Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU = context.GetGPUHandle(context.sceneColorSrvIndex);
     D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU = context.GetGPUHandle(context.sceneDepthSrvIndex);
@@ -43,9 +43,9 @@ void BokehBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffect
 
     // PSO / RootSignature
     cmdList->SetGraphicsRootSignature(
-        engine_->GetRootSignatureManager()->GetRootSignature("BokehBlur"));
+        engine_->GetRootSignatureManager()->GetRootSignature("DoF"));
     cmdList->SetPipelineState(
-        psoManager_->GetPSO("BokehBlur"));
+        psoManager_->GetPSO("DoF"));
 
     // 定数バッファ
     cmdList->SetGraphicsRootConstantBufferView(

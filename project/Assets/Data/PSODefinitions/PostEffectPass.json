@@ -1,7 +1,7 @@
 {
   "RootSignature": "Fullscreen",
   "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
-  "PixelShader": "PostProcess/FullScreenQuad.PS.hlsl",
+  "PixelShader": "PostProcess/PostEffects.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",

@@ -211,7 +211,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Graphics\PostProcess\BilateralBlurPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\FinalCompositePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp" />
-    <ClCompile Include="Engine\Graphics\PostProcess\BokehBlurPass.cpp" />
+    <ClCompile Include="Engine\Graphics\PostProcess\DoFPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\BrightExtractPass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\IPostEffect.cpp" />
@@ -412,7 +412,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\PostProcess\BilateralBlurPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\FinalCompositePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h" />
-    <ClInclude Include="Engine\Graphics\PostProcess\BokehBlurPass.h" />
+    <ClInclude Include="Engine\Graphics\PostProcess\DoFPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\IPostEffect.h" />

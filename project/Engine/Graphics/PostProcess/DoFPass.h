@@ -5,7 +5,7 @@
 namespace FE
 {
 
-class BokehBlurPass : public IPostEffect
+class DoFPass : public IPostEffect
 {
 public:
     // 初期化

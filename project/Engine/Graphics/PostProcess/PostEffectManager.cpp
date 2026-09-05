@@ -50,8 +50,8 @@ void PostEffectManager::Initialize(
     uint32_t halfW = Math::MyMax(1u, width / 2);
     uint32_t halfH = Math::MyMax(1u, height / 2);
 
-    bokehPass_ = std::make_unique<BokehBlurPass>();
-    bokehPass_->Initialize(engine, halfW, halfH, psoManager);
+    dofPass_ = std::make_unique<DoFPass>();
+    dofPass_->Initialize(engine, halfW, halfH, psoManager);
 
     // 最終合成
     compositePass_ = std::make_unique<FinalCompositePass>();
@@ -229,7 +229,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
 
     // Depth of Field
     {
-        bokehPass_->Execute(cmdList, context_);
+        dofPass_->Execute(cmdList, context_);
     }
 
     // Volumetric Fog
@@ -257,7 +257,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             engine_->GetGraphicsDevice()->GetDevice(),
             GetCPUHandle(sceneTextureIndex_),
             GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
-            GetCPUHandle(bokehPass_->GetSRVIndex()),
+            GetCPUHandle(dofPass_->GetSRVIndex()),
             GetCPUHandle(sceneDepthIndex_),
             GetCPUHandle(volumetricFogBilateralPass_->GetSRVIndex()),
             GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
