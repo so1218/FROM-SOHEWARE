@@ -43,8 +43,8 @@ private:
     SRVManager* srvManager_ = nullptr;
     uint32_t srvIndex_ = 0; // SRVManagerから割り当てられたインデックス
 
-    UINT width_ = 0;
-    UINT height_ = 0;
+    uint32_t width_ = 0;
+    uint32_t height_ = 0;
     D3D12_VIEWPORT viewport_{};
     D3D12_RECT scissorRect_{};
 

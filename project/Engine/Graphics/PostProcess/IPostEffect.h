@@ -33,8 +33,8 @@ public:
     // 共通初期化
     void InitializeBase(
         Engine* engine,
-        UINT width,
-        UINT height,
+        uint32_t width,
+        uint32_t height,
         DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT,
         bool isCompute = false 
     );

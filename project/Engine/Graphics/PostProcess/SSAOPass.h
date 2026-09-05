@@ -8,7 +8,7 @@ namespace FE
 class SSAOPass : public IPostEffect 
 {
 public:
-    void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
+    void Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager);
 
     // IPostEffectの純粋仮想関数
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,

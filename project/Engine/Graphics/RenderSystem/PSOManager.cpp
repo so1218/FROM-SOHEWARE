@@ -24,7 +24,7 @@ void PSOManager::Initialize(
         { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescDefault_ = { inputElementsDefault_.data(), (UINT)inputElementsDefault_.size() };
+    inputLayoutDescDefault_ = { inputElementsDefault_.data(), (uint32_t)inputElementsDefault_.size() };
 
     // Skinning 
     inputElementsSkinning_ =
@@ -37,7 +37,7 @@ void PSOManager::Initialize(
         { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescSkinning_ = { inputElementsSkinning_.data(), (UINT)inputElementsSkinning_.size() };
+    inputLayoutDescSkinning_ = { inputElementsSkinning_.data(), (uint32_t)inputElementsSkinning_.size() };
 
     // Depth 
     inputLayoutDescDepth_ = inputLayoutDescDefault_;
@@ -47,7 +47,7 @@ void PSOManager::Initialize(
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescSkybox_ = { inputElementsSkybox_.data(), (UINT)inputElementsSkybox_.size() };
+    inputLayoutDescSkybox_ = { inputElementsSkybox_.data(), (uint32_t)inputElementsSkybox_.size() };
 
     // Trail
     inputElementsTrail_ =
@@ -56,7 +56,7 @@ void PSOManager::Initialize(
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescTrail_ = { inputElementsTrail_.data(), (UINT)inputElementsTrail_.size() };
+    inputLayoutDescTrail_ = { inputElementsTrail_.data(), (uint32_t)inputElementsTrail_.size() };
 
     // Line
     inputElementsLine_ =
@@ -64,7 +64,7 @@ void PSOManager::Initialize(
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescLine_ = { inputElementsLine_.data(), (UINT)inputElementsLine_.size() };
+    inputLayoutDescLine_ = { inputElementsLine_.data(), (uint32_t)inputElementsLine_.size() };
 
     // Grass
     inputElementsGrass_ =
@@ -73,7 +73,7 @@ void PSOManager::Initialize(
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescGrass_ = { inputElementsGrass_.data(), (UINT)inputElementsGrass_.size() };
+    inputLayoutDescGrass_ = { inputElementsGrass_.data(), (uint32_t)inputElementsGrass_.size() };
 
     inputElementsTree_ =
     {
@@ -82,7 +82,7 @@ void PSOManager::Initialize(
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescTree_ = { inputElementsTree_.data(), (UINT)inputElementsTree_.size() };
+    inputLayoutDescTree_ = { inputElementsTree_.data(), (uint32_t)inputElementsTree_.size() };
 
     inputElementsPebble_ =
     {
@@ -91,7 +91,7 @@ void PSOManager::Initialize(
         { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescPebble_ = { inputElementsPebble_.data(), (UINT)inputElementsPebble_.size() };
+    inputLayoutDescPebble_ = { inputElementsPebble_.data(), (uint32_t)inputElementsPebble_.size() };
 
     // Skydome
     inputElementsSkydome_ =
@@ -99,7 +99,7 @@ void PSOManager::Initialize(
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescSkydome_ = { inputElementsSkydome_.data(), (UINT)inputElementsSkydome_.size() };
+    inputLayoutDescSkydome_ = { inputElementsSkydome_.data(), (uint32_t)inputElementsSkydome_.size() };
 
     // Terrain
     inputElementsTerrain_ =
@@ -107,7 +107,7 @@ void PSOManager::Initialize(
         { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescTerrain_ = { inputElementsTerrain_.data(), (UINT)inputElementsTerrain_.size() };
+    inputLayoutDescTerrain_ = { inputElementsTerrain_.data(), (uint32_t)inputElementsTerrain_.size() };
 
     inputElementsLightning_ =
     {
@@ -115,7 +115,7 @@ void PSOManager::Initialize(
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
         { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
     };
-    inputLayoutDescLightning_ = { inputElementsLightning_.data(), (UINT)inputElementsLightning_.size() };
+    inputLayoutDescLightning_ = { inputElementsLightning_.data(), (uint32_t)inputElementsLightning_.size() };
 }
 
 ID3D12PipelineState* PSOManager::GetPSO(const std::string& psoName)
@@ -189,8 +189,8 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
     else
     {
         // RTV複数枚（G-Bufferなど）または1枚
-        psoDesc.NumRenderTargets = static_cast<UINT>(desc.RTVFormats.size());
-        for (UINT i = 0; i < psoDesc.NumRenderTargets; ++i)
+        psoDesc.NumRenderTargets = static_cast<uint32_t>(desc.RTVFormats.size());
+        for (uint32_t i = 0; i < psoDesc.NumRenderTargets; ++i)
         {
             psoDesc.RTVFormats[i] = GetRTVFormat(desc.RTVFormats[i]);
         }

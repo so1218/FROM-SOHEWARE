@@ -1,7 +1,7 @@
 {
   "RootSignature": "Trail",
-  "VertexShader": "Assets/Shaders/Trail.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Trail.PS.hlsl",
+  "VertexShader": "Trail.VS.hlsl",
+  "PixelShader": "Trail.PS.hlsl",
   "InputLayout": "Trail",
   "BlendState": "Additive",
   "RasterizerState": "NoCullSolid",

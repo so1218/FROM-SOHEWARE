@@ -5,7 +5,7 @@
 namespace FE
 {
 
-void VolumetricFogPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+void VolumetricFogPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)
 {
     InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
     psoManager_ = pso;
@@ -156,7 +156,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Volumetric Fog Pass");
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // 現在フレームのインデックス管理
     uint32_t currIdx = frameCounter_ % 2;
@@ -224,10 +224,9 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     SetFogVolumes(gpuVolumes);
 
     // スレッドグループ算出用共通変数
-    UINT dispatch3DX = (froxelW + 7) / 8;
-    UINT dispatch3DY = (froxelH + 7) / 8;
-    UINT dispatch3DZ = (froxelD + 3) / 4;
-
+    uint32_t dispatch3DX = (froxelW + 7) / 8;
+    uint32_t dispatch3DY = (froxelH + 7) / 8;
+    uint32_t dispatch3DZ = (froxelD + 3) / 4;
 
     // ========================================================
     // [1] Injection パス (1点Ditherサンプリング、光と密度の注入)
@@ -235,30 +234,31 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     {
         PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "1. Injection");
 
-        // t0 ~ t5 の連続SRVテーブル作成
+        // ----------------------------------------------------
+        // ディスクリプタのヒープへのコピー (SRV 3個 + UAV 1個)
+        // ----------------------------------------------------
+        // t0: SceneDepth
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 0, handleSize), context.GetCPUHandle(context.sceneDepthSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // t1: ShadowMap
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), engine_->GetShadowMap()->GetSRVHandleCPU(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // t2: NoiseVolume
         device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(noise3DData_.srvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 3, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidDensitySrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 4, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidVelocitySrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 5, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(context.fluidUVWSrvIndex), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-        // u0: VoxelInject UAV (オフセット 6)
-        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 6, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        // u0: VoxelInject UAV (オフセット 3)
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 3, handleSize), engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(injectUavIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogInjectionCS"));
         cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogInjectionCS"));
 
-        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); 
-        cmdList->SetComputeRootConstantBufferView(1, context.fluidSettingsCBAddress); 
-        cmdList->SetComputeRootConstantBufferView(2, constantBuffer_->GetGPUVirtualAddress());
-        cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress()); 
-        cmdList->SetComputeRootConstantBufferView(4, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress()); 
-        cmdList->SetComputeRootConstantBufferView(5, volumeConstantBuffer_->GetGPUVirtualAddress());
-        cmdList->SetComputeRootConstantBufferView(6, engine_->GetLightManager()->GetShadowDataResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(2, engine_->GetLightManager()->GetPointLightResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(4, volumeConstantBuffer_->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(5, engine_->GetLightManager()->GetShadowDataResource()->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize)); 
-        cmdList->SetComputeRootDescriptorTable(8, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 6, handleSize));
+        cmdList->SetComputeRootDescriptorTable(6, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
+        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize));
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 
@@ -381,8 +381,8 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 14, handleSize)); 
         cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 16, handleSize)); 
 
-        UINT clientWidth = Engine::GetClientWidth();
-        UINT clientHeight = Engine::GetClientHeight();
+        uint32_t clientWidth = Engine::GetClientWidth();
+        uint32_t clientHeight = Engine::GetClientHeight();
         cmdList->Dispatch((clientWidth + 7) / 8, (clientHeight + 7) / 8, 1);
     }
 

@@ -9,7 +9,6 @@
 #include "ImGuiManager.h"
 #include "SRVManager.h"
 #include "DSVManager.h"
-#include "FluidSimulationPass.h"
 #include "WorldInteractionPass.h"
 
 namespace FE
@@ -41,6 +40,9 @@ void RenderPipeline::Initialize(Engine* engine,
 
     // PostEffectManagerの初期化
     uint32_t offscreenDepthSrvIndex = engine->GetDSVManager()->GetDSVTextureSRVIndex(1);
+    // RenderCoordinator に深度 SRV インデックスを設定
+    renderCoordinator_->SetOffscreenDepthSRVIndex(offscreenDepthSrvIndex);
+    
     postEffectManager_ = std::make_unique<PostEffectManager>();
     postEffectManager_->Initialize(
         engine,
@@ -60,10 +62,6 @@ void RenderPipeline::Initialize(Engine* engine,
         2048, 2048,
         engine->GetSRVManager()
     );
-
-    // 流体パスの初期化
-    fluidSimulationPass_ = std::make_unique<FluidSimulationPass>();
-    fluidSimulationPass_->Initialize(engine, engine->GetPSOManager());
 
     // ワールドインタラクションパスの初期化
     worldInteractionPass_ = std::make_unique<WorldInteractionPass>();
@@ -90,9 +88,6 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     // カリング用フラスタムを更新
     rendererManager->UpdateCullingFrustums();
-
-    // 流体シミュレーションの実行
-    fluidSimulationPass_->Execute(cmdList);
 
     // WorldInteractionSystem から渡された定数パラメータを Pass に渡す
     worldInteractionPass_->SetConstants(rendererManager->GetWorldInteractionConstants());
@@ -125,18 +120,16 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     shadowMap_->TransitionToRead(cmdList); // ループの後に1回だけバリア
 
+    // RendererManager に深度リソースのポインタを渡す
+    rendererManager->SetOffscreenDepthResource(renderCoordinator_->GetOffscreenDepthResource());
+    rendererManager->SetOffscreenColorResource(renderCoordinator_->GetOffscreenColorResource());
+
     // G-Buffer / オフスクリーンパス
     renderCoordinator_->BeginOffscreenRender();
 
     rendererManager->Draw3D();
-    renderCoordinator_->EndOffscreenRender();
 
-    postEffectManager_->SetFluidData(
-        fluidSimulationPass_->GetCurrentDensitySRVIndex(),
-        fluidSimulationPass_->GetCurrentVelocitySRVIndex(),
-        fluidSimulationPass_->GetCurrentUVWSRVIndex(),
-        fluidSimulationPass_->GetConstantBufferAddress()
-    );
+    renderCoordinator_->EndOffscreenRender();
 
     // ポストエフェクトパス
     postEffectManager_->ExecutePostEffects(cmdList);

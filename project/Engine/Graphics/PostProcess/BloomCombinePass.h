@@ -10,8 +10,8 @@ class BloomCombinePass : public IPostEffect
 public:
     void Initialize(
         Engine* engine,
-        UINT w,
-        UINT h,
+        uint32_t w,
+        uint32_t h,
         PSOManager* pso,
         SRVManager* srvManager
     );
@@ -49,7 +49,7 @@ private:
 
     // 入力テクスチャ用SRVヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvHeap_;
-    UINT descriptorSize_ = 0;
+    uint32_t descriptorSize_ = 0;
 };
 
 }

@@ -1,4 +1,4 @@
 {
   "RootSignature": "GrassGenerationCS",
-  "ComputeShader": "Assets/Shaders/GrassGeneration.CS.hlsl"
+  "ComputeShader": "GrassGeneration.CS.hlsl"
 }

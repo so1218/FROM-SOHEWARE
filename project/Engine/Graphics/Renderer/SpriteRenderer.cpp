@@ -145,7 +145,7 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
         cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
         cmdList->SetGraphicsRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
 
-        cmdList->DrawIndexedInstanced(UINT(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
+        cmdList->DrawIndexedInstanced(uint32_t(sprite.mesh.GetIndexCount()), 1, 0, 0, 0);
     }
 }
 

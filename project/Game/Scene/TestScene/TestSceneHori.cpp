@@ -14,6 +14,7 @@
 #include "PebbleField.h"
 #include "FoliageField.h"
 #include "GameUI.h"
+#include "WaterManager.h"
 
 using namespace FE;
 
@@ -37,6 +38,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     objectManager_.Create<PebbleField>(engine_);
     objectManager_.Create<FoliageField>(engine_);
     objectManager_.Create<GameUI>(engine_);
+    objectManager_.Create<WaterManager>(engine_, "GameWater");
 }
 
 void TestSceneHori::OnInitialize()

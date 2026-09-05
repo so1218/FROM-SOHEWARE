@@ -1,8 +1,8 @@
-#include "ShaderConstants.hlsli"
-#include "LightingUtils.hlsli"
-#include "NormalUtils.hlsli"
-#include "PBRUtils.hlsli"
-#include "ShadowUtils.hlsli"
+#include "Common/ShaderConstants.hlsli"
+#include "Common/LightingUtils.hlsli"
+#include "Common/NormalUtils.hlsli"
+#include "Common/PBRUtils.hlsli"
+#include "Common/ShadowUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 

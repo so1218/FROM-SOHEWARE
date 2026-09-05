@@ -125,7 +125,7 @@ private:
 
     // メッシュごとのマテリアルリスト
     std::vector<MaterialHandle> materials_;
-    // 現在のマテリアルが自分専用（独立）かどうか
+    // 現在のマテリアルが自分専用かどうか
     bool isMaterialsUnique_ = false;
 
     // モデル自体のトランスフォーム

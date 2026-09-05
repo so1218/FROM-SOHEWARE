@@ -1,6 +1,6 @@
 {
   "RootSignature": "ShadowMapTreeTrunk",
-  "VertexShader": "Assets/Shaders/ShadowMapTree.VS.hlsl",
+  "VertexShader": "ShadowMapTree.VS.hlsl",
   "PixelShader": null,
   "InputLayout": "Tree",
   "BlendState": "Opaque",

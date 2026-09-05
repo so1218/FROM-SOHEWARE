@@ -12,7 +12,7 @@ void NoiseTextureGenerator::Initialize(Engine* engine)
 
 GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     ID3D12GraphicsCommandList* cmdList,
-    UINT width, UINT height, UINT depth)
+    uint32_t width, uint32_t height, uint32_t depth)
 {
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     SRVManager* srvManager = engine_->GetSRVManager();
@@ -78,9 +78,9 @@ GeneratedTextureData NoiseTextureGenerator::Generate3DPerlinNoise(
     cmdList->SetComputeRootDescriptorTable(0, srvManager->GetSRVHandleGPU(uavIndex));
 
     // Dispatch (8x8x8 スレッドで処理)
-    UINT dispatchX = (width + 7) / 8;
-    UINT dispatchY = (height + 7) / 8;
-    UINT dispatchZ = (depth + 7) / 8;
+    uint32_t dispatchX = (width + 7) / 8;
+    uint32_t dispatchY = (height + 7) / 8;
+    uint32_t dispatchZ = (depth + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, dispatchZ);
 
     // リソースバリア (UAV -> SRV)

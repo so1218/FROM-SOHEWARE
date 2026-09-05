@@ -7,7 +7,7 @@
 namespace FE
 {
 
-void DownsamplePass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+void DownsamplePass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)
 {
     // 親クラスで1/4サイズのRTV/SRVを作成
     InitializeBase(engine, w, h);

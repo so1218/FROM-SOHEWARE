@@ -26,6 +26,7 @@
 #include "LightningRenderer.h"
 #include "TreeRenderer.h"
 #include "PebbleRenderer.h"
+#include "WaterRenderer.h"
 
 namespace FE
 {
@@ -38,7 +39,7 @@ void RendererManager::Initialize(
 	PSOManager* psoManager, RootSignatureManager* rootSignatureManager,
 	TextureLoader* textureLoader, SRVManager* srvManager, LightManager* lightManager,
 	GlobalConstants* globalConstants, MaterialManager* materialManager,
-	PostEffectManager* postEffectManager,
+	PostEffectManager* postEffectManager, RenderCoordinator* renderCoordinator,
 	int clientWidth, int clientHeight, ShadowMap* shadowMap)
 {
 	// ポインタをメンバ変数に保存
@@ -52,6 +53,7 @@ void RendererManager::Initialize(
 	globalConstants_ = globalConstants;
 	materialManager_ = materialManager;
 	postEffectManager_ = postEffectManager;
+	renderCoordinator_ = renderCoordinator;
 
 	env_.device = device_;
 	env_.commandManager = commandManager_;
@@ -82,6 +84,8 @@ void RendererManager::Initialize(
 	pebbleRenderer_ = std::make_unique<PebbleRenderer>();
 	pebbleRenderer_->Initialize(env_);
 	foliageRenderer_ = std::make_unique<FoliageRenderer>();
+	waterRenderer_ = std::make_unique<WaterRenderer>();
+	waterRenderer_->Initialize(env_);
 	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
 	skydomeRenderer_->Initialize(env_);
 	terrainRenderer_ = std::make_unique<TerrainRenderer>();
@@ -100,6 +104,7 @@ void RendererManager::Finalize()
 {
 	if (modelRenderer_) { modelRenderer_->Finalize(); }
 	if (terrainRenderer_) { terrainRenderer_->Finalize(); }
+	if (waterRenderer_) { waterRenderer_->Finalize(); }
 }
 
 void RendererManager::BeginFrame()
@@ -114,6 +119,7 @@ void RendererManager::BeginFrame()
 	if (treeRenderer_) { treeRenderer_->BeginFrame(); }
 	if (pebbleRenderer_) { pebbleRenderer_->BeginFrame(); }
 	if (foliageRenderer_) { foliageRenderer_->BeginFrame(); }
+	if (waterRenderer_) { waterRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
@@ -141,6 +147,11 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	if (treeRenderer_)
 	{
 		treeRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
+	}
+
+	if (waterRenderer_)
+	{
+		waterRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_); 
 	}
 }
 
@@ -367,6 +378,27 @@ void RendererManager::Draw3D()
 	}
 
 	// 半透明モデルをまとめて描画
+	if (waterRenderer_)
+	{
+		// ① ここまでの不透明カラーをコピー（屈折用 SRV テクスチャの生成）
+		renderCoordinator_->CopyOpaqueSceneColor();
+
+		// ② 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
+		renderCoordinator_->TransitionDepthToShaderResource();
+
+		// ③ 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
+		waterRenderer_->SetSceneTextures(
+			renderCoordinator_->GetOpaqueSceneColorSRVGPUHandle(), // コピーされた背景カラー
+			renderCoordinator_->GetOffscreenDepthSRVGPUHandle()    // 深度テクスチャ
+		);
+
+		// ④ 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
+		waterRenderer_->PrepareBatches();
+		waterRenderer_->Draw(env_);
+
+		// ⑤ 深度バッファを次の描画のために WRITE モードへ復帰
+		renderCoordinator_->TransitionDepthToDepthWrite();
+	}
 	if (modelRenderer_)
 	{
 		modelRenderer_->Draw(env_, RenderGroup::Transparent, isWireFrame_, shadowMap_);
@@ -587,7 +619,7 @@ void RendererManager::UpdateFoliageConfigs(const std::vector<FoliageTypeConfig>&
 
 void RendererManager::GenerateFoliage(
 	uint32_t heightMapSrvHandle,
-	UINT terrainWidth, UINT terrainDepth)
+	uint32_t terrainWidth, uint32_t terrainDepth)
 {
 	// TerrainRendererから地形バッファのGPUアドレスを取得してFoliageRendererへ渡す
 	if (foliageRenderer_ && terrainRenderer_)
@@ -601,6 +633,33 @@ void RendererManager::GenerateFoliage(
 			terrainSettingsAddr,
 			terrainWidth, terrainDepth
 		);
+	}
+}
+
+void RendererManager::SubmitWater(
+	const WorldTransform& worldTransform,
+	const ModelData& modelData,
+	D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV,
+	uint32_t normalMapHandle,
+	uint32_t rippleTextureHandle,
+	uint32_t envMapSrvHandle,
+	const Vector4& instanceColor)
+{
+	if (waterRenderer_)
+	{
+		waterRenderer_->Submit(
+			worldTransform, modelData, waterMaterialCBV,
+			normalMapHandle, rippleTextureHandle, envMapSrvHandle, instanceColor);
+	}
+}
+
+void RendererManager::SetWaterSceneTextures(
+	D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
+	D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV)
+{
+	if (waterRenderer_)
+	{
+		waterRenderer_->SetSceneTextures(sceneColorSRV, sceneDepthSRV);
 	}
 }
 
@@ -689,6 +748,62 @@ uint32_t RendererManager::GetMaxParticleCount() const
 uint32_t RendererManager::GetMaxTrailCount() const
 {
 	return trailRenderer_ ? trailRenderer_->GetMaxCount() : 0;
+}
+
+void RendererManager::TransitionDepthToShaderResource()
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		offscreenDepthResource_,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+	);
+
+	cmdList->ResourceBarrier(1, &barrier);
+}
+
+void RendererManager::TransitionDepthToDepthWrite()
+{
+	auto* cmdList = commandManager_->GetCommandList();
+
+	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		offscreenDepthResource_,
+		D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE
+	);
+
+	cmdList->ResourceBarrier(1, &barrier);
+}
+
+void RendererManager::TransitionColorToShaderResource()
+{
+	if (!offscreenColorResource_) return;
+
+	auto* cmdList = commandManager_->GetCommandList();
+
+	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		offscreenColorResource_,
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
+	);
+
+	cmdList->ResourceBarrier(1, &barrier);
+}
+
+void RendererManager::TransitionColorToRenderTarget()
+{
+	if (!offscreenColorResource_) return;
+
+	auto* cmdList = commandManager_->GetCommandList();
+
+	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		offscreenColorResource_,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_STATE_RENDER_TARGET
+	);
+
+	cmdList->ResourceBarrier(1, &barrier);
 }
 
 }

@@ -308,6 +308,12 @@ void PropertyBinder::BindTexture(
     // 初期同期処理
     std::string savedValue = gv->GetStringValue(groupPath_, key);
 
+    // 条件に関わらず、必ず初期同期として呼び出す
+    if (onValueChanged)
+    {
+        onValueChanged(savedValue);
+    }
+
     // オブジェクトが持っている値と保存されていた値が違う場合
     if (savedValue != initialValue)
     {

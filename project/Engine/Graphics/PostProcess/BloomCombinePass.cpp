@@ -9,8 +9,8 @@ namespace FE
 
 void BloomCombinePass::Initialize(
     Engine* engine,
-    UINT w,
-    UINT h,
+    uint32_t w,
+    uint32_t h,
     PSOManager* pso,
     SRVManager* srvManager)
 {
@@ -67,7 +67,7 @@ void BloomCombinePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle =
         passHeap_->GetCPUDescriptorHandleForHeapStart();
 
-    UINT descriptorSize =
+    uint32_t descriptorSize =
         device->GetDescriptorHandleIncrementSize(
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
         );

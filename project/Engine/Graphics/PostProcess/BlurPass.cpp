@@ -6,7 +6,7 @@
 namespace FE
 {
 
-void BlurPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso, bool isVertical)
+void BlurPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso, bool isVertical)
 {
     InitializeBase(engine, w, h);
     engine_ = engine;

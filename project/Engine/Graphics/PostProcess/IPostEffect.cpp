@@ -16,7 +16,7 @@ IPostEffect::~IPostEffect()
     }
 }
 
-void IPostEffect::InitializeBase(Engine* engine, UINT width, UINT height, DXGI_FORMAT format, bool isCompute)
+void IPostEffect::InitializeBase(Engine* engine, uint32_t width, uint32_t height, DXGI_FORMAT format, bool isCompute)
 {
     engine_ = engine;
 

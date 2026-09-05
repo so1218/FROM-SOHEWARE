@@ -9,7 +9,7 @@ class BokehBlurPass : public IPostEffect
 {
 public:
     // 初期化
-    void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
+    void Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager);
 
     // IPostEffect
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,

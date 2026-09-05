@@ -1,24 +1,77 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<MaterialData> gMaterial : register(b5);
+ConstantBuffer<WaterMaterialData> gWaterMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
 
-// 簡易Gerstner波による頂点変位
-float3 CalculateGerstnerWave(float3 pos, float time, float2 dir, float waveLength, float amplitude, float speed)
+// 風と物理法則から多重 Gerstner 波をプロシージャル自動計算
+float3 CalculateAutoGerstnerWorld(float3 worldPos, float time, out float3 outNormal, out float3 outTangent)
 {
-    float w = 2.0f * 3.14159f / waveLength;
-    float phi = speed * w;
-    float proj = dot(dir, pos.xz);
-    float phase = w * proj + phi * time;
+    static const int OCTAVES = 4;
+    static const float GRAVITY = 9.81f;
 
-    return float3(
-        dir.x * (amplitude * cos(phase)),
-        amplitude * sin(phase),
-        dir.y * (amplitude * cos(phase))
-    );
+    float3 waveOffset = float3(0.0f, 0.0f, 0.0f);
+    float3 tangent = float3(1.0f, 0.0f, 0.0f);
+    float3 binormal = float3(0.0f, 0.0f, 1.0f);
+
+    float currentAmplitude = gWaterMaterial.baseAmplitude;
+    float currentLength = max(gWaterMaterial.baseWaveLength, 0.1f);
+    float2 mainDir = normalize(gWaterMaterial.windDirection);
+
+    float spreadAngle = gWaterMaterial.waveDirectionSpread;
+    float cosAngle = cos(spreadAngle);
+    float sinAngle = sin(spreadAngle);
+    float2x2 rotMatrix = float2x2(cosAngle, -sinAngle, sinAngle, cosAngle);
+
+    float2 currentDir = mainDir;
+
+    [unroll]
+    for (int i = 0; i < OCTAVES; ++i)
+    {
+        float k = (2.0f * PI) / currentLength;
+        float w = sqrt(GRAVITY * k) * gWaterMaterial.waveSpeed;
+
+        float phase = k * dot(currentDir, worldPos.xz) + w * time;
+        float c = cos(phase);
+        float s = sin(phase);
+
+        float q = (gWaterMaterial.baseSteepness / (k * currentAmplitude * (float) OCTAVES)) * gWaterMaterial.waveChop;
+
+        waveOffset.x += currentDir.x * (q * currentAmplitude * c);
+        waveOffset.y += currentAmplitude * s;
+        waveOffset.z += currentDir.y * (q * currentAmplitude * c);
+
+        float wa = k * currentAmplitude;
+        tangent += float3(
+            -currentDir.x * currentDir.x * (q * wa * s),
+             currentDir.x * (wa * c),
+            -currentDir.x * currentDir.y * (q * wa * s)
+        );
+
+        binormal += float3(
+            -currentDir.x * currentDir.y * (q * wa * s),
+             currentDir.y * (wa * c),
+            -currentDir.y * currentDir.y * (q * wa * s)
+        );
+
+        currentAmplitude *= gWaterMaterial.wavePersistence;
+        currentLength /= gWaterMaterial.waveLacunarity;
+        
+        if (i % 2 == 0)
+        {
+            currentDir = mul(rotMatrix, currentDir);
+        }
+        else
+        {
+            currentDir = mul(transpose(rotMatrix), currentDir);
+        }
+    }
+
+    outNormal = normalize(cross(binormal, tangent));
+    outTangent = normalize(tangent);
+    return waveOffset;
 }
 
 VertexShaderOutput main(Object3DVSInputInstanced input)
@@ -28,34 +81,32 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     uint index = input.instanceID + gInstanceOffset.gBaseInstanceIndex;
     Object3DInstanceData instance = gInstanceData[index];
 
-    float4 localPos = input.position;
-    float4 prevLocalPos = input.position;
+    float4 baseWorldPos = mul(input.position, instance.World);
+    float4 prevBaseWorldPos = mul(input.position, instance.PrevWorld);
 
-    // 頂点変位
     float time = gFrameData.gTime;
     float pTime = gFrameData.prevTime;
 
-    float3 waveOffset = CalculateGerstnerWave(localPos.xyz, time, float2(1.0f, 0.3f), 12.0f, 0.08f, 1.2f);
-    waveOffset += CalculateGerstnerWave(localPos.xyz, time, float2(-0.4f, 0.8f), 6.0f, 0.04f, 1.8f);
+    float3 waveNormal, waveTangent;
+    float3 prevWaveNormal, prevWaveTangent;
 
-    float3 prevWaveOffset = CalculateGerstnerWave(prevLocalPos.xyz, pTime, float2(1.0f, 0.3f), 12.0f, 0.08f, 1.2f);
-    prevWaveOffset += CalculateGerstnerWave(prevLocalPos.xyz, pTime, float2(-0.4f, 0.8f), 6.0f, 0.04f, 1.8f);
+    // ワールド座標と風の物理法則から波の頂点変形を計算
+    float3 waveOffset = CalculateAutoGerstnerWorld(baseWorldPos.xyz, time, waveNormal, waveTangent);
+    float3 prevWaveOffset = CalculateAutoGerstnerWorld(prevBaseWorldPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
 
-    localPos.xyz += waveOffset;
-    prevLocalPos.xyz += prevWaveOffset;
+    float3 finalWorldPos = baseWorldPos.xyz + waveOffset;
+    float3 prevFinalWorldPos = prevBaseWorldPos.xyz + prevWaveOffset;
 
-    // 座標変換 & Velocity構築
-    float4 worldPos = mul(localPos, instance.World);
-    output.worldPosition = worldPos.xyz;
-    output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
+    output.worldPosition = finalWorldPos;
+    output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
 
-    float4 prevWorldPos = mul(prevLocalPos, instance.PrevWorld);
-    output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
-
+    output.prevClipPos = mul(float4(prevFinalWorldPos, 1.0f), gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float3x3) instance.WorldInverseTranspose));
-    output.tangent = normalize(mul(input.tangent, (float3x3) instance.World));
+    
+    float3x3 worldInvTranspose = (float3x3) instance.WorldInverseTranspose;
+    output.normal = normalize(mul(waveNormal, worldInvTranspose));
+    output.tangent = normalize(mul(waveTangent, (float3x3) instance.World));
     output.worldColor = instance.WorldColor;
 
     return output;

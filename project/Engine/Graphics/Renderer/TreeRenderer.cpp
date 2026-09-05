@@ -225,7 +225,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     cameraFrustum.ExtractFromMatrix(viewProjectionMatrix_);
 
     // CBV要件である256バイトアライメントの計算
-    UINT alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
+    uint32_t alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
     uint8_t* ptr = reinterpret_cast<uint8_t*>(curRes.mappedCullingData) + (batchOffset * alignedSize);
     AlignedDrawIndexedArguments* mappedArgs = curRes.mappedIndirectArgs + batchOffset;
 
@@ -236,7 +236,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         const auto& meshes = GetOrCreateBatch(*batch.modelData);
         const Mesh* mesh = &meshes[batch.meshIndex];
 
-        mappedArgs[i].args.IndexCountPerInstance = static_cast<UINT>(mesh->GetIndexCount());
+        mappedArgs[i].args.IndexCountPerInstance = static_cast<uint32_t>(mesh->GetIndexCount());
         // CS内でInterlockedAddを使って可視インスタンスを積むため、描画前に必ず0クリア
         mappedArgs[i].args.InstanceCount = 0;
         mappedArgs[i].args.StartIndexLocation = 0;
@@ -307,7 +307,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
             + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
 
-        UINT groupX = (batch.instanceCount + 63) / 64;
+        uint32_t groupX = (batch.instanceCount + 63) / 64;
         cmdList->Dispatch(groupX, 1, 1);
     }
 
@@ -383,7 +383,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
         // CPU側でドローコールごとの可視インスタンス数を関知せず、直接GPUへ描画をキック
-        UINT argsOffset = static_cast<UINT>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+        uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
     }
 }
@@ -405,7 +405,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     Frustum lightFrustum;
     lightFrustum.ExtractFromMatrix(shadowData->cascadeLightViewProj[cascadeIndex]);
 
-    UINT alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
+    uint32_t alignedSize = (sizeof(TreeCullingData) + 255) & ~255;
     uint8_t* cullingPtr = reinterpret_cast<uint8_t*>(curRes.mappedCullingData) + (batchOffset * alignedSize);
     AlignedDrawIndexedArguments* mappedArgs = curRes.mappedIndirectArgs + batchOffset;
 
@@ -416,7 +416,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         const auto& meshes = GetOrCreateBatch(*batch.modelData);
         const Mesh* mesh = &meshes[batch.meshIndex];
 
-        mappedArgs[i].args.IndexCountPerInstance = static_cast<UINT>(mesh->GetIndexCount());
+        mappedArgs[i].args.IndexCountPerInstance = static_cast<uint32_t>(mesh->GetIndexCount());
         mappedArgs[i].args.InstanceCount = 0;
         mappedArgs[i].args.StartIndexLocation = 0;
         mappedArgs[i].args.BaseVertexLocation = 0;
@@ -479,7 +479,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
             + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
 
-        UINT groupX = (batch.instanceCount + 63) / 64;
+        uint32_t groupX = (batch.instanceCount + 63) / 64;
         cmdList->Dispatch(groupX, 1, 1);
     }
 
@@ -547,7 +547,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
 
-        UINT argsOffset = static_cast<UINT>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+        uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
         cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
     }
 }

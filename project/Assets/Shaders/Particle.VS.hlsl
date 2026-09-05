@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli" 
+#include "Common/ShaderConstants.hlsli" 
 
 // インスタンシング用のデータを格納するためのバッファ
 StructuredBuffer<ParticleInstanceData> instanceBuffer : register(t0);

@@ -16,7 +16,7 @@ public:
     );
 
     // ファイルパスとプロファイルからシェーダーBlobを取得する
-    IDxcBlob* GetShader(const std::wstring& filePath, const wchar_t* profile);
+    IDxcBlob* GetShader(const std::wstring& relativePath, const wchar_t* profile);
 
 private:
     // コンパイル処理

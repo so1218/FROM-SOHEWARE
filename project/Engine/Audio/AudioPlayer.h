@@ -75,7 +75,7 @@ public:
     void STDMETHODCALLTYPE OnBufferEnd(void* pBufferContext) override {
         if (onBufferEnd_) onBufferEnd_();
     }
-    void STDMETHODCALLTYPE OnVoiceProcessingPassStart(UINT32) override {}
+    void STDMETHODCALLTYPE OnVoiceProcessingPassStart(uint32_t) override {}
     void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
     void STDMETHODCALLTYPE OnStreamEnd() override {}
     void STDMETHODCALLTYPE OnBufferStart(void*) override {}

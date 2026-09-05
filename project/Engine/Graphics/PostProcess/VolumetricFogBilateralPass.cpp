@@ -5,7 +5,7 @@
 namespace FE
 {
 
-void VolumetricFogBilateralPass::Initialize(Engine* engine, UINT w, UINT h, PSOManager* pso)
+void VolumetricFogBilateralPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)
 {
     // コンピュートシェーダー用として初期化 (isCompute = true)
     InitializeBase(engine, w, h, DXGI_FORMAT_R16G16B16A16_FLOAT, true);
@@ -36,7 +36,7 @@ void VolumetricFogBilateralPass::Initialize(Engine* engine, UINT w, UINT h, PSOM
 void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // ディスクリプタの集約コピー
     D3D12_CPU_DESCRIPTOR_HANDLE destHandle = passHeap_->GetCPUDescriptorHandleForHeapStart();
@@ -84,8 +84,8 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     cmdList->SetComputeRootDescriptorTable(3, gpuHandle);
 
     // Dispatch 実行
-    UINT dispatchX = (static_cast<UINT>(viewport_.Width) + 7) / 8;
-    UINT dispatchY = (static_cast<UINT>(viewport_.Height) + 7) / 8;
+    uint32_t dispatchX = (static_cast<uint32_t>(viewport_.Width) + 7) / 8;
+    uint32_t dispatchY = (static_cast<uint32_t>(viewport_.Height) + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
     depthBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;

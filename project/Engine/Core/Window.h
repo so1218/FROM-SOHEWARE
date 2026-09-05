@@ -10,7 +10,7 @@ public:
         : clientWidth_(width), clientHeight_(height) {}
 
 	// ウィンドウプロシージャ
-	static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK WindowProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 
 	void RegisterWindowClass();
     void Create(std::wstring windowTitle_);

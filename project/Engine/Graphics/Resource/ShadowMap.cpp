@@ -9,8 +9,8 @@ void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManag
 {
     srvManager_ = srvManager;
 
-    width_ = static_cast<UINT>(width);
-    height_ = static_cast<UINT>(height);
+    width_ = static_cast<uint32_t>(width);
+    height_ = static_cast<uint32_t>(height);
 
     // ビューポートとシザー矩形を事前計算
     viewport_ = { 0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_), 0.0f, 1.0f };

@@ -1,7 +1,7 @@
 {
   "RootSignature": "Lightning",
-  "VertexShader": "Assets/Shaders/Lightning.VS.hlsl",
-  "PixelShader": "Assets/Shaders/Lightning.PS.hlsl",
+  "VertexShader": "Lightning.VS.hlsl",
+  "PixelShader": "Lightning.PS.hlsl",
   "InputLayout": "Lightning",
   "BlendState": "Additive",
   "RasterizerState": "NoCullSolid",

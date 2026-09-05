@@ -1,4 +1,4 @@
-#include "Trail.hlsli"
+#include "Common/Trail.hlsli"
 
 Texture2D<float4> gTexture : register(t0);
 Texture2D<float4> gDissolveTexture : register(t1);

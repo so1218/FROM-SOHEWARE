@@ -110,6 +110,36 @@ struct SpriteSubmission
     int layerOrder;                   // 描画順（UIソート用）
 };
 
+struct WaterSubmission
+{
+    const ModelData* modelData = nullptr;
+    uint32_t meshIndex = 0;
+
+    // トランスフォーム
+    Matrix4x4 worldMatrix;
+    Matrix4x4 worldInverseTranspose;
+    Matrix4x4 wvpMatrix;
+    Matrix4x4 prevWorldMatrix;
+    Vector4 instanceColor;
+
+    // 水固有のバッファ・テクスチャ
+    D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV = 0; 
+    uint32_t normalMapHandle = 0;                   
+    uint32_t rippleTextureHandle = 0;    
+    uint32_t envMapSrvHandle;
+
+    // パイプライン設定
+    float depth = 0.0f;
+    RenderGroup group = RenderGroup::Transparent;
+};
+
+struct WaterBatch
+{
+    const WaterSubmission* baseSubmission = nullptr;
+    uint32_t instanceCount = 0;
+    uint32_t startInstanceLocation = 0;
+};
+
 struct RenderSettings
 {
     BlendMode blendMode = BlendMode::kBlendModeNone;

@@ -19,7 +19,7 @@ public:
     // 毎フレームのパラメータ転送
     void Update();
 
-    // パラメータ設定 (マテリアル)
+    // パラメータ設定
     void SetWindMapTexture(const std::string& textureName);
     GrassMaterialData* GetMaterialData() { return &materialData_; }
     GrassCullingData* GetCullingData() { return &cullingData_; }
@@ -29,7 +29,6 @@ private:
     GrassMaterialData materialData_{};
     GrassCullingData cullingData_{};
     uint32_t windMapTextureHandle_ = 0;
-
 };
 
 }

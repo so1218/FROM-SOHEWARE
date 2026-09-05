@@ -87,7 +87,7 @@ namespace FE
         struct AlignedDrawIndexedArguments
         {
             D3D12_DRAW_INDEXED_ARGUMENTS args;
-            UINT padding[3];
+            uint32_t padding[3];
         };
 
         const std::vector<Mesh>& GetOrCreateBatch(const ModelData& modelData);

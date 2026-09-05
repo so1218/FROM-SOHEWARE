@@ -67,10 +67,10 @@ TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
     result.metadata = arrayMeta;
 
     D3D12_RESOURCE_DESC desc{};
-    desc.Width = UINT(arrayMeta.width);
-    desc.Height = UINT(arrayMeta.height);
-    desc.MipLevels = UINT16(arrayMeta.mipLevels);
-    desc.DepthOrArraySize = UINT16(arrayMeta.arraySize);
+    desc.Width = uint32_t(arrayMeta.width);
+    desc.Height = uint32_t(arrayMeta.height);
+    desc.MipLevels = uint16_t(arrayMeta.mipLevels);
+    desc.DepthOrArraySize = uint16_t(arrayMeta.arraySize);
     desc.Format = arrayMeta.format;
     desc.SampleDesc.Count = 1;
     desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -97,10 +97,10 @@ TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
         subresources.insert(subresources.end(), subresourceTmp.begin(), subresourceTmp.end());
     }
 
-    UINT64 requiredSize = GetRequiredIntermediateSize(result.texture.Get(), 0, static_cast<UINT>(subresources.size()));
+    uint64_t requiredSize = GetRequiredIntermediateSize(result.texture.Get(), 0, static_cast<uint32_t>(subresources.size()));
     result.intermediate = BufferManager::CreateBufferResource(device_, requiredSize);
 
-    UpdateSubresources(commandList_, result.texture.Get(), result.intermediate.Get(), 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
+    UpdateSubresources(commandList_, result.texture.Get(), result.intermediate.Get(), 0, 0, static_cast<uint32_t>(subresources.size()), subresources.data());
 
     // Resource Barrier
     D3D12_RESOURCE_BARRIER barrier{};
@@ -121,10 +121,10 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::CreateTextureResource(ID3D
 {
     // metadataを基にResourceの設定
     D3D12_RESOURCE_DESC resourceDesc{};
-    resourceDesc.Width = UINT(metadata.width);// Textureの幅
-    resourceDesc.Height = UINT(metadata.height);// Textureの高さ
-    resourceDesc.MipLevels = UINT16(metadata.mipLevels);// mipmapの数
-    resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize);// 奥行き or 配列Textureの配列数
+    resourceDesc.Width = uint32_t(metadata.width);// Textureの幅
+    resourceDesc.Height = uint32_t(metadata.height);// Textureの高さ
+    resourceDesc.MipLevels = uint16_t(metadata.mipLevels);// mipmapの数
+    resourceDesc.DepthOrArraySize = uint16_t(metadata.arraySize);// 奥行き or 配列Textureの配列数
     resourceDesc.Format = metadata.format;// TextureのFormat
     resourceDesc.SampleDesc.Count = 1;// サンプリングカウント。1固定
     resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension);// Textureの次元数。普段使っているのは2次元
@@ -160,12 +160,12 @@ Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::UploadTextureData(
     std::vector<D3D12_SUBRESOURCE_DATA> subresources;
     DirectX::PrepareUpload(device, mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);
 
-    uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, UINT(subresources.size()));
+    uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, uint32_t(subresources.size()));
 
     Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = BufferManager::CreateBufferResource(device, intermediateSize);
     intermediateResource->SetName(L"TextureUploadIntermediate");
 
-    UpdateSubresources(commandList, texture, intermediateResource.Get(), 0, 0, UINT(subresources.size()), subresources.data());
+    UpdateSubresources(commandList, texture, intermediateResource.Get(), 0, 0, uint32_t(subresources.size()), subresources.data());
 
     D3D12_RESOURCE_BARRIER barrier{};
     barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -197,12 +197,12 @@ TextureLoader::TextureResources TextureLoader::UploadTexture(DirectX::ScratchIma
     if (result.metadata.IsCubemap())
     {
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-        srvDesc.TextureCube.MipLevels = UINT(result.metadata.mipLevels);
+        srvDesc.TextureCube.MipLevels = uint32_t(result.metadata.mipLevels);
     }
     else
     {
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = UINT(result.metadata.mipLevels);
+        srvDesc.Texture2D.MipLevels = uint32_t(result.metadata.mipLevels);
     }
 
     result.srvIndex = srvManager_->CreateSRV(result.texture.Get(), srvDesc);
@@ -268,8 +268,8 @@ void TextureLoader::CreateAndUploadTexture2DArray(
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = arrayMeta.format;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    srvDesc.Texture2DArray.MipLevels = UINT(arrayMeta.mipLevels);
-    srvDesc.Texture2DArray.ArraySize = UINT(arrayMeta.arraySize);
+    srvDesc.Texture2DArray.MipLevels = uint32_t(arrayMeta.mipLevels);
+    srvDesc.Texture2DArray.ArraySize = uint32_t(arrayMeta.arraySize);
     srvDesc.Texture2DArray.FirstArraySlice = 0;
     srvDesc.Texture2DArray.MostDetailedMip = 0;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

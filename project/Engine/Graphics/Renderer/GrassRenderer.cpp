@@ -119,9 +119,9 @@ void GrassRenderer::GenerateGrass(
     cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_));
 
     // スレッドグループの算出 (1グループ = 64スレッド)
-    UINT totalGroups = (genData.maxGrassPerChunk + 63) / 64;
-    UINT groupX = 1024;
-    UINT groupY = (totalGroups + groupX - 1) / groupX;
+    uint32_t totalGroups = (genData.maxGrassPerChunk + 63) / 64;
+    uint32_t groupX = 1024;
+    uint32_t groupY = (totalGroups + groupX - 1) / groupX;
     cmdList->Dispatch(groupX, groupY, 1);
 
     // 次のカリングフェーズで読み込むため SRV ステートへ遷移
@@ -188,8 +188,8 @@ void GrassRenderer::Draw(
     cmdList->SetDescriptorHeaps(1, heaps);
 
     // フレーム毎にディスクリプタの書き込み位置をずらし、GPU実行中のリソース競合を防止
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    UINT destOffset = 3 * currentFrameIndex_;
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t destOffset = 3 * currentFrameIndex_;
 
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
     destCPU.ptr += destOffset * handleSize;
@@ -207,9 +207,9 @@ void GrassRenderer::Draw(
     cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize));
     cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize));
 
-    UINT totalGroups = (totalGeneratedCount_ + 63) / 64;
-    UINT groupX = 1024;
-    UINT groupY = (totalGroups + groupX - 1) / groupX;
+    uint32_t totalGroups = (totalGeneratedCount_ + 63) / 64;
+    uint32_t groupX = 1024;
+    uint32_t groupY = (totalGroups + groupX - 1) / groupX;
     cmdList->Dispatch(groupX, groupY, 1);
 
     // カリングを通過した可視インスタンスの一括描画

@@ -6,7 +6,7 @@
 namespace FE
 {
 
-void SSAOPass::Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager)
+void SSAOPass::Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager)
 {
     InitializeBase(engine, width, height, DXGI_FORMAT_R8_UNORM);
     psoManager_ = psoManager;

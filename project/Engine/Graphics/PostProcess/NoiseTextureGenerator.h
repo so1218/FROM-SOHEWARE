@@ -20,7 +20,7 @@ public:
     // 3D Perlinノイズを生成し、リソースとSRVインデックスを返す
     GeneratedTextureData Generate3DPerlinNoise(
         ID3D12GraphicsCommandList* cmdList,
-        UINT width, UINT height, UINT depth);
+        uint32_t width, uint32_t height, uint32_t depth);
 
 private:
     Engine* engine_ = nullptr;

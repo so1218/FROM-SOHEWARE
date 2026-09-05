@@ -21,7 +21,7 @@ void Mesh::InitializeVertexOnly(ID3D12Device* device, const std::vector<VertexDa
 	// リソースの先頭のアドレスから使う
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズ
-	vertexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(VertexData) * vertices.size());
+	vertexBufferView_.SizeInBytes = static_cast<uint32_t>(sizeof(VertexData) * vertices.size());
 	// 1頂点あたりのサイズ
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
 }
@@ -45,7 +45,7 @@ void Mesh::Initialize(ID3D12Device* device, const std::vector<VertexData>& verti
 	// リソースの先頭のアドレスから使う
 	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
 	// 使用するリソースのサイズ
-	indexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(uint32_t) * indices.size());
+	indexBufferView_.SizeInBytes = static_cast<uint32_t>(sizeof(uint32_t) * indices.size());
 	// インデックスはuint32_tとする
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
@@ -69,7 +69,7 @@ void Mesh::InitializeVertexTrail(ID3D12Device* device, const std::vector<TrailVe
 
 	// 頂点バッファビューの作成
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
+	vertexBufferView_.SizeInBytes = static_cast<uint32_t>(bufferSize);
 	// ストライド（1頂点の幅）を VertexDataTrail に合わせる
 	vertexBufferView_.StrideInBytes = sizeof(TrailVertexData);
 }
@@ -87,8 +87,8 @@ void Mesh::CreateDynamicMesh(ID3D12Device* device, size_t maxVertexCount, size_t
 
 	// ビューの設定
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
-	vertexBufferView_.StrideInBytes = static_cast<UINT>(stride);
+	vertexBufferView_.SizeInBytes = static_cast<uint32_t>(bufferSize);
+	vertexBufferView_.StrideInBytes = static_cast<uint32_t>(stride);
 }
 
 }

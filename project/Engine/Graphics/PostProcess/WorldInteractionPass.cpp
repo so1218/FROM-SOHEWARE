@@ -41,8 +41,8 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
     constantData_.terrainSize = { 1000.0f, 1000.0f };
 
     // 2. StructuredBuffer (InteractionEntity) の生成
-    UINT elementSize = sizeof(InteractionEntity);
-    UINT bufferSize = elementSize * kMaxEntities;
+    uint32_t elementSize = sizeof(InteractionEntity);
+    uint32_t bufferSize = elementSize * kMaxEntities;
 
     CD3DX12_HEAP_PROPERTIES uploadHeapProps(D3D12_HEAP_TYPE_UPLOAD);
     CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
@@ -161,7 +161,7 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
     }
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    UINT handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     readIndex_ = frameCounter_ % 2;
     writeIndex_ = (frameCounter_ + 1) % 2;
@@ -172,7 +172,7 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
     *cbData_ = constantData_;// マップドCBVへ転送
 
     // ヒープ設定
-    UINT heapIndex = frameCounter_ % 2;
+    uint32_t heapIndex = frameCounter_ % 2;
     ID3D12DescriptorHeap* heaps[] = { passHeap_[heapIndex].Get() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
@@ -214,8 +214,8 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
 
     // 5. ディスパッチ実行
     cmdList->SetPipelineState(psoManager_->GetPSO("WorldInteractionCS"));
-    UINT dispatchX = (width_ + 7) / 8;
-    UINT dispatchY = (height_ + 7) / 8;
+    uint32_t dispatchX = (width_ + 7) / 8;
+    uint32_t dispatchY = (height_ + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
     // 6. 次の描画パス（Grass/Snow等）で読み込めるよう SRV に遷移

@@ -1,7 +1,7 @@
 {
   "RootSignature": "SSAO",
-  "VertexShader": "Assets/Shaders/FullScreenQuad.VS.hlsl",
-  "PixelShader": "Assets/Shaders/SSAO.PS.hlsl",
+  "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
+  "PixelShader": "PostProcess/SSAO.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Off",
   "RasterizerState": "NoCullSolid",

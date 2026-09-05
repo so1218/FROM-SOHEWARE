@@ -1,4 +1,4 @@
-#include "ShaderConstants.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<PebbleGenerationData> gGenerationData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b1);

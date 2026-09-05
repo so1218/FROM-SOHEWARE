@@ -10,6 +10,7 @@
 #include "ParticleDefinition.h"
 #include "Terrain.h"
 #include "FoliageRenderer.h"
+#include "RenderCoordinator.h"
 
 namespace FE
 {
@@ -33,6 +34,7 @@ class SkyboxRenderer;
 class GrassRenderer;
 class TreeRenderer;
 class PebbleRenderer;
+class WaterRenderer;
 class SkydomeRenderer;
 class TerrainRenderer;
 class TerrainChunk;
@@ -55,6 +57,7 @@ public:
         GlobalConstants* globalConstants,
         MaterialManager* materialManager,
         PostEffectManager* postEffectManager,
+        RenderCoordinator* renderCoordinator,
         int clientWidth, int clientHeight, ShadowMap* shadowMap
     );
     void Finalize();
@@ -82,20 +85,21 @@ public:
     void SubmitSkybox(const WorldTransform& worldTransform, uint32_t color, uint32_t cubeTextureSrvIndex);
     void SubmitTrail(const std::vector<TrailPoint>& points, const TrailModule& config,
         float instanceSeed);
-    void GenerateGrass(
-        const GrassGenerationData& genData,
-        uint32_t heightMapSrvHandle,
-        uint32_t densityMapSrvHandle);
+    void GenerateGrass(const GrassGenerationData& genData,
+        uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
         const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade);
-    void GeneratePebbles(
-        const PebbleGenerationData& genData,
-        uint32_t heightMapSrvHandle,
-        uint32_t densityMapSrvHandle);
+    void GeneratePebbles(const PebbleGenerationData& genData,
+        uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
+    void SubmitWater(const WorldTransform& worldTransform, const ModelData& modelData,
+        D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV, uint32_t normalMapHandle, uint32_t envMapSrvHandle,
+        uint32_t rippleTextureHandle, const Vector4& instanceColor = Vector4(1, 1, 1, 1));
+    void SetWaterSceneTextures(
+        D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
+        D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV);
     void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-        const Vector4& uvTransform,
-        const MaterialHandle& material, const Vector4& instanceColor,
+        const Vector4& uvTransform, const MaterialHandle& material, const Vector4& instanceColor,
         const Terrain::Parameters& params, uint32_t heightMapHandle);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
@@ -150,7 +154,7 @@ public:
     // 地形生成・配置
     void GenerateFoliage(
         uint32_t heightMapSrvHandle,
-        UINT terrainWidth, UINT terrainDepth);
+        uint32_t terrainWidth, uint32_t terrainDepth);
 
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 
@@ -191,7 +195,21 @@ public:
     void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
     Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
 
+    // OffscreenDepthResource をセットする関数
+    void SetOffscreenDepthResource(ID3D12Resource* depthResource) {
+        offscreenDepthResource_ = depthResource;
+    }
+    void SetOffscreenColorResource(ID3D12Resource* colorResource) {
+        offscreenColorResource_ = colorResource;
+    }
+
 private:
+    // 深度バッファを SRV (シェーダー読み込み) モードへ切り替える
+    void TransitionDepthToShaderResource();
+    void TransitionDepthToDepthWrite();
+    void TransitionColorToShaderResource();
+    void TransitionColorToRenderTarget();
+
     // Engineから受け取るポインタ
     GraphicsDevice* device_ = nullptr;
     CommandManager* commandManager_ = nullptr;
@@ -204,6 +222,7 @@ private:
     MaterialManager* materialManager_ = nullptr;
     PostEffectManager* postEffectManager_ = nullptr;
     ShadowMap* shadowMap_ = nullptr;
+    RenderCoordinator* renderCoordinator_ = nullptr;
 
     // 現在設定されているカメラ行列
     Matrix4x4 viewMatrix_;
@@ -225,6 +244,10 @@ private:
     PebbleCullingData pebbleCullingData_ = {};
 
     FoliageCullingData foliageCullingData_ = {};
+
+    // 深度リソースのポインタ
+    ID3D12Resource* offscreenDepthResource_ = nullptr;
+    ID3D12Resource* offscreenColorResource_ = nullptr;
 
     // カリング用のキャッシュ
     Frustum cameraFrustum_;
@@ -248,6 +271,7 @@ private:
     std::unique_ptr<TreeRenderer> treeRenderer_;
     std::unique_ptr<PebbleRenderer> pebbleRenderer_;
     std::unique_ptr<FoliageRenderer> foliageRenderer_;
+    std::unique_ptr<WaterRenderer> waterRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
     std::unique_ptr<LightningRenderer> lightningRenderer_;

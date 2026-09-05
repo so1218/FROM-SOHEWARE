@@ -175,7 +175,7 @@ SkinCluster CreateSkinCluster(
 	paletteSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	paletteSrvDesc.Buffer.FirstElement = 0;
 	paletteSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	paletteSrvDesc.Buffer.NumElements = static_cast<UINT>(skeleton.joints.size());
+	paletteSrvDesc.Buffer.NumElements = static_cast<uint32_t>(skeleton.joints.size());
 	paletteSrvDesc.Buffer.StructureByteStride = sizeof(WellForGPU);
 
 	skinCluster.paletteSrvIndex = srvManager->CreateSRV(
@@ -224,7 +224,7 @@ SkinCluster CreateSkinCluster(
 
 		// VBV作成
 		influenceInfo.influenceBufferView.BufferLocation = influenceInfo.influenceResource->GetGPUVirtualAddress();
-		influenceInfo.influenceBufferView.SizeInBytes = UINT(sizeof(VertexInfluence) * mesh.vertices.size());
+		influenceInfo.influenceBufferView.SizeInBytes = uint32_t(sizeof(VertexInfluence) * mesh.vertices.size());
 		influenceInfo.influenceBufferView.StrideInBytes = sizeof(VertexInfluence);
 
 		// SkinCluster情報の解析と書き込み

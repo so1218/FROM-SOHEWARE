@@ -26,7 +26,7 @@ public:
 
     // 初期化
     void Initialize(
-        Engine* engine, UINT width, UINT height,
+        Engine* engine, uint32_t width, uint32_t height,
         RootSignatureManager* rootSigManager, PSOManager* psoManager,
         SRVManager* srvManager,
         uint32_t sceneDepthSrvIndex);
@@ -70,15 +70,6 @@ public:
 
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
     void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
-
-    // 流体シミュレーションの結果を受け取る専用の窓口
-    void SetFluidData(uint32_t densitySrvIndex, uint32_t velocitySrvIndex, uint32_t uvwSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS cbAddress)
-    {
-        context_.fluidDensitySrvIndex = densitySrvIndex;
-        context_.fluidVelocitySrvIndex = velocitySrvIndex;
-        context_.fluidUVWSrvIndex = uvwSrvIndex; 
-        context_.fluidSettingsCBAddress = cbAddress;
-    }
 
 private:
     // 依存オブジェクト

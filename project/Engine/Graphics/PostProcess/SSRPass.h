@@ -8,7 +8,7 @@ namespace FE
 class SSRPass : public IPostEffect
 {
 public:
-    void Initialize(Engine* engine, UINT width, UINT height, PSOManager* psoManager);
+    void Initialize(Engine* engine, uint32_t width, uint32_t height, PSOManager* psoManager);
 
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;

@@ -95,7 +95,7 @@ public:
     const DIMOUSESTATE& GetMouseState() { return mouseState_; }
     const DIMOUSESTATE& GetPrevMouseState() { return preMouseState_; }
 
-    // 前のフレームのスティック位置を取得する
+    // 前のフレームのスティック位置を取得
     SHORT GetPrevLeftStickX(int controllerId);
     SHORT GetPrevLeftStickY(int controllerId);
     SHORT GetPrevRightStickX(int controllerId);

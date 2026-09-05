@@ -1,5 +1,5 @@
-#include "Skybox.hlsli" 
-#include "ShaderConstants.hlsli" 
+#include "Common/Skybox.hlsli" 
+#include "Common/ShaderConstants.hlsli" 
 
 ConstantBuffer<MaterialData> gMaterial : register(b0);
 TextureCube<float4> gTexture : register(t0);

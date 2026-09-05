@@ -1,6 +1,6 @@
 {
   "RootSignature": "ShadowMapSkinning",
-  "VertexShader": "Assets/Shaders/ShadowMapSkinning.VS.hlsl",
+  "VertexShader": "ShadowMapSkinning.VS.hlsl",
   "PixelShader": null,
   "InputLayout": "Skinning",
   "BlendState": "Opaque",

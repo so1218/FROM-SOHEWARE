@@ -27,7 +27,6 @@
 #include "CommandManager.h"
 #include "RenderPipeline.h"
 #include "NoiseTextureGenerator.h"
-#include "FluidSimulationPass.h"
 
 namespace FE
 {
@@ -93,11 +92,10 @@ public:
     RenderCoordinator* GetRenderCoordinator() const { return renderPipeline_->GetRenderCoordinator(); }
     PostEffectManager* GetPostEffectManager() const { return renderPipeline_->GetPostEffectManager(); }
     ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
-    FluidSimulationPass* GetFluidSimulationPass() const { return renderPipeline_->GetFluidSimulationPass(); }
     RenderPipeline* GetRenderPipeline() const { return renderPipeline_.get(); }
 
-    static int32_t GetClientWidth() { return sClientWidth; }
-    static int32_t GetClientHeight() { return sClientHeight; }
+    static uint32_t GetClientWidth() { return sClientWidth; }
+    static uint32_t GetClientHeight() { return sClientHeight; }
     const Matrix4x4& GetViewMatrix() const { return viewMatrix_; }
     const Matrix4x4& GetProjectionMatrix() const { return projectionMatrix_; }
 
@@ -127,8 +125,8 @@ private:
 
     std::wstring windowTitle_;
     int kFixedFPS_ = 60;
-    static int32_t sClientWidth;
-    static int32_t sClientHeight;
+    static uint32_t sClientWidth;
+    static uint32_t sClientHeight;
 
     // 現在設定されているカメラ行列
     Matrix4x4 viewMatrix_;

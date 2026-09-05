@@ -1,5 +1,5 @@
-#include "Object3D.hlsli"
-#include "ShaderConstants.hlsli"
+#include "Common/Object3D.hlsli"
+#include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -33,7 +33,7 @@ struct FoliagePSInput
     float2 velocity : TEXCOORD1;
 };
 
-// フレネル反射(Schlickの近似式)等で使用する高速な5乗計算
+// 高速な5乗計算
 float Pow5(float x)
 {
     float x2 = x * x;

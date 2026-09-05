@@ -76,7 +76,7 @@ void SkyboxRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMat
     cmdList->SetGraphicsRootConstantBufferView(1, skyboxWvpResource_->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(currentTextureIndex_));
 
-    cmdList->DrawIndexedInstanced(static_cast<UINT>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
+    cmdList->DrawIndexedInstanced(static_cast<uint32_t>(skyboxMesh_.GetIndexCount()), 1, 0, 0, 0);
 }
 
 }
