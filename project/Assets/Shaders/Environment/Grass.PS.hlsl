@@ -129,8 +129,6 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
         cascadeIndex = 1;
     if (viewDepth > gShadowData.cascadeSplits.y)
         cascadeIndex = 2;
-    if (viewDepth > gShadowData.cascadeSplits.z)
-        cascadeIndex = 3;
 
     // Normal Bias (シャドウアクネ軽減)
     float biasScale = saturate(1.0f - NdotL);

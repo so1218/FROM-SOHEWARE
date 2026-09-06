@@ -59,7 +59,6 @@ void RenderPipeline::Initialize(Engine* engine,
     shadowMap_ = std::make_unique<ShadowMap>();
     shadowMap_->Initialize(
         engine->GetGraphicsDevice()->GetDevice(),
-        2048, 2048,
         engine->GetSRVManager()
     );
 

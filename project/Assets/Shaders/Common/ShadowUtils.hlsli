@@ -78,15 +78,10 @@ float CalculateShadowCSM(
     float nextSplitDist = 0.0f;
 
     // どのカスケードに属しているか判定
-    if (viewDepth > cascadeSplits.z)
-    {
-        cascadeIndex = 3;
-        nextSplitDist = 999999.0f;
-    }
-    else if (viewDepth > cascadeSplits.y)
+    if (viewDepth > cascadeSplits.y)
     {
         cascadeIndex = 2;
-        nextSplitDist = cascadeSplits.z;
+        nextSplitDist = 999999.0f; // 最後のカスケードはブレンドしない
     }
     else if (viewDepth > cascadeSplits.x)
     {
@@ -110,7 +105,7 @@ float CalculateShadowCSM(
     float blendBand = 2.0f;
     float blendFactor = smoothstep(nextSplitDist - blendBand, nextSplitDist, viewDepth);
 
-    if (blendFactor > 0.0f && cascadeIndex < 3)
+    if (blendFactor > 0.0f && cascadeIndex < 2)
     {
         float nextShadowVisibility = SampleSingleCascade(
             worldPos, normal, cascadeIndex + 1, lightDir,

@@ -42,6 +42,10 @@
 #define MAX_SPOT_LIGHTS 4
 #define MAX_AREA_LIGHTS 2
 
+// シャドウマップ
+#define MAX_CASCADE_COUNT 3
+#define SHADOW_MAP_RESOLUTION 1024.0f
+
 // Light types
 #define SHADING_MODEL_HALFLAMBERT 0
 #define SHADING_MODEL_PHONG 1
@@ -942,8 +946,8 @@ struct FogVolumeBuffer
 
 struct ShadowData
 {
-    float4x4 cascadeLightViewProj[4]; // 4枚分のカスケード行列
-    float4 cascadeSplits; // カスケードの切り替わり距離 (x, y, z, w)
+    float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT]; // MAX_CASCADE_COUNT 枚分のカスケード行列
+    float4 cascadeSplits; // カスケードの切り替わり距離
 };
 
 struct CascadeConstant
