@@ -1,7 +1,7 @@
 {
   "RootSignature": "Line",
-  "VertexShader": "Line.VS.hlsl",
-  "PixelShader": "Line.PS.hlsl",
+  "VertexShader": "Debug/Line.VS.hlsl",
+  "PixelShader": "Debug/Line.PS.hlsl",
   "InputLayout": "Line",
   "BlendState": "AlphaBlend",
   "RasterizerState": "LineAA",

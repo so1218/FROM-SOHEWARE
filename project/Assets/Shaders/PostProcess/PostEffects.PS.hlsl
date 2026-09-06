@@ -1,5 +1,6 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D gTexture : register(t0);
 Texture2D gDissolveTexture : register(t1);
@@ -8,40 +9,6 @@ SamplerState gSampler : register(s0);
 SamplerState gClampSampler : register(s1);
 
 ConstantBuffer<PostEffectData> gData : register(b0);
-
-// 擬似乱数関数
-float random(float2 uv)
-{
-    return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453);
-}
-
-float random(float2 uv, float time)
-{
-    float2 seed = uv * 1000.0 + time * 100.0;
-    return frac(sin(dot(seed, float2(12.9898, 78.233))) * 43758.5453);
-}
-
-float noise(float2 uv, float time)
-{
-    // 複数スケールでノイズ生成
-    float n1 = random(uv * 300.0 + time * 10.0);
-    float n2 = random(uv * 600.0 - time * 15.0);
-    float n3 = random(uv * 1200.0 + time * 20.0);
-    // 合成して細かいノイズに
-    return (n1 + n2 * 0.5 + n3 * 0.25) / 1.75;
-}
-
-// 2D hash:小さい乱数を生成する
-float hash(float2 p)
-{
-    return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
-}
-
-// White Noise
-float whiteNoise(float2 uv)
-{
-    return hash(uv);
-}
 
 // パーリンノイズ補完
 float fade(float t)
@@ -199,12 +166,8 @@ float3 ApplyVignette(float3 color, float2 uv)
 
     // 距離に基づいたリニアな進行度を計算
     // ゼロ除算対策
-    float fadeLength = max(gData.vignetteSoftness, 0.0001);
-    
+    float fadeLength = max(gData.vignetteSoftness, kEpsilon);
     float darkness = (dist - gData.vignetteRadius) / fadeLength;
-    
-    // 0.0～1.0の範囲に切り取る
-    darkness = saturate(darkness);
 
     // 滑らかにする
     darkness = smoothstep(0.0, 1.0, darkness);
@@ -212,8 +175,8 @@ float3 ApplyVignette(float3 color, float2 uv)
     // 強度とディザリング
     darkness *= gData.vignetteAmount;
 
-    float dither = (random(uv) - 0.5) / 255.0;
-    darkness += dither * 2.0;
+    float dither = (InterleavedGradientNoise(uv * gData.screenResolution.xy) - 0.5f) / 255.0f;
+    darkness += dither * 2.0f;
 
     // 合成
     float3 blendFactor = lerp(float3(1.0, 1.0, 1.0), gData.vignetteColor.rgb, darkness);
@@ -240,13 +203,9 @@ float3 ApplyScanline(float3 color, float2 uv)
 // フィルムグレイン
 float3 ApplyFilmGrain(float3 color, float2 uv)
 {
-    float grain = noise(uv, gData.totalTime) - 0.5;
-    float3 grainColor = float3(
-        grain * (0.9 + 0.2 * random(uv * 10.0 + float2(1.0, 0.0))),
-        grain * (0.9 + 0.2 * random(uv * 10.0 + float2(0.0, 1.0))),
-        grain * (0.9 + 0.2 * random(uv * 10.0 + float2(1.0, 1.0)))
-    );
-    return saturate(color + grainColor * gData.filmGrainIntensity);
+    float3 grain = Hash33(float3(uv * gData.screenResolution.xy, gData.totalTime * 60.0f));
+    
+    return saturate(color + grain * gData.filmGrainIntensity);
 }
 
 // =======================================================
@@ -261,16 +220,17 @@ float4 SampleGlitch(float2 uv)
     float timePhase = gData.totalTime * 0.5;
 
     // ノイズ生成
-    float glitchOffsetX = (FBM(uv * 10.0 + float2(timePhase, 0.0), 4, 0.5, 2.0) - 0.5) * gData.glitchAmount;
-    float glitchOffsetY = (FBM(uv * 10.0 + float2(0.0, timePhase), 4, 0.5, 2.0) - 0.5) * gData.glitchAmount * 0.3;
-    float glitchSwitch = step(0.5, random(float2(blockIndex, floor(gData.totalTime * 5.0))));
+    float glitchOffsetX = (FBM(uv * 10.0f + float2(timePhase, 0.0f), 4, 0.5f, 2.0f) - 0.5f) * gData.glitchAmount;
+    float glitchOffsetY = (FBM(uv * 10.0f + float2(0.0f, timePhase), 4, 0.5f, 2.0f) - 0.5f) * gData.glitchAmount * 0.3f;
+    
+    float glitchSwitch = step(0.5f, Hash12(float2(blockIndex, floor(gData.totalTime * 5.0f))));
 
     float2 glitchUV = uv + float2(glitchOffsetX, glitchOffsetY) * glitchSwitch;
     
     // 色収差的なズレ
-    float2 offsetR = float2(0.003 * sin(gData.totalTime), 0.0);
-    float2 offsetG = float2(-0.003 * cos(gData.totalTime), 0.0);
-    float2 offsetB = float2(0.003 * sin(uv.y * 50.0 + gData.totalTime), 0.0);
+    float2 offsetR = float2(0.003f * sin(gData.totalTime), 0.0f);
+    float2 offsetG = float2(-0.003f * cos(gData.totalTime), 0.0f);
+    float2 offsetB = float2(0.003f * sin(uv.y * 50.0f + gData.totalTime), 0.0f);
 
     float r = gTexture.Sample(gSampler, glitchUV + offsetR).r;
     float g = gTexture.Sample(gSampler, glitchUV + offsetG).g;
@@ -279,8 +239,8 @@ float4 SampleGlitch(float2 uv)
     float3 col = float3(r, g, b);
     
     // ホワイトノイズ追加
-    float n = (whiteNoise(uv * gData.screenResolution.xy + gData.totalTime * 100.0) - 0.5) * gData.glitchNoiseIntensity;
-    return float4(saturate(col + n), 1.0);
+    float n = (Hash12(uv * gData.screenResolution.xy + gData.totalTime * 100.0f) - 0.5f) * gData.glitchNoiseIntensity;
+    return float4(saturate(col + n), 1.0f);
 }
 
 // RGBスプリット
@@ -475,7 +435,7 @@ float4 main(VSOutput input) : SV_TARGET
 
         float2 timeOffset = frac(gData.totalTime * gData.blockNoiseSpeed * float2(17.0, 23.0));
 
-        float n = random(blockUV + timeOffset);
+        float n = Hash12(blockUV + timeOffset);
 
         float3 noiseColor = float3(n, n, n);
         finalColor.rgb = lerp(finalColor.rgb, noiseColor, gData.blockNoiseAmount);
@@ -488,16 +448,9 @@ float4 main(VSOutput input) : SV_TARGET
 
         float2 timeOffset = float2(gData.totalTime * gData.noiseSpeed, gData.totalTime * gData.noiseSpeed * 1.7);
 
-        float nR = sin(dot(scaledUV + timeOffset.xy, float2(12.9898, 78.233))) * 43758.5453;
-        float nG = sin(dot(scaledUV + timeOffset.xy + 3.0, float2(12.9898, 78.233))) * 43758.5453;
-        float nB = sin(dot(scaledUV + timeOffset.xy + 6.0, float2(12.9898, 78.233))) * 43758.5453;
-
-        nR = frac(nR);
-        nG = frac(nG);
-        nB = frac(nB);
-
-        float3 noiseColor = float3(nR, nG, nB);
-        finalColor.rgb += (noiseColor - 0.5) * gData.noiseAmount;
+        float3 noiseColor = Hash33(float3(scaledUV + timeOffset, gData.totalTime)) * 0.5f;
+        
+        finalColor.rgb += noiseColor * gData.noiseAmount;
     }
     if (gData.flag[0] & COLOR_GRADING_LUT)
     {

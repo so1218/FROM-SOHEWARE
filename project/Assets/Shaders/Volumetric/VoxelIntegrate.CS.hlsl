@@ -1,4 +1,6 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture3D<float4> gVoxelTemporalOut : register(t0);
 RWTexture3D<float4> gVoxelAccumulate : register(u0);
@@ -31,7 +33,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         uint3 voxelCoord = uint3(DTid.x, DTid.y, z);
         float4 stepData = gVoxelTemporalOut.Load(int4(voxelCoord, 0));
         float3 S = stepData.rgb;
-        float extinction = max(stepData.a, kExtinctionEpsilon);
+        float extinction = max(stepData.a, kEpsilon);
         
         // 現在のボクセルの厚みを計算し、次の深度を更新 
         float nextViewZ = currentViewZ * sliceRatio;

@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D<float4> gRawFogTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
@@ -27,7 +28,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // Gauss関数の指数部係数
     float spatialCoeff = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
    
-    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, kExtinctionEpsilon);
+    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, kEpsilon);
     float depthCoeff = 1.0f / (2.0f * safeDepthSigma * safeDepthSigma);
 
     for (int y = -radius; y <= radius; ++y)
@@ -56,5 +57,5 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    gFilteredFog[DTid.xy] = resultColor / max(totalWeight, kExtinctionEpsilon);
+    gFilteredFog[DTid.xy] = resultColor / max(totalWeight, kEpsilon);
 }

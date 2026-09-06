@@ -1,9 +1,9 @@
 {
-  "RootSignature": "Fullscreen",
-  "VertexShader": "FullScreenQuad.VS.hlsl",
-  "PixelShader": "FullScreenQuad.PS.hlsl",
+  "RootSignature": "PostProcess",
+  "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
+  "PixelShader": "PostProcess/FinalComposite.PS.hlsl",
   "InputLayout": "Fullscreen",
-  "BlendState": "Opaque",
+  "BlendState": "FinalComposite",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Off",
   "Topology": "Triangle",

@@ -1,7 +1,7 @@
 {
-  "RootSignature": "BokehBlur",
+  "RootSignature": "DoF",
   "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
-  "PixelShader": "PostProcess/BokehBlur.PS.hlsl",
+  "PixelShader": "PostProcess/DoF.PS.hlsl",
   "InputLayout": "Fullscreen",
   "BlendState": "Off",
   "RasterizerState": "NoCullSolid",

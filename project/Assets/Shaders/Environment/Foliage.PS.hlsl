@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -33,13 +34,6 @@ struct FoliagePSInput
     float2 velocity : TEXCOORD1;
 };
 
-// 高速な5乗計算
-float Pow5(float x)
-{
-    float x2 = x * x;
-    return x2 * x2 * x;
-}
-
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 
 PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
@@ -57,7 +51,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     // -------------------------------------------------------------------------
     // 天候連携 (Wetness / Porosity)
     // -------------------------------------------------------------------------
-    // rootMask: 根元ほど1.0、先端ほど0.0になるマスク
     float rootMask = saturate(1.0f - input.color.r);
     rootMask = pow(rootMask, 2.0f);
 
@@ -70,7 +63,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     // -------------------------------------------------------------------------
     // 法線計算 & 地形との馴染み (Ground Integration)
     // -------------------------------------------------------------------------
-    // 両面描画(Cull None)対応: 裏面の場合は法線を反転させる
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);
     float3 T = normalize(input.tangent * faceSign);
@@ -88,7 +80,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     // -------------------------------------------------------------------------
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
-    float3 toEye = cameraDiff / max(viewDepth, 0.0001f);
+    float3 toEye = cameraDiff / max(viewDepth, kEpsilon); // kEpsilon を使用
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, worldNormal, viewDepth);
@@ -99,8 +91,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float NdotL = saturate((dot(worldNormal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedoAlpha.rgb * attenuatedLight * NdotL;
 
-    // Transmission (Subsurface Scatteringの近似):
-    // 逆光時(LightDirとNormalが逆向き)に葉を透過する光を表現
+    // Transmission (Subsurface Scatteringの近似)
     float backLight = saturate(dot(-worldNormal, lightDir));
     float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
     float3 transmission = (albedoAlpha.rgb * 1.5f) * attenuatedLight * sssIntensity;
@@ -115,7 +106,8 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float alpha = currentRoughness * currentRoughness;
     float alpha2 = alpha * alpha;
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
-    float D = alpha2 / (3.14159265f * denom * denom + 0.00001f);
+    
+    float D = alpha2 / (PI * denom * denom + kEpsilon);
 
     float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
     float3 F = F0 + (1.0f.xxx - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
@@ -147,8 +139,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float3 finalColor = diffuse + transmission + directSpecular + (ambientDiffuse + ambientSpecular) * ao;
 
     // Alpha-to-Coverage を意識したアンチエイリアス処理
-    // fwidthを使用して、テクスチャのミップレベルが下がってもアルファテストの輪郭が痩せないように補正
-    float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), 0.0001f) + 0.5f;
+    float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
     output.normal = float4(worldNormal, 1.0f);

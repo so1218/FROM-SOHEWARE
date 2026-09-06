@@ -1,7 +1,7 @@
 {
   "RootSignature": "Instancing3D",
-  "VertexShader": "Object3D_Instanced.VS.hlsl",
-  "PixelShader": "Object3D.PS.hlsl",
+  "VertexShader": "Objects/Object3D_Instanced.VS.hlsl",
+  "PixelShader": "Objects/Object3D.PS.hlsl",
   "InputLayout": "Default3D",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",

@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<WaterMaterialData> gWaterMaterial : register(b5);

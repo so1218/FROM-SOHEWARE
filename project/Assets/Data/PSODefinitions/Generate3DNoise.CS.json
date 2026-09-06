@@ -1,4 +1,4 @@
 {
   "RootSignature": "Generate3DNoiseCS",
-  "ComputeShader": "Generate3DNoise.CS.hlsl"
+  "ComputeShader": "Volumetric/Generate3DNoise.CS.hlsl"
 }

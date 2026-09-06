@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "BloomCombinePass.h"
+#include "FinalCompositePass.h"
 #include "BufferManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
@@ -7,7 +7,7 @@
 namespace FE
 {
 
-void BloomCombinePass::Initialize(
+void FinalCompositePass::Initialize(
     Engine* engine,
     uint32_t w,
     uint32_t h,
@@ -20,8 +20,8 @@ void BloomCombinePass::Initialize(
 
     ID3D12Device* device = engine->GetGraphicsDevice()->GetDevice();
 
-    // 合成用定数バッファ
-    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<CombineSettings>(
+    // 最終合成用定数バッファ
+    constantBuffer_ = BufferManager::CreateMappedConstantBuffer<FinalCompositeSettings>(
         device,
         &cbData_
     );
@@ -44,7 +44,7 @@ void BloomCombinePass::Initialize(
         IID_PPV_ARGS(&passHeap_)
     );
 
-    passHeap_->SetName(L"BloomCombinePass_Heap");
+    passHeap_->SetName(L"FinalCompositePass_Heap");
 
     descriptorSize_ =
         device->GetDescriptorHandleIncrementSize(
@@ -52,7 +52,7 @@ void BloomCombinePass::Initialize(
         );
 }
 
-void BloomCombinePass::SetupInputViews(
+void FinalCompositePass::SetupInputViews(
     ID3D12Device* device,
     D3D12_CPU_DESCRIPTOR_HANDLE sceneCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE bloomCPU,
@@ -109,16 +109,16 @@ void BloomCombinePass::SetupInputViews(
     destHandle.ptr += descriptorSize;
 }
 
-void BloomCombinePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
+void FinalCompositePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bloom Combine Pass");
+    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Final Composite Pass");
 
     PreDraw(cmdList);
 
     // パイプライン
     cmdList->SetPipelineState(
-        psoManager_->GetPSO("BloomCombine")
+        psoManager_->GetPSO("FinalComposite")
     );
 
     // ディスクリプタヒープ

@@ -12,7 +12,7 @@ Texture2D gSSRTexture : register(t6);
 SamplerState gSampler : register(s0);
 SamplerState gWrapSampler : register(s1);
 
-ConstantBuffer<CombineSettings> gCombineSettings : register(b0);
+ConstantBuffer<FinalCompositeSettings> gCompositeSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
 
 struct PSInput
@@ -28,29 +28,6 @@ float LinearizeDepth(float d)
     float f = gFrameData.farClip;
 
     return (n * f) / (f - d * (f - n));
-}
-
-// Tent Filter (3x3近傍サンプリングで拡大)
-float3 UpsampleTent(Texture2D tex, SamplerState s, float2 uv, float2 texelSize, float sampleScale)
-{
-    // サンプリングオフセット
-    float4 d = texelSize.xyxy * float4(1.0, 1.0, -1.0, 0.0) * sampleScale;
-
-    // 3x3近傍サンプリング
-    float3 s1 = tex.Sample(s, uv - d.xy).rgb;
-    float3 s2 = tex.Sample(s, uv - d.wy).rgb;
-    float3 s3 = tex.Sample(s, uv - d.zy).rgb;
-    float3 s4 = tex.Sample(s, uv - d.xw).rgb;
-    float3 s5 = tex.Sample(s, uv).rgb;
-    float3 s6 = tex.Sample(s, uv + d.xw).rgb;
-    float3 s7 = tex.Sample(s, uv + d.zy).rgb;
-    float3 s8 = tex.Sample(s, uv + d.wy).rgb;
-    float3 s9 = tex.Sample(s, uv + d.xy).rgb;
-
-    // Tent重みで合成
-    return (s1 + s3 + s7 + s9) * 0.0625 +
-           (s2 + s4 + s6 + s8) * 0.125 +
-           s5 * 0.25;
 }
 
 // トーンマッピング
@@ -93,14 +70,14 @@ float4 main(VSOutput input) : SV_TARGET
     float3 combinedScene = sceneColor.rgb;
 
     // 被写界深度の適用
-    if (gCombineSettings.enableDoF != 0)
+    if (gCompositeSettings.enableDoF != 0)
     {
         // ピントが合っている場所はSceneColor
         combinedScene = lerp(sceneColor.rgb, dofColor.rgb, dofColor.a);
     }
     
     // SSAOの適用
-    if (gCombineSettings.enableSSAO != 0)
+    if (gCompositeSettings.enableSSAO != 0)
     {
         float ssao = gSSAOTexture.Sample(gSampler, input.uv).r;
         
@@ -109,22 +86,22 @@ float4 main(VSOutput input) : SV_TARGET
     }
     
     // SSRの適用
-    if (gCombineSettings.enableSSR != 0)
+    if (gCompositeSettings.enableSSR != 0)
     {
         float4 ssrColor = gSSRTexture.Sample(gSampler, input.uv);
         
         // シーンカラーに加算
-        combinedScene += ssrColor.rgb * ssrColor.a * gCombineSettings.ssrIntensity;
+        combinedScene += ssrColor.rgb * ssrColor.a * gCompositeSettings.ssrIntensity;
     }
 
    // Bloomの加算
     float3 bloomColor = gBloomTexture.Sample(gSampler, input.uv).rgb;
     
     // シーンの色を確定
-    float3 result = combinedScene + (bloomColor * gCombineSettings.bloomIntensity);
+    float3 result = combinedScene + (bloomColor * gCompositeSettings.bloomIntensity);
 
     // Volumetric Fog の適用 (物理合成)
-    if (gCombineSettings.enableVolumetricFog != 0)
+    if (gCompositeSettings.enableVolumetricFog != 0)
     {
         // 背景（result）を透過率で暗くし、霧の光を加算する
         result = result * vFogTransmittance + vFogIllumination;

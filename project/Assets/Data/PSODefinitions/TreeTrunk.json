@@ -1,7 +1,7 @@
 {
   "RootSignature": "TreeTrunk",
-  "VertexShader": "Tree.VS.hlsl",
-  "PixelShader": "TreeTrunk.PS.hlsl",
+  "VertexShader": "Environment/Tree.VS.hlsl",
+  "PixelShader": "Environment/TreeTrunk.PS.hlsl",
   "InputLayout": "Tree",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

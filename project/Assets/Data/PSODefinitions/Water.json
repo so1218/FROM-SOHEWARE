@@ -1,7 +1,7 @@
 {
   "RootSignature": "Water",
-  "VertexShader": "Water.VS.hlsl",
-  "PixelShader": "Water.PS.hlsl",
+  "VertexShader": "Environment/Water.VS.hlsl",
+  "PixelShader": "Environment/Water.PS.hlsl",
   "InputLayout": "Default3D",
   "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",

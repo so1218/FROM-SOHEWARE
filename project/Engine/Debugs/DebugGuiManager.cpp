@@ -384,7 +384,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     BrightExtractSettings* brightExtractData = postEffectManager_->GetBrightSettings();
     BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();
     BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
-    CombineSettings* combineSettingsData = postEffectManager_->GetCombineSettings();
+    FinalCompositeSettings* compositeSettingsData = postEffectManager_->GetCompositeSettings();
     VolumetricFogSettings* volFogSettings = postEffectManager_->GetVolumetricFogSettings();
     FogBilateralSettings* fogBilateralSettings = postEffectManager_->GetFogBilateralSettings();
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
@@ -643,10 +643,10 @@ void DebugGuiManager::DrawPostEffectSettings()
     // SSAO
     if (ImGui::TreeNode("環境遮蔽 (SSAO)"))
     {
-        bool ssaoFlag = (combineSettingsData->enableSSAO != 0);
+        bool ssaoFlag = (compositeSettingsData->enableSSAO != 0);
         if (ImGui::Checkbox("SSAO有効", &ssaoFlag))
         {
-            combineSettingsData->enableSSAO = ssaoFlag ? 1 : 0;
+            compositeSettingsData->enableSSAO = ssaoFlag ? 1 : 0;
         }
 
         if (ssaoFlag && ssaoSettings)
@@ -706,7 +706,7 @@ void DebugGuiManager::DrawPostEffectSettings()
         }
 
         ImGui::Text("ブルーム合成強度");
-        ImGui::SliderFloat("Intensity", &combineSettingsData->bloomIntensity, 0.0f, 5.0f);
+        ImGui::SliderFloat("Intensity", &compositeSettingsData->bloomIntensity, 0.0f, 5.0f);
 
         ImGui::TreePop();
     }
@@ -714,9 +714,9 @@ void DebugGuiManager::DrawPostEffectSettings()
     // 被写界深度 (DoF)
     if (ImGui::TreeNode("被写界深度 (DoF)"))
     {
-        bool dofFlag = (combineSettingsData->enableDoF != 0);
+        bool dofFlag = (compositeSettingsData->enableDoF != 0);
         if (ImGui::Checkbox("DoF有効", &dofFlag))
-            combineSettingsData->enableDoF = dofFlag ? 1 : 0;
+            compositeSettingsData->enableDoF = dofFlag ? 1 : 0;
 
         if (dofFlag)
         {
@@ -737,10 +737,10 @@ void DebugGuiManager::DrawPostEffectSettings()
 
     if (ImGui::TreeNode("反射 (SSR)"))
     {
-        bool ssrFlag = (combineSettingsData->enableSSR != 0);
+        bool ssrFlag = (compositeSettingsData->enableSSR != 0);
         if (ImGui::Checkbox("SSR有効", &ssrFlag))
         {
-            combineSettingsData->enableSSR = ssrFlag ? 1 : 0;
+            compositeSettingsData->enableSSR = ssrFlag ? 1 : 0;
         }
 
         if (ssrFlag)
@@ -748,7 +748,7 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::Indent();
 
             ImGui::TextDisabled("合成設定");
-            ImGui::DragFloat("反射強度", &combineSettingsData->ssrIntensity, 0.01f);
+            ImGui::DragFloat("反射強度", &compositeSettingsData->ssrIntensity, 0.01f);
 
             ImGui::Separator();
 
@@ -774,10 +774,10 @@ void DebugGuiManager::DrawPostEffectSettings()
     // フォグ設定
     if (ImGui::TreeNode("ボリュメトリックフォグ"))
     {
-        bool volFogFlag = (combineSettingsData->enableVolumetricFog != 0);
+        bool volFogFlag = (compositeSettingsData->enableVolumetricFog != 0);
         if (ImGui::Checkbox("有効にする", &volFogFlag))
         {
-            combineSettingsData->enableVolumetricFog = volFogFlag ? 1 : 0;
+            compositeSettingsData->enableVolumetricFog = volFogFlag ? 1 : 0;
         }
 
         if (volFogFlag && volFogSettings)

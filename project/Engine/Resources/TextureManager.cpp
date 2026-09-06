@@ -109,6 +109,8 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::tolower);
 
     // 判定ロジック
+    if (pathStr.find("/albedo/") != std::string::npos ||
+        pathStr.find("/utility/") != std::string::npos)      return TextureType::Albedo;
     if (pathStr.find("/particles/") != std::string::npos) return TextureType::Particle;
     if (pathStr.find("/ui/") != std::string::npos)        return TextureType::UI;
     if (pathStr.find("/environments/") != std::string::npos) return TextureType::CubeMap;
@@ -127,6 +129,7 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     if (filename.ends_with("_h") || filename.ends_with("_height")) return TextureType::Height;
     if (path.extension().string() == ".dds") return TextureType::CubeMap;
 
+    // デフォルト (ルート直下にあるファイル等も Albedo)
     return TextureType::Albedo;
 }
 

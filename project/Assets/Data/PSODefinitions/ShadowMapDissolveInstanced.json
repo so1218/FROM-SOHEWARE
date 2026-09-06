@@ -1,7 +1,7 @@
 {
   "RootSignature": "ShadowMapDissolveInstanced",
-  "VertexShader": "ShadowMapInstanced.VS.hlsl",
-  "PixelShader": "ShadowMap.PS.hlsl",
+  "VertexShader": "Shadow/ShadowMapInstanced.VS.hlsl",
+  "PixelShader": "Shadow/ShadowMap.PS.hlsl",
   "InputLayout": "Default3D",
   "BlendState": "Opaque",
   "RasterizerState": "BackCullSolid",

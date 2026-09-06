@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<LightningMaterial> gLightningMaterial : register(b1);
@@ -11,10 +12,6 @@ struct LightningVSOutput
     float4 color : COLOR;
     float3 worldPos : TEXCOORD1;
 };
-
-// 疑似乱数生成用のハッシュ乗数
-// サイン波の周期性を破壊してランダムな値を取り出すための定数
-static const float kPrngHashMultiplier = 43758.5453f;
 
 // アルファテストの閾値（この値未満の透明度のピクセルは描画を破棄）
 static const float kAlphaClipThreshold = 0.01f;
@@ -34,7 +31,7 @@ float4 main(LightningVSOutput input) : SV_Target
     
     // 時間とインスタンスIDに基づく明滅アニメーション
     float timeVal = gFrameData.gTime * gLightningMaterial.flickerSpeed;
-    float flickerNoise = frac(sin(timeVal + gLightningMaterial.instanceSeed) * kPrngHashMultiplier);
+    float flickerNoise = Hash11(timeVal + gLightningMaterial.instanceSeed);
     float flicker = lerp(gLightningMaterial.flickerMin, gLightningMaterial.flickerMax, flickerNoise);
     
     // 芯と発光をそれぞれのカラーで着色し、明滅を適用

@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<GrassGenerationData> gGenerationData : register(b0);
 ConstantBuffer<TerrainSettings> gTerrainSettings : register(b1);
@@ -18,21 +19,6 @@ float2 CalculateTerrainUV(float x, float z)
     float u = (x - gGenerationData.terrainCenter.x) / gGenerationData.terrainWidth + 0.5f;
     float v = (z - gGenerationData.terrainCenter.y) / gGenerationData.terrainDepth + 0.5f;
     return float2(u, v);
-}
-
-// 疑似乱数 (Hash)
-float Hash12(float2 p)
-{
-    float3 p3 = frac(float3(p.xyx) * 0.1031f);
-    p3 += dot(p3, p3.yzx + 33.33f);
-    return frac((p3.x + p3.y) * p3.z);
-}
-
-float2 Hash22(float2 p)
-{
-    float3 p3 = frac(float3(p.xyx) * float3(0.1031f, 0.1030f, 0.0973f));
-    p3 += dot(p3, p3.yzx + 33.33f);
-    return frac((p3.xx + p3.yz) * p3.zy);
 }
 
 [numthreads(64, 1, 1)]

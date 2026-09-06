@@ -350,8 +350,8 @@ D3D12_BLEND_DESC PSOManager::GetBlendState(const std::string& name)
         return blendDesc;
     }
 
-    // Bloom 合成
-    if (name == "BloomCombine")
+    // 最終合成
+    if (name == "FinalComposite")
     {
         D3D12_BLEND_DESC blendDesc{};
         D3D12_RENDER_TARGET_BLEND_DESC& rtBlendDesc = blendDesc.RenderTarget[0];

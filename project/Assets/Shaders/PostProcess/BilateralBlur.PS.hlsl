@@ -1,29 +1,15 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
 
 ConstantBuffer<BilateralBlurSettings> gBilateralBlurSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
 
-Texture2D<float> gSSAOTexture : register(t0); 
+Texture2D<float> gInputTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1); 
 Texture2D<float4> gNormalTexture : register(t2); 
 
 SamplerState gClampSampler : register(s0);
-
-// 深度リニア化
-float LinearizeDepth(float depth, float nearClip, float farClip)
-{
-    return (nearClip * farClip) / (farClip - depth * (farClip - nearClip));
-}
-
-float3 GetViewPos(float2 uv, float depth)
-{
-    float x = uv.x * 2.0f - 1.0f;
-    float y = (1.0f - uv.y) * 2.0f - 1.0f;
-    float4 clipPos = float4(x, y, depth, 1.0f);
-    float4 viewPos = mul(clipPos, gFrameData.invProjMatrix);
-    return viewPos.xyz / viewPos.w;
-}
 
 float4 main(VSOutput input) : SV_TARGET
 {
@@ -36,7 +22,7 @@ float4 main(VSOutput input) : SV_TARGET
 
     float centerZ = LinearizeDepth(centerDepth, gFrameData.nearClip, gFrameData.farClip);
     float3 centerNormal = gNormalTexture.SampleLevel(gClampSampler, input.uv, 0).xyz;
-    float centerColor = gSSAOTexture.SampleLevel(gClampSampler, input.uv, 0);
+    float centerColor = gInputTexture.SampleLevel(gClampSampler, input.uv, 0);
 
     float totalWeight = 1.0f;
     float totalColor = centerColor;
@@ -55,7 +41,7 @@ float4 main(VSOutput input) : SV_TARGET
         float2 offset = input.uv + (gBilateralBlurSettings.direction * gBilateralBlurSettings.texelSize * (float) i);
 
         // 周辺ピクセルの情報を取得
-        float sampleColor = gSSAOTexture.SampleLevel(gClampSampler, offset, 0);
+        float sampleColor = gInputTexture.SampleLevel(gClampSampler, offset, 0);
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, offset, 0);
         float3 sampleNormal = gNormalTexture.SampleLevel(gClampSampler, offset, 0).xyz;
         float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);

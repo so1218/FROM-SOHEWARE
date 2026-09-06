@@ -172,7 +172,7 @@ void RendererManager::UpdateCullingFrustums()
 	}
 }
 
-void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
+void RendererManager::DrawPostEffectsProcess(uint32_t inputSrvIndex)
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
@@ -181,87 +181,37 @@ void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	// フルスクリーン用PSO / ルートシグネチャ
-	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
-	cmdList->SetGraphicsRootSignature(
-		rootSignatureManager_->GetRootSignature("Fullscreen")
-	);
+	cmdList->SetPipelineState(psoManager_->GetPSO("PostEffects"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("PostEffects"));
 
 	// ポストエフェクト定数バッファ
-	cmdList->SetGraphicsRootConstantBufferView(
-		0,
-		postEffectManager_->GetPostEffectDataAddress()
-	);
+	cmdList->SetGraphicsRootConstantBufferView(0, postEffectManager_->GetPostEffectDataAddress());
 
 	// 最終入力テクスチャ（Bloom合成結果）
-	uint32_t finalImageIndex = postEffectManager_->GetBloomCombineSRVIndex();
-	cmdList->SetGraphicsRootDescriptorTable(
-		1,
-		srvManager_->GetSRVHandleGPU(finalImageIndex)
-	);
+	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(inputSrvIndex));
 
+	// Dissolve Map
 	uint32_t dissolveMapIndex = TextureManager::GetInstance().Get("noise_01");
-	cmdList->SetGraphicsRootDescriptorTable(
-		2,
-		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
-	);
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(dissolveMapIndex));
 
-	// 現在のLUTの名前を取得
+	// LUT Map
 	std::string lutName = postEffectManager_->GetCurrentLutName();
 	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
+	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(lutMapIndex));
 
-	cmdList->SetGraphicsRootDescriptorTable(
-		3, srvManager_->GetSRVHandleGPU(lutMapIndex)
-	);
-
-	// フルスクリーントライアングル描画
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
+}
+
+void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
+{
+	DrawPostEffectsProcess(postEffectManager_->GetFinalCompositeSRVIndex());
 }
 
 // 単純にテクスチャをそのまま画面に出すメソッド
 void RendererManager::DrawFinalResult(uint32_t srvIndex)
 {
-	auto* cmdList = commandManager_->GetCommandList();
-
-	// SRVヒープをセット（最終出力テクスチャ）
-	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
-	cmdList->SetDescriptorHeaps(1, heaps);
-
-	// フルスクリーン描画用PSO / ルートシグネチャ
-	cmdList->SetPipelineState(psoManager_->GetPSO("Fullscreen"));
-	cmdList->SetGraphicsRootSignature(
-		rootSignatureManager_->GetRootSignature("Fullscreen")
-	);
-
-	// ポストエフェクト定数
-	cmdList->SetGraphicsRootConstantBufferView(
-		0,
-		postEffectManager_->GetPostEffectDataAddress()
-	);
-
-	// 最終結果テクスチャ
-	cmdList->SetGraphicsRootDescriptorTable(
-		1,
-		srvManager_->GetSRVHandleGPU(srvIndex)
-	);
-
-	uint32_t dissolveMapIndex = TextureManager::GetInstance().Get("noise_01");
-	cmdList->SetGraphicsRootDescriptorTable(
-		2,
-		srvManager_->GetSRVHandleGPU(dissolveMapIndex)
-	);
-
-	// 現在のLUTの名前を取得
-	std::string lutName = postEffectManager_->GetCurrentLutName();
-	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
-
-	cmdList->SetGraphicsRootDescriptorTable(
-		3, srvManager_->GetSRVHandleGPU(lutMapIndex)
-	);
-
-	// フルスクリーントライアングル描画
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	cmdList->DrawInstanced(3, 1, 0, 0);
+	DrawPostEffectsProcess(srvIndex);
 }
 
 void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)

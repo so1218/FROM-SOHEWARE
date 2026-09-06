@@ -1,7 +1,7 @@
 {
   "RootSignature": "Grass",
-  "VertexShader": "Grass.VS.hlsl",
-  "PixelShader": "Grass.PS.hlsl",
+  "VertexShader": "Environment/Grass.VS.hlsl",
+  "PixelShader": "Environment/Grass.PS.hlsl",
   "InputLayout": "None",
   "BlendState": "AlphaBlend",
   "RasterizerState": "NoCullSolid",

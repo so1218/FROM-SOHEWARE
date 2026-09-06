@@ -1,9 +1,9 @@
 {
-  "RootSignature": "PostProcess",
+  "RootSignature": "PostEffects",
   "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
-  "PixelShader": "PostProcess/BloomCombine.PS.hlsl",
+  "PixelShader": "PostProcess/PostEffects.PS.hlsl",
   "InputLayout": "Fullscreen",
-  "BlendState": "BloomCombine",
+  "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Off",
   "Topology": "Triangle",

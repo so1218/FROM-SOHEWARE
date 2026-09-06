@@ -204,6 +204,8 @@ public:
     }
 
 private:
+    void DrawPostEffectsProcess(uint32_t inputSrvIndex);
+
     // 深度バッファを SRV (シェーダー読み込み) モードへ切り替える
     void TransitionDepthToShaderResource();
     void TransitionDepthToDepthWrite();

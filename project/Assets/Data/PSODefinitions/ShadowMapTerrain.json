@@ -1,6 +1,6 @@
 {
   "RootSignature": "ShadowMapTerrain",
-  "VertexShader": "ShadowMapTerrain.VS.hlsl",
+  "VertexShader": "Shadow/ShadowMapTerrain.VS.hlsl",
   "PixelShader": null,
   "InputLayout": "Terrain",
   "BlendState": "Opaque",

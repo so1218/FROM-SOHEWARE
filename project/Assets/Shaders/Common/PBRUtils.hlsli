@@ -2,6 +2,8 @@
 #define PBR_UTILS_HLSLI
 
 #include "ShaderConstants.hlsli"
+#include "MathUtils.hlsli"
+#include "CameraUtils.hlsli"
 
 // Distribution (ハイライトの形状と強さ)
 float D_GGX(float3 N, float3 H, float roughness)
@@ -15,7 +17,7 @@ float D_GGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
     denom = PI * denom * denom;
 
-    return nom / max(denom, kExtinctionEpsilon);
+    return nom / max(denom, kEpsilon);
 }
 
 // Geometry (表面の微細な凹凸による遮蔽)
@@ -27,7 +29,7 @@ float G_SchlickGGX(float NdotV, float roughness)
     float nom = NdotV;
     float denom = NdotV * (1.0f - k) + k;
 
-    return nom / max(denom, kExtinctionEpsilon);
+    return nom / max(denom, kEpsilon);
 }
 
 float G_Smith(float3 N, float3 V, float3 L, float roughness)

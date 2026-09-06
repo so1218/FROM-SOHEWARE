@@ -1,4 +1,5 @@
 #include "Common/Trail.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D<float4> gTexture : register(t0);
 Texture2D<float4> gDissolveTexture : register(t1);
@@ -22,15 +23,15 @@ TrailPSOutput main(TrailVSOutput input)
     if (gTrailMaterial.jitterMode == 2)
     {
         // 雷のチカチカ演出
-        float flickerTime = gFrameData.gTime * 60.0 + gTrailMaterial.instanceSeed;
-        float flicker = frac(sin(flickerTime) * 43758.5453);
-        float flash = (flicker > 0.3) ? 1.0 : 0.2;
+        float flickerTime = gFrameData.gTime * 60.0f + gTrailMaterial.instanceSeed;
+        float flicker = Hash11(flickerTime);
+        float flash = (flicker > 0.3f) ? 1.0f : 0.2f;
         
         finalColor.rgb *= flash;
     }
 
     // ディゾルブ
-    if (gTrailMaterial.isDissolveEnabled > 0.5)
+    if (gTrailMaterial.isDissolveEnabled > 0.5f)
     {
         float alpha = input.color.a;
         float noiseValue = gDissolveTexture.Sample(gSampler, input.texcoordRaw).r;
@@ -44,7 +45,7 @@ TrailPSOutput main(TrailVSOutput input)
         // 境界付近は色を光らせる
         if (alpha < noiseValue + 0.05f)
         {
-            finalColor.rgb += float3(1.0, 0.5, 0.2);
+            finalColor.rgb += float3(1.0f, 0.5f, 0.2f);
         }
     }
 

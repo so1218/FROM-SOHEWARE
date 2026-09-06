@@ -1,28 +1,5 @@
 #include "Common/Trail.hlsli"
-
-float hash11(float p)
-{
-    p = frac(p * .1031);
-    p *= p + 33.33;
-    p *= p + p;
-    return frac(p);
-}
-
-float3 hash31(float p)
-{
-    float3 p3 = frac(float3(p, p, p) * float3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yzx + 33.33);
-    return frac((p3.xxy + p3.yzz) * p3.zyx) * 2.0 - 1.0;
-}
-
-float3 valueNoise31(float p)
-{
-    float i = floor(p);
-    float f = frac(p);
-    
-    f = f * f * (3.0 - 2.0 * f);
-    return lerp(hash31(i), hash31(i + 1.0), f);
-}
+#include "Common/MathUtils.hlsli"
 
 TrailVSOutput main(TrailVSInput input)
 {
@@ -70,13 +47,13 @@ TrailVSOutput main(TrailVSInput input)
  
             float noisePos = input.texcoord.x * gTrailMaterial.jitterFrequency;
 
-            float3 noise = valueNoise31(noisePos + baseSeed);
+            float3 noise = ValueNoise31(noisePos + baseSeed);
        
-            float3 sharpNoise = abs(valueNoise31(noisePos * 2.5 - baseSeed * 1.5)) * 2.0 - 1.0;
+            float3 sharpNoise = abs(ValueNoise31(noisePos * 2.5 - baseSeed * 1.5)) * 2.0 - 1.0;
             
             offset = noise * 0.7 + sharpNoise * 0.3;
             
-            float pinEnvelope = sin(input.texcoord.x * 3.14159265);
+            float pinEnvelope = sin(input.texcoord.x * PI);
             
             offset *= pinEnvelope;
         }

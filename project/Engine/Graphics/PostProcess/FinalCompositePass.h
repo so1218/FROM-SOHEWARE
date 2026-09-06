@@ -5,7 +5,7 @@
 namespace FE
 {
 
-class BloomCombinePass : public IPostEffect
+class FinalCompositePass : public IPostEffect
 {
 public:
     void Initialize(
@@ -33,7 +33,7 @@ public:
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
     // 合成設定取得
-    CombineSettings* GetSettings() const { return cbData_; }
+    FinalCompositeSettings* GetSettings() const { return cbData_; }
 
     // このパス専用のディスクリプタヒープ
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> passHeap_;
@@ -41,7 +41,7 @@ public:
 private:
     // 合成用定数バッファ
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
-    CombineSettings* cbData_ = nullptr;
+    FinalCompositeSettings* cbData_ = nullptr;
 
     // 依存オブジェクト
     PSOManager* psoManager_ = nullptr;
