@@ -43,8 +43,8 @@
 #define MAX_AREA_LIGHTS 2
 
 // シャドウマップ
-#define MAX_CASCADE_COUNT 3
-#define SHADOW_MAP_RESOLUTION 1024.0f
+#define MAX_CASCADE_COUNT 4
+#define SHADOW_MAP_RESOLUTION 2048.0f
 
 // Light types
 #define SHADING_MODEL_HALFLAMBERT 0

@@ -1,6 +1,6 @@
 {
     "GameWater": {
-        "WaterCount": 1,
+        "WaterCount": 2,
         "Water_0": {
             "Absorption": 0.27000001072883606,
             "BaseAmplitude": 0.25999999046325684,
@@ -87,6 +87,95 @@
             ],
             "WindDirection": [
                 -1.059999942779541,
+                0.5
+            ]
+        },
+        "Water_1": {
+            "Absorption": 0.25,
+            "BaseAmplitude": 0.25,
+            "BaseSteepness": 0.10000000149011612,
+            "BaseWaveLength": 18.0,
+            "CausticsDistortion": 2.0,
+            "CausticsFadeDepth": 7.099999904632568,
+            "CausticsIntensity": 0.15000000596046448,
+            "CausticsScale": 2.25,
+            "CausticsSpeed": 3.0,
+            "ChromaticAberration": 1.100000023841858,
+            "DeepColor": [
+                0.2694012522697449,
+                0.8185653686523438,
+                0.7003907561302185,
+                1.0
+            ],
+            "EnvMap": "pureSky",
+            "EnvReflectionIntensity": 0.10000000149011612,
+            "FoamColor": [
+                0.949999988079071,
+                0.9800000190734863,
+                1.0,
+                0.8999999761581421
+            ],
+            "FoamIntensity": 0.44999998807907104,
+            "FoamScale": 0.23000000417232513,
+            "FoamThreshold": 0.4099999964237213,
+            "InteractionBulgeForce": 0.5,
+            "InteractionFoamIntensity": 0.30000001192092896,
+            "InteractionHeightScale": 1.649999976158142,
+            "InteractionNormalScale": 0.0,
+            "InteractionSinkForce": 0.6600000262260437,
+            "NormalIntensity": 0.5,
+            "NormalMap": "normal_02",
+            "Position": [
+                0.6000000238418579,
+                -0.7699999809265137,
+                132.25
+            ],
+            "RainIntensity": 0.0,
+            "RefractionAmount": 0.02800000086426735,
+            "RippleScale": 0.10000000149011612,
+            "RippleSpeed": 10.0,
+            "RippleStrength": 0.15000000596046448,
+            "RippleTexture": "normal_03",
+            "Rotation": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Roughness": 0.4000000059604645,
+            "SSRIntensity": 2.0,
+            "SSRMaxDistance": 92.0,
+            "SSRStepSize": 0.46000000834465027,
+            "SSRThickness": 0.3400000035762787,
+            "Scale": [
+                46.849998474121094,
+                1.0,
+                32.779998779296875
+            ],
+            "ScatterColor": [
+                0.046217672526836395,
+                0.07689724862575531,
+                0.09282702207565308,
+                1.0
+            ],
+            "ShallowColor": [
+                0.9578059315681458,
+                0.9879445433616638,
+                1.0,
+                0.800000011920929
+            ],
+            "SpecularIntensity": 1.850000023841858,
+            "WaveChop": 1.0,
+            "WaveDirectionSpread": 0.3100000023841858,
+            "WaveFoamThreshold": 0.009999999776482582,
+            "WaveLacunarity": 2.0999999046325684,
+            "WavePersistence": 0.11999999731779099,
+            "WaveSpeed": 1.350000023841858,
+            "WaveTiling": [
+                0.029999999329447746,
+                0.30000001192092896
+            ],
+            "WindDirection": [
+                -1.0,
                 0.5
             ]
         }
