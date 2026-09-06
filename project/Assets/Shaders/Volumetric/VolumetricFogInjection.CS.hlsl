@@ -284,7 +284,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, kMinSafeDistance));
     particleDensity *= distanceFade;
 
-    float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, 0.00001f);
+    float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, kEpsilon);
     float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
 
     float3 volumeScattering = 0;

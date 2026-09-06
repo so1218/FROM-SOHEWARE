@@ -9,7 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "EnvironmentManager.h"
-
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -203,6 +203,8 @@ void FoliageRenderer::Draw(
     ID3D12Device* device = env.device->GetDevice();
     size_t numTypes = types_.size();
 
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Foliage Pass (%zu Types)", numTypes);
+
     memcpy(mappedCullingData_[currentFrameIndex_], &cullingData, sizeof(FoliageCullingData));
     uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -210,114 +212,126 @@ void FoliageRenderer::Draw(
     // Pass 1: GPUカリング
     // 前段で生成したインスタンス群に対し、視錐台/距離カリングを適用
     // -----------------------------------------------------------
-    cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("FoliageCullingCS"));
-    cmdList->SetPipelineState(env.psoManager->GetPSO("FoliageCullingCS"));
-
-    ID3D12DescriptorHeap* cullingHeaps[] = { cullingHeap_.Get() };
-    cmdList->SetDescriptorHeaps(1, cullingHeaps);
-
-    for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
     {
-        auto& res = types_[typeIdx];
-        memcpy(res.mappedMaterial[currentFrameIndex_], &res.config.material, sizeof(FoliageMaterialData));
+        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Foliage GPU Culling CS Pass");
 
-        // ExecuteIndirect用の引数バッファ初期化。InstanceCountは後段のCS内で可視判定に通過した数だけインクリメントされる
-        D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-        drawArgs.IndexCountPerInstance = static_cast<uint32_t>(res.config.mesh->GetIndexCount());
-        drawArgs.InstanceCount = 0;
-        *res.mappedArgs[currentFrameIndex_] = drawArgs;
+        cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("FoliageCullingCS"));
+        cmdList->SetPipelineState(env.psoManager->GetPSO("FoliageCullingCS"));
 
-        D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-            res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
-        cmdList->ResourceBarrier(1, &resetBarrier);
+        ID3D12DescriptorHeap* cullingHeaps[] = { cullingHeap_.Get() };
+        cmdList->SetDescriptorHeaps(1, cullingHeaps);
 
-        cmdList->CopyBufferRegion(
-            res.indirectArgsBuffer[currentFrameIndex_].Get(), 0,
-            res.indirectArgsUploadBuffer[currentFrameIndex_].Get(), 0,
-            sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
+        for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
+        {
+            // タイプごとのカリング処理用サブスコープ
+            PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Culling CS [Type %d]", typeIdx);
 
-        D3D12_RESOURCE_BARRIER csBarriers[2] = {
-            CD3DX12_RESOURCE_BARRIER::Transition(res.outputInstanceBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-            CD3DX12_RESOURCE_BARRIER::Transition(res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
-        };
-        cmdList->ResourceBarrier(2, csBarriers);
+            auto& res = types_[typeIdx];
+            memcpy(res.mappedMaterial[currentFrameIndex_], &res.config.material, sizeof(FoliageMaterialData));
 
-        // カリング専用に事前構築したDescriptorHeap上の連続領域を直接参照し、動的なバインドコストを回避
-        uint32_t slotOffset = static_cast<uint32_t>((currentFrameIndex_ * numTypes + typeIdx) * 4);
-        D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
-        destGPU.ptr += slotOffset * handleSize;
+            // ExecuteIndirect用の引数バッファ初期化。InstanceCountは後段のCS内で可視判定に通過した数だけインクリメントされる
+            D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
+            drawArgs.IndexCountPerInstance = static_cast<uint32_t>(res.config.mesh->GetIndexCount());
+            drawArgs.InstanceCount = 0;
+            *res.mappedArgs[currentFrameIndex_] = drawArgs;
 
-        cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-        cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+            D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+                res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST);
+            cmdList->ResourceBarrier(1, &resetBarrier);
 
-        cmdList->SetComputeRootDescriptorTable(2, destGPU); destGPU.ptr += handleSize;
-        cmdList->SetComputeRootDescriptorTable(3, destGPU); destGPU.ptr += handleSize;
-        cmdList->SetComputeRootDescriptorTable(4, destGPU); destGPU.ptr += handleSize;
-        cmdList->SetComputeRootDescriptorTable(5, destGPU);
+            cmdList->CopyBufferRegion(
+                res.indirectArgsBuffer[currentFrameIndex_].Get(), 0,
+                res.indirectArgsUploadBuffer[currentFrameIndex_].Get(), 0,
+                sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
 
-        // 巨大な地形でインスタンス数が超過した場合の安全策としてDispatchの上限をクリップ
-        uint32_t maxGroupsX = 1024;
-        uint32_t dispatchX = std::min((uint32_t)(kMaxInstances + 63) / 64, maxGroupsX);
-        uint32_t dispatchY = ((uint32_t)kMaxInstances + 65535) / 65536;
-        cmdList->Dispatch(dispatchX, dispatchY, 1);
+            D3D12_RESOURCE_BARRIER csBarriers[2] = {
+                CD3DX12_RESOURCE_BARRIER::Transition(res.outputInstanceBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+                CD3DX12_RESOURCE_BARRIER::Transition(res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+            };
+            cmdList->ResourceBarrier(2, csBarriers);
+
+            // カリング専用に事前構築したDescriptorHeap上の連続領域を直接参照し、動的なバインドコストを回避
+            uint32_t slotOffset = static_cast<uint32_t>((currentFrameIndex_ * numTypes + typeIdx) * 4);
+            D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
+            destGPU.ptr += slotOffset * handleSize;
+
+            cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+            cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+
+            cmdList->SetComputeRootDescriptorTable(2, destGPU); destGPU.ptr += handleSize;
+            cmdList->SetComputeRootDescriptorTable(3, destGPU); destGPU.ptr += handleSize;
+            cmdList->SetComputeRootDescriptorTable(4, destGPU); destGPU.ptr += handleSize;
+            cmdList->SetComputeRootDescriptorTable(5, destGPU);
+
+            // 巨大な地形でインスタンス数が超過した場合の安全策としてDispatchの上限をクリップ
+            uint32_t maxGroupsX = 1024;
+            uint32_t dispatchX = std::min((uint32_t)(kMaxInstances + 63) / 64, maxGroupsX);
+            uint32_t dispatchY = ((uint32_t)kMaxInstances + 65535) / 65536;
+            cmdList->Dispatch(dispatchX, dispatchY, 1);
+        }
     }
 
     // -----------------------------------------------------------
     // Pass 2: 間接描画
     // カリング済みのバッファを参照し、CPUを介さずにGPU上で描画コマンドを発行
     // -----------------------------------------------------------
-    cmdList->SetPipelineState(env.psoManager->GetPSO("Foliage"));
-    cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Foliage"));
-    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(1, mainHeaps);
-
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(4, interactionCBAddress); 
-
-    if (shadowMap) 
     {
-        cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
-    }
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Foliage Indirect Draw Pass");
 
-    cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
+        cmdList->SetPipelineState(env.psoManager->GetPSO("Foliage"));
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Foliage"));
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
-    {
-        auto& res = types_[typeIdx];
+        ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(1, mainHeaps);
 
-        D3D12_RESOURCE_BARRIER drawBarriers[2] = {
-            CD3DX12_RESOURCE_BARRIER::Transition(res.outputInstanceBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
-            CD3DX12_RESOURCE_BARRIER::Transition(res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
-        };
-        cmdList->ResourceBarrier(2, drawBarriers);
+        cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(4, interactionCBAddress);
 
-        cmdList->SetGraphicsRootConstantBufferView(3, res.materialResource[currentFrameIndex_]->GetGPUVirtualAddress()); 
-        cmdList->SetGraphicsRootShaderResourceView(6, res.outputInstanceBuffer[currentFrameIndex_]->GetGPUVirtualAddress()); 
-        cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(res.config.albedoSrvHandle)); 
-        cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(res.config.normalSrvHandle)); 
+        if (shadowMap)
+        {
+            cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
+        }
 
-        cmdList->IASetVertexBuffers(0, 1, &res.config.mesh->GetVertexBufferView());
-        cmdList->IASetIndexBuffer(&res.config.mesh->GetIndexBufferView());
+        cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
 
-        cmdList->ExecuteIndirect(
-            commandSignature_.Get(), 1,
-            res.indirectArgsBuffer[currentFrameIndex_].Get(), 0, nullptr, 0);
+        for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
+        {
+            // タイプごとの描画処理用サブスコープ
+            PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "ExecuteIndirect [Type %d]", typeIdx);
 
-        // 次フレームのGenerateパスに向けたステート復元
-        // ※バッチ化して後続の処理とパイプラインバリアを統合し、ストールを隠蔽する余地あり
-        D3D12_RESOURCE_BARRIER restoreBarriers[2] = {
-            CD3DX12_RESOURCE_BARRIER::Transition(res.generatedBuffer.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-            CD3DX12_RESOURCE_BARRIER::Transition(res.appendCounterBuffer.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
-        };
-        cmdList->ResourceBarrier(2, restoreBarriers);
+            auto& res = types_[typeIdx];
+
+            D3D12_RESOURCE_BARRIER drawBarriers[2] = {
+                CD3DX12_RESOURCE_BARRIER::Transition(res.outputInstanceBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
+                CD3DX12_RESOURCE_BARRIER::Transition(res.indirectArgsBuffer[currentFrameIndex_].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
+            };
+            cmdList->ResourceBarrier(2, drawBarriers);
+
+            cmdList->SetGraphicsRootConstantBufferView(3, res.materialResource[currentFrameIndex_]->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootShaderResourceView(6, res.outputInstanceBuffer[currentFrameIndex_]->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(res.config.albedoSrvHandle));
+            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(res.config.normalSrvHandle));
+
+            cmdList->IASetVertexBuffers(0, 1, &res.config.mesh->GetVertexBufferView());
+            cmdList->IASetIndexBuffer(&res.config.mesh->GetIndexBufferView());
+
+            cmdList->ExecuteIndirect(
+                commandSignature_.Get(), 1,
+                res.indirectArgsBuffer[currentFrameIndex_].Get(), 0, nullptr, 0);
+
+            // 次フレームのGenerateパスに向けたステート復元
+            D3D12_RESOURCE_BARRIER restoreBarriers[2] = {
+                CD3DX12_RESOURCE_BARRIER::Transition(res.generatedBuffer.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
+                CD3DX12_RESOURCE_BARRIER::Transition(res.appendCounterBuffer.Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+            };
+            cmdList->ResourceBarrier(2, restoreBarriers);
+        }
     }
 }
-
 
 void FoliageRenderer::UpdateConfigs(const std::vector<FoliageTypeConfig>& configs)
 {

@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b4);
@@ -37,11 +38,16 @@ float3 RotateVectorByQuat(float3 v, float4 q)
     return v + q.w * t + cross(q.xyz, t);
 }
 
-// テクスチャフェッチ(WindMap)を用いず、ワールド座標と時間をベースにした合成サイン波で風を近似する。
-// メモリ帯域を節約しつつ、Sway(全体的な揺れ)、Flutter(葉の微振動)、Gust(突風)のレイヤーを重ねて自然な動きを表現。
+// テクスチャフェッチ(WindMap)を用いず、ワールド座標と時間をベースにした合成サイン波で風を近似
+// メモリ帯域を節約しつつ、Sway(全体的な揺れ)、Flutter(葉の微振動)、Gust(突風)のレイヤーを重ねて自然な動きを表現
 float3 CalculateWindDisplacement(float3 worldPos, float windWeight, float3 basePos)
 {
-    float3 windDir = normalize(float3(gEnvironmentData.windDirection.x, 0.0f, gEnvironmentData.windDirection.y));
+    // 無風時 (windDirection == 0) の normalize による NaN 発生を防止
+    float windLen = length(gEnvironmentData.windDirection);
+    float3 windDir = (windLen > kEpsilon)
+        ? float3(gEnvironmentData.windDirection.x / windLen, 0.0f, gEnvironmentData.windDirection.y / windLen)
+        : float3(0.0f, 0.0f, 1.0f);
+    
     float windSpeed = gEnvironmentData.windSpeed;
 
     // インスタンスごとに位相をずらすため、基準座標(basePos)を用いて位相オフセットを計算
@@ -51,7 +57,7 @@ float3 CalculateWindDisplacement(float3 worldPos, float windWeight, float3 baseP
     float bentWeight = pow(windWeight, gMaterial.stiffness);
     
     float sway = sin(phase) * 0.5f + 0.5f;
-    float flutter = sin(phase * gMaterial.flutterSpeed * 3.1415f) * gMaterial.flutterScale;
+    float flutter = sin(phase * gMaterial.flutterSpeed * PI) * gMaterial.flutterScale;
     
     float gustPhase = dot(basePos.xz, float2(0.05f, 0.05f)) + (gEnvironmentData.windTime * windSpeed * gEnvironmentData.windTurbulence);
     float gust = saturate(sin(gustPhase) * 0.5f + 0.5f);
@@ -73,9 +79,9 @@ FoliageVSOutput main(FoliageVSInput input)
     float3 localPos = input.position.xyz;
     
     // DCCツール側で「揺れやすさ」を頂点カラーとしてペイントするアーティストの工数を削減するため、
-    // ローカルのY座標からプロシージャルに揺れウェイトを算出。
-    // plantHeightを基準にすることで、草のスケールに関わらず0.0(根元)～1.0(先端)のグラデーションを得る。
-    float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, 0.001f));
+    // ローカルのY座標からプロシージャルに揺れウェイトを算出
+    // plantHeightを基準にすることで、草のスケールに関わらず0.0(根元)～1.0(先端)のグラデーションを得る
+    float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, kEpsilon));
     localPos *= scale;
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
     float3 worldPos = basePos + rotatedPos;
@@ -93,7 +99,7 @@ FoliageVSOutput main(FoliageVSInput input)
         
         float2 pushDirXZ = (interactData.rg * 2.0f) - 1.0f;
         float dirLen = length(pushDirXZ);
-        pushDirXZ = (dirLen > 0.001f) ? (pushDirXZ / dirLen) : float2(0, 0);
+        pushDirXZ = (dirLen > kEpsilon) ? (pushDirXZ / dirLen) : float2(0, 0);
 
         // 瞬間的な力と、痕跡(Trail)の合成
         float instantPower = interactData.b;
@@ -116,7 +122,7 @@ FoliageVSOutput main(FoliageVSInput input)
     // 長さの維持
     float currentLen = length(worldPos - basePos);
     float originalLen = length(rotatedPos);
-    if (currentLen > 0.001f)
+    if (currentLen > kEpsilon)
     {
         worldPos = basePos + (worldPos - basePos) * (originalLen / currentLen);
     }
@@ -130,8 +136,8 @@ FoliageVSOutput main(FoliageVSInput input)
 
     float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
     
-    // TAA (Temporal Anti-Aliasing) やモーションブラー向けに Velocity(Motion Vector) を計算。
-    // 負荷軽減のため、風による微細なフレーム間頂点移動は無視し、カメラインプットの差分のみで近似している。
+    // TAA 向けに Velocity を計算
+    // 負荷軽減のため、風による微細なフレーム間頂点移動は無視し、カメラインプットの差分のみで近似
     float4 prevClipPos = mul(float4(basePos + rotatedPos, 1.0f), gFrameData.prevViewProj);
     
     output.position = clipPos;

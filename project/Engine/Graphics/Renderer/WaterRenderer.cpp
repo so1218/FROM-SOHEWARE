@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -195,6 +196,10 @@ void WaterRenderer::Draw(const RenderEnvironment& env)
     if (batches_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    // 1. 水描画パス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Pass");
+
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -215,8 +220,12 @@ void WaterRenderer::Draw(const RenderEnvironment& env)
     // インスタンス構造化バッファ (t10)
     cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); // t10
 
+    uint32_t batchIndex = 0;
     for (const auto& batch : batches_)
     {
+        // 2. バッチ単位の個別イベント（Printf形式でインスタンス数やバッチ番号を表示）
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Batch %u (Instances: %u)", batchIndex++, batch.instanceCount);
+
         const auto& sub = *batch.baseSubmission;
         const auto& meshes = GetOrCreateBatch(*sub.modelData);
         const auto& mesh = meshes[sub.meshIndex];

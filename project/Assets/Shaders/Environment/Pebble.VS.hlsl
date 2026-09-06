@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -64,9 +65,9 @@ PebbleVSOutput main(PebbleVSInput input)
     output.texcoord = input.texcoord;
     
     // 非等方スケール（XYZで異なる倍率）による法線・接線の歪みを補正
-    // TODO: スケール値が極端に0に近づく場合のゼロ除算対策 (現状は max 0.001f でクリップして回避)
-    float3 localNormal = normalize(input.normal / max(anisoScale, 0.001f));
-    float3 localTangent = normalize(input.tangent / max(anisoScale, 0.001f));
+    // TODO: スケール値が極端に0に近づく場合のゼロ除算対策
+    float3 localNormal = normalize(input.normal / max(anisoScale, kEpsilon));
+    float3 localTangent = normalize(input.tangent / max(anisoScale, kEpsilon));
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 

@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -127,15 +128,22 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
 
     auto* cmdList = env.commandManager->GetCommandList();
 
+    // スプライト描画パス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::UI, "Sprite Pass (%zu Sprites)", submissions_.size());
+
     // 共通設定
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->SetPipelineState(env.psoManager->GetPSO("Sprite"));
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Sprite"));
 
     // 登録されたスプライトを一気に描画
-    for (const auto& sub : submissions_)
+    for (size_t i = 0; i < submissions_.size(); ++i)
     {
+        const auto& sub = submissions_[i];
         SpriteData& sprite = sprites_[sub.instanceIndex];
+
+        // スプライトごとの個別スコープ 
+        PIXScopedEvent(cmdList, FE::PIXColors::UI, "Sprite [%zu] (Layer: %d, Instance: %u)", i, sub.layerOrder, sub.instanceIndex);
 
         cmdList->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
         cmdList->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());

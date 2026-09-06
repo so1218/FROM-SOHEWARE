@@ -201,7 +201,7 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float3 v1 = p1 - p0;
     float3 v2 = p2 - p1;
     float3 v3 = p3 - p2;
-    float preserveScale = grassHeight / max(length(v1) + length(v2) + length(v3), 0.001f);
+    float preserveScale = grassHeight / max(length(v1) + length(v2) + length(v3), kEpsilon);
     
     p1 = p0 + v1 * preserveScale;
     p2 = p1 + v2 * preserveScale;

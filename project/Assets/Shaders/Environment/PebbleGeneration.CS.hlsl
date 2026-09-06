@@ -114,7 +114,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     // 地面の傾斜に追従させつつ、Y軸でランダムに回転させて不規則性を出す
     float4 alignQuat = QuatFromVectors(float3(0.0f, 1.0f, 0.0f), terrainNormal);
-    float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * 3.14159265f * 2.0f;
+    float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * PI * 2.0f;
     float4 randomYRotQuat = QuatFromAxisAngle(float3(0.0f, 1.0f, 0.0f), randomAngle);
     float4 finalQuat = QuatMultiply(alignQuat, randomYRotQuat);
 

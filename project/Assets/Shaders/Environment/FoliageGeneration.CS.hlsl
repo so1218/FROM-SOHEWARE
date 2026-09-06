@@ -105,7 +105,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 alignQuat = QuatFromVectors(upVector, plantNormal);
 
     // Y軸まわりのランダム回転で不規則性を追加
-    float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * 3.14159265f * 2.0f;
+    float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * PI * 2.0f;
     float4 randomYRotQuat = QuatFromAxisAngle(upVector, randomAngle);
     float4 finalQuat = QuatMultiply(alignQuat, randomYRotQuat);
 

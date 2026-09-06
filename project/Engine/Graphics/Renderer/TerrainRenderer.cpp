@@ -10,6 +10,7 @@
 #include "GlobalConstants.h"
 #include "CommandManager.h"
 #include "GraphicsDevice.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -117,6 +118,10 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
     if (submissions_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    // 地形描画パス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Terrain Pass");
+
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -152,10 +157,12 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
     // バッチ（溜まったインスタンス）を一気に描画するラムダ式
     auto FlushBatch = [&]()
         {
-        if (instanceCount > 0 && currentChunk)
-        {
-            cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
-        }
+            if (instanceCount > 0 && currentChunk)
+            {
+                // バッチ発行ごとの個別スコープ
+                PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Terrain Batch (Instances: %u)", instanceCount);
+                cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
+            }
         };
 
     for (size_t i = 0; i < submissions_.size(); ++i)
@@ -223,6 +230,9 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
 
     auto* cmdList = env.commandManager->GetCommandList();
 
+    // 地形シャドウ描画パス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Terrain Shadow Pass (Cascade %u)", cascadeIndex);
+
     // ハイトマップテクスチャを読み込むため、DescriptorHeap をセット
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -247,10 +257,12 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
     // バッチをまとめて描画するラムダ式
     auto FlushBatch = [&]()
         {
-        if (instanceCount > 0 && currentChunk)
-        {
-            cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
-        }
+            if (instanceCount > 0 && currentChunk)
+            {
+                // シャドウバッチ発行ごとの個別スコープ
+                PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Terrain Shadow Batch (Instances: %u)", instanceCount);
+                cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
+            }
         };
 
     for (size_t i = 0; i < submissions_.size(); ++i)

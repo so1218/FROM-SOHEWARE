@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -154,6 +155,9 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
 
     auto* cmdList = env.commandManager->GetCommandList();
 
+    // トレイルパス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Trail Pass");
+
     TrailVertexData* mappedVertices = nullptr;
     trailBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&mappedVertices));
     memcpy(mappedVertices, trailBatch_.verticesCPU.data(), sizeof(TrailVertexData) * trailBatch_.verticesCPU.size());
@@ -181,6 +185,9 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
     {
         const auto& batch = trailBatches_[i];
         if (batch.vertexCount == 0) continue;
+
+        // バッチごとの個別スコープ（インデックスと頂点数を可視化）
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Trail Batch %zu (Vertices: %u)", i, batch.vertexCount);
 
         const uint32_t offset = static_cast<uint32_t>(i) * alignedSize;
 

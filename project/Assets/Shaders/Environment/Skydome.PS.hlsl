@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D<float4> gCloudTexture : register(t0); 
 
@@ -123,11 +124,11 @@ SkydomePSOutput main(SkydomeVSOutput input)
     float hgTranslucency = (1.0f - cloudThickness) * cloudAlpha;
 
     float hgDenomSun = 1.0f + g2 - 2.0f * g * sunDot;
-    float hgPhaseSun = (1.0f - g2) / pow(max(hgDenomSun, 0.001f), 1.5f);
+    float hgPhaseSun = (1.0f - g2) / pow(max(hgDenomSun, kEpsilon), 1.5f);
     float3 sunSilverLining = directLightColor * (hgPhaseSun * 1.5f) * hgTranslucency;
 
     float hgDenomMoon = 1.0f + g2 - 2.0f * g * moonDot;
-    float hgPhaseMoon = (1.0f - g2) / pow(max(hgDenomMoon, 0.001f), 1.5f);
+    float hgPhaseMoon = (1.0f - g2) / pow(max(hgDenomMoon, kEpsilon), 1.5f);
     float3 moonSilverLining = moonColorBase * (hgPhaseMoon * 1.0f) * hgTranslucency;
     
     float3 finalCloudColor = baseCloudColor + sunSilverLining + moonSilverLining;

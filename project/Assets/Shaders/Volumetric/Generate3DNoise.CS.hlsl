@@ -1,12 +1,6 @@
-RWTexture3D<float4> gOutputNoise : register(u0);
+#include "Common/MathUtils.hlsli"
 
-// 乱数生成関数 (Hash)
-float3 hash33(float3 p3)
-{
-    p3 = frac(p3 * float3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yxz + 33.33);
-    return -1.0f + 2.0f * frac((p3.xxy + p3.yxx) * p3.zyx);
-}
+RWTexture3D<float4> gOutputNoise : register(u0);
 
 // シームレスな 3D Perlin Noise (-1.0 ～ 1.0)
 float PerlinNoise3D_Seamless(float3 p, float period)
@@ -25,14 +19,14 @@ float PerlinNoise3D_Seamless(float3 p, float period)
     float3 p011 = fmod(pi + float3(0, 1, 1), period);
     float3 p111 = fmod(pi + float3(1, 1, 1), period);
 
-    float c000 = dot(hash33(p000), pf - float3(0, 0, 0));
-    float c100 = dot(hash33(p100), pf - float3(1, 0, 0));
-    float c010 = dot(hash33(p010), pf - float3(0, 1, 0));
-    float c110 = dot(hash33(p110), pf - float3(1, 1, 0));
-    float c001 = dot(hash33(p001), pf - float3(0, 0, 1));
-    float c101 = dot(hash33(p101), pf - float3(1, 0, 1));
-    float c011 = dot(hash33(p011), pf - float3(0, 1, 1));
-    float c111 = dot(hash33(p111), pf - float3(1, 1, 1));
+    float c000 = dot(Hash33(p000), pf - float3(0, 0, 0));
+    float c100 = dot(Hash33(p100), pf - float3(1, 0, 0));
+    float c010 = dot(Hash33(p010), pf - float3(0, 1, 0));
+    float c110 = dot(Hash33(p110), pf - float3(1, 1, 0));
+    float c001 = dot(Hash33(p001), pf - float3(0, 0, 1));
+    float c101 = dot(Hash33(p101), pf - float3(1, 0, 1));
+    float c011 = dot(Hash33(p011), pf - float3(0, 1, 1));
+    float c111 = dot(Hash33(p111), pf - float3(1, 1, 1));
 
     float x00 = lerp(c000, c100, w.x);
     float x10 = lerp(c010, c110, w.x);
@@ -109,7 +103,7 @@ float WorleyNoise3D_Seamless(float3 p, float period)
             {
                 float3 offset = float3(x, y, z);
                 float3 cell = fmod(pi + offset + period, period);
-                float3 cellPoint = hash33(cell) * 0.5f + 0.5f;
+                float3 cellPoint = Hash33(cell) * 0.5f + 0.5f;
                 
                 float3 diff = offset + cellPoint - pf;
                 float dist = length(diff);

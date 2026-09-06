@@ -10,6 +10,7 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 #include "EnvironmentManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -149,6 +150,8 @@ void GrassRenderer::Draw(
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();
 
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Grass Pass (Total Generated: %u)", totalGeneratedCount_);
+
     // 描画およびカリングパラメータの更新
     memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(GrassMaterialData));
 
@@ -170,91 +173,94 @@ void GrassRenderer::Draw(
 
     // コンピュートシェーダーによるGPU駆動カリング
     // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
-    D3D12_RESOURCE_BARRIER csBarriers[2] = {};
-    csBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        outputInstanceBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    csBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    cmdList->ResourceBarrier(2, csBarriers);
-
-    cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("GrassCullingCS"));
-    cmdList->SetPipelineState(env.psoManager->GetPSO("GrassCullingCS"));
-
-    ID3D12DescriptorHeap* heaps[] = { cullingHeap_.Get() };
-    cmdList->SetDescriptorHeaps(1, heaps);
-
-    // フレーム毎にディスクリプタの書き込み位置をずらし、GPU実行中のリソース競合を防止
-    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    uint32_t destOffset = 3 * currentFrameIndex_;
-
-    D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
-    destCPU.ptr += destOffset * handleSize;
-
-    D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
-    destGPU.ptr += destOffset * handleSize;
-
-    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 0, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(generatedSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(outputUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(indirectUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
-    cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize));
-    cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize));
-
-    uint32_t totalGroups = (totalGeneratedCount_ + 63) / 64;
-    uint32_t groupX = 1024;
-    uint32_t groupY = (totalGroups + groupX - 1) / groupX;
-    cmdList->Dispatch(groupX, groupY, 1);
-
-    // カリングを通過した可視インスタンスの一括描画
-    D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
-    drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        outputInstanceBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    drawBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-    cmdList->ResourceBarrier(2, drawBarriers);
-
-    cmdList->SetPipelineState(env.psoManager->GetPSO("Grass"));
-    cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Grass"));
-    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-    ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(1, mainHeaps);
-
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress);
-
-    if (shadowMap)
     {
-        cmdList->SetGraphicsRootConstantBufferView(6, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle()); 
+        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Grass Culling CS");
+
+        // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
+        D3D12_RESOURCE_BARRIER csBarriers[2] = {};
+        csBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
+            outputInstanceBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        csBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
+            indirectArgsBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        cmdList->ResourceBarrier(2, csBarriers);
+
+        cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("GrassCullingCS"));
+        cmdList->SetPipelineState(env.psoManager->GetPSO("GrassCullingCS"));
+
+        ID3D12DescriptorHeap* heaps[] = { cullingHeap_.Get() };
+        cmdList->SetDescriptorHeaps(1, heaps);
+
+        // フレーム毎にディスクリプタの書き込み位置をずらし、GPU実行中のリソース競合を防止
+        uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        uint32_t destOffset = 3 * currentFrameIndex_;
+
+        D3D12_CPU_DESCRIPTOR_HANDLE destCPU = cullingHeap_->GetCPUDescriptorHandleForHeapStart();
+        destCPU.ptr += destOffset * handleSize;
+
+        D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
+        destGPU.ptr += destOffset * handleSize;
+
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 0, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(generatedSrvIndex_), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 1, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(outputUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CopyDescriptorsSimple(1, CD3DX12_CPU_DESCRIPTOR_HANDLE(destCPU, 2, handleSize), env.srvManager->GetSRVHandleCPU_ForCopying(indirectUavIndex_[currentFrameIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetComputeRootDescriptorTable(2, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
+        cmdList->SetComputeRootDescriptorTable(3, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 1, handleSize));
+        cmdList->SetComputeRootDescriptorTable(4, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 2, handleSize));
+
+        uint32_t totalGroups = (totalGeneratedCount_ + 63) / 64;
+        uint32_t groupX = 1024;
+        uint32_t groupY = (totalGroups + groupX - 1) / groupX;
+        cmdList->Dispatch(groupX, groupY, 1);
     }
 
-    cmdList->SetGraphicsRootShaderResourceView(7, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapTextureHandle)); 
-    cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle); 
+    // カリングを通過した可視インスタンスの一括描画
+    {
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Grass ExecuteIndirect Draw");
 
-    cmdList->ExecuteIndirect(
-        commandSignature_.Get(),
-        1,
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        0,
-        nullptr,
-        0);
+        D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
+        drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
+            outputInstanceBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        drawBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
+            indirectArgsBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+        cmdList->ResourceBarrier(2, drawBarriers);
+
+        cmdList->SetPipelineState(env.psoManager->GetPSO("Grass"));
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Grass"));
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+        ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(1, mainHeaps);
+
+        cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(2, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(3, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress);
+
+        if (shadowMap)
+        {
+            cmdList->SetGraphicsRootConstantBufferView(6, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
+        }
+
+        cmdList->SetGraphicsRootShaderResourceView(7, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
+        cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
+
+        cmdList->ExecuteIndirect(commandSignature_.Get(), 1, indirectArgsBuffer_[currentFrameIndex_].Get(), 0, nullptr, 0);
+    }
 }
 
 }

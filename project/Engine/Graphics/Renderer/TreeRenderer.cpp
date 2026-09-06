@@ -10,6 +10,7 @@
 #include "GraphicsDevice.h"
 #include "EnvironmentManager.h"
 #include "Frustum.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -213,6 +214,9 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     if (batches_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Tree Main Pass");
+
     auto& curRes = frameRes_[currentFrameIndex_];
 
     // 同一フレーム内でシャドウパス等とUAV/SRVが競合しないよう、パス単位でバッファ領域を分割
@@ -282,33 +286,36 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     // ==========================================
     // カリングの実行
     // ==========================================
-    cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
-    cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
-
-    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-
-    for (size_t i = 0; i < batches_.size(); ++i)
     {
-        const auto& batch = batches_[i];
+        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Tree Culling CS");
 
-        // DescriptorHeapの動的アロケーションを避けるため、Root CBV / Root SRV / Root UAV で直接アドレスをバインド
-        D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
-        cmdList->SetComputeRootConstantBufferView(1, cbAddress);
+        cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
+        cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
 
-        D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
-            + (batch.startInstanceLocation * sizeof(TreeInstanceData));
-        cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
+        cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
 
-        D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
-            + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
-        cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
+        for (size_t i = 0; i < batches_.size(); ++i)
+        {
+            const auto& batch = batches_[i];
 
-        D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
-            + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
-        cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
+            D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
+            cmdList->SetComputeRootConstantBufferView(1, cbAddress);
 
-        uint32_t groupX = (batch.instanceCount + 63) / 64;
-        cmdList->Dispatch(groupX, 1, 1);
+            D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
+                + (batch.startInstanceLocation * sizeof(TreeInstanceData));
+            cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
+
+            D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
+                + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
+            cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
+
+            D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
+                + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+            cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
+
+            uint32_t groupX = (batch.instanceCount + 63) / 64;
+            cmdList->Dispatch(groupX, 1, 1);
+        }
     }
 
     // ==========================================
@@ -321,70 +328,72 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     };
     cmdList->ResourceBarrier(2, drawBarriers);
 
-    ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(1, heaps);
-    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    for (size_t i = 0; i < batches_.size(); ++i)
     {
-        const auto& batch = batches_[i];
-        const auto& meshes = GetOrCreateBatch(*batch.modelData);
-        const Mesh* mesh = &meshes[batch.meshIndex];
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Tree Indirect Draw");
 
-        TreeInstanceOffset offsetData{};
-        offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
-        offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
+        ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(1, heaps);
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        // 幹と葉でアルファテストや揺らぎの負荷が異なるため、最適なPSOへ切り替え
-        if (batch.isLeaf)
+        for (size_t i = 0; i < batches_.size(); ++i)
         {
-            cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeFoliage"));
+            const auto& batch = batches_[i];
+            const auto& meshes = GetOrCreateBatch(*batch.modelData);
+            const Mesh* mesh = &meshes[batch.meshIndex];
 
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+            TreeInstanceOffset offsetData{};
+            offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
+            offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
 
-            cmdList->SetGraphicsRoot32BitConstants(5, 2, &offsetData, 0);
+            if (batch.isLeaf)
+            {
+                cmdList->SetPipelineState(env.psoManager->GetPSO("TreeFoliage"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeFoliage"));
 
-            cmdList->SetGraphicsRootDescriptorTable(6, shadowMap->GetSRVHandle());
-            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
-            cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(2, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(3, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+
+                cmdList->SetGraphicsRoot32BitConstants(5, 2, &offsetData, 0);
+
+                cmdList->SetGraphicsRootDescriptorTable(6, shadowMap->GetSRVHandle());
+                cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
+                cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
+            }
+            else
+            {
+                cmdList->SetPipelineState(env.psoManager->GetPSO("TreeTrunk"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeTrunk"));
+
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(5, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+
+                cmdList->SetGraphicsRoot32BitConstants(8, 2, &offsetData, 0);
+
+                cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
+                cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
+                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle));
+                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
+                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            }
+
+            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+            uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+            cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
         }
-        else
-        {
-            cmdList->SetPipelineState(env.psoManager->GetPSO("TreeTrunk"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("TreeTrunk"));
-
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(4, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(5, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(6, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-
-            cmdList->SetGraphicsRoot32BitConstants(8, 2, &offsetData, 0);
-
-            cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
-            cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
-            cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle));
-            cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
-            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-        }
-
-        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-        // CPU側でドローコールごとの可視インスタンス数を関知せず、直接GPUへ描画をキック
-        uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
-        cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
     }
 }
 
@@ -394,6 +403,9 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     if (batches_.empty() || currentPassIndex_ >= kMaxPasses) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Tree Shadow Pass (Cascade %u)", cascadeIndex);
+
     auto& curRes = frameRes_[currentFrameIndex_];
 
     uint32_t passIndex = currentPassIndex_++;
@@ -455,32 +467,36 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     // ==========================================
     // カリング CS 実行
     // ==========================================
-    cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
-    cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
-
-    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-
-    for (size_t i = 0; i < batches_.size(); ++i)
     {
-        const auto& batch = batches_[i];
+        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Tree Shadow Culling CS");
 
-        D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
-        cmdList->SetComputeRootConstantBufferView(1, cbAddress);
+        cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
+        cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
 
-        D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
-            + (batch.startInstanceLocation * sizeof(TreeInstanceData));
-        cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
+        cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
 
-        D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
-            + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
-        cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
+        for (size_t i = 0; i < batches_.size(); ++i)
+        {
+            const auto& batch = batches_[i];
 
-        D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
-            + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
-        cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
+            D3D12_GPU_VIRTUAL_ADDRESS cbAddress = curRes.cullingDataBuffer->GetGPUVirtualAddress() + ((batchOffset + i) * alignedSize);
+            cmdList->SetComputeRootConstantBufferView(1, cbAddress);
 
-        uint32_t groupX = (batch.instanceCount + 63) / 64;
-        cmdList->Dispatch(groupX, 1, 1);
+            D3D12_GPU_VIRTUAL_ADDRESS inputSrvAddress = curRes.inputInstanceBuffer->GetGPUVirtualAddress()
+                + (batch.startInstanceLocation * sizeof(TreeInstanceData));
+            cmdList->SetComputeRootShaderResourceView(2, inputSrvAddress);
+
+            D3D12_GPU_VIRTUAL_ADDRESS outputUavAddress = curRes.outputInstanceBuffer->GetGPUVirtualAddress()
+                + ((batch.startInstanceLocation + instanceOffset) * sizeof(TreeInstanceData));
+            cmdList->SetComputeRootUnorderedAccessView(3, outputUavAddress);
+
+            D3D12_GPU_VIRTUAL_ADDRESS indirectUavAddress = curRes.indirectArgsBuffer->GetGPUVirtualAddress()
+                + ((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+            cmdList->SetComputeRootUnorderedAccessView(4, indirectUavAddress);
+
+            uint32_t groupX = (batch.instanceCount + 63) / 64;
+            cmdList->Dispatch(groupX, 1, 1);
+        }
     }
 
     // ==========================================
@@ -492,63 +508,64 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     };
     cmdList->ResourceBarrier(2, drawBarriers);
 
-    ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(1, heaps);
-    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     // ==========================================
     // シャドウマップ描画
     // ==========================================
-    for (size_t i = 0; i < batches_.size(); ++i)
     {
-        const auto& batch = batches_[i];
-        const auto& meshes = GetOrCreateBatch(*batch.modelData);
-        const Mesh* mesh = &meshes[batch.meshIndex];
+        PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Tree Shadow Indirect Draw");
 
-        TreeInstanceOffset offsetData{};
-        offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
-        offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
+        ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(1, heaps);
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        // シャドウパスはカラーやライティング計算が不要なため、専用の軽量なPSOへ切り替え
-        if (batch.isLeaf)
+        for (size_t i = 0; i < batches_.size(); ++i)
         {
-            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeFoliage"));
+            const auto& batch = batches_[i];
+            const auto& meshes = GetOrCreateBatch(*batch.modelData);
+            const Mesh* mesh = &meshes[batch.meshIndex];
 
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
-            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
-            cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+            TreeInstanceOffset offsetData{};
+            offsetData.baseInstanceIndex = batch.startInstanceLocation + instanceOffset;
+            offsetData.isLeaf = batch.isLeaf ? 1u : 0u;
 
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            if (batch.isLeaf)
+            {
+                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeFoliage"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeFoliage"));
 
-            // 葉の影はアルファテストが必要なためテクスチャをバインド
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.leafMaterialBuffer->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
+                cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
+                cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+
+                cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
+            }
+            else
+            {
+                cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeTrunk"));
+                cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeTrunk"));
+
+                cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
+                cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
+                cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
+
+                cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+            }
+
+            cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
+            cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
+
+            uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
+            cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
         }
-        else
-        {
-            cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTreeTrunk"));
-            cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTreeTrunk"));
-
-            cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(1, batch.treeMaterial.trunkMaterialBuffer->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstants(2, 2, &offsetData, 0);
-            cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRoot32BitConstant(4, cascadeIndex, 0);
-            cmdList->SetGraphicsRootConstantBufferView(5, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
-
-            cmdList->SetGraphicsRootDescriptorTable(6, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-            cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
-        }
-
-        cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
-        cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-
-        uint32_t argsOffset = static_cast<uint32_t>((batchOffset + i) * sizeof(AlignedDrawIndexedArguments));
-        cmdList->ExecuteIndirect(commandSignature_.Get(), 1, curRes.indirectArgsBuffer.Get(), argsOffset, nullptr, 0);
     }
 }
 

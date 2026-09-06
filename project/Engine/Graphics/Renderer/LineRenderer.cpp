@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -43,6 +44,10 @@ void LineRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProje
 {
     if (lineBatch_.verticesCPU.empty()) return;
 
+    auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Line Pass (Vertices: %zu)", lineBatch_.verticesCPU.size());
+
     // 行列更新
     lineBatch_.mappedWvp->WVP = viewProjection;
 
@@ -51,8 +56,6 @@ void LineRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProje
     lineBatch_.mesh.GetVertexResource()->Map(0, nullptr, reinterpret_cast<void**>(&gpuPtr));
     std::memcpy(gpuPtr, lineBatch_.verticesCPU.data(), sizeof(LineVertex) * lineBatch_.verticesCPU.size());
     lineBatch_.mesh.GetVertexResource()->Unmap(0, nullptr);
-
-    auto* cmdList = env.commandManager->GetCommandList();
 
     // ステート設定
     cmdList->SetPipelineState(env.psoManager->GetPSO("Line"));
