@@ -2,6 +2,7 @@
 #include "Common/ShaderConstants.hlsli"
 #include "Common/LightingUtils.hlsli"
 #include "Common/PBRUtils.hlsli"
+#include "Common/CameraUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -37,25 +38,11 @@ struct WaterPSOutput
     float2 velocity : SV_TARGET3;
 };
 
-float LinearizeDepth(float depth)
-{
-    float nearP = gFrameData.nearClip;
-    float farP = gFrameData.farClip;
-    return (nearP * farP) / max(farP - depth * (farP - nearP), 0.00001f);
-}
-
 float3 BlendNormalsRNM(float3 baseNormal, float3 detailNormal)
 {
     float3 t = baseNormal + float3(0.0f, 0.0f, 1.0f);
     float3 u = detailNormal * float3(-1.0f, -1.0f, 1.0f);
-    return t * dot(t, u) / max(t.z, 0.0001f) - u;
-}
-
-float Hash21(float2 p)
-{
-    p = frac(p * float2(123.34f, 456.21f));
-    p += dot(p, p + 45.32f);
-    return frac(p.x * p.y);
+    return t * dot(t, u) / max(t.z, kEpsilon) - u;
 }
 
 float ProceduralFoamNoise(float2 uv)
@@ -64,10 +51,10 @@ float ProceduralFoamNoise(float2 uv)
     float2 f = frac(uv);
     f = f * f * (3.0f - 2.0f * f);
 
-    float a = Hash21(i);
-    float b = Hash21(i + float2(1.0f, 0.0f));
-    float c = Hash21(i + float2(0.0f, 1.0f));
-    float d = Hash21(i + float2(1.0f, 1.0f));
+    float a = Hash12(i);
+    float b = Hash12(i + float2(1.0f, 0.0f));
+    float c = Hash12(i + float2(0.0f, 1.0f));
+    float d = Hash12(i + float2(1.0f, 1.0f));
 
     return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
 }
@@ -76,7 +63,7 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
 {
     hitWeight = 0.0f;
 
-    float2 pixelPos = screenUV * float2(1920.0f, 1080.0f); // ※解像度が取れる場合は動的にしてください
+    float2 pixelPos = screenUV * gFrameData.screenResolution.xy;
     float dither = InterleavedGradientNoise(pixelPos + (gFrameData.gTime * 144.0f));
 
     // ★ ステップ数を最適化（品質と負荷のバランス）
@@ -94,27 +81,21 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
 
     bool hit = false;
     float2 hitUV = 0.0f;
-    float currentDepthDiff = 0.0f;
-    float hitLinearDepth = 0.0f;
-
-    // --------------------------------------------------------
-    // 1. レイマーチング (大まかな衝突判定)
-    // --------------------------------------------------------
+    
+    // 1. レイマーチング
     [unroll(MAX_STEPS)]
     for (int i = 0; i < MAX_STEPS; ++i)
     {
         if (traveled > maxDist)
-            break; // 最大距離に達したら打ち切り
+            break;
 
         rayPos += smoothReflectDir * stepSize;
         traveled += stepSize;
-
-        // ★ 縞々対策 2: 急激な加速を抑える (1.05 -> 1.025)
-        // 水面などの浅い角度では、加速しすぎるとオブジェクトをすり抜けて縞々になります
         stepSize *= 1.025f;
 
         float4 projPos = mul(float4(rayPos, 1.0f), gFrameData.viewProjectionMatrix);
-        if (projPos.w <= 0.001f)
+        // kEpsilon でカメラ背面・Nearクリップ付近を安全にスキップ
+        if (projPos.w <= kEpsilon)
             continue;
 
         float3 ndc = projPos.xyz / projPos.w;
@@ -124,14 +105,13 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
             break;
 
         float sceneRawDepth = gSceneDepthTexture.SampleLevel(gClampSampler, uv, 0).r;
-        float sceneLinearDepth = LinearizeDepth(sceneRawDepth);
-        float rayLinearDepth = LinearizeDepth(ndc.z);
+        // LinearizeDepth に nearZ, farZ を渡す
+        float sceneLinearDepth = LinearizeDepth(sceneRawDepth, gFrameData.nearClip, gFrameData.farClip);
+        float rayLinearDepth = LinearizeDepth(ndc.z, gFrameData.nearClip, gFrameData.farClip);
         float depthDiff = rayLinearDepth - sceneLinearDepth;
 
-        // 遠景ほど厚み判定を緩くする
         float dynamicThickness = gWaterMaterial.ssrThickness * max(1.0f, rayLinearDepth * 0.05f);
 
-        // レイがオブジェクトの「内部」に入った瞬間を検知
         if (depthDiff > 0.0f && depthDiff < dynamicThickness)
         {
             hit = true;
@@ -140,9 +120,7 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
         lastRayPos = rayPos;
     }
 
-    // --------------------------------------------------------
-    // 2. バイナリサーチ (衝突位置の正確な特定)
-    // --------------------------------------------------------
+    // 2. バイナリサーチ
     if (hit)
     {
         float3 minPos = lastRayPos;
@@ -154,11 +132,13 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
         {
             midPos = lerp(minPos, maxPos, 0.5f);
             float4 projPos = mul(float4(midPos, 1.0f), gFrameData.viewProjectionMatrix);
-            float3 ndc = projPos.xyz / projPos.w;
+            
+            float clipW = max(projPos.w, kEpsilon);
+            float3 ndc = projPos.xyz / clipW;
             float2 uv = ndc.xy * float2(0.5f, -0.5f) + 0.5f;
 
-            float sceneLinearDepth = LinearizeDepth(gSceneDepthTexture.SampleLevel(gClampSampler, uv, 0).r);
-            float rayLinearDepth = LinearizeDepth(ndc.z);
+            float sceneLinearDepth = LinearizeDepth(gSceneDepthTexture.SampleLevel(gClampSampler, uv, 0).r, gFrameData.nearClip, gFrameData.farClip);
+            float rayLinearDepth = LinearizeDepth(ndc.z, gFrameData.nearClip, gFrameData.farClip);
             float depthDiff = rayLinearDepth - sceneLinearDepth;
 
             float dynamicThickness = gWaterMaterial.ssrThickness * max(1.0f, rayLinearDepth * 0.05f);
@@ -167,8 +147,6 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
             {
                 maxPos = midPos;
                 hitUV = uv;
-                currentDepthDiff = depthDiff;
-                hitLinearDepth = rayLinearDepth;
             }
             else
             {
@@ -176,30 +154,18 @@ float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal
             }
         }
 
-        // --------------------------------------------------------
-        // 3. 各種フェード処理（滑らかなブレンド）
-        // --------------------------------------------------------
+        // 3. フェード処理
         float2 edgeFade2 = smoothstep(0.0f, 0.05f, hitUV) * smoothstep(1.0f, 0.95f, hitUV);
         float screenEdgeFade = edgeFade2.x * edgeFade2.y;
-
         float rayDistance = distance(rayOrigin, midPos);
-        
-        // 遠くの反射ほど自然にフェードアウトさせる
         float rayLengthFade = 1.0f - smoothstep(maxDist * 0.5f, maxDist, rayDistance);
 
         hitWeight = screenEdgeFade * rayLengthFade * gWaterMaterial.ssrIntensity;
 
-        // --------------------------------------------------------
-        // 4. サンプリングと高品質化（波の歪みとボケ）
-        // --------------------------------------------------------
+        // 4. サンプリング
         float distFactor = saturate(rayDistance / maxDist);
-        
-        // 遠景の波の歪みが激しすぎるとノイズになるため、距離に応じて歪みを抑える
         float2 distortionOffset = worldNormal.xz * float2(0.04f, -0.04f) * (1.0f - distFactor * 0.5f);
         float2 distortedUV = clamp(hitUV + distortionOffset, 0.005f, 0.995f);
-
-        // ★ 縞々対策 3: 距離に応じたラフネス（MipMap）の適用
-        // 遠くの反射ほどMipレベルを上げてぼかすことで、サンプリングエラー（ザラつき）を消し飛ばします
         float mipLevel = roughness * 8.0f + (distFactor * 3.0f);
 
         return gSceneColorTexture.SampleLevel(gClampSampler, distortedUV, mipLevel).rgb;
@@ -247,7 +213,7 @@ float3 CalculateCaustics(float2 bottomXZ, float3 lightDir, float time, float wat
     // ★ ただの白ではなく、宝石のようなシアン系の色味を足して発光感を出す
     float3 causticsColor = float3(r, g, b) * float3(0.6f, 0.9f, 1.0f);
 
-    float depthFade = exp(-waterDepth / max(gWaterMaterial.causticsFadeDepth, 0.01f));
+    float depthFade = exp(-waterDepth / max(gWaterMaterial.causticsFadeDepth, kEpsilon));
     float shoreFade = smoothstep(0.02f, 0.2f, waterDepth);
 
     // ★ 最後に 2.0f を掛けて「HDR的な強い発光」をさせる
@@ -259,19 +225,20 @@ WaterPSOutput main(PixelShaderInput input)
     WaterPSOutput output;
 
     float3 V = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    float2 screenUV = (input.currentClipPos.xy / input.currentClipPos.w) * float2(0.5f, -0.5f) + 0.5f;
+    
+    float clipW = max(input.currentClipPos.w, kEpsilon);
+    float2 screenUV = (input.currentClipPos.xy / clipW) * float2(0.5f, -0.5f) + 0.5f;
 
     float sceneRawDepth = gSceneDepthTexture.Sample(gClampSampler, screenUV).r;
-    float sceneLinearDepth = LinearizeDepth(sceneRawDepth);
-    float waterLinearDepth = LinearizeDepth(input.currentClipPos.z / input.currentClipPos.w);
+    float sceneLinearDepth = LinearizeDepth(sceneRawDepth, gFrameData.nearClip, gFrameData.farClip);
+    float waterLinearDepth = LinearizeDepth(input.currentClipPos.z / clipW, gFrameData.nearClip, gFrameData.farClip);
     float waterDepth = max(sceneLinearDepth - waterLinearDepth, 0.0f);
 
     float time = gFrameData.gTime * max(gWaterMaterial.waveSpeed, 0.1f);
     
     float2 windDir = gWaterMaterial.windDirection;
-    if (length(windDir) < 0.001f)
-        windDir = float2(1.0f, 1.0f);
-    windDir = normalize(windDir);
+    float windLen = length(windDir);
+    windDir = (windLen > kEpsilon) ? (windDir / windLen) : float2(0.7071f, 0.7071f);
 
     float2 uv1 = input.worldPosition.xz * gWaterMaterial.waveTiling.x - windDir * (time * 0.08f);
     float2 windDir2 = float2(windDir.x * 0.866f - windDir.y * 0.5f, windDir.x * 0.5f + windDir.y * 0.866f);
@@ -303,7 +270,7 @@ WaterPSOutput main(PixelShaderInput input)
     float2 refractUV_G = screenUV + finalTangentNormal.xy * distortion;
     float2 refractUV_B = screenUV + finalTangentNormal.xy * (distortion - caOffset);
 
-    if (LinearizeDepth(gSceneDepthTexture.Sample(gClampSampler, refractUV_G).r) < waterLinearDepth)
+    if (LinearizeDepth(gSceneDepthTexture.Sample(gClampSampler, refractUV_G).r, gFrameData.nearClip, gFrameData.farClip) < waterLinearDepth)
     {
         refractUV_R = refractUV_G = refractUV_B = screenUV;
     }
@@ -355,7 +322,7 @@ WaterPSOutput main(PixelShaderInput input)
     // ★ 泡の完全修正（画面全体が白くなる問題を解決）
     // ---------------------------------------------------------
     // ① 岸辺の泡マスク（浅瀬ほど強くなる）
-    float shoreMask = 1.0f - saturate(waterDepth / max(gWaterMaterial.foamThreshold, 0.001f));
+    float shoreMask = 1.0f - saturate(waterDepth / max(gWaterMaterial.foamThreshold, kEpsilon));
     
     // ② 波頭の泡マスク（波の法線傾斜から判定）
     float waveSlope = 1.0f - finalTangentNormal.z;
@@ -376,7 +343,7 @@ WaterPSOutput main(PixelShaderInput input)
 
     // --- ハイライト ---
     float3 H = normalize(lightDir + V);
-    float spec = pow(saturate(dot(worldNormal, H)), 256.0f / max(gWaterMaterial.roughness, 0.001f));
+    float spec = pow(saturate(dot(worldNormal, H)), 256.0f / max(gWaterMaterial.roughness, kEpsilon));
     finalColor += gDirectionalLights[0].color.rgb * spec * gWaterMaterial.specularIntensity * edgeFade;
 
     output.color = float4(finalColor, 1.0f);

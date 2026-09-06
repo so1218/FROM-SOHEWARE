@@ -65,7 +65,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
-    float3 toEye = cameraDiff / max(viewDepth, 0.0001f);
+    float3 toEye = cameraDiff / max(viewDepth, kEpsilon);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
 
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
@@ -89,7 +89,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float alpha = roughness * roughness;
     float alpha2 = alpha * alpha;
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
-    float D = alpha2 / (3.14159265f * denom * denom + 0.00001f);
+    float D = alpha2 / (PI * denom * denom + kEpsilon);
 
     float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
     float3 F = F0 + (1.0f.xxx - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
@@ -114,7 +114,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
 
     // Alpha-to-Coverageのジャギーを軽減するため、偏微分を用いてアルファエッジをアンチエイリアス補正
-    float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), 0.0001f) + 0.5f;
+    float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
     output.normal = float4(normal, 1.0f);

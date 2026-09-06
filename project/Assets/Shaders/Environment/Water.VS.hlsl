@@ -18,8 +18,10 @@ float3 CalculateAutoGerstnerWorld(float3 worldPos, float time, out float3 outNor
     float3 binormal = float3(0.0f, 0.0f, 1.0f);
 
     float currentAmplitude = gWaterMaterial.baseAmplitude;
-    float currentLength = max(gWaterMaterial.baseWaveLength, 0.1f);
-    float2 mainDir = normalize(gWaterMaterial.windDirection);
+    float currentLength = max(gWaterMaterial.baseWaveLength, kEpsilon);
+    
+    float windLen = length(gWaterMaterial.windDirection);
+    float2 mainDir = (windLen > kEpsilon) ? (gWaterMaterial.windDirection / windLen) : float2(1.0f, 0.0f);
 
     float spreadAngle = gWaterMaterial.waveDirectionSpread;
     float cosAngle = cos(spreadAngle);
@@ -38,7 +40,7 @@ float3 CalculateAutoGerstnerWorld(float3 worldPos, float time, out float3 outNor
         float c = cos(phase);
         float s = sin(phase);
 
-        float q = (gWaterMaterial.baseSteepness / (k * currentAmplitude * (float) OCTAVES)) * gWaterMaterial.waveChop;
+        float q = (gWaterMaterial.baseSteepness / max(k * currentAmplitude * (float) OCTAVES, kEpsilon)) * gWaterMaterial.waveChop;
 
         waveOffset.x += currentDir.x * (q * currentAmplitude * c);
         waveOffset.y += currentAmplitude * s;

@@ -48,10 +48,10 @@
                 0.0
             ],
             "Roughness": 0.33000001311302185,
-            "SSRIntensity": 0.0,
-            "SSRMaxDistance": 43.0,
-            "SSRStepSize": 0.12999999523162842,
-            "SSRThickness": 0.18000000715255737,
+            "SSRIntensity": 3.0,
+            "SSRMaxDistance": 54.0,
+            "SSRStepSize": 0.27000001072883606,
+            "SSRThickness": 0.23999999463558197,
             "Scale": [
                 51.720001220703125,
                 0.7300000190734863,
