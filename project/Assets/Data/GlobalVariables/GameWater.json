@@ -8,7 +8,7 @@
             "BaseWaveLength": 18.299999237060547,
             "CausticsDistortion": 20.0,
             "CausticsFadeDepth": 6.099999904632568,
-            "CausticsIntensity": 0.30000001192092896,
+            "CausticsIntensity": 0.44999998807907104,
             "CausticsScale": 0.10000000149011612,
             "CausticsSpeed": 0.20999999344348907,
             "ChromaticAberration": 1.149999976158142,
@@ -52,7 +52,7 @@
                 0.0,
                 0.0
             ],
-            "Roughness": 0.33000001311302185,
+            "Roughness": 0.4000000059604645,
             "SSRIntensity": 3.0,
             "SSRMaxDistance": 54.0,
             "SSRStepSize": 0.27000001072883606,
@@ -74,7 +74,7 @@
                 0.9081343412399292,
                 1.0
             ],
-            "SpecularIntensity": 2.0999999046325684,
+            "SpecularIntensity": 1.850000023841858,
             "WaveChop": 1.0,
             "WaveDirectionSpread": 0.30000001192092896,
             "WaveFoamThreshold": 0.009999999776482582,

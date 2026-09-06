@@ -30,7 +30,7 @@
         "LeafShadowDensity": 0.800000011920929,
         "LeafShadowNormBias": 0.019999999552965164,
         "LeafTexture": "leaf1_baseColor",
-        "MaxDrawDistance": 500.0,
+        "MaxDrawDistance": 350.0,
         "MaxScale": 38.400001525878906,
         "MinScale": 19.799999237060547,
         "Position": [
