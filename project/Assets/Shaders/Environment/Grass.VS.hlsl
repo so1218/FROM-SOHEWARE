@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
@@ -54,14 +55,6 @@ float4 UnpackColor(uint packedColor)
         ((packedColor >> 16) & 0xFF) / 255.0f,
         ((packedColor >> 24) & 0xFF) / 255.0f
     );
-}
-
-// 軽量な擬似乱数 (2D入力 -> 1D出力)
-float Hash12(float2 p)
-{
-    float3 p3 = frac(float3(p.xyx) * 0.1031f);
-    p3 += dot(p3, p3.yzx + 33.33f);
-    return frac((p3.x + p3.y) * p3.z);
 }
 
 struct GrassPSInput

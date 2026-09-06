@@ -1,5 +1,7 @@
 #include "Common/ShaderConstants.hlsli"
 #include "Common/Object3D.hlsli"
+#include "Common/CameraUtils.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
 Texture2DArray<float> gShadowMap : register(t1);

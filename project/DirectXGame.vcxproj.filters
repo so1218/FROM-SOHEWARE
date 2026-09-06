@@ -1012,5 +1012,7 @@
     <None Include="Assets\Shaders\Shadow\ShadowMapTreeFoliage.PS.hlsl" />
     <None Include="Assets\Shaders\Common\GridUtils.hlsli" />
     <None Include="Assets\Shaders\Common\ShadowUtils.hlsli" />
+    <None Include="Assets\Shaders\Common\MathUtils.hlsli" />
+    <None Include="Assets\Shaders\Common\CameraUtils.hlsli" />
   </ItemGroup>
 </Project>

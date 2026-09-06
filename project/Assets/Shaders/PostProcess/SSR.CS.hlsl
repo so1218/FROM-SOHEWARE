@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli" 
 
 ConstantBuffer<SSRSettings> gSSRSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
@@ -11,15 +12,6 @@ SamplerState gClampSampler : register(s0);
 
 // 書き込み用テクスチャ (UAV)
 RWTexture2D<float4> gOutReflection : register(u0);
-
-float3 GetViewPos(float2 uv, float depth)
-{
-    float x = uv.x * 2.0f - 1.0f;
-    float y = (1.0f - uv.y) * 2.0f - 1.0f;
-    float4 clipPos = float4(x, y, depth, 1.0f);
-    float4 viewPos = mul(clipPos, gFrameData.invProjMatrix);
-    return viewPos.xyz / viewPos.w;
-}
 
 [numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
@@ -57,7 +49,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     // -------------------------------------------------------------------------
     // 座標変換とレイの準備
     // -------------------------------------------------------------------------
-    float3 viewPos = GetViewPos(uv, depth);
+    float3 viewPos = GetViewPos(uv, depth, gFrameData.invProjMatrix);
     float3 worldNormal = gNormalTexture.SampleLevel(gClampSampler, uv, 0).xyz;
     float3 viewNormal = normalize(mul(worldNormal, (float3x3) gFrameData.viewMatrix));
     float3 viewDir = normalize(viewPos);
@@ -99,8 +91,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
         float sDepth = gDepthTexture.SampleLevel(gClampSampler, currentUVZ.xy, 0);
         
         // View Zを復元して判定 (非線形Depthの誤差を防ぐ)
-        float sZ = GetViewPos(currentUVZ.xy, sDepth).z;
-        float rayZ = GetViewPos(currentUVZ.xy, currentUVZ.z).z;
+        float sZ = GetViewPos(currentUVZ.xy, sDepth, gFrameData.invProjMatrix).z;
+        float rayZ = GetViewPos(currentUVZ.xy, currentUVZ.z, gFrameData.invProjMatrix).z;
         float depthDiff = rayZ - sZ;
 
         // 衝突判定
@@ -116,8 +108,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             {
                 midUVZ = lerp(minUVZ, maxUVZ, 0.5f);
                 float mDepth = gDepthTexture.SampleLevel(gClampSampler, midUVZ.xy, 0);
-                float mZ = GetViewPos(midUVZ.xy, mDepth).z;
-                float mRayZ = GetViewPos(midUVZ.xy, midUVZ.z).z;
+                float mZ = GetViewPos(midUVZ.xy, mDepth, gFrameData.invProjMatrix).z;
+                float mRayZ = GetViewPos(midUVZ.xy, midUVZ.z, gFrameData.invProjMatrix).z;
 
                 if (mRayZ > mZ)
                     maxUVZ = midUVZ;
@@ -131,7 +123,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             if (dot(vHitNormal, reflectDir) < 0.0f)
             {
                 hitUV = midUVZ.xy;
-                rayDistance = length(GetViewPos(midUVZ.xy, midUVZ.z) - viewPos);
+                rayDistance = length(GetViewPos(midUVZ.xy, midUVZ.z, gFrameData.invProjMatrix) - viewPos);
                 hitAlpha = smoothstep(0.0f, gSSRSettings.stepSize * 2.0f, rayDistance);
                 break;
             }

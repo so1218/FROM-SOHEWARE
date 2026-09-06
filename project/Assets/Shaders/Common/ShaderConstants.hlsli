@@ -53,10 +53,6 @@
 #define MAX_FOG_EFFECTORS 4
 #define MAX_FOG_VOLUMES 8
 
-static const float PI = 3.1415926535f;
-static const float kMinNearClip = 0.1f;
-static const float kExtinctionEpsilon = 1e-5f;
-
 struct TransformationMatrix
 {
     float4x4 WVP;

@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
 // TAAされて綺麗になった、蓄積済みの3Dフォグ

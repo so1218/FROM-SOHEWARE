@@ -1,5 +1,7 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli" 
+#include "Common/CameraUtils.hlsli" 
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<SSAOSettings> gSSAOSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
@@ -9,26 +11,6 @@ Texture2D<float> gDepthTexture : register(t1);
 
 SamplerState gClampSampler : register(s0);
 
-float LinearizeDepth(float depth, float nearClip, float farClip)
-{
-    return (nearClip * farClip) / (farClip - depth * (farClip - nearClip));
-}
-
-float3 GetViewPos(float2 uv, float depth)
-{
-    float x = uv.x * 2.0f - 1.0f;
-    float y = (1.0f - uv.y) * 2.0f - 1.0f;
-    float4 clipPos = float4(x, y, depth, 1.0f);
-    float4 viewPos = mul(clipPos, gFrameData.invProjMatrix);
-    return viewPos.xyz / viewPos.w;
-}
-
-float InterleavedGradientNoise(float2 pixelPos)
-{
-    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(pixelPos, magic.xy)));
-}
-
 float4 main(VSOutput input) : SV_TARGET
 {
     float depth = gDepthTexture.SampleLevel(gClampSampler, input.uv, 0);
@@ -37,7 +19,7 @@ float4 main(VSOutput input) : SV_TARGET
         return float4(1.0f, 1.0f, 1.0f, 1.0f);
 
     float3 worldNormal = gNormalTexture.SampleLevel(gClampSampler, input.uv, 0).xyz;
-    float3 viewPos = GetViewPos(input.uv, depth);
+    float3 viewPos = GetViewPos(input.uv, depth, gFrameData.invProjMatrix);
     float3 viewNormal = normalize(mul(worldNormal, (float3x3) gFrameData.viewMatrix));
 
     // NaNを起こさない安全なTBN行列の構築
@@ -48,7 +30,7 @@ float4 main(VSOutput input) : SV_TARGET
 
     // ノイズによるランダムな回転角度だけを取得
     float noise = InterleavedGradientNoise(input.position.xy);
-    float randomAngle = noise * 2.0f * 3.14159265f;
+    float randomAngle = noise * 2.0f * PI;
 
     float occlusion = 0.0f;
     int sampleCount = gSSAOSettings.sampleCount;
@@ -58,7 +40,7 @@ float4 main(VSOutput input) : SV_TARGET
     {
         float u = (float(i) + 0.5f) / float(sampleCount);
         // スパイラルにランダム角度を足すことで全体を回転
-        float theta = u * 2.0f * 3.14159265f * 7.0f + randomAngle;
+        float theta = u * 2.0f * PI * 7.0f + randomAngle;
         
         float r = sqrt(u);
         float z = sqrt(max(0.0f, 1.0f - r * r));

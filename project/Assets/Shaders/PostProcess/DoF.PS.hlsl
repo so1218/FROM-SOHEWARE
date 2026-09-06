@@ -1,5 +1,7 @@
 #include "Common/ShaderConstants.hlsli"
 #include "Common/FullScreenQuad.hlsli"
+#include "Common/CameraUtils.hlsli"
+#include "Common/MathUtils.hlsli"
 
 // シーンカラー
 Texture2D gSceneTexture : register(t0);
@@ -10,14 +12,6 @@ SamplerState gSampler : register(s0);
 // DoF設定
 ConstantBuffer<DoFSettings> gDoFSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
-
-// 深度をリニア化
-float LinearizeDepth(float d)
-{
-    float n = gFrameData.nearClip;
-    float f = gFrameData.farClip;
-    return (n * f) / (f - d * (f - n));
-}
 
 // 符号付きCoC（-：手前ボケ, +：奥ボケ）
 float GetSignedCoC(float depth)
@@ -45,7 +39,8 @@ float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
 
-    float centerDepth = LinearizeDepth(gDepthTexture.SampleLevel(gSampler, uv, 0));
+    float centerRawDepth = gDepthTexture.SampleLevel(gSampler, uv, 0);
+    float centerDepth = LinearizeDepth(centerRawDepth, gFrameData.nearClip, gFrameData.farClip);
     
     float centerCoC = GetSignedCoC(centerDepth);
     float centerAbsCoC = abs(centerCoC);
@@ -64,8 +59,8 @@ float4 main(VSOutput input) : SV_TARGET
     float aspect = (gFrameData.screenResolution.x / 2.0f) / (gFrameData.screenResolution.y / 2.0f);
     
     // UV座標から疑似乱数（回転角度）を作る
-    float randomNoise = frac(sin(dot(uv, float2(12.9898f, 78.233f))) * 43758.5453f);
-    float randomAngle = randomNoise * 3.14159265f * 2.0f; // 0 ～ 2πのランダムな角度
+    float randomNoise = Hash12(uv);
+    float randomAngle = randomNoise * 2.0f * PI; // 0 ～ 2πのランダムな角度
 
     // ボケサンプリング
     for (int i = 0; i < SAMPLE_COUNT; i++)

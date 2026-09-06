@@ -1,5 +1,6 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
 
 ConstantBuffer<BilateralBlurSettings> gBilateralBlurSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
@@ -9,21 +10,6 @@ Texture2D<float> gDepthTexture : register(t1);
 Texture2D<float4> gNormalTexture : register(t2); 
 
 SamplerState gClampSampler : register(s0);
-
-// 深度リニア化
-float LinearizeDepth(float depth, float nearClip, float farClip)
-{
-    return (nearClip * farClip) / (farClip - depth * (farClip - nearClip));
-}
-
-float3 GetViewPos(float2 uv, float depth)
-{
-    float x = uv.x * 2.0f - 1.0f;
-    float y = (1.0f - uv.y) * 2.0f - 1.0f;
-    float4 clipPos = float4(x, y, depth, 1.0f);
-    float4 viewPos = mul(clipPos, gFrameData.invProjMatrix);
-    return viewPos.xyz / viewPos.w;
-}
 
 float4 main(VSOutput input) : SV_TARGET
 {

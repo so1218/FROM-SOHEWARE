@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
 
 Texture3D<float4> gVoxelInjectFiltered : register(t0); // Spatial Filter後の今フレームのデータ
 Texture3D<float4> gVoxelHistory : register(t1); // 前フレームのTemporal Resolve結果

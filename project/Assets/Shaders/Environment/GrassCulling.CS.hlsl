@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassCullingData> gGrassCullingData : register(b1);
@@ -14,14 +15,6 @@ static const uint kIndirectInstanceCountOffset = 4; // IndirectArgsバッファ�
 static const uint kFrustumPlaneCount = 6;
 static const float kMinValidHeight = 0.001f;
 static const float kBoundsRadiusScale = 1.2f; // 判定バウンディングスフィアの余裕持たせ
-
-// 擬似乱数 (Hash12)
-float Hash12(float2 p)
-{
-    float3 p3 = frac(float3(p.xyx) * 0.1031f);
-    p3 += dot(p3, p3.yzx + 33.33f);
-    return frac((p3.x + p3.y) * p3.z);
-}
 
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
