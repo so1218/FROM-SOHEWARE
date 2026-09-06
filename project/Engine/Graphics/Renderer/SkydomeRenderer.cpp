@@ -11,6 +11,7 @@
 #include "PostEffectManager.h"
 #include "ShapeGenerator.h"
 #include "MaterialManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -76,6 +77,9 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     if (!isSubmitted_) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    // スカイドーム描画パス全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Skydome Pass");
 
     // WVP行列の更新（現在のフレーム用バッファへ）
     Matrix4x4 view = viewMatrix;

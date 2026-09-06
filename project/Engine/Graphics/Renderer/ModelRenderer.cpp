@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -383,6 +384,9 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
     bool isSkinning = (sub.skinCluster != nullptr);
 
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Model DrawCore [%s] (Mesh: %u, Instances: %u)",
+        isSkinning ? "Skinning" : "Static", sub.meshIndex, isSkinning ? 1 : instanceCount);
+
     std::string psoName;
     if (isSkinning)
     {
@@ -413,6 +417,8 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     // アウトライン描画
     if (sub.enableOutline)
     {
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Outline Pass (%s)", isSkinning ? "Skinning" : "Static");
+
         if (isSkinning)
         {
             auto& buffer = perObjectBuffers_[sub.instanceIndex]; 
@@ -514,6 +520,9 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex)
 {
     auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Model Shadow Pass (Cascade %u)", cascadeIndex);
+
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // 作成済みのbatches_を回す
@@ -535,6 +544,10 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
         bool isSkinning = (sub.skinCluster != nullptr);
         bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
             (sub.materialHandle.materialData->color.w < 1.0f);
+
+        PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Shadow Batch [%s%s] (Mesh: %u, Instances: %u)",
+            isSkinning ? "Skinning" : "Static", needDissolve ? " + Dissolve" : "",
+            sub.meshIndex, isSkinning ? 1 : batch.instanceCount);
 
         // ディゾルブ
         if (needDissolve)

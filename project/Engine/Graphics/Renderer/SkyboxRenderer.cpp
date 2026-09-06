@@ -11,6 +11,7 @@
 #include "PostEffectManager.h"
 #include "ShapeGenerator.h"
 #include "MaterialManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -51,6 +52,8 @@ void SkyboxRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMat
     if (!isSubmitted_) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Skybox Pass");
 
     // WVP行列の計算（カメラの平行移動を除去して回転のみ反映）
     Matrix4x4 view = viewMatrix;

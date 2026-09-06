@@ -9,6 +9,7 @@
 #include "GlobalConstants.h"
 #include "BufferManager.h"
 #include "PostEffectManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -63,6 +64,10 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
 {
     if (requests_.empty()) return;
 
+    auto* cmdList = env.commandManager->GetCommandList();
+
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Particle Pass (%zu Requests)", requests_.size());
+
     std::stable_sort(requests_.begin(), requests_.end(), [](const ParticleRequest& a, const ParticleRequest& b) {
         return a.blendMode < b.blendMode;
         });
@@ -74,7 +79,6 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
     }
 
     // バッチ描画
-    auto* cmdList = env.commandManager->GetCommandList();
     // 基本セットアップ
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Particle"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -161,6 +161,9 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
         isFirstFrame_ = false;
     }
 
+    PIXScopedEvent(cmdList, FE::PIXColors::Compute, "World Interaction Pass (%ux%u, Read:%u Write:%u)",
+        width_, height_, readIndex_, writeIndex_);
+
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 

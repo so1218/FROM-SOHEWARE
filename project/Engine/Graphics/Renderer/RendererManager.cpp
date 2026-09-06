@@ -27,6 +27,7 @@
 #include "TreeRenderer.h"
 #include "PebbleRenderer.h"
 #include "WaterRenderer.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -175,6 +176,8 @@ void RendererManager::UpdateCullingFrustums()
 void RendererManager::DrawPostEffectsProcess(uint32_t inputSrvIndex)
 {
 	auto* cmdList = commandManager_->GetCommandList();
+
+	PIXScopedEvent(cmdList, FE::PIXColors::PostProcess, "Post Effects Pass");
 
 	// SRVヒープをセット（ポストプロセス入力用）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };

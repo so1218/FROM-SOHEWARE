@@ -8,6 +8,7 @@
 #include "SRVManager.h"
 #include "GlobalConstants.h"
 #include "BufferManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -125,19 +126,17 @@ void PebbleRenderer::GeneratePebbles(
     totalGeneratedCount_ = genData.maxInstancesPerChunk;
 }
 
-void PebbleRenderer::Draw(
-    const RenderEnvironment& env,
-    ShadowMap* shadowMap,
-    uint32_t skyboxSrvHandle,
-    uint32_t albedoSrvHandle,
-    uint32_t normalSrvHandle,
-    const Mesh& pebbleMesh,
-    const PebbleMaterialData& materialData,
-    const PebbleCullingData& cullingData)
+void PebbleRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap,
+    uint32_t skyboxSrvHandle, uint32_t albedoSrvHandle, uint32_t normalSrvHandle,
+    const Mesh& pebbleMesh, const PebbleMaterialData& materialData, const PebbleCullingData& cullingData)
 {
     if (totalGeneratedCount_ == 0) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
+
+    // 小石描画全体のスコープ
+    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Pebble Pass (Total Generated: %u)", totalGeneratedCount_);
+
     ID3D12Device* device = env.device->GetDevice();
 
     memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(PebbleMaterialData));
@@ -145,116 +144,124 @@ void PebbleRenderer::Draw(
     // ==========================================
     // パス 1: GPU カリング 
     // ==========================================
-    cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("PebbleCullingCS"));
-    cmdList->SetPipelineState(env.psoManager->GetPSO("PebbleCullingCS"));
+    {
+        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Pebble GPU Culling CS");
 
-    ID3D12DescriptorHeap* cullingHeaps[] = { cullingHeap_.Get() };
-    cmdList->SetDescriptorHeaps(1, cullingHeaps);
-    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("PebbleCullingCS"));
+        cmdList->SetPipelineState(env.psoManager->GetPSO("PebbleCullingCS"));
 
-    // IndirectDrawのインスタンス数はCS側で加算するため、
-    // 毎フレーム描画前に必ず 0 に初期化しておく
-    D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
-    drawArgs.IndexCountPerInstance = static_cast<uint32_t>(pebbleMesh.GetIndexCount());
-    drawArgs.InstanceCount = 0;
-    drawArgs.StartIndexLocation = 0;
-    drawArgs.BaseVertexLocation = 0;
-    drawArgs.StartInstanceLocation = 0;
+        ID3D12DescriptorHeap* cullingHeaps[] = { cullingHeap_.Get() };
+        cmdList->SetDescriptorHeaps(1, cullingHeaps);
+        uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    *mappedArgs_[currentFrameIndex_] = drawArgs;
+        // IndirectDrawのインスタンス数はCS側で加算するため、
+        // 毎フレーム描画前に必ず 0 に初期化しておく
+        D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
+        drawArgs.IndexCountPerInstance = static_cast<uint32_t>(pebbleMesh.GetIndexCount());
+        drawArgs.InstanceCount = 0;
+        drawArgs.StartIndexLocation = 0;
+        drawArgs.BaseVertexLocation = 0;
+        drawArgs.StartInstanceLocation = 0;
 
-    D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
-        D3D12_RESOURCE_STATE_COPY_DEST);
-    cmdList->ResourceBarrier(1, &resetBarrier);
+        *mappedArgs_[currentFrameIndex_] = drawArgs;
 
-    // CPU側のUploadバッファからGPU側バッファへ描画引数を高速転送
-    cmdList->CopyBufferRegion(
-        indirectArgsBuffer_[currentFrameIndex_].Get(), 0,
-        indirectArgsUploadBuffer_[currentFrameIndex_].Get(), 0,
-        sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
+        D3D12_RESOURCE_BARRIER resetBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            indirectArgsBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
+            D3D12_RESOURCE_STATE_COPY_DEST);
+        cmdList->ResourceBarrier(1, &resetBarrier);
 
-    // カリングCSの実行に備え、UAVおよび間接引数バッファの状態を遷移
-    D3D12_RESOURCE_BARRIER csBarriers[2] = {};
-    csBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        outputInstanceBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    csBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    cmdList->ResourceBarrier(2, csBarriers);
+        // CPU側のUploadバッファからGPU側バッファへ描画引数を高速転送
+        cmdList->CopyBufferRegion(
+            indirectArgsBuffer_[currentFrameIndex_].Get(), 0,
+            indirectArgsUploadBuffer_[currentFrameIndex_].Get(), 0,
+            sizeof(D3D12_DRAW_INDEXED_ARGUMENTS));
 
-    PebbleCullingData actualCullingData = cullingData;
-    actualCullingData.totalInstanceCount = totalGeneratedCount_;
-    memcpy(mappedCullingData_[currentFrameIndex_], &actualCullingData, sizeof(PebbleCullingData));
+        // カリングCSの実行に備え、UAVおよび間接引数バッファの状態を遷移
+        D3D12_RESOURCE_BARRIER csBarriers[2] = {};
+        csBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
+            outputInstanceBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        csBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
+            indirectArgsBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        cmdList->ResourceBarrier(2, csBarriers);
 
-    // 毎フレームの Descriptor Table の書き込みを排除し、
-    // 初期化時にベイク済みの専用ディスクリプタヒープ領域のGPUハンドルを直接指定
-    uint32_t slotOffset = currentFrameIndex_ * 3;
-    D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
-    destGPU.ptr += slotOffset * handleSize;
+        PebbleCullingData actualCullingData = cullingData;
+        actualCullingData.totalInstanceCount = totalGeneratedCount_;
+        memcpy(mappedCullingData_[currentFrameIndex_], &actualCullingData, sizeof(PebbleCullingData));
 
-    cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetComputeRootDescriptorTable(2, destGPU);
-    destGPU.ptr += handleSize;
-    cmdList->SetComputeRootDescriptorTable(3, destGPU);
-    destGPU.ptr += handleSize;
-    cmdList->SetComputeRootDescriptorTable(4, destGPU);
+        // 毎フレームの Descriptor Table の書き込みを排除し、
+        // 初期化時にベイク済みの専用ディスクリプタヒープ領域のGPUハンドルを直接指定
+        uint32_t slotOffset = currentFrameIndex_ * 3;
+        D3D12_GPU_DESCRIPTOR_HANDLE destGPU = cullingHeap_->GetGPUDescriptorHandleForHeapStart();
+        destGPU.ptr += slotOffset * handleSize;
 
-    uint32_t totalThreads = totalGeneratedCount_;
-    uint32_t maxGroupsX = 1024;
-    uint32_t dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
-    uint32_t dispatchY = (totalThreads + 65535) / 65536;
-    cmdList->Dispatch(dispatchX, dispatchY, 1);
+        cmdList->SetComputeRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(1, cullingDataResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetComputeRootDescriptorTable(2, destGPU);
+        destGPU.ptr += handleSize;
+        cmdList->SetComputeRootDescriptorTable(3, destGPU);
+        destGPU.ptr += handleSize;
+        cmdList->SetComputeRootDescriptorTable(4, destGPU);
+
+        uint32_t totalThreads = totalGeneratedCount_;
+        uint32_t maxGroupsX = 1024;
+        uint32_t dispatchX = std::min((totalThreads + 63) / 64, maxGroupsX);
+        uint32_t dispatchY = (totalThreads + 65535) / 65536;
+        cmdList->Dispatch(dispatchX, dispatchY, 1);
+    }
 
     // ==========================================
     // パス 2: 間接描画
     // ==========================================
-    // CSの書き込み完了を待ち、PSから参照可能なSRV状態および間接描画引数状態へバリアを張る
-    D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
-    drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        outputInstanceBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    drawBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        indirectArgsBuffer_[currentFrameIndex_].Get(),
-        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-        D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-    cmdList->ResourceBarrier(2, drawBarriers);
+    {
+        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Pebble Indirect Draw");
 
-    cmdList->SetPipelineState(env.psoManager->GetPSO("Pebble"));
-    cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Pebble"));
+        // CSの書き込み完了を待ち、PSから参照可能なSRV状態および間接描画引数状態へバリアを張る
+        D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
+        drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(
+            outputInstanceBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+        drawBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(
+            indirectArgsBuffer_[currentFrameIndex_].Get(),
+            D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+        cmdList->ResourceBarrier(2, drawBarriers);
 
-    cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        cmdList->SetPipelineState(env.psoManager->GetPSO("Pebble"));
+        cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Pebble"));
 
-    ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(1, mainHeaps);
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(skyboxSrvHandle));
-    cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
-    cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(albedoSrvHandle));
-    cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(normalSrvHandle));
+        ID3D12DescriptorHeap* mainHeaps[] = { env.srvManager->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(1, mainHeaps);
 
-    cmdList->IASetVertexBuffers(0, 1, &pebbleMesh.GetVertexBufferView());
-    cmdList->IASetIndexBuffer(&pebbleMesh.GetIndexBufferView());
+        cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(4, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(skyboxSrvHandle));
+        cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
+        cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(albedoSrvHandle));
+        cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(normalSrvHandle));
 
-    // カリング済みの可視インスタンス配列を構造化バッファとして頂点シェーダーに供給
-    cmdList->SetGraphicsRootShaderResourceView(6, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+        cmdList->IASetVertexBuffers(0, 1, &pebbleMesh.GetVertexBufferView());
+        cmdList->IASetIndexBuffer(&pebbleMesh.GetIndexBufferView());
 
-    // GPU側で計算された描画数をもとに、CPUを介さず直接ドローを発行
-    cmdList->ExecuteIndirect(
-        commandSignature_.Get(), 1,
-        indirectArgsBuffer_[currentFrameIndex_].Get(), 0, nullptr, 0);
+        // カリング済みの可視インスタンス配列を構造化バッファとして頂点シェーダーに供給
+        cmdList->SetGraphicsRootShaderResourceView(6, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
+
+        // GPU側で計算された描画数をもとに、CPUを介さず直接ドローを発行
+        cmdList->ExecuteIndirect(
+            commandSignature_.Get(), 1,
+            indirectArgsBuffer_[currentFrameIndex_].Get(), 0, nullptr, 0);
+    }
 }
 
 }

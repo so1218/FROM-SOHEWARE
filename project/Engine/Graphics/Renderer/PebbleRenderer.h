@@ -21,15 +21,9 @@ public:
         uint32_t densityMapSrvHandle,
         D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress);
 
-    void Draw(
-        const RenderEnvironment& env,
-        ShadowMap* shadowMap,
-        uint32_t skyboxSrvHandle,
-        uint32_t albedoSrvHandle,
-        uint32_t normalSrvHandle,
-        const Mesh& pebbleMesh,
-        const PebbleMaterialData& materialData,
-        const PebbleCullingData& cullingData);
+    void Draw(const RenderEnvironment& env, ShadowMap* shadowMap,
+        uint32_t skyboxSrvHandle, uint32_t albedoSrvHandle, uint32_t normalSrvHandle,
+        const Mesh& pebbleMesh, const PebbleMaterialData& materialData, const PebbleCullingData& cullingData);
 
 private:
     static const int32_t kMaxInstances = 150000;
