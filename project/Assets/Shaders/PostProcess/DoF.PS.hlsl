@@ -90,7 +90,7 @@ float4 main(VSOutput input) : SV_TARGET
         totalWeight += weight;
     }
 
-    float3 bokehResult = finalColor / max(0.0001f, totalWeight);
+    float3 bokehResult = finalColor / max(kEpsilon, totalWeight);
 
     // ピントが合っている所から外れる境界を、ほんの少しだけブレンド
     float mixing = smoothstep(0.0f, 0.2f, centerAbsCoC);

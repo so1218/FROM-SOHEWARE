@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<InteractionConstants> gInteractionConstants : register(b1);
@@ -77,10 +78,10 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             {
                 maxCurrentStrength = strength;
             }
-
+            
             // entityType に応じた方向・挙動の分岐
             float2 entityPushDir = float2(0, 0);
-            float2 radialDir = (distXZ > 0.001f) ? normalize(diffXZ) : float2(0, 1);
+            float2 radialDir = (distXZ > kEpsilon) ? normalize(diffXZ) : float2(0, 1);
 
             if (entity.entityType == 2) // 衝撃波・爆発
             {
@@ -103,7 +104,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
     // 方向ベクトルの正規化と 0.0~1.0 エンコード (-1~1 -> 0~1)
     float pushLen = length(totalPushDir);
-    float2 finalPushDir = (pushLen > 0.001f) ? (totalPushDir / pushLen) : float2(0, 0);
+    float2 finalPushDir = (pushLen > kEpsilon) ? (totalPushDir / pushLen) : float2(0, 0);
     float2 encodedDir = finalPushDir * 0.5f + 0.5f;
 
     // Aチャンネル: 痕跡の保持

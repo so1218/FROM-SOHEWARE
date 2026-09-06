@@ -1,5 +1,6 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D gTexture : register(t0);
 SamplerState samLinear : register(s0);
@@ -17,9 +18,9 @@ float4 main(VSOutput input) : SV_TARGET
     // ソフトしきい値の計算
     float soft = brightness - threshold + knee;
     soft = clamp(soft, 0.0, 2.0 * knee);
-    soft = soft * soft / (4.0 * knee + 0.00001);
+    soft = (soft * soft) / max(4.0f * knee, kEpsilon);
     
-    float contribution = max(soft, brightness - threshold) / max(brightness, 0.00001);
+    float contribution = max(soft, brightness - threshold) / max(brightness, kEpsilon);
     float3 extractColor = color * contribution;
 
     extractColor = min(extractColor, float3(10.0f, 10.0f, 10.0f));

@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<LeafMaterialData> gMaterial : register(b2);
@@ -54,7 +55,7 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     float3 rootPos = instance.worldMatrix[3].xyz;
     
     float currentHeight = max(0.0f, baseWorldPos.y - rootPos.y);
-    float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, 0.1f));
+    float heightRatio = saturate(currentHeight / max(gMaterial.treeHeight, kEpsilon));
     
     bool isLeaf = (gTreeInstanceOffset.isLeaf != 0);
     
@@ -90,15 +91,15 @@ ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
     // -------------------------------------------------------------------------
     // 2次・3次風: 枝葉の微細な揺れ
     // -------------------------------------------------------------------------
-    float3 branchOffset = 0.0f.xxx;
-    float3 flutterOffset = 0.0f.xxx;
+    float3 branchOffset = float3(0.0f, 0.0f, 0.0f);
+    float3 flutterOffset = float3(0.0f, 0.0f, 0.0f);
 
     // isLeaf を用いた分岐で幹描画時の不要な波計算を完全にスキップ
     if (isLeaf)
     {
         // 枝のうねり
         float branchDist = length(origLocalPos.xz);
-        float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, 0.001f));
+        float branchWeight = saturate(branchDist / max(gMaterial.treeRadius, kEpsilon));
         float branchPhase = dot(origLocalPos, float3(0.5f, 0.8f, 0.3f)) + treePhase;
         
         float branchWave = sin(windTime * 2.5f + branchPhase);

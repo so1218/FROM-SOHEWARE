@@ -72,13 +72,6 @@ float ProceduralFoamNoise(float2 uv)
     return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
 }
 
-// ★ 改良版 SSR : 平坦法線でレイを走査し、ヒット後に波法線でUVを歪ませる
-float InterleavedGradientNoise(float2 screenPos)
-{
-    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(screenPos, magic.xy)));
-}
-
 float3 TraceSSR_HQ(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal, float roughness, float2 screenUV, out float hitWeight)
 {
     hitWeight = 0.0f;

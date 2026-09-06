@@ -1,6 +1,7 @@
 #include "Common/FullScreenQuad.hlsli"
 #include "Common/ShaderConstants.hlsli"
 #include "Common/CameraUtils.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<BilateralBlurSettings> gBilateralBlurSettings : register(b0);
 ConstantBuffer<FrameData> gFrameData : register(b1);
@@ -52,7 +53,8 @@ float4 main(VSOutput input) : SV_TARGET
 
         // 深度による重み（段差が大きいと重みが0に近づく）
         float depthDiff = abs(centerZ - sampleZ);
-        float depthW = 1.0f / (1.0f + (depthDiff * depthDiff) / (gBilateralBlurSettings.depthTolerance * gBilateralBlurSettings.depthTolerance + 0.0001f));
+        float depthTolSq = gBilateralBlurSettings.depthTolerance * gBilateralBlurSettings.depthTolerance;
+        float depthW = 1.0f / (1.0f + (depthDiff * depthDiff) / max(depthTolSq, kEpsilon));
 
         // 法線による重み（面が向いている方向が違うと重みが0に近づく）
         float normalW = pow(max(dot(centerNormal, sampleNormal), 0.0f), gBilateralBlurSettings.normalTolerance);

@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)
@@ -28,20 +29,6 @@ struct TreeFoliagePSInput
     float3 instanceTint : COLOR1;
     float lodFade : BLENDWEIGHT;
 };
-
-// 高速 Interleaved Gradient Noise
-float InterleavedGradientNoise(float2 pixelPos)
-{
-    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(pixelPos, magic.xy)));
-}
-
-// 高速 5乗計算
-float Pow5(float x)
-{
-    float x2 = x * x;
-    return x2 * x2 * x;
-}
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
 

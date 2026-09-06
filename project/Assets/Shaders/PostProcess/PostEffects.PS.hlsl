@@ -119,7 +119,7 @@ float2 ApplyFisheye(float2 uv)
     float2 offset = uv - center;
     float dist = length(offset);
     float distDistorted = dist + gData.fisheyeDistortion * dist * dist;
-    float2 newUV = center + (offset / max(dist, 0.0001)) * distDistorted;
+    float2 newUV = center + (offset / max(dist, kEpsilon)) * distDistorted;
 
     return newUV;
 }
@@ -195,7 +195,7 @@ float3 ApplyScanline(float3 color, float2 uv)
     else
         input = (uv.x + uv.y) * 0.7071;
 
-    float wave = sin((input * gData.scanlineFrequency + gData.totalTime * gData.scanlineScrollSpeed) * 6.28318);
+    float wave = sin((input * gData.scanlineFrequency + gData.totalTime * gData.scanlineScrollSpeed) * (2.0f * PI));
     float mask = (wave + 1.0) * 0.5;
     return lerp(color, gData.scanlineColor, mask * gData.scanlineIntensity);
 }

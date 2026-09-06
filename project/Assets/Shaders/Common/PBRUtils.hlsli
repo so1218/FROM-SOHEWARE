@@ -78,7 +78,7 @@ float3 CalculatePBR(
     float3 numerator = NDF * G * F;
     float NdotL = max(dot(N, L), 0.0f);
     float NdotV = max(dot(N, V), 0.0f);
-    float denominator = 4.0f * NdotV * NdotL + 0.0001f;
+    float denominator = max(4.0f * NdotV * NdotL, kEpsilon);
     float3 specular = numerator / denominator;
     
     // エネルギー保存則

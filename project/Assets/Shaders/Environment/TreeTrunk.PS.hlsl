@@ -47,13 +47,6 @@ struct TreeTrunkPSInput
     float lodFade : BLENDWEIGHT;
 };
 
-// TAAと相性の良い Interleaved Gradient Noise (IGN)
-float InterleavedGradientNoise(float2 pixelPos)
-{
-    float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(pixelPos, magic.xy)));
-}
-
 PixelShaderOutput main(TreeTrunkPSInput input)
 {
     PixelShaderOutput output;

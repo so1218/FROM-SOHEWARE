@@ -1,5 +1,6 @@
 #include "Common/ShaderConstants.hlsli"
 #include "Common/CameraUtils.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
 // TAAされて綺麗になった、蓄積済みの3Dフォグ
@@ -10,13 +11,6 @@ RWTexture2D<float4> gOutput : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
-
-// IGNノイズでZスライス境界のバンディングを無効化
-float InterleavedGradientNoise(float2 pixelCoord)
-{
-    static const float3 kIGNMagic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(kIGNMagic.z * frac(dot(pixelCoord, kIGNMagic.xy)));
-}
 
 [numthreads(8, 8, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
