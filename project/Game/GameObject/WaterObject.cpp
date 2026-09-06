@@ -84,6 +84,12 @@ void WaterObject::BindProperties()
     binder_->Bind("RippleScale", &materialData_.rippleScale, 5.0f, 0.1f, 0.1f, 50.0f);
     binder_->Bind("RippleSpeed", &materialData_.rippleSpeed, 2.0f, 0.1f, 0.0f, 10.0f);
     binder_->Bind("RippleStrength", &materialData_.rippleStrength, 0.2f, 0.01f, 0.0f, 1.0f);
+
+    binder_->Bind("InteractionHeightScale", &materialData_.interactionHeightScale, 1.0f, 0.05f, 0.0f, 5.0f);
+    binder_->Bind("InteractionSinkForce", &materialData_.interactionSinkForce, 0.4f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("InteractionBulgeForce", &materialData_.interactionBulgeForce, 0.15f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("InteractionNormalScale", &materialData_.interactionNormalScale, 1.5f, 0.05f, 0.0f, 10.0f);
+    binder_->Bind("InteractionFoamIntensity", &materialData_.interactionFoamIntensity, 1.2f, 0.05f, 0.0f, 5.0f);
 }
 
 void WaterObject::SetId(int newId)
@@ -206,6 +212,16 @@ void WaterObject::DebugDraw()
             binder_->Draw("RippleScale", "波紋密度");
             binder_->Draw("RippleSpeed", "波紋速度");
             binder_->Draw("RippleStrength", "波紋法線強度");
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("インタラクション"))
+        {
+            binder_->Draw("InteractionHeightScale", "高さ変形全体スケール");
+            binder_->Draw("InteractionSinkForce", "足元の沈み込み強度");
+            binder_->Draw("InteractionBulgeForce", "周囲波の盛り上がり強度");
+            binder_->Draw("InteractionNormalScale", "波紋法線歪み強度");
+            binder_->Draw("InteractionFoamIntensity", "移動痕跡の泡強度");
             ImGui::TreePop();
         }
 

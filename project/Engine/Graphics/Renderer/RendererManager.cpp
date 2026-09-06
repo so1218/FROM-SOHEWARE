@@ -303,7 +303,7 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		// 内部で TRIANGLESTRIP に変更して描画
-		grassRenderer_->Draw(env_, grassTextureHandle_, interactionData_.srvIndex, shadowMap_, grassMaterialData_, grassCullingData_,
+		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_, grassCullingData_,
 			interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
 		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
@@ -347,7 +347,7 @@ void RendererManager::Draw3D()
 
 		// ④ 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
 		waterRenderer_->PrepareBatches();
-		waterRenderer_->Draw(env_);
+		waterRenderer_->Draw(env_, interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
 		// ⑤ 深度バッファを次の描画のために WRITE モードへ復帰
 		renderCoordinator_->TransitionDepthToDepthWrite();

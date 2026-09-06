@@ -5,7 +5,12 @@
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<WaterMaterialData> gWaterMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
+ConstantBuffer<InteractionConstants> gInteractionData : register(b8);
+
 StructuredBuffer<Object3DInstanceData> gInstanceData : register(t10);
+Texture2D<float4> gInteractionMap : register(t11);
+
+SamplerState gClampSampler : register(s1);
 
 // 風と物理法則から多重 Gerstner 波をプロシージャル自動計算
 float3 CalculateAutoGerstnerWorld(float3 worldPos, float time, out float3 outNormal, out float3 outTangent)
@@ -93,9 +98,26 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     float3 waveNormal, waveTangent;
     float3 prevWaveNormal, prevWaveTangent;
 
-    // ワールド座標と風の物理法則から波の頂点変形を計算
+    // ゲストナー波の計算
     float3 waveOffset = CalculateAutoGerstnerWorld(baseWorldPos.xyz, time, waveNormal, waveTangent);
     float3 prevWaveOffset = CalculateAutoGerstnerWorld(prevBaseWorldPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
+
+    // ★ 1. プレイヤー水面干渉（スムーズな高さ変形）
+    float2 interactUV = (baseWorldPos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
+    if (all(interactUV >= 0.0f) && all(interactUV <= 1.0f))
+    {
+        float4 interactData = gInteractionMap.SampleLevel(gClampSampler, interactUV, 0);
+        
+        float sinkForce = interactData.b * gWaterMaterial.interactionSinkForce;
+        float waveBulge = interactData.a * gWaterMaterial.interactionBulgeForce;
+        
+        // 縁に向かって滑らかに減衰させるマスク
+        float edgeDist = length(interactUV - 0.5f) * 2.0f;
+        float edgeFade = smoothstep(1.0f, 0.7f, edgeDist);
+
+        float heightDelta = (waveBulge - sinkForce) * gWaterMaterial.interactionHeightScale * edgeFade;
+        waveOffset.y += heightDelta;
+    }
 
     float3 finalWorldPos = baseWorldPos.xyz + waveOffset;
     float3 prevFinalWorldPos = prevBaseWorldPos.xyz + prevWaveOffset;
@@ -103,7 +125,6 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     output.worldPosition = finalWorldPos;
     output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
-
     output.prevClipPos = mul(float4(prevFinalWorldPos, 1.0f), gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
     

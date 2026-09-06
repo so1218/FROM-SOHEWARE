@@ -191,57 +191,57 @@ void WaterRenderer::PrepareBatches()
     }
 }
 
-void WaterRenderer::Draw(const RenderEnvironment& env)
+void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
+    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
     if (batches_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    // 1. 水描画パス全体のスコープ
     PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Pass");
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // RootSignature のバインド
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Water"));
 
-    // フレーム共通バッファのセット (b0〜b3)
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1
-    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); // b2
-    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); // b3
+    // フレーム共通定数バッファ (b0〜b3)
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // [0] b0
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // [1] b1
+    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); // [2] b2
+    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); // [3] b3
 
-    // シーンテクスチャ・環境マップ (t0〜t2)
-    cmdList->SetGraphicsRootDescriptorTable(6, sceneColorSRV_); // t0
-    cmdList->SetGraphicsRootDescriptorTable(7, sceneDepthSRV_); // t1
+    // ★ インタラクション用データ (b8 / t11) のセット（全バッチ共通）
+    cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress); // [5] b8
+    cmdList->SetGraphicsRootDescriptorTable(13, interactionSrvHandle);  // [13] t11
+
+    // シーンテクスチャ (t0, t1)
+    cmdList->SetGraphicsRootDescriptorTable(7, sceneColorSRV_); // [7] t0
+    cmdList->SetGraphicsRootDescriptorTable(8, sceneDepthSRV_); // [8] t1
 
     // インスタンス構造化バッファ (t10)
-    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); // t10
+    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); // [12] t10
 
     uint32_t batchIndex = 0;
     for (const auto& batch : batches_)
     {
-        // 2. バッチ単位の個別イベント（Printf形式でインスタンス数やバッチ番号を表示）
         PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Batch %u (Instances: %u)", batchIndex++, batch.instanceCount);
 
         const auto& sub = *batch.baseSubmission;
         const auto& meshes = GetOrCreateBatch(*sub.modelData);
         const auto& mesh = meshes[sub.meshIndex];
 
-        // PSO
         cmdList->SetPipelineState(env.psoManager->GetPSO("Water"));
 
-        // バッチ個別パラメータ
-        cmdList->SetGraphicsRootConstantBufferView(4, sub.waterMaterialCBV); // b5
-        cmdList->SetGraphicsRoot32BitConstant(5, batch.startInstanceLocation, 0); // b7 (InstanceOffset)
+        // バッチ個別パラメータ (b5, b7, t2〜t4)
+        cmdList->SetGraphicsRootConstantBufferView(4, sub.waterMaterialCBV); // [4] b5
+        cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0); // [6] b7
 
-        cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle)); // t2
-        cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle)); // t3
-        cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle)); // t4
+        cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));    // [9] t2
+        cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));   // [10] t3
+        cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));// [11] t4
 
-        // 頂点/インデックスバッファセットして描画
         cmdList->IASetVertexBuffers(0, 1, &mesh.GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh.GetIndexBufferView());
         cmdList->DrawIndexedInstanced(uint32_t(mesh.GetIndexCount()), batch.instanceCount, 0, 0, 0);

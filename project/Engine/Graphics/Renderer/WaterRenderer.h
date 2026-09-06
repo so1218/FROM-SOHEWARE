@@ -35,7 +35,8 @@ public:
     void PrepareBatches();
 
     // 描画実行
-    void Draw(const RenderEnvironment& env);
+    void Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
+        D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
 
 private:
     struct ModelBatch

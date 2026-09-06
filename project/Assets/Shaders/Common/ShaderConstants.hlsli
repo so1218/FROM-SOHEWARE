@@ -301,6 +301,14 @@ struct WaterMaterialData
     float ssrMaxDistance; // SSR最大距離
     float causticsSpeed; // コースティクス揺らぎ速度
     float causticsDistortion; // コースティクス屈折歪み
+    
+    float interactionHeightScale; // 頂点変形全体のスケール
+    float interactionSinkForce; // 足元の沈み込み強度
+    float interactionBulgeForce; // 周囲波の盛り上がり強度
+    float interactionNormalScale; // 波紋法線歪み強度
+
+    float interactionFoamIntensity; // 移動痕跡の泡強度
+    float3 pad0; 
 };
 
 struct TrailMaterialData
