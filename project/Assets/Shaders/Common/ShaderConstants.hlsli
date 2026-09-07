@@ -246,57 +246,57 @@ struct AtmosphereSkyData
 
 struct WaterMaterialData
 {
-    float2 globalWindDirection; // 基本風向きベクトル
-    float waveLength; // 基本波長 (m)
-    float waveAmplitude; // 基本振幅 (m)
+    float2 globalWindDirection; 
+    float waveLength; 
+    float waveAmplitude; 
 
-    float waveSteepness; // 波の波頭形状 (0.0:滑らか 〜 1.0:鋭角)
-    float waveSpeed; // 波の進行速度
-    float waveAmplitudeFalloff; // 高次波の振幅減衰率
-    float waveLengthFalloff; // 高次波の波長縮小率
+    float waveSteepness; 
+    float waveSpeed;
+    float waveAmplitudeFalloff;
+    float waveLengthFalloff;
     
-    float waveDirectionSpread; // 重ね合わせ時の方向分散角 (rad)
-    float interactionHeightScale; // 干渉波の全体高度倍率
-    float interactionSinkForce; // キャラ足元の押し込み強度
-    float interactionBulgeForce; // キャラ周囲の隆起強度
+    float waveDirectionSpread; 
+    float interactionHeightScale; 
+    float interactionSinkForce; 
+    float interactionBulgeForce; 
 
-    float interactionNormalScale; // 干渉波紋による法線歪み強度
-    float interactionFoamIntensity; // 干渉移動痕跡の泡濃度
-    float2 normalTiling; // 水面法線マップのタイリング (xy)
+    float interactionNormalScale; 
+    float interactionFoamIntensity; 
+    float2 normalTiling; 
     
-    float4 shallowColor; // 浅瀬のベースカラー
-    float4 deepColor; // 深海のベースカラー
-    float4 scatterColor; // 水中散乱光カラー (Subsurface Scattering)
-    float4 foamColor; // 泡カラー (RGB + Alpha)
+    float4 shallowColor; 
+    float4 deepColor;
+    float4 scatterColor; 
+    float4 foamColor;
     
-    float absorption; // 水中光吸収率 (Beer-Lambert)
-    float refractionAmount; // 背景屈折歪み強度
-    float chromaticAberration; // 屈折時の色収差強度
-    float normalIntensity; // 法線凹凸強度
+    float absorption; 
+    float refractionAmount; 
+    float chromaticAberration; 
+    float normalIntensity; 
 
-    float roughness; // 水面ラフネス
-    float specularIntensity; // スペキュラハイライト強度
-    float envReflectionIntensity; // 環境マップ (CubeMap) 反射強度
-    float ssrIntensity; // SSR ブレンド強度
+    float roughness; 
+    float specularIntensity; 
+    float envReflectionIntensity;
+    float ssrIntensity; 
     
-    float ssrStepSize; // レイマーチング初期ステップサイズ
-    float ssrMaxDistance; // レイ追跡の最大距離
-    float ssrThickness; // オブジェクトのレイ判定用判定厚み
-    float waveFoamThreshold; // 波頭泡の発生閾値
+    float ssrStepSize; 
+    float ssrMaxDistance;
+    float ssrThickness; 
+    float waveFoamThreshold; 
     
-    float shoreFoamThreshold; // 岸辺泡の発生水深閾値
-    float foamScale; // 泡ノイズのタイリングスケール
-    float foamIntensity; // 泡全体の生成濃度
-    float causticsIntensity; // コースティクス投影強度
+    float shoreFoamThreshold; 
+    float foamScale; 
+    float foamIntensity; 
+    float causticsIntensity; 
 
-    float causticsScale; // コースティクスパターンサイズ
-    float causticsSpeed; // コースティクス揺らぎ速度
-    float causticsDistortion; // [追加] コースティクスの波紋歪み強度
-    float ssrDistortion; // [追加] SSR映り込みの法線歪み強度
+    float causticsScale; 
+    float causticsSpeed; 
+    float causticsDistortion; 
+    float ssrDistortion; 
 
-    float ssrMaxSteps; // [追加] SSRレイマーチング最大ステップ数 (例: 20〜100)
-    float ssrBinarySearchSteps; // [追加] SSR二分探索ステップ数 (例: 0〜8)
-    float2 pad0; // 16バイト境界整列用パディング
+    float ssrMaxSteps; 
+    float ssrBinarySearchSteps; 
+    float2 pad0; 
 };
 
 struct TrailMaterialData
@@ -569,7 +569,7 @@ struct InteractionConstants
 struct GrassInstanceData
 {
     float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
-    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー(uint), w: 予備
+    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー, w: 予備
 };
 
 struct GrassMaterialData
@@ -723,7 +723,7 @@ struct PebbleInstanceData
 {
     float4 posAndScale; 
     float4 rotationQuat; 
-    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0
+    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合
     float3 colorVariation; 
     float padding;
 };
@@ -810,6 +810,8 @@ struct FoliageMaterialData
     float flattenFactor; 
     
     float trailFlattenWeight;
+    float recoverySpeed; 
+    float springElasticity;
 };
 
 struct FoliageGenerationData

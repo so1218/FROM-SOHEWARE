@@ -35,10 +35,10 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     float3 waveOffset = CalculateGerstnerWaves(baseWorldPos.xyz, time, waveNormal, waveTangent);
     float3 prevWaveOffset = CalculateGerstnerWaves(prevBaseWorldPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
 
-    // プレイヤー水面干渉（インタラクション）
+    // インタラクション
     float2 interactUV = (baseWorldPos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
     
-    // 分岐をなくし、UV範囲外はstep関数でマスクをかけて0にする
+    // UV範囲外はstep関数でマスクをかけて0にする
     float boundsMask = step(0.0f, interactUV.x) * step(interactUV.x, 1.0f) * step(0.0f, interactUV.y) * step(interactUV.y, 1.0f);
     
     float4 interactData = gInteractionMap.SampleLevel(gClampSampler, interactUV, 0);
@@ -70,7 +70,7 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
 
 float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal, out float3 outTangent)
 {
-    // ループ回数（パフォーマンスに応じて調整、通常3〜4で十分）
+    // ループ回数
     static const int NUM_WAVES = 4;
     static const float GRAVITY = 9.81f;
 
@@ -94,7 +94,7 @@ float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal,
     [unroll]
     for (int i = 0; i < NUM_WAVES; ++i)
     {
-        // 波数(k) と 角周波数(w)
+        // 波数と角周波数
         float k = (2.0f * PI) / wavelength;
         float w = sqrt(GRAVITY * k) * gWaterMaterial.waveSpeed;
 
@@ -102,7 +102,7 @@ float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal,
         float sinP, cosP;
         sincos(phase, sinP, cosP);
 
-        // 波が交差してループ（自己交差）しないようにSteepnessを調整
+        // 波が交差してループしないようにSteepnessを調整
         float q = steepness / (k * amplitude * (float) NUM_WAVES);
 
         float wa = k * amplitude;

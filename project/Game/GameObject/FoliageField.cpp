@@ -133,6 +133,8 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "InteractStrength", &layer.material.interactStrength, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind(prefix + "FlattenFactor", &layer.material.flattenFactor, 0.5f, 0.01f, 0.0f, 2.0f);
     binder_->Bind(prefix + "TrailFlattenWeight", &layer.material.trailFlattenWeight, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind(prefix + "RecoverySpeed", &layer.material.recoverySpeed, 0.4f, 0.01f, 0.01f, 2.0f);
+    binder_->Bind(prefix + "SpringElasticity", &layer.material.springElasticity, 0.2f, 0.01f, 0.0f, 1.0f);
 
     layer.material.shadowNormalBias = 0.005f;
     layer.material.shadowBias = 0.001f;
@@ -290,14 +292,14 @@ void FoliageField::DebugDraw()
             ImGui::Text("テクスチャ・マテリアル");
             binder_->Draw(prefix + "Albedo", "アルベド");
             binder_->Draw(prefix + "Normal", "ノーマル");
-            binder_->Draw(prefix + "DensityMap", "密度マップ (Density)"); 
+            binder_->Draw(prefix + "DensityMap", "密度マップ"); 
 
             binder_->Draw(prefix + "BaseColor", "基本色");
 
             binder_->Draw(prefix + "Roughness", "粗さ");
-            binder_->Draw(prefix + "AlphaCutoff", "抜き透過 (Alpha Cutoff)");
+            binder_->Draw(prefix + "AlphaCutoff", "抜き透過 ");
 
-            binder_->Draw(prefix + "SSSStrength", "透過光 (SSS Strength)");
+            binder_->Draw(prefix + "SSSStrength", "透過光");
 
             ImGui::Text("風の揺れ・シャドウ");
             binder_->Draw(prefix + "WindResponse", "風の影響度");
@@ -312,6 +314,8 @@ void FoliageField::DebugDraw()
             binder_->Draw(prefix + "InteractStrength", "物理干渉強度 (しなり)");
             binder_->Draw(prefix + "FlattenFactor", "押しつぶされ率 (倒れ)");
             binder_->Draw(prefix + "TrailFlattenWeight", "軌跡/足跡の押しつぶし影響度");
+            binder_->Draw(prefix + "RecoverySpeed", "復元速度");
+            binder_->Draw(prefix + "SpringElasticity", "揺れ戻り");
         }
         ImGui::PopID();
     }

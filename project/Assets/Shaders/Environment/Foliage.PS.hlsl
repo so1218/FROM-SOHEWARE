@@ -27,8 +27,6 @@ struct FoliagePSInput
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    
-    // R: 風の揺れやすさ(0.0=根元, 1.0=先端) を頂点シェーダーから継承
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
     float2 velocity : TEXCOORD1;
@@ -41,28 +39,14 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     PixelShaderOutput output;
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
-    
-    // 早期ピクセル破棄による無駄なライティング計算の回避
     clip(albedoAlpha.a - 0.05f);
 
-    // インスタンス毎の微小な色相変化により、同一モデルの反復感を軽減
-    albedoAlpha.rgb *= gMaterial.baseColor * input.instanceTint;
-
-    // -------------------------------------------------------------------------
-    // 天候連携 (Wetness / Porosity)
-    // -------------------------------------------------------------------------
-    float rootMask = saturate(1.0f - input.color.r);
-    rootMask = pow(rootMask, 2.0f);
-
-    // 多孔質マテリアルの性質を近似: 濡れると光が内部で散乱し吸収されるためアルベドが暗くなる
-    albedoAlpha.rgb = lerp(albedoAlpha.rgb, albedoAlpha.rgb * 0.45f, gEnvironmentData.wetness);
+    float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
     
-    // 根元付近は泥や水溜まりの影響を受けやすいため、Wetnessに応じてラフネスを下げる
-    float currentRoughness = lerp(gMaterial.roughness, 0.1f, gEnvironmentData.wetness * (1.0f - rootMask));
+    // 植物はツルツルになりすぎないよう、粗さの最低値を0.3程度に制限する（青光り防止）
+    float currentRoughness = clamp(gMaterial.roughness, 0.3f, 1.0f);
+    currentRoughness = lerp(currentRoughness, 0.3f, gEnvironmentData.wetness * 0.5f);
 
-    // -------------------------------------------------------------------------
-    // 法線計算 & 地形との馴染み (Ground Integration)
-    // -------------------------------------------------------------------------
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);
     float3 T = normalize(input.tangent * faceSign);
@@ -72,33 +56,26 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 worldNormal = normalize(mul(tangentNormal, TBN));
 
-    // 根元付近の法線を上方向(Y-Up)へブレンドすることで、地形のライティングとシームレスに繋ぐ
-    worldNormal = normalize(lerp(worldNormal, float3(0.0f, 1.0f, 0.0f), rootMask * 0.5f));
-
-    // -------------------------------------------------------------------------
-    // ライティング
-    // -------------------------------------------------------------------------
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
-    float3 toEye = cameraDiff / max(viewDepth, kEpsilon); // kEpsilon を使用
+    float3 toEye = cameraDiff / max(viewDepth, kEpsilon);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
+    // 影の計算
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, worldNormal, viewDepth);
-    float3 attenuatedLight = (gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity) * shadowFactor;
+    float3 attenuatedLight = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * shadowFactor;
 
-    // Wrap Diffuse: 葉の厚みが薄いことを表現するため、光の回り込みを許可する
+    // Wrap Diffuse (葉の光の回り込み)
     float wrap = 0.3f;
     float NdotL = saturate((dot(worldNormal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
-    float3 diffuse = albedoAlpha.rgb * attenuatedLight * NdotL;
+    float3 diffuse = albedo * attenuatedLight * NdotL;
 
-    // Transmission (Subsurface Scatteringの近似)
+    // 透過光 (サブサーフェススキャタリング近似)
     float backLight = saturate(dot(-worldNormal, lightDir));
     float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
-    float3 transmission = (albedoAlpha.rgb * 1.5f) * attenuatedLight * sssIntensity;
+    float3 transmission = (albedo * 1.5f) * attenuatedLight * sssIntensity;
 
-    // -------------------------------------------------------------------------
-    // スペキュラ & 風の視覚的フィードバック
-    // -------------------------------------------------------------------------
+    // スペキュラ (GGX近似)
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(worldNormal, halfVector));
     float NdotV = saturate(dot(worldNormal, toEye));
@@ -106,39 +83,23 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float alpha = currentRoughness * currentRoughness;
     float alpha2 = alpha * alpha;
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
-    
     float D = alpha2 / (PI * denom * denom + kEpsilon);
 
-    float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
-    float3 F = F0 + (1.0f.xxx - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
+    float3 F0 = float3(0.04f, 0.04f, 0.04f); // 葉の非金属反射率
+    float3 F = F0 + (1.0f - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
+    float3 directSpecular = (D * F) * attenuatedLight * NdotL;
 
-    // 突風(GustMask)が強いとき、葉が裏返ったり角度が変わる現象をハイライトの強調として近似
-    float gustMask = input.color.r;
-    float3 directSpecular = (D * F) * attenuatedLight * NdotL * (1.0f + gustMask * 1.5f);
-
-    // -------------------------------------------------------------------------
-    // IBL & アンビエント
-    // -------------------------------------------------------------------------
-    float3 reflectDir = reflect(-toEye, worldNormal);
-    float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
-    float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
-    envSkyColor *= (1.0f - currentRoughness * 0.5f);
-
-    float3 F_env = F0 + (max(1.0f.xxx - currentRoughness, F0) - F0) * Pow5(1.0f - NdotV);
-    float3 ambientSpecular = envSkyColor * F_env;
-
+    // 環境光 (アンビエント)
+    // ※空の色(青)が強すぎると不自然になるため、彩度を落とすか強度を下げる
     float skyLight = saturate(worldNormal.y * 0.5f + 0.5f);
-    float3 ambientDiffuse = albedoAlpha.rgb * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight);
+    float3 ambientDiffuse = albedo * gEnvironmentData.skyColor.rgb * skyLight * 0.8f; // 強度を微調整
 
-    // 根元に簡易的な疑似AOを適用
-    float ao = lerp(0.2f, 1.0f, input.color.r);
+    float3 F_env = F0 + (max(1.0f - currentRoughness, F0) - F0) * Pow5(1.0f - NdotV);
+    // 植物用の環境反射は控えめにする（プラスチックのような反射を防ぐ）
+    float3 ambientSpecular = gEnvironmentData.skyColor.rgb * F_env * skyLight * 0.1f;
 
-    // -------------------------------------------------------------------------
-    // 最終出力
-    // -------------------------------------------------------------------------
-    float3 finalColor = diffuse + transmission + directSpecular + (ambientDiffuse + ambientSpecular) * ao;
+    float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
 
-    // Alpha-to-Coverage を意識したアンチエイリアス処理
     float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));
@@ -149,13 +110,8 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     return output;
 }
 
-// -----------------------------------------------------------------------------
-// Foliage向け 高速カスケードシャドウマッピング
-// -----------------------------------------------------------------------------
-
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
-    // 最遠カスケードを超えている場合は早期リターン
     if (viewDepth > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
         return 1.0f;
     
@@ -163,11 +119,10 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光の裏側はサンプリングをスキップ
-    if (NdotL <= 0.0f)
+    // Wrap Diffuse の係数 (-0.3) と一致させることで、光の回り込み部分が影で潰れないようにする
+    if (NdotL <= -0.3f)
         return minShadow;
 
-    // カスケードインデックスの決定
     uint cascadeIndex = 0;
     [unroll]
     for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
@@ -178,11 +133,9 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
         }
     }
     
-    // シャドウアクネ対策
     float biasScale = saturate(1.0f - NdotL);
     float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
-    // 行列変換とプロジェクション座標計算
     float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
@@ -191,13 +144,11 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    // フラスタム外チェック
     if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
     }
 
-    // PCF サンプリング
     float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
         float3(projCoords.xy, cascadeIndex),

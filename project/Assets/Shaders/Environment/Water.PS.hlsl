@@ -221,26 +221,21 @@ float3 CalculateCaustics(float3 bottomWorldPos, float3 worldNormal, float3 light
     
     // 基本の投影UV座標 (XZ平面)
     float2 baseXZ = bottomWorldPos.xz * scale;
-
-    // ==========================================================
-    // [改善点] 水面法線による歪み (Normal Distortion)
-    // 水面と波紋の形状にコースティクスを連動させる
-    // 水深が深いほど光の屈折距離が伸びるため、歪み幅を少し広げる
-    // ==========================================================
+    
+    // 水面法線による歪み 
     float distortionIntensity = (0.1f + saturate(waterDepth * 0.05f)) * gWaterMaterial.causticsDistortion;
     float2 normalDistortion = worldNormal.xz * distortionIntensity;
 
-    // 従来の微細なノイズ揺らぎ（波とは別の水中のゆらぎとして弱めに残す）
+    // 従来の微細なノイズ揺らぎ
     float2 warpUV1 = baseXZ * 0.5f + float2(speed * 0.03f, speed * 0.02f);
     float2 warpUV2 = baseXZ * 0.8f + float2(-speed * 0.02f, speed * 0.04f);
     float2 warp1 = gCausticsNoiseTexture.Sample(gSampler, warpUV1).rg * 2.0f - 1.0f;
     float2 warp2 = gCausticsNoiseTexture.Sample(gSampler, warpUV2).rg * 2.0f - 1.0f;
-    float2 totalWarp = (warp1 + warp2 * 0.5f) * 0.05f; // 強度を下げる
+    float2 totalWarp = (warp1 + warp2 * 0.5f) * 0.05f; 
 
-    // 法線の歪み(メイン) + ノイズの歪み(サブ) を合成
+    // 法線の歪み + ノイズの歪みを合成
     float2 uv = baseXZ + normalDistortion + totalWarp + float2(speed * 0.05f, speed * 0.03f);
     
-    // 色収差のズレ幅も水深や法線に依存させるとより綺麗になります
     float dispersion = 0.015f + length(worldNormal.xz) * 0.02f;
     
     float r = CalculateVoronoiEdge(uv + normalDistortion * dispersion);
@@ -256,7 +251,7 @@ float3 CalculateCaustics(float3 bottomWorldPos, float3 worldNormal, float3 light
     float lightFactor = saturate(dot(float3(0, 1, 0), lightDir));
     float3 sunColor = gDirectionalLights[0].color.rgb;
     
-    // 水深による減衰 (深いところはコースティクスが暗くなる/消える)
+    // 水深による減衰 (深いところはコースティクスが暗くなる)
     float depthFade = exp(-waterDepth * 0.1f); // 水深減衰
 
     return finalCausticsColor * sunColor * gWaterMaterial.causticsIntensity * lightFactor * depthFade * 5.0f;
@@ -285,7 +280,7 @@ WaterPSOutput main(PixelShaderInput input)
     windDir = (windLen > kEpsilon) ? (windDir / windLen) : float2(1.0f, 0.0f);
 
     // ---------------------------------------------------------
-    // 法線合成 (タイリング別ブレンド)
+    // 法線合成
     // ---------------------------------------------------------
     float2 uv1 = input.worldPosition.xz * gWaterMaterial.normalTiling.x - windDir * (time * 0.08f);
     float2 windDir2 = float2(windDir.x * 0.866f - windDir.y * 0.5f, windDir.x * 0.5f + windDir.y * 0.866f);
@@ -368,7 +363,7 @@ WaterPSOutput main(PixelShaderInput input)
     float3 refractedLight = illuminatedTerrain * waterBodyColor + inScattering;
 
     // ---------------------------------------------------------
-    // 反射 (SSR & CubeMap)
+    // 反射
     // ---------------------------------------------------------
     float NdotV = saturate(dot(worldNormal, V));
     float fresnel = 0.04f + (1.0f - 0.04f) * pow(1.0f - NdotV, 5.0f);
@@ -392,7 +387,7 @@ WaterPSOutput main(PixelShaderInput input)
     float3 finalColor = lerp(refractedLight, finalReflection, fresnel * edgeFade);
 
     // ---------------------------------------------------------
-    // 泡描画 (岸辺 / 波頭 / インタラクション)
+    // 泡描画
     // ---------------------------------------------------------
     float shoreMask = 1.0f - saturate(waterDepth / max(gWaterMaterial.shoreFoamThreshold, kEpsilon));
     float waveSlope = 1.0f - finalTangentNormal.z;
@@ -417,7 +412,7 @@ WaterPSOutput main(PixelShaderInput input)
     }
 
     // ---------------------------------------------------------
-    // スペキュラハイライト & 最終出力
+    // 最終出力
     // ---------------------------------------------------------
     float3 H = normalize(lightDir + V);
     float spec = pow(saturate(dot(worldNormal, H)), 256.0f / max(gWaterMaterial.roughness, kEpsilon));
