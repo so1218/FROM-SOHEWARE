@@ -9,7 +9,7 @@ namespace FE
 
 WorldInteractionPass::~WorldInteractionPass()
 {
-    auto* srvManager = engine_->GetSRVManager();
+    auto* srvManager = engine_ ? engine_->GetSRVManager() : nullptr;
     if (!srvManager) return;
 
     for (int i = 0; i < 2; ++i)
