@@ -217,25 +217,30 @@ void RendererManager::DrawFinalResult(uint32_t srvIndex)
 	DrawPostEffectsProcess(srvIndex);
 }
 
-void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
+void RendererManager::PrepareShadowBatches()
 {
 	if (modelRenderer_)
 	{
 		modelRenderer_->PrepareBatches();
 	}
-
 	if (treeRenderer_)
-	{
+	{ 
 		treeRenderer_->PrepareBatches();
+	}
+	if (terrainRenderer_) 
+	{ 
+		terrainRenderer_->PrepareBatches();
 	}
 
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+}
 
+void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
+{
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->PrepareBatches();
 		terrainRenderer_->DrawShadow(env_, cascadeIndex);
 	}
 
@@ -244,7 +249,10 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 		treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
 	}
 
-	modelRenderer_->DrawShadow(env_, cascadeIndex);
+	if (modelRenderer_)
+	{
+		modelRenderer_->DrawShadow(env_, cascadeIndex);
+	}
 }
 
 void RendererManager::Draw3D()

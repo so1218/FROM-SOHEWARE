@@ -126,22 +126,34 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
+    // 最遠カスケードを超えている場合は早期リターン
+    if (viewDepth > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
+        return 1.0f;
+    
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // セルフシャドウはシャドウマップのサンプリング自体をスキップし帯域を節約
+    // 光の裏側はサンプリングをスキップ
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // カスケードインデックスを並列解決
-    float4 cascadeSplits = gShadowData.cascadeSplits;
-    uint cascadeIndex = (uint) dot(step(cascadeSplits.xyz, viewDepth.xxx), float3(1.0f, 1.0f, 1.0f));
-
+    // カスケードインデックスの決定
+    uint cascadeIndex = 0;
+    [unroll]
+    for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
+    {
+        if (viewDepth > gShadowData.cascadeSplits[i])
+        {
+            cascadeIndex = i + 1;
+        }
+    }
+    
     // シャドウアクネ対策
     float biasScale = saturate(1.0f - NdotL);
     float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
+    // 行列変換とプロジェクション座標計算
     float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
@@ -150,12 +162,13 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    // フラストム外は遮蔽なしとして扱う
+    // フラスタム外チェック
     if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
     }
 
+    // PCF サンプリング
     float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
         float3(projCoords.xy, cascadeIndex),

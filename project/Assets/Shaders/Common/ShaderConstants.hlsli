@@ -43,7 +43,7 @@
 #define MAX_AREA_LIGHTS 2
 
 // シャドウマップ
-#define MAX_CASCADE_COUNT 4
+#define MAX_CASCADE_COUNT 3
 #define SHADOW_MAP_RESOLUTION 2048.0f
 
 // Light types
@@ -737,10 +737,10 @@ struct TrunkMaterialData
 
 struct PebbleInstanceData
 {
-    float4 posAndScale; // xyz: ワールド座標, w: スケール
-    float4 rotationQuat; // x, y, z, w: 姿勢(クォータニオン)
+    float4 posAndScale; 
+    float4 rotationQuat; 
     float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0
-    float3 colorVariation; // RGB 色ムラ
+    float3 colorVariation; 
     float padding;
 };
 

@@ -97,7 +97,7 @@
             "BaseWaveLength": 18.0,
             "CausticsDistortion": 2.0,
             "CausticsFadeDepth": 7.099999904632568,
-            "CausticsIntensity": 0.15000000596046448,
+            "CausticsIntensity": 0.5,
             "CausticsScale": 2.25,
             "CausticsSpeed": 3.0,
             "ChromaticAberration": 1.100000023841858,
