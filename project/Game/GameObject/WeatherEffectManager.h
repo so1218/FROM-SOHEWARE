@@ -33,7 +33,6 @@ private:
     FE::ParticleEmitter* thunderRainParticleEmitterPtr_;
     std::unique_ptr<FE::ParticleEmitter> snowParticleEmitter_ = nullptr;
     FE::ParticleEmitter* snowParticleEmitterPtr_;
-    
 
     // 雷雨用の制御タイマー
     float thunderIntervalTimer_ = 0.0f; 

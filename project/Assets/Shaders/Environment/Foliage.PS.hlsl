@@ -43,10 +43,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
     
-    // wetnessによる粗さの低下を削除（または影響度を微小化）して明るさを維持
     float currentRoughness = clamp(gMaterial.roughness, 0.3f, 1.0f);
-    // 濡れツヤだけ少し出したい場合は影響度を 0.5f から 0.05f〜0.1f 程度に抑える
-    // currentRoughness = lerp(currentRoughness, 0.3f, gEnvironmentData.wetness * 0.1f);
 
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);

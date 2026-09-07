@@ -4,21 +4,18 @@
 using namespace FE;
 
 WaterObject::WaterObject(Engine* engine, int id, const std::string& parentGroupName)
-    : engine_(engine), id_(id), parentGroupName_(parentGroupName)
+    : engine_(engine), parentGroupName_(parentGroupName), id_(id)
 {
-    // 水面用のメッシュモデルを生成
     model_ = std::make_unique<Model>(engine_, "water");
 }
 
 void WaterObject::Initialize()
 {
-    // 個別の定数バッファを作成
     materialCBResource_ = BufferManager::CreateMappedConstantBuffer<WaterMaterialData>(
         engine_->GetGraphicsDevice()->GetDevice(),
         &mappedMaterialData_
     );
 
-    // プロパティのバインドを実行 
     BindProperties();
 }
 
@@ -84,14 +81,13 @@ void WaterObject::BindProperties()
 void WaterObject::SetId(int newId)
 {
     id_ = newId;
-    BindProperties(); // 新しい ID (Water_X) でバインダーを再作成
+    BindProperties();
 }
 
 void WaterObject::Update()
 {
     model_->GetTransform().UpdateMatrix();
 
-    // UIや自動計算で変更されたマテリアル値をGPU側の定数バッファへ同期
     if (mappedMaterialData_)
     {
         *mappedMaterialData_ = materialData_;
@@ -102,7 +98,6 @@ void WaterObject::Draw()
 {
     if (!model_ || !model_->GetModelData()) return;
 
-    // レンダーマネージャーへ水オブジェクトを描画登録
     engine_->GetRendererManager()->SubmitWater(
         model_->GetTransform(),
         *model_->GetModelData(),

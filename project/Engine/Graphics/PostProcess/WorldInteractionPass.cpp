@@ -31,19 +31,18 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     auto* srvManager = engine_->GetSRVManager();
 
-    // 1. 定数バッファ生成
+    // 定数バッファ生成と初期値設定
     constantBuffer_ = BufferManager::CreateMappedConstantBuffer<InteractionConstants>(device, &cbData_);
 
-    // デフォルトパラメータ
     constantData_.worldSize = 200.0f;
-    constantData_.trailDuration = 3.0f;         // ★ 3.0f = ちょうど3秒間で消滅
-    constantData_.terrainHeightScale = 100.0f; // ハイトマップ高度設定
+    constantData_.trailDuration = 3.0f;
+    constantData_.terrainHeightScale = 100.0f;
     constantData_.terrainCenter = { -500.0f, -500.0f };
     constantData_.terrainSize = { 1000.0f, 1000.0f };
 
-    // 2. StructuredBuffer (InteractionEntity) の生成
-    uint32_t elementSize = sizeof(InteractionEntity);
-    uint32_t bufferSize = elementSize * kMaxEntities;
+    // エンティティ用 StructuredBuffer の初期化
+    const uint32_t elementSize = sizeof(InteractionEntity);
+    const uint32_t bufferSize = elementSize * kMaxEntities;
 
     CD3DX12_HEAP_PROPERTIES uploadHeapProps(D3D12_HEAP_TYPE_UPLOAD);
     CD3DX12_RESOURCE_DESC bufferDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize);
@@ -59,8 +58,7 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
 
     entityBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedEntityBuffer_));
 
-    // StructuredBuffer用 SRV の作成
-    D3D12_SHADER_RESOURCE_VIEW_DESC entitySrvDesc = {};
+    D3D12_SHADER_RESOURCE_VIEW_DESC entitySrvDesc{};
     entitySrvDesc.Format = DXGI_FORMAT_UNKNOWN;
     entitySrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
     entitySrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -70,23 +68,21 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
     entitySrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
     entitySrvIndex_ = srvManager->Allocate();
-    // 1. CopyDescriptorsSimple のソース用 (CPU専用ヒープ)
     device->CreateShaderResourceView(entityBuffer_.Get(), &entitySrvDesc, srvManager->GetSRVHandleCPU_ForCopying(entitySrvIndex_));
-    // 2. メインヒープ用 (GPU可視ヒープ / ImGui・他パス参照用)
     device->CreateShaderResourceView(entityBuffer_.Get(), &entitySrvDesc, srvManager->GetSRVHandleCPU(entitySrvIndex_));
 
-    // 3. パス専用ディスクリプタヒープ構築
+    // パス専用ディスクリプタヒープの構築
     for (int i = 0; i < 2; ++i)
     {
-        D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+        D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
         heapDesc.NumDescriptors = 64;
         heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&passHeap_[i]));
     }
 
-    // 4. Ping-Pong 2D テクスチャ作成用ヘルパー
-    auto CreateInteractionTexture = [&](Microsoft::WRL::ComPtr<ID3D12Resource>& res, LPCWSTR name, uint32_t& uavIdx, uint32_t& srvIdx)
+    // ピンポンバッファ用テクスチャ作成ヘルパー
+    auto CreateInteractionTexture = [&](Microsoft::WRL::ComPtr<ID3D12Resource>& res, const wchar_t* name, uint32_t& uavIdx, uint32_t& srvIdx)
         {
             CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(
                 DXGI_FORMAT_R16G16B16A16_FLOAT, width_, height_, 1, 1, 1, 0,
@@ -101,8 +97,8 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
             );
             res->SetName(name);
 
-            // UAV
-            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            // UAV 生成 (コピー用 / シェーダー参照用)
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
             uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
             uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
@@ -110,17 +106,15 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
             device->CreateUnorderedAccessView(res.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU_ForCopying(uavIdx));
             device->CreateUnorderedAccessView(res.Get(), nullptr, &uavDesc, srvManager->GetSRVHandleCPU(uavIdx));
 
-            // SRV
-            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+            // SRV 生成 (コピー用 / シェーダー参照用)
+            D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
             srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
             srvDesc.Texture2D.MipLevels = 1;
 
             srvIdx = srvManager->Allocate();
-            // 1. CopyDescriptorsSimple のソース用
             device->CreateShaderResourceView(res.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(srvIdx));
-            // 2. メインヒープ用
             device->CreateShaderResourceView(res.Get(), &srvDesc, srvManager->GetSRVHandleCPU(srvIdx));
         };
 
@@ -133,7 +127,7 @@ void WorldInteractionPass::Initialize(Engine* engine, PSOManager* psoManager, ui
 
 void WorldInteractionPass::UpdateEntities(const std::vector<InteractionEntity>& entities)
 {
-    uint32_t count = static_cast<uint32_t>(std::min(entities.size(), static_cast<size_t>(kMaxEntities)));
+    const uint32_t count = static_cast<uint32_t>(std::min(entities.size(), static_cast<size_t>(kMaxEntities)));
     if (count > 0 && mappedEntityBuffer_)
     {
         std::memcpy(mappedEntityBuffer_, entities.data(), sizeof(InteractionEntity) * count);
@@ -143,12 +137,12 @@ void WorldInteractionPass::UpdateEntities(const std::vector<InteractionEntity>& 
 
 void WorldInteractionPass::SetConstants(const InteractionConstants& constants)
 {
-    auto currentCenter = constantData_.centerWorldPos;
-    auto prevCenter = constantData_.prevCenterWorldPos;
+    const auto currentCenter = constantData_.centerWorldPos;
+    const auto prevCenter = constantData_.prevCenterWorldPos;
 
     constantData_ = constants;
 
-    // パス内部で管理する座標履歴を復元
+    // パス管理下の座標履歴は維持
     constantData_.centerWorldPos = currentCenter;
     constantData_.prevCenterWorldPos = prevCenter;
 }
@@ -161,36 +155,40 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
         isFirstFrame_ = false;
     }
 
+    // ダブルバッファリング用インデックスの更新
+    const uint32_t heapIndex = frameCounter_ % 2;
+    readIndex_ = heapIndex;
+    writeIndex_ = (frameCounter_ + 1) % 2;
+
     PIXScopedEvent(cmdList, FE::PIXColors::Compute, "World Interaction Pass (%ux%u, Read:%u Write:%u)",
         width_, height_, readIndex_, writeIndex_);
 
-    ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
-    uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    readIndex_ = frameCounter_ % 2;
-    writeIndex_ = (frameCounter_ + 1) % 2;
-
-    // カメラ位置追従用ワープパラメータ設定
+    // 定数バッファの更新（カメラ移動履歴の同期）
     constantData_.centerWorldPos = centerWorldPos;
     constantData_.prevCenterWorldPos = prevCenterWorldPos_;
-    *cbData_ = constantData_;// マップドCBVへ転送
+    *cbData_ = constantData_;
 
-    // ヒープ設定
-    uint32_t heapIndex = frameCounter_ % 2;
+    ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
+    const uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    // パス専用ディスクリプタヒープの設定
     ID3D12DescriptorHeap* heaps[] = { passHeap_[heapIndex].Get() };
     cmdList->SetDescriptorHeaps(1, heaps);
 
     D3D12_CPU_DESCRIPTOR_HANDLE currentCPU = passHeap_[heapIndex]->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE currentGPU = passHeap_[heapIndex]->GetGPUDescriptorHandleForHeapStart();
 
-    // 1. ルートシグネチャ & 常時定数バッファのバインド
+    // コンピュートパイプラインとルートシグネチャの設定
     cmdList->SetComputeRootSignature(engine_->GetRootSignatureManager()->GetRootSignature("WorldInteractionCS"));
-    cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress()); // b0
-    cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());                              // b1
+    cmdList->SetPipelineState(psoManager_->GetPSO("WorldInteractionCS"));
 
-    // 2. Descriptor Table (t0: Entities, t1: HeightMap, t2: PrevInteraction)
-    D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart = currentGPU;
-    uint32_t srvIndices[3] = { entitySrvIndex_, terrainHeightMapSrvIndex, interactionSrvIndices_[readIndex_] };
+    // CBV のバインド
+    cmdList->SetComputeRootConstantBufferView(0, engine_->GetGlobalConstants()->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetComputeRootConstantBufferView(1, constantBuffer_->GetGPUVirtualAddress());
+
+    // SRV テーブルの構築 
+    const D3D12_GPU_DESCRIPTOR_HANDLE srvTableStart = currentGPU;
+    const uint32_t srvIndices[3] = { entitySrvIndex_, terrainHeightMapSrvIndex, interactionSrvIndices_[readIndex_] };
 
     for (int i = 0; i < 3; ++i)
     {
@@ -198,42 +196,39 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
         currentCPU.ptr += handleSize;
         currentGPU.ptr += handleSize;
     }
-    cmdList->SetComputeRootDescriptorTable(2, srvTableStart); // RootParam 2
+    cmdList->SetComputeRootDescriptorTable(2, srvTableStart);
 
-    // 3. Descriptor Table (u0: OutputInteractionMap)
-    D3D12_GPU_DESCRIPTOR_HANDLE uavTableStart = currentGPU;
+    // UAV テーブルの構築 
+    const D3D12_GPU_DESCRIPTOR_HANDLE uavTableStart = currentGPU;
     device->CopyDescriptorsSimple(1, currentCPU, engine_->GetSRVManager()->GetSRVHandleCPU_ForCopying(interactionUavIndices_[writeIndex_]), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     currentCPU.ptr += handleSize;
     currentGPU.ptr += handleSize;
 
-    cmdList->SetComputeRootDescriptorTable(3, uavTableStart); // RootParam 3
+    cmdList->SetComputeRootDescriptorTable(3, uavTableStart);
 
-    // 4. 書き込み先リソースを UNORDERED_ACCESS に遷移
-    CD3DX12_RESOURCE_BARRIER preBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    // 書き込み対象リソースの状態遷移 (SRV -> UAV)
+    const CD3DX12_RESOURCE_BARRIER preBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         interactionRes_[writeIndex_].Get(),
         D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE,
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS
     );
     cmdList->ResourceBarrier(1, &preBarrier);
 
-    // 5. ディスパッチ実行
-    cmdList->SetPipelineState(psoManager_->GetPSO("WorldInteractionCS"));
-    uint32_t dispatchX = (width_ + 7) / 8;
-    uint32_t dispatchY = (height_ + 7) / 8;
+    // コンピュートシェーダーの実行 (8x8 スレッドグループ)
+    const uint32_t dispatchX = (width_ + 7) / 8;
+    const uint32_t dispatchY = (height_ + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
 
-    // 6. 次の描画パス（Grass/Snow等）で読み込めるよう SRV に遷移
-    CD3DX12_RESOURCE_BARRIER postBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+    // 後続の描画パス参照用状態遷移 (UAV -> SRV)
+    const CD3DX12_RESOURCE_BARRIER postBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
         interactionRes_[writeIndex_].Get(),
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
         D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE
     );
     cmdList->ResourceBarrier(1, &postBarrier);
 
-    // 書き込みが完了した最新テクスチャの SRV インデックスを記録
+    // 参照インデックスおよび位置履歴の更新
     latestSrvIndex_ = interactionSrvIndices_[writeIndex_];
-
-    // フレーム終了処理
     prevCenterWorldPos_ = centerWorldPos;
     frameCounter_++;
 }
