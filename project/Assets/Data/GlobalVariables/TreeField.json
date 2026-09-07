@@ -24,6 +24,8 @@
         ],
         "LeafFlutter": 0.7400000095367432,
         "LeafFlutterFreq": 0.1599999964237213,
+        "LeafNearFadeMaxDist": 20.0,
+        "LeafNearFadeMinDist": 10.0,
         "LeafNormal": "leaf1_normal",
         "LeafRoughness": "leaf1_metallicRoughness",
         "LeafShadowBias": 0.004999999888241291,
@@ -33,6 +35,8 @@
         "MaxDrawDistance": 500.0,
         "MaxScale": 38.400001525878906,
         "MinScale": 19.799999237060547,
+        "NearFadeMaxDist": 20.0,
+        "NearFadeMinDist": 11.0,
         "Position": [
             0.0,
             0.0,

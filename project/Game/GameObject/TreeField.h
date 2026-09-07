@@ -87,6 +87,8 @@ private:
     FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f };
     float leafAlbedoMultiplier_ = 1.0f;
     float leafFlutterFrequency_ = 1.0f;
+    float nearFadeMinDist_ = 1.0f; 
+    float nearFadeMaxDist_ = 3.0f;
 
     // ==========================================
     // 幹パラメータ

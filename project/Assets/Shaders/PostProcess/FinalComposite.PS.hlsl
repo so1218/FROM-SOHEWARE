@@ -43,78 +43,52 @@ float3 ACESFilm(float3 x)
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    // 各入力テクスチャをサンプリング
-    float4 sceneColor = gSceneTexture.Sample(gSampler, input.uv);
-    float4 dofColor = gDoFTexture.Sample(gSampler, input.uv);
-    float depthVal = gDepthTexture.Sample(gSampler, input.uv);
-    float4 vFogData = gVolumetricFogTexture.Sample(gSampler, input.uv);
-    
-    float3 vFogIllumination = vFogData.rgb; // 霧によって散乱して届く光
-    float vFogTransmittance = vFogData.a; // 霧を通り抜けてくる背景の透過率
+    float3 sceneColor = gSceneTexture.Sample(gSampler, input.uv).rgb;
+    float3 combinedScene = sceneColor;
 
-    // 深度をリニア化
-    float linearDepth = LinearizeDepth(depthVal);
-    
-    // UVをクリップ空間に変換
-    float clipX = input.uv.x * 2.0f - 1.0f;
-    float clipY = (1.0f - input.uv.y) * 2.0f - 1.0f;
-
-    // クリップ空間の座標を作成（ZにDepth）
-    float4 clipPos = float4(clipX, clipY, depthVal, 1.0f);
-
-    // 逆行列を掛けてワールド空間へ
-    float4 worldPos = mul(clipPos, gFrameData.invViewProj);
-    worldPos /= worldPos.w; // W除算
-
-    // DoF未適用時はシーンカラー
-    float3 combinedScene = sceneColor.rgb;
-
-    // 被写界深度の適用
+    // DoF の合成
     if (gCompositeSettings.enableDoF != 0)
     {
-        // ピントが合っている場所はSceneColor
-        combinedScene = lerp(sceneColor.rgb, dofColor.rgb, dofColor.a);
+        float4 dofColor = gDoFTexture.Sample(gSampler, input.uv);
+        combinedScene = lerp(combinedScene, dofColor.rgb, dofColor.a);
     }
-    
-    // SSAOの適用
+
+    // SSAO の適用
     if (gCompositeSettings.enableSSAO != 0)
     {
         float ssao = gSSAOTexture.Sample(gSampler, input.uv).r;
-        
-        // ベースのシーンカラーに対してのみ影を落とす
         combinedScene *= ssao;
     }
-    
-    // SSRの適用
+
+    // SSR の加算
     if (gCompositeSettings.enableSSR != 0)
     {
         float4 ssrColor = gSSRTexture.Sample(gSampler, input.uv);
-        
-        // シーンカラーに加算
         combinedScene += ssrColor.rgb * ssrColor.a * gCompositeSettings.ssrIntensity;
     }
 
-   // Bloomの加算
+    // ブルーム成分の加算
     float3 bloomColor = gBloomTexture.Sample(gSampler, input.uv).rgb;
-    
-    // シーンの色を確定
     float3 result = combinedScene + (bloomColor * gCompositeSettings.bloomIntensity);
 
-    // Volumetric Fog の適用 (物理合成)
+    // ボリュメトリックフォグの合成
     if (gCompositeSettings.enableVolumetricFog != 0)
     {
-        // 背景（result）を透過率で暗くし、霧の光を加算する
+        float4 vFogData = gVolumetricFogTexture.Sample(gSampler, input.uv);
+        float3 vFogIllumination = vFogData.rgb;
+        float vFogTransmittance = vFogData.a;
+
         result = result * vFogTransmittance + vFogIllumination;
     }
-    
-    // NaN対策
+
+    // NaN のフォールバック処理
     if (any(isnan(result)))
     {
-        result = float3(0.0, 0.0, 0.0);
+        result = float3(0.0f, 0.0f, 0.0f);
     }
 
-   // 最終出力処理 (トーンマップ等)
-    result = ACESFilm(clamp(result, 0.0, 65504.0));
+    // トーンマッピング適用
+    result = ACESFilm(clamp(result, 0.0f, 65504.0f));
 
     return float4(result, 1.0f);
 }

@@ -50,36 +50,35 @@ struct TreeTrunkPSInput
 PixelShaderOutput main(TreeTrunkPSInput input)
 {
     PixelShaderOutput output;
-    
-    // -------------------------------------------------------------------------
-    // LOD遷移
-    // -------------------------------------------------------------------------
-    // 半透明ブレンドによるオーバードローを避けるためディザリングによるクリップを使用
-    float dither = InterleavedGradientNoise(input.position.xy);
-    clip(input.lodFade - dither);
 
-    // -------------------------------------------------------------------------
-    // 材質特性と天候パラメーターの連動
-    // -------------------------------------------------------------------------
+    // カメラからの距離計算
+    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
+    float viewDepth = length(cameraDiff);
+
+    // カメラ近接フェード率の算出
+    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / max(gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist, kEpsilon));
+
+    // LODクロスフェードと近接フェードの合成
+    float finalFade = min(input.lodFade, proximityFade);
+
+    // ディザリングによるLOD/近接クロスフェード
+    float dither = InterleavedGradientNoise(input.position.xy);
+    clip(finalFade - dither);
+
+    // テクスチャサンプリングおよびベースカラーの構築
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
     float3 baseColor = textureColor.rgb * input.instanceTint * gMaterial.color.rgb * max(gMaterial.albedoMultiplier, 0.0f);
 
     float wetness = gEnvironmentData.wetness;
-    
-    // 樹皮の光学特性を近似
-    // 水分を含むことによる光の内部散乱でアルベドを暗く落とし、表面の水膜を表現するためラフネスを低下
+
+    // 雨天時の樹皮変化 (内部散乱による暗転と表面水膜によるラフネス低下を反映)
     baseColor = lerp(baseColor, baseColor * 0.55f, wetness);
-    
     float baseRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float roughness = lerp(baseRoughness, 0.2f, wetness);
 
-    // -------------------------------------------------------------------------
-    // 法線構築
-    // -------------------------------------------------------------------------、
-    // ピクセルシェーダー内でNormalとTangentの外積から動的に復元
+    // 法線計算
     float3 worldNormal = normalize(input.normal);
     float3 worldTangent = normalize(input.tangent);
-    float3 worldBitangent = cross(worldNormal, worldTangent);
 
     float3 normal = worldNormal;
     if (gMaterial.enableNormalMap != 0)
@@ -89,6 +88,7 @@ PixelShaderOutput main(TreeTrunkPSInput input)
 
     float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
 
+    // CSMによる影判定
     float shadowFactor = 1.0f;
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
     {
@@ -101,12 +101,10 @@ PixelShaderOutput main(TreeTrunkPSInput input)
             gShadowData.cascadeLightViewProj, gShadowMapArray, gShadowSampler);
     }
 
+    // PBRサーフェスデータの再構築
     SurfaceData surface;
     surface.albedo = baseColor;
-    
-    // sRGB -> Linear変換における pow(x, 2.2) の計算負荷を避けるための高速な近似
-    surface.pbrAlbedo = baseColor * baseColor;
-    
+    surface.pbrAlbedo = baseColor * baseColor; // sRGB to Linear
     surface.specularColor = gMaterial.specularColor.rgb;
     surface.normal = normal;
     surface.roughness = roughness;
@@ -115,10 +113,8 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     surface.diffuseReflection = gMaterial.diffuseReflection;
     surface.lightMode = gMaterial.lightMode;
 
-    // -------------------------------------------------------------------------
-    // ライティング & IBL近似
-    // -------------------------------------------------------------------------
-    float3 finalColor = 0.0f.xxx;
+    // ライティングおよび簡易IBLの統合
+    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
     if (gMaterial.enableLighting != 0)
     {
         finalColor += ApplyDirectionalLights(surface, toEyeWorld, shadowFactor, gDirectionalLights, gToonRamp, gClampSampler);
@@ -128,17 +124,17 @@ PixelShaderOutput main(TreeTrunkPSInput input)
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {
             float NdotV = max(dot(surface.normal, toEyeWorld), 0.0f);
-            
-            // F0の計算。非金属のデフォルト値(0.04)に対し、濡れ度合いに応じて水の屈折率(0.02)へと遷移
-            float3 baseF0 = lerp(0.04f.xxx, surface.pbrAlbedo, surface.metalness);
-            float3 F0 = lerp(baseF0, 0.02f.xxx, wetness);
-            
+
+            // 水分付着時の屈折率変動(を考慮し、F0を水のフレネル反射率へと推移
+            float3 baseF0 = lerp(float3(0.04f, 0.04f, 0.04f), surface.pbrAlbedo, surface.metalness);
+            float3 F0 = lerp(baseF0, float3(0.02f, 0.02f, 0.02f), wetness);
+
             float3 kS = F_SchlickRoughness(NdotV, F0, surface.roughness);
-            float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
+            float3 kD = (float3(1.0f, 1.0f, 1.0f) - kS) * (1.0f - surface.metalness);
 
             float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.color.a;
-            
-            // 空色と地面色を用いた半球ライティングにより、IBLを近似
+
+            // 天空光と地表光のグラデーションによる半球アンビエント近似
             float3 reflectDir = reflect(-toEyeWorld, surface.normal);
             float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
             float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
@@ -149,7 +145,7 @@ PixelShaderOutput main(TreeTrunkPSInput input)
             float3 ambientDiffuse = kD * surface.pbrAlbedo * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight);
 
             float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
-            
+
             finalColor += ambient * combinedAO;
         }
     }
@@ -158,13 +154,11 @@ PixelShaderOutput main(TreeTrunkPSInput input)
         finalColor = surface.albedo;
     }
 
+    // MRT 出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
     output.material = float4(surface.metalness, surface.roughness, 0.0f, 1.0f);
-    
-    // TODO: Trunk(幹)のVelocityは静的オブジェクトとして0を出力しているが、
-    // 今後ワールド全体の風による GlobalWind を適用する場合は要修正。
     output.velocity = float2(0.0f, 0.0f);
-    
+
     return output;
 }

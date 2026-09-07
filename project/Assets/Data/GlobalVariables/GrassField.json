@@ -42,6 +42,8 @@
         "Metalness": 0.949999988079071,
         "MinHeight": 1.2899999618530273,
         "MinWidth": 0.10000000149011612,
+        "NearFadeMaxDist": 30.0,
+        "NearFadeMinDist": 10.0,
         "NormalBlend": 1.0499999523162842,
         "Position": [
             0.0,

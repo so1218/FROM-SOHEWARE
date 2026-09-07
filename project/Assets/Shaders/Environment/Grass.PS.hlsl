@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -32,6 +33,15 @@ PixelShaderOutput main(GrassPSInput input)
 {
     PixelShaderOutput output;
     
+    // カメラからの距離計算
+    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
+    float viewDepth = length(cameraDiff);
+
+    // カメラ近接フェード率の算出とディザリングクリップ
+    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / max(gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist, kEpsilon));
+    float dither = InterleavedGradientNoise(input.position.xy);
+    clip(proximityFade - dither);
+
     float t = input.texcoord.y;
     float gustMask = input.color.a;
 
@@ -46,8 +56,7 @@ PixelShaderOutput main(GrassPSInput input)
     // 上方向(0,1,0)へ法線をブレンドし、面全体で柔らかく光を受けるように補正
     float3 bladeNormal = normalize(input.normal);
     float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
-
-    float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
+    
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
 
     // -------------------------------------------------------------------------

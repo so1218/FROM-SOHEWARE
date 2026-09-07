@@ -604,6 +604,8 @@ struct GrassMaterialData
     float colorVariation; 
     
     float windFlattenStrength;
+    float nearFadeMinDist;
+    float nearFadeMaxDist;
 };
 
 struct GrassCullingData
@@ -691,6 +693,8 @@ struct LeafMaterialData
     float3 colorTint; 
     
     float leafFlutterFrequency;
+    float nearFadeMinDist; 
+    float nearFadeMaxDist;
 };
 
 struct TrunkMaterialData
@@ -717,6 +721,9 @@ struct TrunkMaterialData
     float shadowEnvStrength;
     float normalIntensity;
     float albedoMultiplier;
+    
+    float nearFadeMinDist;
+    float nearFadeMaxDist;
 };
 
 struct PebbleInstanceData

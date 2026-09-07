@@ -26,7 +26,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
     float2 uv = (pixelPos + 0.5f) / float2(width, height);
 
     // -------------------------------------------------------------------------
-    // 高速アーリーアウト (不要なピクセルを即死させてGPU負荷をゼロにする)
+    // 高速アーリーアウト
     // -------------------------------------------------------------------------
     float depth = gDepthTexture.SampleLevel(gClampSampler, uv, 0);
     if (depth >= 1.0f) // 背景・空

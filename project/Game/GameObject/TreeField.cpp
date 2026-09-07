@@ -80,6 +80,8 @@ void TreeField::Initialize()
     binder_->Bind("BaseRoughness", &baseRoughness_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("BaseAO", &baseAO_, 1.0f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseThickness", &baseThickness_, 0.1f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("NearFadeMinDist", &nearFadeMinDist_, 1.0f, 0.1f, 0.0f, 10.0f);
+    binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
     
     binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkAlbedoMult", &trunkAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
@@ -203,6 +205,8 @@ void TreeField::UpdateMaterials()
     leafData.albedoMultiplier = leafAlbedoMultiplier_;
     leafData.colorTint = leafColorTint_;
     leafData.leafFlutterFrequency = leafFlutterFrequency_;
+    leafData.nearFadeMinDist = nearFadeMinDist_;
+    leafData.nearFadeMaxDist = nearFadeMaxDist_;
 
     treeSystem_->UpdateLeafMaterial(treeMaterialHandle_, leafData);
 
@@ -226,6 +230,8 @@ void TreeField::UpdateMaterials()
     trunkData.shadowEnvStrength = trunkShadowEnvStrength_;
     trunkData.normalIntensity = trunkNormalIntensity_;
     trunkData.albedoMultiplier = trunkAlbedoMultiplier_;
+    trunkData.nearFadeMinDist = nearFadeMinDist_;
+    trunkData.nearFadeMaxDist = nearFadeMaxDist_;
 
     treeSystem_->UpdateTrunkMaterial(treeMaterialHandle_, trunkData);
     treeSystem_->SetCullingParameters(maxDrawDistance_, treeHeight_, treeRadius_);
@@ -307,6 +313,11 @@ void TreeField::DebugDraw()
         binder_->Draw("MinScale", "最小スケール");
         binder_->Draw("MaxScale", "最大スケール");
         binder_->Draw("ColorRandomness", "色のバリエーション幅");
+
+        ImGui::Separator();
+        ImGui::Text("木のカメラ近接フェード");
+        binder_->Draw("NearFadeMinDist", "完全透明距離 (Min)");
+        binder_->Draw("NearFadeMaxDist", "フェード開始距離 (Max)");
 
         ImGui::Separator();
         ImGui::Text("環境ノイズ");

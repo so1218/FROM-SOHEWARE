@@ -36,13 +36,23 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 {
     PixelShaderOutput output;
 
-    // 半透明のオーバードローを避けるため、IGNを用いたディザリングでLODのクロスフェードを実装
+    // カメラからの距離を算出
+    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
+    float viewDepth = length(cameraDiff);
+
+    // カメラ近接フェード率の算出
+    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / (gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist));
+
+    // LODクロスフェードと近接フェードの合成
+    float finalFade = min(input.lodFade, proximityFade);
+
+    // ディザリング判定
     float dither = InterleavedGradientNoise(input.position.xy);
-    clip(input.lodFade - dither);
+    clip(finalFade - dither);
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     
-    // 完全透明なピクセルは早期に破棄し、以降の重いPBR計算をスキップ
+    // 完全透明なピクセルの破棄
     clip(albedoAlpha.a - 0.05f);
 
     albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
@@ -62,9 +72,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float3x3 TBN = float3x3(T, B, N);
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 normal = normalize(mul(tangentNormal, TBN));
-
-    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
-    float viewDepth = length(cameraDiff);
+    
     float3 toEye = cameraDiff / max(viewDepth, kEpsilon);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
 
