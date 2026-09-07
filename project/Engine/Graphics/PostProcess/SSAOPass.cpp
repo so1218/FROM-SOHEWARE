@@ -2,6 +2,7 @@
 #include "SSAOPass.h"
 #include "Engine.h"
 #include "RootSignatureManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -29,7 +30,7 @@ void SSAOPass::Initialize(Engine* engine, uint32_t width, uint32_t height, PSOMa
 void SSAOPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "SSAO Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "SSAO Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE normalSRV = context.GetGPUHandle(context.normalSrvIndex);
     D3D12_GPU_DESCRIPTOR_HANDLE depthSRV = context.GetGPUHandle(context.sceneDepthSrvIndex);

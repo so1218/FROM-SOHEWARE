@@ -43,9 +43,10 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
     
-    // 植物はツルツルになりすぎないよう、粗さの最低値を0.3程度に制限する（青光り防止）
+    // wetnessによる粗さの低下を削除（または影響度を微小化）して明るさを維持
     float currentRoughness = clamp(gMaterial.roughness, 0.3f, 1.0f);
-    currentRoughness = lerp(currentRoughness, 0.3f, gEnvironmentData.wetness * 0.5f);
+    // 濡れツヤだけ少し出したい場合は影響度を 0.5f から 0.05f〜0.1f 程度に抑える
+    // currentRoughness = lerp(currentRoughness, 0.3f, gEnvironmentData.wetness * 0.1f);
 
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 N = normalize(input.normal * faceSign);
@@ -70,7 +71,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float NdotL = saturate((dot(worldNormal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedo * attenuatedLight * NdotL;
 
-    // 透過光 (サブサーフェススキャタリング近似)
+    // 透過光
     float backLight = saturate(dot(-worldNormal, lightDir));
     float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
     float3 transmission = (albedo * 1.5f) * attenuatedLight * sssIntensity;
@@ -85,17 +86,15 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
     float D = alpha2 / (PI * denom * denom + kEpsilon);
 
-    float3 F0 = float3(0.04f, 0.04f, 0.04f); // 葉の非金属反射率
+    float3 F0 = float3(0.04f, 0.04f, 0.04f);
     float3 F = F0 + (1.0f - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
     float3 directSpecular = (D * F) * attenuatedLight * NdotL;
 
-    // 環境光 (アンビエント)
-    // ※空の色(青)が強すぎると不自然になるため、彩度を落とすか強度を下げる
+    // 環境光 
     float skyLight = saturate(worldNormal.y * 0.5f + 0.5f);
-    float3 ambientDiffuse = albedo * gEnvironmentData.skyColor.rgb * skyLight * 0.8f; // 強度を微調整
+    float3 ambientDiffuse = albedo * gEnvironmentData.skyColor.rgb * skyLight * 0.8f;
 
     float3 F_env = F0 + (max(1.0f - currentRoughness, F0) - F0) * Pow5(1.0f - NdotV);
-    // 植物用の環境反射は控えめにする（プラスチックのような反射を防ぐ）
     float3 ambientSpecular = gEnvironmentData.skyColor.rgb * F_env * skyLight * 0.1f;
 
     float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;

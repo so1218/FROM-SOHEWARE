@@ -3,6 +3,7 @@
 #include "BufferManager.h"
 #include "Engine.h"
 #include "SRVManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -28,7 +29,7 @@ void DownsamplePass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManag
 void DownsamplePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Downsample Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Downsample Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
         ? overrideInput

@@ -2,6 +2,7 @@
 #include "BrightExtractPass.h"
 #include "BufferManager.h"
 #include "Engine.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -25,7 +26,7 @@ void BrightExtractPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOMa
 void BrightExtractPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bright Extract Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Bright Extract Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU = context.GetGPUHandle(context.sceneColorSrvIndex);
 

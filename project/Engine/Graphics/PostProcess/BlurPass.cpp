@@ -2,6 +2,7 @@
 #include "BlurPass.h"
 #include "BufferManager.h"
 #include "Engine.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -26,7 +27,7 @@ void BlurPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* ps
 void BlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Blur Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Blur Pass");
 
     // 入力が指定されていればそれを使う、なければデフォルトのSceneColorを使う
     D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)

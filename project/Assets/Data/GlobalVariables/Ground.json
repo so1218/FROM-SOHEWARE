@@ -1315,7 +1315,7 @@
         "ModelBuilding_Mat9_Wetness": 0.5,
         "ModelBuilding_Metalness": 1.0,
         "ModelBuilding_NormEnable": 1,
-        "ModelBuilding_NormInten": 2.7100000381469727,
+        "ModelBuilding_NormInten": 3.049999952316284,
         "ModelBuilding_NormTile": 1.5,
         "ModelBuilding_NormalMapTex": "normal_33",
         "ModelBuilding_OutlineColor": [
@@ -1326,7 +1326,7 @@
         ],
         "ModelBuilding_OutlineEnable": 0,
         "ModelBuilding_OutlineWidth": 30.200000762939453,
-        "ModelBuilding_POMEnable": 1,
+        "ModelBuilding_POMEnable": 0,
         "ModelBuilding_POMHeightScale": 1.0,
         "ModelBuilding_POMMaxSteps": 32.0,
         "ModelBuilding_POMMinSteps": 29.0,

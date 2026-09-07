@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "SSRPass.h"
 #include "Engine.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -61,7 +62,7 @@ void SSRPass::Initialize(Engine* engine, uint32_t width, uint32_t height, PSOMan
 
 void SSRPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(50, 150, 255), "SSR Compute Pass");
+    PIXScopedEvent(cmdList, PIXColors::Compute, "SSR Compute Pass");
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
     uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);

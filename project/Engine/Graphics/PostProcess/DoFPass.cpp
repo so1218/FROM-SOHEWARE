@@ -2,6 +2,7 @@
 #include "DoFPass.h"
 #include "BufferManager.h"
 #include "Engine.h" 
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -33,7 +34,7 @@ void DoFPass::Initialize(Engine* engine,
 void DoFPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Depth Of Field Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Depth Of Field Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE sceneSrvGPU = context.GetGPUHandle(context.sceneColorSrvIndex);
     D3D12_GPU_DESCRIPTOR_HANDLE depthSrvGPU = context.GetGPUHandle(context.sceneDepthSrvIndex);

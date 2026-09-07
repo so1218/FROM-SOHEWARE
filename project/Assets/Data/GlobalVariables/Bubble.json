@@ -74,7 +74,7 @@
         "bubbleModel_Rot": [
             0.0,
             0.0,
-            0.0
+            0.4000000059604645
         ],
         "bubbleModel_Roughness": 0.25,
         "bubbleModel_Scale": [
@@ -95,9 +95,9 @@
         ],
         "bubbleModel_ToonRampTex": "toonRamp_01",
         "bubbleModel_Trans": [
-            4.0,
-            3.299999952316284,
-            71.30000305175781
+            -1.0,
+            6.599999904632568,
+            8.800000190734863
         ],
         "bubbleModel_TriScale": 0.10000000149011612,
         "bubbleModel_TriSharpness": 4.0,
@@ -122,7 +122,7 @@
         "bubbleModel_Wetness": 0.5,
         "fresnelExponent": 4.949999809265137,
         "rainbowIntensity": 8.670000076293945,
-        "wobbleAmplitude": 0.05999999865889549,
+        "wobbleAmplitude": 0.019999999552965164,
         "wobbleSpeed": 6.019999980926514
     }
 }

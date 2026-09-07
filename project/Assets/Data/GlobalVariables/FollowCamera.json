@@ -2,7 +2,7 @@
     "FollowCamera": {
         "LookAt Offset": [
             0.0,
-            11.09000015258789,
+            11.420000076293945,
             0.0
         ],
         "Max Distance": 105.5,
@@ -13,7 +13,7 @@
         "Rotate Speed Pitch": 0.6800000071525574,
         "Rotate Speed Yaw": 2.0,
         "Rotation Smooth Time": 0.11999999731779099,
-        "Target Distance": 50.599998474121094,
+        "Target Distance": 54.099998474121094,
         "Target Pitch": 0.35199999809265137,
         "Target Yaw": 1.0720000267028809,
         "Zoom Smooth Time": 0.3499999940395355
