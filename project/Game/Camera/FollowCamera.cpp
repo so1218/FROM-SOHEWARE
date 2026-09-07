@@ -101,7 +101,7 @@ void FollowCamera::UpdateCamera(Camera* camera)
     currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
     // ターゲット位置のスムージング
-    Vector3 actualPlayerPos = target_->GetWorldPosition();
+    Vector3 actualPlayerPos = target_->translation_;
     float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);
 

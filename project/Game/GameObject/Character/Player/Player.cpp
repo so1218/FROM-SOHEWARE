@@ -267,6 +267,8 @@ void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 
 void Player::Draw()
 {
+	animationModel_->GetTransform().translation_ = GetTransform().translation_;
+
 	animationModel_->Draw();
 	weaponModel_->Draw();
 }
@@ -313,5 +315,6 @@ void Player::DebugDraw()
 	ImGui::End();
 #endif
 
+	GetTransform().UpdateMatrix();
 	collider_->DrawCollider();
 }

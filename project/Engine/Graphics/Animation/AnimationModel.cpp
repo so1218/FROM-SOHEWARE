@@ -155,14 +155,14 @@ void AnimationModel::Update()
     // 行列更新とスキニング更新はそのまま実行
     UpdateSkeleton(skeleton_);
     UpdateSkinCluster(skinCluster_, skeleton_);
-
-    // モデル自体のワールド行列更新
-    transform_.UpdateMatrix();
 }
 
 void AnimationModel::Draw()
 {
     if (!engine_ || !animeModelData_.modelData) return;
+
+    // モデル自体のワールド行列更新
+    transform_.UpdateMatrix();
 
     engine_->GetRendererManager()->SubmitAnimationModel(
         transform_,

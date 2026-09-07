@@ -40,14 +40,14 @@ public:
         // 全オブジェクト更新
         objectManager_.Update();
 
+        // 衝突判定
+        collisionManager_->CheckAllCollisions();
+
         // カメラを更新
         if (cameraManager_)
         {
             cameraManager_->Update();
         }
-
-        // 衝突判定
-        collisionManager_->CheckAllCollisions();
 
         // カメラの行列更新
         if (camera_)
