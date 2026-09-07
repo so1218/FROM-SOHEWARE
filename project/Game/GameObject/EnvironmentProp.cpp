@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "EnvironmentProp.h"
 #include "GameDefine.h"
+#include "CollisionConfig.h"
 
 using namespace FE;
 
@@ -128,8 +129,15 @@ void EnvironmentProp::ApplySettings()
 {
     // コライダーのリアルタイムON/OFF制御
     if (hasCollider_) {
-        if (!collider_) collider_ = std::make_unique<FE::Collider>(this);
-        collider_->RegisterToManager();
+        if (!collider_)
+        {
+            collider_ = std::make_unique<FE::Collider>(this);
+
+            collider_->SetCollisionAttribute(kCollisionAttributeProp);
+            collider_->SetCollisionMask(kCollisionAttributePlayer);
+
+            collider_->RegisterToManager();
+        }
     }
     else {
         if (collider_) collider_.reset(); // 不要ならメモリ解放
@@ -275,17 +283,47 @@ void EnvironmentProp::DebugDraw()
         binder_->Draw("BaseColor", "基本色（マテリアルに乗算）");
         ImGui::Separator();
 
-        ImGui::Combo("接触時の挙動", &propBehavior_, "なし（通常の障害物）\0拾って消える（アイテム）\0");
+        const char* behaviorNames[] = { "None (何もしない)", "Disappear (拾って消える)", "PushBack (押し戻し)" };
+        int currentBehavior = static_cast<int>(propBehavior_);
 
-        binder_->Draw("HasCollider", "当たり判定（コライダー）");
+        if (ImGui::Combo("振る舞い", &currentBehavior, behaviorNames, IM_ARRAYSIZE(behaviorNames)))
+        {
+            propBehavior_ = currentBehavior;
+
+            // binder_ のグループパスを使って保存
+            auto* gv = FE::GlobalVariables::GetInstance();
+            gv->SetValue(binder_->GetGroupPath(), "Behavior", propBehavior_);
+        }
+
+        binder_->Draw("HasCollider", "コライダー");
 
         if (hasCollider_)
         {
             ImGui::Indent();
-            ImGui::Combo("形状", &colliderType_, "Sphere (球)\0AABB (ボックス)\0");
-            if (colliderType_ == 0) binder_->Draw("ColliderRadius", "半径 (Radius)");
-            else binder_->Draw("ColliderSize", "サイズ (Half Size)");
-            binder_->Draw("ColliderOffset", "中心オフセット");
+            if (ImGui::Combo("形状", &colliderType_, "Sphere (球)\0AABB (ボックス)\0"))
+            {
+                FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ColliderType", colliderType_);
+
+                ApplySettings();
+            }
+
+            if (colliderType_ == 0)
+            {
+                if (binder_->Draw("ColliderRadius", "半径 (Radius)")) {
+                    ApplySettings();
+                }
+            }
+            else
+            {
+                if (binder_->Draw("ColliderSize", "サイズ (Half Size)")) {
+                    ApplySettings();
+                }
+            }
+
+            if (binder_->Draw("ColliderOffset", "中心オフセット")) {
+                ApplySettings();
+            }
+
             ImGui::Unindent();
         }
 
@@ -369,6 +407,8 @@ void EnvironmentProp::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
     {
 
     }
+
+    OnCollisionStay(mine, other);
 }
 
 void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
@@ -405,6 +445,16 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
                 engine_->GetLightManager()->UpdatePointLightProperties(
                     pointLightIndex_, lightColor_, 0.0f, 0.0f, 0.0f
                 );
+            }
+        }
+        else if (propBehavior_ == static_cast<int>(PropBehavior::PushBack))
+        {
+            FE::Vector3 pushVector;
+
+            // プロップからプレイヤーへの押し戻しベクトルを計算
+            if (mine->CalculatePushBackVector(other, pushVector))
+            {
+                hitObj->GetTransform().translation_ += pushVector;
             }
         }
     }

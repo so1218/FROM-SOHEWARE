@@ -9,6 +9,7 @@ enum class PropBehavior
 {
     None = 0,         // 何もしない
     Disappear = 1,    // 拾って消える
+    PushBack = 2,     // 押し戻し
 };
 
 class EnvironmentProp : public FE::GameObject

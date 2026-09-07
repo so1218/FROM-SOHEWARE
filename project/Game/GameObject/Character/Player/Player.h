@@ -7,6 +7,7 @@
 #include "StateMachine.h"
 #include "ParticleEmitter.h"
 #include "Terrain.h"
+#include "TreeField.h"
 
 class PlayerStateNormal; 
 
@@ -49,11 +50,14 @@ public:
 
 	// 地形情報をセットする関数
 	void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+	// 木のフィールド情報をセットする関数
+	void SetTreeField(TreeField* treeField) { treeField_ = treeField; }
 
 private:
 	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
 	FE::Terrain* terrain_ = nullptr;
+	TreeField* treeField_ = nullptr;
 	FollowCamera* followCamera_;
 
 	std::unique_ptr<FE::Model> weaponModel_;

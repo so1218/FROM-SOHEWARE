@@ -30,6 +30,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     treeField_ = objectManager_.Create<TreeField>(engine_);
     treeField_->SetTerrain(ground_->GetTerrain());
     player_->SetTerrain(ground_->GetTerrain());
+    player_->SetTreeField(treeField_);
     followCamera_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());

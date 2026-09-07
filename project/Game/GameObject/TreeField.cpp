@@ -49,6 +49,9 @@ void TreeField::Initialize()
     binder_->Bind("MinScale", &minScale_, 0.8f, 0.05f, 0.1f);
     binder_->Bind("MaxScale", &maxScale_, 1.4f, 0.05f, 0.1f);
     binder_->Bind("ColorRandomness", &colorRandomness_, 0.15f, 0.01f, 0.0f, 0.5f);
+    binder_->Bind("NearFadeMinDist", &nearFadeMinDist_, 1.0f, 0.1f, 0.0f, 10.0f);
+    binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
+    binder_->Bind("TrunkColliderRadius", &trunkColliderRadius_, 0.5f, 0.05f, 0.05f, 5.0f);
 
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]()
         {
@@ -80,8 +83,6 @@ void TreeField::Initialize()
     binder_->Bind("BaseRoughness", &baseRoughness_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("BaseAO", &baseAO_, 1.0f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("BaseThickness", &baseThickness_, 0.1f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("NearFadeMinDist", &nearFadeMinDist_, 1.0f, 0.1f, 0.0f, 10.0f);
-    binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
     
     binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkAlbedoMult", &trunkAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
@@ -133,6 +134,7 @@ void TreeField::Initialize()
     prevMinScale_ = minScale_;
     prevMaxScale_ = maxScale_;
     prevColorRandomness_ = colorRandomness_;
+    prevTrunkColliderRadius_ = trunkColliderRadius_;
 
     treeSystem_->SetWindMapTexture(windMapName_);
 
@@ -153,7 +155,8 @@ void TreeField::Update()
         areaCenter_.y != prevAreaCenter_.y ||
         minScale_ != prevMinScale_ ||
         maxScale_ != prevMaxScale_ ||
-        colorRandomness_ != prevColorRandomness_)
+        colorRandomness_ != prevColorRandomness_ ||
+        trunkColliderRadius_ != prevTrunkColliderRadius_)
     {
         GenerateTrees();
 
@@ -165,6 +168,7 @@ void TreeField::Update()
         prevMinScale_ = minScale_;
         prevMaxScale_ = maxScale_;
         prevColorRandomness_ = colorRandomness_;
+        prevTrunkColliderRadius_ = trunkColliderRadius_;
     }
 
     // 毎フレーム UIなどの変更を定数バッファに流し込む
@@ -291,7 +295,47 @@ void TreeField::GenerateTrees()
 
         // TreeSystem に追加
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_, colorVar, 1.0f);
+
+        // CPU用コライダー登録 
+        TreeCollider col;
+        col.position = Vector3(rx, ry, rz);
+        col.radius = trunkColliderRadius_ * scale;
+        colliders_.push_back(col);
     }
+}
+
+bool TreeField::ResolveCollision(Vector3& playerPos, float playerRadius) const
+{
+    bool isHit = false;
+
+    for (const auto& tree : colliders_)
+    {
+        // XZ平面での差分
+        float dx = playerPos.x - tree.position.x;
+        float dz = playerPos.z - tree.position.z;
+        float distSq = dx * dx + dz * dz;
+
+        float minDist = playerRadius + tree.radius;
+        float minDistSq = minDist * minDist;
+
+        // 衝突チェック
+        if (distSq < minDistSq && distSq > 0.00001f)
+        {
+            float dist = std::sqrt(distSq);
+            float overlap = minDist - dist;
+
+            // 押し戻しベクトルの正規化と適用
+            float nx = dx / dist;
+            float nz = dz / dist;
+
+            playerPos.x += nx * overlap;
+            playerPos.z += nz * overlap;
+
+            isHit = true;
+        }
+    }
+
+    return isHit;
 }
 
 void TreeField::DebugDraw()
@@ -313,6 +357,7 @@ void TreeField::DebugDraw()
         binder_->Draw("MinScale", "最小スケール");
         binder_->Draw("MaxScale", "最大スケール");
         binder_->Draw("ColorRandomness", "色のバリエーション幅");
+        binder_->Draw("TrunkColliderRadius", "幹の衝突判定半径 (基準)");
 
         ImGui::Separator();
         ImGui::Text("木のカメラ近接フェード");

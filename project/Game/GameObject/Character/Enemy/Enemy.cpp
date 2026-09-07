@@ -2,6 +2,7 @@
 #include "Enemy.h"
 #include "GameDefine.h"
 #include "TimeManager.h"
+#include "CollisionConfig.h"
 
 using namespace FE;
 
@@ -52,6 +53,8 @@ void Enemy::Initialize()
     collider_->SetApplyRotation(false);
     collider_->SetRadius(colliderRadius_);
     collider_->SetCenterOffset(colliderOffset_);
+    collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
+    collider_->SetCollisionMask(kCollisionAttributePlayer);
 
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
     auraEmitter_->SetTargetToFollow(&model_->GetTransform());

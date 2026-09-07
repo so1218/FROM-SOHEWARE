@@ -5,6 +5,12 @@
 #include "TreeSystem.h"
 #include "Terrain.h"
 
+struct TreeCollider
+{
+    FE::Vector3 position;
+    float radius;
+};
+
 class TreeField : public FE::GameObject
 {
 public:
@@ -16,6 +22,8 @@ public:
     void DebugDraw() override;
 
     void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+
+    bool ResolveCollision(FE::Vector3& playerPos, float playerRadius) const;
 
 private:
     void GenerateTrees(); // パラメータに基づいて木をランダム散布生成
@@ -30,6 +38,8 @@ private:
     std::unique_ptr<FE::PropertyBinder> binder_;
 
     FE::WorldTransform transform_;
+
+    std::vector<TreeCollider> colliders_;
 
     // 生成したマテリアルハンドル（全インスタンスで共有）
     FE::TreeMaterialHandle treeMaterialHandle_;
@@ -46,6 +56,9 @@ private:
     float maxScale_ = 1.4f;
     float colorRandomness_ = 0.15f;
 
+    // 幹の当たり判定基準半径
+    float trunkColliderRadius_ = 0.5f;
+
     std::string windMapName_ = "noise_39";
     uint32_t windMapHandle_ = 0;
 
@@ -58,6 +71,7 @@ private:
     float prevMinScale_ = 0.0f;
     float prevMaxScale_ = 0.0f;
     float prevColorRandomness_ = 0.0f;
+    float prevTrunkColliderRadius_ = 0.0f;
 
     // ==========================================
     // 葉パラメータ

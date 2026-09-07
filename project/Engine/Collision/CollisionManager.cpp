@@ -83,33 +83,27 @@ bool CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* collide
 
 void CollisionManager::CheckAllCollisions()
 {
-    // 今回のフレームで衝突しているペアのリスト
     std::set<CollisionPair> currentCollisionPairs;
 
-    for (auto itrA = colliders_.begin(); itrA != colliders_.end(); ++itrA)
+    // イテレータより安全で速いインデックスベースのループに変更
+    for (size_t i = 0; i < colliders_.size(); ++i)
     {
-        Collider* colliderA = *itrA;
+        Collider* colliderA = colliders_[i];
 
-        // Aがコライダー自体無効、または親オブジェクトが非アクティブならスキップ
         if (!colliderA->IsEnable() || (colliderA->GetOwner() && !colliderA->GetOwner()->IsActive()))
         {
             continue;
         }
 
-        auto itrB = itrA;
-        ++itrB;
-        for (; itrB != colliders_.end(); ++itrB)
+        for (size_t j = i + 1; j < colliders_.size(); ++j)
         {
-            Collider* colliderA = *itrA;
-            Collider* colliderB = *itrB;
+            Collider* colliderB = colliders_[j];
 
-            // Bがコライダー自体無効、または親オブジェクトが非アクティブならスキップ
             if (!colliderB->IsEnable() || (colliderB->GetOwner() && !colliderB->GetOwner()->IsActive()))
             {
                 continue;
             }
 
-            // フィルタリング
             if (((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0) ||
                 ((colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) == 0))
             {
@@ -126,10 +120,8 @@ void CollisionManager::CheckAllCollisions()
         }
     }
 
-    // Exit判定
     for (const auto& pair : previousCollisionPairs_)
     {
-        // 今回のリストに存在しない
         if (currentCollisionPairs.find(pair) == currentCollisionPairs.end())
         {
             pair.first->OnCollisionExit(pair.second);
@@ -137,7 +129,6 @@ void CollisionManager::CheckAllCollisions()
         }
     }
 
-    // EnterとStay判定
     for (const auto& pair : currentCollisionPairs)
     {
         if (previousCollisionPairs_.find(pair) != previousCollisionPairs_.end())
@@ -152,31 +143,33 @@ void CollisionManager::CheckAllCollisions()
         }
     }
 
-    // 履歴の更新
-    previousCollisionPairs_ = currentCollisionPairs;
+    previousCollisionPairs_ = std::move(currentCollisionPairs); 
 }
 
 void CollisionManager::RemoveCollider(Collider* collider)
 {
     if (!collider) return;
 
-    // 現在のリストから削除
-    colliders_.remove(collider);
-
-    // 前フレームの衝突履歴から削除（クラッシュ防止）
-    for (auto it = previousCollisionPairs_.begin(); it != previousCollisionPairs_.end(); )
+    // 一番後ろの要素と入れ替えてから末尾を削除
+    auto it = std::find(colliders_.begin(), colliders_.end(), collider);
+    if (it != colliders_.end())
     {
-        if (it->first == collider || it->second == collider)
+        std::swap(*it, colliders_.back());
+        colliders_.pop_back();
+    }
+
+    for (auto itHistory = previousCollisionPairs_.begin(); itHistory != previousCollisionPairs_.end(); )
+    {
+        if (itHistory->first == collider || itHistory->second == collider)
         {
-            it = previousCollisionPairs_.erase(it);
+            itHistory = previousCollisionPairs_.erase(itHistory);
         }
         else
         {
-            ++it;
+            ++itHistory;
         }
     }
 
-    // コライダーのマネージャー参照を切る（二重削除防止）
     collider->SetManager(nullptr);
 }
 

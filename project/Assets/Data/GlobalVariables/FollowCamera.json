@@ -1,5 +1,6 @@
 {
     "FollowCamera": {
+        "Ground Check Radius": 0.5,
         "LookAt Offset": [
             0.0,
             11.420000076293945,
@@ -8,6 +9,7 @@
         "Max Distance": 105.5,
         "Max Pitch": 0.8399999737739563,
         "Min Distance": 5.0,
+        "Min Ground Offset": 0.800000011920929,
         "Min Pitch": 0.07000000029802322,
         "Position Lerp Speed": 40.0,
         "Rotate Speed Pitch": 0.6800000071525574,

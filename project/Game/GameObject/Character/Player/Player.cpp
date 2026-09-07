@@ -41,7 +41,7 @@ void Player::Initialize()
 
 	// 衝突判定の属性設定
 	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
-	collider_->SetCollisionMask(kCollisionAttributeEnemy);
+	collider_->SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeProp);
 
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
 	binder_->BindModel("WeaponModel", weaponModel_.get());
@@ -78,6 +78,22 @@ void Player::Update()
 
 	// 毎フレーム、現在のステートのUpdateが呼ばれる
 	stateMachine_->Update();
+
+	// 木との衝突判定
+	if (treeField_)
+	{
+		Vector3 pos = GetTransform().translation_;
+
+		// AABBコライダーの横幅の半分をプレイヤーの半径
+		float playerRadius = colliderSize_.x * 0.5f;
+
+		// 押し戻し実行
+		if (treeField_->ResolveCollision(pos, playerRadius))
+		{
+			// 押し戻された位置をプレイヤーに再設定
+			GetTransform().translation_ = pos;
+		}
+	}
 	
 	{
 		// 0番目のディレクショナルライトを取得
