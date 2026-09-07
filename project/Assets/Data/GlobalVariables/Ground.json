@@ -4,9 +4,9 @@
         "ModelBuilding_AlbedoMap": "white1x1",
         "ModelBuilding_AlphaThres": 0.019999999552965164,
         "ModelBuilding_Color": [
-            0.949367105960846,
-            1.0,
-            0.9955135583877563,
+            0.8396624326705933,
+            0.8396624326705933,
+            0.8396624326705933,
             1.0
         ],
         "ModelBuilding_DiffuseRef": 4.0,
@@ -18,10 +18,10 @@
             0.202531635761261,
             0.0
         ],
-        "ModelBuilding_EdgeInten": 5.699999809265137,
+        "ModelBuilding_EdgeInten": 1.5,
         "ModelBuilding_EdgeWidth": 0.23000000417232513,
-        "ModelBuilding_Emissive": 3.700000047683716,
-        "ModelBuilding_EnvMapInt": 0.009999999776482582,
+        "ModelBuilding_Emissive": 1.7000000476837158,
+        "ModelBuilding_EnvMapInt": 0.18000000715255737,
         "ModelBuilding_EnvMapTex": "pureSky",
         "ModelBuilding_HeightMapTex": "height_33",
         "ModelBuilding_LightMode": 3,
@@ -1363,7 +1363,7 @@
             4.599999904632568,
             0.0
         ],
-        "ModelBuilding_Roughness": 0.5,
+        "ModelBuilding_Roughness": 0.3400000035762787,
         "ModelBuilding_Scale": [
             3.4000000953674316,
             5.800000190734863,

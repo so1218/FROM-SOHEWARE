@@ -1,6 +1,6 @@
 {
     "GameOrb": {
-        "OrbCount": 3,
+        "OrbCount": 4,
         "Orb_0": {
             "LightColor": [
                 1.0,
@@ -420,6 +420,27 @@
             "orbModel_UsePuddle": 0,
             "orbModel_UseTriplanar": 0,
             "orbModel_Wetness": 0.5
+        },
+        "Orb_3": {
+            "LightColor": [
+                0.3012657165527344,
+                0.19999998807907104,
+                1.0,
+                1.0
+            ],
+            "LightIntensity": 30.8799991607666,
+            "LightRadius": 11.239999771118164,
+            "LightVolumetricScatteringIntensity": 100.0,
+            "Position": [
+                4.289999961853027,
+                1.100000023841858,
+                124.6500015258789
+            ],
+            "Scale": [
+                1.5,
+                1.5,
+                1.5
+            ]
         },
         "RainbowSpeed": 0.5099999904632568,
         "SharedOrbModel_AddShadow": 1,

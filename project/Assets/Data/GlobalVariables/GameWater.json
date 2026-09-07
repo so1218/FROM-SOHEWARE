@@ -2,15 +2,15 @@
     "GameWater": {
         "WaterCount": 2,
         "Water_0": {
-            "Absorption": 0.27000001072883606,
+            "Absorption": 0.1599999964237213,
             "BaseAmplitude": 0.25999999046325684,
             "BaseSteepness": 0.10999999940395355,
             "BaseWaveLength": 18.299999237060547,
-            "CausticsDistortion": 20.0,
+            "CausticsDistortion": 3.0,
             "CausticsFadeDepth": 6.099999904632568,
-            "CausticsIntensity": 0.44999998807907104,
-            "CausticsScale": 0.10000000149011612,
-            "CausticsSpeed": 0.20999999344348907,
+            "CausticsIntensity": 0.4000000059604645,
+            "CausticsScale": 3.450000047683716,
+            "CausticsSpeed": 2.0,
             "ChromaticAberration": 1.149999976158142,
             "DeepColor": [
                 0.20003913342952728,
@@ -29,6 +29,10 @@
             "FoamIntensity": 0.44999998807907104,
             "FoamScale": 0.23000000417232513,
             "FoamThreshold": 0.4099999964237213,
+            "GlobalWindDirection": [
+                1.0,
+                0.5
+            ],
             "InteractionBulgeForce": 0.5,
             "InteractionFoamIntensity": 0.30000001192092896,
             "InteractionHeightScale": 1.649999976158142,
@@ -36,13 +40,17 @@
             "InteractionSinkForce": 0.6600000262260437,
             "NormalIntensity": 0.5,
             "NormalMap": "normal_02",
+            "NormalTiling": [
+                0.10000000149011612,
+                0.10000000149011612
+            ],
             "Position": [
                 221.61000061035156,
                 -1.7899999618530273,
                 57.63999938964844
             ],
             "RainIntensity": 1.0,
-            "RefractionAmount": 0.02800000086426735,
+            "RefractionAmount": 0.032999999821186066,
             "RippleScale": 5.0,
             "RippleSpeed": 2.0,
             "RippleStrength": 0.20000000298023224,
@@ -53,8 +61,11 @@
                 0.0
             ],
             "Roughness": 0.4000000059604645,
+            "SSRBinarySearchSteps": 8.0,
+            "SSRDistortion": 0.03999999910593033,
             "SSRIntensity": 3.0,
             "SSRMaxDistance": 54.0,
+            "SSRMaxSteps": 64.0,
             "SSRStepSize": 0.27000001072883606,
             "SSRThickness": 0.23999999463558197,
             "Scale": [
@@ -74,13 +85,19 @@
                 0.9081343412399292,
                 1.0
             ],
+            "ShoreFoamThreshold": 0.30000001192092896,
             "SpecularIntensity": 1.850000023841858,
+            "WaveAmplitude": 0.11999999731779099,
+            "WaveAmplitudeFalloff": 0.5,
             "WaveChop": 1.0,
             "WaveDirectionSpread": 0.30000001192092896,
             "WaveFoamThreshold": 0.009999999776482582,
             "WaveLacunarity": 2.0999999046325684,
+            "WaveLength": 9.5,
+            "WaveLengthFalloff": 0.5,
             "WavePersistence": 0.11999999731779099,
             "WaveSpeed": 1.350000023841858,
+            "WaveSteepness": 0.4000000059604645,
             "WaveTiling": [
                 0.029999999329447746,
                 0.33000001311302185
@@ -95,11 +112,11 @@
             "BaseAmplitude": 0.25,
             "BaseSteepness": 0.10000000149011612,
             "BaseWaveLength": 18.0,
-            "CausticsDistortion": 2.0,
+            "CausticsDistortion": 2.75,
             "CausticsFadeDepth": 7.099999904632568,
             "CausticsIntensity": 0.5,
-            "CausticsScale": 2.25,
-            "CausticsSpeed": 3.0,
+            "CausticsScale": 2.5,
+            "CausticsSpeed": 4.0,
             "ChromaticAberration": 1.100000023841858,
             "DeepColor": [
                 0.2694012522697449,
@@ -118,20 +135,28 @@
             "FoamIntensity": 0.44999998807907104,
             "FoamScale": 0.23000000417232513,
             "FoamThreshold": 0.4099999964237213,
+            "GlobalWindDirection": [
+                1.0,
+                0.5
+            ],
             "InteractionBulgeForce": 0.5,
             "InteractionFoamIntensity": 0.30000001192092896,
             "InteractionHeightScale": 1.649999976158142,
             "InteractionNormalScale": 0.0,
             "InteractionSinkForce": 0.6600000262260437,
-            "NormalIntensity": 0.5,
+            "NormalIntensity": 0.4000000059604645,
             "NormalMap": "normal_02",
+            "NormalTiling": [
+                0.03999999910593033,
+                0.12999999523162842
+            ],
             "Position": [
                 0.6000000238418579,
                 -0.7699999809265137,
                 132.25
             ],
             "RainIntensity": 0.0,
-            "RefractionAmount": 0.02800000086426735,
+            "RefractionAmount": 0.04600000008940697,
             "RippleScale": 0.10000000149011612,
             "RippleSpeed": 10.0,
             "RippleStrength": 0.15000000596046448,
@@ -141,9 +166,12 @@
                 0.0,
                 0.0
             ],
-            "Roughness": 0.4000000059604645,
+            "Roughness": 0.07999999821186066,
+            "SSRBinarySearchSteps": 8.0,
+            "SSRDistortion": 0.03999999910593033,
             "SSRIntensity": 2.0,
             "SSRMaxDistance": 92.0,
+            "SSRMaxSteps": 64.0,
             "SSRStepSize": 0.46000000834465027,
             "SSRThickness": 0.3400000035762787,
             "Scale": [
@@ -163,13 +191,19 @@
                 1.0,
                 0.800000011920929
             ],
-            "SpecularIntensity": 1.850000023841858,
+            "ShoreFoamThreshold": 0.30000001192092896,
+            "SpecularIntensity": 1.9500000476837158,
+            "WaveAmplitude": 0.10999999940395355,
+            "WaveAmplitudeFalloff": 0.5,
             "WaveChop": 1.0,
             "WaveDirectionSpread": 0.3100000023841858,
             "WaveFoamThreshold": 0.009999999776482582,
             "WaveLacunarity": 2.0999999046325684,
+            "WaveLength": 17.899999618530273,
+            "WaveLengthFalloff": 0.5,
             "WavePersistence": 0.11999999731779099,
-            "WaveSpeed": 1.350000023841858,
+            "WaveSpeed": 1.100000023841858,
+            "WaveSteepness": 0.5899999737739563,
             "WaveTiling": [
                 0.029999999329447746,
                 0.30000001192092896

@@ -246,73 +246,57 @@ struct AtmosphereSkyData
 
 struct WaterMaterialData
 {
-// --------------------------------------------------------
-    // 波のグローバル設定
-    // --------------------------------------------------------
-    float2 windDirection; // 風向き [1.0, 0.5]
-    float baseWaveLength; // 基本波長
-    float baseAmplitude; // 基本振幅
+    float2 globalWindDirection; // 基本風向きベクトル
+    float waveLength; // 基本波長 (m)
+    float waveAmplitude; // 基本振幅 (m)
 
-    float baseSteepness; // 波の鋭さ
-    float waveSpeed; // 進行速度
-    float wavePersistence; // 小波減衰率
-    float waveLacunarity; // 小波周波数倍率
-
-    float waveDirectionSpread; // 子波拡散角度
-    float waveChop; // 水平引き寄せ
-    float normalIntensity; // ★ 追加: 法線マップの適用強度 (0.0〜1.0)
-    float waveFoamThreshold; // ★ 追加: 波頭の泡の発生しきい値 (0.0〜1.0)
-
-    // --------------------------------------------------------
-    // カラー設定
-    // --------------------------------------------------------
-    float4 shallowColor; // 浅瀬の色
-    float4 deepColor; // 深い場所の色
-    float4 scatterColor; // 水中散乱光
-    float4 foamColor; // 泡の色
-
-    // --------------------------------------------------------
-    // ライティング・光学設定
-    // --------------------------------------------------------
-    float absorption; // 吸光度
-    float refractionAmount; // 屈折強度
-    float2 waveTiling; // 法線タイリング
-
-    float roughness; // ラフネス
-    float specularIntensity; // ハイライト強度
-    float envReflectionIntensity; // 環境マップ強度
-    float causticsScale; // コースティクスサイズ
-
-    // --------------------------------------------------------
-    // エフェクト設定
-    // --------------------------------------------------------
-    float causticsIntensity; // コースティクス強度
-    float causticsFadeDepth; // コースティクス消滅深度
-    float chromaticAberration; // 色収差強度
-    float foamScale; // 泡ノイズのサイズ
-
-    float foamThreshold; // 岸辺の泡の範囲 (水深)
-    float foamIntensity; // 泡の濃さ
-    float rainIntensity; // 雨の強度
-    float rippleScale; // 波紋サイズ
-
-    float rippleSpeed; // 波紋速度
-    float rippleStrength; // 波紋強度
-    float ssrIntensity; // SSR強度
-    float ssrThickness; // SSR交差厚み
-
-    float ssrStepSize; // SSRレイ初期ステップ幅
-    float ssrMaxDistance; // SSR最大距離
-    float causticsSpeed; // コースティクス揺らぎ速度
-    float causticsDistortion; // コースティクス屈折歪み
+    float waveSteepness; // 波の波頭形状 (0.0:滑らか 〜 1.0:鋭角)
+    float waveSpeed; // 波の進行速度
+    float waveAmplitudeFalloff; // 高次波の振幅減衰率
+    float waveLengthFalloff; // 高次波の波長縮小率
     
-    float interactionHeightScale; // 頂点変形全体のスケール
-    float interactionSinkForce; // 足元の沈み込み強度
-    float interactionBulgeForce; // 周囲波の盛り上がり強度
-    float interactionNormalScale; // 波紋法線歪み強度
+    float waveDirectionSpread; // 重ね合わせ時の方向分散角 (rad)
+    float interactionHeightScale; // 干渉波の全体高度倍率
+    float interactionSinkForce; // キャラ足元の押し込み強度
+    float interactionBulgeForce; // キャラ周囲の隆起強度
 
-    float interactionFoamIntensity; // 移動痕跡の泡強度
-    float3 pad0; 
+    float interactionNormalScale; // 干渉波紋による法線歪み強度
+    float interactionFoamIntensity; // 干渉移動痕跡の泡濃度
+    float2 normalTiling; // 水面法線マップのタイリング (xy)
+    
+    float4 shallowColor; // 浅瀬のベースカラー
+    float4 deepColor; // 深海のベースカラー
+    float4 scatterColor; // 水中散乱光カラー (Subsurface Scattering)
+    float4 foamColor; // 泡カラー (RGB + Alpha)
+    
+    float absorption; // 水中光吸収率 (Beer-Lambert)
+    float refractionAmount; // 背景屈折歪み強度
+    float chromaticAberration; // 屈折時の色収差強度
+    float normalIntensity; // 法線凹凸強度
+
+    float roughness; // 水面ラフネス
+    float specularIntensity; // スペキュラハイライト強度
+    float envReflectionIntensity; // 環境マップ (CubeMap) 反射強度
+    float ssrIntensity; // SSR ブレンド強度
+    
+    float ssrStepSize; // レイマーチング初期ステップサイズ
+    float ssrMaxDistance; // レイ追跡の最大距離
+    float ssrThickness; // オブジェクトのレイ判定用判定厚み
+    float waveFoamThreshold; // 波頭泡の発生閾値
+    
+    float shoreFoamThreshold; // 岸辺泡の発生水深閾値
+    float foamScale; // 泡ノイズのタイリングスケール
+    float foamIntensity; // 泡全体の生成濃度
+    float causticsIntensity; // コースティクス投影強度
+
+    float causticsScale; // コースティクスパターンサイズ
+    float causticsSpeed; // コースティクス揺らぎ速度
+    float causticsDistortion; // [追加] コースティクスの波紋歪み強度
+    float ssrDistortion; // [追加] SSR映り込みの法線歪み強度
+
+    float ssrMaxSteps; // [追加] SSRレイマーチング最大ステップ数 (例: 20〜100)
+    float ssrBinarySearchSteps; // [追加] SSR二分探索ステップ数 (例: 0〜8)
+    float2 pad0; // 16バイト境界整列用パディング
 };
 
 struct TrailMaterialData
