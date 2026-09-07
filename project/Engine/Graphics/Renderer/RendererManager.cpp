@@ -341,23 +341,23 @@ void RendererManager::Draw3D()
 	// 半透明モデルをまとめて描画
 	if (waterRenderer_)
 	{
-		// ① ここまでの不透明カラーをコピー（屈折用 SRV テクスチャの生成）
+		// ここまでのカラーをコピー（屈折用 SRV テクスチャの生成）
 		renderCoordinator_->CopyOpaqueSceneColor();
 
-		// ② 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
+		// 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
 		renderCoordinator_->TransitionDepthToShaderResource();
 
-		// ③ 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
+		// 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
 		waterRenderer_->SetSceneTextures(
 			renderCoordinator_->GetOpaqueSceneColorSRVGPUHandle(), // コピーされた背景カラー
 			renderCoordinator_->GetOffscreenDepthSRVGPUHandle()    // 深度テクスチャ
 		);
 
-		// ④ 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
+		// 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
 		waterRenderer_->PrepareBatches();
 		waterRenderer_->Draw(env_, interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
-		// ⑤ 深度バッファを次の描画のために WRITE モードへ復帰
+		// 深度バッファを次の描画のために WRITE モードへ復帰
 		renderCoordinator_->TransitionDepthToDepthWrite();
 	}
 	if (modelRenderer_)

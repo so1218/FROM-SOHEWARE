@@ -356,6 +356,26 @@ float Terrain::GetHeight(float worldX, float worldZ) const
     return 0.0f;
 }
 
+bool Terrain::GetHeightAt(float worldX, float worldZ, float& outHeight) const
+{
+    // ワールド座標から地形ローカル座標へ変換
+    float localX = worldX - transform_.translation_.x;
+    float localZ = worldZ - transform_.translation_.z;
+    float heightRatio = 0.0f;
+
+    for (const auto& chunk : chunks_)
+    {
+        // チャンクのアタリ判定
+        if (chunk->GetHeightAt(localX, localZ, heightRatio))
+        {
+            outHeight = (heightRatio * params_.maxHeight) + transform_.translation_.y;
+            return true; // 地形内であれば true
+        }
+    }
+
+    return false; // 範囲外であれば false
+}
+
 void Terrain::SetEnableOutline(bool enable)
 {
     int flag = enable ? 1 : 0;

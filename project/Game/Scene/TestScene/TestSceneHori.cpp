@@ -30,6 +30,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     treeField_ = objectManager_.Create<TreeField>(engine_);
     treeField_->SetTerrain(ground_->GetTerrain());
     player_->SetTerrain(ground_->GetTerrain());
+    followCamera_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
@@ -109,6 +110,7 @@ void TestSceneHori::OnInitialize()
     // デフォルトカメラの設定
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
+
 }
 
 void TestSceneHori::OnUpdate()

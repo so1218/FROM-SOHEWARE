@@ -32,6 +32,8 @@ void FollowCamera::Initialize()
     binder_->Bind("Max Distance", &maxDistance_, 100.0f, 0.1f, 0.0f, 200.0f);
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotate Speed Pitch", &rotateSpeedPitch_, 2.0f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("Min Ground Offset", &minGroundOffset_, 0.8f, 0.05f, 0.1f, 3.0f);
+    binder_->Bind("Ground Check Radius", &groundCheckRadius_, 0.5f, 0.05f, 0.0f, 3.0f);
 
     // 内部変数の初期値として適用
     currentYaw_ = targetYaw_;
@@ -113,9 +115,43 @@ void FollowCamera::UpdateCamera(Camera* camera)
 
     Vector3 targetPos = smoothedTargetPos_;
     Vector3 finalCameraPos = targetPos + targetOffset;
-    Vector3 desiredCameraTarget = actualPlayerPos + lookAtOffset_;
+
+    // 地面埋まり防止処理
+    if (terrain_)
+    {
+        float maxTerrainHeight = -FLT_MAX;
+        float h = 0.0f;
+
+        // カメラ中心 + 前後左右の計5点をサンプリング
+        Vector2 checkOffsets[] = {
+            { 0.0f, 0.0f },
+            { groundCheckRadius_, 0.0f },
+            { -groundCheckRadius_, 0.0f },
+            { 0.0f, groundCheckRadius_ },
+            { 0.0f, -groundCheckRadius_ }
+        };
+
+        for (const auto& offset : checkOffsets)
+        {
+            if (terrain_->GetHeightAt(finalCameraPos.x + offset.x, finalCameraPos.z + offset.y, h))
+            {
+                maxTerrainHeight = std::max(maxTerrainHeight, h);
+            }
+        }
+
+        // 周囲で最も高い地形に合わせてカメラを持ち上げる
+        if (maxTerrainHeight != -FLT_MAX)
+        {
+            float minCamY = maxTerrainHeight + minGroundOffset_;
+            if (finalCameraPos.y < minCamY)
+            {
+                finalCameraPos.y = minCamY;
+            }
+        }
+    }
 
     // カメラ回転とシェイク適用
+    Vector3 desiredCameraTarget = actualPlayerPos + lookAtOffset_;
     Vector3 finalCameraForward = (desiredCameraTarget - finalCameraPos).Normalize();
     currentCameraRot_ = Quaternion::LookRotation(finalCameraForward, { 0.0f, 1.0f, 0.0f });
 
@@ -155,6 +191,8 @@ void FollowCamera::DebugDraw()
         binder_->Draw("Max Pitch", "ピッチ最大角度");
         binder_->Draw("Min Distance", "最小距離");
         binder_->Draw("Max Distance", "最大距離");
+        binder_->Draw("Min Ground Offset", "地面高さオフセット");
+        binder_->Draw("Ground Check Radius", "斜面判定半径");
     }
 
     ImGui::End();
