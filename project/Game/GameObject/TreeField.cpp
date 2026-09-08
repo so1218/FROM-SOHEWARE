@@ -430,7 +430,7 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkSpecColor", "スペキュラカラー");
         binder_->Draw("TrunkRoughness", "ラフネス");
         binder_->Draw("TrunkMetalness", "メタルネス");
-        binder_->Draw("TrunkShininess", "ハイライト鋭さ(Shininess)");
+        binder_->Draw("TrunkShininess", "ハイライト鋭さ");
         binder_->Draw("TrunkDiffReflect", "ディフューズ反射");
         binder_->Draw("TrunkNormalInt", "ノーマルマップ強度");
         binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
@@ -444,7 +444,7 @@ void TreeField::DebugDraw()
         binder_->Draw("TrunkShadowEnvStr", "環境マップの影への影響");
     }
 
-    if (ImGui::CollapsingHeader("環境・シェーディング共通"))
+    if (ImGui::CollapsingHeader("共通"))
     {
         ImGui::Text("グローバルテクスチャ");
         binder_->Draw("ToonRamp", "トゥーンランプ");

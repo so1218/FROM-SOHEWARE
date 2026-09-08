@@ -280,10 +280,10 @@ void EnvironmentProp::DebugDraw()
         ImGui::Separator();
 
         ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "個別カラー");
-        binder_->Draw("BaseColor", "基本色（マテリアルに乗算）");
+        binder_->Draw("BaseColor", "基本色");
         ImGui::Separator();
 
-        const char* behaviorNames[] = { "None (何もしない)", "Disappear (拾って消える)", "PushBack (押し戻し)" };
+        const char* behaviorNames[] = { "何もしない", "拾って消える", "押し戻し" };
         int currentBehavior = static_cast<int>(propBehavior_);
 
         if (ImGui::Combo("振る舞い", &currentBehavior, behaviorNames, IM_ARRAYSIZE(behaviorNames)))
@@ -300,7 +300,7 @@ void EnvironmentProp::DebugDraw()
         if (hasCollider_)
         {
             ImGui::Indent();
-            if (ImGui::Combo("形状", &colliderType_, "Sphere (球)\0AABB (ボックス)\0"))
+            if (ImGui::Combo("形状", &colliderType_, "球\0ボックス\0"))
             {
                 FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ColliderType", colliderType_);
 
@@ -309,13 +309,13 @@ void EnvironmentProp::DebugDraw()
 
             if (colliderType_ == 0)
             {
-                if (binder_->Draw("ColliderRadius", "半径 (Radius)")) {
+                if (binder_->Draw("ColliderRadius", "半径")) {
                     ApplySettings();
                 }
             }
             else
             {
-                if (binder_->Draw("ColliderSize", "サイズ (Half Size)")) {
+                if (binder_->Draw("ColliderSize", "サイズ")) {
                     ApplySettings();
                 }
             }
@@ -327,13 +327,13 @@ void EnvironmentProp::DebugDraw()
             ImGui::Unindent();
         }
 
-        binder_->Draw("HasLight", "ポイントライトを有効にする");
+        binder_->Draw("HasLight", "ポイントライトを有効");
 
         if (hasLight_)
         {
             ImGui::Indent();
             binder_->Draw("LightColor", "光の色");
-            binder_->Draw("LightIntensity", "輝度（明るさ）");
+            binder_->Draw("LightIntensity", "明るさ");
             binder_->Draw("LightRadius", "光源の届く半径");
             binder_->Draw("LightVolumetricScatteringIntensity", "フォグへの影響度");
             ImGui::Unindent();
@@ -351,7 +351,7 @@ void EnvironmentProp::DebugDraw()
             {
                 ImGui::Indent();
 
-                bool changedFollow = binder_->Draw(bindFollow, "モデルに追従させる");
+                bool changedFollow = binder_->Draw(bindFollow, "モデルに追従");
 
                 char nameBuf[256];
                 strncpy_s(nameBuf, sizeof(nameBuf), partName.c_str(), _TRUNCATE);
@@ -390,8 +390,8 @@ void EnvironmentProp::DebugDraw()
             }
             };
 
-        drawParticleUI("パーティクル1 を発生させる", hasParticle_, isParticleFollowing_, particleName_, activeEmitter_, "HasParticle", "IsParticleFollowing", "ParticleName", "P1");
-        drawParticleUI("パーティクル2 を発生させる", hasParticle2_, isParticleFollowing2_, particleName2_, activeEmitter2_, "HasParticle2", "IsParticleFollowing2", "ParticleName2", "P2");
+        drawParticleUI("パーティクル1 を発生", hasParticle_, isParticleFollowing_, particleName_, activeEmitter_, "HasParticle", "IsParticleFollowing", "ParticleName", "P1");
+        drawParticleUI("パーティクル2 を発生", hasParticle2_, isParticleFollowing2_, particleName2_, activeEmitter2_, "HasParticle2", "IsParticleFollowing2", "ParticleName2", "P2");
     }
 
     ImGui::PopID();

@@ -156,7 +156,7 @@ void GrassField::DebugDraw()
         binder_->Draw("Position", "中心座標");
         binder_->Draw("BaseScale", "全体の大きさ");
         binder_->Draw("MaxGrassCount", "最大草数");
-        binder_->Draw("GridSpacing", "草の間隔 (小さいほど高密度)");
+        binder_->Draw("GridSpacing", "草の間隔");
 
         ImGui::Separator();
         ImGui::Text("地形フィッティング");
@@ -173,10 +173,10 @@ void GrassField::DebugDraw()
 
         ImGui::Separator();
         ImGui::Text("マップテクスチャ");
-        binder_->Draw("HeightMap", "ハイトマップ(高さ)");
-        binder_->Draw("DensityMap", "密度マップ(生える場所)");
+        binder_->Draw("HeightMap", "ハイトマップ");
+        binder_->Draw("DensityMap", "密度マップ");
 
-        if (ImGui::Button("強制再生成 (Generate)"))
+        if (ImGui::Button("強制再生成"))
         {
             GenerateGrass();
         }

@@ -26,7 +26,7 @@ public:
 
     void RemoveEnvironmentProp(int index);
 
-    // 特定のグループ（モデル）に新しいプロップを追加
+    // 特定のグループに新しいプロップを追加
     void AddPropToGroup(const std::string& modelName);
 
 private:
@@ -44,7 +44,7 @@ private:
     // 実際の差し替え処理を行う関数
     void ExecutePrefabModelChange();
 
-    // インデックス(int)ではなく、ポインタで選択中のプロップを管理する
+    // インデックス(int)ではなく、ポインタで選択中のプロップを管理
     EnvironmentProp* selectedProp_ = nullptr;
 
     std::unique_ptr<FE::PropertyBinder> binder_;
