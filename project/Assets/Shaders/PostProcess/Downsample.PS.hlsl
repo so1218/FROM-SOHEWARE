@@ -8,9 +8,9 @@ ConstantBuffer<BloomSettings> gBloomSettings : register(b0);
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
-    float2 texelSize = gBloomSettings.texelSize; // 縮小前のテクスチャの 1.0/Width, 1.0/Height
+    float2 texelSize = gBloomSettings.texelSize; 
 
-    // 13タップフィルタ（ホタル現象やチラつきを抑えつつ滑らかにする）
+    // 13タップフィルタ
     float4 A = gTexture.Sample(samLinear, uv + float2(-2.0, -2.0) * texelSize);
     float4 B = gTexture.Sample(samLinear, uv + float2(0.0, -2.0) * texelSize);
     float4 C = gTexture.Sample(samLinear, uv + float2(2.0, -2.0) * texelSize);

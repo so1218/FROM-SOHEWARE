@@ -17,7 +17,7 @@ void BloomPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* p
     settings_.radius = 1.0f;
     mipChain_.resize(kMaxMipLevels);
 
-    uint32_t curW = Math::MyMax(1u, w / 2); // 最初は半分のサイズからスタート
+    uint32_t curW = Math::MyMax(1u, w / 2); // 半分のサイズからスタート
     uint32_t curH = Math::MyMax(1u, h / 2);
 
     auto* offscreenRTV = engine_->GetOffscreenRTVManager();
@@ -65,7 +65,7 @@ void BloomPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectCont
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // =========================================================
-    // 1. Downsample パス（多段階でぼかしながら縮小）
+    // Downsample パス（多段階でぼかしながら縮小）
     // =========================================================
     cmdList->SetPipelineState(psoManager_->GetPSO("Downsample"));
 
@@ -102,9 +102,8 @@ void BloomPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectCont
     }
 
     // =========================================================
-    // 2. Upsample パス（拡大しながら加算合成）
+    // Upsample パス（拡大しながら加算合成）
     // =========================================================
-    // BlendState が Additive の PSO をセット
     cmdList->SetPipelineState(psoManager_->GetPSO("Upsample"));
 
     for (int i = static_cast<int>(mipChain_.size()) - 2; i >= 0; --i)
@@ -114,7 +113,6 @@ void BloomPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectCont
 
         targetMip.cbData->radius = settings_.radius;
 
-        // 描画先を targetMip に変更（※クリアせずに加算描画）
         CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
             targetMip.resource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET
         );
@@ -136,7 +134,7 @@ void BloomPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectCont
     }
 
     // =========================================================
-    // 3. BloomPass 自身の出力テクスチャ (textureResource_) へコピー
+    // BloomPass 自身の出力テクスチャへコピー
     // =========================================================
     PreDraw(cmdList);
     cmdList->SetPipelineState(psoManager_->GetPSO("PostProcessCopy")); // 単純描画/コピー用PSO

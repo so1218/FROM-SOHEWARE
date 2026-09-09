@@ -9,7 +9,6 @@ ConstantBuffer<BloomSettings> gBloomSettings : register(b0);
 float4 main(VSOutput input) : SV_TARGET
 {
     float2 uv = input.uv;
-    // radius で光の広がり具合を調整（通常は 1.0 ～ 2.0 程度）
     float2 offset = gBloomSettings.texelSize * gBloomSettings.radius;
 
     float x = offset.x;

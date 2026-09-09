@@ -20,7 +20,7 @@
         ],
         "bubbleModel_EdgeInten": 2.0,
         "bubbleModel_EdgeWidth": 0.05000000074505806,
-        "bubbleModel_Emissive": 1.2999999523162842,
+        "bubbleModel_Emissive": 0.6000000238418579,
         "bubbleModel_EnvMapInt": 0.5400000214576721,
         "bubbleModel_EnvMapTex": "pureSky",
         "bubbleModel_HeightMapTex": "white1x1",
