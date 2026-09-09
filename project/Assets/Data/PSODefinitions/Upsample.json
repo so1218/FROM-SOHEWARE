@@ -1,0 +1,14 @@
+{
+  "RootSignature": "PostProcess",
+  "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
+  "PixelShader": "PostProcess/Upsample.PS.hlsl",
+  "InputLayout": "Fullscreen",
+  "BlendState": "Additive", 
+  "RasterizerState": "NoCullSolid",
+  "DepthStencilState": "Off",
+  "Topology": "Triangle",
+  "RTVFormats": [
+    "R16G16B16A16_FLOAT"
+  ],
+  "DSVFormat": "UNKNOWN"
+}

@@ -421,10 +421,10 @@
     <ClInclude Include="Engine\Graphics\PostProcess\FinalCompositePass.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Graphics\PostProcess\BlurPass.cpp">
+    <ClCompile Include="Engine\Graphics\PostProcess\BloomPass.cpp">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClCompile>
-    <ClInclude Include="Engine\Graphics\PostProcess\BlurPass.h">
+    <ClInclude Include="Engine\Graphics\PostProcess\BloomPass.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
     <ClCompile Include="Engine\Graphics\PostProcess\DoFPass.cpp">
@@ -437,12 +437,6 @@
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClCompile>
     <ClInclude Include="Engine\Graphics\PostProcess\BrightExtractPass.h">
-      <Filter>Engine\Graphics\PostProcess</Filter>
-    </ClInclude>
-    <ClCompile Include="Engine\Graphics\PostProcess\DownsamplePass.cpp">
-      <Filter>Engine\Graphics\PostProcess</Filter>
-    </ClCompile>
-    <ClInclude Include="Engine\Graphics\PostProcess\DownsamplePass.h">
       <Filter>Engine\Graphics\PostProcess</Filter>
     </ClInclude>
     <ClCompile Include="Engine\Graphics\PostProcess\IPostEffect.cpp">
@@ -1006,6 +1000,8 @@
     <FxCompile Include="Assets\Shaders\Environment\WorldInteraction.CS.hlsl" />
     <FxCompile Include="Assets\Shaders\Environment\Water.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Environment\Water.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PostProcess\Upsample.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PostProcess\PostProcessCopy.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

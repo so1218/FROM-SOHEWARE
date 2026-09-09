@@ -382,8 +382,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     // 各データへのポインタ取得
     PostEffectData* postEffectData = postEffectManager_->GetPostEffectData();
     BrightExtractSettings* brightExtractData = postEffectManager_->GetBrightSettings();
-    BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();
-    BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
+    BloomSettings* bloomSettings = postEffectManager_->GetBloomSettings();
     FinalCompositeSettings* compositeSettingsData = postEffectManager_->GetCompositeSettings();
     VolumetricFogSettings* volFogSettings = postEffectManager_->GetVolumetricFogSettings();
     FogBilateralSettings* fogBilateralSettings = postEffectManager_->GetFogBilateralSettings();
@@ -684,24 +683,15 @@ void DebugGuiManager::DrawPostEffectSettings()
     // ブルーム設定
     if (ImGui::TreeNode("ブルーム"))
     {
-        if (ImGui::TreeNode("輝度抽出 (Threshold)"))
+        if (ImGui::TreeNode("輝度抽出"))
         {
             ImGui::SliderFloat("しきい値", &brightExtractData->threshold, 0.0f, 10.0f);
             ImGui::SliderFloat("抽出強度", &brightExtractData->intensity, 0.0f, 5.0f);
             ImGui::TreePop();
         }
-
-        if (ImGui::TreeNode("ぼかし (Blur)"))
+        if (ImGui::TreeNode("光の広がり"))
         {
-            ImGui::TextDisabled("サンプリングサイズ");
-            ImGui::SliderFloat("横 (X)", &hSettings->texelSize.x, 0.0f, 0.01f, "%.5f");
-            ImGui::SliderFloat("縦 (Y)", &vSettings->texelSize.y, 0.0f, 0.01f, "%.5f");
-
-            ImGui::Separator();
-            ImGui::TextDisabled("ブラー強度");
-            if (ImGui::SliderFloat("強さ", &hSettings->blurStrength, 0.0f, 10.0f))
-                vSettings->blurStrength = hSettings->blurStrength;
-
+            ImGui::SliderFloat("拡散半径", &bloomSettings->radius, 0.0f, 5.0f, "%.2f");
             ImGui::TreePop();
         }
 

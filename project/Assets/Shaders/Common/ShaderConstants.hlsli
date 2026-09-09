@@ -482,10 +482,10 @@ struct BrightExtractSettings
     float intensity;
 };
 
-struct BlurSettings
+struct BloomSettings
 {
-    float2 texelSize;
-    float blurStrength;
+    float2 texelSize; 
+    float radius;
 };
 
 struct DoFSettings

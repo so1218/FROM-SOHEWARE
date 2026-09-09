@@ -2,8 +2,7 @@
 #include "Structures.h"
 #include "IPostEffect.h"
 #include "BrightExtractPass.h"
-#include "DownsamplePass.h"
-#include "BlurPass.h"
+#include "BloomPass.h"
 #include "DoFPass.h"
 #include "FinalCompositePass.h"
 #include "SSAOPass.h"
@@ -39,8 +38,7 @@ public:
 
     // 設定アクセス（ImGui用）
     BrightExtractSettings* GetBrightSettings() const { return brightPass_->GetSettings(); }
-    BlurSettings* GetHorizontalBlurSettings() const { return horizontalBlurPass_->GetSettings(); }
-    BlurSettings* GetVerticalBlurSettings() const { return verticalBlurPass_->GetSettings(); }
+    BloomSettings* GetBloomSettings() const { return bloomPass_->GetSettings(); }
     FinalCompositeSettings* GetCompositeSettings() const { return compositePass_->GetSettings(); }
     DoFSettings* GetDoFSettings() const { return dofPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
@@ -81,9 +79,7 @@ private:
     std::unique_ptr<BrightExtractPass> brightPass_;
 
     // Bloom用
-    std::unique_ptr<DownsamplePass> downsamplePass_;
-    std::unique_ptr<BlurPass> verticalBlurPass_;
-    std::unique_ptr<BlurPass> horizontalBlurPass_;
+    std::unique_ptr<BloomPass> bloomPass_;
 
     // DoF用
     std::unique_ptr<DoFPass> dofPass_;

@@ -226,7 +226,7 @@ void Engine::InitializeGraphics()
 
 	// オフスクリーンレンダーターゲットの初期化
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
-	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 20);
+	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 32);
 
 	// ライトマネージャの初期化
 	lightManager_ = std::make_unique<LightManager>();
