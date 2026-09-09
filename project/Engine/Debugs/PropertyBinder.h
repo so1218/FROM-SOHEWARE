@@ -1,10 +1,9 @@
 #pragma once
 #include "GlobalVariables.h"
-#include "ImGuiManager.h"
-#include "TextureManager.h"
 #include "MathUtils.h"
 #include "Structures.h"
 #include "ModelManager.h"
+#include "TextureManager.h"
 
 namespace FE
 {

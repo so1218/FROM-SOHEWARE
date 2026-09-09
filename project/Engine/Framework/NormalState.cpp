@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "NormalState.h"
 #include "FadeOutState.h"
+#include "BaseScene.h"
+#include "Fade.h"
 
 namespace FE
 {

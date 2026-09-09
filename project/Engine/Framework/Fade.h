@@ -1,15 +1,17 @@
 #pragma once
 #include "Engine.h"
-#include "Sprite.h"
-#include "PropertyBinder.h"
 
 namespace FE
 {
+
+class Sprite;
+class PropertyBinder;
 
 class Fade
 {
 public:
 	Fade(Engine* engine);
+	~Fade();
 
 	void Initialize();
 	void Update();

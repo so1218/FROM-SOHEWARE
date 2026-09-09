@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "SceneManager.h"
+#include "Engine.h"
+#include "BaseScene.h"
 #include "NormalState.h"
 #include "FadeInState.h"
 #include "ISceneTransitionState.h"
+#include "Fade.h"
 
 namespace FE
 {

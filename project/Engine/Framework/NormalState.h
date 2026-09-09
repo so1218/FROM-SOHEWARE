@@ -1,6 +1,5 @@
 #pragma once
 #include "ISceneTransitionState.h"
-#include "FadeOutState.h"
 
 namespace FE
 {

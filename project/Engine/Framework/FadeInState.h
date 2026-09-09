@@ -1,6 +1,5 @@
 #pragma once
 #include "ISceneTransitionState.h"
-#include "NormalState.h"
 
 namespace FE
 {

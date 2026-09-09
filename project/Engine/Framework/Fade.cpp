@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Fade.h"
-#include "GlobalVariables.h"
-#include "ImGuiManager.h"
+#include "Sprite.h"
+#include "PropertyBinder.h"
 #include "TimeManager.h"
 
 namespace FE
@@ -13,6 +13,8 @@ Fade::Fade(Engine* engine)
 
     sprite_ = std::make_unique<Sprite>(engine_);
 }
+
+Fade::~Fade() = default;
 
 void Fade::Initialize()
 {

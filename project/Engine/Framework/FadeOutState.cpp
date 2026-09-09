@@ -1,4 +1,6 @@
 #include "pch.h"
+#include "BaseScene.h"
+#include "Fade.h"
 #include "FadeOutState.h"
 #include "FadeInState.h"
 
