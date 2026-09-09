@@ -87,7 +87,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].worleyWeight = 0.95f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseIntensity = 0.9f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };
-    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.5f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;

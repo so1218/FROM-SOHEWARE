@@ -22,7 +22,7 @@
         "FlattenFactor": 10.0,
         "FlutterAmount": 0.009999999776482582,
         "GrassCount": 5,
-        "GrassNormalBlend": 0.75,
+        "GrassNormalBlend": 1.0,
         "GrassRootAO": 1.0,
         "GrassStiffness": 0.3400000035762787,
         "GridSpacing": 0.9200000166893005,
@@ -52,9 +52,9 @@
         ],
         "RootAO": 0.550000011920929,
         "RootColor": [
-            0.009453607723116875,
-            0.2489451766014099,
-            0.009453607723116875
+            0.0,
+            0.2109704613685608,
+            0.0
         ],
         "RootColorMultiplier": [
             0.10000000149011612,
