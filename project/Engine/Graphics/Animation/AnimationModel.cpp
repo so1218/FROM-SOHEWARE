@@ -403,22 +403,21 @@ void AnimationModel::SetMaterialColor(size_t index, uint32_t color)
 
 Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const
 {
+    // 取得される直前の最新 transform_ で行列を自動更新
+    const_cast<WorldTransform&>(transform_).UpdateMatrix();
+
     // ボーンの名前でマップを検索
     auto it = skeleton_.jointMap.find(jointName);
 
     // 見つかった場合
     if (it != skeleton_.jointMap.end())
     {
-        size_t jointIndex = (*it).second; // ボーンの配列インデックス
-
-        // ボーンのモデル空間での行列を取得
+        size_t jointIndex = (*it).second;
         Matrix4x4 boneSkeletonSpaceMatrix = skeleton_.joints[jointIndex].skeletonSpaceMatrix;
 
-        // ボーン行列 × モデルのワールド行列 = ボーンのワールド行列
         return boneSkeletonSpaceMatrix * transform_.matWorld_;
     }
 
-    // 見つからなかった場合の安全対策として、モデルの行列をそのまま返す
     return transform_.matWorld_;
 }
 
