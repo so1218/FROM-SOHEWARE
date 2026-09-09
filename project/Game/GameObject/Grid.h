@@ -16,5 +16,4 @@ public:
 private:
     FE::Engine* engine_;
     std::unique_ptr<FE::Model> model_;
-
 };

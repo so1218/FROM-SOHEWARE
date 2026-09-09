@@ -22,7 +22,6 @@ public:
 private:
     FE::Engine* engine_;
 
-    std::unique_ptr<FE::Model> modelBuilding_;
     std::unique_ptr<FE::Skydome> skydome_;
     std::unique_ptr<FE::PropertyBinder> binder_;
     std::unique_ptr<FE::Terrain> terrain_;

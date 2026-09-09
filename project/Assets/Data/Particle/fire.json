@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 2,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 1.9199999570846558,
+        "lifetime": 0.9599999785423279,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -15,7 +15,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.10000000149011612
+        "spawnInterval": 0.07000000029802322
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -69,18 +69,18 @@
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4278190080,
-            "endColor2": 4294967040,
+            "endColor2": 4278190080,
             "mode": 0,
-            "startColor": 4228842495,
-            "startColor2": 4294967295
+            "startColor": 4279435519,
+            "startColor2": 16748287
         },
-        "intensity": 38.79999923706055,
+        "intensity": 17.899999618530273,
         "noiseModule": {
             "enabled": true,
-            "frequency": 2.4100000858306885,
+            "frequency": 3.049999952316284,
             "scrollSpeed": 1.9900000095367432,
             "separateAxes": false,
-            "strength": 4.400000095367432
+            "strength": 4.5
         },
         "physicsModule": {
             "affectedByWind": true,
@@ -96,7 +96,7 @@
         "rotationModule": {
             "enabled": true,
             "isBillboard": true,
-            "maxAngularVelocity2D": 289.0,
+            "maxAngularVelocity2D": 415.0,
             "maxAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -107,7 +107,7 @@
                 0.0,
                 360.0
             ],
-            "minAngularVelocity2D": -268.0,
+            "minAngularVelocity2D": -374.0,
             "minAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -137,15 +137,15 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                2.0,
-                2.0,
+                1.0,
+                1.0,
                 2.0
             ],
             "frequency": 0.0,
             "oscillate": false,
             "startScale": [
-                8.0,
-                8.0,
+                6.0,
+                6.0,
                 1.0
             ]
         },
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 5.920000076293945
+            "speed": 8.680000305175781
         },
         "vortexModule": {
             "axis": [

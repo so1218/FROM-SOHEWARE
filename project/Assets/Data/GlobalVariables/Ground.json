@@ -19,7 +19,7 @@
             0.0
         ],
         "ModelBuilding_EdgeInten": 1.5,
-        "ModelBuilding_EdgeWidth": 0.23000000417232513,
+        "ModelBuilding_EdgeWidth": 0.12399999797344208,
         "ModelBuilding_Emissive": 1.7000000476837158,
         "ModelBuilding_EnvMapInt": 0.18000000715255737,
         "ModelBuilding_EnvMapTex": "pureSky",
@@ -1382,7 +1382,7 @@
         ],
         "ModelBuilding_ToonRampTex": "toonRamp_2",
         "ModelBuilding_Trans": [
-            -30.200000762939453,
+            -105.0,
             -6.699999809265137,
             0.0
         ],

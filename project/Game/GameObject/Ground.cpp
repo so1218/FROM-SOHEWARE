@@ -17,7 +17,6 @@ Ground::Ground(Engine* engine) : GameObject()
 	float cellSize = 1.0f;
 	terrain_->LoadFromHeightmap("noise_39", cellSize);
 
-	modelBuilding_ = std::make_unique<Model>(engine_, "volumetricFog");
 	skydome_ = std::make_unique<Skydome>(engine);
 
 	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
@@ -27,7 +26,6 @@ Ground::Ground(Engine* engine) : GameObject()
 void Ground::Initialize()
 {
 	binder_->BindTerrain("Terrain", terrain_.get());
-	binder_->BindModel("ModelBuilding", modelBuilding_.get());
 
 	skydome_->Initialize();
 
@@ -51,7 +49,6 @@ void Ground::Draw()
 		terrain_->Draw();
 	}
 
-	modelBuilding_->Draw();
 	skydome_->Draw();
 	interactionSystem_->Draw();
 };
@@ -62,7 +59,6 @@ void Ground::DebugDraw()
 	ImGui::Begin("地面");
 
 	binder_->DrawTerrain("Terrain", "地形エディタ");
-	binder_->DrawModel("ModelBuilding", "建物インスペクター");
 
 	ImGui::End();
 #endif
