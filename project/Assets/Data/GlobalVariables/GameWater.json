@@ -117,7 +117,7 @@
             "CausticsIntensity": 0.5,
             "CausticsScale": 2.5,
             "CausticsSpeed": 4.0,
-            "ChromaticAberration": 1.100000023841858,
+            "ChromaticAberration": 1.25,
             "DeepColor": [
                 0.2694012522697449,
                 0.8185653686523438,
@@ -144,7 +144,7 @@
             "InteractionHeightScale": 1.649999976158142,
             "InteractionNormalScale": 0.0,
             "InteractionSinkForce": 0.6600000262260437,
-            "NormalIntensity": 0.4000000059604645,
+            "NormalIntensity": 0.44999998807907104,
             "NormalMap": "normal_02",
             "NormalTiling": [
                 0.03999999910593033,
