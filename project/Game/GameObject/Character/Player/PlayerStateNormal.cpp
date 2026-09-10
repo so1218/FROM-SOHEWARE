@@ -10,10 +10,10 @@ void PlayerStateNormal::Update(Player* p)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-    // ★ 常時重力を適用（プロップ等の足場に常に密着させて衝突判定を安定させる）
+    // 常時重力を適用
     p->ApplyGravity(deltaTime);
 
-    // 地形への着地位置補正（地形上の場合はここでY座標とvelocityY_が補正される）
+    // 地形への着地位置補正
     p->SnapToGround();
 
     // 足場から外れた場合の落下遷移

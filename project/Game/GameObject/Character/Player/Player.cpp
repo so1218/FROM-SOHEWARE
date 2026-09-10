@@ -100,6 +100,12 @@ void Player::Update()
 			GetTransform().translation_ = pos;
 		}
 	}
+
+	{
+		Vector3& pos = GetTransform().translation_;
+		pos.x = std::clamp(pos.x, -511.0f, 511.0f);
+		pos.z = std::clamp(pos.z, -511.0f, 511.0f);
+	}
 	
 	{
 		// 0番目のディレクショナルライトを取得
