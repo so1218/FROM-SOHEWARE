@@ -2,3 +2,4 @@ Name,Path
 # Characters
 humanRun,Characters/Human/humanRun.gltf
 humanIdle,Characters/Human/humanIdle.gltf
+humanJump,Characters/Human/humanJump.gltf

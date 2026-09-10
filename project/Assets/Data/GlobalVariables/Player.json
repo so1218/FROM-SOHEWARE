@@ -24,9 +24,9 @@
         "PlayerModel_Mat0_AlbedoMap": "white1x1",
         "PlayerModel_Mat0_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat0_Color": [
-            1.0,
-            1.0,
-            1.0,
+            0.0,
+            0.0,
+            0.0,
             1.0
         ],
         "PlayerModel_Mat0_DiffuseRef": 1.0,
@@ -129,8 +129,8 @@
         "PlayerModel_Mat1_AlbedoMap": "white1x1",
         "PlayerModel_Mat1_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat1_Color": [
-            0.7763713002204895,
-            0.7272338271141052,
+            1.0,
+            0.9367087483406067,
             0.0,
             1.0
         ],
@@ -145,7 +145,7 @@
         ],
         "PlayerModel_Mat1_EdgeInten": 2.0,
         "PlayerModel_Mat1_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat1_Emissive": 1.2000000476837158,
+        "PlayerModel_Mat1_Emissive": 1.0,
         "PlayerModel_Mat1_EnvMapInt": 0.15000000596046448,
         "PlayerModel_Mat1_EnvMapTex": "pureSky",
         "PlayerModel_Mat1_HeightMapTex": "white1x1",
@@ -234,8 +234,8 @@
         "PlayerModel_Mat2_AlbedoMap": "white1x1",
         "PlayerModel_Mat2_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat2_Color": [
-            0.7764706015586853,
-            0.7254902124404907,
+            0.9873417615890503,
+            0.9225162863731384,
             0.0,
             1.0
         ],
@@ -250,7 +250,7 @@
         ],
         "PlayerModel_Mat2_EdgeInten": 2.0,
         "PlayerModel_Mat2_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat2_Emissive": 1.2000000476837158,
+        "PlayerModel_Mat2_Emissive": 5.5,
         "PlayerModel_Mat2_EnvMapInt": 0.15000000596046448,
         "PlayerModel_Mat2_EnvMapTex": "pureSky",
         "PlayerModel_Mat2_HeightMapTex": "white1x1",
@@ -549,9 +549,9 @@
         "PlayerModel_Mat5_AlbedoMap": "white1x1",
         "PlayerModel_Mat5_AlphaThres": 0.009999999776482582,
         "PlayerModel_Mat5_Color": [
-            0.9915611743927002,
-            0.814835250377655,
-            0.6945111751556396,
+            0.37974685430526733,
+            0.37974685430526733,
+            0.37974685430526733,
             1.0
         ],
         "PlayerModel_Mat5_DiffuseRef": 4.0,
