@@ -247,7 +247,7 @@
         "PlayerModel_Mat2_DiffuseRef": 4.0,
         "PlayerModel_Mat2_DisEnable": 0,
         "PlayerModel_Mat2_DisThres": 0.5,
-        "PlayerModel_Mat2_DissolveTex": "white1x1",
+        "PlayerModel_Mat2_DissolveTex": "noise_23",
         "PlayerModel_Mat2_EdgeColor": [
             1.0,
             0.5,
@@ -255,7 +255,7 @@
         ],
         "PlayerModel_Mat2_EdgeInten": 2.0,
         "PlayerModel_Mat2_EdgeWidth": 0.05000000074505806,
-        "PlayerModel_Mat2_Emissive": 1.600000023841858,
+        "PlayerModel_Mat2_Emissive": 2.700000047683716,
         "PlayerModel_Mat2_EnvMapInt": 0.15000000596046448,
         "PlayerModel_Mat2_EnvMapTex": "pureSky",
         "PlayerModel_Mat2_HeightMapTex": "white1x1",
