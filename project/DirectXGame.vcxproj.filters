@@ -922,6 +922,7 @@
     <ClCompile Include="Engine\Graphics\Renderer\WaterRenderer.cpp" />
     <ClCompile Include="Game\GameObject\WaterObject.cpp" />
     <ClCompile Include="Game\GameObject\WaterManager.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -968,6 +969,7 @@
     <ClInclude Include="Game\GameObject\WaterObject.h" />
     <ClInclude Include="Game\GameObject\WaterManager.h" />
     <ClInclude Include="Engine\Graphics\Common\PIXColors.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateJump.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />

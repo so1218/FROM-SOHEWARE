@@ -32,7 +32,6 @@ void Player::Initialize()
 {
 	// プレイヤーの基本情報を設定
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
-	moveSpeed_ = 0.2f;
 	weaponModel_->MakeMaterialUnique();
 
 	collider_->SetType(CollisionShapeType::AABB);
@@ -45,12 +44,17 @@ void Player::Initialize()
 
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
 	binder_->BindModel("WeaponModel", weaponModel_.get());
-	binder_->Bind("RunSpeed", &runSpeed_, 0.01f);
-	binder_->Bind("RotationSpeed", &rotationSpeed_, 0.1f);
-	binder_->Bind("IdleAnimSpeed", &idleAnimSpeed_, 0.05f);
-	binder_->Bind("RunAnimSpeed", &runAnimSpeed_, 0.05f);
-	binder_->Bind("IdleToRunBlendTime", &idleToRunBlendTime_, 0.01f);
-	binder_->Bind("RunToIdleBlendTime", &runToIdleBlendTime_, 0.01f);
+	binder_->Bind("RunSpeed", &config.runSpeed, 0.01f);
+	binder_->Bind("RotationSpeed", &config.rotationSpeed, 0.1f);
+	binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 0.05f);
+	binder_->Bind("RunAnimSpeed", &config.runAnimSpeed, 0.05f);
+	binder_->Bind("JumpAnimSpeed", &config.jumpAnimSpeed, 0.05f);
+	binder_->Bind("IdleToRunBlendTime", &config.idleToRunBlendTime, 0.01f);
+	binder_->Bind("RunToIdleBlendTime", &config.runToIdleBlendTime, 0.01f);
+	binder_->Bind("JumpBlendTime", &config.jumpBlendTime, 0.01f);
+	binder_->Bind("JumpInitialVelocity", &config.jumpInitialVelocity, 0.1f);
+	binder_->Bind("Gravity", &config.gravity, 0.1f);
+	binder_->Bind("AirControlRate", &config.airControlRate, 0.05f);
 
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
 	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
@@ -78,6 +82,8 @@ void Player::Update()
 
 	// 毎フレーム、現在のステートのUpdateが呼ばれる
 	stateMachine_->Update();
+
+	isGroundedOnObject_ = false;
 
 	// 木との衝突判定
 	if (treeField_)
@@ -170,48 +176,6 @@ void Player::Update()
 	engine_->GetRendererManager()->SetWorldInteractionCenter({ currentPos.x, currentPos.z });
 }
 
-void Player::Move()
-{
-	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-
-	moveDirection_ = GetMoveDirection();
-
-	// 移動方向がある場合、最後の移動方向を更新
-	if (moveDirection_.Length() > 0.0f)
-	{
-		lastMoveDirection_ = moveDirection_;
-	}
-
-	// 向きを補間して回転
-	if (lastMoveDirection_.Length() > 0.001f)
-	{
-		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
-		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
-
-		Quaternion currentRotation = GetTransform().rotationQuaternion_;
-		float slerpFactor = Math::Clamp(rotationSpeed_ * deltaTime, 0.0f, 1.0f);
-		Quaternion newRotation = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
-
-		GetTransform().rotationQuaternion_ = newRotation;
-	}
-
-	// 実際の位置更新
-	GetTransform().translation_ += moveDirection_ * moveSpeed_;
-
-	// 移動後、地形の高さを取得してY座標を補正（スナップ）する
-	if (terrain_)
-	{
-		// プレイヤーの現在位置の地面の高さを取得
-		float groundHeight = terrain_->GetHeight(
-			GetTransform().translation_.x,
-			GetTransform().translation_.z
-		);
-
-		// プレイヤーのY座標を地面の高さに合わせる
-		GetTransform().translation_.y = groundHeight;
-	}
-}
-
 // 入力から移動方向を取得
 Vector3 Player::GetMoveDirection()
 {
@@ -260,6 +224,70 @@ Vector3 Player::GetMoveDirection()
 	return dir;
 }
 
+void Player::UpdateRotation(const Vector3& moveDir)
+{
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+	if (moveDir.Length() > 0.0f) {
+		lastMoveDirection_ = moveDir;
+	}
+
+	if (lastMoveDirection_.Length() > 0.001f) {
+		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
+		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
+
+		Quaternion currentRotation = GetTransform().rotationQuaternion_;
+		float slerpFactor = Math::Clamp(config.rotationSpeed * deltaTime, 0.0f, 1.0f);
+		GetTransform().rotationQuaternion_ = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
+	}
+}
+
+void Player::ApplyHorizontalMovement(const Vector3& moveDir, float speed)
+{
+	GetTransform().translation_ += moveDir * speed;
+}
+
+void Player::ApplyGravity(float deltaTime)
+{
+	velocityY_ -= config.gravity * deltaTime;
+	GetTransform().translation_.y += velocityY_ * deltaTime;
+}
+
+void Player::SnapToGround()
+{
+	// オブジェクトに乗っている場合
+	if (isGroundedOnObject_) return;
+
+	if (!terrain_) return;
+
+	float groundHeight = 0.0f;
+	if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
+	{
+		// 地形より十分高い位置にいる場合は地面へ落とさない
+		if (GetTransform().translation_.y <= groundHeight + 0.5f)
+		{
+			GetTransform().translation_.y = groundHeight;
+			velocityY_ = 0.0f;
+		}
+	}
+}
+
+bool Player::IsGrounded() const
+{
+	// プロップの上に乗っている場合
+	if (isGroundedOnObject_) return true;
+
+	// 地形の上に乗っている場合
+	if (!terrain_) return true;
+
+	float groundHeight = 0.0f;
+	if (terrain_->GetHeightAt(GetTransform().translation_.x, GetTransform().translation_.z, groundHeight))
+	{
+		return GetTransform().translation_.y <= groundHeight + 0.1f;
+	}
+
+	return false;
+}
+
 void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 {
 
@@ -268,6 +296,9 @@ void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 void Player::Draw()
 {
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
+
+	GetTransform().UpdateMatrix();
+	collider_->DrawCollider();
 
 	animationModel_->Draw();
 	weaponModel_->Draw();
@@ -289,12 +320,21 @@ void Player::DebugDraw()
 		binder_->Draw("RotationSpeed", "回転の速さ");
 	}
 
+	if (ImGui::CollapsingHeader("ジャンプ"))
+	{
+		binder_->Draw("JumpInitialVelocity", "ジャンプ初速");
+		binder_->Draw("Gravity", "重力加速度");
+		binder_->Draw("AirControlRate", "空中移動制御率(0~1)");
+	}
+
 	if (ImGui::CollapsingHeader("アニメーション調整"))
 	{
 		binder_->Draw("IdleAnimSpeed", "待機アニメ速度");
 		binder_->Draw("RunAnimSpeed", "走りアニメ速度");
+		binder_->Draw("JumpAnimSpeed", "ジャンプアニメ速度");
 		binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間(秒)");
 		binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間(秒)");
+		binder_->Draw("JumpBlendTime", "ジャンプ 補間時間(秒)");
 	}
 
 	if (ImGui::CollapsingHeader("コライダー"))
@@ -314,7 +354,4 @@ void Player::DebugDraw()
 
 	ImGui::End();
 #endif
-
-	GetTransform().UpdateMatrix();
-	collider_->DrawCollider();
 }

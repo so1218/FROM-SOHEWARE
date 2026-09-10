@@ -83,13 +83,15 @@
             "strength": 10.699999809265137
         },
         "physicsModule": {
+            "affectedByWind": false,
             "drag": 0.0,
             "enabled": false,
             "gravity": [
                 0.0,
                 -9.800000190734863,
                 0.0
-            ]
+            ],
+            "windInfluence": 1.0
         },
         "rotationModule": {
             "enabled": false,
@@ -154,12 +156,12 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 4.800000190734863,
+            "emissiveIntensity": 2.299999952316284,
             "enabled": true,
             "endColor": [
+                0.3164557218551636,
                 1.0,
-                0.15189874172210693,
-                0.0,
+                0.6279442310333252,
                 0.0
             ],
             "headWidthScale": 1.0,
@@ -175,9 +177,9 @@
                 0.0
             ],
             "startColor": [
+                0.0,
                 1.0,
-                0.0,
-                0.0,
+                0.6582279205322266,
                 1.0
             ],
             "tailWidthScale": 1.0,

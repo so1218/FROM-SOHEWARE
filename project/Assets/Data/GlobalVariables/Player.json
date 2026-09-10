@@ -1,5 +1,6 @@
 {
     "Player": {
+        "AirControlRate": 0.7300000190734863,
         "ColliderOffset": [
             0.0,
             4.579999923706055,
@@ -12,11 +13,15 @@
         ],
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,
+        "Gravity": 74.04000091552734,
         "HP": 9.819999694824219,
         "IdleAnimSpeed": 1.0,
         "IdleToRunBlendTime": 0.25,
         "InteractionForce": 1.309999942779541,
         "InteractionRadius": 8.859999656677246,
+        "JumpAnimSpeed": 0.7599999904632568,
+        "JumpBlendTime": 0.2199999988079071,
+        "JumpInitialVelocity": 34.97999954223633,
         "MaxStamina": 9.0,
         "MaxVerticalDist": 1.6799999475479126,
         "PlayerModel_IsLoop": true,

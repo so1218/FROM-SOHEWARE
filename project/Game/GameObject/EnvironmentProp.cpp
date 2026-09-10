@@ -2,6 +2,7 @@
 #include "EnvironmentProp.h"
 #include "GameDefine.h"
 #include "CollisionConfig.h"
+#include "Player.h"
 
 using namespace FE;
 
@@ -477,6 +478,14 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
         if (mine->CalculatePushBackVector(other, pushVector))
         {
             hitObj->GetTransform().translation_ += pushVector;
+
+            // 上方向に押し戻された場合
+            if (pushVector.y > 0.0f && hitObj->CompareTag(ObjectTag::Player))
+            {
+                Player* player = static_cast<Player*>(hitObj);
+                player->SetVelocityY(0.0f);       
+                player->SetGroundedOnObject(true); 
+            }
         }
     }
 }
