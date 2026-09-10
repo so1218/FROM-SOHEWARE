@@ -74,7 +74,7 @@
             "startColor": 1389035775,
             "startColor2": 4294967295
         },
-        "intensity": 1.100000023841858,
+        "intensity": 1.399999976158142,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                3.5,
-                3.5,
+                5.0,
+                5.0,
                 0.0
             ],
             "frequency": 1.0,

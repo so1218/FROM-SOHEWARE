@@ -15,7 +15,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.10000000149011612
+        "spawnInterval": 0.07999999821186066
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -156,12 +156,12 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 2.299999952316284,
+            "emissiveIntensity": 3.0,
             "enabled": true,
             "endColor": [
                 0.3164557218551636,
+                0.33376067876815796,
                 1.0,
-                0.6279442310333252,
                 0.0
             ],
             "headWidthScale": 1.0,
@@ -170,7 +170,7 @@
             "jitterPhase": 0.0,
             "jitterSpeed": 3.799999952316284,
             "jitterStrength": 0.5,
-            "lifetime": 0.5,
+            "lifetime": 0.4000000059604645,
             "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
@@ -179,7 +179,7 @@
             "startColor": [
                 0.0,
                 1.0,
-                0.6582279205322266,
+                0.4050631523132324,
                 1.0
             ],
             "tailWidthScale": 1.0,
