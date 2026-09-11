@@ -149,20 +149,20 @@
 
 ### スクリーンスペース水面反射 (Screen Space Reflection - SSR)
 - **参考資料**: 
-  - [Efficient GPU Screen-Space Ray Tracing](https://casual-effects.com/research/McGuire2014Reflection/index.html) (Morgan McGuire, Michael Mara / JCGT)
-  - [Stochastic Screen-Space Reflections in Frostbite](https://www.ea.com/frostbite/news/stochastic-screen-space-reflections) (Yasin Uludağ / EA Frostbite)
+  - [Efficient GPU Screen-Space Ray Tracing](https://jcgt.org/published/0003/04/04/) (Morgan McGuire, Michael Mara / JCGT)
+  - [Stochastic Screen-Space Reflections (SIGGRAPH 2015)](https://h3.gd/stochastic-ssr/) (Tomasz Stachowiak, Yasin Uludağ / EA Frostbite)
 - **該当ソースコード**: `Assets/Shaders/Environment/Water.PS.hlsl`
 - **概要**: 線形ステップレイキャストと二分探索（Binary Search Refinement）による高精度SSR。画面端フェード処理およびキューブマップ環境光へのスムーズなフォールバック構造の実装。
 
 ### ボロノイ・コースティクス & 色収差 (Voronoi Caustics & Dispersion)
 - **参考資料**: 
-  - [GPU Gems 3 - Chapter 4: Frank's Water Project](https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-4-franks-water-project) (NVIDIA)
+  - [GPU Gems - Chapter 2: Rendering Water Caustics](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-2-rendering-water-caustics) (NVIDIA)
 - **該当ソースコード**: `Assets/Shaders/Environment/Water.PS.hlsl`
 - **概要**: 4セルボロノイエッジアルゴリズムを用いたプロシージャル水底コースティクス。波法線によるゆがみや水深減衰に加え、RGBチャンネルを微細オフセットさせた波長分散（色収差）表現。
 
 ### 水中吸光 & 物理ベース散乱 (Beer-Lambert Absorption & In-Scattering)
 - **参考資料**: 
-  - [Real-time Water Rendering (SIGGRAPH Course Notes)](https://www.vassvik.com/rendering-water/)
+  - [Simulating Ocean Water (SIGGRAPH Course Notes)](https://jtessen.people.clemson.edu/reports/papers_files/coursenotes2004.pdf) (Jerry Tessendorf)
 - **該当ソースコード**: `Assets/Shaders/Environment/Water.PS.hlsl`
 - **概要**: **Beer-Lambertの法則**（`exp(-depth * absorption)`）に基づく水深に応じた光波の吸光表現（浅瀬〜深海のグラデーション）と、波頭や逆光時に光が分散する水中散乱（In-Scattering）処理。
 
