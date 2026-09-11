@@ -57,7 +57,7 @@ float3 TraceSSR(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal, f
     float2 pixelPos = screenUV * gFrameData.screenResolution.xy;
     float dither = InterleavedGradientNoise(pixelPos + (gFrameData.gTime * 144.0f));
 
-    // CPU側からのパラメータ取得 (安全のためのクランプ処理付き)
+    // CPU側からのパラメータ取得 (安全のためのクランプ処理)
     int maxSteps = (int) clamp(gWaterMaterial.ssrMaxSteps, 8.0f, 128.0f);
     int binarySearchSteps = (int) clamp(gWaterMaterial.ssrBinarySearchSteps, 0.0f, 16.0f);
 
@@ -74,7 +74,7 @@ float3 TraceSSR(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal, f
     float4 projStart = mul(float4(rayOrigin, 1.0f), gFrameData.viewProjectionMatrix);
     float4 projDir = mul(float4(smoothReflectDir, 0.0f), gFrameData.viewProjectionMatrix);
     
-    // [unroll] から [loop] に変更し、動的な maxSteps でループを打ち切る
+    // 動的な maxSteps でループを打ち切る
     [loop]
     for (int i = 0; i < maxSteps; ++i)
     {

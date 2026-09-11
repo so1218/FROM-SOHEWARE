@@ -45,7 +45,7 @@ float4 main(LightningVSOutput input) : SV_Target
     // 最終的な透明度の決定
     float alpha = glow * input.color.a * flicker;
     
-    // アルファテスト: kAlphaClipThreshold を下回る場合はピクセルを破棄
+    // アルファテスト
     clip(alpha - kAlphaClipThreshold);
     
     return float4(finalColor, alpha);
