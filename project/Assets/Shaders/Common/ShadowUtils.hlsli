@@ -1,3 +1,5 @@
+#include "Common/ShaderConstants.hlsli"
+
 static const float2 poissonDisk[16] =
 {
     float2(-0.94201624, -0.39906216), float2(0.94558609, -0.76890725),
@@ -41,7 +43,8 @@ float SampleSingleCascade(
         return 1.0f; // 影なし
     }
 
-    float2 texelSize = 1.0f / 2048.0f;
+    // テクセルサイズを定数化
+    float2 texelSize = 1.0f / SHADOW_MAP_RESOLUTION;
     float softness = max(shadowSoftness, 1.0f);
     float shadow = 0.0f;
 
@@ -65,38 +68,28 @@ float CalculateShadowCSM(
     float3 worldPos, float3 normal, float viewDepth, float3 lightDir,
     float shadowDensity, float4 cascadeSplits,
     float shadowNormalBias, float shadowBias, float shadowSoftness,
-    float4x4 cascadeLightViewProj[4], 
+    float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT],
     Texture2DArray<float> shadowMapArray,
     SamplerComparisonState shadowSampler)
 {
+    // 最遠判定：影の描画限界を超えた場合は処理をスキップ
+    if (viewDepth > cascadeSplits[MAX_CASCADE_COUNT - 1])
+        return 1.0f;
+
     float minShadow = 1.0f - saturate(shadowDensity);
 
     if (dot(normal, lightDir) <= 0.0f)
         return minShadow;
 
+    // カスケードインデックスの判定
     uint cascadeIndex = 0;
-    float nextSplitDist = 0.0f;
-
-    // どのカスケードに属しているか判定
-    if (viewDepth > cascadeSplits.z)
+    [unroll]
+    for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
     {
-        cascadeIndex = 3;
-        nextSplitDist = 999999.0f;
-    }
-    else if (viewDepth > cascadeSplits.y)
-    {
-        cascadeIndex = 2;
-        nextSplitDist = cascadeSplits.z;
-    }
-    else if (viewDepth > cascadeSplits.x)
-    {
-        cascadeIndex = 1;
-        nextSplitDist = cascadeSplits.y;
-    }
-    else
-    {
-        cascadeIndex = 0;
-        nextSplitDist = cascadeSplits.x;
+        if (viewDepth > cascadeSplits[i])
+        {
+            cascadeIndex = i + 1;
+        }
     }
 
     // メインの影を取得
@@ -106,18 +99,22 @@ float CalculateShadowCSM(
         cascadeLightViewProj[cascadeIndex], shadowMapArray, shadowSampler
     );
 
-    // カスケードシーム（ブレンド）処理
-    float blendBand = 2.0f;
-    float blendFactor = smoothstep(nextSplitDist - blendBand, nextSplitDist, viewDepth);
-
-    if (blendFactor > 0.0f && cascadeIndex < 3)
+    // 境界ブレンド処理
+    if (cascadeIndex < MAX_CASCADE_COUNT - 1)
     {
-        float nextShadowVisibility = SampleSingleCascade(
-            worldPos, normal, cascadeIndex + 1, lightDir,
-            shadowNormalBias, shadowBias, shadowSoftness,
-            cascadeLightViewProj[cascadeIndex + 1], shadowMapArray, shadowSampler
-        );
-        shadowVisibility = lerp(shadowVisibility, nextShadowVisibility, blendFactor);
+        float nextSplitDist = cascadeSplits[cascadeIndex];
+        float blendBand = 2.0f;
+        float blendFactor = smoothstep(nextSplitDist - blendBand, nextSplitDist, viewDepth);
+
+        if (blendFactor > 0.0f)
+        {
+            float nextShadowVisibility = SampleSingleCascade(
+                worldPos, normal, cascadeIndex + 1, lightDir,
+                shadowNormalBias, shadowBias, shadowSoftness,
+                cascadeLightViewProj[cascadeIndex + 1], shadowMapArray, shadowSampler
+            );
+            shadowVisibility = lerp(shadowVisibility, nextShadowVisibility, blendFactor);
+        }
     }
 
     return lerp(minShadow, 1.0f, shadowVisibility);

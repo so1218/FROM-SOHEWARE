@@ -122,7 +122,7 @@ private:
     float timeSpeedMultiplier_ = 24.0f;
     Vector3 sunDirection_ = { 0.0f, -1.0f, 0.0f };
 
-    TimeOfDayProfile profileNight_;   // 0時 / 24時
+    TimeOfDayProfile profileNight_;   // 0時
     TimeOfDayProfile profileSunrise_; // 6時
     TimeOfDayProfile profileDay_;     // 12時
     TimeOfDayProfile profileSunset_;  // 18時

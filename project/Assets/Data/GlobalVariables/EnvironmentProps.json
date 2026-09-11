@@ -165,7 +165,7 @@
                 0.0
             ],
             "MasterModel_Mat1_RimEnable": 1,
-            "MasterModel_Mat1_RimInten": 9.899999618530273,
+            "MasterModel_Mat1_RimInten": 0.699999988079071,
             "MasterModel_Mat1_RimPower": 11.800000190734863,
             "MasterModel_Mat1_RimUseDir": 0,
             "MasterModel_Mat1_RippleEnable": 0,
@@ -433,6 +433,128 @@
                 0.0
             ],
             "ModelName": "bonFire"
+        },
+        "Master_building_01": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "white1x1",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                0.8392156958580017,
+                0.8392156958580017,
+                0.8392156958580017,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 1,
+            "MasterModel_DisThres": 0.0,
+            "MasterModel_DissolveTex": "noise_51",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.17721521854400635,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 1.5,
+            "MasterModel_EdgeWidth": 0.08699999749660492,
+            "MasterModel_Emissive": 1.7000000476837158,
+            "MasterModel_EnvMapInt": 0.1899999976158142,
+            "MasterModel_EnvMapTex": "pureSky",
+            "MasterModel_HeightMapTex": "white1x1",
+            "MasterModel_LightMode": 3,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Metalness": 1.0,
+            "MasterModel_NormEnable": 1,
+            "MasterModel_NormInten": 3.0,
+            "MasterModel_NormTile": 1.5,
+            "MasterModel_NormalMapTex": "normal_33",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 1.0,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_RippleEnable": 0,
+            "MasterModel_RippleFreq": 1.0,
+            "MasterModel_RippleMap": "white1x1",
+            "MasterModel_RippleMix": 0.5,
+            "MasterModel_RippleScale": 2.0,
+            "MasterModel_RippleSize": 0.4000000059604645,
+            "MasterModel_RippleSpeed": 1.0,
+            "MasterModel_RippleStren": 0.05000000074505806,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.33000001311302185,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "MasterModel_Wetness": 0.5,
+            "ModelName": "building_01"
         },
         "Master_house1": {
             "MasterModel_AddShadow": 1,
@@ -1424,7 +1546,7 @@
             "MasterModel_Wetness": 0.5,
             "ModelName": "wood01"
         },
-        "PropCount": 6,
+        "PropCount": 7,
         "Prop_0": {
             "BaseColor": [
                 1.0,
@@ -1432,21 +1554,21 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
                 0.0,
-                0.0,
-                0.0
+                5.300000190734863,
+                -0.7799999713897705
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                5.079999923706055,
+                8.039999961853027,
+                4.869999885559082
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
-            "HasCollider": false,
+            "HasCollider": true,
             "HasLight": true,
             "HasParticle": true,
             "HasParticle2": true,
@@ -1458,7 +1580,7 @@
                 0.0,
                 1.0
             ],
-            "LightIntensity": 13.109999656677246,
+            "LightIntensity": 6.71999979019165,
             "LightRadius": 22.440000534057617,
             "LightVolumetricScatteringIntensity": 50.0,
             "ModelName": "bonFire",
@@ -1996,8 +2118,8 @@
             "ParticleName2": "bonfireSmoke",
             "Position": [
                 16.65053939819336,
-                2.168199062347412,
-                93.44293975830078
+                1.6755306720733643,
+                157.69671630859375
             ],
             "Rotation": [
                 0.0,
@@ -2017,21 +2139,21 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
                 0.0,
-                0.0,
-                0.0
+                5.300000190734863,
+                -0.7799999713897705
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                5.079999923706055,
+                5.079999923706055,
+                4.869999885559082
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
-            "HasCollider": false,
+            "HasCollider": true,
             "HasLight": true,
             "HasParticle": true,
             "HasParticle2": true,
@@ -2584,9 +2706,9 @@
             "ParticleName": "fire",
             "ParticleName2": "bonfireSmoke",
             "Position": [
-                37.25941467285156,
-                8.526481628417969,
-                -70.62938690185547
+                31.479999542236328,
+                8.449999809265137,
+                -62.43899917602539
             ],
             "Rotation": [
                 0.0,
@@ -2606,7 +2728,7 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
                 0.0,
                 0.0,
@@ -2614,11 +2736,11 @@
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                11.399999618530273,
+                16.030000686645508,
+                17.790000915527344
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
             "HasCollider": true,
             "HasLight": false,
@@ -2780,21 +2902,21 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
-                0.0,
-                0.0,
-                0.0
+                -0.8100000023841858,
+                7.03000020980835,
+                1.6200000047683716
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                9.529999732971191,
+                10.460000038146973,
+                8.390000343322754
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
-            "HasCollider": false,
+            "HasCollider": true,
             "HasLight": false,
             "HasParticle": false,
             "HasParticle2": false,
@@ -2927,7 +3049,7 @@
             "ParticleName": "enemyAura",
             "ParticleName2": "enemyAura",
             "Position": [
-                59.82355880737305,
+                60.45912170410156,
                 7.104019641876221,
                 48.57733154296875
             ],
@@ -2950,21 +3072,21 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
-                0.0,
-                0.0,
-                0.0
+                -0.3799999952316284,
+                13.069999694824219,
+                6.400000095367432
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                25.020000457763672,
+                12.9399995803833,
+                17.299999237060547
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
-            "HasCollider": false,
+            "HasCollider": true,
             "HasLight": false,
             "HasParticle": false,
             "HasParticle2": false,
@@ -3005,21 +3127,21 @@
                 1.0,
                 1.0
             ],
-            "Behavior": 0,
+            "Behavior": 2,
             "ColliderOffset": [
-                0.0,
-                0.0,
+                0.3400000035762787,
+                -0.15000000596046448,
                 0.0
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
-                0.5,
-                0.5,
-                0.5
+                11.579999923706055,
+                3.380000114440918,
+                3.0899999141693115
             ],
-            "ColliderType": 0,
+            "ColliderType": 1,
             "CustomName": "",
-            "HasCollider": false,
+            "HasCollider": true,
             "HasLight": false,
             "HasParticle": false,
             "HasParticle2": false,
@@ -3051,6 +3173,61 @@
                 2.251699924468994,
                 2.251699924468994,
                 2.251699924468994
+            ]
+        },
+        "Prop_6": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.0,
+                12.350000381469727,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                27.850000381469727,
+                14.270000457763672,
+                25.59000015258789
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                -39.178897857666016,
+                -4.450252056121826,
+                10.076699256896973
+            ],
+            "PrefabName": "building_01",
+            "Rotation": [
+                -3.1415863037109375,
+                -3.140000104904175,
+                -3.1415839195251465
+            ],
+            "Scale": [
+                5.290214538574219,
+                6.279998302459717,
+                5.2902116775512695
             ]
         }
     }

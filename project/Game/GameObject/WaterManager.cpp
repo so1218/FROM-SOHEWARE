@@ -11,16 +11,16 @@ void WaterManager::Initialize()
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, groupName_);
 
-    // JSONに保存・復元される全体の数をバインド (初期デフォルト値: 1)
+    // JSONに保存される全体の数
     binder_->Bind("WaterCount", &waterCount_, 1);
 
     waters_.clear();
 
-    // ロードされた waterCount_ の数だけ WaterObject を生成・初期化
+    // ロードされた waterCount_ の数だけ WaterObject を生成
     for (int i = 0; i < waterCount_; ++i)
     {
         auto water = std::make_unique<WaterObject>(engine_, i, groupName_);
-        water->Initialize(); // 各 WaterObject 内部で "Water_0", "Water_1" 等の JSON データを読込
+        water->Initialize();
         waters_.push_back(std::move(water));
     }
 }
@@ -49,7 +49,7 @@ void WaterManager::AddWater()
 
     waters_.push_back(std::move(newWater));
 
-    waterCount_ = static_cast<int>(waters_.size()); // 管理数を更新してJSON保存対象にする
+    waterCount_ = static_cast<int>(waters_.size()); // 管理数を更新してJSON保存対象に
 }
 
 void WaterManager::RemoveWater(int id)
@@ -60,10 +60,10 @@ void WaterManager::RemoveWater(int id)
         waters_.end()
     );
 
-    // IDの歯抜けを防止するため、残ったオブジェクトのIDを0からの連番に振り直す
+    // 残ったオブジェクトのIDを0からの連番に振り直す
     for (size_t i = 0; i < waters_.size(); ++i)
     {
-        waters_[i]->SetId(static_cast<int>(i)); // groupName の渡し直しが不要に
+        waters_[i]->SetId(static_cast<int>(i)); 
     }
 
     waterCount_ = static_cast<int>(waters_.size());

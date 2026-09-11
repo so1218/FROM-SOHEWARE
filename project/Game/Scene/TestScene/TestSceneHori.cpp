@@ -30,6 +30,8 @@ TestSceneHori::TestSceneHori(Engine* engine)
     treeField_ = objectManager_.Create<TreeField>(engine_);
     treeField_->SetTerrain(ground_->GetTerrain());
     player_->SetTerrain(ground_->GetTerrain());
+    player_->SetTreeField(treeField_);
+    followCamera_->SetTerrain(ground_->GetTerrain());
     bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
@@ -85,7 +87,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].worleyWeight = 0.95f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseIntensity = 0.9f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };
-    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.4f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.5f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;
@@ -109,6 +111,7 @@ void TestSceneHori::OnInitialize()
     // デフォルトカメラの設定
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
+
 }
 
 void TestSceneHori::OnUpdate()

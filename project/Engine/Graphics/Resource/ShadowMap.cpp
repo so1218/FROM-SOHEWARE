@@ -5,12 +5,12 @@
 namespace FE
 {
 
-void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManager* srvManager)
+void ShadowMap::Initialize(ID3D12Device* device, SRVManager* srvManager)
 {
     srvManager_ = srvManager;
 
-    width_ = static_cast<uint32_t>(width);
-    height_ = static_cast<uint32_t>(height);
+    width_ = static_cast<uint32_t>(SHADOW_MAP_RESOLUTION);
+    height_ = static_cast<uint32_t>(SHADOW_MAP_RESOLUTION);
 
     // ビューポートとシザー矩形を事前計算
     viewport_ = { 0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_), 0.0f, 1.0f };
@@ -19,7 +19,7 @@ void ShadowMap::Initialize(ID3D12Device* device, int width, int height, SRVManag
     // リソース設定 
     D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
         DXGI_FORMAT_R32_TYPELESS,
-        width, height,
+        width_, height_,
         kNumCascades,
         1, 1, 0,
         D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL // 深度として使うフラグ

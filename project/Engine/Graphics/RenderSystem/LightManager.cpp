@@ -101,7 +101,7 @@ void LightManager::Initialize(ID3D12Device* device)
         device, &shadowData_);
 
     // 初期化
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < MAX_CASCADE_COUNT; ++i)
     {
         shadowData_->cascadeLightViewProj[i] = Matrix4x4::MakeIdentity();
     }
@@ -285,46 +285,43 @@ void LightManager::UpdateCascadedShadows(
     float cameraNear,
     float cameraFar)
 {
-    // シャドウマップの解像度（テクセルスナップ用。ShadowMapの解像度に合わせる）
-    const float shadowMapResolution = 2048.0f;
+    // シャドウマップの解像度
+    const float shadowMapResolution = SHADOW_MAP_RESOLUTION;
 
     // 正規化したライトの方向
     Vector3 normLightDir = lightDir.Normalize();
 
-    // カメラの逆ViewProjection行列を計算（NDC空間からワールド空間へ戻すため）
+    // カメラの逆ViewProjection行列を計算
     Matrix4x4 invCamViewProj = Matrix4x4::Inverse(cameraView * cameraProj);
 
     // カスケードの分割距離の計算 
-    float splits[5];
+    float splits[MAX_CASCADE_COUNT + 1];
     splits[0] = cameraNear;
-    splits[4] = cameraFar;
+    splits[MAX_CASCADE_COUNT] = cameraFar;
 
-    // lambda: 0.0で完全線形、1.0で完全対数分割。UEのデフォルトに近い 0.5〜0.7 
     const float lambda = 0.5f;
 
-    for (int i = 1; i < 4; ++i)
+    for (int i = 1; i < MAX_CASCADE_COUNT; ++i)
     {
-        float fraction = static_cast<float>(i) / 4.0f;
-        // 対数分割（手前に多く解像度を割く）
+        float fraction = static_cast<float>(i) / static_cast<float>(MAX_CASCADE_COUNT);
+
+        // 対数分割と線形分割
         float logSplit = cameraNear * std::pow(cameraFar / cameraNear, fraction);
-        // 線形分割（均等に割く）
         float linSplit = cameraNear + (cameraFar - cameraNear) * fraction;
 
         // ブレンド
         splits[i] = lambda * logSplit + (1.0f - lambda) * linSplit;
     }
 
-    // ピクセルシェーダーでの境界判定にビュー空間のZ距離を送る
-    shadowData_->cascadeSplits = Vector4{ splits[1], splits[2], splits[3], splits[4] };
+    shadowData_->cascadeSplits = Vector4{ splits[1], splits[2], splits[3], 0.0f };
 
-    // 各カスケードの行列を計算
-    for (int i = 0; i < 4; ++i)
+    // 各カスケードの行列計算
+    for (int i = 0; i < MAX_CASCADE_COUNT; ++i)
     {
         float nearDist = splits[i];
         float farDist = splits[i + 1];
 
         // 各カスケードのプロジェクション空間でのNear/FarのZ値を求める
-        // 深度 [0, 1] へのマッピング
         float m22 = cameraProj.m[2][2];
         float m32 = cameraProj.m[3][2];
         float minZ = (nearDist * m22 + m32) / nearDist;
@@ -346,27 +343,23 @@ void LightManager::UpdateCascadedShadows(
         center = center * (1.0f / 8.0f);
 
         // 外接球の半径を計算
-        // カメラが回転してもライトの投影エリアのサイズが変化しなくなり、影のチラツキが消える
         float radius = 0.0f;
         for (int j = 0; j < 8; ++j)
         {
             float distance = (frustumCorners[j] - center).Length();
             radius = (std::max)(radius, distance);
         }
-        // わずかにバッファを持たせる
         radius = std::ceil(radius * 1.1f);
 
         // ライトの仮のビュー行列を作成
         Vector3 up = { 0.0f, 1.0f, 0.0f };
         if (std::abs(normLightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
-        // 中心点からライトの方向へ少し引いた位置を仮の光源位置とする
         Vector3 lightPos = center - (normLightDir * radius);
         Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, center, up);
 
         // テクセルスナップ
-        // カメラが移動したときに、影の輪郭がテクセル単位でカチッと固定されるように位置を丸める
-        float shadowNearZ = -radius * 2.0f; // 手前の木が入るように負の値に拡張
+        float shadowNearZ = -radius * 2.0f;
         float shadowFarZ = radius * 2.0f;
         Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, shadowNearZ, shadowFarZ);
         Matrix4x4 shadowViewProj = lightView * shadowProj;
@@ -374,13 +367,11 @@ void LightManager::UpdateCascadedShadows(
         // 原点(0,0,0)をライトのViewProj空間に変換
         Vector3 shadowOrigin = { 0.0f, 0.0f, 0.0f };
         shadowOrigin = shadowViewProj.TransformPoint(shadowOrigin);
-        // テクセル単位にスケール
         shadowOrigin = shadowOrigin * (shadowMapResolution / 2.0f);
 
         // 小数点以下を丸める（スナップ）
         Vector3 roundedOrigin{ std::round(shadowOrigin.x), std::round(shadowOrigin.y), std::round(shadowOrigin.z) };
         Vector3 roundOffset = roundedOrigin - shadowOrigin;
-        // 再び元のスケールに戻す
         roundOffset = roundOffset * (2.0f / shadowMapResolution);
 
         // 正射影行列のズレを補正する（スナップ処理）

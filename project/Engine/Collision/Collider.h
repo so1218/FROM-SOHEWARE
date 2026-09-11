@@ -62,6 +62,9 @@ public:
 	void SetApplyRotation(bool apply) { applyRotation_ = apply; }
 	bool IsApplyRotation() const { return applyRotation_; }
 
+	// 自分を基準にして、相手を押し戻すベクトルを計算
+	bool CalculatePushBackVector(Collider* other, FE::Vector3& outPushVector) const;
+
 private:
 	GameObject* owner_ = nullptr; // 自分を持っている親
 	Vector3 centerOffset_ = { 0.0f, 0.0f, 0.0f }; // ローカルオフセット

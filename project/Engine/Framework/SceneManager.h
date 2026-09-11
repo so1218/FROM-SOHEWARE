@@ -1,12 +1,11 @@
 #pragma once
-#include "Fade.h"
-#include "BaseScene.h"
-#include "Engine.h"
 
 namespace FE
 {
-
+class Engine;
+class BaseScene;
 class ISceneTransitionState;
+class Fade;
 
 // シーンを識別するためのID
 enum class SceneID

@@ -42,6 +42,10 @@
 #define MAX_SPOT_LIGHTS 4
 #define MAX_AREA_LIGHTS 2
 
+// シャドウマップ
+#define MAX_CASCADE_COUNT 3
+#define SHADOW_MAP_RESOLUTION 2048.0f
+
 // Light types
 #define SHADING_MODEL_HALFLAMBERT 0
 #define SHADING_MODEL_PHONG 1
@@ -242,65 +246,57 @@ struct AtmosphereSkyData
 
 struct WaterMaterialData
 {
-// --------------------------------------------------------
-    // 波のグローバル設定
-    // --------------------------------------------------------
-    float2 windDirection; // 風向き [1.0, 0.5]
-    float baseWaveLength; // 基本波長
-    float baseAmplitude; // 基本振幅
+    float2 globalWindDirection; 
+    float waveLength; 
+    float waveAmplitude; 
 
-    float baseSteepness; // 波の鋭さ
-    float waveSpeed; // 進行速度
-    float wavePersistence; // 小波減衰率
-    float waveLacunarity; // 小波周波数倍率
+    float waveSteepness; 
+    float waveSpeed;
+    float waveAmplitudeFalloff;
+    float waveLengthFalloff;
+    
+    float waveDirectionSpread; 
+    float interactionHeightScale; 
+    float interactionSinkForce; 
+    float interactionBulgeForce; 
 
-    float waveDirectionSpread; // 子波拡散角度
-    float waveChop; // 水平引き寄せ
-    float normalIntensity; // ★ 追加: 法線マップの適用強度 (0.0〜1.0)
-    float waveFoamThreshold; // ★ 追加: 波頭の泡の発生しきい値 (0.0〜1.0)
+    float interactionNormalScale; 
+    float interactionFoamIntensity; 
+    float2 normalTiling; 
+    
+    float4 shallowColor; 
+    float4 deepColor;
+    float4 scatterColor; 
+    float4 foamColor;
+    
+    float absorption; 
+    float refractionAmount; 
+    float chromaticAberration; 
+    float normalIntensity; 
 
-    // --------------------------------------------------------
-    // カラー設定
-    // --------------------------------------------------------
-    float4 shallowColor; // 浅瀬の色
-    float4 deepColor; // 深い場所の色
-    float4 scatterColor; // 水中散乱光
-    float4 foamColor; // 泡の色
+    float roughness; 
+    float specularIntensity; 
+    float envReflectionIntensity;
+    float ssrIntensity; 
+    
+    float ssrStepSize; 
+    float ssrMaxDistance;
+    float ssrThickness; 
+    float waveFoamThreshold; 
+    
+    float shoreFoamThreshold; 
+    float foamScale; 
+    float foamIntensity; 
+    float causticsIntensity; 
 
-    // --------------------------------------------------------
-    // ライティング・光学設定
-    // --------------------------------------------------------
-    float absorption; // 吸光度
-    float refractionAmount; // 屈折強度
-    float2 waveTiling; // 法線タイリング
+    float causticsScale; 
+    float causticsSpeed; 
+    float causticsDistortion; 
+    float ssrDistortion; 
 
-    float roughness; // ラフネス
-    float specularIntensity; // ハイライト強度
-    float envReflectionIntensity; // 環境マップ強度
-    float causticsScale; // コースティクスサイズ
-
-    // --------------------------------------------------------
-    // エフェクト設定
-    // --------------------------------------------------------
-    float causticsIntensity; // コースティクス強度
-    float causticsFadeDepth; // コースティクス消滅深度
-    float chromaticAberration; // 色収差強度
-    float foamScale; // 泡ノイズのサイズ
-
-    float foamThreshold; // 岸辺の泡の範囲 (水深)
-    float foamIntensity; // 泡の濃さ
-    float rainIntensity; // 雨の強度
-    float rippleScale; // 波紋サイズ
-
-    float rippleSpeed; // 波紋速度
-    float rippleStrength; // 波紋強度
-    float ssrIntensity; // SSR強度
-    float ssrThickness; // SSR交差厚み
-
-    float ssrStepSize; // SSRレイ初期ステップ幅
-    float ssrMaxDistance; // SSR最大距離
-    float causticsSpeed; // コースティクス揺らぎ速度
-    float causticsDistortion; // コースティクス屈折歪み
+    float ssrMaxSteps; 
+    float ssrBinarySearchSteps; 
+    float2 pad0; 
 };
 
 struct TrailMaterialData
@@ -486,10 +482,10 @@ struct BrightExtractSettings
     float intensity;
 };
 
-struct BlurSettings
+struct BloomSettings
 {
-    float2 texelSize;
-    float blurStrength;
+    float2 texelSize; 
+    float radius;
 };
 
 struct DoFSettings
@@ -573,7 +569,7 @@ struct InteractionConstants
 struct GrassInstanceData
 {
     float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
-    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー(uint), w: 予備
+    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー, w: 予備
 };
 
 struct GrassMaterialData
@@ -608,6 +604,8 @@ struct GrassMaterialData
     float colorVariation; 
     
     float windFlattenStrength;
+    float nearFadeMinDist;
+    float nearFadeMaxDist;
 };
 
 struct GrassCullingData
@@ -695,6 +693,8 @@ struct LeafMaterialData
     float3 colorTint; 
     
     float leafFlutterFrequency;
+    float nearFadeMinDist; 
+    float nearFadeMaxDist;
 };
 
 struct TrunkMaterialData
@@ -721,14 +721,17 @@ struct TrunkMaterialData
     float shadowEnvStrength;
     float normalIntensity;
     float albedoMultiplier;
+    
+    float nearFadeMinDist;
+    float nearFadeMaxDist;
 };
 
 struct PebbleInstanceData
 {
-    float4 posAndScale; // xyz: ワールド座標, w: スケール
-    float4 rotationQuat; // x, y, z, w: 姿勢(クォータニオン)
-    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合 0.0~1.0
-    float3 colorVariation; // RGB 色ムラ
+    float4 posAndScale; 
+    float4 rotationQuat; 
+    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合
+    float3 colorVariation; 
     float padding;
 };
 
@@ -814,6 +817,8 @@ struct FoliageMaterialData
     float flattenFactor; 
     
     float trailFlattenWeight;
+    float recoverySpeed; 
+    float springElasticity;
 };
 
 struct FoliageGenerationData
@@ -934,8 +939,8 @@ struct FogVolumeBuffer
 
 struct ShadowData
 {
-    float4x4 cascadeLightViewProj[4]; // 4枚分のカスケード行列
-    float4 cascadeSplits; // カスケードの切り替わり距離 (x, y, z, w)
+    float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT]; // MAX_CASCADE_COUNT 枚分のカスケード行列
+    float4 cascadeSplits; // カスケードの切り替わり距離
 };
 
 struct CascadeConstant

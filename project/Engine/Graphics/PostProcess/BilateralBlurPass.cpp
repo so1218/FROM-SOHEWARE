@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "RootSignatureManager.h"
 #include "SRVManager.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -60,7 +61,7 @@ void BilateralBlurPass::Initialize(Engine* engine, uint32_t width, uint32_t heig
 void BilateralBlurPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Bilateral Blur Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Bilateral Blur Pass");
 
     D3D12_GPU_DESCRIPTOR_HANDLE inputSRV = (overrideInput.ptr != 0)
         ? overrideInput

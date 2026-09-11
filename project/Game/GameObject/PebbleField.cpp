@@ -105,11 +105,11 @@ void PebbleField::DebugDraw()
     if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("Position", "中心座標");
-        binder_->Draw("TerrainWidth", "地形の幅 (Width)");
-        binder_->Draw("TerrainDepth", "地形の奥行き (Depth)");
+        binder_->Draw("TerrainWidth", "地形の幅");
+        binder_->Draw("TerrainDepth", "地形の奥行き");
 
         binder_->Draw("MaxPebbles", "最大生成数");
-        binder_->Draw("GridSpacing", "配置間隔 (小さいほど高密度)");
+        binder_->Draw("GridSpacing", "配置間隔");
         binder_->Draw("MinScale", "最小スケール");
         binder_->Draw("MaxScale", "最大スケール");
         binder_->Draw("MinAnisoScale", "非等方スケール(最小)");
@@ -120,7 +120,7 @@ void PebbleField::DebugDraw()
         binder_->Draw("NormalMap", "ノーマルテクスチャ");
         binder_->Draw("Skybox", "反射用スカイボックス");
         binder_->Draw("HeightMap", "ハイトマップ");
-        binder_->Draw("DensityMap", "密度マップ (生える場所)");
+        binder_->Draw("DensityMap", "密度マップ");
 
         if (ImGui::Button("強制再生成 (Generate)"))
         {
@@ -131,9 +131,9 @@ void PebbleField::DebugDraw()
     if (ImGui::CollapsingHeader("質感・マテリアル"))
     {
         binder_->Draw("BaseColor", "基本色");
-        binder_->Draw("Roughness", "粗さ (0=ツルツル, 1=ザラザラ)");
+        binder_->Draw("Roughness", "粗さ");
         binder_->Draw("Metalness", "金属度");
-        binder_->Draw("NormalIntensity", "法線の強さ(凹凸)");
+        binder_->Draw("NormalIntensity", "法線の強さ");
         binder_->Draw("EnvMapIntensity", "環境反射の強さ");
     }
 

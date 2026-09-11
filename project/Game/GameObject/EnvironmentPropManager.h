@@ -1,12 +1,13 @@
 #pragma once
 #include "EnvironmentProp.h"
 
+// 同一プレハブの共有データを定義する構造体
 struct PropGroup 
 {
     std::string prefabName;
     std::string modelName;
-    std::unique_ptr<FE::Model> masterModel; // このグループのマスターモデル
-    std::vector<std::unique_ptr<EnvironmentProp>> instances; // 実体のリスト
+    std::unique_ptr<FE::Model> masterModel; 
+    std::vector<std::unique_ptr<EnvironmentProp>> instances; 
     std::unique_ptr<FE::PropertyBinder> binder;
 
     // グループ全体で共有する基本設定
@@ -14,44 +15,44 @@ struct PropGroup
     int defaultColliderType = 0;
 };
 
+// マップ上の環境配置物（プロップ）を一括管理するマネージャークラス
 class EnvironmentPropManager : public FE::GameObject
 {
 public:
     EnvironmentPropManager(FE::Engine* engine, const std::string& groupName);
+    ~EnvironmentPropManager() override = default;
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugDraw() override;
 
-    void RemoveEnvironmentProp(int index);
+    // 特定のプレハブグループへプロップインスタンスを追加
+    void AddPropToGroup(const std::string& prefabName);
 
-    // 特定のグループ（モデル）に新しいプロップを追加
-    void AddPropToGroup(const std::string& modelName);
+    // 指定IDのプロップ削除および後続IDの詰め処理
+    void RemoveEnvironmentProp(int targetId);
 
 private:
-    FE::Engine* engine_;
+    // プレハブグループの動的生成およびマスターモデルの構築
+    void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);
+
+    // UI非同期操作によるモデルリロードの遅延適用処理
+    void ExecutePrefabModelChange();
+
+private:
+    FE::Engine* engine_ = nullptr;
     std::string managerGroupName_;
     std::unordered_map<std::string, PropGroup> groups_;
 
-    // 新しい Prefab を作る関数
-    void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);
+    // 遅延適用用パラメータ
+    std::string pendingModelChangePrefab_;
+    std::string pendingModelChangeNewName_;
 
-    // モデル差し替えの遅延実行用
-    std::string pendingModelChangePrefab_ = "";
-    std::string pendingModelChangeNewName_ = "";
-
-    // 実際の差し替え処理を行う関数
-    void ExecutePrefabModelChange();
-
-    // インデックス(int)ではなく、ポインタで選択中のプロップを管理する
     EnvironmentProp* selectedProp_ = nullptr;
-
     std::unique_ptr<FE::PropertyBinder> binder_;
-    int propCount_ = 0; // JSONに保存される全体の数
 
-    // テンプレート用（最後に設定をコピーした元のインデックス）
+    int propCount_ = 0;
     int currentTemplateIndex_ = 0;
-
     int selectedPropIndex_ = -1;
 };

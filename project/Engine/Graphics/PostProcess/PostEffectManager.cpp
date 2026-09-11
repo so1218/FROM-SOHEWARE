@@ -32,19 +32,9 @@ void PostEffectManager::Initialize(
     brightPass_ = std::make_unique<BrightExtractPass>();
     brightPass_->Initialize(engine, width, height, psoManager);
 
-    // 縮小サイズ
-    uint32_t smallW = Math::MyMax(1u, width / 2);
-    uint32_t smallH = Math::MyMax(1u, height / 2);
-
     // Bloom
-    downsamplePass_ = std::make_unique<DownsamplePass>();
-    downsamplePass_->Initialize(engine, smallW, smallH, psoManager);
-
-    verticalBlurPass_ = std::make_unique<BlurPass>();
-    verticalBlurPass_->Initialize(engine, smallW, smallH, psoManager, true);
-
-    horizontalBlurPass_ = std::make_unique<BlurPass>();
-    horizontalBlurPass_->Initialize(engine, smallW, smallH, psoManager, false);
+    bloomPass_ = std::make_unique<BloomPass>();
+    bloomPass_->Initialize(engine, width, height, psoManager);
 
     // DOF(Bokeh)の初期化
     uint32_t halfW = Math::MyMax(1u, width / 2);
@@ -214,17 +204,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     // Bloom
     {
         brightPass_->Execute(cmdList, context_);
-        downsamplePass_->Execute(cmdList, context_, brightPass_->GetSRVHandleGPU());
-
-        D3D12_GPU_DESCRIPTOR_HANDLE bloomInput = downsamplePass_->GetSRVHandleGPU();
-        const int BLUR_ITERATIONS = 4; // 定数化してわかりやすく
-
-        for (int i = 0; i < BLUR_ITERATIONS; ++i)
-        {
-            verticalBlurPass_->Execute(cmdList, context_, bloomInput);
-            horizontalBlurPass_->Execute(cmdList, context_, verticalBlurPass_->GetSRVHandleGPU());
-            bloomInput = horizontalBlurPass_->GetSRVHandleGPU();
-        }
+        bloomPass_->Execute(cmdList, context_, brightPass_->GetSRVHandleGPU());
     }
 
     // Depth of Field
@@ -256,7 +236,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         compositePass_->SetupInputViews(
             engine_->GetGraphicsDevice()->GetDevice(),
             GetCPUHandle(sceneTextureIndex_),
-            GetCPUHandle(horizontalBlurPass_->GetSRVIndex()),
+            GetCPUHandle(bloomPass_->GetSRVIndex()),
             GetCPUHandle(dofPass_->GetSRVIndex()),
             GetCPUHandle(sceneDepthIndex_),
             GetCPUHandle(volumetricFogBilateralPass_->GetSRVIndex()),

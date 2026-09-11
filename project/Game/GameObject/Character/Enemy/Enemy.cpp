@@ -2,6 +2,7 @@
 #include "Enemy.h"
 #include "GameDefine.h"
 #include "TimeManager.h"
+#include "CollisionConfig.h"
 
 using namespace FE;
 
@@ -52,6 +53,8 @@ void Enemy::Initialize()
     collider_->SetApplyRotation(false);
     collider_->SetRadius(colliderRadius_);
     collider_->SetCenterOffset(colliderOffset_);
+    collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
+    collider_->SetCollisionMask(kCollisionAttributePlayer);
 
     auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
     auraEmitter_->SetTargetToFollow(&model_->GetTransform());
@@ -144,8 +147,8 @@ void Enemy::DebugDraw()
         binder_->Draw("Scale", "スケール");
         ImGui::Text("移動設定");
         binder_->Draw("BasePosition", "基準座標 (中心)");
-        binder_->Draw("Amplitude", "移動幅 (X, Y, Z)");
-        binder_->Draw("Frequency", "移動スピード (X, Y, Z)");
+        binder_->Draw("Amplitude", "移動幅");
+        binder_->Draw("Frequency", "移動スピード");
         binder_->Draw("Phase", "波のズレ");
 
         ImGui::Text("スポットライト設定");
@@ -158,7 +161,7 @@ void Enemy::DebugDraw()
             binder_->Draw("SpotDistance", "届く距離");
             binder_->Draw("SpotAngle", "照射角 (度数)");
             binder_->Draw("SpotVolumetric", "ボリュームフォグ輝度");
-            binder_->Draw("SpotDirection", "照射方向 (X, Y, Z)");
+            binder_->Draw("SpotDirection", "照射方向");
         }
 
         ImGui::Text("当たり判定設定");

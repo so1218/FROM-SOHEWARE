@@ -36,13 +36,23 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 {
     PixelShaderOutput output;
 
-    // 半透明のオーバードローを避けるため、IGNを用いたディザリングでLODのクロスフェードを実装
+    // カメラからの距離を算出
+    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
+    float viewDepth = length(cameraDiff);
+
+    // カメラ近接フェード率の算出
+    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / (gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist));
+
+    // LODクロスフェードと近接フェードの合成
+    float finalFade = min(input.lodFade, proximityFade);
+
+    // ディザリング判定
     float dither = InterleavedGradientNoise(input.position.xy);
-    clip(input.lodFade - dither);
+    clip(finalFade - dither);
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     
-    // 完全透明なピクセルは早期に破棄し、以降の重いPBR計算をスキップ
+    // 完全透明なピクセルの破棄
     clip(albedoAlpha.a - 0.05f);
 
     albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
@@ -62,9 +72,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float3x3 TBN = float3x3(T, B, N);
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 normal = normalize(mul(tangentNormal, TBN));
-
-    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
-    float viewDepth = length(cameraDiff);
+    
     float3 toEye = cameraDiff / max(viewDepth, kEpsilon);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
 
@@ -126,22 +134,34 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
+    // 最遠カスケードを超えている場合は早期リターン
+    if (viewDepth > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
+        return 1.0f;
+    
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // セルフシャドウはシャドウマップのサンプリング自体をスキップし帯域を節約
+    // 光の裏側はサンプリングをスキップ
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // カスケードインデックスを並列解決
-    float4 cascadeSplits = gShadowData.cascadeSplits;
-    uint cascadeIndex = (uint) dot(step(cascadeSplits.xyz, viewDepth.xxx), float3(1.0f, 1.0f, 1.0f));
-
+    // カスケードインデックスの決定
+    uint cascadeIndex = 0;
+    [unroll]
+    for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
+    {
+        if (viewDepth > gShadowData.cascadeSplits[i])
+        {
+            cascadeIndex = i + 1;
+        }
+    }
+    
     // シャドウアクネ対策
     float biasScale = saturate(1.0f - NdotL);
     float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
+    // 行列変換とプロジェクション座標計算
     float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
@@ -150,12 +170,13 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    // フラストム外は遮蔽なしとして扱う
+    // フラスタム外チェック
     if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
     }
 
+    // PCF サンプリング
     float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
         float3(projCoords.xy, cascadeIndex),

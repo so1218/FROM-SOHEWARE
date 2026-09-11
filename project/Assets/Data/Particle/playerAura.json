@@ -15,7 +15,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.10000000149011612
+        "spawnInterval": 0.07999999821186066
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -83,13 +83,15 @@
             "strength": 10.699999809265137
         },
         "physicsModule": {
+            "affectedByWind": false,
             "drag": 0.0,
             "enabled": false,
             "gravity": [
                 0.0,
                 -9.800000190734863,
                 0.0
-            ]
+            ],
+            "windInfluence": 1.0
         },
         "rotationModule": {
             "enabled": false,
@@ -154,12 +156,12 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 4.800000190734863,
+            "emissiveIntensity": 3.0,
             "enabled": true,
             "endColor": [
+                0.3164557218551636,
                 1.0,
-                0.15189874172210693,
-                0.0,
+                0.939432680606842,
                 0.0
             ],
             "headWidthScale": 1.0,
@@ -168,16 +170,16 @@
             "jitterPhase": 0.0,
             "jitterSpeed": 3.799999952316284,
             "jitterStrength": 0.5,
-            "lifetime": 0.5,
+            "lifetime": 0.4000000059604645,
             "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
+                0.0,
                 1.0,
-                0.0,
-                0.0,
+                0.8354430198669434,
                 1.0
             ],
             "tailWidthScale": 1.0,

@@ -52,7 +52,6 @@
 #include <shlwapi.h>
 
 // DirectX関連
-#define USE_PIX
 #include <d3d12.h>
 #include <d3dcommon.h>
 #include <dxgi1_6.h>
@@ -60,6 +59,13 @@
 #include <dxcapi.h>
 #include <d3dcompiler.h> 
 #include <DirectXMath.h>
+
+// PIX設定
+#ifdef ENABLE_DEV_TOOLS
+	#ifndef USE_PIX
+		#define USE_PIX
+	#endif
+#endif
 #include <pix3.h>
 
 // DirectInput

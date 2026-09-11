@@ -12,13 +12,9 @@ namespace FE
 
 void PropertyBinder::BindModel(const std::string& groupName, Model* model)
 {
-    // モデル情報をマップに保存（拡張用）
     modelBindMap_[groupName] = { model };
 
-    auto* mat = model->GetMaterialData();
     auto* transform = &model->GetTransform();
-    auto* uvTransform = model->GetUVTransform();
-
     std::string prefix = groupName + "_";
 
     Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
@@ -28,37 +24,99 @@ void PropertyBinder::BindModel(const std::string& groupName, Model* model)
     size_t matCount = model->GetMaterialCount();
     for (size_t i = 0; i < matCount; ++i)
     {
-        std::string matPrefix;
-
-        if (matCount == 1)
-        {
-            // マテリアルが1つならMat0を省略
-            matPrefix = prefix;
-        }
-        else
-        {
-            // 複数あるならMatを付ける
-            matPrefix = prefix + "Mat" + std::to_string(i) + "_";
-        }
-
-        // ヘルパー関数を呼び出す
+        // マテリアルが1つなら Mat0 を省略、複数なら Mat0_, Mat1_ と付与
+        std::string matPrefix = (matCount == 1) ? prefix : prefix + "Mat" + std::to_string(i) + "_";
         BindMaterialProperties(matPrefix, model->GetMaterialHandle(i));
     }
+}
+
+void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationModel* model)
+{
+    animationBindMap_[groupName] = { model };
+
+    auto* transform = &model->GetTransform();
+    std::string prefix = groupName + "_";
+
+    // アニメーション固有の設定
+    Bind(prefix + "SpeedScale", model->GetSpeedScalePtr(), 1.0f, 0.1f, 0.0f, 5.0f);
+    Bind(prefix + "IsLoop", model->GetIsLoopPtr(), true);
+
+    Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
+    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
+    Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
+
+    size_t matCount = model->GetMaterialCount();
+    for (size_t i = 0; i < matCount; ++i) {
+        std::string matPrefix = (matCount == 1) ? prefix : prefix + "Mat" + std::to_string(i) + "_";
+        BindMaterialProperties(matPrefix, model->GetMaterialHandle(i));
+    }
+}
+
+void PropertyBinder::BindModelName(
+    const std::string& key,
+    std::string* currentModelName,
+    const std::string& defaultName,
+    std::function<void(const std::string&)> onChange)
+{
+    auto* gv = GlobalVariables::GetInstance();
+
+    // ロード処理または初期値の設定
+    std::string loadedName = gv->GetStringValue(groupPath_, key);
+    if (loadedName.empty()) {
+        *currentModelName = defaultName;
+        gv->SetValue(groupPath_, key, defaultName);
+    }
+    else {
+        *currentModelName = loadedName;
+    }
+
+    keys_.push_back(key);
+
+#ifdef ENABLE_IMGUI
+    items_[key] = [this, currentModelName, onChange, key](const std::string& nameOverride) {
+        std::vector<std::string> modelNames = ModelManager::GetInstance().GetLoadedModelNames();
+        if (modelNames.empty()) return false;
+
+        // 現在のモデル名が何番目にあるか検索
+        int currentIndex = 0;
+        for (int i = 0; i < modelNames.size(); ++i) {
+            if (modelNames[i] == *currentModelName) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        // C文字列ポインタの配列を構築
+        std::vector<const char*> items(modelNames.size());
+        for (size_t i = 0; i < modelNames.size(); ++i) {
+            items[i] = modelNames[i].c_str();
+        }
+
+        std::string label = MakeLabel(key, nameOverride);
+
+        if (ImGui::Combo(label.c_str(), &currentIndex, items.data(), static_cast<int>(items.size()))) {
+            *currentModelName = modelNames[currentIndex];
+            GlobalVariables::GetInstance()->SetValue(groupPath_, key, *currentModelName);
+
+            if (onChange) {
+                onChange(*currentModelName);
+            }
+            return true;
+        }
+        return false;
+        };
+#endif
 }
 
 bool PropertyBinder::DrawModel(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
-    auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
 
-    Model* targetModel = nullptr;
-    if (modelBindMap_.find(groupName) != modelBindMap_.end()) {
-        targetModel = modelBindMap_[groupName].model;
-    }
-
-    bool isChanged = false; // 変更検知用
+    // マップに存在すればモデルを取得
+    Model* targetModel = modelBindMap_.count(groupName) ? modelBindMap_[groupName].model : nullptr;
+    bool isChanged = false;
 
     ImGui::PushID(groupName.c_str());
     if (ImGui::CollapsingHeader(displayLabel.c_str()))
@@ -70,9 +128,7 @@ bool PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
         isChanged |= Draw(prefix + "Scale", "スケール");
 
         ImGui::Spacing();
-
-        // 共通関数を呼び出し、マテリアル等の変更結果を取得
-        isChanged |= DrawMaterialUI(targetModel, prefix, gv, groupPath_);
+        isChanged |= DrawMaterialUI(targetModel, prefix, GlobalVariables::GetInstance(), groupPath_);
     }
     ImGui::PopID();
 
@@ -82,60 +138,16 @@ bool PropertyBinder::DrawModel(const std::string& groupName, const std::string& 
 #endif
 }
 
-void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationModel* model)
-{
-    AnimationBindInfo info;
-    info.model = model;
-    animationBindMap_[groupName] = info;
-
-    auto* mat = model->GetMaterialData();
-    auto* transform = &model->GetTransform();
-
-    std::string prefix = groupName + "_";
-
-    Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
-    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
-    Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
-
-    size_t matCount = model->GetMaterialCount();
-    for (size_t i = 0; i < matCount; ++i)
-    {
-        std::string matPrefix;
-
-        if (matCount == 1)
-        {
-            // マテリアルが1つならMat0を省略
-            matPrefix = prefix;
-        }
-        else
-        {
-            // 複数あるなら Matを付ける
-            matPrefix = prefix + "Mat" + std::to_string(i) + "_";
-        }
-
-        // ヘルパー関数を呼び出す
-        BindMaterialProperties(matPrefix, model->GetMaterialHandle(i));
-    }
-
-    Bind(prefix + "SpeedScale", model->GetSpeedScalePtr(), 1.0f, 0.1f, 0.0f, 5.0f);
-    Bind(prefix + "IsLoop", model->GetIsLoopPtr(), true);
-}
-
 void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
-    auto* gv = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
 
-    AnimationModel* targetModel = nullptr;
-    if (animationBindMap_.find(groupName) != animationBindMap_.end()) {
-        targetModel = animationBindMap_[groupName].model;
-    }
+    AnimationModel* targetModel = animationBindMap_.count(groupName) ? animationBindMap_[groupName].model : nullptr;
 
     ImGui::PushID(groupName.c_str());
-    if (ImGui::CollapsingHeader(displayLabel.c_str()))
-    {
+    if (ImGui::CollapsingHeader(displayLabel.c_str())) {
         ImGui::Spacing();
         ImGui::SeparatorText("アニメーション設定");
         Draw(prefix + "SpeedScale", "再生速度");
@@ -148,14 +160,11 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
         Draw(prefix + "Scale", "スケール");
 
         ImGui::Spacing();
-
-        // 共通関数を呼び出す
-        DrawMaterialUI(targetModel, prefix, gv, groupPath_);
+        DrawMaterialUI(targetModel, prefix, GlobalVariables::GetInstance(), groupPath_);
     }
     ImGui::PopID();
 #endif
 }
-
 
 void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
 {
@@ -296,199 +305,166 @@ void PropertyBinder::BindTexture(
     const std::string& defaultName,
     TextureType filterType)
 {
-    auto& texManager = TextureManager::GetInstance();
-    GlobalVariables* gv = GlobalVariables::GetInstance();
+    auto* gv = GlobalVariables::GetInstance();
 
     // デフォルト値の決定と登録
     std::string valToSave = initialValue.empty() ? defaultName : initialValue;
-
-    // GlobalVariablesに項目を追加
     gv->AddItem(groupPath_, key, valToSave);
 
-    // 初期同期処理
+    // 保存されている値を取得し、コールバックを実行（
     std::string savedValue = gv->GetStringValue(groupPath_, key);
-
-    // 条件に関わらず、必ず初期同期として呼び出す
-    if (onValueChanged)
+    if (onValueChanged) 
     {
         onValueChanged(savedValue);
     }
 
-    // オブジェクトが持っている値と保存されていた値が違う場合
-    if (savedValue != initialValue)
-    {
-        if (onValueChanged)
-        {
-            onValueChanged(savedValue); // SpriteやMaterialの値を更新
-        }
-    }
-
-    // 描画処理の登録 (ラムダ式)
-    items_[key] = [this, key, filterType, defaultName, onValueChanged](const std::string& label)
-        {
-            auto& texManager = TextureManager::GetInstance();
-            auto* srvManager = this->engine_->GetSRVManager();
-            GlobalVariables* gv = GlobalVariables::GetInstance();
-
-            // 現在の値をGlobalVariablesから取得
-            std::string currentTextureName = gv->GetStringValue(groupPath_, key);
-
-            // ハンドルは名前からその場で引く
-            uint32_t currentHandle = texManager.Get(currentTextureName);
-            auto currentGpuHandle = srvManager->GetSRVHandleGPU(currentHandle);
-
-            // メタデータを取得
-            const TextureHandleData* currentMeta = texManager.GetMetaData(currentTextureName);
-            bool isCurrentCubeMap = (currentMeta && currentMeta->type == TextureType::CubeMap);
-
 #ifdef ENABLE_IMGUI
-            // ラベル表示
-            std::string displayLabel = label.empty() ? key : label;
-            ImGui::Text("%s", displayLabel.c_str());
+    // 描画処理の登録
+    items_[key] = [this, key, filterType, onValueChanged](const std::string& nameOverride) 
+        {
+        auto& texManager = TextureManager::GetInstance();
+        auto* srvManager = this->engine_->GetSRVManager();
+        auto* gv = GlobalVariables::GetInstance();
 
-            std::string popupId = "Popup_" + key;
-            bool openPopup = false;
+        std::string currentName = gv->GetStringValue(groupPath_, key);
+        uint32_t currentHandle = texManager.Get(currentName);
+        auto currentGpuHandle = srvManager->GetSRVHandleGPU(currentHandle);
+        const auto* currentMeta = texManager.GetMetaData(currentName);
 
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+        bool isCubeMap = (currentMeta && currentMeta->type == TextureType::CubeMap);
+        bool valueChanged = false;
+        std::string newName = currentName;
 
-            // プレビューボタン表示
-            ImVec2 previewSize(64, 64);
+        // ラベル表示
+        std::string displayLabel = nameOverride.empty() ? key : nameOverride;
+        ImGui::Text("%s", displayLabel.c_str());
 
-            if (isCurrentCubeMap)
+        // プレビューボタン
+        bool openPopup = false;
+        ImVec2 previewSize(64.0f, 64.0f);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+
+        if (isCubeMap)
+        {
+            if (ImGui::Button("CUBE\nMAP", previewSize)) openPopup = true;
+        }
+        else if (currentGpuHandle.ptr != 0)
+        {
+            if (ImGui::ImageButton(key.c_str(), (ImTextureID)currentGpuHandle.ptr, previewSize)) openPopup = true;
+        }
+        else 
+        {
+            if (ImGui::Button("Null", previewSize)) openPopup = true;
+        }
+        ImGui::PopStyleColor();
+
+        // ツールチップ
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::Text("Name: %s", currentName.c_str());
+            if (!isCubeMap && currentGpuHandle.ptr != 0)
             {
-                if (ImGui::Button("CUBE\nMAP", previewSize)) { openPopup = true; }
+                ImGui::Image((ImTextureID)currentGpuHandle.ptr, ImVec2(128.0f, 128.0f));
             }
-            else
+            ImGui::EndTooltip();
+        }
+
+        ImGui::SameLine();
+
+        // テキストボックス入力
+        char buffer[256];
+        strncpy_s(buffer, currentName.c_str(), _TRUNCATE);
+
+        if (ImGui::InputText(("##TexName_" + key).c_str(), buffer, sizeof(buffer)))
+        {
+            newName = buffer;
+            valueChanged = true;
+        }
+
+        // 選択パレット
+        std::string popupId = "Popup_" + key;
+        if (openPopup) 
+        {
+            ImGui::OpenPopup(popupId.c_str());
+        }
+
+        ImGui::SetNextWindowSizeConstraints(ImVec2(300, 200), ImVec2(800, 600));
+        if (ImGui::BeginPopup(popupId.c_str())) 
+        {
+            const auto& allTextures = texManager.GetAllTextures();
+            ImVec2 btnSize(48.0f, 48.0f);
+            float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+            int displayedCount = 0;
+
+            for (size_t i = 0; i < allTextures.size(); i++) 
             {
-                if (currentGpuHandle.ptr != 0)
+                const auto& data = allTextures[i];
+                if (data.type != filterType) continue; // フィルタに合わないものはスキップ
+
+                auto hGPU = srvManager->GetSRVHandleGPU(data.handle);
+                bool isSelected = (currentName == data.name);
+                bool isItemCube = (data.type == TextureType::CubeMap);
+
+                ImGui::PushID(static_cast<int>(i));
+                ImGui::PushStyleColor(ImGuiCol_Button, isSelected ? ImVec4(1.0f, 1.0f, 0.0f, 1.0f) : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+                bool clicked = false;
+                if (isItemCube) 
                 {
-                    if (ImGui::ImageButton(key.c_str(), (ImTextureID)currentGpuHandle.ptr, previewSize,
-                        ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
-                    {
-                        openPopup = true;
-                    }
+                    if (ImGui::Button("CUBE", btnSize)) clicked = true;
                 }
-                else
+                else 
                 {
-                    if (ImGui::Button("Null", previewSize)) { openPopup = true; }
+                    if (ImGui::ImageButton("Tex", (ImTextureID)hGPU.ptr, btnSize)) clicked = true;
                 }
-            }
+                ImGui::PopStyleColor();
 
-            ImGui::PopStyleColor();
-
-            // ツールチップ
-            if (ImGui::IsItemHovered())
-            {
-                ImGui::BeginTooltip();
-                ImGui::Text("Name: %s", currentTextureName.c_str());
-                if (!isCurrentCubeMap && currentGpuHandle.ptr != 0) {
-                    ImGui::Image((ImTextureID)currentGpuHandle.ptr, ImVec2(128, 128));
-                }
-                ImGui::EndTooltip();
-            }
-
-            ImGui::SameLine();
-
-            // テキストボックス編集
-            char buffer[256];
-            strncpy_s(buffer, currentTextureName.c_str(), _TRUNCATE);
-
-            bool valueChanged = false;
-            std::string newName = currentTextureName;
-
-            if (ImGui::InputText(("##TexName_" + key).c_str(), buffer, sizeof(buffer)))
-            {
-                newName = std::string(buffer);
-                valueChanged = true;
-            }
-
-            // ポップアップ（選択パレット）
-            if (openPopup) {
-                ImGui::OpenPopup(popupId.c_str());
-            }
-
-            ImGui::SetNextWindowSizeConstraints(ImVec2(300, 200), ImVec2(800, 600));
-
-            if (ImGui::BeginPopup(popupId.c_str()))
-            {
-                const auto& allTextures = texManager.GetAllTextures();
-                ImGuiStyle& style = ImGui::GetStyle();
-                ImVec2 buttonSize(48.0f, 48.0f);
-                float windowVisibleX2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-                int displayedCount = 0;
-
-                for (size_t i = 0; i < allTextures.size(); i++)
+                if (clicked) 
                 {
-                    const auto& data = allTextures[i];
-                    if (data.type != filterType) { continue; }
-
-                    auto hGPU = srvManager->GetSRVHandleGPU(data.handle);
-                    ImGui::PushID((int)i);
-
-                    bool isSelected = (currentTextureName == data.name);
-                    if (isSelected) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
-                    else            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-
-                    bool clicked = false;
-                    bool isItemCubeMap = (data.type == TextureType::CubeMap);
-
-                    if (isItemCubeMap) {
-                        if (ImGui::Button("CUBE", buttonSize)) clicked = true;
-                    }
-                    else {
-                        if (ImGui::ImageButton("Tex", (ImTextureID)hGPU.ptr, buttonSize)) clicked = true;
-                    }
-
-                    ImGui::PopStyleColor();
-
-                    if (clicked) {
-                        newName = data.name;
-                        valueChanged = true;
-                        ImGui::CloseCurrentPopup();
-                    }
-
-                    // ポップアップ内ツールチップ
-                    if (ImGui::IsItemHovered())
-                    {
-                        ImGui::BeginTooltip();
-                        ImGui::Text("Name: %s", data.name.c_str());
-                        ImGui::Separator();
-                        if (!isItemCubeMap && hGPU.ptr != 0) {
-                            ImGui::Image((ImTextureID)hGPU.ptr, ImVec2(128.0f, 128.0f));
-                        }
-                        ImGui::EndTooltip();
-                    }
-
-                    ImGui::PopID();
-
-                    float lastButtonX2 = ImGui::GetItemRectMax().x;
-                    float nextButtonX2 = lastButtonX2 + style.ItemSpacing.x + buttonSize.x;
-                    if (nextButtonX2 < windowVisibleX2) { ImGui::SameLine(); }
-                    displayedCount++;
+                    newName = data.name;
+                    valueChanged = true;
+                    ImGui::CloseCurrentPopup();
                 }
-                if (displayedCount == 0) { ImGui::TextDisabled("No textures found."); }
-                ImGui::EndPopup();
-            }
 
-            // 値の更新処理
-            // 変更があった場合のみ保存＆コールバック実行
-            if (valueChanged)
-            {
-                // GlobalVariablesに保存
-                gv->SetValue(groupPath_, key, newName);
-
-                // Sprite側へ通知
-                if (onValueChanged)
+                // ポップアップ内ツールチップ
+                if (ImGui::IsItemHovered()) 
                 {
-                    onValueChanged(newName);
+                    ImGui::BeginTooltip();
+                    ImGui::Text("Name: %s", data.name.c_str());
+                    ImGui::Separator();
+                    if (!isItemCube && hGPU.ptr != 0) {
+                        ImGui::Image((ImTextureID)hGPU.ptr, ImVec2(128.0f, 128.0f));
+                    }
+                    ImGui::EndTooltip();
                 }
-                return true; 
+                ImGui::PopID();
+
+                // 折り返し処理
+                float nextBtnX2 = ImGui::GetItemRectMax().x + ImGui::GetStyle().ItemSpacing.x + btnSize.x;
+                if (nextBtnX2 < windowVisibleX2) 
+                {
+                    ImGui::SameLine();
+                }
+                displayedCount++;
             }
-            return false; 
-#else
-            return false;
-#endif
+
+            if (displayedCount == 0) ImGui::TextDisabled("No textures found.");
+            ImGui::EndPopup();
+        }
+
+        // 値の更新と通知
+        if (valueChanged)
+        {
+            gv->SetValue(groupPath_, key, newName);
+            if (onValueChanged) {
+                onValueChanged(newName);
+            }
+            return true;
+        }
+        return false;
         };
+#endif
 }
 
 void PropertyBinder::BindTexture(
@@ -497,63 +473,49 @@ void PropertyBinder::BindTexture(
     uint32_t* currentHandlePtr,
     const std::string& defaultName,
     TextureType filterType,
-    std::function<void()> callback) 
+    std::function<void()> callback)
 {
-    // ポインタがnullなら何もしない（安全対策）
     if (!currentNamePtr || !currentHandlePtr) return;
 
-    // 自動的にラムダ式を作成して内部のBindTextureへ渡す
-    BindTexture(
-        key,              // キー
-        *currentNamePtr,  // 現在の値
-
-        // callbackをキャプチャ [=] や [..., callback] で取り込む
-        [currentNamePtr, currentHandlePtr, callback](const std::string& newName)
+    BindTexture(key, *currentNamePtr,
+        [currentNamePtr, currentHandlePtr, callback](const std::string& newName) 
         {
-            // ポインタ先の変数を更新
             *currentNamePtr = newName;
-
-            // ハンドル更新
             *currentHandlePtr = TextureManager::GetInstance().Get(newName);
 
-            // テクスチャが変更されたら、登録されたコールバックを実行
-            if (callback)
-            {
+            if (callback) {
                 callback();
             }
         },
-
-        defaultName,      // デフォルト値
-        filterType        // フィルタ
+        defaultName,
+        filterType
     );
 }
 
 void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
 {
     if (!terrain) return;
-    terrainBindMap_[groupName] = { terrain };
 
+    terrainBindMap_[groupName] = { terrain };
     std::string prefix = groupName + "_";
 
-    Bind(prefix + "Position", &terrain->GetTransform().translation_, Vector3(0, 0, 0), 1.0f);
+    Bind(prefix + "Position", &terrain->GetTransform().translation_, { 0.0f, 0.0f, 0.0f }, 1.0f);
 
-    // 地形形状・パラメータ変化用のコールバック
-    auto onTerrainShapeChanged = [terrain]() {
-        terrain->RebuildMesh();
-        };
+    // ハイトマップ画像変更時のコールバックを直接渡す
+    BindTexture(prefix + "Heightmap", terrain->GetHeightmapNamePtr(), terrain->GetHeightmapHandlePtr(), "white1x1", TextureType::Noise,
+        [terrain]() 
+        {
+            terrain->LoadFromHeightmap(terrain->GetHeightmapName(), terrain->GetParams().cellSize);
+        }
+    );
 
-    // ハイトマップがインスペクターで変更されたときのコールバック
-    auto onHeightmapChanged = [terrain]() {
-        // 現在の設定値を維持したまま、新しいハイトマップ画像からメッシュを再生成
-        terrain->LoadFromHeightmap(
-            terrain->GetHeightmapName(),
-            terrain->GetParams().cellSize
-        );
-        };
-
-    BindTexture(prefix + "Heightmap", terrain->GetHeightmapNamePtr(), terrain->GetHeightmapHandlePtr(), "white1x1", TextureType::Noise, onHeightmapChanged);
-
-    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, onTerrainShapeChanged);
+    // 最大高さ変更時にメッシュを再生成するコールバックを直接渡す
+    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f,
+        [terrain]() 
+        {
+            terrain->RebuildMesh();
+        }
+    );
 
     BindMaterialProperties(prefix, terrain->GetMaterialHandle());
 }
@@ -785,7 +747,7 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                         isChanged |= Draw(matPrefix + "AddShadow", "影を受ける");
                         if (gv->GetIntValue(groupPath_, matPrefix + "AddShadow") > 0)
                         {
-                            isChanged |= Draw(matPrefix + "ShadowDens", "影の濃さ(不透明度)");
+                            isChanged |= Draw(matPrefix + "ShadowDens", "影の濃さ");
                             isChanged |= Draw(matPrefix + "ShadowEnv", "環境光の影の強さ");
                             isChanged |= Draw(matPrefix + "ShadowBias", "バイアス");
                             isChanged |= Draw(matPrefix + "ShadowSoft", "柔らかさ");

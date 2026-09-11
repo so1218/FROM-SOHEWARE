@@ -24,9 +24,6 @@ public:
 
 private:
     Engine* engine_ = nullptr;
-    // PSOやRootSignatureを保持（エンジン側で一括管理している場合は不要かも）
-    // Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
-    // Microsoft::WRL::ComPtr<ID3D12PipelineState> pso_;
 };
 
 }

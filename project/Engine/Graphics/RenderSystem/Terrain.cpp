@@ -337,23 +337,32 @@ Vector4* Terrain::GetMaterialColorPtr()
 
 float Terrain::GetHeight(float worldX, float worldZ) const
 {
-    // 入力されたワールド空間の座標を地形のローカル空間へ変換
+    float height = 0.0f;
+    if (GetHeightAt(worldX, worldZ, height))
+    {
+        return height;
+    }
+    return 0.0f;
+}
+
+bool Terrain::GetHeightAt(float worldX, float worldZ, float& outHeight) const
+{
+    // ワールド座標から地形ローカル座標へ変換
     float localX = worldX - transform_.translation_.x;
     float localZ = worldZ - transform_.translation_.z;
     float heightRatio = 0.0f;
 
     for (const auto& chunk : chunks_)
     {
-        // チャンク内で座標がヒットした場合、4点補間された高さの比率（-0.5 〜 0.5）を取得
+        // チャンクのアタリ判定
         if (chunk->GetHeightAt(localX, localZ, heightRatio))
         {
-            // 最大スケールを乗算し、地形全体のワールド基準高さを加算して最終的なワールドY座標を返す
-            return (heightRatio * params_.maxHeight) + transform_.translation_.y;
+            outHeight = (heightRatio * params_.maxHeight) + transform_.translation_.y;
+            return true; // 地形内であれば true
         }
     }
 
-    // 範囲外の場合は基準となる高さを返す
-    return 0.0f;
+    return false; // 範囲外であれば false
 }
 
 void Terrain::SetEnableOutline(bool enable)

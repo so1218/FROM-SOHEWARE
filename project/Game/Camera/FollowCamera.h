@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "ICameraController.h"
 #include "PropertyBinder.h"
+#include "Terrain.h"
 
 class Player;
 
@@ -13,6 +14,16 @@ public:
     void UpdateCamera(FE::Camera* camera) override;
     void DebugDraw() override; 
     void Reset(FE::Camera* camera) override;
+
+    // 地形情報をセットする関数
+    void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+
+private:
+    // スムーズ補間関数
+    float SmoothDamp(float current, float target, float& currentVelocity,
+        float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
+    float SmoothDampAngle(float current, float target, float& currentVelocity,
+        float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
    
 private:
     FE::Engine* engine_;
@@ -57,9 +68,7 @@ private:
     float rotateSpeedYaw_ = 2.0f;   // 左右回転速度
     float rotateSpeedPitch_ = 2.0f; // 上下回転速度
 
-    // スムーズ補間関数
-    float SmoothDamp(float current, float target, float& currentVelocity,
-        float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
-    float SmoothDampAngle(float current, float target, float& currentVelocity,
-        float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
+    FE::Terrain* terrain_ = nullptr;
+    float minGroundOffset_ = 0.8f;
+    float groundCheckRadius_ = 0.4f;
 };

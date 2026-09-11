@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Orb.h"
 #include "GameDefine.h"
+#include "CollisionConfig.h"
 
 using namespace FE;
 
@@ -54,6 +55,9 @@ void Orb::Initialize()
     hitEmitter_->SetTargetToFollow(&model_->GetTransform());
     hitEmitterPtr_ = hitEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(hitEmitter_));
+
+    collider_->SetCollisionAttribute(kCollisionAttributeProp);
+    collider_->SetCollisionMask(kCollisionAttributePlayer);
 }
 
 void Orb::Update()

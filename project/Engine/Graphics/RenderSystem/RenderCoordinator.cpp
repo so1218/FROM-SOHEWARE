@@ -95,8 +95,8 @@ void RenderCoordinator::Initialize(
         DXGI_FORMAT_R16G16B16A16_FLOAT,
         Engine::GetClientWidth(),
         Engine::GetClientHeight(),
-        1, // arraySize
-        1  // ★ mipLevels を 1 に明示指定する（省略すると 0=自動で11レベル生成されてしまう）
+        1,
+        1  
     );
     CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
 
@@ -253,7 +253,7 @@ void RenderCoordinator::CopyOpaqueSceneColor()
 {
     auto* cmdList = commandManager_->GetCommandList();
 
-    // 1. バリア: offscreenTexColor_ を COPY_SOURCE に、opaqueSceneCopy_ を COPY_DEST に遷移
+    // バリア: offscreenTexColor_ を COPY_SOURCE に、opaqueSceneCopy_ を COPY_DEST に遷移
     D3D12_RESOURCE_BARRIER barriersBefore[2];
     barriersBefore[0] = CD3DX12_RESOURCE_BARRIER::Transition(
         offscreenTexColor_.Get(),
@@ -267,10 +267,10 @@ void RenderCoordinator::CopyOpaqueSceneColor()
     );
     cmdList->ResourceBarrier(2, barriersBefore);
 
-    // 2. 高速コピー（GPU内部での転送）
+    // 高速コピー（GPU内部での転送）
     cmdList->CopyResource(opaqueSceneCopy_.Get(), offscreenTexColor_.Get());
 
-    // 3. バリア: 状態を元に戻す（offscreenTexColor_ は RTV、opaqueSceneCopy_ は SRV）
+    // バリア: 状態を元に戻す（offscreenTexColor_ は RTV、opaqueSceneCopy_ は SRV）
     D3D12_RESOURCE_BARRIER barriersAfter[2];
     barriersAfter[0] = CD3DX12_RESOURCE_BARRIER::Transition(
         offscreenTexColor_.Get(),

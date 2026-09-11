@@ -95,11 +95,11 @@ SkydomePSOutput main(SkydomeVSOutput input)
     float transmittance = exp(-cloudThickness * gWeather.cloudAbsorption * 3.0f);
     float3 baseCloudColor = lerp(ambientLight, directLightColor * transmittance, halfLambert);
     
-    // 雲のエッジ部分の擬似SSS (Subsurface Scattering)
+    // 雲のエッジ部分の擬似SSS
     float edgeTranslucency = pow(1.0f - cloudThickness, 2.0f) * cloudAlpha;
     baseCloudColor += directLightColor * edgeTranslucency * 0.5f;
 
-    // 天体（太陽と月）の描画
+    // 太陽と月の描画
     float sunDot = saturate(dot(viewDir, sunVisualDir));
     float moonDot = saturate(dot(viewDir, moonVisualDir));
     

@@ -59,7 +59,6 @@ void RenderPipeline::Initialize(Engine* engine,
     shadowMap_ = std::make_unique<ShadowMap>();
     shadowMap_->Initialize(
         engine->GetGraphicsDevice()->GetDevice(),
-        2048, 2048,
         engine->GetSRVManager()
     );
 
@@ -111,6 +110,10 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     // シャドウパス
     shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア
 
+    // バッチの事前準備（1回だけ実行）
+    rendererManager->PrepareShadowBatches();
+
+    // カスケードごとの描画
     for (uint32_t i = 0; i < ShadowMap::kNumCascades; ++i)
     {
         shadowMap_->BeginPass(cmdList, i);
@@ -124,7 +127,7 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     rendererManager->SetOffscreenDepthResource(renderCoordinator_->GetOffscreenDepthResource());
     rendererManager->SetOffscreenColorResource(renderCoordinator_->GetOffscreenColorResource());
 
-    // G-Buffer / オフスクリーンパス
+    // オフスクリーンパス
     renderCoordinator_->BeginOffscreenRender();
 
     rendererManager->Draw3D();

@@ -1,5 +1,6 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -32,6 +33,15 @@ PixelShaderOutput main(GrassPSInput input)
 {
     PixelShaderOutput output;
     
+    // カメラからの距離計算
+    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
+    float viewDepth = length(cameraDiff);
+
+    // カメラ近接フェード率の算出とディザリングクリップ
+    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / max(gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist, kEpsilon));
+    float dither = InterleavedGradientNoise(input.position.xy);
+    clip(proximityFade - dither);
+
     float t = input.texcoord.y;
     float gustMask = input.color.a;
 
@@ -46,8 +56,7 @@ PixelShaderOutput main(GrassPSInput input)
     // 上方向(0,1,0)へ法線をブレンドし、面全体で柔らかく光を受けるように補正
     float3 bladeNormal = normalize(input.normal);
     float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
-
-    float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
+    
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
 
     // -------------------------------------------------------------------------
@@ -115,27 +124,34 @@ PixelShaderOutput main(GrassPSInput input)
 // 膨大なピクセル面積を占める草描画の帯域幅を節約するため、1-Tap PCFで済ませる
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
+    // 最遠カスケードを超えている場合は早期リターン
+    if (viewDepth > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
+        return 1.0f;
+    
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // [Early-out] 光の裏側（セルフシャドウ領域）はテクスチャフェッチ自体をスキップ
+    // 光の裏側はサンプリングをスキップ
     if (NdotL <= 0.0f)
         return minShadow;
 
-    // CSM カスケード選択
+    // カスケードインデックスの決定
     uint cascadeIndex = 0;
-    if (viewDepth > gShadowData.cascadeSplits.x)
-        cascadeIndex = 1;
-    if (viewDepth > gShadowData.cascadeSplits.y)
-        cascadeIndex = 2;
-    if (viewDepth > gShadowData.cascadeSplits.z)
-        cascadeIndex = 3;
-
-    // Normal Bias (シャドウアクネ軽減)
+    [unroll]
+    for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
+    {
+        if (viewDepth > gShadowData.cascadeSplits[i])
+        {
+            cascadeIndex = i + 1;
+        }
+    }
+    
+    // シャドウアクネ対策
     float biasScale = saturate(1.0f - NdotL);
     float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
+    // 行列変換とプロジェクション座標計算
     float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
     float3 projCoords = shadowCoord.xyz / shadowCoord.w;
 
@@ -144,13 +160,13 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 
     float currentDepth = projCoords.z - gMaterial.shadowBias;
 
-    // Frustum外のクリップ判定
+    // フラスタム外チェック
     if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
     {
         return 1.0f;
     }
 
-    // Hardware PCF (SampleCmpLevelZero 1回で 2x2 bilinear 補間された結果を取得)
+    // PCF サンプリング
     float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
         float3(projCoords.xy, cascadeIndex),

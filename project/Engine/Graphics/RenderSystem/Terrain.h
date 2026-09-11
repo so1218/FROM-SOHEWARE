@@ -74,6 +74,7 @@ public:
 
     // 高さを取得するヘルパー
     float GetHeight(float worldX, float worldZ) const;
+    bool GetHeightAt(float worldX, float worldZ, float& outHeight) const;
 
     // リアルタイムに調整したいパラメータを構造体として定義
     struct Parameters {
@@ -119,7 +120,7 @@ private:
 
     // リアルタイム調整用メンバ変数
     std::string heightmapTexName_;
-    int chunkSize_ = 16;
+    int chunkSize_ = 64;
 
     Parameters params_;
     std::vector<float> rawHeightRatios_;

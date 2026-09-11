@@ -61,6 +61,8 @@ void GrassField::Initialize()
     binder_->Bind("ShadowBias", &grassMat->shadowBias, 0.005f, 0.001f, 0.0f, 0.05f);
     binder_->Bind("ShadowNormalBias", &grassMat->shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.1f);
 
+    binder_->Bind("NearFadeMinDist", &grassMat->nearFadeMinDist, 0.3f, 0.05f, 0.0f, 3.0f);
+    binder_->Bind("NearFadeMaxDist", &grassMat->nearFadeMaxDist, 1.2f, 0.05f, 0.1f, 5.0f);
     binder_->Bind("MaxDrawDistance", &cullingData->maxDrawDistance, 150.0f, 1.0f, 10.0f, 1000.0f);
     binder_->Bind("ThinStartDistance", &cullingData->thinStartDistance, 50.0f, 1.0f, 10.0f, 500.0f);
     binder_->Bind("MaxThinningRate", &cullingData->maxThinningRate, 0.8f, 0.05f, 0.0f, 0.99f);
@@ -154,7 +156,7 @@ void GrassField::DebugDraw()
         binder_->Draw("Position", "中心座標");
         binder_->Draw("BaseScale", "全体の大きさ");
         binder_->Draw("MaxGrassCount", "最大草数");
-        binder_->Draw("GridSpacing", "草の間隔 (小さいほど高密度)");
+        binder_->Draw("GridSpacing", "草の間隔");
 
         ImGui::Separator();
         ImGui::Text("地形フィッティング");
@@ -171,10 +173,10 @@ void GrassField::DebugDraw()
 
         ImGui::Separator();
         ImGui::Text("マップテクスチャ");
-        binder_->Draw("HeightMap", "ハイトマップ(高さ)");
-        binder_->Draw("DensityMap", "密度マップ(生える場所)");
+        binder_->Draw("HeightMap", "ハイトマップ");
+        binder_->Draw("DensityMap", "密度マップ");
 
-        if (ImGui::Button("強制再生成 (Generate)"))
+        if (ImGui::Button("強制再生成"))
         {
             GenerateGrass();
         }
@@ -232,7 +234,12 @@ void GrassField::DebugDraw()
 
     if (ImGui::CollapsingHeader("カリング・LOD設定"))
     {
-        binder_->Draw("MaxDrawDistance", "最大描画距離 (これより遠い草は消去)");
+        ImGui::Text("カメラ近接フェード");
+        binder_->Draw("NearFadeMinDist", "完全透明距離 (Min)");
+        binder_->Draw("NearFadeMaxDist", "フェード開始距離 (Max)");
+
+        ImGui::Separator();
+        binder_->Draw("MaxDrawDistance", "最大描画距離");
 
         ImGui::Separator();
         binder_->Draw("ThinStartDistance", "間引き開始距離");

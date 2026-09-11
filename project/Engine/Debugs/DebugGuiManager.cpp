@@ -382,8 +382,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     // 各データへのポインタ取得
     PostEffectData* postEffectData = postEffectManager_->GetPostEffectData();
     BrightExtractSettings* brightExtractData = postEffectManager_->GetBrightSettings();
-    BlurSettings* hSettings = postEffectManager_->GetHorizontalBlurSettings();
-    BlurSettings* vSettings = postEffectManager_->GetVerticalBlurSettings();
+    BloomSettings* bloomSettings = postEffectManager_->GetBloomSettings();
     FinalCompositeSettings* compositeSettingsData = postEffectManager_->GetCompositeSettings();
     VolumetricFogSettings* volFogSettings = postEffectManager_->GetVolumetricFogSettings();
     FogBilateralSettings* fogBilateralSettings = postEffectManager_->GetFogBilateralSettings();
@@ -684,24 +683,15 @@ void DebugGuiManager::DrawPostEffectSettings()
     // ブルーム設定
     if (ImGui::TreeNode("ブルーム"))
     {
-        if (ImGui::TreeNode("輝度抽出 (Threshold)"))
+        if (ImGui::TreeNode("輝度抽出"))
         {
             ImGui::SliderFloat("しきい値", &brightExtractData->threshold, 0.0f, 10.0f);
             ImGui::SliderFloat("抽出強度", &brightExtractData->intensity, 0.0f, 5.0f);
             ImGui::TreePop();
         }
-
-        if (ImGui::TreeNode("ぼかし (Blur)"))
+        if (ImGui::TreeNode("光の広がり"))
         {
-            ImGui::TextDisabled("サンプリングサイズ");
-            ImGui::SliderFloat("横 (X)", &hSettings->texelSize.x, 0.0f, 0.01f, "%.5f");
-            ImGui::SliderFloat("縦 (Y)", &vSettings->texelSize.y, 0.0f, 0.01f, "%.5f");
-
-            ImGui::Separator();
-            ImGui::TextDisabled("ブラー強度");
-            if (ImGui::SliderFloat("強さ", &hSettings->blurStrength, 0.0f, 10.0f))
-                vSettings->blurStrength = hSettings->blurStrength;
-
+            ImGui::SliderFloat("拡散半径", &bloomSettings->radius, 0.0f, 5.0f, "%.2f");
             ImGui::TreePop();
         }
 
@@ -792,25 +782,25 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::SliderFloat("前方散乱・光の筋 (Anisotropy)", &volFogSettings->anisotropy, -0.99f, 0.99f, "%.2f");
 
                 ImGui::Separator();
-                ImGui::ColorEdit3("環境光 (Ambient Light)", &volFogSettings->ambientLight.x);
+                ImGui::ColorEdit3("環境光", &volFogSettings->ambientLight.x);
             }
 
-            if (ImGui::CollapsingHeader("密度と形状 (Density & Shape)", ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::CollapsingHeader("密度と形状", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ImGui::DragFloat("空間全体のベース密度", &volFogSettings->extinction, 0.001f, 0.0f, 1.0f, "%.3f");
-                ImGui::DragFloat("高さフォグ(雲)の最大密度", &volFogSettings->heightDensity, 0.01f, 0.0f, 5.0f, "%.2f");
-                ImGui::DragFloat("基準高さ (Y)", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
+                ImGui::DragFloat("高さフォグの最大密度", &volFogSettings->heightDensity, 0.01f, 0.0f, 5.0f, "%.2f");
+                ImGui::DragFloat("基準高さ", &volFogSettings->baseHeight, 0.1f, -100.0f, 100.0f, "%.1f");
                 ImGui::DragFloat("高さ減衰率", &volFogSettings->heightFalloff, 0.001f, 0.0f, 1.0f, "%.3f");
             }
 
-            if (ImGui::CollapsingHeader("ノイズ設定 (Noise)"))
+            if (ImGui::CollapsingHeader("ノイズ設定"))
             {
                 ImGui::DragFloat("ノイズスケール", &volFogSettings->noiseScale, 0.001f, 0.0f, 1.0f, "%.3f");
                 ImGui::SliderFloat("ノイズ歪み", &volFogSettings->noiseDistortion, 0.0f, 1.0f, "%.2f");
-                ImGui::DragFloat3("風向き (Wind Dir)", &volFogSettings->windDirection.x, 0.1f, -1.0f, 1.0f);
+                ImGui::DragFloat3("風向き", &volFogSettings->windDirection.x, 0.1f, -1.0f, 1.0f);
                 ImGui::DragFloat("風速", &volFogSettings->windSpeed, 0.01f, -5.0f, 5.0f, "%.2f");
                 ImGui::Separator();
-                ImGui::Text("形状コントロール (Shape & Detail)");
+                ImGui::Text("形状コントロール");
                 ImGui::SliderFloat("霧の量 (Coverage)", &volFogSettings->coverage, 0.0f, 1.0f, "%.2f");
                 ImGui::SliderFloat("雲の塊感 (Worley Weight)", &volFogSettings->worleyWeight, 0.0f, 1.0f, "%.2f");
                 ImGui::SliderFloat("削り取り強度 (Erosion)", &volFogSettings->erosion, 0.0f, 1.0f, "%.2f");
@@ -819,23 +809,24 @@ void DebugGuiManager::DrawPostEffectSettings()
                 ImGui::DragFloat("境界のボケ具合 (Feather)", &volFogSettings->noiseFeather, 0.01f, 0.001f, 2.0f, "%.3f");
             }
 
-            if (ImGui::CollapsingHeader("システム・TAA (System)"))
+            if (ImGui::CollapsingHeader("システム・TAA"))
             {
                 ImGui::DragFloat("最大描画距離", &volFogSettings->maxDistance, 1.0f, 10.0f, 5000.0f, "%.0f m");
                 ImGui::SliderFloat("TAA蓄積ウェイト", &volFogSettings->temporalWeight, 0.01f, 0.5f, "%.3f");
                 ImGui::Text("ボクセル解像度 (Z): %.0f", volFogSettings->depthSliceCount);
             }
 
-            if (fogBilateralSettings && ImGui::CollapsingHeader("ノイズ除去 (Denoise)"))
+            if (fogBilateralSettings && ImGui::CollapsingHeader("ノイズ除去"))
             {
                 ImGui::DragInt("半径", &fogBilateralSettings->blurRadius, 1, 1, 5);
                 ImGui::DragFloat("Spatial Sigma", &fogBilateralSettings->spatialSigma, 0.1f, 0.1f, 10.0f);
                 ImGui::DragFloat("Depth Sigma", &fogBilateralSettings->depthSigma, 0.0001f, 0.00001f, 0.1f, "%.5f");
             }
 
-            if (ImGui::CollapsingHeader("配置式フォグ (Fog Volumes)"))
+            if (ImGui::CollapsingHeader("配置式フォグ"))
             {
-                if (ImGui::Button("ボリュームを追加")) {
+                if (ImGui::Button("ボリュームを追加"))
+                {
                     if (volumes.size() < MAX_FOG_VOLUMES) volumes.push_back(VolumetricFogPass::FogVolumeData());
                 }
 
@@ -849,25 +840,25 @@ void DebugGuiManager::DrawPostEffectSettings()
                         ImGui::Checkbox("デバッグ描画", &vol.isVisible);
                         ImGui::Combo("タイプ", &vol.type, "Sphere\0Box\0");
 
-                        ImGui::DragFloat3("位置 (Position)", &vol.position.x, 0.1f);
-                        ImGui::DragFloat3("回転 (Rotation)", &vol.rotation.x, 1.0f);
+                        ImGui::DragFloat3("位置", &vol.position.x, 0.1f);
+                        ImGui::DragFloat3("回転", &vol.rotation.x, 1.0f);
                         if (vol.type == 0) {
-                            ImGui::DragFloat("半径 (Radius)", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
+                            ImGui::DragFloat("半径", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
                         }
                         else {
-                            ImGui::DragFloat3("サイズ (Scale)", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
+                            ImGui::DragFloat3("サイズ", &vol.scale.x, 0.1f, 0.1f, 1000.0f);
                         }
 
-                        ImGui::ColorEdit3("色 (Color)", &vol.color.x);
-                        ImGui::DragFloat("密度 (Density)", &vol.density, 0.01f, 0.0f, 10.0f);
+                        ImGui::ColorEdit3("色", &vol.color.x);
+                        ImGui::DragFloat("密度", &vol.density, 0.01f, 0.0f, 10.0f);
 
                         ImGui::SliderFloat("境界ボカシ (Blend)", &vol.blendDistance, 0.0f, 1.0f);
 
                         ImGui::Separator();
                         ImGui::Text("Volume 専用光学特性");
                         ImGui::SliderFloat("光の筋 (Anisotropy)", &vol.anisotropy, -0.99f, 0.99f);
-                        ImGui::DragFloat3("風向き (Wind Dir)", &vol.windDirection.x, 0.1f, -1.0f, 1.0f);
-                        ImGui::DragFloat("風速 (Wind Speed)", &vol.windSpeed, 0.01f, -5.0f, 5.0f);
+                        ImGui::DragFloat3("風向き", &vol.windDirection.x, 0.1f, -1.0f, 1.0f);
+                        ImGui::DragFloat("風速", &vol.windSpeed, 0.01f, -5.0f, 5.0f);
                         ImGui::DragFloat3("ノイズスケール", &vol.noiseScale.x, 0.01f);
                         ImGui::SliderFloat("ノイズ強度", &vol.noiseIntensity, 0.0f, 1.0f);
 
@@ -882,7 +873,7 @@ void DebugGuiManager::DrawPostEffectSettings()
                         ImGui::Text("Volume ディテール制御");
                         ImGui::SliderFloat("流体歪み強さ (Distortion)", &vol.distortionAmount, 0.0f, 1.0f);
                         ImGui::SliderFloat("密度の底上げ (Density Offset)", &vol.densityOffset, -1.0f, 1.0f);
-                        ImGui::DragFloat("コントラスト (Contrast)", &vol.noiseContrast, 0.05f, 0.0f, 10.0f);
+                        ImGui::DragFloat("コントラスト", &vol.noiseContrast, 0.05f, 0.0f, 10.0f);
                         ImGui::DragFloat("ローカル高さ減衰 (Height Falloff)", &vol.heightFalloff, 0.05f, 0.0f, 10.0f);
 
                         ImGui::TreePop();

@@ -30,8 +30,8 @@
             1.0
         ],
         "LightHeightOffset": 18.5,
-        "LightIntensityMax": 41.0,
-        "LightRadius": 1000.0,
+        "LightIntensityMax": 30.0,
+        "LightRadius": 500.0,
         "Thickness": 10.0,
         "VolumetricScattering": 2.0999999046325684
     }

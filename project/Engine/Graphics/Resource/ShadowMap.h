@@ -1,4 +1,5 @@
 #pragma once
+#include "Structures.h"
 
 namespace FE
 {
@@ -10,10 +11,10 @@ class ShadowMap
 public:
 
     // カスケード数を定義
-    static const uint32_t kNumCascades = 4;
+    static const uint32_t kNumCascades = MAX_CASCADE_COUNT;
 
     // 初期化
-    void Initialize(ID3D12Device* device, int width, int height, SRVManager* srvManager);
+    void Initialize(ID3D12Device* device, SRVManager* srvManager);
 
     // SRV用（メイン描画パスでテクスチャとして使うとき）
     D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandle() const;

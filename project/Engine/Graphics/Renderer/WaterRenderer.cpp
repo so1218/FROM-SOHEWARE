@@ -89,8 +89,8 @@ void WaterRenderer::Submit(
 {
     GetOrCreateBatch(modelData);
 
-    std::function<void(const Node&, const Matrix4x4&, const Matrix4x4&)> Traverse =
-        [&](const Node& node, const Matrix4x4& parentMatrix, const Matrix4x4& parentPrevMatrix)
+    // std::function のアロケーションを回避するための再帰ラムダ
+    auto Traverse = [&](auto& self, const Node& node, const Matrix4x4& parentMatrix, const Matrix4x4& parentPrevMatrix) -> void
         {
             Matrix4x4 currentWorldMatrix = node.localMatrix * parentMatrix;
             Matrix4x4 currentPrevWorldMatrix = node.localMatrix * parentPrevMatrix;
@@ -114,18 +114,18 @@ void WaterRenderer::Submit(
                 sub.rippleTextureHandle = rippleTextureHandle;
                 sub.envMapSrvHandle = envMapSrvHandle;
 
-                sub.depth = worldView.m[3][2]; // 奥から手前へのソート用 Z 値
+                sub.depth = worldView.m[3][2]; // 奥から手前へのソート用
 
                 waterSubmissions_.push_back(sub);
             }
 
             for (const auto& child : node.children)
             {
-                Traverse(child, currentWorldMatrix, currentPrevWorldMatrix);
+                self(self, child, currentWorldMatrix, currentPrevWorldMatrix);
             }
         };
 
-    Traverse(modelData.rootNode, worldTransform.matWorld_, worldTransform.matWorldPrev_);
+    Traverse(Traverse, modelData.rootNode, worldTransform.matWorld_, worldTransform.matWorldPrev_);
 }
 
 void WaterRenderer::PrepareBatches()
@@ -133,7 +133,7 @@ void WaterRenderer::PrepareBatches()
     batches_.clear();
     if (waterSubmissions_.empty()) return;
 
-    // 水面同士の前後関係を正しく描画するため、奥(depth大)から手前(depth小)へソート
+    // 水面の透過描画のため奥(depth大)から手前(depth小)へソート
     std::sort(waterSubmissions_.begin(), waterSubmissions_.end(),
         [](const WaterSubmission& a, const WaterSubmission& b) {
             if (a.depth != b.depth) return a.depth > b.depth;
@@ -146,9 +146,10 @@ void WaterRenderer::PrepareBatches()
 
     for (size_t i = 0; i < waterSubmissions_.size(); ++i)
     {
+        if (currentInstanceLocation_ + instanceCount >= kMaxInstances) break;
+
         const auto& sub = waterSubmissions_[i];
 
-        // インスタンスデータをバッファへ設定
         auto& instanceData = instanceBuffer_.mapped[currentInstanceLocation_ + instanceCount];
         instanceData.World = sub.worldMatrix;
         instanceData.WorldInverseTranspose = sub.worldInverseTranspose;
@@ -158,24 +159,21 @@ void WaterRenderer::PrepareBatches()
         instanceCount++;
 
         bool isLast = (i == waterSubmissions_.size() - 1);
-        bool shouldFlush = isLast;
+        bool isBufferFull = (currentInstanceLocation_ + instanceCount >= kMaxInstances);
+        bool isStateChanged = false;
 
         if (!isLast)
         {
             const auto& nextSub = waterSubmissions_[i + 1];
-            // 同一メッシュかつ同一マテリアルバッファの場合のみインスタンシング
-            if (sub.modelData != nextSub.modelData ||
+            isStateChanged = (sub.modelData != nextSub.modelData ||
                 sub.meshIndex != nextSub.meshIndex ||
                 sub.waterMaterialCBV != nextSub.waterMaterialCBV ||
                 sub.normalMapHandle != nextSub.normalMapHandle ||
                 sub.rippleTextureHandle != nextSub.rippleTextureHandle ||
-                sub.envMapSrvHandle != nextSub.envMapSrvHandle)
-            {
-                shouldFlush = true;
-            }
+                sub.envMapSrvHandle != nextSub.envMapSrvHandle);
         }
 
-        if (shouldFlush)
+        if (isLast || isStateChanged || isBufferFull)
         {
             WaterBatch batch;
             batch.baseSubmission = &sub;
@@ -185,66 +183,61 @@ void WaterRenderer::PrepareBatches()
 
             currentInstanceLocation_ += instanceCount;
             instanceCount = 0;
-
-            if (currentInstanceLocation_ >= kMaxInstances) break;
         }
     }
 }
 
-void WaterRenderer::Draw(const RenderEnvironment& env)
+void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
+    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
     if (batches_.empty()) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    // 1. 水描画パス全体のスコープ
     PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Pass");
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // RootSignature のバインド
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Water"));
+    cmdList->SetPipelineState(env.psoManager->GetPSO("Water"));
 
-    // フレーム共通バッファのセット (b0〜b3)
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1
-    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); // b2
-    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); // b3
+    // フレーム共通定数バッファ
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
 
-    // シーンテクスチャ・環境マップ (t0〜t2)
-    cmdList->SetGraphicsRootDescriptorTable(6, sceneColorSRV_); // t0
-    cmdList->SetGraphicsRootDescriptorTable(7, sceneDepthSRV_); // t1
+    // インタラクション用データ
+    cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress);
+    cmdList->SetGraphicsRootDescriptorTable(13, interactionSrvHandle);
 
-    // インスタンス構造化バッファ (t10)
-    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex)); // t10
+    // シーンテクスチャ & インスタンスバッファ
+    cmdList->SetGraphicsRootDescriptorTable(7, sceneColorSRV_);
+    cmdList->SetGraphicsRootDescriptorTable(8, sceneDepthSRV_);
+    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
 
     uint32_t batchIndex = 0;
     for (const auto& batch : batches_)
     {
-        // 2. バッチ単位の個別イベント（Printf形式でインスタンス数やバッチ番号を表示）
         PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Batch %u (Instances: %u)", batchIndex++, batch.instanceCount);
 
         const auto& sub = *batch.baseSubmission;
         const auto& meshes = GetOrCreateBatch(*sub.modelData);
         const auto& mesh = meshes[sub.meshIndex];
 
-        // PSO
-        cmdList->SetPipelineState(env.psoManager->GetPSO("Water"));
-
         // バッチ個別パラメータ
-        cmdList->SetGraphicsRootConstantBufferView(4, sub.waterMaterialCBV); // b5
-        cmdList->SetGraphicsRoot32BitConstant(5, batch.startInstanceLocation, 0); // b7 (InstanceOffset)
+        cmdList->SetGraphicsRootConstantBufferView(4, sub.waterMaterialCBV);
+        cmdList->SetGraphicsRoot32BitConstant(6, batch.startInstanceLocation, 0);
 
-        cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle)); // t2
-        cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle)); // t3
-        cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle)); // t4
+        cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
+        cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
+        cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
 
-        // 頂点/インデックスバッファセットして描画
         cmdList->IASetVertexBuffers(0, 1, &mesh.GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh.GetIndexBufferView());
-        cmdList->DrawIndexedInstanced(uint32_t(mesh.GetIndexCount()), batch.instanceCount, 0, 0, 0);
+        cmdList->DrawIndexedInstanced(static_cast<UINT>(mesh.GetIndexCount()), batch.instanceCount, 0, 0, 0);
     }
 }
 

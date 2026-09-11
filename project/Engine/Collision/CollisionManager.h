@@ -25,7 +25,7 @@ public:
 
 private:
     // 登録コライダーのリスト
-    std::list<Collider*> colliders_;
+    std::vector<Collider*> colliders_;
 
     // コライダーペアの衝突判定
     bool CheckCollisionPair(Collider* colliderA, Collider* colliderB);

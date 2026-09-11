@@ -138,7 +138,6 @@ void GrassRenderer::GenerateGrass(
 void GrassRenderer::Draw(
     const RenderEnvironment& env,
     uint32_t windMapTextureHandle,
-    uint32_t interactionMapTextureHandle,
     ShadowMap* shadowMap,
     const GrassMaterialData& materialData,
     const GrassCullingData& cullingData,

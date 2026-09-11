@@ -74,7 +74,7 @@
             "startColor": 4278976767,
             "startColor2": 4294967295
         },
-        "intensity": 33.400001525878906,
+        "intensity": 9.699999809265137,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -83,13 +83,15 @@
             "strength": 1.0
         },
         "physicsModule": {
+            "affectedByWind": false,
             "drag": 0.0,
             "enabled": true,
             "gravity": [
                 0.0,
                 -12.899999618530273,
                 0.0
-            ]
+            ],
+            "windInfluence": 1.0
         },
         "rotationModule": {
             "enabled": true,

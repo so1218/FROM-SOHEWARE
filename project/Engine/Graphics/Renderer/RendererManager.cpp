@@ -217,25 +217,30 @@ void RendererManager::DrawFinalResult(uint32_t srvIndex)
 	DrawPostEffectsProcess(srvIndex);
 }
 
-void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
+void RendererManager::PrepareShadowBatches()
 {
 	if (modelRenderer_)
 	{
 		modelRenderer_->PrepareBatches();
 	}
-
 	if (treeRenderer_)
-	{
+	{ 
 		treeRenderer_->PrepareBatches();
+	}
+	if (terrainRenderer_) 
+	{ 
+		terrainRenderer_->PrepareBatches();
 	}
 
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+}
 
+void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
+{
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->PrepareBatches();
 		terrainRenderer_->DrawShadow(env_, cascadeIndex);
 	}
 
@@ -244,7 +249,10 @@ void RendererManager::DrawSceneForShadow(uint32_t cascadeIndex)
 		treeRenderer_->DrawShadow(env_, cascadeIndex, windMapSrvIndex_);
 	}
 
-	modelRenderer_->DrawShadow(env_, cascadeIndex);
+	if (modelRenderer_)
+	{
+		modelRenderer_->DrawShadow(env_, cascadeIndex);
+	}
 }
 
 void RendererManager::Draw3D()
@@ -303,7 +311,7 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		// 内部で TRIANGLESTRIP に変更して描画
-		grassRenderer_->Draw(env_, grassTextureHandle_, interactionData_.srvIndex, shadowMap_, grassMaterialData_, grassCullingData_,
+		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_, grassCullingData_,
 			interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
 		// 草の描画が終わったら、以降の描画のために TRIANGLELIST に戻す
@@ -333,23 +341,23 @@ void RendererManager::Draw3D()
 	// 半透明モデルをまとめて描画
 	if (waterRenderer_)
 	{
-		// ① ここまでの不透明カラーをコピー（屈折用 SRV テクスチャの生成）
+		// ここまでのカラーをコピー（屈折用 SRV テクスチャの生成）
 		renderCoordinator_->CopyOpaqueSceneColor();
 
-		// ② 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
+		// 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
 		renderCoordinator_->TransitionDepthToShaderResource();
 
-		// ③ 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
+		// 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
 		waterRenderer_->SetSceneTextures(
 			renderCoordinator_->GetOpaqueSceneColorSRVGPUHandle(), // コピーされた背景カラー
 			renderCoordinator_->GetOffscreenDepthSRVGPUHandle()    // 深度テクスチャ
 		);
 
-		// ④ 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
+		// 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
 		waterRenderer_->PrepareBatches();
-		waterRenderer_->Draw(env_);
+		waterRenderer_->Draw(env_, interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
-		// ⑤ 深度バッファを次の描画のために WRITE モードへ復帰
+		// 深度バッファを次の描画のために WRITE モードへ復帰
 		renderCoordinator_->TransitionDepthToDepthWrite();
 	}
 	if (modelRenderer_)

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PlayerStateNormal.h"
+#include "PlayerStateJump.h"
 #include "Input.h"
 #include "TimeManager.h"
 
@@ -7,37 +8,43 @@ using namespace FE;
 
 void PlayerStateNormal::Update(Player* p)
 {
-    // 移動入力の取得
-    p->moveDirection_ = p->GetMoveDirection();
+    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-    // ベクトルの長さで移動中かどうかを判定
-    bool isMoving = (p->moveDirection_.Length() > 0.1f);
+    // 常時重力を適用
+    p->ApplyGravity(deltaTime);
 
+    // 地形への着地位置補正
+    p->SnapToGround();
+
+    // 足場から外れた場合の落下遷移
+    if (!p->IsGrounded())
+    {
+        p->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+        return;
+    }
+
+    // 移動入力ベクトル
+    Vector3 moveDir = p->GetMoveDirection();
+    p->SetMoveDirection(moveDir);
+
+    bool isMoving = (moveDir.Length() > 0.1f);
+
+    // 状態の振り分け
     if (isMoving)
     {
-        p->moveSpeed_ = p->runSpeed_;
-
-        // 走りアニメーションの再生
-        p->animationModel_->Play(
-            "humanRun",
-            true,
-            p->runAnimSpeed_,
-            p->idleToRunBlendTime_
-        );
+        p->PlayAnimation("humanRun", true, p->config.runAnimSpeed, p->config.idleToRunBlendTime);
+        p->UpdateRotation(moveDir);
+        p->ApplyHorizontalMovement(moveDir, p->config.runSpeed);
     }
     else
     {
-        p->moveSpeed_ = 0.0f;
-
-        // 待機アニメーションの再生
-        p->animationModel_->Play(
-            "humanIdle",
-            true,
-            p->idleAnimSpeed_,
-            p->runToIdleBlendTime_
-        );
+        p->PlayAnimation("humanIdle", true, p->config.idleAnimSpeed, p->config.runToIdleBlendTime);
     }
 
-    // 実際の座標・回転更新処理
-    p->Move();
+    // ジャンプ入力時に初速を設定して State 遷移
+    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+    {
+        p->SetVelocityY(p->config.jumpInitialVelocity);
+        p->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+    }
 }

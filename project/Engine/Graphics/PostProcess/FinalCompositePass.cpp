@@ -3,6 +3,7 @@
 #include "BufferManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
+#include "PIXColors.h"
 
 namespace FE
 {
@@ -112,7 +113,7 @@ void FinalCompositePass::SetupInputViews(
 void FinalCompositePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
     D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, PIX_COLOR(200, 50, 255), "Final Composite Pass");
+    PIXScopedEvent(cmdList, PIXColors::PostProcess, "Final Composite Pass");
 
     PreDraw(cmdList);
 
