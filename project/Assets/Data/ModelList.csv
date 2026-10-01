@@ -6,6 +6,7 @@ plane,Primitives/Plane/plane.obj
 
 # Characters
 humanMesh,Characters/Human/humanMesh.gltf
+handGun_01,Characters/Human/handGun_01.gltf
 enemy,Characters/Enemy/Enemy.gltf
 
 # Environment

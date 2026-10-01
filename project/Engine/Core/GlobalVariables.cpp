@@ -19,7 +19,6 @@ void GlobalVariables::Update()
 		return;
 	}
 
-
 	if (ImGui::Button("全てのグローバル変数を保存"))
 	{
 		SaveAllFiles();

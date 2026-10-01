@@ -22,7 +22,7 @@ Player::Player(Engine* engine, Camera* camera) : GameObject(),
 
 	// アニメーションモデルを生成
 	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
-	weaponModel_ = std::make_unique<Model>(engine_, "rock1");
+	weaponModel_ = std::make_unique<Model>(engine_, "handGun_01");
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = std::make_unique<FE::Collider>(this);

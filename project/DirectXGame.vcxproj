@@ -261,6 +261,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Zombi\Zombi.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
     <ClCompile Include="Game\GameObject\FoliageField.cpp" />
@@ -461,6 +462,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateJump.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
+    <ClInclude Include="Game\GameObject\Character\Zombi\Zombi.h" />
     <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
     <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
     <ClInclude Include="Game\GameObject\FoliageField.h" />
