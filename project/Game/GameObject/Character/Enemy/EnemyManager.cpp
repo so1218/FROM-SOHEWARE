@@ -9,32 +9,64 @@ EnemyManager::EnemyManager(Engine* engine, const std::string& groupName)
 
 void EnemyManager::Initialize()
 {
-    binder_ = std::make_unique<PropertyBinder>(engine_, managerGroupName_);
+    binder_ = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("EnemyCount", &enemyCount_, 3);
     enemies_.clear();
 
     for (int i = 0; i < enemyCount_; ++i)
     {
-        auto enemy = std::make_unique<Enemy>(engine_, i, managerGroupName_);
+        // ★ 今回は全てFloatingタイプで生成
+        auto enemy = std::make_unique<Enemy>(engine_, i, EnemyType::Floating, managerGroupName_);
         enemy->SetManager(this->GetManager());
         enemy->Initialize();
         enemies_.push_back(std::move(enemy));
     }
 
-    if (!enemies_.empty())
+    RebuildMaterialSharing(); // ★別関数に切り出し
+}
+
+void EnemyManager::RebuildMaterialSharing()
+{
+    if (enemies_.empty()) return;
+
+    // Typeごとの代表モデルを保持
+    std::unordered_map<EnemyType, FE::Model*> archetypeModels;
+
+    for (auto& enemy : enemies_)
     {
-        // 1体目のマテリアルを敵グループ専用として独立
-        enemies_[0]->GetModel()->MakeMaterialUnique();
+        EnemyType type = enemy->GetType();
 
-        // 2体目以降は、Shareで1体目のマテリアルを共有
-        for (size_t i = 1; i < enemies_.size(); ++i)
+        if (archetypeModels.find(type) == archetypeModels.end())
         {
-            enemies_[i]->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
+            // そのタイプの1体目ならユニーク化して登録
+            enemy->GetModel()->MakeMaterialUnique();
+            archetypeModels[type] = enemy->GetModel();
         }
-
-        // マネージャーのインスペクターに代表として1体目のモデルを登録
-        binder_->BindModel("sharedEnemyModel", enemies_[0]->GetModel());
+        else
+        {
+            // 2体目以降なら代表モデルから共有
+            enemy->GetModel()->ShareMaterialsFrom(archetypeModels[type]);
+        }
     }
+
+    // UI用（とりあえずFloatingのモデルをバインド）
+    binder_->BindModel("sharedEnemyModel", archetypeModels[EnemyType::Floating]);
+}
+
+void EnemyManager::AddEnemy()
+{
+    int newIndex = static_cast<int>(enemies_.size());
+
+    // ★ ここで追加したいタイプを指定できる
+    auto newEnemy = std::make_unique<Enemy>(engine_, newIndex, EnemyType::Floating, managerGroupName_);
+    newEnemy->SetManager(this->GetManager());
+    newEnemy->Initialize();
+
+    enemies_.push_back(std::move(newEnemy));
+    enemyCount_ = static_cast<int>(enemies_.size());
+
+    // マテリアル共有ツリーを再構築
+    RebuildMaterialSharing();
 }
 
 void EnemyManager::Update()
@@ -45,22 +77,6 @@ void EnemyManager::Update()
 void EnemyManager::Draw()
 {
     for (auto& enemy : enemies_) enemy->Draw();
-}
-
-void EnemyManager::AddEnemy()
-{
-    int newIndex = static_cast<int>(enemies_.size());
-    auto newEnemy = std::make_unique<Enemy>(engine_, newIndex, managerGroupName_);
-    newEnemy->SetManager(this->GetManager());
-    newEnemy->Initialize();
-
-    if (!enemies_.empty())
-    {
-        newEnemy->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
-    }
-
-    enemies_.push_back(std::move(newEnemy));
-    enemyCount_ = static_cast<int>(enemies_.size()); // 数を更新
 }
 
 void EnemyManager::DebugDraw()

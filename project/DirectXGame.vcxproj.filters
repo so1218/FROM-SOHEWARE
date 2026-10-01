@@ -924,6 +924,7 @@
     <ClCompile Include="Game\GameObject\WaterManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp" />
     <ClCompile Include="Game\GameObject\Character\Zombi\Zombi.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -972,6 +973,8 @@
     <ClInclude Include="Engine\Graphics\Common\PIXColors.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateJump.h" />
     <ClInclude Include="Game\GameObject\Character\Zombi\Zombi.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\IEnemyBehavior.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />

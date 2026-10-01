@@ -15,6 +15,8 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
+    // 敵の種類ごとにマテリアルを共有する関数
+    void RebuildMaterialSharing();
     void AddEnemy(); 
 
 private:

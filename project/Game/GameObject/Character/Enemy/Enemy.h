@@ -4,12 +4,21 @@
 #include "Collider.h"
 #include "PropertyBinder.h"
 #include "ParticleEmitter.h"
+#include "IEnemyBehavior.h"
+
+enum class EnemyType
+{
+    Floating,
+    // Zombie,     // 将来追加
+    // Fireball,   // 将来追加
+    // Pop         // 将来追加
+};
 
 class Enemy : public FE::GameObject
 {
 public:
-    Enemy(FE::Engine* engine, int id, const std::string& parentGroupName);
-    ~Enemy() override;
+    Enemy(FE::Engine* engine, int id, EnemyType type, const std::string& parentGroupName);
+    ~Enemy() override = default;
 
     void Initialize() override;
     void Update() override;
@@ -18,34 +27,31 @@ public:
 
     void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
 
+    // アクセサ
+    FE::Engine* GetEngine() const { return engine_; }
+    FE::PropertyBinder* GetBinder() const { return binder_.get(); }
+    FE::WorldTransform& GetTransform() { return model_->GetTransform(); }
     FE::Model* GetModel() const { return model_.get(); }
+    EnemyType GetType() const { return type_; }
+
+    // Transform更新を本体に反映させるヘルパー
+    void SyncTransform() { SetTransform(model_->GetTransform()); }
 
 private:
     FE::Engine* engine_;
+    int id_;
+    EnemyType type_;
+
     std::unique_ptr<FE::Model> model_;
     std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
-
     std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
 
-    int id_;
+    // 振る舞いを保持するポインタ
+    std::unique_ptr<IEnemyBehavior> behavior_;
 
-    // 波の動き用パラメーター
-    FE::Vector3 basePosition_; // 基準となる位置
+    // 共通パラメータ
     FE::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
-    FE::Vector3 amplitude_;    // 振幅
-    FE::Vector3 frequency_;    // 周波数
-    float time_ = 0.0f;        // 経過時間
-    FE::Vector3 phase_;
-
     float colliderRadius_ = 1.0f;
     FE::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
-
-    int spotLightIndex_ = -1;
-    FE::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f }; 
-    float spotIntensity_ = 8.0f;
-    float spotDistance_ = 20.0f;
-    float spotAngleDeg_ = 30.0f; 
-    float spotVolumetric_ = 4.0f;
-    FE::Vector3 spotDirection_ = { 0.0f, -1.0f, 0.0f };
 };
