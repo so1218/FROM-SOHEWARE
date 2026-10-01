@@ -23,27 +23,79 @@ void PlayerStateAiming::Update(Player* player)
     player->ApplyGravity(deltaTime);
     player->SnapToGround();
 
-    // Qキーを離したら通常状態に戻る
-    if (!input.IsKeyPressed(DIK_Q))
+    // Kキーを離したら通常状態に戻る
+    if (!input.IsKeyPressed(DIK_K))
     {
         player->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
         return;
     }
 
-    // 回転処理：エイム中は進行方向ではなくカメラの正面に常に体を向ける
+    // 回転処理：エイム中は常にカメラの正面に体を向ける
     player->UpdateAimRotation();
 
-    // 移動処理
+    // 移動処理とアニメーション分岐
     Vector3 moveDir = player->GetMoveDirection();
-    if (moveDir.Length() > 0.1f)
+    bool isMoving = (moveDir.Length() > 0.1f);
+
+    if (isMoving)
     {
+        // 位置移動
         player->ApplyHorizontalMovement(moveDir, player->config.aimMoveSpeed);
+
+        // ---------------------------------------------------------
+        // プレイヤーのローカル方向に対する移動向きの判定
+        // ---------------------------------------------------------
+        Quaternion playerRot = player->GetTransform().rotationQuaternion_;
+        Vector3 playerForward = playerRot.RotateVector({ 0.0f, 0.0f, 1.0f }); // プレイヤーの正面
+        Vector3 playerRight = playerRot.RotateVector({ 1.0f, 0.0f, 0.0f }); // プレイヤーの右方向
+
+        // 移動ベクトルとの内積を計算 
+        float dotForward = moveDir.Dot(playerForward);
+        float dotRight = moveDir.Dot(playerRight);
+
+        // 縦方向の入力と横方向の入力のどちらが大きいかで判定
+        if (std::abs(dotForward) >= std::abs(dotRight))
+        {
+            if (dotForward > 0.0f)
+            {
+                // 前進
+                player->PlayAnimation("humanPistolWalkForward", true, 1.0f, 0.1f);
+            }
+            else
+            {
+                // 後退
+                player->PlayAnimation("humanPistolWalkBackward", true, 1.0f, 0.1f);
+            }
+        }
+        else
+        {
+            if (dotRight > 0.0f)
+            {
+                // 右移動
+                player->PlayAnimation("humanPistolWalkRight", true, 1.0f, 0.1f);
+            }
+            else
+            {
+                // 左移動
+                player->PlayAnimation("humanPistolWalkLeft", true, 1.0f, 0.1f);
+            }
+        }
+    }
+    else
+    {
+        // 移動していない時はエイム待機アニメーション
+        player->PlayAnimation("humanPistolIdle", true, 1.0f, 0.1f);
     }
 
+    // 毎フレームのレティクル収束計算
+    player->UpdateReticle(deltaTime, isMoving, true);
+
     // 射撃処理
-    if (input.IsKeyTriggered(DIK_E))
+    if (input.IsKeyTriggered(DIK_J))
     {
         player->FireWeapon();
+        // 射撃の跳ね上がりでレティクルを開かせる
+        player->OnShootRecoil();
     }
 }
 
@@ -51,4 +103,6 @@ void PlayerStateAiming::Exit(Player* player)
 {
     // 通常カメラモードに戻す
     player->GetFollowCamera()->SetAiming(false);
+    // エイム解除時にフェードアウトへ向けてリセット
+    player->UpdateReticle(0.0f, false, false);
 }

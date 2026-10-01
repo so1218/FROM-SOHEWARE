@@ -4,3 +4,7 @@ humanRun,Characters/Human/humanRun.gltf
 humanIdle,Characters/Human/humanIdle.gltf
 humanJump,Characters/Human/humanJump.gltf
 humanPistolIdle,Characters/Human/humanPistolIdle.gltf
+humanPistolWalkForward,Characters/Human/humanPistolWalkForward.gltf
+humanPistolWalkBackward,Characters/Human/humanPistolWalkBackward.gltf
+humanPistolWalkLeft,Characters/Human/humanPistolWalkLeft.gltf
+humanPistolWalkRight,Characters/Human/humanPistolWalkRight.gltf

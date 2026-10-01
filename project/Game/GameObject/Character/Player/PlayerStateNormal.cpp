@@ -42,8 +42,8 @@ void PlayerStateNormal::Update(Player* player)
         player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
     }
 
-    // Qキーが押されていたらエイム状態に遷移
-    if (Input::GetInstance().IsKeyPressed(DIK_Q))
+    // Kキーが押されていたらエイム状態に遷移
+    if (Input::GetInstance().IsKeyPressed(DIK_K))
     {
         player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
         return;

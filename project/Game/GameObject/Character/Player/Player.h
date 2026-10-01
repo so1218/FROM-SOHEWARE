@@ -8,6 +8,7 @@
 #include "ParticleEmitter.h"
 #include "Terrain.h"
 #include "TreeField.h"
+#include "Sprite.h"
 
 class PlayerStateNormal; 
 
@@ -36,6 +37,14 @@ public:
 		float aimMoveSpeed = 0.08f;       // エイム中の移動速度
 		float aimToIdleBlendTime = 0.1f;
 		float shootRecoilTime = 0.15f;    // 射撃後の隙・反動時間
+
+		// レティクル・照準用パラメータ
+		float reticleMinSize = 24.0f;     // 完全収束時のサイズ
+		float reticleMaxSize = 80.0f;     // 最大拡散時のサイズ
+		float reticleFocusTime = 1.0f;    // 完全収束にかかる時間（秒）
+		float reticleExpandSpeed = 8.0f;  // 移動・射撃時の拡散スピード
+		float maxDamageMultiplier = 1.5f; // 完全フォーカス時の威力倍率
+		float maxBulletSpread = 0.04f;    // 未フォーカス時の弾道の最大ブレ角
 	};
 
 	Config config;
@@ -83,6 +92,12 @@ public:
 
 	std::unique_ptr<FE::AnimationModel> animationModel_;
 
+	// 毎フレームの照準補間処理
+	void UpdateReticle(float deltaTime, bool isMoving, bool isAiming);
+	void DrawReticle();
+	// 射撃反動による拡散
+	void OnShootRecoil();
+
 private:
 	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
@@ -115,5 +130,12 @@ private:
 	float maxVerticalDist_ = 2.0f;
 
 	bool isGroundedOnObject_ = false; // オブジェクトの上に乗っているか
+
+	// レティクル制御用変数
+	std::unique_ptr<FE::Sprite> reticleSprite_;
+	float focusTimer_ = 0.0f;          // 照準を絞っている累積時間
+	float focusRatio_ = 0.0f;          // フォーカス率
+	float currentReticleSize_ = 80.0f; // 現在の描画サイズ
+	float reticleAlpha_ = 0.0f;
 };
 

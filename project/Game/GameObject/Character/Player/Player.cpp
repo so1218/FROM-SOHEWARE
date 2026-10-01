@@ -10,6 +10,8 @@
 #include "AudioPlayer.h"
 #include "GameDefine.h"
 #include "PlayerStateNormal.h"
+#include "CollisionManager.h"
+#include "GameObjectManager.h"
 
 using namespace FE;
 
@@ -42,6 +44,11 @@ void Player::Initialize()
 	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
 	collider_->SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeProp);
 
+	reticleSprite_ = std::make_unique<FE::Sprite>(engine_);
+	reticleSprite_->SetTexture("white1x1"); 
+	reticleSprite_->SetAnchorPoint({ 0.5f, 0.5f }); 
+	reticleSprite_->SetIsVisible(true);
+
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
 	binder_->BindModel("WeaponModel", weaponModel_.get());
 	binder_->Bind("RunSpeed", &config.runSpeed, 0.01f);
@@ -56,12 +63,22 @@ void Player::Initialize()
 	binder_->Bind("Gravity", &config.gravity, 0.1f);
 	binder_->Bind("AirControlRate", &config.airControlRate, 0.05f);
 
+	binder_->Bind("AimMoveSpeed", &config.aimMoveSpeed, 0.005f);
+	binder_->Bind("AimToIdleBlendTime", &config.aimToIdleBlendTime, 0.01f);
+	binder_->Bind("ShootRecoilTime", &config.shootRecoilTime, 0.01f);
+
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
 	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
 
 	binder_->Bind("InteractionRadius", &interactionRadius_, 0.1f);
 	binder_->Bind("InteractionForce", &interactionForce_, 0.1f);
 	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 0.1f);
+
+	binder_->Bind("ReticleMinSize", &config.reticleMinSize, 1.0f, 5.0f, 100.0f);
+	binder_->Bind("ReticleMaxSize", &config.reticleMaxSize, 1.0f, 20.0f, 200.0f);
+	binder_->Bind("ReticleFocusTime", &config.reticleFocusTime, 0.05f, 0.1f, 3.0f);
+	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 1.0f, 3.0f);
+	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.0f, 0.2f);
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
@@ -316,29 +333,115 @@ void Player::UpdateAimRotation()
 
 void Player::FireWeapon()
 {
-	//// レティクル位置（画面中央）または銃口の座標からレイを作成
-	//Vector3 rayStart = camera_->GetPosition();
-	//Vector3 rayDir = camera_->GetForward(); // カメラ正面
+	if (!camera_) return;
 
-	//RaycastHit hitInfo;
-	//float maxDistance = 100.0f;
+	// 1. レイの起点を決定（カメラ位置）
+	Vector3 rayStart = camera_->GetWorldTransform().translation_;
+	Vector3 baseForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
-	//// 物理マネージャー等でレイキャストを実行
-	//if (engine_->GetPhysicsManager()->Raycast(rayStart, rayDir, maxDistance, &hitInfo))
-	//{
-	//	// 敵に当たった場合
-	//	if (hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
-	//	{
-	//		// ヒット位置に血しぶきエフェクト生成・ダメージ適用
-	//		CreateImpactEffect(hitInfo.point, hitInfo.normal);
-	//		hitInfo.hitObject->ApplyDamage(10);
-	//	}
-	//	else
-	//	{
-	//		// 壁などに当たった場合：弾痕・スパークエフェクト
-	//		CreateBulletHoleEffect(hitInfo.point, hitInfo.normal);
-	//	}
-	//}
+	// 2. フォーカス率（レティクルの絞り具合）に応じたランダムな弾道ブレ計算
+	float currentSpread = config.maxBulletSpread * (1.0f - focusRatio_);
+
+	float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
+	float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
+
+	Quaternion spreadRot = Quaternion::QuaternionFromEuler({ randPitch, randYaw, 0.0f });
+	Vector3 finalRayDir = spreadRot.RotateVector(baseForward).Normalize();
+
+	// 3. 威力の補正計算（フォーカス完了で威力アップ）
+	int baseDamage = 20;
+	float damageMult = 1.0f + (config.maxDamageMultiplier - 1.0f) * focusRatio_;
+	int finalDamage = static_cast<int>(baseDamage * damageMult);
+
+	// 4. レイキャスト実行（CollisionManager経由）
+	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
+	if (!colManager) return;
+
+	RaycastHit hitInfo;
+	float maxDistance = 150.0f;
+
+	// レイキャスト対象（敵 | プロップ/障害物）
+	uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
+
+	if (colManager->Raycast(rayStart, finalRayDir, maxDistance, &hitInfo, targetMask))
+	{
+		if (hitInfo.hitObject)
+		{
+			// 敵に当たった場合
+			if (hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
+			{
+				bool isCritical = (focusRatio_ >= 0.95f);
+
+			}
+			// 壁や背景に当たった場合
+			else
+			{
+
+			}
+		}
+	}
+}
+
+void Player::UpdateReticle(float deltaTime, bool isMoving, bool isAiming)
+{
+	// エイム中のアルファ値補間（フェードイン・アウト）
+	float targetAlpha = isAiming ? 1.0f : 0.0f;
+	reticleAlpha_ = Math::Lerp(reticleAlpha_, targetAlpha, 15.0f * deltaTime);
+
+	if (!isAiming)
+	{
+		focusTimer_ = 0.0f;
+		focusRatio_ = 0.0f;
+		currentReticleSize_ = config.reticleMaxSize;
+		return;
+	}
+
+	// 移動していない（静止状態）場合にフォーカスを進める
+	if (!isMoving)
+	{
+		focusTimer_ += deltaTime;
+	}
+	else
+	{
+		// 移動中は素早く拡散
+		focusTimer_ -= deltaTime * config.reticleExpandSpeed;
+	}
+
+	focusTimer_ = std::clamp(focusTimer_, 0.0f, config.reticleFocusTime);
+	focusRatio_ = focusTimer_ / config.reticleFocusTime;
+
+	// サイズの補間
+	float targetSize = Math::Lerp(config.reticleMaxSize, config.reticleMinSize, focusRatio_);
+	currentReticleSize_ = Math::Lerp(currentReticleSize_, targetSize, 20.0f * deltaTime);
+}
+
+// 描画処理
+void Player::DrawReticle()
+{
+	if (!reticleSprite_ || reticleAlpha_ <= 0.001f) return;
+
+	// 画面中央座標の取得
+	float centerX = static_cast<float>(Engine::GetClientWidth()) * 0.5f;
+	float centerY = static_cast<float>(Engine::GetClientHeight()) * 0.5f;
+
+	// 完全に絞り切ったらバイオハザードのように赤色（赤点照準）へ変化させる
+	Vector4 color = { 1.0f, 1.0f, 1.0f, reticleAlpha_ };
+	if (focusRatio_ >= 0.95f)
+	{
+		color = { 1.0f, 0.2f, 0.2f, reticleAlpha_ }; // クリティカル照準（赤）
+	}
+
+	// スプライトパラメータ適用とSubmit
+	reticleSprite_->SetPosition({ centerX, centerY });
+	reticleSprite_->SetSize({ currentReticleSize_, currentReticleSize_ });
+	reticleSprite_->SetColor(color);
+	reticleSprite_->Draw();
+}
+
+void Player::OnShootRecoil()
+{
+	// 射撃した瞬間にフォーカスタイマーを大幅に下げる
+	focusTimer_ *= 0.2f;
 }
 
 void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
@@ -355,6 +458,8 @@ void Player::Draw()
 
 	animationModel_->Draw();
 	weaponModel_->Draw();
+
+	DrawReticle();
 }
 
 void Player::DebugDraw()
@@ -371,6 +476,26 @@ void Player::DebugDraw()
 	{
 		binder_->Draw("RunSpeed", "走り速度");
 		binder_->Draw("RotationSpeed", "回転の速さ");
+	}
+
+	if (ImGui::CollapsingHeader("エイム・射撃・レティクル"))
+	{
+		binder_->Draw("AimMoveSpeed", "エイム時移動速度");
+		binder_->Draw("AimToIdleBlendTime", "エイム補間時間(秒)");
+		binder_->Draw("ShootRecoilTime", "射撃反動時間(秒)");
+
+		ImGui::Separator();
+		ImGui::Text("レティクル・照準パラメータ");
+
+		binder_->Draw("ReticleMinSize", "最小サイズ(全絞り時)");
+		binder_->Draw("ReticleMaxSize", "最大サイズ(移動時)");
+		binder_->Draw("ReticleFocusTime", "フォーカス完了時間(秒)");
+		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
+		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
+
+		// 現在のフォーカス率をプログレスバーでリアルタイム確認
+		ImGui::Spacing();
+		ImGui::ProgressBar(focusRatio_, ImVec2(-1, 0), "フォーカス率");
 	}
 
 	if (ImGui::CollapsingHeader("ジャンプ"))

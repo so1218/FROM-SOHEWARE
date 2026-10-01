@@ -173,4 +173,134 @@ void CollisionManager::RemoveCollider(Collider* collider)
     collider->SetManager(nullptr);
 }
 
+bool CollisionManager::RaycastSphere(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& sphereCenter, float sphereRadius, float& outT, Vector3& outNormal)
+{
+    Vector3 oc = rayOrigin - sphereCenter;
+    float b = oc.Dot(rayDir);
+    float c = oc.Dot(oc) - sphereRadius * sphereRadius;
+    float discriminant = b * b - c;
+
+    if (discriminant < 0.0f) return false;
+
+    float sqrtD = std::sqrt(discriminant);
+    float t = -b - sqrtD;
+
+    if (t < 0.0f)
+    {
+        t = -b + sqrtD;
+        if (t < 0.0f) return false;
+    }
+
+    outT = t;
+    Vector3 hitPoint = rayOrigin + rayDir * t;
+    outNormal = (hitPoint - sphereCenter).Normalize();
+    return true;
+}
+
+bool CollisionManager::RaycastAABB(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxMin, const Vector3& boxMax, float& outT, Vector3& outNormal)
+{
+    float tMin = 0.0f;
+    float tMax = FLT_MAX;
+    Vector3 hitNormal = { 0.0f, 0.0f, 0.0f };
+
+    float origin[3] = { rayOrigin.x, rayOrigin.y, rayOrigin.z };
+    float dir[3] = { rayDir.x, rayDir.y, rayDir.z };
+    float minB[3] = { boxMin.x, boxMin.y, boxMin.z };
+    float maxB[3] = { boxMax.x, boxMax.y, boxMax.z };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (std::abs(dir[i]) < 0.00001f)
+        {
+            if (origin[i] < minB[i] || origin[i] > maxB[i]) return false;
+        }
+        else
+        {
+            float invD = 1.0f / dir[i];
+            float t0 = (minB[i] - origin[i]) * invD;
+            float t1 = (maxB[i] - origin[i]) * invD;
+
+            Vector3 n0 = { i == 0 ? -1.0f : 0.0f, i == 1 ? -1.0f : 0.0f, i == 2 ? -1.0f : 0.0f };
+            Vector3 n1 = { i == 0 ? 1.0f : 0.0f, i == 1 ? 1.0f : 0.0f, i == 2 ? 1.0f : 0.0f };
+
+            if (invD < 0.0f)
+            {
+                std::swap(t0, t1);
+                std::swap(n0, n1);
+            }
+
+            if (t0 > tMin)
+            {
+                tMin = t0;
+                hitNormal = n0;
+            }
+            if (t1 < tMax) tMax = t1;
+
+            if (tMax < tMin) return false;
+        }
+    }
+
+    outT = tMin;
+    outNormal = hitNormal;
+    return true;
+}
+
+bool CollisionManager::Raycast(
+    const Vector3& rayOrigin,
+    const Vector3& rayDirection,
+    float maxDistance,
+    RaycastHit* outHit,
+    uint32_t targetMask)
+{
+    bool hasHit = false;
+    float closestT = maxDistance;
+    Vector3 normalizedDir = rayDirection.Normalize();
+
+    for (Collider* collider : colliders_)
+    {
+        // 無効なコライダーや非アクティブなオブジェクトはスキップ
+        if (!collider || !collider->IsEnable()) continue;
+        if (collider->GetOwner() && !collider->GetOwner()->IsActive()) continue;
+
+        // 衝突属性とマスクのチェック
+        if ((collider->GetCollisionAttribute() & targetMask) == 0) continue;
+
+        float t = 0.0f;
+        Vector3 normal = { 0.0f, 0.0f, 0.0f };
+        bool isHit = false;
+
+        Vector3 pos = collider->GetWorldPosition();
+
+        if (collider->GetType() == CollisionShapeType::Sphere)
+        {
+            isHit = RaycastSphere(rayOrigin, normalizedDir, pos, collider->GetRadius(), t, normal);
+        }
+        else if (collider->GetType() == CollisionShapeType::AABB)
+        {
+            Vector3 size = collider->GetSize();
+            Vector3 boxMin = pos - size;
+            Vector3 boxMax = pos + size;
+            isHit = RaycastAABB(rayOrigin, normalizedDir, boxMin, boxMax, t, normal);
+        }
+
+        // 最も手前（距離 t が一番小さい）衝突相手を記憶
+        if (isHit && t >= 0.0f && t < closestT)
+        {
+            closestT = t;
+            hasHit = true;
+
+            if (outHit)
+            {
+                outHit->hitCollider = collider;
+                outHit->hitObject = collider->GetOwner();
+                outHit->point = rayOrigin + normalizedDir * t;
+                outHit->normal = normal;
+                outHit->distance = t;
+            }
+        }
+    }
+
+    return hasHit;
+}
+
 }

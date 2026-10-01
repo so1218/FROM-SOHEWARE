@@ -1,5 +1,7 @@
 {
     "Player": {
+        "AimMoveSpeed": 0.16500000655651093,
+        "AimToIdleBlendTime": 0.009999999776482582,
         "AirControlRate": 0.7300000190734863,
         "ColliderOffset": [
             0.0,
@@ -1078,6 +1080,7 @@
         "RunAnimSpeed": 1.0,
         "RunSpeed": 0.6200000047683716,
         "RunToIdleBlendTime": 0.25,
+        "ShootRecoilTime": 0.009999999776482582,
         "Stamina": 4.550000190734863,
         "StaminaRecovery": 0.5,
         "WeaponModel_AddShadow": 1,
