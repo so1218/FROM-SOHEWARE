@@ -294,6 +294,53 @@ bool Player::IsGrounded() const
 	return false;
 }
 
+void Player::UpdateAimRotation()
+{
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+
+	// カメラの前方ベクトル
+	Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+	cameraForward.y = 0.0f;
+
+	if (cameraForward.LengthSq() > 0.001f)
+	{
+		cameraForward = cameraForward.Normalize();
+		float targetAngleY = std::atan2(cameraForward.x, cameraForward.z);
+		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
+
+		// カメラの向きに補間
+		Quaternion currentRotation = GetTransform().rotationQuaternion_;
+		GetTransform().rotationQuaternion_ = Quaternion::Slerp(currentRotation, targetRotation, 15.0f * deltaTime);
+	}
+}
+
+void Player::FireWeapon()
+{
+	//// レティクル位置（画面中央）または銃口の座標からレイを作成
+	//Vector3 rayStart = camera_->GetPosition();
+	//Vector3 rayDir = camera_->GetForward(); // カメラ正面
+
+	//RaycastHit hitInfo;
+	//float maxDistance = 100.0f;
+
+	//// 物理マネージャー等でレイキャストを実行
+	//if (engine_->GetPhysicsManager()->Raycast(rayStart, rayDir, maxDistance, &hitInfo))
+	//{
+	//	// 敵に当たった場合
+	//	if (hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
+	//	{
+	//		// ヒット位置に血しぶきエフェクト生成・ダメージ適用
+	//		CreateImpactEffect(hitInfo.point, hitInfo.normal);
+	//		hitInfo.hitObject->ApplyDamage(10);
+	//	}
+	//	else
+	//	{
+	//		// 壁などに当たった場合：弾痕・スパークエフェクト
+	//		CreateBulletHoleEffect(hitInfo.point, hitInfo.normal);
+	//	}
+	//}
+}
+
 void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
 {
 

@@ -10,10 +10,9 @@ public:
         return &instance;
     }
 
-    void Enter(Player* p) override {}
-    void Exit(Player* p) override {}
-
-    void Update(Player* p) override;
+    void Enter(Player* player) override {}
+    void Exit(Player* player) override {}
+    void Update(Player* player) override;
 
     std::string GetName() override { return "Normal"; }
 };

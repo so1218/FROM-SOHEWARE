@@ -1,5 +1,6 @@
 Name,Path
 # Characters
 humanRun,Characters/Human/humanRun.gltf
-humanIdle,Characters/Human/humanPistolIdle.gltf
+humanIdle,Characters/Human/humanIdle.gltf
 humanJump,Characters/Human/humanJump.gltf
+humanPistolIdle,Characters/Human/humanPistolIdle.gltf

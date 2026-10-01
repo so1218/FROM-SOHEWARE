@@ -1,5 +1,18 @@
 {
     "FollowCamera": {
+        "Aim Distance": 18.0,
+        "Aim FOV": 0.3499999940395355,
+        "Aim LookAt Offset": [
+            0.0,
+            1.399999976158142,
+            0.0
+        ],
+        "Aim Shoulder Offset": [
+            -2.5399999618530273,
+            6.869999885559082,
+            0.0
+        ],
+        "Aim Transition Time": 0.11999999731779099,
         "Ground Check Radius": 0.5,
         "LookAt Offset": [
             0.0,
@@ -11,6 +24,13 @@
         "Min Distance": 5.0,
         "Min Ground Offset": 0.800000011920929,
         "Min Pitch": 0.07000000029802322,
+        "Normal Distance": 27.700000762939453,
+        "Normal FOV": 0.44999998807907104,
+        "Normal LookAt Offset": [
+            0.0,
+            8.930000305175781,
+            0.0
+        ],
         "Position Lerp Speed": 40.0,
         "Rotate Speed Pitch": 0.6800000071525574,
         "Rotate Speed Yaw": 2.0,

@@ -32,6 +32,10 @@ public:
 		float jumpInitialVelocity = 10.0f;
 		float gravity = 29.8f;
 		float airControlRate = 0.8f;     
+
+		float aimMoveSpeed = 0.08f;       // エイム中の移動速度
+		float aimToIdleBlendTime = 0.1f;
+		float shootRecoilTime = 0.15f;    // 射撃後の隙・反動時間
 	};
 
 	Config config;
@@ -44,6 +48,9 @@ public:
 	void Draw() override;
 	void DebugDraw() override;
 	void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+
+	void FireWeapon(); // 射撃時の処理
+	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
 	// Stateから呼び出すヘルパー関数
 	void UpdateRotation(const FE::Vector3& moveDir);
@@ -65,6 +72,7 @@ public:
 	float GetVelocityY() const { return velocityY_; }
 
 	FE::Camera* GetCamera() const { return camera_; }
+	FollowCamera* GetFollowCamera() const { return followCamera_; }
 	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
 
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }

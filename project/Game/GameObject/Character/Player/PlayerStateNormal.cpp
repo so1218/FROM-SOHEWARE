@@ -1,50 +1,58 @@
 #include "pch.h"
 #include "PlayerStateNormal.h"
 #include "PlayerStateJump.h"
+#include "PlayerStateAiming.h"
 #include "Input.h"
 #include "TimeManager.h"
 
 using namespace FE;
 
-void PlayerStateNormal::Update(Player* p)
+void PlayerStateNormal::Update(Player* player)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     // 常時重力を適用
-    p->ApplyGravity(deltaTime);
+    player->ApplyGravity(deltaTime);
 
     // 地形への着地位置補正
-    p->SnapToGround();
+    player->SnapToGround();
 
     // 足場から外れた場合の落下遷移
-    if (!p->IsGrounded())
+    if (!player->IsGrounded())
     {
-        p->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
         return;
     }
 
     // 移動入力ベクトル
-    Vector3 moveDir = p->GetMoveDirection();
-    p->SetMoveDirection(moveDir);
+    Vector3 moveDir = player->GetMoveDirection();
+    player->SetMoveDirection(moveDir);
 
     bool isMoving = (moveDir.Length() > 0.1f);
 
     // 状態の振り分け
     if (isMoving)
     {
-        p->PlayAnimation("humanRun", true, p->config.runAnimSpeed, p->config.idleToRunBlendTime);
-        p->UpdateRotation(moveDir);
-        p->ApplyHorizontalMovement(moveDir, p->config.runSpeed);
+        player->PlayAnimation("humanRun", true, player->config.runAnimSpeed, player->config.idleToRunBlendTime);
+        player->UpdateRotation(moveDir);
+        player->ApplyHorizontalMovement(moveDir, player->config.runSpeed);
     }
     else
     {
-        p->PlayAnimation("humanIdle", true, p->config.idleAnimSpeed, p->config.runToIdleBlendTime);
+        player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
+    }
+
+    // Qキーが押されていたらエイム状態に遷移
+    if (Input::GetInstance().IsKeyPressed(DIK_Q))
+    {
+        player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
+        return;
     }
 
     // ジャンプ入力時に初速を設定して State 遷移
     if (Input::GetInstance().IsKeyTriggered(DIK_SPACE))
     {
-        p->SetVelocityY(p->config.jumpInitialVelocity);
-        p->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+        player->SetVelocityY(player->config.jumpInitialVelocity);
+        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
     }
 }

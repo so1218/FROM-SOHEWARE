@@ -1568,13 +1568,13 @@
         "WeaponModel_RippleSpeed": 1.0,
         "WeaponModel_RippleStren": 0.05000000074505806,
         "WeaponModel_Rot": [
-            3.190000057220459,
-            6.179999828338623,
-            5.079999923706055
+            3.140000104904175,
+            6.309999942779541,
+            4.730000019073486
         ],
         "WeaponModel_Roughness": 0.14000000059604645,
         "WeaponModel_Scale": [
-            7.800000190734863,
+            7.0,
             7.0,
             7.0
         ],
@@ -1591,9 +1591,9 @@
         ],
         "WeaponModel_ToonRampTex": "toonRamp_01",
         "WeaponModel_Trans": [
-            -3.799999952316284,
-            19.399999618530273,
-            1.100000023841858
+            -3.5999999046325684,
+            18.700000762939453,
+            2.5
         ],
         "WeaponModel_TriScale": 0.10000000149011612,
         "WeaponModel_TriSharpness": 4.0,

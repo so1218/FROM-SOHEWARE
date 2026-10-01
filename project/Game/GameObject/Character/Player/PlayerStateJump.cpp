@@ -5,28 +5,28 @@
 
 using namespace FE;
 
-void PlayerStateJump::Enter(Player* p)
+void PlayerStateJump::Enter(Player* player)
 {
     // 初速設定は遷移元で行うため、アニメーション再生のみ
-    p->PlayAnimation("humanJump", false, p->config.jumpAnimSpeed, p->config.jumpBlendTime);
+    player->PlayAnimation("humanJump", false, player->config.jumpAnimSpeed, player->config.jumpBlendTime);
 }
 
-void PlayerStateJump::Update(Player* p)
+void PlayerStateJump::Update(Player* player)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     // 重力適用
-    p->ApplyGravity(deltaTime);
+    player->ApplyGravity(deltaTime);
 
     // 空中移動制御
-    Vector3 moveDir = p->GetMoveDirection();
-    p->UpdateRotation(moveDir);
-    p->ApplyHorizontalMovement(moveDir, p->config.runSpeed * p->config.airControlRate);
+    Vector3 moveDir = player->GetMoveDirection();
+    player->UpdateRotation(moveDir);
+    player->ApplyHorizontalMovement(moveDir, player->config.runSpeed * player->config.airControlRate);
 
     // 着地判定
-    if (p->GetVelocityY() <= 0.0f && p->IsGrounded())
+    if (player->GetVelocityY() <= 0.0f && player->IsGrounded())
     {
-        p->SnapToGround();
-        p->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
+        player->SnapToGround();
+        player->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
     }
 }
