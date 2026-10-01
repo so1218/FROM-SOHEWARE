@@ -62,6 +62,8 @@ int32_t CreateJoint(const Node& node, std::optional<int32_t> parentIndex, std::v
 	joint.localMatrix = node.localMatrix;
 	joint.skeletonSpaceMatrix = Matrix4x4::MakeIdentity();
 	joint.transform = node.transform;
+	// 初期姿勢保存
+	joint.initialTransform = joint.transform;
 	joint.index = static_cast<int32_t>(joints.size());
 	joint.parent = parentIndex;
 	joints.push_back(joint);
@@ -93,10 +95,13 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 {
 	for (Joint& joint : skeleton.joints)
 	{
-		// 対象のJointのAnimationがあれば、値の適用を行う
+		// 初期姿勢にリセット
+		joint.transform = joint.initialTransform; 
+
+		// アニメーションデータが存在すれば上書き
 		if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end())
 		{
-			const NodeAnimation& nodeAnimation = (*it).second;
+			const NodeAnimation& nodeAnimation = it->second;
 
 			joint.transform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, animationTime);
 			joint.transform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
@@ -109,11 +114,12 @@ void ApplyBlendAnimation(
 	Skeleton& skeleton,
 	const Animation& prevAnimation, float prevTime,
 	const Animation& currentAnimation, float currentTime,
-	float blendFactor) 
+	float blendFactor)
 {
 	for (Joint& joint : skeleton.joints)
 	{
-		WorldTransform prevTransform = joint.transform;
+		// 初期値は前フレームの値ではなく、初期姿勢にしておく
+		WorldTransform prevTransform = joint.initialTransform;
 		if (auto it = prevAnimation.nodeAnimations.find(joint.name); it != prevAnimation.nodeAnimations.end())
 		{
 			const NodeAnimation& nodeAnimation = it->second;
@@ -122,7 +128,7 @@ void ApplyBlendAnimation(
 			prevTransform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, prevTime);
 		}
 
-		WorldTransform currentTransform = joint.transform;
+		WorldTransform currentTransform = joint.initialTransform;
 		if (auto it = currentAnimation.nodeAnimations.find(joint.name); it != currentAnimation.nodeAnimations.end())
 		{
 			const NodeAnimation& nodeAnimation = it->second;

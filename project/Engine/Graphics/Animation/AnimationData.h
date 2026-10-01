@@ -55,6 +55,7 @@ struct AnimatedModelData
 struct Joint
 {
     WorldTransform transform;
+    WorldTransform initialTransform; // 初期姿勢保持用
     Matrix4x4 localMatrix;
     Matrix4x4 skeletonSpaceMatrix; // skeletonSpaceでの変換行列
     std::string name;
