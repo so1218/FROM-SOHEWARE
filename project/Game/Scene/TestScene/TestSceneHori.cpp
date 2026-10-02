@@ -114,7 +114,7 @@ void TestSceneHori::OnInitialize()
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
 
-	AudioPlayer::GetInstance().PlayUnique("playSceneBGM", true, 20);
+	AudioPlayer::GetInstance().PlayUnique("playSceneBGM", true, 50);
 }
 
 void TestSceneHori::OnUpdate()

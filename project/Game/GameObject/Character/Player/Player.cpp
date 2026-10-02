@@ -506,7 +506,7 @@ void Player::FireWeapon()
 				if (enemy)
 				{
 					enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
-					AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 20);
+					AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 40);
 				}
 			}
 		}
@@ -546,6 +546,51 @@ void Player::ResetReticle()
 	focusTimer_ = 0.0f;
 	focusRatio_ = 0.0f;
 	reticleAlpha_ = 0.0f; 
+}
+
+void Player::UpdateFootstepEvents()
+{
+	if (!animationModel_) return;
+
+	// 現在のアニメーション進捗率
+	float currentNormalizedTime = animationModel_->GetNormalizedTime();
+
+	// humanRun アニメーションの足がつくタイミング（割合）
+	const float leftFootStepTime = 0.20f;
+	const float rightFootStepTime = 0.70f;
+
+	// アニメーションが1周して0.0に戻った場合の補正
+	if (currentNormalizedTime < prevAnimNormalizedTime_)
+	{
+		prevAnimNormalizedTime_ -= 1.0f;
+	}
+
+	// 前フレームと現在フレームの間で接地タイミングを跨いだか判定
+	bool isLeftFoot = (prevAnimNormalizedTime_ < leftFootStepTime && currentNormalizedTime >= leftFootStepTime);
+	bool isRightFoot = (prevAnimNormalizedTime_ < rightFootStepTime && currentNormalizedTime >= rightFootStepTime);
+
+	if (isLeftFoot || isRightFoot)
+	{
+		// 単発の足音SEを再生（PlayUnique ではなく単発再生用関数を使用）
+		// ※ 音声再生クラスの単発再生関数（Play や PlayOneShot 等）に合わせて変更してください
+		AudioPlayer::GetInstance().Play("playerRunning", false, 10);
+	}
+
+	// 次フレームのために正規化した進捗率（0.0～1.0の範囲）を保持
+	prevAnimNormalizedTime_ = std::fmod(currentNormalizedTime, 1.0f);
+	if (prevAnimNormalizedTime_ < 0.0f) prevAnimNormalizedTime_ += 1.0f;
+}
+
+void Player::ResetFootstepState()
+{
+	if (animationModel_)
+	{
+		prevAnimNormalizedTime_ = animationModel_->GetNormalizedTime();
+	}
+	else
+	{
+		prevAnimNormalizedTime_ = 0.0f;
+	}
 }
 
 // 描画処理

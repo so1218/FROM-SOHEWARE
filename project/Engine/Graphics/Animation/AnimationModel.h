@@ -112,6 +112,7 @@ public:
     bool IsFinished() const { return isFinished_; }
     bool IsLoop() const { return isLoop_; }
     float GetAnimationTime() const { return animationTime_; }
+    float GetNormalizedTime() const;
     float GetSpeedScale() const { return speedScale_; }
 
     // トランスフォーム

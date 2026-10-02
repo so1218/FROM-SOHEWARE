@@ -420,6 +420,15 @@ void AnimationModel::SetMaterialColor(size_t index, uint32_t color)
     SetMaterialColor(index, Math::Uint32ToColorVector(color));
 }
 
+float AnimationModel::GetNormalizedTime() const
+{
+    if (!animeModelData_.currentAnimation || animeModelData_.currentAnimation->duration <= 0.0f)
+    {
+        return 0.0f;
+    }
+    return animationTime_ / animeModelData_.currentAnimation->duration;
+}
+
 Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const
 {
     // 取得される直前の最新 transform_ で行列を自動更新

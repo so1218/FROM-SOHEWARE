@@ -111,6 +111,11 @@ public:
 
 	void ResetReticle();
 
+	// 移動中に毎フレーム呼び出す足音更新関数
+	void UpdateFootstepEvents();
+	// 移動停止時に足音タイマー等をリセットする関数
+	void ResetFootstepState();
+
 private:
 	FE::Vector3 GetMuzzleWorldPosition() const; // 銃口のワールド座標を求める関数
 
@@ -157,5 +162,7 @@ private:
 
 	int muzzleLightIndex_ = -1;             // 取得した PointLight のインデックス
 	float muzzleFlashTimer_ = 0.0f;         // 残り発光タイマー
+
+	float prevAnimNormalizedTime_ = 0.0f; // 前フレームのアニメーション進捗率
 };
 
