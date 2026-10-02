@@ -15,21 +15,19 @@ void EnemyManager::Initialize()
 
     for (int i = 0; i < enemyCount_; ++i)
     {
-        // ★ 今回は全てFloatingタイプで生成
         auto enemy = std::make_unique<Enemy>(engine_, i, EnemyType::Floating, managerGroupName_);
         enemy->SetManager(this->GetManager());
         enemy->Initialize();
         enemies_.push_back(std::move(enemy));
     }
 
-    RebuildMaterialSharing(); // ★別関数に切り出し
+    RebuildMaterialSharing();
 }
 
 void EnemyManager::RebuildMaterialSharing()
 {
     if (enemies_.empty()) return;
 
-    // Typeごとの代表モデルを保持
     std::unordered_map<EnemyType, FE::Model*> archetypeModels;
 
     for (auto& enemy : enemies_)
@@ -38,26 +36,25 @@ void EnemyManager::RebuildMaterialSharing()
 
         if (archetypeModels.find(type) == archetypeModels.end())
         {
-            // そのタイプの1体目ならユニーク化して登録
             enemy->GetModel()->MakeMaterialUnique();
             archetypeModels[type] = enemy->GetModel();
         }
         else
         {
-            // 2体目以降なら代表モデルから共有
             enemy->GetModel()->ShareMaterialsFrom(archetypeModels[type]);
         }
     }
 
-    // UI用（とりあえずFloatingのモデルをバインド）
-    binder_->BindModel("sharedEnemyModel", archetypeModels[EnemyType::Floating]);
+    if (archetypeModels.count(EnemyType::Floating))
+    {
+        binder_->BindModel("sharedEnemyModel", archetypeModels[EnemyType::Floating]);
+    }
 }
 
 void EnemyManager::AddEnemy()
 {
     int newIndex = static_cast<int>(enemies_.size());
 
-    // ★ ここで追加したいタイプを指定できる
     auto newEnemy = std::make_unique<Enemy>(engine_, newIndex, EnemyType::Floating, managerGroupName_);
     newEnemy->SetManager(this->GetManager());
     newEnemy->Initialize();
@@ -65,18 +62,40 @@ void EnemyManager::AddEnemy()
     enemies_.push_back(std::move(newEnemy));
     enemyCount_ = static_cast<int>(enemies_.size());
 
-    // マテリアル共有ツリーを再構築
     RebuildMaterialSharing();
 }
 
 void EnemyManager::Update()
 {
-    for (auto& enemy : enemies_) enemy->Update();
+    // 死亡した敵のクリーンアップ（unique_ptrの破棄によりBehaviorのデストラクタでリソース解放が走る）
+    enemies_.erase(
+        std::remove_if(enemies_.begin(), enemies_.end(),
+            [](const std::unique_ptr<Enemy>& enemy) {
+                return !enemy || !enemy->IsActive();
+            }),
+        enemies_.end()
+    );
+
+    enemyCount_ = static_cast<int>(enemies_.size());
+
+    for (auto& enemy : enemies_)
+    {
+        if (enemy->IsActive())
+        {
+            enemy->Update();
+        }
+    }
 }
 
 void EnemyManager::Draw()
 {
-    for (auto& enemy : enemies_) enemy->Draw();
+    for (auto& enemy : enemies_)
+    {
+        if (enemy->IsActive())
+        {
+            enemy->Draw();
+        }
+    }
 }
 
 void EnemyManager::DebugDraw()
@@ -95,12 +114,8 @@ void EnemyManager::DebugDraw()
     if (!enemies_.empty())
     {
         binder_->DrawModel("sharedEnemyModel", "敵共通モデルインスペクター");
-
-        for (size_t i = 1; i < enemies_.size(); ++i)
-        {
-            enemies_[i]->GetModel()->ShareMaterialsFrom(enemies_[0]->GetModel());
-        }
     }
+
     ImGui::Separator();
 
     for (auto& enemy : enemies_)

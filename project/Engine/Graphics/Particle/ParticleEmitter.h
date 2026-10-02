@@ -23,6 +23,7 @@ public:
     void SetAttractionTarget(const WorldTransform* target) { attractionTarget_ = target; }
     void SetVortexTarget(const WorldTransform* target) { vortexTarget_ = target; }
     void SetPosition(const Vector3& position) { position_ = position; }
+    void SetRotation(const Quaternion& rotation) { rotation_ = rotation; }
 
     void Play(); // エミッターの再生を開始/リスタート
     void Stop(); // エミッターの再生を停止
@@ -52,6 +53,7 @@ public:
     }
 
     Vector3 position_;
+    Quaternion rotation_ = { 0.0f, 0.0f, 0.0f, 1.0f };
     float spawnInterval_;
     float lifetime_;
     float timeSinceLastSpawn_;

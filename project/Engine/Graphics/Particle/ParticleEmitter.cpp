@@ -89,10 +89,8 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
     // 定期的にパーティクルを生成
     while (timeSinceLastSpawn_ >= spawnInterval_)
     {
-        // amount_の数だけループしてパーティクルを生成
         for (int i = 0; i < amount_; ++i)
         {
-            // エミッター自身のTransformを作る際、ターゲットの回転とスケールを引き継ぐ
             WorldTransform spawnTransform;
             spawnTransform.translation_ = position_;
             const ModelData* currentModelData = nullptr;
@@ -102,7 +100,6 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
                 spawnTransform.scale_ = targetToFollow_->scale_;
                 spawnTransform.rotationQuaternion_ = targetToFollow_->rotationQuaternion_;
 
-                // ターゲットモデルがあればModelDataを取得
                 if (targetModel_)
                 {
                     currentModelData = targetModel_->GetModelData();
@@ -111,9 +108,10 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
             else
             {
                 spawnTransform.scale_ = { 1.0f, 1.0f, 1.0f };
+                // 追従対象がない場合はエミッター自身の回転を設定
+                spawnTransform.rotationQuaternion_ = rotation_;
             }
 
-            // 1つのパーティクルを生成
             particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_,
                 currentModelData, targetAnimModel_);
         }
@@ -124,12 +122,9 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
 
 void ParticleEmitter::Play()
 {
-    if (!isPlaying_)
-    {
-        elapsedTime_ = 0.0f;
-        timeSinceLastSpawn_ = 0.0f; // 放出タイミングリセット
-        isPlaying_ = true;
-    }
+    elapsedTime_ = 0.0f;
+    timeSinceLastSpawn_ = spawnInterval_; // 初回フレームから即座に発生させる
+    isPlaying_ = true;
 }
 
 void ParticleEmitter::Stop()

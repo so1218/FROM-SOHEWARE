@@ -27,6 +27,9 @@ public:
 
     void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
 
+    // 被弾処理
+    void TakeDamage(int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal);
+
     // アクセサ
     FE::Engine* GetEngine() const { return engine_; }
     FE::PropertyBinder* GetBinder() const { return binder_.get(); }
@@ -46,12 +49,16 @@ private:
     std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
     std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
+    std::unique_ptr<FE::ParticleEmitter> damageParticle_ = nullptr;
+    FE::ParticleEmitter* damageParticlePtr_ = nullptr;
 
     // 振る舞いを保持するポインタ
     std::unique_ptr<IEnemyBehavior> behavior_;
 
     // 共通パラメータ
+    int hp_ = 100;
     FE::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
     float colliderRadius_ = 1.0f;
     FE::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
+
 };

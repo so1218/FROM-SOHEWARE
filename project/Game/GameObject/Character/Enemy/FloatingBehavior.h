@@ -13,6 +13,12 @@ public:
     void Update(Enemy* owner) override;
     void DebugDraw(Enemy* owner) override; 
 
+    int GetInitialHP() const override { return 150; } // 浮遊敵はHP150
+    std::string GetDamageParticleName() const override { return "FloatingDamageParticle"; } 
+
+    void OnTakeDamage(Enemy* owner, int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal) override;
+    void OnDeath(Enemy* owner) override;
+
 private:
     FE::Engine* engine_ = nullptr;
 

@@ -82,8 +82,8 @@ void FollowCamera::UpdateCamera(Camera* camera)
     camera->SetFov(currentFov_);
 
     // ---------------------------------------------------------
-    // 入力によるカメラ回転処理（右スティック 360度アナログ対応）
-    // ---------------------------------------------------------
+        // 入力によるカメラ回転処理（右スティック 360度アナログ対応）
+        // ---------------------------------------------------------
     float rx = 0.0f;
     float ry = 0.0f;
 
@@ -91,15 +91,29 @@ void FollowCamera::UpdateCamera(Camera* camera)
     SHORT rawRx = Input::GetInstance().GetRightStickX(0);
     SHORT rawRy = Input::GetInstance().GetRightStickY(0);
 
-    // デッドゾーンチェック後、-1.0f ~ +1.0f の連続値へ変換
-    if (std::abs(rawRx) > STICK_THRESHOLD)
-    {
-        rx = static_cast<float>(rawRx) / 32768.0f;
-    }
-    if (std::abs(rawRy) > STICK_THRESHOLD)
-    {
-        ry = static_cast<float>(rawRy) / 32768.0f;
-    }
+    // ★ エイム中と通常時でデッドゾーンの閾値を切り替える
+    // ※ 生値 32768 に対して、エイム中は小さめ(2500)、通常時は標準(6000)
+    float currentDeadzone = isAiming_ ? 2500.0f : 6000.0f;
+
+    // リマップ付きデッドゾーン計算用ラムダ関数
+    auto applyScaledDeadzone = [](SHORT rawVal, float deadzone) -> float {
+        float val = static_cast<float>(rawVal);
+        float absVal = std::abs(val);
+
+        if (absVal <= deadzone)
+        {
+            return 0.0f;
+        }
+
+        // デッドゾーンを超えた範囲 (deadzone ~ 32767) を (0.0 ~ 1.0) に滑らかに変換
+        float sign = (val > 0.0f) ? 1.0f : -1.0f;
+        float normalized = (absVal - deadzone) / (32767.0f - deadzone);
+
+        return sign * std::clamp(normalized, 0.0f, 1.0f);
+        };
+
+    rx = applyScaledDeadzone(rawRx, currentDeadzone);
+    ry = applyScaledDeadzone(rawRy, currentDeadzone);
 
     // キーボード入力の加算（矢印キーなど）
     if (Input::GetInstance().IsKeyPressed(DIK_LEFT))  rx -= 1.0f;
@@ -108,12 +122,11 @@ void FollowCamera::UpdateCamera(Camera* camera)
     if (Input::GetInstance().IsKeyPressed(DIK_DOWN))  ry -= 1.0f;
 
     // スティックの倒し幅（rx, ry）に応じて角度を更新
-    // ※ エイム中は感度を少し下げる（バイオRE2風の操作感）
     float currentRotateSpeedYaw = isAiming_ ? rotateSpeedYaw_ * 0.6f : rotateSpeedYaw_;
     float currentRotateSpeedPitch = isAiming_ ? rotateSpeedPitch_ * 0.6f : rotateSpeedPitch_;
 
     targetYaw_ += rx * currentRotateSpeedYaw * dt;
-    targetPitch_ -= ry * currentRotateSpeedPitch * dt; // 上に倒すと見上げる（標準的な設定）
+    targetPitch_ -= ry * currentRotateSpeedPitch * dt;
 
     targetPitch_ = std::clamp(targetPitch_, minPitch_, maxPitch_);
     currentYaw_ = SmoothDampAngle(currentYaw_, targetYaw_, yawVelocity_, rotationSmoothTime_, dt);

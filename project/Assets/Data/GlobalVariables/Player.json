@@ -1604,9 +1604,9 @@
         ],
         "WeaponModel_ToonRampTex": "toonRamp_01",
         "WeaponModel_Trans": [
-            -3.5999999046325684,
-            18.700000762939453,
-            2.5
+            -2.4000000953674316,
+            19.200000762939453,
+            2.5999999046325684
         ],
         "WeaponModel_TriScale": 0.10000000149011612,
         "WeaponModel_TriSharpness": 4.0,

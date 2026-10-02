@@ -98,6 +98,8 @@ void PlayerStateAiming::Update(Player* player)
         player->FireWeapon();
         // 射撃の跳ね上がりでレティクルを開かせる
         player->OnShootRecoil();
+
+        input.StartVibration(0, 0.6f, 0.6f, 0.25f);
     }
 }
 

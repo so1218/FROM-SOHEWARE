@@ -7,10 +7,11 @@ using namespace FE;
 
 FloatingBehavior::~FloatingBehavior()
 {
-    // 固有のリソースはここで解放
+    // ★ 修正点④：安全な解放処理（二重返却を防止）
     if (spotLightIndex_ != -1 && engine_)
     {
         engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
+        spotLightIndex_ = -1;
     }
 }
 
@@ -83,6 +84,22 @@ void FloatingBehavior::Update(Enemy* owner)
             cosAngle,
             spotVolumetric_
         );
+    }
+}
+
+void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
+{
+    // ダメージを受けた瞬間にスポットライトを一瞬強く輝かせる演出など
+    spotIntensity_ = 20.0f;
+}
+
+void FloatingBehavior::OnDeath(Enemy* owner)
+{
+    // 死亡時にも安全に返却
+    if (spotLightIndex_ != -1 && engine_)
+    {
+        engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
+        spotLightIndex_ = -1; // 返却済みフラグ
     }
 }
 

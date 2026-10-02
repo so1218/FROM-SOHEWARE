@@ -12,6 +12,7 @@
 #include "PlayerStateNormal.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
+#include "Enemy.h"
 
 using namespace FE;
 
@@ -347,7 +348,7 @@ void Player::FireWeapon()
 	Vector3 rayStart = camera_->GetWorldTransform().translation_;
 	Vector3 baseForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
-	// フォーカス率（レティクルの絞り具合）に応じたランダムな弾道ブレ計算
+	// フォーカス率に応じたランダムな弾道ブレ計算
 	float currentSpread = config.maxBulletSpread * (1.0f - focusRatio_);
 
 	float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
@@ -356,19 +357,17 @@ void Player::FireWeapon()
 	Quaternion spreadRot = Quaternion::QuaternionFromEuler({ randPitch, randYaw, 0.0f });
 	Vector3 finalRayDir = spreadRot.RotateVector(baseForward).Normalize();
 
-	// 威力の補正計算（フォーカス完了で威力アップ）
+	// 威力の補正計算
 	int baseDamage = 20;
 	float damageMult = 1.0f + (config.maxDamageMultiplier - 1.0f) * focusRatio_;
 	int finalDamage = static_cast<int>(baseDamage * damageMult);
 
-	// レイキャスト実行（CollisionManager経由）
+	// レイキャスト実行
 	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
 	if (!colManager) return;
 
 	RaycastHit hitInfo;
 	float maxDistance = 150.0f;
-
-	// レイキャスト対象（敵 | プロップ/障害物）
 	uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
 
 	if (colManager->Raycast(rayStart, finalRayDir, maxDistance, &hitInfo, targetMask))
@@ -378,13 +377,20 @@ void Player::FireWeapon()
 			// 敵に当たった場合
 			if (hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
 			{
-				bool isCritical = (focusRatio_ >= 0.95f);
+				// Enemyへキャストして着弾処理と火花パーティクル再生を呼び出す
+				Enemy* enemy = dynamic_cast<Enemy*>(hitInfo.hitObject);
+				if (enemy)
+				{
+					enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
+				}
 
+				// 射撃後のレティクル拡散処理
+				OnShootRecoil();
 			}
-			// 壁や背景に当たった場合
+			// 壁や背景に当たった場合（着弾スパーク・弾痕など）
 			else
 			{
-
+				// CreateBulletHoleEffect(hitInfo.point, hitInfo.normal);
 			}
 		}
 	}
