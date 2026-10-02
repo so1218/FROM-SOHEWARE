@@ -12,44 +12,46 @@ public:
     FollowCamera(FE::Engine* engine, const FE::WorldTransform* target);
     void Initialize();
     void UpdateCamera(FE::Camera* camera) override;
-    void DebugDraw() override; 
+    void DebugDraw() override;
     void Reset(FE::Camera* camera) override;
 
-    // 地形情報をセットする関数
-    void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+    void AddRecoil(float pitchAmount, float yawAmount);
 
-    // エイム状態の切り替え
+    void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
     void SetAiming(bool isAiming) { isAiming_ = isAiming; }
     bool IsAiming() const { return isAiming_; }
 
 private:
-    // スムーズ補間関数
     float SmoothDamp(float current, float target, float& currentVelocity,
         float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
     float SmoothDampAngle(float current, float target, float& currentVelocity,
         float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
-   
+
 private:
     FE::Engine* engine_;
     const FE::WorldTransform* target_ = nullptr;
     std::unique_ptr<FE::PropertyBinder> binder_;
 
-    bool isAiming_ = false; // エイム状態フラグ
+    bool isAiming_ = false;
+
+    // スティック最大値
+    static constexpr float kMaxStickValue = 32767.0f;
 
     // 通常カメラ設定
     float normalDistance_ = 45.0f;
     FE::Vector3 normalLookAtOffset_ = { 0.0f, 1.5f, 0.0f };
-    FE::Vector3 normalShoulderOffset_ = { 0.0f, 0.0f, 0.0f }; // 中央配置
+    FE::Vector3 normalShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     float normalFov_ = 0.45f;
+    float normalDeadzone_ = 6000.0f;
 
     // エイムカメラ設定
-    float aimDistance_ = 18.0f;                                // プレイヤーへ接近
-    FE::Vector3 aimLookAtOffset_ = { 0.0f, 1.4f, 0.0f };      // 注視点高さ
-    FE::Vector3 aimShoulderOffset_ = { 1.8f, 0.1f, 0.0f };     // 右肩越しオフセット
-    float aimFov_ = 0.35f;                                     // FOVを絞ってズーム
-
-    // エイム遷移の補間パラメータ
-    float aimTransitionSmoothTime_ = 0.12f; // エイム切替にかかる補間時間
+    float aimDistance_ = 18.0f;
+    FE::Vector3 aimLookAtOffset_ = { 0.0f, 1.4f, 0.0f };
+    FE::Vector3 aimShoulderOffset_ = { 1.8f, 0.1f, 0.0f };
+    float aimFov_ = 0.35f;
+    float aimTransitionSmoothTime_ = 0.12f;
+    float aimDeadzone_ = 2500.0f;                 
+    float aimRotateSpeedMultiplier_ = 0.6f;       // エイム時感度倍率
 
     FE::Vector3 currentShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     FE::Vector3 shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
@@ -94,4 +96,9 @@ private:
     FE::Terrain* terrain_ = nullptr;
     float minGroundOffset_ = 0.8f;
     float groundCheckRadius_ = 0.4f;
+
+    // リコイル用オフセット
+    float recoilPitch_ = 0.0f;
+    float recoilYaw_ = 0.0f;
+    float recoilRecoverySpeed_ = 12.0f; 
 };

@@ -14,7 +14,7 @@ public:
     void DebugDraw(Enemy* owner) override; 
 
     int GetInitialHP() const override { return 150; } // 浮遊敵はHP150
-    std::string GetDamageParticleName() const override { return "FloatingDamageParticle"; } 
+    std::string GetDamageParticleName() const override { return "floatingDamage"; } 
 
     void OnTakeDamage(Enemy* owner, int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal) override;
     void OnDeath(Enemy* owner) override;

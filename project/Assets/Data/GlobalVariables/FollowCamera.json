@@ -1,5 +1,6 @@
 {
     "FollowCamera": {
+        "Aim Deadzone": 2500.0,
         "Aim Distance": 7.599999904632568,
         "Aim FOV": 0.3499999940395355,
         "Aim LookAt Offset": [
@@ -7,6 +8,7 @@
             1.399999976158142,
             0.0
         ],
+        "Aim Sens Multiplier": 0.6000000238418579,
         "Aim Shoulder Offset": [
             -1.7100000381469727,
             6.869999885559082,
@@ -23,7 +25,8 @@
         "Max Pitch": 0.8399999737739563,
         "Min Distance": 5.0,
         "Min Ground Offset": 0.800000011920929,
-        "Min Pitch": 0.07000000029802322,
+        "Min Pitch": -0.699999988079071,
+        "Normal Deadzone": 6000.0,
         "Normal Distance": 27.700000762939453,
         "Normal FOV": 0.44999998807907104,
         "Normal LookAt Offset": [
@@ -32,6 +35,7 @@
             0.0
         ],
         "Position Lerp Speed": 40.0,
+        "Recoil Recovery Speed": 12.0,
         "Rotate Speed Pitch": 0.6800000071525574,
         "Rotate Speed Yaw": 2.0,
         "Rotation Smooth Time": 0.11999999731779099,
