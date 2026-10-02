@@ -79,7 +79,7 @@ void ModelManager::Load(const std::string& name, const std::string& path)
         MaterialHandle defMat = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
 
         defMat.textureHandle = texManager.Get("white1x1");
-        defMat.envMapHandle = texManager.Get("skybox");
+        defMat.envMapHandle = texManager.Get("pureSky");
         defMat.toonRampHandle = texManager.Get("toonRamp_01");
         defMat.dissolveMapHandle = texManager.Get("white1x1");
         defMat.normalMapHandle = texManager.Get("white1x1");

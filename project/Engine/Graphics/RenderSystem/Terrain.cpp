@@ -26,7 +26,7 @@ Terrain::Terrain(Engine* engine)
     auto& texManager = TextureManager::GetInstance();
 
     material_.textureHandle = texManager.Get("white1x1");
-    material_.envMapHandle = texManager.Get("skybox");
+    material_.envMapHandle = texManager.Get("pureSky");
     material_.toonRampHandle = texManager.Get("toonRamp_01");
     material_.dissolveMapHandle = texManager.Get("white1x1");
     material_.normalMapHandle = texManager.Get("white1x1");

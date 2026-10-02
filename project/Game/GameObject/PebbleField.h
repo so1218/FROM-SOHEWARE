@@ -64,7 +64,7 @@ private:
     uint32_t heightMapHandle_ = 0;
     uint32_t densityMapHandle_ = 0;
 
-    std::string skyboxName_ = "Skybox";
+    std::string skyboxName_ = "pureSky";
     std::string albedoMapName_ = "white1x1";
     std::string normalMapName_ = "white1x1";
 

@@ -559,7 +559,7 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     MaterialData* matData = handle->materialData;
 
     BindTexture(prefix + "AlbedoMap", &handle->textureName, &handle->textureHandle, "white1x1", TextureType::Albedo);
-    BindTexture(prefix + "EnvMapTex", &handle->envMapName, &handle->envMapHandle, "skybox", TextureType::CubeMap);
+    BindTexture(prefix + "EnvMapTex", &handle->envMapName, &handle->envMapHandle, "pureSky", TextureType::CubeMap);
     BindTexture(prefix + "NormalMapTex", &handle->normalMapName, &handle->normalMapHandle, "normal_01", TextureType::Normal);
     BindTexture(prefix + "DissolveTex", &handle->dissolveMapName, &handle->dissolveMapHandle, "white1x1", TextureType::Noise);
     BindTexture(prefix + "ToonRampTex", &handle->toonRampName, &handle->toonRampHandle, "toonRamp_01", TextureType::Toon);

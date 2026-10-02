@@ -132,7 +132,7 @@
         "Sunny_AtmoDim": 1.0,
         "Sunny_CloudMax": 0.0,
         "Sunny_CloudMin": 0.46000000834465027,
-        "Sunny_CloudShadow": 0.3400000035762787,
+        "Sunny_CloudShadow": 0.25,
         "Sunny_LightDim": 1.0,
         "Sunny_RainIntens": 0.0,
         "Sunny_SkyBlendWeight": 0.0,

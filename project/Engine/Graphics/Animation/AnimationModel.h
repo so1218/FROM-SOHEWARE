@@ -44,6 +44,12 @@ public:
     // 最初から再生しなおす
     void ResetAnimation();
 
+    // 特定のボーンに回転オフセットを加算する
+    void AddJointRotationOffset(const std::string& jointName, const Quaternion& offsetRotation);
+
+    // オフセット適用後にスケルトンとスキニング行列を再計算する
+    void PostUpdateSkeleton();
+
     // 一時停止 / 再開
     void Stop() { isPlaying_ = false; }
     void Resume() { isPlaying_ = true; }

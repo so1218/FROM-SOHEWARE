@@ -15,6 +15,7 @@
 #include "FoliageField.h"
 #include "GameUI.h"
 #include "WaterManager.h"
+#include "AudioPlayer.h"
 
 using namespace FE;
 
@@ -88,7 +89,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].worleyWeight = 0.95f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseIntensity = 0.9f;
     engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };
-    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.5f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.9f;
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;
@@ -113,6 +114,7 @@ void TestSceneHori::OnInitialize()
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
 
+	AudioPlayer::GetInstance().PlayUnique("playSceneBGM", true, 20);
 }
 
 void TestSceneHori::OnUpdate()

@@ -61,7 +61,7 @@ struct MaterialHandle
     MaterialData* materialData;
 
     std::string textureName = "white1x1";      
-    std::string envMapName = "skybox";  
+    std::string envMapName = "pureSky";  
     std::string normalMapName = "white1x1";      
     std::string heightMapName = "white1x1";      
     std::string dissolveMapName = "white1x1";      

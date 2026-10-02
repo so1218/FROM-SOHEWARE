@@ -38,7 +38,7 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
 
         // デフォルト設定
         newMaterial.textureHandle = texManager.Get("white1x1");
-        newMaterial.envMapHandle = texManager.Get("skybox"); 
+        newMaterial.envMapHandle = texManager.Get("pureSky"); 
         newMaterial.toonRampHandle = texManager.Get("toonRamp_01");    
         newMaterial.dissolveMapHandle = texManager.Get("white1x1"); 
         newMaterial.normalMapHandle = texManager.Get("white1x1");
@@ -249,6 +249,25 @@ void AnimationModel::ResetAnimation()
 {
     animationTime_ = 0.0f;
     isFinished_ = false;
+}
+
+void AnimationModel::AddJointRotationOffset(const std::string& jointName, const Quaternion& offsetRotation)
+{
+    auto it = skeleton_.jointMap.find(jointName);
+    if (it != skeleton_.jointMap.end())
+    {
+        size_t jointIndex = it->second;
+        // アニメーションによる元の回転に、オフセット回転を合成 (Quaternion乗算)
+        skeleton_.joints[jointIndex].transform.rotationQuaternion_ =
+            skeleton_.joints[jointIndex].transform.rotationQuaternion_ * offsetRotation;
+    }
+}
+
+void AnimationModel::PostUpdateSkeleton()
+{
+    // 追加したボーン回転を子ボーン（腕や手首）へ伝搬計算
+    UpdateSkeleton(skeleton_);
+    UpdateSkinCluster(skinCluster_, skeleton_);
 }
 
 // ========================================================================

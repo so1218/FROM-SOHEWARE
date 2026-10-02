@@ -1,3 +1,8 @@
 Name,Path
 # BGM
-titleSceneBGM,BGM/titleSceneBGM.mp3
+playSceneBGM,BGM/playSceneBGM.mp3
+
+# SE
+gunShot,SE/gunShot.mp3
+playerRunning,SE/playerRunning.mp3
+floatingEnemyDamaged,SE/floatingEnemyDamaged.mp3

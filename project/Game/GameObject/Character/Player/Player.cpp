@@ -191,17 +191,47 @@ void Player::Update()
 
 	collider_->SetCenterOffset(colliderOffset_);
 	collider_->SetSize(colliderSize_);
-
-	// 最終的な行列更新
+	// ---------------------------------------------------------
+	// 1. 基本アニメーションの更新
+	// ---------------------------------------------------------
 	animationModel_->Update();
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 	animationModel_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
-	GetTransform().UpdateMatrix();
 
-	// 右手のワールド行列を取得
+	// ---------------------------------------------------------
+	// 2. カメラのピッチ角（上下向き）の計算（★ エイム時のみ適用）
+	// ---------------------------------------------------------
+	float cameraPitch = 0.0f;
+
+	// エイム中かどうかを判定 (カメラのエイム状態、またはステート等で判定)
+	bool isAiming = followCamera_ ? followCamera_->IsAiming() : false;
+
+	if (isAiming && camera_)
+	{
+		Vector3 camForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+		cameraPitch = std::asin(std::clamp(camForward.y, -1.0f, 1.0f));
+	}
+
+	// ---------------------------------------------------------
+	// 3. 上半身（背骨・首ボーン）へエイム時のみピッチ回転を適用
+	// ---------------------------------------------------------
+	if (isAiming && std::abs(cameraPitch) > 0.001f)
+	{
+		Quaternion pitchOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.5f, 0.0f, 0.0f }); // 背骨
+		Quaternion neckOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.3f, 0.0f, 0.0f }); // 首
+
+		animationModel_->AddJointRotationOffset("mixamorig1:Spine1", pitchOffset);
+		animationModel_->AddJointRotationOffset("mixamorig1:Spine2", pitchOffset);
+		animationModel_->AddJointRotationOffset("mixamorig1:Neck", neckOffset);
+
+		// スキニング行列を再計算
+		animationModel_->PostUpdateSkeleton();
+	}
+
+	// ---------------------------------------------------------
+	// 4. 右手のワールド行列を取得して武器に同期
+	// ---------------------------------------------------------
 	Matrix4x4 rightHandWorldMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
-
-	// 武器に右手の行列をそのままセットする
 	rightHandTransform_.matWorld_ = rightHandWorldMatrix;
 
 	if (weaponModel_)
@@ -209,12 +239,13 @@ void Player::Update()
 		weaponModel_->GetTransform().UpdateMatrix();
 	}
 
+	// ---------------------------------------------------------
+	// 5. パーティクル・ライトの更新
+	// ---------------------------------------------------------
 	if (muzzleFlashEmitterPtr_)
 	{
-		// 銃口の最新ワールド座標をセット
 		muzzleFlashEmitterPtr_->SetPosition(GetMuzzleWorldPosition());
 
-		// 射撃方向（カメラの前方）に合わせて回転をセット
 		if (camera_)
 		{
 			Vector3 forward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
@@ -223,19 +254,13 @@ void Player::Update()
 		}
 	}
 
-	// ---------------------------------------------------------
-	// ★ マズルフラッシュ（ポイントライト）の更新
-	// ---------------------------------------------------------
 	if (muzzleLightIndex_ >= 0)
 	{
-		// 毎フレーム最新の銃口位置を計算
 		Vector3 muzzlePos = GetMuzzleWorldPosition();
 
 		if (muzzleFlashTimer_ > 0.0f)
 		{
 			muzzleFlashTimer_ -= deltaTime;
-
-			// ライト位置を更新
 			engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
 
 			float alpha = std::clamp(muzzleFlashTimer_ / config.muzzleFlashDuration, 0.0f, 1.0f);
@@ -251,7 +276,6 @@ void Player::Update()
 		}
 		else
 		{
-			// 常時位置だけ更新しておき、消灯状態にする
 			engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
 			engine_->GetLightManager()->UpdatePointLightProperties(
 				muzzleLightIndex_,
@@ -264,10 +288,9 @@ void Player::Update()
 	}
 
 	// ---------------------------------------------------------
-	// ワールドインタラクション用データの作成と送信
+	// 6. インタラクションデータの送信
 	// ---------------------------------------------------------
 	Vector3 currentPos = GetTransform().translation_;
-
 	Vector3 velocity = { 0.0f, 0.0f, 0.0f };
 	if (deltaTime > 0.0001f) {
 		velocity = (currentPos - prevPosition_) / deltaTime;
@@ -276,11 +299,11 @@ void Player::Update()
 
 	InteractionEntity entity{};
 	entity.position = currentPos;
-	entity.radius = interactionRadius_;         
+	entity.radius = interactionRadius_;
 	entity.velocity = velocity;
-	entity.maxVerticalDist = maxVerticalDist_;  
+	entity.maxVerticalDist = maxVerticalDist_;
 	entity.entityType = 0;
-	entity.forceMultiplier = interactionForce_; 
+	entity.forceMultiplier = interactionForce_;
 
 	engine_->GetRendererManager()->SubmitInteractionEntity(entity);
 	engine_->GetRendererManager()->SetWorldInteractionCenter({ currentPos.x, currentPos.z });
@@ -341,11 +364,13 @@ Vector3 Player::GetMoveDirection()
 void Player::UpdateRotation(const Vector3& moveDir)
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-	if (moveDir.Length() > 0.0f) {
+	if (moveDir.Length() > 0.0f) 
+	{
 		lastMoveDirection_ = moveDir;
 	}
 
-	if (lastMoveDirection_.Length() > 0.001f) {
+	if (lastMoveDirection_.Length() > 0.001f)
+	{
 		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
 		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
@@ -426,6 +451,8 @@ void Player::FireWeapon()
 {
 	if (!camera_) return;
 
+	AudioPlayer::GetInstance().Play("gunShot", false, 20);
+
 	// 1. 発光タイマーのセット（ライト）
 	muzzleFlashTimer_ = config.muzzleFlashDuration;
 
@@ -434,11 +461,17 @@ void Player::FireWeapon()
 		muzzleFlashEmitterPtr_->Play();
 	}
 
+	// 既存のカメラ反動（画面揺れ）
+	if (followCamera_)
+	{
+		followCamera_->AddRecoil(0.08f, 0.03f);
+	}
+
 	// 2. 銃口のワールド座標を取得
 	Vector3 muzzlePos = GetMuzzleWorldPosition();
 
 	// ---------------------------------------------------------
-	// レイキャスト・ダメージ・反動処理（既存コード）
+	// レイキャスト・ダメージ・反動処理
 	// ---------------------------------------------------------
 	Vector3 rayStart = camera_->GetWorldTransform().translation_;
 	Vector3 baseForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
@@ -461,11 +494,6 @@ void Player::FireWeapon()
 	float maxDistance = 150.0f;
 	uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
 
-	if (followCamera_)
-	{
-		followCamera_->AddRecoil(0.03f, 0.01f);
-	}
-
 	OnShootRecoil();
 
 	if (colManager->Raycast(rayStart, finalRayDir, maxDistance, &hitInfo, targetMask))
@@ -478,6 +506,7 @@ void Player::FireWeapon()
 				if (enemy)
 				{
 					enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
+					AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 20);
 				}
 			}
 		}

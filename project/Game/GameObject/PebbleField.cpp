@@ -46,7 +46,7 @@ void PebbleField::Initialize()
 
     // テクスチャリソースのバインド (変更時にコールバック)
     auto onResourceChanged = [this]() { ReloadResources(); };
-    binder_->BindTexture("Skybox", &skyboxName_, &skyboxHandle_, "Skybox", TextureType::CubeMap, onResourceChanged);
+    binder_->BindTexture("Skybox", &skyboxName_, &skyboxHandle_, "pureSky", TextureType::CubeMap, onResourceChanged);
     binder_->BindTexture("AlbedoMap", &albedoMapName_, &albedoMapHandle_, "white1x1", TextureType::Albedo, onResourceChanged);
     binder_->BindTexture("NormalMap", &normalMapName_, &normalMapHandle_, "white1x1", TextureType::Normal, onResourceChanged);
 

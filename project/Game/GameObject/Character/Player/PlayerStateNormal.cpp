@@ -36,6 +36,7 @@ void PlayerStateNormal::Update(Player* player)
         player->PlayAnimation("humanRun", true, player->config.runAnimSpeed, player->config.idleToRunBlendTime);
         player->UpdateRotation(moveDir);
         player->ApplyHorizontalMovement(moveDir, player->config.runSpeed);
+
     }
     else
     {
