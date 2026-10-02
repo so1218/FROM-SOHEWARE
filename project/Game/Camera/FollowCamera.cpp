@@ -67,35 +67,61 @@ void FollowCamera::UpdateCamera(Camera* camera)
     float activeTargetFov = isAiming_ ? aimFov_ : normalFov_;
 
     // 目標値へスムーズ補間
-    // 距離の補間
     targetDistance_ = std::clamp(activeTargetDistance, minDistance_, maxDistance_);
     distance_ = SmoothDamp(distance_, targetDistance_, distanceVelocity_, aimTransitionSmoothTime_, dt);
 
-    // 肩越しオフセットの補間
     currentShoulderOffset_.x = SmoothDamp(currentShoulderOffset_.x, activeTargetShoulder.x, shoulderOffsetVelocity_.x, aimTransitionSmoothTime_, dt);
     currentShoulderOffset_.y = SmoothDamp(currentShoulderOffset_.y, activeTargetShoulder.y, shoulderOffsetVelocity_.y, aimTransitionSmoothTime_, dt);
     currentShoulderOffset_.z = SmoothDamp(currentShoulderOffset_.z, activeTargetShoulder.z, shoulderOffsetVelocity_.z, aimTransitionSmoothTime_, dt);
 
-    // 注視点オフセットの補間
     currentLookAtOffset_.x = SmoothDamp(currentLookAtOffset_.x, activeTargetLookAt.x, lookAtOffsetVelocity_.x, aimTransitionSmoothTime_, dt);
     currentLookAtOffset_.y = SmoothDamp(currentLookAtOffset_.y, activeTargetLookAt.y, lookAtOffsetVelocity_.y, aimTransitionSmoothTime_, dt);
     currentLookAtOffset_.z = SmoothDamp(currentLookAtOffset_.z, activeTargetLookAt.z, lookAtOffsetVelocity_.z, aimTransitionSmoothTime_, dt);
 
-    // FOVの補間とカメラへの適用
     currentFov_ = SmoothDamp(currentFov_, activeTargetFov, fovVelocity_, aimTransitionSmoothTime_, dt);
     camera->SetFov(currentFov_);
 
-    // 入力によるカメラ回転処理
-    if (Input::GetInstance().IsKeyPressed(DIK_LEFT) || Input::GetInstance().IsLeftOnStick(0, Input::RightStick)) targetYaw_ -= rotateSpeedYaw_ * dt;
-    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT) || Input::GetInstance().IsRightOnStick(0, Input::RightStick)) targetYaw_ += rotateSpeedYaw_ * dt;
-    if (Input::GetInstance().IsKeyPressed(DIK_UP) || Input::GetInstance().IsUpOnStick(0, Input::RightStick)) targetPitch_ -= rotateSpeedPitch_ * dt;
-    if (Input::GetInstance().IsKeyPressed(DIK_DOWN) || Input::GetInstance().IsDownOnStick(0, Input::RightStick)) targetPitch_ += rotateSpeedPitch_ * dt;
+    // ---------------------------------------------------------
+    // 入力によるカメラ回転処理（右スティック 360度アナログ対応）
+    // ---------------------------------------------------------
+    float rx = 0.0f;
+    float ry = 0.0f;
+
+    // 右スティックのアナログ生値（-32768 ~ 32767）を取得
+    SHORT rawRx = Input::GetInstance().GetRightStickX(0);
+    SHORT rawRy = Input::GetInstance().GetRightStickY(0);
+
+    // デッドゾーンチェック後、-1.0f ~ +1.0f の連続値へ変換
+    if (std::abs(rawRx) > STICK_THRESHOLD)
+    {
+        rx = static_cast<float>(rawRx) / 32768.0f;
+    }
+    if (std::abs(rawRy) > STICK_THRESHOLD)
+    {
+        ry = static_cast<float>(rawRy) / 32768.0f;
+    }
+
+    // キーボード入力の加算（矢印キーなど）
+    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))  rx -= 1.0f;
+    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT)) rx += 1.0f;
+    if (Input::GetInstance().IsKeyPressed(DIK_UP))    ry += 1.0f;
+    if (Input::GetInstance().IsKeyPressed(DIK_DOWN))  ry -= 1.0f;
+
+    // スティックの倒し幅（rx, ry）に応じて角度を更新
+    // ※ エイム中は感度を少し下げる（バイオRE2風の操作感）
+    float currentRotateSpeedYaw = isAiming_ ? rotateSpeedYaw_ * 0.6f : rotateSpeedYaw_;
+    float currentRotateSpeedPitch = isAiming_ ? rotateSpeedPitch_ * 0.6f : rotateSpeedPitch_;
+
+    targetYaw_ += rx * currentRotateSpeedYaw * dt;
+    targetPitch_ -= ry * currentRotateSpeedPitch * dt; // 上に倒すと見上げる（標準的な設定）
 
     targetPitch_ = std::clamp(targetPitch_, minPitch_, maxPitch_);
     currentYaw_ = SmoothDampAngle(currentYaw_, targetYaw_, yawVelocity_, rotationSmoothTime_, dt);
     currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
 
+    // ---------------------------------------------------------
     // ターゲット位置のスムージングとワールド座標計算
+    // ---------------------------------------------------------
     Vector3 actualPlayerPos = target_->translation_;
     float posEffectiveSpeed = Math::MyMin<float>(1.0f, positionLerpSpeed_ * dt);
     smoothedTargetPos_ = Vector3::Lerp(smoothedTargetPos_, actualPlayerPos, posEffectiveSpeed);

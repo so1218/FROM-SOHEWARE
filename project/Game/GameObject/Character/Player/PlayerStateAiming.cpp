@@ -9,7 +9,7 @@ using namespace FE;
 void PlayerStateAiming::Enter(Player* player)
 {
     // エイム開始アニメーション再生
-    player->PlayAnimation("humanPistolIdle", true, 1.0f, 0.1f);
+    player->PlayAnimation("humanPistolIdle", true, 0.5f, 0.1f);
 
     // カメラをエイムモードにする
     player->GetFollowCamera()->SetAiming(true);
@@ -23,8 +23,10 @@ void PlayerStateAiming::Update(Player* player)
     player->ApplyGravity(deltaTime);
     player->SnapToGround();
 
-    // Kキーを離したら通常状態に戻る
-    if (!input.IsKeyPressed(DIK_K))
+    bool isAimingInput = input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT);
+
+    // どちらの入力も無い場合、通常状態に戻る
+    if (!isAimingInput)
     {
         player->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
         return;
@@ -59,12 +61,12 @@ void PlayerStateAiming::Update(Player* player)
             if (dotForward > 0.0f)
             {
                 // 前進
-                player->PlayAnimation("humanPistolWalkForward", true, 1.0f, 0.1f);
+                player->PlayAnimation("humanPistolWalkForward", true, 0.8f, 0.1f);
             }
             else
             {
                 // 後退
-                player->PlayAnimation("humanPistolWalkBackward", true, 1.0f, 0.1f);
+                player->PlayAnimation("humanPistolWalkBackward", true, 0.8f, 0.1f);
             }
         }
         else
@@ -72,26 +74,26 @@ void PlayerStateAiming::Update(Player* player)
             if (dotRight > 0.0f)
             {
                 // 右移動
-                player->PlayAnimation("humanPistolWalkRight", true, 1.0f, 0.1f);
+                player->PlayAnimation("humanPistolWalkRight", true, 0.8f, 0.1f);
             }
             else
             {
                 // 左移動
-                player->PlayAnimation("humanPistolWalkLeft", true, 1.0f, 0.1f);
+                player->PlayAnimation("humanPistolWalkLeft", true, 0.8f, 0.1f);
             }
         }
     }
     else
     {
         // 移動していない時はエイム待機アニメーション
-        player->PlayAnimation("humanPistolIdle", true, 1.0f, 0.1f);
+        player->PlayAnimation("humanPistolIdle", true, 0.5f, 0.1f);
     }
 
     // 毎フレームのレティクル収束計算
     player->UpdateReticle(deltaTime, isMoving, true);
 
     // 射撃処理
-    if (input.IsKeyTriggered(DIK_J))
+    if (input.IsKeyTriggered(DIK_J) || input.IsControllerButtonTriggered(0, Input::ButtonRT))
     {
         player->FireWeapon();
         // 射撃の跳ね上がりでレティクルを開かせる
@@ -105,4 +107,6 @@ void PlayerStateAiming::Exit(Player* player)
     player->GetFollowCamera()->SetAiming(false);
     // エイム解除時にフェードアウトへ向けてリセット
     player->UpdateReticle(0.0f, false, false);
+
+    player->ResetReticle();
 }

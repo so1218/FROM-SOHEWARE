@@ -1,6 +1,6 @@
 {
     "FollowCamera": {
-        "Aim Distance": 18.0,
+        "Aim Distance": 7.599999904632568,
         "Aim FOV": 0.3499999940395355,
         "Aim LookAt Offset": [
             0.0,
@@ -8,7 +8,7 @@
             0.0
         ],
         "Aim Shoulder Offset": [
-            -2.5399999618530273,
+            -1.7100000381469727,
             6.869999885559082,
             0.0
         ],

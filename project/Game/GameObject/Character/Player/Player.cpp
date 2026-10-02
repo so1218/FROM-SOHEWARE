@@ -74,11 +74,15 @@ void Player::Initialize()
 	binder_->Bind("InteractionForce", &interactionForce_, 0.1f);
 	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 0.1f);
 
-	binder_->Bind("ReticleMinSize", &config.reticleMinSize, 1.0f, 5.0f, 100.0f);
-	binder_->Bind("ReticleMaxSize", &config.reticleMaxSize, 1.0f, 20.0f, 200.0f);
-	binder_->Bind("ReticleFocusTime", &config.reticleFocusTime, 0.05f, 0.1f, 3.0f);
-	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 1.0f, 3.0f);
-	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.0f, 0.2f);
+	binder_->Bind("ReticleLineThickness", &config.reticleLineThickness, 0.5f, 0.1f, 1.0f, 10.0f);
+	binder_->Bind("ReticleLineLength", &config.reticleLineLength, 1.0f, 0.1f, 2.0f, 50.0f);
+	binder_->Bind("ReticleMaxGap", &config.reticleMaxGap, 1.0f, 0.1f, 10.0f, 100.0f);
+	binder_->Bind("ReticleMinGap", &config.reticleMinGap, 0.5f, 0.1f, 0.0f, 30.0f);
+	binder_->Bind("ReticleCenterDotSize", &config.reticleCenterDotSize, 0.5f, 0.1f, 1.0f, 20.0f);
+
+	binder_->Bind("ReticleFocusTime", &config.reticleFocusTime, 0.05f, 0.1f, 0.1f, 3.0f);
+	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 0.1f, 1.0f, 3.0f);
+	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.1f, 0.0f, 0.2f);
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
@@ -202,36 +206,40 @@ void Player::Update()
 // 入力から移動方向を取得
 Vector3 Player::GetMoveDirection()
 {
-	Vector3 dir = { 0.0f, 0.0f, 0.0f };
 	auto& input = Input::GetInstance();
-
 	const int controllerId = 0; // 1P想定
-	SHORT stickX = input.GetLeftStickX(controllerId);
-	SHORT stickY = input.GetLeftStickY(controllerId);
-	const int DEAD_ZONE = STICK_THRESHOLD;
 
-	float normalizedX = 0.0f;
-	float normalizedY = 0.0f;
+	// 1. スティックの生入力を取得 (-32768 ~ 32767)
+	float stickX = static_cast<float>(input.GetLeftStickX(controllerId));
+	float stickY = static_cast<float>(input.GetLeftStickY(controllerId));
 
-	// スティックの入力を正規化
-	if (abs(stickX) > DEAD_ZONE)
-		normalizedX = static_cast<float>(stickX) / 32768.0f;
-	if (abs(stickY) > DEAD_ZONE)
-		normalizedY = static_cast<float>(stickY) / 32768.0f;
+	// キーボード入力（WASD）の加算
+	if (input.IsKeyPressed(DIK_W)) stickY += 32768.0f;
+	if (input.IsKeyPressed(DIK_S)) stickY -= 32768.0f;
+	if (input.IsKeyPressed(DIK_D)) stickX += 32768.0f;
+	if (input.IsKeyPressed(DIK_A)) stickX -= 32768.0f;
 
-	// キーボード入力対応
-	if (input.IsKeyPressed(DIK_W)) normalizedY += 1.0f;
-	if (input.IsKeyPressed(DIK_S)) normalizedY -= 1.0f;
-	if (input.IsKeyPressed(DIK_D)) normalizedX += 1.0f;
-	if (input.IsKeyPressed(DIK_A)) normalizedX -= 1.0f;
+	// 2. -1.0f ~ +1.0f に正規化
+	float inputX = stickX / 32768.0f;
+	float inputY = stickY / 32768.0f;
 
-	dir = { normalizedX, 0.0f, normalizedY };
+	// 3. 入力ベクトルの長さを算出（倒し具合）
+	float inputLength = std::sqrt(inputX * inputX + inputY * inputY);
+	float deadZone = static_cast<float>(STICK_THRESHOLD) / 32768.0f;
 
-	// カメラ方向に基づいて移動ベクトルを変換
-	if (dir.Length() > 0.0f)
+	Vector3 dir = { 0.0f, 0.0f, 0.0f };
+
+	// デッドゾーンを超えている場合のみ処理
+	if (inputLength > deadZone)
 	{
-		dir = dir.Normalize();
+		// デッドゾーンを超えた分を 0.0f ~ 1.0f にスケーリング（入力強度の算出）
+		float inputMagnitude = (std::min)(1.0f, (inputLength - deadZone) / (1.0f - deadZone));
 
+		// 入力方向の単位ベクトル
+		float dirX = inputX / inputLength;
+		float dirY = inputY / inputLength;
+
+		// 4. カメラの向きに合わせてワールド移動方向を決定
 		Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
 		Vector3 cameraRight = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 1.0f, 0.0f, 0.0f });
 
@@ -240,8 +248,8 @@ Vector3 Player::GetMoveDirection()
 		cameraForward = cameraForward.Normalize();
 		cameraRight = cameraRight.Normalize();
 
-		dir = cameraForward * dir.z + cameraRight * dir.x;
-		dir = dir.Normalize();
+		// 方向 × 入力強度（倒し具合）を掛け合わせて360度アナログ移動ベクトルを作成
+		dir = (cameraForward * dirY + cameraRight * dirX).Normalize() * inputMagnitude;
 	}
 
 	return dir;
@@ -335,11 +343,11 @@ void Player::FireWeapon()
 {
 	if (!camera_) return;
 
-	// 1. レイの起点を決定（カメラ位置）
+	// レイの起点を決定（カメラ位置）
 	Vector3 rayStart = camera_->GetWorldTransform().translation_;
 	Vector3 baseForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
-	// 2. フォーカス率（レティクルの絞り具合）に応じたランダムな弾道ブレ計算
+	// フォーカス率（レティクルの絞り具合）に応じたランダムな弾道ブレ計算
 	float currentSpread = config.maxBulletSpread * (1.0f - focusRatio_);
 
 	float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
@@ -348,12 +356,12 @@ void Player::FireWeapon()
 	Quaternion spreadRot = Quaternion::QuaternionFromEuler({ randPitch, randYaw, 0.0f });
 	Vector3 finalRayDir = spreadRot.RotateVector(baseForward).Normalize();
 
-	// 3. 威力の補正計算（フォーカス完了で威力アップ）
+	// 威力の補正計算（フォーカス完了で威力アップ）
 	int baseDamage = 20;
 	float damageMult = 1.0f + (config.maxDamageMultiplier - 1.0f) * focusRatio_;
 	int finalDamage = static_cast<int>(baseDamage * damageMult);
 
-	// 4. レイキャスト実行（CollisionManager経由）
+	// レイキャスト実行（CollisionManager経由）
 	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
 	if (!colManager) return;
 
@@ -384,17 +392,15 @@ void Player::FireWeapon()
 
 void Player::UpdateReticle(float deltaTime, bool isMoving, bool isAiming)
 {
-	// エイム中のアルファ値補間（フェードイン・アウト）
-	float targetAlpha = isAiming ? 1.0f : 0.0f;
-	reticleAlpha_ = Math::Lerp(reticleAlpha_, targetAlpha, 15.0f * deltaTime);
-
+	// ★ エイム中でない場合は即座に完全リセットして非表示にする
 	if (!isAiming)
 	{
-		focusTimer_ = 0.0f;
-		focusRatio_ = 0.0f;
-		currentReticleSize_ = config.reticleMaxSize;
+		ResetReticle();
 		return;
 	}
+
+	// エイム中のアルファ値フェードイン補間
+	reticleAlpha_ = Math::Lerp(reticleAlpha_, 1.0f, 15.0f * deltaTime);
 
 	// 移動していない（静止状態）場合にフォーカスを進める
 	if (!isMoving)
@@ -407,12 +413,16 @@ void Player::UpdateReticle(float deltaTime, bool isMoving, bool isAiming)
 		focusTimer_ -= deltaTime * config.reticleExpandSpeed;
 	}
 
+	// フォーカス時間を [0, reticleFocusTime] にクランプして正規化（0.0 ~ 1.0）
 	focusTimer_ = std::clamp(focusTimer_, 0.0f, config.reticleFocusTime);
 	focusRatio_ = focusTimer_ / config.reticleFocusTime;
+}
 
-	// サイズの補間
-	float targetSize = Math::Lerp(config.reticleMaxSize, config.reticleMinSize, focusRatio_);
-	currentReticleSize_ = Math::Lerp(currentReticleSize_, targetSize, 20.0f * deltaTime);
+void Player::ResetReticle()
+{
+	focusTimer_ = 0.0f;
+	focusRatio_ = 0.0f;
+	reticleAlpha_ = 0.0f; 
 }
 
 // 描画処理
@@ -420,22 +430,56 @@ void Player::DrawReticle()
 {
 	if (!reticleSprite_ || reticleAlpha_ <= 0.001f) return;
 
-	// 画面中央座標の取得
+	// 画面中央座標
 	float centerX = static_cast<float>(Engine::GetClientWidth()) * 0.5f;
 	float centerY = static_cast<float>(Engine::GetClientHeight()) * 0.5f;
 
-	// 完全に絞り切ったらバイオハザードのように赤色（赤点照準）へ変化させる
-	Vector4 color = { 1.0f, 1.0f, 1.0f, reticleAlpha_ };
-	if (focusRatio_ >= 0.95f)
-	{
-		color = { 1.0f, 0.2f, 0.2f, reticleAlpha_ }; // クリティカル照準（赤）
-	}
+	// ★ RE2風：後半に向かって収束速度が加速する EaseInCubic を適用
+	float easedRatio = Easing::Evaluate(EasingType::EaseInQuart, focusRatio_);
 
-	// スプライトパラメータ適用とSubmit
-	reticleSprite_->SetPosition({ centerX, centerY });
-	reticleSprite_->SetSize({ currentReticleSize_, currentReticleSize_ });
-	reticleSprite_->SetColor(color);
+	// イージング適用後の割合でギャップ（中心からの距離）を計算
+	float currentGap = Math::Lerp(config.reticleMaxGap, config.reticleMinGap, easedRatio);
+
+	// 完全収束時の判定
+	bool isFullyFocused = (focusRatio_ >= 0.98f);
+
+	float thickness = config.reticleLineThickness;
+	float length = config.reticleLineLength;
+
+	// ---------------------------------------------------------
+	// 1. 上下左右 4本のレティクル線の描画
+	// ---------------------------------------------------------
+
+	// 【上線】
+	reticleSprite_->SetPosition({ centerX, centerY - currentGap - length * 0.5f });
+	reticleSprite_->SetSize({ thickness, length });
 	reticleSprite_->Draw();
+
+	// 【下線】
+	reticleSprite_->SetPosition({ centerX, centerY + currentGap + length * 0.5f });
+	reticleSprite_->SetSize({ thickness, length });
+	reticleSprite_->Draw();
+
+	// 【左線】
+	reticleSprite_->SetPosition({ centerX - currentGap - length * 0.5f, centerY });
+	reticleSprite_->SetSize({ length, thickness });
+	reticleSprite_->Draw();
+
+	// 【右線】
+	reticleSprite_->SetPosition({ centerX + currentGap + length * 0.5f, centerY });
+	reticleSprite_->SetSize({ length, thickness });
+	reticleSprite_->Draw();
+
+	// ---------------------------------------------------------
+	// 2. 完全収束時（Max）に中心に描画される四角い照準
+	// ---------------------------------------------------------
+	if (isFullyFocused && config.reticleCenterDotSize > 0.0f)
+	{
+		float dotSize = config.reticleCenterDotSize;
+		reticleSprite_->SetPosition({ centerX, centerY });
+		reticleSprite_->SetSize({ dotSize, dotSize });
+		reticleSprite_->Draw();
+	}
 }
 
 void Player::OnShootRecoil()
@@ -485,15 +529,20 @@ void Player::DebugDraw()
 		binder_->Draw("ShootRecoilTime", "射撃反動時間(秒)");
 
 		ImGui::Separator();
-		ImGui::Text("レティクル・照準パラメータ");
+		ImGui::Text("レティクル調整");
 
-		binder_->Draw("ReticleMinSize", "最小サイズ(全絞り時)");
-		binder_->Draw("ReticleMaxSize", "最大サイズ(移動時)");
+		binder_->Draw("ReticleLineThickness", "線の太さ");
+		binder_->Draw("ReticleLineLength", "線の長さ");
+		binder_->Draw("ReticleMaxGap", "最大広がり距離");
+		binder_->Draw("ReticleMinGap", "最小収束距離");
+		binder_->Draw("ReticleCenterDotSize", "完全収束時の中心四角サイズ");
+
+		ImGui::Spacing();
 		binder_->Draw("ReticleFocusTime", "フォーカス完了時間(秒)");
 		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
 		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
 
-		// 現在のフォーカス率をプログレスバーでリアルタイム確認
+		// 現在のフォーカス率の可視化
 		ImGui::Spacing();
 		ImGui::ProgressBar(focusRatio_, ImVec2(-1, 0), "フォーカス率");
 	}

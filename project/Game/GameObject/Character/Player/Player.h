@@ -39,12 +39,16 @@ public:
 		float shootRecoilTime = 0.15f;    // 射撃後の隙・反動時間
 
 		// レティクル・照準用パラメータ
-		float reticleMinSize = 24.0f;     // 完全収束時のサイズ
-		float reticleMaxSize = 80.0f;     // 最大拡散時のサイズ
-		float reticleFocusTime = 1.0f;    // 完全収束にかかる時間（秒）
-		float reticleExpandSpeed = 8.0f;  // 移動・射撃時の拡散スピード
-		float maxDamageMultiplier = 1.5f; // 完全フォーカス時の威力倍率
-		float maxBulletSpread = 0.04f;    // 未フォーカス時の弾道の最大ブレ角
+		float reticleLineThickness = 2.0f;   // 照準線の太さ（ピクセル）
+		float reticleLineLength = 12.0f;     // 照準線の長さ（ピクセル）
+		float reticleMaxGap = 35.0f;         // 最大拡散時の中心からの離間距離
+		float reticleMinGap = 5.0f;          // 最小収束時の中心からの離間距離
+		float reticleCenterDotSize = 3.0f;   // 完全収束時に出る中心四角のサイズ
+
+		float reticleFocusTime = 1.0f;       // 完全収束にかかる時間（秒）
+		float reticleExpandSpeed = 8.0f;     // 移動・射撃時の拡散スピード
+		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率
+		float maxBulletSpread = 0.04f;       // 未フォーカス時の弾道の最大ブレ角
 	};
 
 	Config config;
@@ -97,6 +101,8 @@ public:
 	void DrawReticle();
 	// 射撃反動による拡散
 	void OnShootRecoil();
+
+	void ResetReticle();
 
 private:
 	FE::Engine* engine_;
