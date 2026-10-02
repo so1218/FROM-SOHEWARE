@@ -67,7 +67,7 @@ void EnemyManager::AddEnemy()
 
 void EnemyManager::Update()
 {
-    // 死亡した敵のクリーンアップ（unique_ptrの破棄によりBehaviorのデストラクタでリソース解放が走る）
+    // 死亡した敵のクリーンアップ
     enemies_.erase(
         std::remove_if(enemies_.begin(), enemies_.end(),
             [](const std::unique_ptr<Enemy>& enemy) {

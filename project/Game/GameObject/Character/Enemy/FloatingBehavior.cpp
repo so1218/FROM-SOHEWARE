@@ -2,16 +2,25 @@
 #include "FloatingBehavior.h"
 #include "Enemy.h"
 #include "TimeManager.h"
+#include "AudioPlayer.h"
 
 using namespace FE;
 
 FloatingBehavior::~FloatingBehavior()
 {
-    // ★ 修正点④：安全な解放処理（二重返却を防止）
+    // 解放処理
     if (spotLightIndex_ != -1 && engine_)
     {
         engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
         spotLightIndex_ = -1;
+    }
+
+    // オーラの削除
+    if (auraEmitterPtr_)
+    {
+        auraEmitterPtr_->Stop();
+        auraEmitterPtr_->Destroy();
+        auraEmitterPtr_ = nullptr;
     }
 }
 
@@ -36,6 +45,23 @@ void FloatingBehavior::Initialize(Enemy* owner)
 
     // スポットライト要求
     spotLightIndex_ = engine_->GetLightManager()->RequestSpotLight();
+
+    auto auraEmitter = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
+    if (auraEmitter)
+    {
+        auraEmitterPtr_ = auraEmitter.get();
+        // モデルのTransformに追従
+        auraEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
+        engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter));
+    }
+
+    auto explosion = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyExplosion");
+	explosionEmitterPtr_ = explosion.get();
+    if (explosion)
+    {
+        // 所有権をParticleSystemへ渡す
+        engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
+    }
 }
 
 void FloatingBehavior::Update(Enemy* owner)
@@ -68,7 +94,7 @@ void FloatingBehavior::Update(Enemy* owner)
     }
 
     owner->GetTransform().translation_ = currentPos;
-    owner->SyncTransform(); // Transformの変更を反映
+    owner->SyncTransform(); 
 
     // スポットライトの追従と更新
     if (spotLightIndex_ != -1)
@@ -89,17 +115,38 @@ void FloatingBehavior::Update(Enemy* owner)
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
 {
-    // ダメージを受けた瞬間にスポットライトを一瞬強く輝かせる演出など
-    spotIntensity_ = 20.0f;
+
 }
 
 void FloatingBehavior::OnDeath(Enemy* owner)
 {
-    // 死亡時にも安全に返却
-    if (spotLightIndex_ != -1 && engine_)
+    // engine_ や owner が nullptr の場合は処理を安全に中断
+    if (!engine_ || !owner) return;
+
+	AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
+
+    // 1. スポットライトの安全な返却
+    if (spotLightIndex_ != -1)
     {
         engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
-        spotLightIndex_ = -1; // 返却済みフラグ
+        spotLightIndex_ = -1;
+    }
+
+    // 2. 死亡時にオーラを停止・破棄する
+    if (auraEmitterPtr_)
+    {
+        auraEmitterPtr_->Stop();
+        auraEmitterPtr_->Destroy(); // ParticleEmitter::Destroy()でisDead_ = trueになりシステムから除去される
+        auraEmitterPtr_ = nullptr;
+    }
+
+    // 3. 死亡時の爆発パーティクルを生成してワンショット再生
+    if (explosionEmitterPtr_)
+    {
+        // 敵の死亡位置に爆発を配置
+        explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+
+        explosionEmitterPtr_->Play();
     }
 }
 

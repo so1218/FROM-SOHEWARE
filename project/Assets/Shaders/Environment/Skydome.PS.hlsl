@@ -117,24 +117,8 @@ SkydomePSOutput main(SkydomeVSOutput input)
     float3 moonColorBase = float3(0.6f, 0.8f, 1.0f);
     float3 totalMoon = (moonCore * 2.0f + moonGlow) * moonColorBase;
     
-    // シルバーライニング
-    // Henyey-Greenstein位相関数を用いた前方散乱の近似計算
-    float g = 0.85f;
-    float g2 = g * g;
-    float hgTranslucency = (1.0f - cloudThickness) * cloudAlpha;
-
-    float hgDenomSun = 1.0f + g2 - 2.0f * g * sunDot;
-    float hgPhaseSun = (1.0f - g2) / pow(max(hgDenomSun, kEpsilon), 1.5f);
-    float3 sunSilverLining = directLightColor * (hgPhaseSun * 1.5f) * hgTranslucency;
-
-    float hgDenomMoon = 1.0f + g2 - 2.0f * g * moonDot;
-    float hgPhaseMoon = (1.0f - g2) / pow(max(hgDenomMoon, kEpsilon), 1.5f);
-    float3 moonSilverLining = moonColorBase * (hgPhaseMoon * 1.0f) * hgTranslucency;
-    
-    float3 finalCloudColor = baseCloudColor + sunSilverLining + moonSilverLining;
-    
     // 合成
-    float3 skyWithClouds = lerp(skyColor, finalCloudColor, cloudAlpha);
+    float3 skyWithClouds = lerp(skyColor, baseCloudColor, cloudAlpha);
     
     // 雲の厚みに応じた天体のオクルージョン
     float skyOcclusion = lerp(1.0f, 0.0f, cloudAlpha * cloudThickness);

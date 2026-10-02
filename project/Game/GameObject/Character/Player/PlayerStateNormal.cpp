@@ -4,6 +4,7 @@
 #include "PlayerStateAiming.h"
 #include "Input.h"
 #include "TimeManager.h"
+#include "AudioPlayer.h"
 
 using namespace FE;
 
@@ -36,11 +37,12 @@ void PlayerStateNormal::Update(Player* player)
         player->PlayAnimation("humanRun", true, player->config.runAnimSpeed, player->config.idleToRunBlendTime);
         player->UpdateRotation(moveDir);
         player->ApplyHorizontalMovement(moveDir, player->config.runSpeed);
-
+		AudioPlayer::GetInstance().PlayUnique("playerRunning", true, 20);
     }
     else
     {
         player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
+        AudioPlayer::GetInstance().StopUnique("playerRunning");
     }
 
     // Kキーが押されていたらエイム状態に遷移

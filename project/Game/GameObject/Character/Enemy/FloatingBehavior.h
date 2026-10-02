@@ -13,7 +13,7 @@ public:
     void Update(Enemy* owner) override;
     void DebugDraw(Enemy* owner) override; 
 
-    int GetInitialHP() const override { return 150; } // 浮遊敵はHP150
+    int GetInitialHP() const override { return 500; } 
     std::string GetDamageParticleName() const override { return "floatingDamage"; } 
 
     void OnTakeDamage(Enemy* owner, int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal) override;
@@ -21,6 +21,8 @@ public:
 
 private:
     FE::Engine* engine_ = nullptr;
+    FE::ParticleEmitter* auraEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* explosionEmitterPtr_ = nullptr;
 
     // 浮遊用パラメータ
     FE::Vector3 basePosition_;

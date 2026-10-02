@@ -59,14 +59,6 @@ void Enemy::Initialize()
     }
 
     binder_->Bind("HP", &hp_, hp_);
-
-    // オーラのセットアップ
-    auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
-    if (auraEmitter_)
-    {
-        auraEmitter_->SetTargetToFollow(&model_->GetTransform());
-        engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
-    }
 }
 
 void Enemy::Update()

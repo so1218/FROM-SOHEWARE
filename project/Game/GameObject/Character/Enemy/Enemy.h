@@ -48,7 +48,6 @@ private:
     std::unique_ptr<FE::Model> model_;
     std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
-    std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
     std::unique_ptr<FE::ParticleEmitter> damageParticle_ = nullptr;
     FE::ParticleEmitter* damageParticlePtr_ = nullptr;
 

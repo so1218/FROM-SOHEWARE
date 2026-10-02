@@ -6,3 +6,4 @@ playSceneBGM,BGM/playSceneBGM.mp3
 gunShot,SE/gunShot.mp3
 playerRunning,SE/playerRunning.mp3
 floatingEnemyDamaged,SE/floatingEnemyDamaged.mp3
+floatingEnemyExplosion,SE/floatingEnemyExplosion.mp3
