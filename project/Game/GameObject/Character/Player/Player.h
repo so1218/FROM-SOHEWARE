@@ -12,6 +12,7 @@
 
 class PlayerStateNormal; 
 class PlayerWeapon;
+class PlayerReticle;
 
 class Player : public FE::GameObject
 {
@@ -25,29 +26,21 @@ public:
 		// アニメーション速度・ブレンド時間
 		float idleAnimSpeed = 1.0f;
 		float runAnimSpeed = 1.0f;
-		float jumpAnimSpeed = 1.0f;         
+		float jumpAnimSpeed = 1.0f;
 		float idleToRunBlendTime = 0.15f;
 		float runToIdleBlendTime = 0.20f;
-		float jumpBlendTime = 0.10f;       
+		float jumpBlendTime = 0.10f;
 
 		// ジャンプ・物理用パラメータ
 		float jumpInitialVelocity = 10.0f;
 		float gravity = 29.8f;
-		float airControlRate = 0.8f;     
+		float airControlRate = 0.8f;
 
 		float aimMoveSpeed = 0.08f;       // エイム中の移動速度
 		float aimToIdleBlendTime = 0.1f;
 		float shootRecoilTime = 0.15f;    // 射撃後の隙・反動時間
 
-		// レティクル・照準用パラメータ
-		float reticleLineThickness = 2.0f;   // 照準線の太さ
-		float reticleLineLength = 12.0f;     // 照準線の長さ
-		float reticleMaxGap = 35.0f;         // 最大拡散時の中心からの離間距離
-		float reticleMinGap = 5.0f;          // 最小収束時の中心からの離間距離
-		float reticleCenterDotSize = 3.0f;   // 完全収束時に出る中心四角のサイズ
-
-		float reticleFocusTime = 1.0f;       // 完全収束にかかる時間
-		float reticleExpandSpeed = 8.0f;     // 移動・射撃時の拡散スピード
+		// 武器威力・弾道調整
 		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率
 		float maxBulletSpread = 0.04f;       // 未フォーカス時の弾道の最大ブレ角
 	};
@@ -86,6 +79,7 @@ public:
 	float GetVelocityY() const { return velocityY_; }
 
 	FE::Camera* GetCamera() const { return camera_; }
+	PlayerReticle* GetReticle() const { return reticle_.get(); }
 	FollowCamera* GetFollowCamera() const { return followCamera_; }
 	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
 
@@ -96,14 +90,6 @@ public:
 	void SetGroundedOnObject(bool grounded) { isGroundedOnObject_ = grounded; }
 
 	std::unique_ptr<FE::AnimationModel> animationModel_;
-
-	// 毎フレームの照準補間処理
-	void UpdateReticle(float deltaTime, bool isMoving, bool isAiming);
-	void DrawReticle();
-	// 射撃反動による拡散
-	void OnShootRecoil();
-
-	void ResetReticle();
 
 	// 移動中に毎フレーム呼び出す足音更新関数
 	void UpdateFootstepEvents();
@@ -118,6 +104,7 @@ private:
 	FollowCamera* followCamera_ = nullptr;
 
 	std::unique_ptr<PlayerWeapon> weapon_;
+	std::unique_ptr<PlayerReticle> reticle_;
 
 	std::unique_ptr<FE::Collider> collider_;
 	std::unique_ptr<FE::PropertyBinder> binder_;
@@ -140,13 +127,6 @@ private:
 	float maxVerticalDist_ = 2.0f;
 
 	bool isGroundedOnObject_ = false; // オブジェクトの上に乗っているか
-
-	// レティクル制御用変数
-	std::unique_ptr<FE::Sprite> reticleSprite_;
-	float focusTimer_ = 0.0f;          // 照準を絞っている累積時間
-	float focusRatio_ = 0.0f;          // フォーカス率
-	float currentReticleSize_ = 80.0f; // 現在の描画サイズ
-	float reticleAlpha_ = 0.0f;
 
 	float prevAnimNormalizedTime_ = 0.0f; // 前フレームのアニメーション進捗率
 };

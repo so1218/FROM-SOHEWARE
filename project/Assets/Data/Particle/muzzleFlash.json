@@ -68,13 +68,13 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4278976766,
+            "endColor": 4278911231,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4278976767,
+            "startColor": 4278190335,
             "startColor2": 4294967295
         },
-        "intensity": 33.20000076293945,
+        "intensity": 29.299999237060547,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -151,7 +151,7 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "smoke_01"
+            "textureName": "light_03"
         },
         "trailModule": {
             "alignment": 0,

@@ -3,7 +3,6 @@
 #include "CollisionConfig.h"
 #include "AnimationModel.h"
 #include "Input.h"
-#include "ImGuiManager.h"
 #include "MathUtils.h"  
 #include "Collision.h"   
 #include "TimeManager.h"
@@ -13,11 +12,12 @@
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
 #include "PlayerWeapon.h"
+#include "PlayerReticle.h"
 #include "Enemy.h"
 
 using namespace FE;
 
-Player::Player(Engine* engine, Camera* camera) : GameObject(),
+Player::Player(Engine* engine, Camera* camera) : 
 engine_(engine), camera_(camera)
 {
 	SetTag(ObjectTag::Player);
@@ -26,7 +26,7 @@ engine_(engine), camera_(camera)
 
 	// 武器生成 & 初期化
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
-	weapon_->Initialize();
+	reticle_ = std::make_unique<PlayerReticle>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = std::make_unique<Collider>(this);
@@ -41,11 +41,6 @@ void Player::Initialize()
 	collider_->SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeProp);
 
 	animationModel_->Play("humanRun");
-
-	reticleSprite_ = std::make_unique<Sprite>(engine_);
-	reticleSprite_->SetTexture("white1x1");
-	reticleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
-	reticleSprite_->SetIsVisible(true);
 
 	// PropertyBinder への登録
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
@@ -72,13 +67,6 @@ void Player::Initialize()
 	binder_->Bind("InteractionForce", &interactionForce_, 0.1f);
 	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 0.1f);
 
-	binder_->Bind("ReticleLineThickness", &config.reticleLineThickness, 0.5f, 0.1f, 1.0f, 10.0f);
-	binder_->Bind("ReticleLineLength", &config.reticleLineLength, 1.0f, 0.1f, 2.0f, 50.0f);
-	binder_->Bind("ReticleMaxGap", &config.reticleMaxGap, 1.0f, 0.1f, 10.0f, 100.0f);
-	binder_->Bind("ReticleMinGap", &config.reticleMinGap, 0.5f, 0.1f, 0.0f, 30.0f);
-	binder_->Bind("ReticleCenterDotSize", &config.reticleCenterDotSize, 0.5f, 0.1f, 1.0f, 20.0f);
-
-	binder_->Bind("ReticleFocusTime", &config.reticleFocusTime, 0.05f, 0.1f, 0.1f, 3.0f);
 	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 0.1f, 1.0f, 3.0f);
 	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.1f, 0.0f, 0.2f);
 
@@ -90,6 +78,9 @@ void Player::Initialize()
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
 	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
 	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+
+	weapon_->Initialize();
+	reticle_->Initialize();
 }
 
 // 更新処理
@@ -154,6 +145,13 @@ void Player::Update()
 	if (weapon_)
 	{
 		weapon_->Update(rightHandMatrix, camera_);
+	}
+
+	// レティクルの更新
+	bool isMoving = moveDirection_.LengthSq() > 0.001f;
+	if (reticle_)
+	{
+		reticle_->Update(isMoving, isAiming);
 	}
 
 	// 6. インタラクションデータの送信
@@ -318,7 +316,6 @@ void Player::FireWeapon()
 {
 	if (!weapon_ || !camera_) return;
 
-	// 画面揺れ（反動）
 	if (followCamera_)
 	{
 		followCamera_->AddRecoil(0.08f, 0.03f);
@@ -326,46 +323,16 @@ void Player::FireWeapon()
 
 	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
 
-	// 射撃処理を武器に委譲（成功時にレティクル拡散）
-	if (weapon_->Fire(camera_, focusRatio_, config.maxDamageMultiplier, config.maxBulletSpread, colManager))
+	// レティクルから現在のフォーカス率を取得して射撃に渡す
+	float focusRatio = reticle_->GetFocusRatio();
+
+	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager))
 	{
-		OnShootRecoil();
+		if (reticle_)
+		{
+			reticle_->OnShootRecoil(); // 射撃時の反動拡散
+		}
 	}
-}
-
-void Player::UpdateReticle(float deltaTime, bool isMoving, bool isAiming)
-{
-	// ★ エイム中でない場合は即座に完全リセットして非表示にする
-	if (!isAiming)
-	{
-		ResetReticle();
-		return;
-	}
-
-	// エイム中のアルファ値フェードイン補間
-	reticleAlpha_ = Math::Lerp(reticleAlpha_, 1.0f, 15.0f * deltaTime);
-
-	// 移動していない（静止状態）場合にフォーカスを進める
-	if (!isMoving)
-	{
-		focusTimer_ += deltaTime;
-	}
-	else
-	{
-		// 移動中は素早く拡散
-		focusTimer_ -= deltaTime * config.reticleExpandSpeed;
-	}
-
-	// フォーカス時間を [0, reticleFocusTime] にクランプして正規化（0.0 ~ 1.0）
-	focusTimer_ = std::clamp(focusTimer_, 0.0f, config.reticleFocusTime);
-	focusRatio_ = focusTimer_ / config.reticleFocusTime;
-}
-
-void Player::ResetReticle()
-{
-	focusTimer_ = 0.0f;
-	focusRatio_ = 0.0f;
-	reticleAlpha_ = 0.0f; 
 }
 
 void Player::UpdateFootstepEvents()
@@ -413,69 +380,6 @@ void Player::ResetFootstepState()
 	}
 }
 
-// 描画処理
-void Player::DrawReticle()
-{
-	if (!reticleSprite_ || reticleAlpha_ <= 0.001f) return;
-
-	// 画面中央座標
-	float centerX = static_cast<float>(Engine::GetClientWidth()) * 0.5f;
-	float centerY = static_cast<float>(Engine::GetClientHeight()) * 0.5f;
-
-	// ★ RE2風：後半に向かって収束速度が加速する EaseInCubic を適用
-	float easedRatio = Easing::Evaluate(EasingType::EaseInQuart, focusRatio_);
-
-	// イージング適用後の割合でギャップ（中心からの距離）を計算
-	float currentGap = Math::Lerp(config.reticleMaxGap, config.reticleMinGap, easedRatio);
-
-	// 完全収束時の判定
-	bool isFullyFocused = (focusRatio_ >= 0.98f);
-
-	float thickness = config.reticleLineThickness;
-	float length = config.reticleLineLength;
-
-	// ---------------------------------------------------------
-	// 1. 上下左右 4本のレティクル線の描画
-	// ---------------------------------------------------------
-
-	// 【上線】
-	reticleSprite_->SetPosition({ centerX, centerY - currentGap - length * 0.5f });
-	reticleSprite_->SetSize({ thickness, length });
-	reticleSprite_->Draw();
-
-	// 【下線】
-	reticleSprite_->SetPosition({ centerX, centerY + currentGap + length * 0.5f });
-	reticleSprite_->SetSize({ thickness, length });
-	reticleSprite_->Draw();
-
-	// 【左線】
-	reticleSprite_->SetPosition({ centerX - currentGap - length * 0.5f, centerY });
-	reticleSprite_->SetSize({ length, thickness });
-	reticleSprite_->Draw();
-
-	// 【右線】
-	reticleSprite_->SetPosition({ centerX + currentGap + length * 0.5f, centerY });
-	reticleSprite_->SetSize({ length, thickness });
-	reticleSprite_->Draw();
-
-	// ---------------------------------------------------------
-	// 2. 完全収束時（Max）に中心に描画される四角い照準
-	// ---------------------------------------------------------
-	if (isFullyFocused && config.reticleCenterDotSize > 0.0f)
-	{
-		float dotSize = config.reticleCenterDotSize;
-		reticleSprite_->SetPosition({ centerX, centerY });
-		reticleSprite_->SetSize({ dotSize, dotSize });
-		reticleSprite_->Draw();
-	}
-}
-
-void Player::OnShootRecoil()
-{
-	// 射撃した瞬間にフォーカスタイマーを大幅に下げる
-	focusTimer_ *= 0.2f;
-}
-
 void Player::OnCollisionEnter(Collider* mine, Collider* other)
 {
 
@@ -490,13 +394,8 @@ void Player::Draw()
 
 	animationModel_->Draw();
 
-	// 武器描画
-	if (weapon_)
-	{
-		weapon_->Draw();
-	}
-
-	DrawReticle();
+	weapon_->Draw();
+	reticle_->Draw();
 }
 
 void Player::DebugDraw()
@@ -508,11 +407,8 @@ void Player::DebugDraw()
 
 	ImGui::Separator();
 
-	// 武器設定
-	if (weapon_)
-	{
-		weapon_->DebugDraw();
-	}
+	weapon_->DebugDraw();
+	reticle_->DebugDraw();
 
 	if (ImGui::CollapsingHeader("動き"))
 	{
@@ -520,28 +416,13 @@ void Player::DebugDraw()
 		binder_->Draw("RotationSpeed", "回転の速さ");
 	}
 
-	if (ImGui::CollapsingHeader("エイム・レティクル"))
+	if (ImGui::CollapsingHeader("エイム設定"))
 	{
 		binder_->Draw("AimMoveSpeed", "エイム時移動速度");
 		binder_->Draw("AimToIdleBlendTime", "エイム補間時間(秒)");
 		binder_->Draw("ShootRecoilTime", "射撃反動時間(秒)");
-
-		ImGui::Separator();
-		ImGui::Text("レティクル調整");
-
-		binder_->Draw("ReticleLineThickness", "線の太さ");
-		binder_->Draw("ReticleLineLength", "線の長さ");
-		binder_->Draw("ReticleMaxGap", "最大広がり距離");
-		binder_->Draw("ReticleMinGap", "最小収束距離");
-		binder_->Draw("ReticleCenterDotSize", "完全収束時の中心四角サイズ");
-
-		ImGui::Spacing();
-		binder_->Draw("ReticleFocusTime", "フォーカス完了時間(秒)");
 		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
 		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
-
-		ImGui::Spacing();
-		ImGui::ProgressBar(focusRatio_, ImVec2(-1, 0), "フォーカス率");
 	}
 
 	if (ImGui::CollapsingHeader("ジャンプ"))

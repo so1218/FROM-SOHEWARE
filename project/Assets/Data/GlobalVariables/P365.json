@@ -1,6 +1,6 @@
 {
     "P365": {
-        "BaseDamage": 1,
+        "BaseDamage": 10,
         "MaxDistance": 500.0,
         "Muzzle Flash Color": [
             1.0,

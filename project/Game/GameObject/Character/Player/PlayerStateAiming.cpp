@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PlayerStateAiming.h"
 #include "PlayerStateNormal.h"
+#include "PlayerReticle.h"
 #include "TimeManager.h"
 #include "Input.h"
 
@@ -37,6 +38,8 @@ void PlayerStateAiming::Update(Player* player)
 
     // 移動処理とアニメーション分岐
     Vector3 moveDir = player->GetMoveDirection();
+    // プレイヤーの移動方向更新
+    player->SetMoveDirection(moveDir);
     bool isMoving = (moveDir.Length() > 0.1f);
 
     if (isMoving)
@@ -89,15 +92,10 @@ void PlayerStateAiming::Update(Player* player)
         player->PlayAnimation("humanPistolIdle", true, 0.5f, 0.1f);
     }
 
-    // 毎フレームのレティクル収束計算
-    player->UpdateReticle(deltaTime, isMoving, true);
-
     // 射撃処理
     if (input.IsKeyTriggered(DIK_J) || input.IsControllerButtonTriggered(0, Input::ButtonRT))
     {
         player->FireWeapon();
-        // 射撃の跳ね上がりでレティクルを開かせる
-        player->OnShootRecoil();
 
         input.StartVibration(0, 0.6f, 0.6f, 0.25f);
     }
@@ -107,8 +105,10 @@ void PlayerStateAiming::Exit(Player* player)
 {
     // 通常カメラモードに戻す
     player->GetFollowCamera()->SetAiming(false);
-    // エイム解除時にフェードアウトへ向けてリセット
-    player->UpdateReticle(0.0f, false, false);
 
-    player->ResetReticle();
+    // エイム解除時にレティクルをリセット
+    if (player->GetReticle())
+    {
+        player->GetReticle()->Reset();
+    }
 }

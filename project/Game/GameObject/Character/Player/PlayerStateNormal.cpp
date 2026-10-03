@@ -38,14 +38,14 @@ void PlayerStateNormal::Update(Player* player)
         player->UpdateRotation(moveDir);
         player->ApplyHorizontalMovement(moveDir, player->config.runSpeed);
 
-        // ★ 移動中のみ足音のタイミング判定を実行
+        // 移動中のみ足音のタイミング判定を実行
         player->UpdateFootstepEvents();
     }
     else
     {
         player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
 
-        // ★ 立ち止まったら足音の進捗率をリセット
+        // 止まったら足音の進捗率をリセット
         player->ResetFootstepState();
     }
 
