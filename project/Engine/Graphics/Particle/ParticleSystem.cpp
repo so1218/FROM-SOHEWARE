@@ -78,7 +78,12 @@ void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::s
 
     // Velocity 
     if (particle.config.velocity.enabled)
-        particle.velocity = particle.config.velocity.GetInitialVelocity();
+    {
+        Vector3 localVel = particle.config.velocity.GetInitialVelocity();
+
+        // エミッターの回転を行列で速度に適用
+        particle.velocity = transformMatrix.TransformVector(localVel);
+    }
 
     // Color
     if (particle.config.colorOverLifetime.enabled &&

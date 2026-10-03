@@ -7,7 +7,7 @@
             9.0,
             0.0
         ],
-        "lifetime": 1.9600000381469727,
+        "lifetime": 2.4100000858306885,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 17.479999542236328
+            "speed": 8.520000457763672
         },
         "vortexModule": {
             "axis": [

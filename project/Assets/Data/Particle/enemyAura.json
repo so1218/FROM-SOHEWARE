@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 11,
+        "amount": 8,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             -0.20000000298023224,
             0.0
         ],
-        "lifetime": 0.3700000047683716,
+        "lifetime": 0.38999998569488525,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -74,7 +74,7 @@
             "startColor": 4278976767,
             "startColor2": 4294967295
         },
-        "intensity": 6.0,
+        "intensity": 3.5999999046325684,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -88,7 +88,7 @@
             "enabled": true,
             "gravity": [
                 0.0,
-                -12.899999618530273,
+                -11.600000381469727,
                 0.0
             ],
             "windInfluence": 1.0
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                2.0,
-                2.0,
+                3.0,
+                3.0,
                 0.0
             ],
             "frequency": 1.0,
@@ -151,7 +151,7 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "smoke_07"
+            "textureName": "spark_02"
         },
         "trailModule": {
             "alignment": 0,
@@ -192,7 +192,7 @@
             "width": 0.6000000238418579
         },
         "velocityModule": {
-            "angleRange": 112.0,
+            "angleRange": 43.0,
             "direction": [
                 0.0,
                 -0.550000011920929,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 5.579999923706055
+            "speed": 2.680000066757202
         },
         "vortexModule": {
             "axis": [

@@ -1,7 +1,7 @@
 {
     "EmitterConfig": {
-        "amount": 1,
-        "duration": 0.5080000162124634,
+        "amount": 2,
+        "duration": 0.5870000123977661,
         "followOffset": [
             0.0,
             0.0,
@@ -15,7 +15,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.029999999329447746
+        "spawnInterval": 0.10999999940395355
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -68,7 +68,7 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 1077952512,
+            "endColor": 673720320,
             "endColor2": 4294967040,
             "mode": 0,
             "startColor": 757935615,
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                3.0,
-                3.0,
+                4.0,
+                4.0,
                 0.0
             ],
             "frequency": 1.0,
@@ -192,7 +192,7 @@
             "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 99.0,
+            "angleRange": 77.0,
             "direction": [
                 0.0,
                 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 0.6200000047683716
+            "speed": 0.5099999904632568
         },
         "vortexModule": {
             "axis": [

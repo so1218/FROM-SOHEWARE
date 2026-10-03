@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 93,
+        "amount": 48,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             29.799999237060547,
             0.0
         ],
-        "lifetime": 0.3700000047683716,
+        "lifetime": 0.550000011920929,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -68,7 +68,7 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4294967040,
+            "endColor": 4294967295,
             "endColor2": 4294967040,
             "mode": 0,
             "startColor": 4294967295,
@@ -91,7 +91,7 @@
                 -9.800000190734863,
                 0.0
             ],
-            "windInfluence": 200.0
+            "windInfluence": 10.0
         },
         "rotationModule": {
             "enabled": false,
@@ -137,27 +137,27 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.0,
-                0.0,
+                0.10000000149011612,
+                2.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                0.0,
-                0.0,
+                0.10000000149011612,
+                2.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "circle_05"
+            "textureName": "trace_05"
         },
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
             "emissiveIntensity": 0.6000000238418579,
-            "enabled": true,
+            "enabled": false,
             "endColor": [
                 1.0,
                 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 97.47000122070313
+            "speed": 66.12999725341797
         },
         "vortexModule": {
             "axis": [
