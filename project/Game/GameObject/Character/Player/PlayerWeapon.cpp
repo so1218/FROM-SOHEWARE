@@ -176,19 +176,26 @@ void PlayerWeapon::Draw()
 void PlayerWeapon::DebugDraw()
 {
 #ifdef ENABLE_IMGUI
-    binder_->DrawModel("P365Model", "P365 武器モデル・オフセット");
+    if (ImGui::CollapsingHeader("武器設定"))
+    {
+        ImGui::Indent();
 
-    ImGui::Separator();
-    ImGui::Text("マズルフラッシュ設定");
-    binder_->Draw("Muzzle Flash Color", "発光色");
-    binder_->Draw("Muzzle Flash Intensity", "発光強度");
-    binder_->Draw("Muzzle Flash Radius", "照射半径");
-    binder_->Draw("Muzzle Flash Duration", "発光時間");
-    binder_->Draw("Muzzle Offset", "銃口位置オフセット");
+        binder_->DrawModel("P365Model", "モデル・オフセット調整");
 
-    ImGui::Separator();
-    ImGui::Text("性能設定");
-    binder_->Draw("BaseDamage", "基本ダメージ");
-    binder_->Draw("MaxDistance", "最大射程");
+        ImGui::Spacing();
+        ImGui::TextDisabled("マズルフラッシュ設定");
+        binder_->Draw("Muzzle Flash Color", "発光色");
+        binder_->Draw("Muzzle Flash Intensity", "発光強度");
+        binder_->Draw("Muzzle Flash Radius", "照射半径");
+        binder_->Draw("Muzzle Flash Duration", "発光時間");
+        binder_->Draw("Muzzle Offset", "銃口位置オフセット");
+
+        ImGui::Spacing();
+        ImGui::TextDisabled("性能設定");
+        binder_->Draw("BaseDamage", "基本ダメージ");
+        binder_->Draw("MaxDistance", "最大射程");
+
+        ImGui::Unindent(); 
+    }
 #endif
 }
