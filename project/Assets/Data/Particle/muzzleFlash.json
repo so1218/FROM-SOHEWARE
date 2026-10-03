@@ -68,13 +68,13 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4278911231,
+            "endColor": 4279828480,
             "endColor2": 4294967040,
             "mode": 0,
             "startColor": 4278190335,
             "startColor2": 4294967295
         },
-        "intensity": 29.299999237060547,
+        "intensity": 21.799999237060547,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
@@ -94,9 +94,9 @@
             "windInfluence": 1.0
         },
         "rotationModule": {
-            "enabled": false,
+            "enabled": true,
             "isBillboard": true,
-            "maxAngularVelocity2D": 5.0,
+            "maxAngularVelocity2D": 0.0,
             "maxAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.0,
-                0.0,
+                1.5,
+                1.5,
                 0.0
             ],
             "frequency": 1.0,
@@ -151,7 +151,7 @@
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "light_03"
+            "textureName": "magic_04"
         },
         "trailModule": {
             "alignment": 0,

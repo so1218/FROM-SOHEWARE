@@ -24,7 +24,6 @@ engine_(engine), camera_(camera)
 
 	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
 
-	// 武器生成 & 初期化
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 
@@ -88,11 +87,11 @@ void Player::Update()
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	// 1. ステートマシン更新
+	// ステートマシン更新
 	stateMachine_->Update();
 	isGroundedOnObject_ = false;
 
-	// 2. 衝突判定・境界チェック
+	// 衝突判定・境界チェック
 	if (treeField_)
 	{
 		Vector3 pos = GetTransform().translation_;
@@ -113,12 +112,12 @@ void Player::Update()
 	collider_->SetCenterOffset(colliderOffset_);
 	collider_->SetSize(colliderSize_);
 
-	// 3. 基本アニメーションの更新
+	// 基本アニメーションの更新
 	animationModel_->Update();
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 	animationModel_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
 
-	// 4. エイム時の姿勢（上半身ボーン）更新
+	// エイム時の姿勢更新
 	float cameraPitch = 0.0f;
 	bool isAiming = followCamera_ ? followCamera_->IsAiming() : false;
 
@@ -140,7 +139,7 @@ void Player::Update()
 		animationModel_->PostUpdateSkeleton();
 	}
 
-	// 5. 武器の更新（右手ボーン行列を渡す）
+	// 武器の更新
 	Matrix4x4 rightHandMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
 	if (weapon_)
 	{
@@ -154,7 +153,7 @@ void Player::Update()
 		reticle_->Update(isMoving, isAiming);
 	}
 
-	// 6. インタラクションデータの送信
+	// インタラクションデータの送信
 	Vector3 currentPos = GetTransform().translation_;
 	Vector3 velocity = { 0.0f, 0.0f, 0.0f };
 	if (deltaTime > 0.0001f) {
@@ -178,23 +177,23 @@ void Player::Update()
 Vector3 Player::GetMoveDirection()
 {
 	auto& input = Input::GetInstance();
-	const int controllerId = 0; // 1P想定
+	const int controllerId = 0; 
 
-	// 1. スティックの生入力を取得 (-32768 ~ 32767)
+	// スティックの入力を取得 
 	float stickX = static_cast<float>(input.GetLeftStickX(controllerId));
 	float stickY = static_cast<float>(input.GetLeftStickY(controllerId));
 
-	// キーボード入力（WASD）の加算
+	// キーボード入力
 	if (input.IsKeyPressed(DIK_W)) stickY += 32768.0f;
 	if (input.IsKeyPressed(DIK_S)) stickY -= 32768.0f;
 	if (input.IsKeyPressed(DIK_D)) stickX += 32768.0f;
 	if (input.IsKeyPressed(DIK_A)) stickX -= 32768.0f;
 
-	// 2. -1.0f ~ +1.0f に正規化
+	// -1.0f ~ +1.0f に正規化
 	float inputX = stickX / 32768.0f;
 	float inputY = stickY / 32768.0f;
 
-	// 3. 入力ベクトルの長さを算出（倒し具合）
+	// 入力ベクトルの長さを算出（倒し具合）
 	float inputLength = std::sqrt(inputX * inputX + inputY * inputY);
 	float deadZone = static_cast<float>(STICK_THRESHOLD) / 32768.0f;
 
@@ -210,7 +209,7 @@ Vector3 Player::GetMoveDirection()
 		float dirX = inputX / inputLength;
 		float dirY = inputY / inputLength;
 
-		// 4. カメラの向きに合わせてワールド移動方向を決定
+		// カメラの向きに合わせてワールド移動方向を決定
 		Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
 		Vector3 cameraRight = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 1.0f, 0.0f, 0.0f });
 
@@ -342,7 +341,7 @@ void Player::UpdateFootstepEvents()
 	// 現在のアニメーション進捗率
 	float currentNormalizedTime = animationModel_->GetNormalizedTime();
 
-	// humanRun アニメーションの足がつくタイミング（割合）
+	// humanRun アニメーションの足がつくタイミング
 	const float leftFootStepTime = 0.20f;
 	const float rightFootStepTime = 0.70f;
 
@@ -358,12 +357,10 @@ void Player::UpdateFootstepEvents()
 
 	if (isLeftFoot || isRightFoot)
 	{
-		// 単発の足音SEを再生（PlayUnique ではなく単発再生用関数を使用）
-		// ※ 音声再生クラスの単発再生関数（Play や PlayOneShot 等）に合わせて変更してください
 		AudioPlayer::GetInstance().Play("playerRunning", false, 10);
 	}
 
-	// 次フレームのために正規化した進捗率（0.0～1.0の範囲）を保持
+	// 次フレームのために正規化した進捗率を保持
 	prevAnimNormalizedTime_ = std::fmod(currentNormalizedTime, 1.0f);
 	if (prevAnimNormalizedTime_ < 0.0f) prevAnimNormalizedTime_ += 1.0f;
 }
@@ -429,7 +426,7 @@ void Player::DebugDraw()
 	{
 		binder_->Draw("JumpInitialVelocity", "ジャンプ初速");
 		binder_->Draw("Gravity", "重力加速度");
-		binder_->Draw("AirControlRate", "空中移動制御率(0~1)");
+		binder_->Draw("AirControlRate", "空中移動制御率");
 	}
 
 	if (ImGui::CollapsingHeader("アニメーション調整"))
@@ -437,9 +434,9 @@ void Player::DebugDraw()
 		binder_->Draw("IdleAnimSpeed", "待機アニメ速度");
 		binder_->Draw("RunAnimSpeed", "走りアニメ速度");
 		binder_->Draw("JumpAnimSpeed", "ジャンプアニメ速度");
-		binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間(秒)");
-		binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間(秒)");
-		binder_->Draw("JumpBlendTime", "ジャンプ 補間時間(秒)");
+		binder_->Draw("IdleToRunBlendTime", "待機→走り 補間時間");
+		binder_->Draw("RunToIdleBlendTime", "走り→待機 補間時間");
+		binder_->Draw("JumpBlendTime", "ジャンプ 補間時間");
 	}
 
 	if (ImGui::CollapsingHeader("コライダー"))

@@ -36,6 +36,8 @@ private:
     std::unique_ptr<FE::Model> model_;
     std::unique_ptr<FE::PropertyBinder> binder_; 
     FE::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
 
     FE::WorldTransform handTransform_;
 

@@ -21,7 +21,7 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGr
         modelName = "enemy";
         behavior_ = std::make_unique<FloatingBehavior>();
         break;
-        // 将来: case EnemyType::Zombie: behavior_ = std::make_unique<ZombieBehavior>(); break;
+        // case EnemyType::Zombie: behavior_ = std::make_unique<ZombieBehavior>(); break;
     }
 
     model_ = std::make_unique<FE::Model>(engine_, modelName);

@@ -7,9 +7,9 @@
             0.0,
             0.0
         ],
-        "lifetime": 0.75,
+        "lifetime": 2.930000066757202,
         "looping": false,
-        "playOnAwake": true,
+        "playOnAwake": false,
         "position": [
             0.0,
             0.0,
@@ -71,10 +71,10 @@
             "endColor": 4279828480,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4282843391,
+            "startColor": 4279828735,
             "startColor2": 4294967295
         },
-        "intensity": 12.100000381469727,
+        "intensity": 9.399999618530273,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.5299999713897705,
@@ -85,10 +85,10 @@
         "physicsModule": {
             "affectedByWind": false,
             "drag": 0.0,
-            "enabled": false,
+            "enabled": true,
             "gravity": [
                 0.0,
-                -35.20000076293945,
+                5.5,
                 0.0
             ],
             "windInfluence": 1.0
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                5.0,
-                5.0,
+                8.0,
+                8.0,
                 0.0
             ],
             "frequency": 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 13.699999809265137
+            "speed": 4.789999961853027
         },
         "vortexModule": {
             "axis": [

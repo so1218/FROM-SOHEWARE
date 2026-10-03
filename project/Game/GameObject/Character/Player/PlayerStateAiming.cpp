@@ -33,7 +33,7 @@ void PlayerStateAiming::Update(Player* player)
         return;
     }
 
-    // 回転処理：エイム中は常にカメラの正面に体を向ける
+    // エイム中は常にカメラの正面に体を向ける
     player->UpdateAimRotation();
 
     // 移動処理とアニメーション分岐
@@ -47,12 +47,10 @@ void PlayerStateAiming::Update(Player* player)
         // 位置移動
         player->ApplyHorizontalMovement(moveDir, player->config.aimMoveSpeed);
 
-        // ---------------------------------------------------------
         // プレイヤーのローカル方向に対する移動向きの判定
-        // ---------------------------------------------------------
         Quaternion playerRot = player->GetTransform().rotationQuaternion_;
-        Vector3 playerForward = playerRot.RotateVector({ 0.0f, 0.0f, 1.0f }); // プレイヤーの正面
-        Vector3 playerRight = playerRot.RotateVector({ 1.0f, 0.0f, 0.0f }); // プレイヤーの右方向
+        Vector3 playerForward = playerRot.RotateVector({ 0.0f, 0.0f, 1.0f }); 
+        Vector3 playerRight = playerRot.RotateVector({ 1.0f, 0.0f, 0.0f }); 
 
         // 移動ベクトルとの内積を計算 
         float dotForward = moveDir.Dot(playerForward);

@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                5.0,
-                5.0,
+                0.0,
+                0.0,
                 0.0
             ],
             "frequency": 1.0,

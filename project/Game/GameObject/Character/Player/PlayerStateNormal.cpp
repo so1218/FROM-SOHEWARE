@@ -49,14 +49,14 @@ void PlayerStateNormal::Update(Player* player)
         player->ResetFootstepState();
     }
 
-    // Kキーが押されていたらエイム状態に遷移
+    // エイム状態に遷移
     if (Input::GetInstance().IsKeyPressed(DIK_K) || Input::GetInstance().IsControllerButtonPressed(0, Input::ButtonLT))
     {
         player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
         return;
     }
 
-    // ジャンプ入力時に初速を設定して State 遷移
+    // ジャンプ遷移
     if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA))
     {
         player->SetVelocityY(player->config.jumpInitialVelocity);

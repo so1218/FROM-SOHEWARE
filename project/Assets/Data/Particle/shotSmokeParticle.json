@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 8,
-        "duration": 0.16200000047683716,
+        "amount": 1,
+        "duration": 0.5080000162124634,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 0.9300000071525574,
+        "lifetime": 4.179999828338623,
         "looping": false,
         "playOnAwake": false,
         "position": [
@@ -68,19 +68,19 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4279834880,
+            "endColor": 1077952512,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4281929215,
+            "startColor": 757935615,
             "startColor2": 4294967295
         },
-        "intensity": 16.299999237060547,
+        "intensity": 0.30000001192092896,
         "noiseModule": {
-            "enabled": false,
-            "frequency": 1.0,
+            "enabled": true,
+            "frequency": 1.2100000381469727,
             "scrollSpeed": 1.0,
             "separateAxes": false,
-            "strength": 10.699999809265137
+            "strength": 1.5
         },
         "physicsModule": {
             "affectedByWind": false,
@@ -88,15 +88,15 @@
             "enabled": true,
             "gravity": [
                 0.0,
-                -35.099998474121094,
+                0.10000000149011612,
                 0.0
             ],
             "windInfluence": 1.0
         },
         "rotationModule": {
-            "enabled": false,
+            "enabled": true,
             "isBillboard": true,
-            "maxAngularVelocity2D": 5.0,
+            "maxAngularVelocity2D": 98.0,
             "maxAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -107,7 +107,7 @@
                 0.0,
                 360.0
             ],
-            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity2D": -98.0,
             "minAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -137,62 +137,62 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.10000000149011612,
-                0.10000000149011612,
+                3.0,
+                3.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
                 0.0,
-                0.10000000149011612,
+                0.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "circle_05"
+            "textureName": "smoke_04"
         },
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 1.600000023841858,
-            "enabled": true,
+            "emissiveIntensity": 1.0,
+            "enabled": false,
             "endColor": [
                 1.0,
-                0.27848100662231445,
-                0.0,
-                1.0
+                1.0,
+                1.0,
+                0.0
             ],
-            "headWidthScale": 0.029999999329447746,
+            "headWidthScale": 1.0,
             "jitterFrequency": 10.0,
             "jitterMode": 0,
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
             "jitterStrength": 0.0,
-            "lifetime": 0.05999999865889549,
-            "minVertexDistance": 0.009999999776482582,
+            "lifetime": 0.5,
+            "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
                 1.0,
-                0.14677131175994873,
-                0.05063289403915405,
+                1.0,
+                1.0,
                 1.0
             ],
-            "tailWidthScale": 0.029999999329447746,
+            "tailWidthScale": 1.0,
             "textureMode": 0,
             "textureName": "white1x1",
             "tiling": [
                 1.0,
                 1.0
             ],
-            "width": 0.4000000059604645
+            "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 196.0,
+            "angleRange": 99.0,
             "direction": [
                 0.0,
                 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 18.06999969482422
+            "speed": 0.6200000047683716
         },
         "vortexModule": {
             "axis": [

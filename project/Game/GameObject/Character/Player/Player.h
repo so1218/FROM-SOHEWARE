@@ -8,7 +8,6 @@
 #include "ParticleEmitter.h"
 #include "Terrain.h"
 #include "TreeField.h"
-#include "Sprite.h"
 
 class PlayerStateNormal; 
 class PlayerWeapon;

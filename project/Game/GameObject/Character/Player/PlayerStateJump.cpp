@@ -7,7 +7,6 @@ using namespace FE;
 
 void PlayerStateJump::Enter(Player* player)
 {
-    // 初速設定は遷移元で行うため、アニメーション再生のみ
     player->PlayAnimation("humanJump", false, player->config.jumpAnimSpeed, player->config.jumpBlendTime);
 }
 

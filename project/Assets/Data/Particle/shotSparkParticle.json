@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 8,
-        "duration": 0.16200000047683716,
+        "amount": 1,
+        "duration": 0.1770000010728836,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 0.9300000071525574,
+        "lifetime": 0.2199999988079071,
         "looping": false,
         "playOnAwake": false,
         "position": [
@@ -68,19 +68,19 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4279834880,
+            "endColor": 4294967040,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4281929215,
+            "startColor": 4294967295,
             "startColor2": 4294967295
         },
-        "intensity": 16.299999237060547,
+        "intensity": 1.0,
         "noiseModule": {
             "enabled": false,
             "frequency": 1.0,
             "scrollSpeed": 1.0,
             "separateAxes": false,
-            "strength": 10.699999809265137
+            "strength": 1.0
         },
         "physicsModule": {
             "affectedByWind": false,
@@ -88,7 +88,7 @@
             "enabled": true,
             "gravity": [
                 0.0,
-                -35.099998474121094,
+                -9.800000190734863,
                 0.0
             ],
             "windInfluence": 1.0
@@ -137,62 +137,62 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                0.10000000149011612,
-                0.10000000149011612,
+                0.0,
+                0.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
                 0.0,
-                0.10000000149011612,
+                1.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "circle_05"
+            "textureName": "white1x1"
         },
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 1.600000023841858,
+            "emissiveIntensity": 6.900000095367432,
             "enabled": true,
             "endColor": [
                 1.0,
-                0.27848100662231445,
+                0.07594937086105347,
                 0.0,
-                1.0
+                0.0
             ],
-            "headWidthScale": 0.029999999329447746,
+            "headWidthScale": 0.10000000149011612,
             "jitterFrequency": 10.0,
             "jitterMode": 0,
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
             "jitterStrength": 0.0,
             "lifetime": 0.05999999865889549,
-            "minVertexDistance": 0.009999999776482582,
+            "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
                 1.0,
-                0.14677131175994873,
-                0.05063289403915405,
+                0.405063271522522,
+                0.0,
                 1.0
             ],
-            "tailWidthScale": 0.029999999329447746,
+            "tailWidthScale": 0.10000000149011612,
             "textureMode": 0,
-            "textureName": "white1x1",
+            "textureName": "circle_05",
             "tiling": [
                 1.0,
                 1.0
             ],
-            "width": 0.4000000059604645
+            "width": 0.10000000149011612
         },
         "velocityModule": {
-            "angleRange": 196.0,
+            "angleRange": 257.0,
             "direction": [
                 0.0,
                 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 18.06999969482422
+            "speed": 5.96999979019165
         },
         "vortexModule": {
             "axis": [

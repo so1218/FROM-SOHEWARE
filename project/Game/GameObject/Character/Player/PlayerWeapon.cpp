@@ -48,7 +48,21 @@ void PlayerWeapon::Initialize()
         engine_->GetParticleSystem()->AddEmitter(std::move(muzzleParticle));
     }
 
-    // 武器専用Binderへ登録
+    auto shotSmokeParticle = engine_->GetParticleSystem()->CreateEmitter("shotSmokeParticle");
+    if (shotSmokeParticle)
+    {
+        shotSmokeEmitterPtr_ = shotSmokeParticle.get();
+        engine_->GetParticleSystem()->AddEmitter(std::move(shotSmokeParticle));
+    }
+
+    auto shotSparkParticle = engine_->GetParticleSystem()->CreateEmitter("shotSparkParticle");
+    if (shotSparkParticle)
+    {
+        shotSparkEmitterPtr_ = shotSparkParticle.get();
+        engine_->GetParticleSystem()->AddEmitter(std::move(shotSparkParticle));
+    }
+
+    // Binderへ登録
     binder_->BindModel("P365Model", model_.get());
     binder_->Bind("Muzzle Flash Color", &config_.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
     binder_->Bind("Muzzle Flash Intensity", &config_.muzzleFlashIntensity, 25.0f, 0.5f, 0.0f, 100.0f);
@@ -82,6 +96,28 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
             Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
             Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
             muzzleFlashEmitterPtr_->SetRotation(rot);
+        }
+    }
+
+    if (shotSmokeEmitterPtr_)
+    {
+        shotSmokeEmitterPtr_->SetPosition(muzzlePos);
+        if (camera)
+        {
+            Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+            Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
+            shotSmokeEmitterPtr_->SetRotation(rot);
+        }
+    }
+
+    if (shotSparkEmitterPtr_)
+    {
+        shotSparkEmitterPtr_->SetPosition(muzzlePos);
+        if (camera)
+        {
+            Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+            Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
+            shotSparkEmitterPtr_->SetRotation(rot);
         }
     }
 
@@ -131,10 +167,20 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         muzzleFlashEmitterPtr_->Play();
     }
 
+    if (shotSmokeEmitterPtr_)
+    {
+        shotSmokeEmitterPtr_->Play();
+    }
+
+    if (shotSparkEmitterPtr_)
+    {
+        shotSparkEmitterPtr_->Play();
+    }
+
     Vector3 rayStart = camera->GetWorldTransform().translation_;
     Vector3 baseForward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
-    // 拡散（スプレッド）計算
+    // 拡散計算
     float currentSpread = maxBulletSpread * (1.0f - focusRatio);
     float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
     float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
@@ -161,7 +207,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         }
     }
 
-    return true; // 射撃成功
+    return true; 
 }
 
 void PlayerWeapon::Draw()

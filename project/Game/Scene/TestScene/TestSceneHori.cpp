@@ -93,7 +93,7 @@ void TestSceneHori::OnInitialize()
     engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
     engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
     engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;
-    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 43.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 150.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 65.0f;
     engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
