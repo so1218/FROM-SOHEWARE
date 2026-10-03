@@ -925,6 +925,7 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateAiming.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -975,6 +976,7 @@
     <ClInclude Include="Game\GameObject\Character\Enemy\IEnemyBehavior.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateAiming.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />

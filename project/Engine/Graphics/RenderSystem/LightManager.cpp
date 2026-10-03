@@ -247,8 +247,11 @@ void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4
 
 void LightManager::UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarget)
 {
+    if (lightIndex < 0 || lightIndex >= MAX_DIRECTIONAL_LIGHTS) return;
+
+    // ライトデータの取得
     auto* dirLights = GetDirectionalLightData();
-    if (!dirLights[lightIndex].enable) return;
+    if (!dirLights || !dirLights[lightIndex].enable) return;
 
     // ライト方向を正規化
     Vector3 lightDir = dirLights[lightIndex].direction;

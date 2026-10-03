@@ -12,56 +12,43 @@
 #include "PlayerStateNormal.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
+#include "PlayerWeapon.h"
 #include "Enemy.h"
 
 using namespace FE;
 
 Player::Player(Engine* engine, Camera* camera) : GameObject(),
-	camera_(camera)
+engine_(engine), camera_(camera)
 {
 	SetTag(ObjectTag::Player);
 
-	engine_ = engine;
-
-	// アニメーションモデルを生成
 	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
-	weaponModel_ = std::make_unique<Model>(engine_, "handGun_01");
+
+	// 武器生成 & 初期化
+	weapon_ = std::make_unique<PlayerWeapon>(engine_);
+	weapon_->Initialize();
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
-	collider_ = std::make_unique<FE::Collider>(this);
+	collider_ = std::make_unique<Collider>(this);
 }
 
 void Player::Initialize()
 {
-	// プレイヤーの基本情報を設定
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
-	weaponModel_->MakeMaterialUnique();
 
 	collider_->SetType(CollisionShapeType::AABB);
-
-	animationModel_->Play("humanRun");
-
-	// 衝突判定の属性設定
 	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
 	collider_->SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeProp);
 
-	reticleSprite_ = std::make_unique<FE::Sprite>(engine_);
-	reticleSprite_->SetTexture("white1x1"); 
-	reticleSprite_->SetAnchorPoint({ 0.5f, 0.5f }); 
+	animationModel_->Play("humanRun");
+
+	reticleSprite_ = std::make_unique<Sprite>(engine_);
+	reticleSprite_->SetTexture("white1x1");
+	reticleSprite_->SetAnchorPoint({ 0.5f, 0.5f });
 	reticleSprite_->SetIsVisible(true);
 
-	// マズルフラッシュ用のポイントライトを1つ確保
-	muzzleLightIndex_ = engine_->GetLightManager()->RequestPointLight();
-	if (muzzleLightIndex_ >= 0)
-	{
-		// 初期状態は消灯（Intensity = 0）
-		engine_->GetLightManager()->UpdatePointLightProperties(
-			muzzleLightIndex_, config.muzzleFlashColor, 0.0f, config.muzzleFlashRadius, 0.0f
-		);
-	}
-
+	// PropertyBinder への登録
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
-	binder_->BindModel("WeaponModel", weaponModel_.get());
 	binder_->Bind("RunSpeed", &config.runSpeed, 0.01f);
 	binder_->Bind("RotationSpeed", &config.rotationSpeed, 0.1f);
 	binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 0.05f);
@@ -95,12 +82,6 @@ void Player::Initialize()
 	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 0.1f, 1.0f, 3.0f);
 	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.1f, 0.0f, 0.2f);
 
-	binder_->Bind("Muzzle Flash Color", &config.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
-	binder_->Bind("Muzzle Flash Intensity", &config.muzzleFlashIntensity, 25.0f, 0.5f, 0.0f, 100.0f);
-	binder_->Bind("Muzzle Flash Radius", &config.muzzleFlashRadius, 8.0f, 0.1f, 0.5f, 30.0f);
-	binder_->Bind("Muzzle Flash Duration", &config.muzzleFlashDuration, 0.05f, 0.005f, 0.01f, 0.2f);
-	binder_->Bind("Muzzle Offset", &config.muzzleOffset, { 0.0f, 0.05f, 0.35f });
-
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 
@@ -109,15 +90,6 @@ void Player::Initialize()
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
 	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
 	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
-
-	auto muzzleParticle = engine_->GetParticleSystem()->CreateEmitter("muzzleFlash");
-	if (muzzleParticle)
-	{
-		muzzleFlashEmitterPtr_ = muzzleParticle.get(); // 生ポインタを保持しておく
-		engine_->GetParticleSystem()->AddEmitter(std::move(muzzleParticle)); // 所有権を渡す
-	}
-
-	weaponModel_->GetTransform().SetParent(&rightHandTransform_);
 }
 
 // 更新処理
@@ -125,23 +97,18 @@ void Player::Update()
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	// 毎フレーム、現在のステートのUpdateが呼ばれる
+	// 1. ステートマシン更新
 	stateMachine_->Update();
-
 	isGroundedOnObject_ = false;
 
-	// 木との衝突判定
+	// 2. 衝突判定・境界チェック
 	if (treeField_)
 	{
 		Vector3 pos = GetTransform().translation_;
-
-		// AABBコライダーの横幅の半分をプレイヤーの半径
 		float playerRadius = colliderSize_.x * 0.5f;
 
-		// 押し戻し実行
 		if (treeField_->ResolveCollision(pos, playerRadius))
 		{
-			// 押し戻された位置をプレイヤーに再設定
 			GetTransform().translation_ = pos;
 		}
 	}
@@ -151,59 +118,17 @@ void Player::Update()
 		pos.x = std::clamp(pos.x, -511.0f, 511.0f);
 		pos.z = std::clamp(pos.z, -511.0f, 511.0f);
 	}
-	
-	{
-		// 0番目のディレクショナルライトを取得
-		auto* dirLights = engine_->GetLightManager()->GetDirectionalLightData();
-		if (dirLights[0].enable)
-		{
-			// ライト方向を正規化
-			Vector3 lightDir = dirLights[0].direction;
-			lightDir = lightDir.Normalize();
-
-			// 影を落とす対象の中心座標
-			Vector3 shadowTarget = GetTransform().translation_;
-
-			// ライト位置を決定
-			float distance = 100.0f;
-			Vector3 lightPos = shadowTarget - (lightDir * distance);
-
-			// 上方向ベクトル
-			Vector3 up = { 0.0f, 1.0f, 0.0f };
-			if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
-
-			// ライトのビュー行列を作成
-			Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
-
-			// 平行光源用の正射影行列を作成
-			float size = 100.0f;
-			float nearZ = -100.0f;
-			float farZ = 200.0f;
-			Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
-
-			// ビュー行列と射影行列を合成
-			Matrix4x4 lightViewProj = lightView * lightProj;
-
-			// シャドウ行列をライトマネージャに更新
-			engine_->GetLightManager()->UpdateDirectionalLightShadowMatrix(0, lightViewProj);
-		}
-	}
 
 	collider_->SetCenterOffset(colliderOffset_);
 	collider_->SetSize(colliderSize_);
-	// ---------------------------------------------------------
-	// 1. 基本アニメーションの更新
-	// ---------------------------------------------------------
+
+	// 3. 基本アニメーションの更新
 	animationModel_->Update();
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 	animationModel_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
 
-	// ---------------------------------------------------------
-	// 2. カメラのピッチ角（上下向き）の計算（★ エイム時のみ適用）
-	// ---------------------------------------------------------
+	// 4. エイム時の姿勢（上半身ボーン）更新
 	float cameraPitch = 0.0f;
-
-	// エイム中かどうかを判定 (カメラのエイム状態、またはステート等で判定)
 	bool isAiming = followCamera_ ? followCamera_->IsAiming() : false;
 
 	if (isAiming && camera_)
@@ -212,84 +137,26 @@ void Player::Update()
 		cameraPitch = std::asin(std::clamp(camForward.y, -1.0f, 1.0f));
 	}
 
-	// ---------------------------------------------------------
-	// 3. 上半身（背骨・首ボーン）へエイム時のみピッチ回転を適用
-	// ---------------------------------------------------------
 	if (isAiming && std::abs(cameraPitch) > 0.001f)
 	{
-		Quaternion pitchOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.5f, 0.0f, 0.0f }); // 背骨
-		Quaternion neckOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.3f, 0.0f, 0.0f }); // 首
+		Quaternion pitchOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.5f, 0.0f, 0.0f });
+		Quaternion neckOffset = Quaternion::QuaternionFromEuler({ -cameraPitch * 0.3f, 0.0f, 0.0f });
 
 		animationModel_->AddJointRotationOffset("mixamorig1:Spine1", pitchOffset);
 		animationModel_->AddJointRotationOffset("mixamorig1:Spine2", pitchOffset);
 		animationModel_->AddJointRotationOffset("mixamorig1:Neck", neckOffset);
 
-		// スキニング行列を再計算
 		animationModel_->PostUpdateSkeleton();
 	}
 
-	// ---------------------------------------------------------
-	// 4. 右手のワールド行列を取得して武器に同期
-	// ---------------------------------------------------------
-	Matrix4x4 rightHandWorldMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
-	rightHandTransform_.matWorld_ = rightHandWorldMatrix;
-
-	if (weaponModel_)
+	// 5. 武器の更新（右手ボーン行列を渡す）
+	Matrix4x4 rightHandMatrix = animationModel_->GetJointWorldMatrix("mixamorig1:RightHand");
+	if (weapon_)
 	{
-		weaponModel_->GetTransform().UpdateMatrix();
+		weapon_->Update(rightHandMatrix, camera_);
 	}
 
-	// ---------------------------------------------------------
-	// 5. パーティクル・ライトの更新
-	// ---------------------------------------------------------
-	if (muzzleFlashEmitterPtr_)
-	{
-		muzzleFlashEmitterPtr_->SetPosition(GetMuzzleWorldPosition());
-
-		if (camera_)
-		{
-			Vector3 forward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
-			Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
-			muzzleFlashEmitterPtr_->SetRotation(rot);
-		}
-	}
-
-	if (muzzleLightIndex_ >= 0)
-	{
-		Vector3 muzzlePos = GetMuzzleWorldPosition();
-
-		if (muzzleFlashTimer_ > 0.0f)
-		{
-			muzzleFlashTimer_ -= deltaTime;
-			engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
-
-			float alpha = std::clamp(muzzleFlashTimer_ / config.muzzleFlashDuration, 0.0f, 1.0f);
-			float currentIntensity = config.muzzleFlashIntensity * alpha;
-
-			engine_->GetLightManager()->UpdatePointLightProperties(
-				muzzleLightIndex_,
-				config.muzzleFlashColor,
-				currentIntensity,
-				config.muzzleFlashRadius,
-				1.0f
-			);
-		}
-		else
-		{
-			engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
-			engine_->GetLightManager()->UpdatePointLightProperties(
-				muzzleLightIndex_,
-				config.muzzleFlashColor,
-				0.0f,
-				config.muzzleFlashRadius,
-				0.0f
-			);
-		}
-	}
-
-	// ---------------------------------------------------------
 	// 6. インタラクションデータの送信
-	// ---------------------------------------------------------
 	Vector3 currentPos = GetTransform().translation_;
 	Vector3 velocity = { 0.0f, 0.0f, 0.0f };
 	if (deltaTime > 0.0001f) {
@@ -449,67 +316,20 @@ void Player::UpdateAimRotation()
 
 void Player::FireWeapon()
 {
-	if (!camera_) return;
+	if (!weapon_ || !camera_) return;
 
-	AudioPlayer::GetInstance().Play("gunShot", false, 20);
-
-	// 1. 発光タイマーのセット（ライト）
-	muzzleFlashTimer_ = config.muzzleFlashDuration;
-
-	if (muzzleFlashEmitterPtr_)
-	{
-		muzzleFlashEmitterPtr_->Play();
-	}
-
-	// 既存のカメラ反動（画面揺れ）
+	// 画面揺れ（反動）
 	if (followCamera_)
 	{
 		followCamera_->AddRecoil(0.08f, 0.03f);
 	}
 
-	// 2. 銃口のワールド座標を取得
-	Vector3 muzzlePos = GetMuzzleWorldPosition();
-
-	// ---------------------------------------------------------
-	// レイキャスト・ダメージ・反動処理
-	// ---------------------------------------------------------
-	Vector3 rayStart = camera_->GetWorldTransform().translation_;
-	Vector3 baseForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
-
-	float currentSpread = config.maxBulletSpread * (1.0f - focusRatio_);
-	float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
-	float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
-
-	Quaternion spreadRot = Quaternion::QuaternionFromEuler({ randPitch, randYaw, 0.0f });
-	Vector3 finalRayDir = spreadRot.RotateVector(baseForward).Normalize();
-
-	int baseDamage = 20;
-	float damageMult = 1.0f + (config.maxDamageMultiplier - 1.0f) * focusRatio_;
-	int finalDamage = static_cast<int>(baseDamage * damageMult);
-
 	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
-	if (!colManager) return;
 
-	RaycastHit hitInfo;
-	float maxDistance = 150.0f;
-	uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
-
-	OnShootRecoil();
-
-	if (colManager->Raycast(rayStart, finalRayDir, maxDistance, &hitInfo, targetMask))
+	// 射撃処理を武器に委譲（成功時にレティクル拡散）
+	if (weapon_->Fire(camera_, focusRatio_, config.maxDamageMultiplier, config.maxBulletSpread, colManager))
 	{
-		if (hitInfo.hitObject)
-		{
-			if (hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
-			{
-				Enemy* enemy = static_cast<Enemy*>(hitInfo.hitObject);
-				if (enemy)
-				{
-					enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
-					AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 40);
-				}
-			}
-		}
+		OnShootRecoil();
 	}
 }
 
@@ -656,20 +476,7 @@ void Player::OnShootRecoil()
 	focusTimer_ *= 0.2f;
 }
 
-Vector3 Player::GetMuzzleWorldPosition() const
-{
-	// 右手ではなく、銃モデル本体のワールド行列を基準にオフセットを適用する
-	if (weaponModel_)
-	{
-		const Matrix4x4& weaponMat = weaponModel_->GetTransform().matWorld_;
-		return weaponMat.TransformPoint(config.muzzleOffset);
-	}
-
-	const Matrix4x4& handMat = rightHandTransform_.matWorld_;
-	return handMat.TransformPoint(config.muzzleOffset);
-}
-
-void Player::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
+void Player::OnCollisionEnter(Collider* mine, Collider* other)
 {
 
 }
@@ -682,7 +489,12 @@ void Player::Draw()
 	collider_->DrawCollider();
 
 	animationModel_->Draw();
-	weaponModel_->Draw();
+
+	// 武器描画
+	if (weapon_)
+	{
+		weapon_->Draw();
+	}
 
 	DrawReticle();
 }
@@ -693,9 +505,14 @@ void Player::DebugDraw()
 	ImGui::Begin("プレイヤー");
 
 	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
-	binder_->DrawModel("WeaponModel", "武器インスペクター");
 
 	ImGui::Separator();
+
+	// 武器設定
+	if (weapon_)
+	{
+		weapon_->DebugDraw();
+	}
 
 	if (ImGui::CollapsingHeader("動き"))
 	{
@@ -703,19 +520,11 @@ void Player::DebugDraw()
 		binder_->Draw("RotationSpeed", "回転の速さ");
 	}
 
-	if (ImGui::CollapsingHeader("エイム・射撃・レティクル"))
+	if (ImGui::CollapsingHeader("エイム・レティクル"))
 	{
 		binder_->Draw("AimMoveSpeed", "エイム時移動速度");
 		binder_->Draw("AimToIdleBlendTime", "エイム補間時間(秒)");
 		binder_->Draw("ShootRecoilTime", "射撃反動時間(秒)");
-
-		ImGui::Separator();
-		ImGui::Text("マズルフラッシュ設定");
-		binder_->Draw("Muzzle Flash Color", "発光色");
-		binder_->Draw("Muzzle Flash Intensity", "発光強度");
-		binder_->Draw("Muzzle Flash Radius", "照射半径");
-		binder_->Draw("Muzzle Flash Duration", "発光時間(秒)");
-		binder_->Draw("Muzzle Offset", "銃口位置オフセット");
 
 		ImGui::Separator();
 		ImGui::Text("レティクル調整");
@@ -731,7 +540,6 @@ void Player::DebugDraw()
 		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
 		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
 
-		// 現在のフォーカス率の可視化
 		ImGui::Spacing();
 		ImGui::ProgressBar(focusRatio_, ImVec2(-1, 0), "フォーカス率");
 	}

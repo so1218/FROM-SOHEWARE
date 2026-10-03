@@ -11,6 +11,7 @@
 #include "Sprite.h"
 
 class PlayerStateNormal; 
+class PlayerWeapon;
 
 class Player : public FE::GameObject
 {
@@ -49,13 +50,6 @@ public:
 		float reticleExpandSpeed = 8.0f;     // 移動・射撃時の拡散スピード
 		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率
 		float maxBulletSpread = 0.04f;       // 未フォーカス時の弾道の最大ブレ角
-
-		// マズルフラッシュ調整用パラメータ
-		FE::Vector4 muzzleFlashColor = { 1.0f, 0.75f, 0.3f, 1.0f }; // 黄色〜オレンジ系の光
-		float muzzleFlashIntensity = 25.0f;                       // 光の強さ
-		float muzzleFlashRadius = 8.0f;                          // 照らす範囲（半径）
-		float muzzleFlashDuration = 0.05f;                        // 発光時間
-		FE::Vector3 muzzleOffset = { 0.0f, 0.05f, 0.35f };            // 右手基準の銃口のローカルオフセット
 	};
 
 	Config config;
@@ -117,23 +111,17 @@ public:
 	void ResetFootstepState();
 
 private:
-	FE::Vector3 GetMuzzleWorldPosition() const; // 銃口のワールド座標を求める関数
-
-private:
 	FE::Engine* engine_;
 	FE::Camera* camera_ = nullptr;
 	FE::Terrain* terrain_ = nullptr;
 	TreeField* treeField_ = nullptr;
 	FollowCamera* followCamera_ = nullptr;
 
-	std::unique_ptr<FE::Model> weaponModel_;
-	FE::WorldTransform rightHandTransform_;
-	FE::Vector3 weaponOffsetPos_ = { 0.0f, 0.1f, 0.0f };
+	std::unique_ptr<PlayerWeapon> weapon_;
 
 	std::unique_ptr<FE::Collider> collider_;
 	std::unique_ptr<FE::PropertyBinder> binder_;
 	std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
-	FE::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
 
 	FE::Vector3 moveDirection_{ 0.0f, 0.0f, 0.0f };
 	FE::Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
@@ -159,9 +147,6 @@ private:
 	float focusRatio_ = 0.0f;          // フォーカス率
 	float currentReticleSize_ = 80.0f; // 現在の描画サイズ
 	float reticleAlpha_ = 0.0f;
-
-	int muzzleLightIndex_ = -1;             // 取得した PointLight のインデックス
-	float muzzleFlashTimer_ = 0.0f;         // 残り発光タイマー
 
 	float prevAnimNormalizedTime_ = 0.0f; // 前フレームのアニメーション進捗率
 };
