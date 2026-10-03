@@ -38,6 +38,7 @@ private:
     FE::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
     FE::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
     FE::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* bulletTracerEmitterPtr_ = nullptr;
 
     FE::WorldTransform handTransform_;
 

@@ -62,6 +62,13 @@ void PlayerWeapon::Initialize()
         engine_->GetParticleSystem()->AddEmitter(std::move(shotSparkParticle));
     }
 
+    auto tracerParticle = engine_->GetParticleSystem()->CreateEmitter("bulletTracer");
+    if (tracerParticle)
+    {
+        bulletTracerEmitterPtr_ = tracerParticle.get();
+        engine_->GetParticleSystem()->AddEmitter(std::move(tracerParticle));
+    }
+
     // Binderへ登録
     binder_->BindModel("P365Model", model_.get());
     binder_->Bind("Muzzle Flash Color", &config_.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
@@ -162,25 +169,14 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     AudioPlayer::GetInstance().Play("gunShot", false, 20);
 
     muzzleFlashTimer_ = config_.muzzleFlashDuration;
-    if (muzzleFlashEmitterPtr_)
-    {
-        muzzleFlashEmitterPtr_->Play();
-    }
+    if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
+    if (shotSmokeEmitterPtr_)   shotSmokeEmitterPtr_->Play();
+    if (shotSparkEmitterPtr_)   shotSparkEmitterPtr_->Play();
 
-    if (shotSmokeEmitterPtr_)
-    {
-        shotSmokeEmitterPtr_->Play();
-    }
-
-    if (shotSparkEmitterPtr_)
-    {
-        shotSparkEmitterPtr_->Play();
-    }
-
+    // カメラからのレイとレティクル拡散の計算
     Vector3 rayStart = camera->GetWorldTransform().translation_;
     Vector3 baseForward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
-    // 拡散計算
     float currentSpread = maxBulletSpread * (1.0f - focusRatio);
     float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
     float randYaw = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;
@@ -191,14 +187,21 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     float damageMult = 1.0f + (maxDamageMultiplier - 1.0f) * focusRatio;
     int finalDamage = static_cast<int>(config_.baseDamage * damageMult);
 
+    // ターゲット位置の決定
+    // デフォルトは最大射程先の座標
+    Vector3 targetPoint = rayStart + finalRayDir * config_.maxDistance;
+
     RaycastHit hitInfo;
     uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
 
     if (colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask))
     {
+        // レティクルが当たった実際の地点を着弾点とする
+        targetPoint = hitInfo.point;
+
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
         {
-            auto* enemy = static_cast<Enemy*>(hitInfo.hitObject);
+            auto enemy = static_cast<Enemy*>(hitInfo.hitObject);
             if (enemy)
             {
                 enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
@@ -207,7 +210,29 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         }
     }
 
-    return true; 
+    // 銃口から着弾点に向けた弾道の生成
+    if (bulletTracerEmitterPtr_)
+    {
+        Vector3 muzzlePos = GetMuzzleWorldPosition(); // 銃口のワールド座標
+        Vector3 bulletDir = (targetPoint - muzzlePos);  // 銃口からターゲットへのベクトル
+
+        if (bulletDir.LengthSq() > 0.001f)
+        {
+            bulletDir = bulletDir.Normalize();
+
+            // 銃口からターゲット方向を向く Quaternion を計算
+            Quaternion tracerRot = Quaternion::LookRotation(bulletDir, { 0.0f, 1.0f, 0.0f });
+
+            // エミッターの位置と向きをセット
+            bulletTracerEmitterPtr_->SetPosition(muzzlePos);
+            bulletTracerEmitterPtr_->SetRotation(tracerRot);
+
+            // 1発発射
+            bulletTracerEmitterPtr_->Play();
+        }
+    }
+
+    return true;
 }
 
 void PlayerWeapon::Draw()
