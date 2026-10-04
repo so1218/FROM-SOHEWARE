@@ -44,7 +44,7 @@ public:
         const LeafMaterialData& leafData,
         const TrunkMaterialData& trunkData,
         uint32_t leafTex, uint32_t trunkTex,
-        uint32_t leafNormal = 0, uint32_t trunkNormal = 0, uint32_t toonRamp = 0
+        uint32_t trunkNormal = 0, uint32_t toonRamp = 0
     );
 
     // 時間帯変化や天候に応じた動的パラメータ更新用

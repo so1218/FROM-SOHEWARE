@@ -35,7 +35,6 @@ void TreeField::Initialize()
             if (auto* m1 = model_->GetMaterialHandle(1))
             {
                 leafTextureName_ = m1->textureName;
-                leafNormalName_ = m1->normalMapName;
             }
         }
     }
@@ -106,7 +105,6 @@ void TreeField::Initialize()
         // テクスチャが変更されたら GPU 側の TreeMaterialHandle を更新
         if (treeMaterialHandle_.leafMaterialBuffer) {
             treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
-            treeMaterialHandle_.leafNormalMapHandle = leafNormalHandle_;
             treeMaterialHandle_.trunkTextureHandle = trunkTextureHandle_;
             treeMaterialHandle_.trunkNormalMapHandle = trunkNormalHandle_;
             treeMaterialHandle_.toonRampHandle = toonRampHandle_;
@@ -118,7 +116,6 @@ void TreeField::Initialize()
         });
 
     binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, FE::TextureType::Albedo, OnTextureChanged);
-    binder_->BindTexture("LeafNormal", &leafNormalName_, &leafNormalHandle_, leafNormalName_, FE::TextureType::Normal, OnTextureChanged);
 
     binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, FE::TextureType::Albedo, OnTextureChanged);
     binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, FE::TextureType::Normal, OnTextureChanged);
@@ -259,7 +256,7 @@ void TreeField::GenerateTrees()
         treeMaterialHandle_ = treeSystem_->CreateTreeMaterial(
             LeafMaterialData{}, TrunkMaterialData{},
             leafTextureHandle_, trunkTextureHandle_,
-            leafNormalHandle_, trunkNormalHandle_
+            trunkNormalHandle_
         );
 
         treeMaterialHandle_.toonRampHandle = toonRampHandle_;
@@ -440,7 +437,6 @@ void TreeField::DebugDraw()
     {
         ImGui::Text("テクスチャ");
         binder_->Draw("LeafTexture", "アルベド");
-        binder_->Draw("LeafNormal", "ノーマルマップ");
 
         ImGui::Separator();
         binder_->Draw("LeafColorTint", "色味");

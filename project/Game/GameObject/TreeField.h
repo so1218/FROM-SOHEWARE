@@ -141,8 +141,6 @@ private:
     // 葉
     std::string leafTextureName_ = "white1x1";
     uint32_t    leafTextureHandle_ = 0;
-    std::string leafNormalName_ = "white1x1";
-    uint32_t    leafNormalHandle_ = 0;
 
     // 幹 
     std::string trunkTextureName_ = "white1x1";

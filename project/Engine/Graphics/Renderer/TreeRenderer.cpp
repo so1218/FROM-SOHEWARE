@@ -362,7 +362,6 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
                 cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
                 cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
                 cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafTextureHandle));
-                cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.leafNormalMapHandle));
             }
             else
             {

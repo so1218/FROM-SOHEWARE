@@ -90,7 +90,6 @@ struct TreeMaterialHandle
     uint32_t trunkTextureHandle = 0;       
     uint32_t trunkNormalMapHandle = 0;    
     uint32_t leafTextureHandle = 0;       
-    uint32_t leafNormalMapHandle = 0;      
     uint32_t toonRampHandle = 0;
 };
 
