@@ -885,10 +885,10 @@
     <ClCompile Include="Engine\Graphics\PostProcess\NoiseTextureGenerator.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
-    <ClCompile Include="Game\GameObject\Orb.cpp" />
+    <ClCompile Include="Game\GameObject\Ammo.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skydome.cpp" />
-    <ClCompile Include="Game\GameObject\OrbManager.cpp" />
+    <ClCompile Include="Game\GameObject\AmmoManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
     <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
@@ -935,10 +935,10 @@
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="Engine\Framework\StateMachine.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
-    <ClInclude Include="Game\GameObject\Orb.h" />
+    <ClInclude Include="Game\GameObject\Ammo.h" />
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skydome.h" />
-    <ClInclude Include="Game\GameObject\OrbManager.h" />
+    <ClInclude Include="Game\GameObject\AmmoManager.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\EnvironmentProp.h" />

@@ -7,7 +7,7 @@
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
-#include "OrbManager.h"
+#include "AmmoManager.h"
 #include "EnemyManager.h"
 #include "EnvironmentPropManager.h"
 #include "WeatherEffectManager.h"
@@ -34,7 +34,7 @@ TestSceneHori::TestSceneHori(Engine* engine)
     followCamera_->SetTerrain(ground_->GetTerrain());
 	player_->SetFollowCamera(followCamera_.get());
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
-    objectManager_.Create<OrbManager>(engine_, "GameOrb");
+    objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
     objectManager_.Create<PebbleField>(engine_);

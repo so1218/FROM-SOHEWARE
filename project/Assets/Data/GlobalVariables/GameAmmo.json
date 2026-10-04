@@ -1,0 +1,404 @@
+{
+    "GameAmmo": {
+        "AmmoCount": 4,
+        "Ammo_0": {
+            "LightIntensity": 13.600000381469727,
+            "LightRadius": 11.0,
+            "LightVolumetricScatteringIntensity": 0.3199999928474426,
+            "Position": [
+                29.049999237060547,
+                11.130000114440918,
+                -30.200000762939453
+            ]
+        },
+        "Ammo_1": {
+            "LightIntensity": 12.5,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 11.770000457763672,
+            "Position": [
+                15.050000190734863,
+                1.350000023841858,
+                121.68000030517578
+            ]
+        },
+        "Ammo_2": {
+            "LightIntensity": 12.300000190734863,
+            "LightRadius": 11.420000076293945,
+            "LightVolumetricScatteringIntensity": 8.40999984741211,
+            "Position": [
+                -42.369998931884766,
+                5.320000171661377,
+                -23.31999969482422
+            ]
+        },
+        "Ammo_3": {
+            "LightIntensity": 8.960000038146973,
+            "LightRadius": 11.380000114440918,
+            "LightVolumetricScatteringIntensity": 0.5799999833106995,
+            "Position": [
+                -44.060001373291016,
+                -0.009999999776482582,
+                48.83000183105469
+            ]
+        },
+        "RotationSpeed": 1.5,
+        "SharedAmmoModel_Mat0_AddShadow": 1,
+        "SharedAmmoModel_Mat0_AlbedoMap": "white1x1",
+        "SharedAmmoModel_Mat0_AlphaThres": 0.009999999776482582,
+        "SharedAmmoModel_Mat0_Color": [
+            1.0,
+            0.929411768913269,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat0_DiffuseRef": 4.0,
+        "SharedAmmoModel_Mat0_DisEnable": 0,
+        "SharedAmmoModel_Mat0_DisThres": 0.5,
+        "SharedAmmoModel_Mat0_DissolveTex": "white1x1",
+        "SharedAmmoModel_Mat0_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedAmmoModel_Mat0_EdgeInten": 2.0,
+        "SharedAmmoModel_Mat0_EdgeWidth": 0.05000000074505806,
+        "SharedAmmoModel_Mat0_Emissive": 5.0,
+        "SharedAmmoModel_Mat0_EnvMapInt": 0.029999999329447746,
+        "SharedAmmoModel_Mat0_EnvMapTex": "pureSky",
+        "SharedAmmoModel_Mat0_HeightMapTex": "white1x1",
+        "SharedAmmoModel_Mat0_LightMode": 3,
+        "SharedAmmoModel_Mat0_Lighting": 1,
+        "SharedAmmoModel_Mat0_Metalness": 1.0,
+        "SharedAmmoModel_Mat0_NormEnable": 0,
+        "SharedAmmoModel_Mat0_NormInten": 1.0,
+        "SharedAmmoModel_Mat0_NormTile": 1.0,
+        "SharedAmmoModel_Mat0_NormalMapTex": "white1x1",
+        "SharedAmmoModel_Mat0_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat0_OutlineEnable": 0,
+        "SharedAmmoModel_Mat0_OutlineWidth": 1.0,
+        "SharedAmmoModel_Mat0_POMEnable": 0,
+        "SharedAmmoModel_Mat0_POMHeightScale": 0.05000000074505806,
+        "SharedAmmoModel_Mat0_POMMaxSteps": 32.0,
+        "SharedAmmoModel_Mat0_POMMinSteps": 8.0,
+        "SharedAmmoModel_Mat0_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedAmmoModel_Mat0_PuddleEmission": 0.0,
+        "SharedAmmoModel_Mat0_PuddleFalloff": 0.10000000149011612,
+        "SharedAmmoModel_Mat0_PuddleNoise": "white1x1",
+        "SharedAmmoModel_Mat0_PuddleScale": 0.10000000149011612,
+        "SharedAmmoModel_Mat0_PuddleTint": 0.5,
+        "SharedAmmoModel_Mat0_RimColor": [
+            1.0,
+            0.7058823704719543,
+            0.5882353186607361
+        ],
+        "SharedAmmoModel_Mat0_RimEnable": 1,
+        "SharedAmmoModel_Mat0_RimInten": 1.0,
+        "SharedAmmoModel_Mat0_RimPower": 5.0,
+        "SharedAmmoModel_Mat0_RimUseDir": 0,
+        "SharedAmmoModel_Mat0_RippleEnable": 0,
+        "SharedAmmoModel_Mat0_RippleFreq": 1.0,
+        "SharedAmmoModel_Mat0_RippleMap": "white1x1",
+        "SharedAmmoModel_Mat0_RippleMix": 0.5,
+        "SharedAmmoModel_Mat0_RippleScale": 2.0,
+        "SharedAmmoModel_Mat0_RippleSize": 0.4000000059604645,
+        "SharedAmmoModel_Mat0_RippleSpeed": 1.0,
+        "SharedAmmoModel_Mat0_RippleStren": 0.05000000074505806,
+        "SharedAmmoModel_Mat0_Roughness": 0.23999999463558197,
+        "SharedAmmoModel_Mat0_ShadowBias": 0.0005000000237487257,
+        "SharedAmmoModel_Mat0_ShadowDens": 0.800000011920929,
+        "SharedAmmoModel_Mat0_ShadowEnv": 0.0,
+        "SharedAmmoModel_Mat0_ShadowSoft": 0.0,
+        "SharedAmmoModel_Mat0_Shininess": 50.0,
+        "SharedAmmoModel_Mat0_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat0_ToonRampTex": "toonRamp_01",
+        "SharedAmmoModel_Mat0_TriScale": 0.10000000149011612,
+        "SharedAmmoModel_Mat0_TriSharpness": 4.0,
+        "SharedAmmoModel_Mat0_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedAmmoModel_Mat0_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat0_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedAmmoModel_Mat0_UsePuddle": 0,
+        "SharedAmmoModel_Mat0_UseTriplanar": 0,
+        "SharedAmmoModel_Mat0_Wetness": 0.5,
+        "SharedAmmoModel_Mat1_AddShadow": 1,
+        "SharedAmmoModel_Mat1_AlbedoMap": "white1x1",
+        "SharedAmmoModel_Mat1_AlphaThres": 0.009999999776482582,
+        "SharedAmmoModel_Mat1_Color": [
+            1.0,
+            0.8354430198669434,
+            0.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat1_DiffuseRef": 4.0,
+        "SharedAmmoModel_Mat1_DisEnable": 0,
+        "SharedAmmoModel_Mat1_DisThres": 0.5,
+        "SharedAmmoModel_Mat1_DissolveTex": "white1x1",
+        "SharedAmmoModel_Mat1_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedAmmoModel_Mat1_EdgeInten": 2.0,
+        "SharedAmmoModel_Mat1_EdgeWidth": 0.05000000074505806,
+        "SharedAmmoModel_Mat1_Emissive": 5.0,
+        "SharedAmmoModel_Mat1_EnvMapInt": 0.10000000149011612,
+        "SharedAmmoModel_Mat1_EnvMapTex": "pureSky",
+        "SharedAmmoModel_Mat1_HeightMapTex": "white1x1",
+        "SharedAmmoModel_Mat1_LightMode": 3,
+        "SharedAmmoModel_Mat1_Lighting": 1,
+        "SharedAmmoModel_Mat1_Metalness": 1.0,
+        "SharedAmmoModel_Mat1_NormEnable": 0,
+        "SharedAmmoModel_Mat1_NormInten": 1.0,
+        "SharedAmmoModel_Mat1_NormTile": 1.0,
+        "SharedAmmoModel_Mat1_NormalMapTex": "white1x1",
+        "SharedAmmoModel_Mat1_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat1_OutlineEnable": 0,
+        "SharedAmmoModel_Mat1_OutlineWidth": 1.0,
+        "SharedAmmoModel_Mat1_POMEnable": 0,
+        "SharedAmmoModel_Mat1_POMHeightScale": 0.05000000074505806,
+        "SharedAmmoModel_Mat1_POMMaxSteps": 32.0,
+        "SharedAmmoModel_Mat1_POMMinSteps": 8.0,
+        "SharedAmmoModel_Mat1_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedAmmoModel_Mat1_PuddleEmission": 0.0,
+        "SharedAmmoModel_Mat1_PuddleFalloff": 0.10000000149011612,
+        "SharedAmmoModel_Mat1_PuddleNoise": "white1x1",
+        "SharedAmmoModel_Mat1_PuddleScale": 0.10000000149011612,
+        "SharedAmmoModel_Mat1_PuddleTint": 0.5,
+        "SharedAmmoModel_Mat1_RimColor": [
+            1.0,
+            0.735298752784729,
+            0.004219412803649902
+        ],
+        "SharedAmmoModel_Mat1_RimEnable": 1,
+        "SharedAmmoModel_Mat1_RimInten": 1.0,
+        "SharedAmmoModel_Mat1_RimPower": 5.0,
+        "SharedAmmoModel_Mat1_RimUseDir": 0,
+        "SharedAmmoModel_Mat1_RippleEnable": 0,
+        "SharedAmmoModel_Mat1_RippleFreq": 1.0,
+        "SharedAmmoModel_Mat1_RippleMap": "white1x1",
+        "SharedAmmoModel_Mat1_RippleMix": 0.5,
+        "SharedAmmoModel_Mat1_RippleScale": 2.0,
+        "SharedAmmoModel_Mat1_RippleSize": 0.4000000059604645,
+        "SharedAmmoModel_Mat1_RippleSpeed": 1.0,
+        "SharedAmmoModel_Mat1_RippleStren": 0.05000000074505806,
+        "SharedAmmoModel_Mat1_Roughness": 0.25,
+        "SharedAmmoModel_Mat1_ShadowBias": 0.0005000000237487257,
+        "SharedAmmoModel_Mat1_ShadowDens": 0.800000011920929,
+        "SharedAmmoModel_Mat1_ShadowEnv": 0.0,
+        "SharedAmmoModel_Mat1_ShadowSoft": 0.0,
+        "SharedAmmoModel_Mat1_Shininess": 50.0,
+        "SharedAmmoModel_Mat1_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat1_ToonRampTex": "toonRamp_01",
+        "SharedAmmoModel_Mat1_TriScale": 0.10000000149011612,
+        "SharedAmmoModel_Mat1_TriSharpness": 4.0,
+        "SharedAmmoModel_Mat1_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedAmmoModel_Mat1_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Mat1_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedAmmoModel_Mat1_UsePuddle": 0,
+        "SharedAmmoModel_Mat1_UseTriplanar": 0,
+        "SharedAmmoModel_Mat1_Wetness": 0.5,
+        "SharedAmmoModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedAmmoModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedAmmoModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_AddShadow": 1,
+        "SharedBubbleModel_AlbedoMap": "white1x1",
+        "SharedBubbleModel_AlphaThres": 0.009999999776482582,
+        "SharedBubbleModel_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_DiffuseRef": 4.0,
+        "SharedBubbleModel_DisEnable": 0,
+        "SharedBubbleModel_DisThres": 0.5,
+        "SharedBubbleModel_DissolveTex": "white1x1",
+        "SharedBubbleModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedBubbleModel_EdgeInten": 2.0,
+        "SharedBubbleModel_EdgeWidth": 0.05000000074505806,
+        "SharedBubbleModel_Emissive": 3.299999952316284,
+        "SharedBubbleModel_EnvMapInt": 0.3499999940395355,
+        "SharedBubbleModel_EnvMapTex": "pureSky",
+        "SharedBubbleModel_HeightMapTex": "white1x1",
+        "SharedBubbleModel_LightMode": 3,
+        "SharedBubbleModel_Lighting": 1,
+        "SharedBubbleModel_Metalness": 1.0,
+        "SharedBubbleModel_NormEnable": 1,
+        "SharedBubbleModel_NormInten": 0.25,
+        "SharedBubbleModel_NormTile": 5.5,
+        "SharedBubbleModel_NormalMapTex": "normal_18",
+        "SharedBubbleModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedBubbleModel_OutlineEnable": 0,
+        "SharedBubbleModel_OutlineWidth": 1.0,
+        "SharedBubbleModel_POMEnable": 0,
+        "SharedBubbleModel_POMHeightScale": 0.05000000074505806,
+        "SharedBubbleModel_POMMaxSteps": 32.0,
+        "SharedBubbleModel_POMMinSteps": 8.0,
+        "SharedBubbleModel_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedBubbleModel_PuddleEmission": 0.0,
+        "SharedBubbleModel_PuddleFalloff": 0.10000000149011612,
+        "SharedBubbleModel_PuddleNoise": "white1x1",
+        "SharedBubbleModel_PuddleScale": 0.10000000149011612,
+        "SharedBubbleModel_PuddleTint": 0.5,
+        "SharedBubbleModel_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_RimEnable": 0,
+        "SharedBubbleModel_RimInten": 1.0,
+        "SharedBubbleModel_RimPower": 3.0,
+        "SharedBubbleModel_RimUseDir": 0,
+        "SharedBubbleModel_RippleEnable": 0,
+        "SharedBubbleModel_RippleFreq": 1.0,
+        "SharedBubbleModel_RippleMap": "white1x1",
+        "SharedBubbleModel_RippleMix": 0.5,
+        "SharedBubbleModel_RippleScale": 2.0,
+        "SharedBubbleModel_RippleSize": 0.4000000059604645,
+        "SharedBubbleModel_RippleSpeed": 1.0,
+        "SharedBubbleModel_RippleStren": 0.05000000074505806,
+        "SharedBubbleModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_Roughness": 0.25,
+        "SharedBubbleModel_Scale": [
+            1.7999999523162842,
+            1.7999999523162842,
+            1.7999999523162842
+        ],
+        "SharedBubbleModel_ShadowBias": 0.0005000000237487257,
+        "SharedBubbleModel_ShadowDens": 0.800000011920929,
+        "SharedBubbleModel_ShadowEnv": 0.0,
+        "SharedBubbleModel_ShadowSoft": 0.0,
+        "SharedBubbleModel_Shininess": 50.0,
+        "SharedBubbleModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_ToonRampTex": "toonRamp_01",
+        "SharedBubbleModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_TriScale": 0.10000000149011612,
+        "SharedBubbleModel_TriSharpness": 4.0,
+        "SharedBubbleModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_UsePuddle": 0,
+        "SharedBubbleModel_UseTriplanar": 0,
+        "SharedBubbleModel_Wetness": 0.5,
+        "SharedLightColor": [
+            1.0,
+            0.8225366473197937,
+            0.17721521854400635,
+            1.0
+        ],
+        "SharedScale": [
+            1.5,
+            0.800000011920929,
+            1.5
+        ],
+        "TiltAngle": 30.0,
+        "fresnelExponent": 5.0,
+        "rainbowIntensity": 8.5,
+        "wobbleAmplitude": 0.019999999552965164,
+        "wobbleSpeed": 6.0
+    }
+}

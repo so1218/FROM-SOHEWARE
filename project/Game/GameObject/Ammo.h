@@ -5,11 +5,11 @@
 #include "PropertyBinder.h"
 #include "ParticleEmitter.h"
 
-class Orb : public FE::GameObject
+class Ammo : public FE::GameObject
 {
 public:
-    Orb(FE::Engine* engine, int id, const std::string& parentGroupName);
-    ~Orb() override;
+    Ammo(FE::Engine* engine, int id, const std::string& parentGroupName);
+    ~Ammo() override;
 
     void Initialize() override;
     void Update(const FE::Vector3& scale, const FE::Vector3& bubbleScale, const FE::Vector4& lightColor, float tiltAngle, float rotationSpeed);

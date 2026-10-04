@@ -439,9 +439,9 @@
             "MasterModel_AlbedoMap": "white1x1",
             "MasterModel_AlphaThres": 0.009999999776482582,
             "MasterModel_Color": [
-                0.8987341523170471,
-                0.7662496566772461,
-                0.20098274946212769,
+                1.0,
+                0.9551354050636292,
+                0.7637130618095398,
                 1.0
             ],
             "MasterModel_DiffuseRef": 4.0,
@@ -461,7 +461,7 @@
             "MasterModel_HeightMapTex": "white1x1",
             "MasterModel_LightMode": 3,
             "MasterModel_Lighting": 1,
-            "MasterModel_Metalness": 0.5699999928474426,
+            "MasterModel_Metalness": 0.3400000035762787,
             "MasterModel_NormEnable": 1,
             "MasterModel_NormInten": 3.0,
             "MasterModel_NormTile": 1.5,
@@ -511,7 +511,7 @@
                 0.0,
                 0.0
             ],
-            "MasterModel_Roughness": 0.3400000035762787,
+            "MasterModel_Roughness": 0.699999988079071,
             "MasterModel_Scale": [
                 1.0,
                 1.0,

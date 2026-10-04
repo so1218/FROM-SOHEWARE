@@ -1,18 +1,18 @@
 #include "pch.h"
-#include "OrbManager.h"
+#include "AmmoManager.h"
 #include "TimeManager.h"
 
 using namespace FE;
 
-OrbManager::OrbManager(Engine* engine, const std::string& groupName)
+AmmoManager::AmmoManager(Engine* engine, const std::string& groupName)
     : engine_(engine), managerGroupName_(groupName)
 {}
 
-void OrbManager::Initialize()
+void AmmoManager::Initialize()
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, managerGroupName_);
 
-    binder_->Bind("OrbCount", &orbCount_, 3);
+    binder_->Bind("AmmoCount", &ammoCount_, 3);
 
     binder_->Bind("SharedScale", &sharedScale_, { 1.0f, 1.0f, 1.0f });
     binder_->BindColor("SharedLightColor", &sharedLightColor_, { 0.2f, 0.6f, 1.0f, 1.0f });
@@ -22,7 +22,7 @@ void OrbManager::Initialize()
     // マスターモデルを作成し、独立したマテリアルを持たせる
     sharedModel_ = std::make_unique<Model>(engine_, "bullet");
     sharedModel_->MakeMaterialUnique();
-    binder_->BindModel("SharedOrbModel", sharedModel_.get());
+    binder_->BindModel("SharedAmmoModel", sharedModel_.get());
 
     sharedBubbleModel_ = std::make_unique<Model>(engine_, "sphere");
     sharedBubbleModel_->MakeMaterialUnique();
@@ -38,63 +38,63 @@ void OrbManager::Initialize()
     }
     binder_->BindModel("SharedBubbleModel", sharedBubbleModel_.get());
 
-    orbs_.clear();
+    ammo_.clear();
 
-    for (int i = 0; i < orbCount_; ++i)
+    for (int i = 0; i < ammoCount_; ++i)
     {
-        auto orb = std::make_unique<Orb>(engine_, i, managerGroupName_);
-        orb->SetManager(this->GetManager());
-        orb->Initialize();
+        auto ammo = std::make_unique<Ammo>(engine_, i, managerGroupName_);
+        ammo->SetManager(this->GetManager());
+        ammo->Initialize();
 
-        orb->GetModel()->ShareMaterialsFrom(sharedModel_.get());
-        if (orb->GetBubbleModel())
+        ammo->GetModel()->ShareMaterialsFrom(sharedModel_.get());
+        if (ammo->GetBubbleModel())
         {
-            orb->GetBubbleModel()->SetBlendMode(BlendMode::kBlendModeNormal);
-            orb->GetBubbleModel()->ShareMaterialsFrom(sharedBubbleModel_.get());
+            ammo->GetBubbleModel()->SetBlendMode(BlendMode::kBlendModeNormal);
+            ammo->GetBubbleModel()->ShareMaterialsFrom(sharedBubbleModel_.get());
         }
 
-        orbs_.push_back(std::move(orb));
+        ammo_.push_back(std::move(ammo));
     }
 }
 
-void OrbManager::Update()
+void AmmoManager::Update()
 {
-    for (auto& orb : orbs_)
+    for (auto& ammo : ammo_)
     {
-        orb->Update(sharedScale_, sharedBubbleModel_->GetTransform().scale_, sharedLightColor_, tiltAngle_, rotationSpeed_);
+        ammo->Update(sharedScale_, sharedBubbleModel_->GetTransform().scale_, sharedLightColor_, tiltAngle_, rotationSpeed_);
     }
 }
 
-void OrbManager::Draw()
+void AmmoManager::Draw()
 {
-    for (auto& orb : orbs_)
+    for (auto& ammo : ammo_)
     {
-        orb->Draw();
+        ammo->Draw();
     }
 }
 
-void OrbManager::AddOrb()
+void AmmoManager::AddAmmo()
 {
-    int newIndex = static_cast<int>(orbs_.size());
-    auto newOrb = std::make_unique<Orb>(engine_, newIndex, managerGroupName_);
-    newOrb->SetManager(this->GetManager());
-    newOrb->Initialize();
-    newOrb->GetModel()->ShareMaterialsFrom(sharedModel_.get());
+    int newIndex = static_cast<int>(ammo_.size());
+    auto newAmmo = std::make_unique<Ammo>(engine_, newIndex, managerGroupName_);
+    newAmmo->SetManager(this->GetManager());
+    newAmmo->Initialize();
+    newAmmo->GetModel()->ShareMaterialsFrom(sharedModel_.get());
 
-    orbs_.push_back(std::move(newOrb));
+    ammo_.push_back(std::move(newAmmo));
 
-    orbCount_ = static_cast<int>(orbs_.size());
+    ammoCount_ = static_cast<int>(ammo_.size());
 }
 
-void OrbManager::DebugDraw()
+void AmmoManager::DebugDraw()
 {
 #ifdef ENABLE_IMGUI
-    ImGui::Begin("オーブマネージャー");
-    binder_->Draw("OrbCount", "オーブの数");
+    ImGui::Begin("アモマネージャー");
+    binder_->Draw("AmmoCount", "アモの数");
 
-    if (ImGui::Button("新しいオーブを追加"))
+    if (ImGui::Button("新しいアモを追加"))
     {
-        AddOrb();
+        AddAmmo();
     }
 
     ImGui::Separator();
@@ -115,25 +115,25 @@ void OrbManager::DebugDraw()
 
     ImGui::Separator();
 
-    if (!orbs_.empty())
+    if (!ammo_.empty())
     {
-        binder_->DrawModel("SharedOrbModel", "オーブインスペクター");
+        binder_->DrawModel("SharedAmmoModel", "アモインスペクター");
         binder_->DrawModel("SharedBubbleModel", "バブルインスペクター");
 
-        for (auto& orb : orbs_)
+        for (auto& ammo : ammo_)
         {
-            orb->GetModel()->ShareMaterialsFrom(sharedModel_.get());
-            if (orb->GetBubbleModel())
+            ammo->GetModel()->ShareMaterialsFrom(sharedModel_.get());
+            if (ammo->GetBubbleModel())
             {
-                orb->GetBubbleModel()->ShareMaterialsFrom(sharedBubbleModel_.get());
+                ammo->GetBubbleModel()->ShareMaterialsFrom(sharedBubbleModel_.get());
             }
         }
     }
     ImGui::Separator();
 
-    for (auto& orb : orbs_)
+    for (auto& ammo : ammo_)
     {
-        orb->DebugDraw();
+        ammo->DebugDraw();
     }
 
     ImGui::End();

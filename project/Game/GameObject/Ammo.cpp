@@ -1,24 +1,24 @@
 #include "pch.h"
-#include "Orb.h"
+#include "Ammo.h"
 #include "GameDefine.h"
 #include "CollisionConfig.h"
 #include "TimeManager.h"
 
 using namespace FE;
 
-Orb::Orb(Engine* engine, int id, const std::string& parentGroupName)
+Ammo::Ammo(Engine* engine, int id, const std::string& parentGroupName)
     : engine_(engine), id_(id)
 {
     model_ = std::make_unique<Model>(engine_, "bullet");
     bubbleModel_ = std::make_unique<Model>(engine_, "sphere");
-    std::string childGroupName = "Orb_" + std::to_string(id_);
+    std::string childGroupName = "Ammo_" + std::to_string(id_);
     binder_ = std::make_unique<PropertyBinder>(engine_, parentGroupName, childGroupName);
     collider_ = std::make_unique<Collider>(this);
 }
 
-Orb::~Orb()
+Ammo::~Ammo()
 {
-    // オーブが破棄される際、LightManagerに返却
+    // アモが破棄される際、LightManagerに返却
     if (pointLightIndex_ != -1)
     {
         engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
@@ -26,12 +26,12 @@ Orb::~Orb()
     }
 }
 
-void Orb::Initialize()
+void Ammo::Initialize()
 {
     collider_->RegisterToManager();
-    SetTag(ObjectTag::Orb);
+    SetTag(ObjectTag::Ammo);
 
-    // 各オーブ個別の設定
+    // 各アモ個別の設定
     binder_->Bind("Position", &model_->GetTransform().translation_, { 0.0f, 0.0f, 0.0f });
 
     binder_->Bind("LightIntensity", &lightIntensity_, 5.0f);
@@ -41,7 +41,7 @@ void Orb::Initialize()
     // ポイントライトの空きを要求
     pointLightIndex_ = engine_->GetLightManager()->RequestPointLight();
 
-    hitEmitter_ = engine_->GetParticleSystem()->CreateEmitter("orbHit");
+    hitEmitter_ = engine_->GetParticleSystem()->CreateEmitter("ammoHit");
     if (hitEmitter_)
     {
         hitEmitter_->SetTargetToFollow(&model_->GetTransform());
@@ -53,7 +53,7 @@ void Orb::Initialize()
     collider_->SetCollisionMask(kCollisionAttributePlayer);
 }
 
-void Orb::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Vector4& lightColor, float tiltAngle, float rotationSpeed)
+void Ammo::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Vector4& lightColor, float tiltAngle, float rotationSpeed)
 {
     if (isPicked_) return;
 
@@ -92,7 +92,7 @@ void Orb::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Vec
     SetTransform(model_->GetTransform());
 }
 
-void Orb::Draw()
+void Ammo::Draw()
 {
     if (isPicked_) return;
 
@@ -108,13 +108,13 @@ void Orb::Draw()
     collider_->DrawCollider();
 }
 
-void Orb::DebugDraw()
+void Ammo::DebugDraw()
 {
 #ifdef ENABLE_IMGUI
 
     ImGui::PushID(id_);
 
-    std::string headerName = "オーブ " + std::to_string(id_);
+    std::string headerName = "アモ " + std::to_string(id_);
 
     if (ImGui::CollapsingHeader(headerName.c_str()))
     {
@@ -139,7 +139,7 @@ void Orb::DebugDraw()
 #endif
 }
 
-void Orb::OnCollisionStay(Collider* mine, Collider* other)
+void Ammo::OnCollisionStay(Collider* mine, Collider* other)
 {
     GameObject* hitObject = other->GetOwner();
 
@@ -154,7 +154,7 @@ void Orb::OnCollisionStay(Collider* mine, Collider* other)
     }
 }
 
-void Orb::Sleep()
+void Ammo::Sleep()
 {
     isPicked_ = true;
     SetActive(false);
