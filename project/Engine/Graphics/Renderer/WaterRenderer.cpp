@@ -83,7 +83,6 @@ void WaterRenderer::Submit(
     const ModelData& modelData,
     D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV,
     uint32_t normalMapHandle,
-    uint32_t rippleTextureHandle,
     uint32_t envMapSrvHandle,
     const Vector4& instanceColor)
 {
@@ -111,7 +110,6 @@ void WaterRenderer::Submit(
 
                 sub.waterMaterialCBV = waterMaterialCBV;
                 sub.normalMapHandle = normalMapHandle;
-                sub.rippleTextureHandle = rippleTextureHandle;
                 sub.envMapSrvHandle = envMapSrvHandle;
 
                 sub.depth = worldView.m[3][2]; // 奥から手前へのソート用
@@ -169,7 +167,6 @@ void WaterRenderer::PrepareBatches()
                 sub.meshIndex != nextSub.meshIndex ||
                 sub.waterMaterialCBV != nextSub.waterMaterialCBV ||
                 sub.normalMapHandle != nextSub.normalMapHandle ||
-                sub.rippleTextureHandle != nextSub.rippleTextureHandle ||
                 sub.envMapSrvHandle != nextSub.envMapSrvHandle);
         }
 
@@ -211,12 +208,12 @@ void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS
 
     // インタラクション用データ
     cmdList->SetGraphicsRootConstantBufferView(5, interactionCBAddress);
-    cmdList->SetGraphicsRootDescriptorTable(13, interactionSrvHandle);
+    cmdList->SetGraphicsRootDescriptorTable(12, interactionSrvHandle);
 
     // シーンテクスチャ & インスタンスバッファ
     cmdList->SetGraphicsRootDescriptorTable(7, sceneColorSRV_);
     cmdList->SetGraphicsRootDescriptorTable(8, sceneDepthSRV_);
-    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
 
     uint32_t batchIndex = 0;
     for (const auto& batch : batches_)
@@ -233,7 +230,6 @@ void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS
 
         cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
         cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
-        cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
 
         cmdList->IASetVertexBuffers(0, 1, &mesh.GetVertexBufferView());
         cmdList->IASetIndexBuffer(&mesh.GetIndexBufferView());

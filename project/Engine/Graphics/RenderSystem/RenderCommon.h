@@ -124,8 +124,7 @@ struct WaterSubmission
 
     // 水固有のバッファ・テクスチャ
     D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV = 0; 
-    uint32_t normalMapHandle = 0;                   
-    uint32_t rippleTextureHandle = 0;    
+    uint32_t normalMapHandle = 0;          
     uint32_t envMapSrvHandle;
 
     // パイプライン設定

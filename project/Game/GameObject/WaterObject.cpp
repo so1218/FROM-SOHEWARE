@@ -29,7 +29,6 @@ void WaterObject::BindProperties()
     binder_->Bind("Scale", &model_->GetTransform().scale_, Vector3(10.0f, 1.0f, 10.0f));
 
     binder_->BindTexture("NormalMap", &normalMapName_, &normalMapHandle_, "white1x1", TextureType::Normal);
-    binder_->BindTexture("RippleTexture", &rippleTextureName_, &rippleTextureHandle_, "white1x1", TextureType::Normal);
     binder_->BindTexture("EnvMap", &envMapName_, &envMapSrvHandle_, "pureSky", TextureType::CubeMap);
 
     binder_->Bind("GlobalWindDirection", &materialData_.globalWindDirection, Vector2(1.0f, 0.5f));
@@ -72,10 +71,6 @@ void WaterObject::BindProperties()
     binder_->Bind("ShoreFoamThreshold", &materialData_.shoreFoamThreshold, 0.3f, 0.01f, 0.01f, 2.0f);
     binder_->Bind("FoamScale", &materialData_.foamScale, 0.5f, 0.01f, 0.01f, 5.0f);
     binder_->Bind("FoamIntensity", &materialData_.foamIntensity, 1.0f, 0.05f, 0.0f, 5.0f);
-    binder_->Bind("CausticsIntensity", &materialData_.causticsIntensity, 0.5f, 0.05f, 0.0f, 5.0f);
-    binder_->Bind("CausticsScale", &materialData_.causticsScale, 1.0f, 0.05f, 0.1f, 10.0f);
-    binder_->Bind("CausticsSpeed", &materialData_.causticsSpeed, 0.05f, 0.01f, 0.0f, 0.5f);
-    binder_->Bind("CausticsDistortion", &materialData_.causticsDistortion, 1.0f, 0.05f, 0.0f, 3.0f);    
 }
 
 void WaterObject::SetId(int newId)
@@ -103,7 +98,6 @@ void WaterObject::Draw()
         *model_->GetModelData(),
         materialCBResource_->GetGPUVirtualAddress(),
         normalMapHandle_,
-        rippleTextureHandle_,
         envMapSrvHandle_
     );
 }
@@ -130,7 +124,6 @@ void WaterObject::DebugDraw()
         if (ImGui::TreeNode("テクスチャ設定"))
         {
             binder_->Draw("NormalMap", "法線マップ");
-            binder_->Draw("RippleTexture", "波紋テクスチャ");
             binder_->Draw("EnvMap", "環境マップ");
             ImGui::TreePop();
         }
@@ -193,10 +186,6 @@ void WaterObject::DebugDraw()
             binder_->Draw("ShoreFoamThreshold", "岸辺の泡発生水深");
             binder_->Draw("FoamScale", "泡ノイズ・スケール");
             binder_->Draw("FoamIntensity", "泡の全体濃度");
-            binder_->Draw("CausticsIntensity", "コースティクス・強度");
-            binder_->Draw("CausticsScale", "コースティクス・スケール");
-            binder_->Draw("CausticsSpeed", "コースティクス揺らぎ速度");
-            binder_->Draw("CausticsDistortion", "コースティクス波紋歪み強度"); 
             ImGui::TreePop();
         }
 

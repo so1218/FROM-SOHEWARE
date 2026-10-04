@@ -602,7 +602,6 @@ void RendererManager::SubmitWater(
 	const ModelData& modelData,
 	D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV,
 	uint32_t normalMapHandle,
-	uint32_t rippleTextureHandle,
 	uint32_t envMapSrvHandle,
 	const Vector4& instanceColor)
 {
@@ -610,7 +609,7 @@ void RendererManager::SubmitWater(
 	{
 		waterRenderer_->Submit(
 			worldTransform, modelData, waterMaterialCBV,
-			normalMapHandle, rippleTextureHandle, envMapSrvHandle, instanceColor);
+			normalMapHandle, envMapSrvHandle, instanceColor);
 	}
 }
 

@@ -27,7 +27,6 @@ public:
         const ModelData& modelData,
         D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV,
         uint32_t normalMapHandle,
-        uint32_t rippleTextureHandle,
         uint32_t envMapSrvHandle,
         const Vector4& instanceColor = Vector4(1, 1, 1, 1));
 

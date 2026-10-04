@@ -287,11 +287,6 @@ struct WaterMaterialData
     float shoreFoamThreshold; 
     float foamScale; 
     float foamIntensity; 
-    float causticsIntensity; 
-
-    float causticsScale; 
-    float causticsSpeed; 
-    float causticsDistortion; 
     float ssrDistortion; 
 
     float ssrMaxSteps; 

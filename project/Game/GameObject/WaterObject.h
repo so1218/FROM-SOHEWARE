@@ -36,9 +36,6 @@ private:
     std::string normalMapName_ = "white1x1";
     uint32_t normalMapHandle_ = 0;
 
-    std::string rippleTextureName_ = "white1x1";
-    uint32_t rippleTextureHandle_ = 0;
-
     std::string envMapName_ = "pureSky";
     uint32_t envMapSrvHandle_ = 0;
 };

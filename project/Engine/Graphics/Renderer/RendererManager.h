@@ -93,7 +93,7 @@ public:
         uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitWater(const WorldTransform& worldTransform, const ModelData& modelData,
         D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV, uint32_t normalMapHandle, uint32_t envMapSrvHandle,
-        uint32_t rippleTextureHandle, const Vector4& instanceColor = Vector4(1, 1, 1, 1));
+        const Vector4& instanceColor = Vector4(1, 1, 1, 1));
     void SetWaterSceneTextures(
         D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
         D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV);
