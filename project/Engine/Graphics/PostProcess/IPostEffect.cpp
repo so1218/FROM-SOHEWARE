@@ -23,7 +23,7 @@ void IPostEffect::InitializeBase(Engine* engine, uint32_t width, uint32_t height
     // オフスクリーンRT作成
     Vector4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    // tupleから3つの値（Resource, RTV, SRVIndex）を直接受け取る
+    // tupleから3つの値を直接受け取る
     auto [resource, rtvHandle, srvIndex, uavIndex] =
         engine_->GetOffscreenRTVManager()->CreateOffscreenRenderTarget(
             width, height, clearColor, format, isCompute

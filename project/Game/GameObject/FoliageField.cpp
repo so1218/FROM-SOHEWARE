@@ -58,7 +58,7 @@ void FoliageField::Initialize()
             }
 
             foliageSystem_->AddFoliageType(
-                layer.albedoName, layer.normalName, layer.densityMapName,
+                layer.albedoName, layer.densityMapName,
                 meshPart, layer.material, layer.genData
             );
         }
@@ -142,7 +142,6 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->BindColor(prefix + "BaseColor", &layer.material.baseColor, { 1.0f, 1.0f, 1.0f });
     binder_->BindTexture(prefix + "DensityMap", &layer.densityMapName, &layer.densityMapHandle, "white1x1", FE::TextureType::Noise, onGenChanged);
     binder_->BindTexture(prefix + "Albedo", &layer.albedoName, &layer.albedoHandle, "white1x1", FE::TextureType::Albedo, onResChanged);
-    binder_->BindTexture(prefix + "Normal", &layer.normalName, &layer.normalHandle, "white1x1", FE::TextureType::Normal, onResChanged);
 }
 
 void FoliageField::ReloadResources()
@@ -291,7 +290,6 @@ void FoliageField::DebugDraw()
             ImGui::Separator();
             ImGui::Text("テクスチャ・マテリアル");
             binder_->Draw(prefix + "Albedo", "アルベド");
-            binder_->Draw(prefix + "Normal", "ノーマル");
             binder_->Draw(prefix + "DensityMap", "密度マップ"); 
 
             binder_->Draw(prefix + "BaseColor", "基本色");

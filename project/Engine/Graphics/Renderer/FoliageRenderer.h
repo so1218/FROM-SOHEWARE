@@ -11,7 +11,6 @@ struct FoliageTypeConfig
 {
     const Mesh* mesh;
     uint32_t albedoSrvHandle;
-    uint32_t normalSrvHandle;
     uint32_t densityMapSrvHandle;
 
     FoliageMaterialData material;

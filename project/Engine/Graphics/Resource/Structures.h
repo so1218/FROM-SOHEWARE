@@ -190,9 +190,6 @@ struct FoliageLayer
     std::string albedoName = "white1x1";
     uint32_t albedoHandle = 0;
 
-    std::string normalName = "white1x1";
-    uint32_t normalHandle = 0;
-
     std::string densityMapName = "white1x1"; 
     uint32_t densityMapHandle = 0;
 

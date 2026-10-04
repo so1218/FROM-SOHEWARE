@@ -2,7 +2,7 @@
   "RootSignature": "Foliage",
   "VertexShader": "Environment/Foliage.VS.hlsl",
   "PixelShader": "Environment/Foliage.PS.hlsl",
-  "InputLayout": "Tree",
+  "InputLayout": "Grass",
   "BlendState": "OpaqueA2C",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Default",

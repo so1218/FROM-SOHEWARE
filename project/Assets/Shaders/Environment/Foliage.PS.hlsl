@@ -14,8 +14,7 @@ ConstantBuffer<FoliageMaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gAlbedoAlphaTex : register(t0);
-Texture2D<float3> gNormalTex : register(t1);
-Texture2DArray<float> gShadowMapArray : register(t2);
+Texture2DArray<float> gShadowMapArray : register(t1);
 
 SamplerComparisonState gShadowSampler : register(s1);
 SamplerState gAnisoSampler : register(s3);
@@ -26,7 +25,6 @@ struct FoliagePSInput
     float3 worldPosition : WORLD_POSITION;
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
 };
@@ -37,7 +35,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
 
-    // アルベド ＆ アルファテスト 
+    // アルベド ＆ アルファテスト
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
 
@@ -45,16 +43,11 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float alpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
     clip(alpha - 0.5f);
 
-    // 法線計算 
-    float3 N = normalize(input.normal);
-    float3 T = normalize(input.tangent);
-    float3 B = cross(N, T);
-    float3x3 TBN = float3x3(T, B, N);
+    // 両面ポリゴン対応の法線補正
+    float faceSign = isFrontFace ? 1.0f : -1.0f;
+    float3 worldNormal = normalize(input.normal * faceSign);
 
-    float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
-    float3 worldNormal = normalize(mul(tangentNormal, TBN));
-
-    // 根元ほど暗くして接地感を出す
+    // 接地感の表現
     float rootAO = saturate(input.texcoord.y);
     float groundAO = lerp(0.2f, 1.0f, rootAO);
 
@@ -68,8 +61,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     // ディフューズ ＆ 透過光 
     float NdotL = dot(worldNormal, L);
-    
-    // 表面の直接光
     float directDiffuseFactor = saturate(NdotL);
     float3 directDiffuse = albedo * lightColor * directDiffuseFactor;
 
@@ -77,7 +68,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float backLight = saturate(-NdotL);
     float3 transmission = albedo * lightColor * (backLight * gMaterial.sssStrength);
 
-    // 環境光 
+    // 環境光
     float skyFactor = worldNormal.y * 0.5f + 0.5f;
     float3 skyLighting = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyFactor);
     float3 ambientDiffuse = albedo * skyLighting * groundAO;
@@ -87,7 +78,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    output.material = float4(0.0f, 1.0f, 0.0f, 1.0f); 
 
     return output;
 }

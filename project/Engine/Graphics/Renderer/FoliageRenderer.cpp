@@ -293,10 +293,10 @@ void FoliageRenderer::Draw(
         if (shadowMap)
         {
             cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
+            cmdList->SetGraphicsRootDescriptorTable(8, shadowMap->GetSRVHandle());
         }
 
-        cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
+        cmdList->SetGraphicsRootDescriptorTable(9, interactionSrvHandle);
 
         for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
         {
@@ -314,7 +314,6 @@ void FoliageRenderer::Draw(
             cmdList->SetGraphicsRootConstantBufferView(3, res.materialResource[currentFrameIndex_]->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootShaderResourceView(6, res.outputInstanceBuffer[currentFrameIndex_]->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(res.config.albedoSrvHandle));
-            cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(res.config.normalSrvHandle));
 
             cmdList->IASetVertexBuffers(0, 1, &res.config.mesh->GetVertexBufferView());
             cmdList->IASetIndexBuffer(&res.config.mesh->GetIndexBufferView());

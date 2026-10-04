@@ -11,7 +11,6 @@ FoliageSystem::FoliageSystem(Engine* engine) : engine_(engine)
 
 void FoliageSystem::AddFoliageType(
     const std::string& albedoTextureName,
-    const std::string& normalTextureName,
     const std::string& densityMapName,
     const MeshData& meshData,
     const FoliageMaterialData& defaultMaterial,
@@ -22,7 +21,6 @@ void FoliageSystem::AddFoliageType(
 
     FoliageTypeInfo info;
     info.albedoSrvHandle = TextureManager::GetInstance().Get(albedoTextureName);
-    info.normalSrvHandle = TextureManager::GetInstance().Get(normalTextureName);
     info.densityMapSrvHandle = TextureManager::GetInstance().Get(densityMapName);
 
     auto* device = engine_->GetGraphicsDevice()->GetDevice();
@@ -50,7 +48,6 @@ void FoliageSystem::InitializeRenderer()
         FoliageTypeConfig config;
         config.mesh = typeInfo.mesh.get();
         config.albedoSrvHandle = typeInfo.albedoSrvHandle;
-        config.normalSrvHandle = typeInfo.normalSrvHandle;
         config.densityMapSrvHandle = typeInfo.densityMapSrvHandle;
         config.material = typeInfo.material;
         config.genData = typeInfo.genData;
@@ -94,13 +91,11 @@ void FoliageSystem::UpdateConfigs(const std::vector<FoliageLayer>& layers)
         auto& typeInfo = foliageTypes_[i];
 
         typeInfo.albedoSrvHandle = TextureManager::GetInstance().Get(layer.albedoName);
-        typeInfo.normalSrvHandle = TextureManager::GetInstance().Get(layer.normalName);
         typeInfo.densityMapSrvHandle = TextureManager::GetInstance().Get(layer.densityMapName);
 
         FoliageTypeConfig config;
         config.mesh = typeInfo.mesh.get();
         config.albedoSrvHandle = typeInfo.albedoSrvHandle;
-        config.normalSrvHandle = typeInfo.normalSrvHandle;
         config.densityMapSrvHandle = typeInfo.densityMapSrvHandle;
         config.material = layer.material;
         config.genData = layer.genData;

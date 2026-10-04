@@ -15,7 +15,6 @@ struct FoliageVSInput
     float4 position : POSITION0;
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
-    float3 tangent : TANGENT0;
     uint instanceID : SV_InstanceID;
 };
 
@@ -25,7 +24,6 @@ struct FoliageVSOutput
     float3 worldPosition : WORLD_POSITION;
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
 };
@@ -123,11 +121,9 @@ FoliageVSOutput main(FoliageVSInput input)
     float3 worldPos = basePos + finalLocalPos;
     output.worldPosition = worldPos;
 
-    // 法線・接線の回転
+    // 法線の回転
     float3 localNormal = normalize(input.normal);
-    float3 localTangent = normalize(input.tangent);
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
-    output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
     // 座標変換
     output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);

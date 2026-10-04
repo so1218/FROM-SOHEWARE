@@ -18,7 +18,6 @@ public:
     // VRAM上のメッシュリソースのライフサイクルは本システムで一元管理する
     void AddFoliageType(
         const std::string& albedoTextureName,
-        const std::string& normalTextureName,
         const std::string& densityMapName,
         const MeshData& meshData,
         const FoliageMaterialData& defaultMaterial,
@@ -51,7 +50,6 @@ private:
     // レンダラーへ渡す状態と、システム側で保持するリソースのバインディング情報
     struct FoliageTypeInfo {
         uint32_t albedoSrvHandle = 0;
-        uint32_t normalSrvHandle = 0;
         uint32_t densityMapSrvHandle = 0;
         std::unique_ptr<Mesh> mesh;
         FoliageMaterialData material{};

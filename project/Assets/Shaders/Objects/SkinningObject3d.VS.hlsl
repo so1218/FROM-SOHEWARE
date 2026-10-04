@@ -59,7 +59,6 @@ VertexShaderOutput main(SkinningVSInput input)
 
     // 現在の座標系計算
     output.position = mul(skinned.position, gTransformationMatrix.WVP);
-    output.currentClipPos = output.position; // 現在のクリップ座標を保存
 
     // ワールド座標を計算
     float4 worldPos = mul(skinned.position, gTransformationMatrix.World);
@@ -73,11 +72,6 @@ VertexShaderOutput main(SkinningVSInput input)
         mul(input.position, gPrevMatrixPalette[input.index.z].skeletonSpaceMatrix) * input.weight.z +
         mul(input.position, gPrevMatrixPalette[input.index.w].skeletonSpaceMatrix) * input.weight.w;
     prevLocalPos.w = 1.0f;
-
-    // 過去のローカル座標 × 過去のワールド行列
-    float4 prevWorldPos = mul(prevLocalPos, gTransformationMatrix.PrevWorld);
-    // 過去のワールド座標 × 過去のビュープロジェクション行列
-    output.prevClipPos = mul(prevWorldPos, gFrameData.prevViewProj);
 
     // その他データの出力
     output.texcoord = input.texcoord;
