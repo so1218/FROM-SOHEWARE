@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 1,
+        "amount": 2,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             4.599999904632568,
             0.0
         ],
-        "lifetime": 0.4399999976158142,
+        "lifetime": 0.25,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -74,7 +74,7 @@
             "startColor": 4294967295,
             "startColor2": 4294967295
         },
-        "intensity": 4.5,
+        "intensity": 1.0,
         "noiseModule": {
             "enabled": false,
             "frequency": 0.5400000214576721,
@@ -138,14 +138,14 @@
             "enabled": true,
             "endScale": [
                 0.0,
-                0.0,
+                0.20000000298023224,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
                 0.0,
-                1.0,
+                0.20000000298023224,
                 1.0
             ]
         },
@@ -156,16 +156,16 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 3.0,
+            "emissiveIntensity": 5.0,
             "enabled": true,
             "endColor": [
-                0.3164557218551636,
+                0.0,
+                0.3291141986846924,
                 1.0,
-                0.939432680606842,
-                0.0
+                1.0
             ],
-            "headWidthScale": 1.0,
-            "jitterFrequency": 8.800000190734863,
+            "headWidthScale": 0.4000000059604645,
+            "jitterFrequency": 3.4000000953674316,
             "jitterMode": 2,
             "jitterPhase": 0.0,
             "jitterSpeed": 3.799999952316284,
@@ -177,14 +177,14 @@
                 0.0
             ],
             "startColor": [
-                0.0,
+                0.8860759735107422,
                 1.0,
-                0.8354430198669434,
+                0.0,
                 1.0
             ],
-            "tailWidthScale": 1.0,
+            "tailWidthScale": 0.4000000059604645,
             "textureMode": 0,
-            "textureName": "particle_default",
+            "textureName": "circle_05",
             "tiling": [
                 1.0,
                 1.0
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 0.1899999976158142
+            "speed": 2.0999999046325684
         },
         "vortexModule": {
             "axis": [

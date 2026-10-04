@@ -31,10 +31,6 @@ void DebugGuiManager::Update(Camera* targetCamera)
     // メインのデバッグウィンドウ
     ImGui::Begin("全体のデバッグ情報・設定");
 
-    if (ImGui::CollapsingHeader("描画系設定"))
-    {
-        DrawRenderSettings();
-    }
     if (ImGui::CollapsingHeader("カメラ設定"))
     {
         DrawCameraSettings(targetCamera);
@@ -67,10 +63,6 @@ void DebugGuiManager::Update(Camera* targetCamera)
 }
 
 #ifdef ENABLE_IMGUI
-void DebugGuiManager::DrawRenderSettings()
-{
-    ImGui::Checkbox("ワイヤーフレーム描画", &engine_->GetRendererManager()->isWireFrame_);
-}
 
 void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
 {

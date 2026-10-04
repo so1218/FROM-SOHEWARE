@@ -36,7 +36,7 @@ public:
         const Vector4& instanceColor);
 
     // 描画実行
-    void Draw(const RenderEnvironment& env, RenderGroup group, bool isWireFrame, ShadowMap* shadowMap);
+    void Draw(const RenderEnvironment& env, RenderGroup group, ShadowMap* shadowMap);
 
     // 影用パスの描画
     void DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex);
@@ -71,7 +71,7 @@ private:
     const std::vector<Mesh>& GetOrCreateBatch(const ModelData& modelData);
 
     // 実際の描画コマンド
-    void DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap,
+    void DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, ShadowMap* shadowMap,
         uint32_t instanceCount, uint32_t startInstanceLocation);
 
 private:

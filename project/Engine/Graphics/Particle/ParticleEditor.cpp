@@ -308,58 +308,6 @@ void ParticleEditor::ShowEditor()
 
                 ImGui::Separator();
 
-                if (ImGui::TreeNode("衝突モジュール"))
-                {
-                    auto& col = config.collision;
-                    ImGui::Checkbox("有効##Collision", &col.enabled);
-
-                    if (col.enabled)
-                    {
-                        const char* typeItems[] = { "平面", "ワールドオブジェクト" };
-                        int typeIdx = static_cast<int>(col.type);
-                        if (ImGui::Combo("タイプ", &typeIdx, typeItems, IM_ARRAYSIZE(typeItems)))
-                            col.type = static_cast<CollisionModule::Type>(typeIdx);
-
-                        ImGui::Separator();
-
-                        if (col.type == CollisionModule::Type::Plane)
-                        {
-                            ImGui::Text("平面設定");
-                            ImGui::DragFloat3("位置", &col.plane.point.x, 0.1f);
-                            ImGui::DragFloat3("法線", &col.plane.normal.x, 0.01f, -1.0f, 1.0f);
-                            if (ImGui::Button("法線の正規化")) {
-                                col.plane.normal = col.plane.normal.Normalize();
-                            }
-                        }
-                        else
-                        {
-                            ImGui::Text("ワールドオブジェクト設定");
-                            const char* shapes[] = { "球体", "箱" };
-                            int shapeIdx = static_cast<int>(col.worldObj.shape);
-                            if (ImGui::Combo("形状", &shapeIdx, shapes, IM_ARRAYSIZE(shapes)))
-                                col.worldObj.shape = static_cast<CollisionModule::WorldObject::Shape>(shapeIdx);
-
-                            ImGui::DragFloat3("中心", &col.worldObj.center.x, 0.1f);
-
-                            if (col.worldObj.shape == CollisionModule::WorldObject::Shape::Sphere)
-                                ImGui::DragFloat("半径", &col.worldObj.scale.x, 0.1f);
-                            else
-                                ImGui::DragFloat3("サイズ", &col.worldObj.scale.x, 0.1f);
-                        }
-
-                        ImGui::Separator();
-
-                        ImGui::Text("物理特性");
-                        ImGui::DragFloat("反発", &col.bounce, 0.01f, 0.0f, 2.0f);
-                        ImGui::DragFloat("減衰", &col.dampen, 0.01f, 0.0f, 1.0f);
-                        ImGui::DragFloat("摩擦", &col.friction, 0.01f, 0.0f, 1.0f);
-                        ImGui::DragFloat("寿命減少", &col.lifeLoss, 0.01f, 0.0f, 1.0f);
-                    }
-                    ImGui::TreePop();
-                }
-
-                ImGui::Separator();
-
                 // 色変化モジュール
                 if (ImGui::TreeNode("生存期間中の色"))
                 {

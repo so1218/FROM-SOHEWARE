@@ -304,7 +304,7 @@ void RendererManager::Draw3D()
 
 	if (modelRenderer_)
 	{
-		modelRenderer_->Draw(env_, RenderGroup::Opaque, isWireFrame_, shadowMap_);
+		modelRenderer_->Draw(env_, RenderGroup::Opaque, shadowMap_);
 	}
 
 
@@ -320,7 +320,7 @@ void RendererManager::Draw3D()
 
 	if (modelRenderer_) 
 	{
-		modelRenderer_->Draw(env_, RenderGroup::Grid, isWireFrame_, shadowMap_);
+		modelRenderer_->Draw(env_, RenderGroup::Grid, shadowMap_);
 	}
 
 	if (skyboxRenderer_)
@@ -353,7 +353,7 @@ void RendererManager::Draw3D()
 			renderCoordinator_->GetOffscreenDepthSRVGPUHandle()    // 深度テクスチャ
 		);
 
-		// 描画実行 (offscreenTexColor_ への書き込みと背景 SRV 読み込みが衝突しない)
+		// 描画実行 
 		waterRenderer_->PrepareBatches();
 		waterRenderer_->Draw(env_, interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
 
@@ -362,7 +362,7 @@ void RendererManager::Draw3D()
 	}
 	if (modelRenderer_)
 	{
-		modelRenderer_->Draw(env_, RenderGroup::Transparent, isWireFrame_, shadowMap_);
+		modelRenderer_->Draw(env_, RenderGroup::Transparent, shadowMap_);
 	}
 
 	if (particleRenderer_)

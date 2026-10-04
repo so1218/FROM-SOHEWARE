@@ -129,12 +129,7 @@ public:
     TreeRenderer* GetTreeRenderer() const { return treeRenderer_.get(); }
     const Frustum& GetCameraFrustum() const { return cameraFrustum_; }
 
-    // デバッグ用
-    void SetWireFrame(bool isWireFrame) { isWireFrame_ = isWireFrame; }
-
     BlendMode currentBlendMode_ = kBlendModeNormal;
-
-    bool isWireFrame_ = false;
 
     void InitializeGrass();
     void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);

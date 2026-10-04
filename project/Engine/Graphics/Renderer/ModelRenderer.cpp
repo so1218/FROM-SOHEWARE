@@ -350,7 +350,7 @@ void ModelRenderer::SubmitAnimation(
     }
 }
 
-void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, bool isWireFrame, ShadowMap* shadowMap)
+void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, ShadowMap* shadowMap)
 {
     if (batches_.empty()) return;
 
@@ -368,11 +368,11 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
         if (sub.group != targetGroup) continue;
 
         // バッチの情報を渡して描画コアを呼ぶ
-        DrawCore(env, sub, isWireFrame, shadowMap, batch.instanceCount, batch.startInstanceLocation);
+        DrawCore(env, sub, shadowMap, batch.instanceCount, batch.startInstanceLocation);
     }
 }
 
-void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, bool isWireFrame, ShadowMap* shadowMap,
+void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, ShadowMap* shadowMap,
     uint32_t instanceCount, uint32_t startInstanceLocation)
 {
     const std::vector<Mesh>& meshes = GetOrCreateBatch(*sub.modelData);
@@ -403,16 +403,9 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
         }
     }
 
-    if (isWireFrame)
-    {
-        psoName += "_Wireframe";
-    }
-    else
-    {
-        if (sub.cullMode == CullMode::None || sub.cullMode == CullMode::Front) psoName += "_NoCull";
-        if (sub.depthMode == DepthMode::ReadOnly) psoName += "_DepthRead";
-        else if (sub.depthMode == DepthMode::None) psoName += "_DepthOff";
-    }
+    if (sub.cullMode == CullMode::None || sub.cullMode == CullMode::Front) psoName += "_NoCull";
+    if (sub.depthMode == DepthMode::ReadOnly) psoName += "_DepthRead";
+    else if (sub.depthMode == DepthMode::None) psoName += "_DepthOff";
 
     // アウトライン描画
     if (sub.enableOutline)

@@ -8,8 +8,7 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0,
-				1
+				6
 			]
 		}
 	],
@@ -17,20 +16,49 @@
 		{
 			"mesh":0,
 			"name":"Bullet_0",
-			"scale":[
-				0.0700136050581932,
-				0.0700136050581932,
-				0.0700136050581932
-			],
 			"translation":[
-				-0.0012744218111038208,
-				-1.1628886461257935,
-				0.0005514621734619141
+				0,
+				-16.606748580932617,
+				0
 			]
+		},
+		{
+			"children":[
+				0
+			],
+			"name":"Bullet"
+		},
+		{
+			"name":"Case"
 		},
 		{
 			"mesh":1,
 			"name":"Small Pistol Small Rifle_0",
+			"translation":[
+				0,
+				-16.606748580932617,
+				0
+			]
+		},
+		{
+			"children":[
+				3
+			],
+			"name":"Small Pistol Small Rifle"
+		},
+		{
+			"children":[
+				1,
+				2,
+				4
+			],
+			"name":"Root"
+		},
+		{
+			"children":[
+				5
+			],
+			"name":"Sketchfab_model",
 			"scale":[
 				0.0700136050581932,
 				0.0700136050581932,
@@ -38,7 +66,7 @@
 			],
 			"translation":[
 				-0.0012744218111038208,
-				-1.1628886461257935,
+				-0.00019028782844543457,
 				0.0005514621734619141
 			]
 		}
@@ -80,9 +108,10 @@
 				{
 					"attributes":{
 						"POSITION":0,
-						"NORMAL":1
+						"NORMAL":1,
+						"TEXCOORD_0":2
 					},
-					"indices":2,
+					"indices":3,
 					"material":0
 				}
 			]
@@ -92,10 +121,11 @@
 			"primitives":[
 				{
 					"attributes":{
-						"POSITION":3,
-						"NORMAL":4
+						"POSITION":4,
+						"NORMAL":5,
+						"TEXCOORD_0":6
 					},
-					"indices":5,
+					"indices":7,
 					"material":1
 				}
 			]
@@ -126,14 +156,20 @@
 		},
 		{
 			"bufferView":2,
+			"componentType":5126,
+			"count":782,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":3,
 			"componentType":5123,
 			"count":1146,
 			"type":"SCALAR"
 		},
 		{
-			"bufferView":3,
+			"bufferView":4,
 			"componentType":5126,
-			"count":1114,
+			"count":1124,
 			"max":[
 				3.9749999046325684,
 				28.900001525878906,
@@ -147,13 +183,19 @@
 			"type":"VEC3"
 		},
 		{
-			"bufferView":4,
+			"bufferView":5,
 			"componentType":5126,
-			"count":1114,
+			"count":1124,
 			"type":"VEC3"
 		},
 		{
-			"bufferView":5,
+			"bufferView":6,
+			"componentType":5126,
+			"count":1124,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":7,
 			"componentType":5123,
 			"count":1860,
 			"type":"SCALAR"
@@ -174,32 +216,44 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":2292,
+			"byteLength":6256,
 			"byteOffset":18768,
-			"target":34963
-		},
-		{
-			"buffer":0,
-			"byteLength":13368,
-			"byteOffset":21060,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":13368,
-			"byteOffset":34428,
+			"byteLength":2292,
+			"byteOffset":25024,
+			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":13488,
+			"byteOffset":27316,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":13488,
+			"byteOffset":40804,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":8992,
+			"byteOffset":54292,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3720,
-			"byteOffset":47796,
+			"byteOffset":63284,
 			"target":34963
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":51516,
+			"byteLength":67004,
 			"uri":"bullet.bin"
 		}
 	]
