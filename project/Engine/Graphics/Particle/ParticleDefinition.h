@@ -13,7 +13,7 @@ class AnimationModel;
 
 struct ShapeModule
 {
-    enum class Type { Point, Box, Sphere, Mesh };
+    enum class Type { Point, Box, Sphere };
 
     const ModelData* sourceModelData = nullptr;
 

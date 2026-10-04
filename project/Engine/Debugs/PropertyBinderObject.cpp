@@ -768,7 +768,7 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     ImGui::Separator();
 
-                    if (ImGui::TreeNodeEx("EffectSettings", optFlags, "特殊エフェクト (アウトライン / ディゾルブ)"))
+                    if (ImGui::TreeNodeEx("EffectSettings", optFlags, "アウトライン / ディゾルブ"))
                     {
                         isChanged |= Draw(matPrefix + "OutlineEnable", "アウトライン有効");
                         if (gv->GetIntValue(groupPath_, matPrefix + "OutlineEnable") > 0)

@@ -81,11 +81,11 @@ void ParticleEditor::ShowEditor()
 
                             ImGui::PushID((int)i);
 
-                            // 選択状態判定 (文字列比較)
+                            // 選択状態判定 
                             bool isSelected = (currentTexName == data.name);
 
                             if (isSelected) {
-                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f)); // 黄色枠
+                                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
                             }
                             else {
                                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
@@ -95,7 +95,7 @@ void ParticleEditor::ShowEditor()
                             if (ImGui::ImageButton("TexBtn", imTexID, ImVec2(32, 32),
                                 ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
                             {
-                                currentTexName = data.name; // 名前を更新
+                                currentTexName = data.name;
                             }
 
                             ImGui::PopStyleColor();
@@ -269,11 +269,11 @@ void ParticleEditor::ShowEditor()
                 ImGui::Separator();
 
                 // 形状モジュール
-                if (ImGui::TreeNode("形状モジュール"))
+                if (ImGui::TreeNode("エミッター形状モジュール"))
                 {
                     auto& shape = config.shape;
 
-                    const char* shapeTypes[] = { "点", "ボックス", "球", "メッシュ" };
+                    const char* shapeTypes[] = { "点", "ボックス", "球" };
                     int currentShapeType = (int)shape.type;
 
                     if (ImGui::Combo("形状タイプ", &currentShapeType, shapeTypes, IM_ARRAYSIZE(shapeTypes)))
@@ -291,10 +291,6 @@ void ParticleEditor::ShowEditor()
                         ImGui::Checkbox("縁から放出", &shape.emitFromEdge);
                         break;
                     case ShapeModule::Type::Point:
-                        break;
-                    case ShapeModule::Type::Mesh:
-                        ImGui::TextDisabled("メッシュ");
-                        ImGui::Text("モデルデータをセットして使用");
                         break;
                     }
 
@@ -376,7 +372,7 @@ void ParticleEditor::ShowEditor()
 
                     if (vortex.enabled)
                     {
-                        ImGui::DragFloat3("回転軸 (Axis)", &vortex.axis.x, 0.1f);
+                        ImGui::DragFloat3("回転軸", &vortex.axis.x, 0.1f);
                         ImGui::DragFloat("周回スピード", &vortex.orbitalSpeed, 0.1f, -1000.0f, 1000.0f);
                         ImGui::DragFloat("半径方向スピード", &vortex.radialSpeed, 0.1f, -100.0f, 100.0f);
                         if (ImGui::IsItemHovered())
@@ -473,13 +469,13 @@ void ParticleEditor::ShowEditor()
                         ImGui::Separator();
 
 
-                        ImGui::Text("太さの変化 (Width over Trail)");
-                        ImGui::DragFloat("先端スケール (Head)", &trail.headWidthScale, 0.01f, 0.0f, 5.0f);
-                        ImGui::DragFloat("末尾スケール (Tail)", &trail.tailWidthScale, 0.01f, 0.0f, 5.0f);
+                        ImGui::Text("太さの変化");
+                        ImGui::DragFloat("先端スケール", &trail.headWidthScale, 0.01f, 0.0f, 5.0f);
+                        ImGui::DragFloat("末尾スケール", &trail.tailWidthScale, 0.01f, 0.0f, 5.0f);
 
                         ImGui::Separator();
 
-                        const char* alignModes[] = { "View (カメラ向き)", "Transform (回転追従)" };
+                        const char* alignModes[] = { "カメラ向き", "回転追従" };
                         int currentAlign = static_cast<int>(trail.alignment);
                         if (ImGui::Combo("向きの制御", &currentAlign, alignModes, IM_ARRAYSIZE(alignModes)))
                         {

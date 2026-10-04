@@ -508,14 +508,6 @@ struct BilateralBlurSettings
     float normalTolerance;
 };
 
-struct SSRSettings
-{
-    float maxDistance;
-    float stepSize;
-    int maxSteps;
-    float thickness;
-};
-
 struct InteractionEntity
 {
     float3 position; // ワールド位置

@@ -381,7 +381,6 @@ void DebugGuiManager::DrawPostEffectSettings()
     DoFSettings* dofSettings = postEffectManager_->GetDoFSettings();
     SSAOSettings* ssaoSettings = postEffectManager_->GetSSAOSettings();
     BilateralBlurSettings* bilateralSettings = postEffectManager_->GetBilateralBlurSettings();
-    SSRSettings* ssrSettings = postEffectManager_->GetSSRSettings();
     std::vector<VolumetricFogPass::FogVolumeData>& volumes = postEffectManager_->GetVolumetricFogPass()->GetFogVolumesData();
 
     // カラー・色調系
@@ -711,42 +710,6 @@ void DebugGuiManager::DrawPostEffectSettings()
             ImGui::SliderFloat("ボケ移行距離", &dofSettings->transitionRange, 0.1f, 100.0f, "%.1f m");
             ImGui::SliderFloat("玉ボケ閾値 (明るさ)", &dofSettings->bokehHighlightThreshold, 0.0f, 2.0f, "%.2f");
             ImGui::SliderFloat("玉ボケ強度", &dofSettings->bokehHighlightIntensity, 0.0f, 200.0f, "%.1f");
-
-            ImGui::Unindent();
-        }
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNode("反射 (SSR)"))
-    {
-        bool ssrFlag = (compositeSettingsData->enableSSR != 0);
-        if (ImGui::Checkbox("SSR有効", &ssrFlag))
-        {
-            compositeSettingsData->enableSSR = ssrFlag ? 1 : 0;
-        }
-
-        if (ssrFlag)
-        {
-            ImGui::Indent();
-
-            ImGui::TextDisabled("合成設定");
-            ImGui::DragFloat("反射強度", &compositeSettingsData->ssrIntensity, 0.01f);
-
-            ImGui::Separator();
-
-            if (ssrSettings)
-            {
-                ImGui::TextDisabled("生成パラメータ");
-
-                ImGui::DragFloat("最大探索距離", &ssrSettings->maxDistance, 0.5f, 0.0f, 1000.0f, "%.1f m");
-                ImGui::DragFloat("ステップサイズ", &ssrSettings->stepSize, 0.01f, 0.01f, 10.0f, "%.3f");
-                ImGui::SliderInt("最大ステップ数", &ssrSettings->maxSteps, 1, 256);
-                ImGui::DragFloat("厚み判定", &ssrSettings->thickness, 0.01f, 0.0f, 5.0f, "%.3f");
-            }
-            else
-            {
-                ImGui::TextColored(ImVec4(1, 0, 0, 1), "SSRSettingsのポインタがnull");
-            }
 
             ImGui::Unindent();
         }

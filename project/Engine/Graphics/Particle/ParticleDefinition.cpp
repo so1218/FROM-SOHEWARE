@@ -54,59 +54,6 @@ Vector3 ShapeModule::GetInitialPositionOffset(const ModelData* overrideModelData
 
         return ellipsoidPoint;
     }
-    case Type::Mesh:
-    {
-        // アニメーションモデルが渡された場合は、そのModelDataを使う
-        const ModelData* targetModelData = nullptr;
-        if (overrideAnimModel) {
-            targetModelData = overrideAnimModel->GetModelData();
-        }
-        else {
-            targetModelData = overrideModelData ? overrideModelData : sourceModelData;
-        }
-
-        if (!targetModelData || targetModelData->meshes.empty()) return { 0.0f, 0.0f, 0.0f };
-
-        int randomMeshIndex = Math::RandomInt(0, (int)targetModelData->meshes.size() - 1);
-        const auto& mesh = targetModelData->meshes[randomMeshIndex];
-
-        if (mesh.indices.empty() || mesh.vertices.empty()) return { 0.0f, 0.0f, 0.0f };
-
-        int triangleCount = (int)mesh.indices.size() / 3;
-        int randomTri = Math::RandomInt(0, triangleCount - 1) * 3;
-
-        // 頂点のインデックスを取得
-        uint32_t indexA = mesh.indices[randomTri];
-        uint32_t indexB = mesh.indices[randomTri + 1];
-        uint32_t indexC = mesh.indices[randomTri + 2];
-
-        Vector3 A, B, C;
-
-        // アニメーションモデルならスキニング計算後の座標をもらう
-        if (overrideAnimModel)
-        {
-            A = overrideAnimModel->GetSkinnedVertexPosition(randomMeshIndex, indexA);
-            B = overrideAnimModel->GetSkinnedVertexPosition(randomMeshIndex, indexB);
-            C = overrideAnimModel->GetSkinnedVertexPosition(randomMeshIndex, indexC);
-        }
-        else
-        {
-            A = { mesh.vertices[indexA].position.x, mesh.vertices[indexA].position.y, mesh.vertices[indexA].position.z };
-            B = { mesh.vertices[indexB].position.x, mesh.vertices[indexB].position.y, mesh.vertices[indexB].position.z };
-            C = { mesh.vertices[indexC].position.x, mesh.vertices[indexC].position.y, mesh.vertices[indexC].position.z };
-        }
-
-        // 重心座標系を使って、面上のランダムな点を計算
-        float r1 = sqrtf(Math::RandomFloat(0.0f, 1.0f));
-        float r2 = Math::RandomFloat(0.0f, 1.0f);
-
-        float u = 1.0f - r1;
-        float v = r1 * (1.0f - r2);
-        float w = r1 * r2;
-
-        // ここで計算されたローカル座標をそのまま返すだけでOK！
-        return (A * u) + (B * v) + (C * w);
-    }
     }
 
     return { 0.0f, 0.0f, 0.0f };

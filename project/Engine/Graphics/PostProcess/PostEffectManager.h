@@ -7,7 +7,6 @@
 #include "FinalCompositePass.h"
 #include "SSAOPass.h"
 #include "BilateralBlurPass.h"
-#include "SSRPass.h"
 #include "VolumetricFogPass.h"
 #include "VolumetricFogBilateralPass.h"
 #include "Camera.h"
@@ -43,7 +42,6 @@ public:
     DoFSettings* GetDoFSettings() const { return dofPass_->GetSettings(); }
     SSAOSettings* GetSSAOSettings() const { return ssaoPass_->GetSettings(); }
     BilateralBlurSettings* GetBilateralBlurSettings() const { return horizontalBilateralPass_->GetSettings(); }
-    SSRSettings* GetSSRSettings() const { return ssrPass_->GetSettings(); }
     VolumetricFogSettings* GetVolumetricFogSettings() const { return volumetricFogPass_->GetSettings(); }
     FogBilateralSettings* GetFogBilateralSettings() const { return volumetricFogBilateralPass_->GetSettings(); }
 
@@ -87,8 +85,6 @@ private:
     std::unique_ptr<FinalCompositePass> compositePass_;
 
     std::unique_ptr<SSAOPass> ssaoPass_;
-
-    std::unique_ptr<SSRPass> ssrPass_;
 
     std::unique_ptr<BilateralBlurPass> horizontalBilateralPass_;
     std::unique_ptr<BilateralBlurPass> verticalBilateralPass_;

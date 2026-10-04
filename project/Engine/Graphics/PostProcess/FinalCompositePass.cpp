@@ -60,8 +60,7 @@ void FinalCompositePass::SetupInputViews(
     D3D12_CPU_DESCRIPTOR_HANDLE dofCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE depthCPU,
     D3D12_CPU_DESCRIPTOR_HANDLE volumetricFogSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV,
-    D3D12_CPU_DESCRIPTOR_HANDLE ssrSRV
+    D3D12_CPU_DESCRIPTOR_HANDLE ssaoSRV
 )
 {
     // 専用ヒープの先頭
@@ -104,10 +103,6 @@ void FinalCompositePass::SetupInputViews(
     // SSAO
     device->CopyDescriptorsSimple(1, destHandle, ssaoSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     destHandle.ptr += descriptorSize; 
-
-    // SSR
-    device->CopyDescriptorsSimple(1, destHandle, ssrSRV, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    destHandle.ptr += descriptorSize;
 }
 
 void FinalCompositePass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,

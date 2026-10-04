@@ -61,10 +61,6 @@ void PostEffectManager::Initialize(
     verticalBilateralPass_->Initialize(engine, halfW, halfH, psoManager);
     verticalBilateralPass_->GetSettings()->direction = { 0.0f, 1.0f };
 
-    // SSR初期化
-    ssrPass_ = std::make_unique<SSRPass>();
-    ssrPass_->Initialize(engine, width, height, psoManager);
-
     // VolumetricFog初期化
     uint32_t volFogW = Math::MyMax(1u, width / 2);
     uint32_t volFogH = Math::MyMax(1u, height / 2);
@@ -195,12 +191,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         verticalBilateralPass_->Execute(cmdList, context_, horizontalBilateralPass_->GetSRVHandleGPU());
     }
 
-    // SSR
-    //{
-    //    cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("PostProcess"));
-    //    ssrPass_->Execute(cmdList, context_);
-    //}
-
     // Bloom
     {
         brightPass_->Execute(cmdList, context_);
@@ -240,8 +230,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
             GetCPUHandle(dofPass_->GetSRVIndex()),
             GetCPUHandle(sceneDepthIndex_),
             GetCPUHandle(volumetricFogBilateralPass_->GetSRVIndex()),
-            GetCPUHandle(verticalBilateralPass_->GetSRVIndex()), 
-            GetCPUHandle(ssrPass_->GetSRVIndex())
+            GetCPUHandle(verticalBilateralPass_->GetSRVIndex())
         );
 
         compositePass_->Execute(cmdList, context_);

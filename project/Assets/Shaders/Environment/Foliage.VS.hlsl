@@ -38,24 +38,27 @@ float3 RotateVectorByQuat(float3 v, float4 q)
 }
 
 // プロシージャル風変位
-float3 CalculateWindDisplacement(float3 worldPos, float windWeight, float3 basePos)
+float3 CalculateWindDisplacement(float3 basePos, float windWeight)
 {
+    // 草のしなり：高さの2乗（Y^2）に比例させるのが物理的に自然でpow不要（高速）
+    float bendFactor = windWeight * windWeight * gMaterial.windResponse;
+
     float windLen = length(gEnvironmentData.windDirection);
-    float3 windDir = (windLen > kEpsilon)
-        ? float3(gEnvironmentData.windDirection.x / windLen, 0.0f, gEnvironmentData.windDirection.y / windLen)
-        : float3(0.0f, 0.0f, 1.0f);
+    float2 windDir = (windLen > kEpsilon)
+        ? (gEnvironmentData.windDirection / windLen)
+        : float2(0.0f, 1.0f);
 
-    float windSpeed = gEnvironmentData.windSpeed;
-    float phase = dot(basePos.xz, float2(0.1f, 0.1f)) + (gEnvironmentData.windTime * windSpeed);
-    float bentWeight = pow(windWeight, gMaterial.stiffness);
+    // 空間位相（フィールドを風の波が伝わる表現）
+    float spatialPhase = dot(basePos.xz, windDir * 0.15f);
+    float time = gEnvironmentData.windTime * gEnvironmentData.windSpeed;
 
-    float sway = sin(phase) * 0.5f + 0.5f;
-    float flutter = sin(phase * gMaterial.flutterSpeed * PI) * gMaterial.flutterScale;
+    // 主揺れ (Sway) + 細かい揺れ (Flutter)
+    float mainSway = sin(time + spatialPhase);
+    float detailSway = sin(time * gMaterial.flutterSpeed + spatialPhase * 3.0f) * gMaterial.flutterScale;
 
-    float gustPhase = dot(basePos.xz, float2(0.05f, 0.05f)) + (gEnvironmentData.windTime * windSpeed * gEnvironmentData.windTurbulence);
-    float gust = saturate(sin(gustPhase) * 0.5f + 0.5f);
+    float totalSway = (mainSway + detailSway) * bendFactor;
 
-    return windDir * ((sway + flutter * gust) * bentWeight * gMaterial.windResponse);
+    return float3(windDir.x * totalSway, 0.0f, windDir.y * totalSway);
 }
 
 FoliageVSOutput main(FoliageVSInput input)
@@ -69,20 +72,18 @@ FoliageVSOutput main(FoliageVSInput input)
     float4 quat = instance.rotationQuat;
     float3 localPos = input.position.xyz;
 
+    // 頂点の高さ比率
     float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, kEpsilon));
+
+    // ローカル変換（スケール ＆ 回転）
     localPos *= scale;
-
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
-    float3 worldPos = basePos + rotatedPos;
 
-    // 風変位
-    float3 windDisp = CalculateWindDisplacement(worldPos, windWeight, basePos);
+    // 風変位の計算
+    float3 totalDisp = CalculateWindDisplacement(basePos, windWeight);
 
-   // インタラクション変位
-    float3 pushDisp = float3(0.0f, 0.0f, 0.0f);
+    // インタラクション
     float2 interactUV = (basePos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
-
-    // マップ境界の端10%の領域で滑らかにフェードアウトする係数を作成
     float2 edgeFade = smoothstep(0.0f, 0.1f, interactUV) * smoothstep(1.0f, 0.9f, interactUV);
     float edgeMultiplier = edgeFade.x * edgeFade.y;
 
@@ -90,49 +91,37 @@ FoliageVSOutput main(FoliageVSInput input)
     {
         float4 interactData = gInteractionMap.SampleLevel(gLinearClampSampler, interactUV, 0);
 
-        float2 pushDirXZ = (interactData.rg * 2.0f) - 1.0f;
+        // 押し出し方向 
+        float2 pushDirXZ = interactData.rg * 2.0f - 1.0f;
         float dirLen = length(pushDirXZ);
         pushDirXZ = (dirLen > kEpsilon) ? (pushDirXZ / dirLen) : float2(0.0f, 0.0f);
 
-        float instantPower = interactData.b;
-        float rawTrailPower = interactData.a * gMaterial.trailFlattenWeight;
+        // 押し出し強度の合成
+        float pushPower = max(interactData.b, interactData.a * gMaterial.trailFlattenWeight);
+        float smoothPower = smoothstep(0.0f, 1.0f, pushPower) * edgeMultiplier;
 
-        // 減衰カーブ補正
-        float combinedPower = max(instantPower, rawTrailPower);
-        float smoothPower = smoothstep(0.0f, 1.0f, combinedPower);
-        smoothPower = pow(smoothPower, max(gMaterial.recoverySpeed, 0.1f));
+        // 水平方向への押し倒し量
+        float2 pushOffset = pushDirXZ * (smoothPower * gMaterial.interactStrength * windWeight);
 
-        // エッジ係数を掛けて境界付近で滑らかに元の状態（0）へ戻す
-        smoothPower *= edgeMultiplier;
-
-        // 倒れ込み変位
-        float3 flattenDir = normalize(float3(pushDirXZ.x, -gMaterial.flattenFactor, pushDirXZ.y));
-        float3 flattenDisp = flattenDir * smoothPower * gMaterial.interactStrength * windWeight;
-
-        // 復元時の減衰バネ振動
-        float springPhase = (gEnvironmentData.windTime * 6.0f) + dot(basePos.xz, float2(12.9898f, 78.233f));
-        float springEnvelope = 4.0f * smoothPower * (1.0f - smoothPower);
-        float wave = sin(springPhase);
-
-        float3 springDir = float3(-pushDirXZ.x * wave, abs(wave) * 0.4f, -pushDirXZ.y * wave);
-        float3 springDisp = springDir * springEnvelope * gMaterial.springElasticity * gMaterial.interactStrength * windWeight;
-
-        pushDisp = flattenDisp + springDisp;
-
-        // 倒れ込み中の風揺れ減衰 (フェードアウト時は自然な風揺れに戻る)
-        windDisp *= saturate(1.0f - smoothPower * 1.2f);
+        // 倒れ込み中は風の影響を弱める
+        totalDisp *= saturate(1.0f - smoothPower * 1.2f);
+        totalDisp.xz += pushOffset;
     }
-
-    // 最終座標計算と変形歪み（座屈）の補正
-    worldPos += (windDisp + pushDisp);
-
-    float currentLen = length(worldPos - basePos);
+    
+    // 水平方向に傾いた分だけ、三平方の定理で正確にY座標を下げる
     float originalLen = length(rotatedPos);
-    if (currentLen > kEpsilon)
-    {
-        worldPos = basePos + (worldPos - basePos) * (originalLen / currentLen);
-    }
+    float3 targetLocalXZ = rotatedPos + totalDisp;
+    float distXZSq = dot(targetLocalXZ.xz, targetLocalXZ.xz);
 
+    float3 finalLocalPos;
+    finalLocalPos.xz = targetLocalXZ.xz;
+    
+    // 元の長さを保つように高さYを補正
+    finalLocalPos.y = sqrt(max(0.0f, originalLen * originalLen - distXZSq));
+    if (rotatedPos.y < 0.0f)
+        finalLocalPos.y = -finalLocalPos.y; 
+
+    float3 worldPos = basePos + finalLocalPos;
     output.worldPosition = worldPos;
 
     // 法線・接線の回転
@@ -141,7 +130,7 @@ FoliageVSOutput main(FoliageVSInput input)
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
-    // 座標変換 & TAA用MotionVector
+    // 座標変換 & TAA用 MotionVector
     float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
     float4 prevClipPos = mul(float4(basePos + rotatedPos, 1.0f), gFrameData.prevViewProj);
 

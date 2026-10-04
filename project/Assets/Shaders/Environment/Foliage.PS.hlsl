@@ -38,69 +38,57 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
 
+    // アルベド ＆ アルファテスト 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
-    clip(albedoAlpha.a - 0.05f);
-
     float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
-    
-    float currentRoughness = clamp(gMaterial.roughness, 0.3f, 1.0f);
 
-    float faceSign = isFrontFace ? 1.0f : -1.0f;
-    float3 N = normalize(input.normal * faceSign);
-    float3 T = normalize(input.tangent * faceSign);
+    // アルファの輪郭を滑らかに抜く処理
+    float alpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
+    clip(alpha - 0.5f);
+
+    // 法線計算 
+    float3 N = normalize(input.normal);
+    float3 T = normalize(input.tangent);
     float3 B = cross(N, T);
     float3x3 TBN = float3x3(T, B, N);
-    
+
     float3 tangentNormal = gNormalTex.Sample(gAnisoSampler, input.texcoord).xyz * 2.0f - 1.0f;
     float3 worldNormal = normalize(mul(tangentNormal, TBN));
 
+    // 根元ほど暗くして接地感を出す
+    float rootAO = saturate(input.texcoord.y);
+    float groundAO = lerp(0.2f, 1.0f, rootAO);
+
+    // ベクトル ＆ 影の計算
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
-    float3 toEye = cameraDiff / max(viewDepth, kEpsilon);
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    
-    // 影の計算
+    float3 L = normalize(-gDirectionalLights[0].direction);
+
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, worldNormal, viewDepth);
-    float3 attenuatedLight = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * shadowFactor;
+    float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * shadowFactor;
 
-    // Wrap Diffuse (葉の光の回り込み)
-    float wrap = 0.3f;
-    float NdotL = saturate((dot(worldNormal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
-    float3 diffuse = albedo * attenuatedLight * NdotL;
-
-    // 透過光
-    float backLight = saturate(dot(-worldNormal, lightDir));
-    float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
-    float3 transmission = (albedo * 1.5f) * attenuatedLight * sssIntensity;
-
-    // スペキュラ (GGX近似)
-    float3 halfVector = normalize(lightDir + toEye);
-    float NdotH = saturate(dot(worldNormal, halfVector));
-    float NdotV = saturate(dot(worldNormal, toEye));
+    // ディフューズ ＆ 透過光 
+    float NdotL = dot(worldNormal, L);
     
-    float alpha = currentRoughness * currentRoughness;
-    float alpha2 = alpha * alpha;
-    float denom = (NdotH * NdotH * (alpha2 - 1.0f) + 1.0f);
-    float D = alpha2 / (PI * denom * denom + kEpsilon);
+    // 表面の直接光
+    float directDiffuseFactor = saturate(NdotL);
+    float3 directDiffuse = albedo * lightColor * directDiffuseFactor;
 
-    float3 F0 = float3(0.04f, 0.04f, 0.04f);
-    float3 F = F0 + (1.0f - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
-    float3 directSpecular = (D * F) * attenuatedLight * NdotL;
+    // 裏面の透過光
+    float backLight = saturate(-NdotL);
+    float3 transmission = albedo * lightColor * (backLight * gMaterial.sssStrength);
 
     // 環境光 
-    float skyLight = saturate(worldNormal.y * 0.5f + 0.5f);
-    float3 ambientDiffuse = albedo * gEnvironmentData.skyColor.rgb * skyLight * 0.8f;
+    float skyFactor = worldNormal.y * 0.5f + 0.5f;
+    float3 skyLighting = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyFactor);
+    float3 ambientDiffuse = albedo * skyLighting * groundAO;
 
-    float3 F_env = F0 + (max(1.0f - currentRoughness, F0) - F0) * Pow5(1.0f - NdotV);
-    float3 ambientSpecular = gEnvironmentData.skyColor.rgb * F_env * skyLight * 0.1f;
+    // 最終カラー合成
+    float3 finalColor = (directDiffuse + transmission) * groundAO + ambientDiffuse;
 
-    float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
-
-    float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
-    
-    output.color = float4(finalColor, saturate(outAlpha));
+    output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(0.0f, currentRoughness, 0.0f, 1.0f);
+    output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
     output.velocity = input.velocity;
 
     return output;
@@ -115,7 +103,7 @@ float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
     float NdotL = dot(normal, lightDir);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // Wrap Diffuse の係数 (-0.3) と一致させることで、光の回り込み部分が影で潰れないようにする
+    // 光の回り込み部分が影で潰れないように
     if (NdotL <= -0.3f)
         return minShadow;
 

@@ -33,39 +33,6 @@
             ]
         },
         "blendMode": 2,
-        "collisionModule": {
-            "bounce": 0.5,
-            "dampen": 0.0,
-            "enabled": false,
-            "friction": 0.0,
-            "lifeLoss": 0.0,
-            "plane": {
-                "normal": [
-                    0.0,
-                    1.0,
-                    0.0
-                ],
-                "point": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": 0,
-            "worldObj": {
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    2.0,
-                    2.0,
-                    2.0
-                ],
-                "shape": 0
-            }
-        },
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4294967040,
@@ -74,7 +41,7 @@
             "startColor": 4294967295,
             "startColor2": 4294967295
         },
-        "intensity": 1.0,
+        "intensity": 3.5,
         "noiseModule": {
             "enabled": false,
             "frequency": 0.5400000214576721,
@@ -159,8 +126,8 @@
             "emissiveIntensity": 5.0,
             "enabled": true,
             "endColor": [
-                0.0,
-                0.3291141986846924,
+                0.4092826843261719,
+                0.6036962866783142,
                 1.0,
                 1.0
             ],
@@ -177,9 +144,9 @@
                 0.0
             ],
             "startColor": [
-                0.8860759735107422,
                 1.0,
-                0.0,
+                0.9893713593482971,
+                0.16033756732940674,
                 1.0
             ],
             "tailWidthScale": 0.4000000059604645,
