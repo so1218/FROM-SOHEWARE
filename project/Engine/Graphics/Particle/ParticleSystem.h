@@ -34,6 +34,7 @@ public:
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }
     void Clear();
+    std::vector<std::string> GetPresetNames() const;
 
 public:
     bool ShouldSkipDraw(const ParticleState& particle) const;

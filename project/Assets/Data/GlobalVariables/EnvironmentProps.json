@@ -2114,7 +2114,7 @@
             "Model_UsePuddle": 0,
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
-            "ParticleName": "fire",
+            "ParticleName": "bonfire",
             "ParticleName2": "bonfireSmoke",
             "Position": [
                 16.65053939819336,
@@ -2703,7 +2703,7 @@
             "Model_UsePuddle": 0,
             "Model_UseTriplanar": 0,
             "Model_Wetness": 0.5,
-            "ParticleName": "fire",
+            "ParticleName": "bonfire",
             "ParticleName2": "bonfireSmoke",
             "Position": [
                 31.479999542236328,

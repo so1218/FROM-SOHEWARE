@@ -361,6 +361,9 @@ void EnvironmentProp::DebugDraw()
     // -------------------------------------------------------------
     if (ImGui::TreeNodeEx("パーティクルエミッター", ImGuiTreeNodeFlags_DefaultOpen))
     {
+        // 登録済みパーティクルプリセット一覧を取得
+        std::vector<std::string> presetNames = engine_->GetParticleSystem()->GetPresetNames();
+
         auto drawParticleUI = [&](
             const char* sectionTitle,
             bool& hasPart,
@@ -381,25 +384,9 @@ void EnvironmentProp::DebugDraw()
                 {
                     ImGui::Indent();
 
-                    bool changedFollow = binder_->Draw(bindFollow, "トランスフォーム追従");
-
-                    char nameBuf[128];
-                    strncpy_s(nameBuf, sizeof(nameBuf), partName.c_str(), _TRUNCATE);
-
-                    std::string inputLabel = "アセット名##" + std::string(idSuffix);
-                    std::string btnLabel = "再読み込み##" + std::string(idSuffix);
-
-                    ImGui::SetNextItemWidth(180.0f);
-                    ImGui::InputText(inputLabel.c_str(), nameBuf, sizeof(nameBuf));
-
-                    ImGui::SameLine();
-                    bool applyRequested = ImGui::Button(btnLabel.c_str());
-
-                    if (ImGui::IsItemDeactivatedAfterEdit() || applyRequested)
+                    // トランスフォーム追従の切り替え
+                    if (binder_->Draw(bindFollow, "トランスフォーム追従"))
                     {
-                        partName = nameBuf;
-                        FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
-
                         if (activeEmit)
                         {
                             activeEmit->Destroy();
@@ -407,14 +394,38 @@ void EnvironmentProp::DebugDraw()
                         }
                         ApplySettings();
                     }
-                    else if (changedFollow)
+
+                    // パーティクル選択 
+                    std::string comboLabel = "アセット名##" + std::string(idSuffix);
+                    ImGui::SetNextItemWidth(200.0f);
+
+                    if (ImGui::BeginCombo(comboLabel.c_str(), partName.c_str()))
                     {
-                        if (activeEmit)
+                        for (const auto& preset : presetNames)
                         {
-                            activeEmit->Destroy();
-                            activeEmit = nullptr;
+                            bool isSelected = (partName == preset);
+
+                            if (ImGui::Selectable(preset.c_str(), isSelected))
+                            {
+                                // パーティクル名が変更されたら適用
+                                partName = preset;
+                                FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
+
+                                // 古いエミッターを破棄して新しいエミッターをリロード
+                                if (activeEmit)
+                                {
+                                    activeEmit->Destroy();
+                                    activeEmit = nullptr;
+                                }
+                                ApplySettings();
+                            }
+
+                            if (isSelected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
                         }
-                        ApplySettings();
+                        ImGui::EndCombo();
                     }
 
                     ImGui::Unindent();

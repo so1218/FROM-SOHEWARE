@@ -539,6 +539,17 @@ void ParticleSystem::Clear()
     namedEmitters_.clear();
 }
 
+std::vector<std::string> ParticleSystem::GetPresetNames() const
+{
+    std::vector<std::string> names;
+    names.reserve(definitions_.size());
+    for (const auto& [name, def] : definitions_)
+    {
+        names.push_back(name);
+    }
+    return names;
+}
+
 bool ParticleSystem::ShouldSkipDraw(const ParticleState& particle) const
 {
     const auto& config = particle.config;

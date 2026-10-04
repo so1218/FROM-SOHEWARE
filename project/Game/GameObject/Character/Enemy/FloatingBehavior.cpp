@@ -46,7 +46,7 @@ void FloatingBehavior::Initialize(Enemy* owner)
     // スポットライト要求
     spotLightIndex_ = engine_->GetLightManager()->RequestSpotLight();
 
-    auto auraEmitter = engine_->GetParticleSystem()->CreateEmitter("enemyAura");
+    auto auraEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMove");
     if (auraEmitter)
     {
         auraEmitterPtr_ = auraEmitter.get();
