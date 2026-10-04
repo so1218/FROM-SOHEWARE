@@ -7,6 +7,7 @@
 #include "CollisionConfig.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
+#include "TreeField.h"
 
 using namespace FE;
 
@@ -69,9 +70,16 @@ void PlayerWeapon::Initialize()
         engine_->GetParticleSystem()->AddEmitter(std::move(tracerParticle));
     }
 
+    auto woodHitBulletParticle = engine_->GetParticleSystem()->CreateEmitter("woodHitBullet");
+    if (woodHitBulletParticle)
+    {
+        woodHitBulletEmitterPtr_ = woodHitBulletParticle.get();
+        engine_->GetParticleSystem()->AddEmitter(std::move(woodHitBulletParticle));
+    }
+
     // Binderへ登録
     binder_->BindModel("P365Model", model_.get());
-    binder_->Bind("Muzzle Flash Color", &config_.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
+    binder_->BindColor("Muzzle Flash Color", &config_.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
     binder_->Bind("Muzzle Flash Intensity", &config_.muzzleFlashIntensity, 25.0f, 0.5f, 0.0f, 100.0f);
     binder_->Bind("Muzzle Flash Radius", &config_.muzzleFlashRadius, 8.0f, 0.1f, 0.5f, 30.0f);
     binder_->Bind("Muzzle Flash Duration", &config_.muzzleFlashDuration, 0.05f, 0.005f, 0.01f, 0.2f);
@@ -162,7 +170,8 @@ Vector3 PlayerWeapon::GetMuzzleWorldPosition() const
     return currentHandMatrix_.TransformPoint(config_.muzzleOffset);
 }
 
-bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, CollisionManager* colManager)
+bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, CollisionManager* colManager,
+    TreeField* treeField)
 {
     if (!camera || !colManager) return false;
 
@@ -207,6 +216,26 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
                 enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
                 AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 40);
             }
+        }
+    }
+
+    // 木への Raycast 判定
+    TreeRaycastHit treeHit;
+    if (treeField && treeField->Raycast(rayStart, finalRayDir, config_.maxDistance, &treeHit))
+    {
+        // 敵などよりも手前の木に当たった場合
+        targetPoint = treeHit.point;
+
+        // 木への着弾エフェクトを発生
+        if (woodHitBulletEmitterPtr_)
+        {
+            woodHitBulletEmitterPtr_->SetPosition(treeHit.point);
+
+            // 木の表面の法線の方向へ木屑が飛び散るように回転をセット
+            Quaternion rot = Quaternion::LookRotation(treeHit.normal, { 0.0f, 1.0f, 0.0f });
+            woodHitBulletEmitterPtr_->SetRotation(rot);
+
+            woodHitBulletEmitterPtr_->Play(); 
         }
     }
 

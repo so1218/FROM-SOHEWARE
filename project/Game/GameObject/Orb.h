@@ -12,20 +12,21 @@ public:
     ~Orb() override;
 
     void Initialize() override;
-    void Update() override;
+    void Update(const FE::Vector3& scale, const FE::Vector3& bubbleScale, const FE::Vector4& lightColor, float tiltAngle, float rotationSpeed);
     void Draw() override;
     void DebugDraw() override;
 
-    void Sleep(); 
+    void Sleep();
     bool IsPicked() const { return isPicked_; }
 
     void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
-
     FE::Model* GetModel() const { return model_.get(); }
+    FE::Model* GetBubbleModel() const { return bubbleModel_.get(); }
 
 private:
-    FE::Engine* engine_;
+    FE::Engine* engine_ = nullptr;
     std::unique_ptr<FE::Model> model_;
+    std::unique_ptr<FE::Model> bubbleModel_;
     std::unique_ptr<FE::Collider> collider_;
     std::unique_ptr<FE::PropertyBinder> binder_;
 
@@ -33,12 +34,13 @@ private:
     FE::ParticleEmitter* hitEmitterPtr_ = nullptr;
 
     int id_;
-    bool isPicked_ = false; // 拾われたかどうかのフラグ
+    bool isPicked_ = false;
 
-    // ポイントライト設定
     int pointLightIndex_ = -1;
-    FE::Vector4 lightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
     float lightIntensity_ = 5.0f;
     float lightRadius_ = 10.0f;
     float lightVolumetricScatteringIntensity_ = 1.0f;
+
+    // 自転用の累積回転角度
+    float rotationAngle_ = 0.0f;
 };

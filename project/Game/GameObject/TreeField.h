@@ -11,6 +11,13 @@ struct TreeCollider
     float radius;
 };
 
+struct TreeRaycastHit
+{
+    FE::Vector3 point;   // 着弾座標
+    FE::Vector3 normal;  // 着弾面の法線（外向きベクトル）
+    float distance;      // 銃口/カメラからの距離
+};
+
 class TreeField : public FE::GameObject
 {
 public:
@@ -24,6 +31,9 @@ public:
     void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
 
     bool ResolveCollision(FE::Vector3& playerPos, float playerRadius) const;
+
+    // レイキャスト判定
+    bool Raycast(const FE::Vector3& rayStart, const FE::Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const;
 
 private:
     void GenerateTrees(); // パラメータに基づいて木をランダム散布生成

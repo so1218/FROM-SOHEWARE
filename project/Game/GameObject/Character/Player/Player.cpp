@@ -325,7 +325,7 @@ void Player::FireWeapon()
 	// レティクルから現在のフォーカス率を取得して射撃に渡す
 	float focusRatio = reticle_->GetFocusRatio();
 
-	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager))
+	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager, treeField_))
 	{
 		if (reticle_)
 		{

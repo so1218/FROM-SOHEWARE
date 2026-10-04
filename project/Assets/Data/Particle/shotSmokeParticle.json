@@ -68,10 +68,10 @@
         },
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 673720320,
+            "endColor": 437918208,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 757935615,
+            "startColor": 538976511,
             "startColor2": 4294967295
         },
         "intensity": 0.30000001192092896,
@@ -137,8 +137,8 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                4.0,
-                4.0,
+                3.0,
+                3.0,
                 0.0
             ],
             "frequency": 1.0,
@@ -192,7 +192,7 @@
             "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 77.0,
+            "angleRange": 41.0,
             "direction": [
                 0.0,
                 1.0,
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 0.5099999904632568
+            "speed": 0.7699999809265137
         },
         "vortexModule": {
             "axis": [

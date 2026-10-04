@@ -15,7 +15,6 @@
 #include "FoliageField.h"
 #include "GameUI.h"
 #include "WaterManager.h"
-#include "AudioPlayer.h"
 
 using namespace FE;
 
@@ -34,7 +33,6 @@ TestSceneHori::TestSceneHori(Engine* engine)
     player_->SetTreeField(treeField_);
     followCamera_->SetTerrain(ground_->GetTerrain());
 	player_->SetFollowCamera(followCamera_.get());
-    bubble_ = objectManager_.Create<Bubble>(engine_);
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
     objectManager_.Create<OrbManager>(engine_, "GameOrb");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");

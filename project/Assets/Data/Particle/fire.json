@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 5.940000057220459
+            "speed": 8.869999885559082
         },
         "vortexModule": {
             "axis": [

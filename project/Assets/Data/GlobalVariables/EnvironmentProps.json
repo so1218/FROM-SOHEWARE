@@ -439,13 +439,13 @@
             "MasterModel_AlbedoMap": "white1x1",
             "MasterModel_AlphaThres": 0.009999999776482582,
             "MasterModel_Color": [
-                0.8392156958580017,
-                0.8392156958580017,
-                0.8392156958580017,
+                0.8987341523170471,
+                0.7662496566772461,
+                0.20098274946212769,
                 1.0
             ],
             "MasterModel_DiffuseRef": 4.0,
-            "MasterModel_DisEnable": 1,
+            "MasterModel_DisEnable": 0,
             "MasterModel_DisThres": 0.0,
             "MasterModel_DissolveTex": "noise_51",
             "MasterModel_EdgeColor": [
@@ -455,7 +455,7 @@
             ],
             "MasterModel_EdgeInten": 1.5,
             "MasterModel_EdgeWidth": 0.08699999749660492,
-            "MasterModel_Emissive": 0.8999999761581421,
+            "MasterModel_Emissive": 1.0,
             "MasterModel_EnvMapInt": 0.05000000074505806,
             "MasterModel_EnvMapTex": "pureSky",
             "MasterModel_HeightMapTex": "white1x1",
@@ -2142,13 +2142,13 @@
             "Behavior": 2,
             "ColliderOffset": [
                 0.0,
-                5.300000190734863,
+                4.159999847412109,
                 -0.7799999713897705
             ],
             "ColliderRadius": 1.0,
             "ColliderSize": [
                 5.079999923706055,
-                5.079999923706055,
+                5.699999809265137,
                 4.869999885559082
             ],
             "ColliderType": 1,
@@ -2165,9 +2165,9 @@
                 0.0,
                 1.0
             ],
-            "LightIntensity": 7.170000076293945,
+            "LightIntensity": 10.5,
             "LightRadius": 21.889999389648438,
-            "LightVolumetricScatteringIntensity": 7.449999809265137,
+            "LightVolumetricScatteringIntensity": 3.0,
             "ModelName": "bonFire",
             "Model_AddShadow": 1,
             "Model_AlbedoMap": "white1x1",
@@ -2707,7 +2707,7 @@
             "ParticleName2": "bonfireSmoke",
             "Position": [
                 31.479999542236328,
-                8.449999809265137,
+                5.71999979019165,
                 -62.43899917602539
             ],
             "Rotation": [

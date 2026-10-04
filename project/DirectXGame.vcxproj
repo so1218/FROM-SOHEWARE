@@ -255,7 +255,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Resources\AnimationManager.cpp" />
     <ClCompile Include="Engine\Resources\ModelManager.cpp" />
     <ClCompile Include="Engine\Resources\TextureManager.cpp" />
-    <ClCompile Include="Game\GameObject\Bubble.cpp" />
     <ClCompile Include="Engine\Framework\GameObject.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\EnemyManager.cpp" />
@@ -460,7 +459,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
-    <ClInclude Include="Game\GameObject\Bubble.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h" />

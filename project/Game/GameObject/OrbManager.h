@@ -15,19 +15,21 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    void AddOrb(); 
+    void AddOrb();
 
 private:
-    FE::Engine* engine_;
+    FE::Engine* engine_ = nullptr;
     std::string managerGroupName_;
     std::vector<std::unique_ptr<Orb>> orbs_;
-    // マテリアルを共有するためだけのマスターモデル
     std::unique_ptr<FE::Model> sharedModel_;
-
+    std::unique_ptr<FE::Model> sharedBubbleModel_;
     std::unique_ptr<FE::PropertyBinder> binder_;
-    int orbCount_ = 0; // JSONに保存される全体のオーブ数
 
-    // 虹色アニメーション用の変数
-    float time_ = 0.0f;
-    float rainbowSpeed_ = 0.5f; // 虹色の遷移スピード
+    int orbCount_ = 0;
+
+    // 共通パラメータ
+    FE::Vector3 sharedScale_ = { 1.0f, 1.0f, 1.0f };
+    FE::Vector4 sharedLightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
+    float tiltAngle_ = 15.0f;       // 傾き角度
+    float rotationSpeed_ = 2.0f;    // Y軸回転スピード
 };

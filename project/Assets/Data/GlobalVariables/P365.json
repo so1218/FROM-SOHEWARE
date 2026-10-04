@@ -4,16 +4,16 @@
         "MaxDistance": 500.0,
         "Muzzle Flash Color": [
             1.0,
-            0.800000011920929,
-            0.30000001192092896,
+            0.33824706077575684,
+            0.11392402648925781,
             1.0
         ],
         "Muzzle Flash Duration": 0.12999999523162842,
-        "Muzzle Flash Intensity": 50.0,
-        "Muzzle Flash Radius": 5.0,
+        "Muzzle Flash Intensity": 12.0,
+        "Muzzle Flash Radius": 5.699999809265137,
         "Muzzle Offset": [
             -2.0,
-            1.4800000190734863,
+            1.2599999904632568,
             0.44999998807907104
         ],
         "P365Model_Mat0_AddShadow": 1,
@@ -124,9 +124,9 @@
         "P365Model_Mat1_AlbedoMap": "white1x1",
         "P365Model_Mat1_AlphaThres": 0.009999999776482582,
         "P365Model_Mat1_Color": [
-            0.6274510025978088,
-            0.6274510025978088,
-            0.6274510025978088,
+            0.28691983222961426,
+            0.28691983222961426,
+            0.28691983222961426,
             1.0
         ],
         "P365Model_Mat1_DiffuseRef": 4.0,
@@ -140,8 +140,8 @@
         ],
         "P365Model_Mat1_EdgeInten": 2.0,
         "P365Model_Mat1_EdgeWidth": 0.05000000074505806,
-        "P365Model_Mat1_Emissive": 3.299999952316284,
-        "P365Model_Mat1_EnvMapInt": 0.25,
+        "P365Model_Mat1_Emissive": 2.0,
+        "P365Model_Mat1_EnvMapInt": 0.47999998927116394,
         "P365Model_Mat1_EnvMapTex": "pureSky",
         "P365Model_Mat1_HeightMapTex": "white1x1",
         "P365Model_Mat1_LightMode": 3,
@@ -191,7 +191,7 @@
         "P365Model_Mat1_RippleSize": 0.4000000059604645,
         "P365Model_Mat1_RippleSpeed": 1.0,
         "P365Model_Mat1_RippleStren": 0.05000000074505806,
-        "P365Model_Mat1_Roughness": 0.28999999165534973,
+        "P365Model_Mat1_Roughness": 0.2199999988079071,
         "P365Model_Mat1_ShadowBias": 0.0005000000237487257,
         "P365Model_Mat1_ShadowDens": 0.800000011920929,
         "P365Model_Mat1_ShadowEnv": 0.0,
@@ -433,9 +433,9 @@
         "P365Model_Mat3_UseTriplanar": 0,
         "P365Model_Mat3_Wetness": 0.5,
         "P365Model_Rot": [
-            3.0,
-            6.300000190734863,
-            4.699999809265137
+            3.069999933242798,
+            6.329999923706055,
+            4.789999961853027
         ],
         "P365Model_Scale": [
             7.0,
@@ -443,9 +443,9 @@
             7.0
         ],
         "P365Model_Trans": [
-            -2.4000000953674316,
-            19.0,
-            2.5999999046325684
+            -2.5,
+            19.100000381469727,
+            2.200000047683716
         ]
     }
 }

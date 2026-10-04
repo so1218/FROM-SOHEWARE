@@ -22,8 +22,6 @@ Vector3 Project(const Vector3 worldPosition,
 // 色変換
 Vector4 Uint32ToColorVector(uint32_t color);
 uint32_t ColorVectorToUint32(const Vector4& color);
-// HSV を RGB に変換
-Vector4 HSVToRGB(float h, float s, float v, float alpha = 1.0f);
 
 // 指定範囲の乱数生成
 float RandomFloat(float min, float max);

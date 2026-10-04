@@ -338,6 +338,68 @@ bool TreeField::ResolveCollision(Vector3& playerPos, float playerRadius) const
     return isHit;
 }
 
+bool TreeField::Raycast(const Vector3& rayStart, const Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const
+{
+    bool hitAny = false;
+    float closestDist = maxDistance;
+    TreeRaycastHit bestHit{};
+
+    for (const auto& tree : colliders_)
+    {
+        // XZ平面上での Ray と木の幹の交差判定
+        Vector2 rayStartXZ = { rayStart.x, rayStart.z };
+        Vector2 rayDirXZ = { rayDir.x, rayDir.z };
+        Vector2 circleCenterXZ = { tree.position.x, tree.position.z };
+
+        Vector2 d = rayDirXZ;
+        Vector2 f = rayStartXZ - circleCenterXZ;
+
+        float a = d.Dot(d);
+        float b = 2.0f * f.Dot(d);
+        float c = f.Dot(f) - (tree.radius * tree.radius);
+
+        float discriminant = b * b - 4.0f * a * c;
+
+        // 判別式が負なら、XZ平面上でレイは円と交差しない
+        if (discriminant < 0.0f) continue;
+
+        discriminant = std::sqrt(discriminant);
+
+        // 交点までの媒介変数 t
+        float t1 = (-b - discriminant) / (2.0f * a);
+
+        if (t1 > 0.0f && t1 < closestDist)
+        {
+            // 3D空間上の着弾予定座標を計算
+            Vector3 hitPoint = rayStart + rayDir * t1;
+
+            // 高さのチェック（木の幹の高さの範囲内にあるか）
+            float treeBottomY = tree.position.y;
+            float treeTopY = tree.position.y + (treeHeight_ * 1.5f); // 木の高さ
+
+            if (hitPoint.y >= treeBottomY && hitPoint.y <= treeTopY)
+            {
+                closestDist = t1;
+                hitAny = true;
+
+                bestHit.point = hitPoint;
+                bestHit.distance = t1;
+
+                // 法線ベクトル
+                Vector3 normalXZ = Vector3(hitPoint.x - tree.position.x, 0.0f, hitPoint.z - tree.position.z);
+                bestHit.normal = normalXZ.LengthSq() > 0.0001f ? normalXZ.Normalize() : Vector3(0.0f, 1.0f, 0.0f);
+            }
+        }
+    }
+
+    if (hitAny && outHit)
+    {
+        *outHit = bestHit;
+    }
+
+    return hitAny;
+}
+
 void TreeField::DebugDraw()
 {
 #ifdef ENABLE_IMGUI

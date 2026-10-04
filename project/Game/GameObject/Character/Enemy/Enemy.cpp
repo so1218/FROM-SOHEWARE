@@ -41,10 +41,10 @@ void Enemy::Initialize()
     collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
     collider_->SetCollisionMask(kCollisionAttributePlayer);
 
-    // 1. Behavior の初期化
+    // Behavior の初期化
     if (behavior_) behavior_->Initialize(this);
 
-    // 2. Behavior から敵固有の初期HPと被弾パーティクルを取得
+    // Behavior から敵固有の初期HPと被弾パーティクルを取得
     if (behavior_)
     {
         hp_ = behavior_->GetInitialHP();
@@ -79,14 +79,14 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
     // 被弾パーティクルの再生
     if (damageParticlePtr_)
     {
-        // 1. 着弾座標をセット
+        // 着弾座標をセット
         damageParticlePtr_->SetPosition(hitPoint);
 
-        // 2. 着弾面の法線ベクトルから回転を作成してセット
+        // 着弾面の法線ベクトルから回転を作成してセット
         Quaternion rot = Quaternion::LookRotation(hitNormal, { 0.0f, 1.0f, 0.0f });
         damageParticlePtr_->SetRotation(rot);
 
-        // 3. 再生（Play 内でタイマーがリセットされるため連続ヒットも安心）
+        // 再生（Play 内でタイマーがリセットされるため連続ヒットも安心）
         damageParticlePtr_->Play();
     }
 

@@ -125,22 +125,22 @@ void FloatingBehavior::OnDeath(Enemy* owner)
 
 	AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
 
-    // 1. スポットライトの安全な返却
+    // スポットライトの安全な返却
     if (spotLightIndex_ != -1)
     {
         engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
         spotLightIndex_ = -1;
     }
 
-    // 2. 死亡時にオーラを停止・破棄する
+    // 死亡時にオーラを停止・破棄
     if (auraEmitterPtr_)
     {
         auraEmitterPtr_->Stop();
-        auraEmitterPtr_->Destroy(); // ParticleEmitter::Destroy()でisDead_ = trueになりシステムから除去される
+        auraEmitterPtr_->Destroy(); 
         auraEmitterPtr_ = nullptr;
     }
 
-    // 3. 死亡時の爆発パーティクルを生成してワンショット再生
+    // 3死亡時の爆発パーティクルを生成してワンショット再生
     if (explosionEmitterPtr_)
     {
         // 敵の死亡位置に爆発を配置
@@ -171,7 +171,7 @@ void FloatingBehavior::DebugDraw(Enemy* owner)
         binder->Draw("SpotColor", "色");
         binder->Draw("SpotIntensity", "ライト輝度");
         binder->Draw("SpotDistance", "届く距離");
-        binder->Draw("SpotAngle", "照射角 (度数)");
+        binder->Draw("SpotAngle", "照射角");
         binder->Draw("SpotVolumetric", "ボリュームフォグ輝度");
         binder->Draw("SpotDirection", "照射方向");
     }

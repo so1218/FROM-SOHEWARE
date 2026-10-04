@@ -8,9 +8,9 @@
                 0.7285158634185791,
                 1.0
             ],
-            "LightIntensity": 7.849999904632568,
-            "LightRadius": 26.889999389648438,
-            "LightVolumetricScatteringIntensity": 1.0,
+            "LightIntensity": 12.680000305175781,
+            "LightRadius": 9.079999923706055,
+            "LightVolumetricScatteringIntensity": 0.5600000023841858,
             "Position": [
                 30.200000762939453,
                 12.300000190734863,
@@ -149,8 +149,8 @@
                 1.0
             ],
             "LightIntensity": 2.7300000190734863,
-            "LightRadius": 26.040000915527344,
-            "LightVolumetricScatteringIntensity": 50.0,
+            "LightRadius": 13.630000114440918,
+            "LightVolumetricScatteringIntensity": 20.0,
             "Position": [
                 -1.409999966621399,
                 6.380000114440918,
@@ -288,9 +288,9 @@
                 1.0,
                 1.0
             ],
-            "LightIntensity": 4.960000038146973,
-            "LightRadius": 15.380000114440918,
-            "LightVolumetricScatteringIntensity": 4.110000133514404,
+            "LightIntensity": 7.739999771118164,
+            "LightRadius": 13.130000114440918,
+            "LightVolumetricScatteringIntensity": 0.7300000190734863,
             "Position": [
                 -49.619998931884766,
                 0.38999998569488525,
@@ -423,14 +423,14 @@
         },
         "Orb_3": {
             "LightColor": [
-                0.3012657165527344,
-                0.19999998807907104,
+                0.9898734092712402,
                 1.0,
+                0.19999998807907104,
                 1.0
             ],
-            "LightIntensity": 30.8799991607666,
-            "LightRadius": 11.239999771118164,
-            "LightVolumetricScatteringIntensity": 50.0,
+            "LightIntensity": 6.369999885559082,
+            "LightRadius": 12.510000228881836,
+            "LightVolumetricScatteringIntensity": 20.0,
             "Position": [
                 4.289999961853027,
                 1.100000023841858,
@@ -438,11 +438,137 @@
             ],
             "Scale": [
                 1.5,
-                1.5,
+                1.0800000429153442,
                 1.5
             ]
         },
         "RainbowSpeed": 0.5099999904632568,
+        "RotationSpeed": 1.5,
+        "SharedBubbleModel_AddShadow": 1,
+        "SharedBubbleModel_AlbedoMap": "white1x1",
+        "SharedBubbleModel_AlphaThres": 0.009999999776482582,
+        "SharedBubbleModel_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_DiffuseRef": 4.0,
+        "SharedBubbleModel_DisEnable": 0,
+        "SharedBubbleModel_DisThres": 0.5,
+        "SharedBubbleModel_DissolveTex": "white1x1",
+        "SharedBubbleModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedBubbleModel_EdgeInten": 2.0,
+        "SharedBubbleModel_EdgeWidth": 0.05000000074505806,
+        "SharedBubbleModel_Emissive": 3.299999952316284,
+        "SharedBubbleModel_EnvMapInt": 0.3700000047683716,
+        "SharedBubbleModel_EnvMapTex": "pureSky",
+        "SharedBubbleModel_HeightMapTex": "white1x1",
+        "SharedBubbleModel_LightMode": 3,
+        "SharedBubbleModel_Lighting": 1,
+        "SharedBubbleModel_Metalness": 1.0,
+        "SharedBubbleModel_NormEnable": 1,
+        "SharedBubbleModel_NormInten": 0.25,
+        "SharedBubbleModel_NormTile": 5.5,
+        "SharedBubbleModel_NormalMapTex": "normal_18",
+        "SharedBubbleModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedBubbleModel_OutlineEnable": 0,
+        "SharedBubbleModel_OutlineWidth": 1.0,
+        "SharedBubbleModel_POMEnable": 0,
+        "SharedBubbleModel_POMHeightScale": 0.05000000074505806,
+        "SharedBubbleModel_POMMaxSteps": 32.0,
+        "SharedBubbleModel_POMMinSteps": 8.0,
+        "SharedBubbleModel_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedBubbleModel_PuddleEmission": 0.0,
+        "SharedBubbleModel_PuddleFalloff": 0.10000000149011612,
+        "SharedBubbleModel_PuddleNoise": "white1x1",
+        "SharedBubbleModel_PuddleScale": 0.10000000149011612,
+        "SharedBubbleModel_PuddleTint": 0.5,
+        "SharedBubbleModel_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_RimEnable": 0,
+        "SharedBubbleModel_RimInten": 1.0,
+        "SharedBubbleModel_RimPower": 3.0,
+        "SharedBubbleModel_RimUseDir": 0,
+        "SharedBubbleModel_RippleEnable": 0,
+        "SharedBubbleModel_RippleFreq": 1.0,
+        "SharedBubbleModel_RippleMap": "white1x1",
+        "SharedBubbleModel_RippleMix": 0.5,
+        "SharedBubbleModel_RippleScale": 2.0,
+        "SharedBubbleModel_RippleSize": 0.4000000059604645,
+        "SharedBubbleModel_RippleSpeed": 1.0,
+        "SharedBubbleModel_RippleStren": 0.05000000074505806,
+        "SharedBubbleModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_Roughness": 0.25999999046325684,
+        "SharedBubbleModel_Scale": [
+            1.7999999523162842,
+            1.7999999523162842,
+            1.7999999523162842
+        ],
+        "SharedBubbleModel_ShadowBias": 0.0005000000237487257,
+        "SharedBubbleModel_ShadowDens": 0.800000011920929,
+        "SharedBubbleModel_ShadowEnv": 0.0,
+        "SharedBubbleModel_ShadowSoft": 0.0,
+        "SharedBubbleModel_Shininess": 50.0,
+        "SharedBubbleModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_ToonRampTex": "toonRamp_01",
+        "SharedBubbleModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_TriScale": 0.10000000149011612,
+        "SharedBubbleModel_TriSharpness": 4.0,
+        "SharedBubbleModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedBubbleModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedBubbleModel_UsePuddle": 0,
+        "SharedBubbleModel_UseTriplanar": 0,
+        "SharedBubbleModel_Wetness": 0.5,
+        "SharedLightColor": [
+            1.0,
+            0.7848101258277893,
+            0.0,
+            1.0
+        ],
         "SharedOrbModel_AddShadow": 1,
         "SharedOrbModel_AlbedoMap": "white1x1",
         "SharedOrbModel_AlphaThres": 0.009999999776482582,
@@ -469,8 +595,216 @@
         "SharedOrbModel_HeightMapTex": "white1x1",
         "SharedOrbModel_LightMode": 3,
         "SharedOrbModel_Lighting": 1,
+        "SharedOrbModel_Mat0_AddShadow": 1,
+        "SharedOrbModel_Mat0_AlbedoMap": "white1x1",
+        "SharedOrbModel_Mat0_AlphaThres": 0.009999999776482582,
+        "SharedOrbModel_Mat0_Color": [
+            1.0,
+            0.9297121167182922,
+            0.8818565607070923,
+            1.0
+        ],
+        "SharedOrbModel_Mat0_DiffuseRef": 4.0,
+        "SharedOrbModel_Mat0_DisEnable": 0,
+        "SharedOrbModel_Mat0_DisThres": 0.5,
+        "SharedOrbModel_Mat0_DissolveTex": "white1x1",
+        "SharedOrbModel_Mat0_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedOrbModel_Mat0_EdgeInten": 2.0,
+        "SharedOrbModel_Mat0_EdgeWidth": 0.05000000074505806,
+        "SharedOrbModel_Mat0_Emissive": 5.0,
+        "SharedOrbModel_Mat0_EnvMapInt": 0.029999999329447746,
+        "SharedOrbModel_Mat0_EnvMapTex": "pureSky",
+        "SharedOrbModel_Mat0_HeightMapTex": "white1x1",
+        "SharedOrbModel_Mat0_LightMode": 3,
+        "SharedOrbModel_Mat0_Lighting": 1,
+        "SharedOrbModel_Mat0_Metalness": 1.0,
+        "SharedOrbModel_Mat0_NormEnable": 0,
+        "SharedOrbModel_Mat0_NormInten": 1.0,
+        "SharedOrbModel_Mat0_NormTile": 1.0,
+        "SharedOrbModel_Mat0_NormalMapTex": "white1x1",
+        "SharedOrbModel_Mat0_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat0_OutlineEnable": 0,
+        "SharedOrbModel_Mat0_OutlineWidth": 1.0,
+        "SharedOrbModel_Mat0_POMEnable": 0,
+        "SharedOrbModel_Mat0_POMHeightScale": 0.05000000074505806,
+        "SharedOrbModel_Mat0_POMMaxSteps": 32.0,
+        "SharedOrbModel_Mat0_POMMinSteps": 8.0,
+        "SharedOrbModel_Mat0_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedOrbModel_Mat0_PuddleEmission": 0.0,
+        "SharedOrbModel_Mat0_PuddleFalloff": 0.10000000149011612,
+        "SharedOrbModel_Mat0_PuddleNoise": "white1x1",
+        "SharedOrbModel_Mat0_PuddleScale": 0.10000000149011612,
+        "SharedOrbModel_Mat0_PuddleTint": 0.5,
+        "SharedOrbModel_Mat0_RimColor": [
+            1.0,
+            0.7016503810882568,
+            0.5864979028701782
+        ],
+        "SharedOrbModel_Mat0_RimEnable": 1,
+        "SharedOrbModel_Mat0_RimInten": 1.0,
+        "SharedOrbModel_Mat0_RimPower": 5.0,
+        "SharedOrbModel_Mat0_RimUseDir": 0,
+        "SharedOrbModel_Mat0_RippleEnable": 0,
+        "SharedOrbModel_Mat0_RippleFreq": 1.0,
+        "SharedOrbModel_Mat0_RippleMap": "white1x1",
+        "SharedOrbModel_Mat0_RippleMix": 0.5,
+        "SharedOrbModel_Mat0_RippleScale": 2.0,
+        "SharedOrbModel_Mat0_RippleSize": 0.4000000059604645,
+        "SharedOrbModel_Mat0_RippleSpeed": 1.0,
+        "SharedOrbModel_Mat0_RippleStren": 0.05000000074505806,
+        "SharedOrbModel_Mat0_Roughness": 0.20000000298023224,
+        "SharedOrbModel_Mat0_ShadowBias": 0.0005000000237487257,
+        "SharedOrbModel_Mat0_ShadowDens": 0.800000011920929,
+        "SharedOrbModel_Mat0_ShadowEnv": 0.0,
+        "SharedOrbModel_Mat0_ShadowSoft": 0.0,
+        "SharedOrbModel_Mat0_Shininess": 50.0,
+        "SharedOrbModel_Mat0_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat0_ToonRampTex": "toonRamp_01",
+        "SharedOrbModel_Mat0_TriScale": 0.10000000149011612,
+        "SharedOrbModel_Mat0_TriSharpness": 4.0,
+        "SharedOrbModel_Mat0_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_Mat0_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat0_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_Mat0_UsePuddle": 0,
+        "SharedOrbModel_Mat0_UseTriplanar": 0,
+        "SharedOrbModel_Mat0_Wetness": 0.5,
+        "SharedOrbModel_Mat1_AddShadow": 1,
+        "SharedOrbModel_Mat1_AlbedoMap": "white1x1",
+        "SharedOrbModel_Mat1_AlphaThres": 0.009999999776482582,
+        "SharedOrbModel_Mat1_Color": [
+            0.8607594966888428,
+            0.7626982927322388,
+            0.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat1_DiffuseRef": 4.0,
+        "SharedOrbModel_Mat1_DisEnable": 0,
+        "SharedOrbModel_Mat1_DisThres": 0.5,
+        "SharedOrbModel_Mat1_DissolveTex": "white1x1",
+        "SharedOrbModel_Mat1_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "SharedOrbModel_Mat1_EdgeInten": 2.0,
+        "SharedOrbModel_Mat1_EdgeWidth": 0.05000000074505806,
+        "SharedOrbModel_Mat1_Emissive": 5.0,
+        "SharedOrbModel_Mat1_EnvMapInt": 0.10999999940395355,
+        "SharedOrbModel_Mat1_EnvMapTex": "pureSky",
+        "SharedOrbModel_Mat1_HeightMapTex": "white1x1",
+        "SharedOrbModel_Mat1_LightMode": 3,
+        "SharedOrbModel_Mat1_Lighting": 1,
+        "SharedOrbModel_Mat1_Metalness": 1.0,
+        "SharedOrbModel_Mat1_NormEnable": 0,
+        "SharedOrbModel_Mat1_NormInten": 1.0,
+        "SharedOrbModel_Mat1_NormTile": 1.0,
+        "SharedOrbModel_Mat1_NormalMapTex": "white1x1",
+        "SharedOrbModel_Mat1_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat1_OutlineEnable": 0,
+        "SharedOrbModel_Mat1_OutlineWidth": 1.0,
+        "SharedOrbModel_Mat1_POMEnable": 0,
+        "SharedOrbModel_Mat1_POMHeightScale": 0.05000000074505806,
+        "SharedOrbModel_Mat1_POMMaxSteps": 32.0,
+        "SharedOrbModel_Mat1_POMMinSteps": 8.0,
+        "SharedOrbModel_Mat1_PuddleColor": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612,
+            0.5
+        ],
+        "SharedOrbModel_Mat1_PuddleEmission": 0.0,
+        "SharedOrbModel_Mat1_PuddleFalloff": 0.10000000149011612,
+        "SharedOrbModel_Mat1_PuddleNoise": "white1x1",
+        "SharedOrbModel_Mat1_PuddleScale": 0.10000000149011612,
+        "SharedOrbModel_Mat1_PuddleTint": 0.5,
+        "SharedOrbModel_Mat1_RimColor": [
+            1.0,
+            0.455696165561676,
+            0.0
+        ],
+        "SharedOrbModel_Mat1_RimEnable": 1,
+        "SharedOrbModel_Mat1_RimInten": 0.800000011920929,
+        "SharedOrbModel_Mat1_RimPower": 5.0,
+        "SharedOrbModel_Mat1_RimUseDir": 0,
+        "SharedOrbModel_Mat1_RippleEnable": 0,
+        "SharedOrbModel_Mat1_RippleFreq": 1.0,
+        "SharedOrbModel_Mat1_RippleMap": "white1x1",
+        "SharedOrbModel_Mat1_RippleMix": 0.5,
+        "SharedOrbModel_Mat1_RippleScale": 2.0,
+        "SharedOrbModel_Mat1_RippleSize": 0.4000000059604645,
+        "SharedOrbModel_Mat1_RippleSpeed": 1.0,
+        "SharedOrbModel_Mat1_RippleStren": 0.05000000074505806,
+        "SharedOrbModel_Mat1_Roughness": 0.23999999463558197,
+        "SharedOrbModel_Mat1_ShadowBias": 0.0005000000237487257,
+        "SharedOrbModel_Mat1_ShadowDens": 0.800000011920929,
+        "SharedOrbModel_Mat1_ShadowEnv": 0.0,
+        "SharedOrbModel_Mat1_ShadowSoft": 0.0,
+        "SharedOrbModel_Mat1_Shininess": 50.0,
+        "SharedOrbModel_Mat1_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat1_ToonRampTex": "toonRamp_01",
+        "SharedOrbModel_Mat1_TriScale": 0.10000000149011612,
+        "SharedOrbModel_Mat1_TriSharpness": 4.0,
+        "SharedOrbModel_Mat1_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_Mat1_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SharedOrbModel_Mat1_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SharedOrbModel_Mat1_UsePuddle": 0,
+        "SharedOrbModel_Mat1_UseTriplanar": 0,
+        "SharedOrbModel_Mat1_Wetness": 0.5,
         "SharedOrbModel_Metalness": 1.0,
-        "SharedOrbModel_NormEnable": 1,
+        "SharedOrbModel_NormEnable": 0,
         "SharedOrbModel_NormInten": 2.680000066757202,
         "SharedOrbModel_NormTile": 1.0,
         "SharedOrbModel_NormalMapTex": "normal_21",
@@ -502,7 +836,7 @@
             1.0,
             1.0
         ],
-        "SharedOrbModel_RimEnable": 1,
+        "SharedOrbModel_RimEnable": 0,
         "SharedOrbModel_RimInten": 10.0,
         "SharedOrbModel_RimPower": 3.200000047683716,
         "SharedOrbModel_RimUseDir": 0,
@@ -561,6 +895,16 @@
         ],
         "SharedOrbModel_UsePuddle": 0,
         "SharedOrbModel_UseTriplanar": 0,
-        "SharedOrbModel_Wetness": 0.5
+        "SharedOrbModel_Wetness": 0.5,
+        "SharedScale": [
+            1.5,
+            0.800000011920929,
+            1.5
+        ],
+        "TiltAngle": 29.5,
+        "fresnelExponent": 5.0,
+        "rainbowIntensity": 8.5,
+        "wobbleAmplitude": 0.019999999552965164,
+        "wobbleSpeed": 6.0
     }
 }

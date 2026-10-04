@@ -4,7 +4,6 @@
 #include "FollowCamera.h"
 #include "CameraRail.h"
 #include "ParticleEmitter.h"
-#include "Bubble.h"
 #include "Ground.h"
 #include "GrassField.h"
 #include "TreeField.h"
@@ -23,7 +22,6 @@ public:
 private:
     // メンバー変数
     Player* player_ = nullptr;
-    Bubble* bubble_ = nullptr;
     Ground* ground_ = nullptr;
     GrassField* grassField_ = nullptr;
     TreeField* treeField_ = nullptr;

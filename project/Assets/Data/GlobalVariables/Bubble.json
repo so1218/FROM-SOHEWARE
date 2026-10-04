@@ -78,9 +78,9 @@
         ],
         "bubbleModel_Roughness": 0.25,
         "bubbleModel_Scale": [
-            3.0,
-            3.0,
-            3.0
+            1.7999999523162842,
+            1.7999999523162842,
+            1.7999999523162842
         ],
         "bubbleModel_ShadowBias": 0.008999999612569809,
         "bubbleModel_ShadowDens": 0.5400000214576721,
@@ -95,9 +95,9 @@
         ],
         "bubbleModel_ToonRampTex": "toonRamp_01",
         "bubbleModel_Trans": [
-            -1.0,
-            6.599999904632568,
-            8.800000190734863
+            4.300000190734863,
+            1.2000000476837158,
+            124.5999984741211
         ],
         "bubbleModel_TriScale": 0.10000000149011612,
         "bubbleModel_TriSharpness": 4.0,

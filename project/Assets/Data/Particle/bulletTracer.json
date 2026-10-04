@@ -156,33 +156,33 @@
         "trailModule": {
             "alignment": 0,
             "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 3.5,
+            "emissiveIntensity": 3.9000000953674316,
             "enabled": true,
             "endColor": [
-                0.9957805871963501,
-                0.18391332030296326,
-                0.09243534505367279,
+                0.8101266026496887,
+                0.6128196716308594,
+                0.5366660952568054,
                 0.0
             ],
-            "headWidthScale": 0.550000011920929,
+            "headWidthScale": 0.30000001192092896,
             "jitterFrequency": 10.0,
             "jitterMode": 0,
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
             "jitterStrength": 0.0,
-            "lifetime": 0.11999999731779099,
+            "lifetime": 0.17000000178813934,
             "minVertexDistance": 0.10000000149011612,
             "scrollSpeed": [
                 0.0,
                 0.0
             ],
             "startColor": [
-                1.0,
-                0.15189874172210693,
+                0.9578059315681458,
+                0.727447509765625,
                 0.0,
                 1.0
             ],
-            "tailWidthScale": 0.6100000143051147,
+            "tailWidthScale": 0.6399999856948853,
             "textureMode": 0,
             "textureName": "particle_default",
             "tiling": [
@@ -200,7 +200,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 600.0
+            "speed": 500.0
         },
         "vortexModule": {
             "axis": [

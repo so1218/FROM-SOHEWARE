@@ -5,6 +5,8 @@
 #include "Model.h"
 #include "Collider.h"
 
+class TreeField;
+
 class PlayerWeapon
 {
 public:
@@ -28,7 +30,8 @@ public:
     void Draw();
     void DebugDraw(); 
 
-    bool Fire(FE::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FE::CollisionManager* colManager);
+    bool Fire(FE::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FE::CollisionManager* colManager,
+        TreeField* treeField);
     FE::Vector3 GetMuzzleWorldPosition() const;
 
 private:
@@ -39,6 +42,7 @@ private:
     FE::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
     FE::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
     FE::ParticleEmitter* bulletTracerEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* woodHitBulletEmitterPtr_ = nullptr;
 
     FE::WorldTransform handTransform_;
 

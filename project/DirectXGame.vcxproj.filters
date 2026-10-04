@@ -826,12 +826,6 @@
     <ClInclude Include="Game\Camera\FollowCamera.h">
       <Filter>Game\Camera</Filter>
     </ClInclude>
-    <ClCompile Include="Game\GameObject\Bubble.cpp">
-      <Filter>Game\GameObject</Filter>
-    </ClCompile>
-    <ClInclude Include="Game\GameObject\Bubble.h">
-      <Filter>Game\GameObject</Filter>
-    </ClInclude>
     <ClCompile Include="Game\GameObject\GrassField.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
@@ -926,6 +920,7 @@
     <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateAiming.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerReticle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -977,6 +972,7 @@
     <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateAiming.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerReticle.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />
