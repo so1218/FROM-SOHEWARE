@@ -191,7 +191,7 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
             if (currentHeightMap != sub.heightMapHandle)
             {
                 currentHeightMap = sub.heightMapHandle;
-                cmdList->SetGraphicsRootDescriptorTable(18, env.srvManager->GetSRVHandleGPU(currentHeightMap));
+                cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(currentHeightMap));
             }
 
             // マテリアルの更新
@@ -208,9 +208,7 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
                 cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.materialHandle.toonRampHandle));     
                 cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.materialHandle.dissolveMapHandle));  
                 cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.materialHandle.normalMapHandle));    
-                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.materialHandle.rippleTextureHandle));
-                cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(sub.materialHandle.puddleNoiseHandle));  
-                cmdList->SetGraphicsRootDescriptorTable(17, env.srvManager->GetSRVHandleGPU(sub.materialHandle.heightMapHandle));     
+                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.materialHandle.rippleTextureHandle)); 
             }
 
             instanceStart = sub.instanceIndex;

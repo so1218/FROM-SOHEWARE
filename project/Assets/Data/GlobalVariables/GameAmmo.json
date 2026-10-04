@@ -398,7 +398,7 @@
         "TiltAngle": 30.0,
         "fresnelExponent": 5.0,
         "rainbowIntensity": 8.5,
-        "wobbleAmplitude": 0.019999999552965164,
+        "wobbleAmplitude": 0.029999999329447746,
         "wobbleSpeed": 6.0
     }
 }

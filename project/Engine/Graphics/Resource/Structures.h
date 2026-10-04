@@ -62,22 +62,18 @@ struct MaterialHandle
 
     std::string textureName = "white1x1";      
     std::string envMapName = "pureSky";  
-    std::string normalMapName = "white1x1";      
-    std::string heightMapName = "white1x1";      
+    std::string normalMapName = "white1x1";       
     std::string dissolveMapName = "white1x1";      
     std::string toonRampName = "toonRamp_01";      
     std::string rippleTextureName = "white1x1";     
-    std::string puddleNoiseName = "white1x1";      
 
     // マテリアルごとのテクスチャハンドル
     uint32_t textureHandle = 0;     
     uint32_t envMapHandle = 0;      
     uint32_t normalMapHandle = 0;  
-    uint32_t heightMapHandle = 0;
     uint32_t dissolveMapHandle = 0; 
     uint32_t toonRampHandle = 0;    
     uint32_t rippleTextureHandle = 0;
-    uint32_t puddleNoiseHandle = 0;
 
     // エディタ編集用UVデータ
     WorldTransform uvTransformData;

@@ -130,14 +130,6 @@ void Model::SetRippleTexture(const std::string& textureName)
     for (auto& mat : materials_) mat.rippleTextureHandle = handle;
 }
 
-void Model::SetPuddleNoiseTexture(const std::string& textureName)
-{
-    MakeMaterialUnique();
-
-    uint32_t handle = TextureManager::GetInstance().Get(textureName);
-    for (auto& mat : materials_) mat.puddleNoiseHandle = handle;
-}
-
 void Model::CopyMaterialsFrom(const Model* sourceModel)
 {
     if (!sourceModel) return;
@@ -178,8 +170,6 @@ void Model::CopyMaterialsFrom(const Model* sourceModel)
             myHandle->dissolveMapHandle = sourceHandle->dissolveMapHandle;
             myHandle->toonRampName = sourceHandle->toonRampName;
             myHandle->toonRampHandle = sourceHandle->toonRampHandle;
-            myHandle->puddleNoiseName = sourceHandle->puddleNoiseName;
-            myHandle->puddleNoiseHandle = sourceHandle->puddleNoiseHandle;
             myHandle->rippleTextureName = sourceHandle->rippleTextureName;
             myHandle->rippleTextureHandle = sourceHandle->rippleTextureHandle;
         }
@@ -226,12 +216,8 @@ void Model::MakeMaterialUnique()
         newMat.dissolveMapHandle = oldMat.dissolveMapHandle;
         newMat.normalMapName = oldMat.normalMapName;
         newMat.normalMapHandle = oldMat.normalMapHandle;
-        newMat.heightMapName = oldMat.heightMapName;
-        newMat.heightMapHandle = oldMat.heightMapHandle;
         newMat.rippleTextureName = oldMat.rippleTextureName;
         newMat.rippleTextureHandle = oldMat.rippleTextureHandle;
-        newMat.puddleNoiseName = oldMat.puddleNoiseName;
-        newMat.puddleNoiseHandle = oldMat.puddleNoiseHandle;
 
         // UVトランスフォームの設定値を引き継ぐ
         newMat.uvTransformData = oldMat.uvTransformData;

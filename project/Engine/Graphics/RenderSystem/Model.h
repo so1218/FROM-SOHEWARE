@@ -40,7 +40,6 @@ public:
     void SetDissolveTexture(const std::string& textureName);
     void SetNormalMapTexture(const std::string& textureName);
     void SetRippleTexture(const std::string& textureName);
-    void SetPuddleNoiseTexture(const std::string& textureName);
 
     // 別のモデルからマテリアル情報をすべてコピーする関数
     void CopyMaterialsFrom(const Model* sourceModel);

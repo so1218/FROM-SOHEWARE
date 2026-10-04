@@ -363,21 +363,14 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "AlbedoMap", handle->textureName);
         gv->SetValue(groupPath, matPrefix + "EnvMapTex", handle->envMapName);
         gv->SetValue(groupPath, matPrefix + "NormalMapTex", handle->normalMapName);
-        gv->SetValue(groupPath, matPrefix + "HeightMapTex", handle->heightMapName);
         gv->SetValue(groupPath, matPrefix + "DissolveTex", handle->dissolveMapName);
         gv->SetValue(groupPath, matPrefix + "ToonRampTex", handle->toonRampName);
         gv->SetValue(groupPath, matPrefix + "RippleMap", handle->rippleTextureName);
-        gv->SetValue(groupPath, matPrefix + "PuddleNoise", handle->puddleNoiseName);
 
         // UVトランスフォーム
         gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation_);
         gv->SetValue(groupPath, matPrefix + "UVRot", handle->uvTransformData.rotation_);
         gv->SetValue(groupPath, matPrefix + "UVScale", handle->uvTransformData.scale_);
-
-        // トライプランナー設定
-        gv->SetValue(groupPath, matPrefix + "UseTriplanar", matData->useTriplanar);
-        gv->SetValue(groupPath, matPrefix + "TriScale", matData->triplanarScale);
-        gv->SetValue(groupPath, matPrefix + "TriSharpness", matData->triplanarBlendSharpness);
 
         // 基本色・ライティング設定
         gv->SetValue(groupPath, matPrefix + "Color", matData->color);
@@ -420,12 +413,6 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "NormTile", matData->normalTiling);
         gv->SetValue(groupPath, matPrefix + "NormInten", matData->normalIntensity);
 
-        // POMハイトマップ設定
-        gv->SetValue(groupPath, matPrefix + "POMEnable", matData->enablePOM);
-        gv->SetValue(groupPath, matPrefix + "POMHeightScale", matData->pomHeightScale);
-        gv->SetValue(groupPath, matPrefix + "POMMinSteps", matData->pomMinSteps);
-        gv->SetValue(groupPath, matPrefix + "pomMaxSteps", matData->pomMaxSteps);
-
         // アウトライン設定
         gv->SetValue(groupPath, matPrefix + "OutlineEnable", matData->enableOutline);
         gv->SetValue(groupPath, matPrefix + "OutlineWidth", matData->outlineWidth);
@@ -433,19 +420,13 @@ void EnvironmentProp::SyncMaterialsToJSON()
 
         // リップル・水たまり設定
         gv->SetValue(groupPath, matPrefix + "RippleEnable", matData->enableRipple);
-        gv->SetValue(groupPath, matPrefix + "UsePuddle", matData->usePuddle);
         gv->SetValue(groupPath, matPrefix + "Wetness", matData->wetness);
-        gv->SetValue(groupPath, matPrefix + "PuddleEmission", matData->puddleEmission);
         gv->SetValue(groupPath, matPrefix + "RippleScale", matData->rippleScale);
         gv->SetValue(groupPath, matPrefix + "RippleSpeed", matData->rippleSpeed);
         gv->SetValue(groupPath, matPrefix + "RippleStren", matData->rippleStrength);
-        gv->SetValue(groupPath, matPrefix + "PuddleScale", matData->puddleScale);
-        gv->SetValue(groupPath, matPrefix + "PuddleFalloff", matData->puddleFalloff);
         gv->SetValue(groupPath, matPrefix + "RippleSize", matData->rippleSize);
         gv->SetValue(groupPath, matPrefix + "RippleFreq", matData->rippleFrequency);
         gv->SetValue(groupPath, matPrefix + "RippleMix", matData->rippleLayerMix);
-        gv->SetValue(groupPath, matPrefix + "PuddleColor", matData->puddleColor);
-        gv->SetValue(groupPath, matPrefix + "PuddleTint", matData->puddleTint);
     }
 }
 

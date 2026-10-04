@@ -54,10 +54,6 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->enableNormalMap = false;
     handle.materialData->normalTiling = 1.0f;
     handle.materialData->normalIntensity = 1.0f;
-    handle.materialData->enablePOM = false;     
-    handle.materialData->pomHeightScale = 0.05f;
-    handle.materialData->pomMinSteps = 8.0f;   
-    handle.materialData->pomMaxSteps = 32.0f;
     handle.materialData->roughness = 0.5f;
     handle.materialData->metalness = 0.0f;
     handle.materialData->enableOutline = false;
@@ -68,17 +64,9 @@ MaterialHandle MaterialManager::CreateMaterial(ID3D12Device* device)
     handle.materialData->rippleScale = 2.0f;      
     handle.materialData->rippleSpeed = 1.0f;      
     handle.materialData->rippleStrength = 0.05f;  
-    handle.materialData->puddleScale = 0.1f;      
-    handle.materialData->puddleFalloff = 0.1f;    
-    handle.materialData->puddleEmission = 0.1f;      
-    handle.materialData->puddleColor = { 0.1f, 0.1f, 0.1f, 0.5f };
-    handle.materialData->usePuddle = 0;
     handle.materialData->rippleSize = 0.4f;
     handle.materialData->rippleFrequency = 1.0f;
     handle.materialData->rippleLayerMix = 0.5f;
-    handle.materialData->useTriplanar = 0;                
-    handle.materialData->triplanarScale = 0.1f;           
-    handle.materialData->triplanarBlendSharpness = 4.0f;
 
     materials_.push_back(handle);
     return handle;

@@ -173,34 +173,17 @@ struct MaterialData
     float rippleScale;
     float rippleSpeed;
     float rippleStrength;
-    float puddleScale;
-    
-    float puddleFalloff;
-    float puddleEmission;
-    int usePuddle;
     float rippleSize;
-    
-    float4 puddleColor;
     
     float rippleFrequency;
     float rippleLayerMix;
-    float puddleTint;
     int isBubble;
-    
     float wobbleSpeed;
+    
     float wobbleAmplitude;
     float rainbowIntensity;
     float fresnelExponent;
-   
-    int useTriplanar;
-    float triplanarScale;
-    float triplanarBlendSharpness;
     float shadowNormalBias;
-    
-    int enablePOM;
-    float pomHeightScale;
-    float pomMinSteps; 
-    float pomMaxSteps; 
 };
 
 struct GlobalEnvironmentData

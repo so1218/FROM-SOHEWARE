@@ -2,12 +2,10 @@
 #include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-
 cbuffer DirectionalLights : register(b1)
 {
     DirectionalLight gDirectionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<InstanceOffset> gInstanceOffset : register(b7);
 

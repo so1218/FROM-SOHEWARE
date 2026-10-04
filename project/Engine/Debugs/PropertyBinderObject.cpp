@@ -564,8 +564,6 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindTexture(prefix + "DissolveTex", &handle->dissolveMapName, &handle->dissolveMapHandle, "white1x1", TextureType::Noise);
     BindTexture(prefix + "ToonRampTex", &handle->toonRampName, &handle->toonRampHandle, "toonRamp_01", TextureType::Toon);
     BindTexture(prefix + "RippleMap", &handle->rippleTextureName, &handle->rippleTextureHandle, "normal_00", TextureType::Normal);
-    BindTexture(prefix + "PuddleNoise", &handle->puddleNoiseName, &handle->puddleNoiseHandle, "noise_00", TextureType::Noise);
-    BindTexture(prefix + "HeightMapTex", &handle->heightMapName, &handle->heightMapHandle, "white1x1", TextureType::Height);
 
     auto onUVChange = [handle]()
         {
@@ -582,10 +580,6 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     Bind(prefix + "UVTrans", &handle->uvTransformData.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
     Bind(prefix + "UVRot", &handle->uvTransformData.rotation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
     Bind(prefix + "UVScale", &handle->uvTransformData.scale_, { 1.0f, 1.0f, 1.0f }, 0.01f, onUVChange);
-
-    BindBool(prefix + "UseTriplanar", &matData->useTriplanar, false);
-    Bind(prefix + "TriScale", &matData->triplanarScale, 0.1f, 0.005f, 0.001f, 10.0f);
-    Bind(prefix + "TriSharpness", &matData->triplanarBlendSharpness, 4.0f, 0.1f, 1.0f, 16.0f);
 
     BindColor(prefix + "Color", &matData->color, { 1.0f, 1.0f, 1.0f, 1.0f });
     BindBool(prefix + "Lighting", &matData->enableLighting, true);
@@ -622,33 +616,21 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     Bind(prefix + "NormTile", &matData->normalTiling, 1.0f, 0.1f, 0.1f, 50.0f);
     Bind(prefix + "NormInten", &matData->normalIntensity, 1.0f, 0.01f, 0.0f, 10.0f);
 
-    BindBool(prefix + "POMEnable", &matData->enablePOM, false);
-    Bind(prefix + "POMHeightScale", &matData->pomHeightScale, 0.05f, 0.001f, 0.0f, 0.5f);
-    Bind(prefix + "POMMinSteps", &matData->pomMinSteps, 8.0f, 1.0f, 1.0f, 64.0f);
-    Bind(prefix + "POMMaxSteps", &matData->pomMaxSteps, 32.0f, 1.0f, 1.0f, 128.0f);
-
     BindBool(prefix + "OutlineEnable", &matData->enableOutline, false);
     Bind(prefix + "OutlineWidth", &matData->outlineWidth, 1.0f, 0.1f, 0.0f, 50.0f);
     BindColor(prefix + "OutlineColor", &matData->outlineColor, { 0.0f, 0.0f, 0.0f, 1.0f });
 
     BindBool(prefix + "RippleEnable", &matData->enableRipple, false);
-    BindBool(prefix + "UsePuddle", &matData->usePuddle, false);
 
     Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
-    Bind(prefix + "PuddleEmission", &matData->puddleEmission, 0.0f, 0.1f, 0.0f, 50.0f);
 
     Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
     Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
     Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 5.0f);
 
-    Bind(prefix + "PuddleScale", &matData->puddleScale, 0.1f, 0.01f, 0.001f, 10.0f);
-    Bind(prefix + "PuddleFalloff", &matData->puddleFalloff, 0.1f, 0.005f, 0.001f, 0.5f);
     Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 5.0f);
     Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
     Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
-
-    BindColor(prefix + "PuddleColor", &matData->puddleColor, { 0.1f, 0.1f, 0.1f, 0.5f });
-    Bind(prefix + "PuddleTint", &matData->puddleTint, 0.5f, 0.01f, 0.0f, 1.0f);
 }
 
 template <typename ModelType>
@@ -771,22 +753,6 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     ImGui::Separator();
 
-                    if (ImGui::TreeNodeEx("POMSettings", optFlags, "視差マッピング (POM)"))
-                    {
-                        isChanged |= Draw(matPrefix + "POMEnable", "有効化");
-
-                        if (gv->GetIntValue(groupPath_, matPrefix + "POMEnable") > 0)
-                        {
-                            isChanged |= Draw(matPrefix + "HeightMapTex", "ハイトマップ");
-                            isChanged |= Draw(matPrefix + "POMHeightScale", "高さスケール");
-                            isChanged |= Draw(matPrefix + "POMMinSteps", "最小ステップ数 (正面)");
-                            isChanged |= Draw(matPrefix + "POMMaxSteps", "最大ステップ数 (斜角)");
-                        }
-                        ImGui::TreePop();
-                    }
-
-                    ImGui::Separator();
-
                     if (ImGui::TreeNodeEx("RimLightSettings", optFlags, "リムライト"))
                     {
                         isChanged |= Draw(matPrefix + "RimEnable", "有効化");
@@ -825,7 +791,7 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     ImGui::Separator();
 
-                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "水たまり / 波紋エフェクト"))
+                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "雨の波紋"))
                     {
                         isChanged |= Draw(matPrefix + "RippleEnable", "有効化");
                         if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
@@ -841,19 +807,6 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                             isChanged |= Draw(matPrefix + "RippleSize", "波紋の広がりサイズ");
                             isChanged |= Draw(matPrefix + "RippleFreq", "波紋の発生頻度");
                             isChanged |= Draw(matPrefix + "RippleMix", "波紋のレイヤー合成率");
-
-                            ImGui::Spacing();
-                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "水たまり (Puddle) 設定");
-                            isChanged |= Draw(matPrefix + "UsePuddle", "水たまり形成");
-                            if (gv->GetIntValue(groupPath_, matPrefix + "UsePuddle") > 0)
-                            {
-                                isChanged |= Draw(matPrefix + "PuddleNoise", "分布ノイズマップ");
-                                isChanged |= Draw(matPrefix + "PuddleScale", "ノイズスケール");
-                                isChanged |= Draw(matPrefix + "PuddleFalloff", "エッジの滑らかさ");
-                                isChanged |= Draw(matPrefix + "PuddleColor", "水の色と濁り(Alpha)");
-                                isChanged |= Draw(matPrefix + "PuddleTint", "水の色合い調整");
-                                isChanged |= Draw(matPrefix + "PuddleEmission", "水たまりの発光強度");
-                            }
                         }
                         ImGui::TreePop();
                     }
@@ -862,18 +815,10 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
 
                     if (ImGui::TreeNodeEx("UVSettings", optFlags, "UV トランスフォーム"))
                     {
-                        isChanged |= Draw(matPrefix + "UseTriplanar", "トライプラナー有効");
-                        if (gv->GetIntValue(groupPath_, matPrefix + "UseTriplanar") > 0)
-                        {
-                            isChanged |= Draw(matPrefix + "TriScale", "テクスチャスケール");
-                            isChanged |= Draw(matPrefix + "TriSharpness", "ブレンドのシャープさ");
-                        }
-                        else
-                        {
-                            isChanged |= Draw(matPrefix + "UVTrans", "UV 位置");
-                            isChanged |= Draw(matPrefix + "UVRot", "UV 回転");
-                            isChanged |= Draw(matPrefix + "UVScale", "UV スケール");
-                        }
+                        Draw(matPrefix + "UVTrans", "UV 位置");
+                        Draw(matPrefix + "UVRot", "UV 回転");
+                        Draw(matPrefix + "UVScale", "UV スケール");
+                        
                         ImGui::TreePop();
                     }
 

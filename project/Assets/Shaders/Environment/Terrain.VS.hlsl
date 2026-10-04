@@ -52,7 +52,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     float hD = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, offset), 0).r;
     float hU = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, -offset), 0).r;
     
-    // サンプリング後に1度だけ maxHeight を乗算し、演算命令数を削減
+    // サンプリング後に1度だけ maxHeight を乗算
     float dx = (hL - hR) * gTerrainSettings.maxHeight;
     float dz = (hD - hU) * gTerrainSettings.maxHeight;
     

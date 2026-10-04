@@ -115,7 +115,6 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     if (pathStr.find("/ui/") != std::string::npos)        return TextureType::UI;
     if (pathStr.find("/environments/") != std::string::npos) return TextureType::CubeMap;
     if (pathStr.find("/normal/") != std::string::npos)    return TextureType::Normal;
-    if (pathStr.find("/height/") != std::string::npos)    return TextureType::Height;
     if (pathStr.find("/ramps/") != std::string::npos)     return TextureType::Toon;
     if (pathStr.find("/noise/") != std::string::npos)     return TextureType::Noise;
     if (pathStr.find("/luts/") != std::string::npos)      return TextureType::LUT;
@@ -126,7 +125,6 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
     if (filename.ends_with("_n") || filename.ends_with("_normal")) return TextureType::Normal;
-    if (filename.ends_with("_h") || filename.ends_with("_height")) return TextureType::Height;
     if (path.extension().string() == ".dds") return TextureType::CubeMap;
 
     // デフォルト (ルート直下にあるファイル等も Albedo)

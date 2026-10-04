@@ -271,10 +271,6 @@ void Terrain::SetRippleTexture(const std::string& textureName)
 {
     material_.rippleTextureHandle = TextureManager::GetInstance().Get(textureName);
 }
-void Terrain::SetPuddleNoiseTexture(const std::string& textureName)
-{
-    material_.puddleNoiseHandle = TextureManager::GetInstance().Get(textureName);
-}
 
 void Terrain::SetUVTransform(const WorldTransform& uvTransform)
 {

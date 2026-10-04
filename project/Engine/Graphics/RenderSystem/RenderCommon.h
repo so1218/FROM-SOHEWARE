@@ -58,9 +58,7 @@ struct ModelSubmission
     uint32_t toonRampHandle;          // トゥーンラップ
     uint32_t dissolveTextureHandle;   // ディゾルブテクスチャ
     uint32_t normalMapHandle;		  // 法線マップテクスチャ
-    uint32_t heightMapHandle;		  // POMハイトマップテクスチャ
     uint32_t rippleTextureHandle;     // 波紋用テクスチャ
-    uint32_t puddleNoiseHandle;       // 水たまり用ノイズ
     uint32_t color;                   // メッシュカラー
     Matrix4x4 worldMatrix;            // ワールド変換行列
 
