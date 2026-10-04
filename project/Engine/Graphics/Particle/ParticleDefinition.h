@@ -197,23 +197,16 @@ struct AttractionModule
     float strength = 1.0f;                 // 引力の強さ（加速度）
 };
 
-enum class TrailTextureMode
-{
-    Stretch, // 全体を0〜1で伸ばす
-    Tile     // 距離に応じて繰り返す
-};
-
 enum class TrailAlignment
 {
     View,      // ビルボード
-    Transform  // パーティクルの回転に沿う
+    Transform  // パーティクルの回転
 };
 
 enum class JitterMode
 {
-    Wave,   // 0: 滑らか
-    Step,   // 1: 規則的 (四角・階段)
-    Random, // 2: ランダム (稲妻)
+    Smooth = 0, // サイン波による滑らかなうねり
+    Random = 1  // ノイズとフリッカーによるランダム
 };
 
 struct TrailModule
@@ -227,26 +220,17 @@ struct TrailModule
     Vector4 startColor = { 1, 1, 1, 1 };
     Vector4 endColor = { 1, 1, 1, 0 };
 
-    TrailTextureMode textureMode = TrailTextureMode::Stretch;
-    Vector2 tiling = { 1, 1 };       // UV の繰り返し数
-    Vector2 scrollSpeed = { 0, 0 };  // UV スクロール速度
-
     TrailAlignment alignment = TrailAlignment::View;
 
     float headWidthScale = 1.0f; // 先端の太さ
     float tailWidthScale = 1.0f; // 尻尾の太さ
 
     // ジッター（揺れ）の設定
+    JitterMode jitterMode = JitterMode::Smooth;
     float jitterStrength = 0.0f;
     float jitterFrequency = 10.0f;
     float jitterSpeed = 0.0f;
     float jitterPhase = 0.0f;
-
-    // ディゾルブの設定
-    std::string dissolveTextureName = "white1x1";
-    float dissolveSpeed = 2.0f;
-
-    JitterMode jitterMode = JitterMode::Wave;
 
     float emissiveIntensity = 1.0f;
 };

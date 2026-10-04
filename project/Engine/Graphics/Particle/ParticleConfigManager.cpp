@@ -226,31 +226,11 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                     config.trail.emissiveIntensity = trailJson.value("emissiveIntensity", 1.0f);
                     config.trail.minVertexDistance = trailJson.value("minVertexDistance", 0.1f);
                     config.trail.textureName = trailJson.value("textureName", "white1x1");
-
-                    config.trail.textureMode = static_cast<TrailTextureMode>(trailJson.value("textureMode", 0));
-
-                    if (trailJson.contains("tiling") && trailJson["tiling"].is_array())
-                    {
-                        config.trail.tiling = {
-                            trailJson["tiling"][0].get<float>(),
-                            trailJson["tiling"][1].get<float>()
-                        };
-                    }
-
-                    if (trailJson.contains("scrollSpeed") && trailJson["scrollSpeed"].is_array())
-                    {
-                        config.trail.scrollSpeed = {
-                            trailJson["scrollSpeed"][0].get<float>(),
-                            trailJson["scrollSpeed"][1].get<float>()
-                        };
-                    }
-
                     config.trail.jitterMode = static_cast<JitterMode>(trailJson.value("jitterMode", 0));
                     config.trail.jitterStrength = trailJson.value("jitterStrength", 0.0f);
                     config.trail.jitterFrequency = trailJson.value("jitterFrequency", 10.0f);
                     config.trail.jitterSpeed = trailJson.value("jitterSpeed", 0.0f);
                     config.trail.jitterPhase = trailJson.value("jitterPhase", 0.0f);
-                    config.trail.dissolveTextureName = trailJson.value("dissolveTextureName", "white1x1");
 
                     config.trail.headWidthScale = trailJson.value("headWidthScale", 1.0f);
                     config.trail.tailWidthScale = trailJson.value("tailWidthScale", 1.0f);
@@ -421,15 +401,11 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
             { "emissiveIntensity", config.trail.emissiveIntensity },
             { "minVertexDistance", config.trail.minVertexDistance },
             { "textureName", config.trail.textureName },
-            { "textureMode", static_cast<int>(config.trail.textureMode) },
-            { "tiling", { config.trail.tiling.x, config.trail.tiling.y } },
-            { "scrollSpeed", { config.trail.scrollSpeed.x, config.trail.scrollSpeed.y } },
             { "jitterMode", static_cast<int>(config.trail.jitterMode) },
             { "jitterStrength", config.trail.jitterStrength },
             { "jitterFrequency", config.trail.jitterFrequency },
             { "jitterSpeed", config.trail.jitterSpeed },
             { "jitterPhase", config.trail.jitterPhase },
-            { "dissolveTextureName", config.trail.dissolveTextureName },
             { "headWidthScale", config.trail.headWidthScale },
             { "tailWidthScale", config.trail.tailWidthScale },
             { "alignment", static_cast<int>(config.trail.alignment) },

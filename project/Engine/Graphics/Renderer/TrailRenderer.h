@@ -30,7 +30,6 @@ private:
         uint32_t startVertexIndex;
         uint32_t vertexCount;
         uint32_t textureHandle;
-        uint32_t dissolveHandle;
         TrailMaterialData materialData;
     };
 

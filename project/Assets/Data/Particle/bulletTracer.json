@@ -33,39 +33,6 @@
             ]
         },
         "blendMode": 2,
-        "collisionModule": {
-            "bounce": 0.5,
-            "dampen": 0.0,
-            "enabled": false,
-            "friction": 0.0,
-            "lifeLoss": 0.0,
-            "plane": {
-                "normal": [
-                    0.0,
-                    1.0,
-                    0.0
-                ],
-                "point": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": 0,
-            "worldObj": {
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    2.0,
-                    2.0,
-                    2.0
-                ],
-                "shape": 0
-            }
-        },
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4294967040,
@@ -155,7 +122,6 @@
         },
         "trailModule": {
             "alignment": 0,
-            "dissolveTextureName": "white1x1",
             "emissiveIntensity": 3.9000000953674316,
             "enabled": true,
             "endColor": [
@@ -172,10 +138,6 @@
             "jitterStrength": 0.0,
             "lifetime": 0.17000000178813934,
             "minVertexDistance": 0.10000000149011612,
-            "scrollSpeed": [
-                0.0,
-                0.0
-            ],
             "startColor": [
                 0.9578059315681458,
                 0.727447509765625,
@@ -183,12 +145,7 @@
                 1.0
             ],
             "tailWidthScale": 0.6399999856948853,
-            "textureMode": 0,
             "textureName": "particle_default",
-            "tiling": [
-                1.0,
-                1.0
-            ],
             "width": 0.10000000149011612
         },
         "velocityModule": {

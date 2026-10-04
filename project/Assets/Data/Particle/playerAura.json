@@ -122,12 +122,11 @@
         },
         "trailModule": {
             "alignment": 0,
-            "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 5.0,
+            "emissiveIntensity": 4.800000190734863,
             "enabled": true,
             "endColor": [
-                0.4092826843261719,
-                0.6036962866783142,
+                0.08016878366470337,
+                0.3828989267349243,
                 1.0,
                 1.0
             ],
@@ -137,25 +136,16 @@
             "jitterPhase": 0.0,
             "jitterSpeed": 3.799999952316284,
             "jitterStrength": 0.5,
-            "lifetime": 0.4000000059604645,
+            "lifetime": 0.30000001192092896,
             "minVertexDistance": 0.10000000149011612,
-            "scrollSpeed": [
-                0.0,
-                0.0
-            ],
             "startColor": [
                 1.0,
-                0.9893713593482971,
-                0.16033756732940674,
+                0.9885702133178711,
+                0.09704643487930298,
                 1.0
             ],
             "tailWidthScale": 0.4000000059604645,
-            "textureMode": 0,
             "textureName": "circle_05",
-            "tiling": [
-                1.0,
-                1.0
-            ],
             "width": 0.10000000149011612
         },
         "velocityModule": {

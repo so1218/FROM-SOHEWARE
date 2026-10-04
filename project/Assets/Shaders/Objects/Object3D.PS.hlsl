@@ -165,7 +165,7 @@ PixelShaderOutput main(PixelShaderInput input)
     }
     
     // --------------------------------------------------------
-    // Bubble (薄膜干渉)
+    // Bubble
     // --------------------------------------------------------
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float bubbleAlpha = textureColor.a;

@@ -434,19 +434,7 @@ void ParticleEditor::ShowEditor()
 
                         ImGui::Separator();
 
-                        const char* modes[] = { "Stretch (全体)", "Tile (繰り返し)" };
-                        int currentMode = static_cast<int>(trail.textureMode);
-                        if (ImGui::Combo("テクスチャモード", &currentMode, modes, IM_ARRAYSIZE(modes)))
-                        {
-                            trail.textureMode = static_cast<TrailTextureMode>(currentMode);
-                        }
-
-                        ImGui::DragFloat2("タイリング (回数)", &trail.tiling.x, 0.1f);
-                        ImGui::DragFloat2("スクロール速度", &trail.scrollSpeed.x, 0.01f);
-
-                        ImGui::Separator();
-
-                        const char* jitterModes[] = { "Wave (滑らか)", "Step (四角)", "Random (稲妻)" };
+                        const char* jitterModes[] = { "滑らか", "ランダム" };
                         int currentJitter = static_cast<int>(trail.jitterMode);
                         if (ImGui::Combo("揺れタイプ", &currentJitter, jitterModes, IM_ARRAYSIZE(jitterModes)))
                         {
@@ -460,14 +448,6 @@ void ParticleEditor::ShowEditor()
                         ImGui::DragFloat("位相 (位置ずらし)", &trail.jitterPhase, 0.01f, -10.0f, 10.0f);
 
                         ImGui::Separator();
-
-                        ImGui::Text("ディゾルブ (侵食消滅)");
-
-                        ShowTexturePalette("ノイズ画像選択", trail.dissolveTextureName, TextureType::Noise);
-
-                        ImGui::DragFloat("ディゾルブ速度", &trail.dissolveSpeed, 0.1f);
-                        ImGui::Separator();
-
 
                         ImGui::Text("太さの変化");
                         ImGui::DragFloat("先端スケール", &trail.headWidthScale, 0.01f, 0.0f, 5.0f);

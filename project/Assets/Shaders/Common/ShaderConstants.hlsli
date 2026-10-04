@@ -279,14 +279,10 @@ struct WaterMaterialData
 
 struct TrailMaterialData
 {
-    float2 scrollSpeed;
     float jitterStrength;
     float jitterFrequency;
-    
     float jitterSpeed;
     float jitterPhase;
-    float dissolveThreshold;
-    int isDissolveEnabled;
     
     int jitterMode;
     float emissiveIntensity;
