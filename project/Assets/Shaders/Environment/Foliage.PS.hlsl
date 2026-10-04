@@ -29,7 +29,6 @@ struct FoliagePSInput
     float3 tangent : TANGENT;
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
-    float2 velocity : TEXCOORD1;
 };
 
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
@@ -89,7 +88,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
     output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
-    output.velocity = input.velocity;
 
     return output;
 }

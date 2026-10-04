@@ -127,7 +127,6 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     output.color = float4(finalColor, saturate(outAlpha));
     output.normal = float4(normal, 1.0f);
     output.material = float4(0.0f, roughness, 0.0f, 1.0f);
-    output.velocity = float2(0.0f, 0.0f);
 
     return output;
 }

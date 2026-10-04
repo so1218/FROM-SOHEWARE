@@ -267,16 +267,7 @@ PixelShaderOutput main(PixelShaderInput input)
     output.color.rgb = finalColor;
     output.color.a = (gMaterial.isBubble != 0) ? (bubbleAlpha * gMaterial.color.a) : (textureColor.a * gMaterial.color.a);
     output.normal = float4(normal, 1.0f);
-    
     output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
-    
-    float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
-    float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
-
-    float2 currentUV = currentNDC * float2(0.5f, -0.5f) + 0.5f;
-    float2 prevUV = prevNDC * float2(0.5f, -0.5f) + 0.5f;
-
-    output.velocity = currentUV - prevUV;
     
     return output;
 }

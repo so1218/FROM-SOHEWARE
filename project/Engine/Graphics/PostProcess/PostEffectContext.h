@@ -19,7 +19,6 @@ struct PostEffectContext
     uint32_t sceneDepthSrvIndex = 0;
     uint32_t normalSrvIndex = 0;
     uint32_t materialSrvIndex = 0;
-    uint32_t velocitySrvIndex = 0;
 
     // CPUハンドルの取得
     D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(uint32_t index) const {

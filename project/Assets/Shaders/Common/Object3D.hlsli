@@ -6,8 +6,6 @@ struct VertexShaderOutput
     float3 worldPosition : POSITION1;
     float3 tangent : TANGENT;
     float4 worldColor : COLOR0;
-    float4 currentClipPos : POSITION2;
-    float4 prevClipPos : POSITION3;
 };
 
 struct VertexShaderInput
@@ -27,8 +25,6 @@ struct PixelShaderInput
     float3 worldPosition : POSITION1;
     float3 tangent : TANGENT;
     float4 worldColor : COLOR0;
-    float4 currentClipPos : POSITION2;
-    float4 prevClipPos : POSITION3;
 };
 
 struct PixelShaderOutput
@@ -36,9 +32,7 @@ struct PixelShaderOutput
     float4 color : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 material : SV_TARGET2;
-    float2 velocity : SV_TARGET3;
 };
-
 
 struct Object3DVSInputInstanced
 {

@@ -36,8 +36,6 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     output.worldPosition = worldPos.xyz;
     
     output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
-    output.currentClipPos = output.position;
-    output.prevClipPos = mul(worldPos, gFrameData.prevViewProj);
     
     output.texcoord = globalUV;
     

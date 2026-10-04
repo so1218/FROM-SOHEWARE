@@ -28,7 +28,6 @@ struct FoliageVSOutput
     float3 tangent : TANGENT;
     float4 color : COLOR0;
     float3 instanceTint : COLOR1;
-    float2 velocity : TEXCOORD1;
 };
 
 float3 RotateVectorByQuat(float3 v, float4 q)
@@ -130,12 +129,8 @@ FoliageVSOutput main(FoliageVSInput input)
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
-    // 座標変換 & TAA用 MotionVector
-    float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
-    float4 prevClipPos = mul(float4(basePos + rotatedPos, 1.0f), gFrameData.prevViewProj);
-
-    output.position = clipPos;
-    output.velocity = (clipPos.xy / clipPos.w - prevClipPos.xy / prevClipPos.w) * float2(0.5f, -0.5f);
+    // 座標変換
+    output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
 
     output.texcoord = input.texcoord;
     output.color = float4(windWeight, 0.0f, 0.0f, 0.0f);

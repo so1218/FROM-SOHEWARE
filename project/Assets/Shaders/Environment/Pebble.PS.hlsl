@@ -43,7 +43,6 @@ struct PebbleVSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 tangent : TANGENT0;
-    float2 velocity : TEXCOORD1;
     nointerpolation float3 colorVariation : COLOR0;
     float heightFactor : TEXCOORD2;
 };
@@ -53,7 +52,6 @@ struct PebblePSOutput
     float4 color : SV_Target0;
     float4 normal : SV_Target1;
     float4 material : SV_Target2;
-    float2 velocity : SV_Target3;
 };
 
 PebblePSOutput main(PebbleVSOutput input)
@@ -148,7 +146,6 @@ PebblePSOutput main(PebbleVSOutput input)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
     output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
-    output.velocity = input.velocity;
 
     return output;
 }

@@ -31,12 +31,22 @@ Texture2D<float4> gInteractionMap : register(t11);
 SamplerState gSampler : register(s0);
 SamplerState gClampSampler : register(s1);
 
+struct WaterPSInput
+{
+    float4 position : SV_POSITION;
+    float3 worldPosition : POSITION1;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT;
+    float4 worldColor : COLOR0;
+    float4 currentClipPos : POSITION2;
+};
+
 struct WaterPSOutput
 {
     float4 color : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 material : SV_TARGET2;
-    float2 velocity : SV_TARGET3;
 };
 
 float3 BlendNormalsRNM(float3 baseNormal, float3 detailNormal)
@@ -164,7 +174,7 @@ float3 TraceSSR(float3 rayOrigin, float3 smoothReflectDir, float3 worldNormal, f
     return float3(0.0f, 0.0f, 0.0f);
 }
 
-WaterPSOutput main(PixelShaderInput input)
+WaterPSOutput main(WaterPSInput input)
 {
     WaterPSOutput output;
 
@@ -324,10 +334,6 @@ WaterPSOutput main(PixelShaderInput input)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
     output.material = float4(gWaterMaterial.roughness, 0.0f, 0.0f, 1.0f);
-
-    float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
-    float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
-    output.velocity = (currentNDC * float2(0.5f, -0.5f) + 0.5f) - (prevNDC * float2(0.5f, -0.5f) + 0.5f);
-
+    
     return output;
 }

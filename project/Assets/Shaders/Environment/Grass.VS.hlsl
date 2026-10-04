@@ -65,8 +65,6 @@ struct GrassPSInput
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
     float4 color : COLOR;
-    float4 currentClipPos : POSITION1;
-    float4 prevClipPos : POSITION2;
 };
 
 GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
@@ -233,10 +231,6 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     output.normal = proceduralNormal;
     output.tangent = tangent;
     output.color = float4(finalColor, gustMask); // W要素に風マスクを格納
-    
-    // TAA / MotionBlur用
-    output.currentClipPos = output.position;
-    output.prevClipPos = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
-
+  
     return output;
 }

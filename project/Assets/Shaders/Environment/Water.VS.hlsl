@@ -15,9 +15,20 @@ SamplerState gClampSampler : register(s1);
 // 風と物理法則から多重 Gerstner 波をプロシージャル自動計算
 float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal, out float3 outTangent);
 
-VertexShaderOutput main(Object3DVSInputInstanced input)
+struct WaterVSOutput
 {
-    VertexShaderOutput output;
+    float4 position : SV_POSITION;
+    float3 worldPosition : POSITION1;
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT;
+    float4 worldColor : COLOR0;
+    float4 currentClipPos : POSITION2; 
+};
+
+WaterVSOutput main(Object3DVSInputInstanced input)
+{
+    WaterVSOutput output;
     
     uint index = input.instanceID + gInstanceOffset.gBaseInstanceIndex;
     Object3DInstanceData instance = gInstanceData[index];
@@ -57,7 +68,6 @@ VertexShaderOutput main(Object3DVSInputInstanced input)
     output.worldPosition = finalWorldPos;
     output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
     output.currentClipPos = output.position;
-    output.prevClipPos = mul(float4(prevFinalWorldPos, 1.0f), gFrameData.prevViewProj);
     output.texcoord = input.texcoord;
     
     float3x3 worldInvTranspose = (float3x3) instance.WorldInverseTranspose;

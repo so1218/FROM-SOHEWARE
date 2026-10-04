@@ -158,7 +158,6 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
     output.material = float4(surface.metalness, surface.roughness, 0.0f, 1.0f);
-    output.velocity = float2(0.0f, 0.0f);
 
     return output;
 }

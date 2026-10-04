@@ -22,7 +22,6 @@ struct PebbleVSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 tangent : TANGENT0;
-    float2 velocity : TEXCOORD1;
     nointerpolation float3 colorVariation : COLOR0;
     float heightFactor : TEXCOORD2;
 };
@@ -71,15 +70,7 @@ PebbleVSOutput main(PebbleVSInput input)
     output.normal = normalize(RotateVectorByQuat(localNormal, quat));
     output.tangent = normalize(RotateVectorByQuat(localTangent, quat));
 
-    // TAAおよびモーションブラー用のVelocity計算 (現在と前フレームのNDC空間の差分)
-    float4 clipPos = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
-    float4 prevClipPos = mul(float4(worldPos, 1.0f), gFrameData.prevViewProj);
-    
-    output.position = clipPos;
-    
-    float2 currentNDC = clipPos.xy / clipPos.w;
-    float2 prevNDC = prevClipPos.xy / prevClipPos.w;
-    output.velocity = (currentNDC - prevNDC) * float2(0.5f, -0.5f);
+    output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
     
     output.colorVariation = instance.colorVariation;
 
