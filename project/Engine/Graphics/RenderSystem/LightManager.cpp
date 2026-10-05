@@ -56,23 +56,6 @@ void LightManager::Initialize(ID3D12Device* device)
         spotLightData_[i].volumetricScatteringIntensity = 8.0f;
     }
 
-    // Area Light
-    areaLightResource_ = BufferManager::CreateBufferResource(
-        device, sizeof(AreaLight) * MAX_AREA_LIGHTS);
-    areaLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&areaLightData_));
-
-    for (int i = 0; i < MAX_AREA_LIGHTS; ++i)
-    {
-        areaLightData_[i].enable = false;
-        areaLightData_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        areaLightData_[i].position = { 0.0f, 2.0f, 0.0f };
-        areaLightData_[i].right = { 2.0f, 0.0f, 0.0f }; 
-        areaLightData_[i].up = { 0.0f, 0.0f, 1.0f };    
-        areaLightData_[i].intensity = 10.0f;
-        areaLightData_[i].range = 20.0f;
-        areaLightData_[i].decay = 2.0f;
-    }
-
     // 利用可能なインデックスキューを初期化
     availablePointLightIndices_ = {}; // キューをクリア
     for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
@@ -86,14 +69,6 @@ void LightManager::Initialize(ID3D12Device* device)
     {
         availableSpotLightIndices_.push(i);
         spotLightData_[i].enable = false; // 初期状態はすべてオフ
-    }
-
-    // Area Light のキュー初期化
-    availableAreaLightIndices_ = {}; // キューをクリア
-    for (int i = 0; i < MAX_AREA_LIGHTS; ++i) 
-    {
-        availableAreaLightIndices_.push(i);
-        areaLightData_[i].enable = false; // 全て非アクティブで初期化
     }
 
     // ShadowData
@@ -119,19 +94,6 @@ int LightManager::RequestPointLight()
     availablePointLightIndices_.pop();
 
     pointLightData_[index].enable = true; // ライトを有効化
-    return index;
-}
-
-int LightManager::RequestAreaLight()
-{
-    if (availableAreaLightIndices_.empty()) 
-    {
-        return -1; // 利用可能なスロットがない
-    }
-    int index = availableAreaLightIndices_.front();
-    availableAreaLightIndices_.pop();
-
-    areaLightData_[index].enable = true; // ライトを有効化
     return index;
 }
 
@@ -174,19 +136,6 @@ void LightManager::ReturnSpotLight(int index)
     availableSpotLightIndices_.push(index);
 }
 
-void LightManager::ReturnAreaLight(int index)
-{
-    if (index < 0 || index >= areaLightCount_)
-    {
-        return; // 無効なインデックス
-    }
-
-    if (!areaLightData_[index].enable) return;
-
-    areaLightData_[index].enable = false; // ライトを無効化
-    availableAreaLightIndices_.push(index); // キューに戻す
-}
-
 void LightManager::UpdatePointLightPosition(int index, const Vector3& position)
 {
     if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
@@ -220,20 +169,6 @@ void LightManager::UpdateSpotLightProperties(int index, const Vector4& color, fl
     spotLightData_[index].distance = distance;
     spotLightData_[index].cosAngle = cosAngle;
     spotLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
-}
-
-void LightManager::UpdateAreaLightProperties(int index, const Vector4& color, float intensity,
-    const Vector3& position, const Vector3& right, const Vector3& up,
-    float range, float decay)
-{
-    if (index < 0 || index >= areaLightCount_ || !areaLightData_[index].enable) return;
-    areaLightData_[index].color = color;
-    areaLightData_[index].intensity = intensity;
-    areaLightData_[index].position = position;
-    areaLightData_[index].right = right;
-    areaLightData_[index].up = up;
-    areaLightData_[index].range = range;
-    areaLightData_[index].decay = decay;
 }
 
 void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection)
@@ -508,34 +443,6 @@ void LightManager::DrawDebugLights()
         }
     }
 
-    // Area Lightの描画
-    for (int i = 0; i < MAX_AREA_LIGHTS; ++i)
-    {
-        if (!areaLightData_[i].enable) continue;
-
-        Vector4 color = areaLightData_[i].color;
-        color.w = 1.0f;
-
-        Vector3 pos = areaLightData_[i].position;
-        Vector3 right = areaLightData_[i].right; 
-        Vector3 up = areaLightData_[i].up;       
-
-        // 4つの頂点を計算 
-        Vector3 p0 = pos - right - up; // 左下
-        Vector3 p1 = pos + right - up; // 右下
-        Vector3 p2 = pos + right + up; // 右上
-        Vector3 p3 = pos - right + up; // 左上
-
-        // 四角形の外枠
-        DebugDraw::DrawLine(p0, p1, color);
-        DebugDraw::DrawLine(p1, p2, color);
-        DebugDraw::DrawLine(p2, p3, color);
-        DebugDraw::DrawLine(p3, p0, color);
-
-        // 照射方向を示す法線
-        Vector3 normal = Math::CrossProduct(right, up); 
-    }
-
 #endif
 }
 
@@ -561,13 +468,6 @@ void LightManager::DrawSelectedLightGizmo()
         pos = light.position;
         lightMat = Matrix4x4::MakeFromDirection(light.direction, pos);
     }
-    else if (selectedLightType_ == SelectedLightType::Area) {
-        AreaLight& light = areaLightData_[selectedLightIndex_];
-        pos = light.position;
-        // 右と上のベクトルから行列を構築
-        Vector3 forward = Math::CrossProduct(light.right, light.up);
-        lightMat = Matrix4x4::MakeFromAxes(light.right, light.up, forward, pos);
-    }
     else if (selectedLightType_ == SelectedLightType::Directional) {
         DirectionalLight& light = directionalLightData_[selectedLightIndex_];
         Vector3 pos = directionalLightPositions_[selectedLightIndex_];
@@ -583,7 +483,7 @@ void LightManager::DrawSelectedLightGizmo()
 
         if (selectedLightType_ == SelectedLightType::Point) {
             PointLight& light = pointLightData_[selectedLightIndex_];
-            light.position = outPos; // Translateの適用
+            light.position = outPos;
             // Scaleの適用（X,Y,Zの平均値を半径にする）
             light.radius = std::max(0.1f, (outScale.x + outScale.y + outScale.z) / 3.0f);
         }
@@ -591,17 +491,9 @@ void LightManager::DrawSelectedLightGizmo()
             SpotLight& light = spotLightData_[selectedLightIndex_];
             light.position = outPos;
 
-            // Rotateの適用：行列のZ軸成分（m[2][0], m[2][1], m[2][2]）が前方ベクトル(Direction)
+            // Rotateの適用：行列のZ軸成分が前方ベクトル
             Vector3 newDir = { lightMat.m[2][0], lightMat.m[2][1], lightMat.m[2][2] };
             light.direction = newDir.Normalize();
-        }
-        else if (selectedLightType_ == SelectedLightType::Area) {
-            AreaLight& light = areaLightData_[selectedLightIndex_];
-            light.position = outPos;
-
-            // Rotate/Scaleの適用：行列のX軸とY軸のベクトルをそのままRight/Upに使う
-            light.right = { lightMat.m[0][0], lightMat.m[0][1], lightMat.m[0][2] };
-            light.up = { lightMat.m[1][0], lightMat.m[1][1], lightMat.m[1][2] };
         }
         else if (selectedLightType_ == SelectedLightType::Directional) {
             DirectionalLight& light = directionalLightData_[selectedLightIndex_];
@@ -609,7 +501,7 @@ void LightManager::DrawSelectedLightGizmo()
             // 仮想位置を更新
             directionalLightPositions_[selectedLightIndex_] = outPos;
 
-            // 回転結果の行列のZ軸(Forward)から新しい向きを計算
+            // 回転結果の行列のZ軸から新しい向きを計算
             Vector3 newDir = { lightMat.m[2][0], lightMat.m[2][1], lightMat.m[2][2] };
             light.direction = newDir.Normalize();
         }

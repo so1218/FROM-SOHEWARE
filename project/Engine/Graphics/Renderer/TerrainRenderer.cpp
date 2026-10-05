@@ -132,20 +132,19 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
     cmdList->SetPipelineState(pso);
 
     // 全チャンク共通の定数バッファをセット (ループ外)
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); // b0
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); // b1
-    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); // b2
-    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); // b3
-    cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetAreaLightResource()->GetGPUVirtualAddress()); // b4
-    cmdList->SetGraphicsRootConstantBufferView(6, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress()); // b8
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); 
+    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
     // 最新のパラメータを書き込む
     terrainSettingsMapped_->maxHeight = submissions_[0].params.maxHeight;
     terrainSettingsMapped_->texelSize = submissions_[0].params.texelSize;
     terrainSettingsMapped_->cellSize = submissions_[0].params.cellSize;
 
-    cmdList->SetGraphicsRootConstantBufferView(7, terrainSettingsBuffer_->GetGPUVirtualAddress());// b10
-    cmdList->SetGraphicsRootShaderResourceView(8, instanceBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(6, terrainSettingsBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootShaderResourceView(7, instanceBuffer_->GetGPUVirtualAddress());
 
     // バッチ描画の準備
     const MaterialData* currentMaterial = nullptr;
@@ -191,24 +190,24 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
             if (currentHeightMap != sub.heightMapHandle)
             {
                 currentHeightMap = sub.heightMapHandle;
-                cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(currentHeightMap));
+                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(currentHeightMap));
             }
 
             // マテリアルの更新
             if (currentMaterial != sub.materialHandle.materialData)
             {
                 currentMaterial = sub.materialHandle.materialData;
-                cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(4, sub.materialHandle.resource->GetGPUVirtualAddress());
 
-                cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.materialHandle.textureHandle));       
-                cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.materialHandle.envMapHandle));       
+                cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.materialHandle.textureHandle));       
+                cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.materialHandle.envMapHandle));       
                 if (shadowMap) {
-                    cmdList->SetGraphicsRootDescriptorTable(11, shadowMap->GetSRVHandle());                                          
+                    cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());                                          
                 }
-                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.materialHandle.toonRampHandle));     
-                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.materialHandle.dissolveMapHandle));  
-                cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.materialHandle.normalMapHandle));    
-                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.materialHandle.rippleTextureHandle)); 
+                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.materialHandle.toonRampHandle));     
+                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.materialHandle.dissolveMapHandle));  
+                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.materialHandle.normalMapHandle));    
+                cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.materialHandle.rippleTextureHandle)); 
             }
 
             instanceStart = sub.instanceIndex;

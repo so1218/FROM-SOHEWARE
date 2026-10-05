@@ -19,10 +19,6 @@ cbuffer SpotLights : register(b3)
 {
     SpotLight gSpotLights[MAX_SPOT_LIGHTS];
 };
-cbuffer AreaLightsBuffer : register(b4)
-{
-    AreaLight gAreaLights[MAX_AREA_LIGHTS];
-};
 ConstantBuffer<MaterialData> gMaterial : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
@@ -209,7 +205,6 @@ PixelShaderOutput main(PixelShaderInput input)
         finalColor += ApplyDirectionalLights(surface, toEyeWorld, shadowFactor, gDirectionalLights, gToonRamp, gClampSampler);
         finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
         finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
-        finalColor += ApplyAreaLights(surface, input.worldPosition, toEyeWorld, gAreaLights);
 
         if (gMaterial.lightMode == SHADING_MODEL_PBR)
         {

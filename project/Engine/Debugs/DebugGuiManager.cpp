@@ -191,7 +191,6 @@ void DebugGuiManager::DrawLightSettings()
     DirectionalLight* dirLights = lightManager_->GetDirectionalLightData();
     PointLight* pointLights = lightManager_->GetPointLightData();
     SpotLight* spotLights = lightManager_->GetSpotLightData();
-    AreaLight* areaLights = lightManager_->GetAreaLightData();
 
     ImGui::Separator();
 
@@ -345,55 +344,6 @@ void DebugGuiManager::DrawLightSettings()
         ImGui::TreePop();
     }
     ImGui::Separator();
-
-    // エリアライト 
-    if (ImGui::TreeNode("エリアライト (矩形光源)"))
-    {
-        for (int i = 0; i < lightManager_->GetAreaLightCount(); ++i)
-        {
-            std::string label = "エリアライト " + std::to_string(i);
-
-            // 現在のこのライトが選択されているかチェック
-            bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Area &&
-                lightManager_->GetSelectedLightIndex() == i);
-
-            // ツリーノードのフラグ設定
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-            if (isSelected) {
-                flags |= ImGuiTreeNodeFlags_Selected;
-            }
-
-            // TreeNodeEx でノードを描画
-            bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
-
-            // 項目がクリックされたら、選択状態を更新
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            {
-                lightManager_->SetSelectedLight(SelectedLightType::Area, i);
-            }
-
-            // ツリーが開かれているならパラメータを表示
-            if (isOpen)
-            {
-                bool enabled = (areaLights[i].enable != 0);
-                if (ImGui::Checkbox("有効", &enabled))
-                {
-                    areaLights[i].enable = enabled ? 1 : 0;
-                }
-                ImGui::DragFloat3("座標 (中心)", &areaLights[i].position.x, 0.05f);
-                ImGui::ColorEdit4("色", &areaLights[i].color.x);
-                ImGui::DragFloat("強度", &areaLights[i].intensity, 0.01f);
-
-                ImGui::DragFloat3("右ベクトル (幅/2)", &areaLights[i].right.x, 0.05f);
-                ImGui::DragFloat3("上ベクトル (高さ/2)", &areaLights[i].up.x, 0.05f);
-
-                ImGui::DragFloat("影響半径", &areaLights[i].range, 0.1f);
-                ImGui::DragFloat("減衰", &areaLights[i].decay, 0.01f);
-                ImGui::TreePop();
-            }
-        }
-        ImGui::TreePop();
-    }
 }
 
 void DebugGuiManager::DrawPostEffectSettings()

@@ -29,7 +29,6 @@
 #define MAX_DIRECTIONAL_LIGHTS 2
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 4
-#define MAX_AREA_LIGHTS 2
 
 // シャドウマップ
 #define MAX_CASCADE_COUNT 3
@@ -318,19 +317,6 @@ struct SpotLight
     float cosAngle;
     int enable;
     float volumetricScatteringIntensity;
-};
-
-struct AreaLight
-{
-    float4 color;
-    float3 position;
-    float intensity;
-    float3 right;
-    float range;
-    float3 up;
-    float decay;
-    int enable;
-    float3 padding;
 };
 
 struct ParticleInstanceData

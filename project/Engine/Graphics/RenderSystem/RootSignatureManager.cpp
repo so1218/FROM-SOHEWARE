@@ -39,7 +39,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);    
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(3, D3D12_SHADER_VISIBILITY_PIXEL);  
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL);   
 
         if (name == "Skinning")
@@ -194,7 +193,6 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(1, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(2, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(3, D3D12_SHADER_VISIBILITY_PIXEL);  
-        builder.AddCBV(4, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_PIXEL);  
         builder.AddCBV(8, D3D12_SHADER_VISIBILITY_ALL);    
         builder.AddCBV(10, D3D12_SHADER_VISIBILITY_VERTEX);

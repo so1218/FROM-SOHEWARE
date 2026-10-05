@@ -474,32 +474,31 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, env.lightManager->GetAreaLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(7, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(4, sub.materialHandle.resource->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(6, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
 
     // テクスチャ
-    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
-    cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
-    cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
-    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.toonRampHandle));
-    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
-    cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
-    cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(7, env.srvManager->GetSRVHandleGPU(sub.textureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.envMapSrvHandle));
+    cmdList->SetGraphicsRootDescriptorTable(9, shadowMap->GetSRVHandle());
+    cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.toonRampHandle));
+    cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
+    cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
+    cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
 
     if (isSkinning)
     {
         auto& buffer = perObjectBuffers_[sub.instanceIndex]; // スキニングは個別バッファ
-        cmdList->SetGraphicsRootConstantBufferView(6, buffer.wvpResource->GetGPUVirtualAddress());
-        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-        cmdList->SetGraphicsRootDescriptorTable(16, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
+        cmdList->SetGraphicsRootConstantBufferView(5, buffer.wvpResource->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
     else
     {
         // 静的モデルはインスタンシング描画
-        cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);
-        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+        cmdList->SetGraphicsRoot32BitConstant(5, startInstanceLocation, 0);
+        cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
         cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
     }
 }
