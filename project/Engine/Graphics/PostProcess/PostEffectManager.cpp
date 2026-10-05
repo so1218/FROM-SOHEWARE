@@ -102,10 +102,6 @@ void PostEffectManager::Initialize(
     cbData_->noiseAmount = 0.05f;
     cbData_->noiseSpeed = 1.0f;
     cbData_->noiseScale = 0.2f;
-    cbData_->scanlineScrollSpeed = 0.2f;
-    cbData_->scanlineColor = { 0.0f, 0.0f, 0.0f };
-    cbData_->scanlineDirection = 0;
-    cbData_->noiseSpeed = 1.0f;
     cbData_->chromaOffset = { 0.003f,0.0f };
     cbData_->vignetteColor = Vector3(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f);
     cbData_->flag = 0;

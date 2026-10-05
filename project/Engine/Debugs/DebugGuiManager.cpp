@@ -426,20 +426,6 @@ void DebugGuiManager::DrawPostEffectSettings()
     // 特殊効果・ノイズ系
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "特殊効果・ノイズ");
 
-    // 走査線
-    if (ImGui::CheckboxFlags("走査線 (Scanline)", &postEffectData->flag, SCANLINE)) {}
-    if (postEffectData->flag & SCANLINE)
-    {
-        ImGui::Indent();
-        ImGui::SliderFloat("強度", &postEffectData->scanlineIntensity, 0.0f, 1.0f);
-        ImGui::SliderFloat("線の密度", &postEffectData->scanlineFrequency, 1.0f, 1000.0f);
-        ImGui::SliderFloat("スクロール速度", &postEffectData->scanlineScrollSpeed, -15.0f, 15.0f);
-        ImGui::ColorEdit3("線の色", &postEffectData->scanlineColor.x);
-        const char* directions[] = { "水平", "垂直", "斜め" };
-        ImGui::Combo("方向", &postEffectData->scanlineDirection, directions, IM_ARRAYSIZE(directions));
-        ImGui::Unindent();
-    }
-
     // スクリーンノイズ
     if (ImGui::CheckboxFlags("スクリーンノイズ (砂嵐)", &postEffectData->flag, SCREEN_NOISE)) {}
     if (postEffectData->flag & SCREEN_NOISE)
@@ -494,7 +480,7 @@ void DebugGuiManager::DrawPostEffectSettings()
     ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "環境・光・深度設定");
 
     // SSAO
-    if (ImGui::TreeNode("環境遮蔽 (SSAO)"))
+    if (ImGui::TreeNode("SSAO"))
     {
         bool ssaoFlag = (compositeSettingsData->enableSSAO != 0);
         if (ImGui::Checkbox("SSAO有効", &ssaoFlag))
@@ -524,7 +510,7 @@ void DebugGuiManager::DrawPostEffectSettings()
             if (bilateralSettings)
             {
                 ImGui::Separator();
-                ImGui::TextDisabled("ノイズ除去 (Bilateral Blur)");
+                ImGui::TextDisabled("ノイズ除去");
                 ImGui::SliderFloat("深度の許容度", &bilateralSettings->depthTolerance, 0.0f, 100.0f, "%.3f");
                 ImGui::SliderFloat("法線の許容度", &bilateralSettings->normalTolerance, 0.0f, 256.0f, "%.1f");
             }
@@ -555,8 +541,8 @@ void DebugGuiManager::DrawPostEffectSettings()
         ImGui::TreePop();
     }
 
-    // 被写界深度 (DoF)
-    if (ImGui::TreeNode("被写界深度 (DoF)"))
+    // 被写界深度
+    if (ImGui::TreeNode("被写界深度"))
     {
         bool dofFlag = (compositeSettingsData->enableDoF != 0);
         if (ImGui::Checkbox("DoF有効", &dofFlag))

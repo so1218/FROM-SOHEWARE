@@ -9,20 +9,12 @@ SamplerState gClampSampler : register(s1);
 
 ConstantBuffer<PostEffectData> gData : register(b0);
 
-// =======================================================
-//  UV変形系
-// =======================================================
-
 // ピクセル化
 float2 ApplyPixelation(float2 uv)
 {
     float2 pixelSizeUV = gData.pixelationSize / gData.screenResolution;
     return floor(uv / pixelSizeUV) * pixelSizeUV;
 }
-
-// =======================================================
-//  カラー系
-// =======================================================
 
 // 色かぶり
 float3 ApplyColorTint(float3 color)
@@ -58,33 +50,13 @@ float3 ApplyVignette(float3 color, float2 uv)
     return lerp(color, gData.vignetteColor.rgb, blendAmount);
 }
 
-// スキャンライン
-float3 ApplyScanline(float3 color, float2 uv)
-{
-    float input = 0;
-    if (gData.scanlineDirection == 0)
-        input = uv.y;
-    else if (gData.scanlineDirection == 1)
-        input = uv.x;
-    else
-        input = (uv.x + uv.y) * 0.7071;
-
-    float wave = sin((input * gData.scanlineFrequency + gData.totalTime * gData.scanlineScrollSpeed) * (2.0f * PI));
-    float mask = (wave + 1.0) * 0.5;
-    return lerp(color, gData.scanlineColor, mask * gData.scanlineIntensity);
-}
-
-// =======================================================
-//  特殊サンプリング
-// =======================================================
-
 // 色収差
 float4 SampleChromaticAberration(float2 uv)
 {
     // UV上のオフセット量を計算
     float2 offset = gData.chromaOffset;
 
-    // R channel は +offset, B channel は -offset へずらす
+    // offset でずらす
     float r = gTexture.Sample(gSampler, saturate(uv + offset)).r;
     float g = gTexture.Sample(gSampler, uv).g;
     float b = gTexture.Sample(gSampler, saturate(uv - offset)).b;
@@ -181,8 +153,6 @@ float4 main(VSOutput input) : SV_TARGET
     // 色補正・フィルタ処理
     if (gData.flag & COLOR_TINT)
         finalColor.rgb = ApplyColorTint(finalColor.rgb);
-    if (gData.flag & SCANLINE)
-        finalColor.rgb = ApplyScanline(finalColor.rgb, uv);
     if (gData.flag & VIGNETTE)
         finalColor.rgb = ApplyVignette(finalColor.rgb, uv);
 

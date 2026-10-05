@@ -74,7 +74,7 @@ PixelShaderOutput main(PixelShaderInput input)
     }
 
     // --------------------------------------------------------
-    // Debug: Art Grid
+    // Debug Grid
     // --------------------------------------------------------
     if (gMaterial.isArtGrid)
     {
@@ -115,7 +115,7 @@ PixelShaderOutput main(PixelShaderInput input)
     float currentMetalness = saturate(gMaterial.metalness);
     
     // --------------------------------------------------------
-    // Wetness & Ripple (雨・波紋表現)
+    // 雨・波紋
     // --------------------------------------------------------
     if (gMaterial.enableRipple != 0 && gMaterial.wetness > 0.0f)
     {

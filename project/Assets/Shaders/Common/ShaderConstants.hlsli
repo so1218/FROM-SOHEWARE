@@ -22,9 +22,8 @@
 #define VIGNETTE            (1 << 2)
 #define SCREEN_NOISE        (1 << 3)
 #define CHROM_ABERRATION    (1 << 4)
-#define SCANLINE            (1 << 5)
-#define RADIAL_BLUR         (1 << 6)
-#define COLOR_GRADING_LUT   (1 << 7)
+#define RADIAL_BLUR         (1 << 5)
+#define COLOR_GRADING_LUT   (1 << 6)
 
 #define MAX_DIRECTIONAL_LIGHTS 2
 #define MAX_POINT_LIGHTS 10
@@ -338,49 +337,30 @@ struct PostEffectData
 {
     float pixelationSize;
     float2 screenResolution;
-    float _padding;
-
+    float totalTime;
+    
+    float3 tintColor;
     float tintMulColorAmount;
+    
     float tintAddColorAmount;
     float tintScreenColorAmount;
-    float _padding1;
-
-    float3 tintColor;
-    float totalTime;
+    float2 vignetteEllipseScale;
 
     float vignetteAmount;
     float vignetteRadius;
     float vignetteSoftness;
     float padding_1;
-
-    float2 vignetteEllipseScale;
-    float2 padding_2;
-
+    
+    float3 vignetteColor;
     float noiseAmount;
+    
     float noiseSpeed;
     float noiseScale;
-    float _padding2;
-    
     float2 chromaOffset;
-    float2 _paddingWave;
-
-    float scanlineIntensity;
-    float scanlineFrequency;
-    int scanlineDirection;
-    float _padding3;
-
-    float3 scanlineColor;
-    float scanlineScrollSpeed;
-
-    float3 vignetteColor;
-    float _padding9;
 
     int flag; 
-    float3 _paddingGlow2;
-
     float radialBlurStrength;
     float2 radialBlurCenter; 
-    float _paddingGlow8;
 };
 
 struct BrightExtractSettings
