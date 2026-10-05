@@ -31,11 +31,6 @@ void WeatherEffectManager::Initialize()
     thunderRainParticleEmitterPtr_ = thunderRainParticleEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(thunderRainParticleEmitter_));
 
-    snowParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("snow");
-    snowParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
-    snowParticleEmitterPtr_ = snowParticleEmitter_.get();
-    engine_->GetParticleSystem()->AddEmitter(std::move(snowParticleEmitter_));
-
     lightningSystem_->Initialize();
 
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
@@ -102,10 +97,10 @@ void WeatherEffectManager::Update()
     };
 
     fog->windDirection = targetP.windDirection;
-    // パーティクルと雷の制御
 
     // 各天候のパーティクルの強さを計算
-    auto CalculateIntensity = [&](WeatherState checkState) -> float {
+    auto CalculateIntensity = [&](WeatherState checkState) -> float
+        {
         bool isTarget = (target == checkState);
         bool isCurrent = (current == checkState);
 
@@ -117,37 +112,32 @@ void WeatherEffectManager::Update()
 
     float rainIntensity = CalculateIntensity(WeatherState::Rain);
     float thunderRainIntensity = CalculateIntensity(WeatherState::Thunderstorm);
-    float snowIntensity = CalculateIntensity(WeatherState::Snow);
 
     // 雨パーティクルの制御
-    if (rainIntensity > 0.0f) {
+    if (rainIntensity > 0.0f)
+    {
         rainParticleEmitterPtr_->Play();
         rainParticleEmitterPtr_->SetEmissionRateMultiplier(rainIntensity);
     }
-    else {
+    else 
+    {
         rainParticleEmitterPtr_->Stop();
     }
 
     // 雷雨パーティクルの制御
-    if (thunderRainIntensity > 0.0f) {
+    if (thunderRainIntensity > 0.0f) 
+    {
         thunderRainParticleEmitterPtr_->Play();
         thunderRainParticleEmitterPtr_->SetEmissionRateMultiplier(thunderRainIntensity);
     }
-    else {
+    else 
+    {
         thunderRainParticleEmitterPtr_->Stop();
     }
 
-    // 雪パーティクルの制御
-    if (snowIntensity > 0.0f) {
-        snowParticleEmitterPtr_->Play();
-        snowParticleEmitterPtr_->SetEmissionRateMultiplier(snowIntensity);
-    }
-    else {
-        snowParticleEmitterPtr_->Stop();
-    }
-
     // 落雷の制御
-    if (lightningSystem_) {
+    if (lightningSystem_)
+    {
         lightningSystem_->Update();
     }
 
@@ -250,28 +240,6 @@ inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
         p.erosion = 0.4f;
         p.windSpeed = 0.15f;
         p.windDirection = { 1.0f, 1.0f, 1.0f };
-        break;
-
-    case FE::WeatherState::Snow:
-        // Terrain
-        p.metalness = 0.13f;
-        p.roughness = 1.00f;
-        p.environmentMapIntensity = 0.0f;
-        p.rippleSize = 0.0f;
-        p.normalIntensity = 0.2f;
-        p.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        p.emissiveIntensity = 10.0f;
-        // Fog
-        p.scatteringIntensity = 1.5f;
-        p.noiseScale = 0.03f;
-        p.noiseIntensity = 1.0f;
-        p.heightDensity = 0.1f;
-        p.heightFalloff = 0.0f;
-        p.ambientLight = { 85.0f / 255.0f, 110.0f / 255.0f, 190.0f / 255.0f };
-        p.extinction = 0.005f;
-        p.erosion = 0.8f;
-        p.windSpeed = 0.3f;
-        p.windDirection = { 1.0f, 0.0f, 0.5f };
         break;
 
     default: // Sunny, Cloudy

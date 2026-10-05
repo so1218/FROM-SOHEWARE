@@ -18,6 +18,5 @@ public:
 private:
     // メンバー変数
     std::unique_ptr<FE::Sprite> titleSprite_;
-    std::unique_ptr<FE::ParticleEmitter> titleSceneEmitter_ = nullptr;
     std::unique_ptr<FE::PropertyBinder> binder_;
 };

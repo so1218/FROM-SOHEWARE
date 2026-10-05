@@ -754,12 +754,6 @@
     <ClInclude Include="Engine\Resources\TextureManager.h">
       <Filter>Engine\Resources</Filter>
     </ClInclude>
-    <ClCompile Include="externals\ImGuiFileDialog.cpp">
-      <Filter>externals</Filter>
-    </ClCompile>
-    <ClInclude Include="externals\ImGuiFileDialogConfig.h">
-      <Filter>externals</Filter>
-    </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
       <Filter>externals\imgui</Filter>
     </ClInclude>

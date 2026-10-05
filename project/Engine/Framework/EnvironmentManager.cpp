@@ -109,21 +109,6 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->BindColor("Rain_SkyHorizon", &profileRain_.skyHorizonColor, { 0.3f, 0.32f, 0.35f });
         binder_->Bind("Rain_SkyBlendWeight", &profileRain_.skyColorBlendWeight, 0.70f, 0.01f, 0.0f, 1.0f);
 
-        binder_->Bind("Snow_TransitionSpeed", &profileSnow_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Snow_CloudMin", &profileSnow_.cloudCoverageMin, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_CloudMax", &profileSnow_.cloudCoverageMax, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_CloudShadow", &profileSnow_.cloudShadowDensity, 0.70f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_LightDim", &profileSnow_.lightDimmer, 0.40f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_AtmoDim", &profileSnow_.atmosphereGlowDimmer, 0.30f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_Wetness", &profileSnow_.wetness, 0.20f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_RainIntens", &profileSnow_.rainIntensity, 0.5f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Snow_WindDir", &profileSnow_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
-        binder_->Bind("Snow_WindSpeed", &profileSnow_.windSpeed, 1.5f, 0.1f, 0.0f, 20.0f);
-        binder_->Bind("Snow_WindTurbul", &profileSnow_.windTurbulence, 0.3f, 0.01f, 0.0f, 1.0f);
-        binder_->BindColor("Snow_SkyZenith", &profileSnow_.skyZenithColor, { 0.35f, 0.38f, 0.4f });
-        binder_->BindColor("Snow_SkyHorizon", &profileSnow_.skyHorizonColor, { 0.55f, 0.58f, 0.6f });
-        binder_->Bind("Snow_SkyBlendWeight", &profileSnow_.skyColorBlendWeight, 0.60f, 0.01f, 0.0f, 1.0f);
-
         binder_->Bind("Thunder_TransitionSpeed", &profileThunder_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
         binder_->Bind("Thunder_CloudMin", &profileThunder_.cloudCoverageMin, 0.80f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_CloudMax", &profileThunder_.cloudCoverageMax, 1.00f, 0.01f, 0.0f, 1.0f);
@@ -219,8 +204,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentWeatherProfile_.skyHorizonColor = FE::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
     currentWeatherProfile_.skyColorBlendWeight = FE::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
 
-    // --- 変更後 ---
- // 現在の風向きと目標の風向きを角度(ラジアン)に変換
+    // 現在の風向きと目標の風向きを角度(ラジアン)に変換
     float currentAngle = std::atan2(currentW.windDirection.y, currentW.windDirection.x);
     float targetAngle = std::atan2(targetW.windDirection.y, targetW.windDirection.x);
 
@@ -341,7 +325,7 @@ void EnvironmentManager::DebugDraw()
 
     if (ImGui::CollapsingHeader("天候・ウェザープロファイル", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        const char* weatherNames[] = { "Sunny", "Cloudy", "Rain", "Snow", "Thunderstorm" };
+        const char* weatherNames[] = { "Sunny", "Cloudy", "Rain", "Thunderstorm" };
         ImGui::Text("Current Weather: %s", weatherNames[static_cast<int>(currentWeather_)]);
         ImGui::Text("Target Weather: %s", weatherNames[static_cast<int>(targetWeather_)]);
 
@@ -356,7 +340,6 @@ void EnvironmentManager::DebugDraw()
         if (ImGui::Button("Sunny")) RequestWeatherChange(WeatherState::Sunny); ImGui::SameLine();
         if (ImGui::Button("Cloudy")) RequestWeatherChange(WeatherState::Cloudy); ImGui::SameLine();
         if (ImGui::Button("Rain")) RequestWeatherChange(WeatherState::Rain); ImGui::SameLine();
-        if (ImGui::Button("Snow")) RequestWeatherChange(WeatherState::Snow); ImGui::SameLine();
         if (ImGui::Button("Thunder")) RequestWeatherChange(WeatherState::Thunderstorm);
 
         ImGui::Separator();
@@ -364,10 +347,10 @@ void EnvironmentManager::DebugDraw()
 
         if (ImGui::BeginTabBar("WeatherProfiles"))
         {
-            const char* prefix[] = { "Sunny", "Cloudy", "Rain", "Snow", "Thunder" };
-            const char* tabNames[] = { "Sunny", "Cloudy", "Rain", "Snow", "Thunderstorm" };
+            const char* prefix[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
+            const char* tabNames[] = { "Sunny", "Cloudy", "Rain", "Thunderstorm" };
 
-            for (int i = 0; i < 5; ++i) {
+            for (int i = 0; i < 4; ++i) {
                 if (ImGui::BeginTabItem(tabNames[i])) {
                     std::string p = prefix[i];
                     binder_->Draw((p + "_TransitionSpeed").c_str(), "この天候のベース遷移スピード");
@@ -413,10 +396,10 @@ void EnvironmentManager::RequestWeatherChange(WeatherState nextWeather)
 {
     // 晴れから直接雨・雪・雷に行こうとした場合
     if (currentWeather_ == WeatherState::Sunny &&
-        (nextWeather == WeatherState::Rain || nextWeather == WeatherState::Snow || nextWeather == WeatherState::Thunderstorm))
+        (nextWeather == WeatherState::Rain || nextWeather == WeatherState::Thunderstorm))
     {
         targetWeather_ = WeatherState::Cloudy; // 一旦ターゲットを曇りにする
-        pendingWeather_ = nextWeather;         // 本当になりたい天候を覚えておく
+        pendingWeather_ = nextWeather;         // 天候を覚えておく
         hasPendingWeather_ = true;
     }
     else
@@ -433,7 +416,6 @@ WeatherProfile EnvironmentManager::GetWeatherProfile(WeatherState state) const
     case WeatherState::Sunny:        return profileSunny_;
     case WeatherState::Cloudy:       return profileCloudy_;
     case WeatherState::Rain:         return profileRain_;
-    case WeatherState::Snow:         return profileSnow_;
     case WeatherState::Thunderstorm: return profileThunder_;
     default:                         return profileSunny_;
     }

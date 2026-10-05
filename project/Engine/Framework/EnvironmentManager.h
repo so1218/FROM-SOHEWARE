@@ -27,8 +27,7 @@ struct TimeOfDayProfile
 enum class WeatherState {
     Sunny,          
     Cloudy,       
-    Rain,         
-    Snow,          
+    Rain,             
     Thunderstorm    
 };
 
@@ -136,7 +135,7 @@ private:
     float accumulatedWindTime_ = 0.0f;
     Vector2 windOffset_ = { 0.0f, 0.0f };
 
-    WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileSnow_, profileThunder_;
+    WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileThunder_;
     WeatherProfile currentWeatherProfile_;
 
     WeatherState pendingWeather_ = WeatherState::Sunny;
