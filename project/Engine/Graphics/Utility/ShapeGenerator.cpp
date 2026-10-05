@@ -90,7 +90,7 @@ void ShapeGenerator::SkydomeGenerator(
             // 法線は中心からの方向
             vertex.normal = { x, y, z };
 
-            // 雲を流すためのUV座標（球の極座標をそのまま2DのUVにマッピング）
+            // 雲を流すためのUV座標
             vertex.texcoord = { u, v };
 
             vertices.push_back(vertex);

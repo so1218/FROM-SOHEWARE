@@ -4,7 +4,6 @@
 #include "Input.h"
 #include "ImGuiManager.h"
 #include "AudioPlayer.h"
-#include "TimeManager.h"
 #include "Grid.h"
 
 using namespace FE;
@@ -37,7 +36,7 @@ void TitleScene::OnUpdate()
         || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
-		sceneManager_->RequestSceneChange(SceneID::TestHori);
+		sceneManager_->RequestSceneChange(SceneID::Play);
 	}
 }
 

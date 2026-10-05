@@ -12,7 +12,7 @@ enum class SceneID
 {
     Title,
     Play,
-    TestHori,
+    Test,
 };
 
 class SceneManager

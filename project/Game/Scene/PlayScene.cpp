@@ -1,60 +1,128 @@
 #include "pch.h"
 #include "PlayScene.h"
-#include "SceneManager.h"
-#include "TitleScene.h"
 #include "ImGuiManager.h"
-#include "AudioPlayer.h"
 #include "TimeManager.h"
-#include "MathUtils.h"
 #include "Input.h"
 #include "Grid.h"
+#include "GrassField.h"
+#include "SceneManager.h"
+#include "AudioPlayer.h"
+#include "AmmoManager.h"
+#include "EnemyManager.h"
+#include "EnvironmentPropManager.h"
+#include "WeatherEffectManager.h"
+#include "PebbleField.h"
+#include "FoliageField.h"
+#include "GameUI.h"
+#include "WaterManager.h"
 
 using namespace FE;
 
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine)
 {
-    // オブジェクトを生成
-    auto grid = std::make_unique<Grid>(engine_);
-
-    objectManager_.AddObject(std::move(grid));
-}
-
-PlayScene::~PlayScene()
-{
+	// ゲームオブジェクトの生成・登録
+    player_ = objectManager_.Create<Player>(engine_, camera_.get());
+    followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
+    ground_ = objectManager_.Create<Ground>(engine_);
+    grassField_ = objectManager_.Create<GrassField>(engine_);
+    grassField_->SetTerrain(ground_->GetTerrain());
+    treeField_ = objectManager_.Create<TreeField>(engine_);
+    treeField_->SetTerrain(ground_->GetTerrain());
+    player_->SetTerrain(ground_->GetTerrain());
+    player_->SetTreeField(treeField_);
+    followCamera_->SetTerrain(ground_->GetTerrain());
+	player_->SetFollowCamera(followCamera_.get());
+    objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
+    objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
+    objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
+    objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
+    objectManager_.Create<PebbleField>(engine_);
+    objectManager_.Create<FoliageField>(engine_);
+    objectManager_.Create<GameUI>(engine_);
+    objectManager_.Create<WaterManager>(engine_, "GameWater");
 }
 
 void PlayScene::OnInitialize()
 {
-    // 初期化
-    camera_->Initialize();
+    // ライトの設定
+    engine_->GetLightManager()->GetDirectionalLightData()[0].enable = true;
+    engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-0.4f,1.4f };
+    engine_->GetLightManager()->GetDirectionalLightData()[0].color = { 1.0f,193.0f / 255.0f,96.0f / 255.0f,1.0f };
+    engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
+    engine_->GetLightManager()->GetDirectionalLightData()[0].volumetricScatteringIntensity = 13.0f;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableVolumetricFog = true;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->noiseIntensity = 0.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->scatteringIntensity = 10.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->ambientLight = { 9.0f / 255.0f,9.0f / 255.0f,9.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->maxDistance = 500.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogSettings()->extinctionScale = 0.5f;
+
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().clear();
+    
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().push_back(VolumetricFogPass::FogVolumeData());
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData().push_back(VolumetricFogPass::FogVolumeData());
+    
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].type = 1;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].position = { 50.0f,22.0f,-50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].scale = { 50.0f,24.0f,50.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].color = { 24.0f / 255.0f,194.0f / 255.0f,252.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].density = 0.2f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].blendDistance = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windDirection = { 1.0f,-0.2f,0.7f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].windSpeed = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].coverage = 0.55f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].worleyWeight = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseIntensity = 0.9f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[0].noiseScale = { 0.06f,0.06f,0.06f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].position = { -60.0f,0.0f,60.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].scale.x = 50.0f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].color = { 120.0f / 255.0f,30.0f / 255.0f,255.0f / 255.0f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].density = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].blendDistance = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].windDirection = { 1.0f,-0.2f,0.7f };
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].windSpeed = 0.3f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].coverage = 0.55f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].worleyWeight = 0.95f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseIntensity = 0.9f;
+    engine_->GetPostEffectManager()->GetVolumetricFogPass()->GetFogVolumesData()[1].noiseScale = { 0.06f,0.06f,0.06f };
+    engine_->GetPostEffectManager()->GetBrightSettings()->threshold = 0.9f;
+    engine_->GetPostEffectManager()->GetBrightSettings()->intensity = 1.1f;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableDoF = true;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusDistance = 45.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->focusRange = 150.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->bokehHighlightIntensity = 3.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->transitionRange = 65.0f;
+    engine_->GetPostEffectManager()->GetDoFSettings()->bokehRadius = 2.3f;
+    engine_->GetPostEffectManager()->GetCompositeSettings()->enableSSAO = true;
+    engine_->GetPostEffectManager()->GetSSAOSettings()->intensity = 3.5f;
+
+    // デフォルトカメラの設定
+    followCamera_->Initialize();
+    cameraManager_->ChangeController(followCamera_.get());
+
+	AudioPlayer::GetInstance().PlayUnique("playSceneBGM", true, 50);
 }
 
 void PlayScene::OnUpdate()
 {
-    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
-        || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
-    {
-        // シーンマネージャーを通じてシーン切り替えをリクエスト
-        sceneManager_->RequestSceneChange(SceneID::Title);
-    }
+
+
 }
 
 void PlayScene::OnDraw()
 {
-    
+   
 }
 
 void PlayScene::OnDebugDraw()
 {
 #ifdef ENABLE_IMGUI
-    ImGui::Begin("プレイシーン");
-
-    ImGui::End();
+ 
 #endif
 }
 
 void PlayScene::OnFinalize()
 {
 }
-

@@ -843,22 +843,16 @@
     <ClInclude Include="Game\Global\CollisionConfig.h">
       <Filter>Game\Global</Filter>
     </ClInclude>
-    <ClCompile Include="Game\Scene\PlayScene.cpp">
-      <Filter>Game\Scene</Filter>
-    </ClCompile>
-    <ClInclude Include="Game\Scene\PlayScene.h">
-      <Filter>Game\Scene</Filter>
-    </ClInclude>
     <ClCompile Include="Game\Scene\TitleScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
     <ClInclude Include="Game\Scene\TitleScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
-    <ClCompile Include="Game\Scene\TestScene\TestSceneHori.cpp">
+    <ClCompile Include="Game\Scene\PlayScene.cpp">
       <Filter>Game\Scene\TestScene</Filter>
     </ClCompile>
-    <ClInclude Include="Game\Scene\TestScene\TestSceneHori.h">
+    <ClInclude Include="Game\Scene\PlayScene.h">
       <Filter>Game\Scene\TestScene</Filter>
     </ClInclude>
     <ClCompile Include="Engine\Camera\CameraRail.cpp" />
@@ -905,6 +899,7 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateAiming.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerReticle.cpp" />
+    <ClCompile Include="Game\Scene\TestScene\TestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\json.hpp" />
@@ -957,6 +952,7 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateAiming.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerReticle.h" />
+    <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\Shaders\Volumetric\Generate3DNoise.CS.hlsl" />

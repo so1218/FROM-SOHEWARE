@@ -1,16 +1,17 @@
 #pragma once
 #include "BaseScene.h"
 #include "Player.h"
-#include "ParticleEmitter.h"
 #include "FollowCamera.h"
-#include "Sprite.h"
+#include "CameraRail.h"
+#include "ParticleEmitter.h"
+#include "Ground.h"
+#include "GrassField.h"
+#include "TreeField.h"
 
 class PlayScene : public FE::BaseScene
 {
 public:
     PlayScene(FE::Engine* engine);
-
-    ~PlayScene();
 
     void OnInitialize() override;
     void OnUpdate() override;
@@ -19,5 +20,13 @@ public:
     void OnFinalize() override;
 
 private:
+    // メンバー変数
+    Player* player_ = nullptr;
+    Ground* ground_ = nullptr;
+    GrassField* grassField_ = nullptr;
+    TreeField* treeField_ = nullptr;
+    std::unique_ptr<FollowCamera> followCamera_;
+    std::unique_ptr<FE::CameraRail> openingRail_;
+
 };
 

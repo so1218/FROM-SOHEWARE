@@ -367,8 +367,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\WaterManager.cpp" />
     <ClCompile Include="Game\GameObject\WaterObject.cpp" />
     <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
-    <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
+    <ClCompile Include="Game\Scene\TestScene\TestScene.cpp" />
     <ClCompile Include="Game\Scene\TitleScene.cpp" />
     <ClCompile Include="Game\GameObject\Ground.cpp" />
     <ClCompile Include="Engine\Core\GlobalVariables.cpp" />
@@ -377,7 +377,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ClCompile>
     <ClCompile Include="Engine\Core\TimeManager.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleEmitter.cpp" />
-    <ClCompile Include="Game\Scene\TestScene\TestSceneHori.cpp" />
+    <ClCompile Include="Game\Scene\PlayScene.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Sprite.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleEditor.cpp" />
   </ItemGroup>
@@ -545,9 +545,9 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Global\CollisionConfig.h" />
     <ClInclude Include="Engine\Collision\CollisionManager.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />
-    <ClInclude Include="Game\Scene\PlayScene.h" />
     <ClInclude Include="Engine\Framework\BaseScene.h" />
     <ClInclude Include="Engine\Framework\SceneManager.h" />
+    <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
     <ClInclude Include="Game\Scene\TitleScene.h" />
     <ClInclude Include="Game\GameObject\Ground.h" />
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
@@ -557,7 +557,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
     <ClInclude Include="Engine\Core\TimeManager.h" />
     <ClInclude Include="Engine\Graphics\Resource\SRVAllocator.h" />
-    <ClInclude Include="Game\Scene\TestScene\TestSceneHori.h" />
+    <ClInclude Include="Game\Scene\PlayScene.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Sprite.h" />
   </ItemGroup>
   <ItemGroup>
