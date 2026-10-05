@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "ImGuiManager.h"
-
 #include "WorldTransform.h"
 #include "Camera.h"
+#include "DebugDraw.h"
 
 namespace FE
 {
 
 #ifdef ENABLE_IMGUI
+bool ImGuiManager::showGui_ = true;
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
 int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
@@ -162,12 +163,20 @@ void ImGuiManager::BeginFrame()
 
     // ImGuizmoのフレーム開始処理
     ImGuizmo::BeginFrame();
-    ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext()); // コンテキスト設定
+    ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 
-    // Gizmoを描画する画面範囲を指定（画面全体に設定）
-    ImGuiIO& io = ImGui::GetIO();
+    // F1 キーで ImGui 全体を切り替え
+    if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
+    {
+        showGui_ = !showGui_;
+        DebugDraw::SetEnabled(showGui_);
+    }
 
-    DrawMenuBar();
+    // メニューバーは GUI 有効時のみ描画
+    if (showGui_)
+    {
+        DrawMenuBar();
+    }
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
@@ -175,15 +184,17 @@ void ImGuiManager::BeginFrame()
     ImVec2 dockPos = viewport->Pos;
     ImVec2 dockSize = viewport->Size;
 
-    if (ImGui::GetItemRectSize().y > 0.0f)
+    // メニューバーが表示されている場合のみ位置とサイズを調整
+    if (showGui_ && ImGui::GetItemRectSize().y > 0.0f)
     {
-        dockPos.y += ImGui::GetItemRectSize().y;    // Y座標をメニューバーのぶん下げる
-        dockSize.y -= ImGui::GetItemRectSize().y;   // 高さをメニューバーのぶん縮める
+        dockPos.y += ImGui::GetItemRectSize().y;
+        dockSize.y -= ImGui::GetItemRectSize().y;
     }
 
+    ImGuiIO& io = ImGui::GetIO();
     bool iniFileExists = (io.IniFilename != nullptr && std::filesystem::exists(io.IniFilename));
 
-      // 初回のみDock構造を作成
+    // 初回のみDock構造を作成
     if (!dockInitialized_ && !iniFileExists) {
         dockInitialized_ = true;
 
@@ -195,7 +206,6 @@ void ImGuiManager::BeginFrame()
         ImGuiID dock_id_down, dock_id_right;
 
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.35f, &dock_id_right, &dock_main_id);
-
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.3f, &dock_id_down, &dock_main_id);
 
         // 割り当て
@@ -209,11 +219,11 @@ void ImGuiManager::BeginFrame()
     }
     else if (!dockInitialized_ && iniFileExists)
     {
-        dockInitialized_ = true; // .iniから読み込んだので組んだ扱い
+        dockInitialized_ = true;
     }
 
-    // メインDockSpaceの背景ウィンドウを描画
-    ImGui::SetNextWindowPos(dockPos);  
+    // DockSpace自体は非表示時でも維持し続ける
+    ImGui::SetNextWindowPos(dockPos);
     ImGui::SetNextWindowSize(dockSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
@@ -225,17 +235,14 @@ void ImGuiManager::BeginFrame()
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)); 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("DockSpaceWindow", nullptr, window_flags);
     ImGui::PopStyleVar(3);
-
-  /*  ImGui::ShowStyleEditor();*/
 
     // DockSpaceを作成
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    ImGui::End(); 
+    ImGui::End();
 #endif
 }
 

@@ -6,6 +6,7 @@
 #include "FadeInState.h"
 #include "ISceneTransitionState.h"
 #include "Fade.h"
+#include "ImGuiManager.h"
 
 namespace FE
 {
@@ -49,6 +50,8 @@ void SceneManager::Draw()
 
 void SceneManager::DebugDraw()
 {
+    if (!ImGuiManager::IsGuiVisible()) return;
+
     if (currentScene_)
     {
         currentScene_->DebugDraw();

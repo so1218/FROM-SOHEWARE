@@ -142,11 +142,8 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     postEffectManager_->BeginFinalComposite(cmdList);
     rendererManager->DrawFullScreenQuadWithOffscreenTexture();
 
-#ifdef ENABLE_IMGUI
-    // ImGui有効時ゲーム画面はエディタ内の1ウィンドウとして描画されるため、
-    // オフスクリーンテクスチャ合成時でゲーム内UIを乗せる
     rendererManager->DrawUI();
-#endif
+
     postEffectManager_->EndFinalComposite(cmdList);
 
     // バックバッファへの転送
@@ -154,21 +151,30 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
 #ifdef ENABLE_IMGUI
-    // ImGuiのSceneViewウィンドウの転送と、ImGui自体の描画終了処理
-    engine->GetDebugGuiManager()->EndSceneView();
+    if (ImGuiManager::IsGuiVisible())
+    {
+        // GUI オン時: ImGuiのエディタドッキング画面として描画
+        engine->GetDebugGuiManager()->EndSceneView();
 
-    ID3D12DescriptorHeap* heaps[] = { engine->GetSRVManager()->GetSRVHeap() };
-    cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-    ImGuiManager::EndFrame(cmdList); 
+        ID3D12DescriptorHeap* heaps[] = { engine->GetSRVManager()->GetSRVHeap() };
+        cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+        ImGuiManager::EndFrame(cmdList);
+    }
+    else
+    {
+        // GUI オフ時: 全画面にゲーム結果を直接描画 
+        cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetViewport());
+        cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetScissorRect());
+        rendererManager->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
 
+        // ImGuiの内部コマンドをクリアするためRenderだけ呼び出す
+        ImGui::Render();
+    }
 #else
-    // 製品版(リリース時)画面全体に描画結果を転送し、
-    // その上に直接ゲーム内UIを描画
+    // 製品版
     cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetViewport());
     cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetScissorRect());
     rendererManager->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
-
-    rendererManager->DrawUI(); // 製品版のゲームUI
 #endif
 
     renderCoordinator_->EndFrame();

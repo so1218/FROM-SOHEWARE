@@ -40,6 +40,10 @@ public:
     // シーンビューの情報をセット
     static void SetSceneViewRect(const Vector2& min, const Vector2& size, bool isHovered);
 
+    // GUI全体の表示状態
+    static bool IsGuiVisible() { return showGui_; }
+    static void SetGuiVisible(bool visible) { showGui_ = visible; }
+
     // 外部から情報を取る用
 #ifdef ENABLE_IMGUI
     static bool IsSceneHovered() { return isSceneHovered_; }
@@ -52,6 +56,8 @@ public:
 
 private:
 #ifdef ENABLE_IMGUI
+    static bool showGui_; // GUI表示フラグ
+
     // 操作モードを保持する変数
     static int gizmoOperation_;
 

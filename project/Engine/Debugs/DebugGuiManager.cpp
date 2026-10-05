@@ -37,6 +37,13 @@ void DebugGuiManager::Update(Camera* targetCamera)
 
     ImGui::Separator();
 
+    bool showGui = ImGuiManager::IsGuiVisible();
+    if (ImGui::Checkbox("GUIを表示 (F1キーで切替)", &showGui))
+    {
+        ImGuiManager::SetGuiVisible(showGui);
+        DebugDraw::SetEnabled(showGui);
+    }
+
     bool debugCamEnabled = engine_->GetDebugCamera()->IsEnabled();
     if (ImGui::Checkbox("デバッグカメラ有効", &debugCamEnabled))
     {
@@ -937,10 +944,13 @@ void DebugGuiManager::DrawInformationDisplays()
 
 void DebugGuiManager::BeginSceneView(
     SRVManager* srvManager,
-    uint32_t srvIndexToShow
-)
+    uint32_t srvIndexToShow)
 {
-    /// GPUハンドル取得
+#ifdef ENABLE_IMGUI
+    // GUIがオフの時は SceneView ウィンドウを生成しない
+    if (!ImGuiManager::IsGuiVisible()) return;
+
+    // GPUハンドル取得
     D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = srvManager->GetSRVHandleGPU(srvIndexToShow);
 
     // リセット要求などのロジック
@@ -963,32 +973,26 @@ void DebugGuiManager::BeginSceneView(
     // ウィンドウの利用可能なサイズを取得
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
-    // ゲームの解像度のアスペクト比を計算
+    // アスペクト比計算
     float targetAspect = static_cast<float>(Engine::GetClientWidth()) / static_cast<float>(Engine::GetClientHeight());
-
-    // ウィンドウのアスペクト比を計算
     float windowAspect = windowSize.x / windowSize.y;
 
-    // アスペクト比に合わせて描画サイズを計算
     ImVec2 finalSize = windowSize;
     if (windowAspect > targetAspect)
     {
-        // ウィンドウの方が横長 → 高さに合わせる
         finalSize.x = windowSize.y * targetAspect;
     }
     else
     {
-        // ウィンドウの方が縦長 → 幅に合わせる
         finalSize.y = windowSize.x / targetAspect;
     }
 
-    // 画像を中央に寄せるためのオフセット計算
+    // 画像描画位置のオフセット計算
     ImVec2 cursorStart = ImGui::GetCursorPos();
     ImVec2 offset;
     offset.x = (windowSize.x - finalSize.x) * 0.5f;
     offset.y = (windowSize.y - finalSize.y) * 0.5f;
 
-    // カーソル位置をずらして画像を描画
     ImGui::SetCursorPos(ImVec2(cursorStart.x + offset.x, cursorStart.y + offset.y));
 
     ImGui::Image(reinterpret_cast<ImTextureID>(reinterpret_cast<void*>(gpuHandle.ptr)), finalSize);
@@ -1008,6 +1012,8 @@ void DebugGuiManager::BeginSceneView(
         Vector2(vMax.x - vMin.x, vMax.y - vMin.y),
         isHovered
     );
+
+#endif
 }
 
 void DebugGuiManager::EndSceneView()

@@ -1,5 +1,5 @@
 {
-  "RootSignature": "PostProcess",
+  "RootSignature": "FinalCopy",
   "VertexShader": "PostProcess/FullScreenQuad.VS.hlsl",
   "PixelShader": "PostProcess/CopyTexture.PS.hlsl",
   "InputLayout": "Fullscreen",
@@ -8,7 +8,7 @@
   "DepthStencilState": "Off",
   "Topology": "Triangle",
   "RTVFormats": [
-    "R16G16B16A16_FLOAT"
+    "R8G8B8A8_UNORM_SRGB"
   ],
   "DSVFormat": "UNKNOWN"
 }

@@ -214,7 +214,23 @@ void RendererManager::DrawFullScreenQuadWithOffscreenTexture()
 // 単純にテクスチャをそのまま画面に出すメソッド
 void RendererManager::DrawFinalResult(uint32_t srvIndex)
 {
-	DrawPostEffectsProcess(srvIndex);
+	auto cmdList = commandManager_->GetCommandList();
+
+	PIXScopedEvent(cmdList, FE::PIXColors::PostProcess, "Draw Final Result To BackBuffer");
+
+	// SRVヒープをセット
+	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
+	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
+
+	// バックバッファ用の FinalCopy PSO / ルートシグネチャをセット
+	cmdList->SetPipelineState(psoManager_->GetPSO("FinalCopy"));
+	cmdList->SetGraphicsRootSignature(rootSignatureManager_->GetRootSignature("FinalCopy"));
+
+	// 転送元の最終合成テクスチャを t0 にバインド
+	cmdList->SetGraphicsRootDescriptorTable(0, srvManager_->GetSRVHandleGPU(srvIndex));
+
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->DrawInstanced(3, 1, 0, 0);
 }
 
 void RendererManager::PrepareShadowBatches()

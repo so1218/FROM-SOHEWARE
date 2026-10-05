@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "DebugDraw.h"
 
+bool FE::DebugDraw::enabled_ = true;
+
 #ifdef ENABLE_DEBUG_DRAW
 
 #include "RendererManager.h"
@@ -11,7 +13,6 @@ namespace FE
 {
 
 RendererManager* DebugDraw::rendererManager_ = nullptr;
-bool DebugDraw::enabled_ = true;
 
 void DebugDraw::Initialize(RendererManager* rendererManager)
 {

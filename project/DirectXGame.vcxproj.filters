@@ -989,7 +989,7 @@
     <FxCompile Include="Assets\Shaders\Environment\Water.VS.hlsl" />
     <FxCompile Include="Assets\Shaders\Environment\Water.PS.hlsl" />
     <FxCompile Include="Assets\Shaders\PostProcess\Upsample.PS.hlsl" />
-    <FxCompile Include="Assets\Shaders\PostProcess\PostProcessCopy.PS.hlsl" />
+    <FxCompile Include="Assets\Shaders\PostProcess\CopyTexture.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
