@@ -193,14 +193,10 @@ void RendererManager::DrawPostEffectsProcess(uint32_t inputSrvIndex)
 	// 最終入力テクスチャ（Bloom合成結果）
 	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(inputSrvIndex));
 
-	// Dissolve Map
-	uint32_t dissolveMapIndex = TextureManager::GetInstance().Get("noise_01");
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(dissolveMapIndex));
-
 	// LUT Map
 	std::string lutName = postEffectManager_->GetCurrentLutName();
 	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
-	cmdList->SetGraphicsRootDescriptorTable(3, srvManager_->GetSRVHandleGPU(lutMapIndex));
+	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(lutMapIndex));
 
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);

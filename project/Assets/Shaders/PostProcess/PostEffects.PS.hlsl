@@ -3,63 +3,11 @@
 #include "Common/MathUtils.hlsli"
 
 Texture2D gTexture : register(t0);
-Texture2D gDissolveTexture : register(t1);
-Texture2D gLutTexture : register(t2);
+Texture2D gLutTexture : register(t1);
 SamplerState gSampler : register(s0);
 SamplerState gClampSampler : register(s1);
 
 ConstantBuffer<PostEffectData> gData : register(b0);
-
-// パーリンノイズ補完
-float fade(float t)
-{
-    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
-}
-
-// 擬似乱数生成
-float grad(int hash, float2 p)
-{
-    return (hash & 15) < 8 ? p.x : p.y;
-}
-
-// パーリンノイズ生成
-float perlinNoise(float2 uv)
-{
-    float2 p = floor(uv);
-    float2 f = uv - p;
-
-    int i = int(p.x) + int(p.y) * 57;
-    int i1 = i + 1;
-    int i2 = i + 57;
-    int i3 = i2 + 1;
-
-    float g1 = grad(i, f);
-    float g2 = grad(i1, f - float2(1.0, 0.0));
-    float g3 = grad(i2, f - float2(0.0, 1.0));
-    float g4 = grad(i3, f - float2(1.0, 1.0));
-
-    float u = fade(f.x);
-    float v = fade(f.y);
-
-    return lerp(v, lerp(u, g1, g2), lerp(u, g3, g4));
-}
-
-// 高自由度FBM
-float FBM(float2 p, int octaves, float gain, float lacunarity)
-{
-    float amplitude = 0.5;
-    float frequency = 1.0;
-    float sum = 0.0;
-
-    for (int i = 0; i < octaves; i++)
-    {
-        sum += amplitude * perlinNoise(p * frequency);
-        frequency *= lacunarity;
-        amplitude *= gain;
-    }
-
-    return sum;
-}
 
 // =======================================================
 //  UV変形系
@@ -72,79 +20,9 @@ float2 ApplyPixelation(float2 uv)
     return floor(uv / pixelSizeUV) * pixelSizeUV;
 }
 
-// 画面波（横・縦・両方） 
-float2 ApplyScreenWave(float2 uv)
-{
-    float2 waveOffset = float2(0.0, 0.0);
-    // 横波
-    if (gData.waveDirection == 0 || gData.waveDirection == 2)
-    {
-        waveOffset.x += sin(uv.y * gData.waveFrequency + gData.totalTime * gData.waveSpeed) * gData.waveAmplitude;
-    }
-    // 縦波
-    if (gData.waveDirection == 1 || gData.waveDirection == 2)
-    {
-        waveOffset.y += sin(uv.x * gData.waveFrequency + gData.totalTime * gData.waveSpeed) * gData.waveAmplitude;
-    }
-
-    // 画面端のフェード処理（端で歪まないように）
-    float edgeFade = saturate((1.0 - abs(uv.x - 0.5) * 2.0) * (1.0 - abs(uv.y - 0.5) * 2.0));
-    edgeFade = smoothstep(0.0, 0.2, edgeFade);
-
-    return saturate(uv + waveOffset * edgeFade);
-}
-
-// 陽炎
-float2 ApplyHeatHaze(float2 uv)
-{
-    float2 noiseUV = uv * gData.heatNoiseScale + float2(gData.totalTime * gData.heatSpeed, gData.totalTime * gData.heatSpeed * 0.3);
-    float noiseX = FBM(noiseUV + float2(13.0, 7.0), 5, 0.5, 2.0);
-    float noiseY = FBM(noiseUV + float2(21.0, 11.0), 5, 0.5, 2.0);
-    float2 offset = (float2(noiseX, noiseY) - 0.5) * gData.heatDistortionStrength;
-    return saturate(uv + offset);
-}
-
-// 水面屈折
-float2 ApplyWaterRefraction(float2 uv)
-{
-    float2 noiseUV = uv * gData.turbulentFrequency + float2(gData.totalTime * gData.turbulentSpeed, 0.0);
-    float displacement = sin(noiseUV.x * 10.0 + gData.totalTime * 0.5) * 0.5 + sin(noiseUV.y * 10.0 + gData.totalTime * 0.5) * 0.5;
-    return uv + float2(displacement, displacement) * gData.turbulentStrength;
-}
-
-// 魚眼レンズ
-float2 ApplyFisheye(float2 uv)
-{
-    float2 center = float2(0.5, 0.5);
-    float2 offset = uv - center;
-    float dist = length(offset);
-    float distDistorted = dist + gData.fisheyeDistortion * dist * dist;
-    float2 newUV = center + (offset / max(dist, kEpsilon)) * distDistorted;
-
-    return newUV;
-}
-
 // =======================================================
 //  カラー系
 // =======================================================
-
-// グレースケール
-float3 ApplyGrayscale(float3 color)
-{
-    float gray = dot(color, float3(0.299, 0.587, 0.114));
-    return lerp(color, float3(gray, gray, gray), gData.grayscaleColorAmount);
-}
-
-// セピア
-float3 ApplySepia(float3 color)
-{
-    float3 sepia = float3(
-        dot(color, float3(0.393, 0.769, 0.189)),
-        dot(color, float3(0.349, 0.686, 0.168)),
-        dot(color, float3(0.272, 0.534, 0.131))
-    );
-    return lerp(color, sepia, gData.sepiaColorAmount);
-}
 
 // 色かぶり
 float3 ApplyColorTint(float3 color)
@@ -158,30 +36,26 @@ float3 ApplyColorTint(float3 color)
 // ビネット
 float3 ApplyVignette(float3 color, float2 uv)
 {
-    // 中心座標
-    float2 center = uv - 0.5;
+    float2 center = uv - 0.5f;
     
-    // 距離の計算
-    float dist = length(center / gData.vignetteEllipseScale);
+    // 0除算ガード
+    float2 scale = max(gData.vignetteEllipseScale, float2(0.001f, 0.001f));
+    float dist = length(center / scale);
 
-    // 距離に基づいたリニアな進行度を計算
-    // ゼロ除算対策
     float fadeLength = max(gData.vignetteSoftness, kEpsilon);
     float darkness = (dist - gData.vignetteRadius) / fadeLength;
 
-    // 滑らかにする
-    darkness = smoothstep(0.0, 1.0, darkness);
-
-    // 強度とディザリング
+    darkness = smoothstep(0.0f, 1.0f, darkness);
     darkness *= gData.vignetteAmount;
 
+    // ディザリング
     float dither = (InterleavedGradientNoise(uv * gData.screenResolution.xy) - 0.5f) / 255.0f;
     darkness += dither * 2.0f;
+    
+    float blendAmount = saturate(darkness);
 
-    // 合成
-    float3 blendFactor = lerp(float3(1.0, 1.0, 1.0), gData.vignetteColor.rgb, darkness);
-
-    return color * blendFactor;
+    // 元の色から vignetteColor へ補間
+    return lerp(color, gData.vignetteColor.rgb, blendAmount);
 }
 
 // スキャンライン
@@ -200,129 +74,45 @@ float3 ApplyScanline(float3 color, float2 uv)
     return lerp(color, gData.scanlineColor, mask * gData.scanlineIntensity);
 }
 
-// フィルムグレイン
-float3 ApplyFilmGrain(float3 color, float2 uv)
-{
-    float3 grain = Hash33(float3(uv * gData.screenResolution.xy, gData.totalTime * 60.0f));
-    
-    return saturate(color + grain * gData.filmGrainIntensity);
-}
-
 // =======================================================
 //  特殊サンプリング
 // =======================================================
 
-// グリッチ
-float4 SampleGlitch(float2 uv)
+// 色収差
+float4 SampleChromaticAberration(float2 uv)
 {
-    float blockHeight = gData.glitchBlockHeight;
-    float blockIndex = floor(uv.y / blockHeight);
-    float timePhase = gData.totalTime * 0.5;
+    // UV上のオフセット量を計算
+    float2 offset = gData.chromaOffset;
 
-    // ノイズ生成
-    float glitchOffsetX = (FBM(uv * 10.0f + float2(timePhase, 0.0f), 4, 0.5f, 2.0f) - 0.5f) * gData.glitchAmount;
-    float glitchOffsetY = (FBM(uv * 10.0f + float2(0.0f, timePhase), 4, 0.5f, 2.0f) - 0.5f) * gData.glitchAmount * 0.3f;
-    
-    float glitchSwitch = step(0.5f, Hash12(float2(blockIndex, floor(gData.totalTime * 5.0f))));
-
-    float2 glitchUV = uv + float2(glitchOffsetX, glitchOffsetY) * glitchSwitch;
-    
-    // 色収差的なズレ
-    float2 offsetR = float2(0.003f * sin(gData.totalTime), 0.0f);
-    float2 offsetG = float2(-0.003f * cos(gData.totalTime), 0.0f);
-    float2 offsetB = float2(0.003f * sin(uv.y * 50.0f + gData.totalTime), 0.0f);
-
-    float r = gTexture.Sample(gSampler, glitchUV + offsetR).r;
-    float g = gTexture.Sample(gSampler, glitchUV + offsetG).g;
-    float b = gTexture.Sample(gSampler, glitchUV + offsetB).b;
-
-    float3 col = float3(r, g, b);
-    
-    // ホワイトノイズ追加
-    float n = (Hash12(uv * gData.screenResolution.xy + gData.totalTime * 100.0f) - 0.5f) * gData.glitchNoiseIntensity;
-    return float4(saturate(col + n), 1.0f);
-}
-
-// RGBスプリット
-float4 SampleRGBSplit(float2 uv)
-{
-    float2 offset = float2(gData.rgbSplitOffset, 0);
-    float r = gTexture.Sample(gSampler, saturate(uv - offset)).r;
+    // R channel は +offset, B channel は -offset へずらす
+    float r = gTexture.Sample(gSampler, saturate(uv + offset)).r;
     float g = gTexture.Sample(gSampler, uv).g;
-    float b = gTexture.Sample(gSampler, saturate(uv + offset)).b;
-    return float4(r, g, b, 1.0);
-}
+    float b = gTexture.Sample(gSampler, saturate(uv - offset)).b;
 
-// クロマティックアベレーション
-float4 SampleChromAb(float2 uv)
-{
-    float2 offset = gData.chromaOffset / gData.screenResolution;
-    float r = gTexture.Sample(gSampler, uv + offset).r;
-    float g = gTexture.Sample(gSampler, uv).g;
-    float b = gTexture.Sample(gSampler, uv - offset).b;
-    return float4(r, g, b, 1.0);
+    return float4(r, g, b, 1.0f);
 }
 
 // ラディアルブラー
 float4 ApplyRadialBlur(float2 uv)
 {
-    // サンプリング回数
     const int SAMPLES = 12;
-    
     float4 color = float4(0, 0, 0, 0);
     
-    // 中心から外側へ向かってサンプリング位置をずらしながら加算
+    // 中心からの方向ベクトル
+    float2 dir = uv - gData.radialBlurCenter;
+    
+    // 中心に向かって放射状にサンプリング位置をずらす
     for (int i = 0; i < SAMPLES; i++)
     {
-        // 0.0(中心) ～ 1.0(元の位置) の間でスケールを変化させる
-        float scale = 1.0 - gData.radialBlurStrength * (float(i) / (float(SAMPLES) - 1));
+        float t = float(i) / float(SAMPLES - 1);
         
-        // 中心を基準にUVを縮小
-        float2 sampleUV = (uv - gData.radialBlurCenter) * scale + gData.radialBlurCenter;
+        // 強度に応じて UV をオフセット
+        float2 sampleUV = uv - dir * (gData.radialBlurStrength * t);
         
-        // テクスチャサンプリングして加算
         color += gTexture.Sample(gSampler, sampleUV);
     }
     
-    // 合計値を回数で割って平均化
     return color / float(SAMPLES);
-}
-
-// ディゾルブ
-float4 ApplyDissolve(float4 currentColor, float2 uv)
-{
-    // ノイズテクスチャからサンプリング
-    float noise = gDissolveTexture.Sample(gSampler, uv).r;
-
-    // 閾値より低い部分は黒色にさせる
-    if (noise <= gData.dissolveThreshold)
-    {
-        return float4(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-
-    // 境界線の発光処理
-    float thresholdEdge = gData.dissolveThreshold + gData.dissolveEdgeWidth;
-    
-    // ノイズ値が閾値 ～ 閾値+幅の間にある場合、エッジ色を適用
-    if (noise < thresholdEdge)
-    {
-        // 閾値に近いほど強く発光させる係数
-        float t = 1.0f - ((noise - gData.dissolveThreshold) / gData.dissolveEdgeWidth);
-        
-        // 芯が白く飛び、周囲がカラーになり、Bloomっぽく
-        float glowFactor = pow(t, 2.5f) * gData.dissolveEdgeIntensity;
-        
-        // 加算合成
-        float3 edgeGlow = gData.dissolveEdgeColor * glowFactor;
-
-        // 加算合成のような見た目にする
-        currentColor.rgb += edgeGlow;
-        
-        // 燃え尽きるように元絵を消す
-        currentColor.rgb = lerp(currentColor.rgb, gData.dissolveEdgeColor * gData.dissolveEdgeIntensity, t);
-    }
-
-    return currentColor;
 }
 
 // LUTを使ったカラーグレーディング
@@ -367,38 +157,18 @@ float4 main(VSOutput input) : SV_TARGET
     float2 uv = input.uv;
     float4 finalColor = float4(0, 0, 0, 1);
 
-    // 座標系を加工して視覚効果を作る
-    if (gData.flag[0] & PIXELATION)
-        uv = ApplyPixelation(uv);
-    if (gData.flag[0] & SCREEN_WAVE)
-        uv = ApplyScreenWave(uv);
-    if (gData.flag[0] & HEAT_HAZE)
-        uv = ApplyHeatHaze(uv);
-    if (gData.flag[0] & WATER_REFRACTION)
-        uv = ApplyWaterRefraction(uv);
-    
-    // 魚眼レンズ（範囲外黒塗りつぶしの判定）
-    if (gData.flag[0] & FISHEYE)
+    // UV を更新
+    if (gData.flag & PIXELATION)
     {
-        uv = ApplyFisheye(uv);
-        if (any(uv < 0.0) || any(uv > 1.0))
-            return float4(0, 0, 0, 1);
+        uv = ApplyPixelation(uv);
     }
 
-    // UVを元にテクスチャ取得
-    if (gData.flag[0] & GLITCH)
+    // 変形された UV を使ってテクスチャをサンプリング
+    if (gData.flag & CHROM_ABERRATION)
     {
-        finalColor = SampleGlitch(uv);
+        finalColor = SampleChromaticAberration(uv);
     }
-    else if (gData.flag[0] & RGB_SPLIT)
-    {
-        finalColor = SampleRGBSplit(uv);
-    }
-    else if (gData.flag[0] & CHROM_ABERRATION)
-    {
-        finalColor = SampleChromAb(uv);
-    }
-    else if (gData.flag[0] & RADIAL_BLUR)
+    else if (gData.flag & RADIAL_BLUR)
     {
         finalColor = ApplyRadialBlur(uv);
     }
@@ -408,51 +178,25 @@ float4 main(VSOutput input) : SV_TARGET
         finalColor = gTexture.Sample(gSampler, uv);
     }
     
-    if (gData.flag[0] & DISSOLVE)
-    {
-        finalColor = ApplyDissolve(finalColor, uv);
-    }
-
-      // 色補正・フィルタ処理
-    if (gData.flag[0] & GRAYSCALE)
-        finalColor.rgb = ApplyGrayscale(finalColor.rgb);
-    if (gData.flag[0] & SEPIA)
-        finalColor.rgb = ApplySepia(finalColor.rgb);
-    if (gData.flag[0] & COLOR_TINT)
+    // 色補正・フィルタ処理
+    if (gData.flag & COLOR_TINT)
         finalColor.rgb = ApplyColorTint(finalColor.rgb);
-    if (gData.flag[0] & SCANLINE)
+    if (gData.flag & SCANLINE)
         finalColor.rgb = ApplyScanline(finalColor.rgb, uv);
-    if (gData.flag[0] & VIGNETTE)
+    if (gData.flag & VIGNETTE)
         finalColor.rgb = ApplyVignette(finalColor.rgb, uv);
-    if (gData.flag[0] & FILM_GRAIN)
-        finalColor.rgb = ApplyFilmGrain(finalColor.rgb, uv);
 
-    // 単純加算・乱数系の処理
-    if (gData.flag[0] & BLOCK_NOISE)
-    {
-        float2 blockSize = float2(gData.blockNoiseSize, gData.blockNoiseSize);
-        float2 blockUV = floor(uv * gData.screenResolution / blockSize);
-
-        float2 timeOffset = frac(gData.totalTime * gData.blockNoiseSpeed * float2(17.0, 23.0));
-
-        float n = Hash12(blockUV + timeOffset);
-
-        float3 noiseColor = float3(n, n, n);
-        finalColor.rgb = lerp(finalColor.rgb, noiseColor, gData.blockNoiseAmount);
-
-    }
-    
-    if (gData.flag[0] & SCREEN_NOISE)
+    if (gData.flag & SCREEN_NOISE)
     {
         float2 scaledUV = uv * gData.screenResolution.xy * gData.noiseScale;
-
-        float2 timeOffset = float2(gData.totalTime * gData.noiseSpeed, gData.totalTime * gData.noiseSpeed * 1.7);
+        float2 timeOffset = float2(gData.totalTime * gData.noiseSpeed, gData.totalTime * gData.noiseSpeed * 1.7f);
 
         float3 noiseColor = Hash33(float3(scaledUV + timeOffset, gData.totalTime)) * 0.5f;
-        
         finalColor.rgb += noiseColor * gData.noiseAmount;
     }
-    if (gData.flag[0] & COLOR_GRADING_LUT)
+
+    // LUT
+    if (gData.flag & COLOR_GRADING_LUT)
     {
         finalColor.rgb = ApplyColorGradingLUT(finalColor.rgb);
     }

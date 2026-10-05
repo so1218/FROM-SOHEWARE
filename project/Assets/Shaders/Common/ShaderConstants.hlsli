@@ -17,25 +17,14 @@
 #endif
 
 #define NONE                0
-#define GRAYSCALE           (1 << 0)
-#define SEPIA               (1 << 1)
-#define PIXELATION          (1 << 2)
-#define COLOR_TINT          (1 << 3)
-#define VIGNETTE            (1 << 4)
-#define SCREEN_NOISE        (1 << 5)
-#define CHROM_ABERRATION    (1 << 6)
-#define SCREEN_WAVE         (1 << 7)
-#define FISHEYE             (1 << 8)
-#define SCANLINE            (1 << 9)
-#define BLOCK_NOISE         (1 << 10)
-#define RGB_SPLIT           (1 << 11)
-#define FILM_GRAIN          (1 << 12)
-#define GLITCH              (1 << 13)
-#define HEAT_HAZE           (1 << 14)
-#define WATER_REFRACTION    (1 << 15)
-#define DISSOLVE            (1 << 16)
-#define RADIAL_BLUR         (1 << 17)
-#define COLOR_GRADING_LUT   (1 << 18)
+#define PIXELATION          (1 << 0)
+#define COLOR_TINT          (1 << 1)
+#define VIGNETTE            (1 << 2)
+#define SCREEN_NOISE        (1 << 3)
+#define CHROM_ABERRATION    (1 << 4)
+#define SCANLINE            (1 << 5)
+#define RADIAL_BLUR         (1 << 6)
+#define COLOR_GRADING_LUT   (1 << 7)
 
 #define MAX_DIRECTIONAL_LIGHTS 2
 #define MAX_POINT_LIGHTS 10
@@ -362,11 +351,8 @@ struct ParticleInstanceData
 struct PostEffectData
 {
     float pixelationSize;
-    float3 _padding0;
-
     float2 screenResolution;
-    float grayscaleColorAmount;
-    float sepiaColorAmount;
+    float _padding;
 
     float tintMulColorAmount;
     float tintAddColorAmount;
@@ -388,16 +374,9 @@ struct PostEffectData
     float noiseSpeed;
     float noiseScale;
     float _padding2;
-
-    float chromaOffset;
-    float waveAmplitude;
-    float waveFrequency;
-    float _paddingWave;
-
-    int waveDirection;
-    float waveSpeed;
-    float fisheyeDistortion;
-    float _paddingFisheye;
+    
+    float2 chromaOffset;
+    float2 _paddingWave;
 
     float scanlineIntensity;
     float scanlineFrequency;
@@ -407,47 +386,15 @@ struct PostEffectData
     float3 scanlineColor;
     float scanlineScrollSpeed;
 
-    float blockNoiseAmount;
-    float blockNoiseSize;
-    float blockNoiseSpeed;
-    float _padding4;
-
-    float rgbSplitOffset;
-    float filmGrainIntensity;
-    float _padding5;
-    float _padding6;
-
-    float glitchBlockHeight;
-    float glitchAmount;
-    float glitchNoiseIntensity;
-    float _padding7;
-
-    float heatDistortionStrength;
-    float heatSpeed;
-    float heatNoiseScale;
-    float _padding8;
-
     float3 vignetteColor;
     float _padding9;
 
-    float turbulentStrength;
-    float turbulentFrequency;
-    float turbulentSpeed;
-    float _paddingTurbulence;
-
-    int flag[2];
-    float2 _paddingGlow2;
-
-    float dissolveThreshold;
-    float dissolveEdgeWidth;
-    float dissolveEdgeIntensity;
-    float _paddingDissolve;
-
-    float3 dissolveEdgeColor;
-    float _paddingDissolve2;
+    int flag; 
+    float3 _paddingGlow2;
 
     float radialBlurStrength;
-    float2 radialBlurCenter;
+    float2 radialBlurCenter; 
+    float _paddingGlow8;
 };
 
 struct BrightExtractSettings
