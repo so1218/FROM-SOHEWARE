@@ -93,9 +93,6 @@
     <Filter Include="externals\DirectXTex">
       <UniqueIdentifier>{81247b90-c9a2-419b-9487-c87e4a725863}</UniqueIdentifier>
     </Filter>
-    <Filter Include="externals\dirent">
-      <UniqueIdentifier>{a29ba5d1-eecf-42ce-9ba0-b05abce206f0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="externals\imgui">
       <UniqueIdentifier>{9cb9a7c5-1535-4aa3-a126-27036ee4f54a}</UniqueIdentifier>
     </Filter>
@@ -138,7 +135,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClInclude Include="resource.h" />
     <ClCompile Include="Engine\Engine.cpp">
       <Filter>Engine</Filter>
     </ClCompile>

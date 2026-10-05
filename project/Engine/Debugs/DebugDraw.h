@@ -16,6 +16,10 @@ public:
 #ifdef ENABLE_DEBUG_DRAW
     static void Initialize(RendererManager* rendererManager);
 
+    // デバッグ描画全体のオン/オフ制御
+    static void SetEnabled(bool enabled) { enabled_ = enabled; }
+    static bool IsEnabled() { return enabled_; }
+
     // デバッグ用描画
     static void DrawLine(const Vector3& start, const Vector3& end, const Vector4& color);       // 線分
     static void DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color);         // 軸平行ボックス
@@ -33,7 +37,10 @@ public:
 #endif
 
 private:
-    static RendererManager* rendererManager_; 
+#ifdef ENABLE_DEBUG_DRAW
+    static RendererManager* rendererManager_;
+    static bool enabled_; 
+#endif
 };
 
 }

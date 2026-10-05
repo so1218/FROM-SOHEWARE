@@ -555,7 +555,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Include\json.hpp" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEditor.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Engine\Core\TimeManager.h" />
     <ClInclude Include="Engine\Graphics\Resource\SRVAllocator.h" />
     <ClInclude Include="Game\Scene\TestScene\TestSceneHori.h" />

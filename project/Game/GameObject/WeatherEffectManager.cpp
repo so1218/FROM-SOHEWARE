@@ -153,7 +153,7 @@ void WeatherEffectManager::Update()
             Vector3 playerPos = player_->GetTransform().translation_;
 
             // 角度と距離をランダムに決定
-            std::uniform_real_distribution<float> distAngle(0.0f, 3.14159265f * 2.0f);
+            std::uniform_real_distribution<float> distAngle(0.0f, Math::PI * 2.0f);
             std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
 
             float angle = distAngle(randomEngine_);

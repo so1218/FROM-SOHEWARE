@@ -419,7 +419,7 @@ void LightManager::DrawDebugLights()
         DebugDraw::DrawSphere(virtualPos, sunRadius, color);
 
         // 光の束（円筒状の平行線）
-        float step = (3.141592f * 2.0f) / segments;
+        float step = (Math::PI * 2.0f) / segments;
         for (int j = 0; j < segments; ++j)
         {
             float theta = j * step;
@@ -489,7 +489,7 @@ void LightManager::DrawDebugLights()
 
         // 円を描画
         const int segments = 16;
-        float step = (3.141592f * 2.0f) / segments;
+        float step = (Math::PI * 2.0f) / segments;
         for (int j = 0; j < segments; ++j)
         {
             float theta = j * step;

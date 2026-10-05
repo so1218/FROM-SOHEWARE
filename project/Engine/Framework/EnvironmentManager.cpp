@@ -364,7 +364,7 @@ void EnvironmentManager::DebugDraw()
 
                     ImGui::Separator();
                     ImGui::Text("雨と風の環境設定");
-                    binder_->Draw((p + "_RainIntens").c_str(), "雨(雪)の強さ");
+                    binder_->Draw((p + "_RainIntens").c_str(), "雨の強さ");
                     binder_->Draw((p + "_WindDir").c_str(), "風向き");
                     binder_->Draw((p + "_WindSpeed").c_str(), "風速");
                     binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");

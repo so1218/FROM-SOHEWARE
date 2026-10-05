@@ -31,6 +31,39 @@ void DebugGuiManager::Update(Camera* targetCamera)
     // メインのデバッグウィンドウ
     ImGui::Begin("全体のデバッグ情報・設定");
 
+    auto* time = TimeManager::GetInstance();
+
+    ImGui::Text("FPS: %.1f (%.2f ms)", time->GetAverageFPS(), time->GetDeltaTime() * 1000.0f);
+
+    ImGui::Separator();
+
+    bool debugCamEnabled = engine_->GetDebugCamera()->IsEnabled();
+    if (ImGui::Checkbox("デバッグカメラ有効", &debugCamEnabled))
+    {
+        engine_->GetDebugCamera()->SetEnabled(debugCamEnabled);
+    }
+
+    bool showDebugDraw = DebugDraw::IsEnabled();
+    if (ImGui::Checkbox("デバッグ描画表示", &showDebugDraw))
+    {
+        DebugDraw::SetEnabled(showDebugDraw);
+    }
+
+    bool isPaused = time->IsPaused();
+    if (ImGui::Checkbox("一時停止", &isPaused))
+    {
+        if (isPaused) 
+        {
+            time->Pause();
+        }
+        else 
+        {
+            time->Resume();
+        }
+    }
+
+    ImGui::Separator();
+
     if (ImGui::CollapsingHeader("カメラ設定"))
     {
         DrawCameraSettings(targetCamera);
@@ -66,12 +99,6 @@ void DebugGuiManager::Update(Camera* targetCamera)
 
 void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
 {
-    bool enabled = engine_->GetDebugCamera()->IsEnabled();
-    if (ImGui::Checkbox("デバッグカメラを有効化", &enabled))
-    {
-        engine_->GetDebugCamera()->SetEnabled(enabled);
-    }
-
     if (targetCamera && ImGui::TreeNode("ターゲットカメラ (Scene)"))
     {
         Vector3 translation = targetCamera->GetTranslation();
@@ -869,18 +896,6 @@ void DebugGuiManager::DrawTimeSettings()
 {
     TimeManager* time = TimeManager::GetInstance();
 
-    // 時間の制御
-    bool isPaused = time->IsPaused();
-    if (ImGui::Checkbox("一時停止", &isPaused))
-    {
-        if (isPaused) {
-            time->Pause();
-        }
-        else {
-            time->Resume();
-        }
-    }
-
     // タイムスケール (スローモーション/早送りデバッグ)
     float timeScale = time->GetTimeScale();
     if (ImGui::DragFloat("タイムスケール", &timeScale, 0.01f, 0.0f, 10.0f))
@@ -900,7 +915,6 @@ void DebugGuiManager::DrawTimeSettings()
     // 時間情報の表示
 
     // FPS関連
-    ImGui::Text("平均 FPS: %.1f", time->GetAverageFPS());
     ImGui::Text("瞬間 FPS: %.1f", time->GetFPS());
 
     // DeltaTime

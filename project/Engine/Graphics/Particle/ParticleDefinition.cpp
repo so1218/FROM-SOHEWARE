@@ -23,7 +23,7 @@ Vector3 ShapeModule::GetInitialPositionOffset(const ModelData* overrideModelData
     case Type::Sphere:
     {
         // 単位球上のランダムな点を生成
-        float phi = Math::RandomFloat(0.0f, 2.0f * 3.14159f);
+        float phi = Math::RandomFloat(0.0f, 2.0f * Math::PI);
         float cosTheta = Math::RandomFloat(-1.0f, 1.0f);
         float theta = acosf(cosTheta);
 

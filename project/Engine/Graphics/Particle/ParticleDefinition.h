@@ -148,7 +148,7 @@ struct SizeOverLifetimeModule
     {
         if (oscillate)
         {
-            float sin_wave = sinf(t * frequency * 2.0f * 3.14159f);
+            float sin_wave = sinf(t * frequency * 2.0f * Math::PI);
             float eased_t = sin_wave * 0.5f + 0.5f;
             return Math::Lerp(startScale, endScale, eased_t);
         }

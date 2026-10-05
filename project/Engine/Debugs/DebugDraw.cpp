@@ -11,6 +11,7 @@ namespace FE
 {
 
 RendererManager* DebugDraw::rendererManager_ = nullptr;
+bool DebugDraw::enabled_ = true;
 
 void DebugDraw::Initialize(RendererManager* rendererManager)
 {
@@ -19,7 +20,7 @@ void DebugDraw::Initialize(RendererManager* rendererManager)
 
 void DebugDraw::DrawLine(const Vector3& start, const Vector3& end, const Vector4& color)
 {
-    if (!rendererManager_) return;
+    if (!enabled_ || !rendererManager_) return;
 
     uint32_t colorU = Math::ColorVectorToUint32(color); 
     rendererManager_->SubmitLine(start, end, colorU);
@@ -27,6 +28,8 @@ void DebugDraw::DrawLine(const Vector3& start, const Vector3& end, const Vector4
 
 void DebugDraw::DrawAABB(const Vector3& min, const Vector3& max, const Vector4& color)
 {
+    if (!enabled_) return;
+
     // 下面
     Vector3 p0 = { min.x, min.y, min.z };
     Vector3 p1 = { max.x, min.y, min.z };
@@ -60,6 +63,8 @@ void DebugDraw::DrawAABB(const Vector3& min, const Vector3& max, const Vector4& 
 
 void DebugDraw::DrawOBB(const Vector3& center, const Vector3& size, const Matrix4x4& rotationMat, const Vector4& color)
 {
+    if (!enabled_) return;
+
     // 原点中心AABBを回転・平行移動
     Vector3 half = size * 0.5f;
     Vector3 v[8] = {
@@ -87,9 +92,11 @@ void DebugDraw::DrawOBB(const Vector3& center, const Vector3& size, const Matrix
 
 void DebugDraw::DrawSphere(const Vector3& center, float radius, const Vector4& color)
 {
+    if (!enabled_) return;
+
     // XY, YZ, ZX平面の円で球
     const int seg = 16;
-    const float step = 3.14159265f * 2.0f / seg;
+    const float step = Math::PI * 2.0f / seg;
     for (int i = 0; i < seg; ++i)
     {
         float a1 = i * step, a2 = (i + 1) * step;
@@ -104,6 +111,8 @@ void DebugDraw::DrawSphere(const Vector3& center, float radius, const Vector4& c
 
 void DebugDraw::DrawFrustum(const Matrix4x4& viewProj, const Vector4& color)
 {
+    if (!enabled_) return;
+
     // NDCの8頂点をワールド変換
     std::vector<Vector3> ndc = 
     {

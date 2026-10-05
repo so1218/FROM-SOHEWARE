@@ -154,12 +154,6 @@
 - **該当ソースコード**: `Assets/Shaders/Environment/Water.PS.hlsl`
 - **概要**: 線形ステップレイキャストと二分探索（Binary Search Refinement）による高精度SSR。画面端フェード処理およびキューブマップ環境光へのスムーズなフォールバック構造の実装。
 
-### ボロノイ・コースティクス & 色収差 (Voronoi Caustics & Dispersion)
-- **参考資料**: 
-  - [GPU Gems - Chapter 2: Rendering Water Caustics](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-2-rendering-water-caustics) (NVIDIA)
-- **該当ソースコード**: `Assets/Shaders/Environment/Water.PS.hlsl`
-- **概要**: 4セルボロノイエッジアルゴリズムを用いたプロシージャル水底コースティクス。波法線によるゆがみや水深減衰に加え、RGBチャンネルを微細オフセットさせた波長分散（色収差）表現。
-
 ### 水中吸光 & 物理ベース散乱 (Beer-Lambert Absorption & In-Scattering)
 - **参考資料**: 
   - [Simulating Ocean Water (SIGGRAPH Course Notes)](https://jtessen.people.clemson.edu/reports/papers_files/coursenotes2004.pdf) (Jerry Tessendorf)
