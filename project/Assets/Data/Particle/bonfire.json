@@ -33,39 +33,6 @@
             ]
         },
         "blendMode": 2,
-        "collisionModule": {
-            "bounce": 0.5,
-            "dampen": 0.0,
-            "enabled": false,
-            "friction": 0.0,
-            "lifeLoss": 0.0,
-            "plane": {
-                "normal": [
-                    0.0,
-                    1.0,
-                    0.0
-                ],
-                "point": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": 0,
-            "worldObj": {
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    2.0,
-                    2.0,
-                    2.0
-                ],
-                "shape": 0
-            }
-        },
         "colorOverLifetimeModule": {
             "enabled": true,
             "endColor": 4278190080,
@@ -77,10 +44,11 @@
         "intensity": 17.899999618530273,
         "noiseModule": {
             "enabled": true,
-            "frequency": 3.049999952316284,
-            "scrollSpeed": 1.9900000095367432,
+            "frequency": 0.5,
+            "scrollSpeed": 1.3799999952316284,
             "separateAxes": false,
-            "strength": 4.5
+            "strength": 23.700000762939453,
+            "type": 1
         },
         "physicsModule": {
             "affectedByWind": true,
@@ -155,7 +123,6 @@
         },
         "trailModule": {
             "alignment": 0,
-            "dissolveTextureName": "white1x1",
             "emissiveIntensity": 1.0,
             "enabled": false,
             "endColor": [
@@ -172,10 +139,6 @@
             "jitterStrength": 0.0,
             "lifetime": 0.5,
             "minVertexDistance": 0.10000000149011612,
-            "scrollSpeed": [
-                0.0,
-                0.0
-            ],
             "startColor": [
                 1.0,
                 1.0,
@@ -183,12 +146,7 @@
                 1.0
             ],
             "tailWidthScale": 1.0,
-            "textureMode": 0,
             "textureName": "white1x1",
-            "tiling": [
-                1.0,
-                1.0
-            ],
             "width": 1.0
         },
         "velocityModule": {

@@ -481,12 +481,22 @@ void ParticleEditor::ShowEditor()
                     ImGui::Checkbox("有効##Noise", &noise.enabled);
                     if (noise.enabled)
                     {
+                        const char* typeNames[] = { "Simplex", "Curl " };
+                        int currentType = static_cast<int>(noise.type);
+                        if (ImGui::Combo("タイプ", &currentType, typeNames, IM_ARRAYSIZE(typeNames)))
+                        {
+                            noise.type = static_cast<NoiseModule::NoiseType>(currentType);
+                        }
+
                         ImGui::DragFloat("強度", &noise.strength, 0.1f, 0.0f, 100.0f);
-                        ImGui::DragFloat("周波数", &noise.frequency, 0.01f, 0.01f, 10.0f);
+
+                        ImGui::DragFloat("周波数", &noise.frequency, 0.002f, 0.001f, 0.5f, "%.3f");
                         ImGui::DragFloat("スクロール速度", &noise.scrollSpeed, 0.01f, 0.0f, 10.0f);
 
-                        ImGui::Checkbox("XYZ軸で分離", &noise.separateAxes);
-
+                        if (noise.type == NoiseModule::NoiseType::Simplex)
+                        {
+                            ImGui::Checkbox("XYZ軸で分離", &noise.separateAxes);
+                        }
                     }
 
                     ImGui::TreePop();

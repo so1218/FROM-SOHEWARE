@@ -171,11 +171,20 @@ struct TextureSheetAnimationModule
 
 struct NoiseModule
 {
+    enum class NoiseType
+    {
+        Simplex, // 基本の有機的な揺らぎ
+        Curl     // 流体のような渦を巻く綺麗な散らばり
+    };
+
     bool enabled = false;
-    float strength = 1.0f;    // 揺らぎの強さ
-    float frequency = 1.0f;   // 揺らぎの細かさ
-    float scrollSpeed = 1.0f; // 時間に応じてノイズが流れる速度
-    bool separateAxes = false; // X/Y/Z軸で別々のノイズを使うか
+    NoiseType type = NoiseType::Simplex;
+
+    float strength = 1.0f;     // 揺らぎの強さ（Velocityに与える加速度）
+    float frequency = 0.05f;   // 揺らぎの細かさ
+    float scrollSpeed = 0.5f;  // ノイズ場が流れる速度
+
+    bool separateAxes = true;  // X/Y/Z軸で別々のノイズを使うか（Simplex時に有効）
 };
 
 struct VortexModule

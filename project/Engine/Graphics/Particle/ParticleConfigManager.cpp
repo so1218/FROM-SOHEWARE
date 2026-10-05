@@ -259,10 +259,11 @@ void ParticleConfigManager::LoadAllParticleDefinitions()
                 {
                     auto& noiseJson = configJson["noiseModule"];
                     config.noise.enabled = noiseJson.value("enabled", false);
+                    config.noise.type = static_cast<NoiseModule::NoiseType>(noiseJson.value("type", 0));
                     config.noise.strength = noiseJson.value("strength", 1.0f);
-                    config.noise.frequency = noiseJson.value("frequency", 1.0f);
-                    config.noise.scrollSpeed = noiseJson.value("scrollSpeed", 1.0f);
-                    config.noise.separateAxes = noiseJson.value("separateAxes", false);
+                    config.noise.frequency = noiseJson.value("frequency", 0.05f);
+                    config.noise.scrollSpeed = noiseJson.value("scrollSpeed", 0.5f);
+                    config.noise.separateAxes = noiseJson.value("separateAxes", true);
                 }
             }
 
@@ -426,6 +427,7 @@ void ParticleConfigManager::SaveParticleDefinitionToJson(const std::string& pres
         { "noiseModule",
         {
             { "enabled", config.noise.enabled },
+            { "type", static_cast<int>(config.noise.type) },
             { "strength", config.noise.strength },
             { "frequency", config.noise.frequency },
             { "scrollSpeed", config.noise.scrollSpeed },

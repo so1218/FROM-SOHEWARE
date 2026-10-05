@@ -28,7 +28,5 @@ private:
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<FE::CameraRail> openingRail_;
 
-    std::unique_ptr<FE::ParticleEmitter> grassFieldEmitter_ = nullptr;
-
 };
 

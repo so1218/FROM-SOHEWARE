@@ -10,8 +10,15 @@
 #include "ImGuiManager.h"
 #include "EnvironmentManager.h"
 
+#include "externals/FastNoiseLite.h"
+
 namespace FE
 {
+
+namespace
+{
+    FastNoiseLite gNoiseGen;
+}
 
 ParticleSystem::ParticleSystem(Engine* engine)
 {
@@ -252,36 +259,59 @@ void ParticleSystem::Update()
 
             if (config.noise.enabled)
             {
-                // ノイズのサンプリング座標を計算
-                float frequency = config.noise.frequency;
-                float scroll = TimeManager::GetInstance()->GetTotalTime() * config.noise.scrollSpeed;
+                const auto& noiseConfig = config.noise;
 
-                Vector3 samplePos = particleState.transform->translation_ * frequency;
+                // FastNoiseLite の基本パラメータ設定
+                gNoiseGen.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+                gNoiseGen.SetFrequency(noiseConfig.frequency);
 
-                // Y軸方向へスクロール
-                samplePos.y -= scroll;
+                // スクロールを含むサンプリング座標の計算
+                float totalTime = TimeManager::GetInstance()->GetTotalTime();
+                float scroll = totalTime * noiseConfig.scrollSpeed;
 
-                // ノイズ強度の計算
-                float strength = config.noise.strength;
+                // ワールド位置をサンプル座標として利用
+                Vector3 samplePos = particleState.transform->translation_;
+                samplePos.y -= scroll; // Y軸方向へスクロール
 
-                // 3軸分のノイズを計算              
-                Vector3 noiseVelocity;
+                Vector3 noiseForce = { 0.0f, 0.0f, 0.0f };
 
-                if (config.noise.separateAxes)
+                // ノイズ計算
+                if (noiseConfig.type == NoiseModule::NoiseType::Curl)
                 {
-                    noiseVelocity.x = Math::PerlinNoise(samplePos.x, samplePos.y, samplePos.z);
-                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z);
-                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z);
+                    // Curl Noise
+                    const float e = 0.01f; 
+
+                    float n1 = gNoiseGen.GetNoise(samplePos.x, samplePos.y + e, samplePos.z);
+                    float n2 = gNoiseGen.GetNoise(samplePos.x, samplePos.y - e, samplePos.z);
+                    float n3 = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z + e);
+                    float n4 = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z - e);
+                    float n5 = gNoiseGen.GetNoise(samplePos.x + e, samplePos.y, samplePos.z);
+                    float n6 = gNoiseGen.GetNoise(samplePos.x - e, samplePos.y, samplePos.z);
+
+                    // 回転ベクトルの計算
+                    noiseForce.x = (n1 - n2) - (n3 - n4);
+                    noiseForce.y = (n3 - n4) - (n5 - n6);
+                    noiseForce.z = (n5 - n6) - (n1 - n2);
                 }
-                else
+                else 
                 {
-                    noiseVelocity.x = Math::PerlinNoise(samplePos.x, samplePos.y, samplePos.z);
-                    noiseVelocity.y = Math::PerlinNoise(samplePos.x, samplePos.y + 100.0f, samplePos.z);
-                    noiseVelocity.z = Math::PerlinNoise(samplePos.x, samplePos.y + 200.0f, samplePos.z);
+                    if (noiseConfig.separateAxes)
+                    {
+                        // 各軸で十分離れた座標をサンプリングして非同期化
+                        noiseForce.x = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z);
+                        noiseForce.y = gNoiseGen.GetNoise(samplePos.x + 100.0f, samplePos.y + 100.0f, samplePos.z + 100.0f);
+                        noiseForce.z = gNoiseGen.GetNoise(samplePos.x + 200.0f, samplePos.y + 200.0f, samplePos.z + 200.0f);
+                    }
+                    else
+                    {
+                        // 全軸共通のノイズ値
+                        float val = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z);
+                        noiseForce = { val, val, val };
+                    }
                 }
 
-                // 速度に加算
-                particleState.transform->translation_ += noiseVelocity * strength * deltaTime;
+                // 速度ベクトルに加速度として加算
+                particleState.velocity += noiseForce * noiseConfig.strength * deltaTime;
             }
 
             // Physics Module

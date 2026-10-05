@@ -19,7 +19,5 @@ public:
     void OnFinalize() override;
 
 private:
-    // メンバー変数
-    std::unique_ptr<FE::ParticleEmitter> playSceneEmitter_ = nullptr;
 };
 

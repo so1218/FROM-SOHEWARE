@@ -28,9 +28,6 @@ void PlayScene::OnInitialize()
 {
     // 初期化
     camera_->Initialize();
-
-    playSceneEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playScene");
-    engine_->GetParticleSystem()->AddEmitter(std::move(playSceneEmitter_));
 }
 
 void PlayScene::OnUpdate()

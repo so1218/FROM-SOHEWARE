@@ -1,11 +1,6 @@
 #include "pch.h"
 #include "ImGuiManager.h"
 
-#ifdef ENABLE_IMGUI
-#define STB_IMAGE_IMPLEMENTATION
-#include "externals/stb_image.h"
-#endif
-
 #include "WorldTransform.h"
 #include "Camera.h"
 
@@ -249,14 +244,6 @@ void ImGuiManager::DrawMenuBar()
 #ifdef ENABLE_IMGUI
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("ファイル"))
-        {
-            if (ImGui::MenuItem("終了"))
-            {
-                PostQuitMessage(0);
-            }
-            ImGui::EndMenu();
-        }
         if (ImGui::BeginMenu("ビュー"))
         {
             if (ImGui::MenuItem("レイアウトの初期化")) 
@@ -280,40 +267,6 @@ void ImGuiManager::DrawMenuBar()
         }
         
         ImGui::EndMainMenuBar();
-    }
-#endif
-}
-
-void ImGuiManager::OpenFile(const std::string& filename)
-{
-#ifdef ENABLE_IMGUI
-    int width, height, channels;
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 4); 
-    if (!data)
-    {
-        std::cerr << "Failed to load image: " << filename << std::endl;
-        return;
-    }
-
-    // テクスチャ作成後、data解放
-    stbi_image_free(data);
-#endif
-}
-
-void ImGuiManager::SaveFile(const std::string& filename)
-{
-#ifdef ENABLE_IMGUI
-    // 実際のファイル保存処理
-    std::ofstream ofs(filename);
-    if (ofs.is_open())
-    {
-        ofs << "保存したいデータなどを書き込む\n";
-        ofs.close();
-        OutputDebugStringA("ファイルを保存しました\n");
-    }
-    else
-    {
-        OutputDebugStringA("ファイル保存に失敗しました\n");
     }
 #endif
 }
