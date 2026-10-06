@@ -39,12 +39,13 @@ void ImGuiManager::Initialize(
     io.IniFilename = "imgui_layout.ini";
 
     // フォント設定
-    std::string fontPath = "Assets/Data/Fonts/GenJyuuGothic-Bold.ttf";
+    std::string fontPath = "Assets/Data/Fonts/NotoSansJP-Bold.ttf";
     float fontSize = 16.0f;
 
-
     ImFontConfig font_config;
-    static const ImWchar ranges[] = 
+    font_config.PixelSnapH = true; 
+
+    static const ImWchar ranges[] =
     {
         0x0020, 0x00FF,   // 基本ラテン文字＋補助
         0x3040, 0x309F,   // ひらがな
@@ -64,84 +65,107 @@ void ImGuiManager::Initialize(
 
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // ダークテーマベース
+    // ベーススタイルをクリア
     ImGui::StyleColorsDark();
 
-    // 色設定
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.95f);
-    style.Colors[ImGuiCol_Border] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+    // =========================================================
+    // カラーパレット
+    // =========================================================
+    const ImVec4 bgDark = ImVec4(0.03f, 0.03f, 0.03f, 0.95f); 
+    const ImVec4 bgPanel = ImVec4(0.05f, 0.05f, 0.05f, 0.85f); 
+    const ImVec4 textParchment = ImVec4(0.96f, 0.94f, 0.88f, 1.00f); 
+    const ImVec4 textDisabled = ImVec4(0.45f, 0.43f, 0.40f, 1.00f); 
 
-    // ボタン・スライダー
-    style.Colors[ImGuiCol_Button] = ImVec4(0.03f, 0.06f, 0.3f, 1.0f);
-    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.1f, 0.15f, 0.4f, 1.0f);
-    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.01f, 0.04f, 0.2f, 1.0f);
-    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.15f, 0.22f, 0.4f, 1.0f);
-    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.07f, 0.18f, 0.35f, 1.0f);
+    const ImVec4 navyBase = ImVec4(0.03f, 0.07f, 0.15f, 1.00f); 
+    const ImVec4 navyHover = ImVec4(0.06f, 0.12f, 0.25f, 1.00f); 
+    const ImVec4 navyActive = ImVec4(0.10f, 0.18f, 0.35f, 1.00f);
+    const ImVec4 navyBorder = ImVec4(0.08f, 0.14f, 0.26f, 0.85f);
 
-    // 入力枠背景
-    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.05f, 0.2f, 0.7f);
-    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.1f, 0.15f, 0.4f, 0.9f);
-    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.15f, 0.2f, 0.5f, 1.0f);
+    // ウィンドウ・背景
+    style.Colors[ImGuiCol_WindowBg] = bgDark;
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.96f);
+    style.Colors[ImGuiCol_Border] = navyBorder;
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 
-    // その他UI色
-    style.Colors[ImGuiCol_Separator] = ImVec4(0.15f, 0.15f, 0.35f, 0.25f);
-    style.Colors[ImGuiCol_SeparatorHovered] = ImVec4(0.3f, 0.3f, 0.65f, 0.75f);
-    style.Colors[ImGuiCol_SeparatorActive] = ImVec4(0.35f, 0.35f, 0.75f, 1.0f);
+    // フレーム
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.90f); 
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.04f, 0.08f, 0.16f, 0.90f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.06f, 0.12f, 0.22f, 0.95f);
 
-    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.95f);
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.01f, 0.01f, 0.05f, 1.0f);
-    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.03f, 0.03f, 0.1f, 1.0f);
+    // タイトルバー・メニュー
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.02f, 0.02f, 0.02f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.04f, 0.07f, 0.14f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.02f, 0.02f, 0.02f, 0.75f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
 
-    // スクロールバー
-    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.05f, 0.05f, 0.15f, 0.6f);
-    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.3f, 0.3f, 0.7f, 0.8f);
-    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.4f, 0.4f, 0.85f, 0.9f);
-    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.5f, 0.5f, 0.9f, 1.0f);
-
-    // チェックボックス・ラジオボタン
-    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.25f, 0.4f, 0.8f, 1.0f);
-
-    // ポップアップ・プログレスバー
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.03f, 0.03f, 0.03f, 0.95f);
-    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.15f, 0.25f, 0.45f, 1.0f);
-    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.20f, 0.35f, 0.55f, 1.0f);
-    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.12f, 0.22f, 0.40f, 1.0f);
-    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.18f, 0.30f, 0.50f, 1.0f);
+    // ボタン
+    style.Colors[ImGuiCol_Button] = navyBase;
+    style.Colors[ImGuiCol_ButtonHovered] = navyHover;
+    style.Colors[ImGuiCol_ButtonActive] = navyActive;
 
     // ヘッダー
-    style.Colors[ImGuiCol_Header] = ImVec4(0.05f, 0.05f, 0.2f, 0.7f);      
-    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.1f, 0.15f, 0.4f, 0.9f);
-    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.15f, 0.2f, 0.5f, 1.0f); 
+    style.Colors[ImGuiCol_Header] = ImVec4(0.04f, 0.08f, 0.16f, 0.75f);
+    style.Colors[ImGuiCol_HeaderHovered] = navyHover;
+    style.Colors[ImGuiCol_HeaderActive] = navyActive;
 
     // タブ
-    style.Colors[ImGuiCol_Tab] = ImVec4(0.07f, 0.10f, 0.25f, 1.0f);  
-    style.Colors[ImGuiCol_TabHovered] = ImVec4(0.15f, 0.25f, 0.50f, 1.0f);
-    style.Colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.35f, 0.60f, 1.0f);
-    style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.03f, 0.06f, 0.2f, 1.0f);
-    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.06f, 0.12f, 0.25f, 1.0f);
+    style.Colors[ImGuiCol_Tab] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+    style.Colors[ImGuiCol_TabHovered] = navyHover;
+    style.Colors[ImGuiCol_TabActive] = ImVec4(0.05f, 0.10f, 0.20f, 1.00f);
+    style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.03f, 0.03f, 0.03f, 1.00f);
+    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.03f, 0.06f, 0.12f, 1.00f);
 
-    // テキスト色
-    style.Colors[ImGuiCol_Text] = ImVec4(0.85f, 0.9f, 1.0f, 0.85f);
-    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.4f, 0.5f, 0.7f, 1.0f);
+    // スライダー・スプリッター・チェックマーク
+    style.Colors[ImGuiCol_SliderGrab] = navyBase;
+    style.Colors[ImGuiCol_SliderGrabActive] = navyActive;
+    style.Colors[ImGuiCol_CheckMark] = navyActive;
+    style.Colors[ImGuiCol_Separator] = navyBorder;
+    style.Colors[ImGuiCol_SeparatorHovered] = navyHover;
+    style.Colors[ImGuiCol_SeparatorActive] = navyActive;
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.04f, 0.08f, 0.16f, 0.50f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = navyHover;
+    style.Colors[ImGuiCol_ResizeGripActive] = navyActive;
 
-    // メニューバー背景
-    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.03f, 0.03f, 0.07f, 1.0f);
+    // スクロールバー
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.60f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.04f, 0.08f, 0.15f, 0.80f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = navyHover;
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = navyActive;
 
-    // スタイル設定
+    // テキスト
+    style.Colors[ImGuiCol_Text] = textParchment;
+    style.Colors[ImGuiCol_TextDisabled] = textDisabled;
+
+    // ドッキングプレビュー
+    style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.08f, 0.14f, 0.26f, 0.40f);
+
+    // =========================================================
+    // レイアウト・丸み・枠線
+    // =========================================================
     style.Alpha = 1.0f;
-    style.WindowPadding = ImVec2(6, 6);
-    style.FramePadding = ImVec2(4, 3);
-    style.ItemSpacing = ImVec2(4, 4);
-    style.ScrollbarSize = 10;
-    style.GrabMinSize = 10;
-    style.WindowRounding = 1.0f;
-    style.FrameRounding = 10.0f;       
-    style.ScrollbarRounding = 10.0f;   
-    style.GrabRounding = 10.0f;
+    style.WindowPadding = ImVec2(10, 10);
+    style.FramePadding = ImVec2(6, 4);
+    style.ItemSpacing = ImVec2(8, 6);
+    style.ItemInnerSpacing = ImVec2(6, 4);
+    style.ScrollbarSize = 12.0f;
+    style.GrabMinSize = 10.0f;
+
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.FrameRounding = 2.0f;
+    style.PopupRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabRounding = 2.0f;
+    style.TabRounding = 0.0f;
+
+    style.WindowBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
 
     style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 
-    io.FontGlobalScale = 16.0f / fontSize;
+    io.FontGlobalScale = 1.0f; 
 
     // ImGui初期化
     ImGui_ImplWin32_Init(hwnd);
