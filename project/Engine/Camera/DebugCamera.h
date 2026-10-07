@@ -6,6 +6,8 @@
 namespace FE
 {
 
+class PropertyBinder;
+
 // デバッグカメラ
 class DebugCamera
 {
@@ -21,6 +23,12 @@ public:
 
     void Initialize();
     void Update();
+
+    void BindProperties(PropertyBinder& binder);
+    void DebugDraw(PropertyBinder& binder, const Camera* mainCamera);
+
+    // メインカメラの位置に移動させる
+    void ResetToCamera(const Camera& targetCamera);
 
     // ゲッター
     const Camera& GetCamera() const { return camera_; }

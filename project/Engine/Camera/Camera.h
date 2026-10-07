@@ -7,12 +7,18 @@
 namespace FE
 {
 
+class PropertyBinder;
+
 class Camera
 {
 public:
     Camera() { Initialize(); }
 
     void Initialize();
+
+    // PropertyBinderへの登録
+    void BindProperties(PropertyBinder& binder, const std::string& prefix = "Camera");
+    void DebugDraw(PropertyBinder& binder, const std::string& label);
 
     // WorldTransform関連
     WorldTransform& GetWorldTransform() { return worldTransform_; }
@@ -128,6 +134,7 @@ public:
 
 private:
     WorldTransform worldTransform_;
+    std::string prefix_ = "Camera";
 
     float fovY_ = 0.45f;
     float aspectRatio_ = 16.0f / 9.0f;

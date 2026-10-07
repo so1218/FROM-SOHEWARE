@@ -19,7 +19,7 @@
 using namespace FE;
 
 PlayScene::PlayScene(Engine* engine)
-    : BaseScene(engine)
+    : BaseScene(engine, "PlayScene")
 {
 	// ゲームオブジェクトの生成・登録
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
@@ -119,7 +119,8 @@ void PlayScene::OnDraw()
 void PlayScene::OnDebugDraw()
 {
 #ifdef ENABLE_IMGUI
- 
+
+
 #endif
 }
 

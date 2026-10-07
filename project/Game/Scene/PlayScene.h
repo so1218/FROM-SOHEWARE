@@ -13,6 +13,7 @@ class PlayScene : public FE::BaseScene
 public:
     PlayScene(FE::Engine* engine);
 
+protected:
     void OnInitialize() override;
     void OnUpdate() override;
     void OnDraw() override;
@@ -27,6 +28,5 @@ private:
     TreeField* treeField_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<FE::CameraRail> openingRail_;
-
 };
 

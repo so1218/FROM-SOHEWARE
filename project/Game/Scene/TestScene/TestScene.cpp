@@ -7,7 +7,7 @@
 using namespace FE;
 
 TestScene::TestScene(Engine* engine)
-	: BaseScene(engine)
+	: BaseScene(engine, "TestScene")
 {
 	auto grid = std::make_unique<Grid>(engine_);
 

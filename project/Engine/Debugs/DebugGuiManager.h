@@ -12,10 +12,14 @@ class PostEffectManager;
 class DebugCamera;
 class Engine;
 class SRVManager;
+class PropertyBinder;
 
 class DebugGuiManager
 {
 public:
+    DebugGuiManager();
+    ~DebugGuiManager(); 
+
     void Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager, 
         TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera);
     void Update(Camera* targetCamera);
@@ -32,6 +36,9 @@ private:
     TextureLoader* textureLoader_;
     PostEffectManager* postEffectManager_;
     DebugCamera* debugCamera_;
+
+    // エンジン全体のプロパティバインダー
+    std::unique_ptr<PropertyBinder> engineBinder_;
 
     // 各種パラメータを保持する変数
     // 光源設定

@@ -10,9 +10,13 @@
 #include "DebugCamera.h"
 #include "SRVManager.h"
 #include "DebugDraw.h"
+#include "PropertyBinder.h"
 
 namespace FE
 {
+
+DebugGuiManager::DebugGuiManager() = default;
+DebugGuiManager::~DebugGuiManager() = default;
 
 void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, MaterialManager* materialManager,
     TextureLoader* textureLoader, PostEffectManager* postEffectManager, DebugCamera* debugCamera)
@@ -23,6 +27,12 @@ void DebugGuiManager::Initialize(Engine* engine, LightManager* lightManager, Mat
     textureLoader_ = textureLoader;
     postEffectManager_ = postEffectManager;
     debugCamera_ = debugCamera;
+
+    engineBinder_ = std::make_unique<PropertyBinder>(engine_, "EngineGlobal");
+    if (debugCamera_)
+    {
+        debugCamera_->BindProperties(*engineBinder_);
+    }
 }
 
 void DebugGuiManager::Update(Camera* targetCamera)
@@ -64,9 +74,9 @@ void DebugGuiManager::Update(Camera* targetCamera)
 
     ImGui::Separator();
 
-    if (ImGui::CollapsingHeader("カメラ設定"))
+    if (ImGui::CollapsingHeader("デバッグカメラ"))
     {
-        DrawCameraSettings(targetCamera);
+        debugCamera_->DebugDraw(*engineBinder_, targetCamera);
     }
     if (ImGui::CollapsingHeader("ライト設定"))
     {

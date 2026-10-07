@@ -1,0 +1,15 @@
+{
+    "EngineGlobal": {
+        "DebugCamera/Distance": 50.0,
+        "DebugCamera/DragSpeed": 0.019999999552965164,
+        "DebugCamera/Pitch": 0.4000000059604645,
+        "DebugCamera/RotateSpeed": 0.0010000000474974513,
+        "DebugCamera/Target": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "DebugCamera/Yaw": 0.0,
+        "DebugCamera/ZoomSpeed": 0.029999999329447746
+    }
+}

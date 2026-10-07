@@ -5,6 +5,7 @@
 #include "CameraManager.h"
 #include "GameObjectManager.h"
 #include "ParticleSystemWrapper.h"
+#include "PropertyBinder.h"
 
 namespace FE
 {
@@ -12,8 +13,8 @@ namespace FE
 class BaseScene
 {
 public:
-    BaseScene(Engine* engine)
-        : engine_(engine)
+    BaseScene(Engine* engine, const std::string& sceneName)
+        : engine_(engine), sceneName_(sceneName)
     {
         collisionManager_ = std::make_unique<CollisionManager>();
         objectManager_.SetCollisionManager(collisionManager_.get());
@@ -22,14 +23,22 @@ public:
         cameraManager_ = std::make_unique<CameraManager>(camera_.get());
 
         objectManager_.Create<ParticleSystemWrapper>(engine);
+
+        binder_ = std::make_unique<FE::PropertyBinder>(engine_, sceneName_);
     }
     virtual ~BaseScene() = default;
 
     virtual void Initialize() final
     {
+
         // 共通の初期化
         OnInitialize();
         objectManager_.Initialize();
+
+        if (camera_)
+        {
+            camera_->BindProperties(*binder_, "Camera");
+        }
     }
 
     virtual void Update() final
@@ -73,6 +82,14 @@ public:
         {
             cameraManager_->DebugDraw();
         }
+
+        ImGui::Begin(sceneName_.c_str());
+        if (camera_) 
+        {
+            camera_->DebugDraw(*binder_, "メインカメラ");
+        }
+        ImGui::End();
+
         OnDebugDraw();
     }
 
@@ -85,6 +102,9 @@ public:
 
     // SceneManagerをセット
     virtual void SetSceneManager(class SceneManager* sceneManager) { sceneManager_ = sceneManager; }
+
+    // シーン名のゲッター
+    const std::string& GetSceneName() const { return sceneName_; }
 
     // エンジンが情報を取りに来れるように
     Camera* GetActiveCamera() const { return camera_.get(); }
@@ -99,6 +119,7 @@ protected:
 protected:
     // メンバ変数
     Engine* engine_ = nullptr;
+    std::string sceneName_;
     std::unique_ptr<Camera> camera_;
     SceneManager* sceneManager_ = nullptr;
 
@@ -106,6 +127,7 @@ protected:
     std::unique_ptr<CameraManager> cameraManager_;
     std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
+    std::unique_ptr<PropertyBinder> binder_;
 };
 
 }

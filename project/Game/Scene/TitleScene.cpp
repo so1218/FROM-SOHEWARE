@@ -9,15 +9,13 @@
 using namespace FE;
 
 TitleScene::TitleScene(Engine* engine)
-    : BaseScene(engine)
+	: BaseScene(engine, "TitleScene")
 {
 	auto grid = std::make_unique<Grid>(engine_);
 
 	objectManager_.AddObject(std::move(grid));
 
 	titleSprite_ = std::make_unique<Sprite>(engine_);
-
-	binder_ = std::make_unique<PropertyBinder>(engine_, "Title");
 }
 
 void TitleScene::OnInitialize()
@@ -25,7 +23,6 @@ void TitleScene::OnInitialize()
     camera_->Initialize();
     camera_->SetTranslation(Vector3(0, 0, -6.6f));
 
-	binder_->BindSprite("TitleSprite", titleSprite_.get());
 
 }
 
@@ -48,9 +45,6 @@ void TitleScene::OnDraw()
 void TitleScene::OnDebugDraw()
 {
 #ifdef ENABLE_IMGUI
-    ImGui::Begin("タイトルシーン");
-	binder_->DrawSprite("TitleSprite", "タイトルスプライトインスペクター");
-    ImGui::End();
 #endif
 }
 

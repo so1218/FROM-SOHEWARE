@@ -2,13 +2,13 @@
 #include "BaseScene.h"
 #include "Sprite.h"
 #include "ParticleEmitter.h"
-#include "PropertyBinder.h"
 
 class TitleScene : public FE::BaseScene
 {
 public:
     TitleScene(FE::Engine* engine);
 
+protected:
     void OnInitialize() override;
     void OnUpdate() override;
     void OnDraw() override;
@@ -18,5 +18,4 @@ public:
 private:
     // メンバー変数
     std::unique_ptr<FE::Sprite> titleSprite_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
 };
