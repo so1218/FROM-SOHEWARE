@@ -427,6 +427,7 @@ void RendererManager::ClearSceneRenderStates()
 	if (pebbleRenderer_)  pebbleRenderer_->Reset();
 	if (foliageRenderer_) foliageRenderer_->Reset();
 	if (waterRenderer_)   waterRenderer_->Reset();
+	if (treeRenderer_)    treeRenderer_->Reset();
 }
 
 void RendererManager::SubmitAnimationModel(

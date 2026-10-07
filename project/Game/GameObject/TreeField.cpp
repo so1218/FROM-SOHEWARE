@@ -241,6 +241,7 @@ void TreeField::UpdateMaterials()
 void TreeField::GenerateTrees()
 {
     treeSystem_->Clear();
+    colliders_.clear();
 
     if (!model_) return;
 
@@ -262,20 +263,27 @@ void TreeField::GenerateTrees()
         treeMaterialHandle_.toonRampHandle = toonRampHandle_;
     }
 
+    std::mt19937 rng(1337); // 固定シード値
+    std::uniform_real_distribution<float> distWidth(-areaWidth_ * 0.5f, areaWidth_ * 0.5f);
+    std::uniform_real_distribution<float> distDepth(-areaDepth_ * 0.5f, areaDepth_ * 0.5f);
+    std::uniform_real_distribution<float> distScale(minScale_, maxScale_);
+    std::uniform_real_distribution<float> distRot(0.0f, 360.0f);
+    std::uniform_real_distribution<float> distColor(-colorRandomness_, colorRandomness_);
+
     // ========================================================
     // インスタンス配置ループ
     // ========================================================
     for (int i = 0; i < treeCount_; ++i)
     {
-        float rx = Math::RandomFloat(-areaWidth_ * 0.5f, areaWidth_ * 0.5f) + areaCenter_.x + transform_.translation_.x;
-        float rz = Math::RandomFloat(-areaDepth_ * 0.5f, areaDepth_ * 0.5f) + areaCenter_.y + transform_.translation_.z;
+        float rx = distWidth(rng) + areaCenter_.x + transform_.translation_.x;
+        float rz = distDepth(rng) + areaCenter_.y + transform_.translation_.z;
         float ry = transform_.translation_.y;
         if (terrain_) {
             ry = terrain_->GetHeight(rx, rz);
         }
 
-        float scale = Math::RandomFloat(minScale_, maxScale_);
-        float rotY = Math::RandomFloat(0.0f, 360.0f);
+        float scale = distScale(rng);
+        float rotY = distRot(rng);
 
         WorldTransform treeTransform{};
         treeTransform.UpdateMatrix(
@@ -286,9 +294,9 @@ void TreeField::GenerateTrees()
 
         // 色ムラ
         Vector4 colorVar = { 1.0f, 1.0f, 1.0f, 1.0f };
-        colorVar.x += Math::RandomFloat(-colorRandomness_, colorRandomness_);
-        colorVar.y += Math::RandomFloat(-colorRandomness_, colorRandomness_);
-        colorVar.z += Math::RandomFloat(-colorRandomness_, colorRandomness_);
+        colorVar.x += distColor(rng);
+        colorVar.y += distColor(rng);
+        colorVar.z += distColor(rng);
 
         // TreeSystem に追加
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_, colorVar, 1.0f);

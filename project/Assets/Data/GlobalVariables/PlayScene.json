@@ -1,0 +1,17 @@
+{
+    "PlayScene": {
+        "Camera/FOV": 0.44999998807907104,
+        "Camera/FarClip": 500.0,
+        "Camera/NearClip": 0.10000000149011612,
+        "Camera/Position": [
+            0.0,
+            5.0,
+            -50.0
+        ],
+        "Camera/RotationEuler": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}
