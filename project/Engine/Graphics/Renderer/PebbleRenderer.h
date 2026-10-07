@@ -25,6 +25,8 @@ public:
         uint32_t skyboxSrvHandle, uint32_t albedoSrvHandle, uint32_t normalSrvHandle,
         const Mesh& pebbleMesh, const PebbleMaterialData& materialData, const PebbleCullingData& cullingData);
 
+    void Reset() { totalGeneratedCount_ = 0; }
+
 private:
     static const int32_t kMaxInstances = 150000;
     static constexpr int kFrameCount = 3;

@@ -38,6 +38,12 @@ public:
 
     void UpdateConfigs(const std::vector<FoliageTypeConfig>& configs);
 
+    void Reset()
+    {
+        isGenerated_ = false;
+        types_.clear();
+    }
+
 private:
     static constexpr int32_t kMaxInstances = 200000;
     // CPU-GPU間の同期によるストールを隠蔽するためのトリプルバッファリング

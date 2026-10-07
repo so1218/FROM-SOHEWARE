@@ -97,6 +97,11 @@ public:
     {
         collisionManager_->ClearColliders();
 
+        if (engine_ && engine_->GetRendererManager())
+        {
+            engine_->GetRendererManager()->ClearSceneRenderStates();
+        }
+
         OnFinalize();
     }
 

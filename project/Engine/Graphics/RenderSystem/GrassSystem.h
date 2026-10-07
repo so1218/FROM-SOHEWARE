@@ -11,7 +11,7 @@ class GrassSystem
 {
 public:
     GrassSystem(Engine* engine, const std::string& windMapTextureName);
-    ~GrassSystem() = default;
+    ~GrassSystem();
 
     // 初期化時(またはマップ切り替え時)に1回だけ呼ぶ、GPUへの自動生成命令
     void Generate(const GrassGenerationData& genData, const std::string& heightMapName, const std::string& densityMapName);

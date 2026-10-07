@@ -30,6 +30,9 @@ public:
         D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,  
         D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
 
+    // 描画状態をクリア（草の数を0にする）
+    void Reset() { totalGeneratedCount_ = 0; }
+
 private:
     static const int32_t kMaxInstances = 1500000;
     static constexpr int kFrameCount = 3;

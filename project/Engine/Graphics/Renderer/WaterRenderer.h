@@ -37,6 +37,13 @@ public:
     void Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
         D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
 
+    void Reset()
+    {
+        waterSubmissions_.clear();
+        batches_.clear();
+        currentInstanceLocation_ = 0;
+    }
+
 private:
     struct ModelBatch
     {

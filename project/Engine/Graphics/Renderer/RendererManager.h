@@ -110,6 +110,9 @@ public:
     void Draw3D();
     void DrawUI();
 
+    // シーン遷移時に全環境系レンダラーの描画状態を一括クリア
+    void ClearSceneRenderStates();
+
     // ブレンドモード設定
     void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
 

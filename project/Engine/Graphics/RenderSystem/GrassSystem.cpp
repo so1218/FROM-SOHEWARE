@@ -13,6 +13,11 @@ GrassSystem::GrassSystem(Engine* engine, const std::string& windMapTextureName)
     SetWindMapTexture(windMapTextureName);
 }
 
+GrassSystem::~GrassSystem()
+{
+
+}
+
 // GPUでの草一括生成を呼び出す
 void GrassSystem::Generate(const GrassGenerationData& genData, const std::string& heightMapName, const std::string& densityMapName)
 {

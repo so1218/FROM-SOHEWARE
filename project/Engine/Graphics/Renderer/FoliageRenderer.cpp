@@ -199,7 +199,7 @@ void FoliageRenderer::Draw(
     D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
     D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
-    if (types_.empty() || !mappedCullingData_[currentFrameIndex_])
+    if (!isGenerated_ || types_.empty() || !mappedCullingData_[currentFrameIndex_])
     {
         return;
     }

@@ -144,7 +144,11 @@ void GrassRenderer::Draw(
     D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
     D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
-    if (totalGeneratedCount_ == 0) return;
+    // 草が生成されていない場合は処理をスキップ
+    if (totalGeneratedCount_ == 0)
+    {
+        return;
+    }
 
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();

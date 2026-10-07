@@ -421,6 +421,14 @@ void RendererManager::SubmitModel(const WorldTransform& worldTransform, const Mo
 	}
 }
 
+void RendererManager::ClearSceneRenderStates()
+{
+	if (grassRenderer_)   grassRenderer_->Reset();
+	if (pebbleRenderer_)  pebbleRenderer_->Reset();
+	if (foliageRenderer_) foliageRenderer_->Reset();
+	if (waterRenderer_)   waterRenderer_->Reset();
+}
+
 void RendererManager::SubmitAnimationModel(
 	const WorldTransform& worldTransform,
 	const AnimatedModelData& instance,
