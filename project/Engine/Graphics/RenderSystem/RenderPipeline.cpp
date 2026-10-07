@@ -88,24 +88,35 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     // カリング用フラスタムを更新
     rendererManager->UpdateCullingFrustums();
 
-    // WorldInteractionSystem から渡された定数パラメータを Pass に渡す
-    worldInteractionPass_->SetConstants(rendererManager->GetWorldInteractionConstants());
+    // 地形ハイトマップのSRVインデックスを取得
+    uint32_t heightMapSRV = rendererManager->GetTerrainHeightMapSRVIndex();
 
-    // エンティティリストの転送
-    worldInteractionPass_->UpdateEntities(rendererManager->GetInteractionEntities());
+    // ハイトマップが有効な場合のみ WorldInteractionPass を実行
+    if (heightMapSRV != 0)
+    {
+        // WorldInteractionSystem から渡された定数パラメータを Pass に渡す
+        worldInteractionPass_->SetConstants(rendererManager->GetWorldInteractionConstants());
 
-    // ワールドインタラクションパスの実行 (Draw3Dより前に実行してSRVを更新)
-    Vector2 interactionCenterXZ = rendererManager->GetWorldInteractionCenter();
+        // エンティティリストの転送
+        worldInteractionPass_->UpdateEntities(rendererManager->GetInteractionEntities());
 
-    worldInteractionPass_->Execute(cmdList, rendererManager->GetTerrainHeightMapSRVIndex(), interactionCenterXZ);
+        // ワールドインタラクションパスの実行
+        Vector2 interactionCenterXZ = rendererManager->GetWorldInteractionCenter();
+        worldInteractionPass_->Execute(cmdList, heightMapSRV, interactionCenterXZ);
 
-    // 描画側(Draw3D)に最新のインタラクションテクスチャのSRVインデックスを渡す
-    rendererManager->SetWorldInteractionData(
-        worldInteractionPass_->GetCurrentSRVIndex(),
-        worldInteractionPass_->GetWorldSize(),
-        interactionCenterXZ,
-        worldInteractionPass_->GetConstantBufferAddress()
-    );
+        // 描画側(Draw3D)に最新のインタラクションテクスチャのデータ・SRVを渡す
+        rendererManager->SetWorldInteractionData(
+            worldInteractionPass_->GetCurrentSRVIndex(),
+            worldInteractionPass_->GetWorldSize(),
+            interactionCenterXZ,
+            worldInteractionPass_->GetConstantBufferAddress()
+        );
+    }
+    else
+    {
+        // 地形がないシーンではデフォルト値をセット
+        rendererManager->SetWorldInteractionData(0, 0.0f, Vector2(0.0f, 0.0f), 0);
+    }
 
     // シャドウパス
     shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア

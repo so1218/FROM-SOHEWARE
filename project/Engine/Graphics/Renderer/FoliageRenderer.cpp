@@ -199,6 +199,11 @@ void FoliageRenderer::Draw(
     D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
     D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
 {
+    if (types_.empty() || !mappedCullingData_[currentFrameIndex_])
+    {
+        return;
+    }
+
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();
     size_t numTypes = types_.size();
