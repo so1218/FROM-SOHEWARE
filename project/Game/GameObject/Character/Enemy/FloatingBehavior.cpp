@@ -8,12 +8,6 @@ using namespace FE;
 
 FloatingBehavior::~FloatingBehavior()
 {
-    // 解放処理
-    if (spotLightIndex_ != -1 && engine_)
-    {
-        engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
-        spotLightIndex_ = -1;
-    }
 }
 
 void FloatingBehavior::Initialize(Enemy* owner)
@@ -34,9 +28,6 @@ void FloatingBehavior::Initialize(Enemy* owner)
     binder->Bind("SpotAngle", &spotAngleDeg_, 30.0f);
     binder->Bind("SpotVolumetric", &spotVolumetric_, 4.0f);
     binder->Bind("SpotDirection", &spotDirection_, { 0.0f, -1.0f, 0.0f });
-
-    // スポットライト要求
-    spotLightIndex_ = engine_->GetLightManager()->RequestSpotLight();
 
     auto auraEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMove");
     if (auraEmitter)
@@ -89,20 +80,17 @@ void FloatingBehavior::Update(Enemy* owner)
     owner->SyncTransform(); 
 
     // スポットライトの追従と更新
-    if (spotLightIndex_ != -1)
-    {
-        engine_->GetLightManager()->UpdateSpotLightTransform(spotLightIndex_, currentPos, spotDirection_);
+    float cosAngle = std::cos(spotAngleDeg_ * radian);
 
-        float cosAngle = std::cos(spotAngleDeg_ * radian);
-        engine_->GetLightManager()->UpdateSpotLightProperties(
-            spotLightIndex_,
-            spotColor_,
-            spotIntensity_,
-            spotDistance_,
-            cosAngle,
-            spotVolumetric_
-        );
-    }
+    engine_->GetLightManager()->SubmitSpotLight(
+        currentPos,
+        spotColor_,
+        spotIntensity_,
+        spotDistance_,
+        spotDirection_,
+        cosAngle,
+        spotVolumetric_
+    );
 }
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
@@ -117,13 +105,6 @@ void FloatingBehavior::OnDeath(Enemy* owner)
 
 	AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
 
-    // スポットライトの安全な返却
-    if (spotLightIndex_ != -1)
-    {
-        engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
-        spotLightIndex_ = -1;
-    }
-
     // 死亡時にオーラを停止・破棄
     if (auraEmitterPtr_)
     {
@@ -132,7 +113,7 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         auraEmitterPtr_ = nullptr;
     }
 
-    // 3死亡時の爆発パーティクルを生成してワンショット再生
+    // 死亡時の爆発パーティクルを生成してワンショット再生
     if (explosionEmitterPtr_)
     {
         // 敵の死亡位置に爆発を配置
@@ -154,18 +135,13 @@ void FloatingBehavior::DebugDraw(Enemy* owner)
     binder->Draw("Phase", "波のズレ");
 
     ImGui::Text("スポットライト設定");
-    if (spotLightIndex_ == -1)
-    {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "ライトの空きがない");
-    }
-    else
-    {
-        binder->Draw("SpotColor", "色");
-        binder->Draw("SpotIntensity", "ライト輝度");
-        binder->Draw("SpotDistance", "届く距離");
-        binder->Draw("SpotAngle", "照射角");
-        binder->Draw("SpotVolumetric", "ボリュームフォグ輝度");
-        binder->Draw("SpotDirection", "照射方向");
-    }
+
+    binder->Draw("SpotColor", "色");
+    binder->Draw("SpotIntensity", "ライト輝度");
+    binder->Draw("SpotDistance", "届く距離");
+    binder->Draw("SpotAngle", "照射角");
+    binder->Draw("SpotVolumetric", "ボリュームフォグ輝度");
+    binder->Draw("SpotDirection", "照射方向");
+    
 #endif
 }

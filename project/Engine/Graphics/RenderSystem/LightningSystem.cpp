@@ -14,15 +14,6 @@ LightningSystem::LightningSystem(Engine* engine) : engine_(engine)
 
 LightningSystem::~LightningSystem()
 {
-    // アクティブなライトを返却
-    auto lightManager = engine_->GetLightManager(); 
-    if (lightManager)
-    {
-        for (const auto& activeLight : activeLights_)
-        {
-            lightManager->ReturnPointLight(activeLight.lightIndex);
-        }
-    }
 }
 
 void LightningSystem::Initialize()
@@ -58,6 +49,8 @@ void LightningSystem::Initialize()
     binder_->Bind("VolumetricScattering", &config_.volumetricScattering, 5.0f, 0.1f, 0.0f, 20.0f);
 
     engine_->GetRendererManager()->SetLightningConfig(config_);
+
+    activeLights_.clear();
 }
 
 void LightningSystem::Update()
@@ -65,47 +58,44 @@ void LightningSystem::Update()
     float dt = TimeManager::GetInstance()->GetDeltaTime();
     auto lightManager = engine_->GetLightManager();
 
-    // アクティブな落雷ポイントライトの更新（寿命減衰とチカチカの同期）
-    if (lightManager)
+    // アクティブな落雷ポイントライトの更新（寿命減衰と明滅アニメーション）
+    for (auto it = activeLights_.begin(); it != activeLights_.end(); )
     {
-        for (auto it = activeLights_.begin(); it != activeLights_.end();)
+        it->currentDuration -= dt;
+
+        if (it->currentDuration <= 0.0f)
         {
-            it->currentDuration -= dt;
-            if (it->currentDuration <= 0.0f)
+            // 寿命が尽きたら配列から削除
+            it = activeLights_.erase(it);
+        }
+        else
+        {
+            // 残り時間によるフェードアウト (1.0 -> 0.0)
+            float t = it->currentDuration / it->maxDuration;
+
+            // 明滅ノイズ / サイン波計算
+            float flicker = 1.0f;
+            if (config_.flickerSpeed > 0.0f)
             {
-                // 寿命が尽きたら安全に返却
-                lightManager->ReturnPointLight(it->lightIndex);
-                it = activeLights_.erase(it);
+                float totalTime = TimeManager::GetInstance()->GetTotalTime();
+                flicker = std::sin(totalTime * config_.flickerSpeed + it->seed);
+                flicker = 0.4f + (flicker + 1.0f) * 0.5f * (1.2f - 0.4f);
             }
-            else
+
+            float currentIntensity = config_.lightIntensityMax * t * flicker;
+
+            if (lightManager)
             {
-                // 残り時間によるリニアなフェードアウト (1.0 -> 0.0)
-                float t = it->currentDuration / it->maxDuration;
-
-                // 雷ポリゴンの明滅のノイズ/サイン波
-                float flicker = 1.0f;
-                if (config_.flickerSpeed > 0.0f)
-                {
-                    float totalTime = TimeManager::GetInstance()->GetTotalTime();
-                    flicker = std::sin(totalTime * config_.flickerSpeed + it->seed);
-                    // サイン波 -1.0 ~ 1.0 を 0.4 ~ 1.2 にマッピング
-                    flicker = 0.4f + (flicker + 1.0f) * 0.5f * (1.2f - 0.4f);
-                }
-
-                // 最終光度 = 最大輝度 * 寿命フェード * 明滅
-                float currentIntensity = config_.lightIntensityMax * t * flicker;
-
-                // ライトのパラメータを更新
-                lightManager->UpdatePointLightProperties(
-                    it->lightIndex,
+                lightManager->SubmitPointLight(
+                    it->position,
                     config_.lightColor,
                     currentIntensity,
                     config_.lightRadius,
                     config_.volumetricScattering
                 );
-
-                ++it;
             }
+
+            ++it;
         }
     }
 
@@ -120,42 +110,25 @@ void LightningSystem::SpawnStrike(const Vector3& start, const Vector3& end)
 
 void LightningSystem::TriggerSingleStrike(const Vector3& start, const Vector3& end)
 {
-    // 寿命を Min 〜 Max の間でランダムに決定
-    float randomDuration = config_.durationMin +
-        (static_cast<float>(rand() % 100) / 100.0f) * (config_.durationMax - config_.durationMin);
+    std::uniform_real_distribution<float> distDuration(config_.durationMin, config_.durationMax);
+    std::uniform_real_distribution<float> distSeed(0.0f, 100.0f);
 
-    // レンダラーに雷のメッシュ生成を命令
+    float randomDuration = distDuration(rng_);
+
+    // レンダラーに雷メッシュ生成を命令
     engine_->GetRendererManager()->SpawnLightning(start, end, randomDuration);
 
-    // 落雷ポイントライトの作成
-    auto lightManager = engine_->GetLightManager();
-    if (lightManager)
-    {
-        int freeIndex = lightManager->RequestPointLight();
-        if (freeIndex != -1)
-        {
-            ActiveLight al;
-            al.lightIndex = freeIndex;
-            al.maxDuration = randomDuration;
-            al.currentDuration = randomDuration;
-            al.seed = static_cast<float>(rand() % 100);
+    // 地面から少し浮かせたライト位置の計算
+    Vector3 lightPos = end + Vector3(0.0f, config_.lightHeightOffset, 0.0f);
 
-            // 地面から少し浮かせた位置にライトを配置
-            Vector3 lightPos = end + Vector3(0.0f, config_.lightHeightOffset, 0.0f);
-            lightManager->UpdatePointLightPosition(freeIndex, lightPos);
+    // 位置とパラメータを保持した落雷ライト
+    ActiveLight al;
+    al.position = lightPos;
+    al.maxDuration = randomDuration;
+    al.currentDuration = randomDuration;
+    al.seed = distSeed(rng_);
 
-            // 初期パラメータ設定
-            lightManager->UpdatePointLightProperties(
-                freeIndex,
-                config_.lightColor,
-                config_.lightIntensityMax,
-                config_.lightRadius,
-                config_.volumetricScattering
-            );
-
-            activeLights_.push_back(al);
-        }
-    }
+    activeLights_.push_back(al);
 }
 
 void LightningSystem::DebugDraw()

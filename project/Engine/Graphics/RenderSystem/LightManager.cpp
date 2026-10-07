@@ -9,7 +9,7 @@ namespace FE
 
 void LightManager::Initialize(ID3D12Device* device)
 {
-    // Directional Light
+    // Directional Light Buffer
     directionalLightResource_ = BufferManager::CreateBufferResource(
         device, sizeof(DirectionalLight) * MAX_DIRECTIONAL_LIGHTS);
     directionalLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData_));
@@ -24,159 +24,118 @@ void LightManager::Initialize(ID3D12Device* device)
         directionalLightPositions_[i] = { 0.0f, 10.0f, 0.0f };
     }
 
-    // Point Light
+    // Point Light Buffer
     pointLightResource_ = BufferManager::CreateBufferResource(
         device, sizeof(PointLight) * MAX_POINT_LIGHTS);
     pointLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&pointLightData_));
 
-    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
-    {
-        pointLightData_[i].enable = false;
-        pointLightData_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        pointLightData_[i].position = { -4.0f + i * 2.0f, 5.0f, 0.0f };
-        pointLightData_[i].intensity = 5.0f;
-        pointLightData_[i].radius = 10.0f;
-        pointLightData_[i].volumetricScatteringIntensity = 1.0f;
-    }
-
-    // Spot Light
+    // Spot Light Buffer
     spotLightResource_ = BufferManager::CreateBufferResource(
         device, sizeof(SpotLight) * MAX_SPOT_LIGHTS);
     spotLightResource_->Map(0, nullptr, reinterpret_cast<void**>(&spotLightData_));
 
-    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
-    {
-        spotLightData_[i].enable = false;
-        spotLightData_[i].color = { 1.0f, 1.0f, 1.0f, 1.0f };
-        spotLightData_[i].position = { 0.0f, 5.0f, float(i * 2) };
-        spotLightData_[i].intensity = 5.0f;
-        spotLightData_[i].direction = { 0.0f, -1.0f, 0.0f };
-        spotLightData_[i].distance = 20.0f;
-        spotLightData_[i].cosAngle = 0.866f;
-        spotLightData_[i].volumetricScatteringIntensity = 8.0f;
-    }
+    // Shadow Buffer
+    shadowDataResource_ = BufferManager::CreateMappedConstantBuffer(device, &shadowData_);
 
-    // 利用可能なインデックスキューを初期化
-    availablePointLightIndices_ = {}; // キューをクリア
-    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
-    {
-        availablePointLightIndices_.push(i);
-        pointLightData_[i].enable = false; // 全てのライトを非アクティブで初期化
-    }
-
-    availableSpotLightIndices_ = {};
-    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
-    {
-        availableSpotLightIndices_.push(i);
-        spotLightData_[i].enable = false; // 初期状態はすべてオフ
-    }
-
-    // ShadowData
-    shadowDataResource_ = BufferManager::CreateMappedConstantBuffer(
-        device, &shadowData_);
-
-    // 初期化
     for (int i = 0; i < MAX_CASCADE_COUNT; ++i)
     {
         shadowData_->cascadeLightViewProj[i] = Matrix4x4::MakeIdentity();
     }
     shadowData_->cascadeSplits = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    BeginFrame();
 }
 
-int LightManager::RequestPointLight()
+void LightManager::BeginFrame()
 {
-    if (availablePointLightIndices_.empty())
+    // カウントを 0 にリセット
+    activePointLightCount_ = 0;
+    activeSpotLightCount_ = 0;
+
+    // 全ライトの有効化フラグをリセット
+    for (int i = 0; i < MAX_POINT_LIGHTS; ++i)
     {
-        // 利用可能なライトスロットがない
-        return -1;
+        pointLightData_[i].enable = false;
     }
-    int index = availablePointLightIndices_.front();
-    availablePointLightIndices_.pop();
-
-    pointLightData_[index].enable = true; // ライトを有効化
-    return index;
-}
-
-int LightManager::RequestSpotLight()
-{
-    if (availableSpotLightIndices_.empty()) return -1;
-
-    int index = availableSpotLightIndices_.front();
-    availableSpotLightIndices_.pop();
-
-    spotLightData_[index].enable = true;
-    return index;
-}
-
-void LightManager::ReturnPointLight(int index)
-{
-    if (index < 0 || index >= pointLightCount_)
+    for (int i = 0; i < MAX_SPOT_LIGHTS; ++i)
     {
-        return; // 無効なインデックス
+        spotLightData_[i].enable = false;
+    }
+}
+
+bool LightManager::SubmitPointLight(
+    const Vector3& position,
+    const Vector4& color,
+    float intensity,
+    float radius,
+    float volumetricScatteringIntensity)
+{
+    if (activePointLightCount_ >= MAX_POINT_LIGHTS)
+    {
+        return false;
     }
 
-    if (!pointLightData_[index].enable) return;
+    int index = activePointLightCount_++;
+    auto& light = pointLightData_[index];
 
-    pointLightData_[index].enable = false; // ライトを無効化
-    pointLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-    pointLightData_[index].intensity = 0.0f;
+    light.enable = true;
+    light.position = position;
+    light.color = color;
+    light.intensity = intensity;
+    light.radius = radius;
+    light.volumetricScatteringIntensity = volumetricScatteringIntensity;
 
-    availablePointLightIndices_.push(index); // キューに戻す
+    return true;
 }
 
-void LightManager::ReturnSpotLight(int index)
+bool LightManager::SubmitSpotLight(
+    const Vector3& position,
+    const Vector4& color,
+    float intensity,
+    float distance,
+    const Vector3& direction,
+    float cosAngle,
+    float volumetricScatteringIntensity)
 {
-    if (index < 0 || index >= spotLightCount_) return;
-    if (!spotLightData_[index].enable) return;
+    if (activeSpotLightCount_ >= MAX_SPOT_LIGHTS)
+    {
+        return false;
+    }
 
-    spotLightData_[index].enable = false;
-    spotLightData_[index].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-    spotLightData_[index].intensity = 0.0f;
+    int index = activeSpotLightCount_++;
+    auto& light = spotLightData_[index];
 
-    availableSpotLightIndices_.push(index);
+    light.enable = true;
+    light.position = position;
+    light.direction = direction;
+    light.color = color;
+    light.intensity = intensity;
+    light.distance = distance;
+    light.cosAngle = cosAngle;
+    light.volumetricScatteringIntensity = volumetricScatteringIntensity;
+
+    return true;
 }
 
-void LightManager::UpdatePointLightPosition(int index, const Vector3& position)
+void LightManager::SetDirectionalLight(
+    int index,
+    const Vector3& direction,
+    const Vector4& color,
+    float intensity,
+    float volumetricScatteringIntensity)
 {
-    if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
-    pointLightData_[index].position = position;
-}
+    if (index < 0 || index >= MAX_DIRECTIONAL_LIGHTS) return;
 
-void LightManager::UpdateSpotLightTransform(int index, const Vector3& position, const Vector3& direction)
-{
-    if (index < 0 || index >= spotLightCount_ || !spotLightData_[index].enable) return;
-
-    spotLightData_[index].position = position;
-    // 方向ベクトルは必ず正規化（長さを1に）して代入
-    spotLightData_[index].direction = direction;
-}
-
-void LightManager::UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float volumetricScatteringIntensity)
-{
-    if (index < 0 || index >= pointLightCount_ || !pointLightData_[index].enable) return;
-    pointLightData_[index].color = color;
-    pointLightData_[index].intensity = intensity;
-    pointLightData_[index].radius = radius;
-    pointLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
-}
-
-void LightManager::UpdateSpotLightProperties(int index, const Vector4& color, float intensity, float distance, float cosAngle, float volumetricScatteringIntensity)
-{
-    if (index < 0 || index >= spotLightCount_ || !spotLightData_[index].enable) return;
-
-    spotLightData_[index].color = color;
-    spotLightData_[index].intensity = intensity;
-    spotLightData_[index].distance = distance;
-    spotLightData_[index].cosAngle = cosAngle;
-    spotLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
+    directionalLightData_[index].enable = true;
+    directionalLightData_[index].direction = direction;
+    directionalLightData_[index].color = color;
+    directionalLightData_[index].intensity = intensity;
+    directionalLightData_[index].volumetricScatteringIntensity = volumetricScatteringIntensity;
 }
 
 void LightManager::UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection)
 {
-    // 範囲チェック
     if (index < 0 || index >= directionalLightCount_) return;
-
-    // マップ済みのメモリに直接書き込む
     directionalLightData_[index].viewProj = viewProjection;
 }
 
@@ -184,35 +143,25 @@ void LightManager::UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarge
 {
     if (lightIndex < 0 || lightIndex >= MAX_DIRECTIONAL_LIGHTS) return;
 
-    // ライトデータの取得
-    auto* dirLights = GetDirectionalLightData();
+    auto dirLights = GetDirectionalLightData();
     if (!dirLights || !dirLights[lightIndex].enable) return;
 
-    // ライト方向を正規化
-    Vector3 lightDir = dirLights[lightIndex].direction;
-    lightDir = lightDir.Normalize();
+    Vector3 lightDir = dirLights[lightIndex].direction.Normalize();
 
-    // ライト位置を決定
     float distance = 100.0f;
     Vector3 lightPos = shadowTarget - (lightDir * distance);
 
-    // 上方向ベクトル
     Vector3 up = { 0.0f, 1.0f, 0.0f };
-    if (fabs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
+    if (std::abs(lightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
-    // ライトのビュー行列を作成
     Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, shadowTarget, up);
 
-    // 平行光源用の正射影行列を作成
     float size = 100.0f;
     float nearZ = -100.0f;
     float farZ = 200.0f;
     Matrix4x4 lightProj = Matrix4x4::MakeOrthographic(size, size, nearZ, farZ);
 
-    // ビュー行列と射影行列を合成
     Matrix4x4 lightViewProj = lightView * lightProj;
-
-    // シャドウ行列を更新
     UpdateDirectionalLightShadowMatrix(lightIndex, lightViewProj);
 }
 
@@ -223,16 +172,11 @@ void LightManager::UpdateCascadedShadows(
     float cameraNear,
     float cameraFar)
 {
-    // シャドウマップの解像度
-    const float shadowMapResolution = SHADOW_MAP_RESOLUTION;
-
-    // 正規化したライトの方向
+    const float shadowMapResolution = static_cast<float>(SHADOW_MAP_RESOLUTION);
     Vector3 normLightDir = lightDir.Normalize();
 
-    // カメラの逆ViewProjection行列を計算
     Matrix4x4 invCamViewProj = Matrix4x4::Inverse(cameraView * cameraProj);
 
-    // カスケードの分割距離の計算 
     float splits[MAX_CASCADE_COUNT + 1];
     splits[0] = cameraNear;
     splits[MAX_CASCADE_COUNT] = cameraFar;
@@ -243,35 +187,29 @@ void LightManager::UpdateCascadedShadows(
     {
         float fraction = static_cast<float>(i) / static_cast<float>(MAX_CASCADE_COUNT);
 
-        // 対数分割と線形分割
         float logSplit = cameraNear * std::pow(cameraFar / cameraNear, fraction);
         float linSplit = cameraNear + (cameraFar - cameraNear) * fraction;
 
-        // ブレンド
         splits[i] = lambda * logSplit + (1.0f - lambda) * linSplit;
     }
 
     shadowData_->cascadeSplits = Vector4{ splits[1], splits[2], splits[3], 0.0f };
 
-    // 各カスケードの行列計算
     for (int i = 0; i < MAX_CASCADE_COUNT; ++i)
     {
         float nearDist = splits[i];
         float farDist = splits[i + 1];
 
-        // 各カスケードのプロジェクション空間でのNear/FarのZ値を求める
         float m22 = cameraProj.m[2][2];
         float m32 = cameraProj.m[3][2];
         float minZ = (nearDist * m22 + m32) / nearDist;
         float maxZ = (farDist * m22 + m32) / farDist;
 
-        // NDC（正規化デバイス座標）での視錐台の8頂点を定義
         Vector3 frustumCorners[8] = {
             { -1.0f,  1.0f, minZ }, {  1.0f,  1.0f, minZ }, {  1.0f, -1.0f, minZ }, { -1.0f, -1.0f, minZ },
             { -1.0f,  1.0f, maxZ }, {  1.0f,  1.0f, maxZ }, {  1.0f, -1.0f, maxZ }, { -1.0f, -1.0f, maxZ }
         };
 
-        // 8頂点をワールド空間に変換し、その中心を求める
         Vector3 center{ 0.0f, 0.0f, 0.0f };
         for (int j = 0; j < 8; ++j)
         {
@@ -280,7 +218,6 @@ void LightManager::UpdateCascadedShadows(
         }
         center = center * (1.0f / 8.0f);
 
-        // 外接球の半径を計算
         float radius = 0.0f;
         for (int j = 0; j < 8; ++j)
         {
@@ -289,34 +226,28 @@ void LightManager::UpdateCascadedShadows(
         }
         radius = std::ceil(radius * 1.1f);
 
-        // ライトの仮のビュー行列を作成
         Vector3 up = { 0.0f, 1.0f, 0.0f };
         if (std::abs(normLightDir.y) > 0.99f) up = { 1.0f, 0.0f, 0.0f };
 
         Vector3 lightPos = center - (normLightDir * radius);
         Matrix4x4 lightView = Matrix4x4::MakeLookAt(lightPos, center, up);
 
-        // テクセルスナップ
         float shadowNearZ = -radius * 2.0f;
         float shadowFarZ = radius * 2.0f;
         Matrix4x4 shadowProj = Matrix4x4::MakeOrthographic(radius * 2.0f, radius * 2.0f, shadowNearZ, shadowFarZ);
         Matrix4x4 shadowViewProj = lightView * shadowProj;
 
-        // 原点(0,0,0)をライトのViewProj空間に変換
         Vector3 shadowOrigin = { 0.0f, 0.0f, 0.0f };
         shadowOrigin = shadowViewProj.TransformPoint(shadowOrigin);
         shadowOrigin = shadowOrigin * (shadowMapResolution / 2.0f);
 
-        // 小数点以下を丸める（スナップ）
         Vector3 roundedOrigin{ std::round(shadowOrigin.x), std::round(shadowOrigin.y), std::round(shadowOrigin.z) };
         Vector3 roundOffset = roundedOrigin - shadowOrigin;
         roundOffset = roundOffset * (2.0f / shadowMapResolution);
 
-        // 正射影行列のズレを補正する（スナップ処理）
         shadowProj.m[3][0] += roundOffset.x;
         shadowProj.m[3][1] += roundOffset.y;
 
-        // 最終的な行列を確定させて保存
         shadowData_->cascadeLightViewProj[i] = lightView * shadowProj;
     }
 }

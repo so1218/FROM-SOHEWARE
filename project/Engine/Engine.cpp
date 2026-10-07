@@ -123,6 +123,9 @@ void Engine::BeginFrame()
 	// ImGuiのフレーム開始
 	ImGuiManager::BeginFrame();
 
+	// ライトのカウントをリセット
+	lightManager_->BeginFrame();
+
 	// デバッグカメラ更新
 	debugCamera_->Update();
 

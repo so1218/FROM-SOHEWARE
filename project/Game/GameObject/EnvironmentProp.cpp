@@ -14,12 +14,6 @@ EnvironmentProp::EnvironmentProp(FE::Engine* engine, int id, const std::string& 
 
 EnvironmentProp::~EnvironmentProp()
 {
-    // アロケート済みのポイントライトを確実に返却
-    if (pointLightIndex_ != -1)
-    {
-        engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
-        pointLightIndex_ = -1;
-    }
 }
 
 void EnvironmentProp::Initialize()
@@ -135,33 +129,6 @@ void EnvironmentProp::ApplySettings()
         collider_.reset();
     }
 
-    // ポイントライトの動的更新・返却
-    if (hasLight_) {
-        if (pointLightIndex_ == -1) 
-        {
-            pointLightIndex_ = engine_->GetLightManager()->RequestPointLight();
-        }
-
-        if (pointLightIndex_ != -1)
-        {
-            engine_->GetLightManager()->UpdatePointLightProperties(
-                pointLightIndex_,
-                lightColor_,
-                lightIntensity_,
-                lightRadius_,
-                lightVolumetricScatteringIntensity_
-            );
-        }
-    }
-    else 
-    {
-        if (pointLightIndex_ != -1) 
-        {
-            engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
-            pointLightIndex_ = -1;
-        }
-    }
-
     // パーティクルエミッターの動的割り当て
     UpdateParticleEmitter(hasParticle_, particleName_, isParticleFollowing_, activeEmitter_);
     UpdateParticleEmitter(hasParticle2_, particleName2_, isParticleFollowing2_, activeEmitter2_);
@@ -218,12 +185,14 @@ void EnvironmentProp::Update()
     }
 
     // 動的ポイントライトのワールド座標および描画パラメータ同期
-    if (hasLight_ && pointLightIndex_ != -1)
+    if (hasLight_)
     {
-        const FE::Vector3& currentPos = model_->GetTransform().translation_;
-        engine_->GetLightManager()->UpdatePointLightPosition(pointLightIndex_, currentPos);
-        engine_->GetLightManager()->UpdatePointLightProperties(
-            pointLightIndex_, lightColor_, lightIntensity_, lightRadius_, lightVolumetricScatteringIntensity_
+        engine_->GetLightManager()->SubmitPointLight(
+            GetTransform().translation_,
+            lightColor_,
+            lightIntensity_,
+            lightRadius_,
+            lightVolumetricScatteringIntensity_
         );
     }
 
@@ -448,13 +417,6 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
     if (propBehavior_ == static_cast<int>(PropBehavior::Disappear))
     {
         SetActive(false);
-
-        // 管理システムへライトインデックスを返却
-        if (pointLightIndex_ != -1)
-        {
-            engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
-            pointLightIndex_ = -1;
-        }
 
         // アタッチされているエミッターの解放
         if (activeEmitter_)

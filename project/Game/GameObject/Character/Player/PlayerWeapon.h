@@ -16,6 +16,7 @@ public:
         float muzzleFlashIntensity = 25.0f;
         float muzzleFlashRadius = 8.0f;
         float muzzleFlashDuration = 0.05f;
+        float muzzleFlashVolumetricIntensity = 1.0f;
         FE::Vector3 muzzleOffset = { 0.0f, 0.05f, 0.35f };
 
         int baseDamage = 20;
@@ -48,6 +49,5 @@ private:
 
     Config config_;
     FE::Matrix4x4 currentHandMatrix_;
-    int muzzleLightIndex_ = -1;
     float muzzleFlashTimer_ = 0.0f;
 };

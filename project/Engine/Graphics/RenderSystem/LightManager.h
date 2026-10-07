@@ -19,49 +19,48 @@ class LightManager
 public:
     void Initialize(ID3D12Device* device);
 
-    DirectionalLight* GetDirectionalLightData() { return directionalLightData_; }
-    PointLight* GetPointLightData() { return pointLightData_; }
-    SpotLight* GetSpotLightData() { return spotLightData_; }
+    // フレームの最初に呼び出し、アクティブなライト数を 0 にリセット
+    void BeginFrame();
 
-    ID3D12Resource* GetDirectionalLightResource() { return directionalLightResource_.Get(); }
-    ID3D12Resource* GetPointLightResource() { return pointLightResource_.Get(); }
-    ID3D12Resource* GetSpotLightResource() { return spotLightResource_.Get(); }
-    ID3D12Resource* GetShadowDataResource() { return shadowDataResource_.Get(); }
+    // 毎フレームのライト登録
+    bool SubmitPointLight(
+        const Vector3& position,
+        const Vector4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+        float intensity = 5.0f,
+        float radius = 10.0f,
+        float volumetricScatteringIntensity = 1.0f);
 
-    int GetDirectionalLightCount() const { return directionalLightCount_; }
-    int GetPointLightCount() const { return pointLightCount_; }
-    int GetSpotLightCount() const { return spotLightCount_; }
+    bool SubmitSpotLight(
+        const Vector3& position,
+        const Vector4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+        float intensity = 5.0f,
+        float distance = 20.0f,
+        const Vector3& direction = { 0.0f, -1.0f, 0.0f },
+        float cosAngle = 0.866f,
+        float volumetricScatteringIntensity = 8.0f);
 
-    // ポイントライトのスロットを要求する
-    // 成功すればインデックス(0 ~ MAX-1)を、失敗すれば-1を返す
-    int RequestPointLight();
-    int RequestSpotLight();
+    // ディレクショナルライトの設定・更新
+    void SetDirectionalLight(
+        int index,
+        const Vector3& direction,
+        const Vector4& color = { 1.0f, 1.0f, 1.0f, 1.0f },
+        float intensity = 1.0f,
+        float volumetricScatteringIntensity = 5.0f);
 
-    // ポイントライトのスロットを返却する
-    void ReturnPointLight(int index);
-    void ReturnSpotLight(int index);
-
-    // 特定のポイントライトの位置を更新する
-    void UpdatePointLightPosition(int index, const Vector3& position);
-    void UpdateSpotLightTransform(int index, const Vector3& position, const Vector3& direction);
-
-    // 特定のポイントライトのパラメータを更新する
-    void UpdatePointLightProperties(int index, const Vector4& color, float intensity, float radius, float volumetricScatteringIntensity);
-    void UpdateSpotLightProperties(int index, const Vector4& color, float intensity, float distance, float cosAngle, float volumetricScatteringIntensity);
-
-    // ディレクショナルライトの行列更新
     void UpdateDirectionalLightShadowMatrix(int index, const Matrix4x4& viewProjection);
 
-    // シャドウ用の行列を計算して更新する関数
+    // シャドウ行列計算
     void UpdateShadowMatrix(int lightIndex, const Vector3& shadowTarget);
-    // 毎フレーム呼ばれるCSM計算用関数（メインカメラの情報を渡す）
-    void UpdateCascadedShadows(const Vector3& lightDir, const Matrix4x4& cameraView, const Matrix4x4& cameraProj, float cameraNear, float cameraFar);
-
+    void UpdateCascadedShadows(
+        const Vector3& lightDir,
+        const Matrix4x4& cameraView,
+        const Matrix4x4& cameraProj,
+        float cameraNear,
+        float cameraFar);
     void DrawDebugLights();
-
     void DrawSelectedLightGizmo();
 
-    // 選択状態のGetter/Setter
+    // 選択状態の Getter/Setter
     void SetSelectedLight(SelectedLightType type, int index)
     {
         selectedLightType_ = type;
@@ -70,7 +69,20 @@ public:
     SelectedLightType GetSelectedLightType() const { return selectedLightType_; }
     int GetSelectedLightIndex() const { return selectedLightIndex_; }
 
+    // ゲッター群
+    int GetDirectionalLightCount() const { return directionalLightCount_; }
+    int GetActivePointLightCount() const { return activePointLightCount_; }
+    int GetActiveSpotLightCount() const { return activeSpotLightCount_; }
+
+    DirectionalLight* GetDirectionalLightData() { return directionalLightData_; }
+    PointLight* GetPointLightData() { return pointLightData_; }
+    SpotLight* GetSpotLightData() { return spotLightData_; }
     const ShadowData* GetShadowData() const { return shadowData_; }
+
+    ID3D12Resource* GetDirectionalLightResource() const { return directionalLightResource_.Get(); }
+    ID3D12Resource* GetPointLightResource() const { return pointLightResource_.Get(); }
+    ID3D12Resource* GetSpotLightResource() const { return spotLightResource_.Get(); }
+    ID3D12Resource* GetShadowDataResource() const { return shadowDataResource_.Get(); }
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource_;
@@ -84,17 +96,12 @@ private:
     ShadowData* shadowData_ = nullptr;
 
     int directionalLightCount_ = MAX_DIRECTIONAL_LIGHTS;
-    int pointLightCount_ = MAX_POINT_LIGHTS;
-    int spotLightCount_ = MAX_SPOT_LIGHTS;
+    int activePointLightCount_ = 0;
+    int activeSpotLightCount_ = 0;
 
-    std::queue<int> availablePointLightIndices_;
-    std::queue<int> availableSpotLightIndices_;
-
-    // 現在選択されているライトの情報
     SelectedLightType selectedLightType_ = SelectedLightType::None;
     int selectedLightIndex_ = -1;
 
-    // ディレクショナルライトのエディタ表示用の仮想位置
     Vector3 directionalLightPositions_[MAX_DIRECTIONAL_LIGHTS];
 };
 

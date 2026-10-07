@@ -90,7 +90,6 @@ private:
 
     // Light Properties
     bool hasLight_ = false;
-    int pointLightIndex_ = -1;
     FE::Vector4 lightColor_ = { 1.0f, 0.5f, 0.0f, 1.0f };
     float lightIntensity_ = 5.0f;
     float lightRadius_ = 10.0f;

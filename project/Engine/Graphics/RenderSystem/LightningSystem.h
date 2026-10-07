@@ -31,13 +31,15 @@ private:
     LightningConfig config_;
 
     // アクティブなポイントライトの管理システム
-    struct ActiveLight {
-        int lightIndex = -1;       // LightManager からレンタルしたインデックス
+    struct ActiveLight 
+    {
+        Vector3 position{ 0.0f, 0.0f, 0.0f };
         float maxDuration = 0.0f;   // 初期寿命
         float currentDuration = 0.0f; // 残り寿命
         float seed = 0.0f;          // 明滅を同期するためのシード値
     };
     std::vector<ActiveLight> activeLights_;
+    std::mt19937 rng_{ 1337 };
 };
 
 }

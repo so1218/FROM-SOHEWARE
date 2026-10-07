@@ -218,33 +218,30 @@ void DebugGuiManager::DrawLightSettings()
 
     ImGui::Separator();
 
+    // ==========================================
     // ディレクショナルライト
-    if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
+    // ==========================================
+    if (dirLights && ImGui::TreeNode("ディレクショナルライト (平行光源)"))
     {
         for (int i = 0; i < lightManager_->GetDirectionalLightCount(); ++i)
         {
             std::string label = "ディレクショナルライト " + std::to_string(i);
 
-            // 現在のこのライトが選択されているかチェック
             bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Directional &&
                 lightManager_->GetSelectedLightIndex() == i);
 
-            // ツリーノードのフラグ設定（選択されている場合はハイライト色にする）
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
             if (isSelected) {
                 flags |= ImGuiTreeNodeFlags_Selected;
             }
 
-            // TreeNodeEx でノードを描画
             bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
 
-            // 項目がクリックされたら、選択状態を更新
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             {
                 lightManager_->SetSelectedLight(SelectedLightType::Directional, i);
             }
 
-            // ツリーが開かれているならパラメータを表示
             if (isOpen)
             {
                 bool enabled = (dirLights[i].enable != 0);
@@ -263,92 +260,106 @@ void DebugGuiManager::DrawLightSettings()
     }
     ImGui::Separator();
 
-    // ポイントライト 
-    if (ImGui::TreeNode("ポイントライト (点光源)"))
+    // ==========================================
+    // ポイントライト (アクティブな動的ライト)
+    // ==========================================
+    int activePointCount = lightManager_->GetActivePointLightCount();
+    std::string pointHeader = "ポイントライト (アクティブ: " + std::to_string(activePointCount) + "個)";
+
+    if (pointLights && ImGui::TreeNode(pointHeader.c_str()))
     {
-        for (int i = 0; i < lightManager_->GetPointLightCount(); ++i)
+        if (activePointCount == 0)
         {
-            std::string label = "ポイントライト " + std::to_string(i);
-
-            // 現在のこのライトが選択されているかチェック
-            bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Point &&
-                lightManager_->GetSelectedLightIndex() == i);
-
-            // ツリーノードのフラグ設定
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-            if (isSelected) {
-                flags |= ImGuiTreeNodeFlags_Selected;
-            }
-
-            // TreeNodeEx でノードを描画
-            bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
-
-            // 項目がクリックされたら、選択状態を更新
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            ImGui::TextDisabled("現在登録されているポイントライトはありません");
+        }
+        else
+        {
+            for (int i = 0; i < activePointCount; ++i)
             {
-                lightManager_->SetSelectedLight(SelectedLightType::Point, i);
-            }
+                std::string label = "ポイントライト [" + std::to_string(i) + "]";
 
-            // ツリーが開かれているならパラメータを表示
-            if (isOpen)
-            {
-                bool enabled = (pointLights[i].enable != 0);
-                if (ImGui::Checkbox("有効", &enabled)) { pointLights[i].enable = enabled ? 1 : 0; }
-                ImGui::DragFloat3("座標", &pointLights[i].position.x, 0.05f);
-                ImGui::ColorEdit4("色", &pointLights[i].color.x);
-                ImGui::DragFloat("強度", &pointLights[i].intensity, 0.01f);
-                ImGui::DragFloat("影響半径", &pointLights[i].radius, 0.1f);
-                ImGui::DragFloat("ボリュームフォグ輝度", &pointLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
+                bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Point &&
+                    lightManager_->GetSelectedLightIndex() == i);
 
-                ImGui::TreePop();
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+                if (isSelected) {
+                    flags |= ImGuiTreeNodeFlags_Selected;
+                }
+
+                bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
+
+                if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                {
+                    lightManager_->SetSelectedLight(SelectedLightType::Point, i);
+                }
+
+                if (isOpen)
+                {
+                    bool enabled = (pointLights[i].enable != 0);
+                    if (ImGui::Checkbox("有効", &enabled)) { pointLights[i].enable = enabled ? 1 : 0; }
+                    ImGui::DragFloat3("座標", &pointLights[i].position.x, 0.05f);
+                    ImGui::ColorEdit4("色", &pointLights[i].color.x);
+                    ImGui::DragFloat("強度", &pointLights[i].intensity, 0.01f);
+                    ImGui::DragFloat("影響半径", &pointLights[i].radius, 0.1f);
+                    ImGui::DragFloat("ボリュームフォグ輝度", &pointLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
+
+                    ImGui::TreePop();
+                }
             }
         }
         ImGui::TreePop();
     }
     ImGui::Separator();
 
-    // スポットライト
-    if (ImGui::TreeNode("スポットライト"))
+    // ==========================================
+    // スポットライト (アクティブな動的ライト)
+    // ==========================================
+    int activeSpotCount = lightManager_->GetActiveSpotLightCount();
+    std::string spotHeader = "スポットライト (アクティブ: " + std::to_string(activeSpotCount) + "個)";
+
+    if (spotLights && ImGui::TreeNode(spotHeader.c_str()))
     {
-        for (int i = 0; i < lightManager_->GetSpotLightCount(); ++i)
+        if (activeSpotCount == 0)
         {
-            std::string label = "スポットライト " + std::to_string(i);
-
-            // 現在のこのライトが選択されているかチェック
-            bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Spot &&
-                lightManager_->GetSelectedLightIndex() == i);
-
-            // ツリーノードのフラグ設定
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-            if (isSelected) {
-                flags |= ImGuiTreeNodeFlags_Selected;
-            }
-
-            // TreeNodeEx でノードを描画
-            bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
-
-            // 項目がクリックされたら、選択状態を更新
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+            ImGui::TextDisabled("現在登録されているスポットライトはありません");
+        }
+        else
+        {
+            for (int i = 0; i < activeSpotCount; ++i)
             {
-                lightManager_->SetSelectedLight(SelectedLightType::Spot, i);
-            }
+                std::string label = "スポットライト [" + std::to_string(i) + "]";
 
-            // ツリーが開かれているならパラメータを表示
-            if (isOpen)
-            {
-                bool enabled = (spotLights[i].enable != 0);
-                if (ImGui::Checkbox("有効", &enabled))
-                {
-                    spotLights[i].enable = enabled ? 1 : 0;
+                bool isSelected = (lightManager_->GetSelectedLightType() == SelectedLightType::Spot &&
+                    lightManager_->GetSelectedLightIndex() == i);
+
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+                if (isSelected) {
+                    flags |= ImGuiTreeNodeFlags_Selected;
                 }
-                ImGui::DragFloat3("座標", &spotLights[i].position.x, 0.05f);
-                ImGui::ColorEdit4("色", &spotLights[i].color.x);
-                ImGui::DragFloat("強度", &spotLights[i].intensity, 0.01f);
-                ImGui::DragFloat3("向き", &spotLights[i].direction.x, 0.05f);
-                ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
-                ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
-                ImGui::DragFloat("ボリュームフォグ輝度", &spotLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
-                ImGui::TreePop();
+
+                bool isOpen = ImGui::TreeNodeEx(label.c_str(), flags);
+
+                if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                {
+                    lightManager_->SetSelectedLight(SelectedLightType::Spot, i);
+                }
+
+                if (isOpen)
+                {
+                    bool enabled = (spotLights[i].enable != 0);
+                    if (ImGui::Checkbox("有効", &enabled))
+                    {
+                        spotLights[i].enable = enabled ? 1 : 0;
+                    }
+                    ImGui::DragFloat3("座標", &spotLights[i].position.x, 0.05f);
+                    ImGui::ColorEdit4("色", &spotLights[i].color.x);
+                    ImGui::DragFloat("強度", &spotLights[i].intensity, 0.01f);
+                    ImGui::DragFloat3("向き", &spotLights[i].direction.x, 0.05f);
+                    ImGui::DragFloat("距離", &spotLights[i].distance, 0.1f);
+                    ImGui::DragFloat("照射角(コサイン値)", &spotLights[i].cosAngle, 0.01f, 0.0f, 1.0f);
+                    ImGui::DragFloat("ボリュームフォグ輝度", &spotLights[i].volumetricScatteringIntensity, 0.05f, 0.0f, 50.0f);
+                    ImGui::TreePop();
+                }
             }
         }
         ImGui::TreePop();

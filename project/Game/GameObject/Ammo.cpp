@@ -18,12 +18,6 @@ Ammo::Ammo(Engine* engine, int id, const std::string& parentGroupName)
 
 Ammo::~Ammo()
 {
-    // アモが破棄される際、LightManagerに返却
-    if (pointLightIndex_ != -1)
-    {
-        engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
-        pointLightIndex_ = -1;
-    }
 }
 
 void Ammo::Initialize()
@@ -37,9 +31,6 @@ void Ammo::Initialize()
     binder_->Bind("LightIntensity", &lightIntensity_, 5.0f);
     binder_->Bind("LightRadius", &lightRadius_, 10.0f);
     binder_->Bind("LightVolumetricScatteringIntensity", &lightVolumetricScatteringIntensity_, 1.0f);
-
-    // ポイントライトの空きを要求
-    pointLightIndex_ = engine_->GetLightManager()->RequestPointLight();
 
     hitEmitter_ = engine_->GetParticleSystem()->CreateEmitter("ammoHit");
     if (hitEmitter_)
@@ -55,7 +46,10 @@ void Ammo::Initialize()
 
 void Ammo::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Vector4& lightColor, float tiltAngle, float rotationSpeed)
 {
-    if (isPicked_) return;
+    if (!IsActive() || isPicked_)
+    {
+        return;
+    }
 
     // スケールの適用
     model_->GetTransform().scale_ = scale;
@@ -75,20 +69,14 @@ void Ammo::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Ve
     bubbleModel_->GetTransform().scale_ = bubbleScale;
 
     // ポイントライトの追従
-    if (pointLightIndex_ != -1)
-    {
-        Vector3 currentPos = model_->GetTransform().translation_;
-
-        engine_->GetLightManager()->UpdatePointLightPosition(pointLightIndex_, currentPos);
-        engine_->GetLightManager()->UpdatePointLightProperties(
-            pointLightIndex_,
-            lightColor, 
-            lightIntensity_,
-            lightRadius_,
-            lightVolumetricScatteringIntensity_
-        );
-    }
-
+    engine_->GetLightManager()->SubmitPointLight(
+        model_->GetTransform().translation_,
+        lightColor, 
+        lightIntensity_,                     
+        lightRadius_,
+        lightVolumetricScatteringIntensity_
+    );
+    
     SetTransform(model_->GetTransform());
 }
 
@@ -158,11 +146,4 @@ void Ammo::Sleep()
 {
     isPicked_ = true;
     SetActive(false);
-
-    if (pointLightIndex_ != -1)
-    {
-        engine_->GetLightManager()->UpdatePointLightProperties(
-            pointLightIndex_, { 0.0f, 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f, 0.0f
-        );
-    }
 }

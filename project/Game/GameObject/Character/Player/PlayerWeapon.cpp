@@ -21,10 +21,7 @@ PlayerWeapon::PlayerWeapon(FE::Engine* engine)
 
 PlayerWeapon::~PlayerWeapon()
 {
-    if (muzzleLightIndex_ >= 0 && engine_)
-    {
-        engine_->GetLightManager()->ReturnPointLight(muzzleLightIndex_);
-    }
+
 }
 
 void PlayerWeapon::Initialize()
@@ -33,14 +30,6 @@ void PlayerWeapon::Initialize()
 
     // 武器モデルの親に handTransform_ を設定
     model_->GetTransform().SetParent(&handTransform_);
-
-    muzzleLightIndex_ = engine_->GetLightManager()->RequestPointLight();
-    if (muzzleLightIndex_ >= 0)
-    {
-        engine_->GetLightManager()->UpdatePointLightProperties(
-            muzzleLightIndex_, config_.muzzleFlashColor, 0.0f, config_.muzzleFlashRadius, 0.0f
-        );
-    }
 
     auto muzzleParticle = engine_->GetParticleSystem()->CreateEmitter("muzzleFlash");
     if (muzzleParticle)
@@ -82,6 +71,7 @@ void PlayerWeapon::Initialize()
     binder_->BindColor("Muzzle Flash Color", &config_.muzzleFlashColor, { 1.0f, 0.75f, 0.3f, 1.0f });
     binder_->Bind("Muzzle Flash Intensity", &config_.muzzleFlashIntensity, 25.0f, 0.5f, 0.0f, 100.0f);
     binder_->Bind("Muzzle Flash Radius", &config_.muzzleFlashRadius, 8.0f, 0.1f, 0.5f, 30.0f);
+    binder_->Bind("Muzzle Flash Volumetric", &config_.muzzleFlashVolumetricIntensity, 1.0f, 0.05f, 0.0f, 50.0f);
     binder_->Bind("Muzzle Flash Duration", &config_.muzzleFlashDuration, 0.05f, 0.005f, 0.01f, 0.2f);
     binder_->Bind("Muzzle Offset", &config_.muzzleOffset, { 0.0f, 0.05f, 0.35f });
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
@@ -137,27 +127,21 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
     }
 
     // フラッシュライトのタイマー処理
-    if (muzzleLightIndex_ >= 0)
+    if (muzzleFlashTimer_ > 0.0f)
     {
-        if (muzzleFlashTimer_ > 0.0f)
-        {
-            muzzleFlashTimer_ -= TimeManager::GetInstance()->GetDeltaTime();
-            engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
+        muzzleFlashTimer_ -= TimeManager::GetInstance()->GetDeltaTime();
 
-            float alpha = std::clamp(muzzleFlashTimer_ / config_.muzzleFlashDuration, 0.0f, 1.0f);
-            float currentIntensity = config_.muzzleFlashIntensity * alpha;
+        float alpha = std::clamp(muzzleFlashTimer_ / config_.muzzleFlashDuration, 0.0f, 1.0f);
+        float currentIntensity = config_.muzzleFlashIntensity * alpha;
+        float currentVolumetric = config_.muzzleFlashVolumetricIntensity * alpha;
 
-            engine_->GetLightManager()->UpdatePointLightProperties(
-                muzzleLightIndex_, config_.muzzleFlashColor, currentIntensity, config_.muzzleFlashRadius, 1.0f
-            );
-        }
-        else
-        {
-            engine_->GetLightManager()->UpdatePointLightPosition(muzzleLightIndex_, muzzlePos);
-            engine_->GetLightManager()->UpdatePointLightProperties(
-                muzzleLightIndex_, config_.muzzleFlashColor, 0.0f, config_.muzzleFlashRadius, 0.0f
-            );
-        }
+        engine_->GetLightManager()->SubmitPointLight(
+            muzzlePos,
+            config_.muzzleFlashColor,
+            currentIntensity,
+            config_.muzzleFlashRadius,
+            currentVolumetric
+        );
     }
 }
 
@@ -272,7 +256,6 @@ void PlayerWeapon::Draw()
     }
 }
 
-
 void PlayerWeapon::DebugDraw()
 {
 #ifdef ENABLE_IMGUI
@@ -287,6 +270,7 @@ void PlayerWeapon::DebugDraw()
         binder_->Draw("Muzzle Flash Color", "発光色");
         binder_->Draw("Muzzle Flash Intensity", "発光強度");
         binder_->Draw("Muzzle Flash Radius", "照射半径");
+        binder_->Draw("Muzzle Flash Volumetric", "ボリュメトリック散乱強度");
         binder_->Draw("Muzzle Flash Duration", "発光時間");
         binder_->Draw("Muzzle Offset", "銃口位置オフセット");
 

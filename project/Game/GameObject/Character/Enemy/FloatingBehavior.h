@@ -32,7 +32,6 @@ private:
     float time_ = 0.0f;
 
     // スポットライト用パラメータ
-    int spotLightIndex_ = -1;
     FE::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f };
     float spotIntensity_ = 8.0f;
     float spotDistance_ = 20.0f;

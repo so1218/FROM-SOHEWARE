@@ -11,6 +11,7 @@
         "Muzzle Flash Duration": 0.12999999523162842,
         "Muzzle Flash Intensity": 12.0,
         "Muzzle Flash Radius": 5.699999809265137,
+        "Muzzle Flash Volumetric": 3.299999952316284,
         "Muzzle Offset": [
             -2.0,
             1.2599999904632568,

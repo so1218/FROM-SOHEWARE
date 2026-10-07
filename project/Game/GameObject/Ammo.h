@@ -36,7 +36,6 @@ private:
     int id_;
     bool isPicked_ = false;
 
-    int pointLightIndex_ = -1;
     float lightIntensity_ = 5.0f;
     float lightRadius_ = 10.0f;
     float lightVolumetricScatteringIntensity_ = 1.0f;
