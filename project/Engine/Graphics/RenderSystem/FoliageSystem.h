@@ -39,6 +39,9 @@ public:
     // エディタからパラメータのみ即時反映
     void UpdateConfigs(const std::vector<FoliageLayer>& layers);
 
+    // リセット処理
+    void Reset();
+
     [[nodiscard]] FoliageCullingData* GetCullingData() { return &cullingData_; }
     [[nodiscard]] FoliageMaterialData* GetMaterialData(size_t index);
     [[nodiscard]] FoliageGenerationData* GetGenerationData(size_t index);

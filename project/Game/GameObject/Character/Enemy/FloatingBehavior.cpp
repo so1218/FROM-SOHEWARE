@@ -14,14 +14,6 @@ FloatingBehavior::~FloatingBehavior()
         engine_->GetLightManager()->ReturnSpotLight(spotLightIndex_);
         spotLightIndex_ = -1;
     }
-
-    // オーラの削除
-    if (auraEmitterPtr_)
-    {
-        auraEmitterPtr_->Stop();
-        auraEmitterPtr_->Destroy();
-        auraEmitterPtr_ = nullptr;
-    }
 }
 
 void FloatingBehavior::Initialize(Enemy* owner)

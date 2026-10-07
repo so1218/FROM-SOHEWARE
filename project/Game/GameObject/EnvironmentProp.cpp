@@ -20,19 +20,6 @@ EnvironmentProp::~EnvironmentProp()
         engine_->GetLightManager()->ReturnPointLight(pointLightIndex_);
         pointLightIndex_ = -1;
     }
-
-    // アクティブなエミッターの安全な解放
-    if (activeEmitter_)
-    {
-        activeEmitter_->Destroy();
-        activeEmitter_ = nullptr;
-    }
-
-    if (activeEmitter2_)
-    {
-        activeEmitter2_->Destroy();
-        activeEmitter2_ = nullptr;
-    }
 }
 
 void EnvironmentProp::Initialize()

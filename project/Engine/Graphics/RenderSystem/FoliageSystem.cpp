@@ -106,6 +106,12 @@ void FoliageSystem::UpdateConfigs(const std::vector<FoliageLayer>& layers)
     engine_->GetRendererManager()->UpdateFoliageConfigs(configs);
 }
 
+void FoliageSystem::Reset()
+{
+    foliageTypes_.clear();
+    isRendererInitialized_ = false;
+}
+
 FoliageMaterialData* FoliageSystem::GetMaterialData(size_t index)
 {
     if (index < foliageTypes_.size()) return &foliageTypes_[index].material;

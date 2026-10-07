@@ -10,6 +10,12 @@ FoliageField::FoliageField(FE::Engine* engine) : FE::GameObject(), engine_(engin
 
 void FoliageField::Initialize()
 {
+    layers_.clear();
+    if (foliageSystem_)
+    {
+        foliageSystem_->Reset();
+    }
+
     AddFoliageLayer("Flower_01", "flower_01");
     AddFoliageLayer("Foliage_01", "foliage_01");
     AddFoliageLayer("Foliage_02", "foliage_02");
