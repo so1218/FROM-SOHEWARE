@@ -6,7 +6,7 @@ on:
 
 env:
   #リポジトリのルートディレクトリを起点としたソリューションファイルのパス
-  SOLUTION_FILE_PATH: project/FromSoheEngine.sln
+  SOLUTION_FILE_PATH: project/FromSoheEngine.slnx
   #Visual Studio の構成(Debug / Release )
   CONFIGURATION: Release
 
