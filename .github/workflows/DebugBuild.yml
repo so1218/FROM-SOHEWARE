@@ -5,9 +5,7 @@ on:
       - master
 
 env:
-  #リポジトリのルートディレクトリを起点としたソリューションファイルのパス
   SOLUTION_FILE_PATH: project/FromSoheEngine.slnx
-  #Visual Studio の構成(Debug / Release )
   CONFIGURATION: Debug
 
 jobs:
@@ -17,10 +15,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 1. NuGet CLI の準備
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      # 2. MSBuild を PATH に追加
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
         with:
           msbuild-architecture: x64
+
+      # 3. ビルド前に NuGet パッケージ を復元
+      - name: Restore NuGet Packages
+        run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+      # 4. ビルドの実行
       - name: Build
         run: |
           msbuild ${{env.SOLUTION_FILE_PATH}} /p:Platform=x64 /p:Configuration=${{env.CONFIGURATION}} /p:PlatformToolset=v143
