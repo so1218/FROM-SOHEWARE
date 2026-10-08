@@ -2,18 +2,33 @@
 #include "TitleScene.h"
 #include "SceneManager.h"
 #include "Input.h"
-#include "ImGuiManager.h"
 #include "AudioPlayer.h"
-#include "Grid.h"
+#include "AmmoManager.h"
+#include "EnemyManager.h"
+#include "EnvironmentPropManager.h"
+#include "WeatherEffectManager.h"
+#include "PebbleField.h"
+#include "FoliageField.h"
+#include "GameUI.h"
+#include "WaterManager.h"
 
 using namespace FE;
 
 TitleScene::TitleScene(Engine* engine)
 	: BaseScene(engine, "TitleScene")
 {
-	auto grid = std::make_unique<Grid>(engine_);
-
-	objectManager_.AddObject(std::move(grid));
+    player_ = objectManager_.Create<Player>(engine_, camera_.get());
+    ground_ = objectManager_.Create<Ground>(engine_);
+    grassField_ = objectManager_.Create<GrassField>(engine_);
+    grassField_->SetTerrain(ground_->GetTerrain());
+    treeField_ = objectManager_.Create<TreeField>(engine_);
+    treeField_->SetTerrain(ground_->GetTerrain());
+    objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
+    objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
+    objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
+    objectManager_.Create<PebbleField>(engine_);
+    objectManager_.Create<FoliageField>(engine_);
+    objectManager_.Create<WaterManager>(engine_, "GameWater");
 
 	titleSprite_ = std::make_unique<Sprite>(engine_);
 }
