@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "Input.h"
 #include "Grid.h"
+#include "AudioPlayer.h"
 
 using namespace FE;
 
@@ -18,6 +19,8 @@ void TestScene::OnInitialize()
 {
 	camera_->Initialize();
 	camera_->SetTranslation(Vector3(0, 0, -6.6f));
+
+	AudioPlayer::GetInstance().StopUnique("playSceneBGM");
 }
 
 void TestScene::OnUpdate()

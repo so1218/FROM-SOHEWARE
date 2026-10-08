@@ -39,6 +39,10 @@ public:
         {
             camera_->BindProperties(*binder_, "Camera");
         }
+        if (engine_->GetPostEffectManager())
+        {
+            engine_->GetPostEffectManager()->BindProperties(*binder_, "PostEffect");
+        }
     }
 
     virtual void Update() final
@@ -87,6 +91,10 @@ public:
         if (camera_) 
         {
             camera_->DebugDraw(*binder_, "メインカメラ");
+        }
+        if (engine_->GetPostEffectManager())
+        {
+            engine_->GetPostEffectManager()->DebugDraw(*binder_, "ポストエフェクト");
         }
         ImGui::End();
 

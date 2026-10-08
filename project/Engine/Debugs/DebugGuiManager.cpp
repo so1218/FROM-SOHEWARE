@@ -84,7 +84,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
     }
     if (ImGui::CollapsingHeader("ポストエフェクト設定"))
     {
-        DrawPostEffectSettings();
+        /*DrawPostEffectSettings();*/
     }
     if (ImGui::CollapsingHeader("時間 / FPS"))
     {

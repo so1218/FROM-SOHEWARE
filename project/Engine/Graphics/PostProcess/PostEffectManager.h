@@ -16,6 +16,7 @@ namespace FE
 
 class Engine;
 class SRVManager;
+class PropertyBinder;
 
 class PostEffectManager
 {
@@ -67,6 +68,12 @@ public:
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
     void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
 
+    // シーン初期化時に PropertyBinder へパラメータを一括登録
+    void BindProperties(PropertyBinder& binder, const std::string& prefix = "PostEffect");
+
+    // ImGui でのパラメータ描画
+    void DebugDraw(PropertyBinder& binder, const std::string& label = "ポストエフェクト");
+
 private:
     // 依存オブジェクト
     Engine* engine_ = nullptr;
@@ -111,6 +118,22 @@ private:
     std::string currentLutName_ = "LUT_Neutral_32";
 
     PostEffectContext context_;
+
+    std::string prefix_;
+
+    bool flagColorTint_ = false;
+    bool flagVignette_ = false;
+    bool flagChromAberration_ = false;
+    bool flagPixelation_ = false;
+    bool flagRadialBlur_ = false;
+    bool flagScreenNoise_ = false;
+    bool flagColorGradingLUT_ = false;
+    bool flagSSAO_ = false;
+    bool flagDoF_ = false;
+    bool flagVolumetricFog_ = false;
+
+    // 配置式フォグ個数管理用
+    int fogVolumeCount_ = 0;
 };
 
 }
