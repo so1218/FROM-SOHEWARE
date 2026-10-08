@@ -191,39 +191,6 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     D3D12_CPU_DESCRIPTOR_HANDLE destCPU = passHeap_->GetCPUDescriptorHandleForHeapStart();
     D3D12_GPU_DESCRIPTOR_HANDLE destGPU = passHeap_->GetGPUDescriptorHandleForHeapStart();
 
-    // FogVolume データのCPUからGPUへの構築・転送
-    std::vector<FogVolume> gpuVolumes;
-    for (const auto& volData : editorVolumes_)
-    {
-        FogVolume gpuData = {};
-        Matrix4x4 scaleMat = Matrix4x4::MakeScale(volData.type == 0 ? Vector3{ volData.scale.x, volData.scale.x, volData.scale.x } : volData.scale);
-        Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({ Math::ToRadians(volData.rotation.x), Math::ToRadians(volData.rotation.y), Math::ToRadians(volData.rotation.z) });
-        Matrix4x4 transMat = Matrix4x4::MakeTranslate(volData.position);
-        Matrix4x4 localToWorld = scaleMat * rotMat * transMat;
-
-        gpuData.worldToLocal = Matrix4x4::Inverse(localToWorld);
-        gpuData.type = volData.type;
-        gpuData.color = { volData.color.x, volData.color.y, volData.color.z };
-        gpuData.density = volData.density;
-        gpuData.noiseScale = volData.noiseScale;
-        gpuData.noiseIntensity = volData.noiseIntensity;
-        gpuData.windDirection = volData.windDirection;
-        gpuData.windSpeed = volData.windSpeed;
-        gpuData.anisotropy = volData.anisotropy;
-        gpuData.blendDistance = volData.blendDistance;
-        gpuData.coverage = volData.coverage;
-        gpuData.worleyWeight = volData.worleyWeight;
-        gpuData.erosion = volData.erosion;
-        gpuData.noiseFeather = volData.noiseFeather;
-        gpuData.distortionAmount = volData.distortionAmount;
-        gpuData.densityOffset = volData.densityOffset;
-        gpuData.noiseContrast = volData.noiseContrast;
-        gpuData.heightFalloff = volData.heightFalloff;
-
-        gpuVolumes.push_back(gpuData);
-    }
-    SetFogVolumes(gpuVolumes);
-
     // スレッドグループ算出用共通変数
     uint32_t dispatch3DX = (froxelW + 7) / 8;
     uint32_t dispatch3DY = (froxelH + 7) / 8;
@@ -415,6 +382,63 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     this->srvIndex_ = resolveOutputSrvIndex_;
 
     frameCounter_++;
+}
+
+void VolumetricFogPass::BeginFrame()
+{
+    currentVolumeCount_ = 0;
+    if (volumeCbData_)
+    {
+        volumeCbData_->volumeCount = 0;
+    }
+}
+
+bool VolumetricFogPass::SubmitFogVolume(const FogVolumeData& volData)
+{
+    if (!volumeCbData_ || !volData.isVisible || currentVolumeCount_ >= MAX_FOG_VOLUMES)
+    {
+        return false;
+    }
+
+    // Local to World 行列の作成
+    Vector3 scaleVec = (volData.type == 0)
+        ? Vector3{ volData.scale.x, volData.scale.x, volData.scale.x }
+    : volData.scale;
+
+    Matrix4x4 scaleMat = Matrix4x4::MakeScale(scaleVec);
+    Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({
+        Math::ToRadians(volData.rotation.x),
+        Math::ToRadians(volData.rotation.y),
+        Math::ToRadians(volData.rotation.z)
+        });
+    Matrix4x4 transMat = Matrix4x4::MakeTranslate(volData.position);
+    Matrix4x4 localToWorld = scaleMat * rotMat * transMat;
+
+    // GPU定数バッファのスロットへ直接書き込み
+    FogVolume& gpuData = volumeCbData_->volumes[currentVolumeCount_];
+    gpuData.worldToLocal = Matrix4x4::Inverse(localToWorld);
+    gpuData.type = volData.type;
+    gpuData.color = { volData.color.x, volData.color.y, volData.color.z };
+    gpuData.density = volData.density;
+    gpuData.noiseScale = volData.noiseScale;
+    gpuData.noiseIntensity = volData.noiseIntensity;
+    gpuData.windDirection = volData.windDirection;
+    gpuData.windSpeed = volData.windSpeed;
+    gpuData.anisotropy = volData.anisotropy;
+    gpuData.blendDistance = volData.blendDistance;
+    gpuData.coverage = volData.coverage;
+    gpuData.worleyWeight = volData.worleyWeight;
+    gpuData.erosion = volData.erosion;
+    gpuData.noiseFeather = volData.noiseFeather;
+    gpuData.distortionAmount = volData.distortionAmount;
+    gpuData.densityOffset = volData.densityOffset;
+    gpuData.noiseContrast = volData.noiseContrast;
+    gpuData.heightFalloff = volData.heightFalloff;
+
+    currentVolumeCount_++;
+    volumeCbData_->volumeCount = currentVolumeCount_;
+
+    return true;
 }
 
 }

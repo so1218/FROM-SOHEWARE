@@ -162,11 +162,11 @@ void RendererManager::UpdateCullingFrustums()
 	cameraFrustum_.ExtractFromMatrix(viewProjectionMatrix_);
 
 	// 影用のフラスタム（カスケード4段分）を更新
-	shadowFrustums_.resize(4);
+	shadowFrustums_.resize(MAX_CASCADE_COUNT - 1);
 	if (lightManager_)
 	{
 		const ShadowData* shadowData = lightManager_->GetShadowData();
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
 		{
 			shadowFrustums_[i].ExtractFromMatrix(shadowData->cascadeLightViewProj[i]);
 		}

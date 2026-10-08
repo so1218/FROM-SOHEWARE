@@ -35,9 +35,9 @@ Game::Game()
 
     // 初期シーンを設定
 #ifdef ENABLE_DEV_TOOLS
-    sceneManager_.SetInitialScene(SceneID::Title);
+    sceneManager_.SetInitialScene(SceneID::Play);
 #else
-    sceneManager_.SetInitialScene(SceneID::Title);
+    sceneManager_.SetInitialScene(SceneID::Play);
 #endif
 }
 

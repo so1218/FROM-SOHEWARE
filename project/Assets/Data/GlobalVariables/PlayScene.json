@@ -41,9 +41,9 @@
         "PostEffect/FogVolumes/0/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/0/BlendDistance": 0.30000001192092896,
         "PostEffect/FogVolumes/0/Color": [
-            0.0941176488995552,
-            0.7607843279838562,
-            0.9882352948188782
+            0.34241247177124023,
+            0.4242912530899048,
+            1.0
         ],
         "PostEffect/FogVolumes/0/Coverage": 0.550000011920929,
         "PostEffect/FogVolumes/0/Density": 0.20000000298023224,
@@ -86,9 +86,9 @@
         "PostEffect/FogVolumes/1/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/1/BlendDistance": 0.30000001192092896,
         "PostEffect/FogVolumes/1/Color": [
-            0.47058823704719543,
-            0.11764705926179886,
-            1.0
+            0.2996109127998352,
+            1.0,
+            0.5830366611480713
         ],
         "PostEffect/FogVolumes/1/Coverage": 0.550000011920929,
         "PostEffect/FogVolumes/1/Density": 0.30000001192092896,

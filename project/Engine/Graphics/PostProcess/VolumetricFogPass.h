@@ -13,6 +13,9 @@ public:
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
+    // フレーム冒頭で送信カウントをリセット
+    void BeginFrame();
+
     // 外部からのアクセス用
     VolumetricFogSettings* GetSettings() { return cbData_; }
 
@@ -64,6 +67,9 @@ public:
         bool isVisible = true;
     };
 
+    // 毎フレーム各オブジェクトやエディタからボリュームを送信
+    bool SubmitFogVolume(const FogVolumeData& volData);
+
     std::vector<FogVolumeData>& GetFogVolumesData() { return editorVolumes_; }
 
 private:
@@ -113,6 +119,8 @@ private:
     // エディタで編集する用の生データ配列
     std::vector<FogVolumeData> editorVolumes_;
 
+    // 現在のフレームで Push されたボリュームの数
+    uint32_t currentVolumeCount_ = 0;
 };
 
 }

@@ -131,6 +131,18 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
         if (flagColorGradingLUT_)  cbData_->flag |= COLOR_GRADING_LUT;
     }
 
+    if (volumetricFogPass_)
+    {
+        volumetricFogPass_->BeginFrame();
+
+        // エディタ管理のボリューム配列を毎フレーム Push
+        auto& volumes = volumetricFogPass_->GetFogVolumesData();
+        for (const auto& vol : volumes)
+        {
+            volumetricFogPass_->SubmitFogVolume(vol);
+        }
+    }
+
     // バイラテラルブラーのパラメータ同期
     if (horizontalBilateralPass_ && verticalBilateralPass_)
     {
@@ -594,9 +606,16 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 if (ImGui::Button("ボリュームを追加") && volumes.size() < MAX_FOG_VOLUMES)
                 {
                     volumes.push_back(VolumetricFogPass::FogVolumeData());
-                    BindProperties(binder, prefix_); // 追加時に再バインド
+                    int newCount = static_cast<int>(volumes.size());
+
+                    // GlobalVariables 側の Count を直接更新して再バインド時の上書きを防ぐ
+                    GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
+
+                    binder.Clear(false);
+                    BindProperties(binder, prefix_);
                 }
 
+                bool isErased = false;
                 for (size_t i = 0; i < volumes.size(); ++i)
                 {
                     std::string vp = p + "FogVolumes/" + std::to_string(i) + "/";
@@ -607,10 +626,15 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                         if (ImGui::Button("このボリュームを削除"))
                         {
                             volumes.erase(volumes.begin() + i);
-                            BindProperties(binder, prefix_); // 削除時に再バインド
+                            int newCount = static_cast<int>(volumes.size());
+
+                            // GlobalVariables 側の Count を直接更新
+                            GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
+
+                            isErased = true;
                             ImGui::TreePop();
                             ImGui::PopID();
-                            break;
+                            break; 
                         }
 
                         binder.Draw(vp + "IsVisible", "デバッグ描画");
@@ -639,6 +663,12 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                     }
                     ImGui::PopID();
                 }
+
+                if (isErased)
+                {
+                    binder.Clear(false);
+                    BindProperties(binder, prefix_);
+                }
             }
 
             ImGui::TreePop();
@@ -647,6 +677,39 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
         ImGui::TreePop();
     }
 #endif
+
+    if (!volumetricFogPass_) return;
+
+    const auto& volumes = volumetricFogPass_->GetFogVolumesData();
+    for (const auto& vol : volumes)
+    {
+        if (!vol.isVisible) continue;
+
+        Vector4 drawColor = { vol.color.x, vol.color.y, vol.color.z, 1.0f };
+        if (drawColor.x == 0.0f && drawColor.y == 0.0f && drawColor.z == 0.0f)
+        {
+            drawColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        }
+
+        // 球体ボリューム
+        if (vol.type == 0)
+        {
+            float radius = (std::max)(vol.scale.x, 0.1f);
+            DebugDraw::DrawSphere(vol.position, radius, drawColor);
+        }
+        // ボックスボリューム
+        else if (vol.type == 1)
+        {
+            Matrix4x4 rotMat = Matrix4x4::MakeRotateXYZ({
+                Math::ToRadians(vol.rotation.x),
+                Math::ToRadians(vol.rotation.y),
+                Math::ToRadians(vol.rotation.z)
+                });
+            Vector3 fullSize = { vol.scale.x * 2.0f, vol.scale.y * 2.0f, vol.scale.z * 2.0f };
+            DebugDraw::DrawOBB(vol.position, fullSize, rotMat, drawColor);
+        }
+    }
 }
+
 
 }
