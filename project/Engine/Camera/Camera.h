@@ -18,7 +18,7 @@ public:
 
     // PropertyBinderへの登録
     void BindProperties(PropertyBinder& binder, const std::string& prefix = "Camera");
-    void DebugDraw(PropertyBinder& binder, const std::string& label);
+    void DebugDraw(PropertyBinder& binder);
 
     // WorldTransform関連
     WorldTransform& GetWorldTransform() { return worldTransform_; }

@@ -51,19 +51,18 @@ void Camera::BindProperties(PropertyBinder& binder, const std::string& prefix)
     UpdateViewProjectionMatrix();
 }
 
-void Camera::DebugDraw(PropertyBinder& binder, const std::string& label)
+void Camera::DebugDraw(PropertyBinder& binder)
 {
 #ifdef ENABLE_IMGUI
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
-    if (ImGui::TreeNode(label.c_str()))
+    if (ImGui::CollapsingHeader("メインカメラ設定"))
     {
         binder.Draw(p + "Position", "座標 (World)");
         binder.Draw(p + "RotationEuler", "回転 (World)");
         binder.Draw(p + "FOV", "視野角 (FOV)");
         binder.Draw(p + "NearClip", "ニアクリップ");
         binder.Draw(p + "FarClip", "ファークリップ");
-        ImGui::TreePop();
     }
 #endif
 }

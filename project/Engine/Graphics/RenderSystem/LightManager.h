@@ -5,6 +5,8 @@
 namespace FE
 {
 
+class PropertyBinder;
+
 // ライトの種類を表す列挙型
 enum class SelectedLightType 
 {
@@ -60,6 +62,12 @@ public:
     void DrawDebugLights();
     void DrawSelectedLightGizmo();
 
+    // シーン設定バインド
+    void BindProperties(PropertyBinder& binder, const std::string& prefix = "Light");
+
+    // GUI描画
+    void DebugDraw(PropertyBinder& binder);
+
     // 選択状態の Getter/Setter
     void SetSelectedLight(SelectedLightType type, int index)
     {
@@ -103,6 +111,8 @@ private:
     int selectedLightIndex_ = -1;
 
     Vector3 directionalLightPositions_[MAX_DIRECTIONAL_LIGHTS];
+
+    std::string prefix_;
 };
 
 }

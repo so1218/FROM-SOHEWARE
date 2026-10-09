@@ -44,12 +44,6 @@ PlayScene::PlayScene(Engine* engine)
 
 void PlayScene::OnInitialize()
 {
-    // ライトの設定
-    engine_->GetLightManager()->GetDirectionalLightData()[0].enable = true;
-    engine_->GetLightManager()->GetDirectionalLightData()[0].direction = { 2.6f,-0.4f,1.4f };
-    engine_->GetLightManager()->GetDirectionalLightData()[0].intensity = 0.4f;
-    engine_->GetLightManager()->GetDirectionalLightData()[0].volumetricScatteringIntensity = 13.0f;
-
     // デフォルトカメラの設定
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());

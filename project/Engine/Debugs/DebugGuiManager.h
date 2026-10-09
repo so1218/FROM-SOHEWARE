@@ -48,8 +48,6 @@ private:
 
     void DrawRenderSettings();
     void DrawCameraSettings(Camera* targetCamera);
-    void DrawLightSettings();
-    void DrawPostEffectSettings();
     void DrawTimeSettings();
     void DrawInformationDisplays();  
 };

@@ -33,7 +33,6 @@ public:
 
         // 共通の初期化
         OnInitialize();
-        objectManager_.Initialize();
 
         if (camera_)
         {
@@ -43,6 +42,12 @@ public:
         {
             engine_->GetPostEffectManager()->BindProperties(*binder_, "PostEffect");
         }
+        if (engine_->GetLightManager())
+        {
+            engine_->GetLightManager()->BindProperties(*binder_, "Light");
+        }
+
+        objectManager_.Initialize();
     }
 
     virtual void Update() final
@@ -90,11 +95,15 @@ public:
         ImGui::Begin(sceneName_.c_str());
         if (camera_) 
         {
-            camera_->DebugDraw(*binder_, "メインカメラ");
+            camera_->DebugDraw(*binder_);
         }
         if (engine_->GetPostEffectManager())
         {
-            engine_->GetPostEffectManager()->DebugDraw(*binder_, "ポストエフェクト");
+            engine_->GetPostEffectManager()->DebugDraw(*binder_);
+        }
+        if (engine_->GetLightManager())
+        {
+            engine_->GetLightManager()->DebugDraw(*binder_);
         }
         ImGui::End();
 

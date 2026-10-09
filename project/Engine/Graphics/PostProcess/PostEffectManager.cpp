@@ -444,13 +444,15 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     }
 }
 
-void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& label)
+void PostEffectManager::DebugDraw(PropertyBinder& binder)
 {
 #ifdef ENABLE_IMGUI
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
-    if (ImGui::TreeNode(label.c_str()))
+    if (ImGui::CollapsingHeader("ポストエフェクト設定"))
     {
+        ImGui::Spacing();
+
         if (ImGui::TreeNode("カラー・色調"))
         {
             binder.Draw(p + "ColorTint/Enable", "カラーティント");
@@ -464,6 +466,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 ImGui::Unindent();
             }
 
+            ImGui::Spacing();
             binder.Draw(p + "Vignette/Enable", "ビネット");
             if (flagVignette_)
             {
@@ -476,6 +479,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 ImGui::Unindent();
             }
 
+            ImGui::Spacing();
             binder.Draw(p + "ChromAberration/Enable", "色収差");
             if (flagChromAberration_)
             {
@@ -483,6 +487,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 binder.Draw(p + "ChromAberration/Offset", "ズレ量 (X, Y)");
                 ImGui::Unindent();
             }
+
             ImGui::TreePop();
         }
 
@@ -496,6 +501,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 ImGui::Unindent();
             }
 
+            ImGui::Spacing();
             binder.Draw(p + "RadialBlur/Enable", "ラディアルブラー");
             if (flagRadialBlur_)
             {
@@ -504,6 +510,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 binder.Draw(p + "RadialBlur/Center", "中心座標 (UV)");
                 ImGui::Unindent();
             }
+
             ImGui::TreePop();
         }
 
@@ -519,6 +526,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 ImGui::Unindent();
             }
 
+            ImGui::Spacing();
             binder.Draw(p + "LUT/Enable", "カラーグレーディング (LUT)");
             if (flagColorGradingLUT_)
             {
@@ -526,20 +534,24 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                 binder.Draw(p + "LUT/Texture", "LUTテクスチャ");
                 ImGui::Unindent();
             }
+
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("SSAO"))
         {
-            binder.Draw(p + "SSAO/Enable", "SSAO有効");
+            binder.Draw(p + "SSAO/Enable", "有効にする");
             binder.Draw(p + "SSAO/Radius", "サンプリング半径");
             binder.Draw(p + "SSAO/Intensity", "影の濃さ");
             binder.Draw(p + "SSAO/Bias", "バイアス");
             binder.Draw(p + "SSAO/SampleCount", "サンプル数");
             binder.Draw(p + "SSAO/FadeStart", "フェード開始距離");
             binder.Draw(p + "SSAO/FadeEnd", "フェード終了距離");
+
+            ImGui::SeparatorText("ノイズ除去");
             binder.Draw(p + "SSAO/BilateralDepthTolerance", "深度の許容度");
             binder.Draw(p + "SSAO/BilateralNormalTolerance", "法線の許容度");
+
             ImGui::TreePop();
         }
 
@@ -549,35 +561,41 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
             binder.Draw(p + "Bloom/ExtractIntensity", "抽出強度");
             binder.Draw(p + "Bloom/Radius", "拡散半径");
             binder.Draw(p + "Bloom/CompositeIntensity", "合成強度");
+
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("被写界深度 (DoF)"))
         {
-            binder.Draw(p + "DoF/Enable", "DoF有効");
+            binder.Draw(p + "DoF/Enable", "有効にする");
             binder.Draw(p + "DoF/FocusDistance", "ピント距離");
             binder.Draw(p + "DoF/FocusRange", "ピント範囲");
             binder.Draw(p + "DoF/BokehRadius", "ボケの強さ");
             binder.Draw(p + "DoF/TransitionRange", "ボケ移行距離");
             binder.Draw(p + "DoF/BokehHighlightThreshold", "玉ボケ閾値");
             binder.Draw(p + "DoF/BokehHighlightIntensity", "玉ボケ強度");
+
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("ボリュメトリックフォグ"))
         {
             binder.Draw(p + "VolumetricFog/Enable", "有効にする");
+
+            ImGui::SeparatorText("PBR 光学特性");
             binder.Draw(p + "VolumetricFog/Albedo", "散乱色");
             binder.Draw(p + "VolumetricFog/ScatteringIntensity", "散乱の強さ");
             binder.Draw(p + "VolumetricFog/ExtinctionScale", "光の減衰スケール");
             binder.Draw(p + "VolumetricFog/Anisotropy", "前方散乱 (Anisotropy)");
             binder.Draw(p + "VolumetricFog/AmbientLight", "環境光");
 
+            ImGui::SeparatorText("高さ・密度");
             binder.Draw(p + "VolumetricFog/Extinction", "ベース密度");
             binder.Draw(p + "VolumetricFog/HeightDensity", "高さフォグ最大密度");
             binder.Draw(p + "VolumetricFog/BaseHeight", "基準高さ");
             binder.Draw(p + "VolumetricFog/HeightFalloff", "高さ減衰率");
 
+            ImGui::SeparatorText("ノイズ・形状");
             binder.Draw(p + "VolumetricFog/NoiseScale", "ノイズスケール");
             binder.Draw(p + "VolumetricFog/NoiseDistortion", "ノイズ歪み");
             binder.Draw(p + "VolumetricFog/WindDirection", "風向き");
@@ -589,31 +607,33 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
             binder.Draw(p + "VolumetricFog/NoiseIntensity", "全体ノイズ適用度");
             binder.Draw(p + "VolumetricFog/NoiseFeather", "境界のボケ具合");
 
+            ImGui::SeparatorText("描画・TAA");
             binder.Draw(p + "VolumetricFog/MaxDistance", "最大描画距離");
             binder.Draw(p + "VolumetricFog/TemporalWeight", "TAA蓄積ウェイト");
 
+            ImGui::SeparatorText("ノイズ除去");
             binder.Draw(p + "VolumetricFog/BilateralBlurRadius", "ノイズ除去 半径");
             binder.Draw(p + "VolumetricFog/BilateralSpatialSigma", "ノイズ除去 Spatial Sigma");
             binder.Draw(p + "VolumetricFog/BilateralDepthSigma", "ノイズ除去 Depth Sigma");
 
-            // 配置式フォグ GUI
             if (volumetricFogPass_)
             {
                 auto& volumes = volumetricFogPass_->GetFogVolumesData();
-                ImGui::Separator();
-                ImGui::Text("配置式フォグ (ボリューム数: %d)", static_cast<int>(volumes.size()));
+                ImGui::Spacing();
+                ImGui::SeparatorText("配置式フォグ");
 
-                if (ImGui::Button("ボリュームを追加") && volumes.size() < MAX_FOG_VOLUMES)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.55f, 0.15f, 1.00f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.18f, 0.70f, 0.22f, 1.00f));
+                if (ImGui::Button("+ ボリュームを追加", ImVec2(-1, 0)) && volumes.size() < MAX_FOG_VOLUMES)
                 {
                     volumes.push_back(VolumetricFogPass::FogVolumeData());
                     int newCount = static_cast<int>(volumes.size());
 
-                    // GlobalVariables 側の Count を直接更新して再バインド時の上書きを防ぐ
                     GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
-
                     binder.Clear(false);
                     BindProperties(binder, prefix_);
                 }
+                ImGui::PopStyleColor(2);
 
                 bool isErased = false;
                 for (size_t i = 0; i < volumes.size(); ++i)
@@ -621,28 +641,33 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
                     std::string vp = p + "FogVolumes/" + std::to_string(i) + "/";
                     ImGui::PushID(static_cast<int>(i));
 
-                    if (ImGui::TreeNode(("Volume " + std::to_string(i)).c_str()))
+                    bool nodeOpen = ImGui::TreeNodeEx(("Volume " + std::to_string(i)).c_str(), ImGuiTreeNodeFlags_AllowItemOverlap);
+
+                    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 45.0f);
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.70f, 0.15f, 0.15f, 1.00f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.85f, 0.25f, 0.25f, 1.00f));
+                    if (ImGui::Button("削除", ImVec2(50.0f, 0.0f)))
                     {
-                        if (ImGui::Button("このボリュームを削除"))
-                        {
-                            volumes.erase(volumes.begin() + i);
-                            int newCount = static_cast<int>(volumes.size());
+                        volumes.erase(volumes.begin() + i);
+                        int newCount = static_cast<int>(volumes.size());
 
-                            // GlobalVariables 側の Count を直接更新
-                            GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
+                        GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
+                        isErased = true;
+                        ImGui::PopStyleColor(2);
+                        if (nodeOpen) ImGui::TreePop();
+                        ImGui::PopID();
+                        break;
+                    }
+                    ImGui::PopStyleColor(2);
 
-                            isErased = true;
-                            ImGui::TreePop();
-                            ImGui::PopID();
-                            break; 
-                        }
-
+                    if (nodeOpen)
+                    {
                         binder.Draw(vp + "IsVisible", "デバッグ描画");
                         binder.Draw(vp + "Type", "タイプ (0:Sphere, 1:Box)");
                         binder.Draw(vp + "Position", "位置");
                         binder.Draw(vp + "Rotation", "回転");
                         binder.Draw(vp + "Scale", "サイズ/半径");
-                        binder.Draw(vp + "Color", "色");
+                        binder.Draw(vp + "Color", "色"); 
                         binder.Draw(vp + "Density", "密度");
                         binder.Draw(vp + "BlendDistance", "境界ボカシ (Blend)");
                         binder.Draw(vp + "Anisotropy", "光の筋 (Anisotropy)");
@@ -673,8 +698,6 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder, const std::string& lab
 
             ImGui::TreePop();
         }
-
-        ImGui::TreePop();
     }
 #endif
 

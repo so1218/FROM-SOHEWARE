@@ -3,6 +3,7 @@
 #include "Structures.h"
 #include "DebugDraw.h"
 #include "ImGuiManager.h"
+#include "PropertyBinder.h"
 
 namespace FE
 {
@@ -435,6 +436,142 @@ void LightManager::DrawSelectedLightGizmo()
             // 回転結果の行列のZ軸から新しい向きを計算
             Vector3 newDir = { lightMat.m[2][0], lightMat.m[2][1], lightMat.m[2][2] };
             light.direction = newDir.Normalize();
+        }
+    }
+#endif
+}
+
+void LightManager::BindProperties(PropertyBinder& binder, const std::string& prefix)
+{
+    prefix_ = prefix;
+    std::string p = prefix_.empty() ? "" : prefix_ + "/";
+
+    if (!directionalLightData_) return;
+
+    // ディレクショナルライトの数をバインド
+    binder.Bind(p + "Directional/Count", &directionalLightCount_, directionalLightCount_, 1.0f, 0, MAX_DIRECTIONAL_LIGHTS);
+
+    for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
+    {
+        std::string dp = p + "Directional/" + std::to_string(i) + "/";
+        auto& dir = directionalLightData_[i];
+
+        binder.BindBool(dp + "Enable", &dir.enable, false);
+
+        binder.Bind(dp + "Direction", &dir.direction, { 0.0f, -1.0f, 1.0f }, 0.05f);
+        binder.BindColor(dp + "Color", &dir.color, { 1.0f, 1.0f, 1.0f, 1.0f });
+        binder.Bind(dp + "Intensity", &dir.intensity, 1.0f, 0.05f, 0.0f, 100.0f);
+        binder.Bind(dp + "VolumetricScattering", &dir.volumetricScatteringIntensity, 5.0f, 0.1f, 0.0f, 50.0f);
+    }
+}
+
+void LightManager::DebugDraw(PropertyBinder& binder)
+{
+#ifdef ENABLE_IMGUI
+    std::string p = prefix_.empty() ? "" : prefix_ + "/";
+
+    if (ImGui::CollapsingHeader("ライト設定"))
+    {
+        ImGui::Spacing();
+
+        bool hasSelection = (selectedLightType_ != SelectedLightType::None);
+        if (!hasSelection) ImGui::BeginDisabled();
+        if (ImGui::Button("Gizmo選択を解除", ImVec2(-1, 0)))
+        {
+            SetSelectedLight(SelectedLightType::None, -1);
+        }
+        if (!hasSelection) ImGui::EndDisabled();
+
+        ImGui::Spacing();
+
+        if (ImGui::TreeNode("ディレクショナルライト (平行光源)"))
+        {
+            for (int i = 0; i < directionalLightCount_; ++i)
+            {
+                std::string dp = p + "Directional/" + std::to_string(i) + "/";
+                std::string nodeLabel = "Directional Light " + std::to_string(i);
+
+                bool isSelected = (selectedLightType_ == SelectedLightType::Directional && selectedLightIndex_ == i);
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+                if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
+
+                bool isOpen = ImGui::TreeNodeEx(nodeLabel.c_str(), flags);
+                if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                {
+                    SetSelectedLight(SelectedLightType::Directional, i);
+                }
+
+                if (isOpen)
+                {
+                    binder.Draw(dp + "Enable", "有効");
+                    binder.Draw(dp + "Direction", "向き");
+                    binder.Draw(dp + "Color", "色");
+                    binder.Draw(dp + "Intensity", "強度");
+                    binder.Draw(dp + "VolumetricScattering", "ボリュメトリック散乱強度");
+
+                    ImGui::TreePop();
+                }
+            }
+            ImGui::TreePop();
+        }
+
+        std::string pointHeader = "ポイントライト (アクティブ: " + std::to_string(activePointLightCount_) + "個)";
+        if (ImGui::TreeNode(pointHeader.c_str()))
+        {
+            if (activePointLightCount_ == 0)
+            {
+                ImGui::TextDisabled("現在 Push されているポイントライトはない");
+            }
+            else
+            {
+                for (int i = 0; i < activePointLightCount_; ++i)
+                {
+                    std::string nodeLabel = "Point Light [" + std::to_string(i) + "]";
+
+                    bool isSelected = (selectedLightType_ == SelectedLightType::Point && selectedLightIndex_ == i);
+                    if (ImGui::Selectable(nodeLabel.c_str(), isSelected))
+                    {
+                        SetSelectedLight(SelectedLightType::Point, i);
+                    }
+
+                    // 読み取り専用情報表示
+                    ImGui::SameLine();
+                    ImGui::TextDisabled("(Pos: %.1f, %.1f, %.1f)",
+                        pointLightData_[i].position.x,
+                        pointLightData_[i].position.y,
+                        pointLightData_[i].position.z);
+                }
+            }
+            ImGui::TreePop();
+        }
+
+        std::string spotHeader = "スポットライト (アクティブ: " + std::to_string(activeSpotLightCount_) + "個)";
+        if (ImGui::TreeNode(spotHeader.c_str()))
+        {
+            if (activeSpotLightCount_ == 0)
+            {
+                ImGui::TextDisabled("現在 Push されているスポットライトはない");
+            }
+            else
+            {
+                for (int i = 0; i < activeSpotLightCount_; ++i)
+                {
+                    std::string nodeLabel = "Spot Light [" + std::to_string(i) + "]";
+
+                    bool isSelected = (selectedLightType_ == SelectedLightType::Spot && selectedLightIndex_ == i);
+                    if (ImGui::Selectable(nodeLabel.c_str(), isSelected))
+                    {
+                        SetSelectedLight(SelectedLightType::Spot, i);
+                    }
+
+                    ImGui::SameLine();
+                    ImGui::TextDisabled("(Pos: %.1f, %.1f, %.1f)",
+                        spotLightData_[i].position.x,
+                        spotLightData_[i].position.y,
+                        spotLightData_[i].position.z);
+                }
+            }
+            ImGui::TreePop();
         }
     }
 #endif
