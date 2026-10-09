@@ -26,6 +26,7 @@ cbuffer SpotLights : register(b4)
 
 ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b6);
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
 
 // Henyey-Greenstein 位相関数
 float PhaseFunctionHG(float cosTheta, float g)
@@ -142,9 +143,15 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // ---------------------------------------------------------
     // ボリューメトリックノイズの合成
     // ---------------------------------------------------------
-    float3 timeOffset = normalize(gFogSettings.windDirection + kMinSafeDistance) * (gFrameData.gTime * gFogSettings.windSpeed);
+    // CPUで連続積算された 2D オフセットを XZ 平面へ展開
+    float3 windOffset3D = float3(
+        gEnvironmentData.windOffset.x,
+        0.0f,
+        gEnvironmentData.windOffset.y
+    ) * gFogSettings.windSpeedMultiplier;
 
-    float3 warpUVW = currentPos * (gFogSettings.noiseScale * 0.43f) + timeOffset * 0.35f;
+    // 歪みサンプリング
+    float3 warpUVW = currentPos * (gFogSettings.noiseScale * 0.43f) - windOffset3D * 0.35f;
     float3 distortion = float3(
         gNoiseVolume.SampleLevel(gSampler, warpUVW, 0).r,
         gNoiseVolume.SampleLevel(gSampler, warpUVW + kNoiseOffsetA, 0).r,
@@ -153,10 +160,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float3 distortedPos = currentPos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
 
-    float3 uvwA = distortedPos * gFogSettings.noiseScale + timeOffset;
+    // マイナスで減算することで、風下へノイズが流れる
+    float3 uvwA = distortedPos * gFogSettings.noiseScale - windOffset3D;
     float4 noiseLayer1 = gNoiseVolume.SampleLevel(gSampler, uvwA, 0);
-    
-    float3 uvwB = distortedPos * (gFogSettings.noiseScale * 0.37f) + (timeOffset * 1.41f) + kNoiseOffsetC;
+
+    float3 uvwB = distortedPos * (gFogSettings.noiseScale * 0.37f) - (windOffset3D * 1.41f) + kNoiseOffsetC;
     float4 noiseLayer2 = gNoiseVolume.SampleLevel(gSampler, uvwB, 0);
 
     float combinedPerlin = noiseLayer1.r * noiseLayer2.r * 1.5f;
@@ -315,11 +323,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
         if (volumeMask > 0.0f)
         {
-            float3 volTimeOffset = normalize(vol.windDirection + kMinSafeDistance) * (gFrameData.gTime * vol.windSpeed);
+            // 2D オフセットベース
+            float3 volWindOffset3D = float3(
+            gEnvironmentData.windOffset.x + vol.windDirection.x * gEnvironmentData.windTime, 
+            vol.windDirection.y * gEnvironmentData.windTime,
+            gEnvironmentData.windOffset.y + vol.windDirection.z * gEnvironmentData.windTime) * vol.windSpeed;
 
-            float3 volWarpUVW = (currentPos * vol.noiseScale * 0.4f) + volTimeOffset * 0.5f;
+            // マイナス減算で風下へ流す
+            float3 volWarpUVW = (currentPos * vol.noiseScale * 0.4f) - volWindOffset3D * 0.5f;
             float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
-            float3 volNoisePos = (currentPos * vol.noiseScale) + volTimeOffset + (volWarp * vol.distortionAmount);
+            float3 volNoisePos = (currentPos * vol.noiseScale) - volWindOffset3D + (volWarp * vol.distortionAmount);
 
             float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
 
@@ -330,18 +343,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
             float shiftedNoise = vNoise + vol.densityOffset;
             float volCoverage = smoothstep(volCutoff, volCutoff + max(vol.noiseFeather, kMinSafeDistance), shiftedNoise);
 
-            float erosionFactor = saturate(1.0f - (1.0f - shiftedNoise) * max(vol.noiseContrast, 1.0f));
-            float noiseModifier = lerp(1.0f, erosionFactor * volCoverage, vol.noiseIntensity);
+            float erosionFactorVol = saturate(1.0f - (1.0f - shiftedNoise) * max(vol.noiseContrast, 1.0f));
+            float noiseModifierVol = lerp(1.0f, erosionFactorVol * volCoverage, vol.noiseIntensity);
 
             float localUVW_Y = localPos.y * 0.5f + 0.5f;
-            float finalVolDensity = vol.density * exp(-localUVW_Y * max(vol.heightFalloff, 0.0f)) * noiseModifier * volumeMask;
+            float finalVolDensity = vol.density * exp(-localUVW_Y * max(vol.heightFalloff, 0.0f)) * noiseModifierVol * volumeMask;
 
-            float finalVolShadowVis = shadowVisibility * exp(-finalVolDensity * 4.0f);
-            float phaseVol = DualPhaseHG(cosTheta, vol.anisotropy);
+            float phaseVol = DualPhaseHG(0.0f, vol.anisotropy);
             
-            float3 volLight = finalVolShadowVis * phaseVol * gFrameData.mainLightColor.rgb;
-            volLight += gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalVolShadowVis);
-            volLight += stepLocal;
+            float3 volLight = phaseVol * gFrameData.mainLightColor.rgb;
+            volLight += gFogSettings.ambientLight;
 
             volumeExtinction += finalVolDensity * gFogSettings.extinctionScale;
             volumeScattering += vol.color * finalVolDensity * gFogSettings.scatteringIntensity * volLight;

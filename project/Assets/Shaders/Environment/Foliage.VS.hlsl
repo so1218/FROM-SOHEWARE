@@ -47,13 +47,13 @@ float3 CalculateWindDisplacement(float3 basePos, float windWeight)
 
     // 空間位相（フィールドを風の波が伝わる表現）
     float spatialPhase = dot(basePos.xz, windDir * 0.15f);
-    float time = gEnvironmentData.windTime * gEnvironmentData.windSpeed;
+    float time = gEnvironmentData.windTime;
 
     // 主揺れ (Sway) + 細かい揺れ (Flutter)
     float mainSway = sin(time + spatialPhase);
     float detailSway = sin(time * gMaterial.flutterSpeed + spatialPhase * 3.0f) * gMaterial.flutterScale;
 
-    float totalSway = (mainSway + detailSway) * bendFactor;
+    float totalSway = (mainSway + detailSway) * bendFactor * gEnvironmentData.windSpeed;
 
     return float3(windDir.x * totalSway, 0.0f, windDir.y * totalSway);
 }

@@ -51,8 +51,7 @@ struct WeatherVisualParams
     Vector3 ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
     float extinction = 0.005f;
     float erosion = 0.0f;
-    float windSpeed = 0.1f;
-    Vector3 windDirection = { 1.0f, 1.0f, 1.0f };
+    float windSpeedMultiplier = 1.0f;
 };
 
 // 天候が環境に与える影響のプロファイル

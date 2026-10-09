@@ -84,9 +84,8 @@ void WeatherEffectManager::Update()
     fog->heightFalloff = visual.heightFalloff;
     fog->extinction = visual.extinction;
     fog->erosion = visual.erosion;
-    fog->windSpeed = visual.windSpeed;
     fog->ambientLight = visual.ambientLight;
-    fog->windDirection = visual.windDirection;
+    fog->windSpeedMultiplier = visual.windSpeedMultiplier;
 
     // -------------------------------------------------------------
     // 各天候のパーティクル強さを計算 & 制御

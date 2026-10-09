@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "VolumetricFogPass.h"
 #include "Engine.h"
+#include "EnvironmentManager.h"
 #include "PIXColors.h"
 
 namespace FE
@@ -37,8 +38,7 @@ void VolumetricFogPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOMa
 
     cbData_->noiseScale = 0.01f;
     cbData_->noiseDistortion = 0.15f;
-    cbData_->windDirection = { 1.0f, 1.0f, 1.0f };
-    cbData_->windSpeed = 0.1f;
+    cbData_->windSpeedMultiplier = 1.0f;
 
     cbData_->coverage = 0.85f;
     cbData_->worleyWeight = 0.9f;
@@ -224,9 +224,10 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         cmdList->SetComputeRootConstantBufferView(3, engine_->GetLightManager()->GetSpotLightResource()->GetGPUVirtualAddress());
         cmdList->SetComputeRootConstantBufferView(4, volumeConstantBuffer_->GetGPUVirtualAddress());
         cmdList->SetComputeRootConstantBufferView(5, engine_->GetLightManager()->GetShadowDataResource()->GetGPUVirtualAddress());
+        cmdList->SetComputeRootConstantBufferView(6, EnvironmentManager::GetInstance()->GetGlobalEnvironmentResource()->GetGPUVirtualAddress());
 
-        cmdList->SetComputeRootDescriptorTable(6, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
-        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize));
+        cmdList->SetComputeRootDescriptorTable(7, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 0, handleSize));
+        cmdList->SetComputeRootDescriptorTable(8, CD3DX12_GPU_DESCRIPTOR_HANDLE(destGPU, 3, handleSize));
 
         cmdList->Dispatch(dispatch3DX, dispatch3DY, dispatch3DZ);
 

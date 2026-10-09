@@ -157,7 +157,52 @@
         ],
         "PostEffect/FogVolumes/1/WindSpeed": 0.30000001192092896,
         "PostEffect/FogVolumes/1/WorleyWeight": 0.949999988079071,
-        "PostEffect/FogVolumes/Count": 2,
+        "PostEffect/FogVolumes/2/Anisotropy": 0.699999988079071,
+        "PostEffect/FogVolumes/2/BlendDistance": 0.2199999988079071,
+        "PostEffect/FogVolumes/2/Color": [
+            0.5136187076568604,
+            0.4690292477607727,
+            0.26979970932006836
+        ],
+        "PostEffect/FogVolumes/2/Coverage": 0.7599999904632568,
+        "PostEffect/FogVolumes/2/Density": 1.0,
+        "PostEffect/FogVolumes/2/DensityOffset": 0.0,
+        "PostEffect/FogVolumes/2/DistortionAmount": 0.15000000596046448,
+        "PostEffect/FogVolumes/2/Erosion": 0.6700000166893005,
+        "PostEffect/FogVolumes/2/HeightFalloff": 0.0,
+        "PostEffect/FogVolumes/2/IsVisible": true,
+        "PostEffect/FogVolumes/2/NoiseContrast": 1.0,
+        "PostEffect/FogVolumes/2/NoiseFeather": 1.0199999809265137,
+        "PostEffect/FogVolumes/2/NoiseIntensity": 0.9800000190734863,
+        "PostEffect/FogVolumes/2/NoiseScale": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
+        ],
+        "PostEffect/FogVolumes/2/Position": [
+            4.599999904632568,
+            0.4000000059604645,
+            125.80000305175781
+        ],
+        "PostEffect/FogVolumes/2/Rotation": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "PostEffect/FogVolumes/2/Scale": [
+            42.70000076293945,
+            7.699999809265137,
+            31.700000762939453
+        ],
+        "PostEffect/FogVolumes/2/Type": 1,
+        "PostEffect/FogVolumes/2/WindDirection": [
+            1.0,
+            0.0,
+            0.0
+        ],
+        "PostEffect/FogVolumes/2/WindSpeed": 0.23999999463558197,
+        "PostEffect/FogVolumes/2/WorleyWeight": 0.5,
+        "PostEffect/FogVolumes/Count": 3,
         "PostEffect/LUT/Enable": false,
         "PostEffect/LUT/Texture": "LUT_Neutral_32",
         "PostEffect/Pixelation/Enable": false,
@@ -230,6 +275,7 @@
             0.0
         ],
         "PostEffect/VolumetricFog/WindSpeed": 0.20000000298023224,
+        "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0,
         "PostEffect/VolumetricFog/WorleyWeight": 0.8999999761581421
     }
 }

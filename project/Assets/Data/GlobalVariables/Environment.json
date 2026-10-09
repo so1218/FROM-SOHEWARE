@@ -44,6 +44,7 @@
             1.0
         ],
         "Cloudy_V_FogWindSpeed": 0.10000000149011612,
+        "Cloudy_V_FogWindSpeedMultiplier": 0.0,
         "Cloudy_V_Metal": 0.15000000596046448,
         "Cloudy_V_NormalIntens": 1.7000000476837158,
         "Cloudy_V_RippleSize": 0.0,
@@ -153,6 +154,7 @@
             1.0
         ],
         "Rain_V_FogWindSpeed": 0.15000000596046448,
+        "Rain_V_FogWindSpeedMultiplier": 0.20000000298023224,
         "Rain_V_Metal": 0.0,
         "Rain_V_NormalIntens": 2.0999999046325684,
         "Rain_V_RippleSize": 0.8999999761581421,
@@ -233,6 +235,7 @@
             1.0
         ],
         "Sunny_V_FogWindSpeed": 0.10000000149011612,
+        "Sunny_V_FogWindSpeedMultiplier": 0.0,
         "Sunny_V_Metal": 0.15000000596046448,
         "Sunny_V_NormalIntens": 1.7000000476837158,
         "Sunny_V_RippleSize": 0.0,
@@ -342,6 +345,7 @@
             1.0
         ],
         "Thunder_V_FogWindSpeed": 0.15000000596046448,
+        "Thunder_V_FogWindSpeedMultiplier": 0.3499999940395355,
         "Thunder_V_Metal": 0.0,
         "Thunder_V_NormalIntens": 2.0999999046325684,
         "Thunder_V_RippleSize": 0.8999999761581421,

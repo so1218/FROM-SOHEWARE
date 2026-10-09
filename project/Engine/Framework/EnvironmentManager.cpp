@@ -144,8 +144,7 @@ void EnvironmentManager::Initialize(Engine* engine)
                 binder_->BindColor((p + "_V_FogAmbient").c_str(), &v.ambientLight, v.ambientLight);
                 binder_->Bind((p + "_V_FogExtinct").c_str(), &v.extinction, v.extinction, 0.001f, 0.0f, 1.0f);
                 binder_->Bind((p + "_V_FogErosion").c_str(), &v.erosion, v.erosion, 0.01f, 0.0f, 1.0f);
-                binder_->Bind((p + "_V_FogWindSpeed").c_str(), &v.windSpeed, v.windSpeed, 0.01f, 0.0f, 5.0f);
-                binder_->Bind((p + "_V_FogWindDir").c_str(), &v.windDirection, v.windDirection, 0.05f);
+                binder_->Bind((p + "_V_FogWindSpeedMultiplier").c_str(), &v.windSpeedMultiplier, v.windSpeedMultiplier, 0.05f, 0.0f, 10.0f);
             };
 
         // 既存の WeatherProfile バインドに加え、Visual もバインド
@@ -184,12 +183,7 @@ inline WeatherVisualParams LerpVisualParams(const WeatherVisualParams& a, const 
     };
     res.extinction = FE::Math::Lerp(a.extinction, b.extinction, t);
     res.erosion = FE::Math::Lerp(a.erosion, b.erosion, t);
-    res.windSpeed = FE::Math::Lerp(a.windSpeed, b.windSpeed, t);
-    res.windDirection = {
-        FE::Math::Lerp(a.windDirection.x, b.windDirection.x, t),
-        FE::Math::Lerp(a.windDirection.y, b.windDirection.y, t),
-        FE::Math::Lerp(a.windDirection.z, b.windDirection.z, t)
-    };
+    res.windSpeedMultiplier = FE::Math::Lerp(a.windSpeedMultiplier, b.windSpeedMultiplier, t);
     return res;
 }
 
@@ -426,7 +420,6 @@ void EnvironmentManager::DebugDraw()
 
                     binder_->Draw((p + "_TransitionSpeed").c_str(), "天候遷移スピード");
 
-                    // カテゴリごとに TreeNode で折りたためるようにしてスッキリさせる
                     if (ImGui::TreeNodeEx("雲 & 大気設定", ImGuiTreeNodeFlags_DefaultOpen))
                     {
                         binder_->Draw((p + "_CloudMin").c_str(), "雲の量 (下限)");
@@ -472,8 +465,7 @@ void EnvironmentManager::DebugDraw()
                         binder_->Draw((p + "_V_FogAmbient").c_str(), "環境光");
                         binder_->Draw((p + "_V_FogExtinct").c_str(), "消去係数 (Extinction)");
                         binder_->Draw((p + "_V_FogErosion").c_str(), "削り取り (Erosion)");
-                        binder_->Draw((p + "_V_FogWindSpeed").c_str(), "風速");
-                        binder_->Draw((p + "_V_FogWindDir").c_str(), "風向き");
+                        binder_->Draw((p + "_V_FogWindSpeedMultiplier").c_str(), "フォグ風速倍率");
                         ImGui::TreePop();
                     }
 

@@ -382,8 +382,7 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
 
         binder.Bind(p + "VolumetricFog/NoiseScale", &volFogSettings->noiseScale, 0.01f, 0.001f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/NoiseDistortion", &volFogSettings->noiseDistortion, 0.15f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WindDirection", &volFogSettings->windDirection, { 1.0f, 1.0f, 1.0f }, 0.05f, -1.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WindSpeed", &volFogSettings->windSpeed, 0.1f, 0.01f, -5.0f, 5.0f);
+        binder.Bind(p + "VolumetricFog/WindSpeedMultiplier", &volFogSettings->windSpeedMultiplier, 1.0f, 0.05f, 0.0f, 10.0f);
         binder.Bind(p + "VolumetricFog/Coverage", &volFogSettings->coverage, 0.85f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/WorleyWeight", &volFogSettings->worleyWeight, 0.9f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/Erosion", &volFogSettings->erosion, 0.4f, 0.01f, 0.0f, 1.0f);
@@ -598,8 +597,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
             ImGui::SeparatorText("ノイズ・形状");
             binder.Draw(p + "VolumetricFog/NoiseScale", "ノイズスケール");
             binder.Draw(p + "VolumetricFog/NoiseDistortion", "ノイズ歪み");
-            binder.Draw(p + "VolumetricFog/WindDirection", "風向き");
-            binder.Draw(p + "VolumetricFog/WindSpeed", "風速");
+            binder.Draw(p + "VolumetricFog/WindSpeedMultiplier", "風速影響倍率");
             binder.Draw(p + "VolumetricFog/Coverage", "霧の量 (Coverage)");
             binder.Draw(p + "VolumetricFog/WorleyWeight", "雲の塊感 (Worley)");
             binder.Draw(p + "VolumetricFog/Erosion", "削り取り強度");

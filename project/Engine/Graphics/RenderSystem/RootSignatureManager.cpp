@@ -724,6 +724,7 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
         builder.AddCBV(4, D3D12_SHADER_VISIBILITY_ALL); 
         builder.AddCBV(5, D3D12_SHADER_VISIBILITY_ALL); 
         builder.AddCBV(6, D3D12_SHADER_VISIBILITY_ALL); 
+        builder.AddCBV(7, D3D12_SHADER_VISIBILITY_ALL);
 
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 3, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);

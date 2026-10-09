@@ -757,19 +757,16 @@ struct VolumetricFogSettings
     float maxDistance;
     float depthSliceCount;
     float noiseScale;
-    float pad2;
-    
     float noiseDistortion;
-    float windSpeed;
+    
     float coverage; 
     float worleyWeight; 
-    
     float erosion;
     float noiseFeather; 
+    
     float erosionStrength;
     float noiseIntensity;
-    
-    float3 windDirection;
+    float windSpeedMultiplier;
 };
 
 struct FogBilateralSettings
