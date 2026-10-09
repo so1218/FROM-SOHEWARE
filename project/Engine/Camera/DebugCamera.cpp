@@ -118,16 +118,9 @@ void DebugCamera::BindProperties(PropertyBinder& binder)
     binder.Bind("DebugCamera/ZoomSpeed", &zoomSpeed_, zoomSpeed_, 0.001f, 0.01f, 1.0f);
 }
 
-void DebugCamera::DebugDraw(PropertyBinder& binder, const Camera* mainCamera)
+void DebugCamera::DebugDraw(PropertyBinder& binder)
 {
 #ifdef ENABLE_IMGUI
-
-    if (mainCamera && ImGui::Button("メインカメラ視点に位置をリセット", ImVec2(-1, 0)))
-    {
-        ResetToCamera(*mainCamera);
-    }
-
-    ImGui::Separator();
 
     binder.Draw("DebugCamera/Target", "注視点");
     binder.Draw("DebugCamera/Distance", "注視点からの距離");
@@ -141,33 +134,6 @@ void DebugCamera::DebugDraw(PropertyBinder& binder, const Camera* mainCamera)
     binder.Draw("DebugCamera/ZoomSpeed", "ズーム速度");
     
 #endif
-}
-
-void DebugCamera::ResetToCamera(const Camera& targetCamera)
-{
-    // メインカメラの座標と前方ベクトルを取得
-    Vector3 camPos = targetCamera.GetTranslation();
-    Vector3 forward = targetCamera.GetForward();
-
-    // 距離を現在設定されている値として、注視点を逆算
-    target_ = camPos + forward * distance_;
-
-    // 前方ベクトルから Pitch と Yaw を逆算
-    currentPitch_ = std::asin(std::clamp(forward.y, -0.999f, 0.999f));
-
-    // forward.x, forward.z から yaw を計算
-    currentYaw_ = std::atan2(forward.x, forward.z);
-
-    // 回転クォータニオンと行列を即座に更新
-    Quaternion pitchQuaternion = Quaternion::FromAxisAngle({ 1.0f, 0.0f, 0.0f }, currentPitch_);
-    Quaternion yawQuaternion = Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, currentYaw_);
-    worldTransform_.SetRotation(yawQuaternion * pitchQuaternion);
-
-    Quaternion currentRotation = worldTransform_.rotationQuaternion_;
-    Vector3 rotForward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
-    cameraWorldPosition_ = target_ - rotForward * distance_;
-
-    worldTransform_.UpdateMatrix();
 }
 
 Matrix4x4 DebugCamera::GetViewMatrix()

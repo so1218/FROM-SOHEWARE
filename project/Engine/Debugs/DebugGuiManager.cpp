@@ -75,7 +75,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
     {
         if (debugCamera_)
         {
-            debugCamera_->DebugDraw(*engineBinder_, targetCamera);
+            debugCamera_->DebugDraw(*engineBinder_);
         }
     }
     if (ImGui::CollapsingHeader("時間 / パフォーマンス"))
