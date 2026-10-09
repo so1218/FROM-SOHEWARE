@@ -88,8 +88,7 @@ struct ModelSubmission
     Matrix4x4 worldInverseTranspose;
     Matrix4x4 prevWorldMatrix;    
 
-    bool isVisibleCamera = true;
-    bool isVisibleShadow = true;
+    uint8_t viewMask;        // どのビューに映るかのビットフラグ
 };
 
 struct RenderBatch

@@ -33,7 +33,9 @@ public:
         const std::vector<MaterialHandle>& materials,
         BlendMode blendMode,
         RenderGroup group,
-        const Vector4& instanceColor);
+        const Vector4& instanceColor,
+        const Frustum& cameraFrustum,
+        const std::vector<Frustum>& shadowFrustums);
 
     // 描画実行
     void Draw(const RenderEnvironment& env, RenderGroup group, ShadowMap* shadowMap);

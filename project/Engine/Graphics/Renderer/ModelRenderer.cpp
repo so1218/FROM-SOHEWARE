@@ -128,19 +128,33 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 Vector3 worldMax = { worldCenter.x + worldExtents.x, worldCenter.y + worldExtents.y, worldCenter.z + worldExtents.z };
 
                 // カメラ・影フラスタムとの判定
-                bool isVisibleCamera = cameraFrustum.IntersectsAABB(worldMin, worldMax);
-                bool isVisibleShadow = false;
-                for (const auto& shadowFrustum : shadowFrustums)
+             // 最大の広がりを計算（小物カリング用）
+                float maxExtent = std::max({ worldExtents.x, worldExtents.y, worldExtents.z });
+
+                uint8_t viewMask = 0;
+
+                // 1. カメラフラスタム判定 (Bit 0 に保存)
+                if (cameraFrustum.IntersectsAABB(worldMin, worldMax))
                 {
-                    if (shadowFrustum.IntersectsAABB(worldMin, worldMax))
+                    viewMask |= (1 << 0);
+                }
+
+                // 2. 影カスケード判定 (Bit 1, 2, 3 に保存)
+                for (uint32_t i = 0; i < shadowFrustums.size(); ++i)
+                {
+                    if (shadowFrustums[i].IntersectsAABB(worldMin, worldMax))
                     {
-                        isVisibleShadow = true;
-                        break;
+                        // ★激重対策：遠くのカスケードでは小物を影から除外する
+                        // （値はゲームのスケールに合わせて微調整してください）
+                        if (i == 1 && maxExtent < 1.0f) continue; // Cascade1では半径1m未満を除外
+                        if (i == 2 && maxExtent < 5.0f) continue; // Cascade2では半径5m未満を除外
+
+                        viewMask |= (1 << (i + 1)); // i=0ならBit1, i=1ならBit2...
                     }
                 }
 
-                // 両方から見えない場合は描画対象から除外（カリング）
-                if (!isVisibleCamera && !isVisibleShadow)
+                // どこからも見えない場合は描画対象から除外（カリング）
+                if (viewMask == 0)
                 {
                     continue;
                 }
@@ -202,8 +216,7 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 submission.blendMode = blendMode;
                 submission.cullMode = cullMode;
                 submission.depthMode = depthMode;
-                submission.isVisibleCamera = isVisibleCamera;
-                submission.isVisibleShadow = isVisibleShadow;
+                submission.viewMask = viewMask;
 
                 // アルファ判定
                 bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
@@ -246,7 +259,9 @@ void ModelRenderer::SubmitAnimation(
     const std::vector<MaterialHandle>& materials,
     BlendMode blendMode,
     RenderGroup group,
-    const Vector4& instanceColor)
+    const Vector4& instanceColor,
+    const Frustum& cameraFrustum,                 
+    const std::vector<Frustum>& shadowFrustums)  
 {
     const ModelData* modelData = instance.modelData;
     // GPUメッシュ生成済みか確認
@@ -254,14 +269,65 @@ void ModelRenderer::SubmitAnimation(
 
     for (size_t i = 0; i < modelData->meshes.size(); ++i)
     {
-        assert(indexModel_ < kMaxCount);
+        if (indexModel_ >= kMaxCount) return; // 安全対策
 
         const auto& meshPart = modelData->meshes[i];
+        Matrix4x4 world = worldTransform.matWorld_;
+        Matrix4x4 prevWorld = worldTransform.matWorldPrev_;
+
+        // AABB ワールド変換と viewMask の算出（カリング処理）
+        Vector3 localCenter = {
+            (meshPart.localAABB.min.x + meshPart.localAABB.max.x) * 0.5f,
+            (meshPart.localAABB.min.y + meshPart.localAABB.max.y) * 0.5f,
+            (meshPart.localAABB.min.z + meshPart.localAABB.max.z) * 0.5f
+        };
+        Vector3 localExtents = {
+            (meshPart.localAABB.max.x - meshPart.localAABB.min.x) * 0.5f,
+            (meshPart.localAABB.max.y - meshPart.localAABB.min.y) * 0.5f,
+            (meshPart.localAABB.max.z - meshPart.localAABB.min.z) * 0.5f
+        };
+
+        Vector3 worldCenter = world.TransformPoint(localCenter);
+
+        Vector3 worldExtents;
+        worldExtents.x = std::abs(world.m[0][0]) * localExtents.x + std::abs(world.m[1][0]) * localExtents.y + std::abs(world.m[2][0]) * localExtents.z;
+        worldExtents.y = std::abs(world.m[0][1]) * localExtents.x + std::abs(world.m[1][1]) * localExtents.y + std::abs(world.m[2][1]) * localExtents.z;
+        worldExtents.z = std::abs(world.m[0][2]) * localExtents.x + std::abs(world.m[1][2]) * localExtents.y + std::abs(world.m[2][2]) * localExtents.z;
+
+        Vector3 worldMin = { worldCenter.x - worldExtents.x, worldCenter.y - worldExtents.y, worldCenter.z - worldExtents.z };
+        Vector3 worldMax = { worldCenter.x + worldExtents.x, worldCenter.y + worldExtents.y, worldCenter.z + worldExtents.z };
+
+        float maxExtent = std::max({ worldExtents.x, worldExtents.y, worldExtents.z });
+
+        uint8_t viewMask = 0;
+
+        // メインカメラ判定 (Bit 0)
+        if (cameraFrustum.IntersectsAABB(worldMin, worldMax))
+        {
+            viewMask |= (1 << 0);
+        }
+
+        // 影カスケード判定 
+        for (uint32_t s = 0; s < shadowFrustums.size(); ++s)
+        {
+            if (shadowFrustums[s].IntersectsAABB(worldMin, worldMax))
+            {
+                if (s == 1 && maxExtent < 1.0f) continue;
+                if (s == 2 && maxExtent < 5.0f) continue;
+
+                viewMask |= (1 << (s + 1));
+            }
+        }
+
+        // どこからも見えない場合は描画スキップ
+        if (viewMask == 0)
+        {
+            continue;
+        }
+
         auto& buffer = perObjectBuffers_[indexModel_];
 
         // 各パーツのWorld行列はモデル全体のWorldで統一
-        Matrix4x4 world = worldTransform.matWorld_;
-        Matrix4x4 prevWorld = worldTransform.matWorldPrev_;
         Matrix4x4 wvp = world * viewProjectionMatrix_;
         buffer.wvpMapped->WVP = wvp;
         buffer.wvpMapped->World = world;
@@ -277,7 +343,6 @@ void ModelRenderer::SubmitAnimation(
         }
         else
         {
-            // 万が一足りない場合は0番目かデフォルト
             actualMaterialHandle = materials.empty() ? meshPart.materialHandle : materials[0];
         }
 
@@ -293,7 +358,7 @@ void ModelRenderer::SubmitAnimation(
         submission.type = RenderType::Skinning;
         submission.group = group;
         submission.modelData = modelData;
-        submission.meshIndex = static_cast<uint32_t>(i); // 何番目のメッシュか指定
+        submission.meshIndex = static_cast<uint32_t>(i);
         submission.materialHandle = actualMaterialHandle;
         submission.textureHandle = actualTextureHandle;
         submission.envMapSrvHandle = actualMaterialHandle.envMapHandle;
@@ -307,18 +372,18 @@ void ModelRenderer::SubmitAnimation(
         submission.instancingColor = instanceColor;
         submission.prevWorldMatrix = prevWorld;
 
-        // マテリアルデータのポインタが存在し、かつenableOutlineがtrueなら有効
         if (actualMaterialHandle.materialData)
         {
             submission.enableOutline = (actualMaterialHandle.materialData->enableOutline != 0);
         }
-        else 
+        else
         {
             submission.enableOutline = false;
         }
         submission.instanceIndex = indexModel_;
         submission.skinCluster = &skinCluster;
         submission.blendMode = blendMode;
+        submission.viewMask = viewMask; 
 
         // アルファ判定
         bool hasAlpha = (Math::ColorVectorToUint32(submission.materialHandle.materialData->color) & 0xFF) < 255;
@@ -359,6 +424,9 @@ void ModelRenderer::Draw(const RenderEnvironment& env, RenderGroup targetGroup, 
     for (const auto& batch : batches_)
     {
         const auto& sub = *batch.baseSubmission;
+
+        // メインカメラに映っていないバッチはメイン描画からスキップ
+        if ((sub.viewMask & (1 << 0)) == 0) continue;
 
         // 指定のグループじゃなければスキップ
         if (sub.group != targetGroup) continue;
@@ -517,6 +585,10 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
         // バッチの基準となるデータを取得
         const auto& sub = *batch.baseSubmission;
 
+        // このカスケードに映らないバッチはスキップ
+        uint8_t targetMask = (1 << (cascadeIndex + 1));
+        if ((sub.viewMask & targetMask) == 0) continue;
+
         // フィルタリング処理
         if (sub.type != RenderType::Model && sub.type != RenderType::Skinning) continue;
         if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI) continue;
@@ -634,6 +706,7 @@ void ModelRenderer::PrepareBatches()
     // 全Submissionをソート
     std::sort(modelSubmissions_.begin(), modelSubmissions_.end(),
         [](const ModelSubmission& a, const ModelSubmission& b) {
+            if (a.viewMask != b.viewMask) return a.viewMask < b.viewMask;
             if (a.group != b.group) return a.group < b.group;
             if (a.group == RenderGroup::Transparent) return a.depth > b.depth;
             if (a.type != b.type) return a.type < b.type;
@@ -665,7 +738,8 @@ void ModelRenderer::PrepareBatches()
         {
             const auto& nextSub = modelSubmissions_[i + 1];
             // 描画条件が変わったらバッチを区切る
-            if (sub.modelData != nextSub.modelData ||
+            if (sub.viewMask != nextSub.viewMask ||
+                sub.modelData != nextSub.modelData ||
                 sub.meshIndex != nextSub.meshIndex ||
                 sub.materialHandle.materialData != nextSub.materialHandle.materialData ||
                 sub.type != nextSub.type ||

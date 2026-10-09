@@ -9332,7 +9332,7 @@
         "Terrain_ShadowBias": 0.0005000000237487257,
         "Terrain_ShadowDens": 0.7400000095367432,
         "Terrain_ShadowEnv": 0.10999999940395355,
-        "Terrain_ShadowSoft": 0.25999999046325684,
+        "Terrain_ShadowSoft": 0.009999999776482582,
         "Terrain_Shininess": 50.0,
         "Terrain_SpecColor": [
             1.0,

@@ -13,6 +13,35 @@
             5.699999809265137,
             0.0
         ],
+        "Light/Directional/0/Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Light/Directional/0/Direction": [
+            0.0,
+            -1.0,
+            1.0
+        ],
+        "Light/Directional/0/Enable": 0,
+        "Light/Directional/0/Intensity": 1.0,
+        "Light/Directional/0/VolumetricScattering": 5.0,
+        "Light/Directional/1/Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Light/Directional/1/Direction": [
+            0.0,
+            -1.0,
+            1.0
+        ],
+        "Light/Directional/1/Enable": 0,
+        "Light/Directional/1/Intensity": 1.0,
+        "Light/Directional/1/VolumetricScattering": 5.0,
+        "Light/Directional/Count": 2,
         "PostEffect/Bloom/CompositeIntensity": 1.0,
         "PostEffect/Bloom/ExtractIntensity": 1.0,
         "PostEffect/Bloom/Radius": 1.0,

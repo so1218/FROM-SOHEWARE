@@ -442,7 +442,8 @@ void RendererManager::SubmitAnimationModel(
 	if (modelRenderer_)
 	{
 		modelRenderer_->SubmitAnimation(
-			worldTransform, instance, skinCluster, materials, blendMode, group, instanceColor
+			worldTransform, instance, skinCluster, materials, blendMode, group, instanceColor,
+			cameraFrustum_, shadowFrustums_
 		);
 	}
 }
