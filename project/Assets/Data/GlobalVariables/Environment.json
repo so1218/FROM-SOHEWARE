@@ -18,6 +18,36 @@
             0.16877639293670654
         ],
         "Cloudy_TransitionSpeed": 0.49000000953674316,
+        "Cloudy_V_Color": [
+            0.11764705926179886,
+            0.4901960790157318,
+            0.09803921729326248,
+            1.0
+        ],
+        "Cloudy_V_Emissive": 2.799999952316284,
+        "Cloudy_V_EnvIntens": 0.5,
+        "Cloudy_V_FogAmbient": [
+            0.03921568766236305,
+            0.03921568766236305,
+            0.03921568766236305
+        ],
+        "Cloudy_V_FogErosion": 0.0,
+        "Cloudy_V_FogExtinct": 0.004999999888241291,
+        "Cloudy_V_FogHDensity": 0.0,
+        "Cloudy_V_FogHFalloff": 0.0,
+        "Cloudy_V_FogNoiseIntens": 0.0,
+        "Cloudy_V_FogNoiseScale": 0.029999999329447746,
+        "Cloudy_V_FogScatt": 10.0,
+        "Cloudy_V_FogWindDir": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Cloudy_V_FogWindSpeed": 0.10000000149011612,
+        "Cloudy_V_Metal": 0.15000000596046448,
+        "Cloudy_V_NormalIntens": 1.7000000476837158,
+        "Cloudy_V_RippleSize": 0.0,
+        "Cloudy_V_Rough": 1.0,
         "Cloudy_Wetness": 0.0,
         "Cloudy_WindDir": [
             1.0,
@@ -97,6 +127,36 @@
             0.05063289403915405
         ],
         "Rain_TransitionSpeed": 0.15000000596046448,
+        "Rain_V_Color": [
+            0.2736864984035492,
+            0.607003927230835,
+            0.23618830740451813,
+            1.0
+        ],
+        "Rain_V_Emissive": 13.0,
+        "Rain_V_EnvIntens": 0.009999999776482582,
+        "Rain_V_FogAmbient": [
+            0.1568627506494522,
+            0.27450981736183167,
+            0.6274510025978088
+        ],
+        "Rain_V_FogErosion": 0.4000000059604645,
+        "Rain_V_FogExtinct": 0.019999999552965164,
+        "Rain_V_FogHDensity": 1.0,
+        "Rain_V_FogHFalloff": 0.30000001192092896,
+        "Rain_V_FogNoiseIntens": 1.0,
+        "Rain_V_FogNoiseScale": 0.029999999329447746,
+        "Rain_V_FogScatt": 1.5,
+        "Rain_V_FogWindDir": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Rain_V_FogWindSpeed": 0.15000000596046448,
+        "Rain_V_Metal": 0.0,
+        "Rain_V_NormalIntens": 2.0999999046325684,
+        "Rain_V_RippleSize": 0.8999999761581421,
+        "Rain_V_Rough": 0.6200000047683716,
         "Rain_Wetness": 1.0,
         "Rain_WindDir": [
             -0.6000000238418579,
@@ -147,6 +207,36 @@
             0.4000000059604645
         ],
         "Sunny_TransitionSpeed": 0.4000000059604645,
+        "Sunny_V_Color": [
+            0.11764705926179886,
+            0.4901960790157318,
+            0.09803921729326248,
+            1.0
+        ],
+        "Sunny_V_Emissive": 2.799999952316284,
+        "Sunny_V_EnvIntens": 0.5,
+        "Sunny_V_FogAmbient": [
+            0.03921568766236305,
+            0.03921568766236305,
+            0.03921568766236305
+        ],
+        "Sunny_V_FogErosion": 0.0,
+        "Sunny_V_FogExtinct": 0.004999999888241291,
+        "Sunny_V_FogHDensity": 0.0,
+        "Sunny_V_FogHFalloff": 0.0,
+        "Sunny_V_FogNoiseIntens": 0.0,
+        "Sunny_V_FogNoiseScale": 0.029999999329447746,
+        "Sunny_V_FogScatt": 10.0,
+        "Sunny_V_FogWindDir": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Sunny_V_FogWindSpeed": 0.10000000149011612,
+        "Sunny_V_Metal": 0.15000000596046448,
+        "Sunny_V_NormalIntens": 1.7000000476837158,
+        "Sunny_V_RippleSize": 0.0,
+        "Sunny_V_Rough": 1.0,
         "Sunny_Wetness": 0.0,
         "Sunny_WindDir": [
             -1.0,
@@ -226,6 +316,36 @@
             0.0
         ],
         "Thunder_TransitionSpeed": 0.15000000596046448,
+        "Thunder_V_Color": [
+            0.27450981736183167,
+            0.6078431606292725,
+            0.23529411852359772,
+            1.0
+        ],
+        "Thunder_V_Emissive": 13.0,
+        "Thunder_V_EnvIntens": 0.009999999776482582,
+        "Thunder_V_FogAmbient": [
+            0.46303504705429077,
+            0.5972765684127808,
+            1.0
+        ],
+        "Thunder_V_FogErosion": 0.4000000059604645,
+        "Thunder_V_FogExtinct": 0.019999999552965164,
+        "Thunder_V_FogHDensity": 1.0,
+        "Thunder_V_FogHFalloff": 0.30000001192092896,
+        "Thunder_V_FogNoiseIntens": 1.0,
+        "Thunder_V_FogNoiseScale": 0.029999999329447746,
+        "Thunder_V_FogScatt": 1.5,
+        "Thunder_V_FogWindDir": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "Thunder_V_FogWindSpeed": 0.15000000596046448,
+        "Thunder_V_Metal": 0.0,
+        "Thunder_V_NormalIntens": 2.0999999046325684,
+        "Thunder_V_RippleSize": 0.8999999761581421,
+        "Thunder_V_Rough": 0.6200000047683716,
         "Thunder_Wetness": 0.5699999928474426,
         "Thunder_WindDir": [
             1.0,

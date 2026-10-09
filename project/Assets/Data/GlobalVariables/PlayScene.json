@@ -204,25 +204,25 @@
             0.03529411926865578,
             0.03921568766236305
         ],
-        "PostEffect/VolumetricFog/Anisotropy": 0.5,
+        "PostEffect/VolumetricFog/Anisotropy": 0.699999988079071,
         "PostEffect/VolumetricFog/BaseHeight": 0.0,
         "PostEffect/VolumetricFog/BilateralBlurRadius": 2,
         "PostEffect/VolumetricFog/BilateralDepthSigma": 0.0010000000474974513,
         "PostEffect/VolumetricFog/BilateralSpatialSigma": 2.0,
-        "PostEffect/VolumetricFog/Coverage": 0.5,
+        "PostEffect/VolumetricFog/Coverage": 0.8500000238418579,
         "PostEffect/VolumetricFog/Enable": 1,
         "PostEffect/VolumetricFog/Erosion": 0.20000000298023224,
-        "PostEffect/VolumetricFog/ErosionStrength": 0.5,
-        "PostEffect/VolumetricFog/Extinction": 0.009999999776482582,
-        "PostEffect/VolumetricFog/ExtinctionScale": 0.5,
+        "PostEffect/VolumetricFog/ErosionStrength": 1.0,
+        "PostEffect/VolumetricFog/Extinction": 0.004999999888241291,
+        "PostEffect/VolumetricFog/ExtinctionScale": 0.4000000059604645,
         "PostEffect/VolumetricFog/HeightDensity": 0.5,
         "PostEffect/VolumetricFog/HeightFalloff": 0.10000000149011612,
         "PostEffect/VolumetricFog/MaxDistance": 500.0,
-        "PostEffect/VolumetricFog/NoiseDistortion": 0.10000000149011612,
+        "PostEffect/VolumetricFog/NoiseDistortion": 0.15000000596046448,
         "PostEffect/VolumetricFog/NoiseFeather": 0.30000001192092896,
         "PostEffect/VolumetricFog/NoiseIntensity": 0.5,
         "PostEffect/VolumetricFog/NoiseScale": 0.05000000074505806,
-        "PostEffect/VolumetricFog/ScatteringIntensity": 10.0,
+        "PostEffect/VolumetricFog/ScatteringIntensity": 10.800000190734863,
         "PostEffect/VolumetricFog/TemporalWeight": 0.05000000074505806,
         "PostEffect/VolumetricFog/WindDirection": [
             1.0,
@@ -230,6 +230,6 @@
             0.0
         ],
         "PostEffect/VolumetricFog/WindSpeed": 0.20000000298023224,
-        "PostEffect/VolumetricFog/WorleyWeight": 0.5
+        "PostEffect/VolumetricFog/WorleyWeight": 0.8999999761581421
     }
 }

@@ -31,6 +31,30 @@ enum class WeatherState {
     Thunderstorm    
 };
 
+struct WeatherVisualParams
+{
+    // Terrain
+    float metalness = 0.15f;
+    float roughness = 1.00f;
+    float environmentMapIntensity = 0.5f;
+    float rippleSize = 0.0f;
+    float normalIntensity = 1.7f;
+    Vector4 color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
+    float emissiveIntensity = 3.5f;
+
+    // Volumetric Fog
+    float scatteringIntensity = 10.0f;
+    float noiseScale = 0.03f;
+    float noiseIntensity = 0.0f;
+    float heightDensity = 0.0f;
+    float heightFalloff = 0.0f;
+    Vector3 ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
+    float extinction = 0.005f;
+    float erosion = 0.0f;
+    float windSpeed = 0.1f;
+    Vector3 windDirection = { 1.0f, 1.0f, 1.0f };
+};
+
 // 天候が環境に与える影響のプロファイル
 struct WeatherProfile
 {
@@ -48,6 +72,8 @@ struct WeatherProfile
     Vector3 skyHorizonColor;     // この天候のときの地平線の色
     float skyColorBlendWeight;
     float transitionSpeed;
+
+    WeatherVisualParams visual;
 };
 
 // プロファイル同士をブレンドする関数
@@ -98,6 +124,8 @@ public:
 
     ID3D12Resource* GetGlobalEnvironmentResource() const { return constantBuffer_.Get(); }
 
+    const WeatherVisualParams& GetCurrentVisualParams() const { return currentVisualParams_; }
+
     // 現在の風のパラメータを取得するゲッター
     Vector2 GetWindDirection() const { return currentWeatherProfile_.windDirection; }
     float GetWindSpeed() const { return currentWeatherProfile_.windSpeed; }
@@ -143,6 +171,9 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     GlobalEnvironmentData* cbData_ = nullptr;
+
+    // 今フレームの補間済みビジュアル結果
+    WeatherVisualParams currentVisualParams_;
 };
 
 }

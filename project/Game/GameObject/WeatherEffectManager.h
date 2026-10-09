@@ -75,5 +75,3 @@ struct WeatherVisualParams {
     float windSpeed;
     FE::Vector3 windDirection;
 };
-
-WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state);

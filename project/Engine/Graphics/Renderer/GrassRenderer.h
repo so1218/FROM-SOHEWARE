@@ -34,7 +34,7 @@ public:
     void Reset() { totalGeneratedCount_ = 0; }
 
 private:
-    static const int32_t kMaxInstances = 1500000;
+    static const int32_t kMaxInstances = 2000000;
     static constexpr int kFrameCount = 3;
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> cullingHeap_;

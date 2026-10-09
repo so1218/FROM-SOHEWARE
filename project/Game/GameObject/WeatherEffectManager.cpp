@@ -49,65 +49,57 @@ void WeatherEffectManager::Update()
     WeatherState target = env->GetTargetWeather();
     float t = env->GetWeatherTransitionProgress();
     const WeatherProfile& profile = env->GetCurrentWeatherProfile();
-    float wetness = profile.wetness;
 
-    // パラメータの取得とブレンド
-    WeatherVisualParams currentP = GetWeatherVisualParams(current);
-    WeatherVisualParams targetP = GetWeatherVisualParams(target);
+    // EnvironmentManagerから、今フレームの補間済みビジュアルパラメータを取得
+    const FE::WeatherVisualParams& visual = env->GetCurrentVisualParams();
 
+    // -------------------------------------------------------------
     // Terrainのマテリアル設定適用
-    auto* mat = terrain_->GetMaterialData();
-    mat->metalness = FE::Math::Lerp(currentP.metalness, targetP.metalness, t);
-    mat->roughness = FE::Math::Lerp(currentP.roughness, targetP.roughness, t);
-    mat->environmentMapIntensity = FE::Math::Lerp(currentP.environmentMapIntensity, targetP.environmentMapIntensity, t);
-    mat->rippleSize = FE::Math::Lerp(currentP.rippleSize, targetP.rippleSize, t);
-    mat->normalIntensity = FE::Math::Lerp(currentP.normalIntensity, targetP.normalIntensity, t);
-    mat->emissiveIntensity = FE::Math::Lerp(currentP.emissiveIntensity, targetP.emissiveIntensity, t);
+    // -------------------------------------------------------------
+    auto mat = terrain_->GetMaterialData();
+    mat->metalness = visual.metalness;
+    mat->roughness = visual.roughness;
+    mat->environmentMapIntensity = visual.environmentMapIntensity;
+    mat->rippleSize = visual.rippleSize;
+    mat->normalIntensity = visual.normalIntensity;
+    mat->emissiveIntensity = visual.emissiveIntensity;
+    mat->color = visual.color;
 
-    mat->color = {
-        FE::Math::Lerp(currentP.color.x, targetP.color.x, t),
-        FE::Math::Lerp(currentP.color.y, targetP.color.y, t),
-        FE::Math::Lerp(currentP.color.z, targetP.color.z, t),
-        1.0f
-    };
-
-    // bool値や固定値の設定
-    mat->enableRipple = (wetness > 0.1f);
+    // 波紋の個別制御
+    mat->enableRipple = (profile.wetness > 0.1f);
     mat->rippleScale = 0.4f;
     mat->rippleStrength = 10.0f;
     mat->rippleSpeed = 0.4f;
     mat->rippleFrequency = 6.0f;
     terrain_->SetRippleTexture("normal_31");
 
+    // -------------------------------------------------------------
     // Volumetric Fogの設定適用
-    auto* fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
-    fog->scatteringIntensity = FE::Math::Lerp(currentP.scatteringIntensity, targetP.scatteringIntensity, t);
-    fog->noiseScale = FE::Math::Lerp(currentP.noiseScale, targetP.noiseScale, t);
-    fog->noiseIntensity = targetP.noiseIntensity;
-    fog->heightDensity = targetP.heightDensity;
-    fog->heightFalloff = targetP.heightFalloff;
-    fog->extinction = FE::Math::Lerp(currentP.extinction, targetP.extinction, t);
-    fog->erosion = FE::Math::Lerp(currentP.erosion, targetP.erosion, t);
-    fog->windSpeed = targetP.windSpeed;
+    // -------------------------------------------------------------
+    auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
+    fog->scatteringIntensity = visual.scatteringIntensity;
+    fog->noiseScale = visual.noiseScale;
+    fog->noiseIntensity = visual.noiseIntensity;
+    fog->heightDensity = visual.heightDensity;
+    fog->heightFalloff = visual.heightFalloff;
+    fog->extinction = visual.extinction;
+    fog->erosion = visual.erosion;
+    fog->windSpeed = visual.windSpeed;
+    fog->ambientLight = visual.ambientLight;
+    fog->windDirection = visual.windDirection;
 
-    fog->ambientLight = {
-        FE::Math::Lerp(currentP.ambientLight.x, targetP.ambientLight.x, t),
-        FE::Math::Lerp(currentP.ambientLight.y, targetP.ambientLight.y, t),
-        FE::Math::Lerp(currentP.ambientLight.z, targetP.ambientLight.z, t)
-    };
-
-    fog->windDirection = targetP.windDirection;
-
-    // 各天候のパーティクルの強さを計算
+    // -------------------------------------------------------------
+    // 各天候のパーティクル強さを計算 & 制御
+    // -------------------------------------------------------------
     auto CalculateIntensity = [&](WeatherState checkState) -> float
         {
-        bool isTarget = (target == checkState);
-        bool isCurrent = (current == checkState);
+            bool isTarget = (target == checkState);
+            bool isCurrent = (current == checkState);
 
-        if (isTarget && !isCurrent) return t;           // 降り始め（徐々に強く）
-        if (!isTarget && isCurrent) return 1.0f - t;    // 止み始め（徐々に弱く）
-        if (isTarget && isCurrent)  return 1.0f;        // 完全に降っている
-        return 0.0f;                                    // 降っていない
+            if (isTarget && !isCurrent) return t;           // 降り始め（徐々に強く）
+            if (!isTarget && isCurrent) return 1.0f - t;    // 止み始め（徐々に弱く）
+            if (isTarget && isCurrent)  return 1.0f;        // 完全に降っている
+            return 0.0f;                                    // 降っていない
         };
 
     float rainIntensity = CalculateIntensity(WeatherState::Rain);
@@ -119,23 +111,25 @@ void WeatherEffectManager::Update()
         rainParticleEmitterPtr_->Play();
         rainParticleEmitterPtr_->SetEmissionRateMultiplier(rainIntensity);
     }
-    else 
+    else
     {
         rainParticleEmitterPtr_->Stop();
     }
 
     // 雷雨パーティクルの制御
-    if (thunderRainIntensity > 0.0f) 
+    if (thunderRainIntensity > 0.0f)
     {
         thunderRainParticleEmitterPtr_->Play();
         thunderRainParticleEmitterPtr_->SetEmissionRateMultiplier(thunderRainIntensity);
     }
-    else 
+    else
     {
         thunderRainParticleEmitterPtr_->Stop();
     }
 
+    // -------------------------------------------------------------
     // 落雷の制御
+    // -------------------------------------------------------------
     if (lightningSystem_)
     {
         lightningSystem_->Update();
@@ -149,10 +143,8 @@ void WeatherEffectManager::Update()
         // タイマーが0以下になったら雷を落とす
         if (thunderIntervalTimer_ <= 0.0f)
         {
-            // プレイヤーの位置を中心にランダムな発生座標を計算
             Vector3 playerPos = player_->GetTransform().translation_;
 
-            // 角度と距離をランダムに決定
             std::uniform_real_distribution<float> distAngle(0.0f, Math::PI * 2.0f);
             std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
 
@@ -162,17 +154,13 @@ void WeatherEffectManager::Update()
             float targetX = playerPos.x + std::cos(angle) * radius;
             float targetZ = playerPos.z + std::sin(angle) * radius;
 
-            // 地面の高さを取得
             float groundY = terrain_->GetHeight(targetX, targetZ);
 
-            // 発生地点と目標地点
             Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
             Vector3 endPos(targetX, groundY, targetZ);
 
-            // 雷を生成
             lightningSystem_->SpawnStrike(startPos, endPos);
 
-            // 次の雷までの時間を再設定
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
         }
@@ -211,59 +199,4 @@ void WeatherEffectManager::DebugDraw()
     {
         lightningSystem_->DebugDraw();
     }
-}
-
-inline WeatherVisualParams GetWeatherVisualParams(FE::WeatherState state)
-{
-    WeatherVisualParams p;
-
-    switch (state)
-    {
-    case FE::WeatherState::Rain:
-    case FE::WeatherState::Thunderstorm:
-        // Terrain
-        p.metalness = 0.9f;
-        p.roughness = 0.25f;
-        p.environmentMapIntensity = 0.01f;
-        p.rippleSize = 1.2f;
-        p.normalIntensity = 1.7f;
-        p.color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
-        p.emissiveIntensity = 12.0f;
-        // Fog
-        p.scatteringIntensity = 1.5f;
-        p.noiseScale = 0.03f;
-        p.noiseIntensity = 1.0f;
-        p.heightDensity = 1.0f;
-        p.heightFalloff = 0.3f;
-        p.ambientLight = { 40.0f / 255.0f, 70.0f / 255.0f, 160.0f / 255.0f };
-        p.extinction = 0.02f;
-        p.erosion = 0.4f;
-        p.windSpeed = 0.15f;
-        p.windDirection = { 1.0f, 1.0f, 1.0f };
-        break;
-
-    default: // Sunny, Cloudy
-        // Terrain
-        p.metalness = 0.15f;
-        p.roughness = 1.00f;
-        p.environmentMapIntensity = 0.5f;
-        p.rippleSize = 0.0f;
-        p.normalIntensity = 1.7f;
-        p.color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
-        p.emissiveIntensity = 3.5f;
-        // Fog
-        p.scatteringIntensity = 10.0f;
-        p.noiseScale = 0.03f; 
-        p.noiseIntensity = 0.0f;
-        p.heightDensity = 0.0f;
-        p.heightFalloff = 0.0f;
-        p.ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
-        p.extinction = 0.005f;
-        p.erosion = 0.0f;
-        p.windSpeed = 0.1f;
-        p.windDirection = { 1.0f, 1.0f, 1.0f };
-        break;
-    }
-
-    return p;
 }

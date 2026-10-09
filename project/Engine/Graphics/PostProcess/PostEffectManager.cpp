@@ -369,26 +369,26 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     if (compositeSettings && volFogSettings)
     {
         binder.BindBool(p + "VolumetricFog/Enable", &compositeSettings->enableVolumetricFog, false);
-        binder.BindColor(p + "VolumetricFog/Albedo", &volFogSettings->albedo, volFogSettings->albedo);
+        binder.BindColor(p + "VolumetricFog/Albedo", &volFogSettings->albedo, { 0.8f, 0.8f, 0.8f });
         binder.Bind(p + "VolumetricFog/ScatteringIntensity", &volFogSettings->scatteringIntensity, 10.0f, 0.5f, 0.0f, 200.0f);
-        binder.Bind(p + "VolumetricFog/ExtinctionScale", &volFogSettings->extinctionScale, 1.0f, 0.01f, 0.0f, 10.0f);
-        binder.Bind(p + "VolumetricFog/Anisotropy", &volFogSettings->anisotropy, 0.5f, 0.01f, -0.99f, 0.99f);
-        binder.BindColor(p + "VolumetricFog/AmbientLight", &volFogSettings->ambientLight, volFogSettings->ambientLight);
+        binder.Bind(p + "VolumetricFog/ExtinctionScale", &volFogSettings->extinctionScale, 0.2f, 0.01f, 0.0f, 10.0f);
+        binder.Bind(p + "VolumetricFog/Anisotropy", &volFogSettings->anisotropy, 0.7f, 0.01f, -0.99f, 0.99f);
+        binder.BindColor(p + "VolumetricFog/AmbientLight", &volFogSettings->ambientLight, { 0.0f, 0.0f, 0.0f });
 
-        binder.Bind(p + "VolumetricFog/Extinction", &volFogSettings->extinction, 0.01f, 0.001f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/HeightDensity", &volFogSettings->heightDensity, 0.5f, 0.01f, 0.0f, 5.0f);
+        binder.Bind(p + "VolumetricFog/Extinction", &volFogSettings->extinction, 0.005f, 0.001f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/HeightDensity", &volFogSettings->heightDensity, 0.0f, 0.01f, 0.0f, 5.0f);
         binder.Bind(p + "VolumetricFog/BaseHeight", &volFogSettings->baseHeight, 0.0f, 0.5f, -100.0f, 100.0f);
         binder.Bind(p + "VolumetricFog/HeightFalloff", &volFogSettings->heightFalloff, 0.1f, 0.001f, 0.0f, 1.0f);
 
-        binder.Bind(p + "VolumetricFog/NoiseScale", &volFogSettings->noiseScale, 0.05f, 0.001f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/NoiseDistortion", &volFogSettings->noiseDistortion, 0.1f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WindDirection", &volFogSettings->windDirection, { 1.0f, 0.0f, 0.0f }, 0.05f, -1.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WindSpeed", &volFogSettings->windSpeed, 0.2f, 0.01f, -5.0f, 5.0f);
-        binder.Bind(p + "VolumetricFog/Coverage", &volFogSettings->coverage, 0.5f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WorleyWeight", &volFogSettings->worleyWeight, 0.5f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/Erosion", &volFogSettings->erosion, 0.2f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/ErosionStrength", &volFogSettings->erosionStrength, 0.5f, 0.01f, 0.0f, 2.0f);
-        binder.Bind(p + "VolumetricFog/NoiseIntensity", &volFogSettings->noiseIntensity, 0.5f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/NoiseScale", &volFogSettings->noiseScale, 0.01f, 0.001f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/NoiseDistortion", &volFogSettings->noiseDistortion, 0.15f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/WindDirection", &volFogSettings->windDirection, { 1.0f, 1.0f, 1.0f }, 0.05f, -1.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/WindSpeed", &volFogSettings->windSpeed, 0.1f, 0.01f, -5.0f, 5.0f);
+        binder.Bind(p + "VolumetricFog/Coverage", &volFogSettings->coverage, 0.85f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/WorleyWeight", &volFogSettings->worleyWeight, 0.9f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/Erosion", &volFogSettings->erosion, 0.4f, 0.01f, 0.0f, 1.0f);
+        binder.Bind(p + "VolumetricFog/ErosionStrength", &volFogSettings->erosionStrength, 1.0f, 0.01f, 0.0f, 2.0f);
+        binder.Bind(p + "VolumetricFog/NoiseIntensity", &volFogSettings->noiseIntensity, 1.0f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/NoiseFeather", &volFogSettings->noiseFeather, 0.3f, 0.01f, 0.001f, 2.0f);
 
         binder.Bind(p + "VolumetricFog/MaxDistance", &volFogSettings->maxDistance, 500.0f, 5.0f, 10.0f, 5000.0f);

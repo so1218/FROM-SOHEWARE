@@ -123,7 +123,74 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->BindColor("Thunder_SkyZenith", &profileThunder_.skyZenithColor, { 0.04f, 0.05f, 0.08f });
         binder_->BindColor("Thunder_SkyHorizon", &profileThunder_.skyHorizonColor, { 0.15f, 0.14f, 0.18f });
         binder_->Bind("Thunder_SkyBlendWeight", &profileThunder_.skyColorBlendWeight, 0.85f, 0.01f, 0.0f, 1.0f);
+
+        auto bindVisual = [&](const std::string& p, WeatherVisualParams& v)
+            {
+                // Terrain
+                binder_->Bind((p + "_V_Metal").c_str(), &v.metalness, v.metalness, 0.01f, 0.0f, 1.0f);
+                binder_->Bind((p + "_V_Rough").c_str(), &v.roughness, v.roughness, 0.01f, 0.0f, 1.0f);
+                binder_->Bind((p + "_V_EnvIntens").c_str(), &v.environmentMapIntensity, v.environmentMapIntensity, 0.01f, 0.0f, 5.0f);
+                binder_->Bind((p + "_V_RippleSize").c_str(), &v.rippleSize, v.rippleSize, 0.1f, 0.0f, 10.0f);
+                binder_->Bind((p + "_V_NormalIntens").c_str(), &v.normalIntensity, v.normalIntensity, 0.05f, 0.0f, 5.0f);
+                binder_->BindColor((p + "_V_Color").c_str(), &v.color, v.color);
+                binder_->Bind((p + "_V_Emissive").c_str(), &v.emissiveIntensity, v.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+
+                // Volumetric Fog
+                binder_->Bind((p + "_V_FogScatt").c_str(), &v.scatteringIntensity, v.scatteringIntensity, 0.1f, 0.0f, 50.0f);
+                binder_->Bind((p + "_V_FogNoiseScale").c_str(), &v.noiseScale, v.noiseScale, 0.001f, 0.001f, 1.0f);
+                binder_->Bind((p + "_V_FogNoiseIntens").c_str(), &v.noiseIntensity, v.noiseIntensity, 0.05f, 0.0f, 5.0f);
+                binder_->Bind((p + "_V_FogHDensity").c_str(), &v.heightDensity, v.heightDensity, 0.05f, 0.0f, 10.0f);
+                binder_->Bind((p + "_V_FogHFalloff").c_str(), &v.heightFalloff, v.heightFalloff, 0.01f, 0.0f, 2.0f);
+                binder_->BindColor((p + "_V_FogAmbient").c_str(), &v.ambientLight, v.ambientLight);
+                binder_->Bind((p + "_V_FogExtinct").c_str(), &v.extinction, v.extinction, 0.001f, 0.0f, 1.0f);
+                binder_->Bind((p + "_V_FogErosion").c_str(), &v.erosion, v.erosion, 0.01f, 0.0f, 1.0f);
+                binder_->Bind((p + "_V_FogWindSpeed").c_str(), &v.windSpeed, v.windSpeed, 0.01f, 0.0f, 5.0f);
+                binder_->Bind((p + "_V_FogWindDir").c_str(), &v.windDirection, v.windDirection, 0.05f);
+            };
+
+        // 既存の WeatherProfile バインドに加え、Visual もバインド
+        bindVisual("Sunny", profileSunny_.visual);
+        bindVisual("Cloudy", profileCloudy_.visual);
+        bindVisual("Rain", profileRain_.visual);
+        bindVisual("Thunder", profileThunder_.visual);
     }
+}
+
+inline WeatherVisualParams LerpVisualParams(const WeatherVisualParams& a, const WeatherVisualParams& b, float t)
+{
+    WeatherVisualParams res;
+    res.metalness = FE::Math::Lerp(a.metalness, b.metalness, t);
+    res.roughness = FE::Math::Lerp(a.roughness, b.roughness, t);
+    res.environmentMapIntensity = FE::Math::Lerp(a.environmentMapIntensity, b.environmentMapIntensity, t);
+    res.rippleSize = FE::Math::Lerp(a.rippleSize, b.rippleSize, t);
+    res.normalIntensity = FE::Math::Lerp(a.normalIntensity, b.normalIntensity, t);
+    res.color = {
+        FE::Math::Lerp(a.color.x, b.color.x, t),
+        FE::Math::Lerp(a.color.y, b.color.y, t),
+        FE::Math::Lerp(a.color.z, b.color.z, t),
+        FE::Math::Lerp(a.color.w, b.color.w, t)
+    };
+    res.emissiveIntensity = FE::Math::Lerp(a.emissiveIntensity, b.emissiveIntensity, t);
+
+    res.scatteringIntensity = FE::Math::Lerp(a.scatteringIntensity, b.scatteringIntensity, t);
+    res.noiseScale = FE::Math::Lerp(a.noiseScale, b.noiseScale, t);
+    res.noiseIntensity = FE::Math::Lerp(a.noiseIntensity, b.noiseIntensity, t);
+    res.heightDensity = FE::Math::Lerp(a.heightDensity, b.heightDensity, t);
+    res.heightFalloff = FE::Math::Lerp(a.heightFalloff, b.heightFalloff, t);
+    res.ambientLight = {
+        FE::Math::Lerp(a.ambientLight.x, b.ambientLight.x, t),
+        FE::Math::Lerp(a.ambientLight.y, b.ambientLight.y, t),
+        FE::Math::Lerp(a.ambientLight.z, b.ambientLight.z, t)
+    };
+    res.extinction = FE::Math::Lerp(a.extinction, b.extinction, t);
+    res.erosion = FE::Math::Lerp(a.erosion, b.erosion, t);
+    res.windSpeed = FE::Math::Lerp(a.windSpeed, b.windSpeed, t);
+    res.windDirection = {
+        FE::Math::Lerp(a.windDirection.x, b.windDirection.x, t),
+        FE::Math::Lerp(a.windDirection.y, b.windDirection.y, t),
+        FE::Math::Lerp(a.windDirection.z, b.windDirection.z, t)
+    };
+    return res;
 }
 
 void EnvironmentManager::Update(LightManager* lightManager)
@@ -204,6 +271,8 @@ void EnvironmentManager::Update(LightManager* lightManager)
     currentWeatherProfile_.skyHorizonColor = FE::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
     currentWeatherProfile_.skyColorBlendWeight = FE::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
 
+    currentVisualParams_ = LerpVisualParams(currentW.visual, targetW.visual, weatherTransitionT_);
+
     // 現在の風向きと目標の風向きを角度(ラジアン)に変換
     float currentAngle = std::atan2(currentW.windDirection.y, currentW.windDirection.x);
     float targetAngle = std::atan2(targetW.windDirection.y, targetW.windDirection.x);
@@ -265,115 +334,148 @@ void EnvironmentManager::DebugDraw()
 #ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
-    if (ImGui::CollapsingHeader("時間帯・ライティングプロファイル", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("時間帯・ライティング", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        binder_->Draw("TimeOfDay", "現在の時間 (時)");
-        binder_->Draw("TimeSpeedMultiplier", "時間進行スピード");
-
         int hour = static_cast<int>(timeOfDay_);
         int minute = static_cast<int>((timeOfDay_ - hour) * 60.0f);
-        ImGui::Text("Game Time: %02d:%02d", hour, minute);
+        ImGui::Text("現在のゲーム時間: %02d:%02d", hour, minute);
 
-        ImGui::Separator();
+        binder_->Draw("TimeOfDay", "時間 (0-24時)");
+        binder_->Draw("TimeSpeedMultiplier", "進行スピード倍率");
+
         ImGui::Spacing();
-
         if (ImGui::BeginTabBar("TimeOfDayProfiles"))
         {
-            if (ImGui::BeginTabItem("Night (0時/24時)")) {
-                binder_->Draw("Night_ZenithColor", "天頂の色");
-                binder_->Draw("Night_HorizonColor", "地平線の色");
-                binder_->Draw("Night_GroundColor", "地面の色");
-                binder_->Draw("Night_CloudAmbient", "雲の環境光");
-                binder_->Draw("Night_AtmoGlow", "大気散乱の強さ");
-                binder_->Draw("Night_LightColor", "環境光/月明かりの色");
-                binder_->Draw("Night_LightIntensity", "光の強さ");
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Sunrise (6時)")) {
-                binder_->Draw("Sunrise_ZenithColor", "天頂の色");
-                binder_->Draw("Sunrise_HorizonColor", "地平線の色");
-                binder_->Draw("Sunrise_GroundColor", "地面の色");
-                binder_->Draw("Sunrise_CloudAmbient", "雲の環境光");
-                binder_->Draw("Sunrise_AtmoGlow", "大気散乱の強さ");
-                binder_->Draw("Sunrise_LightColor", "太陽光の色");
-                binder_->Draw("Sunrise_LightIntensity", "光の強さ");
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Day (12時)")) {
-                binder_->Draw("Day_ZenithColor", "天頂の色");
-                binder_->Draw("Day_HorizonColor", "地平線の色");
-                binder_->Draw("Day_GroundColor", "地面の色");
-                binder_->Draw("Day_CloudAmbient", "雲の環境光");
-                binder_->Draw("Day_AtmoGlow", "大気散乱の強さ");
-                binder_->Draw("Day_LightColor", "太陽光の色");
-                binder_->Draw("Day_LightIntensity", "光の強さ");
-                ImGui::EndTabItem();
-            }
-            if (ImGui::BeginTabItem("Sunset (18時)")) {
-                binder_->Draw("Sunset_ZenithColor", "天頂の色");
-                binder_->Draw("Sunset_HorizonColor", "地平線の色");
-                binder_->Draw("Sunset_GroundColor", "地面の色");
-                binder_->Draw("Sunset_CloudAmbient", "雲の環境光");
-                binder_->Draw("Sunset_AtmoGlow", "大気散乱の強さ");
-                binder_->Draw("Sunset_LightColor", "太陽光の色");
-                binder_->Draw("Sunset_LightIntensity", "光の強さ");
-                ImGui::EndTabItem();
-            }
+            auto drawTimeTab = [&](const char* label, const char* p) {
+                if (ImGui::BeginTabItem(label)) {
+                    binder_->Draw((std::string(p) + "_ZenithColor").c_str(), "天頂の色");
+                    binder_->Draw((std::string(p) + "_HorizonColor").c_str(), "地平線の色");
+                    binder_->Draw((std::string(p) + "_GroundColor").c_str(), "地面の色");
+                    binder_->Draw((std::string(p) + "_CloudAmbient").c_str(), "雲環境光");
+                    binder_->Draw((std::string(p) + "_AtmoGlow").c_str(), "大気散乱強度");
+                    binder_->Draw((std::string(p) + "_LightColor").c_str(), "太陽/月光色");
+                    binder_->Draw((std::string(p) + "_LightIntensity").c_str(), "光強度");
+                    ImGui::EndTabItem();
+                }
+                };
+
+            drawTimeTab("Night (0時)", "Night");
+            drawTimeTab("Sunrise (6時)", "Sunrise");
+            drawTimeTab("Day (12時)", "Day");
+            drawTimeTab("Sunset (18時)", "Sunset");
+
             ImGui::EndTabBar();
         }
     }
 
-    if (ImGui::CollapsingHeader("天候・ウェザープロファイル", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        const char* weatherNames[] = { "Sunny", "Cloudy", "Rain", "Thunderstorm" };
-        ImGui::Text("Current Weather: %s", weatherNames[static_cast<int>(currentWeather_)]);
-        ImGui::Text("Target Weather: %s", weatherNames[static_cast<int>(targetWeather_)]);
+    ImGui::Spacing();
 
-        ImGui::ProgressBar(weatherTransitionT_, ImVec2(0.0f, 0.0f), "Transition Progress");
+    // =================================================================
+    // 2. 天候・ウェザープロファイル
+    // =================================================================
+    if (ImGui::CollapsingHeader("天候設定 & プロファイル", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        const char* weatherNames[] = { "Sunny (晴れ)", "Cloudy (曇り)", "Rain (雨)", "Thunderstorm (雷雨)" };
+
+        // 状態表示
+        ImGui::Text("現在: %s  ->  目標: %s",
+            weatherNames[static_cast<int>(currentWeather_)],
+            weatherNames[static_cast<int>(targetWeather_)]);
+
+        ImGui::ProgressBar(weatherTransitionT_, ImVec2(-1.0f, 0.0f), "Transition Progress");
+
         if (hasPendingWeather_) {
-            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Pending: %s", weatherNames[static_cast<int>(pendingWeather_)]);
+            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.0f, 1.0f), "待機中 (Pending): %s", weatherNames[static_cast<int>(pendingWeather_)]);
         }
 
         ImGui::Spacing();
-        ImGui::Text("天候を変更する (テスト用)");
+        ImGui::SeparatorText("天候手動切り替え (テスト機能)");
 
-        if (ImGui::Button("Sunny")) RequestWeatherChange(WeatherState::Sunny); ImGui::SameLine();
-        if (ImGui::Button("Cloudy")) RequestWeatherChange(WeatherState::Cloudy); ImGui::SameLine();
-        if (ImGui::Button("Rain")) RequestWeatherChange(WeatherState::Rain); ImGui::SameLine();
-        if (ImGui::Button("Thunder")) RequestWeatherChange(WeatherState::Thunderstorm);
+        // ボタンレイアウト (アクティブな天候ボタンをハイライト)
+        auto drawWeatherButton = [&](const char* label, WeatherState state) {
+            bool isActive = (targetWeather_ == state);
+            if (isActive) {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.9f, 1.0f));
+            }
+            if (ImGui::Button(label, ImVec2(80.0f, 0.0f))) {
+                RequestWeatherChange(state);
+            }
+            if (isActive) {
+                ImGui::PopStyleColor();
+            }
+            };
 
-        ImGui::Separator();
+        drawWeatherButton("晴れ", WeatherState::Sunny); ImGui::SameLine();
+        drawWeatherButton("曇り", WeatherState::Cloudy); ImGui::SameLine();
+        drawWeatherButton("雨", WeatherState::Rain); ImGui::SameLine();
+        drawWeatherButton("雷雨", WeatherState::Thunderstorm);
+
         ImGui::Spacing();
+        ImGui::SeparatorText("天候プロファイル詳細設定");
 
         if (ImGui::BeginTabBar("WeatherProfiles"))
         {
-            const char* prefix[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
-            const char* tabNames[] = { "Sunny", "Cloudy", "Rain", "Thunderstorm" };
+            const char* prefixes[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
+            const char* tabNames[] = { "Sunny (晴れ)", "Cloudy (曇り)", "Rain (雨)", "Thunder (雷雨)" };
 
-            for (int i = 0; i < 4; ++i) {
-                if (ImGui::BeginTabItem(tabNames[i])) {
-                    std::string p = prefix[i];
-                    binder_->Draw((p + "_TransitionSpeed").c_str(), "この天候のベース遷移スピード");
-                    ImGui::Separator();
-                    binder_->Draw((p + "_CloudMin").c_str(), "雲の量 (下限)");
-                    binder_->Draw((p + "_CloudMax").c_str(), "雲の量 (上限)");
-                    binder_->Draw((p + "_CloudShadow").c_str(), "雲の影の濃さ");
-                    binder_->Draw((p + "_LightDim").c_str(), "太陽/月の光の強さ倍率");
-                    binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の強さ倍率");
-                    binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ具合");
+            for (int i = 0; i < 4; ++i)
+            {
+                if (ImGui::BeginTabItem(tabNames[i]))
+                {
+                    std::string p = prefixes[i];
 
-                    ImGui::Separator();
-                    ImGui::Text("雨と風の環境設定");
-                    binder_->Draw((p + "_RainIntens").c_str(), "雨の強さ");
-                    binder_->Draw((p + "_WindDir").c_str(), "風向き");
-                    binder_->Draw((p + "_WindSpeed").c_str(), "風速");
-                    binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");
+                    binder_->Draw((p + "_TransitionSpeed").c_str(), "天候遷移スピード");
 
-                    ImGui::Separator();
-                    ImGui::Text("天候固有の空の色設定");
-                    binder_->Draw((p + "_SkyZenith").c_str(), "天候時の天頂の色");
-                    binder_->Draw((p + "_SkyHorizon").c_str(), "天候時の地平線の色");
-                    binder_->Draw((p + "_SkyBlendWeight").c_str(), "天候カラーへの強制ブレンド率");
+                    // カテゴリごとに TreeNode で折りたためるようにしてスッキリさせる
+                    if (ImGui::TreeNodeEx("雲 & 大気設定", ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        binder_->Draw((p + "_CloudMin").c_str(), "雲の量 (下限)");
+                        binder_->Draw((p + "_CloudMax").c_str(), "雲の量 (上限)");
+                        binder_->Draw((p + "_CloudShadow").c_str(), "雲の影の濃さ");
+                        binder_->Draw((p + "_LightDim").c_str(), "太陽/月光の遮蔽率");
+                        binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の減衰率");
+                        binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ率");
+                        binder_->Draw((p + "_SkyZenith").c_str(), "天頂の色");
+                        binder_->Draw((p + "_SkyHorizon").c_str(), "地平線の色");
+                        binder_->Draw((p + "_SkyBlendWeight").c_str(), "天候カラー強制補間率");
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("雨 & 風設定", ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        binder_->Draw((p + "_RainIntens").c_str(), "雨パーティクル強度");
+                        binder_->Draw((p + "_WindDir").c_str(), "風向き");
+                        binder_->Draw((p + "_WindSpeed").c_str(), "風速");
+                        binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("Terrain (地形質感) 設定", ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        binder_->Draw((p + "_V_Metal").c_str(), "Metalness");
+                        binder_->Draw((p + "_V_Rough").c_str(), "Roughness");
+                        binder_->Draw((p + "_V_EnvIntens").c_str(), "環境マップ強度");
+                        binder_->Draw((p + "_V_RippleSize").c_str(), "波紋サイズ");
+                        binder_->Draw((p + "_V_NormalIntens").c_str(), "法線強度");
+                        binder_->Draw((p + "_V_Color").c_str(), "ベースカラー");
+                        binder_->Draw((p + "_V_Emissive").c_str(), "発光強度");
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNodeEx("Volumetric Fog (フォグ) 設定", ImGuiTreeNodeFlags_DefaultOpen))
+                    {
+                        binder_->Draw((p + "_V_FogScatt").c_str(), "散乱強度");
+                        binder_->Draw((p + "_V_FogNoiseScale").c_str(), "ノイズスケール");
+                        binder_->Draw((p + "_V_FogNoiseIntens").c_str(), "ノイズ強度");
+                        binder_->Draw((p + "_V_FogHDensity").c_str(), "高さ密度");
+                        binder_->Draw((p + "_V_FogHFalloff").c_str(), "高さ減衰");
+                        binder_->Draw((p + "_V_FogAmbient").c_str(), "環境光");
+                        binder_->Draw((p + "_V_FogExtinct").c_str(), "消去係数 (Extinction)");
+                        binder_->Draw((p + "_V_FogErosion").c_str(), "削り取り (Erosion)");
+                        binder_->Draw((p + "_V_FogWindSpeed").c_str(), "風速");
+                        binder_->Draw((p + "_V_FogWindDir").c_str(), "風向き");
+                        ImGui::TreePop();
+                    }
 
                     ImGui::EndTabItem();
                 }
