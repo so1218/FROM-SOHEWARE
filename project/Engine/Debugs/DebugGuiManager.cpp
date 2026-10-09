@@ -73,7 +73,10 @@ void DebugGuiManager::Update(Camera* targetCamera)
 
     if (ImGui::CollapsingHeader("デバッグカメラ設定"))
     {
-        debugCamera_->DebugDraw(*engineBinder_, targetCamera);
+        if (debugCamera_)
+        {
+            debugCamera_->DebugDraw(*engineBinder_, targetCamera);
+        }
     }
     if (ImGui::CollapsingHeader("時間 / パフォーマンス"))
     {
@@ -95,57 +98,6 @@ void DebugGuiManager::Update(Camera* targetCamera)
 }
 
 #ifdef ENABLE_IMGUI
-
-void DebugGuiManager::DrawCameraSettings(Camera* targetCamera)
-{
-    if (ImGui::TreeNode("デバッグカメラ設定"))
-    {
-        Vector3 target = debugCamera_->GetTarget();
-        if (ImGui::DragFloat3("注視点", &target.x, 0.1f))
-        {
-            debugCamera_->SetTarget(target);
-        }
-
-        float distance = debugCamera_->GetDistance();
-        if (ImGui::DragFloat("注視点からの距離", &distance, 0.1f, 1.0f, 500.0f))
-        {
-            debugCamera_->SetDistance(distance);
-        }
-
-        float pitch = debugCamera_->GetCurrentPitch();
-        if (ImGui::DragFloat("ピッチ (縦回転)", &pitch, 0.1f, -89.0f, 89.0f))
-        {
-            debugCamera_->SetCurrentPitch(pitch);
-        }
-
-        float yaw = debugCamera_->GetCurrentYaw();
-        if (ImGui::DragFloat("ヨー (横回転)", &yaw, 0.1f, -180.0f, 180.0f))
-        {
-            debugCamera_->SetCurrentYaw(yaw);
-        }
-
-        float dragSpeed = debugCamera_->GetDragSpeed();
-        if (ImGui::DragFloat("ドラッグ速度", &dragSpeed, 0.001f, 0.001f, 1.0f))
-        {
-            debugCamera_->SetDragSpeed(dragSpeed);
-        }
-
-        float rotateSpeed = debugCamera_->GetRotateSpeed();
-        if (ImGui::DragFloat("回転速度", &rotateSpeed, 0.0001f, 0.0001f, 0.05f))
-        {
-            debugCamera_->SetRotateSpeed(rotateSpeed);
-        }
-
-        float zoomSpeed = debugCamera_->GetZoomSpeed();
-        if (ImGui::DragFloat("ズーム速度", &zoomSpeed, 0.001f, 0.01f, 1.0f))
-        {
-            debugCamera_->SetZoomSpeed(zoomSpeed);
-        }
-
-        ImGui::TreePop();
-    }
-
-}
 
 void DebugGuiManager::DrawTimeSettings()
 {
@@ -178,9 +130,13 @@ void DebugGuiManager::DrawInformationDisplays()
 {
     // オブジェクト数
     ImGui::Text("Models: %d / %d", engine_->GetRendererManager()->GetModelCount(), engine_->GetRendererManager()->GetMaxModelCount());
+    ImGui::Separator();
     ImGui::Text("Sprites: %d / %d", engine_->GetRendererManager()->GetSpriteCount(), engine_->GetRendererManager()->GetMaxSpriteCount());
+    ImGui::Separator();
     ImGui::Text("Lines: %d / %d", engine_->GetRendererManager()->GetLineCount(), engine_->GetRendererManager()->GetMaxLineCount());
+    ImGui::Separator();
     ImGui::Text("Particles: %d / %d", engine_->GetRendererManager()->GetParticleCount(), engine_->GetRendererManager()->GetMaxParticleCount());
+    ImGui::Separator();
     ImGui::Text("Trails: %d / %d", engine_->GetRendererManager()->GetTrailCount(), engine_->GetRendererManager()->GetMaxTrailCount());
 }
 

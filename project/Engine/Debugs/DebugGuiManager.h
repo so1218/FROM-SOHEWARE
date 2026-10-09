@@ -47,7 +47,6 @@ private:
     float directionalLightIntensity_ = 1.0f;
 
     void DrawRenderSettings();
-    void DrawCameraSettings(Camera* targetCamera);
     void DrawTimeSettings();
     void DrawInformationDisplays();  
 };
