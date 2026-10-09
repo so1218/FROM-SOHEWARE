@@ -230,6 +230,7 @@
             1.0
         ],
         "PostEffect/VolumetricFog/WindSpeed": 0.10000000149011612,
+        "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0,
         "PostEffect/VolumetricFog/WorleyWeight": 0.8999999761581421
     }
 }

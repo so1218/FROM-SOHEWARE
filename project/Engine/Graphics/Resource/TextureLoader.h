@@ -28,10 +28,6 @@ public:
 
     static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 
-    TextureResources CreateTexture2DArray(
-        const std::vector<DirectX::ScratchImage>& mipImagesArray
-    );
-
     void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, SRVManager* srvManager);
 
     // ゲーム側から呼ばれるメインのロード関数
@@ -58,9 +54,6 @@ public:
     void CleanupCompletedUploads(uint64_t completedFenceValue);
 
     std::vector<DirectX::ScratchImage> LoadMultipleTextures(const std::vector<std::string>& texturePaths);
-    void CreateAndUploadTexture2DArray(
-        const std::vector<DirectX::ScratchImage>& images,
-        TextureResources& outTextureArrayResource);
     
     // ゲッター
     const std::vector<UploadResourceEntry>& GetPendingUploadResources() const { return pendingUploadResources_; }

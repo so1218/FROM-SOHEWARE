@@ -3,34 +3,34 @@
         "BranchLengthScale": 0.30000001192092896,
         "BranchProbability": 0.25,
         "CoreColor": [
-            0.801556408405304,
-            0.8864933848381042,
-            1.0
+            0.9806961417198181,
+            1.0,
+            0.801556408405304
         ],
-        "CorePower": 12.100000381469727,
+        "CorePower": 11.800000190734863,
         "CoreThickness": 0.5,
-        "Displacement": 91.0,
-        "DurationMax": 2.5,
+        "Displacement": 100.0,
+        "DurationMax": 1.5,
         "DurationMin": 1.0,
-        "EmissiveIntensity": 15.0,
+        "EmissiveIntensity": 9.0,
         "FlickerMax": 1.149999976158142,
         "FlickerMin": 0.30000001192092896,
         "FlickerSpeed": 29.0,
         "FractalDepth": 6,
         "FringeColor": [
-            0.0,
-            0.07782125473022461,
-            1.0
+            1.0,
+            0.8871594667434692,
+            0.0
         ],
         "GlowPower": 10.0,
         "LightColor": [
-            0.17299580574035645,
-            0.3195536136627197,
             1.0,
+            0.972838282585144,
+            0.6964980363845825,
             1.0
         ],
         "LightHeightOffset": 18.5,
-        "LightIntensityMax": 30.0,
+        "LightIntensityMax": 14.0,
         "LightRadius": 500.0,
         "Thickness": 10.0,
         "VolumetricScattering": 2.0999999046325684

@@ -51,72 +51,6 @@ DirectX::ScratchImage TextureLoader::LoadTexture(const std::string& filePath)
     return image;
 }
 
-TextureLoader::TextureResources TextureLoader::CreateTexture2DArray(
-    const std::vector<DirectX::ScratchImage>& mipImagesArray
-) {
-    TextureResources result;
-
-    assert(!mipImagesArray.empty());
-
-    const auto& baseMeta = mipImagesArray[0].GetMetadata();
-    size_t arraySize = mipImagesArray.size();
-
-    // Texture2DArray Resource 作成
-    DirectX::TexMetadata arrayMeta = baseMeta;
-    arrayMeta.arraySize = static_cast<size_t>(arraySize);
-    result.metadata = arrayMeta;
-
-    D3D12_RESOURCE_DESC desc{};
-    desc.Width = uint32_t(arrayMeta.width);
-    desc.Height = uint32_t(arrayMeta.height);
-    desc.MipLevels = uint16_t(arrayMeta.mipLevels);
-    desc.DepthOrArraySize = uint16_t(arrayMeta.arraySize);
-    desc.Format = arrayMeta.format;
-    desc.SampleDesc.Count = 1;
-    desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-
-    D3D12_HEAP_PROPERTIES heapProps{};
-    heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-    HRESULT hr = device_->CreateCommittedResource(
-        &heapProps,
-        D3D12_HEAP_FLAG_NONE,
-        &desc,
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        nullptr,
-        IID_PPV_ARGS(&result.texture)
-    );
-    assert(SUCCEEDED(hr));
-
-    // Upload
-    std::vector<D3D12_SUBRESOURCE_DATA> subresources;
-
-    for (size_t i = 0; i < arraySize; ++i) {
-        std::vector<D3D12_SUBRESOURCE_DATA> subresourceTmp;
-        DirectX::PrepareUpload(device_, mipImagesArray[i].GetImages(), mipImagesArray[i].GetImageCount(), mipImagesArray[i].GetMetadata(), subresourceTmp);
-        subresources.insert(subresources.end(), subresourceTmp.begin(), subresourceTmp.end());
-    }
-
-    uint64_t requiredSize = GetRequiredIntermediateSize(result.texture.Get(), 0, static_cast<uint32_t>(subresources.size()));
-    result.intermediate = BufferManager::CreateBufferResource(device_, requiredSize);
-
-    UpdateSubresources(commandList_, result.texture.Get(), result.intermediate.Get(), 0, 0, static_cast<uint32_t>(subresources.size()), subresources.data());
-
-    // Resource Barrier
-    D3D12_RESOURCE_BARRIER barrier{};
-    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrier.Transition.pResource = result.texture.Get();
-    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    commandList_->ResourceBarrier(1, &barrier);
-
-    // SRVインデックスはカラのまま返す
-    result.srvIndex = 0;
-
-    return result;
-}
- 
 Microsoft::WRL::ComPtr<ID3D12Resource> TextureLoader::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
 {
     // metadataを基にResourceの設定
@@ -254,32 +188,6 @@ std::vector<DirectX::ScratchImage> TextureLoader::LoadMultipleTextures(const std
         images.push_back(std::move(img));
     }
     return images;
-}
-
-void TextureLoader::CreateAndUploadTexture2DArray(
-    const std::vector<DirectX::ScratchImage>& images,
-    TextureResources& outTextureArrayResource)
-{
-    // Texture2DArrayリソースを作成してGPUにアップロード
-    outTextureArrayResource = CreateTexture2DArray(images);
-
-    // SRVの設定を構築
-    const auto& arrayMeta = outTextureArrayResource.metadata;
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = arrayMeta.format;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-    srvDesc.Texture2DArray.MipLevels = uint32_t(arrayMeta.mipLevels);
-    srvDesc.Texture2DArray.ArraySize = uint32_t(arrayMeta.arraySize);
-    srvDesc.Texture2DArray.FirstArraySlice = 0;
-    srvDesc.Texture2DArray.MostDetailedMip = 0;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-    // SRVManagerを使用してSRVを作成し、インデックスを取得
-    uint32_t index = srvManager_->CreateSRV(outTextureArrayResource.texture.Get(), srvDesc);
-
-    // 取得したインデックスをリソース情報として保存
-    outTextureArrayResource.srvIndex = index;
-    textureArraySrvIndex_ = index;
 }
 
 uint32_t TextureLoader::Load(const std::string& filePath)
