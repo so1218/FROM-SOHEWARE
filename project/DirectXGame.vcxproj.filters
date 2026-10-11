@@ -855,8 +855,6 @@
     <ClInclude Include="Game\Scene\PlayScene.h">
       <Filter>Game\Scene\TestScene</Filter>
     </ClInclude>
-    <ClCompile Include="Engine\Camera\CameraRail.cpp" />
-    <ClCompile Include="Engine\Camera\SplineCameraController.cpp" />
     <ClCompile Include="Engine\Camera\CameraManager.cpp" />
     <ClCompile Include="Engine\Debugs\PropertyBinder.cpp" />
     <ClCompile Include="Engine\Graphics\PostProcess\VolumetricFogPass.cpp" />
@@ -905,8 +903,6 @@
     <ClInclude Include="Include\json.hpp" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Camera\ICameraController.h" />
-    <ClInclude Include="Engine\Camera\CameraRail.h" />
-    <ClInclude Include="Engine\Camera\SplineCameraController.h" />
     <ClInclude Include="Engine\Camera\CameraManager.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\PostEffectContext.h" />
     <ClInclude Include="Engine\Graphics\PostProcess\VolumetricFogPass.h" />

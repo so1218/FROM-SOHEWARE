@@ -2,7 +2,6 @@
 #include "BaseScene.h"
 #include "Player.h"
 #include "FollowCamera.h"
-#include "CameraRail.h"
 #include "ParticleEmitter.h"
 #include "Ground.h"
 #include "GrassField.h"
@@ -27,6 +26,5 @@ private:
     GrassField* grassField_ = nullptr;
     TreeField* treeField_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
-    std::unique_ptr<FE::CameraRail> openingRail_;
 };
 
