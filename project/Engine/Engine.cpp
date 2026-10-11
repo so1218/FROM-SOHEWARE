@@ -16,6 +16,7 @@
 #include "DebugDraw.h"
 #include "SRVManager.h"
 #include "EnvironmentManager.h"
+#include "AudioPlayer.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -116,6 +117,13 @@ void Engine::SetCameraState(
 
 	// Rendererにセット（描画パス用）
 	rendererManager_->SetCameraState(view, projection, eyePos);
+
+	Vector3 camRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
+	Vector3 camUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
+	Vector3 camFront = { view.m[0][2], view.m[1][2], view.m[2][2] };
+
+	// AudioPlayerにカメラの位置と向きを渡す
+	AudioPlayer::GetInstance().SetListener(eyePos, camFront, camUp);
 }
 
 void Engine::BeginFrame()
@@ -131,6 +139,9 @@ void Engine::BeginFrame()
 
 	// 時間の更新
 	TimeManager::GetInstance()->Update();
+
+	// 全3D音源の音量と左右バランスを自動計算
+	AudioPlayer::GetInstance().Update();
 
 	// ポストエフェクトのパラメータ更新など
 	GetPostEffectManager()->Update(viewMatrix_, projectionMatrix_, eyePos_);

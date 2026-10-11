@@ -8,10 +8,10 @@
         "FlashDuration": 1.100000023841858,
         "MaxFlashIntensity": 4.5,
         "StrikeHeight": 250.0,
-        "StrikeRadiusMax": 39.0,
+        "StrikeRadiusMax": 160.0,
         "StrikeRadiusMin": 20.0,
         "ThunderMaxInterval": 4.0,
-        "ThunderMinInterval": 3.0,
+        "ThunderMinInterval": 0.5,
         "ThunderShakeDuration": 0.5,
         "ThunderShakeIntensity": 2.0,
         "ThunderShakeMaxDist": 300.0

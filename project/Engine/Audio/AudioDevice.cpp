@@ -22,6 +22,18 @@ void AudioDevice::Initialize()
     assert(SUCCEEDED(hr));
     hr = xAudio2_->CreateMasteringVoice(&masterVoice_);
     assert(SUCCEEDED(hr));
+
+    // X3DAudio の初期化
+    XAUDIO2_VOICE_DETAILS details;
+    masterVoice_->GetVoiceDetails(&details);
+    masterChannels_ = details.InputChannels;
+
+    DWORD channelMask;
+    hr = masterVoice_->GetChannelMask(&channelMask);
+    if (FAILED(hr)) channelMask = SPEAKER_STEREO; 
+
+    // 初期化
+    X3DAudioInitialize(channelMask, X3DAUDIO_SPEED_OF_SOUND, x3dInstance_);
 }
 
 void AudioDevice::Finalize()

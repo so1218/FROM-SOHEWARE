@@ -1,4 +1,5 @@
 #pragma once
+#include "Vector3.h"
 #include "AudioDefinition.h"
 
 namespace FE
@@ -10,7 +11,12 @@ class MediaAudioDecoder;
 struct AudioInstance
 {
     IXAudio2SourceVoice* voice = nullptr;
-    std::string audioName; // どの音を再生しているか（デバッグや管理用）
+    std::string name;
+
+    uint32_t channels; // モノラル(1)かステレオ(2)か
+    bool is3D;         // 3D音響として鳴らすか
+    Vector3 position;  // 音源の3D座標
+    float maxDistance; // 音が聞こえる最大距離
 };
 
 /// @brief 音声再生管理クラス
@@ -47,6 +53,18 @@ public:
     // 再生中か確認
     bool IsPlaying(int handleID);
 
+    // エンジンのメインループで毎フレーム呼ぶ更新処理
+    void Update();
+
+    // リスナーの情報をセット
+    void SetListener(const Vector3& pos, const Vector3& front, const Vector3& up);
+
+    // 3D座標を指定して再生する関数
+    int Play3D(const std::string& name, const Vector3& position, bool loop = false, uint32_t volume = 100, float maxDistance = 100.0f);
+
+    // 動く音源のために座標を後から更新する関数
+    void SetEmitterPosition(int handleID, const Vector3& position);
+
 private:
     AudioPlayer() {}
     ~AudioPlayer() { StopAll(); }
@@ -64,6 +82,9 @@ private:
 
     // 次に発行するハンドルID（連番）
     int nextHandleID_ = 0;
+
+    // リスナーの情報
+    X3DAUDIO_LISTENER listener_ = {};
 };
 
 // コールバックは変更なしでOK

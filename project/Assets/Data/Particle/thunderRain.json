@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 48,
+        "amount": 31,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             29.799999237060547,
             0.0
         ],
-        "lifetime": 0.5,
+        "lifetime": 0.38999998569488525,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -35,10 +35,10 @@
         "blendMode": 2,
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4294967295,
+            "endColor": 4294967195,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4294967295,
+            "startColor": 4294967176,
             "startColor2": 4294967295
         },
         "intensity": 1.0,
@@ -53,7 +53,7 @@
         "physicsModule": {
             "affectedByWind": true,
             "drag": 0.0,
-            "enabled": true,
+            "enabled": false,
             "gravity": [
                 0.0,
                 -18.200000762939453,
@@ -96,9 +96,9 @@
             "emitFromEdge": false,
             "enabled": true,
             "radius": [
-                50.0,
+                30.0,
                 0.0,
-                50.0
+                30.0
             ],
             "type": 2
         },
@@ -158,7 +158,7 @@
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 66.12999725341797
+            "speed": 72.80000305175781
         },
         "vortexModule": {
             "axis": [

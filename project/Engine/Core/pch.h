@@ -75,6 +75,7 @@
 
 // 音声関連
 #include <xaudio2.h>
+#include <x3daudio.h>
 
 // メディア基盤
 #include <mfapi.h>       

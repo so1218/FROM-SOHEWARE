@@ -198,7 +198,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
             if (enemy)
             {
                 enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
-                AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 40);
+                AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", hitInfo.point, false, 50, 100.0f);
             }
         }
     }

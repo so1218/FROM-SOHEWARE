@@ -18,6 +18,9 @@ public:
 
     IXAudio2* GetXAudio2() const { return xAudio2_.Get(); }
 
+    const X3DAUDIO_HANDLE& GetX3DInstance() const { return x3dInstance_; }
+    uint32_t GetMasterChannels() const { return masterChannels_; }
+
 private:
     AudioDevice() = default;
     ~AudioDevice() = default;
@@ -27,6 +30,9 @@ private:
 
     Microsoft::WRL::ComPtr<IXAudio2> xAudio2_;
     IXAudio2MasteringVoice* masterVoice_ = nullptr;
+
+    X3DAUDIO_HANDLE x3dInstance_ = {};
+    uint32_t masterChannels_ = 0;
 };
 
 }

@@ -71,7 +71,14 @@ int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
     nextHandleID_++; // 次回用にカウントアップ
 
     // mapに登録
-    activeVoices_[handleID] = { sourceVoice, name };
+    activeVoices_[handleID] = {
+        sourceVoice,
+        name,
+        audioData.wfex.nChannels, 
+        false,                   
+        {0, 0, 0},               
+        100.0f
+    };
 
     return handleID;
 }
@@ -168,6 +175,76 @@ void AudioPlayer::StopUnique(const std::string& name)
         int handle = uniqueHandles_[name];
         Stop(handle); // 実体を停止
         uniqueHandles_.erase(name); // 管理情報削除
+    }
+}
+
+void AudioPlayer::SetListener(const Vector3& pos, const Vector3& front, const Vector3& up)
+{
+    listener_.Position = { pos.x, pos.y, pos.z };
+    listener_.OrientFront = { front.x, front.y, front.z };
+    listener_.OrientTop = { up.x, up.y, up.z };
+}
+
+int AudioPlayer::Play3D(const std::string& name, const Vector3& position, bool loop, uint32_t volume, float maxDistance)
+{
+    int handleID = Play(name, loop, volume);
+    if (handleID >= 0)
+    {
+        activeVoices_[handleID].is3D = true;
+        activeVoices_[handleID].position = position;
+        activeVoices_[handleID].channels = audioDataMap_[name].wfex.nChannels;
+        activeVoices_[handleID].maxDistance = maxDistance; 
+    }
+    return handleID;
+}
+
+void AudioPlayer::SetEmitterPosition(int handleID, const Vector3& position)
+{
+    auto it = activeVoices_.find(handleID);
+    if (it != activeVoices_.end()) {
+        it->second.position = position;
+    }
+}
+
+void AudioPlayer::Update()
+{
+    // X3DAudioのインスタンスやマスターチャンネル数を取得 
+    const X3DAUDIO_HANDLE& x3dInstance = AudioDevice::GetInstance().GetX3DInstance();
+    uint32_t dstChannels = AudioDevice::GetInstance().GetMasterChannels();
+
+    for (auto& pair : activeVoices_)
+    {
+        AudioInstance& instance = pair.second;
+
+        // 3D設定されていない音は無視
+        if (!instance.is3D || !instance.voice) continue;
+
+        // 音源の設定
+        X3DAUDIO_EMITTER emitter = {};
+        emitter.ChannelCount = instance.channels;
+        emitter.CurveDistanceScaler = instance.maxDistance;
+        emitter.Position = { instance.position.x, instance.position.y, instance.position.z };
+        emitter.OrientFront = { 0, 0, 1 };
+        emitter.OrientTop = { 0, 1, 0 };
+
+        // 距離によるボリューム減衰計算の設定
+        X3DAUDIO_DSP_SETTINGS dspSettings = {};
+        float matrix[8] = { 0 }; // 左右への振り分け係数が入る配列
+        dspSettings.SrcChannelCount = instance.channels;
+        dspSettings.DstChannelCount = dstChannels;
+        dspSettings.pMatrixCoefficients = matrix;
+
+        // 3D音響の計算
+        X3DAudioCalculate(
+            x3dInstance,
+            &listener_,
+            &emitter,
+            X3DAUDIO_CALCULATE_MATRIX, // 左右と距離減衰のみ計算
+            &dspSettings
+        );
+
+        // 再生中のボイスに計算結果を適用
+        instance.voice->SetOutputMatrix(NULL, dspSettings.SrcChannelCount, dspSettings.DstChannelCount, matrix);
     }
 }
 

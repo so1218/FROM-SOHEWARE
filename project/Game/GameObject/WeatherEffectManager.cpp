@@ -225,7 +225,7 @@ void WeatherEffectManager::Update()
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
 
-			AudioPlayer::GetInstance().Play("lightningStrike", false, 50);
+            AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 50, 100.0f);
         }
     }
 }
