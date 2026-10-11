@@ -263,6 +263,8 @@ void GrassRenderer::Draw(
         cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
 
         cmdList->ExecuteIndirect(commandSignature_.Get(), 1, indirectArgsBuffer_[currentFrameIndex_].Get(), 0, nullptr, 0);
+    
+        cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     }
 }
 

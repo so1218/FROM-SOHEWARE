@@ -46,8 +46,6 @@ void RenderPipeline::Initialize(Engine* engine,
     postEffectManager_ = std::make_unique<PostEffectManager>();
     postEffectManager_->Initialize(
         engine,
-        Engine::GetClientWidth(),
-        Engine::GetClientHeight(),
         engine->GetRootSignatureManager(),
         engine->GetPSOManager(),
         engine->GetSRVManager(),

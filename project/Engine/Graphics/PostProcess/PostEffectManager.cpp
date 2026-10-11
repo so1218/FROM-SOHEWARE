@@ -15,8 +15,6 @@ PostEffectManager::~PostEffectManager()
 
 void PostEffectManager::Initialize(
     Engine* engine,
-    uint32_t width,
-    uint32_t height,
     RootSignatureManager* rootSigManager,
     PSOManager* psoManager,
     SRVManager* srvManager,
@@ -29,6 +27,9 @@ void PostEffectManager::Initialize(
     // シーンカラー / 深度SRV
     sceneTextureIndex_ = engine->GetOffscreenRTVManager()->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Color));
     sceneDepthIndex_ = sceneDepthSrvIndex;
+
+	uint32_t width = Engine::GetClientWidth(); 
+    uint32_t height = Engine::GetClientHeight();
 
     // 輝度抽出
     brightPass_ = std::make_unique<BrightExtractPass>();

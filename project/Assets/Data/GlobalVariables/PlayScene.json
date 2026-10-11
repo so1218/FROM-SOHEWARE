@@ -115,12 +115,12 @@
         "PostEffect/FogVolumes/1/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/1/BlendDistance": 0.30000001192092896,
         "PostEffect/FogVolumes/1/Color": [
-            0.2996109127998352,
-            1.0,
-            0.5830366611480713
+            0.20077519118785858,
+            0.5797665119171143,
+            0.3541412353515625
         ],
         "PostEffect/FogVolumes/1/Coverage": 0.550000011920929,
-        "PostEffect/FogVolumes/1/Density": 0.30000001192092896,
+        "PostEffect/FogVolumes/1/Density": 0.07999999821186066,
         "PostEffect/FogVolumes/1/DensityOffset": 0.0,
         "PostEffect/FogVolumes/1/DistortionAmount": 0.15000000596046448,
         "PostEffect/FogVolumes/1/Erosion": 0.20000000298023224,
@@ -160,9 +160,9 @@
         "PostEffect/FogVolumes/2/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/2/BlendDistance": 0.2199999988079071,
         "PostEffect/FogVolumes/2/Color": [
-            0.5136187076568604,
-            0.4690292477607727,
-            0.26979970932006836
+            0.26979970932006836,
+            0.44246533513069153,
+            0.5136187076568604
         ],
         "PostEffect/FogVolumes/2/Coverage": 0.7599999904632568,
         "PostEffect/FogVolumes/2/Density": 1.0,
@@ -190,9 +190,9 @@
             0.0
         ],
         "PostEffect/FogVolumes/2/Scale": [
-            42.70000076293945,
+            46.70000076293945,
             7.699999809265137,
-            31.700000762939453
+            55.70000076293945
         ],
         "PostEffect/FogVolumes/2/Type": 1,
         "PostEffect/FogVolumes/2/WindDirection": [
