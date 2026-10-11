@@ -20,7 +20,6 @@ void TestScene::OnInitialize()
 	camera_->Initialize();
 	camera_->SetTranslation(Vector3(0, 0, -6.6f));
 
-	AudioPlayer::GetInstance().StopUnique("playSceneBGM");
 }
 
 void TestScene::OnUpdate()

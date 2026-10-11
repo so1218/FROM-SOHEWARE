@@ -32,7 +32,8 @@ PlayScene::PlayScene(Engine* engine)
     player_->SetTreeField(treeField_);
     followCamera_->SetTerrain(ground_->GetTerrain());
 	player_->SetFollowCamera(followCamera_.get());
-    objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
+	auto wetherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
+	wetherEffectManager->SetCameraManager(cameraManager_.get());
     objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
@@ -47,8 +48,6 @@ void PlayScene::OnInitialize()
     // デフォルトカメラの設定
     followCamera_->Initialize();
     cameraManager_->ChangeController(followCamera_.get());
-
-	AudioPlayer::GetInstance().PlayUnique("playSceneBGM", true, 50);
 }
 
 void PlayScene::OnUpdate()

@@ -44,10 +44,10 @@
         "intensity": 17.899999618530273,
         "noiseModule": {
             "enabled": true,
-            "frequency": 0.5,
+            "frequency": 1.0,
             "scrollSpeed": 1.3799999952316284,
             "separateAxes": false,
-            "strength": 23.700000762939453,
+            "strength": 44.20000076293945,
             "type": 1
         },
         "physicsModule": {

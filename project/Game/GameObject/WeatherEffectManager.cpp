@@ -2,6 +2,7 @@
 #include "WeatherEffectManager.h"
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
+#include "AudioPlayer.h"
 
 using namespace FE;
 
@@ -31,6 +32,10 @@ void WeatherEffectManager::Initialize()
     thunderRainParticleEmitterPtr_ = thunderRainParticleEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(thunderRainParticleEmitter_));
 
+    thunderStrikeParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("thunderStrike");
+    thunderStrikeParticleEmitterPtr_ = thunderStrikeParticleEmitter_.get();
+    engine_->GetParticleSystem()->AddEmitter(std::move(thunderStrikeParticleEmitter_));
+
     lightningSystem_->Initialize();
 
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
@@ -38,6 +43,10 @@ void WeatherEffectManager::Initialize()
     binder_->Bind("StrikeRadiusMin", &strikeRadiusMin_, 30.0f, 1.0f, 5.0f, 100.0f);
     binder_->Bind("StrikeRadiusMax", &strikeRadiusMax_, 100.0f, 1.0f, 30.0f, 500.0f);
     binder_->Bind("StrikeHeight", &strikeHeight_, 250.0f, 5.0f, 50.0f, 1000.0f);
+
+    binder_->Bind("ThunderShakeDuration", &thunderShakeDuration_, 0.5f, 0.0f, 0.1f, 5.0f);
+    binder_->Bind("ThunderShakeIntensity", &thunderShakeIntensity_, 2.0f, 0.0f, 0.1f, 20.0f);
+    binder_->Bind("ThunderShakeMaxDist", &thunderShakeMaxDistance_, 300.0f, 1.0f, 10.0f, 1000.0f);
 }
 
 void WeatherEffectManager::Update()
@@ -126,6 +135,36 @@ void WeatherEffectManager::Update()
         thunderRainParticleEmitterPtr_->Stop();
     }
 
+    std::string nextBgm = "";
+    if (target == WeatherState::Sunny || target == WeatherState::Cloudy)
+    {
+        nextBgm = "sunnyBGM";
+    }
+    if (target == WeatherState::Rain)
+    {
+        nextBgm = "rainBGM";
+    }
+    if (target == WeatherState::Thunderstorm) 
+    {
+        nextBgm = "thunderStormBGM";
+    }
+
+    // 再生すべきBGMが、現在鳴っているものと違ったら切り替える
+    if (currentBgmName_ != nextBgm)
+    {
+        if (!currentBgmName_.empty())
+        {
+            AudioPlayer::GetInstance().StopUnique(currentBgmName_);
+        }
+
+        if (!nextBgm.empty()) 
+        {
+            AudioPlayer::GetInstance().PlayUnique(nextBgm, true, 50);
+        }
+
+        currentBgmName_ = nextBgm;
+    }
+
     // -------------------------------------------------------------
     // 落雷の制御
     // -------------------------------------------------------------
@@ -160,8 +199,33 @@ void WeatherEffectManager::Update()
 
             lightningSystem_->SpawnStrike(startPos, endPos);
 
+            if (thunderStrikeParticleEmitterPtr_)
+            {
+                thunderStrikeParticleEmitterPtr_->SetPosition(endPos);
+                thunderStrikeParticleEmitterPtr_->Play();
+            }
+
+            // カメラシェイク
+            if (cameraManager_)
+            {
+                // 距離による減衰を計算 
+                float distanceAttenuation = 1.0f - (radius / thunderShakeMaxDistance_);
+                distanceAttenuation = std::clamp(distanceAttenuation, 0.0f, 1.0f);
+
+                // 減衰をかけた最終的な揺れの強さ
+                float finalIntensity = thunderShakeIntensity_ * distanceAttenuation;
+
+                // 揺れが 0 以上の時だけシェイク
+                if (finalIntensity > 0.01f)
+                {
+                    cameraManager_->RequestShake(thunderShakeDuration_, finalIntensity);
+                }
+            }
+
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
+
+			AudioPlayer::GetInstance().Play("lightningStrike", false, 50);
         }
     }
 }
@@ -176,7 +240,8 @@ void WeatherEffectManager::DebugDraw()
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
 
-        if (thunderMinInterval_ > thunderMaxInterval_) {
+        if (thunderMinInterval_ > thunderMaxInterval_)
+        {
             thunderMaxInterval_ = thunderMinInterval_;
         }
 
@@ -186,9 +251,16 @@ void WeatherEffectManager::DebugDraw()
         binder_->Draw("StrikeRadiusMax", "最大発生距離");
         binder_->Draw("StrikeHeight", "雷雲の高さ(Y)");
 
-        if (strikeRadiusMin_ > strikeRadiusMax_) {
+        if (strikeRadiusMin_ > strikeRadiusMax_)
+        {
             strikeRadiusMax_ = strikeRadiusMin_;
         }
+
+        ImGui::Separator();
+        ImGui::Text("落雷時のカメラシェイク");
+        binder_->Draw("ThunderShakeDuration", "シェイク時間 ");
+        binder_->Draw("ThunderShakeIntensity", "シェイク強度");
+        binder_->Draw("ThunderShakeMaxDist", "揺れが届く最大距離");
     }
 
     ImGui::End();

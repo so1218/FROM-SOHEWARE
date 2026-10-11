@@ -11,6 +11,9 @@
         "StrikeRadiusMax": 39.0,
         "StrikeRadiusMin": 20.0,
         "ThunderMaxInterval": 4.0,
-        "ThunderMinInterval": 3.0
+        "ThunderMinInterval": 3.0,
+        "ThunderShakeDuration": 0.5,
+        "ThunderShakeIntensity": 2.0,
+        "ThunderShakeMaxDist": 300.0
     }
 }
