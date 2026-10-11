@@ -3,36 +3,36 @@
         "BranchLengthScale": 0.30000001192092896,
         "BranchProbability": 0.25,
         "CoreColor": [
-            0.9806961417198181,
-            1.0,
-            0.801556408405304
+            0.8677042722702026,
+            0.8965314626693726,
+            1.0
         ],
         "CorePower": 11.800000190734863,
-        "CoreThickness": 0.5,
+        "CoreThickness": 0.6800000071525574,
         "Displacement": 100.0,
         "DurationMax": 1.5,
         "DurationMin": 1.0,
-        "EmissiveIntensity": 9.0,
+        "EmissiveIntensity": 7.0,
         "FlickerMax": 1.149999976158142,
         "FlickerMin": 0.30000001192092896,
         "FlickerSpeed": 29.0,
         "FractalDepth": 6,
         "FringeColor": [
-            1.0,
-            0.8871594667434692,
-            0.0
+            0.24124515056610107,
+            0.5482902526855469,
+            1.0
         ],
-        "GlowPower": 10.0,
+        "GlowPower": 9.800000190734863,
         "LightColor": [
-            1.0,
-            0.972838282585144,
             0.6964980363845825,
+            0.819316029548645,
+            1.0,
             1.0
         ],
         "LightHeightOffset": 18.5,
-        "LightIntensityMax": 14.0,
+        "LightIntensityMax": 20.0,
         "LightRadius": 500.0,
-        "Thickness": 10.0,
-        "VolumetricScattering": 2.0999999046325684
+        "Thickness": 4.0,
+        "VolumetricScattering": 0.5
     }
 }

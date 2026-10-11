@@ -3,13 +3,13 @@
         "AlbedoMap": "1_rock_baseColor",
         "BaseColor": [
             1.0,
-            0.9968487620353699,
-            0.7510548830032349,
+            1.0,
+            1.0,
             1.0
         ],
         "DensityMap": "noise_23",
         "EnvMapIntensity": 0.23000000417232513,
-        "GridSpacing": 3.4700000286102295,
+        "GridSpacing": 3.0399999618530273,
         "HeightMap": "noise_39",
         "MaxAnisoScale": [
             2.3499999046325684,
@@ -18,23 +18,23 @@
         ],
         "MaxDrawDistance": 224.0,
         "MaxPebbles": 150000,
-        "MaxScale": 0.27000001072883606,
+        "MaxScale": 0.17000000178813934,
         "MaxThinningRate": 0.8999999761581421,
-        "Metalness": 0.9800000190734863,
+        "Metalness": 0.18000000715255737,
         "MinAnisoScale": [
             0.7400000095367432,
             0.7799999713897705,
             0.41999998688697815
         ],
         "MinScale": 0.15000000596046448,
-        "NormalIntensity": 2.609999895095825,
+        "NormalIntensity": 2.319999933242798,
         "NormalMap": "1_rock_normal",
         "Position": [
             0.0,
             0.0,
             0.0
         ],
-        "Roughness": 0.11999999731779099,
+        "Roughness": 0.7200000286102295,
         "Skybox": "pureSky",
         "TerrainDepth": 1024.0,
         "TerrainWidth": 1024.0,

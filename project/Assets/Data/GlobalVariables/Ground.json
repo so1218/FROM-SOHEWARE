@@ -9240,7 +9240,7 @@
         "Model_WetDarkness": 0.10999999940395355,
         "Model_Wetness": 0.5699999928474426,
         "Terrain_AddShadow": 1,
-        "Terrain_AlbedoMap": "forrest_ground_01_diff_1k",
+        "Terrain_AlbedoMap": "forest_leaves_02_diffuse_1k",
         "Terrain_AlphaThres": 0.07999999821186066,
         "Terrain_CellSize": 1.0,
         "Terrain_Color": [
@@ -9271,8 +9271,8 @@
         "Terrain_Metalness": 0.09000000357627869,
         "Terrain_NormEnable": 1,
         "Terrain_NormInten": 2.5999999046325684,
-        "Terrain_NormTile": 29.899999618530273,
-        "Terrain_NormalMapTex": "forrest_ground_01_nor_dx_1k",
+        "Terrain_NormTile": 50.0,
+        "Terrain_NormalMapTex": "forest_leaves_02_nor_dx_1k",
         "Terrain_OutlineColor": [
             0.0,
             0.0,
