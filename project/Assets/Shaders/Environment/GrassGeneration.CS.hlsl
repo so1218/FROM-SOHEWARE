@@ -10,7 +10,7 @@ SamplerState gLinearSampler : register(s0);
 
 RWStructuredBuffer<GrassInstanceData> gOutputGrass : register(u0);
 
-// C++側の Dispatch(1024, 1, 1) と numthreads(64, 1, 1) の総数
+// Dispatch(1024, 1, 1) と numthreads(64, 1, 1) の総数
 static const uint kThreadsPerRow = 1024 * 64;
 
 // ワールド座標から地形全体の0-1 UVへのマッピング
@@ -33,7 +33,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // カメラ移動に伴う草のチラツキを防ぐため、グリッド単位でスナップした座標を基準に
     float2 snappedCenter = floor(gGenerationData.terrainCenter / gGenerationData.gridSpacing) * gGenerationData.gridSpacing;
 
-    uint gridSizeX = max((uint) ceil(gGenerationData.terrainWidth / gGenerationData.gridSpacing), 1);
+    uint gridSizeX = max((uint)ceil(gGenerationData.terrainWidth / gGenerationData.gridSpacing), 1);
     uint gridX = instanceIndex % gridSizeX;
     uint gridZ = instanceIndex / gridSizeX;
     float2 localPos = float2(gridX * gGenerationData.gridSpacing, gridZ * gGenerationData.gridSpacing);
@@ -44,8 +44,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float baseWorldX = snappedCenter.x + offsetX + localPos.x;
     float baseWorldZ = snappedCenter.y + offsetZ + localPos.y;
 
-    // スナップされた安定した座標をシードに、配置のランダムな位置ズレを適用
-    float2 jitter = Hash22(float2(baseWorldX, baseWorldZ)) * (gGenerationData.gridSpacing * 0.5f);
+    // スナップされた座標をシードに、配置のランダムな位置ズレを適用
+    float2 jitter = (Hash22(float2(baseWorldX, baseWorldZ)) - 0.5f) * gGenerationData.gridSpacing;
     
     float worldX = baseWorldX + jitter.x;
     float worldZ = baseWorldZ + jitter.y;
@@ -90,7 +90,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float randomWidth = lerp(gGenerationData.minWidth, gGenerationData.maxWidth, Hash12(float2(worldX, worldZ)));
     float randomRotY = Hash12(float2(worldX, worldZ)) * PI * 2.0f;
     
-    uint packedColor = 0xFFFFFFFF; // 初期値
+    uint packedColor = 0xFFFFFFFF; 
 
     GrassInstanceData grass;
     grass.posAndHeight = float4(worldX, worldY, worldZ, randomHeight);

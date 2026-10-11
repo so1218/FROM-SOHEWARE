@@ -55,6 +55,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
             
             for (uint i = 0; i < kFrustumPlaneCount; ++i)
             {
+                // 平面の法線方向に対して、球の中心から平面までの距離を計算
                 if (dot(gFrameData.frustumPlanes[i].xyz, pos) + gFrameData.frustumPlanes[i].w < -boundsRadius)
                 {
                     isVisible = false;

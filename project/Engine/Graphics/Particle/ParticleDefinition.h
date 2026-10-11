@@ -280,7 +280,7 @@ struct ParticleConfig
 
 struct ParticleState
 {
-    std::unique_ptr<WorldTransform> transform;
+    WorldTransform transform;
     Vector4 color;
     uint32_t textureHandle;
     float lifetime;

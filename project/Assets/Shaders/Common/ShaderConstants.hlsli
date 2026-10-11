@@ -323,14 +323,11 @@ struct ParticleInstanceData
     float3 position;
     float rotationZ;
     
-    float2 scale;
-    uint textureIndex;
-    int isBillboard;
-    
+    float2 scale; 
+    float intensity; 
+    uint textureAndFlags; 
+
     float4 color;
-    
-    float intensity;
-    float3 padding;
 };
 
 struct PostEffectData

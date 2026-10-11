@@ -50,10 +50,15 @@ void ParticleRenderer::Submit(const WorldTransform& worldTransform, uint32_t col
     req.data.scale.y = sqrtf(worldTransform.matWorld_.m[1][0] * worldTransform.matWorld_.m[1][0] + worldTransform.matWorld_.m[1][1] * worldTransform.matWorld_.m[1][1] + worldTransform.matWorld_.m[1][2] * worldTransform.matWorld_.m[1][2]);
 
     req.data.color = Math::Uint32ToColorVector(color);
-    req.data.textureIndex = textureIndex;
     req.data.rotationZ = rotationZ;
-    req.data.isBillboard = isBillboard ? 1 : 0;
     req.data.intensity = intensity;
+
+    // ビットパッキング処理 
+    uint32_t billboardFlag = isBillboard ? 0x80000000 : 0x00000000;
+    // 下位31ビットに textureIndex を格納して統合
+    req.data.textureAndFlags = (textureIndex & 0x7FFFFFFF) | billboardFlag;
+
+    // リクエストの制御用データ
     req.blendMode = blendMode;
     req.textureIndex = textureIndex;
 

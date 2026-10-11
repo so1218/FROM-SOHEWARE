@@ -16,6 +16,9 @@ ParticleVSOutput main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
 {
     ParticleVSOutput vout;
     ParticleInstanceData inst = instanceBuffer[instID];
+    
+    uint textureIndex = inst.textureAndFlags & 0x7FFFFFFF;
+    uint isBillboard = (inst.textureAndFlags >> 31) & 1;
 
     // 板ポリゴンのUVとローカル座標を生成
     float2 uvList[6] =
@@ -40,7 +43,7 @@ ParticleVSOutput main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
     float rotatedX = localPos.x * cosR - localPos.y * sinR;
     float rotatedY = localPos.x * sinR + localPos.y * cosR;
 
-    if (inst.isBillboard == 1)
+    if (isBillboard == 1)
     {
         float3 right = gFrameData.cameraRight;
         float3 up = gFrameData.cameraUp;
@@ -55,7 +58,7 @@ ParticleVSOutput main(uint vID : SV_VertexID, uint instID : SV_InstanceID)
     vout.uv = uv; 
     vout.color = inst.color;
     vout.color.rgb *= inst.intensity;
-    vout.textureIndex = inst.textureIndex;
+    vout.textureIndex = (float)textureIndex;
 
     return vout;
 }
