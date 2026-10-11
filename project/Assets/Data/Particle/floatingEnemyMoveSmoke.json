@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 8,
+        "amount": 3,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
-            -0.20000000298023224,
+            0.0,
             0.0
         ],
-        "lifetime": 0.38999998569488525,
+        "lifetime": 1.600000023841858,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -15,7 +15,7 @@
             0.0,
             0.0
         ],
-        "spawnInterval": 0.07000000029802322
+        "spawnInterval": 0.10000000149011612
     },
     "ParticleConfig": {
         "attractionModule": {
@@ -32,55 +32,23 @@
                 0.0
             ]
         },
-        "blendMode": 2,
-        "collisionModule": {
-            "bounce": 0.5,
-            "dampen": 0.0,
-            "enabled": false,
-            "friction": 0.0,
-            "lifeLoss": 0.0,
-            "plane": {
-                "normal": [
-                    0.0,
-                    1.0,
-                    0.0
-                ],
-                "point": [
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            },
-            "type": 0,
-            "worldObj": {
-                "center": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    2.0,
-                    2.0,
-                    2.0
-                ],
-                "shape": 0
-            }
-        },
+        "blendMode": 1,
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 4281991168,
+            "endColor": 623191296,
             "endColor2": 4294967040,
             "mode": 0,
-            "startColor": 4278976767,
+            "startColor": 3217014783,
             "startColor2": 4294967295
         },
-        "intensity": 3.5999999046325684,
+        "intensity": 1.0,
         "noiseModule": {
             "enabled": false,
-            "frequency": 1.0,
-            "scrollSpeed": 1.0,
-            "separateAxes": false,
-            "strength": 1.0
+            "frequency": 0.1979999989271164,
+            "scrollSpeed": 0.5,
+            "separateAxes": true,
+            "strength": 2.200000047683716,
+            "type": 0
         },
         "physicsModule": {
             "affectedByWind": false,
@@ -88,7 +56,7 @@
             "enabled": true,
             "gravity": [
                 0.0,
-                -11.600000381469727,
+                5.900000095367432,
                 0.0
             ],
             "windInfluence": 1.0
@@ -96,7 +64,7 @@
         "rotationModule": {
             "enabled": true,
             "isBillboard": true,
-            "maxAngularVelocity2D": 5.0,
+            "maxAngularVelocity2D": 427.0,
             "maxAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -107,7 +75,7 @@
                 0.0,
                 360.0
             ],
-            "minAngularVelocity2D": 0.0,
+            "minAngularVelocity2D": -501.0,
             "minAngularVelocity3D": [
                 0.0,
                 0.0,
@@ -125,7 +93,7 @@
                 20.0,
                 20.0
             ],
-            "emitFromEdge": true,
+            "emitFromEdge": false,
             "enabled": true,
             "radius": [
                 1.0,
@@ -137,26 +105,25 @@
         "sizeOverLifetimeModule": {
             "enabled": true,
             "endScale": [
-                3.0,
-                3.0,
+                5.0,
+                5.0,
                 0.0
             ],
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                0.0,
-                0.0,
+                2.0,
+                2.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "spark_02"
+            "textureName": "smoke_alpha_01"
         },
         "trailModule": {
             "alignment": 0,
-            "dissolveTextureName": "white1x1",
-            "emissiveIntensity": 2.5,
+            "emissiveIntensity": 1.0,
             "enabled": false,
             "endColor": [
                 1.0,
@@ -170,12 +137,8 @@
             "jitterPhase": 0.0,
             "jitterSpeed": 0.0,
             "jitterStrength": 0.0,
-            "lifetime": 0.4000000059604645,
+            "lifetime": 0.5,
             "minVertexDistance": 0.10000000149011612,
-            "scrollSpeed": [
-                0.0,
-                0.0
-            ],
             "startColor": [
                 1.0,
                 1.0,
@@ -183,24 +146,19 @@
                 1.0
             ],
             "tailWidthScale": 1.0,
-            "textureMode": 0,
-            "textureName": "circle_05",
-            "tiling": [
-                1.0,
-                1.0
-            ],
-            "width": 0.6000000238418579
+            "textureName": "white1x1",
+            "width": 1.0
         },
         "velocityModule": {
-            "angleRange": 43.0,
+            "angleRange": 0.0,
             "direction": [
                 0.0,
-                -0.550000011920929,
+                -0.49000000953674316,
                 0.0
             ],
             "enabled": true,
             "randomDirection": true,
-            "speed": 2.680000066757202
+            "speed": 7.75
         },
         "vortexModule": {
             "axis": [

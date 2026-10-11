@@ -2167,7 +2167,7 @@
             ],
             "LightIntensity": 10.5,
             "LightRadius": 21.889999389648438,
-            "LightVolumetricScatteringIntensity": 3.0,
+            "LightVolumetricScatteringIntensity": 50.0,
             "ModelName": "bonFire",
             "Model_AddShadow": 1,
             "Model_AlbedoMap": "white1x1",

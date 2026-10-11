@@ -21,7 +21,8 @@ public:
 
 private:
     FE::Engine* engine_ = nullptr;
-    FE::ParticleEmitter* auraEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
+    FE::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
     FE::ParticleEmitter* explosionEmitterPtr_ = nullptr;
 
     // 浮遊用パラメータ

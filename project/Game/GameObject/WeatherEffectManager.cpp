@@ -136,15 +136,15 @@ void WeatherEffectManager::Update()
     }
 
     std::string nextBgm = "";
-    if (target == WeatherState::Sunny || target == WeatherState::Cloudy)
+    if (current == WeatherState::Sunny || current == WeatherState::Cloudy)
     {
         nextBgm = "sunnyBGM";
     }
-    if (target == WeatherState::Rain)
+    if (current == WeatherState::Rain)
     {
         nextBgm = "rainBGM";
     }
-    if (target == WeatherState::Thunderstorm) 
+    if (current == WeatherState::Thunderstorm)
     {
         nextBgm = "thunderStormBGM";
     }

@@ -29,20 +29,26 @@ void FloatingBehavior::Initialize(Enemy* owner)
     binder->Bind("SpotVolumetric", &spotVolumetric_, 4.0f);
     binder->Bind("SpotDirection", &spotDirection_, { 0.0f, -1.0f, 0.0f });
 
-    auto auraEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMove");
-    if (auraEmitter)
+    auto moveFireEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveFire");
+    if (moveFireEmitter)
     {
-        auraEmitterPtr_ = auraEmitter.get();
-        // モデルのTransformに追従
-        auraEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
-        engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter));
+        moveFireEmitterPtr_ = moveFireEmitter.get();
+        moveFireEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
+        engine_->GetParticleSystem()->AddEmitter(std::move(moveFireEmitter));
+    }
+
+    auto moveSmokeEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveSmoke");
+    if (moveSmokeEmitter)
+    {
+        moveSmokeEmitterPtr_ = moveSmokeEmitter.get();
+        moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
+        engine_->GetParticleSystem()->AddEmitter(std::move(moveSmokeEmitter));
     }
 
     auto explosion = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyExplosion");
 	explosionEmitterPtr_ = explosion.get();
     if (explosion)
     {
-        // 所有権をParticleSystemへ渡す
         engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
     }
 }
@@ -106,11 +112,18 @@ void FloatingBehavior::OnDeath(Enemy* owner)
 	AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
 
     // 死亡時にオーラを停止・破棄
-    if (auraEmitterPtr_)
+    if (moveFireEmitterPtr_)
     {
-        auraEmitterPtr_->Stop();
-        auraEmitterPtr_->Destroy(); 
-        auraEmitterPtr_ = nullptr;
+        moveFireEmitterPtr_->Stop();
+        moveFireEmitterPtr_->Destroy(); 
+        moveFireEmitterPtr_ = nullptr;
+    }
+
+    if (moveSmokeEmitterPtr_)
+    {
+        moveSmokeEmitterPtr_->Stop();
+        moveSmokeEmitterPtr_->Destroy();
+        moveSmokeEmitterPtr_ = nullptr;
     }
 
     // 死亡時の爆発パーティクルを生成してワンショット再生
