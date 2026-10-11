@@ -1,13 +1,13 @@
 {
     "EmitterConfig": {
-        "amount": 3,
+        "amount": 1,
         "duration": -0.10000000149011612,
         "followOffset": [
             0.0,
             0.0,
             0.0
         ],
-        "lifetime": 1.600000023841858,
+        "lifetime": 1.2999999523162842,
         "looping": true,
         "playOnAwake": true,
         "position": [
@@ -35,7 +35,7 @@
         "blendMode": 1,
         "colorOverLifetimeModule": {
             "enabled": true,
-            "endColor": 623191296,
+            "endColor": 2341178112,
             "endColor2": 4294967040,
             "mode": 0,
             "startColor": 3217014783,
@@ -112,14 +112,14 @@
             "frequency": 1.0,
             "oscillate": false,
             "startScale": [
-                2.0,
-                2.0,
+                3.0,
+                3.0,
                 1.0
             ]
         },
         "textureSheetModule": {
             "enabled": false,
-            "textureName": "smoke_alpha_01"
+            "textureName": "smoke_alpha_02"
         },
         "trailModule": {
             "alignment": 0,
