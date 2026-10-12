@@ -205,12 +205,7 @@ struct AtmosphereSkyData
     float3 horizonColor;
     float cloudEdgeSoftness;
     
-    float3 groundColor;
     float cloudAbsorption;
-
-    float3 cloudAmbientColor; 
-    float pad1;
-    
     float3 sunDirection;
 };
 

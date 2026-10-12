@@ -96,6 +96,9 @@ void ParticleEditor::ShowEditor()
                                 ImVec2(0, 0), ImVec2(1, 1), ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1)))
                             {
                                 currentTexName = data.name;
+
+                                // 変更された瞬間にハンドルを更新
+                                config.RefreshResources();
                             }
 
                             ImGui::PopStyleColor();

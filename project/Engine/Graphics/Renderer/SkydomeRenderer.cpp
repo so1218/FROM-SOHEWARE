@@ -49,11 +49,9 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
         mappedAtmosphereSky_[i]->sunAtmosphereGlow = 0.5f;
         mappedAtmosphereSky_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
         mappedAtmosphereSky_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
-        mappedAtmosphereSky_[i]->groundColor = { 0.2f, 0.2f, 0.2f };
         mappedAtmosphereSky_[i]->cloudBumpScale = 0.15f;        
         mappedAtmosphereSky_[i]->cloudEdgeSoftness = 0.15f;    
         mappedAtmosphereSky_[i]->cloudAbsorption = 0.7f;       
-        mappedAtmosphereSky_[i]->cloudAmbientColor = { 0.08f, 0.12f, 0.2f };
     }
 }
 

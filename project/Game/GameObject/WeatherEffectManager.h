@@ -68,7 +68,8 @@ private:
     std::string currentBgmName_ = "";
 };
 
-struct WeatherVisualParams {
+struct WeatherVisualParams
+{
     // Terrain
     float metalness;
     float roughness;

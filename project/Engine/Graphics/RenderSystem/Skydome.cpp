@@ -43,8 +43,6 @@ void Skydome::Update()
 
     atmosphereSkyData_.zenithColor = profile.zenithColor;
     atmosphereSkyData_.horizonColor = profile.horizonColor;
-    atmosphereSkyData_.groundColor = profile.groundColor;
-    atmosphereSkyData_.cloudAmbientColor = profile.cloudAmbientColor;
     atmosphereSkyData_.sunAtmosphereGlow = profile.sunAtmosphereGlow;
 
     // 天候プロファイルを取得し、雲の量を上書きする

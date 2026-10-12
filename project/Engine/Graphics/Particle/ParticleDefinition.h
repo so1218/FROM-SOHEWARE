@@ -165,8 +165,15 @@ struct SizeOverLifetimeModule
 
 struct TextureSheetAnimationModule
 {
-    bool enabled = false;           // アニメーションの有効/無効
+    bool enabled = false;
     std::string textureName = "white1x1";
+    uint32_t textureHandle = 0; // キャッシュ用ハンドル
+
+    // テクスチャ名からハンドルを取得・更新
+    void RefreshHandle()
+    {
+        textureHandle = TextureManager::GetInstance().Get(textureName);
+    }
 };
 
 struct NoiseModule
@@ -276,35 +283,35 @@ struct ParticleConfig
         initialPosition = { 0.0f,0.0f,0.0f };
         baseColor = { 1.0f,1.0f,1.0f,1.0f };
     }
+
+    // ロード時や初期化時にハンドルを更新
+    void RefreshResources()
+    {
+        textureSheet.RefreshHandle();
+    }
 };
 
 struct ParticleState
 {
     WorldTransform transform;
     Vector4 color;
-    uint32_t textureHandle;
-    float lifetime;
     Vector3 velocity;
+    Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
+    Vector3 initialPosition;
+
+    float lifetime = 0.0f;
     float age = 0.0f;
+    float trailSeed = 0.0f;
+
     const WorldTransform* attractionTarget = nullptr;
     const WorldTransform* vortexTarget = nullptr;
-    Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
 
-    Vector3 initialPosition; // 生成時のエミッターの座標
-    std::string presetName;
-    Vector4 uvRect = { 0.0f, 0.0f, 1.0f, 1.0f };
+    const ParticleConfig* config = nullptr;
 
     // トレイル用の履歴バッファ
     std::deque<TrailPoint> trailHistory;
-    float trailSeed = 0.0f;
 
-    ParticleConfig config;
-
-    ParticleState()
-    {
-        // デフォルト値で初期化
-        initialPosition = { 0.0f,0.0f,0.0f };
-    }
+    ParticleState() = default;
 };
 
 // エミッター設定

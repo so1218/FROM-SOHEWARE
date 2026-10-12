@@ -36,8 +36,6 @@ TitleScene::TitleScene(Engine* engine)
 void TitleScene::OnInitialize()
 {
     camera_->Initialize();
-    camera_->SetTranslation(Vector3(0, 0, -6.6f));
-
 }
 
 void TitleScene::OnUpdate()

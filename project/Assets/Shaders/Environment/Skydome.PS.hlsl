@@ -54,11 +54,8 @@ SkydomePSOutput main(SkydomeVSOutput input)
     float3 moonVisualDir = -sunVisualDir;
     
     // 空のグラデーションと大気散乱
-    float skyBlend = pow(max(viewDir.y, 0.0f), gWeather.skyGradientExponent);
+    float skyBlend = pow(saturate(viewDir.y), gWeather.skyGradientExponent);
     float3 skyColor = lerp(gWeather.horizonColor, gWeather.zenithColor, skyBlend);
-    
-    float groundBlend = smoothstep(0.0f, -0.1f, viewDir.y);
-    skyColor = lerp(skyColor, gWeather.groundColor, groundBlend);
     
     // レイリー散乱の簡易近似による太陽方向へのグロウ
     float sunDotBase = saturate(dot(viewDir, sunVisualDir));
@@ -89,7 +86,7 @@ SkydomePSOutput main(SkydomeVSOutput input)
     float halfLambert = saturate(NdotL * 0.5f + 0.5f);
     
     float3 directLightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
-    float3 ambientLight = gWeather.cloudAmbientColor * gWeather.cloudShadowDensity;
+    float3 ambientLight = skyColor * gWeather.cloudShadowDensity;
     
     // Beer-Lambert則の近似: 吸収率を用いて積乱雲特有の暗い底面を表現
     float transmittance = exp(-cloudThickness * gWeather.cloudAbsorption * 3.0f);

@@ -14,17 +14,16 @@ struct TimeOfDayProfile
     // 空の色
     Vector3 zenithColor;
     Vector3 horizonColor;
-    Vector3 groundColor;
     // 雲と大気
-    Vector3 cloudAmbientColor;
     float sunAtmosphereGlow;
-    // ライト（ディレクショナルライト）
+    // ライト
     Vector3 directionalLightColor;
     float directionalLightIntensity;
 };
 
 // 天候の種類
-enum class WeatherState {
+enum class WeatherState 
+{
     Sunny,          
     Cloudy,       
     Rain,             
@@ -81,8 +80,6 @@ inline TimeOfDayProfile BlendProfiles(const TimeOfDayProfile& a, const TimeOfDay
     TimeOfDayProfile result;
     result.zenithColor = FE::Math::Lerp(a.zenithColor, b.zenithColor, t);
     result.horizonColor = FE::Math::Lerp(a.horizonColor, b.horizonColor, t);
-    result.groundColor = FE::Math::Lerp(a.groundColor, b.groundColor, t);
-    result.cloudAmbientColor = FE::Math::Lerp(a.cloudAmbientColor, b.cloudAmbientColor, t);
     result.sunAtmosphereGlow = FE::Math::Lerp(a.sunAtmosphereGlow, b.sunAtmosphereGlow, t);
     result.directionalLightColor = FE::Math::Lerp(a.directionalLightColor, b.directionalLightColor, t);
     result.directionalLightIntensity = FE::Math::Lerp(a.directionalLightIntensity, b.directionalLightIntensity, t);

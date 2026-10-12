@@ -35,18 +35,29 @@ void ParticleSystem::Initialize()
 {
     // 全パーティクル設定をロード
     configManager_->LoadAllParticleDefinitions();
+
+    // ロードした全プリセットのテクスチャハンドルを一括更新
+    for (auto& [name, definition] : definitions_)
+    {
+        definition.particleConfig.RefreshResources();
+    }
 }
 
-void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::string& presetName, float lifetime, const WorldTransform* attractionTarget, const WorldTransform* vortexTarget
-    , const ModelData* emitterModelData, const AnimationModel* emitterAnimModel)
+void ParticleSystem::SpawnParticle(
+    const WorldTransform& transform,
+    const std::string& presetName,
+    float lifetime,
+    const WorldTransform* attractionTarget,
+    const WorldTransform* vortexTarget,
+    const ModelData* emitterModelData,
+    const AnimationModel* emitterAnimModel)
 {
-    // 最大数を超える場合は生成しない
     if (particles_.size() >= engine_->GetRendererManager()->GetMaxParticleCount()) return;
 
     // パーティクル設定を取得
-    auto& config = GetConfig(presetName);
+    const auto& config = GetConfig(presetName);
 
-    // 見えない状態かどうかのフラグ
+    // 不可視チェック
     uint32_t startA = (config.colorOverLifetime.startColor) & 0xFF;
     uint32_t endA = (config.colorOverLifetime.endColor) & 0xFF;
     bool invisibleAlpha = (startA < 5 && endA < 5);
@@ -55,110 +66,67 @@ void ParticleSystem::SpawnParticle(const WorldTransform& transform, const std::s
     bool endZero = (config.sizeOverLifetime.endScale.x <= 0.0f || config.sizeOverLifetime.endScale.y <= 0.0f);
     bool invisibleScale = (startZero && endZero);
 
-    // トレイルが無効かつアルファかサイズで見えない状態の時だけ生成をキャンセル
-    if (!config.trail.enabled && (invisibleAlpha || invisibleScale))
-    {
-        return;
-    }
+    if (!config.trail.enabled && (invisibleAlpha || invisibleScale)) return;
 
     ParticleState particle;
-    particle.config = config;
+    particle.config = &config; 
 
-    // Shape
-    Vector3 localOffset = particle.config.shape.GetInitialPositionOffset(emitterModelData, emitterAnimModel);
-
-    // 行列の作成
-    Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(
-        transform.scale_,
-        transform.rotationQuaternion_,
-        { 0.0f, 0.0f, 0.0f }
-    );
-
-    // ローカルオフセットを行列で変換（ワールド空間でのオフセット）
+    // Shape オフセット計算
+    Vector3 localOffset = config.shape.GetInitialPositionOffset(emitterModelData, emitterAnimModel);
+    Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotationQuaternion_, { 0.0f, 0.0f, 0.0f });
     Vector3 worldOffset = transformMatrix.TransformVector(localOffset);
 
-    // 最終的なワールド座標を適用
     particle.transform.translation_ = transform.translation_ + worldOffset;
+    particle.initialPosition = particle.transform.translation_;
 
-    // Velocity 
-    if (particle.config.velocity.enabled)
+    // Velocity
+    if (config.velocity.enabled)
     {
-        Vector3 localVel = particle.config.velocity.GetInitialVelocity();
-
-        // エミッターの回転を行列で速度に適用
+        Vector3 localVel = config.velocity.GetInitialVelocity();
         particle.velocity = transform.rotationQuaternion_.RotateVector(localVel);
     }
 
-    // Color
-    if (particle.config.colorOverLifetime.enabled &&
-        particle.config.colorOverLifetime.mode == ColorOverLifetimeModule::Mode::RandomBetweenTwo)
-    {
-        // 50%の確率で2つ目のグラデーションを使用
-        if (Math::RandomFloat(0.0f, 1.0f) > 0.5f)
-        {
-            particle.config.colorOverLifetime.startColor = particle.config.colorOverLifetime.startColor2;
-            particle.config.colorOverLifetime.endColor = particle.config.colorOverLifetime.endColor2;
-        }
-    }
-
-    // 初期色
-    particle.color = particle.config.colorOverLifetime.enabled ?
-        particle.config.colorOverLifetime.Evaluate(0.0f) :
-        particle.config.baseColor;
-
-    // Size
-    particle.transform.scale_ = particle.config.sizeOverLifetime.enabled ?
-        particle.config.sizeOverLifetime.Evaluate(0.0f) :
-        Vector3{ 1.0f, 1.0f, 1.0f };
+    // Color & Size
+    particle.color = config.colorOverLifetime.enabled ? config.colorOverLifetime.Evaluate(0.0f) : config.baseColor;
+    particle.transform.scale_ = config.sizeOverLifetime.enabled ? config.sizeOverLifetime.Evaluate(0.0f) : Vector3{ 1.0f, 1.0f, 1.0f };
 
     // Rotation
-    if (particle.config.rotation.enabled)
+    if (config.rotation.enabled)
     {
-        const auto& rotConfig = particle.config.rotation;
+        const auto& rotConfig = config.rotation;
+        Vector3 startRot = {
+            Math::RandomFloat(rotConfig.minStartRotation.x, rotConfig.maxStartRotation.x),
+            Math::RandomFloat(rotConfig.minStartRotation.y, rotConfig.maxStartRotation.y),
+            Math::RandomFloat(rotConfig.minStartRotation.z, rotConfig.maxStartRotation.z)
+        };
 
-        // 初期角度の決定
-        Vector3 startRot;
-        startRot.x = Math::RandomFloat(rotConfig.minStartRotation.x, rotConfig.maxStartRotation.x);
-        startRot.y = Math::RandomFloat(rotConfig.minStartRotation.y, rotConfig.maxStartRotation.y);
-        startRot.z = Math::RandomFloat(rotConfig.minStartRotation.z, rotConfig.maxStartRotation.z);
-
-        // ラジアン変換してセット
         particle.transform.rotation_ = {
             Math::ToRadians(startRot.x),
             Math::ToRadians(startRot.y),
             Math::ToRadians(startRot.z)
         };
 
-        // 回転速度の決定
         if (rotConfig.isBillboard)
         {
-            // 2Dの場合、Z軸回転のみ速度を持つ
             float velZ = Math::RandomFloat(rotConfig.minAngularVelocity2D, rotConfig.maxAngularVelocity2D);
             particle.currentAngularVelocity = { 0.0f, 0.0f, velZ };
         }
         else
         {
-            // 3Dの場合、3軸それぞれの速度
-            particle.currentAngularVelocity.x = Math::RandomFloat(rotConfig.minAngularVelocity3D.x, rotConfig.maxAngularVelocity3D.x);
-            particle.currentAngularVelocity.y = Math::RandomFloat(rotConfig.minAngularVelocity3D.y, rotConfig.maxAngularVelocity3D.y);
-            particle.currentAngularVelocity.z = Math::RandomFloat(rotConfig.minAngularVelocity3D.z, rotConfig.maxAngularVelocity3D.z);
+            particle.currentAngularVelocity = {
+                Math::RandomFloat(rotConfig.minAngularVelocity3D.x, rotConfig.maxAngularVelocity3D.x),
+                Math::RandomFloat(rotConfig.minAngularVelocity3D.y, rotConfig.maxAngularVelocity3D.y),
+                Math::RandomFloat(rotConfig.minAngularVelocity3D.z, rotConfig.maxAngularVelocity3D.z)
+            };
         }
     }
-    else
-    {
-        particle.transform.rotation_ = { 0.0f, 0.0f, 0.0f };
-        particle.currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
-    }
 
-    // 共通プロパティ
     particle.lifetime = lifetime;
     particle.age = 0.0f;
-    particle.presetName = presetName;
     particle.attractionTarget = attractionTarget;
     particle.vortexTarget = vortexTarget;
     particle.trailSeed = Math::RandomFloat(0.0f, 1000.0f);
 
-    // 生成したパーティクルを格納
     particles_.push_back(std::move(particle));
 }
 
@@ -183,101 +151,87 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
 
 void ParticleSystem::Update()
 {
-    // エミッター更新 
+    // ---------------------------------------------------------
+    // エミッター更新
+    // ---------------------------------------------------------
     auto it = emitters_.begin();
     while (it != emitters_.end())
     {
         auto& emitter = *it;
-
-        // エミッターが寿命切れなら削除
         if (emitter->isDead_)
         {
             std::string name = emitter->presetName_;
             it = emitters_.erase(it);
-
-            // 名前付きエミッターも削除
             namedEmitters_.erase(name);
             continue;
         }
-
-        // エミッターを更新して新パーティクル生成
         emitter->Update(*this);
         ++it;
     }
 
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    float totalTime = TimeManager::GetInstance()->GetTotalTime();
 
-    // グローバル環境から風のパラメータを取得
+    // ---------------------------------------------------------
+    // 風・ノイズパラメータの事前計算
+    // ---------------------------------------------------------
     auto envManager = EnvironmentManager::GetInstance();
     Vector2 globalWindDir = envManager->GetWindDirection();
     float globalWindSpeed = envManager->GetWindSpeed();
+    Vector3 baseWindVelocity = { globalWindDir.x * globalWindSpeed, 0.0f, globalWindDir.y * globalWindSpeed };
 
-    // ワールド空間における基本風速度ベクトル
-    Vector3 baseWindVelocity = {
-        globalWindDir.x * globalWindSpeed,
-        0.0f,
-        globalWindDir.y * globalWindSpeed
-    };
+    gNoiseGen.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
 
-    // パーティクルの更新
-    for (auto particle = particles_.begin(); particle != particles_.end(); )
+    // ---------------------------------------------------------
+    // パーティクル更新 ＆ GPU送信
+    // ---------------------------------------------------------
+    for (size_t i = 0; i < particles_.size(); )
     {
-        ParticleState& particleState = *particle;
-        const ParticleConfig& config = particleState.config;
+        ParticleState& particleState = particles_[i];
 
-        // 寿命チェック
+        // 安全ガード：設定ポインタが無効なら削除
+        if (!particleState.config)
+        {
+            particles_[i] = std::move(particles_.back());
+            particles_.pop_back();
+            continue;
+        }
+
+        const ParticleConfig& config = *particleState.config;
+
         particleState.age += deltaTime;
 
-        // 削除条件
         bool isExpired = (particleState.age >= particleState.lifetime);
         bool isTrailEmpty = particleState.trailHistory.empty();
+        bool shouldDelete = config.trail.enabled ? (isExpired && isTrailEmpty) : isExpired;
 
-        // 削除するかどうかの判定
-        bool shouldDelete = false;
-
-        if (!config.trail.enabled)
-        {
-            shouldDelete = isExpired;
-        }
-        else
-        {
-            shouldDelete = (isExpired && isTrailEmpty);
-        }
-
+        // Swap & Pop-back による O(1) 削除
         if (shouldDelete)
         {
-            particle = particles_.erase(particle);
-            continue;
+            particles_[i] = std::move(particles_.back());
+            particles_.pop_back();
+            continue; // i をインクリメントせず次のループへ
         }
 
         if (!isExpired)
         {
             float t = particleState.lifetime > 0.0f ? (particleState.age / particleState.lifetime) : 1.0f;
 
+            // Noise Module
             if (config.noise.enabled)
             {
                 const auto& noiseConfig = config.noise;
-
-                // FastNoiseLite の基本パラメータ設定
-                gNoiseGen.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
                 gNoiseGen.SetFrequency(noiseConfig.frequency);
 
-                // スクロールを含むサンプリング座標の計算
-                float totalTime = TimeManager::GetInstance()->GetTotalTime();
                 float scroll = totalTime * noiseConfig.scrollSpeed;
-
-                // ワールド位置をサンプル座標として利用
                 Vector3 samplePos = particleState.transform.translation_;
-                samplePos.y -= scroll; // Y軸方向へスクロール
+                samplePos.y -= scroll;
 
                 Vector3 noiseForce = { 0.0f, 0.0f, 0.0f };
 
-                // ノイズ計算
                 if (noiseConfig.type == NoiseModule::NoiseType::Curl)
                 {
-                    // Curl Noise
-                    const float e = 0.01f; 
-
+                    const float e = 0.01f;
                     float n1 = gNoiseGen.GetNoise(samplePos.x, samplePos.y + e, samplePos.z);
                     float n2 = gNoiseGen.GetNoise(samplePos.x, samplePos.y - e, samplePos.z);
                     float n3 = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z + e);
@@ -285,71 +239,53 @@ void ParticleSystem::Update()
                     float n5 = gNoiseGen.GetNoise(samplePos.x + e, samplePos.y, samplePos.z);
                     float n6 = gNoiseGen.GetNoise(samplePos.x - e, samplePos.y, samplePos.z);
 
-                    // 回転ベクトルの計算
                     noiseForce.x = (n1 - n2) - (n3 - n4);
                     noiseForce.y = (n3 - n4) - (n5 - n6);
                     noiseForce.z = (n5 - n6) - (n1 - n2);
                 }
-                else 
+                else
                 {
                     if (noiseConfig.separateAxes)
                     {
-                        // 各軸で十分離れた座標をサンプリングして非同期化
                         noiseForce.x = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z);
                         noiseForce.y = gNoiseGen.GetNoise(samplePos.x + 100.0f, samplePos.y + 100.0f, samplePos.z + 100.0f);
                         noiseForce.z = gNoiseGen.GetNoise(samplePos.x + 200.0f, samplePos.y + 200.0f, samplePos.z + 200.0f);
                     }
                     else
                     {
-                        // 全軸共通のノイズ値
                         float val = gNoiseGen.GetNoise(samplePos.x, samplePos.y, samplePos.z);
                         noiseForce = { val, val, val };
                     }
                 }
 
-                // 速度ベクトルに加速度として加算
                 particleState.velocity += noiseForce * noiseConfig.strength * deltaTime;
             }
 
             // Physics Module
             if (config.physics.enabled)
             {
-                // 重力の適用
                 particleState.velocity += config.physics.gravity * deltaTime;
 
-                // 風の適用 
                 if (config.physics.affectedByWind && globalWindSpeed > 0.0f)
                 {
-                    Vector3 finalWindForce = baseWindVelocity;
-
-                    // 風による加速度の付加 
-                    particleState.velocity += finalWindForce * config.physics.windInfluence * deltaTime;
+                    particleState.velocity += baseWindVelocity * config.physics.windInfluence * deltaTime;
                 }
 
-                // 空気抵抗による減速
                 particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
             }
 
             // Vortex Module
             if (config.vortex.enabled)
             {
-                Vector3 vortexCenter;
-
-                if (particleState.vortexTarget != nullptr)
-                {
-                    vortexCenter = particleState.vortexTarget->translation_ + config.vortex.offset;
-                }
-                else
-                {
-                    vortexCenter = particleState.initialPosition + config.vortex.center;
-                }
+                Vector3 vortexCenter = particleState.vortexTarget ?
+                    (particleState.vortexTarget->translation_ + config.vortex.offset) :
+                    (particleState.initialPosition + config.vortex.center);
 
                 Vector3 diff = particleState.transform.translation_ - vortexCenter;
                 Vector3 axis = config.vortex.axis.Normalize();
 
                 float height = diff.Dot(axis);
-                Vector3 pointOnAxis = axis * height;
-                Vector3 radialVector = diff - pointOnAxis;
+                Vector3 radialVector = diff - (axis * height);
                 float distanceToAxis = radialVector.Length();
 
                 if (distanceToAxis > 0.01f)
@@ -357,17 +293,12 @@ void ParticleSystem::Update()
                     Vector3 radialDir = radialVector.Normalize();
                     Vector3 tangentialDir = axis.Cross(radialDir).Normalize();
 
-                    float currentAxialSpeed = particleState.velocity.Dot(axis);
-                    Vector3 axialVelocity = axis * currentAxialSpeed;
-
+                    Vector3 axialVelocity = axis * particleState.velocity.Dot(axis);
                     Vector3 orbitalVelocity = tangentialDir * config.vortex.orbitalSpeed;
-
                     Vector3 radialVelocity = radialDir * config.vortex.radialSpeed;
 
                     Vector3 targetVelocity = axialVelocity + orbitalVelocity + radialVelocity;
-
-                    float lerpRate = 10.0f * deltaTime;
-                    if (lerpRate > 1.0f) lerpRate = 1.0f;
+                    float lerpRate = std::min(10.0f * deltaTime, 1.0f);
 
                     particleState.velocity = Math::Lerp(particleState.velocity, targetVelocity, lerpRate);
                 }
@@ -376,90 +307,64 @@ void ParticleSystem::Update()
             // Attraction Module
             if (config.attraction.enabled)
             {
-                Vector3 targetPos;
-
-                // ターゲットが設定されていればターゲット座標 + オフセット
-                if (particleState.attractionTarget)
-                {
-                    targetPos = particleState.attractionTarget->translation_ + config.attraction.offset;
-                }
-                // 設定されていなければ静的ターゲット座標
-                else
-                {
-                    targetPos = config.attraction.target;
-                }
+                Vector3 targetPos = particleState.attractionTarget ?
+                    (particleState.attractionTarget->translation_ + config.attraction.offset) :
+                    config.attraction.target;
 
                 Vector3 directionToTarget = targetPos - particleState.transform.translation_;
                 particleState.velocity += directionToTarget.Normalize() * config.attraction.strength * deltaTime;
             }
 
-            // 位置を更新
+            // 位置更新
             particleState.transform.translation_ += particleState.velocity * deltaTime;
 
             // Rotation Module
             if (config.rotation.enabled)
             {
-                // 生成時に決定したこのパーティクル固有の回転速度を取得
                 Vector3 angularVelocity = particleState.currentAngularVelocity;
 
                 if (config.rotation.isBillboard)
                 {
-                    // ビルボードの場合、XY軸の回転は0に固定し、Z軸だけ回す
                     particleState.transform.rotation_.x = 0.0f;
                     particleState.transform.rotation_.y = 0.0f;
-
-                    // 度数法で保存されている速度をラジアンに変換して加算
                     particleState.transform.rotation_.z += Math::ToRadians(angularVelocity.z) * deltaTime;
                 }
                 else
                 {
-                    // 3Dモデルの場合、XYZ全軸を回転
-                    Vector3 velocityRadians =
-                    {
+                    Vector3 velocityRadians = {
                         Math::ToRadians(angularVelocity.x),
                         Math::ToRadians(angularVelocity.y),
                         Math::ToRadians(angularVelocity.z)
                     };
-
                     particleState.transform.rotation_ += velocityRadians * deltaTime;
+
+                    // クォータニオン変換
+                    particleState.transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform.rotation_);
                 }
             }
-            particleState.transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform.rotation_);
 
-            // Color Module
+            // Color & Size Module
             if (config.colorOverLifetime.enabled)
                 particleState.color = config.colorOverLifetime.Evaluate(t);
 
-            // Size Module
             if (config.sizeOverLifetime.enabled)
                 particleState.transform.scale_ = config.sizeOverLifetime.Evaluate(t);
-
-            // Texture Module
-            particleState.textureHandle = TextureManager::GetInstance().Get(config.textureSheet.textureName);
-
         }
 
-        // Trail処理
+        // Trail Module
         if (config.trail.enabled)
         {
             Vector3 currentPos = particleState.transform.translation_;
 
-            // 新しいポイント追加は生きている間だけ
             if (!isExpired)
             {
-                bool shouldAdd = false;
-                if (particleState.trailHistory.empty())
-                {
-                    shouldAdd = true;
-                }
-                else
+                bool shouldAdd = particleState.trailHistory.empty();
+                if (!shouldAdd)
                 {
                     Vector3 lastPos = particleState.trailHistory.back().position;
                     float distSq = (currentPos - lastPos).LengthSq();
                     if (distSq >= config.trail.minVertexDistance * config.trail.minVertexDistance)
-                    {
                         shouldAdd = true;
-                    }
                 }
 
                 if (shouldAdd)
@@ -472,7 +377,6 @@ void ParticleSystem::Update()
                 }
             }
 
-            // 死亡後も古い点を寿命で削除
             while (!particleState.trailHistory.empty())
             {
                 float timeAlive = particleState.age - particleState.trailHistory.front().time;
@@ -483,27 +387,23 @@ void ParticleSystem::Update()
             }
         }
 
-        ++particle;
-    }
+        // GPUサブミット
+        if (!isExpired && !ShouldSkipDraw(particleState))
+        {
+            particleState.transform.UpdateMatrix();
 
-    // GPUへ送信
-    for (auto& particle : particles_)
-    {
-        if (particle.age >= particle.lifetime) continue;
+            engine_->GetRendererManager()->SubmitParticleInstance(
+                particleState.transform,
+                Math::ColorVectorToUint32(particleState.color),
+                config.textureSheet.textureHandle,
+                particleState.transform.rotation_.z,
+                config.blendMode,
+                config.rotation.isBillboard,
+                config.intensity
+            );
+        }
 
-        // 描画不可ならスキップ
-        if (ShouldSkipDraw(particle)) continue;
-
-        particle.transform.UpdateMatrix();
-        engine_->GetRendererManager()->SubmitParticleInstance(
-            particle.transform,
-            Math::ColorVectorToUint32(particle.color),
-            particle.textureHandle,
-            particle.transform.rotation_.z,
-            particle.config.blendMode,
-            particle.config.rotation.isBillboard,
-            particle.config.intensity
-        );
+        ++i;
     }
 }
 
@@ -523,8 +423,9 @@ void ParticleSystem::Draw()
     // トレイル描画
     for (const auto& particle : particles_)
     {
-        if (!particle.config.trail.enabled) continue; // トレイル無効ならスキップ
-        if (particle.trailHistory.size() < 2) continue; // 頂点が足りなければスキップ
+        // ポインタチェック
+        if (!particle.config || !particle.config->trail.enabled) continue; // トレイル無効ならスキップ
+        if (particle.trailHistory.size() < 2) continue;                    // 頂点が足りなければスキップ
 
         // 描画用ポイントリストを作成
         std::vector<TrailPoint> drawPoints;
@@ -538,7 +439,7 @@ void ParticleSystem::Draw()
             drawPoints.push_back({ particle.transform.translation_, particle.transform.rotationQuaternion_, particle.age });
 
         // Rendererに登録
-        engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config.trail, particle.trailSeed);
+        engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config->trail, particle.trailSeed);
     }
 
     // ブレンドを元に戻す
@@ -575,7 +476,10 @@ std::vector<std::string> ParticleSystem::GetPresetNames() const
 
 bool ParticleSystem::ShouldSkipDraw(const ParticleState& particle) const
 {
-    const auto& config = particle.config;
+    // ポインタチェック
+    if (!particle.config) return true;
+
+    const auto& config = *particle.config;
 
     // アルファ値のチェック
     uint32_t startA = (config.colorOverLifetime.startColor) & 0xFF;
