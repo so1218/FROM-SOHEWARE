@@ -472,9 +472,8 @@ struct GrassMaterialData
     float shadowDensity; 
     float shadowNormalBias; 
     float shadowBias; 
-    float colorVariation; 
-    
     float windFlattenStrength;
+    
     float nearFadeMinDist;
     float nearFadeMaxDist;
 };

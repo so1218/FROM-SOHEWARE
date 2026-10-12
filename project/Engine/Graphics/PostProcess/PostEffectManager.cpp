@@ -302,7 +302,7 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
 
     flagChromAberration_ = (cbData_->flag & CHROM_ABERRATION) != 0;
     binder.Bind(p + "ChromAberration/Enable", &flagChromAberration_, flagChromAberration_);
-    binder.Bind(p + "ChromAberration/Offset", &cbData_->chromaOffset, { 0.0f, 0.0f });
+    binder.Bind(p + "ChromAberration/Offset", &cbData_->chromaOffset, { 0.0f, 0.0f }, 0.001f);
 
     flagPixelation_ = (cbData_->flag & PIXELATION) != 0;
     binder.Bind(p + "Pixelation/Enable", &flagPixelation_, flagPixelation_);

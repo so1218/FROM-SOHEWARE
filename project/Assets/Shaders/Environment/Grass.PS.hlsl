@@ -43,15 +43,15 @@ PixelShaderOutput main(GrassPSInput input)
     float t = input.texcoord.y;
     float gustMask = input.color.a;
 
-    // 頂点カラーに焼き付けたベースカラーとの合成
-    float3 grassColor = lerp(gMaterial.rootColor, gMaterial.tipColor, t);
-    float3 baseColor = input.color.rgb * grassColor;
+    // ベースカラーの取得と Wetnessによる暗化
+    float3 baseColor = input.color.rgb;
+    float wetDarkening = lerp(1.0f, 0.6f, gMaterial.wetness);
+    baseColor *= wetDarkening;
 
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
     
-    // Foliage特有の高周波な法線によるピクセル単位のチラツキを抑えるため、
-    // 上方向(0,1,0)へ法線をブレンドし、面全体で柔らかく光を受けるように補正
+    // 面全体で柔らかく光を受けるように上方向へ法線をブレンド
     float3 bladeNormal = normalize(input.normal);
     float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
     
@@ -60,13 +60,12 @@ PixelShaderOutput main(GrassPSInput input)
     // -------------------------------------------------------------------------
     // Foliage Shading (Diffuse & SSS)
     // -------------------------------------------------------------------------
-    // 葉の円柱的な構造を近似し、陰への光の回り込みを表現
+    // 陰への光の回り込み
     float wrap = 0.5f;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL;
 
-    // View-dependent SSS: 逆光時に葉を透過する光の近似
-    // 根本(t=0)は厚みがあるとして減衰させ、先端(t=1)ほど強く透過
+    // View-dependent SSS (逆光時の葉の透過)
     float sssDot = saturate(dot(-lightDir, toEye + bladeNormal * 0.2f));
     float sssFade = pow(sssDot, 2.5f) * t;
     float3 translucency = gMaterial.sssColor * sssFade * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
@@ -84,19 +83,18 @@ PixelShaderOutput main(GrassPSInput input)
     // -------------------------------------------------------------------------
     // Specular
     // -------------------------------------------------------------------------
-    // 接線ベースの縦方向ハイライト
     float3 H = normalize(lightDir + toEye);
     float3 tangent = normalize(input.tangent);
     
     float TdotH = dot(tangent, H);
     float sinTH = sqrt(1.0f - saturate(TdotH * TdotH));
     
+    // 濡れるとスペキュラが鋭く強くなる
     float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
-    float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength;
-    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor; // 陰部分のハイライト遮蔽
+    float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength * lerp(1.0f, 2.5f, gMaterial.wetness);
+    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor;
     
-    // 突風マスクを利用し、風が強く当たる領域のスペキュラ輝度を引き上げる
-    // 草が風になびいた瞬間に面が揃って白く光る現象を低負荷で近似
+    // 突風時の面の揃いによるハイライト
     specIntensity *= 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
 
     finalColor += gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity;

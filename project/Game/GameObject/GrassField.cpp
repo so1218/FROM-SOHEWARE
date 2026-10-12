@@ -41,7 +41,6 @@ void GrassField::Initialize()
     binder_->BindColor("SSSColor", &grassMat->sssColor, { 0.7f, 0.9f, 0.3f });
     binder_->Bind("SSSStrength", &grassMat->sssStrength, 1.5f, 0.1f, 0.0f, 5.0f);
 
-    binder_->Bind("ColorVariation", &grassMat->colorVariation, 0.5f, 0.05f, 0.0f, 1.0f);
     binder_->Bind("SpecularStrength", &grassMat->specularStrength, 0.2f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("SpecularShininess", &grassMat->specularShininess, 40.0f, 1.0f, 10.0f, 200.0f);
     binder_->Bind("Wetness", &grassMat->wetness, 0.0f, 0.05f, 0.0f, 1.0f);
@@ -189,7 +188,6 @@ void GrassField::DebugDraw()
 
         ImGui::Separator();
         binder_->Draw("TipColor", "先端の色");
-        binder_->Draw("ColorVariation", "草原全体の色ムラ");
 
         ImGui::Separator();
         binder_->Draw("GrassNormalBlend", "法線の上向きブレンド (最重要)");

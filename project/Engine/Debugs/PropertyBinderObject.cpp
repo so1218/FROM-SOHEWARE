@@ -517,6 +517,22 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
         }
     );
 
+    MaterialData* matData = terrain->GetMaterialHandle()->materialData;
+    MaterialHandle* matHandle = terrain->GetMaterialHandle();
+
+    if (matData && matHandle)
+    {
+        BindBool(prefix + "RippleEnable", &matData->enableRipple, false);
+        BindTexture(prefix + "RippleMap", &matHandle->rippleTextureName, &matHandle->rippleTextureHandle, "normal_00", TextureType::Normal);
+        Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
+        Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
+        Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+        Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 5.0f);
+        Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 5.0f);
+        Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
+        Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
+    }
+
     BindMaterialProperties(prefix, terrain->GetMaterialHandle());
 }
 
@@ -545,6 +561,26 @@ void PropertyBinder::DrawTerrain(const std::string& groupName, const std::string
         Draw(prefix + "MaxHeight", "地形の最大高さ");
 
         ImGui::Spacing();
+        ImGui::SeparatorText("雨の波紋設定");
+
+        Draw(prefix + "RippleEnable", "有効化");
+        if (gv->GetIntValue(groupPath_, prefix + "RippleEnable") > 0)
+        {
+            Draw(prefix + "Wetness", "濡れ具合 / 水位");
+
+            ImGui::Spacing();
+            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋パラメータ");
+            Draw(prefix + "RippleMap", "波紋法線マップ");
+            Draw(prefix + "RippleScale", "雨の密度(スケール)");
+            Draw(prefix + "RippleStren", "波紋の強さ(法線)");
+            Draw(prefix + "RippleSpeed", "波紋の全体速度");
+            Draw(prefix + "RippleSize", "波紋の広がりサイズ");
+            Draw(prefix + "RippleFreq", "波紋の発生頻度");
+            Draw(prefix + "RippleMix", "波紋のレイヤー合成率");
+        }
+
+        ImGui::Spacing();
+
         DrawMaterialUI(targetTerrain, prefix, gv, groupPath_);
     }
     ImGui::PopID();
@@ -563,7 +599,6 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindTexture(prefix + "NormalMapTex", &handle->normalMapName, &handle->normalMapHandle, "normal_01", TextureType::Normal);
     BindTexture(prefix + "DissolveTex", &handle->dissolveMapName, &handle->dissolveMapHandle, "white1x1", TextureType::Noise);
     BindTexture(prefix + "ToonRampTex", &handle->toonRampName, &handle->toonRampHandle, "toonRamp_01", TextureType::Toon);
-    BindTexture(prefix + "RippleMap", &handle->rippleTextureName, &handle->rippleTextureHandle, "normal_00", TextureType::Normal);
 
     auto onUVChange = [handle]()
         {
@@ -619,18 +654,6 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
     BindBool(prefix + "OutlineEnable", &matData->enableOutline, false);
     Bind(prefix + "OutlineWidth", &matData->outlineWidth, 1.0f, 0.1f, 0.0f, 50.0f);
     BindColor(prefix + "OutlineColor", &matData->outlineColor, { 0.0f, 0.0f, 0.0f, 1.0f });
-
-    BindBool(prefix + "RippleEnable", &matData->enableRipple, false);
-
-    Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
-
-    Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
-    Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
-    Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 5.0f);
-
-    Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 5.0f);
-    Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
-    Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
 }
 
 template <typename ModelType>
@@ -785,28 +808,6 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
                             isChanged |= Draw(matPrefix + "EdgeWidth", "エッジ幅");
                             isChanged |= Draw(matPrefix + "EdgeInten", "エッジ強度");
                             isChanged |= Draw(matPrefix + "EdgeColor", "エッジ色");
-                        }
-                        ImGui::TreePop();
-                    }
-
-                    ImGui::Separator();
-
-                    if (ImGui::TreeNodeEx("WaterSettings", optFlags, "雨の波紋"))
-                    {
-                        isChanged |= Draw(matPrefix + "RippleEnable", "有効化");
-                        if (gv->GetIntValue(groupPath_, matPrefix + "RippleEnable") > 0)
-                        {
-                            isChanged |= Draw(matPrefix + "Wetness", "濡れ具合 / 水位");
-
-                            ImGui::Spacing();
-                            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋設定");
-                            isChanged |= Draw(matPrefix + "RippleMap", "波紋法線マップ");
-                            isChanged |= Draw(matPrefix + "RippleScale", "雨の密度(スケール)");
-                            isChanged |= Draw(matPrefix + "RippleStren", "波紋の強さ(法線)");
-                            isChanged |= Draw(matPrefix + "RippleSpeed", "波紋の全体速度");
-                            isChanged |= Draw(matPrefix + "RippleSize", "波紋の広がりサイズ");
-                            isChanged |= Draw(matPrefix + "RippleFreq", "波紋の発生頻度");
-                            isChanged |= Draw(matPrefix + "RippleMix", "波紋のレイヤー合成率");
                         }
                         ImGui::TreePop();
                     }
