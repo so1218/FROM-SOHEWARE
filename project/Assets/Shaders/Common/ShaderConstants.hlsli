@@ -669,26 +669,26 @@ struct FoliageInstanceData
 struct FoliageMaterialData
 {
     float3 baseColor;
-    float roughness;
+    float colorIntensity; 
     
-    float alphaCutoff;
-    float sssStrength;
+    float alphaCutoff; 
+    float roughness; 
+    float shadowDensity; 
+    float shadowBias; 
+    
+    float shadowNormalBias;
     float windResponse; 
     float stiffness; 
+    float plantHeight; 
     
     float flutterSpeed; 
     float flutterScale; 
-    float plantHeight;
-    float shadowDensity;
-    
-    float shadowBias;
-    float shadowNormalBias;
-    float interactStrength; 
+    float interactStrength ; 
     float flattenFactor; 
     
-    float trailFlattenWeight;
+    float trailFlattenWeight; 
     float recoverySpeed; 
-    float springElasticity;
+    float springElasticity; 
 };
 
 struct FoliageGenerationData

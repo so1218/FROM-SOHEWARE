@@ -35,9 +35,11 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput output;
 
+    // -------------------------------------------------------------------------
     // アルベド ＆ アルファテスト
+    // -------------------------------------------------------------------------
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
-    float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * input.instanceTint;
+    float3 albedo = albedoAlpha.rgb * gMaterial.baseColor * gMaterial.colorIntensity * input.instanceTint;
 
     // アルファの輪郭を滑らかに抜く処理
     float alpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
@@ -47,11 +49,9 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 worldNormal = normalize(input.normal * faceSign);
 
-    // 接地感の表現
-    float rootAO = saturate(input.texcoord.y);
-    float groundAO = lerp(0.2f, 1.0f, rootAO);
-
+    // -------------------------------------------------------------------------
     // ベクトル ＆ 影の計算
+    // -------------------------------------------------------------------------
     float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
     float viewDepth = length(cameraDiff);
     float3 L = normalize(-gDirectionalLights[0].direction);
@@ -59,26 +59,19 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, worldNormal, viewDepth);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * shadowFactor;
 
-    // ディフューズ ＆ 透過光 
+    // -------------------------------------------------------------------------
+    // ライティング
+    // -------------------------------------------------------------------------
     float NdotL = dot(worldNormal, L);
-    float directDiffuseFactor = saturate(NdotL);
+    float directDiffuseFactor = saturate(NdotL * 0.5f + 0.5f); // Half-Lambert
     float3 directDiffuse = albedo * lightColor * directDiffuseFactor;
 
-    // 裏面の透過光
-    float backLight = saturate(-NdotL);
-    float3 transmission = albedo * lightColor * (backLight * gMaterial.sssStrength);
-
-    // 環境光
-    float skyFactor = worldNormal.y * 0.5f + 0.5f;
-    float3 skyLighting = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyFactor);
-    float3 ambientDiffuse = albedo * skyLighting * groundAO;
-
-    // 最終カラー合成
-    float3 finalColor = (directDiffuse + transmission) * groundAO + ambientDiffuse;
-
-    output.color = float4(finalColor, 1.0f);
+    // -------------------------------------------------------------------------
+    // 最終カラー出力
+    // -------------------------------------------------------------------------
+    output.color = float4(directDiffuse, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(0.0f, 1.0f, 0.0f, 1.0f); 
+    output.material = float4(0.0f, gMaterial.roughness, 0.0f, 1.0f);
 
     return output;
 }

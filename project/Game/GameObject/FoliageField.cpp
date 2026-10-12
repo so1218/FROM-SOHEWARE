@@ -123,13 +123,13 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "GridSpacing", &layer.genData.gridSpacing, 0.5f, 0.01f, 0.05f, 10.0f);
     binder_->Bind(prefix + "MinScale", &layer.genData.minScale, 0.8f, 0.01f, 0.1f, 5.0f);
     binder_->Bind(prefix + "MaxScale", &layer.genData.maxScale, 1.2f, 0.01f, 0.1f, 5.0f);
+    binder_->Bind(prefix + "ColorIntensity", &layer.material.colorIntensity, 1.0f, 0.05f, 0.1f, 5.0f);
 
     binder_->Bind(prefix + "Roughness", &layer.material.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "AlphaCutoff", &layer.material.alphaCutoff, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "WindResponse", &layer.material.windResponse, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind(prefix + "Stiffness", &layer.material.stiffness, 1.0f, 0.01f, 0.0f, 10.0f);
 
-    binder_->Bind(prefix + "SSSStrength", &layer.material.sssStrength, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "FlutterSpeed", &layer.material.flutterSpeed, 2.0f, 0.1f, 0.0f, 10.0f);
     binder_->Bind(prefix + "FlutterScale", &layer.material.flutterScale, 0.1f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "PlantHeight", &layer.material.plantHeight, 1.0f, 0.1f, 0.1f, 10.0f);
@@ -299,11 +299,10 @@ void FoliageField::DebugDraw()
             binder_->Draw(prefix + "DensityMap", "密度マップ"); 
 
             binder_->Draw(prefix + "BaseColor", "基本色");
+            binder_->Draw(prefix + "ColorIntensity", "明るさ倍率");
 
             binder_->Draw(prefix + "Roughness", "粗さ");
             binder_->Draw(prefix + "AlphaCutoff", "抜き透過 ");
-
-            binder_->Draw(prefix + "SSSStrength", "透過光");
 
             ImGui::Text("風の揺れ・シャドウ");
             binder_->Draw(prefix + "WindResponse", "風の影響度");

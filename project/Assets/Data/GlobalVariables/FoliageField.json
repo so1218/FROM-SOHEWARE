@@ -7,6 +7,7 @@
             1.0,
             1.0
         ],
+        "Flower_01_ColorIntensity": 2.200000047683716,
         "Flower_01_DensityMap": "noise_56",
         "Flower_01_FlattenFactor": 0.09000000357627869,
         "Flower_01_FlutterScale": 0.9599999785423279,
@@ -21,18 +22,19 @@
         "Flower_01_RecoverySpeed": 2.0,
         "Flower_01_Roughness": 1.0,
         "Flower_01_SSSStrength": 1.0,
-        "Flower_01_ShadowDensity": 1.0,
+        "Flower_01_ShadowDensity": 0.5799999833106995,
         "Flower_01_SpringElasticity": 0.05999999865889549,
         "Flower_01_Stiffness": 0.1899999976158142,
         "Flower_01_TrailFlattenWeight": 1.0,
         "Flower_01_WindResponse": 1.3600000143051147,
         "Foliage_01_Albedo": "foliage_01_baseColor",
-        "Foliage_01_AlphaCutoff": 0.3400000035762787,
+        "Foliage_01_AlphaCutoff": 0.30000001192092896,
         "Foliage_01_BaseColor": [
             0.0,
             1.0,
             0.07594919204711914
         ],
+        "Foliage_01_ColorIntensity": 1.4500000476837158,
         "Foliage_01_DensityMap": "noise_19",
         "Foliage_01_FlattenFactor": 0.4399999976158142,
         "Foliage_01_FlutterScale": 0.49000000953674316,
@@ -55,10 +57,11 @@
         "Foliage_02_Albedo": "foliage_02_baseColor",
         "Foliage_02_AlphaCutoff": 0.5299999713897705,
         "Foliage_02_BaseColor": [
-            0.25316452980041504,
+            0.4507707953453064,
             1.0,
-            0.0
+            0.2645914554595947
         ],
+        "Foliage_02_ColorIntensity": 2.4000000953674316,
         "Foliage_02_DensityMap": "noise_48",
         "Foliage_02_FlattenFactor": 0.28999999165534973,
         "Foliage_02_FlutterScale": 3.0,
