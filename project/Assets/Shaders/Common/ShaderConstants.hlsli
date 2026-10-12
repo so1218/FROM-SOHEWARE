@@ -678,16 +678,14 @@ struct FoliageMaterialData
     
     float shadowNormalBias;
     float windResponse; 
-    float stiffness; 
     float plantHeight; 
-    
     float flutterSpeed; 
+    
     float flutterScale; 
     float interactStrength ; 
-    float flattenFactor; 
-    
-    float trailFlattenWeight; 
+    float trailFlattenWeight;
     float recoverySpeed; 
+    
     float springElasticity; 
 };
 

@@ -100,7 +100,6 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
     layer.material.shadowDensity = 1.0f;
 
     layer.material.interactStrength = 1.0f;
-    layer.material.flattenFactor = 0.5f;
     layer.material.trailFlattenWeight = 0.8f;
 
     layers_.push_back(layer);
@@ -128,8 +127,7 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "Roughness", &layer.material.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "AlphaCutoff", &layer.material.alphaCutoff, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "WindResponse", &layer.material.windResponse, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind(prefix + "Stiffness", &layer.material.stiffness, 1.0f, 0.01f, 0.0f, 10.0f);
-
+   
     binder_->Bind(prefix + "FlutterSpeed", &layer.material.flutterSpeed, 2.0f, 0.1f, 0.0f, 10.0f);
     binder_->Bind(prefix + "FlutterScale", &layer.material.flutterScale, 0.1f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "PlantHeight", &layer.material.plantHeight, 1.0f, 0.1f, 0.1f, 10.0f);
@@ -137,7 +135,6 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "ShadowDensity", &layer.material.shadowDensity, 1.0f, 0.01f, 0.0f, 1.0f);
 
     binder_->Bind(prefix + "InteractStrength", &layer.material.interactStrength, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind(prefix + "FlattenFactor", &layer.material.flattenFactor, 0.5f, 0.01f, 0.0f, 2.0f);
     binder_->Bind(prefix + "TrailFlattenWeight", &layer.material.trailFlattenWeight, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "RecoverySpeed", &layer.material.recoverySpeed, 0.4f, 0.01f, 0.01f, 2.0f);
     binder_->Bind(prefix + "SpringElasticity", &layer.material.springElasticity, 0.2f, 0.01f, 0.0f, 1.0f);
@@ -306,7 +303,6 @@ void FoliageField::DebugDraw()
 
             ImGui::Text("風の揺れ・シャドウ");
             binder_->Draw(prefix + "WindResponse", "風の影響度");
-            binder_->Draw(prefix + "Stiffness", "硬さ (揺れにくさ)");
             binder_->Draw(prefix + "FlutterSpeed", "細かな揺れの速度");
             binder_->Draw(prefix + "FlutterScale", "細かな揺れの幅");
             binder_->Draw(prefix + "PlantHeight", "植物の高さ基準");
@@ -315,7 +311,6 @@ void FoliageField::DebugDraw()
             ImGui::Separator();
             ImGui::Text("インタラクション");
             binder_->Draw(prefix + "InteractStrength", "物理干渉強度");
-            binder_->Draw(prefix + "FlattenFactor", "押しつぶされ率 (倒れ)");
             binder_->Draw(prefix + "TrailFlattenWeight", "軌跡の押しつぶし影響度");
             binder_->Draw(prefix + "RecoverySpeed", "復元速度");
             binder_->Draw(prefix + "SpringElasticity", "揺れ戻り");
