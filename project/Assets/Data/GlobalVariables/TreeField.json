@@ -16,7 +16,7 @@
         "EnvMap": "pureSky",
         "GustScale": 0.6700000166893005,
         "GustStrength": 0.8399999737739563,
-        "LeafAlbedoMult": 1.7400000095367432,
+        "LeafAlbedoMult": 7.659999847412109,
         "LeafColorTint": [
             0.08770912885665894,
             0.2405063509941101,
@@ -35,8 +35,8 @@
         "MaxDrawDistance": 350.0,
         "MaxScale": 38.400001525878906,
         "MinScale": 19.799999237060547,
-        "NearFadeMaxDist": 20.0,
-        "NearFadeMinDist": 11.0,
+        "NearFadeMaxDist": 15.0,
+        "NearFadeMinDist": 6.0,
         "Position": [
             0.0,
             0.0,
@@ -53,7 +53,7 @@
         "TransDistortion": 0.10000000149011612,
         "TransPower": 5.0,
         "TreeCount": 435,
-        "TreeHeight": 23.700000762939453,
+        "TreeHeight": 15.0,
         "TreeRadius": 20.0,
         "TrunkAlbedoMult": 1.0,
         "TrunkColliderRadius": 0.1599999964237213,

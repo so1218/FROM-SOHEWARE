@@ -40,7 +40,7 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<PebbleField>(engine_);
     objectManager_.Create<FoliageField>(engine_);
     objectManager_.Create<GameUI>(engine_);
-    objectManager_.Create<WaterManager>(engine_, "GameWater");
+    /*objectManager_.Create<WaterManager>(engine_, "GameWater");*/
 }
 
 void PlayScene::OnInitialize()

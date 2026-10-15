@@ -39,4 +39,6 @@ private:
     float spotAngleDeg_ = 30.0f;
     float spotVolumetric_ = 4.0f;
     FE::Vector3 spotDirection_ = { 0.0f, -1.0f, 0.0f };
+
+	int soundHandleID_ = -1; // サウンドのハンドル
 };

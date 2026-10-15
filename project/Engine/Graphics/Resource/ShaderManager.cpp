@@ -17,12 +17,43 @@ void ShaderManager::Initialize(
 
 Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     const std::wstring& filePath,
-    const wchar_t* profile)
+    const wchar_t* profile) 
 {
-    // Assets/Shaders の絶対パスを取得
+    // キャッシュ用 CSO ファイルのパス計算
+    fs::path srcPath(filePath);
+    fs::path relativePath = fs::relative(srcPath, L"Assets/Shaders");
+    fs::path csoPath = L"Cache/Shaders" / relativePath;
+    csoPath.replace_extension(L".cso");
+
+    // タイムスタンプ比較による再コンパイル要否判定
+    bool needCompile = true;
+
+    if (fs::exists(csoPath) && fs::exists(srcPath))
+    {
+        auto srcTime = fs::last_write_time(srcPath);
+        auto csoTime = fs::last_write_time(csoPath);
+
+        // CSOファイルが .hlsl ソースファイル以降に生成されたものであれば再利用
+        if (csoTime >= srcTime)
+        {
+            needCompile = false;
+        }
+    }
+
+    // 高速パス: CSOが存在し最新なら、DXCコンパイルをスキップして即ロード
+    if (!needCompile)
+    {
+        Microsoft::WRL::ComPtr<IDxcBlobEncoding> csoBlob;
+        HRESULT hr = dxcUtils_->LoadFile(csoPath.c_str(), nullptr, &csoBlob);
+        if (SUCCEEDED(hr))
+        {
+            return csoBlob; // 超高速パス
+        }
+    }
+
+    // .hlsl をDXCでコンパイル実行
     std::wstring absoluteShaderDir = fs::absolute(L"Assets/Shaders").wstring();
 
-    // 引数の動的な構築
     std::vector<LPCWSTR> arguments = {
         filePath.c_str(),
         L"-E", L"main",
@@ -63,16 +94,16 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
         IID_PPV_ARGS(&shaderResult));
 
     // エラー詳細の取得
-    if (SUCCEEDED(hr)) {
+    if (SUCCEEDED(hr))
+    {
         Microsoft::WRL::ComPtr<IDxcBlobUtf8> shaderError;
         shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
         if (shaderError && shaderError->GetStringLength() != 0)
         {
-            // アサートせずにログを出すだけにして、ゲームを落とさず修正
             LOG_ERROR("Shader Compile Error in [{}]:\n{}",
                 StringUtils::ConvertString(filePath),
                 shaderError->GetStringPointer());
-            return nullptr; // 失敗時はnullptrを返す
+            return nullptr;
         }
     }
 
@@ -81,13 +112,23 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
     if (FAILED(hr)) return nullptr;
 
+    // コンパイル成功時: CSO ファイルとして自動保存
+    fs::create_directories(csoPath.parent_path()); 
+
+    std::ofstream ofs(csoPath, std::ios::binary);
+    if (ofs.is_open())
+    {
+        ofs.write(static_cast<const char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
+        ofs.close();
+    }
+
     return shaderBlob;
 }
 
 IDxcBlob* ShaderManager::GetShader(const std::wstring& relativePath, const wchar_t* profile)
 {
     // キャッシュキーは受け取った相対パスで管理
-    std::wstring cacheKey = relativePath + L"_" + profile;
+    std::wstring cacheKey = relativePath;
     if (auto it = shaderCache_.find(cacheKey); it != shaderCache_.end()) {
         return it->second.Get();
     }
@@ -100,7 +141,7 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& relativePath, const wchar
     for (auto& ch : safeFileName) {
         if (ch == L'/' || ch == L'\\') ch = L'_';
     }
-    std::wstring cacheFileName = safeFileName + L"_" + profile + L".cso";
+    std::wstring cacheFileName = safeFileName + L".cso";
     std::wstring cachePath = L"Assets/Shaders/Cache/" + cacheFileName;
 
     Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob;
@@ -118,17 +159,21 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& relativePath, const wchar
     if (shouldCompile)
     {
         auto newBlob = CompileShader(fullPath, profile);
-        if (newBlob) {
+        if (newBlob)
+        {
             shaderBlob = newBlob;
             SaveBlob(cachePath, shaderBlob.Get());
         }
-        else {
-            if (fs::exists(cachePath)) {
+        else
+        {
+            if (fs::exists(cachePath))
+            {
                 LOG_ERROR("コンパイル失敗。前回成功したキャッシュを使用: {}", StringUtils::ConvertString(relativePath));
                 MessageBeep(MB_ICONERROR);
                 shaderBlob = LoadBlob(cachePath, dxcUtils_);
             }
-            else {
+            else
+            {
                 LOG_ERROR("コンパイルに失敗し、キャッシュも存在しません: {}", StringUtils::ConvertString(relativePath));
                 return nullptr;
             }

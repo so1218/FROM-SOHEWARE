@@ -1,22 +1,10 @@
 #pragma once
+#include "TextureLoader.h"
 
 namespace FE
 {
 
 class Engine;
-
-enum class TextureType
-{
-    Albedo,
-    Normal,
-    Toon,
-    Noise,
-    CubeMap,
-    Particle,
-    UI,
-    LUT,
-    Unknown
-};
 
 struct TextureHandleData
 {

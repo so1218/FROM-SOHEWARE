@@ -8,6 +8,11 @@ using namespace FE;
 
 FloatingBehavior::~FloatingBehavior()
 {
+    if (soundHandleID_ >= 0)
+    {
+        AudioPlayer::GetInstance().Stop(soundHandleID_);
+        soundHandleID_ = -1;
+    }
 }
 
 void FloatingBehavior::Initialize(Enemy* owner)
@@ -51,6 +56,8 @@ void FloatingBehavior::Initialize(Enemy* owner)
     {
         engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
     }
+
+    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", owner->GetTransform().translation_, true, 100, 100);
 }
 
 void FloatingBehavior::Update(Enemy* owner)
@@ -84,6 +91,11 @@ void FloatingBehavior::Update(Enemy* owner)
 
     owner->GetTransform().translation_ = currentPos;
     owner->SyncTransform(); 
+
+    if (soundHandleID_ >= 0)
+    {
+        AudioPlayer::GetInstance().SetEmitterPosition(soundHandleID_, currentPos);
+    }
 
     // スポットライトの追従と更新
     float cosAngle = std::cos(spotAngleDeg_ * radian);

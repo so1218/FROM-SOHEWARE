@@ -208,43 +208,75 @@ void AudioPlayer::SetEmitterPosition(int handleID, const Vector3& position)
 
 void AudioPlayer::Update()
 {
-    // X3DAudioのインスタンスやマスターチャンネル数を取得 
     const X3DAUDIO_HANDLE& x3dInstance = AudioDevice::GetInstance().GetX3DInstance();
     uint32_t dstChannels = AudioDevice::GetInstance().GetMasterChannels();
 
-    for (auto& pair : activeVoices_)
+    for (auto it = activeVoices_.begin(); it != activeVoices_.end(); )
     {
-        AudioInstance& instance = pair.second;
+        int handleID = it->first;
+        AudioInstance& instance = it->second;
 
-        // 3D設定されていない音は無視
-        if (!instance.is3D || !instance.voice) continue;
+        // 再生終了チェック
+        if (!IsPlaying(handleID))
+        {
+            it = activeVoices_.erase(it);
+            continue;
+        }
 
-        // 音源の設定
-        X3DAUDIO_EMITTER emitter = {};
-        emitter.ChannelCount = instance.channels;
-        emitter.CurveDistanceScaler = instance.maxDistance;
-        emitter.Position = { instance.position.x, instance.position.y, instance.position.z };
-        emitter.OrientFront = { 0, 0, 1 };
-        emitter.OrientTop = { 0, 1, 0 };
+        // 3D音響計算
+        if (instance.is3D && instance.voice)
+        {
+            // リスナーと音源の距離を直接計算
+            float dx = instance.position.x - listener_.Position.x;
+            float dy = instance.position.y - listener_.Position.y;
+            float dz = instance.position.z - listener_.Position.z;
+            float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-        // 距離によるボリューム減衰計算の設定
-        X3DAUDIO_DSP_SETTINGS dspSettings = {};
-        float matrix[8] = { 0 }; // 左右への振り分け係数が入る配列
-        dspSettings.SrcChannelCount = instance.channels;
-        dspSettings.DstChannelCount = dstChannels;
-        dspSettings.pMatrixCoefficients = matrix;
+            // maxDistance 以上離れていたら音量を 0 にして計算をスキップ
+            if (dist >= instance.maxDistance)
+            {
+                float zeroMatrix[8] = { 0 };
+                instance.voice->SetOutputMatrix(NULL, instance.channels, dstChannels, zeroMatrix);
+                ++it;
+                continue;
+            }
 
-        // 3D音響の計算
-        X3DAudioCalculate(
-            x3dInstance,
-            &listener_,
-            &emitter,
-            X3DAUDIO_CALCULATE_MATRIX, // 左右と距離減衰のみ計算
-            &dspSettings
-        );
+            // 音源の設定
+            X3DAUDIO_EMITTER emitter = {};
+            emitter.ChannelCount = instance.channels;
+            emitter.CurveDistanceScaler = instance.maxDistance; // 基準距離
+            emitter.Position = { instance.position.x, instance.position.y, instance.position.z };
+            emitter.OrientFront = { 0, 0, 1 };
+            emitter.OrientTop = { 0, 1, 0 };
 
-        // 再生中のボイスに計算結果を適用
-        instance.voice->SetOutputMatrix(NULL, dspSettings.SrcChannelCount, dspSettings.DstChannelCount, matrix);
+            // 3D音響計算用の設定
+            X3DAUDIO_DSP_SETTINGS dspSettings = {};
+            float matrix[8] = { 0 };
+            dspSettings.SrcChannelCount = instance.channels;
+            dspSettings.DstChannelCount = dstChannels;
+            dspSettings.pMatrixCoefficients = matrix;
+
+            X3DAudioCalculate(
+                x3dInstance,
+                &listener_,
+                &emitter,
+                X3DAUDIO_CALCULATE_MATRIX,
+                &dspSettings
+            );
+
+            // maxDistance に近づくにつれてスムーズに 0 に落とす
+            float distanceFactor = 1.0f - (dist / instance.maxDistance);
+            distanceFactor = std::max(0.0f, std::min(1.0f, distanceFactor)); 
+
+            for (uint32_t i = 0; i < instance.channels * dstChannels; ++i)
+            {
+                matrix[i] *= distanceFactor;
+            }
+
+            instance.voice->SetOutputMatrix(NULL, dspSettings.SrcChannelCount, dspSettings.DstChannelCount, matrix);
+        }
+
+        ++it;
     }
 }
 

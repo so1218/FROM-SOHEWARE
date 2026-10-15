@@ -342,8 +342,8 @@ void Player::UpdateFootstepEvents()
 	float currentNormalizedTime = animationModel_->GetNormalizedTime();
 
 	// humanRun アニメーションの足がつくタイミング
-	const float leftFootStepTime = 0.20f;
-	const float rightFootStepTime = 0.70f;
+	const float leftFootStepTime = 0.10f;
+	const float rightFootStepTime = 0.60f;
 
 	// アニメーションが1周して0.0に戻った場合の補正
 	if (currentNormalizedTime < prevAnimNormalizedTime_)
@@ -355,9 +355,13 @@ void Player::UpdateFootstepEvents()
 	bool isLeftFoot = (prevAnimNormalizedTime_ < leftFootStepTime && currentNormalizedTime >= leftFootStepTime);
 	bool isRightFoot = (prevAnimNormalizedTime_ < rightFootStepTime && currentNormalizedTime >= rightFootStepTime);
 
-	if (isLeftFoot || isRightFoot)
+	if (isLeftFoot)
 	{
-		AudioPlayer::GetInstance().Play("playerRunning", false, 10);
+		AudioPlayer::GetInstance().Play("playerRunning", false, 15);
+	}
+	if (isRightFoot)
+	{
+		AudioPlayer::GetInstance().Play("playerRunning", false, 30);
 	}
 
 	// 次フレームのために正規化した進捗率を保持

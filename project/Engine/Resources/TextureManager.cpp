@@ -18,50 +18,58 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
         return;
     }
 
+    // ディレクトリ走査中に DDS ファイルを新規生成するとイテレータが破綻するため、全ファイルパスを配列に収集
+    std::vector<fs::path> allFiles;
     for (const auto& entry : fs::recursive_directory_iterator(rootDirectory))
     {
         if (entry.is_regular_file()) {
-            fs::path filePath = entry.path();
-
-            // 拡張子を取得して小文字化
-            std::string ext = filePath.extension().string();
-            std::string extLower = ext;
-            std::transform(extLower.begin(), extLower.end(), extLower.begin(), ::tolower);
-
-            // 画像ファイルのみ対象
-            if (extLower == ".png" || extLower == ".jpg" || extLower == ".dds" || extLower == ".tga")
-            {
-
-                TextureHandleData data;
-                data.fullPath = filePath.generic_string();
-
-                // ファイル名を取得し、小文字に統一して保存
-                std::string stem = filePath.stem().string();
-                std::string stemLower = stem;
-                std::transform(stemLower.begin(), stemLower.end(), stemLower.begin(), ::tolower);
-
-                data.name = stem;
-
-                // タイプ判定
-                data.type = DetectTypeFromPath(filePath);
-
-                // ロード
-                data.handle = engine->GetTextureLoader()->Load(data.fullPath);
-
-                // 検索用マップには小文字化した名前で登録
-                if (nameToIndex_.count(stemLower) > 0)
-                {
-                    std::cerr << "[Warning] Duplicate texture name (case-insensitive): " << stem << std::endl;
-                    continue;
-                }
-
-                textures_.push_back(data);
-                nameToIndex_[stemLower] = textures_.size() - 1;
-            }
+            allFiles.push_back(entry.path());
         }
     }
 
-    // エラーハンドルの設定 (小文字で検索)
+    // 収集したリストをもとに処理を行う
+    for (const auto& filePath : allFiles)
+    {
+        std::string ext = filePath.extension().string();
+        std::string extLower = ext;
+        std::transform(extLower.begin(), extLower.end(), extLower.begin(), ::tolower);
+
+        if (extLower == ".png" || extLower == ".jpg" || extLower == ".dds" || extLower == ".tga")
+        {
+            std::string stem = filePath.stem().string();
+            std::string stemLower = stem;
+            std::transform(stemLower.begin(), stemLower.end(), stemLower.begin(), ::tolower);
+
+            // 自動生成された .dds と元の .png の二重読み込みを防止
+            if (extLower == ".dds")
+            {
+                if (fs::exists(filePath.parent_path() / (stem + ".png")) ||
+                    fs::exists(filePath.parent_path() / (stem + ".jpg")) ||
+                    fs::exists(filePath.parent_path() / (stem + ".tga")))
+                {
+                    continue;
+                }
+            }
+
+            TextureHandleData data;
+            data.fullPath = filePath.generic_string();
+            data.name = stem;
+            data.type = DetectTypeFromPath(filePath);
+
+            // ロード実行 (初回は DDS へ変換、2回目以降は爆速ロード)
+            data.handle = engine->GetTextureLoader()->LoadWithAutoDDS(data.fullPath, data.type);
+
+            if (nameToIndex_.count(stemLower) > 0)
+            {
+                std::cerr << "[Warning] Duplicate texture name (case-insensitive): " << stem << std::endl;
+                continue;
+            }
+
+            textures_.push_back(data);
+            nameToIndex_[stemLower] = textures_.size() - 1;
+        }
+    }
+
     if (nameToIndex_.count("white1x1"))
     {
         errorHandle_ = Get("white1x1");
@@ -104,30 +112,25 @@ const TextureHandleData* TextureManager::GetMetaData(const std::string& name)
 
 TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path)
 {
-    // パス全体を小文字化して判定 
     std::string pathStr = path.generic_string();
     std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::tolower);
 
-    // 判定ロジック
     if (pathStr.find("/albedo/") != std::string::npos ||
         pathStr.find("/utility/") != std::string::npos)      return TextureType::Albedo;
     if (pathStr.find("/particles/") != std::string::npos) return TextureType::Particle;
     if (pathStr.find("/ui/") != std::string::npos)        return TextureType::UI;
-    if (pathStr.find("/environments/") != std::string::npos) return TextureType::CubeMap;
+    if (pathStr.find("/environments/") != std::string::npos ||
+        pathStr.find("/cubemap/") != std::string::npos)     return TextureType::CubeMap;
     if (pathStr.find("/normal/") != std::string::npos)    return TextureType::Normal;
     if (pathStr.find("/ramps/") != std::string::npos)     return TextureType::Toon;
     if (pathStr.find("/noise/") != std::string::npos)     return TextureType::Noise;
     if (pathStr.find("/luts/") != std::string::npos)      return TextureType::LUT;
 
-    // ファイル名ルール
     std::string filename = path.stem().string();
-    // ファイル名も小文字化
     std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
     if (filename.ends_with("_n") || filename.ends_with("_normal")) return TextureType::Normal;
-    if (path.extension().string() == ".dds") return TextureType::CubeMap;
 
-    // デフォルト (ルート直下にあるファイル等も Albedo)
     return TextureType::Albedo;
 }
 

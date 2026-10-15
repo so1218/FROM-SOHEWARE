@@ -7,6 +7,7 @@ thunderStormBGM,BGM/thunderStormBGM.mp3
 # SE
 gunShot,SE/gunShot.mp3
 playerRunning,SE/playerRunning.mp3
+floatingEnemy,SE/floatingEnemy.mp3
 floatingEnemyDamaged,SE/floatingEnemyDamaged.mp3
 floatingEnemyExplosion,SE/floatingEnemyExplosion.mp3
 lightningStrike,SE/lightningStrike.mp3

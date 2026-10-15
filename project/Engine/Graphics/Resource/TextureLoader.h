@@ -5,6 +5,19 @@ namespace FE
 
 class SRVManager;
 
+enum class TextureType
+{
+    Albedo,
+    Normal,
+    Toon,
+    Noise,
+    CubeMap,
+    Particle,
+    UI,
+    LUT,
+    Unknown
+};
+
 class TextureLoader
 {
 public:
@@ -54,6 +67,14 @@ public:
     void CleanupCompletedUploads(uint64_t completedFenceValue);
 
     std::vector<DirectX::ScratchImage> LoadMultipleTextures(const std::vector<std::string>& texturePaths);
+
+    static bool ConvertAndSaveToDDS(
+        const std::string& srcPath,
+        const std::string& dstDdsPath,
+        TextureType type
+    );
+
+    uint32_t LoadWithAutoDDS(const std::string& filePath, TextureType type);
     
     // ゲッター
     const std::vector<UploadResourceEntry>& GetPendingUploadResources() const { return pendingUploadResources_; }
