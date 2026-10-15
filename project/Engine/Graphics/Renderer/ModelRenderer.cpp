@@ -16,27 +16,24 @@ namespace FE
 
 void ModelRenderer::Initialize(const RenderEnvironment& env)
 {
-    device_ = env.device; 
+    device_ = env.device;
 
-    perObjectBuffers_.resize(kMaxCount);
-    for (auto& buffer : perObjectBuffers_)
-    {
-        buffer.wvpResource = BufferManager::CreateMappedConstantBuffer(
-            device_->GetDevice(),
-            &buffer.wvpMapped
-        );
-    }
+    // 定数バッファ一括確保
+    const size_t totalPerObjectSize = static_cast<size_t>(kAlignedPerObjectSize) * kMaxCount;
+    perObjectBatchResource_ = BufferManager::CreateMappedBuffer(
+        device_->GetDevice(),
+        totalPerObjectSize,
+        &perObjectMappedData_
+    );
 
-    // インスタンシング用バッファの初期化
-    // StructuredBufferとして作成
+    // StructuredBuffer 一括確保
     instanceBuffer_.resource = BufferManager::CreateMappedBuffer(
         device_->GetDevice(),
-        kMaxInstances,
-        &instanceBuffer_.mapped
+        kMaxInstances, 
+        &instanceBuffer_.mapped 
     );
 
     // SRVの作成
-    instanceBuffer_.srvIndex = env.srvManager->Allocate();
     instanceBuffer_.srvIndex = env.srvManager->CreateStructuredBufferSRV(
         instanceBuffer_.resource.Get(),
         kMaxInstances,
@@ -175,15 +172,15 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                     actualTextureHandle = meshPart.textureData.textureHandle;
                 }
 
-                auto& buffer = perObjectBuffers_[indexModel_];
+                TransformationMatrix* wvpMapped = GetPerObjectMappedPtr(indexModel_);
 
                 // 行列計算
                 Matrix4x4 wvp = currentWorldMatrix * viewProjectionMatrix_;
-                buffer.wvpMapped->WVP = wvp;
-                buffer.wvpMapped->World = currentWorldMatrix;
-                buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
-                buffer.wvpMapped->WorldColor = instanceColor;
-                buffer.wvpMapped->PrevWorld = currentPrevWorldMatrix;
+                wvpMapped->WVP = wvp;
+                wvpMapped->World = currentWorldMatrix;
+                wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
+                wvpMapped->WorldColor = instanceColor;
+                wvpMapped->PrevWorld = currentPrevWorldMatrix;
 
                 ModelSubmission submission{};
                 submission.type = RenderType::Model;
@@ -325,15 +322,15 @@ void ModelRenderer::SubmitAnimation(
             continue;
         }
 
-        auto& buffer = perObjectBuffers_[indexModel_];
+        TransformationMatrix* wvpMapped = GetPerObjectMappedPtr(indexModel_);
 
         // 各パーツのWorld行列はモデル全体のWorldで統一
         Matrix4x4 wvp = world * viewProjectionMatrix_;
-        buffer.wvpMapped->WVP = wvp;
-        buffer.wvpMapped->World = world;
-        buffer.wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
-        buffer.wvpMapped->WorldColor = instanceColor;
-        buffer.wvpMapped->PrevWorld = prevWorld;
+        wvpMapped->WVP = wvp;
+        wvpMapped->World = world;
+        wvpMapped->WorldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
+        wvpMapped->WorldColor = instanceColor;
+        wvpMapped->PrevWorld = prevWorld;
 
         // マテリアル決定
         MaterialHandle actualMaterialHandle;
@@ -478,14 +475,13 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
         if (isSkinning)
         {
-            auto& buffer = perObjectBuffers_[sub.instanceIndex]; 
             cmdList->SetPipelineState(env.psoManager->GetPSO("OutlineSkinning"));
             cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("OutlineSkinning"));
 
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
             cmdList->SetGraphicsRootDescriptorTable(1, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
             cmdList->SetGraphicsRootConstantBufferView(2, sub.materialHandle.resource->GetGPUVirtualAddress());
-            cmdList->SetGraphicsRootConstantBufferView(3, buffer.wvpResource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRootConstantBufferView(3, GetPerObjectGPUAddress(sub.instanceIndex));
 
             const auto& influence = sub.skinCluster->meshInfluences[sub.meshIndex];
             D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
@@ -556,8 +552,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
     if (isSkinning)
     {
-        auto& buffer = perObjectBuffers_[sub.instanceIndex]; // スキニングは個別バッファ
-        cmdList->SetGraphicsRootConstantBufferView(5, buffer.wvpResource->GetGPUVirtualAddress());
+        cmdList->SetGraphicsRootConstantBufferView(5, GetPerObjectGPUAddress(sub.instanceIndex));
         cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
         cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
@@ -598,7 +593,6 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
         assert(sub.meshIndex < meshes.size());
         const Mesh* mesh = &meshes[sub.meshIndex];
 
-        auto& buffer = perObjectBuffers_[sub.instanceIndex];
         bool isSkinning = (sub.skinCluster != nullptr);
         bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
             (sub.materialHandle.materialData->color.w < 1.0f);
@@ -606,6 +600,8 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
         PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Shadow Batch [%s%s] (Mesh: %u, Instances: %u)",
             isSkinning ? "Skinning" : "Static", needDissolve ? " + Dissolve" : "",
             sub.meshIndex, isSkinning ? 1 : batch.instanceCount);
+
+        uint32_t indexCount = static_cast<uint32_t>(mesh->GetIndexCount());
 
         // ディゾルブ
         if (needDissolve)
@@ -617,7 +613,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinningDissolve"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, GetPerObjectGPUAddress(sub.instanceIndex));
 
                 cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRoot32BitConstant(3, cascadeIndex, 0);
@@ -630,7 +626,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(), influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), 1, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
             }
             else
             {
@@ -651,7 +647,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, 0);
             }
         }
         else
@@ -663,7 +659,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapSkinning"));
 
                 cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-                cmdList->SetGraphicsRootConstantBufferView(1, buffer.wvpResource->GetGPUVirtualAddress());
+                cmdList->SetGraphicsRootConstantBufferView(1, GetPerObjectGPUAddress(sub.instanceIndex));
 
                 cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
                 cmdList->SetGraphicsRoot32BitConstant(3, cascadeIndex, 0);
@@ -674,7 +670,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
                 D3D12_VERTEX_BUFFER_VIEW vbvs[2] = { mesh->GetVertexBufferView(),  influence.influenceBufferView };
                 cmdList->IASetVertexBuffers(0, 2, vbvs);
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), 1, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
             }
             else
             {
@@ -692,7 +688,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 
                 cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());
                 cmdList->IASetIndexBuffer(&mesh->GetIndexBufferView());
-                cmdList->DrawIndexedInstanced(uint32_t(mesh->GetIndexCount()), batch.instanceCount, 0, 0, 0);
+                cmdList->DrawIndexedInstanced(indexCount, batch.instanceCount, 0, 0, 0);
             }
         }
     }

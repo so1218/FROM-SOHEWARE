@@ -76,6 +76,14 @@ private:
     void DrawCore(const RenderEnvironment& env, const ModelSubmission& sub, ShadowMap* shadowMap,
         uint32_t instanceCount, uint32_t startInstanceLocation);
 
+    // アドレス取得用ヘルパー関数
+    TransformationMatrix* GetPerObjectMappedPtr(size_t index) const {
+        return reinterpret_cast<TransformationMatrix*>(perObjectMappedData_ + (index * kAlignedPerObjectSize));
+    }
+    D3D12_GPU_VIRTUAL_ADDRESS GetPerObjectGPUAddress(size_t index) const {
+        return perObjectBatchResource_->GetGPUVirtualAddress() + static_cast<uint64_t>(index * kAlignedPerObjectSize);
+    }
+
 private:
     static const int32_t kMaxCount = 10000; // Submitの最大数
     static constexpr uint32_t kMaxInstances = 10000; // インスタンシングの最大数
@@ -85,7 +93,6 @@ private:
     GraphicsDevice* device_ = nullptr;
 
     std::map<const ModelData*, ModelBatch> meshCache_;
-    std::vector<PerObjectBuffer> perObjectBuffers_;
     std::vector<ModelSubmission> modelSubmissions_;
 
     uint32_t indexModel_ = 0;
@@ -99,6 +106,13 @@ private:
     std::vector<RenderBatch> batches_;
 
     int totalDrawCalls = 0;
+
+    // 個別の Resource 保持構造体は廃止し、1本のバッファをまとめる
+    Microsoft::WRL::ComPtr<ID3D12Resource> perObjectBatchResource_;
+    uint8_t* perObjectMappedData_ = nullptr; // 256バイトアライメントアクセス用
+
+    // 256バイト境界に切り上げたアライメントサイズ
+    static constexpr uint32_t kAlignedPerObjectSize = (sizeof(TransformationMatrix) + 255) & ~255;
 };
 
 }
