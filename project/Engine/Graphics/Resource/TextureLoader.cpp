@@ -25,11 +25,9 @@ DXGI_FORMAT GetCompressedFormat(TextureType type, bool isSRGB)
 {
     switch (type)
     {
-    case TextureType::Noise:
-        return DXGI_FORMAT_BC4_UNORM; // 単一チャンネル (モノクロノイズ等)
-
     case TextureType::Albedo:
     case TextureType::Normal:
+    case TextureType::Noise:
     case TextureType::Toon:
     case TextureType::Particle:
     case TextureType::UI:
