@@ -270,7 +270,6 @@ void FollowCamera::Reset(Camera* camera)
     currentShoulderOffset_ = isAiming_ ? aimShoulderOffset_ : normalShoulderOffset_;
     currentLookAtOffset_ = isAiming_ ? aimLookAtOffset_ : normalLookAtOffset_;
 
-    // ★ 反動オフセットもリセット
     recoilPitch_ = 0.0f;
     recoilYaw_ = 0.0f;
 

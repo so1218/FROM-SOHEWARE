@@ -115,7 +115,7 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
 
                 Vector3 worldCenter = currentWorldMatrix.TransformPoint(localCenter);
 
-                // 行列のスケール・回転を適用した広がりを計算（絶対値）
+                // 行列のスケール・回転を適用した広がりを計算
                 Vector3 worldExtents;
                 worldExtents.x = std::abs(currentWorldMatrix.m[0][0]) * localExtents.x + std::abs(currentWorldMatrix.m[1][0]) * localExtents.y + std::abs(currentWorldMatrix.m[2][0]) * localExtents.z;
                 worldExtents.y = std::abs(currentWorldMatrix.m[0][1]) * localExtents.x + std::abs(currentWorldMatrix.m[1][1]) * localExtents.y + std::abs(currentWorldMatrix.m[2][1]) * localExtents.z;
@@ -125,32 +125,31 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 Vector3 worldMax = { worldCenter.x + worldExtents.x, worldCenter.y + worldExtents.y, worldCenter.z + worldExtents.z };
 
                 // カメラ・影フラスタムとの判定
-             // 最大の広がりを計算（小物カリング用）
+                // 最大の広がりを計算（小物カリング用）
                 float maxExtent = std::max({ worldExtents.x, worldExtents.y, worldExtents.z });
 
                 uint8_t viewMask = 0;
 
-                // 1. カメラフラスタム判定 (Bit 0 に保存)
+                // カメラフラスタム判定
                 if (cameraFrustum.IntersectsAABB(worldMin, worldMax))
                 {
                     viewMask |= (1 << 0);
                 }
 
-                // 2. 影カスケード判定 (Bit 1, 2, 3 に保存)
+                // 影カスケード判定
                 for (uint32_t i = 0; i < shadowFrustums.size(); ++i)
                 {
                     if (shadowFrustums[i].IntersectsAABB(worldMin, worldMax))
                     {
-                        // ★激重対策：遠くのカスケードでは小物を影から除外する
-                        // （値はゲームのスケールに合わせて微調整してください）
-                        if (i == 1 && maxExtent < 1.0f) continue; // Cascade1では半径1m未満を除外
-                        if (i == 2 && maxExtent < 5.0f) continue; // Cascade2では半径5m未満を除外
+                        // 遠くのカスケードでは小物を影から除外する
+                        if (i == 1 && maxExtent < 1.0f) continue; 
+                        if (i == 2 && maxExtent < 5.0f) continue; 
 
-                        viewMask |= (1 << (i + 1)); // i=0ならBit1, i=1ならBit2...
+                        viewMask |= (1 << (i + 1)); 
                     }
                 }
 
-                // どこからも見えない場合は描画対象から除外（カリング）
+                // どこからも見えない場合は描画対象から除外
                 if (viewMask == 0)
                 {
                     continue;

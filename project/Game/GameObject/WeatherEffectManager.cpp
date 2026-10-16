@@ -62,9 +62,7 @@ void WeatherEffectManager::Update()
     // EnvironmentManagerから、今フレームの補間済みビジュアルパラメータを取得
     const FE::WeatherVisualParams& visual = env->GetCurrentVisualParams();
 
-    // -------------------------------------------------------------
     // Terrainのマテリアル設定適用
-    // -------------------------------------------------------------
     auto mat = terrain_->GetMaterialData();
     mat->metalness = visual.metalness;
     mat->roughness = visual.roughness;
@@ -82,9 +80,7 @@ void WeatherEffectManager::Update()
     mat->rippleFrequency = 6.0f;
     terrain_->SetRippleTexture("normal_31");
 
-    // -------------------------------------------------------------
     // Volumetric Fogの設定適用
-    // -------------------------------------------------------------
     auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
     fog->scatteringIntensity = visual.scatteringIntensity;
     fog->noiseScale = visual.noiseScale;
@@ -96,16 +92,14 @@ void WeatherEffectManager::Update()
     fog->ambientLight = visual.ambientLight;
     fog->windSpeedMultiplier = visual.windSpeedMultiplier;
 
-    // -------------------------------------------------------------
     // 各天候のパーティクル強さを計算 & 制御
-    // -------------------------------------------------------------
     auto CalculateIntensity = [&](WeatherState checkState) -> float
         {
             bool isTarget = (target == checkState);
             bool isCurrent = (current == checkState);
 
-            if (isTarget && !isCurrent) return t;           // 降り始め（徐々に強く）
-            if (!isTarget && isCurrent) return 1.0f - t;    // 止み始め（徐々に弱く）
+            if (isTarget && !isCurrent) return t;           // 降り始め
+            if (!isTarget && isCurrent) return 1.0f - t;    // 止み始め
             if (isTarget && isCurrent)  return 1.0f;        // 完全に降っている
             return 0.0f;                                    // 降っていない
         };
@@ -165,9 +159,7 @@ void WeatherEffectManager::Update()
         currentBgmName_ = nextBgm;
     }
 
-    // -------------------------------------------------------------
     // 落雷の制御
-    // -------------------------------------------------------------
     if (lightningSystem_)
     {
         lightningSystem_->Update();
