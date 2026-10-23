@@ -110,9 +110,8 @@ PixelShaderOutput main(GrassPSInput input)
 }
 
 // -----------------------------------------------------------------------------
-// Foliage向け 軽量CSMフェッチ
+// CSMフェッチ
 // -----------------------------------------------------------------------------
-// 膨大なピクセル面積を占める草描画の帯域幅を節約するため、1-Tap PCFで済ませる
 float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
 {
     // 最遠カスケードを超えている場合は早期リターン

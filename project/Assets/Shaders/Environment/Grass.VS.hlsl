@@ -102,7 +102,7 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     // 現在の頂点がブレードのどの高さに位置するか (0.0:根元 ~ 1.0:先端)
     float t = (vertexIdx / 2) / (float) ((NUM_VERTICES_PER_BLADE / 2) - 1);
 
-    // 距離ベースLOD: 縮退ポリゴン化
+    // 距離ベースLOD
     if (distToCam > gGrassCullingData.lodDistance2)
     {
         if (vertexIdx >= 2)
@@ -116,7 +116,7 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
             t = 0.5f;
     }
 
-    // 左右のオフセット (-0.5 or 0.5)
+    // 左右のオフセット
     float sideOffset = (vertexIdx % 2 == 0) ? -0.5f : 0.5f;
 
     // -------------------------------------------------------------------------

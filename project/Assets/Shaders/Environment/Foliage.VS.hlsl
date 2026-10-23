@@ -37,7 +37,7 @@ float3 RotateVectorByQuat(float3 v, float4 q)
 // プロシージャル風変位
 float3 CalculateWindDisplacement(float3 basePos, float windWeight)
 {
-    // 草のしなり：高さの2乗（Y^2）に比例させるのが物理的に自然でpow不要（高速）
+    // 草のしなり
     float bendFactor = windWeight * windWeight * gMaterial.windResponse;
 
     float windLen = length(gEnvironmentData.windDirection);
@@ -45,11 +45,11 @@ float3 CalculateWindDisplacement(float3 basePos, float windWeight)
         ? (gEnvironmentData.windDirection / windLen)
         : float2(0.0f, 1.0f);
 
-    // 空間位相（フィールドを風の波が伝わる表現）
+    // 空間位相
     float spatialPhase = dot(basePos.xz, windDir * 0.15f);
     float time = gEnvironmentData.windTime;
 
-    // 主揺れ (Sway) + 細かい揺れ (Flutter)
+    // 主揺れ + 細かい揺れ
     float mainSway = sin(time + spatialPhase);
     float detailSway = sin(time * gMaterial.flutterSpeed + spatialPhase * 3.0f) * gMaterial.flutterScale;
 
@@ -72,7 +72,7 @@ FoliageVSOutput main(FoliageVSInput input)
     // 頂点の高さ比率
     float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, kEpsilon));
 
-    // ローカル変換（スケール ＆ 回転）
+    // ローカル変換
     localPos *= scale;
     float3 rotatedPos = RotateVectorByQuat(localPos, quat);
 
