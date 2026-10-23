@@ -18,7 +18,6 @@ void CameraManager::Update()
 {
     if (!currentController_ || !mainCamera_) return;
 
-    // 各コントローラーに基本位置を決めさせる
     currentController_->UpdateCamera(mainCamera_);
 
     // シェイクを更新

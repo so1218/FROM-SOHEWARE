@@ -37,10 +37,6 @@ void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationM
     auto* transform = &model->GetTransform();
     std::string prefix = groupName + "_";
 
-    // アニメーション固有の設定
-    Bind(prefix + "SpeedScale", model->GetSpeedScalePtr(), 1.0f, 0.1f, 0.0f, 5.0f);
-    Bind(prefix + "IsLoop", model->GetIsLoopPtr(), true);
-
     Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
     BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
     Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
@@ -148,10 +144,6 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
 
     ImGui::PushID(groupName.c_str());
     if (ImGui::CollapsingHeader(displayLabel.c_str())) {
-        ImGui::Spacing();
-        ImGui::SeparatorText("アニメーション設定");
-        Draw(prefix + "SpeedScale", "再生速度");
-        Draw(prefix + "IsLoop", "ループ再生");
 
         ImGui::Spacing();
         ImGui::SeparatorText("トランスフォーム");

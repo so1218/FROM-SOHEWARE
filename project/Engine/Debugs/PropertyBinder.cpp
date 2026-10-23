@@ -387,4 +387,13 @@ namespace FE
         return false;
     }
 
+    // 一括で登録順に描画する関数を追加
+    void PropertyBinder::DrawAll()
+    {
+        for (const auto& key : keys_)
+        {
+            Draw(key);
+        }
+    }
+
 }

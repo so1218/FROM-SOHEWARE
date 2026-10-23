@@ -229,7 +229,7 @@
             ],
             "MasterModel_Mat2_EdgeInten": 2.0,
             "MasterModel_Mat2_EdgeWidth": 0.05000000074505806,
-            "MasterModel_Mat2_Emissive": 51.29999923706055,
+            "MasterModel_Mat2_Emissive": 7.699999809265137,
             "MasterModel_Mat2_EnvMapInt": 0.05000000074505806,
             "MasterModel_Mat2_EnvMapTex": "pureSky",
             "MasterModel_Mat2_HeightMapTex": "white1x1",

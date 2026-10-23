@@ -89,7 +89,7 @@
 
 ### プロシージャル草生成 (Procedural Grass Generation & Grid Snapping)
 - **参考資料**: 
-  - [GDC 2021: Procedural Grass in 'Ghost of Tsushima'](https://www.youtube.com/watch?v=I3132pY8lFA) (Eric Wohllaib / Sucker Punch Productions)
+  - [GDC 2021: Procedural Grass in 'Ghost of Tsushima'](https://youtu.be/Ibe1JBF5i5Y?si=JTa_2jAtyOZPWQjv) (Eric Wohllaib / Sucker Punch Productions)
 - **該当ソースコード**: 
   - `Assets/Shaders/Environment/GrassGeneration.CS.hlsl`
   - `Assets/Shaders/Environment/FoliageGeneration.CS.hlsl`

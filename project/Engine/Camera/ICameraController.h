@@ -19,7 +19,7 @@ public:
     // 描画
     virtual void Draw() {}
 
-    // カメラの状態をリセット（切り替え時やワープ時に使用）
+    // カメラの状態をリセット
     virtual void Reset(Camera* camera) {}
 };
 

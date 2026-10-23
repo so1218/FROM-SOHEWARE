@@ -60,6 +60,8 @@ public:
 
     // UI描画
     bool Draw(const std::string& key, const std::string& name = "");
+    // 一括で登録順に描画する関数を追加
+    void DrawAll();
     bool DrawModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawSprite(const std::string& groupName, const std::string& customLabel = "");

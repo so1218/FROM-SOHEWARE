@@ -1,7 +1,6 @@
 #pragma once
 #include "BaseScene.h"
 #include "Sprite.h"
-#include "ParticleEmitter.h"
 #include "Player.h"
 #include "Ground.h"
 #include "GrassField.h"

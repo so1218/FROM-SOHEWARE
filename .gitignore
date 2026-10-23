@@ -332,7 +332,7 @@ FodyWeavers.xsd
 imgui.ini
 imgui_layout.ini
 
-**/Assets/Shaders/Cache/
+project/Cache/
 
 *.pdb
 

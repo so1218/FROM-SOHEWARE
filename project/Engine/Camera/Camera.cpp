@@ -26,7 +26,7 @@ void Camera::Initialize()
 
 void Camera::BindProperties(PropertyBinder& binder, const std::string& prefix)
 {
-    prefix_ = prefix; // プレフィックスを保存しておく
+    prefix_ = prefix; 
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
     binder.Bind(p + "Position", &worldTransform_.translation_, worldTransform_.translation_, 0.1f, 0.0f, 0.0f,
