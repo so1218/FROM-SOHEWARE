@@ -228,11 +228,13 @@ void EnvironmentManager::Update(LightManager* lightManager)
         float currentSpeed = GetCurrentTransitionSpeed();
 
         weatherTransitionT_ += deltaTime * currentSpeed;
-        if (weatherTransitionT_ >= 1.0f) {
+        if (weatherTransitionT_ >= 1.0f)
+        {
             weatherTransitionT_ = 1.0f;
             currentWeather_ = targetWeather_;
 
-            if (hasPendingWeather_) {
+            if (hasPendingWeather_) 
+            {
                 targetWeather_ = pendingWeather_;
                 hasPendingWeather_ = false;
                 weatherTransitionT_ = 0.0f;

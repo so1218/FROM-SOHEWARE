@@ -240,11 +240,12 @@ void Player::UpdateRotation(const Vector3& moveDir)
 
 void Player::ApplyHorizontalMovement(const Vector3& moveDir, float speed)
 {
-	GetTransform().translation_ += moveDir * speed;
+	GetTransform().translation_ += moveDir * speed * TimeManager::GetInstance()->GetDeltaTime();
 }
 
-void Player::ApplyGravity(float deltaTime)
+void Player::ApplyGravity()
 {
+	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 	velocityY_ -= config.gravity * deltaTime;
 	GetTransform().translation_.y += velocityY_ * deltaTime;
 }

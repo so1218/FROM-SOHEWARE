@@ -112,7 +112,10 @@ public:
 
     virtual void Finalize() final
     {
-        collisionManager_->ClearColliders();
+        if (collisionManager_)
+        {
+            collisionManager_->Reset();
+        }
 
         if (engine_ && engine_->GetRendererManager())
         {

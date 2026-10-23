@@ -61,7 +61,7 @@ public:
 	// Stateから呼び出すヘルパー関数
 	void UpdateRotation(const FE::Vector3& moveDir);
 	void ApplyHorizontalMovement(const FE::Vector3& moveDir, float speed);
-	void ApplyGravity(float deltaTime);
+	void ApplyGravity();
 	void SnapToGround();
 	bool IsGrounded() const;
 

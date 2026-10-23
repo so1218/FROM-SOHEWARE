@@ -21,7 +21,7 @@ void PlayerStateAiming::Update(Player* player)
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
     auto& input = Input::GetInstance();
 
-    player->ApplyGravity(deltaTime);
+    player->ApplyGravity();
     player->SnapToGround();
 
     bool isAimingInput = input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT);

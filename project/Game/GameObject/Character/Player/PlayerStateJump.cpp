@@ -15,7 +15,7 @@ void PlayerStateJump::Update(Player* player)
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
     // 重力適用
-    player->ApplyGravity(deltaTime);
+    player->ApplyGravity();
 
     // 空中移動制御
     Vector3 moveDir = player->GetMoveDirection();
