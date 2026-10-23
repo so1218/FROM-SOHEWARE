@@ -46,9 +46,8 @@ PebbleVSOutput main(PebbleVSInput input)
     float embedRatio = instance.anisoAndEmbed.w;
 
     float3 localPos = input.position.xyz;
-
-    // NOTE: メッシュのローカルY座標が [-0.5, 0.5] の範囲でモデリングされている前提。
-    // 0.0(底面) ~ 1.0(天頂) にマッピングし、PSでのプロシージャルなコケや汚れのブレンドウェイトに使用する
+    
+    // 0.0(底面) ~ 1.0(天頂) にマッピングし、PSでのプロシージャルなコケや汚れのブレンドウェイトに使用
     output.heightFactor = saturate(localPos.y + 0.5f);
 
     localPos *= (baseScale * anisoScale);
