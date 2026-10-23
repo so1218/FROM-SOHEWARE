@@ -46,7 +46,6 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float4 current = gVoxelInjectFiltered.Load(int4(DTid, 0));
 
     // Variance Clipping用の 3x3x3 近傍 AABB 算出
-    // TODO: 負荷が高くなったら GroupSharedMemory (LDS) 化を検討
     float4 m1 = 0.0f;
     float4 m2 = 0.0f;
 

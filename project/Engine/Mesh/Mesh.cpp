@@ -50,27 +50,17 @@ void Mesh::Initialize(ID3D12Device* device, const std::vector<VertexData>& verti
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Mesh::InitializeVertexTrail(ID3D12Device* device, const std::vector<TrailVertexData>& vertices)
+void Mesh::InitializeVertexTrail(ID3D12Device* device, size_t maxVertexCount)
 {
-	// Trailは動的に変わるので頂点数を保存
-	vertexCount_ = vertices.size();
+	vertexCount_ = static_cast<UINT>(maxVertexCount);
 
-	// VertexDataTrail のサイズで計算する
-	size_t bufferSize = sizeof(TrailVertexData) * vertexCount_;
-
-	// バッファ作成
+	// 最大頂点数分のメモリ領域をあらかじめ確保
+	const size_t bufferSize = sizeof(TrailVertexData) * maxVertexCount;
 	vertexResource_ = BufferManager::CreateBufferResource(device, bufferSize);
 
-	// データ転送
-	TrailVertexData* mappedData = nullptr;
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedData));
-	std::memcpy(mappedData, vertices.data(), bufferSize);
-	vertexResource_->Unmap(0, nullptr); 
-
-	// 頂点バッファビューの作成
+	// 頂点バッファビューの基本構成を設定
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
-	vertexBufferView_.SizeInBytes = static_cast<uint32_t>(bufferSize);
-	// ストライド（1頂点の幅）を VertexDataTrail に合わせる
+	vertexBufferView_.SizeInBytes = static_cast<UINT>(bufferSize);
 	vertexBufferView_.StrideInBytes = sizeof(TrailVertexData);
 }
 

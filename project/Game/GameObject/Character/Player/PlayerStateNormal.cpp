@@ -12,7 +12,7 @@ void PlayerStateNormal::Update(Player* player)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-    // 常時重力を適用
+    // 重力を適用
     player->ApplyGravity(deltaTime);
 
     // 地形への着地位置補正

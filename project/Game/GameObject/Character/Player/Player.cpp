@@ -176,52 +176,47 @@ void Player::Update()
 Vector3 Player::GetMoveDirection()
 {
 	auto& input = Input::GetInstance();
-	const int controllerId = 0; 
+	constexpr int kControllerId = 0;
+	constexpr float kMaxStickVal = 32768.0f;
 
-	// スティックの入力を取得 
-	float stickX = static_cast<float>(input.GetLeftStickX(controllerId));
-	float stickY = static_cast<float>(input.GetLeftStickY(controllerId));
+	// パッドとキーボードの入力を -1.0 ~ 1.0 空間で合成
+	float inputX = static_cast<float>(input.GetLeftStickX(kControllerId)) / kMaxStickVal;
+	float inputY = static_cast<float>(input.GetLeftStickY(kControllerId)) / kMaxStickVal;
 
-	// キーボード入力
-	if (input.IsKeyPressed(DIK_W)) stickY += 32768.0f;
-	if (input.IsKeyPressed(DIK_S)) stickY -= 32768.0f;
-	if (input.IsKeyPressed(DIK_D)) stickX += 32768.0f;
-	if (input.IsKeyPressed(DIK_A)) stickX -= 32768.0f;
+	if (input.IsKeyPressed(DIK_W)) { inputY += 1.0f; }
+	if (input.IsKeyPressed(DIK_S)) { inputY -= 1.0f; }
+	if (input.IsKeyPressed(DIK_D)) { inputX += 1.0f; }
+	if (input.IsKeyPressed(DIK_A)) { inputX -= 1.0f; }
 
-	// -1.0f ~ +1.0f に正規化
-	float inputX = stickX / 32768.0f;
-	float inputY = stickY / 32768.0f;
+	inputX = std::clamp(inputX, -1.0f, 1.0f);
+	inputY = std::clamp(inputY, -1.0f, 1.0f);
 
-	// 入力ベクトルの長さを算出（倒し具合）
-	float inputLength = std::sqrt(inputX * inputX + inputY * inputY);
-	float deadZone = static_cast<float>(STICK_THRESHOLD) / 32768.0f;
+	const float inputLength = std::sqrt(inputX * inputX + inputY * inputY);
+	const float deadZone = static_cast<float>(STICK_THRESHOLD) / kMaxStickVal;
 
-	Vector3 dir = { 0.0f, 0.0f, 0.0f };
-
-	// デッドゾーンを超えている場合のみ処理
-	if (inputLength > deadZone)
+	// デッドゾーン以下なら早期リターン
+	if (inputLength <= deadZone)
 	{
-		// デッドゾーンを超えた分を 0.0f ~ 1.0f にスケーリング（入力強度の算出）
-		float inputMagnitude = (std::min)(1.0f, (inputLength - deadZone) / (1.0f - deadZone));
-
-		// 入力方向の単位ベクトル
-		float dirX = inputX / inputLength;
-		float dirY = inputY / inputLength;
-
-		// カメラの向きに合わせてワールド移動方向を決定
-		Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
-		Vector3 cameraRight = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 1.0f, 0.0f, 0.0f });
-
-		cameraForward.y = 0.0f;
-		cameraRight.y = 0.0f;
-		cameraForward = cameraForward.Normalize();
-		cameraRight = cameraRight.Normalize();
-
-		// 方向 × 入力強度（倒し具合）を掛け合わせて360度アナログ移動ベクトルを作成
-		dir = (cameraForward * dirY + cameraRight * dirX).Normalize() * inputMagnitude;
+		return Vector3::Zero();
 	}
 
-	return dir;
+	// デッドゾーン補正後の入力強度
+	const float inputMagnitude = (std::min)(1.0f, (inputLength - deadZone) / (1.0f - deadZone));
+	const float invLen = 1.0f / inputLength;
+	const float dirX = inputX * invLen;
+	const float dirY = inputY * invLen;
+
+	// カメラ基準の水平移動方向を算出
+	const auto& camRot = camera_->GetWorldTransform().rotationQuaternion_;
+	Vector3 cameraForward = camRot.RotateVector({ 0.0f, 0.0f, 1.0f });
+	Vector3 cameraRight = camRot.RotateVector({ 1.0f, 0.0f, 0.0f });
+
+	cameraForward.y = 0.0f;
+	cameraRight.y = 0.0f;
+	cameraForward = cameraForward.Normalize();
+	cameraRight = cameraRight.Normalize();
+
+	return (cameraForward * dirY + cameraRight * dirX).Normalize() * inputMagnitude;
 }
 
 void Player::UpdateRotation(const Vector3& moveDir)

@@ -16,11 +16,11 @@ namespace FE
 
 void TrailRenderer::Initialize(const RenderEnvironment& env)
 {
-    const uint32_t kMaxTotalTrailVertices = kMaxTrailCount * kMaxTrailVertices * 2;
-    trailBatch_.verticesCPU.reserve(kMaxTotalTrailVertices);
+    const uint32_t kMaxTotalVertices = kMaxTrailCount * kMaxTrailVertices * 2;
+    trailBatch_.verticesCPU.reserve(kMaxTotalVertices);
 
-    std::vector<TrailVertexData> dummyVertices(kMaxTotalTrailVertices);
-    trailBatch_.mesh.InitializeVertexTrail(env.device->GetDevice(), dummyVertices);
+    // 最大頂点数分確保
+    trailBatch_.mesh.InitializeVertexTrail(env.device->GetDevice(), kMaxTotalVertices);
 
     trailBatch_.materialResource = BufferManager::CreateMappedConstantBufferArray(
         env.device->GetDevice(),
@@ -39,59 +39,52 @@ void TrailRenderer::BeginFrame()
     prevTrailCount_ = indexTrail_;
     indexTrail_ = 0;
 
-    // クリア処理
     trailBatch_.verticesCPU.clear();
     trailBatches_.clear();
 }
 
 void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailModule& config, const Vector3& cameraPosition, float instanceSeed)
 {
-    if (indexTrail_ >= kMaxTrailCount) return;
-    if (points.size() < 2) return;
+    if (indexTrail_ >= kMaxTrailCount || points.size() < 2) return;
 
-    uint32_t textureHandle = TextureManager::GetInstance().Get(config.textureName);
+    const uint32_t textureHandle = TextureManager::GetInstance().Get(config.textureName);
 
-    // マテリアル定数バッファデータの構築
-    TrailMaterialData currentMatData{};
-    currentMatData.jitterStrength = config.jitterStrength;
-    currentMatData.jitterFrequency = config.jitterFrequency;
-    currentMatData.jitterSpeed = config.jitterSpeed;
-    currentMatData.jitterMode = static_cast<int>(config.jitterMode);
-    currentMatData.jitterPhase = config.jitterPhase;
-    currentMatData.emissiveIntensity = config.emissiveIntensity;
-    currentMatData.instanceSeed = instanceSeed;
+    TrailMaterialData matData{};
+    matData.jitterStrength = config.jitterStrength;
+    matData.jitterFrequency = config.jitterFrequency;
+    matData.jitterSpeed = config.jitterSpeed;
+    matData.jitterMode = static_cast<int>(config.jitterMode);
+    matData.jitterPhase = config.jitterPhase;
+    matData.emissiveIntensity = config.emissiveIntensity;
+    matData.instanceSeed = instanceSeed;
 
-    // バッチマージの判定
+    // 同一ステートであれば既存バッチを拡張
     bool isNewBatch = trailBatches_.empty();
     if (!isNewBatch)
     {
         const auto& last = trailBatches_.back();
-        isNewBatch = last.textureHandle != textureHandle ||
-            std::memcmp(&last.materialData, &currentMatData, sizeof(TrailMaterialData)) != 0;
+        isNewBatch = (last.textureHandle != textureHandle) ||
+            (std::memcmp(&last.materialData, &matData, sizeof(TrailMaterialData)) != 0);
     }
 
     if (isNewBatch)
     {
-        trailBatches_.push_back({ static_cast<uint32_t>(trailBatch_.verticesCPU.size()), 0, textureHandle, currentMatData });
+        trailBatches_.push_back({ static_cast<uint32_t>(trailBatch_.verticesCPU.size()), 0, textureHandle, matData });
     }
 
-    // 各トレイルポイントの左右頂点位置・UV・カラーを一括計算
-    struct TempVertex
-    {
-        Vector3 left;
-        Vector3 right;
-        float u;
-        Vector4 color;
-    };
-    std::vector<TempVertex> calculatedVerts(points.size());
-    const float lastIndexF = static_cast<float>(points.size() - 1);
+    const float invLastIndex = 1.0f / static_cast<float>(points.size() - 1);
+
+    Vector3 prevLeft{}, prevRight{};
+    float prevU = 0.0f;
+    Vector4 prevColor{};
 
     for (size_t i = 0; i < points.size(); ++i)
     {
         const Vector3& pos = points[i].position;
 
-        Vector3 forward = (i < points.size() - 1) ? (points[i + 1].position - pos) : (pos - points[i - 1].position);
-        forward = forward.Normalize();
+        Vector3 forward = (i < points.size() - 1)
+            ? (points[i + 1].position - pos).Normalize()
+            : (pos - points[i - 1].position).Normalize();
 
         Vector3 right;
         if (config.alignment == TrailAlignment::View)
@@ -110,36 +103,35 @@ void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailMod
             right = Math::CrossProduct({ 0.0f, 1.0f, 0.0f }, forward).Normalize();
         }
 
-        float t = static_cast<float>(i) / lastIndexF;
-        float width = config.width * std::lerp(config.tailWidthScale, config.headWidthScale, t);
+        const float t = static_cast<float>(i) * invLastIndex;
+        const float halfWidth = config.width * std::lerp(config.tailWidthScale, config.headWidthScale, t) * 0.5f;
 
-        calculatedVerts[i].left = pos - right * (width * 0.5f);
-        calculatedVerts[i].right = pos + right * (width * 0.5f);
-        calculatedVerts[i].u = t;
-
-        calculatedVerts[i].color = Vector4(
+        const Vector3 currentLeft = pos - right * halfWidth;
+        const Vector3 currentRight = pos + right * halfWidth;
+        const Vector4 currentColor(
             std::lerp(config.endColor.x, config.startColor.x, t),
             std::lerp(config.endColor.y, config.startColor.y, t),
             std::lerp(config.endColor.z, config.startColor.z, t),
             std::lerp(config.endColor.w, config.startColor.w, t)
         );
-    }
 
-    // ポリゴン追加
-    for (size_t i = 0; i < points.size() - 1; ++i)
-    {
-        const auto& v0 = calculatedVerts[i];
-        const auto& v1 = calculatedVerts[i + 1];
+        if (i > 0)
+        {
+            trailBatch_.verticesCPU.push_back({ { prevLeft.x,    prevLeft.y,    prevLeft.z,    1.0f }, { prevU, 0.0f }, prevColor });
+            trailBatch_.verticesCPU.push_back({ { currentLeft.x, currentLeft.y, currentLeft.z, 1.0f }, { t,     0.0f }, currentColor });
+            trailBatch_.verticesCPU.push_back({ { prevRight.x,   prevRight.y,   prevRight.z,   1.0f }, { prevU, 1.0f }, prevColor });
 
-        trailBatch_.verticesCPU.push_back({ { v0.left.x,  v0.left.y,  v0.left.z,  1.0f }, { v0.u, 0.0f }, v0.color });
-        trailBatch_.verticesCPU.push_back({ { v1.left.x,  v1.left.y,  v1.left.z,  1.0f }, { v1.u, 0.0f }, v1.color });
-        trailBatch_.verticesCPU.push_back({ { v0.right.x, v0.right.y, v0.right.z, 1.0f }, { v0.u, 1.0f }, v0.color });
+            trailBatch_.verticesCPU.push_back({ { prevRight.x,   prevRight.y,   prevRight.z,   1.0f }, { prevU, 1.0f }, prevColor });
+            trailBatch_.verticesCPU.push_back({ { currentLeft.x, currentLeft.y, currentLeft.z, 1.0f }, { t,     0.0f }, currentColor });
+            trailBatch_.verticesCPU.push_back({ { currentRight.x,currentRight.y,currentRight.z,1.0f }, { t,     1.0f }, currentColor });
 
-        trailBatch_.verticesCPU.push_back({ { v0.right.x, v0.right.y, v0.right.z, 1.0f }, { v0.u, 1.0f }, v0.color });
-        trailBatch_.verticesCPU.push_back({ { v1.left.x,  v1.left.y,  v1.left.z,  1.0f }, { v1.u, 0.0f }, v1.color });
-        trailBatch_.verticesCPU.push_back({ { v1.right.x, v1.right.y, v1.right.z, 1.0f }, { v1.u, 1.0f }, v1.color });
+            trailBatches_.back().vertexCount += 6;
+        }
 
-        trailBatches_.back().vertexCount += 6;
+        prevLeft = currentLeft;
+        prevRight = currentRight;
+        prevU = t;
+        prevColor = currentColor;
     }
 
     indexTrail_++;
@@ -167,7 +159,6 @@ void TrailRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProj
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Trail"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // 引数の viewProjection を使用
     trailBatch_.mappedWvp->WVP = viewProjection;
     trailBatch_.mappedWvp->World = Matrix4x4::MakeIdentity();
     cmdList->SetGraphicsRootConstantBufferView(0, trailBatch_.wvpResource->GetGPUVirtualAddress());

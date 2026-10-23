@@ -18,7 +18,6 @@ void PlayerReticle::Initialize()
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
     sprite_->SetIsVisible(true);
 
-    // Binderへパラメータ登録
     binder_->Bind("LineThickness", &config_.lineThickness, 0.5f, 0.1f, 1.0f, 10.0f);
     binder_->Bind("LineLength", &config_.lineLength, 1.0f, 0.1f, 2.0f, 50.0f);
     binder_->Bind("MaxGap", &config_.maxGap, 1.0f, 0.1f, 10.0f, 100.0f);

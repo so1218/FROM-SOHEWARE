@@ -36,7 +36,7 @@ float PhaseFunctionHG(float cosTheta, float g)
     return (1.0f - g2) / (4.0f * PI * pow(max(denom, 0.0001f), 1.5f));
 }
 
-// 二重 Henyey-Greenstein 位相関数
+// Dual-HG 位相関数（前方・後方散乱の合成）
 float DualPhaseHG(float cosTheta, float gForward)
 {
     static const float kBackScatterG = -0.2f;
@@ -47,7 +47,7 @@ float DualPhaseHG(float cosTheta, float gForward)
     return lerp(backward, forward, kBlendRatio);
 }
 
-// レイマーチングのアーティファクトを消すためのノイズ関数
+// Interleaved Gradient Noise (IGN)- ジッタリング用
 float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
     static const float kTemporalGoldenRatio = 5.588238f;
@@ -57,9 +57,12 @@ float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
     return frac(kIGNMagic.z * frac(dot(pixelCoord, kIGNMagic.xy)));
 }
 
+// 3D ノイズ用サンプリングオフセット
 static const float3 kNoiseOffsetA = float3(131.0f, 73.0f, 191.0f);
 static const float3 kNoiseOffsetB = float3(43.0f, 269.0f, 113.0f);
 static const float3 kNoiseOffsetC = float3(411.0f, 823.0f, 157.0f);
+
+// カメラ近傍フェード
 static const float kCameraNearFadeStart = 0.5f;
 static const float kCameraNearFadeEnd = 3.0f;
 static const float kMinSafeDistance = 0.001f;

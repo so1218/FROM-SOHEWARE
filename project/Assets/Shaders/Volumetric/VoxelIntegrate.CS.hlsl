@@ -47,8 +47,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
         // 全体の透過率を考慮して累積
         volumetricIllumination += integratedScattering * transmittance;
         transmittance *= stepTransmittance;
-
-        // 結果を書き込み
+        
         gVoxelAccumulate[voxelCoord] = float4(volumetricIllumination, transmittance);
     }
 }
