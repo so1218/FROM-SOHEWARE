@@ -81,13 +81,11 @@ void PlayerReticle::Draw()
 
     if (t <= config_.threshold)
     {
-        // threshold まで縮める
         float normalizedT = t / config_.threshold;
         easedRatio = config_.midRatio * normalizedT;
     }
     else
     {
-		// threshold 以降は加速して収束
         float normalizedT = (t - config_.threshold) / (1.0f - config_.threshold);
         easedRatio = config_.midRatio + (1.0f - config_.midRatio) * std::pow(normalizedT, config_.finalExponent);
     }

@@ -75,19 +75,12 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             float2 radialDir = (distXZ > kEpsilon) ? (diffXZ / distXZ) : float2(0.0f, 1.0f);
             float2 entityPushDir = float2(0.0f, 0.0f);
 
-            if (entity.entityType == 2) // 爆発・衝撃波
-            {
-                entityPushDir = radialDir * strength * 2.0f;
-            }
-            else // キャラクター・車両
-            {
-                float speedSq = dot(entity.velocity.xz, entity.velocity.xz);
-                float2 moveDir = (speedSq > 0.01f) ? normalize(entity.velocity.xz) : radialDir;
+            float speedSq = dot(entity.velocity.xz, entity.velocity.xz);
+            float2 moveDir = (speedSq > 0.01f) ? normalize(entity.velocity.xz) : radialDir;
 
                 // 進行方向と放射方向をブレンドし、引き波を形成
-                float2 wakeDir = normalize(moveDir * 0.4f + radialDir * 0.6f);
-                entityPushDir = wakeDir * strength;
-            }
+            float2 wakeDir = normalize(moveDir * 0.4f + radialDir * 0.6f);
+            entityPushDir = wakeDir * strength;
 
             totalPushDir += entityPushDir;
         }

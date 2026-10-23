@@ -102,7 +102,6 @@ void TreeField::Initialize()
 
     auto OnTextureChanged = [this]() 
         {
-        // テクスチャが変更されたら GPU 側の TreeMaterialHandle を更新
         if (treeMaterialHandle_.leafMaterialBuffer) {
             treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
             treeMaterialHandle_.trunkTextureHandle = trunkTextureHandle_;
@@ -168,10 +167,8 @@ void TreeField::Update()
         prevTrunkColliderRadius_ = trunkColliderRadius_;
     }
 
-    // 毎フレーム UIなどの変更を定数バッファに流し込む
     UpdateMaterials();
 
-    // TreeSystem の Update を実行
     treeSystem_->Update();
 }
 

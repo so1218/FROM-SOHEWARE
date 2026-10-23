@@ -217,7 +217,7 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
         instanceCount++;
     }
 
-    // ループを抜けたら、最後のバッチを描画する
+    // ループを抜けたら、最後のバッチを描画
     FlushBatch();
 }
 

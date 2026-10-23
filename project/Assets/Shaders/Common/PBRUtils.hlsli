@@ -45,7 +45,7 @@ float G_Smith(float3 N, float3 V, float3 L, float roughness)
 // 粗さを考慮したFresnel
 float3 F_SchlickRoughness(float cosTheta, float3 F0, float roughness)
 {
-    // 粗い材質ほど、最大反射率（F90）を下げる
+    // 粗い材質ほど、最大反射率を下げる
     float maxReflectance = 1.0f - roughness;
     float3 F90 = max(float3(maxReflectance, maxReflectance, maxReflectance), F0);
     

@@ -181,7 +181,6 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     int finalDamage = static_cast<int>(config_.baseDamage * damageMult);
 
     // ターゲット位置の決定
-    // デフォルトは最大射程先の座標
     Vector3 targetPoint = rayStart + finalRayDir * config_.maxDistance;
 
     RaycastHit hitInfo;
@@ -189,7 +188,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 
     if (colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask))
     {
-        // レティクルが当たった実際の地点を着弾点とする
+        // レティクルが当たった実際の地点を着弾点
         targetPoint = hitInfo.point;
 
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
@@ -226,8 +225,8 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     // 銃口から着弾点に向けた弾道の生成
     if (bulletTracerEmitterPtr_)
     {
-        Vector3 muzzlePos = GetMuzzleWorldPosition(); // 銃口のワールド座標
-        Vector3 bulletDir = (targetPoint - muzzlePos);  // 銃口からターゲットへのベクトル
+        Vector3 muzzlePos = GetMuzzleWorldPosition();
+        Vector3 bulletDir = (targetPoint - muzzlePos);
 
         if (bulletDir.LengthSq() > 0.001f)
         {
@@ -240,7 +239,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
             bulletTracerEmitterPtr_->SetPosition(muzzlePos);
             bulletTracerEmitterPtr_->SetRotation(tracerRot);
 
-            // 1発発射
+            // 発射
             bulletTracerEmitterPtr_->Play();
         }
     }

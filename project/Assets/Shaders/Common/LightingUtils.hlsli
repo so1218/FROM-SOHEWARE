@@ -25,7 +25,7 @@ float3 ApplyDirectionalLights(
         float NdotL = dot(surface.normal, lightDir);
         float saturateNdotL = saturate(NdotL);
 
-        // 自己陰(NdotL)と落ち影(shadowFactor)を合わせた明るさ
+        // 自己陰と落ち影を合わせた明るさ
         float combinedShadow = saturateNdotL;
         if (i == 0)
             combinedShadow *= shadowFactor;
@@ -36,7 +36,9 @@ float3 ApplyDirectionalLights(
         {
             radiance = CalculatePBR(surface.pbrAlbedo, surface.normal, toEye, lightDir, lightColor, lightIntensity, roughness, metalness);
             if (i == 0)
+            {
                 radiance *= shadowFactor; // 影の濃さが適用済みの数値をそのまま掛ける
+            }
         }
         else
         {
@@ -199,7 +201,7 @@ float3 ApplyRimLight(
     // ライト方向によるマスク処理
     if (rimUseLightDir != 0)
     {
-         // ライトが当たっている面 (NdotL) の強さを掛ける
+         // ライトが当たっている面の強さを掛ける
         float NdotL = saturate(dot(normal, toLight));
         rim *= NdotL;
     }

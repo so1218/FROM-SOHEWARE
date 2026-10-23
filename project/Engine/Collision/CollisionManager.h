@@ -8,8 +8,8 @@ class Collider;
 
 struct RaycastHit
 {
-    Collider* hitCollider = nullptr;   // ヒットしたコライダー
-    GameObject* hitObject = nullptr;   // ヒットしたオブジェクト（親）
+    Collider* hitCollider = nullptr;  
+    GameObject* hitObject = nullptr; 
     Vector3 point = { 0.0f, 0.0f, 0.0f };  // 着弾ワールド座標
     Vector3 normal = { 0.0f, 0.0f, 1.0f }; // 着弾面の法線ベクトル
     float distance = 0.0f;             // 射出位置からの距離

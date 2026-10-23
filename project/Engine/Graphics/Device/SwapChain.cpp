@@ -23,7 +23,7 @@ void SwapChain::Initialize(
     swapChainDesc_.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;// 描画のターゲットとして利用する
     swapChainDesc_.BufferCount = bufferCount;// バッファ数
     swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;// モニタに移したら、中身を破棄
-    // ウィンドウハンドル、設定を渡して生成する
+    // ウィンドウハンドル、設定を渡して生成
     HRESULT hr = dxgiFactory->CreateSwapChainForHwnd(
         commandQueue,
         hwnd,

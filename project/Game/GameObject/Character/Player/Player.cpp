@@ -166,7 +166,6 @@ void Player::Update()
 	entity.radius = interactionRadius_;
 	entity.velocity = velocity;
 	entity.maxVerticalDist = maxVerticalDist_;
-	entity.entityType = 0;
 	entity.forceMultiplier = interactionForce_;
 
 	engine_->GetRendererManager()->SubmitInteractionEntity(entity);

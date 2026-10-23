@@ -313,7 +313,7 @@ namespace FE
             gv->AddItem(groupPath_, key, Math::Uint32ToColorVector(defaultValue));
         }
 
-        // 読み込み（Vector4 -> uint32_t への変換）
+        // 読み込み
         *ptr = Math::ColorVectorToUint32(gv->GetVector4Value(groupPath_, key));
 
 #ifdef ENABLE_IMGUI

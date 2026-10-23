@@ -1,16 +1,16 @@
 #pragma once
 #include "EnvironmentProp.h"
 
-// 同一プレハブの共有データを定義する構造体
-struct PropGroup 
+// プレハブ単位の共有データ
+struct PropGroup
 {
     std::string prefabName;
     std::string modelName;
-    std::unique_ptr<FE::Model> masterModel; 
-    std::vector<std::unique_ptr<EnvironmentProp>> instances; 
+    std::unique_ptr<FE::Model> masterModel;
+    std::vector<std::unique_ptr<EnvironmentProp>> instances;
     std::unique_ptr<FE::PropertyBinder> binder;
 
-    // グループ全体で共有する基本設定
+    // グループ全体のデフォルトコライダー設定
     bool defaultHasCollider = true;
     int defaultColliderType = 0;
 };
@@ -27,17 +27,17 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    // 特定のプレハブグループへプロップインスタンスを追加
+    // 指定プレハブのインスタンスを追加
     void AddPropToGroup(const std::string& prefabName);
 
-    // 指定IDのプロップ削除および後続IDの詰め処理
+    // プロップの削除
     void RemoveEnvironmentProp(int targetId);
 
 private:
-    // プレハブグループの動的生成およびマスターモデルの構築
+    // グループの新規作成とモデル読み込み
     void CreateGroup(const std::string& prefabName, const std::string& fallbackModelName);
 
-    // UI非同期操作によるモデルリロードの遅延適用処理
+    // UI操作等によるモデル差し替えの遅延実行
     void ExecutePrefabModelChange();
 
 private:
@@ -45,7 +45,7 @@ private:
     std::string managerGroupName_;
     std::unordered_map<std::string, PropGroup> groups_;
 
-    // 遅延適用用パラメータ
+    // モデル遅延変更用
     std::string pendingModelChangePrefab_;
     std::string pendingModelChangeNewName_;
 

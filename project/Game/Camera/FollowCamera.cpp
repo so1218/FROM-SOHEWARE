@@ -18,13 +18,11 @@ void FollowCamera::Initialize()
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, "FollowCamera");
 
-    // 通常時パラメータ
     binder_->Bind("Normal Distance", &normalDistance_, 45.0f, 0.1f, 5.0f, 200.0f);
     binder_->Bind("Normal LookAt Offset", &normalLookAtOffset_, { 0.0f, 1.5f, 0.0f });
     binder_->Bind("Normal FOV", &normalFov_, 0.45f, 0.01f, 0.1f, 1.5f);
     binder_->Bind("Normal Deadzone", &normalDeadzone_, 6000.0f, 100.0f, 0.0f, 15000.0f);
 
-    // エイム時パラメータ
     binder_->Bind("Aim Distance", &aimDistance_, 18.0f, 0.1f, 1.0f, 100.0f);
     binder_->Bind("Aim LookAt Offset", &aimLookAtOffset_, { 0.0f, 1.4f, 0.0f });
     binder_->Bind("Aim Shoulder Offset", &aimShoulderOffset_, { 1.8f, 0.1f, 0.0f });
@@ -33,7 +31,6 @@ void FollowCamera::Initialize()
     binder_->Bind("Aim Deadzone", &aimDeadzone_, 2500.0f, 100.0f, 0.0f, 15000.0f);
     binder_->Bind("Aim Sens Multiplier", &aimRotateSpeedMultiplier_, 0.6f, 0.05f, 0.1f, 2.0f);
 
-    // カメラ回転・速度・限界値設定
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotate Speed Pitch", &rotateSpeedPitch_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotation Smooth Time", &rotationSmoothTime_, 0.1f, 0.01f, 0.0f, 1.0f);
@@ -41,10 +38,8 @@ void FollowCamera::Initialize()
     binder_->Bind("Min Pitch", &minPitch_, -0.8f, 0.05f, -1.5f, 0.0f);
     binder_->Bind("Max Pitch", &maxPitch_, 1.4f, 0.05f, 0.0f, 1.5f);
 
-    // リコイル設定
     binder_->Bind("Recoil Recovery Speed", &recoilRecoverySpeed_, 12.0f, 0.5f, 1.0f, 50.0f);
 
-    // 地面補正設定
     binder_->Bind("Min Ground Offset", &minGroundOffset_, 0.8f, 0.05f, 0.0f, 5.0f);
     binder_->Bind("Ground Check Radius", &groundCheckRadius_, 0.4f, 0.05f, 0.1f, 2.0f);
 
@@ -94,7 +89,7 @@ void FollowCamera::UpdateCamera(Camera* camera)
     camera->SetFov(currentFov_);
 
     // ---------------------------------------------------------
-    // 入力によるカメラ回転処理（右スティック 360度アナログ対応）
+    // 入力によるカメラ回転処理
     // ---------------------------------------------------------
     float rx = 0.0f;
     float ry = 0.0f;

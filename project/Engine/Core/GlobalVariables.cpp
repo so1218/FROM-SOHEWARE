@@ -581,7 +581,7 @@ void GlobalVariables::ClearGroup(const std::vector<std::string>& groupPath)
 		current = &itSub->second;
 	}
 
-	// 対象グループの中身（変数とサブグループ）をすべて消去
+	// 対象グループの中身をすべて消去
 	current->items.clear();
 	current->subGroups.clear();
 }

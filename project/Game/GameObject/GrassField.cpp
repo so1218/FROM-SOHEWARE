@@ -74,11 +74,9 @@ void GrassField::Initialize()
 
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() 
         {
-        // 風のテクスチャが変更されたら、GrassSystemに新しいテクスチャを通知
         grassSystem_->SetWindMapTexture(windMapName_);
         });
 
-    // 記憶初期化
     prevPosition_ = transform_.translation_;
     prevMaxGrassPerChunk_ = maxGrassPerChunk_;
     prevGridSpacing_ = gridSpacing_;
@@ -93,7 +91,6 @@ void GrassField::Initialize()
     prevTerrainWidth_ = terrainWidth_;
     prevTerrainDepth_ = terrainDepth_;
 
-    // 草システムの風テクスチャ初期化
     grassSystem_->SetWindMapTexture(windMapName_);
 
     // 初回生成

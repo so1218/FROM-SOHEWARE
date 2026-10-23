@@ -35,7 +35,7 @@ float4 main(VSOutput input) : SV_TARGET
     float occlusion = 0.0f;
     int sampleCount = gSSAOSettings.sampleCount;
 
-    [unroll(32)] // サンプル数が固定ならばアンロールして高速化
+    [unroll(32)] 
     for (int i = 0; i < sampleCount; ++i)
     {
         float u = (float(i) + 0.5f) / float(sampleCount);
@@ -61,7 +61,7 @@ float4 main(VSOutput input) : SV_TARGET
         float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, sampleUV, 0);
         float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
 
-        // 距離に基づく正確な減衰（Haloアーティファクトの防止）
+        // 距離に基づく正確な減衰
         float distance = abs(viewPos.z - sampleZ);
         float rangeCheck = smoothstep(0.0f, 1.0f, 1.0f - saturate(distance / gSSAOSettings.radius));
         

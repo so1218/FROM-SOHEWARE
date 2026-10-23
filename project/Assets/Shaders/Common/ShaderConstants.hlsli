@@ -417,9 +417,8 @@ struct InteractionEntity
     float3 velocity; // 移動速度ベクトル
     float maxVerticalDist; // 影響を及ぼす最大垂直距離
     
-    uint entityType; // 0: 人間, 1: 大型/車両, 2: 衝撃波/爆発
     float forceMultiplier; // 力の倍率
-    float2 padding;
+    float3 padding;
 };
 
 struct InteractionConstants
@@ -804,8 +803,8 @@ struct FogVolumeBuffer
 
 struct ShadowData
 {
-    float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT]; // MAX_CASCADE_COUNT 枚分のカスケード行列
-    float4 cascadeSplits; // カスケードの切り替わり距離
+    float4x4 cascadeLightViewProj[MAX_CASCADE_COUNT]; 
+    float4 cascadeSplits; 
 };
 
 struct CascadeConstant

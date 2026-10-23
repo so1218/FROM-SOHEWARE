@@ -103,7 +103,7 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     Vector2 sceneSize = ImGuiManager::GetSceneViewportSize();
     Vector2 sceneMin = ImGuiManager::GetSceneViewportMin();
 
-    // シーンサイズが有効（0より大きい）ならSceneView基準にする
+    // シーンサイズが有効ならSceneView基準にする
     if (sceneSize.x > 0.0f && sceneSize.y > 0.0f)
     {
         checkViewportSize = sceneSize;
@@ -137,12 +137,10 @@ bool IsMouseHitObject(const Vector3& objectWorldPos, float radius,
     };
 
     // スクリーン座標変換
-    // checkViewportSizeを使う
     float screenX = (ndcPos.x + 1.0f) * 0.5f * checkViewportSize.x;
     float screenY = (1.0f - ndcPos.y) * 0.5f * checkViewportSize.y;
 
     // マウスとの距離判定
-    // 補正済みのcheckMousePosを使う
     float dx = checkMousePos.x - screenX;
     float dy = checkMousePos.y - screenY;
 

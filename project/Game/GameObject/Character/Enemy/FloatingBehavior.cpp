@@ -20,13 +20,11 @@ void FloatingBehavior::Initialize(Enemy* owner)
     engine_ = owner->GetEngine();
     auto binder = owner->GetBinder();
 
-    // 移動パラメータのバインド
     binder->Bind("BasePosition", &basePosition_, basePosition_);
     binder->Bind("Amplitude", &amplitude_, { 3.0f, 2.0f, 0.0f });
     binder->Bind("Frequency", &frequency_, { 0.5f, 1.0f, 0.0f });
     binder->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
 
-    // スポットライトパラメータのバインド
     binder->BindColor("SpotColor", &spotColor_, { 1.0f, 1.0f, 0.8f, 1.0f });
     binder->Bind("SpotIntensity", &spotIntensity_, 8.0f);
     binder->Bind("SpotDistance", &spotDistance_, 20.0f);
@@ -118,12 +116,10 @@ void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hit
 
 void FloatingBehavior::OnDeath(Enemy* owner)
 {
-    // engine_ や owner が nullptr の場合は処理を安全に中断
     if (!engine_ || !owner) return;
 
 	AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
 
-    // 死亡時にオーラを停止・破棄
     if (moveFireEmitterPtr_)
     {
         moveFireEmitterPtr_->Stop();
@@ -138,10 +134,8 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         moveSmokeEmitterPtr_ = nullptr;
     }
 
-    // 死亡時の爆発パーティクルを生成してワンショット再生
     if (explosionEmitterPtr_)
     {
-        // 敵の死亡位置に爆発を配置
         explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
 
         explosionEmitterPtr_->Play();

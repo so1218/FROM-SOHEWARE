@@ -21,7 +21,6 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGr
         modelName = "enemy";
         behavior_ = std::make_unique<FloatingBehavior>();
         break;
-        // case EnemyType::Zombie: behavior_ = std::make_unique<ZombieBehavior>(); break;
     }
 
     model_ = std::make_unique<FE::Model>(engine_, modelName);
@@ -86,7 +85,7 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
         Quaternion rot = Quaternion::LookRotation(hitNormal, { 0.0f, 1.0f, 0.0f });
         damageParticlePtr_->SetRotation(rot);
 
-        // 再生（Play 内でタイマーがリセットされるため連続ヒットも安心）
+        // 再生
         damageParticlePtr_->Play();
     }
 

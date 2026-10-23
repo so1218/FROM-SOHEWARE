@@ -107,7 +107,7 @@ private:
 
     int totalDrawCalls = 0;
 
-    // 個別の Resource 保持構造体は廃止し、1本のバッファをまとめる
+    // 1本のバッファをまとめる
     Microsoft::WRL::ComPtr<ID3D12Resource> perObjectBatchResource_;
     uint8_t* perObjectMappedData_ = nullptr; // 256バイトアライメントアクセス用
 

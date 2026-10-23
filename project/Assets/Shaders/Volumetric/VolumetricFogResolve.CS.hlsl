@@ -37,7 +37,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     // 指数スライス計算
     float zSliceContinuous = (log2(clampedDistance / nearZ) / log2(farZ / nearZ));
     
-    // ジッターを少し乗せてFroxel格子のバンディング（縞模様）を滑らかに分散させる
+    // ジッターを少し乗せてFroxel格子の縞模様を滑らかに分散
     float jitter = (InterleavedGradientNoise(DTid.xy) - 0.5f) * 0.005f;
     float zSlice = saturate(zSliceContinuous + jitter);
     

@@ -421,7 +421,8 @@ bool ImGuiManager::DrawGizmoMatrix(Matrix4x4& worldMatrix)
         &worldMatrix.m[0][0]
     );
 
-    if (ImGuizmo::IsUsing()) {
+    if (ImGuizmo::IsUsing())
+    {
         isEdited = true;
     }
     return isEdited;

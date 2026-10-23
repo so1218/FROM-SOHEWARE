@@ -148,7 +148,6 @@ void TerrainChunk::CalculateAABB()
             float localX = x * cellSize_;
             float localZ = z * cellSize_;
 
-            // heightData_ には ratio (-0.5 ～ 0.5) が入っている
             float actualHeight = heightData_[index];
 
             aabbMin_.x = std::min(aabbMin_.x, localX);
@@ -162,8 +161,8 @@ void TerrainChunk::CalculateAABB()
     }
 
     // カメラ接近時のフラスタムカリング誤判定を防ぐための余白
-    float paddingXZ = cellSize_ * 2.0f; // XZはセル2つ分
-    float paddingY = 0.05f;             // Yは比率として5%程度のマージン
+    float paddingXZ = cellSize_ * 2.0f; 
+    float paddingY = 0.05f;            
 
     aabbMin_.x -= paddingXZ;
     aabbMin_.y -= paddingY;
