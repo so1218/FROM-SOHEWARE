@@ -334,6 +334,9 @@ imgui_layout.ini
 
 project/Cache/
 
+# ビルド成果物・ライブラリファイルの除外
+*.lib
+*.dll
 *.pdb
 
 # VitePress Build & Cache
