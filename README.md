@@ -1,94 +1,137 @@
+<div align="center">
+
+# FromSoheWare Engine
+
+**DirectX 12 と C++ で構築された、自然環境表現とパフォーマンスを追求する自作ゲームエンジン**
+
 [![DebugBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DebugBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DebugBuild.yml)
-[![ReleaseBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml)
 [![DevelopmentBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DevelopmentBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DevelopmentBuild.yml)
+[![ReleaseBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml)
 
-![Engine Demo Header](docs/Textures/scene_01.png)
+<br />
 
-## 概要 
-**FromSoheWare**（`FSW`）は、DirectX 12 と C++ を用いて構築された、高品質な自然環境や広大な世界観の表現を目指す自作 3D ゲームエンジンです。
+<img src="docs/textures/scene_01.png" width="88%" alt="Engine Demo Header" />
 
-グラフィックス API 特有の複雑な初期化・描画処理を抽象化しつつ、ボリュメトリックフォグ等のグラフィックス技術と、直感的なパラメータ調整が可能なインゲーム開発ツールを統合しています。
+</div>
 
 ---
 
-## 主な技術的強み 
+## 目次 
+1. [概要](#1-概要)
+2. [主な技術的強み](#2-主な技術的強み)
+3. [開発ドキュメント (マニュアル)](#3-開発ドキュメント-マニュアル)
+4. [ディレクトリ構成](#4-ディレクトリ構成)
+5. [技術スタック & 開発ツール](#5-技術スタック--開発ツール)
+6. [ビルド構成 & 動作環境](#6-ビルド構成--動作環境)
+7. [使用アセット & 参考資料](#7-使用アセット--参考資料)
 
-### 1. ボリュメトリックフォグ (Volumetric Fog)
+---
+
+## 1. 概要
+
+**FromSoheWare**は、AAA タイトルのような美しい自然環境や広大な世界観の表現を目指して個人開発している C++ / DirectX 12 のゲームエンジンです。
+
+ボリュメトリックフォグをはじめとする表現技術と、効率的なインゲームパラメータ調整ツールを統合しています。
+
+---
+
+## 2. 主な技術的強み
+
+### 2.1. ボリュメトリックフォグ (Volumetric Fog)
 - **視錐台ボクセル（Froxel）サンプリング**: 視錐台をボクセル状に分割して計算量を大幅に削減し、高精度な霧表現を低負荷で実現。
-- **ライトシャフト**: Directional Light / Point Light / Spot Light から漏れ出る光の筋（ライトレイ）をリアルタイム計算。
+- **ライトシャフト**: Directional / Point / Spot Light から漏れ出る光の筋（ライトレイ）をリアルタイム計算。
 - **ボリュームフォグ**: 空間全体のフォグに加え、Box 型および Sphere 型のローカルフォグ配置に対応。
-- **3Dノイズ連携**: 単純な距離フォグではなく、ノイズテクスチャによる空気の揺らぎや密度の濃淡を表現。
+- **3D ノイズ連携**: 単純な距離フォグではなく、ノイズテクスチャによる空気の揺らぎや密度の濃淡を表現。
 
-### 2. 実ゲームを見据えたパフォーマンス最適化 (60 FPS 維持)
+### 2.2. 実ゲームを見据えたパフォーマンス最適化 (60 FPS 維持)
 - **カリング処理**: 視錐台カリングおよび距離カリングにより、遠景の草木や 3D モデルの不要な GPU 描画を自動カット。
 - **PIX プロファイリング & パスマーカー**: `WinPixEventRuntime` を統合し、描画パスごとのプロファイリングと可視化を実施。多数のパスを通しながらも **GPU 時間約 8ms（60 FPS 安定）** を達成。
 
-### 3. データ保存とUI化を一括で行う `PropertyBinder`
-- **僅か 2 行でのデータバインド**: 変数登録と描画呼び出しの最小コードで、JSON への自動保存/読み込みと Dear ImGui でのデバッグ UI 表示を同期。
+### 2.3. データ保存と UI 化を一括で行う `PropertyBinder`
+- **わずか 2 行でのデータバインド**: 変数登録と描画呼び出しの最小コードで、JSON への自動保存/読み込みと Dear ImGui でのデバッグ UI 表示を同期。
 - **マルチマテリアルリアルタイム調整**: モデル単位・マテリアル単位でカラー、法線マップ、粗さ、リムライト等のパラメータを画面上で即座に調整可能。
 
-### 4. カスタムパーティクルシステム & インゲームエディタ
+### 2.4. カスタムパーティクルシステム & インゲームエディタ
 - **モジュール構造**: Unity のパーティクルシステムを参考に設計。エミッターを作成・追加し、インゲームのパーティクルエディタ上でパラメータを調整しながら各種エフェクトを制作可能。
 
+### 2.5. その他のグラフィックス & 環境表現機能
+- **PBR (物理ベースレンダリング)**: 金属度 (Metalness)・粗さ (Roughness) に基づくリアルな材質表現。
+- **地形 & 植生システム**: 地形描画および草木の大量描画（インスタンシング）対応。
+- **動的天候・時間変化**: 太陽位置・天空カラーのグラデーション・雷などの天候・時間推移の連動。
+- **ポストエフェクト**: ブルーム、トーンマッピング、カラーコレクショングレードの調整機能。
+
+> *各機能のシェーダー実装や詳細な仕様については [docs/graphics_features.md](docs/graphics_features.md) を参照してください。*
+
 ---
 
-## 描画・オブジェクト設計
+## 3. 開発ドキュメント (マニュアル)
 
-- **描画クラス**: `Model`, `AnimationModel`, `Sprite`, `Line` などの基本描画クラスを完備。
-- **ライフサイクル自動化**: `GameObject` を継承したオブジェクトをシーンに登録するだけで、初期化・更新（Update）・描画（Draw）のライフサイクルが自動で周回。
+FromSoheWareエンジンを使ったゲーム開発の公式マニュアルです。
+開発を始める際は、まず以下の目次ページをご確認ください。
+
+### [開発ドキュメント目次 (docs/index.md)](docs/index.md)
+
+**【主な収録ガイド】**
+- **[1. シーンとライフサイクル](docs/sceneGuide.md)**
+  - シーンの作成 / オブジェクトの自動ライフサイクル / `Game` クラスへのシーン登録
+- **[2. オブジェクトの作成と制御](docs/gameObjectGuide.md)**
+  - `GameObject` の基本仕様 / キャラクター実装例 / 衝突判定
+- **[3. 描画](docs/drawingGuide.md)**
+  - `Model`, `AnimationModel` の再生など
+- **[4. デバッグとパラメータ調整](docs/propertyBinderGuide.md)**
+  - `PropertyBinder` と ImGui の自動連携 / パラメータの保存とロード
 
 ---
 
-## 技術スタック & 開発ツール
+## 4. ディレクトリ構成
+
+プロジェクトの主要なファイル構造は以下の通りです。
+
+```text
+FromSoheWare/
+├── .github/          # CI/CD (GitHub Actions) のワークフロー定義
+├── docs/             # 開発ドキュメント・ガイドライン
+├── generated/        # 自動生成ファイル
+├── project/          # プロジェクト本体 (ソースコードおよびアセット)
+│   ├── Assets/       # 3Dモデル, テクスチャ, シェーダー(HLSL) などのアセット群
+│   ├── Engine/       # エンジンのコアシステム
+│   ├── Game/         # ゲーム側のアプリケーション層
+│   ├── externals/    # ImGui, DirectXTex などの外部ライブラリ
+│   ├── packages/     # NuGet等の依存パッケージ
+│   ├── Cache/        # キャッシュファイル
+│   ├── Dumps/        # クラッシュダンプ
+│   └── logs/         # 実行ログ
+├── .editorconfig     # コーディングスタイル設定
+├── .gitignore        # Gitの管理除外設定
+└── README.md         # 本ドキュメント
+```
+
+---
+
+## 5. 技術スタック & 開発ツール
 
 | カテゴリ | 内容 / 使用ツール |
 | :--- | :--- |
-| **使用言語** | C++17 / C++20 |
+| **使用言語** | C++ |
 | **グラフィックス API** | DirectX 12 / HLSL |
 | **プロファイリング・デバッグ** | PIX for Windows (`WinPixEventRuntime`), Dear ImGui |
 | **外部ライブラリ** | DirectXTex, Assimp |
 | **アセット制作・編集** | Blender, Mixamo, EffectTextureMaker |
-| **自動テスト (CI)** | GitHub Actions |
+| **自動テスト** | GitHub Actions |
 
 ---
 
-## 使用アセット
+## 6. ビルド構成 & 動作環境
 
-本エンジンのデモ・検証シーン作成において、以下の素材およびツールを活用させていただいています。
-
-- **3D モデル / アニメーション**: [Sketchfab](https://sketchfab.com/), [Mixamo](https://www.mixamo.com/)
-- **テクスチャ / 環境マップ (HDRI)**: [Poly Haven](https://polyhaven.com/)
-- **エフェクトテクスチャ作成**: EffectTextureMaker
-
----
-
-## 📚 参考資料
-
-グラフィックスパイプラインおよびエンジン機能の構築にあたり、以下の技術資料や商用エンジンを参考に設計を行いました。
-
-- **レンダリング技術・ポストエフェクト**
-  - SIGGRAPH / GDC 講演論文
-  - NVIDIA Developer Graphics Articles
-  - Zenn (技術コミュニティ記事)
-- **エンジン設計・アーキテクチャ**
-  - **Unity**: モジュール型パーティクルシステムの設計思想
-  - **Unreal Engine**: Property Binding（プロパティ結合）およびマテリアルパラメータ調整構造
-
----
-
-## ビルド構成 
+### ビルド構成
 
 | 構成 | 特徴と使いどころ |
 | :--- | :--- |
 | **Debug** | **詳細なデバッグ用**<br>DirectX 12 のデバッグレイヤーを有効にし、API の誤用や警告を詳細にチェック。 |
-| **Development** | **普段の開発用 (おすすめ)**<br>インゲームエディタや Dear ImGui、検証用テストシーンが使用可能。動作も軽量で開発作業に最適。 |
+| **Development** | **普段の開発用**<br>インゲームエディタや Dear ImGui、検証用テストシーンが使用可能。動作も軽量で開発作業に最適。 |
 | **Release** | **最終チェック・配布用**<br>デバッグ用 UI やログ機能をオフにし、最高速度で実行。 |
 
----
-
-## クイックスタート
-
-### 動作環境 
+### 動作環境
 
 | 項目 | 条件 |
 | :--- | :--- |
@@ -96,9 +139,21 @@
 | **開発ツール** | Visual Studio 2022 (「C++ によるデスクトップ開発」ワークロード必須) |
 | **グラフィック** | DirectX 12 (Feature Level 11_0 以上) に対応した GPU |
 
-### ビルド手順
+---
 
-1. **リポジトリのクローン**
-   ```bash
-   git clone --recursive [https://github.com/so1218/FROM-SOHEWARE.git](https://github.com/so1218/FROM-SOHEWARE.git)
-   cd FROM-SOHEWARE
+## 7. 使用アセット & 参考資料
+
+### 使用アセット
+本エンジンのデモ・検証シーン作成において、以下の素材およびツールを活用させていただいています。
+- **3D モデル / アニメーション**: [Sketchfab](https://sketchfab.com/), [Mixamo](https://www.mixamo.com/)
+- **テクスチャ / 環境マップ (HDRI)**: [Poly Haven](https://polyhaven.com/)
+- **エフェクトテクスチャ作成**: EffectTextureMaker
+
+### 参考資料
+- **レンダリング技術・ポストエフェクト**
+  - SIGGRAPH / GDC 講演論文
+  - NVIDIA Developer Graphics Articles
+  - Zenn (技術コミュニティ記事)
+- **エンジン設計・アーキテクチャ**
+  - **Unity**: モジュール型パーティクルシステムの設計思想
+  - **Unreal Engine**: Property Binding およびマテリアルパラメータ調整構造

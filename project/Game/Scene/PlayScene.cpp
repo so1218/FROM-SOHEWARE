@@ -14,6 +14,9 @@
 #include "FoliageField.h"
 #include "GameUI.h"
 #include "WaterManager.h"
+#include "Ground.h"
+#include "TreeField.h"
+#include "Player.h"
 
 using namespace FS;
 
@@ -21,18 +24,18 @@ PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine, "PlayScene")
 {
 	// ゲームオブジェクトの生成・登録
-    player_ = objectManager_.Create<Player>(engine_, camera_.get());
-    followCamera_ = std::make_unique<FollowCamera>(engine_, &player_->GetTransform());
-    ground_ = objectManager_.Create<Ground>(engine_);
-    grassField_ = objectManager_.Create<GrassField>(engine_);
-    grassField_->SetTerrain(ground_->GetTerrain());
-    treeField_ = objectManager_.Create<TreeField>(engine_);
-    treeField_->SetTerrain(ground_->GetTerrain());
-    player_->SetTerrain(ground_->GetTerrain());
-    player_->SetTreeField(treeField_);
-    followCamera_->SetTerrain(ground_->GetTerrain());
-	player_->SetFollowCamera(followCamera_.get());
-	auto wetherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player_, ground_->GetTerrain());
+    auto player = objectManager_.Create<Player>(engine_, camera_.get());
+    followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform());
+    auto ground = objectManager_.Create<Ground>(engine_);
+    auto grassField = objectManager_.Create<GrassField>(engine_);
+    grassField->SetTerrain(ground->GetTerrain());
+    auto treeField = objectManager_.Create<TreeField>(engine_);
+    treeField->SetTerrain(ground->GetTerrain());
+    player->SetTerrain(ground->GetTerrain());
+    player->SetTreeField(treeField);
+    followCamera_->SetTerrain(ground->GetTerrain());
+    player->SetFollowCamera(followCamera_.get());
+	auto wetherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
 	wetherEffectManager->SetCameraManager(cameraManager_.get());
     objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");

@@ -1,11 +1,7 @@
 #pragma once
 #include "BaseScene.h"
-#include "Player.h"
 #include "FollowCamera.h"
 #include "ParticleEmitter.h"
-#include "Ground.h"
-#include "GrassField.h"
-#include "TreeField.h"
 
 class PlayScene : public FS::BaseScene
 {
@@ -21,10 +17,6 @@ protected:
 
 private:
     // メンバー変数
-    Player* player_ = nullptr;
-    Ground* ground_ = nullptr;
-    GrassField* grassField_ = nullptr;
-    TreeField* treeField_ = nullptr;
     std::unique_ptr<FollowCamera> followCamera_;
 };
 
