@@ -12,7 +12,7 @@
 #include "EnvironmentManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void GrassRenderer::Initialize(const RenderEnvironment& env)
@@ -153,7 +153,7 @@ void GrassRenderer::Draw(
     auto* cmdList = env.commandManager->GetCommandList();
     ID3D12Device* device = env.device->GetDevice();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Grass Pass (Total Generated: %u)", totalGeneratedCount_);
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Grass Pass (Total Generated: %u)", totalGeneratedCount_);
 
     // 描画およびカリングパラメータの更新
     memcpy(mappedMaterial_[currentFrameIndex_], &materialData, sizeof(GrassMaterialData));
@@ -177,7 +177,7 @@ void GrassRenderer::Draw(
     // コンピュートシェーダーによるGPU駆動カリング
     // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Grass Culling CS");
+        PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Grass Culling CS");
 
         // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
         D3D12_RESOURCE_BARRIER csBarriers[2] = {};
@@ -225,7 +225,7 @@ void GrassRenderer::Draw(
 
     // カリングを通過した可視インスタンスの一括描画
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Grass ExecuteIndirect Draw");
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Grass ExecuteIndirect Draw");
 
         D3D12_RESOURCE_BARRIER drawBarriers[2] = {};
         drawBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(

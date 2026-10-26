@@ -7,24 +7,24 @@
 #include "Terrain.h"
 #include "WorldInteractionSystem.h"
 
-class Ground : public FE::GameObject
+class Ground : public FS::GameObject
 {
 public:
-    Ground(FE::Engine* engine);
+    Ground(FS::Engine* engine);
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugDraw() override;
 
-    FE::Terrain* GetTerrain() const { return terrain_.get(); }
+    FS::Terrain* GetTerrain() const { return terrain_.get(); }
 
 private:
-    FE::Engine* engine_;
+    FS::Engine* engine_;
 
-    std::unique_ptr<FE::Skydome> skydome_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
-    std::unique_ptr<FE::Terrain> terrain_;
-    std::unique_ptr<FE::WorldInteractionSystem> interactionSystem_;
+    std::unique_ptr<FS::Skydome> skydome_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
+    std::unique_ptr<FS::Terrain> terrain_;
+    std::unique_ptr<FS::WorldInteractionSystem> interactionSystem_;
 };
 

@@ -21,7 +21,7 @@ public:
         float finalExponent = 3.0f;  // threshold以降の加速の強さ
     };
 
-    PlayerReticle(FE::Engine* engine);
+    PlayerReticle(FS::Engine* engine);
     ~PlayerReticle() = default;
 
     void Initialize();
@@ -36,9 +36,9 @@ public:
     float GetFocusRatio() const { return focusRatio_; }
 
 private:
-    FE::Engine* engine_ = nullptr;
-    std::unique_ptr<FE::Sprite> sprite_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    FS::Engine* engine_ = nullptr;
+    std::unique_ptr<FS::Sprite> sprite_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
     Config config_;
 

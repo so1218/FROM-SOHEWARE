@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 EnvironmentManager::EnvironmentManager() = default;
@@ -150,32 +150,32 @@ void EnvironmentManager::Initialize(Engine* engine)
 inline WeatherVisualParams LerpVisualParams(const WeatherVisualParams& a, const WeatherVisualParams& b, float t)
 {
     WeatherVisualParams res;
-    res.metalness = FE::Math::Lerp(a.metalness, b.metalness, t);
-    res.roughness = FE::Math::Lerp(a.roughness, b.roughness, t);
-    res.environmentMapIntensity = FE::Math::Lerp(a.environmentMapIntensity, b.environmentMapIntensity, t);
-    res.rippleSize = FE::Math::Lerp(a.rippleSize, b.rippleSize, t);
-    res.normalIntensity = FE::Math::Lerp(a.normalIntensity, b.normalIntensity, t);
+    res.metalness = FS::Math::Lerp(a.metalness, b.metalness, t);
+    res.roughness = FS::Math::Lerp(a.roughness, b.roughness, t);
+    res.environmentMapIntensity = FS::Math::Lerp(a.environmentMapIntensity, b.environmentMapIntensity, t);
+    res.rippleSize = FS::Math::Lerp(a.rippleSize, b.rippleSize, t);
+    res.normalIntensity = FS::Math::Lerp(a.normalIntensity, b.normalIntensity, t);
     res.color = {
-        FE::Math::Lerp(a.color.x, b.color.x, t),
-        FE::Math::Lerp(a.color.y, b.color.y, t),
-        FE::Math::Lerp(a.color.z, b.color.z, t),
-        FE::Math::Lerp(a.color.w, b.color.w, t)
+        FS::Math::Lerp(a.color.x, b.color.x, t),
+        FS::Math::Lerp(a.color.y, b.color.y, t),
+        FS::Math::Lerp(a.color.z, b.color.z, t),
+        FS::Math::Lerp(a.color.w, b.color.w, t)
     };
-    res.emissiveIntensity = FE::Math::Lerp(a.emissiveIntensity, b.emissiveIntensity, t);
+    res.emissiveIntensity = FS::Math::Lerp(a.emissiveIntensity, b.emissiveIntensity, t);
 
-    res.scatteringIntensity = FE::Math::Lerp(a.scatteringIntensity, b.scatteringIntensity, t);
-    res.noiseScale = FE::Math::Lerp(a.noiseScale, b.noiseScale, t);
-    res.noiseIntensity = FE::Math::Lerp(a.noiseIntensity, b.noiseIntensity, t);
-    res.heightDensity = FE::Math::Lerp(a.heightDensity, b.heightDensity, t);
-    res.heightFalloff = FE::Math::Lerp(a.heightFalloff, b.heightFalloff, t);
+    res.scatteringIntensity = FS::Math::Lerp(a.scatteringIntensity, b.scatteringIntensity, t);
+    res.noiseScale = FS::Math::Lerp(a.noiseScale, b.noiseScale, t);
+    res.noiseIntensity = FS::Math::Lerp(a.noiseIntensity, b.noiseIntensity, t);
+    res.heightDensity = FS::Math::Lerp(a.heightDensity, b.heightDensity, t);
+    res.heightFalloff = FS::Math::Lerp(a.heightFalloff, b.heightFalloff, t);
     res.ambientLight = {
-        FE::Math::Lerp(a.ambientLight.x, b.ambientLight.x, t),
-        FE::Math::Lerp(a.ambientLight.y, b.ambientLight.y, t),
-        FE::Math::Lerp(a.ambientLight.z, b.ambientLight.z, t)
+        FS::Math::Lerp(a.ambientLight.x, b.ambientLight.x, t),
+        FS::Math::Lerp(a.ambientLight.y, b.ambientLight.y, t),
+        FS::Math::Lerp(a.ambientLight.z, b.ambientLight.z, t)
     };
-    res.extinction = FE::Math::Lerp(a.extinction, b.extinction, t);
-    res.erosion = FE::Math::Lerp(a.erosion, b.erosion, t);
-    res.windSpeedMultiplier = FE::Math::Lerp(a.windSpeedMultiplier, b.windSpeedMultiplier, t);
+    res.extinction = FS::Math::Lerp(a.extinction, b.extinction, t);
+    res.erosion = FS::Math::Lerp(a.erosion, b.erosion, t);
+    res.windSpeedMultiplier = FS::Math::Lerp(a.windSpeedMultiplier, b.windSpeedMultiplier, t);
     return res;
 }
 
@@ -246,18 +246,18 @@ void EnvironmentManager::Update(LightManager* lightManager)
     WeatherProfile targetW = GetWeatherProfile(targetWeather_);
 
     // 天候パラメータのLerp
-    currentWeatherProfile_.cloudCoverageMin = FE::Math::Lerp(currentW.cloudCoverageMin, targetW.cloudCoverageMin, weatherTransitionT_);
-    currentWeatherProfile_.cloudCoverageMax = FE::Math::Lerp(currentW.cloudCoverageMax, targetW.cloudCoverageMax, weatherTransitionT_);
-    currentWeatherProfile_.cloudShadowDensity = FE::Math::Lerp(currentW.cloudShadowDensity, targetW.cloudShadowDensity, weatherTransitionT_);
-    currentWeatherProfile_.lightDimmer = FE::Math::Lerp(currentW.lightDimmer, targetW.lightDimmer, weatherTransitionT_);
-    currentWeatherProfile_.atmosphereGlowDimmer = FE::Math::Lerp(currentW.atmosphereGlowDimmer, targetW.atmosphereGlowDimmer, weatherTransitionT_);
-    currentWeatherProfile_.wetness = FE::Math::Lerp(currentW.wetness, targetW.wetness, weatherTransitionT_);
-    currentWeatherProfile_.rainIntensity = FE::Math::Lerp(currentW.rainIntensity, targetW.rainIntensity, weatherTransitionT_);
-    currentWeatherProfile_.windSpeed = FE::Math::Lerp(currentW.windSpeed, targetW.windSpeed, weatherTransitionT_);
-    currentWeatherProfile_.windTurbulence = FE::Math::Lerp(currentW.windTurbulence, targetW.windTurbulence, weatherTransitionT_);
-    currentWeatherProfile_.skyZenithColor = FE::Math::Lerp(currentW.skyZenithColor, targetW.skyZenithColor, weatherTransitionT_);
-    currentWeatherProfile_.skyHorizonColor = FE::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
-    currentWeatherProfile_.skyColorBlendWeight = FE::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
+    currentWeatherProfile_.cloudCoverageMin = FS::Math::Lerp(currentW.cloudCoverageMin, targetW.cloudCoverageMin, weatherTransitionT_);
+    currentWeatherProfile_.cloudCoverageMax = FS::Math::Lerp(currentW.cloudCoverageMax, targetW.cloudCoverageMax, weatherTransitionT_);
+    currentWeatherProfile_.cloudShadowDensity = FS::Math::Lerp(currentW.cloudShadowDensity, targetW.cloudShadowDensity, weatherTransitionT_);
+    currentWeatherProfile_.lightDimmer = FS::Math::Lerp(currentW.lightDimmer, targetW.lightDimmer, weatherTransitionT_);
+    currentWeatherProfile_.atmosphereGlowDimmer = FS::Math::Lerp(currentW.atmosphereGlowDimmer, targetW.atmosphereGlowDimmer, weatherTransitionT_);
+    currentWeatherProfile_.wetness = FS::Math::Lerp(currentW.wetness, targetW.wetness, weatherTransitionT_);
+    currentWeatherProfile_.rainIntensity = FS::Math::Lerp(currentW.rainIntensity, targetW.rainIntensity, weatherTransitionT_);
+    currentWeatherProfile_.windSpeed = FS::Math::Lerp(currentW.windSpeed, targetW.windSpeed, weatherTransitionT_);
+    currentWeatherProfile_.windTurbulence = FS::Math::Lerp(currentW.windTurbulence, targetW.windTurbulence, weatherTransitionT_);
+    currentWeatherProfile_.skyZenithColor = FS::Math::Lerp(currentW.skyZenithColor, targetW.skyZenithColor, weatherTransitionT_);
+    currentWeatherProfile_.skyHorizonColor = FS::Math::Lerp(currentW.skyHorizonColor, targetW.skyHorizonColor, weatherTransitionT_);
+    currentWeatherProfile_.skyColorBlendWeight = FS::Math::Lerp(currentW.skyColorBlendWeight, targetW.skyColorBlendWeight, weatherTransitionT_);
 
     currentVisualParams_ = LerpVisualParams(currentW.visual, targetW.visual, weatherTransitionT_);
 
@@ -292,8 +292,8 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
     // 天候による空の色の最終ブレンド合成処理
     float w = currentWeatherProfile_.skyColorBlendWeight;
-    currentProfile_.zenithColor = FE::Math::Lerp(currentProfile_.zenithColor, currentWeatherProfile_.skyZenithColor, w);
-    currentProfile_.horizonColor = FE::Math::Lerp(currentProfile_.horizonColor, currentWeatherProfile_.skyHorizonColor, w);
+    currentProfile_.zenithColor = FS::Math::Lerp(currentProfile_.zenithColor, currentWeatherProfile_.skyZenithColor, w);
+    currentProfile_.horizonColor = FS::Math::Lerp(currentProfile_.horizonColor, currentWeatherProfile_.skyHorizonColor, w);
 
     // 大気散乱のGlow強さも天候によって減衰
     currentProfile_.sunAtmosphereGlow *= currentWeatherProfile_.atmosphereGlowDimmer;

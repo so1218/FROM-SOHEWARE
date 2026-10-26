@@ -11,7 +11,7 @@
 #include "PostEffectManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, int clientHeight)
@@ -129,7 +129,7 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
     auto* cmdList = env.commandManager->GetCommandList();
 
     // スプライト描画パス全体のスコープ
-    PIXScopedEvent(cmdList, FE::PIXColors::UI, "Sprite Pass (%zu Sprites)", submissions_.size());
+    PIXScopedEvent(cmdList, FS::PIXColors::UI, "Sprite Pass (%zu Sprites)", submissions_.size());
 
     // 共通設定
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -143,7 +143,7 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
         SpriteData& sprite = sprites_[sub.instanceIndex];
 
         // スプライトごとの個別スコープ 
-        PIXScopedEvent(cmdList, FE::PIXColors::UI, "Sprite [%zu] (Layer: %d, Instance: %u)", i, sub.layerOrder, sub.instanceIndex);
+        PIXScopedEvent(cmdList, FS::PIXColors::UI, "Sprite [%zu] (Layer: %d, Instance: %u)", i, sub.layerOrder, sub.instanceIndex);
 
         cmdList->IASetIndexBuffer(&sprite.mesh.GetIndexBufferView());
         cmdList->IASetVertexBuffers(0, 1, &sprite.mesh.GetVertexBufferView());

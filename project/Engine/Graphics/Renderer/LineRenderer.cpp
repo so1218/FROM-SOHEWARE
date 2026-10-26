@@ -11,7 +11,7 @@
 #include "PostEffectManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void LineRenderer::Initialize(const RenderEnvironment& env)
@@ -46,7 +46,7 @@ void LineRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewProje
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Line Pass (Vertices: %zu)", lineBatch_.verticesCPU.size());
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Line Pass (Vertices: %zu)", lineBatch_.verticesCPU.size());
 
     // 行列更新
     lineBatch_.mappedWvp->WVP = viewProjection;

@@ -8,7 +8,7 @@
 #include "Fade.h"
 #include "ImGuiManager.h"
 
-namespace FE
+namespace FS
 {
 
 SceneManager::SceneManager() : currentScene_(nullptr)

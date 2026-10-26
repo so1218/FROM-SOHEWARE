@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "BlendMode.h"
 
-namespace FE
+namespace FS
 {
 
 D3D12_RENDER_TARGET_BLEND_DESC GetBlendDesc(BlendMode blendMode)

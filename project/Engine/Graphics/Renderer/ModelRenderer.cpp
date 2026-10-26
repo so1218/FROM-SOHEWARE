@@ -11,7 +11,7 @@
 #include "PostEffectManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void ModelRenderer::Initialize(const RenderEnvironment& env)
@@ -444,7 +444,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
     bool isSkinning = (sub.skinCluster != nullptr);
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Model DrawCore [%s] (Mesh: %u, Instances: %u)",
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Model DrawCore [%s] (Mesh: %u, Instances: %u)",
         isSkinning ? "Skinning" : "Static", sub.meshIndex, isSkinning ? 1 : instanceCount);
 
     std::string psoName;
@@ -470,7 +470,7 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     // アウトライン描画
     if (sub.enableOutline)
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Outline Pass (%s)", isSkinning ? "Skinning" : "Static");
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Outline Pass (%s)", isSkinning ? "Skinning" : "Static");
 
         if (isSkinning)
         {
@@ -569,7 +569,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
 {
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Model Shadow Pass (Cascade %u)", cascadeIndex);
+    PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Model Shadow Pass (Cascade %u)", cascadeIndex);
 
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -596,7 +596,7 @@ void ModelRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInd
         bool needDissolve = (sub.materialHandle.materialData->enableDissolve != 0) ||
             (sub.materialHandle.materialData->color.w < 1.0f);
 
-        PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Shadow Batch [%s%s] (Mesh: %u, Instances: %u)",
+        PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Shadow Batch [%s%s] (Mesh: %u, Instances: %u)",
             isSkinning ? "Skinning" : "Static", needDissolve ? " + Dissolve" : "",
             sub.meshIndex, isSkinning ? 1 : batch.instanceCount);
 

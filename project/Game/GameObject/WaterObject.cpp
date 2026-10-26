@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "WaterObject.h"
 
-using namespace FE;
+using namespace FS;
 
 WaterObject::WaterObject(Engine* engine, int id, const std::string& parentGroupName)
     : engine_(engine), parentGroupName_(parentGroupName), id_(id)

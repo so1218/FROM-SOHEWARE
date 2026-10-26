@@ -5,7 +5,7 @@
 #include "TimeManager.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 void GlobalConstants::Initialize(ID3D12Device* device)

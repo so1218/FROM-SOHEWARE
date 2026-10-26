@@ -12,7 +12,7 @@
 #include "FoliageRenderer.h"
 #include "RenderCoordinator.h"
 
-namespace FE
+namespace FS
 {
 
 // インタラクションデータ保持用の構造体

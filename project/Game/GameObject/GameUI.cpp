@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "GameUI.h"
 
-using namespace FE;
+using namespace FS;
 
 GameUI::GameUI(Engine* engine) : engine_(engine)
 {
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "GameUI");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GameUI");
 
     spriteCameraSwitch_ = std::make_unique<Sprite>(engine_);
     spriteMainCameraMode_ = std::make_unique<Sprite>(engine_);

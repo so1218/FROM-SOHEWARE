@@ -12,42 +12,42 @@ class PlayerWeapon
 public:
     struct Config
     {
-        FE::Vector4 muzzleFlashColor = { 1.0f, 0.75f, 0.3f, 1.0f };
+        FS::Vector4 muzzleFlashColor = { 1.0f, 0.75f, 0.3f, 1.0f };
         float muzzleFlashIntensity = 25.0f;
         float muzzleFlashRadius = 8.0f;
         float muzzleFlashDuration = 0.05f;
         float muzzleFlashVolumetricIntensity = 1.0f;
-        FE::Vector3 muzzleOffset = { 0.0f, 0.05f, 0.35f };
+        FS::Vector3 muzzleOffset = { 0.0f, 0.05f, 0.35f };
 
         int baseDamage = 20;
         float maxDistance = 150.0f;
     };
 
-    PlayerWeapon(FE::Engine* engine);
+    PlayerWeapon(FS::Engine* engine);
     ~PlayerWeapon();
 
     void Initialize();
-    void Update(const FE::Matrix4x4& handWorldMatrix, FE::Camera* camera);
+    void Update(const FS::Matrix4x4& handWorldMatrix, FS::Camera* camera);
     void Draw();
     void DebugDraw(); 
 
-    bool Fire(FE::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FE::CollisionManager* colManager,
+    bool Fire(FS::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FS::CollisionManager* colManager,
         TreeField* treeField);
-    FE::Vector3 GetMuzzleWorldPosition() const;
+    FS::Vector3 GetMuzzleWorldPosition() const;
 
 private:
-    FE::Engine* engine_ = nullptr;
-    std::unique_ptr<FE::Model> model_;
-    std::unique_ptr<FE::PropertyBinder> binder_; 
-    FE::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* bulletTracerEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* woodHitBulletEmitterPtr_ = nullptr;
+    FS::Engine* engine_ = nullptr;
+    std::unique_ptr<FS::Model> model_;
+    std::unique_ptr<FS::PropertyBinder> binder_; 
+    FS::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* shotSmokeEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* shotSparkEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* bulletTracerEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* woodHitBulletEmitterPtr_ = nullptr;
 
-    FE::WorldTransform handTransform_;
+    FS::WorldTransform handTransform_;
 
     Config config_;
-    FE::Matrix4x4 currentHandMatrix_;
+    FS::Matrix4x4 currentHandMatrix_;
     float muzzleFlashTimer_ = 0.0f;
 };

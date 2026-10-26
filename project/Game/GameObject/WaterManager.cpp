@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "WaterManager.h"
 
-using namespace FE;
+using namespace FS;
 
 WaterManager::WaterManager(Engine* engine, const std::string& groupName)
     : engine_(engine), groupName_(groupName)

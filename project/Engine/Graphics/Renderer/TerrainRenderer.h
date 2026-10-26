@@ -3,7 +3,7 @@
 #include "RenderEnvironment.h"
 #include "Terrain.h"
 
-namespace FE
+namespace FS
 {
 
 class TerrainChunk;

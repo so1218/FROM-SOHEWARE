@@ -3,7 +3,7 @@
 #include "Structures.h"
 #include "Mesh.h"
 
-namespace FE
+namespace FS
 {
 
 class Engine;

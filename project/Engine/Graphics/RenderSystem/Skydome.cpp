@@ -6,7 +6,7 @@
 #include "PropertyBinder.h"
 #include "EnvironmentManager.h"
 
-namespace FE
+namespace FS
 {
 
 Skydome::Skydome(Engine* engine)

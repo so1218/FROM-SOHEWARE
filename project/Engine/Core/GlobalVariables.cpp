@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "GlobalVariables.h"
 
-namespace FE
+namespace FS
 {
 
 GlobalVariables* GlobalVariables::GetInstance()

@@ -1,7 +1,7 @@
 #pragma once
 #include "SceneManager.h"
 
-namespace FE
+namespace FS
 {
 
 // 遷移状態の基底クラス

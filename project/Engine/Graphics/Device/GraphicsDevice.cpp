@@ -3,7 +3,7 @@
 #include "Logger.h"
 #include "StringUtils.h"
 
-namespace FE
+namespace FS
 {
 
 void GraphicsDevice::Initialize()

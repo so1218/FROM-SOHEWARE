@@ -2,7 +2,7 @@
 #include "RootSignatureBuilder.h"
 #include "Logger.h"
 
-namespace FE
+namespace FS
 {
 
 void RootSignatureBuilder::AddCBV(uint32_t shaderRegister, D3D12_SHADER_VISIBILITY visibility, uint32_t registerSpace)

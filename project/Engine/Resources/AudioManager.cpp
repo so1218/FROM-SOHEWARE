@@ -3,7 +3,7 @@
 #include "AudioPlayer.h"
 #include "StringUtils.h"
 
-namespace FE
+namespace FS
 {
 
 std::unordered_map<std::string, int> AudioManager::audioMap_;

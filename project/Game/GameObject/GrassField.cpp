@@ -2,14 +2,14 @@
 #include "GrassField.h"
 #include "ImGuiManager.h"
 
-using namespace FE;
+using namespace FS;
 
-GrassField::GrassField(FE::Engine* engine) : FE::GameObject()
+GrassField::GrassField(FS::Engine* engine) : FS::GameObject()
 {
     engine_ = engine;
 
-    grassSystem_ = std::make_unique<FE::GrassSystem>(engine_, "noise_39");
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "GrassField");
+    grassSystem_ = std::make_unique<FS::GrassSystem>(engine_, "noise_39");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GrassField");
 }
 
 void GrassField::Initialize()
@@ -72,7 +72,7 @@ void GrassField::Initialize()
     binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", TextureType::Noise);
     binder_->BindTexture("DensityMap", &densityMapName_, &densityMapHandle_, "white1x1", TextureType::Noise);
 
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() 
+    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() 
         {
         grassSystem_->SetWindMapTexture(windMapName_);
         });
@@ -261,7 +261,7 @@ void GrassField::GenerateGrass()
     uint32_t neededGrassCount = gridX * gridZ;
 
     // バッファの上限を超えないように制限
-    genData.maxGrassPerChunk = FE::Math::MyMin((int)neededGrassCount, maxGrassPerChunk_);
+    genData.maxGrassPerChunk = FS::Math::MyMin((int)neededGrassCount, maxGrassPerChunk_);
 
     // 配置のオフセット
     genData.chunkBasePos = { transform_.translation_.x, transform_.translation_.z };

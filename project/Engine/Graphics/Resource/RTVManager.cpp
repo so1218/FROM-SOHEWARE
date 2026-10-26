@@ -5,7 +5,7 @@
 #include "SwapChain.h"
 #include "SRVManager.h"
 
-namespace FE
+namespace FS
 {
 
 void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, DescriptorHeapManager* descriptorManager)

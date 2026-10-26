@@ -1,7 +1,7 @@
 #pragma once
 #include "ISceneTransitionState.h"
 
-namespace FE
+namespace FS
 {
 
 class FadeInState : public ISceneTransitionState

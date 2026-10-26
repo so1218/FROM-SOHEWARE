@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Vector3.h"
 
-namespace FE
+namespace FS
 {
 
 // 複合代入演算子の定義

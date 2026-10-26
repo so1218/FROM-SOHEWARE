@@ -4,7 +4,7 @@
 #include "TextureManager.h"
 #include "TreeRenderer.h"
 
-namespace FE 
+namespace FS 
 {
 
 TreeSystem::TreeSystem(Engine* engine, const std::string& windMapTextureName)

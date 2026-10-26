@@ -6,7 +6,7 @@
 #include "PropertyBinder.h"
 #include "DebugDraw.h"
 
-namespace FE
+namespace FS
 {
 
 PostEffectManager::~PostEffectManager()

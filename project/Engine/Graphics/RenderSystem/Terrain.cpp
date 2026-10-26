@@ -6,7 +6,7 @@
 #include "TerrainChunk.h"
 #include "Frustum.h"
 
-namespace FE
+namespace FS
 {
 
 Terrain::Terrain(Engine* engine)
@@ -45,7 +45,7 @@ void Terrain::Draw()
 
     const Matrix4x4& view = engine_->GetViewMatrix();
     const Matrix4x4& proj = engine_->GetProjectionMatrix();
-    FE::Frustum frustum;
+    FS::Frustum frustum;
     frustum.ExtractFromMatrix(view * proj);
 
     // VRAM消費を抑えるため、全チャンクで共通の頂点バッファ（代表メッシュ）を使い回す

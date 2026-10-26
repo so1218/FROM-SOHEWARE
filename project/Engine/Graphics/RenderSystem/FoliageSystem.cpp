@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "TextureManager.h"
 
-namespace FE
+namespace FS
 {
 
 FoliageSystem::FoliageSystem(Engine* engine) : engine_(engine)

@@ -3,7 +3,7 @@
 #include "PlayerStateNormal.h"
 #include "TimeManager.h"
 
-using namespace FE;
+using namespace FS;
 
 void PlayerStateJump::Enter(Player* player)
 {

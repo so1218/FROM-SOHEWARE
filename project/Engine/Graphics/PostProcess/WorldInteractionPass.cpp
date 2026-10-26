@@ -4,7 +4,7 @@
 #include "PSOManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 WorldInteractionPass::~WorldInteractionPass()
@@ -160,7 +160,7 @@ void WorldInteractionPass::Execute(ID3D12GraphicsCommandList* cmdList, uint32_t 
     readIndex_ = heapIndex;
     writeIndex_ = (frameCounter_ + 1) % 2;
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Compute, "World Interaction Pass (%ux%u, Read:%u Write:%u)",
+    PIXScopedEvent(cmdList, FS::PIXColors::Compute, "World Interaction Pass (%ux%u, Read:%u Write:%u)",
         width_, height_, readIndex_, writeIndex_);
 
     // 定数バッファの更新（カメラ移動履歴の同期）

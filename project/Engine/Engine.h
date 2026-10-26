@@ -28,7 +28,7 @@
 #include "RenderPipeline.h"
 #include "NoiseTextureGenerator.h"
 
-namespace FE
+namespace FS
 {
 
 class SRVManager;

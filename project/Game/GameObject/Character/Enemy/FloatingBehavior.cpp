@@ -4,7 +4,7 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
-using namespace FE;
+using namespace FS;
 
 FloatingBehavior::~FloatingBehavior()
 {
@@ -60,30 +60,30 @@ void FloatingBehavior::Initialize(Enemy* owner)
 
 void FloatingBehavior::Update(Enemy* owner)
 {
-    time_ += FE::TimeManager::GetInstance()->GetDeltaTime();
-    constexpr float radian = FE::Math::PI / 180.0f;
+    time_ += FS::TimeManager::GetInstance()->GetDeltaTime();
+    constexpr float radian = FS::Math::PI / 180.0f;
 
     // サイン波による位置計算
-    FE::Vector3 offset = {
+    FS::Vector3 offset = {
         std::sin(time_ * frequency_.x + phase_.x * radian) * amplitude_.x,
         std::sin(time_ * frequency_.y + phase_.y * radian) * amplitude_.y,
         std::sin(time_ * frequency_.z + phase_.z * radian) * amplitude_.z
     };
 
-    FE::Vector3 currentPos = basePosition_ + offset;
-    FE::Vector3 prevPos = owner->GetTransform().translation_;
+    FS::Vector3 currentPos = basePosition_ + offset;
+    FS::Vector3 prevPos = owner->GetTransform().translation_;
 
     // 進行方向を向く回転計算
-    FE::Vector3 velocity = { currentPos.x - prevPos.x, currentPos.y - prevPos.y, currentPos.z - prevPos.z };
+    FS::Vector3 velocity = { currentPos.x - prevPos.x, currentPos.y - prevPos.y, currentPos.z - prevPos.z };
     float speedSq = velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z;
 
     if (speedSq > 0.000001f)
     {
         float speed = std::sqrt(speedSq);
-        FE::Vector3 forward = { velocity.x / speed, velocity.y / speed, velocity.z / speed };
-        FE::Vector3 up = { 0.0f, 1.0f, 0.0f };
+        FS::Vector3 forward = { velocity.x / speed, velocity.y / speed, velocity.z / speed };
+        FS::Vector3 up = { 0.0f, 1.0f, 0.0f };
 
-        FE::Quaternion targetRotation = FE::Quaternion::LookRotation(-forward, up);
+        FS::Quaternion targetRotation = FS::Quaternion::LookRotation(-forward, up);
         owner->GetTransform().SetRotation(targetRotation);
     }
 

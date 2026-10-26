@@ -3,7 +3,7 @@
 #include "AudioDevice.h"
 #include "MediaAudioDecoder.h"
 
-namespace FE
+namespace FS
 {
 
 // ロード処理

@@ -10,7 +10,7 @@
 #include "BufferManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void PebbleRenderer::Initialize(const RenderEnvironment& env)
@@ -135,7 +135,7 @@ void PebbleRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap,
     auto* cmdList = env.commandManager->GetCommandList();
 
     // 小石描画全体のスコープ
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Pebble Pass (Total Generated: %u)", totalGeneratedCount_);
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Pebble Pass (Total Generated: %u)", totalGeneratedCount_);
 
     ID3D12Device* device = env.device->GetDevice();
 
@@ -145,7 +145,7 @@ void PebbleRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap,
     // パス 1: GPU カリング 
     // ==========================================
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Pebble GPU Culling CS");
+        PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Pebble GPU Culling CS");
 
         cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("PebbleCullingCS"));
         cmdList->SetPipelineState(env.psoManager->GetPSO("PebbleCullingCS"));
@@ -218,7 +218,7 @@ void PebbleRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap,
     // パス 2: 間接描画
     // ==========================================
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Pebble Indirect Draw");
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Pebble Indirect Draw");
 
         // CSの書き込み完了を待ち、PSから参照可能なSRV状態および間接描画引数状態へバリアを張る
         D3D12_RESOURCE_BARRIER drawBarriers[2] = {};

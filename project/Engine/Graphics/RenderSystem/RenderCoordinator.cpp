@@ -8,7 +8,7 @@
 #include "GraphicsDevice.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 void RenderCoordinator::Initialize(

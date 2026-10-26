@@ -11,7 +11,7 @@
 #include "PostEffectManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void ParticleRenderer::Initialize(const RenderEnvironment& env)
@@ -71,7 +71,7 @@ void ParticleRenderer::Draw(const RenderEnvironment& env)
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Particle Pass (%zu Requests)", requests_.size());
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Particle Pass (%zu Requests)", requests_.size());
 
     std::stable_sort(requests_.begin(), requests_.end(), [](const ParticleRequest& a, const ParticleRequest& b) {
         return a.blendMode < b.blendMode;

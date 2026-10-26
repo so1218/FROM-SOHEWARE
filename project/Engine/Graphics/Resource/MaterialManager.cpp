@@ -4,7 +4,7 @@
 #include "TimeManager.h"  
 #include "Engine.h" 
 
-namespace FE
+namespace FS
 {
 
 MaterialManager::~MaterialManager()

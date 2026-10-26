@@ -5,7 +5,7 @@
 #include "Model.h"
 #include "AnimationModel.h"
 
-namespace FE
+namespace FS
 {
 
 class ParticleEmitter

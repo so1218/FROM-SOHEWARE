@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DebugUtils.h"
 
-namespace FE
+namespace FS
 {
 
 D3DResourceLeakChecker::D3DResourceLeakChecker() {}

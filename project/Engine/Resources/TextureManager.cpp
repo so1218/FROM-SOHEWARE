@@ -2,7 +2,7 @@
 #include "TextureManager.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 namespace fs = std::filesystem;

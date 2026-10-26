@@ -5,7 +5,7 @@
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
 
-namespace FE
+namespace FS
 {
 
 Collider::Collider(GameObject* owner) : owner_(owner)
@@ -92,20 +92,20 @@ void Collider::RegisterToManager()
     }
 }
 
-bool Collider::CalculatePushBackVector(Collider* other, FE::Vector3& outPushVector) const
+bool Collider::CalculatePushBackVector(Collider* other, FS::Vector3& outPushVector) const
 {
     outPushVector = { 0.0f, 0.0f, 0.0f };
     if (!other) return false;
 
-    FE::Vector3 myPos = GetWorldPosition();
-    FE::Vector3 otherPos = other->GetWorldPosition();
+    FS::Vector3 myPos = GetWorldPosition();
+    FS::Vector3 otherPos = other->GetWorldPosition();
 
     // ========================================================
     // AABB(自分) vs AABB(相手)
     // ========================================================
     if (type_ == CollisionShapeType::AABB && other->GetType() == CollisionShapeType::AABB)
     {
-        FE::Vector3 diff = otherPos - myPos;
+        FS::Vector3 diff = otherPos - myPos;
 
         // 各軸の重なり具合を計算
         float overlapX = (size_.x + other->GetSize().x) - std::abs(diff.x);
@@ -136,16 +136,16 @@ bool Collider::CalculatePushBackVector(Collider* other, FE::Vector3& outPushVect
     // ========================================================
     else if (type_ == CollisionShapeType::Sphere && other->GetType() == CollisionShapeType::AABB)
     {
-        FE::Vector3 boxMin = otherPos - other->GetSize();
-        FE::Vector3 boxMax = otherPos + other->GetSize();
+        FS::Vector3 boxMin = otherPos - other->GetSize();
+        FS::Vector3 boxMax = otherPos + other->GetSize();
 
         // AABB(相手)の表面または内部における、Sphere中心(自分)からの最近接点
-        FE::Vector3 closest;
+        FS::Vector3 closest;
         closest.x = std::clamp(myPos.x, boxMin.x, boxMax.x);
         closest.y = std::clamp(myPos.y, boxMin.y, boxMax.y);
         closest.z = std::clamp(myPos.z, boxMin.z, boxMax.z);
 
-        FE::Vector3 diff = closest - myPos; // 自分(Sphere)から最近接点へのベクトル
+        FS::Vector3 diff = closest - myPos; // 自分(Sphere)から最近接点へのベクトル
         float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
         if (distSq < radius_ * radius_)
@@ -165,16 +165,16 @@ bool Collider::CalculatePushBackVector(Collider* other, FE::Vector3& outPushVect
     // ========================================================
     else if (type_ == CollisionShapeType::AABB && other->GetType() == CollisionShapeType::Sphere)
     {
-        FE::Vector3 boxMin = myPos - size_;
-        FE::Vector3 boxMax = myPos + size_;
+        FS::Vector3 boxMin = myPos - size_;
+        FS::Vector3 boxMax = myPos + size_;
 
         // AABB(自分)の表面または内部における、Sphere中心(相手)からの最近接点
-        FE::Vector3 closest;
+        FS::Vector3 closest;
         closest.x = std::clamp(otherPos.x, boxMin.x, boxMax.x);
         closest.y = std::clamp(otherPos.y, boxMin.y, boxMax.y);
         closest.z = std::clamp(otherPos.z, boxMin.z, boxMax.z);
 
-        FE::Vector3 diff = otherPos - closest; // 最近接点から相手(Sphere)へのベクトル
+        FS::Vector3 diff = otherPos - closest; // 最近接点から相手(Sphere)へのベクトル
         float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
         if (distSq < other->GetRadius() * other->GetRadius())
@@ -194,7 +194,7 @@ bool Collider::CalculatePushBackVector(Collider* other, FE::Vector3& outPushVect
     // ========================================================
     else if (type_ == CollisionShapeType::Sphere && other->GetType() == CollisionShapeType::Sphere)
     {
-        FE::Vector3 diff = otherPos - myPos;
+        FS::Vector3 diff = otherPos - myPos;
         float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
         float minDist = radius_ + other->GetRadius();
 

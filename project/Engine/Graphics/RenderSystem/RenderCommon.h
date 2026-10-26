@@ -7,7 +7,7 @@
 #include "BlendMode.h"
 #include "Frustum.h"
 
-namespace FE
+namespace FS
 {
 
 struct RenderData

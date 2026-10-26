@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ParticleSystemWrapper.h" 
 
-using namespace FE;
+using namespace FS;
 
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
     : GameObject()

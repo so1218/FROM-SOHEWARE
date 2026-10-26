@@ -4,10 +4,10 @@
 #include "Sprite.h"
 #include "PropertyBinder.h"
 
-class GameUI : public FE::GameObject
+class GameUI : public FS::GameObject
 {
 public:
-    GameUI(FE::Engine* engine);
+    GameUI(FS::Engine* engine);
 
     void Initialize() override;
     void Update() override;
@@ -15,18 +15,18 @@ public:
     void DebugDraw() override;
 
 private:
-    FE::Engine* engine_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    FS::Engine* engine_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
     // 8枚のスプライトを管理
-    std::unique_ptr<FE::Sprite> spriteCameraSwitch_;
-    std::unique_ptr<FE::Sprite> spriteMainCameraMode_;
-    std::unique_ptr<FE::Sprite> spriteMove_;
-    std::unique_ptr<FE::Sprite> spriteMainCameraMove_;
-    std::unique_ptr<FE::Sprite> spriteDebugCameraMode_;
-    std::unique_ptr<FE::Sprite> spriteDebugCameraTranslate_;
-    std::unique_ptr<FE::Sprite> spriteDebugCameraRotate_;
-    std::unique_ptr<FE::Sprite> spriteDebugCameraZoom_;
+    std::unique_ptr<FS::Sprite> spriteCameraSwitch_;
+    std::unique_ptr<FS::Sprite> spriteMainCameraMode_;
+    std::unique_ptr<FS::Sprite> spriteMove_;
+    std::unique_ptr<FS::Sprite> spriteMainCameraMove_;
+    std::unique_ptr<FS::Sprite> spriteDebugCameraMode_;
+    std::unique_ptr<FS::Sprite> spriteDebugCameraTranslate_;
+    std::unique_ptr<FS::Sprite> spriteDebugCameraRotate_;
+    std::unique_ptr<FS::Sprite> spriteDebugCameraZoom_;
 
     // まとめて表示/非表示を切り替えるフラグ
     bool isVisible_ = true;

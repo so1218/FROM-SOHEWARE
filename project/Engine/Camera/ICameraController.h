@@ -1,7 +1,7 @@
 #pragma once
 #include "Camera.h"
 
-namespace FE
+namespace FS
 {
 
 // カメラの基底クラス

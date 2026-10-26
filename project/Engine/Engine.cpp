@@ -27,7 +27,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "winmm.lib")
 
-namespace FE
+namespace FS
 {
 
 uint32_t Engine::sClientWidth = 1280;

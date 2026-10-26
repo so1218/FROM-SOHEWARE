@@ -5,13 +5,13 @@
 #include "Terrain.h"
 #include "WorldInteractionPass.h"
 
-namespace FE
+namespace FS
 {
 
-WorldInteractionSystem::WorldInteractionSystem(FE::Engine* engine)
+WorldInteractionSystem::WorldInteractionSystem(FS::Engine* engine)
     : engine_(engine)
 {
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "WorldInteraction");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "WorldInteraction");
 }
 
 void WorldInteractionSystem::Initialize()

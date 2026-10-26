@@ -11,7 +11,7 @@
 #include "DSVManager.h"
 #include "WorldInteractionPass.h"
 
-namespace FE
+namespace FS
 {
 
 RenderPipeline::RenderPipeline() = default;

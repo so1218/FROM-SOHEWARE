@@ -4,7 +4,7 @@
 #include "TextureManager.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 Model::Model(Engine* engine, const std::string& modelName)

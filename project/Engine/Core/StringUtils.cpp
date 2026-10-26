@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "StringUtils.h"
 
-namespace FE
+namespace FS
 {
 
 // string->wstring

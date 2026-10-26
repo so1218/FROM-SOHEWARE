@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "TextureManager.h"
 
-namespace FE
+namespace FS
 {
 
 Sprite::Sprite(Engine* engine)

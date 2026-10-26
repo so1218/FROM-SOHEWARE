@@ -2,7 +2,7 @@
 #include "Matrix.h"
 #include "Vector.h"
 
-namespace FE
+namespace FS
 {
 
 class WorldTransform;

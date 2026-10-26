@@ -29,7 +29,7 @@
 #include "WaterRenderer.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 RendererManager::RendererManager() {}
@@ -177,7 +177,7 @@ void RendererManager::DrawPostEffectsProcess(uint32_t inputSrvIndex)
 {
 	auto* cmdList = commandManager_->GetCommandList();
 
-	PIXScopedEvent(cmdList, FE::PIXColors::PostProcess, "Post Effects Pass");
+	PIXScopedEvent(cmdList, FS::PIXColors::PostProcess, "Post Effects Pass");
 
 	// SRVヒープをセット（ポストプロセス入力用）
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
@@ -212,7 +212,7 @@ void RendererManager::DrawFinalResult(uint32_t srvIndex)
 {
 	auto cmdList = commandManager_->GetCommandList();
 
-	PIXScopedEvent(cmdList, FE::PIXColors::PostProcess, "Draw Final Result To BackBuffer");
+	PIXScopedEvent(cmdList, FS::PIXColors::PostProcess, "Draw Final Result To BackBuffer");
 
 	// SRVヒープをセット
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };

@@ -3,7 +3,7 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
-namespace FE
+namespace FS
 {
 
 void ShakeEffect::Start(float duration, float intensity)

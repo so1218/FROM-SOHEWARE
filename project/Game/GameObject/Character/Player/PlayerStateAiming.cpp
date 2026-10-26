@@ -5,7 +5,7 @@
 #include "TimeManager.h"
 #include "Input.h"
 
-using namespace FE;
+using namespace FS;
 
 void PlayerStateAiming::Enter(Player* player)
 {

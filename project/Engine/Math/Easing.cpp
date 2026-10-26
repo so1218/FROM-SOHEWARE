@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Easing.h"
 
-namespace FE
+namespace FS
 {
 
 // イージングの関数群

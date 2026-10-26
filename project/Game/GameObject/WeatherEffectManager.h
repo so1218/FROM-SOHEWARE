@@ -9,33 +9,33 @@
 #include "EnvironmentManager.h"
 #include "CameraManager.h"
 
-class WeatherEffectManager : public FE::GameObject
+class WeatherEffectManager : public FS::GameObject
 {
 public:
-    WeatherEffectManager(FE::Engine* engine, FE::Camera* camera, Player* player, FE::Terrain* terrain);
+    WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, Player* player, FS::Terrain* terrain);
 
     void Initialize() override;
     void Update() override;
     void DebugDraw() override;
 
-    void SetCameraManager(FE::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
+    void SetCameraManager(FS::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
 
 private:
 
-    FE::Engine* engine_;
-    FE::Camera* camera_;
+    FS::Engine* engine_;
+    FS::Camera* camera_;
     Player* player_;
-    FE::Terrain* terrain_;
+    FS::Terrain* terrain_;
 
-    std::unique_ptr<FE::PropertyBinder> binder_ = nullptr;
+    std::unique_ptr<FS::PropertyBinder> binder_ = nullptr;
 
     // エフェクトのポインタを保持
-    std::unique_ptr<FE::ParticleEmitter> rainParticleEmitter_ = nullptr;
-    FE::ParticleEmitter* rainParticleEmitterPtr_;
-    std::unique_ptr<FE::ParticleEmitter> thunderRainParticleEmitter_ = nullptr;
-    FE::ParticleEmitter* thunderRainParticleEmitterPtr_;
-    std::unique_ptr<FE::ParticleEmitter> thunderStrikeParticleEmitter_ = nullptr;
-    FE::ParticleEmitter* thunderStrikeParticleEmitterPtr_;
+    std::unique_ptr<FS::ParticleEmitter> rainParticleEmitter_ = nullptr;
+    FS::ParticleEmitter* rainParticleEmitterPtr_;
+    std::unique_ptr<FS::ParticleEmitter> thunderRainParticleEmitter_ = nullptr;
+    FS::ParticleEmitter* thunderRainParticleEmitterPtr_;
+    std::unique_ptr<FS::ParticleEmitter> thunderStrikeParticleEmitter_ = nullptr;
+    FS::ParticleEmitter* thunderStrikeParticleEmitterPtr_;
 
     // 雷雨用の制御タイマー
     float thunderIntervalTimer_ = 0.0f; 
@@ -44,13 +44,13 @@ private:
 
     float thunderMinInterval_ = 3.0f;    
     float thunderMaxInterval_ = 8.0f;  
-    FE::Vector3 flashColor_ = { 0.9f, 0.95f, 1.0f }; 
+    FS::Vector3 flashColor_ = { 0.9f, 0.95f, 1.0f }; 
     float flashDuration_ = 0.4f;      
     float maxFlashIntensity_ = 10.0f;  
 
     std::mt19937 randomEngine_;
 
-    std::unique_ptr<FE::LightningSystem> lightningSystem_;
+    std::unique_ptr<FS::LightningSystem> lightningSystem_;
 
     // 落雷の発生範囲
     float strikeRadiusMin_ = 30.0f;
@@ -62,7 +62,7 @@ private:
     float thunderShakeIntensity_ = 2.0f;
     float thunderShakeMaxDistance_ = 300.0f;
 
-    FE::CameraManager* cameraManager_ = nullptr;
+    FS::CameraManager* cameraManager_ = nullptr;
 
     // 現在再生中のBGMの名前
     std::string currentBgmName_ = "";
@@ -76,7 +76,7 @@ struct WeatherVisualParams
     float environmentMapIntensity;
     float rippleSize;
     float normalIntensity;
-    FE::Vector4 color;
+    FS::Vector4 color;
     float emissiveIntensity;
 
     // Volumetric Fog
@@ -85,9 +85,9 @@ struct WeatherVisualParams
     float noiseIntensity;
     float heightDensity;
     float heightFalloff;
-    FE::Vector3 ambientLight;
+    FS::Vector3 ambientLight;
     float extinction;
     float erosion;
     float windSpeed;
-    FE::Vector3 windDirection;
+    FS::Vector3 windDirection;
 };

@@ -6,7 +6,7 @@
 #include "MathUtils.h"
 #include "TimeManager.h"
 
-using namespace FE;
+using namespace FS;
 
 FollowCamera::FollowCamera(Engine* engine, const WorldTransform* target)
     : target_(target)

@@ -4,7 +4,7 @@
 #include "PropertyBinder.h" 
 #include "TimeManager.h" 
 
-namespace FE
+namespace FS
 {
 
 LightningSystem::LightningSystem(Engine* engine) : engine_(engine)

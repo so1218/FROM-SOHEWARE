@@ -3,7 +3,7 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 
-namespace FE
+namespace FS
 {
 
 class WorldTransform

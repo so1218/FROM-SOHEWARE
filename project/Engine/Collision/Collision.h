@@ -1,7 +1,7 @@
 #pragma once
 #include "Structures.h"
 
-namespace FE
+namespace FS
 {
 
 // AABB同士の衝突判定

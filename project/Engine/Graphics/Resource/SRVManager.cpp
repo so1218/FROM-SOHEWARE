@@ -3,7 +3,7 @@
 #include "DescriptorHeapManager.h"
 #include "Logger.h"
 
-namespace FE
+namespace FS
 {
 
 void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)

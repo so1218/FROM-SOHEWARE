@@ -1,10 +1,10 @@
 #pragma once
 #include "WaterObject.h"
 
-class WaterManager : public FE::GameObject
+class WaterManager : public FS::GameObject
 {
 public:
-    WaterManager(FE::Engine* engine, const std::string& groupName = "Stage_Water");
+    WaterManager(FS::Engine* engine, const std::string& groupName = "Stage_Water");
     ~WaterManager() override = default;
 
     void Initialize() override;
@@ -16,10 +16,10 @@ public:
     void RemoveWater(int id);
 
 private:
-    FE::Engine* engine_ = nullptr;
+    FS::Engine* engine_ = nullptr;
     std::string groupName_;
     std::vector<std::unique_ptr<WaterObject>> waters_;
 
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
     int waterCount_ = 0; // JSONに保存される全体の水の数
 };

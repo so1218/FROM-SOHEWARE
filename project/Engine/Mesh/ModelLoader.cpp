@@ -3,7 +3,7 @@
 #include "Logger.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 ModelData ModelLoader::LoadModel(const std::string& filePath)

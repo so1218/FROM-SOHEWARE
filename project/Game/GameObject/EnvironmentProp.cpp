@@ -4,12 +4,12 @@
 #include "CollisionConfig.h"
 #include "Player.h"
 
-using namespace FE;
+using namespace FS;
 
-EnvironmentProp::EnvironmentProp(FE::Engine* engine, int id, const std::string& parentGroupName)
+EnvironmentProp::EnvironmentProp(FS::Engine* engine, int id, const std::string& parentGroupName)
     : engine_(engine), id_(id), parentGroupName_(parentGroupName)
 {
-    model_ = std::make_unique<FE::Model>(engine_, "cube");
+    model_ = std::make_unique<FS::Model>(engine_, "cube");
 }
 
 EnvironmentProp::~EnvironmentProp()
@@ -19,13 +19,13 @@ EnvironmentProp::~EnvironmentProp()
 void EnvironmentProp::Initialize()
 {
     const std::string childGroupName = "Prop_" + std::to_string(id_);
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName_, childGroupName);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
     // マスターモデルが存在する場合、メッシュおよびマテリアルデータのみを共有
     if (masterModel_ != nullptr)
     {
         modelName_ = masterModel_->GetName();
-        model_ = std::make_unique<FE::Model>(engine_, masterModel_->GetName());
+        model_ = std::make_unique<FS::Model>(engine_, masterModel_->GetName());
         model_->ShareModelDataFrom(masterModel_);
         model_->ShareMaterialsFrom(masterModel_);
     }
@@ -49,7 +49,7 @@ void EnvironmentProp::SetupProperties()
 
     binder_->Clear();
 
-    auto* gv = FE::GlobalVariables::GetInstance();
+    auto* gv = FS::GlobalVariables::GetInstance();
     const auto& groupPath = binder_->GetGroupPath();
 
     // カスタム名の読み込みおよび初期設定
@@ -119,7 +119,7 @@ void EnvironmentProp::ApplySettings()
     {
         if (!collider_) 
         {
-            collider_ = std::make_unique<FE::Collider>(this);
+            collider_ = std::make_unique<FS::Collider>(this);
             collider_->SetCollisionAttribute(kCollisionAttributeProp);
             collider_->SetCollisionMask(kCollisionAttributePlayer);
             collider_->RegisterToManager();
@@ -138,7 +138,7 @@ void EnvironmentProp::UpdateParticleEmitter(
     bool hasParticle,
     const std::string& particleName,
     bool isFollowing,
-    FE::ParticleEmitter*& outEmitter)
+    FS::ParticleEmitter*& outEmitter)
 {
     if (hasParticle)
     {
@@ -178,7 +178,7 @@ void EnvironmentProp::Update()
     // 物理・判定用コライダーの形状パラメータ同期
     if (hasCollider_ && collider_)
     {
-        collider_->SetType(static_cast<FE::CollisionShapeType>(colliderType_));
+        collider_->SetType(static_cast<FS::CollisionShapeType>(colliderType_));
         collider_->SetRadius(colliderRadius_);
         collider_->SetSize(colliderSize_);
         collider_->SetCenterOffset(colliderOffset_);
@@ -245,7 +245,7 @@ void EnvironmentProp::DebugDraw()
         if (ImGui::Combo("挙動タイプ", &currentBehavior, behaviorNames, IM_ARRAYSIZE(behaviorNames)))
         {
             propBehavior_ = currentBehavior;
-            FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "Behavior", propBehavior_);
+            FS::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "Behavior", propBehavior_);
         }
         ImGui::TreePop();
     }
@@ -267,7 +267,7 @@ void EnvironmentProp::DebugDraw()
             ImGui::Indent();
             if (ImGui::Combo("形状タイプ", &colliderType_, "Sphere\0Box\0"))
             {
-                FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ColliderType", colliderType_);
+                FS::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), "ColliderType", colliderType_);
                 ApplySettings();
             }
 
@@ -325,7 +325,7 @@ void EnvironmentProp::DebugDraw()
             bool& hasPart,
             bool& isFollow,
             std::string& partName,
-            FE::ParticleEmitter*& activeEmit,
+            FS::ParticleEmitter*& activeEmit,
             const char* bindHas,
             const char* bindFollow,
             const char* jsonKey,
@@ -365,7 +365,7 @@ void EnvironmentProp::DebugDraw()
                             {
                                 // パーティクル名が変更されたら適用
                                 partName = preset;
-                                FE::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
+                                FS::GlobalVariables::GetInstance()->SetValue(binder_->GetGroupPath(), jsonKey, partName);
 
                                 // 古いエミッターを破棄して新しいエミッターをリロード
                                 if (activeEmit)
@@ -399,18 +399,18 @@ void EnvironmentProp::DebugDraw()
 #endif
 }
 
-void EnvironmentProp::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
+void EnvironmentProp::OnCollisionEnter(FS::Collider* mine, FS::Collider* other)
 {
     if (!IsActive()) return;
 
     OnCollisionStay(mine, other);
 }
 
-void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
+void EnvironmentProp::OnCollisionStay(FS::Collider* mine, FS::Collider* other)
 {
     if (!IsActive()) return;
 
-    FE::GameObject* hitObj = other->GetOwner();
+    FS::GameObject* hitObj = other->GetOwner();
     if (!hitObj || !hitObj->CompareTag(ObjectTag::Player)) return;
 
     // 回収時消滅挙動
@@ -434,7 +434,7 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
     // 押し戻し挙動
     else if (propBehavior_ == static_cast<int>(PropBehavior::PushBack))
     {
-        FE::Vector3 pushVector;
+        FS::Vector3 pushVector;
         if (mine->CalculatePushBackVector(other, pushVector))
         {
             hitObj->GetTransform().translation_ += pushVector;
@@ -450,7 +450,7 @@ void EnvironmentProp::OnCollisionStay(FE::Collider* mine, FE::Collider* other)
     }
 }
 
-void EnvironmentProp::OnCollisionExit(FE::Collider* mine, FE::Collider* other)
+void EnvironmentProp::OnCollisionExit(FS::Collider* mine, FS::Collider* other)
 {
 
 }
@@ -461,10 +461,10 @@ void EnvironmentProp::ReassignID(int newID)
     const std::string childGroupName = "Prop_" + std::to_string(id_);
 
     // ID変更に伴い、データバインダーおよび保存先パラメータの再構成
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName_, childGroupName);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
     SetupProperties();
 
     // 更新されたグループパスで設定データを即座に永続化
-    FE::GlobalVariables::GetInstance()->SaveFile(binder_->GetGroupPath());
+    FS::GlobalVariables::GetInstance()->SaveFile(binder_->GetGroupPath());
 }

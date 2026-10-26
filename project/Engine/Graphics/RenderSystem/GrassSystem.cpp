@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "ModelManager.h"
 
-namespace FE
+namespace FS
 {
 
 GrassSystem::GrassSystem(Engine* engine, const std::string& windMapTextureName)

@@ -1,7 +1,7 @@
 #pragma once
 #include "AudioDefinition.h"
 
-namespace FE
+namespace FS
 {
 
 class MediaAudioDecoder

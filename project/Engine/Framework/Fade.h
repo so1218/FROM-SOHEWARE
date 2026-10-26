@@ -1,7 +1,7 @@
 #pragma once
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 class Sprite;

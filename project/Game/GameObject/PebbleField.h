@@ -6,10 +6,10 @@
 #include "Terrain.h"
 #include "RenderCommon.h"
 
-class PebbleField : public FE::GameObject
+class PebbleField : public FS::GameObject
 {
 public:
-    PebbleField(FE::Engine* engine);
+    PebbleField(FS::Engine* engine);
 
     void Initialize() override;
     void Update() override;
@@ -21,11 +21,11 @@ private:
     void ReloadResources();
 
 private:
-    FE::Engine* engine_;
-    std::unique_ptr<FE::PebbleSystem> pebbleSystem_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    FS::Engine* engine_;
+    std::unique_ptr<FS::PebbleSystem> pebbleSystem_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
-    FE::WorldTransform transform_;
+    FS::WorldTransform transform_;
 
     // ==========================================
     // 生成用パラメータ (変更されたら再生成)
@@ -36,21 +36,21 @@ private:
     float maxScale_ = 1.5f;
 
     // 非等方スケール（X, Y, Zそれぞれのスケール幅）
-    FE::Vector3 minAnisoScale_{ 0.8f, 0.3f, 0.8f };
-    FE::Vector3 maxAnisoScale_{ 1.2f, 0.8f, 1.2f };
+    FS::Vector3 minAnisoScale_{ 0.8f, 0.3f, 0.8f };
+    FS::Vector3 maxAnisoScale_{ 1.2f, 0.8f, 1.2f };
 
-    FE::Vector2 terrainCenter_{ 0.0f, 0.0f };
+    FS::Vector2 terrainCenter_{ 0.0f, 0.0f };
     float terrainWidth_ = 1024.0f;
     float terrainDepth_ = 1024.0f;
 
     // 再生成判定用のキャッシュ
-    FE::Vector3 prevPosition_;
+    FS::Vector3 prevPosition_;
     int prevMaxPebbles_ = 0;
     float prevGridSpacing_ = 0.0f;
     float prevMinScale_ = 0.0f;
     float prevMaxScale_ = 0.0f;
-    FE::Vector3 prevMinAnisoScale_;
-    FE::Vector3 prevMaxAnisoScale_;
+    FS::Vector3 prevMinAnisoScale_;
+    FS::Vector3 prevMaxAnisoScale_;
     float prevTerrainWidth_ = 0.0f;
     float prevTerrainDepth_ = 0.0f;
 

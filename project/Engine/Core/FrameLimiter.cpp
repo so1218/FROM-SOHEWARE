@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "FrameLimiter.h"
 
-namespace FE
+namespace FS
 {
 
 FrameLimiter::FrameLimiter(int targetFPS)

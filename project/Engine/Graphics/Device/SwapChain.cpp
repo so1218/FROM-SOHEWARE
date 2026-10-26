@@ -4,7 +4,7 @@
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-namespace FE
+namespace FS
 {
 
 void SwapChain::Initialize(

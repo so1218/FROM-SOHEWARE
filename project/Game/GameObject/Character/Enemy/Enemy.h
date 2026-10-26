@@ -14,10 +14,10 @@ enum class EnemyType
     // Pop         
 };
 
-class Enemy : public FE::GameObject
+class Enemy : public FS::GameObject
 {
 public:
-    Enemy(FE::Engine* engine, int id, EnemyType type, const std::string& parentGroupName);
+    Enemy(FS::Engine* engine, int id, EnemyType type, const std::string& parentGroupName);
     ~Enemy() override = default;
 
     void Initialize() override;
@@ -25,39 +25,39 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+    void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
     // 被弾処理
-    void TakeDamage(int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal);
+    void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal);
 
     // アクセサ
-    FE::Engine* GetEngine() const { return engine_; }
-    FE::PropertyBinder* GetBinder() const { return binder_.get(); }
-    FE::WorldTransform& GetTransform() { return model_->GetTransform(); }
-    FE::Model* GetModel() const { return model_.get(); }
+    FS::Engine* GetEngine() const { return engine_; }
+    FS::PropertyBinder* GetBinder() const { return binder_.get(); }
+    FS::WorldTransform& GetTransform() { return model_->GetTransform(); }
+    FS::Model* GetModel() const { return model_.get(); }
     EnemyType GetType() const { return type_; }
 
     // Transform更新を本体に反映させるヘルパー
     void SyncTransform() { SetTransform(model_->GetTransform()); }
 
 private:
-    FE::Engine* engine_;
+    FS::Engine* engine_;
     int id_;
     EnemyType type_;
 
-    std::unique_ptr<FE::Model> model_;
-    std::unique_ptr<FE::Collider> collider_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
-    std::unique_ptr<FE::ParticleEmitter> damageParticle_ = nullptr;
-    FE::ParticleEmitter* damageParticlePtr_ = nullptr;
+    std::unique_ptr<FS::Model> model_;
+    std::unique_ptr<FS::Collider> collider_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
+    std::unique_ptr<FS::ParticleEmitter> damageParticle_ = nullptr;
+    FS::ParticleEmitter* damageParticlePtr_ = nullptr;
 
     // 振る舞いを保持するポインタ
     std::unique_ptr<IEnemyBehavior> behavior_;
 
     // 共通パラメータ
     int hp_ = 100;
-    FE::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
+    FS::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
     float colliderRadius_ = 1.0f;
-    FE::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
+    FS::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
 
 };

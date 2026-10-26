@@ -3,7 +3,7 @@
 #include "PSOManager.h"
 #include "NoiseTextureGenerator.h"
 
-namespace FE
+namespace FS
 {
 
 class VolumetricFogPass : public IPostEffect

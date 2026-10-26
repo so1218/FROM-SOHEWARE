@@ -1,7 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
-namespace FE
+namespace FS
 {
 
 class Collider;

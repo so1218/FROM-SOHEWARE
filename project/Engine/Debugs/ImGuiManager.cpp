@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include "DebugDraw.h"
 
-namespace FE
+namespace FS
 {
 
 #ifdef ENABLE_IMGUI

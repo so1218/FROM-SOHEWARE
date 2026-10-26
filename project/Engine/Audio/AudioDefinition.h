@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-namespace FE
+namespace FS
 {
 
 // 音声データ

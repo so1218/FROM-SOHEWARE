@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Matrix3x3.h"
 
-namespace FE
+namespace FS
 {
 
 // コンストラクタ(初期化なし)

@@ -2,7 +2,7 @@
 #include "IPostEffect.h"
 #include "PSOManager.h"
 
-namespace FE
+namespace FS
 {
 
 class FinalCompositePass : public IPostEffect

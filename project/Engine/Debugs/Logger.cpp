@@ -5,7 +5,7 @@
 
 #pragma comment(lib, "Dbghelp.lib")
 
-namespace FE
+namespace FS
 {
 
 void Logger::Initialize()

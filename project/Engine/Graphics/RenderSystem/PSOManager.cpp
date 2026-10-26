@@ -3,7 +3,7 @@
 #include "ShaderManager.h"
 #include "RootSignatureManager.h"
 
-namespace FE
+namespace FS
 {
 
 void PSOManager::Initialize(

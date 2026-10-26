@@ -16,29 +16,29 @@ public:
     int GetInitialHP() const override { return 500; } 
     std::string GetDamageParticleName() const override { return "floatingDamage"; } 
 
-    void OnTakeDamage(Enemy* owner, int damage, const FE::Vector3& hitPoint, const FE::Vector3& hitNormal) override;
+    void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
     void OnDeath(Enemy* owner) override;
 
 private:
-    FE::Engine* engine_ = nullptr;
-    FE::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
-    FE::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::Engine* engine_ = nullptr;
+    FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
 
     // 浮遊用パラメータ
-    FE::Vector3 basePosition_;
-    FE::Vector3 amplitude_ = { 3.0f, 2.0f, 0.0f };
-    FE::Vector3 frequency_ = { 0.5f, 1.0f, 0.0f };
-    FE::Vector3 phase_ = { 0.0f, 0.0f, 0.0f };
+    FS::Vector3 basePosition_;
+    FS::Vector3 amplitude_ = { 3.0f, 2.0f, 0.0f };
+    FS::Vector3 frequency_ = { 0.5f, 1.0f, 0.0f };
+    FS::Vector3 phase_ = { 0.0f, 0.0f, 0.0f };
     float time_ = 0.0f;
 
     // スポットライト用パラメータ
-    FE::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f };
+    FS::Vector4 spotColor_ = { 1.0f, 1.0f, 0.8f, 1.0f };
     float spotIntensity_ = 8.0f;
     float spotDistance_ = 20.0f;
     float spotAngleDeg_ = 30.0f;
     float spotVolumetric_ = 4.0f;
-    FE::Vector3 spotDirection_ = { 0.0f, -1.0f, 0.0f };
+    FS::Vector3 spotDirection_ = { 0.0f, -1.0f, 0.0f };
 
 	int soundHandleID_ = -1; // サウンドのハンドル
 };

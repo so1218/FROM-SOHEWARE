@@ -3,7 +3,7 @@
 #include "WorldTransform.h"
 #include "Common/ShaderConstants.hlsli"
 
-namespace FE
+namespace FS
 {
 
 struct VertexData

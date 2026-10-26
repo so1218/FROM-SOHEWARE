@@ -6,7 +6,7 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfuuid.lib")
 
-namespace FE
+namespace FS
 {
 
 AudioData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)

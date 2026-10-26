@@ -2,7 +2,7 @@
 #include "SceneManager.h"
 #include "DebugUtils.h"
 
-namespace FE
+namespace FS
 {
     class Engine;
 }
@@ -22,9 +22,9 @@ public:
 
 private:
     // エンジン
-    std::unique_ptr<FE::Engine> engine_;
+    std::unique_ptr<FS::Engine> engine_;
 
     // シーン管理
-    FE::SceneManager sceneManager_;
+    FS::SceneManager sceneManager_;
 };
 

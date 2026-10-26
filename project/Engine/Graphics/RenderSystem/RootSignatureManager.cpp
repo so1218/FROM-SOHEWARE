@@ -3,7 +3,7 @@
 #include "RootSignatureBuilder.h"
 #include "Logger.h"
 
-namespace FE
+namespace FS
 {
 
 void RootSignatureManager::Initialize(ID3D12Device* device)

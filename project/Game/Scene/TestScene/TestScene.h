@@ -2,10 +2,10 @@
 #include "BaseScene.h"
 #include "ParticleEmitter.h"
 
-class TestScene : public FE::BaseScene
+class TestScene : public FS::BaseScene
 {
 public:
-    TestScene(FE::Engine* engine);
+    TestScene(FS::Engine* engine);
 
 protected:
     void OnInitialize() override;

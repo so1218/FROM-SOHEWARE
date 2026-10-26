@@ -11,7 +11,7 @@
 #include "TimeManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 LightningRenderer::LightningRenderer()
@@ -253,7 +253,7 @@ void LightningRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& view
     // コマンドリストへの記録
     auto commandList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(commandList, FE::PIXColors::Geometry,
+    PIXScopedEvent(commandList, FS::PIXColors::Geometry,
         "Lightning Pass (Instances: %zu, Vertices: %u, Indices: %u)",
         activeLightnings_.size(), vertexCount, indexCount);
 

@@ -2,7 +2,7 @@
 #include "Quaternion.h"
 #include "MathUtils.h"
 
-namespace FE
+namespace FS
 {
 
 // 微小値定数（ゼロ除算防止用）

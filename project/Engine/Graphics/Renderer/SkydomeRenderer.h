@@ -3,7 +3,7 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
-namespace FE
+namespace FS
 {
 
 class SkydomeRenderer

@@ -15,7 +15,7 @@
 #include "GameUI.h"
 #include "WaterManager.h"
 
-using namespace FE;
+using namespace FS;
 
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine, "PlayScene")

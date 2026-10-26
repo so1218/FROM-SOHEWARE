@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Vector2.h"
 
-namespace FE
+namespace FS
 {
 
 // デフォルトコンストラクタ

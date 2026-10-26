@@ -4,7 +4,7 @@
 #include "RenderEnvironment.h"
 #include "ShadowMap.h"
 
-namespace FE
+namespace FS
 {
 
 class PebbleRenderer

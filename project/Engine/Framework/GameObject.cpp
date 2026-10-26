@@ -4,7 +4,7 @@
 #include "AnimationManager.h"
 #include "Collider.h"
 
-namespace FE
+namespace FS
 {
 
 GameObject::GameObject()

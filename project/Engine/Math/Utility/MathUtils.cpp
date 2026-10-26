@@ -2,7 +2,7 @@
 #include "MathUtils.h"
 #include "WorldTransform.h"
 
-namespace FE
+namespace FS
 {
 namespace Math
 {

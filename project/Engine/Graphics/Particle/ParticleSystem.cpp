@@ -12,7 +12,7 @@
 
 #include "externals/FastNoiseLite.h"
 
-namespace FE
+namespace FS
 {
 
 namespace

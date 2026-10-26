@@ -2,7 +2,7 @@
 #include "Matrix4x4.h" 
 #include "WorldTransform.h" 
 
-namespace FE
+namespace FS
 {
 
 // コンストラクタ(初期化なし)

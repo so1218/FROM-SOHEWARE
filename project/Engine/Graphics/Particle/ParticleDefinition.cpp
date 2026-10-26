@@ -2,7 +2,7 @@
 #include "ParticleDefinition.h"
 #include "AnimationModel.h" 
 
-namespace FE
+namespace FS
 {
 
 Vector3 ShapeModule::GetInitialPositionOffset(const ModelData* overrideModelData, const AnimationModel* overrideAnimModel) const

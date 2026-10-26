@@ -6,9 +6,9 @@ struct PropGroup
 {
     std::string prefabName;
     std::string modelName;
-    std::unique_ptr<FE::Model> masterModel;
+    std::unique_ptr<FS::Model> masterModel;
     std::vector<std::unique_ptr<EnvironmentProp>> instances;
-    std::unique_ptr<FE::PropertyBinder> binder;
+    std::unique_ptr<FS::PropertyBinder> binder;
 
     // グループ全体のデフォルトコライダー設定
     bool defaultHasCollider = true;
@@ -16,10 +16,10 @@ struct PropGroup
 };
 
 // マップ上の環境配置物（プロップ）を一括管理するマネージャークラス
-class EnvironmentPropManager : public FE::GameObject
+class EnvironmentPropManager : public FS::GameObject
 {
 public:
-    EnvironmentPropManager(FE::Engine* engine, const std::string& groupName);
+    EnvironmentPropManager(FS::Engine* engine, const std::string& groupName);
     ~EnvironmentPropManager() override = default;
 
     void Initialize() override;
@@ -41,7 +41,7 @@ private:
     void ExecutePrefabModelChange();
 
 private:
-    FE::Engine* engine_ = nullptr;
+    FS::Engine* engine_ = nullptr;
     std::string managerGroupName_;
     std::unordered_map<std::string, PropGroup> groups_;
 
@@ -50,7 +50,7 @@ private:
     std::string pendingModelChangeNewName_;
 
     EnvironmentProp* selectedProp_ = nullptr;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
     int propCount_ = 0;
     int currentTemplateIndex_ = 0;

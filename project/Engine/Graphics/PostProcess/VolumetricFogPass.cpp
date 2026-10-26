@@ -4,7 +4,7 @@
 #include "EnvironmentManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void VolumetricFogPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)

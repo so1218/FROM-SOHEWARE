@@ -6,7 +6,7 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "Xinput.lib")
 
-namespace FE
+namespace FS
 {
 
 Input& Input::GetInstance()

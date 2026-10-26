@@ -7,7 +7,7 @@
 #include "ParticleSystemWrapper.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 class BaseScene
@@ -24,7 +24,7 @@ public:
 
         objectManager_.Create<ParticleSystemWrapper>(engine);
 
-        binder_ = std::make_unique<FE::PropertyBinder>(engine_, sceneName_);
+        binder_ = std::make_unique<FS::PropertyBinder>(engine_, sceneName_);
     }
     virtual ~BaseScene() = default;
 

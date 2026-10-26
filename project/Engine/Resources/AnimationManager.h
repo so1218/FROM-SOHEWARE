@@ -1,7 +1,7 @@
 #pragma once
 #include "AnimationLoader.h" 
 
-namespace FE
+namespace FS
 {
 
 class AnimationManager

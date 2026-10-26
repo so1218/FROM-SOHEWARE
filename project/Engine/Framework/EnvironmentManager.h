@@ -2,7 +2,7 @@
 #include "MathUtils.h"
 #include "Structures.h"
 
-namespace FE
+namespace FS
 {
 
 class LightManager;
@@ -78,11 +78,11 @@ struct WeatherProfile
 inline TimeOfDayProfile BlendProfiles(const TimeOfDayProfile& a, const TimeOfDayProfile& b, float t)
 {
     TimeOfDayProfile result;
-    result.zenithColor = FE::Math::Lerp(a.zenithColor, b.zenithColor, t);
-    result.horizonColor = FE::Math::Lerp(a.horizonColor, b.horizonColor, t);
-    result.sunAtmosphereGlow = FE::Math::Lerp(a.sunAtmosphereGlow, b.sunAtmosphereGlow, t);
-    result.directionalLightColor = FE::Math::Lerp(a.directionalLightColor, b.directionalLightColor, t);
-    result.directionalLightIntensity = FE::Math::Lerp(a.directionalLightIntensity, b.directionalLightIntensity, t);
+    result.zenithColor = FS::Math::Lerp(a.zenithColor, b.zenithColor, t);
+    result.horizonColor = FS::Math::Lerp(a.horizonColor, b.horizonColor, t);
+    result.sunAtmosphereGlow = FS::Math::Lerp(a.sunAtmosphereGlow, b.sunAtmosphereGlow, t);
+    result.directionalLightColor = FS::Math::Lerp(a.directionalLightColor, b.directionalLightColor, t);
+    result.directionalLightIntensity = FS::Math::Lerp(a.directionalLightIntensity, b.directionalLightIntensity, t);
     return result;
 }
 

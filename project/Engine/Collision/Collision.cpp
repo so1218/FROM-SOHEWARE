@@ -4,7 +4,7 @@
 #include "Engine.h"
 #include "ImGuiManager.h"
 
-namespace FE
+namespace FS
 {
 
 // AABB同士の衝突判定

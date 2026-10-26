@@ -6,7 +6,7 @@
 class WaterObject
 {
 public:
-    WaterObject(FE::Engine* engine, int id, const std::string& parentGroupName);
+    WaterObject(FS::Engine* engine, int id, const std::string& parentGroupName);
     ~WaterObject() = default;
 
     void Initialize();
@@ -14,7 +14,7 @@ public:
     void Draw();
     void DebugDraw();
 
-    FE::Model* GetModel() const { return model_.get(); }
+    FS::Model* GetModel() const { return model_.get(); }
     int GetId() const { return id_; }
 
     void SetId(int newId);
@@ -22,12 +22,12 @@ public:
 private:
     void BindProperties();
 
-    FE::Engine* engine_ = nullptr;
+    FS::Engine* engine_ = nullptr;
     std::string parentGroupName_;
     int id_ = 0;
 
-    std::unique_ptr<FE::Model> model_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::Model> model_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
     WaterMaterialData materialData_{};
     Microsoft::WRL::ComPtr<ID3D12Resource> materialCBResource_;

@@ -2,7 +2,7 @@
 #include "AnimationManager.h"
 #include "StringUtils.h"
 
-namespace FE
+namespace FS
 {
 
 AnimationManager* AnimationManager::GetInstance()

@@ -2,7 +2,7 @@
 #include "AmmoManager.h"
 #include "TimeManager.h"
 
-using namespace FE;
+using namespace FS;
 
 AmmoManager::AmmoManager(Engine* engine, const std::string& groupName)
     : engine_(engine), managerGroupName_(groupName)

@@ -4,9 +4,9 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
-using namespace FE;
+using namespace FS;
 
-WeatherEffectManager::WeatherEffectManager(FE::Engine* engine, FE::Camera* camera, Player* player, Terrain* terrain)
+WeatherEffectManager::WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, Player* player, Terrain* terrain)
 {
     engine_ = engine;
     camera_ = camera;
@@ -17,7 +17,7 @@ WeatherEffectManager::WeatherEffectManager(FE::Engine* engine, FE::Camera* camer
     randomEngine_.seed(seedGen());
 
     lightningSystem_ = std::make_unique<LightningSystem>(engine_);
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "WeatherEffect");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "WeatherEffect");
 }
 
 void WeatherEffectManager::Initialize()
@@ -60,7 +60,7 @@ void WeatherEffectManager::Update()
     const WeatherProfile& profile = env->GetCurrentWeatherProfile();
 
     // EnvironmentManagerから、今フレームの補間済みビジュアルパラメータを取得
-    const FE::WeatherVisualParams& visual = env->GetCurrentVisualParams();
+    const FS::WeatherVisualParams& visual = env->GetCurrentVisualParams();
 
     // Terrainのマテリアル設定適用
     auto mat = terrain_->GetMaterialData();

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CameraManager.h"
 
-namespace FE
+namespace FS
 {
 
 CameraManager::CameraManager(Camera* camera) : mainCamera_(camera)

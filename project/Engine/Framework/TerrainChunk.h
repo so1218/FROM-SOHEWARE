@@ -1,7 +1,7 @@
 #pragma once
 #include "Structures.h"
 
-namespace FE
+namespace FS
 {
 class Engine;
 

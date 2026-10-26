@@ -6,10 +6,10 @@
 #include "GrassField.h"
 #include "TreeField.h"
 
-class TitleScene : public FE::BaseScene
+class TitleScene : public FS::BaseScene
 {
 public:
-    TitleScene(FE::Engine* engine);
+    TitleScene(FS::Engine* engine);
 
 protected:
     void OnInitialize() override;
@@ -24,5 +24,5 @@ private:
     GrassField* grassField_ = nullptr;
     TreeField* treeField_ = nullptr;
     // メンバー変数
-    std::unique_ptr<FE::Sprite> titleSprite_;
+    std::unique_ptr<FS::Sprite> titleSprite_;
 };

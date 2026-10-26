@@ -1,7 +1,7 @@
 #pragma once
 #include "BlendMode.h"
 
-namespace FE
+namespace FS
 {
 
 class RootSignatureManager;

@@ -5,7 +5,7 @@
 #include "Collider.h"
 #include "GameObject.h"
 
-namespace FE
+namespace FS
 {
 
 void CollisionManager::ClearColliders()

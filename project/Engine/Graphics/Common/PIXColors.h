@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace FE::PIXColors
+namespace FS::PIXColors
 {
     // 0xFFRRGGBB 形式でカラーコードを定義
     constexpr uint32_t Geometry = 0xFFDC5050; // 赤: 幾何描画

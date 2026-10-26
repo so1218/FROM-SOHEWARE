@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void FinalCompositePass::Initialize(

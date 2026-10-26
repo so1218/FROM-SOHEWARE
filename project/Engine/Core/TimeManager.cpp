@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TimeManager.h"
 
-namespace FE
+namespace FS
 {
 
 TimeManager* TimeManager::GetInstance()

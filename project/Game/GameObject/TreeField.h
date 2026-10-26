@@ -7,52 +7,52 @@
 
 struct TreeCollider
 {
-    FE::Vector3 position;
+    FS::Vector3 position;
     float radius;
 };
 
 struct TreeRaycastHit
 {
-    FE::Vector3 point;   // 着弾座標
-    FE::Vector3 normal;  // 着弾面の法線（外向きベクトル）
+    FS::Vector3 point;   // 着弾座標
+    FS::Vector3 normal;  // 着弾面の法線（外向きベクトル）
     float distance;      // 銃口/カメラからの距離
 };
 
-class TreeField : public FE::GameObject
+class TreeField : public FS::GameObject
 {
 public:
-    TreeField(FE::Engine* engine);
+    TreeField(FS::Engine* engine);
 
     void Initialize() override;
     void Update() override;
     void Draw() override {}
     void DebugDraw() override;
 
-    void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 
-    bool ResolveCollision(FE::Vector3& playerPos, float playerRadius) const;
+    bool ResolveCollision(FS::Vector3& playerPos, float playerRadius) const;
 
     // レイキャスト判定
-    bool Raycast(const FE::Vector3& rayStart, const FE::Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const;
+    bool Raycast(const FS::Vector3& rayStart, const FS::Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const;
 
 private:
     void GenerateTrees(); // パラメータに基づいて木をランダム散布生成
     void UpdateMaterials();
 
 private:
-    FE::Engine* engine_ = nullptr;
-    FE::Terrain* terrain_ = nullptr;
+    FS::Engine* engine_ = nullptr;
+    FS::Terrain* terrain_ = nullptr;
 
-    std::unique_ptr<FE::Model> model_;
-    std::unique_ptr<FE::TreeSystem> treeSystem_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::Model> model_;
+    std::unique_ptr<FS::TreeSystem> treeSystem_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
-    FE::WorldTransform transform_;
+    FS::WorldTransform transform_;
 
     std::vector<TreeCollider> colliders_;
 
     // 生成したマテリアルハンドル（全インスタンスで共有）
-    FE::TreeMaterialHandle treeMaterialHandle_;
+    FS::TreeMaterialHandle treeMaterialHandle_;
 
     // ==========================================
     // 配置・散布用パラメータ（変更で自動再生成）
@@ -60,7 +60,7 @@ private:
     int treeCount_ = 500;
     float areaWidth_ = 400.0f;
     float areaDepth_ = 400.0f;
-    FE::Vector2 areaCenter_{ 0.0f, 0.0f };
+    FS::Vector2 areaCenter_{ 0.0f, 0.0f };
 
     float minScale_ = 0.8f;
     float maxScale_ = 1.4f;
@@ -73,11 +73,11 @@ private:
     uint32_t windMapHandle_ = 0;
 
     // 前フレーム記憶（配置変更検知用）
-    FE::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };
+    FS::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };
     int prevTreeCount_ = 0;
     float prevAreaWidth_ = 0.0f;
     float prevAreaDepth_ = 0.0f;
-    FE::Vector2 prevAreaCenter_{ 0.0f, 0.0f };
+    FS::Vector2 prevAreaCenter_{ 0.0f, 0.0f };
     float prevMinScale_ = 0.0f;
     float prevMaxScale_ = 0.0f;
     float prevColorRandomness_ = 0.0f;
@@ -100,7 +100,7 @@ private:
     float sssStrength_ = 1.0f;
     float alphaCutoff_ = 0.5f;
     float leafShadowDensity_ = 0.8f;     
-    FE::Vector3 sssColor_ = { 0.5f, 0.7f, 0.2f };
+    FS::Vector3 sssColor_ = { 0.5f, 0.7f, 0.2f };
     float leafShadowNormalBias_ = 0.02f; 
     float treeHeight_ = 10.0f;
     float treeRadius_ = 5.0f;
@@ -108,7 +108,7 @@ private:
     float baseRoughness_ = 1.0f;
     float baseAO_ = 1.0f;
     float baseThickness_ = 0.1f;
-    FE::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f };
+    FS::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f };
     float leafAlbedoMultiplier_ = 1.0f;
     float leafFlutterFrequency_ = 1.0f;
     float nearFadeMinDist_ = 1.0f; 
@@ -117,8 +117,8 @@ private:
     // ==========================================
     // 幹パラメータ
     // ==========================================
-    FE::Vector4 trunkColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
-    FE::Vector4 trunkSpecularColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+    FS::Vector4 trunkColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
+    FS::Vector4 trunkSpecularColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     int trunkEnableLighting_ = 1;
     int trunkLightMode_ = 1;
     int trunkEnableNormalMap_ = 1;

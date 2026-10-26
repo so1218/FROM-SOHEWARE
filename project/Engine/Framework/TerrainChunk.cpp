@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "BufferManager.h"
 
-namespace FE
+namespace FS
 {
 
 TerrainChunk::TerrainChunk(Engine* engine, int startX, int startZ, int numCellsX, int numCellsZ, float cellSize, float offsetX, float offsetZ,

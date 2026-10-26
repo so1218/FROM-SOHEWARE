@@ -11,7 +11,7 @@
 #include "PostEffectManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void WaterRenderer::Initialize(const RenderEnvironment& env)
@@ -191,7 +191,7 @@ void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Pass");
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Water Pass");
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -218,7 +218,7 @@ void WaterRenderer::Draw(const RenderEnvironment& env, D3D12_GPU_VIRTUAL_ADDRESS
     uint32_t batchIndex = 0;
     for (const auto& batch : batches_)
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Water Batch %u (Instances: %u)", batchIndex++, batch.instanceCount);
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Water Batch %u (Instances: %u)", batchIndex++, batch.instanceCount);
 
         const auto& sub = *batch.baseSubmission;
         const auto& meshes = GetOrCreateBatch(*sub.modelData);

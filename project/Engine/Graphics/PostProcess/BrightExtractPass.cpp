@@ -4,7 +4,7 @@
 #include "Engine.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void BrightExtractPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)

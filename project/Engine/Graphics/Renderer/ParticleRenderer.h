@@ -3,7 +3,7 @@
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
-namespace FE
+namespace FS
 {
 
 // 1つのパーティクルの描画に必要な情報をまとめたもの

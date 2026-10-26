@@ -5,10 +5,10 @@
 #include "Ammo.h"
 #include "PropertyBinder.h"
 
-class AmmoManager : public FE::GameObject
+class AmmoManager : public FS::GameObject
 {
 public:
-    AmmoManager(FE::Engine* engine, const std::string& groupName);
+    AmmoManager(FS::Engine* engine, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;
@@ -18,18 +18,18 @@ public:
     void AddAmmo();
 
 private:
-    FE::Engine* engine_ = nullptr;
+    FS::Engine* engine_ = nullptr;
     std::string managerGroupName_;
     std::vector<std::unique_ptr<Ammo>> ammo_;
-    std::unique_ptr<FE::Model> sharedModel_;
-    std::unique_ptr<FE::Model> sharedBubbleModel_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::Model> sharedModel_;
+    std::unique_ptr<FS::Model> sharedBubbleModel_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
     int ammoCount_ = 0;
 
     // 共通パラメータ
-    FE::Vector3 sharedScale_ = { 1.0f, 1.0f, 1.0f };
-    FE::Vector4 sharedLightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
+    FS::Vector3 sharedScale_ = { 1.0f, 1.0f, 1.0f };
+    FS::Vector4 sharedLightColor_ = { 0.2f, 0.6f, 1.0f, 1.0f };
     float tiltAngle_ = 15.0f;       // 傾き角度
     float rotationSpeed_ = 2.0f;    // Y軸回転スピード
 };

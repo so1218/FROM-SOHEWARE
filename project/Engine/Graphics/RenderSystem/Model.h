@@ -3,7 +3,7 @@
 #include "BlendMode.h" 
 #include "RenderCommon.h" 
 
-namespace FE
+namespace FS
 {
 
 class Engine;

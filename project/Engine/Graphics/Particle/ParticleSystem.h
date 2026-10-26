@@ -6,7 +6,7 @@
 #include "Structures.h"
 #include "ParticleDefinition.h"
 
-namespace FE
+namespace FS
 {
 
 class Engine;

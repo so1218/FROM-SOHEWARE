@@ -5,7 +5,7 @@
 #include "ModelManager.h"
 #include "TextureManager.h"
 
-namespace FE
+namespace FS
 {
 
 class Model;

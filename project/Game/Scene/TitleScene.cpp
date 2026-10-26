@@ -12,7 +12,7 @@
 #include "GameUI.h"
 #include "WaterManager.h"
 
-using namespace FE;
+using namespace FS;
 
 TitleScene::TitleScene(Engine* engine)
 	: BaseScene(engine, "TitleScene")

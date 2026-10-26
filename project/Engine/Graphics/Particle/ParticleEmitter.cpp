@@ -2,7 +2,7 @@
 #include "ParticleEmitter.h"
 #include "TimeManager.h"
 
-namespace FE
+namespace FS
 {
 
 void ParticleEmitter::Initialize(const EmitterConfig& config)

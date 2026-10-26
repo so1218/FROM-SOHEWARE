@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "WorldTransform.h"
 
-namespace FE
+namespace FS
 {
 
 // デフォルトコンストラクタ

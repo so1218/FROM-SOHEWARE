@@ -4,7 +4,7 @@
 #include "MathUtils.h"
 #include "Frustum.h"
 
-namespace FE
+namespace FS
 {
 
 class PropertyBinder;

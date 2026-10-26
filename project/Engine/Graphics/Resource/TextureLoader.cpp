@@ -4,7 +4,7 @@
 #include "BufferManager.h"
 #include "SRVManager.h"
 
-namespace FE
+namespace FS
 {
 
 TextureLoader::TextureLoader() {};

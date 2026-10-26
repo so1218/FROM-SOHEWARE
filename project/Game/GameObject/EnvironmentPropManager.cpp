@@ -3,16 +3,16 @@
 #include "GlobalVariables.h"
 #include "ImGuiManager.h"
 
-EnvironmentPropManager::EnvironmentPropManager(FE::Engine* engine, const std::string& groupName)
+EnvironmentPropManager::EnvironmentPropManager(FS::Engine* engine, const std::string& groupName)
     : engine_(engine), managerGroupName_(groupName)
 {}
 
 void EnvironmentPropManager::Initialize()
 {
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("PropCount", &propCount_, 0);
 
-    auto* gv = FE::GlobalVariables::GetInstance();
+    auto* gv = FS::GlobalVariables::GetInstance();
 
     // 永続化されたプロップデータの復元
     for (int i = 0; i < propCount_; ++i)
@@ -51,7 +51,7 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
     newGroup.prefabName = prefabName;
 
     const std::string masterGroupName = "Master_" + prefabName;
-    auto* gv = FE::GlobalVariables::GetInstance();
+    auto* gv = FS::GlobalVariables::GetInstance();
 
     // グループで使用するモデル名の読み込みおよび初期設定
     std::string loadedModel = gv->GetStringValue({ managerGroupName_, masterGroupName }, "ModelName");
@@ -65,8 +65,8 @@ void EnvironmentPropManager::CreateGroup(const std::string& prefabName, const st
         gv->SetValue({ managerGroupName_, masterGroupName }, "ModelName", newGroup.modelName);
     }
 
-    newGroup.masterModel = std::make_unique<FE::Model>(engine_, newGroup.modelName);
-    newGroup.binder = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
+    newGroup.masterModel = std::make_unique<FS::Model>(engine_, newGroup.modelName);
+    newGroup.binder = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_, masterGroupName);
 
     // ImGui描画フレーム内での即時モデル構築による不整合を防ぐため、遅延適用用の変数へ書き込み
     newGroup.binder->BindModelName("ModelName", &newGroup.modelName, newGroup.modelName,
@@ -122,14 +122,14 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
     newProp->Initialize();
 
     // 永続化用データストアへ新規インスタンスを記録
-    FE::GlobalVariables::GetInstance()->SetValue(
+    FS::GlobalVariables::GetInstance()->SetValue(
         { managerGroupName_, "Prop_" + std::to_string(newIndex) }, "PrefabName", prefabName
     );
 
     groups_[prefabName].instances.push_back(std::move(newProp));
 
     propCount_++;
-    FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
+    FS::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
 }
 
 void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
@@ -137,7 +137,7 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
     // 末尾ノードの削除と永続化データのクリア
     const int lastIndex = propCount_ - 1;
     const std::string lastGroupName = "Prop_" + std::to_string(lastIndex);
-    FE::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
+    FS::GlobalVariables::GetInstance()->ClearGroup({ managerGroupName_, lastGroupName });
 
     // 指定IDインスタンスの削除
     for (auto& [prefabName, group] : groups_)
@@ -161,7 +161,7 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
             {
                 prop->ReassignID(prop->GetID() - 1);
 
-                FE::GlobalVariables::GetInstance()->SetValue(
+                FS::GlobalVariables::GetInstance()->SetValue(
                     { managerGroupName_, "Prop_" + std::to_string(prop->GetID()) },
                     "PrefabName",
                     prefabName
@@ -171,7 +171,7 @@ void EnvironmentPropManager::RemoveEnvironmentProp(int targetId)
     }
 
     propCount_--;
-    FE::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
+    FS::GlobalVariables::GetInstance()->SetValue({ managerGroupName_ }, "PropCount", propCount_);
 
     // 削除対象が選択中だった場合のポインタクリア
     if (selectedProp_ != nullptr && selectedProp_->GetID() == targetId)
@@ -191,7 +191,7 @@ void EnvironmentPropManager::ExecutePrefabModelChange()
         group.modelName = pendingModelChangeNewName_;
 
         // マスターモデルの生成と参照共有の全インスタンス再同期
-        group.masterModel = std::make_unique<FE::Model>(engine_, group.modelName);
+        group.masterModel = std::make_unique<FS::Model>(engine_, group.modelName);
         for (auto& prop : group.instances)
         {
             prop->ChangeMasterModel(group.masterModel.get());
@@ -317,18 +317,18 @@ void EnvironmentPropManager::DebugDraw()
     if (selectedProp_ != nullptr)
     {
         auto& targetTransform = selectedProp_->GetTransformRef();
-        const FE::Vector3 oldPos = targetTransform.translation_;
-        const FE::Vector3 oldRot = targetTransform.rotation_;
-        const FE::Vector3 oldScale = targetTransform.scale_;
+        const FS::Vector3 oldPos = targetTransform.translation_;
+        const FS::Vector3 oldRot = targetTransform.rotation_;
+        const FS::Vector3 oldScale = targetTransform.scale_;
 
-        FE::ImGuiManager::DrawGizmo(targetTransform);
+        FS::ImGuiManager::DrawGizmo(targetTransform);
 
         // ギズモ操作によるトランスフォーム変更を検知してデータストアへ永続化
         if (oldPos != targetTransform.translation_ ||
             oldRot != targetTransform.rotation_ ||
             oldScale != targetTransform.scale_)
         {
-            auto* gv = FE::GlobalVariables::GetInstance();
+            auto* gv = FS::GlobalVariables::GetInstance();
             const std::vector<std::string> groupPath = { managerGroupName_, "Prop_" + std::to_string(selectedProp_->GetID()) };
 
             gv->SetValue(groupPath, "Position", targetTransform.translation_);
@@ -344,7 +344,7 @@ void EnvironmentPropManager::DebugDraw()
 
 void EnvironmentProp::SyncMaterialsToJSON()
 {
-    auto* gv = FE::GlobalVariables::GetInstance();
+    auto* gv = FS::GlobalVariables::GetInstance();
     const std::vector<std::string>& groupPath = binder_->GetGroupPath();
     const std::string prefix = "Model_";
 
@@ -354,7 +354,7 @@ void EnvironmentProp::SyncMaterialsToJSON()
         // 複数マテリアル保持時はインデックス付きプレフィックスを自動生成
         const std::string matPrefix = (count == 1) ? prefix : prefix + "Mat" + std::to_string(i) + "_";
 
-        FE::MaterialHandle* handle = model_->GetMaterialHandle(i);
+        FS::MaterialHandle* handle = model_->GetMaterialHandle(i);
         MaterialData* matData = model_->GetMaterialData(i);
 
         if (!handle || !matData) continue;
@@ -431,7 +431,7 @@ void EnvironmentProp::SyncMaterialsToJSON()
 }
 
 
-void EnvironmentProp::ChangeMasterModel(FE::Model* newMaster)
+void EnvironmentProp::ChangeMasterModel(FS::Model* newMaster)
 {
     masterModel_ = newMaster;
 
@@ -440,7 +440,7 @@ void EnvironmentProp::ChangeMasterModel(FE::Model* newMaster)
 
     // 新しいマスターモデルに合わせたモデルインスタンスの再構築
     modelName_ = masterModel_->GetName();
-    model_ = std::make_unique<FE::Model>(engine_, modelName_);
+    model_ = std::make_unique<FS::Model>(engine_, modelName_);
 
     // メッシュ・マテリアルデータの参照共有
     model_->ShareModelDataFrom(masterModel_);

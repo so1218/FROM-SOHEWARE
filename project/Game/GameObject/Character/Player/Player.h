@@ -13,7 +13,7 @@ class PlayerStateNormal;
 class PlayerWeapon;
 class PlayerReticle;
 
-class Player : public FE::GameObject
+class Player : public FS::GameObject
 {
 public:
 	// 調整用パラメータ構造体
@@ -47,20 +47,20 @@ public:
 	Config config;
 
 public:
-	Player(FE::Engine* engine, FE::Camera* camera);
+	Player(FS::Engine* engine, FS::Camera* camera);
 
 	void Initialize() override;
 	void Update() override;
 	void Draw() override;
 	void DebugDraw() override;
-	void OnCollisionEnter(FE::Collider* mine, FE::Collider* other) override;
+	void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
 	void FireWeapon(); // 射撃時の処理
 	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
 	// Stateから呼び出すヘルパー関数
-	void UpdateRotation(const FE::Vector3& moveDir);
-	void ApplyHorizontalMovement(const FE::Vector3& moveDir, float speed);
+	void UpdateRotation(const FS::Vector3& moveDir);
+	void ApplyHorizontalMovement(const FS::Vector3& moveDir, float speed);
 	void ApplyGravity();
 	void SnapToGround();
 	bool IsGrounded() const;
@@ -70,25 +70,25 @@ public:
 		animationModel_->Play(name, loop, speed, blendTime);
 	}
 
-	void SetMoveDirection(const FE::Vector3& dir) { moveDirection_ = dir; }
-	FE::Vector3 GetMoveDirection();
-	FE::Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
+	void SetMoveDirection(const FS::Vector3& dir) { moveDirection_ = dir; }
+	FS::Vector3 GetMoveDirection();
+	FS::Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
 
 	void SetVelocityY(float vy) { velocityY_ = vy; }
 	float GetVelocityY() const { return velocityY_; }
 
-	FE::Camera* GetCamera() const { return camera_; }
+	FS::Camera* GetCamera() const { return camera_; }
 	PlayerReticle* GetReticle() const { return reticle_.get(); }
 	FollowCamera* GetFollowCamera() const { return followCamera_; }
 	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
 
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
-	void SetTerrain(FE::Terrain* terrain) { terrain_ = terrain; }
+	void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 	void SetTreeField(TreeField* treeField) { treeField_ = treeField; }
 	// オブジェクト上の接地フラグ設定
 	void SetGroundedOnObject(bool grounded) { isGroundedOnObject_ = grounded; }
 
-	std::unique_ptr<FE::AnimationModel> animationModel_;
+	std::unique_ptr<FS::AnimationModel> animationModel_;
 
 	// 移動中に毎フレーム呼び出す足音更新関数
 	void UpdateFootstepEvents();
@@ -96,31 +96,31 @@ public:
 	void ResetFootstepState();
 
 private:
-	FE::Engine* engine_;
-	FE::Camera* camera_ = nullptr;
-	FE::Terrain* terrain_ = nullptr;
+	FS::Engine* engine_;
+	FS::Camera* camera_ = nullptr;
+	FS::Terrain* terrain_ = nullptr;
 	TreeField* treeField_ = nullptr;
 	FollowCamera* followCamera_ = nullptr;
 
 	std::unique_ptr<PlayerWeapon> weapon_;
 	std::unique_ptr<PlayerReticle> reticle_;
 
-	std::unique_ptr<FE::Collider> collider_;
-	std::unique_ptr<FE::PropertyBinder> binder_;
-	std::unique_ptr<FE::ParticleEmitter> auraEmitter_ = nullptr;
+	std::unique_ptr<FS::Collider> collider_;
+	std::unique_ptr<FS::PropertyBinder> binder_;
+	std::unique_ptr<FS::ParticleEmitter> auraEmitter_ = nullptr;
 
-	FE::Vector3 moveDirection_{ 0.0f, 0.0f, 0.0f };
-	FE::Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
+	FS::Vector3 moveDirection_{ 0.0f, 0.0f, 0.0f };
+	FS::Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };
 	float velocityY_ = 0.0f; // Y軸の速度
 
 	std::unique_ptr<StateMachine<Player>> stateMachine_;
 
 	// コライダー調整用の変数
-	FE::Vector3 colliderOffset_ = { 0.0f, 1.0f, 0.0f };
-	FE::Vector3 colliderSize_ = { 0.5f, 1.0f, 0.5f };
+	FS::Vector3 colliderOffset_ = { 0.0f, 1.0f, 0.0f };
+	FS::Vector3 colliderSize_ = { 0.5f, 1.0f, 0.5f };
 
 	// ワールドインタラクション調整用パラメータ
-	FE::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };
+	FS::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };
 	float interactionRadius_ = 1.5f;
 	float interactionForce_ = 1.0f;
 	float maxVerticalDist_ = 2.0f;

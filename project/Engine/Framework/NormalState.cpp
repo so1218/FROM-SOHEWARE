@@ -4,7 +4,7 @@
 #include "BaseScene.h"
 #include "Fade.h"
 
-namespace FE
+namespace FS
 {
 
 void NormalState::Update(SceneManager* manager)

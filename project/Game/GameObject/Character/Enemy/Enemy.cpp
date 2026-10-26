@@ -5,13 +5,13 @@
 #include "CollisionConfig.h"
 #include "FloatingBehavior.h"
 
-using namespace FE;
+using namespace FS;
 
 Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGroupName)
     : engine_(engine), id_(id), type_(type)
 {
     std::string childGroupName = "Enemy_" + std::to_string(id_);
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, parentGroupName, childGroupName);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName, childGroupName);
 
     std::string modelName = "enemy";
 
@@ -23,8 +23,8 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGr
         break;
     }
 
-    model_ = std::make_unique<FE::Model>(engine_, modelName);
-    collider_ = std::make_unique<FE::Collider>(this);
+    model_ = std::make_unique<FS::Model>(engine_, modelName);
+    collider_ = std::make_unique<FS::Collider>(this);
 }
 
 void Enemy::Initialize()
@@ -103,9 +103,9 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
     }
 }
 
-void Enemy::OnCollisionEnter(FE::Collider* mine, FE::Collider* other)
+void Enemy::OnCollisionEnter(FS::Collider* mine, FS::Collider* other)
 {
-    FE::GameObject* hitObject = other ? other->GetOwner() : nullptr;
+    FS::GameObject* hitObject = other ? other->GetOwner() : nullptr;
     if (hitObject && behavior_)
     {
         behavior_->OnCollisionEnter(this, hitObject);

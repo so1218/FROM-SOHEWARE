@@ -4,7 +4,7 @@
 #include "Engine.h" 
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void DoFPass::Initialize(Engine* engine,

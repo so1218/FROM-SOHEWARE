@@ -2,7 +2,7 @@
 #include "ParticleConfigManager.h" 
 #include "ParticleSystem.h" 
 
-namespace FE
+namespace FS
 {
 
 ParticleConfigManager::ParticleConfigManager(ParticleSystem* particleSystem)

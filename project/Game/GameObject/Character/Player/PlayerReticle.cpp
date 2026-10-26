@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "TimeManager.h"
 
-using namespace FE;
+using namespace FS;
 
 PlayerReticle::PlayerReticle(Engine* engine)
     : engine_(engine)

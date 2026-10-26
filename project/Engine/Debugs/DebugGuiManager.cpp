@@ -12,7 +12,7 @@
 #include "DebugDraw.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 DebugGuiManager::DebugGuiManager() = default;

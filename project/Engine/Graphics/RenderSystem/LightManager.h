@@ -2,7 +2,7 @@
 #include "BufferManager.h"
 #include "Structures.h"
 
-namespace FE
+namespace FS
 {
 
 class PropertyBinder;

@@ -5,7 +5,7 @@
 #include "ImGuiManager.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 void LightManager::Initialize(ID3D12Device* device)

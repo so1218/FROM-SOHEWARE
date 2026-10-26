@@ -5,7 +5,7 @@
 #include "SRVManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 BilateralBlurPass::~BilateralBlurPass()

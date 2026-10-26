@@ -12,7 +12,7 @@
 #include "GraphicsDevice.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void TerrainRenderer::Initialize(const RenderEnvironment& env)
@@ -120,7 +120,7 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
     auto* cmdList = env.commandManager->GetCommandList();
 
     // 地形描画パス全体のスコープ
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Terrain Pass");
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Pass");
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -159,7 +159,7 @@ void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGrou
             if (instanceCount > 0 && currentChunk)
             {
                 // バッチ発行ごとの個別スコープ
-                PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Terrain Batch (Instances: %u)", instanceCount);
+                PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Batch (Instances: %u)", instanceCount);
                 cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
             }
         };
@@ -228,7 +228,7 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
     auto* cmdList = env.commandManager->GetCommandList();
 
     // 地形シャドウ描画パス全体のスコープ
-    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Terrain Shadow Pass (Cascade %u)", cascadeIndex);
+    PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Terrain Shadow Pass (Cascade %u)", cascadeIndex);
 
     // ハイトマップテクスチャを読み込むため、DescriptorHeap をセット
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
@@ -257,7 +257,7 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
             if (instanceCount > 0 && currentChunk)
             {
                 // シャドウバッチ発行ごとの個別スコープ
-                PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Terrain Shadow Batch (Instances: %u)", instanceCount);
+                PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Terrain Shadow Batch (Instances: %u)", instanceCount);
                 cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
             }
         };

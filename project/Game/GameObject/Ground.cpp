@@ -4,14 +4,14 @@
 #include "TerrainChunk.h"
 #include "EnvironmentManager.h"
 
-using namespace FE;
+using namespace FS;
 
 Ground::Ground(Engine* engine) : GameObject()
 {
 	engine_ = engine;
 
 	// Terrain の生成
-	terrain_ = std::make_unique<FE::Terrain>(engine_);
+	terrain_ = std::make_unique<FS::Terrain>(engine_);
 
 	// ハイトマップ画像の読み込みとメッシュ生成
 	float cellSize = 1.0f;

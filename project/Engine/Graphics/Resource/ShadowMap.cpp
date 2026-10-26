@@ -2,7 +2,7 @@
 #include "ShadowMap.h"
 #include "SRVManager.h" 
 
-namespace FE
+namespace FS
 {
 
 void ShadowMap::Initialize(ID3D12Device* device, SRVManager* srvManager)

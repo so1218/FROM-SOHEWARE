@@ -7,7 +7,7 @@
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-namespace FE
+namespace FS
 {
 
 /// @brief AudioDeviceの初期化

@@ -12,7 +12,7 @@
 #include "ProjectConfig.h"
 #include "Engine.h"
 
-using namespace FE;
+using namespace FS;
 
 Game::Game() 
     : engine_(std::make_unique<Engine>())

@@ -3,7 +3,7 @@
 #include "Matrix.h"
 #include "Camera.h"
 
-namespace FE
+namespace FS
 {
 
 class PropertyBinder;

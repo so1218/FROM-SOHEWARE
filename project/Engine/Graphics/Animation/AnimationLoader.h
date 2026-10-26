@@ -1,7 +1,7 @@
 #pragma once
 #include "AnimationData.h"
 
-namespace FE
+namespace FS
 {
 
 Animation LoadAnimationFile(const std::string& filePath);

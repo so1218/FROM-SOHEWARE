@@ -5,33 +5,33 @@
 #include "PropertyBinder.h"
 #include "ParticleEmitter.h"
 
-class Ammo : public FE::GameObject
+class Ammo : public FS::GameObject
 {
 public:
-    Ammo(FE::Engine* engine, int id, const std::string& parentGroupName);
+    Ammo(FS::Engine* engine, int id, const std::string& parentGroupName);
     ~Ammo() override;
 
     void Initialize() override;
-    void Update(const FE::Vector3& scale, const FE::Vector3& bubbleScale, const FE::Vector4& lightColor, float tiltAngle, float rotationSpeed);
+    void Update(const FS::Vector3& scale, const FS::Vector3& bubbleScale, const FS::Vector4& lightColor, float tiltAngle, float rotationSpeed);
     void Draw() override;
     void DebugDraw() override;
 
     void Sleep();
     bool IsPicked() const { return isPicked_; }
 
-    void OnCollisionStay(FE::Collider* mine, FE::Collider* other) override;
-    FE::Model* GetModel() const { return model_.get(); }
-    FE::Model* GetBubbleModel() const { return bubbleModel_.get(); }
+    void OnCollisionStay(FS::Collider* mine, FS::Collider* other) override;
+    FS::Model* GetModel() const { return model_.get(); }
+    FS::Model* GetBubbleModel() const { return bubbleModel_.get(); }
 
 private:
-    FE::Engine* engine_ = nullptr;
-    std::unique_ptr<FE::Model> model_;
-    std::unique_ptr<FE::Model> bubbleModel_;
-    std::unique_ptr<FE::Collider> collider_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    FS::Engine* engine_ = nullptr;
+    std::unique_ptr<FS::Model> model_;
+    std::unique_ptr<FS::Model> bubbleModel_;
+    std::unique_ptr<FS::Collider> collider_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
-    std::unique_ptr<FE::ParticleEmitter> hitEmitter_ = nullptr;
-    FE::ParticleEmitter* hitEmitterPtr_ = nullptr;
+    std::unique_ptr<FS::ParticleEmitter> hitEmitter_ = nullptr;
+    FS::ParticleEmitter* hitEmitterPtr_ = nullptr;
 
     int id_;
     bool isPicked_ = false;

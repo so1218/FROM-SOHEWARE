@@ -4,7 +4,7 @@
 #include "TextureManager.h"
 #include "Camera.h"
 
-namespace FE
+namespace FS
 {
 
 Skybox::Skybox(Engine* engine)

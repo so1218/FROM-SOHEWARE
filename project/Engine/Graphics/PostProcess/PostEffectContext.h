@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <d3d12.h>
 
-namespace FE
+namespace FS
 { 
 
 struct PostEffectContext

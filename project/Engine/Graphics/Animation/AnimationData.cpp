@@ -6,7 +6,7 @@
 #include "SRVManager.h"
 #include "WorldTransform.h"
 
-namespace FE
+namespace FS
 {
 
 Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time)

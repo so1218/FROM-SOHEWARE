@@ -2,7 +2,7 @@
 #include "NoiseTextureGenerator.h"
 #include "Engine.h"
 
-namespace FE
+namespace FS
 {
 
 void NoiseTextureGenerator::Initialize(Engine* engine)

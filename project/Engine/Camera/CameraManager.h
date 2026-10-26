@@ -3,7 +3,7 @@
 #include "ICameraController.h"
 #include "ShakeEffect.h"
 
-namespace FE
+namespace FS
 {
 
 class CameraManager

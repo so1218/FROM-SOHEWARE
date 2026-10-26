@@ -11,7 +11,7 @@
 #include "VolumetricFogBilateralPass.h"
 #include "Camera.h"
 
-namespace FE
+namespace FS
 {
 
 class Engine;

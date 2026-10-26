@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "BufferManager.h" 
 
-namespace FE
+namespace FS
 {
 
 void Mesh::InitializeVertexOnly(ID3D12Device* device, const std::vector<VertexData>& vertices)

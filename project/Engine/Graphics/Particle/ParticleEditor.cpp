@@ -8,7 +8,7 @@
 #include "Engine.h" 
 #include "SRVManager.h"
 
-namespace FE
+namespace FS
 {
 
 ParticleEditor::ParticleEditor(ParticleSystem* particleSystem, Engine* engine)

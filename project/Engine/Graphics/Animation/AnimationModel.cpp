@@ -7,7 +7,7 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
-namespace FE
+namespace FS
 {
 
 AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)

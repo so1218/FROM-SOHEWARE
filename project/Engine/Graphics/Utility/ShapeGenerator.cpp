@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ShapeGenerator.h"
 
-namespace FE
+namespace FS
 {
 
 void ShapeGenerator::SkyBoxGenerator(

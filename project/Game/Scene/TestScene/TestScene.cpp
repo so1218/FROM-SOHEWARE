@@ -5,7 +5,7 @@
 #include "Grid.h"
 #include "AudioPlayer.h"
 
-using namespace FE;
+using namespace FS;
 
 TestScene::TestScene(Engine* engine)
 	: BaseScene(engine, "TestScene")

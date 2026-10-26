@@ -15,7 +15,7 @@
 #include "PlayerReticle.h"
 #include "Enemy.h"
 
-using namespace FE;
+using namespace FS;
 
 Player::Player(Engine* engine, Camera* camera) : 
 engine_(engine), camera_(camera)

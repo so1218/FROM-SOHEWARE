@@ -9,14 +9,14 @@
 #include "AudioPlayer.h"
 #include "TreeField.h"
 
-using namespace FE;
+using namespace FS;
 
-PlayerWeapon::PlayerWeapon(FE::Engine* engine)
+PlayerWeapon::PlayerWeapon(FS::Engine* engine)
     : engine_(engine)
 {
-    model_ = std::make_unique<FE::Model>(engine_, "P365");
+    model_ = std::make_unique<FS::Model>(engine_, "P365");
 
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "P365");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "P365");
 }
 
 PlayerWeapon::~PlayerWeapon()

@@ -2,10 +2,10 @@
 #include "FoliageField.h"
 #include "ImGuiManager.h"
 
-FoliageField::FoliageField(FE::Engine* engine) : FE::GameObject(), engine_(engine)
+FoliageField::FoliageField(FS::Engine* engine) : FS::GameObject(), engine_(engine)
 {
-    foliageSystem_ = std::make_unique<FE::FoliageSystem>(engine_);
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, "FoliageField");
+    foliageSystem_ = std::make_unique<FS::FoliageSystem>(engine_);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "FoliageField");
 }
 
 void FoliageField::Initialize()
@@ -33,7 +33,7 @@ void FoliageField::Initialize()
     binder_->Bind("MaxThinningRate", &cullingData_.maxThinningRate, 0.95f, 0.01f, 0.0f, 1.0f);
 
     auto onResourceChanged = [this]() { ReloadResources(); };
-    binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", FE::TextureType::Noise, onResourceChanged);
+    binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", FS::TextureType::Noise, onResourceChanged);
 
     float maxRadius = 0.0f;
     float maxYOffset = 0.0f;
@@ -41,7 +41,7 @@ void FoliageField::Initialize()
     // 初回構築時のみ AddFoliageType と InitializeRenderer を呼ぶ
     for (const auto& layer : layers_)
     {
-        const FE::ModelData* modelData = FE::ModelManager::GetInstance().Get(layer.modelName);
+        const FS::ModelData* modelData = FS::ModelManager::GetInstance().Get(layer.modelName);
         if (modelData && !modelData->meshes.empty())
         {
             const auto& meshPart = modelData->meshes[0];
@@ -49,11 +49,11 @@ void FoliageField::Initialize()
             // ==========================================
             // メッシュのAABBからカリングサイズを計算
             // ==========================================
-            FE::Vector3 minPos = meshPart.localAABB.min;
-            FE::Vector3 maxPos = meshPart.localAABB.max;
+            FS::Vector3 minPos = meshPart.localAABB.min;
+            FS::Vector3 maxPos = meshPart.localAABB.max;
 
             float currentYOffset = (minPos.y + maxPos.y) * 0.5f;
-            FE::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
+            FS::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
             float currentRadius = std::sqrt(size.x * size.x + size.y * size.y + size.z * size.z) * 0.5f;
 
             // 複数のレイヤーがある場合は一番大きいモデルを基準
@@ -84,7 +84,7 @@ void FoliageField::Initialize()
 
 void FoliageField::AddFoliageLayer(const std::string& layerName, const std::string& modelName)
 {
-    FE::FoliageLayer layer;
+    FS::FoliageLayer layer;
     layer.name = layerName;
     layer.modelName = modelName;
 
@@ -143,8 +143,8 @@ void FoliageField::SetupBinderForLayer(size_t index)
     layer.material.shadowBias = 0.001f;
 
     binder_->BindColor(prefix + "BaseColor", &layer.material.baseColor, { 1.0f, 1.0f, 1.0f });
-    binder_->BindTexture(prefix + "DensityMap", &layer.densityMapName, &layer.densityMapHandle, "white1x1", FE::TextureType::Noise, onGenChanged);
-    binder_->BindTexture(prefix + "Albedo", &layer.albedoName, &layer.albedoHandle, "white1x1", FE::TextureType::Albedo, onResChanged);
+    binder_->BindTexture(prefix + "DensityMap", &layer.densityMapName, &layer.densityMapHandle, "white1x1", FS::TextureType::Noise, onGenChanged);
+    binder_->BindTexture(prefix + "Albedo", &layer.albedoName, &layer.albedoHandle, "white1x1", FS::TextureType::Albedo, onResChanged);
 }
 
 void FoliageField::ReloadResources()

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DebugDraw.h"
 
-bool FE::DebugDraw::enabled_ = true;
+bool FS::DebugDraw::enabled_ = true;
 
 #ifdef ENABLE_DEBUG_DRAW
 
@@ -9,7 +9,7 @@ bool FE::DebugDraw::enabled_ = true;
 #include "Camera.h"
 #include "MathUtils.h" 
 
-namespace FE
+namespace FS
 {
 
 RendererManager* DebugDraw::rendererManager_ = nullptr;

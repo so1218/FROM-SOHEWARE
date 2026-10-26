@@ -6,7 +6,7 @@
 #include "TextureManager.h"
 #include "Structures.h"
 
-namespace FE
+namespace FS
 {
 
 class AnimationModel;

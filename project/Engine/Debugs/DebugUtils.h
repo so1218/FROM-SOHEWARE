@@ -1,6 +1,6 @@
 #pragma once
 
-namespace FE
+namespace FS
 {
 
 // プログラム終了時にDXGIのリソースリークをチェックするクラス

@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "SRVManager.h"
 
-namespace FE
+namespace FS
 {
 
 IPostEffect::~IPostEffect()

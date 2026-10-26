@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
     void PropertyBinder::BindBoolInternal(const std::string& key, int32_t* ptr, bool defaultValue)
     {

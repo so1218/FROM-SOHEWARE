@@ -1,7 +1,7 @@
 #pragma once
 #include "StringUtils.h"
 
-namespace FE
+namespace FS
 {
 
 namespace fs = std::filesystem;

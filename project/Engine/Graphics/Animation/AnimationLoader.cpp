@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "AnimationLoader.h"
 
-namespace FE
+namespace FS
 {
 
 Animation LoadAnimationFile(const std::string& filePath)

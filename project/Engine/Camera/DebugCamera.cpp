@@ -4,7 +4,7 @@
 #include "ImGuiManager.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 void DebugCamera::Initialize()

@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void VolumetricFogBilateralPass::Initialize(Engine* engine, uint32_t w, uint32_t h, PSOManager* pso)
@@ -36,7 +36,7 @@ void VolumetricFogBilateralPass::Initialize(Engine* engine, uint32_t w, uint32_t
 
 void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context, D3D12_GPU_DESCRIPTOR_HANDLE overrideInput)
 {
-    PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Volumetric Fog Bilateral Pass (%ux%u)",
+    PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Volumetric Fog Bilateral Pass (%ux%u)",
         static_cast<uint32_t>(viewport_.Width), static_cast<uint32_t>(viewport_.Height));
 
     ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();

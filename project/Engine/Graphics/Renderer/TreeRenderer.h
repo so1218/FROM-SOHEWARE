@@ -4,7 +4,7 @@
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 
-namespace FE
+namespace FS
 {
 
 class TreeRenderer

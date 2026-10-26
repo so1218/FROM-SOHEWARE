@@ -4,7 +4,7 @@
 #include "CollisionConfig.h"
 #include "TimeManager.h"
 
-using namespace FE;
+using namespace FS;
 
 Ammo::Ammo(Engine* engine, int id, const std::string& parentGroupName)
     : engine_(engine), id_(id)
@@ -44,7 +44,7 @@ void Ammo::Initialize()
     collider_->SetCollisionMask(kCollisionAttributePlayer);
 }
 
-void Ammo::Update(const Vector3& scale, const FE::Vector3& bubbleScale, const Vector4& lightColor, float tiltAngle, float rotationSpeed)
+void Ammo::Update(const Vector3& scale, const FS::Vector3& bubbleScale, const Vector4& lightColor, float tiltAngle, float rotationSpeed)
 {
     if (!IsActive() || isPicked_)
     {

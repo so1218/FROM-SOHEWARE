@@ -4,7 +4,7 @@
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
 
-namespace FE
+namespace FS
 {
 
 class TrailRenderer

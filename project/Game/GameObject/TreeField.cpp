@@ -4,7 +4,7 @@
 #include "MathUtils.h"
 #include "Model.h"
 
-using namespace FE;
+using namespace FS;
 
 TreeField::TreeField(Engine* engine) : GameObject()
 {
@@ -52,7 +52,7 @@ void TreeField::Initialize()
     binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
     binder_->Bind("TrunkColliderRadius", &trunkColliderRadius_, 0.5f, 0.05f, 0.05f, 5.0f);
 
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]()
+    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]()
         {
             treeSystem_->SetWindMapTexture(windMapName_);
         });
@@ -110,16 +110,16 @@ void TreeField::Initialize()
         }
         };
 
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FE::TextureType::Noise, [this]() {
+    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() {
         treeSystem_->SetWindMapTexture(windMapName_);
         });
 
-    binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, FE::TextureType::Albedo, OnTextureChanged);
+    binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, FS::TextureType::Albedo, OnTextureChanged);
 
-    binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, FE::TextureType::Albedo, OnTextureChanged);
-    binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, FE::TextureType::Normal, OnTextureChanged);
+    binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, FS::TextureType::Albedo, OnTextureChanged);
+    binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, FS::TextureType::Normal, OnTextureChanged);
 
-    binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, FE::TextureType::Toon, OnTextureChanged);
+    binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, FS::TextureType::Toon, OnTextureChanged);
 
     // 初期化値の記憶
     prevPosition_ = transform_.translation_;

@@ -2,7 +2,7 @@
 #define STICK_THRESHOLD 0x4000
 #include "Vector2.h"
 
-namespace FE
+namespace FS
 {
 
 class Input

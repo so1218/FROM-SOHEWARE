@@ -2,7 +2,7 @@
 #include "Camera.h"
 #include "PropertyBinder.h"
 
-namespace FE
+namespace FS
 {
 
 void Camera::Initialize()

@@ -12,7 +12,7 @@
 #include "Frustum.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void TreeRenderer::Initialize(const RenderEnvironment& env)
@@ -215,7 +215,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Tree Main Pass");
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Tree Main Pass");
 
     auto& curRes = frameRes_[currentFrameIndex_];
 
@@ -287,7 +287,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     // カリングの実行
     // ==========================================
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Tree Culling CS");
+        PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Tree Culling CS");
 
         cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
         cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
@@ -329,7 +329,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     cmdList->ResourceBarrier(2, drawBarriers);
 
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Tree Indirect Draw");
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Tree Indirect Draw");
 
         ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
         cmdList->SetDescriptorHeaps(1, heaps);
@@ -403,7 +403,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Tree Shadow Pass (Cascade %u)", cascadeIndex);
+    PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Tree Shadow Pass (Cascade %u)", cascadeIndex);
 
     auto& curRes = frameRes_[currentFrameIndex_];
 
@@ -467,7 +467,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     // カリング CS 実行
     // ==========================================
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Tree Shadow Culling CS");
+        PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Tree Shadow Culling CS");
 
         cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("TreeCullingCS"));
         cmdList->SetPipelineState(env.psoManager->GetPSO("TreeCullingCS"));
@@ -511,7 +511,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     // シャドウマップ描画
     // ==========================================
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Shadow, "Tree Shadow Indirect Draw");
+        PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Tree Shadow Indirect Draw");
 
         ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
         cmdList->SetDescriptorHeaps(1, heaps);

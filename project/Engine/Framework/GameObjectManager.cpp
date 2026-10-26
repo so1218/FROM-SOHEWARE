@@ -3,7 +3,7 @@
 #include "CollisionManager.h" 
 #include "Collider.h"
 
-namespace FE
+namespace FS
 {
 
 void GameObjectManager::Initialize()

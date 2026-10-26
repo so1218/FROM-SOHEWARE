@@ -5,10 +5,10 @@
 #include "Enemy.h"
 #include "PropertyBinder.h"
 
-class EnemyManager : public FE::GameObject
+class EnemyManager : public FS::GameObject
 {
 public:
-    EnemyManager(FE::Engine* engine, const std::string& groupName);
+    EnemyManager(FS::Engine* engine, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;
@@ -20,10 +20,10 @@ public:
     void AddEnemy(); 
 
 private:
-    FE::Engine* engine_;
+    FS::Engine* engine_;
     std::string managerGroupName_;
     std::vector<std::unique_ptr<Enemy>> enemies_;
 
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
     int enemyCount_ = 0; // JSONに保存される全体の数
 };

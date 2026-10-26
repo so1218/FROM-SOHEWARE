@@ -6,10 +6,10 @@
 #include "Terrain.h"
 #include "RenderCommon.h"
 
-class FoliageField : public FE::GameObject
+class FoliageField : public FS::GameObject
 {
 public:
-    FoliageField(FE::Engine* engine);
+    FoliageField(FS::Engine* engine);
 
     void Initialize() override;
     void Update() override;
@@ -23,11 +23,11 @@ private:
     void GenerateFoliage();
 
 private:
-    FE::Engine* engine_;
-    std::unique_ptr<FE::FoliageSystem> foliageSystem_;
-    std::unique_ptr<FE::PropertyBinder> binder_;
+    FS::Engine* engine_;
+    std::unique_ptr<FS::FoliageSystem> foliageSystem_;
+    std::unique_ptr<FS::PropertyBinder> binder_;
 
-    FE::WorldTransform transform_;
+    FS::WorldTransform transform_;
 
     // ==========================================
     // 全体共通パラメータ
@@ -35,16 +35,16 @@ private:
     std::string heightMapName_ = "noise_39";
     uint32_t heightMapHandle_ = 0;
 
-    FE::Vector2 terrainCenter_{ 0.0f, 0.0f };
+    FS::Vector2 terrainCenter_{ 0.0f, 0.0f };
     float terrainWidth_ = 1024.0f;
     float terrainDepth_ = 1024.0f;
 
     FoliageCullingData cullingData_{};
 
-    std::vector <FE::FoliageLayer> layers_;
+    std::vector <FS::FoliageLayer> layers_;
 
     // 再生成判定用キャッシュ
-    FE::Vector3 prevPosition_;
+    FS::Vector3 prevPosition_;
     float prevTerrainWidth_ = 0.0f;
     float prevTerrainDepth_ = 0.0f;
     std::string prevHeightMapName_;

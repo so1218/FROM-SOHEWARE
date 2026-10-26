@@ -5,7 +5,7 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 #endif
 
-namespace FE
+namespace FS
 {
 
 // ウィンドウプロシージャ

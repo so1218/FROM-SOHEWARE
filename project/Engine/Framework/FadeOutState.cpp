@@ -4,7 +4,7 @@
 #include "FadeOutState.h"
 #include "FadeInState.h"
 
-namespace FE
+namespace FS
 {
 
 void FadeOutState::Update(SceneManager* manager)

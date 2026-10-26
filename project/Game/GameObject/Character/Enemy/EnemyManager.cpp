@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "EnemyManager.h"
 
-using namespace FE;
+using namespace FS;
 
 EnemyManager::EnemyManager(Engine* engine, const std::string& groupName)
     : engine_(engine), managerGroupName_(groupName)
@@ -9,7 +9,7 @@ EnemyManager::EnemyManager(Engine* engine, const std::string& groupName)
 
 void EnemyManager::Initialize()
 {
-    binder_ = std::make_unique<FE::PropertyBinder>(engine_, managerGroupName_);
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("EnemyCount", &enemyCount_, 3);
     enemies_.clear();
 
@@ -28,7 +28,7 @@ void EnemyManager::RebuildMaterialSharing()
 {
     if (enemies_.empty()) return;
 
-    std::unordered_map<EnemyType, FE::Model*> archetypeModels;
+    std::unordered_map<EnemyType, FS::Model*> archetypeModels;
 
     for (auto& enemy : enemies_)
     {

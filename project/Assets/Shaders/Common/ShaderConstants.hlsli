@@ -5,10 +5,10 @@
 #include "MathUtils.h" 
 #include "WorldTransform.h"
 
-#define float4x4 FE::Matrix4x4
-#define float4 FE::Vector4
-#define float3 FE::Vector3
-#define float2 FE::Vector2
+#define float4x4 FS::Matrix4x4
+#define float4 FS::Vector4
+#define float3 FS::Vector3
+#define float2 FS::Vector2
 #define float32_t float
 #define uint uint32_t
 

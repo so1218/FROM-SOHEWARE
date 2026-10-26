@@ -3,15 +3,15 @@
 #include "Engine.h" 
 #include "Camera.h" 
 
-class ParticleSystemWrapper : public FE::GameObject
+class ParticleSystemWrapper : public FS::GameObject
 {
 public:
-    ParticleSystemWrapper(FE::Engine* engine);
+    ParticleSystemWrapper(FS::Engine* engine);
 
     void Update() override;
 
     void Draw() override;
 
 private:
-    FE::Engine* engine_;
+    FS::Engine* engine_;
 };

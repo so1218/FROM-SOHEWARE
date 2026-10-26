@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CommandManager.h"
 
-namespace FE
+namespace FS
 {
 
 void CommandManager::Initialize(ID3D12Device* device)

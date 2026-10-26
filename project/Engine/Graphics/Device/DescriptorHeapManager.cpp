@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DescriptorHeapManager.h"
 
-namespace FE
+namespace FS
 {
 
 // ディスクリプタヒープを作成

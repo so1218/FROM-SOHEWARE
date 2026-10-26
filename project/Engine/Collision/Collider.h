@@ -1,7 +1,7 @@
 #pragma once
 #include "Vector.h"
 
-namespace FE
+namespace FS
 {
 
 class GameObject;
@@ -63,7 +63,7 @@ public:
 	bool IsApplyRotation() const { return applyRotation_; }
 
 	// 自分を基準にして、相手を押し戻すベクトルを計算
-	bool CalculatePushBackVector(Collider* other, FE::Vector3& outPushVector) const;
+	bool CalculatePushBackVector(Collider* other, FS::Vector3& outPushVector) const;
 
 private:
 	GameObject* owner_ = nullptr; // 自分を持っている親

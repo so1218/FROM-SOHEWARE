@@ -2,7 +2,7 @@
 #include "PebbleField.h"
 #include "ImGuiManager.h"
 
-using namespace FE;
+using namespace FS;
 
 PebbleField::PebbleField(Engine* engine) : GameObject(), engine_(engine)
 {
@@ -150,7 +150,7 @@ void PebbleField::DebugDraw()
 
 void PebbleField::ReloadResources()
 {
-    const FE::ModelData* modelData = FE::ModelManager::GetInstance().Get(pebbleModelName_);
+    const FS::ModelData* modelData = FS::ModelManager::GetInstance().Get(pebbleModelName_);
 
     if (modelData && !modelData->meshes.empty())
     {
@@ -167,14 +167,14 @@ void PebbleField::ReloadResources()
         // AABB から Bounds を自動計算
         auto* cull = pebbleSystem_->GetCullingData();
 
-        FE::Vector3 minPos = meshPart.localAABB.min;
-        FE::Vector3 maxPos = meshPart.localAABB.max;
+        FS::Vector3 minPos = meshPart.localAABB.min;
+        FS::Vector3 maxPos = meshPart.localAABB.max;
 
         // Y中心オフセット
         cull->modelCenterYOffset = (minPos.y + maxPos.y) * 0.5f;
 
         // 半径
-        FE::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
+        FS::Vector3 size = { maxPos.x - minPos.x, maxPos.y - minPos.y, maxPos.z - minPos.z };
         cull->modelRadius = std::sqrt(size.x * size.x + size.y * size.y + size.z * size.z) * 0.5f;
 
         // モデルの AABB が小さすぎたり0だった場合の安全対策

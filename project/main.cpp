@@ -5,7 +5,7 @@
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
 {
 #ifdef _DEBUG
-    FE::D3DResourceLeakChecker leakCheck;
+    FS::D3DResourceLeakChecker leakCheck;
 #endif
     Game game;
     game.Run();

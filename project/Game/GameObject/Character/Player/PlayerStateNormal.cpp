@@ -6,7 +6,7 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 
-using namespace FE;
+using namespace FS;
 
 void PlayerStateNormal::Update(Player* player)
 {

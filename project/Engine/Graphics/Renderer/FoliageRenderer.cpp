@@ -11,7 +11,7 @@
 #include "EnvironmentManager.h"
 #include "PIXColors.h"
 
-namespace FE
+namespace FS
 {
 
 void FoliageRenderer::Initialize(const RenderEnvironment& env, const std::vector<FoliageTypeConfig>& configs)
@@ -208,7 +208,7 @@ void FoliageRenderer::Draw(
     ID3D12Device* device = env.device->GetDevice();
     size_t numTypes = types_.size();
 
-    PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Foliage Pass (%zu Types)", numTypes);
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Foliage Pass (%zu Types)", numTypes);
 
     memcpy(mappedCullingData_[currentFrameIndex_], &cullingData, sizeof(FoliageCullingData));
     uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -218,7 +218,7 @@ void FoliageRenderer::Draw(
     // 前段で生成したインスタンス群に対し、視錐台/距離カリングを適用
     // -----------------------------------------------------------
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Foliage GPU Culling CS Pass");
+        PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Foliage GPU Culling CS Pass");
 
         cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("FoliageCullingCS"));
         cmdList->SetPipelineState(env.psoManager->GetPSO("FoliageCullingCS"));
@@ -229,7 +229,7 @@ void FoliageRenderer::Draw(
         for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
         {
             // タイプごとのカリング処理用サブスコープ
-            PIXScopedEvent(cmdList, FE::PIXColors::Compute, "Culling CS [Type %d]", typeIdx);
+            PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Culling CS [Type %d]", typeIdx);
 
             auto& res = types_[typeIdx];
             memcpy(res.mappedMaterial[currentFrameIndex_], &res.config.material, sizeof(FoliageMaterialData));
@@ -281,7 +281,7 @@ void FoliageRenderer::Draw(
     // カリング済みのバッファを参照し、CPUを介さずにGPU上で描画コマンドを発行
     // -----------------------------------------------------------
     {
-        PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "Foliage Indirect Draw Pass");
+        PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Foliage Indirect Draw Pass");
 
         cmdList->SetPipelineState(env.psoManager->GetPSO("Foliage"));
         cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Foliage"));
@@ -306,7 +306,7 @@ void FoliageRenderer::Draw(
         for (int typeIdx = 0; typeIdx < numTypes; ++typeIdx)
         {
             // タイプごとの描画処理用サブスコープ
-            PIXScopedEvent(cmdList, FE::PIXColors::Geometry, "ExecuteIndirect [Type %d]", typeIdx);
+            PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "ExecuteIndirect [Type %d]", typeIdx);
 
             auto& res = types_[typeIdx];
 

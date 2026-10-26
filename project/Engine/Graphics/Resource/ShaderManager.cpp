@@ -2,7 +2,7 @@
 #include "ShaderManager.h"
 #include "Logger.h"
 
-namespace FE
+namespace FS
 {
 
 void ShaderManager::Initialize(
