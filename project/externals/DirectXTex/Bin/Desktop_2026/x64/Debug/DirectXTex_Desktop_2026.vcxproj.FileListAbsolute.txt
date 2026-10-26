@@ -1,2 +1,0 @@
-C:\Users\souhe\授業\MyEngine\DirectXGame\project\externals\DirectXTex\Bin\Desktop_2026\x64\Debug\DirectXTex.lib
-C:\Users\souhe\授業\MyEngine\FromSoheWare\project\externals\DirectXTex\Bin\Desktop_2026\x64\Debug\DirectXTex.lib
