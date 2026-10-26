@@ -346,10 +346,10 @@ project/Cache/
 !externals/**/assimp*.lib
 
 # ビルド出力フォルダ
-Bin/
-obj/
-x64/
-x86/
+**/Bin/
+**/obj/
+**/x64/
+**/x86/
 Debug/
 Release/
 Development/
