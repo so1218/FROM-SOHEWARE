@@ -5,7 +5,7 @@ on:
       - master
 
 env:
-  SOLUTION_FILE_PATH: project/FromSoheEngine.slnx
+  SOLUTION_FILE_PATH: project/FromSoheWare.slnx
   CONFIGURATION: Development
 
 jobs:
