@@ -334,10 +334,29 @@ imgui_layout.ini
 
 project/Cache/
 
-# ビルド成果物・ライブラリファイルの除外
+# ビルド成果物・中間ファイル
 *.lib
-*.dll
+*.o
+*.a
 *.pdb
+*.exe
+*.ilk
+*.idb
+
+# ビルド出力フォルダ
+Bin/
+obj/
+x64/
+x86/
+Debug/
+Release/
+Development/
+generated/
+
+# Visual Studio 関連
+.vs/
+*.user
+*.suo
 
 # VitePress Build & Cache
 docs/.vitepress/dist
