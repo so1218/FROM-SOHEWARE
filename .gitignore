@@ -360,6 +360,4 @@ generated/
 *.user
 *.suo
 
-# VitePress Build & Cache
-docs/.vitepress/dist
-docs/.vitepress/cache
+project/externals/DirectXTex/Shaders/Compiled/*.inc
