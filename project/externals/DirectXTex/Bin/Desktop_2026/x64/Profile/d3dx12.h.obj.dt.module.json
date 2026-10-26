@@ -1,0 +1,15 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "Bin\\Desktop_2026\\x64\\Profile\\d3dx12.obj",
+            "outputs": [
+                "Bin\\Desktop_2026\\x64\\Profile\\d3dx12.h.obj.dt.module.json",
+                "Bin\\Desktop_2026\\x64\\Profile\\d3dx12.h.obj.dt.d.json",
+                "Bin\\Desktop_2026\\x64\\Profile\\DirectXTex.pch"
+            ],
+            "requires": []
+        }
+    ]
+}

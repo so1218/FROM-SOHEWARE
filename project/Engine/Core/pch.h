@@ -88,8 +88,8 @@
 
 // 外部ライブラリ
 #include <json.hpp>
-#include "externals/DirectXTex/d3dx12.h"      
-#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/d3dx12.h"
+#include "DirectXTex.h"
 #include <assimp/Importer.hpp> 
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
