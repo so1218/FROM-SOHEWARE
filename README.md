@@ -1,11 +1,11 @@
-[![DebugBuild](https://github.com/so1218/GE3/actions/workflows/DebugBuild.yml/badge.svg)](https://github.com/so1218/GE3/actions/workflows/DebugBuild.yml)
-[![ReleaseBuild](https://github.com/so1218/GE3/actions/workflows/ReleaseBuild.yml/badge.svg)](https://github.com/so1218/GE3/actions/workflows/ReleaseBuild.yml)
-[![DevelopmentBuild](https://github.com/so1218/GE3/actions/workflows/DevelopmentBuild.yml/badge.svg)](https://github.com/so1218/GE3/actions/workflows/DevelopmentBuild.yml)
+[![DebugBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DebugBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DebugBuild.yml)
+[![ReleaseBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/ReleaseBuild.yml)
+[![DevelopmentBuild](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DevelopmentBuild.yml/badge.svg)](https://github.com/so1218/FROM-SOHEWARE/actions/workflows/DevelopmentBuild.yml)
 
 <!-- 【TODO: ここにエンジンを実行している一番見栄えの良いスクリーンショット（docs/images/hero.pngなど）を貼る】 -->
 
 ## 概要 (Overview)
-GE3 は、〇〇を目的としてC++で開発された軽量なゲームエンジンです。
+FROM-SOHEWARE は、〇〇を目的としてC++で開発された軽量なゲームエンジンです。
 DirectXTexやAssimpを統合しており、直感的な記述で3D/2Dの描画セットアップが完了します。
 
 ## 特徴 (Features)
@@ -16,4 +16,4 @@ DirectXTexやAssimpを統合しており、直感的な記述で3D/2Dの描画�
 ## 導入手順 (Installation)
 1. リポジトリをクローンします。
    ```bash
-   git clone --recursive [https://github.com/so1218/GE3.git](https://github.com/so1218/GE3.git)
+   git clone --recursive [https://github.com/so1218/FROM-SOHEWARE.git](https://github.com/so1218/FROM-SOHEWARE.git)

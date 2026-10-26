@@ -8,7 +8,7 @@
   <Folder Name="/ソリューション項目/">
     <File Path=".editorconfig" />
   </Folder>
-  <Project Path="DirectXGame.vcxproj" Id="cd7dbdc9-d0ce-49f9-83de-fcb4f52da80d" />
+  <Project Path="FromSoheWare.vcxproj" Id="cd7dbdc9-d0ce-49f9-83de-fcb4f52da80d" />
   <Project Path="externals/DirectXTex/DirectXTex_Desktop_2026.vcxproj" Id="371b9fa9-4c90-4ac6-a123-aced756d6c77">
     <BuildType Solution="Development|*" Project="Profile" />
   </Project>
