@@ -343,6 +343,8 @@ project/Cache/
 *.ilk
 *.idb
 
+!externals/**/assimp*.lib
+
 # ビルド出力フォルダ
 Bin/
 obj/
