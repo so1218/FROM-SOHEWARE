@@ -62,8 +62,6 @@ public:
 
     // ゲッター
     // DirectX関連
-    ID3D12Fence* GetFence() const { return fence_.Get(); }
-    HANDLE GetFenceEvent() const { return fenceEvent_; }
     ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_.Get(); }
 
     // システム関連マネージャー
@@ -111,17 +109,10 @@ private:
     void InitializeAudio();
 
 private:
-    uint64_t fenceValue_ = 0; // GPU同期用フェンス値
-
     // DirectX関連
     Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
     Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource_;
-    Microsoft::WRL::ComPtr<ID3D12Fence> fence_;
-    Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils_;
-    Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler_;
-    Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler_;
-    HANDLE fenceEvent_ = nullptr;
 
     std::wstring windowTitle_;
     int kFixedFPS_ = 60;

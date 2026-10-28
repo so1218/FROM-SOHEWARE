@@ -77,14 +77,7 @@ void Engine::Finalize()
 
 	ImGuiManager::Finalize();
 
-	// Fence待機
-	fenceValue_++;
-	commandManager_->GetCommandQueue()->Signal(fence_.Get(), fenceValue_);
-	if (fence_->GetCompletedValue() < fenceValue_)
-	{
-		fence_.Get()->SetEventOnCompletion(fenceValue_, fenceEvent_);
-		WaitForSingleObject(fenceEvent_, INFINITE);
-	}
+	commandManager_->WaitForGPU();
 
 	frameLimiter_->Finalize();
 	rendererManager_->Finalize();
@@ -96,7 +89,6 @@ void Engine::Finalize()
 	srvManager_.reset();
 
 	// リソース解放
-	CloseHandle(fenceEvent_);
 	CloseWindow(window_->GetHwnd());
 }
 
@@ -170,7 +162,7 @@ void Engine::EndFrame()
 		textureLoader_->RegisterPendingUpload(textureResource.intermediate, completedFenceValue);
 	}
 	textureLoader_->ClearNewUploads();
-	textureLoader_->CleanupCompletedUploads(fence_->GetCompletedValue()); 
+	textureLoader_->CleanupCompletedUploads(commandManager_->GetCompletedFenceValue());
 }
 
 void Engine::InitializeSystem()
@@ -271,34 +263,12 @@ void Engine::InitializeRenderer()
 			offscreenDepthResource_
 		);
 
-	// フェンス作成（GPU同期用）
-	HRESULT hr = graphicsDevice_->GetDevice()->CreateFence(
-		fenceValue_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_)
-	);
-	assert(SUCCEEDED(hr));
-
-	fenceEvent_ = CreateEvent(nullptr, false, false, nullptr);
-	assert(fenceEvent_ != nullptr);
-
 	// レンダリング制御クラス初期化
 	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight());
 
-	// DXC 初期化
-	hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
-	assert(SUCCEEDED(hr));
-	hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
-	assert(SUCCEEDED(hr));
-
-	hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
-	assert(SUCCEEDED(hr));
-
 	// シェーダ管理
 	shaderManager_ = std::make_unique<ShaderManager>();
-	shaderManager_->Initialize(
-		dxcUtils_.Get(),
-		dxcCompiler_.Get(),
-		includeHandler_.Get()
-	);
+	shaderManager_->Initialize();
 
 	// ルートシグネチャ
 	rootSignatureManager_ = std::make_unique<RootSignatureManager>();

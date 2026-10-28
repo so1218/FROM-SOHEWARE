@@ -17,8 +17,6 @@ void RenderCoordinator::Initialize(
     OffscreenRTVManager* offscreenRenderTargetManager,
     CommandManager* commandManager,
     RenderContext* renderContext,
-    ID3D12Fence* fence,
-    HANDLE fenceEvent,
     GraphicsDevice* graphicDevice,
     Engine* engine,
     D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
@@ -32,8 +30,8 @@ void RenderCoordinator::Initialize(
     offscreenRTVManager_ = offscreenRenderTargetManager;
     commandManager_ = commandManager;
     renderContext_ = renderContext;
-    fence_ = fence;
-    fenceEvent_ = fenceEvent;
+    fence_ = commandManager_->GetFence();
+    fenceEvent_ = commandManager_->GetFenceEvent();
     graphicDevice_ = graphicDevice;
     engine_ = engine;
 

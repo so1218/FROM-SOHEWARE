@@ -5,17 +5,7 @@
 namespace FS
 {
 
-void ShaderManager::Initialize(
-    IDxcUtils* dxcUtils,
-    IDxcCompiler3* dxcCompiler,
-    IDxcIncludeHandler* includeHandler)
-{
-    dxcUtils_ = dxcUtils;
-    dxcCompiler_ = dxcCompiler;
-    includeHandler_ = includeHandler;
-}
-
-// 補助関数: blob をファイルに書き出す
+// blob をファイルに書き出す
 bool SaveBlobToFile(const fs::path& filePath, IDxcBlob* blob)
 {
     fs::create_directories(filePath.parent_path());
@@ -25,7 +15,7 @@ bool SaveBlobToFile(const fs::path& filePath, IDxcBlob* blob)
     return true;
 }
 
-// 補助関数: ファイルから blob を読み込む
+// ファイルから blob を読み込む
 Microsoft::WRL::ComPtr<IDxcBlob> LoadBlobFromFile(const fs::path& filePath, IDxcUtils* dxcUtils)
 {
     Microsoft::WRL::ComPtr<IDxcBlobEncoding> blob;
@@ -36,9 +26,19 @@ Microsoft::WRL::ComPtr<IDxcBlob> LoadBlobFromFile(const fs::path& filePath, IDxc
     return nullptr;
 }
 
-Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
-    const std::wstring& filePath,
-    const wchar_t* profile) 
+void ShaderManager::Initialize()
+{
+    HRESULT hr = DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils_));
+    assert(SUCCEEDED(hr));
+
+    hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler_));
+    assert(SUCCEEDED(hr));
+
+    hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
+    assert(SUCCEEDED(hr));
+}
+
+Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
 {
     // キャッシュパスの統一
     fs::path srcPath(filePath);
@@ -48,7 +48,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
 
 #ifndef ENABLE_DEV_TOOLS
     // 製品ビルド 直接 Cache を読み込む
-    auto csoBlob = LoadBlobFromFile(csoPath, dxcUtils_);
+    auto csoBlob = LoadBlobFromFile(csoPath, dxcUtils_.Get());
     if (!csoBlob) {
         MessageBoxW(nullptr, L"シェーダーキャッシュ(.cso)が見つかりません", L"Fatal Error", MB_OK | MB_ICONERROR);
         exit(1);
@@ -68,7 +68,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     // 最新の CSO があれば即時ロード
     if (!needCompile)
     {
-        if (auto cachedBlob = LoadBlobFromFile(csoPath, dxcUtils_))
+        if (auto cachedBlob = LoadBlobFromFile(csoPath, dxcUtils_.Get()))
         {
             return cachedBlob;
         }
@@ -86,9 +86,10 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
     };
 
     Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource;
-    if (FAILED(dxcUtils_->LoadFile(filePath.c_str(), nullptr, &shaderSource))) {
+    if (FAILED(dxcUtils_->LoadFile(filePath.c_str(), nullptr, &shaderSource)))
+    {
         LOG_ERROR("Shader file not found: {}", StringUtils::ConvertString(filePath));
-        return LoadBlobFromFile(csoPath, dxcUtils_); // ロード失敗時は過去のキャッシュにフォールバック
+        return LoadBlobFromFile(csoPath, dxcUtils_.Get()); // ロード失敗時は過去のキャッシュにフォールバック
     }
 
     DxcBuffer shaderSourceBuffer{
@@ -102,7 +103,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
         &shaderSourceBuffer,
         arguments.data(),
         static_cast<uint32_t>(arguments.size()),
-        includeHandler_,
+        includeHandler_.Get(),
         IID_PPV_ARGS(&shaderResult));
 
     // エラーチェック
@@ -119,7 +120,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(
             if (fs::exists(csoPath)) {
                 LOG_ERROR("コンパイル失敗。前回の正常なキャッシュを使用します。");
                 MessageBeep(MB_ICONERROR);
-                return LoadBlobFromFile(csoPath, dxcUtils_);
+                return LoadBlobFromFile(csoPath, dxcUtils_.Get());
             }
             return nullptr;
         }

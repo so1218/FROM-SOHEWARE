@@ -158,7 +158,7 @@
         "PostEffect/FogVolumes/1/WindSpeed": 0.30000001192092896,
         "PostEffect/FogVolumes/1/WorleyWeight": 0.949999988079071,
         "PostEffect/FogVolumes/Count": 2,
-        "PostEffect/LUT/Enable": true,
+        "PostEffect/LUT/Enable": false,
         "PostEffect/LUT/Texture": "LUT_Neutral_32",
         "PostEffect/Pixelation/Enable": false,
         "PostEffect/Pixelation/Size": 1.0,

@@ -21,8 +21,6 @@ public:
         OffscreenRTVManager* offscreenRenderTargetManager,
         CommandManager* commandManager,
         RenderContext* renderContext,
-        ID3D12Fence* fence,
-        HANDLE fenceEvent,
         GraphicsDevice* graphicDevice,
         Engine* engine,
         D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
