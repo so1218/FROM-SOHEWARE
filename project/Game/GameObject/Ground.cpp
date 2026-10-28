@@ -29,8 +29,6 @@ void Ground::Initialize()
 
 	skydome_->Initialize();
 
-	EnvironmentManager::GetInstance()->Initialize(engine_);
-
 	interactionSystem_->Initialize();
 	interactionSystem_->SetTerrain(terrain_.get());
 };

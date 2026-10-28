@@ -40,6 +40,8 @@ void WeatherEffectManager::Initialize()
 
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
     binder_->Bind("ThunderMaxInterval", &thunderMaxInterval_, 8.0f, 0.1f, 1.0f, 60.0f);
+    binder_->Bind("MinStrikeCount", &minStrikeCount_, 1, 1, 1, 10);
+    binder_->Bind("MaxStrikeCount", &maxStrikeCount_, 3, 1, 1, 10);
     binder_->Bind("StrikeRadiusMin", &strikeRadiusMin_, 30.0f, 1.0f, 5.0f, 100.0f);
     binder_->Bind("StrikeRadiusMax", &strikeRadiusMax_, 100.0f, 1.0f, 30.0f, 500.0f);
     binder_->Bind("StrikeHeight", &strikeHeight_, 250.0f, 5.0f, 50.0f, 1000.0f);
@@ -165,7 +167,7 @@ void WeatherEffectManager::Update()
         lightningSystem_->Update();
     }
 
-    // 雷は現在が雷雨または雷雨へ遷移中（t が0.5以上）で発生
+    // 雷は現在が雷雨または雷雨へ遷移中で発生
     if (current == WeatherState::Thunderstorm || (target == WeatherState::Thunderstorm && t > 0.5f))
     {
         thunderIntervalTimer_ -= deltaTime;
@@ -177,47 +179,61 @@ void WeatherEffectManager::Update()
 
             std::uniform_real_distribution<float> distAngle(0.0f, Math::PI * 2.0f);
             std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
+            std::uniform_int_distribution<int> distCount(minStrikeCount_, maxStrikeCount_);
 
-            float angle = distAngle(randomEngine_);
-            float radius = distRadius(randomEngine_);
+            // 今回落とす雷の本数を決定
+            int strikeCount = distCount(randomEngine_);
 
-            float targetX = playerPos.x + std::cos(angle) * radius;
-            float targetZ = playerPos.z + std::sin(angle) * radius;
+            // カメラシェイク用に最もプレイヤーに近い雷の距離を記録
+            float closestRadius = 999999.0f;
 
-            float groundY = terrain_->GetHeight(targetX, targetZ);
-
-            Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
-            Vector3 endPos(targetX, groundY, targetZ);
-
-            lightningSystem_->SpawnStrike(startPos, endPos);
-
-            if (thunderStrikeParticleEmitterPtr_)
+            // 決定した本数分ループして雷を落とす
+            for (int i = 0; i < strikeCount; ++i)
             {
-                thunderStrikeParticleEmitterPtr_->SetPosition(endPos);
-                thunderStrikeParticleEmitterPtr_->Play();
+                float angle = distAngle(randomEngine_);
+                float radius = distRadius(randomEngine_);
+
+                if (radius < closestRadius) {
+                    closestRadius = radius;
+                }
+
+                float targetX = playerPos.x + std::cos(angle) * radius;
+                float targetZ = playerPos.z + std::sin(angle) * radius;
+                float groundY = terrain_->GetHeight(targetX, targetZ);
+
+                Vector3 startPos(targetX, playerPos.y + strikeHeight_, targetZ);
+                Vector3 endPos(targetX, groundY, targetZ);
+
+                // 雷のメッシュとライトの生成
+                lightningSystem_->SpawnStrike(startPos, endPos);
+
+                // 3Dサウンドの再生
+                AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 50, 100.0f);
+
+                // 落雷パーティクルの再生
+                if (thunderStrikeParticleEmitterPtr_)
+                {
+                    thunderStrikeParticleEmitterPtr_->SetPosition(endPos);
+                    thunderStrikeParticleEmitterPtr_->Play();
+                }
             }
 
-            // カメラシェイク
-            if (cameraManager_)
+            // カメラシェイク (一番近い雷の距離を使って1回だけ揺らす)
+            if (cameraManager_ && closestRadius < thunderShakeMaxDistance_)
             {
-                // 距離による減衰を計算 
-                float distanceAttenuation = 1.0f - (radius / thunderShakeMaxDistance_);
+                float distanceAttenuation = 1.0f - (closestRadius / thunderShakeMaxDistance_);
                 distanceAttenuation = std::clamp(distanceAttenuation, 0.0f, 1.0f);
 
-                // 減衰をかけた最終的な揺れの強さ
                 float finalIntensity = thunderShakeIntensity_ * distanceAttenuation;
-
-                // 揺れが 0 以上の時だけシェイク
                 if (finalIntensity > 0.01f)
                 {
                     cameraManager_->RequestShake(thunderShakeDuration_, finalIntensity);
                 }
             }
 
+            // 次の雷までのインターバルを設定
             std::uniform_real_distribution<float> dist(thunderMinInterval_, thunderMaxInterval_);
             thunderIntervalTimer_ = dist(randomEngine_);
-
-            AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 50, 100.0f);
         }
     }
 }
@@ -231,6 +247,15 @@ void WeatherEffectManager::DebugDraw()
     {
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
+
+        ImGui::Separator();
+        ImGui::Text("同時発生数");
+        binder_->Draw("MinStrikeCount", "最小本数");
+        binder_->Draw("MaxStrikeCount", "最大本数");
+        if (minStrikeCount_ > maxStrikeCount_) 
+        {
+            maxStrikeCount_ = minStrikeCount_;
+        }
 
         if (thunderMinInterval_ > thunderMaxInterval_)
         {

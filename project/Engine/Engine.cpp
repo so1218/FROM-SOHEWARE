@@ -66,6 +66,8 @@ void Engine::Initialize(const ProjectConfig& config)
 	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), GetPostEffectManager(), debugCamera_.get());
 	particleSystem_ = std::make_unique<ParticleSystem>(this);
 	particleSystem_->Initialize();
+
+	EnvironmentManager::GetInstance()->Initialize(this);
 }
 
 void Engine::Finalize()

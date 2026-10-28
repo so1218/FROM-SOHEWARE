@@ -1,6 +1,6 @@
 {
     "Player": {
-        "AimMoveSpeed": 0.16500000655651093,
+        "AimMoveSpeed": 8.0,
         "AimToIdleBlendTime": 0.009999999776482582,
         "AirControlRate": 0.7300000190734863,
         "ColliderOffset": [

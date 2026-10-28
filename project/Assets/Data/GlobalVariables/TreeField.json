@@ -33,8 +33,8 @@
         "LeafShadowNormBias": 0.019999999552965164,
         "LeafTexture": "leaf1_baseColor",
         "MaxDrawDistance": 350.0,
-        "MaxScale": 38.400001525878906,
-        "MinScale": 19.799999237060547,
+        "MaxScale": 49.75,
+        "MinScale": 22.549999237060547,
         "NearFadeMaxDist": 15.0,
         "NearFadeMinDist": 6.0,
         "Position": [

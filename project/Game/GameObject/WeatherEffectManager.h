@@ -57,6 +57,9 @@ private:
     float strikeRadiusMax_ = 100.0f;
     float strikeHeight_ = 250.0f;  // 空の高さ
 
+    int minStrikeCount_ = 1;
+    int maxStrikeCount_ = 3;
+
     // カメラシェイク用パラメータ
     float thunderShakeDuration_ = 0.5f;
     float thunderShakeIntensity_ = 2.0f;

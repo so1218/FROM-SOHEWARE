@@ -55,7 +55,7 @@ void FloatingBehavior::Initialize(Enemy* owner)
         engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
     }
 
-    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", owner->GetTransform().translation_, true, 100, 100);
+    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", owner->GetTransform().translation_, true, 60, 100);
 }
 
 void FloatingBehavior::Update(Enemy* owner)
