@@ -166,14 +166,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Normal));
     context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Material));
 
-    // 深度バッファを読み取り用に遷移
-    CD3DX12_RESOURCE_BARRIER depthToSrvBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->GetOffscreenDepthResource(),
-        D3D12_RESOURCE_STATE_DEPTH_WRITE,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-    );
-    cmdList->ResourceBarrier(1, &depthToSrvBarrier);
-
     // 共通ヒープの設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(1, heaps);
@@ -234,14 +226,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         compositePass_->Execute(cmdList, context_);
         cmdList->SetDescriptorHeaps(1, heaps);
     }
-
-    // リソースバリアを戻す
-    CD3DX12_RESOURCE_BARRIER depthToWriteBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->GetOffscreenDepthResource(),
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_DEPTH_WRITE
-    );
-    cmdList->ResourceBarrier(1, &depthToWriteBarrier);
 }
 
 void PostEffectManager::BeginFinalComposite(ID3D12GraphicsCommandList* cmdList)

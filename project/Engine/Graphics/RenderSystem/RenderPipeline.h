@@ -36,9 +36,7 @@ public:
     ~RenderPipeline();
 
     // 初期化
-    void Initialize(Engine* engine,
-        D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-        D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle);
+    void Initialize(Engine* engine);
 
     // エンジンから毎フレーム呼ばれる描画の元締め
     void Render(Engine* engine,

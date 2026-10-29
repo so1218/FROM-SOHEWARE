@@ -61,9 +61,6 @@ public:
     void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
 
     // ゲッター
-    // DirectX関連
-    ID3D12Resource* GetOffscreenDepthResource() const { return offscreenDepthResource_.Get(); }
-
     // システム関連マネージャー
     Window* GetWindow() const { return window_.get(); }
     GraphicsDevice* GetGraphicsDevice() const { return graphicsDevice_.get(); }
@@ -109,10 +106,6 @@ private:
     void InitializeAudio();
 
 private:
-    // DirectX関連
-    Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenDepthResource_;
 
     std::wstring windowTitle_;
     int kFixedFPS_ = 60;

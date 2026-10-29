@@ -14,6 +14,7 @@ public:
 
     // ゲッター
     ID3D12Device* GetDevice() const { return device_.Get(); }
+    IDXGIFactory7* GetDXGIFactory() const { return dxgiFactory_.Get(); }
 
 private:
     // DXリソース

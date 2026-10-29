@@ -10,33 +10,20 @@ class DSVManager
 {
 public:
     // 初期化
-    void Initialize(
-        ID3D12Device* device,
-        DescriptorHeapManager* descriptorManager,
-        SRVManager* srvManager,
-        uint32_t dsvCount
-    );
+    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, uint32_t dsvCount);
 
     // 深度ステンシル用リソースとDSVを作成
     // 作成したリソースとCPUハンドルを返す
-    D3D12_CPU_DESCRIPTOR_HANDLE CreateDepthStencilView(
-        uint32_t width,
-        uint32_t height,
-        Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
-    );
+    uint32_t CreateDepthStencilView(uint32_t width, uint32_t height);
 
     // DSVヒープを取得
     ID3D12DescriptorHeap* GetHeap() const { return dsvHeap_.Get(); }
 
+    // インデックスから必要な情報を取得するゲッター
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDSVHandle(uint32_t dsvIndex) const;
+    ID3D12Resource* GetResource(uint32_t dsvIndex) const;
     // 指定したDSVに対応するSRVのインデックスを取得
-    uint32_t GetDSVTextureSRVIndex(uint32_t dsvIndex) const
-    {
-        if (dsvIndex < depthSrvIndices_.size())
-        {
-            return depthSrvIndices_[dsvIndex];
-        }
-        return 0;
-    }
+    uint32_t GetDSVTextureSRVIndex(uint32_t dsvIndex) const;
 
 private:
     ID3D12Device* device_ = nullptr;

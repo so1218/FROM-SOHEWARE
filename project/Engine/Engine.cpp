@@ -199,10 +199,6 @@ void Engine::InitializeGraphics()
 	DebugLayerManager::Instance().Initialize();
 #endif
 
-	// DXGIファクトリの生成
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory_));
-	assert(SUCCEEDED(hr));
-
 	// GPUアダプタの選択とD3D12デバイスの作成
 	graphicsDevice_ = std::make_unique<GraphicsDevice>();
 	graphicsDevice_->Initialize();
@@ -214,7 +210,7 @@ void Engine::InitializeGraphics()
 	// スワップチェーンの初期化（画面表示用のバッファ管理）
 	swapChain_ = std::make_unique<SwapChain>();
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(),
-		GetClientWidth(), GetClientHeight(), 2, dxgiFactory_);
+		GetClientWidth(), GetClientHeight(), 2, graphicsDevice_->GetDXGIFactory());
 
 	// ディスクリプタヒープマネージャの作成
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
@@ -247,22 +243,6 @@ void Engine::InitializeGraphics()
 
 void Engine::InitializeRenderer()
 {
-	// メイン深度ステンシル
-	D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle =
-		dsvManager_->CreateDepthStencilView(
-			GetClientWidth(),
-			GetClientHeight(),
-			depthStencilResource_
-		);
-
-	// オフスクリーン深度ステンシル
-	D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle =
-		dsvManager_->CreateDepthStencilView(
-			GetClientWidth(),
-			GetClientHeight(),
-			offscreenDepthResource_
-		);
-
 	// レンダリング制御クラス初期化
 	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight());
 
@@ -284,7 +264,7 @@ void Engine::InitializeRenderer()
 
 	// RenderPipelineを作成、初期化
 	renderPipeline_ = std::make_unique<RenderPipeline>();
-	renderPipeline_->Initialize(this, mainDsvHandle, offscreenDsvHandle);
+	renderPipeline_->Initialize(this);
 }
 
 void Engine::InitializeResources()

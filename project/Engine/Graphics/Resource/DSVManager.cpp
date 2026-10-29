@@ -34,14 +34,13 @@ void DSVManager::Initialize(
 }
 
 // 深度ステンシル用リソースとDSVを作成
-D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
-    uint32_t width,
-    uint32_t height,
-    Microsoft::WRL::ComPtr<ID3D12Resource>& outResource
-)
+uint32_t DSVManager::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
     // DSV作成数の上限チェック
     assert(createdDSVCount_ < maxDSVCount_);
+
+    // 内部でリソースを受け取るためのローカル変数
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource;
 
     // 深度ステンシル用テクスチャの設定
     D3D12_RESOURCE_DESC resourceDesc{};
@@ -70,7 +69,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
         &resourceDesc,
         D3D12_RESOURCE_STATE_DEPTH_WRITE,
         &depthClearValue,
-        IID_PPV_ARGS(&outResource)
+        IID_PPV_ARGS(&resource)
     );
     assert(SUCCEEDED(hr));
 
@@ -82,11 +81,11 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
         D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.Texture2D.MipLevels = 1;
 
-    uint32_t srvIndex = srvManager_->CreateSRV(outResource.Get(), srvDesc);
+    uint32_t srvIndex = srvManager_->CreateSRV(resource.Get(), srvDesc);
     depthSrvIndices_.push_back(srvIndex);
 
     // リソースを管理リストに保持
-    depthTextures_.push_back(outResource);
+    depthTextures_.push_back(resource);
 
     // DSVの書き込み先ハンドルを計算
     uint32_t dsvIndex = createdDSVCount_++;
@@ -101,16 +100,38 @@ D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::CreateDepthStencilView(
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 
     // DSVをヒープに作成
-    device_->CreateDepthStencilView(
-        outResource.Get(),
-        &dsvDesc,
-        dsvHandle
-    );
+    device_->CreateDepthStencilView(resource.Get(), &dsvDesc, dsvHandle);
 
     LOG_INFO("DSV Created at Index: {}", dsvIndex);
 
     // 作成したDSVのCPUハンドルを返す
-    return dsvHandle;
+    return dsvIndex;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE DSVManager::GetDSVHandle(uint32_t dsvIndex) const
+{
+    assert(dsvIndex < createdDSVCount_);
+    D3D12_CPU_DESCRIPTOR_HANDLE handle = dsvHeapStart_;
+    handle.ptr += static_cast<SIZE_T>(dsvIndex) * dsvDescriptorSize_;
+    return handle;
+}
+
+ID3D12Resource* DSVManager::GetResource(uint32_t dsvIndex) const
+{
+    assert(dsvIndex < depthTextures_.size());
+    return depthTextures_[dsvIndex].Get();
+}
+
+uint32_t FS::DSVManager::GetDSVTextureSRVIndex(uint32_t dsvIndex) const
+{
+    // 配列の範囲外アクセスを防ぐチェック
+    if (dsvIndex < depthSrvIndices_.size())
+    {
+        return depthSrvIndices_[dsvIndex];
+    }
+
+    // エラー時のフォールバック
+    return 0;
 }
 
 }

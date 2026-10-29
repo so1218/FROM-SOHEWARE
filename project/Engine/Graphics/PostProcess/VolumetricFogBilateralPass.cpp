@@ -61,14 +61,6 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     // リソースバリア (CS用の状態遷移)
     PreCompute(cmdList); // 自らの出力をUAVへ
 
-    // Depth は前のパスの最後で PIXEL_SHADER_RESOURCE に戻されているので遷移が必要
-    D3D12_RESOURCE_BARRIER depthBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
-        engine_->GetOffscreenDepthResource(),
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-
-    cmdList->ResourceBarrier(1, &depthBarrier);
-
     // Compute Pipeline 設定
     cmdList->SetComputeRootSignature(context.rootSigManager->GetRootSignature("VolumetricFogBilateralCS"));
     cmdList->SetPipelineState(psoManager_->GetPSO("VolumetricFogBilateralCS"));
@@ -91,10 +83,6 @@ void VolumetricFogBilateralPass::Execute(ID3D12GraphicsCommandList* cmdList, con
     uint32_t dispatchX = (static_cast<uint32_t>(viewport_.Width) + 7) / 8;
     uint32_t dispatchY = (static_cast<uint32_t>(viewport_.Height) + 7) / 8;
     cmdList->Dispatch(dispatchX, dispatchY, 1);
-
-    depthBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    depthBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    cmdList->ResourceBarrier(1, &depthBarrier);
 
     PostCompute(cmdList);
 }

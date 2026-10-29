@@ -163,11 +163,12 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     uint32_t currIdx = frameCounter_ % 2;
     uint32_t prevIdx = (frameCounter_ + 1) % 2;
 
-    // 外部リソース（Depth / Shadow）を Compute で読むためのバリア遷移
-    D3D12_RESOURCE_BARRIER readBarriers[2] = {};
-    readBarriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(engine_->GetOffscreenDepthResource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    readBarriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(engine_->GetShadowMap()->GetResource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-    cmdList->ResourceBarrier(2, readBarriers);
+    // 外部リソース（Shadow）を Compute で読むためのバリア遷移
+    D3D12_RESOURCE_BARRIER shadowBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        engine_->GetShadowMap()->GetResource(),
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+    cmdList->ResourceBarrier(1, &shadowBarrier);
 
     // 履歴バッファ（前フレームの出力）を SRV（読み込み）へ遷移
     if (frameCounter_ > 0) {
@@ -367,12 +368,12 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     resetBarriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(history3DRes_[currIdx].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     cmdList->ResourceBarrier(4, resetBarriers);
 
-    // 外部リソース（Depth / ShadowMap）をピクセルシェーダー読込（元の状態）に復帰
-    readBarriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    readBarriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-    readBarriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    cmdList->ResourceBarrier(2, readBarriers);
+    // 外部リソース（ShadowMap）をピクセルシェーダー読込（元の状態）に復帰
+    D3D12_RESOURCE_BARRIER shadowRevertBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        engine_->GetShadowMap()->GetResource(),
+        D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+    cmdList->ResourceBarrier(1, &shadowRevertBarrier);
 
     // 最終出力の2Dテクスチャをグラフィックスパイプライン/ポストエフェクトチェーン用にSRVへ遷移
     auto finalBarrier = CD3DX12_RESOURCE_BARRIER::Transition(resolveOutputRes_.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);

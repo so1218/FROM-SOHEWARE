@@ -9,7 +9,8 @@ class OffscreenRTVManager;
 class CommandManager;
 class RenderContext;
 class GraphicsDevice;
-class Engine;
+class DSVManager;
+class SRVManager;
 
 class RenderCoordinator
 {
@@ -22,10 +23,8 @@ public:
         CommandManager* commandManager,
         RenderContext* renderContext,
         GraphicsDevice* graphicDevice,
-        Engine* engine,
-        D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-        D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
-        ID3D12Resource* offscreenDepthResource
+        DSVManager* dsvManager, 
+        SRVManager* srvManager
     );
 
     // フレーム描画開始・終了
@@ -64,6 +63,9 @@ public:
     void TransitionDepthToShaderResource();
     void TransitionDepthToDepthWrite();
 
+    uint32_t GetMainDsvIndex() const { return mainDsvIndex_; }
+    uint32_t GetOffscreenDsvIndex() const { return offscreenDsvIndex_; }
+
 private:
     // 外部依存オブジェクト
     SwapChain* swapChain_ = nullptr;
@@ -72,7 +74,8 @@ private:
     CommandManager* commandManager_ = nullptr;
     RenderContext* renderContext_ = nullptr;
     GraphicsDevice* graphicDevice_ = nullptr;
-    Engine* engine_ = nullptr;
+    SRVManager* srvManager_ = nullptr;
+    DSVManager* dsvManager_ = nullptr;
 
     // DSVヒープとハンドル
     ID3D12DescriptorHeap* dsvDescriptorHeap_ = nullptr;
@@ -92,12 +95,10 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexColor_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexNormal_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexMaterial_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexVelocity_;
 
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvColor_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvVelocity_;
 
     // 現在のオフスクリーンのリソースステートを追跡
     D3D12_RESOURCE_STATES currentOffscreenState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
@@ -105,6 +106,10 @@ private:
     // 屈折用に不透明描画結果を保持する複製テクスチャ
     Microsoft::WRL::ComPtr<ID3D12Resource> opaqueSceneCopy_;
     uint32_t opaqueSceneCopySrvIndex_ = 0;
+
+    // DSVインデックスを保持
+    uint32_t mainDsvIndex_ = 0;
+    uint32_t offscreenDsvIndex_ = 0;
 };
 
 }

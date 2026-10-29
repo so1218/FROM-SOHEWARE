@@ -5,6 +5,7 @@
 #include "CommandManager.h"
 #include "RenderContext.h"
 #include "DSVManager.h"
+#include "SRVManager.h"
 #include "GraphicsDevice.h"
 #include "Engine.h"
 
@@ -18,10 +19,8 @@ void RenderCoordinator::Initialize(
     CommandManager* commandManager,
     RenderContext* renderContext,
     GraphicsDevice* graphicDevice,
-    Engine* engine,
-    D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle,
-    ID3D12Resource* offscreenDepthResource
+    DSVManager* dsvManager, 
+    SRVManager* srvManager
 )
 {
     // 各マネージャーとリソースのポインタを保持
@@ -33,12 +32,17 @@ void RenderCoordinator::Initialize(
     fence_ = commandManager_->GetFence();
     fenceEvent_ = commandManager_->GetFenceEvent();
     graphicDevice_ = graphicDevice;
-    engine_ = engine;
+    dsvManager_ = dsvManager;
+    srvManager_ = srvManager;
 
-    // レンダーターゲット・DSV・オフスクリーン関連のハンドルを保持
-    mainDsvHandle_ = mainDsvHandle;
-    offscreenDsvHandle_ = offscreenDsvHandle;
-    offscreenDepthResource_ = offscreenDepthResource;
+    // 深度ステンシルビュー (DSV) の作成
+    mainDsvIndex_ = dsvManager->CreateDepthStencilView(Engine::GetClientWidth(), Engine::GetClientHeight());
+    offscreenDsvIndex_ = dsvManager->CreateDepthStencilView(Engine::GetClientWidth(), Engine::GetClientHeight());
+
+    // ハンドルとリソースを取得して保持
+    mainDsvHandle_ = dsvManager->GetDSVHandle(mainDsvIndex_);
+    offscreenDsvHandle_ = dsvManager->GetDSVHandle(offscreenDsvIndex_);
+    offscreenDepthResource_ = dsvManager->GetResource(offscreenDsvIndex_);
 
     // カラー用
     auto [texColor, rtvColor, srvColor, uavIndexColor] = offscreenRTVManager_->CreateOffscreenRenderTarget(
@@ -58,17 +62,9 @@ void RenderCoordinator::Initialize(
     offscreenTexMaterial_ = texMaterial;
     offscreenRtvMaterial_ = rtvMaterial;
 
-    // 速度用
-    auto [texVelocity, rtvVelocity, srvVelocity, uavIndexVelocity] = offscreenRTVManager_->CreateOffscreenRenderTarget(
-        Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R16G16_FLOAT);
-    offscreenTexVelocity_ = texVelocity;
-    offscreenRtvVelocity_ = rtvVelocity;
-
     // --------------------------------------------------------
     // 深度リソース用 SRV の作成
     // --------------------------------------------------------
-    auto* srvManager = engine_->GetSRVManager();
-
     // SRV ヒープ領域を確保
     offscreenDepthSrvIndex_ = srvManager->Allocate();
 
@@ -185,16 +181,15 @@ void RenderCoordinator::BeginOffscreenRender()
 {
     auto* cmdList = commandManager_->GetCommandList();
 
-    D3D12_RESOURCE_BARRIER barriers[4];
+    D3D12_RESOURCE_BARRIER barriers[3];
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
     barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
     barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    cmdList->ResourceBarrier(4, barriers);
+    cmdList->ResourceBarrier(3, barriers);
 
-    // 4枚のRTVハンドルを配列にしてセット
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[4] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_, offscreenRtvVelocity_ };
-    cmdList->OMSetRenderTargets(4, rtvHandles, FALSE, &offscreenDsvHandle_);
+    // 3枚のRTVハンドルを配列にしてセット
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[3] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_ };
+    cmdList->OMSetRenderTargets(3, rtvHandles, FALSE, &offscreenDsvHandle_);
 
     // それぞれをクリアする
     Vector4 cc = offscreenRTVManager_->GetClearColor();
@@ -204,7 +199,6 @@ void RenderCoordinator::BeginOffscreenRender()
     cmdList->ClearRenderTargetView(offscreenRtvColor_, clearColorDefault, 0, nullptr);
     cmdList->ClearRenderTargetView(offscreenRtvNormal_, clearColorZero, 0, nullptr);
     cmdList->ClearRenderTargetView(offscreenRtvMaterial_, clearColorZero, 0, nullptr);
-    cmdList->ClearRenderTargetView(offscreenRtvVelocity_, clearColorZero, 0, nullptr);
     cmdList->ClearDepthStencilView(offscreenDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // ビューポートとシザーを設定
@@ -214,7 +208,7 @@ void RenderCoordinator::BeginOffscreenRender()
 
 void RenderCoordinator::EndOffscreenRender()
 {
-    D3D12_RESOURCE_BARRIER barriers[4];
+    D3D12_RESOURCE_BARRIER barriers[3];
 
     // 両方のシェーダーで読めるステートを定義
     D3D12_RESOURCE_STATES readState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
@@ -222,9 +216,8 @@ void RenderCoordinator::EndOffscreenRender()
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
     barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
     barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
-    barriers[3] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexVelocity_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
 
-    commandManager_->GetCommandList()->ResourceBarrier(4, barriers);
+    commandManager_->GetCommandList()->ResourceBarrier(3, barriers);
 
     // 次のフレームの BeginOffscreenRender のためにステートを更新
     currentOffscreenState_ = readState;
@@ -238,13 +231,13 @@ D3D12_GPU_DESCRIPTOR_HANDLE RenderCoordinator::GetOffscreenColorSRVGPUHandle() c
     );
 
     // SRVManager を通して GPU ハンドルに変換して返す
-    return engine_->GetSRVManager()->GetSRVHandleGPU(colorSrvIndex);
+    return srvManager_->GetSRVHandleGPU(colorSrvIndex);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE RenderCoordinator::GetOffscreenDepthSRVGPUHandle() const
 {
     // 保存しておいた深度の SRV インデックスから GPU ハンドルを取得
-    return engine_->GetSRVManager()->GetSRVHandleGPU(offscreenDepthSrvIndex_);
+    return srvManager_->GetSRVHandleGPU(offscreenDepthSrvIndex_);
 }
 
 void RenderCoordinator::CopyOpaqueSceneColor()
@@ -307,7 +300,7 @@ void RenderCoordinator::TransitionDepthToDepthWrite()
 
 D3D12_GPU_DESCRIPTOR_HANDLE RenderCoordinator::GetOpaqueSceneColorSRVGPUHandle() const
 {
-    return engine_->GetSRVManager()->GetSRVHandleGPU(opaqueSceneCopySrvIndex_);
+    return srvManager_->GetSRVHandleGPU(opaqueSceneCopySrvIndex_);
 }
 
 }

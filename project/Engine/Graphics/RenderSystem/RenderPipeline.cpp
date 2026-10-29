@@ -17,9 +17,7 @@ namespace FS
 RenderPipeline::RenderPipeline() = default;
 RenderPipeline::~RenderPipeline() = default;
 
-void RenderPipeline::Initialize(Engine* engine,
-    D3D12_CPU_DESCRIPTOR_HANDLE mainDsvHandle,
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenDsvHandle)
+void RenderPipeline::Initialize(Engine* engine)
 {
     // RenderCoordinatorの初期化
     renderCoordinator_ = std::make_unique<RenderCoordinator>();
@@ -30,16 +28,13 @@ void RenderPipeline::Initialize(Engine* engine,
         engine->GetCommandManager(),
         engine->GetRenderContext(),
         engine->GetGraphicsDevice(),
-        engine,                     
-        mainDsvHandle,
-        offscreenDsvHandle,
-        engine->GetOffscreenDepthResource()
+        engine->GetDSVManager(), 
+        engine->GetSRVManager()
     );
 
     // PostEffectManagerの初期化
-    uint32_t offscreenDepthSrvIndex = engine->GetDSVManager()->GetDSVTextureSRVIndex(1);
-    // RenderCoordinator に深度 SRV インデックスを設定
-    renderCoordinator_->SetOffscreenDepthSRVIndex(offscreenDepthSrvIndex);
+    uint32_t offscreenDsvIndex = renderCoordinator_->GetOffscreenDsvIndex();
+    uint32_t offscreenDepthSrvIndex = engine->GetDSVManager()->GetDSVTextureSRVIndex(offscreenDsvIndex);
     
     postEffectManager_ = std::make_unique<PostEffectManager>();
     postEffectManager_->Initialize(
@@ -141,8 +136,14 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
 
     renderCoordinator_->EndOffscreenRender();
 
+    // ポストエフェクトの前に、深度バッファをSRVとして読み取れるように遷移
+    renderCoordinator_->TransitionDepthToShaderResource();
+
     // ポストエフェクトパス
     postEffectManager_->ExecutePostEffects(cmdList);
+
+    // ポストエフェクトが終わったら、深度バッファを書き込み可能に戻す
+    renderCoordinator_->TransitionDepthToDepthWrite();
 
     // 最終合成・トーンマップパス
     renderCoordinator_->BeginFrame();
