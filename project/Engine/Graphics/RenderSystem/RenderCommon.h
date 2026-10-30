@@ -98,15 +98,6 @@ struct RenderBatch
     uint32_t startInstanceLocation;        // インスタンスバッファの開始位置
 };
 
-struct SpriteSubmission
-{
-    size_t instanceIndex;             // sprites_配列の何番目を使うか
-    uint32_t textureHandle;           // テクスチャ
-    uint32_t dissolveTextureHandle;   // ディゾルブ用テクスチャ
-    MaterialHandle materialHandle;    // マテリアル
-    int layerOrder;                   // 描画順（UIソート用）
-};
-
 struct WaterSubmission
 {
     const ModelData* modelData = nullptr;

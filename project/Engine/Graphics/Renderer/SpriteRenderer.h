@@ -1,5 +1,4 @@
 #pragma once
-#include "Mesh.h"
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
 
@@ -13,36 +12,36 @@ public:
 
     void BeginFrame();
 
-    void Submit(
-        const Vector2& position, const Vector2& size, float rotation, uint32_t color,
-        const Vector2& anchorPoint, const WorldTransform& uvTransform,
-        uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
-        const MaterialHandle& materialHandle);
+    // 1 枚分のデータを積む
+    void Submit(const SpriteInstance& instance, int layerOrder);
 
-    // 描画実行関数
     void Draw(const RenderEnvironment& env);
 
-    uint32_t GetCount() const { return prevCount_; }
-    uint32_t GetMaxCount() const { return kMaxCount; }
+    uint32_t GetCount() const { return lastDrawCount_; }
+    uint32_t GetMaxCount() const { return kMaxInstanceCount; }
 
 private:
-    static const int32_t kMaxCount = 101;
+    static constexpr uint32_t kMaxInstanceCount = 16384;
+    static constexpr uint32_t kFrameBufferCount = 2;  
 
-    struct SpriteData 
+    // Submit された 1 枚分と、その重なり順
+    struct SubmittedSprite
     {
-        Mesh mesh;
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-        TransformationMatrix* mappedData = nullptr;
+        SpriteInstance instance;
+        int layerOrder;
     };
 
-    std::vector<SpriteData> sprites_;
-    std::vector<SpriteSubmission> submissions_;
+    std::vector<SubmittedSprite> submittedSprites_;
 
-    uint32_t index_ = 0;
-    uint32_t prevCount_ = 0;
+    std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, kFrameBufferCount> instanceBuffers_;
+    std::array<SpriteInstance*, kFrameBufferCount> mappedInstanceBuffers_{};
 
-    int clientWidth_ = 0;
-    int clientHeight_ = 0;
+    Microsoft::WRL::ComPtr<ID3D12Resource> frameConstantBuffer_;
+    SpriteFrameConstants* mappedFrameConstants_ = nullptr;
+
+    uint32_t currentFrameIndex_ = 0;
+    uint32_t lastDrawCount_ = 0;
+    bool hasWarnedOverflow_ = false;
 };
 
 }

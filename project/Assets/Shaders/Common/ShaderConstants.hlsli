@@ -173,6 +173,39 @@ struct MaterialData
     float shadowNormalBias;
 };
 
+struct SpriteInstance
+{
+    float2 position; 
+    float2 size; 
+
+    float2 pivot;
+    float rotation; 
+    uint textureIndex; 
+
+    float4 color; 
+
+    float4 uvRect;
+
+    float4 uvMatrix;
+    
+    float2 uvTranslate;
+    uint dissolveTextureIndex;
+    float dissolveThreshold;
+
+    float3 edgeColor;
+    float edgeWidth;
+
+    float edgeIntensity;
+    float emissiveIntensity;
+    uint enableDissolve;
+    float padding;
+};
+
+struct SpriteFrameConstants
+{
+    float4x4 projection; // 左上原点の正射影行列
+};
+
 struct GlobalEnvironmentData
 {
     float wetness;

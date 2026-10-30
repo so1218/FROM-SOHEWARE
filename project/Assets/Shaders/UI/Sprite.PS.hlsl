@@ -1,77 +1,62 @@
 #include "Common/ShaderConstants.hlsli"
 
-ConstantBuffer<MaterialData> gMaterial : register(b0);
-
+StructuredBuffer<SpriteInstance> gInstances : register(t0);
 // 通常テクスチャ
-Texture2D<float4> gTexture : register(t0);
-// ディソルブ用ノイズテクスチャ
-Texture2D<float4> gDissolveTexture : register(t1);
-
+Texture2D<float4> gTextures[] : register(t0, space1);
 SamplerState gSampler : register(s0);
 
-struct SpritePSOutput
-{
-    float4 color : SV_TARGET0;
-};
-
-struct SpritePSInput
+struct SpriteVSOutput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD0;
+    nointerpolation uint instanceId : INSTANCEID;
 };
 
-SpritePSOutput main(SpritePSInput input)
+float4 main(SpriteVSOutput input) : SV_TARGET0
 {
-    SpritePSOutput output;
+    SpriteInstance instance = gInstances[input.instanceId];
 
-    // UV座標の変換
-    float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
+    // UV 変換 (以前の uvTransform 行列と同じ)
+    float2 quadUV = input.texcoord;
+    float2 transformedUV = float2(
+        quadUV.x * instance.uvMatrix.x + quadUV.y * instance.uvMatrix.z + instance.uvTranslate.x,
+        quadUV.x * instance.uvMatrix.y + quadUV.y * instance.uvMatrix.w + instance.uvTranslate.y);
 
-    // テクスチャサンプリング
-    float4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
+    // テクスチャの一部 (uvRect) に割り当てる。(0,0,1,1) なら画像全体
+    float2 atlasUV = instance.uvRect.xy + transformedUV * (instance.uvRect.zw - instance.uvRect.xy);
 
-    // 色の決定 
-    output.color = textureColor * gMaterial.color;
-    
-    // ディソルブ処理
-    if (gMaterial.enableDissolve != 0)
+    float4 outputColor =
+        gTextures[NonUniformResourceIndex(instance.textureIndex)].Sample(gSampler, atlasUV) * instance.color;
+
+    // ディゾルブ
+    if (instance.enableDissolve != 0)
     {
-        // マテリアルのUVと同じ座標でノイズをサンプリング
-        float noise = gDissolveTexture.Sample(gSampler, transformedUV.xy).r;
-        
-        float threshold = gMaterial.dissolveThreshold;
-        
-        // 閾値以下はdiscard
-        if (noise <= threshold)
+        float noiseValue =
+            gTextures[NonUniformResourceIndex(instance.dissolveTextureIndex)].Sample(gSampler, transformedUV).r;
+        float dissolveThreshold = instance.dissolveThreshold;
+
+        if (noiseValue <= dissolveThreshold)
         {
             discard;
         }
-        
-        // エッジ発光処理
-        float width = gMaterial.edgeWidth;
-        float thresholdEdge = threshold + width;
 
-        if (noise < thresholdEdge)
+        // 消える境界を光らせる
+        float edgeThreshold = dissolveThreshold + instance.edgeWidth;
+        if (noiseValue < edgeThreshold)
         {
-            float t = 1.0f - ((noise - threshold) / width);
-            float glowFactor = pow(t, 2.5f) * gMaterial.edgeIntensity;
-            float3 edgeGlow = gMaterial.edgeColor * glowFactor;
-            
-            // 色を加算
-            output.color.rgb += edgeGlow;
-            
-            // 燃え尽きる表現
-            output.color.rgb = lerp(output.color.rgb, gMaterial.edgeColor * gMaterial.edgeIntensity, t);
+            float edgeFactor = 1.0f - ((noiseValue - dissolveThreshold) / instance.edgeWidth);
+            float glowStrength = pow(edgeFactor, 2.5f) * instance.edgeIntensity;
+            outputColor.rgb += instance.edgeColor * glowStrength;
+            outputColor.rgb = lerp(outputColor.rgb, instance.edgeColor * instance.edgeIntensity, edgeFactor);
         }
     }
-    
-    output.color *= gMaterial.emissiveIntensity;
+
+    outputColor *= instance.emissiveIntensity;
 
     // 完全に透明なら描画しない
-    if (output.color.a == 0.0)
+    if (outputColor.a == 0.0f)
     {
         discard;
     }
-
-    return output;
+    return outputColor;
 }

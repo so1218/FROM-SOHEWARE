@@ -160,71 +160,61 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
 
 void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
 {
-    auto* mat = sprite->GetMaterial();
-    auto& uvTransform = sprite->GetUVTransform();
+    SpriteMaterial* material = sprite->GetMaterial();
+    WorldTransform& uvTransform = sprite->GetUVTransform();
 
     std::string prefix = groupName + "_";
 
+    // トランスフォーム
     Bind(prefix + "Pos", &sprite->GetPosition(), { 0.0f, 0.0f }, 1.0f);
     Bind(prefix + "Size", &sprite->GetSize(), { 100.0f, 100.0f }, 1.0f);
     Bind(prefix + "Rot", &sprite->GetRotation(), 0.0f, 0.01f);
     Bind(prefix + "Anchor", sprite->GetAnchorPointPtr(), { 0.0f, 0.0f }, 0.01f);
 
+    // 見た目
     BindColor(prefix + "Color", sprite->GetColorPtr(), 0xFFFFFFFF);
-
-    // メインテクスチャ
     BindTexture(
-        prefix + "Tex",                 // キー
-        sprite->GetTextureName(),       // 初期値
-        [sprite](const std::string& newName)// 変更時の処理
-        {
-            sprite->SetTexture(newName);
-        },
-        "white1x1",                     // デフォルト名
-        TextureType::UI             // フィルタ
+        prefix + "Tex",
+        sprite->GetTextureName(),
+        [sprite](const std::string& newName) { sprite->SetTexture(newName); },
+        "white1x1",
+        TextureType::UI
     );
 
     Bind(prefix + "Visible", sprite->GetIsVisiblePtr(), true);
     Bind(prefix + "Layer", sprite->GetLayerOrderPtr(), 0, 1.0f);
 
-    auto onUVChange = [sprite]() {
-        sprite->UpdateUV();
-        };
-    Bind(prefix + "UVTrans", &uvTransform.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
+    // UV 
+    Bind(prefix + "UVTrans", &uvTransform.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f);
     BindRotation(prefix + "UVRot", &uvTransform.rotation_, &uvTransform.rotationQuaternion_, 0.01f);
     Bind(prefix + "UVScale", &uvTransform.scale_, { 1.0f, 1.0f, 1.0f }, 0.01f);
+    Bind(prefix + "UVRect", sprite->GetUVRectPtr(), { 0.0f, 0.0f, 1.0f, 1.0f }, 0.001f, 0.0f, 1.0f);
 
-    BindBool(prefix + "DisEnable", &mat->enableDissolve, false);
-
-    // ディゾルブテクスチャ
+    // ディゾルブ
+    BindBool(prefix + "DisEnable", &material->enableDissolve, false);
     BindTexture(
         prefix + "DisTex",
         sprite->GetDissolveTextureName(),
-        [sprite](const std::string& newName) {
-            sprite->SetDissolveTexture(newName);
-        },
+        [sprite](const std::string& newName) { sprite->SetDissolveTexture(newName); },
         "white1x1",
-        TextureType::Noise // ノイズ用フィルタ
+        TextureType::Noise
     );
-
-    Bind(prefix + "DisThres", &mat->dissolveThreshold, 0.5f, 0.01f, 0.0f, 1.0f);
-    Bind(prefix + "EdgeWidth", &mat->edgeWidth, 0.05f, 0.001f, 0.0f, 0.5f);
-    Bind(prefix + "EdgeInten", &mat->edgeIntensity, 2.0f, 0.1f, 0.0f, 10.0f);
-    BindColor(prefix + "EdgeColor", &mat->edgeColor, { 1.0f, 0.5f, 0.0f });
+    Bind(prefix + "DisThres", &material->dissolveThreshold, 0.5f, 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "EdgeWidth", &material->edgeWidth, 0.05f, 0.001f, 0.0f, 0.5f);
+    Bind(prefix + "EdgeInten", &material->edgeIntensity, 2.0f, 0.1f, 0.0f, 10.0f);
+    BindColor(prefix + "EdgeColor", &material->edgeColor, { 1.0f, 0.5f, 0.0f });
 }
 
-void PropertyBinder::DrawSprite(const std::string & groupName, const std::string & customLabel)
+void PropertyBinder::DrawSprite(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef ENABLE_IMGUI
     std::string prefix = groupName + "_";
-    auto* gv = GlobalVariables::GetInstance();
+    GlobalVariables* globalVariables = GlobalVariables::GetInstance();
     std::string displayLabel = customLabel.empty() ? groupName : customLabel;
 
     ImGui::PushID(groupName.c_str());
 
-    bool isOpened = ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None);
-
-    if (isOpened)
+    if (ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None))
     {
         ImGui::Indent(12.0f);
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
@@ -237,9 +227,9 @@ void PropertyBinder::DrawSprite(const std::string & groupName, const std::string
         ImGui::Spacing();
         ImGui::SeparatorText("トランスフォーム");
         Draw(prefix + "Pos", "位置");
-        Draw(prefix + "Size", "スケール");
+        Draw(prefix + "Size", "サイズ");
         Draw(prefix + "Rot", "回転");
-        Draw(prefix + "Anchor", "アンカーポイント");
+        Draw(prefix + "Anchor", "基準点");
 
         ImGui::Spacing();
         ImGui::SeparatorText("見た目");
@@ -252,9 +242,10 @@ void PropertyBinder::DrawSprite(const std::string & groupName, const std::string
 
         ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-        if (ImGui::TreeNodeEx("UVTransform", nodeFlags, "UV トランスフォーム"))
+        if (ImGui::TreeNodeEx("UVTransform", nodeFlags, "UV"))
         {
             ImGui::Spacing();
+            Draw(prefix + "UVRect", "切り出し範囲 (u0, v0, u1, v1)");   
             Draw(prefix + "UVTrans", "UV 位置");
             Draw(prefix + "UVRot", "UV 回転");
             Draw(prefix + "UVScale", "UV スケール");
@@ -266,7 +257,7 @@ void PropertyBinder::DrawSprite(const std::string & groupName, const std::string
             ImGui::Spacing();
             Draw(prefix + "DisEnable", "有効化");
 
-            if (gv->GetIntValue(groupPath_, prefix + "DisEnable") > 0)
+            if (globalVariables->GetIntValue(groupPath_, prefix + "DisEnable") > 0)
             {
                 ImGui::Indent(10.0f);
                 Draw(prefix + "DisTex", "ノイズマップ");

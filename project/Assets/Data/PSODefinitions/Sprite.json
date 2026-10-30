@@ -2,7 +2,7 @@
   "RootSignature": "Sprite",
   "VertexShader": "UI/Sprite.VS.hlsl",
   "PixelShader": "UI/Sprite.PS.hlsl",
-  "InputLayout": "Default3D",
+  "InputLayout": "None",
   "BlendState": "AlphaBlendUI",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Off",

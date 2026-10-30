@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Mesh.h"
 #include "RenderCommon.h" 
 #include "BlendMode.h" 
@@ -77,8 +76,7 @@ public:
         const AnimatedModelData& instance, const SkinCluster& skinCluster,
         const std::vector<MaterialHandle>& materials, BlendMode blendMode,
         RenderGroup group, const Vector4& instanceColor);
-    void SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform, uint32_t textureHandle,
-        uint32_t dissolveTextureHandle, int layerOrder, const MaterialHandle& materialHandle);
+    void SubmitSprite(const SpriteInstance& instance, int layerOrder);
     void SubmitLine(const Vector3& start, const Vector3& end, uint32_t color);
     void SubmitParticleInstance(const WorldTransform& worldTransform, uint32_t color, uint32_t textureIndex, float rotationZ,
         BlendMode blendMode, bool isBillboard, float intensity);

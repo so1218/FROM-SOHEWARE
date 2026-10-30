@@ -8,18 +8,27 @@ namespace FS
 
 class Engine;
 
+struct SpriteMaterial
+{
+    int32_t enableDissolve = 0;
+    float dissolveThreshold = 0.5f;
+    float edgeWidth = 0.05f;
+    float edgeIntensity = 2.0f;
+    Vector3 edgeColor = { 1.0f, 0.5f, 0.0f };
+    float emissiveIntensity = 1.0f;
+};
+
 class Sprite
 {
 public:
     Sprite(Engine* engine);
     void Draw();
 
-    // 複雑なセッター
+    // セッター
     void SetTexture(const std::string& textureName);
     void SetDissolveTexture(const std::string& textureName);
     void SetColor(const Vector4& color);
 
-    // 単純なセッター
     void SetPosition(const Vector2& position) { position_ = position; }
     void SetSize(const Vector2& size) { size_ = size; }
     void SetRotation(float rotation) { rotation_ = rotation; }
@@ -28,17 +37,18 @@ public:
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
     void SetUVTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
 
+    // テクスチャの一部だけを描く
+    void SetUVRect(const Vector4& uvRect) { uvRect_ = uvRect; }
+    const Vector4& GetUVRect() const { return uvRect_; }
+
     // 色の直接代入
     void SetColor(uint32_t color) { color_ = color; }
 
-    // マテリアルパラメータ
-    void SetEnableDissolve(bool enable) { materialHandle_.materialData->enableDissolve = enable; }
+    void SetEnableDissolve(bool enable) { material_.enableDissolve = enable ? 1 : 0; }
+    SpriteMaterial* GetMaterial() { return &material_; }
+    const SpriteMaterial* GetMaterial() const { return &material_; }
 
-    // マテリアルデータへのアクセサ
-    MaterialData* GetMaterial() { return materialHandle_.materialData; }
-    const MaterialData* GetMaterial() const { return materialHandle_.materialData; }
-
-    // ゲッター
+    // ゲッター 
     Vector2& GetPosition() { return position_; }
     const Vector2& GetPosition() const { return position_; }
 
@@ -58,31 +68,24 @@ public:
     bool GetIsVisible() const { return isVisible_; }
     const Vector2& GetAnchorPoint() const { return anchorPoint_; }
 
-    // ImGui用
-    void UpdateUV()
-    {
-        uvTransform_.UpdateMatrix();
-        // マテリアルデータへの転送
-        if (materialHandle_.materialData)
-        {
-            materialHandle_.materialData->uvTransform = uvTransform_.matWorld_;
-        }
-    }
+    void UpdateUV() { uvTransform_.UpdateMatrix(); }
+
     std::string& GetTextureName() { return textureName_; }
     std::string& GetDissolveTextureName() { return dissolveTextureName_; }
     bool* GetIsVisiblePtr() { return &isVisible_; }
     int* GetLayerOrderPtr() { return &layerOrder_; }
     Vector2* GetAnchorPointPtr() { return &anchorPoint_; }
+    Vector4* GetUVRectPtr() { return &uvRect_; }
 
 private:
     Engine* engine_ = nullptr;
 
-    MaterialHandle materialHandle_;
+    SpriteMaterial material_;                    
 
     Vector2 position_ = { 0.0f, 0.0f };
     Vector2 size_ = { 1.0f, 1.0f };
     float rotation_ = 0.0f;
-    Vector2 anchorPoint_ = { 0.0f, 0.0f }; // デフォルトは左上
+    Vector2 anchorPoint_ = { 0.0f, 0.0f };         
 
     uint32_t color_ = 0xFFFFFFFF;
 
@@ -90,11 +93,12 @@ private:
     uint32_t textureHandle_ = 0;
     uint32_t dissolveTextureHandle_ = 0;
 
-    // テクスチャハンドル
+    // テクスチャ名
     std::string textureName_ = "white1x1";
     std::string dissolveTextureName_ = "white1x1";
 
     WorldTransform uvTransform_;
+    Vector4 uvRect_ = { 0.0f, 0.0f, 1.0f, 1.0f };  
 
     bool isVisible_ = true;
     int layerOrder_ = 0;

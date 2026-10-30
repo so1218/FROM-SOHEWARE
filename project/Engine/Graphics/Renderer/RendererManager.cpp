@@ -444,16 +444,11 @@ void RendererManager::SubmitAnimationModel(
 	}
 }
 
-void RendererManager::SubmitSprite(const Vector2 position, const Vector2 size, float rotation, uint32_t color, const Vector2& anchorPoint, const WorldTransform& uvTransform,
-	uint32_t textureHandle, uint32_t dissolveTextureHandle, int layerOrder,
-	const MaterialHandle& materialHandle)
+void RendererManager::SubmitSprite(const SpriteInstance& instance, int layerOrder)
 {
 	if (spriteRenderer_)
 	{
-		spriteRenderer_->Submit(
-			position, size, rotation, color, anchorPoint, uvTransform,
-			textureHandle, dissolveTextureHandle, layerOrder, materialHandle
-		);
+		spriteRenderer_->Submit(instance, layerOrder);
 	}
 }
 
