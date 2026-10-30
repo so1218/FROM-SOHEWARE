@@ -359,4 +359,14 @@ uint32_t TextureLoader::Load(const std::string& filePath)
     return texResources.srvIndex;
 }
 
+void TextureLoader::OnFrameEnd(uint64_t submittedFenceValue, uint64_t completedFenceValue)
+{
+    for (auto& textureResource : newUploads_)
+    {
+        RegisterPendingUpload(textureResource.intermediate, submittedFenceValue);
+    }
+    newUploads_.clear();
+    CleanupCompletedUploads(completedFenceValue);
+}
+
 }

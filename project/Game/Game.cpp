@@ -111,51 +111,38 @@ void Game::Update()
     Vector3 eyePos;
 
     // 現在のシーンからカメラを取得
-    Camera* sceneCamera = sceneManager_.GetCurrentScene()->GetActiveCamera();
+    BaseScene* scene = sceneManager_.GetCurrentScene();
+    if (!scene) { return; }                       // シーン未設定で落ちないように
+    Camera* sceneCamera = scene->GetActiveCamera();
+
+    // シーンのカメラで作る
+    RenderCameraState camera{
+        sceneCamera->GetViewMatrix(),
+        sceneCamera->GetProjectionMatrix(),
+        sceneCamera->GetTranslation(),
+        sceneCamera->GetNearClip(),
+        sceneCamera->GetFarClip()
+    };
 
 #ifdef ENABLE_DEBUG_CAMERA
-    if (engine_->GetDebugCamera()->IsEnabled())
+    // デバッグカメラが有効なら、行列と位置だけ差し替える
+    DebugCamera* debugCamera = engine_->GetDebugCamera();
+    if (debugCamera->IsEnabled())
     {
-        engine_->GetDebugCamera()->Update();
-
-        // デバッグカメラの行列を使用
-        viewMat = engine_->GetDebugCamera()->GetViewMatrix();
-        projMat = engine_->GetDebugCamera()->GetProjectionMatrix();
-        eyePos = engine_->GetDebugCamera()->GetCameraWorldPosition();
+        camera.view = debugCamera->GetViewMatrix();
+        camera.projection = debugCamera->GetProjectionMatrix();
+        camera.eyePos = debugCamera->GetCameraWorldPosition();
     }
-    else 
-    {
-        // ゲーム内カメラの行列を使う
-        viewMat = sceneCamera->GetViewMatrix();
-        projMat = sceneCamera->GetProjectionMatrix();
-        eyePos = sceneCamera->GetTranslation();
-    }
-
-#else
-    // リリース時は常にシーンカメラ
-    viewMat = sceneCamera->GetViewMatrix();
-    projMat = sceneCamera->GetProjectionMatrix();
-    eyePos = sceneCamera->GetTranslation();
 #endif
 
     engine_->GetDebugGuiManager()->Update(sceneCamera);
-
-    // 決定したカメラ情報をEngineに転送
-    engine_->SetCameraState(
-        viewMat, 
-        projMat,
-        eyePos,
-        sceneCamera->GetNearClip(), 
-        sceneCamera->GetFarClip());
+    engine_->SetCameraState(camera);
 
 #if ENABLE_DEBUG_CAMERA && ENABLE_DEBUG_DRAW
-
-    // ゲームカメラ視錐台を描画
-    if (engine_->GetDebugCamera()->IsEnabled())
+    if (debugCamera->IsEnabled())
     {
         DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
     }
-
 #endif
 
 #ifdef ENABLE_IMGUI
@@ -198,6 +185,4 @@ void Game::DebugDraw()
 
 void Game::Finalize()
 {
-    Input::GetInstance().Finalize();
-    AudioDevice::GetInstance().Finalize();
 }

@@ -26,7 +26,6 @@
 #include "GraphicsDevice.h"
 #include "CommandManager.h"
 #include "RenderPipeline.h"
-#include "NoiseTextureGenerator.h"
 
 namespace FS
 {
@@ -45,13 +44,7 @@ public:
     void Finalize();
 
     // 毎フレーム、描画直前にGameクラスから呼ばれる
-    void SetCameraState(
-        const Matrix4x4& view,
-        const Matrix4x4& projection,
-        const Vector3& eyePos,
-        float nearClip,
-        float farClip
-    );
+    void SetCameraState(const RenderCameraState& camera);
 
     // フレーム処理
     void BeginFrame();
@@ -91,8 +84,8 @@ public:
 
     static uint32_t GetClientWidth() { return sClientWidth; }
     static uint32_t GetClientHeight() { return sClientHeight; }
-    const Matrix4x4& GetViewMatrix() const { return viewMatrix_; }
-    const Matrix4x4& GetProjectionMatrix() const { return projectionMatrix_; }
+    const Matrix4x4& GetViewMatrix() const { return camera_.view; }
+    const Matrix4x4& GetProjectionMatrix() const { return camera_.projection; }
 
 private:
     // 各種初期化処理
@@ -108,21 +101,19 @@ private:
 private:
 
     std::wstring windowTitle_;
-    int kFixedFPS_ = 60;
+    int targetFPS_ = 60;
     static uint32_t sClientWidth;
     static uint32_t sClientHeight;
 
-    // 現在設定されているカメラ行列
-    Matrix4x4 viewMatrix_;
-    Matrix4x4 projectionMatrix_;
-    Vector3 eyePos_;
-    float nearClip_;
-    float farClip_;
+    // 現在設定されているカメラ
+    RenderCameraState camera_{};
 
     // システム関連オブジェクト
     std::unique_ptr<Window> window_;
     std::unique_ptr<GraphicsDevice> graphicsDevice_;
     std::unique_ptr<CommandManager> commandManager_;
+    std::unique_ptr<SRVManager> srvManager_;
+    std::unique_ptr<DSVManager> dsvManager_;
     std::unique_ptr<SwapChain> swapChain_;
     std::unique_ptr<RTVManager> rtvManager_;
     std::unique_ptr<OffscreenRTVManager> offscreenRTVManager_;
@@ -133,8 +124,6 @@ private:
     std::unique_ptr<PSOManager> psoManager_;
     std::unique_ptr<MaterialManager> materialManager_;
     std::unique_ptr<TextureLoader> textureLoader_;
-    std::unique_ptr<SRVManager> srvManager_;
-    std::unique_ptr<DSVManager> dsvManager_;
     std::unique_ptr<LightManager> lightManager_;
     std::unique_ptr<DebugCamera> debugCamera_;
     std::unique_ptr<DebugGuiManager> debugGuiManager_;
@@ -143,7 +132,6 @@ private:
     std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<RenderPipeline> renderPipeline_;
-    std::unique_ptr<NoiseTextureGenerator> noiseTextureGenerator_;
 };
 
 }

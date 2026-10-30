@@ -43,7 +43,7 @@ Engine::~Engine()
 void Engine::Initialize(const ProjectConfig& config)
 {
 	windowTitle_ = config.windowTitle;
-	kFixedFPS_ = config.targetFPS;
+	targetFPS_ = config.targetFPS;
 	sClientWidth = config.width;
 	sClientHeight = config.height;
 
@@ -51,7 +51,7 @@ void Engine::Initialize(const ProjectConfig& config)
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
 
-	frameLimiter_ = std::make_unique<FrameLimiter>(kFixedFPS_); 
+	frameLimiter_ = std::make_unique<FrameLimiter>(targetFPS_);
 	frameLimiter_->Initialize();
 
 	InitializeSystem();
@@ -72,12 +72,13 @@ void Engine::Initialize(const ProjectConfig& config)
 
 void Engine::Finalize()
 {
+	commandManager_->WaitForGPU();
+
 	ModelManager::GetInstance().Clear();
 	EnvironmentManager::GetInstance()->Finalize();
-
 	ImGuiManager::Finalize();
-
-	commandManager_->WaitForGPU();
+	Input::GetInstance().Finalize();
+	AudioDevice::GetInstance().Finalize();
 
 	frameLimiter_->Finalize();
 	rendererManager_->Finalize();
@@ -92,32 +93,19 @@ void Engine::Finalize()
 	CloseWindow(window_->GetHwnd());
 }
 
-void Engine::SetCameraState(
-	const Matrix4x4& view,
-	const Matrix4x4& projection,
-	const Vector3& eyePos,
-	float nearClip,
-	float farClip
-)
+void Engine::SetCameraState(const RenderCameraState& camera)
 {
-	viewMatrix_ = view;
-	projectionMatrix_ = projection;
-	eyePos_ = eyePos;
-	nearClip_ = nearClip;
-	farClip_ = farClip;
+	camera_ = camera;
 
-	// GlobalConstantsを更新
-	globalConstants_->Update(view, projection, eyePos, nearClip, farClip, lightManager_->GetDirectionalLightData()[0]);
+	globalConstants_->Update(camera.view, camera.projection, camera.eyePos,
+		camera.nearClip, camera.farClip,
+		lightManager_->GetDirectionalLightData()[0]);
 
-	// Rendererにセット（描画パス用）
-	rendererManager_->SetCameraState(view, projection, eyePos);
+	rendererManager_->SetCameraState(camera.view, camera.projection, camera.eyePos);
 
-	Vector3 camRight = { view.m[0][0], view.m[1][0], view.m[2][0] };
-	Vector3 camUp = { view.m[0][1], view.m[1][1], view.m[2][1] };
-	Vector3 camFront = { view.m[0][2], view.m[1][2], view.m[2][2] };
-
-	// AudioPlayerにカメラの位置と向きを渡す
-	AudioPlayer::GetInstance().SetListener(eyePos, camFront, camUp);
+	Vector3 camUp = { camera.view.m[0][1], camera.view.m[1][1], camera.view.m[2][1] };
+	Vector3 camFront = { camera.view.m[0][2], camera.view.m[1][2], camera.view.m[2][2] };
+	AudioPlayer::GetInstance().SetListener(camera.eyePos, camFront, camUp);
 }
 
 void Engine::BeginFrame()
@@ -138,7 +126,7 @@ void Engine::BeginFrame()
 	AudioPlayer::GetInstance().Update();
 
 	// ポストエフェクトのパラメータ更新など
-	GetPostEffectManager()->Update(viewMatrix_, projectionMatrix_, eyePos_);
+	GetPostEffectManager()->Update(camera_.view, camera_.projection, camera_.eyePos);
 
 #ifdef ENABLE_IMGUI
 	debugGuiManager_->BeginSceneView(srvManager_.get(), GetPostEffectManager()->GetFinalPassSRVIndex());
@@ -149,20 +137,15 @@ void Engine::BeginFrame()
 void Engine::EndFrame()
 {
 	// パイプラインに描画を丸投げ
-	RenderCameraState camState = { viewMatrix_, projectionMatrix_, eyePos_, nearClip_, farClip_ };
-	renderPipeline_->Render(this, rendererManager_.get(), commandManager_.get(), camState);
+	renderPipeline_->Render(this, rendererManager_.get(), commandManager_.get(), camera_);
 
 	// フレーム待機（システム処理）
 	frameLimiter_->WaitNextFrame();
 
-	// アップロードリソース管理（
-	uint64_t completedFenceValue = renderPipeline_->GetRenderCoordinator()->GetFenceValue();
-	for (auto& textureResource : textureLoader_->GetNewUploads())
-	{
-		textureLoader_->RegisterPendingUpload(textureResource.intermediate, completedFenceValue);
-	}
-	textureLoader_->ClearNewUploads();
-	textureLoader_->CleanupCompletedUploads(commandManager_->GetCompletedFenceValue());
+	// アップロードリソース管理
+	textureLoader_->OnFrameEnd(
+		renderPipeline_->GetRenderCoordinator()->GetFenceValue(),
+		commandManager_->GetCompletedFenceValue());
 }
 
 void Engine::InitializeSystem()

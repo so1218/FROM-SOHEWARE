@@ -54,15 +54,6 @@ public:
         newUploads_.push_back(resource);
     }
 
-    const std::vector<TextureResources>& GetNewUploads() const {
-        return newUploads_;
-    }
-
-    void ClearNewUploads() {
-        newUploads_.clear();
-    }
-
-
     void RegisterPendingUpload(Microsoft::WRL::ComPtr<ID3D12Resource> intermediate, uint64_t fenceValue);
     void CleanupCompletedUploads(uint64_t completedFenceValue);
 
@@ -75,6 +66,9 @@ public:
     );
 
     uint32_t LoadWithAutoDDS(const std::string& filePath, TextureType type);
+
+    // フレーム終了時に呼ぶ。今フレームのアップロードを登録し、GPU が使い終わったものを解放
+    void OnFrameEnd(uint64_t submittedFenceValue, uint64_t completedFenceValue);
     
     // ゲッター
     const std::vector<UploadResourceEntry>& GetPendingUploadResources() const { return pendingUploadResources_; }
