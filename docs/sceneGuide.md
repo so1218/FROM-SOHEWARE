@@ -166,3 +166,63 @@ void Game::DebugDraw()
 #endif
 }
 ```
+シーンの中から遷移する場合は、`BaseScene` が持っている `sceneManager_` (ポインタ) を使います。
+
+```cpp
+void TitleScene::OnUpdate()
+{
+    if (FS::Input::GetInstance().IsKeyTriggered(DIK_SPACE))
+    {
+        sceneManager_->RequestSceneChange(FS::SceneID::Play);
+    }
+}
+```
+
+---
+
+## 4. 補足
+
+### 4-1. 新しいシーン ID を追加する
+シーン ID は `Engine/Framework/SceneManager.h` の `FS::SceneID` 列挙型で定義されています。新しいシーンを作ったら、ここに ID を追加してから `RegisterScene()` で登録してください。
+
+```cpp
+enum class SceneID
+{
+    Title,
+    Play,
+    Test,
+    Result, // 追加
+};
+```
+
+### 4-2. シーン遷移の流れ
+`RequestSceneChange()` を呼ぶと、すぐには切り替わらず次の順に進みます。フェードの長さは `Fade` の設定 (`Fade.json`) で調整できます。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Normal
+    Normal --> FadeOut : RequestSceneChange()
+    FadeOut --> FadeIn : フェードアウト完了<br/>旧シーン Finalize() → 新シーン Initialize()
+    FadeIn --> Normal : フェードイン完了
+```
+
+- フェードアウト中も現在のシーンの `Update()` と `Draw()` は続きます。
+- シーンが切り替わるとき、`ParticleSystem` のパーティクルはすべて消去されます。
+- シーンのインスタンスは `RegisterScene()` 時に一度だけ生成され、使い回されます。同じシーンに戻ったときは、コンストラクタではなく `Initialize()` (→ `OnInitialize()`) からやり直されます。
+
+### 4-3. BaseScene が用意しているメンバー
+
+派生シーンからは、次のメンバーをそのまま使えます。
+
+| メンバー | 内容 |
+| :--- | :--- |
+| `engine_` | エンジンへのポインタ |
+| `objectManager_` | シーン内の `GameObject` を管理する `GameObjectManager` |
+| `camera_` | シーンのカメラ。描画にはこのカメラの行列が使われる |
+| `cameraManager_` | カメラコントローラー (`FollowCamera` など) の切り替え。`ChangeController()` で変更 |
+| `collisionManager_` | シーン内の衝突判定 (`Collider::RegisterToManager()` の登録先) |
+| `binder_` | シーン名をグループ名にした `PropertyBinder` ([プロパティバインダー ガイド 6 節](propertyBinderGuide.md#6-シーンごとのカメラライトポストエフェクト設定)) |
+| `sceneManager_` | シーン遷移のリクエストに使う `SceneManager` |
+| `sceneName_` | シーン名 |
+
+`DebugDraw()` (と `OnDebugDraw()`) は、ImGui の GUI が表示されているときだけ呼ばれます。

@@ -1,0 +1,9 @@
+# ドキュメントのビルドに必要な Python パッケージ
+# pip install -r docs/requirements.txt
+sphinx>=7.2,<9
+breathe>=4.36
+myst-parser>=3.0
+furo>=2024.1.29
+sphinxcontrib-mermaid>=0.9.2
+sphinx-copybutton>=0.5.2
+sphinx-autobuild>=2024.2.4

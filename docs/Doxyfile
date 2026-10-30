@@ -1,0 +1,77 @@
+# FromSoheWare Engine - Doxygen 設定
+#
+# Sphinx (Breathe) に渡す XML を生成するための設定です。
+# 通常は conf.py から自動で実行されるため、手動で実行する必要はありません。
+# 記載のない項目は Doxygen の既定値が使われます。
+
+#---------------------------------------------------------------------------
+# プロジェクト
+#---------------------------------------------------------------------------
+PROJECT_NAME           = "FromSoheWare Engine"
+OUTPUT_DIRECTORY       = _build/doxygen
+OUTPUT_LANGUAGE        = Japanese
+INPUT_ENCODING         = UTF-8
+CREATE_SUBDIRS         = NO
+
+#---------------------------------------------------------------------------
+# 入力
+#---------------------------------------------------------------------------
+INPUT                  = ../project/Engine \
+                         ../project/Game
+FILE_PATTERNS          = *.h \
+                         *.hpp
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */externals/* \
+                         */pch.h
+STRIP_FROM_PATH        = ../project
+STRIP_FROM_INC_PATH    = ../project
+
+#---------------------------------------------------------------------------
+# 抽出設定
+#   ヘッダーのコメントは // 形式のため、Doxygen コメントがなくても
+#   全クラス・全メンバーを一覧に載せる (EXTRACT_ALL)。
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_ANON_NSPACES   = NO
+HIDE_UNDOC_RELATIONS   = NO
+INLINE_INHERITED_MEMB  = NO
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+MARKDOWN_SUPPORT       = YES
+BUILTIN_STL_SUPPORT    = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_NO_PARAMDOC       = NO
+QUIET                  = YES
+
+#---------------------------------------------------------------------------
+# プリプロセッサ
+#   開発ビルド (Development 構成) と同じマクロを定義し、
+#   ImGui / デバッグ用の API もリファレンスに含める。
+#---------------------------------------------------------------------------
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+SEARCH_INCLUDES        = NO
+PREDEFINED             = ENABLE_IMGUI \
+                         ENABLE_DEV_TOOLS \
+                         ENABLE_DEBUG_DRAW \
+                         ENABLE_DEBUG_CAMERA \
+                         _WINDOWS \
+                         STDMETHODCALLTYPE= \
+                         WINAPI= \
+                         "alignas(x)="
+
+#---------------------------------------------------------------------------
+# 出力 (XML のみ。HTML は Sphinx が作る)
+#---------------------------------------------------------------------------
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+XML_PROGRAMLISTING     = NO
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+HAVE_DOT               = NO
