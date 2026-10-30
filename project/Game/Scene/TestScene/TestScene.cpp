@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TestScene.h"
 #include "SceneManager.h"
+#include "GameDefine.h"
 #include "Input.h"
 #include "Grid.h"
 #include "AudioPlayer.h"
@@ -8,7 +9,7 @@
 using namespace FS;
 
 TestScene::TestScene(Engine* engine)
-	: BaseScene(engine, "TestScene")
+	: BaseScene(engine, SceneName::Test)
 {
 	auto grid = std::make_unique<Grid>(engine_);
 
@@ -29,7 +30,7 @@ void TestScene::OnUpdate()
 		|| Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
-		sceneManager_->RequestSceneChange(SceneID::Play);
+		sceneManager_->RequestSceneChange(SceneName::Play);
 	}
 }
 

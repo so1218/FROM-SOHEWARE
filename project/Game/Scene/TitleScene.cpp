@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TitleScene.h"
 #include "SceneManager.h"
+#include "GameDefine.h"
 #include "Input.h"
 #include "AudioPlayer.h"
 #include "AmmoManager.h"
@@ -15,7 +16,7 @@
 using namespace FS;
 
 TitleScene::TitleScene(Engine* engine)
-	: BaseScene(engine, "TitleScene")
+	: BaseScene(engine, SceneName::Title)
 {
     player_ = objectManager_.Create<Player>(engine_, camera_.get());
     ground_ = objectManager_.Create<Ground>(engine_);
@@ -45,7 +46,7 @@ void TitleScene::OnUpdate()
         || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
-		sceneManager_->RequestSceneChange(SceneID::Play);
+		sceneManager_->RequestSceneChange(SceneName::Play);
 	}
 }
 

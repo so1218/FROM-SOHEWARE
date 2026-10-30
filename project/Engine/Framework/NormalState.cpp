@@ -16,7 +16,7 @@ void NormalState::Update(SceneManager* manager)
     }
 
     // 次のシーンへの切り替えリクエストが来ているかチェック
-    if (manager->HasNextSceneID())
+    if (manager->HasNextScene())
     {
         // フェードを開始設定
         manager->GetFade()->Start(Fade::Status::FadeOut, manager->GetFade()->GetDuration());

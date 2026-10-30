@@ -16,7 +16,7 @@ void EnemyManager::Initialize()
     for (int i = 0; i < enemyCount_; ++i)
     {
         auto enemy = std::make_unique<Enemy>(engine_, i, EnemyType::Floating, managerGroupName_);
-        enemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
+        enemy->AttachToManager(GetManager(), 0); 
         enemy->Initialize();
         enemies_.push_back(std::move(enemy));
     }

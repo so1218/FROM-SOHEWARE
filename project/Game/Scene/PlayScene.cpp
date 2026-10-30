@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PlayScene.h"
+#include "GameDefine.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 #include "Input.h"
@@ -21,7 +22,7 @@
 using namespace FS;
 
 PlayScene::PlayScene(Engine* engine)
-    : BaseScene(engine, "PlayScene")
+    : BaseScene(engine, SceneName::Play)
 {
 	// ゲームオブジェクトの生成・登録
     auto player = objectManager_.Create<Player>(engine_, camera_.get());

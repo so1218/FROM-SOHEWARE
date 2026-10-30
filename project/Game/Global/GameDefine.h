@@ -26,3 +26,10 @@ namespace ObjectTag
         Ammo
     };
 }
+
+namespace SceneName
+{
+    inline const std::string Title = "TitleScene";
+    inline const std::string Play = "PlayScene";
+    inline const std::string Test = "TestScene";
+}

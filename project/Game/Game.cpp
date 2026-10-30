@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "Game.h"
+#include "GameDefine.h"
 #include "PlayScene.h"
 #include "TitleScene.h"
+#include "TestScene.h"
 #include "GlobalVariables.h"
 #include "AudioDevice.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "TestScene.h"
 #include "ImGuiManager.h"
 #include "DebugDraw.h"
 #include "ProjectConfig.h"
@@ -29,15 +30,15 @@ Game::Game()
     sceneManager_.Initialize(engine_.get());
 
     // シーンの生成と登録
-    sceneManager_.RegisterScene(SceneID::Title, std::make_unique<TitleScene>(engine_.get()));
-    sceneManager_.RegisterScene(SceneID::Play, std::make_unique<PlayScene>(engine_.get()));
-    sceneManager_.RegisterScene(SceneID::Test, std::make_unique<TestScene>(engine_.get()));
+    sceneManager_.RegisterScene(std::make_unique<TitleScene>(engine_.get()));
+    sceneManager_.RegisterScene(std::make_unique<PlayScene>(engine_.get()));
+    sceneManager_.RegisterScene(std::make_unique<TestScene>(engine_.get()));
 
     // 初期シーンを設定
 #ifdef ENABLE_DEV_TOOLS
-    sceneManager_.SetInitialScene(SceneID::Play);
+    sceneManager_.SetInitialScene(SceneName::Play);
 #else
-    sceneManager_.SetInitialScene(SceneID::Play);
+    sceneManager_.SetInitialScene(SceneName::Play);
 #endif
 }
 
@@ -160,17 +161,12 @@ void Game::DebugDraw()
 #ifdef ENABLE_IMGUI
     if (ImGui::Begin("シーンの選択"))
     {
-        if (ImGui::Button("タイトルシーン"))
+        for (const std::string& name : sceneManager_.GetSceneNames())
         {
-            sceneManager_.RequestSceneChange(SceneID::Title);
-        }
-        if (ImGui::Button("プレイシーン"))
-        {
-            sceneManager_.RequestSceneChange(SceneID::Play);
-        }
-        if (ImGui::Button("テストシーン"))
-        {
-            sceneManager_.RequestSceneChange(SceneID::Test);
+            if (ImGui::Button(name.c_str()))
+            {
+                sceneManager_.RequestSceneChange(name);
+            }
         }
     }
     ImGui::End();

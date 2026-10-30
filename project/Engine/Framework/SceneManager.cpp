@@ -6,6 +6,7 @@
 #include "FadeInState.h"
 #include "ISceneTransitionState.h"
 #include "Fade.h"
+#include "Logger.h"
 #include "ImGuiManager.h"
 
 namespace FS
@@ -60,33 +61,42 @@ void SceneManager::DebugDraw()
 }
 
 // シーンをマップに登録する
-void SceneManager::RegisterScene(SceneID id, std::unique_ptr<BaseScene> scene)
+void SceneManager::RegisterScene(std::unique_ptr<BaseScene> scene)
 {
-    // SceneManagerをシーンに渡す
+    const std::string& name = scene->GetSceneName();
+    assert(!scenes_.contains(name) && "同じ名前のシーンが二重に登録されている");
+
     scene->SetSceneManager(this);
-    scenes_[id] = std::move(scene);
+    sceneOrder_.push_back(name);
+    scenes_[name] = std::move(scene);
 }
 
-void SceneManager::SetInitialScene(SceneID initialSceneID)
+BaseScene* SceneManager::FindScene(const std::string& sceneName) const
 {
-    // マップから探す
-    auto it = scenes_.find(initialSceneID);
-    if (it != scenes_.end())
+    auto it = scenes_.find(sceneName);
+    return (it != scenes_.end()) ? it->second.get() : nullptr;
+}
+
+void SceneManager::SetInitialScene(const std::string& sceneName)
+{
+    BaseScene* scene = FindScene(sceneName);
+    assert(scene && "SetInitialScene: 登録されていないシーン名");  
+
+    SetScene(scene);
+    ChangeState(std::make_unique<FadeInState>());
+    fade_->Start(Fade::Status::FadeIn, fade_->GetDuration());
+}
+
+void SceneManager::RequestSceneChange(const std::string& sceneName)
+{
+    if (!FindScene(sceneName))
     {
-        // SetSceneを直接呼んでシーンを初期化
-        SetScene(it->second.get());
-
-        // フェードイン状態へ切り替え
-        ChangeState(std::make_unique<FadeInState>());
-        fade_->Start(Fade::Status::FadeIn, fade_->GetDuration());
+        LOG_WARN("RequestSceneChange: 登録されていないシーン名: {}", sceneName);
+        return;   
     }
+    nextSceneName_ = sceneName;
 }
 
-// 切り替えたいシーンのIDをセットする
-void SceneManager::RequestSceneChange(SceneID nextSceneID)
-{
-    nextSceneID_ = nextSceneID;
-}
 
 // 内部用のシーン設定処理
 void SceneManager::SetScene(BaseScene* newScene)
@@ -113,17 +123,15 @@ void SceneManager::ChangeState(std::unique_ptr<ISceneTransitionState> newState)
     state_ = std::move(newState);
 }
 
-// 実際のシーン入れ替え処理
 void SceneManager::ChangeSceneActual()
 {
-    if (nextSceneID_)
+    if (nextSceneName_)
     {
-        auto it = scenes_.find(*nextSceneID_);
-        if (it != scenes_.end())
+        if (BaseScene* scene = FindScene(*nextSceneName_))
         {
-            SetScene(it->second.get());
+            SetScene(scene);
         }
-        nextSceneID_ = std::nullopt;
+        nextSceneName_ = std::nullopt;
     }
 }
 
