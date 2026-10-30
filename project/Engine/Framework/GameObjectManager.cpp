@@ -8,11 +8,22 @@ namespace FS
 
 void GameObjectManager::Initialize()
 {
-    for (auto& obj : objects_)
+    isInitialized_ = true;
+
+    const size_t count = objects_.size();
+    for (size_t i = 0; i < count; ++i)
     {
-        obj->Initialize();
+        SetupNewObject(objects_[i].get());
     }
 }
+
+void GameObjectManager::SetupNewObject(GameObject* obj)
+{
+    obj->Initialize();
+    obj->GetTransform().UpdateMatrix();   // 追加直後のフレームに原点で描画・判定されるのを防ぐ
+    obj->RegisterColliders();             // AddCollider() したコライダーを自動登録
+}
+
 
 void GameObjectManager::Update()
 {
@@ -20,7 +31,7 @@ void GameObjectManager::Update()
 
     if (isSortNeeded_)
     {
-        std::sort(objects_.begin(), objects_.end(),
+        std::stable_sort(objects_.begin(), objects_.end(),
             [](const std::unique_ptr<GameObject>& a, const std::unique_ptr<GameObject>& b)
             {
                 return a->GetUpdatePriority() < b->GetUpdatePriority();
@@ -30,38 +41,63 @@ void GameObjectManager::Update()
 
     for (size_t i = 0; i < objects_.size(); ++i)
     {
-        if (!objects_[i]->IsDead() && objects_[i]->IsActive())
-        {
-            objects_[i]->Update();
-        }
+        if (IsAlive(objects_[i].get())) objects_[i]->Update();
     }
 
     // 行列更新
     for (size_t i = 0; i < objects_.size(); ++i)
     {
-        if (!objects_[i]->IsDead() && objects_[i]->IsActive())
+        if (IsAlive(objects_[i].get())) objects_[i]->GetTransform().UpdateMatrix();
+    }
+
+    // 削除されるオブジェクトの OnDestroy
+    for (size_t i = 0; i < objects_.size(); ++i)
+    {
+        if (objects_[i]->IsDead()) 
         {
-            objects_[i]->GetTransform().UpdateMatrix();
+            objects_[i]->OnDestroy();
         }
     }
 
     isUpdating_ = false;
 
-    // 待機オブジェクトの合流
-    for (auto& newObj : pendingObjects_) {
-        newObj->Initialize();
-        objects_.push_back(std::move(newObj));
-        isSortNeeded_ = true;
-    }
-    pendingObjects_.clear();
+    RemoveDeadObjects();
+    MergePendingObjects();
+}
 
-    // 削除処理
+void GameObjectManager::RemoveDeadObjects()
+{
     auto it = std::remove_if(objects_.begin(), objects_.end(),
         [](const std::unique_ptr<GameObject>& obj) { return obj->IsDead(); });
 
-    if (it != objects_.end())
+    // ID の登録を先に消す
+    for (auto i = it; i != objects_.end(); ++i)
     {
-        objects_.erase(it, objects_.end());
+        idMap_.erase((*i)->GetId());
+    }
+
+    objects_.erase(it, objects_.end());
+}
+
+void GameObjectManager::MergePendingObjects()
+{
+    std::vector<std::unique_ptr<GameObject>> pending;
+    pending.swap(pendingObjects_);
+
+    for (auto& obj : pending)
+    {
+        // 生成された同じフレームに Destroy されたもの
+        if (obj->IsDead())
+        {
+            obj->OnDestroy();
+            idMap_.erase(obj->GetId());
+            continue;   // obj はこのループの終わりで破棄
+        }
+
+        GameObject* raw = obj.get();
+        objects_.push_back(std::move(obj));
+        isSortNeeded_ = true;
+        SetupNewObject(raw);
     }
 }
 
@@ -89,15 +125,22 @@ void GameObjectManager::DebugDraw()
 
 void GameObjectManager::AddObject(std::unique_ptr<GameObject> obj)
 {
-    obj->SetManager(this);
+    obj->AttachToManager(this, nextId_++);
+    idMap_[obj->GetId()] = obj.get();
+
     if (isUpdating_)
     {
-        pendingObjects_.push_back(std::move(obj)); // ループ中は待機列へ
+        pendingObjects_.push_back(std::move(obj));   // 更新中は待機リストへ
+        return;
     }
-    else 
+
+    GameObject* raw = obj.get();
+    objects_.push_back(std::move(obj));
+    isSortNeeded_ = true;
+
+    if (isInitialized_)
     {
-        objects_.push_back(std::move(obj)); // それ以外は直接追加
-        isSortNeeded_ = true;
+        SetupNewObject(raw);   // シーン開始後に追加されたものはすぐ初期化
     }
 }
 
@@ -105,7 +148,7 @@ GameObject* GameObjectManager::FindObjectWithTag(uint32_t tag)
 {
     for (auto& obj : objects_)
     {
-        if (!obj->IsDead() && obj->IsActive() && obj->CompareTag(tag))
+        if (IsAlive(obj.get()) && obj->CompareTag(tag))
         {
             return obj.get();
         }
@@ -118,13 +161,13 @@ std::vector<GameObject*> GameObjectManager::FindObjectsWithTag(uint32_t tag)
     std::vector<GameObject*> result;
     for (auto& obj : objects_)
     {
-        // 生きていて、かつタグが一致するものをリストに追加
-        if (!obj->IsDead() && obj->IsActive() && obj->CompareTag(tag))
+        if (IsAlive(obj.get()) && obj->CompareTag(tag))
         {
             result.push_back(obj.get());
         }
     }
     return result;
 }
+
 
 }

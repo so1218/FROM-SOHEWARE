@@ -24,12 +24,11 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGr
     }
 
     model_ = std::make_unique<FS::Model>(engine_, modelName);
-    collider_ = std::make_unique<FS::Collider>(this);
+    collider_ = AddCollider(); 
 }
 
 void Enemy::Initialize()
 {
-    collider_->RegisterToManager();
     SetTag(ObjectTag::Enemy);
 
     binder_->Bind("Scale", &scale_, { 1.0f, 1.0f, 1.0f });

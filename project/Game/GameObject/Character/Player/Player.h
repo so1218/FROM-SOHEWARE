@@ -105,7 +105,7 @@ private:
 	std::unique_ptr<PlayerWeapon> weapon_;
 	std::unique_ptr<PlayerReticle> reticle_;
 
-	std::unique_ptr<FS::Collider> collider_;
+	FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
 	std::unique_ptr<FS::PropertyBinder> binder_;
 	std::unique_ptr<FS::ParticleEmitter> auraEmitter_ = nullptr;
 

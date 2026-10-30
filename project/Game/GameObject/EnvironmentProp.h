@@ -75,7 +75,7 @@ private:
     std::string propCustomName_;
 
     std::unique_ptr<FS::Model> model_;
-    std::unique_ptr<FS::Collider> collider_;
+    FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
     std::unique_ptr<FS::PropertyBinder> binder_;
 
     FS::Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };

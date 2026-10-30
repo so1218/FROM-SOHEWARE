@@ -7,7 +7,7 @@ namespace ObjectUpdateOrder
     {
         Field = 10,
         Player = 30,
-        Default = 30,
+        Default = 50,
         Effect = 60,
         UI = 90,
     };

@@ -28,7 +28,7 @@ engine_(engine), camera_(camera)
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
-	collider_ = std::make_unique<Collider>(this);
+	collider_ = AddCollider(); // 登録はマネージャーへの追加時に自動で行われる
 }
 
 void Player::Initialize()
@@ -72,7 +72,6 @@ void Player::Initialize()
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 
-	collider_->RegisterToManager();
 
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
 	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());

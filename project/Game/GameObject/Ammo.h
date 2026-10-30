@@ -27,7 +27,7 @@ private:
     FS::Engine* engine_ = nullptr;
     std::unique_ptr<FS::Model> model_;
     std::unique_ptr<FS::Model> bubbleModel_;
-    std::unique_ptr<FS::Collider> collider_;
+    FS::Collider* collider_ = nullptr; 
     std::unique_ptr<FS::PropertyBinder> binder_;
 
     std::unique_ptr<FS::ParticleEmitter> hitEmitter_ = nullptr;

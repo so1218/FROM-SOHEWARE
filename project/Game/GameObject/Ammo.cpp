@@ -13,7 +13,7 @@ Ammo::Ammo(Engine* engine, int id, const std::string& parentGroupName)
     bubbleModel_ = std::make_unique<Model>(engine_, "sphere");
     std::string childGroupName = "Ammo_" + std::to_string(id_);
     binder_ = std::make_unique<PropertyBinder>(engine_, parentGroupName, childGroupName);
-    collider_ = std::make_unique<Collider>(this);
+    collider_ = AddCollider(); 
 }
 
 Ammo::~Ammo()
@@ -22,7 +22,6 @@ Ammo::~Ammo()
 
 void Ammo::Initialize()
 {
-    collider_->RegisterToManager();
     SetTag(ObjectTag::Ammo);
 
     // 各アモ個別の設定

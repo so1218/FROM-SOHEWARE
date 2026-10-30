@@ -85,6 +85,8 @@ void Collider::DrawCollider()
 
 void Collider::RegisterToManager()
 {
+    if (manager_) return;
+
     if (owner_ && owner_->GetManager())
     {
         manager_ = owner_->GetManager()->GetCollisionManager();

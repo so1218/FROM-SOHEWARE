@@ -36,7 +36,7 @@ void EnvironmentPropManager::Initialize()
         auto prop = std::make_unique<EnvironmentProp>(engine_, i, managerGroupName_);
         prop->SetPrefabName(prefabName);
         prop->SetMasterModel(groups_[prefabName].masterModel.get());
-        prop->SetManager(this->GetManager());
+        prop->AttachToManager(GetManager(), 0); 
         prop->Initialize();
 
         groups_[prefabName].instances.push_back(std::move(prop));
@@ -118,7 +118,7 @@ void EnvironmentPropManager::AddPropToGroup(const std::string& prefabName)
     auto newProp = std::make_unique<EnvironmentProp>(engine_, newIndex, managerGroupName_);
     newProp->SetPrefabName(prefabName);
     newProp->SetMasterModel(groups_[prefabName].masterModel.get());
-    newProp->SetManager(this->GetManager());
+    newProp->AttachToManager(GetManager(), 0); 
     newProp->Initialize();
 
     // 永続化用データストアへ新規インスタンスを記録

@@ -148,9 +148,9 @@ protected:
     std::unique_ptr<Camera> camera_;
     SceneManager* sceneManager_ = nullptr;
 
+    std::unique_ptr<CollisionManager> collisionManager_;
     GameObjectManager objectManager_;
     std::unique_ptr<CameraManager> cameraManager_;
-    std::unique_ptr<CollisionManager> collisionManager_;
     std::unique_ptr<ParticleSystemWrapper> particleSystemWrapper_;
     std::unique_ptr<PropertyBinder> binder_;
 };

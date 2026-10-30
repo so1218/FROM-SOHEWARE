@@ -43,7 +43,7 @@ void AmmoManager::Initialize()
     for (int i = 0; i < ammoCount_; ++i)
     {
         auto ammo = std::make_unique<Ammo>(engine_, i, managerGroupName_);
-        ammo->SetManager(this->GetManager());
+        ammo->AttachToManager(GetManager(), 0); 
         ammo->Initialize();
 
         ammo->GetModel()->ShareMaterialsFrom(sharedModel_.get());
@@ -77,7 +77,7 @@ void AmmoManager::AddAmmo()
 {
     int newIndex = static_cast<int>(ammo_.size());
     auto newAmmo = std::make_unique<Ammo>(engine_, newIndex, managerGroupName_);
-    newAmmo->SetManager(this->GetManager());
+    newAmmo->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
     newAmmo->Initialize();
     newAmmo->GetModel()->ShareMaterialsFrom(sharedModel_.get());
 

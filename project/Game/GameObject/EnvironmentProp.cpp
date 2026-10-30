@@ -119,14 +119,17 @@ void EnvironmentProp::ApplySettings()
     {
         if (!collider_) 
         {
-            collider_ = std::make_unique<FS::Collider>(this);
+            collider_ = AddCollider(); // マネージャーに追加済みならすぐ登録される
             collider_->SetCollisionAttribute(kCollisionAttributeProp);
             collider_->SetCollisionMask(kCollisionAttributePlayer);
-            collider_->RegisterToManager();
         }
     }
     else {
-        collider_.reset();
+        if (collider_)
+        {
+            RemoveCollider(collider_);
+            collider_ = nullptr;
+        }
     }
 
     // パーティクルエミッターの動的割り当て

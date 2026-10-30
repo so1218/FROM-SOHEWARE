@@ -16,7 +16,7 @@ void EnemyManager::Initialize()
     for (int i = 0; i < enemyCount_; ++i)
     {
         auto enemy = std::make_unique<Enemy>(engine_, i, EnemyType::Floating, managerGroupName_);
-        enemy->SetManager(this->GetManager());
+        enemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
         enemy->Initialize();
         enemies_.push_back(std::move(enemy));
     }
@@ -56,7 +56,7 @@ void EnemyManager::AddEnemy()
     int newIndex = static_cast<int>(enemies_.size());
 
     auto newEnemy = std::make_unique<Enemy>(engine_, newIndex, EnemyType::Floating, managerGroupName_);
-    newEnemy->SetManager(this->GetManager());
+    newEnemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
     newEnemy->Initialize();
 
     enemies_.push_back(std::move(newEnemy));
