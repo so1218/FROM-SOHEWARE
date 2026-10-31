@@ -5,9 +5,7 @@ ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<FoliageCullingData> gCullingData : register(b1);
 
 StructuredBuffer<FoliageInstanceData> gInputFoliage : register(t0);
-
-// GenerationCSのAppendカウンタ(u0)から直接値を読み取る
-ByteAddressBuffer gInstanceCounter : register(t1);
+ByteAddressBuffer gInstanceCounter : register(t1);   // 生成した数 (FoliageGeneration.CS の Append カウンター)
 
 RWStructuredBuffer<FoliageInstanceData> gOutputFoliage : register(u0);
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
@@ -19,79 +17,57 @@ static const uint kFrustumPlaneCount = 6;
 [numthreads(64, 1, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
+    // CPU は生成した数を知らないので、多めに起動して実際の数で打ち切る
     uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
-    
-    // CPU側でのディスパッチ数の無駄をカバーするため、GPU側の実生成数で早期リターン
-    uint totalGeneratedCount = gInstanceCounter.Load(0);
-    if (instanceIndex >= totalGeneratedCount)
+    if (instanceIndex >= gInstanceCounter.Load(0))
+    {
         return;
-    
+    }
+
     FoliageInstanceData foliage = gInputFoliage[instanceIndex];
-    float3 pos = foliage.posAndScale.xyz;
+    float3 rootPosition = foliage.posAndScale.xyz;
     float scale = foliage.posAndScale.w;
 
-    bool isVisible = (scale > 0.001f);
+    float distanceToCamera = distance(rootPosition.xz, gFrameData.cameraWorldPosition.xz);
+    bool isVisible = scale > 0.001f && distanceToCamera <= gCullingData.maxDrawDistance;
 
+    // 原点は根元にあるので、球の中心を植物の中ほどまで上げて視錐台と判定する
     if (isVisible)
     {
-        // XZ平面のみで距離計算
-        float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
-        
-        if (distToCamXZ > gCullingData.maxDrawDistance)
-        {
-            isVisible = false;
-        }
+        float3 sphereCenter = rootPosition + float3(0.0f, gCullingData.modelCenterYOffset * scale, 0.0f);
+        float sphereRadius = gCullingData.modelRadius * scale;
 
-        if (isVisible)
+        for (uint planeIndex = 0; planeIndex < kFrustumPlaneCount; ++planeIndex)
         {
-            float boundsRadius = gCullingData.modelRadius * scale;
-            
-            // 植物モデルの原点は根元(Y=0)にあるため、カリング用スフィアの中心を葉の重心付近へ持ち上げる
-            float3 boundsCenter = pos + float3(0.0f, gCullingData.modelCenterYOffset * scale, 0.0f);
-            
-            for (uint i = 0; i < kFrustumPlaneCount; ++i)
-            {
-                if (dot(gFrameData.frustumPlanes[i].xyz, boundsCenter) + gFrameData.frustumPlanes[i].w < -boundsRadius)
-                {
-                    isVisible = false;
-                    break;
-                }
-            }
-        }
-
-        // 遠景のオーバードローおよび、サブピクセル級ポリゴンによるラスタライザの処理落ちを防ぐ
-        if (isVisible)
-        {
-            float fadeRange = max(1.0f, gCullingData.maxDrawDistance - gCullingData.thinStartDistance);
-            float thinFactor = saturate((distToCamXZ - gCullingData.thinStartDistance) / fadeRange);
-            
-            if (thinFactor > 0.0f && Hash12(pos.xz) < (thinFactor * gCullingData.maxThinningRate))
+            float4 plane = gFrameData.frustumPlanes[planeIndex];
+            if (dot(plane.xyz, sphereCenter) + plane.w < -sphereRadius)
             {
                 isVisible = false;
+                break;
             }
         }
     }
 
-    // ----------------------------------------------------------------------
-    // Wave Intrinsics によるアトミック操作の最適化 (Atomic Contention の回避)
-    // ----------------------------------------------------------------------
-    // 全スレッドが個別に InterlockedAdd を呼ぶと、VRAMへのアクセス競合で大渋滞を起こす。
-    // そのため、Wave(SIMDグループ)内で生き残った数を集計し、最初の1スレッドだけがメモリアクセスを行う。
-    uint waveCount = WaveActiveCountBits(isVisible);
-    uint waveOffset = 0;
-
-    if (WaveIsFirstLane() && waveCount > 0)
+    // 遠くほど間引いて、描く数を減らす
+    if (isVisible)
     {
-        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, waveCount, waveOffset);
+        float thinRange = max(1.0f, gCullingData.maxDrawDistance - gCullingData.thinStartDistance);
+        float thinRate = saturate((distanceToCamera - gCullingData.thinStartDistance) / thinRange) * gCullingData.maxThinningRate;
+        isVisible = Hash12(rootPosition.xz) >= thinRate;
     }
-    
-    // リーダースレッドが取得した書き込み開始位置を、Wave内の全スレッドへ共有
+
+    // 見えるものだけを出力に詰める。
+    // アトミック加算は Wave (同時に動くスレッドのまとまり) ごとに 1 回だけ行う
+    uint visibleCountInWave = WaveActiveCountBits(isVisible);
+    uint waveOffset = 0;
+    if (WaveIsFirstLane() && visibleCountInWave > 0)
+    {
+        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, visibleCountInWave, waveOffset);
+    }
     waveOffset = WaveReadLaneFirst(waveOffset);
 
     if (isVisible)
     {
-        // プレフィックスサムを用いて、このWave内での自身の相対的な書き込みインデックスを決定
-        uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
-        gOutputFoliage[appendIndex] = foliage;
+        gOutputFoliage[waveOffset + WavePrefixCountBits(isVisible)] = foliage;
     }
 }

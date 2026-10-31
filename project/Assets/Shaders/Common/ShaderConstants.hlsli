@@ -626,33 +626,27 @@ struct TrunkMaterialData
 
 struct FoliageInstanceData
 {
-    float4 posAndScale;
+    float4 posAndScale;   // xyz = 根元の位置, w = 大きさ
     float4 rotationQuat;
-    float3 colorVariation;
-    uint padding;
 };
 
 struct FoliageMaterialData
 {
     float3 baseColor;
-    float colorIntensity; 
-    
-    float alphaCutoff; 
-    float roughness; 
-    float shadowDensity; 
-    float shadowBias; 
-    
+    float alphaCutoff;
+
+    float shadowDensity;
+    float shadowBias;
     float shadowNormalBias;
-    float windResponse; 
-    float plantHeight; 
-    float flutterSpeed; 
-    
-    float flutterScale; 
-    float interactStrength ; 
-    float trailFlattenWeight;
-    float recoverySpeed; 
-    
-    float springElasticity; 
+    float windResponse;       // 風で揺れる大きさ
+
+    float plantHeight;        // この高さで揺れが最大になる
+    float flutterSpeed;       // 細かい揺れの速さ
+    float flutterScale;       // 細かい揺れの大きさ
+    float interactStrength;   // 押されて倒れる大きさ
+
+    float trailFlattenWeight; // 通った跡が残る強さ
+    float colorIntensity;     // 明るさの倍率 (baseColor は 0〜1 なので、明るくするときに使う)
 };
 
 struct FoliageGenerationData

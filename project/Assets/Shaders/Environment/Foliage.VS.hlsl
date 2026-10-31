@@ -24,8 +24,6 @@ struct FoliageVSOutput
     float3 worldPosition : WORLD_POSITION;
     float2 texcoord : TEXCOORD;
     float3 normal : NORMAL;
-    float4 color : COLOR0;
-    float3 instanceTint : COLOR1;
 };
 
 float3 RotateVectorByQuat(float3 v, float4 q)
@@ -34,103 +32,68 @@ float3 RotateVectorByQuat(float3 v, float4 q)
     return v + q.w * t + cross(q.xyz, t);
 }
 
-// プロシージャル風変位
-float3 CalculateWindDisplacement(float3 basePos, float windWeight)
+// 風で横にずらす量
+float3 CalculateWindOffset(float3 rootPosition, float heightRatio)
 {
-    // 草のしなり
-    float bendFactor = windWeight * windWeight * gMaterial.windResponse;
+    float windLength = length(gEnvironmentData.windDirection);
+    float2 windDirection = (windLength > kEpsilon) ? gEnvironmentData.windDirection / windLength : float2(0.0f, 1.0f);
 
-    float windLen = length(gEnvironmentData.windDirection);
-    float2 windDir = (windLen > kEpsilon)
-        ? (gEnvironmentData.windDirection / windLen)
-        : float2(0.0f, 1.0f);
-
-    // 空間位相
-    float spatialPhase = dot(basePos.xz, windDir * 0.15f);
+    // 場所ごとに揺れのタイミングをずらす
+    float phase = dot(rootPosition.xz, windDirection * 0.15f);
     float time = gEnvironmentData.windTime;
 
-    // 主揺れ + 細かい揺れ
-    float mainSway = sin(time + spatialPhase);
-    float detailSway = sin(time * gMaterial.flutterSpeed + spatialPhase * 3.0f) * gMaterial.flutterScale;
+    float mainSway = sin(time + phase);
+    float detailSway = sin(time * gMaterial.flutterSpeed + phase * 3.0f) * gMaterial.flutterScale;
 
-    float totalSway = (mainSway + detailSway) * bendFactor * gEnvironmentData.windSpeed;
-
-    return float3(windDir.x * totalSway, 0.0f, windDir.y * totalSway);
+    // 根元は動かさず、上ほど大きく揺らす
+    float sway = (mainSway + detailSway) * heightRatio * heightRatio * gMaterial.windResponse * gEnvironmentData.windSpeed;
+    return float3(windDirection.x * sway, 0.0f, windDirection.y * sway);
 }
 
 FoliageVSOutput main(FoliageVSInput input)
 {
-    FoliageVSOutput output;
-
     FoliageInstanceData instance = gInstanceData[input.instanceID];
-
-    float3 basePos = instance.posAndScale.xyz;
+    float3 rootPosition = instance.posAndScale.xyz;
     float scale = instance.posAndScale.w;
-    float4 quat = instance.rotationQuat;
-    float3 localPos = input.position.xyz;
 
-    // 頂点の高さ比率
-    float windWeight = saturate(localPos.y / max(gMaterial.plantHeight, kEpsilon));
+    // 根元 0 〜 植物の高さ 1
+    float heightRatio = saturate(input.position.y / max(gMaterial.plantHeight, kEpsilon));
 
-    // ローカル変換
-    localPos *= scale;
-    float3 rotatedPos = RotateVectorByQuat(localPos, quat);
+    float3 rotatedPosition = RotateVectorByQuat(input.position.xyz * scale, instance.rotationQuat);
+    float3 offset = CalculateWindOffset(rootPosition, heightRatio);
 
-    // 風変位の計算
-    float3 totalDisp = CalculateWindDisplacement(basePos, windWeight);
+    // プレイヤーなどに押されて倒れる。インタラクションの範囲の端では効果を弱める
+    float2 interactionUV = (rootPosition.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
+    float2 edgeFade = smoothstep(0.0f, 0.1f, interactionUV) * smoothstep(1.0f, 0.9f, interactionUV);
+    float edgeWeight = edgeFade.x * edgeFade.y;
 
-    // インタラクション
-    float2 interactUV = (basePos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
-    float2 edgeFade = smoothstep(0.0f, 0.1f, interactUV) * smoothstep(1.0f, 0.9f, interactUV);
-    float edgeMultiplier = edgeFade.x * edgeFade.y;
-
-    if (edgeMultiplier > kEpsilon && all(interactUV >= 0.0f) && all(interactUV <= 1.0f))
+    if (edgeWeight > kEpsilon)
     {
-        float4 interactData = gInteractionMap.SampleLevel(gLinearClampSampler, interactUV, 0);
+        float4 interaction = gInteractionMap.SampleLevel(gLinearClampSampler, interactionUV, 0);
 
-        // 押し出し方向 
-        float2 pushDirXZ = interactData.rg * 2.0f - 1.0f;
-        float dirLen = length(pushDirXZ);
-        pushDirXZ = (dirLen > kEpsilon) ? (pushDirXZ / dirLen) : float2(0.0f, 0.0f);
+        float2 pushDirection = interaction.rg * 2.0f - 1.0f;
+        float pushLength = length(pushDirection);
+        pushDirection = (pushLength > kEpsilon) ? pushDirection / pushLength : float2(0.0f, 0.0f);
 
-        // 押し出し強度の合成
-        float pushPower = max(interactData.b, interactData.a * gMaterial.trailFlattenWeight);
-        float smoothPower = smoothstep(0.0f, 1.0f, pushPower) * edgeMultiplier;
+        // b = 今押されている強さ, a = 通った跡
+        float pushPower = smoothstep(0.0f, 1.0f, max(interaction.b, interaction.a * gMaterial.trailFlattenWeight)) * edgeWeight;
 
-        // 水平方向への押し倒し量
-        float2 pushOffset = pushDirXZ * (smoothPower * gMaterial.interactStrength * windWeight);
-
-        // 倒れ込み中は風の影響を弱める
-        totalDisp *= saturate(1.0f - smoothPower * 1.2f);
-        totalDisp.xz += pushOffset;
+        // 倒れている間は風で揺れにくくする
+        offset *= saturate(1.0f - pushPower * 1.2f);
+        offset.xz += pushDirection * pushPower * gMaterial.interactStrength * heightRatio;
     }
-    
-    // 水平方向に傾いた分だけ、三平方の定理で正確にY座標を下げる
-    float originalLen = length(rotatedPos);
-    float3 targetLocalXZ = rotatedPos + totalDisp;
-    float distXZSq = dot(targetLocalXZ.xz, targetLocalXZ.xz);
 
-    float3 finalLocalPos;
-    finalLocalPos.xz = targetLocalXZ.xz;
-    
-    // 元の長さを保つように高さYを補正
-    finalLocalPos.y = sqrt(max(0.0f, originalLen * originalLen - distXZSq));
-    if (rotatedPos.y < 0.0f)
-        finalLocalPos.y = -finalLocalPos.y; 
+    // 横にずれた分だけ低くして、長さを保つ (伸びて見えないように)
+    float3 bentPosition = rotatedPosition + offset;
+    float bentHeight = sqrt(max(0.0f, dot(rotatedPosition, rotatedPosition) - dot(bentPosition.xz, bentPosition.xz)));
+    bentPosition.y = (rotatedPosition.y < 0.0f) ? -bentHeight : bentHeight;
 
-    float3 worldPos = basePos + finalLocalPos;
-    output.worldPosition = worldPos;
+    float3 worldPosition = rootPosition + bentPosition;
 
-    // 法線の回転
-    float3 localNormal = normalize(input.normal);
-    output.normal = normalize(RotateVectorByQuat(localNormal, quat));
-
-    // 座標変換
-    output.position = mul(float4(worldPos, 1.0f), gFrameData.viewProjectionMatrix);
-
+    FoliageVSOutput output;
+    output.position = mul(float4(worldPosition, 1.0f), gFrameData.viewProjectionMatrix);
+    output.worldPosition = worldPosition;
     output.texcoord = input.texcoord;
-    output.color = float4(windWeight, 0.0f, 0.0f, 0.0f);
-    output.instanceTint = instance.colorVariation;
-
+    output.normal = normalize(RotateVectorByQuat(normalize(input.normal), instance.rotationQuat));
     return output;
 }

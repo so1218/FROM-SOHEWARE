@@ -8,32 +8,35 @@ Texture2D<float> gHeightMap : register(t0);
 Texture2D<float> gDensityMap : register(t1);
 SamplerState gLinearSampler : register(s0);
 
-// NOTE: 描画時の DrawInstancedIndirect のために、有効なインスタンスのみを密にパックする
+// 生えている所だけを詰めて出力する
 AppendStructuredBuffer<FoliageInstanceData> gOutputFoliage : register(u0);
 
 static const uint kThreadsPerRow = 1024 * 64;
 
-// ワールド座標から地形ハイトマップUVへのマッピング
-// TODO: 地形マテリアル側にタイリング・オフセット(uvTransform)が追加された場合、ここで同期させる必要がある
-float2 CalculateTerrainUV(float x, float z)
+// ワールド座標 → 地形のハイトマップの UV
+float2 CalculateTerrainUV(float worldX, float worldZ)
 {
-    float u = (x - gGenerationData.terrainCenter.x) / gGenerationData.terrainWidth + 0.5f;
-    float v = (z - gGenerationData.terrainCenter.y) / gGenerationData.terrainDepth + 0.5f;
+    float u = (worldX - gGenerationData.terrainCenter.x) / gGenerationData.terrainWidth + 0.5f;
+    float v = (worldZ - gGenerationData.terrainCenter.y) / gGenerationData.terrainDepth + 0.5f;
     return float2(u, v);
 }
 
-float4 QuatFromVectors(float3 u, float3 v)
+// from を to に向ける回転
+float4 QuatFromVectors(float3 from, float3 to)
 {
-    float cosTheta = dot(u, v);
-    
-    // 平行・反平行時のジンバルロック回避
+    float cosTheta = dot(from, to);
+
+    // 同じ向き・逆向きのときは cross が 0 になるので別に扱う
     if (cosTheta > 0.9999f)
-        return float4(0, 0, 0, 1);
+    {
+        return float4(0.0f, 0.0f, 0.0f, 1.0f);
+    }
     if (cosTheta < -0.9999f)
-        return float4(1, 0, 0, 0);
-    
-    float3 axis = cross(u, v);
-    return normalize(float4(axis, 1.0f + cosTheta));
+    {
+        return float4(1.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    return normalize(float4(cross(from, to), 1.0f + cosTheta));
 }
 
 float4 QuatFromAxisAngle(float3 axis, float angle)
@@ -58,64 +61,63 @@ void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
     if (instanceIndex >= gGenerationData.maxInstancesPerChunk)
+    {
         return;
+    }
 
-    // グリッド配置 ＋ ジッター加算によるポアソンディスク分布の近似
+    // 格子状に並べてから、各点をランダムにずらして規則的に見えないように
     float gridSpacing = gGenerationData.gridSpacing;
     float2 snappedCenter = floor(gGenerationData.terrainCenter / gridSpacing) * gridSpacing;
-    uint gridSizeX = max((uint) ceil(gGenerationData.terrainWidth / gridSpacing), 1);
-    uint gridX = instanceIndex % gridSizeX;
-    uint gridZ = instanceIndex / gridSizeX;
-    float2 localPos = float2(gridX * gridSpacing, gridZ * gridSpacing);
+    uint gridCountX = max((uint) ceil(gGenerationData.terrainWidth / gridSpacing), 1);
+    uint gridX = instanceIndex % gridCountX;
+    uint gridZ = instanceIndex / gridCountX;
 
-    float offsetX = -gGenerationData.terrainWidth * 0.5f;
-    float offsetZ = -gGenerationData.terrainDepth * 0.5f;
-    float baseWorldX = snappedCenter.x + offsetX + localPos.x;
-    float baseWorldZ = snappedCenter.y + offsetZ + localPos.y;
+    float2 gridPosition = snappedCenter
+        - float2(gGenerationData.terrainWidth, gGenerationData.terrainDepth) * 0.5f
+        + float2(gridX, gridZ) * gridSpacing;
 
-    float2 jitter = Hash22(float2(baseWorldX, baseWorldZ)) * (gridSpacing * 0.5f);
-    float worldX = baseWorldX + jitter.x;
-    float worldZ = baseWorldZ + jitter.y;
-    
-    float2 globalUV = CalculateTerrainUV(worldX, worldZ);
-    if (any(globalUV < 0.0f) || any(globalUV > 1.0f))
+    float2 jitter = Hash22(gridPosition) * (gridSpacing * 0.5f);
+    float worldX = gridPosition.x + jitter.x;
+    float worldZ = gridPosition.y + jitter.y;
+
+    float2 terrainUV = CalculateTerrainUV(worldX, worldZ);
+    if (any(terrainUV < 0.0f) || any(terrainUV > 1.0f))
+    {
         return;
+    }
 
-    // 密度マップによる確率的カリング
-    // 半端なアルファ値による境界のノイズ（まばらすぎる草）を避けるため、step関数で群生エリアを明確に二値化する
-    float density = step(0.5f, gDensityMap.SampleLevel(gLinearSampler, globalUV, 0).r);
-    if (Hash12(float2(baseWorldX, baseWorldZ)) >= density)
+    // 密度マップが 0.5 以上の所にだけ生やす (境目でまばらにならないよう 0 か 1 に)
+    float density = step(0.5f, gDensityMap.SampleLevel(gLinearSampler, terrainUV, 0).r);
+    if (Hash12(gridPosition) >= density)
+    {
         return;
+    }
 
-    // 中央差分による地形ローカル法線の算出
-    float rawHeight = gHeightMap.SampleLevel(gLinearSampler, globalUV, 0).r;
-    float worldY = (rawHeight - 0.5f) * gTerrainSettings.maxHeight;
-    
-    float offset = gTerrainSettings.texelSize;
-    float hL = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(-offset, 0.0f), 0).r;
-    float hR = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(offset, 0.0f), 0).r;
-    float hD = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(0.0f, offset), 0).r;
-    float hU = gHeightMap.SampleLevel(gLinearSampler, globalUV + float2(0.0f, -offset), 0).r;
-    float3 terrainNormal = normalize(float3((hL - hR) * gTerrainSettings.maxHeight, 2.0f * gTerrainSettings.cellSize, (hD - hU) * gTerrainSettings.maxHeight));
+    float worldY = (gHeightMap.SampleLevel(gLinearSampler, terrainUV, 0).r - 0.5f) * gTerrainSettings.maxHeight;
 
-    // 植物の重力屈性（太陽に向かって真っ直ぐ伸びる性質）の近似
-    // 地形の法線に完全に沿わせると斜面で不自然に寝てしまうため、Y-Upベクトルとブレンドして姿勢を補正する
+    // 周りの高さの差から地面の法線を求める
+    float texelSize = gTerrainSettings.texelSize;
+    float heightLeft = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(-texelSize, 0.0f), 0).r;
+    float heightRight = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(texelSize, 0.0f), 0).r;
+    float heightDown = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, texelSize), 0).r;
+    float heightUp = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, -texelSize), 0).r;
+    float3 terrainNormal = normalize(float3(
+        (heightLeft - heightRight) * gTerrainSettings.maxHeight,
+        2.0f * gTerrainSettings.cellSize,
+        (heightDown - heightUp) * gTerrainSettings.maxHeight));
+
+    // 斜面に完全に沿わせると寝てしまうので、真上寄りに傾ける
     float3 upVector = float3(0.0f, 1.0f, 0.0f);
-    float3 plantNormal = normalize(lerp(upVector, terrainNormal, 0.3f));
-    float4 alignQuat = QuatFromVectors(upVector, plantNormal);
+    float4 alignRotation = QuatFromVectors(upVector, normalize(lerp(upVector, terrainNormal, 0.3f)));
 
-    // Y軸まわりのランダム回転で不規則性を追加
+    // 向きをばらばらにする
     float randomAngle = Hash12(float2(worldX * 1.3f, worldZ * 2.7f)) * PI * 2.0f;
-    float4 randomYRotQuat = QuatFromAxisAngle(upVector, randomAngle);
-    float4 finalQuat = QuatMultiply(alignQuat, randomYRotQuat);
+    float4 rotation = QuatMultiply(alignRotation, QuatFromAxisAngle(upVector, randomAngle));
 
-    FoliageInstanceData inst = (FoliageInstanceData) 0;
-    float randomScale = lerp(gGenerationData.minScale, gGenerationData.maxScale, Hash12(float2(worldZ, worldX)));
-    inst.posAndScale = float4(worldX, worldY, worldZ, randomScale);
-    inst.rotationQuat = finalQuat;
-    
-    float cJitter = lerp(0.7f, 1.0f, Hash12(float2(worldX * 2.0f, worldZ * 2.0f)));
-    inst.colorVariation = float3(cJitter, cJitter, cJitter);
+    float scale = lerp(gGenerationData.minScale, gGenerationData.maxScale, Hash12(float2(worldZ, worldX)));
 
-    gOutputFoliage.Append(inst);
+    FoliageInstanceData foliage;
+    foliage.posAndScale = float4(worldX, worldY, worldZ, scale);
+    foliage.rotationQuat = rotation;
+    gOutputFoliage.Append(foliage);
 }

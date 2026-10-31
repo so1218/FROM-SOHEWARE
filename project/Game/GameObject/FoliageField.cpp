@@ -94,7 +94,6 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
     layer.genData.minScale = 0.8f;
     layer.genData.maxScale = 1.2f;
 
-    layer.material.roughness = 0.8f;
     layer.material.alphaCutoff = 0.5f;
     layer.material.windResponse = 1.0f;
     layer.material.shadowDensity = 1.0f;
@@ -123,8 +122,6 @@ void FoliageField::SetupBinderForLayer(size_t index)
     binder_->Bind(prefix + "MinScale", &layer.genData.minScale, 0.8f, 0.01f, 0.1f, 5.0f);
     binder_->Bind(prefix + "MaxScale", &layer.genData.maxScale, 1.2f, 0.01f, 0.1f, 5.0f);
     binder_->Bind(prefix + "ColorIntensity", &layer.material.colorIntensity, 1.0f, 0.05f, 0.1f, 5.0f);
-
-    binder_->Bind(prefix + "Roughness", &layer.material.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "AlphaCutoff", &layer.material.alphaCutoff, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind(prefix + "WindResponse", &layer.material.windResponse, 1.0f, 0.01f, 0.0f, 5.0f);
    
@@ -136,8 +133,6 @@ void FoliageField::SetupBinderForLayer(size_t index)
 
     binder_->Bind(prefix + "InteractStrength", &layer.material.interactStrength, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind(prefix + "TrailFlattenWeight", &layer.material.trailFlattenWeight, 0.8f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind(prefix + "RecoverySpeed", &layer.material.recoverySpeed, 0.4f, 0.01f, 0.01f, 2.0f);
-    binder_->Bind(prefix + "SpringElasticity", &layer.material.springElasticity, 0.2f, 0.01f, 0.0f, 1.0f);
 
     layer.material.shadowNormalBias = 0.005f;
     layer.material.shadowBias = 0.001f;
@@ -298,7 +293,6 @@ void FoliageField::DebugDraw()
             binder_->Draw(prefix + "BaseColor", "基本色");
             binder_->Draw(prefix + "ColorIntensity", "明るさ倍率");
 
-            binder_->Draw(prefix + "Roughness", "粗さ");
             binder_->Draw(prefix + "AlphaCutoff", "抜き透過 ");
 
             ImGui::Text("風の揺れ・シャドウ");
@@ -312,8 +306,6 @@ void FoliageField::DebugDraw()
             ImGui::Text("インタラクション");
             binder_->Draw(prefix + "InteractStrength", "物理干渉強度");
             binder_->Draw(prefix + "TrailFlattenWeight", "軌跡の押しつぶし影響度");
-            binder_->Draw(prefix + "RecoverySpeed", "復元速度");
-            binder_->Draw(prefix + "SpringElasticity", "揺れ戻り");
         }
         ImGui::PopID();
     }
