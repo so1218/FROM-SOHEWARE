@@ -17,6 +17,7 @@
 #include "SRVManager.h"
 #include "EnvironmentManager.h"
 #include "AudioPlayer.h"
+#include "FontManager.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -75,6 +76,7 @@ void Engine::Finalize()
 	commandManager_->WaitForGPU();
 
 	ModelManager::GetInstance().Clear();
+	FontManager::GetInstance().Clear();
 	EnvironmentManager::GetInstance()->Finalize();
 	ImGuiManager::Finalize();
 	Input::GetInstance().Finalize();
@@ -283,6 +285,8 @@ void Engine::InitializeResources()
 	TextureManager::GetInstance().LoadAllTextures(this);
 	ModelManager::GetInstance().LoadFromCSV(this);
 	AnimationManager::GetInstance()->LoadFromCSV();
+
+	FontManager::GetInstance().LoadFromCSV(this);
 
 	// 3Dノイズ を生成して VolumetricFog に渡す
 	{

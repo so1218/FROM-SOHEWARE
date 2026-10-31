@@ -48,6 +48,9 @@ public:
 
     TextureResources UploadTexture(DirectX::ScratchImage& mipImages);
 
+    // メモリ上の画像からテクスチャを作る
+    uint32_t LoadFromImage(const std::string& cacheKey, DirectX::ScratchImage& image);
+
     TextureResources UploadTex(DirectX::ScratchImage& mipImages);
 
     void AddNewUpload(const TextureResources& resource) {

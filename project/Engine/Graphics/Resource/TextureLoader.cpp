@@ -359,6 +359,19 @@ uint32_t TextureLoader::Load(const std::string& filePath)
     return texResources.srvIndex;
 }
 
+uint32_t TextureLoader::LoadFromImage(const std::string& cacheKey, DirectX::ScratchImage& image)
+{
+    auto cachedTexture = textureCache_.find(cacheKey);
+    if (cachedTexture != textureCache_.end())
+    {
+        return cachedTexture->second;
+    }
+
+    TextureResources textureResources = UploadTexture(image);
+    textureCache_[cacheKey] = textureResources.srvIndex;
+    return textureResources.srvIndex;
+}
+
 void TextureLoader::OnFrameEnd(uint64_t submittedFenceValue, uint64_t completedFenceValue)
 {
     for (auto& textureResource : newUploads_)

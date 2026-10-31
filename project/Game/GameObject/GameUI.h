@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "GameObject.h"
 #include "Sprite.h"
+#include "Text.h"
 #include "PropertyBinder.h"
 
 class GameUI : public FS::GameObject
@@ -18,15 +19,14 @@ private:
     FS::Engine* engine_;
     std::unique_ptr<FS::PropertyBinder> binder_;
 
-    // 8枚のスプライトを管理
-    std::unique_ptr<FS::Sprite> spriteCameraSwitch_;
-    std::unique_ptr<FS::Sprite> spriteMainCameraMode_;
-    std::unique_ptr<FS::Sprite> spriteMove_;
-    std::unique_ptr<FS::Sprite> spriteMainCameraMove_;
-    std::unique_ptr<FS::Sprite> spriteDebugCameraMode_;
-    std::unique_ptr<FS::Sprite> spriteDebugCameraTranslate_;
-    std::unique_ptr<FS::Sprite> spriteDebugCameraRotate_;
-    std::unique_ptr<FS::Sprite> spriteDebugCameraZoom_;
+    // テキスト
+    std::unique_ptr<FS::Text> titleText_;     
+    std::unique_ptr<FS::Text> timeText_;      
+    std::unique_ptr<FS::Text> messageText_;
+    std::unique_ptr<FS::Text> stageNameText_;  // 縦書き
+
+    // timeText_ の書式 
+    std::string timeFormat_;
 
     // まとめて表示/非表示を切り替えるフラグ
     bool isVisible_ = true;
