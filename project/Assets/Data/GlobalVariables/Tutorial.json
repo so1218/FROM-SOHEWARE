@@ -1,0 +1,44 @@
+{
+    "Tutorial": {
+        "ClearedWaitTime": 0.6000000238418579,
+        "CompleteShowTime": 2.0,
+        "FadeTime": 0.30000001192092896,
+        "Font": "Gothic",
+        "FontSize": 43.0,
+        "IconOffsetY": 26.0,
+        "IconSize": 66.0,
+        "IconSpacing": 8.0,
+        "IsEnabled": true,
+        "PanelColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8352941274642944
+        ],
+        "PanelEdgeFade": 0.3499999940395355,
+        "PanelOffset": [
+            0.0,
+            -164.0
+        ],
+        "PanelSize": [
+            487.0,
+            145.0
+        ],
+        "RequiredHoldTime": 1.0,
+        "StartDelay": 1.0,
+        "Step0_Message": "移動",
+        "Step1_Message": "ダッシュ",
+        "Step2_Message": "回避",
+        "Step3_Message": "ジャンプ",
+        "Step4_Message": "エイム",
+        "Step5_Message": "エイム中に射撃",
+        "Step6_Message": "チュートリアル完了",
+        "TextColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TextOffsetY": -35.5
+    }
+}

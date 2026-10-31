@@ -338,6 +338,7 @@ void Player::FireWeapon()
 		{
 			reticle_->OnShootRecoil(); // 射撃時の反動拡散
 		}
+		++shotCount_;
 	}
 }
 

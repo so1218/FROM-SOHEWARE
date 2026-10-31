@@ -44,7 +44,7 @@
             0.7600417733192444,
             1.0
         ],
-        "MessageText_Content": "WASD で移動\nマウスで視点操作\nY でメイン・デバッグカメラ切り替え\nメインカメラ\n[Arrow]: カメラ移動\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
+        "MessageText_Content": "マウスで視点操作\nY でメイン・デバッグカメラ切り替え\nメインカメラ\n[Arrow]: カメラ移動\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
         "MessageText_Direction": 0,
         "MessageText_Font": "Gothic",
         "MessageText_FontSize": 28.5,

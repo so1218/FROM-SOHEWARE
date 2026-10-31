@@ -18,6 +18,7 @@
 #include "Ground.h"
 #include "TreeField.h"
 #include "Player.h"
+#include "Tutorial.h"
 
 using namespace FS;
 
@@ -44,6 +45,7 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<PebbleField>(engine_);
     objectManager_.Create<FoliageField>(engine_);
     objectManager_.Create<GameUI>(engine_);
+    objectManager_.Create<Tutorial>(engine_, player);
     /*objectManager_.Create<WaterManager>(engine_, "GameWater");*/
 }
 

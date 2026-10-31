@@ -27,6 +27,8 @@ public:
 
     // セッター
     void SetTexture(const std::string& textureName);
+    // 名前を持たない、プログラムで作ったテクスチャを使う
+    void SetTextureHandle(uint32_t textureHandle) { textureHandle_ = textureHandle; }
     void SetDissolveTexture(const std::string& textureName);
     void SetColor(const Vector4& color);
 

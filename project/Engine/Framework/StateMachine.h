@@ -37,6 +37,8 @@ public:
         if (currentState_) currentState_->Update(owner_);
     }
 
+    State<T>* GetCurrentState() const { return currentState_; }
+
     std::string GetCurrentStateName() const
     {
         if (currentState_) 

@@ -68,6 +68,7 @@ public:
 	void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
 	void FireWeapon(); // 射撃時の処理
+	int GetShotCount() const { return shotCount_; } // これまでに撃った数 (チュートリアルの判定用)
 	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
 	// Stateから呼び出すヘルパー関数
@@ -158,5 +159,7 @@ private:
 	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
 	FS::Vector3 dodgeDirection_ = { 0.0f, 0.0f, 1.0f };
 	float dodgeElapsedTime_ = 0.0f;
+
+	int shotCount_ = 0;
 };
 
