@@ -12,9 +12,6 @@ Texture2D<float4> gInteractionMap : register(t11);
 
 SamplerState gClampSampler : register(s1);
 
-// 風と物理法則から多重 Gerstner 波をプロシージャル自動計算
-float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal, out float3 outTangent);
-
 struct WaterVSOutput
 {
     float4 position : SV_POSITION;
@@ -22,129 +19,95 @@ struct WaterVSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL0;
     float3 tangent : TANGENT;
-    float4 worldColor : COLOR0;
-    float4 currentClipPos : POSITION2; 
 };
 
-WaterVSOutput main(Object3DVSInputInstanced input)
+static const int kWaveCount = 4;
+static const float kGravity = 9.81f;
+
+// 向きと長さの違う Gerstner 波を 4 つ重ねて、水面の高さと法線を求める
+float3 CalculateGerstnerWaves(float3 worldPosition, float time, out float3 outNormal, out float3 outTangent)
 {
-    WaterVSOutput output;
-    
-    uint index = input.instanceID + gInstanceOffset.gBaseInstanceIndex;
-    Object3DInstanceData instance = gInstanceData[index];
-
-    float4 baseWorldPos = mul(input.position, instance.World);
-    float4 prevBaseWorldPos = mul(input.position, instance.PrevWorld);
-
-    float time = gFrameData.gTime;
-    float pTime = gFrameData.prevTime;
-
-    float3 waveNormal, waveTangent;
-    float3 prevWaveNormal, prevWaveTangent;
-
-    // 波の変位計算
-    float3 waveOffset = CalculateGerstnerWaves(baseWorldPos.xyz, time, waveNormal, waveTangent);
-    float3 prevWaveOffset = CalculateGerstnerWaves(prevBaseWorldPos.xyz, pTime, prevWaveNormal, prevWaveTangent);
-
-    // インタラクション
-    float2 interactUV = (baseWorldPos.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
-    
-    // UV範囲外はstep関数でマスクをかけて0にする
-    float boundsMask = step(0.0f, interactUV.x) * step(interactUV.x, 1.0f) * step(0.0f, interactUV.y) * step(interactUV.y, 1.0f);
-    
-    float4 interactData = gInteractionMap.SampleLevel(gClampSampler, interactUV, 0);
-    float sinkForce = interactData.b * gWaterMaterial.interactionSinkForce;
-    float waveBulge = interactData.a * gWaterMaterial.interactionBulgeForce;
-    
-    float edgeDist = length(interactUV - 0.5f) * 2.0f;
-    float edgeFade = smoothstep(1.0f, 0.7f, edgeDist) * boundsMask;
-
-    waveOffset.y += (waveBulge - sinkForce) * gWaterMaterial.interactionHeightScale * edgeFade;
-
-    // 最終座標の確定
-    float3 finalWorldPos = baseWorldPos.xyz + waveOffset;
-    float3 prevFinalWorldPos = prevBaseWorldPos.xyz + prevWaveOffset;
-
-    output.worldPosition = finalWorldPos;
-    output.position = mul(float4(finalWorldPos, 1.0f), gFrameData.viewProjectionMatrix);
-    output.currentClipPos = output.position;
-    output.texcoord = input.texcoord;
-    
-    float3x3 worldInvTranspose = (float3x3) instance.WorldInverseTranspose;
-    output.normal = normalize(mul(waveNormal, worldInvTranspose));
-    output.tangent = normalize(mul(waveTangent, (float3x3) instance.World));
-    output.worldColor = instance.WorldColor;
-
-    return output;
-}
-
-float3 CalculateGerstnerWaves(float3 worldPos, float time, out float3 outNormal, out float3 outTangent)
-{
-    // ループ回数
-    static const int NUM_WAVES = 4;
-    static const float GRAVITY = 9.81f;
-
-    float3 waveOffset = float3(0.0f, 0.0f, 0.0f);
+    float3 offset = float3(0.0f, 0.0f, 0.0f);
     float3 tangent = float3(1.0f, 0.0f, 0.0f);
     float3 binormal = float3(0.0f, 0.0f, 1.0f);
 
     float amplitude = gWaterMaterial.waveAmplitude;
     float wavelength = max(gWaterMaterial.waveLength, 0.001f);
-    float steepness = clamp(gWaterMaterial.waveSteepness, 0.0f, 1.0f);
-    
-    // ベースとなる風向き
-    float windLen = length(gWaterMaterial.globalWindDirection);
-    float2 baseDir = (windLen > 0.0001f) ? (gWaterMaterial.globalWindDirection / windLen) : float2(1.0f, 0.0f);
+    float steepness = saturate(gWaterMaterial.waveSteepness);
 
-    // 波の拡散用回転行列
-    float spread = gWaterMaterial.waveDirectionSpread;
-    float2x2 rotMatrix = float2x2(cos(spread), -sin(spread), sin(spread), cos(spread));
-    float2 currentDir = baseDir;
+    float windLength = length(gWaterMaterial.globalWindDirection);
+    float2 windDirection = (windLength > kEpsilon) ? gWaterMaterial.globalWindDirection / windLength : float2(1.0f, 0.0f);
+    float windAngle = atan2(windDirection.y, windDirection.x);
 
     [unroll]
-    for (int i = 0; i < NUM_WAVES; ++i)
+    for (int waveIndex = 0; waveIndex < kWaveCount; ++waveIndex)
     {
-        // 波数と角周波数
-        float k = (2.0f * PI) / wavelength;
-        float w = sqrt(GRAVITY * k) * gWaterMaterial.waveSpeed;
+        // 風向きから 0, +spread, -spread, +2spread … と左右交互に広げる
+        float angleStep = (float) ((waveIndex + 1) / 2) * ((waveIndex % 2 == 1) ? 1.0f : -1.0f);
+        float waveAngle = windAngle + angleStep * gWaterMaterial.waveDirectionSpread;
+        float2 direction = float2(cos(waveAngle), sin(waveAngle));
 
-        float phase = k * dot(currentDir, worldPos.xz) + (w * time);
-        float sinP, cosP;
-        sincos(phase, sinP, cosP);
+        // 深い水の分散関係: 長い波ほど速く進む
+        float waveNumber = 2.0f * PI / wavelength;
+        float angularSpeed = sqrt(kGravity * waveNumber) * gWaterMaterial.waveSpeed;
 
-        // 波が交差してループしないようにSteepnessを調整
-        float q = steepness / (k * amplitude * (float) NUM_WAVES);
+        float sinPhase, cosPhase;
+        sincos(waveNumber * dot(direction, worldPosition.xz) + angularSpeed * time, sinPhase, cosPhase);
 
-        float wa = k * amplitude;
-        float xDiff = currentDir.x * (q * amplitude * cosP);
-        float zDiff = currentDir.y * (q * amplitude * cosP);
-        float yDiff = amplitude * sinP;
+        // 波の頂点がとがりすぎて裏返らないよう、波の数で割っておく
+        float sharpness = steepness / (waveNumber * amplitude * kWaveCount);
+        float slope = waveNumber * amplitude;
 
-        waveOffset += float3(xDiff, yDiff, zDiff);
+        offset += float3(
+            direction.x * sharpness * amplitude * cosPhase,
+            amplitude * sinPhase,
+            direction.y * sharpness * amplitude * cosPhase);
 
-        // 法線・接線用の偏微分係数
         tangent += float3(
-            -currentDir.x * currentDir.x * (q * wa * sinP),
-             currentDir.x * (wa * cosP),
-            -currentDir.x * currentDir.y * (q * wa * sinP)
-        );
+            -direction.x * direction.x * sharpness * slope * sinPhase,
+             direction.x * slope * cosPhase,
+            -direction.x * direction.y * sharpness * slope * sinPhase);
 
         binormal += float3(
-            -currentDir.x * currentDir.y * (q * wa * sinP),
-             currentDir.y * (wa * cosP),
-            -currentDir.y * currentDir.y * (q * wa * sinP)
-        );
+            -direction.x * direction.y * sharpness * slope * sinPhase,
+             direction.y * slope * cosPhase,
+            -direction.y * direction.y * sharpness * slope * sinPhase);
 
-        // 次のオクターブへの減衰
         amplitude *= gWaterMaterial.waveAmplitudeFalloff;
         wavelength *= gWaterMaterial.waveLengthFalloff;
-        
-        // オクターブ毎に波の進行方向を交互に振る
-        currentDir = mul(i % 2 == 0 ? rotMatrix : transpose(rotMatrix), currentDir);
     }
 
     outNormal = normalize(cross(binormal, tangent));
     outTangent = normalize(tangent);
-    
-    return waveOffset;
+    return offset;
+}
+
+WaterVSOutput main(Object3DVSInputInstanced input)
+{
+    Object3DInstanceData instance = gInstanceData[input.instanceID + gInstanceOffset.gBaseInstanceIndex];
+
+    float3 worldPosition = mul(input.position, instance.World).xyz;
+
+    float3 waveNormal;
+    float3 waveTangent;
+    float3 waveOffset = CalculateGerstnerWaves(worldPosition, gFrameData.gTime, waveNormal, waveTangent);
+
+    // プレイヤーなどが入った所はへこみ、通った跡は盛り上がる。
+    // インタラクションの範囲の端に近いほど弱める (範囲の外は 0)
+    float2 interactionUV = (worldPosition.xz - gInteractionData.centerWorldPos) / gInteractionData.worldSize + 0.5f;
+    float edgeFade = smoothstep(1.0f, 0.7f, length(interactionUV - 0.5f) * 2.0f);
+    float4 interaction = gInteractionMap.SampleLevel(gClampSampler, interactionUV, 0);
+    float sink = interaction.b * gWaterMaterial.interactionSinkForce;
+    float bulge = interaction.a * gWaterMaterial.interactionBulgeForce;
+    waveOffset.y += (bulge - sink) * gWaterMaterial.interactionHeightScale * edgeFade;
+
+    worldPosition += waveOffset;
+
+    WaterVSOutput output;
+    output.position = mul(float4(worldPosition, 1.0f), gFrameData.viewProjectionMatrix);
+    output.worldPosition = worldPosition;
+    output.texcoord = input.texcoord;
+    output.normal = normalize(mul(waveNormal, (float3x3) instance.WorldInverseTranspose));
+    output.tangent = normalize(mul(waveTangent, (float3x3) instance.World));
+    return output;
 }
