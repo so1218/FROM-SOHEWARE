@@ -23,7 +23,6 @@ public:
     bool Load(Engine* engine, const std::string& name, const std::string& fontPath,
         float pixelHeight, const std::u32string& characters);
 
-    // ない文字は '?' を返す
     const Glyph* FindGlyph(char32_t codepoint) const;
 
     uint32_t GetTextureIndex() const { return textureIndex_; }
@@ -41,7 +40,16 @@ public:
 
 private:
     static constexpr int kAtlasSize = 2048;
-    static constexpr int kGlyphSpacing = 2;   // アトラス上の文字同士のすき間
+    static constexpr int kGlyphSpacing = 2;        // アトラス上の文字同士のすき間
+    static constexpr uint32_t kCacheVersion = 1;   // キャッシュの形を変えたら上げる
+
+    // フォントファイルから距離のアトラスを作る
+    bool BuildAtlas(const std::string& fontPath, const std::u32string& characters,
+        std::vector<unsigned char>& distanceField);
+
+    // 作ったアトラスをファイルに保存し、次回からはそれを読む
+    bool LoadCache(const std::string& cachePath, uint64_t cacheKey, std::vector<unsigned char>& distanceField);
+    void SaveCache(const std::string& cachePath, uint64_t cacheKey, const std::vector<unsigned char>& distanceField) const;
 
     std::unordered_map<char32_t, Glyph> glyphs_;
     uint32_t textureIndex_ = 0;

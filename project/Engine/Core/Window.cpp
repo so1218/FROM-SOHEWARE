@@ -67,6 +67,8 @@ void Window::Create(std::wstring windowTitle_)
     hInstance_ = GetModuleHandle(nullptr);
     // カーソル
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    // 初期化中に背景を黒にする
+    wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
 
     // ウィンドウクラスを登録する
     RegisterClass(&wc);

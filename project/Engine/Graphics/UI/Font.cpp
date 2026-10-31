@@ -18,6 +18,46 @@ namespace FS
 bool Font::Load(Engine* engine, const std::string& name, const std::string& fontPath,
     float pixelHeight, const std::u32string& characters)
 {
+    pixelHeight_ = pixelHeight;
+
+    // フォントファイル・大きさ・文字のどれかが変わったら作り直す
+    std::error_code errorCode;
+    const auto fontFileSize = std::filesystem::file_size(fontPath, errorCode);
+    const auto fontWriteTime = std::filesystem::last_write_time(fontPath, errorCode).time_since_epoch().count();
+    std::string cacheKeySource = std::format("{}|{}|{}|{}|{}|{}|{}|",
+        fontPath, fontFileSize, fontWriteTime, pixelHeight, kSdfPadding, kAtlasSize, kCacheVersion);
+    cacheKeySource.append(reinterpret_cast<const char*>(characters.data()), characters.size() * sizeof(char32_t));
+    const uint64_t cacheKey = std::hash<std::string>{}(cacheKeySource);
+
+    const std::string cachePath = "Cache/Fonts/" + name + ".fontcache";
+    std::vector<unsigned char> distanceField;
+    if (!LoadCache(cachePath, cacheKey, distanceField))
+    {
+        if (!BuildAtlas(fontPath, characters, distanceField))
+        {
+            return false;
+        }
+        SaveCache(cachePath, cacheKey, distanceField);
+    }
+
+    // A = 輪郭までの距離 (シェーダーは a だけを読む)
+    DirectX::ScratchImage atlasImage;
+    if (FAILED(atlasImage.Initialize2D(DXGI_FORMAT_A8_UNORM, kAtlasSize, kAtlasSize, 1, 1)))
+    {
+        LOG_ERROR("フォント {} のアトラス画像を作成出来なかった", name);
+        return false;
+    }
+    std::memcpy(atlasImage.GetPixels(), distanceField.data(), distanceField.size());
+
+    textureIndex_ = engine->GetTextureLoader()->LoadFromImage("Font:" + name, atlasImage);
+
+    LOG_INFO("フォント {} を作成 ({} 文字)", name, glyphs_.size());
+    return true;
+}
+
+bool Font::BuildAtlas(const std::string& fontPath, const std::u32string& characters,
+    std::vector<unsigned char>& distanceField)
+{
     std::ifstream fontFile(fontPath, std::ios::binary);
     if (!fontFile)
     {
@@ -34,8 +74,7 @@ bool Font::Load(Engine* engine, const std::string& name, const std::string& font
         return false;
     }
 
-    pixelHeight_ = pixelHeight;
-    const float fontScale = stbtt_ScaleForPixelHeight(&fontInfo, pixelHeight);
+    const float fontScale = stbtt_ScaleForPixelHeight(&fontInfo, pixelHeight_);
 
     int ascent = 0;
     int descent = 0;
@@ -58,7 +97,7 @@ bool Font::Load(Engine* engine, const std::string& name, const std::string& font
     }
 
     // 左から順に詰めていく
-    std::vector<unsigned char> distanceField(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
+    distanceField.assign(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
     int penX = kGlyphSpacing;
     int penY = kGlyphSpacing;
     int rowHeight = 0;
@@ -76,7 +115,7 @@ bool Font::Load(Engine* engine, const std::string& name, const std::string& font
         Glyph glyph;
         glyph.advance = advanceWidth * fontScale;
 
-        // 輪郭の値を 128 にして、外側 kSdfPadding ピクセルまでの距離を持たせる
+        // 輪郭の値を 128 (≒ 0.5) にして、外側 kSdfPadding ピクセルまでの距離を持たせる
         int glyphWidth = 0;
         int glyphHeight = 0;
         int glyphLeft = 0;
@@ -101,7 +140,7 @@ bool Font::Load(Engine* engine, const std::string& name, const std::string& font
         if (penY + glyphHeight + kGlyphSpacing > kAtlasSize)
         {
             stbtt_FreeSDF(sdfBitmap, nullptr);
-            LOG_WARN("フォント {} のアトラスが一杯", name);
+            LOG_WARN("フォント {} のアトラスが一杯", fontPath);
             break;
         }
 
@@ -125,27 +164,104 @@ bool Font::Load(Engine* engine, const std::string& name, const std::string& font
         rowHeight = std::max(rowHeight, glyphHeight);
     }
 
-    // RGB = 白, A = 輪郭までの距離
-    DirectX::ScratchImage atlasImage;
-    if (FAILED(atlasImage.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM, kAtlasSize, kAtlasSize, 1, 1)))
+    return true;
+}
+
+bool Font::LoadCache(const std::string& cachePath, uint64_t cacheKey, std::vector<unsigned char>& distanceField)
+{
+    std::ifstream cacheFile(cachePath, std::ios::binary);
+    if (!cacheFile)
     {
-        LOG_ERROR("フォント {} のアトラス画像を作成できなかった", name);
         return false;
     }
 
-    uint8_t* atlasPixels = atlasImage.GetPixels();
-    for (size_t pixelIndex = 0; pixelIndex < distanceField.size(); ++pixelIndex)
+    uint64_t savedKey = 0;
+    cacheFile.read(reinterpret_cast<char*>(&savedKey), sizeof(savedKey));
+    if (savedKey != cacheKey)
     {
-        atlasPixels[pixelIndex * 4 + 0] = 255;
-        atlasPixels[pixelIndex * 4 + 1] = 255;
-        atlasPixels[pixelIndex * 4 + 2] = 255;
-        atlasPixels[pixelIndex * 4 + 3] = distanceField[pixelIndex];
+        return false;
     }
 
-    textureIndex_ = engine->GetTextureLoader()->LoadFromImage("Font:" + name, atlasImage);
+    float metrics[4] = {};
+    uint32_t glyphCount = 0;
+    uint32_t usedHeight = 0;
+    cacheFile.read(reinterpret_cast<char*>(metrics), sizeof(metrics));
+    cacheFile.read(reinterpret_cast<char*>(&glyphCount), sizeof(glyphCount));
+    cacheFile.read(reinterpret_cast<char*>(&usedHeight), sizeof(usedHeight));
+    if (!cacheFile || usedHeight > kAtlasSize)
+    {
+        return false;
+    }
 
-    LOG_INFO("フォント {} を作成 ({} 文字)", name, glyphs_.size());
+    lineHeight_ = metrics[0];
+    ascent_ = metrics[1];
+    emSize_ = metrics[2];
+    emAscent_ = metrics[3];
+
+    glyphs_.clear();
+    glyphs_.reserve(glyphCount);
+    for (uint32_t glyphIndex = 0; glyphIndex < glyphCount; ++glyphIndex)
+    {
+        char32_t codepoint = 0;
+        float values[9] = {};
+        cacheFile.read(reinterpret_cast<char*>(&codepoint), sizeof(codepoint));
+        cacheFile.read(reinterpret_cast<char*>(values), sizeof(values));
+
+        Glyph glyph;
+        glyph.uvRect = Vector4(values[0], values[1], values[2], values[3]);
+        glyph.size = Vector2(values[4], values[5]);
+        glyph.offset = Vector2(values[6], values[7]);
+        glyph.advance = values[8];
+        glyphs_[codepoint] = glyph;
+    }
+
+    // 使っている段だけ保存してあるので、残りは 0 のまま
+    distanceField.assign(static_cast<size_t>(kAtlasSize) * kAtlasSize, 0);
+    cacheFile.read(reinterpret_cast<char*>(distanceField.data()), static_cast<std::streamsize>(usedHeight) * kAtlasSize);
+
+    if (!cacheFile)
+    {
+        glyphs_.clear();
+        return false;
+    }
     return true;
+}
+
+void Font::SaveCache(const std::string& cachePath, uint64_t cacheKey, const std::vector<unsigned char>& distanceField) const
+{
+    std::filesystem::create_directories(std::filesystem::path(cachePath).parent_path());
+    std::ofstream cacheFile(cachePath, std::ios::binary);
+    if (!cacheFile)
+    {
+        LOG_WARN("フォントのキャッシュを保存できなかった: {}", cachePath);
+        return;
+    }
+
+    uint32_t usedHeight = 0;
+    for (const auto& [codepoint, glyph] : glyphs_)
+    {
+        usedHeight = std::max(usedHeight, static_cast<uint32_t>(std::ceil(glyph.uvRect.w * kAtlasSize)));
+    }
+
+    const float metrics[4] = { lineHeight_, ascent_, emSize_, emAscent_ };
+    const uint32_t glyphCount = static_cast<uint32_t>(glyphs_.size());
+    cacheFile.write(reinterpret_cast<const char*>(&cacheKey), sizeof(cacheKey));
+    cacheFile.write(reinterpret_cast<const char*>(metrics), sizeof(metrics));
+    cacheFile.write(reinterpret_cast<const char*>(&glyphCount), sizeof(glyphCount));
+    cacheFile.write(reinterpret_cast<const char*>(&usedHeight), sizeof(usedHeight));
+
+    for (const auto& [codepoint, glyph] : glyphs_)
+    {
+        const float values[9] =
+        {
+            glyph.uvRect.x, glyph.uvRect.y, glyph.uvRect.z, glyph.uvRect.w,
+            glyph.size.x, glyph.size.y, glyph.offset.x, glyph.offset.y, glyph.advance,
+        };
+        cacheFile.write(reinterpret_cast<const char*>(&codepoint), sizeof(codepoint));
+        cacheFile.write(reinterpret_cast<const char*>(values), sizeof(values));
+    }
+
+    cacheFile.write(reinterpret_cast<const char*>(distanceField.data()), static_cast<std::streamsize>(usedHeight) * kAtlasSize);
 }
 
 const Glyph* Font::FindGlyph(char32_t codepoint) const
