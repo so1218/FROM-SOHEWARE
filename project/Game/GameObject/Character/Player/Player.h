@@ -12,6 +12,7 @@
 class PlayerStateNormal; 
 class PlayerWeapon;
 class PlayerReticle;
+class PlayerStamina;
 
 class Player : public FS::GameObject
 {
@@ -42,6 +43,17 @@ public:
 		// 武器威力・弾道調整
 		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率
 		float maxBulletSpread = 0.04f;       // 未フォーカス時の弾道の最大ブレ角
+
+		// ダッシュ
+		float sprintSpeedRate = 1.5f;          // 走りの速さに対する倍率
+		float sprintAnimSpeed = 1.3f;
+		float sprintStaminaPerSecond = 20.0f;  // 1 秒あたりに使うスタミナ
+
+		// 回避
+		float dodgeDistance = 12.0f;
+		float dodgeDuration = 0.4f;
+		float dodgeStaminaCost = 30.0f;
+		float dodgeAnimSpeed = 1.6f;
 	};
 
 	Config config;
@@ -95,6 +107,15 @@ public:
 	// 移動停止時に足音タイマー等をリセットする関数
 	void ResetFootstepState();
 
+	// ダッシュ・回避
+	PlayerStamina* GetStamina() const { return stamina_.get(); }
+	bool IsSprintInputActive() const { return isSprintInputActive_; }
+	bool IsDodgeInputTriggered() const;
+	void SetDodgeDirection(const FS::Vector3& direction) { dodgeDirection_ = direction; }
+	const FS::Vector3& GetDodgeDirection() const { return dodgeDirection_; }
+	void SetDodgeElapsedTime(float elapsedTime) { dodgeElapsedTime_ = elapsedTime; }
+	float GetDodgeElapsedTime() const { return dodgeElapsedTime_; }
+
 private:
 	FS::Engine* engine_;
 	FS::Camera* camera_ = nullptr;
@@ -128,5 +149,14 @@ private:
 	bool isGroundedOnObject_ = false; // オブジェクトの上に乗っているか
 
 	float prevAnimNormalizedTime_ = 0.0f; // 前フレームのアニメーション進捗率
+
+	// ダッシュ・回避
+	void UpdateSprintInput();
+
+	std::unique_ptr<PlayerStamina> stamina_;
+	bool isSprintInputActive_ = false;
+	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
+	FS::Vector3 dodgeDirection_ = { 0.0f, 0.0f, 1.0f };
+	float dodgeElapsedTime_ = 0.0f;
 };
 

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "PlayerStateAiming.h"
 #include "PlayerStateNormal.h"
+#include "PlayerStateDodge.h"
+#include "PlayerStamina.h"
 #include "PlayerReticle.h"
 #include "TimeManager.h"
 #include "Input.h"
@@ -30,6 +32,13 @@ void PlayerStateAiming::Update(Player* player)
     if (!isAimingInput)
     {
         player->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
+        return;
+    }
+
+    // エイム中も回避できる
+    if (player->IsDodgeInputTriggered() && player->GetStamina()->TryConsume(player->config.dodgeStaminaCost))
+    {
+        player->GetStateMachine()->ChangeState(PlayerStateDodge::GetInstance());
         return;
     }
 

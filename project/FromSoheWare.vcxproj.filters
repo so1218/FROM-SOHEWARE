@@ -690,6 +690,15 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStamina.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -1222,6 +1231,15 @@
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateJump.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStamina.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h">

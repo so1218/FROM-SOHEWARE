@@ -34,10 +34,10 @@
             8.930000305175781,
             0.0
         ],
-        "Position Lerp Speed": 40.0,
+        "Position Lerp Speed": 60.0,
         "Recoil Recovery Speed": 12.0,
-        "Rotate Speed Pitch": 0.6800000071525574,
-        "Rotate Speed Yaw": 2.0,
+        "Rotate Speed Pitch": 1.0299999713897705,
+        "Rotate Speed Yaw": 3.140000104904175,
         "Rotation Smooth Time": 0.11999999731779099,
         "Target Distance": 32.0,
         "Target Pitch": 0.35199999809265137,

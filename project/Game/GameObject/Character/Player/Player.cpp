@@ -13,6 +13,7 @@
 #include "GameObjectManager.h"
 #include "PlayerWeapon.h"
 #include "PlayerReticle.h"
+#include "PlayerStamina.h"
 #include "Enemy.h"
 
 using namespace FS;
@@ -26,6 +27,7 @@ engine_(engine), camera_(camera)
 
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
+	stamina_ = std::make_unique<PlayerStamina>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = AddCollider(); // 登録はマネージャーへの追加時に自動で行われる
@@ -69,6 +71,15 @@ void Player::Initialize()
 	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 0.1f, 1.0f, 3.0f);
 	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.1f, 0.0f, 0.2f);
 
+	binder_->Bind("SprintSpeedRate", &config.sprintSpeedRate, 1.5f, 0.01f, 1.0f, 5.0f);
+	binder_->Bind("SprintAnimSpeed", &config.sprintAnimSpeed, 1.3f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("SprintStaminaPerSecond", &config.sprintStaminaPerSecond, 20.0f, 0.5f, 0.0f, 500.0f);
+	binder_->Bind("DodgeDistance", &config.dodgeDistance, 12.0f, 0.1f, 0.0f, 100.0f);
+	binder_->Bind("DodgeDuration", &config.dodgeDuration, 0.4f, 0.01f, 0.05f, 3.0f);
+	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
+	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
+	stamina_->BindProperties(*binder_);
+
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
 
@@ -87,7 +98,9 @@ void Player::Update()
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
 	// ステートマシン更新
+	UpdateSprintInput();
 	stateMachine_->Update();
+	stamina_->Update();
 	isGroundedOnObject_ = false;
 
 	// 衝突判定・境界チェック
@@ -375,6 +388,29 @@ void Player::ResetFootstepState()
 	}
 }
 
+void Player::UpdateSprintInput()
+{
+	auto& input = Input::GetInstance();
+
+	// コントローラーはスティックを倒したまま L3 を押し続けにくいので、押したらスティックを離すまで続ける
+	if (input.IsControllerButtonTriggered(0, Input::ButtonL3))
+	{
+		isControllerSprintLatched_ = true;
+	}
+	if (GetMoveDirection().LengthSq() < 0.01f)
+	{
+		isControllerSprintLatched_ = false;
+	}
+
+	isSprintInputActive_ = input.IsKeyPressed(DIK_LSHIFT) || isControllerSprintLatched_;
+}
+
+bool Player::IsDodgeInputTriggered() const
+{
+	auto& input = Input::GetInstance();
+	return input.IsKeyTriggered(DIK_LCONTROL) || input.IsControllerButtonTriggered(0, Input::ButtonB);
+}
+
 void Player::OnCollisionEnter(Collider* mine, Collider* other)
 {
 
@@ -391,6 +427,7 @@ void Player::Draw()
 
 	weapon_->Draw();
 	reticle_->Draw();
+	stamina_->DrawGauge();
 }
 
 void Player::DebugDraw()
@@ -409,6 +446,28 @@ void Player::DebugDraw()
 	{
 		binder_->Draw("RunSpeed", "走り速度");
 		binder_->Draw("RotationSpeed", "回転の速さ");
+	}
+
+	ImGui::Text("状態: %s", stateMachine_->GetCurrentStateName().c_str());
+
+	if (ImGui::CollapsingHeader("ダッシュ"))
+	{
+		binder_->Draw("SprintSpeedRate", "速さの倍率 (走りに対して)");
+		binder_->Draw("SprintAnimSpeed", "アニメ速度");
+		binder_->Draw("SprintStaminaPerSecond", "1 秒あたりのスタミナ消費");
+	}
+
+	if (ImGui::CollapsingHeader("回避"))
+	{
+		binder_->Draw("DodgeDistance", "移動距離");
+		binder_->Draw("DodgeDuration", "かかる時間 (秒)");
+		binder_->Draw("DodgeStaminaCost", "スタミナ消費");
+		binder_->Draw("DodgeAnimSpeed", "アニメ速度");
+	}
+
+	if (ImGui::CollapsingHeader("スタミナ"))
+	{
+		stamina_->DrawProperties(*binder_);
 	}
 
 	if (ImGui::CollapsingHeader("エイム設定"))

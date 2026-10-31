@@ -15,6 +15,10 @@
         ],
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,
+        "DodgeAnimSpeed": 1.600000023841858,
+        "DodgeDistance": 12.0,
+        "DodgeDuration": 0.4000000059604645,
+        "DodgeStaminaCost": 30.0,
         "Gravity": 74.04000091552734,
         "HP": 9.819999694824219,
         "IdleAnimSpeed": 1.0,
@@ -1102,11 +1106,38 @@
         "RollSpeed": 3.4700000286102295,
         "RotationSpeed": 3.3399999141693115,
         "RunAnimSpeed": 1.0,
-        "RunSpeed": 28.280000686645508,
+        "RunSpeed": 20.170000076293945,
         "RunToIdleBlendTime": 0.25,
         "ShootRecoilTime": 0.009999999776482582,
+        "SprintAnimSpeed": 1.2999999523162842,
+        "SprintSpeedRate": 1.5,
+        "SprintStaminaPerSecond": 10.0,
         "Stamina": 4.550000190734863,
         "StaminaRecovery": 0.5,
+        "Stamina_ExhaustedColor": [
+            0.8999999761581421,
+            0.25,
+            0.20000000298023224,
+            0.8999999761581421
+        ],
+        "Stamina_ExhaustedRecover": 40.0,
+        "Stamina_GaugeColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.8999999761581421
+        ],
+        "Stamina_GaugeOffset": [
+            0.0,
+            -60.0
+        ],
+        "Stamina_GaugeSize": [
+            240.0,
+            6.0
+        ],
+        "Stamina_Max": 100.0,
+        "Stamina_RegenDelay": 0.800000011920929,
+        "Stamina_RegenPerSecond": 20.0,
         "WeaponModel_AddShadow": 1,
         "WeaponModel_AlbedoMap": "white1x1",
         "WeaponModel_AlphaThres": 0.009999999776482582,

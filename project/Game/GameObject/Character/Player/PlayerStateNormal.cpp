@@ -2,6 +2,9 @@
 #include "PlayerStateNormal.h"
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
+#include "PlayerStateSprint.h"
+#include "PlayerStateDodge.h"
+#include "PlayerStamina.h"
 #include "Input.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
@@ -49,10 +52,24 @@ void PlayerStateNormal::Update(Player* player)
         player->ResetFootstepState();
     }
 
+    // 回避
+    if (player->IsDodgeInputTriggered() && player->GetStamina()->TryConsume(player->config.dodgeStaminaCost))
+    {
+        player->GetStateMachine()->ChangeState(PlayerStateDodge::GetInstance());
+        return;
+    }
+
     // エイム状態に遷移
     if (Input::GetInstance().IsKeyPressed(DIK_K) || Input::GetInstance().IsControllerButtonPressed(0, Input::ButtonLT))
     {
         player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
+        return;
+    }
+
+    // ダッシュ
+    if (isMoving && player->IsSprintInputActive() && !player->GetStamina()->IsExhausted())
+    {
+        player->GetStateMachine()->ChangeState(PlayerStateSprint::GetInstance());
         return;
     }
 

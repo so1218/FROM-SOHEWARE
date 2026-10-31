@@ -1,5 +1,40 @@
 {
     "GameUI": {
+        "InstructionText_Align": 0,
+        "InstructionText_CharSpacing": 0.0,
+        "InstructionText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "InstructionText_Content": "",
+        "InstructionText_Direction": 0,
+        "InstructionText_Font": "Main",
+        "InstructionText_FontSize": 32.0,
+        "InstructionText_Layer": 0,
+        "InstructionText_LineSpacing": 1.0,
+        "InstructionText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "InstructionText_OutlineWidth": 0.0,
+        "InstructionText_Pivot": [
+            0.0,
+            0.0
+        ],
+        "InstructionText_Pos": [
+            0.0,
+            0.0
+        ],
+        "InstructionText_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
+        "InstructionText_Visible": true,
+        "InstructionText_WrapLength": 0.0,
         "IsVisible": true,
         "MessageText_Align": 0,
         "MessageText_CharSpacing": 1.0,
