@@ -15,7 +15,6 @@
 namespace FS
 {
 
-
 void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, int clientHeight)
 {
     ID3D12Device* device = env.device->GetDevice();
@@ -28,7 +27,7 @@ void SpriteRenderer::Initialize(const RenderEnvironment& env, int clientWidth, i
         instanceBuffers_[frameIndex]->Map(0, nullptr, reinterpret_cast<void**>(&mappedInstanceBuffers_[frameIndex]));
     }
 
-    // 正射影行列 (左上が原点、右下が (画面幅, 画面高さ))。画面サイズは固定なので 1 回だけ作る
+    // 正射影行列
     frameConstantBuffer_ = BufferManager::CreateBufferResource(device, sizeof(SpriteFrameConstants));
     frameConstantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedFrameConstants_));
     mappedFrameConstants_->projection = Matrix4x4::MakeOrthographic(
@@ -64,14 +63,14 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
         return;
     }
 
-    // 重なり順で並べる。同じ値なら Submit した順 (stable_sort なので順番が保たれる)
+    // 重なり順で並べる
     std::stable_sort(submittedSprites_.begin(), submittedSprites_.end(),
         [](const SubmittedSprite& a, const SubmittedSprite& b)
         {
             return a.layerOrder < b.layerOrder;
         });
 
-    // 並べた順にバッファへコピー。GPU はインスタンスの順番どおりに重ねて描く
+    // 並べた順にバッファへコピー
     SpriteInstance* instanceDestination = mappedInstanceBuffers_[currentFrameIndex_];
     for (size_t i = 0; i < submittedSprites_.size(); ++i)
     {
@@ -92,7 +91,7 @@ void SpriteRenderer::Draw(const RenderEnvironment& env)
     commandList->SetGraphicsRootDescriptorTable(
         2, env.srvManager->GetSRVHandleGPU(0));  
 
-    // 6 頂点 × 枚数 を 1 回で描画
+    // 描画
     commandList->DrawInstanced(6, lastDrawCount_, 0, 0);
 
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameBufferCount;

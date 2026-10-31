@@ -11,6 +11,7 @@ namespace FS
 class Model;
 class AnimationModel;
 class Sprite;
+class Text;
 class Terrain;
 class Engine;
 
@@ -52,10 +53,17 @@ public:
     void BindTexture(const std::string& key, const std::string& initialValue, std::function<void(const std::string&)> onValueChanged, const std::string& defaultName = "white1x1", TextureType filterType = TextureType::Albedo);
     void BindTexture(const std::string& key, std::string* currentTextureName, uint32_t* currentHandlePtr, const std::string& defaultName, TextureType filterType = TextureType::Albedo, std::function<void()> callback = nullptr);
 
+    // 文字列を入力欄で編集する
+    void BindString(const std::string& key, const std::string& defaultValue, std::function<void(const std::string&)> onChange, bool isMultiline = false);
+    // FontList.csv で読み込んだフォントから選ぶ
+    void BindFontName(const std::string& key, const std::string& defaultName, std::function<void(const std::string&)> onChange);
+
     // オブジェクトバインド
     void BindModel(const std::string& groupName, Model* model);
     void BindAnimationModel(const std::string& groupName, AnimationModel* model);
     void BindSprite(const std::string& groupName, Sprite* sprite);
+    // bindContent = false にすると文字列は登録しない (スコアなど、コードから毎フレーム書き換える文字用)
+    void BindTextElement(const std::string& groupName, Text* text, bool bindContent = true);
     void BindTerrain(const std::string& groupName, Terrain* terrain);
 
     // UI描画
@@ -65,6 +73,7 @@ public:
     bool DrawModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
+    void DrawTextElement(const std::string& groupName, const std::string& customLabel = "");
     void DrawTerrain(const std::string& groupName, const std::string& customLabel = "");
 
     void Clear(bool eraseData = false);
@@ -89,6 +98,9 @@ private:
     void BindVector3Internal(const std::string& key, Vector3* ptr, const Vector3& defaultValue, float speed, float min, float max, std::function<void()> onChange);
     void BindMaterialProperties(const std::string& prefix, MaterialHandle* handle);
 
+    // 9 方向のボタンで画面基準と基準点をまとめて設定する
+    bool DrawAnchorPreset(const std::string& screenAnchorKey, Vector2* screenAnchor, const std::string& pivotKey, Vector2* pivot);
+
     template <typename ModelType>
     bool DrawMaterialUI(ModelType* targetModel, const std::string& prefix, GlobalVariables* gv, const std::vector<std::string>& groupPath);
 
@@ -101,10 +113,13 @@ private:
     struct ModelBindInfo { Model* model = nullptr; };
     struct AnimationBindInfo { AnimationModel* model = nullptr; };
     struct TerrainBindInfo { Terrain* terrain = nullptr; };
+    struct TextBindInfo { Text* text = nullptr; bool bindContent = true; };
 
     std::unordered_map<std::string, ModelBindInfo> modelBindMap_;
     std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
     std::unordered_map<std::string, TerrainBindInfo> terrainBindMap_;
+    std::unordered_map<std::string, Sprite*> spriteBindMap_;
+    std::unordered_map<std::string, TextBindInfo> textBindMap_;
 };
 
 }

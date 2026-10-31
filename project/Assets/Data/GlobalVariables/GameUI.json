@@ -1,6 +1,41 @@
 {
     "GameUI": {
         "IsVisible": true,
+        "MessageText_Align": 0,
+        "MessageText_CharSpacing": 1.0,
+        "MessageText_Color": [
+            0.7782101035118103,
+            0.7600417733192444,
+            0.7600417733192444,
+            1.0
+        ],
+        "MessageText_Content": "WASD で移動\nマウスで視点操作\nY でメイン・デバッグカメラ切り替え\nメインカメラ\n[Arrow]: カメラ移動\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
+        "MessageText_Direction": 0,
+        "MessageText_Font": "Gothic",
+        "MessageText_FontSize": 28.5,
+        "MessageText_Layer": 0,
+        "MessageText_LineSpacing": 0.949999988079071,
+        "MessageText_OutlineColor": [
+            0.00311279296875,
+            0.0,
+            0.20000000298023224,
+            1.0
+        ],
+        "MessageText_OutlineWidth": 0.0,
+        "MessageText_Pivot": [
+            0.0,
+            1.0
+        ],
+        "MessageText_Pos": [
+            0.0,
+            0.0
+        ],
+        "MessageText_ScreenAnchor": [
+            0.019999999552965164,
+            0.9800000190734863
+        ],
+        "MessageText_Visible": true,
+        "MessageText_WrapLength": 0.0,
         "SpriteCameraSwitch_Anchor": [
             0.0,
             0.0
@@ -27,11 +62,21 @@
             510.0
         ],
         "SpriteCameraSwitch_Rot": 0.0,
+        "SpriteCameraSwitch_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteCameraSwitch_Size": [
             295.0,
             20.0
         ],
         "SpriteCameraSwitch_Tex": "ui_cameraSwitch",
+        "SpriteCameraSwitch_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteCameraSwitch_UVRot": [
             0.0,
             0.0,
@@ -74,11 +119,21 @@
             600.0
         ],
         "SpriteDebugCameraMode_Rot": 0.0,
+        "SpriteDebugCameraMode_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteDebugCameraMode_Size": [
             122.0,
             20.0
         ],
         "SpriteDebugCameraMode_Tex": "ui_debugCameraMode",
+        "SpriteDebugCameraMode_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteDebugCameraMode_UVRot": [
             0.0,
             0.0,
@@ -121,11 +176,21 @@
             660.0
         ],
         "SpriteDebugCameraRotate_Rot": 0.0,
+        "SpriteDebugCameraRotate_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteDebugCameraRotate_Size": [
             329.0,
             20.0
         ],
         "SpriteDebugCameraRotate_Tex": "ui_debugCameraRotate",
+        "SpriteDebugCameraRotate_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteDebugCameraRotate_UVRot": [
             0.0,
             0.0,
@@ -168,11 +233,21 @@
             630.0
         ],
         "SpriteDebugCameraTranslate_Rot": 0.0,
+        "SpriteDebugCameraTranslate_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteDebugCameraTranslate_Size": [
             405.0,
             20.0
         ],
         "SpriteDebugCameraTranslate_Tex": "ui_debugCameraTranslate",
+        "SpriteDebugCameraTranslate_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteDebugCameraTranslate_UVRot": [
             0.0,
             0.0,
@@ -215,11 +290,21 @@
             690.0
         ],
         "SpriteDebugCameraZoom_Rot": 0.0,
+        "SpriteDebugCameraZoom_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteDebugCameraZoom_Size": [
             223.0,
             20.0
         ],
         "SpriteDebugCameraZoom_Tex": "ui_debugCameraZoom",
+        "SpriteDebugCameraZoom_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteDebugCameraZoom_UVRot": [
             0.0,
             0.0,
@@ -262,11 +347,21 @@
             540.0
         ],
         "SpriteMainCameraMode_Rot": 0.0,
+        "SpriteMainCameraMode_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteMainCameraMode_Size": [
             98.0,
             20.0
         ],
         "SpriteMainCameraMode_Tex": "ui_mainCameraMode",
+        "SpriteMainCameraMode_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteMainCameraMode_UVRot": [
             0.0,
             0.0,
@@ -309,11 +404,21 @@
             570.0
         ],
         "SpriteMainCameraMove_Rot": 0.0,
+        "SpriteMainCameraMove_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteMainCameraMove_Size": [
             181.0,
             20.0
         ],
         "SpriteMainCameraMove_Tex": "ui_mainCameraMove",
+        "SpriteMainCameraMove_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteMainCameraMove_UVRot": [
             0.0,
             0.0,
@@ -356,11 +461,21 @@
             480.0
         ],
         "SpriteMove_Rot": 0.0,
+        "SpriteMove_ScreenAnchor": [
+            0.0,
+            0.0
+        ],
         "SpriteMove_Size": [
             180.0,
             20.0
         ],
         "SpriteMove_Tex": "ui_move",
+        "SpriteMove_UVRect": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+        ],
         "SpriteMove_UVRot": [
             0.0,
             0.0,
@@ -376,6 +491,146 @@
             0.0,
             0.0
         ],
-        "SpriteMove_Visible": true
+        "SpriteMove_Visible": true,
+        "StageNameText_Align": 0,
+        "StageNameText_CharSpacing": 4.0,
+        "StageNameText_Color": [
+            0.10220428556203842,
+            0.4863813519477844,
+            0.06623870879411697,
+            1.0
+        ],
+        "StageNameText_Content": "RimGrave",
+        "StageNameText_Direction": 0,
+        "StageNameText_Font": "Shippori",
+        "StageNameText_FontSize": 104.0,
+        "StageNameText_Layer": 0,
+        "StageNameText_LineSpacing": 1.0,
+        "StageNameText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "StageNameText_OutlineWidth": 3.0,
+        "StageNameText_Pivot": [
+            1.0,
+            0.5
+        ],
+        "StageNameText_Pos": [
+            -30.0,
+            0.0
+        ],
+        "StageNameText_ScreenAnchor": [
+            0.3400000035762787,
+            0.10000000149011612
+        ],
+        "StageNameText_Visible": true,
+        "StageNameText_WrapLength": 0.0,
+        "TimeFormat": " {:.1f} 秒",
+        "TimeText_Align": 0,
+        "TimeText_CharSpacing": 0.0,
+        "TimeText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TimeText_Direction": 0,
+        "TimeText_Font": "Gothic",
+        "TimeText_FontSize": 56.5,
+        "TimeText_Layer": 0,
+        "TimeText_LineSpacing": 1.409999966621399,
+        "TimeText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "TimeText_OutlineWidth": 0.0,
+        "TimeText_Pivot": [
+            1.0,
+            0.0
+        ],
+        "TimeText_Pos": [
+            0.0,
+            0.0
+        ],
+        "TimeText_ScreenAnchor": [
+            0.9700000286102295,
+            0.019999999552965164
+        ],
+        "TimeText_Visible": true,
+        "TimeText_WrapLength": 0.0,
+        "TitleText_Align": 0,
+        "TitleText_CharSpacing": 0.0,
+        "TitleText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TitleText_Content": "操作説明",
+        "TitleText_Direction": 0,
+        "TitleText_Font": "Gothic",
+        "TitleText_FontSize": 48.0,
+        "TitleText_Layer": 0,
+        "TitleText_LineSpacing": 1.0,
+        "TitleText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "TitleText_OutlineWidth": 0.0,
+        "TitleText_Pivot": [
+            0.0,
+            0.0
+        ],
+        "TitleText_Pos": [
+            20.0,
+            20.0
+        ],
+        "TitleText_ScreenAnchor": [
+            0.0,
+            0.5400000214576721
+        ],
+        "TitleText_Visible": true,
+        "TitleText_WrapLength": 0.0,
+        "VerticalText_Align": 0,
+        "VerticalText_CharSpacing": -1.899999976158142,
+        "VerticalText_Color": [
+            0.36964982748031616,
+            0.36964982748031616,
+            0.36964982748031616,
+            1.0
+        ],
+        "VerticalText_Content": "リムグレイブ",
+        "VerticalText_Direction": 0,
+        "VerticalText_Font": "Shippori",
+        "VerticalText_FontSize": 100.0,
+        "VerticalText_Layer": 0,
+        "VerticalText_LineSpacing": 1.0800000429153442,
+        "VerticalText_OutlineColor": [
+            0.0,
+            0.17120623588562012,
+            0.16121363639831543,
+            1.0
+        ],
+        "VerticalText_OutlineWidth": 0.0,
+        "VerticalText_Pivot": [
+            0.0,
+            0.0
+        ],
+        "VerticalText_Pos": [
+            -30.0,
+            0.0
+        ],
+        "VerticalText_ScreenAnchor": [
+            0.05999999865889549,
+            0.03999999910593033
+        ],
+        "VerticalText_Visible": true,
+        "VerticalText_WrapLength": 0.0
     }
 }

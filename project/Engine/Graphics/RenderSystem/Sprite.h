@@ -2,6 +2,7 @@
 #include "Vector2.h"
 #include "WorldTransform.h"
 #include "Structures.h"
+#include "UIAnchor.h"
 
 namespace FS
 {
@@ -33,6 +34,17 @@ public:
     void SetSize(const Vector2& size) { size_ = size; }
     void SetRotation(float rotation) { rotation_ = rotation; }
     void SetAnchorPoint(const Vector2& anchorPoint) { anchorPoint_ = anchorPoint; }
+
+    // 画面の基準点
+    void SetScreenAnchor(const Vector2& screenAnchor) { screenAnchor_ = screenAnchor; }
+
+    // 画面基準と基準点を同じ位置にそろえる
+    void SetAnchor(UIAnchor anchor)
+    {
+        screenAnchor_ = ToAnchorVector(anchor);
+        anchorPoint_ = screenAnchor_;
+    }
+    const Vector2& GetScreenAnchor() const { return screenAnchor_; }
     void SetLayerOrder(int order) { layerOrder_ = order; }
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
     void SetUVTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
@@ -76,6 +88,7 @@ public:
     int* GetLayerOrderPtr() { return &layerOrder_; }
     Vector2* GetAnchorPointPtr() { return &anchorPoint_; }
     Vector4* GetUVRectPtr() { return &uvRect_; }
+    Vector2* GetScreenAnchorPtr() { return &screenAnchor_; }
 
 private:
     Engine* engine_ = nullptr;
@@ -83,6 +96,7 @@ private:
     SpriteMaterial material_;                    
 
     Vector2 position_ = { 0.0f, 0.0f };
+    Vector2 screenAnchor_ = { 0.0f, 0.0f };   // 左上
     Vector2 size_ = { 1.0f, 1.0f };
     float rotation_ = 0.0f;
     Vector2 anchorPoint_ = { 0.0f, 0.0f };         

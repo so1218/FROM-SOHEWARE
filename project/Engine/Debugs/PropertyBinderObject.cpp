@@ -3,6 +3,8 @@
 #include "Model.h"
 #include "AnimationModel.h"
 #include "Sprite.h"
+#include "Text.h"
+#include "FontManager.h"
 #include "SRVManager.h"
 #include "Terrain.h"
 #include "Engine.h"
@@ -164,12 +166,14 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
     WorldTransform& uvTransform = sprite->GetUVTransform();
 
     std::string prefix = groupName + "_";
+    spriteBindMap_[groupName] = sprite;
 
     // トランスフォーム
     Bind(prefix + "Pos", &sprite->GetPosition(), { 0.0f, 0.0f }, 1.0f);
     Bind(prefix + "Size", &sprite->GetSize(), { 100.0f, 100.0f }, 1.0f);
     Bind(prefix + "Rot", &sprite->GetRotation(), 0.0f, 0.01f);
     Bind(prefix + "Anchor", sprite->GetAnchorPointPtr(), { 0.0f, 0.0f }, 0.01f);
+    Bind(prefix + "ScreenAnchor", sprite->GetScreenAnchorPtr(), sprite->GetScreenAnchor(), 0.01f, 0.0f, 1.0f);
 
     // 見た目
     BindColor(prefix + "Color", sprite->GetColorPtr(), 0xFFFFFFFF);
@@ -205,6 +209,104 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
     BindColor(prefix + "EdgeColor", &material->edgeColor, { 1.0f, 0.5f, 0.0f });
 }
 
+void PropertyBinder::BindTextElement(const std::string& groupName, Text* text, bool bindContent)
+{
+    std::string prefix = groupName + "_";
+    textBindMap_[groupName] = { text, bindContent };
+
+    // 文字列とフォント
+    if (bindContent)
+    {
+        BindString(prefix + "Content", text->GetText(),
+            [text](const std::string& newText) { text->SetText(newText); }, true);
+    }
+    BindFontName(prefix + "Font", text->GetFontName(),
+        [text](const std::string& newFontName) { text->SetFont(newFontName); });
+
+    // 配置
+    Bind(prefix + "Pos", text->GetPositionPtr(), *text->GetPositionPtr(), 1.0f);
+    Bind(prefix + "ScreenAnchor", text->GetScreenAnchorPtr(), *text->GetScreenAnchorPtr(), 0.01f, 0.0f, 1.0f);
+    Bind(prefix + "Pivot", text->GetPivotPtr(), *text->GetPivotPtr(), 0.01f, 0.0f, 1.0f);
+    BindCombo(prefix + "Align", text->GetAlignPtr(), *text->GetAlignPtr(), "左 (上) 揃え\0中央揃え\0右 (下) 揃え\0");
+    BindCombo(prefix + "Direction", text->GetDirectionPtr(), *text->GetDirectionPtr(), "横書き\0縦書き\0");
+    Bind(prefix + "WrapLength", text->GetWrapLengthPtr(), *text->GetWrapLengthPtr(), 1.0f, 0.0f, 4000.0f);
+
+    // 見た目
+    Bind(prefix + "FontSize", text->GetFontSizePtr(), *text->GetFontSizePtr(), 0.5f, 1.0f, 512.0f);
+    Bind(prefix + "LineSpacing", text->GetLineSpacingPtr(), *text->GetLineSpacingPtr(), 0.01f, 0.1f, 5.0f);
+    Bind(prefix + "CharSpacing", text->GetCharacterSpacingPtr(), *text->GetCharacterSpacingPtr(), 0.1f, -100.0f, 200.0f);
+    BindColor(prefix + "Color", text->GetColorPtr(), *text->GetColorPtr());
+    Bind(prefix + "OutlineWidth", text->GetOutlineWidthPtr(), *text->GetOutlineWidthPtr(), 0.1f, 0.0f, 16.0f);
+    BindColor(prefix + "OutlineColor", text->GetOutlineColorPtr(), *text->GetOutlineColorPtr());
+
+    Bind(prefix + "Visible", text->GetIsVisiblePtr(), *text->GetIsVisiblePtr());
+    Bind(prefix + "Layer", text->GetLayerOrderPtr(), *text->GetLayerOrderPtr(), 1.0f);
+}
+
+void PropertyBinder::DrawTextElement(const std::string& groupName, const std::string& customLabel)
+{
+#ifdef ENABLE_IMGUI
+    std::string prefix = groupName + "_";
+    std::string displayLabel = customLabel.empty() ? groupName : customLabel;
+
+    ImGui::PushID(groupName.c_str());
+
+    if (ImGui::CollapsingHeader(displayLabel.c_str(), ImGuiTreeNodeFlags_None))
+    {
+        ImGui::Indent(12.0f);
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("基本設定");
+        Draw(prefix + "Visible", "表示");
+        Draw(prefix + "Layer", "描画順");
+
+        auto foundText = textBindMap_.find(groupName);
+        Text* text = (foundText != textBindMap_.end()) ? foundText->second.text : nullptr;
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("文字");
+        if (foundText != textBindMap_.end() && foundText->second.bindContent)
+        {
+            Draw(prefix + "Content", "文字列");
+        }
+        Draw(prefix + "Font", "フォント");
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("配置");
+        if (text != nullptr)
+        {
+            DrawAnchorPreset(prefix + "ScreenAnchor", text->GetScreenAnchorPtr(), prefix + "Pivot", text->GetPivotPtr());
+        }
+        Draw(prefix + "ScreenAnchor", "画面基準 (0,0=左上 1,1=右下)");
+        Draw(prefix + "Pos", "位置 (画面基準からのずれ)");
+        Draw(prefix + "Pivot", "文章の基準点 (0,0=左上 1,1=右下)");
+        Draw(prefix + "Direction", "書く向き");
+        Draw(prefix + "Align", "行の揃え");
+        Draw(prefix + "WrapLength", "折り返す長さ (0 = 折り返さない)");
+        if (text != nullptr)
+        {
+            const Vector2 textSize = text->MeasureSize();
+            ImGui::TextDisabled("大きさ: %.0f x %.0f", textSize.x, textSize.y);
+        }
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("見た目");
+        Draw(prefix + "FontSize", "文字の大きさ");
+        Draw(prefix + "LineSpacing", "行間 (倍率)");
+        Draw(prefix + "CharSpacing", "字間 (ピクセル)");
+        Draw(prefix + "Color", "文字色");
+        Draw(prefix + "OutlineWidth", "縁取りの太さ");
+        Draw(prefix + "OutlineColor", "縁取りの色");
+
+        ImGui::PopItemWidth();
+        ImGui::Unindent(12.0f);
+    }
+
+    ImGui::PopID();
+#endif
+}
+
 void PropertyBinder::DrawSprite(const std::string& groupName, const std::string& customLabel)
 {
 #ifdef ENABLE_IMGUI
@@ -226,10 +328,16 @@ void PropertyBinder::DrawSprite(const std::string& groupName, const std::string&
 
         ImGui::Spacing();
         ImGui::SeparatorText("トランスフォーム");
+        if (auto foundSprite = spriteBindMap_.find(groupName); foundSprite != spriteBindMap_.end())
+        {
+            Sprite* sprite = foundSprite->second;
+            DrawAnchorPreset(prefix + "ScreenAnchor", sprite->GetScreenAnchorPtr(), prefix + "Anchor", sprite->GetAnchorPointPtr());
+        }
         Draw(prefix + "Pos", "位置");
         Draw(prefix + "Size", "サイズ");
         Draw(prefix + "Rot", "回転");
         Draw(prefix + "Anchor", "基準点");
+        Draw(prefix + "ScreenAnchor", "画面基準 (0,0=左上 1,1=右下)");
 
         ImGui::Spacing();
         ImGui::SeparatorText("見た目");
@@ -815,6 +923,177 @@ bool PropertyBinder::DrawMaterialUI(ModelType* targetModel, const std::string& p
         }
     }
 
+    return isChanged;
+#else
+    return false;
+#endif
+}
+
+void PropertyBinder::BindString(
+    const std::string& key,
+    const std::string& defaultValue,
+    std::function<void(const std::string&)> onChange,
+    bool isMultiline)
+{
+    auto* globalVariables = GlobalVariables::GetInstance();
+
+    if (items_.find(key) == items_.end())
+    {
+        keys_.push_back(key);
+    }
+    globalVariables->AddItem(groupPath_, key, defaultValue);
+
+    if (onChange)
+    {
+        onChange(globalVariables->GetStringValue(groupPath_, key));
+    }
+
+#ifdef ENABLE_IMGUI
+    items_[key] = [this, key, onChange, isMultiline](const std::string& nameOverride)
+        {
+            auto* globalVariables = GlobalVariables::GetInstance();
+            const std::string currentValue = globalVariables->GetStringValue(groupPath_, key);
+
+            std::array<char, 1024> inputBuffer{};
+            currentValue.copy(inputBuffer.data(), inputBuffer.size() - 1);
+
+            const std::string label = MakeLabel(key, nameOverride);
+            bool isChanged = false;
+            if (isMultiline)
+            {
+                const ImVec2 inputSize(0.0f, ImGui::GetTextLineHeight() * 4.0f);
+                isChanged = ImGui::InputTextMultiline(label.c_str(), inputBuffer.data(), inputBuffer.size(), inputSize);
+            }
+            else
+            {
+                isChanged = ImGui::InputText(label.c_str(), inputBuffer.data(), inputBuffer.size());
+            }
+
+            if (!isChanged)
+            {
+                return false;
+            }
+
+            const std::string newValue = inputBuffer.data();
+            globalVariables->SetValue(groupPath_, key, newValue);
+            if (onChange)
+            {
+                onChange(newValue);
+            }
+            return true;
+        };
+#endif
+}
+
+void PropertyBinder::BindFontName(
+    const std::string& key,
+    const std::string& defaultName,
+    std::function<void(const std::string&)> onChange)
+{
+    auto* globalVariables = GlobalVariables::GetInstance();
+
+    if (items_.find(key) == items_.end())
+    {
+        keys_.push_back(key);
+    }
+    globalVariables->AddItem(groupPath_, key, defaultName);
+
+    if (onChange)
+    {
+        onChange(globalVariables->GetStringValue(groupPath_, key));
+    }
+
+#ifdef ENABLE_IMGUI
+    items_[key] = [this, key, onChange](const std::string& nameOverride)
+        {
+            auto* globalVariables = GlobalVariables::GetInstance();
+            const std::vector<std::string>& fontNames = FontManager::GetInstance().GetFontNames();
+            const std::string currentName = globalVariables->GetStringValue(groupPath_, key);
+
+            bool isChanged = false;
+            const std::string label = MakeLabel(key, nameOverride);
+            if (ImGui::BeginCombo(label.c_str(), currentName.c_str()))
+            {
+                for (const std::string& fontName : fontNames)
+                {
+                    const bool isSelected = (fontName == currentName);
+                    if (ImGui::Selectable(fontName.c_str(), isSelected) && !isSelected)
+                    {
+                        globalVariables->SetValue(groupPath_, key, fontName);
+                        if (onChange)
+                        {
+                            onChange(fontName);
+                        }
+                        isChanged = true;
+                    }
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            return isChanged;
+        };
+#endif
+}
+
+bool PropertyBinder::DrawAnchorPreset(const std::string& screenAnchorKey, Vector2* screenAnchor, const std::string& pivotKey, Vector2* pivot)
+{
+#ifdef ENABLE_IMGUI
+    static const char* kAnchorNames[9] =
+    {
+        "左上", "上", "右上",
+        "左", "中央", "右",
+        "左下", "下", "右下",
+    };
+
+    auto* globalVariables = GlobalVariables::GetInstance();
+    bool isChanged = false;
+
+    ImGui::PushID(screenAnchorKey.c_str());
+    for (int32_t anchorIndex = 0; anchorIndex < 9; ++anchorIndex)
+    {
+        const Vector2 anchorVector = ToAnchorVector(static_cast<UIAnchor>(anchorIndex));
+        const bool isCurrent =
+            screenAnchor->x == anchorVector.x && screenAnchor->y == anchorVector.y &&
+            pivot->x == anchorVector.x && pivot->y == anchorVector.y;
+
+        if (anchorIndex % 3 != 0)
+        {
+            ImGui::SameLine();
+        }
+
+        ImGui::PushID(anchorIndex);
+        if (isCurrent)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+        }
+        if (ImGui::Button(isCurrent ? "*" : " ", ImVec2(24.0f, 24.0f)))
+        {
+            *screenAnchor = anchorVector;
+            *pivot = anchorVector;
+            globalVariables->SetValue(groupPath_, screenAnchorKey, *screenAnchor);
+            globalVariables->SetValue(groupPath_, pivotKey, *pivot);
+            isChanged = true;
+        }
+        if (isCurrent)
+        {
+            ImGui::PopStyleColor();
+        }
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("%s", kAnchorNames[anchorIndex]);
+        }
+        ImGui::PopID();
+
+        if (anchorIndex == 2)
+        {
+            ImGui::SameLine();
+            ImGui::TextUnformatted("配置プリセット");
+        }
+    }
+    ImGui::PopID();
     return isChanged;
 #else
     return false;

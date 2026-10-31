@@ -7,6 +7,7 @@ struct SpriteVSOutput
     nointerpolation uint instanceId : INSTANCEID;
 };
 
+// SpriteInstance を変えたらこのファイルも再コンパイルする必要がある
 ConstantBuffer<SpriteFrameConstants> gSpriteFrame : register(b0);
 StructuredBuffer<SpriteInstance> gInstances : register(t0);
 

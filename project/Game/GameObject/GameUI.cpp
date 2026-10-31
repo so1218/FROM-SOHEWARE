@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameUI.h"
+#include "TimeManager.h"
 
 using namespace FS;
 
@@ -7,46 +8,56 @@ GameUI::GameUI(Engine* engine) : engine_(engine)
 {
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GameUI");
 
-    spriteCameraSwitch_ = std::make_unique<Sprite>(engine_);
-    spriteMainCameraMode_ = std::make_unique<Sprite>(engine_);
-    spriteMove_ = std::make_unique<Sprite>(engine_);
-    spriteMainCameraMove_ = std::make_unique<Sprite>(engine_);
-    spriteDebugCameraMode_ = std::make_unique<Sprite>(engine_);
-    spriteDebugCameraTranslate_ = std::make_unique<Sprite>(engine_);
-    spriteDebugCameraRotate_ = std::make_unique<Sprite>(engine_);
-    spriteDebugCameraZoom_ = std::make_unique<Sprite>(engine_);
+    // フォントを省略すると FontList.csv の先頭のフォントを使う
+    instructionText_ = std::make_unique<Text>(engine_);
+
+    // フォントを名前で指定する
+    timeText_ = std::make_unique<Text>(engine_, "Main");
+    timeText_->SetAnchor(UIAnchor::TopRight);
+    timeText_->SetPosition({ -20.0f, 20.0f });
+    timeText_->SetFontSize(28.0f);
+
+    messageText_ = std::make_unique<Text>(engine_);
+    stageNameText_ = std::make_unique<Text>(engine_);
 }
 
 void GameUI::Initialize()
 {
     binder_->Bind("IsVisible", &isVisible_, true);
 
-    binder_->BindSprite("SpriteCameraSwitch", spriteCameraSwitch_.get());
-    binder_->BindSprite("SpriteMainCameraMode", spriteMainCameraMode_.get());
-    binder_->BindSprite("SpriteMove", spriteMove_.get());
-    binder_->BindSprite("SpriteMainCameraMove", spriteMainCameraMove_.get());
-    binder_->BindSprite("SpriteDebugCameraMode", spriteDebugCameraMode_.get());
-    binder_->BindSprite("SpriteDebugCameraTranslate", spriteDebugCameraTranslate_.get());
-    binder_->BindSprite("SpriteDebugCameraRotate", spriteDebugCameraRotate_.get());
-    binder_->BindSprite("SpriteDebugCameraZoom", spriteDebugCameraZoom_.get());
+    binder_->BindTextElement("InstructionText", instructionText_.get());
+    binder_->BindTextElement("MessageText", messageText_.get());
+    binder_->BindTextElement("StageNameText", stageNameText_.get());
+
+    // 文字列はコードで作るので、配置と見た目だけ登録する
+    binder_->BindTextElement("TimeText", timeText_.get(), false);
+    binder_->BindString("TimeFormat", "時間 {:.1f} 秒",
+        [this](const std::string& newFormat) { timeFormat_ = newFormat; });
 }
 
 void GameUI::Update()
 {
+    const float totalTime = TimeManager::GetInstance()->GetTotalTime();
+
+    // 書式を ImGui で編集している途中は {} が崩れることがあるので、そのときは書式をそのまま出す
+    try
+    {
+        timeText_->SetText(std::vformat(timeFormat_, std::make_format_args(totalTime)));
+    }
+    catch (const std::format_error&)
+    {
+        timeText_->SetText(timeFormat_);
+    }
 }
 
 void GameUI::Draw()
 {
     if (!isVisible_) return;
 
-    spriteCameraSwitch_->Draw();
-    spriteMainCameraMode_->Draw();
-    spriteMove_->Draw();
-    spriteMainCameraMove_->Draw();
-    spriteDebugCameraMode_->Draw();
-    spriteDebugCameraTranslate_->Draw();
-    spriteDebugCameraRotate_->Draw();
-    spriteDebugCameraZoom_->Draw();
+    instructionText_->Draw();
+    timeText_->Draw();
+    messageText_->Draw();
+    stageNameText_->Draw();
 }
 
 void GameUI::DebugDraw()
@@ -54,15 +65,13 @@ void GameUI::DebugDraw()
 #if ENABLE_IMGUI
     ImGui::Begin("ゲームUI調整");
     binder_->Draw("IsVisible", "表示切り替え");
-    ImGui::Separator();
-    binder_->DrawSprite("SpriteCameraSwitch", "CameraSwitchインスペクター");
-    binder_->DrawSprite("SpriteMainCameraMode", "MainCameraModeインスペクター");
-    binder_->DrawSprite("SpriteMove", "Moveインスペクター");
-    binder_->DrawSprite("SpriteMainCameraMove", "MainCameraMoveインスペクター");
-    binder_->DrawSprite("SpriteDebugCameraMode", "DebugCameraModeインスペクター");
-    binder_->DrawSprite("SpriteDebugCameraTranslate", "DebugCameraTranslateインスペクター");
-    binder_->DrawSprite("SpriteDebugCameraRotate", "DebugCameraRotateインスペクター");
-    binder_->DrawSprite("SpriteDebugCameraZoom", "DebugCameraZoomインスペクター");
+
+    ImGui::SeparatorText("テキスト");
+    binder_->DrawTextElement("InstructionText", "操作方法");
+    binder_->DrawTextElement("MessageText", "メッセージ");
+    binder_->DrawTextElement("StageNameText", "ステージ名");
+    binder_->DrawTextElement("TimeText", "経過時間");
+    binder_->Draw("TimeFormat", "経過時間の書式");
     ImGui::End();
 #endif
 }

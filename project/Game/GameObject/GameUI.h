@@ -20,7 +20,7 @@ private:
     std::unique_ptr<FS::PropertyBinder> binder_;
 
     // テキスト
-    std::unique_ptr<FS::Text> titleText_;     
+    std::unique_ptr<FS::Text> instructionText_;     
     std::unique_ptr<FS::Text> timeText_;      
     std::unique_ptr<FS::Text> messageText_;
     std::unique_ptr<FS::Text> stageNameText_;  // 縦書き

@@ -1,0 +1,6 @@
+Name,Path,PixelHeight,Charset
+# 先頭のフォントが Text の既定フォント
+# Path と Charset は Assets/Data/Fonts/ からの相対パス
+Main,NotoSansJP-Bold.ttf,48
+Shippori,ShipporiMincho-Bold.ttf,72
+Gothic,ZenKakuGothicNew-Regular.ttf,72

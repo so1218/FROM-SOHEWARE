@@ -2,6 +2,7 @@
 #include "Sprite.h"
 #include "Engine.h"
 #include "TextureManager.h"
+#include "UICommon.h"
 
 namespace FS
 {
@@ -48,7 +49,7 @@ void Sprite::Draw()
     SpriteInstance instance{};
 
     // 位置・大きさ
-    instance.position = position_;
+    instance.position = UI::ResolveScreenPosition(screenAnchor_, position_);
     instance.size = size_;
     instance.pivot = anchorPoint_;
     instance.rotation = rotation_;

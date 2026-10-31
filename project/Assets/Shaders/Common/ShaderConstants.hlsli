@@ -44,6 +44,10 @@
 #define MAX_FOG_EFFECTORS 4
 #define MAX_FOG_VOLUMES 8
 
+// SpriteInstance の drawMode
+#define SPRITE_DRAW_MODE_NORMAL   0
+#define SPRITE_DRAW_MODE_SDF_TEXT 1
+
 struct TransformationMatrix
 {
     float4x4 WVP;
@@ -198,7 +202,12 @@ struct SpriteInstance
     float edgeIntensity;
     float emissiveIntensity;
     uint enableDissolve;
-    float padding;
+    uint drawMode;
+    
+    float4 outlineColor;
+    
+    float outlineThickness;   
+    float3 padding;
 };
 
 struct SpriteFrameConstants

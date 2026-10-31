@@ -163,6 +163,9 @@
     <Filter Include="Engine\Graphics\PostProcess">
       <UniqueIdentifier>{1cdf2869-408a-4381-8aa2-adbb6c463ddc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Graphics\UI">
+      <UniqueIdentifier>{7d3f2a91-5c4e-4b8a-9e61-2f0c8b4d7a15}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Engine\Graphics\Renderer">
       <UniqueIdentifier>{316c0b1c-8e8e-4891-bfd3-bde678a68770}</UniqueIdentifier>
     </Filter>
@@ -476,6 +479,15 @@
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Renderer\SkydomeRenderer.cpp">
       <Filter>Engine\Graphics\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\UI\Font.cpp">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\UI\FontManager.cpp">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Graphics\UI\Text.cpp">
+      <Filter>Engine\Graphics\UI</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\Renderer\SpriteRenderer.cpp">
       <Filter>Engine\Graphics\Renderer</Filter>
@@ -974,6 +986,21 @@
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Renderer\SkydomeRenderer.h">
       <Filter>Engine\Graphics\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\UI\Font.h">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\UI\FontManager.h">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\UI\Text.h">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\UI\UICommon.h">
+      <Filter>Engine\Graphics\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Graphics\UI\UIAnchor.h">
+      <Filter>Engine\Graphics\UI</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Renderer\SpriteRenderer.h">
       <Filter>Engine\Graphics\Renderer</Filter>
