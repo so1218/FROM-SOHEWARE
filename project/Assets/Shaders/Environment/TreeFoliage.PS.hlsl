@@ -24,8 +24,7 @@ struct TreeFoliagePSInput
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
-    float4 color : COLOR0;
-    float3 instanceTint : COLOR1;
+    float ao : COLOR0;
     float lodFade : BLENDWEIGHT;
 };
 
@@ -51,17 +50,16 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 
     float4 albedoAlpha = gAlbedoAlphaTex.Sample(gAnisoSampler, input.texcoord);
     
-    // 完全透明なピクセルの破棄
     clip(albedoAlpha.a - 0.05f);
 
-    albedoAlpha.rgb *= input.instanceTint * gMaterial.colorTint * max(gMaterial.albedoMultiplier, 0.0f);
-    float ao = gMaterial.baseAO * input.color.a;
+    albedoAlpha.rgb *= gMaterial.colorTint;
+    float ao = gMaterial.baseAO * input.ao;
 
-    // 天候パラメータからの動的Wetness反映
+    // 雨で濡れると暗く、つるつるになる
     albedoAlpha.rgb = lerp(albedoAlpha.rgb, albedoAlpha.rgb * 0.45f, gEnvironmentData.wetness);
     float roughness = lerp(gMaterial.baseRoughness, 0.05f, gEnvironmentData.wetness);
 
-    // 両面ポリゴン向けに SV_IsFrontFace を用いて頂点法線を反転
+    // 両面ポリゴンなので、裏面は法線を反転する
     float faceSign = isFrontFace ? 1.0f : -1.0f;
     float3 normal = normalize(input.normal * faceSign);
     
@@ -71,17 +69,17 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
     float3 attenuatedLight = (gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity) * shadowFactor;
 
-    // Half-LambertライクなWrap
+    // 光の裏側も少し明るくする (wrap)
     float wrap = gMaterial.diffuseWrap;
     float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
     float3 diffuse = albedoAlpha.rgb * attenuatedLight * NdotL;
 
     // 逆光時の透過光
     float backLight = saturate(dot(-normal, lightDir));
-    float sssIntensity = Pow5(backLight) * (1.0f - gMaterial.baseThickness) * gMaterial.sssStrength;
+    float sssIntensity = Pow5(backLight) * gMaterial.sssStrength;
     float3 transmission = (albedoAlpha.rgb * gMaterial.sssColor) * attenuatedLight * sssIntensity;
 
-    // Direct Specular
+    // 直接光の鏡面反射
     float3 halfVector = normalize(lightDir + toEye);
     float NdotH = saturate(dot(normal, halfVector));
     float NdotV = saturate(dot(normal, toEye));
@@ -94,10 +92,9 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float3 F0 = lerp(0.04f.xxx, 0.02f.xxx, gEnvironmentData.wetness);
     float3 F = F0 + (1.0f.xxx - F0) * Pow5(1.0f - saturate(dot(halfVector, toEye)));
 
-    float gustMask = input.color.r;
-    float3 directSpecular = (D * F) * attenuatedLight * NdotL * (1.0f + gustMask * 2.0f);
+    float3 directSpecular = (D * F) * attenuatedLight * NdotL;
 
-    // IBL Specular & Ambient
+    // 空と地面の色による環境光
     float3 reflectDir = reflect(-toEye, normal);
     float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
     float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
@@ -111,7 +108,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
 
     float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
 
-    // Alpha-to-Coverage アンチエイリアス補正
+    // Alpha to Coverage で葉のふちをなめらかにする
     float outAlpha = (albedoAlpha.a - gMaterial.alphaCutoff) / max(fwidth(albedoAlpha.a), kEpsilon) + 0.5f;
     
     output.color = float4(finalColor, saturate(outAlpha));

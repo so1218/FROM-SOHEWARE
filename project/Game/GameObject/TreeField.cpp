@@ -47,30 +47,17 @@ void TreeField::Initialize()
     binder_->Bind("AreaCenterZ", &areaCenter_.y, 0.0f, 1.0f, -2000.0f, 2000.0f);
     binder_->Bind("MinScale", &minScale_, 0.8f, 0.05f, 0.1f);
     binder_->Bind("MaxScale", &maxScale_, 1.4f, 0.05f, 0.1f);
-    binder_->Bind("ColorRandomness", &colorRandomness_, 0.15f, 0.01f, 0.0f, 0.5f);
     binder_->Bind("NearFadeMinDist", &nearFadeMinDist_, 1.0f, 0.1f, 0.0f, 10.0f);
     binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
     binder_->Bind("TrunkColliderRadius", &trunkColliderRadius_, 0.5f, 0.05f, 0.05f, 5.0f);
 
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]()
-        {
-            treeSystem_->SetWindMapTexture(windMapName_);
-        });
-    
     binder_->BindColor("LeafColorTint", &leafColorTint_, { 1.0f, 1.0f, 1.0f });
-    binder_->Bind("LeafAlbedoMult", &leafAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("WindSpeedMult", &windSpeedMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("WindStrengthMult", &windStrengthMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("GustScale", &gustScale_, 0.05f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("GustStrength", &gustStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkFlex", &trunkFlexibility_, 0.1f, 0.01f, 0.0f, 2.0f);
-    binder_->Bind("BranchFlex", &branchFlexibility_, 0.3f, 0.01f, 0.0f, 2.0f);
     binder_->Bind("LeafFlutter", &leafFlutterAmount_, 0.2f, 0.01f, 0.0f, 2.0f);
-    binder_->Bind("LeafFlutterFreq", &leafFlutterFrequency_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("BackfaceFlatten", &backfaceFlatten_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("DiffuseWrap", &diffuseWrap_, 0.2f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TransDistortion", &transmissionDistortion_, 0.1f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TransPower", &transmissionPower_, 5.0f, 0.1f, 1.0f, 20.0f);
     binder_->Bind("SSSStrength", &sssStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->BindColor("SSSColor", &sssColor_, { 0.5f, 0.7f, 0.2f });
     binder_->Bind("AlphaCutoff", &alphaCutoff_, 0.5f, 0.01f, 0.0f, 1.0f);
@@ -81,10 +68,8 @@ void TreeField::Initialize()
     binder_->Bind("TreeRadius", &treeRadius_, 5.0f, 0.1f, 0.1f, 20.0f);
     binder_->Bind("BaseRoughness", &baseRoughness_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("BaseAO", &baseAO_, 1.0f, 0.01f, 0.0f, 2.0f);
-    binder_->Bind("BaseThickness", &baseThickness_, 0.1f, 0.01f, 0.0f, 1.0f);
     
     binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
-    binder_->Bind("TrunkAlbedoMult", &trunkAlbedoMultiplier_, 1.0f, 0.01f, 0.0f, 10.0f);
     binder_->BindColor("TrunkSpecColor", &trunkSpecularColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkRoughness", &trunkRoughness_, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TrunkMetalness", &trunkMetalness_, 0.0f, 0.01f, 0.0f, 1.0f);
@@ -129,7 +114,6 @@ void TreeField::Initialize()
     prevAreaCenter_ = areaCenter_;
     prevMinScale_ = minScale_;
     prevMaxScale_ = maxScale_;
-    prevColorRandomness_ = colorRandomness_;
     prevTrunkColliderRadius_ = trunkColliderRadius_;
 
     treeSystem_->SetWindMapTexture(windMapName_);
@@ -151,7 +135,6 @@ void TreeField::Update()
         areaCenter_.y != prevAreaCenter_.y ||
         minScale_ != prevMinScale_ ||
         maxScale_ != prevMaxScale_ ||
-        colorRandomness_ != prevColorRandomness_ ||
         trunkColliderRadius_ != prevTrunkColliderRadius_)
     {
         GenerateTrees();
@@ -163,7 +146,6 @@ void TreeField::Update()
         prevAreaCenter_ = areaCenter_;
         prevMinScale_ = minScale_;
         prevMaxScale_ = maxScale_;
-        prevColorRandomness_ = colorRandomness_;
         prevTrunkColliderRadius_ = trunkColliderRadius_;
     }
 
@@ -178,31 +160,22 @@ void TreeField::UpdateMaterials()
 
     // 葉のパラメータ更新
     LeafMaterialData leafData{};
-    leafData.gustScale = gustScale_;
     leafData.windSpeedMultiplier = windSpeedMultiplier_;
-    leafData.windStrengthMultiplier = windStrengthMultiplier_;
+    leafData.gustScale = gustScale_;
     leafData.gustStrength = gustStrength_;
     leafData.trunkFlexibility = trunkFlexibility_;
-    leafData.branchFlexibility = branchFlexibility_;
     leafData.leafFlutterAmount = leafFlutterAmount_;
-    leafData.backfaceFlatten = backfaceFlatten_;
     leafData.diffuseWrap = diffuseWrap_;
-    leafData.transmissionDistortion = transmissionDistortion_;
-    leafData.transmissionPower = transmissionPower_;
     leafData.sssStrength = sssStrength_;
     leafData.alphaCutoff = alphaCutoff_;
     leafData.shadowDensity = leafShadowDensity_;
     leafData.sssColor = sssColor_;
     leafData.shadowNormalBias = leafShadowNormalBias_;
     leafData.treeHeight = treeHeight_;
-    leafData.treeRadius = treeRadius_;
     leafData.shadowBias = leafShadowBias_;
     leafData.baseRoughness = baseRoughness_;
     leafData.baseAO = baseAO_;
-    leafData.baseThickness = baseThickness_;
-    leafData.albedoMultiplier = leafAlbedoMultiplier_;
     leafData.colorTint = leafColorTint_;
-    leafData.leafFlutterFrequency = leafFlutterFrequency_;
     leafData.nearFadeMinDist = nearFadeMinDist_;
     leafData.nearFadeMaxDist = nearFadeMaxDist_;
 
@@ -227,7 +200,6 @@ void TreeField::UpdateMaterials()
     trunkData.environmentMapIntensity = trunkEnvironmentMapIntensity_;
     trunkData.shadowEnvStrength = trunkShadowEnvStrength_;
     trunkData.normalIntensity = trunkNormalIntensity_;
-    trunkData.albedoMultiplier = trunkAlbedoMultiplier_;
     trunkData.nearFadeMinDist = nearFadeMinDist_;
     trunkData.nearFadeMaxDist = nearFadeMaxDist_;
 
@@ -265,7 +237,6 @@ void TreeField::GenerateTrees()
     std::uniform_real_distribution<float> distDepth(-areaDepth_ * 0.5f, areaDepth_ * 0.5f);
     std::uniform_real_distribution<float> distScale(minScale_, maxScale_);
     std::uniform_real_distribution<float> distRot(0.0f, 360.0f);
-    std::uniform_real_distribution<float> distColor(-colorRandomness_, colorRandomness_);
 
     // ========================================================
     // インスタンス配置ループ
@@ -289,14 +260,7 @@ void TreeField::GenerateTrees()
             Vector3(rx, ry, rz)
         );
 
-        // 色ムラ
-        Vector4 colorVar = { 1.0f, 1.0f, 1.0f, 1.0f };
-        colorVar.x += distColor(rng);
-        colorVar.y += distColor(rng);
-        colorVar.z += distColor(rng);
-
-        // TreeSystem に追加
-        treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_, colorVar, 1.0f);
+        treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_);
 
         // CPU用コライダー登録 
         TreeCollider col;
@@ -420,7 +384,6 @@ void TreeField::DebugDraw()
         ImGui::Separator();
         binder_->Draw("MinScale", "最小スケール");
         binder_->Draw("MaxScale", "最大スケール");
-        binder_->Draw("ColorRandomness", "色のバリエーション幅");
         binder_->Draw("TrunkColliderRadius", "幹の衝突判定半径 (基準)");
 
         ImGui::Separator();
@@ -445,33 +408,25 @@ void TreeField::DebugDraw()
 
         ImGui::Separator();
         binder_->Draw("LeafColorTint", "色味");
-        binder_->Draw("LeafAlbedoMult", "明るさ倍率");
 
         ImGui::Separator();
         ImGui::Text("風・揺れ");
         binder_->Draw("TreeHeight", "木の高さ (基準)");
-        binder_->Draw("TreeRadius", "木の半径 (基準)");
-        binder_->Draw("WindSpeedMult", "風の速さ(揺れ)倍率");
-        binder_->Draw("WindStrengthMult", "風の強さ(曲がり)倍率");
+        binder_->Draw("TreeRadius", "木の半径 (カリング用)");
+        binder_->Draw("WindSpeedMult", "揺れの速さ倍率 (環境の風に対して)");
         binder_->Draw("GustScale", "突風ノイズスケール");
         binder_->Draw("GustStrength", "突風の強さ");
         binder_->Draw("TrunkFlex", "幹のしなりやすさ");
-        binder_->Draw("BranchFlex", "枝のしなりやすさ");
-        binder_->Draw("LeafFlutter", "葉のバタつき");
-        binder_->Draw("LeafFlutterFreq", "葉の揺れ速度(周波数)");
+        binder_->Draw("LeafFlutter", "葉の揺れ幅");
 
         ImGui::Separator();
         ImGui::Text("質感・透過");
-        binder_->Draw("BackfaceFlatten", "裏面法線の平坦化");
         binder_->Draw("DiffuseWrap", "ディフューズラップ");
-        binder_->Draw("TransDistortion", "透過光の歪み");
-        binder_->Draw("TransPower", "透過光のシャープさ");
         binder_->Draw("SSSStrength", "SSS強度");
         binder_->Draw("SSSColor", "SSSカラー");
         binder_->Draw("AlphaCutoff", "アルファカットオフ");
         binder_->Draw("BaseRoughness", "基本ラフネス");
         binder_->Draw("BaseAO", "ベースAO");
-        binder_->Draw("BaseThickness", "葉の厚み");
 
         ImGui::Separator();
         ImGui::Text("影");
@@ -489,7 +444,6 @@ void TreeField::DebugDraw()
         ImGui::Separator();
         ImGui::Text("質感");
         binder_->Draw("TrunkColor", "カラー");
-        binder_->Draw("TrunkAlbedoMult", "明るさ倍率");
         binder_->Draw("TrunkSpecColor", "スペキュラカラー");
         binder_->Draw("TrunkRoughness", "ラフネス");
         binder_->Draw("TrunkMetalness", "メタルネス");

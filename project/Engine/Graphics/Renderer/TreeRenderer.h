@@ -18,9 +18,7 @@ public:
     void Submit(
         const WorldTransform& worldTransform,
         const ModelData& modelData,
-        const TreeMaterialHandle& treeMaterial,
-        const Vector4& colorVariation,
-        float lodFade = 1.0f
+        const TreeMaterialHandle& treeMaterial
     );
 
     // 蓄積された Submission を評価し、Instancing 可能なバッチに結合
@@ -68,8 +66,6 @@ private:
         uint32_t toonRampHandle = 0;
 
         Matrix4x4 worldMatrix;
-        Vector4 colorVariation;
-        float lodFade = 1.0f;
     };
 
     struct TreeBatch

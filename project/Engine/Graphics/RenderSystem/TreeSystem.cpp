@@ -31,16 +31,12 @@ void TreeSystem::AddInstance(const TreeInstance& instance)
 void TreeSystem::AddInstance(
     const WorldTransform& transform,
     const ModelData& modelData,
-    const TreeMaterialHandle& treeMaterial, 
-    const Vector4& colorVariation,
-    float lodFade)
+    const TreeMaterialHandle& treeMaterial)
 {
     TreeInstance inst{};
     inst.transform = transform;
     inst.modelData = &modelData;
-    inst.treeMaterial = treeMaterial;      
-    inst.colorVariation = colorVariation;
-    inst.lodFade = lodFade;
+    inst.treeMaterial = treeMaterial;
     instances_.push_back(inst);
 }
 
@@ -57,9 +53,7 @@ void TreeSystem::Update()
             rendererManager->SubmitTree(
                 inst.transform,
                 *inst.modelData,
-                inst.treeMaterial,
-                inst.colorVariation,
-                inst.lodFade
+                inst.treeMaterial
             );
         }
     }

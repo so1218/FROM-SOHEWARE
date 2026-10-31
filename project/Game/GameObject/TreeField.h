@@ -64,7 +64,6 @@ private:
 
     float minScale_ = 0.8f;
     float maxScale_ = 1.4f;
-    float colorRandomness_ = 0.15f;
 
     // 幹の当たり判定基準半径
     float trunkColliderRadius_ = 0.5f;
@@ -80,23 +79,17 @@ private:
     FS::Vector2 prevAreaCenter_{ 0.0f, 0.0f };
     float prevMinScale_ = 0.0f;
     float prevMaxScale_ = 0.0f;
-    float prevColorRandomness_ = 0.0f;
     float prevTrunkColliderRadius_ = 0.0f;
 
     // ==========================================
     // 葉パラメータ
     // ==========================================
-    float gustScale_ = 0.05f;
     float windSpeedMultiplier_ = 1.0f;
-    float windStrengthMultiplier_ = 1.0f;
+    float gustScale_ = 0.05f;
     float gustStrength_ = 1.0f;
     float trunkFlexibility_ = 0.1f;
-    float branchFlexibility_ = 0.3f;
     float leafFlutterAmount_ = 0.2f;
-    float backfaceFlatten_ = 0.5f;
     float diffuseWrap_ = 0.2f;
-    float transmissionDistortion_ = 0.1f;
-    float transmissionPower_ = 5.0f;
     float sssStrength_ = 1.0f;
     float alphaCutoff_ = 0.5f;
     float leafShadowDensity_ = 0.8f;     
@@ -107,10 +100,7 @@ private:
     float leafShadowBias_ = 0.005f;   
     float baseRoughness_ = 1.0f;
     float baseAO_ = 1.0f;
-    float baseThickness_ = 0.1f;
     FS::Vector3 leafColorTint_ = { 1.0f, 1.0f, 1.0f };
-    float leafAlbedoMultiplier_ = 1.0f;
-    float leafFlutterFrequency_ = 1.0f;
     float nearFadeMinDist_ = 1.0f; 
     float nearFadeMaxDist_ = 3.0f;
 
@@ -134,7 +124,6 @@ private:
     float trunkEnvironmentMapIntensity_ = 1.0f;
     float trunkShadowEnvStrength_ = 0.5f;
     float trunkNormalIntensity_ = 1.0f;
-    float trunkAlbedoMultiplier_ = 1.0f;
 
     float maxDrawDistance_ = 300.0f;
 

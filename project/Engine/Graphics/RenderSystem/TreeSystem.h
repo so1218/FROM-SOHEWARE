@@ -13,8 +13,6 @@ struct TreeInstance
     WorldTransform transform;
     const ModelData* modelData = nullptr;
     TreeMaterialHandle treeMaterial;
-    Vector4 colorVariation{ 1.0f, 1.0f, 1.0f, 1.0f };
-    float lodFade = 1.0f;
 };
 
 class TreeSystem
@@ -31,9 +29,7 @@ public:
     void AddInstance(
         const WorldTransform& transform,
         const ModelData& modelData,
-        const TreeMaterialHandle& treeMaterial,
-        const Vector4& colorVariation = { 1.0f, 1.0f, 1.0f, 1.0f },
-        float lodFade = 1.0f
+        const TreeMaterialHandle& treeMaterial
     );
 
     // 登録されたインスタンス群をレンダラキューへ積む

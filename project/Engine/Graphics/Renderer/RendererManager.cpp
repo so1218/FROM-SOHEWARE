@@ -517,11 +517,11 @@ void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t
 }
 
 void RendererManager::SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
-	const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade)
+	const TreeMaterialHandle& treeMaterial)
 {
 	if (treeRenderer_)
 	{
-		treeRenderer_->Submit(worldTransform, modelData, treeMaterial, colorVariation, lodFade);
+		treeRenderer_->Submit(worldTransform, modelData, treeMaterial);
 	}
 }
 

@@ -549,9 +549,8 @@ struct GrassGenerationData
 
 struct TreeInstanceData
 {
-    float4x4 worldMatrix; 
-    float4 colorVariation; 
-    float lodFade; 
+    float4x4 worldMatrix;
+    float lodFade;   // カリングの CS が距離から決める
 };
 
 struct TreeInstanceOffset
@@ -572,40 +571,29 @@ struct TreeCullingData
 
 struct LeafMaterialData
 {
-    float windSpeedMultiplier; 
-    float windStrengthMultiplier;
-    float gustScale;
-    float gustStrength; 
-    
-    float trunkFlexibility;
-    float branchFlexibility; 
-    float leafFlutterAmount; 
-    float backfaceFlatten; 
-    
-    float diffuseWrap; 
-    float transmissionDistortion; 
-    float transmissionPower; 
-    float sssStrength; 
-    
-    float alphaCutoff; 
-    float shadowDensity; 
+    float gustScale;          // 突風ノイズの細かさ
+    float gustStrength;       // 突風の強さ
+    float trunkFlexibility;   // 幹のしなりやすさ
+    float leafFlutterAmount;  // 葉の揺れ幅
+
+    float diffuseWrap;
+    float sssStrength;
+    float alphaCutoff;
+    float shadowDensity;
+
+    float3 sssColor;
     float shadowNormalBias;
+
+    float3 colorTint;
+    float shadowBias;
+
     float treeHeight;
-    
-    float3 sssColor; 
-    float treeRadius; 
-    
-    float shadowBias; 
     float baseRoughness;
-    float baseAO; 
-    float baseThickness;
-    
-    float albedoMultiplier;
-    float3 colorTint; 
-    
-    float leafFlutterFrequency;
-    float nearFadeMinDist; 
+    float baseAO;
+    float nearFadeMinDist;
+
     float nearFadeMaxDist;
+    float windSpeedMultiplier;  // 環境の風に対する揺れの速さ
 };
 
 struct TrunkMaterialData
@@ -631,8 +619,7 @@ struct TrunkMaterialData
     float environmentMapIntensity;
     float shadowEnvStrength;
     float normalIntensity;
-    float albedoMultiplier;
-    
+
     float nearFadeMinDist;
     float nearFadeMaxDist;
 };

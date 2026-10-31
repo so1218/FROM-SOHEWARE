@@ -99,9 +99,7 @@ const std::vector<Mesh>& TreeRenderer::GetOrCreateBatch(const ModelData& modelDa
 void TreeRenderer::Submit(
     const WorldTransform& worldTransform,
     const ModelData& modelData,
-    const TreeMaterialHandle& treeMaterial,
-    const Vector4& colorVariation,
-    float lodFade)
+    const TreeMaterialHandle& treeMaterial)
 {
     GetOrCreateBatch(modelData);
 
@@ -120,8 +118,6 @@ void TreeRenderer::Submit(
                 sub.meshIndex = meshIndex;
                 sub.treeMaterial = treeMaterial;
                 sub.worldMatrix = currentWorld;
-                sub.colorVariation = colorVariation;
-                sub.lodFade = lodFade;
 
                 // メッシュIndex 0 を幹、1以降を葉
                 sub.isLeaf = (meshIndex >= 1);
@@ -171,8 +167,7 @@ void TreeRenderer::PrepareBatches()
         // GPUに転送するための Upload バッファへ直接書き込む
         auto& instanceGPU = curRes.mappedInputInstanceData[currentInstanceLocation_ + instanceCount];
         instanceGPU.worldMatrix = sub.worldMatrix;
-        instanceGPU.colorVariation = sub.colorVariation;
-        instanceGPU.lodFade = sub.lodFade;
+        instanceGPU.lodFade = 1.0f;   // カリングの CS が距離から上書きする
 
         instanceCount++;
 

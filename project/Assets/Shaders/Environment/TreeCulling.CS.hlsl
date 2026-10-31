@@ -15,36 +15,28 @@ static const uint kFrustumPlaneCount = 6;
 void main(uint3 DTid : SV_DispatchThreadID)
 {
     uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
-    
     if (instanceIndex >= gTreeCullingData.totalInstanceCount)
-        return;
-    
-    TreeInstanceData tree = gInputTreeData[instanceIndex];
-    
-    // トランスフォーム行列の平行移動成分から直接ワールド座標を取得
-    float3 rootPos = tree.worldMatrix[3].xyz;
-    
-    float treeHeight = gTreeCullingData.approxTreeHeight;
-    float treeRadius = gTreeCullingData.approxTreeRadius;
-
-    bool isVisible = true;
-
-    float distToCam = distance(rootPos, gFrameData.cameraWorldPosition);
-    if (distToCam > gTreeCullingData.maxDrawDistance)
     {
-        isVisible = false;
+        return;
     }
 
+    TreeInstanceData tree = gInputTreeData[instanceIndex];
+    float3 rootPosition = tree.worldMatrix[3].xyz;
+
+    float distanceToCamera = distance(rootPosition, gFrameData.cameraWorldPosition);
+    bool isVisible = distanceToCamera <= gTreeCullingData.maxDrawDistance;
+
+    // 木を、根元から高さの半分の位置を中心とした球で近似して視錐台と判定する
     if (isVisible)
     {
-        // 樹木の形状を内包するためのバウンディングスフィア近似
-        // 重心をY軸方向へオフセットした球判定に落とし込んで計算を軽量化
-        float3 sphereCenter = rootPos + float3(0.0f, treeHeight * 0.5f, 0.0f);
-        float boundsRadius = max(treeHeight * 0.5f, treeRadius) * 1.2f;
-        
-        for (uint i = 0; i < kFrustumPlaneCount; ++i)
+        float treeHeight = gTreeCullingData.approxTreeHeight;
+        float3 sphereCenter = rootPosition + float3(0.0f, treeHeight * 0.5f, 0.0f);
+        float sphereRadius = max(treeHeight * 0.5f, gTreeCullingData.approxTreeRadius) * 1.2f;
+
+        for (uint planeIndex = 0; planeIndex < kFrustumPlaneCount; ++planeIndex)
         {
-            if (dot(gTreeCullingData.frustumPlanes[i].xyz, sphereCenter) + gTreeCullingData.frustumPlanes[i].w < -boundsRadius)
+            float4 plane = gTreeCullingData.frustumPlanes[planeIndex];
+            if (dot(plane.xyz, sphereCenter) + plane.w < -sphereRadius)
             {
                 isVisible = false;
                 break;
@@ -52,36 +44,26 @@ void main(uint3 DTid : SV_DispatchThreadID)
         }
     }
 
-    // ---------------------------------------------------------
-    // Smooth LOD Transition 用のフェード値算出
-    // ---------------------------------------------------------
-    // 遠景でモデルが急に消えるのを防ぐためのディザリング用アルファを計算
-    // 頂点ごとの計算で済むよう、コンピュートシェーダーで事前計算しインスタンスデータに乗せておく
+    // 描画距離の最後の 2 割で、ディザで少しずつ消す
     if (isVisible)
     {
         float fadeStart = gTreeCullingData.maxDrawDistance * 0.8f;
         float fadeRange = gTreeCullingData.maxDrawDistance - fadeStart;
-        tree.lodFade = saturate(1.0f - ((distToCam - fadeStart) / fadeRange));
+        tree.lodFade = saturate(1.0f - (distanceToCamera - fadeStart) / fadeRange);
     }
 
-    // ---------------------------------------------------------
-    // VRAMアクセス競合の回避 (Wave Intrinsics)
-    // ---------------------------------------------------------
-    // Wave 内で可視インスタンス数を集計し、代表の1スレッドのみがアトミック加算
-    uint waveCount = WaveActiveCountBits(isVisible);
+    // 見える木だけを出力に詰める。
+    // アトミック加算は Wave (同時に動くスレッドのまとまり) ごとに 1 回だけ行う
+    uint visibleCountInWave = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
-
-    if (WaveIsFirstLane() && waveCount > 0)
+    if (WaveIsFirstLane() && visibleCountInWave > 0)
     {
-        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, waveCount, waveOffset);
+        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, visibleCountInWave, waveOffset);
     }
-
     waveOffset = WaveReadLaneFirst(waveOffset);
 
     if (isVisible)
     {
-        // Wave内での自身の書き込みオフセットをプレフィックスサムで決定し、バッファを詰めて出力
-        uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
-        gOutputTreeData[appendIndex] = tree;
+        gOutputTreeData[waveOffset + WavePrefixCountBits(isVisible)] = tree;
     }
 }

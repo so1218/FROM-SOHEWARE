@@ -42,8 +42,7 @@ struct TreeTrunkPSInput
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
-    float4 color : COLOR0;
-    float3 instanceTint : COLOR1;
+    float ao : COLOR0;
     float lodFade : BLENDWEIGHT;
 };
 
@@ -67,11 +66,11 @@ PixelShaderOutput main(TreeTrunkPSInput input)
 
     // テクスチャサンプリングおよびベースカラーの構築
     float4 textureColor = gTexture.Sample(gSampler, input.texcoord);
-    float3 baseColor = textureColor.rgb * input.instanceTint * gMaterial.color.rgb * max(gMaterial.albedoMultiplier, 0.0f);
+    float3 baseColor = textureColor.rgb * gMaterial.color.rgb;
 
     float wetness = gEnvironmentData.wetness;
 
-    // 雨天時の樹皮変化 (内部散乱による暗転と表面水膜によるラフネス低下を反映)
+    // 雨で濡れると暗く、つるつるになる
     baseColor = lerp(baseColor, baseColor * 0.55f, wetness);
     float baseRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float roughness = lerp(baseRoughness, 0.2f, wetness);
@@ -101,7 +100,7 @@ PixelShaderOutput main(TreeTrunkPSInput input)
             gShadowData.cascadeLightViewProj, gShadowMapArray, gShadowSampler);
     }
 
-    // PBRサーフェスデータの再構築
+    // 表面の情報
     SurfaceData surface;
     surface.albedo = baseColor;
     surface.pbrAlbedo = baseColor * baseColor; // sRGB to Linear
@@ -113,7 +112,7 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     surface.diffuseReflection = gMaterial.diffuseReflection;
     surface.lightMode = gMaterial.lightMode;
 
-    // ライティングおよび簡易IBLの統合
+    // ライティング
     float3 finalColor = float3(0.0f, 0.0f, 0.0f);
     if (gMaterial.enableLighting != 0)
     {
@@ -125,16 +124,16 @@ PixelShaderOutput main(TreeTrunkPSInput input)
         {
             float NdotV = max(dot(surface.normal, toEyeWorld), 0.0f);
 
-            // 水分付着時の屈折率変動(を考慮し、F0を水のフレネル反射率へと推移
+            // 濡れているほど水の反射率に近づける
             float3 baseF0 = lerp(float3(0.04f, 0.04f, 0.04f), surface.pbrAlbedo, surface.metalness);
             float3 F0 = lerp(baseF0, float3(0.02f, 0.02f, 0.02f), wetness);
 
             float3 kS = F_SchlickRoughness(NdotV, F0, surface.roughness);
             float3 kD = (float3(1.0f, 1.0f, 1.0f) - kS) * (1.0f - surface.metalness);
 
-            float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.color.a;
+            float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.ao;
 
-            // 天空光と地表光のグラデーションによる半球アンビエント近似
+            // 空と地面の色による環境光
             float3 reflectDir = reflect(-toEyeWorld, surface.normal);
             float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
             float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
@@ -154,7 +153,6 @@ PixelShaderOutput main(TreeTrunkPSInput input)
         finalColor = surface.albedo;
     }
 
-    // MRT 出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
 

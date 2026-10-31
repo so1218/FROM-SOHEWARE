@@ -86,7 +86,7 @@ public:
     void GenerateGrass(const GrassGenerationData& genData,
         uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
-        const TreeMaterialHandle& treeMaterial, const Vector4& colorVariation, float lodFade);
+        const TreeMaterialHandle& treeMaterial);
     void GeneratePebbles(const PebbleGenerationData& genData,
         uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitWater(const WorldTransform& worldTransform, const ModelData& modelData,
