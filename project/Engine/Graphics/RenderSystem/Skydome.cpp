@@ -56,20 +56,13 @@ void Skydome::Update()
 void Skydome::SetCloudNoiseTexture(const std::string& textureName) {
     cloudNoiseHandle_ = TextureManager::GetInstance().Get(textureName);
 }
-void Skydome::SetColor(uint32_t color) { color_ = color; }
 WorldTransform& Skydome::GetTransform() { return transform_; }
 
 void Skydome::Draw()
 {
     transform_.UpdateMatrix();
 
-    // 2つのテクスチャハンドルを渡してSubmit
-    engine_->GetRendererManager()->SubmitSkydome(
-        transform_,
-        color_,
-        cloudNoiseHandle_,
-        atmosphereSkyData_
-    );
+    engine_->GetRendererManager()->SubmitSkydome(transform_, cloudNoiseHandle_, atmosphereSkyData_);
 }
 
 void Skydome::DebugDraw()
@@ -84,6 +77,7 @@ void Skydome::DebugDraw()
         binder_->Draw("WindVelocity", "風向きと強さ");
         binder_->Draw("CloudEdgeSoftness", "雲の輪郭の柔らかさ");
         binder_->Draw("CloudBumpScale", "雲の凹凸の強さ (モクモク感)");
+        binder_->Draw("SkyGradientExp", "空のグラデーションのかかり方");
 
         ImGui::Separator();
 

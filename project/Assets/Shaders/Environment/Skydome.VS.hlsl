@@ -5,28 +5,22 @@ ConstantBuffer<TransformationMatrix> gTransform : register(b0);
 struct SkydomeVSInput
 {
     float3 position : POSITION;
-    float2 uv : TEXCOORD0; 
 };
 
 struct SkydomeVSOutput
 {
     float4 position : SV_Position;
-    float3 viewDir : TEXCOORD0; 
-    float2 uv : TEXCOORD1; 
+    float3 viewDirection : TEXCOORD0;
 };
 
 SkydomeVSOutput main(SkydomeVSInput input)
 {
     SkydomeVSOutput output;
-    
-    // xywwで深度を画面の最奥に固定
+
+    // z を w にして、深度を画面の一番奥に固定する
     output.position = mul(float4(input.position, 1.0f), gTransform.WVP).xyww;
 
-    // ローカルの中心からの方向がそのまま視線方向ベクトル
-    output.viewDir = input.position.xyz;
-    
-    // 雲用のUVをピクセルシェーダーに渡す
-    output.uv = input.uv;
-    
+    // 球の中心から頂点への向きが、そのまま視線の向きになる
+    output.viewDirection = input.position;
     return output;
 }

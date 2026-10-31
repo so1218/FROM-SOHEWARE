@@ -92,7 +92,7 @@ public:
     void SetWaterSceneTextures(
         D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
         D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV);
-    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather);
+    void SubmitSkydome(const WorldTransform& worldTransform, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData);
     void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
         const Vector4& uvTransform, const MaterialHandle& material, const Vector4& instanceColor,
         const Terrain::Parameters& params, uint32_t heightMapHandle);

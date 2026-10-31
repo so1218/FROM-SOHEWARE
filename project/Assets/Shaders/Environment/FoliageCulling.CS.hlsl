@@ -56,8 +56,8 @@ void main(uint3 DTid : SV_DispatchThreadID)
         isVisible = Hash12(rootPosition.xz) >= thinRate;
     }
 
-    // 見えるものだけを出力に詰める。
-    // アトミック加算は Wave (同時に動くスレッドのまとまり) ごとに 1 回だけ行う
+    // 見えるものだけを出力に詰める
+    // アトミック加算は同時に動くスレッドのまとまりごとに 1 回だけ行う
     uint visibleCountInWave = WaveActiveCountBits(isVisible);
     uint waveOffset = 0;
     if (WaveIsFirstLane() && visibleCountInWave > 0)

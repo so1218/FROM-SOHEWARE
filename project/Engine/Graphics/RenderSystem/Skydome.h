@@ -21,7 +21,6 @@ public:
     void DebugDraw();  
 
     void SetCloudNoiseTexture(const std::string& textureName);
-    void SetColor(uint32_t color);
 
     WorldTransform& GetTransform();
 
@@ -31,10 +30,9 @@ private:
 
     WorldTransform transform_;
     uint32_t cloudNoiseHandle_ = 0;
-    uint32_t color_ = 0xFFFFFFFF;
 
-    // 天候パラメータ
-    AtmosphereSkyData atmosphereSkyData_;
+    // 雲の形はここで調整し、空の色・雲の量・太陽の向きは EnvironmentManager から毎フレーム受け取る
+    AtmosphereSkyData atmosphereSkyData_{};
 };
 
 }

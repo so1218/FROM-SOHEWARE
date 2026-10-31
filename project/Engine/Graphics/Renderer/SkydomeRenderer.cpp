@@ -10,7 +10,6 @@
 #include "BufferManager.h"
 #include "PostEffectManager.h"
 #include "ShapeGenerator.h"
-#include "MaterialManager.h"
 #include "PIXColors.h"
 
 namespace FS
@@ -23,35 +22,10 @@ void SkydomeRenderer::Initialize(const RenderEnvironment& env)
     ShapeGenerator::SkydomeGenerator(vertices, indices, 64, 32);
     skydomeMesh_.Initialize(env.device->GetDevice(), vertices, indices);
 
-    skydomeMaterialHandle_ = env.materialManager->CreateMaterial(env.device->GetDevice());
-    skydomeMaterialHandle_.materialData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-    for (int i = 0; i < kFrameCount; ++i)
+    for (int frameIndex = 0; frameIndex < kFrameCount; ++frameIndex)
     {
-        // WVPバッファの生成
-        wvpResource_[i] = BufferManager::CreateMappedConstantBuffer(
-            env.device->GetDevice(),
-            &mappedWvp_[i]
-        );
-
-        // 天候バッファの生成
-        AtmosphereSkyResource_[i] = BufferManager::CreateMappedConstantBuffer(
-            env.device->GetDevice(),
-            &mappedAtmosphereSky_[i]
-        );
-
-        // 天候の初期値
-        mappedAtmosphereSky_[i]->cloudCoverage = { 0.35f, 0.7f };
-        mappedAtmosphereSky_[i]->windVelocity = { 0.006f, 0.003f };
-        mappedAtmosphereSky_[i]->cloudScale = 0.3f;
-        mappedAtmosphereSky_[i]->cloudShadowDensity = 0.6f;
-        mappedAtmosphereSky_[i]->skyGradientExponent = 0.6f;
-        mappedAtmosphereSky_[i]->sunAtmosphereGlow = 0.5f;
-        mappedAtmosphereSky_[i]->zenithColor = { 0.05f, 0.15f, 0.4f };
-        mappedAtmosphereSky_[i]->horizonColor = { 0.4f, 0.6f, 0.8f };
-        mappedAtmosphereSky_[i]->cloudBumpScale = 0.15f;        
-        mappedAtmosphereSky_[i]->cloudEdgeSoftness = 0.15f;    
-        mappedAtmosphereSky_[i]->cloudAbsorption = 0.7f;       
+        wvpResource_[frameIndex] = BufferManager::CreateMappedConstantBuffer(env.device->GetDevice(), &mappedWvp_[frameIndex]);
+        atmosphereSkyResource_[frameIndex] = BufferManager::CreateMappedConstantBuffer(env.device->GetDevice(), &mappedAtmosphereSky_[frameIndex]);
     }
 }
 
@@ -61,12 +35,11 @@ void SkydomeRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t color, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& weather)
+void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
 {
     currentTransform_ = worldTransform;
-    currentColor_ = color;
     cloudTextureIndex_ = cloudNoiseSrvIndex;
-    currentAtmosphereSkyData_ = weather;
+    currentAtmosphereSkyData_ = atmosphereSkyData;
     isSubmitted_ = true;
 }
 
@@ -79,36 +52,28 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     // スカイドーム描画パス全体のスコープ
     PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Skydome Pass");
 
-    // WVP行列の更新（現在のフレーム用バッファへ）
+    // カメラが動いても空が付いてくるよう、ビュー行列から平行移動を除く
     Matrix4x4 view = viewMatrix;
-    view.m[3][0] = 0.0f; view.m[3][1] = 0.0f; view.m[3][2] = 0.0f; // 平行移動の除去
+    view.m[3][0] = 0.0f;
+    view.m[3][1] = 0.0f;
+    view.m[3][2] = 0.0f;
     Matrix4x4 wvpMatrix = currentTransform_.matWorld_ * view * projectionMatrix;
     memcpy(mappedWvp_[currentFrameIndex_], &wvpMatrix, sizeof(TransformationMatrix));
 
-    // 天候データの更新（現在のフレーム用バッファへ）
     memcpy(mappedAtmosphereSky_[currentFrameIndex_], &currentAtmosphereSkyData_, sizeof(AtmosphereSkyData));
 
-    // マテリアルカラーの更新
-    skydomeMaterialHandle_.materialData->color = Math::Uint32ToColorVector(currentColor_);
-
-    // 描画準備
     cmdList->SetPipelineState(env.psoManager->GetPSO("Skydome"));
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Skydome"));
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     cmdList->IASetVertexBuffers(0, 1, &skydomeMesh_.GetVertexBufferView());
     cmdList->IASetIndexBuffer(&skydomeMesh_.GetIndexBufferView());
 
-    // 各種定数バッファのバインド
     cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(1, wvpResource_[currentFrameIndex_]->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, skydomeMaterialHandle_.resource->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(4, AtmosphereSkyResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, atmosphereSkyResource_[currentFrameIndex_]->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));
 
-    // SRVのバインド
-    cmdList->SetGraphicsRootDescriptorTable(5, env.srvManager->GetSRVHandleGPU(cloudTextureIndex_));
-
-    // 描画
     cmdList->DrawIndexedInstanced(static_cast<uint32_t>(skydomeMesh_.GetIndexCount()), 1, 0, 0, 0);
 }
 
