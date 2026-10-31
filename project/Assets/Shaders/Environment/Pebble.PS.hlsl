@@ -51,7 +51,6 @@ struct PebblePSOutput
 {
     float4 color : SV_Target0;
     float4 normal : SV_Target1;
-    float4 material : SV_Target2;
 };
 
 PebblePSOutput main(PebbleVSOutput input)
@@ -145,7 +144,6 @@ PebblePSOutput main(PebbleVSOutput input)
     // TAA/モーションブラー用のVelocityや、後段のSSR等のためのマテリアル情報をMRT出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
 
     return output;
 }

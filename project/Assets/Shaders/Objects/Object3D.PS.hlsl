@@ -84,7 +84,6 @@ PixelShaderOutput main(PixelShaderInput input)
         output.color = float4(DrawArtGridColor(input.texcoord, gFrameData.iResolution), 1.0f);
         
         output.normal = float4(0.0f, 1.0f, 0.0f, 1.0f);
-        output.material = float4(0.0f, 1.0f, 0.0f, 1.0f);
         return output;
     }
     
@@ -262,7 +261,6 @@ PixelShaderOutput main(PixelShaderInput input)
     output.color.rgb = finalColor;
     output.color.a = (gMaterial.isBubble != 0) ? (bubbleAlpha * gMaterial.color.a) : (textureColor.a * gMaterial.color.a);
     output.normal = float4(normal, 1.0f);
-    output.material = float4(currentMetalness, currentRoughness, 0.0f, 1.0f);
     
     return output;
 }

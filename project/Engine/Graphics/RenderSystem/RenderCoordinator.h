@@ -94,11 +94,9 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexColor_;
     Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexNormal_;
-    Microsoft::WRL::ComPtr<ID3D12Resource> offscreenTexMaterial_;
 
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvColor_;
     D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvNormal_;
-    D3D12_CPU_DESCRIPTOR_HANDLE offscreenRtvMaterial_;
 
     // 現在のオフスクリーンのリソースステートを追跡
     D3D12_RESOURCE_STATES currentOffscreenState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;

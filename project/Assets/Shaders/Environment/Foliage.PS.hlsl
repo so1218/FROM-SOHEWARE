@@ -71,7 +71,6 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     // -------------------------------------------------------------------------
     output.color = float4(directDiffuse, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(0.0f, gMaterial.roughness, 0.0f, 1.0f);
 
     return output;
 }

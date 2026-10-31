@@ -164,7 +164,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
     context_.sceneColorSrvIndex = sceneTextureIndex_;
     context_.sceneDepthSrvIndex = sceneDepthIndex_;
     context_.normalSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Normal));
-    context_.materialSrvIndex = offscreenRTV->GetOffscreenSRVIndex(static_cast<uint32_t>(GBufferIndex::Material));
 
     // 共通ヒープの設定
     ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };

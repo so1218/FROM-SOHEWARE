@@ -103,9 +103,6 @@ PixelShaderOutput main(GrassPSInput input)
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
     
-    // G-Buffer : 濡れ表現でRoughnessを下げる
-    output.material = float4(0.0f, 0.8f - (gMaterial.wetness * 0.6f), 0.0f, 1.0f);
-
     return output;
 }
 

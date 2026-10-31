@@ -157,7 +157,6 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     // MRT 出力
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);
-    output.material = float4(surface.metalness, surface.roughness, 0.0f, 1.0f);
 
     return output;
 }

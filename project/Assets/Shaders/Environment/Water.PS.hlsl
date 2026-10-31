@@ -46,7 +46,6 @@ struct WaterPSOutput
 {
     float4 color : SV_TARGET0;
     float4 normal : SV_TARGET1;
-    float4 material : SV_TARGET2;
 };
 
 float3 BlendNormalsRNM(float3 baseNormal, float3 detailNormal)
@@ -333,7 +332,6 @@ WaterPSOutput main(WaterPSInput input)
 
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(worldNormal, 1.0f);
-    output.material = float4(gWaterMaterial.roughness, 0.0f, 0.0f, 1.0f);
     
     return output;
 }

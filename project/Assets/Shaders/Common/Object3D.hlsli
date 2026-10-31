@@ -31,7 +31,6 @@ struct PixelShaderOutput
 {
     float4 color : SV_TARGET0;
     float4 normal : SV_TARGET1;
-    float4 material : SV_TARGET2;
 };
 
 struct Object3DVSInputInstanced

@@ -56,12 +56,6 @@ void RenderCoordinator::Initialize(
     offscreenTexNormal_ = texNormal;
     offscreenRtvNormal_ = rtvNormal;
 
-    // 材質用
-    auto [texMaterial, rtvMaterial, srvMaterial, uavIndexMaterial] = offscreenRTVManager_->CreateOffscreenRenderTarget(
-        Engine::GetClientWidth(), Engine::GetClientHeight(), Vector4(0, 0, 0, 0), DXGI_FORMAT_R8G8B8A8_UNORM);
-    offscreenTexMaterial_ = texMaterial;
-    offscreenRtvMaterial_ = rtvMaterial;
-
     // --------------------------------------------------------
     // 深度リソース用 SRV の作成
     // --------------------------------------------------------
@@ -181,15 +175,14 @@ void RenderCoordinator::BeginOffscreenRender()
 {
     auto* cmdList = commandManager_->GetCommandList();
 
-    D3D12_RESOURCE_BARRIER barriers[3];
+    D3D12_RESOURCE_BARRIER barriers[2];
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
     barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), currentOffscreenState_, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    cmdList->ResourceBarrier(3, barriers);
+    cmdList->ResourceBarrier(2, barriers);
 
-    // 3枚のRTVハンドルを配列にしてセット
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[3] = { offscreenRtvColor_, offscreenRtvNormal_, offscreenRtvMaterial_ };
-    cmdList->OMSetRenderTargets(3, rtvHandles, FALSE, &offscreenDsvHandle_);
+    // 2枚のRTVハンドルを配列にしてセット
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2] = { offscreenRtvColor_, offscreenRtvNormal_ };
+    cmdList->OMSetRenderTargets(2, rtvHandles, FALSE, &offscreenDsvHandle_);
 
     // それぞれをクリアする
     Vector4 cc = offscreenRTVManager_->GetClearColor();
@@ -198,7 +191,6 @@ void RenderCoordinator::BeginOffscreenRender()
 
     cmdList->ClearRenderTargetView(offscreenRtvColor_, clearColorDefault, 0, nullptr);
     cmdList->ClearRenderTargetView(offscreenRtvNormal_, clearColorZero, 0, nullptr);
-    cmdList->ClearRenderTargetView(offscreenRtvMaterial_, clearColorZero, 0, nullptr);
     cmdList->ClearDepthStencilView(offscreenDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
     // ビューポートとシザーを設定
@@ -208,16 +200,15 @@ void RenderCoordinator::BeginOffscreenRender()
 
 void RenderCoordinator::EndOffscreenRender()
 {
-    D3D12_RESOURCE_BARRIER barriers[3];
+    D3D12_RESOURCE_BARRIER barriers[2];
 
     // 両方のシェーダーで読めるステートを定義
     D3D12_RESOURCE_STATES readState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 
     barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexColor_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
     barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexNormal_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
-    barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(offscreenTexMaterial_.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, readState);
-
-    commandManager_->GetCommandList()->ResourceBarrier(3, barriers);
+    
+    commandManager_->GetCommandList()->ResourceBarrier(2, barriers);
 
     // 次のフレームの BeginOffscreenRender のためにステートを更新
     currentOffscreenState_ = readState;
