@@ -11,7 +11,6 @@
 #include "EnemyManager.h"
 #include "EnvironmentPropManager.h"
 #include "WeatherEffectManager.h"
-#include "PebbleField.h"
 #include "FoliageField.h"
 #include "GameUI.h"
 #include "WaterManager.h"
@@ -42,7 +41,6 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
-    //objectManager_.Create<PebbleField>(engine_);
     objectManager_.Create<FoliageField>(engine_);
     objectManager_.Create<GameUI>(engine_);
     objectManager_.Create<Tutorial>(engine_, player);

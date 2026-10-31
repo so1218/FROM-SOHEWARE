@@ -25,7 +25,6 @@
 #include "TerrainChunk.h"
 #include "LightningRenderer.h"
 #include "TreeRenderer.h"
-#include "PebbleRenderer.h"
 #include "WaterRenderer.h"
 #include "PIXColors.h"
 
@@ -82,8 +81,6 @@ void RendererManager::Initialize(
 	grassRenderer_ = std::make_unique<GrassRenderer>();
 	treeRenderer_ = std::make_unique<TreeRenderer>();
 	treeRenderer_->Initialize(env_);
-	pebbleRenderer_ = std::make_unique<PebbleRenderer>();
-	pebbleRenderer_->Initialize(env_);
 	foliageRenderer_ = std::make_unique<FoliageRenderer>();
 	waterRenderer_ = std::make_unique<WaterRenderer>();
 	waterRenderer_->Initialize(env_);
@@ -118,7 +115,6 @@ void RendererManager::BeginFrame()
 	if (skyboxRenderer_) { skyboxRenderer_->BeginFrame(); }
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 	if (treeRenderer_) { treeRenderer_->BeginFrame(); }
-	if (pebbleRenderer_) { pebbleRenderer_->BeginFrame(); }
 	if (foliageRenderer_) { foliageRenderer_->BeginFrame(); }
 	if (waterRenderer_) { waterRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
@@ -283,21 +279,6 @@ void RendererManager::Draw3D()
 		terrainRenderer_->Draw(env_, RenderGroup::Opaque, shadowMap_);
 	}
 
-	if (pebbleRenderer_)
-	{
-		pebbleRenderer_->Draw(
-			env_,
-			shadowMap_,
-			pebbleSkyboxSrvHandle_,
-			pebbleAlbedoSrvHandle_,
-			pebbleNormalSrvHandle_,
-			pebbleMesh_,
-			pebbleMaterialData_,
-			pebbleCullingData_
-		);
-
-	}
-
 	if (foliageRenderer_)
 	{
 		foliageRenderer_->Draw(
@@ -420,7 +401,6 @@ void RendererManager::SubmitModel(const WorldTransform& worldTransform, const Mo
 void RendererManager::ClearSceneRenderStates()
 {
 	if (grassRenderer_)   grassRenderer_->Reset();
-	if (pebbleRenderer_)  pebbleRenderer_->Reset();
 	if (foliageRenderer_) foliageRenderer_->Reset();
 	if (waterRenderer_)   waterRenderer_->Reset();
 	if (treeRenderer_)    treeRenderer_->Reset();
@@ -522,51 +502,6 @@ void RendererManager::SubmitTree(const WorldTransform& worldTransform, const Mod
 	if (treeRenderer_)
 	{
 		treeRenderer_->Submit(worldTransform, modelData, treeMaterial);
-	}
-}
-
-void RendererManager::InitializePebble()
-{
-	if (pebbleRenderer_)
-	{
-		pebbleRenderer_->Initialize(env_);
-	}
-}
-
-void RendererManager::SetPebbleRenderingParams(
-	uint32_t skyboxSrvHandle,
-	uint32_t albedoSrvHandle,
-	uint32_t normalSrvHandle,
-	const Mesh& pebbleMesh,
-	const PebbleMaterialData& materialData,
-	const PebbleCullingData& cullingData)
-{
-	pebbleSkyboxSrvHandle_ = skyboxSrvHandle;
-	pebbleAlbedoSrvHandle_ = albedoSrvHandle;
-	pebbleNormalSrvHandle_ = normalSrvHandle;
-	pebbleMesh_ = pebbleMesh;
-	pebbleMaterialData_ = materialData;
-	pebbleCullingData_ = cullingData;
-}
-
-void RendererManager::GeneratePebbles(
-	const PebbleGenerationData& genData,
-	uint32_t heightMapSrvHandle,
-	uint32_t densityMapSrvHandle)
-{
-	// TerrainRendererから地形バッファのGPUアドレスを取得してPebbleRendererへ渡す
-	if (pebbleRenderer_ && terrainRenderer_)
-	{
-		D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddr =
-			terrainRenderer_->GetSettingsBuffer()->GetGPUVirtualAddress();
-
-		pebbleRenderer_->GeneratePebbles(
-			env_,
-			genData,
-			heightMapSrvHandle,
-			densityMapSrvHandle,
-			terrainSettingsAddr
-		);
 	}
 }
 

@@ -32,7 +32,6 @@ class TrailRenderer;
 class SkyboxRenderer;
 class GrassRenderer;
 class TreeRenderer;
-class PebbleRenderer;
 class WaterRenderer;
 class SkydomeRenderer;
 class TerrainRenderer;
@@ -87,8 +86,6 @@ public:
         uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
         const TreeMaterialHandle& treeMaterial);
-    void GeneratePebbles(const PebbleGenerationData& genData,
-        uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitWater(const WorldTransform& worldTransform, const ModelData& modelData,
         D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV, uint32_t normalMapHandle, uint32_t envMapSrvHandle,
         const Vector4& instanceColor = Vector4(1, 1, 1, 1));
@@ -134,15 +131,6 @@ public:
 
     void InitializeGrass();
     void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);
-
-    void InitializePebble();
-    void SetPebbleRenderingParams(
-        uint32_t skyboxSrvHandle,
-        uint32_t albedoSrvHandle,
-        uint32_t normalSrvHandle,
-        const Mesh& pebbleMesh,
-        const PebbleMaterialData& materialData,
-        const PebbleCullingData& cullingData);
 
     // 初期化 (構成のリストを渡す)
     void InitializeFoliage(const std::vector<FoliageTypeConfig>& configs);
@@ -236,13 +224,6 @@ private:
 
     uint32_t windMapSrvIndex_ = 0;
 
-    uint32_t pebbleSkyboxSrvHandle_ = 0;
-    uint32_t pebbleAlbedoSrvHandle_ = 0;
-    uint32_t pebbleNormalSrvHandle_ = 0;
-    Mesh pebbleMesh_;
-    PebbleMaterialData pebbleMaterialData_ = {};
-    PebbleCullingData pebbleCullingData_ = {};
-
     FoliageCullingData foliageCullingData_ = {};
 
     // 深度リソースのポインタ
@@ -269,7 +250,6 @@ private:
     std::unique_ptr<SkyboxRenderer> skyboxRenderer_;
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<TreeRenderer> treeRenderer_;
-    std::unique_ptr<PebbleRenderer> pebbleRenderer_;
     std::unique_ptr<FoliageRenderer> foliageRenderer_;
     std::unique_ptr<WaterRenderer> waterRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;

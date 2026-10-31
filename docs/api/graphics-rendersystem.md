@@ -12,7 +12,6 @@
 | {ref}`FS::Model <fs-model>` | class | `Engine/Graphics/RenderSystem/Model.h` |  |
 | {ref}`FS::PSODescription <fs-psodescription>` | struct | `Engine/Graphics/RenderSystem/PSOManager.h` | JSONで指定するPSO設定 |
 | {ref}`FS::PSOManager <fs-psomanager>` | class | `Engine/Graphics/RenderSystem/PSOManager.h` |  |
-| {ref}`FS::PebbleSystem <fs-pebblesystem>` | class | `Engine/Graphics/RenderSystem/PebbleSystem.h` |  |
 | {ref}`FS::RenderData <fs-renderdata>` | struct | `Engine/Graphics/RenderSystem/RenderCommon.h` |  |
 | {ref}`FS::ModelSubmission <fs-modelsubmission>` | struct | `Engine/Graphics/RenderSystem/RenderCommon.h` | 描画要求情報（レンダリング用の1オブジェクト単位データ） |
 | {ref}`FS::RenderBatch <fs-renderbatch>` | struct | `Engine/Graphics/RenderSystem/RenderCommon.h` |  |
@@ -118,17 +117,6 @@ JSONで指定するPSO設定
 ヘッダー: `Engine/Graphics/RenderSystem/PSOManager.h`
 
 ```{doxygenclass} FS::PSOManager
-:members:
-:protected-members:
-:undoc-members:
-```
-
-(fs-pebblesystem)=
-## FS::PebbleSystem
-
-ヘッダー: `Engine/Graphics/RenderSystem/PebbleSystem.h`
-
-```{doxygenclass} FS::PebbleSystem
 :members:
 :protected-members:
 :undoc-members:

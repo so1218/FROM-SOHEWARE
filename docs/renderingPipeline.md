@@ -86,7 +86,7 @@ flowchart TD
 `RendererManager::Draw3D()` が、次の順で 3D シーンを描画します。
 
 1. 地形 (Early-Z のため最初に描画)
-2. 小石、葉、木
+2. 葉、木
 3. 不透明モデル (`RenderGroup::Opaque`)
 4. 草
 5. グリッド (`RenderGroup::Grid`)

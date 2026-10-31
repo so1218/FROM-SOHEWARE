@@ -624,68 +624,6 @@ struct TrunkMaterialData
     float nearFadeMaxDist;
 };
 
-struct PebbleInstanceData
-{
-    float4 posAndScale; 
-    float4 rotationQuat; 
-    float4 anisoAndEmbed; // x, y, z: 非等方スケール比率, w: 埋まり具合
-    float3 colorVariation; 
-    float padding;
-};
-
-struct PebbleMaterialData
-{
-    float4 baseColor;
-    
-    float roughness;
-    float metalness;
-    float normalIntensity;
-    float shadowDensity;
-    
-    float shadowNormalBias;
-    float shadowBias;
-    float shadowSoftness;
-    float shadowEnvStrength;
-    
-    float environmentMapIntensity;
-    float shininess;
-    float diffuseReflection;
-    float padding;
-};
-
-struct PebbleGenerationData
-{
-    float2 chunkBasePos;
-    float2 terrainCenter;
-    
-    float terrainWidth;
-    float terrainDepth;
-    uint maxInstancesPerChunk;
-    float gridSpacing;
-    
-    float minScale;
-    float maxScale; 
-    float2 heightMapTexelSize;
-  
-    float3 minAnisoScale; 
-    float padding1;
-    
-    float3 maxAnisoScale; 
-    float padding2;
-};
-
-struct PebbleCullingData
-{
-    float maxDrawDistance;
-    float thinStartDistance;
-    float maxThinningRate;
-    float modelRadius; 
-    
-    float modelCenterYOffset; 
-    uint totalInstanceCount;
-    float2 padding;
-};
-
 struct FoliageInstanceData
 {
     float4 posAndScale;

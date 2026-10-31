@@ -85,7 +85,7 @@
 - **該当ソースコード**: `Assets/Shaders/Volumetric/VoxelSpatialFilter.CS.hlsl`
 - **概要**: Froxel格子へのライト注入直後（TAA前段）に生じる高周波ノイズ（IGNや点光源サンプリングの粗）を除去する3D空間フィルタ。Rec.709規格の輝度重み付け（`0.2126, 0.7152, 0.0722`）に基づく6近傍差分評価に加え、奥のボクセルほど対数分割で世界空間上のサイズが大きくなる特性に合わせてエッジ感度（`bilateralSensitivity`）を距離に応じて緩和（`smoothstep`）し、遠景の輪郭チラつきを防止。
 
-## 草木・植生システム・小石 (Grass, Foliage & Pebble System)
+## 草木・植生システム (Grass & Foliage System)
 
 ### プロシージャル草生成 (Procedural Grass Generation & Grid Snapping)
 - **参考資料**: 
@@ -93,7 +93,6 @@
 - **該当ソースコード**: 
   - `Assets/Shaders/Environment/GrassGeneration.CS.hlsl`
   - `Assets/Shaders/Environment/FoliageGeneration.CS.hlsl`
-  - `Assets/Shaders/Environment/PebbleGeneration.CS.hlsl`
 - **概要**: カメラ移動時のチラつき（ポッピング）を防ぐグリッドスナップ処理とHash関数による疑似乱数ジッター配置。ハイトマップ・密度マップを事前サンプリングしたGPU上の動的インスタンスデータ生成。
 
 ### GPU-Driven カリング & Wave Intrinsics 最適化 (GPU-Driven Culling)
@@ -103,7 +102,6 @@
 - **該当ソースコード**: 
   - `Assets/Shaders/GrassCulling.CS.hlsl`
   - `Assets/Shaders/FoliageCulling.CS.hlsl`
-  - `Assets/Shaders/PebbleCulling.CS.hlsl`
 - **概要**: 6つの視錐台平面（Frustum）と距離に基づく球判定カリングを実施。`ExecuteIndirect` 用のアトミックカウントにおいて、`WaveActiveCountBits` や `WavePrefixCountBits` 等の Wave Intrinsics を使用してレーン（Warp/Wavefront）単位でアトミック書き込みを集約し、メモリバスカウント競合を劇的に削減した高性能GPUカリングパイプライン。
 
 ### 草頂点アニメーション & ベジェ曲線物理

@@ -468,9 +468,6 @@
     <ClCompile Include="Engine\Graphics\Renderer\ParticleRenderer.cpp">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Renderer\PebbleRenderer.cpp">
-      <Filter>Engine\Graphics\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClCompile>
@@ -520,9 +517,6 @@
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\Model.cpp">
-      <Filter>Engine\Graphics\RenderSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Graphics\RenderSystem\PebbleSystem.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\PSOManager.cpp">
@@ -736,9 +730,6 @@
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp">
-      <Filter>Game\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\PebbleField.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\TreeField.cpp">
@@ -984,9 +975,6 @@
     <ClInclude Include="Engine\Graphics\Renderer\ParticleRenderer.h">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Graphics\Renderer\PebbleRenderer.h">
-      <Filter>Engine\Graphics\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Graphics\Renderer\RenderEnvironment.h">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClInclude>
@@ -1045,9 +1033,6 @@
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\Model.h">
-      <Filter>Engine\Graphics\RenderSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\RenderSystem\PebbleSystem.h">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\PSOManager.h">
@@ -1284,9 +1269,6 @@
     <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\PebbleField.h">
-      <Filter>Game\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Game\GameObject\TreeField.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
@@ -1341,18 +1323,6 @@
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>
     <FxCompile Include="Assets\Shaders\Environment\GrassGeneration.CS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\Pebble.PS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\Pebble.VS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\PebbleCulling.CS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\PebbleGeneration.CS.hlsl">
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>
     <FxCompile Include="Assets\Shaders\Environment\Skydome.PS.hlsl">

@@ -146,7 +146,7 @@ FS::AudioPlayer::GetInstance().PlayUnique("sunnyBGM", true, 50);
 | `VertexShader` | グラフィックス PSO では ✓ | `Assets/Shaders/` からの相対パス |
 | `PixelShader` | | 同上。深度のみのパスでは省略可 |
 | `ComputeShader` | | 指定するとコンピュートパイプラインになる |
-| `InputLayout` | | `Default3D` `Skinning` `Depth` `Skybox` `Trail` `Line` `Grass` `Tree` `Pebble` `Skydome` `Terrain` `Lightning` `Fullscreen` `None` |
+| `InputLayout` | | `Default3D` `Skinning` `Depth` `Skybox` `Trail` `Line` `Grass` `Tree` `Skydome` `Terrain` `Lightning` `Fullscreen` `None` |
 | `BlendState` | | `Opaque` `OpaqueA2C` `AlphaBlend` `AlphaBlendUI` `Add` `Additive` `Subtract` `Multiply` `Screen` `Exclusion` `FinalComposite` |
 | `RasterizerState` | | `BackCullSolid` `FrontCullSolid` `NoCullSolid` `FrontCullBias` `Wireframe` `LineAA` |
 | `DepthStencilState` | | `Default` `ReadOnly` `DepthOnly` `Off` |
@@ -175,7 +175,7 @@ PSO は使われたときに初めて生成されるため、Release で使う�
 | :--- | :--- |
 | `Common/` | 共通の `.hlsli` (PBR、ライティング、シャドウ、カメラ、定数など) |
 | `Objects/` | 3D モデル (インスタンシング、スキニング、アウトライン) |
-| `Environment/` | 草・木・小石・地形・水・空 (生成とカリングのコンピュートシェーダーを含む) |
+| `Environment/` | 草・木・地形・水・空 (生成とカリングのコンピュートシェーダーを含む) |
 | `Shadow/` | シャドウマップ |
 | `PostProcess/` | ポストエフェクト |
 | `Volumetric/` | ボリュメトリックフォグ、3D ノイズ生成 |

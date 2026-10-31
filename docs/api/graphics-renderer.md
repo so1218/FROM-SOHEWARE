@@ -14,7 +14,6 @@
 | {ref}`FS::ModelRenderer <fs-modelrenderer>` | class | `Engine/Graphics/Renderer/ModelRenderer.h` |  |
 | {ref}`FS::ParticleRequest <fs-particlerequest>` | struct | `Engine/Graphics/Renderer/ParticleRenderer.h` | 1つのパーティクルの描画に必要な情報をまとめたもの |
 | {ref}`FS::ParticleRenderer <fs-particlerenderer>` | class | `Engine/Graphics/Renderer/ParticleRenderer.h` |  |
-| {ref}`FS::PebbleRenderer <fs-pebblerenderer>` | class | `Engine/Graphics/Renderer/PebbleRenderer.h` |  |
 | {ref}`FS::RenderEnvironment <fs-renderenvironment>` | struct | `Engine/Graphics/Renderer/RenderEnvironment.h` |  |
 | {ref}`FS::WorldInteractionData <fs-worldinteractiondata>` | struct | `Engine/Graphics/Renderer/RendererManager.h` | インタラクションデータ保持用の構造体 |
 | {ref}`FS::RendererManager <fs-renderermanager>` | class | `Engine/Graphics/Renderer/RendererManager.h` |  |
@@ -137,17 +136,6 @@
 ヘッダー: `Engine/Graphics/Renderer/ParticleRenderer.h`
 
 ```{doxygenclass} FS::ParticleRenderer
-:members:
-:protected-members:
-:undoc-members:
-```
-
-(fs-pebblerenderer)=
-## FS::PebbleRenderer
-
-ヘッダー: `Engine/Graphics/Renderer/PebbleRenderer.h`
-
-```{doxygenclass} FS::PebbleRenderer
 :members:
 :protected-members:
 :undoc-members:
