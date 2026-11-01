@@ -4,7 +4,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// タイトルの文字と「START GAME」。黒い画面から始まり、決定するとフェードアウトする
+// タイトルの文字とSTART GAME
 class TitleMenu : public FS::GameObject
 {
 public:

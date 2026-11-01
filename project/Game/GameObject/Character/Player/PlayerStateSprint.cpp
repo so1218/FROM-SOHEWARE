@@ -55,7 +55,7 @@ void PlayerStateSprint::Update(Player* player)
         return;
     }
 
-    if (player->IsJumpInputTriggered())
+    if (player->IsJumpInputTriggered() && player->GetStamina()->TryConsume(player->config.jumpStaminaCost))
     {
         player->SetVelocityY(player->config.jumpInitialVelocity);
         player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());

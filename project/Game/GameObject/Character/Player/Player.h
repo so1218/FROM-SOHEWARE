@@ -56,6 +56,8 @@ public:
 		float dodgeDuration = 0.4f;
 		float dodgeStaminaCost = 30.0f;
 		float dodgeAnimSpeed = 1.6f;
+
+		float jumpStaminaCost = 15.0f;
 	};
 
 	Config config;

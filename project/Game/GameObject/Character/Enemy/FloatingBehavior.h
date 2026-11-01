@@ -4,6 +4,8 @@
 #include "PropertyBinder.h"
 #include <random>
 
+namespace FS { class Terrain; }
+
 class Player;
 
 // ワスプ全体で共通のパラメータ。EnemyManager が 1 つ持ち、全機が参照する
@@ -47,7 +49,7 @@ struct FloatingEnemyConfig
     bool showThrusters = false;    // 保存しない。調整用
 
     // 墜落
-    float crashTime = 2.0f;
+    float crashTime = 5.0f;        // 地面に届かなくても、この時間で爆発する
     float crashGravity = 30.0f;
 
     // スポットライト
@@ -66,7 +68,7 @@ struct FloatingEnemyConfig
 class FloatingBehavior : public IEnemyBehavior
 {
 public:
-    FloatingBehavior(const FloatingEnemyConfig& config);
+    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain);
     ~FloatingBehavior() override;
 
     void Initialize(Enemy* owner) override;
@@ -79,6 +81,7 @@ public:
     int ModifyDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint) override;
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
+    bool OnHealthDepleted(Enemy* owner) override;
 
 private:
     enum class State
@@ -105,6 +108,7 @@ private:
     void FireShot(Enemy* owner);
     void DestroyThruster(Enemy* owner, int thrusterIndex);
     void RepairThrusters();
+    void StartCrash();
     FS::Vector3 GetMuzzlePosition(Enemy* owner) const;
     float RandomRange(float min, float max);
     void ReleaseEffects();
@@ -112,6 +116,7 @@ private:
     void DrawThrusterMarkers(Enemy* owner);
 
     const FloatingEnemyConfig& config_;
+    const FS::Terrain* terrain_ = nullptr;   // 墜落したときに地面の高さを調べる
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
 

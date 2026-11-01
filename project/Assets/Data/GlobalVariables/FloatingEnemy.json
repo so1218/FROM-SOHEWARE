@@ -11,7 +11,7 @@
         ],
         "ColliderRadius": 3.25,
         "CrashGravity": 30.0,
-        "CrashTime": 2.0,
+        "CrashTime": 5.0,
         "DamagePerShot": 4,
         "HP": 100,
         "HearingRange": 120.0,

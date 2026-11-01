@@ -81,7 +81,7 @@ void EnemyManager::AddEnemy()
 
 std::unique_ptr<Enemy> EnemyManager::CreateEnemy(int index)
 {
-    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_);
+    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_);
     auto enemy = std::make_unique<Enemy>(engine_, index, EnemyType::Floating, std::move(behavior), managerGroupName_);
     enemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
     enemy->Initialize();

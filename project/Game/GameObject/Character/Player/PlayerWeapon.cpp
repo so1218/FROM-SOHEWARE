@@ -223,40 +223,38 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 
     RaycastHit hitInfo;
     uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
+    const bool hasColliderHit = colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask);
 
-    if (colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask))
+    // レイはカメラから飛ばすので、カメラとプレイヤーの間にある木は無視する
+    const float muzzleDistance = (GetMuzzleWorldPosition() - rayStart).Dot(finalRayDir);
+    TreeRaycastHit treeHit;
+    const bool hasTreeHit = treeField && treeField->Raycast(rayStart, finalRayDir, config_.maxDistance, &treeHit)
+        && treeHit.distance > muzzleDistance;
+
+    // 木が手前にあれば弾はそこで止まり、奥の敵には当たらない
+    const bool isTreeInFront = hasTreeHit && (!hasColliderHit || treeHit.distance < hitInfo.distance);
+
+    if (isTreeInFront)
     {
-        // レティクルが当たった実際の地点を着弾点
+        targetPoint = treeHit.point;
+
+        // 木の表面の法線の方向へ木屑が飛び散るようにする
+        if (woodHitBulletEmitterPtr_)
+        {
+            woodHitBulletEmitterPtr_->SetPosition(treeHit.point);
+            woodHitBulletEmitterPtr_->SetRotation(Quaternion::LookRotation(treeHit.normal, { 0.0f, 1.0f, 0.0f }));
+            woodHitBulletEmitterPtr_->Play();
+        }
+    }
+    else if (hasColliderHit)
+    {
         targetPoint = hitInfo.point;
 
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
         {
             auto enemy = static_cast<Enemy*>(hitInfo.hitObject);
-            if (enemy)
-            {
-                enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
-                AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 50);
-            }
-        }
-    }
-
-    // 木への Raycast 判定
-    TreeRaycastHit treeHit;
-    if (treeField && treeField->Raycast(rayStart, finalRayDir, config_.maxDistance, &treeHit))
-    {
-        // 敵などよりも手前の木に当たった場合
-        targetPoint = treeHit.point;
-
-        // 木への着弾エフェクトを発生
-        if (woodHitBulletEmitterPtr_)
-        {
-            woodHitBulletEmitterPtr_->SetPosition(treeHit.point);
-
-            // 木の表面の法線の方向へ木屑が飛び散るように回転をセット
-            Quaternion rot = Quaternion::LookRotation(treeHit.normal, { 0.0f, 1.0f, 0.0f });
-            woodHitBulletEmitterPtr_->SetRotation(rot);
-
-            woodHitBulletEmitterPtr_->Play(); 
+            enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
+            AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 50);
         }
     }
 

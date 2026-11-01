@@ -47,6 +47,7 @@ PlayScene::PlayScene(Engine* engine)
 	wetherEffectManager->SetCameraManager(cameraManager_.get());
     objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
+    enemyManager_->SetTerrain(ground->GetTerrain());
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
     objectManager_.Create<FoliageField>(engine_);
     gameUI_ = objectManager_.Create<GameUI>(engine_);

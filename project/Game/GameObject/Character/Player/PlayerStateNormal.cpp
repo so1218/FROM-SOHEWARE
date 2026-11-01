@@ -74,7 +74,7 @@ void PlayerStateNormal::Update(Player* player)
     }
 
     // ジャンプ遷移
-    if (player->IsJumpInputTriggered())
+    if (player->IsJumpInputTriggered() && player->GetStamina()->TryConsume(player->config.jumpStaminaCost))
     {
         player->SetVelocityY(player->config.jumpInitialVelocity);
         player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());

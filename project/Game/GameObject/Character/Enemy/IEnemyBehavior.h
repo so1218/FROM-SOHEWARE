@@ -35,6 +35,9 @@ public:
     // 被弾時の固有処理
     virtual void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) {}
 
+    // HP が 0 になったとき。墜落などの演出を自分で行ってから Die() するなら true を返す
+    virtual bool OnHealthDepleted(Enemy* owner) { return false; }
+
     // 死亡時の固有処理
     virtual void OnDeath(Enemy* owner) {}
 

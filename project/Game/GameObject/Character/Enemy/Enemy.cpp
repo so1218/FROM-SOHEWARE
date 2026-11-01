@@ -94,8 +94,8 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
         behavior_->OnTakeDamage(this, damage, hitPoint, hitNormal);
     }
 
-    // 死亡判定
-    if (hp_ <= 0)
+    // 死亡判定。墜落などの演出がある敵は、演出のあとで自分から Die() する
+    if (hp_ <= 0 && !(behavior_ && behavior_->OnHealthDepleted(this)))
     {
         Die();
     }

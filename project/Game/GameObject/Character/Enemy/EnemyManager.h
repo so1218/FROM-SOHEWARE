@@ -21,6 +21,8 @@ public:
     void AddEnemy(); 
     // 倒された敵も含めて、保存されている数だけ作り直す
     void ResetEnemies();
+    // 墜落した敵が地面で爆発するのに使う
+    void SetTerrain(const FS::Terrain* terrain) { terrain_ = terrain; }
 
 private:
     std::unique_ptr<Enemy> CreateEnemy(int index);
@@ -28,6 +30,7 @@ private:
 
     FS::Engine* engine_;
     std::string managerGroupName_;
+    const FS::Terrain* terrain_ = nullptr;
     std::vector<std::unique_ptr<Enemy>> enemies_;
 
     std::unique_ptr<FS::PropertyBinder> binder_;

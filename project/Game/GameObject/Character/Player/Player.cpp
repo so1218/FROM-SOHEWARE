@@ -84,6 +84,7 @@ void Player::Initialize()
 	binder_->Bind("DodgeDuration", &config.dodgeDuration, 0.4f, 0.01f, 0.05f, 3.0f);
 	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
 	ammoDisplay_->BindProperties(*binder_);
@@ -620,6 +621,7 @@ void Player::DebugDraw()
 		binder_->Draw("JumpInitialVelocity", "ジャンプ初速");
 		binder_->Draw("Gravity", "重力加速度");
 		binder_->Draw("AirControlRate", "空中移動制御率");
+		binder_->Draw("JumpStaminaCost", "スタミナ消費");
 	}
 
 	if (ImGui::CollapsingHeader("アニメーション調整"))

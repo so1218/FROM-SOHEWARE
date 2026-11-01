@@ -7,6 +7,7 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "MathUtils.h"
+#include "Terrain.h"
 
 using namespace FS;
 
@@ -16,8 +17,8 @@ namespace
     const Vector3 kUp = { 0.0f, 1.0f, 0.0f };
 }
 
-FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config)
-    : config_(config), random_(std::random_device{}())
+FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain)
+    : config_(config), terrain_(terrain), random_(std::random_device{}())
 {
 }
 
@@ -241,6 +242,16 @@ void FloatingBehavior::UpdateCrash(Enemy* owner, float deltaTime)
     transform.translation_ += velocity_ * deltaTime;
     transform.SetRotation(Quaternion::FromAxisAngle(kUp, kSpinSpeed * deltaTime) * transform.rotationQuaternion_);
 
+    // 地面まで落ちたらそこで爆発する
+    float groundHeight = 0.0f;
+    const bool hasGround = terrain_ && terrain_->GetHeightAt(transform.translation_.x, transform.translation_.z, groundHeight);
+    if (hasGround && transform.translation_.y <= groundHeight)
+    {
+        transform.translation_.y = groundHeight;
+        owner->Die();
+        return;
+    }
+
     if (stateTimer_ >= config_.crashTime)
     {
         owner->Die();
@@ -394,10 +405,26 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
 
     if (destroyedThrusterCount_ >= config_.thrustersToCrash)
     {
-        // 落ちながら少し流れる
-        velocity_.y = std::max(velocity_.y, 0.0f);
-        ChangeState(State::Crash);
+        StartCrash();
     }
+}
+
+bool FloatingBehavior::OnHealthDepleted(Enemy* owner)
+{
+    StartCrash();
+    return true;
+}
+
+void FloatingBehavior::StartCrash()
+{
+    if (state_ == State::Crash)
+    {
+        return;
+    }
+
+    // 落ちながら少し流れる
+    velocity_.y = std::max(velocity_.y, 0.0f);
+    ChangeState(State::Crash);
 }
 
 Vector3 FloatingBehavior::GetMuzzlePosition(Enemy* owner) const
@@ -552,7 +579,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("BodyDamageRate", &bodyDamageRate, 0.3f, 0.01f, 0.0f, 1.0f);
     binder.Bind("ThrustersToCrash", &thrustersToCrash, 2, 1.0f, 1, 4);
 
-    binder.Bind("CrashTime", &crashTime, 2.0f, 0.05f, 0.0f, 10.0f);
+    binder.Bind("CrashTime", &crashTime, 5.0f, 0.05f, 0.0f, 10.0f);
     binder.Bind("CrashGravity", &crashGravity, 30.0f, 0.5f, 0.0f, 200.0f);
 
     binder.BindColor("SpotColor", &spotColor, { 0.076f, 0.216f, 1.0f, 1.0f });
@@ -616,7 +643,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("ThrusterHP", "スラスター 1 基の HP");
         binder.Draw("BodyDamageRate", "本体へのダメージ倍率");
         binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");
-        binder.Draw("CrashTime", "墜落してから爆発まで (秒)");
+        binder.Draw("CrashTime", "地面に届かないときに爆発するまで (秒)");
         binder.Draw("CrashGravity", "墜落の重力");
         ImGui::TreePop();
     }
