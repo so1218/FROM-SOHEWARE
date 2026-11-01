@@ -46,8 +46,8 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
     if (instance.drawMode == SPRITE_DRAW_MODE_SDF_TEXT)
     {
         float signedDistance = textureColor.a;
-        // 1 ピクセル分の距離の変化でぼかすと、どの大きさでもくっきりする
-        float smoothing = max(fwidth(signedDistance) * 0.7f, 0.0001f);
+        // 1 ピクセル分の距離の変化でぼかすと、どの大きさでもくっきりする。影はさらに edgeSoftness だけぼかす
+        float smoothing = max(fwidth(signedDistance) * 0.7f, 0.0001f) + instance.edgeSoftness;
         float fillAlpha = smoothstep(0.5f - smoothing, 0.5f + smoothing, signedDistance);
 
         if (instance.outlineThickness > 0.0f)

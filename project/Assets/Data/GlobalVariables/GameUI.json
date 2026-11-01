@@ -33,6 +33,18 @@
             0.0,
             0.0
         ],
+        "InstructionText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "InstructionText_ShadowOffset": [
+            2.0,
+            2.0
+        ],
+        "InstructionText_ShadowSoftness": 0.0,
+        "InstructionText_ShadowSpread": 0.0,
         "InstructionText_Visible": true,
         "InstructionText_WrapLength": 0.0,
         "IsVisible": true,
@@ -69,6 +81,18 @@
             0.029999999329447746,
             0.9100000262260437
         ],
+        "MessageText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "MessageText_ShadowOffset": [
+            2.0,
+            2.0
+        ],
+        "MessageText_ShadowSoftness": 0.0,
+        "MessageText_ShadowSpread": 0.0,
         "MessageText_Visible": true,
         "MessageText_WrapLength": 0.0,
         "SpriteCameraSwitch_Anchor": [
@@ -530,9 +554,9 @@
         "StageNameText_Align": 0,
         "StageNameText_CharSpacing": 4.0,
         "StageNameText_Color": [
-            0.5836576223373413,
-            0.5836576223373413,
-            0.5836576223373413,
+            0.20706555247306824,
+            0.5758755207061768,
+            0.17253859341144562,
             1.0
         ],
         "StageNameText_Content": "カマタ森林",
@@ -547,7 +571,7 @@
             0.14785993099212646,
             1.0
         ],
-        "StageNameText_OutlineWidth": 2.299999952316284,
+        "StageNameText_OutlineWidth": 0.0,
         "StageNameText_Pivot": [
             1.0,
             0.5
@@ -560,6 +584,18 @@
             0.23000000417232513,
             0.17000000178813934
         ],
+        "StageNameText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8588235378265381
+        ],
+        "StageNameText_ShadowOffset": [
+            2.5999999046325684,
+            2.5
+        ],
+        "StageNameText_ShadowSoftness": 4.0,
+        "StageNameText_ShadowSpread": 0.6000000238418579,
         "StageNameText_Visible": true,
         "StageNameText_WrapLength": 0.0,
         "TimeFormat": "{}:{:02}",
@@ -595,6 +631,18 @@
             0.9700000286102295,
             0.019999999552965164
         ],
+        "TimeText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "TimeText_ShadowOffset": [
+            2.0,
+            2.0
+        ],
+        "TimeText_ShadowSoftness": 0.0,
+        "TimeText_ShadowSpread": 0.0,
         "TimeText_Visible": true,
         "TimeText_WrapLength": 0.0,
         "TitleText_Align": 0,

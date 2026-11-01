@@ -206,8 +206,9 @@ struct SpriteInstance
     
     float4 outlineColor;
     
-    float outlineThickness;   
-    float3 padding;
+    float outlineThickness;
+    float edgeSoftness;   // SDF 文字の輪郭を余分にぼかす量 (影に使う)
+    float2 padding;
 };
 
 struct SpriteFrameConstants

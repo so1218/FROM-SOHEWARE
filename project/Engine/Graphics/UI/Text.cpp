@@ -241,21 +241,35 @@ void Text::Draw()
         anchorPosition.x - pivot_.x * layout.blockSize.x,
         anchorPosition.y - pivot_.y * layout.blockSize.y);
 
-    // 縁取りを先に全部描く
+    // 影、縁取り、文字の順に、それぞれ全部の文字を描く。隣の文字の影や縁取りが文字にかぶらないようにするため
+    if (shadowColor_.w > 0.0f)
+    {
+        const Vector4 shadowColor(shadowColor_.x, shadowColor_.y, shadowColor_.z, shadowColor_.w * opacity_);
+        // 影は縁取りも含めた形で落とす
+        const float shadowThickness = ToSdfDistance(std::max(outlineWidth_, 0.0f) + shadowSpread_);
+        // 太らせた分とぼかした分を合わせても、アトラスの余白からはみ出さないようにする
+        const float maxDistance = ToSdfDistance(static_cast<float>(Font::kSdfPadding) * GetDisplayScale());
+        const float shadowSoftness = std::min(ToSdfDistance(shadowSoftness_), maxDistance - shadowThickness);
+        SubmitGlyphs(layout, blockTopLeft + shadowOffset_, shadowColor, shadowThickness, shadowSoftness);
+    }
+
     if (outlineWidth_ > 0.0f)
     {
-        // 画面のピクセルをアトラスのピクセルに直す
-        const float outlineAtlasPixels =
-            std::min(outlineWidth_ / GetDisplayScale(), static_cast<float>(Font::kSdfPadding - 1));
         const Vector4 outlineColor(outlineColor_.x, outlineColor_.y, outlineColor_.z, outlineColor_.w * opacity_);
-        SubmitGlyphs(layout, blockTopLeft, outlineColor, outlineAtlasPixels * Font::kSdfDistancePerPixel);
+        SubmitGlyphs(layout, blockTopLeft, outlineColor, ToSdfDistance(outlineWidth_));
     }
     const Vector4 color(color_.x, color_.y, color_.z, color_.w * opacity_);
     SubmitGlyphs(layout, blockTopLeft, color, 0.0f);
 }
 
+float Text::ToSdfDistance(float screenPixels) const
+{
+    const float atlasPixels = std::min(screenPixels / GetDisplayScale(), static_cast<float>(Font::kSdfPadding - 1));
+    return std::max(atlasPixels, 0.0f) * Font::kSdfDistancePerPixel;
+}
+
 void Text::SubmitGlyphs(const TextLayout& layout, const Vector2& blockTopLeft,
-    const Vector4& color, float outlineThickness) const
+    const Vector4& color, float outlineThickness, float edgeSoftness) const
 {
     RendererManager* rendererManager = engine_->GetRendererManager();
 
@@ -275,6 +289,7 @@ void Text::SubmitGlyphs(const TextLayout& layout, const Vector2& blockTopLeft,
         glyphInstance.drawMode = SPRITE_DRAW_MODE_SDF_TEXT;
         glyphInstance.outlineColor = color;
         glyphInstance.outlineThickness = outlineThickness;
+        glyphInstance.edgeSoftness = edgeSoftness;
 
         rendererManager->SubmitSprite(glyphInstance, layerOrder_);
     }

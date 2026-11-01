@@ -238,6 +238,10 @@ void PropertyBinder::BindTextElement(const std::string& groupName, Text* text, b
     BindColor(prefix + "Color", text->GetColorPtr(), *text->GetColorPtr());
     Bind(prefix + "OutlineWidth", text->GetOutlineWidthPtr(), *text->GetOutlineWidthPtr(), 0.1f, 0.0f, 16.0f);
     BindColor(prefix + "OutlineColor", text->GetOutlineColorPtr(), *text->GetOutlineColorPtr());
+    Bind(prefix + "ShadowOffset", text->GetShadowOffsetPtr(), *text->GetShadowOffsetPtr(), 0.1f, -100.0f, 100.0f);
+    BindColor(prefix + "ShadowColor", text->GetShadowColorPtr(), *text->GetShadowColorPtr());
+    Bind(prefix + "ShadowSoftness", text->GetShadowSoftnessPtr(), *text->GetShadowSoftnessPtr(), 0.1f, 0.0f, 16.0f);
+    Bind(prefix + "ShadowSpread", text->GetShadowSpreadPtr(), *text->GetShadowSpreadPtr(), 0.1f, 0.0f, 16.0f);
 
     Bind(prefix + "Visible", text->GetIsVisiblePtr(), *text->GetIsVisiblePtr());
     Bind(prefix + "Layer", text->GetLayerOrderPtr(), *text->GetLayerOrderPtr(), 1.0f);
@@ -298,6 +302,13 @@ void PropertyBinder::DrawTextElement(const std::string& groupName, const std::st
         Draw(prefix + "Color", "文字色");
         Draw(prefix + "OutlineWidth", "縁取りの太さ");
         Draw(prefix + "OutlineColor", "縁取りの色");
+
+        ImGui::Spacing();
+        ImGui::SeparatorText("影");
+        Draw(prefix + "ShadowColor", "色 (アルファ 0 で出さない)");
+        Draw(prefix + "ShadowOffset", "ずらす量 (ピクセル)");
+        Draw(prefix + "ShadowSoftness", "ぼかし (ピクセル)");
+        Draw(prefix + "ShadowSpread", "太らせる量 (ピクセル)");
 
         ImGui::PopItemWidth();
         ImGui::Unindent(12.0f);

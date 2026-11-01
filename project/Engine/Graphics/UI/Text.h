@@ -64,6 +64,15 @@ public:
         outlineWidth_ = width;
         outlineColor_ = color;
     }
+    // 文字の後ろに影を出す。offset はずらす量、softness はぼかし、spread は太らせる量 (どれもピクセル)。
+    // color のアルファが 0 なら影は出ない
+    void SetShadow(const Vector2& offset, const Vector4& color, float softness = 0.0f, float spread = 0.0f)
+    {
+        shadowOffset_ = offset;
+        shadowColor_ = color;
+        shadowSoftness_ = softness;
+        shadowSpread_ = spread;
+    }
     void SetLayerOrder(int layerOrder) { layerOrder_ = layerOrder; }
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
     // 色と縁取りの色のアルファに掛ける。フェード用
@@ -84,6 +93,10 @@ public:
     Vector4* GetColorPtr() { return &color_; }
     float* GetOutlineWidthPtr() { return &outlineWidth_; }
     Vector4* GetOutlineColorPtr() { return &outlineColor_; }
+    Vector2* GetShadowOffsetPtr() { return &shadowOffset_; }
+    Vector4* GetShadowColorPtr() { return &shadowColor_; }
+    float* GetShadowSoftnessPtr() { return &shadowSoftness_; }
+    float* GetShadowSpreadPtr() { return &shadowSpread_; }
     int* GetLayerOrderPtr() { return &layerOrder_; }
     bool* GetIsVisiblePtr() { return &isVisible_; }
 
@@ -107,8 +120,10 @@ private:
     float GetDisplayScale() const;
     // 行の方向に進む量
     float GetAdvance(char32_t codepoint, const Glyph& glyph) const;
+    // 画面のピクセルを SDF の距離に直す。アトラスの余白より外は表せないので、そこで止める
+    float ToSdfDistance(float screenPixels) const;
     void SubmitGlyphs(const TextLayout& layout, const Vector2& blockTopLeft,
-        const Vector4& color, float outlineThickness) const;
+        const Vector4& color, float outlineThickness, float edgeSoftness = 0.0f) const;
 
     Engine* engine_ = nullptr;
     const Font* font_ = nullptr;
@@ -130,6 +145,10 @@ private:
     Vector4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     float outlineWidth_ = 0.0f;
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
+    Vector2 shadowOffset_ = { 2.0f, 2.0f };
+    Vector4 shadowColor_ = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float shadowSoftness_ = 0.0f;
+    float shadowSpread_ = 0.0f;
     int layerOrder_ = 0;
     bool isVisible_ = true;
     float opacity_ = 1.0f;
