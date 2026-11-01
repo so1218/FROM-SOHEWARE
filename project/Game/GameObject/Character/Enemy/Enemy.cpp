@@ -72,6 +72,12 @@ void Enemy::Update()
 
 void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNormal)
 {
+    if (!IsActive()) return;
+
+    if (behavior_)
+    {
+        damage = behavior_->ModifyDamage(this, damage, hitPoint);
+    }
     hp_ -= damage;
 
     // 被弾パーティクルの再生
@@ -97,9 +103,14 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
     // 死亡判定
     if (hp_ <= 0)
     {
-        if (behavior_) behavior_->OnDeath(this);
-        SetActive(false);
+        Die();
     }
+}
+
+void Enemy::Die()
+{
+    if (behavior_) behavior_->OnDeath(this);
+    SetActive(false);
 }
 
 void Enemy::OnCollisionEnter(FS::Collider* mine, FS::Collider* other)

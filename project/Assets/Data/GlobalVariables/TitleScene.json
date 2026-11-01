@@ -4,13 +4,13 @@
         "Camera/FarClip": 500.0,
         "Camera/NearClip": 0.10000000149011612,
         "Camera/Position": [
-            68.4000015258789,
-            14.899999618530273,
-            63.29999923706055
+            101.69999694824219,
+            18.399999618530273,
+            151.3000030517578
         ],
         "Camera/RotationEuler": [
             0.0,
-            5.599999904632568,
+            4.599999904632568,
             0.0
         ],
         "Light/Directional/0/Color": [
@@ -62,7 +62,7 @@
         "PostEffect/ColorTint/ScreenAmount": 0.0,
         "PostEffect/DoF/BokehHighlightIntensity": 1.0,
         "PostEffect/DoF/BokehHighlightThreshold": 1.0,
-        "PostEffect/DoF/BokehRadius": 5.0,
+        "PostEffect/DoF/BokehRadius": 3.0,
         "PostEffect/DoF/Enable": 1,
         "PostEffect/DoF/FocusDistance": 10.0,
         "PostEffect/DoF/FocusRange": 5.0,

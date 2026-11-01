@@ -13,6 +13,7 @@ class PlayerStateNormal;
 class PlayerWeapon;
 class PlayerReticle;
 class PlayerStamina;
+class PlayerHealth;
 
 class Player : public FS::GameObject
 {
@@ -68,6 +69,7 @@ public:
 	void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
 	void FireWeapon(); // 射撃時の処理
+	void TakeDamage(int damage); // 回避中は当たらない
 	int GetShotCount() const { return shotCount_; } // これまでに撃った数 (チュートリアルの判定用)
 	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
@@ -110,6 +112,9 @@ public:
 
 	// ダッシュ・回避
 	PlayerStamina* GetStamina() const { return stamina_.get(); }
+	PlayerHealth* GetHealth() const { return health_.get(); }
+	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + colliderOffset_; }
+	const FS::Vector3& GetColliderSize() const { return colliderSize_; }
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
 	bool IsDodgeInputTriggered() const;
 	void SetDodgeDirection(const FS::Vector3& direction) { dodgeDirection_ = direction; }
@@ -155,6 +160,8 @@ private:
 	void UpdateSprintInput();
 
 	std::unique_ptr<PlayerStamina> stamina_;
+	std::unique_ptr<PlayerHealth> health_;
+	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };   // 倒れたらここに戻る
 	bool isSprintInputActive_ = false;
 	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
 	FS::Vector3 dodgeDirection_ = { 0.0f, 0.0f, 1.0f };

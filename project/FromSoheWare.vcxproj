@@ -260,6 +260,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateAiming.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateJump.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStamina.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerHealth.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
@@ -463,6 +464,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateAiming.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateJump.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStamina.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerHealth.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />

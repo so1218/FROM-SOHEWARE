@@ -14,6 +14,8 @@
 #include "PlayerWeapon.h"
 #include "PlayerReticle.h"
 #include "PlayerStamina.h"
+#include "PlayerHealth.h"
+#include "PlayerStateDodge.h"
 #include "Enemy.h"
 
 using namespace FS;
@@ -28,6 +30,7 @@ engine_(engine), camera_(camera)
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 	stamina_ = std::make_unique<PlayerStamina>(engine_);
+	health_ = std::make_unique<PlayerHealth>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = AddCollider(); // 登録はマネージャーへの追加時に自動で行われる
@@ -79,6 +82,8 @@ void Player::Initialize()
 	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
 	stamina_->BindProperties(*binder_);
+	health_->BindProperties(*binder_);
+	binder_->Bind("SpawnPosition", &spawnPosition_, GetTransform().translation_, 0.1f);
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
@@ -101,6 +106,7 @@ void Player::Update()
 	UpdateSprintInput();
 	stateMachine_->Update();
 	stamina_->Update();
+	health_->Update();
 	isGroundedOnObject_ = false;
 
 	// 衝突判定・境界チェック
@@ -342,6 +348,25 @@ void Player::FireWeapon()
 	}
 }
 
+void Player::TakeDamage(int damage)
+{
+	if (stateMachine_->GetCurrentState() == PlayerStateDodge::GetInstance())
+	{
+		return;
+	}
+
+	health_->TakeDamage(damage);
+	Input::GetInstance().StartVibration(0, 0.5f, 0.5f, 0.15f);
+
+	if (health_->IsDead())
+	{
+		GetTransform().translation_ = spawnPosition_;
+		velocityY_ = 0.0f;
+		health_->Refill();
+		stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+	}
+}
+
 void Player::UpdateFootstepEvents()
 {
 	if (!animationModel_) return;
@@ -429,6 +454,7 @@ void Player::Draw()
 	weapon_->Draw();
 	reticle_->Draw();
 	stamina_->DrawGauge();
+	health_->DrawHUD();
 }
 
 void Player::DebugDraw()
@@ -464,6 +490,12 @@ void Player::DebugDraw()
 		binder_->Draw("DodgeDuration", "かかる時間 (秒)");
 		binder_->Draw("DodgeStaminaCost", "スタミナ消費");
 		binder_->Draw("DodgeAnimSpeed", "アニメ速度");
+	}
+
+	if (ImGui::CollapsingHeader("HP"))
+	{
+		health_->DrawProperties(*binder_);
+		binder_->Draw("SpawnPosition", "倒れたときに戻る位置");
 	}
 
 	if (ImGui::CollapsingHeader("スタミナ"))

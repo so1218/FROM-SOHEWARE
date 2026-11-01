@@ -29,6 +29,7 @@ public:
 
     // 被弾処理
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal);
+    void Die();
 
     // アクセサ
     FS::Engine* GetEngine() const { return engine_; }

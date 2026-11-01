@@ -21,6 +21,35 @@
         "DodgeStaminaCost": 30.0,
         "Gravity": 74.04000091552734,
         "HP": 9.819999694824219,
+        "Health_FlashColor": [
+            0.800000011920929,
+            0.0,
+            0.0,
+            0.3499999940395355
+        ],
+        "Health_FlashDuration": 0.3499999940395355,
+        "Health_GaugeColor": [
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421,
+            0.8999999761581421
+        ],
+        "Health_GaugeOffset": [
+            40.0,
+            -40.0
+        ],
+        "Health_GaugeSize": [
+            300.0,
+            10.0
+        ],
+        "Health_LowColor": [
+            0.8999999761581421,
+            0.20000000298023224,
+            0.15000000596046448,
+            0.8999999761581421
+        ],
+        "Health_LowRatio": 0.30000001192092896,
+        "Health_Max": 100,
         "IdleAnimSpeed": 1.0,
         "IdleToRunBlendTime": 0.25,
         "InteractionForce": 1.309999942779541,
@@ -1109,6 +1138,11 @@
         "RunSpeed": 20.170000076293945,
         "RunToIdleBlendTime": 0.25,
         "ShootRecoilTime": 0.009999999776482582,
+        "SpawnPosition": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "SprintAnimSpeed": 1.2999999523162842,
         "SprintSpeedRate": 1.5,
         "SprintStaminaPerSecond": 10.0,

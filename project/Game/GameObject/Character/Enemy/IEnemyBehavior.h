@@ -20,6 +20,9 @@ public:
     virtual int GetInitialHP() const { return 100; }
     virtual std::string GetDamageParticleName() const { return "EnemyDamageParticle"; }
 
+    // 当たった場所に応じてダメージを変える (弱点など)
+    virtual int ModifyDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint) { return damage; }
+
     // 被弾時の固有処理
     virtual void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) {}
 
