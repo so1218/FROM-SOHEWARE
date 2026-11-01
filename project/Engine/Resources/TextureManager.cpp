@@ -124,7 +124,6 @@ TextureType TextureManager::DetectTypeFromPath(const std::filesystem::path& path
     if (pathStr.find("/normal/") != std::string::npos)    return TextureType::Normal;
     if (pathStr.find("/ramps/") != std::string::npos)     return TextureType::Toon;
     if (pathStr.find("/noise/") != std::string::npos)     return TextureType::Noise;
-    if (pathStr.find("/luts/") != std::string::npos)      return TextureType::LUT;
 
     std::string filename = path.stem().string();
     std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);

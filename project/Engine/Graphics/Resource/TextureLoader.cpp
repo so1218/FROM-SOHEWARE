@@ -31,7 +31,6 @@ DXGI_FORMAT GetCompressedFormat(TextureType type, bool isSRGB)
     case TextureType::Toon:
     case TextureType::Particle:
     case TextureType::UI:
-    case TextureType::LUT:
     default:
         // アルベドや一般的な画像は BC7 (最も高品質な圧縮)
         return isSRGB ? DXGI_FORMAT_BC7_UNORM_SRGB : DXGI_FORMAT_BC7_UNORM;

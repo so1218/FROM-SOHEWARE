@@ -14,7 +14,6 @@ enum class TextureType
     CubeMap,
     Particle,
     UI,
-    LUT,
     Unknown
 };
 

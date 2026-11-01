@@ -129,7 +129,6 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
         if (flagPixelation_)      cbData_->flag |= PIXELATION;
         if (flagRadialBlur_)      cbData_->flag |= RADIAL_BLUR;
         if (flagScreenNoise_)     cbData_->flag |= SCREEN_NOISE;
-        if (flagColorGradingLUT_)  cbData_->flag |= COLOR_GRADING_LUT;
     }
 
     if (volumetricFogPass_)
@@ -302,11 +301,6 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     binder.Bind(p + "ScreenNoise/Speed", &cbData_->noiseSpeed, 1.0f, 0.1f, 0.0f, 10.0f);
     binder.Bind(p + "ScreenNoise/Scale", &cbData_->noiseScale, 0.5f, 0.01f, 0.0f, 1.0f);
 
-    flagColorGradingLUT_ = (cbData_->flag & COLOR_GRADING_LUT) != 0;
-    binder.Bind(p + "LUT/Enable", &flagColorGradingLUT_, flagColorGradingLUT_);
-    binder.BindTexture(p + "LUT/Texture", currentLutName_, [this](const std::string& name) {
-        currentLutName_ = name;
-        }, "LUT_Neutral_32", TextureType::LUT);
 
     if (compositeSettings && ssaoSettings)
     {
@@ -497,7 +491,7 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
             ImGui::TreePop();
         }
 
-        if (ImGui::TreeNode("特殊効果・ノイズ"))
+        if (ImGui::TreeNode("ノイズ"))
         {
             binder.Draw(p + "ScreenNoise/Enable", "スクリーンノイズ (砂嵐)");
             if (flagScreenNoise_)
@@ -506,15 +500,6 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
                 binder.Draw(p + "ScreenNoise/Amount", "ノイズ量");
                 binder.Draw(p + "ScreenNoise/Speed", "変化速度");
                 binder.Draw(p + "ScreenNoise/Scale", "粒度スケール");
-                ImGui::Unindent();
-            }
-
-            ImGui::Spacing();
-            binder.Draw(p + "LUT/Enable", "カラーグレーディング (LUT)");
-            if (flagColorGradingLUT_)
-            {
-                ImGui::Indent();
-                binder.Draw(p + "LUT/Texture", "LUTテクスチャ");
                 ImGui::Unindent();
             }
 

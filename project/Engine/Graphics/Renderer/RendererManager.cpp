@@ -189,11 +189,6 @@ void RendererManager::DrawPostEffectsProcess(uint32_t inputSrvIndex)
 	// 最終入力テクスチャ（Bloom合成結果）
 	cmdList->SetGraphicsRootDescriptorTable(1, srvManager_->GetSRVHandleGPU(inputSrvIndex));
 
-	// LUT Map
-	std::string lutName = postEffectManager_->GetCurrentLutName();
-	uint32_t lutMapIndex = TextureManager::GetInstance().Get(lutName);
-	cmdList->SetGraphicsRootDescriptorTable(2, srvManager_->GetSRVHandleGPU(lutMapIndex));
-
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	cmdList->DrawInstanced(3, 1, 0, 0);
 }

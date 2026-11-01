@@ -62,9 +62,6 @@ public:
 
     uint32_t GetVolumetricFogSRVIndex() const { return volumetricFogPass_->GetSRVIndex(); }
 
-    const std::string& GetCurrentLutName() const { return currentLutName_; }
-    void SetCurrentLutName(const std::string& name) { currentLutName_ = name; }
-
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
     void EndFinalComposite(ID3D12GraphicsCommandList* cmdList);
 
@@ -115,8 +112,6 @@ private:
     // 光源のワールド座標を保存する変数
     Vector3 lightPosition_ = { 0, 100, 100 };
 
-    std::string currentLutName_ = "LUT_Neutral_32";
-
     PostEffectContext context_;
 
     std::string prefix_;
@@ -127,7 +122,6 @@ private:
     bool flagPixelation_ = false;
     bool flagRadialBlur_ = false;
     bool flagScreenNoise_ = false;
-    bool flagColorGradingLUT_ = false;
     bool flagSSAO_ = false;
     bool flagDoF_ = false;
     bool flagVolumetricFog_ = false;

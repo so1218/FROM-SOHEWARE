@@ -23,7 +23,6 @@
 #define SCREEN_NOISE        (1 << 3)
 #define CHROM_ABERRATION    (1 << 4)
 #define RADIAL_BLUR         (1 << 5)
-#define COLOR_GRADING_LUT   (1 << 6)
 
 #define MAX_DIRECTIONAL_LIGHTS 2
 #define MAX_POINT_LIGHTS 10
