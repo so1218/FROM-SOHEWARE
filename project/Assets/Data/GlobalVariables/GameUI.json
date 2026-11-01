@@ -530,15 +530,15 @@
         "StageNameText_Align": 0,
         "StageNameText_CharSpacing": 4.0,
         "StageNameText_Color": [
-            0.10220428556203842,
-            0.4863813519477844,
-            0.06623870879411697,
+            0.6584354639053345,
+            1.0,
+            0.6264591217041016,
             1.0
         ],
-        "StageNameText_Content": "RimGrave",
+        "StageNameText_Content": "カマタ森林",
         "StageNameText_Direction": 0,
         "StageNameText_Font": "Shippori",
-        "StageNameText_FontSize": 104.0,
+        "StageNameText_FontSize": 60.5,
         "StageNameText_Layer": 0,
         "StageNameText_LineSpacing": 1.0,
         "StageNameText_OutlineColor": [
@@ -547,7 +547,7 @@
             0.0,
             1.0
         ],
-        "StageNameText_OutlineWidth": 3.0,
+        "StageNameText_OutlineWidth": 0.0,
         "StageNameText_Pivot": [
             1.0,
             0.5
@@ -557,7 +557,7 @@
             0.0
         ],
         "StageNameText_ScreenAnchor": [
-            0.3499999940395355,
+            0.23000000417232513,
             0.15000000596046448
         ],
         "StageNameText_Visible": true,
