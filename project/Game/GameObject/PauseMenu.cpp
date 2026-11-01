@@ -58,7 +58,6 @@ void PauseMenu::Initialize()
 
 void PauseMenu::Update()
 {
-    // ゲームの時間を止めている間も動くよう、止まらない方の時間を使う
     const float deltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     openAmount_ = std::clamp(openAmount_ + (isOpen_ ? deltaTime : -deltaTime) / fadeTime_, 0.0f, 1.0f);
 

@@ -12,22 +12,9 @@ TitleMenu::TitleMenu(Engine* engine)
     binder_ = std::make_unique<PropertyBinder>(engine_, "TitleMenu");
 
     titleText_ = std::make_unique<Text>(engine_);
-    titleText_->SetText("FROM SOHEWARE");
-    titleText_->SetAnchor(UIAnchor::Center);
-    titleText_->SetAlign(TextAlign::Center);
-    titleText_->SetPosition({ 0.0f, -80.0f });
-    titleText_->SetFontSize(72.0f);
-    titleText_->SetCharacterSpacing(12.0f);
-    titleText_->SetLayerOrder(31);
 
     startText_ = std::make_unique<Text>(engine_);
     startText_->SetText("START GAME");
-    startText_->SetAnchor(UIAnchor::Center);
-    startText_->SetAlign(TextAlign::Center);
-    startText_->SetPosition({ 0.0f, 200.0f });
-    startText_->SetFontSize(26.0f);
-    startText_->SetCharacterSpacing(6.0f);
-    startText_->SetLayerOrder(31);
 
     blackScreen_ = std::make_unique<Sprite>(engine_);
     blackScreen_->SetScreenAnchor({ 0.0f, 0.0f });
@@ -55,7 +42,6 @@ void TitleMenu::Update()
     switch (phase_)
     {
     case Phase::FadeIn:
-        // 文字が出きる前でも決定できる
         if (phaseTimer_ >= textFadeInDelay_ + textFadeTime_ || IsConfirmTriggered())
         {
             phase_ = Phase::Waiting;

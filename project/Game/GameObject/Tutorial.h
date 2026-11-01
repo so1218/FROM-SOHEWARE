@@ -6,7 +6,7 @@
 
 class Player;
 
-// 操作のチュートリアル。上に説明、下にキーやボタンの画像を出し、その操作ができたら次へ進む
+// 操作のチュートリアル
 class Tutorial : public FS::GameObject
 {
 public:
@@ -17,7 +17,7 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
-    // 説明を最初から始める (IsEnabled が false なら何もしない)
+    // 説明を最初から始める
     void Begin();
     void Stop() { StartStep(Step::Finished); }
 
@@ -46,7 +46,7 @@ private:
         FadeOut,
     };
 
-    // 説明 1 つ分の文章と、キー・ボタンの画像 (テクスチャ名をカンマ区切り)
+    // 説明 1 つ分の文章と、キー・ボタンの画像
     struct StepContent
     {
         std::string message;
@@ -85,7 +85,7 @@ private:
     float fadeTime_ = 0.3f;
     float clearedWaitTime_ = 0.6f;  // できてから消え始めるまで
     float requiredHoldTime_ = 1.0f; // 移動・ダッシュ・エイムを続ける時間
-    float completeShowTime_ = 2.0f; // 最後の「完了」を出しておく時間
+    float completeShowTime_ = 2.0f; // 最後の完了を出しておく時間
 
     FS::Vector2 panelOffset_ = { 0.0f, 200.0f };  // 画面中央からのずれ
     FS::Vector2 panelSize_ = { 1280.0f, 130.0f };

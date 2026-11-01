@@ -67,7 +67,7 @@ void TitleCamera::UpdateTransition(Camera* camera)
     const float progress = transitionTimer_ / transitionTime_;
     const float blend = SmootherStep(progress);
 
-    // 行き先は毎フレーム FollowCamera に計算させる。寄っている間にプレイヤーが動いてもずれない
+    // 行き先は毎フレーム計算
     followCamera_->UpdateCamera(camera);
     const Vector3 endPosition = camera->GetTranslation();
     const Quaternion endRotation = camera->GetRotation();
@@ -87,7 +87,7 @@ void TitleCamera::StartTransition(Camera* camera)
     startRotation_ = camera->GetRotation();
     startFov_ = camera->GetFov();
 
-    // FollowCamera の補間を落ち着いた状態から始める (camera はこのあと UpdateTransition で上書きされる)
+    // FollowCamera の補間を落ち着いた状態から始める
     followCamera_->PlaceBehindTarget();
     followCamera_->Reset(camera);
 

@@ -5,7 +5,7 @@
 
 class FollowCamera;
 
-// タイトル画面の固定カメラ。StartTransition() を呼ぶと、今の位置から FollowCamera の位置へ寄っていく
+// タイトル画面の固定カメラ
 class TitleCamera : public FS::ICameraController
 {
 public:
@@ -40,8 +40,8 @@ private:
     FS::Vector3 position_ = { 0.0f, 20.0f, -60.0f };
     FS::Vector3 rotationDegrees_ = { 10.0f, 0.0f, 0.0f };
     float fov_ = 0.45f;
-    float swayAmount_ = 0.3f;       // 手持ちのようにゆっくり揺らす量
+    float swayAmount_ = 0.3f;       // 揺らす量
     float swaySpeed_ = 0.4f;
     float transitionTime_ = 2.5f;
-    float arcHeight_ = 4.0f;        // 寄る途中で持ち上げる高さ。地面や木に埋まりにくくする
+    float arcHeight_ = 4.0f;        // 寄る途中で持ち上げる高さ
 };

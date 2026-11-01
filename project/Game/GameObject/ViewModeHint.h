@@ -4,8 +4,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// 画面左上に「[Esc] / [メニューボタン]  メニュー  エディターも使えます」と出す。
-// エディターもアピールしたいので、その部分は目立つ色にする
+// 画面左上に出すポーズメニュー
 class ViewModeHint : public FS::GameObject
 {
 public:

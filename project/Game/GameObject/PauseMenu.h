@@ -4,8 +4,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// Esc かメニューボタンで開くポーズメニュー。上下で選んで決定する。
-// 選んだ項目を受け取って実際に何をするかは持ち主 (PlayScene) が決める
+// ポーズメニュー
 class PauseMenu : public FS::GameObject
 {
 public:
@@ -69,7 +68,7 @@ private:
     FS::Vector4 cursorBandColor_ = { 1.0f, 1.0f, 1.0f, 0.12f };
     FS::Vector4 selectedColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     FS::Vector4 unselectedColor_ = { 1.0f, 1.0f, 1.0f, 0.45f };
-    FS::Vector4 editorColor_ = { 1.0f, 0.78f, 0.3f, 1.0f };   // エディターの項目は目立つ色にする
+    FS::Vector4 editorColor_ = { 1.0f, 0.78f, 0.3f, 1.0f };   
     float descriptionFontSize_ = 20.0f;
     float descriptionOffsetY_ = 40.0f;   // 最後の項目の下から
 };

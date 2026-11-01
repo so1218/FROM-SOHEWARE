@@ -10,9 +10,6 @@ class GameUI;
 class EnemyManager;
 class PauseMenu;
 
-// タイトルからゲームまで同じシーンで行う。
-// タイトル画面 → START GAME でカメラがプレイヤーへ寄る → 寄りきったら操作とチュートリアルを始める。
-// 制限時間が切れたらタイトルに戻る
 class PlayScene : public FS::BaseScene
 {
 public:

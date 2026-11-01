@@ -14,7 +14,6 @@ using namespace FS;
 
 namespace
 {
-    // Step と同じ並び。画像の名前は Assets/Textures 以下の PNG のファイル名
     const char* const kDefaultStepContents[][3] =
     {
         { "移動", "keyboard_w,keyboard_a,keyboard_s,keyboard_d", "xbox_stick_l" },
@@ -113,7 +112,7 @@ void Tutorial::Begin()
 
 void Tutorial::CreatePanelTexture()
 {
-    // 横 1 列の白い画像を作り、左右の端だけ透明にしていく。色は panelColor_ で付ける
+    // 横 1 列の白い画像を作り、左右の端だけ透明にしていく
     constexpr int kTextureWidth = 256;
     DirectX::ScratchImage gradientImage;
     if (FAILED(gradientImage.Initialize2D(DXGI_FORMAT_R8G8B8A8_UNORM, kTextureWidth, 1, 1, 1)))
@@ -363,7 +362,7 @@ void Tutorial::Draw()
     panel_->SetColor(Vector4(panelColor_.x, panelColor_.y, panelColor_.z, panelColor_.w * visibility_));
     panel_->Draw();
 
-    // 画像がないとき (完了など) は文章を帯の真ん中に出す
+    // 画像がないときは文章を帯の真ん中に出す
     const float textY = (iconCount_ > 0) ? panelOffset_.y + textOffsetY_ : panelOffset_.y;
     messageText_->SetPosition({ panelOffset_.x, textY });
     messageText_->SetFontSize(fontSize_);

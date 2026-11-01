@@ -15,7 +15,7 @@
         "StartText_Content": "START GAME",
         "StartText_Direction": 0,
         "StartText_Font": "Main",
-        "StartText_FontSize": 26.0,
+        "StartText_FontSize": 32.5,
         "StartText_Layer": 31,
         "StartText_LineSpacing": 1.0,
         "StartText_OutlineColor": [
@@ -44,11 +44,11 @@
             0.0
         ],
         "StartText_ShadowOffset": [
-            2.0,
-            2.0
+            2.5,
+            2.5
         ],
-        "StartText_ShadowSoftness": 0.0,
-        "StartText_ShadowSpread": 0.0,
+        "StartText_ShadowSoftness": 3.5,
+        "StartText_ShadowSpread": 1.0,
         "StartText_Visible": true,
         "StartText_WrapLength": 0.0,
         "TextFadeInDelay": 1.0,
