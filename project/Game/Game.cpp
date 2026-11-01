@@ -83,10 +83,15 @@ void Game::Run()
 void Game::Update()
 {
 #ifdef ENABLE_DEBUG_CAMERA
-    // デバッグカメラの有効/無効切り替え
-    if (Input::GetInstance().IsKeyTriggered(DIK_Y))
+    // デバッグカメラはエディター表示のときだけ使う。ゲーム画面では必ずメインカメラ
+    DebugCamera* debugCamera = engine_->GetDebugCamera();
+    if (!ImGuiManager::IsGuiVisible())
     {
-        engine_->GetDebugCamera()->SetEnabled(!engine_->GetDebugCamera()->IsEnabled());
+        debugCamera->SetEnabled(false);
+    }
+    else if (Input::GetInstance().IsKeyTriggered(DIK_Y))
+    {
+        debugCamera->SetEnabled(!debugCamera->IsEnabled());
     }
 #endif
 
@@ -121,7 +126,6 @@ void Game::Update()
 
 #ifdef ENABLE_DEBUG_CAMERA
     // デバッグカメラが有効なら、行列と位置だけ差し替える
-    DebugCamera* debugCamera = engine_->GetDebugCamera();
     if (debugCamera->IsEnabled())
     {
         camera.view = debugCamera->GetViewMatrix();

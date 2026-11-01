@@ -403,7 +403,7 @@ bool Input::IsStickUpTriggered(int controllerId, StickType stickType)
     SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
     SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
 
-    return (prevY >= -STICK_THRESHOLD && currentY < -STICK_THRESHOLD);
+    return (prevY <= STICK_THRESHOLD && currentY > STICK_THRESHOLD);
 }
 
 bool Input::IsStickDownTriggered(int controllerId, StickType stickType)
@@ -411,7 +411,7 @@ bool Input::IsStickDownTriggered(int controllerId, StickType stickType)
     SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
     SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
 
-    return (prevY <= STICK_THRESHOLD && currentY > STICK_THRESHOLD);
+    return (prevY >= -STICK_THRESHOLD && currentY < -STICK_THRESHOLD);
 }
 
 bool Input::IsTriggerOnStick(int controllerId, StickType stickType)

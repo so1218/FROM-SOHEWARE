@@ -8,9 +8,11 @@ class Tutorial;
 class TitleMenu;
 class GameUI;
 class EnemyManager;
+class PauseMenu;
 
 // タイトルからゲームまで同じシーンで行う。
-// タイトル画面 → START GAME でカメラがプレイヤーへ寄る → 寄りきったら操作とチュートリアルを始める
+// タイトル画面 → START GAME でカメラがプレイヤーへ寄る → 寄りきったら操作とチュートリアルを始める。
+// 制限時間が切れたらタイトルに戻る
 class PlayScene : public FS::BaseScene
 {
 public:
@@ -35,6 +37,8 @@ private:
     void StartPlaying();
     // プレイヤー・敵・チュートリアルを最初の状態に戻してタイトルへ
     void ReturnToTitle();
+    // ポーズメニューの開け閉めに合わせてゲームを止める・動かす
+    void UpdatePauseMenu();
 
     std::unique_ptr<FollowCamera> followCamera_;
     std::unique_ptr<TitleCamera> titleCamera_;
@@ -43,6 +47,13 @@ private:
     TitleMenu* titleMenu_ = nullptr;
     GameUI* gameUI_ = nullptr;
     EnemyManager* enemyManager_ = nullptr;
+    PauseMenu* pauseMenu_ = nullptr;
 
     Phase phase_ = Phase::Title;
+
+    bool isPaused_ = false;
+    float timeScaleBeforePause_ = 1.0f;
+
+    float timeLimit_ = 300.0f;      // 秒
+    float remainingTime_ = 300.0f;
 };

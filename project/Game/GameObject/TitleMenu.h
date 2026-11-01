@@ -20,6 +20,8 @@ public:
     void Skip();
     // 最初の黒い画面からやり直す
     void Restart();
+    // ポーズメニューを開いている間は決定を受け付けない
+    void SetInputEnabled(bool isEnabled) { isInputEnabled_ = isEnabled; }
 
 private:
     enum class Phase
@@ -39,6 +41,7 @@ private:
 
     Phase phase_ = Phase::FadeIn;
     float phaseTimer_ = 0.0f;
+    bool isInputEnabled_ = true;
 
     // パラメータ
     float fadeInTime_ = 2.0f;       // 黒い画面が明けるまで

@@ -8,7 +8,12 @@ namespace FS
 {
 
 #ifdef ENABLE_IMGUI
+// 開発用のビルドはエディター表示、リリースはゲーム画面から始める
+#ifdef ENABLE_DEV_TOOLS
 bool ImGuiManager::showGui_ = true;
+#else
+bool ImGuiManager::showGui_ = false;
+#endif
 bool ImGuiManager::dockInitialized_ = false;
 bool ImGuiManager::resetSceneSize_ = false;
 int ImGuiManager::gizmoOperation_ = ImGuizmo::TRANSLATE;
@@ -37,6 +42,9 @@ void ImGuiManager::Initialize(
     io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;
 
     io.IniFilename = "imgui_layout.ini";
+
+    // デバッグ描画はエディター表示と一緒に出し入れするので、始まりの状態もそろえる
+    DebugDraw::SetEnabled(showGui_);
 
     // フォント設定
     std::string fontPath = "Assets/Data/Fonts/NotoSansJP-Bold.ttf";
@@ -178,6 +186,12 @@ void ImGuiManager::Initialize(
 #endif
 }
 
+void ImGuiManager::ToggleGui()
+{
+    showGui_ = !showGui_;
+    DebugDraw::SetEnabled(showGui_);
+}
+
 void ImGuiManager::BeginFrame()
 {
 #ifdef ENABLE_IMGUI
@@ -189,11 +203,10 @@ void ImGuiManager::BeginFrame()
     ImGuizmo::BeginFrame();
     ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 
-    // F1 キーで ImGui 全体を切り替え
+    // F1 キーでエディター表示とゲーム画面を切り替える (コントローラーはポーズメニューから)
     if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
     {
-        showGui_ = !showGui_;
-        DebugDraw::SetEnabled(showGui_);
+        ToggleGui();
     }
 
     // メニューバーは GUI 有効時のみ描画

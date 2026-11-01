@@ -78,6 +78,11 @@ void TitleMenu::Update()
 
 bool TitleMenu::IsConfirmTriggered() const
 {
+    if (!isInputEnabled_)
+    {
+        return false;
+    }
+
     auto& input = Input::GetInstance();
     return input.IsKeyTriggered(DIK_SPACE) || input.IsKeyTriggered(DIK_RETURN)
         || input.IsControllerButtonTriggered(0, Input::ButtonA);

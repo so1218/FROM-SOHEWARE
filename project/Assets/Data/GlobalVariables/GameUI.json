@@ -44,7 +44,7 @@
             0.7600417733192444,
             1.0
         ],
-        "MessageText_Content": "マウスで視点操作\nY でメイン・デバッグカメラ切り替え\nメインカメラ\n[Arrow]: カメラ移動\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
+        "MessageText_Content": "Y でメイン・デバッグカメラ切り替え\nデバッグカメラ\n[ホイールボタン] + [Shift] + ドラッグ : 視点平行移動\n[ホイールボタン] +ドラッグ : 視点回転移動\n[ホイール回転] : 視点ズーム",
         "MessageText_Direction": 0,
         "MessageText_Font": "Gothic",
         "MessageText_FontSize": 28.5,
@@ -66,8 +66,8 @@
             0.0
         ],
         "MessageText_ScreenAnchor": [
-            0.019999999552965164,
-            0.9800000190734863
+            0.029999999329447746,
+            0.9100000262260437
         ],
         "MessageText_Visible": true,
         "MessageText_WrapLength": 0.0,
@@ -557,12 +557,12 @@
             0.0
         ],
         "StageNameText_ScreenAnchor": [
-            0.3400000035762787,
-            0.10000000149011612
+            0.3499999940395355,
+            0.15000000596046448
         ],
         "StageNameText_Visible": true,
         "StageNameText_WrapLength": 0.0,
-        "TimeFormat": " {:.1f} 秒",
+        "TimeFormat": "{}:{:02}",
         "TimeText_Align": 0,
         "TimeText_CharSpacing": 0.0,
         "TimeText_Color": [

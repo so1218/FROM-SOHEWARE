@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameUI.h"
-#include "TimeManager.h"
+#include "ImGuiManager.h"
 
 using namespace FS;
 
@@ -31,18 +31,21 @@ void GameUI::Initialize()
 
     // 文字列はコードで作るので、配置と見た目だけ登録する
     binder_->BindTextElement("TimeText", timeText_.get(), false);
-    binder_->BindString("TimeFormat", "時間 {:.1f} 秒",
+    binder_->BindString("TimeFormat", "{}:{:02}",
         [this](const std::string& newFormat) { timeFormat_ = newFormat; });
 }
 
 void GameUI::Update()
 {
-    const float totalTime = TimeManager::GetInstance()->GetTotalTime();
+    // 残り 0.5 秒を 0:01 と出すように切り上げる
+    const int totalSeconds = static_cast<int>(std::ceil(std::max(remainingTime_, 0.0f)));
+    const int minutes = totalSeconds / 60;
+    const int seconds = totalSeconds % 60;
 
     // 書式を ImGui で編集している途中は {} が崩れることがあるので、そのときは書式をそのまま出す
     try
     {
-        timeText_->SetText(std::vformat(timeFormat_, std::make_format_args(totalTime)));
+        timeText_->SetText(std::vformat(timeFormat_, std::make_format_args(minutes, seconds)));
     }
     catch (const std::format_error&)
     {
@@ -54,9 +57,16 @@ void GameUI::Draw()
 {
     if (!isVisible_) return;
 
+    // カメラの操作説明なので、エディター表示のときだけ出す
+    if (ImGuiManager::IsGuiVisible())
+    {
+        messageText_->Draw();
+    }
+
+    if (!isGameplayVisible_) return;
+
     instructionText_->Draw();
     timeText_->Draw();
-    messageText_->Draw();
     stageNameText_->Draw();
 }
 
@@ -70,8 +80,8 @@ void GameUI::DebugDraw()
     binder_->DrawTextElement("InstructionText", "操作方法");
     binder_->DrawTextElement("MessageText", "メッセージ");
     binder_->DrawTextElement("StageNameText", "ステージ名");
-    binder_->DrawTextElement("TimeText", "経過時間");
-    binder_->Draw("TimeFormat", "経過時間の書式");
+    binder_->DrawTextElement("TimeText", "残り時間");
+    binder_->Draw("TimeFormat", "残り時間の書式 ({} に分、秒の順で入る)");
     ImGui::End();
 #endif
 }

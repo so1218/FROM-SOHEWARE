@@ -732,6 +732,12 @@
     <ClCompile Include="Game\GameObject\TitleMenu.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\ViewModeHint.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\PauseMenu.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\GrassField.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
@@ -1276,6 +1282,12 @@
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\TitleMenu.h">
+      <Filter>Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\ViewModeHint.h">
+      <Filter>Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\PauseMenu.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\GrassField.h">
