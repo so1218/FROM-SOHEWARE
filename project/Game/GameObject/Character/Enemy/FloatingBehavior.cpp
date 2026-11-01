@@ -16,8 +16,8 @@ namespace
     const Vector3 kUp = { 0.0f, 1.0f, 0.0f };
 }
 
-FloatingBehavior::FloatingBehavior()
-    : random_(std::random_device{}())
+FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config)
+    : config_(config), random_(std::random_device{}())
 {
 }
 
@@ -40,48 +40,8 @@ void FloatingBehavior::Initialize(Enemy* owner)
     binder->Bind("Frequency", &frequency_, { 0.5f, 1.0f, 0.0f });
     binder->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
     binder->Bind("PatrolSpeed", &patrolSpeed_, 30.0f, 0.5f, 0.0f, 200.0f);
-    binder->Bind("TurnSpeed", &turnSpeed_, 6.0f, 0.1f, 0.0f, 50.0f);
 
-    binder->Bind("SightRange", &sightRange_, 60.0f, 1.0f, 0.0f, 500.0f);
-    binder->Bind("HearingRange", &hearingRange_, 120.0f, 1.0f, 0.0f, 500.0f);
-    binder->Bind("LoseRange", &loseRange_, 150.0f, 1.0f, 0.0f, 1000.0f);
-
-    binder->Bind("MoveSpeed", &moveSpeed_, 18.0f, 0.5f, 0.0f, 200.0f);
-    binder->Bind("Acceleration", &acceleration_, 3.0f, 0.05f, 0.1f, 50.0f);
-    binder->Bind("KeepDistance", &keepDistance_, 25.0f, 0.5f, 0.0f, 200.0f);
-    binder->Bind("KeepHeight", &keepHeight_, 10.0f, 0.5f, -50.0f, 200.0f);
-    binder->Bind("OrbitSpeed", &orbitSpeed_, 0.6f, 0.01f, 0.0f, 10.0f);
-    binder->Bind("WobbleAmount", &wobbleAmount_, 2.0f, 0.1f, 0.0f, 50.0f);
-    binder->Bind("AttackInterval", &attackInterval_, 2.5f, 0.05f, 0.0f, 30.0f);
-
-    binder->Bind("LockOnTime", &lockOnTime_, 1.0f, 0.05f, 0.0f, 10.0f);
-    binder->Bind("BurstCount", &burstCount_, 6, 1.0f, 1, 100);
-    binder->Bind("ShotInterval", &shotInterval_, 0.1f, 0.01f, 0.01f, 2.0f);
-    binder->Bind("DamagePerShot", &damagePerShot_, 4, 1.0f, 0, 1000);
-    binder->Bind("ShotSpread", &shotSpread_, 0.03f, 0.001f, 0.0f, 0.5f);
-    binder->Bind("MaxFireDistance", &maxFireDistance_, 80.0f, 1.0f, 1.0f, 500.0f);
-    binder->Bind("MuzzleOffset", &muzzleOffset_, { 0.0f, 2.0f, 0.0f });
-
-    binder->Bind("ThrusterOffset", &thrusterOffset_, { 1.0f, 1.0f, 1.0f });
-    binder->Bind("ThrusterRadius", &thrusterRadius_, 0.8f, 0.01f, 0.0f, 20.0f);
-    binder->Bind("ThrusterHP", &thrusterMaxHP_, 30, 1.0f, 1, 10000);
-    binder->Bind("BodyDamageRate", &bodyDamageRate_, 0.3f, 0.01f, 0.0f, 1.0f);
-    binder->Bind("ThrustersToCrash", &thrustersToCrash_, 2, 1.0f, 1, kThrusterCount);
-
-    binder->Bind("CrashTime", &crashTime_, 2.0f, 0.05f, 0.0f, 10.0f);
-    binder->Bind("CrashGravity", &crashGravity_, 30.0f, 0.5f, 0.0f, 200.0f);
-
-    binder->BindColor("SpotColor", &spotColor_, { 1.0f, 1.0f, 0.8f, 1.0f });
-    binder->Bind("SpotIntensity", &spotIntensity_, 8.0f);
-    binder->Bind("SpotDistance", &spotDistance_, 20.0f);
-    binder->Bind("SpotAngle", &spotAngleDeg_, 30.0f);
-    binder->Bind("SpotVolumetric", &spotVolumetric_, 4.0f);
-    binder->Bind("SpotDirection", &spotDirection_, { 0.0f, -1.0f, 0.0f });
-
-    for (int& hp : thrusterHP_)
-    {
-        hp = thrusterMaxHP_;
-    }
+    RepairThrusters();
 
     auto moveFireEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveFire");
     if (moveFireEmitter)
@@ -119,6 +79,8 @@ void FloatingBehavior::Update(Enemy* owner)
     if (!player_)
     {
         player_ = owner->GetManager()->FindObjectWithTag<Player>(ObjectTag::Player);
+        // 見つける前に撃った分は銃声として扱わない
+        lastPlayerShotCount_ = player_ ? player_->GetShotCount() : 0;
     }
 
     switch (state_)
@@ -144,16 +106,16 @@ void FloatingBehavior::Update(Enemy* owner)
         AudioPlayer::GetInstance().SetEmitterPosition(soundHandleID_, position);
     }
 
-    // 狙っている間はライトもプレイヤーへ向ける
-    const bool isAiming = state_ == State::LockOn || state_ == State::Fire;
+    // ライトは機体の向きについてくる。狙うときは機体がプレイヤーを向くので、ライトもプレイヤーに当たる
+    const Vector3 spotDirection = owner->GetTransform().rotationQuaternion_.RotateVector(config_.spotLocalDirection).Normalize();
     engine_->GetLightManager()->SubmitSpotLight(
         position,
-        spotColor_,
-        spotIntensity_,
-        spotDistance_,
-        isAiming ? aimDirection_ : spotDirection_,
-        std::cos(spotAngleDeg_ * kDegToRad),
-        spotVolumetric_
+        config_.spotColor,
+        config_.spotIntensity,
+        config_.spotDistance,
+        spotDirection,
+        std::cos(config_.spotAngleDeg * kDegToRad),
+        config_.spotVolumetric
     );
 
     for (Tracer& tracer : tracers_)
@@ -163,7 +125,7 @@ void FloatingBehavior::Update(Enemy* owner)
     }
     std::erase_if(tracers_, [](const Tracer& tracer) { return tracer.remainingTime <= 0.0f; });
 
-    if (showThrusters_)
+    if (config_.showThrusters)
     {
         DrawThrusterMarkers(owner);
     }
@@ -195,7 +157,7 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
     const Vector3 playerCenter = player_->GetColliderCenter();
     const float distance = (playerCenter - position).Length();
 
-    if (distance > loseRange_)
+    if (distance > config_.loseRange)
     {
         ChangeState(State::Patrol);
         return;
@@ -211,21 +173,21 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
         }
         orbitChangeTimer_ = RandomRange(1.5f, 4.0f);
     }
-    orbitAngle_ += orbitSpeed_ * orbitDirection_ * deltaTime;
+    orbitAngle_ += config_.orbitSpeed * orbitDirection_ * deltaTime;
 
     const Vector3 wobble = {
-        std::sin(elapsedTime_ * 1.3f) * wobbleAmount_,
-        std::sin(elapsedTime_ * 2.1f) * wobbleAmount_ * 0.5f,
-        std::cos(elapsedTime_ * 1.7f) * wobbleAmount_
+        std::sin(elapsedTime_ * 1.3f) * config_.wobbleAmount,
+        std::sin(elapsedTime_ * 2.1f) * config_.wobbleAmount * 0.5f,
+        std::cos(elapsedTime_ * 1.7f) * config_.wobbleAmount
     };
     const Vector3 target = player_->GetTransform().translation_
-        + Vector3(std::cos(orbitAngle_) * keepDistance_, keepHeight_, std::sin(orbitAngle_) * keepDistance_)
+        + Vector3(std::cos(orbitAngle_) * config_.keepDistance, config_.keepHeight, std::sin(orbitAngle_) * config_.keepDistance)
         + wobble;
 
-    MoveToward(owner, target, moveSpeed_, deltaTime);
+    MoveToward(owner, target, config_.moveSpeed, deltaTime);
     FaceDirection(owner, playerCenter - position, deltaTime);
 
-    if (stateTimer_ >= attackInterval_ && distance <= maxFireDistance_)
+    if (stateTimer_ >= config_.attackInterval && distance <= config_.maxFireDistance)
     {
         ChangeState(State::LockOn);
     }
@@ -234,18 +196,18 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
 void FloatingBehavior::UpdateLockOn(Enemy* owner, float deltaTime)
 {
     // 狙っている間はほとんど止まる
-    MoveToward(owner, owner->GetTransform().translation_, moveSpeed_, deltaTime);
+    MoveToward(owner, owner->GetTransform().translation_, config_.moveSpeed, deltaTime);
 
     const Vector3 muzzle = GetMuzzlePosition(owner);
     const Vector3 toPlayer = player_->GetColliderCenter() - muzzle;
     aimDirection_ = toPlayer.Normalize();
     FaceDirection(owner, aimDirection_, deltaTime);
 
-    const float laserLength = std::min(toPlayer.Length(), maxFireDistance_);
+    const float laserLength = std::min(toPlayer.Length(), config_.maxFireDistance);
     engine_->GetRendererManager()->SubmitLine(muzzle, muzzle + aimDirection_ * laserLength, Math::ColorVectorToUint32({ 1.0f, 0.1f, 0.1f, 1.0f }));
 
     // 撃ち始めたら狙いは固定する。ロックオンの終わりに横へ動けば避けられる
-    if (stateTimer_ >= lockOnTime_)
+    if (stateTimer_ >= config_.lockOnTime)
     {
         ChangeState(State::Fire);
     }
@@ -253,18 +215,18 @@ void FloatingBehavior::UpdateLockOn(Enemy* owner, float deltaTime)
 
 void FloatingBehavior::UpdateFire(Enemy* owner, float deltaTime)
 {
-    MoveToward(owner, owner->GetTransform().translation_, moveSpeed_, deltaTime);
+    MoveToward(owner, owner->GetTransform().translation_, config_.moveSpeed, deltaTime);
 
-    if (stateTimer_ < shotInterval_)
+    if (stateTimer_ < config_.shotInterval)
     {
         return;
     }
-    stateTimer_ -= shotInterval_;
+    stateTimer_ -= config_.shotInterval;
 
     FireShot(owner);
     ++shotsFired_;
 
-    if (shotsFired_ >= burstCount_)
+    if (shotsFired_ >= config_.burstCount)
     {
         ChangeState(State::Chase);
     }
@@ -274,12 +236,12 @@ void FloatingBehavior::UpdateCrash(Enemy* owner, float deltaTime)
 {
     constexpr float kSpinSpeed = 8.0f;
 
-    velocity_.y -= crashGravity_ * deltaTime;
+    velocity_.y -= config_.crashGravity * deltaTime;
     WorldTransform& transform = owner->GetTransform();
     transform.translation_ += velocity_ * deltaTime;
     transform.SetRotation(Quaternion::FromAxisAngle(kUp, kSpinSpeed * deltaTime) * transform.rotationQuaternion_);
 
-    if (stateTimer_ >= crashTime_)
+    if (stateTimer_ >= config_.crashTime)
     {
         owner->Die();
     }
@@ -294,7 +256,7 @@ void FloatingBehavior::ChangeState(State state)
 
 bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
 {
-    if (!player_)
+    if (!player_ || !player_->IsControllable())
     {
         return false;
     }
@@ -302,10 +264,10 @@ bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
     const float distance = (player_->GetTransform().translation_ - position).Length();
 
     const int playerShotCount = player_->GetShotCount();
-    const bool heardShot = playerShotCount != lastPlayerShotCount_ && distance <= hearingRange_;
+    const bool heardShot = playerShotCount != lastPlayerShotCount_ && distance <= config_.hearingRange;
     lastPlayerShotCount_ = playerShotCount;
 
-    return distance <= sightRange_ || heardShot;
+    return distance <= config_.sightRange || heardShot;
 }
 
 void FloatingBehavior::MoveToward(Enemy* owner, const Vector3& target, float speed, float deltaTime)
@@ -321,7 +283,7 @@ void FloatingBehavior::MoveToward(Enemy* owner, const Vector3& target, float spe
         desiredVelocity = toTarget * (std::min(speed, distance * 2.0f) / distance);
     }
 
-    const float blend = std::min(acceleration_ * deltaTime, 1.0f);
+    const float blend = std::min(config_.acceleration * deltaTime, 1.0f);
     velocity_ += (desiredVelocity - velocity_) * blend;
     position += velocity_ * deltaTime;
 }
@@ -348,25 +310,25 @@ void FloatingBehavior::FaceDirection(Enemy* owner, const Vector3& direction, flo
     // モデルは -Z が正面
     WorldTransform& transform = owner->GetTransform();
     const Quaternion targetRotation = Quaternion::LookRotation(-forward, kUp);
-    transform.SetRotation(Quaternion::Slerp(transform.rotationQuaternion_, targetRotation, std::min(turnSpeed_ * deltaTime, 1.0f)));
+    transform.SetRotation(Quaternion::Slerp(transform.rotationQuaternion_, targetRotation, std::min(config_.turnSpeed * deltaTime, 1.0f)));
 }
 
 void FloatingBehavior::FireShot(Enemy* owner)
 {
     const Vector3 muzzle = GetMuzzlePosition(owner);
-    const Vector3 spread = { RandomRange(-shotSpread_, shotSpread_), RandomRange(-shotSpread_, shotSpread_), RandomRange(-shotSpread_, shotSpread_) };
+    const Vector3 spread = { RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread) };
     const Vector3 shotDirection = (aimDirection_ + spread).Normalize();
 
     AudioPlayer::GetInstance().Play3D("gunShot", muzzle, false, 50, 150.0f);
 
-    Vector3 shotEnd = muzzle + shotDirection * maxFireDistance_;
+    Vector3 shotEnd = muzzle + shotDirection * config_.maxFireDistance;
 
     // プレイヤーの当たり判定 (箱) を、縦は高さ、横は円として扱う
     const Vector3 playerCenter = player_->GetColliderCenter();
     const Vector3& playerHalfSize = player_->GetColliderSize();
     const float distanceAlongShot = (playerCenter - muzzle).Dot(shotDirection);
 
-    if (distanceAlongShot > 0.0f && distanceAlongShot <= maxFireDistance_)
+    if (distanceAlongShot > 0.0f && distanceAlongShot <= config_.maxFireDistance)
     {
         const Vector3 closestPoint = muzzle + shotDirection * distanceAlongShot;
         const Vector3 offset = playerCenter - closestPoint;
@@ -376,7 +338,7 @@ void FloatingBehavior::FireShot(Enemy* owner)
         if (horizontalOffset <= hitRadius && std::abs(offset.y) <= playerHalfSize.y)
         {
             shotEnd = closestPoint;
-            player_->TakeDamage(damagePerShot_);
+            player_->TakeDamage(config_.damagePerShot);
         }
     }
 
@@ -408,7 +370,7 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitP
         {
             continue;
         }
-        if ((localHit - GetThrusterLocalPosition(thrusterIndex)).Length() > thrusterRadius_)
+        if ((localHit - GetThrusterLocalPosition(thrusterIndex)).Length() > config_.thrusterRadius)
         {
             continue;
         }
@@ -421,7 +383,7 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitP
         return damage;
     }
 
-    return static_cast<int>(static_cast<float>(damage) * bodyDamageRate_);
+    return static_cast<int>(static_cast<float>(damage) * config_.bodyDamageRate);
 }
 
 void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
@@ -430,7 +392,7 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
     ++destroyedThrusterCount_;
     AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, false, 60, 100.0f);
 
-    if (destroyedThrusterCount_ >= thrustersToCrash_)
+    if (destroyedThrusterCount_ >= config_.thrustersToCrash)
     {
         // 落ちながら少し流れる
         velocity_.y = std::max(velocity_.y, 0.0f);
@@ -441,14 +403,14 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
 Vector3 FloatingBehavior::GetMuzzlePosition(Enemy* owner) const
 {
     const WorldTransform& transform = owner->GetTransform();
-    return transform.translation_ + transform.rotationQuaternion_.RotateVector(muzzleOffset_);
+    return transform.translation_ + transform.rotationQuaternion_.RotateVector(config_.muzzleOffset);
 }
 
 Vector3 FloatingBehavior::GetThrusterLocalPosition(int thrusterIndex) const
 {
     const float signX = (thrusterIndex & 1) ? -1.0f : 1.0f;
     const float signZ = (thrusterIndex & 2) ? -1.0f : 1.0f;
-    return { thrusterOffset_.x * signX, thrusterOffset_.y, thrusterOffset_.z * signZ };
+    return { config_.thrusterOffset.x * signX, config_.thrusterOffset.y, config_.thrusterOffset.z * signZ };
 }
 
 float FloatingBehavior::RandomRange(float min, float max)
@@ -459,7 +421,7 @@ float FloatingBehavior::RandomRange(float min, float max)
 void FloatingBehavior::DrawThrusterMarkers(Enemy* owner)
 {
     const WorldTransform& transform = owner->GetTransform();
-    const float markerSize = thrusterRadius_ * transform.scale_.x;
+    const float markerSize = config_.thrusterRadius * transform.scale_.x;
 
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
     {
@@ -482,7 +444,28 @@ void FloatingBehavior::OnDeath(Enemy* owner)
     if (!engine_ || !owner) return;
 
     AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
+    ReleaseEffects();
 
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        explosionEmitterPtr_->Play();
+    }
+}
+
+void FloatingBehavior::OnDespawn(Enemy* owner)
+{
+    ReleaseEffects();
+
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->Destroy();
+        explosionEmitterPtr_ = nullptr;
+    }
+}
+
+void FloatingBehavior::ReleaseEffects()
+{
     if (soundHandleID_ >= 0)
     {
         AudioPlayer::GetInstance().Stop(soundHandleID_);
@@ -502,12 +485,15 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         moveSmokeEmitterPtr_->Destroy();
         moveSmokeEmitterPtr_ = nullptr;
     }
+}
 
-    if (explosionEmitterPtr_)
+void FloatingBehavior::RepairThrusters()
+{
+    for (int& hp : thrusterHP_)
     {
-        explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
-        explosionEmitterPtr_->Play();
+        hp = config_.thrusterMaxHP;
     }
+    destroyedThrusterCount_ = 0;
 }
 
 void FloatingBehavior::DebugDraw(Enemy* owner)
@@ -520,77 +506,129 @@ void FloatingBehavior::DebugDraw(Enemy* owner)
     ImGui::Text("スラスター HP: %d / %d / %d / %d", thrusterHP_[0], thrusterHP_[1], thrusterHP_[2], thrusterHP_[3]);
     if (ImGui::Button("スラスターを直す"))
     {
-        for (int& hp : thrusterHP_)
-        {
-            hp = thrusterMaxHP_;
-        }
-        destroyedThrusterCount_ = 0;
+        RepairThrusters();
     }
 
-    if (ImGui::TreeNode("巡回"))
+    ImGui::Text("巡回");
+    binder->Draw("BasePosition", "基準座標 (中心)");
+    binder->Draw("Amplitude", "移動幅");
+    binder->Draw("Frequency", "移動スピード");
+    binder->Draw("Phase", "波のズレ");
+    binder->Draw("PatrolSpeed", "巡回の最高速度");
+#endif
+}
+
+void FloatingEnemyConfig::Bind(PropertyBinder& binder)
+{
+    binder.Bind("HP", &body.maxHP, 100, 1.0f, 1, 100000);
+    binder.Bind("Scale", &body.scale, { 2.0f, 2.0f, 2.0f });
+    binder.Bind("ColliderRadius", &body.colliderRadius, 3.25f);
+    binder.Bind("ColliderOffset", &body.colliderOffset, { 0.0f, 2.0f, 0.0f });
+    binder.Bind("TurnSpeed", &turnSpeed, 6.0f, 0.1f, 0.0f, 50.0f);
+
+    binder.Bind("SightRange", &sightRange, 60.0f, 1.0f, 0.0f, 500.0f);
+    binder.Bind("HearingRange", &hearingRange, 120.0f, 1.0f, 0.0f, 500.0f);
+    binder.Bind("LoseRange", &loseRange, 150.0f, 1.0f, 0.0f, 1000.0f);
+
+    binder.Bind("MoveSpeed", &moveSpeed, 18.0f, 0.5f, 0.0f, 200.0f);
+    binder.Bind("Acceleration", &acceleration, 3.0f, 0.05f, 0.1f, 50.0f);
+    binder.Bind("KeepDistance", &keepDistance, 25.0f, 0.5f, 0.0f, 200.0f);
+    binder.Bind("KeepHeight", &keepHeight, 10.0f, 0.5f, -50.0f, 200.0f);
+    binder.Bind("OrbitSpeed", &orbitSpeed, 0.6f, 0.01f, 0.0f, 10.0f);
+    binder.Bind("WobbleAmount", &wobbleAmount, 2.0f, 0.1f, 0.0f, 50.0f);
+    binder.Bind("AttackInterval", &attackInterval, 2.5f, 0.05f, 0.0f, 30.0f);
+
+    binder.Bind("LockOnTime", &lockOnTime, 1.0f, 0.05f, 0.0f, 10.0f);
+    binder.Bind("BurstCount", &burstCount, 6, 1.0f, 1, 100);
+    binder.Bind("ShotInterval", &shotInterval, 0.1f, 0.01f, 0.01f, 2.0f);
+    binder.Bind("DamagePerShot", &damagePerShot, 4, 1.0f, 0, 1000);
+    binder.Bind("ShotSpread", &shotSpread, 0.03f, 0.001f, 0.0f, 0.5f);
+    binder.Bind("MaxFireDistance", &maxFireDistance, 80.0f, 1.0f, 1.0f, 500.0f);
+    binder.Bind("MuzzleOffset", &muzzleOffset, { 0.0f, 2.0f, 0.0f });
+
+    binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
+    binder.Bind("ThrusterRadius", &thrusterRadius, 0.8f, 0.01f, 0.0f, 20.0f);
+    binder.Bind("ThrusterHP", &thrusterMaxHP, 30, 1.0f, 1, 10000);
+    binder.Bind("BodyDamageRate", &bodyDamageRate, 0.3f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("ThrustersToCrash", &thrustersToCrash, 2, 1.0f, 1, 4);
+
+    binder.Bind("CrashTime", &crashTime, 2.0f, 0.05f, 0.0f, 10.0f);
+    binder.Bind("CrashGravity", &crashGravity, 30.0f, 0.5f, 0.0f, 200.0f);
+
+    binder.BindColor("SpotColor", &spotColor, { 0.076f, 0.216f, 1.0f, 1.0f });
+    binder.Bind("SpotIntensity", &spotIntensity, 30.85f);
+    binder.Bind("SpotDistance", &spotDistance, 28.24f);
+    binder.Bind("SpotAngle", &spotAngleDeg, 28.13f);
+    binder.Bind("SpotVolumetric", &spotVolumetric, 200.0f);
+    binder.Bind("SpotLocalDirection", &spotLocalDirection, { 0.0f, -0.3f, -1.0f });
+}
+
+void FloatingEnemyConfig::Draw(PropertyBinder& binder)
+{
+#ifdef ENABLE_IMGUI
+    if (ImGui::TreeNode("本体"))
     {
-        binder->Draw("BasePosition", "基準座標 (中心)");
-        binder->Draw("Amplitude", "移動幅");
-        binder->Draw("Frequency", "移動スピード");
-        binder->Draw("Phase", "波のズレ");
-        binder->Draw("PatrolSpeed", "巡回の最高速度");
-        binder->Draw("TurnSpeed", "向きを変える速さ");
+        binder.Draw("HP", "HP");
+        binder.Draw("Scale", "スケール");
+        binder.Draw("ColliderRadius", "当たり判定の半径");
+        binder.Draw("ColliderOffset", "当たり判定の位置");
+        binder.Draw("TurnSpeed", "向きを変える速さ");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("発見"))
     {
-        binder->Draw("SightRange", "気づく距離");
-        binder->Draw("HearingRange", "銃声に気づく距離");
-        binder->Draw("LoseRange", "見失う距離");
+        binder.Draw("SightRange", "気づく距離");
+        binder.Draw("HearingRange", "銃声に気づく距離");
+        binder.Draw("LoseRange", "見失う距離");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("追跡"))
     {
-        binder->Draw("MoveSpeed", "最高速度");
-        binder->Draw("Acceleration", "加速 (大きいほど機敏)");
-        binder->Draw("KeepDistance", "プレイヤーとの水平距離");
-        binder->Draw("KeepHeight", "プレイヤーより上の高さ");
-        binder->Draw("OrbitSpeed", "周回の速さ (ラジアン/秒)");
-        binder->Draw("WobbleAmount", "ふらつき");
-        binder->Draw("AttackInterval", "攻撃の間隔 (秒)");
+        binder.Draw("MoveSpeed", "最高速度");
+        binder.Draw("Acceleration", "加速 (大きいほど機敏)");
+        binder.Draw("KeepDistance", "プレイヤーとの水平距離");
+        binder.Draw("KeepHeight", "プレイヤーより上の高さ");
+        binder.Draw("OrbitSpeed", "周回の速さ (ラジアン/秒)");
+        binder.Draw("WobbleAmount", "ふらつき");
+        binder.Draw("AttackInterval", "攻撃の間隔 (秒)");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("攻撃"))
     {
-        binder->Draw("LockOnTime", "ロックオン時間 (秒)");
-        binder->Draw("BurstCount", "連射数");
-        binder->Draw("ShotInterval", "連射の間隔 (秒)");
-        binder->Draw("DamagePerShot", "1 発のダメージ");
-        binder->Draw("ShotSpread", "ばらつき (ラジアン)");
-        binder->Draw("MaxFireDistance", "射程");
-        binder->Draw("MuzzleOffset", "銃口の位置");
+        binder.Draw("LockOnTime", "ロックオン時間 (秒)");
+        binder.Draw("BurstCount", "連射数");
+        binder.Draw("ShotInterval", "連射の間隔 (秒)");
+        binder.Draw("DamagePerShot", "1 発のダメージ");
+        binder.Draw("ShotSpread", "ばらつき (ラジアン)");
+        binder.Draw("MaxFireDistance", "射程");
+        binder.Draw("MuzzleOffset", "銃口の位置");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("弱点・墜落"))
     {
-        ImGui::Checkbox("スラスターの位置を表示", &showThrusters_);
-        binder->Draw("ThrusterOffset", "スラスターの位置 (1 基目)");
-        binder->Draw("ThrusterRadius", "スラスターの半径");
-        binder->Draw("ThrusterHP", "スラスター 1 基の HP");
-        binder->Draw("BodyDamageRate", "本体へのダメージ倍率");
-        binder->Draw("ThrustersToCrash", "墜落するまでに壊す数");
-        binder->Draw("CrashTime", "墜落してから爆発まで (秒)");
-        binder->Draw("CrashGravity", "墜落の重力");
+        ImGui::Checkbox("スラスターの位置を表示", &showThrusters);
+        binder.Draw("ThrusterOffset", "スラスターの位置 (1 基目)");
+        binder.Draw("ThrusterRadius", "スラスターの半径");
+        binder.Draw("ThrusterHP", "スラスター 1 基の HP");
+        binder.Draw("BodyDamageRate", "本体へのダメージ倍率");
+        binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");
+        binder.Draw("CrashTime", "墜落してから爆発まで (秒)");
+        binder.Draw("CrashGravity", "墜落の重力");
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("スポットライト"))
     {
-        binder->Draw("SpotColor", "色");
-        binder->Draw("SpotIntensity", "ライト輝度");
-        binder->Draw("SpotDistance", "届く距離");
-        binder->Draw("SpotAngle", "照射角");
-        binder->Draw("SpotVolumetric", "ボリュームフォグ輝度");
-        binder->Draw("SpotDirection", "照射方向 (巡回中)");
+        binder.Draw("SpotColor", "色");
+        binder.Draw("SpotIntensity", "ライト輝度");
+        binder.Draw("SpotDistance", "届く距離");
+        binder.Draw("SpotAngle", "照射角");
+        binder.Draw("SpotVolumetric", "ボリュームフォグ輝度");
+        binder.Draw("SpotLocalDirection", "照射方向 (機体から見て。-Z が正面)");
         ImGui::TreePop();
     }
 #endif

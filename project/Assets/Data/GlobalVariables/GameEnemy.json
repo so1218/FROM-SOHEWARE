@@ -2,87 +2,27 @@
     "GameEnemy": {
         "EnemyCount": 3,
         "Enemy_0": {
-            "Acceleration": 3.0,
             "Amplitude": [
                 80.0,
                 0.0,
                 80.0
             ],
-            "AttackInterval": 2.5,
             "BasePosition": [
                 0.0,
                 20.0,
                 0.0
             ],
-            "BodyDamageRate": 0.30000001192092896,
-            "BurstCount": 6,
-            "ColliderOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "ColliderRadius": 3.25,
-            "CrashGravity": 30.0,
-            "CrashTime": 2.0,
-            "DamagePerShot": 4,
             "Frequency": [
                 0.20000000298023224,
                 0.0,
                 0.20000000298023224
             ],
-            "HP": 100,
-            "HearingRange": 120.0,
-            "KeepDistance": 25.0,
-            "KeepHeight": 10.0,
-            "LockOnTime": 1.0,
-            "LoseRange": 150.0,
-            "MaxFireDistance": 80.0,
-            "MoveSpeed": 18.0,
-            "MuzzleOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "OrbitSpeed": 0.6000000238418579,
             "PatrolSpeed": 30.0,
             "Phase": [
                 0.0,
                 0.0,
                 90.0
             ],
-            "Scale": [
-                2.0,
-                2.0,
-                2.0
-            ],
-            "ShotInterval": 0.10000000149011612,
-            "ShotSpread": 0.029999999329447746,
-            "SightRange": 60.0,
-            "SpotAngle": 28.1299991607666,
-            "SpotColor": [
-                0.07594937086105347,
-                0.21631181240081787,
-                1.0,
-                1.0
-            ],
-            "SpotDirection": [
-                0.0,
-                -1.0,
-                0.0
-            ],
-            "SpotDistance": 23.969999313354492,
-            "SpotIntensity": 30.850000381469727,
-            "SpotVolumetric": 200.0,
-            "ThrusterHP": 30,
-            "ThrusterOffset": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "ThrusterRadius": 0.800000011920929,
-            "ThrustersToCrash": 2,
-            "TurnSpeed": 6.0,
-            "WobbleAmount": 2.0,
             "enemyModel_AddShadow": 1,
             "enemyModel_AlbedoMap": "white1x1",
             "enemyModel_AlphaThres": 0.009999999776482582,
@@ -615,87 +555,27 @@
             "enemyModel_Wetness": 0.5
         },
         "Enemy_1": {
-            "Acceleration": 3.0,
             "Amplitude": [
                 57.130001068115234,
                 0.0,
                 10.0
             ],
-            "AttackInterval": 2.5,
             "BasePosition": [
                 -13.390000343322754,
                 20.0,
                 56.59000015258789
             ],
-            "BodyDamageRate": 0.30000001192092896,
-            "BurstCount": 6,
-            "ColliderOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "ColliderRadius": 3.25,
-            "CrashGravity": 30.0,
-            "CrashTime": 2.0,
-            "DamagePerShot": 4,
             "Frequency": [
                 0.23000000417232513,
                 1.0,
                 0.10000000149011612
             ],
-            "HP": 100,
-            "HearingRange": 120.0,
-            "KeepDistance": 25.0,
-            "KeepHeight": 10.0,
-            "LockOnTime": 1.0,
-            "LoseRange": 150.0,
-            "MaxFireDistance": 80.0,
-            "MoveSpeed": 18.0,
-            "MuzzleOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "OrbitSpeed": 0.6000000238418579,
             "PatrolSpeed": 30.0,
             "Phase": [
                 0.0,
                 0.0,
                 0.0
             ],
-            "Scale": [
-                2.0,
-                2.0,
-                2.0
-            ],
-            "ShotInterval": 0.10000000149011612,
-            "ShotSpread": 0.029999999329447746,
-            "SightRange": 60.0,
-            "SpotAngle": 29.299999237060547,
-            "SpotColor": [
-                1.0,
-                0.2362869381904602,
-                0.2362869381904602,
-                1.0
-            ],
-            "SpotDirection": [
-                0.0,
-                -1.0,
-                0.0
-            ],
-            "SpotDistance": 35.369998931884766,
-            "SpotIntensity": 12.1899995803833,
-            "SpotVolumetric": 200.0,
-            "ThrusterHP": 30,
-            "ThrusterOffset": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "ThrusterRadius": 0.800000011920929,
-            "ThrustersToCrash": 2,
-            "TurnSpeed": 6.0,
-            "WobbleAmount": 2.0,
             "enemyModel_AddShadow": 1,
             "enemyModel_AlbedoMap": "white1x1",
             "enemyModel_AlphaThres": 0.009999999776482582,
@@ -1228,87 +1108,27 @@
             "enemyModel_Wetness": 0.5
         },
         "Enemy_2": {
-            "Acceleration": 3.0,
             "Amplitude": [
                 57.7400016784668,
                 3.4600000381469727,
                 16.670000076293945
             ],
-            "AttackInterval": 2.5,
             "BasePosition": [
                 0.0,
                 20.0,
                 -58.150001525878906
             ],
-            "BodyDamageRate": 0.30000001192092896,
-            "BurstCount": 6,
-            "ColliderOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "ColliderRadius": 3.25,
-            "CrashGravity": 30.0,
-            "CrashTime": 2.0,
-            "DamagePerShot": 4,
             "Frequency": [
                 0.1899999976158142,
                 1.1399999856948853,
                 0.49000000953674316
             ],
-            "HP": 100,
-            "HearingRange": 120.0,
-            "KeepDistance": 25.0,
-            "KeepHeight": 10.0,
-            "LockOnTime": 1.0,
-            "LoseRange": 150.0,
-            "MaxFireDistance": 80.0,
-            "MoveSpeed": 18.0,
-            "MuzzleOffset": [
-                0.0,
-                2.0,
-                0.0
-            ],
-            "OrbitSpeed": 0.6000000238418579,
             "PatrolSpeed": 30.0,
             "Phase": [
                 0.0,
                 90.0,
                 0.0
             ],
-            "Scale": [
-                2.0,
-                2.0,
-                2.0
-            ],
-            "ShotInterval": 0.10000000149011612,
-            "ShotSpread": 0.029999999329447746,
-            "SightRange": 60.0,
-            "SpotAngle": 21.530000686645508,
-            "SpotColor": [
-                0.16877639293670654,
-                1.0,
-                0.37921249866485596,
-                1.0
-            ],
-            "SpotDirection": [
-                0.0,
-                -1.0,
-                0.0
-            ],
-            "SpotDistance": 29.309999465942383,
-            "SpotIntensity": 18.84000015258789,
-            "SpotVolumetric": 200.0,
-            "ThrusterHP": 30,
-            "ThrusterOffset": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "ThrusterRadius": 0.800000011920929,
-            "ThrustersToCrash": 2,
-            "TurnSpeed": 6.0,
-            "WobbleAmount": 2.0,
             "enemyModel_AddShadow": 1,
             "enemyModel_AlbedoMap": "white1x1",
             "enemyModel_AlphaThres": 0.009999999776482582,

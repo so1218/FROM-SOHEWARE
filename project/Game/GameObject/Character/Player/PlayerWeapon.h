@@ -21,6 +21,10 @@ public:
 
         int baseDamage = 20;
         float maxDistance = 150.0f;
+
+        int magazineSize = 10;
+        float fireInterval = 0.35f;   // 1 発撃ってから次を撃てるまで
+        float reloadTime = 1.6f;
     };
 
     PlayerWeapon(FS::Engine* engine);
@@ -34,6 +38,19 @@ public:
     bool Fire(FS::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FS::CollisionManager* colManager,
         TreeField* treeField);
     FS::Vector3 GetMuzzleWorldPosition() const;
+
+    // 撃てる状態か (リロード中・クールタイム中・弾切れでない)
+    bool CanFire() const { return !IsReloading() && fireCooldown_ <= 0.0f && ammoInMagazine_ > 0; }
+    // 弾が満タンでなく、リロード中でもなければリロードを始める
+    void StartReload();
+    void Refill();
+
+    int GetAmmo() const { return ammoInMagazine_; }
+    int GetMagazineSize() const { return config_.magazineSize; }
+    bool IsReloading() const { return reloadTimer_ > 0.0f; }
+    // 0 = 始めたところ, 1 = 終わり
+    float GetReloadProgress() const { return 1.0f - reloadTimer_ / config_.reloadTime; }
+    int GetReloadCount() const { return reloadCount_; }
 
 private:
     FS::Engine* engine_ = nullptr;
@@ -50,4 +67,9 @@ private:
     Config config_;
     FS::Matrix4x4 currentHandMatrix_;
     float muzzleFlashTimer_ = 0.0f;
+
+    int ammoInMagazine_ = 10;
+    float fireCooldown_ = 0.0f;
+    float reloadTimer_ = 0.0f;   // 0 より大きい間はリロード中
+    int reloadCount_ = 0;        // リロードを終えた回数 (チュートリアルの判定用)
 };

@@ -3,23 +3,20 @@
 #include "GameDefine.h"
 #include "TimeManager.h"
 #include "CollisionConfig.h"
-#include "FloatingBehavior.h"
 
 using namespace FS;
 
-Enemy::Enemy(Engine* engine, int id, EnemyType type, const std::string& parentGroupName)
-    : engine_(engine), id_(id), type_(type)
+Enemy::Enemy(Engine* engine, int id, EnemyType type, std::unique_ptr<IEnemyBehavior> behavior, const std::string& parentGroupName)
+    : engine_(engine), id_(id), type_(type), behavior_(std::move(behavior))
 {
     std::string childGroupName = "Enemy_" + std::to_string(id_);
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, parentGroupName, childGroupName);
 
-    std::string modelName = "enemy";
-
+    std::string modelName;
     switch (type_)
     {
     case EnemyType::Floating:
         modelName = "enemy";
-        behavior_ = std::make_unique<FloatingBehavior>();
         break;
     }
 
@@ -31,10 +28,6 @@ void Enemy::Initialize()
 {
     SetTag(ObjectTag::Enemy);
 
-    binder_->Bind("Scale", &scale_, { 1.0f, 1.0f, 1.0f });
-    binder_->Bind("ColliderRadius", &colliderRadius_, 1.0f);
-    binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 0.0f, 0.0f });
-
     collider_->SetApplyRotation(false);
     collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
     collider_->SetCollisionMask(kCollisionAttributePlayer);
@@ -45,7 +38,7 @@ void Enemy::Initialize()
     // Behavior から敵固有の初期HPと被弾パーティクルを取得
     if (behavior_)
     {
-        hp_ = behavior_->GetInitialHP();
+        hp_ = behavior_->GetBodyConfig().maxHP;
         std::string particleName = behavior_->GetDamageParticleName();
 
         damageParticle_ = engine_->GetParticleSystem()->CreateEmitter(particleName);
@@ -56,7 +49,6 @@ void Enemy::Initialize()
         }
     }
 
-    binder_->Bind("HP", &hp_, hp_);
 }
 
 void Enemy::Update()
@@ -65,9 +57,11 @@ void Enemy::Update()
 
     if (behavior_) behavior_->Update(this);
 
-    model_->GetTransform().scale_ = scale_;
-    collider_->SetRadius(colliderRadius_);
-    collider_->SetCenterOffset(colliderOffset_);
+    // 同じ種類の敵で共有している値なので、調整中の変更がすぐ反映されるよう毎フレーム読む
+    const EnemyBodyConfig& body = behavior_->GetBodyConfig();
+    model_->GetTransform().scale_ = body.scale;
+    collider_->SetRadius(body.colliderRadius);
+    collider_->SetCenterOffset(body.colliderOffset);
 }
 
 void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNormal)
@@ -113,6 +107,17 @@ void Enemy::Die()
     SetActive(false);
 }
 
+void Enemy::Despawn()
+{
+    if (behavior_) behavior_->OnDespawn(this);
+    if (damageParticlePtr_)
+    {
+        damageParticlePtr_->Destroy();
+        damageParticlePtr_ = nullptr;
+    }
+    SetActive(false);
+}
+
 void Enemy::OnCollisionEnter(FS::Collider* mine, FS::Collider* other)
 {
     FS::GameObject* hitObject = other ? other->GetOwner() : nullptr;
@@ -138,16 +143,7 @@ void Enemy::DebugDraw()
 
     if (ImGui::CollapsingHeader(headerName.c_str()))
     {
-        ImGui::Text("基本設定");
-        binder_->Draw("HP", "HP");
-        binder_->Draw("Scale", "スケール");
-
-        ImGui::Text("当たり判定設定");
-        binder_->Draw("ColliderRadius", "半径");
-        binder_->Draw("ColliderOffset", "オフセット");
-
-        ImGui::Separator();
-
+        ImGui::Text("HP: %d", hp_);
         if (behavior_)
         {
             behavior_->DebugDraw(this);

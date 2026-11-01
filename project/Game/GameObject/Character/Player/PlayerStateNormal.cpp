@@ -60,7 +60,7 @@ void PlayerStateNormal::Update(Player* player)
     }
 
     // エイム状態に遷移
-    if (Input::GetInstance().IsKeyPressed(DIK_K) || Input::GetInstance().IsControllerButtonPressed(0, Input::ButtonLT))
+    if (player->IsAimInputActive())
     {
         player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
         return;
@@ -74,7 +74,7 @@ void PlayerStateNormal::Update(Player* player)
     }
 
     // ジャンプ遷移
-    if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA))
+    if (player->IsJumpInputTriggered())
     {
         player->SetVelocityY(player->config.jumpInitialVelocity);
         player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());

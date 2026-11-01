@@ -2,7 +2,6 @@
 #include "Game.h"
 #include "GameDefine.h"
 #include "PlayScene.h"
-#include "TitleScene.h"
 #include "TestScene.h"
 #include "GlobalVariables.h"
 #include "AudioDevice.h"
@@ -30,16 +29,11 @@ Game::Game()
     sceneManager_.Initialize(engine_.get());
 
     // シーンの生成と登録
-    sceneManager_.RegisterScene(std::make_unique<TitleScene>(engine_.get()));
     sceneManager_.RegisterScene(std::make_unique<PlayScene>(engine_.get()));
     sceneManager_.RegisterScene(std::make_unique<TestScene>(engine_.get()));
 
     // 初期シーンを設定
-#ifdef ENABLE_DEV_TOOLS
     sceneManager_.SetInitialScene(SceneName::Play);
-#else
-    sceneManager_.SetInitialScene(SceneName::Play);
-#endif
 }
 
 Game::~Game()

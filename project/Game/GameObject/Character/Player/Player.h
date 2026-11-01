@@ -14,6 +14,7 @@ class PlayerWeapon;
 class PlayerReticle;
 class PlayerStamina;
 class PlayerHealth;
+class PlayerAmmoDisplay;
 
 class Player : public FS::GameObject
 {
@@ -70,6 +71,8 @@ public:
 
 	void FireWeapon(); // 射撃時の処理
 	void TakeDamage(int damage); // 回避中は当たらない
+	// 初期位置に戻して HP やスタミナも元に戻す
+	void ResetToSpawn();
 	int GetShotCount() const { return shotCount_; } // これまでに撃った数 (チュートリアルの判定用)
 	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
@@ -117,6 +120,15 @@ public:
 	const FS::Vector3& GetColliderSize() const { return colliderSize_; }
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
 	bool IsDodgeInputTriggered() const;
+	bool IsAimInputActive() const;
+	bool IsJumpInputTriggered() const;
+	bool IsShootInputTriggered() const;
+	bool IsReloadInputTriggered() const;
+	PlayerWeapon* GetWeapon() const { return weapon_.get(); }
+
+	// false の間は入力を受け付けず、HUD も出さない (タイトル画面など)
+	void SetControllable(bool isControllable) { isControllable_ = isControllable; }
+	bool IsControllable() const { return isControllable_; }
 	void SetDodgeDirection(const FS::Vector3& direction) { dodgeDirection_ = direction; }
 	const FS::Vector3& GetDodgeDirection() const { return dodgeDirection_; }
 	void SetDodgeElapsedTime(float elapsedTime) { dodgeElapsedTime_ = elapsedTime; }
@@ -130,6 +142,7 @@ private:
 	FollowCamera* followCamera_ = nullptr;
 
 	std::unique_ptr<PlayerWeapon> weapon_;
+	std::unique_ptr<PlayerAmmoDisplay> ammoDisplay_;
 	std::unique_ptr<PlayerReticle> reticle_;
 
 	FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
@@ -161,12 +174,15 @@ private:
 
 	std::unique_ptr<PlayerStamina> stamina_;
 	std::unique_ptr<PlayerHealth> health_;
-	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };   // 倒れたらここに戻る
+	void PlaceAtSpawn();
+	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };   // 始まりの位置。倒れたときもここに戻る
+	float spawnRotationY_ = 0.0f;                         // 始まりの向き (度)
 	bool isSprintInputActive_ = false;
 	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
 	FS::Vector3 dodgeDirection_ = { 0.0f, 0.0f, 1.0f };
 	float dodgeElapsedTime_ = 0.0f;
 
 	int shotCount_ = 0;
+	bool isControllable_ = true;
 };
 

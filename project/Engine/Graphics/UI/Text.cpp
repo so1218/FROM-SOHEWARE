@@ -230,7 +230,7 @@ Vector2 Text::MeasureSize() const
 
 void Text::Draw()
 {
-    if (!isVisible_ || font_ == nullptr || codepoints_.empty())
+    if (!isVisible_ || opacity_ <= 0.0f || font_ == nullptr || codepoints_.empty())
     {
         return;
     }
@@ -247,9 +247,11 @@ void Text::Draw()
         // 画面のピクセルをアトラスのピクセルに直す
         const float outlineAtlasPixels =
             std::min(outlineWidth_ / GetDisplayScale(), static_cast<float>(Font::kSdfPadding - 1));
-        SubmitGlyphs(layout, blockTopLeft, outlineColor_, outlineAtlasPixels * Font::kSdfDistancePerPixel);
+        const Vector4 outlineColor(outlineColor_.x, outlineColor_.y, outlineColor_.z, outlineColor_.w * opacity_);
+        SubmitGlyphs(layout, blockTopLeft, outlineColor, outlineAtlasPixels * Font::kSdfDistancePerPixel);
     }
-    SubmitGlyphs(layout, blockTopLeft, color_, 0.0f);
+    const Vector4 color(color_.x, color_.y, color_.z, color_.w * opacity_);
+    SubmitGlyphs(layout, blockTopLeft, color, 0.0f);
 }
 
 void Text::SubmitGlyphs(const TextLayout& layout, const Vector2& blockTopLeft,

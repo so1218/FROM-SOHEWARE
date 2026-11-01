@@ -21,12 +21,11 @@ void PlayerStateAiming::Enter(Player* player)
 void PlayerStateAiming::Update(Player* player)
 {
     float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-    auto& input = Input::GetInstance();
 
     player->ApplyGravity();
     player->SnapToGround();
 
-    bool isAimingInput = input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT);
+    bool isAimingInput = player->IsAimInputActive();
 
     // どちらの入力も無い場合、通常状態に戻る
     if (!isAimingInput)
@@ -100,11 +99,9 @@ void PlayerStateAiming::Update(Player* player)
     }
 
     // 射撃処理
-    if (input.IsKeyTriggered(DIK_J) || input.IsControllerButtonTriggered(0, Input::ButtonRT))
+    if (player->IsShootInputTriggered())
     {
         player->FireWeapon();
-
-        input.StartVibration(0, 0.6f, 0.6f, 0.25f);
     }
 }
 

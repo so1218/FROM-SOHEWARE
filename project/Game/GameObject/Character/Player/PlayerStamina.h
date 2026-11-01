@@ -16,6 +16,7 @@ public:
 
     // 足りていれば amount だけ減らして true を返す
     bool TryConsume(float amount);
+    void Refill();
     // 1 秒あたり amountPerSecond の割合で減らす。0 になると息切れする
     void Drain(float amountPerSecond);
 

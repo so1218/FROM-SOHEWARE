@@ -663,6 +663,9 @@
     <ClCompile Include="Game\Camera\FollowCamera.cpp">
       <Filter>Game\Camera</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Camera\TitleCamera.cpp">
+      <Filter>Game\Camera</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Enemy\Enemy.cpp">
       <Filter>Game\GameObject\Character\Enemy</Filter>
     </ClCompile>
@@ -688,6 +691,9 @@
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerHealth.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp">
@@ -723,6 +729,9 @@
     <ClCompile Include="Game\GameObject\Tutorial.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\TitleMenu.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\GrassField.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
@@ -751,9 +760,6 @@
       <Filter>Game\Scene\TestScene</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scene\PlayScene.cpp">
-      <Filter>Game\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Scene\TitleScene.cpp">
       <Filter>Game\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Game\Game.cpp">
@@ -1200,6 +1206,9 @@
     <ClInclude Include="Game\Camera\FollowCamera.h">
       <Filter>Game\Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Game\Camera\TitleCamera.h">
+      <Filter>Game\Camera</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h">
       <Filter>Game\GameObject\Character\Enemy</Filter>
     </ClInclude>
@@ -1228,6 +1237,9 @@
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerHealth.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h">
@@ -1261,6 +1273,9 @@
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Tutorial.h">
+      <Filter>Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\TitleMenu.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\GrassField.h">
@@ -1297,9 +1312,6 @@
       <Filter>Game\Scene\TestScene</Filter>
     </ClInclude>
     <ClInclude Include="Game\Scene\PlayScene.h">
-      <Filter>Game\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Scene\TitleScene.h">
       <Filter>Game\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Game\Game.h">

@@ -76,10 +76,45 @@ void PlayerWeapon::Initialize()
     binder_->Bind("Muzzle Offset", &config_.muzzleOffset, { 0.0f, 0.05f, 0.35f });
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
     binder_->Bind("MaxDistance", &config_.maxDistance, 5.0f);
+    binder_->Bind("MagazineSize", &config_.magazineSize, 10, 1.0f, 1, 200);
+    binder_->Bind("FireInterval", &config_.fireInterval, 0.35f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("ReloadTime", &config_.reloadTime, 1.6f, 0.05f, 0.05f, 10.0f);
+
+    Refill();
+}
+
+void PlayerWeapon::StartReload()
+{
+    if (IsReloading() || ammoInMagazine_ >= config_.magazineSize)
+    {
+        return;
+    }
+    reloadTimer_ = config_.reloadTime;
+}
+
+void PlayerWeapon::Refill()
+{
+    ammoInMagazine_ = config_.magazineSize;
+    reloadTimer_ = 0.0f;
+    fireCooldown_ = 0.0f;
 }
 
 void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
 {
+    const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    fireCooldown_ = std::max(fireCooldown_ - deltaTime, 0.0f);
+
+    if (IsReloading())
+    {
+        reloadTimer_ -= deltaTime;
+        if (reloadTimer_ <= 0.0f)
+        {
+            reloadTimer_ = 0.0f;
+            ammoInMagazine_ = config_.magazineSize;
+            ++reloadCount_;
+        }
+    }
+
     // 右手のワールド行列を親トランスフォームに設定
     handTransform_.matWorld_ = handWorldMatrix;
 
@@ -157,7 +192,10 @@ Vector3 PlayerWeapon::GetMuzzleWorldPosition() const
 bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, CollisionManager* colManager,
     TreeField* treeField)
 {
-    if (!camera || !colManager) return false;
+    if (!camera || !colManager || !CanFire()) return false;
+
+    --ammoInMagazine_;
+    fireCooldown_ = config_.fireInterval;
 
     AudioPlayer::GetInstance().Play("gunShot", false, 20);
 
@@ -277,6 +315,10 @@ void PlayerWeapon::DebugDraw()
         ImGui::TextDisabled("性能設定");
         binder_->Draw("BaseDamage", "基本ダメージ");
         binder_->Draw("MaxDistance", "最大射程");
+        binder_->Draw("MagazineSize", "装弾数");
+        binder_->Draw("FireInterval", "1 発ごとの間隔 (秒)");
+        binder_->Draw("ReloadTime", "リロード時間 (秒)");
+        ImGui::Text("残り: %d / %d %s", ammoInMagazine_, config_.magazineSize, IsReloading() ? "(リロード中)" : "");
 
         ImGui::Unindent(); 
     }

@@ -16,7 +16,6 @@ void PlayerStateSprint::Enter(Player* player)
 
 void PlayerStateSprint::Update(Player* player)
 {
-    auto& input = Input::GetInstance();
     PlayerStamina* stamina = player->GetStamina();
 
     player->ApplyGravity();
@@ -50,13 +49,13 @@ void PlayerStateSprint::Update(Player* player)
         return;
     }
 
-    if (input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT))
+    if (player->IsAimInputActive())
     {
         player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
         return;
     }
 
-    if (input.IsKeyTriggered(DIK_SPACE) || input.IsControllerButtonTriggered(0, Input::ButtonA))
+    if (player->IsJumpInputTriggered())
     {
         player->SetVelocityY(player->config.jumpInitialVelocity);
         player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());

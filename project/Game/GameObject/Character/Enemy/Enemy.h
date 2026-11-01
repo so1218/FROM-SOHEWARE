@@ -17,7 +17,7 @@ enum class EnemyType
 class Enemy : public FS::GameObject
 {
 public:
-    Enemy(FS::Engine* engine, int id, EnemyType type, const std::string& parentGroupName);
+    Enemy(FS::Engine* engine, int id, EnemyType type, std::unique_ptr<IEnemyBehavior> behavior, const std::string& parentGroupName);
     ~Enemy() override = default;
 
     void Initialize() override;
@@ -30,6 +30,7 @@ public:
     // 被弾処理
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal);
     void Die();
+    void Despawn();
 
     // アクセサ
     FS::Engine* GetEngine() const { return engine_; }
@@ -55,10 +56,6 @@ private:
     // 振る舞いを保持するポインタ
     std::unique_ptr<IEnemyBehavior> behavior_;
 
-    // 共通パラメータ
     int hp_ = 100;
-    FS::Vector3 scale_ = { 1.0f, 1.0f, 1.0f };
-    float colliderRadius_ = 1.0f;
-    FS::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
 
 };

@@ -66,6 +66,8 @@ public:
     }
     void SetLayerOrder(int layerOrder) { layerOrder_ = layerOrder; }
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
+    // 色と縁取りの色のアルファに掛ける。フェード用
+    void SetOpacity(float opacity) { opacity_ = opacity; }
 
     Vector2 MeasureSize() const;
 
@@ -130,6 +132,7 @@ private:
     Vector4 outlineColor_ = { 0.0f, 0.0f, 0.0f, 1.0f };
     int layerOrder_ = 0;
     bool isVisible_ = true;
+    float opacity_ = 1.0f;
 };
 
 }

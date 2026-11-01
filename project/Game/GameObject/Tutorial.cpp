@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Tutorial.h"
 #include "Player.h"
+#include "PlayerWeapon.h"
 #include "PlayerStateSprint.h"
 #include "PlayerStateDodge.h"
 #include "PlayerStateJump.h"
@@ -22,6 +23,7 @@ namespace
         { "ジャンプ", "keyboard_space", "xbox_button_a" },
         { "エイム", "keyboard_k", "xbox_lt" },
         { "エイム中に射撃", "keyboard_j", "xbox_rt" },
+        { "リロード", "keyboard_r", "xbox_button_x" },
         { "チュートリアル完了", "", "" },
     };
 
@@ -98,7 +100,15 @@ void Tutorial::Initialize()
     messageText_->SetLayerOrder(21);
 
     isUsingController_ = Input::GetInstance().IsControllerConnected(0);
-    StartStep(isEnabled_ ? Step::Move : Step::Finished);
+    StartStep(Step::Finished);
+}
+
+void Tutorial::Begin()
+{
+    if (isEnabled_)
+    {
+        StartStep(Step::Move);
+    }
 }
 
 void Tutorial::CreatePanelTexture()
@@ -142,6 +152,7 @@ void Tutorial::StartStep(Step step)
         visibility_ = 0.0f;
         heldTime_ = 0.0f;
         shotCountAtStart_ = player_->GetShotCount();
+        reloadCountAtStart_ = player_->GetWeapon()->GetReloadCount();
     }
     currentStep_ = step;
 
@@ -264,6 +275,14 @@ bool Tutorial::IsStepCleared()
 
     case Step::Shoot:
         return player_->GetShotCount() > shotCountAtStart_;
+
+    case Step::Reload:
+    {
+        // 満タンだとリロードできず先へ進めなくなるので、そのときも済んだことにする
+        const PlayerWeapon* weapon = player_->GetWeapon();
+        const bool isFull = weapon->GetAmmo() == weapon->GetMagazineSize() && !weapon->IsReloading();
+        return weapon->GetReloadCount() > reloadCountAtStart_ || isFull;
+    }
 
     case Step::Complete:
         heldTime_ += deltaTime;
@@ -391,7 +410,7 @@ void Tutorial::DebugDraw()
         StartStep(static_cast<Step>(static_cast<int>(currentStep_) + 1));
     }
 
-    binder_->Draw("IsEnabled", "シーン開始時に表示する");
+    binder_->Draw("IsEnabled", "ゲーム開始時に表示する");
     binder_->Draw("StartDelay", "最初に出すまでの時間 (秒)");
     binder_->Draw("FadeTime", "フェードの時間 (秒)");
     binder_->Draw("ClearedWaitTime", "できてから消えるまで (秒)");

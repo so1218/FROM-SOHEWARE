@@ -15,8 +15,10 @@
 #include "PlayerReticle.h"
 #include "PlayerStamina.h"
 #include "PlayerHealth.h"
+#include "PlayerAmmoDisplay.h"
 #include "PlayerStateDodge.h"
 #include "Enemy.h"
+#include "GlobalVariables.h"
 
 using namespace FS;
 
@@ -28,6 +30,7 @@ engine_(engine), camera_(camera)
 	animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanRun");
 
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
+	ammoDisplay_ = std::make_unique<PlayerAmmoDisplay>(engine_);
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 	stamina_ = std::make_unique<PlayerStamina>(engine_);
 	health_ = std::make_unique<PlayerHealth>(engine_);
@@ -83,10 +86,12 @@ void Player::Initialize()
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
-	binder_->Bind("SpawnPosition", &spawnPosition_, GetTransform().translation_, 0.1f);
+	ammoDisplay_->BindProperties(*binder_);
+	binder_->Bind("SpawnPosition", &spawnPosition_, { 0.0f, 0.0f, 0.0f }, 0.1f, [this]() { PlaceAtSpawn(); });
+	binder_->Bind("SpawnRotationY", &spawnRotationY_, 0.0f, 0.5f, -360.0f, 360.0f, [this]() { PlaceAtSpawn(); });
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
-	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+	ResetToSpawn();
 
 
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
@@ -104,6 +109,10 @@ void Player::Update()
 
 	// ステートマシン更新
 	UpdateSprintInput();
+	if (IsReloadInputTriggered())
+	{
+		weapon_->StartReload();
+	}
 	stateMachine_->Update();
 	stamina_->Update();
 	health_->Update();
@@ -193,6 +202,11 @@ void Player::Update()
 // 入力から移動方向を取得
 Vector3 Player::GetMoveDirection()
 {
+	if (!isControllable_)
+	{
+		return { 0.0f, 0.0f, 0.0f };
+	}
+
 	auto& input = Input::GetInstance();
 	constexpr int kControllerId = 0;
 	constexpr float kMaxStickVal = 32768.0f;
@@ -328,9 +342,15 @@ void Player::FireWeapon()
 {
 	if (!weapon_ || !camera_) return;
 
-	if (followCamera_)
+	// 弾切れで撃とうとしたらリロードを始める
+	if (weapon_->GetAmmo() == 0)
 	{
-		followCamera_->AddRecoil(0.08f, 0.03f);
+		weapon_->StartReload();
+		return;
+	}
+	if (!weapon_->CanFire())
+	{
+		return;
 	}
 
 	CollisionManager* colManager = GetManager() ? GetManager()->GetCollisionManager() : nullptr;
@@ -344,6 +364,11 @@ void Player::FireWeapon()
 		{
 			reticle_->OnShootRecoil(); // 射撃時の反動拡散
 		}
+		if (followCamera_)
+		{
+			followCamera_->AddRecoil(0.08f, 0.03f);
+		}
+		Input::GetInstance().StartVibration(0, 0.6f, 0.6f, 0.25f);
 		++shotCount_;
 	}
 }
@@ -360,11 +385,34 @@ void Player::TakeDamage(int damage)
 
 	if (health_->IsDead())
 	{
-		GetTransform().translation_ = spawnPosition_;
-		velocityY_ = 0.0f;
-		health_->Refill();
-		stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+		ResetToSpawn();
 	}
+}
+
+void Player::ResetToSpawn()
+{
+	PlaceAtSpawn();
+	velocityY_ = 0.0f;
+	moveDirection_ = { 0.0f, 0.0f, 0.0f };
+	health_->Refill();
+	stamina_->Refill();
+	weapon_->Refill();
+	if (followCamera_)
+	{
+		followCamera_->SetAiming(false);
+	}
+	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+}
+
+void Player::PlaceAtSpawn()
+{
+	const float yaw = spawnRotationY_ * Math::PI / 180.0f;
+
+	GetTransform().translation_ = spawnPosition_;
+	GetTransform().SetRotation(Quaternion::QuaternionFromEuler({ 0.0f, yaw, 0.0f }));
+	// 止まっている間も最後に動いた方向へ向き直るので、そちらも合わせる
+	lastMoveDirection_ = { std::sin(yaw), 0.0f, std::cos(yaw) };
+	prevPosition_ = spawnPosition_;
 }
 
 void Player::UpdateFootstepEvents()
@@ -428,13 +476,37 @@ void Player::UpdateSprintInput()
 		isControllerSprintLatched_ = false;
 	}
 
-	isSprintInputActive_ = input.IsKeyPressed(DIK_LSHIFT) || isControllerSprintLatched_;
+	isSprintInputActive_ = isControllable_ && (input.IsKeyPressed(DIK_LSHIFT) || isControllerSprintLatched_);
 }
 
 bool Player::IsDodgeInputTriggered() const
 {
 	auto& input = Input::GetInstance();
-	return input.IsKeyTriggered(DIK_LCONTROL) || input.IsControllerButtonTriggered(0, Input::ButtonB);
+	return isControllable_ && (input.IsKeyTriggered(DIK_LCONTROL) || input.IsControllerButtonTriggered(0, Input::ButtonB));
+}
+
+bool Player::IsAimInputActive() const
+{
+	auto& input = Input::GetInstance();
+	return isControllable_ && (input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT));
+}
+
+bool Player::IsJumpInputTriggered() const
+{
+	auto& input = Input::GetInstance();
+	return isControllable_ && (input.IsKeyTriggered(DIK_SPACE) || input.IsControllerButtonTriggered(0, Input::ButtonA));
+}
+
+bool Player::IsReloadInputTriggered() const
+{
+	auto& input = Input::GetInstance();
+	return isControllable_ && (input.IsKeyTriggered(DIK_R) || input.IsControllerButtonTriggered(0, Input::ButtonX));
+}
+
+bool Player::IsShootInputTriggered() const
+{
+	auto& input = Input::GetInstance();
+	return isControllable_ && (input.IsKeyTriggered(DIK_J) || input.IsControllerButtonTriggered(0, Input::ButtonRT));
 }
 
 void Player::OnCollisionEnter(Collider* mine, Collider* other)
@@ -452,9 +524,14 @@ void Player::Draw()
 	animationModel_->Draw();
 
 	weapon_->Draw();
-	reticle_->Draw();
-	stamina_->DrawGauge();
-	health_->DrawHUD();
+
+	if (isControllable_)
+	{
+		reticle_->Draw();
+		ammoDisplay_->Draw(*weapon_);
+		stamina_->DrawGauge();
+		health_->DrawHUD();
+	}
 }
 
 void Player::DebugDraw()
@@ -468,6 +545,11 @@ void Player::DebugDraw()
 
 	weapon_->DebugDraw();
 	reticle_->DebugDraw();
+
+	if (ImGui::CollapsingHeader("残弾表示"))
+	{
+		ammoDisplay_->DrawProperties(*binder_);
+	}
 
 	if (ImGui::CollapsingHeader("動き"))
 	{
@@ -492,10 +574,31 @@ void Player::DebugDraw()
 		binder_->Draw("DodgeAnimSpeed", "アニメ速度");
 	}
 
+	if (ImGui::CollapsingHeader("初期位置"))
+	{
+		binder_->Draw("SpawnPosition", "位置 (倒れたときもここに戻る)");
+		binder_->Draw("SpawnRotationY", "向き (度)");
+		if (ImGui::Button("今の位置と向きを初期位置にする"))
+		{
+			const Vector3 forward = GetTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+			spawnPosition_ = GetTransform().translation_;
+			spawnRotationY_ = std::atan2(forward.x, forward.z) * 180.0f / Math::PI;
+
+			// ボタンで変えた値は保存対象に書き込まないと残らない
+			GlobalVariables* globalVariables = GlobalVariables::GetInstance();
+			globalVariables->SetValue(binder_->GetGroupPath(), "SpawnPosition", spawnPosition_);
+			globalVariables->SetValue(binder_->GetGroupPath(), "SpawnRotationY", spawnRotationY_);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("初期位置に戻す"))
+		{
+			ResetToSpawn();
+		}
+	}
+
 	if (ImGui::CollapsingHeader("HP"))
 	{
 		health_->DrawProperties(*binder_);
-		binder_->Draw("SpawnPosition", "倒れたときに戻る位置");
 	}
 
 	if (ImGui::CollapsingHeader("スタミナ"))

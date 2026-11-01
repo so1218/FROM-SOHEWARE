@@ -3,6 +3,54 @@
         "AimMoveSpeed": 8.0,
         "AimToIdleBlendTime": 0.009999999776482582,
         "AirControlRate": 0.7300000190734863,
+        "Ammo_EmptyRoundColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.20000000298023224
+        ],
+        "Ammo_FontSize": 56.0,
+        "Ammo_LowColor": [
+            1.0,
+            0.3499999940395355,
+            0.25,
+            0.949999988079071
+        ],
+        "Ammo_LowRatio": 0.30000001192092896,
+        "Ammo_MagazineFontSize": 26.0,
+        "Ammo_MagazineTextOffset": [
+            -40.0,
+            -44.0
+        ],
+        "Ammo_NormalColor": [
+            1.0,
+            1.0,
+            1.0,
+            0.949999988079071
+        ],
+        "Ammo_PromptFontSize": 24.0,
+        "Ammo_PromptIconSize": 36.0,
+        "Ammo_PromptOffset": [
+            -40.0,
+            -150.0
+        ],
+        "Ammo_ReloadBarSize": [
+            160.0,
+            4.0
+        ],
+        "Ammo_RoundSize": [
+            6.0,
+            18.0
+        ],
+        "Ammo_RoundSpacing": 4.0,
+        "Ammo_RoundsOffset": [
+            -40.0,
+            -110.0
+        ],
+        "Ammo_TextOffset": [
+            -110.0,
+            -36.0
+        ],
         "ColliderOffset": [
             0.0,
             4.800000190734863,
@@ -1139,10 +1187,11 @@
         "RunToIdleBlendTime": 0.25,
         "ShootRecoilTime": 0.009999999776482582,
         "SpawnPosition": [
+            56.20000076293945,
             0.0,
-            0.0,
-            0.0
+            129.89999389648438
         ],
+        "SpawnRotationY": -114.5,
         "SprintAnimSpeed": 1.2999999523162842,
         "SprintSpeedRate": 1.5,
         "SprintStaminaPerSecond": 10.0,

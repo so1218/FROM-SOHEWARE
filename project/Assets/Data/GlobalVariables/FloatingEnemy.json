@@ -1,0 +1,64 @@
+{
+    "FloatingEnemy": {
+        "Acceleration": 3.0,
+        "AttackInterval": 2.5,
+        "BodyDamageRate": 0.30000001192092896,
+        "BurstCount": 6,
+        "ColliderOffset": [
+            0.0,
+            2.0,
+            0.0
+        ],
+        "ColliderRadius": 3.25,
+        "CrashGravity": 30.0,
+        "CrashTime": 2.0,
+        "DamagePerShot": 4,
+        "HP": 100,
+        "HearingRange": 120.0,
+        "KeepDistance": 25.0,
+        "KeepHeight": 10.0,
+        "LockOnTime": 1.0,
+        "LoseRange": 150.0,
+        "MaxFireDistance": 80.0,
+        "MoveSpeed": 18.0,
+        "MuzzleOffset": [
+            0.0,
+            2.0,
+            0.0
+        ],
+        "OrbitSpeed": 0.6000000238418579,
+        "Scale": [
+            2.0,
+            2.0,
+            2.0
+        ],
+        "ShotInterval": 0.10000000149011612,
+        "ShotSpread": 0.029999999329447746,
+        "SightRange": 60.0,
+        "SpotAngle": 16.530000686645508,
+        "SpotColor": [
+            0.9922178983688354,
+            0.16601312160491943,
+            0.16601312160491943,
+            1.0
+        ],
+        "SpotDistance": 49.95000076293945,
+        "SpotIntensity": 25.139999389648438,
+        "SpotLocalDirection": [
+            0.0,
+            -0.3400000035762787,
+            -1.0
+        ],
+        "SpotVolumetric": 19.770000457763672,
+        "ThrusterHP": 30,
+        "ThrusterOffset": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ThrusterRadius": 0.800000011920929,
+        "ThrustersToCrash": 2,
+        "TurnSpeed": 6.0,
+        "WobbleAmount": 2.0
+    }
+}

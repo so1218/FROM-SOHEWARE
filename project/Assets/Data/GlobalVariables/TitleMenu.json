@@ -1,0 +1,80 @@
+{
+    "TitleMenu": {
+        "BlinkMinOpacity": 0.3499999940395355,
+        "BlinkSpeed": 2.5,
+        "FadeInTime": 2.0,
+        "FadeOutTime": 0.6000000238418579,
+        "StartText_Align": 1,
+        "StartText_CharSpacing": 6.0,
+        "StartText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "StartText_Content": "START GAME",
+        "StartText_Direction": 0,
+        "StartText_Font": "Main",
+        "StartText_FontSize": 26.0,
+        "StartText_Layer": 31,
+        "StartText_LineSpacing": 1.0,
+        "StartText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "StartText_OutlineWidth": 0.0,
+        "StartText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "StartText_Pos": [
+            0.0,
+            200.0
+        ],
+        "StartText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "StartText_Visible": true,
+        "StartText_WrapLength": 0.0,
+        "TextFadeInDelay": 1.0,
+        "TextFadeTime": 1.0,
+        "TitleText_Align": 1,
+        "TitleText_CharSpacing": 12.0,
+        "TitleText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TitleText_Content": "FROM SOHEWARE",
+        "TitleText_Direction": 0,
+        "TitleText_Font": "Shippori",
+        "TitleText_FontSize": 112.0,
+        "TitleText_Layer": 31,
+        "TitleText_LineSpacing": 1.0,
+        "TitleText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "TitleText_OutlineWidth": 0.0,
+        "TitleText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "TitleText_Pos": [
+            0.0,
+            -80.0
+        ],
+        "TitleText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "TitleText_Visible": true,
+        "TitleText_WrapLength": 0.0
+    }
+}

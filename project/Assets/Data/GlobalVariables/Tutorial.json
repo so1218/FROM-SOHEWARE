@@ -32,7 +32,8 @@
         "Step3_Message": "ジャンプ",
         "Step4_Message": "エイム",
         "Step5_Message": "エイム中に射撃",
-        "Step6_Message": "チュートリアル完了",
+        "Step6_Message": "リロード",
+        "Step7_Message": "チュートリアル完了",
         "TextColor": [
             1.0,
             1.0,

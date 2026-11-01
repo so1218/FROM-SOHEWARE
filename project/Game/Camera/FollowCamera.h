@@ -14,6 +14,8 @@ public:
     void UpdateCamera(FS::Camera* camera) override;
     void DebugDraw() override;
     void Reset(FS::Camera* camera) override;
+    // 追いかける相手の真後ろを向き先にする
+    void PlaceBehindTarget();
 
     void AddRecoil(float pitchAmount, float yawAmount);
 

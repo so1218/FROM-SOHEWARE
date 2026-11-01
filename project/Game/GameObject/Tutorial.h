@@ -17,6 +17,10 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
+    // 説明を最初から始める (IsEnabled が false なら何もしない)
+    void Begin();
+    void Stop() { StartStep(Step::Finished); }
+
 private:
     // 説明の順番
     enum class Step
@@ -27,6 +31,7 @@ private:
         Jump,
         Aim,
         Shoot,
+        Reload,
         Complete,
         Finished,
     };
@@ -71,6 +76,7 @@ private:
     float visibility_ = 0.0f;       // 0 = 見えない, 1 = 見える
     float heldTime_ = 0.0f;         // 移動やダッシュを続けている時間
     int shotCountAtStart_ = 0;
+    int reloadCountAtStart_ = 0;
     bool isUsingController_ = false;
 
     // パラメータ

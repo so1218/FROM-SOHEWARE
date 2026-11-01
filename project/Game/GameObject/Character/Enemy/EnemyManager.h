@@ -4,6 +4,7 @@
 #include "Collider.h"
 #include "Enemy.h"
 #include "PropertyBinder.h"
+#include "FloatingBehavior.h"
 
 class EnemyManager : public FS::GameObject
 {
@@ -18,12 +19,21 @@ public:
     // 敵の種類ごとにマテリアルを共有する関数
     void RebuildMaterialSharing();
     void AddEnemy(); 
+    // 倒された敵も含めて、保存されている数だけ作り直す
+    void ResetEnemies();
 
 private:
+    std::unique_ptr<Enemy> CreateEnemy(int index);
+    void SpawnEnemies();
+
     FS::Engine* engine_;
     std::string managerGroupName_;
     std::vector<std::unique_ptr<Enemy>> enemies_;
 
     std::unique_ptr<FS::PropertyBinder> binder_;
-    int enemyCount_ = 0; // JSONに保存される全体の数
+    // ワスプ共通のパラメータ。ステージをまたいで共有する
+    FloatingEnemyConfig floatingConfig_;
+    std::unique_ptr<FS::PropertyBinder> floatingBinder_;
+
+    int enemyCount_ = 0; // JSONに保存される全体の数。倒されても減らさない
 };

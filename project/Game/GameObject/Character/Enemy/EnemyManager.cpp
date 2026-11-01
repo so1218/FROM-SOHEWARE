@@ -11,14 +11,32 @@ void EnemyManager::Initialize()
 {
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("EnemyCount", &enemyCount_, 3);
-    enemies_.clear();
 
+    floatingBinder_ = std::make_unique<FS::PropertyBinder>(engine_, "FloatingEnemy");
+    floatingConfig_.Bind(*floatingBinder_);
+
+    // シーンに入り直したときはパーティクルがすでに全部消されているので、Despawn せずに作り直す
+    SpawnEnemies();
+}
+
+void EnemyManager::ResetEnemies()
+{
+    for (auto& enemy : enemies_)
+    {
+        if (enemy->IsActive())
+        {
+            enemy->Despawn();
+        }
+    }
+    SpawnEnemies();
+}
+
+void EnemyManager::SpawnEnemies()
+{
+    enemies_.clear();
     for (int i = 0; i < enemyCount_; ++i)
     {
-        auto enemy = std::make_unique<Enemy>(engine_, i, EnemyType::Floating, managerGroupName_);
-        enemy->AttachToManager(GetManager(), 0); 
-        enemy->Initialize();
-        enemies_.push_back(std::move(enemy));
+        enemies_.push_back(CreateEnemy(i));
     }
 
     RebuildMaterialSharing();
@@ -53,16 +71,21 @@ void EnemyManager::RebuildMaterialSharing()
 
 void EnemyManager::AddEnemy()
 {
-    int newIndex = static_cast<int>(enemies_.size());
+    int newIndex = enemyCount_;
 
-    auto newEnemy = std::make_unique<Enemy>(engine_, newIndex, EnemyType::Floating, managerGroupName_);
-    newEnemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
-    newEnemy->Initialize();
-
-    enemies_.push_back(std::move(newEnemy));
-    enemyCount_ = static_cast<int>(enemies_.size());
+    enemies_.push_back(CreateEnemy(newIndex));
+    ++enemyCount_;
 
     RebuildMaterialSharing();
+}
+
+std::unique_ptr<Enemy> EnemyManager::CreateEnemy(int index)
+{
+    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_);
+    auto enemy = std::make_unique<Enemy>(engine_, index, EnemyType::Floating, std::move(behavior), managerGroupName_);
+    enemy->AttachToManager(GetManager(), 0); // ID 0 = GameObjectManager の管理外 (このマネージャーが所有)
+    enemy->Initialize();
+    return enemy;
 }
 
 void EnemyManager::Update()
@@ -75,8 +98,6 @@ void EnemyManager::Update()
             }),
         enemies_.end()
     );
-
-    enemyCount_ = static_cast<int>(enemies_.size());
 
     for (auto& enemy : enemies_)
     {
@@ -114,6 +135,11 @@ void EnemyManager::DebugDraw()
     if (!enemies_.empty())
     {
         binder_->DrawModel("sharedEnemyModel", "敵共通モデルインスペクター");
+    }
+
+    if (ImGui::CollapsingHeader("ワスプ共通"))
+    {
+        floatingConfig_.Draw(*floatingBinder_);
     }
 
     ImGui::Separator();

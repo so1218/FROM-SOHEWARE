@@ -22,7 +22,13 @@ void PlayerStamina::BindProperties(PropertyBinder& binder)
     binder.BindColor("Stamina_GaugeColor", &gaugeColor_, { 1.0f, 1.0f, 1.0f, 0.9f });
     binder.BindColor("Stamina_ExhaustedColor", &exhaustedColor_, { 0.9f, 0.25f, 0.2f, 0.9f });
 
+    Refill();
+}
+
+void PlayerStamina::Refill()
+{
     currentStamina_ = maxStamina_;
+    timeSinceUsed_ = 0.0f;
     isExhausted_ = false;
 }
 
