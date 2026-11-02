@@ -33,6 +33,9 @@ void SwapChain::Initialize(
         reinterpret_cast<IDXGISwapChain1**>(dxgiSwapChain_.GetAddressOf())
     );
     assert(SUCCEEDED(hr));
+
+    // Alt+Enter で DXGI が勝手に排他フルスクリーンへ切り替えないようにする
+    dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 }
 
 void SwapChain::Present()

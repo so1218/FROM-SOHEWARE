@@ -13,6 +13,7 @@ public:
         Resume,
         ToggleEditor,
         ReturnToTitle,
+        QuitGame,
     };
 
     PauseMenu(FS::Engine* engine);
@@ -33,6 +34,10 @@ private:
     void Open();
     void Close();
     void UpdateCursor();
+    // 「本当に終了しますか」の確認
+    void UpdateQuitConfirm();
+    // 項目を縦に並べて描く。highlightIndex の項目はエディターの色にする (-1 ならなし)
+    void DrawItems(const std::vector<std::string>& labels, int cursorIndex, int highlightIndex);
     std::string GetLabel(Item item) const;
 
     bool IsToggleTriggered() const;
@@ -48,6 +53,7 @@ private:
     std::unique_ptr<FS::Text> headerText_;
     std::unique_ptr<FS::Text> itemText_;   // 1 つを使い回して項目の数だけ描く
     std::unique_ptr<FS::Text> descriptionText_;
+    std::unique_ptr<FS::Text> questionText_;
 
     bool canOpen_ = false;
     bool canReturnToTitle_ = false;
@@ -56,6 +62,9 @@ private:
     std::vector<Item> items_;
     int cursorIndex_ = 0;
     std::optional<Item> selectedItem_;
+
+    bool isConfirmingQuit_ = false;
+    int quitConfirmIndex_ = 0;   // 0 = やめる, 1 = 終了する
 
     // パラメータ
     float fadeTime_ = 0.15f;

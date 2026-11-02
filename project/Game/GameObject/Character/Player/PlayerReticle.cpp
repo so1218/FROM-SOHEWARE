@@ -72,8 +72,8 @@ void PlayerReticle::Draw()
 {
     if (!sprite_ || reticleAlpha_ <= 0.001f) return;
 
-    float centerX = static_cast<float>(Engine::GetClientWidth()) * 0.5f;
-    float centerY = static_cast<float>(Engine::GetClientHeight()) * 0.5f;
+    float centerX = Engine::GetUIWidth() * 0.5f;
+    float centerY = Engine::GetUIHeight() * 0.5f;
 
     float easedRatio = 0.0f;
     float t = std::clamp(focusRatio_, 0.0f, 1.0f);

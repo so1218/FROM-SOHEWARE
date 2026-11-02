@@ -171,8 +171,8 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     else
     {
         // GUI オフ時: 全画面にゲーム結果を直接描画 
-        cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetViewport());
-        cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetScissorRect());
+        cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetOutputViewport());
+        cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetOutputScissorRect());
         rendererManager->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
 
         // ImGuiの内部コマンドをクリアするためRenderだけ呼び出す
@@ -180,8 +180,8 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     }
 #else
     // 製品版
-    cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetViewport());
-    cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetScissorRect());
+    cmdList->RSSetViewports(1, &engine->GetRenderContext()->GetOutputViewport());
+    cmdList->RSSetScissorRects(1, &engine->GetRenderContext()->GetOutputScissorRect());
     rendererManager->DrawFinalResult(postEffectManager_->GetFinalPassSRVIndex());
 #endif
 

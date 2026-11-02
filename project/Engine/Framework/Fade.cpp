@@ -18,7 +18,7 @@ Fade::~Fade() = default;
 
 void Fade::Initialize()
 {
-    spriteSize_ = { (float)Engine::GetClientWidth(),(float)Engine::GetClientHeight()};
+    spriteSize_ = { Engine::GetUIWidth(), Engine::GetUIHeight() };
 
     // 通常スプライト
     sprite_->SetPosition(spritePos_);

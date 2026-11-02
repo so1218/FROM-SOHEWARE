@@ -115,7 +115,7 @@ void TitleMenu::Draw()
 
     if (blackOpacity > 0.0f)
     {
-        blackScreen_->SetSize({ static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()) });
+        blackScreen_->SetSize({ Engine::GetUIWidth(), Engine::GetUIHeight() });
         blackScreen_->SetColor(Vector4(0.0f, 0.0f, 0.0f, blackOpacity));
         blackScreen_->Draw();
     }

@@ -26,8 +26,10 @@ PauseMenu::PauseMenu(Engine* engine)
     headerText_->SetCharacterSpacing(10.0f);
     itemText_ = std::make_unique<Text>(engine_);
     descriptionText_ = std::make_unique<Text>(engine_);
+    questionText_ = std::make_unique<Text>(engine_);
+    questionText_->SetText("本当に終了しますか？");
 
-    for (Text* text : { headerText_.get(), itemText_.get(), descriptionText_.get() })
+    for (Text* text : { headerText_.get(), itemText_.get(), descriptionText_.get(), questionText_.get() })
     {
         text->SetAnchor(UIAnchor::Center);
         text->SetAlign(TextAlign::Center);
@@ -79,6 +81,12 @@ void PauseMenu::Update()
         return;
     }
 
+    if (isConfirmingQuit_)
+    {
+        UpdateQuitConfirm();
+        return;
+    }
+
     if (IsCancelTriggered())
     {
         Close();
@@ -89,8 +97,42 @@ void PauseMenu::Update()
 
     if (IsConfirmTriggered())
     {
+        if (items_[cursorIndex_] == Item::QuitGame)
+        {
+            // 間違えて押しても終わらないよう、先に確認する。最初は「やめる」を選んでおく
+            isConfirmingQuit_ = true;
+            quitConfirmIndex_ = 0;
+            return;
+        }
         selectedItem_ = items_[cursorIndex_];
         Close();
+    }
+}
+
+void PauseMenu::UpdateQuitConfirm()
+{
+    if (IsCancelTriggered())
+    {
+        isConfirmingQuit_ = false;
+        return;
+    }
+
+    if (IsUpTriggered() || IsDownTriggered())
+    {
+        quitConfirmIndex_ = 1 - quitConfirmIndex_;
+    }
+
+    if (IsConfirmTriggered())
+    {
+        if (quitConfirmIndex_ == 1)
+        {
+            selectedItem_ = Item::QuitGame;
+            Close();
+        }
+        else
+        {
+            isConfirmingQuit_ = false;
+        }
     }
 }
 
@@ -101,7 +143,9 @@ void PauseMenu::Open()
     {
         items_.push_back(Item::ReturnToTitle);
     }
+    items_.push_back(Item::QuitGame);
     cursorIndex_ = 0;
+    isConfirmingQuit_ = false;
     isOpen_ = true;
 }
 
@@ -137,6 +181,7 @@ std::string PauseMenu::GetLabel(Item item) const
     case Item::Resume:        return "ゲームに戻る";
     case Item::ToggleEditor:  return ImGuiManager::IsGuiVisible() ? "エディターを閉じる" : "エディターを開く";
     case Item::ReturnToTitle: return "タイトルに戻る";
+    case Item::QuitGame:      return "ゲームを終了";
     }
     return "";
 }
@@ -181,9 +226,21 @@ void PauseMenu::Draw()
 
     Vector4 overlayColor = overlayColor_;
     overlayColor.w *= openAmount_;
-    overlay_->SetSize({ static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()) });
+    overlay_->SetSize({ Engine::GetUIWidth(), Engine::GetUIHeight() });
     overlay_->SetColor(overlayColor);
     overlay_->Draw();
+
+    if (isConfirmingQuit_)
+    {
+        questionText_->SetFontSize(itemFontSize_);
+        questionText_->SetPosition({ 0.0f, headerOffsetY_ });
+        questionText_->SetColor(selectedColor_);
+        questionText_->SetOpacity(openAmount_);
+        questionText_->Draw();
+
+        DrawItems({ "やめる", "終了する" }, quitConfirmIndex_, -1);
+        return;
+    }
 
     headerText_->SetFontSize(headerFontSize_);
     headerText_->SetPosition({ 0.0f, headerOffsetY_ });
@@ -191,13 +248,40 @@ void PauseMenu::Draw()
     headerText_->SetOpacity(openAmount_);
     headerText_->Draw();
 
-    // 項目は画面中央を中心に縦に並べる
-    const float firstItemY = -itemSpacing_ * static_cast<float>(items_.size() - 1) * 0.5f;
+    std::vector<std::string> labels;
+    int editorIndex = -1;
     for (int itemIndex = 0; itemIndex < static_cast<int>(items_.size()); ++itemIndex)
     {
+        labels.push_back(GetLabel(items_[itemIndex]));
+        if (items_[itemIndex] == Item::ToggleEditor)
+        {
+            editorIndex = itemIndex;
+        }
+    }
+    DrawItems(labels, cursorIndex_, editorIndex);
+
+    if (cursorIndex_ == editorIndex)
+    {
+        const float lastItemY = itemSpacing_ * static_cast<float>(items_.size() - 1) * 0.5f;
+        descriptionText_->SetText(ImGuiManager::IsGuiVisible()
+            ? "ゲーム画面だけの表示に戻します"
+            : "自作エンジンのエディターを開きます");
+        descriptionText_->SetFontSize(descriptionFontSize_);
+        descriptionText_->SetPosition({ 0.0f, lastItemY + descriptionOffsetY_ });
+        descriptionText_->SetColor(editorColor_);
+        descriptionText_->SetOpacity(openAmount_);
+        descriptionText_->Draw();
+    }
+}
+
+void PauseMenu::DrawItems(const std::vector<std::string>& labels, int cursorIndex, int highlightIndex)
+{
+    // 項目は画面中央を中心に縦に並べる
+    const float firstItemY = -itemSpacing_ * static_cast<float>(labels.size() - 1) * 0.5f;
+    for (int itemIndex = 0; itemIndex < static_cast<int>(labels.size()); ++itemIndex)
+    {
         const float itemY = firstItemY + itemSpacing_ * static_cast<float>(itemIndex);
-        const bool isSelected = itemIndex == cursorIndex_;
-        const bool isEditorItem = items_[itemIndex] == Item::ToggleEditor;
+        const bool isSelected = itemIndex == cursorIndex;
 
         if (isSelected)
         {
@@ -209,30 +293,18 @@ void PauseMenu::Draw()
             cursorBand_->Draw();
         }
 
-        itemText_->SetText(GetLabel(items_[itemIndex]));
-        itemText_->SetFontSize(itemFontSize_);
-        itemText_->SetPosition({ 0.0f, itemY });
         Vector4 itemColor = isSelected ? selectedColor_ : unselectedColor_;
-        if (isEditorItem)
+        if (itemIndex == highlightIndex)
         {
             itemColor = { editorColor_.x, editorColor_.y, editorColor_.z, isSelected ? editorColor_.w : editorColor_.w * 0.7f };
         }
+
+        itemText_->SetText(labels[itemIndex]);
+        itemText_->SetFontSize(itemFontSize_);
+        itemText_->SetPosition({ 0.0f, itemY });
         itemText_->SetColor(itemColor);
         itemText_->SetOpacity(openAmount_);
         itemText_->Draw();
-    }
-
-    if (items_[cursorIndex_] == Item::ToggleEditor)
-    {
-        const float lastItemY = firstItemY + itemSpacing_ * static_cast<float>(items_.size() - 1);
-        descriptionText_->SetText(ImGuiManager::IsGuiVisible()
-            ? "ゲーム画面だけの表示に戻します"
-            : "自作エンジンのエディターを開きます");
-        descriptionText_->SetFontSize(descriptionFontSize_);
-        descriptionText_->SetPosition({ 0.0f, lastItemY + descriptionOffsetY_ });
-        descriptionText_->SetColor(editorColor_);
-        descriptionText_->SetOpacity(openAmount_);
-        descriptionText_->Draw();
     }
 }
 

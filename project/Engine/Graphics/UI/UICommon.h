@@ -5,12 +5,13 @@
 namespace FS::UI
 {
 
-    // 画面上の位置。screenAnchor (0,0) = 左上, (1,1) = 右下
+// 画面上の位置。screenAnchor (0,0) = 左上, (1,1) = 右下。
+// UI の座標は高さ 720 の画面が基準で、実際の解像度への拡大は SubmitSprite で行う
 inline Vector2 ResolveScreenPosition(const Vector2& screenAnchor, const Vector2& offset)
 {
     return Vector2(
-        screenAnchor.x * static_cast<float>(Engine::GetClientWidth()) + offset.x,
-        screenAnchor.y * static_cast<float>(Engine::GetClientHeight()) + offset.y);
+        screenAnchor.x * Engine::GetUIWidth() + offset.x,
+        screenAnchor.y * Engine::GetUIHeight() + offset.y);
 }
 
 // UTF-8 を 1 文字ずつに分解する

@@ -74,7 +74,7 @@ void PlayerHealth::DrawHUD()
         damageFlash_->SetScreenAnchor({ 0.0f, 0.0f });
         damageFlash_->SetAnchorPoint({ 0.0f, 0.0f });
         damageFlash_->SetPosition({ 0.0f, 0.0f });
-        damageFlash_->SetSize({ static_cast<float>(Engine::GetClientWidth()), static_cast<float>(Engine::GetClientHeight()) });
+        damageFlash_->SetSize({ Engine::GetUIWidth(), Engine::GetUIHeight() });
         damageFlash_->SetColor(color);
         damageFlash_->SetLayerOrder(9);
         damageFlash_->Draw();

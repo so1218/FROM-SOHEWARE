@@ -82,8 +82,16 @@ public:
     ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
     RenderPipeline* GetRenderPipeline() const { return renderPipeline_.get(); }
 
+    // 描く解像度 (ウィンドウのクライアント領域の大きさ)
     static uint32_t GetClientWidth() { return sClientWidth; }
     static uint32_t GetClientHeight() { return sClientHeight; }
+
+    // UI は高さ 720 の画面を基準に作り、実際の解像度に合わせてこの倍率で拡大して描く
+    static constexpr float kUIReferenceHeight = 720.0f;
+    static float GetUIScale() { return static_cast<float>(sClientHeight) / kUIReferenceHeight; }
+    // UI を置くときの画面の大きさ
+    static float GetUIWidth() { return static_cast<float>(sClientWidth) / GetUIScale(); }
+    static float GetUIHeight() { return kUIReferenceHeight; }
     const Matrix4x4& GetViewMatrix() const { return camera_.view; }
     const Matrix4x4& GetProjectionMatrix() const { return camera_.projection; }
 
@@ -104,6 +112,7 @@ private:
     int targetFPS_ = 60;
     static uint32_t sClientWidth;
     static uint32_t sClientHeight;
+    bool isFullscreen_ = false;
 
     // 現在設定されているカメラ
     RenderCameraState camera_{};

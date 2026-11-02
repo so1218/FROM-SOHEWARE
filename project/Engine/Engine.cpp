@@ -45,8 +45,26 @@ void Engine::Initialize(const ProjectConfig& config)
 {
 	windowTitle_ = config.windowTitle;
 	targetFPS_ = config.targetFPS;
-	sClientWidth = config.width;
-	sClientHeight = config.height;
+	isFullscreen_ = config.isFullscreen;
+
+	// DPI を自分で扱う。Windows の拡大表示でウィンドウ全体が引き伸ばされてしまうため
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+	if (isFullscreen_)
+	{
+		// フルスクリーンはメインモニターの解像度で描く
+		MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+		GetMonitorInfo(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+		sClientWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+		sClientHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+	}
+	else
+	{
+		// 窓は Windows の拡大率に合わせて大きくし、そのまま描く解像度にする
+		const float dpiScale = static_cast<float>(GetDpiForSystem()) / USER_DEFAULT_SCREEN_DPI;
+		sClientWidth = static_cast<uint32_t>(static_cast<float>(config.width) * dpiScale);
+		sClientHeight = static_cast<uint32_t>(static_cast<float>(config.height) * dpiScale);
+	}
 
 	materialManager_ = std::make_unique<MaterialManager>();
 	debugCamera_ = std::make_unique<DebugCamera>();
@@ -166,7 +184,7 @@ void Engine::InitializeWindow()
 	// Windowクラスのインスタンス作成
 	window_ = std::make_unique<Window>(GetClientWidth(), GetClientHeight());
 	// Windowの作成
-	window_->Create(windowTitle_);
+	window_->Create(windowTitle_, isFullscreen_);
 }
 
 void Engine::InitializeInput()
@@ -194,8 +212,9 @@ void Engine::InitializeGraphics()
 
 	// スワップチェーンの初期化（画面表示用のバッファ管理）
 	swapChain_ = std::make_unique<SwapChain>();
+	// スワップチェーンは実際のウィンドウの大きさ (フルスクリーンならモニターの解像度) で作る
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(),
-		GetClientWidth(), GetClientHeight(), 2, graphicsDevice_->GetDXGIFactory());
+		window_->GetClientWidth(), window_->GetClientHeight(), 2, graphicsDevice_->GetDXGIFactory());
 
 	// ディスクリプタヒープマネージャの作成
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
@@ -229,7 +248,8 @@ void Engine::InitializeGraphics()
 void Engine::InitializeRenderer()
 {
 	// レンダリング制御クラス初期化
-	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight());
+	renderContext_ = std::make_unique<RenderContext>(GetClientWidth(), GetClientHeight(),
+		window_->GetClientWidth(), window_->GetClientHeight());
 
 	// シェーダ管理
 	shaderManager_ = std::make_unique<ShaderManager>();

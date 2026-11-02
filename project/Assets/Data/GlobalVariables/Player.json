@@ -105,6 +105,7 @@
         "JumpAnimSpeed": 0.7599999904632568,
         "JumpBlendTime": 0.2199999988079071,
         "JumpInitialVelocity": 34.97999954223633,
+        "JumpStaminaCost": 15.0,
         "MaxBulletSpread": 0.0020000000949949026,
         "MaxDamageMultiplier": 1.2999999523162842,
         "MaxStamina": 9.0,

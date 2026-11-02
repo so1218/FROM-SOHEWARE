@@ -123,15 +123,16 @@ void RenderCoordinator::BeginFrame()
     );
     commandManager_->GetCommandList()->ResourceBarrier(1, &barrier);
 
-    // 描画先のRTVとDSVを設定
-    commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[backBufferIndex], false, &mainDsvHandle_);
+    // 描画先のRTVとDSVを設定。バックバッファはフルスクリーンだと DSV と大きさが違うので、深度は付けない (使っていない)
+    commandManager_->GetCommandList()->OMSetRenderTargets(1, &rtvManager_->rtvHandles[backBufferIndex], false, nullptr);
 
     // レンダーターゲットと深度ステンシルをクリア
     float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     commandManager_->GetCommandList()->ClearRenderTargetView(rtvManager_->rtvHandles[backBufferIndex], clearColor, 0, nullptr);
     commandManager_->GetCommandList()->ClearDepthStencilView(mainDsvHandle_, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-    // ビューポートとシザー矩形を設定
+    // このあと最終合成 (ゲームを描く解像度の画面) に描くので、ゲームの解像度のビューポートにしておく。
+    // バックバッファへ貼るときは RenderPipeline で出力用のビューポートに切り替える
     commandManager_->GetCommandList()->RSSetViewports(1, &renderContext_->GetViewport());
     commandManager_->GetCommandList()->RSSetScissorRects(1, &renderContext_->GetScissorRect());
 }

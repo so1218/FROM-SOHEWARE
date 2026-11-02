@@ -27,6 +27,7 @@
 #include "TreeRenderer.h"
 #include "WaterRenderer.h"
 #include "PIXColors.h"
+#include "Engine.h"
 
 namespace FS
 {
@@ -423,7 +424,12 @@ void RendererManager::SubmitSprite(const SpriteInstance& instance, int layerOrde
 {
 	if (spriteRenderer_)
 	{
-		spriteRenderer_->Submit(instance, layerOrder);
+		// UI は高さ 720 の画面を基準に置いているので、実際の解像度に合わせて拡大する
+		SpriteInstance scaledInstance = instance;
+		const float uiScale = Engine::GetUIScale();
+		scaledInstance.position = instance.position * uiScale;
+		scaledInstance.size = instance.size * uiScale;
+		spriteRenderer_->Submit(scaledInstance, layerOrder);
 	}
 }
 

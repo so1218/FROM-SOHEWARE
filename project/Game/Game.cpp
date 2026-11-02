@@ -22,6 +22,10 @@ Game::Game()
     config.width = 1280;
     config.height = 720;
     config.targetFPS = 60;
+#ifndef ENABLE_DEV_TOOLS
+    // 製品版はフルスクリーン。開発中はエディターを使うので窓で起動する
+    config.isFullscreen = true;
+#endif
 
     engine_->Initialize(config);
 

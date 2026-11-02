@@ -55,7 +55,7 @@ PlayScene::PlayScene(Engine* engine)
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
-    objectManager_.Create<WaterManager>(engine_, "GameWater");
+    /*objectManager_.Create<WaterManager>(engine_, "GameWater");*/
 }
 
 void PlayScene::OnInitialize()
@@ -117,6 +117,10 @@ void PlayScene::UpdatePauseMenu()
             break;
         case PauseMenu::Item::ReturnToTitle:
             ReturnToTitle();
+            break;
+        case PauseMenu::Item::QuitGame:
+            // メッセージループが WM_QUIT を受け取って終了処理に進む
+            PostQuitMessage(0);
             break;
         }
     }

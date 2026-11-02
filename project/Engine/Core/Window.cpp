@@ -50,14 +50,8 @@ void Window::RegisterWindowClass()
     RegisterClass(&wc);
 }
 
-void Window::Create(std::wstring windowTitle_)
+void Window::Create(std::wstring windowTitle_, bool isFullscreen)
 {
-    // ウィンドウサイズを表す構造体にクライアント領域を入れる
-    RECT wrc = { 0,0,clientWidth_ ,clientHeight_ };
-
-    // クライアント領域を元に実際のサイズにwrcを変更してもらう
-    AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
     WNDCLASS wc = {};
     // ウィンドウプロシージャ
     wc.lpfnWndProc = Window::WindowProc;
@@ -73,15 +67,32 @@ void Window::Create(std::wstring windowTitle_)
     // ウィンドウクラスを登録する
     RegisterClass(&wc);
 
+    DWORD style = WS_OVERLAPPEDWINDOW;
+    RECT windowRect = { 0, 0, clientWidth_, clientHeight_ };
+
+    if (isFullscreen)
+    {
+        // メインモニター全体を覆う枠なしのウィンドウ (ボーダーレスフルスクリーン)
+        MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+        GetMonitorInfo(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+        style = WS_POPUP;
+        windowRect = monitorInfo.rcMonitor;
+    }
+    else
+    {
+        // クライアント領域を元に実際のサイズにwrcを変更してもらう
+        AdjustWindowRect(&windowRect, style, false);
+    }
+
     // ウィンドウの生成
     hwnd_ = CreateWindow(
         wc.lpszClassName,       // 利用するクラス名
-        windowTitle_.c_str(),                 // タイトルバーの文字
-        WS_OVERLAPPEDWINDOW,    // ウィンドウスタイル
-        CW_USEDEFAULT,          // 表示X座標
-        CW_USEDEFAULT,
-        wrc.right - wrc.left,
-        wrc.bottom - wrc.top,
+        windowTitle_.c_str(),   // タイトルバーの文字
+        style,                  // ウィンドウスタイル
+        isFullscreen ? windowRect.left : CW_USEDEFAULT,
+        isFullscreen ? windowRect.top : CW_USEDEFAULT,
+        windowRect.right - windowRect.left,
+        windowRect.bottom - windowRect.top,
         nullptr,
         nullptr,
         hInstance_,
@@ -90,6 +101,12 @@ void Window::Create(std::wstring windowTitle_)
 
     // ウィンドウを表示する
     ShowWindow(hwnd_, SW_SHOW);
+
+    // スワップチェーンはこの大きさで作る
+    RECT clientRect{};
+    GetClientRect(hwnd_, &clientRect);
+    clientWidth_ = clientRect.right - clientRect.left;
+    clientHeight_ = clientRect.bottom - clientRect.top;
 }
 
 }

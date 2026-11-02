@@ -48,7 +48,9 @@ void ImGuiManager::Initialize(
 
     // フォント設定
     std::string fontPath = "Assets/Data/Fonts/NotoSansJP-Bold.ttf";
-    float fontSize = 16.0f;
+    // Windows の拡大率 (125% なら 1.25)。最初から大きな文字で作るので、拡大してもぼやけない
+    const float dpiScale = static_cast<float>(GetDpiForWindow(hwnd)) / USER_DEFAULT_SCREEN_DPI;
+    float fontSize = 16.0f * dpiScale;
 
     ImFontConfig font_config;
     font_config.PixelSnapH = true; 
@@ -175,6 +177,9 @@ void ImGuiManager::Initialize(
 
     io.FontGlobalScale = 1.0f; 
 
+    // 余白やボタンの大きさも拡大率に合わせる
+    style.ScaleAllSizes(dpiScale);
+
     // ImGui初期化
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX12_Init(device,
@@ -288,6 +293,16 @@ void ImGuiManager::DrawMenuBar()
 #ifdef ENABLE_IMGUI
     if (ImGui::BeginMainMenuBar())
     {
+        if (ImGui::BeginMenu("ファイル"))
+        {
+            if (ImGui::MenuItem("終了", "Alt+F4"))
+            {
+                // メッセージループが WM_QUIT を受け取って終了処理に進む
+                PostQuitMessage(0);
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("ビュー"))
         {
             if (ImGui::MenuItem("レイアウトの初期化")) 
