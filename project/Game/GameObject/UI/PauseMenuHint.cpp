@@ -1,13 +1,13 @@
 #include "pch.h"
-#include "ViewModeHint.h"
+#include "PauseMenuHint.h"
 #include "ImGuiManager.h"
 
 using namespace FS;
 
-ViewModeHint::ViewModeHint(Engine* engine)
+PauseMenuHint::PauseMenuHint(Engine* engine)
     : engine_(engine)
 {
-    binder_ = std::make_unique<PropertyBinder>(engine_, "ViewModeHint");
+    binder_ = std::make_unique<PropertyBinder>(engine_, "PauseMenuHint");
 
     background_ = std::make_unique<Sprite>(engine_);
     background_->SetScreenAnchor({ 0.0f, 0.0f });
@@ -38,7 +38,7 @@ ViewModeHint::ViewModeHint(Engine* engine)
     }
 }
 
-void ViewModeHint::Initialize()
+void PauseMenuHint::Initialize()
 {
     binder_->Bind("Position", &position_, { 24.0f, 24.0f }, 1.0f);
     binder_->Bind("FontSize", &fontSize_, 20.0f, 0.5f, 4.0f, 100.0f);
@@ -50,7 +50,7 @@ void ViewModeHint::Initialize()
     binder_->BindColor("BackgroundColor", &backgroundColor_, { 0.0f, 0.0f, 0.0f, 0.45f });
 }
 
-void ViewModeHint::Draw()
+void PauseMenuHint::Draw()
 {
     editorText_->SetText(ImGuiManager::IsGuiVisible() ? "エディター表示中" : "エディター使用可能");
 
@@ -86,7 +86,7 @@ void ViewModeHint::Draw()
     background_->Draw();
 }
 
-void ViewModeHint::DebugDraw()
+void PauseMenuHint::DebugDraw()
 {
 #ifdef ENABLE_IMGUI
     ImGui::Begin("操作の案内");

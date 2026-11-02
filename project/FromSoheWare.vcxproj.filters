@@ -244,6 +244,15 @@
     <Filter Include="Game\GameObject\Character">
       <UniqueIdentifier>{7fe6e4d6-1ab2-4b77-887b-69afddbddab6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObject\Field">
+      <UniqueIdentifier>{984cdb3b-178d-4fe4-94d3-b772bb401ffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObject\Item">
+      <UniqueIdentifier>{737a4c33-271b-44c1-bb96-b90158ffe90a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\GameObject\UI">
+      <UniqueIdentifier>{e365c5b6-16ac-46a2-bb7f-d5221e381c20}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Game\GameObject">
       <UniqueIdentifier>{3e004c1e-aedc-4cf9-b216-687327451f41}</UniqueIdentifier>
     </Filter>
@@ -708,59 +717,59 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Ammo.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Item\Ammo.cpp">
+      <Filter>Game\GameObject\Item</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\AmmoManager.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Item\AmmoManager.cpp">
+      <Filter>Game\GameObject\Item</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\EnvironmentProp.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\EnvironmentProp.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\EnvironmentPropManager.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\FoliageField.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\FoliageField.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\GameUI.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\UI\GameUI.cpp">
+      <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Tutorial.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\UI\Tutorial.cpp">
+      <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\TitleMenu.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\UI\TitleMenu.cpp">
+      <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\ViewModeHint.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\UI\PauseMenuHint.cpp">
+      <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\PauseMenu.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp">
+      <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\GrassField.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\GrassField.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Grid.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Engine\Debugs\Grid.cpp">
+      <Filter>Engine\Debugs</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Ground.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\Ground.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Engine\Framework\ParticleSystemWrapper.cpp">
+      <Filter>Engine\Framework</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\TreeField.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\TreeField.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\WaterManager.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\WaterManager.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\WaterObject.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\WaterObject.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp">
-      <Filter>Game\GameObject</Filter>
+    <ClCompile Include="Game\GameObject\Field\WeatherEffectManager.cpp">
+      <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
     <ClCompile Include="Game\Scene\TestScene\TestScene.cpp">
       <Filter>Game\Scene\TestScene</Filter>
@@ -1263,59 +1272,59 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Ammo.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Item\Ammo.h">
+      <Filter>Game\GameObject\Item</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\AmmoManager.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Item\AmmoManager.h">
+      <Filter>Game\GameObject\Item</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\EnvironmentProp.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\EnvironmentProp.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\EnvironmentPropManager.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\EnvironmentPropManager.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\FoliageField.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\FoliageField.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\GameUI.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\UI\GameUI.h">
+      <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Tutorial.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\UI\Tutorial.h">
+      <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\TitleMenu.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\UI\TitleMenu.h">
+      <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\ViewModeHint.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\UI\PauseMenuHint.h">
+      <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\PauseMenu.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\UI\PauseMenu.h">
+      <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\GrassField.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\GrassField.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Grid.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Engine\Debugs\Grid.h">
+      <Filter>Engine\Debugs</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Ground.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\Ground.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Engine\Framework\ParticleSystemWrapper.h">
+      <Filter>Engine\Framework</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\TreeField.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\TreeField.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\WaterManager.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\WaterManager.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\WaterObject.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\WaterObject.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\WeatherEffectManager.h">
-      <Filter>Game\GameObject</Filter>
+    <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
     <ClInclude Include="Game\Global\CollisionConfig.h">
       <Filter>Game\Global</Filter>

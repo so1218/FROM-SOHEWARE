@@ -81,7 +81,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Game\GameObject\Field;$(ProjectDir)Game\GameObject\Item;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -116,7 +116,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Game\GameObject\Field;$(ProjectDir)Game\GameObject\Item;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -153,7 +153,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Graphics\RenderSystem;$(ProjectDir)Engine\Audio;$(ProjectDir)Engine\Graphics\Utility;$(ProjectDir)Engine\Graphics\Resource;$(ProjectDir)Engine\Graphics\Device;$(ProjectDir)Engine\Debugs;$(ProjectDir)Engine;$(ProjectDir)Game;$(ProjectDir)Game\Scene;$(ProjectDir)Engine\Utility;$(ProjectDir)Engine\Mesh;$(ProjectDir)Engine\Math\Utility;$(ProjectDir)Game\GameObject;$(ProjectDir)Game\GameObject\Character;$(ProjectDir)Game\GameObject\Field;$(ProjectDir)Game\GameObject\Item;$(ProjectDir)Assets\Shaders;$(ProjectDir)externals\json;$(ProjectDir)Game\Global;$(ProjectDir)Game\Camera;$(ProjectDir)Engine\Graphics\Common;$(ProjectDir)Game\GameObject\Character\Enemy;$(ProjectDir)Game\GameObject\Character\Player;$(ProjectDir)Game\Utility;$(ProjectDir)Engine\Collision;$(ProjectDir)externals\assimp\include;$(ProjectDir)Engine\Graphics\PostProcess;$(ProjectDir)externals\nlohmann;$(ProjectDir)Game\Map;$(ProjectDir)Engine\Camera;$(ProjectDir)Game\Scene\TestScene;$(ProjectDir)Game\GameObject\Character\Boss;$(ProjectDir)Engine\Graphics\Particle;$(ProjectDir)Engine\Math\Vector;$(ProjectDir)Engine\Math\Matrix;$(ProjectDir)Engine\Math;$(ProjectDir)Engine\Graphics\Animation;$(ProjectDir)Game\GameObject\UI;$(ProjectDir)externals\imgui;$(ProjectDir)externals\ImGuizmo;$(ProjectDir)Engine\Resources;$(ProjectDir)Engine\Graphics\Renderer;$(ProjectDir)Engine\Effect;$(SolutionDir)externals\DirectXTex;$(ProjectDir)Engine\Framework;$(ProjectDir)Engine\Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -266,17 +266,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp" />
-    <ClCompile Include="Game\GameObject\EnvironmentProp.cpp" />
-    <ClCompile Include="Game\GameObject\EnvironmentPropManager.cpp" />
+    <ClCompile Include="Game\GameObject\Field\EnvironmentProp.cpp" />
+    <ClCompile Include="Game\GameObject\Field\EnvironmentPropManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp" />
-    <ClCompile Include="Game\GameObject\FoliageField.cpp" />
-    <ClCompile Include="Game\GameObject\GameUI.cpp" />
-    <ClCompile Include="Game\GameObject\Tutorial.cpp" />
-    <ClCompile Include="Game\GameObject\TitleMenu.cpp" />
-    <ClCompile Include="Game\GameObject\ViewModeHint.cpp" />
-    <ClCompile Include="Game\GameObject\PauseMenu.cpp" />
-    <ClCompile Include="Game\GameObject\GrassField.cpp" />
-    <ClCompile Include="Game\GameObject\Grid.cpp" />
+    <ClCompile Include="Game\GameObject\Field\FoliageField.cpp" />
+    <ClCompile Include="Game\GameObject\UI\GameUI.cpp" />
+    <ClCompile Include="Game\GameObject\UI\Tutorial.cpp" />
+    <ClCompile Include="Game\GameObject\UI\TitleMenu.cpp" />
+    <ClCompile Include="Game\GameObject\UI\PauseMenuHint.cpp" />
+    <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp" />
+    <ClCompile Include="Game\GameObject\Field\GrassField.cpp" />
+    <ClCompile Include="Engine\Debugs\Grid.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\RendererManager.cpp" />
     <ClCompile Include="Engine\Graphics\RenderSystem\Skybox.cpp" />
     <ClCompile Include="Engine\Framework\GameObjectManager.cpp" />
@@ -364,20 +364,20 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
-    <ClCompile Include="Game\GameObject\Ammo.cpp" />
-    <ClCompile Include="Game\GameObject\AmmoManager.cpp" />
-    <ClCompile Include="Game\GameObject\ParticleSystemWrapper.cpp" />
+    <ClCompile Include="Game\GameObject\Item\Ammo.cpp" />
+    <ClCompile Include="Game\GameObject\Item\AmmoManager.cpp" />
+    <ClCompile Include="Engine\Framework\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
-    <ClCompile Include="Game\GameObject\TreeField.cpp" />
-    <ClCompile Include="Game\GameObject\WaterManager.cpp" />
-    <ClCompile Include="Game\GameObject\WaterObject.cpp" />
-    <ClCompile Include="Game\GameObject\WeatherEffectManager.cpp" />
+    <ClCompile Include="Game\GameObject\Field\TreeField.cpp" />
+    <ClCompile Include="Game\GameObject\Field\WaterManager.cpp" />
+    <ClCompile Include="Game\GameObject\Field\WaterObject.cpp" />
+    <ClCompile Include="Game\GameObject\Field\WeatherEffectManager.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TestScene\TestScene.cpp" />
-    <ClCompile Include="Game\GameObject\Ground.cpp" />
+    <ClCompile Include="Game\GameObject\Field\Ground.cpp" />
     <ClCompile Include="Engine\Core\GlobalVariables.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
@@ -474,17 +474,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h" />
-    <ClInclude Include="Game\GameObject\EnvironmentProp.h" />
-    <ClInclude Include="Game\GameObject\EnvironmentPropManager.h" />
-    <ClInclude Include="Game\GameObject\FoliageField.h" />
-    <ClInclude Include="Game\GameObject\GameUI.h" />
-    <ClInclude Include="Game\GameObject\Tutorial.h" />
-    <ClInclude Include="Game\GameObject\TitleMenu.h" />
-    <ClInclude Include="Game\GameObject\ViewModeHint.h" />
-    <ClInclude Include="Game\GameObject\PauseMenu.h" />
-    <ClInclude Include="Game\GameObject\GrassField.h" />
+    <ClInclude Include="Game\GameObject\Field\EnvironmentProp.h" />
+    <ClInclude Include="Game\GameObject\Field\EnvironmentPropManager.h" />
+    <ClInclude Include="Game\GameObject\Field\FoliageField.h" />
+    <ClInclude Include="Game\GameObject\UI\GameUI.h" />
+    <ClInclude Include="Game\GameObject\UI\Tutorial.h" />
+    <ClInclude Include="Game\GameObject\UI\TitleMenu.h" />
+    <ClInclude Include="Game\GameObject\UI\PauseMenuHint.h" />
+    <ClInclude Include="Game\GameObject\UI\PauseMenu.h" />
+    <ClInclude Include="Game\GameObject\Field\GrassField.h" />
     <ClInclude Include="Engine\Core\ProjectConfig.h" />
-    <ClInclude Include="Game\GameObject\Grid.h" />
+    <ClInclude Include="Engine\Debugs\Grid.h" />
     <ClInclude Include="Engine\Graphics\Renderer\RendererManager.h" />
     <ClInclude Include="Engine\Graphics\RenderSystem\Skybox.h" />
     <ClInclude Include="Engine\Framework\GameObjectManager.h" />
@@ -550,13 +550,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
-    <ClInclude Include="Game\GameObject\Ammo.h" />
-    <ClInclude Include="Game\GameObject\AmmoManager.h" />
-    <ClInclude Include="Game\GameObject\ParticleSystemWrapper.h" />
-    <ClInclude Include="Game\GameObject\TreeField.h" />
-    <ClInclude Include="Game\GameObject\WaterManager.h" />
-    <ClInclude Include="Game\GameObject\WaterObject.h" />
-    <ClInclude Include="Game\GameObject\WeatherEffectManager.h" />
+    <ClInclude Include="Game\GameObject\Item\Ammo.h" />
+    <ClInclude Include="Game\GameObject\Item\AmmoManager.h" />
+    <ClInclude Include="Engine\Framework\ParticleSystemWrapper.h" />
+    <ClInclude Include="Game\GameObject\Field\TreeField.h" />
+    <ClInclude Include="Game\GameObject\Field\WaterManager.h" />
+    <ClInclude Include="Game\GameObject\Field\WaterObject.h" />
+    <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
     <ClInclude Include="Engine\Collision\Collision.h" />
@@ -566,7 +566,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Framework\BaseScene.h" />
     <ClInclude Include="Engine\Framework\SceneManager.h" />
     <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
-    <ClInclude Include="Game\GameObject\Ground.h" />
+    <ClInclude Include="Game\GameObject\Field\Ground.h" />
     <ClInclude Include="Engine\Core\GlobalVariables.h" />
     <ClInclude Include="Engine\Framework\GameObject.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleEmitter.h" />

@@ -19,7 +19,7 @@
 #include "Player.h"
 #include "Tutorial.h"
 #include "TitleMenu.h"
-#include "ViewModeHint.h"
+#include "PauseMenuHint.h"
 #include "PauseMenu.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
@@ -53,7 +53,7 @@ PlayScene::PlayScene(Engine* engine)
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
-    objectManager_.Create<ViewModeHint>(engine_);
+    objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
     objectManager_.Create<WaterManager>(engine_, "GameWater");
 }

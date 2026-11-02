@@ -4,7 +4,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// 画面左上に出すポーズメニュー
+// 画面左上に出すポーズメニューに関するヒント表示
 class ViewModeHint : public FS::GameObject
 {
 public:
