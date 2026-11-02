@@ -31,11 +31,6 @@
         "MinScale": 35.5,
         "NearFadeMaxDist": 15.0,
         "NearFadeMinDist": 6.0,
-        "Position": [
-            0.0,
-            0.0,
-            0.0
-        ],
         "RoughnessScale": 1.0,
         "SSSColor": [
             0.5999999046325684,

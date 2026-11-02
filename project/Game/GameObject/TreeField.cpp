@@ -6,6 +6,14 @@
 
 using namespace FS;
 
+namespace
+{
+    // 毎回同じ配置になるように固定
+    constexpr uint32_t kPlacementSeed = 1337;
+    // 弾が当たる高さ
+    constexpr float kHitHeightRate = 1.5f;
+}
+
 TreeField::TreeField(Engine* engine) : GameObject()
 {
     engine_ = engine;
@@ -17,29 +25,27 @@ TreeField::TreeField(Engine* engine) : GameObject()
 
 void TreeField::Initialize()
 {
-    if (model_) 
+    // メッシュ 0 が幹、1 が葉
+    if (model_)
     {
-        // メッシュ0: 幹
         if (model_->GetMaterialCount() > 0)
         {
-            if (auto* m0 = model_->GetMaterialHandle(0))
+            if (auto* trunkHandle = model_->GetMaterialHandle(0))
             {
-                trunkTextureName_ = m0->textureName;
-                trunkNormalName_ = m0->normalMapName;
-                toonRampName_ = m0->toonRampName;
+                trunkTextureName_ = trunkHandle->textureName;
+                trunkNormalName_ = trunkHandle->normalMapName;
+                toonRampName_ = trunkHandle->toonRampName;
             }
         }
-        // メッシュ1: 葉
-        if (model_->GetMaterialCount() > 1) 
+        if (model_->GetMaterialCount() > 1)
         {
-            if (auto* m1 = model_->GetMaterialHandle(1))
+            if (auto* leafHandle = model_->GetMaterialHandle(1))
             {
-                leafTextureName_ = m1->textureName;
+                leafTextureName_ = leafHandle->textureName;
             }
         }
     }
 
-    binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("TreeCount", &treeCount_, 500, 1, 10, 5000);
     binder_->Bind("AreaWidth", &areaWidth_, 400.0f, 1.0f, 10.0f, 2000.0f);
     binder_->Bind("AreaDepth", &areaDepth_, 400.0f, 1.0f, 10.0f, 2000.0f);
@@ -47,164 +53,89 @@ void TreeField::Initialize()
     binder_->Bind("AreaCenterZ", &areaCenter_.y, 0.0f, 1.0f, -2000.0f, 2000.0f);
     binder_->Bind("MinScale", &minScale_, 0.8f, 0.05f, 0.1f);
     binder_->Bind("MaxScale", &maxScale_, 1.4f, 0.05f, 0.1f);
-    binder_->Bind("NearFadeMinDist", &nearFadeMinDist_, 1.0f, 0.1f, 0.0f, 10.0f);
-    binder_->Bind("NearFadeMaxDist", &nearFadeMaxDist_, 3.0f, 0.1f, 0.1f, 20.0f);
     binder_->Bind("TrunkColliderRadius", &trunkColliderRadius_, 0.5f, 0.05f, 0.05f, 5.0f);
-
-    binder_->BindColor("LeafColorTint", &leafColorTint_, { 1.0f, 1.0f, 1.0f });
-    binder_->Bind("WindSpeedMult", &windSpeedMultiplier_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("GustScale", &gustScale_, 0.05f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("GustStrength", &gustStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkFlex", &trunkFlexibility_, 0.1f, 0.01f, 0.0f, 2.0f);
-    binder_->Bind("LeafFlutter", &leafFlutterAmount_, 0.2f, 0.01f, 0.0f, 2.0f);
-    binder_->Bind("DiffuseWrap", &diffuseWrap_, 0.2f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("SSSStrength", &sssStrength_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->BindColor("SSSColor", &sssColor_, { 0.5f, 0.7f, 0.2f });
-    binder_->Bind("AlphaCutoff", &alphaCutoff_, 0.5f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("LeafShadowDensity", &leafShadowDensity_, 0.8f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("LeafShadowNormBias", &leafShadowNormalBias_, 0.02f, 0.001f, 0.0f, 0.5f);
-    binder_->Bind("LeafShadowBias", &leafShadowBias_, 0.005f, 0.0001f, 0.0f, 0.1f);
-    binder_->Bind("TreeHeight", &treeHeight_, 10.0f, 0.1f, 1.0f, 50.0f);
-    binder_->Bind("TreeRadius", &treeRadius_, 5.0f, 0.1f, 0.1f, 20.0f);
-    binder_->Bind("BaseRoughness", &baseRoughness_, 0.5f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("BaseAO", &baseAO_, 1.0f, 0.01f, 0.0f, 2.0f);
-    
-    binder_->BindColor("TrunkColor", &trunkColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
-    binder_->BindColor("TrunkSpecColor", &trunkSpecularColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
-    binder_->Bind("TrunkRoughness", &trunkRoughness_, 0.8f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TrunkMetalness", &trunkMetalness_, 0.0f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TrunkShininess", &trunkShininess_, 10.0f, 0.1f, 0.0f, 100.0f);
-    binder_->Bind("TrunkDiffReflect", &trunkDiffuseReflection_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkEnvMapInt", &trunkEnvironmentMapIntensity_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkNormalInt", &trunkNormalIntensity_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkShadowDens", &trunkShadowDensity_, 0.8f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TrunkShadowBias", &trunkShadowBias_, 0.005f, 0.0001f, 0.0f, 0.1f);
-    binder_->Bind("TrunkShadowNBias", &trunkShadowNormalBias_, 0.02f, 0.001f, 0.0f, 0.5f);
-    binder_->Bind("TrunkShadowSoft", &trunkShadowSoftness_, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkShadowEnvStr", &trunkShadowEnvStrength_, 0.5f, 0.01f, 0.0f, 1.0f);
-
     binder_->Bind("MaxDrawDistance", &maxDrawDistance_, 300.0f, 5.0f, 50.0f, 2000.0f);
+    binder_->Bind("TreeRadius", &treeRadius_, 5.0f, 0.1f, 0.1f, 20.0f);
 
-    auto OnTextureChanged = [this]() 
-        {
-        if (treeMaterialHandle_.leafMaterialBuffer) {
-            treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
-            treeMaterialHandle_.trunkTextureHandle = trunkTextureHandle_;
-            treeMaterialHandle_.trunkNormalMapHandle = trunkNormalHandle_;
-            treeMaterialHandle_.toonRampHandle = toonRampHandle_;
-        }
-        };
+    // 葉
+    binder_->BindColor("LeafColorTint", &leafMaterial_.colorTint, { 1.0f, 1.0f, 1.0f });
+    binder_->Bind("TreeHeight", &leafMaterial_.treeHeight, 10.0f, 0.1f, 1.0f, 50.0f);
+    binder_->Bind("WindSpeedMult", &leafMaterial_.windSpeedMultiplier, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("GustScale", &leafMaterial_.gustScale, 0.05f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("GustStrength", &leafMaterial_.gustStrength, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("TrunkFlex", &leafMaterial_.trunkFlexibility, 0.1f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("LeafFlutter", &leafMaterial_.leafFlutterAmount, 0.2f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("DiffuseWrap", &leafMaterial_.diffuseWrap, 0.2f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("SSSStrength", &leafMaterial_.sssStrength, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->BindColor("SSSColor", &leafMaterial_.sssColor, { 0.5f, 0.7f, 0.2f });
+    binder_->Bind("AlphaCutoff", &leafMaterial_.alphaCutoff, 0.5f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("BaseRoughness", &leafMaterial_.baseRoughness, 0.5f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("BaseAO", &leafMaterial_.baseAO, 1.0f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("LeafShadowDensity", &leafMaterial_.shadowDensity, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("LeafShadowNormBias", &leafMaterial_.shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.5f);
+    binder_->Bind("LeafShadowBias", &leafMaterial_.shadowBias, 0.005f, 0.0001f, 0.0f, 0.1f);
+    binder_->Bind("NearFadeMinDist", &leafMaterial_.nearFadeMinDist, 1.0f, 0.1f, 0.0f, 10.0f);
+    binder_->Bind("NearFadeMaxDist", &leafMaterial_.nearFadeMaxDist, 3.0f, 0.1f, 0.1f, 20.0f);
 
-    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() {
-        treeSystem_->SetWindMapTexture(windMapName_);
-        });
+    // 幹
+    binder_->BindColor("TrunkColor", &trunkMaterial_.color, { 1.0f, 1.0f, 1.0f, 1.0f });
+    binder_->BindColor("TrunkSpecColor", &trunkMaterial_.specularColor, { 1.0f, 1.0f, 1.0f, 1.0f });
+    binder_->Bind("TrunkRoughness", &trunkMaterial_.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("TrunkMetalness", &trunkMaterial_.metalness, 0.0f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("TrunkShininess", &trunkMaterial_.shininess, 10.0f, 0.1f, 0.0f, 100.0f);
+    binder_->Bind("TrunkDiffReflect", &trunkMaterial_.diffuseReflection, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("TrunkEnvMapInt", &trunkMaterial_.environmentMapIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("TrunkNormalInt", &trunkMaterial_.normalIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("TrunkShadowDens", &trunkMaterial_.shadowDensity, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("TrunkShadowBias", &trunkMaterial_.shadowBias, 0.005f, 0.0001f, 0.0f, 0.1f);
+    binder_->Bind("TrunkShadowNBias", &trunkMaterial_.shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.5f);
+    binder_->Bind("TrunkShadowSoft", &trunkMaterial_.shadowSoftness, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->Bind("TrunkShadowEnvStr", &trunkMaterial_.shadowEnvStrength, 0.5f, 0.01f, 0.0f, 1.0f);
 
-    binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, FS::TextureType::Albedo, OnTextureChanged);
+    // 幹は常にライティング・法線マップ・影ありで描く
+    trunkMaterial_.enableLighting = 1;
+    trunkMaterial_.lightMode = 1;
+    trunkMaterial_.enableNormalMap = 1;
+    trunkMaterial_.addShadow = 1;
 
-    binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, FS::TextureType::Albedo, OnTextureChanged);
-    binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, FS::TextureType::Normal, OnTextureChanged);
-
-    binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, FS::TextureType::Toon, OnTextureChanged);
-
-    // 初期化値の記憶
-    prevPosition_ = transform_.translation_;
-    prevTreeCount_ = treeCount_;
-    prevAreaWidth_ = areaWidth_;
-    prevAreaDepth_ = areaDepth_;
-    prevAreaCenter_ = areaCenter_;
-    prevMinScale_ = minScale_;
-    prevMaxScale_ = maxScale_;
-    prevTrunkColliderRadius_ = trunkColliderRadius_;
+    auto onTextureChanged = [this]() { ApplyTextures(); };
+    binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", TextureType::Noise,
+        [this]() { treeSystem_->SetWindMapTexture(windMapName_); });
+    binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, TextureType::Albedo, onTextureChanged);
+    binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, TextureType::Albedo, onTextureChanged);
+    binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, TextureType::Normal, onTextureChanged);
+    binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, TextureType::Toon, onTextureChanged);
 
     treeSystem_->SetWindMapTexture(windMapName_);
-
-    // 初回配置生成
     GenerateTrees();
+    ApplyMaterials();
 }
 
 void TreeField::Update()
 {
-    // 配置パラメータが変わった時だけ再生成
-    if (transform_.translation_.x != prevPosition_.x ||
-        transform_.translation_.y != prevPosition_.y ||
-        transform_.translation_.z != prevPosition_.z ||
-        treeCount_ != prevTreeCount_ ||
-        areaWidth_ != prevAreaWidth_ ||
-        areaDepth_ != prevAreaDepth_ ||
-        areaCenter_.x != prevAreaCenter_.x ||
-        areaCenter_.y != prevAreaCenter_.y ||
-        minScale_ != prevMinScale_ ||
-        maxScale_ != prevMaxScale_ ||
-        trunkColliderRadius_ != prevTrunkColliderRadius_)
-    {
-        GenerateTrees();
-
-        prevPosition_ = transform_.translation_;
-        prevTreeCount_ = treeCount_;
-        prevAreaWidth_ = areaWidth_;
-        prevAreaDepth_ = areaDepth_;
-        prevAreaCenter_ = areaCenter_;
-        prevMinScale_ = minScale_;
-        prevMaxScale_ = maxScale_;
-        prevTrunkColliderRadius_ = trunkColliderRadius_;
-    }
-
-    UpdateMaterials();
-
     treeSystem_->Update();
 }
 
-void TreeField::UpdateMaterials()
+void TreeField::ApplyMaterials()
 {
     if (!treeMaterialHandle_.leafMaterialBuffer) return;
 
-    // 葉のパラメータ更新
-    LeafMaterialData leafData{};
-    leafData.windSpeedMultiplier = windSpeedMultiplier_;
-    leafData.gustScale = gustScale_;
-    leafData.gustStrength = gustStrength_;
-    leafData.trunkFlexibility = trunkFlexibility_;
-    leafData.leafFlutterAmount = leafFlutterAmount_;
-    leafData.diffuseWrap = diffuseWrap_;
-    leafData.sssStrength = sssStrength_;
-    leafData.alphaCutoff = alphaCutoff_;
-    leafData.shadowDensity = leafShadowDensity_;
-    leafData.sssColor = sssColor_;
-    leafData.shadowNormalBias = leafShadowNormalBias_;
-    leafData.treeHeight = treeHeight_;
-    leafData.shadowBias = leafShadowBias_;
-    leafData.baseRoughness = baseRoughness_;
-    leafData.baseAO = baseAO_;
-    leafData.colorTint = leafColorTint_;
-    leafData.nearFadeMinDist = nearFadeMinDist_;
-    leafData.nearFadeMaxDist = nearFadeMaxDist_;
+    trunkMaterial_.nearFadeMinDist = leafMaterial_.nearFadeMinDist;
+    trunkMaterial_.nearFadeMaxDist = leafMaterial_.nearFadeMaxDist;
 
-    treeSystem_->UpdateLeafMaterial(treeMaterialHandle_, leafData);
+    treeSystem_->UpdateLeafMaterial(treeMaterialHandle_, leafMaterial_);
+    treeSystem_->UpdateTrunkMaterial(treeMaterialHandle_, trunkMaterial_);
+    treeSystem_->SetCullingParameters(maxDrawDistance_, leafMaterial_.treeHeight, treeRadius_);
+}
 
-    // 幹のパラメータ更新
-    TrunkMaterialData trunkData{};
-    trunkData.color = trunkColor_;
-    trunkData.specularColor = trunkSpecularColor_;
-    trunkData.enableLighting = trunkEnableLighting_;
-    trunkData.lightMode = trunkLightMode_;
-    trunkData.enableNormalMap = trunkEnableNormalMap_;
-    trunkData.addShadow = trunkAddShadow_;
-    trunkData.roughness = trunkRoughness_;
-    trunkData.metalness = trunkMetalness_;
-    trunkData.shininess = trunkShininess_;
-    trunkData.diffuseReflection = trunkDiffuseReflection_;
-    trunkData.shadowDensity = trunkShadowDensity_;
-    trunkData.shadowBias = trunkShadowBias_;
-    trunkData.shadowNormalBias = trunkShadowNormalBias_;
-    trunkData.shadowSoftness = trunkShadowSoftness_;
-    trunkData.environmentMapIntensity = trunkEnvironmentMapIntensity_;
-    trunkData.shadowEnvStrength = trunkShadowEnvStrength_;
-    trunkData.normalIntensity = trunkNormalIntensity_;
-    trunkData.nearFadeMinDist = nearFadeMinDist_;
-    trunkData.nearFadeMaxDist = nearFadeMaxDist_;
+void TreeField::ApplyTextures()
+{
+    if (!treeMaterialHandle_.leafMaterialBuffer) return;
 
-    treeSystem_->UpdateTrunkMaterial(treeMaterialHandle_, trunkData);
-    treeSystem_->SetCullingParameters(maxDrawDistance_, treeHeight_, treeRadius_);
+    treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
+    treeMaterialHandle_.trunkTextureHandle = trunkTextureHandle_;
+    treeMaterialHandle_.trunkNormalMapHandle = trunkNormalHandle_;
+    treeMaterialHandle_.toonRampHandle = toonRampHandle_;
 }
 
 void TreeField::GenerateTrees()
@@ -217,56 +148,36 @@ void TreeField::GenerateTrees()
     const ModelData* modelData = model_->GetModelData();
     if (!modelData) return;
 
-    // ========================================================
-    // 共有マテリアルハンドルの生成（初回または更新時）
-    // ========================================================
+    // マテリアルは全部の木で 1 つを共有
     if (!treeMaterialHandle_.leafMaterialBuffer)
     {
-        // BindTexture で既に取得・同期されているハンドルを渡す
         treeMaterialHandle_ = treeSystem_->CreateTreeMaterial(
-            LeafMaterialData{}, TrunkMaterialData{},
-            leafTextureHandle_, trunkTextureHandle_,
-            trunkNormalHandle_
-        );
-
+            leafMaterial_, trunkMaterial_, leafTextureHandle_, trunkTextureHandle_, trunkNormalHandle_);
         treeMaterialHandle_.toonRampHandle = toonRampHandle_;
     }
 
-    std::mt19937 rng(1337); // 固定シード値
-    std::uniform_real_distribution<float> distWidth(-areaWidth_ * 0.5f, areaWidth_ * 0.5f);
-    std::uniform_real_distribution<float> distDepth(-areaDepth_ * 0.5f, areaDepth_ * 0.5f);
-    std::uniform_real_distribution<float> distScale(minScale_, maxScale_);
-    std::uniform_real_distribution<float> distRot(0.0f, 360.0f);
+    std::mt19937 random(kPlacementSeed);
+    std::uniform_real_distribution<float> offsetX(-areaWidth_ * 0.5f, areaWidth_ * 0.5f);
+    std::uniform_real_distribution<float> offsetZ(-areaDepth_ * 0.5f, areaDepth_ * 0.5f);
+    std::uniform_real_distribution<float> scaleRange(minScale_, maxScale_);
+    std::uniform_real_distribution<float> rotationRange(0.0f, 360.0f);
 
-    // ========================================================
-    // インスタンス配置ループ
-    // ========================================================
-    for (int i = 0; i < treeCount_; ++i)
+    for (int treeIndex = 0; treeIndex < treeCount_; ++treeIndex)
     {
-        float rx = distWidth(rng) + areaCenter_.x + transform_.translation_.x;
-        float rz = distDepth(rng) + areaCenter_.y + transform_.translation_.z;
-        float ry = transform_.translation_.y;
-        if (terrain_) {
-            ry = terrain_->GetHeight(rx, rz);
+        Vector3 position = { areaCenter_.x + offsetX(random), 0.0f, areaCenter_.y + offsetZ(random) };
+        if (terrain_)
+        {
+            position.y = terrain_->GetHeight(position.x, position.z);
         }
 
-        float scale = distScale(rng);
-        float rotY = distRot(rng);
+        const float scale = scaleRange(random);
+        const float rotationY = rotationRange(random);
 
         WorldTransform treeTransform{};
-        treeTransform.UpdateMatrix(
-            Vector3(scale, scale, scale),
-            Vector3(0.0f, rotY, 0.0f),
-            Vector3(rx, ry, rz)
-        );
-
+        treeTransform.UpdateMatrix(Vector3(scale, scale, scale), Vector3(0.0f, rotationY, 0.0f), position);
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_);
 
-        // CPU用コライダー登録 
-        TreeCollider col;
-        col.position = Vector3(rx, ry, rz);
-        col.radius = trunkColliderRadius_ * scale;
-        colliders_.push_back(col);
+        colliders_.push_back({ position, trunkColliderRadius_ * scale });
     }
 }
 
@@ -274,29 +185,20 @@ bool TreeField::ResolveCollision(Vector3& playerPos, float playerRadius) const
 {
     bool isHit = false;
 
-    for (const auto& tree : colliders_)
+    for (const TreeCollider& tree : colliders_)
     {
-        // XZ平面での差分
-        float dx = playerPos.x - tree.position.x;
-        float dz = playerPos.z - tree.position.z;
-        float distSq = dx * dx + dz * dz;
+        // 幹は縦に長いので XZ 平面の円で押し戻す
+        const float offsetX = playerPos.x - tree.position.x;
+        const float offsetZ = playerPos.z - tree.position.z;
+        const float distanceSq = offsetX * offsetX + offsetZ * offsetZ;
+        const float minDistance = playerRadius + tree.radius;
 
-        float minDist = playerRadius + tree.radius;
-        float minDistSq = minDist * minDist;
-
-        // 衝突チェック
-        if (distSq < minDistSq && distSq > 0.00001f)
+        if (distanceSq < minDistance * minDistance && distanceSq > 0.00001f)
         {
-            float dist = std::sqrt(distSq);
-            float overlap = minDist - dist;
-
-            // 押し戻しベクトルの正規化と適用
-            float nx = dx / dist;
-            float nz = dz / dist;
-
-            playerPos.x += nx * overlap;
-            playerPos.z += nz * overlap;
-
+            const float distance = std::sqrt(distanceSq);
+            const float overlap = minDistance - distance;
+            playerPos.x += offsetX / distance * overlap;
+            playerPos.z += offsetZ / distance * overlap;
             isHit = true;
         }
     }
@@ -306,64 +208,44 @@ bool TreeField::ResolveCollision(Vector3& playerPos, float playerRadius) const
 
 bool TreeField::Raycast(const Vector3& rayStart, const Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const
 {
-    bool hitAny = false;
-    float closestDist = maxDistance;
-    TreeRaycastHit bestHit{};
+    bool isHit = false;
+    float closestDistance = maxDistance;
+    TreeRaycastHit closestHit{};
 
-    for (const auto& tree : colliders_)
+    const Vector2 rayStartXZ = { rayStart.x, rayStart.z };
+    const Vector2 rayDirXZ = { rayDir.x, rayDir.z };
+    const float hitHeight = leafMaterial_.treeHeight * kHitHeightRate;
+
+    for (const TreeCollider& tree : colliders_)
     {
-        // XZ平面上での Ray と木の幹の交差判定
-        Vector2 rayStartXZ = { rayStart.x, rayStart.z };
-        Vector2 rayDirXZ = { rayDir.x, rayDir.z };
-        Vector2 circleCenterXZ = { tree.position.x, tree.position.z };
-
-        Vector2 d = rayDirXZ;
-        Vector2 f = rayStartXZ - circleCenterXZ;
-
-        float a = d.Dot(d);
-        float b = 2.0f * f.Dot(d);
-        float c = f.Dot(f) - (tree.radius * tree.radius);
-
-        float discriminant = b * b - 4.0f * a * c;
-
-        // 判別式が負なら、XZ平面上でレイは円と交差しない
+        // XZ 平面でレイと幹の円が交わるか
+        const Vector2 fromCenter = rayStartXZ - Vector2(tree.position.x, tree.position.z);
+        const float a = rayDirXZ.Dot(rayDirXZ);
+        const float b = 2.0f * fromCenter.Dot(rayDirXZ);
+        const float c = fromCenter.Dot(fromCenter) - tree.radius * tree.radius;
+        const float discriminant = b * b - 4.0f * a * c;
         if (discriminant < 0.0f) continue;
 
-        discriminant = std::sqrt(discriminant);
+        // 手前側の交点
+        const float distance = (-b - std::sqrt(discriminant)) / (2.0f * a);
+        if (distance <= 0.0f || distance >= closestDistance) continue;
 
-        // 交点までの媒介変数 t
-        float t1 = (-b - discriminant) / (2.0f * a);
+        const Vector3 hitPoint = rayStart + rayDir * distance;
+        if (hitPoint.y < tree.position.y || hitPoint.y > tree.position.y + hitHeight) continue;
 
-        if (t1 > 0.0f && t1 < closestDist)
-        {
-            // 3D空間上の着弾予定座標を計算
-            Vector3 hitPoint = rayStart + rayDir * t1;
-
-            // 高さのチェック（木の幹の高さの範囲内にあるか）
-            float treeBottomY = tree.position.y;
-            float treeTopY = tree.position.y + (treeHeight_ * 1.5f); // 木の高さ
-
-            if (hitPoint.y >= treeBottomY && hitPoint.y <= treeTopY)
-            {
-                closestDist = t1;
-                hitAny = true;
-
-                bestHit.point = hitPoint;
-                bestHit.distance = t1;
-
-                // 法線ベクトル
-                Vector3 normalXZ = Vector3(hitPoint.x - tree.position.x, 0.0f, hitPoint.z - tree.position.z);
-                bestHit.normal = normalXZ.LengthSq() > 0.0001f ? normalXZ.Normalize() : Vector3(0.0f, 1.0f, 0.0f);
-            }
-        }
+        const Vector3 normalXZ = Vector3(hitPoint.x - tree.position.x, 0.0f, hitPoint.z - tree.position.z);
+        closestDistance = distance;
+        closestHit.point = hitPoint;
+        closestHit.distance = distance;
+        closestHit.normal = normalXZ.LengthSq() > 0.0001f ? normalXZ.Normalize() : Vector3(0.0f, 1.0f, 0.0f);
+        isHit = true;
     }
 
-    if (hitAny && outHit)
+    if (isHit && outHit)
     {
-        *outHit = bestHit;
+        *outHit = closestHit;
     }
-
-    return hitAny;
+    return isHit;
 }
 
 void TreeField::DebugDraw()
@@ -371,104 +253,95 @@ void TreeField::DebugDraw()
 #ifdef ENABLE_IMGUI
     ImGui::Begin("森林");
 
-    if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))
+    // 配置を変えたら木を作り直し、マテリアルを変えたら GPU に送り直す
+    bool isPlacementChanged = false;
+    bool isMaterialChanged = false;
+
+    if (ImGui::CollapsingHeader("配置 (変えると作り直す)", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        binder_->Draw("Position", "中心座標");
-        binder_->Draw("TreeCount", "木の配置本数");
-        binder_->Draw("AreaWidth", "配置範囲 (幅 X)");
-        binder_->Draw("AreaDepth", "配置範囲 (奥行 Z)");
-        binder_->Draw("AreaCenterX", "配置中心 X");
-        binder_->Draw("AreaCenterZ", "配置中心 Z");
-        ImGui::Separator();
-        binder_->Draw("MaxDrawDistance", "最大描画距離");
-        ImGui::Separator();
-        binder_->Draw("MinScale", "最小スケール");
-        binder_->Draw("MaxScale", "最大スケール");
-        binder_->Draw("TrunkColliderRadius", "幹の衝突判定半径 (基準)");
+        isPlacementChanged |= binder_->Draw("TreeCount", "木の本数");
+        isPlacementChanged |= binder_->Draw("AreaWidth", "配置範囲 (幅 X)");
+        isPlacementChanged |= binder_->Draw("AreaDepth", "配置範囲 (奥行 Z)");
+        isPlacementChanged |= binder_->Draw("AreaCenterX", "配置の中心 X");
+        isPlacementChanged |= binder_->Draw("AreaCenterZ", "配置の中心 Z");
+        isPlacementChanged |= binder_->Draw("MinScale", "最小スケール");
+        isPlacementChanged |= binder_->Draw("MaxScale", "最大スケール");
+        isPlacementChanged |= binder_->Draw("TrunkColliderRadius", "幹の当たり判定の半径 (スケール 1 のとき)");
 
         ImGui::Separator();
-        ImGui::Text("木のカメラ近接フェード");
-        binder_->Draw("NearFadeMinDist", "完全透明距離 (Min)");
-        binder_->Draw("NearFadeMaxDist", "フェード開始距離 (Max)");
-
-        ImGui::Separator();
-        ImGui::Text("環境ノイズ");
+        isMaterialChanged |= binder_->Draw("MaxDrawDistance", "最大描画距離");
+        isMaterialChanged |= binder_->Draw("TreeRadius", "木の半径 (カリング用)");
+        isMaterialChanged |= binder_->Draw("NearFadeMinDist", "カメラが近いとき完全に透ける距離");
+        isMaterialChanged |= binder_->Draw("NearFadeMaxDist", "カメラが近いとき透け始める距離");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
-
-        if (ImGui::Button("強制再生成"))
-        {
-            GenerateTrees();
-        }
     }
 
-    if (ImGui::CollapsingHeader("葉パラメータ"))
+    if (ImGui::CollapsingHeader("葉"))
     {
-        ImGui::Text("テクスチャ");
         binder_->Draw("LeafTexture", "アルベド");
+        isMaterialChanged |= binder_->Draw("LeafColorTint", "色味");
 
-        ImGui::Separator();
-        binder_->Draw("LeafColorTint", "色味");
+        ImGui::SeparatorText("風・揺れ");
+        isMaterialChanged |= binder_->Draw("TreeHeight", "木の高さ (基準)");
+        isMaterialChanged |= binder_->Draw("WindSpeedMult", "揺れの速さ倍率 (環境の風に対して)");
+        isMaterialChanged |= binder_->Draw("GustScale", "突風ノイズスケール");
+        isMaterialChanged |= binder_->Draw("GustStrength", "突風の強さ");
+        isMaterialChanged |= binder_->Draw("TrunkFlex", "幹のしなりやすさ");
+        isMaterialChanged |= binder_->Draw("LeafFlutter", "葉の揺れ幅");
 
-        ImGui::Separator();
-        ImGui::Text("風・揺れ");
-        binder_->Draw("TreeHeight", "木の高さ (基準)");
-        binder_->Draw("TreeRadius", "木の半径 (カリング用)");
-        binder_->Draw("WindSpeedMult", "揺れの速さ倍率 (環境の風に対して)");
-        binder_->Draw("GustScale", "突風ノイズスケール");
-        binder_->Draw("GustStrength", "突風の強さ");
-        binder_->Draw("TrunkFlex", "幹のしなりやすさ");
-        binder_->Draw("LeafFlutter", "葉の揺れ幅");
+        ImGui::SeparatorText("質感・透過");
+        isMaterialChanged |= binder_->Draw("DiffuseWrap", "ディフューズラップ");
+        isMaterialChanged |= binder_->Draw("SSSStrength", "SSS 強度");
+        isMaterialChanged |= binder_->Draw("SSSColor", "SSS カラー");
+        isMaterialChanged |= binder_->Draw("AlphaCutoff", "アルファカットオフ");
+        isMaterialChanged |= binder_->Draw("BaseRoughness", "基本ラフネス");
+        isMaterialChanged |= binder_->Draw("BaseAO", "ベース AO");
 
-        ImGui::Separator();
-        ImGui::Text("質感・透過");
-        binder_->Draw("DiffuseWrap", "ディフューズラップ");
-        binder_->Draw("SSSStrength", "SSS強度");
-        binder_->Draw("SSSColor", "SSSカラー");
-        binder_->Draw("AlphaCutoff", "アルファカットオフ");
-        binder_->Draw("BaseRoughness", "基本ラフネス");
-        binder_->Draw("BaseAO", "ベースAO");
-
-        ImGui::Separator();
-        ImGui::Text("影");
-        binder_->Draw("LeafShadowDensity", "影の濃さ");
-        binder_->Draw("LeafShadowNormBias", "シャドウノーマルバイアス");
-        binder_->Draw("LeafShadowBias", "シャドウ深度バイアス");
+        ImGui::SeparatorText("影");
+        isMaterialChanged |= binder_->Draw("LeafShadowDensity", "影の濃さ");
+        isMaterialChanged |= binder_->Draw("LeafShadowNormBias", "シャドウノーマルバイアス");
+        isMaterialChanged |= binder_->Draw("LeafShadowBias", "シャドウ深度バイアス");
     }
 
-    if (ImGui::CollapsingHeader("幹パラメータ"))
+    if (ImGui::CollapsingHeader("幹"))
     {
-        ImGui::Text("テクスチャ");
         binder_->Draw("TrunkTexture", "アルベド");
         binder_->Draw("TrunkNormal", "ノーマルマップ");
 
-        ImGui::Separator();
-        ImGui::Text("質感");
-        binder_->Draw("TrunkColor", "カラー");
-        binder_->Draw("TrunkSpecColor", "スペキュラカラー");
-        binder_->Draw("TrunkRoughness", "ラフネス");
-        binder_->Draw("TrunkMetalness", "メタルネス");
-        binder_->Draw("TrunkShininess", "ハイライト鋭さ");
-        binder_->Draw("TrunkDiffReflect", "ディフューズ反射");
-        binder_->Draw("TrunkNormalInt", "ノーマルマップ強度");
-        binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
+        ImGui::SeparatorText("質感");
+        isMaterialChanged |= binder_->Draw("TrunkColor", "カラー");
+        isMaterialChanged |= binder_->Draw("TrunkSpecColor", "スペキュラカラー");
+        isMaterialChanged |= binder_->Draw("TrunkRoughness", "ラフネス");
+        isMaterialChanged |= binder_->Draw("TrunkMetalness", "メタルネス");
+        isMaterialChanged |= binder_->Draw("TrunkShininess", "ハイライトの鋭さ");
+        isMaterialChanged |= binder_->Draw("TrunkDiffReflect", "ディフューズ反射");
+        isMaterialChanged |= binder_->Draw("TrunkNormalInt", "ノーマルマップ強度");
+        isMaterialChanged |= binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
 
-        ImGui::Separator();
-        ImGui::Text("影");
-        binder_->Draw("TrunkShadowDens", "影の濃さ");
-        binder_->Draw("TrunkShadowBias", "シャドウ深度バイアス");
-        binder_->Draw("TrunkShadowNBias", "シャドウノーマルバイアス");
-        binder_->Draw("TrunkShadowSoft", "影のソフトネス");
-        binder_->Draw("TrunkShadowEnvStr", "環境マップの影への影響");
+        ImGui::SeparatorText("影");
+        isMaterialChanged |= binder_->Draw("TrunkShadowDens", "影の濃さ");
+        isMaterialChanged |= binder_->Draw("TrunkShadowBias", "シャドウ深度バイアス");
+        isMaterialChanged |= binder_->Draw("TrunkShadowNBias", "シャドウノーマルバイアス");
+        isMaterialChanged |= binder_->Draw("TrunkShadowSoft", "影のソフトネス");
+        isMaterialChanged |= binder_->Draw("TrunkShadowEnvStr", "環境マップの影への影響");
     }
 
     if (ImGui::CollapsingHeader("共通"))
     {
-        ImGui::Text("グローバルテクスチャ");
         binder_->Draw("ToonRamp", "トゥーンランプ");
     }
 
+    if (isPlacementChanged)
+    {
+        GenerateTrees();
+    }
+    if (isMaterialChanged)
+    {
+        ApplyMaterials();
+    }
+
     ImGui::Separator();
-    ImGui::Text("現在の描画本数: %u", treeSystem_->GetInstanceCount());
+    ImGui::Text("描画中の本数: %u", treeSystem_->GetInstanceCount());
 
     ImGui::End();
 #endif
