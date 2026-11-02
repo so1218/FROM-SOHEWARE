@@ -283,7 +283,7 @@ void FollowCamera::PlaceBehindTarget()
     if (!target_) return;
 
     // カメラは target から (sin(yaw), cos(yaw)) の方向に置かれるので、正面の反対にする
-    const Vector3 forward = target_->rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+    const Vector3 forward = target_->rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
     targetYaw_ = std::atan2(forward.x, forward.z) + Math::PI;
     currentYaw_ = targetYaw_;
     yawVelocity_ = 0.0f;

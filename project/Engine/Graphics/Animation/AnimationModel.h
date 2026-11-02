@@ -63,7 +63,7 @@ public:
     // 基本トランスフォーム
     // ========================================================================
     void SetTransform(const WorldTransform& transform) { transform_ = transform; }
-    void SetUVTransform(const WorldTransform& uvTransform); // 全マテリアル一括
+    void SetUVTransform(const UVTransform& uvTransform); // 全マテリアル一括
 
     // ========================================================================
     // マテリアル一括設定 (全マテリアルへ適用)

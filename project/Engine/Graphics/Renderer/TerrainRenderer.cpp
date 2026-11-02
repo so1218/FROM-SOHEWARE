@@ -67,8 +67,8 @@ void TerrainRenderer::Submit(const WorldTransform& worldTransform, const Terrain
     TerrainSubmission submission{};
     submission.chunk = chunk;
     submission.materialHandle = material;
-    submission.worldMatrix = worldTransform.matWorld_;
-    submission.wvpMatrix = worldTransform.matWorld_ * viewProjectionMatrix_;
+    submission.worldMatrix = worldTransform.GetWorldMatrix();
+    submission.wvpMatrix = worldTransform.GetWorldMatrix() * viewProjectionMatrix_;
     submission.worldInverseTranspose = Matrix4x4::Inverse(submission.worldMatrix.Transpose());
     submission.instancingColor = instanceColor;
     submission.group = RenderGroup::Opaque;

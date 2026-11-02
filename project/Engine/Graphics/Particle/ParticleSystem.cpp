@@ -73,7 +73,7 @@ void ParticleSystem::SpawnParticle(
 
     // Shape オフセット計算
     Vector3 localOffset = config.shape.GetInitialPositionOffset(emitterModelData, emitterAnimModel);
-    Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotationQuaternion_, { 0.0f, 0.0f, 0.0f });
+    Matrix4x4 transformMatrix = Matrix4x4::MakeAffine(transform.scale_, transform.rotation_, { 0.0f, 0.0f, 0.0f });
     Vector3 worldOffset = transformMatrix.TransformVector(localOffset);
 
     particle.transform.translation_ = transform.translation_ + worldOffset;
@@ -83,7 +83,7 @@ void ParticleSystem::SpawnParticle(
     if (config.velocity.enabled)
     {
         Vector3 localVel = config.velocity.GetInitialVelocity();
-        particle.velocity = transform.rotationQuaternion_.RotateVector(localVel);
+        particle.velocity = transform.rotation_.RotateVector(localVel);
     }
 
     // Color & Size
@@ -100,7 +100,7 @@ void ParticleSystem::SpawnParticle(
             Math::RandomFloat(rotConfig.minStartRotation.z, rotConfig.maxStartRotation.z)
         };
 
-        particle.transform.rotation_ = {
+        particle.rotation = {
             Math::ToRadians(startRot.x),
             Math::ToRadians(startRot.y),
             Math::ToRadians(startRot.z)
@@ -325,9 +325,9 @@ void ParticleSystem::Update()
 
                 if (config.rotation.isBillboard)
                 {
-                    particleState.transform.rotation_.x = 0.0f;
-                    particleState.transform.rotation_.y = 0.0f;
-                    particleState.transform.rotation_.z += Math::ToRadians(angularVelocity.z) * deltaTime;
+                    particleState.rotation.x = 0.0f;
+                    particleState.rotation.y = 0.0f;
+                    particleState.rotation.z += Math::ToRadians(angularVelocity.z) * deltaTime;
                 }
                 else
                 {
@@ -336,10 +336,10 @@ void ParticleSystem::Update()
                         Math::ToRadians(angularVelocity.y),
                         Math::ToRadians(angularVelocity.z)
                     };
-                    particleState.transform.rotation_ += velocityRadians * deltaTime;
+                    particleState.rotation += velocityRadians * deltaTime;
 
                     // クォータニオン変換
-                    particleState.transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(particleState.transform.rotation_);
+                    particleState.transform.rotation_ = Quaternion::QuaternionFromEuler(particleState.rotation);
                 }
             }
 
@@ -371,7 +371,7 @@ void ParticleSystem::Update()
                 {
                     TrailPoint newPoint;
                     newPoint.position = currentPos;
-                    newPoint.rotationQuaternion = particleState.transform.rotationQuaternion_;
+                    newPoint.rotation = particleState.transform.rotation_;
                     newPoint.time = particleState.age;
                     particleState.trailHistory.push_back(newPoint);
                 }
@@ -396,7 +396,7 @@ void ParticleSystem::Update()
                 particleState.transform,
                 Math::ColorVectorToUint32(particleState.color),
                 config.textureSheet.textureHandle,
-                particleState.transform.rotation_.z,
+                particleState.rotation.z,
                 config.blendMode,
                 config.rotation.isBillboard,
                 config.intensity
@@ -436,7 +436,7 @@ void ParticleSystem::Draw()
 
         // 生存中なら現在位置も追加
         if (particle.age < particle.lifetime)
-            drawPoints.push_back({ particle.transform.translation_, particle.transform.rotationQuaternion_, particle.age });
+            drawPoints.push_back({ particle.transform.translation_, particle.transform.rotation_, particle.age });
 
         // Rendererに登録
         engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config->trail, particle.trailSeed);

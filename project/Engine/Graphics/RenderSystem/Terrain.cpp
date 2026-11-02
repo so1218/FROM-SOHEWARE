@@ -16,7 +16,6 @@ Terrain::Terrain(Engine* engine)
 
     // Transform の初期化
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
-    transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
     transform_.UpdateMatrix();
 
@@ -31,11 +30,10 @@ Terrain::Terrain(Engine* engine)
     material_.dissolveMapHandle = texManager.Get("white1x1");
     material_.normalMapHandle = texManager.Get("white1x1");
 
-    // テクスチャ座標の変換行列を初期化し、定数バッファへ反映
-    material_.uvTransformData.Initialize();
+    // テクスチャ座標の変換行列を定数バッファへ反映
     if (material_.materialData)
     {
-        material_.materialData->uvTransform = material_.uvTransformData.matWorld_;
+        material_.materialData->uvTransform = material_.uvTransformData.MakeMatrix();
     }
 }
 
@@ -240,10 +238,9 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTexName, float cellS
 
 void Terrain::UpdateUV()
 {
-    material_.uvTransformData.UpdateMatrix();
     if (material_.materialData)
     {
-        material_.materialData->uvTransform = material_.uvTransformData.matWorld_;
+        material_.materialData->uvTransform = material_.uvTransformData.MakeMatrix();
     }
 }
 
@@ -272,15 +269,11 @@ void Terrain::SetRippleTexture(const std::string& textureName)
     material_.rippleTextureHandle = TextureManager::GetInstance().Get(textureName);
 }
 
-void Terrain::SetUVTransform(const WorldTransform& uvTransform)
+void Terrain::SetUVTransform(const UVTransform& uvTransform)
 {
-    material_.uvTransformData.translation_ = uvTransform.translation_;
-    material_.uvTransformData.rotation_ = uvTransform.rotation_;
-    material_.uvTransformData.scale_ = uvTransform.scale_;
-
-    material_.uvTransformData.UpdateMatrix();
+    material_.uvTransformData = uvTransform;
     if (material_.materialData) {
-        material_.materialData->uvTransform = material_.uvTransformData.matWorld_;
+        material_.materialData->uvTransform = uvTransform.MakeMatrix();
     }
 }
 
@@ -303,7 +296,7 @@ void Terrain::SetEmissiveIntensity(float intensity)
     if (material_.materialData) material_.materialData->emissiveIntensity = intensity;
 }
 
-WorldTransform* Terrain::GetUVTransform()
+UVTransform* Terrain::GetUVTransform()
 {
     return &material_.uvTransformData;
 }

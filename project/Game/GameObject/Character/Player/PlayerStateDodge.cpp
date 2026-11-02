@@ -23,7 +23,7 @@ void PlayerStateDodge::Enter(Player* player)
 
     // 回避の向きへすぐ体を向ける
     const float angleY = std::atan2(dodgeDirection.x, dodgeDirection.z);
-    player->GetTransform().rotationQuaternion_ = Quaternion::QuaternionFromEuler({ 0.0f, angleY, 0.0f });
+    player->GetTransform().rotation_ = Quaternion::QuaternionFromEuler({ 0.0f, angleY, 0.0f });
 
     // 回避用のアニメーションを追加したら、ここの名前を変える
     player->PlayAnimation("humanRun", true, player->config.dodgeAnimSpeed, 0.05f);

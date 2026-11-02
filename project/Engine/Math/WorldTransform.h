@@ -11,27 +11,17 @@ class WorldTransform
 public:
     // ローカルスケール
     Vector3 scale_;
-    // X,Y,Z軸回りのローカル回転角(オイラー角)
-    Vector3 rotation_;
     // ローカル座標
     Vector3 translation_;
-    // ワールド行列
-    Matrix4x4 matWorld_;
-    // 1フレーム前のワールド行列
-    Matrix4x4 matWorldPrev_ = Matrix4x4::MakeIdentity();
-    // 回転を保持するクォータニオン
-    Quaternion rotationQuaternion_;
-
-    // 親のWorldTransformへのポインタ
-    WorldTransform* parent_;
+    // ローカル回転
+    Quaternion rotation_;
 
 public:
-    // コンストラクタ
     WorldTransform();
     WorldTransform(const Vector3& scale, const Vector3& rotation, const Vector3& translation);
     WorldTransform(const Vector3& scale, const Quaternion& rotation, const Vector3& translation);
 
-    // 明示的に定義する
+    // 親はコピーしない
     WorldTransform(const WorldTransform& other);
     WorldTransform& operator=(const WorldTransform& other);
 
@@ -47,8 +37,8 @@ public:
         const Quaternion& rotation,
         const Vector3& translation);
 
-    // 親を設定するメソッド
     void SetParent(WorldTransform* parent) { parent_ = parent; }
+    WorldTransform* GetParent() const { return parent_; }
 
     // 行列を更新する関数
     void UpdateMatrix();
@@ -63,6 +53,11 @@ public:
     void UpdateLocalFromWorld();
 
     void ApplyWorldMatrix();
+
+    const Matrix4x4& GetWorldMatrix() const { return matWorld_; }
+    // 行列を直接決める 
+    void SetWorldMatrix(const Matrix4x4& worldMatrix) { matWorld_ = worldMatrix; }
+    const Matrix4x4& GetPrevWorldMatrix() const { return matWorldPrev_; }
     Vector3 GetWorldPosition() const;
 
     // 特定のプロパティを更新するセッター
@@ -70,6 +65,17 @@ public:
     void SetTranslation(const Vector3& translation);
     void SetRotation(const Quaternion& rotation);
 
+    // オイラー角。クォータニオンに変換して持つ
+    void SetRotationEuler(const Vector3& euler) { SetRotation(Quaternion::QuaternionFromEuler(euler)); }
+    Vector3 GetRotationEuler() const { return Quaternion::QuaternionToEuler(rotation_); }
+
+private:
+    // ワールド行列
+    Matrix4x4 matWorld_;
+    // 1フレーム前のワールド行列
+    Matrix4x4 matWorldPrev_ = Matrix4x4::MakeIdentity();
+    // 親のWorldTransformへのポインタ
+    WorldTransform* parent_ = nullptr;
 };
 
 }

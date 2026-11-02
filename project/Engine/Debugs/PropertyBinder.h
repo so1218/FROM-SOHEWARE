@@ -47,7 +47,8 @@ public:
     void BindBool(const std::string& key, int32_t* ptr, bool defaultValue);
     void BindBool(const std::string& key, uint32_t* ptr, bool defaultValue);
     void BindCombo(const std::string& key, int32_t* ptr, int32_t defaultValue, const char* items);
-    void BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed = 0.01f, std::function<void()> onChange = nullptr);
+    // 回転はクォータニオンで持ち、ImGui での編集と保存はオイラー角で行う
+    void BindRotation(const std::string& key, Quaternion* rotation, float speed = 0.01f, std::function<void()> onChange = nullptr);
 
     void BindModelName(const std::string& key, std::string* currentModelName, const std::string& defaultName, std::function<void(const std::string&)> onChange = nullptr);
     void BindTexture(const std::string& key, const std::string& initialValue, std::function<void(const std::string&)> onValueChanged, const std::string& defaultName = "white1x1", TextureType filterType = TextureType::Albedo);
@@ -109,6 +110,8 @@ private:
     std::vector<std::string> groupPath_;
     std::vector<std::string> keys_;
     std::unordered_map<std::string, std::function<bool(const std::string&)>> items_;
+    // BindRotation の編集・保存用のオイラー角。ポインタを ImGui の項目に渡すので、要素が動かない std::map にする
+    std::map<std::string, Vector3> rotationEulers_;
 
     struct ModelBindInfo { Model* model = nullptr; };
     struct AnimationBindInfo { AnimationModel* model = nullptr; };

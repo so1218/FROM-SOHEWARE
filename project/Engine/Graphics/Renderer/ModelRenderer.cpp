@@ -245,7 +245,7 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
             }
         };
 
-        Traverse(modelData.rootNode, worldTransform.matWorld_, worldTransform.matWorldPrev_);
+        Traverse(modelData.rootNode, worldTransform.GetWorldMatrix(), worldTransform.GetPrevWorldMatrix());
 }
 
 void ModelRenderer::SubmitAnimation(
@@ -268,8 +268,8 @@ void ModelRenderer::SubmitAnimation(
         if (indexModel_ >= kMaxCount) return; // 安全対策
 
         const auto& meshPart = modelData->meshes[i];
-        Matrix4x4 world = worldTransform.matWorld_;
-        Matrix4x4 prevWorld = worldTransform.matWorldPrev_;
+        Matrix4x4 world = worldTransform.GetWorldMatrix();
+        Matrix4x4 prevWorld = worldTransform.GetPrevWorldMatrix();
 
         // AABB ワールド変換と viewMask の算出（カリング処理）
         Vector3 localCenter = {

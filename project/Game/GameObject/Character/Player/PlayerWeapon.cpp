@@ -116,7 +116,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
     }
 
     // 右手のワールド行列を親トランスフォームに設定
-    handTransform_.matWorld_ = handWorldMatrix;
+    handTransform_.SetWorldMatrix(handWorldMatrix);
 
     // 武器モデルの更新
     if (model_)
@@ -133,7 +133,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         muzzleFlashEmitterPtr_->SetPosition(muzzlePos);
         if (camera)
         {
-            Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+            Vector3 forward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
             Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
             muzzleFlashEmitterPtr_->SetRotation(rot);
         }
@@ -144,7 +144,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         shotSmokeEmitterPtr_->SetPosition(muzzlePos);
         if (camera)
         {
-            Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+            Vector3 forward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
             Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
             shotSmokeEmitterPtr_->SetRotation(rot);
         }
@@ -155,7 +155,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         shotSparkEmitterPtr_->SetPosition(muzzlePos);
         if (camera)
         {
-            Vector3 forward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+            Vector3 forward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
             Quaternion rot = Quaternion::LookRotation(forward, { 0.0f, 1.0f, 0.0f });
             shotSparkEmitterPtr_->SetRotation(rot);
         }
@@ -184,7 +184,7 @@ Vector3 PlayerWeapon::GetMuzzleWorldPosition() const
 {
     if (model_)
     {
-        return model_->GetTransform().matWorld_.TransformPoint(config_.muzzleOffset);
+        return model_->GetTransform().GetWorldMatrix().TransformPoint(config_.muzzleOffset);
     }
     return currentHandMatrix_.TransformPoint(config_.muzzleOffset);
 }
@@ -206,7 +206,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 
     // カメラからのレイとレティクル拡散の計算
     Vector3 rayStart = camera->GetWorldTransform().translation_;
-    Vector3 baseForward = camera->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
+    Vector3 baseForward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f }).Normalize();
 
     float currentSpread = maxBulletSpread * (1.0f - focusRatio);
     float randPitch = (((float)rand() / RAND_MAX) * 2.0f - 1.0f) * currentSpread;

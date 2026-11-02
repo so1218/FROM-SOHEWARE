@@ -6,36 +6,29 @@ namespace FS
 
 // デフォルトコンストラクタ
 WorldTransform::WorldTransform()
-    : scale_({ 1, 1, 1 }), rotation_({ 0, 0, 0 }), translation_({ 0, 0, 0 }),
-    rotationQuaternion_(Quaternion::Identity()), parent_(nullptr) 
+    : scale_({ 1, 1, 1 }), translation_({ 0, 0, 0 }), rotation_(Quaternion::Identity())
 {
     UpdateMatrix(); // コンストラクタで初期行列を生成
 }
 
 // コンストラクタ(オイラー角を使用)
 WorldTransform::WorldTransform(const Vector3& scale, const Vector3& rotation, const Vector3& translation)
-    : scale_(scale), rotation_(rotation), translation_(translation),
-    rotationQuaternion_(Quaternion::QuaternionFromEuler(rotation)), parent_(nullptr)
+    : scale_(scale), translation_(translation), rotation_(Quaternion::QuaternionFromEuler(rotation))
 {
     UpdateMatrix();
 }
 
 // コンストラクタ(クォータニオンを使用)
 WorldTransform::WorldTransform(const Vector3& scale, const Quaternion& rotation, const Vector3& translation)
-    : scale_(scale), rotation_({ 0,0,0 }), translation_(translation),
-    rotationQuaternion_(rotation), parent_(nullptr)
+    : scale_(scale), translation_(translation), rotation_(rotation)
 {
     UpdateMatrix();
 }
 
 WorldTransform::WorldTransform(const WorldTransform& other)
+    : scale_(other.scale_), translation_(other.translation_), rotation_(other.rotation_),
+    matWorld_(other.matWorld_), matWorldPrev_(other.matWorldPrev_)
 {
-    scale_ = other.scale_;
-    rotation_ = other.rotation_;
-    translation_ = other.translation_;
-    matWorld_ = other.matWorld_;
-    rotationQuaternion_ = other.rotationQuaternion_;
-    parent_ = nullptr; // コピーしない
 }
 
 WorldTransform& WorldTransform::operator=(const WorldTransform& other)
@@ -43,10 +36,10 @@ WorldTransform& WorldTransform::operator=(const WorldTransform& other)
     if (this != &other)
     {
         scale_ = other.scale_;
-        rotation_ = other.rotation_;
         translation_ = other.translation_;
+        rotation_ = other.rotation_;
         matWorld_ = other.matWorld_;
-        rotationQuaternion_ = other.rotationQuaternion_;
+        matWorldPrev_ = other.matWorldPrev_;
         parent_ = nullptr; // コピーしない
     }
     return *this;
@@ -58,16 +51,7 @@ void WorldTransform::Initialize(
     const Vector3& rotation,
     const Vector3& translation)
 {
-    // 単位行列に初期化
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
-            matWorld_.m[i][j] = (i == j) ? 1.0f : 0.0f;
-    scale_ = scale;
-    rotation_ = rotation;
-    translation_ = translation;
-    parent_ = nullptr;
-    rotationQuaternion_ = Quaternion::QuaternionFromEuler(rotation_); // Euler角からクォータニオンを生成
-    UpdateMatrix();
+    Initialize(scale, Quaternion::QuaternionFromEuler(rotation), translation);
 }
 
 // 初期化関数(クォータニオンを使用)
@@ -76,14 +60,10 @@ void WorldTransform::Initialize(
     const Quaternion& rotation,
     const Vector3& translation)
 {
-    // 単位行列に初期化
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
-            matWorld_.m[i][j] = (i == j) ? 1.0f : 0.0f;
     parent_ = nullptr;
-    scale_ = { 1.0f, 1.0f, 1.0f };
-    rotationQuaternion_ = Quaternion();
-    translation_ = { 0.0f, 0.0f, 0.0f };
+    scale_ = scale;
+    rotation_ = rotation;
+    translation_ = translation;
     UpdateMatrix();
 }
 
@@ -93,16 +73,18 @@ void WorldTransform::UpdateMatrix()
     // ローカル行列を計算
     Matrix4x4 localMat = Matrix4x4::MakeAffine(
         scale_,
-        rotationQuaternion_,
+        rotation_,
         translation_
     );
 
-    if (parent_ != nullptr) {
+    if (parent_ != nullptr)
+    {
         // 親が設定されている場合、親のワールド行列を乗算
         matWorld_ = localMat * parent_->matWorld_;
     }
-    else {
-        // 親がいない場合は、ローカル行列がワールド行列となる
+    else 
+    {
+        // 親がいない場合は、ローカル行列がワールド行列
         matWorld_ = localMat;
     }
 }
@@ -114,9 +96,8 @@ void WorldTransform::UpdateMatrix(
     const Vector3& translation)
 {
     scale_ = scale;
-    rotation_ = rotation;
     translation_ = translation;
-    rotationQuaternion_ = Quaternion::QuaternionFromEuler(rotation_);
+    rotation_ = Quaternion::QuaternionFromEuler(rotation);
     UpdateMatrix(); 
 }
 
@@ -143,12 +124,12 @@ void WorldTransform::UpdateLocalFromWorld()
         Matrix4x4 localMat = parentInv * matWorld_;
 
         // localMat からスケール・回転・平行移動を分解してセット
-        Matrix4x4::Decompose(localMat, scale_, rotationQuaternion_, translation_);
+        Matrix4x4::Decompose(localMat, scale_, rotation_, translation_);
     }
     else
     {
         // 親なしならローカル=ワールド
-        Matrix4x4::Decompose(matWorld_, scale_, rotationQuaternion_, translation_);
+        Matrix4x4::Decompose(matWorld_, scale_, rotation_, translation_);
     }
 }
 
@@ -156,12 +137,7 @@ void WorldTransform::ApplyWorldMatrix()
 {
     // ワールド行列からローカル情報（スケール・回転・移動）を取り出す
     Matrix4x4 world = matWorld_;
-
-    // 行列を分解（スケール・回転・位置を抽出）
-    Matrix4x4::Decompose(world, scale_, rotationQuaternion_, translation_);
-
-    // 回転角（オイラー）も更新
-    rotation_ = Quaternion::QuaternionToEuler(rotationQuaternion_);
+    Matrix4x4::Decompose(world, scale_, rotation_, translation_);
 
     // 親を外して独立
     parent_ = nullptr;
@@ -187,7 +163,7 @@ void WorldTransform::SetTranslation(const Vector3& translation)
 
 void WorldTransform::SetRotation(const Quaternion& rotation) 
 {
-    rotationQuaternion_ = rotation;
+    rotation_ = rotation;
     UpdateMatrix();
 }
 

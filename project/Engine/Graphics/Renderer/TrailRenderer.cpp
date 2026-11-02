@@ -94,7 +94,7 @@ void TrailRenderer::Submit(const std::vector<TrailPoint>& points, const TrailMod
         }
         else
         {
-            Vector3 up = points[i].rotationQuaternion.RotateVector({ 0.0f, 1.0f, 0.0f });
+            Vector3 up = points[i].rotation.RotateVector({ 0.0f, 1.0f, 0.0f });
             right = Math::CrossProduct(up, forward).Normalize();
         }
 

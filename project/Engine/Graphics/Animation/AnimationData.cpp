@@ -104,7 +104,7 @@ void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animat
 			const NodeAnimation& nodeAnimation = it->second;
 
 			joint.transform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, animationTime);
-			joint.transform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
+			joint.transform.rotation_ = CalculateValue(nodeAnimation.rotate.keyframes, animationTime);
 			joint.transform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, animationTime);
 		}
 	}
@@ -124,7 +124,7 @@ void ApplyBlendAnimation(
 		{
 			const NodeAnimation& nodeAnimation = it->second;
 			prevTransform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, prevTime);
-			prevTransform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, prevTime);
+			prevTransform.rotation_ = CalculateValue(nodeAnimation.rotate.keyframes, prevTime);
 			prevTransform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, prevTime);
 		}
 
@@ -133,12 +133,12 @@ void ApplyBlendAnimation(
 		{
 			const NodeAnimation& nodeAnimation = it->second;
 			currentTransform.translation_ = CalculateValue(nodeAnimation.translate.keyframes, currentTime);
-			currentTransform.rotationQuaternion_ = CalculateValue(nodeAnimation.rotate.keyframes, currentTime);
+			currentTransform.rotation_ = CalculateValue(nodeAnimation.rotate.keyframes, currentTime);
 			currentTransform.scale_ = CalculateValue(nodeAnimation.scale.keyframes, currentTime);
 		}
 
 		joint.transform.translation_ = Math::Lerp(prevTransform.translation_, currentTransform.translation_, blendFactor);
-		joint.transform.rotationQuaternion_ = Quaternion::Slerp(prevTransform.rotationQuaternion_, currentTransform.rotationQuaternion_, blendFactor);
+		joint.transform.rotation_ = Quaternion::Slerp(prevTransform.rotation_, currentTransform.rotation_, blendFactor);
 		joint.transform.scale_ = Math::Lerp(prevTransform.scale_, currentTransform.scale_, blendFactor);
 	}
 }
@@ -148,7 +148,7 @@ void UpdateSkeleton(Skeleton& skeleton)
 	// 全てのJointを更新。親が若いので通常ループで処理可能になっている
 	for (Joint& joint : skeleton.joints)
 	{
-		joint.localMatrix = Matrix4x4::MakeAffine(joint.transform.scale_, joint.transform.rotationQuaternion_, joint.transform.translation_);
+		joint.localMatrix = Matrix4x4::MakeAffine(joint.transform.scale_, joint.transform.rotation_, joint.transform.translation_);
 		if (joint.parent)
 		{
 			joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*(joint.parent)].skeletonSpaceMatrix;

@@ -46,13 +46,9 @@ void Model::UpdateUV()
 {
     for (auto& mat : materials_)
     {
-        // 行列計算
-        mat.uvTransformData.UpdateMatrix();
-
-        // 定数バッファ転送
         if (mat.materialData)
         {
-            mat.materialData->uvTransform = mat.uvTransformData.matWorld_;
+            mat.materialData->uvTransform = mat.uvTransformData.MakeMatrix();
         }
     }
 }
@@ -61,20 +57,15 @@ void Model::UpdateUV()
 // 一括設定
 // ========================================================================
 
-void Model::SetUVTransform(const WorldTransform& uvTransform)
+void Model::SetUVTransform(const UVTransform& uvTransform)
 {
     MakeMaterialUnique();
 
     for (auto& mat : materials_)
     {
-        mat.uvTransformData.translation_ = uvTransform.translation_;
-        mat.uvTransformData.rotation_ = uvTransform.rotation_;
-        mat.uvTransformData.scale_ = uvTransform.scale_;
-
-        // 即座に行列更新とGPU転送を行う
-        mat.uvTransformData.UpdateMatrix();
+        mat.uvTransformData = uvTransform;
         if (mat.materialData) {
-            mat.materialData->uvTransform = mat.uvTransformData.matWorld_;
+            mat.materialData->uvTransform = uvTransform.MakeMatrix();
         }
     }
 }
@@ -327,7 +318,7 @@ void Model::SetMaterialColor(size_t index, uint32_t color)
 // ゲッター / アクセサ
 // ========================================================================
 
-WorldTransform* Model::GetUVTransform(size_t index)
+UVTransform* Model::GetUVTransform(size_t index)
 {
     if (!IsValidMaterialIndex(index)) return nullptr;
     return &materials_[index].uvTransformData;

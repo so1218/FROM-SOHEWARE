@@ -56,7 +56,7 @@ void DebugCamera::Update()
             int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
             distance_ -= wheelDelta * zoomSpeed_;
 
-            Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+            Quaternion currentRotation = worldTransform_.rotation_;
             Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
             if (distance_ < minDistance_)
             {
@@ -77,7 +77,7 @@ void DebugCamera::Update()
             if (Input::GetInstance().IsKeyPressed(DIK_LSHIFT))
             {
                 // 平行移動
-                Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+                Quaternion currentRotation = worldTransform_.rotation_;
                 Vector3 right = currentRotation.RotateVector(Vector3(1.0f, 0.0f, 0.0f));
                 Vector3 up = currentRotation.RotateVector(Vector3(0.0f, 1.0f, 0.0f));
 
@@ -99,7 +99,7 @@ void DebugCamera::Update()
     worldTransform_.SetRotation(yawQuaternion * pitchQuaternion);
 
     // カメラのワールド座標を計算
-    Quaternion currentRotation = worldTransform_.rotationQuaternion_;
+    Quaternion currentRotation = worldTransform_.rotation_;
     Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
     cameraWorldPosition_ = target_ - forward * distance_;
 
@@ -142,7 +142,7 @@ Matrix4x4 DebugCamera::GetViewMatrix()
     // カメラのワールド行列を作る
     Matrix4x4 cameraMatrix = Matrix4x4::MakeAffine(
         Vector3{ 1, 1, 1 },          
-        worldTransform_.rotationQuaternion_,
+        worldTransform_.rotation_,
         cameraWorldPosition_
     );
 

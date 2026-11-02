@@ -84,8 +84,9 @@ void ModelManager::Load(const std::string& name, const std::string& path)
         defMat.dissolveMapHandle = texManager.Get("white1x1");
         defMat.normalMapHandle = texManager.Get("white1x1");
 
-        if (defMat.materialData) {
-            defMat.materialData->uvTransform = defMat.uvTransformData.matWorld_;
+        if (defMat.materialData)
+        {
+            defMat.materialData->uvTransform = defMat.uvTransformData.MakeMatrix();
         }
 
         data.defaultMaterials.push_back(defMat);

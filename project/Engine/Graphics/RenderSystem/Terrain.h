@@ -39,7 +39,7 @@ public:
     void SetRippleTexture(const std::string& textureName);
 
     // UV
-    void SetUVTransform(const WorldTransform& uvTransform);
+    void SetUVTransform(const UVTransform& uvTransform);
 
     // カラー・発光
     void SetColor(const Vector4& color);
@@ -63,7 +63,7 @@ public:
     size_t GetMaterialCount() const { return 1; }
 
     // ゲッター・セッター
-    WorldTransform* GetUVTransform();
+    UVTransform* GetUVTransform();
 
     MaterialData* GetMaterialData();
     const MaterialData* GetMaterialData() const;

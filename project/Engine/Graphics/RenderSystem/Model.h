@@ -49,7 +49,7 @@ public:
     void MakeMaterialUnique();
 
     // UV
-    void SetUVTransform(const WorldTransform& uvTransform);
+    void SetUVTransform(const UVTransform& uvTransform);
 
     // カラー・発光
     void SetColor(const Vector4& color);
@@ -86,7 +86,7 @@ public:
     // ========================================================================
 
     // UVトランスフォーム取得
-    WorldTransform* GetUVTransform(size_t index = 0);
+    UVTransform* GetUVTransform(size_t index = 0);
 
     // マテリアルデータ取得
     MaterialData* GetMaterialData(size_t index = 0);

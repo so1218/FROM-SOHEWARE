@@ -37,23 +37,39 @@ namespace FS
         BindBoolInternal(key, reinterpret_cast<int32_t*>(ptr), defaultValue);
     }
 
-    void PropertyBinder::BindRotation(const std::string& key, Vector3* eulerPtr, Quaternion* quatPtr, float speed, std::function<void()> onChange)
+    void PropertyBinder::BindRotation(const std::string& key, Quaternion* rotation, float speed, std::function<void()> onChange)
     {
-        BindVector3Internal(key, eulerPtr, { 0.0f, 0.0f, 0.0f }, speed, 0.0f, 360.0f,
-            [eulerPtr, quatPtr, onChange]()
+        Vector3* euler = &rotationEulers_[key];
+        BindVector3Internal(key, euler, { 0.0f, 0.0f, 0.0f }, speed, 0.0f, 0.0f,
+            [euler, rotation, onChange]()
             {
-                *quatPtr = Quaternion::QuaternionFromEuler(*eulerPtr);
+                *rotation = Quaternion::QuaternionFromEuler(*euler);
                 if (onChange) onChange();
             }
         );
-        // 初期値設定
-        *quatPtr = Quaternion::QuaternionFromEuler(*eulerPtr);
+        // 保存されていたオイラー角から回転を作る
+        *rotation = Quaternion::QuaternionFromEuler(*euler);
+
+#ifdef ENABLE_IMGUI
+        auto drawEuler = items_[key];
+        items_[key] = [drawEuler, euler, rotation](const std::string& nameOverride)
+            {
+                const Quaternion eulerRotation = Quaternion::QuaternionFromEuler(*euler);
+                const bool isSameRotation = std::abs(Quaternion::Dot(eulerRotation, *rotation)) > 0.9999f;
+                if (!isSameRotation)
+                {
+                    *euler = Quaternion::QuaternionToEuler(*rotation);
+                }
+                return drawEuler(nameOverride);
+            };
+#endif
     }
 
     void PropertyBinder::Clear(bool eraseData)
     {
         keys_.clear();
         items_.clear();
+        rotationEulers_.clear();
         modelBindMap_.clear();
         animationBindMap_.clear();
         terrainBindMap_.clear();

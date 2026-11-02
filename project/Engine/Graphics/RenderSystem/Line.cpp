@@ -25,8 +25,8 @@ void Line::Update()
 void Line::Draw()
 {
     // ローカル座標を行列でワールド座標に変換する
-    Vector3 worldStart = transform_.matWorld_.Transform(localStart_);
-    Vector3 worldEnd = transform_.matWorld_.Transform(localEnd_);
+    Vector3 worldStart = transform_.GetWorldMatrix().Transform(localStart_);
+    Vector3 worldEnd = transform_.GetWorldMatrix().Transform(localEnd_);
 
     engine_->GetRendererManager()->SubmitLine(worldStart, worldEnd, color_);
 }

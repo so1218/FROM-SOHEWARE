@@ -65,7 +65,7 @@ void EnvironmentProp::SetupProperties()
 
     // PropertyBinder へのパラメータ登録
     binder_->Bind("Position", &model_->GetTransform().translation_, { 0.0f, 0.0f, 0.0f });
-    binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, &model_->GetTransform().rotationQuaternion_, 0.01f);
+    binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, 0.01f);
     binder_->Bind("Scale", &model_->GetTransform().scale_, { 1.0f, 1.0f, 1.0f });
     binder_->BindColor("BaseColor", &baseColor_, { 1.0f, 1.0f, 1.0f, 1.0f });
 

@@ -12,7 +12,6 @@ Skybox::Skybox(Engine* engine)
 {
     // トランスフォームを初期化
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    transform_.rotation_ = { 0.0f, 0.0f, 0.0f };
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
     cubeTextureHandle_ = TextureManager::GetInstance().Get("black_cube");
 }

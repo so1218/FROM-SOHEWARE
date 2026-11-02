@@ -44,10 +44,10 @@ void ParticleRenderer::Submit(const WorldTransform& worldTransform, uint32_t col
 
     ParticleRequest req;
 
-    req.data.position = { worldTransform.matWorld_.m[3][0], worldTransform.matWorld_.m[3][1], worldTransform.matWorld_.m[3][2] };
+    req.data.position = { worldTransform.GetWorldMatrix().m[3][0], worldTransform.GetWorldMatrix().m[3][1], worldTransform.GetWorldMatrix().m[3][2] };
 
-    req.data.scale.x = sqrtf(worldTransform.matWorld_.m[0][0] * worldTransform.matWorld_.m[0][0] + worldTransform.matWorld_.m[0][1] * worldTransform.matWorld_.m[0][1] + worldTransform.matWorld_.m[0][2] * worldTransform.matWorld_.m[0][2]);
-    req.data.scale.y = sqrtf(worldTransform.matWorld_.m[1][0] * worldTransform.matWorld_.m[1][0] + worldTransform.matWorld_.m[1][1] * worldTransform.matWorld_.m[1][1] + worldTransform.matWorld_.m[1][2] * worldTransform.matWorld_.m[1][2]);
+    req.data.scale.x = sqrtf(worldTransform.GetWorldMatrix().m[0][0] * worldTransform.GetWorldMatrix().m[0][0] + worldTransform.GetWorldMatrix().m[0][1] * worldTransform.GetWorldMatrix().m[0][1] + worldTransform.GetWorldMatrix().m[0][2] * worldTransform.GetWorldMatrix().m[0][2]);
+    req.data.scale.y = sqrtf(worldTransform.GetWorldMatrix().m[1][0] * worldTransform.GetWorldMatrix().m[1][0] + worldTransform.GetWorldMatrix().m[1][1] * worldTransform.GetWorldMatrix().m[1][1] + worldTransform.GetWorldMatrix().m[1][2] * worldTransform.GetWorldMatrix().m[1][2]);
 
     req.data.color = Math::Uint32ToColorVector(color);
     req.data.rotationZ = rotationZ;

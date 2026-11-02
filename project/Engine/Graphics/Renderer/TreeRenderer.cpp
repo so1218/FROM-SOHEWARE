@@ -131,7 +131,7 @@ void TreeRenderer::Submit(
             }
         };
 
-    Traverse(modelData.rootNode, worldTransform.matWorld_);
+    Traverse(modelData.rootNode, worldTransform.GetWorldMatrix());
 }
 
 void TreeRenderer::PrepareBatches()

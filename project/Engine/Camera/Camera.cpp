@@ -32,10 +32,10 @@ void Camera::BindProperties(PropertyBinder& binder, const std::string& prefix)
     binder.Bind(p + "Position", &worldTransform_.translation_, worldTransform_.translation_, 0.1f, 0.0f, 0.0f,
         [this]() { UpdateViewMatrix(); });
 
-    binder.BindRotation(p + "RotationEuler", &worldTransform_.rotation_, &worldTransform_.rotationQuaternion_, 0.1f,
+    binder.BindRotation(p + "RotationEuler", &worldTransform_.rotation_, 0.1f,
         [this]() {
-            Quaternion q = Quaternion::QuaternionFromEuler(worldTransform_.rotation_);
-            worldTransform_.SetRotation(q);
+            // クォータニオンは BindRotation が更新済み
+            worldTransform_.UpdateMatrix();
             UpdateViewMatrix();
         });
 

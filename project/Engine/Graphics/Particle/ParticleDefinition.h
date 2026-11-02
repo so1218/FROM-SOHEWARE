@@ -254,7 +254,7 @@ struct TrailModule
 struct TrailPoint
 {
     Vector3 position;
-    Quaternion rotationQuaternion;
+    Quaternion rotation;
     float time; // 生成された時刻
 };
 
@@ -297,6 +297,8 @@ struct ParticleState
     Vector4 color;
     Vector3 velocity;
     Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
+    // 角速度で回すので、回転はオイラー角 (ラジアン) で持つ。ビルボードは z だけ使う
+    Vector3 rotation = { 0.0f, 0.0f, 0.0f };
     Vector3 initialPosition;
 
     float lifetime = 0.0f;

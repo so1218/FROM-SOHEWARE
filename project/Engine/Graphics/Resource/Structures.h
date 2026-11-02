@@ -1,6 +1,7 @@
 #pragma once
 #include "MathUtils.h"
 #include "WorldTransform.h"
+#include "UVTransform.h"
 #include "Common/ShaderConstants.hlsli"
 
 namespace FS
@@ -76,7 +77,7 @@ struct MaterialHandle
     uint32_t rippleTextureHandle = 0;
 
     // エディタ編集用UVデータ
-    WorldTransform uvTransformData;
+    UVTransform uvTransformData;
 };
 
 struct TreeMaterialHandle

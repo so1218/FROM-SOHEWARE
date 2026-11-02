@@ -50,7 +50,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
 
         Matrix4x4 targetMatrix = Matrix4x4::MakeAffine(
             targetToFollow_->scale_,
-            targetToFollow_->rotationQuaternion_,
+            targetToFollow_->rotation_,
             { 0.0f, 0.0f, 0.0f } // 回転とスケールだけ適用
         );
 
@@ -98,7 +98,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
             if (targetToFollow_)
             {
                 spawnTransform.scale_ = targetToFollow_->scale_;
-                spawnTransform.rotationQuaternion_ = targetToFollow_->rotationQuaternion_;
+                spawnTransform.rotation_ = targetToFollow_->rotation_;
 
                 if (targetModel_)
                 {
@@ -109,7 +109,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
             {
                 spawnTransform.scale_ = { 1.0f, 1.0f, 1.0f };
                 // 追従対象がない場合はエミッター自身の回転を設定
-                spawnTransform.rotationQuaternion_ = rotation_;
+                spawnTransform.rotation_ = rotation_;
             }
 
             particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_,

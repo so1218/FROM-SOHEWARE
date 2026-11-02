@@ -390,11 +390,8 @@ void ImGuiManager::DrawGizmo(WorldTransform& transform)
         transform.translation_ = translation;
         transform.scale_ = scale;
 
-        float toRadian = Math::PI / 180.0f;
-        transform.rotation_.x = rotationDeg.x * toRadian;
-        transform.rotation_.y = rotationDeg.y * toRadian;
-        transform.rotation_.z = rotationDeg.z * toRadian;
-		transform.rotationQuaternion_ = Quaternion::QuaternionFromEuler(transform.rotation_);
+        const float toRadian = Math::PI / 180.0f;
+        transform.SetRotationEuler(rotationDeg * toRadian);
     }
 
     ImGuizmo::PopID();

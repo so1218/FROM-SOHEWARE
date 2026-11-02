@@ -108,7 +108,7 @@ void FloatingBehavior::Update(Enemy* owner)
     }
 
     // ライトは機体の向きについてくる。狙うときは機体がプレイヤーを向くので、ライトもプレイヤーに当たる
-    const Vector3 spotDirection = owner->GetTransform().rotationQuaternion_.RotateVector(config_.spotLocalDirection).Normalize();
+    const Vector3 spotDirection = owner->GetTransform().rotation_.RotateVector(config_.spotLocalDirection).Normalize();
     engine_->GetLightManager()->SubmitSpotLight(
         position,
         config_.spotColor,
@@ -240,7 +240,7 @@ void FloatingBehavior::UpdateCrash(Enemy* owner, float deltaTime)
     velocity_.y -= config_.crashGravity * deltaTime;
     WorldTransform& transform = owner->GetTransform();
     transform.translation_ += velocity_ * deltaTime;
-    transform.SetRotation(Quaternion::FromAxisAngle(kUp, kSpinSpeed * deltaTime) * transform.rotationQuaternion_);
+    transform.SetRotation(Quaternion::FromAxisAngle(kUp, kSpinSpeed * deltaTime) * transform.rotation_);
 
     // 地面まで落ちたらそこで爆発する
     float groundHeight = 0.0f;
@@ -321,7 +321,7 @@ void FloatingBehavior::FaceDirection(Enemy* owner, const Vector3& direction, flo
     // モデルは -Z が正面
     WorldTransform& transform = owner->GetTransform();
     const Quaternion targetRotation = Quaternion::LookRotation(-forward, kUp);
-    transform.SetRotation(Quaternion::Slerp(transform.rotationQuaternion_, targetRotation, std::min(config_.turnSpeed * deltaTime, 1.0f)));
+    transform.SetRotation(Quaternion::Slerp(transform.rotation_, targetRotation, std::min(config_.turnSpeed * deltaTime, 1.0f)));
 }
 
 void FloatingBehavior::FireShot(Enemy* owner)
@@ -372,7 +372,7 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitP
 
     // 着弾位置をモデルのローカルに戻して、どのスラスターに当たったかを調べる
     const WorldTransform& transform = owner->GetTransform();
-    const Vector3 rotatedHit = transform.rotationQuaternion_.Inverse().RotateVector(hitPoint - transform.translation_);
+    const Vector3 rotatedHit = transform.rotation_.Inverse().RotateVector(hitPoint - transform.translation_);
     const Vector3 localHit = { rotatedHit.x / transform.scale_.x, rotatedHit.y / transform.scale_.y, rotatedHit.z / transform.scale_.z };
 
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
@@ -430,7 +430,7 @@ void FloatingBehavior::StartCrash()
 Vector3 FloatingBehavior::GetMuzzlePosition(Enemy* owner) const
 {
     const WorldTransform& transform = owner->GetTransform();
-    return transform.translation_ + transform.rotationQuaternion_.RotateVector(config_.muzzleOffset);
+    return transform.translation_ + transform.rotation_.RotateVector(config_.muzzleOffset);
 }
 
 Vector3 FloatingBehavior::GetThrusterLocalPosition(int thrusterIndex) const
@@ -454,7 +454,7 @@ void FloatingBehavior::DrawThrusterMarkers(Enemy* owner)
     {
         const Vector3 local = GetThrusterLocalPosition(thrusterIndex);
         const Vector3 scaled = { local.x * transform.scale_.x, local.y * transform.scale_.y, local.z * transform.scale_.z };
-        const Vector3 center = transform.translation_ + transform.rotationQuaternion_.RotateVector(scaled);
+        const Vector3 center = transform.translation_ + transform.rotation_.RotateVector(scaled);
 
         const Vector4 color = thrusterHP_[thrusterIndex] > 0 ? Vector4(0.2f, 1.0f, 0.3f, 1.0f) : Vector4(0.4f, 0.4f, 0.4f, 1.0f);
         const uint32_t packedColor = Math::ColorVectorToUint32(color);

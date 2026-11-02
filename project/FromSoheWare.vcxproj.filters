@@ -1164,6 +1164,9 @@
     <ClInclude Include="Engine\Math\WorldTransform.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Math\UVTransform.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
     <ClInclude Include="Engine\Mesh\Mesh.h">
       <Filter>Engine\Mesh</Filter>
     </ClInclude>

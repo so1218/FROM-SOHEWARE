@@ -20,7 +20,7 @@ void PropertyBinder::BindModel(const std::string& groupName, Model* model)
     std::string prefix = groupName + "_";
 
     Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
-    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
+    BindRotation(prefix + "Rot", &transform->rotation_, 0.01f);
     Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
 
     size_t matCount = model->GetMaterialCount();
@@ -40,7 +40,7 @@ void PropertyBinder::BindAnimationModel(const std::string& groupName, AnimationM
     std::string prefix = groupName + "_";
 
     Bind(prefix + "Trans", &transform->translation_, { 0.0f, 0.0f, 0.0f }, 0.1f);
-    BindRotation(prefix + "Rot", &transform->rotation_, &transform->rotationQuaternion_, 0.01f);
+    BindRotation(prefix + "Rot", &transform->rotation_, 0.01f);
     Bind(prefix + "Scale", &transform->scale_, { 1.0f, 1.0f, 1.0f }, 0.1f);
 
     size_t matCount = model->GetMaterialCount();
@@ -163,7 +163,7 @@ void PropertyBinder::DrawAnimationModel(const std::string& groupName, const std:
 void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
 {
     SpriteMaterial* material = sprite->GetMaterial();
-    WorldTransform& uvTransform = sprite->GetUVTransform();
+    UVTransform& uvTransform = sprite->GetUVTransform();
 
     std::string prefix = groupName + "_";
     spriteBindMap_[groupName] = sprite;
@@ -189,9 +189,9 @@ void PropertyBinder::BindSprite(const std::string& groupName, Sprite* sprite)
     Bind(prefix + "Layer", sprite->GetLayerOrderPtr(), 0, 1.0f);
 
     // UV 
-    Bind(prefix + "UVTrans", &uvTransform.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f);
-    BindRotation(prefix + "UVRot", &uvTransform.rotation_, &uvTransform.rotationQuaternion_, 0.01f);
-    Bind(prefix + "UVScale", &uvTransform.scale_, { 1.0f, 1.0f, 1.0f }, 0.01f);
+    Bind(prefix + "UVTrans", &uvTransform.translation, { 0.0f, 0.0f, 0.0f }, 0.01f);
+    Bind(prefix + "UVRot", &uvTransform.rotation, { 0.0f, 0.0f, 0.0f }, 0.01f);
+    Bind(prefix + "UVScale", &uvTransform.scale, { 1.0f, 1.0f, 1.0f }, 0.01f);
     Bind(prefix + "UVRect", sprite->GetUVRectPtr(), { 0.0f, 0.0f, 1.0f, 1.0f }, 0.001f, 0.0f, 1.0f);
 
     // ディゾルブ
@@ -704,19 +704,12 @@ void PropertyBinder::BindMaterialProperties(const std::string& prefix, MaterialH
 
     auto onUVChange = [handle]()
         {
-            handle->uvTransformData.rotationQuaternion_ = Quaternion::QuaternionFromEuler(handle->uvTransformData.rotation_);
-            Matrix4x4 mat = Matrix4x4::MakeAffine(
-                handle->uvTransformData.scale_,
-                handle->uvTransformData.rotationQuaternion_,
-                handle->uvTransformData.translation_
-            );
-            // 結果をConstantBufferに書き込む
-            handle->materialData->uvTransform = mat;
+            handle->materialData->uvTransform = handle->uvTransformData.MakeMatrix();
         };
 
-    Bind(prefix + "UVTrans", &handle->uvTransformData.translation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
-    Bind(prefix + "UVRot", &handle->uvTransformData.rotation_, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
-    Bind(prefix + "UVScale", &handle->uvTransformData.scale_, { 1.0f, 1.0f, 1.0f }, 0.01f, onUVChange);
+    Bind(prefix + "UVTrans", &handle->uvTransformData.translation, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
+    Bind(prefix + "UVRot", &handle->uvTransformData.rotation, { 0.0f, 0.0f, 0.0f }, 0.01f, onUVChange);
+    Bind(prefix + "UVScale", &handle->uvTransformData.scale, { 1.0f, 1.0f, 1.0f }, 0.01f, onUVChange);
 
     BindColor(prefix + "Color", &matData->color, { 1.0f, 1.0f, 1.0f, 1.0f });
     BindBool(prefix + "Lighting", &matData->enableLighting, true);

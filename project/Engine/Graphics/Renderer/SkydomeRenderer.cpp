@@ -57,7 +57,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
     view.m[3][0] = 0.0f;
     view.m[3][1] = 0.0f;
     view.m[3][2] = 0.0f;
-    Matrix4x4 wvpMatrix = currentTransform_.matWorld_ * view * projectionMatrix;
+    Matrix4x4 wvpMatrix = currentTransform_.GetWorldMatrix() * view * projectionMatrix;
     memcpy(mappedWvp_[currentFrameIndex_], &wvpMatrix, sizeof(TransformationMatrix));
 
     memcpy(mappedAtmosphereSky_[currentFrameIndex_], &currentAtmosphereSkyData_, sizeof(AtmosphereSkyData));

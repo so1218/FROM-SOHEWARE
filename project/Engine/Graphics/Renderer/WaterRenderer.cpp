@@ -123,7 +123,7 @@ void WaterRenderer::Submit(
             }
         };
 
-    Traverse(Traverse, modelData.rootNode, worldTransform.matWorld_, worldTransform.matWorldPrev_);
+    Traverse(Traverse, modelData.rootNode, worldTransform.GetWorldMatrix(), worldTransform.GetPrevWorldMatrix());
 }
 
 void WaterRenderer::PrepareBatches()

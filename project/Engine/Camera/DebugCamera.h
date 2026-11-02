@@ -17,7 +17,6 @@ public:
         // 初期化処理
         viewMatrix_ = Matrix4x4::MakeIdentity();
         worldTransform_.scale_ = { 1, 1, 1 };
-        worldTransform_.rotation_ = { 0, 0, 0 };
         worldTransform_.translation_ = { 0, 0, -100 };
     }
 

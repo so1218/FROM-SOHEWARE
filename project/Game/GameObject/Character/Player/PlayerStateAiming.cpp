@@ -56,7 +56,7 @@ void PlayerStateAiming::Update(Player* player)
         player->ApplyHorizontalMovement(moveDir, player->config.aimMoveSpeed);
 
         // プレイヤーのローカル方向に対する移動向きの判定
-        Quaternion playerRot = player->GetTransform().rotationQuaternion_;
+        Quaternion playerRot = player->GetTransform().rotation_;
         Vector3 playerForward = playerRot.RotateVector({ 0.0f, 0.0f, 1.0f }); 
         Vector3 playerRight = playerRot.RotateVector({ 1.0f, 0.0f, 0.0f }); 
 

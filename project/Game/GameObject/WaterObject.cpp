@@ -25,7 +25,7 @@ void WaterObject::BindProperties()
     binder_ = std::make_unique<PropertyBinder>(engine_, parentGroupName_, childGroupName);
 
     binder_->Bind("Position", &model_->GetTransform().translation_, Vector3(0.0f, 0.0f, 0.0f));
-    binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, &model_->GetTransform().rotationQuaternion_, 0.01f);
+    binder_->BindRotation("Rotation", &model_->GetTransform().rotation_, 0.01f);
     binder_->Bind("Scale", &model_->GetTransform().scale_, Vector3(10.0f, 1.0f, 10.0f));
 
     binder_->BindTexture("NormalMap", &normalMapName_, &normalMapHandle_, "white1x1", TextureType::Normal);

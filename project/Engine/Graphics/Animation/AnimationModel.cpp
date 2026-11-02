@@ -43,11 +43,9 @@ AnimationModel::AnimationModel(Engine* engine, const ModelData* modelData, const
         newMaterial.dissolveMapHandle = texManager.Get("white1x1"); 
         newMaterial.normalMapHandle = texManager.Get("white1x1");
 
-        // UV初期化
-        newMaterial.uvTransformData.Initialize();
         if (newMaterial.materialData)
         {
-            newMaterial.materialData->uvTransform = newMaterial.uvTransformData.matWorld_;
+            newMaterial.materialData->uvTransform = newMaterial.uvTransformData.MakeMatrix();
         }
 
         materials_.push_back(newMaterial);
@@ -258,8 +256,8 @@ void AnimationModel::AddJointRotationOffset(const std::string& jointName, const 
     {
         size_t jointIndex = it->second;
         // アニメーションによる元の回転に、オフセット回転を合成 (Quaternion乗算)
-        skeleton_.joints[jointIndex].transform.rotationQuaternion_ =
-            skeleton_.joints[jointIndex].transform.rotationQuaternion_ * offsetRotation;
+        skeleton_.joints[jointIndex].transform.rotation_ =
+            skeleton_.joints[jointIndex].transform.rotation_ * offsetRotation;
     }
 }
 
@@ -274,18 +272,14 @@ void AnimationModel::PostUpdateSkeleton()
 // マテリアル一括設定
 // ========================================================================
 
-void AnimationModel::SetUVTransform(const WorldTransform& uvTransform)
+void AnimationModel::SetUVTransform(const UVTransform& uvTransform)
 {
     for (auto& mat : materials_)
     {
-        mat.uvTransformData.translation_ = uvTransform.translation_;
-        mat.uvTransformData.rotation_ = uvTransform.rotation_;
-        mat.uvTransformData.scale_ = uvTransform.scale_;
-
-        mat.uvTransformData.UpdateMatrix();
+        mat.uvTransformData = uvTransform;
         if (mat.materialData)
         {
-            mat.materialData->uvTransform = mat.uvTransformData.matWorld_;
+            mat.materialData->uvTransform = uvTransform.MakeMatrix();
         }
     }
 }
@@ -389,10 +383,9 @@ void AnimationModel::UpdateUV()
 {
     for (auto& mat : materials_)
     {
-        mat.uvTransformData.UpdateMatrix();
         if (mat.materialData)
         {
-            mat.materialData->uvTransform = mat.uvTransformData.matWorld_;
+            mat.materialData->uvTransform = mat.uvTransformData.MakeMatrix();
         }
     }
 }
@@ -436,10 +429,10 @@ Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) cons
         size_t jointIndex = (*it).second;
         Matrix4x4 boneSkeletonSpaceMatrix = skeleton_.joints[jointIndex].skeletonSpaceMatrix;
 
-        return boneSkeletonSpaceMatrix * transform_.matWorld_;
+        return boneSkeletonSpaceMatrix * transform_.GetWorldMatrix();
     }
 
-    return transform_.matWorld_;
+    return transform_.GetWorldMatrix();
 }
 
 MaterialData* AnimationModel::GetMaterialData(size_t index)

@@ -36,19 +36,16 @@ public:
         UpdateViewProjectionMatrix();
     }
 
-    Quaternion GetRotation() const { return worldTransform_.rotationQuaternion_; }
+    Quaternion GetRotation() const { return worldTransform_.rotation_; }
 
     void SetRotation(const Quaternion& rotation) {
         worldTransform_.SetRotation(rotation);
         UpdateViewProjectionMatrix();
     }
 
-    Vector3 GetWorldRotationEuler() const { return worldTransform_.rotation_; }
+    Vector3 GetWorldRotationEuler() const { return worldTransform_.GetRotationEuler(); }
     void SetWorldRotationEuler(const Vector3& euler) {
-        worldTransform_.rotation_ = euler;
-        Quaternion q = Quaternion::QuaternionFromEuler(euler);
-        worldTransform_.SetRotation(q);
-        worldTransform_.UpdateMatrix();
+        worldTransform_.SetRotationEuler(euler);
     }
 
     // カメラパラメータ
@@ -88,9 +85,9 @@ public:
     {
         // ワールド行列のZ軸成分が前方ベクトル
         Vector3 forward;
-        forward.x = worldTransform_.matWorld_.m[2][0];
-        forward.y = worldTransform_.matWorld_.m[2][1];
-        forward.z = worldTransform_.matWorld_.m[2][2];
+        forward.x = worldTransform_.GetWorldMatrix().m[2][0];
+        forward.y = worldTransform_.GetWorldMatrix().m[2][1];
+        forward.z = worldTransform_.GetWorldMatrix().m[2][2];
         return forward;
     }
 
@@ -118,7 +115,7 @@ public:
     // 更新関数
     void UpdateViewMatrix() {
         worldTransform_.UpdateMatrix();
-        matView_ = Matrix4x4::Inverse(worldTransform_.matWorld_);
+        matView_ = Matrix4x4::Inverse(worldTransform_.GetWorldMatrix());
     }
 
     void UpdateProjectionMatrix() {

@@ -318,21 +318,21 @@ void EnvironmentPropManager::DebugDraw()
     {
         auto& targetTransform = selectedProp_->GetTransformRef();
         const FS::Vector3 oldPos = targetTransform.translation_;
-        const FS::Vector3 oldRot = targetTransform.rotation_;
+        const FS::Quaternion oldRotation = targetTransform.rotation_;
         const FS::Vector3 oldScale = targetTransform.scale_;
 
         FS::ImGuiManager::DrawGizmo(targetTransform);
 
         // ギズモ操作によるトランスフォーム変更を検知してデータストアへ永続化
         if (oldPos != targetTransform.translation_ ||
-            oldRot != targetTransform.rotation_ ||
+            std::abs(FS::Quaternion::Dot(oldRotation, targetTransform.rotation_)) < 0.99999f ||
             oldScale != targetTransform.scale_)
         {
             auto* gv = FS::GlobalVariables::GetInstance();
             const std::vector<std::string> groupPath = { managerGroupName_, "Prop_" + std::to_string(selectedProp_->GetID()) };
 
             gv->SetValue(groupPath, "Position", targetTransform.translation_);
-            gv->SetValue(groupPath, "Rotation", targetTransform.rotation_);
+            gv->SetValue(groupPath, "Rotation", targetTransform.GetRotationEuler());
             gv->SetValue(groupPath, "Scale", targetTransform.scale_);
         }
     }
@@ -368,9 +368,9 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "RippleMap", handle->rippleTextureName);
 
         // UVトランスフォーム
-        gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation_);
-        gv->SetValue(groupPath, matPrefix + "UVRot", handle->uvTransformData.rotation_);
-        gv->SetValue(groupPath, matPrefix + "UVScale", handle->uvTransformData.scale_);
+        gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation);
+        gv->SetValue(groupPath, matPrefix + "UVRot", handle->uvTransformData.rotation);
+        gv->SetValue(groupPath, matPrefix + "UVScale", handle->uvTransformData.scale);
 
         // 基本色・ライティング設定
         gv->SetValue(groupPath, matPrefix + "Color", matData->color);

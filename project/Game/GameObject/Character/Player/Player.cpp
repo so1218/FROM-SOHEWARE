@@ -143,7 +143,7 @@ void Player::Update()
 	// 基本アニメーションの更新
 	animationModel_->Update();
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
-	animationModel_->GetTransform().rotationQuaternion_ = GetTransform().rotationQuaternion_;
+	animationModel_->GetTransform().rotation_ = GetTransform().rotation_;
 
 	// エイム時の姿勢更新
 	float cameraPitch = 0.0f;
@@ -151,7 +151,7 @@ void Player::Update()
 
 	if (isAiming && camera_)
 	{
-		Vector3 camForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+		Vector3 camForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
 		cameraPitch = std::asin(std::clamp(camForward.y, -1.0f, 1.0f));
 	}
 
@@ -240,7 +240,7 @@ Vector3 Player::GetMoveDirection()
 	const float dirY = inputY * invLen;
 
 	// カメラ基準の水平移動方向を算出
-	const auto& camRot = camera_->GetWorldTransform().rotationQuaternion_;
+	const auto& camRot = camera_->GetWorldTransform().rotation_;
 	Vector3 cameraForward = camRot.RotateVector({ 0.0f, 0.0f, 1.0f });
 	Vector3 cameraRight = camRot.RotateVector({ 1.0f, 0.0f, 0.0f });
 
@@ -265,9 +265,9 @@ void Player::UpdateRotation(const Vector3& moveDir)
 		float targetAngleY = std::atan2(lastMoveDirection_.x, lastMoveDirection_.z);
 		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
-		Quaternion currentRotation = GetTransform().rotationQuaternion_;
+		Quaternion currentRotation = GetTransform().rotation_;
 		float slerpFactor = Math::Clamp(config.rotationSpeed * deltaTime, 0.0f, 1.0f);
-		GetTransform().rotationQuaternion_ = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
+		GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, slerpFactor);
 	}
 }
 
@@ -324,7 +324,7 @@ void Player::UpdateAimRotation()
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
 	// カメラの前方ベクトル
-	Vector3 cameraForward = camera_->GetWorldTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+	Vector3 cameraForward = camera_->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
 	cameraForward.y = 0.0f;
 
 	if (cameraForward.LengthSq() > 0.001f)
@@ -334,8 +334,8 @@ void Player::UpdateAimRotation()
 		Quaternion targetRotation = Quaternion::QuaternionFromEuler({ 0.0f, targetAngleY, 0.0f });
 
 		// カメラの向きに補間
-		Quaternion currentRotation = GetTransform().rotationQuaternion_;
-		GetTransform().rotationQuaternion_ = Quaternion::Slerp(currentRotation, targetRotation, 15.0f * deltaTime);
+		Quaternion currentRotation = GetTransform().rotation_;
+		GetTransform().rotation_ = Quaternion::Slerp(currentRotation, targetRotation, 15.0f * deltaTime);
 	}
 }
 
@@ -581,7 +581,7 @@ void Player::DebugDraw()
 		binder_->Draw("SpawnRotationY", "向き (度)");
 		if (ImGui::Button("今の位置と向きを初期位置にする"))
 		{
-			const Vector3 forward = GetTransform().rotationQuaternion_.RotateVector({ 0.0f, 0.0f, 1.0f });
+			const Vector3 forward = GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
 			spawnPosition_ = GetTransform().translation_;
 			spawnRotationY_ = std::atan2(forward.x, forward.z) * 180.0f / Math::PI;
 

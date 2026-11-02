@@ -1,6 +1,6 @@
 #pragma once
 #include "Vector2.h"
-#include "WorldTransform.h"
+#include "UVTransform.h"
 #include "Structures.h"
 #include "UIAnchor.h"
 
@@ -49,7 +49,7 @@ public:
     const Vector2& GetScreenAnchor() const { return screenAnchor_; }
     void SetLayerOrder(int order) { layerOrder_ = order; }
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
-    void SetUVTransform(const WorldTransform& uvTransform) { uvTransform_ = uvTransform; }
+    void SetUVTransform(const UVTransform& uvTransform) { uvTransform_ = uvTransform; }
 
     // テクスチャの一部だけを描く
     void SetUVRect(const Vector4& uvRect) { uvRect_ = uvRect; }
@@ -75,14 +75,12 @@ public:
     uint32_t GetColor() const { return color_; }
     uint32_t* GetColorPtr() { return &color_; }
 
-    WorldTransform& GetUVTransform() { return uvTransform_; }
-    const WorldTransform& GetUVTransform() const { return uvTransform_; }
+    UVTransform& GetUVTransform() { return uvTransform_; }
+    const UVTransform& GetUVTransform() const { return uvTransform_; }
 
     int GetLayerOrder() const { return layerOrder_; }
     bool GetIsVisible() const { return isVisible_; }
     const Vector2& GetAnchorPoint() const { return anchorPoint_; }
-
-    void UpdateUV() { uvTransform_.UpdateMatrix(); }
 
     std::string& GetTextureName() { return textureName_; }
     std::string& GetDissolveTextureName() { return dissolveTextureName_; }
@@ -113,7 +111,7 @@ private:
     std::string textureName_ = "white1x1";
     std::string dissolveTextureName_ = "white1x1";
 
-    WorldTransform uvTransform_;
+    UVTransform uvTransform_;
     Vector4 uvRect_ = { 0.0f, 0.0f, 1.0f, 1.0f };  
 
     bool isVisible_ = true;

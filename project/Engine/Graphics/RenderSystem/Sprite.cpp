@@ -10,10 +10,6 @@ namespace FS
 Sprite::Sprite(Engine* engine)
     : engine_(engine)
 {
-    uvTransform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    uvTransform_.rotation_ = { 0.0f, 0.0f, 0.0f };
-    uvTransform_.translation_ = { 0.0f, 0.0f, 0.0f };
-
     textureName_ = "white1x1";
     dissolveTextureName_ = "white1x1";
 
@@ -61,9 +57,9 @@ void Sprite::Draw()
 
     // UV 変換 
     Matrix4x4 uvTransformMatrix =
-        Matrix4x4::MakeScale(uvTransform_.scale_) *
-        Matrix4x4::MakeRotateZ(uvTransform_.rotation_.z) *
-        Matrix4x4::MakeTranslate(uvTransform_.translation_);
+        Matrix4x4::MakeScale(uvTransform_.scale) *
+        Matrix4x4::MakeRotateZ(uvTransform_.rotation.z) *
+        Matrix4x4::MakeTranslate(uvTransform_.translation);
     instance.uvMatrix = Vector4(
         uvTransformMatrix.m[0][0], uvTransformMatrix.m[0][1],
         uvTransformMatrix.m[1][0], uvTransformMatrix.m[1][1]);

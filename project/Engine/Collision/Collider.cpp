@@ -32,7 +32,7 @@ Vector3 Collider::GetWorldPosition() const
     if (applyRotation_)
     {
         // 回転を適用する
-        Vector3 rotatedOffset = transform.rotationQuaternion_.RotateVector(centerOffset_);
+        Vector3 rotatedOffset = transform.rotation_.RotateVector(centerOffset_);
         return transform.GetWorldPosition() + rotatedOffset;
     }
     else

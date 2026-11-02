@@ -62,7 +62,7 @@ void Ammo::Update(const Vector3& scale, const FS::Vector3& bubbleScale, const Ve
     Quaternion spinRot = Quaternion::QuaternionFromEuler({ 0.0f, rotationAngle_, 0.0f });
 
     // 傾きを適用した後にY軸で回転
-    model_->GetTransform().rotationQuaternion_ = spinRot * tiltRot;
+    model_->GetTransform().rotation_ = spinRot * tiltRot;
 
     bubbleModel_->GetTransform().translation_ = model_->GetTransform().translation_;
     bubbleModel_->GetTransform().scale_ = bubbleScale;
