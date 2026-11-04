@@ -482,7 +482,7 @@ struct InteractionConstants
 struct GrassInstanceData
 {
     float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
-    float4 rotWidthColor; // x: Y軸回転角, y: 幅スケール, z: パックカラー, w: 予備
+    float4 rotationAndWidth; // x: Y軸回転角, y: 幅スケール, zw: 予備
 };
 
 struct GrassMaterialData
@@ -506,7 +506,6 @@ struct GrassMaterialData
     float gustStrength; 
     float flutterAmount; 
     
-    float windHighlightStrength; 
     float specularStrength; 
     float specularShininess;
     float wetness; 

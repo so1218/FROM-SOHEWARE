@@ -7,95 +7,64 @@ ConstantBuffer<GrassCullingData> gGrassCullingData : register(b1);
 StructuredBuffer<GrassInstanceData> gInputGrassData : register(t0);
 RWStructuredBuffer<GrassInstanceData> gOutputGrassData : register(u0);
 
-// Indirect ArgsのInstanceCount(オフセット4バイト目)をインクリメントして描画数を動的決定
+// 描画引数。InstanceCount に見えた本数を足していく
 RWByteAddressBuffer gIndirectDrawArgs : register(u1);
 
-static const uint kThreadsPerRow = 65536; // Dispatch(X)上限(65535)回避用2D展開幅
-static const uint kIndirectInstanceCountOffset = 4; // IndirectArgsバッファ内のInstanceCountオフセット(Byte)
+// Dispatch の X は 65535 までなので、Y に折り返している
+static const uint kThreadsPerRow = 65536;
+// D3D12_DRAW_ARGUMENTS の InstanceCount の位置 (バイト)
+static const uint kInstanceCountOffset = 4;
 static const uint kFrustumPlaneCount = 6;
 static const float kMinValidHeight = 0.001f;
-static const float kBoundsRadiusScale = 1.2f; // 判定バウンディングスフィアの余裕持たせ
+// 風で傾いた分も入るように、高さより少し大きくする
+static const float kBoundsRadiusScale = 1.2f;
+
+bool IsGrassVisible(float3 position, float height)
+{
+    // 生成のときに生やさなかった場所は高さが 0
+    if (height <= kMinValidHeight)
+        return false;
+
+    float distanceToCameraXZ = distance(position.xz, gFrameData.cameraWorldPosition.xz);
+    if (distanceToCameraXZ > gGrassCullingData.maxDrawDistance)
+        return false;
+
+    // 草の中ほどを中心にした球で判定する
+    float3 boundsCenter = position + float3(0.0f, height * 0.5f, 0.0f);
+    float boundsRadius = height * kBoundsRadiusScale;
+    for (uint i = 0; i < kFrustumPlaneCount; ++i)
+    {
+        if (dot(gFrameData.frustumPlanes[i].xyz, boundsCenter) + gFrameData.frustumPlanes[i].w < -boundsRadius)
+            return false;
+    }
+
+    // 遠くほど間引く。描画側では間引いた分だけ幅を広げている
+    float thinRange = max(1.0f, gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance);
+    float thinRatio = saturate((distanceToCameraXZ - gGrassCullingData.thinStartDistance) / thinRange);
+    return Hash12(position.xz) >= thinRatio * gGrassCullingData.maxThinningRate;
+}
 
 [numthreads(64, 1, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    // 2Dスレッドインデックスから1DのインスタンスIDを復元
-    uint instanceIndex = DTid.y * kThreadsPerRow + DTid.x;
-    
+    uint instanceIndex = dispatchThreadId.y * kThreadsPerRow + dispatchThreadId.x;
     if (instanceIndex >= gGrassCullingData.totalInstanceCount)
         return;
-    
+
     GrassInstanceData grass = gInputGrassData[instanceIndex];
-    float3 pos = grass.posAndHeight.xyz;
-    float height = grass.posAndHeight.w;
+    bool isVisible = IsGrassVisible(grass.posAndHeight.xyz, grass.posAndHeight.w);
 
-    // ---------------------------------------------------------
-    // カリング判定 (早期リジェクト)
-    // ---------------------------------------------------------
-    bool isVisible = true;
-
-    // 非アクティブ（高さゼロ）草の早期除外
-    if (height <= kMinValidHeight)
+    // 1本ずつ足すと atomic が混み合うので、Wave ごとにまとめて書き込む場所を取る
+    uint visibleCount = WaveActiveCountBits(isVisible);
+    uint writeStart = 0;
+    if (WaveIsFirstLane() && visibleCount > 0)
     {
-        isVisible = false;
+        gIndirectDrawArgs.InterlockedAdd(kInstanceCountOffset, visibleCount, writeStart);
     }
-    else
-    {
-        // 距離カリング (XZ平面)
-        float distToCamXZ = distance(pos.xz, gFrameData.cameraWorldPosition.xz);
-        if (distToCamXZ > gGrassCullingData.maxDrawDistance)
-        {
-            isVisible = false;
-        }
-
-        // 視錐台カリング (球判定)
-        if (isVisible)
-        {
-            float boundsRadius = height * kBoundsRadiusScale;
-            
-            for (uint i = 0; i < kFrustumPlaneCount; ++i)
-            {
-                // 平面の法線方向に対して、球の中心から平面までの距離を計算
-                if (dot(gFrameData.frustumPlanes[i].xyz, pos) + gFrameData.frustumPlanes[i].w < -boundsRadius)
-                {
-                    isVisible = false;
-                    break; // 1平面でも外側なら確定で離脱
-                }
-            }
-        }
-
-        // 確率的ディザカリング (遠景LODフェードアウト & 密度調整)
-        if (isVisible)
-        {
-            float fadeRange = max(1.0f, gGrassCullingData.maxDrawDistance - gGrassCullingData.thinStartDistance);
-            float thinFactor = saturate((distToCamXZ - gGrassCullingData.thinStartDistance) / fadeRange);
-            
-            if (thinFactor > 0.0f && Hash12(pos.xz) < (thinFactor * gGrassCullingData.maxThinningRate))
-            {
-                isVisible = false;
-            }
-        }
-    }
-
-    // ---------------------------------------------------------
-    // Wave Intrinsics による Append 競合緩和
-    // ---------------------------------------------------------
-    // レーン単位ではなく、Wave 全体でまとめてアトミック加算してバスボトルネックを回避
-    uint waveCount = WaveActiveCountBits(isVisible);
-    uint waveOffset = 0;
-
-    if (WaveIsFirstLane() && waveCount > 0)
-    {
-        gIndirectDrawArgs.InterlockedAdd(kIndirectInstanceCountOffset, waveCount, waveOffset);
-    }
-
-    // 代表スレッドが取得した書き込み開始アドレスをWave内へブロードキャスト
-    waveOffset = WaveReadLaneFirst(waveOffset);
+    writeStart = WaveReadLaneFirst(writeStart);
 
     if (isVisible)
     {
-        // Wave内プレフィックスサムで自身の出力インデックスを決定
-        uint appendIndex = waveOffset + WavePrefixCountBits(isVisible);
-        gOutputGrassData[appendIndex] = grass;
+        gOutputGrassData[writeStart + WavePrefixCountBits(isVisible)] = grass;
     }
 }

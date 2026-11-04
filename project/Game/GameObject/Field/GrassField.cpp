@@ -51,7 +51,6 @@ void GrassField::Initialize()
     binder_->Bind("GustStrength", &grassMat->gustStrength, 1.2f, 0.1f, 0.0f, 5.0f);
     binder_->Bind("WindFlattenStrength", &grassMat->windFlattenStrength, 1.0f, 0.05f, 0.0f, 3.0f);
     binder_->Bind("FlutterAmount", &grassMat->flutterAmount, 0.15f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("WindHighlightStrength", &grassMat->windHighlightStrength, 0.4f, 0.05f, 0.0f, 1.0f);
 
     binder_->Bind("InteractStrength", &grassMat->interactStrength, 1.0f, 0.1f, 0.0f, 5.0f);
     binder_->Bind("FlattenFactor", &grassMat->flattenFactor, 2.0f, 0.1f, 0.0f, 5.0f);
@@ -187,7 +186,7 @@ void GrassField::DebugDraw()
         binder_->Draw("TipColor", "先端の色");
 
         ImGui::Separator();
-        binder_->Draw("GrassNormalBlend", "法線の上向きブレンド (最重要)");
+        binder_->Draw("GrassNormalBlend", "法線の上向きブレンド");
         binder_->Draw("SSSColor", "透過光(SSS)の色");
         binder_->Draw("SSSStrength", "透過光(SSS)の強さ");
 
@@ -210,7 +209,6 @@ void GrassField::DebugDraw()
         binder_->Draw("GustStrength", "突風の強さ(水平方向)");
         binder_->Draw("WindFlattenStrength", "突風時の押し潰し(下方向)");
         binder_->Draw("FlutterAmount", "葉先の震えの強さ");
-        binder_->Draw("WindHighlightStrength", "風による光沢変化(シルバーライニング)");
     }
 
     if (ImGui::CollapsingHeader("インタラクション"))

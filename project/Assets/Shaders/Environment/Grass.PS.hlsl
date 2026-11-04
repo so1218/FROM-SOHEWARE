@@ -18,147 +18,116 @@ SamplerComparisonState gShadowSampler : register(s1);
 struct GrassPSInput
 {
     float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD;
+    float heightRatio : TEXCOORD; // 0:根元 ~ 1:先端
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
-    float4 color : COLOR;
 };
 
-float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth);
+// 陰になる側にも光を回り込ませる量
+static const float kWrapLighting = 0.5f;
+
+float CalculateGrassShadow(float3 worldPosition, float3 lightDirection, float distanceToCamera);
 
 PixelShaderOutput main(GrassPSInput input)
 {
     PixelShaderOutput output;
-    
-    // カメラからの距離計算
-    float3 cameraDiff = gFrameData.cameraWorldPosition - input.worldPosition;
-    float viewDepth = length(cameraDiff);
 
-    // カメラ近接フェード率の算出とディザリングクリップ
-    float proximityFade = saturate((viewDepth - gMaterial.nearFadeMinDist) / max(gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist, kEpsilon));
-    float dither = InterleavedGradientNoise(input.position.xy);
-    clip(proximityFade - dither);
+    float3 toCamera = gFrameData.cameraWorldPosition - input.worldPosition;
+    float distanceToCamera = length(toCamera);
+    float3 toEye = toCamera / max(distanceToCamera, kEpsilon);
 
-    float t = input.texcoord.y;
-    float gustMask = input.color.a;
+    // カメラのすぐ近くの草はディザで消す
+    float nearFade = saturate((distanceToCamera - gMaterial.nearFadeMinDist) / max(gMaterial.nearFadeMaxDist - gMaterial.nearFadeMinDist, kEpsilon));
+    clip(nearFade - InterleavedGradientNoise(input.position.xy));
 
-    // ベースカラーの取得と Wetnessによる暗化
-    float3 baseColor = input.color.rgb;
-    float wetDarkening = lerp(1.0f, 0.6f, gMaterial.wetness);
-    baseColor *= wetDarkening;
+    float heightRatio = input.heightRatio;
 
-    float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    
-    // 面全体で柔らかく光を受けるように上方向へ法線をブレンド
+    float3 baseColor = lerp(gMaterial.rootColor, gMaterial.tipColor, heightRatio);
+    baseColor *= lerp(1.0f, 0.6f, gMaterial.wetness);
+
+    float3 lightDirection = normalize(-gDirectionalLights[0].direction);
+    float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
+
+    // 両面描画なので、裏から見ている面は法線をカメラ側へ向け直す
     float3 bladeNormal = normalize(input.normal);
+    if (dot(bladeNormal, toEye) < 0.0f)
+    {
+        bladeNormal = -bladeNormal;
+    }
+
+    // 上向きに寄せて、草原全体が地面と同じように光を受けるようにする
     float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
-    
-    float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
 
-    // -------------------------------------------------------------------------
-    // Foliage Shading (Diffuse & SSS)
-    // -------------------------------------------------------------------------
-    // 陰への光の回り込み
-    float wrap = 0.5f;
-    float NdotL = saturate((dot(normal, lightDir) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
-    float3 diffuse = baseColor * gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * NdotL;
+    // 影は面の向きではなく位置だけで決める。向きで決めると、日の当たらない側の草に木の影が乗らなくなる
+    float shadow = CalculateGrassShadow(input.worldPosition, lightDirection, distanceToCamera);
 
-    // View-dependent SSS (逆光時の葉の透過)
-    float sssDot = saturate(dot(-lightDir, toEye + bladeNormal * 0.2f));
-    float sssFade = pow(sssDot, 2.5f) * t;
-    float3 translucency = gMaterial.sssColor * sssFade * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
+    float normalDotLight = saturate((dot(normal, lightDirection) + kWrapLighting) / ((1.0f + kWrapLighting) * (1.0f + kWrapLighting)));
+    float3 diffuse = baseColor * lightColor * normalDotLight;
 
-    diffuse *= shadowFactor;
-    translucency *= shadowFactor;
+    // 逆光のとき、先端ほど光が透ける
+    float translucencyAmount = pow(saturate(dot(-lightDirection, toEye + bladeNormal * 0.2f)), 2.5f) * heightRatio;
+    float3 translucency = gMaterial.sssColor * translucencyAmount * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
 
-    // 環境光と疑似AO (根本を暗くして接地感を出す)
-    float ao = lerp(gMaterial.grassRootAO, 1.0f, t);
-    float skyLight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambient = baseColor * (0.15f + skyLight * 0.2f) * ao;
-
-    float3 finalColor = diffuse + translucency + ambient;
-
-    // -------------------------------------------------------------------------
-    // Specular
-    // -------------------------------------------------------------------------
-    float3 H = normalize(lightDir + toEye);
-    float3 tangent = normalize(input.tangent);
-    
-    float TdotH = dot(tangent, H);
-    float sinTH = sqrt(1.0f - saturate(TdotH * TdotH));
-    
-    // 濡れるとスペキュラが鋭く強くなる
+    // 葉の筋に沿ったハイライト。濡れると鋭く強くなる
+    float3 halfVector = normalize(lightDirection + toEye);
+    float tangentDotHalf = dot(normalize(input.tangent), halfVector);
+    float sinTangentHalf = sqrt(1.0f - saturate(tangentDotHalf * tangentDotHalf));
     float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
-    float specIntensity = pow(sinTH, shininess) * gMaterial.specularStrength * lerp(1.0f, 2.5f, gMaterial.wetness);
-    specIntensity *= saturate(dot(normal, lightDir)) * shadowFactor;
-    
-    // 突風時の面の揃いによるハイライト
-    specIntensity *= 1.0f + (gustMask * gMaterial.windHighlightStrength * t);
+    float specular = pow(sinTangentHalf, shininess) * gMaterial.specularStrength * lerp(1.0f, 2.5f, gMaterial.wetness);
+    specular *= saturate(dot(normal, lightDirection));
 
-    finalColor += gDirectionalLights[0].color.rgb * specIntensity * gDirectionalLights[0].intensity;
+    float3 directLight = (diffuse + translucency + lightColor * specular) * shadow;
 
-    // 出力
-    output.color = float4(finalColor, 1.0f);
+    // 根元を暗くして接地感を出す
+    float ambientOcclusion = lerp(gMaterial.grassRootAO, 1.0f, heightRatio);
+    float skyLight = saturate(normal.y * 0.5f + 0.5f);
+    float3 ambient = baseColor * (0.15f + skyLight * 0.2f) * ambientOcclusion;
+
+    output.color = float4(directLight + ambient, 1.0f);
     output.normal = float4(normal, 1.0f);
-    
     return output;
 }
 
-// -----------------------------------------------------------------------------
-// CSMフェッチ
-// -----------------------------------------------------------------------------
-float CalculateFastShadowCSM(float3 worldPos, float3 normal, float viewDepth)
+// 草は数が多いので、1回だけサンプルする
+float CalculateGrassShadow(float3 worldPosition, float3 lightDirection, float distanceToCamera)
 {
-    // 最遠カスケードを超えている場合は早期リターン
-    if (viewDepth > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
+    if (distanceToCamera > gShadowData.cascadeSplits[MAX_CASCADE_COUNT - 1])
         return 1.0f;
-    
-    float3 lightDir = normalize(-gDirectionalLights[0].direction);
-    float NdotL = dot(normal, lightDir);
+
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光の裏側はサンプリングをスキップ
-    if (NdotL <= 0.0f)
+    // 太陽が地平線より下
+    if (lightDirection.y <= 0.0f)
         return minShadow;
 
-    // カスケードインデックスの決定
     uint cascadeIndex = 0;
     [unroll]
     for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
     {
-        if (viewDepth > gShadowData.cascadeSplits[i])
+        if (distanceToCamera > gShadowData.cascadeSplits[i])
         {
             cascadeIndex = i + 1;
         }
     }
-    
-    // シャドウアクネ対策
-    float biasScale = saturate(1.0f - NdotL);
-    float3 biasedWorldPos = worldPos + normal * (gMaterial.shadowNormalBias * biasScale);
 
-    // 行列変換とプロジェクション座標計算
-    float4 shadowCoord = mul(float4(biasedWorldPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
-    float3 projCoords = shadowCoord.xyz / shadowCoord.w;
+    // 自分の影が乗らないように少し上へずらす。草は薄いので面の法線は使わない
+    float biasScale = saturate(1.0f - lightDirection.y);
+    float3 biasedPosition = worldPosition + float3(0.0f, gMaterial.shadowNormalBias * biasScale, 0.0f);
 
-    projCoords.x = projCoords.x * 0.5f + 0.5f;
-    projCoords.y = -projCoords.y * 0.5f + 0.5f;
+    float4 shadowClip = mul(float4(biasedPosition, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
+    float3 shadowPosition = shadowClip.xyz / shadowClip.w;
+    float2 shadowUV = float2(shadowPosition.x * 0.5f + 0.5f, -shadowPosition.y * 0.5f + 0.5f);
 
-    float currentDepth = projCoords.z - gMaterial.shadowBias;
-
-    // フラスタム外チェック
-    if (any(projCoords < 0.0f) || any(projCoords > 1.0f))
+    if (any(shadowUV < 0.0f) || any(shadowUV > 1.0f) || shadowPosition.z < 0.0f || shadowPosition.z > 1.0f)
     {
         return 1.0f;
     }
 
-    // PCF サンプリング
-    float shadowVisibility = gShadowMapArray.SampleCmpLevelZero(
+    float visibility = gShadowMapArray.SampleCmpLevelZero(
         gShadowSampler,
-        float3(projCoords.xy, cascadeIndex),
-        currentDepth
-    );
+        float3(shadowUV, cascadeIndex),
+        shadowPosition.z - gMaterial.shadowBias);
 
-    return lerp(minShadow, 1.0f, shadowVisibility);
+    return lerp(minShadow, 1.0f, visibility);
 }

@@ -3,7 +3,7 @@
   "VertexShader": "Environment/Grass.VS.hlsl",
   "PixelShader": "Environment/Grass.PS.hlsl",
   "InputLayout": "None",
-  "BlendState": "AlphaBlend",
+  "BlendState": "Opaque",
   "RasterizerState": "NoCullSolid",
   "DepthStencilState": "Default",
   "Topology": "Triangle",
