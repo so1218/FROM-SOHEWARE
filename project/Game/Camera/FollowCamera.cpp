@@ -5,6 +5,7 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
+#include "PostEffectManager.h"
 
 using namespace FS;
 
@@ -87,6 +88,11 @@ void FollowCamera::UpdateCamera(Camera* camera)
 
     currentFov_ = SmoothDamp(currentFov_, activeTargetFov, fovVelocity_, aimTransitionSmoothTime_, dt);
     camera->SetFov(currentFov_);
+
+    // エイム中は狙う先がぼけないように被写界深度を消す
+    const float targetDofStrength = isAiming_ ? 0.0f : 1.0f;
+    dofStrength_ = std::clamp(SmoothDamp(dofStrength_, targetDofStrength, dofStrengthVelocity_, aimTransitionSmoothTime_, dt), 0.0f, 1.0f);
+    engine_->GetPostEffectManager()->GetCompositeSettings()->dofStrength = dofStrength_;
 
     // ---------------------------------------------------------
     // 入力によるカメラ回転処理
@@ -264,6 +270,8 @@ void FollowCamera::Reset(Camera* camera)
     currentFov_ = isAiming_ ? aimFov_ : normalFov_;
     currentShoulderOffset_ = isAiming_ ? aimShoulderOffset_ : normalShoulderOffset_;
     currentLookAtOffset_ = isAiming_ ? aimLookAtOffset_ : normalLookAtOffset_;
+    dofStrength_ = isAiming_ ? 0.0f : 1.0f;
+    dofStrengthVelocity_ = 0.0f;
 
     recoilPitch_ = 0.0f;
     recoilYaw_ = 0.0f;

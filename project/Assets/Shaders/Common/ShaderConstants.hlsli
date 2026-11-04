@@ -429,6 +429,7 @@ struct FinalCompositeSettings
     
     float ssrIntensity;
     int enableVolumetricFog; 
+    float dofStrength; 
 };
 
 struct SSAOSettings

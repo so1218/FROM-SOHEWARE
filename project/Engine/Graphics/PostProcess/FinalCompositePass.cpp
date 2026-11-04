@@ -30,13 +30,12 @@ void FinalCompositePass::Initialize(
     cbData_->bloomIntensity = 0.8f;
     cbData_->enableSSAO = false;
     cbData_->enableDoF = false;
-    cbData_->enableSSR = false;  
-    cbData_->ssrIntensity = 1.0f;
     cbData_->enableVolumetricFog = false;
+    cbData_->dofStrength = 1.0f;
 
     // 入力テクスチャ用 SRV ヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-    heapDesc.NumDescriptors = 7;
+    heapDesc.NumDescriptors = 6;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
     heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 

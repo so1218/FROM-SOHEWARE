@@ -64,6 +64,10 @@ private:
     float currentFov_ = 0.45f;
     float fovVelocity_ = 0.0f;
 
+    // エイム中は被写界深度を消す。1 で通常、0 で無し
+    float dofStrength_ = 1.0f;
+    float dofStrengthVelocity_ = 0.0f;
+
     // 回転・距離・補間変数
     float targetYaw_ = 0.0f;
     float targetPitch_ = 0.3f;

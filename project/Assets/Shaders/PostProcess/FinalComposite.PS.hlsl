@@ -7,7 +7,6 @@ Texture2D gDoFTexture : register(t2); // DoF用 (全体ボケ)
 Texture2D<float> gDepthTexture : register(t3);
 Texture2D gVolumetricFogTexture : register(t4);
 Texture2D gSSAOTexture : register(t5);
-Texture2D gSSRTexture : register(t6); 
 
 SamplerState gSampler : register(s0);
 SamplerState gWrapSampler : register(s1);
@@ -50,7 +49,7 @@ float4 main(VSOutput input) : SV_TARGET
     if (gCompositeSettings.enableDoF != 0)
     {
         float4 dofColor = gDoFTexture.Sample(gSampler, input.uv);
-        combinedScene = lerp(combinedScene, dofColor.rgb, dofColor.a);
+        combinedScene = lerp(combinedScene, dofColor.rgb, dofColor.a * gCompositeSettings.dofStrength);
     }
 
     // SSAO の適用
@@ -58,13 +57,6 @@ float4 main(VSOutput input) : SV_TARGET
     {
         float ssao = gSSAOTexture.Sample(gSampler, input.uv).r;
         combinedScene *= ssao;
-    }
-
-    // SSR の加算
-    if (gCompositeSettings.enableSSR != 0)
-    {
-        float4 ssrColor = gSSRTexture.Sample(gSampler, input.uv);
-        combinedScene += ssrColor.rgb * ssrColor.a * gCompositeSettings.ssrIntensity;
     }
 
     // ブルーム成分の加算
