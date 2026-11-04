@@ -144,10 +144,8 @@ public:
 
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 
-    // 雷を発生させる
-    void SpawnLightning(const Vector3& start, const Vector3& end, float duration);
-    void UpdateLightnings();
-
+    // 雷。形と明るさは LightningSystem が毎フレーム渡す
+    void SubmitLightning(const std::vector<LightningPath>& paths, float brightness);
     void SetLightningConfig(const LightningConfig& config);
 
     // 地形ハイトマップSRVインデックスのゲッター

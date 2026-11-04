@@ -1,31 +1,26 @@
 #include "Common/ShaderConstants.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-SamplerState gSampler : register(s0);
 
 struct LightningVSInput
 {
     float4 position : POSITION;
     float2 texcoord : TEXCOORD;
-    float4 color : COLOR; 
+    float brightness : BRIGHTNESS; // 消えていく分と明滅を掛けた明るさ (CPU で決める)
 };
 
 struct LightningVSOutput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
-    float4 color : COLOR;
-    float3 worldPos : TEXCOORD1;
+    float brightness : BRIGHTNESS;
 };
 
 LightningVSOutput main(LightningVSInput input)
 {
     LightningVSOutput output;
-    
     output.position = mul(input.position, gFrameData.viewProjectionMatrix);
     output.texcoord = input.texcoord;
-    output.color = input.color;
-    output.worldPos = input.position.xyz;
-    
+    output.brightness = input.brightness;
     return output;
 }

@@ -41,7 +41,7 @@ struct LightningVertexData
 {
     Vector4 position;
     Vector2 texcoord;
-    Vector4 color;
+    float brightness; // 消えていく分と明滅を掛けた明るさ
 };
 
 struct TextureData
@@ -157,30 +157,44 @@ enum class DepthMode
     None        // テストも書き込みもなし (UI・常に最前面)
 };
 
-// シェーダーに送る雷の見た目パラメータ
+// 雷の見た目・形・寿命・光の設定
 struct LightningConfig
 {
-    Vector3 coreColor = { 1.0f, 1.0f, 1.0f };     
-    float coreThickness = 0.15f;                  
-    Vector3 fringeColor = { 0.1f, 0.5f, 1.0f };   
-    float corePower = 4.0f;                       
-    float glowPower = 2.5f;                       
-    float emissiveIntensity = 50.0f;              
-    float flickerSpeed = 60.0f;                   
-    float displacement = 20.0f;                   
-    float durationMin = 0.08f;                    
-    float durationMax = 0.35f;                    
-    float lightIntensityMax = 150.0f;             
-    float lightRadius = 100.0f;                   
-    float lightHeightOffset = 10.0f;              
-    float volumetricScattering = 5.0f;            
+    // 見た目
+    Vector3 coreColor = { 1.0f, 1.0f, 1.0f };
+    Vector3 fringeColor = { 0.1f, 0.5f, 1.0f };
+    float thickness = 0.5f;
+    float coreThickness = 0.15f;
+    float corePower = 4.0f;
+    float glowPower = 2.5f;
+    float emissiveIntensity = 50.0f;
+
+    // 形
+    int fractalDepth = 6;
+    float displacement = 20.0f;
+    float branchProbability = 0.3f;
+    float branchLengthScale = 0.6f;
+
+    // 寿命と明滅
+    float durationMin = 0.08f;
+    float durationMax = 0.35f;
+    float flickerSpeed = 60.0f;
+    float flickerMin = 0.4f;
+    float flickerMax = 1.2f;
+
+    // 落ちた場所を照らす光
     Vector4 lightColor = { 0.7f, 0.85f, 1.0f, 1.0f };
-    float thickness = 0.5f;     
-    float flickerMin = 0.4f;    
-    float flickerMax = 1.2f;    
-    int fractalDepth = 6;       
-    float branchProbability = 0.3f; 
-    float branchLengthScale = 0.6f; 
+    float lightIntensityMax = 150.0f;
+    float lightRadius = 100.0f;
+    float lightHeightOffset = 10.0f;
+    float volumetricScattering = 5.0f;
+};
+
+// 雷の1本の線。幹と枝それぞれが1本ずつ
+struct LightningPath
+{
+    std::vector<Vector3> points;
+    float thicknessScale = 1.0f; // 枝は幹より細くする
 };
 
 struct FoliageLayer

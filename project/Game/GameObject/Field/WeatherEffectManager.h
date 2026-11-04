@@ -21,6 +21,8 @@ public:
     void SetCameraManager(FS::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
 
 private:
+    // 同時に落ちる雷の数だけ、落雷のパーティクルのエミッターを用意する。足りなければ増やす
+    void PrepareThunderStrikeEmitters(int count);
 
     FS::Engine* engine_;
     FS::Camera* camera_;
@@ -34,8 +36,8 @@ private:
     FS::ParticleEmitter* rainParticleEmitterPtr_;
     std::unique_ptr<FS::ParticleEmitter> thunderRainParticleEmitter_ = nullptr;
     FS::ParticleEmitter* thunderRainParticleEmitterPtr_;
-    std::unique_ptr<FS::ParticleEmitter> thunderStrikeParticleEmitter_ = nullptr;
-    FS::ParticleEmitter* thunderStrikeParticleEmitterPtr_;
+    // 落雷1本につき1つ。持ち主は ParticleSystem
+    std::vector<FS::ParticleEmitter*> thunderStrikeEmitters_;
 
     // 雷雨用の制御タイマー
     float thunderIntervalTimer_ = 0.0f; 

@@ -15,7 +15,7 @@
         "EmissiveIntensity": 7.0,
         "FlickerMax": 1.149999976158142,
         "FlickerMin": 0.30000001192092896,
-        "FlickerSpeed": 29.0,
+        "FlickerSpeed": 33.0,
         "FractalDepth": 6,
         "FringeColor": [
             0.24124515056610107,
@@ -30,7 +30,7 @@
             1.0
         ],
         "LightHeightOffset": 18.5,
-        "LightIntensityMax": 5.0,
+        "LightIntensityMax": 10.0,
         "LightRadius": 300.0,
         "Thickness": 4.0,
         "VolumetricScattering": 2.0

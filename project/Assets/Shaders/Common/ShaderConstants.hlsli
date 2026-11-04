@@ -780,19 +780,14 @@ struct TerrainInstanceData
 
 struct LightningMaterial
 {
-    float3 coreColor; 
-    float coreThickness;
+    float3 coreColor;
+    float coreThickness;    // 芯の太さ (板の幅に対する割合)
     
-    float3 fringeColor; 
+    float3 fringeColor;
     float corePower;
     
-    float glowPower; 
-    float flickerSpeed; 
-    float flickerMin; 
-    float flickerMax; 
-    
-    float emissiveIntensity; 
-    float instanceSeed;
+    float glowPower;
+    float emissiveIntensity;
 };
 
 #endif 

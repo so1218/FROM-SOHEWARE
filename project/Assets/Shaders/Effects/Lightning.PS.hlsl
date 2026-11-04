@@ -1,52 +1,26 @@
 #include "Common/ShaderConstants.hlsli"
-#include "Common/MathUtils.hlsli"
 
-ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<LightningMaterial> gLightningMaterial : register(b1);
-SamplerState gSampler : register(s0);
 
 struct LightningVSOutput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
-    float4 color : COLOR;
-    float3 worldPos : TEXCOORD1;
+    float brightness : BRIGHTNESS;
 };
 
-// アルファテストの閾値（この値未満の透明度のピクセルは描画を破棄）
-static const float kAlphaClipThreshold = 0.01f;
-
+// 加算で描くので、色にアルファを掛けたものが画面に足される
 float4 main(LightningVSOutput input) : SV_Target
 {
-    // UVのX座標(0.0 ~ 1.0)を、中心(0.5)からの距離(1.0 ~ 0.0 ~ 1.0)に変換
-    float distFromCenter = abs(input.texcoord.x - 0.5f) * 2.0f;
-    
-    // 中心の白く飛ぶ芯の計算
-    float core = saturate(1.0f - (distFromCenter / gLightningMaterial.coreThickness));
-    core = pow(core, gLightningMaterial.corePower);
-    
-    // 周囲にフワッと広がる発光の計算
-    float glow = saturate(1.0f - distFromCenter);
-    glow = pow(glow, gLightningMaterial.glowPower);
-    
-    // 時間とインスタンスIDに基づく明滅アニメーション
-    float timeVal = gFrameData.gTime * gLightningMaterial.flickerSpeed;
-    float flickerNoise = Hash11(timeVal + gLightningMaterial.instanceSeed);
-    float flicker = lerp(gLightningMaterial.flickerMin, gLightningMaterial.flickerMax, flickerNoise);
-    
-    // 芯と発光をそれぞれのカラーで着色し、明滅を適用
-    float3 coreColor = gLightningMaterial.coreColor * core;
-    float3 glowColor = gLightningMaterial.fringeColor * glow;
-    float3 finalColor = (coreColor + glowColor) * flicker;
-    
-    // ブルームエフェクトを乗せるための高輝度化
-    finalColor *= gLightningMaterial.emissiveIntensity;
-  
-    // 最終的な透明度の決定
-    float alpha = glow * input.color.a * flicker;
-    
-    // アルファテスト
-    clip(alpha - kAlphaClipThreshold);
-    
-    return float4(finalColor, alpha);
+    // 板の中心が 0、両端が 1
+    float distanceFromCenter = abs(input.texcoord.x - 0.5f) * 2.0f;
+
+    // 白く飛ぶ芯と、その周りの青いにじみ
+    float core = pow(saturate(1.0f - distanceFromCenter / gLightningMaterial.coreThickness), gLightningMaterial.corePower);
+    float glow = pow(saturate(1.0f - distanceFromCenter), gLightningMaterial.glowPower);
+
+    // ブルームで光って見えるように明るくする
+    float3 color = (gLightningMaterial.coreColor * core + gLightningMaterial.fringeColor * glow) * gLightningMaterial.emissiveIntensity;
+
+    return float4(color, glow * input.brightness);
 }

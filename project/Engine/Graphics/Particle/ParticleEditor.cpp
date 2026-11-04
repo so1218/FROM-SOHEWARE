@@ -47,9 +47,28 @@ void ParticleEditor::ShowEditor()
             }
 
             // プリセット選択
-            ImGui::Combo("プリセット", &selectedPresetIdx_, presetNames.data(), (int)presetNames.size());
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted("プリセット");
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            ImGui::Combo("##Preset", &selectedPresetIdx_, presetNames.data(), (int)presetNames.size());
 
             const std::string& selectedPresetName = presetNameStrings[selectedPresetIdx_];
+
+            // 何度も押すので、スクロールしなくても見えるプリセットのすぐ下に置く
+            if (ImGui::Button("セーブ"))
+            {
+                particleSystem_->configManager_->SaveParticleDefinitionToJson(selectedPresetName);
+                saveMessageTimer_ = 3.0f;
+            }
+            if (saveMessageTimer_ > 0.0f)
+            {
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s.json を保存", selectedPresetName.c_str());
+                saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
+            }
+            ImGui::Separator();
+
             auto& definition = particleSystem_->definitions_[selectedPresetName];
             auto& config = definition.particleConfig;
             auto& emitterConfig = definition.emitterConfig;
@@ -505,30 +524,6 @@ void ParticleEditor::ShowEditor()
                     ImGui::TreePop();
                 }
             }
-
-            ImGui::Separator();
-
-            // 保存ボタン
-            if (ImGui::Button("セーブ"))
-            {
-                particleSystem_->configManager_->SaveParticleDefinitionToJson(selectedPresetName);
-
-                std::string message = std::format("{}.json saved", selectedPresetName);
-                // タイマーをセットする
-                saveMessageTimer_ = 3.0f;
-            }
-
-            if (saveMessageTimer_ > 0.0f)
-            {
-                ImGui::SameLine();
-
-                ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "%s.json を保存", selectedPresetName.c_str());
-
-                // 経過時間を減算
-                saveMessageTimer_ -= ImGui::GetIO().DeltaTime;
-            }
-
-            ImGui::SameLine();
         }
     }
 

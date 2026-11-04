@@ -362,7 +362,7 @@ void RendererManager::Draw3D()
 
 	if (lightningRenderer_)
 	{
-		lightningRenderer_->Draw(env_, viewMatrix_, projectionMatrix_, cameraPosition_);
+		lightningRenderer_->Draw(env_, cameraPosition_);
 	}
 }
 
@@ -593,19 +593,11 @@ void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const 
 	}
 }
 
-void RendererManager::SpawnLightning(const Vector3& start, const Vector3& end, float duration)
+void RendererManager::SubmitLightning(const std::vector<LightningPath>& paths, float brightness)
 {
 	if (lightningRenderer_)
 	{
-		lightningRenderer_->SpawnLightning(start, end, duration);
-	}
-}
-
-void RendererManager::UpdateLightnings()
-{
-	if (lightningRenderer_)
-	{
-		lightningRenderer_->Update();
+		lightningRenderer_->Submit(paths, brightness);
 	}
 }
 

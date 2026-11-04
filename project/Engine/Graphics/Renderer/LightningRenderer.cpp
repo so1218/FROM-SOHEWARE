@@ -3,22 +3,13 @@
 #include "BufferManager.h"
 #include "PSOManager.h"
 #include "RootSignatureManager.h"
-#include "LightManager.h"
-#include "SRVManager.h"
 #include "GlobalConstants.h"
 #include "CommandManager.h"
 #include "GraphicsDevice.h"
-#include "TimeManager.h"
 #include "PIXColors.h"
 
 namespace FS
 {
-
-LightningRenderer::LightningRenderer()
-{
-    std::random_device seedGen;
-    randomEngine_.seed(seedGen());
-}
 
 void LightningRenderer::Initialize(const RenderEnvironment& env)
 {
@@ -29,258 +20,107 @@ void LightningRenderer::Initialize(const RenderEnvironment& env)
         vertexBuffer_[i] = BufferManager::CreateMappedBuffer(device, kMaxVertices, &mappedVertices_[i]);
         indexBuffer_[i] = BufferManager::CreateMappedBuffer(device, kMaxIndices, &mappedIndices_[i]);
         materialResource_[i] = BufferManager::CreateMappedConstantBuffer(device, &mappedMaterial_[i]);
-
-        // マテリアルの初期値セット
-        mappedMaterial_[i]->coreColor = { 1.0f, 1.0f, 1.0f };      
-        mappedMaterial_[i]->coreThickness = 0.15f;                 
-        mappedMaterial_[i]->fringeColor = { 0.1f, 0.5f, 1.0f };    
-        mappedMaterial_[i]->corePower = 4.0f;                      
-        mappedMaterial_[i]->glowPower = 2.5f;                      
-        mappedMaterial_[i]->flickerSpeed = 60.0f;                  
-        mappedMaterial_[i]->flickerMin = 0.4f;
-        mappedMaterial_[i]->flickerMax = 1.2f;
-        mappedMaterial_[i]->emissiveIntensity = 50.0f;             
-        mappedMaterial_[i]->instanceSeed = 0.0f;                   
     }
 }
 
 void LightningRenderer::BeginFrame()
 {
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
+    submissions_.clear();
 }
 
-// 中点変位法による再帰的な経路生成
-void LightningRenderer::GenerateFractalPath(
-    LightningInstance& inst,
-    std::vector<Vector3>& points,
-    const Vector3& start,
-    const Vector3& end,
-    int depth,
-    float displacement,
-    float currentThickness)
+void LightningRenderer::Submit(const std::vector<LightningPath>& paths, float brightness)
 {
-    if (depth == 0)
-    {
-        points.push_back(end);
-        return;
-    }
-
-    Vector3 mid = (start + end) * 0.5f;
-
-    std::uniform_real_distribution<float> dist(-0.5f, 0.5f);
-
-    float randX = dist(randomEngine_) * displacement;
-    float randY = dist(randomEngine_) * displacement * 0.05f; // Yは逆行を防ぐため控えめに
-    float randZ = dist(randomEngine_) * displacement;
-
-    mid = mid + Vector3(randX, randY, randZ);
-
-    // 前半のパスを生成
-    GenerateFractalPath(inst, points, start, mid, depth - 1, displacement * 0.5f, currentThickness);
-
-    // 枝分かれの生成判定
-    std::uniform_real_distribution<float> probDist(0.0f, 1.0f);
-    if (probDist(randomEngine_) < config_.branchProbability)
-    {
-        // 進行方向ベクトル
-        Vector3 mainDir = end - start;
-
-        // 枝の終点（メイン方向からランダムに逸れた位置）
-        Vector3 branchOffset(dist(randomEngine_), dist(randomEngine_) * 0.5f, dist(randomEngine_));
-        Vector3 branchEnd = mid + (mainDir * config_.branchLengthScale) + (branchOffset * displacement * 2.0f);
-
-        // 新しいパス（枝）の作成
-        LightningPath branchPath;
-        branchPath.thicknessScale = currentThickness * 0.5f; // 枝は半分くらいの細さにする
-        branchPath.points.push_back(mid); // 枝の始点は現在のmid
-
-        // 枝に対して再帰処理（計算負荷を下げるため深さを-1しておく）
-        GenerateFractalPath(inst, branchPath.points, mid, branchEnd, depth - 1, displacement * 0.5f, branchPath.thicknessScale);
-
-        // インスタンスに枝を追加
-        inst.paths.push_back(branchPath);
-    }
-
-    // 後半のパスを生成
-    GenerateFractalPath(inst, points, mid, end, depth - 1, displacement * 0.5f, currentThickness);
+    submissions_.push_back({ paths, brightness });
 }
 
-void LightningRenderer::SpawnLightning(const Vector3& start, const Vector3& end, float duration)
+void LightningRenderer::Draw(const RenderEnvironment& env, const Vector3& cameraPosition)
 {
-    LightningInstance inst;
-    inst.startPos = start;
-    inst.endPos = end;
-    inst.maxLifeTime = duration;
-    inst.lifeTime = duration;
+    if (submissions_.empty()) return;
 
-    std::uniform_real_distribution<float> seedDist(0.0f, 10000.0f);
-    inst.seed = (uint32_t)seedDist(randomEngine_);
+    LightningMaterial* material = mappedMaterial_[currentFrameIndex_];
+    material->coreColor = config_.coreColor;
+    material->coreThickness = config_.coreThickness;
+    material->fringeColor = config_.fringeColor;
+    material->corePower = config_.corePower;
+    material->glowPower = config_.glowPower;
+    material->emissiveIntensity = config_.emissiveIntensity;
 
-    // メインのパス（幹）を作成
-    LightningPath mainPath;
-    mainPath.thicknessScale = 1.0f;
-    mainPath.points.push_back(start);
-
-    // 再帰呼び出し（メインパスの points を渡す）
-    GenerateFractalPath(inst, mainPath.points, start, end, config_.fractalDepth, config_.displacement, 1.0f);
-
-    // インスタンスにメインパスを追加
-    inst.paths.push_back(mainPath);
-
-    activeLightnings_.push_back(inst);
-}
-
-void LightningRenderer::Update()
-{
-    // 寿命を減らし、0になったものを削除
-    for (auto it = activeLightnings_.begin(); it != activeLightnings_.end();)
-    {
-        it->lifeTime -= TimeManager::GetInstance()->GetDeltaTime();
-        if (it->lifeTime <= 0.0f) {
-            it = activeLightnings_.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
-
-// カメラに向けた板ポリゴン生成と描画
-void LightningRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPos)
-{
-    if (activeLightnings_.empty()) return;
-
-    // 定数バッファに必要な設定を転送
-    mappedMaterial_[currentFrameIndex_]->coreColor = config_.coreColor;
-    mappedMaterial_[currentFrameIndex_]->coreThickness = config_.coreThickness;
-    mappedMaterial_[currentFrameIndex_]->fringeColor = config_.fringeColor;
-    mappedMaterial_[currentFrameIndex_]->corePower = config_.corePower;
-    mappedMaterial_[currentFrameIndex_]->glowPower = config_.glowPower;
-    mappedMaterial_[currentFrameIndex_]->emissiveIntensity = config_.emissiveIntensity;
-    mappedMaterial_[currentFrameIndex_]->flickerSpeed = config_.flickerSpeed;
-
+    LightningVertexData* vertices = mappedVertices_[currentFrameIndex_];
+    uint32_t* indices = mappedIndices_[currentFrameIndex_];
     uint32_t vertexCount = 0;
     uint32_t indexCount = 0;
-    LightningVertexData* vMap = mappedVertices_[currentFrameIndex_];
-    uint32_t* iMap = mappedIndices_[currentFrameIndex_];
 
-    for (const auto& inst : activeLightnings_)
+    for (const Submission& submission : submissions_)
     {
-        // 残り寿命からフェードアウトのアルファ値を計算
-        float alpha = inst.lifeTime / inst.maxLifeTime;
-
-        // マテリアル定数にシード値や明滅係数を流し込む
-        mappedMaterial_[currentFrameIndex_]->instanceSeed = static_cast<float>(inst.seed);
-        mappedMaterial_[currentFrameIndex_]->flickerMin = config_.flickerMin;
-        mappedMaterial_[currentFrameIndex_]->flickerMax = config_.flickerMax;
-
-        // インスタンスが持つすべてのパス（本流＋枝分かれしたパス）をすべてループ
-        for (const auto& path : inst.paths)
+        for (const LightningPath& path : submission.paths)
         {
-            const auto& pts = path.points;
-            if (pts.size() < 2) continue; // 2点未満は板ポリゴンを形成できないためスキップ
+            const std::vector<Vector3>& points = path.points;
+            const uint32_t pointCount = static_cast<uint32_t>(points.size());
+            if (pointCount < 2) continue;
+            if (vertexCount + pointCount * 2 > kMaxVertices || indexCount + (pointCount - 1) * 6 > kMaxIndices) break;
 
-            // 枝分かれの太さスケールを元の太さに掛け合わせる
-            float thickness = config_.thickness * path.thicknessScale;
-            uint32_t baseVertex = vertexCount;
+            const float halfWidth = config_.thickness * path.thicknessScale * 0.5f;
+            const uint32_t baseVertex = vertexCount;
 
-            // 頂点生成フラグ
-            bool vertexOverflow = false;
-
-            for (uint32_t i = 0; i < static_cast<uint32_t>(pts.size()); ++i)
+            for (uint32_t i = 0; i < pointCount; ++i)
             {
-                // 動的バッファの上限を超えないよう安全柵
-                if (vertexCount + 2 > kMaxVertices)
-                {
-                    vertexOverflow = true;
-                    break;
-                }
+                const Vector3& point = points[i];
+                Vector3 direction = (i + 1 < pointCount) ? points[i + 1] - point : point - points[i - 1];
 
-                Vector3 curr = pts[i];
+                // 進む向きとカメラへの向きの両方に直角な向きへ広げると、板がカメラを向く
+                Vector3 side = direction.Cross(cameraPosition - point);
+                float sideLength = side.Length();
+                if (sideLength < 1e-5f) continue;
+                side = side * (halfWidth / sideLength);
 
-                // 進行方向ベクトル
-                Vector3 dir;
-                if (i < pts.size() - 1) dir = (pts[i + 1] - curr).Normalize();
-                else dir = (curr - pts[i - 1]).Normalize();
-
-                // カメラへのベクトルと外積を取って横幅ベクトルを算出
-                Vector3 toCamera = (cameraPos - curr).Normalize();
-                Vector3 right = (dir.Cross(toCamera)).Normalize();
-
-                float v = static_cast<float>(i) / (static_cast<float>(pts.size()) - 1.0f);
-
-                // 左頂点
-                Vector3 leftPos = curr - right * (thickness * 0.5f);
-                vMap[vertexCount].position = { leftPos.x, leftPos.y, leftPos.z, 1.0f };
-                vMap[vertexCount].texcoord = { 0.0f, v };
-                vMap[vertexCount].color = { 1.0f, 1.0f, 1.0f, alpha };
-                vertexCount++;
-
-                // 右頂点
-                Vector3 rightPos = curr + right * (thickness * 0.5f);
-                vMap[vertexCount].position = { rightPos.x, rightPos.y, rightPos.z, 1.0f };
-                vMap[vertexCount].texcoord = { 1.0f, v };
-                vMap[vertexCount].color = { 1.0f, 1.0f, 1.0f, alpha };
-                vertexCount++;
+                float heightRatio = static_cast<float>(i) / static_cast<float>(pointCount - 1);
+                Vector3 left = point - side;
+                Vector3 right = point + side;
+                vertices[vertexCount++] = { Vector4(left.x, left.y, left.z, 1.0f), { 0.0f, heightRatio }, submission.brightness };
+                vertices[vertexCount++] = { Vector4(right.x, right.y, right.z, 1.0f), { 1.0f, heightRatio }, submission.brightness };
             }
 
-            // このパス内で実際に生成できた頂点ペア（セグメント）数を算出
-            uint32_t generatedSegments = (vertexCount - baseVertex) / 2;
-            if (generatedSegments < 2) continue; // セグメントが不十分なら描画スキップ
-
-            // インデックスの構築（パスごとに独立した四角形ポリゴンをつなぐ）
-            for (uint32_t i = 0; i < generatedSegments - 1; ++i)
+            const uint32_t emittedPointCount = (vertexCount - baseVertex) / 2;
+            for (uint32_t i = 0; i + 1 < emittedPointCount; ++i)
             {
-                if (indexCount + 6 > kMaxIndices) break;
-
-                uint32_t localBase = baseVertex + (i * 2);
-                iMap[indexCount++] = localBase;
-                iMap[indexCount++] = localBase + 1;
-                iMap[indexCount++] = localBase + 2;
-
-                iMap[indexCount++] = localBase + 1;
-                iMap[indexCount++] = localBase + 3;
-                iMap[indexCount++] = localBase + 2;
+                uint32_t corner = baseVertex + i * 2;
+                indices[indexCount++] = corner;
+                indices[indexCount++] = corner + 1;
+                indices[indexCount++] = corner + 2;
+                indices[indexCount++] = corner + 1;
+                indices[indexCount++] = corner + 3;
+                indices[indexCount++] = corner + 2;
             }
-
-            // 頂点が限界に達していたらすべてのループから完全に抜ける
-            if (vertexOverflow) break;
         }
     }
 
-    if (vertexCount == 0 || indexCount == 0) return;
+    if (indexCount == 0) return;
 
-    // コマンドリストへの記録
-    auto commandList = env.commandManager->GetCommandList();
+    auto* commandList = env.commandManager->GetCommandList();
 
     PIXScopedEvent(commandList, FS::PIXColors::Geometry,
-        "Lightning Pass (Instances: %zu, Vertices: %u, Indices: %u)",
-        activeLightnings_.size(), vertexCount, indexCount);
+        "Lightning Pass (Strikes: %zu, Vertices: %u, Indices: %u)",
+        submissions_.size(), vertexCount, indexCount);
 
-    // RootSignatureとPSOをセット
     commandList->SetPipelineState(env.psoManager->GetPSO("Lightning"));
     commandList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Lightning"));
 
-    // 頂点/インデックスバッファビューの設定
-    D3D12_VERTEX_BUFFER_VIEW vbv{};
-    vbv.BufferLocation = vertexBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-    vbv.SizeInBytes = vertexCount * sizeof(LightningVertexData);
-    vbv.StrideInBytes = sizeof(LightningVertexData);
-    commandList->IASetVertexBuffers(0, 1, &vbv);
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+    vertexBufferView.BufferLocation = vertexBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
+    vertexBufferView.SizeInBytes = vertexCount * sizeof(LightningVertexData);
+    vertexBufferView.StrideInBytes = sizeof(LightningVertexData);
+    commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 
-    D3D12_INDEX_BUFFER_VIEW ibv{};
-    ibv.BufferLocation = indexBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
-    ibv.SizeInBytes = indexCount * sizeof(uint32_t);
-    ibv.Format = DXGI_FORMAT_R32_UINT;
-    commandList->IASetIndexBuffer(&ibv);
+    D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+    indexBufferView.BufferLocation = indexBuffer_[currentFrameIndex_]->GetGPUVirtualAddress();
+    indexBufferView.SizeInBytes = indexCount * sizeof(uint32_t);
+    indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+    commandList->IASetIndexBuffer(&indexBufferView);
 
     commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    // 定数バッファのセット
     commandList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
     commandList->SetGraphicsRootConstantBufferView(1, materialResource_[currentFrameIndex_]->GetGPUVirtualAddress());
-
-    // 描画
     commandList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
 }
 

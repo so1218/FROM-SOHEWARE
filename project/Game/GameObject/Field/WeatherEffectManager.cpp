@@ -32,10 +32,6 @@ void WeatherEffectManager::Initialize()
     thunderRainParticleEmitterPtr_ = thunderRainParticleEmitter_.get();
     engine_->GetParticleSystem()->AddEmitter(std::move(thunderRainParticleEmitter_));
 
-    thunderStrikeParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("thunderStrike");
-    thunderStrikeParticleEmitterPtr_ = thunderStrikeParticleEmitter_.get();
-    engine_->GetParticleSystem()->AddEmitter(std::move(thunderStrikeParticleEmitter_));
-
     lightningSystem_->Initialize();
 
     binder_->Bind("ThunderMinInterval", &thunderMinInterval_, 3.0f, 0.1f, 0.5f, 30.0f);
@@ -49,6 +45,19 @@ void WeatherEffectManager::Initialize()
     binder_->Bind("ThunderShakeDuration", &thunderShakeDuration_, 0.5f, 0.0f, 0.1f, 5.0f);
     binder_->Bind("ThunderShakeIntensity", &thunderShakeIntensity_, 2.0f, 0.0f, 0.1f, 20.0f);
     binder_->Bind("ThunderShakeMaxDist", &thunderShakeMaxDistance_, 300.0f, 1.0f, 10.0f, 1000.0f);
+
+    PrepareThunderStrikeEmitters(maxStrikeCount_);
+}
+
+void WeatherEffectManager::PrepareThunderStrikeEmitters(int count)
+{
+    auto* particleSystem = engine_->GetParticleSystem();
+    while (static_cast<int>(thunderStrikeEmitters_.size()) < count)
+    {
+        auto emitter = particleSystem->CreateEmitter("thunderStrike");
+        thunderStrikeEmitters_.push_back(emitter.get());
+        particleSystem->AddEmitter(std::move(emitter));
+    }
 }
 
 void WeatherEffectManager::Update()
@@ -180,8 +189,9 @@ void WeatherEffectManager::Update()
             std::uniform_real_distribution<float> distRadius(strikeRadiusMin_, strikeRadiusMax_);
             std::uniform_int_distribution<int> distCount(minStrikeCount_, maxStrikeCount_);
 
-            // 今回落とす雷の本数を決定
+            // 今回落とす雷の本数を決定。エディタで最大数を増やしたときはここでエミッターが増える
             int strikeCount = distCount(randomEngine_);
+            PrepareThunderStrikeEmitters(strikeCount);
 
             // カメラシェイク用に最もプレイヤーに近い雷の距離を記録
             float closestRadius = 999999.0f;
@@ -209,12 +219,9 @@ void WeatherEffectManager::Update()
                 // 3Dサウンドの再生
                 AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 50, 100.0f);
 
-                // 落雷パーティクルの再生
-                if (thunderStrikeParticleEmitterPtr_)
-                {
-                    thunderStrikeParticleEmitterPtr_->SetPosition(endPos);
-                    thunderStrikeParticleEmitterPtr_->Play();
-                }
+                // 落雷パーティクルの再生。1本ごとに別のエミッターを使う
+                thunderStrikeEmitters_[i]->SetPosition(endPos);
+                thunderStrikeEmitters_[i]->Play();
             }
 
             // カメラシェイク (一番近い雷の距離を使って1回だけ揺らす)
