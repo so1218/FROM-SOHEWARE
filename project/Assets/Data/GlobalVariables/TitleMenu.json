@@ -51,6 +51,53 @@
         "StartText_ShadowSpread": 1.0,
         "StartText_Visible": true,
         "StartText_WrapLength": 0.0,
+        "SubtitleText_Align": 1,
+        "SubtitleText_CharSpacing": 8.0,
+        "SubtitleText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "SubtitleText_Content": "A War Alone",
+        "SubtitleText_Direction": 0,
+        "SubtitleText_Font": "Title",
+        "SubtitleText_FontSize": 40.0,
+        "SubtitleText_Layer": 31,
+        "SubtitleText_LineSpacing": 1.0,
+        "SubtitleText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SubtitleText_OutlineWidth": 0.0,
+        "SubtitleText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "SubtitleText_Pos": [
+            0.0,
+            20.0
+        ],
+        "SubtitleText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "SubtitleText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "SubtitleText_ShadowOffset": [
+            2.5,
+            2.5
+        ],
+        "SubtitleText_ShadowSoftness": 6.0,
+        "SubtitleText_ShadowSpread": 0.20000000298023224,
+        "SubtitleText_Visible": true,
+        "SubtitleText_WrapLength": 0.0,
         "TextFadeInDelay": 1.0,
         "TextFadeTime": 1.0,
         "TitleText_Align": 1,
@@ -61,7 +108,7 @@
             1.0,
             1.0
         ],
-        "TitleText_Content": "From Hazard",
+        "TitleText_Content": "Last Blood",
         "TitleText_Direction": 0,
         "TitleText_Font": "Title",
         "TitleText_FontSize": 156.0,

@@ -13,13 +13,13 @@ GlobalVariables* GlobalVariables::GetInstance()
 void GlobalVariables::Update()
 {
 #ifdef ENABLE_IMGUI
-	if (!ImGui::Begin("グローバル変数###GlobalVariables"))
+	if (!ImGui::Begin("パラメータの保存###GlobalVariables"))
 	{
 		ImGui::End();
 		return;
 	}
 
-	if (ImGui::Button("全てのグローバル変数を保存"))
+	if (ImGui::Button("すべての変更を保存"))
 	{
 		SaveAllFiles();
 	}

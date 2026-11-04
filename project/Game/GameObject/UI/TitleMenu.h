@@ -4,7 +4,7 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// タイトルの文字とSTART GAME
+// タイトルとサブタイトルの文字とSTART GAME
 class TitleMenu : public FS::GameObject
 {
 public:
@@ -36,6 +36,7 @@ private:
     FS::Engine* engine_ = nullptr;
     std::unique_ptr<FS::PropertyBinder> binder_;
     std::unique_ptr<FS::Text> titleText_;
+    std::unique_ptr<FS::Text> subtitleText_;
     std::unique_ptr<FS::Text> startText_;
     std::unique_ptr<FS::Sprite> blackScreen_;
 

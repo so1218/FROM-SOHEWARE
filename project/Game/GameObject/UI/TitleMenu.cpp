@@ -13,8 +13,10 @@ TitleMenu::TitleMenu(Engine* engine)
 
     titleText_ = std::make_unique<Text>(engine_);
 
+    // 保存した値が無いときの初期値。タイトルのすぐ下に小さく出す
+    subtitleText_ = std::make_unique<Text>(engine_);
+
     startText_ = std::make_unique<Text>(engine_);
-    startText_->SetText("START GAME");
 
     blackScreen_ = std::make_unique<Sprite>(engine_);
     blackScreen_->SetScreenAnchor({ 0.0f, 0.0f });
@@ -25,6 +27,7 @@ TitleMenu::TitleMenu(Engine* engine)
 void TitleMenu::Initialize()
 {
     binder_->BindTextElement("TitleText", titleText_.get());
+    binder_->BindTextElement("SubtitleText", subtitleText_.get());
     binder_->BindTextElement("StartText", startText_.get());
 
     binder_->Bind("FadeInTime", &fadeInTime_, 2.0f, 0.05f, 0.0f, 10.0f);
@@ -122,6 +125,8 @@ void TitleMenu::Draw()
 
     titleText_->SetOpacity(textOpacity);
     titleText_->Draw();
+    subtitleText_->SetOpacity(textOpacity);
+    subtitleText_->Draw();
     startText_->SetOpacity(startOpacity);
     startText_->Draw();
 }
@@ -131,6 +136,7 @@ void TitleMenu::DebugDraw()
 #ifdef ENABLE_IMGUI
     ImGui::Begin("タイトル");
     binder_->DrawTextElement("TitleText", "タイトル");
+    binder_->DrawTextElement("SubtitleText", "サブタイトル");
     binder_->DrawTextElement("StartText", "START GAME");
     binder_->Draw("FadeInTime", "黒い画面が明けるまで (秒)");
     binder_->Draw("TextFadeInDelay", "文字が出始めるまで (秒)");

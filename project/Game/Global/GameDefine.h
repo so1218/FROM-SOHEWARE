@@ -3,7 +3,7 @@
 
 namespace ObjectUpdateOrder
 {
-    enum Priority : int
+    enum Priority
     {
         Field = 10,
         Player = 30,
