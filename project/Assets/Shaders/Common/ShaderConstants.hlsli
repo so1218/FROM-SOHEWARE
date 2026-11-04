@@ -688,33 +688,27 @@ struct InstanceOffset
 
 struct VolumetricFogSettings
 {
-    float3 albedo;
-    float scatteringIntensity;
+    float3 albedo;          // 散乱色
+    float extinctionScale;  // すべての濃さに掛ける倍率
     
-    float extinctionScale;
     float anisotropy;
-    float extinction;
-    float heightDensity;
-    
+    float extinction;       // どこにでもある一様な濃さ
+    float heightDensity;    // 地面近くに足す濃さ
     float baseHeight;
-    float heightFalloff;
-    float2 pad1; 
     
     float3 ambientLight;
-    float temporalWeight;
+    float heightFalloff;
     
+    float temporalWeight;
     float maxDistance;
-    float depthSliceCount;
     float noiseScale;
     float noiseDistortion;
     
     float coverage; 
-    float worleyWeight; 
     float erosion;
     float noiseFeather; 
-    
-    float erosionStrength;
     float noiseIntensity;
+    
     float windSpeedMultiplier;
 };
 
@@ -729,7 +723,7 @@ struct FogVolume
 {
     float4x4 worldToLocal;
 
-    float3 color;
+    float3 color; // 散乱色
     float density;
 
     float3 noiseScale; 
@@ -739,19 +733,14 @@ struct FogVolume
     float windSpeed; 
 
     float coverage; 
-    float anisotropy; 
     float blendDistance; 
-    int type; 
-
-    float worleyWeight; 
     float erosion; 
     float noiseFeather; 
-    float distortionAmount; 
 
-    float densityOffset; 
-    float noiseContrast; 
+    float distortionAmount; 
     float heightFalloff; 
-    float pad0; 
+    int type; // 0: 球, 1: 箱
+    float pad;
 };
 
 struct FogVolumeBuffer

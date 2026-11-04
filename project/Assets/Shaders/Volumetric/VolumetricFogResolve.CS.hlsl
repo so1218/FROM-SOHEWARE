@@ -1,48 +1,44 @@
 #include "Common/ShaderConstants.hlsli"
-#include "Common/CameraUtils.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Volumetric/FroxelCommon.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
-// TAAされて綺麗になった、蓄積済みの3Dフォグ
 Texture3D<float4> gVoxelAccumulate : register(t1);
 SamplerState gLinearSampler : register(s0);
 
+// rgb: 霧の光, a: 奥の景色がどれだけ残るか
 RWTexture2D<float4> gOutput : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
+// 画面の各ピクセルで、手前の物までに積み上がった霧を読む
 [numthreads(8, 8, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    uint width, height;
-    gOutput.GetDimensions(width, height);
-    if (DTid.x >= width || DTid.y >= height)
+    uint outputWidth, outputHeight;
+    gOutput.GetDimensions(outputWidth, outputHeight);
+    if (any(dispatchThreadId.xy >= uint2(outputWidth, outputHeight)))
         return;
-    
-    float2 texelSize = 1.0f / float2(width, height);
-    float2 uv = (float2(DTid.xy) + 0.5f) * texelSize;
-    
-    float depthVal = gDepthTexture.SampleLevel(gLinearSampler, uv, 0).r;
-    
-    float4 clipPos = float4(uv.x * 2.0f - 1.0f, (1.0f - uv.y) * 2.0f - 1.0f, depthVal, 1.0f);
-    float4 worldPosFull = mul(clipPos, gFrameData.invViewProj);
-    float3 worldPos = worldPosFull.xyz / worldPosFull.w;
 
-    float nearZ = max(gFrameData.nearClip, kMinNearClip);
-    float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
-    float rayLength = length(worldPos - gFrameData.cameraWorldPosition);
-    float clampedDistance = clamp(rayLength, nearZ, farZ);
-    
-    // 指数スライス計算
-    float zSliceContinuous = (log2(clampedDistance / nearZ) / log2(farZ / nearZ));
-    
-    // ジッターを少し乗せてFroxel格子の縞模様を滑らかに分散
-    float jitter = (InterleavedGradientNoise(DTid.xy) - 0.5f) * 0.005f;
-    float zSlice = saturate(zSliceContinuous + jitter);
-    
-    float3 sampleUVW = float3(uv, zSlice);
-    float4 finalFog = gVoxelAccumulate.SampleLevel(gLinearSampler, sampleUVW, 0);
-    
-    gOutput[DTid.xy] = finalFog;
+    float2 screenUV = (float2(dispatchThreadId.xy) + 0.5f) / float2(outputWidth, outputHeight);
+
+    float sceneDepth = gDepthTexture.SampleLevel(gLinearSampler, screenUV, 0).r;
+    float4 sceneWorld = mul(float4(screenUV.x * 2.0f - 1.0f, (1.0f - screenUV.y) * 2.0f - 1.0f, sceneDepth, 1.0f), gFrameData.invViewProj);
+    float sceneDistance = length(sceneWorld.xyz / sceneWorld.w - gFrameData.cameraWorldPosition);
+
+    float nearDistance = GetFroxelNearDistance(gFrameData.nearClip);
+    float farDistance = GetFroxelFarDistance(gFrameData.farClip, gFogSettings.maxDistance);
+    float depthUV = FroxelDistanceToDepthUV(clamp(sceneDistance, nearDistance, farDistance), nearDistance, farDistance);
+
+    // 積み上げたテクスチャの各スライスには「そのスライスの奥の端まで」の霧が入っているので、
+    // 物の位置ちょうどの値を読むには半スライス手前にずらす
+    uint froxelWidth, froxelHeight, froxelDepth;
+    gVoxelAccumulate.GetDimensions(froxelWidth, froxelHeight, froxelDepth);
+    depthUV -= 0.5f / float(froxelDepth);
+
+    // スライスの境目が縞に見えないように、少しだけ散らす
+    depthUV = saturate(depthUV + (InterleavedGradientNoise(dispatchThreadId.xy) - 0.5f) * 0.005f);
+
+    gOutput[dispatchThreadId.xy] = gVoxelAccumulate.SampleLevel(gLinearSampler, float3(screenUV, depthUV), 0);
 }

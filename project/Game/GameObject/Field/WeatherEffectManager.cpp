@@ -84,7 +84,6 @@ void WeatherEffectManager::Update()
 
     // Volumetric Fogの設定適用
     auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
-    fog->scatteringIntensity = visual.scatteringIntensity;
     fog->noiseScale = visual.noiseScale;
     fog->noiseIntensity = visual.noiseIntensity;
     fog->heightDensity = visual.heightDensity;

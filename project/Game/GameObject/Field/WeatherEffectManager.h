@@ -70,27 +70,3 @@ private:
     // 現在再生中のBGMの名前
     std::string currentBgmName_ = "";
 };
-
-struct WeatherVisualParams
-{
-    // Terrain
-    float metalness;
-    float roughness;
-    float environmentMapIntensity;
-    float rippleSize;
-    float normalIntensity;
-    FS::Vector4 color;
-    float emissiveIntensity;
-
-    // Volumetric Fog
-    float scatteringIntensity;
-    float noiseScale;
-    float noiseIntensity;
-    float heightDensity;
-    float heightFalloff;
-    FS::Vector3 ambientLight;
-    float extinction;
-    float erosion;
-    float windSpeed;
-    FS::Vector3 windDirection;
-};

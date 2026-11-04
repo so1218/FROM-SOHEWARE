@@ -1431,6 +1431,9 @@
     <None Include="Assets\Shaders\Common\MathUtils.hlsli" />
     <None Include="Assets\Shaders\Shadow\ShadowMapTreeFoliage.PS.hlsl" />
     <None Include="Assets\Shaders\Common\ShadowUtils.hlsli" />
+    <None Include="Assets\Shaders\Volumetric\FroxelCommon.hlsli">
+      <Filter>Assets\Shaders\Volumetric</Filter>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

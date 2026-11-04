@@ -1,7 +1,7 @@
 #include "Common/ShaderConstants.hlsli"
 #include "Common/Object3D.hlsli"
-#include "Common/CameraUtils.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Volumetric/FroxelCommon.hlsli"
 
 Texture2D<float> gDepthTexture : register(t0);
 Texture2DArray<float> gShadowMap : register(t1);
@@ -9,7 +9,7 @@ Texture3D<float4> gNoiseVolume : register(t2);
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
 
-// 3Dテクスチャへの出力
+// rgb: 散乱した光, a: 減衰係数
 RWTexture3D<float4> gVoxelInject : register(u0);
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
@@ -28,345 +28,322 @@ ConstantBuffer<FogVolumeBuffer> gFogVolumeBuffer : register(b5);
 ConstantBuffer<ShadowData> gShadowData : register(b6);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
 
-// Henyey-Greenstein 位相関数
-float PhaseFunctionHG(float cosTheta, float g)
-{
-    float g2 = g * g;
-    float denom = 1.0f + g2 - 2.0f * g * cosTheta;
-    return (1.0f - g2) / (4.0f * PI * pow(max(denom, 0.0001f), 1.5f));
-}
-
-// Dual-HG 位相関数（前方・後方散乱の合成）
-float DualPhaseHG(float cosTheta, float gForward)
-{
-    static const float kBackScatterG = -0.2f;
-    static const float kBlendRatio = 0.9f;
-
-    float forward = PhaseFunctionHG(cosTheta, gForward);
-    float backward = PhaseFunctionHG(cosTheta, kBackScatterG);
-    return lerp(backward, forward, kBlendRatio);
-}
-
-// Interleaved Gradient Noise (IGN)- ジッタリング用
-float InterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
-{
-    static const float kTemporalGoldenRatio = 5.588238f;
-    pixelCoord += float2(frameIndex * kTemporalGoldenRatio, frameIndex * kTemporalGoldenRatio);
-    
-    static const float3 kIGNMagic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(kIGNMagic.z * frac(dot(pixelCoord, kIGNMagic.xy)));
-}
-
-// 3D ノイズ用サンプリングオフセット
-static const float3 kNoiseOffsetA = float3(131.0f, 73.0f, 191.0f);
-static const float3 kNoiseOffsetB = float3(43.0f, 269.0f, 113.0f);
-static const float3 kNoiseOffsetC = float3(411.0f, 823.0f, 157.0f);
-
-// カメラ近傍フェード
+// カメラのすぐ前の霧は消す
 static const float kCameraNearFadeStart = 0.5f;
 static const float kCameraNearFadeEnd = 3.0f;
 static const float kMinSafeDistance = 0.001f;
 
-[numthreads(8, 8, 4)]
-void main(uint3 DTid : SV_DispatchThreadID)
+// 後方散乱を少し混ぜて、太陽と反対を見たときも真っ暗にならないようにする
+static const float kBackScatterAnisotropy = -0.2f;
+static const float kForwardScatterRatio = 0.9f;
+
+// 霧が自分自身にかける影。太陽の方向へ 1, 2, 4, 8m と伸ばしながら 4 回濃さを調べる (合計 15m)
+static const uint kSelfShadowStepCount = 4;
+static const float kSelfShadowFirstStep = 1.0f;
+
+// 霧の中の 1 点の濃さと色
+struct FogMedia
 {
-    // ---------------------------------------------------------
-    // Froxel空間の復元とサンプリング用ジッター
-    // ---------------------------------------------------------
-    uint width, height, depth;
-    gVoxelInject.GetDimensions(width, height, depth);
-    if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
-        return;
+    float density;     // 減衰の強さ (ExtinctionScale を掛ける前)
+    float3 scattering; // density に散乱色を掛けたもの
+};
 
-    float nearZ = max(gFrameData.nearClip, kMinNearClip);
-    float farZ = min(gFrameData.farClip, gFogSettings.maxDistance);
+float PhaseHenyeyGreenstein(float cosTheta, float anisotropy)
+{
+    float anisotropySquared = anisotropy * anisotropy;
+    float denominator = 1.0f + anisotropySquared - 2.0f * anisotropy * cosTheta;
+    return (1.0f - anisotropySquared) / (4.0f * PI * pow(max(denominator, 0.0001f), 1.5f));
+}
 
-    float zSlice0 = float(DTid.z) / float(depth);
-    float zSlice1 = float(DTid.z + 1.0f) / float(depth);
-    float viewZ0 = nearZ * pow(farZ / nearZ, zSlice0);
-    float viewZ1 = nearZ * pow(farZ / nearZ, zSlice1);
-    float voxelThickness = viewZ1 - viewZ0;
+float PhaseDualHenyeyGreenstein(float cosTheta, float forwardAnisotropy)
+{
+    float forward = PhaseHenyeyGreenstein(cosTheta, forwardAnisotropy);
+    float backward = PhaseHenyeyGreenstein(cosTheta, kBackScatterAnisotropy);
+    return lerp(backward, forward, kForwardScatterRatio);
+}
 
-    float screenU = (float(DTid.x) + 0.5f) / float(width);
-    float screenV = (float(DTid.y) + 0.5f) / float(height);
-    float clipX = screenU * 2.0f - 1.0f;
-    float clipY = (1.0f - screenV) * 2.0f - 1.0f;
+// フレームごとに模様が変わる IGN。時間方向に混ぜて、スライスの縞を消す
+float TemporalInterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
+{
+    pixelCoord += frameIndex * 5.588238f;
+    return frac(52.9829189f * frac(dot(pixelCoord, float2(0.06711056f, 0.00583715f))));
+}
 
-    float4 worldTarget = mul(float4(clipX, clipY, 1.0f, 1.0f), gFrameData.invViewProj);
-    float3 rayDir = normalize(worldTarget.xyz / worldTarget.w - gFrameData.cameraWorldPosition);
+// 霧のむらの形。全体の霧も置いた霧も同じ式を使う。
+// noise は r: パーリン, g: ウォーリーの塊, b: 削り用の細かいウォーリー
+float CalculateNoiseShape(float4 noise, float coverage, float softness, float erosion)
+{
+    // パーリンをウォーリーの塊で持ち上げて、もこもこした形にする (Perlin-Worley)
+    float shape = saturate((noise.r - (noise.g - 1.0f)) / max(2.0f - noise.g, kEpsilon));
 
-    float hwDepth = gDepthTexture.SampleLevel(gSampler, float2(screenU, screenV), 0).r;
-    float4 sceneWorld = mul(float4(clipX, clipY, hwDepth, 1.0f), gFrameData.invViewProj);
-    sceneWorld.xyz /= sceneWorld.w;
-    float sceneDist = length(sceneWorld.xyz - gFrameData.cameraWorldPosition);
+    // 細かいウォーリーで縁を削る
+    float erosionAmount = noise.b * erosion;
+    shape = saturate((shape - erosionAmount) / max(1.0f - erosionAmount, kEpsilon));
 
-    float noiseJitter = InterleavedGradientNoise(DTid.xy, gFrameData.frameIndex);
-    float sampleViewZ = viewZ0 + voxelThickness * noiseJitter;
+    // coverage で霧のある場所の広さを決め、softness で境目をぼかす
+    float coverageStart = 1.0f - coverage;
+    return smoothstep(coverageStart, coverageStart + max(softness, kMinSafeDistance), shape) * shape;
+}
 
-    // ---------------------------------------------------------
-    // ジオメトリカリングと境界のソフト化
-    // ---------------------------------------------------------
-    float fadeRange = max(voxelThickness * 1.0f, 0.1f);
-    
-    if (sampleViewZ > sceneDist + fadeRange)
+// 置いた霧の中にどれだけ入っているか (0~1)。端は blendDistance でなだらかにする
+float CalculateVolumeMask(FogVolume volume, float3 localPosition)
+{
+    if (volume.type == 1) // 箱
     {
-        gVoxelInject[DTid.xyz] = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        return;
+        float3 distanceToEdge = 1.0f - abs(localPosition);
+        if (any(distanceToEdge <= 0.0f))
+            return 0.0f;
+        float3 fade = smoothstep(0.0f, max(volume.blendDistance, kMinSafeDistance), distanceToEdge);
+        return fade.x * fade.y * fade.z;
     }
 
-    float depthWeight = saturate((sceneDist - sampleViewZ) / fadeRange);
-    float nearFade = smoothstep(kCameraNearFadeStart, kCameraNearFadeEnd, sampleViewZ);
-    depthWeight *= nearFade;
+    // 球
+    float distanceFromCenter = length(localPosition);
+    if (distanceFromCenter >= 1.0f)
+        return 0.0f;
+    return smoothstep(1.0f, 1.0f - volume.blendDistance, distanceFromCenter);
+}
 
-    float3 currentPos = gFrameData.cameraWorldPosition + (rayDir * sampleViewZ);
+// position の霧。detailRatio は 1 で細かい模様まで、0 で大まかな形だけ。
+// isDetailed が false のときは歪ませるノイズを読まない (自己影を調べるとき用)
+FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
+{
+    FogMedia media;
+    media.density = 0.0f;
+    media.scattering = float3(0.0f, 0.0f, 0.0f);
 
-    // ---------------------------------------------------------
-    // カスケードシャドウ
-    // ---------------------------------------------------------
-    uint cascadeIndex = 0;
-    if (sampleViewZ > gShadowData.cascadeSplits[1])
-        cascadeIndex = 2;
-    else if (sampleViewZ > gShadowData.cascadeSplits[0])
-        cascadeIndex = 1;
-
-    float4 shadowCoord = mul(float4(currentPos, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
-    shadowCoord.xyz /= shadowCoord.w;
-    float2 shadowUV = shadowCoord.xy * float2(0.5f, -0.5f) + 0.5f;
-
-    float shadowVisibility = 1.0f;
-    if (all(shadowUV >= 0.0f) && all(shadowUV <= 1.0f) && shadowCoord.z >= 0.0f && shadowCoord.z <= 1.0f)
-    {
-        shadowVisibility = gShadowMap.SampleCmpLevelZero(
-            gShadowSampler,
-            float3(shadowUV, cascadeIndex),
-            shadowCoord.z - kMinSafeDistance
-        );
-    }
-
-    // ---------------------------------------------------------
-    // ボリューメトリックノイズの合成
-    // ---------------------------------------------------------
-    // CPUで連続積算された 2D オフセットを XZ 平面へ展開
-    float3 windOffset3D = float3(
-        gEnvironmentData.windOffset.x,
-        0.0f,
-        gEnvironmentData.windOffset.y
-    ) * gFogSettings.windSpeedMultiplier;
-
-    // 歪みサンプリング
-    float3 warpUVW = currentPos * (gFogSettings.noiseScale * 0.43f) - windOffset3D * 0.35f;
-    float3 distortion = float3(
-        gNoiseVolume.SampleLevel(gSampler, warpUVW, 0).r,
-        gNoiseVolume.SampleLevel(gSampler, warpUVW + kNoiseOffsetA, 0).r,
-        gNoiseVolume.SampleLevel(gSampler, warpUVW + kNoiseOffsetB, 0).r
-    );
-
-    float3 distortedPos = currentPos + (distortion * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
-
-    // マイナスで減算することで、風下へノイズが流れる
-    float3 uvwA = distortedPos * gFogSettings.noiseScale - windOffset3D;
-    float4 noiseLayer1 = gNoiseVolume.SampleLevel(gSampler, uvwA, 0);
-
-    float3 uvwB = distortedPos * (gFogSettings.noiseScale * 0.37f) - (windOffset3D * 1.41f) + kNoiseOffsetC;
-    float4 noiseLayer2 = gNoiseVolume.SampleLevel(gSampler, uvwB, 0);
-
-    float combinedPerlin = noiseLayer1.r * noiseLayer2.r * 1.5f;
-
-    float linearDistanceRatio = saturate(sampleViewZ / farZ);
-    float detailFade = smoothstep(0.1f, 0.6f, linearDistanceRatio);
-
-    float activeWorleyWeight = lerp(gFogSettings.worleyWeight, 0.0f, detailFade);
-    float activeErosion = lerp(gFogSettings.erosion, 0.0f, detailFade);
-    float activeNoiseIntensity = lerp(gFogSettings.noiseIntensity, gFogSettings.noiseIntensity * 0.2f, detailFade);
-
-    float combinedNoise = lerp(combinedPerlin, 1.0f - noiseLayer1.g, activeWorleyWeight);
-    combinedNoise = saturate(combinedNoise - (noiseLayer1.b * activeErosion));
-
+    // 全体の霧: 一様な濃さ + 地面近くの高さフォグ
     float heightFactor = 1.0f;
     if (gFogSettings.heightFalloff > 0.0f)
     {
-        float heightDiff = max(currentPos.y - gFogSettings.baseHeight, 0.0f);
-        heightFactor = exp(-heightDiff * gFogSettings.heightFalloff);
+        heightFactor = exp(-max(position.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
     }
+    float globalDensity = gFogSettings.extinction + gFogSettings.heightDensity * heightFactor;
 
-    float globalBaseDensity = gFogSettings.extinction + (gFogSettings.heightDensity * heightFactor);
-
-    float cutoff = 1.0f - gFogSettings.coverage;
-    float noiseCoverage = smoothstep(cutoff, cutoff + max(gFogSettings.noiseFeather, kMinSafeDistance), combinedNoise);
-    float erosionFactor = saturate(1.0f - (1.0f - combinedNoise) * gFogSettings.erosionStrength);
-
-    float combinedNoiseEffect = erosionFactor * noiseCoverage;
-    float finalNoiseModifier = lerp(1.0f, combinedNoiseEffect, activeNoiseIntensity);
-
-    float particleDensity = globalBaseDensity * finalNoiseModifier;
-
-    // ---------------------------------------------------------
-    // ライティングと光の減衰
-    // ---------------------------------------------------------
-    float dynamicShadowFog = globalBaseDensity * combinedNoiseEffect;
-    float fogSelfShadow = exp(-dynamicShadowFog * 4.0f);
-    float finalShadowVisibility = shadowVisibility * fogSelfShadow;
-
-    float cosTheta = dot(rayDir, normalize(-gFrameData.mainLightDirection));
-    float phase = DualPhaseHG(cosTheta, gFogSettings.anisotropy);
-
-    float3 mainLightContrib = finalShadowVisibility * phase * gFrameData.mainLightColor.rgb * gFrameData.mainLightVolumetricScatteringIntensity;
-    float3 ambientContrib = gFogSettings.ambientLight * lerp(0.3f, 1.0f, finalShadowVisibility);
-    float3 totalLight = mainLightContrib + ambientContrib;
-
-    float3 stepLocal = 0;
-
-    for (int p = 0; p < MAX_POINT_LIGHTS; ++p)
+    if (gFogSettings.noiseIntensity > 0.0f)
     {
-        if (gPointLights[p].enable == 0)
-            continue;
-
-        float3 lightVec = gPointLights[p].position - currentPos;
-        float distance = length(lightVec);
-        float radius = gPointLights[p].radius;
-
-        float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
-        if (smoothDistance > radius * 1.1f)
-            continue;
-
-        float3 lightDir = lightVec / max(distance, kMinSafeDistance);
-
-        float baseAttenuate = pow(saturate(1.0f - smoothDistance / radius), 2.0f);
-        float edgeFadeOut = smoothstep(radius * 1.1f, radius * 0.95f, smoothDistance);
-        
-        float phaseLocal = DualPhaseHG(dot(rayDir, lightDir), gFogSettings.anisotropy);
-        float pointLocalFogAttenuation = exp(-particleDensity * 1.0f);
-
-        stepLocal += gPointLights[p].color.rgb * (gPointLights[p].intensity * gPointLights[p].volumetricScatteringIntensity)
-                   * (baseAttenuate * edgeFadeOut) * phaseLocal * pointLocalFogAttenuation;
-    }
-
-    for (int s = 0; s < MAX_SPOT_LIGHTS; ++s)
-    {
-        if (gSpotLights[s].enable == 0)
-            continue;
-
-        float3 lightVec = gSpotLights[s].position - currentPos;
-        float distance = length(lightVec);
-        float smoothDistance = sqrt(distance * distance + voxelThickness * voxelThickness * 0.25f);
-
-        if (smoothDistance > gSpotLights[s].distance * 1.2f)
-            continue;
-
-        float3 lDir = lightVec / max(distance, kMinSafeDistance);
-        
-        if (distance < 0.2f)
+        float3 windOffset = float3(gEnvironmentData.windOffset.x, 0.0f, gEnvironmentData.windOffset.y) * gFogSettings.windSpeedMultiplier;
+        float3 noisePosition = position;
+        if (isDetailed)
         {
-            float blend = smoothstep(0.0f, 0.2f, distance);
-            lDir = normalize(lerp(-gSpotLights[s].direction, lDir, blend));
+            float3 warp = gNoiseVolume.SampleLevel(gSampler, position * (gFogSettings.noiseScale * 0.43f) - windOffset * 0.35f, 0).rgb;
+            noisePosition += (warp * 2.0f - 1.0f) * gFogSettings.noiseDistortion;
+        }
+        float4 noise = gNoiseVolume.SampleLevel(gSampler, noisePosition * gFogSettings.noiseScale - windOffset, 0);
+        float shape = CalculateNoiseShape(noise, gFogSettings.coverage, gFogSettings.noiseFeather, gFogSettings.erosion * detailRatio);
+
+        // 遠くは模様が見えずちらつくだけなので、むらを弱める
+        float noiseIntensity = gFogSettings.noiseIntensity * lerp(0.2f, 1.0f, detailRatio);
+        globalDensity *= lerp(1.0f, shape, noiseIntensity);
+    }
+
+    media.density += globalDensity;
+    media.scattering += globalDensity * gFogSettings.albedo;
+
+    // 置いた霧 (箱と球)
+    for (uint volumeIndex = 0; volumeIndex < gFogVolumeBuffer.volumeCount; ++volumeIndex)
+    {
+        FogVolume volume = gFogVolumeBuffer.volumes[volumeIndex];
+        float3 localPosition = mul(float4(position, 1.0f), volume.worldToLocal).xyz;
+        float volumeMask = CalculateVolumeMask(volume, localPosition);
+        if (volumeMask <= 0.0f)
+            continue;
+
+        float3 volumeWind = float3(
+            gEnvironmentData.windOffset.x + volume.windDirection.x * gEnvironmentData.windTime,
+            volume.windDirection.y * gEnvironmentData.windTime,
+            gEnvironmentData.windOffset.y + volume.windDirection.z * gEnvironmentData.windTime) * volume.windSpeed;
+
+        float3 noisePosition = position * volume.noiseScale - volumeWind;
+        if (isDetailed)
+        {
+            float3 warp = gNoiseVolume.SampleLevel(gSampler, position * volume.noiseScale * 0.4f - volumeWind * 0.5f, 0).rgb;
+            noisePosition += (warp * 2.0f - 1.0f) * volume.distortionAmount;
+        }
+        float4 noise = gNoiseVolume.SampleLevel(gSampler, noisePosition, 0);
+
+        // 端に行くほど霧のある場所を狭めて、形のある霧の塊にする
+        float shape = CalculateNoiseShape(noise, volume.coverage * volumeMask, volume.noiseFeather, volume.erosion * detailRatio);
+
+        float heightInVolume = localPosition.y * 0.5f + 0.5f;
+        float volumeDensity = volume.density * volumeMask
+                            * exp(-heightInVolume * max(volume.heightFalloff, 0.0f))
+                            * lerp(1.0f, shape, volume.noiseIntensity);
+
+        media.density += volumeDensity;
+        media.scattering += volumeDensity * volume.color;
+    }
+
+    return media;
+}
+
+float SampleSunShadow(float3 worldPosition, float distanceFromCamera)
+{
+    uint cascadeIndex = 0;
+    [unroll]
+    for (uint i = 0; i < MAX_CASCADE_COUNT - 1; ++i)
+    {
+        if (distanceFromCamera > gShadowData.cascadeSplits[i])
+            cascadeIndex = i + 1;
+    }
+
+    float4 shadowClip = mul(float4(worldPosition, 1.0f), gShadowData.cascadeLightViewProj[cascadeIndex]);
+    float3 shadowPosition = shadowClip.xyz / shadowClip.w;
+    float2 shadowUV = shadowPosition.xy * float2(0.5f, -0.5f) + 0.5f;
+
+    if (any(shadowUV < 0.0f) || any(shadowUV > 1.0f) || shadowPosition.z < 0.0f || shadowPosition.z > 1.0f)
+        return 1.0f;
+
+    return gShadowMap.SampleCmpLevelZero(gShadowSampler, float3(shadowUV, cascadeIndex), shadowPosition.z - kMinSafeDistance);
+}
+
+// 太陽の方向へ霧の濃さを足していき、どれだけ光が届くかを返す
+float CalculateFogSelfShadow(float3 position, float3 toSun, float detailRatio)
+{
+    float opticalDepth = 0.0f;
+    float stepStart = 0.0f;
+    float stepLength = kSelfShadowFirstStep;
+    for (uint i = 0; i < kSelfShadowStepCount; ++i)
+    {
+        float3 samplePosition = position + toSun * (stepStart + stepLength * 0.5f);
+        opticalDepth += EvaluateFogMedia(samplePosition, detailRatio, false).density * stepLength;
+        stepStart += stepLength;
+        stepLength *= 2.0f;
+    }
+    return exp(-opticalDepth * gFogSettings.extinctionScale);
+}
+
+[numthreads(8, 8, 4)]
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
+{
+    uint froxelWidth, froxelHeight, froxelDepth;
+    gVoxelInject.GetDimensions(froxelWidth, froxelHeight, froxelDepth);
+    if (any(dispatchThreadId >= uint3(froxelWidth, froxelHeight, froxelDepth)))
+        return;
+
+    float nearDistance = GetFroxelNearDistance(gFrameData.nearClip);
+    float farDistance = GetFroxelFarDistance(gFrameData.farClip, gFogSettings.maxDistance);
+
+    float sliceStart = FroxelSliceToDistance(dispatchThreadId.z, froxelDepth, nearDistance, farDistance);
+    float sliceEnd = FroxelSliceToDistance(dispatchThreadId.z + 1.0f, froxelDepth, nearDistance, farDistance);
+    float sliceThickness = sliceEnd - sliceStart;
+
+    float2 screenUV = (float2(dispatchThreadId.xy) + 0.5f) / float2(froxelWidth, froxelHeight);
+    float3 rayDirection = GetViewRayDirection(screenUV, gFrameData.invViewProj, gFrameData.cameraWorldPosition);
+
+    // 手前にある物までの距離
+    float sceneDepth = gDepthTexture.SampleLevel(gSampler, screenUV, 0).r;
+    float4 sceneWorld = mul(float4(screenUV.x * 2.0f - 1.0f, (1.0f - screenUV.y) * 2.0f - 1.0f, sceneDepth, 1.0f), gFrameData.invViewProj);
+    float sceneDistance = length(sceneWorld.xyz / sceneWorld.w - gFrameData.cameraWorldPosition);
+
+    // スライスの中の1点だけを調べる。どこを調べるかは毎フレーム変えて、時間方向に平均する
+    float sampleDistance = sliceStart + sliceThickness * TemporalInterleavedGradientNoise(dispatchThreadId.xy, gFrameData.frameIndex);
+
+    // 物の向こう側には霧を置かない。境目はスライス1枚分でなだらかにする
+    float edgeFadeRange = max(sliceThickness, 0.1f);
+    if (sampleDistance > sceneDistance + edgeFadeRange)
+    {
+        gVoxelInject[dispatchThreadId] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        return;
+    }
+
+    float visibleWeight = saturate((sceneDistance - sampleDistance) / edgeFadeRange);
+    visibleWeight *= smoothstep(kCameraNearFadeStart, kCameraNearFadeEnd, sampleDistance);
+
+    // 描画距離の端で霧が途切れて見えないように、最後の 2 割で薄くする
+    float fadeStart = farDistance * 0.8f;
+    visibleWeight *= saturate((farDistance - sampleDistance) / max(farDistance - fadeStart, kMinSafeDistance));
+
+    float3 samplePosition = gFrameData.cameraWorldPosition + rayDirection * sampleDistance;
+
+    // 遠くは細かい模様が見えずちらつくだけなので弱める
+    float detailRatio = 1.0f - smoothstep(0.1f, 0.6f, saturate(sampleDistance / farDistance));
+
+    FogMedia media = EvaluateFogMedia(samplePosition, detailRatio, true);
+    if (media.density <= 0.0f)
+    {
+        gVoxelInject[dispatchThreadId] = float4(0.0f, 0.0f, 0.0f, kEpsilon);
+        return;
+    }
+
+    // 太陽。影と、太陽までの霧による自己影の両方で暗くなる。
+    // 完全に影の中なら自己影を掛けても 0 のままなので、重い自己影の計算は飛ばす
+    float3 toSun = normalize(-gFrameData.mainLightDirection);
+    float sunVisibility = SampleSunShadow(samplePosition, sampleDistance);
+    if (sunVisibility > 0.0f)
+    {
+        sunVisibility *= CalculateFogSelfShadow(samplePosition, toSun, detailRatio);
+    }
+    float sunPhase = PhaseDualHenyeyGreenstein(dot(rayDirection, toSun), gFogSettings.anisotropy);
+    float3 light = gFrameData.mainLightColor.rgb * gFrameData.mainLightVolumetricScatteringIntensity * sunPhase * sunVisibility;
+
+    // 空からの光は、どの向きからも均等に来るものとして足す
+    light += gFogSettings.ambientLight;
+
+    // 点光源とスポットライト。フロクセルの厚みぶん距離をなめらかにして、光の境目のガタつきを抑える
+    float sliceThicknessSquaredHalf = sliceThickness * sliceThickness * 0.25f;
+
+    for (int pointIndex = 0; pointIndex < MAX_POINT_LIGHTS; ++pointIndex)
+    {
+        PointLight pointLight = gPointLights[pointIndex];
+        if (pointLight.enable == 0)
+            continue;
+
+        float3 toLight = pointLight.position - samplePosition;
+        float distanceToLight = length(toLight);
+        float smoothDistance = sqrt(distanceToLight * distanceToLight + sliceThicknessSquaredHalf);
+        if (smoothDistance > pointLight.radius * 1.1f)
+            continue;
+
+        float3 lightDirection = toLight / max(distanceToLight, kMinSafeDistance);
+        float distanceAttenuation = pow(saturate(1.0f - smoothDistance / pointLight.radius), 2.0f);
+        distanceAttenuation *= smoothstep(pointLight.radius * 1.1f, pointLight.radius * 0.95f, smoothDistance);
+
+        float phase = PhaseDualHenyeyGreenstein(dot(rayDirection, lightDirection), gFogSettings.anisotropy);
+        light += pointLight.color.rgb * (pointLight.intensity * pointLight.volumetricScatteringIntensity) * distanceAttenuation * phase;
+    }
+
+    for (int spotIndex = 0; spotIndex < MAX_SPOT_LIGHTS; ++spotIndex)
+    {
+        SpotLight spotLight = gSpotLights[spotIndex];
+        if (spotLight.enable == 0)
+            continue;
+
+        float3 toLight = spotLight.position - samplePosition;
+        float distanceToLight = length(toLight);
+        float smoothDistance = sqrt(distanceToLight * distanceToLight + sliceThicknessSquaredHalf);
+        if (smoothDistance > spotLight.distance * 1.2f)
+            continue;
+
+        // ライトのすぐ近くは向きが暴れるので、ライトの向きに寄せる
+        float3 lightDirection = toLight / max(distanceToLight, kMinSafeDistance);
+        if (distanceToLight < 0.2f)
+        {
+            lightDirection = normalize(lerp(-spotLight.direction, lightDirection, smoothstep(0.0f, 0.2f, distanceToLight)));
         }
 
-        float currentCos = dot(-lDir, normalize(gSpotLights[s].direction));
-        float cosOuter = gSpotLights[s].cosAngle;
-        float voxelSmoothing = (voxelThickness / max(distance, 1.0f)) * 0.15f;
-
-        if (currentCos < cosOuter - voxelSmoothing)
+        float cosToSample = dot(-lightDirection, normalize(spotLight.direction));
+        float edgeSoftness = (sliceThickness / max(distanceToLight, 1.0f)) * 0.15f;
+        float cosOuter = spotLight.cosAngle - edgeSoftness;
+        if (cosToSample < cosOuter)
             continue;
 
-        float safeMaxDist = max(gSpotLights[s].distance, kMinSafeDistance);
-        float distanceAtt = pow(saturate(1.0f - saturate(smoothDistance / safeMaxDist)), 2.0f);
-
-        float cosInner = min(cosOuter + 0.02f + voxelSmoothing, 1.0f);
-        float rawAngleAtt = saturate((currentCos - (cosOuter - voxelSmoothing)) / max(cosInner - (cosOuter - voxelSmoothing), kMinSafeDistance));
-        
-        float attenuation = distanceAtt * (rawAngleAtt * rawAngleAtt);
+        float distanceAttenuation = pow(saturate(1.0f - saturate(smoothDistance / max(spotLight.distance, kMinSafeDistance))), 2.0f);
+        float cosInner = min(spotLight.cosAngle + 0.02f + edgeSoftness, 1.0f);
+        float angleAttenuation = saturate((cosToSample - cosOuter) / max(cosInner - cosOuter, kMinSafeDistance));
+        float attenuation = distanceAttenuation * angleAttenuation * angleAttenuation;
         if (attenuation <= 0.0f)
             continue;
 
-        float phaseSmoothing = saturate(1.0f - (voxelThickness / max(distance, 0.5f)));
-        float phaseLocal = DualPhaseHG(dot(rayDir, lDir), gFogSettings.anisotropy * phaseSmoothing);
-        float spotLocalFogAttenuation = exp(-particleDensity * 1.0f);
-
-        stepLocal += gSpotLights[s].color.rgb * (gSpotLights[s].intensity * gSpotLights[s].volumetricScatteringIntensity)
-                   * attenuation * phaseLocal * spotLocalFogAttenuation;
+        // 厚いフロクセルでは前方散乱を弱めて、光の筋がちらつかないようにする
+        float anisotropyScale = saturate(1.0f - sliceThickness / max(distanceToLight, 0.5f));
+        float phase = PhaseDualHenyeyGreenstein(dot(rayDirection, lightDirection), gFogSettings.anisotropy * anisotropyScale);
+        light += spotLight.color.rgb * (spotLight.intensity * spotLight.volumetricScatteringIntensity) * attenuation * phase;
     }
 
-    totalLight += stepLocal;
+    // 散乱係数 = 減衰係数 × 散乱色。全体の霧も置いた霧も同じ光を受ける
+    float extinction = max(media.density * gFogSettings.extinctionScale, kEpsilon);
+    float3 scattering = media.scattering * gFogSettings.extinctionScale * light;
 
-    // ---------------------------------------------------------
-    // ローカルフォグボリュームの評価
-    // ---------------------------------------------------------
-    float fadeStart = farZ * 0.8f;
-    float distanceFade = saturate((farZ - sampleViewZ) / max(farZ - fadeStart, kMinSafeDistance));
-    particleDensity *= distanceFade;
-
-    float global_sigma_e = max(particleDensity * gFogSettings.extinctionScale, kEpsilon);
-    float3 global_sigma_s = global_sigma_e * gFogSettings.albedo;
-
-    float3 volumeScattering = 0;
-    float volumeExtinction = 0;
-
-    for (uint v = 0; v < gFogVolumeBuffer.volumeCount; ++v)
-    {
-        FogVolume vol = gFogVolumeBuffer.volumes[v];
-        
-        float3 localPos = mul(float4(currentPos, 1.0f), vol.worldToLocal).xyz;
-
-        float volumeMask = 0.0f;
-        if (vol.type == 1) // Box
-        {
-            float3 distToEdge = 1.0f - abs(localPos);
-            if (all(distToEdge > 0.0f))
-            {
-                float3 fade = smoothstep(0.0f, max(vol.blendDistance, kMinSafeDistance), distToEdge);
-                volumeMask = fade.x * fade.y * fade.z;
-            }
-        }
-        else // Sphere
-        {
-            float dist = length(localPos);
-            if (dist < 1.0f)
-                volumeMask = smoothstep(1.0f, 1.0f - vol.blendDistance, dist);
-        }
-
-        if (volumeMask > 0.0f)
-        {
-            // 2D オフセットベース
-            float3 volWindOffset3D = float3(
-            gEnvironmentData.windOffset.x + vol.windDirection.x * gEnvironmentData.windTime, 
-            vol.windDirection.y * gEnvironmentData.windTime,
-            gEnvironmentData.windOffset.y + vol.windDirection.z * gEnvironmentData.windTime) * vol.windSpeed;
-
-            // マイナス減算で風下へ流す
-            float3 volWarpUVW = (currentPos * vol.noiseScale * 0.4f) - volWindOffset3D * 0.5f;
-            float3 volWarp = gNoiseVolume.SampleLevel(gSampler, volWarpUVW, 0.0f).rgb * 2.0f - 1.0f;
-            float3 volNoisePos = (currentPos * vol.noiseScale) - volWindOffset3D + (volWarp * vol.distortionAmount);
-
-            float4 volNoiseSample = gNoiseVolume.SampleLevel(gSampler, volNoisePos, 0.0f);
-
-            float vNoise = lerp(volNoiseSample.r, 1.0f - volNoiseSample.g, vol.worleyWeight);
-            vNoise = saturate(vNoise - (1.0f - vNoise) * volNoiseSample.b * vol.erosion);
-
-            float volCutoff = 1.0f - (vol.coverage * volumeMask);
-            float shiftedNoise = vNoise + vol.densityOffset;
-            float volCoverage = smoothstep(volCutoff, volCutoff + max(vol.noiseFeather, kMinSafeDistance), shiftedNoise);
-
-            float erosionFactorVol = saturate(1.0f - (1.0f - shiftedNoise) * max(vol.noiseContrast, 1.0f));
-            float noiseModifierVol = lerp(1.0f, erosionFactorVol * volCoverage, vol.noiseIntensity);
-
-            float localUVW_Y = localPos.y * 0.5f + 0.5f;
-            float finalVolDensity = vol.density * exp(-localUVW_Y * max(vol.heightFalloff, 0.0f)) * noiseModifierVol * volumeMask;
-
-            float phaseVol = DualPhaseHG(0.0f, vol.anisotropy);
-            
-            float3 volLight = phaseVol * gFrameData.mainLightColor.rgb;
-            volLight += gFogSettings.ambientLight;
-
-            volumeExtinction += finalVolDensity * gFogSettings.extinctionScale;
-            volumeScattering += vol.color * finalVolDensity * gFogSettings.scatteringIntensity * volLight;
-        }
-    }
-
-    // ---------------------------------------------------------
-    // ボクセルへの書き込み
-    // ---------------------------------------------------------
-    float3 scattering = ((totalLight * global_sigma_s) + volumeScattering) * depthWeight;
-    float extinction = (global_sigma_e + volumeExtinction) * depthWeight;
-
-    gVoxelInject[DTid.xyz] = float4(scattering, extinction);
+    gVoxelInject[dispatchThreadId] = float4(scattering, extinction) * visibleWeight;
 }

@@ -42,7 +42,6 @@ struct WeatherVisualParams
     float emissiveIntensity = 3.5f;
 
     // Volumetric Fog
-    float scatteringIntensity = 10.0f;
     float noiseScale = 0.03f;
     float noiseIntensity = 0.0f;
     float heightDensity = 0.0f;

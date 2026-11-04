@@ -128,7 +128,6 @@ void EnvironmentManager::Initialize(Engine* engine)
                 binder_->Bind((p + "_V_Emissive").c_str(), &v.emissiveIntensity, v.emissiveIntensity, 0.1f, 0.0f, 50.0f);
 
                 // Volumetric Fog
-                binder_->Bind((p + "_V_FogScatt").c_str(), &v.scatteringIntensity, v.scatteringIntensity, 0.1f, 0.0f, 50.0f);
                 binder_->Bind((p + "_V_FogNoiseScale").c_str(), &v.noiseScale, v.noiseScale, 0.001f, 0.001f, 1.0f);
                 binder_->Bind((p + "_V_FogNoiseIntens").c_str(), &v.noiseIntensity, v.noiseIntensity, 0.05f, 0.0f, 5.0f);
                 binder_->Bind((p + "_V_FogHDensity").c_str(), &v.heightDensity, v.heightDensity, 0.05f, 0.0f, 10.0f);
@@ -163,7 +162,6 @@ inline WeatherVisualParams LerpVisualParams(const WeatherVisualParams& a, const 
     };
     res.emissiveIntensity = FS::Math::Lerp(a.emissiveIntensity, b.emissiveIntensity, t);
 
-    res.scatteringIntensity = FS::Math::Lerp(a.scatteringIntensity, b.scatteringIntensity, t);
     res.noiseScale = FS::Math::Lerp(a.noiseScale, b.noiseScale, t);
     res.noiseIntensity = FS::Math::Lerp(a.noiseIntensity, b.noiseIntensity, t);
     res.heightDensity = FS::Math::Lerp(a.heightDensity, b.heightDensity, t);
@@ -448,7 +446,6 @@ void EnvironmentManager::DebugDraw()
 
                     if (ImGui::TreeNodeEx("Volumetric Fog (フォグ) 設定", ImGuiTreeNodeFlags_DefaultOpen))
                     {
-                        binder_->Draw((p + "_V_FogScatt").c_str(), "散乱強度");
                         binder_->Draw((p + "_V_FogNoiseScale").c_str(), "ノイズスケール");
                         binder_->Draw((p + "_V_FogNoiseIntens").c_str(), "ノイズ強度");
                         binder_->Draw((p + "_V_FogHDensity").c_str(), "高さ密度");

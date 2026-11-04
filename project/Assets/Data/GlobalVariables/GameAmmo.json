@@ -4,7 +4,7 @@
         "Ammo_0": {
             "LightIntensity": 13.600000381469727,
             "LightRadius": 11.0,
-            "LightVolumetricScatteringIntensity": 20.0,
+            "LightVolumetricScatteringIntensity": 8.529999732971191,
             "Position": [
                 29.049999237060547,
                 11.130000114440918,
@@ -14,7 +14,7 @@
         "Ammo_1": {
             "LightIntensity": 12.5,
             "LightRadius": 10.0,
-            "LightVolumetricScatteringIntensity": 20.0,
+            "LightVolumetricScatteringIntensity": 8.739999771118164,
             "Position": [
                 15.050000190734863,
                 1.350000023841858,

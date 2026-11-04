@@ -27,9 +27,9 @@
         "Cloudy_V_Emissive": 2.799999952316284,
         "Cloudy_V_EnvIntens": 0.5,
         "Cloudy_V_FogAmbient": [
-            0.03921568766236305,
-            0.03921568766236305,
-            0.03921568766236305
+            0.24223601818084717,
+            0.24223601818084717,
+            0.24223601818084717
         ],
         "Cloudy_V_FogErosion": 0.0,
         "Cloudy_V_FogExtinct": 0.004999999888241291,
@@ -37,7 +37,6 @@
         "Cloudy_V_FogHFalloff": 0.0,
         "Cloudy_V_FogNoiseIntens": 0.0,
         "Cloudy_V_FogNoiseScale": 0.029999999329447746,
-        "Cloudy_V_FogScatt": 10.0,
         "Cloudy_V_FogWindDir": [
             1.0,
             1.0,
@@ -137,9 +136,9 @@
         "Rain_V_Emissive": 13.0,
         "Rain_V_EnvIntens": 0.009999999776482582,
         "Rain_V_FogAmbient": [
-            0.1568627506494522,
-            0.27450981736183167,
-            0.6274510025978088
+            0.1790054440498352,
+            0.2584778368473053,
+            0.4968944191932678
         ],
         "Rain_V_FogErosion": 0.4000000059604645,
         "Rain_V_FogExtinct": 0.019999999552965164,
@@ -147,7 +146,6 @@
         "Rain_V_FogHFalloff": 0.30000001192092896,
         "Rain_V_FogNoiseIntens": 1.0,
         "Rain_V_FogNoiseScale": 0.029999999329447746,
-        "Rain_V_FogScatt": 1.5,
         "Rain_V_FogWindDir": [
             1.0,
             1.0,
@@ -218,9 +216,9 @@
         "Sunny_V_Emissive": 2.799999952316284,
         "Sunny_V_EnvIntens": 0.5,
         "Sunny_V_FogAmbient": [
-            0.03921568766236305,
-            0.03921568766236305,
-            0.03921568766236305
+            0.24223601818084717,
+            0.24223601818084717,
+            0.24223601818084717
         ],
         "Sunny_V_FogErosion": 0.0,
         "Sunny_V_FogExtinct": 0.004999999888241291,
@@ -228,7 +226,6 @@
         "Sunny_V_FogHFalloff": 0.0,
         "Sunny_V_FogNoiseIntens": 0.0,
         "Sunny_V_FogNoiseScale": 0.029999999329447746,
-        "Sunny_V_FogScatt": 10.0,
         "Sunny_V_FogWindDir": [
             1.0,
             1.0,
@@ -328,24 +325,23 @@
         "Thunder_V_Emissive": 13.0,
         "Thunder_V_EnvIntens": 0.009999999776482582,
         "Thunder_V_FogAmbient": [
-            0.46303504705429077,
-            0.5972765684127808,
-            1.0
+            0.1624937355518341,
+            0.289572536945343,
+            0.6708074808120728
         ],
-        "Thunder_V_FogErosion": 0.4000000059604645,
-        "Thunder_V_FogExtinct": 0.019999999552965164,
+        "Thunder_V_FogErosion": 0.5799999833106995,
+        "Thunder_V_FogExtinct": 0.014000000432133675,
         "Thunder_V_FogHDensity": 1.0,
         "Thunder_V_FogHFalloff": 0.30000001192092896,
         "Thunder_V_FogNoiseIntens": 1.0,
         "Thunder_V_FogNoiseScale": 0.029999999329447746,
-        "Thunder_V_FogScatt": 1.5,
         "Thunder_V_FogWindDir": [
             1.0,
             1.0,
             1.0
         ],
         "Thunder_V_FogWindSpeed": 0.15000000596046448,
-        "Thunder_V_FogWindSpeedMultiplier": 0.3499999940395355,
+        "Thunder_V_FogWindSpeedMultiplier": 0.15000000596046448,
         "Thunder_V_Metal": 0.0,
         "Thunder_V_NormalIntens": 1.2000000476837158,
         "Thunder_V_RippleSize": 0.8999999761581421,
@@ -357,7 +353,7 @@
         ],
         "Thunder_WindSpeed": 1.2000000476837158,
         "Thunder_WindTurbul": 0.20000000298023224,
-        "TimeOfDay": 17.200000762939453,
+        "TimeOfDay": 17.0,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

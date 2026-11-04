@@ -5,64 +5,54 @@ RWTexture3D<float4> gVoxelInjectFiltered : register(u0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
-// sRGB 輝度計算
-float CalculateLuminance(float3 color)
-{
-    return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
-}
-
-// 6近傍クロスフィルタ用オフセット
 static const int3 kNeighborOffsets[6] =
 {
-    int3(-1, 0, 0), int3(1, 0, 0), // 左右
-    int3(0, -1, 0), int3(0, 1, 0), // 上下
-    int3(0, 0, -1), int3(0, 0, 1) // 前後
+    int3(-1, 0, 0), int3(1, 0, 0),
+    int3(0, -1, 0), int3(0, 1, 0),
+    int3(0, 0, -1), int3(0, 0, 1)
 };
 
-// 深度に応じたエッジ感度
+// 明るさの差にどれだけ敏感にするか。奥ほど鈍くして、遠くのちらつきを強くならす
 static const float kEdgeSensitivityNear = 2.0f;
 static const float kEdgeSensitivityFar = 0.02f;
 static const float kFadeStartRatio = 0.1f;
 static const float kFadeEndRatio = 0.7f;
 
-[numthreads(8, 8, 4)]
-void main(uint3 DTid : SV_DispatchThreadID)
+float CalculateLuminance(float3 color)
 {
-    uint width, height, depth;
-    gVoxelInjectFiltered.GetDimensions(width, height, depth);
-    if (DTid.x >= width || DTid.y >= height || DTid.z >= depth)
+    return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
+// 前後上下左右の 6 つと、明るさが近いものだけを混ぜる
+[numthreads(8, 8, 4)]
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
+{
+    uint froxelWidth, froxelHeight, froxelDepth;
+    gVoxelInjectFiltered.GetDimensions(froxelWidth, froxelHeight, froxelDepth);
+    if (any(dispatchThreadId >= uint3(froxelWidth, froxelHeight, froxelDepth)))
         return;
 
-    float4 center = gVoxelInjectCurrent.Load(int4(DTid, 0));
+    int3 maxCoord = int3(froxelWidth, froxelHeight, froxelDepth) - 1;
+
+    float4 center = gVoxelInjectCurrent.Load(int4(dispatchThreadId, 0));
+    float centerLuminance = CalculateLuminance(center.rgb);
+
+    float depthRatio = float(dispatchThreadId.z) / float(max(1u, froxelDepth - 1));
+    float sensitivity = lerp(kEdgeSensitivityNear, kEdgeSensitivityFar, smoothstep(kFadeStartRatio, kFadeEndRatio, depthRatio));
+
     float4 sum = center;
     float totalWeight = 1.0f;
-    
-    // 奥に行くほどバイラテラル感度を落とし、遠景のステップノイズ・チラつきを抑える
-    float zLinear = float(DTid.z) / float(max(1u, depth - 1));
-    float lodFade = smoothstep(kFadeStartRatio, kFadeEndRatio, zLinear);
-    float bilateralSensitivity = lerp(kEdgeSensitivityNear, kEdgeSensitivityFar, lodFade);
-    
-    float centerLuma = CalculateLuminance(center.rgb);
-    
     for (int i = 0; i < 6; ++i)
     {
-        int3 neighborCoord = int3(DTid) + kNeighborOffsets[i];
-        
-        neighborCoord.x = clamp(neighborCoord.x, 0, int(width) - 1);
-        neighborCoord.y = clamp(neighborCoord.y, 0, int(height) - 1);
-        neighborCoord.z = clamp(neighborCoord.z, 0, int(depth) - 1);
-        
+        int3 neighborCoord = clamp(int3(dispatchThreadId) + kNeighborOffsets[i], 0, maxCoord);
         float4 neighbor = gVoxelInjectCurrent.Load(int4(neighborCoord, 0));
-        
-        // 輝度差 + 透過度差分によるウエイト算出
-        float neighborLuma = CalculateLuminance(neighbor.rgb);
-        float colorDiff = abs(centerLuma - neighborLuma) + abs(center.a - neighbor.a);
-        
-        float weight = exp(-colorDiff * bilateralSensitivity);
-        
+
+        float difference = abs(centerLuminance - CalculateLuminance(neighbor.rgb)) + abs(center.a - neighbor.a);
+        float weight = exp(-difference * sensitivity);
+
         sum += neighbor * weight;
         totalWeight += weight;
     }
-    
-    gVoxelInjectFiltered[DTid] = sum / totalWeight;
+
+    gVoxelInjectFiltered[dispatchThreadId] = sum / totalWeight;
 }

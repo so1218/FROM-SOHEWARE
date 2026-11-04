@@ -5,6 +5,7 @@
 #include "SRVManager.h"
 #include "PropertyBinder.h"
 #include "DebugDraw.h"
+#include "Frustum.h"
 
 namespace FS
 {
@@ -135,11 +136,31 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
     {
         volumetricFogPass_->BeginFrame();
 
-        // エディタ管理のボリューム配列を毎フレーム Push
-        auto& volumes = volumetricFogPass_->GetFogVolumesData();
-        for (const auto& vol : volumes)
+        // 映っていない置いた霧は送らない。
+        // 霧の自己影はシェーダーで太陽の方へ 15m 先まで調べるので、画面のすぐ外の霧も影を落とす。その分だけ大きめに判定する
+        constexpr float kSelfShadowReach = 15.0f;
+        Frustum frustum;
+        frustum.ExtractFromMatrix(viewMatrix * projectionMatrix);
+        const float fogMaxDistance = volumetricFogPass_->GetSettings()->maxDistance;
+
+        for (const auto& volume : volumetricFogPass_->GetFogVolumesData())
         {
-            volumetricFogPass_->SubmitFogVolume(vol);
+            // 球は scale.x が半径。箱は scale が中心から面までの長さなので、回転していても対角の長さに収まる
+            float radius = (volume.type == 0) ? volume.scale.x : volume.scale.Length();
+            radius += kSelfShadowReach;
+
+            if ((volume.position - cameraPosition).Length() - radius > fogMaxDistance)
+            {
+                continue;
+            }
+
+            Vector3 extent = { radius, radius, radius };
+            if (!frustum.IntersectsAABB(volume.position - extent, volume.position + extent))
+            {
+                continue;
+            }
+
+            volumetricFogPass_->SubmitFogVolume(volume);
         }
     }
 
@@ -196,10 +217,7 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         volumetricFogPass_->Execute(cmdList, context_);
 
         // フィルターパスに生フォグの情報を渡して実行
-        volumetricFogBilateralPass_->SetRawFogInput(
-            volumetricFogPass_->GetResource(),   // リソースポインタ (バリア用)
-            volumetricFogPass_->GetSRVIndex()    // SRVインデックス (コピー用)
-        );
+        volumetricFogBilateralPass_->SetRawFogSrvIndex(volumetricFogPass_->GetSRVIndex());
         volumetricFogBilateralPass_->Execute(cmdList, context_);
     }
 
@@ -348,7 +366,6 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     {
         binder.BindBool(p + "VolumetricFog/Enable", &compositeSettings->enableVolumetricFog, false);
         binder.BindColor(p + "VolumetricFog/Albedo", &volFogSettings->albedo, { 0.8f, 0.8f, 0.8f });
-        binder.Bind(p + "VolumetricFog/ScatteringIntensity", &volFogSettings->scatteringIntensity, 10.0f, 0.5f, 0.0f, 200.0f);
         binder.Bind(p + "VolumetricFog/ExtinctionScale", &volFogSettings->extinctionScale, 0.2f, 0.01f, 0.0f, 10.0f);
         binder.Bind(p + "VolumetricFog/Anisotropy", &volFogSettings->anisotropy, 0.7f, 0.01f, -0.99f, 0.99f);
         binder.BindColor(p + "VolumetricFog/AmbientLight", &volFogSettings->ambientLight, { 0.0f, 0.0f, 0.0f });
@@ -362,9 +379,7 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
         binder.Bind(p + "VolumetricFog/NoiseDistortion", &volFogSettings->noiseDistortion, 0.15f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/WindSpeedMultiplier", &volFogSettings->windSpeedMultiplier, 1.0f, 0.05f, 0.0f, 10.0f);
         binder.Bind(p + "VolumetricFog/Coverage", &volFogSettings->coverage, 0.85f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/WorleyWeight", &volFogSettings->worleyWeight, 0.9f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/Erosion", &volFogSettings->erosion, 0.4f, 0.01f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/ErosionStrength", &volFogSettings->erosionStrength, 1.0f, 0.01f, 0.0f, 2.0f);
         binder.Bind(p + "VolumetricFog/NoiseIntensity", &volFogSettings->noiseIntensity, 1.0f, 0.01f, 0.0f, 1.0f);
         binder.Bind(p + "VolumetricFog/NoiseFeather", &volFogSettings->noiseFeather, 0.3f, 0.01f, 0.001f, 2.0f);
 
@@ -403,18 +418,14 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
                 binder.BindColor(vp + "Color", &vol.color, vol.color);
                 binder.Bind(vp + "Density", &vol.density, vol.density, 0.01f, 0.0f, 10.0f);
                 binder.Bind(vp + "BlendDistance", &vol.blendDistance, vol.blendDistance, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "Anisotropy", &vol.anisotropy, vol.anisotropy, 0.01f, -0.99f, 0.99f);
                 binder.Bind(vp + "WindDirection", &vol.windDirection, vol.windDirection, 0.05f, -1.0f, 1.0f);
                 binder.Bind(vp + "WindSpeed", &vol.windSpeed, vol.windSpeed, 0.01f, -5.0f, 5.0f);
                 binder.Bind(vp + "NoiseScale", &vol.noiseScale, vol.noiseScale, 0.01f);
                 binder.Bind(vp + "NoiseIntensity", &vol.noiseIntensity, vol.noiseIntensity, 0.01f, 0.0f, 1.0f);
                 binder.Bind(vp + "Coverage", &vol.coverage, vol.coverage, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "WorleyWeight", &vol.worleyWeight, vol.worleyWeight, 0.01f, 0.0f, 1.0f);
                 binder.Bind(vp + "Erosion", &vol.erosion, vol.erosion, 0.01f, 0.0f, 1.0f);
                 binder.Bind(vp + "NoiseFeather", &vol.noiseFeather, vol.noiseFeather, 0.01f, 0.001f, 2.0f);
                 binder.Bind(vp + "DistortionAmount", &vol.distortionAmount, vol.distortionAmount, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "DensityOffset", &vol.densityOffset, vol.densityOffset, 0.01f, -1.0f, 1.0f);
-                binder.Bind(vp + "NoiseContrast", &vol.noiseContrast, vol.noiseContrast, 0.05f, 0.0f, 10.0f);
                 binder.Bind(vp + "HeightFalloff", &vol.heightFalloff, vol.heightFalloff, 0.05f, 0.0f, 10.0f);
             }
         }
@@ -552,13 +563,12 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
 
             ImGui::SeparatorText("PBR 光学特性");
             binder.Draw(p + "VolumetricFog/Albedo", "散乱色");
-            binder.Draw(p + "VolumetricFog/ScatteringIntensity", "散乱の強さ");
-            binder.Draw(p + "VolumetricFog/ExtinctionScale", "光の減衰スケール");
+            binder.Draw(p + "VolumetricFog/ExtinctionScale", "全体の濃さ倍率");
             binder.Draw(p + "VolumetricFog/Anisotropy", "前方散乱 (Anisotropy)");
             binder.Draw(p + "VolumetricFog/AmbientLight", "環境光");
 
             ImGui::SeparatorText("高さ・密度");
-            binder.Draw(p + "VolumetricFog/Extinction", "ベース密度");
+            binder.Draw(p + "VolumetricFog/Extinction", "一様な濃さ");
             binder.Draw(p + "VolumetricFog/HeightDensity", "高さフォグ最大密度");
             binder.Draw(p + "VolumetricFog/BaseHeight", "基準高さ");
             binder.Draw(p + "VolumetricFog/HeightFalloff", "高さ減衰率");
@@ -568,11 +578,9 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
             binder.Draw(p + "VolumetricFog/NoiseDistortion", "ノイズ歪み");
             binder.Draw(p + "VolumetricFog/WindSpeedMultiplier", "風速影響倍率");
             binder.Draw(p + "VolumetricFog/Coverage", "霧の量 (Coverage)");
-            binder.Draw(p + "VolumetricFog/WorleyWeight", "雲の塊感 (Worley)");
-            binder.Draw(p + "VolumetricFog/Erosion", "削り取り強度");
-            binder.Draw(p + "VolumetricFog/ErosionStrength", "流体融合削り強度");
-            binder.Draw(p + "VolumetricFog/NoiseIntensity", "全体ノイズ適用度");
-            binder.Draw(p + "VolumetricFog/NoiseFeather", "境界のボケ具合");
+            binder.Draw(p + "VolumetricFog/Erosion", "縁の削り");
+            binder.Draw(p + "VolumetricFog/NoiseIntensity", "むらの強さ");
+            binder.Draw(p + "VolumetricFog/NoiseFeather", "むらの境目のぼかし");
 
             ImGui::SeparatorText("描画・TAA");
             binder.Draw(p + "VolumetricFog/MaxDistance", "最大描画距離");
@@ -634,21 +642,17 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
                         binder.Draw(vp + "Position", "位置");
                         binder.Draw(vp + "Rotation", "回転");
                         binder.Draw(vp + "Scale", "サイズ/半径");
-                        binder.Draw(vp + "Color", "色"); 
+                        binder.Draw(vp + "Color", "散乱色");
                         binder.Draw(vp + "Density", "密度");
                         binder.Draw(vp + "BlendDistance", "境界ボカシ (Blend)");
-                        binder.Draw(vp + "Anisotropy", "光の筋 (Anisotropy)");
                         binder.Draw(vp + "WindDirection", "風向き");
                         binder.Draw(vp + "WindSpeed", "風速");
                         binder.Draw(vp + "NoiseScale", "ノイズスケール");
-                        binder.Draw(vp + "NoiseIntensity", "ノイズ強度");
+                        binder.Draw(vp + "NoiseIntensity", "むらの強さ");
                         binder.Draw(vp + "Coverage", "霧の量 (Coverage)");
-                        binder.Draw(vp + "WorleyWeight", "雲の塊感");
-                        binder.Draw(vp + "Erosion", "削り取り強度");
-                        binder.Draw(vp + "NoiseFeather", "境界のボケ具合");
+                        binder.Draw(vp + "Erosion", "縁の削り");
+                        binder.Draw(vp + "NoiseFeather", "むらの境目のぼかし");
                         binder.Draw(vp + "DistortionAmount", "流体歪み強さ");
-                        binder.Draw(vp + "DensityOffset", "密度の底上げ");
-                        binder.Draw(vp + "NoiseContrast", "コントラスト");
                         binder.Draw(vp + "HeightFalloff", "ローカル高さ減衰");
 
                         ImGui::TreePop();

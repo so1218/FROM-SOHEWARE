@@ -3,59 +3,50 @@
 
 Texture2D<float4> gRawFogTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
-
-// ぼかし処理が終わった最終結果
 RWTexture2D<float4> gFilteredFog : register(u0);
 
 ConstantBuffer<FogBilateralSettings> gFogBilateralSettings : register(b0);
 
+// 深度が近いピクセルだけでぼかして、物の輪郭で霧がにじまないようにする
 [numthreads(8, 8, 1)]
-void main(uint3 DTid : SV_DispatchThreadID)
+void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-    uint width, height;
-    gFilteredFog.GetDimensions(width, height);
-    if (DTid.x >= width || DTid.y >= height)
+    uint outputWidth, outputHeight;
+    gFilteredFog.GetDimensions(outputWidth, outputHeight);
+    if (any(dispatchThreadId.xy >= uint2(outputWidth, outputHeight)))
         return;
 
-    int3 centerPos = int3(DTid.xy, 0);
-    float4 centerFog = gRawFogTexture.Load(centerPos);
-    float centerDepth = gDepthTexture.Load(centerPos).r;
+    // 霧は画面の半分の大きさなので、深度は大きさの比で読む位置を合わせる
+    uint depthWidth, depthHeight;
+    gDepthTexture.GetDimensions(depthWidth, depthHeight);
+    float2 depthScale = float2(depthWidth, depthHeight) / float2(outputWidth, outputHeight);
+    int2 maxCoord = int2(outputWidth, outputHeight) - 1;
+    int2 maxDepthCoord = int2(depthWidth, depthHeight) - 1;
 
-    float4 resultColor = 0.0f;
-    float totalWeight = 0.0f;
+    float centerDepth = gDepthTexture.Load(int3(min(int2(dispatchThreadId.xy * depthScale), maxDepthCoord), 0));
+
     int radius = gFogBilateralSettings.blurRadius;
-    
-    // Gauss関数の指数部係数
-    float spatialCoeff = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
-   
-    float safeDepthSigma = max(gFogBilateralSettings.depthSigma, kEpsilon);
-    float depthCoeff = 1.0f / (2.0f * safeDepthSigma * safeDepthSigma);
+    float spatialFactor = 1.0f / (2.0f * gFogBilateralSettings.spatialSigma * gFogBilateralSettings.spatialSigma);
+    float depthSigma = max(gFogBilateralSettings.depthSigma, kEpsilon);
+    float depthFactor = 1.0f / (2.0f * depthSigma * depthSigma);
 
+    float4 sum = 0.0f;
+    float totalWeight = 0.0f;
     for (int y = -radius; y <= radius; ++y)
     {
         for (int x = -radius; x <= radius; ++x)
         {
-            // サンプル座標を画面内にクランプ
-            int2 sampleCoord = clamp(int2(DTid.x + x, DTid.y + y), 0, int2(width - 1, height - 1));
-            int3 samplePos = int3(sampleCoord, 0);
+            int2 sampleCoord = clamp(int2(dispatchThreadId.xy) + int2(x, y), 0, maxCoord);
+            float4 fog = gRawFogTexture.Load(int3(sampleCoord, 0));
+            float sampleDepth = gDepthTexture.Load(int3(min(int2(sampleCoord * depthScale), maxDepthCoord), 0));
 
-            float4 sampleFog = gRawFogTexture.Load(samplePos);
-            float sampleDepth = gDepthTexture.Load(samplePos).r;
+            float depthDifference = centerDepth - sampleDepth;
+            float weight = exp(-float(x * x + y * y) * spatialFactor) * exp(-depthDifference * depthDifference * depthFactor);
 
-            // 空間ウェイト計算
-            float distSq = float(x * x + y * y);
-            float spatialWeight = exp(-distSq * spatialCoeff);
-
-            // 深度ウェイト計算（エッジ保持）
-            float depthDiff = centerDepth - sampleDepth;
-            float depthWeight = exp(-(depthDiff * depthDiff) * depthCoeff);
-
-            float weight = spatialWeight * depthWeight;
-
-            resultColor += sampleFog * weight;
+            sum += fog * weight;
             totalWeight += weight;
         }
     }
 
-    gFilteredFog[DTid.xy] = resultColor / max(totalWeight, kEpsilon);
+    gFilteredFog[dispatchThreadId.xy] = sum / max(totalWeight, kEpsilon);
 }

@@ -67,21 +67,18 @@
         "PostEffect/DoF/FocusDistance": 45.0,
         "PostEffect/DoF/FocusRange": 150.0,
         "PostEffect/DoF/TransitionRange": 65.0,
-        "PostEffect/FogVolumes/0/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/0/BlendDistance": 0.30000001192092896,
         "PostEffect/FogVolumes/0/Color": [
-            0.34241247177124023,
-            0.4242912530899048,
-            1.0
+            0.1375814974308014,
+            0.243031308054924,
+            0.9844720363616943
         ],
         "PostEffect/FogVolumes/0/Coverage": 0.550000011920929,
-        "PostEffect/FogVolumes/0/Density": 0.20000000298023224,
-        "PostEffect/FogVolumes/0/DensityOffset": 0.0,
+        "PostEffect/FogVolumes/0/Density": 0.3799999952316284,
         "PostEffect/FogVolumes/0/DistortionAmount": 0.15000000596046448,
         "PostEffect/FogVolumes/0/Erosion": 0.20000000298023224,
         "PostEffect/FogVolumes/0/HeightFalloff": 0.0,
         "PostEffect/FogVolumes/0/IsVisible": true,
-        "PostEffect/FogVolumes/0/NoiseContrast": 1.0,
         "PostEffect/FogVolumes/0/NoiseFeather": 0.30000001192092896,
         "PostEffect/FogVolumes/0/NoiseIntensity": 0.8999999761581421,
         "PostEffect/FogVolumes/0/NoiseScale": [
@@ -111,22 +108,18 @@
             0.699999988079071
         ],
         "PostEffect/FogVolumes/0/WindSpeed": 0.30000001192092896,
-        "PostEffect/FogVolumes/0/WorleyWeight": 0.949999988079071,
-        "PostEffect/FogVolumes/1/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/1/BlendDistance": 0.30000001192092896,
         "PostEffect/FogVolumes/1/Color": [
-            0.20077519118785858,
-            0.5797665119171143,
-            0.3541412353515625
+            0.40960997343063354,
+            1.0,
+            0.2515528202056885
         ],
         "PostEffect/FogVolumes/1/Coverage": 0.550000011920929,
-        "PostEffect/FogVolumes/1/Density": 0.07999999821186066,
-        "PostEffect/FogVolumes/1/DensityOffset": 0.0,
+        "PostEffect/FogVolumes/1/Density": 0.17000000178813934,
         "PostEffect/FogVolumes/1/DistortionAmount": 0.15000000596046448,
         "PostEffect/FogVolumes/1/Erosion": 0.20000000298023224,
         "PostEffect/FogVolumes/1/HeightFalloff": 0.0,
         "PostEffect/FogVolumes/1/IsVisible": true,
-        "PostEffect/FogVolumes/1/NoiseContrast": 1.0,
         "PostEffect/FogVolumes/1/NoiseFeather": 0.30000001192092896,
         "PostEffect/FogVolumes/1/NoiseIntensity": 0.8999999761581421,
         "PostEffect/FogVolumes/1/NoiseScale": [
@@ -156,22 +149,18 @@
             0.699999988079071
         ],
         "PostEffect/FogVolumes/1/WindSpeed": 0.30000001192092896,
-        "PostEffect/FogVolumes/1/WorleyWeight": 0.949999988079071,
-        "PostEffect/FogVolumes/2/Anisotropy": 0.699999988079071,
         "PostEffect/FogVolumes/2/BlendDistance": 0.2199999988079071,
         "PostEffect/FogVolumes/2/Color": [
-            0.26979970932006836,
-            0.44246533513069153,
-            0.5136187076568604
+            0.24534159898757935,
+            0.7797694206237793,
+            1.0
         ],
         "PostEffect/FogVolumes/2/Coverage": 0.7599999904632568,
         "PostEffect/FogVolumes/2/Density": 1.0,
-        "PostEffect/FogVolumes/2/DensityOffset": 0.0,
         "PostEffect/FogVolumes/2/DistortionAmount": 0.15000000596046448,
         "PostEffect/FogVolumes/2/Erosion": 0.6700000166893005,
         "PostEffect/FogVolumes/2/HeightFalloff": 0.0,
         "PostEffect/FogVolumes/2/IsVisible": true,
-        "PostEffect/FogVolumes/2/NoiseContrast": 1.0,
         "PostEffect/FogVolumes/2/NoiseFeather": 1.0199999809265137,
         "PostEffect/FogVolumes/2/NoiseIntensity": 0.9800000190734863,
         "PostEffect/FogVolumes/2/NoiseScale": [
@@ -201,7 +190,6 @@
             0.0
         ],
         "PostEffect/FogVolumes/2/WindSpeed": 0.23999999463558197,
-        "PostEffect/FogVolumes/2/WorleyWeight": 0.5,
         "PostEffect/FogVolumes/Count": 3,
         "PostEffect/Pixelation/Enable": false,
         "PostEffect/Pixelation/Size": 1.0,
@@ -247,7 +235,7 @@
             0.03529411926865578,
             0.03921568766236305
         ],
-        "PostEffect/VolumetricFog/Anisotropy": 0.699999988079071,
+        "PostEffect/VolumetricFog/Anisotropy": 0.75,
         "PostEffect/VolumetricFog/BaseHeight": 0.0,
         "PostEffect/VolumetricFog/BilateralBlurRadius": 2,
         "PostEffect/VolumetricFog/BilateralDepthSigma": 0.0010000000474974513,
@@ -255,9 +243,8 @@
         "PostEffect/VolumetricFog/Coverage": 0.8500000238418579,
         "PostEffect/VolumetricFog/Enable": 1,
         "PostEffect/VolumetricFog/Erosion": 0.20000000298023224,
-        "PostEffect/VolumetricFog/ErosionStrength": 1.0,
         "PostEffect/VolumetricFog/Extinction": 0.004999999888241291,
-        "PostEffect/VolumetricFog/ExtinctionScale": 0.4000000059604645,
+        "PostEffect/VolumetricFog/ExtinctionScale": 0.30000001192092896,
         "PostEffect/VolumetricFog/HeightDensity": 0.5,
         "PostEffect/VolumetricFog/HeightFalloff": 0.10000000149011612,
         "PostEffect/VolumetricFog/MaxDistance": 500.0,
@@ -265,16 +252,8 @@
         "PostEffect/VolumetricFog/NoiseFeather": 0.30000001192092896,
         "PostEffect/VolumetricFog/NoiseIntensity": 0.5,
         "PostEffect/VolumetricFog/NoiseScale": 0.05000000074505806,
-        "PostEffect/VolumetricFog/ScatteringIntensity": 10.800000190734863,
         "PostEffect/VolumetricFog/TemporalWeight": 0.05000000074505806,
-        "PostEffect/VolumetricFog/WindDirection": [
-            1.0,
-            0.0,
-            0.0
-        ],
-        "PostEffect/VolumetricFog/WindSpeed": 0.20000000298023224,
         "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0,
-        "PostEffect/VolumetricFog/WorleyWeight": 0.8999999761581421,
         "TimeLimit": 300.0
     }
 }
