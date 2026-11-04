@@ -1,7 +1,6 @@
 {
     "Environment": {
         "Cloudy_AtmoDim": 0.5,
-        "Cloudy_CloudMax": 0.6399999856948853,
         "Cloudy_CloudMin": 0.029999999329447746,
         "Cloudy_CloudShadow": 0.3799999952316284,
         "Cloudy_LightDim": 0.3400000035762787,
@@ -56,11 +55,6 @@
         "Cloudy_WindSpeed": 1.0,
         "Cloudy_WindTurbul": 0.20000000298023224,
         "Day_AtmoGlow": 0.5,
-        "Day_CloudAmbient": [
-            0.800000011920929,
-            0.800000011920929,
-            0.800000011920929
-        ],
         "Day_GroundColor": [
             0.8987341523170471,
             0.9782086610794067,
@@ -83,11 +77,6 @@
             1.0
         ],
         "Night_AtmoGlow": 0.49000000953674316,
-        "Night_CloudAmbient": [
-            1.0,
-            1.0,
-            1.0
-        ],
         "Night_GroundColor": [
             0.0,
             0.0,
@@ -110,7 +99,6 @@
             0.12236285209655762
         ],
         "Rain_AtmoDim": 0.20000000298023224,
-        "Rain_CloudMax": 0.11999999731779099,
         "Rain_CloudMin": 0.25,
         "Rain_CloudShadow": 0.5099999904632568,
         "Rain_LightDim": 0.12999999523162842,
@@ -164,35 +152,9 @@
         ],
         "Rain_WindSpeed": 1.399999976158142,
         "Rain_WindTurbul": 0.5,
-        "Snow_AtmoDim": 0.30000001192092896,
-        "Snow_CloudMax": 0.6299999952316284,
-        "Snow_CloudMin": 0.09000000357627869,
-        "Snow_CloudShadow": 0.699999988079071,
-        "Snow_LightDim": 0.41999998688697815,
-        "Snow_RainIntens": 0.0,
-        "Snow_SkyBlendWeight": 0.949999988079071,
-        "Snow_SkyHorizon": [
-            0.017449578270316124,
-            0.012284353375434875,
-            0.06329113245010376
-        ],
-        "Snow_SkyZenith": [
-            0.08016878366470337,
-            0.08016878366470337,
-            0.08016878366470337
-        ],
-        "Snow_TransitionSpeed": 0.15000000596046448,
-        "Snow_Wetness": 0.20000000298023224,
-        "Snow_WindDir": [
-            1.0,
-            0.0
-        ],
-        "Snow_WindSpeed": 1.0,
-        "Snow_WindTurbul": 0.20000000298023224,
         "Sunny_AtmoDim": 1.0,
-        "Sunny_CloudMax": 0.0,
-        "Sunny_CloudMin": 0.46000000834465027,
-        "Sunny_CloudShadow": 0.25,
+        "Sunny_CloudMin": 0.41999998688697815,
+        "Sunny_CloudShadow": 0.5600000023841858,
         "Sunny_LightDim": 1.0,
         "Sunny_RainIntens": 0.0,
         "Sunny_SkyBlendWeight": 0.0,
@@ -245,11 +207,6 @@
         "Sunny_WindSpeed": 0.8999999761581421,
         "Sunny_WindTurbul": 0.7599999904632568,
         "Sunrise_AtmoGlow": 2.0,
-        "Sunrise_CloudAmbient": [
-            0.800000011920929,
-            0.800000011920929,
-            0.800000011920929
-        ],
         "Sunrise_GroundColor": [
             0.2067510485649109,
             0.10468407720327377,
@@ -272,11 +229,6 @@
             1.0
         ],
         "Sunset_AtmoGlow": 2.0,
-        "Sunset_CloudAmbient": [
-            0.800000011920929,
-            0.800000011920929,
-            0.800000011920929
-        ],
         "Sunset_GroundColor": [
             0.40084385871887207,
             0.13192330300807953,
@@ -299,7 +251,6 @@
             0.6244726181030273
         ],
         "Thunder_AtmoDim": 0.17000000178813934,
-        "Thunder_CloudMax": 0.5,
         "Thunder_CloudMin": 0.14000000059604645,
         "Thunder_CloudShadow": 0.5099999904632568,
         "Thunder_LightDim": 0.14000000059604645,

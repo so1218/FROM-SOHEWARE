@@ -39,7 +39,7 @@ float4 main(SkydomePSInput input) : SV_Target
     float3 sunDirection = normalize(-gSky.sunDirection);
     float3 moonDirection = -sunDirection;
 
-    // 雲を照らす光 
+    // 雲を照らす光
     float3 lightDirection = normalize(-gDirectionalLights[0].direction);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
 
@@ -60,15 +60,15 @@ float4 main(SkydomePSInput input) : SV_Target
     float densityForward = SampleCloudDensity(cloudUV + float2(0.0f, 0.005f));
     float3 cloudNormal = normalize(float3(density - densityRight, gSky.cloudBumpScale, density - densityForward));
 
-    // 濃さが cloudCoverage.x を超えた所が雲。地平線の近くは消す
-    float cloudAlpha = smoothstep(gSky.cloudCoverage.x, gSky.cloudCoverage.x + gSky.cloudEdgeSoftness, density)
+    // 濃さが cloudThreshold を超えた所が雲。超えた分が多いほど厚い。地平線の近くは消す
+    float cloudAlpha = smoothstep(gSky.cloudThreshold, gSky.cloudThreshold + gSky.cloudEdgeSoftness, density)
                      * smoothstep(0.05f, 0.2f, viewDirection.y);
-    float thickness = smoothstep(max(0.0f, gSky.cloudCoverage.x - 0.05f), min(1.0f, gSky.cloudCoverage.y + 0.15f), density);
+    float thickness = saturate((density - gSky.cloudThreshold) / max(1.0f - gSky.cloudThreshold, 0.001f));
 
     // 光の当たる側は明るく、厚い所ほど光が通らず暗い。陰の側は空の色を受ける
     float halfLambert = saturate(dot(cloudNormal, lightDirection) * 0.5f + 0.5f);
     float transmittance = exp(-thickness * gSky.cloudAbsorption * 3.0f);
-    float3 cloudColor = lerp(skyColor * gSky.cloudShadowDensity, lightColor * transmittance, halfLambert);
+    float3 cloudColor = lerp(skyColor * gSky.cloudShadowBrightness, lightColor * transmittance, halfLambert);
 
     // 薄いふちは光が透けて明るく見える
     cloudColor += lightColor * pow(1.0f - thickness, 2.0f) * cloudAlpha * 0.5f;

@@ -8,7 +8,6 @@
 #include "SRVManager.h"
 #include "GlobalConstants.h"
 #include "BufferManager.h"
-#include "PostEffectManager.h"
 #include "ShapeGenerator.h"
 #include "PIXColors.h"
 
@@ -35,9 +34,8 @@ void SkydomeRenderer::BeginFrame()
     currentFrameIndex_ = (currentFrameIndex_ + 1) % kFrameCount;
 }
 
-void SkydomeRenderer::Submit(const WorldTransform& worldTransform, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
+void SkydomeRenderer::Submit(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
 {
-    currentTransform_ = worldTransform;
     cloudTextureIndex_ = cloudNoiseSrvIndex;
     currentAtmosphereSkyData_ = atmosphereSkyData;
     isSubmitted_ = true;
@@ -49,15 +47,14 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
 
     auto* cmdList = env.commandManager->GetCommandList();
 
-    // スカイドーム描画パス全体のスコープ
     PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Skydome Pass");
 
-    // カメラが動いても空が付いてくるよう、ビュー行列から平行移動を除く
+    // カメラが動いても空が付いてくるよう、ビュー行列から平行移動を除く。空の球は原点にある大きさ 1 の球
     Matrix4x4 view = viewMatrix;
     view.m[3][0] = 0.0f;
     view.m[3][1] = 0.0f;
     view.m[3][2] = 0.0f;
-    Matrix4x4 wvpMatrix = currentTransform_.GetWorldMatrix() * view * projectionMatrix;
+    Matrix4x4 wvpMatrix = view * projectionMatrix;
     memcpy(mappedWvp_[currentFrameIndex_], &wvpMatrix, sizeof(TransformationMatrix));
 
     memcpy(mappedAtmosphereSky_[currentFrameIndex_], &currentAtmosphereSkyData_, sizeof(AtmosphereSkyData));

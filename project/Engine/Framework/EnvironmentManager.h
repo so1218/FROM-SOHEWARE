@@ -55,9 +55,8 @@ struct WeatherVisualParams
 // 天候が環境に与える影響のプロファイル
 struct WeatherProfile
 {
-    float cloudCoverageMin;      // 雲の量（下限）
-    float cloudCoverageMax;      // 雲の量（上限）
-    float cloudShadowDensity;    // 雲の影の濃さ
+    float cloudThreshold;        // この濃さを超えた所が雲になる。大きいほど雲が減る
+    float cloudShadowBrightness; // 雲の陰の側に空の色をどれだけ残すか
     float lightDimmer;           // 太陽/月の光をどれくらい遮るか (1.0 = そのまま, 0.2 = 暗い)
     float atmosphereGlowDimmer;  // 大気散乱の減衰
     float wetness;

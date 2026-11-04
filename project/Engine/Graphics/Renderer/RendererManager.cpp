@@ -572,11 +572,11 @@ void RendererManager::SetWaterSceneTextures(
 	}
 }
 
-void RendererManager::SubmitSkydome(const WorldTransform& worldTransform, uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
+void RendererManager::SubmitSkydome(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
 {
 	if (skydomeRenderer_)
 	{
-		skydomeRenderer_->Submit(worldTransform, cloudNoiseSrvIndex, atmosphereSkyData);
+		skydomeRenderer_->Submit(cloudNoiseSrvIndex, atmosphereSkyData);
 	}
 }
 

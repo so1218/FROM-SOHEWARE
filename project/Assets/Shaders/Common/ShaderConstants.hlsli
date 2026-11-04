@@ -233,21 +233,21 @@ struct GlobalEnvironmentData
 
 struct AtmosphereSkyData
 {
-    float2 cloudCoverage; 
     float2 windVelocity;
-    
+    float cloudThreshold;        // この濃さを超えた所が雲になる。大きいほど雲が減る
     float cloudScale;
-    float cloudShadowDensity; 
+    
+    float cloudShadowBrightness; // 陰になった側に空の色をどれだけ残すか
     float skyGradientExponent;
     float sunAtmosphereGlow;
-    
-    float3 zenithColor;
     float cloudBumpScale;
     
-    float3 horizonColor;
+    float3 zenithColor;
     float cloudEdgeSoftness;
     
+    float3 horizonColor;
     float cloudAbsorption;
+    
     float3 sunDirection;
 };
 

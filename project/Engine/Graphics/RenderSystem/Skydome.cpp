@@ -2,7 +2,6 @@
 #include "Skydome.h"
 #include "Engine.h"
 #include "TextureManager.h"
-#include "Camera.h"
 #include "PropertyBinder.h"
 #include "EnvironmentManager.h"
 
@@ -12,10 +11,6 @@ namespace FS
 Skydome::Skydome(Engine* engine)
     : engine_(engine)
 {
-    transform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    transform_.translation_ = { 0.0f, 0.0f, 0.0f };
-
-    // デフォルトテクスチャの読み込み
     cloudNoiseHandle_ = TextureManager::GetInstance().Get("noise_59");
 
     binder_ = std::make_unique<PropertyBinder>(engine_, "Skydome");
@@ -23,7 +18,6 @@ Skydome::Skydome(Engine* engine)
 
 void Skydome::Initialize()
 {
-    // バインド処理
     binder_->Bind("WindVelocity", &atmosphereSkyData_.windVelocity, { 0.006f, 0.003f }, 0.001f, -0.1f, 0.1f);
     binder_->Bind("CloudScale", &atmosphereSkyData_.cloudScale, 0.3f, 0.01f, 0.01f, 2.0f);
     binder_->Bind("SkyGradientExp", &atmosphereSkyData_.skyGradientExponent, 0.6f, 0.01f, 0.1f, 5.0f);
@@ -34,34 +28,28 @@ void Skydome::Initialize()
 
 void Skydome::Update()
 {
-    // 太陽の向きを取得
+    // 空の色・雲の量・太陽の向きは時間と天気で変わるので、毎フレーム受け取る
     atmosphereSkyData_.sunDirection = EnvironmentManager::GetInstance()->GetSunDirection();
 
-    // 現在ブレンド済みの環境パラメータを取得し、適用
     const TimeOfDayProfile& profile = EnvironmentManager::GetInstance()->GetCurrentProfile();
 
     atmosphereSkyData_.zenithColor = profile.zenithColor;
     atmosphereSkyData_.horizonColor = profile.horizonColor;
     atmosphereSkyData_.sunAtmosphereGlow = profile.sunAtmosphereGlow;
 
-    // 天候プロファイルを取得し、雲の量を上書きする
     const WeatherProfile& weather = EnvironmentManager::GetInstance()->GetCurrentWeatherProfile();
-
-    atmosphereSkyData_.cloudCoverage.x = weather.cloudCoverageMin;
-    atmosphereSkyData_.cloudCoverage.y = weather.cloudCoverageMax;
-    atmosphereSkyData_.cloudShadowDensity = weather.cloudShadowDensity;
+    atmosphereSkyData_.cloudThreshold = weather.cloudThreshold;
+    atmosphereSkyData_.cloudShadowBrightness = weather.cloudShadowBrightness;
 }
 
-void Skydome::SetCloudNoiseTexture(const std::string& textureName) {
+void Skydome::SetCloudNoiseTexture(const std::string& textureName)
+{
     cloudNoiseHandle_ = TextureManager::GetInstance().Get(textureName);
 }
-WorldTransform& Skydome::GetTransform() { return transform_; }
 
 void Skydome::Draw()
 {
-    transform_.UpdateMatrix();
-
-    engine_->GetRendererManager()->SubmitSkydome(transform_, cloudNoiseHandle_, atmosphereSkyData_);
+    engine_->GetRendererManager()->SubmitSkydome(cloudNoiseHandle_, atmosphereSkyData_);
 }
 
 void Skydome::DebugDraw()
@@ -75,15 +63,13 @@ void Skydome::DebugDraw()
         binder_->Draw("CloudScale", "雲のサイズ");
         binder_->Draw("WindVelocity", "風向きと強さ");
         binder_->Draw("CloudEdgeSoftness", "雲の輪郭の柔らかさ");
-        binder_->Draw("CloudBumpScale", "雲の凹凸の強さ (モクモク感)");
+        binder_->Draw("CloudBumpScale", "雲の凹凸の強さ");
         binder_->Draw("SkyGradientExp", "空のグラデーションのかかり方");
 
         ImGui::Separator();
 
         ImGui::Text("雲のライティング・陰影設定");
         binder_->Draw("CloudAbsorption", "雲の厚みによる光の遮蔽率");
-
-        ImGui::Separator();
     }
 
     ImGui::End();

@@ -57,9 +57,8 @@ void EnvironmentManager::Initialize(Engine* engine)
         // 天候プロファイル
         // -------------------------------------------------------------
         binder_->Bind("Sunny_TransitionSpeed", &profileSunny_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Sunny_CloudMin", &profileSunny_.cloudCoverageMin, 0.35f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_CloudMax", &profileSunny_.cloudCoverageMax, 0.70f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_CloudShadow", &profileSunny_.cloudShadowDensity, 0.60f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Sunny_CloudMin", &profileSunny_.cloudThreshold, 0.35f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Sunny_CloudShadow", &profileSunny_.cloudShadowBrightness, 0.60f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Sunny_LightDim", &profileSunny_.lightDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Sunny_AtmoDim", &profileSunny_.atmosphereGlowDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Sunny_Wetness", &profileSunny_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
@@ -72,9 +71,8 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Sunny_SkyBlendWeight", &profileSunny_.skyColorBlendWeight, 0.00f, 0.01f, 0.0f, 1.0f);
 
         binder_->Bind("Cloudy_TransitionSpeed", &profileCloudy_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Cloudy_CloudMin", &profileCloudy_.cloudCoverageMin, 0.60f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_CloudMax", &profileCloudy_.cloudCoverageMax, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_CloudShadow", &profileCloudy_.cloudShadowDensity, 0.80f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Cloudy_CloudMin", &profileCloudy_.cloudThreshold, 0.60f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Cloudy_CloudShadow", &profileCloudy_.cloudShadowBrightness, 0.80f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Cloudy_LightDim", &profileCloudy_.lightDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Cloudy_AtmoDim", &profileCloudy_.atmosphereGlowDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Cloudy_Wetness", &profileCloudy_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
@@ -87,9 +85,8 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Cloudy_SkyBlendWeight", &profileCloudy_.skyColorBlendWeight, 0.40f, 0.01f, 0.0f, 1.0f);
 
         binder_->Bind("Rain_TransitionSpeed", &profileRain_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Rain_CloudMin", &profileRain_.cloudCoverageMin, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_CloudMax", &profileRain_.cloudCoverageMax, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowDensity, 0.90f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Rain_CloudMin", &profileRain_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowBrightness, 0.90f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_LightDim", &profileRain_.lightDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_AtmoDim", &profileRain_.atmosphereGlowDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_Wetness", &profileRain_.wetness, 1.00f, 0.01f, 0.0f, 1.0f);
@@ -102,9 +99,8 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Rain_SkyBlendWeight", &profileRain_.skyColorBlendWeight, 0.70f, 0.01f, 0.0f, 1.0f);
 
         binder_->Bind("Thunder_TransitionSpeed", &profileThunder_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Thunder_CloudMin", &profileThunder_.cloudCoverageMin, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_CloudMax", &profileThunder_.cloudCoverageMax, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_CloudShadow", &profileThunder_.cloudShadowDensity, 0.95f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Thunder_CloudMin", &profileThunder_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Thunder_CloudShadow", &profileThunder_.cloudShadowBrightness, 0.95f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_LightDim", &profileThunder_.lightDimmer, 0.15f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_AtmoDim", &profileThunder_.atmosphereGlowDimmer, 0.10f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 1.00f, 0.01f, 0.0f, 1.0f);
@@ -244,9 +240,8 @@ void EnvironmentManager::Update(LightManager* lightManager)
     WeatherProfile targetW = GetWeatherProfile(targetWeather_);
 
     // 天候パラメータのLerp
-    currentWeatherProfile_.cloudCoverageMin = FS::Math::Lerp(currentW.cloudCoverageMin, targetW.cloudCoverageMin, weatherTransitionT_);
-    currentWeatherProfile_.cloudCoverageMax = FS::Math::Lerp(currentW.cloudCoverageMax, targetW.cloudCoverageMax, weatherTransitionT_);
-    currentWeatherProfile_.cloudShadowDensity = FS::Math::Lerp(currentW.cloudShadowDensity, targetW.cloudShadowDensity, weatherTransitionT_);
+    currentWeatherProfile_.cloudThreshold = FS::Math::Lerp(currentW.cloudThreshold, targetW.cloudThreshold, weatherTransitionT_);
+    currentWeatherProfile_.cloudShadowBrightness = FS::Math::Lerp(currentW.cloudShadowBrightness, targetW.cloudShadowBrightness, weatherTransitionT_);
     currentWeatherProfile_.lightDimmer = FS::Math::Lerp(currentW.lightDimmer, targetW.lightDimmer, weatherTransitionT_);
     currentWeatherProfile_.atmosphereGlowDimmer = FS::Math::Lerp(currentW.atmosphereGlowDimmer, targetW.atmosphereGlowDimmer, weatherTransitionT_);
     currentWeatherProfile_.wetness = FS::Math::Lerp(currentW.wetness, targetW.wetness, weatherTransitionT_);
@@ -411,9 +406,8 @@ void EnvironmentManager::DebugDraw()
 
                     if (ImGui::TreeNodeEx("雲 & 大気設定", ImGuiTreeNodeFlags_DefaultOpen))
                     {
-                        binder_->Draw((p + "_CloudMin").c_str(), "雲の量 (下限)");
-                        binder_->Draw((p + "_CloudMax").c_str(), "雲の量 (上限)");
-                        binder_->Draw((p + "_CloudShadow").c_str(), "雲の影の濃さ");
+                        binder_->Draw((p + "_CloudMin").c_str(), "雲が出る濃さ (大きいほど雲が減る)");
+                        binder_->Draw((p + "_CloudShadow").c_str(), "雲の陰の明るさ");
                         binder_->Draw((p + "_LightDim").c_str(), "太陽/月光の遮蔽率");
                         binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の減衰率");
                         binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ率");
