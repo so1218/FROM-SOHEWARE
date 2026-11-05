@@ -27,11 +27,7 @@ private:
     std::unique_ptr<FS::GrassSystem> grassSystem_;
     std::unique_ptr<FS::PropertyBinder> binder_;
 
-    FS::WorldTransform transform_;
-
-    // ==========================================
-    // GPUに送る 生成用パラメータ（変更されたら再生成が必要）
-    // ==========================================
+    // 生成に使う設定。エディターで変えたら needsRegenerate_ を立てる
     int maxGrassCount_ = 300000;
     float gridSpacing_ = 0.5f;
     float baseScale_ = 1.0f;
@@ -41,36 +37,14 @@ private:
     float minWidth_ = 0.8f;
     float maxWidth_ = 1.5f;
 
-    // 前フレーム比較用（再生成判定のため）
-    FS::Vector3 prevPosition_;
-    int prevMaxGrassCount_ = 0;
-    float prevGridSpacing_ = 0.0f;
-    float prevBaseScale_ = 0.0f;
-    float prevMinHeight_ = 0.0f;
-    float prevMaxHeight_ = 0.0f;
-    float prevMinWidth_ = 0.0f;
-    float prevMaxWidth_ = 0.0f;
-
-    std::string heightMapName_ = "noise_39";
-    uint32_t heightMapHandle_ = 0;
-
+    // 範囲は地形全体なので、密度マップも地形全体に貼られる
     std::string densityMapName_ = "white1x1";
     uint32_t densityMapHandle_ = 0;
 
     std::string windMapName_ = "noise_39";
     uint32_t windMapHandle_ = 0;
 
-    // 前回のテクスチャ名を記憶（変更検知による再生成用）
-    std::string prevHeightMapName_ = "";
-    std::string prevDensityMapName_ = "";
-
-    // 地形フィッティング用パラメータ
-    FS::Vector2 terrainCenter_;
-    float terrainWidth_ = 500.0f;
-    float terrainDepth_ = 500.0f;
-
-    // 変更監視用
-    FS::Vector2 prevTerrainCenter_{ 0.0f, 0.0f };
-    float prevTerrainWidth_ = 0.0f;
-    float prevTerrainDepth_ = 0.0f;
+    bool needsRegenerate_ = true;
+    // 最後に生成したときの地形の形。変わっていたら作り直す
+    uint32_t generatedTerrainVersion_ = 0;
 };

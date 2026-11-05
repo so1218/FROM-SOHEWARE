@@ -28,7 +28,6 @@
         "GridSpacing": 0.7799999713897705,
         "GustScale": 0.0010000000474974513,
         "GustStrength": 1.0,
-        "HeightMap": "noise_39",
         "InteractRadius": 5.0,
         "InteractStrength": 1.0,
         "LodDistance1": 100.0,
@@ -45,11 +44,6 @@
         "NearFadeMaxDist": 15.0,
         "NearFadeMinDist": 2.0,
         "NormalBlend": 1.0499999523162842,
-        "Position": [
-            0.0,
-            0.0,
-            0.0
-        ],
         "RootAO": 0.550000011920929,
         "RootColor": [
             0.031901802867650986,
@@ -74,10 +68,6 @@
         "SpecularShininess": 200.0,
         "SpecularStrength": 0.41999998688697815,
         "SpreadRadius": 500.0,
-        "TerrainCenterX": 0.0,
-        "TerrainCenterZ": 0.0,
-        "TerrainDepth": 1024.0,
-        "TerrainWidth": 1024.0,
         "ThinStartDistance": 150.0,
         "TipColor": [
             0.22779135406017303,

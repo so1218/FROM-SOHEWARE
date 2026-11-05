@@ -3,9 +3,7 @@
 #include "PlayerStateNormal.h"
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
-#include "PlayerStateDodge.h"
 #include "PlayerStamina.h"
-#include "Input.h"
 
 using namespace FS;
 
@@ -23,41 +21,30 @@ void PlayerStateSprint::Update(Player* player)
 
     if (!player->IsGrounded())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateJump>();
         return;
     }
 
-    Vector3 moveDir = player->GetMoveDirection();
-    player->SetMoveDirection(moveDir);
-    const bool isMoving = (moveDir.Length() > 0.1f);
-
-    // 止まった、ボタンを離した、息切れした
-    if (!isMoving || !player->IsSprintInputActive() || stamina->IsExhausted())
+    if (!player->IsMoving() || !player->IsSprintInputActive() || stamina->IsExhausted())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateNormal::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateNormal>();
         return;
     }
 
-    player->UpdateRotation(moveDir);
-    player->ApplyHorizontalMovement(moveDir, player->config.runSpeed * player->config.sprintSpeedRate);
+    const Vector3& moveDirection = player->GetMoveDirection();
+    player->UpdateRotation(moveDirection);
+    player->ApplyHorizontalMovement(moveDirection, player->config.runSpeed * player->config.sprintSpeedRate);
     player->UpdateFootstepEvents();
     stamina->Drain(player->config.sprintStaminaPerSecond);
 
-    if (player->IsDodgeInputTriggered() && stamina->TryConsume(player->config.dodgeStaminaCost))
-    {
-        player->GetStateMachine()->ChangeState(PlayerStateDodge::GetInstance());
+    if (player->TryStartDodge())
         return;
-    }
 
     if (player->IsAimInputActive())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateAiming>();
         return;
     }
 
-    if (player->IsJumpInputTriggered() && player->GetStamina()->TryConsume(player->config.jumpStaminaCost))
-    {
-        player->SetVelocityY(player->config.jumpInitialVelocity);
-        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
-    }
+    player->TryStartJump();
 }

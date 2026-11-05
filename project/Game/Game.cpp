@@ -18,11 +18,12 @@ Game::Game()
     : engine_(std::make_unique<Engine>())
 {
     ProjectConfig config;
-    config.windowTitle = L"FROM SOHEWARE"; 
+    config.windowTitle = L"LAST BLOOD: A War Alone";
     config.width = 1280;
     config.height = 720;
     config.targetFPS = 60;
 
+    // 開発用ツールのない Release だけフルスクリーン
 #ifndef ENABLE_DEV_TOOLS
     config.isFullscreen = true;
 #endif

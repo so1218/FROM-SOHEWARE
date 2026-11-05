@@ -2,7 +2,6 @@
 #include "PropertyBinder.h"
 #include "Sprite.h"
 
-// スタミナ。ダッシュ中は減り続け、回避で一度に減る。使うのをやめて少したつと回復する
 class PlayerStamina
 {
 public:

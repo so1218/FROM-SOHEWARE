@@ -9,7 +9,6 @@
 #include "Terrain.h"
 #include "TreeField.h"
 
-class PlayerStateNormal; 
 class PlayerWeapon;
 class PlayerReticle;
 class PlayerStamina;
@@ -90,9 +89,14 @@ public:
 		animationModel_->Play(name, loop, speed, blendTime);
 	}
 
-	void SetMoveDirection(const FS::Vector3& dir) { moveDirection_ = dir; }
-	FS::Vector3 GetMoveDirection();
+	// カメラから見た移動の入力。フレームの初めに1回だけ読む
+	const FS::Vector3& GetMoveDirection() const { return moveDirection_; }
+	bool IsMoving() const { return moveDirection_.LengthSq() > kMovingThreshold * kMovingThreshold; }
 	FS::Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
+
+	// 入力があり、スタミナが足りれば、その動きを始める
+	bool TryStartDodge();
+	bool TryStartJump();
 
 	void SetVelocityY(float vy) { velocityY_ = vy; }
 	float GetVelocityY() const { return velocityY_; }
@@ -131,12 +135,12 @@ public:
 	// false の間は入力を受け付けず、HUD も出さない (タイトル画面など)
 	void SetControllable(bool isControllable) { isControllable_ = isControllable; }
 	bool IsControllable() const { return isControllable_; }
-	void SetDodgeDirection(const FS::Vector3& direction) { dodgeDirection_ = direction; }
-	const FS::Vector3& GetDodgeDirection() const { return dodgeDirection_; }
-	void SetDodgeElapsedTime(float elapsedTime) { dodgeElapsedTime_ = elapsedTime; }
-	float GetDodgeElapsedTime() const { return dodgeElapsedTime_; }
 
 private:
+	static constexpr float kMovingThreshold = 0.1f;
+
+	FS::Vector3 ReadMoveInput() const;
+
 	FS::Engine* engine_;
 	FS::Camera* camera_ = nullptr;
 	FS::Terrain* terrain_ = nullptr;
@@ -181,8 +185,6 @@ private:
 	float spawnRotationY_ = 0.0f;                         // 始まりの向き (度)
 	bool isSprintInputActive_ = false;
 	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
-	FS::Vector3 dodgeDirection_ = { 0.0f, 0.0f, 1.0f };
-	float dodgeElapsedTime_ = 0.0f;
 
 	int shotCount_ = 0;
 	bool isControllable_ = true;

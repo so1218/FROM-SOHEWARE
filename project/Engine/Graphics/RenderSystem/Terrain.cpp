@@ -127,6 +127,7 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTextureName, float c
 
     CreateChunks();
     CreateMesh();
+    MarkShapeChanged();
 
     // 最初の Draw より前に草や植物が生成されても、地形の設定が入っているようにする
     engine_->GetRendererManager()->SubmitTerrain(CreateDrawData(), {});

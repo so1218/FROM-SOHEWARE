@@ -15,14 +15,13 @@
 #include "GameUI.h"
 #include "WaterManager.h"
 #include "Ground.h"
+#include "Environment.h"
 #include "TreeField.h"
 #include "Player.h"
 #include "Tutorial.h"
 #include "TitleMenu.h"
 #include "PauseMenuHint.h"
 #include "PauseMenu.h"
-#include "ImGuiManager.h"
-#include "TimeManager.h"
 
 using namespace FS;
 
@@ -34,6 +33,8 @@ PlayScene::PlayScene(Engine* engine)
     player_ = player;
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform());
     titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
+    // 空と光を最初に更新して、ほかの物が今の時間帯や天気を使えるようにする
+    objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
     auto grassField = objectManager_.Create<GrassField>(engine_);
     grassField->SetTerrain(ground->GetTerrain());
@@ -43,13 +44,14 @@ PlayScene::PlayScene(Engine* engine)
     player->SetTreeField(treeField);
     followCamera_->SetTerrain(ground->GetTerrain());
     player->SetFollowCamera(followCamera_.get());
-	auto wetherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
-	wetherEffectManager->SetCameraManager(cameraManager_.get());
+	auto weatherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
+	weatherEffectManager->SetCameraManager(cameraManager_.get());
     objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     enemyManager_->SetTerrain(ground->GetTerrain());
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
-    objectManager_.Create<FoliageField>(engine_);
+    auto foliageField = objectManager_.Create<FoliageField>(engine_);
+    foliageField->SetTerrain(ground->GetTerrain());
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);

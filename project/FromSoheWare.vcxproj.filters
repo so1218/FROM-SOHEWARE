@@ -753,6 +753,9 @@
     <ClCompile Include="Engine\Debugs\Grid.cpp">
       <Filter>Engine\Debugs</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Field\Environment.cpp">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Field\Ground.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
@@ -1307,6 +1310,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Debugs\Grid.h">
       <Filter>Engine\Debugs</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Field\Environment.h">
+      <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\Ground.h">
       <Filter>Game\GameObject\Field</Filter>

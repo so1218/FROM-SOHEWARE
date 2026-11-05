@@ -9,6 +9,7 @@
 #include "AudioPlayer.h"
 #include "GameDefine.h"
 #include "PlayerStateNormal.h"
+#include "PlayerStateJump.h"
 #include "CollisionManager.h"
 #include "GameObjectManager.h"
 #include "PlayerWeapon.h"
@@ -94,7 +95,6 @@ void Player::Initialize()
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	ResetToSpawn();
 
-
 	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
 	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
 	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
@@ -108,7 +108,7 @@ void Player::Update()
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
 
-	// ステートマシン更新
+	moveDirection_ = ReadMoveInput();
 	UpdateSprintInput();
 	if (IsReloadInputTriggered())
 	{
@@ -201,7 +201,7 @@ void Player::Update()
 }
 
 // 入力から移動方向を取得
-Vector3 Player::GetMoveDirection()
+Vector3 Player::ReadMoveInput() const
 {
 	if (!isControllable_)
 	{
@@ -376,7 +376,7 @@ void Player::FireWeapon()
 
 void Player::TakeDamage(int damage)
 {
-	if (stateMachine_->GetCurrentState() == PlayerStateDodge::GetInstance())
+	if (stateMachine_->IsCurrentState<PlayerStateDodge>())
 	{
 		return;
 	}
@@ -402,7 +402,7 @@ void Player::ResetToSpawn()
 	{
 		followCamera_->SetAiming(false);
 	}
-	stateMachine_->ChangeState(PlayerStateNormal::GetInstance());
+	stateMachine_->ChangeState<PlayerStateNormal>();
 }
 
 void Player::PlaceAtSpawn()
@@ -472,12 +472,31 @@ void Player::UpdateSprintInput()
 	{
 		isControllerSprintLatched_ = true;
 	}
-	if (GetMoveDirection().LengthSq() < 0.01f)
+	if (!IsMoving())
 	{
 		isControllerSprintLatched_ = false;
 	}
 
 	isSprintInputActive_ = isControllable_ && (input.IsKeyPressed(DIK_LSHIFT) || isControllerSprintLatched_);
+}
+
+bool Player::TryStartDodge()
+{
+	if (!IsDodgeInputTriggered() || !stamina_->TryConsume(config.dodgeStaminaCost))
+		return false;
+
+	stateMachine_->ChangeState<PlayerStateDodge>();
+	return true;
+}
+
+bool Player::TryStartJump()
+{
+	if (!IsJumpInputTriggered() || !stamina_->TryConsume(config.jumpStaminaCost))
+		return false;
+
+	velocityY_ = config.jumpInitialVelocity;
+	stateMachine_->ChangeState<PlayerStateJump>();
+	return true;
 }
 
 bool Player::IsDodgeInputTriggered() const
@@ -557,7 +576,7 @@ void Player::DebugDraw()
 		binder_->Draw("RotationSpeed", "回転の速さ");
 	}
 
-	ImGui::Text("状態: %s", stateMachine_->GetCurrentStateName().c_str());
+	ImGui::Text("状態: %s", stateMachine_->GetCurrentStateName());
 
 	if (ImGui::CollapsingHeader("ダッシュ"))
 	{

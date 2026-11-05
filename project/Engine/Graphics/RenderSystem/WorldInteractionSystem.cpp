@@ -14,6 +14,8 @@ WorldInteractionSystem::WorldInteractionSystem(FS::Engine* engine)
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "WorldInteraction");
 }
 
+WorldInteractionSystem::~WorldInteractionSystem() = default;
+
 void WorldInteractionSystem::Initialize()
 {
     // 初期値の設定

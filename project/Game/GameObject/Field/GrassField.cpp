@@ -17,7 +17,6 @@ void GrassField::Initialize()
     auto* grassMat = grassSystem_->GetMaterialData();
     auto* cullingData = grassSystem_->GetCullingData();
 
-    binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("BaseScale", &baseScale_, 1.0f, 0.01f, 0.1f, 5.0f);
     binder_->Bind("MaxGrassCount", &maxGrassCount_, 300000, 1000, 1000, 2000000);
     binder_->Bind("GridSpacing", &gridSpacing_, 0.5f, 0.01f, 0.05f, 2.0f);
@@ -26,11 +25,6 @@ void GrassField::Initialize()
     binder_->Bind("MaxHeight", &maxHeight_, 1.5f, 0.01f, 0.1f, 5.0f);
     binder_->Bind("MinWidth", &minWidth_, 0.8f, 0.01f, 0.1f, 5.0f);
     binder_->Bind("MaxWidth", &maxWidth_, 1.5f, 0.01f, 0.1f, 5.0f);
-
-    binder_->Bind("TerrainCenterX", &terrainCenter_.x, 0.0f, 1.0f, -2000.0f, 2000.0f);
-    binder_->Bind("TerrainCenterZ", &terrainCenter_.y, 0.0f, 1.0f, -2000.0f, 2000.0f);
-    binder_->Bind("TerrainWidth", &terrainWidth_, 500.0f, 1.0f, 10.0f, 5000.0f);
-    binder_->Bind("TerrainDepth", &terrainDepth_, 500.0f, 1.0f, 10.0f, 5000.0f);
 
     binder_->BindColor("RootColor", &grassMat->rootColor, { 0.1f, 0.2f, 0.05f });
     binder_->Bind("GrassRootAO", &grassMat->grassRootAO, 0.3f, 0.05f, 0.0f, 1.0f);
@@ -68,7 +62,6 @@ void GrassField::Initialize()
     binder_->Bind("LodDistance1", &cullingData->lodDistance1, 20.0f, 1.0f, 5.0f, 100.0f);
     binder_->Bind("LodDistance2", &cullingData->lodDistance2, 50.0f, 1.0f, 10.0f, 200.0f);
 
-    binder_->BindTexture("HeightMap", &heightMapName_, &heightMapHandle_, "noise_39", TextureType::Noise);
     binder_->BindTexture("DensityMap", &densityMapName_, &densityMapHandle_, "white1x1", TextureType::Noise);
 
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() 
@@ -76,61 +69,16 @@ void GrassField::Initialize()
         grassSystem_->SetWindMapTexture(windMapName_);
         });
 
-    prevPosition_ = transform_.translation_;
-    prevMaxGrassCount_ = maxGrassCount_;
-    prevGridSpacing_ = gridSpacing_;
-    prevBaseScale_ = baseScale_;
-    prevMinHeight_ = minHeight_;
-    prevMaxHeight_ = maxHeight_;
-    prevMinWidth_ = minWidth_;
-    prevMaxWidth_ = maxWidth_;
-    prevHeightMapName_ = heightMapName_;
-    prevDensityMapName_ = densityMapName_;
-    prevTerrainCenter_ = terrainCenter_;
-    prevTerrainWidth_ = terrainWidth_;
-    prevTerrainDepth_ = terrainDepth_;
-
     grassSystem_->SetWindMapTexture(windMapName_);
-
-    // 初回生成
     GenerateGrass();
 }
 
 void GrassField::Update()
 {
-    // 形状や配置に関するパラメータが変わった時だけ再生成
-    if (transform_.translation_.x != prevPosition_.x ||
-        transform_.translation_.y != prevPosition_.y ||
-        transform_.translation_.z != prevPosition_.z ||
-        maxGrassCount_ != prevMaxGrassCount_ ||
-        gridSpacing_ != prevGridSpacing_ ||
-        baseScale_ != prevBaseScale_ ||
-        minHeight_ != prevMinHeight_ ||
-        maxHeight_ != prevMaxHeight_ ||
-        minWidth_ != prevMinWidth_ ||
-        maxWidth_ != prevMaxWidth_ ||
-        heightMapName_ != prevHeightMapName_ ||
-        densityMapName_ != prevDensityMapName_ ||
-        terrainCenter_.x != prevTerrainCenter_.x ||
-        terrainCenter_.y != prevTerrainCenter_.y ||
-        terrainWidth_ != prevTerrainWidth_ ||
-        terrainDepth_ != prevTerrainDepth_)
+    // 設定か地形が変わったときだけ作り直す
+    if (needsRegenerate_ || terrain_->GetShapeVersion() != generatedTerrainVersion_)
     {
         GenerateGrass();
-
-        prevPosition_ = transform_.translation_;
-        prevMaxGrassCount_ = maxGrassCount_;
-        prevGridSpacing_ = gridSpacing_;
-        prevBaseScale_ = baseScale_;
-        prevMinHeight_ = minHeight_;
-        prevMaxHeight_ = maxHeight_;
-        prevMinWidth_ = minWidth_;
-        prevMaxWidth_ = maxWidth_;
-        prevHeightMapName_ = heightMapName_;
-        prevDensityMapName_ = densityMapName_;
-        prevTerrainCenter_ = terrainCenter_;
-        prevTerrainWidth_ = terrainWidth_;
-        prevTerrainDepth_ = terrainDepth_;
     }
 
     grassSystem_->Update();
@@ -146,34 +94,25 @@ void GrassField::DebugDraw()
 #ifdef ENABLE_IMGUI
     ImGui::Begin("草むら");
 
+    // 生える範囲とハイトマップは地形から取る
     if (ImGui::CollapsingHeader("配置設定 (変更で自動再生成)", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        binder_->Draw("Position", "中心座標");
-        binder_->Draw("BaseScale", "全体の大きさ");
-        binder_->Draw("MaxGrassCount", "最大草数");
-        binder_->Draw("GridSpacing", "草の間隔");
+        needsRegenerate_ |= binder_->Draw("BaseScale", "全体の大きさ");
+        needsRegenerate_ |= binder_->Draw("MaxGrassCount", "最大草数");
+        needsRegenerate_ |= binder_->Draw("GridSpacing", "草の間隔");
 
         ImGui::Separator();
-        ImGui::Text("地形フィッティング");
-        binder_->Draw("TerrainWidth", "地形の幅 (Xサイズ)");
-        binder_->Draw("TerrainDepth", "地形の奥行き (Zサイズ)");
-        binder_->Draw("TerrainCenterX", "地形の中心 X");
-        binder_->Draw("TerrainCenterZ", "地形の中心 Z");
+        needsRegenerate_ |= binder_->Draw("MinHeight", "最小の高さ");
+        needsRegenerate_ |= binder_->Draw("MaxHeight", "最大の高さ");
+        needsRegenerate_ |= binder_->Draw("MinWidth", "最小の太さ");
+        needsRegenerate_ |= binder_->Draw("MaxWidth", "最大の太さ");
 
         ImGui::Separator();
-        binder_->Draw("MinHeight", "最小の高さ");
-        binder_->Draw("MaxHeight", "最大の高さ");
-        binder_->Draw("MinWidth", "最小の太さ");
-        binder_->Draw("MaxWidth", "最大の太さ");
-
-        ImGui::Separator();
-        ImGui::Text("マップテクスチャ");
-        binder_->Draw("HeightMap", "ハイトマップ");
-        binder_->Draw("DensityMap", "密度マップ");
+        needsRegenerate_ |= binder_->Draw("DensityMap", "密度マップ");
 
         if (ImGui::Button("強制再生成"))
         {
-            GenerateGrass();
+            needsRegenerate_ = true;
         }
     }
 
@@ -250,12 +189,15 @@ void GrassField::DebugDraw()
 
 void GrassField::GenerateGrass()
 {
-    // GPUで草を一括生成するための設定データを作成
+    needsRegenerate_ = false;
+    generatedTerrainVersion_ = terrain_->GetShapeVersion();
+
+    const Vector2 areaSize = terrain_->GetSizeXZ();
     GrassGenerationData genData{};
 
-    // 指定された範囲を敷き詰めるために必要な草の総数を自動計算
-    uint32_t gridX = static_cast<uint32_t>(std::ceil(terrainWidth_ / gridSpacing_));
-    uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / gridSpacing_));
+    // 地形全体を敷き詰めるのに必要な本数
+    uint32_t gridX = static_cast<uint32_t>(std::ceil(areaSize.x / gridSpacing_));
+    uint32_t gridZ = static_cast<uint32_t>(std::ceil(areaSize.y / gridSpacing_));
     uint32_t neededGrassCount = gridX * gridZ;
 
     // 設定した上限と必要数のうち、小さい方を採用
@@ -268,9 +210,9 @@ void GrassField::GenerateGrass()
     genData.minWidth = minWidth_ * baseScale_;
     genData.maxWidth = maxWidth_ * baseScale_;
 
-    genData.terrainCenter = terrainCenter_;
-    genData.terrainWidth = terrainWidth_;
-    genData.terrainDepth = terrainDepth_;
+    genData.terrainCenter = terrain_->GetCenterXZ();
+    genData.terrainWidth = areaSize.x;
+    genData.terrainDepth = areaSize.y;
 
-    grassSystem_->Generate(genData, heightMapName_, densityMapName_);
+    grassSystem_->Generate(genData, terrain_->GetHeightmapName(), densityMapName_);
 }

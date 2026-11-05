@@ -1,9 +1,7 @@
 #pragma once
 #include "Engine.h"
 #include "GameObject.h"
-#include "Skydome.h"
 #include "PropertyBinder.h"
-#include "Model.h"
 #include "Terrain.h"
 #include "WorldInteractionSystem.h"
 
@@ -22,9 +20,7 @@ public:
 private:
     FS::Engine* engine_;
 
-    std::unique_ptr<FS::Skydome> skydome_;
     std::unique_ptr<FS::PropertyBinder> binder_;
     std::unique_ptr<FS::Terrain> terrain_;
     std::unique_ptr<FS::WorldInteractionSystem> interactionSystem_;
 };
-

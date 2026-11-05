@@ -241,32 +241,32 @@ void Tutorial::ApplyIcons()
 bool Tutorial::IsStepCleared()
 {
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-    const State<Player>* playerState = player_->GetStateMachine()->GetCurrentState();
+    const StateMachine<Player>* playerStateMachine = player_->GetStateMachine();
 
     switch (currentStep_)
     {
     case Step::Move:
-        if (player_->GetMoveDirection().LengthSq() > 0.01f)
+        if (player_->IsMoving())
         {
             heldTime_ += deltaTime;
         }
         return heldTime_ >= requiredHoldTime_;
 
     case Step::Sprint:
-        if (playerState == PlayerStateSprint::GetInstance())
+        if (playerStateMachine->IsCurrentState<PlayerStateSprint>())
         {
             heldTime_ += deltaTime;
         }
         return heldTime_ >= requiredHoldTime_;
 
     case Step::Dodge:
-        return playerState == PlayerStateDodge::GetInstance();
+        return playerStateMachine->IsCurrentState<PlayerStateDodge>();
 
     case Step::Jump:
-        return playerState == PlayerStateJump::GetInstance();
+        return playerStateMachine->IsCurrentState<PlayerStateJump>();
 
     case Step::Aim:
-        if (playerState == PlayerStateAiming::GetInstance())
+        if (playerStateMachine->IsCurrentState<PlayerStateAiming>())
         {
             heldTime_ += deltaTime;
         }

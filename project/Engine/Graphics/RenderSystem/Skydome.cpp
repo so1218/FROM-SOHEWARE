@@ -16,6 +16,8 @@ Skydome::Skydome(Engine* engine)
     binder_ = std::make_unique<PropertyBinder>(engine_, "Skydome");
 }
 
+Skydome::~Skydome() = default;
+
 void Skydome::Initialize()
 {
     binder_->Bind("WindVelocity", &atmosphereSkyData_.windVelocity, { 0.006f, 0.003f }, 0.001f, -0.1f, 0.1f);

@@ -25,8 +25,12 @@ public:
 
     bool LoadFromHeightmap(const std::string& heightmapTextureName, float cellSize);
 
-    // 地形の中心の位置
+    // 地形の中心の位置。書き換えたら MarkShapeChanged を呼ぶ
     Vector3& GetPosition() { return position_; }
+
+    // 位置や高さ、ハイトマップが変わるたびに増える。草などを作り直すかの判定に使う
+    uint32_t GetShapeVersion() const { return shapeVersion_; }
+    void MarkShapeChanged() { ++shapeVersion_; }
 
     // 地面の高さ。地形の外なら false
     bool GetHeightAt(float worldX, float worldZ, float& outHeight) const;
@@ -77,6 +81,7 @@ private:
     MaterialHandle material_;
     Vector3 position_ = { 0.0f, 0.0f, 0.0f };
     Parameters params_;
+    uint32_t shapeVersion_ = 0;
 
     std::string heightmapTextureName_;
     uint32_t heightMapHandle_ = 0;

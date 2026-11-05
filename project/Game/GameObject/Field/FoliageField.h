@@ -16,40 +16,25 @@ public:
     void Draw() override;
     void DebugDraw() override;
 
+    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
+
 private:
     void AddFoliageLayer(const std::string& layerName, const std::string& modelName);
     void SetupBinderForLayer(size_t layerIndex);
-    void ReloadResources();
     void GenerateFoliage();
 
 private:
     FS::Engine* engine_;
+    FS::Terrain* terrain_ = nullptr;
     std::unique_ptr<FS::FoliageSystem> foliageSystem_;
     std::unique_ptr<FS::PropertyBinder> binder_;
 
-    FS::WorldTransform transform_;
-
-    // ==========================================
-    // 全体共通パラメータ
-    // ==========================================
-    std::string heightMapName_ = "noise_39";
-    uint32_t heightMapHandle_ = 0;
-
-    FS::Vector2 terrainCenter_{ 0.0f, 0.0f };
-    float terrainWidth_ = 1024.0f;
-    float terrainDepth_ = 1024.0f;
-
     FoliageCullingData cullingData_{};
 
-    std::vector <FS::FoliageLayer> layers_;
+    // 生える範囲は地形全体なので、各層の密度マップも地形全体に貼られる
+    std::vector<FS::FoliageLayer> layers_;
 
-    // 再生成判定用キャッシュ
-    FS::Vector3 prevPosition_;
-    float prevTerrainWidth_ = 0.0f;
-    float prevTerrainDepth_ = 0.0f;
-    std::string prevHeightMapName_;
-
-    bool needRegenerate_ = false;
-    bool needReloadResources_ = false;
-    bool isInitialized_ = false; // 初期化が完了したかどうかのフラグ
+    bool needsRegenerate_ = true;
+    // 最後に生成したときの地形の形。変わっていたら作り直す
+    uint32_t generatedTerrainVersion_ = 0;
 };

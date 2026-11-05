@@ -3,80 +3,51 @@
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
 #include "PlayerStateSprint.h"
-#include "PlayerStateDodge.h"
 #include "PlayerStamina.h"
-#include "Input.h"
-#include "TimeManager.h"
-#include "AudioPlayer.h"
 
 using namespace FS;
 
 void PlayerStateNormal::Update(Player* player)
 {
-    float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
-
-    // 重力を適用
     player->ApplyGravity();
-
-    // 地形への着地位置補正
     player->SnapToGround();
 
-    // 足場から外れた場合の落下遷移
+    // 足場から外れたら落ちる
     if (!player->IsGrounded())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateJump>();
         return;
     }
 
-    // 移動入力ベクトル
-    Vector3 moveDir = player->GetMoveDirection();
-    player->SetMoveDirection(moveDir);
-
-    bool isMoving = (moveDir.Length() > 0.1f);
-
-    // 状態の振り分け
+    const Vector3& moveDirection = player->GetMoveDirection();
+    const bool isMoving = player->IsMoving();
     if (isMoving)
     {
         player->PlayAnimation("humanRun", true, player->config.runAnimSpeed, player->config.idleToRunBlendTime);
-        player->UpdateRotation(moveDir);
-        player->ApplyHorizontalMovement(moveDir, player->config.runSpeed);
-
-        // 移動中のみ足音のタイミング判定を実行
+        player->UpdateRotation(moveDirection);
+        player->ApplyHorizontalMovement(moveDirection, player->config.runSpeed);
         player->UpdateFootstepEvents();
     }
     else
     {
         player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
-
-        // 止まったら足音の進捗率をリセット
         player->ResetFootstepState();
     }
 
-    // 回避
-    if (player->IsDodgeInputTriggered() && player->GetStamina()->TryConsume(player->config.dodgeStaminaCost))
-    {
-        player->GetStateMachine()->ChangeState(PlayerStateDodge::GetInstance());
+    if (player->TryStartDodge())
         return;
-    }
 
-    // エイム状態に遷移
     if (player->IsAimInputActive())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateAiming::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateAiming>();
         return;
     }
 
-    // ダッシュ
     if (isMoving && player->IsSprintInputActive() && !player->GetStamina()->IsExhausted())
     {
-        player->GetStateMachine()->ChangeState(PlayerStateSprint::GetInstance());
+        player->GetStateMachine()->ChangeState<PlayerStateSprint>();
         return;
     }
 
-    // ジャンプ遷移
-    if (player->IsJumpInputTriggered() && player->GetStamina()->TryConsume(player->config.jumpStaminaCost))
-    {
-        player->SetVelocityY(player->config.jumpInitialVelocity);
-        player->GetStateMachine()->ChangeState(PlayerStateJump::GetInstance());
-    }
+    player->TryStartJump();
 }

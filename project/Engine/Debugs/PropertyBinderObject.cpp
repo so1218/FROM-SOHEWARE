@@ -601,7 +601,7 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
     terrainBindMap_[groupName] = { terrain };
     std::string prefix = groupName + "_";
 
-    Bind(prefix + "Position", &terrain->GetPosition(), { 0.0f, 0.0f, 0.0f }, 1.0f);
+    Bind(prefix + "Position", &terrain->GetPosition(), { 0.0f, 0.0f, 0.0f }, 1.0f, [terrain]() { terrain->MarkShapeChanged(); });
 
     BindTexture(prefix + "Heightmap", terrain->GetHeightmapNamePtr(), terrain->GetHeightmapHandlePtr(), "white1x1", TextureType::Noise,
         [terrain]() 
@@ -610,7 +610,7 @@ void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
         }
     );
 
-    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f);
+    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, [terrain]() { terrain->MarkShapeChanged(); });
 
     MaterialData* matData = terrain->GetMaterialHandle()->materialData;
     MaterialHandle* matHandle = terrain->GetMaterialHandle();

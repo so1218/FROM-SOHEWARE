@@ -212,15 +212,8 @@ struct FoliageLayer
     FoliageMaterialData material{};
     FoliageGenerationData genData{};
 
-    // UIで設定した最大生成数を保持する変数 (上書き防止)
+    // エディターで決める上限。実際の数は範囲を埋めるのに必要な数と比べて小さいほう
     int uiMaxInstances = 50000;
-
-    // 変更検知のための前回値キャッシュ
-    float prevGridSpacing = 0.0f;
-    float prevMinScale = 0.0f;
-    float prevMaxScale = 0.0f;
-    int prevMaxInstances = 0;
-
 };
 
 }

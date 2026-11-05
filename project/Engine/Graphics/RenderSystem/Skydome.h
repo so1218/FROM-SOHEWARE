@@ -12,7 +12,7 @@ class Skydome
 {
 public:
     Skydome(Engine* engine);
-    ~Skydome() = default;
+    ~Skydome();
 
     void Initialize(); 
     void Update();
@@ -27,7 +27,6 @@ private:
 
     uint32_t cloudNoiseHandle_ = 0;
 
-    // 雲の形はここで調整し、空の色・雲の量・太陽の向きは EnvironmentManager から毎フレーム受け取る
     AtmosphereSkyData atmosphereSkyData_{};
 };
 
