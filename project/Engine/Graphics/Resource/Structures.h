@@ -30,10 +30,11 @@ struct LineVertexData
     Vector4 color;
 };
 
+// チャンクの中で何番目の頂点か。位置と高さはシェーダーで決める
 struct TerrainVertexData
 {
-    Vector4 position;
-    Vector2 texcoord;
+    uint32_t gridX;
+    uint32_t gridZ;
 };
 
 

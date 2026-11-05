@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "TerrainRenderer.h"
-#include "TerrainChunk.h"
 #include "ShadowMap.h"
 #include "BufferManager.h"
 #include "PSOManager.h"
@@ -17,290 +16,98 @@ namespace FS
 
 void TerrainRenderer::Initialize(const RenderEnvironment& env)
 {
-    device_ = env.device;
+    settingsBuffer_ = BufferManager::CreateMappedConstantBuffer(env.device->GetDevice(), &mappedSettings_);
+    *mappedSettings_ = {};
 
-    // 地形パラメータ用バッファ
-    terrainSettingsBuffer_ = BufferManager::CreateMappedConstantBuffer(
-        device_->GetDevice(),
-        &terrainSettingsMapped_
-    );
-
-    // 初期値をセット 
-    terrainSettingsMapped_->maxHeight = 100.0f;
-    terrainSettingsMapped_->texelSize = 1.0f / 512.0f;
-    terrainSettingsMapped_->cellSize = 1.0f; 
-
-    // インスタンス配列用バッファ
-    // 最大数分のInstanceDataを格納できる大きなバッファを1つだけ作る
-    instanceBuffer_ = BufferManager::CreateMappedBuffer(
-        device_->GetDevice(),
-        kMaxCount,
-        &instanceMapped_
-    );
-}
-
-void TerrainRenderer::Finalize()
-{
-
+    chunkBuffer_ = BufferManager::CreateMappedBuffer(env.device->GetDevice(), kMaxChunkCount, &mappedChunks_);
 }
 
 void TerrainRenderer::BeginFrame()
 {
-    prevCount_ = indexChunk_;
-    indexChunk_ = 0;
-    submissions_.clear();
+    isSubmitted_ = false;
+    chunkCount_ = 0;
 }
 
-void TerrainRenderer::SetCameraState(const Matrix4x4& view, const Matrix4x4& viewProjection)
+void TerrainRenderer::Submit(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
 {
-    viewMatrix_ = view;
-    viewProjectionMatrix_ = viewProjection;
+    drawData_ = drawData;
+    isSubmitted_ = true;
+
+    // GPU が描き終わるのを毎フレーム待っているので、ここで直接書き換えてよい
+    *mappedSettings_ = drawData.settings;
+
+    chunkCount_ = static_cast<uint32_t>(std::min<size_t>(visibleChunks.size(), kMaxChunkCount));
+    std::memcpy(mappedChunks_, visibleChunks.data(), sizeof(TerrainChunkData) * chunkCount_);
 }
 
-void TerrainRenderer::Submit(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-    const Vector4& uvTransform,
-    const MaterialHandle& material, const Vector4& instanceColor,
-    const Terrain::Parameters& params, uint32_t heightMapHandle)
+void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
 {
-    if (indexChunk_ >= kMaxCount || !chunk) return;
-
-    TerrainSubmission submission{};
-    submission.chunk = chunk;
-    submission.materialHandle = material;
-    submission.worldMatrix = worldTransform.GetWorldMatrix();
-    submission.wvpMatrix = worldTransform.GetWorldMatrix() * viewProjectionMatrix_;
-    submission.worldInverseTranspose = Matrix4x4::Inverse(submission.worldMatrix.Transpose());
-    submission.instancingColor = instanceColor;
-    submission.group = RenderGroup::Opaque;
-    submission.uvTransform = uvTransform;
-
-    // 渡された地形パラメータとハイトマップを保存
-    submission.params = params;
-    submission.heightMapHandle = heightMapHandle;
-
-    Matrix4x4 worldView = submission.worldMatrix * viewMatrix_;
-    submission.depth = worldView.m[3][2];
-
-    submissions_.push_back(submission);
-    indexChunk_++;
-}
-
-void TerrainRenderer::PrepareBatches()
-{
-    if (submissions_.empty()) return;
-
-    // グループ順 ＞ ハイトマップ順 ＞ マテリアル順 でソート
-    std::sort(submissions_.begin(), submissions_.end(),
-        [](const TerrainSubmission& a, const TerrainSubmission& b) {
-            if (a.group != b.group) return a.group < b.group;
-            if (a.group == RenderGroup::Transparent) return a.depth > b.depth;
-
-            // ハイトマップのハンドルでソート（同じハイトマップを連続させる）
-            if (a.heightMapHandle != b.heightMapHandle) return a.heightMapHandle < b.heightMapHandle;
-
-            return a.materialHandle.materialData < b.materialHandle.materialData;
-        });
-
-    // GPUバッファへの書き込み処理はそのまま
-    for (size_t i = 0; i < submissions_.size(); ++i)
-    {
-        instanceMapped_[i].WVP = submissions_[i].wvpMatrix;
-        instanceMapped_[i].World = submissions_[i].worldMatrix;
-        instanceMapped_[i].WorldInverseTranspose = submissions_[i].worldInverseTranspose;
-        instanceMapped_[i].WorldColor = submissions_[i].instancingColor;
-        instanceMapped_[i].uvTransform = submissions_[i].uvTransform;
-        submissions_[i].instanceIndex = static_cast<uint32_t>(i);
-    }
-}
-
-void TerrainRenderer::Draw(const RenderEnvironment & env, RenderGroup targetGroup, ShadowMap * shadowMap)
-{
-    if (submissions_.empty()) return;
+    if (!isSubmitted_ || chunkCount_ == 0) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
-
-    // 地形描画パス全体のスコープ
-    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Pass");
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Pass (Chunks: %u)", chunkCount_);
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Terrain"));
+    cmdList->SetPipelineState(env.psoManager->GetPSO("Terrain"));
 
-    ID3D12PipelineState* pso = env.psoManager->GetPSO("Terrain");
-    cmdList->SetPipelineState(pso);
-
-    // 全チャンク共通の定数バッファをセット (ループ外)
-    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress()); 
-    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-
-    // 最新のパラメータを書き込む
-    terrainSettingsMapped_->maxHeight = submissions_[0].params.maxHeight;
-    terrainSettingsMapped_->texelSize = submissions_[0].params.texelSize;
-    terrainSettingsMapped_->cellSize = submissions_[0].params.cellSize;
-
-    cmdList->SetGraphicsRootConstantBufferView(6, terrainSettingsBuffer_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootShaderResourceView(7, instanceBuffer_->GetGPUVirtualAddress());
-
-    // バッチ描画の準備
-    const MaterialData* currentMaterial = nullptr;
-    const TerrainChunk* currentChunk = nullptr;
-    uint32_t currentHeightMap = 0;
-    uint32_t instanceStart = 0;
-    uint32_t instanceCount = 0;
-
-    // バッチ（溜まったインスタンス）を一気に描画するラムダ式
-    auto FlushBatch = [&]()
+    const MaterialHandle& material = *drawData_.material;
+    auto SetTexture = [&](uint32_t rootIndex, uint32_t srvIndex)
         {
-            if (instanceCount > 0 && currentChunk)
-            {
-                // バッチ発行ごとの個別スコープ
-                PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Batch (Instances: %u)", instanceCount);
-                cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
-            }
+            cmdList->SetGraphicsRootDescriptorTable(rootIndex, env.srvManager->GetSRVHandleGPU(srvIndex));
         };
 
-    for (size_t i = 0; i < submissions_.size(); ++i)
+    cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(1, env.lightManager->GetDirectionalLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(2, env.lightManager->GetPointLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(4, material.resource->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(6, settingsBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootShaderResourceView(7, chunkBuffer_->GetGPUVirtualAddress());
+
+    SetTexture(8, material.textureHandle);
+    SetTexture(9, material.envMapHandle);
+    if (shadowMap)
     {
-        const auto& sub = submissions_[i];
-        if (sub.group != targetGroup) continue;
-
-        // チャンク形状、マテリアル、ハイトマップのいずれかが変わったらバッチを区切る
-        if (currentMaterial != sub.materialHandle.materialData ||
-            currentChunk != sub.chunk ||
-            currentHeightMap != sub.heightMapHandle)
-        {
-            FlushBatch();
-
-            // チャンク(VB/IB)の更新
-            if (currentChunk != sub.chunk)
-            {
-                currentChunk = sub.chunk;
-                D3D12_VERTEX_BUFFER_VIEW vbv = currentChunk->GetVertexBufferView();
-                D3D12_INDEX_BUFFER_VIEW ibv = currentChunk->GetIndexBufferView();
-                cmdList->IASetVertexBuffers(0, 1, &vbv);
-                cmdList->IASetIndexBuffer(&ibv);
-            }
-
-            // ハイトマップテクスチャの更新
-            if (currentHeightMap != sub.heightMapHandle)
-            {
-                currentHeightMap = sub.heightMapHandle;
-                cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(currentHeightMap));
-            }
-
-            // マテリアルの更新
-            if (currentMaterial != sub.materialHandle.materialData)
-            {
-                currentMaterial = sub.materialHandle.materialData;
-                cmdList->SetGraphicsRootConstantBufferView(4, sub.materialHandle.resource->GetGPUVirtualAddress());
-
-                cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(sub.materialHandle.textureHandle));       
-                cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(sub.materialHandle.envMapHandle));       
-                if (shadowMap) {
-                    cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());                                          
-                }
-                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.materialHandle.toonRampHandle));     
-                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.materialHandle.dissolveMapHandle));  
-                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.materialHandle.normalMapHandle));    
-                cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.materialHandle.rippleTextureHandle)); 
-            }
-
-            instanceStart = sub.instanceIndex;
-            instanceCount = 0;
-        }
-
-        instanceCount++;
+        cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
     }
+    SetTexture(11, material.toonRampHandle);
+    SetTexture(12, material.dissolveMapHandle);
+    SetTexture(13, material.normalMapHandle);
+    SetTexture(14, material.rippleTextureHandle);
+    SetTexture(15, drawData_.heightMapHandle);
 
-    // ループを抜けたら、最後のバッチを描画
-    FlushBatch();
+    cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
+    cmdList->IASetIndexBuffer(&drawData_.indexBufferView);
+    cmdList->DrawIndexedInstanced(drawData_.indexCount, chunkCount_, 0, 0, 0);
 }
 
 void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex)
 {
-    if (submissions_.empty()) return;
+    if (!isSubmitted_ || chunkCount_ == 0) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
-
-    // 地形シャドウ描画パス全体のスコープ
     PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Terrain Shadow Pass (Cascade %u)", cascadeIndex);
 
-    // ハイトマップテクスチャを読み込むため、DescriptorHeap をセット
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
-
     cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("ShadowMapTerrain"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("ShadowMapTerrain"));
 
-    // 全チャンク共通の設定 (ループの外で一度だけセット)
     cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRoot32BitConstant(1, cascadeIndex, 0);
-    cmdList->SetGraphicsRootShaderResourceView(2, instanceBuffer_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, terrainSettingsBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootShaderResourceView(2, chunkBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, settingsBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(drawData_.heightMapHandle));
 
-    // バッチ描画のループ処理
-    const TerrainChunk* currentChunk = nullptr;
-    uint32_t currentHeightMap = 0;
-    uint32_t instanceStart = 0;
-    uint32_t instanceCount = 0;
-
-    // バッチをまとめて描画するラムダ式
-    auto FlushBatch = [&]()
-        {
-            if (instanceCount > 0 && currentChunk)
-            {
-                // シャドウバッチ発行ごとの個別スコープ
-                PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Terrain Shadow Batch (Instances: %u)", instanceCount);
-                cmdList->DrawIndexedInstanced(currentChunk->GetIndexCount(), instanceCount, 0, 0, instanceStart);
-            }
-        };
-
-    for (size_t i = 0; i < submissions_.size(); ++i)
-    {
-        const auto& sub = submissions_[i];
-
-        // シャドウ描画が不要なグループや、完全に透明なものはスキップ
-        if (sub.group == RenderGroup::Background || sub.group == RenderGroup::UI) continue;
-        if (sub.materialHandle.materialData->color.w <= 0.0f || sub.group == RenderGroup::Transparent) continue;
-
-        // チャンク形状、またはハイトマップが変わったらバッチを区切って描画 (シャドウはマテリアルを無視)
-        if (currentChunk != sub.chunk || currentHeightMap != sub.heightMapHandle)
-        {
-            FlushBatch();
-
-            // チャンク(頂点・インデックスバッファ)の更新
-            if (currentChunk != sub.chunk)
-            {
-                currentChunk = sub.chunk;
-                D3D12_VERTEX_BUFFER_VIEW vbv = currentChunk->GetVertexBufferView();
-                D3D12_INDEX_BUFFER_VIEW ibv = currentChunk->GetIndexBufferView();
-                cmdList->IASetVertexBuffers(0, 1, &vbv);
-                cmdList->IASetIndexBuffer(&ibv);
-            }
-
-            // ハイトマップテクスチャの更新
-            if (currentHeightMap != sub.heightMapHandle)
-            {
-                currentHeightMap = sub.heightMapHandle;
-                cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(currentHeightMap));
-            }
-
-            instanceStart = sub.instanceIndex;
-            instanceCount = 0;
-        }
-
-        instanceCount++;
-    }
-
-    // ループを抜けたら、最後の残りバッチを描画
-    FlushBatch();
+    // 視錐台で選んだチャンクを影にも使う。カメラの外から伸びる影は欠ける
+    cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
+    cmdList->IASetIndexBuffer(&drawData_.indexBufferView);
+    cmdList->DrawIndexedInstanced(drawData_.indexCount, chunkCount_, 0, 0, 0);
 }
 
 }

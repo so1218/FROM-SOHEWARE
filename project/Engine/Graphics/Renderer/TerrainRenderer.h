@@ -1,95 +1,51 @@
 #pragma once
 #include "RenderCommon.h"
 #include "RenderEnvironment.h"
-#include "Terrain.h"
+#include "Structures.h"
 
 namespace FS
 {
 
-class TerrainChunk;
 class ShadowMap;
-    
+
+// 地形1つを描くのに必要なもの
+struct TerrainDrawData
+{
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+    D3D12_INDEX_BUFFER_VIEW indexBufferView{};
+    uint32_t indexCount = 0;
+    const MaterialHandle* material = nullptr;
+    uint32_t heightMapHandle = 0;
+    TerrainSettings settings{};
+};
+
+// 地形を、見えているチャンクの数だけインスタンス描画する
 class TerrainRenderer
 {
 public:
     void Initialize(const RenderEnvironment& env);
-    void Finalize();
-
     void BeginFrame();
 
-    // カメラ情報の受け取り
-    void SetCameraState(const Matrix4x4& view, const Matrix4x4& viewProjection);
+    void Submit(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
 
-    // 地形描画登録
-    void Submit(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-        const Vector4& uvTransform,
-        const MaterialHandle& material, const Vector4& instanceColor,
-        const Terrain::Parameters& params, uint32_t heightMapHandle);
-
-    // 描画実行
-    void Draw(const RenderEnvironment& env, RenderGroup group, ShadowMap* shadowMap);
-
-    // 影用パスの描画
+    void Draw(const RenderEnvironment& env, ShadowMap* shadowMap);
     void DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex);
 
-    // 描画前のバッチ準備（Zソートやグループ化）
-    void PrepareBatches();
-
-    ID3D12Resource* GetSettingsBuffer() const { return terrainSettingsBuffer_.Get(); }
-
-    uint32_t GetCount() const { return prevCount_; }
-    uint32_t GetMaxCount() const { return kMaxCount; }
+    // 草や植物の生成でも、地形と同じ高さを求めるのに使う
+    ID3D12Resource* GetSettingsBuffer() const { return settingsBuffer_.Get(); }
 
 private:
-    struct TerrainSubmission
-    {
-        RenderGroup group;
-        const TerrainChunk* chunk = nullptr;
-        MaterialHandle materialHandle;
+    static constexpr uint32_t kMaxChunkCount = 4096;
 
-        Matrix4x4 worldMatrix;
-        Matrix4x4 wvpMatrix;
-        Matrix4x4 worldInverseTranspose;
-        Vector4 instancingColor;
-        Vector4 uvTransform;
+    bool isSubmitted_ = false;
+    TerrainDrawData drawData_;
+    uint32_t chunkCount_ = 0;
 
-        uint32_t instanceIndex = 0;
-        BlendMode blendMode = BlendMode::kBlendModeNone;
-        CullMode cullMode = CullMode::Back;
-        DepthMode depthMode = DepthMode::Write;
-        float depth = 0.0f; // Zソート用
+    Microsoft::WRL::ComPtr<ID3D12Resource> settingsBuffer_;
+    TerrainSettings* mappedSettings_ = nullptr;
 
-        Terrain::Parameters params;
-        uint32_t heightMapHandle;
-    };
-
-    // 地形はインスタンシングしないため、チャンクごとに1つの定数バッファを持つ
-    struct PerObjectBuffer
-    {
-        Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
-        TransformationMatrix* wvpMapped = nullptr;
-    };
-
-private:
-    static const int32_t kMaxCount = 5000; // 想定されるチャンクの最大数
-
-    GraphicsDevice* device_ = nullptr;
-
-    std::vector<PerObjectBuffer> perObjectBuffers_;
-    std::vector<TerrainSubmission> submissions_;
-
-    uint32_t indexChunk_ = 0;
-    uint32_t prevCount_ = 0;
-
-    Matrix4x4 viewMatrix_;
-    Matrix4x4 viewProjectionMatrix_;
-
-    // バッファリソースとマッピング用ポインタ
-    Microsoft::WRL::ComPtr<ID3D12Resource> terrainSettingsBuffer_;
-    TerrainSettings* terrainSettingsMapped_ = nullptr;
-
-    Microsoft::WRL::ComPtr<ID3D12Resource> instanceBuffer_;
-    TerrainInstanceData* instanceMapped_ = nullptr;
+    Microsoft::WRL::ComPtr<ID3D12Resource> chunkBuffer_;
+    TerrainChunkData* mappedChunks_ = nullptr;
 };
 
 }

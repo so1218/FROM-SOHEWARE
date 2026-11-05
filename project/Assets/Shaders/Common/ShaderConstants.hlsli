@@ -764,18 +764,19 @@ struct CascadeConstant
 
 struct TerrainSettings
 {
-    float maxHeight; 
-    float texelSize;
-    float cellSize;
+    float3 origin;          // ハイトマップの (0, 0) のピクセルにあたる頂点の、高さ 0 での位置
+    float maxHeight;
+    float cellSize;         // 頂点の間隔
+    float texelSize;        // ハイトマップ1ピクセル分の UV。草や植物の生成で使う
+    uint heightMapWidth;
+    uint heightMapHeight;
 };
 
-struct TerrainInstanceData
+// 描くチャンクごとに、ハイトマップのどのピクセルから始まるか
+struct TerrainChunkData
 {
-    float4x4 WVP;
-    float4x4 World;
-    float4x4 WorldInverseTranspose;
-    float4 WorldColor;
-    float4 uvTransform;
+    uint startX;
+    uint startZ;
 };
 
 struct LightningMaterial

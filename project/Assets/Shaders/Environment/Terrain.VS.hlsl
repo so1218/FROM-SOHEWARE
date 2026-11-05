@@ -1,68 +1,38 @@
 #include "Common/Object3D.hlsli"
-#include "Common/ShaderConstants.hlsli"
+#include "Environment/TerrainCommon.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
-ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10); 
+ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10);
 
-Texture2D<float> gTerrainHeightMap : register(t9);
-StructuredBuffer<TerrainInstanceData> gTerrainInstances : register(t10);
-
-SamplerState gSampler : register(s0);
+Texture2D<float> gHeightMap : register(t9);
+StructuredBuffer<TerrainChunkData> gChunks : register(t10);
 
 struct TerrainVSInput
 {
-    float4 position : POSITION0;
-    float2 texcoord : TEXCOORD0;
+    uint2 gridPosition : POSITION0; // チャンクの中での頂点の位置
 };
 
 VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
 {
+    TerrainChunkData chunk = gChunks[instanceID];
+    int2 texel = int2(chunk.startX, chunk.startZ) + int2(input.gridPosition);
+
+    float height = LoadTerrainHeight(gHeightMap, gTerrainSettings, texel);
+    float3 worldPosition = GetTerrainWorldPosition(gTerrainSettings, texel, height);
+
+    // 両隣の高さの差から、法線と X 方向の接線を求める。両隣は2マス離れている
+    float heightLeft = LoadTerrainHeight(gHeightMap, gTerrainSettings, texel + int2(-1, 0));
+    float heightRight = LoadTerrainHeight(gHeightMap, gTerrainSettings, texel + int2(1, 0));
+    float heightBack = LoadTerrainHeight(gHeightMap, gTerrainSettings, texel + int2(0, -1));
+    float heightFront = LoadTerrainHeight(gHeightMap, gTerrainSettings, texel + int2(0, 1));
+    float neighborDistance = 2.0f * gTerrainSettings.cellSize;
+
     VertexShaderOutput output;
-    TerrainInstanceData inst = gTerrainInstances[instanceID];
-
-    // ---------------------------------------------------------
-    // ハイトマップサンプリングと頂点変位
-    // ---------------------------------------------------------
-    float2 globalUV = input.texcoord * inst.uvTransform.xy + inst.uvTransform.zw;
-    
-    // 0, 1 のテクスチャ値を -0.5, 0.5 へリマップし、基準面を中心とした高さを算出
-    float rawHeight = gTerrainHeightMap.SampleLevel(gSampler, globalUV, 0).r;
-    input.position.y = (rawHeight - 0.5f) * gTerrainSettings.maxHeight;
-
-    // ---------------------------------------------------------
-    // 座標変換とVelocity Bufferのプロパティ計算
-    // ---------------------------------------------------------
-    float4 worldPos = mul(input.position, inst.World);
-    output.worldPosition = worldPos.xyz;
-    
-    output.position = mul(worldPos, gFrameData.viewProjectionMatrix);
-    
-    output.texcoord = globalUV;
-    
-    // ---------------------------------------------------------
-    // ハイトマップからの法線動的生成 
-    // ---------------------------------------------------------
-    float offset = gTerrainSettings.texelSize;
-    
-    // 差分計算においてベースの高さオフセットは相殺されるため、生の値をフェッチ
-    float hL = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(-offset, 0.0f), 0).r;
-    float hR = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(offset, 0.0f), 0).r;
-    float hD = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, offset), 0).r;
-    float hU = gTerrainHeightMap.SampleLevel(gSampler, globalUV + float2(0.0f, -offset), 0).r;
-    
-    // サンプリング後に1度だけ maxHeight を乗算
-    float dx = (hL - hR) * gTerrainSettings.maxHeight;
-    float dz = (hD - hU) * gTerrainSettings.maxHeight;
-    
-    float3 localNormal = normalize(float3(dx, 2.0f * gTerrainSettings.cellSize, dz));
-    
-    // インスタンスの非均等スケールを考慮し、法線は逆転置行列で変換
-    output.normal = normalize(mul(localNormal, (float3x3) inst.WorldInverseTranspose));
-    
-    // 接ベクトルもローカル空間の固定値ではなく、ワールド行列で回転
-    output.tangent = normalize(mul(float3(1.0f, 0.0f, 0.0f), (float3x3) inst.World));
-    
-    output.worldColor = inst.WorldColor;
-    
+    output.position = mul(float4(worldPosition, 1.0f), gFrameData.viewProjectionMatrix);
+    output.worldPosition = worldPosition;
+    output.texcoord = (float2(texel) + 0.5f) / float2(gTerrainSettings.heightMapWidth, gTerrainSettings.heightMapHeight);
+    output.normal = normalize(float3(heightLeft - heightRight, neighborDistance, heightBack - heightFront));
+    output.tangent = normalize(float3(neighborDistance, heightRight - heightLeft, 0.0f));
+    output.worldColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     return output;
 }

@@ -22,7 +22,6 @@
 #include "GrassRenderer.h"
 #include "SkydomeRenderer.h"
 #include "TerrainRenderer.h"
-#include "TerrainChunk.h"
 #include "LightningRenderer.h"
 #include "TreeRenderer.h"
 #include "WaterRenderer.h"
@@ -102,7 +101,6 @@ void RendererManager::Initialize(
 void RendererManager::Finalize()
 {
 	if (modelRenderer_) { modelRenderer_->Finalize(); }
-	if (terrainRenderer_) { terrainRenderer_->Finalize(); }
 	if (waterRenderer_) { waterRenderer_->Finalize(); }
 }
 
@@ -135,11 +133,6 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	if (modelRenderer_)
 	{
 		modelRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
-	}
-
-	if (terrainRenderer_)
-	{
-		terrainRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
 	}
 
 	if (treeRenderer_)
@@ -231,10 +224,6 @@ void RendererManager::PrepareShadowBatches()
 	{ 
 		treeRenderer_->PrepareBatches();
 	}
-	if (terrainRenderer_) 
-	{ 
-		terrainRenderer_->PrepareBatches();
-	}
 
 	auto* cmdList = commandManager_->GetCommandList();
 	ID3D12DescriptorHeap* heaps[] = { srvManager_->GetSRVHeap() };
@@ -272,7 +261,7 @@ void RendererManager::Draw3D()
 	// 不透明オブジェクトの最序盤にTerrainを描画 (Early-Z最適化)
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Draw(env_, RenderGroup::Opaque, shadowMap_);
+		terrainRenderer_->Draw(env_, shadowMap_);
 	}
 
 	if (foliageRenderer_)
@@ -580,16 +569,13 @@ void RendererManager::SubmitSkydome(uint32_t cloudNoiseSrvIndex, const Atmospher
 	}
 }
 
-void RendererManager::SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-	const Vector4& uvTransform,
-	const MaterialHandle& material, const Vector4& instanceColor,
-	const Terrain::Parameters& params, uint32_t heightMapHandle)
+void RendererManager::SubmitTerrain(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
 {
-	terrainHeightMapSrvIndex_ = heightMapHandle;
+	terrainHeightMapSrvIndex_ = drawData.heightMapHandle;
 
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Submit(worldTransform, chunk, uvTransform, material, instanceColor, params, heightMapHandle);
+		terrainRenderer_->Submit(drawData, visibleChunks);
 	}
 }
 

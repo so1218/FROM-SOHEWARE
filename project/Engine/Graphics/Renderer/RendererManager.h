@@ -7,7 +7,7 @@
 #include "ShadowMap.h"
 #include "RenderEnvironment.h"
 #include "ParticleDefinition.h"
-#include "Terrain.h"
+#include "TerrainRenderer.h"
 #include "FoliageRenderer.h"
 #include "RenderCoordinator.h"
 
@@ -34,8 +34,6 @@ class GrassRenderer;
 class TreeRenderer;
 class WaterRenderer;
 class SkydomeRenderer;
-class TerrainRenderer;
-class TerrainChunk;
 class LightningRenderer;
 
 class RendererManager
@@ -93,9 +91,7 @@ public:
         D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
         D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV);
     void SubmitSkydome(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData);
-    void SubmitTerrain(const WorldTransform& worldTransform, const TerrainChunk* chunk,
-        const Vector4& uvTransform, const MaterialHandle& material, const Vector4& instanceColor,
-        const Terrain::Parameters& params, uint32_t heightMapHandle);
+    void SubmitTerrain(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);

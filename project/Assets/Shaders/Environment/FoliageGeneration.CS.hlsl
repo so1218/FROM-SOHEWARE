@@ -99,12 +99,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     float texelSize = gTerrainSettings.texelSize;
     float heightLeft = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(-texelSize, 0.0f), 0).r;
     float heightRight = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(texelSize, 0.0f), 0).r;
-    float heightDown = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, texelSize), 0).r;
-    float heightUp = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, -texelSize), 0).r;
+    float heightBack = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, -texelSize), 0).r;
+    float heightFront = gHeightMap.SampleLevel(gLinearSampler, terrainUV + float2(0.0f, texelSize), 0).r;
     float3 terrainNormal = normalize(float3(
         (heightLeft - heightRight) * gTerrainSettings.maxHeight,
         2.0f * gTerrainSettings.cellSize,
-        (heightDown - heightUp) * gTerrainSettings.maxHeight));
+        (heightBack - heightFront) * gTerrainSettings.maxHeight));
 
     // 斜面に完全に沿わせると寝てしまうので、真上寄りに傾ける
     float3 upVector = float3(0.0f, 1.0f, 0.0f);

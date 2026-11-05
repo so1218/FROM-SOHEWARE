@@ -1,133 +1,98 @@
 #pragma once
-#include "WorldTransform.h"
-#include "BlendMode.h" 
-#include "RenderCommon.h" 
+#include "RenderCommon.h"
+#include "Structures.h"
 
 namespace FS
 {
 
 class Engine;
-class TerrainChunk;
 
+// ハイトマップの1ピクセルを1頂点とした地形。
+// 同じ大きさのチャンクに分け、1つの格子メッシュを全チャンクで使い回して描く
 class Terrain
 {
 public:
+    struct Parameters
+    {
+        float maxHeight = 20.0f;
+        float cellSize = 1.0f;  // 頂点の間隔
+    };
+
     Terrain(Engine* engine);
-    ~Terrain() = default;
 
     void Draw();
 
-    // パラメータが変わったときにメッシュを再構成する関数
-    void RebuildMesh();
+    bool LoadFromHeightmap(const std::string& heightmapTextureName, float cellSize);
 
-    bool LoadFromHeightmap(const std::string& heightmapTexName, float cellSize);
+    // 地形の中心の位置
+    Vector3& GetPosition() { return position_; }
 
-    // UV情報の更新
-    void UpdateUV();
-
-    // 基本トランスフォーム
-    void SetTransform(const WorldTransform& transform) { transform_ = transform; }
-    const WorldTransform& GetTransform() const { return transform_; }
-    WorldTransform& GetTransform() { return transform_; }
-
-    // マテリアル・テクスチャ設定
-    void SetTexture(const std::string& textureName);
-    void SetEnvironmentMapTexture(const std::string& textureName);
-    void SetToonRampTexture(const std::string& textureName);
-    void SetDissolveTexture(const std::string& textureName);
-    void SetNormalMapTexture(const std::string& textureName);
-    void SetRippleTexture(const std::string& textureName);
-
-    // UV
-    void SetUVTransform(const UVTransform& uvTransform);
-
-    // カラー・発光
-    void SetColor(const Vector4& color);
-    void SetColor(uint32_t color);
-    void SetEmissiveIntensity(float intensity);
-
-    // マテリアルは触らず、地形自体の色を変える
-    void SetBaseColor(const Vector4& color) { baseColor_ = color; }
-    const Vector4& GetBaseColor() const { return baseColor_; }
-    void SetBaseColor(uint32_t color);
-
-    // アウトライン
-    void SetEnableOutline(bool enable);
-    void SetOutlineWidth(float width);
-    void SetOutlineColor(const Vector4& color);
-    void SetOutlineColor(uint32_t color);
-
-    // ディゾルブ
-    void SetEnableDissolve(bool enable);
-
-    size_t GetMaterialCount() const { return 1; }
-
-    // ゲッター・セッター
-    UVTransform* GetUVTransform();
-
-    MaterialData* GetMaterialData();
-    const MaterialData* GetMaterialData() const;
-
-    MaterialHandle* GetMaterialHandle();
-    Vector4* GetMaterialColorPtr();
-
-    // 高さを取得するヘルパー
-    float GetHeight(float worldX, float worldZ) const;
+    // 地面の高さ。地形の外なら false
     bool GetHeightAt(float worldX, float worldZ, float& outHeight) const;
-
-    // リアルタイムに調整したいパラメータを構造体として定義
-    struct Parameters {
-        float maxHeight = 20.0f;
-        float uvScale = 0.1f;
-        float texelSize = 1.0f / 512.0f;
-        float cellSize = 1.0f;
-    };
+    // 地形の外なら 0
+    float GetHeight(float worldX, float worldZ) const;
 
     Parameters& GetParams() { return params_; }
     const Parameters& GetParams() const { return params_; }
-
-    // ゲッター（PropertyBinder用ポインタ拡張）
-    std::string* GetHeightmapNamePtr() { return &heightmapTexName_; }
-    const std::string& GetHeightmapName() const { return heightmapTexName_; }
-
-    uint32_t* GetHeightmapHandlePtr() { return &heightMapHandle_; }
-    uint32_t GetHeightmapHandle() const { return heightMapHandle_; }
-
-    int GetChunkSize() const { return chunkSize_; }
-
-    // 高さスケールの取得
     float GetHeightScale() const { return params_.maxHeight; }
 
-    // ワールドXZ原点の取得 (Transformの平行移動量を基準にする場合)
-    Vector2 GetOriginXZ() const {
-        return Vector2(transform_.translation_.x, transform_.translation_.z);
-    }
+    Vector2 GetCenterXZ() const { return { position_.x, position_.z }; }
+    Vector2 GetSizeXZ() const;
 
-    // 地形全体のワールドサイズの計算取得
-    Vector2 GetSizeXZ() const {
-        float width = (totalVertsX_ > 0 ? totalVertsX_ - 1 : 0) * params_.cellSize * transform_.scale_.x;
-        float depth = (totalVertsZ_ > 0 ? totalVertsZ_ - 1 : 0) * params_.cellSize * transform_.scale_.z;
-        return Vector2(width, depth);
-    }
+    std::string* GetHeightmapNamePtr() { return &heightmapTextureName_; }
+    const std::string& GetHeightmapName() const { return heightmapTextureName_; }
+    uint32_t* GetHeightmapHandlePtr() { return &heightMapHandle_; }
+
+    // マテリアル。PropertyBinder のマテリアル UI からも使う
+    MaterialHandle* GetMaterialHandle() { return &material_; }
+    MaterialData* GetMaterialData() { return material_.materialData; }
+    size_t GetMaterialCount() const { return 1; }
+    void SetColor(const Vector4& color);
+    void SetEnableOutline(bool enable);
+    void SetOutlineWidth(float width);
+    void SetRippleTexture(const std::string& textureName);
 
 private:
+    struct Chunk
+    {
+        uint32_t startX = 0;
+        uint32_t startZ = 0;
+        // カリング用。高さを掛ける前の 0〜1 の値で持つので、最大高さを変えても作り直さなくてよい
+        float minHeightRatio = 0.0f;
+        float maxHeightRatio = 0.0f;
+    };
+
+    static constexpr uint32_t kChunkCellCount = 64;
+
+    void CreateChunks();
+    void CreateMesh();
+
+    float GetHeightRatio(uint32_t x, uint32_t z) const { return heightRatios_[z * heightMapWidth_ + x]; }
+    // ハイトマップの (0, 0) のピクセルにあたる頂点の、高さ 0 での位置
+    Vector3 GetOrigin() const;
+
     Engine* engine_ = nullptr;
-    std::vector<std::unique_ptr<TerrainChunk>> chunks_;
     MaterialHandle material_;
-    WorldTransform transform_; 
-    Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-    // リアルタイム調整用メンバ変数
-    std::string heightmapTexName_;
-    int chunkSize_ = 64;
-
+    Vector3 position_ = { 0.0f, 0.0f, 0.0f };
     Parameters params_;
-    std::vector<float> rawHeightRatios_;
 
-    int totalVertsX_ = 0;
-    int totalVertsZ_ = 0;
-
+    std::string heightmapTextureName_;
     uint32_t heightMapHandle_ = 0;
+    uint32_t heightMapWidth_ = 0;
+    uint32_t heightMapHeight_ = 0;
+    std::vector<float> heightRatios_;
+
+    // 1チャンクのマス数。地形がチャンクより小さければ地形の大きさになる
+    uint32_t chunkCellsX_ = 0;
+    uint32_t chunkCellsZ_ = 0;
+    std::vector<Chunk> chunks_;
+    std::vector<TerrainChunkData> visibleChunks_;
+
+    Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
+    Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_;
+    D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+    D3D12_INDEX_BUFFER_VIEW indexBufferView_{};
+    uint32_t indexCount_ = 0;
 };
 
 }

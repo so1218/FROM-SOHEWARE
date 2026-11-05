@@ -4,7 +4,6 @@
 using namespace FS;
 
 ParticleSystemWrapper::ParticleSystemWrapper(Engine* engine)
-    : GameObject()
 {
     engine_ = engine;
 }

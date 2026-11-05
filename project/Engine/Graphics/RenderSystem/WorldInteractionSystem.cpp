@@ -29,7 +29,7 @@ void WorldInteractionSystem::Update()
     // Terrain がセットされていれば、ハイトマップの原点やサイズを動的に同期
     if (terrain_) 
     {
-        constants_.terrainCenter = terrain_->GetOriginXZ();
+        constants_.terrainCenter = terrain_->GetCenterXZ();
         constants_.terrainSize = terrain_->GetSizeXZ();
         constants_.terrainHeightScale = terrain_->GetHeightScale();
     }
