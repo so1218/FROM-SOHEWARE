@@ -113,6 +113,49 @@ void Engine::Finalize()
 	CloseWindow(window_->GetHwnd());
 }
 
+void Engine::SetSceneCamera(Camera* sceneCamera)
+{
+	RenderCameraState camera{
+		sceneCamera->GetViewMatrix(),
+		sceneCamera->GetProjectionMatrix(),
+		sceneCamera->GetTranslation(),
+		sceneCamera->GetNearClip(),
+		sceneCamera->GetFarClip()
+	};
+
+#ifdef ENABLE_DEBUG_CAMERA
+	// デバッグカメラはエディター表示のときだけ使う。ゲーム画面では必ずシーンのカメラ
+	if (!ImGuiManager::IsGuiVisible())
+	{
+		debugCamera_->SetEnabled(false);
+	}
+	else if (Input::GetInstance().IsKeyTriggered(DIK_Y))
+	{
+		debugCamera_->SetEnabled(!debugCamera_->IsEnabled());
+	}
+
+	if (debugCamera_->IsEnabled())
+	{
+		camera.view = debugCamera_->GetViewMatrix();
+		camera.projection = debugCamera_->GetProjectionMatrix();
+		camera.eyePos = debugCamera_->GetCameraWorldPosition();
+
+#ifdef ENABLE_DEBUG_DRAW
+		// シーンのカメラが映している範囲
+		DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
+#endif
+	}
+#endif
+
+#ifdef ENABLE_IMGUI
+	debugGuiManager_->Update(sceneCamera);
+	// ギズモは実際に描いているカメラに合わせる
+	ImGuiManager::SetGizmoCamera(camera.view, camera.projection);
+#endif
+
+	SetCameraState(camera);
+}
+
 void Engine::SetCameraState(const RenderCameraState& camera)
 {
 	camera_ = camera;
@@ -132,6 +175,10 @@ void Engine::BeginFrame()
 {
 	// ImGuiのフレーム開始
 	ImGuiManager::BeginFrame();
+
+#ifdef ENABLE_IMGUI
+	GlobalVariables::GetInstance()->Update();
+#endif
 
 	// ライトのカウントをリセット
 	lightManager_->BeginFrame();

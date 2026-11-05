@@ -3,12 +3,9 @@
 #include "GameDefine.h"
 #include "PlayScene.h"
 #include "TestScene.h"
-#include "GlobalVariables.h"
-#include "AudioDevice.h"
 #include "Input.h"
 #include "TimeManager.h"
 #include "ImGuiManager.h"
-#include "DebugDraw.h"
 #include "ProjectConfig.h"
 #include "Engine.h"
 
@@ -87,71 +84,15 @@ void Game::Run()
 
 void Game::Update()
 {
-#ifdef ENABLE_DEBUG_CAMERA
-    // デバッグカメラはエディター表示のときだけ使う。ゲーム画面では必ずメインカメラ
-    DebugCamera* debugCamera = engine_->GetDebugCamera();
-    if (!ImGuiManager::IsGuiVisible())
-    {
-        debugCamera->SetEnabled(false);
-    }
-    else if (Input::GetInstance().IsKeyTriggered(DIK_Y))
-    {
-        debugCamera->SetEnabled(!debugCamera->IsEnabled());
-    }
-#endif
-
-#ifdef ENABLE_IMGUI
-    // グローバル変数更新
-    GlobalVariables::GetInstance()->Update();
-#endif
-
-    // ゲームシーン更新
     if (!TimeManager::GetInstance()->IsPaused())
     {
         sceneManager_.Update();
     }
 
-    // 描画に使うカメラ情報
-    Matrix4x4 viewMat, projMat;
-    Vector3 eyePos;
-
-    // 現在のシーンからカメラを取得
     BaseScene* scene = sceneManager_.GetCurrentScene();
-    if (!scene) { return; }                       // シーン未設定で落ちないように
-    Camera* sceneCamera = scene->GetActiveCamera();
+    if (!scene) return;
 
-    // シーンのカメラで作る
-    RenderCameraState camera{
-        sceneCamera->GetViewMatrix(),
-        sceneCamera->GetProjectionMatrix(),
-        sceneCamera->GetTranslation(),
-        sceneCamera->GetNearClip(),
-        sceneCamera->GetFarClip()
-    };
-
-#ifdef ENABLE_DEBUG_CAMERA
-    // デバッグカメラが有効なら、行列と位置だけ差し替える
-    if (debugCamera->IsEnabled())
-    {
-        camera.view = debugCamera->GetViewMatrix();
-        camera.projection = debugCamera->GetProjectionMatrix();
-        camera.eyePos = debugCamera->GetCameraWorldPosition();
-    }
-#endif
-
-    engine_->GetDebugGuiManager()->Update(sceneCamera);
-    engine_->SetCameraState(camera);
-
-#if ENABLE_DEBUG_CAMERA && ENABLE_DEBUG_DRAW
-    if (debugCamera->IsEnabled())
-    {
-        DebugDraw::DrawFrustum(sceneCamera->GetViewProjectionMatrix(), { 1.0f, 1.0f, 0.0f, 1.0f });
-    }
-#endif
-
-#ifdef ENABLE_IMGUI
-    ImGuiManager::SetGizmoCamera(viewMat, projMat);
-#endif
+    engine_->SetSceneCamera(scene->GetActiveCamera());
 }
 
 void Game::Draw()

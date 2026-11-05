@@ -43,7 +43,8 @@ public:
     void Initialize(const ProjectConfig& config);
     void Finalize();
 
-    // 毎フレーム、描画直前にGameクラスから呼ばれる
+    // 毎フレーム、シーンの更新のあとに呼ぶ。デバッグカメラが有効なら、描画はそちらのカメラで行う
+    void SetSceneCamera(Camera* sceneCamera);
     void SetCameraState(const RenderCameraState& camera);
 
     // フレーム処理
