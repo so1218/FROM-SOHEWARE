@@ -93,8 +93,14 @@ struct SkinCluster
     };
     std::vector<MeshInfluence> meshInfluences; // メッシュの数だけ用意する
 
-    // 現在のフレーム用
     std::vector<Matrix4x4> inverseBindPoseMatrices;
+
+    // CPU 側で計算した最新のパレット。GPU 用のメモリは読むと遅いので、CPU から読むときはこちらを使う
+    std::vector<WellForGPU> palette;
+    // 最後に GPU へ書き込んだパレット。次に書き込むときに、1フレーム前のパレットになる
+    std::vector<WellForGPU> uploadedPalette;
+
+    // 現在のフレーム用
     Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
     std::span<WellForGPU> mappedPalette;
     uint32_t paletteSrvIndex;
@@ -121,6 +127,9 @@ SkinCluster CreateSkinCluster(
     const Skeleton& skeleton,
     const ModelData& modelData,
     SRVManager* srvManager);
+// スケルトンからパレットを計算する。CPU 側だけなので、1フレームに何度呼んでもよい
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton);
+// 計算したパレットを GPU に書き込む。前フレームのパレットもここで決まるので、1フレームに1回だけ呼ぶ
+void UploadSkinCluster(SkinCluster& skinCluster);
 
 }

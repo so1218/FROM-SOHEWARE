@@ -198,8 +198,8 @@ SkinCluster CreateSkinCluster(
 	skinCluster.prevPaletteSrvIndex = srvManager->CreateSRV(
 		skinCluster.prevPaletteResource.Get(), paletteSrvDesc);
 
-	// 初期化として、現在のパレットの中身を過去パレットにもコピーしておく(0フレーム目の暴れ防止)
-	std::copy(skinCluster.mappedPalette.begin(), skinCluster.mappedPalette.end(), skinCluster.prevMappedPalette.begin());
+	skinCluster.palette.resize(skeleton.joints.size(),
+		WellForGPU{ Matrix4x4::MakeIdentity(), Matrix4x4::MakeIdentity() });
 
 	// InverseBindPoseMatrixの初期化
 	skinCluster.inverseBindPoseMatrices.resize(skeleton.joints.size());
@@ -287,20 +287,28 @@ SkinCluster CreateSkinCluster(
 
 void UpdateSkinCluster(SkinCluster& skinCluster, const Skeleton& skeleton)
 {
-	// 新しい行列を計算して上書きする前に、今の状態を過去パレットに退避
-	std::copy(skinCluster.mappedPalette.begin(),
-		skinCluster.mappedPalette.end(),
-		skinCluster.prevMappedPalette.begin());
+	assert(skeleton.joints.size() <= skinCluster.inverseBindPoseMatrices.size());
 
-	// 最新の行列計算
 	for (size_t jointIndex = 0; jointIndex < skeleton.joints.size(); ++jointIndex)
 	{
-		assert(jointIndex < skinCluster.inverseBindPoseMatrices.size());
-		skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix =
+		const Matrix4x4 skeletonSpaceMatrix =
 			skinCluster.inverseBindPoseMatrices[jointIndex] * skeleton.joints[jointIndex].skeletonSpaceMatrix;
-		skinCluster.mappedPalette[jointIndex].skeletonSpaceInverseTransposeMatrix =
-			Matrix4x4::Inverse(skinCluster.mappedPalette[jointIndex].skeletonSpaceMatrix).Transpose();
+		skinCluster.palette[jointIndex].skeletonSpaceMatrix = skeletonSpaceMatrix;
+		skinCluster.palette[jointIndex].skeletonSpaceInverseTransposeMatrix = Matrix4x4::Inverse(skeletonSpaceMatrix).Transpose();
 	}
+}
+
+void UploadSkinCluster(SkinCluster& skinCluster)
+{
+	// 初めて書き込むときは前フレームがないので、今のパレットを前フレームとして扱う
+	const std::vector<WellForGPU>& previousPalette =
+		skinCluster.uploadedPalette.empty() ? skinCluster.palette : skinCluster.uploadedPalette;
+
+	// GPU 用のメモリは書き込むだけにして、読まない
+	std::memcpy(skinCluster.prevMappedPalette.data(), previousPalette.data(), sizeof(WellForGPU) * previousPalette.size());
+	std::memcpy(skinCluster.mappedPalette.data(), skinCluster.palette.data(), sizeof(WellForGPU) * skinCluster.palette.size());
+
+	skinCluster.uploadedPalette = skinCluster.palette;
 }
 
 }

@@ -1,69 +1,32 @@
 #include "pch.h"
 #include "ModelManager.h"
 #include "ModelLoader.h"
-#include "StringUtils.h" 
+#include "AssetFiles.h"
 #include "TextureManager.h" 
 #include "Engine.h" 
 
 namespace FS
 {
 
-// CSV読み込み
-void ModelManager::LoadFromCSV(Engine* engine, const std::string& csvPath)
+void ModelManager::LoadAllModels(Engine* engine, const std::filesystem::path& rootDirectory)
 {
     engine_ = engine;
 
-    std::ifstream file(csvPath);
-    if (!file.is_open())
+    for (const std::filesystem::path& path : CollectAssetFiles(rootDirectory, { ".gltf", ".obj" }))
     {
-        std::cerr << "[ModelManager] CSV not found: " << csvPath << std::endl;
-        assert(false && "ModelList.csv not found.");
-        return;
-    }
+        // メッシュがない glTF は AnimationManager が読む
+        if (!ContainsMesh(path)) continue;
 
-    // 共通の親フォルダパス
-    const std::string kDirectoryPath = "Assets/Models/";
-
-    std::string line;
-    // ヘッダ行がある場合はスキップ
-    std::getline(file, line);
-
-    while (std::getline(file, line))
-    {
-        // 空行やコメントのスキップ処理
-        if (line.empty()) continue;
-        size_t firstChar = line.find_first_not_of(" \t");
-        if (firstChar == std::string::npos) continue;
-        if (line[firstChar] == '#' || (line.size() > firstChar + 1 && line[firstChar] == '/' && line[firstChar + 1] == '/')) 
-        {
-            continue;
-        }
-
-        std::istringstream stream(line);
-        std::string name, path;
-
-        if (std::getline(stream, name, ',') && std::getline(stream, path))
-        {
-            name = StringUtils::Trim(name);
-            path = StringUtils::Trim(path);
-
-            if (!name.empty() && !path.empty())
-            {
-                std::string fullPath = kDirectoryPath + path;
-
-                // 自分自身のLoad関数を呼び出す
-                Load(name, fullPath);
-            }
-        }
+        Load(GetAssetName(path), path.generic_string());
     }
 }
 
 void ModelManager::Load(const std::string& name, const std::string& path)
 {
-    // 重複チェック
-    if (models_.find(name) != models_.end())
+    if (models_.contains(name))
     {
-        return; 
+        std::cerr << "[ModelManager] Duplicate model name, skipped: " << path << std::endl;
+        return;
     }
 
     ModelLoader loader;

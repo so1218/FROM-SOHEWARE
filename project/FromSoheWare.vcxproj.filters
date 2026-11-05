@@ -633,6 +633,9 @@
     <ClCompile Include="Engine\Resources\AnimationManager.cpp">
       <Filter>Engine\Resources</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Resources\AssetFiles.cpp">
+      <Filter>Engine\Resources</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Resources\AudioManager.cpp">
       <Filter>Engine\Resources</Filter>
     </ClCompile>
@@ -1183,6 +1186,9 @@
       <Filter>Engine\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Resources\AnimationManager.h">
+      <Filter>Engine\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Resources\AssetFiles.h">
       <Filter>Engine\Resources</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Resources\AudioManager.h">

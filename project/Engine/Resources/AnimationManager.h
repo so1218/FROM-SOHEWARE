@@ -14,10 +14,10 @@ public:
     AnimationManager(const AnimationManager&) = delete;
     AnimationManager& operator=(const AnimationManager&) = delete;
 
-    // CSVから一括ロード（初期化）
-    void LoadFromCSV(const std::string& csvPath = "Assets/Data/AnimationList.csv");
+    // フォルダ内の、メッシュを持たない glTF をすべて読み込む。名前は拡張子を除いたファイル名
+    void LoadAllAnimations(const std::filesystem::path& rootDirectory = "Assets/Models");
 
-    // 単体ロード（CSVを使わず直接ロードしたい場合用）
+    // 単体ロード
     void Load(const std::string& name, const std::string& path);
 
     // 取得関数

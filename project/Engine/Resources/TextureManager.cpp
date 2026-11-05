@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TextureManager.h"
 #include "Engine.h"
+#include "AssetFiles.h"
 
 namespace FS
 {
@@ -12,62 +13,45 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
     textures_.clear();
     nameToIndex_.clear();
 
-    if (!fs::exists(rootDirectory))
-    {
-        std::cerr << "[TextureManager] Directory not found: " << rootDirectory << std::endl;
-        return;
-    }
+    // 読み込み中に DDS を作るとフォルダの走査が壊れるので、先に一覧にしてから読む
+    const std::vector<fs::path> allFiles = CollectAssetFiles(rootDirectory, { ".png", ".jpg", ".dds", ".tga" });
 
-    // ディレクトリ走査中に DDS ファイルを新規生成するとイテレータが破綻するため、全ファイルパスを配列に収集
-    std::vector<fs::path> allFiles;
-    for (const auto& entry : fs::recursive_directory_iterator(rootDirectory))
-    {
-        if (entry.is_regular_file()) {
-            allFiles.push_back(entry.path());
-        }
-    }
-
-    // 収集したリストをもとに処理を行う
     for (const auto& filePath : allFiles)
     {
-        std::string ext = filePath.extension().string();
-        std::string extLower = ext;
+        std::string extLower = filePath.extension().string();
         std::transform(extLower.begin(), extLower.end(), extLower.begin(), ::tolower);
 
-        if (extLower == ".png" || extLower == ".jpg" || extLower == ".dds" || extLower == ".tga")
+        std::string stem = filePath.stem().string();
+        std::string stemLower = stem;
+        std::transform(stemLower.begin(), stemLower.end(), stemLower.begin(), ::tolower);
+
+        // 自動生成された .dds と元の .png の二重読み込みを防止
+        if (extLower == ".dds")
         {
-            std::string stem = filePath.stem().string();
-            std::string stemLower = stem;
-            std::transform(stemLower.begin(), stemLower.end(), stemLower.begin(), ::tolower);
-
-            // 自動生成された .dds と元の .png の二重読み込みを防止
-            if (extLower == ".dds")
+            if (fs::exists(filePath.parent_path() / (stem + ".png")) ||
+                fs::exists(filePath.parent_path() / (stem + ".jpg")) ||
+                fs::exists(filePath.parent_path() / (stem + ".tga")))
             {
-                if (fs::exists(filePath.parent_path() / (stem + ".png")) ||
-                    fs::exists(filePath.parent_path() / (stem + ".jpg")) ||
-                    fs::exists(filePath.parent_path() / (stem + ".tga")))
-                {
-                    continue;
-                }
-            }
-
-            TextureHandleData data;
-            data.fullPath = filePath.generic_string();
-            data.name = stem;
-            data.type = DetectTypeFromPath(filePath);
-
-            // ロード実行 (初回は DDS へ変換、2回目以降は爆速ロード)
-            data.handle = engine->GetTextureLoader()->LoadWithAutoDDS(data.fullPath, data.type);
-
-            if (nameToIndex_.count(stemLower) > 0)
-            {
-                std::cerr << "[Warning] Duplicate texture name (case-insensitive): " << stem << std::endl;
                 continue;
             }
-
-            textures_.push_back(data);
-            nameToIndex_[stemLower] = textures_.size() - 1;
         }
+
+        if (nameToIndex_.count(stemLower) > 0)
+        {
+            std::cerr << "[Warning] Duplicate texture name (case-insensitive): " << stem << std::endl;
+            continue;
+        }
+
+        TextureHandleData data;
+        data.fullPath = filePath.generic_string();
+        data.name = stem;
+        data.type = DetectTypeFromPath(filePath);
+
+        // ロード実行 (初回は DDS へ変換、2回目以降は爆速ロード)
+        data.handle = engine->GetTextureLoader()->LoadWithAutoDDS(data.fullPath, data.type);
+
+        textures_.push_back(data);
+        nameToIndex_[stemLower] = textures_.size() - 1;
     }
 
     if (nameToIndex_.count("white1x1"))

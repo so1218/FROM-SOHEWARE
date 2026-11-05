@@ -251,6 +251,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Engine\Resources\AnimationManager.cpp" />
+    <ClCompile Include="Engine\Resources\AssetFiles.cpp" />
     <ClCompile Include="Engine\Resources\ModelManager.cpp" />
     <ClCompile Include="Engine\Resources\TextureManager.cpp" />
     <ClCompile Include="Engine\Framework\GameObject.cpp" />
@@ -458,6 +459,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Math\Tween.h" />
     <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
+    <ClInclude Include="Engine\Resources\AssetFiles.h" />
     <ClInclude Include="Engine\Resources\ModelManager.h" />
     <ClInclude Include="Engine\Resources\TextureManager.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />

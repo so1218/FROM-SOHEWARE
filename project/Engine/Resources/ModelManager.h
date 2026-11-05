@@ -20,8 +20,8 @@ public:
     ModelManager(const ModelManager&) = delete;
     ModelManager& operator=(const ModelManager&) = delete;
 
-    // CSVから一括ロード
-    void LoadFromCSV(Engine* engine, const std::string& csvPath = "Assets/Data/ModelList.csv");
+    // フォルダ内のモデルをすべて読み込む。名前は拡張子を除いたファイル名
+    void LoadAllModels(Engine* engine, const std::filesystem::path& rootDirectory = "Assets/Models");
 
     // 単体ロード（外部から個別に読み込みたい場合用）
     void Load(const std::string& name, const std::string& path);

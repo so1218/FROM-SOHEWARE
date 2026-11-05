@@ -16,7 +16,7 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, std::unique_ptr<IEnemyBehav
     switch (type_)
     {
     case EnemyType::Floating:
-        modelName = "enemy";
+        modelName = "Enemy";
         break;
     }
 

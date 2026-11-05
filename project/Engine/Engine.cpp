@@ -303,8 +303,8 @@ void Engine::InitializeResources()
 
 	// 共通ハンドル初期化
 	TextureManager::GetInstance().LoadAllTextures(this);
-	ModelManager::GetInstance().LoadFromCSV(this);
-	AnimationManager::GetInstance()->LoadFromCSV();
+	ModelManager::GetInstance().LoadAllModels(this);
+	AnimationManager::GetInstance()->LoadAllAnimations();
 
 	FontManager::GetInstance().LoadFromCSV(this);
 

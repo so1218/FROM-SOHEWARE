@@ -159,6 +159,9 @@ void AnimationModel::Draw()
 {
     if (!engine_ || !animeModelData_.modelData) return;
 
+    // 首や腕の補正まで終わった最終的な姿勢を、ここで1回だけ GPU に送る
+    UploadSkinCluster(skinCluster_);
+
     engine_->GetRendererManager()->SubmitAnimationModel(
         transform_,
         animeModelData_,
@@ -481,7 +484,7 @@ Vector3 AnimationModel::GetSkinnedVertexPosition(size_t meshIndex, size_t vertex
         int32_t jointIndex = influence.jointIndices[i];
 
         // パレットから対象ボーンのスキニング用行列を取得
-        const Matrix4x4& jointMatrix = skinCluster_.mappedPalette[jointIndex].skeletonSpaceMatrix;
+        const Matrix4x4& jointMatrix = skinCluster_.palette[jointIndex].skeletonSpaceMatrix;
 
         // 頂点座標に行列を掛ける
         Vector3 transformedPos;
