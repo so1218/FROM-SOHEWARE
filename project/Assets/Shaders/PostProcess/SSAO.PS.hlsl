@@ -1,6 +1,6 @@
 #include "Common/FullScreenQuad.hlsli"
-#include "Common/ShaderConstants.hlsli" 
-#include "Common/CameraUtils.hlsli" 
+#include "Common/ShaderConstants.hlsli"
+#include "Common/CameraUtils.hlsli"
 #include "Common/MathUtils.hlsli"
 
 ConstantBuffer<SSAOSettings> gSSAOSettings : register(b0);
@@ -9,77 +9,92 @@ ConstantBuffer<FrameData> gFrameData : register(b1);
 Texture2D<float4> gNormalTexture : register(t0);
 Texture2D<float> gDepthTexture : register(t1);
 
-SamplerState gClampSampler : register(s0);
+// 半球の中を何周しながら外へ広げていくか
+static const float kSpiralTurns = 7.0f;
+// 深度バッファは遠いほど粗くなるので、遮っているとみなす高さを距離に比例して増やす
+static const float kDistanceBiasScale = 0.001f;
+
+// 4x4 のピクセルで回転をずらす。後のぼかし (左右 4 ピクセル) で平均されて模様が消える
+static const float kRotationPattern[16] =
+{
+     0.0f,  8.0f,  2.0f, 10.0f,
+    12.0f,  4.0f, 14.0f,  6.0f,
+     3.0f, 11.0f,  1.0f,  9.0f,
+    15.0f,  7.0f, 13.0f,  5.0f
+};
 
 float4 main(VSOutput input) : SV_TARGET
 {
-    float depth = gDepthTexture.SampleLevel(gClampSampler, input.uv, 0);
-    
+    uint depthWidth, depthHeight;
+    gDepthTexture.GetDimensions(depthWidth, depthHeight);
+    float2 depthSize = float2(depthWidth, depthHeight);
+    int2 maxCoord = int2(depthWidth, depthHeight) - 1;
+
+    // 深度と法線は補間すると輪郭で手前と奥が混ざるので、一番近いピクセルを読む
+    int2 centerCoord = min(int2(input.uv * depthSize), maxCoord);
+    float depth = gDepthTexture.Load(int3(centerCoord, 0));
     if (depth >= 1.0f)
         return float4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    float3 worldNormal = gNormalTexture.SampleLevel(gClampSampler, input.uv, 0).xyz;
-    float3 viewPos = GetViewPos(input.uv, depth, gFrameData.invProjMatrix);
+    float2 centerUV = (float2(centerCoord) + 0.5f) / depthSize;
+    float3 viewPosition = GetViewPos(centerUV, depth, gFrameData.invProjMatrix);
+    float3 worldNormal = gNormalTexture.Load(int3(centerCoord, 0)).xyz;
     float3 viewNormal = normalize(mul(worldNormal, (float3x3) gFrameData.viewMatrix));
+    float heightBias = gSSAOSettings.bias + viewPosition.z * kDistanceBiasScale;
 
-    // NaNを起こさない安全なTBN行列の構築
-    float3 upVector = abs(viewNormal.z) < 0.999f ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f, 0.0f, 0.0f);
-    float3 tangent = normalize(cross(upVector, viewNormal));
+    // 法線を Z にした半球の向き。法線が Z とほぼ同じ向きのときは cross が 0 になるので X を使う
+    float3 reference = abs(viewNormal.z) < 0.999f ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f, 0.0f, 0.0f);
+    float3 tangent = normalize(cross(reference, viewNormal));
     float3 bitangent = cross(viewNormal, tangent);
-    float3x3 TBN = float3x3(tangent, bitangent, viewNormal);
+    float3x3 tangentToView = float3x3(tangent, bitangent, viewNormal);
 
-    // ノイズによるランダムな回転角度だけを取得
-    float noise = InterleavedGradientNoise(input.position.xy);
-    float randomAngle = noise * 2.0f * PI;
+    uint2 patternCoord = uint2(input.position.xy) % 4;
+    float randomAngle = (kRotationPattern[patternCoord.y * 4 + patternCoord.x] + 0.5f) / 16.0f * 2.0f * PI;
 
+    int sampleCount = max(gSSAOSettings.sampleCount, 1);
     float occlusion = 0.0f;
-    int sampleCount = gSSAOSettings.sampleCount;
 
-    [unroll(32)] 
+    [loop]
     for (int i = 0; i < sampleCount; ++i)
     {
-        float u = (float(i) + 0.5f) / float(sampleCount);
-        // スパイラルにランダム角度を足すことで全体を回転
-        float theta = u * 2.0f * PI * 7.0f + randomAngle;
-        
-        float r = sqrt(u);
-        float z = sqrt(max(0.0f, 1.0f - r * r));
-        float3 hemispherePos = float3(r * cos(theta), r * sin(theta), z);
+        float ratio = (float(i) + 0.5f) / float(sampleCount);
+        float theta = ratio * 2.0f * PI * kSpiralTurns + randomAngle;
+        float radius = sqrt(ratio);
+        float3 hemisphereDirection = float3(radius * cos(theta), radius * sin(theta), sqrt(1.0f - ratio));
 
-        float3 sampleOffset = mul(hemispherePos, TBN);
-        sampleOffset *= lerp(0.1f, 1.0f, u * u);
+        // 中心の近くにサンプルを集める
+        float3 sampleOffset = mul(hemisphereDirection, tangentToView) * lerp(0.1f, 1.0f, ratio * ratio);
+        float3 samplePosition = viewPosition + sampleOffset * gSSAOSettings.radius;
 
-        float3 samplePos = viewPos + sampleOffset * gSSAOSettings.radius;
-
-        float4 offsetPos = mul(float4(samplePos, 1.0f), gFrameData.projectionMatrix);
-        offsetPos.xyz /= offsetPos.w;
-        float2 sampleUV = float2(offsetPos.x * 0.5f + 0.5f, 1.0f - (offsetPos.y * 0.5f + 0.5f));
-
-        if (sampleUV.x < 0.0f || sampleUV.x > 1.0f || sampleUV.y < 0.0f || sampleUV.y > 1.0f)
+        float4 sampleClip = mul(float4(samplePosition, 1.0f), gFrameData.projectionMatrix);
+        float2 sampleUV = sampleClip.xy / sampleClip.w * float2(0.5f, -0.5f) + 0.5f;
+        if (any(sampleUV < 0.0f) || any(sampleUV > 1.0f))
             continue;
 
-        float sampleDepth = gDepthTexture.SampleLevel(gClampSampler, sampleUV, 0);
-        float sampleZ = LinearizeDepth(sampleDepth, gFrameData.nearClip, gFrameData.farClip);
+        // サンプルが映るピクセルにある物の位置
+        int2 sampleCoord = min(int2(sampleUV * depthSize), maxCoord);
+        float sceneDepth = gDepthTexture.Load(int3(sampleCoord, 0));
+        float3 scenePosition = GetViewPos((float2(sampleCoord) + 0.5f) / depthSize, sceneDepth, gFrameData.invProjMatrix);
 
-        // 距離に基づく正確な減衰
-        float distance = abs(viewPos.z - sampleZ);
-        float rangeCheck = smoothstep(0.0f, 1.0f, 1.0f - saturate(distance / gSSAOSettings.radius));
-        
-        if (sampleZ < samplePos.z - gSSAOSettings.bias)
+        // 中心の面より上に出ている物だけが光を遮る。
+        // 同じ面の上の点は高さが 0 になるので、斜めから見た地面でも深度の段差が縞にならない
+        float3 toScene = scenePosition - viewPosition;
+        float distanceToScene = length(toScene);
+        if (dot(toScene, viewNormal) > heightBias)
         {
-            occlusion += 1.0f * rangeCheck;
+            // 半径の 2 倍より遠い物は遮らないものとして、だんだん弱める
+            occlusion += 1.0f - saturate(distanceToScene / gSSAOSettings.radius - 1.0f);
         }
     }
 
-    occlusion = 1.0f - (occlusion / (float) sampleCount);
-    
-    // 遠距離フェード
-    float linearDepth = LinearizeDepth(depth, gFrameData.nearClip, gFrameData.farClip);
-    float fade = saturate((linearDepth - gSSAOSettings.fadeStart) / (gSSAOSettings.fadeEnd - gSSAOSettings.fadeStart));
-    occlusion = lerp(occlusion, 1.0f, fade);
+    float ambientVisibility = 1.0f - occlusion / float(sampleCount);
 
-    // コントラスト調整
-    occlusion = pow(abs(occlusion), gSSAOSettings.intensity);
+    // 遠くは消していく
+    float fadeRange = max(gSSAOSettings.fadeEnd - gSSAOSettings.fadeStart, kEpsilon);
+    ambientVisibility = lerp(ambientVisibility, 1.0f, saturate((viewPosition.z - gSSAOSettings.fadeStart) / fadeRange));
 
-    return float4(occlusion, occlusion, occlusion, 1.0f);
+    // intensity が大きいほど暗くなる
+    ambientVisibility = pow(ambientVisibility, gSSAOSettings.intensity);
+
+    return float4(ambientVisibility, ambientVisibility, ambientVisibility, 1.0f);
 }

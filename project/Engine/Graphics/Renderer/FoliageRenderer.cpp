@@ -31,7 +31,6 @@ void FoliageRenderer::Initialize(const RenderEnvironment& env, const std::vector
     *counterResetMapped = 0;
 
     // カリングCSのバインドに必要なディスクリプタを連続領域として確保
-    // レイアウト: [t0: Input, t1: Counter, u0: Output, u1: IndirectArgs] * 種類数 * フレーム数
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
     heapDesc.NumDescriptors = 4 * static_cast<uint32_t>(numTypes) * kFrameCount;
     heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;

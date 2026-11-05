@@ -49,7 +49,7 @@ void SkydomeRenderer::Draw(const RenderEnvironment& env, const Matrix4x4& viewMa
 
     PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Skydome Pass");
 
-    // カメラが動いても空が付いてくるよう、ビュー行列から平行移動を除く。空の球は原点にある大きさ 1 の球
+    // カメラが動いても空が付いてくるよう、ビュー行列から平行移動を除く
     Matrix4x4 view = viewMatrix;
     view.m[3][0] = 0.0f;
     view.m[3][1] = 0.0f;

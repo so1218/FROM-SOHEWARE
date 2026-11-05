@@ -66,6 +66,12 @@ float3 Hash33(float3 p3)
     return -1.0f + 2.0f * frac((p3.xxy + p3.yxx) * p3.zyx);
 }
 
+// 明るさ (Rec.709)
+float CalculateLuminance(float3 color)
+{
+    return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
+}
+
 // スクリーン空間グラディエントノイズ (SSAO/SSR/ディザリング用) [0.0, 1.0]
 float InterleavedGradientNoise(float2 pixelPos)
 {

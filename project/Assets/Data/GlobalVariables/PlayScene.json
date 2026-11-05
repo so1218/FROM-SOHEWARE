@@ -205,7 +205,7 @@
         "PostEffect/SSAO/Enable": 1,
         "PostEffect/SSAO/FadeEnd": 200.0,
         "PostEffect/SSAO/FadeStart": 100.0,
-        "PostEffect/SSAO/Intensity": 3.5,
+        "PostEffect/SSAO/Intensity": 1.0,
         "PostEffect/SSAO/Radius": 1.0,
         "PostEffect/SSAO/SampleCount": 16,
         "PostEffect/ScreenNoise/Amount": 0.0,

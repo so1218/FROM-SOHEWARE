@@ -1,4 +1,5 @@
 #include "Common/ShaderConstants.hlsli"
+#include "Common/MathUtils.hlsli"
 
 Texture3D<float4> gVoxelInjectCurrent : register(t0);
 RWTexture3D<float4> gVoxelInjectFiltered : register(u0);
@@ -17,11 +18,6 @@ static const float kEdgeSensitivityNear = 2.0f;
 static const float kEdgeSensitivityFar = 0.02f;
 static const float kFadeStartRatio = 0.1f;
 static const float kFadeEndRatio = 0.7f;
-
-float CalculateLuminance(float3 color)
-{
-    return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
-}
 
 // 隣の 6 つのうち、明るさが近いものほど強く混ぜる
 [numthreads(8, 8, 4)]

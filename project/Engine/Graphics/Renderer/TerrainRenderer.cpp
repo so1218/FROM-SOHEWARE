@@ -33,7 +33,7 @@ void TerrainRenderer::Submit(const TerrainDrawData& drawData, const std::vector<
     drawData_ = drawData;
     isSubmitted_ = true;
 
-    // GPU が描き終わるのを毎フレーム待っているので、ここで直接書き換えてよい
+    // GPU が描き終わるのを毎フレーム待っているので、ここで直接書き換え
     *mappedSettings_ = drawData.settings;
 
     chunkCount_ = static_cast<uint32_t>(std::min<size_t>(visibleChunks.size(), kMaxChunkCount));
@@ -107,7 +107,7 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
     cmdList->SetGraphicsRootConstantBufferView(3, settingsBuffer_->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(drawData_.heightMapHandle));
 
-    // 視錐台で選んだチャンクを影にも使う。カメラの外から伸びる影は欠ける
+    // 視錐台で選んだチャンクを影にも使う
     cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
     cmdList->IASetIndexBuffer(&drawData_.indexBufferView);
     cmdList->DrawIndexedInstanced(drawData_.indexCount, chunkCount_, 0, 0, 0);
