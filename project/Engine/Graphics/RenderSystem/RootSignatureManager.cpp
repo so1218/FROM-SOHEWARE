@@ -400,9 +400,10 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         RootSignatureBuilder builder;
 
+        // 地形の設定とハイトマップは、地形のシェーダーと同じ b10 と t9
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL);
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddCBV(10, D3D12_SHADER_VISIBILITY_ALL);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 1, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL);
 
@@ -534,10 +535,11 @@ Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureManager::CreateRootSign
     {
         RootSignatureBuilder builder;
 
+        // 地形の設定とハイトマップは、地形のシェーダーと同じ b10 と t9
         builder.AddCBV(0, D3D12_SHADER_VISIBILITY_ALL, 0);
-        builder.AddCBV(1, D3D12_SHADER_VISIBILITY_ALL, 0);
+        builder.AddCBV(10, D3D12_SHADER_VISIBILITY_ALL, 0);
 
-        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 1, D3D12_SHADER_VISIBILITY_ALL, 0);
+        builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 1, D3D12_SHADER_VISIBILITY_ALL, 0);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, D3D12_SHADER_VISIBILITY_ALL, 0);
         builder.AddDescriptorTableRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1, D3D12_SHADER_VISIBILITY_ALL, 0);
 

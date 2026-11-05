@@ -26,8 +26,7 @@ public:
     void GenerateFoliage(
         const RenderEnvironment& env,
         uint32_t heightMapSrvHandle,
-        D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress,
-        uint32_t terrainWidth, uint32_t terrainDepth);
+        D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress);
 
     void Draw(
         const RenderEnvironment& env,

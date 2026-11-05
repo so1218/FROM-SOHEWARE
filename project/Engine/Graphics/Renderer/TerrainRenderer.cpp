@@ -37,7 +37,10 @@ void TerrainRenderer::Submit(const TerrainDrawData& drawData, const std::vector<
     *mappedSettings_ = drawData.settings;
 
     chunkCount_ = static_cast<uint32_t>(std::min<size_t>(visibleChunks.size(), kMaxChunkCount));
-    std::memcpy(mappedChunks_, visibleChunks.data(), sizeof(TerrainChunkData) * chunkCount_);
+    if (chunkCount_ > 0)
+    {
+        std::memcpy(mappedChunks_, visibleChunks.data(), sizeof(TerrainChunkData) * chunkCount_);
+    }
 }
 
 void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)

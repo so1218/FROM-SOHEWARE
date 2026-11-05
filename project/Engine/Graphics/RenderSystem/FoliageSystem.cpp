@@ -58,15 +58,13 @@ void FoliageSystem::InitializeRenderer()
     isRendererInitialized_ = true;
 }
 
-void FoliageSystem::Generate(
-    const std::string& heightMapName,
-    uint32_t terrainWidth, uint32_t terrainDepth)
+void FoliageSystem::Generate(const std::string& heightMapName)
 {
     assert(isRendererInitialized_ && "Foliage renderer is not initialized.");
     if (!engine_ || !isRendererInitialized_) return;
 
     uint32_t heightMapHandle = TextureManager::GetInstance().Get(heightMapName);
-    engine_->GetRendererManager()->GenerateFoliage(heightMapHandle, terrainWidth, terrainDepth);
+    engine_->GetRendererManager()->GenerateFoliage(heightMapHandle);
 }
 
 void FoliageSystem::Update()

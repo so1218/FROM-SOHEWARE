@@ -533,14 +533,12 @@ struct GrassCullingData
 
 struct GrassGenerationData
 {
-    float2 chunkBasePos;
     float2 terrainCenter;
-    
     float terrainWidth;
     float terrainDepth;
-    uint maxGrassPerChunk;
+
+    uint maxGrassCount;
     float gridSpacing;
-  
     float minHeight;
     float maxHeight;
     float minWidth;
@@ -655,7 +653,7 @@ struct FoliageGenerationData
     float terrainWidth;
     float terrainDepth;
     
-    uint maxInstancesPerChunk;
+    uint maxInstanceCount;
     float gridSpacing;
     float minScale; 
     float maxScale;
@@ -669,8 +667,6 @@ struct FoliageCullingData
     float modelRadius;
     
     float modelCenterYOffset; 
-    uint totalInstanceCount;
-    float2 padding;
 };
 
 struct Object3DInstanceData

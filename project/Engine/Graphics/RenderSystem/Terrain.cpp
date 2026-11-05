@@ -71,21 +71,25 @@ void Terrain::Draw()
         }
     }
 
+    // 見えるチャンクがなくても、草や植物の生成が地形の設定を使うので必ず送る
+    engine_->GetRendererManager()->SubmitTerrain(CreateDrawData(), visibleChunks_);
+}
+
+TerrainDrawData Terrain::CreateDrawData() const
+{
     TerrainDrawData drawData;
     drawData.vertexBufferView = vertexBufferView_;
     drawData.indexBufferView = indexBufferView_;
     drawData.indexCount = indexCount_;
     drawData.material = &material_;
     drawData.heightMapHandle = heightMapHandle_;
-    drawData.settings.origin = origin;
+    drawData.settings.origin = GetOrigin();
     drawData.settings.maxHeight = params_.maxHeight;
     drawData.settings.cellSize = params_.cellSize;
     drawData.settings.texelSize = 1.0f / static_cast<float>(heightMapWidth_);
     drawData.settings.heightMapWidth = heightMapWidth_;
     drawData.settings.heightMapHeight = heightMapHeight_;
-
-    // 見えるチャンクがなくても、草や植物の生成が地形の設定を使うので必ず送る
-    engine_->GetRendererManager()->SubmitTerrain(drawData, visibleChunks_);
+    return drawData;
 }
 
 bool Terrain::LoadFromHeightmap(const std::string& heightmapTextureName, float cellSize)
@@ -123,6 +127,9 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTextureName, float c
 
     CreateChunks();
     CreateMesh();
+
+    // 最初の Draw より前に草や植物が生成されても、地形の設定が入っているようにする
+    engine_->GetRendererManager()->SubmitTerrain(CreateDrawData(), {});
     return true;
 }
 

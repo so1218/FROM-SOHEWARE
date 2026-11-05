@@ -134,9 +134,7 @@ public:
     void SetFoliageRenderingParams(const FoliageCullingData& cullingData);
     void UpdateFoliageConfigs(const std::vector<FoliageTypeConfig>& configs);
     // 地形生成・配置
-    void GenerateFoliage(
-        uint32_t heightMapSrvHandle,
-        uint32_t terrainWidth, uint32_t terrainDepth);
+    void GenerateFoliage(uint32_t heightMapSrvHandle);
 
     void SetWindMap(uint32_t windMapSrvIndex) { windMapSrvIndex_ = windMapSrvIndex; }
 

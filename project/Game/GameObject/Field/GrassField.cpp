@@ -19,7 +19,7 @@ void GrassField::Initialize()
 
     binder_->Bind("Position", &transform_.translation_, { 0.0f, 0.0f, 0.0f });
     binder_->Bind("BaseScale", &baseScale_, 1.0f, 0.01f, 0.1f, 5.0f);
-    binder_->Bind("MaxGrassCount", &maxGrassPerChunk_, 300000, 1000, 1000, 2000000);
+    binder_->Bind("MaxGrassCount", &maxGrassCount_, 300000, 1000, 1000, 2000000);
     binder_->Bind("GridSpacing", &gridSpacing_, 0.5f, 0.01f, 0.05f, 2.0f);
 
     binder_->Bind("MinHeight", &minHeight_, 0.8f, 0.01f, 0.1f, 5.0f);
@@ -77,7 +77,7 @@ void GrassField::Initialize()
         });
 
     prevPosition_ = transform_.translation_;
-    prevMaxGrassPerChunk_ = maxGrassPerChunk_;
+    prevMaxGrassCount_ = maxGrassCount_;
     prevGridSpacing_ = gridSpacing_;
     prevBaseScale_ = baseScale_;
     prevMinHeight_ = minHeight_;
@@ -102,7 +102,7 @@ void GrassField::Update()
     if (transform_.translation_.x != prevPosition_.x ||
         transform_.translation_.y != prevPosition_.y ||
         transform_.translation_.z != prevPosition_.z ||
-        maxGrassPerChunk_ != prevMaxGrassPerChunk_ ||
+        maxGrassCount_ != prevMaxGrassCount_ ||
         gridSpacing_ != prevGridSpacing_ ||
         baseScale_ != prevBaseScale_ ||
         minHeight_ != prevMinHeight_ ||
@@ -119,7 +119,7 @@ void GrassField::Update()
         GenerateGrass();
 
         prevPosition_ = transform_.translation_;
-        prevMaxGrassPerChunk_ = maxGrassPerChunk_;
+        prevMaxGrassCount_ = maxGrassCount_;
         prevGridSpacing_ = gridSpacing_;
         prevBaseScale_ = baseScale_;
         prevMinHeight_ = minHeight_;
@@ -258,15 +258,8 @@ void GrassField::GenerateGrass()
     uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / gridSpacing_));
     uint32_t neededGrassCount = gridX * gridZ;
 
-    // バッファの上限を超えないように制限
-    genData.maxGrassPerChunk = FS::Math::MyMin((int)neededGrassCount, maxGrassPerChunk_);
-
-    // 配置のオフセット
-    genData.chunkBasePos = { transform_.translation_.x, transform_.translation_.z };
-
-    genData.terrainWidth = terrainWidth_;
-    genData.terrainDepth = terrainDepth_;
-    genData.maxGrassPerChunk = maxGrassPerChunk_;
+    // 設定した上限と必要数のうち、小さい方を採用
+    genData.maxGrassCount = std::min(neededGrassCount, static_cast<uint32_t>(maxGrassCount_));
     genData.gridSpacing = gridSpacing_;
 
     // スケールを掛け合わせて最終的な高さを決定

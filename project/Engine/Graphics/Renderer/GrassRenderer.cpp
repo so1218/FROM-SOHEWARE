@@ -95,7 +95,10 @@ void GrassRenderer::GenerateGrass(
 {
     auto* cmdList = env.commandManager->GetCommandList();
 
-    memcpy(mappedGenData_, &genData, sizeof(GrassGenerationData));
+    // 生成バッファに入りきらない分は作らない
+    GrassGenerationData generationData = genData;
+    generationData.maxGrassCount = std::min<uint32_t>(generationData.maxGrassCount, kMaxInstances);
+    memcpy(mappedGenData_, &generationData, sizeof(GrassGenerationData));
 
     // 生成先バッファを UAV ステートへ遷移
     D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -119,11 +122,11 @@ void GrassRenderer::GenerateGrass(
     cmdList->SetComputeRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(densityMapSrvHandle));
     cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(generatedUavIndex_));
 
-    // スレッドグループの算出 (1グループ = 64スレッド)
-    uint32_t totalGroups = (genData.maxGrassPerChunk + 63) / 64;
-    uint32_t groupX = 1024;
-    uint32_t groupY = (totalGroups + groupX - 1) / groupX;
-    cmdList->Dispatch(groupX, groupY, 1);
+    // 1 グループ 64 スレッドで、X は 1024 グループまで。シェーダーの kThreadsPerRow と合わせる
+    uint32_t groupCount = (generationData.maxGrassCount + 63) / 64;
+    uint32_t groupCountX = std::min(groupCount, 1024u);
+    uint32_t groupCountY = (groupCount + 1023) / 1024;
+    cmdList->Dispatch(groupCountX, std::max(groupCountY, 1u), 1);
 
     // 次のカリングフェーズで読み込むため SRV ステートへ遷移
     barrier = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -132,7 +135,7 @@ void GrassRenderer::GenerateGrass(
         D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
     cmdList->ResourceBarrier(1, &barrier);
 
-    totalGeneratedCount_ = genData.maxGrassPerChunk;
+    totalGeneratedCount_ = generationData.maxGrassCount;
 }
 
 void GrassRenderer::Draw(

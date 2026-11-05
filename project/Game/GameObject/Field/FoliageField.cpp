@@ -89,7 +89,7 @@ void FoliageField::AddFoliageLayer(const std::string& layerName, const std::stri
     layer.modelName = modelName;
 
     // 初期値設定
-    layer.genData.maxInstancesPerChunk = 50000;
+    layer.genData.maxInstanceCount = 50000;
     layer.genData.gridSpacing = 0.5f;
     layer.genData.minScale = 0.8f;
     layer.genData.maxScale = 1.2f;
@@ -159,8 +159,8 @@ void FoliageField::GenerateFoliage()
         uint32_t gridZ = static_cast<uint32_t>(std::ceil(terrainDepth_ / layer.genData.gridSpacing));
         uint32_t neededFoliageCount = gridX * gridZ;
 
-        // maxInstancesPerChunk と必要数のうち、小さい方を採用
-        layer.genData.maxInstancesPerChunk = std::min(
+        // 設定した上限と必要数のうち、小さい方を採用
+        layer.genData.maxInstanceCount = std::min(
             static_cast<uint32_t>(layer.uiMaxInstances),
             neededFoliageCount
         );
@@ -169,7 +169,7 @@ void FoliageField::GenerateFoliage()
     // Systemのポインタ経由で最新データを送る
     foliageSystem_->UpdateConfigs(layers_);
 
-    foliageSystem_->Generate(heightMapName_, static_cast<uint32_t>(terrainWidth_), static_cast<uint32_t>(terrainDepth_));
+    foliageSystem_->Generate(heightMapName_);
 }
 
 void FoliageField::Update()

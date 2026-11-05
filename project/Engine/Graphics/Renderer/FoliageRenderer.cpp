@@ -112,8 +112,7 @@ void FoliageRenderer::BeginFrame()
 void FoliageRenderer::GenerateFoliage(
     const RenderEnvironment& env,
     uint32_t heightMapSrvHandle,
-    D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress,
-    uint32_t terrainWidth, uint32_t terrainDepth)
+    D3D12_GPU_VIRTUAL_ADDRESS terrainSettingsAddress)
 {
     if (types_.empty()) return;
 
@@ -162,20 +161,24 @@ void FoliageRenderer::GenerateFoliage(
     cmdList->SetComputeRootConstantBufferView(1, terrainSettingsAddress);
     cmdList->SetComputeRootDescriptorTable(2, env.srvManager->GetSRVHandleGPU(heightMapSrvHandle));
 
-    uint32_t dispatchX = (terrainWidth + 7) / 8;
-    uint32_t dispatchY = (terrainDepth + 7) / 8;
-
     // 種類ごとに固有のDensityMapとパラメータをバインドし、地形上にインスタンスを動的生成
     for (size_t i = 0; i < numTypes; ++i)
     {
         auto& res = types_[i];
-        memcpy(res.mappedGenData[currentFrameIndex_], &res.config.genData, sizeof(FoliageGenerationData));
+        // 生成バッファに入りきらない分は作らない
+        FoliageGenerationData generationData = res.config.genData;
+        generationData.maxInstanceCount = std::min<uint32_t>(generationData.maxInstanceCount, kMaxInstances);
+        memcpy(res.mappedGenData[currentFrameIndex_], &generationData, sizeof(FoliageGenerationData));
 
         cmdList->SetComputeRootConstantBufferView(0, res.generationDataResource[currentFrameIndex_]->GetGPUVirtualAddress());
         cmdList->SetComputeRootDescriptorTable(3, env.srvManager->GetSRVHandleGPU(res.config.densityMapSrvHandle));
         cmdList->SetComputeRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(res.generatedUavIndex));
 
-        cmdList->Dispatch(dispatchX, dispatchY, 1);
+        // 1 グループ 64 スレッドで、X は 1024 グループまで。シェーダーの kThreadsPerRow と合わせる
+        uint32_t groupCount = (generationData.maxInstanceCount + 63) / 64;
+        uint32_t groupCountX = std::min(groupCount, 1024u);
+        uint32_t groupCountY = (groupCount + 1023) / 1024;
+        cmdList->Dispatch(groupCountX, std::max(groupCountY, 1u), 1);
     }
 
     // 後段のカリングパスでの読み取りに備えてSRVへ遷移

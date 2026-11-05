@@ -516,9 +516,7 @@ void RendererManager::UpdateFoliageConfigs(const std::vector<FoliageTypeConfig>&
 	}
 }
 
-void RendererManager::GenerateFoliage(
-	uint32_t heightMapSrvHandle,
-	uint32_t terrainWidth, uint32_t terrainDepth)
+void RendererManager::GenerateFoliage(uint32_t heightMapSrvHandle)
 {
 	// TerrainRendererから地形バッファのGPUアドレスを取得してFoliageRendererへ渡す
 	if (foliageRenderer_ && terrainRenderer_)
@@ -529,8 +527,7 @@ void RendererManager::GenerateFoliage(
 		foliageRenderer_->GenerateFoliage(
 			env_,
 			heightMapSrvHandle,
-			terrainSettingsAddr,
-			terrainWidth, terrainDepth
+			terrainSettingsAddr
 		);
 	}
 }

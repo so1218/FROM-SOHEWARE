@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderCommon.h"
 #include "Structures.h"
+#include "TerrainRenderer.h"
 
 namespace FS
 {
@@ -66,6 +67,7 @@ private:
 
     void CreateChunks();
     void CreateMesh();
+    TerrainDrawData CreateDrawData() const;
 
     float GetHeightRatio(uint32_t x, uint32_t z) const { return heightRatios_[z * heightMapWidth_ + x]; }
     // ハイトマップの (0, 0) のピクセルにあたる頂点の、高さ 0 での位置

@@ -32,7 +32,7 @@ private:
     // ==========================================
     // GPUに送る 生成用パラメータ（変更されたら再生成が必要）
     // ==========================================
-    int maxGrassPerChunk_ = 300000;
+    int maxGrassCount_ = 300000;
     float gridSpacing_ = 0.5f;
     float baseScale_ = 1.0f;
 
@@ -43,7 +43,7 @@ private:
 
     // 前フレーム比較用（再生成判定のため）
     FS::Vector3 prevPosition_;
-    int prevMaxGrassPerChunk_ = 0;
+    int prevMaxGrassCount_ = 0;
     float prevGridSpacing_ = 0.0f;
     float prevBaseScale_ = 0.0f;
     float prevMinHeight_ = 0.0f;

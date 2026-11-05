@@ -29,9 +29,7 @@ public:
 
     // 密度マップとハイトマップを参照し、GPU Computeを用いて地形上にインスタンスを静的生成
     // シームレスロード時の裏読みなど、非同期実行に対応できる設計を想定
-    void Generate(
-        const std::string& heightMapName,
-        uint32_t terrainWidth, uint32_t terrainDepth);
+    void Generate(const std::string& heightMapName);
 
     // 視錐台やLOD算出用のカリング定数をGPUへ送出
     void Update();
