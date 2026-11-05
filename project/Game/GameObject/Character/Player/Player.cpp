@@ -519,7 +519,6 @@ void Player::Draw()
 {
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 
-	GetTransform().UpdateMatrix();
 	collider_->DrawCollider();
 
 	animationModel_->Draw();

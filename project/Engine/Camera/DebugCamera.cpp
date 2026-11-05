@@ -30,9 +30,6 @@ void DebugCamera::Initialize()
 #else
     isEnabled_ = false;
 #endif
-
-    // ワールド行列の更新
-    worldTransform_.UpdateMatrix();
 }
 
 void DebugCamera::Update()
@@ -102,9 +99,6 @@ void DebugCamera::Update()
     Quaternion currentRotation = worldTransform_.rotation_;
     Vector3 forward = currentRotation.RotateVector(Vector3(0.0f, 0.0f, 1.0f));
     cameraWorldPosition_ = target_ - forward * distance_;
-
-    // ワールド行列を更新
-    worldTransform_.UpdateMatrix();
 }
 
 void DebugCamera::BindProperties(PropertyBinder& binder)

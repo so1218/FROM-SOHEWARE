@@ -115,14 +115,8 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         }
     }
 
-    // 右手のワールド行列を親トランスフォームに設定
+    // 右手のワールド行列を親トランスフォームに設定。武器のモデルは子なので、読んだときに付いてくる
     handTransform_.SetWorldMatrix(handWorldMatrix);
-
-    // 武器モデルの更新
-    if (model_)
-    {
-        model_->GetTransform().UpdateMatrix();
-    }
 
     // 正しいワールド行列から銃口位置を取得
     Vector3 muzzlePos = GetMuzzleWorldPosition();

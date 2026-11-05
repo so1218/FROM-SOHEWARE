@@ -159,11 +159,12 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     cmdList->OMSetRenderTargets(1, &backBufferRTV, FALSE, nullptr);
 
 #ifdef ENABLE_IMGUI
+    // 表示の切り替えに関係なく、このフレームで開いた Scene ウィンドウは必ず閉じる
+    engine->GetDebugGuiManager()->EndSceneView();
+
     if (ImGuiManager::IsGuiVisible())
     {
         // GUI オン時: ImGuiのエディタドッキング画面として描画
-        engine->GetDebugGuiManager()->EndSceneView();
-
         ID3D12DescriptorHeap* heaps[] = { engine->GetSRVManager()->GetSRVHeap() };
         cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
         ImGuiManager::EndFrame(cmdList);

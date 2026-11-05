@@ -81,8 +81,6 @@ void WaterObject::SetId(int newId)
 
 void WaterObject::Update()
 {
-    model_->GetTransform().UpdateMatrix();
-
     if (mappedMaterialData_)
     {
         *mappedMaterialData_ = materialData_;

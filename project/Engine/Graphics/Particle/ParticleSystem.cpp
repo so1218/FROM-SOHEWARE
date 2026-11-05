@@ -390,8 +390,6 @@ void ParticleSystem::Update()
         // GPUサブミット
         if (!isExpired && !ShouldSkipDraw(particleState))
         {
-            particleState.transform.UpdateMatrix();
-
             engine_->GetRendererManager()->SubmitParticleInstance(
                 particleState.transform,
                 Math::ColorVectorToUint32(particleState.color),

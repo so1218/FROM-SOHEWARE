@@ -35,7 +35,6 @@ void Camera::BindProperties(PropertyBinder& binder, const std::string& prefix)
     binder.BindRotation(p + "RotationEuler", &worldTransform_.rotation_, 0.1f,
         [this]() {
             // クォータニオンは BindRotation が更新済み
-            worldTransform_.UpdateMatrix();
             UpdateViewMatrix();
         });
 

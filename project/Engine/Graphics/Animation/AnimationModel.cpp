@@ -159,9 +159,6 @@ void AnimationModel::Draw()
 {
     if (!engine_ || !animeModelData_.modelData) return;
 
-    // モデル自体のワールド行列更新
-    transform_.UpdateMatrix();
-
     engine_->GetRendererManager()->SubmitAnimationModel(
         transform_,
         animeModelData_,
@@ -417,9 +414,6 @@ float AnimationModel::GetNormalizedTime() const
 
 Matrix4x4 AnimationModel::GetJointWorldMatrix(const std::string& jointName) const
 {
-    // 取得される直前の最新 transform_ で行列を自動更新
-    const_cast<WorldTransform&>(transform_).UpdateMatrix();
-
     // ボーンの名前でマップを検索
     auto it = skeleton_.jointMap.find(jointName);
 

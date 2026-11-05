@@ -26,9 +26,6 @@ void Model::Draw()
 {
     if (!modelData_ || !engine_) return;
 
-    // CPUでの行列更新
-    transform_.UpdateMatrix();
-
     // 描画命令発行
     engine_->GetRendererManager()->SubmitModel(
         transform_,

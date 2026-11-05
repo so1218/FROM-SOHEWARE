@@ -37,6 +37,9 @@ private:
     PostEffectManager* postEffectManager_;
     DebugCamera* debugCamera_;
 
+    // フレームの途中で表示が切り替わっても、Begin した回だけ End するために覚えておく
+    bool isSceneViewBegun_ = false;
+
     // エンジン全体のプロパティバインダー
     std::unique_ptr<PropertyBinder> engineBinder_;
 

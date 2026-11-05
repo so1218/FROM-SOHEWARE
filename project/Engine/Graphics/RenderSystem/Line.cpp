@@ -17,11 +17,6 @@ void Line::Initialize()
     transform_.Initialize();
 }
 
-void Line::Update()
-{
-    transform_.UpdateMatrix();
-}
-
 void Line::Draw()
 {
     // ローカル座標を行列でワールド座標に変換する

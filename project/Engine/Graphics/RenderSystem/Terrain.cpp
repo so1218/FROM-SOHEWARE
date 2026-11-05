@@ -17,7 +17,6 @@ Terrain::Terrain(Engine* engine)
     // Transform の初期化
     transform_.translation_ = { 0.0f, 0.0f, 0.0f };
     transform_.scale_ = { 1.0f, 1.0f, 1.0f };
-    transform_.UpdateMatrix();
 
     // 描画用マテリアルの構築とテクスチャ割り当て
     material_ = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
@@ -62,7 +61,6 @@ void Terrain::Draw()
             transform_.translation_.y,
             (chunk->GetStartZ() * params_.cellSize - offsetZ) + transform_.translation_.z  
         };
-        chunkTransform.UpdateMatrix();
 
         // チャンクのUVトランスフォームを計算
         float totalVertsX_f = static_cast<float>(totalVertsX_);

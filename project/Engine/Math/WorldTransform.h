@@ -21,7 +21,7 @@ public:
     WorldTransform(const Vector3& scale, const Vector3& rotation, const Vector3& translation);
     WorldTransform(const Vector3& scale, const Quaternion& rotation, const Vector3& translation);
 
-    // 親はコピーしない
+    // 親はコピーしない。ワールド行列はコピーした時点のものを引き継ぐ
     WorldTransform(const WorldTransform& other);
     WorldTransform& operator=(const WorldTransform& other);
 
@@ -40,42 +40,44 @@ public:
     void SetParent(WorldTransform* parent) { parent_ = parent; }
     WorldTransform* GetParent() const { return parent_; }
 
-    // 行列を更新する関数
-    void UpdateMatrix();
-
-    // 行列を更新する関数(オイラー角を使用)
-    void UpdateMatrix(
-        const Vector3& scale,
-        const Vector3& rotation,
-        const Vector3& translation);
-
     void DetachFromParent();
     void UpdateLocalFromWorld();
-
     void ApplyWorldMatrix();
 
-    const Matrix4x4& GetWorldMatrix() const { return matWorld_; }
-    // 行列を直接決める 
-    void SetWorldMatrix(const Matrix4x4& worldMatrix) { matWorld_ = worldMatrix; }
+    const Matrix4x4& GetWorldMatrix() const;
+    // 行列を直接決める。位置・回転・大きさか親が変わるまでは、この行列のまま
+    void SetWorldMatrix(const Matrix4x4& worldMatrix);
     const Matrix4x4& GetPrevWorldMatrix() const { return matWorldPrev_; }
     Vector3 GetWorldPosition() const;
 
-    // 特定のプロパティを更新するセッター
-    void SetScale(const Vector3& scale);
-    void SetTranslation(const Vector3& translation);
-    void SetRotation(const Quaternion& rotation);
+    void SetScale(const Vector3& scale) { scale_ = scale; }
+    void SetTranslation(const Vector3& translation) { translation_ = translation; }
+    void SetRotation(const Quaternion& rotation) { rotation_ = rotation; }
 
     // オイラー角。クォータニオンに変換して持つ
     void SetRotationEuler(const Vector3& euler) { SetRotation(Quaternion::QuaternionFromEuler(euler)); }
     Vector3 GetRotationEuler() const { return Quaternion::QuaternionToEuler(rotation_); }
 
 private:
-    // ワールド行列
-    Matrix4x4 matWorld_;
+    // 前に計算したときから自分か親が変わっていたら、ワールド行列を計算し直す
+    void RefreshWorldMatrix() const;
+    void ComputeWorldMatrix() const;
+    // 子が親が変わったかを知るための番号。ワールド行列が変わるたびに進む
+    uint32_t GetWorldMatrixVersion() const;
+
+    WorldTransform* parent_ = nullptr;
+
     // 1フレーム前のワールド行列
     Matrix4x4 matWorldPrev_ = Matrix4x4::MakeIdentity();
-    // 親のWorldTransformへのポインタ
-    WorldTransform* parent_ = nullptr;
+
+    // 最後に計算したときの値を覚えておき、変わったかを比べる
+    mutable Matrix4x4 matWorld_;
+    mutable Vector3 computedScale_;
+    mutable Vector3 computedTranslation_;
+    mutable Quaternion computedRotation_;
+    mutable const WorldTransform* computedParent_ = nullptr;
+    mutable uint32_t computedParentVersion_ = 0;
+    mutable uint32_t worldMatrixVersion_ = 0;
 };
 
 }

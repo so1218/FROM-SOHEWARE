@@ -114,7 +114,6 @@ public:
 
     // 更新関数
     void UpdateViewMatrix() {
-        worldTransform_.UpdateMatrix();
         matView_ = Matrix4x4::Inverse(worldTransform_.GetWorldMatrix());
     }
 

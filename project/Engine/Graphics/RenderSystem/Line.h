@@ -14,7 +14,6 @@ public:
     Line(Engine* engine);
 
     void Initialize();
-    void Update();
     void Draw();
 
     // セッター

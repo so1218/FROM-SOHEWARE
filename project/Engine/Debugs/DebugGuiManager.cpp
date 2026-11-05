@@ -167,6 +167,7 @@ void DebugGuiManager::BeginSceneView(
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("Scene");
     ImGui::PopStyleVar();
+    isSceneViewBegun_ = true;
 
     // ウィンドウの利用可能なサイズを取得
     ImVec2 windowSize = ImGui::GetContentRegionAvail();
@@ -216,7 +217,9 @@ void DebugGuiManager::BeginSceneView(
 
 void DebugGuiManager::EndSceneView()
 {
-    // ウィンドウを閉じるだけ
+    if (!isSceneViewBegun_) return;
+
+    isSceneViewBegun_ = false;
     ImGui::End();
 }
 

@@ -20,7 +20,6 @@ void GameObjectManager::Initialize()
 void GameObjectManager::SetupNewObject(GameObject* obj)
 {
     obj->Initialize();
-    obj->GetTransform().UpdateMatrix();   // 追加直後のフレームに原点で描画・判定されるのを防ぐ
     obj->RegisterColliders();             // AddCollider() したコライダーを自動登録
 }
 
@@ -42,12 +41,6 @@ void GameObjectManager::Update()
     for (size_t i = 0; i < objects_.size(); ++i)
     {
         if (IsAlive(objects_[i].get())) objects_[i]->Update();
-    }
-
-    // 行列更新
-    for (size_t i = 0; i < objects_.size(); ++i)
-    {
-        if (IsAlive(objects_[i].get())) objects_[i]->GetTransform().UpdateMatrix();
     }
 
     // 削除されるオブジェクトの OnDestroy

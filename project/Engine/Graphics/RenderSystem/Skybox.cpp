@@ -33,9 +33,6 @@ WorldTransform& Skybox::GetTransform()
 
 void Skybox::Draw()
 {
-    // トランスフォーム行列を更新
-    transform_.UpdateMatrix();
-
     engine_->GetRendererManager()->SubmitSkybox(
         transform_,
         color_,

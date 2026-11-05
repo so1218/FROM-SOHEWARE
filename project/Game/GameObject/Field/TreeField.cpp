@@ -173,8 +173,7 @@ void TreeField::GenerateTrees()
         const float scale = scaleRange(random);
         const float rotationY = rotationRange(random);
 
-        WorldTransform treeTransform{};
-        treeTransform.UpdateMatrix(Vector3(scale, scale, scale), Vector3(0.0f, rotationY, 0.0f), position);
+        WorldTransform treeTransform(Vector3(scale, scale, scale), Vector3(0.0f, rotationY, 0.0f), position);
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_);
 
         colliders_.push_back({ position, trunkColliderRadius_ * scale });
