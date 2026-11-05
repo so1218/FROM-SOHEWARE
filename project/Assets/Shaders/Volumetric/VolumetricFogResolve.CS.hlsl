@@ -12,7 +12,7 @@ RWTexture2D<float4> gOutput : register(u0);
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
-// 画面の各ピクセルで、手前の物までに積み上がった霧を読む
+// 各ピクセルで、物までに積み上がった霧を読む
 [numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
@@ -23,7 +23,11 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 
     float2 screenUV = (float2(dispatchThreadId.xy) + 0.5f) / float2(outputWidth, outputHeight);
 
-    float sceneDepth = gDepthTexture.SampleLevel(gLinearSampler, screenUV, 0).r;
+    // 補間すると輪郭で手前と奥の深度が混ざるので、補間せずに読む
+    uint depthWidth, depthHeight;
+    gDepthTexture.GetDimensions(depthWidth, depthHeight);
+    int2 depthCoord = min(int2(screenUV * float2(depthWidth, depthHeight)), int2(depthWidth, depthHeight) - 1);
+    float sceneDepth = gDepthTexture.Load(int3(depthCoord, 0));
     float4 sceneWorld = mul(float4(screenUV.x * 2.0f - 1.0f, (1.0f - screenUV.y) * 2.0f - 1.0f, sceneDepth, 1.0f), gFrameData.invViewProj);
     float sceneDistance = length(sceneWorld.xyz / sceneWorld.w - gFrameData.cameraWorldPosition);
 
@@ -31,13 +35,12 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float farDistance = GetFroxelFarDistance(gFrameData.farClip, gFogSettings.maxDistance);
     float depthUV = FroxelDistanceToDepthUV(clamp(sceneDistance, nearDistance, farDistance), nearDistance, farDistance);
 
-    // 積み上げたテクスチャの各スライスには「そのスライスの奥の端まで」の霧が入っているので、
-    // 物の位置ちょうどの値を読むには半スライス手前にずらす
+    // 各スライスにはスライスの奥の端までの霧が入っているので、半スライス手前を読む
     uint froxelWidth, froxelHeight, froxelDepth;
     gVoxelAccumulate.GetDimensions(froxelWidth, froxelHeight, froxelDepth);
     depthUV -= 0.5f / float(froxelDepth);
 
-    // スライスの境目が縞に見えないように、少しだけ散らす
+    // スライスの境目の縞を目立たなくする
     depthUV = saturate(depthUV + (InterleavedGradientNoise(dispatchThreadId.xy) - 0.5f) * 0.005f);
 
     gOutput[dispatchThreadId.xy] = gVoxelAccumulate.SampleLevel(gLinearSampler, float3(screenUV, depthUV), 0);

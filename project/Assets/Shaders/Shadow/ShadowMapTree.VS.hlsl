@@ -43,7 +43,6 @@ float3x3 AngleAxisTo3x3(float3 axis, float angle)
     );
 }
 
-// Tree.VS.hlsl と同じ動きにする
 ShadowVSOutput main(ShadowVSInput input, uint instanceID : SV_InstanceID)
 {
     TreeInstanceData instance = gInstanceData[instanceID + gTreeInstanceOffset.baseInstanceIndex];

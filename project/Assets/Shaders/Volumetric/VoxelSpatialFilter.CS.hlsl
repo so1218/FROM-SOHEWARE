@@ -12,7 +12,7 @@ static const int3 kNeighborOffsets[6] =
     int3(0, 0, -1), int3(0, 0, 1)
 };
 
-// 明るさの差にどれだけ敏感にするか。奥ほど鈍くして、遠くのちらつきを強くならす
+// 明るさの差への敏感さ。奥ほど鈍くして、遠くのちらつきを強くならす
 static const float kEdgeSensitivityNear = 2.0f;
 static const float kEdgeSensitivityFar = 0.02f;
 static const float kFadeStartRatio = 0.1f;
@@ -23,7 +23,7 @@ float CalculateLuminance(float3 color)
     return dot(color, float3(0.2126f, 0.7152f, 0.0722f));
 }
 
-// 前後上下左右の 6 つと、明るさが近いものだけを混ぜる
+// 隣の 6 つのうち、明るさが近いものほど強く混ぜる
 [numthreads(8, 8, 4)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {

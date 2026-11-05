@@ -7,7 +7,6 @@ struct SpriteVSOutput
     nointerpolation uint instanceId : INSTANCEID;
 };
 
-// SpriteInstance を変えたらこのファイルも再コンパイルする必要がある
 ConstantBuffer<SpriteFrameConstants> gSpriteFrame : register(b0);
 StructuredBuffer<SpriteInstance> gInstances : register(t0);
 
@@ -22,17 +21,15 @@ SpriteVSOutput main(uint vertexId : SV_VertexID, uint instanceId : SV_InstanceID
     SpriteInstance instance = gInstances[instanceId];
     float2 cornerPosition = kQuadCorners[vertexId];
 
-    // 基準点ずらし → 拡縮
+    // pivot を原点にして大きさを掛ける
     float2 localPosition = (cornerPosition - instance.pivot) * instance.size;
 
-    // 回転
     float cosRotation = cos(instance.rotation);
     float sinRotation = sin(instance.rotation);
     float2 rotatedPosition = float2(
         localPosition.x * cosRotation - localPosition.y * sinRotation,
         localPosition.x * sinRotation + localPosition.y * cosRotation);
 
-    // 移動
     float2 screenPosition = rotatedPosition + instance.position;
 
     SpriteVSOutput output;

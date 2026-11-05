@@ -3,9 +3,7 @@
 
 #include "Common/CameraUtils.hlsli"
 
-// フロクセルの奥行きは、近いほど細かくなるように指数で分けている。
-// 奥行きはカメラからの距離 (レイの長さ) で数える
-
+// フロクセルの奥行きは、近いほど細かくなるように指数で分ける
 float GetFroxelNearDistance(float nearClip)
 {
     return max(nearClip, kMinNearClip);
@@ -16,7 +14,7 @@ float GetFroxelFarDistance(float farClip, float maxDistance)
     return min(farClip, maxDistance);
 }
 
-// スライス番号 (小数可) から距離へ
+// スライス番号から距離へ
 float FroxelSliceToDistance(float slice, float sliceCount, float nearDistance, float farDistance)
 {
     return nearDistance * pow(farDistance / nearDistance, slice / sliceCount);

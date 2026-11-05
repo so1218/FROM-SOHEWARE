@@ -10,14 +10,14 @@ ConstantBuffer<VolumetricFogSettings> gFogSettings : register(b2);
 
 SamplerState gLinearClampSampler : register(s0);
 
-// 大きく変わったときに、今のフレームをどこまで混ぜるか
+// 急に変わったときに、今のフレームを混ぜる割合の上限
 static const float kMaxCurrentWeight = 0.4f;
-// この色の差で kMaxCurrentWeight に達する
+// この色の差で上限に達する
 static const float kColorDifferenceForMaxWeight = 2.0f;
-// 周りのばらつきの何倍まで履歴を許すか。毎フレームずらしている分のゆれは残す
+// 履歴を周りのばらつきの何倍まで許すか。毎フレームのずらしによるゆれは残す
 static const float kClipStandardDeviationScale = 2.2f;
 
-// 前のフレームの結果を、今のカメラから見た位置に合わせて混ぜる
+// 前のフレームの結果を、今の位置に合わせて読んで混ぜる
 [numthreads(8, 8, 4)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
@@ -29,7 +29,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     int3 maxCoord = int3(froxelWidth, froxelHeight, froxelDepth) - 1;
     float4 current = gVoxelInjectFiltered.Load(int4(dispatchThreadId, 0));
 
-    // 周り 3x3x3 の平均とばらつき。これから外れた履歴は古いので切り詰める
+    // 周り 3x3x3 の平均とばらつきから外れた履歴は、古いとみなして切り詰める
     float4 sum = 0.0f;
     float4 sumSquared = 0.0f;
     for (int z = -1; z <= 1; ++z)
@@ -71,7 +71,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     }
     history = clamp(history, clipMin, clipMax);
 
-    // ふだんは temporalWeight だけ今のフレームを混ぜる。光が急に変わったときは多めに混ぜて残像を減らす
+    // 光が急に変わったときは、今のフレームを多めに混ぜて残像を減らす
     float colorDifference = length(current.rgb - history.rgb);
     float currentWeight = lerp(gFogSettings.temporalWeight, kMaxCurrentWeight, saturate(colorDifference / kColorDifferenceForMaxWeight));
 

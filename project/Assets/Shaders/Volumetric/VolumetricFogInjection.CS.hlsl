@@ -1,5 +1,4 @@
 #include "Common/ShaderConstants.hlsli"
-#include "Common/Object3D.hlsli"
 #include "Common/MathUtils.hlsli"
 #include "Volumetric/FroxelCommon.hlsli"
 
@@ -33,18 +32,17 @@ static const float kCameraNearFadeStart = 0.5f;
 static const float kCameraNearFadeEnd = 3.0f;
 static const float kMinSafeDistance = 0.001f;
 
-// 後方散乱を少し混ぜて、太陽と反対を見たときも真っ暗にならないようにする
+// 太陽を背にしても真っ暗にならないよう、後方散乱を少し混ぜる
 static const float kBackScatterAnisotropy = -0.2f;
 static const float kForwardScatterRatio = 0.9f;
 
-// 霧が自分自身にかける影。太陽の方向へ 1, 2, 4, 8m と伸ばしながら 4 回濃さを調べる (合計 15m)
+// 自己影は、太陽の方向へ 1, 2, 4, 8m と間隔を倍にしながら調べる
 static const uint kSelfShadowStepCount = 4;
 static const float kSelfShadowFirstStep = 1.0f;
 
-// 霧の中の 1 点の濃さと色
 struct FogMedia
 {
-    float density;     // 減衰の強さ (ExtinctionScale を掛ける前)
+    float density;     // extinctionScale を掛ける前の減衰
     float3 scattering; // density に散乱色を掛けたもの
 };
 
@@ -62,30 +60,29 @@ float PhaseDualHenyeyGreenstein(float cosTheta, float forwardAnisotropy)
     return lerp(backward, forward, kForwardScatterRatio);
 }
 
-// フレームごとに模様が変わる IGN。時間方向に混ぜて、スライスの縞を消す
+// 毎フレーム模様をずらした IGN
 float TemporalInterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
 {
     pixelCoord += frameIndex * 5.588238f;
     return frac(52.9829189f * frac(dot(pixelCoord, float2(0.06711056f, 0.00583715f))));
 }
 
-// 霧のむらの形。全体の霧も置いた霧も同じ式を使う。
-// noise は r: パーリン, g: ウォーリーの塊, b: 削り用の細かいウォーリー
+// 霧のむら。全体の霧と置いた霧で同じ式を使う
 float CalculateNoiseShape(float4 noise, float coverage, float softness, float erosion)
 {
-    // パーリンをウォーリーの塊で持ち上げて、もこもこした形にする (Perlin-Worley)
+    // パーリンをウォーリーで持ち上げて塊にする
     float shape = saturate((noise.r - (noise.g - 1.0f)) / max(2.0f - noise.g, kEpsilon));
 
     // 細かいウォーリーで縁を削る
     float erosionAmount = noise.b * erosion;
     shape = saturate((shape - erosionAmount) / max(1.0f - erosionAmount, kEpsilon));
 
-    // coverage で霧のある場所の広さを決め、softness で境目をぼかす
+    // coverage が霧のある範囲、softness が境目のぼかし
     float coverageStart = 1.0f - coverage;
     return smoothstep(coverageStart, coverageStart + max(softness, kMinSafeDistance), shape) * shape;
 }
 
-// 置いた霧の中にどれだけ入っているか (0~1)。端は blendDistance でなだらかにする
+// 置いた霧の内側なら 1、外側なら 0。端は blendDistance でぼかす
 float CalculateVolumeMask(FogVolume volume, float3 localPosition)
 {
     if (volume.type == 1) // 箱
@@ -104,15 +101,15 @@ float CalculateVolumeMask(FogVolume volume, float3 localPosition)
     return smoothstep(1.0f, 1.0f - volume.blendDistance, distanceFromCenter);
 }
 
-// position の霧。detailRatio は 1 で細かい模様まで、0 で大まかな形だけ。
-// isDetailed が false のときは歪ませるノイズを読まない (自己影を調べるとき用)
+// detailRatio が 0 に近いほど細かい模様を省く
+// 自己影では細かさがいらないので、isDetailed を false にして歪み用のノイズを省く
 FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
 {
     FogMedia media;
     media.density = 0.0f;
     media.scattering = float3(0.0f, 0.0f, 0.0f);
 
-    // 全体の霧: 一様な濃さ + 地面近くの高さフォグ
+    // 全体の霧は、一様な濃さに地面近くの濃さを足したもの
     float heightFactor = 1.0f;
     if (gFogSettings.heightFalloff > 0.0f)
     {
@@ -132,7 +129,7 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
         float4 noise = gNoiseVolume.SampleLevel(gSampler, noisePosition * gFogSettings.noiseScale - windOffset, 0);
         float shape = CalculateNoiseShape(noise, gFogSettings.coverage, gFogSettings.noiseFeather, gFogSettings.erosion * detailRatio);
 
-        // 遠くは模様が見えずちらつくだけなので、むらを弱める
+        // 遠くではむらを弱める
         float noiseIntensity = gFogSettings.noiseIntensity * lerp(0.2f, 1.0f, detailRatio);
         globalDensity *= lerp(1.0f, shape, noiseIntensity);
     }
@@ -140,7 +137,6 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
     media.density += globalDensity;
     media.scattering += globalDensity * gFogSettings.albedo;
 
-    // 置いた霧 (箱と球)
     for (uint volumeIndex = 0; volumeIndex < gFogVolumeBuffer.volumeCount; ++volumeIndex)
     {
         FogVolume volume = gFogVolumeBuffer.volumes[volumeIndex];
@@ -162,7 +158,7 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
         }
         float4 noise = gNoiseVolume.SampleLevel(gSampler, noisePosition, 0);
 
-        // 端に行くほど霧のある場所を狭めて、形のある霧の塊にする
+        // 端ほど coverage を下げて、輪郭のある塊にする
         float shape = CalculateNoiseShape(noise, volume.coverage * volumeMask, volume.noiseFeather, volume.erosion * detailRatio);
 
         float heightInVolume = localPosition.y * 0.5f + 0.5f;
@@ -197,7 +193,7 @@ float SampleSunShadow(float3 worldPosition, float distanceFromCamera)
     return gShadowMap.SampleCmpLevelZero(gShadowSampler, float3(shadowUV, cascadeIndex), shadowPosition.z - kMinSafeDistance);
 }
 
-// 太陽の方向へ霧の濃さを足していき、どれだけ光が届くかを返す
+// 太陽までの霧で、光がどれだけ残るか
 float CalculateFogSelfShadow(float3 position, float3 toSun, float detailRatio)
 {
     float opticalDepth = 0.0f;
@@ -231,15 +227,14 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float2 screenUV = (float2(dispatchThreadId.xy) + 0.5f) / float2(froxelWidth, froxelHeight);
     float3 rayDirection = GetViewRayDirection(screenUV, gFrameData.invViewProj, gFrameData.cameraWorldPosition);
 
-    // 手前にある物までの距離
     float sceneDepth = gDepthTexture.SampleLevel(gSampler, screenUV, 0).r;
     float4 sceneWorld = mul(float4(screenUV.x * 2.0f - 1.0f, (1.0f - screenUV.y) * 2.0f - 1.0f, sceneDepth, 1.0f), gFrameData.invViewProj);
     float sceneDistance = length(sceneWorld.xyz / sceneWorld.w - gFrameData.cameraWorldPosition);
 
-    // スライスの中の1点だけを調べる。どこを調べるかは毎フレーム変えて、時間方向に平均する
+    // スライス内の1点だけ調べる。位置は毎フレーム変えて、TemporalResolve で平均する
     float sampleDistance = sliceStart + sliceThickness * TemporalInterleavedGradientNoise(dispatchThreadId.xy, gFrameData.frameIndex);
 
-    // 物の向こう側には霧を置かない。境目はスライス1枚分でなだらかにする
+    // 物より奥には霧を置かない。境目はスライス1枚分でぼかす
     float edgeFadeRange = max(sliceThickness, 0.1f);
     if (sampleDistance > sceneDistance + edgeFadeRange)
     {
@@ -250,7 +245,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float visibleWeight = saturate((sceneDistance - sampleDistance) / edgeFadeRange);
     visibleWeight *= smoothstep(kCameraNearFadeStart, kCameraNearFadeEnd, sampleDistance);
 
-    // 描画距離の端で霧が途切れて見えないように、最後の 2 割で薄くする
+    // 最大距離で霧がぷつりと切れないよう、最後の 2 割で薄くする
     float fadeStart = farDistance * 0.8f;
     visibleWeight *= saturate((farDistance - sampleDistance) / max(farDistance - fadeStart, kMinSafeDistance));
 
@@ -266,8 +261,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
         return;
     }
 
-    // 太陽。影と、太陽までの霧による自己影の両方で暗くなる。
-    // 完全に影の中なら自己影を掛けても 0 のままなので、重い自己影の計算は飛ばす
+    // 完全に影なら自己影を掛けても 0 なので、自己影の計算を飛ばす
     float3 toSun = normalize(-gFrameData.mainLightDirection);
     float sunVisibility = SampleSunShadow(samplePosition, sampleDistance);
     if (sunVisibility > 0.0f)
@@ -277,10 +271,10 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float sunPhase = PhaseDualHenyeyGreenstein(dot(rayDirection, toSun), gFogSettings.anisotropy);
     float3 light = gFrameData.mainLightColor.rgb * gFrameData.mainLightVolumetricScatteringIntensity * sunPhase * sunVisibility;
 
-    // 空からの光は、どの向きからも均等に来るものとして足す
+    // 空からの光は向きを考えずに足す
     light += gFogSettings.ambientLight;
 
-    // 点光源とスポットライト。フロクセルの厚みぶん距離をなめらかにして、光の境目のガタつきを抑える
+    // フロクセルの厚みの分だけ距離をならして、光の境目のガタつきを抑える
     float sliceThicknessSquaredHalf = sliceThickness * sliceThickness * 0.25f;
 
     for (int pointIndex = 0; pointIndex < MAX_POINT_LIGHTS; ++pointIndex)
@@ -341,7 +335,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
         light += spotLight.color.rgb * (spotLight.intensity * spotLight.volumetricScatteringIntensity) * attenuation * phase;
     }
 
-    // 散乱係数 = 減衰係数 × 散乱色。全体の霧も置いた霧も同じ光を受ける
+    // 散乱係数は減衰係数に散乱色を掛けたもの
     float extinction = max(media.density * gFogSettings.extinctionScale, kEpsilon);
     float3 scattering = media.scattering * gFogSettings.extinctionScale * light;
 

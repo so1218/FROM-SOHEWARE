@@ -1,10 +1,9 @@
 #include "Common/ShaderConstants.hlsli"
 
 StructuredBuffer<SpriteInstance> gInstances : register(t0);
-// 通常テクスチャ
 Texture2D<float4> gTextures[] : register(t0, space1);
-SamplerState gWrapSampler : register(s0);    // UV をスクロール・繰り返しするとき
-SamplerState gClampSampler : register(s1);   // 端に反対側の色がにじまないようにする
+SamplerState gWrapSampler : register(s0);   
+SamplerState gClampSampler : register(s1);  
 
 struct SpriteVSOutput
 {
@@ -17,13 +16,13 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
 {
     SpriteInstance instance = gInstances[input.instanceId];
 
-    // UV 変換 (以前の uvTransform 行列と同じ)
+    // uvMatrix は回転と拡縮、uvTranslate は移動
     float2 quadUV = input.texcoord;
     float2 transformedUV = float2(
         quadUV.x * instance.uvMatrix.x + quadUV.y * instance.uvMatrix.z + instance.uvTranslate.x,
         quadUV.x * instance.uvMatrix.y + quadUV.y * instance.uvMatrix.w + instance.uvTranslate.y);
 
-    // テクスチャの一部 (uvRect) に割り当てる。(0,0,1,1) なら画像全体
+    // uvRect の範囲だけを使う。0, 0, 1, 1 なら画像全体
     float2 atlasUV = instance.uvRect.xy + transformedUV * (instance.uvRect.zw - instance.uvRect.xy);
 
     // UV 変換をしていなければ Clamp で読む
@@ -42,11 +41,11 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
 
     float4 outputColor = textureColor * instance.color;
 
-    // SDF 文字。a に輪郭までの距離が入っている (0.5 が輪郭)
+    // SDF 文字。a は輪郭からの距離で、0.5 がちょうど輪郭
     if (instance.drawMode == SPRITE_DRAW_MODE_SDF_TEXT)
     {
         float signedDistance = textureColor.a;
-        // 1 ピクセル分の距離の変化でぼかすと、どの大きさでもくっきりする。影はさらに edgeSoftness だけぼかす
+        // 1 ピクセル分だけぼかすと、どの大きさでもくっきり見える。影は edgeSoftness でさらにぼかす
         float smoothing = max(fwidth(signedDistance) * 0.7f, 0.0001f) + instance.edgeSoftness;
         float fillAlpha = smoothstep(0.5f - smoothing, 0.5f + smoothing, signedDistance);
 
@@ -63,7 +62,6 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
         }
     }
 
-    // ディゾルブ
     if (instance.enableDissolve != 0)
     {
         float noiseValue =
@@ -88,7 +86,6 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
 
     outputColor *= instance.emissiveIntensity;
 
-    // 完全に透明なら描画しない
     if (outputColor.a == 0.0f)
     {
         discard;

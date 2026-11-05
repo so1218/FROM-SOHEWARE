@@ -7,7 +7,7 @@ RWTexture2D<float4> gFilteredFog : register(u0);
 
 ConstantBuffer<FogBilateralSettings> gFogBilateralSettings : register(b0);
 
-// 深度が近いピクセルだけでぼかして、物の輪郭で霧がにじまないようにする
+// 深度が近いピクセルだけ混ぜて、輪郭で霧がにじまないようにする
 [numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
@@ -16,7 +16,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     if (any(dispatchThreadId.xy >= uint2(outputWidth, outputHeight)))
         return;
 
-    // 霧は画面の半分の大きさなので、深度は大きさの比で読む位置を合わせる
+    // 霧は半解像度なので、深度は大きさの比で読む
     uint depthWidth, depthHeight;
     gDepthTexture.GetDimensions(depthWidth, depthHeight);
     float2 depthScale = float2(depthWidth, depthHeight) / float2(outputWidth, outputHeight);

@@ -39,7 +39,7 @@
         ],
         "SSSStrength": 5.0,
         "ToonRamp": "toonRamp_01",
-        "TreeCount": 300,
+        "TreeCount": 250,
         "TreeHeight": 24.100000381469727,
         "TreeRadius": 30.0,
         "TrunkColliderRadius": 0.1599999964237213,

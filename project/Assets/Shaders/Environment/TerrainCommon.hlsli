@@ -3,18 +3,29 @@
 
 #include "Common/ShaderConstants.hlsli"
 
-// ハイトマップの1ピクセルが地形の頂点1つにあたる。
-// 頂点はちょうどピクセルの上にあるので、補間せずにそのまま読む
-float LoadTerrainHeight(Texture2D<float> heightMap, TerrainSettings settings, int2 texel)
+// 地形の描画と影の描画で同じレジスタを使う
+ConstantBuffer<TerrainSettings> gTerrainSettings : register(b10);
+Texture2D<float> gHeightMap : register(t9);
+StructuredBuffer<TerrainChunkData> gChunks : register(t10);
+
+// 頂点がハイトマップのどのピクセルにあたるか
+int2 GetTerrainTexel(uint2 gridPosition, uint instanceID)
 {
-    int2 maxTexel = int2(settings.heightMapWidth, settings.heightMapHeight) - 1;
-    float heightRatio = heightMap.Load(int3(clamp(texel, 0, maxTexel), 0));
-    return (heightRatio - 0.5f) * settings.maxHeight;
+    TerrainChunkData chunk = gChunks[instanceID];
+    return int2(chunk.startX, chunk.startZ) + int2(gridPosition);
 }
 
-float3 GetTerrainWorldPosition(TerrainSettings settings, int2 texel, float height)
+// 頂点はちょうどピクセルの上にあるので、補間せずにそのまま読む
+float LoadTerrainHeight(int2 texel)
 {
-    return settings.origin + float3(texel.x * settings.cellSize, height, texel.y * settings.cellSize);
+    int2 maxTexel = int2(gTerrainSettings.heightMapWidth, gTerrainSettings.heightMapHeight) - 1;
+    float heightRatio = gHeightMap.Load(int3(clamp(texel, 0, maxTexel), 0));
+    return (heightRatio - 0.5f) * gTerrainSettings.maxHeight;
+}
+
+float3 GetTerrainWorldPosition(int2 texel, float height)
+{
+    return gTerrainSettings.origin + float3(texel.x * gTerrainSettings.cellSize, height, texel.y * gTerrainSettings.cellSize);
 }
 
 #endif
