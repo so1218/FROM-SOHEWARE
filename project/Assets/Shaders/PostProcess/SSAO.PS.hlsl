@@ -14,7 +14,7 @@ static const float kSpiralTurns = 7.0f;
 // 深度バッファは遠いほど粗くなるので、遮っているとみなす高さを距離に比例して増やす
 static const float kDistanceBiasScale = 0.001f;
 
-// 4x4 のピクセルで回転をずらす。後のぼかし (左右 4 ピクセル) で平均されて模様が消える
+// 4x4 のピクセルで回転をずらす。後のぼかしで平均されて模様が消える
 static const float kRotationPattern[16] =
 {
      0.0f,  8.0f,  2.0f, 10.0f,
@@ -76,8 +76,7 @@ float4 main(VSOutput input) : SV_TARGET
         float sceneDepth = gDepthTexture.Load(int3(sampleCoord, 0));
         float3 scenePosition = GetViewPos((float2(sampleCoord) + 0.5f) / depthSize, sceneDepth, gFrameData.invProjMatrix);
 
-        // 中心の面より上に出ている物だけが光を遮る。
-        // 同じ面の上の点は高さが 0 になるので、斜めから見た地面でも深度の段差が縞にならない
+        // 中心の面より上に出ている物だけが光を遮る
         float3 toScene = scenePosition - viewPosition;
         float distanceToScene = length(toScene);
         if (dot(toScene, viewNormal) > heightBias)

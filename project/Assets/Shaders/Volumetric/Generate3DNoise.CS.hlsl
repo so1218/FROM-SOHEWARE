@@ -1,6 +1,6 @@
 #include "Common/MathUtils.hlsli"
 
-// 霧のむら用の 3D ノイズ。繰り返して貼っても継ぎ目が出ない
+// 霧のむら用の 3D ノイズ
 // r: パーリン, g: 大きいウォーリー, b: 細かいウォーリー
 RWTexture3D<float4> gOutputNoise : register(u0);
 

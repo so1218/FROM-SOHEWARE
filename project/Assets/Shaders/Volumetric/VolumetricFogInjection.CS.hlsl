@@ -67,10 +67,10 @@ float TemporalInterleavedGradientNoise(float2 pixelCoord, uint frameIndex)
     return frac(52.9829189f * frac(dot(pixelCoord, float2(0.06711056f, 0.00583715f))));
 }
 
-// 霧のむら。全体の霧と置いた霧で同じ式を使う
+// 霧のむら。全体の霧と置いた霧で同じ式
 float CalculateNoiseShape(float4 noise, float coverage, float softness, float erosion)
 {
-    // パーリンをウォーリーで持ち上げて塊にする
+    // パーリンをウォーリーで持ち上げて塊に
     float shape = saturate((noise.r - (noise.g - 1.0f)) / max(2.0f - noise.g, kEpsilon));
 
     // 細かいウォーリーで縁を削る
@@ -102,7 +102,6 @@ float CalculateVolumeMask(FogVolume volume, float3 localPosition)
 }
 
 // detailRatio が 0 に近いほど細かい模様を省く
-// 自己影では細かさがいらないので、isDetailed を false にして歪み用のノイズを省く
 FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
 {
     FogMedia media;
