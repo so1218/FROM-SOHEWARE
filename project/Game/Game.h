@@ -17,7 +17,7 @@ public:
     void Run();
     void Update();
     void Draw();
-    void DebugDraw();
+    void DebugGui();
     void Finalize();
 
 private:

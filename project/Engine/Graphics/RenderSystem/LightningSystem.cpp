@@ -150,9 +150,8 @@ void LightningSystem::GenerateFractalPath(Strike& strike, std::vector<Vector3>& 
     GenerateFractalPath(strike, points, middle, end, depth - 1, displacement * 0.5f, thicknessScale);
 }
 
-void LightningSystem::DebugDraw()
+void LightningSystem::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("雷エフェクト", ImGuiTreeNodeFlags_DefaultOpen))
@@ -192,7 +191,6 @@ void LightningSystem::DebugDraw()
         }
     }
     ImGui::End();
-#endif
 }
 
 }

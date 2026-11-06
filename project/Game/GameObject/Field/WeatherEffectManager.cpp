@@ -244,9 +244,8 @@ void WeatherEffectManager::Update()
     }
 }
 
-void WeatherEffectManager::DebugDraw()
+void WeatherEffectManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("雷発生設定", ImGuiTreeNodeFlags_DefaultOpen))
@@ -287,10 +286,9 @@ void WeatherEffectManager::DebugDraw()
     }
 
     ImGui::End();
-#endif
 
     if (lightningSystem_)
     {
-        lightningSystem_->DebugDraw();
+        lightningSystem_->DebugGui();
     }
 }

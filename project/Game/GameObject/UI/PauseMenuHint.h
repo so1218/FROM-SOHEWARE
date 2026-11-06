@@ -12,7 +12,7 @@ public:
 
     void Initialize() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
 private:
     FS::Engine* engine_ = nullptr;

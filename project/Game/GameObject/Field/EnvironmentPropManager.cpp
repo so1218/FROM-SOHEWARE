@@ -202,9 +202,8 @@ void EnvironmentPropManager::ExecutePrefabModelChange()
     pendingModelChangeNewName_.clear();
 }
 
-void EnvironmentPropManager::DebugDraw()
+void EnvironmentPropManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("環境オブジェクトマネージャー");
 
     int deleteRequestID = -1;
@@ -261,7 +260,7 @@ void EnvironmentPropManager::DebugDraw()
                 if (isOpen)
                 {
                     ImGui::Spacing();
-                    prop->DebugDraw();
+                    prop->DebugGui();
 
                     ImGui::Spacing();
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
@@ -339,7 +338,6 @@ void EnvironmentPropManager::DebugDraw()
 
     // モデル非同期差し替えの適用
     ExecutePrefabModelChange();
-#endif
 }
 
 void EnvironmentProp::SyncMaterialsToJSON()

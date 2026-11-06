@@ -7,9 +7,8 @@
 namespace FS
 {
 
-#ifdef ENABLE_IMGUI
-// 開発用のビルドはエディター表示、リリースはゲーム画面から始める
-#ifdef ENABLE_DEV_TOOLS
+// 開発用のビルドはエディター表示、リリースと ImGui なしのビルドはゲーム画面から始める
+#if defined(ENABLE_IMGUI) && defined(ENABLE_DEV_TOOLS)
 bool ImGuiManager::showGui_ = true;
 #else
 bool ImGuiManager::showGui_ = false;
@@ -22,7 +21,6 @@ Vector2 ImGuiManager::sceneRectSize_ = { 0.0f, 0.0f };
 bool ImGuiManager::isSceneHovered_ = false;
 Matrix4x4 ImGuiManager::gizmoViewMatrix_ = Matrix4x4::MakeIdentity();
 Matrix4x4 ImGuiManager::gizmoProjMatrix_ = Matrix4x4::MakeIdentity();
-#endif
 
 void ImGuiManager::Initialize(
     HWND hwnd,
@@ -193,8 +191,11 @@ void ImGuiManager::Initialize(
 
 void ImGuiManager::ToggleGui()
 {
+    // ImGui のないビルドにはエディターがないので、ゲーム画面のまま
+#ifdef ENABLE_IMGUI
     showGui_ = !showGui_;
     DebugDraw::SetEnabled(showGui_);
+#endif
 }
 
 void ImGuiManager::BeginFrame()

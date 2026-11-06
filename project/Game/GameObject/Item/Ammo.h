@@ -14,7 +14,7 @@ public:
     void Initialize() override;
     void Update(const FS::Vector3& scale, const FS::Vector3& bubbleScale, const FS::Vector4& lightColor, float tiltAngle, float rotationSpeed);
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void Sleep();
     bool IsPicked() const { return isPicked_; }

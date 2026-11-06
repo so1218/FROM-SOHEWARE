@@ -38,11 +38,9 @@ void TestScene::OnDraw()
 {
 }
 
-void TestScene::OnDebugDraw()
+void TestScene::OnDebugGui()
 {
-#ifdef ENABLE_IMGUI
 
-#endif
 }
 
 void TestScene::OnFinalize()

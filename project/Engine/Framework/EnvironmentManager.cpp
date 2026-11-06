@@ -309,9 +309,8 @@ void EnvironmentManager::Update(LightManager* lightManager)
     }
 }
 
-void EnvironmentManager::DebugDraw()
+void EnvironmentManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("時間帯・ライティング", ImGuiTreeNodeFlags_DefaultOpen))
@@ -459,7 +458,6 @@ void EnvironmentManager::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }
 
 void EnvironmentManager::Finalize()

@@ -247,9 +247,8 @@ bool TreeField::Raycast(const Vector3& rayStart, const Vector3& rayDir, float ma
     return isHit;
 }
 
-void TreeField::DebugDraw()
+void TreeField::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("森林");
 
     // 配置を変えたら木を作り直し、マテリアルを変えたら GPU に送り直す
@@ -343,5 +342,4 @@ void TreeField::DebugDraw()
     ImGui::Text("描画中の本数: %u", treeSystem_->GetInstanceCount());
 
     ImGui::End();
-#endif
 }

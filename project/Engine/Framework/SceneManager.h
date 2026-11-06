@@ -16,7 +16,7 @@ public:
     void Initialize(Engine* engine);
     void Update();
     void Draw();
-    void DebugDraw();
+    void DebugGui();
 
     // シーンを登録。シーン名で識別
     void RegisterScene(std::unique_ptr<BaseScene> scene);

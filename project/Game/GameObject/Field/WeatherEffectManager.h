@@ -16,7 +16,7 @@ public:
 
     void Initialize() override;
     void Update() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void SetCameraManager(FS::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
 

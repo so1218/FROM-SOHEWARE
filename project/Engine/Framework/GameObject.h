@@ -16,7 +16,7 @@ public:
     virtual void Initialize() {}
     virtual void Update() {}
     virtual void Draw() {}
-    virtual void DebugDraw() {}
+    virtual void DebugGui() {}
     virtual void OnDestroy() {}
 
     // 生存フラグ

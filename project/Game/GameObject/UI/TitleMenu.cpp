@@ -131,9 +131,8 @@ void TitleMenu::Draw()
     startText_->Draw();
 }
 
-void TitleMenu::DebugDraw()
+void TitleMenu::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("タイトル");
     binder_->DrawTextElement("TitleText", "タイトル");
     binder_->DrawTextElement("SubtitleText", "サブタイトル");
@@ -145,5 +144,4 @@ void TitleMenu::DebugDraw()
     binder_->Draw("BlinkSpeed", "点滅の速さ");
     binder_->Draw("BlinkMinOpacity", "点滅で一番薄いとき");
     ImGui::End();
-#endif
 }

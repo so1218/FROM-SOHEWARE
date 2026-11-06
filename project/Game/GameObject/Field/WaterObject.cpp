@@ -100,9 +100,8 @@ void WaterObject::Draw()
     );
 }
 
-void WaterObject::DebugDraw()
+void WaterObject::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::PushID(id_);
 
     std::string headerName = "水面 (Water " + std::to_string(id_) + ")";
@@ -192,5 +191,4 @@ void WaterObject::DebugDraw()
     }
 
     ImGui::PopID();
-#endif
 }

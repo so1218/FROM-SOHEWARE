@@ -12,7 +12,7 @@ public:
     void Initialize();
     void Update();
     void Draw();
-    void DebugDraw();
+    void DebugGui();
 
     void AddObject(std::unique_ptr<GameObject> obj);
 

@@ -94,11 +94,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-// デバッグビルド時のみ
-#ifdef ENABLE_IMGUI
+// ImGui を使う処理は ENABLE_IMGUI のときしか呼ばれないが、DebugGui の中に毎回 #ifdef を書かなくて済むように常に読み込む
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_internal.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
-#include "ImGuizmo.h" 
-#endif
+#include "ImGuizmo.h"

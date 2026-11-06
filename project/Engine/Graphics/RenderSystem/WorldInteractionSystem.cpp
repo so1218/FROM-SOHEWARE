@@ -43,9 +43,8 @@ void WorldInteractionSystem::Draw()
     engine_->GetRendererManager()->SubmitWorldInteractionParams(constants_);
 }
 
-void WorldInteractionSystem::DebugDraw()
+void WorldInteractionSystem::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("ワールドインタラクション");
 
     binder_->Draw("TrailDuration", "足跡の持続時間 (秒)");
@@ -69,7 +68,6 @@ void WorldInteractionSystem::DebugDraw()
     }
 
     ImGui::End();
-#endif
 
 }
 

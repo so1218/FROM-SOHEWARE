@@ -73,7 +73,7 @@ public:
 
     void Initialize(Enemy* owner) override;
     void Update(Enemy* owner) override;
-    void DebugDraw(Enemy* owner) override;
+    void DebugGui(Enemy* owner) override;
 
     const EnemyBodyConfig& GetBodyConfig() const override { return config_.body; }
     std::string GetDamageParticleName() const override { return "floatingDamage"; }

@@ -12,7 +12,7 @@ public:
     FollowCamera(FS::Engine* engine, const FS::WorldTransform* target);
     void Initialize();
     void UpdateCamera(FS::Camera* camera) override;
-    void DebugDraw() override;
+    void DebugGui() override;
     void Reset(FS::Camera* camera) override;
     // 追いかける相手の真後ろを向き先にする
     void PlaceBehindTarget();

@@ -35,13 +35,11 @@ void Ground::Draw()
 	interactionSystem_->Draw();
 }
 
-void Ground::DebugDraw()
+void Ground::DebugGui()
 {
-#ifdef ENABLE_IMGUI
 	ImGui::Begin("地面");
 	binder_->DrawTerrain("Terrain", "地形エディタ");
 	ImGui::End();
-#endif
 
-	interactionSystem_->DebugDraw();
+	interactionSystem_->DebugGui();
 }

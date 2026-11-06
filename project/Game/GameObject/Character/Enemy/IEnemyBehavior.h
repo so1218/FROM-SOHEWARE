@@ -20,7 +20,7 @@ public:
 
     virtual void Initialize(Enemy* owner) = 0;
     virtual void Update(Enemy* owner) = 0;
-    virtual void DebugDraw(Enemy* owner) = 0;
+    virtual void DebugGui(Enemy* owner) = 0;
 
     // 衝突処理
     virtual void OnCollisionEnter(Enemy* owner, FS::GameObject* hitObject) {}

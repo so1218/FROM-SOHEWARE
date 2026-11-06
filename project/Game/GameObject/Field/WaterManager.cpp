@@ -69,9 +69,8 @@ void WaterManager::RemoveWater(int id)
     waterCount_ = static_cast<int>(waters_.size());
 }
 
-void WaterManager::DebugDraw()
+void WaterManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("水マネージャー");
     binder_->Draw("WaterCount", "水の数");
 
@@ -86,7 +85,7 @@ void WaterManager::DebugDraw()
 
     for (auto& water : waters_)
     {
-        water->DebugDraw();
+        water->DebugGui();
 
         std::string deleteLabel = "この水を削除 ##" + std::to_string(water->GetId());
         if (ImGui::Button(deleteLabel.c_str()))
@@ -102,7 +101,6 @@ void WaterManager::DebugDraw()
     {
         RemoveWater(waterToDelete);
     }
-#endif
 }
 
 

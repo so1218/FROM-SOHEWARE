@@ -97,7 +97,6 @@ void TitleCamera::StartTransition(Camera* camera)
 
 void TitleCamera::DrawProperties()
 {
-#ifdef ENABLE_IMGUI
     binder_->Draw("Position", "位置");
     binder_->Draw("Rotation", "向き (度)");
     binder_->Draw("Fov", "画角");
@@ -105,5 +104,4 @@ void TitleCamera::DrawProperties()
     binder_->Draw("SwaySpeed", "揺れの速さ");
     binder_->Draw("TransitionTime", "プレイヤーに寄る時間 (秒)");
     binder_->Draw("ArcHeight", "寄る途中で持ち上げる高さ");
-#endif
 }

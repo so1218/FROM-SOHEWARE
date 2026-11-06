@@ -24,7 +24,7 @@ public:
     void Update();
 
     void BindProperties(PropertyBinder& binder);
-    void DebugDraw(PropertyBinder& binder);
+    void DebugGui(PropertyBinder& binder);
 
     // ゲッター
     const Camera& GetCamera() const { return camera_; }

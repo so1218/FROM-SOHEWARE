@@ -33,7 +33,7 @@ public:
     void Initialize();
     void Update(const FS::Matrix4x4& handWorldMatrix, FS::Camera* camera);
     void Draw();
-    void DebugDraw(); 
+    void DebugGui(); 
 
     bool Fire(FS::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FS::CollisionManager* colManager,
         TreeField* treeField);

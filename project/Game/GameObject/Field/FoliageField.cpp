@@ -173,9 +173,8 @@ void FoliageField::Update()
 
 void FoliageField::Draw() {}
 
-void FoliageField::DebugDraw()
+void FoliageField::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("植物プロシージャル");
 
     // 生える範囲とハイトマップは地形から取る
@@ -231,5 +230,4 @@ void FoliageField::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }

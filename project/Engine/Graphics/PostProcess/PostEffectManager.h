@@ -69,7 +69,7 @@ public:
     void BindProperties(PropertyBinder& binder, const std::string& prefix = "PostEffect");
 
     // ImGui でのパラメータ描画
-    void DebugDraw(PropertyBinder& binder);
+    void DebugGui(PropertyBinder& binder);
 
 private:
     // 依存オブジェクト

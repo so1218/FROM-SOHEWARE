@@ -432,9 +432,8 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     }
 }
 
-void PostEffectManager::DebugDraw(PropertyBinder& binder)
+void PostEffectManager::DebugGui(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
     if (ImGui::CollapsingHeader("ポストエフェクト設定"))
@@ -670,7 +669,6 @@ void PostEffectManager::DebugDraw(PropertyBinder& binder)
             ImGui::TreePop();
         }
     }
-#endif
 
     if (!volumetricFogPass_) return;
 

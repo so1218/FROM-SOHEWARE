@@ -25,7 +25,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     // 指定プレハブのインスタンスを追加
     void AddPropToGroup(const std::string& prefabName);

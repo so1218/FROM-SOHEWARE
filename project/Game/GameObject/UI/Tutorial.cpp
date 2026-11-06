@@ -383,9 +383,8 @@ void Tutorial::Draw()
     }
 }
 
-void Tutorial::DebugDraw()
+void Tutorial::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("チュートリアル");
 
     if (currentStep_ == Step::Finished)
@@ -448,5 +447,4 @@ void Tutorial::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }

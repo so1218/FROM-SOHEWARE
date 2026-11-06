@@ -47,17 +47,15 @@ public:
     static void ToggleGui();
 
     // 外部から情報を取る用
-#ifdef ENABLE_IMGUI
     static bool IsSceneHovered() { return isSceneHovered_; }
     static Vector2 GetSceneViewportMin() { return sceneRectMin_; }
     static Vector2 GetSceneViewportSize() { return sceneRectSize_; }
-#endif
 
     static bool dockInitialized_;
     static bool resetSceneSize_;
 
 private:
-#ifdef ENABLE_IMGUI
+    // ImGui を使わないビルドでも、ゲーム画面かどうかの判定には使うので常に持つ
     static bool showGui_; // GUI表示フラグ
 
     // 操作モードを保持する変数
@@ -71,7 +69,6 @@ private:
     // Gizmo計算用の行列
     static Matrix4x4 gizmoViewMatrix_;
     static Matrix4x4 gizmoProjMatrix_;
-#endif
 };
 
 }

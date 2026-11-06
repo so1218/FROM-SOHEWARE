@@ -285,9 +285,8 @@ void PlayerWeapon::Draw()
     }
 }
 
-void PlayerWeapon::DebugDraw()
+void PlayerWeapon::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     if (ImGui::CollapsingHeader("武器設定"))
     {
         ImGui::Indent();
@@ -314,5 +313,4 @@ void PlayerWeapon::DebugDraw()
 
         ImGui::Unindent(); 
     }
-#endif
 }

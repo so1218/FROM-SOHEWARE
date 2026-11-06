@@ -194,9 +194,8 @@ void PlayScene::OnDraw()
 {
 }
 
-void PlayScene::OnDebugDraw()
+void PlayScene::OnDebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("タイトル");
     ImGui::SeparatorText("カメラ");
     titleCamera_->DrawProperties();
@@ -216,7 +215,6 @@ void PlayScene::OnDebugDraw()
         ReturnToTitle();
     }
     ImGui::End();
-#endif
 }
 
 void PlayScene::OnFinalize()

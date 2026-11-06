@@ -89,9 +89,8 @@ void GrassField::Draw()
 
 }
 
-void GrassField::DebugDraw()
+void GrassField::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("草むら");
 
     // 生える範囲とハイトマップは地形から取る
@@ -184,7 +183,6 @@ void GrassField::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }
 
 void GrassField::GenerateGrass()

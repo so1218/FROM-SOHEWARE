@@ -135,9 +135,8 @@ void Enemy::Draw()
     collider_->DrawCollider();
 }
 
-void Enemy::DebugDraw()
+void Enemy::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::PushID(id_);
     std::string headerName = "敵 " + std::to_string(id_) + " の設定";
 
@@ -146,9 +145,8 @@ void Enemy::DebugDraw()
         ImGui::Text("HP: %d", hp_);
         if (behavior_)
         {
-            behavior_->DebugDraw(this);
+            behavior_->DebugGui(this);
         }
     }
     ImGui::PopID();
-#endif
 }

@@ -86,9 +86,8 @@ void PauseMenuHint::Draw()
     background_->Draw();
 }
 
-void PauseMenuHint::DebugDraw()
+void PauseMenuHint::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("操作の案内");
     binder_->Draw("Position", "位置 (画面左上から)");
     binder_->Draw("FontSize", "文字の大きさ");
@@ -99,5 +98,4 @@ void PauseMenuHint::DebugDraw()
     binder_->Draw("EditorColor", "エディターの案内の色");
     binder_->Draw("BackgroundColor", "背景の色");
     ImGui::End();
-#endif
 }

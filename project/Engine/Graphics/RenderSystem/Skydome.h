@@ -17,7 +17,7 @@ public:
     void Initialize(); 
     void Update();
     void Draw();
-    void DebugDraw();  
+    void DebugGui();  
 
     void SetCloudNoiseTexture(const std::string& textureName);
 

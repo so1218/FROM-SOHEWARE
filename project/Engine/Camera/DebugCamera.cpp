@@ -113,9 +113,8 @@ void DebugCamera::BindProperties(PropertyBinder& binder)
     binder.Bind("DebugCamera/ZoomSpeed", &zoomSpeed_, zoomSpeed_, 0.001f, 0.01f, 1.0f);
 }
 
-void DebugCamera::DebugDraw(PropertyBinder& binder)
+void DebugCamera::DebugGui(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
 
     binder.Draw("DebugCamera/Target", "注視点");
     binder.Draw("DebugCamera/Distance", "注視点からの距離");
@@ -128,7 +127,6 @@ void DebugCamera::DebugDraw(PropertyBinder& binder)
     binder.Draw("DebugCamera/RotateSpeed", "回転速度");
     binder.Draw("DebugCamera/ZoomSpeed", "ズーム速度");
     
-#endif
 }
 
 Matrix4x4 DebugCamera::GetViewMatrix()

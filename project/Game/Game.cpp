@@ -70,7 +70,10 @@ void Game::Run()
 
             Update();
 
-            DebugDraw();
+            // 調整用の画面はここでだけ切り替える。各 DebugGui の中には書かない
+#ifdef ENABLE_IMGUI
+            DebugGui();
+#endif
 
             Draw();
 
@@ -98,11 +101,14 @@ void Game::Update()
 void Game::Draw()
 {
     sceneManager_.Draw();
+
+#ifdef ENABLE_DEBUG_DRAW
+    engine_->GetLightManager()->DrawDebugLights();
+#endif
 }
 
-void Game::DebugDraw()
+void Game::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     if (ImGui::Begin("シーンの選択"))
     {
         for (const std::string& name : sceneManager_.GetSceneNames())
@@ -114,13 +120,8 @@ void Game::DebugDraw()
         }
     }
     ImGui::End();
-#endif
 
-    sceneManager_.DebugDraw();
-
-#ifdef ENABLE_DEBUG_DRAW
-    engine_->GetLightManager()->DrawDebugLights();
-#endif
+    sceneManager_.DebugGui();
 }
 
 void Game::Finalize()

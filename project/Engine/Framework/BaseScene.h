@@ -84,30 +84,30 @@ public:
         OnDraw();
     }
 
-    virtual void DebugDraw() final
+    virtual void DebugGui() final
     {
-        objectManager_.DebugDraw();
+        objectManager_.DebugGui();
         if (cameraManager_)
         {
-            cameraManager_->DebugDraw();
+            cameraManager_->DebugGui();
         }
 
         ImGui::Begin(sceneName_.c_str());
         if (camera_) 
         {
-            camera_->DebugDraw(*binder_);
+            camera_->DebugGui(*binder_);
         }
         if (engine_->GetPostEffectManager())
         {
-            engine_->GetPostEffectManager()->DebugDraw(*binder_);
+            engine_->GetPostEffectManager()->DebugGui(*binder_);
         }
         if (engine_->GetLightManager())
         {
-            engine_->GetLightManager()->DebugDraw(*binder_);
+            engine_->GetLightManager()->DebugGui(*binder_);
         }
         ImGui::End();
 
-        OnDebugDraw();
+        OnDebugGui();
     }
 
     virtual void Finalize() final
@@ -138,7 +138,7 @@ protected:
     virtual void OnInitialize() {}
     virtual void OnUpdate() {}
     virtual void OnDraw() {}
-    virtual void OnDebugDraw() {}
+    virtual void OnDebugGui() {}
     virtual void OnFinalize() {}
 
 protected:

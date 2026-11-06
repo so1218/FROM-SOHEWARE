@@ -96,7 +96,7 @@ public:
     void Initialize(Engine* engine);
 
     void Update(LightManager* lightManager);
-    void DebugDraw();
+    void DebugGui();
 
     void Finalize();
 

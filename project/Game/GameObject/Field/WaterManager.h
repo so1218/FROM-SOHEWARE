@@ -10,7 +10,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void AddWater();
     void RemoveWater(int id);

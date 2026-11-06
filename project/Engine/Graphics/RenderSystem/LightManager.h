@@ -66,7 +66,7 @@ public:
     void BindProperties(PropertyBinder& binder, const std::string& prefix = "Light");
 
     // GUI描画
-    void DebugDraw(PropertyBinder& binder);
+    void DebugGui(PropertyBinder& binder);
 
     // 選択状態の Getter/Setter
     void SetSelectedLight(SelectedLightType type, int index)

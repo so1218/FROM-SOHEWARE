@@ -212,9 +212,8 @@ void FollowCamera::UpdateCamera(Camera* camera)
     camera->SetRotation(currentCameraRot_);
 }
 
-void FollowCamera::DebugDraw()
+void FollowCamera::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("追従カメラ");
 
     if (ImGui::CollapsingHeader("通常時カメラ設定", ImGuiTreeNodeFlags_DefaultOpen))
@@ -257,7 +256,6 @@ void FollowCamera::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }
 
 void FollowCamera::Reset(Camera* camera)

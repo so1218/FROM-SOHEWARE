@@ -126,9 +126,8 @@ void PlayerReticle::Draw()
     }
 }
 
-void PlayerReticle::DebugDraw()
+void PlayerReticle::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     if (ImGui::CollapsingHeader("レティクル設定"))
     {
         ImGui::Indent();
@@ -151,5 +150,4 @@ void PlayerReticle::DebugDraw()
 
         ImGui::Unindent();
     }
-#endif
 }

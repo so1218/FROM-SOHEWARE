@@ -23,7 +23,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 

@@ -13,7 +13,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     // タイトル中は遊ぶときの表示 (時間など) を隠す。操作説明 (messageText_) はエディター表示なら出す
     void SetGameplayVisible(bool isVisible) { isGameplayVisible_ = isVisible; }

@@ -105,13 +105,13 @@ void GameObjectManager::Draw()
     }
 }
 
-void GameObjectManager::DebugDraw()
+void GameObjectManager::DebugGui()
 {
     for (auto& obj : objects_)
     {
         if (obj->IsActive() && !obj->IsDead())
         {
-            obj->DebugDraw();
+            obj->DebugGui();
         }
     }
 }

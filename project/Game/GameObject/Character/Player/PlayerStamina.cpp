@@ -34,7 +34,6 @@ void PlayerStamina::Refill()
 
 void PlayerStamina::DrawProperties(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     ImGui::Text("現在: %.1f / %.1f %s", currentStamina_, maxStamina_, isExhausted_ ? "(息切れ)" : "");
     binder.Draw("Stamina_Max", "最大値");
     binder.Draw("Stamina_RegenPerSecond", "1 秒あたりの回復量");
@@ -44,7 +43,6 @@ void PlayerStamina::DrawProperties(PropertyBinder& binder)
     binder.Draw("Stamina_GaugeSize", "ゲージの大きさ");
     binder.Draw("Stamina_GaugeColor", "ゲージの色");
     binder.Draw("Stamina_ExhaustedColor", "息切れ中の色");
-#endif
 }
 
 void PlayerStamina::Update()

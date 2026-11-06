@@ -12,7 +12,7 @@ public:
     void Initialize();
     void Update();
     void Draw();
-    void DebugDraw();
+    void DebugGui();
 
     FS::Model* GetModel() const { return model_.get(); }
     int GetId() const { return id_; }

@@ -19,7 +19,7 @@ public:
     void Initialize();
     void Update();
     void Draw();
-    void DebugDraw();
+    void DebugGui();
 
     // 地形オブジェクトの参照を設定
     void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }

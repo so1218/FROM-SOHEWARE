@@ -465,9 +465,8 @@ void LightManager::BindProperties(PropertyBinder& binder, const std::string& pre
     }
 }
 
-void LightManager::DebugDraw(PropertyBinder& binder)
+void LightManager::DebugGui(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
     if (ImGui::CollapsingHeader("ライト設定"))
@@ -574,7 +573,6 @@ void LightManager::DebugDraw(PropertyBinder& binder)
             ImGui::TreePop();
         }
     }
-#endif
 }
 
 }

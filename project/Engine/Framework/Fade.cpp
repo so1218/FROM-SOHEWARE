@@ -124,9 +124,8 @@ void Fade::Draw()
     sprite_->Draw();
 }
 
-void Fade::DebugDraw()
+void Fade::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("フェード設定");
 
     if (ImGui::CollapsingHeader("基本設定", ImGuiTreeNodeFlags_DefaultOpen))
@@ -150,7 +149,6 @@ void Fade::DebugDraw()
     ImGui::Separator();
 
     ImGui::End();
-#endif
 }
 
 void Fade::Start(Status status, float duration)

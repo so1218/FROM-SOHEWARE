@@ -49,15 +49,15 @@ void SceneManager::Draw()
     }
 }
 
-void SceneManager::DebugDraw()
+void SceneManager::DebugGui()
 {
     if (!ImGuiManager::IsGuiVisible()) return;
 
     if (currentScene_)
     {
-        currentScene_->DebugDraw();
+        currentScene_->DebugGui();
     }
-	fade_->DebugDraw();
+	fade_->DebugGui();
 }
 
 // シーンをマップに登録する

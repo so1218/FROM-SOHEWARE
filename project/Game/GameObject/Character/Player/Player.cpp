@@ -553,17 +553,16 @@ void Player::Draw()
 	}
 }
 
-void Player::DebugDraw()
+void Player::DebugGui()
 {
-#ifdef ENABLE_IMGUI
 	ImGui::Begin("プレイヤー");
 
 	binder_->DrawAnimationModel("PlayerModel", "プレイヤーインスペクター");
 
 	ImGui::Separator();
 
-	weapon_->DebugDraw();
-	reticle_->DebugDraw();
+	weapon_->DebugGui();
+	reticle_->DebugGui();
 
 	if (ImGui::CollapsingHeader("残弾表示"))
 	{
@@ -668,5 +667,4 @@ void Player::DebugDraw()
 	ImGui::Separator();
 
 	ImGui::End();
-#endif
 }

@@ -17,7 +17,7 @@ public:
 
     void Initialize();
     void Update();
-    void DebugDraw();
+    void DebugGui();
 
     void SpawnStrike(const Vector3& start, const Vector3& end);
 

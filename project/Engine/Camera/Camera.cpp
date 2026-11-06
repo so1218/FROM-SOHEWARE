@@ -50,9 +50,8 @@ void Camera::BindProperties(PropertyBinder& binder, const std::string& prefix)
     UpdateViewProjectionMatrix();
 }
 
-void Camera::DebugDraw(PropertyBinder& binder)
+void Camera::DebugGui(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
 
     if (ImGui::CollapsingHeader("メインカメラ設定"))
@@ -63,7 +62,6 @@ void Camera::DebugDraw(PropertyBinder& binder)
         binder.Draw(p + "NearClip", "ニアクリップ");
         binder.Draw(p + "FarClip", "ファークリップ");
     }
-#endif
 }
 
 }

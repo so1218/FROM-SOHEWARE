@@ -16,7 +16,7 @@ public:
 	void Initialize();
 	void Update();
 	void Draw();
-	void DebugDraw();
+	void DebugGui();
 
 	float GetDuration() const { return duration_; }
 

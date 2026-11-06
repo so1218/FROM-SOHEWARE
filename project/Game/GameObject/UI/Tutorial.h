@@ -15,7 +15,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     // 説明を最初から始める
     void Begin();

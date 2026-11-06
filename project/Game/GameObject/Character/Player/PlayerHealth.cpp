@@ -30,7 +30,6 @@ void PlayerHealth::BindProperties(PropertyBinder& binder)
 
 void PlayerHealth::DrawProperties(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     ImGui::Text("現在: %d / %d", currentHP_, maxHP_);
     if (ImGui::Button("全回復"))
     {
@@ -44,7 +43,6 @@ void PlayerHealth::DrawProperties(PropertyBinder& binder)
     binder.Draw("Health_LowRatio", "残り少ないとみなす割合");
     binder.Draw("Health_FlashColor", "被弾時の画面の色");
     binder.Draw("Health_FlashDuration", "被弾時の色が消えるまで (秒)");
-#endif
 }
 
 void PlayerHealth::Update()

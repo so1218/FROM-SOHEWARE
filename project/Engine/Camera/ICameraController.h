@@ -14,7 +14,7 @@ public:
     virtual void UpdateCamera(Camera* camera) = 0;
 
     // デバッグ表示
-    virtual void DebugDraw() {}
+    virtual void DebugGui() {}
 
     // 描画
     virtual void Draw() {}

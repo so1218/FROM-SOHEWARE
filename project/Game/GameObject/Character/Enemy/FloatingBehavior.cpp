@@ -523,9 +523,8 @@ void FloatingBehavior::RepairThrusters()
     destroyedThrusterCount_ = 0;
 }
 
-void FloatingBehavior::DebugDraw(Enemy* owner)
+void FloatingBehavior::DebugGui(Enemy* owner)
 {
-#ifdef ENABLE_IMGUI
     auto binder = owner->GetBinder();
 
     constexpr const char* kStateNames[] = { "巡回", "追跡", "ロックオン", "射撃", "墜落" };
@@ -542,7 +541,6 @@ void FloatingBehavior::DebugDraw(Enemy* owner)
     binder->Draw("Frequency", "移動スピード");
     binder->Draw("Phase", "波のズレ");
     binder->Draw("PatrolSpeed", "巡回の最高速度");
-#endif
 }
 
 void FloatingEnemyConfig::Bind(PropertyBinder& binder)
@@ -592,7 +590,6 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
 
 void FloatingEnemyConfig::Draw(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     if (ImGui::TreeNode("本体"))
     {
         binder.Draw("HP", "HP");
@@ -658,5 +655,4 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("SpotLocalDirection", "照射方向 (機体から見て。-Z が正面)");
         ImGui::TreePop();
     }
-#endif
 }

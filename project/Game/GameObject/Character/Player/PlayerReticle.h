@@ -27,7 +27,7 @@ public:
     void Initialize();
     void Update(bool isMoving, bool isAiming);
     void Draw();
-    void DebugDraw();
+    void DebugGui();
 
     void OnShootRecoil();
     void Reset();

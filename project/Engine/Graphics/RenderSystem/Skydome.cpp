@@ -54,9 +54,8 @@ void Skydome::Draw()
     engine_->GetRendererManager()->SubmitSkydome(cloudNoiseHandle_, atmosphereSkyData_);
 }
 
-void Skydome::DebugDraw()
+void Skydome::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("環境設定");
 
     if (ImGui::CollapsingHeader("スカイドーム", ImGuiTreeNodeFlags_DefaultOpen))
@@ -75,7 +74,6 @@ void Skydome::DebugDraw()
     }
 
     ImGui::End();
-#endif
 }
 
 }

@@ -308,9 +308,8 @@ void PauseMenu::DrawItems(const std::vector<std::string>& labels, int cursorInde
     }
 }
 
-void PauseMenu::DebugDraw()
+void PauseMenu::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("ポーズメニュー");
     binder_->Draw("FadeTime", "開くまでの時間 (秒)");
     binder_->Draw("OverlayColor", "背景を暗くする色");
@@ -326,5 +325,4 @@ void PauseMenu::DebugDraw()
     binder_->Draw("DescriptionFontSize", "説明の文字の大きさ");
     binder_->Draw("DescriptionOffsetY", "説明の位置 (最後の項目の下から)");
     ImGui::End();
-#endif
 }

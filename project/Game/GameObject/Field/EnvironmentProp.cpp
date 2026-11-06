@@ -218,9 +218,8 @@ void EnvironmentProp::Draw()
     }
 }
 
-void EnvironmentProp::DebugDraw()
+void EnvironmentProp::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::PushID(id_);
 
     // -------------------------------------------------------------
@@ -399,7 +398,6 @@ void EnvironmentProp::DebugDraw()
     }
 
     ImGui::PopID();
-#endif
 }
 
 void EnvironmentProp::OnCollisionEnter(FS::Collider* mine, FS::Collider* other)

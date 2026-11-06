@@ -25,8 +25,8 @@ void Environment::Draw()
     skydome_->Draw();
 }
 
-void Environment::DebugDraw()
+void Environment::DebugGui()
 {
-    EnvironmentManager::GetInstance()->DebugDraw();
-    skydome_->DebugDraw();
+    EnvironmentManager::GetInstance()->DebugGui();
+    skydome_->DebugGui();
 }

@@ -70,9 +70,8 @@ void GameUI::Draw()
     stageNameText_->Draw();
 }
 
-void GameUI::DebugDraw()
+void GameUI::DebugGui()
 {
-#if ENABLE_IMGUI
     ImGui::Begin("ゲームUI調整");
     binder_->Draw("IsVisible", "表示切り替え");
 
@@ -83,5 +82,4 @@ void GameUI::DebugDraw()
     binder_->DrawTextElement("TimeText", "残り時間");
     binder_->Draw("TimeFormat", "残り時間の書式 ({} に分、秒の順で入る)");
     ImGui::End();
-#endif
 }

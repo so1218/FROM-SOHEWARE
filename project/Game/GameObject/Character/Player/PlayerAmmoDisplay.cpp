@@ -66,7 +66,6 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
 
 void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
 {
-#ifdef ENABLE_IMGUI
     binder.Draw("Ammo_TextOffset", "残弾の数字の位置");
     binder.Draw("Ammo_FontSize", "残弾の数字の大きさ");
     binder.Draw("Ammo_MagazineTextOffset", "装弾数の位置");
@@ -82,7 +81,6 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_LowColor", "残り少ないときの色");
     binder.Draw("Ammo_EmptyRoundColor", "撃ったあとの弾の色");
     binder.Draw("Ammo_LowRatio", "残り少ないとみなす割合");
-#endif
 }
 
 void PlayerAmmoDisplay::Draw(const PlayerWeapon& weapon)

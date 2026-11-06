@@ -11,7 +11,7 @@ protected:
     void OnInitialize() override;
     void OnUpdate() override;
     void OnDraw() override;
-    void OnDebugDraw() override;
+    void OnDebugGui() override;
     void OnFinalize() override;
 
 private:

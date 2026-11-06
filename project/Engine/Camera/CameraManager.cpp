@@ -36,11 +36,11 @@ void CameraManager::RequestShake(float duration, float intensity)
     shake_.Start(duration, intensity);
 }
 
-void CameraManager::DebugDraw()
+void CameraManager::DebugGui()
 {
     if (currentController_)
     {
-        currentController_->DebugDraw();
+        currentController_->DebugGui();
     }
 }
 

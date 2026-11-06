@@ -21,7 +21,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void SetCanOpen(bool canOpen) { canOpen_ = canOpen; }
     void SetCanReturnToTitle(bool canReturnToTitle) { canReturnToTitle_ = canReturnToTitle; }

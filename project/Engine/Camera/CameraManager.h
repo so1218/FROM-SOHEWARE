@@ -19,7 +19,7 @@ public:
 
     // どこからでもカメラを揺らす
     void RequestShake(float duration, float intensity);
-    void DebugDraw();
+    void DebugGui();
     void Draw();
 
     Camera* GetMainCamera() const { return mainCamera_; }

@@ -119,9 +119,8 @@ void EnemyManager::Draw()
     }
 }
 
-void EnemyManager::DebugDraw()
+void EnemyManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("敵マネージャー");
     binder_->Draw("EnemyCount", "敵の数");
 
@@ -146,9 +145,8 @@ void EnemyManager::DebugDraw()
 
     for (auto& enemy : enemies_)
     {
-        enemy->DebugDraw();
+        enemy->DebugGui();
     }
 
     ImGui::End();
-#endif
 }

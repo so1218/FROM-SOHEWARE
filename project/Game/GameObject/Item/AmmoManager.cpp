@@ -86,9 +86,8 @@ void AmmoManager::AddAmmo()
     ammoCount_ = static_cast<int>(ammo_.size());
 }
 
-void AmmoManager::DebugDraw()
+void AmmoManager::DebugGui()
 {
-#ifdef ENABLE_IMGUI
     ImGui::Begin("アモマネージャー");
     binder_->Draw("AmmoCount", "アモの数");
 
@@ -133,9 +132,8 @@ void AmmoManager::DebugDraw()
 
     for (auto& ammo : ammo_)
     {
-        ammo->DebugDraw();
+        ammo->DebugGui();
     }
 
     ImGui::End();
-#endif
 }

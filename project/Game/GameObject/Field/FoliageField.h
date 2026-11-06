@@ -14,7 +14,7 @@ public:
     void Initialize() override;
     void Update() override;
     void Draw() override;
-    void DebugDraw() override;
+    void DebugGui() override;
 
     void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 

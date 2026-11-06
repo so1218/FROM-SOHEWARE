@@ -95,9 +95,8 @@ void Ammo::Draw()
     collider_->DrawCollider();
 }
 
-void Ammo::DebugDraw()
+void Ammo::DebugGui()
 {
-#ifdef ENABLE_IMGUI
 
     ImGui::PushID(id_);
 
@@ -123,7 +122,6 @@ void Ammo::DebugDraw()
 
     ImGui::PopID();
 
-#endif
 }
 
 void Ammo::OnCollisionStay(Collider* mine, Collider* other)
