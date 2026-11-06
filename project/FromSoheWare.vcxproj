@@ -456,7 +456,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Graphics\RenderSystem\WorldInteractionSystem.h" />
     <ClInclude Include="Engine\Graphics\Resource\GlobalConstants.h" />
     <ClInclude Include="Engine\Graphics\Resource\ShadowMap.h" />
-    <ClInclude Include="Engine\Math\Tween.h" />
     <ClInclude Include="externals\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="Engine\Resources\AnimationManager.h" />
     <ClInclude Include="Engine\Resources\AssetFiles.h" />

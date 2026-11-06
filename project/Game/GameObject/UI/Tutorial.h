@@ -90,7 +90,7 @@ private:
     FS::Vector2 panelOffset_ = { 0.0f, 200.0f };  // 画面中央からのずれ
     FS::Vector2 panelSize_ = { 1280.0f, 130.0f };
     FS::Vector4 panelColor_ = { 0.0f, 0.0f, 0.0f, 0.7f };
-    float panelEdgeFade_ = 0.35f;   // 左右それぞれ、幅のこの割合で透明になっていく
+    float panelEdgeFade_ = 0.35f;   // 左右それぞれ、透明になっていく割合
 
     FS::Vector4 textColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     float fontSize_ = 28.0f;

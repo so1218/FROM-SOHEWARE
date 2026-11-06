@@ -27,16 +27,16 @@ public:
     void SetCanReturnToTitle(bool canReturnToTitle) { canReturnToTitle_ = canReturnToTitle; }
 
     bool IsOpen() const { return isOpen_; }
-    // 決定された項目を受け取る。受け取ると空になる
+    // 決定された項目を受け取る
     std::optional<Item> TakeSelectedItem();
 
 private:
     void Open();
     void Close();
     void UpdateCursor();
-    // 「本当に終了しますか」の確認
+    // 本当に終了しますかの確認
     void UpdateQuitConfirm();
-    // 項目を縦に並べて描く。highlightIndex の項目はエディターの色にする (-1 ならなし)
+    // 項目を縦に並べて描く
     void DrawItems(const std::vector<std::string>& labels, int cursorIndex, int highlightIndex);
     std::string GetLabel(Item item) const;
 

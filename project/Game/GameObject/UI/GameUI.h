@@ -15,7 +15,7 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // タイトル中は遊ぶときの表示 (時間など) を隠す。操作説明 (messageText_) はエディター表示なら出す
+    // タイトル中は遊ぶときの表示を隠す。操作説明はエディター表示なら出す
     void SetGameplayVisible(bool isVisible) { isGameplayVisible_ = isVisible; }
     void SetRemainingTime(float seconds) { remainingTime_ = seconds; }
 
@@ -29,7 +29,7 @@ private:
     std::unique_ptr<FS::Text> messageText_;
     std::unique_ptr<FS::Text> stageNameText_; 
 
-    // timeText_ の書式。{} に分、秒の順で入る
+    // timeText_ の書式
     std::string timeFormat_;
     float remainingTime_ = 0.0f;
 

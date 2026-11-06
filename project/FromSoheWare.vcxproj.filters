@@ -1170,9 +1170,6 @@
     <ClInclude Include="Engine\Math\Quaternion.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Math\Tween.h">
-      <Filter>Engine\Math</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Math\WorldTransform.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>

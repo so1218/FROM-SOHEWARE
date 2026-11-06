@@ -20,7 +20,7 @@ Game::Game()
     config.height = 720;
     config.targetFPS = 60;
 
-    // 開発用ツールのない Release だけフルスクリーン
+    // Release
 #ifndef ENABLE_DEV_TOOLS
     config.isFullscreen = true;
 #endif

@@ -99,7 +99,7 @@ void PauseMenu::Update()
     {
         if (items_[cursorIndex_] == Item::QuitGame)
         {
-            // 間違えて押しても終わらないよう、先に確認する。最初は「やめる」を選んでおく
+            // 間違えて押しても終わらないように確認
             isConfirmingQuit_ = true;
             quitConfirmIndex_ = 0;
             return;

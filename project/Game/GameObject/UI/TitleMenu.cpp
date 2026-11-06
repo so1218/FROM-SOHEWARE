@@ -13,7 +13,7 @@ TitleMenu::TitleMenu(Engine* engine)
 
     titleText_ = std::make_unique<Text>(engine_);
 
-    // 保存した値が無いときの初期値。タイトルのすぐ下に小さく出す
+    // 保存した値が無いときの初期値
     subtitleText_ = std::make_unique<Text>(engine_);
 
     startText_ = std::make_unique<Text>(engine_);
