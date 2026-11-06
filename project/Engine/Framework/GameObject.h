@@ -44,7 +44,7 @@ public:
     
     // コライダーの作成。登録はマネージャーが自動で行う
     Collider* AddCollider();
-    // AddCollider() で作ったコライダーを削除する (登録解除も自動で行われる)
+    // AddCollider() で作ったコライダーを削除
     void RemoveCollider(Collider* collider);
     const std::vector<std::unique_ptr<Collider>>& GetColliders() const { return colliders_; }
 

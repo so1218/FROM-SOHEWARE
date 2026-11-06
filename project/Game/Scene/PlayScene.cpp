@@ -218,7 +218,7 @@ void PlayScene::OnDebugGui()
 
 void PlayScene::OnFinalize()
 {
-    // ポーズ中にシーンを切り替えても時間が止まったままにならないようにする
+    // ポーズ中にシーンを切り替えても時間が止まったままにならないように
     if (isPaused_)
     {
         TimeManager::GetInstance()->SetTimeScale(timeScaleBeforePause_);

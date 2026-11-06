@@ -27,7 +27,7 @@ private:
     std::unique_ptr<FS::GrassSystem> grassSystem_;
     std::unique_ptr<FS::PropertyBinder> binder_;
 
-    // 生成に使う設定。エディターで変えたら needsRegenerate_ を立てる
+    // 生成に使う設定
     int maxGrassCount_ = 300000;
     float gridSpacing_ = 0.5f;
     float baseScale_ = 1.0f;
@@ -37,7 +37,6 @@ private:
     float minWidth_ = 0.8f;
     float maxWidth_ = 1.5f;
 
-    // 範囲は地形全体なので、密度マップも地形全体に貼られる
     std::string densityMapName_ = "white1x1";
     uint32_t densityMapHandle_ = 0;
 
@@ -45,6 +44,6 @@ private:
     uint32_t windMapHandle_ = 0;
 
     bool needsRegenerate_ = true;
-    // 最後に生成したときの地形の形。変わっていたら作り直す
+    // 最後に生成したときの地形の形
     uint32_t generatedTerrainVersion_ = 0;
 };

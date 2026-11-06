@@ -66,7 +66,7 @@ void Game::Run()
 
             Update();
 
-            // 調整用の画面はここでだけ切り替える。各 DebugGui の中には書かない
+            // 調整用の画面はここでだけ切り替える
 #ifdef ENABLE_IMGUI
             DebugGui();
 #endif

@@ -20,7 +20,7 @@ void GameObjectManager::Initialize()
 void GameObjectManager::SetupNewObject(GameObject* obj)
 {
     obj->Initialize();
-    obj->RegisterColliders();             // AddCollider() したコライダーを自動登録
+    obj->RegisterColliders(); // AddCollider() したコライダーを自動登録
 }
 
 

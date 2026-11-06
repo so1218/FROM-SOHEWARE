@@ -44,4 +44,5 @@ void TestScene::OnDebugGui()
 }
 
 void TestScene::OnFinalize()
-{}
+{
+}

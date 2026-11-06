@@ -1,6 +1,6 @@
 #pragma once
 
-// 状態の基底クラス。状態だけで使うデータは、派生クラスのメンバーに持つ
+// 状態の基底クラス
 template <class T>
 class State
 {
@@ -13,8 +13,6 @@ public:
     virtual const char* GetName() const = 0;
 };
 
-// 状態は切り替えるたびに作り直すので、前の状態のデータは残らない。
-// 切り替えは Update の前後でまとめて行うので、状態の Update の中で切り替えても自分が消えることはない
 template <class T>
 class StateMachine
 {

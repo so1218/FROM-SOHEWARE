@@ -135,7 +135,6 @@ void EnvironmentManager::Initialize(Engine* engine)
                 binder_->Bind((p + "_V_FogWindSpeedMultiplier").c_str(), &v.windSpeedMultiplier, v.windSpeedMultiplier, 0.05f, 0.0f, 10.0f);
             };
 
-        // 既存の WeatherProfile バインドに加え、Visual もバインド
         bindVisual("Sunny", profileSunny_.visual);
         bindVisual("Cloudy", profileCloudy_.visual);
         bindVisual("Rain", profileRain_.visual);

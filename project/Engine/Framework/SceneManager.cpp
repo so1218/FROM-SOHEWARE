@@ -69,7 +69,6 @@ void SceneManager::DebugGui()
 	fade_->DebugGui();
 }
 
-// シーンをマップに登録する
 void SceneManager::RegisterScene(std::unique_ptr<BaseScene> scene)
 {
     const std::string& name = scene->GetSceneName();
@@ -126,7 +125,6 @@ void SceneManager::SetScene(BaseScene* newScene)
     }
 }
 
-// 状態を切り替える関数
 void SceneManager::ChangeState(std::unique_ptr<ISceneTransitionState> newState)
 {
     state_ = std::move(newState);

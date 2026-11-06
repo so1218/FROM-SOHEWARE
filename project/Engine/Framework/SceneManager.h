@@ -14,13 +14,12 @@ public:
     ~SceneManager();
 
     void Initialize(Engine* engine);
-    // 今のシーンを終わらせ、すべてのシーンを消す。エンジンを片付ける前に呼ぶ
     void Finalize();
     void Update();
     void Draw();
     void DebugGui();
 
-    // シーンを登録。シーン名で識別
+    // シーンを登録
     void RegisterScene(std::unique_ptr<BaseScene> scene);
 
     // 最初のシーンをフェードインでセット

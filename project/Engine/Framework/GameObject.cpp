@@ -47,8 +47,7 @@ void GameObject::AttachToManager(GameObjectManager* manager, uint64_t id)
     manager_ = manager;
     id_ = id;
 
-    // コンストラクタで AddCollider() されたコライダーをここで登録する。
-    // GameObjectManager の管理外 (ID 0) で、他のオブジェクトが所有する場合もこれで登録漏れがなくなる
+    // コンストラクタで AddCollider() されたコライダーを登録
     RegisterColliders();
 }
 
