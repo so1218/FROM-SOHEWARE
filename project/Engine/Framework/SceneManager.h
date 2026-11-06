@@ -14,6 +14,8 @@ public:
     ~SceneManager();
 
     void Initialize(Engine* engine);
+    // 今のシーンを終わらせ、すべてのシーンを消す。エンジンを片付ける前に呼ぶ
+    void Finalize();
     void Update();
     void Draw();
     void DebugGui();

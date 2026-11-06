@@ -37,10 +37,11 @@ class Engine
 {
 public:
     Engine();
+    // Finalize を呼び忘れていたら、ここで呼ぶ
     ~Engine();
 
-    // 初期化・終了
     void Initialize(const ProjectConfig& config);
+    // GPU を待ってから、シングルトンなどメンバーではないものを片付ける。2回目以降は何もしない
     void Finalize();
 
     // 毎フレーム、シーンの更新のあとに呼ぶ。デバッグカメラが有効なら、描画はそちらのカメラで行う
@@ -99,7 +100,7 @@ public:
 private:
     // 各種初期化処理
     void InitializeSystem();
-    void InitializeWindow();
+    void InitializeWindow(const ProjectConfig& config);
     void InitializeInput();
     void InitializeGraphics();
     void InitializeRenderer();
@@ -108,40 +109,38 @@ private:
     void InitializeAudio();
 
 private:
-
-    std::wstring windowTitle_;
-    int targetFPS_ = 60;
     static uint32_t sClientWidth;
     static uint32_t sClientHeight;
-    bool isFullscreen_ = false;
 
     // 現在設定されているカメラ
     RenderCameraState camera_{};
 
-    // システム関連オブジェクト
+    bool isFinalized_ = false;
+
+    // 作る順に並べる。消えるときはこの逆順なので、使う側が使われる側より先に消える
+    std::unique_ptr<MaterialManager> materialManager_;
+    std::unique_ptr<DebugCamera> debugCamera_;
+    std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<Window> window_;
     std::unique_ptr<GraphicsDevice> graphicsDevice_;
     std::unique_ptr<CommandManager> commandManager_;
+    std::unique_ptr<SwapChain> swapChain_;
+    std::unique_ptr<DescriptorHeapManager> descriptorManager_;
     std::unique_ptr<SRVManager> srvManager_;
     std::unique_ptr<DSVManager> dsvManager_;
-    std::unique_ptr<SwapChain> swapChain_;
     std::unique_ptr<RTVManager> rtvManager_;
     std::unique_ptr<OffscreenRTVManager> offscreenRTVManager_;
-    std::unique_ptr<DescriptorHeapManager> descriptorManager_;
-    std::unique_ptr<RenderContext> renderContext_;
-    std::unique_ptr<RootSignatureManager> rootSignatureManager_;
-    std::unique_ptr<ShaderManager> shaderManager_;
-    std::unique_ptr<PSOManager> psoManager_;
-    std::unique_ptr<MaterialManager> materialManager_;
-    std::unique_ptr<TextureLoader> textureLoader_;
     std::unique_ptr<LightManager> lightManager_;
-    std::unique_ptr<DebugCamera> debugCamera_;
+    std::unique_ptr<GlobalConstants> globalConstants_;
+    std::unique_ptr<RenderContext> renderContext_;
+    std::unique_ptr<ShaderManager> shaderManager_;
+    std::unique_ptr<RootSignatureManager> rootSignatureManager_;
+    std::unique_ptr<PSOManager> psoManager_;
+    std::unique_ptr<RenderPipeline> renderPipeline_;
+    std::unique_ptr<TextureLoader> textureLoader_;
+    std::unique_ptr<RendererManager> rendererManager_;
     std::unique_ptr<DebugGuiManager> debugGuiManager_;
     std::unique_ptr<ParticleSystem> particleSystem_;
-    std::unique_ptr<GlobalConstants> globalConstants_;
-    std::unique_ptr<RendererManager> rendererManager_;
-    std::unique_ptr<FrameLimiter> frameLimiter_;
-    std::unique_ptr<RenderPipeline> renderPipeline_;
 };
 
 }

@@ -38,19 +38,37 @@ Engine::Engine() = default;
 
 Engine::~Engine()
 {
+	Finalize();
+}
+
+void Engine::Finalize()
+{
+	if (isFinalized_ || !commandManager_) return;
+	isFinalized_ = true;
+
+	// GPU が使い終わるのを待ってから片付ける
+	commandManager_->WaitForGPU();
+
+	ModelManager::GetInstance().Clear();
+	FontManager::GetInstance().Clear();
+	EnvironmentManager::GetInstance()->Finalize();
+	ImGuiManager::Finalize();
+	Input::GetInstance().Finalize();
+	AudioDevice::GetInstance().Finalize();
+
+	frameLimiter_->Finalize();
+	rendererManager_->Finalize();
+
+	CloseWindow(window_->GetHwnd());
 	CoUninitialize();
 }
 
 void Engine::Initialize(const ProjectConfig& config)
 {
-	windowTitle_ = config.windowTitle;
-	targetFPS_ = config.targetFPS;
-	isFullscreen_ = config.isFullscreen;
-
 	// DPI を自分で扱う。Windows の拡大表示でウィンドウ全体が引き伸ばされてしまうため
 	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-	if (isFullscreen_)
+	if (config.isFullscreen)
 	{
 		// フルスクリーンはメインモニターの解像度で描く
 		MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
@@ -70,11 +88,11 @@ void Engine::Initialize(const ProjectConfig& config)
 	debugCamera_ = std::make_unique<DebugCamera>();
 	debugCamera_->Initialize();
 
-	frameLimiter_ = std::make_unique<FrameLimiter>(targetFPS_);
+	frameLimiter_ = std::make_unique<FrameLimiter>(config.targetFPS);
 	frameLimiter_->Initialize();
 
 	InitializeSystem();
-	InitializeWindow();
+	InitializeWindow(config);
 	InitializeInput();
 	InitializeGraphics();
 	InitializeRenderer();
@@ -87,30 +105,6 @@ void Engine::Initialize(const ProjectConfig& config)
 	particleSystem_->Initialize();
 
 	EnvironmentManager::GetInstance()->Initialize(this);
-}
-
-void Engine::Finalize()
-{
-	commandManager_->WaitForGPU();
-
-	ModelManager::GetInstance().Clear();
-	FontManager::GetInstance().Clear();
-	EnvironmentManager::GetInstance()->Finalize();
-	ImGuiManager::Finalize();
-	Input::GetInstance().Finalize();
-	AudioDevice::GetInstance().Finalize();
-
-	frameLimiter_->Finalize();
-	rendererManager_->Finalize();
-
-	// srvManager_を使うクラスを先に解放
-	textureLoader_.reset();     
-	renderPipeline_.reset();
-
-	srvManager_.reset();
-
-	// リソース解放
-	CloseWindow(window_->GetHwnd());
 }
 
 void Engine::SetSceneCamera(Camera* sceneCamera)
@@ -226,12 +220,10 @@ void Engine::InitializeSystem()
 	GlobalVariables::GetInstance()->LoadFiles();
 }
 
-void Engine::InitializeWindow()
+void Engine::InitializeWindow(const ProjectConfig& config)
 {
-	// Windowクラスのインスタンス作成
 	window_ = std::make_unique<Window>(GetClientWidth(), GetClientHeight());
-	// Windowの作成
-	window_->Create(windowTitle_, isFullscreen_);
+	window_->Create(config.windowTitle, config.isFullscreen);
 }
 
 void Engine::InitializeInput()

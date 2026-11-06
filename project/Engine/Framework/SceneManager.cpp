@@ -17,11 +17,20 @@ SceneManager::SceneManager() : currentScene_(nullptr)
 
 SceneManager::~SceneManager()
 {
-    // 最後に有効だったシーンのFinalizeを呼ぶ
+    Finalize();
+}
+
+void SceneManager::Finalize()
+{
     if (currentScene_)
     {
         currentScene_->Finalize();
+        currentScene_ = nullptr;
     }
+
+    state_.reset();
+    scenes_.clear();
+    fade_.reset();
 }
 
 void SceneManager::Initialize(Engine* engine)

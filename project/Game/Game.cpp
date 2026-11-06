@@ -40,18 +40,14 @@ Game::Game()
 
 Game::~Game()
 {
-    // ライブラリの終了
+    // シーンはエンジンを使うので、先に片付ける
+    sceneManager_.Finalize();
     engine_->Finalize();
-}
-
-void Game::Initialize()
-{
 }
 
 void Game::Run()
 {
 	MSG msg{};
-    Initialize();
     // ウィンドウのxボタンが押されるまでのループ
     while (msg.message != WM_QUIT)
     {
@@ -81,8 +77,6 @@ void Game::Run()
             engine_->EndFrame();
         }
     }
-
-    Finalize();
 }
 
 void Game::Update()
@@ -122,8 +116,4 @@ void Game::DebugGui()
     ImGui::End();
 
     sceneManager_.DebugGui();
-}
-
-void Game::Finalize()
-{
 }
