@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WaterObject.h"
+#include "GraphicsDevice.h"
 
 using namespace FS;
 

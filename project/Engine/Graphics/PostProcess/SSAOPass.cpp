@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "SSAOPass.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "GlobalConstants.h"
+#include "PSOManager.h"
 #include "RootSignatureManager.h"
 #include "PIXColors.h"
 

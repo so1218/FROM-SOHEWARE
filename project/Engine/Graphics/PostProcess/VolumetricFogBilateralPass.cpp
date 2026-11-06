@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "VolumetricFogBilateralPass.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "PSOManager.h"
 #include "PIXColors.h"
 
 namespace FS

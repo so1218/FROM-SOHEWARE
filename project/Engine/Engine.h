@@ -1,37 +1,36 @@
 #pragma once
-#include "Window.h"
-#include "SwapChain.h"
-#include "RTVManager.h"
-#include "DescriptorHeapManager.h"
-#include "RenderContext.h"
-#include "RenderCoordinator.h"
-#include "RootSignatureManager.h"
-#include "PSOManager.h"
-#include "MaterialManager.h"
-#include "TextureLoader.h"
-#include "LightManager.h"
-#include "Camera.h"
-#include "DebugCamera.h"
+// ゲーム側からも使うものだけを読み込む
 #include "RenderCommon.h"
-#include "debugGuiManager.h"
+#include "Camera.h"
+#include "LightManager.h"
 #include "ParticleSystem.h"
-#include "GlobalConstants.h" 
-#include "PostEffectManager.h" 
-#include "AnimationLoader.h" 
-#include "RendererManager.h" 
-#include "FrameLimiter.h" 
-#include "ShaderManager.h"
-#include "ShadowMap.h"
-#include "ProjectConfig.h"
-#include "GraphicsDevice.h"
-#include "CommandManager.h"
+#include "PostEffectManager.h"
+#include "RendererManager.h"
 #include "RenderPipeline.h"
 
 namespace FS
 {
 
+struct ProjectConfig;
+class Window;
+class FrameLimiter;
+class GraphicsDevice;
+class CommandManager;
+class SwapChain;
+class DescriptorHeapManager;
 class SRVManager;
 class DSVManager;
+class RTVManager;
+class OffscreenRTVManager;
+class GlobalConstants;
+class RenderContext;
+class ShaderManager;
+class RootSignatureManager;
+class PSOManager;
+class MaterialManager;
+class TextureLoader;
+class DebugCamera;
+class DebugGuiManager;
 
 class Engine
 {
@@ -41,10 +40,10 @@ public:
     ~Engine();
 
     void Initialize(const ProjectConfig& config);
-    // GPU を待ってから、シングルトンなどメンバーではないものを片付ける。2回目以降は何もしない
+    // GPU を待ってから、シングルトンなどメンバーではないものを片付ける
     void Finalize();
 
-    // 毎フレーム、シーンの更新のあとに呼ぶ。デバッグカメラが有効なら、描画はそちらのカメラで行う
+    // 毎フレーム、シーンの更新のあとに呼ぶ
     void SetSceneCamera(Camera* sceneCamera);
     void SetCameraState(const RenderCameraState& camera);
 
@@ -52,21 +51,15 @@ public:
     void BeginFrame();
     void EndFrame();
 
-    // ブレンドモード設定
-    void SetBlendMode(BlendMode blendMode) { rendererManager_->currentBlendMode_ = blendMode; }
-
     // ゲッター
     // システム関連マネージャー
-    Window* GetWindow() const { return window_.get(); }
     GraphicsDevice* GetGraphicsDevice() const { return graphicsDevice_.get(); }
     CommandManager* GetCommandManager() const { return commandManager_.get(); }
     SwapChain* GetSwapChain() const { return swapChain_.get(); }
     RTVManager* GetRTVManager() const { return rtvManager_.get(); }
     OffscreenRTVManager* GetOffscreenRTVManager() const { return offscreenRTVManager_.get(); }
-    DescriptorHeapManager* GetDescriptorManager() const { return descriptorManager_.get(); }
     RenderContext* GetRenderContext() const { return renderContext_.get(); }
     RootSignatureManager* GetRootSignatureManager() const { return rootSignatureManager_.get(); }
-    ShaderManager* GetShaderManager() const { return shaderManager_.get(); }
     PSOManager* GetPSOManager() const { return psoManager_.get(); }
     MaterialManager* GetMaterialManager() const { return materialManager_.get(); }
     TextureLoader* GetTextureLoader() const { return textureLoader_.get(); }
@@ -78,11 +71,8 @@ public:
     ParticleSystem* GetParticleSystem() const { return particleSystem_.get(); }
     GlobalConstants* GetGlobalConstants() const { return globalConstants_.get(); }
     RendererManager* GetRendererManager() const { return rendererManager_.get(); }
-    FrameLimiter* GetFrameLimiter() const { return frameLimiter_.get(); }
-    RenderCoordinator* GetRenderCoordinator() const { return renderPipeline_->GetRenderCoordinator(); }
     PostEffectManager* GetPostEffectManager() const { return renderPipeline_->GetPostEffectManager(); }
     ShadowMap* GetShadowMap() const { return renderPipeline_->GetShadowMap(); }
-    RenderPipeline* GetRenderPipeline() const { return renderPipeline_.get(); }
 
     // 描く解像度 (ウィンドウのクライアント領域の大きさ)
     static uint32_t GetClientWidth() { return sClientWidth; }
@@ -98,15 +88,13 @@ public:
     const Matrix4x4& GetProjectionMatrix() const { return camera_.projection; }
 
 private:
-    // 各種初期化処理
-    void InitializeSystem();
-    void InitializeWindow(const ProjectConfig& config);
-    void InitializeInput();
+    void InitializePlatform(const ProjectConfig& config);
+    void DecideClientSize(const ProjectConfig& config);
     void InitializeGraphics();
     void InitializeRenderer();
     void InitializeResources();
-    void InitializeImGui();
     void InitializeAudio();
+    void InitializeDevelopmentTools();
 
 private:
     static uint32_t sClientWidth;
@@ -117,11 +105,9 @@ private:
 
     bool isFinalized_ = false;
 
-    // 作る順に並べる。消えるときはこの逆順なので、使う側が使われる側より先に消える
-    std::unique_ptr<MaterialManager> materialManager_;
-    std::unique_ptr<DebugCamera> debugCamera_;
-    std::unique_ptr<FrameLimiter> frameLimiter_;
+    // 作る順に並べる
     std::unique_ptr<Window> window_;
+    std::unique_ptr<FrameLimiter> frameLimiter_;
     std::unique_ptr<GraphicsDevice> graphicsDevice_;
     std::unique_ptr<CommandManager> commandManager_;
     std::unique_ptr<SwapChain> swapChain_;
@@ -136,11 +122,13 @@ private:
     std::unique_ptr<ShaderManager> shaderManager_;
     std::unique_ptr<RootSignatureManager> rootSignatureManager_;
     std::unique_ptr<PSOManager> psoManager_;
+    std::unique_ptr<MaterialManager> materialManager_;
     std::unique_ptr<RenderPipeline> renderPipeline_;
     std::unique_ptr<TextureLoader> textureLoader_;
     std::unique_ptr<RendererManager> rendererManager_;
-    std::unique_ptr<DebugGuiManager> debugGuiManager_;
     std::unique_ptr<ParticleSystem> particleSystem_;
+    std::unique_ptr<DebugCamera> debugCamera_;
+    std::unique_ptr<DebugGuiManager> debugGuiManager_;
 };
 
 }

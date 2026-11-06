@@ -3,6 +3,9 @@
 #include "BufferManager.h"
 #include "TimeManager.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "GlobalConstants.h"
+#include "PSOManager.h"
 #include "PIXColors.h"
 
 namespace FS

@@ -3,6 +3,7 @@
 #include "TimeManager.h"
 #include "LightManager.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
 #include "PropertyBinder.h"
 
 namespace FS

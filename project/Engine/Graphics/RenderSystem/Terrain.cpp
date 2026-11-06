@@ -2,6 +2,8 @@
 #include "Terrain.h"
 #include "TextureManager.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "MaterialManager.h"
 #include "BufferManager.h"
 #include "Frustum.h"
 #include "TerrainRenderer.h"

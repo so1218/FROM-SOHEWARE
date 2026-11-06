@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "FoliageSystem.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
 #include "TextureManager.h"
 
 namespace FS

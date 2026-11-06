@@ -104,9 +104,6 @@ public:
     // シーン遷移時に全環境系レンダラーの描画状態を一括クリア
     void ClearSceneRenderStates();
 
-    // ブレンドモード設定
-    void SetBlendMode(BlendMode blendMode) { currentBlendMode_ = blendMode; }
-
     // 描画カウント取得
     uint32_t GetModelCount() const;
     uint32_t GetSpriteCount() const;
@@ -122,8 +119,6 @@ public:
 
     TreeRenderer* GetTreeRenderer() const { return treeRenderer_.get(); }
     const Frustum& GetCameraFrustum() const { return cameraFrustum_; }
-
-    BlendMode currentBlendMode_ = kBlendModeNormal;
 
     void InitializeGrass();
     void SetGrassRenderingParams(uint32_t windMapHandle, const GrassMaterialData& materialData, const GrassCullingData& cullingData);

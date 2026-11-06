@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "IPostEffect.h"
 #include "Engine.h"
+#include "RTVManager.h"
 #include "SRVManager.h"
 
 namespace FS

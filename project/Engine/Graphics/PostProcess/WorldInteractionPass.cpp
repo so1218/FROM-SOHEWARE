@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "WorldInteractionPass.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "GlobalConstants.h"
+#include "RootSignatureManager.h"
 #include "PSOManager.h"
 #include "PIXColors.h"
 

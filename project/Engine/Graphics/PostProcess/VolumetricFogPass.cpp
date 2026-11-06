@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "VolumetricFogPass.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "GlobalConstants.h"
+#include "PSOManager.h"
 #include "EnvironmentManager.h"
 #include "PIXColors.h"
 

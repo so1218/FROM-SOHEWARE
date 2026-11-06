@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "NoiseTextureGenerator.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "RootSignatureManager.h"
+#include "PSOManager.h"
 
 namespace FS
 {

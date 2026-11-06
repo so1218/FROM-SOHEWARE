@@ -4,6 +4,8 @@
 #include "AssetFiles.h"
 #include "TextureManager.h" 
 #include "Engine.h" 
+#include "GraphicsDevice.h"
+#include "MaterialManager.h"
 
 namespace FS
 {

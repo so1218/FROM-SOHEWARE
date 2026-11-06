@@ -5,6 +5,8 @@
 #include "AnimationManager.h"
 #include "TextureManager.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "MaterialManager.h"
 #include "SRVManager.h"
 
 namespace FS

@@ -416,8 +416,6 @@ void ParticleSystem::AddEmitter(std::unique_ptr<ParticleEmitter> emitter)
 
 void ParticleSystem::Draw()
 {
-    engine_->SetBlendMode(BlendMode::kBlendModeAdd);
-
     // トレイル描画
     for (const auto& particle : particles_)
     {
@@ -440,13 +438,11 @@ void ParticleSystem::Draw()
         engine_->GetRendererManager()->SubmitTrail(drawPoints, particle.config->trail, particle.trailSeed);
     }
 
-    // ブレンドを元に戻す
-    engine_->SetBlendMode(BlendMode::kBlendModeNormal);
+}
 
-#ifdef ENABLE_IMGUI
-    // デバッグ用エディタ表示
+void ParticleSystem::DebugGui()
+{
     editor_->ShowEditor();
-#endif
 }
 
 void ParticleSystem::Clear()

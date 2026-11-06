@@ -2,6 +2,8 @@
 #include "BrightExtractPass.h"
 #include "BufferManager.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
+#include "PSOManager.h"
 #include "PIXColors.h"
 
 namespace FS

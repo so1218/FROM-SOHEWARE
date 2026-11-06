@@ -1,5 +1,21 @@
 #include "pch.h"
 #include "Engine.h"
+#include "ProjectConfig.h"
+#include "Window.h"
+#include "FrameLimiter.h"
+#include "GraphicsDevice.h"
+#include "CommandManager.h"
+#include "SwapChain.h"
+#include "DescriptorHeapManager.h"
+#include "RTVManager.h"
+#include "GlobalConstants.h"
+#include "RenderContext.h"
+#include "ShaderManager.h"
+#include "RootSignatureManager.h"
+#include "PSOManager.h"
+#include "MaterialManager.h"
+#include "DebugCamera.h"
+#include "DebugGuiManager.h"
 #include "AudioDevice.h"
 #include "DebugLayerManager.h"
 #include "Logger.h"
@@ -65,45 +81,14 @@ void Engine::Finalize()
 
 void Engine::Initialize(const ProjectConfig& config)
 {
-	// DPI を自分で扱う。Windows の拡大表示でウィンドウ全体が引き伸ばされてしまうため
-	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-	if (config.isFullscreen)
-	{
-		// フルスクリーンはメインモニターの解像度で描く
-		MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
-		GetMonitorInfo(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
-		sClientWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-		sClientHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
-	}
-	else
-	{
-		// 窓は Windows の拡大率に合わせて大きくし、そのまま描く解像度にする
-		const float dpiScale = static_cast<float>(GetDpiForSystem()) / USER_DEFAULT_SCREEN_DPI;
-		sClientWidth = static_cast<uint32_t>(static_cast<float>(config.width) * dpiScale);
-		sClientHeight = static_cast<uint32_t>(static_cast<float>(config.height) * dpiScale);
-	}
-
-	materialManager_ = std::make_unique<MaterialManager>();
-	debugCamera_ = std::make_unique<DebugCamera>();
-	debugCamera_->Initialize();
-
-	frameLimiter_ = std::make_unique<FrameLimiter>(config.targetFPS);
-	frameLimiter_->Initialize();
-
-	InitializeSystem();
-	InitializeWindow(config);
-	InitializeInput();
+	InitializePlatform(config);
 	InitializeGraphics();
 	InitializeRenderer();
 	InitializeResources();
-	InitializeImGui();
 	InitializeAudio();
-	debugGuiManager_ = std::make_unique<DebugGuiManager>();
-	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), GetPostEffectManager(), debugCamera_.get());
-	particleSystem_ = std::make_unique<ParticleSystem>(this);
-	particleSystem_->Initialize();
+	InitializeDevelopmentTools();
 
+	// 時間帯と天気
 	EnvironmentManager::GetInstance()->Initialize(this);
 }
 
@@ -209,29 +194,46 @@ void Engine::EndFrame()
 		commandManager_->GetCompletedFenceValue());
 }
 
-void Engine::InitializeSystem()
+
+
+
+void Engine::InitializePlatform(const ProjectConfig& config)
 {
-	// COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
-
-	// ロガーの初期化
 	Logger::Instance().Initialize();
-
 	GlobalVariables::GetInstance()->LoadFiles();
-}
 
-void Engine::InitializeWindow(const ProjectConfig& config)
-{
+	// DPI を自分で扱う。Windows の拡大表示でウィンドウ全体が引き伸ばされてしまうため
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+	DecideClientSize(config);
+
 	window_ = std::make_unique<Window>(GetClientWidth(), GetClientHeight());
 	window_->Create(config.windowTitle, config.isFullscreen);
+
+	Input::GetInstance().Initialize(window_->GetHInstance(), window_->GetHwnd());
+	TimeManager::GetInstance()->Initialize();
+
+	frameLimiter_ = std::make_unique<FrameLimiter>(config.targetFPS);
+	frameLimiter_->Initialize();
 }
 
-void Engine::InitializeInput()
+void Engine::DecideClientSize(const ProjectConfig& config)
 {
-	// 入力管理の初期化
-	Input::GetInstance().Initialize(window_->GetHInstance(), window_->GetHwnd());
-
-	TimeManager::GetInstance()->Initialize();
+	if (config.isFullscreen)
+	{
+		// フルスクリーンはメインモニターの解像度で描く
+		MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+		GetMonitorInfo(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+		sClientWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+		sClientHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+	}
+	else
+	{
+		// 窓は Windows の拡大率に合わせて大きくし、そのまま描く解像度にする
+		const float dpiScale = static_cast<float>(GetDpiForSystem()) / USER_DEFAULT_SCREEN_DPI;
+		sClientWidth = static_cast<uint32_t>(static_cast<float>(config.width) * dpiScale);
+		sClientHeight = static_cast<uint32_t>(static_cast<float>(config.height) * dpiScale);
+	}
 }
 
 void Engine::InitializeGraphics()
@@ -306,6 +308,9 @@ void Engine::InitializeRenderer()
 		rootSignatureManager_.get()
 	);
 
+	// モデルやポストエフェクトのマテリアルは、ここで作る定数バッファを使う
+	materialManager_ = std::make_unique<MaterialManager>();
+
 	// RenderPipelineを作成、初期化
 	renderPipeline_ = std::make_unique<RenderPipeline>();
 	renderPipeline_->Initialize(this);
@@ -362,14 +367,15 @@ void Engine::InitializeResources()
 		// VolumetricFogPassに直接データを渡す
 		GetPostEffectManager()->GetVolumetricFogPass()->SetNoiseData(noiseData);
 	}
+
+	particleSystem_ = std::make_unique<ParticleSystem>(this);
+	particleSystem_->Initialize();
 }
 
-void Engine::InitializeImGui()
+void Engine::InitializeDevelopmentTools()
 {
-	// SRVマネージャからディスクリプタヒープを取得
+	// ImGui は SRV のヒープを使い、デバッグ描画は RendererManager に線を送るので、描画の準備ができてから
 	ID3D12DescriptorHeap* srvHeap = srvManager_->GetSRVHeap();
-
-	// ImGuiの初期化
 	ImGuiManager::Initialize(window_->GetHwnd(), graphicsDevice_->GetDevice(),
 		rtvManager_->rtvDesc, swapChain_->GetSwapChainDesc(), srvHeap,
 		srvHeap->GetCPUDescriptorHandleForHeapStart(),
@@ -379,6 +385,12 @@ void Engine::InitializeImGui()
 #ifdef ENABLE_DEBUG_DRAW
 	DebugDraw::Initialize(rendererManager_.get());
 #endif
+
+	debugCamera_ = std::make_unique<DebugCamera>();
+	debugCamera_->Initialize();
+
+	debugGuiManager_ = std::make_unique<DebugGuiManager>();
+	debugGuiManager_->Initialize(this, lightManager_.get(), materialManager_.get(), textureLoader_.get(), GetPostEffectManager(), debugCamera_.get());
 }
 
 void Engine::InitializeAudio()

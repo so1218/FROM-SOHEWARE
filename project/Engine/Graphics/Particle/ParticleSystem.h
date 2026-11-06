@@ -30,6 +30,8 @@ public:
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);
     void Draw();
+    // パーティクルエディターを出す
+    void DebugGui();
     // presetNameだけでConfigを取得できるように
     const ParticleConfig& GetConfig(const std::string& presetName) const { return definitions_.at(presetName).particleConfig; }
     ParticleConfig& GetConfig(const std::string& presetName) { return definitions_.at(presetName).particleConfig; }

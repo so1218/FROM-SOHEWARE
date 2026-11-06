@@ -17,3 +17,8 @@ void ParticleSystemWrapper::Draw()
 {
     engine_->GetParticleSystem()->Draw();
 }
+
+void ParticleSystemWrapper::DebugGui()
+{
+    engine_->GetParticleSystem()->DebugGui();
+}

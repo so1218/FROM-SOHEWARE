@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TreeSystem.h"
 #include "Engine.h"
+#include "GraphicsDevice.h"
 #include "TextureManager.h"
 #include "TreeRenderer.h"
 
