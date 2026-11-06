@@ -89,7 +89,7 @@ float LightningSystem::CalculateFlicker(float flickerPhase) const
         return 1.0f;
     }
 
-    // 1秒に flickerSpeed 回、明るさをでたらめに変える。フレームの速さには左右されない
+    // 1秒に flickerSpeed 回、明るさを変える
     const float step = std::floor(TimeManager::GetInstance()->GetTotalTime() * config_.flickerSpeed + flickerPhase);
     const float noise = std::sin(step * 12.9898f) * 43758.5453f;
     return std::lerp(config_.flickerMin, config_.flickerMax, noise - std::floor(noise));
@@ -184,11 +184,6 @@ void LightningSystem::DebugGui()
         binder_->Draw("LightRadius", "届く半径");
         binder_->Draw("LightHeightOffset", "地面からの高さ");
         binder_->Draw("VolumetricScattering", "霧に当たる強さ");
-
-        if (ImGui::Button("テスト落雷", ImVec2(120, 30)))
-        {
-            SpawnStrike(Vector3(0, 500, 0), Vector3(10, 0, 10));
-        }
     }
     ImGui::End();
 }

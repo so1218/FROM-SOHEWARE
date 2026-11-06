@@ -33,7 +33,6 @@ PlayScene::PlayScene(Engine* engine)
     player_ = player;
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform());
     titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
-    // 空と光を最初に更新して、ほかの物が今の時間帯や天気を使えるようにする
     objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
     auto grassField = objectManager_.Create<GrassField>(engine_);

@@ -13,7 +13,6 @@ class WorldInteractionSystem
 {
 public:
     WorldInteractionSystem(FS::Engine* engine);
-    // PropertyBinder を前方宣言だけで持つので、消す処理は cpp に置く
     ~WorldInteractionSystem();
 
     void Initialize();

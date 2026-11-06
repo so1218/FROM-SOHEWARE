@@ -1,7 +1,9 @@
 {
     "Player": {
+        "AimBlendTime": 0.10000000149011612,
+        "AimIdleAnimSpeed": 0.5,
         "AimMoveSpeed": 8.0,
-        "AimToIdleBlendTime": 0.009999999776482582,
+        "AimWalkAnimSpeed": 0.800000011920929,
         "AirControlRate": 0.7300000190734863,
         "Ammo_EmptyRoundColor": [
             1.0,
@@ -106,7 +108,7 @@
         "JumpBlendTime": 0.2199999988079071,
         "JumpInitialVelocity": 34.97999954223633,
         "JumpStaminaCost": 15.0,
-        "MaxBulletSpread": 0.0020000000949949026,
+        "MaxBulletSpread": 0.03999999910593033,
         "MaxDamageMultiplier": 1.2999999523162842,
         "MaxStamina": 9.0,
         "MaxVerticalDist": 1.6799999475479126,
@@ -1186,7 +1188,6 @@
         "RunAnimSpeed": 1.0,
         "RunSpeed": 20.170000076293945,
         "RunToIdleBlendTime": 0.25,
-        "ShootRecoilTime": 0.009999999776482582,
         "SpawnPosition": [
             56.20000076293945,
             0.0,

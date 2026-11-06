@@ -18,16 +18,16 @@ void PlayerReticle::Initialize()
     sprite_->SetAnchorPoint({ 0.5f, 0.5f });
     sprite_->SetIsVisible(true);
 
-    binder_->Bind("LineThickness", &config_.lineThickness, 0.5f, 0.1f, 1.0f, 10.0f);
-    binder_->Bind("LineLength", &config_.lineLength, 1.0f, 0.1f, 2.0f, 50.0f);
-    binder_->Bind("MaxGap", &config_.maxGap, 1.0f, 0.1f, 10.0f, 100.0f);
-    binder_->Bind("MinGap", &config_.minGap, 0.5f, 0.1f, 0.0f, 30.0f);
-    binder_->Bind("CenterDotSize", &config_.centerDotSize, 0.5f, 0.1f, 1.0f, 20.0f);
-    binder_->Bind("FocusTime", &config_.focusTime, 0.05f, 0.1f, 0.1f, 3.0f);
-    binder_->Bind("ExpandSpeed", &config_.expandSpeed, 0.5f, 0.1f, 1.0f, 20.0f);
-    binder_->Bind("Threshold", &config_.threshold, 0.05f, 0.1f, 0.5f, 0.95f);
-    binder_->Bind("MidRatio", &config_.midRatio, 0.05f, 0.1f, 0.1f, 0.8f);
-    binder_->Bind("FinalExponent", &config_.finalExponent, 0.5f, 0.1f, 1.0f, 8.0f);
+    binder_->Bind("LineThickness", &config_.lineThickness, 2.0f, 0.5f, 1.0f, 10.0f);
+    binder_->Bind("LineLength", &config_.lineLength, 12.0f, 1.0f, 2.0f, 50.0f);
+    binder_->Bind("MaxGap", &config_.maxGap, 35.0f, 1.0f, 10.0f, 100.0f);
+    binder_->Bind("MinGap", &config_.minGap, 5.0f, 0.5f, 0.0f, 30.0f);
+    binder_->Bind("CenterDotSize", &config_.centerDotSize, 3.0f, 0.5f, 1.0f, 20.0f);
+    binder_->Bind("FocusTime", &config_.focusTime, 1.0f, 0.05f, 0.1f, 3.0f);
+    binder_->Bind("ExpandSpeed", &config_.expandSpeed, 8.0f, 0.5f, 1.0f, 20.0f);
+    binder_->Bind("Threshold", &config_.threshold, 0.8f, 0.05f, 0.5f, 0.95f);
+    binder_->Bind("MidRatio", &config_.midRatio, 0.35f, 0.05f, 0.1f, 0.8f);
+    binder_->Bind("FinalExponent", &config_.finalExponent, 3.0f, 0.5f, 1.0f, 8.0f);
 }
 
 void PlayerReticle::Update(bool isMoving, bool isAiming)

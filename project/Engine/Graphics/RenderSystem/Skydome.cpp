@@ -30,7 +30,6 @@ void Skydome::Initialize()
 
 void Skydome::Update()
 {
-    // 空の色・雲の量・太陽の向きは時間と天気で変わるので、毎フレーム受け取る
     atmosphereSkyData_.sunDirection = EnvironmentManager::GetInstance()->GetSunDirection();
 
     const TimeOfDayProfile& profile = EnvironmentManager::GetInstance()->GetCurrentProfile();

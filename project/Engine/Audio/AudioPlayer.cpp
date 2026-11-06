@@ -216,9 +216,13 @@ void AudioPlayer::Update()
         int handleID = it->first;
         AudioInstance& instance = it->second;
 
-        // 再生終了チェック
+        // 再生が終わったボイスは破棄してから外す
         if (!IsPlaying(handleID))
         {
+            if (instance.voice)
+            {
+                instance.voice->DestroyVoice();
+            }
             it = activeVoices_.erase(it);
             continue;
         }

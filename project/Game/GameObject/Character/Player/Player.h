@@ -38,8 +38,9 @@ public:
 		float airControlRate = 0.8f;
 
 		float aimMoveSpeed = 0.08f;       // エイム中の移動速度
-		float aimToIdleBlendTime = 0.1f;
-		float shootRecoilTime = 0.15f;    // 射撃後の隙・反動時間
+		float aimIdleAnimSpeed = 0.5f;
+		float aimWalkAnimSpeed = 0.8f;
+		float aimBlendTime = 0.1f;        // エイム中のアニメーションを切り替えるときの補間時間
 
 		// 武器威力・弾道調整
 		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率

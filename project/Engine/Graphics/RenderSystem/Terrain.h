@@ -25,14 +25,14 @@ public:
 
     bool LoadFromHeightmap(const std::string& heightmapTextureName, float cellSize);
 
-    // 地形の中心の位置。書き換えたら MarkShapeChanged を呼ぶ
+    // 地形の中心の位置
     Vector3& GetPosition() { return position_; }
 
-    // 位置や高さ、ハイトマップが変わるたびに増える。草などを作り直すかの判定に使う
+    // 位置や高さ、ハイトマップが変わるたびに増える
     uint32_t GetShapeVersion() const { return shapeVersion_; }
     void MarkShapeChanged() { ++shapeVersion_; }
 
-    // 地面の高さ。地形の外なら false
+    // 地面の高さ
     bool GetHeightAt(float worldX, float worldZ, float& outHeight) const;
     // 地形の外なら 0
     float GetHeight(float worldX, float worldZ) const;
@@ -62,7 +62,7 @@ private:
     {
         uint32_t startX = 0;
         uint32_t startZ = 0;
-        // カリング用。高さを掛ける前の 0〜1 の値で持つので、最大高さを変えても作り直さなくてよい
+        // カリング用
         float minHeightRatio = 0.0f;
         float maxHeightRatio = 0.0f;
     };
@@ -89,7 +89,7 @@ private:
     uint32_t heightMapHeight_ = 0;
     std::vector<float> heightRatios_;
 
-    // 1チャンクのマス数。地形がチャンクより小さければ地形の大きさになる
+    // 1チャンクのマス数
     uint32_t chunkCellsX_ = 0;
     uint32_t chunkCellsZ_ = 0;
     std::vector<Chunk> chunks_;

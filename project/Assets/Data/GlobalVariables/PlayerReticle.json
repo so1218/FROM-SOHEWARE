@@ -1,8 +1,7 @@
 {
     "PlayerReticle": {
         "CenterDotSize": 4.0,
-        "CurveExponent": 18.0,
-        "ExpandSpeed": 0.5,
+        "ExpandSpeed": 8.0,
         "FinalExponent": 3.4000000953674316,
         "FocusTime": 0.699999988079071,
         "LineLength": 11.0,

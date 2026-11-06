@@ -19,7 +19,7 @@ void Line::Initialize()
 
 void Line::Draw()
 {
-    // ローカル座標を行列でワールド座標に変換する
+    // ローカル座標を行列でワールド座標に変換
     Vector3 worldStart = transform_.GetWorldMatrix().Transform(localStart_);
     Vector3 worldEnd = transform_.GetWorldMatrix().Transform(localEnd_);
 

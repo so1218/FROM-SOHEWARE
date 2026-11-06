@@ -7,7 +7,7 @@ using namespace FS;
 
 void PlayerStateAiming::Enter(Player* player)
 {
-    player->PlayAnimation("humanPistolIdle", true, 0.5f, 0.1f);
+    player->PlayAnimation("humanPistolIdle", true, player->config.aimIdleAnimSpeed, player->config.aimBlendTime);
     player->GetFollowCamera()->SetAiming(true);
 }
 
@@ -46,11 +46,11 @@ void PlayerStateAiming::Update(Player* player)
         {
             animationName = rightAmount > 0.0f ? "humanPistolWalkRight" : "humanPistolWalkLeft";
         }
-        player->PlayAnimation(animationName, true, 0.8f, 0.1f);
+        player->PlayAnimation(animationName, true, player->config.aimWalkAnimSpeed, player->config.aimBlendTime);
     }
     else
     {
-        player->PlayAnimation("humanPistolIdle", true, 0.5f, 0.1f);
+        player->PlayAnimation("humanPistolIdle", true, player->config.aimIdleAnimSpeed, player->config.aimBlendTime);
     }
 
     if (player->IsShootInputTriggered())

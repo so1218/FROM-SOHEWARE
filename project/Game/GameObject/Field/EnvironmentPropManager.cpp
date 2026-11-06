@@ -9,6 +9,11 @@ EnvironmentPropManager::EnvironmentPropManager(FS::Engine* engine, const std::st
 
 void EnvironmentPropManager::Initialize()
 {
+    // シーンに入り直したときは前回のプロップが残っているので、作り直す前に消す
+    groups_.clear();
+    selectedProp_ = nullptr;
+    selectedPropIndex_ = -1;
+
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("PropCount", &propCount_, 0);
 

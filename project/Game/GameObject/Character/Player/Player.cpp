@@ -52,31 +52,32 @@ void Player::Initialize()
 
 	// PropertyBinder への登録
 	binder_->BindAnimationModel("PlayerModel", animationModel_.get());
-	binder_->Bind("RunSpeed", &config.runSpeed, 0.01f);
-	binder_->Bind("RotationSpeed", &config.rotationSpeed, 0.1f);
-	binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 0.05f);
-	binder_->Bind("RunAnimSpeed", &config.runAnimSpeed, 0.05f);
-	binder_->Bind("JumpAnimSpeed", &config.jumpAnimSpeed, 0.05f);
-	binder_->Bind("IdleToRunBlendTime", &config.idleToRunBlendTime, 0.01f);
-	binder_->Bind("RunToIdleBlendTime", &config.runToIdleBlendTime, 0.01f);
-	binder_->Bind("JumpBlendTime", &config.jumpBlendTime, 0.01f);
-	binder_->Bind("JumpInitialVelocity", &config.jumpInitialVelocity, 0.1f);
-	binder_->Bind("Gravity", &config.gravity, 0.1f);
-	binder_->Bind("AirControlRate", &config.airControlRate, 0.05f);
+	binder_->Bind("RunSpeed", &config.runSpeed, 0.2f, 0.01f);
+	binder_->Bind("RotationSpeed", &config.rotationSpeed, 10.0f, 0.1f);
+	binder_->Bind("IdleAnimSpeed", &config.idleAnimSpeed, 1.0f, 0.05f);
+	binder_->Bind("RunAnimSpeed", &config.runAnimSpeed, 1.0f, 0.05f);
+	binder_->Bind("JumpAnimSpeed", &config.jumpAnimSpeed, 1.0f, 0.05f);
+	binder_->Bind("IdleToRunBlendTime", &config.idleToRunBlendTime, 0.15f, 0.01f);
+	binder_->Bind("RunToIdleBlendTime", &config.runToIdleBlendTime, 0.2f, 0.01f);
+	binder_->Bind("JumpBlendTime", &config.jumpBlendTime, 0.1f, 0.01f);
+	binder_->Bind("JumpInitialVelocity", &config.jumpInitialVelocity, 10.0f, 0.1f);
+	binder_->Bind("Gravity", &config.gravity, 29.8f, 0.1f);
+	binder_->Bind("AirControlRate", &config.airControlRate, 0.8f, 0.05f);
 
-	binder_->Bind("AimMoveSpeed", &config.aimMoveSpeed, 0.005f);
-	binder_->Bind("AimToIdleBlendTime", &config.aimToIdleBlendTime, 0.01f);
-	binder_->Bind("ShootRecoilTime", &config.shootRecoilTime, 0.01f);
+	binder_->Bind("AimMoveSpeed", &config.aimMoveSpeed, 0.08f, 0.005f);
+	binder_->Bind("AimIdleAnimSpeed", &config.aimIdleAnimSpeed, 0.5f);
+	binder_->Bind("AimWalkAnimSpeed", &config.aimWalkAnimSpeed, 0.8f);
+	binder_->Bind("AimBlendTime", &config.aimBlendTime, 0.1f);
 
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
 	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
 
-	binder_->Bind("InteractionRadius", &interactionRadius_, 0.1f);
-	binder_->Bind("InteractionForce", &interactionForce_, 0.1f);
-	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 0.1f);
+	binder_->Bind("InteractionRadius", &interactionRadius_, 1.5f, 0.1f);
+	binder_->Bind("InteractionForce", &interactionForce_, 1.0f, 0.1f);
+	binder_->Bind("MaxVerticalDist", &maxVerticalDist_, 2.0f, 0.1f);
 
-	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 0.05f, 0.1f, 1.0f, 3.0f);
-	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.002f, 0.1f, 0.0f, 0.2f);
+	binder_->Bind("MaxDamageMultiplier", &config.maxDamageMultiplier, 1.5f, 0.05f, 1.0f, 3.0f);
+	binder_->Bind("MaxBulletSpread", &config.maxBulletSpread, 0.04f, 0.001f, 0.0f, 0.2f);
 
 	binder_->Bind("SprintSpeedRate", &config.sprintSpeedRate, 1.5f, 0.01f, 1.0f, 5.0f);
 	binder_->Bind("SprintAnimSpeed", &config.sprintAnimSpeed, 1.3f, 0.01f, 0.1f, 5.0f);
@@ -627,8 +628,9 @@ void Player::DebugGui()
 	if (ImGui::CollapsingHeader("エイム設定"))
 	{
 		binder_->Draw("AimMoveSpeed", "エイム時移動速度");
-		binder_->Draw("AimToIdleBlendTime", "エイム補間時間(秒)");
-		binder_->Draw("ShootRecoilTime", "射撃反動時間(秒)");
+		binder_->Draw("AimIdleAnimSpeed", "エイム待機アニメ速度");
+		binder_->Draw("AimWalkAnimSpeed", "エイム歩きアニメ速度");
+		binder_->Draw("AimBlendTime", "エイム補間時間(秒)");
 		binder_->Draw("MaxDamageMultiplier", "フォーカス時威力倍率");
 		binder_->Draw("MaxBulletSpread", "最大弾道ブレ角");
 	}

@@ -17,7 +17,6 @@ void FoliageSystem::AddFoliageType(
     const FoliageMaterialData& defaultMaterial,
     const FoliageGenerationData& defaultGenData)
 {
-    // アセットの追加は初期化フェーズに限定し、動的なバッファ再確保の複雑化を避ける
     assert(!isRendererInitialized_ && "Cannot add foliage types after renderer initialization.");
 
     FoliageTypeInfo info;
@@ -42,8 +41,6 @@ void FoliageSystem::InitializeRenderer()
     std::vector<FoliageTypeConfig> configs;
     configs.reserve(foliageTypes_.size());
 
-    // レンダラー側にはポインタ経由でメッシュやテクスチャハンドルを参照させ、
-    // 実リソースの管理責任をSystem側に明確に分離する
     for (const auto& typeInfo : foliageTypes_)
     {
         FoliageTypeConfig config;
@@ -82,8 +79,6 @@ void FoliageSystem::UpdateConfigs(const std::vector<FoliageLayer>& layers)
     std::vector<FoliageTypeConfig> configs;
     configs.reserve(count);
 
-    // エディタ側でのテクスチャ差し替えや密度調整を即座に反映
-    // メッシュトポロジの変更は伴わない前提のため、リソースの再構築はスキップ
     for (size_t i = 0; i < count; ++i)
     {
         const auto& layer = layers[i];
