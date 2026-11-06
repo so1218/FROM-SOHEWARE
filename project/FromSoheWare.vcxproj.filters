@@ -858,6 +858,9 @@
     <ClInclude Include="Engine\Debugs\DebugUtils.h">
       <Filter>Engine\Debugs</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Debugs\EnvironmentWindow.h">
+      <Filter>Engine\Debugs</Filter>
+    </ClInclude>
     <ClInclude Include="Engine\Debugs\ImGuiManager.h">
       <Filter>Engine\Debugs</Filter>
     </ClInclude>

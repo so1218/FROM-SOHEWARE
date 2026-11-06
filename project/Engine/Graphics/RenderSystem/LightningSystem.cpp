@@ -150,11 +150,10 @@ void LightningSystem::GenerateFractalPath(Strike& strike, std::vector<Vector3>& 
     GenerateFractalPath(strike, points, middle, end, depth - 1, displacement * 0.5f, thicknessScale);
 }
 
+// 呼び出し側が開いたウィンドウやタブの中に書く
 void LightningSystem::DebugGui()
 {
-    ImGui::Begin("環境設定");
-
-    if (ImGui::CollapsingHeader("雷エフェクト", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("雷の見た目"))
     {
         ImGui::SeparatorText("見た目");
         binder_->Draw("CoreColor", "芯の色");
@@ -185,7 +184,6 @@ void LightningSystem::DebugGui()
         binder_->Draw("LightHeightOffset", "地面からの高さ");
         binder_->Draw("VolumetricScattering", "霧に当たる強さ");
     }
-    ImGui::End();
 }
 
 }

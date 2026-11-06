@@ -3,6 +3,7 @@
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
+#include "EnvironmentWindow.h"
 
 using namespace FS;
 
@@ -246,9 +247,12 @@ void WeatherEffectManager::Update()
 
 void WeatherEffectManager::DebugGui()
 {
-    ImGui::Begin("環境設定");
+    if (!FS::BeginEnvironmentTab("雷"))
+    {
+        return;
+    }
 
-    if (ImGui::CollapsingHeader("雷発生設定", ImGuiTreeNodeFlags_DefaultOpen))
+    if (ImGui::CollapsingHeader("落雷の発生", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("ThunderMinInterval", "最小インターバル (秒)");
         binder_->Draw("ThunderMaxInterval", "最大インターバル (秒)");
@@ -285,10 +289,11 @@ void WeatherEffectManager::DebugGui()
         binder_->Draw("ThunderShakeMaxDist", "揺れが届く最大距離");
     }
 
-    ImGui::End();
-
+    // 雷の見た目は同じタブの中に、LightningSystem が書く
     if (lightningSystem_)
     {
         lightningSystem_->DebugGui();
     }
+
+    FS::EndEnvironmentTab();
 }

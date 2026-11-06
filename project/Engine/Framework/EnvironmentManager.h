@@ -161,6 +161,7 @@ private:
     WeatherProfile currentWeatherProfile_;
 
     WeatherState pendingWeather_ = WeatherState::Sunny;
+    WeatherState editingWeather_ = WeatherState::Sunny; // ImGui で設定を編集している天候
     bool hasPendingWeather_ = false;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;

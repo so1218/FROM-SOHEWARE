@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "PropertyBinder.h"
 #include "EnvironmentManager.h"
+#include "EnvironmentWindow.h"
 
 namespace FS
 {
@@ -55,9 +56,7 @@ void Skydome::Draw()
 
 void Skydome::DebugGui()
 {
-    ImGui::Begin("環境設定");
-
-    if (ImGui::CollapsingHeader("スカイドーム", ImGuiTreeNodeFlags_DefaultOpen))
+    if (BeginEnvironmentTab("空"))
     {
         ImGui::Text("雲の形状・アニメーション設定");
         binder_->Draw("CloudScale", "雲のサイズ");
@@ -70,9 +69,9 @@ void Skydome::DebugGui()
 
         ImGui::Text("雲のライティング・陰影設定");
         binder_->Draw("CloudAbsorption", "雲の厚みによる光の遮蔽率");
-    }
 
-    ImGui::End();
+        EndEnvironmentTab();
+    }
 }
 
 }

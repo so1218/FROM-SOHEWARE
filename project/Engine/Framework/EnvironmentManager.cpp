@@ -5,6 +5,7 @@
 #include "Engine.h"
 #include "GraphicsDevice.h"
 #include "PropertyBinder.h"
+#include "EnvironmentWindow.h"
 
 namespace FS
 {
@@ -311,9 +312,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
 void EnvironmentManager::DebugGui()
 {
-    ImGui::Begin("環境設定");
-
-    if (ImGui::CollapsingHeader("時間帯・ライティング", ImGuiTreeNodeFlags_DefaultOpen))
+    if (BeginEnvironmentTab("時間帯"))
     {
         int hour = static_cast<int>(timeOfDay_);
         int minute = static_cast<int>((timeOfDay_ - hour) * 60.0f);
@@ -343,18 +342,13 @@ void EnvironmentManager::DebugGui()
 
             ImGui::EndTabBar();
         }
+        EndEnvironmentTab();
     }
 
-    ImGui::Spacing();
-
-    // =================================================================
-    // 2. 天候・ウェザープロファイル
-    // =================================================================
-    if (ImGui::CollapsingHeader("天候設定 & プロファイル", ImGuiTreeNodeFlags_DefaultOpen))
+    if (BeginEnvironmentTab("天候"))
     {
         const char* weatherNames[] = { "Sunny (晴れ)", "Cloudy (曇り)", "Rain (雨)", "Thunderstorm (雷雨)" };
 
-        // 状態表示
         ImGui::Text("現在: %s  ->  目標: %s",
             weatherNames[static_cast<int>(currentWeather_)],
             weatherNames[static_cast<int>(targetWeather_)]);
@@ -365,10 +359,7 @@ void EnvironmentManager::DebugGui()
             ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.0f, 1.0f), "待機中 (Pending): %s", weatherNames[static_cast<int>(pendingWeather_)]);
         }
 
-        ImGui::Spacing();
-        ImGui::SeparatorText("天候手動切り替え (テスト機能)");
-
-        // ボタンレイアウト (アクティブな天候ボタンをハイライト)
+        // 目標の天候のボタンを色付けする
         auto drawWeatherButton = [&](const char* label, WeatherState state) {
             bool isActive = (targetWeather_ == state);
             if (isActive) {
@@ -387,77 +378,69 @@ void EnvironmentManager::DebugGui()
         drawWeatherButton("雨", WeatherState::Rain); ImGui::SameLine();
         drawWeatherButton("雷雨", WeatherState::Thunderstorm);
 
-        ImGui::Spacing();
-        ImGui::SeparatorText("天候プロファイル詳細設定");
+        ImGui::SeparatorText("天候ごとの設定");
 
-        if (ImGui::BeginTabBar("WeatherProfiles"))
+        // 4つ並べると長くなるので、編集する天候を1つ選んでその項目だけ出す
+        int editingIndex = static_cast<int>(editingWeather_);
+        if (ImGui::Combo("編集する天候", &editingIndex, weatherNames, IM_ARRAYSIZE(weatherNames)))
         {
-            const char* prefixes[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
-            const char* tabNames[] = { "Sunny (晴れ)", "Cloudy (曇り)", "Rain (雨)", "Thunder (雷雨)" };
-
-            for (int i = 0; i < 4; ++i)
-            {
-                if (ImGui::BeginTabItem(tabNames[i]))
-                {
-                    std::string p = prefixes[i];
-
-                    binder_->Draw((p + "_TransitionSpeed").c_str(), "天候遷移スピード");
-
-                    if (ImGui::TreeNodeEx("雲 & 大気設定", ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        binder_->Draw((p + "_CloudMin").c_str(), "雲が出る濃さ (大きいほど雲が減る)");
-                        binder_->Draw((p + "_CloudShadow").c_str(), "雲の陰の明るさ");
-                        binder_->Draw((p + "_LightDim").c_str(), "太陽/月光の遮蔽率");
-                        binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の減衰率");
-                        binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ率");
-                        binder_->Draw((p + "_SkyZenith").c_str(), "天頂の色");
-                        binder_->Draw((p + "_SkyHorizon").c_str(), "地平線の色");
-                        binder_->Draw((p + "_SkyBlendWeight").c_str(), "天候カラー強制補間率");
-                        ImGui::TreePop();
-                    }
-
-                    if (ImGui::TreeNodeEx("雨 & 風設定", ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        binder_->Draw((p + "_RainIntens").c_str(), "雨パーティクル強度");
-                        binder_->Draw((p + "_WindDir").c_str(), "風向き");
-                        binder_->Draw((p + "_WindSpeed").c_str(), "風速");
-                        binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");
-                        ImGui::TreePop();
-                    }
-
-                    if (ImGui::TreeNodeEx("Terrain (地形質感) 設定", ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        binder_->Draw((p + "_V_Metal").c_str(), "Metalness");
-                        binder_->Draw((p + "_V_Rough").c_str(), "Roughness");
-                        binder_->Draw((p + "_V_EnvIntens").c_str(), "環境マップ強度");
-                        binder_->Draw((p + "_V_RippleSize").c_str(), "波紋サイズ");
-                        binder_->Draw((p + "_V_NormalIntens").c_str(), "法線強度");
-                        binder_->Draw((p + "_V_Color").c_str(), "ベースカラー");
-                        binder_->Draw((p + "_V_Emissive").c_str(), "発光強度");
-                        ImGui::TreePop();
-                    }
-
-                    if (ImGui::TreeNodeEx("Volumetric Fog (フォグ) 設定", ImGuiTreeNodeFlags_DefaultOpen))
-                    {
-                        binder_->Draw((p + "_V_FogNoiseScale").c_str(), "ノイズスケール");
-                        binder_->Draw((p + "_V_FogNoiseIntens").c_str(), "ノイズ強度");
-                        binder_->Draw((p + "_V_FogHDensity").c_str(), "高さ密度");
-                        binder_->Draw((p + "_V_FogHFalloff").c_str(), "高さ減衰");
-                        binder_->Draw((p + "_V_FogAmbient").c_str(), "環境光");
-                        binder_->Draw((p + "_V_FogExtinct").c_str(), "消去係数 (Extinction)");
-                        binder_->Draw((p + "_V_FogErosion").c_str(), "削り取り (Erosion)");
-                        binder_->Draw((p + "_V_FogWindSpeedMultiplier").c_str(), "フォグ風速倍率");
-                        ImGui::TreePop();
-                    }
-
-                    ImGui::EndTabItem();
-                }
-            }
-            ImGui::EndTabBar();
+            editingWeather_ = static_cast<WeatherState>(editingIndex);
         }
-    }
 
-    ImGui::End();
+        const char* prefixes[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
+        std::string p = prefixes[editingIndex];
+
+        binder_->Draw((p + "_TransitionSpeed").c_str(), "天候遷移スピード");
+
+        if (ImGui::TreeNode("雲 & 大気設定"))
+        {
+            binder_->Draw((p + "_CloudMin").c_str(), "雲が出る濃さ (大きいほど雲が減る)");
+            binder_->Draw((p + "_CloudShadow").c_str(), "雲の陰の明るさ");
+            binder_->Draw((p + "_LightDim").c_str(), "太陽/月光の遮蔽率");
+            binder_->Draw((p + "_AtmoDim").c_str(), "大気散乱の減衰率");
+            binder_->Draw((p + "_Wetness").c_str(), "地面の濡れ率");
+            binder_->Draw((p + "_SkyZenith").c_str(), "天頂の色");
+            binder_->Draw((p + "_SkyHorizon").c_str(), "地平線の色");
+            binder_->Draw((p + "_SkyBlendWeight").c_str(), "天候カラー強制補間率");
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("雨 & 風設定"))
+        {
+            binder_->Draw((p + "_RainIntens").c_str(), "雨パーティクル強度");
+            binder_->Draw((p + "_WindDir").c_str(), "風向き");
+            binder_->Draw((p + "_WindSpeed").c_str(), "風速");
+            binder_->Draw((p + "_WindTurbul").c_str(), "風の乱れ");
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Terrain (地形質感) 設定"))
+        {
+            binder_->Draw((p + "_V_Metal").c_str(), "Metalness");
+            binder_->Draw((p + "_V_Rough").c_str(), "Roughness");
+            binder_->Draw((p + "_V_EnvIntens").c_str(), "環境マップ強度");
+            binder_->Draw((p + "_V_RippleSize").c_str(), "波紋サイズ");
+            binder_->Draw((p + "_V_NormalIntens").c_str(), "法線強度");
+            binder_->Draw((p + "_V_Color").c_str(), "ベースカラー");
+            binder_->Draw((p + "_V_Emissive").c_str(), "発光強度");
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Volumetric Fog (フォグ) 設定"))
+        {
+            binder_->Draw((p + "_V_FogNoiseScale").c_str(), "ノイズスケール");
+            binder_->Draw((p + "_V_FogNoiseIntens").c_str(), "ノイズ強度");
+            binder_->Draw((p + "_V_FogHDensity").c_str(), "高さ密度");
+            binder_->Draw((p + "_V_FogHFalloff").c_str(), "高さ減衰");
+            binder_->Draw((p + "_V_FogAmbient").c_str(), "環境光");
+            binder_->Draw((p + "_V_FogExtinct").c_str(), "消去係数 (Extinction)");
+            binder_->Draw((p + "_V_FogErosion").c_str(), "削り取り (Erosion)");
+            binder_->Draw((p + "_V_FogWindSpeedMultiplier").c_str(), "フォグ風速倍率");
+            ImGui::TreePop();
+        }
+
+        EndEnvironmentTab();
+    }
 }
 
 void EnvironmentManager::Finalize()

@@ -399,6 +399,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Core\pch.h" />
     <ClInclude Include="Engine\Debugs\DebugDraw.h" />
     <ClInclude Include="Engine\Debugs\DebugUtils.h" />
+    <ClInclude Include="Engine\Debugs\EnvironmentWindow.h" />
     <ClInclude Include="Engine\Debugs\PropertyBinder.h" />
     <ClInclude Include="Engine\Effect\ShakeEffect.h" />
     <ClInclude Include="Engine\Framework\EnvironmentManager.h" />

@@ -38,8 +38,8 @@ float3 CalculateWindOffset(float3 rootPosition, float heightRatio)
     float windLength = length(gEnvironmentData.windDirection);
     float2 windDirection = (windLength > kEpsilon) ? gEnvironmentData.windDirection / windLength : float2(0.0f, 1.0f);
 
-    // 場所ごとに揺れのタイミングをずらす
-    float phase = dot(rootPosition.xz, windDirection * 0.15f);
+    // 場所ごとに揺れのタイミングをずらす。風向きを掛けると、天候が変わって向きが回るあいだ位相が急に動く
+    float phase = dot(rootPosition.xz, float2(0.15f, 0.11f));
     float time = gEnvironmentData.windTime;
 
     float mainSway = sin(time + phase);
