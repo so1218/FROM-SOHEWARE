@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "IEnemyBehavior.h"
 #include "PropertyBinder.h"
+#include "Model.h"
 #include <random>
 
 namespace FS { class Terrain; }
@@ -14,7 +15,7 @@ struct FloatingEnemyConfig
     void Bind(FS::PropertyBinder& binder);
     void Draw(FS::PropertyBinder& binder);
 
-    EnemyBodyConfig body = { 100, { 2.0f, 2.0f, 2.0f }, 3.25f, { 0.0f, 2.0f, 0.0f } };
+    EnemyBodyConfig body = { 100, { 2.0f, 2.0f, 2.0f }, { 3.25f, 3.25f, 3.25f }, { 0.0f, 2.0f, 0.0f } };
     float turnSpeed = 6.0f;
 
     // 発見
@@ -40,13 +41,13 @@ struct FloatingEnemyConfig
     float maxFireDistance = 80.0f;
     FS::Vector3 muzzleOffset = { 0.0f, 2.0f, 0.0f };
 
-    // 弱点。位置と半径はモデルのローカル単位 (スケールがかかる)
+    // 弱点。位置と大きさは機体のローカル単位 (機体のスケールがかかる)
     FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };  // 1 基目の位置。残りは x, z の符号を変えた位置
-    float thrusterRadius = 0.8f;
+    FS::Vector3 thrusterScale = { 0.5f, 0.5f, 0.5f };
+    FS::Vector3 thrusterColliderSize = { 0.5f, 0.5f, 0.5f };   // 当たり判定の箱の半分の大きさ
     int thrusterMaxHP = 30;
     float bodyDamageRate = 0.3f;   // 本体に当たったときのダメージの倍率
     int thrustersToCrash = 2;
-    bool showThrusters = false;    // 保存しない。調整用
 
     // 墜落
     float crashTime = 5.0f;        // 地面に届かなくても、この時間で爆発する
@@ -61,24 +62,24 @@ struct FloatingEnemyConfig
     FS::Vector3 spotLocalDirection = { 0.0f, -0.3f, -1.0f };   // 機体から見た向き。-Z が正面
 };
 
-// ARC Raiders のワスプのような飛行ドローン。
-// 巡回 → プレイヤーを見つける (視界・銃声) → 距離を保って周回 → レーザーで狙う → 短く連射。
-// 4 基のスラスターが弱点で、決まった数を壊されると墜落する。
-// 巡回のしかただけは 1 機ずつ違い、ほかは FloatingEnemyConfig を全機で共有する
+// ARC Raiders のワスプのような飛行ドローン。見つけると距離を保って周回し、レーザーで狙ってから連射する
+// 本体は硬く、4 基のスラスターのうち決まった数を壊すと墜落する
 class FloatingBehavior : public IEnemyBehavior
 {
 public:
-    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain);
+    // thrusterSourceModel はスラスターのマテリアルの共有元
+    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain, const FS::Model* thrusterSourceModel);
     ~FloatingBehavior() override;
 
     void Initialize(Enemy* owner) override;
     void Update(Enemy* owner) override;
     void DebugGui(Enemy* owner) override;
+    void Draw(Enemy* owner) override;
 
     const EnemyBodyConfig& GetBodyConfig() const override { return config_.body; }
     std::string GetDamageParticleName() const override { return "floatingDamage"; }
 
-    int ModifyDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint) override;
+    int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
     bool OnHealthDepleted(Enemy* owner) override;
@@ -102,6 +103,7 @@ private:
     void UpdateCrash(Enemy* owner, float deltaTime);
 
     void ChangeState(State state);
+    void StartChase(Enemy* owner);
     bool CanDetectPlayer(const FS::Vector3& position);
     void MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
@@ -113,9 +115,10 @@ private:
     float RandomRange(float min, float max);
     void ReleaseEffects();
     FS::Vector3 GetThrusterLocalPosition(int thrusterIndex) const;
-    void DrawThrusterMarkers(Enemy* owner);
+    void UpdateThrusters(Enemy* owner);
 
     const FloatingEnemyConfig& config_;
+    const FS::Model* thrusterSourceModel_ = nullptr;
     const FS::Terrain* terrain_ = nullptr;   // 墜落したときに地面の高さを調べる
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
@@ -133,6 +136,9 @@ private:
     std::mt19937 random_;
 
     int thrusterHP_[kThrusterCount] = {};
+    FS::Collider* thrusterColliders_[kThrusterCount] = {};   // 所有は Enemy (AddCollider で作る)
+    std::unique_ptr<FS::Model> thrusterModels_[kThrusterCount];
+    float propellerAngle_ = 0.0f;
     int destroyedThrusterCount_ = 0;
 
     // 撃った弾の線を少しだけ残す
@@ -155,5 +161,6 @@ private:
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
     FS::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;
     int soundHandleID_ = -1;
 };

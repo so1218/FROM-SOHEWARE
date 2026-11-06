@@ -35,7 +35,11 @@ Game::Game()
     sceneManager_.RegisterScene(std::make_unique<TestScene>(engine_.get()));
 
     // 初期シーンを設定
+#ifdef ENABLE_DEV_TOOLS
     sceneManager_.SetInitialScene(SceneName::Play);
+#else
+	sceneManager_.SetInitialScene(SceneName::Play);
+#endif 
 }
 
 Game::~Game()

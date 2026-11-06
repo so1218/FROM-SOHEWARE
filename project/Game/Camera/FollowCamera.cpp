@@ -34,7 +34,8 @@ void FollowCamera::Initialize()
 
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotate Speed Pitch", &rotateSpeedPitch_, 2.0f, 0.01f, 0.0f, 10.0f);
-    binder_->Bind("Rotation Smooth Time", &rotationSmoothTime_, 0.1f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rotation Acceleration Time", &rotationAccelerationTime_, 0.1f, 0.005f, 0.0f, 1.0f);
+    binder_->Bind("Rotation Deceleration Time", &rotationDecelerationTime_, 0.04f, 0.005f, 0.0f, 1.0f);
     binder_->Bind("Position Lerp Speed", &positionLerpSpeed_, 8.0f, 0.1f, 0.0f, 20.0f);
     binder_->Bind("Min Pitch", &minPitch_, -0.8f, 0.05f, -1.5f, 0.0f);
     binder_->Bind("Max Pitch", &maxPitch_, 1.4f, 0.05f, 0.0f, 1.5f);
@@ -45,14 +46,12 @@ void FollowCamera::Initialize()
     binder_->Bind("Ground Check Radius", &groundCheckRadius_, 0.4f, 0.05f, 0.1f, 2.0f);
 
     // 初期状態の設定
-    currentYaw_ = targetYaw_;
-    currentPitch_ = targetPitch_;
     distance_ = normalDistance_;
     currentFov_ = normalFov_;
     currentLookAtOffset_ = normalLookAtOffset_;
     currentShoulderOffset_ = normalShoulderOffset_;
 
-    yawVelocity_ = pitchVelocity_ = distanceVelocity_ = fovVelocity_ = 0.0f;
+    yawRate_ = pitchRate_ = distanceVelocity_ = fovVelocity_ = 0.0f;
     shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
     lookAtOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
 
@@ -134,12 +133,19 @@ void FollowCamera::UpdateCamera(Camera* camera)
     float currentRotateSpeedYaw = isAiming_ ? rotateSpeedYaw_ * aimRotateSpeedMultiplier_ : rotateSpeedYaw_;
     float currentRotateSpeedPitch = isAiming_ ? rotateSpeedPitch_ * aimRotateSpeedMultiplier_ : rotateSpeedPitch_;
 
-    targetYaw_ += rx * currentRotateSpeedYaw * dt;
-    targetPitch_ -= ry * currentRotateSpeedPitch * dt;
+    // 角度ではなく回す速さを滑らかにする。角度を追いかけると、離したあとも遅れた分だけ回り続けてしまう
+    yawRate_ = ApproachRotationRate(yawRate_, rx * currentRotateSpeedYaw, currentRotateSpeedYaw, dt);
+    pitchRate_ = ApproachRotationRate(pitchRate_, -ry * currentRotateSpeedPitch, currentRotateSpeedPitch, dt);
 
-    targetPitch_ = std::clamp(targetPitch_, minPitch_, maxPitch_);
-    currentYaw_ = SmoothDampAngle(currentYaw_, targetYaw_, yawVelocity_, rotationSmoothTime_, dt);
-    currentPitch_ = SmoothDamp(currentPitch_, targetPitch_, pitchVelocity_, rotationSmoothTime_, dt);
+    currentYaw_ = std::remainder(currentYaw_ + yawRate_ * dt, Math::PI * 2.0f);
+    currentPitch_ += pitchRate_ * dt;
+
+    // 上下の端に当たったら、その向きの勢いは捨てる
+    if (currentPitch_ <= minPitch_ || currentPitch_ >= maxPitch_)
+    {
+        currentPitch_ = std::clamp(currentPitch_, minPitch_, maxPitch_);
+        pitchRate_ = 0.0f;
+    }
 
     // ---------------------------------------------------------
     // 反動オフセットの復元
@@ -244,6 +250,8 @@ void FollowCamera::DebugGui()
     {
         binder_->Draw("Rotate Speed Yaw", "左右回転速度");
         binder_->Draw("Rotate Speed Pitch", "上下回転速度");
+        binder_->Draw("Rotation Acceleration Time", "回し始めの加速時間 (秒)");
+        binder_->Draw("Rotation Deceleration Time", "止めるときの減速時間 (秒)");
         binder_->Draw("Position Lerp Speed", "追従スピード");
         binder_->Draw("Min Pitch", "最小ピッチ(下限)");
         binder_->Draw("Max Pitch", "最大ピッチ(上限)");
@@ -262,8 +270,6 @@ void FollowCamera::Reset(Camera* camera)
 {
     if (!target_ || !camera) return;
 
-    currentYaw_ = targetYaw_;
-    currentPitch_ = targetPitch_;
     distance_ = isAiming_ ? aimDistance_ : normalDistance_;
     currentFov_ = isAiming_ ? aimFov_ : normalFov_;
     currentShoulderOffset_ = isAiming_ ? aimShoulderOffset_ : normalShoulderOffset_;
@@ -276,7 +282,7 @@ void FollowCamera::Reset(Camera* camera)
 
     smoothedTargetPos_ = target_->GetWorldPosition();
 
-    yawVelocity_ = pitchVelocity_ = distanceVelocity_ = fovVelocity_ = 0.0f;
+    yawRate_ = pitchRate_ = distanceVelocity_ = fovVelocity_ = 0.0f;
     shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
     lookAtOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
     posVelocity_ = { 0.0f, 0.0f, 0.0f };
@@ -290,9 +296,8 @@ void FollowCamera::PlaceBehindTarget()
 
     // カメラは target から (sin(yaw), cos(yaw)) の方向に置かれるので、正面の反対にする
     const Vector3 forward = target_->rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
-    targetYaw_ = std::atan2(forward.x, forward.z) + Math::PI;
-    currentYaw_ = targetYaw_;
-    yawVelocity_ = 0.0f;
+    currentYaw_ = std::atan2(forward.x, forward.z) + Math::PI;
+    yawRate_ = 0.0f;
 }
 
 void FollowCamera::AddRecoil(float pitchAmount, float yawAmount)
@@ -332,12 +337,17 @@ float FollowCamera::SmoothDamp(float current, float target, float& currentVeloci
     return output;
 }
 
-float FollowCamera::SmoothDampAngle(float current, float target, float& currentVelocity,
-    float smoothTime, float deltaTime, float maxSpeed)
+// 回転の速さを一定の加速度で目標へ近づける。速めるときと緩めるときで、最高速度までにかかる時間を変える
+float FollowCamera::ApproachRotationRate(float currentRate, float targetRate, float maxRate, float deltaTime) const
 {
-    float delta = target - current;
-    while (delta > Math::PI) delta -= Math::PI * 2.0f;
-    while (delta < -Math::PI) delta += Math::PI * 2.0f;
-    target = current + delta;
-    return SmoothDamp(current, target, currentVelocity, smoothTime, deltaTime, maxSpeed);
+    // 逆向きに倒したときは、まず 0 まで減速する
+    const bool isSpeedingUp = std::abs(targetRate) > std::abs(currentRate) && targetRate * currentRate >= 0.0f;
+    const float time = isSpeedingUp ? rotationAccelerationTime_ : rotationDecelerationTime_;
+    if (time <= 0.0f)
+    {
+        return targetRate;
+    }
+
+    const float maxChange = maxRate / time * deltaTime;
+    return currentRate + std::clamp(targetRate - currentRate, -maxChange, maxChange);
 }

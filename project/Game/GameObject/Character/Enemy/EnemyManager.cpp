@@ -12,10 +12,16 @@ void EnemyManager::Initialize()
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
     binder_->Bind("EnemyCount", &enemyCount_, 3);
 
+    if (!thrusterModel_)
+    {
+        thrusterModel_ = std::make_unique<FS::Model>(engine_, "enemyThruster");
+        thrusterModel_->MakeMaterialUnique();
+    }
+    binder_->BindModel("ThrusterModel", thrusterModel_.get());
+
     floatingBinder_ = std::make_unique<FS::PropertyBinder>(engine_, "FloatingEnemy");
     floatingConfig_.Bind(*floatingBinder_);
 
-    // シーンに入り直したときはパーティクルがすでに全部消されているので、Despawn せずに作り直す
     SpawnEnemies();
 }
 
@@ -81,7 +87,7 @@ void EnemyManager::AddEnemy()
 
 std::unique_ptr<Enemy> EnemyManager::CreateEnemy(int index)
 {
-    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_);
+    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_, thrusterModel_.get());
     auto enemy = std::make_unique<Enemy>(engine_, index, EnemyType::Floating, std::move(behavior), managerGroupName_);
     enemy->AttachToManager(GetManager(), 0); 
     enemy->Initialize();
@@ -134,9 +140,10 @@ void EnemyManager::DebugGui()
     if (!enemies_.empty())
     {
         binder_->DrawModel("sharedEnemyModel", "敵共通モデルインスペクター");
+        binder_->DrawModel("ThrusterModel", "スラスターのモデル");
     }
 
-    if (ImGui::CollapsingHeader("ワスプ共通"))
+    if (ImGui::CollapsingHeader("浮遊している敵共通"))
     {
         floatingConfig_.Draw(*floatingBinder_);
     }

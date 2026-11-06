@@ -8,7 +8,7 @@
             1.399999976158142,
             0.0
         ],
-        "Aim Sens Multiplier": 0.6000000238418579,
+        "Aim Sens Multiplier": 0.30000001192092896,
         "Aim Shoulder Offset": [
             -1.7100000381469727,
             6.869999885559082,
@@ -38,7 +38,8 @@
         "Recoil Recovery Speed": 12.0,
         "Rotate Speed Pitch": 1.0299999713897705,
         "Rotate Speed Yaw": 3.140000104904175,
-        "Rotation Smooth Time": 0.11999999731779099,
+        "Rotation Acceleration Time": 0.10000000149011612,
+        "Rotation Deceleration Time": 0.03999999910593033,
         "Target Distance": 32.0,
         "Target Pitch": 0.35199999809265137,
         "Target Yaw": 1.0720000267028809,

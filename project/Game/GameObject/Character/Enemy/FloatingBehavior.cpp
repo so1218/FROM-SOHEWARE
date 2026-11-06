@@ -8,6 +8,7 @@
 #include "AudioPlayer.h"
 #include "MathUtils.h"
 #include "Terrain.h"
+#include "CollisionConfig.h"
 
 using namespace FS;
 
@@ -15,10 +16,20 @@ namespace
 {
     constexpr float kDegToRad = Math::PI / 180.0f;
     const Vector3 kUp = { 0.0f, 1.0f, 0.0f };
+
+    Vector3 MultiplyEach(const Vector3& a, const Vector3& b)
+    {
+        return { a.x * b.x, a.y * b.y, a.z * b.z };
+    }
+
+    constexpr float kPropellerSpeed = 40.0f;   // スラスターの回る速さ (ラジアン / 秒)
+
+    // 専用のパーティクルができるまでは、被弾の火花で代わりにする
+    const char* const kThrusterBreakParticle = "floatingDamage";
 }
 
-FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain)
-    : config_(config), terrain_(terrain), random_(std::random_device{}())
+FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel)
+    : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), random_(std::random_device{}())
 {
 }
 
@@ -42,6 +53,22 @@ void FloatingBehavior::Initialize(Enemy* owner)
     binder->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
     binder->Bind("PatrolSpeed", &patrolSpeed_, 30.0f, 0.5f, 0.0f, 200.0f);
 
+    // スラスターは本体とは別の球で、弾のレイで当たったかを調べる
+    for (Collider*& collider : thrusterColliders_)
+    {
+        collider = owner->AddCollider();
+        collider->SetType(CollisionShapeType::AABB);
+        collider->SetApplyRotation(true);
+        collider->SetCollisionAttribute(kCollisionAttributeEnemy);
+        collider->SetCollisionMask(0);   // 弾にだけ当たればいいので、ほかのコライダーとはぶつけない
+    }
+
+    // マテリアルは全機で共有する
+    for (std::unique_ptr<Model>& model : thrusterModels_)
+    {
+        model = std::make_unique<Model>(engine_, "enemyThruster");
+        model->ShareMaterialsFrom(thrusterSourceModel_);
+    }
     RepairThrusters();
 
     auto moveFireEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveFire");
@@ -67,7 +94,17 @@ void FloatingBehavior::Initialize(Enemy* owner)
         engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
     }
 
+    auto thrusterBreak = engine_->GetParticleSystem()->CreateEmitter(kThrusterBreakParticle);
+    thrusterBreakEmitterPtr_ = thrusterBreak.get();
+    if (thrusterBreak)
+    {
+        engine_->GetParticleSystem()->AddEmitter(std::move(thrusterBreak));
+    }
+
     owner->GetTransform().translation_ = basePosition_;
+    owner->SyncTransform();
+    UpdateThrusters(owner);
+
     soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", basePosition_, true, 60, 100);
 }
 
@@ -76,6 +113,7 @@ void FloatingBehavior::Update(Enemy* owner)
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
     elapsedTime_ += deltaTime;
     stateTimer_ += deltaTime;
+    propellerAngle_ = std::fmod(propellerAngle_ + kPropellerSpeed * deltaTime, Math::PI * 2.0f);
 
     if (!player_)
     {
@@ -100,6 +138,7 @@ void FloatingBehavior::Update(Enemy* owner)
     }
 
     owner->SyncTransform();
+    UpdateThrusters(owner);
     const Vector3& position = owner->GetTransform().translation_;
 
     if (soundHandleID_ >= 0)
@@ -125,11 +164,6 @@ void FloatingBehavior::Update(Enemy* owner)
         engine_->GetRendererManager()->SubmitLine(tracer.start, tracer.end, Math::ColorVectorToUint32({ 1.0f, 0.85f, 0.4f, 1.0f }));
     }
     std::erase_if(tracers_, [](const Tracer& tracer) { return tracer.remainingTime <= 0.0f; });
-
-    if (config_.showThrusters)
-    {
-        DrawThrusterMarkers(owner);
-    }
 }
 
 void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
@@ -145,10 +179,7 @@ void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
 
     if (CanDetectPlayer(owner->GetTransform().translation_))
     {
-        // 今いる方向から回り始める
-        const Vector3 fromPlayer = owner->GetTransform().translation_ - player_->GetTransform().translation_;
-        orbitAngle_ = std::atan2(fromPlayer.z, fromPlayer.x);
-        ChangeState(State::Chase);
+        StartChase(owner);
     }
 }
 
@@ -265,6 +296,14 @@ void FloatingBehavior::ChangeState(State state)
     shotsFired_ = 0;
 }
 
+void FloatingBehavior::StartChase(Enemy* owner)
+{
+    // 今いる方向から回り始める
+    const Vector3 fromPlayer = owner->GetTransform().translation_ - player_->GetTransform().translation_;
+    orbitAngle_ = std::atan2(fromPlayer.z, fromPlayer.x);
+    ChangeState(State::Chase);
+}
+
 bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
 {
     if (!player_ || !player_->IsControllable())
@@ -357,7 +396,7 @@ void FloatingBehavior::FireShot(Enemy* owner)
     tracers_.push_back({ muzzle, shotEnd, kTracerTime });
 }
 
-int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitPoint)
+int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCollider)
 {
     if (state_ == State::Crash)
     {
@@ -367,21 +406,13 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitP
     // 撃たれたら気づく
     if (state_ == State::Patrol && player_)
     {
-        ChangeState(State::Chase);
+        StartChase(owner);
     }
 
-    // 着弾位置をモデルのローカルに戻して、どのスラスターに当たったかを調べる
-    const WorldTransform& transform = owner->GetTransform();
-    const Vector3 rotatedHit = transform.rotation_.Inverse().RotateVector(hitPoint - transform.translation_);
-    const Vector3 localHit = { rotatedHit.x / transform.scale_.x, rotatedHit.y / transform.scale_.y, rotatedHit.z / transform.scale_.z };
-
+    // 壊れたスラスターのコライダーは無効にしてあるので、当たるのは残っているものだけ
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
     {
-        if (thrusterHP_[thrusterIndex] <= 0)
-        {
-            continue;
-        }
-        if ((localHit - GetThrusterLocalPosition(thrusterIndex)).Length() > config_.thrusterRadius)
+        if (thrusterColliders_[thrusterIndex] != hitCollider)
         {
             continue;
         }
@@ -400,7 +431,14 @@ int FloatingBehavior::ModifyDamage(Enemy* owner, int damage, const Vector3& hitP
 void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
 {
     thrusterHP_[thrusterIndex] = 0;
+    thrusterColliders_[thrusterIndex]->SetEnable(false);   // 同じフレームの次の弾が当たらないよう、すぐ外す
     ++destroyedThrusterCount_;
+
+    if (thrusterBreakEmitterPtr_)
+    {
+        thrusterBreakEmitterPtr_->SetPosition(thrusterModels_[thrusterIndex]->GetTransform().translation_);
+        thrusterBreakEmitterPtr_->Play();
+    }
     AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, false, 60, 100.0f);
 
     if (destroyedThrusterCount_ >= config_.thrustersToCrash)
@@ -445,31 +483,52 @@ float FloatingBehavior::RandomRange(float min, float max)
     return std::uniform_real_distribution<float>(min, max)(random_);
 }
 
-void FloatingBehavior::DrawThrusterMarkers(Enemy* owner)
+// 調整中に ImGui で位置や大きさを変えても、すぐ当たり判定と見た目に反映されるよう毎フレーム設定する
+void FloatingBehavior::UpdateThrusters(Enemy* owner)
 {
-    const WorldTransform& transform = owner->GetTransform();
-    const float markerSize = config_.thrusterRadius * transform.scale_.x;
+    const WorldTransform& body = owner->GetTransform();
+
+    // コライダーは回転だけ反映するので、機体のスケールはここで掛けておく
+    const Vector3 colliderSize = MultiplyEach(config_.thrusterColliderSize, body.scale_);
+    const Vector3 modelScale = MultiplyEach(config_.thrusterScale, body.scale_);
 
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
     {
-        const Vector3 local = GetThrusterLocalPosition(thrusterIndex);
-        const Vector3 scaled = { local.x * transform.scale_.x, local.y * transform.scale_.y, local.z * transform.scale_.z };
-        const Vector3 center = transform.translation_ + transform.rotation_.RotateVector(scaled);
+        const Vector3 offset = MultiplyEach(GetThrusterLocalPosition(thrusterIndex), body.scale_);
+        const bool isAlive = thrusterHP_[thrusterIndex] > 0;
 
-        const Vector4 color = thrusterHP_[thrusterIndex] > 0 ? Vector4(0.2f, 1.0f, 0.3f, 1.0f) : Vector4(0.4f, 0.4f, 0.4f, 1.0f);
-        const uint32_t packedColor = Math::ColorVectorToUint32(color);
+        Collider* collider = thrusterColliders_[thrusterIndex];
+        collider->SetCenterOffset(offset);
+        collider->SetSize(colliderSize);
+        collider->SetEnable(isAlive);
+        collider->SetColor(isAlive ? Vector4(0.2f, 1.0f, 0.3f, 1.0f) : Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 
-        auto* renderer = engine_->GetRendererManager();
-        renderer->SubmitLine(center - Vector3(markerSize, 0.0f, 0.0f), center + Vector3(markerSize, 0.0f, 0.0f), packedColor);
-        renderer->SubmitLine(center - Vector3(0.0f, markerSize, 0.0f), center + Vector3(0.0f, markerSize, 0.0f), packedColor);
-        renderer->SubmitLine(center - Vector3(0.0f, 0.0f, markerSize), center + Vector3(0.0f, 0.0f, markerSize), packedColor);
+        // 対角どうしを同じ向きに回し、隣とは逆に回す (実際のドローンと同じ)
+        const bool isClockwise = ((thrusterIndex & 1) != 0) != ((thrusterIndex & 2) != 0);
+        const float spinAngle = isClockwise ? -propellerAngle_ : propellerAngle_;
+
+        // 機体の上向きの軸で回す
+        WorldTransform& transform = thrusterModels_[thrusterIndex]->GetTransform();
+        transform.translation_ = body.translation_ + body.rotation_.RotateVector(offset);
+        transform.SetRotation(body.rotation_ * Quaternion::FromAxisAngle(kUp, spinAngle));
+        transform.scale_ = modelScale;
+    }
+}
+
+void FloatingBehavior::Draw(Enemy* owner)
+{
+    // 壊れたスラスターは描かない
+    for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
+    {
+        if (thrusterHP_[thrusterIndex] > 0)
+        {
+            thrusterModels_[thrusterIndex]->Draw();
+        }
     }
 }
 
 void FloatingBehavior::OnDeath(Enemy* owner)
 {
-    if (!engine_ || !owner) return;
-
     AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
     ReleaseEffects();
 
@@ -488,6 +547,12 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
     {
         explosionEmitterPtr_->Destroy();
         explosionEmitterPtr_ = nullptr;
+    }
+
+    if (thrusterBreakEmitterPtr_)
+    {
+        thrusterBreakEmitterPtr_->Destroy();
+        thrusterBreakEmitterPtr_ = nullptr;
     }
 }
 
@@ -547,7 +612,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
 {
     binder.Bind("HP", &body.maxHP, 100, 1.0f, 1, 100000);
     binder.Bind("Scale", &body.scale, { 2.0f, 2.0f, 2.0f });
-    binder.Bind("ColliderRadius", &body.colliderRadius, 3.25f);
+    binder.Bind("ColliderSize", &body.colliderSize, { 3.25f, 3.25f, 3.25f });
     binder.Bind("ColliderOffset", &body.colliderOffset, { 0.0f, 2.0f, 0.0f });
     binder.Bind("TurnSpeed", &turnSpeed, 6.0f, 0.1f, 0.0f, 50.0f);
 
@@ -572,7 +637,8 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("MuzzleOffset", &muzzleOffset, { 0.0f, 2.0f, 0.0f });
 
     binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
-    binder.Bind("ThrusterRadius", &thrusterRadius, 0.8f, 0.01f, 0.0f, 20.0f);
+    binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
+    binder.Bind("ThrusterColliderSize", &thrusterColliderSize, { 0.5f, 0.5f, 0.5f });
     binder.Bind("ThrusterHP", &thrusterMaxHP, 30, 1.0f, 1, 10000);
     binder.Bind("BodyDamageRate", &bodyDamageRate, 0.3f, 0.01f, 0.0f, 1.0f);
     binder.Bind("ThrustersToCrash", &thrustersToCrash, 2, 1.0f, 1, 4);
@@ -594,7 +660,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
     {
         binder.Draw("HP", "HP");
         binder.Draw("Scale", "スケール");
-        binder.Draw("ColliderRadius", "当たり判定の半径");
+        binder.Draw("ColliderSize", "当たり判定の大きさ (半分)");
         binder.Draw("ColliderOffset", "当たり判定の位置");
         binder.Draw("TurnSpeed", "向きを変える速さ");
         ImGui::TreePop();
@@ -634,9 +700,9 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
 
     if (ImGui::TreeNode("弱点・墜落"))
     {
-        ImGui::Checkbox("スラスターの位置を表示", &showThrusters);
         binder.Draw("ThrusterOffset", "スラスターの位置 (1 基目)");
-        binder.Draw("ThrusterRadius", "スラスターの半径");
+        binder.Draw("ThrusterScale", "スラスターのスケール");
+        binder.Draw("ThrusterColliderSize", "スラスターの当たり判定の大きさ (半分)");
         binder.Draw("ThrusterHP", "スラスター 1 基の HP");
         binder.Draw("BodyDamageRate", "本体へのダメージ倍率");
         binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");

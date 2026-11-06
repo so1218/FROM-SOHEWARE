@@ -31,12 +31,16 @@ private:
     FS::Engine* engine_;
     std::string managerGroupName_;
     const FS::Terrain* terrain_ = nullptr;
+
+    // 全機のスラスターがマテリアルを共有する元のモデル
+    std::unique_ptr<FS::Model> thrusterModel_;
+
     std::vector<std::unique_ptr<Enemy>> enemies_;
 
     std::unique_ptr<FS::PropertyBinder> binder_;
-    // ワスプ共通のパラメータ。ステージをまたいで共有する
+    // 共通のパラメータ
     FloatingEnemyConfig floatingConfig_;
     std::unique_ptr<FS::PropertyBinder> floatingBinder_;
 
-    int enemyCount_ = 0; // JSONに保存される全体の数。倒されても減らさない
+    int enemyCount_ = 0; // JSONに保存される全体の数
 };

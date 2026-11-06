@@ -7,8 +7,8 @@
         ],
         "Dissolve Edge Width": 0.03999999910593033,
         "Dissolve Intensity": 1.0,
-        "Enable Alpha Fade": false,
-        "Enable Dissolve": true,
+        "Enable Alpha Fade": true,
+        "Enable Dissolve": false,
         "duration_": 1.0
     }
 }

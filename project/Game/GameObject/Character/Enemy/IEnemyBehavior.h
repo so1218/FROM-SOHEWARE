@@ -8,7 +8,7 @@ struct EnemyBodyConfig
 {
     int maxHP = 100;
     FS::Vector3 scale = { 1.0f, 1.0f, 1.0f };
-    float colliderRadius = 1.0f;
+    FS::Vector3 colliderSize = { 1.0f, 1.0f, 1.0f };   // 当たり判定の箱の半分の大きさ
     FS::Vector3 colliderOffset = { 0.0f, 0.0f, 0.0f };
 };
 
@@ -22,6 +22,9 @@ public:
     virtual void Update(Enemy* owner) = 0;
     virtual void DebugGui(Enemy* owner) = 0;
 
+    // 本体のモデルのほかに描くもの (部位など)
+    virtual void Draw(Enemy* owner) {}
+
     // 衝突処理
     virtual void OnCollisionEnter(Enemy* owner, FS::GameObject* hitObject) {}
 
@@ -29,8 +32,8 @@ public:
     virtual const EnemyBodyConfig& GetBodyConfig() const = 0;
     virtual std::string GetDamageParticleName() const { return "EnemyDamageParticle"; }
 
-    // 当たった場所に応じてダメージを変える (弱点など)
-    virtual int ModifyDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint) { return damage; }
+    // 当たったコライダーに応じてダメージを変える (弱点など)。hitCollider は分からなければ nullptr
+    virtual int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) { return damage; }
 
     // 被弾時の固有処理
     virtual void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) {}

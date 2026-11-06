@@ -28,6 +28,7 @@ void Enemy::Initialize()
 {
     SetTag(ObjectTag::Enemy);
 
+    collider_->SetType(FS::CollisionShapeType::AABB);
     collider_->SetApplyRotation(false);
     collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
     collider_->SetCollisionMask(kCollisionAttributePlayer);
@@ -60,17 +61,17 @@ void Enemy::Update()
     // 同じ種類の敵で共有している値なので、調整中の変更がすぐ反映されるよう毎フレーム読む
     const EnemyBodyConfig& body = behavior_->GetBodyConfig();
     model_->GetTransform().scale_ = body.scale;
-    collider_->SetRadius(body.colliderRadius);
+    collider_->SetSize(body.colliderSize);
     collider_->SetCenterOffset(body.colliderOffset);
 }
 
-void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNormal)
+void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNormal, const FS::Collider* hitCollider)
 {
     if (!IsActive()) return;
 
     if (behavior_)
     {
-        damage = behavior_->ModifyDamage(this, damage, hitPoint);
+        damage = behavior_->ModifyDamage(this, damage, hitCollider);
     }
     hp_ -= damage;
 
@@ -132,7 +133,13 @@ void Enemy::Draw()
     if (!IsActive()) return;
 
     if (model_) model_->Draw();
-    collider_->DrawCollider();
+    if (behavior_) behavior_->Draw(this);
+
+    // 本体と、Behavior が付けた弱点などのコライダーをまとめて描く
+    for (const auto& collider : GetColliders())
+    {
+        collider->DrawCollider();
+    }
 }
 
 void Enemy::DebugGui()

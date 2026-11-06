@@ -27,8 +27,8 @@ public:
 
     void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
-    // 被弾処理
-    void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal);
+    // 被弾処理。hitCollider は弾が当たったコライダー (弱点の判定に使う)
+    void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal, const FS::Collider* hitCollider = nullptr);
     void Die();
     void Despawn();
 

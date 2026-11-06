@@ -247,7 +247,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
         {
             auto enemy = static_cast<Enemy*>(hitInfo.hitObject);
-            enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal);
+            enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal, hitInfo.hitCollider);
             AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 50);
         }
     }

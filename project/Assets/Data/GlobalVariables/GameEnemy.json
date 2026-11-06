@@ -1660,6 +1660,96 @@
             "enemyModel_UseTriplanar": 0,
             "enemyModel_Wetness": 0.5
         },
+        "ThrusterModel_AddShadow": 1,
+        "ThrusterModel_AlbedoMap": "white1x1",
+        "ThrusterModel_AlphaThres": 0.009999999776482582,
+        "ThrusterModel_Color": [
+            0.9751552939414978,
+            0.34524133801460266,
+            0.0,
+            1.0
+        ],
+        "ThrusterModel_DiffuseRef": 4.0,
+        "ThrusterModel_DisEnable": 0,
+        "ThrusterModel_DisThres": 0.550000011920929,
+        "ThrusterModel_DissolveTex": "noise_19",
+        "ThrusterModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ThrusterModel_EdgeInten": 0.0,
+        "ThrusterModel_EdgeWidth": 0.0010000000474974513,
+        "ThrusterModel_Emissive": 42.20000076293945,
+        "ThrusterModel_EnvMapInt": 0.10000000149011612,
+        "ThrusterModel_EnvMapTex": "pureSky",
+        "ThrusterModel_LightMode": 3,
+        "ThrusterModel_Lighting": 1,
+        "ThrusterModel_Metalness": 0.05000000074505806,
+        "ThrusterModel_NormEnable": 1,
+        "ThrusterModel_NormInten": 4.809999942779541,
+        "ThrusterModel_NormTile": 8.100000381469727,
+        "ThrusterModel_NormalMapTex": "normal_02",
+        "ThrusterModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ThrusterModel_OutlineEnable": 0,
+        "ThrusterModel_OutlineWidth": 1.0,
+        "ThrusterModel_RimColor": [
+            1.0,
+            0.1677018404006958,
+            0.0
+        ],
+        "ThrusterModel_RimEnable": 1,
+        "ThrusterModel_RimInten": 0.10000000149011612,
+        "ThrusterModel_RimPower": 18.700000762939453,
+        "ThrusterModel_RimUseDir": 0,
+        "ThrusterModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ThrusterModel_Roughness": 0.2800000011920929,
+        "ThrusterModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ThrusterModel_ShadowBias": 0.0005000000237487257,
+        "ThrusterModel_ShadowDens": 0.800000011920929,
+        "ThrusterModel_ShadowEnv": 0.0,
+        "ThrusterModel_ShadowSoft": 0.0,
+        "ThrusterModel_Shininess": 50.0,
+        "ThrusterModel_SpecColor": [
+            0.11124184727668762,
+            0.15374818444252014,
+            0.4534161686897278,
+            1.0
+        ],
+        "ThrusterModel_ToonRampTex": "toonRamp_01",
+        "ThrusterModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ThrusterModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ThrusterModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ThrusterModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "sharedEnemyModel_Mat0_AddShadow": 1,
         "sharedEnemyModel_Mat0_AlbedoMap": "white1x1",
         "sharedEnemyModel_Mat0_AlphaThres": 0.009999999776482582,

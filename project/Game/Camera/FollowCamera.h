@@ -26,8 +26,7 @@ public:
 private:
     float SmoothDamp(float current, float target, float& currentVelocity,
         float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
-    float SmoothDampAngle(float current, float target, float& currentVelocity,
-        float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
+    float ApproachRotationRate(float currentRate, float targetRate, float maxRate, float deltaTime) const;
 
 private:
     FS::Engine* engine_;
@@ -69,19 +68,19 @@ private:
     float dofStrengthVelocity_ = 0.0f;
 
     // 回転・距離・補間変数
-    float targetYaw_ = 0.0f;
-    float targetPitch_ = 0.3f;
     float targetDistance_ = 45.0f;
 
     float currentYaw_ = 0.0f;
     float currentPitch_ = 0.3f;
     float distance_ = 45.0f;
 
-    float yawVelocity_ = 0.0f;
-    float pitchVelocity_ = 0.0f;
+    // 今の回転の速さ (ラジアン / 秒)。スティックを離すとすぐ 0 に戻る
+    float yawRate_ = 0.0f;
+    float pitchRate_ = 0.0f;
     float distanceVelocity_ = 0.0f;
 
-    float rotationSmoothTime_ = 0.1f;
+    float rotationAccelerationTime_ = 0.1f;    // 回し始めてから最高速度になるまで (秒)
+    float rotationDecelerationTime_ = 0.04f;   // 最高速度から止まるまで (秒)
     float zoomSmoothTime_ = 0.2f;
     float positionLerpSpeed_ = 8.0f;
 
