@@ -8,16 +8,13 @@
 namespace FS
 {
 
-void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, DescriptorHeapManager* descriptorManager)
+void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, DescriptorHeapManager* descriptorManager)
 {
-    backBufferCount = bufferCount;
-
-    // 配列サイズを調整
-    rtvHandles.resize(bufferCount);
-    swapChainResources.resize(bufferCount);
+    rtvHandles.resize(SwapChain::kBufferCount);
+    swapChainResources.resize(SwapChain::kBufferCount);
 
     // RTVヒープを作成（Shader内で使用しないのでShaderVisibleはfalse）
-    rtvDescriptorHeap_ = descriptorManager->CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, bufferCount, false);
+    rtvDescriptorHeap_ = descriptorManager->CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, SwapChain::kBufferCount, false);
 
     // ヒープ先頭のCPUハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHeapStartCPUHandle = rtvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
@@ -30,7 +27,7 @@ void RTVManager::Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, ui
     rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
     // SwapChainのバックバッファから各RTVを作成
-    for (uint32_t i = 0; i < backBufferCount; ++i)
+    for (uint32_t i = 0; i < SwapChain::kBufferCount; ++i)
     {
         HRESULT hr = swapChain->GetBuffer(i, IID_PPV_ARGS(&swapChainResources[i]));
         assert(SUCCEEDED(hr));
@@ -50,17 +47,16 @@ D3D12_CPU_DESCRIPTOR_HANDLE RTVManager::GetCurrentBackBufferRTVCPUHandle(SwapCha
     return rtvHandles[backBufferIndex];
 }
 
-void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, uint32_t rtvDescriptorCount)
+void OffscreenRTVManager::Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager)
 {
     device_ = device;
     srvManager_ = srvManager;
-    rtvDescriptorCount_ = rtvDescriptorCount;
 
     // RTVヒープを作成
-    rtvDescriptorHeap_ = descriptorManager->CreateDescriptorHeap(device_, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, rtvDescriptorCount_, false);
+    rtvDescriptorHeap_ = descriptorManager->CreateDescriptorHeap(device_, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, kMaxRTVCount, false);
     rtvDescriptorSize_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     rtvHeapStart_ = rtvDescriptorHeap_->GetCPUDescriptorHandleForHeapStart();
-    offscreenRTVHandles_.resize(rtvDescriptorCount_);
+    offscreenRTVHandles_.resize(kMaxRTVCount);
 
     createdRTVCount_ = 0;
     clearColor_ = Vector4(0.03f, 0.03f, 0.03f, 1.0f);
@@ -70,7 +66,7 @@ std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, 
 OffscreenRTVManager::CreateOffscreenRenderTarget(uint32_t width, uint32_t height, Vector4 clearColor, DXGI_FORMAT format, bool enableUAV)
 {
     uint32_t rtvIndex = createdRTVCount_;
-    assert(rtvIndex < rtvDescriptorCount_);
+    assert(rtvIndex < kMaxRTVCount);
     createdRTVCount_++;
 
     // テクスチャのリソース作成

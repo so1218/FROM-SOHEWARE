@@ -27,7 +27,7 @@ private:
     std::unique_ptr<FS::Text> instructionText_;     
     std::unique_ptr<FS::Text> timeText_;      
     std::unique_ptr<FS::Text> messageText_;
-    std::unique_ptr<FS::Text> stageNameText_;  // 縦書き
+    std::unique_ptr<FS::Text> stageNameText_; 
 
     // timeText_ の書式。{} に分、秒の順で入る
     std::string timeFormat_;

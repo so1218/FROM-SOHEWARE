@@ -21,7 +21,7 @@ public:
     void SetCameraManager(FS::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
 
 private:
-    // 同時に落ちる雷の数だけ、落雷のパーティクルのエミッターを用意する。足りなければ増やす
+    // 同時に落ちる雷の数だけ、落雷のパーティクルのエミッターを用意
     void PrepareThunderStrikeEmitters(int count);
 
     FS::Engine* engine_;

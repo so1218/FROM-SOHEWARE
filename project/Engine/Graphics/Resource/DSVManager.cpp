@@ -10,20 +10,18 @@ namespace FS
 void DSVManager::Initialize(
     ID3D12Device* device,
     DescriptorHeapManager* descriptorManager,
-    SRVManager* srvManager,
-    uint32_t dsvCount
+    SRVManager* srvManager
 )
 {
     device_ = device;
     srvManager_ = srvManager;
-    maxDSVCount_ = dsvCount;
     createdDSVCount_ = 0;
 
     // DSV用ディスクリプタヒープを作成（Shader Visible なし）
     dsvHeap_ = descriptorManager->CreateDescriptorHeap(
         device_,
         D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
-        dsvCount,
+        kMaxDSVCount,
         false
     );
 
@@ -37,7 +35,7 @@ void DSVManager::Initialize(
 uint32_t DSVManager::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
     // DSV作成数の上限チェック
-    assert(createdDSVCount_ < maxDSVCount_);
+    assert(createdDSVCount_ < kMaxDSVCount);
 
     // 内部でリソースを受け取るためのローカル変数
     Microsoft::WRL::ComPtr<ID3D12Resource> resource;

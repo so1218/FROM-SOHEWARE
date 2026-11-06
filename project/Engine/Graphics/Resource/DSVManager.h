@@ -9,8 +9,11 @@ class SRVManager;
 class DSVManager
 {
 public:
+    // 作れる深度バッファの上限
+    static constexpr uint32_t kMaxDSVCount = 8;
+
     // 初期化
-    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager, uint32_t dsvCount);
+    void Initialize(ID3D12Device* device, DescriptorHeapManager* descriptorManager, SRVManager* srvManager);
 
     // 深度ステンシル用リソースとDSVを作成
     // 作成したリソースとCPUハンドルを返す
@@ -36,7 +39,6 @@ private:
 
     // DSVの作成状況管理
     uint32_t createdDSVCount_ = 0;
-    uint32_t maxDSVCount_ = 0;
 
     // 深度ステンシル用テクスチャの保持
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> depthTextures_;

@@ -6,8 +6,6 @@
 namespace FS
 {
 
-// 画面を小さな箱 (フロクセル) に分けて霧を計算する。
-// 光を入れる → ならす → 前のフレームと混ぜる → 奥へ積み上げる → 画面に戻す、の順に5回 Dispatch する
 class VolumetricFogPass : public IPostEffect
 {
 public:
@@ -19,8 +17,6 @@ public:
     void BeginFrame();
 
     VolumetricFogSettings* GetSettings() { return settings_; }
-
-    void SetNoiseData(const GeneratedTextureData& data) { noiseTexture_ = data; }
 
     // エディタで編集する、置いた霧の設定
     struct FogVolumeData
@@ -61,6 +57,9 @@ private:
     static constexpr uint32_t kFroxelWidth = 160;
     static constexpr uint32_t kFroxelHeight = 90;
     static constexpr uint32_t kFroxelDepth = 64;
+
+    // 霧の濃淡に使う3Dノイズの1辺の大きさ
+    static constexpr uint32_t kNoiseResolution = 64;
 
     struct FroxelTexture
     {

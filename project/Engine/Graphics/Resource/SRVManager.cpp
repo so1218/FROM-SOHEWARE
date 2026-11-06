@@ -6,7 +6,7 @@
 namespace FS
 {
 
-void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)
+void SRVManager::Initialize(ID3D12Device* device)
 {
     device_ = device;
     srvDescriptorSize_ = device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -14,7 +14,7 @@ void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)
     // Shader Visibleヒープ（GPUから見える）を作成
     D3D12_DESCRIPTOR_HEAP_DESC heapDescVisible = {};
     heapDescVisible.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heapDescVisible.NumDescriptors = maxDescriptors;
+    heapDescVisible.NumDescriptors = kMaxDescriptorCount;
     heapDescVisible.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     HRESULT hr = device_->CreateDescriptorHeap(&heapDescVisible, IID_PPV_ARGS(&srvHeap_));
     assert(SUCCEEDED(hr));
@@ -22,13 +22,13 @@ void SRVManager::Initialize(ID3D12Device* device, uint32_t maxDescriptors)
     // CPU専用ヒープ（コピー用）を作成
     D3D12_DESCRIPTOR_HEAP_DESC heapDescCPU = {};
     heapDescCPU.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    heapDescCPU.NumDescriptors = maxDescriptors;
+    heapDescCPU.NumDescriptors = kMaxDescriptorCount;
     heapDescCPU.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
     hr = device_->CreateDescriptorHeap(&heapDescCPU, IID_PPV_ARGS(&srvHeapCPU_));
     assert(SUCCEEDED(hr));
 
     // SRVの割り当て管理用アロケータを作成
-    allocator_ = std::make_unique<SRVAllocator>(maxDescriptors);
+    allocator_ = std::make_unique<SRVAllocator>(kMaxDescriptorCount);
 }
 
 uint32_t SRVManager::CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc)

@@ -6,12 +6,14 @@ namespace FS
 class SwapChain
 {
 public:
+	// バックバッファの数。RTVManager もこの数だけRTVを作る
+	static constexpr uint32_t kBufferCount = 2;
+
 	void Initialize(
 		HWND hwnd,
 		ID3D12CommandQueue* commandQueue,
 		uint32_t width,
 		uint32_t height,
-		uint32_t bufferCount,
 		Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory);
 	void Present();
 

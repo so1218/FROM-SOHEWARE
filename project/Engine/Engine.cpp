@@ -255,27 +255,26 @@ void Engine::InitializeGraphics()
 	swapChain_ = std::make_unique<SwapChain>();
 	// スワップチェーンは実際のウィンドウの大きさ (フルスクリーンならモニターの解像度) で作る
 	swapChain_->Initialize(window_->GetHwnd(), commandManager_->GetCommandQueue(),
-		window_->GetClientWidth(), window_->GetClientHeight(), 2, graphicsDevice_->GetDXGIFactory());
+		window_->GetClientWidth(), window_->GetClientHeight(), graphicsDevice_->GetDXGIFactory());
 
 	// ディスクリプタヒープマネージャの作成
 	descriptorManager_ = std::make_unique<DescriptorHeapManager>();
 
 	// SRVマネージャの初期化
 	srvManager_ = std::make_unique<SRVManager>();
-	srvManager_->Initialize(graphicsDevice_->GetDevice(), 1000);
+	srvManager_->Initialize(graphicsDevice_->GetDevice());
 
 	// DSVマネージャの初期化
 	dsvManager_ = std::make_unique<DSVManager>();
-	dsvManager_->Initialize(graphicsDevice_->GetDevice(), descriptorManager_.get(), srvManager_.get(), 8); 
+	dsvManager_->Initialize(graphicsDevice_->GetDevice(), descriptorManager_.get(), srvManager_.get());
 
 	// RTVマネージャの初期化
 	rtvManager_ = std::make_unique<RTVManager>();
-	rtvManager_->Initialize(graphicsDevice_->GetDevice(), swapChain_->GetSwapChain(),
-		2, descriptorManager_.get());
+	rtvManager_->Initialize(graphicsDevice_->GetDevice(), swapChain_->GetSwapChain(), descriptorManager_.get());
 
 	// オフスクリーンレンダーターゲットの初期化
 	offscreenRTVManager_ = std::make_unique<OffscreenRTVManager>();
-	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get(), 32);
+	offscreenRTVManager_->Initialize(graphicsDevice_->GetDevice(), srvManager_.get(), descriptorManager_.get());
 
 	// ライトマネージャの初期化
 	lightManager_ = std::make_unique<LightManager>();
@@ -351,22 +350,6 @@ void Engine::InitializeResources()
 	AnimationManager::GetInstance()->LoadAllAnimations();
 
 	FontManager::GetInstance().LoadFromCSV(this);
-
-	// 3Dノイズ を生成して VolumetricFog に渡す
-	{
-		// ローカル変数としてジェネレーターを作成
-		NoiseTextureGenerator noiseGen;
-		noiseGen.Initialize(this);
-
-		// ロード処理で使っている共通のコマンドリストを取得
-		ID3D12GraphicsCommandList* cmdList = commandManager_->GetCommandList();
-
-		// コマンドリストにノイズ生成処理(CS)を積む
-		GeneratedTextureData noiseData = noiseGen.Generate3DPerlinNoise(cmdList, 64, 64, 64);
-
-		// VolumetricFogPassに直接データを渡す
-		GetPostEffectManager()->GetVolumetricFogPass()->SetNoiseData(noiseData);
-	}
 
 	particleSystem_ = std::make_unique<ParticleSystem>(this);
 	particleSystem_->Initialize();

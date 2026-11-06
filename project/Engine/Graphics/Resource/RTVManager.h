@@ -15,9 +15,8 @@ public:
     ~RTVManager() { rtvDescriptorHeap_.Reset(); }
 
     // 初期化：スワップチェーンのバックバッファ用RTVを作成
-    void Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, uint32_t bufferCount, DescriptorHeapManager* descriptorManager);
+    void Initialize(ID3D12Device* device, IDXGISwapChain4* swapChain, DescriptorHeapManager* descriptorManager);
 
-    uint32_t backBufferCount = 0;                 // バックバッファ数
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};      // RTVの基本設定
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;  // 各バックバッファ用RTVハンドル
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_; // RTVヒープ
@@ -37,7 +36,10 @@ enum class GBufferIndex : uint32_t
 class OffscreenRTVManager
 {
 public:
-    void Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager, uint32_t rtvDescriptorCount);
+    // オフスクリーンに作れるRTVの上限
+    static constexpr uint32_t kMaxRTVCount = 32;
+
+    void Initialize(ID3D12Device* device, SRVManager* srvManager, DescriptorHeapManager* descriptorManager);
 
     // オフスクリーンレンダーターゲットを作成し、リソースとRTVハンドルを返す
     std::tuple<Microsoft::WRL::ComPtr<ID3D12Resource>, D3D12_CPU_DESCRIPTOR_HANDLE, uint32_t, uint32_t>
@@ -68,7 +70,6 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap_; // RTVヒープ
     uint32_t rtvDescriptorSize_ = 0;       // 1ディスクリプタのサイズ
-    uint32_t rtvDescriptorCount_ = 0;      // 作成可能なRTV数
     uint32_t createdRTVCount_ = 0;         // 作成済みRTV数
     D3D12_CPU_DESCRIPTOR_HANDLE rtvHeapStart_; // ヒープ先頭のCPUハンドル
 

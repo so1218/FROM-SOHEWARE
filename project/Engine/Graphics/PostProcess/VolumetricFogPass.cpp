@@ -2,6 +2,7 @@
 #include "VolumetricFogPass.h"
 #include "Engine.h"
 #include "GraphicsDevice.h"
+#include "CommandManager.h"
 #include "GlobalConstants.h"
 #include "PSOManager.h"
 #include "EnvironmentManager.h"
@@ -52,6 +53,12 @@ void VolumetricFogPass::Initialize(Engine* engine, uint32_t width, uint32_t heig
     accumulateTexture_ = CreateFroxelTexture(device, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, L"VoxelAccumulate");
     historyTextures_[0] = CreateFroxelTexture(device, D3D12_RESOURCE_STATE_COMMON, L"VoxelHistory_0");
     historyTextures_[1] = CreateFroxelTexture(device, D3D12_RESOURCE_STATE_COMMON, L"VoxelHistory_1");
+
+    // 生成のコマンドは初期化用のコマンドリストに積み、ロードのコマンドと一緒に実行される
+    NoiseTextureGenerator noiseGenerator;
+    noiseGenerator.Initialize(engine);
+    noiseTexture_ = noiseGenerator.Generate3DPerlinNoise(engine->GetCommandManager()->GetCommandList(),
+        kNoiseResolution, kNoiseResolution, kNoiseResolution);
 
     // 画面に戻した結果は、InitializeBase が作った画面の半分の大きさのテクスチャに書く
     textureResource_->SetName(L"VolumetricFog_ResolveOutput");

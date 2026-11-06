@@ -7,8 +7,11 @@ namespace FS
 class SRVManager
 {
 public:
+    // SRV/UAV/CBVを置けるヒープの大きさ
+    static constexpr uint32_t kMaxDescriptorCount = 1000;
+
     // SRVヒープとアロケータを初期化
-    void Initialize(ID3D12Device* device, uint32_t maxDescriptors);
+    void Initialize(ID3D12Device* device);
 
     // リソースとSRV設定からSRVを作成し、ヒープ内のインデックスを返す
     uint32_t CreateSRV(ID3D12Resource* resource, const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc);
