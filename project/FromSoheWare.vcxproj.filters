@@ -705,6 +705,9 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -717,10 +720,7 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Item\Ammo.cpp">
-      <Filter>Game\GameObject\Item</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\Item\AmmoManager.cpp">
+    <ClCompile Include="Game\GameObject\Item\CoinManager.cpp">
       <Filter>Game\GameObject\Item</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Field\EnvironmentProp.cpp">
@@ -1263,6 +1263,9 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
@@ -1275,10 +1278,7 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Item\Ammo.h">
-      <Filter>Game\GameObject\Item</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObject\Item\AmmoManager.h">
+    <ClInclude Include="Game\GameObject\Item\CoinManager.h">
       <Filter>Game\GameObject\Item</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\EnvironmentProp.h">

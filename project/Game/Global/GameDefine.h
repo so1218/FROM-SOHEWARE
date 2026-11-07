@@ -23,7 +23,6 @@ namespace ObjectTag
         PlayerAttack,
         EnemyAttack, 
         Item,
-        Ammo
     };
 }
 

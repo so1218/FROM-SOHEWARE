@@ -85,8 +85,6 @@ public:
     float GetReloadProgress() const { return 1.0f - reloadTimer_ / config_.reloadTime; }
     int GetReloadCount() const { return reloadCount_; }
 
-    // 薬莢のマテリアルの共有元。弾のアイテムと同じ見た目にする。無ければモデルのままのマテリアルで出す
-    void SetCasingMaterialSource(const FS::Model* sourceModel) { casingMaterialSource_ = sourceModel; }
 
 private:
     // 銃から飛び出した物。跳ね上がってから落ち、決まった時間で消える
@@ -122,7 +120,7 @@ private:
 
     // 落とすマガジンのマテリアルの共有元。ImGui で色や質感を編集する (位置や大きさは EjectSettings で決める)
     std::unique_ptr<FS::Model> magazineModel_;
-    const FS::Model* casingMaterialSource_ = nullptr;
+    std::unique_ptr<FS::Model> casingModel_;   // 薬莢のマテリアルの共有元
     std::vector<EjectedObject> ejectedObjects_;
     std::mt19937 random_;
 

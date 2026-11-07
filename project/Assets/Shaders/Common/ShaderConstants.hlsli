@@ -167,13 +167,8 @@ struct MaterialData
     
     float rippleFrequency;
     float rippleLayerMix;
-    int isBubble;
-    float wobbleSpeed;
-    
-    float wobbleAmplitude;
-    float rainbowIntensity;
-    float fresnelExponent;
     float shadowNormalBias;
+    float padding;
 };
 
 struct SpriteInstance

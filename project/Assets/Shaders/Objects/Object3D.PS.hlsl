@@ -159,29 +159,8 @@ PixelShaderOutput main(PixelShaderInput input)
         normal = normalize(normal + float3(rippleNormal.x, 0.0f, rippleNormal.y));
     }
     
-    // --------------------------------------------------------
-    // Bubble
-    // --------------------------------------------------------
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-    float bubbleAlpha = textureColor.a;
-    
-    if (gMaterial.isBubble != 0)
-    {
-        float3 bubbleNormal = normalize(input.normal);
-        float NdotV = saturate(dot(bubbleNormal, toEye));
-        float fresnel = 1.0f - NdotV;
 
-        float t = fresnel + gFrameData.gTime * (gMaterial.wobbleSpeed * 0.1f);
-        float3 a = 0.5f.xxx;
-        float3 b = 0.5f.xxx;
-        float3 c = 1.0f.xxx;
-        float3 d = float3(0.00f, 0.33f, 0.67f);
-        float3 rainbowColor = a + b * cos(6.28318f * (c * t + d));
-
-        baseColor += rainbowColor * fresnel * gMaterial.rainbowIntensity;
-        bubbleAlpha = lerp(0.1f, 1.0f, pow(fresnel, gMaterial.fresnelExponent));
-    }
-    
     // SurfaceData の構築
     SurfaceData surface;
     surface.albedo = baseColor * gMaterial.color.rgb;
@@ -259,7 +238,7 @@ PixelShaderOutput main(PixelShaderInput input)
     // G-Buffer Output
     // --------------------------------------------------------
     output.color.rgb = finalColor;
-    output.color.a = (gMaterial.isBubble != 0) ? (bubbleAlpha * gMaterial.color.a) : (textureColor.a * gMaterial.color.a);
+    output.color.a = textureColor.a * gMaterial.color.a;
     output.normal = float4(normal, 1.0f);
     
     return output;

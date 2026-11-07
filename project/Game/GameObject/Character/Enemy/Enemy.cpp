@@ -104,6 +104,7 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
 
 void Enemy::Die()
 {
+    isDefeated_ = true;
     if (behavior_) behavior_->OnDeath(this);
     SetActive(false);
 }

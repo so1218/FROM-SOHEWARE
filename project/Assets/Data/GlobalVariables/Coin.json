@@ -1,0 +1,126 @@
+{
+    "Coin": {
+        "BlinkTime": 3.0,
+        "Bounce": 0.5,
+        "CoinModel_AddShadow": 1,
+        "CoinModel_AlbedoMap": "white1x1",
+        "CoinModel_AlphaThres": 0.009999999776482582,
+        "CoinModel_Color": [
+            0.9505806565284729,
+            0.9937888383865356,
+            0.0,
+            1.0
+        ],
+        "CoinModel_DiffuseRef": 4.0,
+        "CoinModel_DisEnable": 0,
+        "CoinModel_DisThres": 0.5,
+        "CoinModel_DissolveTex": "white1x1",
+        "CoinModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "CoinModel_EdgeInten": 2.0,
+        "CoinModel_EdgeWidth": 0.05000000074505806,
+        "CoinModel_Emissive": 1.100000023841858,
+        "CoinModel_EnvMapInt": 0.17000000178813934,
+        "CoinModel_EnvMapTex": "pureSky",
+        "CoinModel_LightMode": 3,
+        "CoinModel_Lighting": 0,
+        "CoinModel_Metalness": 1.0,
+        "CoinModel_NormEnable": 0,
+        "CoinModel_NormInten": 1.0,
+        "CoinModel_NormTile": 1.0,
+        "CoinModel_NormalMapTex": "normal_18",
+        "CoinModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "CoinModel_OutlineEnable": 0,
+        "CoinModel_OutlineWidth": 1.0,
+        "CoinModel_RimColor": [
+            0.8944099545478821,
+            0.47461941838264465,
+            0.016666080802679062
+        ],
+        "CoinModel_RimEnable": 1,
+        "CoinModel_RimInten": 1.0,
+        "CoinModel_RimPower": 10.399999618530273,
+        "CoinModel_RimUseDir": 0,
+        "CoinModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "CoinModel_Roughness": 0.14000000059604645,
+        "CoinModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "CoinModel_ShadowBias": 0.0005000000237487257,
+        "CoinModel_ShadowDens": 0.800000011920929,
+        "CoinModel_ShadowEnv": 0.0,
+        "CoinModel_ShadowSoft": 0.0,
+        "CoinModel_Shininess": 50.0,
+        "CoinModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "CoinModel_ToonRampTex": "toonRamp_01",
+        "CoinModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "CoinModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "CoinModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "CoinModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "CoinsPerBurst": 10,
+        "CollectRadius": 0.800000011920929,
+        "EjectSpeed": 30.0,
+        "Gravity": 64.5,
+        "LifeTime": 1000.0,
+        "LightColor": [
+            1.0,
+            0.800000011920929,
+            0.30000001192092896,
+            1.0
+        ],
+        "LightHeight": 0.5,
+        "LightIntensity": 5.0,
+        "LightRadius": 13.5,
+        "LightVolumetric": 52.25,
+        "MagnetAcceleration": 60.0,
+        "MagnetDelay": 0.30000001192092896,
+        "MagnetMaxSpeed": 30.0,
+        "MagnetRadius": 4.0,
+        "MaxLitBursts": 1,
+        "RestSpeed": 1.5,
+        "Scale": [
+            1.5,
+            0.3100000023841858,
+            1.5
+        ],
+        "SpawnDuration": 1.0,
+        "SpinSpeed": 0.0,
+        "SpreadSpeed": 6.0,
+        "ValuePerCoin": 3
+    }
+}

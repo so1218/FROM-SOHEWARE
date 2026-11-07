@@ -17,6 +17,7 @@
 #include "PlayerStamina.h"
 #include "PlayerHealth.h"
 #include "PlayerAmmoDisplay.h"
+#include "PlayerMoneyDisplay.h"
 #include "PlayerStateDodge.h"
 #include "Enemy.h"
 #include "GlobalVariables.h"
@@ -32,6 +33,7 @@ engine_(engine), camera_(camera)
 
 	weapon_ = std::make_unique<PlayerWeapon>(engine_);
 	ammoDisplay_ = std::make_unique<PlayerAmmoDisplay>(engine_);
+	moneyDisplay_ = std::make_unique<PlayerMoneyDisplay>(engine_);
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 	stamina_ = std::make_unique<PlayerStamina>(engine_);
 	health_ = std::make_unique<PlayerHealth>(engine_);
@@ -90,6 +92,7 @@ void Player::Initialize()
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
 	ammoDisplay_->BindProperties(*binder_);
+	moneyDisplay_->BindProperties(*binder_);
 	binder_->Bind("SpawnPosition", &spawnPosition_, { 0.0f, 0.0f, 0.0f }, 0.1f, [this]() { PlaceAtSpawn(); });
 	binder_->Bind("SpawnRotationY", &spawnRotationY_, 0.0f, 0.5f, -360.0f, 360.0f, [this]() { PlaceAtSpawn(); });
 
@@ -399,11 +402,28 @@ void Player::ResetToSpawn()
 	health_->Refill();
 	stamina_->Refill();
 	weapon_->Refill();
+	money_ = 0;
 	if (followCamera_)
 	{
 		followCamera_->SetAiming(false);
 	}
 	stateMachine_->ChangeState<PlayerStateNormal>();
+}
+
+void Player::AddMoney(int amount)
+{
+	money_ += amount;
+	moneyDisplay_->OnGain(amount);
+}
+
+bool Player::TrySpend(int amount)
+{
+	if (money_ < amount)
+	{
+		return false;
+	}
+	money_ -= amount;
+	return true;
 }
 
 void Player::PlaceAtSpawn()
@@ -549,6 +569,7 @@ void Player::Draw()
 	{
 		reticle_->Draw();
 		ammoDisplay_->Draw(*weapon_);
+		moneyDisplay_->Draw(money_);
 		stamina_->DrawGauge();
 		health_->DrawHUD();
 	}
@@ -568,6 +589,12 @@ void Player::DebugGui()
 	if (ImGui::CollapsingHeader("残弾表示"))
 	{
 		ammoDisplay_->DrawProperties(*binder_);
+	}
+
+	if (ImGui::CollapsingHeader("所持金"))
+	{
+		ImGui::Text("所持金: %d", money_);
+		moneyDisplay_->DrawProperties(*binder_);
 	}
 
 	if (ImGui::CollapsingHeader("動き"))

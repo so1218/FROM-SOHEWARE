@@ -6,6 +6,8 @@
 #include "PropertyBinder.h"
 #include "FloatingBehavior.h"
 
+class CoinManager;
+
 class EnemyManager : public FS::GameObject
 {
 public:
@@ -23,6 +25,8 @@ public:
     void ResetEnemies();
     // 墜落した敵が地面で爆発するのに使う
     void SetTerrain(const FS::Terrain* terrain) { terrain_ = terrain; }
+    // 倒された敵の位置でお金を出す
+    void SetCoinManager(CoinManager* coinManager) { coinManager_ = coinManager; }
 
 private:
     std::unique_ptr<Enemy> CreateEnemy(int index);
@@ -31,6 +35,7 @@ private:
     FS::Engine* engine_;
     std::string managerGroupName_;
     const FS::Terrain* terrain_ = nullptr;
+    CoinManager* coinManager_ = nullptr;
 
     // 全機のスラスターがマテリアルを共有する元のモデル
     std::unique_ptr<FS::Model> thrusterModel_;

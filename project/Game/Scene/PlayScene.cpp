@@ -7,7 +7,7 @@
 #include "GrassField.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
-#include "AmmoManager.h"
+#include "CoinManager.h"
 #include "EnemyManager.h"
 #include "EnvironmentPropManager.h"
 #include "WeatherEffectManager.h"
@@ -46,10 +46,12 @@ PlayScene::PlayScene(Engine* engine)
     player->SetFollowCamera(followCamera_.get());
 	auto weatherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
 	weatherEffectManager->SetCameraManager(cameraManager_.get());
-    auto ammoManager = objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
-    player->GetWeapon()->SetCasingMaterialSource(ammoManager->GetSharedModel());
+    auto coinManager = objectManager_.Create<CoinManager>(engine_);
+    coinManager->SetPlayer(player);
+    coinManager->SetTerrain(ground->GetTerrain());
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     enemyManager_->SetTerrain(ground->GetTerrain());
+    enemyManager_->SetCoinManager(coinManager);
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
     auto foliageField = objectManager_.Create<FoliageField>(engine_);
     foliageField->SetTerrain(ground->GetTerrain());

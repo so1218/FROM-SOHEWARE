@@ -121,6 +121,30 @@
         "MaxDamageMultiplier": 1.2999999523162842,
         "MaxStamina": 9.0,
         "MaxVerticalDist": 1.6799999475479126,
+        "Money_Color": [
+            1.0,
+            1.0,
+            1.0,
+            0.949999988079071
+        ],
+        "Money_FontSize": 40.0,
+        "Money_GainColor": [
+            1.0,
+            0.8500000238418579,
+            0.3499999940395355,
+            1.0
+        ],
+        "Money_GainFontSize": 28.0,
+        "Money_GainOffset": [
+            -40.0,
+            90.0
+        ],
+        "Money_GainRise": 12.0,
+        "Money_GainShowTime": 1.2000000476837158,
+        "Money_Offset": [
+            -40.0,
+            40.0
+        ],
         "Muzzle Flash Color": [
             1.0,
             0.800000011920929,

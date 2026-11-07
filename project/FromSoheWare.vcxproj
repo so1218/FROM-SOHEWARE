@@ -262,6 +262,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStamina.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerHealth.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
@@ -364,8 +365,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Math\Easing.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleConfigManager.cpp" />
-    <ClCompile Include="Game\GameObject\Item\Ammo.cpp" />
-    <ClCompile Include="Game\GameObject\Item\AmmoManager.cpp" />
+    <ClCompile Include="Game\GameObject\Item\CoinManager.cpp" />
     <ClCompile Include="Engine\Framework\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Engine\Collision\Collision.cpp" />
@@ -471,6 +471,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStamina.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerHealth.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
@@ -551,8 +552,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\Game.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleConfigManager.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleDefinition.h" />
-    <ClInclude Include="Game\GameObject\Item\Ammo.h" />
-    <ClInclude Include="Game\GameObject\Item\AmmoManager.h" />
+    <ClInclude Include="Game\GameObject\Item\CoinManager.h" />
     <ClInclude Include="Engine\Framework\ParticleSystemWrapper.h" />
     <ClInclude Include="Game\GameObject\Field\TreeField.h" />
     <ClInclude Include="Game\GameObject\Field\WaterManager.h" />

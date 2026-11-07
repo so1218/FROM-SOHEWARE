@@ -27,6 +27,7 @@ PlayerWeapon::PlayerWeapon(FS::Engine* engine)
 {
     model_ = std::make_unique<FS::Model>(engine_, "P365");
     magazineModel_ = std::make_unique<FS::Model>(engine_, "cube");
+    casingModel_ = std::make_unique<FS::Model>(engine_, "bullet");
 
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "P365");
 }
@@ -43,6 +44,7 @@ void PlayerWeapon::Initialize()
     model_->GetTransform().SetParent(&reloadTiltTransform_);
     reloadTiltTransform_.SetParent(&handTransform_);
     magazineModel_->MakeMaterialUnique();
+    casingModel_->MakeMaterialUnique();
 
     auto muzzleParticle = engine_->GetParticleSystem()->CreateEmitter("muzzleFlash");
     if (muzzleParticle)
@@ -94,6 +96,7 @@ void PlayerWeapon::Initialize()
     binder_->Bind("ReloadTime", &config_.reloadTime, 1.6f, 0.05f, 0.05f, 10.0f);
 
     binder_->BindModel("MagazineModel", magazineModel_.get());
+    binder_->BindModel("CasingModel", casingModel_.get());
     binder_->Bind("Reload Tilt Axis", &config_.reloadTiltAxis, { 1.0f, 0.0f, 0.0f });
     binder_->Bind("Reload Tilt Angle", &config_.reloadTiltAngle, 35.0f, 0.5f, -180.0f, 180.0f);
     binder_->Bind("Reload Tilt In Time", &config_.reloadTiltInTime, 0.15f, 0.01f, 0.01f, 1.0f);
@@ -235,7 +238,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
     if (shotSmokeEmitterPtr_)   shotSmokeEmitterPtr_->Play();
     if (shotSparkEmitterPtr_)   shotSparkEmitterPtr_->Play();
-    Eject(config_.casing, "bullet", casingMaterialSource_);
+    Eject(config_.casing, "bullet", casingModel_.get());
 
     // カメラからのレイとレティクル拡散の計算
     Vector3 rayStart = camera->GetWorldTransform().translation_;
@@ -465,10 +468,10 @@ void PlayerWeapon::DebugGui()
             ImGui::TreePop();
         }
 
-        // 見た目は弾のアイテムのモデルと共有しているので、そちらで編集する
         if (ImGui::TreeNode("薬莢"))
         {
             DrawEjectSettings("Casing");
+            binder_->DrawModel("CasingModel", "薬莢の見た目 (色や質感だけを使う)");
             ImGui::TreePop();
         }
 

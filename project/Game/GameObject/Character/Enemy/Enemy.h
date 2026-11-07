@@ -31,6 +31,8 @@ public:
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal, const FS::Collider* hitCollider = nullptr);
     void Die();
     void Despawn();
+    // 倒されて消えたか。Despawn で消えたときは false
+    bool IsDefeated() const { return isDefeated_; }
 
     // アクセサ
     FS::Engine* GetEngine() const { return engine_; }
@@ -57,5 +59,6 @@ private:
     std::unique_ptr<IEnemyBehavior> behavior_;
 
     int hp_ = 100;
+    bool isDefeated_ = false;
 
 };

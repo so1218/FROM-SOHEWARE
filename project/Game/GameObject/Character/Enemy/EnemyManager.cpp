@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EnemyManager.h"
+#include "CoinManager.h"
 
 using namespace FS;
 
@@ -97,6 +98,14 @@ std::unique_ptr<Enemy> EnemyManager::CreateEnemy(int index)
 void EnemyManager::Update()
 {
     // 死亡した敵のクリーンアップ
+    for (const auto& enemy : enemies_)
+    {
+        if (enemy && !enemy->IsActive() && enemy->IsDefeated() && coinManager_)
+        {
+            coinManager_->SpawnBurst(enemy->GetTransform().translation_);
+        }
+    }
+
     enemies_.erase(
         std::remove_if(enemies_.begin(), enemies_.end(),
             [](const std::unique_ptr<Enemy>& enemy) {

@@ -14,6 +14,7 @@ class PlayerReticle;
 class PlayerStamina;
 class PlayerHealth;
 class PlayerAmmoDisplay;
+class PlayerMoneyDisplay;
 
 class Player : public FS::GameObject
 {
@@ -76,6 +77,11 @@ public:
 	// 初期位置に戻して HP やスタミナも元に戻す
 	void ResetToSpawn();
 	int GetShotCount() const { return shotCount_; } // これまでに撃った数 (チュートリアルの判定用)
+
+	// 所持金。敵を倒して拾ったお金を、夕方の強化などに使う
+	void AddMoney(int amount);
+	bool TrySpend(int amount);   // 足りなければ使わずに false
+	int GetMoney() const { return money_; }
 	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
 
 	// Stateから呼び出すヘルパー関数
@@ -150,6 +156,8 @@ private:
 
 	std::unique_ptr<PlayerWeapon> weapon_;
 	std::unique_ptr<PlayerAmmoDisplay> ammoDisplay_;
+	std::unique_ptr<PlayerMoneyDisplay> moneyDisplay_;
+	int money_ = 0;
 	std::unique_ptr<PlayerReticle> reticle_;
 
 	FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
