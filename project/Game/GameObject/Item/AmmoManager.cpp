@@ -6,7 +6,14 @@ using namespace FS;
 
 AmmoManager::AmmoManager(Engine* engine, const std::string& groupName)
     : engine_(engine), managerGroupName_(groupName)
-{}
+{
+    // 薬莢がこのマテリアルを共有するので、シーンに入り直しても作り直さない
+    sharedModel_ = std::make_unique<Model>(engine_, "bullet");
+    sharedModel_->MakeMaterialUnique();
+
+    sharedBubbleModel_ = std::make_unique<Model>(engine_, "sphere");
+    sharedBubbleModel_->MakeMaterialUnique();
+}
 
 void AmmoManager::Initialize()
 {
@@ -19,13 +26,7 @@ void AmmoManager::Initialize()
     binder_->Bind("TiltAngle", &tiltAngle_, 15.0f, 0.5f, -90.0f, 90.0f);
     binder_->Bind("RotationSpeed", &rotationSpeed_, 2.0f, 0.1f, -20.0f, 20.0f);
 
-    // マスターモデルを作成し、独立したマテリアルを持たせる
-    sharedModel_ = std::make_unique<Model>(engine_, "bullet");
-    sharedModel_->MakeMaterialUnique();
     binder_->BindModel("SharedAmmoModel", sharedModel_.get());
-
-    sharedBubbleModel_ = std::make_unique<Model>(engine_, "sphere");
-    sharedBubbleModel_->MakeMaterialUnique();
 
     auto bubbleMat = sharedBubbleModel_->GetMaterialData();
     if (bubbleMat)

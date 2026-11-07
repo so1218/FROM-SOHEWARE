@@ -4,12 +4,27 @@
 #include "ParticleEmitter.h"
 #include "Model.h"
 #include "Collider.h"
+#include <random>
 
 class TreeField;
 
 class PlayerWeapon
 {
 public:
+    // 銃から飛び出す物 (マガジン、薬莢) の出方。位置は銃から見た値、向きはカメラから見た値 (x = 右, y = 上, z = 奥)、
+    // 大きさはワールドでの大きさ
+    struct EjectSettings
+    {
+        FS::Vector3 offset = { 0.0f, 0.0f, 0.0f };
+        FS::Vector3 direction = { 0.0f, 1.0f, 0.0f };
+        FS::Vector3 scale = { 0.1f, 0.1f, 0.1f };
+        float speed = 3.0f;
+        float spread = 0.3f;        // 向きのばらつき
+        float spinSpeed = 7.0f;     // 回る速さ (ラジアン / 秒)。毎回少し変える
+        float gravity = 30.0f;
+        float lifeTime = 1.0f;      // 出てから消えるまで (秒)
+    };
+
     struct Config
     {
         FS::Vector4 muzzleFlashColor = { 1.0f, 0.75f, 0.3f, 1.0f };
@@ -25,6 +40,24 @@ public:
         int magazineSize = 10;
         float fireInterval = 0.35f;   // 1 発撃ってから次を撃てるまで
         float reloadTime = 1.6f;
+
+        // リロードの演出。アニメーションの代わりに、銃を手の中で傾けてマガジンを落とす
+        FS::Vector3 reloadTiltAxis = { 1.0f, 0.0f, 0.0f };   // 手から見た軸
+        float reloadTiltAngle = 35.0f;      // 度
+        float reloadTiltInTime = 0.15f;     // 傾けるまで (秒)
+        float reloadTiltOutTime = 0.15f;    // 戻すまで (秒)
+
+        EjectSettings magazine = { .direction = { 0.7f, 1.0f, 0.0f }, .scale = { 0.1f, 0.25f, 0.15f } };
+        // ハンドガンは右上に排莢する。少しカメラ側に飛ばすと後ろからの視点でよく見える
+        EjectSettings casing = {
+            .offset = { -1.0f, 1.4f, 0.45f },
+            .direction = { 1.0f, 1.0f, -0.3f },
+            .scale = { 0.04f, 0.04f, 0.04f },
+            .speed = 4.0f,
+            .spread = 0.25f,
+            .spinSpeed = 15.0f,
+            .lifeTime = 0.6f,
+        };
     };
 
     PlayerWeapon(FS::Engine* engine);
@@ -52,8 +85,30 @@ public:
     float GetReloadProgress() const { return 1.0f - reloadTimer_ / config_.reloadTime; }
     int GetReloadCount() const { return reloadCount_; }
 
+    // 薬莢のマテリアルの共有元。弾のアイテムと同じ見た目にする。無ければモデルのままのマテリアルで出す
+    void SetCasingMaterialSource(const FS::Model* sourceModel) { casingMaterialSource_ = sourceModel; }
+
 private:
+    // 銃から飛び出した物。跳ね上がってから落ち、決まった時間で消える
+    struct EjectedObject
+    {
+        std::unique_ptr<FS::Model> model;
+        const EjectSettings* settings = nullptr;   // 調整中の変更がすぐ反映されるよう、Config を指す
+        FS::Vector3 velocity;
+        FS::Vector3 spinAxis;
+        float spinSpeed = 0.0f;
+        float elapsedTime = 0.0f;
+    };
+
+    float CalculateReloadTilt() const;
+    void DropMagazine();
+    void Eject(const EjectSettings& settings, const std::string& modelName, const FS::Model* materialSource);
+    void UpdateEjectedObject(EjectedObject& ejectedObject, float deltaTime);
+    void BindEjectSettings(const std::string& prefix, EjectSettings& settings);
+    void DrawEjectSettings(const std::string& prefix);
+
     FS::Engine* engine_ = nullptr;
+    FS::Camera* camera_ = nullptr;   // 飛び出す物の向きの基準
     std::unique_ptr<FS::Model> model_;
     std::unique_ptr<FS::PropertyBinder> binder_; 
     FS::ParticleEmitter* muzzleFlashEmitterPtr_ = nullptr;
@@ -63,6 +118,13 @@ private:
     FS::ParticleEmitter* woodHitBulletEmitterPtr_ = nullptr;
 
     FS::WorldTransform handTransform_;
+    FS::WorldTransform reloadTiltTransform_;   // 手と銃の間に挟み、リロード中だけ回す
+
+    // 落とすマガジンのマテリアルの共有元。ImGui で色や質感を編集する (位置や大きさは EjectSettings で決める)
+    std::unique_ptr<FS::Model> magazineModel_;
+    const FS::Model* casingMaterialSource_ = nullptr;
+    std::vector<EjectedObject> ejectedObjects_;
+    std::mt19937 random_;
 
     Config config_;
     FS::Matrix4x4 currentHandMatrix_;

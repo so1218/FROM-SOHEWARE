@@ -8,13 +8,25 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "TreeField.h"
+#include "Easing.h"
+#include "MathUtils.h"
 
 using namespace FS;
 
+namespace
+{
+    constexpr float kDegToRad = Math::PI / 180.0f;
+    constexpr float kEjectShrinkTime = 0.2f;    // 消える前に小さくなる時間
+
+    // マガジンを出したときの音。Assets/Audio に置けば鳴る
+    const char* const kMagazineEjectSound = "magazineEject";
+}
+
 PlayerWeapon::PlayerWeapon(FS::Engine* engine)
-    : engine_(engine)
+    : engine_(engine), random_(std::random_device{}())
 {
     model_ = std::make_unique<FS::Model>(engine_, "P365");
+    magazineModel_ = std::make_unique<FS::Model>(engine_, "cube");
 
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "P365");
 }
@@ -28,8 +40,9 @@ void PlayerWeapon::Initialize()
 {
     model_->MakeMaterialUnique();
 
-    // 武器モデルの親に handTransform_ を設定
-    model_->GetTransform().SetParent(&handTransform_);
+    model_->GetTransform().SetParent(&reloadTiltTransform_);
+    reloadTiltTransform_.SetParent(&handTransform_);
+    magazineModel_->MakeMaterialUnique();
 
     auto muzzleParticle = engine_->GetParticleSystem()->CreateEmitter("muzzleFlash");
     if (muzzleParticle)
@@ -80,6 +93,14 @@ void PlayerWeapon::Initialize()
     binder_->Bind("FireInterval", &config_.fireInterval, 0.35f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("ReloadTime", &config_.reloadTime, 1.6f, 0.05f, 0.05f, 10.0f);
 
+    binder_->BindModel("MagazineModel", magazineModel_.get());
+    binder_->Bind("Reload Tilt Axis", &config_.reloadTiltAxis, { 1.0f, 0.0f, 0.0f });
+    binder_->Bind("Reload Tilt Angle", &config_.reloadTiltAngle, 35.0f, 0.5f, -180.0f, 180.0f);
+    binder_->Bind("Reload Tilt In Time", &config_.reloadTiltInTime, 0.15f, 0.01f, 0.01f, 1.0f);
+    binder_->Bind("Reload Tilt Out Time", &config_.reloadTiltOutTime, 0.15f, 0.01f, 0.01f, 1.0f);
+    BindEjectSettings("Magazine", config_.magazine);
+    BindEjectSettings("Casing", config_.casing);
+
     Refill();
 }
 
@@ -90,6 +111,7 @@ void PlayerWeapon::StartReload()
         return;
     }
     reloadTimer_ = config_.reloadTime;
+    DropMagazine();
 }
 
 void PlayerWeapon::Refill()
@@ -115,8 +137,24 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
         }
     }
 
+    camera_ = camera;
+
     // 右手のワールド行列を親トランスフォームに設定。武器のモデルは子なので、読んだときに付いてくる
     handTransform_.SetWorldMatrix(handWorldMatrix);
+
+    if (config_.reloadTiltAxis.LengthSq() > 0.0001f)
+    {
+        const float tiltAngle = config_.reloadTiltAngle * kDegToRad * CalculateReloadTilt();
+        reloadTiltTransform_.SetRotation(Quaternion::FromAxisAngle(config_.reloadTiltAxis.Normalize(), tiltAngle));
+    }
+
+    for (EjectedObject& ejectedObject : ejectedObjects_)
+    {
+        UpdateEjectedObject(ejectedObject, deltaTime);
+    }
+    std::erase_if(ejectedObjects_, [](const EjectedObject& ejectedObject) {
+        return ejectedObject.elapsedTime >= ejectedObject.settings->lifeTime;
+    });
 
     // 正しいワールド行列から銃口位置を取得
     Vector3 muzzlePos = GetMuzzleWorldPosition();
@@ -197,6 +235,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
     if (shotSmokeEmitterPtr_)   shotSmokeEmitterPtr_->Play();
     if (shotSparkEmitterPtr_)   shotSparkEmitterPtr_->Play();
+    Eject(config_.casing, "bullet", casingMaterialSource_);
 
     // カメラからのレイとレティクル拡散の計算
     Vector3 rayStart = camera->GetWorldTransform().translation_;
@@ -283,6 +322,107 @@ void PlayerWeapon::Draw()
     {
         model_->Draw();
     }
+
+    for (const EjectedObject& ejectedObject : ejectedObjects_)
+    {
+        ejectedObject.model->Draw();
+    }
+}
+
+// 0 = 構えたまま, 1 = いちばん傾けたところ。始めにすっと傾け、終わりに戻す
+float PlayerWeapon::CalculateReloadTilt() const
+{
+    if (!IsReloading())
+    {
+        return 0.0f;
+    }
+
+    const float elapsedTime = config_.reloadTime - reloadTimer_;
+    const float tiltIn = elapsedTime / config_.reloadTiltInTime;
+    const float tiltOut = reloadTimer_ / config_.reloadTiltOutTime;
+    return Easing::Evaluate(EasingType::EaseOutCubic, std::clamp(std::min(tiltIn, tiltOut), 0.0f, 1.0f));
+}
+
+void PlayerWeapon::DropMagazine()
+{
+    Eject(config_.magazine, "cube", magazineModel_.get());
+    AudioPlayer::GetInstance().Play(kMagazineEjectSound, false, 40);
+}
+
+void PlayerWeapon::Eject(const EjectSettings& settings, const std::string& modelName, const Model* materialSource)
+{
+    const Matrix4x4& gunMatrix = model_->GetTransform().GetWorldMatrix();
+    Vector3 gunScale;
+    Quaternion gunRotation;
+    Vector3 gunTranslation;
+    Matrix4x4::Decompose(gunMatrix, gunScale, gunRotation, gunTranslation);
+
+    EjectedObject ejectedObject;
+    ejectedObject.settings = &settings;
+    ejectedObject.model = std::make_unique<Model>(engine_, modelName);
+    if (materialSource)
+    {
+        ejectedObject.model->ShareMaterialsFrom(materialSource);
+    }
+
+    WorldTransform& transform = ejectedObject.model->GetTransform();
+    transform.translation_ = gunMatrix.TransformPoint(settings.offset);
+    transform.SetRotation(gunRotation);
+    transform.scale_ = settings.scale;
+
+    // 向きを少しばらけさせて飛ばし、重力で落とす
+    std::uniform_real_distribution<float> spread(-settings.spread, settings.spread);
+    // 向きはカメラを基準にする。銃の向きは構え方やリロードの傾きで変わるので、画面の右上へ飛ばすにはカメラのほうが安定する
+    const Quaternion& directionBasis = camera_ ? camera_->GetWorldTransform().rotation_ : gunRotation;
+    const Vector3 baseDirection = directionBasis.RotateVector(settings.direction).Normalize();
+    const Vector3 direction = (baseDirection + Vector3(spread(random_), spread(random_), spread(random_))).Normalize();
+    ejectedObject.velocity = direction * settings.speed;
+
+    std::uniform_real_distribution<float> axis(-1.0f, 1.0f);
+    ejectedObject.spinAxis = Vector3(axis(random_), axis(random_), axis(random_)).Normalize();
+    ejectedObject.spinSpeed = settings.spinSpeed * std::uniform_real_distribution<float>(0.6f, 1.4f)(random_);
+
+    ejectedObjects_.push_back(std::move(ejectedObject));
+}
+
+void PlayerWeapon::UpdateEjectedObject(EjectedObject& ejectedObject, float deltaTime)
+{
+    const EjectSettings& settings = *ejectedObject.settings;
+    ejectedObject.elapsedTime += deltaTime;
+    WorldTransform& transform = ejectedObject.model->GetTransform();
+
+    ejectedObject.velocity.y -= settings.gravity * deltaTime;
+    transform.translation_ += ejectedObject.velocity * deltaTime;
+    transform.SetRotation(Quaternion::FromAxisAngle(ejectedObject.spinAxis, ejectedObject.spinSpeed * deltaTime) * transform.rotation_);
+
+    // 消える直前に小さくしてから消す
+    const float remainingTime = settings.lifeTime - ejectedObject.elapsedTime;
+    transform.scale_ = settings.scale * std::clamp(remainingTime / kEjectShrinkTime, 0.0f, 1.0f);
+}
+
+// 初期値は Config に書いた値を使う
+void PlayerWeapon::BindEjectSettings(const std::string& prefix, EjectSettings& settings)
+{
+    binder_->Bind(prefix + " Offset", &settings.offset, settings.offset);
+    binder_->Bind(prefix + " Direction", &settings.direction, settings.direction);
+    binder_->Bind(prefix + " Scale", &settings.scale, settings.scale, 0.005f);
+    binder_->Bind(prefix + " Eject Speed", &settings.speed, settings.speed, 0.1f, 0.0f, 50.0f);
+    binder_->Bind(prefix + " Spread", &settings.spread, settings.spread, 0.01f, 0.0f, 2.0f);
+    binder_->Bind(prefix + " Spin Speed", &settings.spinSpeed, settings.spinSpeed, 0.1f, 0.0f, 100.0f);
+    binder_->Bind(prefix + " Gravity", &settings.gravity, settings.gravity, 0.5f, 0.0f, 200.0f);
+    binder_->Bind(prefix + " Life Time", &settings.lifeTime, settings.lifeTime, 0.05f, 0.1f, 10.0f);
+}
+
+void PlayerWeapon::DrawEjectSettings(const std::string& prefix)
+{
+    binder_->Draw(prefix + " Offset", "出る位置 (銃から見て)");
+    binder_->Draw(prefix + " Direction", "飛ぶ向き (カメラから見て。x 右, y 上, z 奥)");
+    binder_->Draw(prefix + " Scale", "大きさ");
+    binder_->Draw(prefix + " Eject Speed", "飛び出す速さ");
+    binder_->Draw(prefix + " Spread", "向きのばらつき");
+    binder_->Draw(prefix + " Spin Speed", "回る速さ");
+    binder_->Draw(prefix + " Gravity", "重力");
+    binder_->Draw(prefix + " Life Time", "消えるまで (秒)");
 }
 
 void PlayerWeapon::DebugGui()
@@ -310,6 +450,27 @@ void PlayerWeapon::DebugGui()
         binder_->Draw("FireInterval", "1 発ごとの間隔 (秒)");
         binder_->Draw("ReloadTime", "リロード時間 (秒)");
         ImGui::Text("残り: %d / %d %s", ammoInMagazine_, config_.magazineSize, IsReloading() ? "(リロード中)" : "");
+
+        ImGui::Spacing();
+        ImGui::TextDisabled("リロードの演出");
+        binder_->Draw("Reload Tilt Axis", "銃を傾ける軸 (手から見て)");
+        binder_->Draw("Reload Tilt Angle", "傾ける角度 (度)");
+        binder_->Draw("Reload Tilt In Time", "傾けるまで (秒)");
+        binder_->Draw("Reload Tilt Out Time", "戻すまで (秒)");
+
+        if (ImGui::TreeNode("マガジン"))
+        {
+            DrawEjectSettings("Magazine");
+            binder_->DrawModel("MagazineModel", "マガジンの見た目 (色や質感だけを使う)");
+            ImGui::TreePop();
+        }
+
+        // 見た目は弾のアイテムのモデルと共有しているので、そちらで編集する
+        if (ImGui::TreeNode("薬莢"))
+        {
+            DrawEjectSettings("Casing");
+            ImGui::TreePop();
+        }
 
         ImGui::Unindent(); 
     }

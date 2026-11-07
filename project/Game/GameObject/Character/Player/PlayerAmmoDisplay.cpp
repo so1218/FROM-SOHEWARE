@@ -24,6 +24,11 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     promptText_->SetAlign(TextAlign::Right);
     promptText_->SetLayerOrder(12);
 
+    reloadText_ = std::make_unique<Text>(engine_);
+    reloadText_->SetAnchor(UIAnchor::Center);
+    reloadText_->SetAlign(TextAlign::Center);
+    reloadText_->SetLayerOrder(12);
+
     roundSprite_ = std::make_unique<Sprite>(engine_);
     roundSprite_->SetScreenAnchor({ 1.0f, 1.0f });
     roundSprite_->SetAnchorPoint({ 1.0f, 1.0f });
@@ -34,14 +39,15 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     promptIcon_->SetAnchorPoint({ 1.0f, 1.0f });
     promptIcon_->SetLayerOrder(12);
 
+    // ゲージは左端から伸ばすので、左端を基準にする
     reloadBarBack_ = std::make_unique<Sprite>(engine_);
-    reloadBarBack_->SetScreenAnchor({ 1.0f, 1.0f });
-    reloadBarBack_->SetAnchorPoint({ 0.0f, 1.0f });
+    reloadBarBack_->SetScreenAnchor({ 0.5f, 0.5f });
+    reloadBarBack_->SetAnchorPoint({ 0.0f, 0.5f });
     reloadBarBack_->SetLayerOrder(12);
 
     reloadBarFill_ = std::make_unique<Sprite>(engine_);
-    reloadBarFill_->SetScreenAnchor({ 1.0f, 1.0f });
-    reloadBarFill_->SetAnchorPoint({ 0.0f, 1.0f });
+    reloadBarFill_->SetScreenAnchor({ 0.5f, 0.5f });
+    reloadBarFill_->SetAnchorPoint({ 0.0f, 0.5f });
     reloadBarFill_->SetLayerOrder(13);
 }
 
@@ -57,7 +63,10 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
     binder.Bind("Ammo_PromptOffset", &promptOffset_, { -40.0f, -150.0f }, 1.0f);
     binder.Bind("Ammo_PromptFontSize", &promptFontSize_, 24.0f, 0.5f, 4.0f, 200.0f);
     binder.Bind("Ammo_PromptIconSize", &promptIconSize_, 36.0f, 0.5f, 4.0f, 200.0f);
-    binder.Bind("Ammo_ReloadBarSize", &reloadBarSize_, { 160.0f, 4.0f }, 0.5f, 1.0f, 1000.0f);
+    binder.Bind("Ammo_ReloadBarOffset", &reloadBarOffset_, { 0.0f, 90.0f }, 1.0f);
+    binder.Bind("Ammo_ReloadBarSize", &reloadBarSize_, { 70.0f, 3.0f }, 0.5f, 1.0f, 1000.0f);
+    binder.Bind("Ammo_ReloadTextOffset", &reloadTextOffset_, { 0.0f, 100.0f }, 1.0f);
+    binder.Bind("Ammo_ReloadFontSize", &reloadFontSize_, 16.0f, 0.5f, 4.0f, 200.0f);
     binder.BindColor("Ammo_NormalColor", &normalColor_, { 1.0f, 1.0f, 1.0f, 0.95f });
     binder.BindColor("Ammo_LowColor", &lowAmmoColor_, { 1.0f, 0.35f, 0.25f, 0.95f });
     binder.BindColor("Ammo_EmptyRoundColor", &emptyRoundColor_, { 1.0f, 1.0f, 1.0f, 0.2f });
@@ -73,10 +82,13 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_RoundsOffset", "弾の列の位置 (右端)");
     binder.Draw("Ammo_RoundSize", "弾 1 発の大きさ");
     binder.Draw("Ammo_RoundSpacing", "弾の間隔");
-    binder.Draw("Ammo_PromptOffset", "リロード表示の位置 (右端)");
-    binder.Draw("Ammo_PromptFontSize", "リロード表示の文字の大きさ");
+    binder.Draw("Ammo_PromptOffset", "弾切れの表示の位置 (右端)");
+    binder.Draw("Ammo_PromptFontSize", "弾切れの表示の文字の大きさ");
     binder.Draw("Ammo_PromptIconSize", "ボタン画像の大きさ");
+    binder.Draw("Ammo_ReloadBarOffset", "リロードのゲージの位置 (画面中央から)");
     binder.Draw("Ammo_ReloadBarSize", "リロードのゲージの大きさ");
+    binder.Draw("Ammo_ReloadTextOffset", "「リロード中」の位置 (画面中央から)");
+    binder.Draw("Ammo_ReloadFontSize", "「リロード中」の文字の大きさ");
     binder.Draw("Ammo_NormalColor", "色");
     binder.Draw("Ammo_LowColor", "残り少ないときの色");
     binder.Draw("Ammo_EmptyRoundColor", "撃ったあとの弾の色");
@@ -105,6 +117,7 @@ void PlayerAmmoDisplay::Draw(const PlayerWeapon& weapon)
 
     DrawRounds(weapon);
     DrawReloadPrompt(weapon);
+    DrawReloadProgress(weapon);
 }
 
 void PlayerAmmoDisplay::DrawRounds(const PlayerWeapon& weapon)
@@ -132,30 +145,34 @@ void PlayerAmmoDisplay::DrawRounds(const PlayerWeapon& weapon)
     }
 }
 
-void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
+void PlayerAmmoDisplay::DrawReloadProgress(const PlayerWeapon& weapon)
 {
-    if (weapon.IsReloading())
+    if (!weapon.IsReloading())
     {
-        promptText_->SetText("リロード中");
-        promptText_->SetPosition(promptOffset_);
-        promptText_->SetFontSize(promptFontSize_);
-        promptText_->SetColor(normalColor_);
-        promptText_->Draw();
-
-        const Vector2 barLeft = { promptOffset_.x - reloadBarSize_.x, promptOffset_.y + 10.0f };
-        reloadBarBack_->SetPosition(barLeft);
-        reloadBarBack_->SetSize(reloadBarSize_);
-        reloadBarBack_->SetColor(emptyRoundColor_);
-        reloadBarBack_->Draw();
-
-        reloadBarFill_->SetPosition(barLeft);
-        reloadBarFill_->SetSize({ reloadBarSize_.x * weapon.GetReloadProgress(), reloadBarSize_.y });
-        reloadBarFill_->SetColor(normalColor_);
-        reloadBarFill_->Draw();
         return;
     }
 
-    if (weapon.GetAmmo() > 0)
+    const Vector2 barLeft = { reloadBarOffset_.x - reloadBarSize_.x * 0.5f, reloadBarOffset_.y };
+    reloadBarBack_->SetPosition(barLeft);
+    reloadBarBack_->SetSize(reloadBarSize_);
+    reloadBarBack_->SetColor(emptyRoundColor_);
+    reloadBarBack_->Draw();
+
+    reloadBarFill_->SetPosition(barLeft);
+    reloadBarFill_->SetSize({ reloadBarSize_.x * weapon.GetReloadProgress(), reloadBarSize_.y });
+    reloadBarFill_->SetColor(normalColor_);
+    reloadBarFill_->Draw();
+
+    reloadText_->SetText("リロード中");
+    reloadText_->SetPosition(reloadTextOffset_);
+    reloadText_->SetFontSize(reloadFontSize_);
+    reloadText_->SetColor(normalColor_);
+    reloadText_->Draw();
+}
+
+void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
+{
+    if (weapon.IsReloading() || weapon.GetAmmo() > 0)
     {
         return;
     }

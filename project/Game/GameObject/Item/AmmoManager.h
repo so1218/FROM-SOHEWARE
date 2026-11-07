@@ -17,6 +17,9 @@ public:
 
     void AddAmmo();
 
+    // 弾のアイテムのマテリアルの共有元。銃の薬莢も同じ見た目にするのに使う
+    const FS::Model* GetSharedModel() const { return sharedModel_.get(); }
+
 private:
     FS::Engine* engine_ = nullptr;
     std::string managerGroupName_;

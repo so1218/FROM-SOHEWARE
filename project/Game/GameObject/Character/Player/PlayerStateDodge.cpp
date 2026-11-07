@@ -19,7 +19,7 @@ void PlayerStateDodge::Enter(Player* player)
     player->GetTransform().rotation_ = Quaternion::QuaternionFromEuler({ 0.0f, angleY, 0.0f });
 
     // 回避用のアニメーション
-    player->PlayAnimation("humanRun", true, player->config.dodgeAnimSpeed, 0.05f);
+    player->PlayAnimation("humanRoll", true, player->config.dodgeAnimSpeed, 0.05f);
 }
 
 void PlayerStateDodge::Update(Player* player)

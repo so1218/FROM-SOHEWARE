@@ -1,7 +1,137 @@
 {
     "P365": {
         "BaseDamage": 10,
+        "Casing Direction": [
+            0.30000001192092896,
+            1.0,
+            -0.15000000596046448
+        ],
+        "Casing Eject Speed": 8.0,
+        "Casing Gravity": 30.0,
+        "Casing Life Time": 1.5,
+        "Casing Offset": [
+            -1.0,
+            1.399999976158142,
+            0.44999998807907104
+        ],
+        "Casing Scale": [
+            0.15000000596046448,
+            0.10000000149011612,
+            0.15000000596046448
+        ],
+        "Casing Spin Speed": 15.0,
+        "Casing Spread": 0.30000001192092896,
         "FireInterval": 0.3499999940395355,
+        "Magazine Direction": [
+            0.33000001311302185,
+            1.0,
+            0.0
+        ],
+        "Magazine Eject Speed": 10.0,
+        "Magazine Gravity": 30.0,
+        "Magazine Life Time": 2.0,
+        "Magazine Offset": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Magazine Scale": [
+            0.20000000298023224,
+            0.3499999940395355,
+            0.10000000149011612
+        ],
+        "Magazine Spin Speed": 7.0,
+        "Magazine Spread": 0.30000001192092896,
+        "MagazineModel_AddShadow": 1,
+        "MagazineModel_AlbedoMap": "white1x1",
+        "MagazineModel_AlphaThres": 0.009999999776482582,
+        "MagazineModel_Color": [
+            0.44720494747161865,
+            0.44720494747161865,
+            0.44720494747161865,
+            1.0
+        ],
+        "MagazineModel_DiffuseRef": 4.0,
+        "MagazineModel_DisEnable": 0,
+        "MagazineModel_DisThres": 0.5,
+        "MagazineModel_DissolveTex": "white1x1",
+        "MagazineModel_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "MagazineModel_EdgeInten": 2.0,
+        "MagazineModel_EdgeWidth": 0.05000000074505806,
+        "MagazineModel_Emissive": 3.4000000953674316,
+        "MagazineModel_EnvMapInt": 0.03999999910593033,
+        "MagazineModel_EnvMapTex": "pureSky",
+        "MagazineModel_LightMode": 3,
+        "MagazineModel_Lighting": 1,
+        "MagazineModel_Metalness": 1.0,
+        "MagazineModel_NormEnable": 1,
+        "MagazineModel_NormInten": 10.0,
+        "MagazineModel_NormTile": 1.0,
+        "MagazineModel_NormalMapTex": "bark1_normal",
+        "MagazineModel_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "MagazineModel_OutlineEnable": 0,
+        "MagazineModel_OutlineWidth": 1.0,
+        "MagazineModel_RimColor": [
+            0.4440993666648865,
+            0.4440993666648865,
+            0.4440993666648865
+        ],
+        "MagazineModel_RimEnable": 1,
+        "MagazineModel_RimInten": 0.6000000238418579,
+        "MagazineModel_RimPower": 2.0999999046325684,
+        "MagazineModel_RimUseDir": 0,
+        "MagazineModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "MagazineModel_Roughness": 0.27000001072883606,
+        "MagazineModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "MagazineModel_ShadowBias": 0.0005000000237487257,
+        "MagazineModel_ShadowDens": 0.800000011920929,
+        "MagazineModel_ShadowEnv": 0.0,
+        "MagazineModel_ShadowSoft": 0.0,
+        "MagazineModel_Shininess": 50.0,
+        "MagazineModel_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "MagazineModel_ToonRampTex": "toonRamp_01",
+        "MagazineModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "MagazineModel_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "MagazineModel_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "MagazineModel_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
         "MagazineSize": 10,
         "MaxDistance": 500.0,
         "Muzzle Flash Color": [
@@ -450,6 +580,14 @@
             19.100000381469727,
             2.200000047683716
         ],
+        "Reload Tilt Angle": 16.5,
+        "Reload Tilt Axis": [
+            0.0,
+            0.0,
+            0.17000000178813934
+        ],
+        "Reload Tilt In Time": 0.6000000238418579,
+        "Reload Tilt Out Time": 0.4000000059604645,
         "ReloadTime": 1.600000023841858
     }
 }

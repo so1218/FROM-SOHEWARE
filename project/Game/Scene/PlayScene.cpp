@@ -18,6 +18,7 @@
 #include "Environment.h"
 #include "TreeField.h"
 #include "Player.h"
+#include "PlayerWeapon.h"
 #include "Tutorial.h"
 #include "TitleMenu.h"
 #include "PauseMenuHint.h"
@@ -45,7 +46,8 @@ PlayScene::PlayScene(Engine* engine)
     player->SetFollowCamera(followCamera_.get());
 	auto weatherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
 	weatherEffectManager->SetCameraManager(cameraManager_.get());
-    objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
+    auto ammoManager = objectManager_.Create<AmmoManager>(engine_, "GameAmmo");
+    player->GetWeapon()->SetCasingMaterialSource(ammoManager->GetSharedModel());
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
     enemyManager_->SetTerrain(ground->GetTerrain());
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
