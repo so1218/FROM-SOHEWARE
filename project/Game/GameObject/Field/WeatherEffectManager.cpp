@@ -218,7 +218,7 @@ void WeatherEffectManager::Update()
                 lightningSystem_->SpawnStrike(startPos, endPos);
 
                 // 3Dサウンドの再生
-                AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 50, 100.0f);
+                AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 30, 500.0f);
 
                 // 落雷パーティクルの再生。1本ごとに別のエミッターを使う
                 thunderStrikeEmitters_[i]->SetPosition(endPos);
@@ -289,7 +289,6 @@ void WeatherEffectManager::DebugGui()
         binder_->Draw("ThunderShakeMaxDist", "揺れが届く最大距離");
     }
 
-    // 雷の見た目は同じタブの中に、LightningSystem が書く
     if (lightningSystem_)
     {
         lightningSystem_->DebugGui();

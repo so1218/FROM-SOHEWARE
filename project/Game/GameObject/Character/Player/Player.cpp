@@ -96,9 +96,9 @@ void Player::Initialize()
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	ResetToSpawn();
 
-	auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
-	auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
-	engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
+	//auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
+	//auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
+	//engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
 	weapon_->Initialize();
 	reticle_->Initialize();

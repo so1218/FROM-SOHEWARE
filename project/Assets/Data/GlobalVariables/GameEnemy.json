@@ -1664,9 +1664,9 @@
         "ThrusterModel_AlbedoMap": "white1x1",
         "ThrusterModel_AlphaThres": 0.009999999776482582,
         "ThrusterModel_Color": [
-            0.9751552939414978,
-            0.34524133801460266,
-            0.0,
+            0.7329192161560059,
+            0.7329192161560059,
+            0.7329192161560059,
             1.0
         ],
         "ThrusterModel_DiffuseRef": 4.0,
@@ -1680,16 +1680,16 @@
         ],
         "ThrusterModel_EdgeInten": 0.0,
         "ThrusterModel_EdgeWidth": 0.0010000000474974513,
-        "ThrusterModel_Emissive": 42.20000076293945,
+        "ThrusterModel_Emissive": 20.899999618530273,
         "ThrusterModel_EnvMapInt": 0.10000000149011612,
         "ThrusterModel_EnvMapTex": "pureSky",
         "ThrusterModel_LightMode": 3,
         "ThrusterModel_Lighting": 1,
-        "ThrusterModel_Metalness": 0.05000000074505806,
+        "ThrusterModel_Metalness": 0.9200000166893005,
         "ThrusterModel_NormEnable": 1,
-        "ThrusterModel_NormInten": 4.809999942779541,
-        "ThrusterModel_NormTile": 8.100000381469727,
-        "ThrusterModel_NormalMapTex": "normal_02",
+        "ThrusterModel_NormInten": 0.8199999928474426,
+        "ThrusterModel_NormTile": 11.300000190734863,
+        "ThrusterModel_NormalMapTex": "normal_18",
         "ThrusterModel_OutlineColor": [
             0.0,
             0.0,
@@ -1699,12 +1699,12 @@
         "ThrusterModel_OutlineEnable": 0,
         "ThrusterModel_OutlineWidth": 1.0,
         "ThrusterModel_RimColor": [
-            1.0,
-            0.1677018404006958,
-            0.0
+            0.9534161686897278,
+            0.9534161686897278,
+            0.9534161686897278
         ],
         "ThrusterModel_RimEnable": 1,
-        "ThrusterModel_RimInten": 0.10000000149011612,
+        "ThrusterModel_RimInten": 0.4000000059604645,
         "ThrusterModel_RimPower": 18.700000762939453,
         "ThrusterModel_RimUseDir": 0,
         "ThrusterModel_Rot": [
@@ -1712,7 +1712,7 @@
             0.0,
             0.0
         ],
-        "ThrusterModel_Roughness": 0.2800000011920929,
+        "ThrusterModel_Roughness": 0.25999999046325684,
         "ThrusterModel_Scale": [
             1.0,
             1.0,
@@ -1724,9 +1724,9 @@
         "ThrusterModel_ShadowSoft": 0.0,
         "ThrusterModel_Shininess": 50.0,
         "ThrusterModel_SpecColor": [
-            0.11124184727668762,
-            0.15374818444252014,
-            0.4534161686897278,
+            0.8571428656578064,
+            0.8571428656578064,
+            0.8571428656578064,
             1.0
         ],
         "ThrusterModel_ToonRampTex": "toonRamp_01",
@@ -2017,7 +2017,7 @@
             0.13229572772979736,
             1.0
         ],
-        "sharedEnemyModel_Mat2_RimEnable": 1,
+        "sharedEnemyModel_Mat2_RimEnable": 0,
         "sharedEnemyModel_Mat2_RimInten": 10.0,
         "sharedEnemyModel_Mat2_RimPower": 3.9000000953674316,
         "sharedEnemyModel_Mat2_RimUseDir": 0,
