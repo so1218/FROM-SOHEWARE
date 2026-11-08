@@ -41,7 +41,8 @@ namespace FS
     void PropertyBinder::BindRotation(const std::string& key, Quaternion* rotation, float speed, std::function<void()> onChange)
     {
         Vector3* euler = &rotationEulers_[key];
-        BindVector3Internal(key, euler, { 0.0f, 0.0f, 0.0f }, speed, 0.0f, 0.0f,
+        // 保存された値がなければ、今の回転をそのまま使う
+        BindVector3Internal(key, euler, Quaternion::QuaternionToEuler(*rotation), speed, 0.0f, 0.0f,
             [euler, rotation, onChange]()
             {
                 *rotation = Quaternion::QuaternionFromEuler(*euler);

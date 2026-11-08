@@ -41,9 +41,8 @@ bool IsBoxSphereOverlap(const Vector3& boxCenter, const Vector3& halfSize, const
 
 }
 
-void CollisionManager::Reset()
+void CollisionManager::ResetCollisionHistory()
 {
-    colliders_.clear();
     previousCollisionPairs_.clear();
 }
 

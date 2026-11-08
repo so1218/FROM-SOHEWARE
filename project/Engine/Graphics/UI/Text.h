@@ -21,7 +21,7 @@ enum class TextAlign : int32_t
 enum class TextDirection : int32_t
 {
     Horizontal = 0,   // 横書き
-    Vertical = 1,     // 縦書き (行は右から左へ並ぶ)
+    Vertical = 1,     // 縦書き
 };
 
 class Text
@@ -45,7 +45,7 @@ public:
     void SetAlign(TextAlign align) { align_ = align; }
     void SetDirection(TextDirection direction) { direction_ = direction; }
 
-    // 画面基準と文章の基準点を同じ位置にそろえる (右上なら画面の右上に文章の右上を合わせる)
+    // 画面基準と文章の基準点を同じ位置にそろえる
     void SetAnchor(UIAnchor anchor)
     {
         screenAnchor_ = ToAnchorVector(anchor);

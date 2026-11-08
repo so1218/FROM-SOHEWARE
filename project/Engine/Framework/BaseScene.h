@@ -118,7 +118,7 @@ public:
     {
         if (collisionManager_)
         {
-            collisionManager_->Reset();
+            collisionManager_->ResetCollisionHistory();
         }
 
         if (engine_ && engine_->GetRendererManager())

@@ -64,20 +64,15 @@
 
 ## 3. 開発ドキュメント (マニュアル)
 
-FromSoheWareエンジンを使ったゲーム開発のマニュアルです。
-開発を始める際は、まず以下の目次ページをご確認ください。
+FromSoheWare エンジンでゲームを作るためのドキュメントです。目次は [docs/index.md](docs/index.md) です。
 
-### [開発ドキュメント目次 (docs/index.md)](docs/index.md)
-
-**【主な収録ガイド】**
-- **[1. シーンとライフサイクル](docs/sceneGuide.md)**
-  - シーンの作成 / オブジェクトの自動ライフサイクル / `Game` クラスへのシーン登録
-- **[2. オブジェクトの作成と制御](docs/gameObjectGuide.md)**
-  - `GameObject` の基本仕様 / キャラクター実装例 / 衝突判定
-- **[3. 描画](docs/drawingGuide.md)**
-  - `Model`, `AnimationModel` の再生など
-- **[4. デバッグとパラメータ調整](docs/propertyBinderGuide.md)**
-  - `PropertyBinder` と ImGui の自動連携 / パラメータの保存とロード
+| 目的 | 読むところ |
+| :--- | :--- |
+| まず動かしたい | [はじめに](docs/start/index.md) |
+| ゲームの作り方を一通り知りたい | [チュートリアル: ジェム集めゲームを作る](docs/tutorial/index.md) |
+| やりたいことのやり方を知りたい | [機能別ガイド](docs/guides/index.md) |
+| 仕組みを知りたい・エンジンを改造したい | [エンジンの仕組み](docs/concepts/index.md) |
+| 関数を調べたい | [早見表](docs/reference/cheatsheet.md) / [API リファレンス](docs/reference/api.md) |
 
 ---
 
@@ -134,7 +129,7 @@ FromSoheWare/
 | 項目 | 条件 |
 | :--- | :--- |
 | **OS** | Windows 10 または Windows 11 |
-| **開発ツール** | Visual Studio 2022 |
+| **開発ツール** | Visual Studio 2026 (プラットフォームツールセット v145) |
 | **グラフィック** | DirectX 12 に対応した GPU |
 
 ---

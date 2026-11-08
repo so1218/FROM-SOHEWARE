@@ -23,8 +23,9 @@ public:
     void AddCollider(Collider* collider);
     void RemoveCollider(Collider* collider);
 
-    // 登録と前フレームの衝突をすべて消す
-    void Reset();
+    // 前フレームまでの衝突の記録を消す。シーンを抜けるときに呼ぶ。
+    // コライダーの登録は持ち主の GameObject と同じだけ続くので、ここでは消さない
+    void ResetCollisionHistory();
 
     // 全コライダーの衝突判定を実行
     void CheckAllCollisions();
