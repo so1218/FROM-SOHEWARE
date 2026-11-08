@@ -24,7 +24,7 @@ public:
 
     void Initialize();
     void SpawnParticle(const WorldTransform& transform, const std::string& presetName, float lifetime,
-        const WorldTransform* attractionTarget, const WorldTransform* vortexTarget, const ModelData* emitterModelData = nullptr,
+        const WorldTransform* attractionTarget, const ModelData* emitterModelData = nullptr,
         const AnimationModel* emitterAnimModel = nullptr);
     void Update();
     // プリセットからエミッターを作って登録する。持ち主は ParticleSystem で、返したポインタは使う側が覚えておいて Play などに使う。

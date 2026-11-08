@@ -384,36 +384,6 @@ void ParticleEditor::ShowEditor()
                 }
 
                 ImGui::Separator();
-
-                // 渦モジュール
-                if (ImGui::TreeNode("渦モジュール"))
-                {
-                    auto& vortex = config.vortex;
-
-                    ImGui::Checkbox("有効##Vortex", &vortex.enabled);
-
-                    if (vortex.enabled)
-                    {
-                        ImGui::DragFloat3("回転軸", &vortex.axis.x, 0.1f);
-                        ImGui::DragFloat("周回スピード", &vortex.orbitalSpeed, 0.1f, -1000.0f, 1000.0f);
-                        ImGui::DragFloat("半径方向スピード", &vortex.radialSpeed, 0.1f, -100.0f, 100.0f);
-                        if (ImGui::IsItemHovered())
-                            ImGui::SetTooltip("負値で中心へ(吸引)、正値で外へ(拡散)");
-
-                        ImGui::Separator();
-
-                        ImGui::Text("静的中心 (ターゲット未設定時)");
-                        ImGui::DragFloat3("相対座標##VortexCenter", &vortex.center.x, 0.1f);
-
-                        ImGui::Separator();
-
-                        ImGui::Text("動的ターゲット (SetVortexTarget使用時)");
-                        ImGui::DragFloat3("オフセット##VortexOffset", &vortex.offset.x, 0.1f);
-                    }
-
-                    ImGui::TreePop();
-                }
-                ImGui::Separator();
                 if (ImGui::TreeNode("引力モジュール"))
                 {
                     auto& attraction = config.attraction;

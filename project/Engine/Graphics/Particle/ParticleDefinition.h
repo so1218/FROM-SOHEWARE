@@ -194,17 +194,6 @@ struct NoiseModule
     bool separateAxes = true;  // X/Y/Z軸で別々のノイズを使うか（Simplex時に有効）
 };
 
-struct VortexModule
-{
-    bool enabled = false;
-    Vector3 center = { 0.0f, 0.0f, 0.0f }; // 渦の基準点
-    Vector3 axis = { 0.0f, 1.0f, 0.0f };   // 回転軸
-    float orbitalSpeed = 2.0f; // 周回スピード（接線方向）
-    float radialSpeed = 0.0f;  // 中心へ向かうスピード（負の値で外へ広がる）
-    const WorldTransform* targetToFollow = nullptr;
-    Vector3 offset = { 0.0f, 0.0f, 0.0f };
-};
-
 struct AttractionModule
 {
     bool enabled = false;
@@ -273,7 +262,6 @@ struct ParticleConfig
     RotationOverLifetimeModule rotation;
     ShapeModule shape;
     TextureSheetAnimationModule textureSheet;
-    VortexModule vortex;
     TrailModule trail;
     AttractionModule attraction;
     NoiseModule noise;
@@ -306,7 +294,6 @@ struct ParticleState
     float trailSeed = 0.0f;
 
     const WorldTransform* attractionTarget = nullptr;
-    const WorldTransform* vortexTarget = nullptr;
 
     const ParticleConfig* config = nullptr;
 

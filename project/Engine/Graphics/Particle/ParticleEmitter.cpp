@@ -112,7 +112,7 @@ void ParticleEmitter::Update(ParticleSystem& particleSystem)
                 spawnTransform.rotation_ = rotation_;
             }
 
-            particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_, vortexTarget_,
+            particleSystem.SpawnParticle(spawnTransform, presetName_, lifetime_, attractionTarget_,
                 currentModelData, targetAnimModel_);
         }
 

@@ -49,7 +49,6 @@ void ParticleSystem::SpawnParticle(
     const std::string& presetName,
     float lifetime,
     const WorldTransform* attractionTarget,
-    const WorldTransform* vortexTarget,
     const ModelData* emitterModelData,
     const AnimationModel* emitterAnimModel)
 {
@@ -125,7 +124,6 @@ void ParticleSystem::SpawnParticle(
     particle.lifetime = lifetime;
     particle.age = 0.0f;
     particle.attractionTarget = attractionTarget;
-    particle.vortexTarget = vortexTarget;
     particle.trailSeed = Math::RandomFloat(0.0f, 1000.0f);
 
     particles_.push_back(std::move(particle));
@@ -275,36 +273,6 @@ void ParticleSystem::Update()
                 }
 
                 particleState.velocity *= (1.0f - config.physics.drag * deltaTime);
-            }
-
-            // Vortex Module
-            if (config.vortex.enabled)
-            {
-                Vector3 vortexCenter = particleState.vortexTarget ?
-                    (particleState.vortexTarget->translation_ + config.vortex.offset) :
-                    (particleState.initialPosition + config.vortex.center);
-
-                Vector3 diff = particleState.transform.translation_ - vortexCenter;
-                Vector3 axis = config.vortex.axis.Normalize();
-
-                float height = diff.Dot(axis);
-                Vector3 radialVector = diff - (axis * height);
-                float distanceToAxis = radialVector.Length();
-
-                if (distanceToAxis > 0.01f)
-                {
-                    Vector3 radialDir = radialVector.Normalize();
-                    Vector3 tangentialDir = axis.Cross(radialDir).Normalize();
-
-                    Vector3 axialVelocity = axis * particleState.velocity.Dot(axis);
-                    Vector3 orbitalVelocity = tangentialDir * config.vortex.orbitalSpeed;
-                    Vector3 radialVelocity = radialDir * config.vortex.radialSpeed;
-
-                    Vector3 targetVelocity = axialVelocity + orbitalVelocity + radialVelocity;
-                    float lerpRate = std::min(10.0f * deltaTime, 1.0f);
-
-                    particleState.velocity = Math::Lerp(particleState.velocity, targetVelocity, lerpRate);
-                }
             }
 
             // Attraction Module

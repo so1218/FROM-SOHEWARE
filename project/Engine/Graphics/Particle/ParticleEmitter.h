@@ -21,7 +21,6 @@ public:
     void SetFollowOffset(const Vector3& offset) { followOffset_ = offset; }
     void SetOffsetScale(const Vector3& scale) { offsetScale_ = scale; }
     void SetAttractionTarget(const WorldTransform* target) { attractionTarget_ = target; }
-    void SetVortexTarget(const WorldTransform* target) { vortexTarget_ = target; }
     void SetPosition(const Vector3& position) { position_ = position; }
     void SetRotation(const Quaternion& rotation) { rotation_ = rotation; }
 
@@ -66,7 +65,6 @@ public:
     Vector3 followOffset_ = { 0.0f, 0.0f, 0.0f };
     Vector3 offsetScale_ = { 1.0f, 1.0f, 1.0f };
     const WorldTransform* attractionTarget_ = nullptr;
-    const WorldTransform* vortexTarget_ = nullptr;
 
     std::string name_ = "Emitter";
     std::string& presetName_ = name_;

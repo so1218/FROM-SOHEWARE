@@ -201,26 +201,6 @@
             "enabled": false,
             "randomDirection": true,
             "speed": 9.4399995803833
-        },
-        "vortexModule": {
-            "axis": [
-                0.0,
-                1.0,
-                0.0
-            ],
-            "center": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "enabled": false,
-            "offset": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "orbitalSpeed": 2.0,
-            "radialSpeed": 0.0
         }
     }
 }
