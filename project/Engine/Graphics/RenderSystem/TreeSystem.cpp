@@ -64,7 +64,7 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
     const LeafMaterialData& leafData,
     const TrunkMaterialData& trunkData,
     uint32_t leafTex, uint32_t trunkTex,
-    uint32_t trunkNormal, uint32_t toonRamp)
+    uint32_t trunkNormal)
 {
     TreeMaterialHandle handle{};
     auto* device = engine_->GetGraphicsDevice()->GetDevice();
@@ -86,7 +86,6 @@ TreeMaterialHandle TreeSystem::CreateTreeMaterial(
     handle.leafTextureHandle = leafTex;
     handle.trunkTextureHandle = trunkTex;
     handle.trunkNormalMapHandle = trunkNormal;
-    handle.toonRampHandle = toonRamp;
 
     materialBuffers_.push_back(handle.leafMaterialBuffer);
     materialBuffers_.push_back(handle.trunkMaterialBuffer);

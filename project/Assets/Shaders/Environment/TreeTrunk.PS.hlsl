@@ -28,12 +28,10 @@ ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2D<float4> gTexture : register(t0);
 Texture2DArray<float> gShadowMapArray : register(t2);
-Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gNormalTexture : register(t5);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
-SamplerState gClampSampler : register(s2);
 
 struct TreeTrunkPSInput
 {
@@ -79,17 +77,13 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     float3 worldNormal = normalize(input.normal);
     float3 worldTangent = normalize(input.tangent);
 
-    float3 normal = worldNormal;
-    if (gMaterial.enableNormalMap != 0)
-    {
-        normal = CalculateNormalFromMap(worldNormal, worldTangent, input.texcoord, gMaterial.normalIntensity, gNormalTexture, gSampler);
-    }
+    float3 normal = CalculateNormalFromMap(worldNormal, worldTangent, input.texcoord, gMaterial.normalIntensity, gNormalTexture, gSampler);
 
     float3 toEyeWorld = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
 
     // CSMによる影判定
     float shadowFactor = 1.0f;
-    if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)
+    if (gDirectionalLights[0].enable)
     {
         float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
         float3 lightDir = normalize(-gDirectionalLights[0].direction);
@@ -103,55 +97,39 @@ PixelShaderOutput main(TreeTrunkPSInput input)
     // 表面の情報
     SurfaceData surface;
     surface.albedo = baseColor;
-    surface.pbrAlbedo = baseColor * baseColor; // sRGB to Linear
-    surface.specularColor = gMaterial.specularColor.rgb;
+    surface.pbrAlbedo = baseColor;
+    surface.specularColor = 0.0f.xxx;
     surface.normal = normal;
     surface.roughness = roughness;
-    surface.metalness = saturate(gMaterial.metalness);
-    surface.shininess = gMaterial.shininess;
-    surface.diffuseReflection = gMaterial.diffuseReflection;
-    surface.lightMode = gMaterial.lightMode;
+    surface.metalness = 0.0f;
+    surface.shininess = 1.0f;
+    surface.diffuseReflection = 1.0f;
+    surface.lightMode = SHADING_MODEL_PBR;
 
-    // ライティング
-    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-    if (gMaterial.enableLighting != 0)
-    {
-        finalColor += ApplyDirectionalLights(surface, toEyeWorld, shadowFactor, gDirectionalLights, gToonRamp, gClampSampler);
-        finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
-        finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
+    float3 finalColor = ApplyDirectionalLightsPBR(surface, toEyeWorld, shadowFactor, gDirectionalLights);
+    finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
+    finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
 
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            float NdotV = max(dot(surface.normal, toEyeWorld), 0.0f);
+    float NdotV = max(dot(surface.normal, toEyeWorld), 0.0f);
 
-            // 濡れているほど水の反射率に近づける
-            float3 baseF0 = lerp(float3(0.04f, 0.04f, 0.04f), surface.pbrAlbedo, surface.metalness);
-            float3 F0 = lerp(baseF0, float3(0.02f, 0.02f, 0.02f), wetness);
+    // 濡れているほど水の反射率に近づける
+    float3 F0 = lerp(float3(0.04f, 0.04f, 0.04f), float3(0.02f, 0.02f, 0.02f), wetness);
 
-            float3 kS = F_SchlickRoughness(NdotV, F0, surface.roughness);
-            float3 kD = (float3(1.0f, 1.0f, 1.0f) - kS) * (1.0f - surface.metalness);
+    float3 kS = F_SchlickRoughness(NdotV, F0, surface.roughness);
+    float3 kD = float3(1.0f, 1.0f, 1.0f) - kS;
 
-            float combinedAO = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor) * input.ao;
+    // 空と地面の色による環境光
+    float3 reflectDir = reflect(-toEyeWorld, surface.normal);
+    float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
+    float3 envSkyColor = lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyWeight);
 
-            // 空と地面の色による環境光
-            float3 reflectDir = reflect(-toEyeWorld, surface.normal);
-            float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
-            float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
+    float3 ambientSpecular = envSkyColor * kS;
 
-            float3 ambientSpecular = envSkyColor * kS;
+    float skyLight = saturate(surface.normal.y * 0.5f + 0.5f);
+    float3 ambientDiffuse = kD * surface.pbrAlbedo * lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyLight);
 
-            float skyLight = saturate(surface.normal.y * 0.5f + 0.5f);
-            float3 ambientDiffuse = kD * surface.pbrAlbedo * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight);
-
-            float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
-
-            finalColor += ambient * combinedAO;
-        }
-    }
-    else
-    {
-        finalColor = surface.albedo;
-    }
+    float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
+    finalColor += ambient * input.ao;
 
     output.color = float4(finalColor, 1.0f);
     output.normal = float4(normal, 1.0f);

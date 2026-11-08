@@ -376,10 +376,9 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
 
                 cmdList->SetGraphicsRootDescriptorTable(9, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkTextureHandle));
                 cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
-                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.toonRampHandle));
-                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
-                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
-                cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(batch.treeMaterial.trunkNormalMapHandle));
+                cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(curRes.outputSrvIndex));
+                cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(windMapSrvIndex));
             }
 
             cmdList->IASetVertexBuffers(0, 1, &mesh->GetVertexBufferView());

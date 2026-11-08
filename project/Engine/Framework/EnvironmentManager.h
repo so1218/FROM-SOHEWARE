@@ -19,6 +19,9 @@ struct TimeOfDayProfile
     // ライト
     Vector3 directionalLightColor;
     float directionalLightIntensity;
+    // 環境光。空の見た目の色とは別に決める
+    Vector3 ambientSkyColor;
+    Vector3 ambientGroundColor;
 };
 
 // 天候の種類
@@ -81,6 +84,8 @@ inline TimeOfDayProfile BlendProfiles(const TimeOfDayProfile& a, const TimeOfDay
     result.sunAtmosphereGlow = FS::Math::Lerp(a.sunAtmosphereGlow, b.sunAtmosphereGlow, t);
     result.directionalLightColor = FS::Math::Lerp(a.directionalLightColor, b.directionalLightColor, t);
     result.directionalLightIntensity = FS::Math::Lerp(a.directionalLightIntensity, b.directionalLightIntensity, t);
+    result.ambientSkyColor = FS::Math::Lerp(a.ambientSkyColor, b.ambientSkyColor, t);
+    result.ambientGroundColor = FS::Math::Lerp(a.ambientGroundColor, b.ambientGroundColor, t);
     return result;
 }
 

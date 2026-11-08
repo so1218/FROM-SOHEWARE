@@ -34,7 +34,6 @@ void TreeField::Initialize()
             {
                 trunkTextureName_ = trunkHandle->textureName;
                 trunkNormalName_ = trunkHandle->normalMapName;
-                toonRampName_ = trunkHandle->toonRampName;
             }
         }
         if (model_->GetMaterialCount() > 1)
@@ -79,24 +78,13 @@ void TreeField::Initialize()
 
     // 幹
     binder_->BindColor("TrunkColor", &trunkMaterial_.color, { 1.0f, 1.0f, 1.0f, 1.0f });
-    binder_->BindColor("TrunkSpecColor", &trunkMaterial_.specularColor, { 1.0f, 1.0f, 1.0f, 1.0f });
     binder_->Bind("TrunkRoughness", &trunkMaterial_.roughness, 0.8f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TrunkMetalness", &trunkMaterial_.metalness, 0.0f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("TrunkShininess", &trunkMaterial_.shininess, 10.0f, 0.1f, 0.0f, 100.0f);
-    binder_->Bind("TrunkDiffReflect", &trunkMaterial_.diffuseReflection, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkEnvMapInt", &trunkMaterial_.environmentMapIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkNormalInt", &trunkMaterial_.normalIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("TrunkShadowDens", &trunkMaterial_.shadowDensity, 0.8f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("TrunkShadowBias", &trunkMaterial_.shadowBias, 0.005f, 0.0001f, 0.0f, 0.1f);
     binder_->Bind("TrunkShadowNBias", &trunkMaterial_.shadowNormalBias, 0.02f, 0.001f, 0.0f, 0.5f);
     binder_->Bind("TrunkShadowSoft", &trunkMaterial_.shadowSoftness, 1.0f, 0.01f, 0.0f, 5.0f);
-    binder_->Bind("TrunkShadowEnvStr", &trunkMaterial_.shadowEnvStrength, 0.5f, 0.01f, 0.0f, 1.0f);
-
-    // 幹は常にライティング・法線マップ・影ありで描く
-    trunkMaterial_.enableLighting = 1;
-    trunkMaterial_.lightMode = 1;
-    trunkMaterial_.enableNormalMap = 1;
-    trunkMaterial_.addShadow = 1;
 
     auto onTextureChanged = [this]() { ApplyTextures(); };
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", TextureType::Noise,
@@ -104,7 +92,6 @@ void TreeField::Initialize()
     binder_->BindTexture("LeafTexture", &leafTextureName_, &leafTextureHandle_, leafTextureName_, TextureType::Albedo, onTextureChanged);
     binder_->BindTexture("TrunkTexture", &trunkTextureName_, &trunkTextureHandle_, trunkTextureName_, TextureType::Albedo, onTextureChanged);
     binder_->BindTexture("TrunkNormal", &trunkNormalName_, &trunkNormalHandle_, trunkNormalName_, TextureType::Normal, onTextureChanged);
-    binder_->BindTexture("ToonRamp", &toonRampName_, &toonRampHandle_, toonRampName_, TextureType::Toon, onTextureChanged);
 
     treeSystem_->SetWindMapTexture(windMapName_);
     GenerateTrees();
@@ -135,7 +122,6 @@ void TreeField::ApplyTextures()
     treeMaterialHandle_.leafTextureHandle = leafTextureHandle_;
     treeMaterialHandle_.trunkTextureHandle = trunkTextureHandle_;
     treeMaterialHandle_.trunkNormalMapHandle = trunkNormalHandle_;
-    treeMaterialHandle_.toonRampHandle = toonRampHandle_;
 }
 
 void TreeField::GenerateTrees()
@@ -153,7 +139,6 @@ void TreeField::GenerateTrees()
     {
         treeMaterialHandle_ = treeSystem_->CreateTreeMaterial(
             leafMaterial_, trunkMaterial_, leafTextureHandle_, trunkTextureHandle_, trunkNormalHandle_);
-        treeMaterialHandle_.toonRampHandle = toonRampHandle_;
     }
 
     std::mt19937 random(kPlacementSeed);
@@ -308,11 +293,7 @@ void TreeField::DebugGui()
 
         ImGui::SeparatorText("質感");
         isMaterialChanged |= binder_->Draw("TrunkColor", "カラー");
-        isMaterialChanged |= binder_->Draw("TrunkSpecColor", "スペキュラカラー");
         isMaterialChanged |= binder_->Draw("TrunkRoughness", "ラフネス");
-        isMaterialChanged |= binder_->Draw("TrunkMetalness", "メタルネス");
-        isMaterialChanged |= binder_->Draw("TrunkShininess", "ハイライトの鋭さ");
-        isMaterialChanged |= binder_->Draw("TrunkDiffReflect", "ディフューズ反射");
         isMaterialChanged |= binder_->Draw("TrunkNormalInt", "ノーマルマップ強度");
         isMaterialChanged |= binder_->Draw("TrunkEnvMapInt", "環境マップ反射強度");
 
@@ -321,12 +302,6 @@ void TreeField::DebugGui()
         isMaterialChanged |= binder_->Draw("TrunkShadowBias", "シャドウ深度バイアス");
         isMaterialChanged |= binder_->Draw("TrunkShadowNBias", "シャドウノーマルバイアス");
         isMaterialChanged |= binder_->Draw("TrunkShadowSoft", "影のソフトネス");
-        isMaterialChanged |= binder_->Draw("TrunkShadowEnvStr", "環境マップの影への影響");
-    }
-
-    if (ImGui::CollapsingHeader("共通"))
-    {
-        binder_->Draw("ToonRamp", "トゥーンランプ");
     }
 
     if (isPlacementChanged)

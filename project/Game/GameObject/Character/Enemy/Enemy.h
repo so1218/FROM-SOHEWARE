@@ -9,9 +9,7 @@
 enum class EnemyType
 {
     Floating,
-    // Zombie,     
-    // Fireball,   
-    // Pop         
+    // Zombie,       
 };
 
 class Enemy : public FS::GameObject

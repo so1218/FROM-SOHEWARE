@@ -51,7 +51,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
 
     // 空と地面の色による環境光。影の中が真っ黒にならないようにする
     float skyWeight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambient = albedo * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
+    float3 ambient = albedo * lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyWeight);
 
     PixelShaderOutput output;
     output.color = float4(diffuse + ambient, 1.0f);

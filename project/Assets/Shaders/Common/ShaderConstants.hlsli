@@ -206,8 +206,8 @@ struct GlobalEnvironmentData
     float rainIntensity;
     float2 windDirection; 
     
-    float4 skyColor; 
-    float4 groundColor;
+    float4 ambientSkyColor;     // 上を向いた面に当たる環境光
+    float4 ambientGroundColor;  // 下を向いた面に当たる環境光。地面からの照り返し
     
     float windSpeed;
     float windTurbulence;
@@ -579,31 +579,21 @@ struct LeafMaterialData
     float windSpeedMultiplier;  // 環境の風に対する揺れの速さ
 };
 
+// 幹は金属でない PBR 固定で、法線マップと影は常に使う
 struct TrunkMaterialData
 {
     float4 color;
-    float4 specularColor;
-
-    int enableLighting;
-    int lightMode;
-    int enableNormalMap;
-    int addShadow;
 
     float roughness;
-    float metalness;
-    float shininess;
-    float diffuseReflection;
-
+    float environmentMapIntensity;
+    float normalIntensity;
     float shadowDensity;
+
     float shadowBias;
     float shadowNormalBias;
     float shadowSoftness;
-
-    float environmentMapIntensity;
-    float shadowEnvStrength;
-    float normalIntensity;
-
     float nearFadeMinDist;
+
     float nearFadeMaxDist;
 };
 

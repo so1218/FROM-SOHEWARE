@@ -36,24 +36,32 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Night_AtmoGlow", &profileNight_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
         binder_->BindColor("Night_LightColor", &profileNight_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
         binder_->Bind("Night_LightIntensity", &profileNight_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+        binder_->BindColor("Night_AmbientSky", &profileNight_.ambientSkyColor, { 0.015f, 0.02f, 0.04f });
+        binder_->BindColor("Night_AmbientGround", &profileNight_.ambientGroundColor, { 0.005f, 0.005f, 0.008f });
 
         binder_->BindColor("Sunrise_ZenithColor", &profileSunrise_.zenithColor, { 0.05f, 0.15f, 0.4f });
         binder_->BindColor("Sunrise_HorizonColor", &profileSunrise_.horizonColor, { 0.4f, 0.6f, 0.8f });
         binder_->Bind("Sunrise_AtmoGlow", &profileSunrise_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
         binder_->BindColor("Sunrise_LightColor", &profileSunrise_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
         binder_->Bind("Sunrise_LightIntensity", &profileSunrise_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+        binder_->BindColor("Sunrise_AmbientSky", &profileSunrise_.ambientSkyColor, { 0.2f, 0.16f, 0.15f });
+        binder_->BindColor("Sunrise_AmbientGround", &profileSunrise_.ambientGroundColor, { 0.06f, 0.05f, 0.04f });
 
         binder_->BindColor("Day_ZenithColor", &profileDay_.zenithColor, { 0.05f, 0.15f, 0.4f });
         binder_->BindColor("Day_HorizonColor", &profileDay_.horizonColor, { 0.4f, 0.6f, 0.8f });
         binder_->Bind("Day_AtmoGlow", &profileDay_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
         binder_->BindColor("Day_LightColor", &profileDay_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
         binder_->Bind("Day_LightIntensity", &profileDay_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+        binder_->BindColor("Day_AmbientSky", &profileDay_.ambientSkyColor, { 0.25f, 0.28f, 0.33f });
+        binder_->BindColor("Day_AmbientGround", &profileDay_.ambientGroundColor, { 0.08f, 0.07f, 0.05f });
 
         binder_->BindColor("Sunset_ZenithColor", &profileSunset_.zenithColor, { 0.05f, 0.15f, 0.4f });
         binder_->BindColor("Sunset_HorizonColor", &profileSunset_.horizonColor, { 0.4f, 0.6f, 0.8f });
         binder_->Bind("Sunset_AtmoGlow", &profileSunset_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
         binder_->BindColor("Sunset_LightColor", &profileSunset_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
         binder_->Bind("Sunset_LightIntensity", &profileSunset_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+        binder_->BindColor("Sunset_AmbientSky", &profileSunset_.ambientSkyColor, { 0.2f, 0.14f, 0.13f });
+        binder_->BindColor("Sunset_AmbientGround", &profileSunset_.ambientGroundColor, { 0.06f, 0.04f, 0.03f });
 
         // -------------------------------------------------------------
         // 天候プロファイル
@@ -306,7 +314,17 @@ void EnvironmentManager::Update(LightManager* lightManager)
         cbData_->windTime = accumulatedWindTime_;
         cbData_->windOffset = windOffset_;
         cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
-        cbData_->skyColor = { currentProfile_.zenithColor.x, currentProfile_.zenithColor.y, currentProfile_.zenithColor.z, 1.0f };
+
+        // 曇りや雨では空の光が雲で散らされるので、天候が空の色を変える強さだけ環境光の色味を抜く
+        auto removeTint = [w](const Vector3& color)
+            {
+                float luminance = color.x * 0.2126f + color.y * 0.7152f + color.z * 0.0722f;
+                return FS::Math::Lerp(color, Vector3{ luminance, luminance, luminance }, w);
+            };
+        const Vector3 ambientSky = removeTint(currentProfile_.ambientSkyColor);
+        const Vector3 ambientGround = removeTint(currentProfile_.ambientGroundColor);
+        cbData_->ambientSkyColor = { ambientSky.x, ambientSky.y, ambientSky.z, 1.0f };
+        cbData_->ambientGroundColor = { ambientGround.x, ambientGround.y, ambientGround.z, 1.0f };
     }
 }
 
@@ -331,6 +349,8 @@ void EnvironmentManager::DebugGui()
                     binder_->Draw((std::string(p) + "_AtmoGlow").c_str(), "大気散乱強度");
                     binder_->Draw((std::string(p) + "_LightColor").c_str(), "太陽/月光色");
                     binder_->Draw((std::string(p) + "_LightIntensity").c_str(), "光強度");
+                    binder_->Draw((std::string(p) + "_AmbientSky").c_str(), "環境光 (上からの光)");
+                    binder_->Draw((std::string(p) + "_AmbientGround").c_str(), "環境光 (地面からの照り返し)");
                     ImGui::EndTabItem();
                 }
                 };

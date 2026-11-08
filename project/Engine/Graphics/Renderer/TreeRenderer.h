@@ -62,9 +62,6 @@ private:
         // 幹と葉でPSOが異なるため保持
         bool isLeaf = false;
 
-        uint32_t envMapSrvHandle = 0;
-        uint32_t toonRampHandle = 0;
-
         Matrix4x4 worldMatrix;
     };
 
@@ -74,9 +71,6 @@ private:
         uint32_t meshIndex = 0;
         TreeMaterialHandle treeMaterial;
         bool isLeaf = false;
-
-        uint32_t envMapSrvHandle = 0;
-        uint32_t toonRampHandle = 0;
 
         uint32_t instanceCount = 0;
         uint32_t startInstanceLocation = 0;

@@ -91,8 +91,6 @@ void Ground::BindTerrain()
 
 void Ground::DrawTerrainEditor()
 {
-	if (!ImGui::CollapsingHeader("地形エディタ")) return;
-
 	const TerrainMaterialData* data = terrain_->GetMaterial().data;
 
 	ImGui::SeparatorText("形状");

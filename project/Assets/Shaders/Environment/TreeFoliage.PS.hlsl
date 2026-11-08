@@ -97,14 +97,14 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     // 空と地面の色による環境光
     float3 reflectDir = reflect(-toEye, normal);
     float skyWeight = saturate(reflectDir.y * 0.5f + 0.5f);
-    float3 envSkyColor = lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyWeight);
+    float3 envSkyColor = lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyWeight);
     envSkyColor *= (1.0f - roughness * 0.5f);
 
     float3 F_env = F0 + (max(1.0f.xxx - roughness, F0) - F0) * Pow5(1.0f - NdotV);
     float3 ambientSpecular = envSkyColor * F_env * ao;
 
     float skyLight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambientDiffuse = albedoAlpha.rgb * lerp(gEnvironmentData.groundColor.rgb, gEnvironmentData.skyColor.rgb, skyLight) * ao;
+    float3 ambientDiffuse = albedoAlpha.rgb * lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyLight) * ao;
 
     float3 finalColor = diffuse + transmission + directSpecular + ambientDiffuse + ambientSpecular;
 

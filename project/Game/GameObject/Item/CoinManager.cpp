@@ -327,7 +327,7 @@ void CoinManager::DebugGui()
         binder_->Draw("LightVolumetric", "霧に当たる強さ");
         binder_->Draw("LightHeight", "光の高さ");
         binder_->Draw("MaxLitBursts", "同時に照らす数");
-        binder_->DrawModel("CoinModel", "マテリアル (発光を上げるとブルームで光る)");
+        binder_->DrawModel("CoinModel", "マテリアル");
         ImGui::TreePop();
     }
 

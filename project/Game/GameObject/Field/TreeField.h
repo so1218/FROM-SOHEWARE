@@ -75,6 +75,4 @@ private:
     uint32_t trunkTextureHandle_ = 0;
     std::string trunkNormalName_ = "white1x1";
     uint32_t trunkNormalHandle_ = 0;
-    std::string toonRampName_ = "toonRamp_01";
-    uint32_t toonRampHandle_ = 0;
 };
