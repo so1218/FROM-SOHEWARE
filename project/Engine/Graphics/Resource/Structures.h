@@ -67,7 +67,6 @@ struct MaterialHandle
     std::string normalMapName = "white1x1";       
     std::string dissolveMapName = "white1x1";      
     std::string toonRampName = "toonRamp_01";      
-    std::string rippleTextureName = "white1x1";     
 
     // マテリアルごとのテクスチャハンドル
     uint32_t textureHandle = 0;     
@@ -75,10 +74,26 @@ struct MaterialHandle
     uint32_t normalMapHandle = 0;  
     uint32_t dissolveMapHandle = 0; 
     uint32_t toonRampHandle = 0;    
-    uint32_t rippleTextureHandle = 0;
 
     // エディタ編集用UVデータ
     UVTransform uvTransformData;
+};
+
+// 地形専用のマテリアル。MaterialHandle と違い、地形が使う値とテクスチャだけを持つ
+struct TerrainMaterial
+{
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+    TerrainMaterialData* data = nullptr;
+
+    std::string albedoMapName = "white1x1";
+    std::string environmentMapName = "pureSky";
+    std::string normalMapName = "white1x1";
+    std::string rippleMapName = "white1x1";
+
+    uint32_t albedoMapHandle = 0;
+    uint32_t environmentMapHandle = 0;
+    uint32_t normalMapHandle = 0;
+    uint32_t rippleMapHandle = 0;
 };
 
 struct TreeMaterialHandle

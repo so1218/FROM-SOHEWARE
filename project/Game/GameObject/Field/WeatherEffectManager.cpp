@@ -74,23 +74,16 @@ void WeatherEffectManager::Update()
     // EnvironmentManagerから、今フレームの補間済みビジュアルパラメータを取得
     const FS::WeatherVisualParams& visual = env->GetCurrentVisualParams();
 
-    // Terrainのマテリアル設定適用
-    auto mat = terrain_->GetMaterialData();
-    mat->metalness = visual.metalness;
-    mat->roughness = visual.roughness;
-    mat->environmentMapIntensity = visual.environmentMapIntensity;
-    mat->rippleSize = visual.rippleSize;
-    mat->normalIntensity = visual.normalIntensity;
-    mat->emissiveIntensity = visual.emissiveIntensity;
-    mat->color = visual.color;
-
-    // 波紋の個別制御
-    mat->enableRipple = (profile.wetness > 0.1f);
-    mat->rippleScale = 0.4f;
-    mat->rippleStrength = 10.0f;
-    mat->rippleSpeed = 0.4f;
-    mat->rippleFrequency = 6.0f;
-    terrain_->SetRippleTexture("normal_31");
+    // 地形の質感は天候ごとの設定で決める
+    TerrainMaterialData* terrainMaterial = terrain_->GetMaterial().data;
+    terrainMaterial->color = visual.color;
+    terrainMaterial->metalness = visual.metalness;
+    terrainMaterial->roughness = visual.roughness;
+    terrainMaterial->environmentMapIntensity = visual.environmentMapIntensity;
+    terrainMaterial->emissiveIntensity = visual.emissiveIntensity;
+    terrainMaterial->normalIntensity = visual.normalIntensity;
+    terrainMaterial->rippleSize = visual.rippleSize;
+    terrainMaterial->wetness = profile.wetness;
 
     // Volumetric Fogの設定適用
     auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();

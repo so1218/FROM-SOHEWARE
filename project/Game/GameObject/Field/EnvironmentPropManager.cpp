@@ -368,7 +368,6 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "NormalMapTex", handle->normalMapName);
         gv->SetValue(groupPath, matPrefix + "DissolveTex", handle->dissolveMapName);
         gv->SetValue(groupPath, matPrefix + "ToonRampTex", handle->toonRampName);
-        gv->SetValue(groupPath, matPrefix + "RippleMap", handle->rippleTextureName);
 
         // UVトランスフォーム
         gv->SetValue(groupPath, matPrefix + "UVTrans", handle->uvTransformData.translation);
@@ -420,16 +419,6 @@ void EnvironmentProp::SyncMaterialsToJSON()
         gv->SetValue(groupPath, matPrefix + "OutlineEnable", matData->enableOutline);
         gv->SetValue(groupPath, matPrefix + "OutlineWidth", matData->outlineWidth);
         gv->SetValue(groupPath, matPrefix + "OutlineColor", matData->outlineColor);
-
-        // リップル・水たまり設定
-        gv->SetValue(groupPath, matPrefix + "RippleEnable", matData->enableRipple);
-        gv->SetValue(groupPath, matPrefix + "Wetness", matData->wetness);
-        gv->SetValue(groupPath, matPrefix + "RippleScale", matData->rippleScale);
-        gv->SetValue(groupPath, matPrefix + "RippleSpeed", matData->rippleSpeed);
-        gv->SetValue(groupPath, matPrefix + "RippleStren", matData->rippleStrength);
-        gv->SetValue(groupPath, matPrefix + "RippleSize", matData->rippleSize);
-        gv->SetValue(groupPath, matPrefix + "RippleFreq", matData->rippleFrequency);
-        gv->SetValue(groupPath, matPrefix + "RippleMix", matData->rippleLayerMix);
     }
 }
 

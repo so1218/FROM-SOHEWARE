@@ -12,7 +12,6 @@ class Model;
 class AnimationModel;
 class Sprite;
 class Text;
-class Terrain;
 class Engine;
 
 // 変数の登録を行えば、GlobalVariablesの読み書きとImGuiの表示をしてくれる関数
@@ -65,7 +64,6 @@ public:
     void BindSprite(const std::string& groupName, Sprite* sprite);
     // bindContent = false にすると文字列は登録しない (スコアなど、コードから毎フレーム書き換える文字用)
     void BindTextElement(const std::string& groupName, Text* text, bool bindContent = true);
-    void BindTerrain(const std::string& groupName, Terrain* terrain);
 
     // UI描画
     bool Draw(const std::string& key, const std::string& name = "");
@@ -75,7 +73,6 @@ public:
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawSprite(const std::string& groupName, const std::string& customLabel = "");
     void DrawTextElement(const std::string& groupName, const std::string& customLabel = "");
-    void DrawTerrain(const std::string& groupName, const std::string& customLabel = "");
 
     void Clear(bool eraseData = false);
     const std::vector<std::string>& GetGroupPath() const { return groupPath_; }
@@ -115,12 +112,10 @@ private:
 
     struct ModelBindInfo { Model* model = nullptr; };
     struct AnimationBindInfo { AnimationModel* model = nullptr; };
-    struct TerrainBindInfo { Terrain* terrain = nullptr; };
     struct TextBindInfo { Text* text = nullptr; bool bindContent = true; };
 
     std::unordered_map<std::string, ModelBindInfo> modelBindMap_;
     std::unordered_map<std::string, AnimationBindInfo> animationBindMap_;
-    std::unordered_map<std::string, TerrainBindInfo> terrainBindMap_;
     std::unordered_map<std::string, Sprite*> spriteBindMap_;
     std::unordered_map<std::string, TextBindInfo> textBindMap_;
 };

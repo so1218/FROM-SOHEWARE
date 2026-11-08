@@ -28,7 +28,6 @@ Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gToonRamp : register(t3);
 Texture2D<float4> gDissolveTexture : register(t4);
 Texture2D<float4> gNormalTexture : register(t5);
-Texture2D<float4> gRippleTexture : register(t6);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -113,54 +112,6 @@ PixelShaderOutput main(PixelShaderInput input)
     float currentRoughness = clamp(gMaterial.roughness, 0.05f, 1.0f);
     float currentMetalness = saturate(gMaterial.metalness);
     
-    // --------------------------------------------------------
-    // 雨・波紋
-    // --------------------------------------------------------
-    if (gMaterial.enableRipple != 0 && gMaterial.wetness > 0.0f)
-    {
-        float globalWetness = gMaterial.wetness;
-
-        // 水濡れによるラフネスの平滑化
-        currentRoughness = lerp(currentRoughness, 0.01f, globalWetness);
-
-        // レイヤーのUVをずらしてサンプリングし、不規則な波紋アニメーションを作る
-        float2 rippleUV = input.worldPosition.xz * gMaterial.rippleScale;
-        float time = gFrameData.gTime * gMaterial.rippleSpeed;
-        float3 combinedRipple = 0.0f.xxx;
-
-        [unroll]
-        for (int i = 0; i < 3; i++)
-        {
-            float2 offset = float2(i * 0.33f, i * 0.71f);
-            float2 p = rippleUV + offset;
-            float2 gridID = floor(p);
-            float2 f = frac(p);
-
-            // セルごとのランダムシード生成
-            float3 seed = float3(gridID, float(i));
-            float rand = frac(sin(dot(seed.xy + seed.z, float2(12.9898f, 78.233f))) * 43758.5453f);
-            float localTime = frac(time * gMaterial.rippleFrequency + rand);
-
-            float spread = localTime * gMaterial.rippleSize + 0.0001f;
-            float2 animatedUV = (f - 0.5f) / spread + 0.5f;
-
-            float3 r = 0.0f.xxx;
-            if (animatedUV.x >= 0.0f && animatedUV.x <= 1.0f && animatedUV.y >= 0.0f && animatedUV.y <= 1.0f)
-            {
-                r = gRippleTexture.Sample(gSampler, animatedUV).xyz * 2.0f - 1.0f;
-            }
-
-            float mask = smoothstep(1.0f, 0.0f, localTime);
-            float edgeMask = smoothstep(0.5f, 0.4f, length(f - 0.5f));
-            combinedRipple += r * mask * edgeMask;
-        }
-
-        float3 rippleNormal = combinedRipple * gMaterial.rippleStrength * globalWetness;
-        normal = normalize(normal + float3(rippleNormal.x, 0.0f, rippleNormal.y));
-    }
-    
-    float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
-
     // SurfaceData の構築
     SurfaceData surface;
     surface.albedo = baseColor * gMaterial.color.rgb;
@@ -184,34 +135,8 @@ PixelShaderOutput main(PixelShaderInput input)
         finalColor += ApplyPointLights(surface, input.worldPosition, toEyeWorld, gPointLights);
         finalColor += ApplySpotLights(surface, input.worldPosition, toEyeWorld, gSpotLights);
 
-        if (gMaterial.lightMode == SHADING_MODEL_PBR)
-        {
-            float3 kS = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), 0.04f.xxx, surface.roughness);
-            float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
-            
-            float3 baseAmbient = 0.03f.xxx;
-            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
-
-            float3 ambientDiffuse = kD * surface.pbrAlbedo * baseAmbient;
-
-            float3 reflectionVector = reflect(-toEyeWorld, surface.normal);
-            float3 envColor = gEnvironmentTexture.SampleLevel(gSampler, reflectionVector, surface.roughness * 6.0f).rgb;
-    
-            float3 F0 = lerp(0.04f.xxx, surface.pbrAlbedo, surface.metalness);
-            float3 F_env = F_SchlickRoughness(max(dot(surface.normal, toEyeWorld), 0.0f), F0, surface.roughness);
-            float3 ambientSpecular = envColor * F_env;
-
-            float3 ambient = (ambientDiffuse + ambientSpecular) * gMaterial.environmentMapIntensity;
-            finalColor += ambient * ambientOcclusion;
-        }
-        else
-        {
-            float3 reflectionVector = reflect(-toEyeWorld, surface.normal);
-            float4 envColor = gEnvironmentTexture.Sample(gSampler, reflectionVector);
-            float ambientOcclusion = lerp(gMaterial.shadowEnvStrength, 1.0f, shadowFactor);
-
-            finalColor += envColor.rgb * gMaterial.environmentMapIntensity * ambientOcclusion;
-        }
+        finalColor += ApplyAmbient(surface, toEyeWorld, shadowFactor, gMaterial.shadowEnvStrength,
+            gMaterial.environmentMapIntensity, gEnvironmentTexture, gSampler);
         
         if (gMaterial.enableRim != 0)
         {

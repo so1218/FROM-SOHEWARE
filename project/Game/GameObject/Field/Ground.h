@@ -18,6 +18,9 @@ public:
     FS::Terrain* GetTerrain() const { return terrain_.get(); }
 
 private:
+    void BindTerrain();
+    void DrawTerrainEditor();
+
     FS::Engine* engine_;
 
     std::unique_ptr<FS::PropertyBinder> binder_;

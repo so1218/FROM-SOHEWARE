@@ -1379,6 +1379,9 @@
     <FxCompile Include="Assets\Shaders\Environment\Skydome.VS.hlsl">
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>
+    <FxCompile Include="Assets\Shaders\Environment\Terrain.PS.hlsl">
+      <Filter>Assets\Shaders\Environment</Filter>
+    </FxCompile>
     <FxCompile Include="Assets\Shaders\Environment\Terrain.VS.hlsl">
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>

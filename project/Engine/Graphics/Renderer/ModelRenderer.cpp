@@ -192,7 +192,6 @@ void ModelRenderer::Submit(const WorldTransform& worldTransform, const ModelData
                 submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
                 submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
                 submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
-                submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
                 submission.worldMatrix = currentWorldMatrix;
                 submission.worldInverseTranspose = Matrix4x4::Inverse(currentWorldMatrix.Transpose());
                 submission.instancingColor = instanceColor;
@@ -361,7 +360,6 @@ void ModelRenderer::SubmitAnimation(
         submission.toonRampHandle = actualMaterialHandle.toonRampHandle;
         submission.dissolveTextureHandle = actualMaterialHandle.dissolveMapHandle;
         submission.normalMapHandle = actualMaterialHandle.normalMapHandle;
-        submission.rippleTextureHandle = actualMaterialHandle.rippleTextureHandle;
         submission.worldMatrix = world;
         submission.wvpMatrix = wvp;
         submission.worldInverseTranspose = Matrix4x4::Inverse(world.Transpose());
@@ -500,9 +498,9 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
 
             // インスタンシング用の共通定数とリソースをセット
             cmdList->SetGraphicsRootConstantBufferView(0, env.globalConstants->GetResource()->GetGPUVirtualAddress()); 
-            cmdList->SetGraphicsRootConstantBufferView(5, sub.materialHandle.resource->GetGPUVirtualAddress());       
-            cmdList->SetGraphicsRoot32BitConstant(6, startInstanceLocation, 0);                                      
-            cmdList->SetGraphicsRootDescriptorTable(17, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+            cmdList->SetGraphicsRootConstantBufferView(4, sub.materialHandle.resource->GetGPUVirtualAddress());
+            cmdList->SetGraphicsRoot32BitConstant(5, startInstanceLocation, 0);
+            cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
 
             cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, startInstanceLocation);
         }
@@ -547,20 +545,19 @@ void ModelRenderer::DrawCore(const RenderEnvironment& env, const ModelSubmission
     cmdList->SetGraphicsRootDescriptorTable(10, env.srvManager->GetSRVHandleGPU(sub.toonRampHandle));
     cmdList->SetGraphicsRootDescriptorTable(11, env.srvManager->GetSRVHandleGPU(sub.dissolveTextureHandle));
     cmdList->SetGraphicsRootDescriptorTable(12, env.srvManager->GetSRVHandleGPU(sub.normalMapHandle));
-    cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.rippleTextureHandle));
 
     if (isSkinning)
     {
         cmdList->SetGraphicsRootConstantBufferView(5, GetPerObjectGPUAddress(sub.instanceIndex));
-        cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
-        cmdList->SetGraphicsRootDescriptorTable(15, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(sub.skinCluster->paletteSrvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(sub.skinCluster->prevPaletteSrvIndex));
         cmdList->DrawIndexedInstanced(indexCount, 1, 0, 0, 0);
     }
     else
     {
         // 静的モデルはインスタンシング描画
         cmdList->SetGraphicsRoot32BitConstant(5, startInstanceLocation, 0);
-        cmdList->SetGraphicsRootDescriptorTable(14, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
+        cmdList->SetGraphicsRootDescriptorTable(13, env.srvManager->GetSRVHandleGPU(instanceBuffer_.srvIndex));
         cmdList->DrawIndexedInstanced(indexCount, instanceCount, 0, 0, 0);
     }
 }

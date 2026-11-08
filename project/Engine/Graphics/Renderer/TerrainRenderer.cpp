@@ -56,7 +56,7 @@ void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Terrain"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("Terrain"));
 
-    const MaterialHandle& material = *drawData_.material;
+    const TerrainMaterial& material = *drawData_.material;
     auto SetTexture = [&](uint32_t rootIndex, uint32_t srvIndex)
         {
             cmdList->SetGraphicsRootDescriptorTable(rootIndex, env.srvManager->GetSRVHandleGPU(srvIndex));
@@ -71,17 +71,15 @@ void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
     cmdList->SetGraphicsRootConstantBufferView(6, settingsBuffer_->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootShaderResourceView(7, chunkBuffer_->GetGPUVirtualAddress());
 
-    SetTexture(8, material.textureHandle);
-    SetTexture(9, material.envMapHandle);
+    SetTexture(8, material.albedoMapHandle);
+    SetTexture(9, material.environmentMapHandle);
     if (shadowMap)
     {
         cmdList->SetGraphicsRootDescriptorTable(10, shadowMap->GetSRVHandle());
     }
-    SetTexture(11, material.toonRampHandle);
-    SetTexture(12, material.dissolveMapHandle);
-    SetTexture(13, material.normalMapHandle);
-    SetTexture(14, material.rippleTextureHandle);
-    SetTexture(15, drawData_.heightMapHandle);
+    SetTexture(11, material.normalMapHandle);
+    SetTexture(12, material.rippleMapHandle);
+    SetTexture(13, drawData_.heightMapHandle);
 
     cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
     cmdList->IASetIndexBuffer(&drawData_.indexBufferView);

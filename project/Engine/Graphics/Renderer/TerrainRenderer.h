@@ -14,7 +14,7 @@ struct TerrainDrawData
     D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
     D3D12_INDEX_BUFFER_VIEW indexBufferView{};
     uint32_t indexCount = 0;
-    const MaterialHandle* material = nullptr;
+    const TerrainMaterial* material = nullptr;
     uint32_t heightMapHandle = 0;
     TerrainSettings settings{};
 };

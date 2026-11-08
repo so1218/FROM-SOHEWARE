@@ -48,14 +48,7 @@ public:
     const std::string& GetHeightmapName() const { return heightmapTextureName_; }
     uint32_t* GetHeightmapHandlePtr() { return &heightMapHandle_; }
 
-    // マテリアル。PropertyBinder のマテリアル UI からも使う
-    MaterialHandle* GetMaterialHandle() { return &material_; }
-    MaterialData* GetMaterialData() { return material_.materialData; }
-    size_t GetMaterialCount() const { return 1; }
-    void SetColor(const Vector4& color);
-    void SetEnableOutline(bool enable);
-    void SetOutlineWidth(float width);
-    void SetRippleTexture(const std::string& textureName);
+    TerrainMaterial& GetMaterial() { return material_; }
 
 private:
     struct Chunk
@@ -78,7 +71,7 @@ private:
     Vector3 GetOrigin() const;
 
     Engine* engine_ = nullptr;
-    MaterialHandle material_;
+    TerrainMaterial material_;
     Vector3 position_ = { 0.0f, 0.0f, 0.0f };
     Parameters params_;
     uint32_t shapeVersion_ = 0;

@@ -145,7 +145,7 @@
         "Rain_V_NormalIntens": 1.2000000476837158,
         "Rain_V_RippleSize": 0.8999999761581421,
         "Rain_V_Rough": 0.6200000047683716,
-        "Rain_Wetness": 1.0,
+        "Rain_Wetness": 0.5,
         "Rain_WindDir": [
             -0.6000000238418579,
             -0.800000011920929
@@ -297,7 +297,7 @@
         "Thunder_V_NormalIntens": 1.2000000476837158,
         "Thunder_V_RippleSize": 0.8999999761581421,
         "Thunder_V_Rough": 0.6200000047683716,
-        "Thunder_Wetness": 0.5699999928474426,
+        "Thunder_Wetness": 0.5,
         "Thunder_WindDir": [
             1.0,
             0.0

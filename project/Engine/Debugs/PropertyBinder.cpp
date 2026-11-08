@@ -72,7 +72,6 @@ namespace FS
         rotationEulers_.clear();
         modelBindMap_.clear();
         animationBindMap_.clear();
-        terrainBindMap_.clear();
 
         // JSONのデータも完全に消去
         if (eraseData)

@@ -157,16 +157,6 @@ struct MaterialData
     
     float outlineWidth;
     int enableOutline;
-    int enableRipple;
-    float wetness;
-    
-    float rippleScale;
-    float rippleSpeed;
-    float rippleStrength;
-    float rippleSize;
-    
-    float rippleFrequency;
-    float rippleLayerMix;
     float shadowNormalBias;
     float padding;
 };
@@ -761,6 +751,37 @@ struct TerrainSettings
     float texelSize;        // ハイトマップ1ピクセル分の UV。草や植物の生成で使う
     uint heightMapWidth;
     uint heightMapHeight;
+};
+
+// 地形は PBR 固定。色や粗さなどは天候ごとの設定で毎フレーム上書きされる
+struct TerrainMaterialData
+{
+    float4 color;
+
+    float roughness;
+    float metalness;
+    float environmentMapIntensity;
+    float emissiveIntensity;
+
+    int addShadow;
+    float shadowBias;
+    float shadowNormalBias;
+    float shadowDensity;
+
+    float shadowSoftness;
+    float shadowEnvStrength;
+    int enableNormalMap;
+    float normalTiling;
+
+    float normalIntensity;
+    float wetness;          // 0 なら乾いていて波紋も出ない
+    float rippleScale;      // 大きいほど波紋が細かく密に並ぶ
+    float rippleSpeed;
+
+    float rippleStrength;
+    float rippleSize;
+    float rippleFrequency;
+    float padding;
 };
 
 // 描くチャンクごとに、ハイトマップのどのピクセルから始まるか

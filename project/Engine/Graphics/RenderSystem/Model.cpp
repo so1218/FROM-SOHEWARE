@@ -112,14 +112,6 @@ void Model::SetNormalMapTexture(const std::string& textureName)
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 
-void Model::SetRippleTexture(const std::string& textureName)
-{
-    MakeMaterialUnique();
-
-    uint32_t handle = TextureManager::GetInstance().Get(textureName);
-    for (auto& mat : materials_) mat.rippleTextureHandle = handle;
-}
-
 void Model::CopyMaterialsFrom(const Model* sourceModel)
 {
     if (!sourceModel) return;
@@ -160,8 +152,6 @@ void Model::CopyMaterialsFrom(const Model* sourceModel)
             myHandle->dissolveMapHandle = sourceHandle->dissolveMapHandle;
             myHandle->toonRampName = sourceHandle->toonRampName;
             myHandle->toonRampHandle = sourceHandle->toonRampHandle;
-            myHandle->rippleTextureName = sourceHandle->rippleTextureName;
-            myHandle->rippleTextureHandle = sourceHandle->rippleTextureHandle;
         }
     }
 }
@@ -206,8 +196,6 @@ void Model::MakeMaterialUnique()
         newMat.dissolveMapHandle = oldMat.dissolveMapHandle;
         newMat.normalMapName = oldMat.normalMapName;
         newMat.normalMapHandle = oldMat.normalMapHandle;
-        newMat.rippleTextureName = oldMat.rippleTextureName;
-        newMat.rippleTextureHandle = oldMat.rippleTextureHandle;
 
         // UVトランスフォームの設定値を引き継ぐ
         newMat.uvTransformData = oldMat.uvTransformData;

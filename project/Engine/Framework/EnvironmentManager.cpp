@@ -91,7 +91,7 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowBrightness, 0.90f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_LightDim", &profileRain_.lightDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_AtmoDim", &profileRain_.atmosphereGlowDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_Wetness", &profileRain_.wetness, 1.00f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Rain_Wetness", &profileRain_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_RainIntens", &profileRain_.rainIntensity, 0.8f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_WindDir", &profileRain_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
         binder_->Bind("Rain_WindSpeed", &profileRain_.windSpeed, 3.0f, 0.1f, 0.0f, 20.0f);
@@ -105,7 +105,7 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->Bind("Thunder_CloudShadow", &profileThunder_.cloudShadowBrightness, 0.95f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_LightDim", &profileThunder_.lightDimmer, 0.15f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_AtmoDim", &profileThunder_.atmosphereGlowDimmer, 0.10f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 1.00f, 0.01f, 0.0f, 1.0f);
+        binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_RainIntens", &profileThunder_.rainIntensity, 1.0f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Thunder_WindDir", &profileThunder_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
         binder_->Bind("Thunder_WindSpeed", &profileThunder_.windSpeed, 5.0f, 0.1f, 0.0f, 20.0f);

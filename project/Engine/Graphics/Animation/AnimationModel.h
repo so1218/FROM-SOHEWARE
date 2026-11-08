@@ -74,7 +74,6 @@ public:
     void SetToonRampTexture(const std::string& textureName);
     void SetDissolveTexture(const std::string& textureName);
     void SetNormalMapTexture(const std::string& textureName);
-    void SetRippleTexture(const std::string& textureName);
 
     // カラー・発光
     void SetColor(const Vector4& color);

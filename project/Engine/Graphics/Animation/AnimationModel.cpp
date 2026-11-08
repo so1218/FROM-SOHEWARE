@@ -319,12 +319,6 @@ void AnimationModel::SetNormalMapTexture(const std::string& textureName)
     for (auto& mat : materials_) mat.normalMapHandle = handle;
 }
 
-void AnimationModel::SetRippleTexture(const std::string& textureName)
-{
-    uint32_t handle = TextureManager::GetInstance().Get(textureName);
-    for (auto& mat : materials_) mat.rippleTextureHandle = handle;
-}
-
 void AnimationModel::SetColor(const Vector4& color)
 {
     for (auto& mat : materials_) {

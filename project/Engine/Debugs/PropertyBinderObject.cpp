@@ -6,7 +6,6 @@
 #include "Text.h"
 #include "FontManager.h"
 #include "SRVManager.h"
-#include "Terrain.h"
 #include "Engine.h"
 
 namespace FS
@@ -592,94 +591,6 @@ void PropertyBinder::BindTexture(
         defaultName,
         filterType
     );
-}
-
-void PropertyBinder::BindTerrain(const std::string& groupName, Terrain* terrain)
-{
-    if (!terrain) return;
-
-    terrainBindMap_[groupName] = { terrain };
-    std::string prefix = groupName + "_";
-
-    Bind(prefix + "Position", &terrain->GetPosition(), { 0.0f, 0.0f, 0.0f }, 1.0f, [terrain]() { terrain->MarkShapeChanged(); });
-
-    BindTexture(prefix + "Heightmap", terrain->GetHeightmapNamePtr(), terrain->GetHeightmapHandlePtr(), "white1x1", TextureType::Noise,
-        [terrain]() 
-        {
-            terrain->LoadFromHeightmap(terrain->GetHeightmapName(), terrain->GetParams().cellSize);
-        }
-    );
-
-    Bind(prefix + "MaxHeight", &terrain->GetParams().maxHeight, 20.0f, 0.1f, 0.0f, 500.0f, [terrain]() { terrain->MarkShapeChanged(); });
-
-    MaterialData* matData = terrain->GetMaterialHandle()->materialData;
-    MaterialHandle* matHandle = terrain->GetMaterialHandle();
-
-    if (matData && matHandle)
-    {
-        BindBool(prefix + "RippleEnable", &matData->enableRipple, false);
-        BindTexture(prefix + "RippleMap", &matHandle->rippleTextureName, &matHandle->rippleTextureHandle, "normal_00", TextureType::Normal);
-        Bind(prefix + "Wetness", &matData->wetness, 0.5f, 0.01f, 0.0f, 1.0f);
-        Bind(prefix + "RippleScale", &matData->rippleScale, 2.0f, 0.1f, 0.1f, 50.0f);
-        Bind(prefix + "RippleSpeed", &matData->rippleSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
-        Bind(prefix + "RippleStren", &matData->rippleStrength, 0.05f, 0.01f, 0.0f, 5.0f);
-        Bind(prefix + "RippleSize", &matData->rippleSize, 0.4f, 0.01f, 0.01f, 5.0f);
-        Bind(prefix + "RippleFreq", &matData->rippleFrequency, 1.0f, 0.1f, 0.01f, 10.0f);
-        Bind(prefix + "RippleMix", &matData->rippleLayerMix, 0.5f, 0.01f, 0.0f, 1.0f);
-    }
-
-    BindMaterialProperties(prefix, terrain->GetMaterialHandle());
-}
-
-void PropertyBinder::DrawTerrain(const std::string& groupName, const std::string& customLabel)
-{
-#ifdef ENABLE_IMGUI
-    std::string prefix = groupName + "_";
-    auto* gv = GlobalVariables::GetInstance();
-    std::string displayLabel = customLabel.empty() ? groupName : customLabel;
-
-    Terrain* targetTerrain = nullptr;
-    if (terrainBindMap_.find(groupName) != terrainBindMap_.end()) {
-        targetTerrain = terrainBindMap_[groupName].terrain;
-    }
-
-    ImGui::PushID(groupName.c_str());
-    if (ImGui::CollapsingHeader(displayLabel.c_str()))
-    {
-        ImGui::Spacing();
-        ImGui::SeparatorText("地形パラメータ");
-
-        Draw(prefix + "Position", "地形の位置");
-
-        Draw(prefix + "Heightmap", "ハイトマップ画像");
-
-        Draw(prefix + "MaxHeight", "地形の最大高さ");
-
-        ImGui::Spacing();
-        ImGui::SeparatorText("雨の波紋設定");
-
-        Draw(prefix + "RippleEnable", "有効化");
-        if (gv->GetIntValue(groupPath_, prefix + "RippleEnable") > 0)
-        {
-            Draw(prefix + "Wetness", "濡れ具合 / 水位");
-
-            ImGui::Spacing();
-            ImGui::TextColored(ImVec4(0.6f, 0.8f, 1.0f, 1.0f), "波紋パラメータ");
-            Draw(prefix + "RippleMap", "波紋法線マップ");
-            Draw(prefix + "RippleScale", "雨の密度(スケール)");
-            Draw(prefix + "RippleStren", "波紋の強さ(法線)");
-            Draw(prefix + "RippleSpeed", "波紋の全体速度");
-            Draw(prefix + "RippleSize", "波紋の広がりサイズ");
-            Draw(prefix + "RippleFreq", "波紋の発生頻度");
-            Draw(prefix + "RippleMix", "波紋のレイヤー合成率");
-        }
-
-        ImGui::Spacing();
-
-        DrawMaterialUI(targetTerrain, prefix, gv, groupPath_);
-    }
-    ImGui::PopID();
-#endif
 }
 
 // マテリアルのプロパティを登録する関数

@@ -3,7 +3,6 @@
 #include "TextureManager.h"
 #include "Engine.h"
 #include "GraphicsDevice.h"
-#include "MaterialManager.h"
 #include "BufferManager.h"
 #include "Frustum.h"
 #include "TerrainRenderer.h"
@@ -30,19 +29,30 @@ std::vector<uint32_t> CalculateChunkStarts(uint32_t totalCells, uint32_t chunkCe
 Terrain::Terrain(Engine* engine)
     : engine_(engine)
 {
-    material_ = engine_->GetMaterialManager()->CreateMaterial(engine_->GetGraphicsDevice()->GetDevice());
+    material_.resource = BufferManager::CreateMappedConstantBuffer(engine_->GetGraphicsDevice()->GetDevice(), &material_.data);
+    material_.resource->SetName(L"TerrainMaterial");
+
+    TerrainMaterialData& data = *material_.data;
+    data = {};
+    data.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    data.roughness = 1.0f;
+    data.environmentMapIntensity = 0.5f;
+    data.emissiveIntensity = 1.0f;
+    data.addShadow = 1;
+    data.shadowBias = 0.0005f;
+    data.shadowDensity = 0.8f;
+    data.normalTiling = 1.0f;
+    data.normalIntensity = 1.0f;
+    data.rippleScale = 0.4f;
+    data.rippleSpeed = 0.4f;
+    data.rippleStrength = 10.0f;
+    data.rippleFrequency = 6.0f;
 
     auto& textureManager = TextureManager::GetInstance();
-    material_.textureHandle = textureManager.Get("white1x1");
-    material_.envMapHandle = textureManager.Get("pureSky");
-    material_.toonRampHandle = textureManager.Get("toonRamp_01");
-    material_.dissolveMapHandle = textureManager.Get("white1x1");
-    material_.normalMapHandle = textureManager.Get("white1x1");
-
-    if (material_.materialData)
-    {
-        material_.materialData->uvTransform = material_.uvTransformData.MakeMatrix();
-    }
+    material_.albedoMapHandle = textureManager.Get(material_.albedoMapName);
+    material_.environmentMapHandle = textureManager.Get(material_.environmentMapName);
+    material_.normalMapHandle = textureManager.Get(material_.normalMapName);
+    material_.rippleMapHandle = textureManager.Get(material_.rippleMapName);
 }
 
 void Terrain::Draw()
@@ -265,26 +275,6 @@ float Terrain::GetHeight(float worldX, float worldZ) const
 {
     float height = 0.0f;
     return GetHeightAt(worldX, worldZ, height) ? height : 0.0f;
-}
-
-void Terrain::SetColor(const Vector4& color)
-{
-    if (material_.materialData) material_.materialData->color = color;
-}
-
-void Terrain::SetEnableOutline(bool enable)
-{
-    if (material_.materialData) material_.materialData->enableOutline = enable ? 1 : 0;
-}
-
-void Terrain::SetOutlineWidth(float width)
-{
-    if (material_.materialData) material_.materialData->outlineWidth = width;
-}
-
-void Terrain::SetRippleTexture(const std::string& textureName)
-{
-    material_.rippleTextureHandle = TextureManager::GetInstance().Get(textureName);
 }
 
 }

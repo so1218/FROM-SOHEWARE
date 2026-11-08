@@ -80,6 +80,30 @@ float3 ApplyDirectionalLights(
     return finalColor;
 }
 
+// PBR だけで照らす。トゥーンランプを持たない地形で使う
+float3 ApplyDirectionalLightsPBR(
+    SurfaceData surface, float3 toEye, float shadowFactor, const DirectionalLight dirLights[MAX_DIRECTIONAL_LIGHTS])
+{
+    float3 finalColor = float3(0.0f, 0.0f, 0.0f);
+    float roughness = clamp(surface.roughness, 0.05f, 1.0f);
+    float metalness = saturate(surface.metalness);
+
+    for (int i = 0; i < MAX_DIRECTIONAL_LIGHTS; ++i)
+    {
+        if (dirLights[i].enable == 0)
+            continue;
+
+        float3 lightDir = normalize(-dirLights[i].direction);
+        float3 lightColor = dirLights[i].color.rgb * dirLights[i].color.a;
+        float3 radiance = CalculatePBR(surface.pbrAlbedo, surface.normal, toEye, lightDir, lightColor, dirLights[i].intensity, roughness, metalness);
+        if (i == 0)
+            radiance *= shadowFactor;
+
+        finalColor += radiance;
+    }
+    return finalColor;
+}
+
 // Point Light
 float3 ApplyPointLights(
     SurfaceData surface, float3 worldPos, float3 toEye,
@@ -187,6 +211,32 @@ float3 ApplySpotLights(
         finalColor += radiance;
     }
     return finalColor;
+}
+
+// 環境光。PBR は環境マップの鏡面反射と弱い拡散光、それ以外は環境マップの色を足す
+float3 ApplyAmbient(
+    SurfaceData surface, float3 toEye, float shadowFactor, float shadowEnvStrength, float environmentIntensity,
+    TextureCube<float4> environmentTexture, SamplerState environmentSampler)
+{
+    float3 reflectionVector = reflect(-toEye, surface.normal);
+    float ambientOcclusion = lerp(shadowEnvStrength, 1.0f, shadowFactor);
+
+    if (surface.lightMode != SHADING_MODEL_PBR)
+    {
+        float3 envColor = environmentTexture.Sample(environmentSampler, reflectionVector).rgb;
+        return envColor * environmentIntensity * ambientOcclusion;
+    }
+
+    float NdotV = max(dot(surface.normal, toEye), 0.0f);
+    float3 kS = F_SchlickRoughness(NdotV, 0.04f.xxx, surface.roughness);
+    float3 kD = (1.0f.xxx - kS) * (1.0f - surface.metalness);
+    float3 ambientDiffuse = kD * surface.pbrAlbedo * 0.03f;
+
+    float3 envColor = environmentTexture.SampleLevel(environmentSampler, reflectionVector, surface.roughness * 6.0f).rgb;
+    float3 F0 = lerp(0.04f.xxx, surface.pbrAlbedo, surface.metalness);
+    float3 ambientSpecular = envColor * F_SchlickRoughness(NdotV, F0, surface.roughness);
+
+    return (ambientDiffuse + ambientSpecular) * environmentIntensity * ambientOcclusion;
 }
 
 float3 ApplyRimLight(
