@@ -1,34 +1,13 @@
 {
     "GrassField": {
-        "AlphaCutoff": 0.10000000149011612,
-        "BaseGrassColor": [
-            0.10226084291934967,
-            0.4599156379699707,
-            0.025227433070540428,
-            1.0
-        ],
-        "BaseHeight": 0.5,
         "BaseScale": 5.0,
-        "BaseWidth": 0.05000000074505806,
-        "BaseWindStrength": 0.0,
-        "Color": [
-            0.0817866325378418,
-            0.2151898741722107,
-            0.07082197815179825,
-            1.0
-        ],
-        "ColorVariation": 0.0,
         "DensityMap": "noise_44",
         "FlattenFactor": 10.0,
-        "FlutterAmount": 0.009999999776482582,
-        "GrassCount": 5,
+        "FlutterAmount": 0.029999999329447746,
         "GrassNormalBlend": 0.44999998807907104,
-        "GrassRootAO": 0.6000000238418579,
-        "GrassStiffness": 0.3400000035762787,
         "GridSpacing": 0.7799999713897705,
         "GustScale": 0.0010000000474974513,
         "GustStrength": 1.0,
-        "InteractRadius": 5.0,
         "InteractStrength": 1.0,
         "LodDistance1": 100.0,
         "LodDistance2": 150.0,
@@ -38,24 +17,15 @@
         "MaxThinningRate": 0.9900000095367432,
         "MaxWidth": 0.05000000074505806,
         "MaxWidthMultiplier": 15.0,
-        "Metalness": 0.949999988079071,
         "MinHeight": 1.0099999904632568,
         "MinWidth": 0.05000000074505806,
         "NearFadeMaxDist": 15.0,
         "NearFadeMinDist": 2.0,
-        "NormalBlend": 1.0499999523162842,
-        "RootAO": 0.550000011920929,
         "RootColor": [
-            0.031901802867650986,
-            0.09316772222518921,
+            0.021267861127853394,
+            0.06211179494857788,
             0.0
         ],
-        "RootColorMultiplier": [
-            0.10000000149011612,
-            0.20000000298023224,
-            0.05000000074505806
-        ],
-        "Roughness": 0.15000000596046448,
         "SSSColor": [
             0.548628568649292,
             1.0,
@@ -65,50 +35,15 @@
         "ShadowBias": 0.0010000000474974513,
         "ShadowDensity": 1.0,
         "ShadowNormalBias": 0.009999999776482582,
-        "SpecularShininess": 200.0,
-        "SpecularStrength": 0.41999998688697815,
-        "SpreadRadius": 500.0,
         "ThinStartDistance": 150.0,
         "TipColor": [
-            0.22779135406017303,
-            0.5680934190750122,
-            0.11494497954845428
+            0.36951708793640137,
+            0.9223602414131165,
+            0.18619072437286377
         ],
         "TrailFlattenWeight": 1.0,
-        "Translucency": 0.4699999988079071,
-        "Wetness": 0.0,
-        "WindAmplitude": 0.6800000071525574,
-        "WindBaseStrength": 0.10999999940395355,
-        "WindColorShift": 0.9800000190734863,
-        "WindDir": [
-            1.0,
-            0.800000011920929
-        ],
-        "WindDirX": 1.0,
-        "WindDirY": 0.800000011920929,
-        "WindDirection": [
-            1.0,
-            0.5
-        ],
         "WindFlattenStrength": 0.20000000298023224,
-        "WindFlutterSpeed": 6.0,
-        "WindFlutterStrength": 1.340000033378601,
-        "WindGustExponent": 3.0399999618530273,
-        "WindGustFalloff": 0.009999999776482582,
-        "WindGustStrength": 35.09000015258789,
-        "WindGustThreshold": 0.49000000953674316,
         "WindMap": "noise_19",
-        "WindMapScale": 0.009999999776482582,
-        "WindScSpeed": 2.5,
-        "WindScrollSpeed": [
-            1.4600000381469727,
-            0.8600000143051147
-        ],
-        "WindSpeed": 1.5,
-        "WindSpeedMult": 1.0,
-        "WindStrengthMult": 0.0,
-        "WindTurbulence": 0.0,
-        "WindWaveScale": 0.009999999776482582,
-        "WindWaveStrength": 0.4000000059604645
+        "WindSpeedMult": 1.0
     }
 }

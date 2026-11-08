@@ -10,6 +10,7 @@ cbuffer DirectionalLights : register(b1)
 };
 
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
+ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
 
 Texture2DArray<float> gShadowMapArray : register(t2);
@@ -20,7 +21,6 @@ struct GrassPSInput
     float4 position : SV_POSITION;
     float heightRatio : TEXCOORD; // 0:根元 ~ 1:先端
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
 };
 
@@ -44,7 +44,6 @@ PixelShaderOutput main(GrassPSInput input)
     float heightRatio = input.heightRatio;
 
     float3 baseColor = lerp(gMaterial.rootColor, gMaterial.tipColor, heightRatio);
-    baseColor *= lerp(1.0f, 0.6f, gMaterial.wetness);
 
     float3 lightDirection = normalize(-gDirectionalLights[0].direction);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;
@@ -62,27 +61,18 @@ PixelShaderOutput main(GrassPSInput input)
     // 影は面の向きではなく位置だけで決める。向きで決めると、日の当たらない側の草に木の影が乗らなくなる
     float shadow = CalculateGrassShadow(input.worldPosition, lightDirection, distanceToCamera);
 
-    float normalDotLight = saturate((dot(normal, lightDirection) + kWrapLighting) / ((1.0f + kWrapLighting) * (1.0f + kWrapLighting)));
+    float normalDotLight = saturate((dot(normal, lightDirection) + kWrapLighting) / (1.0f + kWrapLighting));
     float3 diffuse = baseColor * lightColor * normalDotLight;
 
     // 逆光のとき、先端ほど光が透ける
     float translucencyAmount = pow(saturate(dot(-lightDirection, toEye + bladeNormal * 0.2f)), 2.5f) * heightRatio;
     float3 translucency = gMaterial.sssColor * translucencyAmount * gMaterial.sssStrength * gDirectionalLights[0].color.rgb;
 
-    // 葉の筋に沿ったハイライト。濡れると鋭く強くなる
-    float3 halfVector = normalize(lightDirection + toEye);
-    float tangentDotHalf = dot(normalize(input.tangent), halfVector);
-    float sinTangentHalf = sqrt(1.0f - saturate(tangentDotHalf * tangentDotHalf));
-    float shininess = lerp(gMaterial.specularShininess, 150.0f, gMaterial.wetness);
-    float specular = pow(sinTangentHalf, shininess) * gMaterial.specularStrength * lerp(1.0f, 2.5f, gMaterial.wetness);
-    specular *= saturate(dot(normal, lightDirection));
+    float3 directLight = (diffuse + translucency) * shadow;
 
-    float3 directLight = (diffuse + translucency + lightColor * specular) * shadow;
-
-    // 根元を暗くして接地感を出す
-    float ambientOcclusion = lerp(gMaterial.grassRootAO, 1.0f, heightRatio);
     float skyLight = saturate(normal.y * 0.5f + 0.5f);
-    float3 ambient = baseColor * (0.15f + skyLight * 0.2f) * ambientOcclusion;
+    float3 ambientColor = lerp(gEnvironmentData.ambientGroundColor.rgb, gEnvironmentData.ambientSkyColor.rgb, skyLight);
+    float3 ambient = baseColor * ambientColor;
 
     output.color = float4(directLight + ambient, 1.0f);
     output.normal = float4(normal, 1.0f);

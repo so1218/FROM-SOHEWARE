@@ -74,7 +74,7 @@ struct FrameData
     float farClip;
 
     float3 mainLightDirection;
-    float gTime;
+    float time;
     
     float3 mainLightColor;
     float mainLightVolumetricScatteringIntensity;
@@ -90,7 +90,7 @@ struct FrameData
     float3 prevCameraWorldPosition;
     
     float deltaTime;
-    float3 pad;
+    float3 padding;
     
     float4 frustumPlanes[6];
     
@@ -190,13 +190,13 @@ struct SpriteInstance
     float4 outlineColor;
     
     float outlineThickness;
-    float edgeSoftness;   // SDF 文字の輪郭を余分にぼかす量 (影に使う)
+    float edgeSoftness;  
     float2 padding;
 };
 
 struct SpriteFrameConstants
 {
-    float4x4 projection; // 左上原点の正射影行列
+    float4x4 projection; 
 };
 
 struct GlobalEnvironmentData
@@ -205,8 +205,8 @@ struct GlobalEnvironmentData
     float rainIntensity;
     float2 windDirection; 
     
-    float4 ambientSkyColor;     // 上を向いた面に当たる環境光
-    float4 ambientGroundColor;  // 下を向いた面に当たる環境光。地面からの照り返し
+    float4 ambientSkyColor;     
+    float4 ambientGroundColor;  
     
     float windSpeed;
     float windTurbulence;
@@ -218,10 +218,10 @@ struct GlobalEnvironmentData
 struct AtmosphereSkyData
 {
     float2 windVelocity;
-    float cloudThreshold;        // この濃さを超えた所が雲になる。大きいほど雲が減る
+    float cloudThreshold;        
     float cloudScale;
     
-    float cloudShadowBrightness; // 陰になった側に空の色をどれだけ残すか
+    float cloudShadowBrightness; 
     float skyGradientExponent;
     float sunAtmosphereGlow;
     float cloudBumpScale;
@@ -432,13 +432,13 @@ struct BilateralBlurSettings
 
 struct InteractionEntity
 {
-    float3 position; // ワールド位置
-    float radius; // 影響半径
+    float3 position; 
+    float radius;
     
-    float3 velocity; // 移動速度ベクトル
-    float maxVerticalDist; // 影響を及ぼす最大垂直距離
+    float3 velocity; 
+    float maxVerticalDist; 
     
-    float forceMultiplier; // 力の倍率
+    float forceMultiplier;x
     float3 padding;
 };
 
@@ -459,40 +459,33 @@ struct InteractionConstants
 
 struct GrassInstanceData
 {
-    float4 posAndHeight; // xyz: ワールド座標, w: 高さスケール
-    float4 rotationAndWidth; // x: Y軸回転角, y: 幅スケール, zw: 予備
+    float4 posAndHeight; 
+    float4 rotationAndWidth;
 };
 
 struct GrassMaterialData
 {
     float3 rootColor;
-    float grassRootAO; 
-    
+    float grassNormalBlend;
+
     float3 tipColor;
-    float grassNormalBlend; 
-    
-    float3 sssColor;
     float sssStrength;
-    
+
+    float3 sssColor;
     float interactStrength;
+
     float flattenFactor;
     float trailFlattenWeight;
-    float windSpeedMultiplier; 
+    float windSpeedMultiplier;
+    float gustScale;
     
-    float windStrengthMultiplier;
-    float gustScale; 
-    float gustStrength; 
-    float flutterAmount; 
+    float gustStrength;
+    float flutterAmount;
+    float shadowDensity;
+    float shadowNormalBias;
     
-    float specularStrength; 
-    float specularShininess;
-    float wetness; 
-    
-    float shadowDensity; 
-    float shadowNormalBias; 
-    float shadowBias; 
+    float shadowBias;
     float windFlattenStrength;
-    
     float nearFadeMinDist;
     float nearFadeMaxDist;
 };
@@ -526,7 +519,7 @@ struct GrassGenerationData
 struct TreeInstanceData
 {
     float4x4 worldMatrix;
-    float lodFade;   // カリングの CS が距離から決める
+    float lodFade;  
 };
 
 struct TreeInstanceOffset
@@ -547,10 +540,10 @@ struct TreeCullingData
 
 struct LeafMaterialData
 {
-    float gustScale;          // 突風ノイズの細かさ
-    float gustStrength;       // 突風の強さ
-    float trunkFlexibility;   // 幹のしなりやすさ
-    float leafFlutterAmount;  // 葉の揺れ幅
+    float gustScale;         
+    float gustStrength;      
+    float trunkFlexibility;  
+    float leafFlutterAmount; 
 
     float diffuseWrap;
     float sssStrength;
@@ -569,10 +562,9 @@ struct LeafMaterialData
     float nearFadeMinDist;
 
     float nearFadeMaxDist;
-    float windSpeedMultiplier;  // 環境の風に対する揺れの速さ
+    float windSpeedMultiplier;  
 };
 
-// 幹は金属でない PBR 固定で、法線マップと影は常に使う
 struct TrunkMaterialData
 {
     float4 color;
@@ -592,7 +584,7 @@ struct TrunkMaterialData
 
 struct FoliageInstanceData
 {
-    float4 posAndScale;   // xyz = 根元の位置, w = 大きさ
+    float4 posAndScale; 
     float4 rotationQuat;
 };
 
@@ -604,15 +596,15 @@ struct FoliageMaterialData
     float shadowDensity;
     float shadowBias;
     float shadowNormalBias;
-    float windResponse;       // 風で揺れる大きさ
+    float windResponse;      
 
-    float plantHeight;        // この高さで揺れが最大になる
-    float flutterSpeed;       // 細かい揺れの速さ
-    float flutterScale;       // 細かい揺れの大きさ
-    float interactStrength;   // 押されて倒れる大きさ
+    float plantHeight;       
+    float flutterSpeed;      
+    float flutterScale;      
+    float interactStrength;  
 
-    float trailFlattenWeight; // 通った跡が残る強さ
-    float colorIntensity;     // 明るさの倍率 (baseColor は 0〜1 なので、明るくするときに使う)
+    float trailFlattenWeight;
+    float colorIntensity;    
 };
 
 struct FoliageGenerationData
@@ -652,12 +644,12 @@ struct InstanceOffset
 
 struct VolumetricFogSettings
 {
-    float3 albedo;          // 散乱色
-    float extinctionScale;  // すべての濃さに掛ける倍率
+    float3 albedo;         
+    float extinctionScale;  
     
     float anisotropy;
-    float extinction;       // どこにでもある一様な濃さ
-    float heightDensity;    // 地面近くに足す濃さ
+    float extinction;      
+    float heightDensity;    
     float baseHeight;
     
     float3 ambientLight;
@@ -687,7 +679,7 @@ struct FogVolume
 {
     float4x4 worldToLocal;
 
-    float3 color; // 散乱色
+    float3 color;
     float density;
 
     float3 noiseScale; 
@@ -703,7 +695,7 @@ struct FogVolume
 
     float distortionAmount; 
     float heightFalloff; 
-    int type; // 0: 球, 1: 箱
+    int type; 
     float pad;
 };
 
@@ -728,15 +720,14 @@ struct CascadeConstant
 
 struct TerrainSettings
 {
-    float3 origin;          // ハイトマップの (0, 0) のピクセルにあたる頂点の、高さ 0 での位置
+    float3 origin;         
     float maxHeight;
-    float cellSize;         // 頂点の間隔
-    float texelSize;        // ハイトマップ1ピクセル分の UV。草や植物の生成で使う
+    float cellSize;       
+    float texelSize;       
     uint heightMapWidth;
     uint heightMapHeight;
 };
 
-// 地形は PBR 固定。色や粗さなどは天候ごとの設定で毎フレーム上書きされる
 struct TerrainMaterialData
 {
     float4 color;
@@ -757,8 +748,8 @@ struct TerrainMaterialData
     float normalTiling;
 
     float normalIntensity;
-    float wetness;          // 0 なら乾いていて波紋も出ない
-    float rippleScale;      // 大きいほど波紋が細かく密に並ぶ
+    float wetness;        
+    float rippleScale;     
     float rippleSpeed;
 
     float rippleStrength;
@@ -767,7 +758,6 @@ struct TerrainMaterialData
     float padding;
 };
 
-// 描くチャンクごとに、ハイトマップのどのピクセルから始まるか
 struct TerrainChunkData
 {
     uint startX;
@@ -777,7 +767,7 @@ struct TerrainChunkData
 struct LightningMaterial
 {
     float3 coreColor;
-    float coreThickness;    // 芯の太さ (板の幅に対する割合)
+    float coreThickness;  
     
     float3 fringeColor;
     float corePower;

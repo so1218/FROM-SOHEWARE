@@ -8,6 +8,7 @@
 #include "Fade.h"
 #include "Logger.h"
 #include "ImGuiManager.h"
+#include "AudioPlayer.h"
 
 namespace FS
 {
@@ -116,6 +117,7 @@ void SceneManager::SetScene(BaseScene* newScene)
     }
 
     engine_->GetParticleSystem()->Clear();
+    AudioPlayer::GetInstance().InvalidateListener();
     currentScene_ = newScene;
 
     // 新しいシーンの初期化処理

@@ -34,7 +34,7 @@ SamplerComparisonState gShadowSampler : register(s1);
 float3 CalculateRippleNormal(float3 worldPosition)
 {
     float2 rippleUV = worldPosition.xz * gMaterial.rippleScale;
-    float time = gFrameData.gTime * gMaterial.rippleSpeed;
+    float time = gFrameData.time * gMaterial.rippleSpeed;
     float3 combinedRipple = 0.0f.xxx;
 
     [unroll]

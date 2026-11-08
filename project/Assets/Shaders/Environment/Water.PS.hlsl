@@ -73,7 +73,7 @@ float3 TraceScreenSpaceReflection(float3 rayOrigin, float3 rayDirection, float3 
     float maxDistance = max(gWaterMaterial.ssrMaxDistance, 10.0f);
 
     // 開始位置をピクセルごとにずらして、段差の縞を目立たなくする
-    float dither = InterleavedGradientNoise(screenUV * gFrameData.screenResolution.xy + gFrameData.gTime * 144.0f);
+    float dither = InterleavedGradientNoise(screenUV * gFrameData.screenResolution.xy + gFrameData.time * 144.0f);
     float traveled = stepSize * dither;
     float previousTraveled = traveled;
 
@@ -158,7 +158,7 @@ PixelShaderOutput main(WaterPSInput input)
     float waterSurfaceDepth = LinearizeDepth(input.position.z, gFrameData.nearClip, gFrameData.farClip);
     float waterDepth = max(LinearDepthAt(screenUV) - waterSurfaceDepth, 0.0f);
 
-    float time = gFrameData.gTime * max(gWaterMaterial.waveSpeed, 0.1f);
+    float time = gFrameData.time * max(gWaterMaterial.waveSpeed, 0.1f);
     float windLength = length(gWaterMaterial.globalWindDirection);
     float2 windDirection = (windLength > kEpsilon) ? gWaterMaterial.globalWindDirection / windLength : float2(1.0f, 0.0f);
 

@@ -27,7 +27,6 @@ void GrassField::Initialize()
     binder_->Bind("MaxWidth", &maxWidth_, 1.5f, 0.01f, 0.1f, 5.0f);
 
     binder_->BindColor("RootColor", &grassMat->rootColor, { 0.1f, 0.2f, 0.05f });
-    binder_->Bind("GrassRootAO", &grassMat->grassRootAO, 0.3f, 0.05f, 0.0f, 1.0f);
 
     binder_->BindColor("TipColor", &grassMat->tipColor, { 0.4f, 0.7f, 0.2f });
     binder_->Bind("GrassNormalBlend", &grassMat->grassNormalBlend, 0.7f, 0.05f, 0.0f, 1.0f);
@@ -35,12 +34,8 @@ void GrassField::Initialize()
     binder_->BindColor("SSSColor", &grassMat->sssColor, { 0.7f, 0.9f, 0.3f });
     binder_->Bind("SSSStrength", &grassMat->sssStrength, 1.5f, 0.1f, 0.0f, 5.0f);
 
-    binder_->Bind("SpecularStrength", &grassMat->specularStrength, 0.2f, 0.01f, 0.0f, 1.0f);
-    binder_->Bind("SpecularShininess", &grassMat->specularShininess, 40.0f, 1.0f, 10.0f, 200.0f);
-    binder_->Bind("Wetness", &grassMat->wetness, 0.0f, 0.05f, 0.0f, 1.0f);
 
     binder_->Bind("WindSpeedMult", &grassMat->windSpeedMultiplier, 1.0f, 0.05f, 0.0f, 5.0f);
-    binder_->Bind("WindStrengthMult", &grassMat->windStrengthMultiplier, 1.0f, 0.05f, 0.0f, 5.0f);
     binder_->Bind("GustScale", &grassMat->gustScale, 0.03f, 0.005f, 0.001f, 0.5f);
     binder_->Bind("GustStrength", &grassMat->gustStrength, 1.2f, 0.1f, 0.0f, 5.0f);
     binder_->Bind("WindFlattenStrength", &grassMat->windFlattenStrength, 1.0f, 0.05f, 0.0f, 3.0f);
@@ -118,7 +113,6 @@ void GrassField::DebugGui()
     if (ImGui::CollapsingHeader("質感・ライティング"))
     {
         binder_->Draw("RootColor", "根本の色");
-        binder_->Draw("GrassRootAO", "根本のAO(暗さ)");
 
         ImGui::Separator();
         binder_->Draw("TipColor", "先端の色");
@@ -127,11 +121,6 @@ void GrassField::DebugGui()
         binder_->Draw("GrassNormalBlend", "法線の上向きブレンド");
         binder_->Draw("SSSColor", "透過光(SSS)の色");
         binder_->Draw("SSSStrength", "透過光(SSS)の強さ");
-
-        ImGui::Separator();
-        binder_->Draw("SpecularStrength", "ハイライトの基本強度");
-        binder_->Draw("SpecularShininess", "ハイライトの鋭さ");
-        binder_->Draw("Wetness", "濡れ具合");
     }
 
     if (ImGui::CollapsingHeader("風の挙動"))
@@ -139,13 +128,12 @@ void GrassField::DebugGui()
         ImGui::Text("風テクスチャ");
         binder_->Draw("WindMap", "風のノイズテクスチャ");
         ImGui::Separator();
-        binder_->Draw("WindSpeedMult", "風の速さ(揺れ)倍率");
-        binder_->Draw("WindStrengthMult", "風の強さ(曲がり)倍率");
+        binder_->Draw("WindSpeedMult", "突風の模様が流れる速さの倍率");
 
         ImGui::Separator();
         binder_->Draw("GustScale", "突風ノイズのスケール");
-        binder_->Draw("GustStrength", "突風の強さ(水平方向)");
-        binder_->Draw("WindFlattenStrength", "突風時の押し潰し(下方向)");
+        binder_->Draw("GustStrength", "突風の強さ");
+        binder_->Draw("WindFlattenStrength", "風で下へ倒れる割合");
         binder_->Draw("FlutterAmount", "葉先の震えの強さ");
     }
 

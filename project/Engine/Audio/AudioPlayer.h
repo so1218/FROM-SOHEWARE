@@ -58,6 +58,8 @@ public:
 
     // リスナーの情報をセット
     void SetListener(const Vector3& pos, const Vector3& front, const Vector3& up);
+    // シーンを切り替えたときに呼ぶ。新しいカメラの位置が届くまで 3D の音を鳴らさない
+    void InvalidateListener() { hasListener_ = false; }
 
     // 3D座標を指定して再生する関数
     int Play3D(const std::string& name, const Vector3& position, bool loop = false, uint32_t volume = 100, float maxDistance = 100.0f);
@@ -68,6 +70,13 @@ public:
 private:
     AudioPlayer() {}
     ~AudioPlayer() { StopAll(); }
+
+    // ボイスを作ってバッファを積み、鳴らさずに登録する。失敗したら -1
+    int CreateInstance(const std::string& name, bool loop, uint32_t volume);
+    // 鳴らし始める。失敗したら登録ごと消す
+    int StartInstance(int handleID);
+    // リスナーとの位置関係から、左右の振り分けと距離による減衰を掛ける
+    void Apply3D(AudioInstance& instance);
 
     IXAudio2* xAudio2_ = nullptr; // Initializeで取得想定
 
@@ -85,6 +94,8 @@ private:
 
     // リスナーの情報
     X3DAUDIO_LISTENER listener_ = {};
+    // まだカメラから位置を受け取っていないとき、前のシーンの位置や向きのない状態で計算しないようにする
+    bool hasListener_ = false;
 };
 
 // コールバックは変更なしでOK

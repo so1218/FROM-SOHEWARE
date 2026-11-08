@@ -90,7 +90,7 @@ WaterVSOutput main(Object3DVSInputInstanced input)
 
     float3 waveNormal;
     float3 waveTangent;
-    float3 waveOffset = CalculateGerstnerWaves(worldPosition, gFrameData.gTime, waveNormal, waveTangent);
+    float3 waveOffset = CalculateGerstnerWaves(worldPosition, gFrameData.time, waveNormal, waveTangent);
 
     // プレイヤーなどが入った所はへこみ、通った跡は盛り上がる。
     // インタラクションの範囲の端に近いほど弱める (範囲の外は 0)

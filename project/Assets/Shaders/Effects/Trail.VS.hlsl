@@ -9,7 +9,7 @@ TrailVSOutput main(TrailVSInput input)
     output.texcoord = input.texcoord;
     float3 pos = input.position.xyz;
     
-    float time = gFrameData.gTime;
+    float time = gFrameData.time;
 
     // ジッター適用
     if (gTrailMaterial.jitterStrength > 0.0f)

@@ -24,24 +24,22 @@ void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)
 // 再生処理
 int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
 {
-    // 名前でデータを検索
+    return StartInstance(CreateInstance(name, loop, volume));
+}
+
+int AudioPlayer::CreateInstance(const std::string& name, bool loop, uint32_t volume)
+{
     auto it = audioDataMap_.find(name);
-    if (it == audioDataMap_.end())
-    {
-        // データが見つからない
-        return -1;
-    }
+    if (it == audioDataMap_.end()) return -1;
 
     const auto& audioData = it->second;
 
     if (!AudioDevice::GetInstance().GetXAudio2()) return -1;
 
-    // ソースボイス作成
     IXAudio2SourceVoice* sourceVoice = nullptr;
     HRESULT hr = AudioDevice::GetInstance().GetXAudio2()->CreateSourceVoice(&sourceVoice, &audioData.wfex);
     if (FAILED(hr)) return -1;
 
-    // バッファ設定
     XAUDIO2_BUFFER buffer = { 0 };
     buffer.AudioBytes = static_cast<uint32_t>(audioData.buffer.size());
     buffer.pAudioData = audioData.buffer.data();
@@ -54,32 +52,34 @@ int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
         return -1;
     }
 
-    // 音量設定
-    float fVolume = volume / 100.0f;
-    fVolume = std::clamp(fVolume, 0.0f, 10.0f);
-    sourceVoice->SetVolume(fVolume);
+    sourceVoice->SetVolume(std::clamp(volume / 100.0f, 0.0f, 10.0f));
 
-    // 再生開始
-    hr = sourceVoice->Start(0);
-    if (FAILED(hr)) {
-        sourceVoice->DestroyVoice();
-        return -1;
-    }
-
-    // ハンドルIDの発行と管理
     int handleID = nextHandleID_;
-    nextHandleID_++; // 次回用にカウントアップ
+    nextHandleID_++;
 
-    // mapに登録
     activeVoices_[handleID] = {
         sourceVoice,
         name,
-        audioData.wfex.nChannels, 
-        false,                   
-        {0, 0, 0},               
+        audioData.wfex.nChannels,
+        false,
+        {0, 0, 0},
         100.0f
     };
 
+    return handleID;
+}
+
+int AudioPlayer::StartInstance(int handleID)
+{
+    auto it = activeVoices_.find(handleID);
+    if (it == activeVoices_.end()) return -1;
+
+    if (FAILED(it->second.voice->Start(0)))
+    {
+        it->second.voice->DestroyVoice();
+        activeVoices_.erase(it);
+        return -1;
+    }
     return handleID;
 }
 
@@ -183,19 +183,22 @@ void AudioPlayer::SetListener(const Vector3& pos, const Vector3& front, const Ve
     listener_.Position = { pos.x, pos.y, pos.z };
     listener_.OrientFront = { front.x, front.y, front.z };
     listener_.OrientTop = { up.x, up.y, up.z };
+    hasListener_ = true;
 }
 
 int AudioPlayer::Play3D(const std::string& name, const Vector3& position, bool loop, uint32_t volume, float maxDistance)
 {
-    int handleID = Play(name, loop, volume);
-    if (handleID >= 0)
-    {
-        activeVoices_[handleID].is3D = true;
-        activeVoices_[handleID].position = position;
-        activeVoices_[handleID].channels = audioDataMap_[name].wfex.nChannels;
-        activeVoices_[handleID].maxDistance = maxDistance; 
-    }
-    return handleID;
+    int handleID = CreateInstance(name, loop, volume);
+    if (handleID < 0) return -1;
+
+    // 鳴らし始める前に減衰を掛けておかないと、最初の 1 フレームは距離に関係なく最大音量で鳴る
+    AudioInstance& instance = activeVoices_[handleID];
+    instance.is3D = true;
+    instance.position = position;
+    instance.maxDistance = maxDistance;
+    Apply3D(instance);
+
+    return StartInstance(handleID);
 }
 
 void AudioPlayer::SetEmitterPosition(int handleID, const Vector3& position)
@@ -208,80 +211,69 @@ void AudioPlayer::SetEmitterPosition(int handleID, const Vector3& position)
 
 void AudioPlayer::Update()
 {
-    const X3DAUDIO_HANDLE& x3dInstance = AudioDevice::GetInstance().GetX3DInstance();
-    uint32_t dstChannels = AudioDevice::GetInstance().GetMasterChannels();
-
     for (auto it = activeVoices_.begin(); it != activeVoices_.end(); )
     {
-        int handleID = it->first;
-        AudioInstance& instance = it->second;
-
         // 再生が終わったボイスは破棄してから外す
-        if (!IsPlaying(handleID))
+        if (!IsPlaying(it->first))
         {
-            if (instance.voice)
+            if (it->second.voice)
             {
-                instance.voice->DestroyVoice();
+                it->second.voice->DestroyVoice();
             }
             it = activeVoices_.erase(it);
             continue;
         }
 
-        // 3D音響計算
-        if (instance.is3D && instance.voice)
+        if (it->second.is3D && it->second.voice)
         {
-            // リスナーと音源の距離を直接計算
-            float dx = instance.position.x - listener_.Position.x;
-            float dy = instance.position.y - listener_.Position.y;
-            float dz = instance.position.z - listener_.Position.z;
-            float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
-
-            // maxDistance 以上離れていたら音量を 0 にして計算をスキップ
-            if (dist >= instance.maxDistance)
-            {
-                float zeroMatrix[8] = { 0 };
-                instance.voice->SetOutputMatrix(NULL, instance.channels, dstChannels, zeroMatrix);
-                ++it;
-                continue;
-            }
-
-            // 音源の設定
-            X3DAUDIO_EMITTER emitter = {};
-            emitter.ChannelCount = instance.channels;
-            emitter.CurveDistanceScaler = instance.maxDistance; // 基準距離
-            emitter.Position = { instance.position.x, instance.position.y, instance.position.z };
-            emitter.OrientFront = { 0, 0, 1 };
-            emitter.OrientTop = { 0, 1, 0 };
-
-            // 3D音響計算用の設定
-            X3DAUDIO_DSP_SETTINGS dspSettings = {};
-            float matrix[8] = { 0 };
-            dspSettings.SrcChannelCount = instance.channels;
-            dspSettings.DstChannelCount = dstChannels;
-            dspSettings.pMatrixCoefficients = matrix;
-
-            X3DAudioCalculate(
-                x3dInstance,
-                &listener_,
-                &emitter,
-                X3DAUDIO_CALCULATE_MATRIX,
-                &dspSettings
-            );
-
-            // maxDistance に近づくにつれてスムーズに 0 に落とす
-            float distanceFactor = 1.0f - (dist / instance.maxDistance);
-            distanceFactor = std::max(0.0f, std::min(1.0f, distanceFactor)); 
-
-            for (uint32_t i = 0; i < instance.channels * dstChannels; ++i)
-            {
-                matrix[i] *= distanceFactor;
-            }
-
-            instance.voice->SetOutputMatrix(NULL, dspSettings.SrcChannelCount, dspSettings.DstChannelCount, matrix);
+            Apply3D(it->second);
         }
 
         ++it;
     }
+}
+
+void AudioPlayer::Apply3D(AudioInstance& instance)
+{
+    const X3DAUDIO_HANDLE& x3dInstance = AudioDevice::GetInstance().GetX3DInstance();
+    uint32_t dstChannels = AudioDevice::GetInstance().GetMasterChannels();
+
+    float dx = instance.position.x - listener_.Position.x;
+    float dy = instance.position.y - listener_.Position.y;
+    float dz = instance.position.z - listener_.Position.z;
+    float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+    // 聞く位置が決まっていないときと maxDistance 以上離れているときは音量を 0 にする
+    if (!hasListener_ || dist >= instance.maxDistance)
+    {
+        float zeroMatrix[8] = { 0 };
+        instance.voice->SetOutputMatrix(NULL, instance.channels, dstChannels, zeroMatrix);
+        return;
+    }
+
+    X3DAUDIO_EMITTER emitter = {};
+    emitter.ChannelCount = instance.channels;
+    emitter.CurveDistanceScaler = instance.maxDistance;
+    emitter.Position = { instance.position.x, instance.position.y, instance.position.z };
+    emitter.OrientFront = { 0, 0, 1 };
+    emitter.OrientTop = { 0, 1, 0 };
+
+    X3DAUDIO_DSP_SETTINGS dspSettings = {};
+    float matrix[8] = { 0 };
+    dspSettings.SrcChannelCount = instance.channels;
+    dspSettings.DstChannelCount = dstChannels;
+    dspSettings.pMatrixCoefficients = matrix;
+
+    X3DAudioCalculate(x3dInstance, &listener_, &emitter, X3DAUDIO_CALCULATE_MATRIX, &dspSettings);
+
+    // maxDistance に近づくにつれてスムーズに 0 に落とす
+    float distanceFactor = std::clamp(1.0f - (dist / instance.maxDistance), 0.0f, 1.0f);
+    for (uint32_t i = 0; i < instance.channels * dstChannels; ++i)
+    {
+        matrix[i] *= distanceFactor;
+    }
+
+    instance.voice->SetOutputMatrix(NULL, dspSettings.SrcChannelCount, dspSettings.DstChannelCount, matrix);
 }
 
 }

@@ -23,7 +23,7 @@ struct SkydomePSInput
 // 細かい層ほど速く、少し違う向きに流して、同じ模様がそろって動いて見えないようにする
 float SampleCloudDensity(float2 cloudUV)
 {
-    float time = gFrameData.gTime;
+    float time = gFrameData.time;
     float2 wind = gSky.windVelocity;
 
     float largeLayer = gCloudTexture.Sample(gSampler, cloudUV + wind * time).r;

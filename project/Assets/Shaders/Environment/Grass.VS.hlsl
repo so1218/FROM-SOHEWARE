@@ -45,7 +45,6 @@ struct GrassPSInput
     float4 position : SV_POSITION;
     float heightRatio : TEXCOORD; // 0:根元 ~ 1:先端
     float3 normal : NORMAL;
-    float3 tangent : TANGENT;
     float3 worldPosition : WORLD_POSITION;
 };
 
@@ -106,11 +105,9 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float2 windUV = rootPosition.xz * gMaterial.gustScale + windScroll * 0.05f;
     float gustMask = smoothstep(0.2f, 0.8f, gWindMap.SampleLevel(gLinearWrapSampler, windUV, 0).r);
 
-    float flutter = sin(gFrameData.gTime * 10.0f + rootPosition.x * 1.7f + rootPosition.z * 2.3f)
+    float flutter = sin(gFrameData.time * 10.0f + rootPosition.x * 1.7f + rootPosition.z * 2.3f)
                     * gMaterial.flutterAmount * gEnvironmentData.windSpeed;
-    float windStrength = gEnvironmentData.windSpeed * gMaterial.windStrengthMultiplier
-                       + gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed
-                       + flutter;
+    float windStrength = gustMask * gMaterial.gustStrength * gEnvironmentData.windSpeed + flutter;
 
     float3 windForce = float3(windDirection.x, -gMaterial.windFlattenStrength, windDirection.y) * windStrength;
 
@@ -176,6 +173,5 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     output.worldPosition = worldPosition;
     output.heightRatio = heightRatio;
     output.normal = normal;
-    output.tangent = tangent;
     return output;
 }
