@@ -133,7 +133,6 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
     shadowMap_->TransitionToRead(cmdList); // ループの後に1回だけバリア
 
     // RendererManager に深度リソースのポインタを渡す
-    rendererManager->SetOffscreenDepthResource(renderCoordinator_->GetOffscreenDepthResource());
     rendererManager->SetOffscreenColorResource(renderCoordinator_->GetOffscreenColorResource());
 
     // オフスクリーンパス

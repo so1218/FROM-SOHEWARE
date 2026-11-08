@@ -504,9 +504,6 @@
     <ClCompile Include="Engine\Graphics\Renderer\TreeRenderer.cpp">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Graphics\Renderer\WaterRenderer.cpp">
-      <Filter>Engine\Graphics\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Graphics\RenderSystem\FoliageSystem.cpp">
       <Filter>Engine\Graphics\RenderSystem</Filter>
     </ClCompile>
@@ -763,12 +760,6 @@
       <Filter>Engine\Framework</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Field\TreeField.cpp">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\Field\WaterManager.cpp">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\GameObject\Field\WaterObject.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Field\WeatherEffectManager.cpp">
@@ -1039,9 +1030,6 @@
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\Renderer\TreeRenderer.h">
-      <Filter>Engine\Graphics\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Graphics\Renderer\WaterRenderer.h">
       <Filter>Engine\Graphics\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\RenderSystem\FoliageSystem.h">
@@ -1323,12 +1311,6 @@
     <ClInclude Include="Game\GameObject\Field\TreeField.h">
       <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Field\WaterManager.h">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObject\Field\WaterObject.h">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClInclude>
     <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h">
       <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
@@ -1389,12 +1371,6 @@
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>
     <FxCompile Include="Assets\Shaders\Environment\TreeFoliage.PS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\Water.PS.hlsl">
-      <Filter>Assets\Shaders\Environment</Filter>
-    </FxCompile>
-    <FxCompile Include="Assets\Shaders\Environment\Water.VS.hlsl">
       <Filter>Assets\Shaders\Environment</Filter>
     </FxCompile>
     <FxCompile Include="Assets\Shaders\Environment\WorldInteraction.CS.hlsl">

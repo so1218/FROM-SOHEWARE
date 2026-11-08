@@ -75,41 +75,6 @@ void RenderCoordinator::Initialize(
         &depthSrvDesc,
         srvManager->GetSRVHandleCPU(offscreenDepthSrvIndex_)
     );
-
-    // --------------------------------------------------------
-    // 屈折用不透明カラーコピーテクスチャの作成
-    // --------------------------------------------------------
-    CD3DX12_RESOURCE_DESC copyDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-        DXGI_FORMAT_R16G16B16A16_FLOAT,
-        Engine::GetClientWidth(),
-        Engine::GetClientHeight(),
-        1,
-        1  
-    );
-    CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_DEFAULT);
-
-    graphicDevice_->GetDevice()->CreateCommittedResource(
-        &heapProps,
-        D3D12_HEAP_FLAG_NONE,
-        &copyDesc,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        nullptr,
-        IID_PPV_ARGS(&opaqueSceneCopy_)
-    );
-
-    opaqueSceneCopySrvIndex_ = srvManager->Allocate();
-
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    graphicDevice_->GetDevice()->CreateShaderResourceView(
-        opaqueSceneCopy_.Get(),
-        &srvDesc,
-        srvManager->GetSRVHandleCPU(opaqueSceneCopySrvIndex_)
-    );
 }
 
 void RenderCoordinator::BeginFrame()
@@ -232,42 +197,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE RenderCoordinator::GetOffscreenDepthSRVGPUHandle() c
     return srvManager_->GetSRVHandleGPU(offscreenDepthSrvIndex_);
 }
 
-void RenderCoordinator::CopyOpaqueSceneColor()
-{
-    auto* cmdList = commandManager_->GetCommandList();
-
-    // バリア: offscreenTexColor_ を COPY_SOURCE に、opaqueSceneCopy_ を COPY_DEST に遷移
-    D3D12_RESOURCE_BARRIER barriersBefore[2];
-    barriersBefore[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexColor_.Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_COPY_SOURCE
-    );
-    barriersBefore[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        opaqueSceneCopy_.Get(),
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-        D3D12_RESOURCE_STATE_COPY_DEST
-    );
-    cmdList->ResourceBarrier(2, barriersBefore);
-
-    // 高速コピー（GPU内部での転送）
-    cmdList->CopyResource(opaqueSceneCopy_.Get(), offscreenTexColor_.Get());
-
-    // バリア: 状態を元に戻す（offscreenTexColor_ は RTV、opaqueSceneCopy_ は SRV）
-    D3D12_RESOURCE_BARRIER barriersAfter[2];
-    barriersAfter[0] = CD3DX12_RESOURCE_BARRIER::Transition(
-        offscreenTexColor_.Get(),
-        D3D12_RESOURCE_STATE_COPY_SOURCE,
-        D3D12_RESOURCE_STATE_RENDER_TARGET
-    );
-    barriersAfter[1] = CD3DX12_RESOURCE_BARRIER::Transition(
-        opaqueSceneCopy_.Get(),
-        D3D12_RESOURCE_STATE_COPY_DEST,
-        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-    );
-    cmdList->ResourceBarrier(2, barriersAfter);
-}
-
 void RenderCoordinator::TransitionDepthToShaderResource()
 {
     auto* cmdList = commandManager_->GetCommandList();
@@ -288,11 +217,6 @@ void RenderCoordinator::TransitionDepthToDepthWrite()
         D3D12_RESOURCE_STATE_DEPTH_WRITE
     );
     cmdList->ResourceBarrier(1, &barrier);
-}
-
-D3D12_GPU_DESCRIPTOR_HANDLE RenderCoordinator::GetOpaqueSceneColorSRVGPUHandle() const
-{
-    return srvManager_->GetSRVHandleGPU(opaqueSceneCopySrvIndex_);
 }
 
 }

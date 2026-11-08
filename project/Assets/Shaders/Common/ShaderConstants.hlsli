@@ -235,56 +235,6 @@ struct AtmosphereSkyData
     float3 sunDirection;
 };
 
-struct WaterMaterialData
-{
-    float2 globalWindDirection; 
-    float waveLength; 
-    float waveAmplitude; 
-
-    float waveSteepness; 
-    float waveSpeed;
-    float waveAmplitudeFalloff;
-    float waveLengthFalloff;
-    
-    float waveDirectionSpread; 
-    float interactionHeightScale; 
-    float interactionSinkForce; 
-    float interactionBulgeForce; 
-
-    float interactionNormalScale; 
-    float interactionFoamIntensity; 
-    float2 normalTiling; 
-    
-    float4 shallowColor; 
-    float4 deepColor;
-    float4 scatterColor; 
-    float4 foamColor;
-    
-    float absorption; 
-    float refractionAmount; 
-    float chromaticAberration; 
-    float normalIntensity; 
-
-    float roughness; 
-    float specularIntensity; 
-    float envReflectionIntensity;
-    float ssrIntensity; 
-    
-    float ssrStepSize; 
-    float ssrMaxDistance;
-    float ssrThickness; 
-    float waveFoamThreshold; 
-    
-    float shoreFoamThreshold; 
-    float foamScale; 
-    float foamIntensity; 
-    float ssrDistortion; 
-
-    float ssrMaxSteps; 
-    float ssrBinarySearchSteps; 
-    float2 pad0; 
-};
-
 struct TrailMaterialData
 {
     float jitterStrength;
@@ -438,7 +388,7 @@ struct InteractionEntity
     float3 velocity; 
     float maxVerticalDist; 
     
-    float forceMultiplier;x
+    float forceMultiplier;
     float3 padding;
 };
 

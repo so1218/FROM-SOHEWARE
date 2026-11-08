@@ -24,7 +24,6 @@
 #include "TerrainRenderer.h"
 #include "LightningRenderer.h"
 #include "TreeRenderer.h"
-#include "WaterRenderer.h"
 #include "PIXColors.h"
 #include "Engine.h"
 
@@ -82,8 +81,6 @@ void RendererManager::Initialize(
 	treeRenderer_ = std::make_unique<TreeRenderer>();
 	treeRenderer_->Initialize(env_);
 	foliageRenderer_ = std::make_unique<FoliageRenderer>();
-	waterRenderer_ = std::make_unique<WaterRenderer>();
-	waterRenderer_->Initialize(env_);
 	skydomeRenderer_ = std::make_unique<SkydomeRenderer>();
 	skydomeRenderer_->Initialize(env_);
 	terrainRenderer_ = std::make_unique<TerrainRenderer>();
@@ -101,7 +98,6 @@ void RendererManager::Initialize(
 void RendererManager::Finalize()
 {
 	if (modelRenderer_) { modelRenderer_->Finalize(); }
-	if (waterRenderer_) { waterRenderer_->Finalize(); }
 }
 
 void RendererManager::BeginFrame()
@@ -115,7 +111,6 @@ void RendererManager::BeginFrame()
 	if (grassRenderer_) { grassRenderer_->BeginFrame(); }
 	if (treeRenderer_) { treeRenderer_->BeginFrame(); }
 	if (foliageRenderer_) { foliageRenderer_->BeginFrame(); }
-	if (waterRenderer_) { waterRenderer_->BeginFrame(); }
 	if (skydomeRenderer_) { skydomeRenderer_->BeginFrame(); }
 	if (terrainRenderer_) { terrainRenderer_->BeginFrame(); }
 	if (lightningRenderer_) { lightningRenderer_->BeginFrame(); }
@@ -138,11 +133,6 @@ void RendererManager::SetCameraState(const Matrix4x4& view, const Matrix4x4& pro
 	if (treeRenderer_)
 	{
 		treeRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_);
-	}
-
-	if (waterRenderer_)
-	{
-		waterRenderer_->SetCameraState(viewMatrix_, viewProjectionMatrix_); 
 	}
 }
 
@@ -313,27 +303,6 @@ void RendererManager::Draw3D()
 	}
 
 	// 半透明モデルをまとめて描画
-	if (waterRenderer_)
-	{
-		// ここまでのカラーをコピー（屈折用 SRV テクスチャの生成）
-		renderCoordinator_->CopyOpaqueSceneColor();
-
-		// 深度バッファを SRV 兼 DEPTH_READ モードへ切り替え
-		renderCoordinator_->TransitionDepthToShaderResource();
-
-		// 最新の SRV (コピーした不透明カラー & 深度) を水レンダラーに設定
-		waterRenderer_->SetSceneTextures(
-			renderCoordinator_->GetOpaqueSceneColorSRVGPUHandle(), // コピーされた背景カラー
-			renderCoordinator_->GetOffscreenDepthSRVGPUHandle()    // 深度テクスチャ
-		);
-
-		// 描画実行 
-		waterRenderer_->PrepareBatches();
-		waterRenderer_->Draw(env_, interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
-
-		// 深度バッファを次の描画のために WRITE モードへ復帰
-		renderCoordinator_->TransitionDepthToDepthWrite();
-	}
 	if (modelRenderer_)
 	{
 		modelRenderer_->Draw(env_, RenderGroup::Transparent, shadowMap_);
@@ -387,7 +356,6 @@ void RendererManager::ClearSceneRenderStates()
 {
 	if (grassRenderer_)   grassRenderer_->Reset();
 	if (foliageRenderer_) foliageRenderer_->Reset();
-	if (waterRenderer_)   waterRenderer_->Reset();
 	if (treeRenderer_)    treeRenderer_->Reset();
 }
 
@@ -532,32 +500,6 @@ void RendererManager::GenerateFoliage(uint32_t heightMapSrvHandle)
 	}
 }
 
-void RendererManager::SubmitWater(
-	const WorldTransform& worldTransform,
-	const ModelData& modelData,
-	D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV,
-	uint32_t normalMapHandle,
-	uint32_t envMapSrvHandle,
-	const Vector4& instanceColor)
-{
-	if (waterRenderer_)
-	{
-		waterRenderer_->Submit(
-			worldTransform, modelData, waterMaterialCBV,
-			normalMapHandle, envMapSrvHandle, instanceColor);
-	}
-}
-
-void RendererManager::SetWaterSceneTextures(
-	D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
-	D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV)
-{
-	if (waterRenderer_)
-	{
-		waterRenderer_->SetSceneTextures(sceneColorSRV, sceneDepthSRV);
-	}
-}
-
 void RendererManager::SubmitSkydome(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData)
 {
 	if (skydomeRenderer_)
@@ -632,32 +574,6 @@ uint32_t RendererManager::GetMaxParticleCount() const
 uint32_t RendererManager::GetMaxTrailCount() const
 {
 	return trailRenderer_ ? trailRenderer_->GetMaxCount() : 0;
-}
-
-void RendererManager::TransitionDepthToShaderResource()
-{
-	auto* cmdList = commandManager_->GetCommandList();
-
-	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-		offscreenDepthResource_,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE
-	);
-
-	cmdList->ResourceBarrier(1, &barrier);
-}
-
-void RendererManager::TransitionDepthToDepthWrite()
-{
-	auto* cmdList = commandManager_->GetCommandList();
-
-	D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-		offscreenDepthResource_,
-		D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		D3D12_RESOURCE_STATE_DEPTH_WRITE
-	);
-
-	cmdList->ResourceBarrier(1, &barrier);
 }
 
 void RendererManager::TransitionColorToShaderResource()

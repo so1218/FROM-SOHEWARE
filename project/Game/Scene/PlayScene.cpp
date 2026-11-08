@@ -13,7 +13,6 @@
 #include "WeatherEffectManager.h"
 #include "FoliageField.h"
 #include "GameUI.h"
-#include "WaterManager.h"
 #include "Ground.h"
 #include "Environment.h"
 #include "TreeField.h"
@@ -60,7 +59,6 @@ PlayScene::PlayScene(Engine* engine)
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
-    /*objectManager_.Create<WaterManager>(engine_, "GameWater");*/
 }
 
 void PlayScene::OnInitialize()

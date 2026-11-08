@@ -32,7 +32,6 @@ class TrailRenderer;
 class SkyboxRenderer;
 class GrassRenderer;
 class TreeRenderer;
-class WaterRenderer;
 class SkydomeRenderer;
 class LightningRenderer;
 
@@ -84,12 +83,6 @@ public:
         uint32_t heightMapSrvHandle, uint32_t densityMapSrvHandle);
     void SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,
         const TreeMaterialHandle& treeMaterial);
-    void SubmitWater(const WorldTransform& worldTransform, const ModelData& modelData,
-        D3D12_GPU_VIRTUAL_ADDRESS waterMaterialCBV, uint32_t normalMapHandle, uint32_t envMapSrvHandle,
-        const Vector4& instanceColor = Vector4(1, 1, 1, 1));
-    void SetWaterSceneTextures(
-        D3D12_GPU_DESCRIPTOR_HANDLE sceneColorSRV,
-        D3D12_GPU_DESCRIPTOR_HANDLE sceneDepthSRV);
     void SubmitSkydome(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData);
     void SubmitTerrain(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
     void DrawFullScreenQuadWithOffscreenTexture();
@@ -168,10 +161,6 @@ public:
     void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
     Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
 
-    // OffscreenDepthResource をセットする関数
-    void SetOffscreenDepthResource(ID3D12Resource* depthResource) {
-        offscreenDepthResource_ = depthResource;
-    }
     void SetOffscreenColorResource(ID3D12Resource* colorResource) {
         offscreenColorResource_ = colorResource;
     }
@@ -179,9 +168,6 @@ public:
 private:
     void DrawPostEffectsProcess(uint32_t inputSrvIndex);
 
-    // 深度バッファを SRV (シェーダー読み込み) モードへ切り替える
-    void TransitionDepthToShaderResource();
-    void TransitionDepthToDepthWrite();
     void TransitionColorToShaderResource();
     void TransitionColorToRenderTarget();
 
@@ -213,8 +199,6 @@ private:
 
     FoliageCullingData foliageCullingData_ = {};
 
-    // 深度リソースのポインタ
-    ID3D12Resource* offscreenDepthResource_ = nullptr;
     ID3D12Resource* offscreenColorResource_ = nullptr;
 
     // カリング用のキャッシュ
@@ -238,7 +222,6 @@ private:
     std::unique_ptr<GrassRenderer> grassRenderer_;
     std::unique_ptr<TreeRenderer> treeRenderer_;
     std::unique_ptr<FoliageRenderer> foliageRenderer_;
-    std::unique_ptr<WaterRenderer> waterRenderer_;
     std::unique_ptr<SkydomeRenderer> skydomeRenderer_;
     std::unique_ptr<TerrainRenderer> terrainRenderer_;
     std::unique_ptr<LightningRenderer> lightningRenderer_;
