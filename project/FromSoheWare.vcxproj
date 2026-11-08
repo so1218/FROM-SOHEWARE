@@ -286,6 +286,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Audio\MediaAudioDecoder.cpp" />
     <ClCompile Include="Engine\Audio\AudioPlayer.cpp" />
     <ClCompile Include="Engine\Core\Input.cpp" />
+    <ClCompile Include="Engine\Debugs\DevError.cpp" />
     <ClCompile Include="Engine\Core\InputBinding.cpp" />
     <ClCompile Include="Game\Global\GameInput.cpp" />
     <ClCompile Include="Engine\Debugs\Logger.cpp" />
@@ -494,6 +495,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Audio\MediaAudioDecoder.h" />
     <ClInclude Include="Engine\Audio\AudioPlayer.h" />
     <ClInclude Include="Engine\Core\Input.h" />
+    <ClInclude Include="Engine\Debugs\DevError.h" />
     <ClInclude Include="Engine\Core\InputBinding.h" />
     <ClInclude Include="Engine\Core\RepeatInput.h" />
     <ClInclude Include="Game\Global\GameInput.h" />

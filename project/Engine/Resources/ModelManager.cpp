@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ModelManager.h"
-#include "Logger.h"
+#include "DevError.h"
 #include "ModelLoader.h"
 #include "AssetFiles.h"
 #include "TextureManager.h" 
@@ -62,12 +62,12 @@ void ModelManager::Load(const std::string& name, const std::string& path)
     models_[name] = std::make_unique<ModelData>(std::move(data));
 }
 
-const ModelData* ModelManager::Get(const std::string& name) const
+const ModelData* ModelManager::Get(const std::string& name, std::source_location location) const
 {
     auto it = models_.find(name);
     if (it == models_.end())
     {
-        LOG_WARN("モデル \"{}\" が見つからない。Assets のファイル名と合っているか確認する", name);
+        DevError::Report(std::format("モデル \"{}\" が見つからない。\nAssets/Models にその名前のモデルがあるか確認する", name), location);
         return nullptr;
     }
     return it->second.get();

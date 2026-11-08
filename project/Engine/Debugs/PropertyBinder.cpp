@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "PropertyBinder.h"
-#include "Logger.h"
+#include "DevError.h"
 
 namespace FS
 {
@@ -393,23 +393,28 @@ namespace FS
 #endif
     }
 
-    bool PropertyBinder::Draw(const std::string& key, const std::string& name)
+    bool PropertyBinder::Draw(const std::string& key, const std::string& name, std::source_location location)
     {
         const auto it = items_.find(key);
         if (it == items_.end())
         {
 #ifdef ENABLE_IMGUI
             // Bind と Draw でキーの綴りが違うと、項目が黙って出なくなるので知らせる
-            static std::unordered_set<std::string> reportedKeys;
-            if (reportedKeys.insert(key).second)
-            {
-                LOG_ERROR("PropertyBinder: Bind していないキー \"{}\" を Draw しようとした", key);
-            }
-            assert(false && "PropertyBinder::Draw に Bind していないキーが渡された。ログにキー名が出ている");
+            DevError::Report(std::format("PropertyBinder: Bind していないキー \"{}\" を Draw しようとした。\nBind と Draw でキーの綴りが同じか確認する", key), location);
 #endif
             return false;
         }
         return it->second(name);
+    }
+
+    std::string PropertyBinder::DescribeKey(const std::string& key) const
+    {
+        std::string place = groupPath_.empty() ? std::string("GlobalVariables") : groupPath_[0] + ".json";
+        for (size_t i = 1; i < groupPath_.size(); ++i)
+        {
+            place += " / " + groupPath_[i];
+        }
+        return std::format("{} の \"{}\"", place, key);
     }
 
     // 一括で登録順に描画する関数を追加

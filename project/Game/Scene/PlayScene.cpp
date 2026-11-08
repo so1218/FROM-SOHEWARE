@@ -28,7 +28,7 @@ using namespace FS;
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine, SceneName::Play)
 {
-    // ゲームオブジェクトの生成・登録。必要な相手はコンストラクタで渡すので、使われる側から先に作る
+    // ゲームオブジェクトの生成・登録
     objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
     Terrain* terrain = ground->GetTerrain();
@@ -58,7 +58,7 @@ void PlayScene::OnInitialize()
     followCamera_->Initialize();
     titleCamera_->Initialize();
     binder_->Bind("TimeLimit", &timeLimit_, 300.0f, 1.0f, 1.0f, 3600.0f);
-    // プレイヤーや敵の初期化はこのあと各 Initialize で行われる
+
     EnterTitle();
 }
 
@@ -84,7 +84,6 @@ void PlayScene::OnUpdate()
         break;
 
     case Phase::Playing:
-        // ポーズ中は時間の倍率が 0 なので減らない
         remainingTime_ -= TimeManager::GetInstance()->GetDeltaTime();
         if (remainingTime_ <= 0.0f)
         {
@@ -130,12 +129,11 @@ void PlayScene::UpdatePauseMenu()
     TimeManager* timeManager = TimeManager::GetInstance();
     if (isPaused_)
     {
-        // 時間の倍率を 0 にして、敵・アニメーション・パーティクルなどをまとめて止める
         timeScaleBeforePause_ = timeManager->GetTimeScale();
         timeManager->SetTimeScale(0.0f);
         player_->SetControllable(false);
         titleMenu_->SetInputEnabled(false);
-        // FollowCamera は止めた時間でもスティックで回ってしまうので、カメラごと止める
+        // カメラを止める
         cameraManager_->ChangeController(nullptr);
     }
     else

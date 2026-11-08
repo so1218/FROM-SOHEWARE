@@ -286,7 +286,7 @@
         "PlayerModel_Mat1_NormEnable": 0,
         "PlayerModel_Mat1_NormInten": 0.6000000238418579,
         "PlayerModel_Mat1_NormTile": 6.800000190734863,
-        "PlayerModel_Mat1_NormalMapTex": "normal_07",
+        "PlayerModel_Mat1_NormalMapTex": "normal_00",
         "PlayerModel_Mat1_OutlineColor": [
             0.0,
             0.0,
@@ -478,7 +478,7 @@
         "PlayerModel_Mat3_NormEnable": 1,
         "PlayerModel_Mat3_NormInten": 0.20999999344348907,
         "PlayerModel_Mat3_NormTile": 1.7000000476837158,
-        "PlayerModel_Mat3_NormalMapTex": "normal_08",
+        "PlayerModel_Mat3_NormalMapTex": "normal_00",
         "PlayerModel_Mat3_OutlineColor": [
             0.0,
             0.0,
@@ -574,7 +574,7 @@
         "PlayerModel_Mat4_NormEnable": 1,
         "PlayerModel_Mat4_NormInten": 1.0,
         "PlayerModel_Mat4_NormTile": 1.0,
-        "PlayerModel_Mat4_NormalMapTex": "normal_29",
+        "PlayerModel_Mat4_NormalMapTex": "normal_00",
         "PlayerModel_Mat4_OutlineColor": [
             0.0,
             0.0,

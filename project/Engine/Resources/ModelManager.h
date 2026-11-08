@@ -27,7 +27,7 @@ public:
     void Load(const std::string& name, const std::string& path);
 
     // 名前でモデルデータを取得
-    const ModelData* Get(const std::string& name) const;
+    const ModelData* Get(const std::string& name, std::source_location location = std::source_location::current()) const;
 
     // 読み込み済みのモデル名一覧を取得
     std::vector<std::string> GetLoadedModelNames() const;

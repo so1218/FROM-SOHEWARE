@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "TextureManager.h"
-#include "Logger.h"
+#include "DevError.h"
 #include "Engine.h"
 #include "AssetFiles.h"
 
@@ -65,7 +65,7 @@ void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDire
     }
 }
 
-uint32_t TextureManager::Get(const std::string& name)
+uint32_t TextureManager::Get(const std::string& name, std::source_location location)
 {
     // 検索時も入力されたキーを小文字化して探す
     std::string nameLower = name;
@@ -77,12 +77,7 @@ uint32_t TextureManager::Get(const std::string& name)
         return textures_[it->second].handle;
     }
 
-    // 毎フレーム呼ばれることがあるので、同じ名前は 1 回だけ知らせる
-    static std::unordered_set<std::string> reportedNames;
-    if (reportedNames.insert(name).second)
-    {
-        LOG_WARN("テクスチャ \"{}\" が見つからないので、エラー用の画像を使う", name);
-    }
+    DevError::Report(std::format("テクスチャ \"{}\" が見つからないので、エラー用の画像を使う。\nAssets/Textures にその名前のファイルがあるか確認する", name), location);
     return errorHandle_;
 }
 

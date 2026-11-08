@@ -47,9 +47,9 @@ public:
     // volume は 0 ~ 1
 
     // 1 回だけ鳴らす
-    int Play(const std::string& name, float volume = 1.0f);
+    int Play(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     // 止めるまで繰り返し鳴らす
-    int PlayLoop(const std::string& name, float volume = 1.0f);
+    int PlayLoop(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
 
     // ハンドルIDを指定して停止
     void Stop(int handleID);
@@ -58,7 +58,7 @@ public:
     void StopAll();
 
     // BGM を繰り返し鳴らす。同じ名前がもう鳴っていれば何もしない
-    int PlayBgm(const std::string& name, float volume = 1.0f);
+    int PlayBgm(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     void StopBgm(const std::string& name);
 
     // 再生中か確認
@@ -73,7 +73,8 @@ public:
     void InvalidateListener() { hasListener_ = false; }
 
     // position から聞こえるように鳴らす。聞く位置はカメラ
-    int Play3D(const std::string& name, const Vector3& position, const Sound3DSettings& settings = {});
+    int Play3D(const std::string& name, const Vector3& position, const Sound3DSettings& settings = {},
+        std::source_location location = std::source_location::current());
 
     // 動く音源のために座標を後から更新する関数
     void SetEmitterPosition(int handleID, const Vector3& position);
@@ -83,7 +84,7 @@ private:
     ~AudioPlayer() { StopAll(); }
 
     // ボイスを作ってバッファを積み、鳴らさずに登録する。失敗したら -1
-    int CreateInstance(const std::string& name, bool isLoop, float volume);
+    int CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location);
     // 鳴らし始める。失敗したら登録ごと消す
     int StartInstance(int handleID);
     // リスナーとの位置関係から、左右の振り分けと距離による減衰を掛ける

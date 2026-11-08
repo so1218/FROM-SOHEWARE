@@ -9,8 +9,8 @@
 namespace FS
 {
 
-Model::Model(Engine* engine, const std::string& modelName)
-    : Model(engine, ModelManager::GetInstance().Get(modelName))
+Model::Model(Engine* engine, const std::string& modelName, std::source_location location)
+    : Model(engine, ModelManager::GetInstance().Get(modelName, location))
 {
     name_ = modelName;
 }

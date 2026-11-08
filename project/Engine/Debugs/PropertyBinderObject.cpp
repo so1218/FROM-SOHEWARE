@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PropertyBinder.h"
+#include "DevError.h"
 #include "Model.h"
 #include "AnimationModel.h"
 #include "Sprite.h"
@@ -412,10 +413,12 @@ void PropertyBinder::BindTexture(
     std::string valToSave = initialValue.empty() ? defaultName : initialValue;
     gv->AddItem(groupPath_, key, valToSave);
 
-    // 保存されている値を取得し、コールバックを実行（
+    // 保存されている値を取得し、コールバックを実行
     std::string savedValue = gv->GetStringValue(groupPath_, key);
     if (onValueChanged) 
     {
+        // 保存されていた名前のテクスチャがなければ、どの JSON のどの項目かを出す
+        DevError::ScopedContext context(DescribeKey(key));
         onValueChanged(savedValue);
     }
 
@@ -853,6 +856,8 @@ void PropertyBinder::BindString(
 
     if (onChange)
     {
+        // 保存されていた名前でモデルなどを探すときに、どの JSON のどの項目かを出せるようにする
+        DevError::ScopedContext context(DescribeKey(key));
         onChange(globalVariables->GetStringValue(groupPath_, key));
     }
 

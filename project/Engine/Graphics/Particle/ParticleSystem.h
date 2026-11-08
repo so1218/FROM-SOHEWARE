@@ -29,9 +29,9 @@ public:
     void Update();
     // プリセットからエミッターを作って登録する。持ち主は ParticleSystem で、返したポインタは使う側が覚えておいて Play などに使う。
     // シーンの切り替えで消えるので、シーンをまたいで持ち続けない
-    ParticleEmitter* SpawnEmitter(const std::string& presetName);
+    ParticleEmitter* SpawnEmitter(const std::string& presetName, std::source_location location = std::source_location::current());
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
-    std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName);
+    std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName, std::source_location location = std::source_location::current());
     void Draw();
     // パーティクルエディターを出す
     void DebugGui();

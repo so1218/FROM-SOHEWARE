@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ParticleSystem.h"
-#include "Logger.h"
+#include "DevError.h"
 #include "Engine.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
@@ -131,13 +131,13 @@ void ParticleSystem::SpawnParticle(
     particles_.push_back(std::move(particle));
 }
 
-std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string& presetName)
+std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string& presetName, std::source_location location)
 {
     // 定義が存在しなければデフォルトを作成して保存
     if (definitions_.find(presetName) == definitions_.end())
     {
         // 名前を打ち間違えても新しいプリセットができるだけで動いてしまうので、気付けるように知らせる
-        LOG_WARN("パーティクルのプリセット \"{}\" がないので、初期設定で新しく作った", presetName);
+        DevError::Report(std::format("パーティクルのプリセット \"{}\" がないので、初期設定で新しく作った。\n名前を打ち間違えていないか確認する", presetName), location);
         definitions_[presetName] = ParticleDefinition();
         configManager_->SaveParticleDefinitionToJson(presetName);
     }
@@ -408,9 +408,9 @@ void ParticleSystem::Update()
     }
 }
 
-ParticleEmitter* ParticleSystem::SpawnEmitter(const std::string& presetName)
+ParticleEmitter* ParticleSystem::SpawnEmitter(const std::string& presetName, std::source_location location)
 {
-    std::unique_ptr<ParticleEmitter> emitter = CreateEmitter(presetName);
+    std::unique_ptr<ParticleEmitter> emitter = CreateEmitter(presetName, location);
     ParticleEmitter* emitterPtr = emitter.get();
     AddEmitter(std::move(emitter));
     return emitterPtr;

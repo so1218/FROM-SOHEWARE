@@ -12,7 +12,7 @@ class Model
 {
 public:
     // コンストラクタ
-    Model(Engine* engine, const std::string& modelName);
+    Model(Engine* engine, const std::string& modelName, std::source_location location = std::source_location::current());
     // 内部処理用
     Model(Engine* engine, const ModelData* modelData);
     ~Model() = default;

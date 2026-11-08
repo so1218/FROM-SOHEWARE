@@ -14,7 +14,8 @@ class AnimationModel
 {
 public:
     // コンストラクタ
-    AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName);
+    AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName,
+        std::source_location location = std::source_location::current());
     // 内部生成用
     AnimationModel(Engine* engine, const ModelData* modelData, const Animation* animation);
     ~AnimationModel();

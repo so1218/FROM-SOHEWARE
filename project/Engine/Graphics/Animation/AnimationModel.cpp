@@ -12,9 +12,10 @@
 namespace FS
 {
 
-AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName)
+AnimationModel::AnimationModel(Engine* engine, const std::string& modelName, const std::string& animationName,
+    std::source_location location)
     : AnimationModel(engine,
-        ModelManager::GetInstance().Get(modelName),
+        ModelManager::GetInstance().Get(modelName, location),
         AnimationManager::GetInstance()->Get(animationName))
 {
 }
