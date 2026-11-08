@@ -19,27 +19,26 @@ struct RaycastHit
 class CollisionManager
 {
 public:
-    // 登録済みコライダーを全てクリア
-    void ClearColliders();
-
-    void Reset();
-
-    // コライダーを登録
+    // GameObject がコライダーを作ったとき・消したときに呼ぶ。ゲーム側から呼ぶ必要はない
     void AddCollider(Collider* collider);
+    void RemoveCollider(Collider* collider);
+
+    // 登録と前フレームの衝突をすべて消す
+    void Reset();
 
     // 全コライダーの衝突判定を実行
     void CheckAllCollisions();
 
-    // コライダーの登録を解除
-    void RemoveCollider(Collider* collider);
+    // 全コライダーをデバッグ表示する
+    void DrawColliders() const;
 
-    // レイキャスト判定（登録中の全コライダーを走査して最も近い衝突対象を取得）
+    // レイに最初に当たったコライダーを返す。layerMask にレイヤーが入っているコライダーだけを調べる
     bool Raycast(
         const Vector3& rayOrigin,
         const Vector3& rayDirection,
         float maxDistance,
         RaycastHit* outHit,
-        uint32_t targetMask = 0xFFFFFFFF
+        uint32_t layerMask = 0xFFFFFFFF
     );
 
 private:
@@ -49,6 +48,11 @@ private:
     // コライダーペアの衝突判定
     bool CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 
+    // 持ち主の GameObject に衝突を知らせる
+    void NotifyEnter(Collider* mine, Collider* other);
+    void NotifyStay(Collider* mine, Collider* other);
+    void NotifyExit(Collider* mine, Collider* other);
+
     // コライダーのペアを型定義（ポインタの大小で保存順を固定）
     using CollisionPair = std::pair<Collider*, Collider*>;
 
@@ -57,8 +61,8 @@ private:
 
     // Ray vs Sphere（球）判定
     bool RaycastSphere(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& sphereCenter, float sphereRadius, float& outT, Vector3& outNormal);
-    // Ray vs AABB（軸平行ボックス）判定
-    bool RaycastAABB(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxMin, const Vector3& boxMax, float& outT, Vector3& outNormal);
+    // Ray vs Box 判定
+    bool RaycastBox(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxMin, const Vector3& boxMax, float& outT, Vector3& outNormal);
 };
 
 }

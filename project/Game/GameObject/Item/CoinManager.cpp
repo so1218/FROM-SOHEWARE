@@ -85,7 +85,7 @@ void CoinManager::Update()
     PlayerArea playerArea = { { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } };
     if (player_)
     {
-        playerArea = { player_->GetColliderCenter(), player_->GetColliderSize() };
+        playerArea = { player_->GetColliderCenter(), player_->GetColliderHalfSize() };
     }
     const Vector3& playerCenter = playerArea.center;
 

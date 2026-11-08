@@ -75,7 +75,7 @@ private:
     std::string propCustomName_;
 
     std::unique_ptr<FS::Model> model_;
-    FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
+    FS::Collider* collider_ = nullptr; 
     std::unique_ptr<FS::PropertyBinder> binder_;
 
     FS::Vector4 baseColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -85,7 +85,7 @@ private:
     bool hasCollider_ = false;
     int colliderType_ = 0;
     float colliderRadius_ = 1.0f;
-    FS::Vector3 colliderSize_ = { 0.5f, 0.5f, 0.5f };
+    FS::Vector3 colliderSize_ = { 1.0f, 1.0f, 1.0f };
     FS::Vector3 colliderOffset_ = { 0.0f, 0.0f, 0.0f };
 
     // Light Properties

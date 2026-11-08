@@ -1,24 +1,34 @@
 #include "pch.h"
 #include "Collider.h"
 #include "GameObject.h"
-#include "DebugDraw.h"
-#include "CollisionManager.h"
-#include "GameObjectManager.h"
+#include "DevError.h"
 
 namespace FS
 {
 
-Collider::Collider(GameObject* owner) : owner_(owner)
+Collider::Collider(GameObject* owner, CollisionShapeType type) : owner_(owner), type_(type)
 {
 
 }
 
-Collider::~Collider()
+void Collider::SetRadius(float radius, std::source_location location)
 {
-    if (manager_)
+    if (type_ != CollisionShapeType::Sphere)
     {
-        manager_->RemoveCollider(this);
+        DevError::Report("球ではないコライダーに SetRadius した。箱の大きさは SetSize で指定する", location);
+        return;
     }
+    radius_ = radius;
+}
+
+void Collider::SetSize(const Vector3& size, std::source_location location)
+{
+    if (type_ != CollisionShapeType::Box)
+    {
+        DevError::Report("箱ではないコライダーに SetSize した。球の大きさは SetRadius で指定する", location);
+        return;
+    }
+    size_ = size;
 }
 
 Vector3 Collider::GetWorldPosition() const
@@ -27,71 +37,11 @@ Vector3 Collider::GetWorldPosition() const
     if (!owner_) return centerOffset_;
 
     const WorldTransform& transform = owner_->GetTransform();
-
-    // フラグを見て、回転を適用するかどうかを変える
-    if (applyRotation_)
+    if (isRotateCenterOffset_)
     {
-        // 回転を適用する
-        Vector3 rotatedOffset = transform.rotation_.RotateVector(centerOffset_);
-        return transform.GetWorldPosition() + rotatedOffset;
+        return transform.GetWorldPosition() + transform.rotation_.RotateVector(centerOffset_);
     }
-    else
-    {
-        // 回転を適用しない
-        return transform.GetWorldPosition() + centerOffset_;
-    }
-}
-
-void Collider::OnCollisionEnter(Collider* other)
-{
-    if (owner_)
-    {
-        owner_->OnCollisionEnter(this, other);
-    }
-}
-
-void Collider::OnCollisionStay(Collider* other)
-{
-    if (owner_)
-    {
-        owner_->OnCollisionStay(this, other);
-    }
-}
-
-void Collider::OnCollisionExit(Collider* other)
-{
-    if (owner_)
-    {
-        owner_->OnCollisionExit(this, other);
-    }
-}
-
-// デバッグ用コライダー描画
-void Collider::DrawCollider()
-{
-    Vector3 center = GetWorldPosition();
-
-    // 球コライダー描画
-    if (type_ == CollisionShapeType::Sphere)
-    {
-        DebugDraw::DrawSphere(center, radius_, color_);
-    }
-    // AABBコライダー描画
-    else if (type_ == CollisionShapeType::AABB)
-    {
-        DebugDraw::DrawAABB(center - size_, center + size_, color_);
-    }
-}
-
-void Collider::RegisterToManager()
-{
-    if (manager_) return;
-
-    if (owner_ && owner_->GetManager())
-    {
-        manager_ = owner_->GetManager()->GetCollisionManager();
-        if (manager_) manager_->AddCollider(this);
-    }
+    return transform.GetWorldPosition() + centerOffset_;
 }
 
 bool Collider::CalculatePushBackVector(Collider* other, FS::Vector3& outPushVector) const
@@ -100,19 +50,20 @@ bool Collider::CalculatePushBackVector(Collider* other, FS::Vector3& outPushVect
     if (!other) return false;
 
     FS::Vector3 myPos = GetWorldPosition();
+    const FS::Vector3 halfSize = GetHalfSize();
     FS::Vector3 otherPos = other->GetWorldPosition();
 
     // ========================================================
-    // AABB(自分) vs AABB(相手)
+    // Box(自分) vs Box(相手)
     // ========================================================
-    if (type_ == CollisionShapeType::AABB && other->GetType() == CollisionShapeType::AABB)
+    if (type_ == CollisionShapeType::Box && other->GetType() == CollisionShapeType::Box)
     {
         FS::Vector3 diff = otherPos - myPos;
 
         // 各軸の重なり具合を計算
-        float overlapX = (size_.x + other->GetSize().x) - std::abs(diff.x);
-        float overlapY = (size_.y + other->GetSize().y) - std::abs(diff.y);
-        float overlapZ = (size_.z + other->GetSize().z) - std::abs(diff.z);
+        float overlapX = (halfSize.x + other->GetHalfSize().x) - std::abs(diff.x);
+        float overlapY = (halfSize.y + other->GetHalfSize().y) - std::abs(diff.y);
+        float overlapZ = (halfSize.z + other->GetHalfSize().z) - std::abs(diff.z);
 
         if (overlapX > 0.0f && overlapY > 0.0f && overlapZ > 0.0f)
         {
@@ -134,14 +85,14 @@ bool Collider::CalculatePushBackVector(Collider* other, FS::Vector3& outPushVect
     }
 
     // ========================================================
-    // Sphere(自分) vs AABB(相手)
+    // Sphere(自分) vs Box(相手)
     // ========================================================
-    else if (type_ == CollisionShapeType::Sphere && other->GetType() == CollisionShapeType::AABB)
+    else if (type_ == CollisionShapeType::Sphere && other->GetType() == CollisionShapeType::Box)
     {
-        FS::Vector3 boxMin = otherPos - other->GetSize();
-        FS::Vector3 boxMax = otherPos + other->GetSize();
+        FS::Vector3 boxMin = otherPos - other->GetHalfSize();
+        FS::Vector3 boxMax = otherPos + other->GetHalfSize();
 
-        // AABB(相手)の表面または内部における、Sphere中心(自分)からの最近接点
+        // Box(相手)の表面または内部における、Sphere中心(自分)からの最近接点
         FS::Vector3 closest;
         closest.x = std::clamp(myPos.x, boxMin.x, boxMax.x);
         closest.y = std::clamp(myPos.y, boxMin.y, boxMax.y);
@@ -163,14 +114,14 @@ bool Collider::CalculatePushBackVector(Collider* other, FS::Vector3& outPushVect
     }
 
     // ========================================================
-    // AABB(自分) vs Sphere(相手)
+    // Box(自分) vs Sphere(相手)
     // ========================================================
-    else if (type_ == CollisionShapeType::AABB && other->GetType() == CollisionShapeType::Sphere)
+    else if (type_ == CollisionShapeType::Box && other->GetType() == CollisionShapeType::Sphere)
     {
-        FS::Vector3 boxMin = myPos - size_;
-        FS::Vector3 boxMax = myPos + size_;
+        FS::Vector3 boxMin = myPos - halfSize;
+        FS::Vector3 boxMax = myPos + halfSize;
 
-        // AABB(自分)の表面または内部における、Sphere中心(相手)からの最近接点
+        // Box(自分)の表面または内部における、Sphere中心(相手)からの最近接点
         FS::Vector3 closest;
         closest.x = std::clamp(otherPos.x, boxMin.x, boxMax.x);
         closest.y = std::clamp(otherPos.y, boxMin.y, boxMax.y);

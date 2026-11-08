@@ -129,7 +129,7 @@ public:
 	PlayerStamina* GetStamina() const { return stamina_.get(); }
 	PlayerHealth* GetHealth() const { return health_.get(); }
 	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + colliderOffset_; }
-	const FS::Vector3& GetColliderSize() const { return colliderSize_; }
+	FS::Vector3 GetColliderHalfSize() const { return colliderSize_ * 0.5f; }
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
 	bool IsDodgeInputTriggered() const;
 	bool IsAimInputActive() const;
@@ -159,7 +159,7 @@ private:
 	int money_ = 0;
 	std::unique_ptr<PlayerReticle> reticle_;
 
-	FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
+	FS::Collider* collider_ = nullptr; 
 	std::unique_ptr<FS::PropertyBinder> binder_;
 
 	FS::Vector3 moveDirection_{ 0.0f, 0.0f, 0.0f };
@@ -170,7 +170,7 @@ private:
 
 	// コライダー調整用の変数
 	FS::Vector3 colliderOffset_ = { 0.0f, 1.0f, 0.0f };
-	FS::Vector3 colliderSize_ = { 0.5f, 1.0f, 0.5f };
+	FS::Vector3 colliderSize_ = { 1.0f, 2.0f, 1.0f };
 
 	// ワールドインタラクション調整用パラメータ
 	FS::Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };

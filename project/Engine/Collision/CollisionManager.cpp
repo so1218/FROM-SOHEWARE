@@ -1,83 +1,82 @@
 #include "pch.h"
 #include "CollisionManager.h"
-#include "Collision.h"
 #include "Collider.h"
 #include "GameObject.h"
+#include "DebugDraw.h"
 
 namespace FS
 {
 
-void CollisionManager::ClearColliders()
+namespace
 {
-    // リストを空にする前に、全コライダーのマネージャー参照を切る
-    for (Collider* collider : colliders_)
-    {
-        collider->SetManager(nullptr);
-    }
 
-    colliders_.clear();
+// 重なりの判定は押し戻しの計算 (Collider::CalculatePushBackVector) と同じく、接しているだけなら重なっていないとする
+
+bool IsSphereOverlap(const Vector3& centerA, float radiusA, const Vector3& centerB, float radiusB)
+{
+    const float radiusSum = radiusA + radiusB;
+    return (centerB - centerA).LengthSq() < radiusSum * radiusSum;
+}
+
+// halfSize は中心から面までの距離
+bool IsBoxOverlap(const Vector3& centerA, const Vector3& halfSizeA, const Vector3& centerB, const Vector3& halfSizeB)
+{
+    const Vector3 diff = centerB - centerA;
+    return std::abs(diff.x) < halfSizeA.x + halfSizeB.x
+        && std::abs(diff.y) < halfSizeA.y + halfSizeB.y
+        && std::abs(diff.z) < halfSizeA.z + halfSizeB.z;
+}
+
+bool IsBoxSphereOverlap(const Vector3& boxCenter, const Vector3& halfSize, const Vector3& sphereCenter, float radius)
+{
+    // 球の中心に一番近い箱の上の点
+    const Vector3 boxMin = boxCenter - halfSize;
+    const Vector3 boxMax = boxCenter + halfSize;
+    const Vector3 closest =
+    {
+        std::clamp(sphereCenter.x, boxMin.x, boxMax.x),
+        std::clamp(sphereCenter.y, boxMin.y, boxMax.y),
+        std::clamp(sphereCenter.z, boxMin.z, boxMax.z),
+    };
+    return (sphereCenter - closest).LengthSq() < radius * radius;
+}
+
 }
 
 void CollisionManager::Reset()
 {
-    ClearColliders();
+    colliders_.clear();
     previousCollisionPairs_.clear();
 }
 
 void CollisionManager::AddCollider(Collider* collider)
 {
-    // 有効なコライダーのみ登録
     if (collider)
     {
         colliders_.push_back(collider);
-
-        // コライダーに自分のマネージャーを教える
-        collider->SetManager(this);
     }
 }
 
 bool CollisionManager::CheckCollisionPair(Collider* colliderA, Collider* colliderB)
 {
-    CollisionShapeType typeA = colliderA->GetType();
-    CollisionShapeType typeB = colliderB->GetType();
+    const Vector3 centerA = colliderA->GetWorldPosition();
+    const Vector3 centerB = colliderB->GetWorldPosition();
+    const bool isSphereA = colliderA->GetType() == CollisionShapeType::Sphere;
+    const bool isSphereB = colliderB->GetType() == CollisionShapeType::Sphere;
 
-    // 球と球
-    if (typeA == CollisionShapeType::Sphere && typeB == CollisionShapeType::Sphere)
+    if (isSphereA && isSphereB)
     {
-        return IsCollision(
-            colliderA->GetWorldPosition(), colliderA->GetRadius(),
-            colliderB->GetWorldPosition(), colliderB->GetRadius()
-        );
+        return IsSphereOverlap(centerA, colliderA->GetRadius(), centerB, colliderB->GetRadius());
     }
-    // AABBとAABB
-    else if (typeA == CollisionShapeType::AABB && typeB == CollisionShapeType::AABB)
+    if (!isSphereA && !isSphereB)
     {
-        Vector3 posA = colliderA->GetWorldPosition();
-        Vector3 posB = colliderB->GetWorldPosition();
-        Vector3 sizeA = colliderA->GetSize();
-        Vector3 sizeB = colliderB->GetSize();
-        AABB boxA = { posA - sizeA, posA + sizeA };
-        AABB boxB = { posB - sizeB, posB + sizeB };
-        return IsCollision(boxA, boxB);
+        return IsBoxOverlap(centerA, colliderA->GetHalfSize(), centerB, colliderB->GetHalfSize());
     }
-    // 球とAABB
-    else if (typeA == CollisionShapeType::Sphere && typeB == CollisionShapeType::AABB)
+    if (isSphereA)
     {
-        Vector3 posB = colliderB->GetWorldPosition();
-        Vector3 sizeB = colliderB->GetSize();
-        AABB boxB = { posB - sizeB, posB + sizeB };
-        return IsCollision(boxB, colliderA->GetWorldPosition(), colliderA->GetRadius());
+        return IsBoxSphereOverlap(centerB, colliderB->GetHalfSize(), centerA, colliderA->GetRadius());
     }
-    // AABBと球
-    else if (typeA == CollisionShapeType::AABB && typeB == CollisionShapeType::Sphere)
-    {
-        Vector3 posA = colliderA->GetWorldPosition();
-        Vector3 sizeA = colliderA->GetSize();
-        AABB boxA = { posA - sizeA, posA + sizeA };
-        return IsCollision(boxA, colliderB->GetWorldPosition(), colliderB->GetRadius());
-    }
-
-    return false;
+    return IsBoxSphereOverlap(centerA, colliderA->GetHalfSize(), centerB, colliderB->GetRadius());
 }
 
 void CollisionManager::CheckAllCollisions()
@@ -89,7 +88,7 @@ void CollisionManager::CheckAllCollisions()
     {
         Collider* colliderA = colliders_[i];
 
-        if (!colliderA->IsEnable() || (colliderA->GetOwner() && !colliderA->GetOwner()->IsActive()))
+        if (!colliderA->IsEnable() || colliderA->IsRaycastOnly() || (colliderA->GetOwner() && !colliderA->GetOwner()->IsActive()))
         {
             continue;
         }
@@ -98,13 +97,13 @@ void CollisionManager::CheckAllCollisions()
         {
             Collider* colliderB = colliders_[j];
 
-            if (!colliderB->IsEnable() || (colliderB->GetOwner() && !colliderB->GetOwner()->IsActive()))
+            if (!colliderB->IsEnable() || colliderB->IsRaycastOnly() || (colliderB->GetOwner() && !colliderB->GetOwner()->IsActive()))
             {
                 continue;
             }
 
-            if (((colliderA->GetCollisionAttribute() & colliderB->GetCollisionMask()) == 0) ||
-                ((colliderB->GetCollisionAttribute() & colliderA->GetCollisionMask()) == 0))
+            if (((colliderA->GetCollisionLayer() & colliderB->GetCollisionMask()) == 0) ||
+                ((colliderB->GetCollisionLayer() & colliderA->GetCollisionMask()) == 0))
             {
                 continue;
             }
@@ -123,8 +122,8 @@ void CollisionManager::CheckAllCollisions()
     {
         if (currentCollisionPairs.find(pair) == currentCollisionPairs.end())
         {
-            pair.first->OnCollisionExit(pair.second);
-            pair.second->OnCollisionExit(pair.first);
+            NotifyExit(pair.first, pair.second);
+            NotifyExit(pair.second, pair.first);
         }
     }
 
@@ -132,13 +131,13 @@ void CollisionManager::CheckAllCollisions()
     {
         if (previousCollisionPairs_.find(pair) != previousCollisionPairs_.end())
         {
-            pair.first->OnCollisionStay(pair.second);
-            pair.second->OnCollisionStay(pair.first);
+            NotifyStay(pair.first, pair.second);
+            NotifyStay(pair.second, pair.first);
         }
         else
         {
-            pair.first->OnCollisionEnter(pair.second);
-            pair.second->OnCollisionEnter(pair.first);
+            NotifyEnter(pair.first, pair.second);
+            NotifyEnter(pair.second, pair.first);
         }
     }
 
@@ -168,8 +167,41 @@ void CollisionManager::RemoveCollider(Collider* collider)
             ++itHistory;
         }
     }
+}
 
-    collider->SetManager(nullptr);
+void CollisionManager::NotifyEnter(Collider* mine, Collider* other)
+{
+    if (GameObject* owner = mine->GetOwner()) owner->OnCollisionEnter(mine, other);
+}
+
+void CollisionManager::NotifyStay(Collider* mine, Collider* other)
+{
+    if (GameObject* owner = mine->GetOwner()) owner->OnCollisionStay(mine, other);
+}
+
+void CollisionManager::NotifyExit(Collider* mine, Collider* other)
+{
+    if (GameObject* owner = mine->GetOwner()) owner->OnCollisionExit(mine, other);
+}
+
+void CollisionManager::DrawColliders() const
+{
+    for (const Collider* collider : colliders_)
+    {
+        const GameObject* owner = collider->GetOwner();
+        if (owner && !owner->IsActive()) continue;
+
+        const Vector3 center = collider->GetWorldPosition();
+        if (collider->GetType() == CollisionShapeType::Sphere)
+        {
+            DebugDraw::DrawSphere(center, collider->GetRadius(), collider->GetColor());
+        }
+        else
+        {
+            const Vector3 halfSize = collider->GetHalfSize();
+            DebugDraw::DrawAABB(center - halfSize, center + halfSize, collider->GetColor());
+        }
+    }
 }
 
 bool CollisionManager::RaycastSphere(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& sphereCenter, float sphereRadius, float& outT, Vector3& outNormal)
@@ -196,7 +228,7 @@ bool CollisionManager::RaycastSphere(const Vector3& rayOrigin, const Vector3& ra
     return true;
 }
 
-bool CollisionManager::RaycastAABB(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxMin, const Vector3& boxMax, float& outT, Vector3& outNormal)
+bool CollisionManager::RaycastBox(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxMin, const Vector3& boxMax, float& outT, Vector3& outNormal)
 {
     float tMin = 0.0f;
     float tMax = FLT_MAX;
@@ -249,7 +281,7 @@ bool CollisionManager::Raycast(
     const Vector3& rayDirection,
     float maxDistance,
     RaycastHit* outHit,
-    uint32_t targetMask)
+    uint32_t layerMask)
 {
     bool hasHit = false;
     float closestT = maxDistance;
@@ -261,8 +293,7 @@ bool CollisionManager::Raycast(
         if (!collider || !collider->IsEnable()) continue;
         if (collider->GetOwner() && !collider->GetOwner()->IsActive()) continue;
 
-        // 衝突属性とマスクのチェック
-        if ((collider->GetCollisionAttribute() & targetMask) == 0) continue;
+        if ((collider->GetCollisionLayer() & layerMask) == 0) continue;
 
         float t = 0.0f;
         Vector3 normal = { 0.0f, 0.0f, 0.0f };
@@ -274,12 +305,12 @@ bool CollisionManager::Raycast(
         {
             isHit = RaycastSphere(rayOrigin, normalizedDir, pos, collider->GetRadius(), t, normal);
         }
-        else if (collider->GetType() == CollisionShapeType::AABB)
+        else if (collider->GetType() == CollisionShapeType::Box)
         {
-            Vector3 size = collider->GetSize();
+            Vector3 size = collider->GetHalfSize();
             Vector3 boxMin = pos - size;
             Vector3 boxMax = pos + size;
-            isHit = RaycastAABB(rayOrigin, normalizedDir, boxMin, boxMax, t, normal);
+            isHit = RaycastBox(rayOrigin, normalizedDir, boxMin, boxMax, t, normal);
         }
 
         // 最も手前（距離 t が一番小さい）衝突相手を記憶

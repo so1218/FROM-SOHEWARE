@@ -3,8 +3,12 @@
 #include "PropertyBinder.h"
 #include "ParticleEmitter.h"
 #include "Model.h"
-#include "Collider.h"
 #include <random>
+
+namespace FS
+{
+class CollisionManager;
+}
 
 class TreeField;
 

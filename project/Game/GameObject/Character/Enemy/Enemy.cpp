@@ -21,17 +21,15 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, std::unique_ptr<IEnemyBehav
     }
 
     model_ = std::make_unique<FS::Model>(engine_, modelName);
-    collider_ = AddCollider(); 
+    collider_ = AddBoxCollider(behavior_->GetBodyConfig().colliderSize);
+    collider_->SetRotateCenterOffset(false);
+    collider_->SetCollisionLayer(CollisionLayer::Enemy);
+    collider_->SetCollisionMask(CollisionLayer::Player);
 }
 
 void Enemy::Initialize()
 {
     SetTag(ObjectTag::Enemy);
-
-    collider_->SetType(FS::CollisionShapeType::AABB);
-    collider_->SetApplyRotation(false);
-    collider_->SetCollisionAttribute(kCollisionAttributeEnemy);
-    collider_->SetCollisionMask(kCollisionAttributePlayer);
 
     // Behavior の初期化
     if (behavior_) behavior_->Initialize(this);
@@ -130,12 +128,6 @@ void Enemy::Draw()
 
     if (model_) model_->Draw();
     if (behavior_) behavior_->Draw(this);
-
-    // 本体と、Behavior が付けた弱点などのコライダーをまとめて描く
-    for (const auto& collider : GetColliders())
-    {
-        collider->DrawCollider();
-    }
 }
 
 void Enemy::DebugGui()

@@ -2,12 +2,23 @@
 #include "GameObject.h"
 #include "GameObjectManager.h"
 #include "Collider.h"
+#include "CollisionManager.h"
 
 namespace FS
 {
 
 GameObject::GameObject() = default;
-GameObject::~GameObject() = default;
+
+GameObject::~GameObject()
+{
+    if (collisionManager_)
+    {
+        for (const auto& collider : colliders_)
+        {
+            collisionManager_->RemoveCollider(collider.get());
+        }
+    }
+}
 
 void GameObject::SetUpdatePriority(int priority)
 {
@@ -18,26 +29,31 @@ void GameObject::SetUpdatePriority(int priority)
     }   
 }
 
-Collider* GameObject::AddCollider()
+Collider* GameObject::AddSphereCollider(float radius)
 {
-    auto collider = std::make_unique<Collider>(this);
+    auto collider = std::make_unique<Collider>(this, CollisionShapeType::Sphere);
+    collider->SetRadius(radius);
+    return AddColliderWithShape(std::move(collider));
+}
+
+Collider* GameObject::AddBoxCollider(const Vector3& size)
+{
+    auto collider = std::make_unique<Collider>(this, CollisionShapeType::Box);
+    collider->SetSize(size);
+    return AddColliderWithShape(std::move(collider));
+}
+
+Collider* GameObject::AddColliderWithShape(std::unique_ptr<Collider> collider)
+{
     Collider* ptr = collider.get();
     colliders_.push_back(std::move(collider));
 
-    // すでにマネージャーに登録済みなら、すぐ登録
-    if (manager_)
+    // マネージャーに追加される前なら、追加されたときに登録する
+    if (collisionManager_)
     {
-        ptr->RegisterToManager();
+        collisionManager_->AddCollider(ptr);
     }
     return ptr;
-}
-
-void GameObject::RegisterColliders()
-{
-    for (auto& collider : colliders_)
-    {
-        collider->RegisterToManager();   // 登録済みなら何もしない 
-    }
 }
 
 void GameObject::AttachToManager(GameObjectManager* manager, uint64_t id)
@@ -47,12 +63,23 @@ void GameObject::AttachToManager(GameObjectManager* manager, uint64_t id)
     manager_ = manager;
     id_ = id;
 
-    // コンストラクタで AddCollider() されたコライダーを登録
-    RegisterColliders();
+    // コンストラクタで付けたコライダーを登録
+    collisionManager_ = manager->GetCollisionManager();
+    if (collisionManager_)
+    {
+        for (const auto& collider : colliders_)
+        {
+            collisionManager_->AddCollider(collider.get());
+        }
+    }
 }
 
 void GameObject::RemoveCollider(Collider* collider)
 {
+    if (collisionManager_)
+    {
+        collisionManager_->RemoveCollider(collider);
+    }
     std::erase_if(colliders_, [collider](const std::unique_ptr<Collider>& c) { return c.get() == collider; });
 }
 

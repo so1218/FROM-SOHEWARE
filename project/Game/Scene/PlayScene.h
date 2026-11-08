@@ -32,7 +32,7 @@ private:
 
     void EnterTitle();
     void StartPlaying();
-    // プレイヤー・敵・チュートリアルを最初の状態に戻してタイトルへ
+    // 状態に戻してタイトルへ
     void ReturnToTitle();
     // ポーズメニューの開け閉めに合わせてゲームを止める・動かす
     void UpdatePauseMenu();
@@ -51,6 +51,6 @@ private:
     bool isPaused_ = false;
     float timeScaleBeforePause_ = 1.0f;
 
-    float timeLimit_ = 300.0f;      // 秒
+    float timeLimit_ = 300.0f;     
     float remainingTime_ = 300.0f;
 };

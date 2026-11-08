@@ -370,7 +370,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game\GameObject\Item\CoinManager.cpp" />
     <ClCompile Include="Engine\Framework\ParticleSystemWrapper.cpp" />
     <ClCompile Include="Engine\Graphics\Particle\ParticleSystem.cpp" />
-    <ClCompile Include="Engine\Collision\Collision.cpp" />
     <ClCompile Include="Engine\Collision\CollisionManager.cpp" />
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
     <ClCompile Include="Game\GameObject\Field\TreeField.cpp" />
@@ -561,7 +560,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game\GameObject\Field\WeatherEffectManager.h" />
     <ClInclude Include="Game\Global\GameDefine.h" />
     <ClInclude Include="Engine\Graphics\Particle\ParticleSystem.h" />
-    <ClInclude Include="Engine\Collision\Collision.h" />
     <ClInclude Include="Game\Global\CollisionConfig.h" />
     <ClInclude Include="Engine\Collision\CollisionManager.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />

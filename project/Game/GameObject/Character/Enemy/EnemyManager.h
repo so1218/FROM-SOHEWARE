@@ -11,7 +11,6 @@ class CoinManager;
 class EnemyManager : public FS::GameObject
 {
 public:
-    // terrain は墜落した敵が地面で爆発するのに、coinManager は倒された敵の位置でお金を出すのに使う
     EnemyManager(FS::Engine* engine, const std::string& groupName, const FS::Terrain* terrain, CoinManager* coinManager);
 
     void Initialize() override;
@@ -22,7 +21,7 @@ public:
     // 敵の種類ごとにマテリアルを共有する関数
     void RebuildMaterialSharing();
     void AddEnemy(); 
-    // 倒された敵も含めて、保存されている数だけ作り直す
+    // 保存されている数だけ作り直す
     void ResetEnemies();
 
 private:

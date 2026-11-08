@@ -48,7 +48,7 @@ private:
     EnemyType type_;
 
     std::unique_ptr<FS::Model> model_;
-    FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
+    FS::Collider* collider_ = nullptr; // 所有は GameObject (AddBoxCollider で作成)
     std::unique_ptr<FS::PropertyBinder> binder_;
     FS::ParticleEmitter* damageParticlePtr_ = nullptr;
 

@@ -303,9 +303,6 @@
     <ClCompile Include="Engine\Collision\Collider.cpp">
       <Filter>Engine\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Collision\Collision.cpp">
-      <Filter>Engine\Collision</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Collision\CollisionManager.cpp">
       <Filter>Engine\Collision</Filter>
     </ClCompile>
@@ -811,9 +808,6 @@
       <Filter>Engine\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\Collider.h">
-      <Filter>Engine\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Collision\Collision.h">
       <Filter>Engine\Collision</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Collision\CollisionManager.h">

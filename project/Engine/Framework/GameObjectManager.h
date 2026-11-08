@@ -78,7 +78,7 @@ public:
 private:
     static bool IsAlive(const GameObject* obj) { return !obj->IsDead() && obj->IsActive(); }
 
-    void SetupNewObject(GameObject* obj);   // 初期化・行列更新・コライダー登録
+    void SetupNewObject(GameObject* obj);   // 初期化
     void RemoveDeadObjects();
     void MergePendingObjects();
 

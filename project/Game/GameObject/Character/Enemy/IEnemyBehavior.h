@@ -3,12 +3,12 @@
 
 class Enemy; 
 
-// 敵の体の大きさと HP。同じ種類の敵で共有する
+// 敵のパラメータ。同じ種類の敵で共有
 struct EnemyBodyConfig
 {
     int maxHP = 100;
     FS::Vector3 scale = { 1.0f, 1.0f, 1.0f };
-    FS::Vector3 colliderSize = { 1.0f, 1.0f, 1.0f };   // 当たり判定の箱の半分の大きさ
+    FS::Vector3 colliderSize = { 2.0f, 2.0f, 2.0f };   
     FS::Vector3 colliderOffset = { 0.0f, 0.0f, 0.0f };
 };
 
@@ -22,7 +22,7 @@ public:
     virtual void Update(Enemy* owner) = 0;
     virtual void DebugGui(Enemy* owner) = 0;
 
-    // 本体のモデルのほかに描くもの (部位など)
+    // 本体のモデルのほかに描くもの
     virtual void Draw(Enemy* owner) {}
 
     // 衝突処理
@@ -32,18 +32,18 @@ public:
     virtual const EnemyBodyConfig& GetBodyConfig() const = 0;
     virtual std::string GetDamageParticleName() const { return "EnemyDamageParticle"; }
 
-    // 当たったコライダーに応じてダメージを変える (弱点など)。hitCollider は分からなければ nullptr
+    // 当たったコライダーに応じてダメージを変える
     virtual int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) { return damage; }
 
     // 被弾時の固有処理
     virtual void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) {}
 
-    // HP が 0 になったとき。墜落などの演出を自分で行ってから Die() するなら true を返す
+    // HP が 0 になったとき
     virtual bool OnHealthDepleted(Enemy* owner) { return false; }
 
     // 死亡時の固有処理
     virtual void OnDeath(Enemy* owner) {}
 
-    // 倒されずに消えるとき (リセットなど)。追従しているエフェクトや音を片付ける
+    // 倒されずに消えるとき
     virtual void OnDespawn(Enemy* owner) {}
 };

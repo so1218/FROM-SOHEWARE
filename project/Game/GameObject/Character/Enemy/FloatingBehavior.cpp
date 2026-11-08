@@ -14,18 +14,12 @@ using namespace FS;
 
 namespace
 {
-    constexpr float kDegToRad = Math::PI / 180.0f;
-    const Vector3 kUp = { 0.0f, 1.0f, 0.0f };
-
     Vector3 MultiplyEach(const Vector3& a, const Vector3& b)
     {
         return { a.x * b.x, a.y * b.y, a.z * b.z };
     }
 
     constexpr float kPropellerSpeed = 40.0f;   // スラスターの回る速さ (ラジアン / 秒)
-
-    // 専用のパーティクルができるまでは、被弾の火花で代わりにする
-    const char* const kThrusterBreakParticle = "floatingDamage";
 }
 
 FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel)
@@ -53,14 +47,12 @@ void FloatingBehavior::Initialize(Enemy* owner)
     binder->Bind("Phase", &phase_, { 0.0f, 0.0f, 0.0f });
     binder->Bind("PatrolSpeed", &patrolSpeed_, 30.0f, 0.5f, 0.0f, 200.0f);
 
-    // スラスターは本体とは別の球で、弾のレイで当たったかを調べる
+    // スラスターは本体とは別の箱で、弾のレイで当たったかを調べる
     for (Collider*& collider : thrusterColliders_)
     {
-        collider = owner->AddCollider();
-        collider->SetType(CollisionShapeType::AABB);
-        collider->SetApplyRotation(true);
-        collider->SetCollisionAttribute(kCollisionAttributeEnemy);
-        collider->SetCollisionMask(0);   // 弾にだけ当たればいいので、ほかのコライダーとはぶつけない
+        collider = owner->AddBoxCollider(config_.thrusterColliderSize);
+        collider->SetCollisionLayer(CollisionLayer::Enemy);
+        collider->SetRaycastOnly(true);
     }
 
     // マテリアルは全機で共有する
@@ -77,7 +69,7 @@ void FloatingBehavior::Initialize(Enemy* owner)
     moveSmokeEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveSmoke");
     moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
     explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
-    thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter(kThrusterBreakParticle);
+    thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
 
     owner->GetTransform().translation_ = basePosition_;
     owner->SyncTransform();
@@ -132,7 +124,7 @@ void FloatingBehavior::Update(Enemy* owner)
         config_.spotIntensity,
         config_.spotDistance,
         spotDirection,
-        std::cos(config_.spotAngleDeg * kDegToRad),
+        std::cos(config_.spotAngleDeg * Math::PI / 180.0f),
         config_.spotVolumetric
     );
 
@@ -147,9 +139,9 @@ void FloatingBehavior::Update(Enemy* owner)
 void FloatingBehavior::UpdatePatrol(Enemy* owner, float deltaTime)
 {
     const Vector3 waveOffset = {
-        std::sin(elapsedTime_ * frequency_.x + phase_.x * kDegToRad) * amplitude_.x,
-        std::sin(elapsedTime_ * frequency_.y + phase_.y * kDegToRad) * amplitude_.y,
-        std::sin(elapsedTime_ * frequency_.z + phase_.z * kDegToRad) * amplitude_.z
+        std::sin(elapsedTime_ * frequency_.x + phase_.x * Math::PI / 180.0f) * amplitude_.x,
+        std::sin(elapsedTime_ * frequency_.y + phase_.y * Math::PI / 180.0f) * amplitude_.y,
+        std::sin(elapsedTime_ * frequency_.z + phase_.z * Math::PI / 180.0f) * amplitude_.z
     };
 
     MoveToward(owner, basePosition_ + waveOffset, patrolSpeed_, deltaTime);
@@ -249,7 +241,7 @@ void FloatingBehavior::UpdateCrash(Enemy* owner, float deltaTime)
     velocity_.y -= config_.crashGravity * deltaTime;
     WorldTransform& transform = owner->GetTransform();
     transform.translation_ += velocity_ * deltaTime;
-    transform.SetRotation(Quaternion::FromAxisAngle(kUp, kSpinSpeed * deltaTime) * transform.rotation_);
+    transform.SetRotation(Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, kSpinSpeed * deltaTime) * transform.rotation_);
 
     // 地面まで落ちたらそこで爆発する
     float groundHeight = 0.0f;
@@ -337,7 +329,7 @@ void FloatingBehavior::FaceDirection(Enemy* owner, const Vector3& direction, flo
 
     // モデルは -Z が正面
     WorldTransform& transform = owner->GetTransform();
-    const Quaternion targetRotation = Quaternion::LookRotation(-forward, kUp);
+    const Quaternion targetRotation = Quaternion::LookRotation(-forward, { 0.0f, 1.0f, 0.0f });
     transform.SetRotation(Quaternion::Slerp(transform.rotation_, targetRotation, std::min(config_.turnSpeed * deltaTime, 1.0f)));
 }
 
@@ -353,7 +345,7 @@ void FloatingBehavior::FireShot(Enemy* owner)
 
     // プレイヤーの当たり判定 (箱) を、縦は高さ、横は円として扱う
     const Vector3 playerCenter = player_->GetColliderCenter();
-    const Vector3& playerHalfSize = player_->GetColliderSize();
+    const Vector3 playerHalfSize = player_->GetColliderHalfSize();
     const float distanceAlongShot = (playerCenter - muzzle).Dot(shotDirection);
 
     if (distanceAlongShot > 0.0f && distanceAlongShot <= config_.maxFireDistance)
@@ -481,14 +473,14 @@ void FloatingBehavior::UpdateThrusters(Enemy* owner)
         collider->SetEnable(isAlive);
         collider->SetColor(isAlive ? Vector4(0.2f, 1.0f, 0.3f, 1.0f) : Vector4(0.4f, 0.4f, 0.4f, 1.0f));
 
-        // 対角どうしを同じ向きに回し、隣とは逆に回す (実際のドローンと同じ)
+        // 対角どうしを同じ向きに回し、隣とは逆に回す
         const bool isClockwise = ((thrusterIndex & 1) != 0) != ((thrusterIndex & 2) != 0);
         const float spinAngle = isClockwise ? -propellerAngle_ : propellerAngle_;
 
         // 機体の上向きの軸で回す
         WorldTransform& transform = thrusterModels_[thrusterIndex]->GetTransform();
         transform.translation_ = body.translation_ + body.rotation_.RotateVector(offset);
-        transform.SetRotation(body.rotation_ * Quaternion::FromAxisAngle(kUp, spinAngle));
+        transform.SetRotation(body.rotation_ * Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, spinAngle));
         transform.scale_ = modelScale;
     }
 }
@@ -590,7 +582,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
 {
     binder.Bind("HP", &body.maxHP, 100, 1.0f, 1, 100000);
     binder.Bind("Scale", &body.scale, { 2.0f, 2.0f, 2.0f });
-    binder.Bind("ColliderSize", &body.colliderSize, { 3.25f, 3.25f, 3.25f });
+    binder.Bind("ColliderSize", &body.colliderSize, { 6.5f, 6.5f, 6.5f });
     binder.Bind("ColliderOffset", &body.colliderOffset, { 0.0f, 2.0f, 0.0f });
     binder.Bind("TurnSpeed", &turnSpeed, 6.0f, 0.1f, 0.0f, 50.0f);
 
@@ -616,7 +608,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
 
     binder.Bind("ThrusterOffset", &thrusterOffset, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
-    binder.Bind("ThrusterColliderSize", &thrusterColliderSize, { 0.5f, 0.5f, 0.5f });
+    binder.Bind("ThrusterColliderSize", &thrusterColliderSize, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterHP", &thrusterMaxHP, 30, 1.0f, 1, 10000);
     binder.Bind("BodyDamageRate", &bodyDamageRate, 0.3f, 0.01f, 0.0f, 1.0f);
     binder.Bind("ThrustersToCrash", &thrustersToCrash, 2, 1.0f, 1, 4);
@@ -638,7 +630,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
     {
         binder.Draw("HP", "HP");
         binder.Draw("Scale", "スケール");
-        binder.Draw("ColliderSize", "当たり判定の大きさ (半分)");
+        binder.Draw("ColliderSize", "当たり判定の大きさ");
         binder.Draw("ColliderOffset", "当たり判定の位置");
         binder.Draw("TurnSpeed", "向きを変える速さ");
         ImGui::TreePop();
@@ -680,7 +672,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
     {
         binder.Draw("ThrusterOffset", "スラスターの位置 (1 基目)");
         binder.Draw("ThrusterScale", "スラスターのスケール");
-        binder.Draw("ThrusterColliderSize", "スラスターの当たり判定の大きさ (半分)");
+        binder.Draw("ThrusterColliderSize", "スラスターの当たり判定の大きさ");
         binder.Draw("ThrusterHP", "スラスター 1 基の HP");
         binder.Draw("BodyDamageRate", "本体へのダメージ倍率");
         binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");

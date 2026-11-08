@@ -4,7 +4,6 @@
 #include "AnimationModel.h"
 #include "GameInput.h"
 #include "MathUtils.h"  
-#include "Collision.h"   
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "GameDefine.h"
@@ -39,16 +38,14 @@ engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 	health_ = std::make_unique<PlayerHealth>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
-	collider_ = AddCollider(); // 登録はマネージャーへの追加時に自動で行われる
+	collider_ = AddBoxCollider(colliderSize_);
+	collider_->SetCollisionLayer(CollisionLayer::Player);
+	collider_->SetCollisionMask(CollisionLayer::Enemy | CollisionLayer::Prop);
 }
 
 void Player::Initialize()
 {
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
-
-	collider_->SetType(CollisionShapeType::AABB);
-	collider_->SetCollisionAttribute(kCollisionAttributePlayer);
-	collider_->SetCollisionMask(kCollisionAttributeEnemy | kCollisionAttributeProp);
 
 	animationModel_->Play("humanRun");
 
@@ -72,7 +69,7 @@ void Player::Initialize()
 	binder_->Bind("AimBlendTime", &config.aimBlendTime, 0.1f);
 
 	binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 1.0f, 0.0f });
-	binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 1.0f, 0.5f });
+	binder_->Bind("ColliderSize", &colliderSize_, { 1.0f, 2.0f, 1.0f });
 
 	binder_->Bind("InteractionRadius", &interactionRadius_, 1.5f, 0.1f);
 	binder_->Bind("InteractionForce", &interactionForce_, 1.0f, 0.1f);
@@ -123,6 +120,7 @@ void Player::Update()
 	if (treeField_)
 	{
 		Vector3 pos = GetTransform().translation_;
+		// 木の幹とは、箱の幅の半分を半径とする円で判定する
 		float playerRadius = colliderSize_.x * 0.5f;
 
 		if (treeField_->ResolveCollision(pos, playerRadius))
@@ -527,8 +525,6 @@ void Player::Draw()
 {
 	animationModel_->GetTransform().translation_ = GetTransform().translation_;
 
-	collider_->DrawCollider();
-
 	animationModel_->Draw();
 
 	weapon_->Draw();
@@ -651,7 +647,7 @@ void Player::DebugGui()
 	if (ImGui::CollapsingHeader("コライダー"))
 	{
 		binder_->Draw("ColliderOffset", "位置オフセット");
-		binder_->Draw("ColliderSize", "ハーフサイズ");
+		binder_->Draw("ColliderSize", "大きさ (幅・高さ・奥行き)");
 	}
 
 	if (ImGui::CollapsingHeader("環境インタラクション"))

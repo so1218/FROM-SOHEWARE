@@ -77,6 +77,10 @@ public:
     virtual void Draw() final
     {
         objectManager_.Draw();
+        if (isColliderVisible_)
+        {
+            collisionManager_->DrawColliders();
+        }
         if (cameraManager_)
         {
             cameraManager_->Draw();
@@ -152,6 +156,8 @@ protected:
     GameObjectManager objectManager_;
     std::unique_ptr<CameraManager> cameraManager_;
     std::unique_ptr<PropertyBinder> binder_;
+
+    bool isColliderVisible_ = true;
 };
 
 }

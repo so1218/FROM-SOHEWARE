@@ -230,7 +230,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     Vector3 targetPoint = rayStart + finalRayDir * config_.maxDistance;
 
     RaycastHit hitInfo;
-    uint32_t targetMask = kCollisionAttributeEnemy | kCollisionAttributeProp;
+    uint32_t targetMask = CollisionLayer::Enemy | CollisionLayer::Prop;
     const bool hasColliderHit = colManager->Raycast(rayStart, finalRayDir, config_.maxDistance, &hitInfo, targetMask);
 
     // レイはカメラから飛ばすので、カメラとプレイヤーの間にある木は無視する

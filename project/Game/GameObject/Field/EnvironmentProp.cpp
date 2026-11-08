@@ -74,7 +74,7 @@ void EnvironmentProp::SetupProperties()
 
     binder_->Bind("ColliderType", &colliderType_, 0);
     binder_->Bind("ColliderRadius", &colliderRadius_, 1.0f);
-    binder_->Bind("ColliderSize", &colliderSize_, { 0.5f, 0.5f, 0.5f });
+    binder_->Bind("ColliderSize", &colliderSize_, { 1.0f, 1.0f, 1.0f });
     binder_->Bind("ColliderOffset", &colliderOffset_, { 0.0f, 0.0f, 0.0f });
 
     binder_->Bind("HasLight", &hasLight_, false);
@@ -114,22 +114,18 @@ void EnvironmentProp::SetupProperties()
 
 void EnvironmentProp::ApplySettings()
 {
-    // コライダーの動的生成・破棄
-    if (hasCollider_) 
+    // コライダーの生成・破棄。形を変えたときは作り直す
+    const FS::CollisionShapeType shape = (colliderType_ == 0) ? FS::CollisionShapeType::Sphere : FS::CollisionShapeType::Box;
+    if (collider_ && (!hasCollider_ || collider_->GetType() != shape))
     {
-        if (!collider_) 
-        {
-            collider_ = AddCollider(); // マネージャーに追加済みならすぐ登録される
-            collider_->SetCollisionAttribute(kCollisionAttributeProp);
-            collider_->SetCollisionMask(kCollisionAttributePlayer);
-        }
+        RemoveCollider(collider_);
+        collider_ = nullptr;
     }
-    else {
-        if (collider_)
-        {
-            RemoveCollider(collider_);
-            collider_ = nullptr;
-        }
+    if (hasCollider_ && !collider_)
+    {
+        collider_ = (shape == FS::CollisionShapeType::Sphere) ? AddSphereCollider(colliderRadius_) : AddBoxCollider(colliderSize_);
+        collider_->SetCollisionLayer(CollisionLayer::Prop);
+        collider_->SetCollisionMask(CollisionLayer::Player);
     }
 
     // パーティクルエミッターの動的割り当て
@@ -176,9 +172,14 @@ void EnvironmentProp::Update()
     // 物理・判定用コライダーの形状パラメータ同期
     if (hasCollider_ && collider_)
     {
-        collider_->SetType(static_cast<FS::CollisionShapeType>(colliderType_));
-        collider_->SetRadius(colliderRadius_);
-        collider_->SetSize(colliderSize_);
+        if (collider_->GetType() == FS::CollisionShapeType::Sphere)
+        {
+            collider_->SetRadius(colliderRadius_);
+        }
+        else
+        {
+            collider_->SetSize(colliderSize_);
+        }
         collider_->SetCenterOffset(colliderOffset_);
     }
 
@@ -205,11 +206,6 @@ void EnvironmentProp::Draw()
     if (model_)
     {
         model_->Draw();
-    }
-
-    if (hasCollider_ && collider_)
-    {
-        collider_->DrawCollider();
     }
 }
 
@@ -274,7 +270,7 @@ void EnvironmentProp::DebugGui()
             }
             else
             {
-                if (binder_->Draw("ColliderSize", "ボックスサイズ")) ApplySettings();
+                if (binder_->Draw("ColliderSize", "ボックスの大きさ")) ApplySettings();
             }
 
             if (binder_->Draw("ColliderOffset", "中心オフセット")) ApplySettings();

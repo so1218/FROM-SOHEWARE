@@ -9,14 +9,14 @@ namespace FS { class Terrain; }
 
 class Player;
 
-// ワスプ全体で共通のパラメータ。EnemyManager が 1 つ持ち、全機が参照する
+// 浮遊する敵で共通の設定
 struct FloatingEnemyConfig
 {
     void Bind(FS::PropertyBinder& binder);
     void Draw(FS::PropertyBinder& binder);
 
-    EnemyBodyConfig body = { 100, { 2.0f, 2.0f, 2.0f }, { 3.25f, 3.25f, 3.25f }, { 0.0f, 2.0f, 0.0f } };
-    float turnSpeed = 6.0f;
+    EnemyBodyConfig body = { 100, { 2.0f, 2.0f, 2.0f }, { 6.5f, 6.5f, 6.5f }, { 0.0f, 2.0f, 0.0f } };
+    float turnSpeed = 6.0f;        // 機体の向きが変わる速さ
 
     // 発見
     float sightRange = 60.0f;      // この距離まで近づくと気づく
@@ -25,29 +25,29 @@ struct FloatingEnemyConfig
 
     // 追跡
     float moveSpeed = 18.0f;
-    float acceleration = 3.0f;     // 大きいほど速く向きを変える
+    float acceleration = 3.0f;     // 大きいほど早く目標の速さになる
     float keepDistance = 25.0f;    // プレイヤーとの水平距離
     float keepHeight = 10.0f;      // プレイヤーより上の高さ
     float orbitSpeed = 0.6f;       // 周回の速さ (ラジアン / 秒)
-    float wobbleAmount = 2.0f;     // 不規則なふらつき
-    float attackInterval = 2.5f;   // 攻撃と攻撃の間
+    float wobbleAmount = 2.0f;     // ふらつきの大きさ
 
     // 攻撃
-    float lockOnTime = 1.0f;
-    int burstCount = 6;
-    float shotInterval = 0.1f;
+    float attackInterval = 2.5f;   // 追跡に入ってから狙い始めるまで (秒)
+    float lockOnTime = 1.0f;       // レーザーで狙う時間 (秒)
+    int burstCount = 6;            // 1 回の連射で撃つ数
+    float shotInterval = 0.1f;     // 連射の間隔 (秒)
     int damagePerShot = 4;
     float shotSpread = 0.03f;      // ばらつき (ラジアン)
     float maxFireDistance = 80.0f;
     FS::Vector3 muzzleOffset = { 0.0f, 2.0f, 0.0f };
 
-    // 弱点。位置と大きさは機体のローカル単位 (機体のスケールがかかる)
-    FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };  // 1 基目の位置。残りは x, z の符号を変えた位置
+    // スラスター (弱点)。位置と大きさには機体のスケールがかかる
+    FS::Vector3 thrusterOffset = { 1.0f, 1.0f, 1.0f };   // 1 基目の位置。残りは x, z の符号を変えた位置
     FS::Vector3 thrusterScale = { 0.5f, 0.5f, 0.5f };
-    FS::Vector3 thrusterColliderSize = { 0.5f, 0.5f, 0.5f };   // 当たり判定の箱の半分の大きさ
+    FS::Vector3 thrusterColliderSize = { 1.0f, 1.0f, 1.0f };
     int thrusterMaxHP = 30;
     float bodyDamageRate = 0.3f;   // 本体に当たったときのダメージの倍率
-    int thrustersToCrash = 2;
+    int thrustersToCrash = 2;      // この数を壊すと墜落する
 
     // 墜落
     float crashTime = 5.0f;        // 地面に届かなくても、この時間で爆発する
@@ -62,7 +62,7 @@ struct FloatingEnemyConfig
     FS::Vector3 spotLocalDirection = { 0.0f, -0.3f, -1.0f };   // 機体から見た向き。-Z が正面
 };
 
-// ARC Raiders のワスプのような飛行ドローン。見つけると距離を保って周回し、レーザーで狙ってから連射する
+// 空中を飛ぶドローン型の敵。プレイヤーを見つけると距離を保って周りを回り、レーザーで狙ってから連射する。
 // 本体は硬く、4 基のスラスターのうち決まった数を壊すと墜落する
 class FloatingBehavior : public IEnemyBehavior
 {
@@ -96,26 +96,33 @@ private:
 
     static constexpr int kThrusterCount = 4;
 
+    // 状態ごとの更新
     void UpdatePatrol(Enemy* owner, float deltaTime);
     void UpdateChase(Enemy* owner, float deltaTime);
     void UpdateLockOn(Enemy* owner, float deltaTime);
     void UpdateFire(Enemy* owner, float deltaTime);
     void UpdateCrash(Enemy* owner, float deltaTime);
-
     void ChangeState(State state);
     void StartChase(Enemy* owner);
+    void StartCrash();
+
+    // 移動と向き
     bool CanDetectPlayer(const FS::Vector3& position);
     void MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
+
+    // 射撃
     void FireShot(Enemy* owner);
+    FS::Vector3 GetMuzzlePosition(Enemy* owner) const;
+
+    // スラスター
     void DestroyThruster(Enemy* owner, int thrusterIndex);
     void RepairThrusters();
-    void StartCrash();
-    FS::Vector3 GetMuzzlePosition(Enemy* owner) const;
-    float RandomRange(float min, float max);
-    void ReleaseEffects();
     FS::Vector3 GetThrusterLocalPosition(int thrusterIndex) const;
     void UpdateThrusters(Enemy* owner);
+
+    float RandomRange(float min, float max);
+    void ReleaseEffects();
 
     const FloatingEnemyConfig& config_;
     const FS::Model* thrusterSourceModel_ = nullptr;
@@ -123,20 +130,24 @@ private:
     FS::Engine* engine_ = nullptr;
     Player* player_ = nullptr;
 
+    // 状態
     State state_ = State::Patrol;
-    float stateTimer_ = 0.0f;
+    float stateTimer_ = 0.0f;         // 今の状態になってからの時間
     float elapsedTime_ = 0.0f;
-    float orbitChangeTimer_ = 0.0f;   // 0 になったら周回の向きを変える
-    FS::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
-    FS::Vector3 aimDirection_ = { 0.0f, 0.0f, 1.0f };   // ロックオン時に決めた向き
-    float orbitAngle_ = 0.0f;
-    float orbitDirection_ = 1.0f;     // 1 = 左回り, -1 = 右回り
-    int shotsFired_ = 0;
-    int lastPlayerShotCount_ = 0;
+    int shotsFired_ = 0;              // 今の連射で撃った数
+    int lastPlayerShotCount_ = 0;     // 銃声に気づくために、前のフレームの発射数を覚えておく
     std::mt19937 random_;
 
+    // 移動
+    FS::Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
+    FS::Vector3 aimDirection_ = { 0.0f, 0.0f, 1.0f };   // ロックオンで決めた向き
+    float orbitAngle_ = 0.0f;
+    float orbitDirection_ = 1.0f;     // 1 = 左回り, -1 = 右回り
+    float orbitChangeTimer_ = 0.0f;   // 0 になったら周回の向きを変える
+
+    // スラスター
     int thrusterHP_[kThrusterCount] = {};
-    FS::Collider* thrusterColliders_[kThrusterCount] = {};   // 所有は Enemy (AddCollider で作る)
+    FS::Collider* thrusterColliders_[kThrusterCount] = {};   // 所有は Enemy (AddBoxCollider で作る)
     std::unique_ptr<FS::Model> thrusterModels_[kThrusterCount];
     float propellerAngle_ = 0.0f;
     int destroyedThrusterCount_ = 0;
@@ -150,11 +161,11 @@ private:
     };
     std::vector<Tracer> tracers_;
 
-    // 巡回 (1 機ずつ違う。基準位置を中心にサイン波で動く)
+    // 巡回。基準位置を中心にサイン波で動く。1 機ずつ違う値を持つ
     FS::Vector3 basePosition_;
     FS::Vector3 amplitude_ = { 3.0f, 2.0f, 0.0f };
     FS::Vector3 frequency_ = { 0.5f, 1.0f, 0.0f };
-    FS::Vector3 phase_ = { 0.0f, 0.0f, 0.0f };
+    FS::Vector3 phase_ = { 0.0f, 0.0f, 0.0f };   // 度
     float patrolSpeed_ = 30.0f;
 
     // 演出
