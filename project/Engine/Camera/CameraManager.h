@@ -17,7 +17,7 @@ public:
     // 更新処理
     void Update();
 
-    // どこからでもカメラを揺らす
+    // カメラを揺らす関数
     void RequestShake(float duration, float intensity);
     void DebugGui();
     void Draw();
@@ -28,7 +28,7 @@ private:
     Camera* mainCamera_ = nullptr;
     ICameraController* currentController_ = nullptr;
 
-    // 演出が終わった後に戻るための普段のカメラを記憶しておくポインタ
+    // 普段のカメラを記憶しておくポインタ
     ICameraController* defaultController_ = nullptr;
 
     ShakeEffect shake_;

@@ -71,41 +71,19 @@ void FloatingBehavior::Initialize(Enemy* owner)
     }
     RepairThrusters();
 
-    auto moveFireEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveFire");
-    if (moveFireEmitter)
-    {
-        moveFireEmitterPtr_ = moveFireEmitter.get();
-        moveFireEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
-        engine_->GetParticleSystem()->AddEmitter(std::move(moveFireEmitter));
-    }
-
-    auto moveSmokeEmitter = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyMoveSmoke");
-    if (moveSmokeEmitter)
-    {
-        moveSmokeEmitterPtr_ = moveSmokeEmitter.get();
-        moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
-        engine_->GetParticleSystem()->AddEmitter(std::move(moveSmokeEmitter));
-    }
-
-    auto explosion = engine_->GetParticleSystem()->CreateEmitter("floatingEnemyExplosion");
-    explosionEmitterPtr_ = explosion.get();
-    if (explosion)
-    {
-        engine_->GetParticleSystem()->AddEmitter(std::move(explosion));
-    }
-
-    auto thrusterBreak = engine_->GetParticleSystem()->CreateEmitter(kThrusterBreakParticle);
-    thrusterBreakEmitterPtr_ = thrusterBreak.get();
-    if (thrusterBreak)
-    {
-        engine_->GetParticleSystem()->AddEmitter(std::move(thrusterBreak));
-    }
+    ParticleSystem* particleSystem = engine_->GetParticleSystem();
+    moveFireEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveFire");
+    moveFireEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
+    moveSmokeEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveSmoke");
+    moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
+    explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
+    thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter(kThrusterBreakParticle);
 
     owner->GetTransform().translation_ = basePosition_;
     owner->SyncTransform();
     UpdateThrusters(owner);
 
-    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", basePosition_, true, 60, 100);
+    soundHandleID_ = AudioPlayer::GetInstance().Play3D("floatingEnemy", basePosition_, { .volume = 0.6f, .maxDistance = 100.0f, .isLoop = true });
 }
 
 void FloatingBehavior::Update(Enemy* owner)
@@ -369,7 +347,7 @@ void FloatingBehavior::FireShot(Enemy* owner)
     const Vector3 spread = { RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread), RandomRange(-config_.shotSpread, config_.shotSpread) };
     const Vector3 shotDirection = (aimDirection_ + spread).Normalize();
 
-    AudioPlayer::GetInstance().Play3D("gunShot", muzzle, false, 50, 150.0f);
+    AudioPlayer::GetInstance().Play3D("gunShot", muzzle, { .volume = 0.5f, .maxDistance = 150.0f });
 
     Vector3 shotEnd = muzzle + shotDirection * config_.maxFireDistance;
 
@@ -439,7 +417,7 @@ void FloatingBehavior::DestroyThruster(Enemy* owner, int thrusterIndex)
         thrusterBreakEmitterPtr_->SetPosition(thrusterModels_[thrusterIndex]->GetTransform().translation_);
         thrusterBreakEmitterPtr_->Play();
     }
-    AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, false, 60, 100.0f);
+    AudioPlayer::GetInstance().Play3D("floatingEnemyDamaged", owner->GetTransform().translation_, { .volume = 0.6f, .maxDistance = 100.0f });
 
     if (destroyedThrusterCount_ >= config_.thrustersToCrash)
     {
@@ -529,7 +507,7 @@ void FloatingBehavior::Draw(Enemy* owner)
 
 void FloatingBehavior::OnDeath(Enemy* owner)
 {
-    AudioPlayer::GetInstance().Play("floatingEnemyExplosion", false, 40);
+    AudioPlayer::GetInstance().Play("floatingEnemyExplosion", 0.4f);
     ReleaseEffects();
 
     if (explosionEmitterPtr_)

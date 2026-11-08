@@ -2,7 +2,7 @@
 #include "TitleMenu.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
-#include "Input.h"
+#include "GameInput.h"
 
 using namespace FS;
 
@@ -72,9 +72,7 @@ bool TitleMenu::IsConfirmTriggered() const
         return false;
     }
 
-    auto& input = Input::GetInstance();
-    return input.IsKeyTriggered(DIK_SPACE) || input.IsKeyTriggered(DIK_RETURN)
-        || input.IsControllerButtonTriggered(0, Input::ButtonA);
+    return GameInput::IsTriggered(GameAction::Confirm);
 }
 
 void TitleMenu::Skip()

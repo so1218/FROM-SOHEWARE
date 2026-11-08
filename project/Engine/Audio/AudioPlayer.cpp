@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AudioPlayer.h"
+#include "Logger.h"
 #include "AudioDevice.h"
 #include "MediaAudioDecoder.h"
 
@@ -22,15 +23,28 @@ void AudioPlayer::Load(const std::string& name, const std::wstring& filePath)
 }
 
 // 再生処理
-int AudioPlayer::Play(const std::string& name, bool loop, uint32_t volume)
+int AudioPlayer::Play(const std::string& name, float volume)
 {
-    return StartInstance(CreateInstance(name, loop, volume));
+    return StartInstance(CreateInstance(name, false, volume));
 }
 
-int AudioPlayer::CreateInstance(const std::string& name, bool loop, uint32_t volume)
+int AudioPlayer::PlayLoop(const std::string& name, float volume)
+{
+    return StartInstance(CreateInstance(name, true, volume));
+}
+
+int AudioPlayer::CreateInstance(const std::string& name, bool isLoop, float volume)
 {
     auto it = audioDataMap_.find(name);
-    if (it == audioDataMap_.end()) return -1;
+    if (it == audioDataMap_.end())
+    {
+        static std::unordered_set<std::string> reportedNames;
+        if (reportedNames.insert(name).second)
+        {
+            LOG_WARN("音 \"{}\" が読み込まれていない。Assets のファイル名と合っているか確認する", name);
+        }
+        return -1;
+    }
 
     const auto& audioData = it->second;
 
@@ -44,7 +58,7 @@ int AudioPlayer::CreateInstance(const std::string& name, bool loop, uint32_t vol
     buffer.AudioBytes = static_cast<uint32_t>(audioData.buffer.size());
     buffer.pAudioData = audioData.buffer.data();
     buffer.Flags = XAUDIO2_END_OF_STREAM;
-    buffer.LoopCount = loop ? XAUDIO2_LOOP_INFINITE : 0;
+    buffer.LoopCount = isLoop ? XAUDIO2_LOOP_INFINITE : 0;
 
     hr = sourceVoice->SubmitSourceBuffer(&buffer);
     if (FAILED(hr)) {
@@ -52,7 +66,7 @@ int AudioPlayer::CreateInstance(const std::string& name, bool loop, uint32_t vol
         return -1;
     }
 
-    sourceVoice->SetVolume(std::clamp(volume / 100.0f, 0.0f, 10.0f));
+    sourceVoice->SetVolume(std::clamp(volume, 0.0f, 10.0f));
 
     int handleID = nextHandleID_;
     nextHandleID_++;
@@ -135,8 +149,7 @@ bool AudioPlayer::IsPlaying(int handleID)
     return (state.BuffersQueued > 0);
 }
 
-// ユニーク再生
-int AudioPlayer::PlayUnique(const std::string& name, bool loop, uint32_t volume)
+int AudioPlayer::PlayBgm(const std::string& name, float volume)
 {
     // その名前の音がすでに管理されているか確認
     if (uniqueHandles_.count(name))
@@ -157,7 +170,7 @@ int AudioPlayer::PlayUnique(const std::string& name, bool loop, uint32_t volume)
     }
 
     // 新規再生
-    int newHandle = Play(name, loop, volume);
+    int newHandle = PlayLoop(name, volume);
 
     // 成功したらユニーク管理に登録
     if (newHandle >= 0) {
@@ -167,8 +180,7 @@ int AudioPlayer::PlayUnique(const std::string& name, bool loop, uint32_t volume)
     return newHandle;
 }
 
-// ユニーク停止
-void AudioPlayer::StopUnique(const std::string& name)
+void AudioPlayer::StopBgm(const std::string& name)
 {
     if (uniqueHandles_.count(name))
     {
@@ -186,16 +198,16 @@ void AudioPlayer::SetListener(const Vector3& pos, const Vector3& front, const Ve
     hasListener_ = true;
 }
 
-int AudioPlayer::Play3D(const std::string& name, const Vector3& position, bool loop, uint32_t volume, float maxDistance)
+int AudioPlayer::Play3D(const std::string& name, const Vector3& position, const Sound3DSettings& settings)
 {
-    int handleID = CreateInstance(name, loop, volume);
+    int handleID = CreateInstance(name, settings.isLoop, settings.volume);
     if (handleID < 0) return -1;
 
     // 鳴らし始める前に減衰を掛けておかないと、最初の 1 フレームは距離に関係なく最大音量で鳴る
     AudioInstance& instance = activeVoices_[handleID];
     instance.is3D = true;
     instance.position = position;
-    instance.maxDistance = maxDistance;
+    instance.maxDistance = settings.maxDistance;
     Apply3D(instance);
 
     return StartInstance(handleID);

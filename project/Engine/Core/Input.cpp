@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Input.h"
 #include "TimeManager.h"
-#include "MathUtils.h"
 
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "Xinput.lib")
@@ -9,32 +8,21 @@
 namespace FS
 {
 
+namespace
+{
+
+constexpr float kMaxStickValue = 32767.0f;
+// 最後に触った機器を決めるときに、スティックを触ったとみなす傾き
+constexpr SHORT kStickTouchThreshold = 0x4000;
+
+bool IsDown(BYTE state) { return (state & 0x80) != 0; }
+
+}
+
 Input& Input::GetInstance()
 {
     static Input instance;
     return instance;
-}
-
-Input::Input()
-{
-    directInput_ = nullptr;
-    keyboard_ = nullptr;
-    mouse_ = nullptr;
-    hwnd_ = nullptr;
-
-    ZeroMemory(keys_, sizeof(keys_));
-    ZeroMemory(preKeys_, sizeof(preKeys_));
-    ZeroMemory(&mouseState_, sizeof(mouseState_));
-    ZeroMemory(&preMouseState_, sizeof(preMouseState_));
-    ZeroMemory(&mousePosition_, sizeof(mousePosition_));
-
-    for (int i = 0; i < 4; i++)
-    {
-        controllerConnected_[i] = false;
-        vibrationTimers_[i] = 0;
-        ZeroMemory(&controllerStates_[i], sizeof(XINPUT_STATE));
-        ZeroMemory(&prevControllerStates_[i], sizeof(XINPUT_STATE));
-    }
 }
 
 Input::~Input()
@@ -59,38 +47,36 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
     hwnd_ = hwnd;
 
-    // DirectInput
     HRESULT hr = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput_, nullptr);
     assert(SUCCEEDED(hr));
 
-    // キーボード
     hr = directInput_->CreateDevice(GUID_SysKeyboard, &keyboard_, NULL);
     assert(SUCCEEDED(hr));
-
     hr = keyboard_->SetDataFormat(&c_dfDIKeyboard);
     assert(SUCCEEDED(hr));
-
     hr = keyboard_->SetCooperativeLevel(hwnd_, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
     assert(SUCCEEDED(hr));
 
-    // マウス
     hr = directInput_->CreateDevice(GUID_SysMouse, &mouse_, NULL);
     assert(SUCCEEDED(hr));
-
     hr = mouse_->SetDataFormat(&c_dfDIMouse);
     assert(SUCCEEDED(hr));
-
     hr = mouse_->SetCooperativeLevel(hwnd_, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
     assert(SUCCEEDED(hr));
+
+    // 起動時にパッドがつながっていれば、パッドで遊ぶものとして始める
+    UpdatePads();
+    if (isPadConnected_[0])
+    {
+        lastUsedDevice_ = Device::Pad;
+    }
 }
 
 void Input::Update()
 {
-    // 前回の状態を保存
-    memcpy(preKeys_, keys_, sizeof(keys_));
-    preMouseState_ = mouseState_; // structは直接代入でOK
+    memcpy(prevKeys_, keys_, sizeof(keys_));
+    prevMouseState_ = mouseState_;
 
-    // デバイスの制御を取得
     if (keyboard_)
     {
         keyboard_->Acquire();
@@ -102,365 +88,171 @@ void Input::Update()
         mouse_->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState_);
     }
 
-    // マウスカーソル位置の更新
     GetCursorPos(&mousePosition_);
     ScreenToClient(hwnd_, &mousePosition_);
 
-    // コントローラーの状態を更新
-    UpdateController();
+    UpdatePads();
+    UpdateLastUsedDevice();
 }
-
 
 void Input::Finalize()
 {
-    // 全てのコントローラーの振動を停止する
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < kMaxPadCount; ++i)
     {
-        VibrateController(i, 0.0f, 0.0f);
+        SetVibration(i, 0.0f, 0.0f);
     }
 }
 
-void Input::UpdateController()
+void Input::UpdatePads()
 {
-    for (int i = 0; i < 4; ++i)
+    const float deltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
+
+    for (int i = 0; i < kMaxPadCount; ++i)
     {
-        // 現在の状態を前回の状態として保存
-        prevControllerStates_[i] = controllerStates_[i];
+        prevPadStates_[i] = padStates_[i];
+        isPadConnected_[i] = (XInputGetState(i, &padStates_[i]) == ERROR_SUCCESS);
 
-        // 新しい状態を取得
-        DWORD result = XInputGetState(i, &controllerStates_[i]);
-
-        // 接続状態を更新
-        controllerConnected_[i] = (result == ERROR_SUCCESS);
-    }
-
-    for (int i = 0; i < 4; ++i)
-    {
-        // タイマーが作動中の場合
         if (vibrationTimers_[i] > 0.0f)
         {
-            vibrationTimers_[i] -= TimeManager::GetInstance()->GetDeltaTime(); // 経過時間を引く
-
-            // タイマーが0以下になったら
+            vibrationTimers_[i] -= deltaTime;
             if (vibrationTimers_[i] <= 0.0f)
             {
                 vibrationTimers_[i] = 0.0f;
-                VibrateController(i, 0, 0); // 振動を停止
+                SetVibration(i, 0.0f, 0.0f);
             }
         }
     }
 }
 
-int Input::GetMouseWheelDelta()
+void Input::UpdateLastUsedDevice()
 {
-    return mouseState_.lZ;
-}
-
-Vector2 Input::GetMousePosition()
-{
-    return Vector2
+    // 遊ぶのは 0 番のパッドだけ
+    const XINPUT_GAMEPAD& pad = padStates_[0].Gamepad;
+    const bool isPadTouched = isPadConnected_[0] && (
+        pad.wButtons != 0 ||
+        pad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD || pad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD ||
+        std::abs(pad.sThumbLX) > kStickTouchThreshold || std::abs(pad.sThumbLY) > kStickTouchThreshold ||
+        std::abs(pad.sThumbRX) > kStickTouchThreshold || std::abs(pad.sThumbRY) > kStickTouchThreshold);
+    if (isPadTouched)
     {
-       static_cast<float>(mousePosition_.x),
-       static_cast<float>(mousePosition_.y)
-    };
-}
-
-int Input::GetMouseX()
-{
-    return static_cast<int>(mousePosition_.x);
-}
-
-int Input::GetMouseY()
-{
-    return static_cast<int>(mousePosition_.y);
-}
-
-bool Input::IsKeyTriggered(BYTE key)
-{
-    return (keys_[key] & 0x80) && !(preKeys_[key] & 0x80);
-}
-bool Input::IsKeyPressed(BYTE key)
-{
-    return keys_[key] & 0x80;
-}
-bool Input::IsKeyReleased(BYTE key)
-{
-    return !(keys_[key] & 0x80) && (preKeys_[key] & 0x80);
-}
-bool Input::IsKeyUp(BYTE key)
-{
-    return !(keys_[key] & 0x80);
-}
-bool Input::IsMouseButtonTriggered(DWORD button)
-{
-    return (mouseState_.rgbButtons[button] & 0x80) && !(preMouseState_.rgbButtons[button] & 0x80);
-}
-bool Input::IsMouseButtonPressed(DWORD button)
-{
-    return (mouseState_.rgbButtons[button] & 0x80);
-}
-bool Input::IsMouseButtonIsKeyReleased(DWORD button)
-{
-    return !(mouseState_.rgbButtons[button] & 0x80) && (preMouseState_.rgbButtons[button] & 0x80);
-}
-bool Input::IsMouseButtonUp(DWORD button)
-{
-    return !(preMouseState_.rgbButtons[button] & 0x80);
-}
-
-bool Input::IsControllerConnected(int controllerId)
-{
-    return (XInputGetState(controllerId, &controllerStates_[controllerId]) == ERROR_SUCCESS);
-}
-
-bool Input::IsControllerButtonPressed(int controllerId, int button)
-{
-    if (controllerId < 0 || controllerId >= 4) return false;
-
-    // LT
-    if (button == PadButton::ButtonLT)
-    {
-        return controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-    }
-    // RT
-    else if (button == PadButton::ButtonRT)
-    {
-        return controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+        lastUsedDevice_ = Device::Pad;
+        return;
     }
 
-    // 通常ボタン
-    return (controllerStates_[controllerId].Gamepad.wButtons & button) == button;
-}
-
-bool Input::IsControllerButtonTriggered(int controllerId, int button)
-{
-    if (controllerId < 0 || controllerId >= 4) return false;
-
-    // LT
-    if (button == PadButton::ButtonLT)
+    // マウスの移動は机に当たっただけでも起きるので、キーとボタンだけで判定する
+    if (std::any_of(std::begin(keys_), std::end(keys_), IsDown) ||
+        std::any_of(std::begin(mouseState_.rgbButtons), std::end(mouseState_.rgbButtons), IsDown))
     {
-        bool isPressed = controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        return isPressed && !wasPressed;
+        lastUsedDevice_ = Device::KeyboardMouse;
     }
-    // RT
-    else if (button == PadButton::ButtonRT)
+}
+
+bool Input::IsKeyPressed(BYTE key) const { return IsDown(keys_[key]); }
+bool Input::IsKeyTriggered(BYTE key) const { return IsDown(keys_[key]) && !IsDown(prevKeys_[key]); }
+bool Input::IsKeyReleased(BYTE key) const { return !IsDown(keys_[key]) && IsDown(prevKeys_[key]); }
+
+bool Input::IsMouseButtonPressed(MouseButton button) const
+{
+    return IsDown(mouseState_.rgbButtons[static_cast<int>(button)]);
+}
+
+bool Input::IsMouseButtonTriggered(MouseButton button) const
+{
+    const int index = static_cast<int>(button);
+    return IsDown(mouseState_.rgbButtons[index]) && !IsDown(prevMouseState_.rgbButtons[index]);
+}
+
+bool Input::IsMouseButtonReleased(MouseButton button) const
+{
+    const int index = static_cast<int>(button);
+    return !IsDown(mouseState_.rgbButtons[index]) && IsDown(prevMouseState_.rgbButtons[index]);
+}
+
+Vector2 Input::GetMousePosition() const
+{
+    return { static_cast<float>(mousePosition_.x), static_cast<float>(mousePosition_.y) };
+}
+
+Vector2 Input::GetMouseDelta() const
+{
+    return { static_cast<float>(mouseState_.lX), static_cast<float>(mouseState_.lY) };
+}
+
+float Input::GetMouseWheel() const
+{
+    return static_cast<float>(mouseState_.lZ);
+}
+
+bool Input::IsPadConnected(int padIndex) const
+{
+    return IsValidPad(padIndex) && isPadConnected_[padIndex];
+}
+
+bool Input::IsPadButtonDown(const XINPUT_GAMEPAD& pad, PadButton button)
+{
+    switch (button)
     {
-        bool isPressed = controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        return isPressed && !wasPressed;
-    }
-
-    // 通常ボタン
-    return ((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
-        !((prevControllerStates_[controllerId].Gamepad.wButtons & button) == button);
-}
-
-bool Input::IsControllerButtonReleased(int controllerId, int button)
-{
-    if (controllerId < 0 || controllerId >= 4) return false;
-
-    // LT
-    if (button == PadButton::ButtonLT)
+    case PadButton::LT: return pad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    case PadButton::RT: return pad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    default:
     {
-        bool isPressed = controllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        return !isPressed && wasPressed; // 今回押されてなくて、前回押されていた
+        const WORD mask = static_cast<WORD>(button);
+        return (pad.wButtons & mask) == mask;
     }
-    // RT
-    else if (button == PadButton::ButtonRT)
-    {
-        bool isPressed = controllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        bool wasPressed = prevControllerStates_[controllerId].Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
-        return !isPressed && wasPressed;
     }
-
-    // 通常ボタン
-    return !((controllerStates_[controllerId].Gamepad.wButtons & button) == button) &&
-        ((prevControllerStates_[controllerId].Gamepad.wButtons & button) == button);
 }
 
-SHORT Input::GetLeftTrigger(int controllerId)
+bool Input::IsPadButtonPressed(PadButton button, int padIndex) const
 {
-    return controllerStates_[controllerId].Gamepad.bLeftTrigger;
+    return IsPadConnected(padIndex) && IsPadButtonDown(padStates_[padIndex].Gamepad, button);
 }
 
-SHORT Input::GetRightTrigger(int controllerId)
+bool Input::IsPadButtonTriggered(PadButton button, int padIndex) const
 {
-    return controllerStates_[controllerId].Gamepad.bRightTrigger;
+    return IsPadConnected(padIndex) &&
+        IsPadButtonDown(padStates_[padIndex].Gamepad, button) && !IsPadButtonDown(prevPadStates_[padIndex].Gamepad, button);
 }
 
-SHORT Input::GetLeftStickX(int controllerId)
+bool Input::IsPadButtonReleased(PadButton button, int padIndex) const
 {
-    return controllerStates_[controllerId].Gamepad.sThumbLX;
+    return IsPadConnected(padIndex) &&
+        !IsPadButtonDown(padStates_[padIndex].Gamepad, button) && IsPadButtonDown(prevPadStates_[padIndex].Gamepad, button);
 }
 
-SHORT Input::GetLeftStickY(int controllerId)
+Vector2 Input::GetStick(Stick stick, float deadzone, int padIndex) const
 {
-    return controllerStates_[controllerId].Gamepad.sThumbLY;
+    if (!IsPadConnected(padIndex)) return { 0.0f, 0.0f };
+
+    // 端まで倒しても 1 に届かないパッドがあるので、少し手前で 1 にする
+    constexpr float kOuterEdge = 0.95f;
+
+    const XINPUT_GAMEPAD& pad = padStates_[padIndex].Gamepad;
+    const bool isLeft = (stick == Stick::Left);
+    const float x = std::clamp((isLeft ? pad.sThumbLX : pad.sThumbRX) / kMaxStickValue, -1.0f, 1.0f);
+    const float y = std::clamp((isLeft ? pad.sThumbLY : pad.sThumbRY) / kMaxStickValue, -1.0f, 1.0f);
+
+    const float length = std::sqrt(x * x + y * y);
+    if (length <= deadzone) return { 0.0f, 0.0f };
+
+    // 向きは保ったまま、デッドゾーンの外側を 0 ~ 1 に広げ直す
+    const float strength = std::clamp((length - deadzone) / (kOuterEdge - deadzone), 0.0f, 1.0f);
+    return { x / length * strength, y / length * strength };
 }
 
-SHORT Input::GetRightStickX(int controllerId)
+void Input::StartVibration(float leftMotorSpeed, float rightMotorSpeed, float durationSeconds, int padIndex)
 {
-    return controllerStates_[controllerId].Gamepad.sThumbRX;
+    if (!IsValidPad(padIndex)) return;
+
+    SetVibration(padIndex, leftMotorSpeed, rightMotorSpeed);
+    vibrationTimers_[padIndex] = durationSeconds;
 }
 
-SHORT Input::GetRightStickY(int controllerId)
+void Input::SetVibration(int padIndex, float leftMotorSpeed, float rightMotorSpeed)
 {
-
-    return controllerStates_[controllerId].Gamepad.sThumbRY;
-}
-
-bool Input::IsLeftOnStick(int controllerId, StickType stickType)
-{
-    if (stickType == LeftStick)
-    {
-        return GetLeftStickX(controllerId) < -STICK_THRESHOLD;
-    }
-    else if (stickType == RightStick)
-    {
-        return GetRightStickX(controllerId) < -STICK_THRESHOLD;
-    }
-    return false;
-}
-
-bool Input::IsRightOnStick(int controllerId, StickType stickType)
-{
-    if (stickType == LeftStick)
-    {
-        return GetLeftStickX(controllerId) > STICK_THRESHOLD;
-    }
-    else if (stickType == RightStick)
-    {
-        return GetRightStickX(controllerId) > STICK_THRESHOLD;
-    }
-    return false;
-}
-
-bool Input::IsUpOnStick(int controllerId, StickType stickType)
-{
-    if (stickType == LeftStick)
-    {
-        return GetLeftStickY(controllerId) > STICK_THRESHOLD;
-    }
-    else if (stickType == RightStick)
-    {
-        return GetRightStickY(controllerId) > STICK_THRESHOLD;
-    }
-    return false;
-}
-
-
-bool Input::IsDownOnStick(int controllerId, StickType stickType)
-{
-    if (stickType == LeftStick)
-    {
-        return GetLeftStickY(controllerId) < -STICK_THRESHOLD;
-    }
-    else if (stickType == RightStick)
-    {
-        return GetRightStickY(controllerId) < -STICK_THRESHOLD;
-    }
-    return false;
-}
-
-
-SHORT Input::GetPrevLeftStickX(int controllerId)
-{
-    return prevControllerStates_[controllerId].Gamepad.sThumbLX;
-}
-SHORT Input::GetPrevLeftStickY(int controllerId)
-{
-    return prevControllerStates_[controllerId].Gamepad.sThumbLY;
-}
-SHORT Input::GetPrevRightStickX(int controllerId)
-{
-    return prevControllerStates_[controllerId].Gamepad.sThumbRX;
-}
-SHORT Input::GetPrevRightStickY(int controllerId)
-{
-    return prevControllerStates_[controllerId].Gamepad.sThumbRY;
-}
-
-bool Input::IsStickLeftTriggered(int controllerId, StickType stickType)
-{
-    SHORT currentX = (stickType == LeftStick) ? GetLeftStickX(controllerId) : GetRightStickX(controllerId);
-    SHORT prevX = (stickType == LeftStick) ? GetPrevLeftStickX(controllerId) : GetPrevRightStickX(controllerId);
-
-    return (prevX >= -STICK_THRESHOLD && currentX < -STICK_THRESHOLD);
-}
-
-bool Input::IsStickRightTriggered(int controllerId, StickType stickType)
-{
-    SHORT currentX = (stickType == LeftStick) ? GetLeftStickX(controllerId) : GetRightStickX(controllerId);
-    SHORT prevX = (stickType == LeftStick) ? GetPrevLeftStickX(controllerId) : GetPrevRightStickX(controllerId);
-
-    return (prevX <= STICK_THRESHOLD && currentX > STICK_THRESHOLD);
-}
-
-bool Input::IsStickUpTriggered(int controllerId, StickType stickType)
-{
-    SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
-    SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
-
-    return (prevY <= STICK_THRESHOLD && currentY > STICK_THRESHOLD);
-}
-
-bool Input::IsStickDownTriggered(int controllerId, StickType stickType)
-{
-    SHORT currentY = (stickType == LeftStick) ? GetLeftStickY(controllerId) : GetRightStickY(controllerId);
-    SHORT prevY = (stickType == LeftStick) ? GetPrevLeftStickY(controllerId) : GetPrevRightStickY(controllerId);
-
-    return (prevY >= -STICK_THRESHOLD && currentY < -STICK_THRESHOLD);
-}
-
-bool Input::IsTriggerOnStick(int controllerId, StickType stickType)
-{
-    if (stickType == LeftStick)
-    {
-        return (GetLeftStickX(controllerId) > STICK_THRESHOLD ||
-            GetLeftStickX(controllerId) < -STICK_THRESHOLD ||
-            GetLeftStickY(controllerId) > STICK_THRESHOLD ||
-            GetLeftStickY(controllerId) < -STICK_THRESHOLD);
-    }
-    else if (stickType == RightStick)
-    {
-        return (GetRightStickX(controllerId) > STICK_THRESHOLD ||
-            GetRightStickX(controllerId) < -STICK_THRESHOLD ||
-            GetRightStickY(controllerId) > STICK_THRESHOLD ||
-            GetRightStickY(controllerId) < -STICK_THRESHOLD);
-    }
-    return false;
-}
-
-void Input::VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed)
-{
-    if (controllerId < 0 || controllerId >= 4) return;
-
-    // 値を0.0f～1.0f にクランプ
-    leftMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, leftMotorSpeed));
-    rightMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, rightMotorSpeed));
-
-    XINPUT_VIBRATION vibration = { 0 };
-    vibration.wLeftMotorSpeed = static_cast<WORD>(leftMotorSpeed * 65535.0f);
-    vibration.wRightMotorSpeed = static_cast<WORD>(rightMotorSpeed * 65535.0f);
-
-    XInputSetState(controllerId, &vibration);
-}
-
-void Input::StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds)
-{
-    if (controllerId < 0 || controllerId >= 4) return;
-
-    leftMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, leftMotorSpeed));
-    rightMotorSpeed = Math::MyMax<float>(0.0f, Math::MyMin<float>(1.0f, rightMotorSpeed));
-
-
-    // 振動を開始
-    VibrateController(controllerId, leftMotorSpeed, rightMotorSpeed);
-
-    // タイマーをセット
-    vibrationTimers_[controllerId] = durationSeconds;
+    XINPUT_VIBRATION vibration = {};
+    vibration.wLeftMotorSpeed = static_cast<WORD>(std::clamp(leftMotorSpeed, 0.0f, 1.0f) * 65535.0f);
+    vibration.wRightMotorSpeed = static_cast<WORD>(std::clamp(rightMotorSpeed, 0.0f, 1.0f) * 65535.0f);
+    XInputSetState(padIndex, &vibration);
 }
 
 }

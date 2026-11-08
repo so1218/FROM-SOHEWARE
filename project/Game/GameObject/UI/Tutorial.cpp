@@ -8,7 +8,7 @@
 #include "PlayerStateAiming.h"
 #include "TextureLoader.h"
 #include "TimeManager.h"
-#include "Input.h"
+#include "GameInput.h"
 
 using namespace FS;
 
@@ -98,7 +98,7 @@ void Tutorial::Initialize()
     messageText_->SetAlign(TextAlign::Center);
     messageText_->SetLayerOrder(21);
 
-    isUsingController_ = Input::GetInstance().IsControllerConnected(0);
+    isUsingController_ = GameInput::IsUsingController();
     StartStep(Step::Finished);
 }
 
@@ -164,45 +164,9 @@ void Tutorial::StartStep(Step step)
 
 void Tutorial::UpdateInputDevice()
 {
-    Input& input = Input::GetInstance();
-
     // 最後に触った方の画像を出す
-    static const int kControllerButtons[] =
-    {
-        Input::ButtonA, Input::ButtonB, Input::ButtonX, Input::ButtonY,
-        Input::ButtonLB, Input::ButtonRB, Input::ButtonLT, Input::ButtonRT, Input::ButtonL3, Input::ButtonR3,
-    };
-    static const BYTE kKeyboardKeys[] =
-    {
-        DIK_W, DIK_A, DIK_S, DIK_D, DIK_LSHIFT, DIK_LCONTROL, DIK_SPACE, DIK_K, DIK_J,
-    };
-
-    bool isControllerTouched = false;
-    if (input.IsControllerConnected(0))
-    {
-        isControllerTouched =
-            std::abs(input.GetLeftStickX(0)) > STICK_THRESHOLD || std::abs(input.GetLeftStickY(0)) > STICK_THRESHOLD;
-        for (int button : kControllerButtons)
-        {
-            isControllerTouched = isControllerTouched || input.IsControllerButtonPressed(0, button);
-        }
-    }
-
-    bool isKeyboardTouched = false;
-    for (BYTE key : kKeyboardKeys)
-    {
-        isKeyboardTouched = isKeyboardTouched || input.IsKeyPressed(key);
-    }
-
     const bool wasUsingController = isUsingController_;
-    if (isControllerTouched)
-    {
-        isUsingController_ = true;
-    }
-    else if (isKeyboardTouched)
-    {
-        isUsingController_ = false;
-    }
+    isUsingController_ = GameInput::IsUsingController();
 
     if (isUsingController_ != wasUsingController)
     {

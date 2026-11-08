@@ -70,6 +70,7 @@ public:
 
     // ImGui でのパラメータ描画
     void DebugGui(PropertyBinder& binder);
+    void BindFogVolumes(PropertyBinder& binder);
 
 private:
     // 依存オブジェクト

@@ -321,6 +321,12 @@
     <ClCompile Include="Engine\Core\Input.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Core\InputBinding.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Global\GameInput.cpp">
+      <Filter>Game\Global</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Core\pch.cpp">
       <Filter>Engine\Core</Filter>
     </ClCompile>
@@ -821,6 +827,15 @@
     </ClInclude>
     <ClInclude Include="Engine\Core\Input.h">
       <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\InputBinding.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\RepeatInput.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\GameInput.h">
+      <Filter>Game\Global</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Core\pch.h">
       <Filter>Engine\Core</Filter>

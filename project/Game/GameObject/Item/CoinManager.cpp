@@ -17,8 +17,8 @@ namespace
     const char* const kCollectSound = "coinCollect";
 }
 
-CoinManager::CoinManager(Engine* engine)
-    : engine_(engine), random_(std::random_device{}())
+CoinManager::CoinManager(Engine* engine, Player* player, const Terrain* terrain)
+    : engine_(engine), player_(player), terrain_(terrain), random_(std::random_device{}())
 {
     sourceModel_ = std::make_unique<Model>(engine_, "cylinder");
     sourceModel_->MakeMaterialUnique();
@@ -218,7 +218,7 @@ void CoinManager::Collect(Coin& coin)
 {
     coin.isCollected = true;
     player_->AddMoney(config_.valuePerCoin);
-    AudioPlayer::GetInstance().Play(kCollectSound, false, 30);
+    AudioPlayer::GetInstance().Play(kCollectSound, 0.3f);
 }
 
 // 1 回分ずつ、残っている枚数の中心に点光源を置く。点光源の数には上限があるので、近いものだけ照らす

@@ -2,7 +2,7 @@
 #include "PlayerAmmoDisplay.h"
 #include "PlayerWeapon.h"
 #include "TimeManager.h"
-#include "Input.h"
+#include "GameInput.h"
 
 using namespace FS;
 
@@ -187,7 +187,7 @@ void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
     promptText_->SetColor(color);
     promptText_->Draw();
 
-    const bool isUsingController = Input::GetInstance().IsControllerConnected(0);
+    const bool isUsingController = GameInput::IsUsingController();
     const float textWidth = promptText_->MeasureSize().x;
     promptIcon_->SetTexture(isUsingController ? "xbox_button_x" : "keyboard_r");
     promptIcon_->SetPosition({ promptOffset_.x - textWidth - 8.0f, promptOffset_.y + (promptIconSize_ - promptFontSize_) * 0.5f });

@@ -14,7 +14,7 @@ namespace
     constexpr float kHitHeightRate = 1.5f;
 }
 
-TreeField::TreeField(Engine* engine) : GameObject()
+TreeField::TreeField(Engine* engine, Terrain* terrain) : GameObject(), terrain_(terrain)
 {
     engine_ = engine;
 

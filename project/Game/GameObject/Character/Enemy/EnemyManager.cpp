@@ -4,8 +4,8 @@
 
 using namespace FS;
 
-EnemyManager::EnemyManager(Engine* engine, const std::string& groupName)
-    : engine_(engine), managerGroupName_(groupName)
+EnemyManager::EnemyManager(Engine* engine, const std::string& groupName, const Terrain* terrain, CoinManager* coinManager)
+    : engine_(engine), managerGroupName_(groupName), terrain_(terrain), coinManager_(coinManager)
 {}
 
 void EnemyManager::Initialize()

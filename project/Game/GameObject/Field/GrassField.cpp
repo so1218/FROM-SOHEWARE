@@ -4,7 +4,7 @@
 
 using namespace FS;
 
-GrassField::GrassField(FS::Engine* engine) : FS::GameObject()
+GrassField::GrassField(FS::Engine* engine, FS::Terrain* terrain) : FS::GameObject(), terrain_(terrain)
 {
     engine_ = engine;
 

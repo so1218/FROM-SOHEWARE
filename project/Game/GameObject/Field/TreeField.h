@@ -21,14 +21,12 @@ struct TreeRaycastHit
 class TreeField : public FS::GameObject
 {
 public:
-    TreeField(FS::Engine* engine);
+    TreeField(FS::Engine* engine, FS::Terrain* terrain);
 
     void Initialize() override;
     void Update() override;
     void Draw() override {}
     void DebugGui() override;
-
-    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 
     bool ResolveCollision(FS::Vector3& playerPos, float playerRadius) const;
     bool Raycast(const FS::Vector3& rayStart, const FS::Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const;

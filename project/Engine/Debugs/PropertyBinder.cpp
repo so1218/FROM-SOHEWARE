@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PropertyBinder.h"
+#include "Logger.h"
 
 namespace FS
 {
@@ -394,12 +395,21 @@ namespace FS
 
     bool PropertyBinder::Draw(const std::string& key, const std::string& name)
     {
-        // 指定されたキーが存在すれば実行し、その描画結果を返す
-        if (items_.count(key))
+        const auto it = items_.find(key);
+        if (it == items_.end())
         {
-            return items_[key](name);
+#ifdef ENABLE_IMGUI
+            // Bind と Draw でキーの綴りが違うと、項目が黙って出なくなるので知らせる
+            static std::unordered_set<std::string> reportedKeys;
+            if (reportedKeys.insert(key).second)
+            {
+                LOG_ERROR("PropertyBinder: Bind していないキー \"{}\" を Draw しようとした", key);
+            }
+            assert(false && "PropertyBinder::Draw に Bind していないキーが渡された。ログにキー名が出ている");
+#endif
+            return false;
         }
-        return false;
+        return it->second(name);
     }
 
     // 一括で登録順に描画する関数を追加

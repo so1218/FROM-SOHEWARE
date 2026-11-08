@@ -46,40 +46,12 @@ void PlayerWeapon::Initialize()
     magazineModel_->MakeMaterialUnique();
     casingModel_->MakeMaterialUnique();
 
-    auto muzzleParticle = engine_->GetParticleSystem()->CreateEmitter("muzzleFlash");
-    if (muzzleParticle)
-    {
-        muzzleFlashEmitterPtr_ = muzzleParticle.get();
-        engine_->GetParticleSystem()->AddEmitter(std::move(muzzleParticle));
-    }
-
-    auto shotSmokeParticle = engine_->GetParticleSystem()->CreateEmitter("shotSmokeParticle");
-    if (shotSmokeParticle)
-    {
-        shotSmokeEmitterPtr_ = shotSmokeParticle.get();
-        engine_->GetParticleSystem()->AddEmitter(std::move(shotSmokeParticle));
-    }
-
-    auto shotSparkParticle = engine_->GetParticleSystem()->CreateEmitter("shotSparkParticle");
-    if (shotSparkParticle)
-    {
-        shotSparkEmitterPtr_ = shotSparkParticle.get();
-        engine_->GetParticleSystem()->AddEmitter(std::move(shotSparkParticle));
-    }
-
-    auto tracerParticle = engine_->GetParticleSystem()->CreateEmitter("bulletTracer");
-    if (tracerParticle)
-    {
-        bulletTracerEmitterPtr_ = tracerParticle.get();
-        engine_->GetParticleSystem()->AddEmitter(std::move(tracerParticle));
-    }
-
-    auto woodHitBulletParticle = engine_->GetParticleSystem()->CreateEmitter("woodHitBullet");
-    if (woodHitBulletParticle)
-    {
-        woodHitBulletEmitterPtr_ = woodHitBulletParticle.get();
-        engine_->GetParticleSystem()->AddEmitter(std::move(woodHitBulletParticle));
-    }
+    ParticleSystem* particleSystem = engine_->GetParticleSystem();
+    muzzleFlashEmitterPtr_ = particleSystem->SpawnEmitter("muzzleFlash");
+    shotSmokeEmitterPtr_ = particleSystem->SpawnEmitter("shotSmokeParticle");
+    shotSparkEmitterPtr_ = particleSystem->SpawnEmitter("shotSparkParticle");
+    bulletTracerEmitterPtr_ = particleSystem->SpawnEmitter("bulletTracer");
+    woodHitBulletEmitterPtr_ = particleSystem->SpawnEmitter("woodHitBullet");
 
     // Binderへ登録
     binder_->BindModel("P365Model", model_.get());
@@ -232,7 +204,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     --ammoInMagazine_;
     fireCooldown_ = config_.fireInterval;
 
-    AudioPlayer::GetInstance().Play("gunShot", false, 20);
+    AudioPlayer::GetInstance().Play("gunShot", 0.2f);
 
     muzzleFlashTimer_ = config_.muzzleFlashDuration;
     if (muzzleFlashEmitterPtr_) muzzleFlashEmitterPtr_->Play();
@@ -290,7 +262,7 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         {
             auto enemy = static_cast<Enemy*>(hitInfo.hitObject);
             enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal, hitInfo.hitCollider);
-            AudioPlayer::GetInstance().Play("floatingEnemyDamaged", false, 50);
+            AudioPlayer::GetInstance().Play("floatingEnemyDamaged", 0.5f);
         }
     }
 
@@ -349,7 +321,7 @@ float PlayerWeapon::CalculateReloadTilt() const
 void PlayerWeapon::DropMagazine()
 {
     Eject(config_.magazine, "cube", magazineModel_.get());
-    AudioPlayer::GetInstance().Play(kMagazineEjectSound, false, 40);
+    AudioPlayer::GetInstance().Play(kMagazineEjectSound, 0.4f);
 }
 
 void PlayerWeapon::Eject(const EjectSettings& settings, const std::string& modelName, const Model* materialSource)

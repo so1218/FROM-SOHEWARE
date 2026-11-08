@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextureManager.h"
+#include "Logger.h"
 #include "Engine.h"
 #include "AssetFiles.h"
 
@@ -76,7 +77,12 @@ uint32_t TextureManager::Get(const std::string& name)
         return textures_[it->second].handle;
     }
 
-    std::cerr << "[TextureManager] Texture not found: " << name << std::endl;
+    // 毎フレーム呼ばれることがあるので、同じ名前は 1 回だけ知らせる
+    static std::unordered_set<std::string> reportedNames;
+    if (reportedNames.insert(name).second)
+    {
+        LOG_WARN("テクスチャ \"{}\" が見つからないので、エラー用の画像を使う", name);
+    }
     return errorHandle_;
 }
 

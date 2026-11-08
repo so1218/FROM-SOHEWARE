@@ -11,7 +11,8 @@ class CoinManager;
 class EnemyManager : public FS::GameObject
 {
 public:
-    EnemyManager(FS::Engine* engine, const std::string& groupName);
+    // terrain は墜落した敵が地面で爆発するのに、coinManager は倒された敵の位置でお金を出すのに使う
+    EnemyManager(FS::Engine* engine, const std::string& groupName, const FS::Terrain* terrain, CoinManager* coinManager);
 
     void Initialize() override;
     void Update() override;
@@ -23,10 +24,6 @@ public:
     void AddEnemy(); 
     // 倒された敵も含めて、保存されている数だけ作り直す
     void ResetEnemies();
-    // 墜落した敵が地面で爆発するのに使う
-    void SetTerrain(const FS::Terrain* terrain) { terrain_ = terrain; }
-    // 倒された敵の位置でお金を出す
-    void SetCoinManager(CoinManager* coinManager) { coinManager_ = coinManager; }
 
 private:
     std::unique_ptr<Enemy> CreateEnemy(int index);

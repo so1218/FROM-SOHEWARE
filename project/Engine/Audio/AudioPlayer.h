@@ -19,6 +19,14 @@ struct AudioInstance
     float maxDistance; // 音が聞こえる最大距離
 };
 
+// 3D で鳴らすときの設定。Play3D("名前", 位置, { .volume = 0.5f, .maxDistance = 150.0f }) のように書く
+struct Sound3DSettings
+{
+    float volume = 1.0f;         // 0 ~ 1
+    float maxDistance = 100.0f;  // これより離れると聞こえない
+    bool isLoop = false;
+};
+
 /// @brief 音声再生管理クラス
 class AudioPlayer
 {
@@ -35,8 +43,13 @@ public:
     // 名前を紐付けてロードする
     void Load(const std::string& name, const std::wstring& filePath);
 
-    // 名前で再生し、ユニークなハンドルIDを返す
-    int Play(const std::string& name, bool loop = false, uint32_t volume = 100);
+    // 再生の関数は、止めたり位置を動かしたりするときに使うハンドルを返す。鳴らせなかったら -1
+    // volume は 0 ~ 1
+
+    // 1 回だけ鳴らす
+    int Play(const std::string& name, float volume = 1.0f);
+    // 止めるまで繰り返し鳴らす
+    int PlayLoop(const std::string& name, float volume = 1.0f);
 
     // ハンドルIDを指定して停止
     void Stop(int handleID);
@@ -44,11 +57,9 @@ public:
     // 全停止
     void StopAll();
 
-    // BGMなどの重複防止再生
-    int PlayUnique(const std::string& name, bool loop = true, uint32_t volume = 100);
-
-    // ユニーク再生の停止
-    void StopUnique(const std::string& name);
+    // BGM を繰り返し鳴らす。同じ名前がもう鳴っていれば何もしない
+    int PlayBgm(const std::string& name, float volume = 1.0f);
+    void StopBgm(const std::string& name);
 
     // 再生中か確認
     bool IsPlaying(int handleID);
@@ -61,8 +72,8 @@ public:
     // シーンを切り替えたときに呼ぶ。新しいカメラの位置が届くまで 3D の音を鳴らさない
     void InvalidateListener() { hasListener_ = false; }
 
-    // 3D座標を指定して再生する関数
-    int Play3D(const std::string& name, const Vector3& position, bool loop = false, uint32_t volume = 100, float maxDistance = 100.0f);
+    // position から聞こえるように鳴らす。聞く位置はカメラ
+    int Play3D(const std::string& name, const Vector3& position, const Sound3DSettings& settings = {});
 
     // 動く音源のために座標を後から更新する関数
     void SetEmitterPosition(int handleID, const Vector3& position);
@@ -72,7 +83,7 @@ private:
     ~AudioPlayer() { StopAll(); }
 
     // ボイスを作ってバッファを積み、鳴らさずに登録する。失敗したら -1
-    int CreateInstance(const std::string& name, bool loop, uint32_t volume);
+    int CreateInstance(const std::string& name, bool isLoop, float volume);
     // 鳴らし始める。失敗したら登録ごと消す
     int StartInstance(int handleID);
     // リスナーとの位置関係から、左右の振り分けと距離による減衰を掛ける

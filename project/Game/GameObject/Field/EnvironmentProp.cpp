@@ -147,19 +147,14 @@ void EnvironmentProp::UpdateParticleEmitter(
     {
         if (!outEmitter)
         {
-            auto emitter = engine_->GetParticleSystem()->CreateEmitter(particleName);
-            if (emitter) 
+            outEmitter = engine_->GetParticleSystem()->SpawnEmitter(particleName);
+            if (isFollowing)
             {
-                if (isFollowing)
-                {
-                    emitter->SetTargetToFollow(&model_->GetTransform());
-                }
-                else 
-                {
-                    emitter->SetPosition(model_->GetTransform().translation_);
-                }
-                outEmitter = emitter.get();
-                engine_->GetParticleSystem()->AddEmitter(std::move(emitter));
+                outEmitter->SetTargetToFollow(&model_->GetTransform());
+            }
+            else
+            {
+                outEmitter->SetPosition(model_->GetTransform().translation_);
             }
         }
     }

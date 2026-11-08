@@ -2,7 +2,7 @@
 #include "FoliageField.h"
 #include "ImGuiManager.h"
 
-FoliageField::FoliageField(FS::Engine* engine) : FS::GameObject(), engine_(engine)
+FoliageField::FoliageField(FS::Engine* engine, FS::Terrain* terrain) : FS::GameObject(), engine_(engine), terrain_(terrain)
 {
     foliageSystem_ = std::make_unique<FS::FoliageSystem>(engine_);
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "FoliageField");

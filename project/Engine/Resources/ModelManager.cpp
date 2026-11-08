@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ModelManager.h"
+#include "Logger.h"
 #include "ModelLoader.h"
 #include "AssetFiles.h"
 #include "TextureManager.h" 
@@ -66,8 +67,8 @@ const ModelData* ModelManager::Get(const std::string& name) const
     auto it = models_.find(name);
     if (it == models_.end())
     {
-        std::cerr << "[ModelManager] Model not found: " << name << std::endl;
-        return nullptr; 
+        LOG_WARN("モデル \"{}\" が見つからない。Assets のファイル名と合っているか確認する", name);
+        return nullptr;
     }
     return it->second.get();
 }

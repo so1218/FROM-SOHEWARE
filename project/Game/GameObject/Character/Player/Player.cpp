@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "CollisionConfig.h"
 #include "AnimationModel.h"
-#include "Input.h"
+#include "GameInput.h"
 #include "MathUtils.h"  
 #include "Collision.h"   
 #include "TimeManager.h"
@@ -24,8 +24,8 @@
 
 using namespace FS;
 
-Player::Player(Engine* engine, Camera* camera) : 
-engine_(engine), camera_(camera)
+Player::Player(Engine* engine, Camera* camera, Terrain* terrain, TreeField* treeField) :
+engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 {
 	SetTag(ObjectTag::Player);
 
@@ -98,10 +98,6 @@ void Player::Initialize()
 
 	stateMachine_ = std::make_unique<StateMachine<Player>>(this);
 	ResetToSpawn();
-
-	//auraEmitter_ = engine_->GetParticleSystem()->CreateEmitter("playerAura");
-	//auraEmitter_->SetTargetToFollow(&animationModel_->GetTransform());
-	//engine_->GetParticleSystem()->AddEmitter(std::move(auraEmitter_));
 
 	weapon_->Initialize();
 	reticle_->Initialize();
@@ -212,36 +208,15 @@ Vector3 Player::ReadMoveInput() const
 		return { 0.0f, 0.0f, 0.0f };
 	}
 
-	auto& input = Input::GetInstance();
-	constexpr int kControllerId = 0;
-	constexpr float kMaxStickVal = 32768.0f;
-
-	// パッドとキーボードの入力を -1.0 ~ 1.0 空間で合成
-	float inputX = static_cast<float>(input.GetLeftStickX(kControllerId)) / kMaxStickVal;
-	float inputY = static_cast<float>(input.GetLeftStickY(kControllerId)) / kMaxStickVal;
-
-	if (input.IsKeyPressed(DIK_W)) { inputY += 1.0f; }
-	if (input.IsKeyPressed(DIK_S)) { inputY -= 1.0f; }
-	if (input.IsKeyPressed(DIK_D)) { inputX += 1.0f; }
-	if (input.IsKeyPressed(DIK_A)) { inputX -= 1.0f; }
-
-	inputX = std::clamp(inputX, -1.0f, 1.0f);
-	inputY = std::clamp(inputY, -1.0f, 1.0f);
-
-	const float inputLength = std::sqrt(inputX * inputX + inputY * inputY);
-	const float deadZone = static_cast<float>(STICK_THRESHOLD) / kMaxStickVal;
-
-	// デッドゾーン以下なら早期リターン
-	if (inputLength <= deadZone)
+	const Vector2 moveAxis = GameInput::GetMoveAxis();
+	const float inputMagnitude = std::sqrt(moveAxis.x * moveAxis.x + moveAxis.y * moveAxis.y);
+	if (inputMagnitude <= 0.0f)
 	{
 		return Vector3::Zero();
 	}
 
-	// デッドゾーン補正後の入力強度
-	const float inputMagnitude = (std::min)(1.0f, (inputLength - deadZone) / (1.0f - deadZone));
-	const float invLen = 1.0f / inputLength;
-	const float dirX = inputX * invLen;
-	const float dirY = inputY * invLen;
+	const float dirX = moveAxis.x / inputMagnitude;
+	const float dirY = moveAxis.y / inputMagnitude;
 
 	// カメラ基準の水平移動方向を算出
 	const auto& camRot = camera_->GetWorldTransform().rotation_;
@@ -373,7 +348,7 @@ void Player::FireWeapon()
 		{
 			followCamera_->AddRecoil(0.08f, 0.03f);
 		}
-		Input::GetInstance().StartVibration(0, 0.6f, 0.6f, 0.25f);
+		GameInput::StartVibration(0.6f, 0.6f, 0.25f);
 		++shotCount_;
 	}
 }
@@ -386,7 +361,7 @@ void Player::TakeDamage(int damage)
 	}
 
 	health_->TakeDamage(damage);
-	Input::GetInstance().StartVibration(0, 0.5f, 0.5f, 0.15f);
+	GameInput::StartVibration(0.5f, 0.5f, 0.15f);
 
 	if (health_->IsDead())
 	{
@@ -460,11 +435,11 @@ void Player::UpdateFootstepEvents()
 
 	if (isLeftFoot)
 	{
-		AudioPlayer::GetInstance().Play("playerRunning", false, 15);
+		AudioPlayer::GetInstance().Play("playerRunning", 0.15f);
 	}
 	if (isRightFoot)
 	{
-		AudioPlayer::GetInstance().Play("playerRunning", false, 30);
+		AudioPlayer::GetInstance().Play("playerRunning", 0.3f);
 	}
 
 	// 次フレームのために正規化した進捗率を保持
@@ -486,10 +461,8 @@ void Player::ResetFootstepState()
 
 void Player::UpdateSprintInput()
 {
-	auto& input = Input::GetInstance();
-
-	// コントローラーはスティックを倒したまま L3 を押し続けにくいので、押したらスティックを離すまで続ける
-	if (input.IsControllerButtonTriggered(0, Input::ButtonL3))
+	// パッドはスティックを倒したまま L3 を押し続けにくいので、押したらスティックを離すまで続ける
+	if (GameInput::IsTriggered(GameAction::Sprint) && GameInput::IsUsingController())
 	{
 		isControllerSprintLatched_ = true;
 	}
@@ -498,7 +471,7 @@ void Player::UpdateSprintInput()
 		isControllerSprintLatched_ = false;
 	}
 
-	isSprintInputActive_ = isControllable_ && (input.IsKeyPressed(DIK_LSHIFT) || isControllerSprintLatched_);
+	isSprintInputActive_ = isControllable_ && (GameInput::IsPressed(GameAction::Sprint) || isControllerSprintLatched_);
 }
 
 bool Player::TryStartDodge()
@@ -522,32 +495,27 @@ bool Player::TryStartJump()
 
 bool Player::IsDodgeInputTriggered() const
 {
-	auto& input = Input::GetInstance();
-	return isControllable_ && (input.IsKeyTriggered(DIK_LCONTROL) || input.IsControllerButtonTriggered(0, Input::ButtonB));
+	return isControllable_ && GameInput::IsTriggered(GameAction::Dodge);
 }
 
 bool Player::IsAimInputActive() const
 {
-	auto& input = Input::GetInstance();
-	return isControllable_ && (input.IsKeyPressed(DIK_K) || input.IsControllerButtonPressed(0, Input::ButtonLT));
+	return isControllable_ && GameInput::IsPressed(GameAction::Aim);
 }
 
 bool Player::IsJumpInputTriggered() const
 {
-	auto& input = Input::GetInstance();
-	return isControllable_ && (input.IsKeyTriggered(DIK_SPACE) || input.IsControllerButtonTriggered(0, Input::ButtonA));
+	return isControllable_ && GameInput::IsTriggered(GameAction::Jump);
 }
 
 bool Player::IsReloadInputTriggered() const
 {
-	auto& input = Input::GetInstance();
-	return isControllable_ && (input.IsKeyTriggered(DIK_R) || input.IsControllerButtonTriggered(0, Input::ButtonX));
+	return isControllable_ && GameInput::IsTriggered(GameAction::Reload);
 }
 
 bool Player::IsShootInputTriggered() const
 {
-	auto& input = Input::GetInstance();
-	return isControllable_ && (input.IsKeyTriggered(DIK_J) || input.IsControllerButtonTriggered(0, Input::ButtonRT));
+	return isControllable_ && GameInput::IsTriggered(GameAction::Shoot);
 }
 
 void Player::OnCollisionEnter(Collider* mine, Collider* other)

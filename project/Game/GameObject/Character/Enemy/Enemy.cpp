@@ -42,12 +42,7 @@ void Enemy::Initialize()
         hp_ = behavior_->GetBodyConfig().maxHP;
         std::string particleName = behavior_->GetDamageParticleName();
 
-        damageParticle_ = engine_->GetParticleSystem()->CreateEmitter(particleName);
-        damageParticlePtr_ = damageParticle_.get();
-        if (damageParticle_)
-        {
-            engine_->GetParticleSystem()->AddEmitter(std::move(damageParticle_));
-        }
+        damageParticlePtr_ = engine_->GetParticleSystem()->SpawnEmitter(particleName);
     }
 
 }

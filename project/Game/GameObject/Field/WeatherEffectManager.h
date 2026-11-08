@@ -12,13 +12,11 @@
 class WeatherEffectManager : public FS::GameObject
 {
 public:
-    WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, Player* player, FS::Terrain* terrain);
+    WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, FS::CameraManager* cameraManager, Player* player, FS::Terrain* terrain);
 
     void Initialize() override;
     void Update() override;
     void DebugGui() override;
-
-    void SetCameraManager(FS::CameraManager* cameraManager) { cameraManager_ = cameraManager; }
 
 private:
     // 同時に落ちる雷の数だけ、落雷のパーティクルのエミッターを用意
@@ -32,10 +30,8 @@ private:
     std::unique_ptr<FS::PropertyBinder> binder_ = nullptr;
 
     // エフェクトのポインタを保持
-    std::unique_ptr<FS::ParticleEmitter> rainParticleEmitter_ = nullptr;
-    FS::ParticleEmitter* rainParticleEmitterPtr_;
-    std::unique_ptr<FS::ParticleEmitter> thunderRainParticleEmitter_ = nullptr;
-    FS::ParticleEmitter* thunderRainParticleEmitterPtr_;
+    FS::ParticleEmitter* rainParticleEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* thunderRainParticleEmitterPtr_ = nullptr;
     // 落雷1本につき1つ。持ち主は ParticleSystem
     std::vector<FS::ParticleEmitter*> thunderStrikeEmitters_;
 

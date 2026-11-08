@@ -28,32 +28,24 @@ using namespace FS;
 PlayScene::PlayScene(Engine* engine)
     : BaseScene(engine, SceneName::Play)
 {
-	// ゲームオブジェクトの生成・登録
-    auto player = objectManager_.Create<Player>(engine_, camera_.get());
-    player_ = player;
-    followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform());
-    titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
+    // ゲームオブジェクトの生成・登録。必要な相手はコンストラクタで渡すので、使われる側から先に作る
     objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
-    auto grassField = objectManager_.Create<GrassField>(engine_);
-    grassField->SetTerrain(ground->GetTerrain());
-    auto treeField = objectManager_.Create<TreeField>(engine_);
-    treeField->SetTerrain(ground->GetTerrain());
-    player->SetTerrain(ground->GetTerrain());
-    player->SetTreeField(treeField);
-    followCamera_->SetTerrain(ground->GetTerrain());
+    Terrain* terrain = ground->GetTerrain();
+    objectManager_.Create<GrassField>(engine_, terrain);
+    auto treeField = objectManager_.Create<TreeField>(engine_, terrain);
+
+    auto player = objectManager_.Create<Player>(engine_, camera_.get(), terrain, treeField);
+    player_ = player;
+    followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform(), terrain);
     player->SetFollowCamera(followCamera_.get());
-	auto weatherEffectManager = objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), player, ground->GetTerrain());
-	weatherEffectManager->SetCameraManager(cameraManager_.get());
-    auto coinManager = objectManager_.Create<CoinManager>(engine_);
-    coinManager->SetPlayer(player);
-    coinManager->SetTerrain(ground->GetTerrain());
-    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy");
-    enemyManager_->SetTerrain(ground->GetTerrain());
-    enemyManager_->SetCoinManager(coinManager);
+    titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
+
+    objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), cameraManager_.get(), player, terrain);
+    auto coinManager = objectManager_.Create<CoinManager>(engine_, player, terrain);
+    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, coinManager);
     objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
-    auto foliageField = objectManager_.Create<FoliageField>(engine_);
-    foliageField->SetTerrain(ground->GetTerrain());
+    objectManager_.Create<FoliageField>(engine_, terrain);
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);

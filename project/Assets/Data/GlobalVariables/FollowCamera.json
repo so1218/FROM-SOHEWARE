@@ -1,6 +1,6 @@
 {
     "FollowCamera": {
-        "Aim Deadzone": 2500.0,
+        "Aim Deadzone": 0.076,
         "Aim Distance": 6.099999904632568,
         "Aim FOV": 0.44999998807907104,
         "Aim LookAt Offset": [
@@ -26,7 +26,7 @@
         "Min Distance": 5.0,
         "Min Ground Offset": 0.800000011920929,
         "Min Pitch": -0.699999988079071,
-        "Normal Deadzone": 6000.0,
+        "Normal Deadzone": 0.183,
         "Normal Distance": 16.700000762939453,
         "Normal FOV": 0.800000011920929,
         "Normal LookAt Offset": [

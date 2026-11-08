@@ -1,130 +1,121 @@
 #pragma once
-#define STICK_THRESHOLD 0x4000
 #include "Vector2.h"
 
 namespace FS
 {
 
+// キーボード・マウス・パッドの状態をそのまま返す
 class Input
 {
 public:
     static Input& GetInstance();
 
-    // コピーと代入を禁止
     Input(const Input&) = delete;
     Input& operator=(const Input&) = delete;
 
-    enum StickType
+    enum class MouseButton
     {
-        LeftStick,
-        RightStick
+        Left,
+        Right,
+        Middle,
     };
 
-    // Xboxコントローラーのボタン列挙
-    enum PadButton
+    // Xbox コントローラーのボタン
+    enum class PadButton : uint32_t
     {
-        ButtonUp = XINPUT_GAMEPAD_DPAD_UP,
-        ButtonDown = XINPUT_GAMEPAD_DPAD_DOWN,
-        ButtonLeft = XINPUT_GAMEPAD_DPAD_LEFT,
-        ButtonRight = XINPUT_GAMEPAD_DPAD_RIGHT,
-        ButtonMenu = XINPUT_GAMEPAD_START,
-        ButtonPhoto = XINPUT_GAMEPAD_BACK,
-        ButtonL3 = XINPUT_GAMEPAD_LEFT_THUMB,
-        ButtonR3 = XINPUT_GAMEPAD_RIGHT_THUMB,
-        ButtonLB = XINPUT_GAMEPAD_LEFT_SHOULDER,
-        ButtonRB = XINPUT_GAMEPAD_RIGHT_SHOULDER,
-        ButtonA = XINPUT_GAMEPAD_A,
-        ButtonB = XINPUT_GAMEPAD_B,
-        ButtonX = XINPUT_GAMEPAD_X,
-        ButtonY = XINPUT_GAMEPAD_Y,
-        ButtonLT = 0x10000,
-        ButtonRT = 0x20000,
+        Up = XINPUT_GAMEPAD_DPAD_UP,
+        Down = XINPUT_GAMEPAD_DPAD_DOWN,
+        Left = XINPUT_GAMEPAD_DPAD_LEFT,
+        Right = XINPUT_GAMEPAD_DPAD_RIGHT,
+        Menu = XINPUT_GAMEPAD_START,
+        View = XINPUT_GAMEPAD_BACK,
+        L3 = XINPUT_GAMEPAD_LEFT_THUMB,
+        R3 = XINPUT_GAMEPAD_RIGHT_THUMB,
+        LB = XINPUT_GAMEPAD_LEFT_SHOULDER,
+        RB = XINPUT_GAMEPAD_RIGHT_SHOULDER,
+        A = XINPUT_GAMEPAD_A,
+        B = XINPUT_GAMEPAD_B,
+        X = XINPUT_GAMEPAD_X,
+        Y = XINPUT_GAMEPAD_Y,
+        LT = 0x10000,
+        RT = 0x20000,
     };
 
-    enum MouseButton
+    enum class Stick
     {
-        Left = 0,
-        Right = 1,
-        Middle = 2,
+        Left,
+        Right,
+    };
+
+    // 最後に操作された機器
+    enum class Device
+    {
+        KeyboardMouse,
+        Pad,
     };
 
     void Initialize(HINSTANCE hInstance, HWND hwnd);
     void Update();
     void Finalize();
 
-    // マウス関連
-    int GetMouseWheelDelta();
-    Vector2  GetMousePosition();
-    int GetMouseX();
-    int GetMouseY();
-    bool IsMouseButtonTriggered(DWORD button);// マウスキーが押された瞬間
-    bool IsMouseButtonPressed(DWORD button);// マウスキーが常に押されてるかどうか
-    bool IsMouseButtonIsKeyReleased(DWORD button);// マウスキーを離した瞬間
-    bool IsMouseButtonUp(DWORD button);// マウスキーが常に押されてないかどうか
-
-    // キーボード関連
-    bool IsKeyTriggered(BYTE key); // キーが押された瞬間
-    bool IsKeyPressed(BYTE key);   // キーが常に押されてるかどうか
-    bool IsKeyReleased(BYTE key);   // キーを離した瞬間
-    bool IsKeyUp(BYTE key);   // キーが常に押されてないかどうか
-
-    // コントローラー関連
-    bool IsControllerConnected(int controllerId);
-    bool IsControllerButtonPressed(int controllerId, int button);
-    bool IsControllerButtonTriggered(int controllerId, int button);
-    bool IsControllerButtonReleased(int controllerId, int button);
-    SHORT GetLeftTrigger(int controllerId);
-    SHORT GetRightTrigger(int controllerId);
-    SHORT GetLeftStickX(int controllerId);
-    SHORT GetLeftStickY(int controllerId);
-    SHORT GetRightStickX(int controllerId);
-    SHORT GetRightStickY(int controllerId);
-    bool IsLeftOnStick(int controllerId, StickType stickType);
-    bool IsRightOnStick(int controllerId, StickType stickType);
-    bool IsUpOnStick(int controllerId, StickType stickType);
-    bool IsDownOnStick(int controllerId, StickType stickType);
-    bool IsStickLeftTriggered(int controllerId, StickType stickType);
-    bool IsStickRightTriggered(int controllerId, StickType stickType);
-    bool IsStickUpTriggered(int controllerId, StickType stickType);
-    bool IsStickDownTriggered(int controllerId, StickType stickType);
-    bool IsTriggerOnStick(int controllerId, StickType stickType);
-    void VibrateController(int controllerId, float leftMotorSpeed, float rightMotorSpeed);
-    void StartVibration(int controllerId, float leftMotorSpeed, float rightMotorSpeed, float durationSeconds);
-    void UpdateController();
-
-    const DIMOUSESTATE& GetMouseState() { return mouseState_; }
-    const DIMOUSESTATE& GetPrevMouseState() { return preMouseState_; }
-
-    // 前のフレームのスティック位置を取得
-    SHORT GetPrevLeftStickX(int controllerId);
-    SHORT GetPrevLeftStickY(int controllerId);
-    SHORT GetPrevRightStickX(int controllerId);
-    SHORT GetPrevRightStickY(int controllerId);
-
-private:
-    Input();
-    ~Input();
-
-    // DirectInput
-    IDirectInput8* directInput_;
-    HWND hwnd_;
-
     // キーボード
-    IDirectInputDevice8* keyboard_;
-    BYTE keys_[256];
-    BYTE preKeys_[256];
+    bool IsKeyPressed(BYTE key) const;
+    bool IsKeyTriggered(BYTE key) const;
+    bool IsKeyReleased(BYTE key) const;
 
     // マウス
-    IDirectInputDevice8* mouse_;
-    DIMOUSESTATE mouseState_;
-    DIMOUSESTATE preMouseState_;
-    POINT mousePosition_;
+    bool IsMouseButtonPressed(MouseButton button) const;
+    bool IsMouseButtonTriggered(MouseButton button) const;
+    bool IsMouseButtonReleased(MouseButton button) const;
+    // ウィンドウの左上からのカーソルの位置 (ピクセル)
+    Vector2 GetMousePosition() const;
+    // このフレームでマウスが動いた量
+    Vector2 GetMouseDelta() const;
+    // ホイールを回した量。奥に回すと正で、1 目盛りで 120
+    float GetMouseWheel() const;
 
-    // コントローラー
-    XINPUT_STATE controllerStates_[4];
-    XINPUT_STATE prevControllerStates_[4];
-    bool controllerConnected_[4];
-    float vibrationTimers_[4];
+    // パッド
+    bool IsPadConnected(int padIndex = 0) const;
+    bool IsPadButtonPressed(PadButton button, int padIndex = 0) const;
+    bool IsPadButtonTriggered(PadButton button, int padIndex = 0) const;
+    bool IsPadButtonReleased(PadButton button, int padIndex = 0) const;
+    // スティックの傾き。各軸 -1 ~ 1 で、倒した量が deadzone 以下なら 0
+    Vector2 GetStick(Stick stick, float deadzone, int padIndex = 0) const;
+    // durationSeconds 秒たつと止まる。強さは 0 ~ 1
+    void StartVibration(float leftMotorSpeed, float rightMotorSpeed, float durationSeconds, int padIndex = 0);
+
+    Device GetLastUsedDevice() const { return lastUsedDevice_; }
+
+private:
+    static constexpr int kMaxPadCount = 4;
+
+    Input() = default;
+    ~Input();
+
+    void UpdatePads();
+    void UpdateLastUsedDevice();
+    void SetVibration(int padIndex, float leftMotorSpeed, float rightMotorSpeed);
+    static bool IsPadButtonDown(const XINPUT_GAMEPAD& pad, PadButton button);
+    static bool IsValidPad(int padIndex) { return padIndex >= 0 && padIndex < kMaxPadCount; }
+
+    IDirectInput8* directInput_ = nullptr;
+    HWND hwnd_ = nullptr;
+
+    IDirectInputDevice8* keyboard_ = nullptr;
+    BYTE keys_[256] = {};
+    BYTE prevKeys_[256] = {};
+
+    IDirectInputDevice8* mouse_ = nullptr;
+    DIMOUSESTATE mouseState_ = {};
+    DIMOUSESTATE prevMouseState_ = {};
+    POINT mousePosition_ = {};
+
+    XINPUT_STATE padStates_[kMaxPadCount] = {};
+    XINPUT_STATE prevPadStates_[kMaxPadCount] = {};
+    bool isPadConnected_[kMaxPadCount] = {};
+    float vibrationTimers_[kMaxPadCount] = {};
+
+    Device lastUsedDevice_ = Device::KeyboardMouse;
 };
 
 }

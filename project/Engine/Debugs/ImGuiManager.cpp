@@ -209,7 +209,7 @@ void ImGuiManager::BeginFrame()
     ImGuizmo::BeginFrame();
     ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 
-    // F1 キーでエディター表示とゲーム画面を切り替える (コントローラーはポーズメニューから)
+    // F1 キーでエディター表示とゲーム画面を切り替える
     if (ImGui::IsKeyPressed(ImGuiKey_F1, false))
     {
         ToggleGui();

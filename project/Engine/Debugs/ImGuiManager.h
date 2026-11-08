@@ -43,7 +43,7 @@ public:
     // GUI全体の表示状態
     static bool IsGuiVisible() { return showGui_; }
     static void SetGuiVisible(bool visible) { showGui_ = visible; }
-    // エディター表示とゲーム画面を切り替える (デバッグ描画も一緒に)
+    // エディター表示とゲーム画面を切り替える
     static void ToggleGui();
 
     // 外部から情報を取る用
@@ -55,7 +55,6 @@ public:
     static bool resetSceneSize_;
 
 private:
-    // ImGui を使わないビルドでも、ゲーム画面かどうかの判定には使うので常に持つ
     static bool showGui_; // GUI表示フラグ
 
     // 操作モードを保持する変数

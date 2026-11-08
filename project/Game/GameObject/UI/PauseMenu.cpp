@@ -2,7 +2,7 @@
 #include "PauseMenu.h"
 #include "ImGuiManager.h"
 #include "TimeManager.h"
-#include "Input.h"
+#include "GameInput.h"
 
 using namespace FS;
 
@@ -63,7 +63,7 @@ void PauseMenu::Update()
     const float deltaTime = TimeManager::GetInstance()->GetUnscaledDeltaTime();
     openAmount_ = std::clamp(openAmount_ + (isOpen_ ? deltaTime : -deltaTime) / fadeTime_, 0.0f, 1.0f);
 
-    if (IsToggleTriggered())
+    if (GameInput::IsTriggered(GameAction::Pause))
     {
         if (isOpen_)
         {
@@ -81,21 +81,23 @@ void PauseMenu::Update()
         return;
     }
 
+    const int verticalMove = ReadVerticalMove(deltaTime);
+
     if (isConfirmingQuit_)
     {
-        UpdateQuitConfirm();
+        UpdateQuitConfirm(verticalMove);
         return;
     }
 
-    if (IsCancelTriggered())
+    if (GameInput::IsTriggered(GameAction::Cancel))
     {
         Close();
         return;
     }
 
-    UpdateCursor();
+    UpdateCursor(verticalMove);
 
-    if (IsConfirmTriggered())
+    if (GameInput::IsTriggered(GameAction::Confirm))
     {
         if (items_[cursorIndex_] == Item::QuitGame)
         {
@@ -109,20 +111,20 @@ void PauseMenu::Update()
     }
 }
 
-void PauseMenu::UpdateQuitConfirm()
+void PauseMenu::UpdateQuitConfirm(int verticalMove)
 {
-    if (IsCancelTriggered())
+    if (GameInput::IsTriggered(GameAction::Cancel))
     {
         isConfirmingQuit_ = false;
         return;
     }
 
-    if (IsUpTriggered() || IsDownTriggered())
+    if (verticalMove != 0)
     {
         quitConfirmIndex_ = 1 - quitConfirmIndex_;
     }
 
-    if (IsConfirmTriggered())
+    if (GameInput::IsTriggered(GameAction::Confirm))
     {
         if (quitConfirmIndex_ == 1)
         {
@@ -147,6 +149,8 @@ void PauseMenu::Open()
     cursorIndex_ = 0;
     isConfirmingQuit_ = false;
     isOpen_ = true;
+    upRepeat_.Reset();
+    downRepeat_.Reset();
 }
 
 void PauseMenu::Close()
@@ -154,17 +158,18 @@ void PauseMenu::Close()
     isOpen_ = false;
 }
 
-void PauseMenu::UpdateCursor()
+void PauseMenu::UpdateCursor(int verticalMove)
 {
     const int itemCount = static_cast<int>(items_.size());
-    if (IsUpTriggered())
-    {
-        cursorIndex_ = (cursorIndex_ + itemCount - 1) % itemCount;
-    }
-    if (IsDownTriggered())
-    {
-        cursorIndex_ = (cursorIndex_ + 1) % itemCount;
-    }
+    cursorIndex_ = (cursorIndex_ + verticalMove + itemCount) % itemCount;
+}
+
+int PauseMenu::ReadVerticalMove(float deltaTime)
+{
+    const float vertical = GameInput::GetMenuVertical();
+    const bool isUp = upRepeat_.Update((std::max)(vertical, 0.0f), deltaTime);
+    const bool isDown = downRepeat_.Update((std::max)(-vertical, 0.0f), deltaTime);
+    return (isDown ? 1 : 0) - (isUp ? 1 : 0);
 }
 
 std::optional<PauseMenu::Item> PauseMenu::TakeSelectedItem()
@@ -184,37 +189,6 @@ std::string PauseMenu::GetLabel(Item item) const
     case Item::QuitGame:      return "ゲームを終了";
     }
     return "";
-}
-
-bool PauseMenu::IsToggleTriggered() const
-{
-    auto& input = Input::GetInstance();
-    return input.IsKeyTriggered(DIK_ESCAPE) || input.IsControllerButtonTriggered(0, Input::ButtonMenu);
-}
-
-bool PauseMenu::IsConfirmTriggered() const
-{
-    auto& input = Input::GetInstance();
-    return input.IsKeyTriggered(DIK_SPACE) || input.IsKeyTriggered(DIK_RETURN) || input.IsControllerButtonTriggered(0, Input::ButtonA);
-}
-
-bool PauseMenu::IsCancelTriggered() const
-{
-    return Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB);
-}
-
-bool PauseMenu::IsUpTriggered() const
-{
-    auto& input = Input::GetInstance();
-    return input.IsKeyTriggered(DIK_W) || input.IsKeyTriggered(DIK_UP)
-        || input.IsControllerButtonTriggered(0, Input::ButtonUp) || input.IsStickUpTriggered(0, Input::LeftStick);
-}
-
-bool PauseMenu::IsDownTriggered() const
-{
-    auto& input = Input::GetInstance();
-    return input.IsKeyTriggered(DIK_S) || input.IsKeyTriggered(DIK_DOWN)
-        || input.IsControllerButtonTriggered(0, Input::ButtonDown) || input.IsStickDownTriggered(0, Input::LeftStick);
 }
 
 void PauseMenu::Draw()

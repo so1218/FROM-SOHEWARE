@@ -8,14 +8,12 @@
 class GrassField : public FS::GameObject
 {
 public:
-    GrassField(FS::Engine* engine);
+    GrassField(FS::Engine* engine, FS::Terrain* terrain);
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugGui() override;
-
-    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 
 private:
     void GenerateGrass();

@@ -3,6 +3,7 @@
 #include "PropertyBinder.h"
 #include "Sprite.h"
 #include "Text.h"
+#include "RepeatInput.h"
 
 // ポーズメニュー
 class PauseMenu : public FS::GameObject
@@ -33,18 +34,15 @@ public:
 private:
     void Open();
     void Close();
-    void UpdateCursor();
+    // 上下の入力で選択を動かす。上が -1、下が +1
+    void UpdateCursor(int verticalMove);
     // 本当に終了しますかの確認
-    void UpdateQuitConfirm();
+    void UpdateQuitConfirm(int verticalMove);
+    // 押しっぱなしでも一定間隔で進むように、上下の入力を項目の移動量に変える
+    int ReadVerticalMove(float deltaTime);
     // 項目を縦に並べて描く
     void DrawItems(const std::vector<std::string>& labels, int cursorIndex, int highlightIndex);
     std::string GetLabel(Item item) const;
-
-    bool IsToggleTriggered() const;
-    bool IsConfirmTriggered() const;
-    bool IsCancelTriggered() const;
-    bool IsUpTriggered() const;
-    bool IsDownTriggered() const;
 
     FS::Engine* engine_ = nullptr;
     std::unique_ptr<FS::PropertyBinder> binder_;
@@ -62,6 +60,8 @@ private:
     std::vector<Item> items_;
     int cursorIndex_ = 0;
     std::optional<Item> selectedItem_;
+    FS::RepeatInput upRepeat_;
+    FS::RepeatInput downRepeat_;
 
     bool isConfirmingQuit_ = false;
     int quitConfirmIndex_ = 0;   // 0 = やめる, 1 = 終了する

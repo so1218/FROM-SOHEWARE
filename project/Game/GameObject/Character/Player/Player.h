@@ -64,7 +64,7 @@ public:
 	Config config;
 
 public:
-	Player(FS::Engine* engine, FS::Camera* camera);
+	Player(FS::Engine* engine, FS::Camera* camera, FS::Terrain* terrain, TreeField* treeField);
 
 	void Initialize() override;
 	void Update() override;
@@ -113,9 +113,8 @@ public:
 	FollowCamera* GetFollowCamera() const { return followCamera_; }
 	StateMachine<Player>* GetStateMachine() { return stateMachine_.get(); }
 
+	// FollowCamera はプレイヤーを追いかけるので、プレイヤーを作ったあとで渡す
 	void SetFollowCamera(FollowCamera* followCamera) { followCamera_ = followCamera; }
-	void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
-	void SetTreeField(TreeField* treeField) { treeField_ = treeField; }
 	// オブジェクト上の接地フラグ設定
 	void SetGroundedOnObject(bool grounded) { isGroundedOnObject_ = grounded; }
 
@@ -162,7 +161,6 @@ private:
 
 	FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
 	std::unique_ptr<FS::PropertyBinder> binder_;
-	std::unique_ptr<FS::ParticleEmitter> auraEmitter_ = nullptr;
 
 	FS::Vector3 moveDirection_{ 0.0f, 0.0f, 0.0f };
 	FS::Vector3 lastMoveDirection_ = { 0.0f, 0.0f, 1.0f };

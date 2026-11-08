@@ -2,7 +2,7 @@
 #include "TestScene.h"
 #include "SceneManager.h"
 #include "GameDefine.h"
-#include "Input.h"
+#include "GameInput.h"
 #include "Grid.h"
 #include "AudioPlayer.h"
 
@@ -26,8 +26,7 @@ void TestScene::OnInitialize()
 void TestScene::OnUpdate()
 {
 	// シーン切り替えの入力検出
-	if (Input::GetInstance().IsKeyTriggered(DIK_SPACE) || Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonA)
-		|| Input::GetInstance().IsControllerButtonTriggered(0, Input::ButtonB))
+	if (GameInput::IsTriggered(GameAction::Confirm) || GameInput::IsTriggered(GameAction::Cancel))
 	{
 		// シーンマネージャーを通じてシーン切り替えをリクエスト
 		sceneManager_->RequestSceneChange(SceneName::Play);

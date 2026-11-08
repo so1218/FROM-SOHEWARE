@@ -9,14 +9,12 @@
 class FoliageField : public FS::GameObject
 {
 public:
-    FoliageField(FS::Engine* engine);
+    FoliageField(FS::Engine* engine, FS::Terrain* terrain);
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugGui() override;
-
-    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
 
 private:
     void AddFoliageLayer(const std::string& layerName, const std::string& modelName);

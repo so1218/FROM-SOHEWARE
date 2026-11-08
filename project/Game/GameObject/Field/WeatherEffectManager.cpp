@@ -7,10 +7,11 @@
 
 using namespace FS;
 
-WeatherEffectManager::WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, Player* player, Terrain* terrain)
+WeatherEffectManager::WeatherEffectManager(FS::Engine* engine, FS::Camera* camera, FS::CameraManager* cameraManager, Player* player, Terrain* terrain)
 {
     engine_ = engine;
     camera_ = camera;
+    cameraManager_ = cameraManager;
     player_ = player;
     terrain_ = terrain;
 
@@ -23,15 +24,10 @@ WeatherEffectManager::WeatherEffectManager(FS::Engine* engine, FS::Camera* camer
 
 void WeatherEffectManager::Initialize()
 {
-    rainParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("rain");
-    rainParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
-    rainParticleEmitterPtr_ = rainParticleEmitter_.get();
-    engine_->GetParticleSystem()->AddEmitter(std::move(rainParticleEmitter_));
-
-    thunderRainParticleEmitter_ = engine_->GetParticleSystem()->CreateEmitter("thunderRain");
-    thunderRainParticleEmitter_->SetTargetToFollow(&player_->GetTransform());
-    thunderRainParticleEmitterPtr_ = thunderRainParticleEmitter_.get();
-    engine_->GetParticleSystem()->AddEmitter(std::move(thunderRainParticleEmitter_));
+    rainParticleEmitterPtr_ = engine_->GetParticleSystem()->SpawnEmitter("rain");
+    rainParticleEmitterPtr_->SetTargetToFollow(&player_->GetTransform());
+    thunderRainParticleEmitterPtr_ = engine_->GetParticleSystem()->SpawnEmitter("thunderRain");
+    thunderRainParticleEmitterPtr_->SetTargetToFollow(&player_->GetTransform());
 
     lightningSystem_->Initialize();
 
@@ -55,9 +51,7 @@ void WeatherEffectManager::PrepareThunderStrikeEmitters(int count)
     auto* particleSystem = engine_->GetParticleSystem();
     while (static_cast<int>(thunderStrikeEmitters_.size()) < count)
     {
-        auto emitter = particleSystem->CreateEmitter("thunderStrike");
-        thunderStrikeEmitters_.push_back(emitter.get());
-        particleSystem->AddEmitter(std::move(emitter));
+        thunderStrikeEmitters_.push_back(particleSystem->SpawnEmitter("thunderStrike"));
     }
 }
 
@@ -152,12 +146,12 @@ void WeatherEffectManager::Update()
     {
         if (!currentBgmName_.empty())
         {
-            AudioPlayer::GetInstance().StopUnique(currentBgmName_);
+            AudioPlayer::GetInstance().StopBgm(currentBgmName_);
         }
 
         if (!nextBgm.empty()) 
         {
-            AudioPlayer::GetInstance().PlayUnique(nextBgm, true, 50);
+            AudioPlayer::GetInstance().PlayBgm(nextBgm, 0.5f);
         }
 
         currentBgmName_ = nextBgm;
@@ -211,7 +205,7 @@ void WeatherEffectManager::Update()
                 lightningSystem_->SpawnStrike(startPos, endPos);
 
                 // 3Dサウンドの再生
-                AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, false, 30, 500.0f);
+                AudioPlayer::GetInstance().Play3D("lightningStrike", endPos, { .volume = 0.3f, .maxDistance = 500.0f });
 
                 // 落雷パーティクルの再生。1本ごとに別のエミッターを使う
                 thunderStrikeEmitters_[i]->SetPosition(endPos);

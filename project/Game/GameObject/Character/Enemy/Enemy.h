@@ -50,7 +50,6 @@ private:
     std::unique_ptr<FS::Model> model_;
     FS::Collider* collider_ = nullptr; // 所有は GameObject (AddCollider で作成)
     std::unique_ptr<FS::PropertyBinder> binder_;
-    std::unique_ptr<FS::ParticleEmitter> damageParticle_ = nullptr;
     FS::ParticleEmitter* damageParticlePtr_ = nullptr;
 
     // 振る舞いを保持するポインタ

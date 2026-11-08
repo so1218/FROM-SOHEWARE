@@ -9,7 +9,7 @@ class Player;
 class FollowCamera : public FS::ICameraController
 {
 public:
-    FollowCamera(FS::Engine* engine, const FS::WorldTransform* target);
+    FollowCamera(FS::Engine* engine, const FS::WorldTransform* target, FS::Terrain* terrain);
     void Initialize();
     void UpdateCamera(FS::Camera* camera) override;
     void DebugGui() override;
@@ -19,7 +19,6 @@ public:
 
     void AddRecoil(float pitchAmount, float yawAmount);
 
-    void SetTerrain(FS::Terrain* terrain) { terrain_ = terrain; }
     void SetAiming(bool isAiming) { isAiming_ = isAiming; }
     bool IsAiming() const { return isAiming_; }
 
@@ -36,14 +35,13 @@ private:
     bool isAiming_ = false;
 
     // スティック最大値
-    static constexpr float kMaxStickValue = 32767.0f;
 
     // 通常カメラ設定
     float normalDistance_ = 45.0f;
     FS::Vector3 normalLookAtOffset_ = { 0.0f, 1.5f, 0.0f };
     FS::Vector3 normalShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     float normalFov_ = 0.45f;
-    float normalDeadzone_ = 6000.0f;
+    float normalDeadzone_ = 0.18f;
 
     // エイムカメラ設定
     float aimDistance_ = 18.0f;
@@ -51,7 +49,7 @@ private:
     FS::Vector3 aimShoulderOffset_ = { 1.8f, 0.1f, 0.0f };
     float aimFov_ = 0.35f;
     float aimTransitionSmoothTime_ = 0.12f;
-    float aimDeadzone_ = 2500.0f;                 
+    float aimDeadzone_ = 0.08f;                 
     float aimRotateSpeedMultiplier_ = 0.6f;       // エイム時感度倍率
 
     FS::Vector3 currentShoulderOffset_ = { 0.0f, 0.0f, 0.0f };

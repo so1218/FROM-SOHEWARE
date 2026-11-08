@@ -38,8 +38,7 @@ void DebugCamera::Update()
 
     bool canInput = true;
 #if ENABLE_IMGUI && ENABLE_DEBUG_CAMERA
-    // マウスがScene Viewの上にないなら操作しない
-    // Gizmoをドラッグ中ならカメラ操作はしない
+    // マウスがScene Viewの上にない・Gizmoをドラッグ中なら操作しない
     if (!ImGuiManager::IsSceneHovered() || ImGuizmo::IsUsing())
     {
         canInput = false;
@@ -50,7 +49,7 @@ void DebugCamera::Update()
     {
         // ズームはマウスホイールで操作
         {
-            int wheelDelta = Input::GetInstance().GetMouseWheelDelta();
+            const float wheelDelta = Input::GetInstance().GetMouseWheel();
             distance_ -= wheelDelta * zoomSpeed_;
 
             Quaternion currentRotation = worldTransform_.rotation_;
@@ -67,8 +66,9 @@ void DebugCamera::Update()
         if (Input::GetInstance().IsMouseButtonPressed(Input::MouseButton::Middle))
         {
             // マウスの移動量を取得
-            int deltaX = Input::GetInstance().GetMouseState().lX;
-            int deltaY = Input::GetInstance().GetMouseState().lY;
+            const Vector2 mouseDelta = Input::GetInstance().GetMouseDelta();
+            const float deltaX = mouseDelta.x;
+            const float deltaY = mouseDelta.y;
 
             // Shiftキーの有無で分岐
             if (Input::GetInstance().IsKeyPressed(DIK_LSHIFT))

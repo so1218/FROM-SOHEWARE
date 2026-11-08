@@ -385,42 +385,48 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
             binder.Bind(p + "VolumetricFog/BilateralDepthSigma", &fogBilateralSettings->depthSigma, 0.001f, 0.0001f, 0.00001f, 0.1f);
         }
 
-        if (volumetricFogPass_)
-        {
-            auto& volumes = volumetricFogPass_->GetFogVolumesData();
-            fogVolumeCount_ = static_cast<int>(volumes.size());
+        BindFogVolumes(binder);
+    }
+}
 
-            binder.Bind(p + "FogVolumes/Count", &fogVolumeCount_, fogVolumeCount_, 1.0f, 0, static_cast<int>(MAX_FOG_VOLUMES));
+// 配置式フォグの項目。ボリュームを足したり消したりしたら、要素の場所が変わるので登録し直す
+void PostEffectManager::BindFogVolumes(PropertyBinder& binder)
+{
+    if (!volumetricFogPass_) return;
 
-            if (fogVolumeCount_ < 0) fogVolumeCount_ = 0;
-            if (fogVolumeCount_ > static_cast<int>(MAX_FOG_VOLUMES)) fogVolumeCount_ = static_cast<int>(MAX_FOG_VOLUMES);
+    const std::string p = prefix_.empty() ? "" : prefix_ + "/";
+    auto& volumes = volumetricFogPass_->GetFogVolumesData();
+    fogVolumeCount_ = static_cast<int>(volumes.size());
 
-            volumes.resize(fogVolumeCount_);
+    binder.Bind(p + "FogVolumes/Count", &fogVolumeCount_, fogVolumeCount_, 1.0f, 0, static_cast<int>(MAX_FOG_VOLUMES));
 
-            for (int i = 0; i < fogVolumeCount_; ++i)
-            {
-                std::string vp = p + "FogVolumes/" + std::to_string(i) + "/";
-                auto& vol = volumes[i];
+    if (fogVolumeCount_ < 0) fogVolumeCount_ = 0;
+    if (fogVolumeCount_ > static_cast<int>(MAX_FOG_VOLUMES)) fogVolumeCount_ = static_cast<int>(MAX_FOG_VOLUMES);
 
-                binder.Bind(vp + "Type", &vol.type, vol.type, 1.0f, 0, 1);
-                binder.Bind(vp + "IsVisible", &vol.isVisible, vol.isVisible);
-                binder.Bind(vp + "Position", &vol.position, vol.position, 0.1f);
-                binder.Bind(vp + "Rotation", &vol.rotation, vol.rotation, 1.0f);
-                binder.Bind(vp + "Scale", &vol.scale, vol.scale, 0.1f, 0.1f, 1000.0f);
-                binder.BindColor(vp + "Color", &vol.color, vol.color);
-                binder.Bind(vp + "Density", &vol.density, vol.density, 0.01f, 0.0f, 10.0f);
-                binder.Bind(vp + "BlendDistance", &vol.blendDistance, vol.blendDistance, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "WindDirection", &vol.windDirection, vol.windDirection, 0.05f, -1.0f, 1.0f);
-                binder.Bind(vp + "WindSpeed", &vol.windSpeed, vol.windSpeed, 0.01f, -5.0f, 5.0f);
-                binder.Bind(vp + "NoiseScale", &vol.noiseScale, vol.noiseScale, 0.01f);
-                binder.Bind(vp + "NoiseIntensity", &vol.noiseIntensity, vol.noiseIntensity, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "Coverage", &vol.coverage, vol.coverage, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "Erosion", &vol.erosion, vol.erosion, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "NoiseFeather", &vol.noiseFeather, vol.noiseFeather, 0.01f, 0.001f, 2.0f);
-                binder.Bind(vp + "DistortionAmount", &vol.distortionAmount, vol.distortionAmount, 0.01f, 0.0f, 1.0f);
-                binder.Bind(vp + "HeightFalloff", &vol.heightFalloff, vol.heightFalloff, 0.05f, 0.0f, 10.0f);
-            }
-        }
+    volumes.resize(fogVolumeCount_);
+
+    for (int i = 0; i < fogVolumeCount_; ++i)
+    {
+        std::string vp = p + "FogVolumes/" + std::to_string(i) + "/";
+        auto& vol = volumes[i];
+
+        binder.Bind(vp + "Type", &vol.type, vol.type, 1.0f, 0, 1);
+        binder.Bind(vp + "IsVisible", &vol.isVisible, vol.isVisible);
+        binder.Bind(vp + "Position", &vol.position, vol.position, 0.1f);
+        binder.Bind(vp + "Rotation", &vol.rotation, vol.rotation, 1.0f);
+        binder.Bind(vp + "Scale", &vol.scale, vol.scale, 0.1f, 0.1f, 1000.0f);
+        binder.BindColor(vp + "Color", &vol.color, vol.color);
+        binder.Bind(vp + "Density", &vol.density, vol.density, 0.01f, 0.0f, 10.0f);
+        binder.Bind(vp + "BlendDistance", &vol.blendDistance, vol.blendDistance, 0.01f, 0.0f, 1.0f);
+        binder.Bind(vp + "WindDirection", &vol.windDirection, vol.windDirection, 0.05f, -1.0f, 1.0f);
+        binder.Bind(vp + "WindSpeed", &vol.windSpeed, vol.windSpeed, 0.01f, -5.0f, 5.0f);
+        binder.Bind(vp + "NoiseScale", &vol.noiseScale, vol.noiseScale, 0.01f);
+        binder.Bind(vp + "NoiseIntensity", &vol.noiseIntensity, vol.noiseIntensity, 0.01f, 0.0f, 1.0f);
+        binder.Bind(vp + "Coverage", &vol.coverage, vol.coverage, 0.01f, 0.0f, 1.0f);
+        binder.Bind(vp + "Erosion", &vol.erosion, vol.erosion, 0.01f, 0.0f, 1.0f);
+        binder.Bind(vp + "NoiseFeather", &vol.noiseFeather, vol.noiseFeather, 0.01f, 0.001f, 2.0f);
+        binder.Bind(vp + "DistortionAmount", &vol.distortionAmount, vol.distortionAmount, 0.01f, 0.0f, 1.0f);
+        binder.Bind(vp + "HeightFalloff", &vol.heightFalloff, vol.heightFalloff, 0.05f, 0.0f, 10.0f);
     }
 }
 
@@ -576,8 +582,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
                     int newCount = static_cast<int>(volumes.size());
 
                     GlobalVariables::GetInstance()->SetValue(binder.GetGroupPath(), p + "FogVolumes/Count", newCount);
-                    binder.Clear(false);
-                    BindProperties(binder, prefix_);
+                    BindFogVolumes(binder);
                 }
                 ImGui::PopStyleColor(2);
 
@@ -633,8 +638,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
 
                 if (isErased)
                 {
-                    binder.Clear(false);
-                    BindProperties(binder, prefix_);
+                    BindFogVolumes(binder);
                 }
             }
 

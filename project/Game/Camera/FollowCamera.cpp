@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "FollowCamera.h"
 #include "Player.h"
-#include "Input.h"
+#include "GameInput.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "TimeManager.h"
@@ -9,8 +9,8 @@
 
 using namespace FS;
 
-FollowCamera::FollowCamera(Engine* engine, const WorldTransform* target)
-    : target_(target)
+FollowCamera::FollowCamera(Engine* engine, const WorldTransform* target, Terrain* terrain)
+    : target_(target), terrain_(terrain)
 {
     engine_ = engine;
 }
@@ -22,14 +22,14 @@ void FollowCamera::Initialize()
     binder_->Bind("Normal Distance", &normalDistance_, 45.0f, 0.1f, 5.0f, 200.0f);
     binder_->Bind("Normal LookAt Offset", &normalLookAtOffset_, { 0.0f, 1.5f, 0.0f });
     binder_->Bind("Normal FOV", &normalFov_, 0.45f, 0.01f, 0.1f, 1.5f);
-    binder_->Bind("Normal Deadzone", &normalDeadzone_, 6000.0f, 100.0f, 0.0f, 15000.0f);
+    binder_->Bind("Normal Deadzone", &normalDeadzone_, 0.18f, 0.005f, 0.0f, 0.9f);
 
     binder_->Bind("Aim Distance", &aimDistance_, 18.0f, 0.1f, 1.0f, 100.0f);
     binder_->Bind("Aim LookAt Offset", &aimLookAtOffset_, { 0.0f, 1.4f, 0.0f });
     binder_->Bind("Aim Shoulder Offset", &aimShoulderOffset_, { 1.8f, 0.1f, 0.0f });
     binder_->Bind("Aim FOV", &aimFov_, 0.35f, 0.01f, 0.1f, 1.5f);
     binder_->Bind("Aim Transition Time", &aimTransitionSmoothTime_, 0.12f, 0.01f, 0.01f, 1.0f);
-    binder_->Bind("Aim Deadzone", &aimDeadzone_, 2500.0f, 100.0f, 0.0f, 15000.0f);
+    binder_->Bind("Aim Deadzone", &aimDeadzone_, 0.08f, 0.005f, 0.0f, 0.9f);
     binder_->Bind("Aim Sens Multiplier", &aimRotateSpeedMultiplier_, 0.6f, 0.05f, 0.1f, 2.0f);
 
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
@@ -96,38 +96,11 @@ void FollowCamera::UpdateCamera(Camera* camera)
     // ---------------------------------------------------------
     // 入力によるカメラ回転処理
     // ---------------------------------------------------------
-    float rx = 0.0f;
-    float ry = 0.0f;
-
-    SHORT rawRx = Input::GetInstance().GetRightStickX(0);
-    SHORT rawRy = Input::GetInstance().GetRightStickY(0);
-
     // バインドされたデッドゾーンを使用
-    float currentDeadzone = isAiming_ ? aimDeadzone_ : normalDeadzone_;
-
-    auto applyScaledDeadzone = [](SHORT rawVal, float deadzone) -> float {
-        float val = static_cast<float>(rawVal);
-        float absVal = std::abs(val);
-
-        if (absVal <= deadzone)
-        {
-            return 0.0f;
-        }
-
-        float sign = (val > 0.0f) ? 1.0f : -1.0f;
-        float normalized = (absVal - deadzone) / (kMaxStickValue - deadzone);
-
-        return sign * std::clamp(normalized, 0.0f, 1.0f);
-        };
-
-    rx = applyScaledDeadzone(rawRx, currentDeadzone);
-    ry = applyScaledDeadzone(rawRy, currentDeadzone);
-
-    // キーボード入力の加算
-    if (Input::GetInstance().IsKeyPressed(DIK_LEFT))  rx -= 1.0f;
-    if (Input::GetInstance().IsKeyPressed(DIK_RIGHT)) rx += 1.0f;
-    if (Input::GetInstance().IsKeyPressed(DIK_UP))    ry += 1.0f;
-    if (Input::GetInstance().IsKeyPressed(DIK_DOWN))  ry -= 1.0f;
+    const float currentDeadzone = isAiming_ ? aimDeadzone_ : normalDeadzone_;
+    const Vector2 lookAxis = GameInput::GetLookAxis(currentDeadzone);
+    const float rx = lookAxis.x;
+    const float ry = lookAxis.y;
 
     // バインドされた倍率を使用
     float currentRotateSpeedYaw = isAiming_ ? rotateSpeedYaw_ * aimRotateSpeedMultiplier_ : rotateSpeedYaw_;

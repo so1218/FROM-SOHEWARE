@@ -11,16 +11,13 @@ class Player;
 class CoinManager : public FS::GameObject
 {
 public:
-    CoinManager(FS::Engine* engine);
+    CoinManager(FS::Engine* engine, Player* player, const FS::Terrain* terrain);
     ~CoinManager() override;
 
     void Initialize() override;
     void Update() override;
     void Draw() override;
     void DebugGui() override;
-
-    void SetPlayer(Player* player) { player_ = player; }
-    void SetTerrain(const FS::Terrain* terrain) { terrain_ = terrain; }
 
     // position から 1 回分のお金を、少しずつ時間をずらして飛び散らせる
     void SpawnBurst(const FS::Vector3& position);
