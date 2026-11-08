@@ -14,15 +14,6 @@ float2 ApplyPixelation(float2 uv)
     return floor(uv / pixelSizeUV) * pixelSizeUV;
 }
 
-// 色かぶり
-float3 ApplyColorTint(float3 color)
-{
-    float3 mulTint = lerp(color, color * gData.tintColor, gData.tintMulColorAmount);
-    float3 addTint = saturate(color + gData.tintColor * gData.tintAddColorAmount);
-    float3 screenTint = 1.0 - (1.0 - color) * (1.0 - gData.tintColor * gData.tintScreenColorAmount);
-    return (mulTint + addTint + screenTint) / 3.0;
-}
-
 // ビネット
 float3 ApplyVignette(float3 color, float2 uv)
 {
@@ -112,8 +103,6 @@ float4 main(VSOutput input) : SV_TARGET
     }
     
     // 色補正・フィルタ処理
-    if (gData.flag & COLOR_TINT)
-        finalColor.rgb = ApplyColorTint(finalColor.rgb);
     if (gData.flag & VIGNETTE)
         finalColor.rgb = ApplyVignette(finalColor.rgb, uv);
 

@@ -116,7 +116,6 @@ private:
 
     std::string prefix_;
 
-    bool flagColorTint_ = false;
     bool flagVignette_ = false;
     bool flagChromAberration_ = false;
     bool flagPixelation_ = false;

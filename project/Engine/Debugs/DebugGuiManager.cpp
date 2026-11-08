@@ -120,7 +120,7 @@ void DebugGuiManager::DrawTimeSettings()
     ImGui::Spacing();
     ImGui::SeparatorText("詳細統計");
 
-    ImGui::Text("瞬間 FPS          : %.1f", time->GetFPS());
+    ImGui::Text("瞬間 FPS            : %.1f", time->GetFPS());
     ImGui::Text("DeltaTime (Scaled)  : %.2f ms", time->GetDeltaTime() * 1000.0f);
     ImGui::Text("DeltaTime (Unscaled): %.2f ms", time->GetUnscaledDeltaTime() * 1000.0f);
     ImGui::Text("総実行時間 (Total)  : %.2f s", time->GetTotalTime());

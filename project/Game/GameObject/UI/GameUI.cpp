@@ -8,8 +8,6 @@ GameUI::GameUI(Engine* engine) : engine_(engine)
 {
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GameUI");
 
-    instructionText_ = std::make_unique<Text>(engine_);
-
     timeText_ = std::make_unique<Text>(engine_, "Main");
     timeText_->SetAnchor(UIAnchor::TopRight);
     timeText_->SetPosition({ -20.0f, 20.0f });
@@ -23,7 +21,6 @@ void GameUI::Initialize()
 {
     binder_->Bind("IsVisible", &isVisible_, true);
 
-    binder_->BindTextElement("InstructionText", instructionText_.get());
     binder_->BindTextElement("MessageText", messageText_.get());
     binder_->BindTextElement("StageNameText", stageNameText_.get());
 
@@ -62,7 +59,6 @@ void GameUI::Draw()
 
     if (!isGameplayVisible_) return;
 
-    instructionText_->Draw();
     timeText_->Draw();
     stageNameText_->Draw();
 }
@@ -73,7 +69,6 @@ void GameUI::DebugGui()
     binder_->Draw("IsVisible", "表示切り替え");
 
     ImGui::SeparatorText("テキスト");
-    binder_->DrawTextElement("InstructionText", "操作方法");
     binder_->DrawTextElement("MessageText", "メッセージ");
     binder_->DrawTextElement("StageNameText", "ステージ名");
     binder_->DrawTextElement("TimeText", "残り時間");

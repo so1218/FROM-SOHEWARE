@@ -99,10 +99,6 @@ void PostEffectManager::Initialize(
     cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
     cbData_->pixelationSize = 2.386f;
     cbData_->screenResolution = Vector2(float(width), float(height));
-    cbData_->tintMulColorAmount = 1.0f;
-    cbData_->tintAddColorAmount = 1.0f;
-    cbData_->tintScreenColorAmount = 1.0f;
-    cbData_->tintColor = Vector3(1.0f, 1.0f, 1.0f);
     cbData_->vignetteAmount = 0.294f;
     cbData_->vignetteRadius = 0.148f;
     cbData_->vignetteSoftness = 0.3f;
@@ -128,7 +124,6 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
     if (cbData_)
     {
         cbData_->flag = 0;
-        if (flagColorTint_)       cbData_->flag |= COLOR_TINT;
         if (flagVignette_)        cbData_->flag |= VIGNETTE;
         if (flagChromAberration_)  cbData_->flag |= CHROM_ABERRATION;
         if (flagPixelation_)      cbData_->flag |= PIXELATION;
@@ -289,13 +284,6 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
     VolumetricFogSettings* volFogSettings = GetVolumetricFogSettings();
     FogBilateralSettings* fogBilateralSettings = GetFogBilateralSettings();
 
-    flagColorTint_ = (cbData_->flag & COLOR_TINT) != 0;
-    binder.Bind(p + "ColorTint/Enable", &flagColorTint_, flagColorTint_);
-    binder.BindColor(p + "ColorTint/Color", &cbData_->tintColor, cbData_->tintColor);
-    binder.Bind(p + "ColorTint/MulAmount", &cbData_->tintMulColorAmount, 0.0f, 0.05f, 0.0f, 1.0f);
-    binder.Bind(p + "ColorTint/AddAmount", &cbData_->tintAddColorAmount, 0.0f, 0.05f, 0.0f, 1.0f);
-    binder.Bind(p + "ColorTint/ScreenAmount", &cbData_->tintScreenColorAmount, 0.0f, 0.05f, 0.0f, 1.0f);
-
     flagVignette_ = (cbData_->flag & VIGNETTE) != 0;
     binder.Bind(p + "Vignette/Enable", &flagVignette_, flagVignette_);
     binder.Bind(p + "Vignette/Amount", &cbData_->vignetteAmount, 0.0f, 0.1f, 0.0f, 10.0f);
@@ -444,20 +432,8 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
     {
         ImGui::Spacing();
 
-        if (ImGui::TreeNode("カラー・色調"))
+        if (ImGui::TreeNode("画面演出"))
         {
-            binder.Draw(p + "ColorTint/Enable", "カラーティント");
-            if (flagColorTint_)
-            {
-                ImGui::Indent();
-                binder.Draw(p + "ColorTint/Color", "着色カラー");
-                binder.Draw(p + "ColorTint/MulAmount", "乗算合成率");
-                binder.Draw(p + "ColorTint/AddAmount", "加算合成率");
-                binder.Draw(p + "ColorTint/ScreenAmount", "スクリーン合成率");
-                ImGui::Unindent();
-            }
-
-            ImGui::Spacing();
             binder.Draw(p + "Vignette/Enable", "ビネット");
             if (flagVignette_)
             {
@@ -479,11 +455,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
                 ImGui::Unindent();
             }
 
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("形状・歪み"))
-        {
+            ImGui::Spacing();
             binder.Draw(p + "Pixelation/Enable", "ドット化");
             if (flagPixelation_)
             {
@@ -502,11 +474,7 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
                 ImGui::Unindent();
             }
 
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("ノイズ"))
-        {
+            ImGui::Spacing();
             binder.Draw(p + "ScreenNoise/Enable", "スクリーンノイズ (砂嵐)");
             if (flagScreenNoise_)
             {

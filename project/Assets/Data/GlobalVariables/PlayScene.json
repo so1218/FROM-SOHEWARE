@@ -51,15 +51,6 @@
             0.0,
             0.0
         ],
-        "PostEffect/ColorTint/AddAmount": 0.0,
-        "PostEffect/ColorTint/Color": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "PostEffect/ColorTint/Enable": false,
-        "PostEffect/ColorTint/MulAmount": 0.0,
-        "PostEffect/ColorTint/ScreenAmount": 0.0,
         "PostEffect/DoF/BokehHighlightIntensity": 3.5,
         "PostEffect/DoF/BokehHighlightThreshold": 1.0,
         "PostEffect/DoF/BokehRadius": 3.0,
