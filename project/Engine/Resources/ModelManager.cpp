@@ -67,7 +67,7 @@ const ModelData* ModelManager::Get(const std::string& name, std::source_location
     auto it = models_.find(name);
     if (it == models_.end())
     {
-        DevError::Report(std::format("モデル \"{}\" が見つからない。\nAssets/Models にその名前のモデルがあるか確認する", name), location);
+        DevError::Report(std::format("モデル \"{}\" が見つからない\nAssets/Models にその名前のモデルがあるか確認する", name), location);
         return nullptr;
     }
     return it->second.get();

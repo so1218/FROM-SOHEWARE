@@ -77,7 +77,7 @@ uint32_t TextureManager::Get(const std::string& name, std::source_location locat
         return textures_[it->second].handle;
     }
 
-    DevError::Report(std::format("テクスチャ \"{}\" が見つからないので、エラー用の画像を使う。\nAssets/Textures にその名前のファイルがあるか確認する", name), location);
+    DevError::Report(std::format("テクスチャ \"{}\" が見つからないので、エラー用の画像を使う\nAssets/Textures にその名前のファイルがあるか確認する", name), location);
     return errorHandle_;
 }
 

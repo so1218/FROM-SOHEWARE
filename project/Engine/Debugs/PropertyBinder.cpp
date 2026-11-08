@@ -400,7 +400,7 @@ namespace FS
         {
 #ifdef ENABLE_IMGUI
             // Bind と Draw でキーの綴りが違うと、項目が黙って出なくなるので知らせる
-            DevError::Report(std::format("PropertyBinder: Bind していないキー \"{}\" を Draw しようとした。\nBind と Draw でキーの綴りが同じか確認する", key), location);
+            DevError::Report(std::format("PropertyBinder: Bind していないキー \"{}\" を Draw しようとした\nBind と Draw でキーの綴りが同じか確認する", key), location);
 #endif
             return false;
         }

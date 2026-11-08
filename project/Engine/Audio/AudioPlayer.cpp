@@ -38,7 +38,7 @@ int AudioPlayer::CreateInstance(const std::string& name, bool isLoop, float volu
     auto it = audioDataMap_.find(name);
     if (it == audioDataMap_.end())
     {
-        DevError::Report(std::format("音 \"{}\" が読み込まれていない。\nAssets/Audio にその名前のファイルがあるか確認する", name), location);
+        DevError::Report(std::format("音 \"{}\" が読み込まれていない\nAssets/Audio にその名前のファイルがあるか確認する", name), location);
         return -1;
     }
 

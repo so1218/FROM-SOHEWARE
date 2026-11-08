@@ -135,7 +135,7 @@ std::unique_ptr<ParticleEmitter> ParticleSystem::CreateEmitter(const std::string
     if (definitions_.find(presetName) == definitions_.end())
     {
         // 名前を打ち間違えても新しいプリセットができるだけで動いてしまうので、気付けるように知らせる
-        DevError::Report(std::format("パーティクルのプリセット \"{}\" がないので、初期設定で新しく作った。\n名前を打ち間違えていないか確認する", presetName), location);
+        DevError::Report(std::format("パーティクルのプリセット \"{}\" がないので、初期設定で新しく作った\n名前を打ち間違えていないか確認する", presetName), location);
         definitions_[presetName] = ParticleDefinition();
         configManager_->SaveParticleDefinitionToJson(presetName);
     }

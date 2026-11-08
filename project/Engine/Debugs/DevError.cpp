@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "DevError.h"
 #include "Logger.h"
-#include "StringUtils.h"
 
 namespace FS::DevError
 {
@@ -9,7 +8,19 @@ namespace FS::DevError
 namespace
 {
 
-thread_local std::vector<std::string> contexts;
+struct Entry
+{
+    std::string message;
+    std::string place;
+    int count = 0;
+};
+
+// 画面に出している一覧。クリアすると空になる
+std::vector<Entry> entries;
+// これまでに報告されたもの。ログには初めてのときだけ書く
+std::unordered_set<std::string> reportedKeys;
+// ScopedContext で積まれた場所
+std::vector<std::string> contexts;
 
 std::string MakePlace(const std::source_location& location)
 {
@@ -41,21 +52,57 @@ std::string MakePlace(const std::source_location& location)
 
 void Report(const std::string& message, std::source_location location)
 {
-    const std::string text = std::format("{}\n\n場所: {}", message, MakePlace(location));
+    const std::string place = MakePlace(location);
+    const std::string key = message + "\n" + place;
 
-    // アセットの読み込みは別のスレッドから呼ばれることがある
-    static std::mutex mutex;
-    static std::unordered_set<std::string> reportedTexts;
+    for (Entry& entry : entries)
     {
-        std::lock_guard<std::mutex> lock(mutex);
-        if (!reportedTexts.insert(text).second) return;
+        if (entry.message == message && entry.place == place)
+        {
+            ++entry.count;
+            return;
+        }
     }
 
-    LOG_ERROR("{}", text);
+    entries.push_back({ message, place, 1 });
 
-#ifdef ENABLE_DEV_TOOLS
-    const std::wstring wideText = StringUtils::ConvertString(text);
-    MessageBoxW(nullptr, wideText.c_str(), L"開発用のエラー", MB_OK | MB_ICONWARNING);
+    // クリアしたあとにまた起きたものは、一覧に戻すだけにする
+    if (!reportedKeys.insert(key).second) return;
+
+    LOG_ERROR("{} (場所: {})", message, place);
+}
+
+void DrawGui()
+{
+#if defined(ENABLE_IMGUI) && defined(ENABLE_DEV_TOOLS)
+    if (entries.empty()) return;
+
+    const ImVec4 titleColor = { 0.6f, 0.1f, 0.1f, 1.0f };
+    ImGui::PushStyleColor(ImGuiCol_TitleBg, titleColor);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, titleColor);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, titleColor);
+
+    // 件数が変わってもウィンドウの位置と大きさを保つよう、### の後ろを ID にする
+    const std::string title = std::format("開発用のエラー ({} 件)###DevError", entries.size());
+    if (ImGui::Begin(title.c_str()))
+    {
+        if (ImGui::Button("クリア"))
+        {
+            entries.clear();
+        }
+
+        for (const Entry& entry : entries)
+        {
+            ImGui::Separator();
+            ImGui::PushTextWrapPos(0.0f);
+            ImGui::TextColored(ImVec4(1.0f, 0.45f, 0.4f, 1.0f), "%s", entry.message.c_str());
+            ImGui::TextDisabled("場所: %s (%d 回)", entry.place.c_str(), entry.count);
+            ImGui::PopTextWrapPos();
+        }
+    }
+    ImGui::End();
+
+    ImGui::PopStyleColor(3);
 #endif
 }
 

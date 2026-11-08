@@ -351,8 +351,6 @@ void EnvironmentManager::DebugGui()
             weatherNames[static_cast<int>(currentWeather_)],
             weatherNames[static_cast<int>(targetWeather_)]);
 
-        ImGui::ProgressBar(weatherTransitionT_, ImVec2(-1.0f, 0.0f), "Transition Progress");
-
         // 目標の天候のボタンを色付けする
         auto drawWeatherButton = [&](const char* label, WeatherState state) {
             bool isActive = (targetWeather_ == state);
@@ -373,7 +371,6 @@ void EnvironmentManager::DebugGui()
 
         ImGui::SeparatorText("天候ごとの設定");
 
-        // 全部並べると長くなるので、編集する天候を1つ選んでその項目だけ出す
         int editingIndex = static_cast<int>(editingWeather_);
         if (ImGui::Combo("編集する天候", &editingIndex, weatherNames, IM_ARRAYSIZE(weatherNames)))
         {

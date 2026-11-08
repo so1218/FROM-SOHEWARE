@@ -52,7 +52,6 @@ private:
     void SetConsoleColor(LogLevel level);
 
     std::ofstream logStream_;
-    std::mutex mutex_; // ログ出力の排他制御用
 
     // 出力する最低レベル
     LogLevel minLevel_ = LogLevel::Info;
@@ -68,17 +67,11 @@ template<typename... Args>
 void Logger::Log(LogLevel level, std::source_location location, const std::format_string<Args...>& format, Args&&... args)
 {
     if (level < minLevel_) return;
-    std::lock_guard<std::mutex> lock(mutex_);
 
     // ユーザーメッセージ部分をフォーマット
     const std::string userMessage = std::format(format, std::forward<Args>(args)...);
 
     auto now = std::chrono::system_clock::now();
-
-    // スレッドIDを文字列に変換
-    std::stringstream ss;
-    ss << std::this_thread::get_id();
-    const std::string threadIdStr = ss.str();
 
     // ファイル名安全取得
     std::string_view path = location.file_name();
@@ -88,9 +81,8 @@ void Logger::Log(LogLevel level, std::source_location location, const std::forma
         : std::string(path.substr(pos + 1));
 
     const std::string logMessage = std::format(
-        "[{:%Y-%m-%d %H:%M:%S}] [{}] [{}] [{}:{}] {}",
+        "[{:%Y-%m-%d %H:%M:%S}] [{}] [{}:{}] {}",
         now,
-        threadIdStr,
         LevelToString(level),
         fileName,
         location.line(),

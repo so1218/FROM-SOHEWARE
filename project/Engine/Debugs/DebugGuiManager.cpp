@@ -11,6 +11,7 @@
 #include "SRVManager.h"
 #include "DebugDraw.h"
 #include "PropertyBinder.h"
+#include "DevError.h"
 
 namespace FS
 {
@@ -94,6 +95,7 @@ void DebugGuiManager::Update(Camera* targetCamera)
         lightManager_->DrawSelectedLightGizmo();
     }
 
+    DevError::DrawGui();
 #endif
 }
 
