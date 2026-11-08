@@ -7,7 +7,7 @@ namespace FS
 
 class MediaAudioDecoder;
 
-/// @brief 再生中のインスタンス情報
+// 再生中のインスタンス情報
 struct AudioInstance
 {
     IXAudio2SourceVoice* voice = nullptr;
@@ -19,7 +19,7 @@ struct AudioInstance
     float maxDistance; // 音が聞こえる最大距離
 };
 
-// 3D で鳴らすときの設定。Play3D("名前", 位置, { .volume = 0.5f, .maxDistance = 150.0f }) のように書く
+// 3D で鳴らすときの設定
 struct Sound3DSettings
 {
     float volume = 1.0f;         // 0 ~ 1
@@ -27,7 +27,7 @@ struct Sound3DSettings
     bool isLoop = false;
 };
 
-/// @brief 音声再生管理クラス
+// 音声再生管理クラス
 class AudioPlayer
 {
 public:
@@ -40,12 +40,10 @@ public:
     AudioPlayer(const AudioPlayer&) = delete;
     AudioPlayer& operator=(const AudioPlayer&) = delete;
 
-    // 名前を紐付けてロードする
+    // 名前を紐付けてロード
     void Load(const std::string& name, const std::wstring& filePath);
 
-    // 再生の関数は、止めたり位置を動かしたりするときに使うハンドルを返す。鳴らせなかったら -1
     // volume は 0 ~ 1
-
     // 1 回だけ鳴らす
     int Play(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     // 止めるまで繰り返し鳴らす
@@ -57,7 +55,7 @@ public:
     // 全停止
     void StopAll();
 
-    // BGM を繰り返し鳴らす。同じ名前がもう鳴っていれば何もしない
+    // BGM を繰り返し鳴らす。同じ名前が鳴っていれば何もしない
     int PlayBgm(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     void StopBgm(const std::string& name);
 
@@ -90,7 +88,7 @@ private:
     // リスナーとの位置関係から、左右の振り分けと距離による減衰を掛ける
     void Apply3D(AudioInstance& instance);
 
-    IXAudio2* xAudio2_ = nullptr; // Initializeで取得想定
+    IXAudio2* xAudio2_ = nullptr; 
 
     // ロード済みデータ（名前検索用）
     std::unordered_map<std::string, AudioData> audioDataMap_;
@@ -101,16 +99,16 @@ private:
     // ユニーク再生管理
     std::unordered_map<std::string, int> uniqueHandles_;
 
-    // 次に発行するハンドルID（連番）
+    // 次に発行するハンドルID
     int nextHandleID_ = 0;
 
     // リスナーの情報
     X3DAUDIO_LISTENER listener_ = {};
-    // まだカメラから位置を受け取っていないとき、前のシーンの位置や向きのない状態で計算しないようにする
+    // まだカメラから位置を受け取っていないとき、前のシーンの位置や向きのない状態で計算しないように
     bool hasListener_ = false;
 };
 
-// コールバックは変更なしでOK
+// コールバック
 class VoiceCallback : public IXAudio2VoiceCallback
 {
 public:

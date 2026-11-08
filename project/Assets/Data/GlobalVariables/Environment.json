@@ -1,59 +1,5 @@
 {
     "Environment": {
-        "Cloudy_AtmoDim": 0.5,
-        "Cloudy_CloudMin": 0.029999999329447746,
-        "Cloudy_CloudShadow": 0.3799999952316284,
-        "Cloudy_LightDim": 0.3400000035762787,
-        "Cloudy_RainIntens": 0.0,
-        "Cloudy_SkyBlendWeight": 0.6000000238418579,
-        "Cloudy_SkyHorizon": [
-            0.0042016091756522655,
-            0.004208730533719063,
-            0.004219412803649902
-        ],
-        "Cloudy_SkyZenith": [
-            0.16877639293670654,
-            0.16877639293670654,
-            0.16877639293670654
-        ],
-        "Cloudy_TransitionSpeed": 0.3959999978542328,
-        "Cloudy_V_Color": [
-            0.5098039507865906,
-            0.6274510025978088,
-            0.11764705926179886,
-            1.0
-        ],
-        "Cloudy_V_Emissive": 2.799999952316284,
-        "Cloudy_V_EnvIntens": 0.5,
-        "Cloudy_V_FogAmbient": [
-            0.24223601818084717,
-            0.24223601818084717,
-            0.24223601818084717
-        ],
-        "Cloudy_V_FogErosion": 0.0,
-        "Cloudy_V_FogExtinct": 0.004999999888241291,
-        "Cloudy_V_FogHDensity": 0.0,
-        "Cloudy_V_FogHFalloff": 0.0,
-        "Cloudy_V_FogNoiseIntens": 0.0,
-        "Cloudy_V_FogNoiseScale": 0.029999999329447746,
-        "Cloudy_V_FogWindDir": [
-            1.0,
-            1.0,
-            1.0
-        ],
-        "Cloudy_V_FogWindSpeed": 0.10000000149011612,
-        "Cloudy_V_FogWindSpeedMultiplier": 0.0,
-        "Cloudy_V_Metal": 0.15000000596046448,
-        "Cloudy_V_NormalIntens": 1.2000000476837158,
-        "Cloudy_V_RippleSize": 0.0,
-        "Cloudy_V_Rough": 1.0,
-        "Cloudy_Wetness": 0.0,
-        "Cloudy_WindDir": [
-            1.0,
-            0.0
-        ],
-        "Cloudy_WindSpeed": 1.0,
-        "Cloudy_WindTurbul": 0.20000000298023224,
         "Day_AmbientGround": [
             0.07999999821186066,
             0.07000000029802322,

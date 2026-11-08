@@ -43,7 +43,6 @@ private:
     // エンジン全体のプロパティバインダー
     std::unique_ptr<PropertyBinder> engineBinder_;
 
-    // 各種パラメータを保持する変数
     // 光源設定
     Vector3 directionalLightDirection_ = { 0.0f, -1.0f, 0.0f };
     Vector4 directionalLightColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };

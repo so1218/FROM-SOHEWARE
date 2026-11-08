@@ -67,7 +67,7 @@ public:
 
     // UI描画
     bool Draw(const std::string& key, const std::string& name = "", std::source_location location = std::source_location::current());
-    // 一括で登録順に描画する関数を追加
+    // 一括で登録順に描画する関数
     void DrawAll();
     bool DrawModel(const std::string& groupName, const std::string& customLabel = "");
     void DrawAnimationModel(const std::string& groupName, const std::string& customLabel = "");
@@ -88,7 +88,7 @@ private:
     template<typename T>
     void RegisterItem(const std::string& key, const T& defaultValue, T* ptr);
 
-    // 「Player.json の "PlayerModel_Color"」のように、key が保存されている場所を表す文字列
+    // key が保存されている場所を表す文字列
     std::string DescribeKey(const std::string& key) const;
 
     std::string MakeLabel(const std::string& key, const std::string& nameOverride) const {

@@ -41,7 +41,7 @@ void ImGuiManager::Initialize(
 
     io.IniFilename = "imgui_layout.ini";
 
-    // デバッグ描画はエディター表示と一緒に出し入れするので、始まりの状態もそろえる
+    // デバッグ描画も、始まりの状態をそろえる
     DebugDraw::SetEnabled(showGui_);
 
     // フォント設定

@@ -10,9 +10,9 @@ struct RaycastHit
 {
     Collider* hitCollider = nullptr;  
     GameObject* hitObject = nullptr; 
-    Vector3 point = { 0.0f, 0.0f, 0.0f };  // 着弾ワールド座標
+    Vector3 point = { 0.0f, 0.0f, 0.0f }; // 着弾ワールド座標
     Vector3 normal = { 0.0f, 0.0f, 1.0f }; // 着弾面の法線ベクトル
-    float distance = 0.0f;             // 射出位置からの距離
+    float distance = 0.0f; // 射出位置からの距離
 };
 
 // コライダー同士の衝突判定を管理するクラス
@@ -32,7 +32,7 @@ public:
     // 全コライダーをデバッグ表示する
     void DrawColliders() const;
 
-    // レイに最初に当たったコライダーを返す。layerMask にレイヤーが入っているコライダーだけを調べる
+    // レイに最初に当たったコライダーを返す
     bool Raycast(
         const Vector3& rayOrigin,
         const Vector3& rayDirection,

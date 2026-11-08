@@ -10,8 +10,6 @@ namespace FS
 namespace
 {
 
-// 重なりの判定は押し戻しの計算 (Collider::CalculatePushBackVector) と同じく、接しているだけなら重なっていないとする
-
 bool IsSphereOverlap(const Vector3& centerA, float radiusA, const Vector3& centerB, float radiusB)
 {
     const float radiusSum = radiusA + radiusB;
@@ -313,7 +311,7 @@ bool CollisionManager::Raycast(
             isHit = RaycastBox(rayOrigin, normalizedDir, boxMin, boxMax, t, normal);
         }
 
-        // 最も手前（距離 t が一番小さい）衝突相手を記憶
+        // 最も手前衝突相手を記憶
         if (isHit && t >= 0.0f && t < closestT)
         {
             closestT = t;

@@ -28,7 +28,6 @@ struct TimeOfDayProfile
 enum class WeatherState 
 {
     Sunny,          
-    Cloudy,       
     Rain,             
     Thunderstorm    
 };
@@ -162,12 +161,10 @@ private:
     float accumulatedWindTime_ = 0.0f;
     Vector2 windOffset_ = { 0.0f, 0.0f };
 
-    WeatherProfile profileSunny_, profileCloudy_, profileRain_, profileThunder_;
+    WeatherProfile profileSunny_, profileRain_, profileThunder_;
     WeatherProfile currentWeatherProfile_;
 
-    WeatherState pendingWeather_ = WeatherState::Sunny;
     WeatherState editingWeather_ = WeatherState::Sunny; // ImGui で設定を編集している天候
-    bool hasPendingWeather_ = false;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     GlobalEnvironmentData* cbData_ = nullptr;

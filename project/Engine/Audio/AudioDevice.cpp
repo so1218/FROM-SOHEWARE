@@ -10,7 +10,7 @@
 namespace FS
 {
 
-/// @brief AudioDeviceの初期化
+// AudioDeviceの初期化
 void AudioDevice::Initialize()
 {
     // MediaFoundationの初期化

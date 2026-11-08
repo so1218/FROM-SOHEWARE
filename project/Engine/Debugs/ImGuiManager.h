@@ -25,7 +25,7 @@ public:
     static void EndFrame(ID3D12GraphicsCommandList* commandList);
     // ImGuiの終了処理
     static void Finalize();
-    // リセット要求を確認・取得する
+    // リセット要求を確認・取得
     static bool GetSceneResetRequested() { return resetSceneSize_; }
     static void ClearSceneResetRequested() { resetSceneSize_ = false; }
 

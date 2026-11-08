@@ -80,20 +80,6 @@ void EnvironmentManager::Initialize(Engine* engine)
         binder_->BindColor("Sunny_SkyHorizon", &profileSunny_.skyHorizonColor, { 0.4f, 0.6f, 0.8f });
         binder_->Bind("Sunny_SkyBlendWeight", &profileSunny_.skyColorBlendWeight, 0.00f, 0.01f, 0.0f, 1.0f);
 
-        binder_->Bind("Cloudy_TransitionSpeed", &profileCloudy_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Cloudy_CloudMin", &profileCloudy_.cloudThreshold, 0.60f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_CloudShadow", &profileCloudy_.cloudShadowBrightness, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_LightDim", &profileCloudy_.lightDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_AtmoDim", &profileCloudy_.atmosphereGlowDimmer, 0.50f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_Wetness", &profileCloudy_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_RainIntens", &profileCloudy_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Cloudy_WindDir", &profileCloudy_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
-        binder_->Bind("Cloudy_WindSpeed", &profileCloudy_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
-        binder_->Bind("Cloudy_WindTurbul", &profileCloudy_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
-        binder_->BindColor("Cloudy_SkyZenith", &profileCloudy_.skyZenithColor, { 0.2f, 0.25f, 0.3f });
-        binder_->BindColor("Cloudy_SkyHorizon", &profileCloudy_.skyHorizonColor, { 0.4f, 0.42f, 0.45f });
-        binder_->Bind("Cloudy_SkyBlendWeight", &profileCloudy_.skyColorBlendWeight, 0.40f, 0.01f, 0.0f, 1.0f);
-
         binder_->Bind("Rain_TransitionSpeed", &profileRain_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
         binder_->Bind("Rain_CloudMin", &profileRain_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
         binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowBrightness, 0.90f, 0.01f, 0.0f, 1.0f);
@@ -145,7 +131,6 @@ void EnvironmentManager::Initialize(Engine* engine)
             };
 
         bindVisual("Sunny", profileSunny_.visual);
-        bindVisual("Cloudy", profileCloudy_.visual);
         bindVisual("Rain", profileRain_.visual);
         bindVisual("Thunder", profileThunder_.visual);
     }
@@ -225,7 +210,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
         currentProfile_ = profileNight_;
     }
 
-    // 天候の遷移とPending状態の処理
+    // 天候の遷移
     if (weatherTransitionT_ < 1.0f) {
         // 動的に計算された遷移スピードを適用
         float currentSpeed = GetCurrentTransitionSpeed();
@@ -235,13 +220,6 @@ void EnvironmentManager::Update(LightManager* lightManager)
         {
             weatherTransitionT_ = 1.0f;
             currentWeather_ = targetWeather_;
-
-            if (hasPendingWeather_) 
-            {
-                targetWeather_ = pendingWeather_;
-                hasPendingWeather_ = false;
-                weatherTransitionT_ = 0.0f;
-            }
         }
     }
 
@@ -315,7 +293,7 @@ void EnvironmentManager::Update(LightManager* lightManager)
         cbData_->windOffset = windOffset_;
         cbData_->windTurbulence = currentWeatherProfile_.windTurbulence;
 
-        // 曇りや雨では空の光が雲で散らされるので、天候が空の色を変える強さだけ環境光の色味を抜く
+        // 雨や雷雨では空の光が雲で散らされるので、天候が空の色を変える強さだけ環境光の色味を抜く
         auto removeTint = [w](const Vector3& color)
             {
                 float luminance = color.x * 0.2126f + color.y * 0.7152f + color.z * 0.0722f;
@@ -367,17 +345,13 @@ void EnvironmentManager::DebugGui()
 
     if (BeginEnvironmentTab("天候"))
     {
-        const char* weatherNames[] = { "Sunny (晴れ)", "Cloudy (曇り)", "Rain (雨)", "Thunderstorm (雷雨)" };
+        const char* weatherNames[] = { "Sunny (晴れ)", "Rain (雨)", "Thunderstorm (雷雨)" };
 
         ImGui::Text("現在: %s  ->  目標: %s",
             weatherNames[static_cast<int>(currentWeather_)],
             weatherNames[static_cast<int>(targetWeather_)]);
 
         ImGui::ProgressBar(weatherTransitionT_, ImVec2(-1.0f, 0.0f), "Transition Progress");
-
-        if (hasPendingWeather_) {
-            ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.0f, 1.0f), "待機中 (Pending): %s", weatherNames[static_cast<int>(pendingWeather_)]);
-        }
 
         // 目標の天候のボタンを色付けする
         auto drawWeatherButton = [&](const char* label, WeatherState state) {
@@ -394,20 +368,19 @@ void EnvironmentManager::DebugGui()
             };
 
         drawWeatherButton("晴れ", WeatherState::Sunny); ImGui::SameLine();
-        drawWeatherButton("曇り", WeatherState::Cloudy); ImGui::SameLine();
         drawWeatherButton("雨", WeatherState::Rain); ImGui::SameLine();
         drawWeatherButton("雷雨", WeatherState::Thunderstorm);
 
         ImGui::SeparatorText("天候ごとの設定");
 
-        // 4つ並べると長くなるので、編集する天候を1つ選んでその項目だけ出す
+        // 全部並べると長くなるので、編集する天候を1つ選んでその項目だけ出す
         int editingIndex = static_cast<int>(editingWeather_);
         if (ImGui::Combo("編集する天候", &editingIndex, weatherNames, IM_ARRAYSIZE(weatherNames)))
         {
             editingWeather_ = static_cast<WeatherState>(editingIndex);
         }
 
-        const char* prefixes[] = { "Sunny", "Cloudy", "Rain", "Thunder" };
+        const char* prefixes[] = { "Sunny", "Rain", "Thunder" };
         std::string p = prefixes[editingIndex];
 
         binder_->Draw((p + "_TransitionSpeed").c_str(), "天候遷移スピード");
@@ -471,19 +444,7 @@ void EnvironmentManager::Finalize()
 
 void EnvironmentManager::RequestWeatherChange(WeatherState nextWeather)
 {
-    // 晴れから直接雨・雪・雷に行こうとした場合
-    if (currentWeather_ == WeatherState::Sunny &&
-        (nextWeather == WeatherState::Rain || nextWeather == WeatherState::Thunderstorm))
-    {
-        targetWeather_ = WeatherState::Cloudy; // 一旦ターゲットを曇りにする
-        pendingWeather_ = nextWeather;         // 天候を覚えておく
-        hasPendingWeather_ = true;
-    }
-    else
-    {
-        targetWeather_ = nextWeather;
-        hasPendingWeather_ = false;
-    }
+    targetWeather_ = nextWeather;
     weatherTransitionT_ = 0.0f; // 遷移開始
 }
 
@@ -491,7 +452,6 @@ WeatherProfile EnvironmentManager::GetWeatherProfile(WeatherState state) const
 {
     switch (state) {
     case WeatherState::Sunny:        return profileSunny_;
-    case WeatherState::Cloudy:       return profileCloudy_;
     case WeatherState::Rain:         return profileRain_;
     case WeatherState::Thunderstorm: return profileThunder_;
     default:                         return profileSunny_;

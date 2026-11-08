@@ -9,15 +9,13 @@ class GameObject;
 // コライダーの形
 enum class CollisionShapeType
 {
-	Sphere,   // 球
-	Box,      // 箱。回転はせず、常にワールドの軸に沿う
+	Sphere,   
+	Box,      
 };
 
-// 判定に使うレイヤーの初期値。ゲーム側のレイヤーはこれ以外のビットを使う
+// 判定に使うレイヤーの初期値
 constexpr uint32_t kDefaultCollisionLayer = 1u << 0;
 
-// 当たり判定の形。GameObject::AddSphereCollider / AddBoxCollider で作る。
-// 持ち主の GameObject が所有し、マネージャーへの登録と解除も自動で行う
 class Collider
 {
 public:
@@ -25,11 +23,11 @@ public:
 
 	CollisionShapeType GetType() const { return type_; }
 
-	// 球の半径。Sphere のときだけ使える
+	// 球の半径
 	void SetRadius(float radius, std::source_location location = std::source_location::current());
 	float GetRadius() const { return radius_; }
 
-	// 箱の大きさ (幅・高さ・奥行き)。Box のときだけ使える
+	// 箱の大きさ
 	void SetSize(const Vector3& size, std::source_location location = std::source_location::current());
 	const Vector3& GetSize() const { return size_; }
 	Vector3 GetHalfSize() const { return size_ * 0.5f; }
@@ -38,22 +36,20 @@ public:
 	void SetCenterOffset(const Vector3& offset) { centerOffset_ = offset; }
 	const Vector3& GetCenterOffset() const { return centerOffset_; }
 
-	// 中心のずれを持ち主の回転に合わせて回すか (初期値は回す)。箱そのものは回らない
+	// 中心のずれを持ち主の回転に合わせて回すか。箱そのものは回らない
 	void SetRotateCenterOffset(bool isRotate) { isRotateCenterOffset_ = isRotate; }
 	bool IsRotateCenterOffset() const { return isRotateCenterOffset_; }
 
 	// 持ち主の位置 + 中心のずれ
 	Vector3 GetWorldPosition() const;
 
-	// 自分が属するレイヤーと、当たる相手のレイヤー (どちらもビットの組み合わせ)。
-	// 2 つのコライダーは、お互いのマスクに相手のレイヤーが入っているときだけ判定する。
-	// レイは、Raycast に渡したマスクにレイヤーが入っているコライダーに当たる
+	// 自分が属するレイヤーと、当たる相手のレイヤー
 	void SetCollisionLayer(uint32_t layer) { collisionLayer_ = layer; }
 	uint32_t GetCollisionLayer() const { return collisionLayer_; }
 	void SetCollisionMask(uint32_t mask) { collisionMask_ = mask; }
 	uint32_t GetCollisionMask() const { return collisionMask_; }
 
-	// true にすると、ほかのコライダーとは判定せず、レイだけに当たる (弱点など)
+	// true にすると、ほかのコライダーとは判定せず、レイだけに当たる
 	void SetRaycastOnly(bool isRaycastOnly) { isRaycastOnly_ = isRaycastOnly; }
 	bool IsRaycastOnly() const { return isRaycastOnly_; }
 

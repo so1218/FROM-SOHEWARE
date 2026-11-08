@@ -4,7 +4,6 @@
 namespace FS
 {
 
-// キーボード・マウス・パッドの状態をそのまま返す
 class Input
 {
 public:
