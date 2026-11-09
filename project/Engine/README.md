@@ -23,7 +23,7 @@ git subtree add --prefix=Engine <このリポジトリの URL> <版のタグ> --
 robocopy Engine\Template . /E
 ```
 
-`Game.slnx` を開き、NuGet パッケージを復元して Development でビルドします。詳しくは `Docs/start/new-project.md` を見てください。
+`Game.slnx` を開き、NuGet パッケージを復元し、`Game` をスタートアップ プロジェクトに設定して、Development でビルドします。詳しくは `Docs/start/new-project.md` を見てください。
 
 ## 更新する
 

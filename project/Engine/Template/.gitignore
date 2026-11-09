@@ -12,6 +12,9 @@ Dumps/
 # NuGet (packages.config から復元する)
 packages/
 
+# エディター画面のウィンドウの配置 (人ごとに違う)
+imgui_layout.ini
+
 # Visual Studio
 .vs/
 *.user

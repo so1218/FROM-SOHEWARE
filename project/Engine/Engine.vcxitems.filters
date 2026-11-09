@@ -1174,5 +1174,9 @@
     <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VoxelTemporalResolve.CS.hlsl">
       <Filter>Shaders\Volumetric</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)Engine.props" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" />
+    <None Include="$(MSBuildThisFileDirectory)UpdateEngine.ps1" />
   </ItemGroup>
 </Project>
