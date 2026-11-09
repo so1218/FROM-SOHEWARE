@@ -76,13 +76,17 @@
     Release をビルドすると、配布できる形のフォルダを出力先の Package に作る
     exe は起動したフォルダからの相対パスで Engine/Assets・Assets・Cache を読むので、exe と同じ階層に並べる
     Release はシェーダーをコンパイルしないため、Development で起動して作った Cache/Shaders を使う
+    作らないときは /p:CreateGamePackage=false を渡す (自動ビルドなど)
   -->
-  <Target Name="PackageGame" AfterTargets="Build" DependsOnTargets="CopyShaderCompilerDlls" Condition="'$(Configuration)'=='Release' and '$(ConfigurationType)'=='Application'">
+  <Target Name="PackageGame" AfterTargets="Build" DependsOnTargets="CopyShaderCompilerDlls" Condition="'$(Configuration)'=='Release' and '$(ConfigurationType)'=='Application' and '$(CreateGamePackage)'!='false'">
     <PropertyGroup>
       <GamePackageDirectory>$(OutDir)Package\</GamePackageDirectory>
+      <GameShaderCacheExists Condition="Exists('$(ProjectDir)Cache\Shaders')">true</GameShaderCacheExists>
     </PropertyGroup>
-    <Error Condition="!Exists('$(ProjectDir)Cache\Shaders')" Text="Cache\Shaders がないので、配布用のフォルダを作れない。Development で一度起動してから、Release をビルドし直す" />
-    <ItemGroup>
+    <!-- Visual Studio では作り忘れに気づけるよう止める。コマンドでのビルド (自動ビルドなど) は、コンパイルの確認だけなので止めない -->
+    <Error Condition="'$(GameShaderCacheExists)'!='true' and '$(BuildingInsideVisualStudio)'=='true'" Text="Cache\Shaders がないので、配布用のフォルダを作れない。Development で一度起動してから、Release をビルドし直す" />
+    <Warning Condition="'$(GameShaderCacheExists)'!='true' and '$(BuildingInsideVisualStudio)'!='true'" Text="Cache\Shaders がないので、配布用のフォルダは作らない" />
+    <ItemGroup Condition="'$(GameShaderCacheExists)'=='true'">
       <PackageBinaryFile Include="$(OutDir)*.exe;$(OutDir)*.dll" />
       <PackageEngineAssetFile Include="$(MSBuildThisFileDirectory)Assets\**\*" />
       <PackageGameAssetFile Include="$(ProjectDir)Assets\**\*" Exclude="$(ProjectDir)Assets\**\.gitkeep" />
@@ -92,14 +96,14 @@
       <PackageFontCacheFile Include="$(ProjectDir)Cache\Fonts\**\*" />
     </ItemGroup>
     <!-- 消したアセットが残らないように、毎回作り直す -->
-    <RemoveDir Directories="$(GamePackageDirectory)" />
-    <Copy SourceFiles="@(PackageBinaryFile)" DestinationFolder="$(GamePackageDirectory)" />
-    <Copy SourceFiles="@(PackageEngineAssetFile)" DestinationFiles="@(PackageEngineAssetFile->'$(GamePackageDirectory)Engine\Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(PackageGameAssetFile)" DestinationFiles="@(PackageGameAssetFile->'$(GamePackageDirectory)Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(PackageShaderCacheFile)" DestinationFiles="@(PackageShaderCacheFile->'$(GamePackageDirectory)Cache\Shaders\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(PackageTextureCacheFile)" DestinationFiles="@(PackageTextureCacheFile->'$(GamePackageDirectory)Cache\Textures\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(PackageEngineTextureCacheFile)" DestinationFiles="@(PackageEngineTextureCacheFile->'$(GamePackageDirectory)Cache\EngineTextures\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(PackageFontCacheFile)" DestinationFiles="@(PackageFontCacheFile->'$(GamePackageDirectory)Cache\Fonts\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Message Importance="high" Text="配布用のフォルダを作った: $(GamePackageDirectory)" />
+    <RemoveDir Condition="'$(GameShaderCacheExists)'=='true'" Directories="$(GamePackageDirectory)" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageBinaryFile)" DestinationFolder="$(GamePackageDirectory)" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageEngineAssetFile)" DestinationFiles="@(PackageEngineAssetFile->'$(GamePackageDirectory)Engine\Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageGameAssetFile)" DestinationFiles="@(PackageGameAssetFile->'$(GamePackageDirectory)Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageShaderCacheFile)" DestinationFiles="@(PackageShaderCacheFile->'$(GamePackageDirectory)Cache\Shaders\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageTextureCacheFile)" DestinationFiles="@(PackageTextureCacheFile->'$(GamePackageDirectory)Cache\Textures\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageEngineTextureCacheFile)" DestinationFiles="@(PackageEngineTextureCacheFile->'$(GamePackageDirectory)Cache\EngineTextures\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy Condition="'$(GameShaderCacheExists)'=='true'" SourceFiles="@(PackageFontCacheFile)" DestinationFiles="@(PackageFontCacheFile->'$(GamePackageDirectory)Cache\Fonts\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Condition="'$(GameShaderCacheExists)'=='true'" Importance="high" Text="配布用のフォルダを作った: $(GamePackageDirectory)" />
   </Target>
 </Project>
