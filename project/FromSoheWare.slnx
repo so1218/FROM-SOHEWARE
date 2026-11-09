@@ -6,7 +6,7 @@
     <Platform Name="x64" />
   </Configurations>
   <Folder Name="/ソリューション項目/">
-    <File Path=".editorconfig" />
+    <File Path="../.editorconfig" />
   </Folder>
   <Project Path="Engine/Engine.vcxitems" Id="c4531a48-063d-4cbb-91fe-fcfed031db46" />
   <Project Path="FromSoheWare.vcxproj" Id="cd7dbdc9-d0ce-49f9-83de-fcb4f52da80d" />
