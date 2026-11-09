@@ -4,7 +4,6 @@
 #include "Sprite.h"
 #include "Text.h"
 
-// タイトルとサブタイトルの文字とSTART GAME
 class TitleMenu : public FS::GameObject
 {
 public:
@@ -26,8 +25,8 @@ public:
 private:
     enum class Phase
     {
-        FadeIn,    // 黒い画面が明けていく
-        Waiting,   // 決定を待つ
+        FadeIn,   
+        Waiting,  
         Started,
     };
 
@@ -45,10 +44,10 @@ private:
     bool isInputEnabled_ = true;
 
     // パラメータ
-    float fadeInTime_ = 2.0f;       // 黒い画面が明けるまで
-    float textFadeInDelay_ = 1.0f;  // 画面が明け始めてから文字が出始めるまで
+    float fadeInTime_ = 2.0f;       
+    float textFadeInDelay_ = 1.0f;  
     float textFadeTime_ = 1.0f;
-    float fadeOutTime_ = 0.6f;      // 決定してから文字が消えるまで
-    float blinkSpeed_ = 2.5f;       // START GAME の点滅の速さ
+    float fadeOutTime_ = 0.6f;      
+    float blinkSpeed_ = 2.5f;       
     float blinkMinOpacity_ = 0.35f;
 };

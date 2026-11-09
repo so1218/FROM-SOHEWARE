@@ -15,7 +15,6 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // タイトル中は遊ぶときの表示を隠す。操作説明はエディター表示なら出す
     void SetGameplayVisible(bool isVisible) { isGameplayVisible_ = isVisible; }
     void SetRemainingTime(float seconds) { remainingTime_ = seconds; }
 

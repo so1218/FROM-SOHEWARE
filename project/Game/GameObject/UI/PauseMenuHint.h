@@ -25,7 +25,7 @@ private:
     std::unique_ptr<FS::Text> editorText_;
 
     // パラメータ
-    FS::Vector2 position_ = { 24.0f, 24.0f };   // 画面左上から
+    FS::Vector2 position_ = { 24.0f, 24.0f };  
     float fontSize_ = 20.0f;
     float iconSize_ = 34.0f;
     float spacing_ = 8.0f;

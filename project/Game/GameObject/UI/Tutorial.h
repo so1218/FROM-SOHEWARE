@@ -6,7 +6,6 @@
 
 class Player;
 
-// 操作のチュートリアル
 class Tutorial : public FS::GameObject
 {
 public:
@@ -73,29 +72,29 @@ private:
     Step currentStep_ = Step::Move;
     Phase phase_ = Phase::Delay;
     float phaseTimer_ = 0.0f;
-    float visibility_ = 0.0f;       // 0 = 見えない, 1 = 見える
-    float heldTime_ = 0.0f;         // 移動やダッシュを続けている時間
+    float visibility_ = 0.0f;      
+    float heldTime_ = 0.0f;       
     int shotCountAtStart_ = 0;
     int reloadCountAtStart_ = 0;
     bool isUsingController_ = false;
 
     // パラメータ
     bool isEnabled_ = true;
-    float startDelay_ = 1.0f;       // シーン開始から最初の説明を出すまで
+    float startDelay_ = 1.0f;      
     float fadeTime_ = 0.3f;
-    float clearedWaitTime_ = 0.6f;  // できてから消え始めるまで
-    float requiredHoldTime_ = 1.0f; // 移動・ダッシュ・エイムを続ける時間
-    float completeShowTime_ = 2.0f; // 最後の完了を出しておく時間
+    float clearedWaitTime_ = 0.6f;  
+    float requiredHoldTime_ = 1.0f; 
+    float completeShowTime_ = 2.0f; 
 
-    FS::Vector2 panelOffset_ = { 0.0f, 200.0f };  // 画面中央からのずれ
+    FS::Vector2 panelOffset_ = { 0.0f, 200.0f };
     FS::Vector2 panelSize_ = { 1280.0f, 130.0f };
     FS::Vector4 panelColor_ = { 0.0f, 0.0f, 0.0f, 0.7f };
-    float panelEdgeFade_ = 0.35f;   // 左右それぞれ、透明になっていく割合
+    float panelEdgeFade_ = 0.35f;   
 
     FS::Vector4 textColor_ = { 1.0f, 1.0f, 1.0f, 1.0f };
     float fontSize_ = 28.0f;
-    float textOffsetY_ = -24.0f;    // 帯の中心からのずれ
+    float textOffsetY_ = -24.0f;   
     float iconSize_ = 48.0f;
     float iconSpacing_ = 8.0f;
-    float iconOffsetY_ = 26.0f;     // 帯の中心からのずれ
+    float iconOffsetY_ = 26.0f;     
 };

@@ -53,7 +53,7 @@ private:
         float bounce = 0.4f;           
         float restSpeed = 1.5f;        
         float spinSpeed = 3.0f;        
-        float tiltAngle = 0.35f;       // 面が光を受けるよう、少し傾けて回す (ラジアン)
+        float tiltAngle = 0.35f;       
         float magnetDelay = 0.3f;      
         float magnetRadius = 4.0f;
         float magnetAcceleration = 60.0f;

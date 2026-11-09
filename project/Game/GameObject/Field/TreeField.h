@@ -54,7 +54,7 @@ private:
     FS::Vector2 areaCenter_ = { 0.0f, 0.0f };
     float minScale_ = 0.8f;
     float maxScale_ = 1.4f;
-    float trunkColliderRadius_ = 0.5f;   // 大きさ 1 の木の幹の当たり判定の半径
+    float trunkColliderRadius_ = 0.5f;  
 
     // GPU に送る値をそのまま持ち、ImGui からも直接変える
     LeafMaterialData leafMaterial_{};

@@ -514,7 +514,7 @@ D3D12_DEPTH_STENCIL_DESC PSOManager::GetDepthStencilState(const std::string& nam
     {
         D3D12_DEPTH_STENCIL_DESC desc{};
         desc.DepthEnable = true;
-        desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; // 深度は書き込む
+        desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; 
         desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
         return desc;
     }

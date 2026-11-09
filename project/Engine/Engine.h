@@ -36,11 +36,9 @@ class Engine
 {
 public:
     Engine();
-    // Finalize を呼び忘れていたら、ここで呼ぶ
     ~Engine();
 
     void Initialize(const ProjectConfig& config);
-    // GPU を待ってから、シングルトンなどメンバーではないものを片付ける
     void Finalize();
 
     // 毎フレーム、シーンの更新のあとに呼ぶ

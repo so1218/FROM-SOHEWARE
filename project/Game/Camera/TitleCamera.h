@@ -40,8 +40,8 @@ private:
     FS::Vector3 position_ = { 0.0f, 20.0f, -60.0f };
     FS::Vector3 rotationDegrees_ = { 10.0f, 0.0f, 0.0f };
     float fov_ = 0.45f;
-    float swayAmount_ = 0.3f;       // 揺らす量
+    float swayAmount_ = 0.3f;       
     float swaySpeed_ = 0.4f;
     float transitionTime_ = 2.5f;
-    float arcHeight_ = 4.0f;        // 寄る途中で持ち上げる高さ
+    float arcHeight_ = 4.0f;        
 };

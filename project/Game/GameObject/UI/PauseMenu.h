@@ -5,7 +5,6 @@
 #include "Text.h"
 #include "RepeatInput.h"
 
-// ポーズメニュー
 class PauseMenu : public FS::GameObject
 {
 public:
@@ -34,7 +33,7 @@ public:
 private:
     void Open();
     void Close();
-    // 上下の入力で選択を動かす。上が -1、下が +1
+    // 上下の入力で選択を動かす
     void UpdateCursor(int verticalMove);
     // 本当に終了しますかの確認
     void UpdateQuitConfirm(int verticalMove);
@@ -49,14 +48,14 @@ private:
     std::unique_ptr<FS::Sprite> overlay_;
     std::unique_ptr<FS::Sprite> cursorBand_;
     std::unique_ptr<FS::Text> headerText_;
-    std::unique_ptr<FS::Text> itemText_;   // 1 つを使い回して項目の数だけ描く
+    std::unique_ptr<FS::Text> itemText_;   
     std::unique_ptr<FS::Text> descriptionText_;
     std::unique_ptr<FS::Text> questionText_;
 
     bool canOpen_ = false;
     bool canReturnToTitle_ = false;
     bool isOpen_ = false;
-    float openAmount_ = 0.0f;   // 0 = 閉じている, 1 = 開ききった
+    float openAmount_ = 0.0f;   
     std::vector<Item> items_;
     int cursorIndex_ = 0;
     std::optional<Item> selectedItem_;
@@ -64,13 +63,13 @@ private:
     FS::RepeatInput downRepeat_;
 
     bool isConfirmingQuit_ = false;
-    int quitConfirmIndex_ = 0;   // 0 = やめる, 1 = 終了する
+    int quitConfirmIndex_ = 0;   
 
     // パラメータ
     float fadeTime_ = 0.15f;
     FS::Vector4 overlayColor_ = { 0.0f, 0.0f, 0.0f, 0.65f };
     float headerFontSize_ = 40.0f;
-    float headerOffsetY_ = -120.0f;   // 画面中央から
+    float headerOffsetY_ = -120.0f;   
     float itemFontSize_ = 30.0f;
     float itemSpacing_ = 56.0f;
     FS::Vector2 cursorBandSize_ = { 460.0f, 48.0f };
@@ -79,5 +78,5 @@ private:
     FS::Vector4 unselectedColor_ = { 1.0f, 1.0f, 1.0f, 0.45f };
     FS::Vector4 editorColor_ = { 1.0f, 0.78f, 0.3f, 1.0f };   
     float descriptionFontSize_ = 20.0f;
-    float descriptionOffsetY_ = 40.0f;   // 最後の項目の下から
+    float descriptionOffsetY_ = 40.0f;   
 };

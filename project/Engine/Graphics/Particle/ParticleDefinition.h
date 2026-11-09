@@ -17,15 +17,15 @@ struct ShapeModule
 
     const ModelData* sourceModelData = nullptr;
 
-    bool enabled = true;      // モジュールが有効かどうか
-    Type type = Type::Point;  // 形状の種類
+    bool enabled = true;     
+    Type type = Type::Point;  
 
     // Sphere設定
-    Vector3 radius = { 10.0f, 10.0f, 10.0f }; // 各軸方向の半径
-    bool emitFromEdge = false;                // 縁からのみ生成するか
+    Vector3 radius = { 10.0f, 10.0f, 10.0f }; 
+    bool emitFromEdge = false;              
 
     // Box設定
-    Vector3 boxSize = { 20.0f, 20.0f, 20.0f }; // 各軸方向のサイズ
+    Vector3 boxSize = { 20.0f, 20.0f, 20.0f };
 
     // 初期位置オフセットを形状に基づいて計算
     Vector3 GetInitialPositionOffset(const ModelData* overrideModelData = nullptr, const AnimationModel* overrideAnimModel = nullptr) const;
@@ -53,7 +53,7 @@ struct VelocityModule
                 up = { 1.0f, 0.0f, 0.0f };
             }
             Vector3 u = Math::CrossProduct(d_norm, up).Normalize();
-            Vector3 v = Math::CrossProduct(d_norm, u); // uとd_normが直交かつ正規化済みなので、vも正規化
+            Vector3 v = Math::CrossProduct(d_norm, u);
 
             // 円錐状に広がるためのランダムな角度を2つ生成
             float phi = Math::RandomFloat(0.0f, 2.0f * Math::PI);
@@ -79,18 +79,18 @@ struct VelocityModule
 
 struct PhysicsModule
 {
-    bool enabled = false;               // モジュールの有効/無効
-    Vector3 gravity = { 0.0f, -9.8f, 0.0f }; // 重力加速度
-    float drag = 0.0f;                  // 空気抵抗 (0.01 = 1% 減速)
+    bool enabled = false;              
+    Vector3 gravity = { 0.0f, -9.8f, 0.0f }; 
+    float drag = 0.0f;                 
 
-    bool affectedByWind = false;            // 風の影響を受けるか
-    float windInfluence = 1.0f;             // 風の影響度（0.0=影響なし, 1.0=等倍, 2.0=軽くて激しく流される）
+    bool affectedByWind = false;         
+    float windInfluence = 1.0f;           
 };
 
 struct RotationOverLifetimeModule
 {
-    bool enabled = false;               // モジュールの有効/無効
-    bool isBillboard = true;            // ビルボード回転か3D回転か
+    bool enabled = false;             
+    bool isBillboard = true;           
 
     // 2D (Billboard) 用の速度範囲
     float minAngularVelocity2D = 0.0f;
@@ -104,33 +104,32 @@ struct RotationOverLifetimeModule
     Vector3 minStartRotation = { 0.0f, 0.0f, 0.0f };
     Vector3 maxStartRotation = { 0.0f, 0.0f, 360.0f };
 
-    bool randomStartRotation = true;    // 初期回転をランダムにするか
+    bool randomStartRotation = true;    
 };
 
 struct ColorOverLifetimeModule
 {
     enum class Mode : int
     {
-        Single = 0,             // 単一グラデーション
-        RandomBetweenTwo = 1    // 2種類の色からランダムに選択
+        Single = 0,            
+        RandomBetweenTwo = 1   
     };
 
-    bool enabled = true;         // モジュールの有効/無効
-    Mode mode = Mode::Single;    // 色決定モード
+    bool enabled = true;         
+    Mode mode = Mode::Single;   
 
-    unsigned int startColor = 0xffffffff;  // 開始色
-    unsigned int endColor = 0xffffff00;    // 終了色
-    unsigned int startColor2 = 0xffffffff; // 2つ目の開始色
-    unsigned int endColor2 = 0xffffff00;   // 2つ目の終了色
-
-    EasingType easingType = EasingType::EaseLinear; // 補間のイージングタイプ
+    unsigned int startColor = 0xffffffff;  
+    unsigned int endColor = 0xffffff00;    
+    unsigned int startColor2 = 0xffffffff; 
+    unsigned int endColor2 = 0xffffff00;  
+    EasingType easingType = EasingType::EaseLinear;
 
     Vector4 Evaluate(float t) const
     {
-        float eased_t = Easing::Evaluate(this->easingType, t);  // 時間をイージング
+        float eased_t = Easing::Evaluate(this->easingType, t);  
         Vector4 startVec = Math::Uint32ToColorVector(startColor);
         Vector4 endVec = Math::Uint32ToColorVector(endColor);
-        return Math::Lerp(startVec, endVec, eased_t);           // 色を補間
+        return Math::Lerp(startVec, endVec, eased_t);         
     }
 };
 
@@ -157,7 +156,7 @@ struct SizeOverLifetimeModule
             // 通常のイージング
             float eased_t = Easing::Evaluate(this->easingType, t);
 
-            // 加工された時間を使って補間する
+            // 加工された時間を使って補間
             return Math::Lerp(startScale, endScale, eased_t);
         }
     }
@@ -167,7 +166,7 @@ struct TextureSheetAnimationModule
 {
     bool enabled = false;
     std::string textureName = "white1x1";
-    uint32_t textureHandle = 0; // キャッシュ用ハンドル
+    uint32_t textureHandle = 0; 
 
     // テクスチャ名からハンドルを取得・更新
     void RefreshHandle()
@@ -180,38 +179,38 @@ struct NoiseModule
 {
     enum class NoiseType
     {
-        Simplex, // 基本の有機的な揺らぎ
-        Curl     // 流体のような渦を巻く綺麗な散らばり
+        Simplex, 
+        Curl    
     };
 
     bool enabled = false;
     NoiseType type = NoiseType::Simplex;
 
-    float strength = 1.0f;     // 揺らぎの強さ（Velocityに与える加速度）
-    float frequency = 0.05f;   // 揺らぎの細かさ
-    float scrollSpeed = 0.5f;  // ノイズ場が流れる速度
+    float strength = 1.0f;     
+    float frequency = 0.05f;   
+    float scrollSpeed = 0.5f; 
 
-    bool separateAxes = true;  // X/Y/Z軸で別々のノイズを使うか（Simplex時に有効）
+    bool separateAxes = true;  
 };
 
 struct AttractionModule
 {
     bool enabled = false;
-    Vector3 target = { 0.0f, 0.0f, 0.0f }; // 静的な目標位置（ターゲット未設定時）
-    Vector3 offset = { 0.0f, 0.0f, 0.0f };// 動的ターゲットに対するオフセット
-    float strength = 1.0f;                 // 引力の強さ（加速度）
+    Vector3 target = { 0.0f, 0.0f, 0.0f }; 
+    Vector3 offset = { 0.0f, 0.0f, 0.0f };
+    float strength = 1.0f;               
 };
 
 enum class TrailAlignment
 {
-    View,      // ビルボード
-    Transform  // パーティクルの回転
+    View,      
+    Transform  
 };
 
 enum class JitterMode
 {
-    Smooth = 0, // サイン波による滑らかなうねり
-    Random = 1  // ノイズとフリッカーによるランダム
+    Smooth = 0, 
+    Random = 1  
 };
 
 struct TrailModule
@@ -227,10 +226,10 @@ struct TrailModule
 
     TrailAlignment alignment = TrailAlignment::View;
 
-    float headWidthScale = 1.0f; // 先端の太さ
-    float tailWidthScale = 1.0f; // 尻尾の太さ
+    float headWidthScale = 1.0f;
+    float tailWidthScale = 1.0f;
 
-    // ジッター（揺れ）の設定
+    // ジッターの設定
     JitterMode jitterMode = JitterMode::Smooth;
     float jitterStrength = 0.0f;
     float jitterFrequency = 10.0f;
@@ -244,7 +243,7 @@ struct TrailPoint
 {
     Vector3 position;
     Quaternion rotation;
-    float time; // 生成された時刻
+    float time; 
 };
 
 struct ParticleConfig
@@ -285,7 +284,7 @@ struct ParticleState
     Vector4 color;
     Vector3 velocity;
     Vector3 currentAngularVelocity = { 0.0f, 0.0f, 0.0f };
-    // 角速度で回すので、回転はオイラー角 (ラジアン) で持つ。ビルボードは z だけ使う
+    // 角速度で回すので、回転はオイラー角で持つ
     Vector3 rotation = { 0.0f, 0.0f, 0.0f };
     Vector3 initialPosition;
 
@@ -307,13 +306,13 @@ struct ParticleState
 struct EmitterConfig
 {
     Vector3 position = { 0.0f, 0.0f, 0.0f };
-    float spawnInterval = 0.1f; // パーティクルの生成間隔
-    float lifetime = 4.0f;      // パーティクル寿命
-    int amount = 1;             // 1回の生成数
-    float duration = -0.1f;     // エミッター稼働時間（負なら無限）
-    bool looping = true;        // duration終了後にループするか
-    bool playOnAwake = true;    // 生成時に自動再生するか
-    Vector3 followOffset = { 0.0f, 0.0f, 0.0f };// 追従時のオフセット座標
+    float spawnInterval = 0.1f;
+    float lifetime = 4.0f;     
+    int amount = 1;            
+    float duration = -0.1f;     
+    bool looping = true;       
+    bool playOnAwake = true;    
+    Vector3 followOffset = { 0.0f, 0.0f, 0.0f };
 };
 
 // パーティクル・エミッター設定のセット
