@@ -36,14 +36,14 @@ static const float kMinSafeDistance = 0.001f;
 static const float kBackScatterAnisotropy = -0.2f;
 static const float kForwardScatterRatio = 0.9f;
 
-// 自己影は、太陽の方向へ 1, 2, 4, 8m と間隔を倍にしながら調べる
+// 自己影
 static const uint kSelfShadowStepCount = 4;
 static const float kSelfShadowFirstStep = 1.0f;
 
 struct FogMedia
 {
-    float density;     // extinctionScale を掛ける前の減衰
-    float3 scattering; // density に散乱色を掛けたもの
+    float density;     
+    float3 scattering;
 };
 
 float PhaseHenyeyGreenstein(float cosTheta, float anisotropy)

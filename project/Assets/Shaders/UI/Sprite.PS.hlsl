@@ -22,7 +22,7 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
         quadUV.x * instance.uvMatrix.x + quadUV.y * instance.uvMatrix.z + instance.uvTranslate.x,
         quadUV.x * instance.uvMatrix.y + quadUV.y * instance.uvMatrix.w + instance.uvTranslate.y);
 
-    // uvRect の範囲だけを使う。0, 0, 1, 1 なら画像全体
+    // uvRect の範囲だけを使う
     float2 atlasUV = instance.uvRect.xy + transformedUV * (instance.uvRect.zw - instance.uvRect.xy);
 
     // UV 変換をしていなければ Clamp で読む
@@ -45,7 +45,6 @@ float4 main(SpriteVSOutput input) : SV_TARGET0
     if (instance.drawMode == SPRITE_DRAW_MODE_SDF_TEXT)
     {
         float signedDistance = textureColor.a;
-        // 1 ピクセル分だけぼかすと、どの大きさでもくっきり見える。影は edgeSoftness でさらにぼかす
         float smoothing = max(fwidth(signedDistance) * 0.7f, 0.0001f) + instance.edgeSoftness;
         float fillAlpha = smoothstep(0.5f - smoothing, 0.5f + smoothing, signedDistance);
 

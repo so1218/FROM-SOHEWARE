@@ -13,7 +13,7 @@ static const int3 kNeighborOffsets[6] =
     int3(0, 0, -1), int3(0, 0, 1)
 };
 
-// 明るさの差への敏感さ。奥ほど鈍くして、遠くのちらつきを強くならす
+// 奥ほど鈍くして、遠くのちらつきを強くならす
 static const float kEdgeSensitivityNear = 2.0f;
 static const float kEdgeSensitivityFar = 0.02f;
 static const float kFadeStartRatio = 0.1f;

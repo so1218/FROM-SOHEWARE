@@ -1,14 +1,12 @@
 #include "Common/MathUtils.hlsli"
 
-// 霧のむら用の 3D ノイズ
-// r: パーリン, g: 大きいウォーリー, b: 細かいウォーリー
 RWTexture3D<float4> gOutputNoise : register(u0);
 
 static const uint kOctaveCount = 4;
-static const float kBaseFrequency = 2.0f; // 周期が整数でないと継ぎ目が出る
+static const float kBaseFrequency = 2.0f; 
 static const float kWarpStrength = 0.15f;
 
-// period ごとに繰り返すパーリン。-1~1
+// period ごとに繰り返すパーリン
 float PeriodicPerlinNoise(float3 p, float period)
 {
     float3 cell = floor(p);
@@ -30,7 +28,7 @@ float PeriodicPerlinNoise(float3 p, float period)
     return lerp(lerp(x00, x10, weight.y), lerp(x01, x11, weight.y), weight.z);
 }
 
-// period ごとに繰り返すウォーリー。一番近い点までの距離
+// period ごとに繰り返すウォーリー
 float PeriodicWorleyNoise(float3 p, float period)
 {
     float3 cell = floor(p);
@@ -52,7 +50,7 @@ float PeriodicWorleyNoise(float3 p, float period)
     return saturate(nearestDistance);
 }
 
-// オクターブを重ねたパーリン。0~1
+// オクターブを重ねたパーリン
 float CalculateFractalPerlinNoise(float3 uvw)
 {
     // 格子の向きが目立たないように少し歪ませる
@@ -98,7 +96,6 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float perlin = smoothstep(0.1f, 0.9f, pow(CalculateFractalPerlinNoise(uvw), 1.2f));
     float largeWorley = 1.0f - PeriodicWorleyNoise(uvw * 4.0f, 4.0f);
     float smallWorley = 1.0f - PeriodicWorleyNoise(uvw * 8.0f, 8.0f);
-
-    // a は使っていない
+    
     gOutputNoise[dispatchThreadId] = float4(perlin, largeWorley, smallWorley, 0.0f);
 }
