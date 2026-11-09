@@ -1,0 +1,8 @@
+# コードの書き方の決まり (Docs/concepts/conventions.md) に合わせた設定
+root = true
+
+[*.{cpp,h,hlsl,hlsli}]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4

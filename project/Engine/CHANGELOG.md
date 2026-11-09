@@ -1,0 +1,12 @@
+# 変更履歴
+
+版ごとの変更点。ゲーム側で対応が必要な変更は「対応が必要」に書きます。
+
+## v1.0.0 (2026-11-09)
+
+最初の版です
+
+### はじめ方
+- `Template/` のひな形から始める。手順は `Docs/start/new-project.md`
+- エンジンの更新は `UpdateEngine.ps1`。使い方は `README.md`
+- 完成版のまとめ方は `Docs/guides/packaging.md`

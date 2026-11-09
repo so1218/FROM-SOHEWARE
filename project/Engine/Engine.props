@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  エンジンを使うプロジェクトが読み込むビルド設定
+  エンジンが動くために必要なものだけを置き、ゲームごとに決めてよい設定 (警告レベル・最適化・出力先など) はゲームの vcxproj に書く
+  構成名は Debug / Development / Release の 3 つを前提にしている
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FromSoheWareEngineDirectory>$(MSBuildThisFileDirectory)</FromSoheWareEngineDirectory>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)externals\assimp\lib\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- assimp の lib にデバッグ情報がないことによる警告 -->
+      <AdditionalOptions>/ignore:4049 /ignore:4048 /ignore:4204 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <!--
+    開発用の構成 (Debug・Development) だけ、エディター画面とデバッグ機能を入れる
+    Release でも使いたいゲームは、自分の vcxproj の Release に ENABLE_IMGUI などを足す
+    assimp の lib が /MT でビルドされているので、ランタイムも静的リンクにそろえる
+  -->
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;ENABLE_IMGUI;ENABLE_DEV_TOOLS;ENABLE_DEBUG_DRAW;ENABLE_DEBUG_CAMERA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Development'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;ENABLE_IMGUI;ENABLE_DEV_TOOLS;ENABLE_DEBUG_DRAW;ENABLE_DEBUG_CAMERA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)externals\DirectXTex\DirectXTex_Desktop_2026.vcxproj">
+      <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- シェーダーを実行時にコンパイルするので、DXC の dll を exe の隣に置く -->
+  <Target Name="CopyShaderCompilerDlls" AfterTargets="Build" Condition="'$(ConfigurationType)'=='Application'">
+    <Copy SourceFiles="$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll;$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+  <!--
+    Release をビルドすると、配布できる形のフォルダを出力先の Package に作る
+    exe は起動したフォルダからの相対パスで Engine/Assets・Assets・Cache を読むので、exe と同じ階層に並べる
+    Release はシェーダーをコンパイルしないため、Development で起動して作った Cache/Shaders を使う
+  -->
+  <Target Name="PackageGame" AfterTargets="Build" DependsOnTargets="CopyShaderCompilerDlls" Condition="'$(Configuration)'=='Release' and '$(ConfigurationType)'=='Application'">
+    <PropertyGroup>
+      <GamePackageDirectory>$(OutDir)Package\</GamePackageDirectory>
+    </PropertyGroup>
+    <Warning Condition="!Exists('$(ProjectDir)Cache\Shaders')" Text="Cache\Shaders がないので、配布用のフォルダの exe は起動できない。Development で一度起動してから、Release をビルドし直す" />
+    <ItemGroup>
+      <PackageBinaryFile Include="$(OutDir)*.exe;$(OutDir)*.dll" />
+      <PackageEngineAssetFile Include="$(MSBuildThisFileDirectory)Assets\**\*" />
+      <PackageGameAssetFile Include="$(ProjectDir)Assets\**\*" Exclude="$(ProjectDir)Assets\**\.gitkeep" />
+      <PackageShaderCacheFile Include="$(ProjectDir)Cache\Shaders\**\*" />
+      <PackageTextureCacheFile Include="$(ProjectDir)Cache\Textures\**\*" />
+      <PackageEngineTextureCacheFile Include="$(ProjectDir)Cache\EngineTextures\**\*" />
+    </ItemGroup>
+    <!-- 消したアセットが残らないように、毎回作り直す -->
+    <RemoveDir Directories="$(GamePackageDirectory)" />
+    <Copy SourceFiles="@(PackageBinaryFile)" DestinationFolder="$(GamePackageDirectory)" />
+    <Copy SourceFiles="@(PackageEngineAssetFile)" DestinationFiles="@(PackageEngineAssetFile->'$(GamePackageDirectory)Engine\Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackageGameAssetFile)" DestinationFiles="@(PackageGameAssetFile->'$(GamePackageDirectory)Assets\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackageShaderCacheFile)" DestinationFiles="@(PackageShaderCacheFile->'$(GamePackageDirectory)Cache\Shaders\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackageTextureCacheFile)" DestinationFiles="@(PackageTextureCacheFile->'$(GamePackageDirectory)Cache\Textures\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackageEngineTextureCacheFile)" DestinationFiles="@(PackageEngineTextureCacheFile->'$(GamePackageDirectory)Cache\EngineTextures\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Importance="high" Text="配布用のフォルダを作った: $(GamePackageDirectory)" />
+  </Target>
+</Project>

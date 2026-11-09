@@ -15,7 +15,8 @@ public:
     AnimationManager& operator=(const AnimationManager&) = delete;
 
     // フォルダ内の、メッシュを持たない glTF をすべて読み込む。名前は拡張子を除いたファイル名
-    void LoadAllAnimations(const std::filesystem::path& rootDirectory = "Assets/Models");
+    // Engine/Assets/Models と Assets/Models のアニメーションをすべて読む
+    void LoadAllAnimations();
 
     // 単体ロード
     void Load(const std::string& name, const std::string& path);

@@ -14,15 +14,12 @@ std::string ToLower(std::string text)
     return text;
 }
 
-}
-
-std::vector<std::filesystem::path> CollectAssetFiles(
+std::vector<std::filesystem::path> CollectFilesInDirectory(
     const std::filesystem::path& rootDirectory, std::initializer_list<std::string_view> extensions)
 {
     std::vector<std::filesystem::path> files;
     if (!std::filesystem::exists(rootDirectory))
     {
-        std::cerr << "[AssetFiles] Directory not found: " << rootDirectory.generic_string() << std::endl;
         return files;
     }
 
@@ -39,6 +36,26 @@ std::vector<std::filesystem::path> CollectAssetFiles(
 
     // 名前が重複したときにどちらが読まれるかを、毎回同じにする
     std::sort(files.begin(), files.end());
+    return files;
+}
+
+}
+
+std::vector<std::filesystem::path> CollectAssetFiles(
+    std::string_view subDirectory, std::initializer_list<std::string_view> extensions)
+{
+    std::vector<std::filesystem::path> files;
+    for (std::string_view assetDirectory : { kEngineAssetDirectory, kGameAssetDirectory })
+    {
+        const std::filesystem::path directory = std::filesystem::path(assetDirectory) / subDirectory;
+        std::vector<std::filesystem::path> found = CollectFilesInDirectory(directory, extensions);
+        files.insert(files.end(), found.begin(), found.end());
+    }
+
+    if (files.empty())
+    {
+        std::cerr << "[AssetFiles] No asset found in " << subDirectory << std::endl;
+    }
     return files;
 }
 

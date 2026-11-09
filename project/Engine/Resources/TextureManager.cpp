@@ -9,13 +9,13 @@ namespace FS
 
 namespace fs = std::filesystem;
 
-void TextureManager::LoadAllTextures(Engine* engine, const std::string& rootDirectory)
+void TextureManager::LoadAllTextures(Engine* engine)
 {
     textures_.clear();
     nameToIndex_.clear();
 
     // 読み込み中に DDS を作るとフォルダの走査が壊れるので、先に一覧にしてから読む
-    const std::vector<fs::path> allFiles = CollectAssetFiles(rootDirectory, { ".png", ".jpg", ".dds", ".tga" });
+    const std::vector<fs::path> allFiles = CollectAssetFiles("Textures", { ".png", ".jpg", ".dds", ".tga" });
 
     for (const auto& filePath : allFiles)
     {

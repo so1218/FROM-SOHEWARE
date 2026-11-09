@@ -197,7 +197,7 @@ Microsoft::WRL::ComPtr<ID3D12PipelineState> PSOManager::CreatePSO(const std::str
 
 PSODescription PSOManager::LoadPSODefinition(const std::string& psoName)
 {
-    std::string filePath = "Assets/Data/PSODefinitions/" + psoName + ".json";
+    std::string filePath = "Engine/Assets/Data/PSODefinitions/" + psoName + ".json";
 
     // JSON読み込み
     std::ifstream file(filePath);

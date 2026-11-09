@@ -21,7 +21,8 @@ public:
     ModelManager& operator=(const ModelManager&) = delete;
 
     // フォルダ内のモデルをすべて読み込む。名前は拡張子を除いたファイル名
-    void LoadAllModels(Engine* engine, const std::filesystem::path& rootDirectory = "Assets/Models");
+    // Engine/Assets/Models と Assets/Models のモデルをすべて読む
+    void LoadAllModels(Engine* engine);
 
     // 単体ロード（外部から個別に読み込みたい場合用）
     void Load(const std::string& name, const std::string& path);

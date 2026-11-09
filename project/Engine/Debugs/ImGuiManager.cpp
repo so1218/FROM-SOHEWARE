@@ -45,7 +45,7 @@ void ImGuiManager::Initialize(
     DebugDraw::SetEnabled(showGui_);
 
     // フォント設定
-    std::string fontPath = "Assets/Data/Fonts/NotoSansJP-Bold.ttf";
+    std::string fontPath = "Engine/Assets/Fonts/NotoSansJP-Bold.ttf";
     // Windows の拡大率 (125% なら 1.25)。最初から大きな文字で作るので、拡大してもぼやけない
     const float dpiScale = static_cast<float>(GetDpiForWindow(hwnd)) / USER_DEFAULT_SCREEN_DPI;
     float fontSize = 16.0f * dpiScale;
@@ -148,9 +148,7 @@ void ImGuiManager::Initialize(
     // ドッキングプレビュー
     style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.08f, 0.14f, 0.26f, 0.40f);
 
-    // =========================================================
     // レイアウト・丸み・枠線
-    // =========================================================
     style.Alpha = 1.0f;
     style.WindowPadding = ImVec2(10, 10);
     style.FramePadding = ImVec2(6, 4);

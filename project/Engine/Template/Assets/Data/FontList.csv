@@ -1,0 +1,4 @@
+Name,Path,PixelHeight,Charset
+# 先頭のフォントが Text の既定フォント
+# Path と Charset は Assets/Data/Fonts/ からの相対パス。Assets にないフォントは Engine/Assets/Fonts から探す
+Main,NotoSansJP-Bold.ttf,48

@@ -10,7 +10,7 @@
 
 <br />
 
-<img src="docs/textures/scene_01.png" width="88%" alt="Engine Demo Header" />
+<img src="project/Engine/Docs/textures/scene_01.png" width="88%" alt="Engine Demo Header" />
 
 </div>
 
@@ -64,15 +64,15 @@
 
 ## 3. 開発ドキュメント (マニュアル)
 
-FromSoheWare エンジンでゲームを作るためのドキュメントです。目次は [docs/index.md](docs/index.md) です。
+FromSoheWare エンジンでゲームを作るためのドキュメントです。目次は [project/Engine/Docs/index.md](project/Engine/Docs/index.md) です。
 
 | 目的 | 読むところ |
 | :--- | :--- |
-| まず動かしたい | [はじめに](docs/start/index.md) |
-| ゲームの作り方を一通り知りたい | [チュートリアル: ジェム集めゲームを作る](docs/tutorial/index.md) |
-| やりたいことのやり方を知りたい | [機能別ガイド](docs/guides/index.md) |
-| 仕組みを知りたい・エンジンを改造したい | [エンジンの仕組み](docs/concepts/index.md) |
-| 関数を調べたい | [早見表](docs/reference/cheatsheet.md) / [API リファレンス](docs/reference/api.md) |
+| まず動かしたい | [はじめに](project/Engine/Docs/start/index.md) |
+| ゲームの作り方を一通り知りたい | [チュートリアル: ジェム集めゲームを作る](project/Engine/Docs/tutorial/index.md) |
+| やりたいことのやり方を知りたい | [機能別ガイド](project/Engine/Docs/guides/index.md) |
+| 仕組みを知りたい・エンジンを改造したい | [エンジンの仕組み](project/Engine/Docs/concepts/index.md) |
+| 関数を調べたい | [早見表](project/Engine/Docs/reference/cheatsheet.md) / [API リファレンス](project/Engine/Docs/reference/api.md) |
 
 ---
 
@@ -83,13 +83,15 @@ FromSoheWare エンジンでゲームを作るためのドキュメントです�
 ```text
 FromSoheWare/
 ├── .github/          # GitHub Actions のワークフロー定義
-├── docs/             # 開発ドキュメント・ガイドライン
 ├── generated/        # 自動生成ファイル
 ├── project/          # プロジェクト本体 (ソースコードおよびアセット)
-│   ├── Assets/       # 3Dモデル, テクスチャ, シェーダー(HLSL) などのアセット群
+│   ├── Assets/       # ゲームの3Dモデル, テクスチャ, 音などのアセット群
 │   ├── Engine/       # エンジンのコアシステム
+│   │   ├── Shaders/      # シェーダー(HLSL)
+│   │   ├── Assets/       # エンジンが使うテクスチャ, モデル, フォント, PSO 定義
+│   │   ├── Docs/         # 開発ドキュメント (Sphinx)
+│   │   └── externals/    # ImGui, DirectXTex などの外部ライブラリ
 │   ├── Game/         # ゲーム側のアプリケーション層
-│   ├── externals/    # ImGui, DirectXTex などの外部ライブラリ
 │   ├── packages/     # WinPixEventRuntime (PIXプロファイリング用 NuGet パッケージ)
 │   ├── Cache/        # キャッシュファイル
 │   ├── Dumps/        # クラッシュダンプ

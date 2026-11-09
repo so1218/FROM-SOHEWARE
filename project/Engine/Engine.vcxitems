@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{c4531a48-063d-4cbb-91fe-fcfed031db46}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)Core;$(MSBuildThisFileDirectory)Graphics\RenderSystem;$(MSBuildThisFileDirectory)Audio;$(MSBuildThisFileDirectory)Graphics\Utility;$(MSBuildThisFileDirectory)Graphics\Resource;$(MSBuildThisFileDirectory)Graphics\Device;$(MSBuildThisFileDirectory)Debugs;$(MSBuildThisFileDirectory);$(MSBuildThisFileDirectory)Utility;$(MSBuildThisFileDirectory)Mesh;$(MSBuildThisFileDirectory)Math\Utility;$(MSBuildThisFileDirectory)Shaders;$(MSBuildThisFileDirectory)externals\json;$(MSBuildThisFileDirectory)Graphics\Common;$(MSBuildThisFileDirectory)Collision;$(MSBuildThisFileDirectory)externals\assimp\include;$(MSBuildThisFileDirectory)Graphics\PostProcess;$(MSBuildThisFileDirectory)externals\nlohmann;$(MSBuildThisFileDirectory)Camera;$(MSBuildThisFileDirectory)Graphics\Particle;$(MSBuildThisFileDirectory)Math\Vector;$(MSBuildThisFileDirectory)Math\Matrix;$(MSBuildThisFileDirectory)Math;$(MSBuildThisFileDirectory)Graphics\Animation;$(MSBuildThisFileDirectory)externals\imgui;$(MSBuildThisFileDirectory)externals\ImGuizmo;$(MSBuildThisFileDirectory)Resources;$(MSBuildThisFileDirectory)Graphics\Renderer;$(MSBuildThisFileDirectory)Effect;$(MSBuildThisFileDirectory)externals\DirectXTex;$(MSBuildThisFileDirectory)Framework;$(MSBuildThisFileDirectory)Graphics\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Engine.props" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" />
+    <None Include="$(MSBuildThisFileDirectory)UpdateEngine.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Audio\AudioDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Audio\AudioPlayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Audio\MediaAudioDecoder.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera\Camera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera\CameraManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera\DebugCamera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collision\Collider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collision\CollisionManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Collision\Frustum.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\FrameLimiter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\GlobalVariables.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\Input.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\InputBinding.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\StringUtils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\TimeManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Core\Window.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\DebugDraw.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\DebugGuiManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\DebugLayerManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\DebugUtils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\DevError.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\Grid.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\ImGuiManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\Logger.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\PropertyBinder.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Debugs\PropertyBinderObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Effect\ShakeEffect.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\Application.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\EnvironmentManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\Fade.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\FadeInState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\FadeOutState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\GameObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\GameObjectManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\NormalState.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\ParticleSystemWrapper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Framework\SceneManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationData.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationModel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Device\CommandManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Device\DescriptorHeapManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Device\GraphicsDevice.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Device\SwapChain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleConfigManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleDefinition.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleEditor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleEmitter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BilateralBlurPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BloomPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BrightExtractPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\DoFPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\FinalCompositePass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\IPostEffect.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\NoiseTextureGenerator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\PostEffectManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\SSAOPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\GrassRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LightningRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LineRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\ModelRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\ParticleRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\RendererManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SkyboxRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SkydomeRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SpriteRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TerrainRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TrailRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TreeRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\FoliageSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\GrassSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\LightManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\LightningSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Line.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Model.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\PSOManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RenderCoordinator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RenderPipeline.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RootSignatureBuilder.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RootSignatureManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Skybox.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Skydome.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Sprite.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Terrain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\TreeSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\WorldInteractionSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\DSVManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\GlobalConstants.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\MaterialManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\RTVManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\ShaderManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\ShadowMap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\SRVManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Resource\TextureLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\UI\Font.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\UI\FontManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\UI\Text.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Utility\BlendMode.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Utility\BufferManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Utility\RenderContext.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Utility\ShapeGenerator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Easing.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Matrix\Matrix3x3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Matrix\Matrix4x4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Quaternion.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Utility\MathUtils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Vector\Vector2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Vector\Vector3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\Vector\Vector4.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Math\WorldTransform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Mesh\Mesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Mesh\ModelLoader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources\AnimationManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources\AssetFiles.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources\AudioManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources\ModelManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources\TextureManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_impl_dx12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_impl_win32.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)externals\ImGuizmo\ImGuizmo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Development|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio\AudioDefinition.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio\AudioDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio\AudioPlayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Audio\MediaAudioDecoder.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera\Camera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera\CameraManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera\DebugCamera.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera\ICameraController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collision\Collider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collision\CollisionManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Collision\Frustum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\FrameLimiter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\GlobalVariables.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\Input.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\InputBinding.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\pch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\ProjectConfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\RepeatInput.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\StringUtils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\TimeManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Core\Window.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\DebugDraw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\DebugGuiManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\DebugLayerManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\DebugUtils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\DevError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\EnvironmentWindow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\Grid.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\ImGuiManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\Logger.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Debugs\PropertyBinder.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Effect\ShakeEffect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Engine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\Application.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\BaseScene.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\EnvironmentManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\Fade.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\FadeInState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\FadeOutState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\GameObject.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\GameObjectManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\ISceneTransitionState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\NormalState.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\ParticleSystemWrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\SceneManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Framework\StateMachine.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationData.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Animation\AnimationModel.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Common\PIXColors.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Device\CommandManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Device\DescriptorHeapManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Device\GraphicsDevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Device\SwapChain.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleConfigManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleDefinition.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleEditor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleEmitter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Particle\ParticleSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BilateralBlurPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BloomPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\BrightExtractPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\DoFPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\FinalCompositePass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\IPostEffect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\NoiseTextureGenerator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\PostEffectContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\PostEffectManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\SSAOPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogBilateralPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\GrassRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LightningRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LineRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\ModelRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\ParticleRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\RenderEnvironment.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\RendererManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SkyboxRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SkydomeRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\SpriteRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TerrainRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TrailRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\TreeRenderer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\FoliageSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\GrassSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\LightManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\LightningSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Line.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Model.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\PSOManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RenderCommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RenderCoordinator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RenderPipeline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RootSignatureBuilder.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\RootSignatureManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Skybox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Skydome.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Sprite.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\Terrain.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\TreeSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\RenderSystem\WorldInteractionSystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\DSVManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\GlobalConstants.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\MaterialManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\RTVManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\ShaderManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\ShadowMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\SRVAllocator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\SRVManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\Structures.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Resource\TextureLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\UI\Font.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\UI\FontManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\UI\Text.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\UI\UIAnchor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\UI\UICommon.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Utility\BlendMode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Utility\BufferManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Utility\RenderContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Utility\ShapeGenerator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Easing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Matrix\Matrix.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Matrix\Matrix3x3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Matrix\Matrix4x4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Quaternion.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Utility\MathUtils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\UVTransform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Vector\Vector.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Vector\Vector2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Vector\Vector3.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\Vector\Vector4.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Math\WorldTransform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mesh\Mesh.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Mesh\ModelLoader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources\AnimationManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources\AssetFiles.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources\AudioManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources\ModelManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources\TextureManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imconfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imgui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_impl_dx12.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imstb_rectpack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imstb_textedit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\imgui\imstb_truetype.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)externals\ImGuizmo\ImGuizmo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\CameraUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\FullScreenQuad.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\GridUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\LightingUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\MathUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\NormalUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\Object3D.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\PBRUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\ShaderConstants.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\ShadowUtils.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\Skybox.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Common\Trail.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Debug\Line.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Debug\Line.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Lightning.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Lightning.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Particle.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Particle.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Trail.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Effects\Trail.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Foliage.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Foliage.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\FoliageCulling.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\FoliageGeneration.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Grass.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Grass.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassCulling.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassGeneration.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Skybox.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Skybox.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Skydome.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Skydome.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Terrain.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Terrain.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TerrainCommon.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\Tree.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TreeCulling.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TreeFoliage.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TreeTrunk.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\WorldInteraction.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Object3D.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Object3D_Instanced.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Outline.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\OutlineInstanced.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\OutlineSkinning.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\SkinningObject3d.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\BilateralBlur.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\BrightExtract.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\CopyTexture.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\DoF.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\Downsample.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\FinalComposite.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\FullScreenQuad.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\PostEffects.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\SSAO.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\PostProcess\Upsample.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMap.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMapInstanced.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMapSkinning.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMapTerrain.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMapTree.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Shadow\ShadowMapTreeFoliage.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\UI\Sprite.PS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\UI\Sprite.VS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\FroxelCommon.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\Generate3DNoise.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VolumetricFogBilateral.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VolumetricFogInjection.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VolumetricFogResolve.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VoxelIntegrate.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VoxelSpatialFilter.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Volumetric\VoxelTemporalResolve.CS.hlsl" />
+  </ItemGroup>
+</Project>

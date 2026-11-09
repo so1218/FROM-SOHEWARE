@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Game">
+      <UniqueIdentifier>{6e34a85c-2098-4844-a85c-0b9aa43af7bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Global">
+      <UniqueIdentifier>{549ecec3-2f60-430f-b62f-30c25f4b4917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Scene">
+      <UniqueIdentifier>{1aa1a100-90d3-4443-a0bc-03e5cf46eff5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Global\GameInput.cpp">
+      <Filter>Game\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Scene\MainScene.cpp">
+      <Filter>Game\Scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\CollisionConfig.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\GameDefine.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\GameInput.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Scene\MainScene.h">
+      <Filter>Game\Scene</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
