@@ -66,6 +66,13 @@
     <Copy SourceFiles="$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll;$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
   <!--
+    Visual Studio はコードが変わっていないとビルドを省略するので、Release だけは毎回ビルドを実行させて Package を作り直す
+    コンパイルは変わったところだけなので、時間はほとんど増えない
+  -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+  <!--
     Release をビルドすると、配布できる形のフォルダを出力先の Package に作る
     exe は起動したフォルダからの相対パスで Engine/Assets・Assets・Cache を読むので、exe と同じ階層に並べる
     Release はシェーダーをコンパイルしないため、Development で起動して作った Cache/Shaders を使う
@@ -74,7 +81,7 @@
     <PropertyGroup>
       <GamePackageDirectory>$(OutDir)Package\</GamePackageDirectory>
     </PropertyGroup>
-    <Warning Condition="!Exists('$(ProjectDir)Cache\Shaders')" Text="Cache\Shaders がないので、配布用のフォルダの exe は起動できない。Development で一度起動してから、Release をビルドし直す" />
+    <Error Condition="!Exists('$(ProjectDir)Cache\Shaders')" Text="Cache\Shaders がないので、配布用のフォルダを作れない。Development で一度起動してから、Release をビルドし直す" />
     <ItemGroup>
       <PackageBinaryFile Include="$(OutDir)*.exe;$(OutDir)*.dll" />
       <PackageEngineAssetFile Include="$(MSBuildThisFileDirectory)Assets\**\*" />
@@ -82,6 +89,7 @@
       <PackageShaderCacheFile Include="$(ProjectDir)Cache\Shaders\**\*" />
       <PackageTextureCacheFile Include="$(ProjectDir)Cache\Textures\**\*" />
       <PackageEngineTextureCacheFile Include="$(ProjectDir)Cache\EngineTextures\**\*" />
+      <PackageFontCacheFile Include="$(ProjectDir)Cache\Fonts\**\*" />
     </ItemGroup>
     <!-- 消したアセットが残らないように、毎回作り直す -->
     <RemoveDir Directories="$(GamePackageDirectory)" />
@@ -91,6 +99,7 @@
     <Copy SourceFiles="@(PackageShaderCacheFile)" DestinationFiles="@(PackageShaderCacheFile->'$(GamePackageDirectory)Cache\Shaders\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(PackageTextureCacheFile)" DestinationFiles="@(PackageTextureCacheFile->'$(GamePackageDirectory)Cache\Textures\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(PackageEngineTextureCacheFile)" DestinationFiles="@(PackageEngineTextureCacheFile->'$(GamePackageDirectory)Cache\EngineTextures\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackageFontCacheFile)" DestinationFiles="@(PackageFontCacheFile->'$(GamePackageDirectory)Cache\Fonts\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Message Importance="high" Text="配布用のフォルダを作った: $(GamePackageDirectory)" />
   </Target>
 </Project>
