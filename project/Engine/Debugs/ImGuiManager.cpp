@@ -148,9 +148,7 @@ void ImGuiManager::Initialize(
     // ドッキングプレビュー
     style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.08f, 0.14f, 0.26f, 0.40f);
 
-    // =========================================================
     // レイアウト・丸み・枠線
-    // =========================================================
     style.Alpha = 1.0f;
     style.WindowPadding = ImVec2(10, 10);
     style.FramePadding = ImVec2(6, 4);
