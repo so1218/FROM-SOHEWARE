@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # エンジンのリポジトリ
-$engineRepositoryUrl = "<エンジンのリポジトリの URL>"
+$engineRepositoryUrl = "<https://github.com/so1218/FROM-SOHEWARE-Engine.git>"
 
 function Stop-Update([string]$message)
 {
