@@ -85,7 +85,7 @@ if ($tags -notcontains $Version)
     Stop-Update "$Version という版はない。使える版: $($tags -join ', ')"
 }
 
-# 取り込みはマージなので、Git が管理しているファイルの変更があると混ざって戻せなくなる。
+# 取り込みはマージなので、Git が管理しているファイルの変更があると混ざって戻せなくなる
 # まだ登録していない新しいファイルは取り込みに影響しないので見ない
 $uncommitted = Invoke-Git status --porcelain --untracked-files=no
 if ($uncommitted)

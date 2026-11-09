@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
-  エンジンを使うプロジェクトが読み込むビルド設定。
-  エンジンが動くために必要なものだけを置き、ゲームごとに決めてよい設定 (警告レベル・最適化・出力先など) はゲームの vcxproj に書く。
-  構成名は Debug / Development / Release の 3 つを前提にしている。
+  エンジンを使うプロジェクトが読み込むビルド設定
+  エンジンが動くために必要なものだけを置き、ゲームごとに決めてよい設定 (警告レベル・最適化・出力先など) はゲームの vcxproj に書く
+  構成名は Debug / Development / Release の 3 つを前提にしている
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -25,9 +25,9 @@
     </Link>
   </ItemDefinitionGroup>
   <!--
-    開発用の構成 (Debug・Development) だけ、エディター画面とデバッグ機能を入れる。
-    Release でも使いたいゲームは、自分の vcxproj の Release に ENABLE_IMGUI などを足す。
-    assimp の lib が /MT でビルドされているので、ランタイムも静的リンクにそろえる。
+    開発用の構成 (Debug・Development) だけ、エディター画面とデバッグ機能を入れる
+    Release でも使いたいゲームは、自分の vcxproj の Release に ENABLE_IMGUI などを足す
+    assimp の lib が /MT でビルドされているので、ランタイムも静的リンクにそろえる
   -->
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -66,9 +66,9 @@
     <Copy SourceFiles="$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll;$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
   <!--
-    Release をビルドすると、配布できる形のフォルダを出力先の Package に作る。
-    exe は起動したフォルダからの相対パスで Engine/Assets・Assets・Cache を読むので、exe と同じ階層に並べる。
-    Release はシェーダーをコンパイルしないため、Development で起動して作った Cache/Shaders を使う。
+    Release をビルドすると、配布できる形のフォルダを出力先の Package に作る
+    exe は起動したフォルダからの相対パスで Engine/Assets・Assets・Cache を読むので、exe と同じ階層に並べる
+    Release はシェーダーをコンパイルしないため、Development で起動して作った Cache/Shaders を使う
   -->
   <Target Name="PackageGame" AfterTargets="Build" DependsOnTargets="CopyShaderCompilerDlls" Condition="'$(Configuration)'=='Release' and '$(ConfigurationType)'=='Application'">
     <PropertyGroup>
