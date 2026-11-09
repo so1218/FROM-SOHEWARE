@@ -18,10 +18,23 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# 途中で移動するので、終わったら (止まったときも) 実行した場所に戻す
+$originalLocation = Get-Location
+function Exit-Script([int]$exitCode)
+{
+    Set-Location $originalLocation
+    exit $exitCode
+}
+trap
+{
+    Set-Location $originalLocation
+    break
+}
+
 function Stop-Release([string]$message)
 {
     Write-Host $message -ForegroundColor Red
-    exit 1
+    Exit-Script 1
 }
 
 function Invoke-Git
@@ -99,3 +112,4 @@ Invoke-Git push $Remote "${releaseCommit}:refs/tags/$Version" | Out-Null
 
 Write-Host "$Version を出した ($releaseCommit)" -ForegroundColor Green
 Write-Host "2 年生には、版の番号と CHANGELOG の内容を伝える"
+Set-Location $originalLocation

@@ -12,13 +12,26 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# 途中で移動するので、終わったら (止まったときも) 実行した場所に戻す
+$originalLocation = Get-Location
+function Exit-Script([int]$exitCode)
+{
+    Set-Location $originalLocation
+    exit $exitCode
+}
+trap
+{
+    Set-Location $originalLocation
+    break
+}
+
 # エンジンのリポジトリ
 $engineRepositoryUrl = "https://github.com/so1218/FROM-SOHEWARE-Engine.git"
 
 function Stop-Update([string]$message)
 {
     Write-Host $message -ForegroundColor Red
-    exit 1
+    Exit-Script 1
 }
 
 function Invoke-Git
@@ -64,7 +77,7 @@ if (-not $Version)
     Write-Host "今の版: $currentVersion"
     Write-Host "使える版: $($tags -join ', ')"
     Write-Host "更新するときは .\$enginePrefix\UpdateEngine.ps1 <版> で実行する"
-    exit 0
+    Exit-Script 0
 }
 
 if ($tags -notcontains $Version)
@@ -90,17 +103,18 @@ if ($LASTEXITCODE -ne 0)
     Write-Host "更新に失敗した。$enginePrefix の中を直接直したところがぶつかっている可能性が高い" -ForegroundColor Red
     Write-Host "元に戻すには: git merge --abort"
     Write-Host "戻したら、エンジンの担当者に相談する"
-    exit 1
+    Exit-Script 1
 }
 
 # 最後に取り込んだ版と同じ版を指定すると、git は何もせずに成功する
 if ((Invoke-Git rev-parse HEAD) -eq $headBeforeUpdate)
 {
     Write-Host "$Version はすでに取り込んであるので、何も変わらなかった" -ForegroundColor Yellow
-    exit 0
+    Exit-Script 0
 }
 
 Write-Host "$Version に切り替えた" -ForegroundColor Green
 Write-Host "1. $enginePrefix/CHANGELOG.md の $Version の「対応が必要」を読んで、ゲームのコードを直す"
 Write-Host "2. Visual Studio でリビルドして、起動を確かめる"
 Write-Host "3. git push する。うまく動かないときは .\$enginePrefix\UpdateEngine.ps1 $currentVersion で前の版に戻せる"
+Set-Location $originalLocation
