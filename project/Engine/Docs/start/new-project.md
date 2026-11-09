@@ -52,6 +52,7 @@ MyGame/                  自分のリポジトリ
 | `Game/Global/` | シーン名・タグ・入力の割り当て・当たり判定のレイヤー ([コードの決まり](../concepts/conventions.md)) |
 | `Assets/Data/FontList.csv` | 文字のフォント。最初はエンジンが持っている NotoSansJP を使う |
 | `.gitignore` | `Cache/` やビルド結果を Git に入れないための設定 |
+| `README.md` | GitHub でリポジトリを開いたときに出る説明。ドキュメントへのリンクが入っている。ゲームの名前と説明を書き換えて使う (GitHub が作った README は上書きされる) |
 
 エンジンが使うテクスチャ・モデル・フォントは `Engine/Assets/` に入っているので、ゲーム側で用意しなくても `white1x1` や `noise_39` などの名前で使えます ([アセットの追加](../guides/assets.md))。
 
