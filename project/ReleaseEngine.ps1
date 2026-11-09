@@ -74,11 +74,28 @@ if ($existingTag)
     Stop-Release "$Version はすでに出している。新しい版の番号を指定する"
 }
 
-Write-Host "$enginePrefix の履歴を切り出している (初回は数分かかる)..."
-$splitCommit = (Invoke-Git subtree split --prefix=$enginePrefix) | Select-Object -Last 1
+# 今の Engine の中身をそのまま 1 つのコミットにして、前の版の続きとして出す。
+# 2 年生は --squash で取り込むので、細かい履歴は配らない (履歴はこのリポジトリにある)
+$engineTree = Invoke-Git rev-parse "HEAD:$enginePrefix"
+$sourceCommit = Invoke-Git rev-parse --short HEAD
+$parentArguments = @()
 
-Invoke-Git push $Remote "${splitCommit}:refs/heads/main" | Out-Null
-Invoke-Git push $Remote "${splitCommit}:refs/tags/$Version" | Out-Null
+if (Invoke-Git ls-remote --heads $Remote main)
+{
+    # タグはこのリポジトリのタグと混ざらないように取ってこない
+    Invoke-Git fetch --quiet --no-tags $Remote main
+    $previousRelease = Invoke-Git rev-parse FETCH_HEAD
+    if ((Invoke-Git rev-parse "${previousRelease}^{tree}") -eq $engineTree)
+    {
+        Stop-Release "前の版から $enginePrefix の中身が変わっていない"
+    }
+    $parentArguments = @("-p", $previousRelease)
+}
 
-Write-Host "$Version を出した ($splitCommit)" -ForegroundColor Green
+$releaseCommit = Invoke-Git commit-tree $engineTree @parentArguments -m $Version -m "元のリポジトリのコミット: $sourceCommit"
+
+Invoke-Git push $Remote "${releaseCommit}:refs/heads/main" | Out-Null
+Invoke-Git push $Remote "${releaseCommit}:refs/tags/$Version" | Out-Null
+
+Write-Host "$Version を出した ($releaseCommit)" -ForegroundColor Green
 Write-Host "2 年生には、版の番号と CHANGELOG の内容を伝える"

@@ -72,15 +72,17 @@ if ($tags -notcontains $Version)
     Stop-Update "$Version という版はない。使える版: $($tags -join ', ')"
 }
 
-# 取り込みはマージなので、作業中の変更があると混ざって戻せなくなる
-$uncommitted = Invoke-Git status --porcelain
+# 取り込みはマージなので、Git が管理しているファイルの変更があると混ざって戻せなくなる。
+# まだ登録していない新しいファイルは取り込みに影響しないので見ない
+$uncommitted = Invoke-Git status --porcelain --untracked-files=no
 if ($uncommitted)
 {
     Write-Host ($uncommitted -join "`n")
     Stop-Update "コミットしていない変更がある。コミットしてからやり直す"
 }
 
-Write-Host "$currentVersion から $Version に更新する..."
+Write-Host "$currentVersion から $Version に切り替える..."
+$headBeforeUpdate = Invoke-Git rev-parse HEAD
 
 & git subtree pull --prefix=$enginePrefix $engineRepositoryUrl $Version --squash -m "Update engine to $Version"
 if ($LASTEXITCODE -ne 0)
@@ -91,7 +93,14 @@ if ($LASTEXITCODE -ne 0)
     exit 1
 }
 
-Write-Host "$Version に更新した" -ForegroundColor Green
+# 最後に取り込んだ版と同じ版を指定すると、git は何もせずに成功する
+if ((Invoke-Git rev-parse HEAD) -eq $headBeforeUpdate)
+{
+    Write-Host "$Version はすでに取り込んであるので、何も変わらなかった" -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "$Version に切り替えた" -ForegroundColor Green
 Write-Host "1. $enginePrefix/CHANGELOG.md の $Version の「対応が必要」を読んで、ゲームのコードを直す"
 Write-Host "2. Visual Studio でリビルドして、起動を確かめる"
-Write-Host "3. git push する。うまく動かないときは git revert -m 1 HEAD で更新を取り消せる"
+Write-Host "3. git push する。うまく動かないときは .\$enginePrefix\UpdateEngine.ps1 $currentVersion で前の版に戻せる"

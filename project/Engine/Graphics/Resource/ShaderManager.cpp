@@ -5,6 +5,28 @@
 namespace FS
 {
 
+namespace
+{
+
+// Debug は最適化せず、シェーダーのデバッガーで 1 行ずつ追えるようにする。
+// Development は最適化してコンパイルし、Release はその結果を読む。保存先を分けて、Release が最適化していないものを使わないようにする
+#ifdef _DEBUG
+const fs::path kShaderCacheDirectory = L"Cache/ShadersDebug";
+const wchar_t* const kOptimizationArgument = L"-Od";
+#else
+const fs::path kShaderCacheDirectory = L"Cache/Shaders";
+const wchar_t* const kOptimizationArgument = L"-O3";
+#endif
+
+// コンパイルの設定を変えたら書き換える。保存してある設定と違えば、古いキャッシュを消してコンパイルし直す
+#ifdef _DEBUG
+const std::string kCompileSettings = "-Zpr -Zi -Qembed_debug -Od";
+#else
+const std::string kCompileSettings = "-Zpr -Zi -Qembed_debug -O3";
+#endif
+
+}
+
 // blob をファイルに書き出す
 bool SaveBlobToFile(const fs::path& filePath, IDxcBlob* blob)
 {
@@ -36,6 +58,23 @@ void ShaderManager::Initialize()
 
     hr = dxcUtils_->CreateDefaultIncludeHandler(&includeHandler_);
     assert(SUCCEEDED(hr));
+
+#ifdef ENABLE_DEV_TOOLS
+    // .cso は元のファイルより新しければ使い回すので、設定を変えただけでは作り直されない。設定が違うキャッシュは消す
+    const fs::path settingsPath = kShaderCacheDirectory / L"CompileSettings.txt";
+    std::string savedSettings;
+    if (std::ifstream settingsFile(settingsPath); settingsFile)
+    {
+        std::getline(settingsFile, savedSettings);
+    }
+    if (savedSettings != kCompileSettings)
+    {
+        std::error_code errorCode;
+        fs::remove_all(kShaderCacheDirectory, errorCode);
+        fs::create_directories(kShaderCacheDirectory);
+        std::ofstream(settingsPath) << kCompileSettings;
+    }
+#endif
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring& filePath, const wchar_t* profile)
@@ -43,7 +82,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
     // キャッシュパスの統一
     fs::path srcPath(filePath);
     fs::path relativePath = fs::relative(srcPath, L"Engine/Shaders");
-    fs::path csoPath = L"Cache/Shaders" / relativePath;
+    fs::path csoPath = kShaderCacheDirectory / relativePath;
     csoPath.replace_extension(L".cso");
 
 #ifndef ENABLE_DEV_TOOLS
@@ -82,7 +121,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
         L"-T", profile,
         L"-Zpr",
         L"-I", absoluteShaderDir.c_str(),
-        L"-Zi", L"-Qembed_debug", L"-Od" // 開発用デバッグ情報
+        L"-Zi", L"-Qembed_debug", // PIX などでシェーダーを調べられるようにデバッグ情報を埋め込む
+        kOptimizationArgument,
     };
 
     Microsoft::WRL::ComPtr<IDxcBlobEncoding> shaderSource;

@@ -83,8 +83,10 @@ flowchart TD
 
 ## シェーダーのキャッシュ
 
-- 開発用の構成では、起動時にシェーダーをコンパイルし、結果を `Cache/Shaders/` に保存する。元のファイルより新しい結果があればそれを使う
+- Development は、起動時にシェーダーを最適化してコンパイルし、結果を `Cache/Shaders/` に保存する。元のファイルより新しい結果があればそれを使う
+- Debug は最適化せずにコンパイルし、`Cache/ShadersDebug/` に保存する。シェーダーのデバッガーで 1 行ずつ追えるようにするため
 - Release はコンパイルせず `Cache/Shaders/` の結果だけを使う。シェーダーを変えたら、Release の前に Development で一度起動する
+- コンパイルの設定 (`ShaderManager.cpp` の `kCompileSettings`) を変えると、次の起動で古い結果を消してコンパイルし直す
 
 ## リソースの管理
 
