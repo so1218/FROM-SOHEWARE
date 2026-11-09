@@ -44,6 +44,8 @@ public:
     static Vector3 Slerp(const Vector3& start, const Vector3& end, float t);
     static Vector3 Lerp(const Vector3& current, const Vector3& target, float maxDelta);
     static Vector3 CatmullRomInterpolation(const std::vector<Vector3>& controlPoints, float t);
+    // 成分ごとに掛ける (x * x, y * y, z * z)。大きさのスケールを位置や大きさに掛けるときに使う
+    static Vector3 Scale(const Vector3& a, const Vector3& b);
 
     // 方向ベクトルを返す静的関数
     static Vector3 Up() { return Vector3(0.0f, 1.0f, 0.0f); }

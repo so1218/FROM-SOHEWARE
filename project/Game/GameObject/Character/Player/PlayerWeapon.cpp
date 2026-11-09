@@ -15,11 +15,7 @@ using namespace FS;
 
 namespace
 {
-    constexpr float kDegToRad = Math::PI / 180.0f;
     constexpr float kEjectShrinkTime = 0.2f;    // 消える前に小さくなる時間
-
-    // マガジンを出したときの音。Assets/Audio に置けば鳴る
-    const char* const kMagazineEjectSound = "magazineEject";
 }
 
 PlayerWeapon::PlayerWeapon(FS::Engine* engine)
@@ -119,7 +115,7 @@ void PlayerWeapon::Update(const Matrix4x4& handWorldMatrix, Camera* camera)
 
     if (config_.reloadTiltAxis.LengthSq() > 0.0001f)
     {
-        const float tiltAngle = config_.reloadTiltAngle * kDegToRad * CalculateReloadTilt();
+        const float tiltAngle = config_.reloadTiltAngle * Math::PI / 180.0f * CalculateReloadTilt();
         reloadTiltTransform_.SetRotation(Quaternion::FromAxisAngle(config_.reloadTiltAxis.Normalize(), tiltAngle));
     }
 
@@ -321,7 +317,7 @@ float PlayerWeapon::CalculateReloadTilt() const
 void PlayerWeapon::DropMagazine()
 {
     Eject(config_.magazine, "cube", magazineModel_.get());
-    AudioPlayer::GetInstance().Play(kMagazineEjectSound, 0.4f);
+    AudioPlayer::GetInstance().Play("magazineEject", 0.4f);
 }
 
 void PlayerWeapon::Eject(const EjectSettings& settings, const std::string& modelName, const Model* materialSource)

@@ -177,7 +177,7 @@ void PlayerAmmoDisplay::DrawReloadPrompt(const PlayerWeapon& weapon)
         return;
     }
 
-    // 弾切れ。点滅させて目に入るようにする
+    // 弾切れ
     Vector4 color = lowAmmoColor_;
     color.w *= 0.6f + 0.4f * (std::cos(elapsedTime_ * 6.0f) * 0.5f + 0.5f);
 

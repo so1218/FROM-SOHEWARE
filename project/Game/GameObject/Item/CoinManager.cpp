@@ -8,15 +8,6 @@
 
 using namespace FS;
 
-namespace
-{
-    const Vector3 kUp = { 0.0f, 1.0f, 0.0f };
-    constexpr float kTiltAngle = 0.35f;   // 面が光を受けるよう、少し傾けて回す (ラジアン)
-
-    // 拾ったときの音。Assets/Audio に置けば鳴る
-    const char* const kCollectSound = "coinCollect";
-}
-
 CoinManager::CoinManager(Engine* engine, Player* player, const Terrain* terrain)
     : engine_(engine), player_(player), terrain_(terrain), random_(std::random_device{}())
 {
@@ -45,6 +36,7 @@ void CoinManager::Initialize()
     binder_->Bind("Bounce", &c.bounce, c.bounce, 0.01f, 0.0f, 1.0f);
     binder_->Bind("RestSpeed", &c.restSpeed, c.restSpeed, 0.05f, 0.0f, 20.0f);
     binder_->Bind("SpinSpeed", &c.spinSpeed, c.spinSpeed, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("TiltAngle", &c.tiltAngle, c.tiltAngle, 0.01f, -1.57f, 1.57f);
     binder_->Bind("MagnetDelay", &c.magnetDelay, c.magnetDelay, 0.01f, 0.0f, 5.0f);
     binder_->Bind("MagnetRadius", &c.magnetRadius, c.magnetRadius, 0.1f, 0.0f, 100.0f);
     binder_->Bind("MagnetAcceleration", &c.magnetAcceleration, c.magnetAcceleration, 1.0f, 0.0f, 1000.0f);
@@ -169,7 +161,7 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
 
     WorldTransform& transform = coin.model->GetTransform();
     transform.translation_ = coin.position;
-    transform.SetRotation(Quaternion::FromAxisAngle(kUp, coin.spinAngle) * Quaternion::FromAxisAngle({ 1.0f, 0.0f, 0.0f }, kTiltAngle));
+    transform.SetRotation(Quaternion::FromAxisAngle({ 0.0f, 1.0f, 0.0f }, coin.spinAngle) * Quaternion::FromAxisAngle({ 1.0f, 0.0f, 0.0f }, config_.tiltAngle));
     transform.scale_ = config_.scale;
 }
 
@@ -218,7 +210,7 @@ void CoinManager::Collect(Coin& coin)
 {
     coin.isCollected = true;
     player_->AddMoney(config_.valuePerCoin);
-    AudioPlayer::GetInstance().Play(kCollectSound, 0.3f);
+    AudioPlayer::GetInstance().Play("coinCollect", 0.3f);
 }
 
 // 1 回分ずつ、残っている枚数の中心に点光源を置く。点光源の数には上限があるので、近いものだけ照らす
@@ -256,7 +248,7 @@ void CoinManager::SubmitBurstLights(const Vector3& playerCenter)
         const Vector3 center = burst.positionSum / static_cast<float>(burst.count);
         const float remainingRatio = static_cast<float>(burst.count) / static_cast<float>(config_.coinsPerBurst);
         engine_->GetLightManager()->SubmitPointLight(
-            center + kUp * config_.lightHeight,
+            center + Vector3{ 0.0f, 1.0f, 0.0f } * config_.lightHeight,
             config_.lightColor,
             config_.lightIntensity * std::min(remainingRatio, 1.0f),
             config_.lightRadius,
@@ -303,6 +295,7 @@ void CoinManager::DebugGui()
         binder_->Draw("Bounce", "跳ね返り");
         binder_->Draw("RestSpeed", "止まる速さ");
         binder_->Draw("SpinSpeed", "回る速さ");
+        binder_->Draw("TiltAngle", "回るときの傾き (ラジアン)");
         ImGui::TreePop();
     }
 

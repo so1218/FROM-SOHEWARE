@@ -83,6 +83,7 @@
 | :--- | :--- |
 | 長さ・正規化 | `v.Length()` / `v.Normalize()` |
 | 内積・外積 | `a.Dot(b)` / `a.Cross(b)` |
+| 成分ごとに掛ける | `Vector3::Scale(a, b)` |
 | 2 点の間 | `Math::Lerp(a, b, t)` |
 | ベクトルを回転させる | `rotation.RotateVector(v)` |
 | 回転のなめらかな補間 | `Quaternion::Slerp(from, to, t)` |

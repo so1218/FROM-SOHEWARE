@@ -25,11 +25,11 @@ public:
 
     void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
-    // 被弾処理。hitCollider は弾が当たったコライダー (弱点の判定に使う)
+    // 被弾処理
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal, const FS::Collider* hitCollider = nullptr);
     void Die();
     void Despawn();
-    // 倒されて消えたか。Despawn で消えたときは false
+    // 倒されて消えたか
     bool IsDefeated() const { return isDefeated_; }
 
     // アクセサ
@@ -48,7 +48,7 @@ private:
     EnemyType type_;
 
     std::unique_ptr<FS::Model> model_;
-    FS::Collider* collider_ = nullptr; // 所有は GameObject (AddBoxCollider で作成)
+    FS::Collider* collider_ = nullptr; 
     std::unique_ptr<FS::PropertyBinder> binder_;
     FS::ParticleEmitter* damageParticlePtr_ = nullptr;
 

@@ -12,16 +12,6 @@
 
 using namespace FS;
 
-namespace
-{
-    Vector3 MultiplyEach(const Vector3& a, const Vector3& b)
-    {
-        return { a.x * b.x, a.y * b.y, a.z * b.z };
-    }
-
-    constexpr float kPropellerSpeed = 40.0f;   // スラスターの回る速さ (ラジアン / 秒)
-}
-
 FloatingBehavior::FloatingBehavior(const FloatingEnemyConfig& config, const Terrain* terrain, const Model* thrusterSourceModel)
     : config_(config), thrusterSourceModel_(thrusterSourceModel), terrain_(terrain), random_(std::random_device{}())
 {
@@ -83,7 +73,7 @@ void FloatingBehavior::Update(Enemy* owner)
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
     elapsedTime_ += deltaTime;
     stateTimer_ += deltaTime;
-    propellerAngle_ = std::fmod(propellerAngle_ + kPropellerSpeed * deltaTime, Math::PI * 2.0f);
+    propellerAngle_ = std::fmod(propellerAngle_ + config_.propellerSpeed * deltaTime, Math::PI * 2.0f);
 
     if (!player_)
     {
@@ -459,12 +449,12 @@ void FloatingBehavior::UpdateThrusters(Enemy* owner)
     const WorldTransform& body = owner->GetTransform();
 
     // コライダーは回転だけ反映するので、機体のスケールはここで掛けておく
-    const Vector3 colliderSize = MultiplyEach(config_.thrusterColliderSize, body.scale_);
-    const Vector3 modelScale = MultiplyEach(config_.thrusterScale, body.scale_);
+    const Vector3 colliderSize = Vector3::Scale(config_.thrusterColliderSize, body.scale_);
+    const Vector3 modelScale = Vector3::Scale(config_.thrusterScale, body.scale_);
 
     for (int thrusterIndex = 0; thrusterIndex < kThrusterCount; ++thrusterIndex)
     {
-        const Vector3 offset = MultiplyEach(GetThrusterLocalPosition(thrusterIndex), body.scale_);
+        const Vector3 offset = Vector3::Scale(GetThrusterLocalPosition(thrusterIndex), body.scale_);
         const bool isAlive = thrusterHP_[thrusterIndex] > 0;
 
         Collider* collider = thrusterColliders_[thrusterIndex];
@@ -610,6 +600,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("ThrusterScale", &thrusterScale, { 0.5f, 0.5f, 0.5f });
     binder.Bind("ThrusterColliderSize", &thrusterColliderSize, { 1.0f, 1.0f, 1.0f });
     binder.Bind("ThrusterHP", &thrusterMaxHP, 30, 1.0f, 1, 10000);
+    binder.Bind("PropellerSpeed", &propellerSpeed, 40.0f, 0.5f, 0.0f, 200.0f);
     binder.Bind("BodyDamageRate", &bodyDamageRate, 0.3f, 0.01f, 0.0f, 1.0f);
     binder.Bind("ThrustersToCrash", &thrustersToCrash, 2, 1.0f, 1, 4);
 
@@ -674,6 +665,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("ThrusterScale", "スラスターのスケール");
         binder.Draw("ThrusterColliderSize", "スラスターの当たり判定の大きさ");
         binder.Draw("ThrusterHP", "スラスター 1 基の HP");
+        binder.Draw("PropellerSpeed", "プロペラの回る速さ (ラジアン / 秒)");
         binder.Draw("BodyDamageRate", "本体へのダメージ倍率");
         binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");
         binder.Draw("CrashTime", "地面に届かないときに爆発するまで (秒)");

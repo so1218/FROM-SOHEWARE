@@ -38,19 +38,19 @@ public:
 		float gravity = 29.8f;
 		float airControlRate = 0.8f;
 
-		float aimMoveSpeed = 0.08f;       // エイム中の移動速度
+		float aimMoveSpeed = 0.08f;       
 		float aimIdleAnimSpeed = 0.5f;
 		float aimWalkAnimSpeed = 0.8f;
-		float aimBlendTime = 0.1f;        // エイム中のアニメーションを切り替えるときの補間時間
+		float aimBlendTime = 0.1f;        
 
 		// 武器威力・弾道調整
-		float maxDamageMultiplier = 1.5f;    // 完全フォーカス時の威力倍率
-		float maxBulletSpread = 0.04f;       // 未フォーカス時の弾道の最大ブレ角
+		float maxDamageMultiplier = 1.5f;    
+		float maxBulletSpread = 0.04f;       
 
 		// ダッシュ
-		float sprintSpeedRate = 1.5f;          // 走りの速さに対する倍率
+		float sprintSpeedRate = 1.5f;         
 		float sprintAnimSpeed = 1.3f;
-		float sprintStaminaPerSecond = 20.0f;  // 1 秒あたりに使うスタミナ
+		float sprintStaminaPerSecond = 20.0f;  
 
 		// 回避
 		float dodgeDistance = 12.0f;
@@ -72,17 +72,17 @@ public:
 	void DebugGui() override;
 	void OnCollisionEnter(FS::Collider* mine, FS::Collider* other) override;
 
-	void FireWeapon(); // 射撃時の処理
-	void TakeDamage(int damage); // 回避中は当たらない
-	// 初期位置に戻して HP やスタミナも元に戻す
-	void ResetToSpawn();
-	int GetShotCount() const { return shotCount_; } // これまでに撃った数 (チュートリアルの判定用)
+	void FireWeapon();
+	void TakeDamage(int damage); 
 
-	// 所持金。敵を倒して拾ったお金を、夕方の強化などに使う
+	void ResetToSpawn();
+	int GetShotCount() const { return shotCount_; } 
+
+	// 所持金
 	void AddMoney(int amount);
-	bool TrySpend(int amount);   // 足りなければ使わずに false
+	bool TrySpend(int amount);  
 	int GetMoney() const { return money_; }
-	void UpdateAimRotation(); // エイム時カメラの正面に体を向ける
+	void UpdateAimRotation(); 
 
 	// Stateから呼び出すヘルパー関数
 	void UpdateRotation(const FS::Vector3& moveDir);
@@ -96,7 +96,7 @@ public:
 		animationModel_->Play(name, loop, speed, blendTime);
 	}
 
-	// カメラから見た移動の入力。フレームの初めに1回だけ読む
+	// カメラから見た移動の入力
 	const FS::Vector3& GetMoveDirection() const { return moveDirection_; }
 	bool IsMoving() const { return moveDirection_.LengthSq() > kMovingThreshold * kMovingThreshold; }
 	FS::Vector3 GetLastMoveDirection() const { return lastMoveDirection_; }
@@ -138,7 +138,7 @@ public:
 	bool IsReloadInputTriggered() const;
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); }
 
-	// false の間は入力を受け付けず、HUD も出さない (タイトル画面など)
+	// false の間は入力を受け付けず、HUD も出さない
 	void SetControllable(bool isControllable) { isControllable_ = isControllable; }
 	bool IsControllable() const { return isControllable_; }
 
@@ -178,9 +178,9 @@ private:
 	float interactionForce_ = 1.0f;
 	float maxVerticalDist_ = 2.0f;
 
-	bool isGroundedOnObject_ = false; // オブジェクトの上に乗っているか
+	bool isGroundedOnObject_ = false; 
 
-	float prevAnimNormalizedTime_ = 0.0f; // 前フレームのアニメーション進捗率
+	float prevAnimNormalizedTime_ = 0.0f;
 
 	// ダッシュ・回避
 	void UpdateSprintInput();
@@ -188,10 +188,10 @@ private:
 	std::unique_ptr<PlayerStamina> stamina_;
 	std::unique_ptr<PlayerHealth> health_;
 	void PlaceAtSpawn();
-	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };   // 始まりの位置。倒れたときもここに戻る
-	float spawnRotationY_ = 0.0f;                         // 始まりの向き (度)
+	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
+	float spawnRotationY_ = 0.0f;                        
 	bool isSprintInputActive_ = false;
-	bool isControllerSprintLatched_ = false;   // コントローラーは L3 でダッシュを始め、スティックを離すまで続ける
+	bool isControllerSprintLatched_ = false;   
 
 	int shotCount_ = 0;
 	bool isControllable_ = true;

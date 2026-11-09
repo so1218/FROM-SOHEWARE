@@ -2,7 +2,7 @@
 #include "PropertyBinder.h"
 #include "Sprite.h"
 
-// プレイヤーの HP。被弾すると画面が一瞬赤くなる
+// プレイヤーの HP
 class PlayerHealth
 {
 public:

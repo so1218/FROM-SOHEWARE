@@ -125,6 +125,11 @@ Vector3 Vector3::Cross(const Vector3& other) const
 }
 
 // 静的メンバ関数の定義
+Vector3 Vector3::Scale(const Vector3& a, const Vector3& b)
+{
+    return Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
 float Vector3::DistanceSquared(const Vector3& v1, const Vector3& v2)
 {
     float dx = v1.x - v2.x;
