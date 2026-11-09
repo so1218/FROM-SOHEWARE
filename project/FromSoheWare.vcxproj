@@ -374,6 +374,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Math\Quaternion.cpp" />
     <ClCompile Include="Game\GameObject\Field\TreeField.cpp" />
     <ClCompile Include="Game\GameObject\Field\WeatherEffectManager.cpp" />
+    <ClCompile Include="Engine\Framework\Application.cpp" />
     <ClCompile Include="Engine\Framework\SceneManager.cpp" />
     <ClCompile Include="Game\Scene\TestScene\TestScene.cpp" />
     <ClCompile Include="Game\GameObject\Field\Environment.cpp" />
@@ -564,6 +565,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Collision\CollisionManager.h" />
     <ClInclude Include="Engine\Math\Quaternion.h" />
     <ClInclude Include="Engine\Framework\BaseScene.h" />
+    <ClInclude Include="Engine\Framework\Application.h" />
     <ClInclude Include="Engine\Framework\SceneManager.h" />
     <ClInclude Include="Game\Scene\TestScene\TestScene.h" />
     <ClInclude Include="Game\GameObject\Field\Environment.h" />

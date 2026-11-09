@@ -1,25 +1,8 @@
 #pragma once
-#include "SceneManager.h"
-#include "DebugUtils.h"
+#include "Application.h"
 
-namespace FS
-{
-    class Engine;
-}
-
-class Game
+class Game : public FS::Application
 {
 public:
     Game();
-    ~Game();
-
-    void Run();
-    void Update();
-    void Draw();
-    void DebugGui();
-
-private:
-    std::unique_ptr<FS::Engine> engine_;
-    FS::SceneManager sceneManager_;
 };
-

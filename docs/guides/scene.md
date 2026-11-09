@@ -31,8 +31,9 @@ private:
 作ったシーンは `Game/Game.cpp` で登録します。シーンの名前は `Game/Global/GameDefine.h` の `SceneName` にまとめます。
 
 ```cpp
-sceneManager_.RegisterScene(std::make_unique<TitleScene>(engine_.get()));
-sceneManager_.SetInitialScene(SceneName::Title);   // 起動したときのシーン
+// Game のコンストラクタで
+GetSceneManager().RegisterScene(std::make_unique<TitleScene>(GetEngine()));
+GetSceneManager().SetInitialScene(SceneName::Title);   // 起動したときのシーン
 ```
 
 ## シーンを切り替える
@@ -50,6 +51,10 @@ void TitleScene::OnUpdate()
 ```
 
 すぐには切り替わらず、フェードアウト → 切り替え → フェードインの順に進みます。フェードの長さはエディター画面の「フェード設定」ウィンドウで調整できます。
+
+## ゲームを終える
+
+「ゲームを終了」のメニューなどからは、`engine_->RequestQuit()` を呼びます。そのフレームの処理を最後まで終えてから、ゲームが終了します。
 
 ## シーンが持っているもの
 

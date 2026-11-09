@@ -75,18 +75,20 @@ void SampleScene::OnInitialize()
 #include "SampleScene.h"   // 追加
 
 Game::Game()
-    : engine_(std::make_unique<Engine>())
+    : Application(MakeConfig())
 {
-    // ...
+    SceneManager& sceneManager = GetSceneManager();
 
-    sceneManager_.RegisterScene(std::make_unique<PlayScene>(engine_.get()));
-    sceneManager_.RegisterScene(std::make_unique<TestScene>(engine_.get()));
-    sceneManager_.RegisterScene(std::make_unique<SampleScene>(engine_.get()));   // 追加
+    sceneManager.RegisterScene(std::make_unique<PlayScene>(GetEngine()));
+    sceneManager.RegisterScene(std::make_unique<TestScene>(GetEngine()));
+    sceneManager.RegisterScene(std::make_unique<SampleScene>(GetEngine()));   // 追加
 
     // 起動したときに最初に開くシーン。作っている間はこれにしておくと楽
-    sceneManager_.SetInitialScene(SceneName::Sample);
+    sceneManager.SetInitialScene(SceneName::Sample);
 }
 ```
+
+`Game` は、ウィンドウの設定 (`MakeConfig`) とシーンの登録だけを書く場所です。メインループや 1 フレームの処理の順番はエンジン (`FS::Application`) が受け持つので、ここに書く必要はありません。
 
 ## 動かしてみる
 

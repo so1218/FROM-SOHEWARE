@@ -12,12 +12,24 @@
 
 | 名前 | 内容 |
 | :--- | :--- |
+| {ref}`FS::Application <api-fs-application>` | メインループ。ゲームは継承してシーンを登録する |
 | {ref}`FS::BaseScene <api-fs-basescene>` | シーンの基底クラス。派生して OnInitialize などを上書きする |
 | {ref}`FS::SceneManager <api-fs-scenemanager>` | シーンの登録と切り替え |
 | {ref}`FS::GameObject <api-fs-gameobject>` | シーンに置くものの基底クラス |
 | {ref}`FS::GameObjectManager <api-fs-gameobjectmanager>` | シーンに置いたものの作成・検索 |
 | {ref}`State <api-state>` | 状態の基底クラス |
 | {ref}`StateMachine <api-statemachine>` | 状態の切り替え |
+
+(api-fs-application)=
+### FS::Application
+
+ヘッダー: `Engine/Framework/Application.h`
+
+```{doxygenclass} FS::Application
+:members:
+:protected-members:
+:undoc-members:
+```
 
 (api-fs-basescene)=
 ### FS::BaseScene

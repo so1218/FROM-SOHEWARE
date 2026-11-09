@@ -18,16 +18,16 @@ const std::vector<InputBinding>& GetBindings(GameAction action)
 {
     static const std::unordered_map<GameAction, std::vector<InputBinding>> kBindings =
     {
-        { GameAction::Sprint,  { Key(DIK_LSHIFT), Pad(PadButton::L3) } },
-        { GameAction::Dodge,   { Key(DIK_LCONTROL), Pad(PadButton::B) } },
-        { GameAction::Aim,     { Key(DIK_K), Pad(PadButton::LT) } },
-        { GameAction::Jump,    { Key(DIK_SPACE), Pad(PadButton::A) } },
+        { GameAction::Sprint, { Key(DIK_LSHIFT), Pad(PadButton::L3) } },
+        { GameAction::Dodge, { Key(DIK_LCONTROL), Pad(PadButton::B) } },
+        { GameAction::Aim, { Key(DIK_K), Pad(PadButton::LT) } },
+        { GameAction::Jump, { Key(DIK_SPACE), Pad(PadButton::A) } },
         { GameAction::Reload,  { Key(DIK_R), Pad(PadButton::X) } },
         { GameAction::Shoot,   { Key(DIK_J), Pad(PadButton::RT) } },
 
-        { GameAction::Pause,   { Key(DIK_ESCAPE), Pad(PadButton::Menu) } },
+        { GameAction::Pause, { Key(DIK_ESCAPE), Pad(PadButton::Menu) } },
         { GameAction::Confirm, { Key(DIK_SPACE), Key(DIK_RETURN), Pad(PadButton::A) } },
-        { GameAction::Cancel,  { Pad(PadButton::B) } },
+        { GameAction::Cancel, { Pad(PadButton::B) } },
     };
 
     const auto it = kBindings.find(action);

@@ -72,7 +72,7 @@ void PlayScene::OnUpdate()
         if (titleMenu_->HasStarted())
         {
             titleCamera_->StartTransition(camera_.get());
-            phase_ = Phase::CameraMove;
+            ChangePhase(Phase::CameraMove);
         }
         break;
 
@@ -113,8 +113,7 @@ void PlayScene::UpdatePauseMenu()
             ReturnToTitle();
             break;
         case PauseMenu::Item::QuitGame:
-            // メッセージループが WM_QUIT を受け取って終了処理に進む
-            PostQuitMessage(0);
+            engine_->RequestQuit();
             break;
         }
     }
@@ -131,46 +130,57 @@ void PlayScene::UpdatePauseMenu()
     {
         timeScaleBeforePause_ = timeManager->GetTimeScale();
         timeManager->SetTimeScale(0.0f);
-        player_->SetControllable(false);
-        titleMenu_->SetInputEnabled(false);
-        // カメラを止める
-        cameraManager_->ChangeController(nullptr);
     }
     else
     {
         timeManager->SetTimeScale(timeScaleBeforePause_);
-        player_->SetControllable(phase_ == Phase::Playing);
-        titleMenu_->SetInputEnabled(true);
-        if (phase_ == Phase::Playing)
-        {
-            cameraManager_->ChangeController(followCamera_.get());
-        }
-        else
-        {
-            cameraManager_->ChangeController(titleCamera_.get());
-        }
+    }
+    ApplyPhaseSettings();
+}
+
+void PlayScene::ChangePhase(Phase phase)
+{
+    phase_ = phase;
+    ApplyPhaseSettings();
+}
+
+void PlayScene::ApplyPhaseSettings()
+{
+    const bool isPlaying = phase_ == Phase::Playing;
+
+    gameUI_->SetGameplayVisible(isPlaying);
+    player_->SetControllable(isPlaying && !isPaused_);
+    titleMenu_->SetInputEnabled(!isPaused_);
+
+    if (isPaused_)
+    {
+        // ポーズ中はカメラを止める
+        cameraManager_->ChangeController(nullptr);
+    }
+    else if (isPlaying)
+    {
+        cameraManager_->ChangeController(followCamera_.get());
+    }
+    else
+    {
+        // タイトル中と、タイトルからプレイヤーの後ろへ移る間
+        cameraManager_->ChangeController(titleCamera_.get());
     }
 }
 
 void PlayScene::StartPlaying()
 {
-    cameraManager_->ChangeController(followCamera_.get());
-    player_->SetControllable(true);
-    gameUI_->SetGameplayVisible(true);
     tutorial_->Begin();
     remainingTime_ = timeLimit_;
-    phase_ = Phase::Playing;
+    ChangePhase(Phase::Playing);
 }
 
 void PlayScene::EnterTitle()
 {
     titleCamera_->CancelTransition();
-    cameraManager_->ChangeController(titleCamera_.get());
-    player_->SetControllable(false);
-    gameUI_->SetGameplayVisible(false);
     titleMenu_->Restart();
     remainingTime_ = timeLimit_;
-    phase_ = Phase::Title;
+    ChangePhase(Phase::Title);
 }
 
 void PlayScene::ReturnToTitle()

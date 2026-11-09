@@ -13,8 +13,7 @@ public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
 
-    // 描画リクエストの蓄積。実際の描画コマンド構築は PrepareBatches に遅延させ、
-    // フレーム単位でステートの最適化（ソート）を一括で行う
+    // 描画リクエストの蓄積
     void Submit(
         const WorldTransform& worldTransform,
         const ModelData& modelData,

@@ -32,6 +32,9 @@ private:
 
     void EnterTitle();
     void StartPlaying();
+    void ChangePhase(Phase phase);
+    // フェーズごとの設定
+    void ApplyPhaseSettings();
     // 状態に戻してタイトルへ
     void ReturnToTitle();
     // ポーズメニューの開け閉めに合わせてゲームを止める・動かす

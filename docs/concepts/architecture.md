@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    Main["main.cpp<br/>WinMain"] --> Game["Game<br/>(Game/Game.cpp)"]
+    Main["main.cpp<br/>WinMain"] --> Game["Game (Game/Game.cpp)<br/>FS::Application を継承"]
     Game --> Engine["FS::Engine<br/>描画・ライト・パーティクルなどの機能"]
     Game --> SM["FS::SceneManager<br/>シーンの登録と切り替え"]
     SM --> Scene["シーン (BaseScene の派生)"]
@@ -15,14 +15,14 @@ flowchart TD
 ```
 
 - `Engine/` はどのゲームでも使う機能、`Game/` はこのゲームだけのコードです。`Engine/` から `Game/` のものを使ってはいけません
-- `Game` クラスがエンジンとシーンマネージャーを持ち、メインループを回します
+- メインループと 1 フレームの処理の順番は、エンジンの `FS::Application` が受け持ちます。ゲームは `Application` を継承した `Game` で、ウィンドウの設定とシーンの登録だけを書きます
 - シーンごとに、GameObject・当たり判定・カメラが分かれています
 
 ## 1 フレームの流れ
 
 ```mermaid
 sequenceDiagram
-    participant G as Game
+    participant G as Application
     participant E as Engine
     participant S as シーン
 

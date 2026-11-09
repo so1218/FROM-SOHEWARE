@@ -9,6 +9,7 @@
 | :--- | :--- | :--- |
 | シーンにオブジェクトを置く | `objectManager_.Create<Enemy>(engine_, 引数...)` | [GameObject](../guides/gameobject.md) |
 | シーンを切り替える | `sceneManager_->RequestSceneChange(SceneName::Play)` | [シーン](../guides/scene.md) |
+| ゲームを終える | `engine_->RequestQuit()` | [シーン](../guides/scene.md) |
 | 自分の位置 | `GetTransform().translation_` | [GameObject](../guides/gameobject.md) |
 | 回転させる | `GetTransform().rotation_ = Quaternion::FromAxisAngle(Vector3::Up(), angle)` | [GameObject](../guides/gameobject.md) |
 | 向きたい方向に向ける | `Quaternion::LookRotation(direction, Vector3::Up())` | |

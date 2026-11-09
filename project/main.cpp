@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Game.h"
+#include "DebugUtils.h"
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 

@@ -387,6 +387,9 @@
     <ClCompile Include="Engine\Framework\NormalState.cpp">
       <Filter>Engine\Framework</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Framework\Application.cpp">
+      <Filter>Engine\Framework</Filter>
+    </ClCompile>
     <ClCompile Include="Engine\Framework\SceneManager.cpp">
       <Filter>Engine\Framework</Filter>
     </ClCompile>
@@ -904,6 +907,9 @@
       <Filter>Engine\Framework</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Framework\NormalState.h">
+      <Filter>Engine\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Framework\Application.h">
       <Filter>Engine\Framework</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Framework\SceneManager.h">

@@ -182,6 +182,9 @@ void Engine::BeginFrame()
 
 void Engine::EndFrame()
 {
+	// このフレームに登録されたライトがそろってから、位置を表示する
+	lightManager_->DrawDebugLights();
+
 	// パイプラインに描画を丸投げ
 	renderPipeline_->Render(this, rendererManager_.get(), commandManager_.get(), camera_);
 

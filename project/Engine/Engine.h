@@ -51,6 +51,10 @@ public:
     void BeginFrame();
     void EndFrame();
 
+    // ゲームを終える。今のフレームを最後まで処理してから、メインループを抜ける
+    void RequestQuit() { isQuitRequested_ = true; }
+    bool IsQuitRequested() const { return isQuitRequested_; }
+
     // ゲッター
     // システム関連マネージャー
     GraphicsDevice* GetGraphicsDevice() const { return graphicsDevice_.get(); }
@@ -104,6 +108,7 @@ private:
     RenderCameraState camera_{};
 
     bool isFinalized_ = false;
+    bool isQuitRequested_ = false;
 
     // 作る順に並べる
     std::unique_ptr<Window> window_;
