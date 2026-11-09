@@ -1,0 +1,18 @@
+# ビルド結果
+generated/
+*.pdb
+*.ilk
+*.exe
+
+# 起動するたびに作り直されるもの
+Cache/
+logs/
+Dumps/
+
+# NuGet (packages.config から復元する)
+packages/
+
+# Visual Studio
+.vs/
+*.user
+*.suo

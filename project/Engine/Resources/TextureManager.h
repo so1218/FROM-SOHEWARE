@@ -23,7 +23,8 @@ public:
         return instance;
     }
 
-    void LoadAllTextures(Engine* engine, const std::string& rootDirectory = "Assets/Textures");
+    // Engine/Assets/Textures と Assets/Textures のテクスチャをすべて読む
+    void LoadAllTextures(Engine* engine);
     uint32_t Get(const std::string& name, std::source_location location = std::source_location::current());
     const TextureHandleData* GetMetaData(const std::string& name);
     const std::vector<TextureHandleData>& GetAllTextures() const { return textures_; }

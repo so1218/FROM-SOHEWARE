@@ -343,7 +343,7 @@ project/Cache/
 *.ilk
 *.idb
 
-!externals/**/assimp*.lib
+!project/Engine/externals/assimp/lib/**/assimp*.lib
 
 # ビルド出力フォルダ
 **/Bin/
@@ -354,10 +354,18 @@ Debug/
 Release/
 Development/
 generated/
+# エンジンに含める assimp のライブラリと、Debug という名前のシェーダーのフォルダは除外しない
+!project/Engine/externals/assimp/lib/Debug/
+!project/Engine/externals/assimp/lib/Release/
+!project/Engine/externals/assimp/lib/Development/
+!project/Engine/Shaders/Debug/
 
 # Visual Studio 関連
 .vs/
 *.user
 *.suo
 
-project/externals/DirectXTex/Shaders/Compiled/*.inc
+project/Engine/externals/DirectXTex/Shaders/Compiled/*.inc
+
+# 移動・削除待ちのファイルの置き場
+project/_to_delete/

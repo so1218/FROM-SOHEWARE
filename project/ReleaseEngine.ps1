@@ -1,0 +1,84 @@
+﻿<#
+エンジン (project/Engine) の新しい版を、エンジンのリポジトリに出す。
+
+使い方:
+    .\ReleaseEngine.ps1 v1.1.0
+
+前もってやっておくこと:
+    - エンジンのリポジトリを remote "engine" として登録しておく (最初の 1 回だけ)
+        git remote add engine <エンジンのリポジトリの URL>
+    - project/Engine/CHANGELOG.md に "## v1.1.0" の見出しを書いてコミットしておく
+#>
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$Version,
+
+    [string]$Remote = "engine"
+)
+
+$ErrorActionPreference = "Stop"
+
+function Stop-Release([string]$message)
+{
+    Write-Host $message -ForegroundColor Red
+    exit 1
+}
+
+function Invoke-Git
+{
+    $output = & git @args
+    if ($LASTEXITCODE -ne 0)
+    {
+        Stop-Release "git $($args -join ' ') が失敗した"
+    }
+    return $output
+}
+
+if ($Version -notmatch '^v\d+\.\d+\.\d+$')
+{
+    Stop-Release "版は v1.2.3 の形で指定する: $Version"
+}
+
+# git が出す絶対パスは日本語のフォルダ名が文字化けするので、相対パスだけを使う
+Set-Location $PSScriptRoot
+$enginePrefix = "$(Invoke-Git rev-parse --show-prefix)Engine"
+$pathToRoot = Invoke-Git rev-parse --show-cdup
+if ($pathToRoot)
+{
+    Set-Location $pathToRoot
+}
+
+# Windows PowerShell では git の標準エラーをリダイレクトすると例外になるので、一覧から探す
+if ((Invoke-Git remote) -notcontains $Remote)
+{
+    Stop-Release "remote `"$Remote`" がない。git remote add $Remote <エンジンのリポジトリの URL> で登録する"
+}
+
+# split はコミット済みの履歴だけを使うので、コミットしていない変更は出ない
+$uncommitted = Invoke-Git status --porcelain -- $enginePrefix
+if ($uncommitted)
+{
+    Write-Host ($uncommitted -join "`n")
+    Stop-Release "$enginePrefix にコミットしていない変更がある。コミットしてからやり直す"
+}
+
+$changelog = Get-Content "$enginePrefix/CHANGELOG.md" -Encoding UTF8
+if (-not ($changelog -match "^## $([regex]::Escape($Version))(\s|$)"))
+{
+    Stop-Release "$enginePrefix/CHANGELOG.md に `"## $Version`" の見出しがない。変更点を書いてコミットしてからやり直す"
+}
+
+$existingTag = Invoke-Git ls-remote --tags $Remote "refs/tags/$Version"
+if ($existingTag)
+{
+    Stop-Release "$Version はすでに出している。新しい版の番号を指定する"
+}
+
+Write-Host "$enginePrefix の履歴を切り出している (初回は数分かかる)..."
+$splitCommit = (Invoke-Git subtree split --prefix=$enginePrefix) | Select-Object -Last 1
+
+Invoke-Git push $Remote "${splitCommit}:refs/heads/main" | Out-Null
+Invoke-Git push $Remote "${splitCommit}:refs/tags/$Version" | Out-Null
+
+Write-Host "$Version を出した ($splitCommit)" -ForegroundColor Green
+Write-Host "2 年生には、版の番号と CHANGELOG の内容を伝える"

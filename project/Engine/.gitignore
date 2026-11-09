@@ -1,0 +1,7 @@
+# エンジンをビルドしたときにエンジンの中にできるもの。どのリポジトリに入れても無視されるよう、エンジンと一緒に配る
+externals/DirectXTex/Bin/
+externals/DirectXTex/Shaders/Compiled/*.inc
+*.vcxproj.user
+
+# ドキュメントのビルド結果
+Docs/_build/

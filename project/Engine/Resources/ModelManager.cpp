@@ -11,11 +11,11 @@
 namespace FS
 {
 
-void ModelManager::LoadAllModels(Engine* engine, const std::filesystem::path& rootDirectory)
+void ModelManager::LoadAllModels(Engine* engine)
 {
     engine_ = engine;
 
-    for (const std::filesystem::path& path : CollectAssetFiles(rootDirectory, { ".gltf", ".obj" }))
+    for (const std::filesystem::path& path : CollectAssetFiles("Models", { ".gltf", ".obj" }))
     {
         // メッシュがない glTF は AnimationManager が読む
         if (!ContainsMesh(path)) continue;

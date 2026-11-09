@@ -9,12 +9,12 @@ namespace FS
 
 bool AudioManager::initialized_ = false;
 
-void AudioManager::Initialize(const std::filesystem::path& rootDirectory)
+void AudioManager::Initialize()
 {
     if (initialized_) return;
 
     std::unordered_set<std::string> loadedNames;
-    for (const std::filesystem::path& path : CollectAssetFiles(rootDirectory, { ".mp3", ".wav" }))
+    for (const std::filesystem::path& path : CollectAssetFiles("Audio", { ".mp3", ".wav" }))
     {
         const std::string name = GetAssetName(path);
         if (!loadedNames.insert(name).second)

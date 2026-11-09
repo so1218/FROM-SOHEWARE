@@ -11,9 +11,9 @@ AnimationManager* AnimationManager::GetInstance()
     return &instance;
 }
 
-void AnimationManager::LoadAllAnimations(const std::filesystem::path& rootDirectory)
+void AnimationManager::LoadAllAnimations()
 {
-    for (const std::filesystem::path& path : CollectAssetFiles(rootDirectory, { ".gltf" }))
+    for (const std::filesystem::path& path : CollectAssetFiles("Models", { ".gltf" }))
     {
         // メッシュがある glTF は ModelManager が読む
         if (ContainsMesh(path)) continue;

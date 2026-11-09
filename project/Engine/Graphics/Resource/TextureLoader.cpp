@@ -123,8 +123,12 @@ uint32_t TextureLoader::LoadWithAutoDDS(const std::string& filePath, TextureType
     // PNG / JPG / TGA などの非DDSファイルの場合
     if (srcPath.extension() != ".dds")
     {
-        std::filesystem::path relativePath = std::filesystem::relative(srcPath, "Assets/Textures");
-        std::filesystem::path ddsPath = "Cache/Textures" / relativePath;
+        // 元のフォルダの構成のまま Cache に置く。エンジンのテクスチャは Cache/EngineTextures に分ける
+        const std::filesystem::path engineRelativePath = std::filesystem::relative(srcPath, "Engine/Assets/Textures");
+        const bool isEngineTexture = !engineRelativePath.empty() && *engineRelativePath.begin() != "..";
+        std::filesystem::path ddsPath = isEngineTexture
+            ? "Cache/EngineTextures" / engineRelativePath
+            : "Cache/Textures" / std::filesystem::relative(srcPath, "Assets/Textures");
         ddsPath.replace_extension(".dds");
 
         // 出力先のサブフォルダが存在しない場合は自動作成

@@ -42,7 +42,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
 {
     // キャッシュパスの統一
     fs::path srcPath(filePath);
-    fs::path relativePath = fs::relative(srcPath, L"Assets/Shaders");
+    fs::path relativePath = fs::relative(srcPath, L"Engine/Shaders");
     fs::path csoPath = L"Cache/Shaders" / relativePath;
     csoPath.replace_extension(L".cso");
 
@@ -75,7 +75,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
     }
 
     // DXC によるコンパイル実行
-    std::wstring absoluteShaderDir = fs::absolute(L"Assets/Shaders").wstring();
+    std::wstring absoluteShaderDir = fs::absolute(L"Engine/Shaders").wstring();
     std::vector<LPCWSTR> arguments = {
         filePath.c_str(),
         L"-E", L"main",
@@ -146,7 +146,7 @@ IDxcBlob* ShaderManager::GetShader(const std::wstring& relativePath, const wchar
         return it->second.Get();
     }
 
-    std::wstring fullPath = L"Assets/Shaders/" + relativePath;
+    std::wstring fullPath = L"Engine/Shaders/" + relativePath;
 
     // CompileShader に一任（ディスクキャッシュの確認・コンパイル・保存・フォールバックを完結）
     auto shaderBlob = CompileShader(fullPath, profile);

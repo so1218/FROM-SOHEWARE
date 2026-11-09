@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Development" />
+    <BuildType Name="Release" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/ソリューション項目/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="Engine/Engine.vcxitems" Id="c4531a48-063d-4cbb-91fe-fcfed031db46" />
+  <Project Path="Game.vcxproj" Id="a6815dde-a78e-4c63-8d08-94ae099582c4" />
+  <Project Path="Engine/externals/DirectXTex/DirectXTex_Desktop_2026.vcxproj" Id="371b9fa9-4c90-4ac6-a123-aced756d6c77">
+    <BuildType Solution="Development|*" Project="Profile" />
+  </Project>
+</Solution>

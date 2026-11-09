@@ -3,9 +3,33 @@
 #include "UICommon.h"
 #include "Logger.h"
 #include "StringUtils.h"
+#include "AssetFiles.h"
 
 namespace FS
 {
+
+namespace
+{
+
+// ゲームの Assets/Data/Fonts になければ、エンジンが持っているフォントを使う
+std::string ResolveFontFilePath(const std::string& fileName)
+{
+    const std::filesystem::path gamePath = std::filesystem::path("Assets/Data/Fonts") / fileName;
+    if (std::filesystem::exists(gamePath))
+    {
+        return gamePath.generic_string();
+    }
+
+    const std::filesystem::path enginePath = std::filesystem::path(kEngineAssetDirectory) / "Fonts" / fileName;
+    if (std::filesystem::exists(enginePath))
+    {
+        return enginePath.generic_string();
+    }
+
+    return gamePath.generic_string();
+}
+
+}
 
 void FontManager::LoadFromCSV(Engine* engine, const std::string& csvPath)
 {
@@ -15,8 +39,6 @@ void FontManager::LoadFromCSV(Engine* engine, const std::string& csvPath)
         LOG_ERROR("フォント一覧が見つからない: {}", csvPath);
         return;
     }
-
-    const std::string fontDirectory = "Assets/Data/Fonts/";
 
     std::string line;
     std::getline(csvFile, line);   // ヘッダー
@@ -49,7 +71,7 @@ void FontManager::LoadFromCSV(Engine* engine, const std::string& csvPath)
             charsetFileName = columns[3];
         }
 
-        Load(engine, columns[0], fontDirectory + columns[1], std::stof(columns[2]), fontDirectory + charsetFileName);
+        Load(engine, columns[0], ResolveFontFilePath(columns[1]), std::stof(columns[2]), ResolveFontFilePath(charsetFileName));
     }
 }
 
