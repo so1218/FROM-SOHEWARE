@@ -8,7 +8,7 @@ namespace FS
 class Engine;
 class PropertyBinder;
 
-// 落雷を管理する。形を作り、寿命と明滅を決め、雷の板と光を毎フレーム出す
+// 落雷を管理
 class LightningSystem
 {
 public:
@@ -24,11 +24,11 @@ public:
 private:
     struct Strike
     {
-        std::vector<LightningPath> paths; // 0 番目が幹、それ以降が枝
+        std::vector<LightningPath> paths; 
         Vector3 lightPosition;
         float duration = 0.0f;
         float remainingTime = 0.0f;
-        float flickerPhase = 0.0f;        // 雷ごとに明滅をずらす
+        float flickerPhase = 0.0f;       
     };
 
     // 中点を少しずつずらして分割し、ジグザグの線と枝を作る

@@ -19,7 +19,7 @@ struct TerrainDrawData
     TerrainSettings settings{};
 };
 
-// 地形を、見えているチャンクの数だけインスタンス描画する
+// 地形を、見えているチャンクの数だけインスタンス描画
 class TerrainRenderer
 {
 public:

@@ -5,8 +5,7 @@
 namespace FS::UI
 {
 
-// 画面上の位置。screenAnchor (0,0) = 左上, (1,1) = 右下。
-// UI の座標は高さ 720 の画面が基準で、実際の解像度への拡大は SubmitSprite で行う
+// 画面上の位置
 inline Vector2 ResolveScreenPosition(const Vector2& screenAnchor, const Vector2& offset)
 {
     return Vector2(
@@ -14,7 +13,7 @@ inline Vector2 ResolveScreenPosition(const Vector2& screenAnchor, const Vector2&
         screenAnchor.y * Engine::GetUIHeight() + offset.y);
 }
 
-// UTF-8 を 1 文字ずつに分解する
+// UTF-8 を 1 文字ずつに分解
 inline std::u32string DecodeUtf8(std::string_view utf8Text)
 {
     std::u32string codepoints;

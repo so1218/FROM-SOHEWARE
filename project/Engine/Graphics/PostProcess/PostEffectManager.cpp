@@ -136,7 +136,6 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
         volumetricFogPass_->BeginFrame();
 
         // 映っていない置いた霧は送らない。
-        // 霧の自己影はシェーダーで太陽の方へ 15m 先まで調べるので、画面のすぐ外の霧も影を落とす。その分だけ大きめに判定する
         constexpr float kSelfShadowReach = 15.0f;
         Frustum frustum;
         frustum.ExtractFromMatrix(viewMatrix * projectionMatrix);
@@ -144,7 +143,7 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
 
         for (const auto& volume : volumetricFogPass_->GetFogVolumesData())
         {
-            // 球は scale.x が半径。箱は scale が中心から面までの長さなので、回転していても対角の長さに収まる
+            // 球は scale.x が半径
             float radius = (volume.type == 0) ? volume.scale.x : volume.scale.Length();
             radius += kSelfShadowReach;
 

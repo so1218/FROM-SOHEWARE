@@ -10,7 +10,7 @@ class Engine;
 class Font;
 struct Glyph;
 
-// 行の揃え。縦書きでは Left = 上揃え, Right = 下揃え
+// 行の揃え
 enum class TextAlign : int32_t
 {
     Left = 0,
@@ -27,7 +27,6 @@ enum class TextDirection : int32_t
 class Text
 {
 public:
-    // fontName を省略すると FontList.csv の先頭のフォントを使う
     Text(Engine* engine, const std::string& fontName = "");
 
     void Draw();
@@ -54,9 +53,9 @@ public:
 
     void SetFontSize(float fontSize) { fontSize_ = fontSize; }
     void SetLineSpacing(float lineSpacing) { lineSpacing_ = lineSpacing; }
-    // 文字と文字の間に足すすき間 (ピクセル)。マイナスで詰める
+    // 文字と文字の間に足すすき間 
     void SetCharacterSpacing(float characterSpacing) { characterSpacing_ = characterSpacing; }
-    // 1 行の長さがこれを超えたら折り返す (ピクセル)。0 なら折り返さない
+    // 1 行の長さがこれを超えたら折り返す
     void SetWrapLength(float wrapLength) { wrapLength_ = wrapLength; }
     void SetColor(const Vector4& color) { color_ = color; }
     void SetOutline(float width, const Vector4& color)
@@ -64,8 +63,7 @@ public:
         outlineWidth_ = width;
         outlineColor_ = color;
     }
-    // 文字の後ろに影を出す。offset はずらす量、softness はぼかし、spread は太らせる量 (どれもピクセル)。
-    // color のアルファが 0 なら影は出ない
+    // 文字の後ろに影を出す
     void SetShadow(const Vector2& offset, const Vector4& color, float softness = 0.0f, float spread = 0.0f)
     {
         shadowOffset_ = offset;
@@ -75,7 +73,7 @@ public:
     }
     void SetLayerOrder(int layerOrder) { layerOrder_ = layerOrder; }
     void SetIsVisible(bool isVisible) { isVisible_ = isVisible; }
-    // 色と縁取りの色のアルファに掛ける。フェード用
+    // 色と縁取りの色のアルファに掛ける
     void SetOpacity(float opacity) { opacity_ = opacity; }
 
     Vector2 MeasureSize() const;
@@ -120,7 +118,7 @@ private:
     float GetDisplayScale() const;
     // 行の方向に進む量
     float GetAdvance(char32_t codepoint, const Glyph& glyph) const;
-    // 画面のピクセルを SDF の距離に直す。アトラスの余白より外は表せないので、そこで止める
+    // 画面のピクセルを SDF の距離に直す
     float ToSdfDistance(float screenPixels) const;
     void SubmitGlyphs(const TextLayout& layout, const Vector2& blockTopLeft,
         const Vector4& color, float outlineThickness, float edgeSoftness = 0.0f) const;

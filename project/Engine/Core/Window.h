@@ -6,7 +6,6 @@ namespace FS
 class Window
 {
 public:
-    // width, height は窓のときのクライアント領域の大きさ
     Window(int width, int height)
         : clientWidth_(width), clientHeight_(height) {}
 

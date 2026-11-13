@@ -6,8 +6,7 @@
 namespace FS
 {
 
-// 空と太陽の光。シーンに置くと、空が描かれ、時間帯と天気に合わせて光・空の色・霧が変わる
-// 置かないと太陽の光がないので、モデルは暗く (ほぼ黒く) 映る
+// 空と太陽の光
 class Environment : public GameObject
 {
 public:

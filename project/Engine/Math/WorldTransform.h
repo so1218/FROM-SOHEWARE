@@ -45,7 +45,7 @@ public:
     void ApplyWorldMatrix();
 
     const Matrix4x4& GetWorldMatrix() const;
-    // 行列を直接決める。位置・回転・大きさか親が変わるまでは、この行列のまま
+    // 行列を直接決める
     void SetWorldMatrix(const Matrix4x4& worldMatrix);
     const Matrix4x4& GetPrevWorldMatrix() const { return matWorldPrev_; }
     Vector3 GetWorldPosition() const;

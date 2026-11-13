@@ -13,7 +13,7 @@ public:
     void Initialize(const RenderEnvironment& env);
     void BeginFrame();
 
-    void Submit(const std::vector<TrailPoint>& points, const TrailModule& config, const Vector3& cameraPosition,         // 共通データ（カメラ位置）
+    void Submit(const std::vector<TrailPoint>& points, const TrailModule& config, const Vector3& cameraPosition,       
         float instanceSeed);
 
     void Draw(const RenderEnvironment& env, const Matrix4x4& viewProjection);

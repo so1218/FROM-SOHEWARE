@@ -11,7 +11,6 @@ namespace FS
 namespace
 {
 
-// ゲームの Assets/Data/Fonts になければ、エンジンが持っているフォントを使う
 std::string ResolveFontFilePath(const std::string& fileName)
 {
     const std::filesystem::path gamePath = std::filesystem::path("Assets/Data/Fonts") / fileName;

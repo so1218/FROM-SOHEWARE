@@ -278,9 +278,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
     };
     cmdList->ResourceBarrier(2, csBarriers);
 
-    // ==========================================
     // カリングの実行
-    // ==========================================
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Tree Culling CS");
 
@@ -313,9 +311,7 @@ void TreeRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint
         }
     }
 
-    // ==========================================
     // 描画
-    // ==========================================
     // CSの書き込み完了を待ち、PSから参照可能なSRVと間接引数用ステートへバリアを張る
     D3D12_RESOURCE_BARRIER drawBarriers[2] = {
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.outputInstanceBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
@@ -457,9 +453,7 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
     };
     cmdList->ResourceBarrier(2, csBarriers);
 
-    // ==========================================
     // カリング CS 実行
-    // ==========================================
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Tree Shadow Culling CS");
 
@@ -492,18 +486,14 @@ void TreeRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeInde
         }
     }
 
-    // ==========================================
     // 描画フェーズへのバリア
-    // ==========================================
     D3D12_RESOURCE_BARRIER drawBarriers[2] = {
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.outputInstanceBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE),
         CD3DX12_RESOURCE_BARRIER::Transition(curRes.indirectArgsBuffer.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
     };
     cmdList->ResourceBarrier(2, drawBarriers);
 
-    // ==========================================
     // シャドウマップ描画
-    // ==========================================
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Tree Shadow Indirect Draw");
 

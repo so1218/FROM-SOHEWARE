@@ -149,7 +149,7 @@ public:
     Vector3 GetSkinnedVertexPosition(size_t meshIndex, size_t vertexIndex) const;
 
 private:
-    // ヘルパー: インデックス検証
+    // インデックス検証
     bool IsValidMaterialIndex(size_t index) const;
 
 private:
@@ -177,11 +177,11 @@ private:
     bool isFinished_ = false;
     EasingType easingType_ = EasingType::EaseLinear;
 
-    const Animation* prevAnimation_ = nullptr; // 遷移前のアニメーション
-    float prevAnimationTime_ = 0.0f;           // 遷移前のアニメーション時間
-    float blendDuration_ = 0.0f;               // ブレンドにかける総時間
-    float blendTimer_ = 0.0f;                  // ブレンド経過時間
-    bool isBlending_ = false;                  // ブレンド中フラグ
+    const Animation* prevAnimation_ = nullptr; 
+    float prevAnimationTime_ = 0.0f;           
+    float blendDuration_ = 0.0f;               
+    float blendTimer_ = 0.0f;                  
+    bool isBlending_ = false;                  
 
     // 描画設定
     BlendMode blendMode_ = BlendMode::kBlendModeNone;

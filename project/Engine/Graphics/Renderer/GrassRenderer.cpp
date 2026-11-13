@@ -107,7 +107,6 @@ void GrassRenderer::GenerateGrass(
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     cmdList->ResourceBarrier(1, &barrier);
 
-    // Grass Generation Compute Shader
     // ハイトマップ・密度マップを参照し、GPU上で草のインスタンスデータをプロシージャルに事前生成
     cmdList->SetComputeRootSignature(env.rootSignatureManager->GetRootSignature("GrassGenerationCS"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("GrassGenerationCS"));
@@ -177,7 +176,6 @@ void GrassRenderer::Draw(
         indirectArgsUploadBuffer_.Get(), 0,
         sizeof(D3D12_DRAW_ARGUMENTS));
 
-    // コンピュートシェーダーによるGPU駆動カリング
     // 全草データから可視インスタンスのみを抽出し、間接描画バッファのカウンターを加算
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Grass Culling CS");

@@ -6,8 +6,6 @@
 namespace FS
 {
 
-// 雷を、カメラを向いた細い板の連なりとして描く。
-// 形と明るさは LightningSystem が毎フレーム Submit する
 class LightningRenderer
 {
 public:

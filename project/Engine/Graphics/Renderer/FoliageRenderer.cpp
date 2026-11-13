@@ -92,8 +92,7 @@ void FoliageRenderer::Initialize(const RenderEnvironment& env, const std::vector
         }
     }
 
-    // GPUドリブンレンダリングの要となるCommandSignatureの設定
-    // CSが間接引数バッファに書き込んだIndex/InstanceCountを用いてDrawIndexedを発行
+    // CommandSignatureの設定
     D3D12_INDIRECT_ARGUMENT_DESC argDesc = {};
     argDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
     D3D12_COMMAND_SIGNATURE_DESC cmdSigDesc = {};
@@ -215,10 +214,7 @@ void FoliageRenderer::Draw(
     memcpy(mappedCullingData_[currentFrameIndex_], &cullingData, sizeof(FoliageCullingData));
     uint32_t handleSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    // -----------------------------------------------------------
-    // Pass 1: GPUカリング
     // 前段で生成したインスタンス群に対し、視錐台/距離カリングを適用
-    // -----------------------------------------------------------
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Compute, "Foliage GPU Culling CS Pass");
 
@@ -236,7 +232,7 @@ void FoliageRenderer::Draw(
             auto& res = types_[typeIdx];
             memcpy(res.mappedMaterial[currentFrameIndex_], &res.config.material, sizeof(FoliageMaterialData));
 
-            // ExecuteIndirect用の引数バッファ初期化。InstanceCountは後段のCS内で可視判定に通過した数だけインクリメントされる
+            // ExecuteIndirect用の引数バッファ初期化
             D3D12_DRAW_INDEXED_ARGUMENTS drawArgs = {};
             drawArgs.IndexCountPerInstance = static_cast<uint32_t>(res.config.mesh->GetIndexCount());
             drawArgs.InstanceCount = 0;
@@ -278,10 +274,8 @@ void FoliageRenderer::Draw(
         }
     }
 
-    // -----------------------------------------------------------
-    // Pass 2: 間接描画
+
     // カリング済みのバッファを参照し、CPUを介さずにGPU上で描画コマンドを発行
-    // -----------------------------------------------------------
     {
         PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Foliage Indirect Draw Pass");
 
@@ -341,7 +335,7 @@ void FoliageRenderer::Draw(
 
 void FoliageRenderer::UpdateConfigs(const std::vector<FoliageTypeConfig>& configs)
 {
-    // ツールからのホットリロード用途。VRAM上のバッファ再確保を避けつつパラメータのみを更新
+    // VRAM上のバッファ再確保を避けつつパラメータのみを更新
     size_t count = std::min(types_.size(), configs.size());
     for (size_t i = 0; i < count; ++i)
     {

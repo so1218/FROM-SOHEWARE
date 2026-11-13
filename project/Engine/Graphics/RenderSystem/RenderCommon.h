@@ -23,78 +23,78 @@ struct RenderData
 // 描画するオブジェクトの種類
 enum class RenderType
 {
-    Model,       // 通常モデル
-    Skinning,    // スキニングモデル
-    Sprite,      // スプライト
-    Trail,       // トレイル
-    Particle,    // パーティクル
-    Line,        // ライン
-    Skybox,      // スカイボックス
-	Grass        // 草
+    Model,      
+    Skinning,   
+    Sprite,     
+    Trail,      
+    Particle,   
+    Line,       
+    Skybox,     
+	Grass       
 };
 
 // 描画グループ（描画順の優先度や用途で分類）
 enum class RenderGroup
 {
-    Background = 0,   // 背景
-    Opaque,           // 不透明
-    AlphaTest,        // アルファテスト
-    Grid,             // グリッド
-    Skybox,           // スカイボックス
-    Transparent,      // 半透明
-    Particle,         // パーティクル
-    Trail,            // トレイル
-    UI                // UI
+    Background = 0,   
+    Opaque,           
+    AlphaTest,        
+    Grid,             
+    Skybox,           
+    Transparent,      
+    Particle,         
+    Trail,            
+    UI                
 };
 
 // 描画要求情報（レンダリング用の1オブジェクト単位データ）
 struct ModelSubmission
 {
-    const ModelData* modelData;       // メッシュデータ
-    uint32_t meshIndex;               // このモデルの何番目のメッシュ(MeshData)を描画するか
-    MaterialHandle materialHandle;    // 使用マテリアル
-    uint32_t textureHandle;           // テクスチャSRV
-    uint32_t envMapSrvHandle;         // 環境マップSRV
-    uint32_t toonRampHandle;          // トゥーンラップ
-    uint32_t dissolveTextureHandle;   // ディゾルブテクスチャ
-    uint32_t normalMapHandle;		  // 法線マップテクスチャ
-    uint32_t color;                   // メッシュカラー
-    Matrix4x4 worldMatrix;            // ワールド変換行列
+    const ModelData* modelData;     
+    uint32_t meshIndex;             
+    MaterialHandle materialHandle;  
+    uint32_t textureHandle;         
+    uint32_t envMapSrvHandle;       
+    uint32_t toonRampHandle;        
+    uint32_t dissolveTextureHandle; 
+    uint32_t normalMapHandle;		
+    uint32_t color;                 
+    Matrix4x4 worldMatrix;          
 
-    BlendMode blendMode = BlendMode::kBlendModeNormal;  // ブレンドモード
+    BlendMode blendMode = BlendMode::kBlendModeNormal;  
 
     // アウトライン設定
-    bool enableOutline;               // 有効かどうか
-    float outlineWidth;               // 幅
-    Vector4 outlineColor;             // 色
+    bool enableOutline;               
+    float outlineWidth;               
+    Vector4 outlineColor;             
 
-    size_t instanceIndex;             // 使用する定数バッファのインデックス
+    size_t instanceIndex;             
 
-    const SkinCluster* skinCluster = nullptr; // スキニング情報
+    const SkinCluster* skinCluster = nullptr;
 
-    float depth = 0.0f;                      // 描画ソート用距離
+    float depth = 0.0f;                      
 
     CullMode cullMode;
     DepthMode depthMode;
 
-    RenderType type;                  // 描画タイプ
-    RenderGroup group;                // 描画順グループ
+    RenderType type;                 
+    RenderGroup group;               
 
-    int layerOrder = 0;               // 手動ソート用（UIや重ね順）
+    int layerOrder = 0;              
 
-    Vector4 instancingColor;          // instanceColor用
+    Vector4 instancingColor;         
     Matrix4x4 wvpMatrix;             
     Matrix4x4 worldInverseTranspose;
     Matrix4x4 prevWorldMatrix;    
 
-    uint8_t viewMask;        // どのビューに映るかのビットフラグ
+    uint8_t viewMask;        
 };
 
 struct RenderBatch
 {
-    const ModelSubmission* baseSubmission; // このバッチの基準となる先頭のSubmission
-    uint32_t instanceCount;                // 描画するインスタンス数
-    uint32_t startInstanceLocation;        // インスタンスバッファの開始位置
+    const ModelSubmission* baseSubmission; 
+    uint32_t instanceCount;                
+    uint32_t startInstanceLocation;        
 };
 
 struct RenderSettings
@@ -114,25 +114,25 @@ static const RenderSettings Standard =
     BlendMode::kBlendModeNone, CullMode::Back, DepthMode::Write, RenderGroup::Opaque
 };
 
-// 草・マント (不透明・両面)
+// 草 (不透明・両面)
 static const RenderSettings StandardNoCull =
 {
     BlendMode::kBlendModeNone, CullMode::None, DepthMode::Write, RenderGroup::Opaque
 };
 
-// ガラス・水 (半透明・裏面カリング)
+// ガラス (半透明・裏面カリング)
 static const RenderSettings Transparent =
 {
     BlendMode::kBlendModeNormal, CullMode::Back, DepthMode::ReadOnly, RenderGroup::Transparent
 };
 
-// 魔法陣・爆発 (加算・両面・Z書き込みなし)
+// 爆発 (加算・両面・Z書き込みなし)
 static const RenderSettings AddNoCull =
 {
     BlendMode::kBlendModeAdd, CullMode::None, DepthMode::ReadOnly, RenderGroup::Transparent
 };
 
-// UIや前面表示用 (カリングなし・深度無視)
+// UI (カリングなし・深度無視)
 static const RenderSettings UI =
 {
     BlendMode::kBlendModeNormal, CullMode::None, DepthMode::None, RenderGroup::Transparent

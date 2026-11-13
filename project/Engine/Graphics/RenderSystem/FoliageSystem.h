@@ -15,7 +15,6 @@ public:
     ~FoliageSystem() = default;
 
     // 描画パイプライン構築前に草木のアセットと生成パラメータを登録
-    // VRAM上のメッシュリソースのライフサイクルは本システムで一元管理する
     void AddFoliageType(
         const std::string& albedoTextureName,
         const std::string& densityMapName,
@@ -23,12 +22,9 @@ public:
         const FoliageMaterialData& defaultMaterial,
         const FoliageGenerationData& defaultGenData);
 
-    // 登録済みの型情報からGPU側のストラクチャードバッファ群を確保し、バインド状態を確定
-    // 起動時およびロードシーケンスでのみコールされる想定
     void InitializeRenderer();
 
-    // 密度マップとハイトマップを参照し、GPU Computeを用いて地形上にインスタンスを静的生成
-    // シームレスロード時の裏読みなど、非同期実行に対応できる設計を想定
+    // 密度マップとハイトマップを参照し、地形上にインスタンスを生成
     void Generate(const std::string& heightMapName);
 
     // 視錐台やLOD算出用のカリング定数をGPUへ送出
@@ -49,7 +45,8 @@ private:
     FoliageCullingData cullingData_{};
 
     // レンダラーへ渡す状態と、システム側で保持するリソースのバインディング情報
-    struct FoliageTypeInfo {
+    struct FoliageTypeInfo 
+    {
         uint32_t albedoSrvHandle = 0;
         uint32_t densityMapSrvHandle = 0;
         std::unique_ptr<Mesh> mesh;
