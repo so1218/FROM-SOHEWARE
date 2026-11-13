@@ -54,7 +54,7 @@ Player* player = objectManager_.Create<Player>(engine_);
 objectManager_.Create<Enemy>(engine_, player);   // 敵は作られたときからプレイヤーを知っている
 ```
 
-後から探す必要があるときは、タグか型で探します。タグは `Game/Global/GameDefine.h` の `ObjectTag` にまとめます。
+後から探す必要があるときは、タグか型で探します。タグは `Game/Global/GameDefine.h` の `ObjectTag` にまとめます。ひな形には `None`・`Player`・`Enemy` だけがあるので、必要な種類を足して使います。
 
 ```cpp
 // 自分のコンストラクタで
@@ -78,7 +78,7 @@ Player* player2 = manager->FindObject<Player>();   // 型で 1 つ
 
 ## 更新の順番
 
-`SetUpdatePriority()` の値が小さいものから順に `Update()` が呼ばれます。値は `Game/Global/GameDefine.h` の `ObjectUpdateOrder` にまとめています。
+`SetUpdatePriority()` の値が小さいものから順に `Update()` が呼ばれます。値は `Game/Global/GameDefine.h` の `ObjectUpdateOrder` にまとめます。何も設定しないものは `Default` (50) です。
 
 ```cpp
 SetUpdatePriority(ObjectUpdateOrder::Player);   // 地形 (Field) のあと、ほかのもの (Default) の前
@@ -116,8 +116,7 @@ stateMachine_->Update();                                       // Update で
 ```
 
 状態の切り替えは、`ChangeState` を呼んだ時点ではなく、次に `Update()` を呼んだときに行われます。
-
-`Player` が実際にこの方法で作られています (`Game/GameObject/Character/Player/PlayerState*.cpp`)。
+上の `Enemy`・`EnemyIdle`・`EnemyChase` は説明のための例で、エンジンには入っていません。
 
 ## つまずきやすい点
 

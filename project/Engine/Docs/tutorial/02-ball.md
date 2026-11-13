@@ -5,7 +5,7 @@
 ## GameObject を作る
 
 シーンに置くもの (キャラクター・アイテム・UI など) は、すべて `FS::GameObject` を継承して作ります。
-`Game/GameObject/` に `Ball.h` と `Ball.cpp` を作ります。
+`Game/GameObject/` に `Ball.h` と `Ball.cpp` を作り、プロジェクトに追加します。
 
 ```cpp
 // Game/GameObject/Ball.h
@@ -41,8 +41,9 @@ using namespace FS;
 
 Ball::Ball(Engine* engine) : engine_(engine)
 {
-    // Assets/Models にある sphere.obj を使う。モデルはファイル名 (拡張子なし) で指定する
+    // エンジンが用意している球のモデル。モデルはファイル名 (拡張子なし) で指定する
     model_ = std::make_unique<Model>(engine_, "sphere");
+    model_->SetColor(Vector4{ 1.0f, 0.4f, 0.2f, 1.0f });
 }
 
 void Ball::Initialize()
@@ -72,9 +73,11 @@ void Ball::Draw()
 
 覚えておくことは 3 つです。
 
-- **4 つの関数の役割**: `Initialize()` はシーンに入るたびに 1 回、`Update()` と `Draw()` は毎フレーム呼ばれる。中身はエンジンが呼ぶので、自分で呼ぶ必要はない
+- **関数の役割**: `Initialize()` はシーンに入るたびに 1 回、`Update()` と `Draw()` は毎フレーム呼ばれる。どれもエンジンが呼ぶので、自分で呼ぶ必要はない
 - **位置と見た目は別**: `GetTransform()` はオブジェクトの位置、`model_->GetTransform()` はモデルの位置。`Update()` でモデルをオブジェクトに合わせる
 - **時間を掛ける**: 移動量に `GetDeltaTime()` (前のフレームからの秒数) を掛けると、FPS が変わっても同じ速さで動く
+
+エンジンには、`sphere` のほかに `cube`・`plane`・`cylinder` などの基本図形のモデルが入っています ([アセットの追加](../guides/assets.md))。
 
 :::{note}
 入力は `Input` (キーやボタンを直接見る) ではなく `GameInput` (「移動」「ジャンプ」などの操作で見る) を使います。
@@ -101,7 +104,11 @@ SampleScene::SampleScene(Engine* engine)
 
 ## 動かしてみる
 
-ビルドして起動し、WASD (パッドなら左スティック) でボールが動けば完成です。
+ビルドして起動し、WASD (パッドなら左スティック) でオレンジ色のボールが動けば完成です。
+
+:::{tip}
+ボールが真っ黒に見えるときは、シーンに `Environment` が置かれているか確認してください。太陽の光がないと、色を付けても黒く映ります。
+:::
 
 ## 詳しく知りたいとき
 

@@ -9,8 +9,8 @@
 // メンバー
 std::unique_ptr<FS::Model> model_;
 
-// コンストラクタで。名前は Assets/Models にあるファイル名 (拡張子なし)
-model_ = std::make_unique<Model>(engine_, "tree");
+// コンストラクタで。名前は Assets/Models に置いたファイル名 (拡張子なし)
+model_ = std::make_unique<Model>(engine_, "tree");   // Assets/Models/tree.gltf など
 
 // Update で、オブジェクトの位置に合わせる
 model_->GetTransform().translation_ = GetTransform().translation_;
@@ -21,6 +21,8 @@ model_->Draw();
 ```
 
 モデルは自分の位置 (`model_->GetTransform()`) を持っていて、GameObject の位置とは別です。毎フレーム合わせるのを忘れると、原点に出たままになります。
+
+自分でモデルを用意しなくても、エンジンに入っている基本図形 (`sphere`・`cube`・`plane` など) が同じように使えます ([アセットの追加](assets.md#エンジンに入っている基本図形))。
 
 :::{tip}
 `Draw()` は「描く予定を登録する」だけで、実際の描画はフレームの最後にまとめて行われます。`Draw()` を呼ぶ順番で前後関係は変わりません。
@@ -67,7 +69,7 @@ binder_->DrawModel("Body", "体のモデル");    // DebugGui で
 ## アニメーションさせる
 
 ```cpp
-// コンストラクタで。モデル名と、最初に再生するアニメーション名
+// コンストラクタで。モデル名と、最初に再生するアニメーション名 (どちらも Assets/Models に置いたファイル名)
 animationModel_ = std::make_unique<AnimationModel>(engine_, "humanMesh", "humanIdle");
 
 // Update で。アニメーションを進めるので、毎フレーム必ず呼ぶ
@@ -107,6 +109,7 @@ Mixamo などからダウンロードしたものは、アニメーションご�
 
 ## つまずきやすい点
 
+- **色を付けても真っ黒に映る。** シーンに `Environment` を置いていないので、太陽の光がない ([エフェクトとライト](effects.md#時間帯と天気))
 - **`AnimationModel::Update()` を呼び忘れると動かない。** `Model` と違い、毎フレームの `Update()` が必要
 - **モデル名を間違えると、「開発用のエラー」ウィンドウに名前と場所が出る。** 名前は拡張子なしのファイル名。フォルダ名は含めない
 - **同じ名前のファイルが 2 つあると、片方しか読まれない。** フォルダが違っても名前は重ならないようにする

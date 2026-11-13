@@ -22,6 +22,28 @@
 テクスチャの名前は、大文字と小文字を区別しません。
 :::
 
+## エンジンに入っている基本図形
+
+`Engine/Assets/Models/` に、次のモデルが入っています。自分で用意しなくても、名前を書くだけで使えます。
+
+| 名前 | 形 |
+| :--- | :--- |
+| `sphere` | 球 |
+| `cube` | 立方体 |
+| `plane` | 板 |
+| `cylinder` | 円柱 |
+| `OpenCylinder` | ふたのない円柱 |
+| `Ring` | 輪 |
+
+```cpp
+model_ = std::make_unique<Model>(engine_, "cube");
+model_->SetColor(Vector4{ 0.2f, 0.8f, 1.0f, 1.0f });
+```
+
+モデルの名前は、大文字と小文字を区別します (`OpenCylinder` と `Ring` は大文字で始まる)。
+
+エンジンに入っているテクスチャ (`white1x1`・`noise_39`・`noise_59`・`normal_01`・`toonRamp_01` など) も、ゲームから名前で使えます。
+
 ## 3D モデル
 
 - glTF (`.gltf` + `.bin`) か OBJ (`.obj` + `.mtl`) で置く

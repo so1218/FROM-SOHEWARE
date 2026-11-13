@@ -8,7 +8,8 @@
 | やりたいこと | 書き方 | ガイド |
 | :--- | :--- | :--- |
 | シーンにオブジェクトを置く | `objectManager_.Create<Enemy>(engine_, 引数...)` | [GameObject](../guides/gameobject.md) |
-| シーンを切り替える | `sceneManager_->RequestSceneChange(SceneName::Play)` | [シーン](../guides/scene.md) |
+| シーンを切り替える | `sceneManager_->RequestSceneChange(SceneName::Play)` (`#include "SceneManager.h"`) | [シーン](../guides/scene.md) |
+| 空と太陽の光を出す | `objectManager_.Create<Environment>(engine_)` (`#include "Environment.h"`) | [エフェクト](../guides/effects.md) |
 | ゲームを終える | `engine_->RequestQuit()` | [シーン](../guides/scene.md) |
 | 自分の位置 | `GetTransform().translation_` | [GameObject](../guides/gameobject.md) |
 | 回転させる | `GetTransform().rotation_ = Quaternion::FromAxisAngle(Vector3::Up(), angle)` | [GameObject](../guides/gameobject.md) |
@@ -26,7 +27,7 @@
 | 前のフレームからの秒数 | `TimeManager::GetInstance()->GetDeltaTime()` | |
 | 時間をゆっくりにする・止める | `TimeManager::GetInstance()->SetTimeScale(0.5f)` | |
 | 操作を押した瞬間 | `GameInput::IsTriggered(GameAction::Jump)` | [入力](../guides/input.md) |
-| 操作を押している間 | `GameInput::IsPressed(GameAction::Sprint)` | [入力](../guides/input.md) |
+| 操作を押している間 | `GameInput::IsPressed(GameAction::Jump)` | [入力](../guides/input.md) |
 | 移動の入力 | `GameInput::GetMoveAxis()` (x が右、y が奥) | [入力](../guides/input.md) |
 | パッドを振動させる | `GameInput::StartVibration(左, 右, 秒)` | [入力](../guides/input.md) |
 
@@ -34,7 +35,7 @@
 
 | やりたいこと | 書き方 | ガイド |
 | :--- | :--- | :--- |
-| モデルを出す | `std::make_unique<Model>(engine_, "名前")` → `Draw()` | [3D モデル](../guides/model.md) |
+| モデルを出す | `std::make_unique<Model>(engine_, "名前")` → `Draw()`。基本図形は `"sphere"` `"cube"` など | [3D モデル](../guides/model.md) |
 | 色を変える | `model_->SetColor({ 1.0f, 0.0f, 0.0f, 1.0f })` | [3D モデル](../guides/model.md) |
 | 一時的に色を掛ける | `model_->SetBaseColor({ 1.0f, 0.5f, 0.5f, 1.0f })` | [3D モデル](../guides/model.md) |
 | アニメーションを再生 | `animationModel_->Play("名前", ループ, 速度, つなぐ秒)` | [3D モデル](../guides/model.md) |
@@ -43,7 +44,7 @@
 | 文字を出す | `std::make_unique<Text>(engine_)` → `SetText("...")` → `Draw()` | [UI](../guides/ui.md) |
 | UI を画面の端に寄せる | `SetAnchor(UIAnchor::TopRight)` | [UI](../guides/ui.md) |
 | 明かりを置く (毎フレーム) | `engine_->GetLightManager()->SubmitPointLight(位置, 色, 強さ, 距離)` | [エフェクト](../guides/effects.md) |
-| エフェクトを出す | `SpawnEmitter("名前")` (Initialize で) → `SetPosition` → `Play()` | [エフェクト](../guides/effects.md) |
+| エフェクトを出す | `engine_->GetParticleSystem()->SpawnEmitter("プリセット名")` (Initialize で) → `SetPosition` → `Play()` | [エフェクト](../guides/effects.md) |
 | 画面を揺らす | `cameraManager_->RequestShake(秒, 強さ)` | [カメラ](../guides/camera.md) |
 
 ## 音

@@ -62,10 +62,10 @@ model_ = std::make_unique<Model>(engine_, "tree");
 // シーン
 objectManager_.Create<Player>(engine_);
 
-// Player
+// Player (Weapon は Player が持つ部品の例)
 Player::Player(Engine* engine) : engine_(engine)
 {
-    weapon_ = std::make_unique<PlayerWeapon>(engine_);
+    weapon_ = std::make_unique<Weapon>(engine_);
 }
 ```
 
@@ -93,8 +93,10 @@ Player::Player(Engine* engine) : engine_(engine)
 | :--- | :---: | :---: | :---: | :--- |
 | `_DEBUG` | ✓ | | | DirectX 12 のデバッグレイヤー、終了時の解放漏れの報告、`assert` |
 | `ENABLE_DEV_TOOLS` | ✓ | ✓ | | シェーダーの実行時コンパイル、開発用のエラー表示、`LOG_INFO` / `LOG_WARN`、PIX のマーカー |
-| `ENABLE_IMGUI` | ✓ | ✓ | ✓ | エディター画面、PropertyBinder の編集 |
-| `ENABLE_DEBUG_DRAW` | ✓ | ✓ | ✓ | `DebugDraw`、コライダーやライトの表示 |
-| `ENABLE_DEBUG_CAMERA` | ✓ | ✓ | ✓ | デバッグカメラ (Y キー) |
+| `ENABLE_IMGUI` | ✓ | ✓ | | エディター画面、PropertyBinder の編集、`Grid` の表示 |
+| `ENABLE_DEBUG_DRAW` | ✓ | ✓ | | `DebugDraw`、コライダーやライトの表示 |
+| `ENABLE_DEBUG_CAMERA` | ✓ | ✓ | | デバッグカメラ (Y キー) |
+
+これらは `Engine/Engine.props` で決めています。Release でもエディター画面などを使いたいゲームは、自分の `Game.vcxproj` の Release の「プリプロセッサの定義」に `ENABLE_IMGUI;ENABLE_DEBUG_DRAW;ENABLE_DEBUG_CAMERA` を足します。
 
 `assert` は Debug でしか動きません。Development でも気づいてほしい間違いは、`DevError::Report` で知らせます。

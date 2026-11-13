@@ -13,7 +13,7 @@ public:
     void Execute(ID3D12GraphicsCommandList* cmdList, const PostEffectContext& context,
         D3D12_GPU_DESCRIPTOR_HANDLE overrideInput = { 0 }) override;
 
-    // 置いた霧の数を 0 に戻す。毎フレーム最初に呼ぶ
+    // 置いた霧の数を 0 に戻す
     void BeginFrame();
 
     VolumetricFogSettings* GetSettings() { return settings_; }
@@ -21,12 +21,12 @@ public:
     // エディタで編集する、置いた霧の設定
     struct FogVolumeData
     {
-        int type = 0; // 0: 球, 1: 箱
+        int type = 0;
         Vector3 position = { 0.0f, 0.0f, 0.0f };
         Vector3 rotation = { 0.0f, 0.0f, 0.0f };
         Vector3 scale = { 10.0f, 10.0f, 10.0f };
 
-        Vector3 color = { 1.0f, 1.0f, 1.0f }; // 散乱色
+        Vector3 color = { 1.0f, 1.0f, 1.0f };
         float density = 1.0f;
 
         Vector3 noiseScale = { 0.1f, 0.1f, 0.1f };
@@ -80,7 +80,7 @@ private:
 
     FroxelTexture injectTexture_;      // 各フロクセルの光と濃さ
     FroxelTexture filteredTexture_;    // となりとならしたもの
-    FroxelTexture historyTextures_[2]; // 前のフレームと混ぜたもの。交互に読み書きする
+    FroxelTexture historyTextures_[2]; // 前のフレームと混ぜたもの
     FroxelTexture accumulateTexture_;  // 手前から積み上げたもの
 
     uint32_t frameCounter_ = 0;

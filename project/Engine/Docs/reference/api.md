@@ -17,6 +17,7 @@
 | {ref}`FS::SceneManager <api-fs-scenemanager>` | シーンの登録と切り替え |
 | {ref}`FS::GameObject <api-fs-gameobject>` | シーンに置くものの基底クラス |
 | {ref}`FS::GameObjectManager <api-fs-gameobjectmanager>` | シーンに置いたものの作成・検索 |
+| {ref}`FS::Environment <api-fs-environment>` | 空と太陽の光。シーンに置くと光が当たる |
 | {ref}`State <api-state>` | 状態の基底クラス |
 | {ref}`StateMachine <api-statemachine>` | 状態の切り替え |
 
@@ -68,6 +69,16 @@
 ヘッダー: `Engine/Framework/GameObjectManager.h`
 
 ```{doxygenclass} FS::GameObjectManager
+:members:
+:undoc-members:
+```
+
+(api-fs-environment)=
+### FS::Environment
+
+ヘッダー: `Engine/Framework/Environment.h`
+
+```{doxygenclass} FS::Environment
 :members:
 :undoc-members:
 ```

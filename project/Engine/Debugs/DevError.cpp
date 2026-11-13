@@ -17,7 +17,7 @@ struct Entry
 
 // 画面に出している一覧。クリアすると空になる
 std::vector<Entry> entries;
-// これまでに報告されたもの。ログには初めてのときだけ書く
+// これまでに報告されたもの
 std::unordered_set<std::string> reportedKeys;
 // ScopedContext で積まれた場所
 std::vector<std::string> contexts;
@@ -31,7 +31,6 @@ std::string MakePlace(const std::source_location& location)
 
     std::string_view path = location.file_name();
 
-    // std::make_unique などを通して呼ぶと、標準ライブラリの中が呼び出し元になってしまう
     const bool isProjectFile =
         path.find("\\Engine\\") != std::string_view::npos || path.find("/Engine/") != std::string_view::npos ||
         path.find("\\Game\\") != std::string_view::npos || path.find("/Game/") != std::string_view::npos;
@@ -82,7 +81,6 @@ void DrawGui()
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, titleColor);
     ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, titleColor);
 
-    // 件数が変わってもウィンドウの位置と大きさを保つよう、### の後ろを ID にする
     const std::string title = std::format("開発用のエラー ({} 件)###DevError", entries.size());
     if (ImGui::Begin(title.c_str()))
     {

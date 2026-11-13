@@ -38,7 +38,7 @@ MyGame/                  自分のリポジトリ
 
 4. `Game.slnx` を Visual Studio で開き、ソリューションを右クリック →「NuGet パッケージの復元」
 5. ソリューションエクスプローラーで `Game` を右クリック →「スタートアップ プロジェクトに設定」。`Game` が太字になれば設定できている (最初は DirectXTex が選ばれていて、そのまま起動すると「有効な Win32 アプリケーションではありません」と出る。一度設定すれば次からは覚えている)
-6. ビルド構成を **Development** にして F5 で起動する。グリッドだけの画面が出れば完了
+6. ビルド構成を **Development** にして F5 で起動する。空とグリッドの画面が出れば完了 (v1.0.1 以前のひな形では、空はなくグリッドだけ)
 
 ファイル名 (`Game.slnx`・`Game.vcxproj`) やウィンドウのタイトル (`Game/Game.cpp` の `windowTitle`) は、自分のゲームの名前に変えてかまいません。
 
@@ -48,8 +48,8 @@ MyGame/                  自分のリポジトリ
 | :--- | :--- |
 | `Game.vcxproj` | `Engine/Engine.vcxitems` (エンジンのソース) と `Engine/Engine.props` (エンジンに必要なビルド設定) を読み込む |
 | `main.cpp`・`Game/Game.cpp` | ウィンドウの設定とシーンの登録 |
-| `Game/Scene/MainScene` | グリッドを置いただけのシーン |
-| `Game/Global/` | シーン名・タグ・入力の割り当て・当たり判定のレイヤー ([コードの決まり](../concepts/conventions.md)) |
+| `Game/Scene/MainScene` | 空と光 (`Environment`) とグリッドを置いただけのシーン |
+| `Game/Global/` | シーン名・タグ・入力の割り当て・当たり判定のレイヤー ([コードを書くときに必要なこと](../concepts/conventions.md)) |
 | `Assets/Data/FontList.csv` | 文字のフォント。最初はエンジンが持っている NotoSansJP を使う |
 | `.gitignore` | `Cache/` やビルド結果を Git に入れないための設定 |
 | `README.md` | GitHub でリポジトリを開いたときに出る、ドキュメントへのリンクとビルドの手順。ゲームの説明を書きたいときは、先頭に足す (GitHub が作った README は上書きされる) |

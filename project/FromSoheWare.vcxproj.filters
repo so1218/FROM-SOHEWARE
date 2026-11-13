@@ -228,9 +228,6 @@
     <ClCompile Include="Game\GameObject\Field\GrassField.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Field\Environment.cpp">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClCompile>
     <ClCompile Include="Game\GameObject\Field\Ground.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
@@ -337,9 +334,6 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\GrassField.h">
-      <Filter>Game\GameObject\Field</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameObject\Field\Environment.h">
       <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\Ground.h">

@@ -121,6 +121,7 @@
         "SpawnDuration": 1.0,
         "SpinSpeed": 0.0,
         "SpreadSpeed": 6.0,
+        "TiltAngle": 0.3499999940395355,
         "ValuePerCoin": 3
     }
 }

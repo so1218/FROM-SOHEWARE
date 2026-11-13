@@ -152,7 +152,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
     const uint32_t groupCountY = (kFroxelHeight + 7) / 8;
     const uint32_t groupCountZ = (kFroxelDepth + 3) / 4;
 
-    // 1. 各フロクセルに光と濃さを入れる
+    // 各フロクセルに光と濃さを入れる
     {
         PIXScopedEvent(cmdList, PIXColors::Compute, "Injection");
 
@@ -174,7 +174,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         ToShaderResource(injectTexture_.resource.Get());
     }
 
-    // 2. となりのフロクセルとならす
+    // となりのフロクセルとならす
     {
         PIXScopedEvent(cmdList, PIXColors::Compute, "Spatial Filter");
 
@@ -189,7 +189,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         ToShaderResource(filteredTexture_.resource.Get());
     }
 
-    // 3. 前のフレームの結果と混ぜる
+    // 前のフレームの結果と混ぜる
     {
         PIXScopedEvent(cmdList, PIXColors::Compute, "Temporal Resolve");
 
@@ -209,7 +209,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         ToShaderResource(historyTextures_[currentHistory].resource.Get());
     }
 
-    // 4. 手前から奥へ積み上げる。奥行きはシェーダーの中で回すので Z は 1
+    // 手前から奥へ積み上げる
     {
         PIXScopedEvent(cmdList, PIXColors::Compute, "Integrate");
 
@@ -224,7 +224,7 @@ void VolumetricFogPass::Execute(ID3D12GraphicsCommandList* cmdList, const PostEf
         ToShaderResource(accumulateTexture_.resource.Get());
     }
 
-    // 5. 画面の各ピクセルで、手前の物までの霧を読む
+    // 画面の各ピクセルで、手前の物までの霧を読む
     {
         PIXScopedEvent(cmdList, PIXColors::Compute, "Resolve 2D");
 
@@ -271,7 +271,6 @@ bool VolumetricFogPass::SubmitFogVolume(const FogVolumeData& volumeData)
         return false;
     }
 
-    // 球は x の大きさだけを使う
     Vector3 scale = (volumeData.type == 0)
         ? Vector3{ volumeData.scale.x, volumeData.scale.x, volumeData.scale.x }
         : volumeData.scale;

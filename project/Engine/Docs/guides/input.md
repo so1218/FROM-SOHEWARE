@@ -1,6 +1,7 @@
 # 入力
 
-ゲームの操作は `GameInput` で読みます。「ジャンプ」「射撃」のような**操作の名前**で読むので、キーボードとパッドの両方に対応でき、割り当ての変更も 1 か所で済みます。
+ゲームの操作は `GameInput` で読みます。「ジャンプ」「決定」のような**操作の名前**で読むので、キーボードとパッドの両方に対応でき、割り当ての変更も 1 か所で済みます。
+`GameInput` はエンジンではなくゲーム側 (`Game/Global/GameInput.h` / `.cpp`) にあり、操作の種類や割り当てはゲームごとに自由に変えられます。
 
 ## 操作を読む
 
@@ -8,8 +9,8 @@
 #include "GameInput.h"
 
 if (GameInput::IsTriggered(GameAction::Jump)) { /* 押した瞬間 */ }
-if (GameInput::IsPressed(GameAction::Sprint)) { /* 押している間 */ }
-if (GameInput::IsReleased(GameAction::Aim))   { /* 離した瞬間 */ }
+if (GameInput::IsPressed(GameAction::Jump))   { /* 押している間 */ }
+if (GameInput::IsReleased(GameAction::Jump))  { /* 離した瞬間 */ }
 
 // 移動 (WASD・左スティック)。x が右、y が奥。長さが入力の強さ (0 ~ 1)
 Vector2 move = GameInput::GetMoveAxis();
@@ -29,6 +30,17 @@ Vector2 look = GameInput::GetLookAxis(0.2f);
 | `StartVibration` | パッドを振動させる |
 
 ## 操作を足す
+
+ひな形に最初からある操作は次のとおりです。
+
+| 操作 | キーボード | パッド |
+| :--- | :--- | :--- |
+| `Jump` | Space | A |
+| `Pause` | Esc | Menu |
+| `Confirm` (決定) | Space・Enter | A |
+| `Cancel` (戻る) | BackSpace | B |
+| 移動 (`GetMoveAxis`) | WASD | 左スティック |
+| 視点 (`GetLookAxis`) | 矢印キー | 右スティック |
 
 割り当ては `Game/Global/GameInput.cpp` の 1 か所にまとめています。
 
@@ -87,4 +99,4 @@ if (upRepeat_.Update((std::max)(vertical, 0.0f), deltaTime))
 ## つまずきやすい点
 
 - **ゲームの操作に `Input` を直接使わない。** キーボードしか対応できず、割り当てがあちこちに散らばる
-- **メニューを開いている間はプレイヤーの操作を止める。** 同じボタンが両方に効いてしまう。`PlayScene` では、ポーズ中は `Player::SetControllable(false)` で止めている
+- **メニューを開いている間はプレイヤーの操作を止める。** 止めないと、同じボタンがメニューとプレイヤーの両方に効いてしまう。プレイヤーに「操作を受け付けるか」のフラグを持たせ、メニューを開いている間は切っておく

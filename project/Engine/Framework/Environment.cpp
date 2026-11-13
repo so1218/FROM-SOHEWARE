@@ -2,7 +2,8 @@
 #include "Environment.h"
 #include "EnvironmentManager.h"
 
-using namespace FS;
+namespace FS
+{
 
 Environment::Environment(Engine* engine) : GameObject(), engine_(engine)
 {
@@ -29,4 +30,6 @@ void Environment::DebugGui()
 {
     EnvironmentManager::GetInstance()->DebugGui();
     skydome_->DebugGui();
+}
+
 }

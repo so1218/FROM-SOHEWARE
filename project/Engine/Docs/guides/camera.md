@@ -42,7 +42,7 @@ private:
 };
 ```
 
-シーンで作って、`cameraManager_` に渡します。
+シーンで作って、`cameraManager_` に渡します。シーンの `.cpp` で `#include "CameraManager.h"` が必要です。
 
 ```cpp
 // メンバー
@@ -59,8 +59,6 @@ cameraManager_->ChangeController(topDownCamera_.get());
 カメラはオブジェクトの更新と当たり判定が終わったあとで更新されるので、追う相手の最新の位置が使えます。
 タイトル画面とゲーム中でカメラを変えるときは、`ChangeController` で別のコントローラーに切り替えます。`nullptr` を渡すとカメラは止まります。
 
-実例は `Game/Camera/FollowCamera.cpp` (プレイヤーを追う三人称カメラ) と `TitleCamera.cpp` (タイトルからゲームへ移るカメラ) です。
-
 ## 画面を揺らす
 
 ```cpp
@@ -70,7 +68,7 @@ cameraManager_->RequestShake(0.3f, 0.5f);
 
 揺れはカメラコントローラーが動かした位置に上乗せされます。**コントローラーを設定していないと揺れません。**
 
-GameObject から揺らしたいときは、シーンが作るときに `CameraManager*` を渡しておきます (例: `WeatherEffectManager` は雷のときに画面を揺らしている)。
+GameObject から揺らしたいときは、シーンが作るときに `CameraManager*` を渡しておきます。
 
 ## カメラの向きを使う
 

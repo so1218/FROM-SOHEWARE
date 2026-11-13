@@ -10,6 +10,9 @@
     <Filter Include="Game\Scene">
       <UniqueIdentifier>{1aa1a100-90d3-4443-a0bc-03e5cf46eff5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObject">
+      <UniqueIdentifier>{2397cfcb-db3f-4d13-9842-35211eb99d6a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

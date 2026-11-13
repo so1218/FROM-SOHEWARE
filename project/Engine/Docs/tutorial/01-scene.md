@@ -1,23 +1,22 @@
 # 1. シーンを作る
 
-空と床だけがある、空っぽのシーンを作ります。
+空と床だけがあるシーンを作ります。
 
 ## シーンの名前を決める
 
-シーンは名前で区別します。名前は `Game/Global/GameDefine.h` の `SceneName` にまとめて書きます。
+シーンは名前で区別します。名前は `Game/Global/GameDefine.h` の `SceneName` にまとめて書きます。`Sample` を足します。
 
 ```cpp
 namespace SceneName
 {
-    inline const std::string Play = "PlayScene";
-    inline const std::string Test = "TestScene";
+    inline const std::string Main = "MainScene";
     inline const std::string Sample = "SampleScene";   // 追加
 }
 ```
 
 ## シーンのクラスを作る
 
-`Game/Scene/` に `SampleScene.h` と `SampleScene.cpp` を作ります。
+`Game/Scene/` に `SampleScene.h` と `SampleScene.cpp` を作り、プロジェクトに追加します。
 シーンは `FS::BaseScene` を継承し、必要な関数だけを上書きします。
 
 ```cpp
@@ -48,7 +47,7 @@ using namespace FS;
 SampleScene::SampleScene(Engine* engine)
     : BaseScene(engine, SceneName::Sample)
 {
-    // シーンに置くものを作る。作ったものは、更新・描画・破棄をシーンがまとめて行う
+    // シーンに置くものを作る。作ったものの更新・描画・破棄は、シーンがまとめて行う
     objectManager_.Create<Environment>(engine_);   // 空と太陽の光
     objectManager_.Create<Grid>(engine_);          // 床の目安になる格子
 }
@@ -62,9 +61,16 @@ void SampleScene::OnInitialize()
 }
 ```
 
+`Environment` と `Grid` は、エンジンが用意しているオブジェクトです。
+
+| オブジェクト | 内容 |
+| :--- | :--- |
+| `Environment` | 空を描き、太陽の光と環境光を決める。**置かないと光がないので、モデルが真っ黒に映る** |
+| `Grid` | 床の目安になる格子。Debug・Development でだけ見え、Release では描かれない |
+
 ポイントは 2 つです。
 
-- **コンストラクタ**: シーンに置くものを `objectManager_.Create<クラス名>(引数...)` で作る。ここで作ったものは、シーンが続く間ずっと残る
+- **コンストラクタ**: シーンに置くものを `objectManager_.Create<クラス名>(引数...)` で作る。ここで作ったものは、ゲームが終わるまで残る
 - **`OnInitialize()`**: シーンに入るたびに呼ばれる。シーンに入り直したときにやり直したいこと (カメラの位置など) はここに書く
 
 ## シーンを登録する
@@ -77,14 +83,12 @@ void SampleScene::OnInitialize()
 Game::Game()
     : Application(MakeConfig())
 {
-    SceneManager& sceneManager = GetSceneManager();
+    // シーンを足したら、ここで登録する
+    GetSceneManager().RegisterScene(std::make_unique<MainScene>(GetEngine()));
+    GetSceneManager().RegisterScene(std::make_unique<SampleScene>(GetEngine()));   // 追加
 
-    sceneManager.RegisterScene(std::make_unique<PlayScene>(GetEngine()));
-    sceneManager.RegisterScene(std::make_unique<TestScene>(GetEngine()));
-    sceneManager.RegisterScene(std::make_unique<SampleScene>(GetEngine()));   // 追加
-
-    // 起動したときに最初に開くシーン。作っている間はこれにしておくと楽
-    sceneManager.SetInitialScene(SceneName::Sample);
+    // 起動したときに最初に開くシーン。作っている間は、作っているシーンにしておくと楽
+    GetSceneManager().SetInitialScene(SceneName::Sample);   // Main から変える
 }
 ```
 
@@ -92,14 +96,15 @@ Game::Game()
 
 ## 動かしてみる
 
-ビルドして起動すると、空と格子の床だけが映ります。
-「シーンの選択」ウィンドウのボタンで、ほかのシーンとの切り替えもできます。
+ビルドして起動すると、空と格子の床が映ります。
+「シーンの選択」ウィンドウのボタンで、`MainScene` との切り替えもできます。
 
 :::{tip}
 カメラの位置は、シーン名のウィンドウ (「SampleScene」) の「メインカメラ設定」で動かせます。
-「パラメータの保存」で保存すると、次の起動からはコードに書いた値ではなく保存した値が使われます。
+「パラメータの保存」ウィンドウで保存すると、次の起動からはコードに書いた値ではなく保存した値が使われます。
 :::
 
 ## 詳しく知りたいとき
 
 - [シーン](../guides/scene.md): シーンの切り替え、シーンが持っているもの、呼ばれる順番
+- [エフェクトとライト](../guides/effects.md#時間帯と天気): `Environment` の時間帯と天気

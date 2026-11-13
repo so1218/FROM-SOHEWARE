@@ -49,15 +49,15 @@ void Enemy::OnCollisionExit(Collider* mine, Collider* other) {}   // 離れた�
 ## 何と何が当たるか (レイヤー)
 
 関係ないもの同士 (敵と敵など) を判定しないように、コライダーごとに「自分のレイヤー」と「当たる相手のレイヤー (マスク)」を決めます。
-レイヤーは `Game/Global/CollisionConfig.h` にまとめて書きます。
+レイヤーは `Game/Global/CollisionConfig.h` にまとめて書きます。ひな形には `Player` と `Enemy` があるので、必要なものを足します。
 
 ```cpp
 namespace CollisionLayer
 {
     constexpr uint32_t Player = 1u << 1;
     constexpr uint32_t Enemy = 1u << 2;
-    constexpr uint32_t Prop = 1u << 3;
-    constexpr uint32_t Item = 1u << 4;   // 足すときは、使っていないビットを使う
+    constexpr uint32_t Item = 1u << 3;   // 足すときは、使っていないビットを使う
+    constexpr uint32_t Wall = 1u << 4;
 }
 ```
 
@@ -82,7 +82,7 @@ CollisionManager* collisionManager = GetManager()->GetCollisionManager();
 
 RaycastHit hit;
 // 始点, 向き, 最大距離, 結果, 調べるレイヤー
-if (collisionManager->Raycast(origin, direction, 100.0f, &hit, CollisionLayer::Enemy | CollisionLayer::Prop))
+if (collisionManager->Raycast(origin, direction, 100.0f, &hit, CollisionLayer::Enemy | CollisionLayer::Wall))
 {
     hit.hitObject;     // 当たった GameObject
     hit.hitCollider;   // 当たったコライダー
@@ -110,14 +110,12 @@ void Wall::OnCollisionStay(Collider* mine, Collider* other)
 }
 ```
 
-実例は `Game/GameObject/Field/EnvironmentProp.cpp` (乗れる足場) です。
-
 ## 確認する
 
-エディター画面では、コライダーの形が線で表示されます。シーン名のウィンドウの「コライダーを表示」で ON / OFF できます。線の色は `SetColor()` で変えられます。
+エディター画面では、コライダーの形が水色の線で表示されます。「全体のデバッグ情報・設定」ウィンドウの「デバッグ描画」で ON / OFF できます。線の色は、コライダーの `SetColor()` で変えられます。
 
 ## つまずきやすい点
 
-- **当たらない。** まず「コライダーを表示」で形と位置を確認する。次に、両方のマスクに相手のレイヤーが入っているか確認する
+- **当たらない。** まずコライダーの線で形と位置を確認する。次に、両方のマスクに相手のレイヤーが入っているか確認する
 - **当たり判定は、全オブジェクトの `Update()` のあと、`Draw()` の前に行われる。** `OnCollisionEnter` で `Destroy()` したものは、そのフレームから描かれない
 - **止めたオブジェクト (`SetActive(false)`) は当たらない。** 消すつもりがないなら、コライダーだけを `SetEnable(false)` にする方法もある

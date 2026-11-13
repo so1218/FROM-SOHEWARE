@@ -10,26 +10,42 @@
 - 2 つのコライダーが重なると、両方の GameObject の `OnCollisionEnter()` が呼ばれる
 - 何と何が当たるかは「レイヤー」で決める。関係ないもの同士は判定しない
 
-## レイヤーを足す
+## レイヤーとタグを足す
 
-レイヤーは `Game/Global/CollisionConfig.h` にまとめて書きます。ジェム用の `Item` を足します。
+当たり判定のレイヤーは `Game/Global/CollisionConfig.h` に、オブジェクトの種類 (タグ) は `Game/Global/GameDefine.h` にまとめて書きます。どちらにも、ジェム用の `Item` を足します。
 
 ```cpp
+// Game/Global/CollisionConfig.h
 namespace CollisionLayer
 {
     constexpr uint32_t Player = 1u << 1;
     constexpr uint32_t Enemy = 1u << 2;
-    constexpr uint32_t Prop = 1u << 3;
-    constexpr uint32_t Item = 1u << 4;   // 追加
+    constexpr uint32_t Item = 1u << 3;   // 追加
 }
 ```
 
+```cpp
+// Game/Global/GameDefine.h
+namespace ObjectTag
+{
+    enum ID : uint32_t
+    {
+        None = 0,
+        Player,
+        Enemy,
+        Item,   // 追加
+    };
+}
+```
+
+レイヤーは 1 つずつ違うビット (`1u << 数字`) にします。`1u << 0` はエンジンが使うので、`1u << 1` から使います。
+
 ## ジェムを作る
 
-`Game/GameObject/Item/` に `Gem.h` と `Gem.cpp` を作ります。
+`Game/GameObject/` に `Gem.h` と `Gem.cpp` を作り、プロジェクトに追加します。
 
 ```cpp
-// Game/GameObject/Item/Gem.h
+// Game/GameObject/Gem.h
 #pragma once
 #include "GameObject.h"
 #include "Model.h"
@@ -51,7 +67,7 @@ private:
 ```
 
 ```cpp
-// Game/GameObject/Item/Gem.cpp
+// Game/GameObject/Gem.cpp
 #include "pch.h"
 #include "Gem.h"
 #include "Collider.h"
@@ -105,12 +121,12 @@ void Gem::OnCollisionEnter(Collider* mine, Collider* other)
 
 :::{note}
 消すだけなら `Destroy()` もあります。`Destroy()` したオブジェクトはシーンから完全に取り除かれ、シーンに入り直しても戻りません。
-シーンをやり直したときに元に戻したいものは、このように `SetActive(false)` で止めておき、`Initialize()` で `SetActive(true)` に戻します。
+シーンに入り直したときに元に戻したいものは、このように `SetActive(false)` で止めておき、`Initialize()` で `SetActive(true)` に戻します。
 :::
 
 ## ボールにもコライダーを付けて、スコアを数える
 
-`Ball.h` に、衝突したときの関数とスコアを足します。
+`Ball.h` に、当たったときの関数とスコアを足します。
 
 ```cpp
 public:
@@ -133,6 +149,7 @@ private:
 Ball::Ball(Engine* engine) : engine_(engine)
 {
     model_ = std::make_unique<Model>(engine_, "sphere");
+    model_->SetColor(Vector4{ 1.0f, 0.4f, 0.2f, 1.0f });
     binder_ = std::make_unique<PropertyBinder>(engine_, "Ball");
 
     // 自分は Player で、Item とだけ当たる
@@ -178,7 +195,7 @@ SampleScene::SampleScene(Engine* engine)
     objectManager_.Create<Grid>(engine_);
     objectManager_.Create<Ball>(engine_);
 
-    // 半径 6 の円の上に等間隔に置く
+    // 半径 6 の円の上に、等間隔に置く
     for (int i = 0; i < 8; ++i)
     {
         const float angle = Math::PI * 2.0f * static_cast<float>(i) / 8.0f;
@@ -190,7 +207,7 @@ SampleScene::SampleScene(Engine* engine)
 ## 動かしてみる
 
 ボールでジェムに触れると、ジェムが消えます。
-当たり判定の形はエディター画面で水色の線で表示されます。見えないときは、シーン名のウィンドウの「コライダーを表示」を確認してください。
+当たり判定の形は、エディター画面で水色の線で表示されます。見えないときは、「全体のデバッグ情報・設定」ウィンドウの「デバッグ描画」がオンになっているか確認してください。
 
 ## 詳しく知りたいとき
 

@@ -11,7 +11,7 @@
 - 値を JSON に保存する
 - 起動したときに、保存した値を読み込む
 
-`Ball.h` に PropertyBinder と、エディター画面を出す `DebugGui()` を足します。
+`Ball.h` に PropertyBinder と、エディター画面に表示する `DebugGui()` を足します。
 
 ```cpp
 #include "PropertyBinder.h"   // 追加
@@ -34,6 +34,7 @@ private:
 Ball::Ball(Engine* engine) : engine_(engine)
 {
     model_ = std::make_unique<Model>(engine_, "sphere");
+    model_->SetColor(Vector4{ 1.0f, 0.4f, 0.2f, 1.0f });
 
     // "Ball" は保存先の名前。Assets/Data/GlobalVariables/Ball.json に保存される
     binder_ = std::make_unique<PropertyBinder>(engine_, "Ball");

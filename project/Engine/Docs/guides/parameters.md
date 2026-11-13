@@ -69,8 +69,8 @@ binder_->Bind("Fov", &fov_, 0.45f, 0.01f, 0.1f, 3.0f, [this]() { RebuildProjecti
 保存先の名前を複数渡すと、1 つの JSON の中で階層に分けて保存されます。同じ種類のものがたくさんあるときに使います。
 
 ```cpp
-// EnvironmentProps.json の中の "Prop_3" に保存される
-binder_ = std::make_unique<PropertyBinder>(engine_, "EnvironmentProps", "Prop_3");
+// Coins.json の中の "Coin_3" に保存される
+binder_ = std::make_unique<PropertyBinder>(engine_, "Coins", "Coin_3");
 ```
 
 ## シーンごとの設定
@@ -79,7 +79,7 @@ binder_ = std::make_unique<PropertyBinder>(engine_, "EnvironmentProps", "Prop_3"
 シーンだけで使う値も、ここに登録できます。
 
 ```cpp
-void PlayScene::OnInitialize()
+void GameScene::OnInitialize()
 {
     binder_->Bind("TimeLimit", &timeLimit_, 300.0f, 1.0f, 1.0f, 3600.0f);
 }

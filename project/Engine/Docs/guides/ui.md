@@ -1,7 +1,7 @@
 # UI (画像と文字)
 
 画面に画像を出すには `FS::Sprite`、文字を出すには `FS::Text` を使います。
-UI 用の GameObject を作り、その中で持つのが基本です (例: `Game/GameObject/UI/GameUI.cpp`)。
+どちらも GameObject ではないので、UI 用の GameObject (またはシーン) が持ち、`Draw()` の中で `Draw()` を呼びます。
 
 ## 画面の座標
 
@@ -20,7 +20,7 @@ sprite->SetPosition({ -20.0f, 20.0f });   // そこから左に 20、下に 20
 ```cpp
 // コンストラクタで
 icon_ = std::make_unique<Sprite>(engine_);
-icon_->SetTexture("heart");               // Assets/Textures にあるファイル名 (拡張子なし)
+icon_->SetTexture("heart");               // Assets/Textures/UI などに置いた画像のファイル名 (拡張子なし)
 icon_->SetAnchor(UIAnchor::TopLeft);
 icon_->SetPosition({ 20.0f, 20.0f });
 icon_->SetSize({ 64.0f, 64.0f });
@@ -46,7 +46,7 @@ const float ratio = static_cast<float>(hp_) / static_cast<float>(maxHp_);
 gaugeFill_->SetSize({ gaugeSize_.x * ratio, gaugeSize_.y });
 ```
 
-左端を基準に縮めたいので、アンカーは左側 (`TopLeft` など) にしておきます。実例は `Game/GameObject/Character/Player/PlayerHealth.cpp` です。
+左端を基準に縮めたいので、アンカーは左側 (`TopLeft` など) にしておきます。
 
 ## 文字を出す
 
@@ -111,11 +111,13 @@ Pop,MyPopFont.ttf,72
 | 列 | 内容 |
 | :--- | :--- |
 | Name | コードで使う名前 |
-| Path | `Assets/Data/Fonts/` からのファイルの場所 |
+| Path | `Assets/Data/Fonts/` からのファイルの場所。そこになければ、エンジンが持っているフォント (`Engine/Assets/Fonts/`) から探す |
 | PixelHeight | 文字を作るときの大きさ。大きく表示する文字が多いなら大きくする |
 | Charset | 使う漢字の一覧ファイル。省略すると `Charset.txt` |
 
-英数字・ひらがな・カタカナ・記号はいつでも使えます。漢字は Charset のファイルに書いてあるものだけが使えるので、出ない漢字があればそのファイルに足してください。
+ひな形の `Main` は、エンジンが持っている NotoSansJP を使っています。
+
+英数字・ひらがな・カタカナ・記号はいつでも使えます。漢字は Charset のファイル (`Assets/Data/Fonts/Charset.txt`) に書いてあるものだけが使えます。ひな形の Charset.txt は空なので、使う漢字をそのファイルに書き足してください (改行や区切りは不要で、並べて書くだけでよい)。
 
 ## つまずきやすい点
 

@@ -2,13 +2,16 @@
 #include "MainScene.h"
 #include "GameDefine.h"
 #include "Grid.h"
+#include "Environment.h"
 
 using namespace FS;
 
 MainScene::MainScene(Engine* engine)
     : BaseScene(engine, SceneName::Main)
 {
-    objectManager_.AddObject(std::make_unique<Grid>(engine_));
+    // 空と太陽の光。置かないとモデルが暗く映る
+    objectManager_.Create<Environment>(engine_);
+    objectManager_.Create<Grid>(engine_);
 }
 
 void MainScene::OnInitialize()
