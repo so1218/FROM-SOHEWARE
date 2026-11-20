@@ -24,6 +24,8 @@ public:
 
     // 本体のモデルのほかに描くもの
     virtual void Draw(Enemy* owner) {}
+    // アニメーションするモデルを自分で描く敵は false にする
+    virtual bool DrawsBodyModel() const { return true; }
 
     // 衝突処理
     virtual void OnCollisionEnter(Enemy* owner, FS::GameObject* hitObject) {}

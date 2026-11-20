@@ -162,6 +162,9 @@
     <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp">
       <Filter>Game\GameObject\Character\Enemy</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Enemy\ZombieBehavior.cpp">
+      <Filter>Game\GameObject\Character\Enemy</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\Player.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -274,6 +277,9 @@
       <Filter>Game\GameObject\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h">
+      <Filter>Game\GameObject\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Enemy\ZombieBehavior.h">
       <Filter>Game\GameObject\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Enemy\IEnemyBehavior.h">

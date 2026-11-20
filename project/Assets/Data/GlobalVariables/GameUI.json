@@ -552,6 +552,7 @@
         "StageNameText_Visible": true,
         "StageNameText_WrapLength": 0.0,
         "TimeFormat": "{}:{:02}",
+        "TimeMinuteStep": 10,
         "TimeText_Align": 0,
         "TimeText_CharSpacing": 0.0,
         "TimeText_Color": [

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameUI.h"
 #include "ImGuiManager.h"
+#include "EnvironmentManager.h"
 
 using namespace FS;
 
@@ -28,18 +29,22 @@ void GameUI::Initialize()
     binder_->BindTextElement("TimeText", timeText_.get(), false);
     binder_->BindString("TimeFormat", "{}:{:02}",
         [this](const std::string& newFormat) { timeFormat_ = newFormat; });
+    binder_->Bind("TimeMinuteStep", &minuteStep_, 10, 1.0f, 1, 60);
 }
 
 void GameUI::Update()
 {
-    const int totalSeconds = static_cast<int>(std::ceil(std::max(remainingTime_, 0.0f)));
-    const int minutes = totalSeconds / 60;
-    const int seconds = totalSeconds % 60;
+    // ゲームの中の時刻 (0 ~ 24 時間)
+    const float timeOfDay = EnvironmentManager::GetInstance()->GetTimeOfDay();
+    const int totalMinutes = static_cast<int>(timeOfDay * 60.0f) % (24 * 60);
+    const int hours = totalMinutes / 60;
+    const int step = std::max(minuteStep_, 1);
+    const int minutes = (totalMinutes % 60) / step * step;
 
     // 書式を ImGui で編集している途中は 崩れることがあるので、そのときは書式をそのまま出す
     try
     {
-        timeText_->SetText(std::vformat(timeFormat_, std::make_format_args(minutes, seconds)));
+        timeText_->SetText(std::vformat(timeFormat_, std::make_format_args(hours, minutes)));
     }
     catch (const std::format_error&)
     {
@@ -71,7 +76,8 @@ void GameUI::DebugGui()
     ImGui::SeparatorText("テキスト");
     binder_->DrawTextElement("MessageText", "メッセージ");
     binder_->DrawTextElement("StageNameText", "ステージ名");
-    binder_->DrawTextElement("TimeText", "残り時間");
-    binder_->Draw("TimeFormat", "残り時間の書式 ({} に分、秒の順で入る)");
+    binder_->DrawTextElement("TimeText", "時刻");
+    binder_->Draw("TimeFormat", "時刻の書式 ({} に時、分の順で入る)");
+    binder_->Draw("TimeMinuteStep", "分の刻み (分)");
     ImGui::End();
 }

@@ -96,8 +96,6 @@ void PlayScene::OnUpdate()
         }
         break;
     }
-
-    gameUI_->SetRemainingTime(remainingTime_);
 }
 
 void PlayScene::UpdatePauseMenu()

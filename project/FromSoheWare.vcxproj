@@ -161,6 +161,7 @@
     <ClCompile Include="Game\GameObject\Field\EnvironmentProp.cpp" />
     <ClCompile Include="Game\GameObject\Field\EnvironmentPropManager.cpp" />
     <ClCompile Include="Game\GameObject\Character\Enemy\FloatingBehavior.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Enemy\ZombieBehavior.cpp" />
     <ClCompile Include="Game\GameObject\Field\FoliageField.cpp" />
     <ClCompile Include="Game\GameObject\UI\GameUI.cpp" />
     <ClCompile Include="Game\GameObject\UI\Tutorial.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Game\GameObject\Character\Enemy\Enemy.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\EnemyManager.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\FloatingBehavior.h" />
+    <ClInclude Include="Game\GameObject\Character\Enemy\ZombieBehavior.h" />
     <ClInclude Include="Game\GameObject\Character\Enemy\IEnemyBehavior.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerReticle.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateAiming.h" />

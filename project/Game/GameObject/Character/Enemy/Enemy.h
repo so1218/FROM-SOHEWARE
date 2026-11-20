@@ -9,7 +9,7 @@
 enum class EnemyType
 {
     Floating,
-    // Zombie,       
+    Zombie,
 };
 
 class Enemy : public FS::GameObject
@@ -38,6 +38,7 @@ public:
     FS::WorldTransform& GetTransform() { return model_->GetTransform(); }
     FS::Model* GetModel() const { return model_.get(); }
     EnemyType GetType() const { return type_; }
+    int GetId() const { return id_; }
 
     // Transform更新を本体に反映させるヘルパー
     void SyncTransform() { SetTransform(model_->GetTransform()); }

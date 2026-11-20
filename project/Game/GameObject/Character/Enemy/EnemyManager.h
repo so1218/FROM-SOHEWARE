@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "PropertyBinder.h"
 #include "FloatingBehavior.h"
+#include "ZombieBehavior.h"
 
 class CoinManager;
 
@@ -28,6 +29,15 @@ private:
     std::unique_ptr<Enemy> CreateEnemy(int index);
     void SpawnEnemies();
 
+    // ゾンビ
+    void UpdateZombieSpawning();
+    // プレイヤーの周りの地形の上で、ほかのゾンビと重ならない場所を探す
+    bool FindZombieSpawnPosition(const FS::Vector3& playerPosition, FS::Vector3& outPosition);
+    void SpawnZombie(const FS::Vector3& position, const FS::Vector3& playerPosition);
+    // ゾンビどうしが重ならないように押し離す
+    void SeparateZombies();
+    int CountAliveZombies() const;
+
     FS::Engine* engine_;
     std::string managerGroupName_;
     const FS::Terrain* terrain_ = nullptr;
@@ -44,4 +54,11 @@ private:
     std::unique_ptr<FS::PropertyBinder> floatingBinder_;
 
     int enemyCount_ = 0; // JSONに保存される全体の数
+
+    // ゾンビ
+    ZombieConfig zombieConfig_;
+    std::unique_ptr<FS::PropertyBinder> zombieBinder_;
+    float zombieSpawnTimer_ = 0.0f;
+    bool hasZombieAssets_ = false;
+    std::mt19937 random_{ std::random_device{}() };
 };

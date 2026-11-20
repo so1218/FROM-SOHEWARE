@@ -1,0 +1,45 @@
+{
+    "ZombieEnemy": {
+        "AnimBlendTime": 0.25,
+        "AttackAnimSpeed": 1.0,
+        "AttackDamage": 10,
+        "AttackHitTime": 0.44999998807907104,
+        "AttackRange": 1.600000023841858,
+        "ChaseSpeed": 2.200000047683716,
+        "CloseNoticeRange": 4.0,
+        "ColliderOffset": [
+            0.0,
+            0.8999999761581421,
+            0.0
+        ],
+        "ColliderSize": [
+            2.5799999237060547,
+            15.289999961853027,
+            2.5199999809265137
+        ],
+        "DespawnDistance": 90.0,
+        "EmergeAnimSpeed": 1.0,
+        "EmergeDepth": 1.7999999523162842,
+        "EmergeTime": 2.5,
+        "HP": 60,
+        "HearingRange": 60.0,
+        "LoseTime": 1.0,
+        "MaxAliveCount": 10,
+        "Scale": [
+            5.0,
+            5.0,
+            5.0
+        ],
+        "SearchTime": 6.0,
+        "SeparationRadius": 1.2000000476837158,
+        "SightRange": 40.0,
+        "SpawnEnable": true,
+        "SpawnInterval": 5.0,
+        "SpawnMaxDistance": 35.0,
+        "SpawnMinDistance": 15.0,
+        "TurnSpeed": 6.0,
+        "WalkAnimSpeed": 1.0,
+        "WanderRadius": 8.0,
+        "WanderSpeed": 0.800000011920929
+    }
+}

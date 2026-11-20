@@ -16,7 +16,6 @@ public:
     void DebugGui() override;
 
     void SetGameplayVisible(bool isVisible) { isGameplayVisible_ = isVisible; }
-    void SetRemainingTime(float seconds) { remainingTime_ = seconds; }
 
 private:
     FS::Engine* engine_;
@@ -29,7 +28,8 @@ private:
 
     // timeText_ の書式
     std::string timeFormat_;
-    float remainingTime_ = 0.0f;
+    // 分をこの単位で切り捨てて出す
+    int minuteStep_ = 10;
 
     // まとめて表示/非表示を切り替えるフラグ
     bool isVisible_ = true;

@@ -3,6 +3,7 @@
 #include "GameDefine.h"
 #include "TimeManager.h"
 #include "CollisionConfig.h"
+#include "ZombieBehavior.h"
 
 using namespace FS;
 
@@ -17,6 +18,9 @@ Enemy::Enemy(Engine* engine, int id, EnemyType type, std::unique_ptr<IEnemyBehav
     {
     case EnemyType::Floating:
         modelName = "Enemy";
+        break;
+    case EnemyType::Zombie:
+        modelName = ZombieBehavior::kMeshName;
         break;
     }
 
@@ -126,7 +130,7 @@ void Enemy::Draw()
 {
     if (!IsActive()) return;
 
-    if (model_) model_->Draw();
+    if (model_ && behavior_ && behavior_->DrawsBodyModel()) model_->Draw();
     if (behavior_) behavior_->Draw(this);
 }
 
