@@ -82,6 +82,13 @@ void FloatingBehavior::Update(Enemy* owner)
         lastPlayerShotCount_ = player_ ? player_->GetShotCount() : 0;
     }
 
+    // 狙っている間や撃っている間も数え、隠れ続ければ見失う
+    if (player_ && (state_ == State::Chase || state_ == State::LockOn || state_ == State::Fire))
+    {
+        const float distance = (player_->GetColliderCenter() - owner->GetTransform().translation_).Length();
+        hiddenTimer_ = IsPlayerHiddenFrom(distance) ? hiddenTimer_ + deltaTime : 0.0f;
+    }
+
     switch (state_)
     {
     case State::Patrol: UpdatePatrol(owner, deltaTime); break;
@@ -149,7 +156,7 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
     const Vector3 playerCenter = player_->GetColliderCenter();
     const float distance = (playerCenter - position).Length();
 
-    if (distance > config_.loseRange)
+    if (distance > config_.loseRange || hiddenTimer_ >= config_.hiddenLoseTime)
     {
         ChangeState(State::Patrol);
         return;
@@ -179,7 +186,8 @@ void FloatingBehavior::UpdateChase(Enemy* owner, float deltaTime)
     MoveToward(owner, target, config_.moveSpeed, deltaTime);
     FaceDirection(owner, playerCenter - position, deltaTime);
 
-    if (stateTimer_ >= config_.attackInterval && distance <= config_.maxFireDistance)
+    // 見えていない相手は狙わない
+    if (stateTimer_ >= config_.attackInterval && distance <= config_.maxFireDistance && !IsPlayerHiddenFrom(distance))
     {
         ChangeState(State::LockOn);
     }
@@ -261,6 +269,7 @@ void FloatingBehavior::StartChase(Enemy* owner)
     // 今いる方向から回り始める
     const Vector3 fromPlayer = owner->GetTransform().translation_ - player_->GetTransform().translation_;
     orbitAngle_ = std::atan2(fromPlayer.z, fromPlayer.x);
+    hiddenTimer_ = 0.0f;
     ChangeState(State::Chase);
 }
 
@@ -277,7 +286,14 @@ bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
     const bool heardShot = playerShotCount != lastPlayerShotCount_ && distance <= config_.hearingRange;
     lastPlayerShotCount_ = playerShotCount;
 
-    return distance <= config_.sightRange || heardShot;
+    // 隠れていると、近くまで来ないと気づかない
+    const float sightRange = player_->IsHidden() ? std::min(config_.hiddenSightRange, config_.sightRange) : config_.sightRange;
+    return distance <= sightRange || heardShot;
+}
+
+bool FloatingBehavior::IsPlayerHiddenFrom(float distance) const
+{
+    return player_ && player_->IsHidden() && distance > config_.hiddenSightRange;
 }
 
 void FloatingBehavior::MoveToward(Enemy* owner, const Vector3& target, float speed, float deltaTime)
@@ -555,6 +571,7 @@ void FloatingBehavior::DebugGui(Enemy* owner)
     constexpr const char* kStateNames[] = { "巡回", "追跡", "ロックオン", "射撃", "墜落" };
     ImGui::Text("状態: %s", kStateNames[static_cast<int>(state_)]);
     ImGui::Text("スラスター HP: %d / %d / %d / %d", thrusterHP_[0], thrusterHP_[1], thrusterHP_[2], thrusterHP_[3]);
+    ImGui::Text("プレイヤーが見えていない時間: %.1f 秒", hiddenTimer_);
     if (ImGui::Button("スラスターを直す"))
     {
         RepairThrusters();
@@ -579,6 +596,8 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("SightRange", &sightRange, 60.0f, 1.0f, 0.0f, 500.0f);
     binder.Bind("HearingRange", &hearingRange, 120.0f, 1.0f, 0.0f, 500.0f);
     binder.Bind("LoseRange", &loseRange, 150.0f, 1.0f, 0.0f, 1000.0f);
+    binder.Bind("HiddenSightRange", &hiddenSightRange, 10.0f, 0.5f, 0.0f, 500.0f);
+    binder.Bind("HiddenLoseTime", &hiddenLoseTime, 4.0f, 0.1f, 0.0f, 60.0f);
 
     binder.Bind("MoveSpeed", &moveSpeed, 18.0f, 0.5f, 0.0f, 200.0f);
     binder.Bind("Acceleration", &acceleration, 3.0f, 0.05f, 0.1f, 50.0f);
@@ -632,6 +651,8 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("SightRange", "気づく距離");
         binder.Draw("HearingRange", "銃声に気づく距離");
         binder.Draw("LoseRange", "見失う距離");
+        binder.Draw("HiddenSightRange", "隠れているプレイヤーに気づく距離");
+        binder.Draw("HiddenLoseTime", "隠れ続けると見失うまで (秒)");
         ImGui::TreePop();
     }
 

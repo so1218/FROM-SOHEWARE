@@ -10,6 +10,7 @@ enum class GameAction
     Jump,
     Reload,
     Shoot,
+    Crouch,
 
     Pause,
     Confirm,

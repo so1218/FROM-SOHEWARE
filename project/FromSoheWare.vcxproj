@@ -153,6 +153,8 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateCrouch.cpp" />
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerConcealment.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateNormal.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\PlayerWeapon.cpp" />
@@ -194,6 +196,8 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerAmmoDisplay.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerMoneyDisplay.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateCrouch.h" />
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerConcealment.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateNormal.h" />
     <ClInclude Include="Game\GameObject\Character\Player\PlayerWeapon.h" />

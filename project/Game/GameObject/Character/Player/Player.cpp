@@ -18,6 +18,8 @@
 #include "PlayerAmmoDisplay.h"
 #include "PlayerMoneyDisplay.h"
 #include "PlayerStateDodge.h"
+#include "PlayerStateCrouch.h"
+#include "PlayerConcealment.h"
 #include "Enemy.h"
 #include "GlobalVariables.h"
 
@@ -36,12 +38,15 @@ engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 	reticle_ = std::make_unique<PlayerReticle>(engine_);
 	stamina_ = std::make_unique<PlayerStamina>(engine_);
 	health_ = std::make_unique<PlayerHealth>(engine_);
+	concealment_ = std::make_unique<PlayerConcealment>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = AddBoxCollider(colliderSize_);
 	collider_->SetCollisionLayer(CollisionLayer::Player);
 	collider_->SetCollisionMask(CollisionLayer::Enemy | CollisionLayer::Prop);
 }
+
+Player::~Player() = default;
 
 void Player::Initialize()
 {
@@ -86,6 +91,12 @@ void Player::Initialize()
 	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
 	binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
+	binder_->Bind("CrouchSpeed", &config.crouchSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
+	binder_->Bind("CrouchWalkAnimSpeed", &config.crouchWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("CrouchIdleAnimSpeed", &config.crouchIdleAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("CrouchBlendTime", &config.crouchBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
+	binder_->Bind("CrouchColliderHeightRate", &config.crouchColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
+	concealment_->BindProperties(*binder_);
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
 	ammoDisplay_->BindProperties(*binder_);
@@ -135,8 +146,10 @@ void Player::Update()
 		pos.z = std::clamp(pos.z, -511.0f, 511.0f);
 	}
 
-	collider_->SetCenterOffset(colliderOffset_);
-	collider_->SetSize(colliderSize_);
+	concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrouching(), isControllable_);
+
+	collider_->SetCenterOffset(GetCurrentColliderOffset());
+	collider_->SetSize(GetCurrentColliderSize());
 
 	// 基本アニメーションの更新
 	animationModel_->Update();
@@ -511,6 +524,45 @@ bool Player::IsReloadInputTriggered() const
 	return isControllable_ && GameInput::IsTriggered(GameAction::Reload);
 }
 
+bool Player::IsCrouchInputTriggered() const
+{
+	return isControllable_ && GameInput::IsTriggered(GameAction::Crouch);
+}
+
+bool Player::IsCrouching() const
+{
+	return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrouch>();
+}
+
+bool Player::IsHidden() const
+{
+	return concealment_->IsHidden();
+}
+
+void Player::SetGrassField(const GrassField* grassField)
+{
+	concealment_->SetGrassField(grassField);
+}
+
+Vector3 Player::GetCurrentColliderSize() const
+{
+	if (!IsCrouching())
+	{
+		return colliderSize_;
+	}
+	return { colliderSize_.x, colliderSize_.y * config.crouchColliderHeightRate, colliderSize_.z };
+}
+
+Vector3 Player::GetCurrentColliderOffset() const
+{
+	// 足元の高さは変えずに低くする
+	if (!IsCrouching())
+	{
+		return colliderOffset_;
+	}
+	return { colliderOffset_.x, colliderOffset_.y * config.crouchColliderHeightRate, colliderOffset_.z };
+}
+
 bool Player::IsShootInputTriggered() const
 {
 	return isControllable_ && GameInput::IsTriggered(GameAction::Shoot);
@@ -574,6 +626,16 @@ void Player::DebugGui()
 		binder_->Draw("SprintSpeedRate", "速さの倍率 (走りに対して)");
 		binder_->Draw("SprintAnimSpeed", "アニメ速度");
 		binder_->Draw("SprintStaminaPerSecond", "1 秒あたりのスタミナ消費");
+	}
+
+	if (ImGui::CollapsingHeader("しゃがみ・隠れる"))
+	{
+		binder_->Draw("CrouchSpeed", "移動の速さ");
+		binder_->Draw("CrouchWalkAnimSpeed", "歩きアニメ速度");
+		binder_->Draw("CrouchIdleAnimSpeed", "待機アニメ速度");
+		binder_->Draw("CrouchBlendTime", "アニメの補間時間 (秒)");
+		binder_->Draw("CrouchColliderHeightRate", "当たり判定の高さの倍率");
+		concealment_->DrawProperties(*binder_);
 	}
 
 	if (ImGui::CollapsingHeader("回避"))

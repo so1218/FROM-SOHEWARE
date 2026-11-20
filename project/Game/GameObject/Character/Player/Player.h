@@ -15,6 +15,8 @@ class PlayerStamina;
 class PlayerHealth;
 class PlayerAmmoDisplay;
 class PlayerMoneyDisplay;
+class PlayerConcealment;
+class GrassField;
 
 class Player : public FS::GameObject
 {
@@ -59,12 +61,20 @@ public:
 		float dodgeAnimSpeed = 1.6f;
 
 		float jumpStaminaCost = 15.0f;
+
+		// しゃがみ
+		float crouchSpeed = 0.1f;
+		float crouchWalkAnimSpeed = 0.7f;
+		float crouchIdleAnimSpeed = 1.0f;
+		float crouchBlendTime = 0.2f;
+		float crouchColliderHeightRate = 0.6f;
 	};
 
 	Config config;
 
 public:
 	Player(FS::Engine* engine, FS::Camera* camera, FS::Terrain* terrain, TreeField* treeField);
+	~Player() override;
 
 	void Initialize() override;
 	void Update() override;
@@ -128,14 +138,24 @@ public:
 	// ダッシュ・回避
 	PlayerStamina* GetStamina() const { return stamina_.get(); }
 	PlayerHealth* GetHealth() const { return health_.get(); }
-	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + colliderOffset_; }
-	FS::Vector3 GetColliderHalfSize() const { return colliderSize_ * 0.5f; }
+	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + GetCurrentColliderOffset(); }
+	FS::Vector3 GetColliderHalfSize() const { return GetCurrentColliderSize() * 0.5f; }
+	// しゃがんでいる間は低くなる
+	FS::Vector3 GetCurrentColliderSize() const;
+	FS::Vector3 GetCurrentColliderOffset() const;
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
 	bool IsDodgeInputTriggered() const;
 	bool IsAimInputActive() const;
 	bool IsJumpInputTriggered() const;
 	bool IsShootInputTriggered() const;
 	bool IsReloadInputTriggered() const;
+	bool IsCrouchInputTriggered() const;
+
+	// しゃがみと隠れる
+	bool IsCrouching() const;
+	// 敵から見つかりにくい
+	bool IsHidden() const;
+	void SetGrassField(const GrassField* grassField);
 	PlayerWeapon* GetWeapon() const { return weapon_.get(); }
 
 	// false の間は入力を受け付けず、HUD も出さない
@@ -187,6 +207,7 @@ private:
 
 	std::unique_ptr<PlayerStamina> stamina_;
 	std::unique_ptr<PlayerHealth> health_;
+	std::unique_ptr<PlayerConcealment> concealment_;
 	void PlaceAtSpawn();
 	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
 	float spawnRotationY_ = 0.0f;                        

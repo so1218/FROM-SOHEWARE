@@ -24,6 +24,7 @@ const std::vector<InputBinding>& GetBindings(GameAction action)
         { GameAction::Jump, { Key(DIK_SPACE), Pad(PadButton::A) } },
         { GameAction::Reload,  { Key(DIK_R), Pad(PadButton::X) } },
         { GameAction::Shoot,   { Key(DIK_J), Pad(PadButton::RT) } },
+        { GameAction::Crouch,  { Key(DIK_C), Pad(PadButton::R3) } },
 
         { GameAction::Pause, { Key(DIK_ESCAPE), Pad(PadButton::Menu) } },
         { GameAction::Confirm, { Key(DIK_SPACE), Key(DIK_RETURN), Pad(PadButton::A) } },

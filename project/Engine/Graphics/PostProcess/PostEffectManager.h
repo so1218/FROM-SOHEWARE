@@ -60,6 +60,8 @@ public:
 
     void SetSceneDepthIndex(uint32_t index) { sceneDepthIndex_ = index; }
 
+    void SetOverlayVignette(float amount, const Vector3& color, float start = 0.25f, float end = 0.85f);
+
     uint32_t GetVolumetricFogSRVIndex() const { return volumetricFogPass_->GetSRVIndex(); }
 
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);

@@ -19,6 +19,8 @@
         "DamagePerShot": 4,
         "HP": 100,
         "HearingRange": 120.0,
+        "HiddenLoseTime": 4.0,
+        "HiddenSightRange": 10.0,
         "KeepDistance": 25.0,
         "KeepHeight": 10.0,
         "LockOnTime": 1.0,

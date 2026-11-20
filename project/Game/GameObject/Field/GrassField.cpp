@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "GrassField.h"
 #include "ImGuiManager.h"
+#include "TextureManager.h"
+#include "StringUtils.h"
 
 using namespace FS;
 
@@ -201,4 +203,116 @@ void GrassField::GenerateGrass()
     genData.terrainDepth = areaSize.y;
 
     grassSystem_->Generate(genData, terrain_->GetHeightmapName(), densityMapName_);
+
+    generatedData_ = genData;
+    LoadDensityMapForQuery();
+}
+
+void GrassField::LoadDensityMapForQuery()
+{
+    queryDensities_.clear();
+    queryWidth_ = 0;
+    queryHeight_ = 0;
+
+    const FS::TextureHandleData* metaData = FS::TextureManager::GetInstance().GetMetaData(densityMapName_);
+    if (!metaData)
+    {
+        return;
+    }
+
+    const std::wstring path = FS::StringUtils::ConvertString(metaData->fullPath);
+    const bool isDDS = std::filesystem::path(metaData->fullPath).extension() == ".dds";
+
+    DirectX::ScratchImage image;
+    HRESULT result = isDDS
+        ? DirectX::LoadFromDDSFile(path.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, image)
+        : DirectX::LoadFromWICFile(path.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, image);
+    if (FAILED(result))
+    {
+        return;
+    }
+
+    const DXGI_FORMAT format = image.GetMetadata().format;
+    if (format != DXGI_FORMAT_R32G32B32A32_FLOAT)
+    {
+        DirectX::ScratchImage converted;
+        result = DirectX::IsCompressed(format)
+            ? DirectX::Decompress(*image.GetImage(0, 0, 0), DXGI_FORMAT_R32G32B32A32_FLOAT, converted)
+            : DirectX::Convert(*image.GetImage(0, 0, 0), DXGI_FORMAT_R32G32B32A32_FLOAT, DirectX::TEX_FILTER_DEFAULT, DirectX::TEX_THRESHOLD_DEFAULT, converted);
+        if (FAILED(result))
+        {
+            return;
+        }
+        image = std::move(converted);
+    }
+
+    const DirectX::Image* pixels = image.GetImage(0, 0, 0);
+    queryWidth_ = static_cast<uint32_t>(pixels->width);
+    queryHeight_ = static_cast<uint32_t>(pixels->height);
+    queryDensities_.resize(static_cast<size_t>(queryWidth_) * queryHeight_);
+
+    for (uint32_t y = 0; y < queryHeight_; ++y)
+    {
+        const float* row = reinterpret_cast<const float*>(pixels->pixels + pixels->rowPitch * y);
+        for (uint32_t x = 0; x < queryWidth_; ++x)
+        {
+            queryDensities_[static_cast<size_t>(y) * queryWidth_ + x] = row[x * 4];
+        }
+    }
+}
+
+float GrassField::SampleQueryDensity(float u, float v) const
+{
+    // 画素の中心を基準に 4 画素を混ぜる
+    const float pixelX = std::clamp(u * queryWidth_ - 0.5f, 0.0f, static_cast<float>(queryWidth_ - 1));
+    const float pixelY = std::clamp(v * queryHeight_ - 0.5f, 0.0f, static_cast<float>(queryHeight_ - 1));
+    const uint32_t x0 = static_cast<uint32_t>(pixelX);
+    const uint32_t y0 = static_cast<uint32_t>(pixelY);
+    const uint32_t x1 = std::min(x0 + 1, queryWidth_ - 1);
+    const uint32_t y1 = std::min(y0 + 1, queryHeight_ - 1);
+    const float blendX = pixelX - static_cast<float>(x0);
+    const float blendY = pixelY - static_cast<float>(y0);
+
+    auto At = [&](uint32_t x, uint32_t y) { return queryDensities_[static_cast<size_t>(y) * queryWidth_ + x]; };
+    const float top = At(x0, y0) + (At(x1, y0) - At(x0, y0)) * blendX;
+    const float bottom = At(x0, y1) + (At(x1, y1) - At(x0, y1)) * blendX;
+    return top + (bottom - top) * blendY;
+}
+
+bool GrassField::IsGrassAt(float worldX, float worldZ) const
+{
+    if (queryDensities_.empty() || generatedData_.gridSpacing <= 0.0f)
+    {
+        return false;
+    }
+
+    const float spacing = generatedData_.gridSpacing;
+    const float areaWidth = generatedData_.terrainWidth;
+    const float areaDepth = generatedData_.terrainDepth;
+    const Vector2& center = generatedData_.terrainCenter;
+
+    // 本数の上限で生やせなかったマスには草がないので、生成と同じ格子の番号で調べる
+    const uint32_t gridCountX = std::max(static_cast<uint32_t>(std::ceil(areaWidth / spacing)), 1u);
+    const float originX = std::floor(center.x / spacing) * spacing - areaWidth * 0.5f;
+    const float originZ = std::floor(center.y / spacing) * spacing - areaDepth * 0.5f;
+    const float column = std::round((worldX - originX) / spacing);
+    const float row = std::round((worldZ - originZ) / spacing);
+    if (column < 0.0f || row < 0.0f || column >= static_cast<float>(gridCountX))
+    {
+        return false;
+    }
+    const uint64_t instanceIndex = static_cast<uint64_t>(row) * gridCountX + static_cast<uint64_t>(column);
+    if (instanceIndex >= generatedData_.maxGrassCount)
+    {
+        return false;
+    }
+
+    const float u = (worldX - center.x) / areaWidth + 0.5f;
+    const float v = (worldZ - center.y) / areaDepth + 0.5f;
+    if (u < 0.0f || u > 1.0f || v < 0.0f || v > 1.0f)
+    {
+        return false;
+    }
+
+    return SampleQueryDensity(u, v) >= 0.5f;
 }

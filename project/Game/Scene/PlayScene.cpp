@@ -22,6 +22,7 @@
 #include "TitleMenu.h"
 #include "PauseMenuHint.h"
 #include "PauseMenu.h"
+#include "PostEffectManager.h"
 
 using namespace FS;
 
@@ -32,11 +33,12 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
     Terrain* terrain = ground->GetTerrain();
-    objectManager_.Create<GrassField>(engine_, terrain);
+    auto grassField = objectManager_.Create<GrassField>(engine_, terrain);
     auto treeField = objectManager_.Create<TreeField>(engine_, terrain);
 
     auto player = objectManager_.Create<Player>(engine_, camera_.get(), terrain, treeField);
     player_ = player;
+    player->SetGrassField(grassField);
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform(), terrain);
     player->SetFollowCamera(followCamera_.get());
     titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
@@ -226,4 +228,7 @@ void PlayScene::OnFinalize()
         TimeManager::GetInstance()->SetTimeScale(timeScaleBeforePause_);
         isPaused_ = false;
     }
+
+    // 隠れているときのビネットは毎フレーム渡す値なので、次のシーンに残さない
+    engine_->GetPostEffectManager()->SetOverlayVignette(0.0f, { 0.0f, 0.0f, 0.0f });
 }

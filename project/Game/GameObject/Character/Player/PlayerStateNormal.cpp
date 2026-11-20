@@ -3,6 +3,7 @@
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
 #include "PlayerStateSprint.h"
+#include "PlayerStateCrouch.h"
 #include "PlayerStamina.h"
 
 using namespace FS;
@@ -32,6 +33,12 @@ void PlayerStateNormal::Update(Player* player)
     {
         player->PlayAnimation("humanIdle", true, player->config.idleAnimSpeed, player->config.runToIdleBlendTime);
         player->ResetFootstepState();
+    }
+
+    if (player->IsCrouchInputTriggered())
+    {
+        player->GetStateMachine()->ChangeState<PlayerStateCrouch>();
+        return;
     }
 
     if (player->TryStartDodge())

@@ -15,8 +15,14 @@ public:
     void Draw() override;
     void DebugGui() override;
 
+    // その位置に草が生えているか
+    bool IsGrassAt(float worldX, float worldZ) const;
+
 private:
     void GenerateGrass();
+    // 密度マップを CPU でも読めるように持っておく
+    void LoadDensityMapForQuery();
+    float SampleQueryDensity(float u, float v) const;
 
 private:
     FS::Engine* engine_;
@@ -42,6 +48,11 @@ private:
     uint32_t windMapHandle_ = 0;
 
     bool needsRegenerate_ = true;
+
+    GrassGenerationData generatedData_{};
+    std::vector<float> queryDensities_;
+    uint32_t queryWidth_ = 0;
+    uint32_t queryHeight_ = 0;
     // 最後に生成したときの地形の形
     uint32_t generatedTerrainVersion_ = 0;
 };

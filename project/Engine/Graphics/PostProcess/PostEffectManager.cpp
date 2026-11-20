@@ -111,6 +111,20 @@ void PostEffectManager::Initialize(
     cbData_->flag = 0;
 	cbData_->radialBlurCenter = Vector2(0.5f, 0.5f);
 	cbData_->radialBlurStrength = 0.3f; 
+    cbData_->overlayVignetteAmount = 0.0f;
+    cbData_->overlayVignetteStart = 0.25f;
+    cbData_->overlayVignetteEnd = 0.85f;
+    cbData_->overlayVignetteColor = Vector3(0.0f, 0.0f, 0.0f);
+}
+
+void PostEffectManager::SetOverlayVignette(float amount, const Vector3& color, float start, float end)
+{
+    if (!cbData_) return;
+
+    cbData_->overlayVignetteAmount = std::clamp(amount, 0.0f, 1.0f);
+    cbData_->overlayVignetteColor = color;
+    cbData_->overlayVignetteStart = std::max(start, 0.0f);
+    cbData_->overlayVignetteEnd = std::max(end, cbData_->overlayVignetteStart);
 }
 
 void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& projectionMatrix, const Vector3& cameraPosition)

@@ -323,6 +323,11 @@ struct PostEffectData
     float2 radialBlurCenter;
 
     float radialBlurStrength;
+    
+    float overlayVignetteAmount;
+    float overlayVignetteStart; 
+    float overlayVignetteEnd;   
+    float3 overlayVignetteColor;
 };
 
 struct BrightExtractSettings

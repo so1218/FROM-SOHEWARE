@@ -23,6 +23,10 @@ struct FloatingEnemyConfig
     float hearingRange = 120.0f;  
     float loseRange = 150.0f;     
 
+    // プレイヤーが隠れているとき
+    float hiddenSightRange = 10.0f;
+    float hiddenLoseTime = 4.0f;
+
     // 追跡
     float moveSpeed = 18.0f;
     float acceleration = 3.0f;    
@@ -107,6 +111,8 @@ private:
 
     // 移動と向き
     bool CanDetectPlayer(const FS::Vector3& position);
+    // 隠れていて、近すぎもしないので見えない
+    bool IsPlayerHiddenFrom(float distance) const;
     void MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
 
@@ -135,6 +141,7 @@ private:
     float elapsedTime_ = 0.0f;
     int shotsFired_ = 0;             
     int lastPlayerShotCount_ = 0;    
+    float hiddenTimer_ = 0.0f;      
     std::mt19937 random_;
 
     // 移動

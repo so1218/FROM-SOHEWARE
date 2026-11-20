@@ -72,6 +72,11 @@
             7.920000076293945,
             2.0
         ],
+        "CrouchBlendTime": 0.20000000298023224,
+        "CrouchColliderHeightRate": 0.6000000238418579,
+        "CrouchIdleAnimSpeed": 1.0,
+        "CrouchSpeed": 0.10000000149011612,
+        "CrouchWalkAnimSpeed": 0.699999988079071,
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,
         "DodgeAnimSpeed": 1.0,
@@ -109,6 +114,16 @@
         ],
         "Health_LowRatio": 0.30000001192092896,
         "Health_Max": 100,
+        "HiddenFadeInTime": 0.28999999165534973,
+        "HiddenFadeOutTime": 0.5,
+        "HiddenVignetteAmount": 1.0,
+        "HiddenVignetteColor": [
+            0.0,
+            0.04192547872662544,
+            0.0838509202003479
+        ],
+        "HiddenVignetteEnd": 0.8299999833106995,
+        "HiddenVignetteStart": 0.23000000417232513,
         "IdleAnimSpeed": 1.0,
         "IdleToRunBlendTime": 0.25,
         "InteractionForce": 1.309999942779541,

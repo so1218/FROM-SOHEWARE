@@ -6,7 +6,7 @@ namespace FS
 class SwapChain
 {
 public:
-	// バックバッファの数。RTVManager もこの数だけRTVを作る
+	// バックバッファの数
 	static constexpr uint32_t kBufferCount = 2;
 
 	void Initialize(

@@ -39,6 +39,14 @@ float3 ApplyVignette(float3 color, float2 uv)
     return lerp(color, gData.vignetteColor.rgb, blendAmount);
 }
 
+float3 ApplyOverlayVignette(float3 color, float2 uv)
+{
+    float2 center = (uv - 0.5f) * float2(1.2f, 1.0f);
+    float end = max(gData.overlayVignetteEnd, gData.overlayVignetteStart + 0.001f);
+    float darkness = smoothstep(gData.overlayVignetteStart, end, length(center)) * gData.overlayVignetteAmount;
+    return lerp(color, gData.overlayVignetteColor, saturate(darkness));
+}
+
 // 色収差
 float4 SampleChromaticAberration(float2 uv)
 {
@@ -105,6 +113,9 @@ float4 main(VSOutput input) : SV_TARGET
     // 色補正・フィルタ処理
     if (gData.flag & VIGNETTE)
         finalColor.rgb = ApplyVignette(finalColor.rgb, uv);
+
+    if (gData.overlayVignetteAmount > 0.0f)
+        finalColor.rgb = ApplyOverlayVignette(finalColor.rgb, uv);
 
     if (gData.flag & SCREEN_NOISE)
     {
