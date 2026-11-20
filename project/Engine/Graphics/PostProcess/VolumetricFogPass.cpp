@@ -33,6 +33,15 @@ void VolumetricFogPass::Initialize(Engine* engine, uint32_t width, uint32_t heig
     settings_->noiseScale = 0.01f;
     settings_->noiseDistortion = 0.15f;
     settings_->windSpeedMultiplier = 1.0f;
+    settings_->boundaryDensity = 0.0f;
+    settings_->boundaryInset = 20.0f;
+    settings_->boundaryRampLength = 80.0f;
+    settings_->boundaryHeightFalloff = 0.02f;
+    settings_->boundaryBaseHeight = 0.0f;
+    settings_->boundaryNoiseIntensity = 0.6f;
+    settings_->boundaryEnabled = 0;
+    settings_->boundaryMin = { 0.0f, 0.0f };
+    settings_->boundaryMax = { 0.0f, 0.0f };
     settings_->coverage = 0.85f;
     settings_->erosion = 0.4f;
     settings_->noiseFeather = 0.3f;

@@ -363,6 +363,26 @@ struct FinalCompositeSettings
     float ssrIntensity;
     int enableVolumetricFog; 
     float dofStrength; 
+    
+    int boundaryEnabled;
+    float2 boundaryMin;
+    float2 boundaryMax;
+
+    float boundaryDensity;
+    float boundaryInset;
+    float boundaryRampLength;
+    float boundaryHeightFalloff;
+
+    float boundaryBaseHeight;
+    float boundaryNoiseIntensity;
+    float fogAnisotropy;
+    float fogExtinctionScale;
+
+    float3 fogAlbedo;
+    float fogMaxDistance;
+
+    float3 fogAmbientLight;
+    float boundaryPadding;
 };
 
 struct SSAOSettings
@@ -623,6 +643,19 @@ struct VolumetricFogSettings
     float noiseIntensity;
     
     float windSpeedMultiplier;
+
+    // 歩ける範囲の外で濃くなる霧
+    float boundaryDensity;
+    float boundaryInset;          // 境界からどれだけ内側で濃くなり始めるか
+    float boundaryRampLength;     // 濃くなりきるまでの距離
+
+    float boundaryHeightFalloff;  // 上に行くほど薄くなる割合
+    float boundaryBaseHeight;
+    float boundaryNoiseIntensity;
+    int boundaryEnabled;          // ゲームが毎フレーム範囲を渡したか。保存しない
+
+    float2 boundaryMin;           // 歩ける範囲の XZ。保存しない
+    float2 boundaryMax;
 };
 
 struct FogBilateralSettings
