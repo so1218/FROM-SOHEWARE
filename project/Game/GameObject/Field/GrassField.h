@@ -42,6 +42,8 @@ private:
     float maxWidth_ = 1.5f;
 
     std::string densityMapName_ = "white1x1";
+    // 密度マップがこの値以上の所に生やす
+    float densityThreshold_ = 0.5f;
     uint32_t densityMapHandle_ = 0;
 
     std::string windMapName_ = "noise_39";

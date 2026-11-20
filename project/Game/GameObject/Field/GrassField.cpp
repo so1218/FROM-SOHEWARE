@@ -59,6 +59,7 @@ void GrassField::Initialize()
     binder_->Bind("LodDistance1", &cullingData->lodDistance1, 20.0f, 1.0f, 5.0f, 100.0f);
     binder_->Bind("LodDistance2", &cullingData->lodDistance2, 50.0f, 1.0f, 10.0f, 200.0f);
 
+    binder_->Bind("DensityThreshold", &densityThreshold_, 0.5f, 0.01f, 0.0f, 1.0f);
     binder_->BindTexture("DensityMap", &densityMapName_, &densityMapHandle_, "white1x1", TextureType::Noise);
 
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() 
@@ -105,6 +106,7 @@ void GrassField::DebugGui()
 
         ImGui::Separator();
         needsRegenerate_ |= binder_->Draw("DensityMap", "密度マップ");
+        needsRegenerate_ |= binder_->Draw("DensityThreshold", "生やす密度のしきい値 (この値以上に生やす)");
 
         if (ImGui::Button("強制再生成"))
         {
@@ -197,6 +199,7 @@ void GrassField::GenerateGrass()
     genData.maxHeight = maxHeight_ * baseScale_;
     genData.minWidth = minWidth_ * baseScale_;
     genData.maxWidth = maxWidth_ * baseScale_;
+    genData.densityThreshold = densityThreshold_;
 
     genData.terrainCenter = terrain_->GetCenterXZ();
     genData.terrainWidth = areaSize.x;
@@ -314,5 +317,5 @@ bool GrassField::IsGrassAt(float worldX, float worldZ) const
         return false;
     }
 
-    return SampleQueryDensity(u, v) >= 0.5f;
+    return SampleQueryDensity(u, v) >= generatedData_.densityThreshold;
 }

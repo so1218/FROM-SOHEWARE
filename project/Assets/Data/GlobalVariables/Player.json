@@ -75,7 +75,7 @@
         "CrouchBlendTime": 0.20000000298023224,
         "CrouchColliderHeightRate": 0.6000000238418579,
         "CrouchIdleAnimSpeed": 1.0,
-        "CrouchSpeed": 0.10000000149011612,
+        "CrouchSpeed": 10.0,
         "CrouchWalkAnimSpeed": 0.699999988079071,
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,

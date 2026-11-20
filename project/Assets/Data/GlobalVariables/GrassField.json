@@ -2,6 +2,7 @@
     "GrassField": {
         "BaseScale": 5.0,
         "DensityMap": "noise_44",
+        "DensityThreshold": 0.5,
         "FlattenFactor": 10.0,
         "FlutterAmount": 0.029999999329447746,
         "GrassNormalBlend": 0.44999998807907104,

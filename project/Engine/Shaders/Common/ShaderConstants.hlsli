@@ -467,8 +467,10 @@ struct GrassGenerationData
     float gridSpacing;
     float minHeight;
     float maxHeight;
+    
     float minWidth;
     float maxWidth;
+    float densityThreshold;
 };
 
 struct TreeInstanceData

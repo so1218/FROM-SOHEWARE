@@ -37,10 +37,9 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
     float2 worldXZ = gridPosition + (Hash22(gridPosition) - 0.5f) * gridSpacing;
     float2 areaUV = CalculateAreaUV(worldXZ);
 
-    // 範囲の外と、密度マップの半分より薄いところには生やさない。
-    // 生やさない場所も 0 で埋めて、前に作った草が残らないようにする
+    // 範囲の外と、密度マップがしきい値より薄いところには生やさない
     bool isOutside = any(areaUV < 0.0f) || any(areaUV > 1.0f);
-    if (isOutside || gDensityMap.SampleLevel(gLinearSampler, areaUV, 0) < 0.5f)
+    if (isOutside || gDensityMap.SampleLevel(gLinearSampler, areaUV, 0) < gGenerationData.densityThreshold)
     {
         gOutputGrass[instanceIndex] = (GrassInstanceData) 0;
         return;
