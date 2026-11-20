@@ -3,6 +3,7 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 #include "Model.h"
+#include "DistantMountains.h"
 
 using namespace FS;
 
@@ -56,6 +57,12 @@ void TreeField::Initialize()
     binder_->Bind("MaxDrawDistance", &maxDrawDistance_, 300.0f, 5.0f, 50.0f, 2000.0f);
     binder_->Bind("TreeRadius", &treeRadius_, 5.0f, 0.1f, 0.1f, 20.0f);
 
+    binder_->Bind("BoundaryForestEnable", &isBoundaryForestEnabled_, true);
+    binder_->Bind("BoundaryInnerTreeCount", &boundaryInnerTreeCount_, 500, 1.0f, 0, 3500);
+    binder_->Bind("BoundaryOuterTreeCount", &boundaryOuterTreeCount_, 1000, 1.0f, 0, 3500);
+    binder_->Bind("BoundaryInnerWidth", &boundaryInnerWidth_, 20.0f, 0.5f, 0.0f, 200.0f);
+    binder_->Bind("BoundaryOuterWidth", &boundaryOuterWidth_, 150.0f, 1.0f, 0.0f, 1000.0f);
+
     // 葉
     binder_->BindColor("LeafColorTint", &leafMaterial_.colorTint, { 1.0f, 1.0f, 1.0f });
     binder_->Bind("TreeHeight", &leafMaterial_.treeHeight, 10.0f, 0.1f, 1.0f, 50.0f);
@@ -100,6 +107,12 @@ void TreeField::Initialize()
 
 void TreeField::Update()
 {
+    // 遠景の山が作り直されたら、ふもとの木の高さを合わせ直す
+    if (distantMountains_ && distantMountains_->GetShapeVersion() != placedMountainVersion_)
+    {
+        GenerateTrees();
+    }
+
     treeSystem_->Update();
 }
 
@@ -161,6 +174,102 @@ void TreeField::GenerateTrees()
         WorldTransform treeTransform(Vector3(scale, scale, scale), Vector3(0.0f, rotationY, 0.0f), position);
         treeSystem_->AddInstance(treeTransform, *modelData, treeMaterialHandle_);
 
+        colliders_.push_back({ position, trunkColliderRadius_ * scale });
+    }
+
+    if (isBoundaryForestEnabled_)
+    {
+        AddBoundaryTrees(*modelData);
+    }
+}
+
+void TreeField::AddBoundaryTrees(const ModelData& modelData)
+{
+    if (!terrain_) return;
+
+    const Vector2 size = terrain_->GetSizeXZ();
+    if (size.x <= 0.0f || size.y <= 0.0f) return;
+
+    const Vector2 center = terrain_->GetCenterXZ();
+    const Vector2 areaMin = center - size * 0.5f;
+    const Vector2 areaMax = center + size * 0.5f;
+
+    if (distantMountains_)
+    {
+        placedMountainVersion_ = distantMountains_->GetShapeVersion();
+    }
+    // 遠景の山がないときは、外に置くと宙に浮くので内側だけにする
+    const float outerWidth = distantMountains_ ? boundaryOuterWidth_ : 0.0f;
+
+    // 端の木の並びが変わらないよう、ほかの木とは別の乱数を使う
+    std::mt19937 random(kPlacementSeed + 1);
+    std::uniform_real_distribution<float> unit(0.0f, 1.0f);
+    std::uniform_real_distribution<float> scaleRange(minScale_, maxScale_);
+    std::uniform_real_distribution<float> rotationRange(0.0f, 360.0f);
+
+    // 内側は同じ密度、外側は端から離れるほど直線的にまばらにする
+    const int outerTreeCount = distantMountains_ ? boundaryOuterTreeCount_ : 0;
+    const int totalTreeCount = boundaryInnerTreeCount_ + outerTreeCount;
+
+    const float perimeter = (size.x + size.y) * 2.0f;
+    for (int treeIndex = 0; treeIndex < totalTreeCount; ++treeIndex)
+    {
+        // 外向きを正とした、端からの距離
+        float offset = 0.0f;
+        if (treeIndex < boundaryInnerTreeCount_)
+        {
+            offset = -boundaryInnerWidth_ * unit(random);
+        }
+        else
+        {
+            offset = outerWidth * (1.0f - std::sqrt(1.0f - unit(random)));
+        }
+
+        // 周の長さで辺を選ぶ。外側の木は辺の両端より先にもはみ出させ、角の外が空かないようにする
+        float along = unit(random) * perimeter;
+        const float overhang = std::max(offset, 0.0f);
+        const auto AlongSide = [&](float sideLength) { return -overhang + (along / sideLength) * (sideLength + overhang * 2.0f); };
+
+        Vector3 position = { 0.0f, 0.0f, 0.0f };
+        if (along < size.x)
+        {
+            position = { areaMin.x + AlongSide(size.x), 0.0f, areaMin.y - offset };
+        }
+        else if ((along -= size.x) < size.y)
+        {
+            position = { areaMax.x + offset, 0.0f, areaMin.y + AlongSide(size.y) };
+        }
+        else if ((along -= size.y) < size.x)
+        {
+            position = { areaMax.x - AlongSide(size.x), 0.0f, areaMax.y + offset };
+        }
+        else
+        {
+            along -= size.x;
+            position = { areaMin.x - offset, 0.0f, areaMax.y - AlongSide(size.y) };
+        }
+
+        const bool isInside = position.x >= areaMin.x && position.x < areaMax.x && position.z >= areaMin.y && position.z < areaMax.y;
+        if (isInside)
+        {
+            position.y = terrain_->GetHeight(position.x, position.z);
+        }
+        else if (distantMountains_)
+        {
+            position.y = distantMountains_->GetHeight(position.x, position.z);
+        }
+        else
+        {
+            continue;
+        }
+
+        const float scale = scaleRange(random);
+        const float rotationY = rotationRange(random);
+
+        WorldTransform treeTransform(Vector3(scale, scale, scale), Vector3(0.0f, rotationY, 0.0f), position);
+        treeSystem_->AddInstance(treeTransform, modelData, treeMaterialHandle_);
+
+        // 外の木にはプレイヤーは届かないが、弾は当たるようにする
         colliders_.push_back({ position, trunkColliderRadius_ * scale });
     }
 }
@@ -250,6 +359,13 @@ void TreeField::DebugGui()
         isPlacementChanged |= binder_->Draw("MinScale", "最小スケール");
         isPlacementChanged |= binder_->Draw("MaxScale", "最大スケール");
         isPlacementChanged |= binder_->Draw("TrunkColliderRadius", "幹の当たり判定の半径 (スケール 1 のとき)");
+
+        ImGui::SeparatorText("境界の森");
+        isPlacementChanged |= binder_->Draw("BoundaryForestEnable", "置く");
+        isPlacementChanged |= binder_->Draw("BoundaryInnerTreeCount", "内側 (歩ける地形の中) の本数");
+        isPlacementChanged |= binder_->Draw("BoundaryOuterTreeCount", "外側 (遠景の山のふもと) の本数");
+        isPlacementChanged |= binder_->Draw("BoundaryInnerWidth", "地形の端から内側へ置く幅");
+        isPlacementChanged |= binder_->Draw("BoundaryOuterWidth", "地形の端から外側へ置く幅 (外ほどまばら)");
 
         ImGui::Separator();
         isMaterialChanged |= binder_->Draw("MaxDrawDistance", "最大描画距離");

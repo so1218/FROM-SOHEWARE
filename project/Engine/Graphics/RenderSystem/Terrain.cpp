@@ -6,6 +6,9 @@
 #include "BufferManager.h"
 #include "Frustum.h"
 #include "TerrainRenderer.h"
+#include "SRVManager.h"
+#include "CommandManager.h"
+#include "TextureLoader.h"
 
 namespace FS
 {
@@ -68,6 +71,19 @@ void Terrain::Draw()
     visibleChunks_.clear();
     for (const Chunk& chunk : chunks_)
     {
+        if (hasHiddenArea_)
+        {
+            const float chunkMinX = origin.x + chunk.startX * params_.cellSize;
+            const float chunkMinZ = origin.z + chunk.startZ * params_.cellSize;
+            const bool isHidden =
+                chunkMinX >= hiddenAreaMin_.x && chunkMinX + chunkSize.x <= hiddenAreaMax_.x &&
+                chunkMinZ >= hiddenAreaMin_.y && chunkMinZ + chunkSize.y <= hiddenAreaMax_.y;
+            if (isHidden)
+            {
+                continue;
+            }
+        }
+
         const Vector3 boundsMin = {
             origin.x + chunk.startX * params_.cellSize,
             origin.y + (chunk.minHeightRatio - 0.5f) * params_.maxHeight,
@@ -83,8 +99,31 @@ void Terrain::Draw()
         }
     }
 
+    if (isVista_)
+    {
+        engine_->GetRendererManager()->SubmitTerrainVista(CreateDrawData(), visibleChunks_);
+        return;
+    }
+
     // 見えるチャンクがなくても、草や植物の生成が地形の設定を使うので必ず送る
     engine_->GetRendererManager()->SubmitTerrain(CreateDrawData(), visibleChunks_);
+}
+
+void Terrain::SetHiddenArea(const Vector2& min, const Vector2& max)
+{
+    hasHiddenArea_ = true;
+    hiddenAreaMin_ = min;
+    hiddenAreaMax_ = max;
+}
+
+void Terrain::GetTexcoordTransform(Vector2& outOrigin, Vector2& outScale) const
+{
+    // ハイトマップの 1 ピクセルの真ん中を、そのピクセルの UV にする
+    const Vector3 origin = GetOrigin();
+    outOrigin = { origin.x - params_.cellSize * 0.5f, origin.z - params_.cellSize * 0.5f };
+    outScale = {
+        1.0f / (params_.cellSize * static_cast<float>(std::max(heightMapWidth_, 1u))),
+        1.0f / (params_.cellSize * static_cast<float>(std::max(heightMapHeight_, 1u))) };
 }
 
 TerrainDrawData Terrain::CreateDrawData() const
@@ -93,7 +132,7 @@ TerrainDrawData Terrain::CreateDrawData() const
     drawData.vertexBufferView = vertexBufferView_;
     drawData.indexBufferView = indexBufferView_;
     drawData.indexCount = indexCount_;
-    drawData.material = &material_;
+    drawData.material = materialSource_ ? &materialSource_->material_ : &material_;
     drawData.heightMapHandle = heightMapHandle_;
     drawData.settings.origin = GetOrigin();
     drawData.settings.maxHeight = params_.maxHeight;
@@ -101,6 +140,8 @@ TerrainDrawData Terrain::CreateDrawData() const
     drawData.settings.texelSize = 1.0f / static_cast<float>(heightMapWidth_);
     drawData.settings.heightMapWidth = heightMapWidth_;
     drawData.settings.heightMapHeight = heightMapHeight_;
+    const Terrain* texcoordSource = materialSource_ ? materialSource_ : this;
+    texcoordSource->GetTexcoordTransform(drawData.settings.texcoordOrigin, drawData.settings.texcoordScale);
     return drawData;
 }
 
@@ -117,33 +158,113 @@ bool Terrain::LoadFromHeightmap(const std::string& heightmapTextureName, float c
 
     heightmapTextureName_ = heightmapTextureName;
     heightMapHandle_ = metaData->handle;
-    heightMapWidth_ = static_cast<uint32_t>(imageMetaData.width);
-    heightMapHeight_ = static_cast<uint32_t>(imageMetaData.height);
-    params_.cellSize = cellSize;
+    const uint32_t width = static_cast<uint32_t>(imageMetaData.width);
+    const uint32_t height = static_cast<uint32_t>(imageMetaData.height);
 
     // 16bit なら段差が出にくいのでそのまま使い、それ以外は先頭のチャンネルを高さにする
     const bool is16Bit = imageMetaData.format == DXGI_FORMAT_R16_UNORM;
     const size_t bytesPerPixel = DirectX::BitsPerPixel(imageMetaData.format) / 8;
 
-    heightRatios_.resize(heightMapWidth_ * heightMapHeight_);
-    for (uint32_t z = 0; z < heightMapHeight_; ++z)
+    heightRatios_.resize(width * height);
+    for (uint32_t z = 0; z < height; ++z)
     {
         const uint8_t* row = pixels->pixels + z * pixels->rowPitch;
-        for (uint32_t x = 0; x < heightMapWidth_; ++x)
+        for (uint32_t x = 0; x < width; ++x)
         {
-            heightRatios_[z * heightMapWidth_ + x] = is16Bit
+            heightRatios_[z * width + x] = is16Bit
                 ? reinterpret_cast<const uint16_t*>(row)[x] / 65535.0f
                 : row[x * bytesPerPixel] / 255.0f;
         }
     }
 
-    CreateChunks();
-    CreateMesh();
-    MarkShapeChanged();
+    RebuildFromHeights(width, height, cellSize);
 
     // 最初の Draw より前に草や植物が生成されても、地形の設定が入っているようにする
     engine_->GetRendererManager()->SubmitTerrain(CreateDrawData(), {});
     return true;
+}
+
+bool Terrain::LoadFromHeightRatios(const std::vector<float>& heightRatios, uint32_t width, uint32_t height, float cellSize, float maxHeight)
+{
+    if (width < 2 || height < 2 || heightRatios.size() != static_cast<size_t>(width) * height) return false;
+
+    heightmapTextureName_.clear();
+    heightRatios_ = heightRatios;
+    params_.maxHeight = maxHeight;
+    RebuildFromHeights(width, height, cellSize);
+    UploadOwnedHeightMap();
+    return true;
+}
+
+void Terrain::RebuildFromHeights(uint32_t width, uint32_t height, float cellSize)
+{
+    heightMapWidth_ = width;
+    heightMapHeight_ = height;
+    params_.cellSize = cellSize;
+
+    CreateChunks();
+    CreateMesh();
+    MarkShapeChanged();
+}
+
+void Terrain::UploadOwnedHeightMap()
+{
+    ID3D12Device* device = engine_->GetGraphicsDevice()->GetDevice();
+    ID3D12GraphicsCommandList* cmdList = engine_->GetCommandManager()->GetCommandList();
+    SRVManager* srvManager = engine_->GetSRVManager();
+
+    constexpr D3D12_RESOURCE_STATES kReadState = D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
+
+    const D3D12_RESOURCE_DESC currentDesc = ownedHeightMap_ ? ownedHeightMap_->GetDesc() : D3D12_RESOURCE_DESC{};
+    const bool canReuse = ownedHeightMap_ && currentDesc.Width == heightMapWidth_ && currentDesc.Height == heightMapHeight_;
+
+    if (canReuse)
+    {
+        const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(ownedHeightMap_.Get(), kReadState, D3D12_RESOURCE_STATE_COPY_DEST);
+        cmdList->ResourceBarrier(1, &barrier);
+    }
+    else
+    {
+        // 大きさが変わったときだけ作り直す
+        const CD3DX12_HEAP_PROPERTIES heapProperties(D3D12_HEAP_TYPE_DEFAULT);
+        const CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32_FLOAT, heightMapWidth_, heightMapHeight_, 1, 1);
+        ownedHeightMap_.Reset();
+        device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&ownedHeightMap_));
+        ownedHeightMap_->SetName(L"TerrainOwnedHeightMap");
+
+        if (!hasOwnedHeightMapSrv_)
+        {
+            ownedHeightMapSrvIndex_ = srvManager->Allocate();
+            hasOwnedHeightMapSrv_ = true;
+        }
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Texture2D.MipLevels = 1;
+        // シェーダーが読むのは表側のヒープ
+        device->CreateShaderResourceView(ownedHeightMap_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_Visible(ownedHeightMapSrvIndex_));
+        device->CreateShaderResourceView(ownedHeightMap_.Get(), &srvDesc, srvManager->GetSRVHandleCPU_ForCopying(ownedHeightMapSrvIndex_));
+    }
+
+    const uint64_t intermediateSize = GetRequiredIntermediateSize(ownedHeightMap_.Get(), 0, 1);
+    const CD3DX12_HEAP_PROPERTIES uploadHeapProperties(D3D12_HEAP_TYPE_UPLOAD);
+    const CD3DX12_RESOURCE_DESC uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(intermediateSize);
+    TextureLoader::TextureResources upload{};
+    device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &uploadDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&upload.intermediate));
+
+    D3D12_SUBRESOURCE_DATA subresource = {};
+    subresource.pData = heightRatios_.data();
+    subresource.RowPitch = static_cast<LONG_PTR>(heightMapWidth_ * sizeof(float));
+    subresource.SlicePitch = subresource.RowPitch * heightMapHeight_;
+    UpdateSubresources(cmdList, ownedHeightMap_.Get(), upload.intermediate.Get(), 0, 0, 1, &subresource);
+    engine_->GetTextureLoader()->AddNewUpload(upload);
+
+    const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(ownedHeightMap_.Get(), D3D12_RESOURCE_STATE_COPY_DEST, kReadState);
+    cmdList->ResourceBarrier(1, &barrier);
+
+    heightMapHandle_ = ownedHeightMapSrvIndex_;
 }
 
 void Terrain::CreateChunks()

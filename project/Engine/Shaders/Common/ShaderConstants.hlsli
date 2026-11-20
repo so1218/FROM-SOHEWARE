@@ -683,6 +683,9 @@ struct TerrainSettings
     float texelSize;       
     uint heightMapWidth;
     uint heightMapHeight;
+    
+    float2 texcoordOrigin;
+    float2 texcoordScale;
 };
 
 struct TerrainMaterialData

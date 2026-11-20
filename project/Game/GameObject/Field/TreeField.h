@@ -5,6 +5,8 @@
 #include "TreeSystem.h"
 #include "Terrain.h"
 
+class DistantMountains;
+
 struct TreeCollider
 {
     FS::Vector3 position;
@@ -31,8 +33,13 @@ public:
     bool ResolveCollision(FS::Vector3& playerPos, float playerRadius) const;
     bool Raycast(const FS::Vector3& rayStart, const FS::Vector3& rayDir, float maxDistance, TreeRaycastHit* outHit) const;
 
+    // 境界の森を遠景の山のふもとまで広げるのに使う
+    void SetDistantMountains(const DistantMountains* distantMountains) { distantMountains_ = distantMountains; }
+
 private:
     void GenerateTrees();
+    // 歩ける地形の端に沿って森を作り、草が途切れる所と遠景の山とのつなぎ目を隠す
+    void AddBoundaryTrees(const FS::ModelData& modelData);
     // 葉と幹のマテリアル、カリングの値を GPU 側へ送る
     void ApplyMaterials();
     void ApplyTextures();
@@ -55,6 +62,16 @@ private:
     float minScale_ = 0.8f;
     float maxScale_ = 1.4f;
     float trunkColliderRadius_ = 0.5f;  
+
+    // 境界の森 (変えると木を作り直す)
+    bool isBoundaryForestEnabled_ = true;
+    int boundaryInnerTreeCount_ = 500;  
+    int boundaryOuterTreeCount_ = 1000; 
+    float boundaryInnerWidth_ = 20.0f;  
+    float boundaryOuterWidth_ = 150.0f; 
+    const DistantMountains* distantMountains_ = nullptr;
+    // 最後に木を置いたときの遠景の山の形
+    uint32_t placedMountainVersion_ = 0;
 
     // GPU に送る値をそのまま持ち、ImGui からも直接変える
     LeafMaterialData leafMaterial_{};

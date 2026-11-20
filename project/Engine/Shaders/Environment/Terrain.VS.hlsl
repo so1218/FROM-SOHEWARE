@@ -17,7 +17,7 @@ VertexShaderOutput main(TerrainVSInput input, uint instanceID : SV_InstanceID)
     VertexShaderOutput output;
     output.position = mul(float4(worldPosition, 1.0f), gFrameData.viewProjectionMatrix);
     output.worldPosition = worldPosition;
-    output.texcoord = (float2(texel) + 0.5f) / float2(gTerrainSettings.heightMapWidth, gTerrainSettings.heightMapHeight);
+    output.texcoord = (worldPosition.xz - gTerrainSettings.texcoordOrigin) * gTerrainSettings.texcoordScale;
     output.normal = normal;
     // 斜面に沿った X 方向
     output.tangent = normalize(cross(normal, float3(0.0f, 0.0f, 1.0f)));

@@ -518,6 +518,14 @@ void RendererManager::SubmitTerrain(const TerrainDrawData& drawData, const std::
 	}
 }
 
+void RendererManager::SubmitTerrainVista(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
+{
+	if (terrainRenderer_)
+	{
+		terrainRenderer_->SubmitVista(drawData, visibleChunks);
+	}
+}
+
 void RendererManager::SubmitLightning(const std::vector<LightningPath>& paths, float brightness)
 {
 	if (lightningRenderer_)

@@ -16,39 +16,64 @@ namespace FS
 
 void TerrainRenderer::Initialize(const RenderEnvironment& env)
 {
-    settingsBuffer_ = BufferManager::CreateMappedConstantBuffer(env.device->GetDevice(), &mappedSettings_);
-    *mappedSettings_ = {};
+    InitializeBatch(env, main_);
+    InitializeBatch(env, vista_);
+}
 
-    chunkBuffer_ = BufferManager::CreateMappedBuffer(env.device->GetDevice(), kMaxChunkCount, &mappedChunks_);
+void TerrainRenderer::InitializeBatch(const RenderEnvironment& env, Batch& batch)
+{
+    batch.settingsBuffer = BufferManager::CreateMappedConstantBuffer(env.device->GetDevice(), &batch.mappedSettings);
+    *batch.mappedSettings = {};
+
+    batch.chunkBuffer = BufferManager::CreateMappedBuffer(env.device->GetDevice(), kMaxChunkCount, &batch.mappedChunks);
 }
 
 void TerrainRenderer::BeginFrame()
 {
-    isSubmitted_ = false;
-    chunkCount_ = 0;
+    main_.isSubmitted = false;
+    main_.chunkCount = 0;
+    vista_.isSubmitted = false;
+    vista_.chunkCount = 0;
 }
 
 void TerrainRenderer::Submit(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
 {
-    drawData_ = drawData;
-    isSubmitted_ = true;
+    SubmitBatch(main_, drawData, visibleChunks);
+}
+
+void TerrainRenderer::SubmitVista(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
+{
+    SubmitBatch(vista_, drawData, visibleChunks);
+}
+
+void TerrainRenderer::SubmitBatch(Batch& batch, const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks)
+{
+    batch.drawData = drawData;
+    batch.isSubmitted = true;
 
     // GPU が描き終わるのを毎フレーム待っているので、ここで直接書き換え
-    *mappedSettings_ = drawData.settings;
+    *batch.mappedSettings = drawData.settings;
 
-    chunkCount_ = static_cast<uint32_t>(std::min<size_t>(visibleChunks.size(), kMaxChunkCount));
-    if (chunkCount_ > 0)
+    batch.chunkCount = static_cast<uint32_t>(std::min<size_t>(visibleChunks.size(), kMaxChunkCount));
+    if (batch.chunkCount > 0)
     {
-        std::memcpy(mappedChunks_, visibleChunks.data(), sizeof(TerrainChunkData) * chunkCount_);
+        std::memcpy(batch.mappedChunks, visibleChunks.data(), sizeof(TerrainChunkData) * batch.chunkCount);
     }
 }
 
 void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
 {
-    if (!isSubmitted_ || chunkCount_ == 0) return;
+    // 遠景は歩ける地形の下に隠れる所があるので、歩ける地形を先に描いて深度で省く
+    DrawBatch(env, shadowMap, main_, "Terrain Pass");
+    DrawBatch(env, shadowMap, vista_, "Terrain Vista Pass");
+}
+
+void TerrainRenderer::DrawBatch(const RenderEnvironment& env, ShadowMap* shadowMap, const Batch& batch, const char* eventName)
+{
+    if (!batch.isSubmitted || batch.chunkCount == 0 || !batch.drawData.material) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
-    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "Terrain Pass (Chunks: %u)", chunkCount_);
+    PIXScopedEvent(cmdList, FS::PIXColors::Geometry, "%s (Chunks: %u)", eventName, batch.chunkCount);
 
     ID3D12DescriptorHeap* heaps[] = { env.srvManager->GetSRVHeap() };
     cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -56,7 +81,7 @@ void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
     cmdList->SetGraphicsRootSignature(env.rootSignatureManager->GetRootSignature("Terrain"));
     cmdList->SetPipelineState(env.psoManager->GetPSO("Terrain"));
 
-    const TerrainMaterial& material = *drawData_.material;
+    const TerrainMaterial& material = *batch.drawData.material;
     auto SetTexture = [&](uint32_t rootIndex, uint32_t srvIndex)
         {
             cmdList->SetGraphicsRootDescriptorTable(rootIndex, env.srvManager->GetSRVHandleGPU(srvIndex));
@@ -68,8 +93,8 @@ void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
     cmdList->SetGraphicsRootConstantBufferView(3, env.lightManager->GetSpotLightResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(4, material.resource->GetGPUVirtualAddress());
     cmdList->SetGraphicsRootConstantBufferView(5, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(6, settingsBuffer_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootShaderResourceView(7, chunkBuffer_->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(6, batch.settingsBuffer->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootShaderResourceView(7, batch.chunkBuffer->GetGPUVirtualAddress());
 
     SetTexture(8, material.albedoMapHandle);
     SetTexture(9, material.environmentMapHandle);
@@ -79,16 +104,17 @@ void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
     }
     SetTexture(11, material.normalMapHandle);
     SetTexture(12, material.rippleMapHandle);
-    SetTexture(13, drawData_.heightMapHandle);
+    SetTexture(13, batch.drawData.heightMapHandle);
 
-    cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
-    cmdList->IASetIndexBuffer(&drawData_.indexBufferView);
-    cmdList->DrawIndexedInstanced(drawData_.indexCount, chunkCount_, 0, 0, 0);
+    cmdList->IASetVertexBuffers(0, 1, &batch.drawData.vertexBufferView);
+    cmdList->IASetIndexBuffer(&batch.drawData.indexBufferView);
+    cmdList->DrawIndexedInstanced(batch.drawData.indexCount, batch.chunkCount, 0, 0, 0);
 }
 
 void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex)
 {
-    if (!isSubmitted_ || chunkCount_ == 0) return;
+    // 遠景はほとんど影の範囲の外にあるので、影は落とさない
+    if (!main_.isSubmitted || main_.chunkCount == 0) return;
 
     auto* cmdList = env.commandManager->GetCommandList();
     PIXScopedEvent(cmdList, FS::PIXColors::Shadow, "Terrain Shadow Pass (Cascade %u)", cascadeIndex);
@@ -101,14 +127,14 @@ void TerrainRenderer::DrawShadow(const RenderEnvironment& env, uint32_t cascadeI
 
     cmdList->SetGraphicsRootConstantBufferView(0, env.lightManager->GetShadowDataResource()->GetGPUVirtualAddress());
     cmdList->SetGraphicsRoot32BitConstant(1, cascadeIndex, 0);
-    cmdList->SetGraphicsRootShaderResourceView(2, chunkBuffer_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootConstantBufferView(3, settingsBuffer_->GetGPUVirtualAddress());
-    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(drawData_.heightMapHandle));
+    cmdList->SetGraphicsRootShaderResourceView(2, main_.chunkBuffer->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootConstantBufferView(3, main_.settingsBuffer->GetGPUVirtualAddress());
+    cmdList->SetGraphicsRootDescriptorTable(4, env.srvManager->GetSRVHandleGPU(main_.drawData.heightMapHandle));
 
     // 視錐台で選んだチャンクを影にも使う
-    cmdList->IASetVertexBuffers(0, 1, &drawData_.vertexBufferView);
-    cmdList->IASetIndexBuffer(&drawData_.indexBufferView);
-    cmdList->DrawIndexedInstanced(drawData_.indexCount, chunkCount_, 0, 0, 0);
+    cmdList->IASetVertexBuffers(0, 1, &main_.drawData.vertexBufferView);
+    cmdList->IASetIndexBuffer(&main_.drawData.indexBufferView);
+    cmdList->DrawIndexedInstanced(main_.drawData.indexCount, main_.chunkCount, 0, 0, 0);
 }
 
 }

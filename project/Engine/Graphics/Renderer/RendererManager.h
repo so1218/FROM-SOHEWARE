@@ -85,6 +85,8 @@ public:
         const TreeMaterialHandle& treeMaterial);
     void SubmitSkydome(uint32_t cloudNoiseSrvIndex, const AtmosphereSkyData& atmosphereSkyData);
     void SubmitTerrain(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
+    // 歩ける地形の外に見せる遠景の地形
+    void SubmitTerrainVista(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
     void DrawFullScreenQuadWithOffscreenTexture();
     // テクスチャをそのまま画面に出すメソッド
     void DrawFinalResult(uint32_t srvIndex);

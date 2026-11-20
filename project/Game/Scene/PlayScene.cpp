@@ -5,6 +5,7 @@
 #include "TimeManager.h"
 #include "Input.h"
 #include "GrassField.h"
+#include "DistantMountains.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
 #include "CoinManager.h"
@@ -33,8 +34,10 @@ PlayScene::PlayScene(Engine* engine)
     objectManager_.Create<Environment>(engine_);
     auto ground = objectManager_.Create<Ground>(engine_);
     Terrain* terrain = ground->GetTerrain();
+    auto distantMountains = objectManager_.Create<DistantMountains>(engine_, terrain);
     auto grassField = objectManager_.Create<GrassField>(engine_, terrain);
     auto treeField = objectManager_.Create<TreeField>(engine_, terrain);
+    treeField->SetDistantMountains(distantMountains);
 
     auto player = objectManager_.Create<Player>(engine_, camera_.get(), terrain, treeField);
     player_ = player;

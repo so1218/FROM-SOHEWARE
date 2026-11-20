@@ -25,6 +25,16 @@ public:
 
     bool LoadFromHeightmap(const std::string& heightmapTextureName, float cellSize);
 
+    // CPU で作った高さから作る
+    bool LoadFromHeightRatios(const std::vector<float>& heightRatios, uint32_t width, uint32_t height, float cellSize, float maxHeight);
+
+    // 遠景の地形として描く
+    void SetDrawAsVista(bool isVista) { isVista_ = isVista; }
+    // 質感と模様の位置を、つながる先の地形にそろえる
+    void ShareMaterialFrom(const Terrain* source) { materialSource_ = source; }
+    // XZ がこの範囲に収まるチャンクは描かない
+    void SetHiddenArea(const Vector2& min, const Vector2& max);
+
     // 地形の中心の位置
     Vector3& GetPosition() { return position_; }
 
@@ -62,6 +72,11 @@ private:
 
     static constexpr uint32_t kChunkCellCount = 64;
 
+    // heightRatios_ と大きさを入れたあとに呼び、チャンクとメッシュを作り直す
+    void RebuildFromHeights(uint32_t width, uint32_t height, float cellSize);
+    void UploadOwnedHeightMap();
+    void GetTexcoordTransform(Vector2& outOrigin, Vector2& outScale) const;
+
     void CreateChunks();
     void CreateMesh();
     TerrainDrawData CreateDrawData() const;
@@ -87,6 +102,17 @@ private:
     uint32_t chunkCellsZ_ = 0;
     std::vector<Chunk> chunks_;
     std::vector<TerrainChunkData> visibleChunks_;
+
+    bool isVista_ = false;
+    const Terrain* materialSource_ = nullptr;
+    bool hasHiddenArea_ = false;
+    Vector2 hiddenAreaMin_ = { 0.0f, 0.0f };
+    Vector2 hiddenAreaMax_ = { 0.0f, 0.0f };
+
+    // LoadFromHeightRatios で作る高さのテクスチャ
+    Microsoft::WRL::ComPtr<ID3D12Resource> ownedHeightMap_;
+    uint32_t ownedHeightMapSrvIndex_ = 0;
+    bool hasOwnedHeightMapSrv_ = false;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> vertexBuffer_;
     Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer_;
