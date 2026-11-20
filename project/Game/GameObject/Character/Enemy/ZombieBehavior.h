@@ -28,6 +28,7 @@ struct ZombieConfig
     float despawnDistance = 90.0f;  
     float emergeTime = 2.5f;        
     float emergeDepth = 1.8f;       
+    float emergeBuryMargin = 0.3f;   // 頭のてっぺんより、さらに深く埋める分
 
     // 発見
     float sightRange = 40.0f;       
@@ -65,7 +66,8 @@ public:
     static constexpr const char* kAttackAnimation = "humanPistolIdle";
     static constexpr const char* kDeathAnimation = "zombieDeath";
 
-    ZombieBehavior(const ZombieConfig& config, const FS::Terrain* terrain, const FS::Vector3& spawnPosition, float spawnYaw);
+    // materialSource は全員で共有するマテリアルを持つモデル。ImGui で調整した値が毎フレーム反映される
+    ZombieBehavior(const ZombieConfig& config, const FS::Terrain* terrain, const FS::AnimationModel* materialSource, const FS::Vector3& spawnPosition, float spawnYaw);
 
     void Initialize(Enemy* owner) override;
     void Update(Enemy* owner) override;
@@ -111,14 +113,21 @@ private:
     float GetGroundHeight(float x, float z) const;
     void PlayAnimation(const char* name, bool isLoop, float speed);
     float RandomRange(float min, float max);
-    void ReleaseAura();
+    void ReleaseEffects();
+    // 本体と同じ大きさで立たせたときの、足元から頭までの高さ。頭の骨が無ければ 0
+    float MeasureHeadHeight();
 
     const ZombieConfig& config_;
     const FS::Terrain* terrain_ = nullptr;
+    const FS::AnimationModel* materialSource_ = nullptr;
     Player* player_ = nullptr;
     std::unique_ptr<FS::AnimationModel> animationModel_;
     // 体にまとわせ、生きている間ずっと出すパーティクル
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
+    // 這い出ている間だけ出す土煙
+    FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
+    // 這い出る前に埋まっている深さ。頭まで隠れるように、モデルの高さから決める
+    float buriedDepth_ = 0.0f;
 
     State state_ = State::Emerge;
     float stateTimer_ = 0.0f;

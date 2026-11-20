@@ -391,6 +391,14 @@ void AnimationModel::UpdateUV()
 // マテリアル個別設定・ゲッター
 // ========================================================================
 
+void AnimationModel::ShareMaterialsFrom(const AnimationModel* sourceModel)
+{
+    // メッシュの数が違うモデルとは共有しない
+    if (!sourceModel || sourceModel == this || sourceModel->materials_.size() != materials_.size()) return;
+
+    materials_ = sourceModel->materials_;
+}
+
 void AnimationModel::SetMaterialColor(size_t index, const Vector4& color)
 {
     if (IsValidMaterialIndex(index) && materials_[index].materialData) {

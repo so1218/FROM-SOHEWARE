@@ -131,6 +131,8 @@ public:
     MaterialHandle* GetMaterialHandle(size_t index = 0);
     Vector4* GetMaterialColorPtr(size_t index); // ImGui等での編集用
     size_t GetMaterialCount() const { return materials_.size(); }
+    // 同じモデルのほかの AnimationModel と、マテリアルの定数バッファを共有する。テクスチャの指定は呼んだときの値を写す
+    void ShareMaterialsFrom(const AnimationModel* sourceModel);
 
     const Vector4& GetBaseColor() const { return baseColor_; }
 

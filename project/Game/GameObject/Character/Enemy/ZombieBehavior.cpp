@@ -37,8 +37,8 @@ float HorizontalDistance(const Vector3& from, const Vector3& to)
 
 }
 
-ZombieBehavior::ZombieBehavior(const ZombieConfig& config, const Terrain* terrain, const Vector3& spawnPosition, float spawnYaw)
-    : config_(config), terrain_(terrain), spawnPosition_(spawnPosition), spawnYaw_(spawnYaw), random_(std::random_device{}())
+ZombieBehavior::ZombieBehavior(const ZombieConfig& config, const Terrain* terrain, const AnimationModel* materialSource, const Vector3& spawnPosition, float spawnYaw)
+    : config_(config), terrain_(terrain), materialSource_(materialSource), spawnPosition_(spawnPosition), spawnYaw_(spawnYaw), random_(std::random_device{}())
 {
 }
 
@@ -55,14 +55,49 @@ void ZombieBehavior::Initialize(Enemy* owner)
         auraEmitterPtr_->Play();
     }
 
-    // 地面の下に埋まった所から始める
+    // 頭のてっぺんまで地面の下に埋まった所から始める
+    const float headHeight = MeasureHeadHeight();
+    buriedDepth_ = (headHeight > 0.1f) ? headHeight + config_.emergeBuryMargin * config_.body.scale.y : config_.emergeDepth;
+
+    const float groundHeight = GetGroundHeight(spawnPosition_.x, spawnPosition_.z);
     WorldTransform& transform = owner->GetTransform();
-    transform.translation_ = { spawnPosition_.x, GetGroundHeight(spawnPosition_.x, spawnPosition_.z) - config_.emergeDepth, spawnPosition_.z };
+    transform.translation_ = { spawnPosition_.x, groundHeight - buriedDepth_, spawnPosition_.z };
     transform.SetRotation(Quaternion::QuaternionFromEuler({ 0.0f, spawnYaw_, 0.0f }));
     owner->SyncTransform();
 
+    // 這い出ている間、足元から土煙を上げる
+    dustEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("zombieEmergeDust");
+    if (dustEmitterPtr_)
+    {
+        dustEmitterPtr_->SetPosition({ spawnPosition_.x, groundHeight, spawnPosition_.z });
+        dustEmitterPtr_->Play();
+    }
+
     PlayAnimation(kEmergeAnimation, false, config_.emergeAnimSpeed);
     ChangeState(State::Emerge);
+}
+
+float ZombieBehavior::MeasureHeadHeight()
+{
+    // Mixamo のモデルは、書き出し方で骨の名前の頭が変わる
+    constexpr const char* kHeadJointNames[] = { "mixamorig1:HeadTop_End", "mixamorig:HeadTop_End", "mixamorig1:Head", "mixamorig:Head" };
+    const auto& jointMap = animationModel_->GetSkeleton().jointMap;
+
+    for (const char* jointName : kHeadJointNames)
+    {
+        if (!jointMap.contains(jointName))
+        {
+            continue;
+        }
+
+        // 原点に本体と同じ大きさで置き、姿勢を一度計算してから測る
+        WorldTransform& visual = animationModel_->GetTransform();
+        visual.translation_ = { 0.0f, 0.0f, 0.0f };
+        visual.scale_ = config_.body.scale;
+        animationModel_->Update();
+        return animationModel_->GetJointWorldMatrix(jointName).m[3][1];
+    }
+    return 0.0f;
 }
 
 void ZombieBehavior::Update(Enemy* owner)
@@ -101,21 +136,30 @@ void ZombieBehavior::Update(Enemy* owner)
     visual.translation_ = body.translation_;
     visual.rotation_ = body.rotation_;
     visual.scale_ = config_.body.scale;
+
+    // テクスチャを変えたときも反映されるよう、毎フレーム写す
+    animationModel_->ShareMaterialsFrom(materialSource_);
     animationModel_->Update();
 }
 
 void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
 {
-    // 最初は勢いよく、地面に出る直前はゆっくり上がる
+    // 土をかき分けるように、出始めと出きる直前はゆっくり上がる
     const float progress = std::clamp(stateTimer_ / std::max(config_.emergeTime, 0.01f), 0.0f, 1.0f);
-    const float eased = 1.0f - (1.0f - progress) * (1.0f - progress);
+    const float eased = progress * progress * (3.0f - 2.0f * progress);
 
     Vector3& position = owner->GetTransform().translation_;
-    position.y = GetGroundHeight(position.x, position.z) - config_.emergeDepth * (1.0f - eased);
+    position.y = GetGroundHeight(position.x, position.z) - buriedDepth_ * (1.0f - eased);
 
     if (progress < 1.0f)
     {
         return;
+    }
+
+    // 出きったら土煙を止める。出ている煙は消えるまで残る
+    if (dustEmitterPtr_)
+    {
+        dustEmitterPtr_->Stop();
     }
 
     // 這い出たら、見えていれば追いかけ、隠れていればうろつく
@@ -328,21 +372,24 @@ float ZombieBehavior::RandomRange(float min, float max)
 
 void ZombieBehavior::OnDeath(Enemy* owner)
 {
-    ReleaseAura();
+    ReleaseEffects();
 }
 
 void ZombieBehavior::OnDespawn(Enemy* owner)
 {
-    ReleaseAura();
+    ReleaseEffects();
 }
 
-void ZombieBehavior::ReleaseAura()
+void ZombieBehavior::ReleaseEffects()
 {
-    if (auraEmitterPtr_)
+    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &dustEmitterPtr_ })
     {
-        auraEmitterPtr_->Stop();
-        auraEmitterPtr_->Destroy();
-        auraEmitterPtr_ = nullptr;
+        if (*emitter)
+        {
+            (*emitter)->Stop();
+            (*emitter)->Destroy();
+            *emitter = nullptr;
+        }
     }
 }
 
@@ -398,6 +445,7 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("DespawnDistance", &despawnDistance, 90.0f, 1.0f, 10.0f, 1000.0f);
     binder.Bind("EmergeTime", &emergeTime, 2.5f, 0.05f, 0.1f, 10.0f);
     binder.Bind("EmergeDepth", &emergeDepth, 1.8f, 0.05f, 0.0f, 5.0f);
+    binder.Bind("EmergeBuryMargin", &emergeBuryMargin, 0.3f, 0.01f, 0.0f, 3.0f);
 
     binder.Bind("SightRange", &sightRange, 40.0f, 0.5f, 0.0f, 300.0f);
     binder.Bind("CloseNoticeRange", &closeNoticeRange, 4.0f, 0.1f, 0.0f, 50.0f);
@@ -441,7 +489,8 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("SpawnMaxDistance", "プレイヤーから一番遠くて");
         binder.Draw("DespawnDistance", "これより離れたら消す");
         binder.Draw("EmergeTime", "這い出るのにかかる秒数");
-        binder.Draw("EmergeDepth", "埋まっている深さ");
+        binder.Draw("EmergeBuryMargin", "頭のてっぺんより深く埋める分 (スケール 1 のとき)");
+        binder.Draw("EmergeDepth", "頭の骨が見つからないときの埋める深さ");
         ImGui::TreePop();
     }
 

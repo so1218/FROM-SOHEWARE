@@ -19,6 +19,7 @@
         ],
         "DespawnDistance": 90.0,
         "EmergeAnimSpeed": 1.0,
+        "EmergeBuryMargin": 0.30000001192092896,
         "EmergeDepth": 1.7999999523162842,
         "EmergeTime": 2.5,
         "HP": 60,
@@ -40,6 +41,471 @@
         "TurnSpeed": 6.0,
         "WalkAnimSpeed": 1.0,
         "WanderRadius": 8.0,
-        "WanderSpeed": 0.800000011920929
+        "WanderSpeed": 0.800000011920929,
+        "ZombieModel_Mat0_AddShadow": 1,
+        "ZombieModel_Mat0_AlbedoMap": "white1x1",
+        "ZombieModel_Mat0_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat0_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat0_DiffuseRef": 4.0,
+        "ZombieModel_Mat0_DisEnable": 0,
+        "ZombieModel_Mat0_DisThres": 0.5,
+        "ZombieModel_Mat0_DissolveTex": "white1x1",
+        "ZombieModel_Mat0_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat0_EdgeInten": 2.0,
+        "ZombieModel_Mat0_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat0_Emissive": 0.8999999761581421,
+        "ZombieModel_Mat0_EnvMapInt": 0.25,
+        "ZombieModel_Mat0_EnvMapTex": "pureSky",
+        "ZombieModel_Mat0_LightMode": 3,
+        "ZombieModel_Mat0_Lighting": 1,
+        "ZombieModel_Mat0_Metalness": 1.0,
+        "ZombieModel_Mat0_NormEnable": 0,
+        "ZombieModel_Mat0_NormInten": 1.0,
+        "ZombieModel_Mat0_NormTile": 1.0,
+        "ZombieModel_Mat0_NormalMapTex": "white1x1",
+        "ZombieModel_Mat0_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat0_OutlineEnable": 0,
+        "ZombieModel_Mat0_OutlineWidth": 1.0,
+        "ZombieModel_Mat0_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat0_RimEnable": 0,
+        "ZombieModel_Mat0_RimInten": 1.0,
+        "ZombieModel_Mat0_RimPower": 3.0,
+        "ZombieModel_Mat0_RimUseDir": 0,
+        "ZombieModel_Mat0_Roughness": 0.20999999344348907,
+        "ZombieModel_Mat0_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat0_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat0_ShadowEnv": 0.0,
+        "ZombieModel_Mat0_ShadowSoft": 0.0,
+        "ZombieModel_Mat0_Shininess": 50.0,
+        "ZombieModel_Mat0_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat0_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat0_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat0_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat0_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat1_AddShadow": 1,
+        "ZombieModel_Mat1_AlbedoMap": "white1x1",
+        "ZombieModel_Mat1_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat1_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat1_DiffuseRef": 4.0,
+        "ZombieModel_Mat1_DisEnable": 0,
+        "ZombieModel_Mat1_DisThres": 0.5,
+        "ZombieModel_Mat1_DissolveTex": "white1x1",
+        "ZombieModel_Mat1_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat1_EdgeInten": 2.0,
+        "ZombieModel_Mat1_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat1_Emissive": 1.0,
+        "ZombieModel_Mat1_EnvMapInt": 0.0,
+        "ZombieModel_Mat1_EnvMapTex": "pureSky",
+        "ZombieModel_Mat1_LightMode": 1,
+        "ZombieModel_Mat1_Lighting": 1,
+        "ZombieModel_Mat1_Metalness": 0.0,
+        "ZombieModel_Mat1_NormEnable": 0,
+        "ZombieModel_Mat1_NormInten": 1.0,
+        "ZombieModel_Mat1_NormTile": 1.0,
+        "ZombieModel_Mat1_NormalMapTex": "white1x1",
+        "ZombieModel_Mat1_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat1_OutlineEnable": 0,
+        "ZombieModel_Mat1_OutlineWidth": 1.0,
+        "ZombieModel_Mat1_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat1_RimEnable": 0,
+        "ZombieModel_Mat1_RimInten": 1.0,
+        "ZombieModel_Mat1_RimPower": 3.0,
+        "ZombieModel_Mat1_RimUseDir": 0,
+        "ZombieModel_Mat1_Roughness": 0.5,
+        "ZombieModel_Mat1_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat1_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat1_ShadowEnv": 0.0,
+        "ZombieModel_Mat1_ShadowSoft": 0.0,
+        "ZombieModel_Mat1_Shininess": 50.0,
+        "ZombieModel_Mat1_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat1_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat1_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat1_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat1_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat2_AddShadow": 1,
+        "ZombieModel_Mat2_AlbedoMap": "white1x1",
+        "ZombieModel_Mat2_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat2_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat2_DiffuseRef": 4.0,
+        "ZombieModel_Mat2_DisEnable": 0,
+        "ZombieModel_Mat2_DisThres": 0.5,
+        "ZombieModel_Mat2_DissolveTex": "white1x1",
+        "ZombieModel_Mat2_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat2_EdgeInten": 2.0,
+        "ZombieModel_Mat2_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat2_Emissive": 1.0,
+        "ZombieModel_Mat2_EnvMapInt": 0.0,
+        "ZombieModel_Mat2_EnvMapTex": "pureSky",
+        "ZombieModel_Mat2_LightMode": 1,
+        "ZombieModel_Mat2_Lighting": 1,
+        "ZombieModel_Mat2_Metalness": 0.0,
+        "ZombieModel_Mat2_NormEnable": 0,
+        "ZombieModel_Mat2_NormInten": 1.0,
+        "ZombieModel_Mat2_NormTile": 1.0,
+        "ZombieModel_Mat2_NormalMapTex": "white1x1",
+        "ZombieModel_Mat2_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat2_OutlineEnable": 0,
+        "ZombieModel_Mat2_OutlineWidth": 1.0,
+        "ZombieModel_Mat2_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat2_RimEnable": 0,
+        "ZombieModel_Mat2_RimInten": 1.0,
+        "ZombieModel_Mat2_RimPower": 3.0,
+        "ZombieModel_Mat2_RimUseDir": 0,
+        "ZombieModel_Mat2_Roughness": 0.5,
+        "ZombieModel_Mat2_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat2_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat2_ShadowEnv": 0.0,
+        "ZombieModel_Mat2_ShadowSoft": 0.0,
+        "ZombieModel_Mat2_Shininess": 50.0,
+        "ZombieModel_Mat2_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat2_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat2_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat2_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat2_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat3_AddShadow": 1,
+        "ZombieModel_Mat3_AlbedoMap": "white1x1",
+        "ZombieModel_Mat3_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat3_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat3_DiffuseRef": 4.0,
+        "ZombieModel_Mat3_DisEnable": 0,
+        "ZombieModel_Mat3_DisThres": 0.5,
+        "ZombieModel_Mat3_DissolveTex": "white1x1",
+        "ZombieModel_Mat3_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat3_EdgeInten": 2.0,
+        "ZombieModel_Mat3_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat3_Emissive": 1.0,
+        "ZombieModel_Mat3_EnvMapInt": 0.0,
+        "ZombieModel_Mat3_EnvMapTex": "pureSky",
+        "ZombieModel_Mat3_LightMode": 1,
+        "ZombieModel_Mat3_Lighting": 1,
+        "ZombieModel_Mat3_Metalness": 0.0,
+        "ZombieModel_Mat3_NormEnable": 0,
+        "ZombieModel_Mat3_NormInten": 1.0,
+        "ZombieModel_Mat3_NormTile": 1.0,
+        "ZombieModel_Mat3_NormalMapTex": "white1x1",
+        "ZombieModel_Mat3_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat3_OutlineEnable": 0,
+        "ZombieModel_Mat3_OutlineWidth": 1.0,
+        "ZombieModel_Mat3_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat3_RimEnable": 0,
+        "ZombieModel_Mat3_RimInten": 1.0,
+        "ZombieModel_Mat3_RimPower": 3.0,
+        "ZombieModel_Mat3_RimUseDir": 0,
+        "ZombieModel_Mat3_Roughness": 0.5,
+        "ZombieModel_Mat3_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat3_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat3_ShadowEnv": 0.0,
+        "ZombieModel_Mat3_ShadowSoft": 0.0,
+        "ZombieModel_Mat3_Shininess": 50.0,
+        "ZombieModel_Mat3_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat3_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat3_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat3_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat3_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat4_AddShadow": 1,
+        "ZombieModel_Mat4_AlbedoMap": "white1x1",
+        "ZombieModel_Mat4_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat4_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat4_DiffuseRef": 4.0,
+        "ZombieModel_Mat4_DisEnable": 0,
+        "ZombieModel_Mat4_DisThres": 0.5,
+        "ZombieModel_Mat4_DissolveTex": "white1x1",
+        "ZombieModel_Mat4_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat4_EdgeInten": 2.0,
+        "ZombieModel_Mat4_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat4_Emissive": 1.0,
+        "ZombieModel_Mat4_EnvMapInt": 0.0,
+        "ZombieModel_Mat4_EnvMapTex": "pureSky",
+        "ZombieModel_Mat4_LightMode": 1,
+        "ZombieModel_Mat4_Lighting": 1,
+        "ZombieModel_Mat4_Metalness": 0.0,
+        "ZombieModel_Mat4_NormEnable": 0,
+        "ZombieModel_Mat4_NormInten": 1.0,
+        "ZombieModel_Mat4_NormTile": 1.0,
+        "ZombieModel_Mat4_NormalMapTex": "white1x1",
+        "ZombieModel_Mat4_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat4_OutlineEnable": 0,
+        "ZombieModel_Mat4_OutlineWidth": 1.0,
+        "ZombieModel_Mat4_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat4_RimEnable": 0,
+        "ZombieModel_Mat4_RimInten": 1.0,
+        "ZombieModel_Mat4_RimPower": 3.0,
+        "ZombieModel_Mat4_RimUseDir": 0,
+        "ZombieModel_Mat4_Roughness": 0.5,
+        "ZombieModel_Mat4_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat4_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat4_ShadowEnv": 0.0,
+        "ZombieModel_Mat4_ShadowSoft": 0.0,
+        "ZombieModel_Mat4_Shininess": 50.0,
+        "ZombieModel_Mat4_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat4_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat4_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat4_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat4_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat5_AddShadow": 1,
+        "ZombieModel_Mat5_AlbedoMap": "white1x1",
+        "ZombieModel_Mat5_AlphaThres": 0.009999999776482582,
+        "ZombieModel_Mat5_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat5_DiffuseRef": 4.0,
+        "ZombieModel_Mat5_DisEnable": 0,
+        "ZombieModel_Mat5_DisThres": 0.5,
+        "ZombieModel_Mat5_DissolveTex": "white1x1",
+        "ZombieModel_Mat5_EdgeColor": [
+            1.0,
+            0.5,
+            0.0
+        ],
+        "ZombieModel_Mat5_EdgeInten": 2.0,
+        "ZombieModel_Mat5_EdgeWidth": 0.05000000074505806,
+        "ZombieModel_Mat5_Emissive": 1.0,
+        "ZombieModel_Mat5_EnvMapInt": 0.0,
+        "ZombieModel_Mat5_EnvMapTex": "pureSky",
+        "ZombieModel_Mat5_LightMode": 1,
+        "ZombieModel_Mat5_Lighting": 1,
+        "ZombieModel_Mat5_Metalness": 0.0,
+        "ZombieModel_Mat5_NormEnable": 0,
+        "ZombieModel_Mat5_NormInten": 1.0,
+        "ZombieModel_Mat5_NormTile": 1.0,
+        "ZombieModel_Mat5_NormalMapTex": "white1x1",
+        "ZombieModel_Mat5_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "ZombieModel_Mat5_OutlineEnable": 0,
+        "ZombieModel_Mat5_OutlineWidth": 1.0,
+        "ZombieModel_Mat5_RimColor": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat5_RimEnable": 0,
+        "ZombieModel_Mat5_RimInten": 1.0,
+        "ZombieModel_Mat5_RimPower": 3.0,
+        "ZombieModel_Mat5_RimUseDir": 0,
+        "ZombieModel_Mat5_Roughness": 0.5,
+        "ZombieModel_Mat5_ShadowBias": 0.0005000000237487257,
+        "ZombieModel_Mat5_ShadowDens": 0.800000011920929,
+        "ZombieModel_Mat5_ShadowEnv": 0.0,
+        "ZombieModel_Mat5_ShadowSoft": 0.0,
+        "ZombieModel_Mat5_Shininess": 50.0,
+        "ZombieModel_Mat5_SpecColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat5_ToonRampTex": "toonRamp_01",
+        "ZombieModel_Mat5_UVRot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Mat5_UVScale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Mat5_UVTrans": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Rot": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "ZombieModel_Scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "ZombieModel_Trans": [
+            0.0,
+            0.0,
+            0.0
+        ]
     }
 }

@@ -1,7 +1,7 @@
 {
     "EmitterConfig": {
         "amount": 2,
-        "duration": 0.3,
+        "duration": 0.30000001192092896,
         "followOffset": [
             0.0,
             4.599999904632568,
@@ -47,7 +47,8 @@
             "frequency": 0.5400000214576721,
             "scrollSpeed": 0.9900000095367432,
             "separateAxes": false,
-            "strength": 10.699999809265137
+            "strength": 10.699999809265137,
+            "type": 0
         },
         "physicsModule": {
             "affectedByWind": false,
@@ -125,9 +126,9 @@
             "emissiveIntensity": 4.800000190734863,
             "enabled": true,
             "endColor": [
-                0.08016878366470337,
-                0.3828989267349243,
                 1.0,
+                0.0,
+                0.0,
                 1.0
             ],
             "headWidthScale": 0.4000000059604645,
@@ -140,7 +141,7 @@
             "minVertexDistance": 0.10000000149011612,
             "startColor": [
                 1.0,
-                0.9885702133178711,
+                0.09704643487930298,
                 0.09704643487930298,
                 1.0
             ],

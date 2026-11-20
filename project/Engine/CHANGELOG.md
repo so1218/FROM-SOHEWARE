@@ -10,6 +10,7 @@
 - 歩ける地形の外に見せる遠景の地形を描けるようにした。`Terrain::LoadFromHeightRatios` で CPU で作った高さから地形を作り、`SetDrawAsVista(true)` で遠景として描く。遠景は影を落とさず、草や植物の生成にも使わない。`ShareMaterialFrom` で歩ける地形と質感・模様の位置をそろえ、`SetHiddenArea` で歩ける地形の下にあるチャンクを省く
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
 - 歩ける範囲の外で濃くなる霧を追加。`PostEffectManager::SetFogBoundary` で範囲を毎フレーム渡すと、境界の少し内側から霧が濃くなり、低い所ほど濃く溜まる。Volumetric Fog が届く所は光や影を受ける霧として、その先は合成のときに式で求めて、同じ光の当て方でつなげる。設定はポストエフェクトの Volumetric Fog の「歩ける範囲の外の霧」。渡さないシーンや Volumetric Fog が無効のときは何も変わらない
+- `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
 
 ### 変更
 - 木を描ける数の上限を 2000 から 8000 に増やした。木 1 本は幹と葉で 2 つ数える

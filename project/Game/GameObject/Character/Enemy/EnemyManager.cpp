@@ -54,6 +54,12 @@ void EnemyManager::Initialize()
     const bool hasWalk = AnimationManager::GetInstance()->Get(ZombieBehavior::kWalkAnimation) != nullptr;
     hasZombieAssets_ = hasMesh && hasWalk;
 
+    if (hasZombieAssets_ && !zombieMaterialSource_)
+    {
+        zombieMaterialSource_ = std::make_unique<AnimationModel>(engine_, ZombieBehavior::kMeshName, ZombieBehavior::kWalkAnimation);
+        zombieBinder_->BindAnimationModel("ZombieModel", zombieMaterialSource_.get());
+    }
+
     SpawnEnemies();
 }
 
@@ -258,7 +264,7 @@ void EnemyManager::SpawnZombie(const Vector3& position, const Vector3& playerPos
     // プレイヤーの方を向いて這い出る
     const float yaw = std::atan2(playerPosition.x - position.x, playerPosition.z - position.z);
 
-    auto behavior = std::make_unique<ZombieBehavior>(zombieConfig_, terrain_, position, yaw);
+    auto behavior = std::make_unique<ZombieBehavior>(zombieConfig_, terrain_, zombieMaterialSource_.get(), position, yaw);
     auto enemy = std::make_unique<Enemy>(engine_, kZombieIdOffset + slot, EnemyType::Zombie, std::move(behavior), kZombieGroupName);
     enemy->AttachToManager(GetManager(), 0);
     enemy->Initialize();
@@ -354,6 +360,12 @@ void EnemyManager::DebugGui()
         }
         ImGui::Text("出ている数: %d", CountAliveZombies());
         zombieConfig_.Draw(*zombieBinder_);
+
+        // 位置・回転・スケールは使わない。大きさは「本体」のスケールで変える
+        if (zombieMaterialSource_)
+        {
+            zombieBinder_->DrawAnimationModel("ZombieModel", "ゾンビのマテリアル (全員で共有)");
+        }
     }
 
     ImGui::Separator();
