@@ -12,6 +12,12 @@
             0.20000000298023224
         ],
         "Ammo_FontSize": 56.0,
+        "Ammo_IncendiaryColor": [
+            1.0,
+            0.550000011920929,
+            0.15000000596046448,
+            0.949999988079071
+        ],
         "Ammo_LowColor": [
             1.0,
             0.3499999940395355,
@@ -61,6 +67,11 @@
         "Ammo_TextOffset": [
             -110.0,
             -36.0
+        ],
+        "Ammo_TypeFontSize": 22.0,
+        "Ammo_TypeTextOffset": [
+            -200.0,
+            -44.0
         ],
         "ColliderOffset": [
             0.0,

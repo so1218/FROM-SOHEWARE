@@ -8,6 +8,7 @@
 namespace FS
 {
 class CollisionManager;
+class Terrain;
 }
 
 class TreeField;
@@ -15,6 +16,13 @@ class TreeField;
 class PlayerWeapon
 {
 public:
+    // 弾の種類
+    enum class AmmoType
+    {
+        Normal,
+        Incendiary,  // 当たった所の草に火をつける
+    };
+
     // 銃から飛び出す物の出方
     struct EjectSettings
     {
@@ -40,6 +48,10 @@ public:
 
         int baseDamage = 20;
         float maxDistance = 150.0f;
+
+        // 焼夷弾
+        float incendiaryRadius = 2.0f;        // 火をつける範囲
+        float incendiaryGroundReach = 4.0f;   // 地面からこの高さまでに当たれば、真下の草に火をつける
 
         int magazineSize = 10;
         float fireInterval = 0.35f;   
@@ -71,8 +83,12 @@ public:
     void Draw();
     void DebugGui(); 
 
+    // terrain を渡すと、弾が地面で止まる
     bool Fire(FS::Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, FS::CollisionManager* colManager,
-        TreeField* treeField);
+        TreeField* treeField, const FS::Terrain* terrain);
+
+    void ToggleAmmoType();
+    AmmoType GetAmmoType() const { return ammoType_; }
     FS::Vector3 GetMuzzleWorldPosition() const;
 
     // 撃てる状態か 
@@ -101,6 +117,10 @@ private:
     };
 
     float CalculateReloadTilt() const;
+    // 地面に当たる所を探す。当たらなければ false
+    static bool RaycastTerrain(const FS::Terrain* terrain, const FS::Vector3& start, const FS::Vector3& direction, float maxDistance, FS::Vector3& outPoint);
+    // 焼夷弾が当たった所の真下の草に火をつける
+    void IgniteAt(const FS::Terrain* terrain, const FS::Vector3& hitPoint);
     void DropMagazine();
     void Eject(const EjectSettings& settings, const std::string& modelName, const FS::Model* materialSource);
     void UpdateEjectedObject(EjectedObject& ejectedObject, float deltaTime);
@@ -131,6 +151,7 @@ private:
     float muzzleFlashTimer_ = 0.0f;
 
     int ammoInMagazine_ = 10;
+    AmmoType ammoType_ = AmmoType::Normal;
     float fireCooldown_ = 0.0f;
     float reloadTimer_ = 0.0f;   
     int reloadCount_ = 0;      

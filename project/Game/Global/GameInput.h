@@ -11,6 +11,7 @@ enum class GameAction
     Reload,
     Shoot,
     Crouch,
+    SwitchAmmo,
 
     Pause,
     Confirm,

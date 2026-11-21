@@ -12,6 +12,7 @@ cbuffer DirectionalLights : register(b1)
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
 ConstantBuffer<GlobalEnvironmentData> gEnvironmentData : register(b7);
 ConstantBuffer<ShadowData> gShadowData : register(b8);
+ConstantBuffer<GrassFireConstants> gFire : register(b9);
 
 Texture2DArray<float> gShadowMapArray : register(t2);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -22,6 +23,7 @@ struct GrassPSInput
     float heightRatio : TEXCOORD; // 0:根元 ~ 1:先端
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
+    float2 burn : BURN; // x: 燃え進み, y: 炎の強さ
 };
 
 // 陰になる側にも光を回り込ませる量
@@ -44,6 +46,14 @@ PixelShaderOutput main(GrassPSInput input)
     float heightRatio = input.heightRatio;
 
     float3 baseColor = lerp(gMaterial.rootColor, gMaterial.tipColor, heightRatio);
+
+    // 火が近づくと熱で茶色く枯れ、燃えると先端から炭になっていく
+    float burnProgress = input.burn.x;
+    float scorch = smoothstep(0.0f, 0.2f, burnProgress);
+    float charLine = 1.0f - smoothstep(0.1f, 0.6f, burnProgress);
+    float charAmount = max(smoothstep(0.55f, 0.7f, burnProgress), smoothstep(charLine - 0.05f, charLine + 0.05f, heightRatio) * scorch);
+    baseColor = lerp(baseColor, gFire.scorchColor, scorch);
+    baseColor = lerp(baseColor, gFire.charColor, charAmount);
 
     float3 lightDirection = normalize(-gDirectionalLights[0].direction);
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity;

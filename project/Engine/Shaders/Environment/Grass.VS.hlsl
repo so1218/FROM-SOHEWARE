@@ -1,6 +1,7 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Environment/GrassFireCommon.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 ConstantBuffer<GrassMaterialData> gMaterial : register(b5);
@@ -11,6 +12,10 @@ StructuredBuffer<GrassInstanceData> gInstanceData : register(t10);
 
 Texture2D<float> gWindMap : register(t11);
 Texture2D<float4> gInteractionMap : register(t12);
+
+// 草の燃え具合
+ConstantBuffer<GrassFireConstants> gFire : register(b9);
+Texture2D<float4> gFireMap : register(t13);
 
 SamplerState gLinearWrapSampler : register(s2);
 SamplerState gLinearClampSampler : register(s3);
@@ -46,6 +51,7 @@ struct GrassPSInput
     float heightRatio : TEXCOORD; // 0:根元 ~ 1:先端
     float3 normal : NORMAL;
     float3 worldPosition : WORLD_POSITION;
+    float2 burn : BURN; // x: 燃え進み, y: 炎の強さ
 };
 
 GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
@@ -59,6 +65,25 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float grassWidth = instance.rotationAndWidth.y;
 
     float distanceToCamera = distance(rootPosition, gFrameData.cameraWorldPosition);
+
+    // 燃え具合
+    float burnProgress = 0.0f;
+    float fireIntensity = 0.0f;
+    if (gFire.isActive != 0)
+    {
+        float2 fireUV = CalculateGrassFireUV(rootPosition.xz, gFire.areaCenter, gFire.areaSize);
+        if (IsInsideGrassFireArea(fireUV))
+        {
+            float4 fireData = gFireMap.SampleLevel(gLinearClampSampler, fireUV, 0);
+            float bladeOffset = (Hash12(rootPosition.xz * 3.17f) - 0.5f) * 0.2f;
+            burnProgress = (fireData.g > 0.0f) ? saturate(fireData.g + bladeOffset) : 0.0f;
+            fireIntensity = fireData.r;
+        }
+    }
+
+    // 燃えるにつれて縮み、焼け残った短い茎になる
+    float burnShrink = smoothstep(0.15f, 0.85f, burnProgress);
+    grassHeight *= lerp(1.0f, gFire.charHeightRatio, burnShrink);
 
     // 遠くでは間引いた分だけ幅を広げて、草原が薄く見えないようにする
     float thinRatio = saturate((distanceToCamera - gGrassCullingData.thinStartDistance) /
@@ -141,8 +166,16 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     float controlHeight1 = lerp(0.2f, 0.5f, shapeRandom2);
     float controlHeight2 = lerp(0.5f, 0.8f, shapeRandom1);
 
+    // 焼け残った茎は硬くなり、風でほとんど揺れない
+    windForce *= 1.0f - burnShrink;
+
     float3 bendForce = windForce + pushForce + tiltForce;
     bendForce.y -= lerp(0.1f, 0.3f, shapeRandom2);
+
+    // 燃えている草は熱でしおれて垂れ下がり、炎の上昇気流で小刻みに震える
+    float heatShiver = sin(gFrameData.time * 23.0f + shapeRandom1 * 40.0f) * 0.25f;
+    bendForce += (randomForward * (0.6f * shapeRandom2) + randomRight * heatShiver) * fireIntensity;
+    bendForce.y -= fireIntensity * lerp(0.4f, 0.9f, shapeRandom1);
 
     float3 p0 = rootPosition;
     float3 p1 = rootPosition + float3(0.0f, grassHeight * controlHeight1, 0.0f) + tiltForce * (grassHeight * 0.2f);
@@ -173,5 +206,6 @@ GrassPSInput main(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
     output.worldPosition = worldPosition;
     output.heightRatio = heightRatio;
     output.normal = normal;
+    output.burn = float2(burnProgress, fireIntensity);
     return output;
 }

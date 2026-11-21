@@ -237,6 +237,9 @@
     <ClCompile Include="Game\GameObject\Field\GrassField.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Field\GrassFireEffects.cpp">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Field\DistantMountains.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
@@ -355,6 +358,9 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\GrassField.h">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Field\GrassFireEffects.h">
       <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\DistantMountains.h">

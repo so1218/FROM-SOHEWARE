@@ -24,6 +24,11 @@ PlayerAmmoDisplay::PlayerAmmoDisplay(Engine* engine)
     promptText_->SetAlign(TextAlign::Right);
     promptText_->SetLayerOrder(12);
 
+    ammoTypeText_ = std::make_unique<Text>(engine_);
+    ammoTypeText_->SetAnchor(UIAnchor::BottomRight);
+    ammoTypeText_->SetAlign(TextAlign::Right);
+    ammoTypeText_->SetLayerOrder(12);
+
     reloadText_ = std::make_unique<Text>(engine_);
     reloadText_->SetAnchor(UIAnchor::Center);
     reloadText_->SetAlign(TextAlign::Center);
@@ -70,6 +75,9 @@ void PlayerAmmoDisplay::BindProperties(PropertyBinder& binder)
     binder.BindColor("Ammo_NormalColor", &normalColor_, { 1.0f, 1.0f, 1.0f, 0.95f });
     binder.BindColor("Ammo_LowColor", &lowAmmoColor_, { 1.0f, 0.35f, 0.25f, 0.95f });
     binder.BindColor("Ammo_EmptyRoundColor", &emptyRoundColor_, { 1.0f, 1.0f, 1.0f, 0.2f });
+    binder.Bind("Ammo_TypeTextOffset", &ammoTypeTextOffset_, { -200.0f, -44.0f }, 1.0f);
+    binder.Bind("Ammo_TypeFontSize", &ammoTypeFontSize_, 22.0f, 0.5f, 4.0f, 200.0f);
+    binder.BindColor("Ammo_IncendiaryColor", &incendiaryColor_, { 1.0f, 0.55f, 0.15f, 0.95f });
     binder.Bind("Ammo_LowRatio", &lowAmmoRatio_, 0.3f, 0.01f, 0.0f, 1.0f);
 }
 
@@ -92,6 +100,9 @@ void PlayerAmmoDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Ammo_NormalColor", "色");
     binder.Draw("Ammo_LowColor", "残り少ないときの色");
     binder.Draw("Ammo_EmptyRoundColor", "撃ったあとの弾の色");
+    binder.Draw("Ammo_TypeTextOffset", "弾の種類の位置");
+    binder.Draw("Ammo_TypeFontSize", "弾の種類の文字の大きさ");
+    binder.Draw("Ammo_IncendiaryColor", "焼夷弾の色");
     binder.Draw("Ammo_LowRatio", "残り少ないとみなす割合");
 }
 
@@ -115,6 +126,14 @@ void PlayerAmmoDisplay::Draw(const PlayerWeapon& weapon)
     magazineText_->SetColor(normalColor_);
     magazineText_->Draw();
 
+    // 焼夷弾のときは、種類の文字と弾の列を炎の色にする
+    const bool isIncendiary = weapon.GetAmmoType() == PlayerWeapon::AmmoType::Incendiary;
+    ammoTypeText_->SetText(isIncendiary ? "焼夷弾" : "通常弾");
+    ammoTypeText_->SetPosition(ammoTypeTextOffset_);
+    ammoTypeText_->SetFontSize(ammoTypeFontSize_);
+    ammoTypeText_->SetColor(isIncendiary ? incendiaryColor_ : normalColor_);
+    ammoTypeText_->Draw();
+
     DrawRounds(weapon);
     DrawReloadPrompt(weapon);
     DrawReloadProgress(weapon);
@@ -133,14 +152,15 @@ void PlayerAmmoDisplay::DrawRounds(const PlayerWeapon& weapon)
 
     roundSprite_->SetSize(roundSize_);
 
-    // 右から並べる。右端が最後に撃つ弾
+    // 右から並べる
     for (int roundIndex = 0; roundIndex < magazineSize; ++roundIndex)
     {
         const float offsetX = -static_cast<float>(roundIndex) * (roundSize_.x + roundSpacing_);
         const bool isFilled = (magazineSize - 1 - roundIndex) < filledCount;
 
         roundSprite_->SetPosition({ roundsOffset_.x + offsetX, roundsOffset_.y });
-        roundSprite_->SetColor(isFilled ? normalColor_ : emptyRoundColor_);
+        const Vector4& filledColor = (weapon.GetAmmoType() == PlayerWeapon::AmmoType::Incendiary) ? incendiaryColor_ : normalColor_;
+        roundSprite_->SetColor(isFilled ? filledColor : emptyRoundColor_);
         roundSprite_->Draw();
     }
 }

@@ -5,6 +5,7 @@
 #include "TimeManager.h"
 #include "Input.h"
 #include "GrassField.h"
+#include "GrassFireEffects.h"
 #include "DistantMountains.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
@@ -24,6 +25,7 @@
 #include "PauseMenuHint.h"
 #include "PauseMenu.h"
 #include "PostEffectManager.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
@@ -36,6 +38,7 @@ PlayScene::PlayScene(Engine* engine)
     Terrain* terrain = ground->GetTerrain();
     auto distantMountains = objectManager_.Create<DistantMountains>(engine_, terrain);
     auto grassField = objectManager_.Create<GrassField>(engine_, terrain);
+    objectManager_.Create<GrassFireEffects>(engine_, terrain);
     auto treeField = objectManager_.Create<TreeField>(engine_, terrain);
     treeField->SetDistantMountains(distantMountains);
 
@@ -190,6 +193,8 @@ void PlayScene::ReturnToTitle()
 {
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
+    // 次に遊ぶときは、燃える前の草原から始める
+    engine_->GetRendererManager()->ResetGrassFire();
     tutorial_->Stop();
     EnterTitle();
 }

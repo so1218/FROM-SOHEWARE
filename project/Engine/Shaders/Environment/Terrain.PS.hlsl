@@ -4,6 +4,7 @@
 #include "Common/LightingUtils.hlsli"
 #include "Common/NormalUtils.hlsli"
 #include "Common/PBRUtils.hlsli"
+#include "Environment/GrassFireCommon.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)
@@ -26,6 +27,10 @@ TextureCube<float4> gEnvironmentTexture : register(t1);
 Texture2DArray<float> gShadowMapArray : register(t2);
 Texture2D<float4> gNormalTexture : register(t3);
 Texture2D<float4> gRippleTexture : register(t4);
+
+// 草の燃え具合
+ConstantBuffer<GrassFireConstants> gFire : register(b11);
+Texture2D<float4> gFireMap : register(t11);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -72,6 +77,19 @@ PixelShaderOutput main(PixelShaderInput input)
     float3 toEye = normalize(gFrameData.cameraWorldPosition - input.worldPosition);
     float3 worldNormal = normalize(input.normal);
     float3 baseColor = gAlbedoTexture.Sample(gSampler, input.texcoord).rgb;
+
+    // 燃えた所は黒く焦げる
+    if (gFire.isActive != 0)
+    {
+        float2 fireUV = CalculateGrassFireUV(input.worldPosition.xz, gFire.areaCenter, gFire.areaSize);
+        if (IsInsideGrassFireArea(fireUV))
+        {
+            float4 fireData = gFireMap.SampleLevel(gSampler, fireUV, 0);
+            float burnProgress = fireData.g;
+            float scorch = smoothstep(0.05f, 0.6f, burnProgress) * gFire.groundScorchDarkness;
+            baseColor = lerp(baseColor, gFire.charColor, scorch);
+        }
+    }
 
     float shadowFactor = 1.0f;
     if (gDirectionalLights[0].enable && gMaterial.addShadow != 0)

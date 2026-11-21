@@ -88,6 +88,18 @@ void RendererManager::Initialize(
 	lightningRenderer_ = std::make_unique<LightningRenderer>();
 	lightningRenderer_->Initialize(env_);
 
+	grassFireSettings_.burnDuration = 6.0f;
+	grassFireSettings_.spreadRate = 2.5f;
+	grassFireSettings_.windSpreadBias = 1.5f;
+	grassFireSettings_.rainSuppression = 0.9f;
+	grassFireSettings_.coolingRate = 0.5f;
+	grassFireSettings_.densityThreshold = 0.5f;
+	grassFireSettings_.charHeightRatio = 0.15f;
+	grassFireSettings_.scorchColor = { 0.35f, 0.25f, 0.1f };
+	grassFireSettings_.groundScorchDarkness = 0.85f;
+	grassFireSettings_.charColor = { 0.03f, 0.025f, 0.02f };
+	grassFireSettings_.maxSpreadDistance = 25.0f;
+
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();
 	viewProjectionMatrix_ = Matrix4x4::MakeIdentity();
@@ -251,7 +263,7 @@ void RendererManager::Draw3D()
 	// 不透明オブジェクトの最序盤にTerrainを描画 (Early-Z最適化)
 	if (terrainRenderer_)
 	{
-		terrainRenderer_->Draw(env_, shadowMap_);
+		terrainRenderer_->Draw(env_, shadowMap_, grassFireMapSrvIndex_, grassFireCBAddress_);
 	}
 
 	if (foliageRenderer_)
@@ -279,7 +291,8 @@ void RendererManager::Draw3D()
 	if (grassRenderer_)
 	{
 		grassRenderer_->Draw(env_, grassTextureHandle_, shadowMap_, grassMaterialData_, grassCullingData_,
-			interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()));
+			interactionData_.cbAddress, srvManager_->GetSRVHandleGPU(GetWorldInteractionSRVIndex()),
+			grassFireCBAddress_, srvManager_->GetSRVHandleGPU(grassFireMapSrvIndex_));
 	}
 
 	if (modelRenderer_) 
@@ -452,6 +465,22 @@ void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t
 			terrainSettingsAddr
 		);
 	}
+
+	// 燃え具合の地図は、草を生やす範囲に合わせる
+	grassFireSettings_.areaCenter = genData.terrainCenter;
+	grassFireSettings_.areaSize = { genData.terrainWidth, genData.terrainDepth };
+	grassFireSettings_.densityThreshold = genData.densityThreshold;
+	grassFireDensityMapSrvIndex_ = densityMapSrvHandle;
+	ResetGrassFire();
+}
+
+void RendererManager::SubmitGrassIgnition(const Vector3& position, float radius, float strength)
+{
+	if (grassIgnitions_.size() >= MAX_GRASS_FIRE_IGNITIONS)
+	{
+		return;
+	}
+	grassIgnitions_.push_back({ { position.x, position.z }, radius, strength });
 }
 
 void RendererManager::SubmitTree(const WorldTransform& worldTransform, const ModelData& modelData,

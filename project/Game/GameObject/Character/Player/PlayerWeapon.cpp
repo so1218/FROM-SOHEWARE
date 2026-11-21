@@ -10,6 +10,8 @@
 #include "TreeField.h"
 #include "Easing.h"
 #include "MathUtils.h"
+#include "Terrain.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
@@ -59,6 +61,8 @@ void PlayerWeapon::Initialize()
     binder_->Bind("Muzzle Offset", &config_.muzzleOffset, { 0.0f, 0.05f, 0.35f });
     binder_->Bind("BaseDamage", &config_.baseDamage, 1);
     binder_->Bind("MaxDistance", &config_.maxDistance, 5.0f);
+    binder_->Bind("IncendiaryRadius", &config_.incendiaryRadius, 2.0f, 0.1f, 0.1f, 20.0f);
+    binder_->Bind("IncendiaryGroundReach", &config_.incendiaryGroundReach, 4.0f, 0.1f, 0.0f, 50.0f);
     binder_->Bind("MagazineSize", &config_.magazineSize, 10, 1.0f, 1, 200);
     binder_->Bind("FireInterval", &config_.fireInterval, 0.35f, 0.01f, 0.0f, 5.0f);
     binder_->Bind("ReloadTime", &config_.reloadTime, 1.6f, 0.05f, 0.05f, 10.0f);
@@ -192,8 +196,67 @@ Vector3 PlayerWeapon::GetMuzzleWorldPosition() const
     return currentHandMatrix_.TransformPoint(config_.muzzleOffset);
 }
 
+void PlayerWeapon::ToggleAmmoType()
+{
+    ammoType_ = (ammoType_ == AmmoType::Normal) ? AmmoType::Incendiary : AmmoType::Normal;
+}
+
+bool PlayerWeapon::RaycastTerrain(const Terrain* terrain, const Vector3& start, const Vector3& direction, float maxDistance, Vector3& outPoint)
+{
+    if (!terrain) return false;
+
+    // 少しずつ進めて地面の下に入った所を見つけ、その前との間を二分探索で詰める
+    constexpr float kStepLength = 0.5f;
+    constexpr int kRefineCount = 8;
+    auto IsUnderground = [terrain](const Vector3& point)
+        {
+            float groundHeight = 0.0f;
+            return terrain->GetHeightAt(point.x, point.z, groundHeight) && point.y <= groundHeight;
+        };
+
+    float previousDistance = 0.0f;
+    for (float distance = kStepLength; distance <= maxDistance; distance += kStepLength)
+    {
+        if (!IsUnderground(start + direction * distance))
+        {
+            previousDistance = distance;
+            continue;
+        }
+
+        float aboveDistance = previousDistance;
+        float belowDistance = distance;
+        for (int refine = 0; refine < kRefineCount; ++refine)
+        {
+            const float middle = (aboveDistance + belowDistance) * 0.5f;
+            if (IsUnderground(start + direction * middle))
+            {
+                belowDistance = middle;
+            }
+            else
+            {
+                aboveDistance = middle;
+            }
+        }
+        outPoint = start + direction * belowDistance;
+        return true;
+    }
+    return false;
+}
+
+void PlayerWeapon::IgniteAt(const Terrain* terrain, const Vector3& hitPoint)
+{
+    if (ammoType_ != AmmoType::Incendiary || !terrain) return;
+
+    float groundHeight = 0.0f;
+    if (!terrain->GetHeightAt(hitPoint.x, hitPoint.z, groundHeight) || hitPoint.y - groundHeight > config_.incendiaryGroundReach)
+    {
+        return;
+    }
+    engine_->GetRendererManager()->SubmitGrassIgnition({ hitPoint.x, groundHeight, hitPoint.z }, config_.incendiaryRadius);
+}
+
 bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultiplier, float maxBulletSpread, CollisionManager* colManager,
-    TreeField* treeField)
+    TreeField* treeField, const Terrain* terrain)
 {
     if (!camera || !colManager || !CanFire()) return false;
 
@@ -235,10 +298,24 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
     const bool hasTreeHit = treeField && treeField->Raycast(rayStart, finalRayDir, config_.maxDistance, &treeHit)
         && treeHit.distance > muzzleDistance;
 
-    // 木が手前にあれば弾はそこで止まり、奥の敵には当たらない
-    const bool isTreeInFront = hasTreeHit && (!hasColliderHit || treeHit.distance < hitInfo.distance);
+    // 地面に当たれば弾はそこで止まる
+    Vector3 terrainHitPoint;
+    const bool hasTerrainHit = RaycastTerrain(terrain, rayStart, finalRayDir, config_.maxDistance, terrainHitPoint)
+        && (terrainHitPoint - rayStart).Dot(finalRayDir) > muzzleDistance;
+    const float terrainDistance = hasTerrainHit ? (terrainHitPoint - rayStart).Length() : config_.maxDistance;
 
-    if (isTreeInFront)
+    // 木が手前にあれば弾はそこで止まり、奥の敵には当たらない
+    const bool isTerrainInFront = hasTerrainHit
+        && (!hasTreeHit || terrainDistance < treeHit.distance)
+        && (!hasColliderHit || terrainDistance < hitInfo.distance);
+    const bool isTreeInFront = !isTerrainInFront && hasTreeHit && (!hasColliderHit || treeHit.distance < hitInfo.distance);
+
+    if (isTerrainInFront)
+    {
+        targetPoint = terrainHitPoint;
+        IgniteAt(terrain, terrainHitPoint);
+    }
+    else if (isTreeInFront)
     {
         targetPoint = treeHit.point;
 
@@ -249,10 +326,12 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
             woodHitBulletEmitterPtr_->SetRotation(Quaternion::LookRotation(treeHit.normal, { 0.0f, 1.0f, 0.0f }));
             woodHitBulletEmitterPtr_->Play();
         }
+        IgniteAt(terrain, treeHit.point);
     }
     else if (hasColliderHit)
     {
         targetPoint = hitInfo.point;
+        IgniteAt(terrain, hitInfo.point);
 
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
         {
@@ -417,6 +496,8 @@ void PlayerWeapon::DebugGui()
         ImGui::TextDisabled("性能設定");
         binder_->Draw("BaseDamage", "基本ダメージ");
         binder_->Draw("MaxDistance", "最大射程");
+        binder_->Draw("IncendiaryRadius", "焼夷弾で火をつける範囲");
+        binder_->Draw("IncendiaryGroundReach", "焼夷弾が地面に火をつける高さ");
         binder_->Draw("MagazineSize", "装弾数");
         binder_->Draw("FireInterval", "1 発ごとの間隔 (秒)");
         binder_->Draw("ReloadTime", "リロード時間 (秒)");

@@ -3,6 +3,26 @@
         "BaseScale": 5.0,
         "DensityMap": "noise_44",
         "DensityThreshold": 0.5,
+        "Fire_BurnDuration": 6.0,
+        "Fire_CharColor": [
+            0.029999999329447746,
+            0.02500000037252903,
+            0.019999999552965164
+        ],
+        "Fire_CharHeightRatio": 0.15000000596046448,
+        "Fire_CoolingRate": 0.5,
+        "Fire_GlowIntensity": 0.0,
+        "Fire_GroundScorchDarkness": 0.8500000238418579,
+        "Fire_MaxSpreadDistance": 25.0,
+        "Fire_RainSuppression": 0.8999999761581421,
+        "Fire_ScorchColor": [
+            0.3499999940395355,
+            0.25,
+            0.10000000149011612
+        ],
+        "Fire_SmolderRatio": 0.15000000596046448,
+        "Fire_SpreadRate": 2.5,
+        "Fire_WindSpreadBias": 1.5,
         "FlattenFactor": 10.0,
         "FlutterAmount": 0.029999999329447746,
         "GrassNormalBlend": 0.44999998807907104,

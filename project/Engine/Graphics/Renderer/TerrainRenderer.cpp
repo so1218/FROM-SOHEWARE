@@ -61,14 +61,15 @@ void TerrainRenderer::SubmitBatch(Batch& batch, const TerrainDrawData& drawData,
     }
 }
 
-void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap)
+void TerrainRenderer::Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint32_t fireMapSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress)
 {
     // 遠景は歩ける地形の下に隠れる所があるので、歩ける地形を先に描いて深度で省く
-    DrawBatch(env, shadowMap, main_, "Terrain Pass");
-    DrawBatch(env, shadowMap, vista_, "Terrain Vista Pass");
+    DrawBatch(env, shadowMap, main_, "Terrain Pass", fireMapSrvIndex, fireCBAddress);
+    DrawBatch(env, shadowMap, vista_, "Terrain Vista Pass", fireMapSrvIndex, fireCBAddress);
 }
 
-void TerrainRenderer::DrawBatch(const RenderEnvironment& env, ShadowMap* shadowMap, const Batch& batch, const char* eventName)
+void TerrainRenderer::DrawBatch(const RenderEnvironment& env, ShadowMap* shadowMap, const Batch& batch, const char* eventName,
+    uint32_t fireMapSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress)
 {
     if (!batch.isSubmitted || batch.chunkCount == 0 || !batch.drawData.material) return;
 
@@ -105,6 +106,8 @@ void TerrainRenderer::DrawBatch(const RenderEnvironment& env, ShadowMap* shadowM
     SetTexture(11, material.normalMapHandle);
     SetTexture(12, material.rippleMapHandle);
     SetTexture(13, batch.drawData.heightMapHandle);
+    SetTexture(14, fireMapSrvIndex);
+    cmdList->SetGraphicsRootConstantBufferView(15, fireCBAddress);
 
     cmdList->IASetVertexBuffers(0, 1, &batch.drawData.vertexBufferView);
     cmdList->IASetIndexBuffer(&batch.drawData.indexBufferView);

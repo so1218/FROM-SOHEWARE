@@ -25,7 +25,7 @@
         "HP": 60,
         "HearingRange": 60.0,
         "LoseTime": 1.0,
-        "MaxAliveCount": 10,
+        "MaxAliveCount": 5,
         "Scale": [
             5.0,
             5.0,

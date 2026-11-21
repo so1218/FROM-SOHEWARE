@@ -122,6 +122,10 @@ void Player::Update()
 	{
 		weapon_->StartReload();
 	}
+	if (isControllable_ && GameInput::IsTriggered(GameAction::SwitchAmmo))
+	{
+		weapon_->ToggleAmmoType();
+	}
 	stateMachine_->Update();
 	stamina_->Update();
 	health_->Update();
@@ -349,7 +353,7 @@ void Player::FireWeapon()
 	// レティクルから現在のフォーカス率を取得して射撃に渡す
 	float focusRatio = reticle_->GetFocusRatio();
 
-	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager, treeField_))
+	if (weapon_->Fire(camera_, focusRatio, config.maxDamageMultiplier, config.maxBulletSpread, colManager, treeField_, terrain_))
 	{
 		if (reticle_)
 		{

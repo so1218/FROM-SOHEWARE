@@ -1,0 +1,4 @@
+{
+  "RootSignature": "GrassFireReadbackCS",
+  "ComputeShader": "Environment/GrassFireReadback.CS.hlsl"
+}

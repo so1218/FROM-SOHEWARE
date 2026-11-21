@@ -17,6 +17,7 @@
 #include "SRVManager.h"
 #include "DSVManager.h"
 #include "WorldInteractionPass.h"
+#include "GrassFirePass.h"
 
 namespace FS
 {
@@ -63,6 +64,10 @@ void RenderPipeline::Initialize(Engine* engine)
     // ワールドインタラクションパスの初期化
     worldInteractionPass_ = std::make_unique<WorldInteractionPass>();
     worldInteractionPass_->Initialize(engine, engine->GetPSOManager());
+
+    // 草の延焼
+    grassFirePass_ = std::make_unique<GrassFirePass>();
+    grassFirePass_->Initialize(engine, engine->GetPSOManager());
 }
 
 void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, CommandManager* commandManager, const RenderCameraState& cameraState)
@@ -115,6 +120,13 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
         // 地形がないシーンではデフォルト値をセット
         rendererManager->SetWorldInteractionData(0, 0.0f, Vector2(0.0f, 0.0f), 0);
     }
+
+    // 草の燃え具合を進める
+    grassFirePass_->Execute(cmdList, rendererManager->GetGrassFireSettings(), rendererManager->GetGrassIgnitions(),
+        rendererManager->GetGrassFireDensityMapSrvIndex(), rendererManager->ConsumeGrassFireReset());
+    rendererManager->ClearGrassIgnitions();
+    rendererManager->SetGrassFireData(grassFirePass_->GetCurrentSRVIndex(), grassFirePass_->GetConstantBufferAddress());
+    rendererManager->SetGrassFireReadback(grassFirePass_->GetReadbackValues(), GrassFirePass::kReadbackResolution);
 
     // シャドウパス
     shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア
