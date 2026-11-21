@@ -35,6 +35,8 @@ FS::Vector2 GetMoveAxis();
 FS::Vector2 GetLookAxis(float stickDeadzone);
 // メニューの上下の入力
 float GetMenuVertical();
+// メニューの左右の入力
+float GetMenuHorizontal();
 
 // 最後に触ったのがパッドか
 bool IsUsingController();

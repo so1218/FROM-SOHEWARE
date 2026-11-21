@@ -8,7 +8,8 @@
 class GrassField : public FS::GameObject
 {
 public:
-    GrassField(FS::Engine* engine, FS::Terrain* terrain);
+    // groupName は設定を保存するグループの名前
+    GrassField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

@@ -5,7 +5,7 @@
 
 using namespace FS;
 
-Ground::Ground(Engine* engine) : GameObject()
+Ground::Ground(Engine* engine, const std::string& groupName) : GameObject()
 {
 	engine_ = engine;
 
@@ -13,7 +13,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	terrain_ = std::make_unique<FS::Terrain>(engine_);
 	terrain_->LoadFromHeightmap("noise_39", 1.0f);
 
-	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
+	binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 	interactionSystem_ = std::make_unique<WorldInteractionSystem>(engine_);
 }
 

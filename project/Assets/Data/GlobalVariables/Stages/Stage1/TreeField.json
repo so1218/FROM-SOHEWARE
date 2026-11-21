@@ -1,5 +1,5 @@
 {
-    "TreeField": {
+    "Stages/Stage1/TreeField": {
         "AlphaCutoff": 0.5,
         "AreaCenterX": 0.0,
         "AreaCenterZ": 0.0,

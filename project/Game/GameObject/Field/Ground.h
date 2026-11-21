@@ -8,7 +8,8 @@
 class Ground : public FS::GameObject
 {
 public:
-    Ground(FS::Engine* engine);
+    // groupName は設定を保存するグループの名前
+    Ground(FS::Engine* engine, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

@@ -27,35 +27,40 @@
 #include "PauseMenu.h"
 #include "PostEffectManager.h"
 #include "RendererManager.h"
+#include "SceneManager.h"
+#include "StageCatalog.h"
 
 using namespace FS;
 
 PlayScene::PlayScene(Engine* engine)
-    : BaseScene(engine, SceneName::Play)
+    : BaseScene(engine, SceneName::Play, StageCatalog::GetSelectedStage().GetGroupName("PlayScene"))
 {
+    // フィールド・時間と天気・空・ライトとポストエフェクトは、選んでいるステージの設定を使う
+    const StageDefinition& stage = StageCatalog::GetSelectedStage();
+
     // ゲームオブジェクトの生成・登録
-    objectManager_.Create<Environment>(engine_);
-    auto ground = objectManager_.Create<Ground>(engine_);
+    objectManager_.Create<Environment>(engine_, stage.GetGroupName("Environment"), stage.GetGroupName("Skydome"));
+    auto ground = objectManager_.Create<Ground>(engine_, stage.GetGroupName("Ground"));
     Terrain* terrain = ground->GetTerrain();
-    auto distantMountains = objectManager_.Create<DistantMountains>(engine_, terrain);
-    auto grassField = objectManager_.Create<GrassField>(engine_, terrain);
+    auto distantMountains = objectManager_.Create<DistantMountains>(engine_, terrain, stage.GetGroupName("DistantMountains"));
+    auto grassField = objectManager_.Create<GrassField>(engine_, terrain, stage.GetGroupName("GrassField"));
     objectManager_.Create<GrassFireEffects>(engine_, terrain);
-    auto treeField = objectManager_.Create<TreeField>(engine_, terrain);
+    auto treeField = objectManager_.Create<TreeField>(engine_, terrain, stage.GetGroupName("TreeField"));
     treeField->SetDistantMountains(distantMountains);
 
     auto player = objectManager_.Create<Player>(engine_, camera_.get(), terrain, treeField);
     player_ = player;
     player->SetGrassField(grassField);
-    objectManager_.Create<FireflyField>(engine_, terrain, &player->GetTransform());
+    objectManager_.Create<FireflyField>(engine_, terrain, &player->GetTransform(), stage.GetGroupName("FireflyField"));
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform(), terrain);
     player->SetFollowCamera(followCamera_.get());
-    titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());
+    titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get(), stage.GetGroupName("TitleCamera"));
 
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), cameraManager_.get(), player, terrain);
     auto coinManager = objectManager_.Create<CoinManager>(engine_, player, terrain);
     enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, coinManager);
-    objectManager_.Create<EnvironmentPropManager>(engine_, "EnvironmentProps");
-    objectManager_.Create<FoliageField>(engine_, terrain);
+    objectManager_.Create<EnvironmentPropManager>(engine_, stage.GetGroupName("EnvironmentProps"));
+    objectManager_.Create<FoliageField>(engine_, terrain, stage.GetGroupName("FoliageField"));
     gameUI_ = objectManager_.Create<GameUI>(engine_);
     tutorial_ = objectManager_.Create<Tutorial>(engine_, player);
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
@@ -70,6 +75,12 @@ void PlayScene::OnInitialize()
     binder_->Bind("TimeLimit", &timeLimit_, 300.0f, 1.0f, 1.0f, 3600.0f);
 
     EnterTitle();
+
+    // タイトルでステージを切り替えて作り直したときは、画面のフェードで十分なので、タイトルの黒い画面を省く
+    if (StageCatalog::TakeJustSwitched())
+    {
+        titleMenu_->SkipFadeIn();
+    }
 }
 
 void PlayScene::OnUpdate()
@@ -79,6 +90,12 @@ void PlayScene::OnUpdate()
     switch (phase_)
     {
     case Phase::Title:
+        // ステージを切り替えたら、そのステージの設定でシーンを作り直す
+        if (titleMenu_->TakeStageChangeRequest())
+        {
+            sceneManager_->RequestSceneReload();
+            break;
+        }
         if (titleMenu_->HasStarted())
         {
             titleCamera_->StartTransition(camera_.get());

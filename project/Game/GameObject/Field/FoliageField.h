@@ -9,7 +9,8 @@
 class FoliageField : public FS::GameObject
 {
 public:
-    FoliageField(FS::Engine* engine, FS::Terrain* terrain);
+    // groupName は設定を保存するグループの名前
+    FoliageField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;
@@ -33,6 +34,6 @@ private:
     std::vector<FS::FoliageLayer> layers_;
 
     bool needsRegenerate_ = true;
-    // 最後に生成したときの地形の形。変わっていたら作り直す
+    // 最後に生成したときの地形の形
     uint32_t generatedTerrainVersion_ = 0;
 };

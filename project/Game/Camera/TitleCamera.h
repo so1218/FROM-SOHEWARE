@@ -9,7 +9,8 @@ class FollowCamera;
 class TitleCamera : public FS::ICameraController
 {
 public:
-    TitleCamera(FS::Engine* engine, FollowCamera* followCamera);
+    // groupName は設定を保存するグループの名前
+    TitleCamera(FS::Engine* engine, FollowCamera* followCamera, const std::string& groupName);
 
     void Initialize();
     void UpdateCamera(FS::Camera* camera) override;

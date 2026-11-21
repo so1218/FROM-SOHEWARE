@@ -7,12 +7,12 @@
 
 using namespace FS;
 
-GrassField::GrassField(FS::Engine* engine, FS::Terrain* terrain) : FS::GameObject(), terrain_(terrain)
+GrassField::GrassField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName) : FS::GameObject(), terrain_(terrain)
 {
     engine_ = engine;
 
     grassSystem_ = std::make_unique<FS::GrassSystem>(engine_, "noise_39");
-    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GrassField");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, groupName);
 }
 
 void GrassField::Initialize()

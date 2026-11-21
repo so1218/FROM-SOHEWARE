@@ -23,7 +23,8 @@ struct TreeRaycastHit
 class TreeField : public FS::GameObject
 {
 public:
-    TreeField(FS::Engine* engine, FS::Terrain* terrain);
+    // groupName は設定を保存するグループの名前
+    TreeField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

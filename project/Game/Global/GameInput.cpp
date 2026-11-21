@@ -114,6 +114,16 @@ float GetMenuVertical()
     return std::clamp(value, -1.0f, 1.0f);
 }
 
+float GetMenuHorizontal()
+{
+    const Input& input = Input::GetInstance();
+    float value = GetKeyDirection(kMoveKeys).x + GetKeyDirection(kLookKeys).x;
+    if (input.IsPadButtonPressed(PadButton::Right)) value += 1.0f;
+    if (input.IsPadButtonPressed(PadButton::Left))  value -= 1.0f;
+    value += input.GetStick(Input::Stick::Left, 0.0f).x;
+    return std::clamp(value, -1.0f, 1.0f);
+}
+
 bool IsUsingController()
 {
     return Input::GetInstance().GetLastUsedDevice() == Input::Device::Pad;

@@ -1,5 +1,5 @@
 {
-    "DistantMountains": {
+    "Stages/Stage2/DistantMountains": {
         "CellSize": 4.0,
         "Enable": true,
         "Extent": 1000.0,

@@ -9,12 +9,12 @@
 namespace FS
 {
 
-Skydome::Skydome(Engine* engine)
+Skydome::Skydome(Engine* engine, const std::string& groupName)
     : engine_(engine)
 {
     cloudNoiseHandle_ = TextureManager::GetInstance().Get("noise_59");
 
-    binder_ = std::make_unique<PropertyBinder>(engine_, "Skydome");
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 }
 
 Skydome::~Skydome() = default;

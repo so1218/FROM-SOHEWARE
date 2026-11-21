@@ -20,134 +20,144 @@ void EnvironmentManager::Initialize(Engine* engine)
         &cbData_
     );
 
-    if (!binder_)
-    {
-        binder_ = std::make_unique<PropertyBinder>(engine, "Environment");
+    engine_ = engine;
+}
 
-        // 時間進行パラメータ
-        binder_->Bind("TimeOfDay", &timeOfDay_, 12.0f, 0.1f, 0.0f, 24.0f);
-        binder_->Bind("TimeSpeedMultiplier", &timeSpeedMultiplier_, 24.0f, 1.0f, -100.0f, 1000.0f);
+void EnvironmentManager::LoadSettings(const std::string& groupName)
+{
+    // 前の設定の ImGui の項目と値の結び付きは、PropertyBinder ごと作り直して捨てる
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 
-        // -------------------------------------------------------------
-        // 時間帯プロファイル
-        // -------------------------------------------------------------
-        binder_->BindColor("Night_ZenithColor", &profileNight_.zenithColor, { 0.05f, 0.15f, 0.4f });
-        binder_->BindColor("Night_HorizonColor", &profileNight_.horizonColor, { 0.4f, 0.6f, 0.8f });
-        binder_->Bind("Night_AtmoGlow", &profileNight_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
-        binder_->BindColor("Night_LightColor", &profileNight_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
-        binder_->Bind("Night_LightIntensity", &profileNight_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
-        binder_->BindColor("Night_AmbientSky", &profileNight_.ambientSkyColor, { 0.015f, 0.02f, 0.04f });
-        binder_->BindColor("Night_AmbientGround", &profileNight_.ambientGroundColor, { 0.005f, 0.005f, 0.008f });
+    // 時間進行パラメータ
+    binder_->Bind("TimeOfDay", &timeOfDay_, 12.0f, 0.1f, 0.0f, 24.0f);
+    binder_->Bind("TimeSpeedMultiplier", &timeSpeedMultiplier_, 24.0f, 1.0f, -100.0f, 1000.0f);
 
-        binder_->BindColor("Sunrise_ZenithColor", &profileSunrise_.zenithColor, { 0.05f, 0.15f, 0.4f });
-        binder_->BindColor("Sunrise_HorizonColor", &profileSunrise_.horizonColor, { 0.4f, 0.6f, 0.8f });
-        binder_->Bind("Sunrise_AtmoGlow", &profileSunrise_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
-        binder_->BindColor("Sunrise_LightColor", &profileSunrise_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
-        binder_->Bind("Sunrise_LightIntensity", &profileSunrise_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
-        binder_->BindColor("Sunrise_AmbientSky", &profileSunrise_.ambientSkyColor, { 0.2f, 0.16f, 0.15f });
-        binder_->BindColor("Sunrise_AmbientGround", &profileSunrise_.ambientGroundColor, { 0.06f, 0.05f, 0.04f });
+    // -------------------------------------------------------------
+    // 時間帯プロファイル
+    // -------------------------------------------------------------
+    binder_->BindColor("Night_ZenithColor", &profileNight_.zenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("Night_HorizonColor", &profileNight_.horizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->Bind("Night_AtmoGlow", &profileNight_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->BindColor("Night_LightColor", &profileNight_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
+    binder_->Bind("Night_LightIntensity", &profileNight_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->BindColor("Night_AmbientSky", &profileNight_.ambientSkyColor, { 0.015f, 0.02f, 0.04f });
+    binder_->BindColor("Night_AmbientGround", &profileNight_.ambientGroundColor, { 0.005f, 0.005f, 0.008f });
 
-        binder_->BindColor("Day_ZenithColor", &profileDay_.zenithColor, { 0.05f, 0.15f, 0.4f });
-        binder_->BindColor("Day_HorizonColor", &profileDay_.horizonColor, { 0.4f, 0.6f, 0.8f });
-        binder_->Bind("Day_AtmoGlow", &profileDay_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
-        binder_->BindColor("Day_LightColor", &profileDay_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
-        binder_->Bind("Day_LightIntensity", &profileDay_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
-        binder_->BindColor("Day_AmbientSky", &profileDay_.ambientSkyColor, { 0.25f, 0.28f, 0.33f });
-        binder_->BindColor("Day_AmbientGround", &profileDay_.ambientGroundColor, { 0.08f, 0.07f, 0.05f });
+    binder_->BindColor("Sunrise_ZenithColor", &profileSunrise_.zenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("Sunrise_HorizonColor", &profileSunrise_.horizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->Bind("Sunrise_AtmoGlow", &profileSunrise_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->BindColor("Sunrise_LightColor", &profileSunrise_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
+    binder_->Bind("Sunrise_LightIntensity", &profileSunrise_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->BindColor("Sunrise_AmbientSky", &profileSunrise_.ambientSkyColor, { 0.2f, 0.16f, 0.15f });
+    binder_->BindColor("Sunrise_AmbientGround", &profileSunrise_.ambientGroundColor, { 0.06f, 0.05f, 0.04f });
 
-        binder_->BindColor("Sunset_ZenithColor", &profileSunset_.zenithColor, { 0.05f, 0.15f, 0.4f });
-        binder_->BindColor("Sunset_HorizonColor", &profileSunset_.horizonColor, { 0.4f, 0.6f, 0.8f });
-        binder_->Bind("Sunset_AtmoGlow", &profileSunset_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
-        binder_->BindColor("Sunset_LightColor", &profileSunset_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
-        binder_->Bind("Sunset_LightIntensity", &profileSunset_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
-        binder_->BindColor("Sunset_AmbientSky", &profileSunset_.ambientSkyColor, { 0.2f, 0.14f, 0.13f });
-        binder_->BindColor("Sunset_AmbientGround", &profileSunset_.ambientGroundColor, { 0.06f, 0.04f, 0.03f });
+    binder_->BindColor("Day_ZenithColor", &profileDay_.zenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("Day_HorizonColor", &profileDay_.horizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->Bind("Day_AtmoGlow", &profileDay_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->BindColor("Day_LightColor", &profileDay_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
+    binder_->Bind("Day_LightIntensity", &profileDay_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->BindColor("Day_AmbientSky", &profileDay_.ambientSkyColor, { 0.25f, 0.28f, 0.33f });
+    binder_->BindColor("Day_AmbientGround", &profileDay_.ambientGroundColor, { 0.08f, 0.07f, 0.05f });
 
-        // -------------------------------------------------------------
-        // 天候プロファイル
-        // -------------------------------------------------------------
-        binder_->Bind("Sunny_TransitionSpeed", &profileSunny_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Sunny_CloudMin", &profileSunny_.cloudThreshold, 0.35f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_CloudShadow", &profileSunny_.cloudShadowBrightness, 0.60f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_LightDim", &profileSunny_.lightDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_AtmoDim", &profileSunny_.atmosphereGlowDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_Wetness", &profileSunny_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Sunny_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
-        binder_->Bind("Sunny_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
-        binder_->Bind("Sunny_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
-        binder_->BindColor("Sunny_SkyZenith", &profileSunny_.skyZenithColor, { 0.05f, 0.15f, 0.4f });
-        binder_->BindColor("Sunny_SkyHorizon", &profileSunny_.skyHorizonColor, { 0.4f, 0.6f, 0.8f });
-        binder_->Bind("Sunny_SkyBlendWeight", &profileSunny_.skyColorBlendWeight, 0.00f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("Sunset_ZenithColor", &profileSunset_.zenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("Sunset_HorizonColor", &profileSunset_.horizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->Bind("Sunset_AtmoGlow", &profileSunset_.sunAtmosphereGlow, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder_->BindColor("Sunset_LightColor", &profileSunset_.directionalLightColor, { 1.0f, 0.95f, 0.9f });
+    binder_->Bind("Sunset_LightIntensity", &profileSunset_.directionalLightIntensity, 1.0f, 0.01f, 0.0f, 5.0f);
+    binder_->BindColor("Sunset_AmbientSky", &profileSunset_.ambientSkyColor, { 0.2f, 0.14f, 0.13f });
+    binder_->BindColor("Sunset_AmbientGround", &profileSunset_.ambientGroundColor, { 0.06f, 0.04f, 0.03f });
 
-        binder_->Bind("Rain_TransitionSpeed", &profileRain_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Rain_CloudMin", &profileRain_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowBrightness, 0.90f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_LightDim", &profileRain_.lightDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_AtmoDim", &profileRain_.atmosphereGlowDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_Wetness", &profileRain_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_RainIntens", &profileRain_.rainIntensity, 0.8f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Rain_WindDir", &profileRain_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
-        binder_->Bind("Rain_WindSpeed", &profileRain_.windSpeed, 3.0f, 0.1f, 0.0f, 20.0f);
-        binder_->Bind("Rain_WindTurbul", &profileRain_.windTurbulence, 0.5f, 0.01f, 0.0f, 1.0f);
-        binder_->BindColor("Rain_SkyZenith", &profileRain_.skyZenithColor, { 0.12f, 0.15f, 0.2f });
-        binder_->BindColor("Rain_SkyHorizon", &profileRain_.skyHorizonColor, { 0.3f, 0.32f, 0.35f });
-        binder_->Bind("Rain_SkyBlendWeight", &profileRain_.skyColorBlendWeight, 0.70f, 0.01f, 0.0f, 1.0f);
+    // -------------------------------------------------------------
+    // 天候プロファイル
+    // -------------------------------------------------------------
+    binder_->Bind("Sunny_TransitionSpeed", &profileSunny_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
+    binder_->Bind("Sunny_CloudMin", &profileSunny_.cloudThreshold, 0.35f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_CloudShadow", &profileSunny_.cloudShadowBrightness, 0.60f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_LightDim", &profileSunny_.lightDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_AtmoDim", &profileSunny_.atmosphereGlowDimmer, 1.00f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_Wetness", &profileSunny_.wetness, 0.00f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_RainIntens", &profileSunny_.rainIntensity, 0.0f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Sunny_WindDir", &profileSunny_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+    binder_->Bind("Sunny_WindSpeed", &profileSunny_.windSpeed, 1.0f, 0.1f, 0.0f, 20.0f);
+    binder_->Bind("Sunny_WindTurbul", &profileSunny_.windTurbulence, 0.2f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("Sunny_SkyZenith", &profileSunny_.skyZenithColor, { 0.05f, 0.15f, 0.4f });
+    binder_->BindColor("Sunny_SkyHorizon", &profileSunny_.skyHorizonColor, { 0.4f, 0.6f, 0.8f });
+    binder_->Bind("Sunny_SkyBlendWeight", &profileSunny_.skyColorBlendWeight, 0.00f, 0.01f, 0.0f, 1.0f);
 
-        binder_->Bind("Thunder_TransitionSpeed", &profileThunder_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
-        binder_->Bind("Thunder_CloudMin", &profileThunder_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_CloudShadow", &profileThunder_.cloudShadowBrightness, 0.95f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_LightDim", &profileThunder_.lightDimmer, 0.15f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_AtmoDim", &profileThunder_.atmosphereGlowDimmer, 0.10f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_RainIntens", &profileThunder_.rainIntensity, 1.0f, 0.01f, 0.0f, 1.0f);
-        binder_->Bind("Thunder_WindDir", &profileThunder_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
-        binder_->Bind("Thunder_WindSpeed", &profileThunder_.windSpeed, 5.0f, 0.1f, 0.0f, 20.0f);
-        binder_->Bind("Thunder_WindTurbul", &profileThunder_.windTurbulence, 0.8f, 0.01f, 0.0f, 1.0f);
-        binder_->BindColor("Thunder_SkyZenith", &profileThunder_.skyZenithColor, { 0.04f, 0.05f, 0.08f });
-        binder_->BindColor("Thunder_SkyHorizon", &profileThunder_.skyHorizonColor, { 0.15f, 0.14f, 0.18f });
-        binder_->Bind("Thunder_SkyBlendWeight", &profileThunder_.skyColorBlendWeight, 0.85f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_TransitionSpeed", &profileRain_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
+    binder_->Bind("Rain_CloudMin", &profileRain_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_CloudShadow", &profileRain_.cloudShadowBrightness, 0.90f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_LightDim", &profileRain_.lightDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_AtmoDim", &profileRain_.atmosphereGlowDimmer, 0.20f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_Wetness", &profileRain_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_RainIntens", &profileRain_.rainIntensity, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Rain_WindDir", &profileRain_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+    binder_->Bind("Rain_WindSpeed", &profileRain_.windSpeed, 3.0f, 0.1f, 0.0f, 20.0f);
+    binder_->Bind("Rain_WindTurbul", &profileRain_.windTurbulence, 0.5f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("Rain_SkyZenith", &profileRain_.skyZenithColor, { 0.12f, 0.15f, 0.2f });
+    binder_->BindColor("Rain_SkyHorizon", &profileRain_.skyHorizonColor, { 0.3f, 0.32f, 0.35f });
+    binder_->Bind("Rain_SkyBlendWeight", &profileRain_.skyColorBlendWeight, 0.70f, 0.01f, 0.0f, 1.0f);
 
-        auto bindVisual = [&](const std::string& p, WeatherVisualParams& v)
-            {
-                // Terrain
-                binder_->Bind((p + "_V_Metal").c_str(), &v.metalness, v.metalness, 0.01f, 0.0f, 1.0f);
-                binder_->Bind((p + "_V_Rough").c_str(), &v.roughness, v.roughness, 0.01f, 0.0f, 1.0f);
-                binder_->Bind((p + "_V_EnvIntens").c_str(), &v.environmentMapIntensity, v.environmentMapIntensity, 0.01f, 0.0f, 5.0f);
-                binder_->Bind((p + "_V_RippleSize").c_str(), &v.rippleSize, v.rippleSize, 0.1f, 0.0f, 10.0f);
-                binder_->Bind((p + "_V_NormalIntens").c_str(), &v.normalIntensity, v.normalIntensity, 0.05f, 0.0f, 5.0f);
-                binder_->BindColor((p + "_V_Color").c_str(), &v.color, v.color);
-                binder_->Bind((p + "_V_Emissive").c_str(), &v.emissiveIntensity, v.emissiveIntensity, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("Thunder_TransitionSpeed", &profileThunder_.transitionSpeed, 0.1f, 0.005f, 0.001f, 2.0f);
+    binder_->Bind("Thunder_CloudMin", &profileThunder_.cloudThreshold, 0.80f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_CloudShadow", &profileThunder_.cloudShadowBrightness, 0.95f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_LightDim", &profileThunder_.lightDimmer, 0.15f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_AtmoDim", &profileThunder_.atmosphereGlowDimmer, 0.10f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_Wetness", &profileThunder_.wetness, 0.50f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_RainIntens", &profileThunder_.rainIntensity, 1.0f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Thunder_WindDir", &profileThunder_.windDirection, { 1.0f, 0.0f }, 0.01f, -1.0f, 1.0f);
+    binder_->Bind("Thunder_WindSpeed", &profileThunder_.windSpeed, 5.0f, 0.1f, 0.0f, 20.0f);
+    binder_->Bind("Thunder_WindTurbul", &profileThunder_.windTurbulence, 0.8f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("Thunder_SkyZenith", &profileThunder_.skyZenithColor, { 0.04f, 0.05f, 0.08f });
+    binder_->BindColor("Thunder_SkyHorizon", &profileThunder_.skyHorizonColor, { 0.15f, 0.14f, 0.18f });
+    binder_->Bind("Thunder_SkyBlendWeight", &profileThunder_.skyColorBlendWeight, 0.85f, 0.01f, 0.0f, 1.0f);
 
-            };
+    auto bindVisual = [&](const std::string& p, WeatherVisualParams& v)
+        {
+            // Terrain
+            binder_->Bind((p + "_V_Metal").c_str(), &v.metalness, v.metalness, 0.01f, 0.0f, 1.0f);
+            binder_->Bind((p + "_V_Rough").c_str(), &v.roughness, v.roughness, 0.01f, 0.0f, 1.0f);
+            binder_->Bind((p + "_V_EnvIntens").c_str(), &v.environmentMapIntensity, v.environmentMapIntensity, 0.01f, 0.0f, 5.0f);
+            binder_->Bind((p + "_V_RippleSize").c_str(), &v.rippleSize, v.rippleSize, 0.1f, 0.0f, 10.0f);
+            binder_->Bind((p + "_V_NormalIntens").c_str(), &v.normalIntensity, v.normalIntensity, 0.05f, 0.0f, 5.0f);
+            binder_->BindColor((p + "_V_Color").c_str(), &v.color, v.color);
+            binder_->Bind((p + "_V_Emissive").c_str(), &v.emissiveIntensity, v.emissiveIntensity, 0.1f, 0.0f, 50.0f);
 
-        // 霧。初期値は defaults から取る
-        auto bindFog = [&](const std::string& p, FogProfile& fog, const FogProfile& defaults)
-            {
-                binder_->Bind((p + "_V_FogNoiseScale").c_str(), &fog.noiseScale, defaults.noiseScale, 0.001f, 0.001f, 1.0f);
-                binder_->Bind((p + "_V_FogNoiseIntens").c_str(), &fog.noiseIntensity, defaults.noiseIntensity, 0.05f, 0.0f, 5.0f);
-                binder_->Bind((p + "_V_FogHDensity").c_str(), &fog.heightDensity, defaults.heightDensity, 0.05f, 0.0f, 10.0f);
-                binder_->Bind((p + "_V_FogHFalloff").c_str(), &fog.heightFalloff, defaults.heightFalloff, 0.01f, 0.0f, 2.0f);
-                binder_->BindColor((p + "_V_FogAmbient").c_str(), &fog.ambientLight, defaults.ambientLight);
-                binder_->Bind((p + "_V_FogExtinct").c_str(), &fog.extinction, defaults.extinction, 0.001f, 0.0f, 1.0f);
-                binder_->Bind((p + "_V_FogErosion").c_str(), &fog.erosion, defaults.erosion, 0.01f, 0.0f, 1.0f);
-                binder_->Bind((p + "_V_FogWindSpeedMultiplier").c_str(), &fog.windSpeedMultiplier, defaults.windSpeedMultiplier, 0.05f, 0.0f, 10.0f);
-                binder_->Bind((p + "_V_FogSunScattering").c_str(), &fog.sunScattering, defaults.sunScattering, 0.1f, 0.0f, 50.0f);
-            };
+        };
 
-        bindVisual("Sunny", profileSunny_.visual);
-        bindVisual("Rain", profileRain_.visual);
-        bindVisual("Thunder", profileThunder_.visual);
+    // 霧。初期値は defaults から取る
+    auto bindFog = [&](const std::string& p, FogProfile& fog, const FogProfile& defaults)
+        {
+            binder_->Bind((p + "_V_FogNoiseScale").c_str(), &fog.noiseScale, defaults.noiseScale, 0.001f, 0.001f, 1.0f);
+            binder_->Bind((p + "_V_FogNoiseIntens").c_str(), &fog.noiseIntensity, defaults.noiseIntensity, 0.05f, 0.0f, 5.0f);
+            binder_->Bind((p + "_V_FogHDensity").c_str(), &fog.heightDensity, defaults.heightDensity, 0.05f, 0.0f, 10.0f);
+            binder_->Bind((p + "_V_FogHFalloff").c_str(), &fog.heightFalloff, defaults.heightFalloff, 0.01f, 0.0f, 2.0f);
+            binder_->BindColor((p + "_V_FogAmbient").c_str(), &fog.ambientLight, defaults.ambientLight);
+            binder_->Bind((p + "_V_FogExtinct").c_str(), &fog.extinction, defaults.extinction, 0.001f, 0.0f, 1.0f);
+            binder_->Bind((p + "_V_FogErosion").c_str(), &fog.erosion, defaults.erosion, 0.01f, 0.0f, 1.0f);
+            binder_->Bind((p + "_V_FogWindSpeedMultiplier").c_str(), &fog.windSpeedMultiplier, defaults.windSpeedMultiplier, 0.05f, 0.0f, 10.0f);
+            binder_->Bind((p + "_V_FogSunScattering").c_str(), &fog.sunScattering, defaults.sunScattering, 0.1f, 0.0f, 50.0f);
+        };
 
-        const FogProfile defaultFog;
-        bindFog("Sunny", profileSunny_.visual.fog, defaultFog);
-        bindFog("Rain", profileRain_.visual.fog, defaultFog);
-        bindFog("Thunder", profileThunder_.visual.fog, defaultFog);
+    bindVisual("Sunny", profileSunny_.visual);
+    bindVisual("Rain", profileRain_.visual);
+    bindVisual("Thunder", profileThunder_.visual);
 
-        // 昼と夜の霧は、はじめは今までの晴れの霧と同じにして、見た目を変えずに調整を始められるようにする
-        bindFog("Day", fogDay_, profileSunny_.visual.fog);
-        bindFog("Night", fogNight_, profileSunny_.visual.fog);
-    }
+    const FogProfile defaultFog;
+    bindFog("Sunny", profileSunny_.visual.fog, defaultFog);
+    bindFog("Rain", profileRain_.visual.fog, defaultFog);
+    bindFog("Thunder", profileThunder_.visual.fog, defaultFog);
+
+    // 昼と夜の霧は、はじめは今までの晴れの霧と同じにして、見た目を変えずに調整を始められるようにする
+    bindFog("Day", fogDay_, profileSunny_.visual.fog);
+    bindFog("Night", fogNight_, profileSunny_.visual.fog);
+
+    // 始まりの天気
+    binder_->BindCombo("StartWeather", &startWeather_, 0, "晴れ\0雨\0雷雨\0");
+    const int weatherIndex = std::clamp(startWeather_, 0, static_cast<int>(WeatherState::Thunderstorm));
+    currentWeather_ = static_cast<WeatherState>(weatherIndex);
+    targetWeather_ = currentWeather_;
+    weatherTransitionT_ = 1.0f;
 }
 
 inline FogProfile LerpFogProfile(const FogProfile& a, const FogProfile& b, float t)
@@ -349,6 +359,12 @@ void EnvironmentManager::Update(LightManager* lightManager)
 
 void EnvironmentManager::DebugGui()
 {
+    // ステージの設定を読み込む前は、調整する値がない
+    if (!binder_)
+    {
+        return;
+    }
+
     if (BeginEnvironmentTab("時間帯"))
     {
         int hour = static_cast<int>(timeOfDay_);
@@ -425,6 +441,8 @@ void EnvironmentManager::DebugGui()
         drawWeatherButton("晴れ", WeatherState::Sunny); ImGui::SameLine();
         drawWeatherButton("雨", WeatherState::Rain); ImGui::SameLine();
         drawWeatherButton("雷雨", WeatherState::Thunderstorm);
+
+        binder_->Draw("StartWeather", "始まりの天気");
 
         ImGui::SeparatorText("天候ごとの設定");
 

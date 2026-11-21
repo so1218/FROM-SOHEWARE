@@ -1,5 +1,5 @@
 {
-    "PlayScene": {
+    "Stages/Stage1/PlayScene": {
         "Camera/FOV": 0.44999998807907104,
         "Camera/FarClip": 2000.0,
         "Camera/NearClip": 0.10000000149011612,

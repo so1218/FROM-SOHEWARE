@@ -16,10 +16,10 @@ namespace
     }
 }
 
-TitleCamera::TitleCamera(Engine* engine, FollowCamera* followCamera)
+TitleCamera::TitleCamera(Engine* engine, FollowCamera* followCamera, const std::string& groupName)
     : followCamera_(followCamera)
 {
-    binder_ = std::make_unique<PropertyBinder>(engine, "TitleCamera");
+    binder_ = std::make_unique<PropertyBinder>(engine, groupName);
 }
 
 void TitleCamera::Initialize()

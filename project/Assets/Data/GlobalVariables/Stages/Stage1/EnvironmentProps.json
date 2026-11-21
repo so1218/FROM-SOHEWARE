@@ -1,5 +1,5 @@
 {
-    "EnvironmentProps": {
+    "Stages/Stage1/EnvironmentProps": {
         "Master_bonFire": {
             "MasterModel_Mat0_AddShadow": 1,
             "MasterModel_Mat0_AlbedoMap": "white1x1",

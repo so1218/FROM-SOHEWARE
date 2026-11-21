@@ -173,6 +173,7 @@
     <ClCompile Include="Game\GameObject\Field\FireflyField.cpp" />
     <ClCompile Include="Game\GameObject\Field\DistantMountains.cpp" />
     <ClCompile Include="Game\Global\GameInput.cpp" />
+    <ClCompile Include="Game\Global\StageCatalog.cpp" />
     <ClCompile Include="Game\Camera\FollowCamera.cpp" />
     <ClCompile Include="Game\Camera\TitleCamera.cpp" />
     <ClCompile Include="Game\GameObject\Character\Player\Player.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="Game\GameObject\Field\FireflyField.h" />
     <ClInclude Include="Game\GameObject\Field\DistantMountains.h" />
     <ClInclude Include="Game\Global\GameInput.h" />
+    <ClInclude Include="Game\Global\StageCatalog.h" />
     <ClInclude Include="Game\Camera\FollowCamera.h" />
     <ClInclude Include="Game\Camera\TitleCamera.h" />
     <ClInclude Include="Game\GameObject\Character\Player\Player.h" />

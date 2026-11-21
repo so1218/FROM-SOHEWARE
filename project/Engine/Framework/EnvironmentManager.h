@@ -105,6 +105,9 @@ public:
     // 初期化関数
     void Initialize(Engine* engine);
 
+    // 時間・天候・霧などの設定を、groupName のグループから読み直す
+    void LoadSettings(const std::string& groupName);
+
     void Update(LightManager* lightManager);
     void DebugGui();
 
@@ -148,17 +151,19 @@ private:
     // 霧の設定を ImGui に並べる。prefix は保存キーの頭 (Day, Night, Rain など)
     void DrawFogSettings(const std::string& prefix);
 
+    Engine* engine_ = nullptr;
     std::unique_ptr<PropertyBinder> binder_;
+    int32_t startWeather_ = 0; 
 
     // パラメータ
     float timeOfDay_ = 12.0f;
     float timeSpeedMultiplier_ = 24.0f;
     Vector3 sunDirection_ = { 0.0f, -1.0f, 0.0f };
 
-    TimeOfDayProfile profileNight_;   // 0時
-    TimeOfDayProfile profileSunrise_; // 6時
-    TimeOfDayProfile profileDay_;     // 12時
-    TimeOfDayProfile profileSunset_;  // 18時
+    TimeOfDayProfile profileNight_;   
+    TimeOfDayProfile profileSunrise_; 
+    TimeOfDayProfile profileDay_;     
+    TimeOfDayProfile profileSunset_; 
 
     // ブレンドされた現在の結果を保存する変数
     TimeOfDayProfile currentProfile_;

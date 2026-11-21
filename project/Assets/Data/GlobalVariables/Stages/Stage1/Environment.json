@@ -1,5 +1,5 @@
 {
-    "Environment": {
+    "Stages/Stage1/Environment": {
         "Day_AmbientGround": [
             0.07999999821186066,
             0.07000000029802322,
@@ -145,6 +145,7 @@
         ],
         "Rain_WindSpeed": 1.399999976158142,
         "Rain_WindTurbul": 0.5,
+        "StartWeather": 0,
         "Sunny_AtmoDim": 1.0,
         "Sunny_CloudMin": 0.41999998688697815,
         "Sunny_CloudShadow": 0.5600000023841858,

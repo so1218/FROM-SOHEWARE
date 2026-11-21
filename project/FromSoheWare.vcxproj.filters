@@ -147,6 +147,9 @@
     <ClCompile Include="Game\Global\GameInput.cpp">
       <Filter>Game\Global</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Global\StageCatalog.cpp">
+      <Filter>Game\Global</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Camera\FollowCamera.cpp">
       <Filter>Game\Camera</Filter>
     </ClCompile>
@@ -268,6 +271,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Global\GameInput.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\StageCatalog.h">
       <Filter>Game\Global</Filter>
     </ClInclude>
     <ClInclude Include="Game\Camera\FollowCamera.h">

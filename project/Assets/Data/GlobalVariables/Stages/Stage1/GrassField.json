@@ -1,5 +1,5 @@
 {
-    "GrassField": {
+    "Stages/Stage1/GrassField": {
         "BaseScale": 5.0,
         "DensityMap": "noise_44",
         "DensityThreshold": 0.5,

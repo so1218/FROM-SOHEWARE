@@ -1,5 +1,5 @@
 {
-    "FireflyField": {
+    "Stages/Stage1/FireflyField": {
         "ActiveRadius": 30.0,
         "BaseDensity": 0.01600000075995922,
         "BlinkPeriodMax": 5.0,

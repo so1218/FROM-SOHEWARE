@@ -1,5 +1,5 @@
 {
-    "Ground": {
+    "Stages/Stage1/Ground": {
         "Terrain_AddShadow": 1,
         "Terrain_AlbedoMap": "forest_leaves_02_diffuse_1k",
         "Terrain_Color": [

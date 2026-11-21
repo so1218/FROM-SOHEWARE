@@ -1,5 +1,5 @@
 {
-    "FoliageField": {
+    "Stages/Stage2/FoliageField": {
         "Flower_01_Albedo": "flower_01_baseColor",
         "Flower_01_AlphaCutoff": 0.3799999952316284,
         "Flower_01_BaseColor": [

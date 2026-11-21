@@ -30,7 +30,9 @@ void SceneManager::Finalize()
     }
 
     state_.reset();
+    retiredScene_.reset();
     scenes_.clear();
+    sceneFactories_.clear();
     fade_.reset();
 }
 
@@ -45,6 +47,9 @@ void SceneManager::Initialize(Engine* engine)
 
 void SceneManager::Update()
 {
+    // 前のフレームの描画は GPU が終えているので、作り直す前のシーンをここで捨てる
+    retiredScene_.reset();
+
     if (state_)
     {
         state_->Update(this);
@@ -68,6 +73,13 @@ void SceneManager::DebugGui()
         currentScene_->DebugGui();
     }
 	fade_->DebugGui();
+}
+
+void SceneManager::RegisterScene(std::function<std::unique_ptr<BaseScene>()> factory)
+{
+    std::unique_ptr<BaseScene> scene = factory();
+    sceneFactories_[scene->GetSceneName()] = std::move(factory);
+    RegisterScene(std::move(scene));
 }
 
 void SceneManager::RegisterScene(std::unique_ptr<BaseScene> scene)
@@ -104,6 +116,24 @@ void SceneManager::RequestSceneChange(const std::string& sceneName)
         return;   
     }
     nextSceneName_ = sceneName;
+    isReloadRequested_ = false;
+}
+
+void SceneManager::RequestSceneReload()
+{
+    if (!currentScene_)
+    {
+        return;
+    }
+
+    const std::string& sceneName = currentScene_->GetSceneName();
+    if (!sceneFactories_.contains(sceneName))
+    {
+        LOG_WARN("RequestSceneReload: 作る関数を登録していないシーンは作り直せない: {}", sceneName);
+        return;
+    }
+    nextSceneName_ = sceneName;
+    isReloadRequested_ = true;
 }
 
 
@@ -127,6 +157,30 @@ void SceneManager::SetScene(BaseScene* newScene)
     }
 }
 
+void SceneManager::ReloadScene(const std::string& sceneName)
+{
+    auto factory = sceneFactories_.find(sceneName);
+    auto scene = scenes_.find(sceneName);
+    if (factory == sceneFactories_.end() || scene == scenes_.end())
+    {
+        return;
+    }
+
+    // 古いシーンの終わりの処理は、新しいシーンを作る前に済ませる
+    if (currentScene_)
+    {
+        currentScene_->Finalize();
+        currentScene_ = nullptr;
+    }
+    retiredScene_ = std::move(scene->second);
+
+    std::unique_ptr<BaseScene> newScene = factory->second();
+    newScene->SetSceneManager(this);
+    BaseScene* newScenePointer = newScene.get();
+    scene->second = std::move(newScene);
+    SetScene(newScenePointer);
+}
+
 void SceneManager::ChangeState(std::unique_ptr<ISceneTransitionState> newState)
 {
     state_ = std::move(newState);
@@ -136,11 +190,16 @@ void SceneManager::ChangeSceneActual()
 {
     if (nextSceneName_)
     {
-        if (BaseScene* scene = FindScene(*nextSceneName_))
+        if (isReloadRequested_)
+        {
+            ReloadScene(*nextSceneName_);
+        }
+        else if (BaseScene* scene = FindScene(*nextSceneName_))
         {
             SetScene(scene);
         }
         nextSceneName_ = std::nullopt;
+        isReloadRequested_ = false;
     }
 }
 

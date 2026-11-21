@@ -57,10 +57,10 @@ enum RandomSalt : uint32_t
 
 }
 
-FireflyField::FireflyField(Engine* engine, const Terrain* terrain, const WorldTransform* playerTransform)
+FireflyField::FireflyField(Engine* engine, const Terrain* terrain, const WorldTransform* playerTransform, const std::string& groupName)
     : GameObject(), engine_(engine), terrain_(terrain), playerTransform_(playerTransform)
 {
-    binder_ = std::make_unique<PropertyBinder>(engine_, "FireflyField");
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 }
 
 void FireflyField::Initialize()

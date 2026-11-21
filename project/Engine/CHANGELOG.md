@@ -11,6 +11,10 @@
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
 - 歩ける範囲の外で濃くなる霧を追加。`PostEffectManager::SetFogBoundary` で範囲を毎フレーム渡すと、境界の少し内側から霧が濃くなり、低い所ほど濃く溜まる。Volumetric Fog が届く所は光や影を受ける霧として、その先は合成のときに式で求めて、同じ光の当て方でつなげる。設定はポストエフェクトの Volumetric Fog の「歩ける範囲の外の霧」。渡さないシーンや Volumetric Fog が無効のときは何も変わらない
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
+- シーンを作り直せるようにした。`SceneManager::RegisterScene` にシーンを作る関数を渡して登録すると、`RequestSceneReload` でフェードアウトしてから今のシーンを捨てて作り直し、フェードインで見せる。古いシーンは、そのフレームの描画が終わった次のフレームの始めに捨てる。ステージを読み込み直すときに使う
+- GlobalVariables が `Assets/Data/GlobalVariables/` の中のフォルダも読むようにした。`Stages/Stage1/Ground.json` は `"Stages/Stage1/Ground"` というグループになり、保存も同じ場所へ戻る
+- ステージごとに設定を分けられるよう、保存するグループの名前を渡せるようにした。`BaseScene` (カメラ・ポストエフェクト・ライト)、`Environment` (時間・天候・霧と空)、`Skydome`。渡さなければ今までと同じ名前を使う
+- `EnvironmentManager::LoadSettings` を追加。時間・天候・霧などの設定を、渡したグループから読み直す。始まりの天気 (`StartWeather`) も保存でき、読み直すとその天気から始まる
 - 晴れのときの Volumetric Fog を、昼と夜で別に決められるようにした。空の色と同じく 5 ~ 7 時で夜から昼へ、17 ~ 19 時で昼から夜へ滑らかに移る。雨と雷雨は今までどおり天候ごとの霧を使い、天候の移り変わりに合わせて混ぜる。設定は環境の「時間帯」タブの「晴れのときの霧」。はじめは今までの晴れの霧と同じ値になる
 - 霧の設定に、太陽と月の光が霧を照らす強さ (`FogProfile::sunScattering`) を足した。ディレクショナルライトの `volumetricScatteringIntensity` は毎フレームこの値で決まる
 - 夜空に星を追加。空を立方体の 6 面のマス目に分け、マスごとの乱数で星を置くか・位置・明るさ・色 (青白から橙) を決める。星ごとに速さと位相をずらして瞬き、地平線に近いほど強く瞬く。太陽が沈むほど見え、雲の後ろと地平線の近くでは薄れる。時間とともに空と一緒に回る。設定は環境の「空」タブ
@@ -23,6 +27,7 @@
 - 木を描ける数の上限を 2000 から 8000 に増やした。木 1 本は幹と葉で 2 つ数える
 
 ### 対応が必要
+- `EnvironmentManager::Initialize` は設定を読まなくなった。`Environment` を作ると、そのときに `LoadSettings` で読む。`Environment` を作らずに `EnvironmentManager` の設定を使うゲームは、自分で `LoadSettings("Environment")` を呼ぶ
 - `WeatherVisualParams` の霧の値は `fog` (`FogProfile`) にまとめた。`visual.extinction` などを読んでいるゲームは `visual.fog.extinction` に直す
 - `GrassGenerationData` を自分で作って `GrassSystem::Generate` に渡しているゲームは、`densityThreshold` を入れる。今までと同じにするなら 0.5。入れないと 0 になり、密度マップが黒い所にも草が生える
 
