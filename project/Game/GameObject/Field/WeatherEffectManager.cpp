@@ -81,14 +81,14 @@ void WeatherEffectManager::Update()
 
     // Volumetric Fogの設定適用
     auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
-    fog->noiseScale = visual.noiseScale;
-    fog->noiseIntensity = visual.noiseIntensity;
-    fog->heightDensity = visual.heightDensity;
-    fog->heightFalloff = visual.heightFalloff;
-    fog->extinction = visual.extinction;
-    fog->erosion = visual.erosion;
-    fog->ambientLight = visual.ambientLight;
-    fog->windSpeedMultiplier = visual.windSpeedMultiplier;
+    fog->noiseScale = visual.fog.noiseScale;
+    fog->noiseIntensity = visual.fog.noiseIntensity;
+    fog->heightDensity = visual.fog.heightDensity;
+    fog->heightFalloff = visual.fog.heightFalloff;
+    fog->extinction = visual.fog.extinction;
+    fog->erosion = visual.fog.erosion;
+    fog->ambientLight = visual.fog.ambientLight;
+    fog->windSpeedMultiplier = visual.fog.windSpeedMultiplier;
 
     // 各天候のパーティクル強さを計算 & 制御
     auto CalculateIntensity = [&](WeatherState checkState) -> float
