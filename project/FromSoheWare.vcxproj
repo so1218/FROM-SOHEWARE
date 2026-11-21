@@ -170,6 +170,7 @@
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp" />
     <ClCompile Include="Game\GameObject\Field\GrassField.cpp" />
     <ClCompile Include="Game\GameObject\Field\GrassFireEffects.cpp" />
+    <ClCompile Include="Game\GameObject\Field\FireflyField.cpp" />
     <ClCompile Include="Game\GameObject\Field\DistantMountains.cpp" />
     <ClCompile Include="Game\Global\GameInput.cpp" />
     <ClCompile Include="Game\Camera\FollowCamera.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h" />
     <ClInclude Include="Game\GameObject\Field\GrassField.h" />
     <ClInclude Include="Game\GameObject\Field\GrassFireEffects.h" />
+    <ClInclude Include="Game\GameObject\Field\FireflyField.h" />
     <ClInclude Include="Game\GameObject\Field\DistantMountains.h" />
     <ClInclude Include="Game\Global\GameInput.h" />
     <ClInclude Include="Game\Camera\FollowCamera.h" />

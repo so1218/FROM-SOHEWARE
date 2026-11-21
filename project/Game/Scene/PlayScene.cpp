@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "GrassField.h"
 #include "GrassFireEffects.h"
+#include "FireflyField.h"
 #include "DistantMountains.h"
 #include "SceneManager.h"
 #include "AudioPlayer.h"
@@ -45,6 +46,7 @@ PlayScene::PlayScene(Engine* engine)
     auto player = objectManager_.Create<Player>(engine_, camera_.get(), terrain, treeField);
     player_ = player;
     player->SetGrassField(grassField);
+    objectManager_.Create<FireflyField>(engine_, terrain, &player->GetTransform());
     followCamera_ = std::make_unique<FollowCamera>(engine_, &player->GetTransform(), terrain);
     player->SetFollowCamera(followCamera_.get());
     titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get());

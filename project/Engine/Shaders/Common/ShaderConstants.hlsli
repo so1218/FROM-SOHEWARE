@@ -233,6 +233,15 @@ struct AtmosphereSkyData
     float cloudAbsorption;
     
     float3 sunDirection;
+    float starDensity;        
+
+    float starGridSize;       
+    float starSize;           
+    float starBrightness;
+    float starTwinkleSpeed;
+
+    float starTwinkleAmount;  
+    float3 starPadding;
 };
 
 struct TrailMaterialData
