@@ -246,7 +246,6 @@
         "PostEffect/VolumetricFog/NoiseIntensity": 0.5,
         "PostEffect/VolumetricFog/NoiseScale": 0.05000000074505806,
         "PostEffect/VolumetricFog/TemporalWeight": 0.05000000074505806,
-        "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0,
-        "TimeLimit": 300.0
+        "PostEffect/VolumetricFog/WindSpeedMultiplier": 1.0
     }
 }

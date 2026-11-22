@@ -14,7 +14,6 @@ public:
     void UpdateCamera(FS::Camera* camera) override;
     void DebugGui() override;
     void Reset(FS::Camera* camera) override;
-    // 追いかける相手の真後ろを向き先にする
     void PlaceBehindTarget();
 
     void AddRecoil(float pitchAmount, float yawAmount);
@@ -50,7 +49,7 @@ private:
     float aimFov_ = 0.35f;
     float aimTransitionSmoothTime_ = 0.12f;
     float aimDeadzone_ = 0.08f;                 
-    float aimRotateSpeedMultiplier_ = 0.6f;       // エイム時感度倍率
+    float aimRotateSpeedMultiplier_ = 0.6f;      
 
     FS::Vector3 currentShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     FS::Vector3 shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
@@ -72,13 +71,13 @@ private:
     float currentPitch_ = 0.3f;
     float distance_ = 45.0f;
 
-    // 今の回転の速さ (ラジアン / 秒)。スティックを離すとすぐ 0 に戻る
+    // 今の回転の速さ
     float yawRate_ = 0.0f;
     float pitchRate_ = 0.0f;
     float distanceVelocity_ = 0.0f;
 
-    float rotationAccelerationTime_ = 0.1f;    // 回し始めてから最高速度になるまで (秒)
-    float rotationDecelerationTime_ = 0.04f;   // 最高速度から止まるまで (秒)
+    float rotationAccelerationTime_ = 0.1f;   
+    float rotationDecelerationTime_ = 0.04f;   
     float zoomSmoothTime_ = 0.2f;
     float positionLerpSpeed_ = 8.0f;
 

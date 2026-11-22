@@ -16,14 +16,13 @@ struct TreeCollider
 struct TreeRaycastHit
 {
     FS::Vector3 point;   // 着弾座標
-    FS::Vector3 normal;  // 着弾面の法線（外向きベクトル）
+    FS::Vector3 normal;  // 着弾面の法線
     float distance;      // レイの始点からの距離
 };
 
 class TreeField : public FS::GameObject
 {
 public:
-    // groupName は設定を保存するグループの名前
     TreeField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName);
 
     void Initialize() override;

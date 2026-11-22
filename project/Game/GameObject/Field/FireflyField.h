@@ -7,7 +7,6 @@
 class FireflyField : public FS::GameObject
 {
 public:
-    // groupName は設定を保存するグループの名前
     FireflyField(FS::Engine* engine, const FS::Terrain* terrain, const FS::WorldTransform* playerTransform, const std::string& groupName);
 
     void Initialize() override;

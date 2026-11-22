@@ -32,7 +32,7 @@ private:
     // エフェクトのポインタを保持
     FS::ParticleEmitter* rainParticleEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thunderRainParticleEmitterPtr_ = nullptr;
-    // 落雷1本につき1つ。持ち主は ParticleSystem
+    // 落雷1本につき1つ
     std::vector<FS::ParticleEmitter*> thunderStrikeEmitters_;
 
     // 雷雨用の制御タイマー

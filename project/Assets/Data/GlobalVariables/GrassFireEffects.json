@@ -4,9 +4,6 @@
         "FireSoundHeight": 1.0,
         "FireSoundMaxDistance": 150.0,
         "FireSoundVolume": 0.8999999761581421,
-        "FlameLifetimeMax": 1.100000023841858,
-        "FlameLifetimeMin": 0.6000000238418579,
-        "FlameRatePerCell": 6.0,
         "FlameRatePerSquareMeter": 0.4000000059604645,
         "FlameSpawnHeight": 0.30000001192092896,
         "FlameThreshold": 0.05000000074505806,
@@ -28,9 +25,6 @@
         "PeakSeparation": 10.0,
         "PeakThreshold": 0.11999999731779099,
         "SmokeDuration": 12.0,
-        "SmokeLifetimeMax": 8.0,
-        "SmokeLifetimeMin": 5.0,
-        "SmokeRatePerCell": 0.6000000238418579,
         "SmokeRatePerSquareMeter": 0.03999999910593033,
         "SmokeSpawnHeight": 1.0
     }

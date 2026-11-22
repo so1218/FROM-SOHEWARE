@@ -7,7 +7,6 @@
 class DistantMountains : public FS::GameObject
 {
 public:
-    // groupName は設定を保存するグループの名前
     DistantMountains(FS::Engine* engine, const FS::Terrain* playableTerrain, const std::string& groupName);
 
     void Initialize() override;
