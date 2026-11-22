@@ -9,6 +9,7 @@
 #include "MathUtils.h"
 #include "Terrain.h"
 #include "AudioPlayer.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
@@ -124,6 +125,13 @@ void ZombieBehavior::Update(Enemy* owner)
     }
 
     // Dying の中で Die() されたときはここで終わる
+    if (!owner->IsActive())
+    {
+        return;
+    }
+
+    // 燃えて倒れたときもここで終わる
+    UpdateBurning(owner, deltaTime);
     if (!owner->IsActive())
     {
         return;
@@ -381,9 +389,81 @@ void ZombieBehavior::OnDespawn(Enemy* owner)
     ReleaseEffects();
 }
 
+void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
+{
+    // 倒れている最中は、もう燃えても HP は減らさない。まとっている炎はそのまま残す
+    if (state_ != State::Dying)
+    {
+        const int damage = burn_.Update(owner->GetEngine()->GetRendererManager(), owner->GetTransform().translation_, config_.burn, deltaTime);
+        if (damage > 0)
+        {
+            owner->TakeDamageOverTime(damage);
+        }
+    }
+    UpdateBurnEffects(owner);
+
+    if (!burn_.IsBurning())
+    {
+        // ゾンビごとにずらしておき、何体も同時に燃え始めても音がそろわないようにする
+        burnSparkTimer_ = RandomRange(0.0f, config_.burnSparkInterval);
+        return;
+    }
+
+    // 回路が焼ける音を、間を置いて鳴らす。遠いゾンビほど小さく、遠すぎれば鳴らさない
+    burnSparkTimer_ -= deltaTime;
+    if (burnSparkTimer_ > 0.0f)
+    {
+        return;
+    }
+    burnSparkTimer_ = config_.burnSparkInterval * RandomRange(0.7f, 1.3f);
+
+    if (!player_ || config_.burnSparkHearingDistance <= 0.0f)
+    {
+        return;
+    }
+    const Vector3 toPlayer = player_->GetTransform().translation_ - owner->GetTransform().translation_;
+    const float distance = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y + toPlayer.z * toPlayer.z);
+    if (distance < config_.burnSparkHearingDistance)
+    {
+        AudioPlayer::GetInstance().Play("zombieSpark", config_.burnSparkVolume * (1.0f - distance / config_.burnSparkHearingDistance));
+    }
+}
+
+void ZombieBehavior::UpdateBurnEffects(Enemy* owner)
+{
+    const bool shouldPlay = burn_.IsBurning();
+    if (shouldPlay && !burnEmbersEmitterPtr_)
+    {
+        // 見た目はプレイヤーが燃えているときと同じ
+        burnEmbersEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("playerBurnEmbers");
+        if (burnEmbersEmitterPtr_)
+        {
+            burnEmbersEmitterPtr_->SetTargetAnimationModel(animationModel_.get());
+        }
+    }
+    if (shouldPlay == isBurnEffectPlaying_)
+    {
+        return;
+    }
+
+    if (burnEmbersEmitterPtr_)
+    {
+        if (shouldPlay)
+        {
+            burnEmbersEmitterPtr_->Play();
+        }
+        else
+        {
+            burnEmbersEmitterPtr_->Stop();
+        }
+    }
+    isBurnEffectPlaying_ = shouldPlay;
+}
+
 void ZombieBehavior::ReleaseEffects()
 {
-    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &dustEmitterPtr_ })
+    isBurnEffectPlaying_ = false;
+    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &dustEmitterPtr_, &burnEmbersEmitterPtr_ })
     {
         if (*emitter)
         {
@@ -484,6 +564,11 @@ void ZombieConfig::Bind(PropertyBinder& binder)
 
     binder.Bind("DamagedSoundVolume", &damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
     binder.Bind("SparkSoundVolume", &sparkSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+
+    burn.Bind(binder, "Burn", ZombieConfig().burn);
+    binder.Bind("BurnSparkInterval", &burnSparkInterval, 0.8f, 0.01f, 0.05f, 10.0f);
+    binder.Bind("BurnSparkVolume", &burnSparkVolume, 0.35f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("BurnSparkHearingDistance", &burnSparkHearingDistance, 30.0f, 0.5f, 0.0f, 500.0f);
 }
 
 void ZombieConfig::Draw(PropertyBinder& binder)
@@ -552,6 +637,15 @@ void ZombieConfig::Draw(PropertyBinder& binder)
     {
         binder.Draw("DamagedSoundVolume", "当たる音の大きさ");
         binder.Draw("SparkSoundVolume", "ショートする音の大きさ");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("燃える"))
+    {
+        burn.Draw(binder, "Burn");
+        binder.Draw("BurnSparkInterval", "回路が焼ける音 (zombieSpark) の間隔 (秒)");
+        binder.Draw("BurnSparkVolume", "回路が焼ける音の大きさ");
+        binder.Draw("BurnSparkHearingDistance", "回路が焼ける音が聞こえる距離 (m)");
         ImGui::TreePop();
     }
 }

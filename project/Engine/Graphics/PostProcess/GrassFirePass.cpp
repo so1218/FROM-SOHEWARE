@@ -16,7 +16,7 @@ namespace
 {
 
 constexpr DXGI_FORMAT kFireMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
-constexpr DXGI_FORMAT kReadbackFormat = DXGI_FORMAT_R32_FLOAT;
+constexpr DXGI_FORMAT kReadbackFormat = DXGI_FORMAT_R32G32_FLOAT;
 
 // パス専用ヒープの置き場所
 enum HeapSlot : uint32_t
@@ -116,11 +116,19 @@ void GrassFirePass::ReadBack()
     uint8_t* mapped = nullptr;
     if (FAILED(readbackBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mapped)))) return;
 
-    readbackValues_.resize(static_cast<size_t>(kReadbackResolution) * kReadbackResolution);
+    const size_t cellCount = static_cast<size_t>(kReadbackResolution) * kReadbackResolution;
+    readbackValues_.resize(cellCount);
+    burntReadbackValues_.resize(cellCount);
     for (uint32_t row = 0; row < kReadbackResolution; ++row)
     {
+        // 1 マスに炎と燃え進み具合の 2 つが並んでいる
         const float* source = reinterpret_cast<const float*>(mapped + readbackFootprint_.Offset + readbackFootprint_.Footprint.RowPitch * row);
-        std::memcpy(&readbackValues_[static_cast<size_t>(row) * kReadbackResolution], source, sizeof(float) * kReadbackResolution);
+        for (uint32_t column = 0; column < kReadbackResolution; ++column)
+        {
+            const size_t index = static_cast<size_t>(row) * kReadbackResolution + column;
+            readbackValues_[index] = source[column * 2];
+            burntReadbackValues_[index] = source[column * 2 + 1];
+        }
     }
 
     const D3D12_RANGE noWrite = { 0, 0 };
@@ -138,6 +146,7 @@ void GrassFirePass::Execute(ID3D12GraphicsCommandList* cmdList, const GrassFireC
     if (isReset)
     {
         readbackValues_.clear();
+        burntReadbackValues_.clear();
     }
     if (!hasArea && !isReset)
     {

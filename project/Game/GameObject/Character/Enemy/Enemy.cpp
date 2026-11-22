@@ -99,6 +99,17 @@ void Enemy::TakeDamage(int damage, const Vector3& hitPoint, const Vector3& hitNo
     }
 }
 
+void Enemy::TakeDamageOverTime(int damage)
+{
+    if (!IsActive() || damage <= 0) return;
+
+    hp_ -= damage;
+    if (hp_ <= 0 && !(behavior_ && behavior_->OnHealthDepleted(this)))
+    {
+        Die();
+    }
+}
+
 void Enemy::Die()
 {
     isDefeated_ = true;

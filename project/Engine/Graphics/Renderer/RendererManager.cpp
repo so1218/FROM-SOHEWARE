@@ -474,6 +474,38 @@ void RendererManager::GenerateGrass(const GrassGenerationData& genData, uint32_t
 	ResetGrassFire();
 }
 
+float RendererManager::SampleGrassFire(float worldX, float worldZ) const
+{
+	return SampleGrassReadback(grassFireReadback_, worldX, worldZ);
+}
+
+float RendererManager::SampleGrassBurnt(float worldX, float worldZ) const
+{
+	return SampleGrassReadback(grassBurntReadback_, worldX, worldZ);
+}
+
+float RendererManager::SampleGrassReadback(const std::vector<float>& readback, float worldX, float worldZ) const
+{
+	const uint32_t resolution = grassFireReadbackResolution_;
+	if (resolution == 0 || readback.size() < static_cast<size_t>(resolution) * resolution
+		|| grassFireSettings_.areaSize.x <= 0.0f || grassFireSettings_.areaSize.y <= 0.0f)
+	{
+		return 0.0f;
+	}
+
+	// 地図の向きは、燃え具合の地図と同じく u が X、v が Z
+	const float u = (worldX - grassFireSettings_.areaCenter.x) / grassFireSettings_.areaSize.x + 0.5f;
+	const float v = (worldZ - grassFireSettings_.areaCenter.y) / grassFireSettings_.areaSize.y + 0.5f;
+	if (u < 0.0f || u >= 1.0f || v < 0.0f || v >= 1.0f)
+	{
+		return 0.0f;
+	}
+
+	const uint32_t cellX = std::min(static_cast<uint32_t>(u * static_cast<float>(resolution)), resolution - 1);
+	const uint32_t cellZ = std::min(static_cast<uint32_t>(v * static_cast<float>(resolution)), resolution - 1);
+	return std::clamp(readback[static_cast<size_t>(cellZ) * resolution + cellX], 0.0f, 1.0f);
+}
+
 void RendererManager::SubmitGrassIgnition(const Vector3& position, float radius, float strength)
 {
 	if (grassIgnitions_.size() >= MAX_GRASS_FIRE_IGNITIONS)

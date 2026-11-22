@@ -4,6 +4,7 @@
 #include "PropertyBinder.h"
 #include "AnimationModel.h"
 #include "ParticleEmitter.h"
+#include "BurnStatus.h"
 #include <random>
 
 namespace FS { class Terrain; }
@@ -57,6 +58,13 @@ struct ZombieConfig
     // 撃たれたときの音
     float damagedSoundVolume = 0.6f;
     float sparkSoundVolume = 0.5f;
+
+    // 燃えている草の上での継続ダメージ
+    BurnConfig burn = { 0.2f, 20.0f, 0.5f, 3.0f };
+    // 燃えている間に、回路が焼ける音を鳴らす間隔と大きさ
+    float burnSparkInterval = 0.8f;
+    float burnSparkVolume = 0.35f;
+    float burnSparkHearingDistance = 30.0f;   // プレイヤーからこれより遠いゾンビの音は鳴らさない
 };
 
 class ZombieBehavior : public IEnemyBehavior
@@ -119,6 +127,9 @@ private:
     void PlayAnimation(const char* name, bool isLoop, float speed);
     float RandomRange(float min, float max);
     void ReleaseEffects();
+    // 足元の炎で燃え、継続ダメージを受ける
+    void UpdateBurning(Enemy* owner, float deltaTime);
+    void UpdateBurnEffects(Enemy* owner);
     // 本体と同じ大きさで立たせたときの、足元から頭までの高さ
     float MeasureHeadHeight();
 
@@ -131,6 +142,11 @@ private:
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
+    // 燃えている間だけ出す炎と火の粉
+    FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
+    bool isBurnEffectPlaying_ = false;
+    BurnStatus burn_;
+    float burnSparkTimer_ = 0.0f;
     // 這い出る前に埋まっている深さ
     float buriedDepth_ = 0.0f;
 

@@ -28,6 +28,8 @@ public:
 
     // 1 フレーム前の、kReadbackResolution 四方の炎の強さ
     const std::vector<float>& GetReadbackValues() const { return readbackValues_; }
+    // 1 フレーム前の、kReadbackResolution 四方の燃え進み具合
+    const std::vector<float>& GetBurntReadbackValues() const { return burntReadbackValues_; }
 
 private:
     void CreateTexture(ID3D12Device* device, DXGI_FORMAT format, uint32_t size, const wchar_t* name,
@@ -51,6 +53,7 @@ private:
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT readbackFootprint_{};
     bool hasPendingReadback_ = false;
     std::vector<float> readbackValues_;
+    std::vector<float> burntReadbackValues_;
 
     Microsoft::WRL::ComPtr<ID3D12Resource> constantBuffer_;
     GrassFireConstants* mappedConstants_ = nullptr;

@@ -27,6 +27,8 @@ public:
 
     // 被弾処理
     void TakeDamage(int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal, const FS::Collider* hitCollider = nullptr);
+    // 燃えているときなどの継続ダメージ
+    void TakeDamageOverTime(int damage);
     void Die();
     void Despawn();
     // 倒されて消えたか

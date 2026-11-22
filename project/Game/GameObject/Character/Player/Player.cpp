@@ -20,6 +20,7 @@
 #include "PlayerStateDodge.h"
 #include "PlayerStateCrawl.h"
 #include "PlayerConcealment.h"
+#include "PlayerBurn.h"
 #include "Enemy.h"
 #include "GlobalVariables.h"
 
@@ -39,6 +40,7 @@ engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 	stamina_ = std::make_unique<PlayerStamina>(engine_);
 	health_ = std::make_unique<PlayerHealth>(engine_);
 	concealment_ = std::make_unique<PlayerConcealment>(engine_);
+	burn_ = std::make_unique<PlayerBurn>(engine_);
 
 	binder_ = std::make_unique<PropertyBinder>(engine, "Player");
 	collider_ = AddBoxCollider(colliderSize_);
@@ -97,6 +99,7 @@ void Player::Initialize()
 	binder_->Bind("CrouchBlendTime", &config.crawlBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
 	binder_->Bind("CrouchColliderHeightRate", &config.crawlColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
 	concealment_->BindProperties(*binder_);
+	burn_->BindProperties(*binder_);
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
 	ammoDisplay_->BindProperties(*binder_);
@@ -151,6 +154,14 @@ void Player::Update()
 	}
 
 	concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrawling(), isControllable_);
+
+	// 隠れているときの画面の縁より炎を優先するので、隠れる処理のあとに進める
+	const int burnDamage = burn_->Update(GetTransform().translation_, animationModel_.get(), isControllable_);
+	if (burnDamage > 0)
+	{
+		TakeBurnDamage(burnDamage);
+	}
+	health_->SetBurning(burn_->IsBurning());
 
 	collider_->SetCenterOffset(GetCurrentColliderOffset());
 	collider_->SetSize(GetCurrentColliderSize());
@@ -384,12 +395,34 @@ void Player::TakeDamage(int damage)
 	}
 }
 
+void Player::TakeBurnDamage(int damage)
+{
+	// 全体を赤くする被弾の色は出さず、炎の画面の縁で知らせる
+	health_->TakeDamage(damage, false);
+	burn_->OnDamaged();
+	GameInput::StartVibration(burn_->GetVibrationStrength(), burn_->GetVibrationStrength(), burn_->GetVibrationTime());
+
+	// 上下と左右に小さく揺らす
+	if (followCamera_)
+	{
+		const float shake = burn_->GetCameraShake();
+		const float pitch = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * shake;
+		followCamera_->AddRecoil(pitch, shake);
+	}
+
+	if (health_->IsDead())
+	{
+		ResetToSpawn();
+	}
+}
+
 void Player::ResetToSpawn()
 {
 	PlaceAtSpawn();
 	velocityY_ = 0.0f;
 	moveDirection_ = { 0.0f, 0.0f, 0.0f };
 	health_->Refill();
+	burn_->Reset();
 	stamina_->Refill();
 	weapon_->Refill();
 	money_ = 0;
@@ -657,6 +690,11 @@ void Player::DebugGui()
 		binder_->Draw("CrouchBlendTime", "アニメの補間時間 (秒)");
 		binder_->Draw("CrouchColliderHeightRate", "当たり判定の高さの倍率");
 		concealment_->DrawProperties(*binder_);
+	}
+
+	if (ImGui::CollapsingHeader("燃える"))
+	{
+		burn_->DrawProperties(*binder_);
 	}
 
 	if (ImGui::CollapsingHeader("回避"))

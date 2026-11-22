@@ -16,6 +16,7 @@ class PlayerHealth;
 class PlayerAmmoDisplay;
 class PlayerMoneyDisplay;
 class PlayerConcealment;
+class PlayerBurn;
 class GrassField;
 
 class Player : public FS::GameObject
@@ -84,6 +85,8 @@ public:
 
 	void FireWeapon();
 	void TakeDamage(int damage); 
+	// 燃えている草の上で受ける継続ダメージ
+	void TakeBurnDamage(int damage);
 
 	void ResetToSpawn();
 	int GetShotCount() const { return shotCount_; } 
@@ -210,6 +213,7 @@ private:
 	std::unique_ptr<PlayerStamina> stamina_;
 	std::unique_ptr<PlayerHealth> health_;
 	std::unique_ptr<PlayerConcealment> concealment_;
+	std::unique_ptr<PlayerBurn> burn_;
 	void PlaceAtSpawn();
 	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
 	float spawnRotationY_ = 0.0f;                        

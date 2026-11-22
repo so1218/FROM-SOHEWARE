@@ -61,6 +61,8 @@ public:
 
     // 再生中か確認
     bool IsPlaying(int handleID);
+    // その名前の音を読み込んでいるか
+    bool HasSound(const std::string& name) const { return audioDataMap_.contains(name); }
 
     // エンジンのメインループで毎フレーム呼ぶ更新処理
     void Update();

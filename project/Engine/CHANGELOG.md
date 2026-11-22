@@ -10,6 +10,9 @@
 - 歩ける地形の外に見せる遠景の地形を描けるようにした。`Terrain::LoadFromHeightRatios` で CPU で作った高さから地形を作り、`SetDrawAsVista(true)` で遠景として描く。遠景は影を落とさず、草や植物の生成にも使わない。`ShareMaterialFrom` で歩ける地形と質感・模様の位置をそろえ、`SetHiddenArea` で歩ける地形の下にあるチャンクを省く
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
+- `RendererManager::SampleGrassFire` を追加。その場所の草の炎の強さ (0 ~ 1) を、CPU に読み戻した地図から返す。燃えている所にいるキャラクターにダメージを与えるのに使う
+- `RendererManager::SampleGrassBurnt` を追加。その場所の草の燃え進み具合 (0 ~ 1) を返す。焼けた草むらに隠れられないようにするのに使う。`SetGrassFireReadback` は燃え進み具合の地図も受け取るようにした
+- `AudioPlayer::HasSound` を追加。その名前の音を読み込んでいるかを返す
 - 影を落とす距離を、カメラの描画距離と分けた (`LightManager` の「影の範囲」、初期値 120m)。カスケードはこの距離までを、手前ほど細かく割り振る (初期値 0.75)。今まではカメラの描画距離 (2000m) いっぱいに影の地図を広げていたため、手前でも 1 ピクセルが 36cm ほどになり、葉の影の形が出ていなかった。影は距離の手前 1 割でだんだん消える
 - `AudioPlayer::SetVolume` を追加。鳴っている音の大きさを後から変える。3D の音では、距離による減衰がこれに掛かる。ループの音をゆっくり大きくしたり消したりするのに使う
 - シーンを作り直せるようにした。`SceneManager::RegisterScene` にシーンを作る関数を渡して登録すると、`RequestSceneReload` でフェードアウトしてから今のシーンを捨てて作り直し、フェードインで見せる。古いシーンは、そのフレームの描画が終わった次のフレームの始めに捨てる。ステージを読み込み直すときに使う

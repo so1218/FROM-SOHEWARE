@@ -2,6 +2,7 @@
 #include "PlayerConcealment.h"
 #include "GrassField.h"
 #include "PostEffectManager.h"
+#include "RendererManager.h"
 #include "TimeManager.h"
 #include "MathUtils.h"
 
@@ -13,6 +14,7 @@ PlayerConcealment::PlayerConcealment(Engine* engine) : engine_(engine)
 
 void PlayerConcealment::BindProperties(PropertyBinder& binder)
 {
+    binder.Bind("HiddenBurntThreshold", &burntHideThreshold_, 0.3f, 0.01f, 0.0f, 1.0f);
     binder.Bind("HiddenVignetteAmount", &vignetteAmount_, 0.6f, 0.01f, 0.0f, 1.0f);
     binder.BindColor("HiddenVignetteColor", &vignetteColor_, { 0.01f, 0.02f, 0.03f });
     binder.Bind("HiddenVignetteStart", &vignetteStart_, 0.25f, 0.01f, 0.0f, 1.5f);
@@ -24,9 +26,11 @@ void PlayerConcealment::BindProperties(PropertyBinder& binder)
 void PlayerConcealment::DrawProperties(PropertyBinder& binder)
 {
     ImGui::Text("草の中: %s", isInGrass_ ? "はい" : "いいえ");
+    ImGui::Text("焼けた草の上: %s", isOnBurntGrass_ ? "はい" : "いいえ");
     ImGui::Text("置いた霧の中: %s", isInFogVolume_ ? "はい" : "いいえ");
     ImGui::Text("隠れている: %s", isHidden_ ? "はい" : "いいえ");
 
+    binder.Draw("HiddenBurntThreshold", "隠れられなくなる焼け具合 (0 ~ 1)");
     binder.Draw("HiddenVignetteAmount", "ビネットの強さ");
     binder.Draw("HiddenVignetteColor", "ビネットの色");
     binder.Draw("HiddenVignetteStart", "ビネットが始まる距離 (画面中心から)");
@@ -37,7 +41,10 @@ void PlayerConcealment::DrawProperties(PropertyBinder& binder)
 
 void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyCenter, bool isCrawling, bool isControllable)
 {
-    isInGrass_ = grassField_ && grassField_->IsGrassAt(footPosition.x, footPosition.z);
+    const RendererManager* rendererManager = engine_ ? engine_->GetRendererManager() : nullptr;
+    const float burnt = rendererManager ? rendererManager->SampleGrassBurnt(footPosition.x, footPosition.z) : 0.0f;
+    isOnBurntGrass_ = burnt > burntHideThreshold_;
+    isInGrass_ = grassField_ && grassField_->IsGrassAt(footPosition.x, footPosition.z) && !isOnBurntGrass_;
     isInFogVolume_ = IsInsideFogVolume(bodyCenter);
     isHidden_ = isControllable && ((isCrawling && isInGrass_) || isInFogVolume_);
 
@@ -63,6 +70,7 @@ void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyC
 void PlayerConcealment::Reset()
 {
     isInGrass_ = false;
+    isOnBurntGrass_ = false;
     isInFogVolume_ = false;
     isHidden_ = false;
     effectRatio_ = 0.0f;

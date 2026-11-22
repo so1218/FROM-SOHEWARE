@@ -24,6 +24,8 @@ void PlayerHealth::BindProperties(PropertyBinder& binder)
 
     binder.BindColor("Health_FlashColor", &flashColor_, { 0.8f, 0.0f, 0.0f, 0.35f });
     binder.Bind("Health_FlashDuration", &flashDuration_, 0.35f, 0.01f, 0.01f, 3.0f);
+    binder.BindColor("Health_BurnBlinkColor", &burnBlinkColor_, { 1.0f, 0.3f, 0.05f, 0.95f });
+    binder.Bind("Health_BurnBlinkSpeed", &burnBlinkSpeed_, 8.0f, 0.1f, 0.0f, 50.0f);
 
     Refill();
 }
@@ -43,17 +45,24 @@ void PlayerHealth::DrawProperties(PropertyBinder& binder)
     binder.Draw("Health_LowRatio", "残り少ないとみなす割合");
     binder.Draw("Health_FlashColor", "被弾時の画面の色");
     binder.Draw("Health_FlashDuration", "被弾時の色が消えるまで (秒)");
+    binder.Draw("Health_BurnBlinkColor", "燃えている間に点滅する色");
+    binder.Draw("Health_BurnBlinkSpeed", "燃えている間の点滅の速さ");
 }
 
 void PlayerHealth::Update()
 {
-    flashTimer_ = std::max(flashTimer_ - TimeManager::GetInstance()->GetDeltaTime(), 0.0f);
+    const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+    flashTimer_ = std::max(flashTimer_ - deltaTime, 0.0f);
+    burnBlinkTime_ = isBurning_ ? burnBlinkTime_ + deltaTime : 0.0f;
 }
 
-void PlayerHealth::TakeDamage(int damage)
+void PlayerHealth::TakeDamage(int damage, bool showFlash)
 {
     currentHP_ = std::max(currentHP_ - damage, 0);
-    flashTimer_ = flashDuration_;
+    if (showFlash)
+    {
+        flashTimer_ = flashDuration_;
+    }
 }
 
 void PlayerHealth::Refill()
@@ -92,7 +101,14 @@ void PlayerHealth::DrawHUD()
     gaugeFill_->SetAnchorPoint({ 0.0f, 0.5f });
     gaugeFill_->SetPosition(gaugeOffset_);
     gaugeFill_->SetSize({ gaugeSize_.x * healthRatio, gaugeSize_.y });
-    gaugeFill_->SetColor(healthRatio < lowHealthRatio_ ? lowHealthColor_ : gaugeColor_);
+    Vector4 fillColor = healthRatio < lowHealthRatio_ ? lowHealthColor_ : gaugeColor_;
+    if (isBurning_)
+    {
+        // 燃えている間は、いつもの色と炎の色の間を行き来する
+        const float blink = std::sin(burnBlinkTime_ * burnBlinkSpeed_) * 0.5f + 0.5f;
+        fillColor = fillColor + (burnBlinkColor_ - fillColor) * blink;
+    }
+    gaugeFill_->SetColor(fillColor);
     gaugeFill_->SetLayerOrder(11);
     gaugeFill_->Draw();
 }

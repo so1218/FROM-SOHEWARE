@@ -126,7 +126,7 @@ void RenderPipeline::Render(Engine* engine, RendererManager* rendererManager, Co
         rendererManager->GetGrassFireDensityMapSrvIndex(), rendererManager->ConsumeGrassFireReset());
     rendererManager->ClearGrassIgnitions();
     rendererManager->SetGrassFireData(grassFirePass_->GetCurrentSRVIndex(), grassFirePass_->GetConstantBufferAddress());
-    rendererManager->SetGrassFireReadback(grassFirePass_->GetReadbackValues(), GrassFirePass::kReadbackResolution);
+    rendererManager->SetGrassFireReadback(grassFirePass_->GetReadbackValues(), grassFirePass_->GetBurntReadbackValues(), GrassFirePass::kReadbackResolution);
 
     // シャドウパス
     shadowMap_->TransitionToDepthWrite(cmdList); // ループの前に1回だけバリア

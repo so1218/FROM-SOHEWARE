@@ -198,6 +198,12 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateCrawl.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerBurn.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\BurnStatus.cpp">
+      <Filter>Game\GameObject\Character</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerConcealment.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -326,6 +332,12 @@
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateCrawl.h">
       <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerBurn.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\BurnStatus.h">
+      <Filter>Game\GameObject\Character</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerConcealment.h">
       <Filter>Game\GameObject\Character\Player</Filter>
