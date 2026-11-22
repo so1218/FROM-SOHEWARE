@@ -62,12 +62,12 @@ public:
 
 		float jumpStaminaCost = 15.0f;
 
-		// しゃがみ
-		float crouchSpeed = 0.1f;
-		float crouchWalkAnimSpeed = 0.7f;
-		float crouchIdleAnimSpeed = 1.0f;
-		float crouchBlendTime = 0.2f;
-		float crouchColliderHeightRate = 0.6f;
+		// 這う
+		float crawlSpeed = 0.1f;
+		float crawlWalkAnimSpeed = 0.7f;
+		float crawlIdleAnimSpeed = 1.0f;
+		float crawlBlendTime = 0.2f;
+		float crawlColliderHeightRate = 0.6f;
 	};
 
 	Config config;
@@ -140,19 +140,21 @@ public:
 	PlayerHealth* GetHealth() const { return health_.get(); }
 	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + GetCurrentColliderOffset(); }
 	FS::Vector3 GetColliderHalfSize() const { return GetCurrentColliderSize() * 0.5f; }
-	// しゃがんでいる間は低くなる
+	// 這っている間は低くなる
 	FS::Vector3 GetCurrentColliderSize() const;
 	FS::Vector3 GetCurrentColliderOffset() const;
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
+	// ダッシュの入力を取り消す。押したままのボタンは、押し直すまでダッシュとして扱わない
+	void CancelSprintInput();
 	bool IsDodgeInputTriggered() const;
 	bool IsAimInputActive() const;
 	bool IsJumpInputTriggered() const;
 	bool IsShootInputTriggered() const;
 	bool IsReloadInputTriggered() const;
-	bool IsCrouchInputTriggered() const;
+	bool IsCrawlInputTriggered() const;
 
-	// しゃがみと隠れる
-	bool IsCrouching() const;
+	// 這うと隠れる
+	bool IsCrawling() const;
 	// 敵から見つかりにくい
 	bool IsHidden() const;
 	void SetGrassField(const GrassField* grassField);
@@ -213,6 +215,7 @@ private:
 	float spawnRotationY_ = 0.0f;                        
 	bool isSprintInputActive_ = false;
 	bool isControllerSprintLatched_ = false;   
+	bool isSprintRepressRequired_ = false;
 
 	int shotCount_ = 0;
 	bool isControllable_ = true;

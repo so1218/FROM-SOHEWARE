@@ -3,7 +3,7 @@
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
 #include "PlayerStateSprint.h"
-#include "PlayerStateCrouch.h"
+#include "PlayerStateCrawl.h"
 #include "PlayerStamina.h"
 
 using namespace FS;
@@ -35,9 +35,9 @@ void PlayerStateNormal::Update(Player* player)
         player->ResetFootstepState();
     }
 
-    if (player->IsCrouchInputTriggered())
+    if (player->IsCrawlInputTriggered())
     {
-        player->GetStateMachine()->ChangeState<PlayerStateCrouch>();
+        player->GetStateMachine()->ChangeState<PlayerStateCrawl>();
         return;
     }
 

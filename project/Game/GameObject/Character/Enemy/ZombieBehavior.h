@@ -53,6 +53,10 @@ struct ZombieConfig
     float walkAnimSpeed = 1.0f;
     float attackAnimSpeed = 1.0f;
     float animBlendTime = 0.25f;
+
+    // 撃たれたときの音
+    float damagedSoundVolume = 0.6f;
+    float sparkSoundVolume = 0.5f;
 };
 
 class ZombieBehavior : public IEnemyBehavior
@@ -60,10 +64,10 @@ class ZombieBehavior : public IEnemyBehavior
 public:
     // アニメーションと見た目のモデルの名前
     static constexpr const char* kMeshName = "humanMesh";
-    static constexpr const char* kEmergeAnimation = "humanIdle";
+    static constexpr const char* kEmergeAnimation = "zombieEmerge";
     static constexpr const char* kIdleAnimation = "humanIdle";
-    static constexpr const char* kWalkAnimation = "humanRun";
-    static constexpr const char* kAttackAnimation = "humanPistolIdle";
+    static constexpr const char* kWalkAnimation = "zombieWalk";
+    static constexpr const char* kAttackAnimation = "zombieAttack";
     static constexpr const char* kDeathAnimation = "zombieDeath";
 
     // materialSource は全員で共有するマテリアルを持つモデル。ImGui で調整した値が毎フレーム反映される
@@ -82,6 +86,7 @@ public:
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
     int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
+    void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
 
     // ゾンビどうしを押し離すのに使う
     bool IsDying() const { return state_ == State::Dying; }
@@ -107,14 +112,14 @@ private:
 
     // 見えているか、銃声が聞こえたら、プレイヤーの位置を覚えて true
     bool TryNoticePlayer(const FS::Vector3& position);
-    // 地面に沿って歩き、進む向きを向く。着いたら true
+    // 地面に沿って歩き、進む向きを向く
     bool MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
     float GetGroundHeight(float x, float z) const;
     void PlayAnimation(const char* name, bool isLoop, float speed);
     float RandomRange(float min, float max);
     void ReleaseEffects();
-    // 本体と同じ大きさで立たせたときの、足元から頭までの高さ。頭の骨が無ければ 0
+    // 本体と同じ大きさで立たせたときの、足元から頭までの高さ
     float MeasureHeadHeight();
 
     const ZombieConfig& config_;
@@ -126,7 +131,7 @@ private:
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
-    // 這い出る前に埋まっている深さ。頭まで隠れるように、モデルの高さから決める
+    // 這い出る前に埋まっている深さ
     float buriedDepth_ = 0.0f;
 
     State state_ = State::Emerge;

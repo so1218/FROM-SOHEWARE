@@ -14,8 +14,8 @@ public:
 
     void SetGrassField(const GrassField* grassField) { grassField_ = grassField; }
 
-    // しゃがんで草に入っているか、置いた霧の中にいれば隠れている
-    void Update(const FS::Vector3& footPosition, const FS::Vector3& bodyCenter, bool isCrouching, bool isControllable);
+    // 這って草に入っているか、置いた霧の中にいれば隠れている
+    void Update(const FS::Vector3& footPosition, const FS::Vector3& bodyCenter, bool isCrawling, bool isControllable);
     // 隠れていないことにして、画面の演出も消す
     void Reset();
 

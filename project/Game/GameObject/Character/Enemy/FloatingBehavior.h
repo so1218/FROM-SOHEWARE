@@ -83,6 +83,7 @@ public:
     std::string GetDamageParticleName() const override { return "floatingDamage"; }
 
     int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
+    void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
     bool OnHealthDepleted(Enemy* owner) override;

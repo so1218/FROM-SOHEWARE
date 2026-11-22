@@ -35,11 +35,11 @@ void PlayerConcealment::DrawProperties(PropertyBinder& binder)
     binder.Draw("HiddenFadeOutTime", "出たときに戻るまで (秒)");
 }
 
-void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyCenter, bool isCrouching, bool isControllable)
+void PlayerConcealment::Update(const Vector3& footPosition, const Vector3& bodyCenter, bool isCrawling, bool isControllable)
 {
     isInGrass_ = grassField_ && grassField_->IsGrassAt(footPosition.x, footPosition.z);
     isInFogVolume_ = IsInsideFogVolume(bodyCenter);
-    isHidden_ = isControllable && ((isCrouching && isInGrass_) || isInFogVolume_);
+    isHidden_ = isControllable && ((isCrawling && isInGrass_) || isInFogVolume_);
 
     // 入った瞬間ははっきり、出たときはゆっくり戻す
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();

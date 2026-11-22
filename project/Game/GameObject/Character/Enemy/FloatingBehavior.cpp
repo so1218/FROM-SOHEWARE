@@ -515,6 +515,11 @@ void FloatingBehavior::OnDeath(Enemy* owner)
     }
 }
 
+void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
+{
+    AudioPlayer::GetInstance().Play("floatingEnemyDamaged", 0.5f);
+}
+
 void FloatingBehavior::OnDespawn(Enemy* owner)
 {
     ReleaseEffects();

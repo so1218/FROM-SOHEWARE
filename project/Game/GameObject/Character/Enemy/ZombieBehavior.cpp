@@ -8,6 +8,7 @@
 #include "AnimationManager.h"
 #include "MathUtils.h"
 #include "Terrain.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -418,6 +419,20 @@ int ZombieBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCo
     return damage;
 }
 
+void ZombieBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
+{
+    // 倒れている最中は弾が効かないので、音も鳴らさない
+    if (damage <= 0)
+    {
+        return;
+    }
+
+    // 撃った手応えとして、距離に関係なく同じ大きさで鳴らす
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    audioPlayer.Play("zombieDamaged", config_.damagedSoundVolume);
+    audioPlayer.Play("zombieSpark", config_.sparkSoundVolume);
+}
+
 void ZombieBehavior::Draw(Enemy* owner)
 {
     animationModel_->Draw();
@@ -466,6 +481,9 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("WalkAnimSpeed", &walkAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("AttackAnimSpeed", &attackAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("AnimBlendTime", &animBlendTime, 0.25f, 0.01f, 0.0f, 2.0f);
+
+    binder.Bind("DamagedSoundVolume", &damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("SparkSoundVolume", &sparkSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
 }
 
 void ZombieConfig::Draw(PropertyBinder& binder)
@@ -527,6 +545,13 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("WalkAnimSpeed", "歩く速さ");
         binder.Draw("AttackAnimSpeed", "殴る速さ");
         binder.Draw("AnimBlendTime", "切り替えの補間時間 (秒)");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("撃たれたときの音"))
+    {
+        binder.Draw("DamagedSoundVolume", "当たる音の大きさ");
+        binder.Draw("SparkSoundVolume", "ショートする音の大きさ");
         ImGui::TreePop();
     }
 }

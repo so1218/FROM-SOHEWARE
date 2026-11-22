@@ -72,8 +72,6 @@ void PlayScene::OnInitialize()
 {
     followCamera_->Initialize();
     titleCamera_->Initialize();
-    binder_->Bind("TimeLimit", &timeLimit_, 300.0f, 1.0f, 1.0f, 3600.0f);
-
     EnterTitle();
 
     // タイトルでステージを切り替えて作り直したときは、画面のフェードで十分なので、タイトルの黒い画面を省く
@@ -111,11 +109,6 @@ void PlayScene::OnUpdate()
         break;
 
     case Phase::Playing:
-        remainingTime_ -= TimeManager::GetInstance()->GetDeltaTime();
-        if (remainingTime_ <= 0.0f)
-        {
-            ReturnToTitle();
-        }
         break;
     }
 }
@@ -196,7 +189,6 @@ void PlayScene::ApplyPhaseSettings()
 void PlayScene::StartPlaying()
 {
     tutorial_->Begin();
-    remainingTime_ = timeLimit_;
     ChangePhase(Phase::Playing);
 }
 
@@ -204,7 +196,6 @@ void PlayScene::EnterTitle()
 {
     titleCamera_->CancelTransition();
     titleMenu_->Restart();
-    remainingTime_ = timeLimit_;
     ChangePhase(Phase::Title);
 }
 
@@ -227,10 +218,6 @@ void PlayScene::OnDebugGui()
     ImGui::Begin("タイトル");
     ImGui::SeparatorText("カメラ");
     titleCamera_->DrawProperties();
-
-    ImGui::SeparatorText("ゲーム");
-    binder_->Draw("TimeLimit", "制限時間 (秒)");
-    ImGui::Text("残り: %.1f 秒", remainingTime_);
 
     ImGui::SeparatorText("確認用");
     if (phase_ != Phase::Playing && ImGui::Button("タイトルを飛ばす"))

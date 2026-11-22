@@ -336,8 +336,8 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
         if (hitInfo.hitObject && hitInfo.hitObject->CompareTag(ObjectTag::Enemy))
         {
             auto enemy = static_cast<Enemy*>(hitInfo.hitObject);
+            // 当たった音は、敵の種類ごとに Behavior が鳴らす
             enemy->TakeDamage(finalDamage, hitInfo.point, hitInfo.normal, hitInfo.hitCollider);
-            AudioPlayer::GetInstance().Play("floatingEnemyDamaged", 0.5f);
         }
     }
 
@@ -349,6 +349,14 @@ bool PlayerWeapon::Fire(Camera* camera, float focusRatio, float maxDamageMultipl
 
         if (bulletDir.LengthSq() > 0.001f)
         {
+            // 着弾点に届いたところで消えるよう寿命を決める
+            const float tracerDistance = bulletDir.Length();
+            const float tracerSpeed = engine_->GetParticleSystem()->GetConfig("bulletTracer").velocity.speed;
+            if (tracerSpeed > 0.0f)
+            {
+                bulletTracerEmitterPtr_->lifetime_ = tracerDistance / tracerSpeed;
+            }
+
             bulletDir = bulletDir.Normalize();
 
             // 銃口からターゲット方向を向く Quaternion を計算

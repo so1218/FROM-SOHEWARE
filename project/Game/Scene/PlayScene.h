@@ -53,7 +53,4 @@ private:
 
     bool isPaused_ = false;
     float timeScaleBeforePause_ = 1.0f;
-
-    float timeLimit_ = 300.0f;     
-    float remainingTime_ = 300.0f;
 };

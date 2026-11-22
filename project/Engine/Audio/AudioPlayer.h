@@ -55,7 +55,7 @@ public:
     // 全停止
     void StopAll();
 
-    // BGM を繰り返し鳴らす。同じ名前が鳴っていれば何もしない
+    // BGM を繰り返し鳴らす
     int PlayBgm(const std::string& name, float volume = 1.0f, std::source_location location = std::source_location::current());
     void StopBgm(const std::string& name);
 
@@ -77,11 +77,14 @@ public:
     // 動く音源のために座標を後から更新する関数
     void SetEmitterPosition(int handleID, const Vector3& position);
 
+    // 鳴っている音の大きさを変える
+    void SetVolume(int handleID, float volume);
+
 private:
     AudioPlayer() {}
     ~AudioPlayer() { StopAll(); }
 
-    // ボイスを作ってバッファを積み、鳴らさずに登録する。失敗したら -1
+    // ボイスを作ってバッファを積み、鳴らさずに登録する
     int CreateInstance(const std::string& name, bool isLoop, float volume, const std::source_location& location);
     // 鳴らし始める。失敗したら登録ごと消す
     int StartInstance(int handleID);

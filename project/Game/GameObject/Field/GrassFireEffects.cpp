@@ -5,6 +5,7 @@
 #include "LightManager.h"
 #include "TimeManager.h"
 #include "MathUtils.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -12,6 +13,11 @@ GrassFireEffects::GrassFireEffects(Engine* engine, const Terrain* terrain)
     : GameObject(), engine_(engine), terrain_(terrain)
 {
     binder_ = std::make_unique<PropertyBinder>(engine_, "GrassFireEffects");
+}
+
+GrassFireEffects::~GrassFireEffects()
+{
+    StopFireSounds();
 }
 
 void GrassFireEffects::Initialize()
@@ -37,6 +43,12 @@ void GrassFireEffects::Initialize()
     binder_->Bind("SmokeDuration", &smokeDuration_, 12.0f, 0.5f, 0.0f, 120.0f);
     binder_->Bind("SmokeSpawnHeight", &smokeSpawnHeight_, 1.0f, 0.1f, 0.0f, 20.0f);
     binder_->Bind("MaxSmokeCount", &maxSmokeCount_, 400, 10.0f, 0, 3000);
+
+    binder_->Bind("MaxFireSoundCount", &maxFireSoundCount_, 3, 1.0f, 0, 8);
+    binder_->Bind("FireSoundVolume", &fireSoundVolume_, 0.8f, 0.01f, 0.0f, 2.0f);
+    binder_->Bind("FireSoundMaxDistance", &fireSoundMaxDistance_, 50.0f, 1.0f, 1.0f, 500.0f);
+    binder_->Bind("FireSoundFadeTime", &fireSoundFadeTime_, 1.0f, 0.05f, 0.0f, 10.0f);
+    binder_->Bind("FireSoundHeight", &fireSoundHeight_, 1.0f, 0.05f, 0.0f, 10.0f);
 }
 
 void GrassFireEffects::Update()
@@ -52,6 +64,108 @@ void GrassFireEffects::Update()
     SubmitFireLights();
     UpdateEmbers();
     UpdateFlamesAndSmoke(readback, resolution, deltaTime);
+    UpdateFireSounds(deltaTime);
+}
+
+void GrassFireEffects::UpdateFireSounds(float deltaTime)
+{
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    const size_t soundCount = static_cast<size_t>(std::max(maxFireSoundCount_, 0));
+    if (fireSounds_.size() < soundCount)
+    {
+        fireSounds_.resize(soundCount);
+    }
+
+    // 鳴っている音は、近くの塊についていく
+    std::vector<bool> isPeakUsed(peaks_.size(), false);
+    const float followDistanceSq = (peakSeparation_ * 1.5f) * (peakSeparation_ * 1.5f);
+    const Vector3 heightOffset = { 0.0f, fireSoundHeight_, 0.0f };
+    for (size_t soundIndex = 0; soundIndex < fireSounds_.size(); ++soundIndex)
+    {
+        FireSound& sound = fireSounds_[soundIndex];
+        sound.targetVolume = 0.0f;
+        if (sound.handle < 0 || soundIndex >= soundCount)
+        {
+            continue;
+        }
+
+        int nearestPeak = -1;
+        float nearestDistanceSq = followDistanceSq;
+        for (size_t peakIndex = 0; peakIndex < peaks_.size(); ++peakIndex)
+        {
+            if (isPeakUsed[peakIndex]) continue;
+            const float offsetX = peaks_[peakIndex].position.x - sound.targetPosition.x;
+            const float offsetZ = peaks_[peakIndex].position.z - sound.targetPosition.z;
+            const float distanceSq = offsetX * offsetX + offsetZ * offsetZ;
+            if (distanceSq < nearestDistanceSq)
+            {
+                nearestDistanceSq = distanceSq;
+                nearestPeak = static_cast<int>(peakIndex);
+            }
+        }
+        if (nearestPeak >= 0)
+        {
+            isPeakUsed[nearestPeak] = true;
+            sound.targetPosition = peaks_[nearestPeak].position + heightOffset;
+            sound.targetVolume = fireSoundVolume_ * peaks_[nearestPeak].intensity;
+        }
+    }
+
+    // 音のついていない塊に、空いている枠から新しく鳴らす
+    for (size_t peakIndex = 0; peakIndex < peaks_.size(); ++peakIndex)
+    {
+        if (isPeakUsed[peakIndex]) continue;
+
+        const auto freeSound = std::find_if(fireSounds_.begin(), fireSounds_.begin() + soundCount,
+            [](const FireSound& sound) { return sound.handle < 0; });
+        if (freeSound == fireSounds_.begin() + soundCount)
+        {
+            break;
+        }
+
+        // 小さな音から始めて、ゆっくり大きくする
+        const Vector3 position = peaks_[peakIndex].position + heightOffset;
+        freeSound->handle = audioPlayer.Play3D("fireLoop", position, { .volume = 0.0f, .maxDistance = fireSoundMaxDistance_, .isLoop = true });
+        freeSound->position = position;
+        freeSound->targetPosition = position;
+        freeSound->volume = 0.0f;
+        freeSound->targetVolume = fireSoundVolume_ * peaks_[peakIndex].intensity;
+        isPeakUsed[peakIndex] = true;
+    }
+
+    // 大きさと場所を滑らかに変え、消えきった音は止める
+    const float volumeStep = (fireSoundFadeTime_ > 0.0f) ? deltaTime / fireSoundFadeTime_ * std::max(fireSoundVolume_, 0.01f) : 10.0f;
+    const float followRatio = std::min(deltaTime * 2.0f, 1.0f);
+    for (FireSound& sound : fireSounds_)
+    {
+        if (sound.handle < 0) continue;
+
+        sound.volume = (sound.volume < sound.targetVolume)
+            ? std::min(sound.volume + volumeStep, sound.targetVolume)
+            : std::max(sound.volume - volumeStep, sound.targetVolume);
+        if (sound.volume <= 0.0f && sound.targetVolume <= 0.0f)
+        {
+            audioPlayer.Stop(sound.handle);
+            sound.handle = -1;
+            continue;
+        }
+
+        sound.position = sound.position + (sound.targetPosition - sound.position) * followRatio;
+        audioPlayer.SetEmitterPosition(sound.handle, sound.position);
+        audioPlayer.SetVolume(sound.handle, sound.volume);
+    }
+}
+
+void GrassFireEffects::StopFireSounds()
+{
+    for (FireSound& sound : fireSounds_)
+    {
+        if (sound.handle >= 0)
+        {
+            AudioPlayer::GetInstance().Stop(sound.handle);
+            sound.handle = -1;
+        }
+    }
 }
 
 void GrassFireEffects::FindFirePeaks(const std::vector<float>& readback, uint32_t resolution)
@@ -303,6 +417,13 @@ void GrassFireEffects::DebugGui()
     binder_->Draw("SmokeDuration", "燃え尽きてから出し続ける秒数");
     binder_->Draw("SmokeSpawnHeight", "出す高さ (m)");
     binder_->Draw("MaxSmokeCount", "同時に出す数の上限");
+
+    ImGui::SeparatorText("燃える音");
+    binder_->Draw("MaxFireSoundCount", "同時に鳴らす数");
+    binder_->Draw("FireSoundVolume", "大きさ");
+    binder_->Draw("FireSoundMaxDistance", "聞こえる距離 (m)");
+    binder_->Draw("FireSoundFadeTime", "鳴り始めと消えるときの秒数");
+    binder_->Draw("FireSoundHeight", "地面からの高さ (m)");
 
     ImGui::End();
 }

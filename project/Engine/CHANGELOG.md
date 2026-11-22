@@ -11,6 +11,7 @@
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
 - 歩ける範囲の外で濃くなる霧を追加。`PostEffectManager::SetFogBoundary` で範囲を毎フレーム渡すと、境界の少し内側から霧が濃くなり、低い所ほど濃く溜まる。Volumetric Fog が届く所は光や影を受ける霧として、その先は合成のときに式で求めて、同じ光の当て方でつなげる。設定はポストエフェクトの Volumetric Fog の「歩ける範囲の外の霧」。渡さないシーンや Volumetric Fog が無効のときは何も変わらない
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
+- `AudioPlayer::SetVolume` を追加。鳴っている音の大きさを後から変える。3D の音では、距離による減衰がこれに掛かる。ループの音をゆっくり大きくしたり消したりするのに使う
 - シーンを作り直せるようにした。`SceneManager::RegisterScene` にシーンを作る関数を渡して登録すると、`RequestSceneReload` でフェードアウトしてから今のシーンを捨てて作り直し、フェードインで見せる。古いシーンは、そのフレームの描画が終わった次のフレームの始めに捨てる。ステージを読み込み直すときに使う
 - GlobalVariables が `Assets/Data/GlobalVariables/` の中のフォルダも読むようにした。`Stages/Stage1/Ground.json` は `"Stages/Stage1/Ground"` というグループになり、保存も同じ場所へ戻る
 - ステージごとに設定を分けられるよう、保存するグループの名前を渡せるようにした。`BaseScene` (カメラ・ポストエフェクト・ライト)、`Environment` (時間・天候・霧と空)、`Skydome`。渡さなければ今までと同じ名前を使う
@@ -23,6 +24,7 @@
 - 草は燃えるにつれて枯れ、先端から炭になって縮む。地面は焦げて黒くなる
 
 ### 変更
+- ステレオの音を `Play3D` で鳴らすと落ちていたのを直した。X3DAudio にチャンネルごとの向きを渡していなかったため。2ch 以上の音は 1 点から鳴る音として扱う。振り分けの表も、出力が 5.1ch などのときに足りるよう大きくした
 - 草と地形のルートシグネチャに、燃え具合の地図 (草: t13 と b9、地形: t11 と b11) を足した。`GrassRenderer::Draw` と `TerrainRenderer::Draw` は地図と定数を受け取る
 - 木を描ける数の上限を 2000 から 8000 に増やした。木 1 本は幹と葉で 2 つ数える
 

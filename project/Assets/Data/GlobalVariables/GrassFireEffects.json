@@ -1,5 +1,9 @@
 {
     "GrassFireEffects": {
+        "FireSoundFadeTime": 1.0,
+        "FireSoundHeight": 1.0,
+        "FireSoundMaxDistance": 150.0,
+        "FireSoundVolume": 0.8999999761581421,
         "FlameLifetimeMax": 1.100000023841858,
         "FlameLifetimeMin": 0.6000000238418579,
         "FlameRatePerCell": 6.0,
@@ -17,6 +21,7 @@
         "LightRadius": 14.0,
         "LightVolumetricIntensity": 2.0,
         "MaxEmberEmitterCount": 6,
+        "MaxFireSoundCount": 3,
         "MaxFlameCount": 1200,
         "MaxLightCount": 6,
         "MaxSmokeCount": 400,

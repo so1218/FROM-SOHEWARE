@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "PlayerStateCrouch.h"
+#include "PlayerStateCrawl.h"
 #include "PlayerStateNormal.h"
 #include "PlayerStateJump.h"
 #include "PlayerStateAiming.h"
@@ -12,14 +12,20 @@ using namespace FS;
 namespace
 {
 
-const char* SelectAnimation(const char* crouchName, const char* fallbackName)
+const char* SelectAnimation(const char* crawlName, const char* fallbackName)
 {
-    return AnimationManager::GetInstance()->Get(crouchName) ? crouchName : fallbackName;
+    return AnimationManager::GetInstance()->Get(crawlName) ? crawlName : fallbackName;
 }
 
 }
 
-void PlayerStateCrouch::Update(Player* player)
+void PlayerStateCrawl::Enter(Player* player)
+{
+    // ダッシュから這うに移ったら、ダッシュは取り消す
+    player->CancelSprintInput();
+}
+
+void PlayerStateCrawl::Update(Player* player)
 {
     player->ApplyGravity();
     player->SnapToGround();
@@ -34,17 +40,17 @@ void PlayerStateCrouch::Update(Player* player)
     const Vector3& moveDirection = player->GetMoveDirection();
     if (player->IsMoving())
     {
-        player->PlayAnimation(SelectAnimation("humanCrouchWalk", "humanRun"), true, player->config.crouchWalkAnimSpeed, player->config.crouchBlendTime);
+        player->PlayAnimation(SelectAnimation("humanCrawl", "humanRun"), true, player->config.crawlWalkAnimSpeed, player->config.crawlBlendTime);
         player->UpdateRotation(moveDirection);
-        player->ApplyHorizontalMovement(moveDirection, player->config.crouchSpeed);
+        player->ApplyHorizontalMovement(moveDirection, player->config.crawlSpeed);
     }
     else
     {
-        player->PlayAnimation(SelectAnimation("humanCrouchIdle", "humanIdle"), true, player->config.crouchIdleAnimSpeed, player->config.crouchBlendTime);
+        player->PlayAnimation(SelectAnimation("humanCrawlIdle", "humanIdle"), true, player->config.crawlIdleAnimSpeed, player->config.crawlBlendTime);
     }
     player->ResetFootstepState();
 
-    if (player->IsCrouchInputTriggered())
+    if (player->IsCrawlInputTriggered())
     {
         player->GetStateMachine()->ChangeState<PlayerStateNormal>();
         return;

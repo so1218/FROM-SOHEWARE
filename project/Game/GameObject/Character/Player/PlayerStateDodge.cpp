@@ -5,6 +5,7 @@
 #include "PlayerStateJump.h"
 #include "PlayerStamina.h"
 #include "TimeManager.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -20,6 +21,8 @@ void PlayerStateDodge::Enter(Player* player)
 
     // 回避用のアニメーション
     player->PlayAnimation("humanRoll", true, player->config.dodgeAnimSpeed, 0.05f);
+
+    AudioPlayer::GetInstance().Play("playerDodge", 0.3f);
 }
 
 void PlayerStateDodge::Update(Player* player)

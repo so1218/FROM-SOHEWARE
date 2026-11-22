@@ -110,8 +110,7 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
 
     coin.elapsedTime += deltaTime;
 
-    // 近くにいれば吸い寄せる。出た直後は散らばる様子を見せるため待つ
-    // 体の大きさによらないよう、距離は当たり判定の箱の表面から測る
+    // 近くにいれば吸い寄せる
     const bool canAttract = player_ && player_->IsControllable() && coin.elapsedTime >= config_.magnetDelay;
     if (coin.state != State::Attracted && canAttract)
     {
@@ -177,7 +176,7 @@ void CoinManager::UpdateFlying(Coin& coin, float deltaTime)
         return;
     }
 
-    // 少し浮かせて置く。円柱のモデルは高さ 1 なので、厚みの半分
+    // 少し浮かせて置く
     const float restHeight = groundHeight + config_.scale.y * 0.5f;
     if (coin.position.y > restHeight)
     {
@@ -213,7 +212,7 @@ void CoinManager::Collect(Coin& coin)
     AudioPlayer::GetInstance().Play("coinCollect", 0.3f);
 }
 
-// 1 回分ずつ、残っている枚数の中心に点光源を置く。点光源の数には上限があるので、近いものだけ照らす
+// 1 回分ずつ、残っている枚数の中心に点光源を置く
 void CoinManager::SubmitBurstLights(const Vector3& playerCenter)
 {
     struct BurstLight

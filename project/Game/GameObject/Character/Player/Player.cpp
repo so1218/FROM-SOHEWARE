@@ -18,7 +18,7 @@
 #include "PlayerAmmoDisplay.h"
 #include "PlayerMoneyDisplay.h"
 #include "PlayerStateDodge.h"
-#include "PlayerStateCrouch.h"
+#include "PlayerStateCrawl.h"
 #include "PlayerConcealment.h"
 #include "Enemy.h"
 #include "GlobalVariables.h"
@@ -91,11 +91,11 @@ void Player::Initialize()
 	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
 	binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
-	binder_->Bind("CrouchSpeed", &config.crouchSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
-	binder_->Bind("CrouchWalkAnimSpeed", &config.crouchWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
-	binder_->Bind("CrouchIdleAnimSpeed", &config.crouchIdleAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
-	binder_->Bind("CrouchBlendTime", &config.crouchBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
-	binder_->Bind("CrouchColliderHeightRate", &config.crouchColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
+	binder_->Bind("CrouchSpeed", &config.crawlSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
+	binder_->Bind("CrouchWalkAnimSpeed", &config.crawlWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("CrouchIdleAnimSpeed", &config.crawlIdleAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
+	binder_->Bind("CrouchBlendTime", &config.crawlBlendTime, 0.2f, 0.01f, 0.0f, 2.0f);
+	binder_->Bind("CrouchColliderHeightRate", &config.crawlColliderHeightRate, 0.6f, 0.01f, 0.1f, 1.0f);
 	concealment_->BindProperties(*binder_);
 	stamina_->BindProperties(*binder_);
 	health_->BindProperties(*binder_);
@@ -150,7 +150,7 @@ void Player::Update()
 		pos.z = std::clamp(pos.z, -511.0f, 511.0f);
 	}
 
-	concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrouching(), isControllable_);
+	concealment_->Update(GetTransform().translation_, GetColliderCenter(), IsCrawling(), isControllable_);
 
 	collider_->SetCenterOffset(GetCurrentColliderOffset());
 	collider_->SetSize(GetCurrentColliderSize());
@@ -476,17 +476,32 @@ void Player::ResetFootstepState()
 
 void Player::UpdateSprintInput()
 {
-	// パッドはスティックを倒したまま L3 を押し続けにくいので、押したらスティックを離すまで続ける
-	if (GameInput::IsTriggered(GameAction::Sprint) && GameInput::IsUsingController())
+	const bool isSprintTriggered = GameInput::IsTriggered(GameAction::Sprint);
+
+	if (isSprintTriggered && GameInput::IsUsingController())
 	{
-		isControllerSprintLatched_ = true;
+		isControllerSprintLatched_ = !isControllerSprintLatched_;
 	}
 	if (!IsMoving())
 	{
 		isControllerSprintLatched_ = false;
 	}
 
-	isSprintInputActive_ = isControllable_ && (GameInput::IsPressed(GameAction::Sprint) || isControllerSprintLatched_);
+	// 取り消したあとは、ボタンを押し直すまでダッシュしない
+	if (isSprintTriggered || !GameInput::IsPressed(GameAction::Sprint))
+	{
+		isSprintRepressRequired_ = false;
+	}
+
+	isSprintInputActive_ = isControllable_ && !isSprintRepressRequired_
+		&& (GameInput::IsPressed(GameAction::Sprint) || isControllerSprintLatched_);
+}
+
+void Player::CancelSprintInput()
+{
+	isControllerSprintLatched_ = false;
+	isSprintRepressRequired_ = true;
+	isSprintInputActive_ = false;
 }
 
 bool Player::TryStartDodge()
@@ -505,6 +520,8 @@ bool Player::TryStartJump()
 
 	velocityY_ = config.jumpInitialVelocity;
 	stateMachine_->ChangeState<PlayerStateJump>();
+	AudioPlayer::GetInstance().Play("playerLand", 0.8f);
+
 	return true;
 }
 
@@ -528,14 +545,14 @@ bool Player::IsReloadInputTriggered() const
 	return isControllable_ && GameInput::IsTriggered(GameAction::Reload);
 }
 
-bool Player::IsCrouchInputTriggered() const
+bool Player::IsCrawlInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Crouch);
+	return isControllable_ && GameInput::IsTriggered(GameAction::Crawl);
 }
 
-bool Player::IsCrouching() const
+bool Player::IsCrawling() const
 {
-	return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrouch>();
+	return stateMachine_ && stateMachine_->IsCurrentState<PlayerStateCrawl>();
 }
 
 bool Player::IsHidden() const
@@ -550,21 +567,21 @@ void Player::SetGrassField(const GrassField* grassField)
 
 Vector3 Player::GetCurrentColliderSize() const
 {
-	if (!IsCrouching())
+	if (!IsCrawling())
 	{
 		return colliderSize_;
 	}
-	return { colliderSize_.x, colliderSize_.y * config.crouchColliderHeightRate, colliderSize_.z };
+	return { colliderSize_.x, colliderSize_.y * config.crawlColliderHeightRate, colliderSize_.z };
 }
 
 Vector3 Player::GetCurrentColliderOffset() const
 {
 	// 足元の高さは変えずに低くする
-	if (!IsCrouching())
+	if (!IsCrawling())
 	{
 		return colliderOffset_;
 	}
-	return { colliderOffset_.x, colliderOffset_.y * config.crouchColliderHeightRate, colliderOffset_.z };
+	return { colliderOffset_.x, colliderOffset_.y * config.crawlColliderHeightRate, colliderOffset_.z };
 }
 
 bool Player::IsShootInputTriggered() const
@@ -632,7 +649,7 @@ void Player::DebugGui()
 		binder_->Draw("SprintStaminaPerSecond", "1 秒あたりのスタミナ消費");
 	}
 
-	if (ImGui::CollapsingHeader("しゃがみ・隠れる"))
+	if (ImGui::CollapsingHeader("這う・隠れる"))
 	{
 		binder_->Draw("CrouchSpeed", "移動の速さ");
 		binder_->Draw("CrouchWalkAnimSpeed", "歩きアニメ速度");

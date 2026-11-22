@@ -9,6 +9,7 @@ class GrassFireEffects : public FS::GameObject
 {
 public:
     GrassFireEffects(FS::Engine* engine, const FS::Terrain* terrain);
+    ~GrassFireEffects() override;
 
     void Initialize() override;
     void Update() override;
@@ -30,6 +31,9 @@ private:
     // マスの中のランダムな地面の位置
     FS::Vector3 CalculateRandomPositionInCell(uint32_t cellIndex, uint32_t resolution) const;
     void StopEmbers();
+    // 燃えている塊の近くで、燃える音
+    void UpdateFireSounds(float deltaTime);
+    void StopFireSounds();
 
     FS::Engine* engine_ = nullptr;
     const FS::Terrain* terrain_ = nullptr;
@@ -55,6 +59,17 @@ private:
     std::vector<ActiveCell> activeCells_;
     int estimatedFlameCount_ = 0;
     int estimatedSmokeCount_ = 0;
+
+    // 燃える音
+    struct FireSound
+    {
+        int handle = -1;
+        FS::Vector3 position;
+        FS::Vector3 targetPosition;
+        float volume = 0.0f;
+        float targetVolume = 0.0f;
+    };
+    std::vector<FireSound> fireSounds_;
 
     // 燃えている塊の見つけ方
     float peakThreshold_ = 0.12f;     
@@ -82,4 +97,11 @@ private:
     float smokeDuration_ = 12.0f;
     float smokeSpawnHeight_ = 1.0f;    
     int maxSmokeCount_ = 400;
+
+    // 燃える音
+    int maxFireSoundCount_ = 3;      
+    float fireSoundVolume_ = 0.8f;   
+    float fireSoundMaxDistance_ = 50.0f;
+    float fireSoundFadeTime_ = 1.0f;   
+    float fireSoundHeight_ = 1.0f;     
 };
