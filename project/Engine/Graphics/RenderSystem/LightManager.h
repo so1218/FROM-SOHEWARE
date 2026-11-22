@@ -86,6 +86,8 @@ public:
     PointLight* GetPointLightData() { return pointLightData_; }
     SpotLight* GetSpotLightData() { return spotLightData_; }
     const ShadowData* GetShadowData() const { return shadowData_; }
+    // 影を落とす距離
+    float GetShadowDistance() const { return shadowDistance_; }
 
     ID3D12Resource* GetDirectionalLightResource() const { return directionalLightResource_.Get(); }
     ID3D12Resource* GetPointLightResource() const { return pointLightResource_.Get(); }
@@ -113,6 +115,11 @@ private:
     Vector3 directionalLightPositions_[MAX_DIRECTIONAL_LIGHTS];
 
     std::string prefix_;
+
+    // 影の地図をカメラの描画距離いっぱいに広げると 1 ピクセルが大きくなり、葉の影の形が出ない
+    // そのため影はこの距離までにして、手前のカスケードほど細かく割り振る
+    float shadowDistance_ = 120.0f;
+    float cascadeSplitLambda_ = 0.75f;   // 0 で等間隔、1 で手前ほど細かく (対数) 分ける
 };
 
 }

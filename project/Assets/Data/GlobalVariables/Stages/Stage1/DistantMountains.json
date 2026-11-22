@@ -4,7 +4,7 @@
         "Enable": true,
         "Extent": 1000.0,
         "FlatWidth": 40.0,
-        "MountainHeight": 150.0,
+        "MountainHeight": 236.0,
         "NoiseScale": 0.004000000189989805,
         "RidgeSharpness": 2.0,
         "RiseLength": 300.0,

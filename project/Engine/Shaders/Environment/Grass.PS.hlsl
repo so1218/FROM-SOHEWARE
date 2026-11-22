@@ -1,6 +1,7 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Common/ShadowUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -68,8 +69,9 @@ PixelShaderOutput main(GrassPSInput input)
     // 上向きに寄せて、草原全体が地面と同じように光を受けるようにする
     float3 normal = normalize(lerp(bladeNormal, float3(0.0f, 1.0f, 0.0f), gMaterial.grassNormalBlend));
 
-    // 影は面の向きではなく位置だけで決める。向きで決めると、日の当たらない側の草に木の影が乗らなくなる
+    // 影は面の向きではなく位置だけで決める
     float shadow = CalculateGrassShadow(input.worldPosition, lightDirection, distanceToCamera);
+    shadow = lerp(shadow, 1.0f, CalculateShadowDistanceFade(distanceToCamera, gShadowData.cascadeSplits));
 
     float normalDotLight = saturate((dot(normal, lightDirection) + kWrapLighting) / (1.0f + kWrapLighting));
     float3 diffuse = baseColor * lightColor * normalDotLight;
@@ -111,7 +113,7 @@ float CalculateGrassShadow(float3 worldPosition, float3 lightDirection, float di
         }
     }
 
-    // 自分の影が乗らないように少し上へずらす。草は薄いので面の法線は使わない
+    // 自分の影が乗らないように少し上へずらす
     float biasScale = saturate(1.0f - lightDirection.y);
     float3 biasedPosition = worldPosition + float3(0.0f, gMaterial.shadowNormalBias * biasScale, 0.0f);
 

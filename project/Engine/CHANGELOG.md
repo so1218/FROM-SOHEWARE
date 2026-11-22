@@ -9,8 +9,8 @@
 - 草を生やす密度のしきい値 `GrassGenerationData::densityThreshold` を追加。密度マップがこの値以上の所に草を生やす。今までは 0.5 で固定だった
 - 歩ける地形の外に見せる遠景の地形を描けるようにした。`Terrain::LoadFromHeightRatios` で CPU で作った高さから地形を作り、`SetDrawAsVista(true)` で遠景として描く。遠景は影を落とさず、草や植物の生成にも使わない。`ShareMaterialFrom` で歩ける地形と質感・模様の位置をそろえ、`SetHiddenArea` で歩ける地形の下にあるチャンクを省く
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
-- 歩ける範囲の外で濃くなる霧を追加。`PostEffectManager::SetFogBoundary` で範囲を毎フレーム渡すと、境界の少し内側から霧が濃くなり、低い所ほど濃く溜まる。Volumetric Fog が届く所は光や影を受ける霧として、その先は合成のときに式で求めて、同じ光の当て方でつなげる。設定はポストエフェクトの Volumetric Fog の「歩ける範囲の外の霧」。渡さないシーンや Volumetric Fog が無効のときは何も変わらない
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
+- 影を落とす距離を、カメラの描画距離と分けた (`LightManager` の「影の範囲」、初期値 120m)。カスケードはこの距離までを、手前ほど細かく割り振る (初期値 0.75)。今まではカメラの描画距離 (2000m) いっぱいに影の地図を広げていたため、手前でも 1 ピクセルが 36cm ほどになり、葉の影の形が出ていなかった。影は距離の手前 1 割でだんだん消える
 - `AudioPlayer::SetVolume` を追加。鳴っている音の大きさを後から変える。3D の音では、距離による減衰がこれに掛かる。ループの音をゆっくり大きくしたり消したりするのに使う
 - シーンを作り直せるようにした。`SceneManager::RegisterScene` にシーンを作る関数を渡して登録すると、`RequestSceneReload` でフェードアウトしてから今のシーンを捨てて作り直し、フェードインで見せる。古いシーンは、そのフレームの描画が終わった次のフレームの始めに捨てる。ステージを読み込み直すときに使う
 - GlobalVariables が `Assets/Data/GlobalVariables/` の中のフォルダも読むようにした。`Stages/Stage1/Ground.json` は `"Stages/Stage1/Ground"` というグループになり、保存も同じ場所へ戻る

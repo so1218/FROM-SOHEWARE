@@ -28,17 +28,17 @@
         ],
         "Day_LightIntensity": 1.0,
         "Day_V_FogAmbient": [
-            0.6366459727287292,
-            0.6366459727287292,
-            0.6366459727287292
+            0.5662975907325745,
+            1.0,
+            0.546583890914917
         ],
-        "Day_V_FogErosion": 0.3700000047683716,
+        "Day_V_FogErosion": 0.05000000074505806,
         "Day_V_FogExtinct": 0.004999999888241291,
-        "Day_V_FogHDensity": 0.05000000074505806,
-        "Day_V_FogHFalloff": 0.09000000357627869,
-        "Day_V_FogNoiseIntens": 1.899999976158142,
-        "Day_V_FogNoiseScale": 0.03999999910593033,
-        "Day_V_FogSunScattering": 13.0,
+        "Day_V_FogHDensity": 0.029999999329447746,
+        "Day_V_FogHFalloff": 0.05999999865889549,
+        "Day_V_FogNoiseIntens": 1.850000023841858,
+        "Day_V_FogNoiseScale": 0.0560000017285347,
+        "Day_V_FogSunScattering": 13.600000381469727,
         "Day_V_FogWindSpeedMultiplier": 0.20000000298023224,
         "Day_ZenithColor": [
             0.0,
@@ -147,8 +147,8 @@
         "Rain_WindTurbul": 0.5,
         "StartWeather": 0,
         "Sunny_AtmoDim": 1.0,
-        "Sunny_CloudMin": 0.41999998688697815,
-        "Sunny_CloudShadow": 0.5600000023841858,
+        "Sunny_CloudMin": 0.5,
+        "Sunny_CloudShadow": 1.0,
         "Sunny_LightDim": 1.0,
         "Sunny_RainIntens": 0.0,
         "Sunny_SkyBlendWeight": 0.0,
@@ -291,13 +291,13 @@
         "Thunder_V_Emissive": 13.0,
         "Thunder_V_EnvIntens": 0.009999999776482582,
         "Thunder_V_FogAmbient": [
-            0.4041510820388794,
-            0.5863386392593384,
-            0.6708074808120728
+            0.31403109431266785,
+            0.5662785768508911,
+            0.6832298040390015
         ],
         "Thunder_V_FogErosion": 0.5799999833106995,
         "Thunder_V_FogExtinct": 0.014000000432133675,
-        "Thunder_V_FogHDensity": 0.800000011920929,
+        "Thunder_V_FogHDensity": 0.44999998807907104,
         "Thunder_V_FogHFalloff": 0.30000001192092896,
         "Thunder_V_FogNoiseIntens": 1.0,
         "Thunder_V_FogNoiseScale": 0.029999999329447746,
@@ -320,7 +320,7 @@
         ],
         "Thunder_WindSpeed": 1.2000000476837158,
         "Thunder_WindTurbul": 0.20000000298023224,
-        "TimeOfDay": 14.899999618530273,
+        "TimeOfDay": 10.199999809265137,
         "TimeSpeedMultiplier": 0.0,
         "WeatherTransitionSpeed": 0.15000000596046448
     }

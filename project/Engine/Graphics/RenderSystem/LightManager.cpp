@@ -178,18 +178,21 @@ void LightManager::UpdateCascadedShadows(
 
     Matrix4x4 invCamViewProj = Matrix4x4::Inverse(cameraView * cameraProj);
 
+    // 影はカメラの描画距離ではなく、影を落とす距離までにする
+    const float shadowFar = std::clamp(shadowDistance_, cameraNear + 0.01f, (std::max)(cameraFar, cameraNear + 0.01f));
+
     float splits[MAX_CASCADE_COUNT + 1];
     splits[0] = cameraNear;
-    splits[MAX_CASCADE_COUNT] = cameraFar;
+    splits[MAX_CASCADE_COUNT] = shadowFar;
 
-    const float lambda = 0.5f;
+    const float lambda = std::clamp(cascadeSplitLambda_, 0.0f, 1.0f);
 
     for (int i = 1; i < MAX_CASCADE_COUNT; ++i)
     {
         float fraction = static_cast<float>(i) / static_cast<float>(MAX_CASCADE_COUNT);
 
-        float logSplit = cameraNear * std::pow(cameraFar / cameraNear, fraction);
-        float linSplit = cameraNear + (cameraFar - cameraNear) * fraction;
+        float logSplit = cameraNear * std::pow(shadowFar / cameraNear, fraction);
+        float linSplit = cameraNear + (shadowFar - cameraNear) * fraction;
 
         splits[i] = lambda * logSplit + (1.0f - lambda) * linSplit;
     }
@@ -463,11 +466,22 @@ void LightManager::BindProperties(PropertyBinder& binder, const std::string& pre
         binder.Bind(dp + "Intensity", &dir.intensity, 1.0f, 0.05f, 0.0f, 100.0f);
         binder.Bind(dp + "VolumetricScattering", &dir.volumetricScatteringIntensity, 5.0f, 0.1f, 0.0f, 50.0f);
     }
+
+    binder.Bind(p + "Shadow/Distance", &shadowDistance_, 120.0f, 1.0f, 5.0f, 2000.0f);
+    binder.Bind(p + "Shadow/SplitLambda", &cascadeSplitLambda_, 0.75f, 0.01f, 0.0f, 1.0f);
 }
 
 void LightManager::DebugGui(PropertyBinder& binder)
 {
     std::string p = prefix_.empty() ? "" : prefix_ + "/";
+
+    if (ImGui::CollapsingHeader("影の範囲"))
+    {
+        binder.Draw(p + "Shadow/Distance", "影を落とす距離 (m)");
+        binder.Draw(p + "Shadow/SplitLambda", "カスケードの分け方 (1 に近いほど手前が細かい)");
+        ImGui::Text("カスケードの境目: %.1f m / %.1f m / %.1f m",
+            shadowData_->cascadeSplits.x, shadowData_->cascadeSplits.y, shadowData_->cascadeSplits.z);
+    }
 
     if (ImGui::CollapsingHeader("ライト設定"))
     {
