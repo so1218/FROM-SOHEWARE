@@ -89,6 +89,8 @@ public:
 	void TakeBurnDamage(int damage);
 
 	void ResetToSpawn();
+	// HP が無くなって倒れている
+	bool IsDead() const;
 	int GetShotCount() const { return shotCount_; } 
 
 	// 所持金
@@ -215,6 +217,8 @@ private:
 	std::unique_ptr<PlayerConcealment> concealment_;
 	std::unique_ptr<PlayerBurn> burn_;
 	void PlaceAtSpawn();
+	// 倒れる
+	void StartDeath();
 	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
 	float spawnRotationY_ = 0.0f;                        
 	bool isSprintInputActive_ = false;

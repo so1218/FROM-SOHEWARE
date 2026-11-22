@@ -9,6 +9,7 @@ class TitleMenu;
 class GameUI;
 class EnemyManager;
 class PauseMenu;
+class GameOverScreen;
 
 class PlayScene : public FS::BaseScene
 {
@@ -28,6 +29,7 @@ private:
         Title,
         CameraMove,
         Playing,
+        GameOver,   
     };
 
     void EnterTitle();
@@ -37,6 +39,8 @@ private:
     void ApplyPhaseSettings();
     // 状態に戻してタイトルへ
     void ReturnToTitle();
+    // 倒れたあと、初期位置から遊び直す
+    void RestartFromSpawn();
     // ポーズメニューの開け閉めに合わせてゲームを止める・動かす
     void UpdatePauseMenu();
 
@@ -48,6 +52,7 @@ private:
     GameUI* gameUI_ = nullptr;
     EnemyManager* enemyManager_ = nullptr;
     PauseMenu* pauseMenu_ = nullptr;
+    GameOverScreen* gameOverScreen_ = nullptr;
 
     Phase phase_ = Phase::Title;
 

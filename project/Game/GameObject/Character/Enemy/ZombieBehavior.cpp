@@ -75,6 +75,9 @@ void ZombieBehavior::Initialize(Enemy* owner)
         dustEmitterPtr_->Play();
     }
 
+    explosionEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("floatingEnemyExplosion");
+    deathSparkEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("enemyDeathSpark");
+
     PlayAnimation(kEmergeAnimation, false, config_.emergeAnimSpeed);
     ChangeState(State::Emerge);
 }
@@ -167,7 +170,7 @@ void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
         return;
     }
 
-    // 出きったら土煙を止める。出ている煙は消えるまで残る
+    // 出きったら土煙を止める
     if (dustEmitterPtr_)
     {
         dustEmitterPtr_->Stop();
@@ -431,11 +434,38 @@ float ZombieBehavior::RandomRange(float min, float max)
 void ZombieBehavior::OnDeath(Enemy* owner)
 {
     ReleaseEffects();
+
+    // 倒れきって消える瞬間に爆発させ、急に消えるのを隠す
+    AudioPlayer::GetInstance().Play("floatingEnemyExplosion", 0.4f);
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        explosionEmitterPtr_->Play();
+    }
+
+    // 爆発と一緒に火花を降らせる
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        deathSparkEmitterPtr_->Play();
+    }
 }
 
 void ZombieBehavior::OnDespawn(Enemy* owner)
 {
     ReleaseEffects();
+
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->Destroy();
+        explosionEmitterPtr_ = nullptr;
+    }
+
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->Destroy();
+        deathSparkEmitterPtr_ = nullptr;
+    }
 }
 
 void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)

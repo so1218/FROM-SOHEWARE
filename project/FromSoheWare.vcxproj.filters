@@ -207,6 +207,9 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerConcealment.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDeath.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
@@ -238,6 +241,9 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\UI\PauseMenuHint.cpp">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\UI\GameOverScreen.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp">
@@ -342,6 +348,9 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerConcealment.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDeath.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
@@ -373,6 +382,9 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\UI\PauseMenuHint.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\GameOverScreen.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h">

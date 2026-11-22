@@ -150,6 +150,9 @@ private:
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
+    // 倒されて消えるときの爆発
+    FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
     // 燃えている間だけ出す火の粉
     FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
     bool isBurnEffectPlaying_ = false;

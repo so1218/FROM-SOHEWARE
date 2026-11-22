@@ -25,6 +25,7 @@
 #include "TitleMenu.h"
 #include "PauseMenuHint.h"
 #include "PauseMenu.h"
+#include "GameOverScreen.h"
 #include "PostEffectManager.h"
 #include "RendererManager.h"
 #include "SceneManager.h"
@@ -66,6 +67,8 @@ PlayScene::PlayScene(Engine* engine)
     titleMenu_ = objectManager_.Create<TitleMenu>(engine_);
     objectManager_.Create<PauseMenuHint>(engine_);
     pauseMenu_ = objectManager_.Create<PauseMenu>(engine_);
+    // プレイヤーの画面の縁を上書きするので、プレイヤーより後に更新する
+    gameOverScreen_ = objectManager_.Create<GameOverScreen>(engine_);
 }
 
 void PlayScene::OnInitialize()
@@ -109,13 +112,28 @@ void PlayScene::OnUpdate()
         break;
 
     case Phase::Playing:
+        if (player_->IsDead())
+        {
+            gameOverScreen_->Begin();
+            followCamera_->SetDeathFocus(true);
+            ChangePhase(Phase::GameOver);
+        }
+        break;
+
+    case Phase::GameOver:
+        if (gameOverScreen_->TakeRestartRequest())
+        {
+            RestartFromSpawn();
+            ChangePhase(Phase::Playing);
+        }
         break;
     }
 }
 
 void PlayScene::UpdatePauseMenu()
 {
-    pauseMenu_->SetCanOpen(phase_ != Phase::CameraMove);
+    // 倒れている間は時間の流れを演出で変えているので、ポーズさせない
+    pauseMenu_->SetCanOpen(phase_ != Phase::CameraMove && phase_ != Phase::GameOver);
     pauseMenu_->SetCanReturnToTitle(phase_ == Phase::Playing);
 
     if (std::optional<PauseMenu::Item> item = pauseMenu_->TakeSelectedItem())
@@ -175,7 +193,7 @@ void PlayScene::ApplyPhaseSettings()
         // ポーズ中はカメラを止める
         cameraManager_->ChangeController(nullptr);
     }
-    else if (isPlaying)
+    else if (isPlaying || phase_ == Phase::GameOver)
     {
         cameraManager_->ChangeController(followCamera_.get());
     }
@@ -199,8 +217,21 @@ void PlayScene::EnterTitle()
     ChangePhase(Phase::Title);
 }
 
+void PlayScene::RestartFromSpawn()
+{
+    player_->ResetToSpawn();
+    enemyManager_->ResetEnemies();
+    engine_->GetRendererManager()->ResetGrassFire();
+    // 倒れた場所からカメラが追いかけてこないよう、すぐ後ろに置き直す
+    followCamera_->SetDeathFocus(false);
+    followCamera_->PlaceBehindTarget();
+    followCamera_->Reset(camera_.get());
+}
+
 void PlayScene::ReturnToTitle()
 {
+    gameOverScreen_->Cancel();
+    followCamera_->SetDeathFocus(false);
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
     // 次に遊ぶときは、燃える前の草原から始める
@@ -240,6 +271,9 @@ void PlayScene::OnFinalize()
         TimeManager::GetInstance()->SetTimeScale(timeScaleBeforePause_);
         isPaused_ = false;
     }
+
+    // 倒れた直後のスローを次のシーンに残さない
+    gameOverScreen_->Cancel();
 
     // 隠れているときのビネットは毎フレーム渡す値なので、次のシーンに残さない
     engine_->GetPostEffectManager()->SetOverlayVignette(0.0f, { 0.0f, 0.0f, 0.0f });

@@ -181,6 +181,7 @@ private:
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
     FS::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;
     int soundHandleID_ = -1;
 };

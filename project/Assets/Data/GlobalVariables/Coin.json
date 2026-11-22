@@ -96,7 +96,7 @@
         "CollectRadius": 0.800000011920929,
         "EjectSpeed": 30.0,
         "Gravity": 64.5,
-        "LifeTime": 1000.0,
+        "LifeTime": 30.0,
         "LightColor": [
             1.0,
             0.800000011920929,

@@ -59,6 +59,7 @@ void FloatingBehavior::Initialize(Enemy* owner)
     moveSmokeEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyMoveSmoke");
     moveSmokeEmitterPtr_->SetTargetToFollow(&owner->GetModel()->GetTransform());
     explosionEmitterPtr_ = particleSystem->SpawnEmitter("floatingEnemyExplosion");
+    deathSparkEmitterPtr_ = particleSystem->SpawnEmitter("enemyDeathSpark");
     thrusterBreakEmitterPtr_ = particleSystem->SpawnEmitter("floatingDamage");
 
     owner->GetTransform().translation_ = basePosition_;
@@ -515,6 +516,13 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
         explosionEmitterPtr_->Play();
     }
+
+    // 爆発と一緒に火花を降らせる
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        deathSparkEmitterPtr_->Play();
+    }
 }
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
@@ -530,6 +538,12 @@ void FloatingBehavior::OnDespawn(Enemy* owner)
     {
         explosionEmitterPtr_->Destroy();
         explosionEmitterPtr_ = nullptr;
+    }
+
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->Destroy();
+        deathSparkEmitterPtr_ = nullptr;
     }
 
     if (thrusterBreakEmitterPtr_)

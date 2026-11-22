@@ -21,6 +21,9 @@ public:
     void SetAiming(bool isAiming) { isAiming_ = isAiming; }
     bool IsAiming() const { return isAiming_; }
 
+    // 倒れている間は操作を受け付けず、倒れた体を見下ろす位置へ寄る
+    void SetDeathFocus(bool isDeathFocus);
+
 private:
     float SmoothDamp(float current, float target, float& currentVelocity,
         float smoothTime, float deltaTime, float maxSpeed = 1000.0f);
@@ -50,6 +53,14 @@ private:
     float aimTransitionSmoothTime_ = 0.12f;
     float aimDeadzone_ = 0.08f;                 
     float aimRotateSpeedMultiplier_ = 0.6f;      
+
+    // 倒れたときのカメラ設定
+    bool isDeathFocus_ = false;
+    float deathDistance_ = 30.0f;
+    FS::Vector3 deathLookAtOffset_ = { 0.0f, 0.5f, 0.0f };
+    float deathPitch_ = 0.6f;
+    float deathTransitionTime_ = 0.8f;
+    float deathPitchVelocity_ = 0.0f;
 
     FS::Vector3 currentShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     FS::Vector3 shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };

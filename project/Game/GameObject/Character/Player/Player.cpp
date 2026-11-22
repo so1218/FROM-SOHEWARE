@@ -19,6 +19,7 @@
 #include "PlayerMoneyDisplay.h"
 #include "PlayerStateDodge.h"
 #include "PlayerStateCrawl.h"
+#include "PlayerStateDeath.h"
 #include "PlayerConcealment.h"
 #include "PlayerBurn.h"
 #include "Enemy.h"
@@ -381,7 +382,7 @@ void Player::FireWeapon()
 
 void Player::TakeDamage(int damage)
 {
-	if (stateMachine_->IsCurrentState<PlayerStateDodge>())
+	if (IsDead() || stateMachine_->IsCurrentState<PlayerStateDodge>())
 	{
 		return;
 	}
@@ -391,12 +392,17 @@ void Player::TakeDamage(int damage)
 
 	if (health_->IsDead())
 	{
-		ResetToSpawn();
+		StartDeath();
 	}
 }
 
 void Player::TakeBurnDamage(int damage)
 {
+	if (IsDead())
+	{
+		return;
+	}
+
 	// 全体を赤くする被弾の色は出さず、炎の画面の縁で知らせる
 	health_->TakeDamage(damage, false);
 	burn_->OnDamaged();
@@ -412,8 +418,32 @@ void Player::TakeBurnDamage(int damage)
 
 	if (health_->IsDead())
 	{
-		ResetToSpawn();
+		StartDeath();
 	}
+}
+
+bool Player::IsDead() const
+{
+	return health_->IsDead();
+}
+
+void Player::StartDeath()
+{
+	if (followCamera_)
+	{
+		followCamera_->SetAiming(false);
+	}
+	CancelSprintInput();
+	GameInput::StartVibration(0.8f, 0.8f, 0.4f);
+
+	// 素材を入れたときだけ鳴らす
+	AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+	if (audioPlayer.HasSound("playerDeath"))
+	{
+		audioPlayer.Play("playerDeath", 0.6f);
+	}
+
+	stateMachine_->ChangeState<PlayerStateDeath>();
 }
 
 void Player::ResetToSpawn()
@@ -730,6 +760,11 @@ void Player::DebugGui()
 	if (ImGui::CollapsingHeader("HP"))
 	{
 		health_->DrawProperties(*binder_);
+		if (!IsDead() && ImGui::Button("倒れる (ゲームオーバーの確認)"))
+		{
+			health_->TakeDamage(health_->GetCurrent(), false);
+			StartDeath();
+		}
 	}
 
 	if (ImGui::CollapsingHeader("スタミナ"))
