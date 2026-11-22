@@ -64,7 +64,13 @@ struct ZombieConfig
     // 燃えている間に、回路が焼ける音を鳴らす間隔と大きさ
     float burnSparkInterval = 0.8f;
     float burnSparkVolume = 0.35f;
-    float burnSparkHearingDistance = 30.0f;   // プレイヤーからこれより遠いゾンビの音は鳴らさない
+    float burnSparkHearingDistance = 30.0f; 
+
+    // 足音
+    float footstepVolume = 0.5f;
+    float footstepMaxDistance = 25.0f;
+    float footstepLeftTime = 0.1f;
+    float footstepRightTime = 0.6f;
 };
 
 class ZombieBehavior : public IEnemyBehavior
@@ -78,7 +84,7 @@ public:
     static constexpr const char* kAttackAnimation = "zombieAttack";
     static constexpr const char* kDeathAnimation = "zombieDeath";
 
-    // materialSource は全員で共有するマテリアルを持つモデル。ImGui で調整した値が毎フレーム反映される
+    // materialSource は全員で共有するマテリアルを持つモデル
     ZombieBehavior(const ZombieConfig& config, const FS::Terrain* terrain, const FS::AnimationModel* materialSource, const FS::Vector3& spawnPosition, float spawnYaw);
 
     void Initialize(Enemy* owner) override;
@@ -130,6 +136,8 @@ private:
     // 足元の炎で燃え、継続ダメージを受ける
     void UpdateBurning(Enemy* owner, float deltaTime);
     void UpdateBurnEffects(Enemy* owner);
+    // 歩いている間、足が着いた瞬間に足音を鳴らす
+    void UpdateFootsteps(Enemy* owner);
     // 本体と同じ大きさで立たせたときの、足元から頭までの高さ
     float MeasureHeadHeight();
 
@@ -142,11 +150,14 @@ private:
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
-    // 燃えている間だけ出す炎と火の粉
+    // 燃えている間だけ出す火の粉
     FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
     bool isBurnEffectPlaying_ = false;
     BurnStatus burn_;
     float burnSparkTimer_ = 0.0f;
+    // 今流しているアニメーションと、足音を判定するための前のフレームの進み具合
+    const char* currentAnimation_ = nullptr;
+    float previousFootstepTime_ = 0.0f;
     // 這い出る前に埋まっている深さ
     float buriedDepth_ = 0.0f;
 

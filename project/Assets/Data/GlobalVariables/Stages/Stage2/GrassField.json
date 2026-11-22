@@ -32,18 +32,18 @@
         "LodDistance2": 150.0,
         "MaxDrawDistance": 500.0,
         "MaxGrassCount": 5000000,
-        "MaxHeight": 1.0199999809265137,
+        "MaxHeight": 1.8899999856948853,
         "MaxThinningRate": 0.9900000095367432,
-        "MaxWidth": 0.05000000074505806,
+        "MaxWidth": 0.03999999910593033,
         "MaxWidthMultiplier": 15.0,
-        "MinHeight": 1.0099999904632568,
-        "MinWidth": 0.05000000074505806,
+        "MinHeight": 1.8799999952316284,
+        "MinWidth": 0.03999999910593033,
         "NearFadeMaxDist": 15.0,
         "NearFadeMinDist": 2.0,
         "RootColor": [
-            0.021267861127853394,
+            0.0,
             0.06211179494857788,
-            0.0
+            0.01118782814592123
         ],
         "SSSColor": [
             0.548628568649292,
@@ -56,9 +56,9 @@
         "ShadowNormalBias": 0.009999999776482582,
         "ThinStartDistance": 150.0,
         "TipColor": [
-            0.9223602414131165,
-            0.73488849401474,
-            0.18619072437286377
+            0.0,
+            0.48136645555496216,
+            0.15846218168735504
         ],
         "TrailFlattenWeight": 1.0,
         "WindFlattenStrength": 0.20000000298023224,

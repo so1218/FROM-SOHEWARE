@@ -39,6 +39,7 @@
             1.5,
             1.5
         ],
+        "ScreamVolume": 0.5,
         "ShotInterval": 0.10000000149011612,
         "ShotSpread": 0.029999999329447746,
         "SightRange": 60.0,

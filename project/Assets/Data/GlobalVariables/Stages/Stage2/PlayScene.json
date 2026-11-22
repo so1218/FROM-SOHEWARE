@@ -42,6 +42,8 @@
         "Light/Directional/1/Intensity": 1.0,
         "Light/Directional/1/VolumetricScattering": 5.0,
         "Light/Directional/Count": 2,
+        "Light/Shadow/Distance": 300.0,
+        "Light/Shadow/SplitLambda": 0.75,
         "PostEffect/Bloom/CompositeIntensity": 1.0,
         "PostEffect/Bloom/ExtractIntensity": 1.100000023841858,
         "PostEffect/Bloom/Radius": 1.0,

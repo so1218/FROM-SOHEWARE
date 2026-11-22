@@ -149,6 +149,8 @@ void ZombieBehavior::Update(Enemy* owner)
     // テクスチャを変えたときも反映されるよう、毎フレーム写す
     animationModel_->ShareMaterialsFrom(materialSource_);
     animationModel_->Update();
+
+    UpdateFootsteps(owner);
 }
 
 void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
@@ -372,6 +374,53 @@ void ZombieBehavior::PlayAnimation(const char* name, bool isLoop, float speed)
     // 用意していないアニメーションは、歩きで代わりにする
     const char* animation = HasAnimation(name) ? name : kWalkAnimation;
     animationModel_->Play(animation, isLoop, speed, config_.animBlendTime);
+
+    // 切り替えた直後に足音が鳴らないよう、今の進み具合から数え直す
+    if (currentAnimation_ != animation)
+    {
+        currentAnimation_ = animation;
+        previousFootstepTime_ = animationModel_->GetNormalizedTime();
+    }
+}
+
+void ZombieBehavior::UpdateFootsteps(Enemy* owner)
+{
+    // 歩いて移動している状態だけ。攻撃のアニメーションが無くて歩きで代わりにしているときは鳴らさない
+    const bool isMovingState = state_ == State::Chase || state_ == State::Search || state_ == State::Wander;
+    if (!isMovingState || currentAnimation_ != kWalkAnimation)
+    {
+        return;
+    }
+
+    const float currentTime = animationModel_->GetNormalizedTime();
+    // 1 周して頭に戻ったときは、前の値を 1 周分戻して比べる
+    float previousTime = previousFootstepTime_;
+    if (currentTime < previousTime)
+    {
+        previousTime -= 1.0f;
+    }
+    previousFootstepTime_ = currentTime;
+
+    int stepCount = 0;
+    for (float stepTime : { config_.footstepLeftTime, config_.footstepRightTime })
+    {
+        // 1 周前の分も見て、頭に戻ったフレームで跨いだ足も拾う
+        for (float cycleOffset : { -1.0f, 0.0f })
+        {
+            const float time = stepTime + cycleOffset;
+            if (previousTime < time && time <= currentTime)
+            {
+                ++stepCount;
+            }
+        }
+    }
+    if (stepCount == 0)
+    {
+        return;
+    }
+
+    AudioPlayer::GetInstance().Play3D("zombieFootstep", owner->GetTransform().translation_,
+        { .volume = config_.footstepVolume, .maxDistance = config_.footstepMaxDistance });
 }
 
 float ZombieBehavior::RandomRange(float min, float max)
@@ -569,6 +618,11 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("BurnSparkInterval", &burnSparkInterval, 0.8f, 0.01f, 0.05f, 10.0f);
     binder.Bind("BurnSparkVolume", &burnSparkVolume, 0.35f, 0.01f, 0.0f, 2.0f);
     binder.Bind("BurnSparkHearingDistance", &burnSparkHearingDistance, 30.0f, 0.5f, 0.0f, 500.0f);
+
+    binder.Bind("FootstepVolume", &footstepVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("FootstepMaxDistance", &footstepMaxDistance, 25.0f, 0.5f, 1.0f, 200.0f);
+    binder.Bind("FootstepLeftTime", &footstepLeftTime, 0.1f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("FootstepRightTime", &footstepRightTime, 0.6f, 0.01f, 0.0f, 1.0f);
 }
 
 void ZombieConfig::Draw(PropertyBinder& binder)
@@ -646,6 +700,15 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("BurnSparkInterval", "回路が焼ける音 (zombieSpark) の間隔 (秒)");
         binder.Draw("BurnSparkVolume", "回路が焼ける音の大きさ");
         binder.Draw("BurnSparkHearingDistance", "回路が焼ける音が聞こえる距離 (m)");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("足音"))
+    {
+        binder.Draw("FootstepVolume", "足音 (zombieFootstep) の大きさ");
+        binder.Draw("FootstepMaxDistance", "足音が聞こえる距離 (m)");
+        binder.Draw("FootstepLeftTime", "左足が着く位置 (歩きのアニメーションの 0 ~ 1)");
+        binder.Draw("FootstepRightTime", "右足が着く位置 (歩きのアニメーションの 0 ~ 1)");
         ImGui::TreePop();
     }
 }

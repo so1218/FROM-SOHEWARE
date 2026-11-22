@@ -26,6 +26,8 @@ struct FloatingEnemyConfig
     // プレイヤーが隠れているとき
     float hiddenSightRange = 10.0f;
     float hiddenLoseTime = 4.0f;
+    // 気づいたときの叫び声の大きさ
+    float screamVolume = 0.6f;
 
     // 追跡
     float moveSpeed = 18.0f;

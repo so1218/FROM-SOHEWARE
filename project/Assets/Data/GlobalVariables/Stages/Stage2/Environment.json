@@ -28,18 +28,18 @@
         ],
         "Day_LightIntensity": 1.0,
         "Day_V_FogAmbient": [
-            0.24223601818084717,
-            0.24223601818084717,
-            0.24223601818084717
+            0.6010833382606506,
+            0.2070232778787613,
+            0.8229813575744629
         ],
-        "Day_V_FogErosion": 0.0,
+        "Day_V_FogErosion": 0.5799999833106995,
         "Day_V_FogExtinct": 0.004999999888241291,
-        "Day_V_FogHDensity": 0.0,
-        "Day_V_FogHFalloff": 0.0,
-        "Day_V_FogNoiseIntens": 0.0,
-        "Day_V_FogNoiseScale": 0.029999999329447746,
+        "Day_V_FogHDensity": 0.15000000596046448,
+        "Day_V_FogHFalloff": 0.20000000298023224,
+        "Day_V_FogNoiseIntens": 1.2000000476837158,
+        "Day_V_FogNoiseScale": 0.06300000101327896,
         "Day_V_FogSunScattering": 13.0,
-        "Day_V_FogWindSpeedMultiplier": 0.0,
+        "Day_V_FogWindSpeedMultiplier": 0.10000000149011612,
         "Day_ZenithColor": [
             0.0,
             0.05063295364379883,
@@ -164,9 +164,9 @@
         ],
         "Sunny_TransitionSpeed": 0.4000000059604645,
         "Sunny_V_Color": [
-            0.54347825050354,
-            0.3878003656864166,
-            0.04219548776745796,
+            0.04397983476519585,
+            0.37267082929611206,
+            0.0,
             1.0
         ],
         "Sunny_V_Emissive": 2.799999952316284,

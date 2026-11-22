@@ -271,6 +271,8 @@ void FloatingBehavior::StartChase(Enemy* owner)
     orbitAngle_ = std::atan2(fromPlayer.z, fromPlayer.x);
     hiddenTimer_ = 0.0f;
     ChangeState(State::Chase);
+
+    AudioPlayer::GetInstance().Play("floatingScream", config_.screamVolume);
 }
 
 bool FloatingBehavior::CanDetectPlayer(const Vector3& position)
@@ -603,6 +605,7 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
     binder.Bind("LoseRange", &loseRange, 150.0f, 1.0f, 0.0f, 1000.0f);
     binder.Bind("HiddenSightRange", &hiddenSightRange, 10.0f, 0.5f, 0.0f, 500.0f);
     binder.Bind("HiddenLoseTime", &hiddenLoseTime, 4.0f, 0.1f, 0.0f, 60.0f);
+    binder.Bind("ScreamVolume", &screamVolume, 0.6f, 0.01f, 0.0f, 2.0f);
 
     binder.Bind("MoveSpeed", &moveSpeed, 18.0f, 0.5f, 0.0f, 200.0f);
     binder.Bind("Acceleration", &acceleration, 3.0f, 0.05f, 0.1f, 50.0f);
@@ -658,6 +661,7 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("LoseRange", "見失う距離");
         binder.Draw("HiddenSightRange", "隠れているプレイヤーに気づく距離");
         binder.Draw("HiddenLoseTime", "隠れ続けると見失うまで (秒)");
+        binder.Draw("ScreamVolume", "気づいたときの叫び声の大きさ");
         ImGui::TreePop();
     }
 

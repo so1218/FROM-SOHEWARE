@@ -347,7 +347,7 @@ void RendererManager::DrawUI()
 
 	if (spriteRenderer_)
 	{
-		spriteRenderer_->Draw(env_);
+		/*spriteRenderer_->Draw(env_);*/
 	}
 }
 
