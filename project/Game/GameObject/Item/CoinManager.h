@@ -46,6 +46,7 @@ private:
     {
         int coinsPerBurst = 10;
         int valuePerCoin = 3;
+        float burstSoundVolume = 0.5f;   
         float spawnDuration = 0.2f;    
         float ejectSpeed = 6.0f;       
         float spreadSpeed = 3.0f;      

@@ -4,6 +4,7 @@
 #include "AudioPlayer.h"
 #include "GameInput.h"
 #include "StageCatalog.h"
+#include "UISound.h"
 
 using namespace FS;
 
@@ -68,6 +69,7 @@ void TitleMenu::Update()
     case Phase::Waiting:
         if (IsConfirmTriggered())
         {
+            UISound::PlayConfirm();
             phase_ = Phase::Started;
             phaseTimer_ = 0.0f;
             break;
@@ -107,6 +109,7 @@ void TitleMenu::UpdateStageSelect(float deltaTime)
         return;
     }
 
+    UISound::PlayCursor();
     StageCatalog::Select(StageCatalog::GetSelectedIndex() + move);
     isStageChangeRequested_ = true;
 }

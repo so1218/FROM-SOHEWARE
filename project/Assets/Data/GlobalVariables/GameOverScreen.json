@@ -34,7 +34,7 @@
         "KanjiGlowSoftness": 12.0,
         "KanjiOffsetY": -20.0,
         "KanjiSettleTime": 0.6000000238418579,
-        "KanjiSoundVolume": 0.699999988079071,
+        "KanjiSoundVolume": 0.5,
         "KanjiStartScale": 1.350000023841858,
         "PromptColor": [
             1.0,

@@ -4,6 +4,7 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "PostEffectManager.h"
+#include "UISound.h"
 
 using namespace FS;
 
@@ -195,6 +196,7 @@ void GameOverScreen::Update()
         // 案内が出る前の決定は、倒れた直後の連打で飛ばさないよう受け付けない
         if (phaseTimer_ >= promptDelay_ && GameInput::IsTriggered(GameAction::Confirm))
         {
+            UISound::PlayConfirm();
             ChangePhase(Phase::FadeOut);
         }
         break;

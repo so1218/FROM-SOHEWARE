@@ -30,6 +30,7 @@ void CoinManager::Initialize()
     binder_->Bind("CoinsPerBurst", &c.coinsPerBurst, c.coinsPerBurst, 1.0f, 1, 100);
     binder_->Bind("ValuePerCoin", &c.valuePerCoin, c.valuePerCoin, 1.0f, 0, 10000);
     binder_->Bind("SpawnDuration", &c.spawnDuration, c.spawnDuration, 0.01f, 0.0f, 3.0f);
+    binder_->Bind("BurstSoundVolume", &c.burstSoundVolume, c.burstSoundVolume, 0.01f, 0.0f, 2.0f);
     binder_->Bind("EjectSpeed", &c.ejectSpeed, c.ejectSpeed, 0.1f, 0.0f, 100.0f);
     binder_->Bind("SpreadSpeed", &c.spreadSpeed, c.spreadSpeed, 0.1f, 0.0f, 100.0f);
     binder_->Bind("Gravity", &c.gravity, c.gravity, 0.5f, 0.0f, 200.0f);
@@ -56,6 +57,10 @@ void CoinManager::Initialize()
 void CoinManager::SpawnBurst(const Vector3& position)
 {
     const int burstId = nextBurstId_++;
+
+    // 1 枚ずつ鳴らすと重なって割れるので、まとめて散らばる音を 1 回だけ鳴らす
+    AudioPlayer::GetInstance().Play("coinBurst", config_.burstSoundVolume);
+
     for (int coinIndex = 0; coinIndex < config_.coinsPerBurst; ++coinIndex)
     {
         Coin coin;
@@ -288,6 +293,7 @@ void CoinManager::DebugGui()
         binder_->Draw("CoinsPerBurst", "1 体から出る枚数");
         binder_->Draw("ValuePerCoin", "1 枚の金額");
         binder_->Draw("SpawnDuration", "出し切るまで (秒)");
+        binder_->Draw("BurstSoundVolume", "飛び出すときの音 (coinBurst) の大きさ");
         binder_->Draw("EjectSpeed", "上に飛び出す速さ");
         binder_->Draw("SpreadSpeed", "横に散らばる速さ");
         binder_->Draw("Gravity", "重力");

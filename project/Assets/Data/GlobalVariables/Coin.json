@@ -2,6 +2,7 @@
     "Coin": {
         "BlinkTime": 3.0,
         "Bounce": 0.5,
+        "BurstSoundVolume": 0.800000011920929,
         "CoinModel_AddShadow": 1,
         "CoinModel_AlbedoMap": "white1x1",
         "CoinModel_AlphaThres": 0.009999999776482582,

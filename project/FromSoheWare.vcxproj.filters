@@ -246,6 +246,9 @@
     <ClCompile Include="Game\GameObject\UI\GameOverScreen.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\UI\UISound.cpp">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
@@ -385,6 +388,9 @@
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\UI\GameOverScreen.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\UISound.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h">
