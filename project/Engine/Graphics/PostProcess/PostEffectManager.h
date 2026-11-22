@@ -62,9 +62,6 @@ public:
 
     void SetOverlayVignette(float amount, const Vector3& color, float start = 0.25f, float end = 0.85f);
 
-    // 歩ける範囲の XZ
-    void SetFogBoundary(const Vector2& min, const Vector2& max);
-
     uint32_t GetVolumetricFogSRVIndex() const { return volumetricFogPass_->GetSRVIndex(); }
 
     void BeginFinalComposite(ID3D12GraphicsCommandList* cmdList);
@@ -78,9 +75,6 @@ public:
     void BindFogVolumes(PropertyBinder& binder);
 
 private:
-    // 遠くの境界の霧が使う、Volumetric Fog の値を毎フレーム入れる
-    void UpdateBoundaryFogData();
-
     // 依存オブジェクト
     Engine* engine_ = nullptr;
     SRVManager* srvManager_ = nullptr;
