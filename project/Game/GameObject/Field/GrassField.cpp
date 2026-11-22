@@ -69,6 +69,7 @@ void GrassField::Initialize()
     binder_->Bind("Fire_MaxSpreadDistance", &fire.maxSpreadDistance, 25.0f, 0.5f, 0.0f, 1000.0f);
     binder_->Bind("Fire_WindSpreadBias", &fire.windSpreadBias, 1.5f, 0.05f, 0.0f, 10.0f);
     binder_->Bind("Fire_RainSuppression", &fire.rainSuppression, 0.9f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Fire_RainSpreadDistanceRate", &fire.rainSpreadDistanceRate, 0.35f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("Fire_CoolingRate", &fire.coolingRate, 0.5f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Fire_CharHeightRatio", &fire.charHeightRatio, 0.15f, 0.01f, 0.0f, 1.0f);
     binder_->BindColor("Fire_ScorchColor", &fire.scorchColor, { 0.35f, 0.25f, 0.1f });
@@ -202,6 +203,7 @@ void GrassField::DebugGui()
         binder_->Draw("Fire_MaxSpreadDistance", "火をつけた所から燃え広がる距離 (m、0 で止めない)");
         binder_->Draw("Fire_WindSpreadBias", "風下への燃え広がりやすさ");
         binder_->Draw("Fire_RainSuppression", "雨で燃え広がりにくくなる割合");
+        binder_->Draw("Fire_RainSpreadDistanceRate", "濡れきったときの燃え広がる距離 (晴れの何倍か)");
         binder_->Draw("Fire_CoolingRate", "火が来なくなった所が冷める速さ");
 
         ImGui::SeparatorText("見た目");

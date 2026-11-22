@@ -449,6 +449,14 @@ void ZombieBehavior::OnDeath(Enemy* owner)
         deathSparkEmitterPtr_->SetPosition(owner->GetTransform().translation_);
         deathSparkEmitterPtr_->Play();
     }
+
+    // 足元の草に火がつく
+    if (config_.deathIgniteRadius > 0.0f)
+    {
+        const Vector3& position = owner->GetTransform().translation_;
+        owner->GetEngine()->GetRendererManager()->SubmitGrassIgnition(
+            { position.x, GetGroundHeight(position.x, position.z), position.z }, config_.deathIgniteRadius);
+    }
 }
 
 void ZombieBehavior::OnDespawn(Enemy* owner)
@@ -653,6 +661,8 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("FootstepMaxDistance", &footstepMaxDistance, 25.0f, 0.5f, 1.0f, 200.0f);
     binder.Bind("FootstepLeftTime", &footstepLeftTime, 0.1f, 0.01f, 0.0f, 1.0f);
     binder.Bind("FootstepRightTime", &footstepRightTime, 0.6f, 0.01f, 0.0f, 1.0f);
+
+    binder.Bind("DeathIgniteRadius", &deathIgniteRadius, 4.0f, 0.1f, 0.0f, 50.0f);
 }
 
 void ZombieConfig::Draw(PropertyBinder& binder)
@@ -730,6 +740,7 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("BurnSparkInterval", "回路が焼ける音 (zombieSpark) の間隔 (秒)");
         binder.Draw("BurnSparkVolume", "回路が焼ける音の大きさ");
         binder.Draw("BurnSparkHearingDistance", "回路が焼ける音が聞こえる距離 (m)");
+        binder.Draw("DeathIgniteRadius", "倒されて爆発したときに草に火がつく半径 (0 でつかない)");
         ImGui::TreePop();
     }
 

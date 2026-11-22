@@ -13,6 +13,7 @@
         "Fire_CoolingRate": 0.5,
         "Fire_GroundScorchDarkness": 0.8500000238418579,
         "Fire_MaxSpreadDistance": 25.0,
+        "Fire_RainSpreadDistanceRate": 0.3499999940395355,
         "Fire_RainSuppression": 0.8999999761581421,
         "Fire_ScorchColor": [
             0.3499999940395355,

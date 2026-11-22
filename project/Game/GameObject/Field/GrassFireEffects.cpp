@@ -25,12 +25,13 @@ void GrassFireEffects::Initialize()
     binder_->Bind("PeakThreshold", &peakThreshold_, 0.12f, 0.01f, 0.0f, 1.0f);
     binder_->Bind("PeakSeparation", &peakSeparation_, 10.0f, 0.5f, 1.0f, 100.0f);
 
-    binder_->Bind("MaxLightCount", &maxLightCount_, 6, 1.0f, 0, 16);
     binder_->BindColor("LightColor", &lightColor_, { 1.0f, 0.45f, 0.12f, 1.0f });
     binder_->Bind("LightIntensity", &lightIntensity_, 12.0f, 0.1f, 0.0f, 200.0f);
     binder_->Bind("LightRadius", &lightRadius_, 14.0f, 0.5f, 1.0f, 100.0f);
     binder_->Bind("LightHeight", &lightHeight_, 1.5f, 0.1f, 0.0f, 20.0f);
     binder_->Bind("LightVolumetricIntensity", &lightVolumetricIntensity_, 2.0f, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("LightGatherRadius", &lightGatherRadius_, 40.0f, 0.5f, 1.0f, 500.0f);
+    binder_->Bind("LightSpreadRadiusRate", &lightSpreadRadiusRate_, 1.5f, 0.05f, 0.0f, 10.0f);
 
     binder_->Bind("MaxEmberEmitterCount", &maxEmberEmitterCount_, 6, 1.0f, 0, 16);
 
@@ -61,7 +62,7 @@ void GrassFireEffects::Update()
     const uint32_t resolution = rendererManager->GetGrassFireReadbackResolution();
     FindFirePeaks(readback, resolution);
 
-    SubmitFireLights();
+    SubmitFireLight(readback, resolution);
     UpdateEmbers();
     UpdateFlamesAndSmoke(readback, resolution, deltaTime);
     UpdateFireSounds(deltaTime);
@@ -188,7 +189,7 @@ void GrassFireEffects::FindFirePeaks(const std::vector<float>& readback, uint32_
     std::sort(candidates.begin(), candidates.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
 
     const GrassFireConstants& fire = engine_->GetRendererManager()->GetGrassFireSettings();
-    const size_t maxPeakCount = static_cast<size_t>(std::max(maxLightCount_, maxEmberEmitterCount_));
+    const size_t maxPeakCount = static_cast<size_t>(std::max(maxEmberEmitterCount_, maxFireSoundCount_));
     const float separationSq = peakSeparation_ * peakSeparation_;
 
     for (const auto& [intensity, index] : candidates)
@@ -215,26 +216,66 @@ void GrassFireEffects::FindFirePeaks(const std::vector<float>& readback, uint32_
     }
 }
 
-void GrassFireEffects::SubmitFireLights()
+void GrassFireEffects::SubmitFireLight(const std::vector<float>& readback, uint32_t resolution)
 {
-    LightManager* lightManager = engine_->GetLightManager();
-    const size_t lightCount = std::min(peaks_.size(), static_cast<size_t>(std::max(maxLightCount_, 0)));
-
-    for (size_t index = 0; index < lightCount; ++index)
+    // 塊は強い順に並んでいるので、先頭が一番強く燃えている所
+    if (peaks_.empty() || resolution == 0 || readback.size() < static_cast<size_t>(resolution) * resolution)
     {
-        const FirePeak& peak = peaks_[index];
-
-        // 速さの違う揺れを重ね、炎らしく不規則にちらつかせる
-        const float phase = static_cast<float>(index) * 1.7f;
-        const float flicker = 0.75f + 0.15f * std::sin(elapsedTime_ * 11.0f + phase) + 0.1f * std::sin(elapsedTime_ * 23.0f + phase * 2.3f);
-
-        lightManager->SubmitPointLight(
-            peak.position + Vector3(0.0f, lightHeight_, 0.0f),
-            lightColor_,
-            lightIntensity_ * peak.intensity * flicker,
-            lightRadius_,
-            lightVolumetricIntensity_);
+        return;
     }
+    const FirePeak& strongestPeak = peaks_.front();
+
+    // その周りで燃えているマスを、炎の強さで重み付けして中心と広がりを求める
+    const GrassFireConstants& fire = engine_->GetRendererManager()->GetGrassFireSettings();
+    const float gatherRadiusSq = lightGatherRadius_ * lightGatherRadius_;
+    float totalWeight = 0.0f;
+    float sumX = 0.0f;
+    float sumZ = 0.0f;
+    float sumDistanceSq = 0.0f;
+    for (uint32_t index = 0; index < resolution * resolution; ++index)
+    {
+        const float intensity = readback[index];
+        if (intensity <= peakThreshold_)
+        {
+            continue;
+        }
+
+        const float u = (static_cast<float>(index % resolution) + 0.5f) / static_cast<float>(resolution);
+        const float v = (static_cast<float>(index / resolution) + 0.5f) / static_cast<float>(resolution);
+        const float x = fire.areaCenter.x + (u - 0.5f) * fire.areaSize.x;
+        const float z = fire.areaCenter.y + (v - 0.5f) * fire.areaSize.y;
+        const float offsetX = x - strongestPeak.position.x;
+        const float offsetZ = z - strongestPeak.position.z;
+        const float distanceSq = offsetX * offsetX + offsetZ * offsetZ;
+        if (distanceSq > gatherRadiusSq)
+        {
+            continue;
+        }
+
+        totalWeight += intensity;
+        sumX += x * intensity;
+        sumZ += z * intensity;
+        sumDistanceSq += distanceSq * intensity;
+    }
+    if (totalWeight <= 0.0f)
+    {
+        return;
+    }
+
+    Vector3 center = { sumX / totalWeight, 0.0f, sumZ / totalWeight };
+    center.y = (terrain_ ? terrain_->GetHeight(center.x, center.z) : 0.0f) + lightHeight_;
+    // 一番強い所からのばらつきを、火の広がりの目安にする
+    const float spread = std::sqrt(sumDistanceSq / totalWeight);
+
+    // 速さの違う揺れを重ね、炎らしく不規則にちらつかせる
+    const float flicker = 0.75f + 0.15f * std::sin(elapsedTime_ * 11.0f) + 0.1f * std::sin(elapsedTime_ * 23.0f);
+
+    engine_->GetLightManager()->SubmitPointLight(
+        center,
+        lightColor_,
+        lightIntensity_ * strongestPeak.intensity * flicker,
+        lightRadius_ + spread * lightSpreadRadiusRate_,
+        lightVolumetricIntensity_);
 }
 
 void GrassFireEffects::UpdateEmbers()
@@ -396,12 +437,13 @@ void GrassFireEffects::DebugGui()
     binder_->Draw("PeakSeparation", "塊どうしの最短の間隔 (m)");
 
     ImGui::SeparatorText("炎の光");
-    binder_->Draw("MaxLightCount", "ライトの数");
     binder_->Draw("LightColor", "色");
     binder_->Draw("LightIntensity", "強さ");
     binder_->Draw("LightRadius", "届く距離");
     binder_->Draw("LightHeight", "地面からの高さ");
     binder_->Draw("LightVolumetricIntensity", "霧の中の光の筋の強さ");
+    binder_->Draw("LightGatherRadius", "一番強い所からまとめる範囲 (m)");
+    binder_->Draw("LightSpreadRadiusRate", "火の広がりに応じて届く距離を伸ばす割合");
 
     ImGui::SeparatorText("火の粉");
     binder_->Draw("MaxEmberEmitterCount", "出す場所の数");

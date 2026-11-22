@@ -12,6 +12,8 @@
         "StrikeHeight": 250.0,
         "StrikeRadiusMax": 160.0,
         "StrikeRadiusMin": 50.0,
+        "ThunderIgniteChance": 0.15000000596046448,
+        "ThunderIgniteRadius": 4.0,
         "ThunderMaxInterval": 4.0,
         "ThunderMinInterval": 0.5,
         "ThunderShakeDuration": 0.5,

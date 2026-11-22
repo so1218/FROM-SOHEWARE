@@ -12,6 +12,7 @@
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
 - `RendererManager::SampleGrassFire` を追加。その場所の草の炎の強さ (0 ~ 1) を、CPU に読み戻した地図から返す。燃えている所にいるキャラクターにダメージを与えるのに使う
 - `RendererManager::SampleGrassBurnt` を追加。その場所の草の燃え進み具合 (0 ~ 1) を返す。焼けた草むらに隠れられないようにするのに使う。`SetGrassFireReadback` は燃え進み具合の地図も受け取るようにした
+- `GrassFireConstants::rainSpreadDistanceRate` を追加 (今まで使っていなかった `charPadding` の場所)。地面が濡れきったときに、燃え広がる距離に掛ける割合 (初期値 0.35)。燃えている途中で降り出した雨にも効く
 - `AudioPlayer::HasSound` を追加。その名前の音を読み込んでいるかを返す
 - 影を落とす距離を、カメラの描画距離と分けた (`LightManager` の「影の範囲」、初期値 120m)。カスケードはこの距離までを、手前ほど細かく割り振る (初期値 0.75)。今まではカメラの描画距離 (2000m) いっぱいに影の地図を広げていたため、手前でも 1 ピクセルが 36cm ほどになり、葉の影の形が出ていなかった。影は距離の手前 1 割でだんだん消える
 - `AudioPlayer::SetVolume` を追加。鳴っている音の大きさを後から変える。3D の音では、距離による減衰がこれに掛かる。ループの音をゆっくり大きくしたり消したりするのに使う

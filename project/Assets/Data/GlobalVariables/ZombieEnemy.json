@@ -25,6 +25,7 @@
             2.5199999809265137
         ],
         "DamagedSoundVolume": 0.9100000262260437,
+        "DeathIgniteRadius": 4.0,
         "DespawnDistance": 90.0,
         "EmergeAnimSpeed": 1.0,
         "EmergeBuryMargin": 0.30000001192092896,

@@ -71,6 +71,9 @@ struct ZombieConfig
     float footstepMaxDistance = 25.0f;
     float footstepLeftTime = 0.1f;
     float footstepRightTime = 0.6f;
+
+    // 倒されて爆発したときに、足元の草に火がつく半径。0 でつかない
+    float deathIgniteRadius = 4.0f;
 };
 
 class ZombieBehavior : public IEnemyBehavior

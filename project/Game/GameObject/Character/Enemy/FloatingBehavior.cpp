@@ -9,6 +9,7 @@
 #include "MathUtils.h"
 #include "Terrain.h"
 #include "CollisionConfig.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
@@ -523,6 +524,15 @@ void FloatingBehavior::OnDeath(Enemy* owner)
         deathSparkEmitterPtr_->SetPosition(owner->GetTransform().translation_);
         deathSparkEmitterPtr_->Play();
     }
+
+    // 地面の近くで爆発したら草に火がつく
+    const Vector3& position = owner->GetTransform().translation_;
+    float groundHeight = 0.0f;
+    if (config_.deathIgniteRadius > 0.0f && terrain_ && terrain_->GetHeightAt(position.x, position.z, groundHeight) &&
+        position.y - groundHeight <= config_.deathIgniteGroundReach)
+    {
+        engine_->GetRendererManager()->SubmitGrassIgnition({ position.x, groundHeight, position.z }, config_.deathIgniteRadius);
+    }
 }
 
 void FloatingBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
@@ -647,6 +657,8 @@ void FloatingEnemyConfig::Bind(PropertyBinder& binder)
 
     binder.Bind("CrashTime", &crashTime, 5.0f, 0.05f, 0.0f, 10.0f);
     binder.Bind("CrashGravity", &crashGravity, 30.0f, 0.5f, 0.0f, 200.0f);
+    binder.Bind("DeathIgniteRadius", &deathIgniteRadius, 6.0f, 0.1f, 0.0f, 50.0f);
+    binder.Bind("DeathIgniteGroundReach", &deathIgniteGroundReach, 5.0f, 0.1f, 0.0f, 100.0f);
 
     binder.BindColor("SpotColor", &spotColor, { 0.076f, 0.216f, 1.0f, 1.0f });
     binder.Bind("SpotIntensity", &spotIntensity, 30.85f);
@@ -714,6 +726,8 @@ void FloatingEnemyConfig::Draw(PropertyBinder& binder)
         binder.Draw("ThrustersToCrash", "墜落するまでに壊す数");
         binder.Draw("CrashTime", "地面に届かないときに爆発するまで (秒)");
         binder.Draw("CrashGravity", "墜落の重力");
+        binder.Draw("DeathIgniteRadius", "爆発した所の草に火がつく半径 (0 でつかない)");
+        binder.Draw("DeathIgniteGroundReach", "火がつく、地面からの爆発の高さの上限");
         ImGui::TreePop();
     }
 

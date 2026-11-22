@@ -17,6 +17,8 @@
         "CrashGravity": 30.0,
         "CrashTime": 5.0,
         "DamagePerShot": 4,
+        "DeathIgniteGroundReach": 5.0,
+        "DeathIgniteRadius": 6.0,
         "HP": 100,
         "HearingRange": 120.0,
         "HiddenLoseTime": 4.0,

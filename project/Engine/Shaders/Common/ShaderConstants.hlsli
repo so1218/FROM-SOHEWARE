@@ -515,7 +515,7 @@ struct GrassFireConstants
     float groundScorchDarkness; 
 
     float3 charColor;       
-    float charPadding;
+    float rainSpreadDistanceRate;   // 濡れきったときに、燃え広がる距離に掛ける割合
 
     GrassFireIgnition ignitions[MAX_GRASS_FIRE_IGNITIONS];
 };

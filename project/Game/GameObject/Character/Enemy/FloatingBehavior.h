@@ -59,6 +59,9 @@ struct FloatingEnemyConfig
     // 墜落
     float crashTime = 5.0f;        
     float crashGravity = 30.0f;
+    // 爆発した所の草に火がつく半径
+    float deathIgniteRadius = 6.0f;
+    float deathIgniteGroundReach = 5.0f;
 
     // スポットライト
     FS::Vector4 spotColor = { 0.076f, 0.216f, 1.0f, 1.0f };

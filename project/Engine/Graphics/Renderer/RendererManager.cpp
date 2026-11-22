@@ -99,6 +99,7 @@ void RendererManager::Initialize(
 	grassFireSettings_.groundScorchDarkness = 0.85f;
 	grassFireSettings_.charColor = { 0.03f, 0.025f, 0.02f };
 	grassFireSettings_.maxSpreadDistance = 25.0f;
+	grassFireSettings_.rainSpreadDistanceRate = 0.35f;
 
 	viewMatrix_ = Matrix4x4::MakeIdentity();
 	projectionMatrix_ = Matrix4x4::MakeIdentity();

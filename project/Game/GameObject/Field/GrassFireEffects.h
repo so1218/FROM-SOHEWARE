@@ -25,7 +25,8 @@ private:
     };
 
     void FindFirePeaks(const std::vector<float>& readback, uint32_t resolution);
-    void SubmitFireLights();
+    // 一番強く燃えている所の周りの火をまとめて、その中心に 1 つだけ光を置く
+    void SubmitFireLight(const std::vector<float>& readback, uint32_t resolution);
     void UpdateEmbers();
     void UpdateFlamesAndSmoke(const std::vector<float>& readback, uint32_t resolution, float deltaTime);
     // マスの中のランダムな地面の位置
@@ -76,12 +77,13 @@ private:
     float peakSeparation_ = 10.0f;    
 
     // 炎の光
-    int maxLightCount_ = 6;
     FS::Vector4 lightColor_ = { 1.0f, 0.45f, 0.12f, 1.0f };
     float lightIntensity_ = 12.0f;
     float lightRadius_ = 14.0f;
     float lightHeight_ = 1.5f;
     float lightVolumetricIntensity_ = 2.0f;
+    float lightGatherRadius_ = 40.0f;      // 一番強い所からこの距離までの火をまとめる
+    float lightSpreadRadiusRate_ = 1.5f;   // 火が広がっているほど、光の届く距離を伸ばす
 
     // 火の粉
     int maxEmberEmitterCount_ = 6;

@@ -63,6 +63,8 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
             float windAmount = gEnvironment.windSpeed * gFire.windSpreadBias;
             int2 maxTexel = int2(width, height) - 1;
             float2 cellSize = gFire.areaSize / float2(width, height);
+            // 濡れているほど 1 マス燃え移るたびに多く使い、燃え広がる距離が短くなる。もう燃えている火にも効く
+            float rainDistanceScale = lerp(1.0f, max(gFire.rainSpreadDistanceRate, 0.01f), saturate(gEnvironment.wetness));
 
             float receivedHeat = 0.0f;
             float bestBudget = 0.0f;
@@ -81,7 +83,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID)
                     float distanceWeight = (offsetX != 0 && offsetY != 0) ? 0.7071f : 1.0f;
 
                     // 隣から燃え移ると、その分だけ燃え広がれる距離が減る
-                    float stepCost = length(float2(offsetX, offsetY) * cellSize) / windFactor;
+                    float stepCost = length(float2(offsetX, offsetY) * cellSize) / (windFactor * rainDistanceScale);
                     float remainingBudget = neighbor.a - stepCost;
                     if (neighbor.r <= 0.0f || remainingBudget <= 0.0f)
                         continue;
