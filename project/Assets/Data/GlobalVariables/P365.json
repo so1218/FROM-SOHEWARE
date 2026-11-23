@@ -227,6 +227,8 @@
             0.0
         ],
         "FireInterval": 0.3499999940395355,
+        "IncendiaryGroundReach": 4.0,
+        "IncendiaryRadius": 2.0,
         "Magazine Direction": [
             0.33000001311302185,
             1.0,

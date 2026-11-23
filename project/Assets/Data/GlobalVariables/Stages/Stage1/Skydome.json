@@ -1,0 +1,19 @@
+{
+    "Stages/Stage1/Skydome": {
+        "CloudAbsorption": 0.3799999952316284,
+        "CloudBumpScale": 0.14499999582767487,
+        "CloudEdgeSoftness": 0.20999999344348907,
+        "CloudScale": 0.10999999940395355,
+        "SkyGradientExp": 0.7400000095367432,
+        "StarBrightness": 25.299999237060547,
+        "StarDensity": 0.009999999776482582,
+        "StarGridSize": 250.0,
+        "StarSize": 0.09000000357627869,
+        "StarTwinkleAmount": 0.4000000059604645,
+        "StarTwinkleSpeed": 1.5,
+        "WindVelocity": [
+            0.004999999888241291,
+            0.0010000000474974513
+        ]
+    }
+}

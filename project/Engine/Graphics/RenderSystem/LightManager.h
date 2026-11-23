@@ -86,6 +86,8 @@ public:
     PointLight* GetPointLightData() { return pointLightData_; }
     SpotLight* GetSpotLightData() { return spotLightData_; }
     const ShadowData* GetShadowData() const { return shadowData_; }
+    // 影を落とす距離
+    float GetShadowDistance() const { return shadowDistance_; }
 
     ID3D12Resource* GetDirectionalLightResource() const { return directionalLightResource_.Get(); }
     ID3D12Resource* GetPointLightResource() const { return pointLightResource_.Get(); }
@@ -113,6 +115,9 @@ private:
     Vector3 directionalLightPositions_[MAX_DIRECTIONAL_LIGHTS];
 
     std::string prefix_;
+
+    float shadowDistance_ = 300.0f;
+    float cascadeSplitLambda_ = 0.75f;   
 };
 
 }

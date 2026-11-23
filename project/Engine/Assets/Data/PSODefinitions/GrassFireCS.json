@@ -1,0 +1,4 @@
+{
+  "RootSignature": "GrassFireCS",
+  "ComputeShader": "Environment/GrassFire.CS.hlsl"
+}

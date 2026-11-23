@@ -3,15 +3,16 @@
 #include "ImGuiManager.h"
 #include "TextureManager.h"
 #include "StringUtils.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
-GrassField::GrassField(FS::Engine* engine, FS::Terrain* terrain) : FS::GameObject(), terrain_(terrain)
+GrassField::GrassField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName) : FS::GameObject(), terrain_(terrain)
 {
     engine_ = engine;
 
     grassSystem_ = std::make_unique<FS::GrassSystem>(engine_, "noise_39");
-    binder_ = std::make_unique<FS::PropertyBinder>(engine_, "GrassField");
+    binder_ = std::make_unique<FS::PropertyBinder>(engine_, groupName);
 }
 
 void GrassField::Initialize()
@@ -60,6 +61,20 @@ void GrassField::Initialize()
     binder_->Bind("LodDistance2", &cullingData->lodDistance2, 50.0f, 1.0f, 10.0f, 200.0f);
 
     binder_->Bind("DensityThreshold", &densityThreshold_, 0.5f, 0.01f, 0.0f, 1.0f);
+
+    // 延焼
+    GrassFireConstants& fire = engine_->GetRendererManager()->GetGrassFireSettings();
+    binder_->Bind("Fire_BurnDuration", &fire.burnDuration, 6.0f, 0.1f, 0.5f, 60.0f);
+    binder_->Bind("Fire_SpreadRate", &fire.spreadRate, 2.5f, 0.05f, 0.0f, 30.0f);
+    binder_->Bind("Fire_MaxSpreadDistance", &fire.maxSpreadDistance, 25.0f, 0.5f, 0.0f, 1000.0f);
+    binder_->Bind("Fire_WindSpreadBias", &fire.windSpreadBias, 1.5f, 0.05f, 0.0f, 10.0f);
+    binder_->Bind("Fire_RainSuppression", &fire.rainSuppression, 0.9f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Fire_RainSpreadDistanceRate", &fire.rainSpreadDistanceRate, 0.35f, 0.01f, 0.0f, 1.0f);
+    binder_->Bind("Fire_CoolingRate", &fire.coolingRate, 0.5f, 0.01f, 0.0f, 10.0f);
+    binder_->Bind("Fire_CharHeightRatio", &fire.charHeightRatio, 0.15f, 0.01f, 0.0f, 1.0f);
+    binder_->BindColor("Fire_ScorchColor", &fire.scorchColor, { 0.35f, 0.25f, 0.1f });
+    binder_->BindColor("Fire_CharColor", &fire.charColor, { 0.03f, 0.025f, 0.02f });
+    binder_->Bind("Fire_GroundScorchDarkness", &fire.groundScorchDarkness, 0.85f, 0.01f, 0.0f, 1.0f);
     binder_->BindTexture("DensityMap", &densityMapName_, &densityMapHandle_, "white1x1", TextureType::Noise);
 
     binder_->BindTexture("WindMap", &windMapName_, &windMapHandle_, "noise_39", FS::TextureType::Noise, [this]() 
@@ -172,6 +187,30 @@ void GrassField::DebugGui()
         ImGui::Separator();
         binder_->Draw("LodDistance1", "LOD1の距離 (高ポリ境界)");
         binder_->Draw("LodDistance2", "LOD2の距離 (中ポリ境界)");
+    }
+
+    if (ImGui::CollapsingHeader("延焼"))
+    {
+        ImGui::TextDisabled("焼夷弾 (Q / Y で切り替え) で撃った所の草に火がつく");
+        if (ImGui::Button("燃え跡を消す"))
+        {
+            engine_->GetRendererManager()->ResetGrassFire();
+        }
+
+        ImGui::SeparatorText("燃え広がり方");
+        binder_->Draw("Fire_BurnDuration", "1 か所が燃え尽きるまで (秒)");
+        binder_->Draw("Fire_SpreadRate", "燃え移る速さ");
+        binder_->Draw("Fire_MaxSpreadDistance", "火をつけた所から燃え広がる距離 (m、0 で止めない)");
+        binder_->Draw("Fire_WindSpreadBias", "風下への燃え広がりやすさ");
+        binder_->Draw("Fire_RainSuppression", "雨で燃え広がりにくくなる割合");
+        binder_->Draw("Fire_RainSpreadDistanceRate", "濡れきったときの燃え広がる距離 (晴れの何倍か)");
+        binder_->Draw("Fire_CoolingRate", "火が来なくなった所が冷める速さ");
+
+        ImGui::SeparatorText("見た目");
+        binder_->Draw("Fire_CharHeightRatio", "燃え尽きた草の高さ (元に対する割合)");
+        binder_->Draw("Fire_ScorchColor", "熱で枯れた草の色");
+        binder_->Draw("Fire_CharColor", "炭の色");
+        binder_->Draw("Fire_GroundScorchDarkness", "焼け跡の地面の暗さ");
     }
 
     ImGui::End();

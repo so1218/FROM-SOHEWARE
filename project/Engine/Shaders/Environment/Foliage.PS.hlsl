@@ -1,6 +1,7 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Common/ShadowUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 
@@ -44,6 +45,7 @@ PixelShaderOutput main(FoliagePSInput input, bool isFrontFace : SV_IsFrontFace)
     float viewDepth = distance(gFrameData.cameraWorldPosition, input.worldPosition);
     float3 lightDirection = normalize(-gDirectionalLights[0].direction);
     float shadowFactor = CalculateShadow(input.worldPosition, normal, viewDepth);
+    shadowFactor = lerp(shadowFactor, 1.0f, CalculateShadowDistanceFade(viewDepth, gShadowData.cascadeSplits));
     float3 lightColor = gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity * shadowFactor;
 
     // Half-Lambert で光の裏側も少し明るくする
@@ -70,7 +72,7 @@ float CalculateShadow(float3 worldPosition, float3 normal, float viewDepth)
     float NdotL = dot(normal, lightDirection);
     float minShadow = 1.0f - saturate(gMaterial.shadowDensity);
 
-    // 光の真裏だけは調べずに影にする (少し回り込む面は影で潰さない)
+    // 光の真裏だけは調べずに影にする 
     if (NdotL <= -0.3f)
     {
         return minShadow;

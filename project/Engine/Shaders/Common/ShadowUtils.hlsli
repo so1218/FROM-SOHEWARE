@@ -1,4 +1,14 @@
+#ifndef SHADOW_UTILS_HLSLI
+#define SHADOW_UTILS_HLSLI
+
 #include "Common/ShaderConstants.hlsli"
+
+// 影を落とす距離の手前 1 割で、影をだんだん消す
+float CalculateShadowDistanceFade(float viewDepth, float4 cascadeSplits)
+{
+    float shadowDistance = cascadeSplits[MAX_CASCADE_COUNT - 1];
+    return saturate((viewDepth - shadowDistance * 0.9f) / max(shadowDistance * 0.1f, 0.001f));
+}
 
 static const float2 poissonDisk[16] =
 {
@@ -77,9 +87,10 @@ float CalculateShadowCSM(
         return 1.0f;
 
     float minShadow = 1.0f - saturate(shadowDensity);
+    float distanceFade = CalculateShadowDistanceFade(viewDepth, cascadeSplits);
 
     if (dot(normal, lightDir) <= 0.0f)
-        return minShadow;
+        return lerp(minShadow, 1.0f, distanceFade);
 
     // カスケードインデックスの判定
     uint cascadeIndex = 0;
@@ -117,5 +128,7 @@ float CalculateShadowCSM(
         }
     }
 
-    return lerp(minShadow, 1.0f, shadowVisibility);
+    return lerp(lerp(minShadow, 1.0f, shadowVisibility), 1.0f, distanceFade);
 }
+
+#endif

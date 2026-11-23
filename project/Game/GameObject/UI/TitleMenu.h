@@ -3,6 +3,7 @@
 #include "PropertyBinder.h"
 #include "Sprite.h"
 #include "Text.h"
+#include "RepeatInput.h"
 
 class TitleMenu : public FS::GameObject
 {
@@ -21,6 +22,10 @@ public:
     void Restart();
     // ポーズメニューを開いている間は決定を受け付けない
     void SetInputEnabled(bool isEnabled) { isInputEnabled_ = isEnabled; }
+    // 黒い画面からの出だしを省いて、決定を待つところから始める
+    void SkipFadeIn();
+    // 左右の入力でステージを選び直したか
+    bool TakeStageChangeRequest();
 
 private:
     enum class Phase
@@ -31,17 +36,23 @@ private:
     };
 
     bool IsConfirmTriggered() const;
+    // 決定を待つ間の左右の入力で、選ぶステージを変える
+    void UpdateStageSelect(float deltaTime);
 
     FS::Engine* engine_ = nullptr;
     std::unique_ptr<FS::PropertyBinder> binder_;
     std::unique_ptr<FS::Text> titleText_;
     std::unique_ptr<FS::Text> subtitleText_;
     std::unique_ptr<FS::Text> startText_;
+    std::unique_ptr<FS::Text> stageText_;
     std::unique_ptr<FS::Sprite> blackScreen_;
 
     Phase phase_ = Phase::FadeIn;
     float phaseTimer_ = 0.0f;
     bool isInputEnabled_ = true;
+    bool isStageChangeRequested_ = false;
+    FS::RepeatInput leftRepeat_;
+    FS::RepeatInput rightRepeat_;
 
     // パラメータ
     float fadeInTime_ = 2.0f;       

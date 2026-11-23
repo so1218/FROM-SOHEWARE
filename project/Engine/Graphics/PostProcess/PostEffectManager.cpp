@@ -117,40 +117,6 @@ void PostEffectManager::Initialize(
     cbData_->overlayVignetteColor = Vector3(0.0f, 0.0f, 0.0f);
 }
 
-void PostEffectManager::SetFogBoundary(const Vector2& min, const Vector2& max)
-{
-    VolumetricFogSettings* fogSettings = GetVolumetricFogSettings();
-    if (!fogSettings) return;
-
-    fogSettings->boundaryEnabled = 1;
-    fogSettings->boundaryMin = min;
-    fogSettings->boundaryMax = max;
-}
-
-void PostEffectManager::UpdateBoundaryFogData()
-{
-    FinalCompositeSettings* composite = GetCompositeSettings();
-    const VolumetricFogSettings* fog = GetVolumetricFogSettings();
-    if (!composite || !fog) return;
-
-    // 霧を描いていないときは、遠くの境界の霧も出さない
-    const bool isActive = composite->enableVolumetricFog != 0 && fog->boundaryEnabled != 0 && fog->boundaryDensity > 0.0f;
-    composite->boundaryEnabled = isActive ? 1 : 0;
-    composite->boundaryMin = fog->boundaryMin;
-    composite->boundaryMax = fog->boundaryMax;
-    composite->boundaryDensity = fog->boundaryDensity;
-    composite->boundaryInset = fog->boundaryInset;
-    composite->boundaryRampLength = fog->boundaryRampLength;
-    composite->boundaryHeightFalloff = fog->boundaryHeightFalloff;
-    composite->boundaryBaseHeight = fog->boundaryBaseHeight;
-    composite->boundaryNoiseIntensity = fog->boundaryNoiseIntensity;
-    composite->fogAnisotropy = fog->anisotropy;
-    composite->fogExtinctionScale = fog->extinctionScale;
-    composite->fogAlbedo = fog->albedo;
-    composite->fogMaxDistance = fog->maxDistance;
-    composite->fogAmbientLight = fog->ambientLight;
-}
-
 void PostEffectManager::SetOverlayVignette(float amount, const Vector3& color, float start, float end)
 {
     if (!cbData_) return;
@@ -167,12 +133,6 @@ void PostEffectManager::Update(const Matrix4x4& viewMatrix, const Matrix4x4& pro
     if (cbData_)
     {
         cbData_->totalTime = static_cast<float>(TimeManager::GetInstance()->GetTotalTime());
-    }
-
-    // 境界の霧は、ゲームがこのフレームに範囲を渡したときだけ出す
-    if (VolumetricFogSettings* fogSettings = GetVolumetricFogSettings())
-    {
-        fogSettings->boundaryEnabled = 0;
     }
 
     if (cbData_)
@@ -272,9 +232,6 @@ void PostEffectManager::ExecutePostEffects(ID3D12GraphicsCommandList* cmdList)
         volumetricFogBilateralPass_->SetRawFogSrvIndex(volumetricFogPass_->GetSRVIndex());
         volumetricFogBilateralPass_->Execute(cmdList, context_);
     }
-
-    // 遠くの境界の霧に、Volumetric Fog の値を渡す
-    UpdateBoundaryFogData();
 
     // 最終合成
     {
@@ -440,13 +397,6 @@ void PostEffectManager::BindProperties(PropertyBinder& binder, const std::string
             binder.Bind(p + "VolumetricFog/BilateralSpatialSigma", &fogBilateralSettings->spatialSigma, 2.0f, 0.1f, 0.1f, 10.0f);
             binder.Bind(p + "VolumetricFog/BilateralDepthSigma", &fogBilateralSettings->depthSigma, 0.001f, 0.0001f, 0.00001f, 0.1f);
         }
-
-        binder.Bind(p + "VolumetricFog/BoundaryDensity", &volFogSettings->boundaryDensity, 0.05f, 0.001f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/BoundaryInset", &volFogSettings->boundaryInset, 20.0f, 1.0f, -500.0f, 500.0f);
-        binder.Bind(p + "VolumetricFog/BoundaryRampLength", &volFogSettings->boundaryRampLength, 80.0f, 1.0f, 1.0f, 2000.0f);
-        binder.Bind(p + "VolumetricFog/BoundaryHeightFalloff", &volFogSettings->boundaryHeightFalloff, 0.02f, 0.001f, 0.0f, 1.0f);
-        binder.Bind(p + "VolumetricFog/BoundaryBaseHeight", &volFogSettings->boundaryBaseHeight, 0.0f, 1.0f, -500.0f, 2000.0f);
-        binder.Bind(p + "VolumetricFog/BoundaryNoiseIntensity", &volFogSettings->boundaryNoiseIntensity, 0.6f, 0.01f, 0.0f, 1.0f);
 
         BindFogVolumes(binder);
     }
@@ -630,14 +580,6 @@ void PostEffectManager::DebugGui(PropertyBinder& binder)
             binder.Draw(p + "VolumetricFog/BilateralBlurRadius", "ノイズ除去 半径");
             binder.Draw(p + "VolumetricFog/BilateralSpatialSigma", "ノイズ除去 Spatial Sigma");
             binder.Draw(p + "VolumetricFog/BilateralDepthSigma", "ノイズ除去 Depth Sigma");
-
-            ImGui::SeparatorText("歩ける範囲の外の霧");
-            binder.Draw(p + "VolumetricFog/BoundaryDensity", "濃さ (0 で出さない)");
-            binder.Draw(p + "VolumetricFog/BoundaryInset", "境界から内側へ何 m で濃くなり始めるか");
-            binder.Draw(p + "VolumetricFog/BoundaryRampLength", "濃くなりきるまでの距離");
-            binder.Draw(p + "VolumetricFog/BoundaryHeightFalloff", "上で薄くなる割合 (大きいほど低く溜まる)");
-            binder.Draw(p + "VolumetricFog/BoundaryBaseHeight", "一番濃い高さ (これより下は同じ濃さ)");
-            binder.Draw(p + "VolumetricFog/BoundaryNoiseIntensity", "むらの強さ");
 
             if (volumetricFogPass_)
             {

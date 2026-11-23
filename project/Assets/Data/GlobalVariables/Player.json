@@ -12,6 +12,12 @@
             0.20000000298023224
         ],
         "Ammo_FontSize": 56.0,
+        "Ammo_IncendiaryColor": [
+            1.0,
+            0.550000011920929,
+            0.15000000596046448,
+            0.949999988079071
+        ],
         "Ammo_LowColor": [
             1.0,
             0.3499999940395355,
@@ -62,6 +68,39 @@
             -110.0,
             -36.0
         ],
+        "Ammo_TypeFontSize": 22.0,
+        "Ammo_TypeTextOffset": [
+            -200.0,
+            -44.0
+        ],
+        "Burn_AfterburnTime": 2.0,
+        "Burn_CameraShake": 0.012000000104308128,
+        "Burn_DamagePerSecond": 8.0,
+        "Burn_FadeInTime": 0.20000000298023224,
+        "Burn_FadeOutTime": 0.6000000238418579,
+        "Burn_FireThreshold": 0.20000000298023224,
+        "Burn_FlashAmount": 0.3499999940395355,
+        "Burn_FlashTime": 0.25,
+        "Burn_FlickerAmount": 0.15000000596046448,
+        "Burn_FlickerSpeed": 9.0,
+        "Burn_SoundVolume": 0.5,
+        "Burn_TickInterval": 0.5,
+        "Burn_VibrationStrength": 0.25,
+        "Burn_VibrationTime": 0.10000000149011612,
+        "Burn_VignetteAmount": 0.5,
+        "Burn_VignetteColor": [
+            1.0,
+            0.3499999940395355,
+            0.05000000074505806
+        ],
+        "Burn_VignetteEnd": 0.949999988079071,
+        "Burn_VignetteHotColor": [
+            0.8500000238418579,
+            0.05000000074505806,
+            0.019999999552965164
+        ],
+        "Burn_VignetteStart": 0.30000001192092896,
+        "Burn_VoiceVolume": 0.5,
         "ColliderOffset": [
             0.0,
             4.800000190734863,
@@ -73,18 +112,25 @@
             2.0
         ],
         "CrouchBlendTime": 0.20000000298023224,
-        "CrouchColliderHeightRate": 0.6000000238418579,
+        "CrouchColliderHeightRate": 0.3700000047683716,
         "CrouchIdleAnimSpeed": 1.0,
-        "CrouchSpeed": 10.0,
-        "CrouchWalkAnimSpeed": 0.699999988079071,
+        "CrouchSpeed": 5.0,
+        "CrouchWalkAnimSpeed": 1.1299999952316284,
         "DashCost": 1.0,
         "DashSpeed": 1.2999999523162842,
         "DodgeAnimSpeed": 1.0,
-        "DodgeDistance": 18.0,
+        "DodgeDistance": 16.0,
         "DodgeDuration": 1.0,
-        "DodgeStaminaCost": 30.0,
+        "DodgeStaminaCost": 20.0,
         "Gravity": 74.04000091552734,
         "HP": 9.819999694824219,
+        "Health_BurnBlinkColor": [
+            1.0,
+            0.30000001192092896,
+            0.05000000074505806,
+            0.949999988079071
+        ],
+        "Health_BurnBlinkSpeed": 8.0,
         "Health_FlashColor": [
             0.800000011920929,
             0.0,
@@ -114,16 +160,17 @@
         ],
         "Health_LowRatio": 0.30000001192092896,
         "Health_Max": 100,
+        "HiddenBurntThreshold": 0.30000001192092896,
         "HiddenFadeInTime": 0.28999999165534973,
         "HiddenFadeOutTime": 0.5,
         "HiddenVignetteAmount": 1.0,
         "HiddenVignetteColor": [
-            0.0,
-            0.04192547872662544,
-            0.0838509202003479
+            0.00800509937107563,
+            0.0195305235683918,
+            0.031055927276611328
         ],
-        "HiddenVignetteEnd": 0.8299999833106995,
-        "HiddenVignetteStart": 0.23000000417232513,
+        "HiddenVignetteEnd": 0.8100000023841858,
+        "HiddenVignetteStart": 0.0,
         "IdleAnimSpeed": 1.0,
         "IdleToRunBlendTime": 0.25,
         "InteractionForce": 1.309999942779541,
@@ -142,7 +189,7 @@
             1.0,
             0.949999988079071
         ],
-        "Money_FontSize": 40.0,
+        "Money_FontSize": 36.0,
         "Money_GainColor": [
             1.0,
             0.8500000238418579,
@@ -151,14 +198,24 @@
         ],
         "Money_GainFontSize": 28.0,
         "Money_GainOffset": [
-            -40.0,
-            90.0
+            -38.0,
+            140.0
         ],
         "Money_GainRise": 12.0,
         "Money_GainShowTime": 1.2000000476837158,
+        "Money_IconColor": [
+            0.9780101776123047,
+            1.0,
+            0.11490684747695923,
+            0.949999988079071
+        ],
+        "Money_IconGap": 10.0,
+        "Money_IconOffsetY": 0.0,
+        "Money_IconScale": 1.0,
+        "Money_IconTexture": "pouch",
         "Money_Offset": [
-            -40.0,
-            40.0
+            -38.0,
+            88.0
         ],
         "Muzzle Flash Color": [
             1.0,
@@ -718,7 +775,7 @@
         "PlayerModel_Mat5_RimInten": 10.0,
         "PlayerModel_Mat5_RimPower": 4.199999809265137,
         "PlayerModel_Mat5_RimUseDir": 0,
-        "PlayerModel_Mat5_Roughness": 0.1899999976158142,
+        "PlayerModel_Mat5_Roughness": 0.03999999910593033,
         "PlayerModel_Mat5_ShadowBias": 0.0005000000237487257,
         "PlayerModel_Mat5_ShadowDens": 0.800000011920929,
         "PlayerModel_Mat5_ShadowEnv": 0.0,
@@ -1154,7 +1211,7 @@
         "SpawnRotationY": -114.5,
         "SprintAnimSpeed": 1.2999999523162842,
         "SprintSpeedRate": 1.5,
-        "SprintStaminaPerSecond": 10.0,
+        "SprintStaminaPerSecond": 20.0,
         "Stamina": 4.550000190734863,
         "StaminaRecovery": 0.5,
         "Stamina_ExhaustedColor": [
@@ -1179,8 +1236,8 @@
             6.0
         ],
         "Stamina_Max": 100.0,
-        "Stamina_RegenDelay": 0.800000011920929,
-        "Stamina_RegenPerSecond": 20.0,
+        "Stamina_RegenDelay": 2.0,
+        "Stamina_RegenPerSecond": 7.5,
         "WeaponModel_AddShadow": 1,
         "WeaponModel_AlbedoMap": "white1x1",
         "WeaponModel_AlphaThres": 0.009999999776482582,

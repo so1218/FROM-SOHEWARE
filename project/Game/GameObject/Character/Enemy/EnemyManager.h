@@ -8,6 +8,7 @@
 #include "ZombieBehavior.h"
 
 class CoinManager;
+class Player;
 
 class EnemyManager : public FS::GameObject
 {
@@ -19,15 +20,23 @@ public:
     void Draw() override;
     void DebugGui() override;
 
-    // 敵の種類ごとにマテリアルを共有する関数
-    void RebuildMaterialSharing();
-    void AddEnemy(); 
-    // 保存されている数だけ作り直す
+    // 全部消して、遊び始めの状態に戻す
     void ResetEnemies();
 
 private:
-    std::unique_ptr<Enemy> CreateEnemy(int index);
     void SpawnEnemies();
+
+    // 浮遊する敵
+    void UpdateFloatingSpawning();
+    // 遊び始めに、プレイヤーから離れたフィールドの上に置く
+    void SpawnInitialFloating(const FS::Vector3& playerPosition);
+    // 画面に映っていない遠くの上空に出し、プレイヤーのいる辺りへ向かわせる
+    bool SpawnArrivingFloating(Player* player);
+    void SpawnFloating(const FS::Vector3& position, const FS::Vector3& firstWanderTarget);
+    // プレイヤーの周りで、歩ける地形の内側の点を探す
+    bool FindFieldPointAround(const FS::Vector3& origin, float minDistance, float maxDistance, FS::Vector3& outPoint);
+    int CountAliveFloating() const;
+    float GetGroundHeight(float x, float z) const;
 
     // ゾンビ
     void UpdateZombieSpawning();
@@ -45,6 +54,8 @@ private:
 
     // 全機のスラスターがマテリアルを共有する元のモデル
     std::unique_ptr<FS::Model> thrusterModel_;
+    // 全機の本体がマテリアルを共有する元のモデル
+    std::unique_ptr<FS::Model> floatingMaterialSource_;
 
     std::vector<std::unique_ptr<Enemy>> enemies_;
 
@@ -53,7 +64,7 @@ private:
     FloatingEnemyConfig floatingConfig_;
     std::unique_ptr<FS::PropertyBinder> floatingBinder_;
 
-    int enemyCount_ = 0; // JSONに保存される全体の数
+    float floatingSpawnTimer_ = 0.0f;
 
     // ゾンビ
     ZombieConfig zombieConfig_;

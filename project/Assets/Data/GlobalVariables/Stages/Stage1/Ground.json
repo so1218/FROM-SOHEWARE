@@ -1,0 +1,40 @@
+{
+    "Stages/Stage1/Ground": {
+        "Terrain_AddShadow": 1,
+        "Terrain_AlbedoMap": "forest_leaves_02_diffuse_1k",
+        "Terrain_Color": [
+            0.5201482176780701,
+            0.6877636909484863,
+            0.34823477268218994,
+            1.0
+        ],
+        "Terrain_Emissive": 3.5,
+        "Terrain_EnvMapInt": 0.5,
+        "Terrain_EnvMapTex": "pureSky",
+        "Terrain_Heightmap": "noise_39",
+        "Terrain_MaxHeight": 20.200000762939453,
+        "Terrain_Metalness": 0.09000000357627869,
+        "Terrain_NormEnable": 1,
+        "Terrain_NormInten": 2.5999999046325684,
+        "Terrain_NormTile": 50.0,
+        "Terrain_NormalMapTex": "forest_leaves_02_nor_dx_1k",
+        "Terrain_Position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "Terrain_RippleFreq": 6.0,
+        "Terrain_RippleMap": "normal_31",
+        "Terrain_RippleScale": 0.4000000059604645,
+        "Terrain_RippleSize": 0.4000000059604645,
+        "Terrain_RippleSpeed": 0.4000000059604645,
+        "Terrain_RippleStren": 10.0,
+        "Terrain_Roughness": 1.0,
+        "Terrain_ShadowBias": 0.0005000000237487257,
+        "Terrain_ShadowDens": 0.7400000095367432,
+        "Terrain_ShadowEnv": 0.10999999940395355,
+        "Terrain_ShadowNormalBias": 0.0,
+        "Terrain_ShadowSoft": 0.009999999776482582,
+        "Terrain_Wetness": 0.5
+    }
+}

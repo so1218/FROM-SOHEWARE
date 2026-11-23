@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "PlayerStateJump.h"
 #include "PlayerStateNormal.h"
+#include "AudioPlayer.h"
 
 using namespace FS;
 
@@ -22,5 +23,6 @@ void PlayerStateJump::Update(Player* player)
     {
         player->SnapToGround();
         player->GetStateMachine()->ChangeState<PlayerStateNormal>();
+        AudioPlayer::GetInstance().Play("playerLand", 0.4f);
     }
 }

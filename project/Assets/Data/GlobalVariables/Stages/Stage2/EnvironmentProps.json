@@ -1,0 +1,3000 @@
+{
+    "Stages/Stage2/EnvironmentProps": {
+        "Master_bonFire": {
+            "MasterModel_Mat0_AddShadow": 1,
+            "MasterModel_Mat0_AlbedoMap": "white1x1",
+            "MasterModel_Mat0_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat0_Color": [
+                0.25738394260406494,
+                0.209599569439888,
+                0.209599569439888,
+                1.0
+            ],
+            "MasterModel_Mat0_DiffuseRef": 4.0,
+            "MasterModel_Mat0_DisEnable": 0,
+            "MasterModel_Mat0_DisThres": 0.5,
+            "MasterModel_Mat0_DissolveTex": "white1x1",
+            "MasterModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat0_EdgeInten": 2.0,
+            "MasterModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat0_Emissive": 1.0,
+            "MasterModel_Mat0_EnvMapInt": 0.0,
+            "MasterModel_Mat0_EnvMapTex": "pureSky",
+            "MasterModel_Mat0_HeightMapTex": "white1x1",
+            "MasterModel_Mat0_LightMode": 3,
+            "MasterModel_Mat0_Lighting": 1,
+            "MasterModel_Mat0_Metalness": 0.0,
+            "MasterModel_Mat0_NormEnable": 0,
+            "MasterModel_Mat0_NormInten": 1.0,
+            "MasterModel_Mat0_NormTile": 1.0,
+            "MasterModel_Mat0_NormalMapTex": "white1x1",
+            "MasterModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat0_OutlineEnable": 0,
+            "MasterModel_Mat0_OutlineWidth": 1.0,
+            "MasterModel_Mat0_POMEnable": 0,
+            "MasterModel_Mat0_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat0_POMMaxSteps": 32.0,
+            "MasterModel_Mat0_POMMinSteps": 8.0,
+            "MasterModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat0_PuddleEmission": 0.0,
+            "MasterModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleNoise": "white1x1",
+            "MasterModel_Mat0_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleTint": 0.5,
+            "MasterModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_RimEnable": 0,
+            "MasterModel_Mat0_RimInten": 1.0,
+            "MasterModel_Mat0_RimPower": 3.0,
+            "MasterModel_Mat0_RimUseDir": 0,
+            "MasterModel_Mat0_Roughness": 0.5,
+            "MasterModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat0_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat0_ShadowEnv": 0.0,
+            "MasterModel_Mat0_ShadowSoft": 0.0,
+            "MasterModel_Mat0_Shininess": 50.0,
+            "MasterModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat0_TriScale": 0.10000000149011612,
+            "MasterModel_Mat0_TriSharpness": 4.0,
+            "MasterModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UsePuddle": 0,
+            "MasterModel_Mat0_UseTriplanar": 0,
+            "MasterModel_Mat1_AddShadow": 1,
+            "MasterModel_Mat1_AlbedoMap": "white1x1",
+            "MasterModel_Mat1_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat1_Color": [
+                0.6536965370178223,
+                0.6028252243995667,
+                0.6028252243995667,
+                1.0
+            ],
+            "MasterModel_Mat1_DiffuseRef": 4.0,
+            "MasterModel_Mat1_DisEnable": 0,
+            "MasterModel_Mat1_DisThres": 0.5,
+            "MasterModel_Mat1_DissolveTex": "white1x1",
+            "MasterModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat1_EdgeInten": 2.0,
+            "MasterModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat1_Emissive": 1.5,
+            "MasterModel_Mat1_EnvMapInt": 0.0,
+            "MasterModel_Mat1_EnvMapTex": "pureSky",
+            "MasterModel_Mat1_HeightMapTex": "white1x1",
+            "MasterModel_Mat1_LightMode": 3,
+            "MasterModel_Mat1_Lighting": 1,
+            "MasterModel_Mat1_Metalness": 0.9599999785423279,
+            "MasterModel_Mat1_NormEnable": 1,
+            "MasterModel_Mat1_NormInten": 3.119999885559082,
+            "MasterModel_Mat1_NormTile": 1.0,
+            "MasterModel_Mat1_NormalMapTex": "normal_32",
+            "MasterModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat1_OutlineEnable": 0,
+            "MasterModel_Mat1_OutlineWidth": 1.0,
+            "MasterModel_Mat1_POMEnable": 0,
+            "MasterModel_Mat1_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat1_POMMaxSteps": 32.0,
+            "MasterModel_Mat1_POMMinSteps": 8.0,
+            "MasterModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat1_PuddleEmission": 0.0,
+            "MasterModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleNoise": "white1x1",
+            "MasterModel_Mat1_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleTint": 0.5,
+            "MasterModel_Mat1_RimColor": [
+                1.0,
+                0.07003891468048096,
+                0.0
+            ],
+            "MasterModel_Mat1_RimEnable": 1,
+            "MasterModel_Mat1_RimInten": 2.4000000953674316,
+            "MasterModel_Mat1_RimPower": 6.099999904632568,
+            "MasterModel_Mat1_RimUseDir": 0,
+            "MasterModel_Mat1_Roughness": 0.5799999833106995,
+            "MasterModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat1_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat1_ShadowEnv": 0.0,
+            "MasterModel_Mat1_ShadowSoft": 0.0,
+            "MasterModel_Mat1_Shininess": 50.0,
+            "MasterModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat1_TriScale": 0.10000000149011612,
+            "MasterModel_Mat1_TriSharpness": 4.0,
+            "MasterModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UsePuddle": 0,
+            "MasterModel_Mat1_UseTriplanar": 0,
+            "MasterModel_Mat2_AddShadow": 1,
+            "MasterModel_Mat2_AlbedoMap": "white1x1",
+            "MasterModel_Mat2_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat2_Color": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat2_DiffuseRef": 4.0,
+            "MasterModel_Mat2_DisEnable": 0,
+            "MasterModel_Mat2_DisThres": 0.5,
+            "MasterModel_Mat2_DissolveTex": "white1x1",
+            "MasterModel_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat2_EdgeInten": 2.0,
+            "MasterModel_Mat2_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat2_Emissive": 7.699999809265137,
+            "MasterModel_Mat2_EnvMapInt": 0.05000000074505806,
+            "MasterModel_Mat2_EnvMapTex": "pureSky",
+            "MasterModel_Mat2_HeightMapTex": "white1x1",
+            "MasterModel_Mat2_LightMode": 3,
+            "MasterModel_Mat2_Lighting": 1,
+            "MasterModel_Mat2_Metalness": 0.0,
+            "MasterModel_Mat2_NormEnable": 1,
+            "MasterModel_Mat2_NormInten": 3.2799999713897705,
+            "MasterModel_Mat2_NormTile": 5.599999904632568,
+            "MasterModel_Mat2_NormalMapTex": "normal_18",
+            "MasterModel_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat2_OutlineEnable": 0,
+            "MasterModel_Mat2_OutlineWidth": 1.0,
+            "MasterModel_Mat2_POMEnable": 0,
+            "MasterModel_Mat2_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat2_POMMaxSteps": 32.0,
+            "MasterModel_Mat2_POMMinSteps": 8.0,
+            "MasterModel_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat2_PuddleEmission": 0.0,
+            "MasterModel_Mat2_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat2_PuddleNoise": "white1x1",
+            "MasterModel_Mat2_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat2_PuddleTint": 0.5,
+            "MasterModel_Mat2_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_RimEnable": 0,
+            "MasterModel_Mat2_RimInten": 1.0,
+            "MasterModel_Mat2_RimPower": 3.0,
+            "MasterModel_Mat2_RimUseDir": 0,
+            "MasterModel_Mat2_Roughness": 0.3700000047683716,
+            "MasterModel_Mat2_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat2_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat2_ShadowEnv": 0.0,
+            "MasterModel_Mat2_ShadowSoft": 0.0,
+            "MasterModel_Mat2_Shininess": 50.0,
+            "MasterModel_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat2_TriScale": 0.10000000149011612,
+            "MasterModel_Mat2_TriSharpness": 4.0,
+            "MasterModel_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat2_UsePuddle": 0,
+            "MasterModel_Mat2_UseTriplanar": 0,
+            "MasterModel_Mat3_AddShadow": 1,
+            "MasterModel_Mat3_AlbedoMap": "white1x1",
+            "MasterModel_Mat3_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_DiffuseRef": 4.0,
+            "MasterModel_Mat3_DisEnable": 0,
+            "MasterModel_Mat3_DisThres": 0.5,
+            "MasterModel_Mat3_DissolveTex": "white1x1",
+            "MasterModel_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat3_EdgeInten": 2.0,
+            "MasterModel_Mat3_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat3_Emissive": 1.7000000476837158,
+            "MasterModel_Mat3_EnvMapInt": 0.36000001430511475,
+            "MasterModel_Mat3_EnvMapTex": "pureSky",
+            "MasterModel_Mat3_HeightMapTex": "white1x1",
+            "MasterModel_Mat3_LightMode": 3,
+            "MasterModel_Mat3_Lighting": 1,
+            "MasterModel_Mat3_Metalness": 0.019999999552965164,
+            "MasterModel_Mat3_NormEnable": 1,
+            "MasterModel_Mat3_NormInten": 1.8300000429153442,
+            "MasterModel_Mat3_NormTile": 6.099999904632568,
+            "MasterModel_Mat3_NormalMapTex": "normal_18",
+            "MasterModel_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat3_OutlineEnable": 0,
+            "MasterModel_Mat3_OutlineWidth": 1.0,
+            "MasterModel_Mat3_POMEnable": 0,
+            "MasterModel_Mat3_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat3_POMMaxSteps": 32.0,
+            "MasterModel_Mat3_POMMinSteps": 8.0,
+            "MasterModel_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat3_PuddleEmission": 0.0,
+            "MasterModel_Mat3_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat3_PuddleNoise": "white1x1",
+            "MasterModel_Mat3_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat3_PuddleTint": 0.5,
+            "MasterModel_Mat3_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_RimEnable": 0,
+            "MasterModel_Mat3_RimInten": 1.0,
+            "MasterModel_Mat3_RimPower": 3.0,
+            "MasterModel_Mat3_RimUseDir": 0,
+            "MasterModel_Mat3_Roughness": 0.8999999761581421,
+            "MasterModel_Mat3_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat3_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat3_ShadowEnv": 0.0,
+            "MasterModel_Mat3_ShadowSoft": 0.0,
+            "MasterModel_Mat3_Shininess": 50.0,
+            "MasterModel_Mat3_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat3_TriScale": 0.10000000149011612,
+            "MasterModel_Mat3_TriSharpness": 4.0,
+            "MasterModel_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat3_UsePuddle": 0,
+            "MasterModel_Mat3_UseTriplanar": 0,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "ModelName": "bonFire"
+        },
+        "Master_building_01": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "white1x1",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                1.0,
+                0.9551354050636292,
+                0.7637130618095398,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 0,
+            "MasterModel_DisThres": 0.0,
+            "MasterModel_DissolveTex": "noise_51",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.17721521854400635,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 1.5,
+            "MasterModel_EdgeWidth": 0.08699999749660492,
+            "MasterModel_Emissive": 1.0,
+            "MasterModel_EnvMapInt": 0.05000000074505806,
+            "MasterModel_EnvMapTex": "pureSky",
+            "MasterModel_HeightMapTex": "white1x1",
+            "MasterModel_LightMode": 3,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Metalness": 0.3400000035762787,
+            "MasterModel_NormEnable": 1,
+            "MasterModel_NormInten": 3.0,
+            "MasterModel_NormTile": 1.5,
+            "MasterModel_NormalMapTex": "normal_33",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 1.0,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.699999988079071,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "ModelName": "building_01"
+        },
+        "Master_house1": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "white1x1",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 0,
+            "MasterModel_DisThres": 0.5,
+            "MasterModel_DissolveTex": "white1x1",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 2.0,
+            "MasterModel_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Emissive": 1.0,
+            "MasterModel_EnvMapInt": 0.0,
+            "MasterModel_EnvMapTex": "skybox",
+            "MasterModel_HeightMapTex": "white1x1",
+            "MasterModel_LightMode": 1,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Mat0_AddShadow": 1,
+            "MasterModel_Mat0_AlbedoMap": "house1_baseColor",
+            "MasterModel_Mat0_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_DiffuseRef": 4.0,
+            "MasterModel_Mat0_DisEnable": 0,
+            "MasterModel_Mat0_DisThres": 0.5,
+            "MasterModel_Mat0_DissolveTex": "white1x1",
+            "MasterModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat0_EdgeInten": 2.0,
+            "MasterModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat0_Emissive": 2.200000047683716,
+            "MasterModel_Mat0_EnvMapInt": 0.12999999523162842,
+            "MasterModel_Mat0_EnvMapTex": "pureSky",
+            "MasterModel_Mat0_HeightMapTex": "white1x1",
+            "MasterModel_Mat0_LightMode": 3,
+            "MasterModel_Mat0_Lighting": 1,
+            "MasterModel_Mat0_Metalness": 0.5899999737739563,
+            "MasterModel_Mat0_NormEnable": 1,
+            "MasterModel_Mat0_NormInten": 0.1599999964237213,
+            "MasterModel_Mat0_NormTile": 16.0,
+            "MasterModel_Mat0_NormalMapTex": "normal_23",
+            "MasterModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat0_OutlineEnable": 0,
+            "MasterModel_Mat0_OutlineWidth": 1.0,
+            "MasterModel_Mat0_POMEnable": 0,
+            "MasterModel_Mat0_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat0_POMMaxSteps": 32.0,
+            "MasterModel_Mat0_POMMinSteps": 8.0,
+            "MasterModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat0_PuddleEmission": 0.0,
+            "MasterModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleNoise": "white1x1",
+            "MasterModel_Mat0_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleTint": 0.5,
+            "MasterModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_RimEnable": 0,
+            "MasterModel_Mat0_RimInten": 1.0,
+            "MasterModel_Mat0_RimPower": 3.0,
+            "MasterModel_Mat0_RimUseDir": 0,
+            "MasterModel_Mat0_Roughness": 0.6899999976158142,
+            "MasterModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat0_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat0_ShadowEnv": 0.0,
+            "MasterModel_Mat0_ShadowSoft": 0.0,
+            "MasterModel_Mat0_Shininess": 50.0,
+            "MasterModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat0_TriScale": 0.10000000149011612,
+            "MasterModel_Mat0_TriSharpness": 4.0,
+            "MasterModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UsePuddle": 0,
+            "MasterModel_Mat0_UseTriplanar": 0,
+            "MasterModel_Mat1_AddShadow": 1,
+            "MasterModel_Mat1_AlbedoMap": "house1_baseColor",
+            "MasterModel_Mat1_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_DiffuseRef": 4.0,
+            "MasterModel_Mat1_DisEnable": 0,
+            "MasterModel_Mat1_DisThres": 0.5,
+            "MasterModel_Mat1_DissolveTex": "white1x1",
+            "MasterModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat1_EdgeInten": 2.0,
+            "MasterModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat1_Emissive": 4.199999809265137,
+            "MasterModel_Mat1_EnvMapInt": 0.7400000095367432,
+            "MasterModel_Mat1_EnvMapTex": "pureSky",
+            "MasterModel_Mat1_HeightMapTex": "white1x1",
+            "MasterModel_Mat1_LightMode": 3,
+            "MasterModel_Mat1_Lighting": 1,
+            "MasterModel_Mat1_Metalness": 0.14000000059604645,
+            "MasterModel_Mat1_NormEnable": 1,
+            "MasterModel_Mat1_NormInten": 0.8500000238418579,
+            "MasterModel_Mat1_NormTile": 26.399999618530273,
+            "MasterModel_Mat1_NormalMapTex": "normal_18",
+            "MasterModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat1_OutlineEnable": 0,
+            "MasterModel_Mat1_OutlineWidth": 1.0,
+            "MasterModel_Mat1_POMEnable": 0,
+            "MasterModel_Mat1_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat1_POMMaxSteps": 32.0,
+            "MasterModel_Mat1_POMMinSteps": 8.0,
+            "MasterModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat1_PuddleEmission": 0.0,
+            "MasterModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleNoise": "white1x1",
+            "MasterModel_Mat1_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleTint": 0.5,
+            "MasterModel_Mat1_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_RimEnable": 0,
+            "MasterModel_Mat1_RimInten": 1.0,
+            "MasterModel_Mat1_RimPower": 3.0,
+            "MasterModel_Mat1_RimUseDir": 0,
+            "MasterModel_Mat1_Roughness": 1.0,
+            "MasterModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat1_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat1_ShadowEnv": 0.0,
+            "MasterModel_Mat1_ShadowSoft": 0.0,
+            "MasterModel_Mat1_Shininess": 50.0,
+            "MasterModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat1_TriScale": 0.10000000149011612,
+            "MasterModel_Mat1_TriSharpness": 4.0,
+            "MasterModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UsePuddle": 0,
+            "MasterModel_Mat1_UseTriplanar": 0,
+            "MasterModel_Metalness": 0.0,
+            "MasterModel_NormEnable": 0,
+            "MasterModel_NormInten": 1.0,
+            "MasterModel_NormTile": 1.0,
+            "MasterModel_NormalMapTex": "white1x1",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 1.0,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.5,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "ModelName": "house1"
+        },
+        "Master_rock1": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "1_rock_baseColor",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                0.6835442781448364,
+                0.7236020565032959,
+                1.0,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 0,
+            "MasterModel_DisThres": 0.5,
+            "MasterModel_DissolveTex": "white1x1",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 2.0,
+            "MasterModel_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Emissive": 5.900000095367432,
+            "MasterModel_EnvMapInt": 0.03999999910593033,
+            "MasterModel_EnvMapTex": "pureSky",
+            "MasterModel_HeightMapTex": "height_32",
+            "MasterModel_LightMode": 3,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Mat0_AddShadow": 1,
+            "MasterModel_Mat0_AlbedoMap": "white1x1",
+            "MasterModel_Mat0_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_DiffuseRef": 4.0,
+            "MasterModel_Mat0_DisEnable": 0,
+            "MasterModel_Mat0_DisThres": 0.5,
+            "MasterModel_Mat0_DissolveTex": "white1x1",
+            "MasterModel_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat0_EdgeInten": 2.0,
+            "MasterModel_Mat0_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat0_Emissive": 1.0,
+            "MasterModel_Mat0_EnvMapInt": 0.0,
+            "MasterModel_Mat0_EnvMapTex": "skybox",
+            "MasterModel_Mat0_HeightMapTex": "white1x1",
+            "MasterModel_Mat0_LightMode": 1,
+            "MasterModel_Mat0_Lighting": 1,
+            "MasterModel_Mat0_Metalness": 0.0,
+            "MasterModel_Mat0_NormEnable": 0,
+            "MasterModel_Mat0_NormInten": 1.0,
+            "MasterModel_Mat0_NormTile": 1.0,
+            "MasterModel_Mat0_NormalMapTex": "white1x1",
+            "MasterModel_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat0_OutlineEnable": 0,
+            "MasterModel_Mat0_OutlineWidth": 1.0,
+            "MasterModel_Mat0_POMEnable": 0,
+            "MasterModel_Mat0_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat0_POMMaxSteps": 32.0,
+            "MasterModel_Mat0_POMMinSteps": 8.0,
+            "MasterModel_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat0_PuddleEmission": 0.0,
+            "MasterModel_Mat0_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleNoise": "white1x1",
+            "MasterModel_Mat0_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat0_PuddleTint": 0.5,
+            "MasterModel_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_RimEnable": 0,
+            "MasterModel_Mat0_RimInten": 1.0,
+            "MasterModel_Mat0_RimPower": 3.0,
+            "MasterModel_Mat0_RimUseDir": 0,
+            "MasterModel_Mat0_Roughness": 0.5,
+            "MasterModel_Mat0_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat0_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat0_ShadowEnv": 0.0,
+            "MasterModel_Mat0_ShadowSoft": 0.0,
+            "MasterModel_Mat0_Shininess": 50.0,
+            "MasterModel_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat0_TriScale": 0.10000000149011612,
+            "MasterModel_Mat0_TriSharpness": 4.0,
+            "MasterModel_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat0_UsePuddle": 0,
+            "MasterModel_Mat0_UseTriplanar": 0,
+            "MasterModel_Mat1_AddShadow": 1,
+            "MasterModel_Mat1_AlbedoMap": "white1x1",
+            "MasterModel_Mat1_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat1_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_DiffuseRef": 4.0,
+            "MasterModel_Mat1_DisEnable": 0,
+            "MasterModel_Mat1_DisThres": 0.5,
+            "MasterModel_Mat1_DissolveTex": "white1x1",
+            "MasterModel_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat1_EdgeInten": 2.0,
+            "MasterModel_Mat1_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat1_Emissive": 1.0,
+            "MasterModel_Mat1_EnvMapInt": 0.0,
+            "MasterModel_Mat1_EnvMapTex": "skybox",
+            "MasterModel_Mat1_HeightMapTex": "white1x1",
+            "MasterModel_Mat1_LightMode": 1,
+            "MasterModel_Mat1_Lighting": 1,
+            "MasterModel_Mat1_Metalness": 0.0,
+            "MasterModel_Mat1_NormEnable": 0,
+            "MasterModel_Mat1_NormInten": 1.0,
+            "MasterModel_Mat1_NormTile": 1.0,
+            "MasterModel_Mat1_NormalMapTex": "white1x1",
+            "MasterModel_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat1_OutlineEnable": 0,
+            "MasterModel_Mat1_OutlineWidth": 1.0,
+            "MasterModel_Mat1_POMEnable": 0,
+            "MasterModel_Mat1_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat1_POMMaxSteps": 32.0,
+            "MasterModel_Mat1_POMMinSteps": 8.0,
+            "MasterModel_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat1_PuddleEmission": 0.0,
+            "MasterModel_Mat1_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleNoise": "white1x1",
+            "MasterModel_Mat1_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat1_PuddleTint": 0.5,
+            "MasterModel_Mat1_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_RimEnable": 0,
+            "MasterModel_Mat1_RimInten": 1.0,
+            "MasterModel_Mat1_RimPower": 3.0,
+            "MasterModel_Mat1_RimUseDir": 0,
+            "MasterModel_Mat1_Roughness": 0.5,
+            "MasterModel_Mat1_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat1_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat1_ShadowEnv": 0.0,
+            "MasterModel_Mat1_ShadowSoft": 0.0,
+            "MasterModel_Mat1_Shininess": 50.0,
+            "MasterModel_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat1_TriScale": 0.10000000149011612,
+            "MasterModel_Mat1_TriSharpness": 4.0,
+            "MasterModel_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat1_UsePuddle": 0,
+            "MasterModel_Mat1_UseTriplanar": 0,
+            "MasterModel_Mat2_AddShadow": 1,
+            "MasterModel_Mat2_AlbedoMap": "white1x1",
+            "MasterModel_Mat2_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat2_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_DiffuseRef": 4.0,
+            "MasterModel_Mat2_DisEnable": 0,
+            "MasterModel_Mat2_DisThres": 0.5,
+            "MasterModel_Mat2_DissolveTex": "white1x1",
+            "MasterModel_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat2_EdgeInten": 2.0,
+            "MasterModel_Mat2_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat2_Emissive": 1.0,
+            "MasterModel_Mat2_EnvMapInt": 0.0,
+            "MasterModel_Mat2_EnvMapTex": "skybox",
+            "MasterModel_Mat2_HeightMapTex": "white1x1",
+            "MasterModel_Mat2_LightMode": 1,
+            "MasterModel_Mat2_Lighting": 1,
+            "MasterModel_Mat2_Metalness": 0.0,
+            "MasterModel_Mat2_NormEnable": 0,
+            "MasterModel_Mat2_NormInten": 1.0,
+            "MasterModel_Mat2_NormTile": 1.0,
+            "MasterModel_Mat2_NormalMapTex": "white1x1",
+            "MasterModel_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat2_OutlineEnable": 0,
+            "MasterModel_Mat2_OutlineWidth": 1.0,
+            "MasterModel_Mat2_POMEnable": 0,
+            "MasterModel_Mat2_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat2_POMMaxSteps": 32.0,
+            "MasterModel_Mat2_POMMinSteps": 8.0,
+            "MasterModel_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat2_PuddleEmission": 0.0,
+            "MasterModel_Mat2_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat2_PuddleNoise": "white1x1",
+            "MasterModel_Mat2_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat2_PuddleTint": 0.5,
+            "MasterModel_Mat2_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_RimEnable": 0,
+            "MasterModel_Mat2_RimInten": 1.0,
+            "MasterModel_Mat2_RimPower": 3.0,
+            "MasterModel_Mat2_RimUseDir": 0,
+            "MasterModel_Mat2_Roughness": 0.5,
+            "MasterModel_Mat2_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat2_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat2_ShadowEnv": 0.0,
+            "MasterModel_Mat2_ShadowSoft": 0.0,
+            "MasterModel_Mat2_Shininess": 50.0,
+            "MasterModel_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat2_TriScale": 0.10000000149011612,
+            "MasterModel_Mat2_TriSharpness": 4.0,
+            "MasterModel_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat2_UsePuddle": 0,
+            "MasterModel_Mat2_UseTriplanar": 0,
+            "MasterModel_Mat3_AddShadow": 1,
+            "MasterModel_Mat3_AlbedoMap": "white1x1",
+            "MasterModel_Mat3_AlphaThres": 0.009999999776482582,
+            "MasterModel_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_DiffuseRef": 4.0,
+            "MasterModel_Mat3_DisEnable": 0,
+            "MasterModel_Mat3_DisThres": 0.5,
+            "MasterModel_Mat3_DissolveTex": "white1x1",
+            "MasterModel_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_Mat3_EdgeInten": 2.0,
+            "MasterModel_Mat3_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Mat3_Emissive": 1.0,
+            "MasterModel_Mat3_EnvMapInt": 0.0,
+            "MasterModel_Mat3_EnvMapTex": "skybox",
+            "MasterModel_Mat3_HeightMapTex": "white1x1",
+            "MasterModel_Mat3_LightMode": 1,
+            "MasterModel_Mat3_Lighting": 1,
+            "MasterModel_Mat3_Metalness": 0.0,
+            "MasterModel_Mat3_NormEnable": 0,
+            "MasterModel_Mat3_NormInten": 1.0,
+            "MasterModel_Mat3_NormTile": 1.0,
+            "MasterModel_Mat3_NormalMapTex": "white1x1",
+            "MasterModel_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_Mat3_OutlineEnable": 0,
+            "MasterModel_Mat3_OutlineWidth": 1.0,
+            "MasterModel_Mat3_POMEnable": 0,
+            "MasterModel_Mat3_POMHeightScale": 0.05000000074505806,
+            "MasterModel_Mat3_POMMaxSteps": 32.0,
+            "MasterModel_Mat3_POMMinSteps": 8.0,
+            "MasterModel_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_Mat3_PuddleEmission": 0.0,
+            "MasterModel_Mat3_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_Mat3_PuddleNoise": "white1x1",
+            "MasterModel_Mat3_PuddleScale": 0.10000000149011612,
+            "MasterModel_Mat3_PuddleTint": 0.5,
+            "MasterModel_Mat3_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_RimEnable": 0,
+            "MasterModel_Mat3_RimInten": 1.0,
+            "MasterModel_Mat3_RimPower": 3.0,
+            "MasterModel_Mat3_RimUseDir": 0,
+            "MasterModel_Mat3_Roughness": 0.5,
+            "MasterModel_Mat3_ShadowBias": 0.0005000000237487257,
+            "MasterModel_Mat3_ShadowDens": 0.800000011920929,
+            "MasterModel_Mat3_ShadowEnv": 0.0,
+            "MasterModel_Mat3_ShadowSoft": 0.0,
+            "MasterModel_Mat3_Shininess": 50.0,
+            "MasterModel_Mat3_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_ToonRampTex": "toonRamp_01",
+            "MasterModel_Mat3_TriScale": 0.10000000149011612,
+            "MasterModel_Mat3_TriSharpness": 4.0,
+            "MasterModel_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Mat3_UsePuddle": 0,
+            "MasterModel_Mat3_UseTriplanar": 0,
+            "MasterModel_Metalness": 0.03999999910593033,
+            "MasterModel_NormEnable": 1,
+            "MasterModel_NormInten": 1.2699999809265137,
+            "MasterModel_NormTile": 1.0,
+            "MasterModel_NormalMapTex": "1_rock_normal",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.11299999803304672,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 1.0,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.8500000238418579,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "ModelName": "rock1"
+        },
+        "Master_woodStick01": {
+            "MasterModel_AddShadow": 1,
+            "MasterModel_AlbedoMap": "woodStick_baseColor01",
+            "MasterModel_AlphaThres": 0.009999999776482582,
+            "MasterModel_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_DiffuseRef": 4.0,
+            "MasterModel_DisEnable": 0,
+            "MasterModel_DisThres": 0.5,
+            "MasterModel_DissolveTex": "white1x1",
+            "MasterModel_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "MasterModel_EdgeInten": 2.0,
+            "MasterModel_EdgeWidth": 0.05000000074505806,
+            "MasterModel_Emissive": 1.100000023841858,
+            "MasterModel_EnvMapInt": 0.30000001192092896,
+            "MasterModel_EnvMapTex": "pureSky",
+            "MasterModel_HeightMapTex": "white1x1",
+            "MasterModel_LightMode": 3,
+            "MasterModel_Lighting": 1,
+            "MasterModel_Metalness": 0.17000000178813934,
+            "MasterModel_NormEnable": 1,
+            "MasterModel_NormInten": 2.25,
+            "MasterModel_NormTile": 1.0,
+            "MasterModel_NormalMapTex": "woodStick_normal01",
+            "MasterModel_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "MasterModel_OutlineEnable": 0,
+            "MasterModel_OutlineWidth": 1.0,
+            "MasterModel_POMEnable": 0,
+            "MasterModel_POMHeightScale": 0.05000000074505806,
+            "MasterModel_POMMaxSteps": 32.0,
+            "MasterModel_POMMinSteps": 8.0,
+            "MasterModel_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "MasterModel_PuddleEmission": 0.0,
+            "MasterModel_PuddleFalloff": 0.10000000149011612,
+            "MasterModel_PuddleNoise": "white1x1",
+            "MasterModel_PuddleScale": 0.10000000149011612,
+            "MasterModel_PuddleTint": 0.5,
+            "MasterModel_RimColor": [
+                0.31255674362182617,
+                0.9620253443717957,
+                0.3783256411552429
+            ],
+            "MasterModel_RimEnable": 0,
+            "MasterModel_RimInten": 0.4000000059604645,
+            "MasterModel_RimPower": 3.0,
+            "MasterModel_RimUseDir": 0,
+            "MasterModel_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_Roughness": 0.9800000190734863,
+            "MasterModel_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ShadowBias": 0.0005000000237487257,
+            "MasterModel_ShadowDens": 0.800000011920929,
+            "MasterModel_ShadowEnv": 0.0,
+            "MasterModel_ShadowSoft": 0.0,
+            "MasterModel_Shininess": 50.0,
+            "MasterModel_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_ToonRampTex": "toonRamp_01",
+            "MasterModel_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_TriScale": 0.10000000149011612,
+            "MasterModel_TriSharpness": 4.0,
+            "MasterModel_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "MasterModel_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "MasterModel_UsePuddle": 0,
+            "MasterModel_UseTriplanar": 0,
+            "ModelName": "wood01"
+        },
+        "PropCount": 7,
+        "Prop_0": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.0,
+                5.300000190734863,
+                -0.7799999713897705
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                10.15999984741211,
+                16.079999923706055,
+                9.739999771118164
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": true,
+            "HasParticle": true,
+            "HasParticle2": true,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.1012657880783081,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 6.71999979019165,
+            "LightRadius": 22.440000534057617,
+            "LightVolumetricScatteringIntensity": 50.0,
+            "ModelName": "bonFire",
+            "Model_AddShadow": 1,
+            "Model_AlbedoMap": "white1x1",
+            "Model_AlphaThres": 0.009999999776482582,
+            "Model_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_DiffuseRef": 4.0,
+            "Model_DisEnable": 0,
+            "Model_DisThres": 0.5,
+            "Model_DissolveTex": "white1x1",
+            "Model_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_EdgeInten": 2.0,
+            "Model_EdgeWidth": 0.05000000074505806,
+            "Model_Emissive": 1.0,
+            "Model_EnvMapInt": 0.0,
+            "Model_EnvMapTex": "skybox",
+            "Model_LightMode": 1,
+            "Model_Lighting": 1,
+            "Model_Mat0_AddShadow": 1,
+            "Model_Mat0_AlbedoMap": "white1x1",
+            "Model_Mat0_AlphaThres": 0.009999999776482582,
+            "Model_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_DiffuseRef": 4.0,
+            "Model_Mat0_DisEnable": 0,
+            "Model_Mat0_DisThres": 0.5,
+            "Model_Mat0_DissolveTex": "white1x1",
+            "Model_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat0_EdgeInten": 2.0,
+            "Model_Mat0_EdgeWidth": 0.05000000074505806,
+            "Model_Mat0_Emissive": 1.0,
+            "Model_Mat0_EnvMapInt": 0.0,
+            "Model_Mat0_EnvMapTex": "skybox",
+            "Model_Mat0_HeightMapTex": "white1x1",
+            "Model_Mat0_LightMode": 1,
+            "Model_Mat0_Lighting": 1,
+            "Model_Mat0_Metalness": 0.0,
+            "Model_Mat0_NormEnable": 0,
+            "Model_Mat0_NormInten": 1.0,
+            "Model_Mat0_NormTile": 1.0,
+            "Model_Mat0_NormalMapTex": "white1x1",
+            "Model_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat0_OutlineEnable": 0,
+            "Model_Mat0_OutlineWidth": 1.0,
+            "Model_Mat0_POMEnable": 0,
+            "Model_Mat0_POMHeightScale": 0.05000000074505806,
+            "Model_Mat0_POMMaxSteps": 32.0,
+            "Model_Mat0_POMMinSteps": 8.0,
+            "Model_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat0_PuddleEmission": 0.0,
+            "Model_Mat0_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat0_PuddleNoise": "white1x1",
+            "Model_Mat0_PuddleScale": 0.10000000149011612,
+            "Model_Mat0_PuddleTint": 0.5,
+            "Model_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_RimEnable": 0,
+            "Model_Mat0_RimInten": 1.0,
+            "Model_Mat0_RimPower": 3.0,
+            "Model_Mat0_RimUseDir": 0,
+            "Model_Mat0_Roughness": 0.5,
+            "Model_Mat0_ShadowBias": 0.0005000000237487257,
+            "Model_Mat0_ShadowDens": 0.800000011920929,
+            "Model_Mat0_ShadowEnv": 0.0,
+            "Model_Mat0_ShadowSoft": 0.0,
+            "Model_Mat0_Shininess": 50.0,
+            "Model_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_ToonRampTex": "toonRamp_01",
+            "Model_Mat0_TriScale": 0.10000000149011612,
+            "Model_Mat0_TriSharpness": 4.0,
+            "Model_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat0_UsePuddle": 0,
+            "Model_Mat0_UseTriplanar": 0,
+            "Model_Mat1_AddShadow": 1,
+            "Model_Mat1_AlbedoMap": "white1x1",
+            "Model_Mat1_AlphaThres": 0.009999999776482582,
+            "Model_Mat1_Color": [
+                0.9535865187644958,
+                0.34623095393180847,
+                0.04828284680843353,
+                1.0
+            ],
+            "Model_Mat1_DiffuseRef": 4.0,
+            "Model_Mat1_DisEnable": 0,
+            "Model_Mat1_DisThres": 0.5,
+            "Model_Mat1_DissolveTex": "white1x1",
+            "Model_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat1_EdgeInten": 2.0,
+            "Model_Mat1_EdgeWidth": 0.05000000074505806,
+            "Model_Mat1_Emissive": 22.799999237060547,
+            "Model_Mat1_EnvMapInt": 0.0,
+            "Model_Mat1_EnvMapTex": "skybox",
+            "Model_Mat1_HeightMapTex": "white1x1",
+            "Model_Mat1_LightMode": 3,
+            "Model_Mat1_Lighting": 1,
+            "Model_Mat1_Metalness": 1.0,
+            "Model_Mat1_NormEnable": 1,
+            "Model_Mat1_NormInten": 1.5499999523162842,
+            "Model_Mat1_NormTile": 3.9000000953674316,
+            "Model_Mat1_NormalMapTex": "normal_21",
+            "Model_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat1_OutlineEnable": 0,
+            "Model_Mat1_OutlineWidth": 1.0,
+            "Model_Mat1_POMEnable": 0,
+            "Model_Mat1_POMHeightScale": 0.05000000074505806,
+            "Model_Mat1_POMMaxSteps": 32.0,
+            "Model_Mat1_POMMinSteps": 8.0,
+            "Model_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat1_PuddleEmission": 0.0,
+            "Model_Mat1_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat1_PuddleNoise": "white1x1",
+            "Model_Mat1_PuddleScale": 0.10000000149011612,
+            "Model_Mat1_PuddleTint": 0.5,
+            "Model_Mat1_RimColor": [
+                1.0,
+                0.09154516458511353,
+                0.01687765121459961
+            ],
+            "Model_Mat1_RimEnable": 1,
+            "Model_Mat1_RimInten": 3.299999952316284,
+            "Model_Mat1_RimPower": 6.900000095367432,
+            "Model_Mat1_RimUseDir": 0,
+            "Model_Mat1_Roughness": 0.41999998688697815,
+            "Model_Mat1_ShadowBias": 0.0005000000237487257,
+            "Model_Mat1_ShadowDens": 0.800000011920929,
+            "Model_Mat1_ShadowEnv": 0.0,
+            "Model_Mat1_ShadowSoft": 0.0,
+            "Model_Mat1_Shininess": 50.0,
+            "Model_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat1_ToonRampTex": "toonRamp_01",
+            "Model_Mat1_TriScale": 0.10000000149011612,
+            "Model_Mat1_TriSharpness": 4.0,
+            "Model_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat1_UsePuddle": 0,
+            "Model_Mat1_UseTriplanar": 0,
+            "Model_Mat2_AddShadow": 1,
+            "Model_Mat2_AlbedoMap": "white1x1",
+            "Model_Mat2_AlphaThres": 0.009999999776482582,
+            "Model_Mat2_Color": [
+                0.8691983222961426,
+                0.018337532877922058,
+                0.018337532877922058,
+                1.0
+            ],
+            "Model_Mat2_DiffuseRef": 4.0,
+            "Model_Mat2_DisEnable": 0,
+            "Model_Mat2_DisThres": 0.5,
+            "Model_Mat2_DissolveTex": "white1x1",
+            "Model_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat2_EdgeInten": 2.0,
+            "Model_Mat2_EdgeWidth": 0.05000000074505806,
+            "Model_Mat2_Emissive": 17.0,
+            "Model_Mat2_EnvMapInt": 0.0,
+            "Model_Mat2_EnvMapTex": "skybox",
+            "Model_Mat2_HeightMapTex": "white1x1",
+            "Model_Mat2_LightMode": 3,
+            "Model_Mat2_Lighting": 1,
+            "Model_Mat2_Metalness": 0.9700000286102295,
+            "Model_Mat2_NormEnable": 1,
+            "Model_Mat2_NormInten": 2.1700000762939453,
+            "Model_Mat2_NormTile": 5.199999809265137,
+            "Model_Mat2_NormalMapTex": "normal_26",
+            "Model_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat2_OutlineEnable": 0,
+            "Model_Mat2_OutlineWidth": 1.0,
+            "Model_Mat2_POMEnable": 0,
+            "Model_Mat2_POMHeightScale": 0.05000000074505806,
+            "Model_Mat2_POMMaxSteps": 32.0,
+            "Model_Mat2_POMMinSteps": 8.0,
+            "Model_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat2_PuddleEmission": 0.0,
+            "Model_Mat2_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat2_PuddleNoise": "white1x1",
+            "Model_Mat2_PuddleScale": 0.10000000149011612,
+            "Model_Mat2_PuddleTint": 0.5,
+            "Model_Mat2_RimColor": [
+                1.0,
+                0.5063291192054749,
+                0.0
+            ],
+            "Model_Mat2_RimEnable": 1,
+            "Model_Mat2_RimInten": 7.099999904632568,
+            "Model_Mat2_RimPower": 6.699999809265137,
+            "Model_Mat2_RimUseDir": 0,
+            "Model_Mat2_Roughness": 0.5799999833106995,
+            "Model_Mat2_ShadowBias": 0.0005000000237487257,
+            "Model_Mat2_ShadowDens": 0.800000011920929,
+            "Model_Mat2_ShadowEnv": 0.0,
+            "Model_Mat2_ShadowSoft": 0.0,
+            "Model_Mat2_Shininess": 50.0,
+            "Model_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat2_ToonRampTex": "toonRamp_01",
+            "Model_Mat2_TriScale": 0.10000000149011612,
+            "Model_Mat2_TriSharpness": 4.0,
+            "Model_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat2_UsePuddle": 0,
+            "Model_Mat2_UseTriplanar": 0,
+            "Model_Mat3_AddShadow": 1,
+            "Model_Mat3_AlbedoMap": "white1x1",
+            "Model_Mat3_AlphaThres": 0.009999999776482582,
+            "Model_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat3_DiffuseRef": 4.0,
+            "Model_Mat3_DisEnable": 0,
+            "Model_Mat3_DisThres": 0.5,
+            "Model_Mat3_DissolveTex": "white1x1",
+            "Model_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat3_EdgeInten": 2.0,
+            "Model_Mat3_EdgeWidth": 0.05000000074505806,
+            "Model_Mat3_Emissive": 13.300000190734863,
+            "Model_Mat3_EnvMapInt": 0.0,
+            "Model_Mat3_EnvMapTex": "skybox",
+            "Model_Mat3_HeightMapTex": "white1x1",
+            "Model_Mat3_LightMode": 3,
+            "Model_Mat3_Lighting": 1,
+            "Model_Mat3_Metalness": 0.5799999833106995,
+            "Model_Mat3_NormEnable": 1,
+            "Model_Mat3_NormInten": 1.6299999952316284,
+            "Model_Mat3_NormTile": 3.299999952316284,
+            "Model_Mat3_NormalMapTex": "normal_18",
+            "Model_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat3_OutlineEnable": 0,
+            "Model_Mat3_OutlineWidth": 1.0,
+            "Model_Mat3_POMEnable": 0,
+            "Model_Mat3_POMHeightScale": 0.05000000074505806,
+            "Model_Mat3_POMMaxSteps": 32.0,
+            "Model_Mat3_POMMinSteps": 8.0,
+            "Model_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat3_PuddleEmission": 0.0,
+            "Model_Mat3_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat3_PuddleNoise": "white1x1",
+            "Model_Mat3_PuddleScale": 0.10000000149011612,
+            "Model_Mat3_PuddleTint": 0.5,
+            "Model_Mat3_RimColor": [
+                0.9957805871963501,
+                0.4858439266681671,
+                0.1386529952287674
+            ],
+            "Model_Mat3_RimEnable": 0,
+            "Model_Mat3_RimInten": 1.0,
+            "Model_Mat3_RimPower": 20.0,
+            "Model_Mat3_RimUseDir": 0,
+            "Model_Mat3_Roughness": 0.699999988079071,
+            "Model_Mat3_ShadowBias": 0.0005000000237487257,
+            "Model_Mat3_ShadowDens": 0.800000011920929,
+            "Model_Mat3_ShadowEnv": 0.0,
+            "Model_Mat3_ShadowSoft": 0.0,
+            "Model_Mat3_Shininess": 50.0,
+            "Model_Mat3_SpecColor": [
+                0.3248944878578186,
+                0.3248944878578186,
+                0.3248944878578186,
+                1.0
+            ],
+            "Model_Mat3_ToonRampTex": "toonRamp_01",
+            "Model_Mat3_TriScale": 0.10000000149011612,
+            "Model_Mat3_TriSharpness": 4.0,
+            "Model_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat3_UsePuddle": 0,
+            "Model_Mat3_UseTriplanar": 0,
+            "Model_Metalness": 0.0,
+            "Model_NormEnable": 0,
+            "Model_NormInten": 1.0,
+            "Model_NormTile": 1.0,
+            "Model_NormalMapTex": "white1x1",
+            "Model_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_OutlineEnable": 0,
+            "Model_OutlineWidth": 1.0,
+            "Model_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_PuddleEmission": 0.0,
+            "Model_PuddleFalloff": 0.10000000149011612,
+            "Model_PuddleNoise": "white1x1",
+            "Model_PuddleScale": 0.10000000149011612,
+            "Model_PuddleTint": 0.5,
+            "Model_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_RimEnable": 0,
+            "Model_RimInten": 1.0,
+            "Model_RimPower": 3.0,
+            "Model_RimUseDir": 0,
+            "Model_Rot": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Model_Roughness": 0.5,
+            "Model_Scale": [
+                2.0,
+                1.5,
+                2.0
+            ],
+            "Model_ShadowBias": 0.0005000000237487257,
+            "Model_ShadowDens": 0.800000011920929,
+            "Model_ShadowEnv": 0.0,
+            "Model_ShadowSoft": 0.0,
+            "Model_Shininess": 50.0,
+            "Model_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ToonRampTex": "toonRamp_01",
+            "Model_Trans": [
+                37.161781311035156,
+                9.05885124206543,
+                -54.14961624145508
+            ],
+            "Model_TriScale": 0.10000000149011612,
+            "Model_TriSharpness": 4.0,
+            "Model_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UsePuddle": 0,
+            "Model_UseTriplanar": 0,
+            "ParticleName": "bonfire",
+            "ParticleName2": "bonfireSmoke",
+            "Position": [
+                16.65053939819336,
+                1.6755306720733643,
+                157.69671630859375
+            ],
+            "Rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Scale": [
+                2.0,
+                1.5,
+                2.0
+            ]
+        },
+        "Prop_1": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.0,
+                4.159999847412109,
+                -0.7799999713897705
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                10.15999984741211,
+                11.399999618530273,
+                9.739999771118164
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": true,
+            "HasParticle": true,
+            "HasParticle2": true,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.025316476821899414,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 10.5,
+            "LightRadius": 21.889999389648438,
+            "LightVolumetricScatteringIntensity": 50.0,
+            "ModelName": "bonFire",
+            "Model_AddShadow": 1,
+            "Model_AlbedoMap": "white1x1",
+            "Model_AlphaThres": 0.009999999776482582,
+            "Model_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_DiffuseRef": 4.0,
+            "Model_DisEnable": 0,
+            "Model_DisThres": 0.5,
+            "Model_DissolveTex": "white1x1",
+            "Model_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_EdgeInten": 2.0,
+            "Model_EdgeWidth": 0.05000000074505806,
+            "Model_Emissive": 1.0,
+            "Model_EnvMapInt": 0.0,
+            "Model_EnvMapTex": "skybox",
+            "Model_LightMode": 1,
+            "Model_Lighting": 1,
+            "Model_Mat0_AddShadow": 1,
+            "Model_Mat0_AlbedoMap": "white1x1",
+            "Model_Mat0_AlphaThres": 0.009999999776482582,
+            "Model_Mat0_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_DiffuseRef": 4.0,
+            "Model_Mat0_DisEnable": 0,
+            "Model_Mat0_DisThres": 0.5,
+            "Model_Mat0_DissolveTex": "white1x1",
+            "Model_Mat0_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat0_EdgeInten": 2.0,
+            "Model_Mat0_EdgeWidth": 0.05000000074505806,
+            "Model_Mat0_Emissive": 1.0,
+            "Model_Mat0_EnvMapInt": 0.0,
+            "Model_Mat0_EnvMapTex": "skybox",
+            "Model_Mat0_HeightMapTex": "white1x1",
+            "Model_Mat0_LightMode": 1,
+            "Model_Mat0_Lighting": 1,
+            "Model_Mat0_Metalness": 0.0,
+            "Model_Mat0_NormEnable": 0,
+            "Model_Mat0_NormInten": 1.0,
+            "Model_Mat0_NormTile": 1.0,
+            "Model_Mat0_NormalMapTex": "white1x1",
+            "Model_Mat0_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat0_OutlineEnable": 0,
+            "Model_Mat0_OutlineWidth": 1.0,
+            "Model_Mat0_POMEnable": 0,
+            "Model_Mat0_POMHeightScale": 0.05000000074505806,
+            "Model_Mat0_POMMaxSteps": 32.0,
+            "Model_Mat0_POMMinSteps": 8.0,
+            "Model_Mat0_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat0_PuddleEmission": 0.0,
+            "Model_Mat0_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat0_PuddleNoise": "white1x1",
+            "Model_Mat0_PuddleScale": 0.10000000149011612,
+            "Model_Mat0_PuddleTint": 0.5,
+            "Model_Mat0_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_RimEnable": 0,
+            "Model_Mat0_RimInten": 1.0,
+            "Model_Mat0_RimPower": 3.0,
+            "Model_Mat0_RimUseDir": 0,
+            "Model_Mat0_Roughness": 0.5,
+            "Model_Mat0_ShadowBias": 0.0005000000237487257,
+            "Model_Mat0_ShadowDens": 0.800000011920929,
+            "Model_Mat0_ShadowEnv": 0.0,
+            "Model_Mat0_ShadowSoft": 0.0,
+            "Model_Mat0_Shininess": 50.0,
+            "Model_Mat0_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_ToonRampTex": "toonRamp_01",
+            "Model_Mat0_TriScale": 0.10000000149011612,
+            "Model_Mat0_TriSharpness": 4.0,
+            "Model_Mat0_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat0_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat0_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat0_UsePuddle": 0,
+            "Model_Mat0_UseTriplanar": 0,
+            "Model_Mat0_pomMaxSteps": 32.0,
+            "Model_Mat1_AddShadow": 1,
+            "Model_Mat1_AlbedoMap": "white1x1",
+            "Model_Mat1_AlphaThres": 0.009999999776482582,
+            "Model_Mat1_Color": [
+                0.9535865187644958,
+                0.34623095393180847,
+                0.04828284680843353,
+                1.0
+            ],
+            "Model_Mat1_DiffuseRef": 4.0,
+            "Model_Mat1_DisEnable": 0,
+            "Model_Mat1_DisThres": 0.5,
+            "Model_Mat1_DissolveTex": "white1x1",
+            "Model_Mat1_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat1_EdgeInten": 2.0,
+            "Model_Mat1_EdgeWidth": 0.05000000074505806,
+            "Model_Mat1_Emissive": 22.799999237060547,
+            "Model_Mat1_EnvMapInt": 0.0,
+            "Model_Mat1_EnvMapTex": "skybox",
+            "Model_Mat1_HeightMapTex": "white1x1",
+            "Model_Mat1_LightMode": 3,
+            "Model_Mat1_Lighting": 1,
+            "Model_Mat1_Metalness": 1.0,
+            "Model_Mat1_NormEnable": 1,
+            "Model_Mat1_NormInten": 1.5499999523162842,
+            "Model_Mat1_NormTile": 3.9000000953674316,
+            "Model_Mat1_NormalMapTex": "normal_21",
+            "Model_Mat1_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat1_OutlineEnable": 0,
+            "Model_Mat1_OutlineWidth": 1.0,
+            "Model_Mat1_POMEnable": 0,
+            "Model_Mat1_POMHeightScale": 0.05000000074505806,
+            "Model_Mat1_POMMaxSteps": 32.0,
+            "Model_Mat1_POMMinSteps": 8.0,
+            "Model_Mat1_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat1_PuddleEmission": 0.0,
+            "Model_Mat1_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat1_PuddleNoise": "white1x1",
+            "Model_Mat1_PuddleScale": 0.10000000149011612,
+            "Model_Mat1_PuddleTint": 0.5,
+            "Model_Mat1_RimColor": [
+                1.0,
+                0.09154516458511353,
+                0.01687765121459961
+            ],
+            "Model_Mat1_RimEnable": 1,
+            "Model_Mat1_RimInten": 3.299999952316284,
+            "Model_Mat1_RimPower": 6.900000095367432,
+            "Model_Mat1_RimUseDir": 0,
+            "Model_Mat1_Roughness": 0.41999998688697815,
+            "Model_Mat1_ShadowBias": 0.0005000000237487257,
+            "Model_Mat1_ShadowDens": 0.800000011920929,
+            "Model_Mat1_ShadowEnv": 0.0,
+            "Model_Mat1_ShadowSoft": 0.0,
+            "Model_Mat1_Shininess": 50.0,
+            "Model_Mat1_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat1_ToonRampTex": "toonRamp_01",
+            "Model_Mat1_TriScale": 0.10000000149011612,
+            "Model_Mat1_TriSharpness": 4.0,
+            "Model_Mat1_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat1_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat1_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat1_UsePuddle": 0,
+            "Model_Mat1_UseTriplanar": 0,
+            "Model_Mat1_pomMaxSteps": 32.0,
+            "Model_Mat2_AddShadow": 1,
+            "Model_Mat2_AlbedoMap": "white1x1",
+            "Model_Mat2_AlphaThres": 0.009999999776482582,
+            "Model_Mat2_Color": [
+                0.8691983222961426,
+                0.018337532877922058,
+                0.018337532877922058,
+                1.0
+            ],
+            "Model_Mat2_DiffuseRef": 4.0,
+            "Model_Mat2_DisEnable": 0,
+            "Model_Mat2_DisThres": 0.5,
+            "Model_Mat2_DissolveTex": "white1x1",
+            "Model_Mat2_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat2_EdgeInten": 2.0,
+            "Model_Mat2_EdgeWidth": 0.05000000074505806,
+            "Model_Mat2_Emissive": 17.0,
+            "Model_Mat2_EnvMapInt": 0.0,
+            "Model_Mat2_EnvMapTex": "skybox",
+            "Model_Mat2_HeightMapTex": "white1x1",
+            "Model_Mat2_LightMode": 3,
+            "Model_Mat2_Lighting": 1,
+            "Model_Mat2_Metalness": 0.9700000286102295,
+            "Model_Mat2_NormEnable": 1,
+            "Model_Mat2_NormInten": 2.1700000762939453,
+            "Model_Mat2_NormTile": 5.199999809265137,
+            "Model_Mat2_NormalMapTex": "normal_26",
+            "Model_Mat2_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat2_OutlineEnable": 0,
+            "Model_Mat2_OutlineWidth": 1.0,
+            "Model_Mat2_POMEnable": 0,
+            "Model_Mat2_POMHeightScale": 0.05000000074505806,
+            "Model_Mat2_POMMaxSteps": 32.0,
+            "Model_Mat2_POMMinSteps": 8.0,
+            "Model_Mat2_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat2_PuddleEmission": 0.0,
+            "Model_Mat2_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat2_PuddleNoise": "white1x1",
+            "Model_Mat2_PuddleScale": 0.10000000149011612,
+            "Model_Mat2_PuddleTint": 0.5,
+            "Model_Mat2_RimColor": [
+                1.0,
+                0.07594937086105347,
+                0.0
+            ],
+            "Model_Mat2_RimEnable": 1,
+            "Model_Mat2_RimInten": 7.099999904632568,
+            "Model_Mat2_RimPower": 6.699999809265137,
+            "Model_Mat2_RimUseDir": 0,
+            "Model_Mat2_Roughness": 0.5799999833106995,
+            "Model_Mat2_ShadowBias": 0.0005000000237487257,
+            "Model_Mat2_ShadowDens": 0.800000011920929,
+            "Model_Mat2_ShadowEnv": 0.0,
+            "Model_Mat2_ShadowSoft": 0.0,
+            "Model_Mat2_Shininess": 50.0,
+            "Model_Mat2_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat2_ToonRampTex": "toonRamp_01",
+            "Model_Mat2_TriScale": 0.10000000149011612,
+            "Model_Mat2_TriSharpness": 4.0,
+            "Model_Mat2_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat2_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat2_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat2_UsePuddle": 0,
+            "Model_Mat2_UseTriplanar": 0,
+            "Model_Mat2_pomMaxSteps": 32.0,
+            "Model_Mat3_AddShadow": 1,
+            "Model_Mat3_AlbedoMap": "white1x1",
+            "Model_Mat3_AlphaThres": 0.009999999776482582,
+            "Model_Mat3_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat3_DiffuseRef": 4.0,
+            "Model_Mat3_DisEnable": 0,
+            "Model_Mat3_DisThres": 0.5,
+            "Model_Mat3_DissolveTex": "white1x1",
+            "Model_Mat3_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_Mat3_EdgeInten": 2.0,
+            "Model_Mat3_EdgeWidth": 0.05000000074505806,
+            "Model_Mat3_Emissive": 13.300000190734863,
+            "Model_Mat3_EnvMapInt": 0.0,
+            "Model_Mat3_EnvMapTex": "skybox",
+            "Model_Mat3_HeightMapTex": "white1x1",
+            "Model_Mat3_LightMode": 3,
+            "Model_Mat3_Lighting": 1,
+            "Model_Mat3_Metalness": 0.5799999833106995,
+            "Model_Mat3_NormEnable": 1,
+            "Model_Mat3_NormInten": 1.6299999952316284,
+            "Model_Mat3_NormTile": 3.299999952316284,
+            "Model_Mat3_NormalMapTex": "normal_18",
+            "Model_Mat3_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_Mat3_OutlineEnable": 0,
+            "Model_Mat3_OutlineWidth": 1.0,
+            "Model_Mat3_POMEnable": 0,
+            "Model_Mat3_POMHeightScale": 0.05000000074505806,
+            "Model_Mat3_POMMaxSteps": 32.0,
+            "Model_Mat3_POMMinSteps": 8.0,
+            "Model_Mat3_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_Mat3_PuddleEmission": 0.0,
+            "Model_Mat3_PuddleFalloff": 0.10000000149011612,
+            "Model_Mat3_PuddleNoise": "white1x1",
+            "Model_Mat3_PuddleScale": 0.10000000149011612,
+            "Model_Mat3_PuddleTint": 0.5,
+            "Model_Mat3_RimColor": [
+                0.9957805871963501,
+                0.4858439266681671,
+                0.1386529952287674
+            ],
+            "Model_Mat3_RimEnable": 0,
+            "Model_Mat3_RimInten": 1.0,
+            "Model_Mat3_RimPower": 20.0,
+            "Model_Mat3_RimUseDir": 0,
+            "Model_Mat3_Roughness": 0.699999988079071,
+            "Model_Mat3_ShadowBias": 0.0005000000237487257,
+            "Model_Mat3_ShadowDens": 0.800000011920929,
+            "Model_Mat3_ShadowEnv": 0.0,
+            "Model_Mat3_ShadowSoft": 0.0,
+            "Model_Mat3_Shininess": 50.0,
+            "Model_Mat3_SpecColor": [
+                0.3248944878578186,
+                0.3248944878578186,
+                0.3248944878578186,
+                1.0
+            ],
+            "Model_Mat3_ToonRampTex": "toonRamp_01",
+            "Model_Mat3_TriScale": 0.10000000149011612,
+            "Model_Mat3_TriSharpness": 4.0,
+            "Model_Mat3_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat3_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_Mat3_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Mat3_UsePuddle": 0,
+            "Model_Mat3_UseTriplanar": 0,
+            "Model_Mat3_pomMaxSteps": 32.0,
+            "Model_Metalness": 0.0,
+            "Model_NormEnable": 0,
+            "Model_NormInten": 1.0,
+            "Model_NormTile": 1.0,
+            "Model_NormalMapTex": "white1x1",
+            "Model_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_OutlineEnable": 0,
+            "Model_OutlineWidth": 1.0,
+            "Model_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_PuddleEmission": 0.0,
+            "Model_PuddleFalloff": 0.10000000149011612,
+            "Model_PuddleNoise": "white1x1",
+            "Model_PuddleScale": 0.10000000149011612,
+            "Model_PuddleTint": 0.5,
+            "Model_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_RimEnable": 0,
+            "Model_RimInten": 1.0,
+            "Model_RimPower": 3.0,
+            "Model_RimUseDir": 0,
+            "Model_Rot": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Model_Roughness": 0.5,
+            "Model_Scale": [
+                2.0,
+                1.5,
+                2.0
+            ],
+            "Model_ShadowBias": 0.0005000000237487257,
+            "Model_ShadowDens": 0.800000011920929,
+            "Model_ShadowEnv": 0.0,
+            "Model_ShadowSoft": 0.0,
+            "Model_Shininess": 50.0,
+            "Model_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ToonRampTex": "toonRamp_01",
+            "Model_Trans": [
+                36.847328186035156,
+                8.808576583862305,
+                63.36332321166992
+            ],
+            "Model_TriScale": 0.10000000149011612,
+            "Model_TriSharpness": 4.0,
+            "Model_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UsePuddle": 0,
+            "Model_UseTriplanar": 0,
+            "ParticleName": "bonfire",
+            "ParticleName2": "bonfireSmoke",
+            "Position": [
+                31.479999542236328,
+                5.71999979019165,
+                -62.43899917602539
+            ],
+            "Rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Scale": [
+                2.0,
+                1.5,
+                2.0
+            ]
+        },
+        "Prop_2": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                22.799999237060547,
+                32.060001373291016,
+                35.58000183105469
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ModelName": "rock1",
+            "Model_AddShadow": 1,
+            "Model_AlbedoMap": "white1x1",
+            "Model_AlphaThres": 0.009999999776482582,
+            "Model_Color": [
+                0.42744216322898865,
+                0.4592936933040619,
+                0.6371307969093323,
+                1.0
+            ],
+            "Model_DiffuseRef": 4.0,
+            "Model_DisEnable": 0,
+            "Model_DisThres": 0.5,
+            "Model_DissolveTex": "white1x1",
+            "Model_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_EdgeInten": 2.0,
+            "Model_EdgeWidth": 0.05000000074505806,
+            "Model_Emissive": 32.70000076293945,
+            "Model_EnvMapInt": 0.0,
+            "Model_EnvMapTex": "skybox",
+            "Model_HeightMapTex": "white1x1",
+            "Model_LightMode": 3,
+            "Model_Lighting": 1,
+            "Model_Metalness": 0.30000001192092896,
+            "Model_NormEnable": 1,
+            "Model_NormInten": 2.180000066757202,
+            "Model_NormTile": 2.700000047683716,
+            "Model_NormalMapTex": "normal_26",
+            "Model_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_OutlineEnable": 0,
+            "Model_OutlineWidth": 1.0,
+            "Model_POMEnable": 0,
+            "Model_POMHeightScale": 0.05000000074505806,
+            "Model_POMMaxSteps": 32.0,
+            "Model_POMMinSteps": 8.0,
+            "Model_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_PuddleEmission": 0.0,
+            "Model_PuddleFalloff": 0.10000000149011612,
+            "Model_PuddleNoise": "white1x1",
+            "Model_PuddleScale": 0.10000000149011612,
+            "Model_PuddleTint": 0.5,
+            "Model_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_RimEnable": 0,
+            "Model_RimInten": 1.0,
+            "Model_RimPower": 3.0,
+            "Model_RimUseDir": 0,
+            "Model_Rot": [
+                0.5300000309944153,
+                3.309999942779541,
+                0.6136953830718994
+            ],
+            "Model_Roughness": 1.0,
+            "Model_Scale": [
+                22.07651710510254,
+                20.73563575744629,
+                34.08407974243164
+            ],
+            "Model_ShadowBias": 0.0005000000237487257,
+            "Model_ShadowDens": 0.800000011920929,
+            "Model_ShadowEnv": 0.0,
+            "Model_ShadowSoft": 0.0,
+            "Model_Shininess": 50.0,
+            "Model_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ToonRampTex": "toonRamp_01",
+            "Model_Trans": [
+                -111.43412017822266,
+                7.098520278930664,
+                58.858917236328125
+            ],
+            "Model_TriScale": 0.10000000149011612,
+            "Model_TriSharpness": 4.0,
+            "Model_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UsePuddle": 0,
+            "Model_UseTriplanar": 0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                -103.85462951660156,
+                4.095241546630859,
+                68.9308090209961
+            ],
+            "Rotation": [
+                1.167420506477356,
+                -1.05403733253479,
+                -1.1144816875457764
+            ],
+            "Scale": [
+                6.728643417358398,
+                4.362847328186035,
+                5.604976177215576
+            ]
+        },
+        "Prop_3": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                -0.8100000023841858,
+                7.03000020980835,
+                1.6200000047683716
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                19.059999465942383,
+                20.920000076293945,
+                16.780000686645508
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ModelName": "cube",
+            "Model_AddShadow": 1,
+            "Model_AlbedoMap": "white1x1",
+            "Model_AlphaThres": 0.009999999776482582,
+            "Model_Color": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_DiffuseRef": 4.0,
+            "Model_DisEnable": 0,
+            "Model_DisThres": 0.5,
+            "Model_DissolveTex": "white1x1",
+            "Model_EdgeColor": [
+                1.0,
+                0.5,
+                0.0
+            ],
+            "Model_EdgeInten": 2.0,
+            "Model_EdgeWidth": 0.05000000074505806,
+            "Model_Emissive": 1.0,
+            "Model_EnvMapInt": 0.0,
+            "Model_EnvMapTex": "skybox",
+            "Model_LightMode": 1,
+            "Model_Lighting": 1,
+            "Model_Metalness": 0.0,
+            "Model_NormEnable": 0,
+            "Model_NormInten": 1.0,
+            "Model_NormTile": 1.0,
+            "Model_NormalMapTex": "white1x1",
+            "Model_OutlineColor": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Model_OutlineEnable": 0,
+            "Model_OutlineWidth": 1.0,
+            "Model_PuddleColor": [
+                0.10000000149011612,
+                0.10000000149011612,
+                0.10000000149011612,
+                0.5
+            ],
+            "Model_PuddleEmission": 0.0,
+            "Model_PuddleFalloff": 0.10000000149011612,
+            "Model_PuddleNoise": "white1x1",
+            "Model_PuddleScale": 0.10000000149011612,
+            "Model_PuddleTint": 0.5,
+            "Model_RimColor": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_RimEnable": 0,
+            "Model_RimInten": 1.0,
+            "Model_RimPower": 3.0,
+            "Model_RimUseDir": 0,
+            "Model_Rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_Roughness": 0.5,
+            "Model_Scale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ShadowBias": 0.0005000000237487257,
+            "Model_ShadowDens": 0.800000011920929,
+            "Model_ShadowEnv": 0.0,
+            "Model_ShadowSoft": 0.0,
+            "Model_Shininess": 50.0,
+            "Model_SpecColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_ToonRampTex": "toonRamp_01",
+            "Model_Trans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_TriScale": 0.10000000149011612,
+            "Model_TriSharpness": 4.0,
+            "Model_UVRot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UVScale": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Model_UVTrans": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "Model_UsePuddle": 0,
+            "Model_UseTriplanar": 0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                60.45912170410156,
+                7.104019641876221,
+                48.57733154296875
+            ],
+            "PrefabName": "rock1",
+            "Rotation": [
+                0.7648232579231262,
+                -0.0,
+                1.1193594932556152
+            ],
+            "Scale": [
+                4.77000093460083,
+                4.769998550415039,
+                4.7699995040893555
+            ]
+        },
+        "Prop_4": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                -0.3799999952316284,
+                13.069999694824219,
+                6.400000095367432
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                50.040000915527344,
+                25.8799991607666,
+                34.599998474121094
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                124.36329650878906,
+                -7.544990539550781,
+                13.0987548828125
+            ],
+            "PrefabName": "house1",
+            "Rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Scale": [
+                7.244999885559082,
+                7.244999885559082,
+                7.244999885559082
+            ]
+        },
+        "Prop_5": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.3400000035762787,
+                -0.15000000596046448,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                23.15999984741211,
+                6.760000228881836,
+                6.179999828338623
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                -11.99226188659668,
+                -0.42013609409332275,
+                98.19273376464844
+            ],
+            "PrefabName": "woodStick01",
+            "Rotation": [
+                0.0,
+                -0.0,
+                0.0
+            ],
+            "Scale": [
+                2.251699924468994,
+                2.251699924468994,
+                2.251699924468994
+            ]
+        },
+        "Prop_6": {
+            "BaseColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "Behavior": 2,
+            "ColliderOffset": [
+                0.0,
+                12.350000381469727,
+                0.0
+            ],
+            "ColliderRadius": 1.0,
+            "ColliderSize": [
+                55.70000076293945,
+                28.540000915527344,
+                51.18000030517578
+            ],
+            "ColliderType": 1,
+            "CustomName": "",
+            "HasCollider": true,
+            "HasLight": false,
+            "HasParticle": false,
+            "HasParticle2": false,
+            "IsParticleFollowing": true,
+            "IsParticleFollowing2": true,
+            "LightColor": [
+                1.0,
+                0.5,
+                0.0,
+                1.0
+            ],
+            "LightIntensity": 5.0,
+            "LightRadius": 10.0,
+            "LightVolumetricScatteringIntensity": 1.0,
+            "ParticleName": "enemyAura",
+            "ParticleName2": "enemyAura",
+            "Position": [
+                -39.178897857666016,
+                -4.450252056121826,
+                10.076699256896973
+            ],
+            "PrefabName": "building_01",
+            "Rotation": [
+                -3.1415863037109375,
+                -3.140000104904175,
+                -3.1415839195251465
+            ],
+            "Scale": [
+                5.290214538574219,
+                6.279998302459717,
+                5.2902116775512695
+            ]
+        }
+    }
+}

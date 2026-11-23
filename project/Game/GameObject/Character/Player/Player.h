@@ -16,6 +16,7 @@ class PlayerHealth;
 class PlayerAmmoDisplay;
 class PlayerMoneyDisplay;
 class PlayerConcealment;
+class PlayerBurn;
 class GrassField;
 
 class Player : public FS::GameObject
@@ -60,14 +61,23 @@ public:
 		float dodgeStaminaCost = 30.0f;
 		float dodgeAnimSpeed = 1.6f;
 
+		// 殴られたとき
+		float hitKnockbackDistance = 3.0f;  
+		float hitKnockbackTime = 0.25f;     
+		float hitStunTime = 0.4f;           
+		float hitInvulnerableTime = 0.8f;   
+		float hitCameraShake = 0.04f;       
+		float hitStopTime = 0.05f;          
+		float hitStopTimeScale = 0.05f;     
+
 		float jumpStaminaCost = 15.0f;
 
-		// しゃがみ
-		float crouchSpeed = 0.1f;
-		float crouchWalkAnimSpeed = 0.7f;
-		float crouchIdleAnimSpeed = 1.0f;
-		float crouchBlendTime = 0.2f;
-		float crouchColliderHeightRate = 0.6f;
+		// 這う
+		float crawlSpeed = 0.1f;
+		float crawlWalkAnimSpeed = 0.7f;
+		float crawlIdleAnimSpeed = 1.0f;
+		float crawlBlendTime = 0.2f;
+		float crawlColliderHeightRate = 0.6f;
 	};
 
 	Config config;
@@ -84,8 +94,13 @@ public:
 
 	void FireWeapon();
 	void TakeDamage(int damage); 
+	void TakeHit(int damage, const FS::Vector3& knockbackDirection);
+	// 燃えている草の上で受ける継続ダメージ
+	void TakeBurnDamage(int damage);
 
 	void ResetToSpawn();
+	// HP が無くなって倒れている
+	bool IsDead() const;
 	int GetShotCount() const { return shotCount_; } 
 
 	// 所持金
@@ -140,19 +155,21 @@ public:
 	PlayerHealth* GetHealth() const { return health_.get(); }
 	FS::Vector3 GetColliderCenter() { return GetTransform().translation_ + GetCurrentColliderOffset(); }
 	FS::Vector3 GetColliderHalfSize() const { return GetCurrentColliderSize() * 0.5f; }
-	// しゃがんでいる間は低くなる
+	// 這っている間は低くなる
 	FS::Vector3 GetCurrentColliderSize() const;
 	FS::Vector3 GetCurrentColliderOffset() const;
 	bool IsSprintInputActive() const { return isSprintInputActive_; }
+	// ダッシュの入力を取り消す。押したままのボタンは、押し直すまでダッシュとして扱わない
+	void CancelSprintInput();
 	bool IsDodgeInputTriggered() const;
 	bool IsAimInputActive() const;
 	bool IsJumpInputTriggered() const;
 	bool IsShootInputTriggered() const;
 	bool IsReloadInputTriggered() const;
-	bool IsCrouchInputTriggered() const;
+	bool IsCrawlInputTriggered() const;
 
-	// しゃがみと隠れる
-	bool IsCrouching() const;
+	// 這うと隠れる
+	bool IsCrawling() const;
 	// 敵から見つかりにくい
 	bool IsHidden() const;
 	void SetGrassField(const GrassField* grassField);
@@ -208,13 +225,27 @@ private:
 	std::unique_ptr<PlayerStamina> stamina_;
 	std::unique_ptr<PlayerHealth> health_;
 	std::unique_ptr<PlayerConcealment> concealment_;
+	std::unique_ptr<PlayerBurn> burn_;
 	void PlaceAtSpawn();
+	// 倒れる
+	void StartDeath();
+	// 当たった瞬間に一瞬だけ時間を遅くして、衝撃を強調する
+	void StartHitStop();
+	void UpdateHitStop();
+	void EndHitStop();
 	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
 	float spawnRotationY_ = 0.0f;                        
 	bool isSprintInputActive_ = false;
 	bool isControllerSprintLatched_ = false;   
+	bool isSprintRepressRequired_ = false;
 
 	int shotCount_ = 0;
+
+	// 殴られたとき
+	float invulnerableTimer_ = 0.0f;
+	bool isHitStopActive_ = false;
+	float hitStopTimer_ = 0.0f;
+	float timeScaleBeforeHitStop_ = 1.0f;
 	bool isControllable_ = true;
 };
 

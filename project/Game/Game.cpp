@@ -32,7 +32,9 @@ Game::Game()
     : Application(MakeConfig())
 {
     // シーンの生成と登録
-    GetSceneManager().RegisterScene(std::make_unique<PlayScene>(GetEngine()));
+    // プレイシーンは、タイトルでステージを切り替えたときに作り直す
+    Engine* engine = GetEngine();
+    GetSceneManager().RegisterScene([engine]() { return std::make_unique<PlayScene>(engine); });
     GetSceneManager().RegisterScene(std::make_unique<TestScene>(GetEngine()));
 
     // 初期シーンを設定

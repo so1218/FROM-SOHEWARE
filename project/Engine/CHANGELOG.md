@@ -5,17 +5,48 @@
 ## 未リリース
 
 ### 追加
-- 保存するビネットとは別に、ゲームの状態 (隠れているなど) を伝えるビネットを重ねる `PostEffectManager::SetOverlayVignette` を追加。強さ・色と、暗くなり始める距離・一番暗くなる距離を渡す。毎フレーム渡す値で、保存はしない。渡さなければ見た目は変わらない
-- 草を生やす密度のしきい値 `GrassGenerationData::densityThreshold` を追加。密度マップがこの値以上の所に草を生やす。今までは 0.5 で固定だった
+
+#### 草の延焼
+- 草の延焼を追加。草を生やす範囲を覆う燃え具合の地図 (1024×1024) を GPU で毎フレーム進め、隣の炎から熱を受けて燃え移る。風下ほど燃え広がりやすく、雨で濡れていると燃え広がりにくい。密度マップで草が無い所は燃えない。火をつけた所から燃え広がる距離 (`maxSpreadDistance`) を決められ、風下へは遠く、風上へは近くまで広がる。`RendererManager::SubmitGrassIgnition` で火をつけ、`ResetGrassFire` で燃え跡を消す。燃え方と見た目は `GetGrassFireSettings` で変える
+- 草は燃えるにつれて枯れ、先端から炭になって縮む。地面は焦げて黒くなる
+- `GrassFireConstants::rainSpreadDistanceRate` を追加。地面が濡れきったときに、燃え広がる距離に掛ける割合 (初期値 0.35)。燃え移るたびに判定するので、燃えている途中で降り出した雨にも効く。今まで使っていなかった `charPadding` の場所を使うので、定数の並びは変わらない
+- 燃え具合の地図を 256×256 に縮めて CPU へ読み戻すようにした。炎の強さはマスの中の最大値、燃え進み具合はマスの中の平均値で縮める。1 フレーム遅れる
+  - `RendererManager::GetGrassFireReadback`: 炎の強さの地図。ゲームが燃えている場所にライトや火の粉を置ける
+  - `RendererManager::SampleGrassFire`: その場所の炎の強さ (0 ~ 1)。燃えている所にいるキャラクターにダメージを与えるのに使う
+  - `RendererManager::SampleGrassBurnt`: その場所の燃え進み具合 (0 は燃えていない、1 は燃え尽きた)。焼けた草むらに隠れられないようにするのに使う
+
+#### 環境・空
+- 晴れのときの Volumetric Fog を、昼と夜で別に決められるようにした。空の色と同じく 5 ~ 7 時で夜から昼へ、17 ~ 19 時で昼から夜へ滑らかに移る。雨と雷雨は今までどおり天候ごとの霧を使い、天候の移り変わりに合わせて混ぜる。設定は環境の「時間帯」タブの「晴れのときの霧」。はじめは今までの晴れの霧と同じ値になる
+- 霧の設定に、太陽と月の光が霧を照らす強さ (`FogProfile::sunScattering`) を足した。ディレクショナルライトの `volumetricScatteringIntensity` は毎フレームこの値で決まる
+- 夜空に星を追加。空を立方体の 6 面のマス目に分け、マスごとの乱数で星を置くか・位置・明るさ・色 (青白から橙) を決める。星ごとに速さと位相をずらして瞬き、地平線に近いほど強く瞬く。太陽が沈むほど見え、雲の後ろと地平線の近くでは薄れる。時間とともに空と一緒に回る。設定は環境の「空」タブ
+- `EnvironmentManager::LoadSettings` を追加。時間・天候・霧などの設定を、渡したグループから読み直す。始まりの天気 (`StartWeather`) も保存でき、読み直すとその天気から始まる
+
+#### 描画
+- 影を落とす距離を、カメラの描画距離と分けた (`LightManager` の「影の範囲」、初期値 300m)。カスケードはこの距離までを、手前ほど細かく割り振る (初期値 0.75)。今まではカメラの描画距離 (2000m) いっぱいに影の地図を広げていたため、手前でも 1 ピクセルが 36cm ほどになり、葉の影の形が出ていなかった。影は距離の手前 1 割でだんだん消える
 - 歩ける地形の外に見せる遠景の地形を描けるようにした。`Terrain::LoadFromHeightRatios` で CPU で作った高さから地形を作り、`SetDrawAsVista(true)` で遠景として描く。遠景は影を落とさず、草や植物の生成にも使わない。`ShareMaterialFrom` で歩ける地形と質感・模様の位置をそろえ、`SetHiddenArea` で歩ける地形の下にあるチャンクを省く
 - `TerrainSettings` に、質感のテクスチャの UV を決める `texcoordOrigin` と `texcoordScale` を追加。今までの地形の見た目は変わらない
-- 歩ける範囲の外で濃くなる霧を追加。`PostEffectManager::SetFogBoundary` で範囲を毎フレーム渡すと、境界の少し内側から霧が濃くなり、低い所ほど濃く溜まる。Volumetric Fog が届く所は光や影を受ける霧として、その先は合成のときに式で求めて、同じ光の当て方でつなげる。設定はポストエフェクトの Volumetric Fog の「歩ける範囲の外の霧」。渡さないシーンや Volumetric Fog が無効のときは何も変わらない
+- 草を生やす密度のしきい値 `GrassGenerationData::densityThreshold` を追加。密度マップがこの値以上の所に草を生やす。今までは 0.5 で固定だった
+- 保存するビネットとは別に、ゲームの状態 (隠れているなど) を伝えるビネットを重ねる `PostEffectManager::SetOverlayVignette` を追加。強さ・色と、暗くなり始める距離・一番暗くなる距離を渡す。毎フレーム渡す値で、保存はしない。渡さなければ見た目は変わらない
 - `AnimationModel::ShareMaterialsFrom` を追加。`Model` と同じく、ほかの AnimationModel とマテリアルを共有する。同じモデルの敵を何体も出すときに、1 つを ImGui で調整すれば全員に反映できる
 
+#### シーン・設定の保存
+- シーンを作り直せるようにした。`SceneManager::RegisterScene` にシーンを作る関数を渡して登録すると、`RequestSceneReload` でフェードアウトしてから今のシーンを捨てて作り直し、フェードインで見せる。古いシーンは、そのフレームの描画が終わった次のフレームの始めに捨てる。ステージを読み込み直すときに使う
+- GlobalVariables が `Assets/Data/GlobalVariables/` の中のフォルダも読むようにした。`Stages/Stage1/Ground.json` は `"Stages/Stage1/Ground"` というグループになり、保存も同じ場所へ戻る
+- ステージごとに設定を分けられるよう、保存するグループの名前を渡せるようにした。`BaseScene` (カメラ・ポストエフェクト・ライト)、`Environment` (時間・天候・霧と空)、`Skydome`。渡さなければ今までと同じ名前を使う
+
+#### 音
+- `AudioPlayer::SetVolume` を追加。鳴っている音の大きさを後から変える。3D の音では、距離による減衰がこれに掛かる。ループの音をゆっくり大きくしたり消したりするのに使う
+- `AudioPlayer::HasSound` を追加。その名前の音を読み込んでいるかを返す。素材を置いたときだけ鳴らす音に使う
+
 ### 変更
+- ステレオの音を `Play3D` で鳴らすと落ちていたのを直した。X3DAudio にチャンネルごとの向きを渡していなかったため。2ch 以上の音は 1 点から鳴る音として扱う。振り分けの表も、出力が 5.1ch などのときに足りるよう大きくした
+- 草と地形のルートシグネチャに、燃え具合の地図 (草: t13 と b9、地形: t11 と b11) を足した。`GrassRenderer::Draw` と `TerrainRenderer::Draw` は地図と定数を受け取る
+- `RendererManager::SetGrassFireReadback` は、炎の強さの地図に加えて燃え進み具合の地図も受け取るようにした。描画の流れ (`RenderPipeline`) から呼ぶもので、ゲームからは呼ばない
 - 木を描ける数の上限を 2000 から 8000 に増やした。木 1 本は幹と葉で 2 つ数える
 
 ### 対応が必要
+- `EnvironmentManager::Initialize` は設定を読まなくなった。`Environment` を作ると、そのときに `LoadSettings` で読む。`Environment` を作らずに `EnvironmentManager` の設定を使うゲームは、自分で `LoadSettings("Environment")` を呼ぶ
+- `WeatherVisualParams` の霧の値は `fog` (`FogProfile`) にまとめた。`visual.extinction` などを読んでいるゲームは `visual.fog.extinction` に直す
 - `GrassGenerationData` を自分で作って `GrassSystem::Generate` に渡しているゲームは、`densityThreshold` を入れる。今までと同じにするなら 0.5。入れないと 0 になり、密度マップが黒い所にも草が生える
 
 ## v1.1.0 (2026-11-13)

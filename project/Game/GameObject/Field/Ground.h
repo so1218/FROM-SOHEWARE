@@ -8,7 +8,7 @@
 class Ground : public FS::GameObject
 {
 public:
-    Ground(FS::Engine* engine);
+    Ground(FS::Engine* engine, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

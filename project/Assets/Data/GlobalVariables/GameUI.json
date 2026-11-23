@@ -562,10 +562,10 @@
             1.0
         ],
         "TimeText_Direction": 0,
-        "TimeText_Font": "Gothic",
-        "TimeText_FontSize": 56.5,
+        "TimeText_Font": "Shippori",
+        "TimeText_FontSize": 71.0,
         "TimeText_Layer": 0,
-        "TimeText_LineSpacing": 1.409999966621399,
+        "TimeText_LineSpacing": 1.0,
         "TimeText_OutlineColor": [
             0.0,
             0.0,

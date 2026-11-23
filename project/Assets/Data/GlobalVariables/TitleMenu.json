@@ -4,6 +4,52 @@
         "BlinkSpeed": 2.5,
         "FadeInTime": 2.0,
         "FadeOutTime": 0.6000000238418579,
+        "StageText_Align": 1,
+        "StageText_CharSpacing": 4.0,
+        "StageText_Color": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "StageText_Direction": 0,
+        "StageText_Font": "Main",
+        "StageText_FontSize": 24.0,
+        "StageText_Layer": 31,
+        "StageText_LineSpacing": 1.0,
+        "StageText_OutlineColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "StageText_OutlineWidth": 0.0,
+        "StageText_Pivot": [
+            0.5,
+            0.5
+        ],
+        "StageText_Pos": [
+            0.0,
+            250.0
+        ],
+        "StageText_ScreenAnchor": [
+            0.5,
+            0.5
+        ],
+        "StageText_ShadowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.6000000238418579
+        ],
+        "StageText_ShadowOffset": [
+            2.5,
+            2.5
+        ],
+        "StageText_ShadowSoftness": 3.5,
+        "StageText_ShadowSpread": 1.0,
+        "StageText_Visible": true,
+        "StageText_WrapLength": 0.0,
         "StartText_Align": 1,
         "StartText_CharSpacing": 6.0,
         "StartText_Color": [

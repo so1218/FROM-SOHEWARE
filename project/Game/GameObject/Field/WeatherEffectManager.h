@@ -32,7 +32,7 @@ private:
     // エフェクトのポインタを保持
     FS::ParticleEmitter* rainParticleEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thunderRainParticleEmitterPtr_ = nullptr;
-    // 落雷1本につき1つ。持ち主は ParticleSystem
+    // 落雷1本につき1つ
     std::vector<FS::ParticleEmitter*> thunderStrikeEmitters_;
 
     // 雷雨用の制御タイマー
@@ -62,6 +62,10 @@ private:
     float thunderShakeDuration_ = 0.5f;
     float thunderShakeIntensity_ = 2.0f;
     float thunderShakeMaxDistance_ = 300.0f;
+    // 落ちた所の草に火がつく半径。0 でつかない
+    float thunderIgniteRadius_ = 4.0f;
+    // 1 本の雷が火をつける割合 (0 ~ 1)
+    float thunderIgniteChance_ = 0.3f;
 
     FS::CameraManager* cameraManager_ = nullptr;
 

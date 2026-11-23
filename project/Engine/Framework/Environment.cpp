@@ -5,9 +5,12 @@
 namespace FS
 {
 
-Environment::Environment(Engine* engine) : GameObject(), engine_(engine)
+Environment::Environment(Engine* engine, const std::string& environmentGroupName, const std::string& skydomeGroupName)
+    : GameObject(), engine_(engine)
 {
-    skydome_ = std::make_unique<Skydome>(engine_);
+    // 太陽の光や霧は、ほかのオブジェクトより先に、このシーンの設定にしておく
+    EnvironmentManager::GetInstance()->LoadSettings(environmentGroupName);
+    skydome_ = std::make_unique<Skydome>(engine_, skydomeGroupName);
 }
 
 void Environment::Initialize()

@@ -26,6 +26,7 @@ private:
     std::unique_ptr<FS::Text> magazineText_;
     std::unique_ptr<FS::Text> promptText_;
     std::unique_ptr<FS::Text> reloadText_;
+    std::unique_ptr<FS::Text> ammoTypeText_;
     std::unique_ptr<FS::Sprite> roundSprite_;
     std::unique_ptr<FS::Sprite> promptIcon_;
     std::unique_ptr<FS::Sprite> reloadBarBack_;
@@ -56,4 +57,9 @@ private:
     FS::Vector4 lowAmmoColor_ = { 1.0f, 0.35f, 0.25f, 0.95f };
     FS::Vector4 emptyRoundColor_ = { 1.0f, 1.0f, 1.0f, 0.2f };
     float lowAmmoRatio_ = 0.3f;  
+
+    // 弾の種類
+    FS::Vector2 ammoTypeTextOffset_ = { -200.0f, -44.0f };
+    float ammoTypeFontSize_ = 22.0f;
+    FS::Vector4 incendiaryColor_ = { 1.0f, 0.55f, 0.15f, 0.95f };
 };

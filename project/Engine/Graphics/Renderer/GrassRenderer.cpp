@@ -144,7 +144,9 @@ void GrassRenderer::Draw(
     const GrassMaterialData& materialData,
     const GrassCullingData& cullingData,
     D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,
-    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle)
+    D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle,
+    D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress,
+    D3D12_GPU_DESCRIPTOR_HANDLE fireSrvHandle)
 {
     // 草が生成されていない場合は処理をスキップ
     if (totalGeneratedCount_ == 0)
@@ -262,6 +264,8 @@ void GrassRenderer::Draw(
         cmdList->SetGraphicsRootShaderResourceView(7, outputInstanceBuffer_[currentFrameIndex_]->GetGPUVirtualAddress());
         cmdList->SetGraphicsRootDescriptorTable(8, env.srvManager->GetSRVHandleGPU(windMapTextureHandle));
         cmdList->SetGraphicsRootDescriptorTable(10, interactionSrvHandle);
+        cmdList->SetGraphicsRootDescriptorTable(11, fireSrvHandle);
+        cmdList->SetGraphicsRootConstantBufferView(12, fireCBAddress);
 
         cmdList->ExecuteIndirect(commandSignature_.Get(), 1, indirectArgsBuffer_[currentFrameIndex_].Get(), 0, nullptr, 0);
     

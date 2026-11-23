@@ -1,11 +1,10 @@
 #include "pch.h"
 #include "Ground.h"
 #include "ImGuiManager.h"
-#include "PostEffectManager.h"
 
 using namespace FS;
 
-Ground::Ground(Engine* engine) : GameObject()
+Ground::Ground(Engine* engine, const std::string& groupName) : GameObject()
 {
 	engine_ = engine;
 
@@ -13,7 +12,7 @@ Ground::Ground(Engine* engine) : GameObject()
 	terrain_ = std::make_unique<FS::Terrain>(engine_);
 	terrain_->LoadFromHeightmap("noise_39", 1.0f);
 
-	binder_ = std::make_unique<PropertyBinder>(engine_, "Ground");
+	binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 	interactionSystem_ = std::make_unique<WorldInteractionSystem>(engine_);
 }
 
@@ -28,14 +27,6 @@ void Ground::Initialize()
 void Ground::Update()
 {
 	interactionSystem_->Update();
-
-	// 歩ける地形の外を霧に沈める
-	const Vector2 center = terrain_->GetCenterXZ();
-	const Vector2 halfSize = terrain_->GetSizeXZ() * 0.5f;
-	if (halfSize.x > 0.0f && halfSize.y > 0.0f)
-	{
-		engine_->GetPostEffectManager()->SetFogBoundary(center - halfSize, center + halfSize);
-	}
 }
 
 void Ground::Draw()

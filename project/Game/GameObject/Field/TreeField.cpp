@@ -15,13 +15,13 @@ namespace
     constexpr float kHitHeightRate = 1.5f;
 }
 
-TreeField::TreeField(Engine* engine, Terrain* terrain) : GameObject(), terrain_(terrain)
+TreeField::TreeField(Engine* engine, Terrain* terrain, const std::string& groupName) : GameObject(), terrain_(terrain)
 {
     engine_ = engine;
 
     model_ = std::make_unique<Model>(engine_, "tree");
     treeSystem_ = std::make_unique<TreeSystem>(engine_, "noise_39");
-    binder_ = std::make_unique<PropertyBinder>(engine_, "TreeField");
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 }
 
 void TreeField::Initialize()

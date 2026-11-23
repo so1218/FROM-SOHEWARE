@@ -33,6 +33,77 @@ float SampleCloudDensity(float2 cloudUV)
     return largeLayer * 0.6f + mediumLayer * 0.3f + smallLayer * 0.1f;
 }
 
+// 星の色
+float3 CalculateStarColor(float temperature)
+{
+    const float3 blueWhite = float3(0.65f, 0.75f, 1.0f);
+    const float3 white = float3(1.0f, 1.0f, 1.0f);
+    const float3 yellow = float3(1.0f, 0.88f, 0.7f);
+    const float3 orange = float3(1.0f, 0.65f, 0.4f);
+    if (temperature < 0.3f)
+        return lerp(blueWhite, white, temperature / 0.3f);
+    if (temperature < 0.75f)
+        return lerp(white, yellow, (temperature - 0.3f) / 0.45f);
+    return lerp(yellow, orange, (temperature - 0.75f) / 0.25f);
+}
+
+// 星
+float3 CalculateStars(float3 direction, float horizonRatio)
+{
+    float3 absoluteDirection = abs(direction);
+    float faceIndex;
+    float2 faceUV;
+    if (absoluteDirection.x >= absoluteDirection.y && absoluteDirection.x >= absoluteDirection.z)
+    {
+        faceIndex = (direction.x > 0.0f) ? 0.0f : 1.0f;
+        faceUV = direction.yz / absoluteDirection.x;
+    }
+    else if (absoluteDirection.y >= absoluteDirection.z)
+    {
+        faceIndex = (direction.y > 0.0f) ? 2.0f : 3.0f;
+        faceUV = direction.xz / absoluteDirection.y;
+    }
+    else
+    {
+        faceIndex = (direction.z > 0.0f) ? 4.0f : 5.0f;
+        faceUV = direction.xy / absoluteDirection.z;
+    }
+
+    float2 gridPosition = (faceUV * 0.5f + 0.5f) * gSky.starGridSize;
+    float2 cell = floor(gridPosition);
+    float2 local = gridPosition - cell;
+
+    // 1 画素がマスのどれだけにあたるか
+    float pixelSize = max(fwidth(gridPosition.x), fwidth(gridPosition.y));
+
+    float3 placementRandom = Hash33(float3(cell, faceIndex * 1000.0f + 17.0f)) * 0.5f + 0.5f;
+    if (placementRandom.x > gSky.starDensity)
+        return float3(0.0f, 0.0f, 0.0f);
+    float3 shapeRandom = Hash33(float3(cell + 31.7f, faceIndex * 1000.0f + 53.0f)) * 0.5f + 0.5f;
+
+    // マスの端に寄せないので、隣のマスの星がはみ出してくることはない
+    float2 starPosition = 0.2f + shapeRandom.xy * 0.6f;
+    float radius = max(gSky.starSize, pixelSize * 0.75f);
+    float distanceToStar = length(local - starPosition);
+    float shape = exp(-2.0f * distanceToStar * distanceToStar / (radius * radius));
+
+    // 画素に合わせて広げた分だけ暗くし、見かけの明るさをそろえる
+    float energy = (gSky.starSize * gSky.starSize) / (radius * radius);
+
+    // 暗い星ほど多く、明るい星はまれにする
+    float magnitude = lerp(0.05f, 1.0f, pow(placementRandom.y, 6.0f));
+
+    // 星ごとに速さと位相をずらして、ゆっくり瞬かせる。地平線に近いほど空気の揺らぎで強く瞬く
+    float phase = shapeRandom.z * 6.2831853f;
+    float speed = gSky.starTwinkleSpeed * (0.7f + frac(placementRandom.y * 13.7f) * 0.6f);
+    float time = gFrameData.time;
+    float twinkle = 0.6f * sin(time * speed + phase) + 0.4f * sin(time * speed * 2.3f + phase * 1.7f);
+    float twinkleAmount = gSky.starTwinkleAmount * lerp(1.5f, 1.0f, horizonRatio);
+    float twinkleBrightness = saturate(1.0f + twinkle * twinkleAmount);
+
+    return CalculateStarColor(placementRandom.z) * magnitude * shape * energy * twinkleBrightness * gSky.starBrightness;
+}
+
 float4 main(SkydomePSInput input) : SV_Target
 {
     float3 viewDirection = normalize(input.viewDirection);
@@ -87,6 +158,19 @@ float4 main(SkydomePSInput input) : SV_Target
     // 厚い雲の後ろにある太陽と月は隠す
     float celestialVisibility = 1.0f - cloudAlpha * thickness;
 
-    float3 color = lerp(skyColor, cloudColor, cloudAlpha) + (sun + moon) * celestialVisibility;
+    // 星は空と一緒に回るよう、太陽が回った角度だけ見る向きを戻してから探す
+    float skyAngle = atan2(gSky.sunDirection.y, gSky.sunDirection.x);
+    float cosAngle = cos(skyAngle);
+    float sinAngle = sin(skyAngle);
+    float3 starDirection = float3(viewDirection.x * cosAngle + viewDirection.y * sinAngle,
+                                  -viewDirection.x * sinAngle + viewDirection.y * cosAngle,
+                                  viewDirection.z);
+
+    // 太陽が沈むほど見え、地平線の近くは空気で薄れる
+    float horizonRatio = smoothstep(0.0f, 0.3f, viewDirection.y);
+    float nightRatio = 1.0f - smoothstep(-0.15f, 0.05f, sunDirection.y);
+    float3 stars = CalculateStars(starDirection, horizonRatio) * nightRatio * smoothstep(0.0f, 0.15f, viewDirection.y) * (1.0f - cloudAlpha);
+
+    float3 color = lerp(skyColor, cloudColor, cloudAlpha) + (sun + moon) * celestialVisibility + stars;
     return float4(color, 1.0f);
 }

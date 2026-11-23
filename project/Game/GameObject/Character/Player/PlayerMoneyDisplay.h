@@ -1,6 +1,7 @@
 #pragma once
 #include "PropertyBinder.h"
 #include "Text.h"
+#include "Sprite.h"
 
 // 所持金
 class PlayerMoneyDisplay
@@ -13,11 +14,14 @@ public:
 
     // 続けて拾ったときは、表示中の+に足していく
     void OnGain(int amount);
+    // 出ている +表示を消す
+    void Reset();
     void Draw(int money);
 
 private:
     std::unique_ptr<FS::Text> moneyText_;
     std::unique_ptr<FS::Text> gainText_;
+    std::unique_ptr<FS::Sprite> iconSprite_;
 
     int gainAmount_ = 0;
     float gainTimer_ = 0.0f;   // 0 より大きい間+を出す
@@ -31,4 +35,12 @@ private:
     float gainRiseDistance_ = 12.0f;   
     FS::Vector4 moneyColor_ = { 1.0f, 1.0f, 1.0f, 0.95f };
     FS::Vector4 gainColor_ = { 1.0f, 0.85f, 0.35f, 1.0f };
+
+    // アイコン
+    std::string iconTextureName_ = "pouch";
+    uint32_t iconTextureHandle_ = 0;
+    float iconScale_ = 1.0f;    
+    float iconGap_ = 10.0f;    
+    float iconOffsetY_ = 0.0f;  
+    FS::Vector4 iconColor_ = { 1.0f, 1.0f, 1.0f, 0.95f };
 };

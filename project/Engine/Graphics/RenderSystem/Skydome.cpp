@@ -9,12 +9,12 @@
 namespace FS
 {
 
-Skydome::Skydome(Engine* engine)
+Skydome::Skydome(Engine* engine, const std::string& groupName)
     : engine_(engine)
 {
     cloudNoiseHandle_ = TextureManager::GetInstance().Get("noise_59");
 
-    binder_ = std::make_unique<PropertyBinder>(engine_, "Skydome");
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 }
 
 Skydome::~Skydome() = default;
@@ -27,6 +27,13 @@ void Skydome::Initialize()
     binder_->Bind("CloudBumpScale", &atmosphereSkyData_.cloudBumpScale, 0.15f, 0.005f, 0.01f, 1.0f);
     binder_->Bind("CloudEdgeSoftness", &atmosphereSkyData_.cloudEdgeSoftness, 0.15f, 0.01f, 0.01f, 0.5f);
     binder_->Bind("CloudAbsorption", &atmosphereSkyData_.cloudAbsorption, 0.7f, 0.01f, 0.0f, 1.0f);
+
+    binder_->Bind("StarDensity", &atmosphereSkyData_.starDensity, 0.06f, 0.005f, 0.0f, 1.0f);
+    binder_->Bind("StarGridSize", &atmosphereSkyData_.starGridSize, 250.0f, 1.0f, 10.0f, 2000.0f);
+    binder_->Bind("StarSize", &atmosphereSkyData_.starSize, 0.08f, 0.005f, 0.01f, 0.3f);
+    binder_->Bind("StarBrightness", &atmosphereSkyData_.starBrightness, 8.0f, 0.1f, 0.0f, 100.0f);
+    binder_->Bind("StarTwinkleSpeed", &atmosphereSkyData_.starTwinkleSpeed, 1.5f, 0.05f, 0.0f, 20.0f);
+    binder_->Bind("StarTwinkleAmount", &atmosphereSkyData_.starTwinkleAmount, 0.4f, 0.01f, 0.0f, 1.0f);
 }
 
 void Skydome::Update()
@@ -69,6 +76,14 @@ void Skydome::DebugGui()
 
         ImGui::Text("雲のライティング・陰影設定");
         binder_->Draw("CloudAbsorption", "雲の厚みによる光の遮蔽率");
+
+        ImGui::SeparatorText("星 (太陽が沈むと見える)");
+        binder_->Draw("StarDensity", "星を置くマスの割合");
+        binder_->Draw("StarGridSize", "空を分けるマスの細かさ (立方体 1 面の 1 辺)");
+        binder_->Draw("StarSize", "星の大きさ (1 マスに対する割合)");
+        binder_->Draw("StarBrightness", "明るさ");
+        binder_->Draw("StarTwinkleSpeed", "瞬きの速さ");
+        binder_->Draw("StarTwinkleAmount", "瞬きで明るさが変わる割合");
 
         EndEnvironmentTab();
     }

@@ -8,6 +8,8 @@
 #include "AnimationManager.h"
 #include "MathUtils.h"
 #include "Terrain.h"
+#include "AudioPlayer.h"
+#include "RendererManager.h"
 
 using namespace FS;
 
@@ -18,8 +20,6 @@ namespace
 constexpr float kArriveDistance = 0.3f;
 // うろついて目的地に着いたら、ここまで立ち止まる
 constexpr float kWanderPauseTime = 3.0f;
-// 殴る範囲から少し出ても、振り下ろしは当たる
-constexpr float kAttackReachMargin = 0.5f;
 // 攻撃や倒れるアニメーションが無いときに次へ進むまで
 constexpr float kAnimationFallbackTime = 3.0f;
 
@@ -72,6 +72,9 @@ void ZombieBehavior::Initialize(Enemy* owner)
         dustEmitterPtr_->SetPosition({ spawnPosition_.x, groundHeight, spawnPosition_.z });
         dustEmitterPtr_->Play();
     }
+
+    explosionEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("floatingEnemyExplosion");
+    deathSparkEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("enemyDeathSpark");
 
     PlayAnimation(kEmergeAnimation, false, config_.emergeAnimSpeed);
     ChangeState(State::Emerge);
@@ -128,6 +131,13 @@ void ZombieBehavior::Update(Enemy* owner)
         return;
     }
 
+    // 燃えて倒れたときもここで終わる
+    UpdateBurning(owner, deltaTime);
+    if (!owner->IsActive())
+    {
+        return;
+    }
+
     owner->SyncTransform();
 
     // 見た目は本体の位置と向きに合わせる
@@ -140,6 +150,8 @@ void ZombieBehavior::Update(Enemy* owner)
     // テクスチャを変えたときも反映されるよう、毎フレーム写す
     animationModel_->ShareMaterialsFrom(materialSource_);
     animationModel_->Update();
+
+    UpdateFootsteps(owner);
 }
 
 void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
@@ -156,7 +168,7 @@ void ZombieBehavior::UpdateEmerge(Enemy* owner, float deltaTime)
         return;
     }
 
-    // 出きったら土煙を止める。出ている煙は消えるまで残る
+    // 出きったら土煙を止める
     if (dustEmitterPtr_)
     {
         dustEmitterPtr_->Stop();
@@ -203,17 +215,29 @@ void ZombieBehavior::UpdateAttack(Enemy* owner, float deltaTime)
 
     const Vector3& position = owner->GetTransform().translation_;
     const Vector3 playerPosition = player_->GetTransform().translation_;
-    FaceDirection(owner, playerPosition - position, deltaTime);
-
-    // 振り下ろした瞬間に、まだ届く所にいれば当たる
     const bool hasAttackAnimation = HasAnimation(kAttackAnimation);
     const float attackProgress = hasAttackAnimation ? animationModel_->GetNormalizedTime() : stateTimer_ / kAnimationFallbackTime;
+
+    // 振りかぶる間だけプレイヤーへ向き直る
+    if (attackProgress < config_.attackTrackEndTime)
+    {
+        FaceDirection(owner, playerPosition - position, deltaTime);
+    }
+
+    // 振り下ろした瞬間に、正面の届く所にいれば当たる
     if (!hasHitThisAttack_ && attackProgress >= config_.attackHitTime)
     {
         hasHitThisAttack_ = true;
-        if (HorizontalDistance(position, playerPosition) <= config_.attackRange + kAttackReachMargin)
+        if (HorizontalDistance(position, playerPosition) <= config_.attackRange + config_.attackReachMargin &&
+            IsInAttackAngle(owner, playerPosition))
         {
-            player_->TakeDamage(config_.attackDamage);
+            // ゾンビから離れる向きへ押し飛ばす
+            Vector3 knockbackDirection = { playerPosition.x - position.x, 0.0f, playerPosition.z - position.z };
+            if (knockbackDirection.LengthSq() < 0.0001f)
+            {
+                knockbackDirection = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+            }
+            player_->TakeHit(config_.attackDamage, knockbackDirection);
         }
     }
 
@@ -339,6 +363,30 @@ bool ZombieBehavior::MoveToward(Enemy* owner, const Vector3& target, float speed
     return distance <= kArriveDistance;
 }
 
+bool ZombieBehavior::IsInAttackAngle(Enemy* owner, const Vector3& targetPosition) const
+{
+    const Vector3& position = owner->GetTransform().translation_;
+    const float toTargetX = targetPosition.x - position.x;
+    const float toTargetZ = targetPosition.z - position.z;
+    const float distance = std::sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
+    // 重なるほど近いときは向きが決まらないので当てる
+    if (distance < 0.001f)
+    {
+        return true;
+    }
+
+    // モデルは +Z が正面
+    const Vector3 forward = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+    const float forwardLength = std::sqrt(forward.x * forward.x + forward.z * forward.z);
+    if (forwardLength < 0.001f)
+    {
+        return true;
+    }
+
+    const float cosAngle = (forward.x * toTargetX + forward.z * toTargetZ) / (forwardLength * distance);
+    return cosAngle >= std::cos(config_.attackHalfAngle * Math::PI / 180.0f);
+}
+
 void ZombieBehavior::FaceDirection(Enemy* owner, const Vector3& direction, float deltaTime)
 {
     if (direction.x * direction.x + direction.z * direction.z < 0.0001f)
@@ -363,6 +411,53 @@ void ZombieBehavior::PlayAnimation(const char* name, bool isLoop, float speed)
     // 用意していないアニメーションは、歩きで代わりにする
     const char* animation = HasAnimation(name) ? name : kWalkAnimation;
     animationModel_->Play(animation, isLoop, speed, config_.animBlendTime);
+
+    // 切り替えた直後に足音が鳴らないよう、今の進み具合から数え直す
+    if (currentAnimation_ != animation)
+    {
+        currentAnimation_ = animation;
+        previousFootstepTime_ = animationModel_->GetNormalizedTime();
+    }
+}
+
+void ZombieBehavior::UpdateFootsteps(Enemy* owner)
+{
+    // 歩いて移動している状態だけ。攻撃のアニメーションが無くて歩きで代わりにしているときは鳴らさない
+    const bool isMovingState = state_ == State::Chase || state_ == State::Search || state_ == State::Wander;
+    if (!isMovingState || currentAnimation_ != kWalkAnimation)
+    {
+        return;
+    }
+
+    const float currentTime = animationModel_->GetNormalizedTime();
+    // 1 周して頭に戻ったときは、前の値を 1 周分戻して比べる
+    float previousTime = previousFootstepTime_;
+    if (currentTime < previousTime)
+    {
+        previousTime -= 1.0f;
+    }
+    previousFootstepTime_ = currentTime;
+
+    int stepCount = 0;
+    for (float stepTime : { config_.footstepLeftTime, config_.footstepRightTime })
+    {
+        // 1 周前の分も見て、頭に戻ったフレームで跨いだ足も拾う
+        for (float cycleOffset : { -1.0f, 0.0f })
+        {
+            const float time = stepTime + cycleOffset;
+            if (previousTime < time && time <= currentTime)
+            {
+                ++stepCount;
+            }
+        }
+    }
+    if (stepCount == 0)
+    {
+        return;
+    }
+
+    AudioPlayer::GetInstance().Play3D("zombieFootstep", owner->GetTransform().translation_,
+        { .volume = config_.footstepVolume, .maxDistance = config_.footstepMaxDistance });
 }
 
 float ZombieBehavior::RandomRange(float min, float max)
@@ -373,16 +468,123 @@ float ZombieBehavior::RandomRange(float min, float max)
 void ZombieBehavior::OnDeath(Enemy* owner)
 {
     ReleaseEffects();
+
+    // 倒れきって消える瞬間に爆発させ、急に消えるのを隠す
+    AudioPlayer::GetInstance().Play("floatingEnemyExplosion", 0.4f);
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        explosionEmitterPtr_->Play();
+    }
+
+    // 爆発と一緒に火花を降らせる
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->SetPosition(owner->GetTransform().translation_);
+        deathSparkEmitterPtr_->Play();
+    }
+
+    // 足元の草に火がつく
+    if (config_.deathIgniteRadius > 0.0f)
+    {
+        const Vector3& position = owner->GetTransform().translation_;
+        owner->GetEngine()->GetRendererManager()->SubmitGrassIgnition(
+            { position.x, GetGroundHeight(position.x, position.z), position.z }, config_.deathIgniteRadius);
+    }
 }
 
 void ZombieBehavior::OnDespawn(Enemy* owner)
 {
     ReleaseEffects();
+
+    if (explosionEmitterPtr_)
+    {
+        explosionEmitterPtr_->Destroy();
+        explosionEmitterPtr_ = nullptr;
+    }
+
+    if (deathSparkEmitterPtr_)
+    {
+        deathSparkEmitterPtr_->Destroy();
+        deathSparkEmitterPtr_ = nullptr;
+    }
+}
+
+void ZombieBehavior::UpdateBurning(Enemy* owner, float deltaTime)
+{
+    // 倒れている最中は、もう燃えても HP は減らさない。まとっている炎はそのまま残す
+    if (state_ != State::Dying)
+    {
+        const int damage = burn_.Update(owner->GetEngine()->GetRendererManager(), owner->GetTransform().translation_, config_.burn, deltaTime);
+        if (damage > 0)
+        {
+            owner->TakeDamageOverTime(damage);
+        }
+    }
+    UpdateBurnEffects(owner);
+
+    if (!burn_.IsBurning())
+    {
+        // ゾンビごとにずらしておき、何体も同時に燃え始めても音がそろわないようにする
+        burnSparkTimer_ = RandomRange(0.0f, config_.burnSparkInterval);
+        return;
+    }
+
+    // 回路が焼ける音を、間を置いて鳴らす。遠いゾンビほど小さく、遠すぎれば鳴らさない
+    burnSparkTimer_ -= deltaTime;
+    if (burnSparkTimer_ > 0.0f)
+    {
+        return;
+    }
+    burnSparkTimer_ = config_.burnSparkInterval * RandomRange(0.7f, 1.3f);
+
+    if (!player_ || config_.burnSparkHearingDistance <= 0.0f)
+    {
+        return;
+    }
+    const Vector3 toPlayer = player_->GetTransform().translation_ - owner->GetTransform().translation_;
+    const float distance = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y + toPlayer.z * toPlayer.z);
+    if (distance < config_.burnSparkHearingDistance)
+    {
+        AudioPlayer::GetInstance().Play("zombieSpark", config_.burnSparkVolume * (1.0f - distance / config_.burnSparkHearingDistance));
+    }
+}
+
+void ZombieBehavior::UpdateBurnEffects(Enemy* owner)
+{
+    const bool shouldPlay = burn_.IsBurning();
+    if (shouldPlay && !burnEmbersEmitterPtr_)
+    {
+        // 見た目はプレイヤーが燃えているときと同じ
+        burnEmbersEmitterPtr_ = owner->GetEngine()->GetParticleSystem()->SpawnEmitter("playerBurnEmbers");
+        if (burnEmbersEmitterPtr_)
+        {
+            burnEmbersEmitterPtr_->SetTargetAnimationModel(animationModel_.get());
+        }
+    }
+    if (shouldPlay == isBurnEffectPlaying_)
+    {
+        return;
+    }
+
+    if (burnEmbersEmitterPtr_)
+    {
+        if (shouldPlay)
+        {
+            burnEmbersEmitterPtr_->Play();
+        }
+        else
+        {
+            burnEmbersEmitterPtr_->Stop();
+        }
+    }
+    isBurnEffectPlaying_ = shouldPlay;
 }
 
 void ZombieBehavior::ReleaseEffects()
 {
-    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &dustEmitterPtr_ })
+    isBurnEffectPlaying_ = false;
+    for (FS::ParticleEmitter** emitter : { &auraEmitterPtr_, &dustEmitterPtr_, &burnEmbersEmitterPtr_ })
     {
         if (*emitter)
         {
@@ -416,6 +618,20 @@ int ZombieBehavior::ModifyDamage(Enemy* owner, int damage, const Collider* hitCo
         ChangeState(State::Chase);
     }
     return damage;
+}
+
+void ZombieBehavior::OnTakeDamage(Enemy* owner, int damage, const Vector3& hitPoint, const Vector3& hitNormal)
+{
+    // 倒れている最中は弾が効かないので、音も鳴らさない
+    if (damage <= 0)
+    {
+        return;
+    }
+
+    // 撃った手応えとして、距離に関係なく同じ大きさで鳴らす
+    AudioPlayer& audioPlayer = AudioPlayer::GetInstance();
+    audioPlayer.Play("zombieDamaged", config_.damagedSoundVolume);
+    audioPlayer.Play("zombieSpark", config_.sparkSoundVolume);
 }
 
 void ZombieBehavior::Draw(Enemy* owner)
@@ -458,14 +674,32 @@ void ZombieConfig::Bind(PropertyBinder& binder)
     binder.Bind("WanderRadius", &wanderRadius, 8.0f, 0.1f, 0.0f, 100.0f);
     binder.Bind("SeparationRadius", &separationRadius, 1.2f, 0.05f, 0.0f, 10.0f);
 
-    binder.Bind("AttackRange", &attackRange, 1.6f, 0.05f, 0.1f, 10.0f);
+    binder.Bind("AttackRange", &attackRange, 1.6f, 0.05f, 0.1f, 30.0f);
+    binder.Bind("AttackReachMargin", &attackReachMargin, 0.5f, 0.05f, 0.0f, 30.0f);
     binder.Bind("AttackDamage", &attackDamage, 10, 1.0f, 0, 1000);
     binder.Bind("AttackHitTime", &attackHitTime, 0.45f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("AttackHalfAngle", &attackHalfAngle, 60.0f, 1.0f, 0.0f, 180.0f);
+    binder.Bind("AttackTrackEndTime", &attackTrackEndTime, 0.3f, 0.01f, 0.0f, 1.0f);
 
     binder.Bind("EmergeAnimSpeed", &emergeAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("WalkAnimSpeed", &walkAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("AttackAnimSpeed", &attackAnimSpeed, 1.0f, 0.01f, 0.1f, 5.0f);
     binder.Bind("AnimBlendTime", &animBlendTime, 0.25f, 0.01f, 0.0f, 2.0f);
+
+    binder.Bind("DamagedSoundVolume", &damagedSoundVolume, 0.6f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("SparkSoundVolume", &sparkSoundVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+
+    burn.Bind(binder, "Burn", ZombieConfig().burn);
+    binder.Bind("BurnSparkInterval", &burnSparkInterval, 0.8f, 0.01f, 0.05f, 10.0f);
+    binder.Bind("BurnSparkVolume", &burnSparkVolume, 0.35f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("BurnSparkHearingDistance", &burnSparkHearingDistance, 30.0f, 0.5f, 0.0f, 500.0f);
+
+    binder.Bind("FootstepVolume", &footstepVolume, 0.5f, 0.01f, 0.0f, 2.0f);
+    binder.Bind("FootstepMaxDistance", &footstepMaxDistance, 25.0f, 0.5f, 1.0f, 200.0f);
+    binder.Bind("FootstepLeftTime", &footstepLeftTime, 0.1f, 0.01f, 0.0f, 1.0f);
+    binder.Bind("FootstepRightTime", &footstepRightTime, 0.6f, 0.01f, 0.0f, 1.0f);
+
+    binder.Bind("DeathIgniteRadius", &deathIgniteRadius, 4.0f, 0.1f, 0.0f, 50.0f);
 }
 
 void ZombieConfig::Draw(PropertyBinder& binder)
@@ -515,9 +749,12 @@ void ZombieConfig::Draw(PropertyBinder& binder)
 
     if (ImGui::TreeNode("攻撃"))
     {
-        binder.Draw("AttackRange", "殴る距離");
+        binder.Draw("AttackRange", "攻撃を始める距離");
+        binder.Draw("AttackReachMargin", "当たる瞬間に、始める距離より遠くまで届く分");
         binder.Draw("AttackDamage", "ダメージ");
         binder.Draw("AttackHitTime", "当たる瞬間 (アニメーションの 0 ~ 1)");
+        binder.Draw("AttackHalfAngle", "当たる範囲 (正面から左右の角度、度)");
+        binder.Draw("AttackTrackEndTime", "向きを合わせ続ける所 (アニメーションの 0 ~ 1)");
         ImGui::TreePop();
     }
 
@@ -527,6 +764,32 @@ void ZombieConfig::Draw(PropertyBinder& binder)
         binder.Draw("WalkAnimSpeed", "歩く速さ");
         binder.Draw("AttackAnimSpeed", "殴る速さ");
         binder.Draw("AnimBlendTime", "切り替えの補間時間 (秒)");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("撃たれたときの音"))
+    {
+        binder.Draw("DamagedSoundVolume", "当たる音の大きさ");
+        binder.Draw("SparkSoundVolume", "ショートする音の大きさ");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("燃える"))
+    {
+        burn.Draw(binder, "Burn");
+        binder.Draw("BurnSparkInterval", "回路が焼ける音 (zombieSpark) の間隔 (秒)");
+        binder.Draw("BurnSparkVolume", "回路が焼ける音の大きさ");
+        binder.Draw("BurnSparkHearingDistance", "回路が焼ける音が聞こえる距離 (m)");
+        binder.Draw("DeathIgniteRadius", "倒されて爆発したときに草に火がつく半径 (0 でつかない)");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("足音"))
+    {
+        binder.Draw("FootstepVolume", "足音 (zombieFootstep) の大きさ");
+        binder.Draw("FootstepMaxDistance", "足音が聞こえる距離 (m)");
+        binder.Draw("FootstepLeftTime", "左足が着く位置 (歩きのアニメーションの 0 ~ 1)");
+        binder.Draw("FootstepRightTime", "右足が着く位置 (歩きのアニメーションの 0 ~ 1)");
         ImGui::TreePop();
     }
 }

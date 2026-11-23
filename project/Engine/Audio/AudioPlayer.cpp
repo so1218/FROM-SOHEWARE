@@ -218,6 +218,14 @@ void AudioPlayer::SetEmitterPosition(int handleID, const Vector3& position)
     }
 }
 
+void AudioPlayer::SetVolume(int handleID, float volume)
+{
+    auto it = activeVoices_.find(handleID);
+    if (it != activeVoices_.end() && it->second.voice) {
+        it->second.voice->SetVolume(std::clamp(volume, 0.0f, 10.0f));
+    }
+}
+
 void AudioPlayer::Update()
 {
     for (auto it = activeVoices_.begin(); it != activeVoices_.end(); )
@@ -247,6 +255,12 @@ void AudioPlayer::Apply3D(AudioInstance& instance)
     const X3DAUDIO_HANDLE& x3dInstance = AudioDevice::GetInstance().GetX3DInstance();
     uint32_t dstChannels = AudioDevice::GetInstance().GetMasterChannels();
 
+    constexpr uint32_t kMaxMatrixSize = 64;
+    if (instance.channels == 0 || instance.channels * dstChannels > kMaxMatrixSize)
+    {
+        return;
+    }
+
     float dx = instance.position.x - listener_.Position.x;
     float dy = instance.position.y - listener_.Position.y;
     float dz = instance.position.z - listener_.Position.z;
@@ -255,7 +269,7 @@ void AudioPlayer::Apply3D(AudioInstance& instance)
     // 聞く位置が決まっていないときと maxDistance 以上離れているときは音量を 0 にする
     if (!hasListener_ || dist >= instance.maxDistance)
     {
-        float zeroMatrix[8] = { 0 };
+        float zeroMatrix[kMaxMatrixSize] = { 0 };
         instance.voice->SetOutputMatrix(NULL, instance.channels, dstChannels, zeroMatrix);
         return;
     }
@@ -267,8 +281,12 @@ void AudioPlayer::Apply3D(AudioInstance& instance)
     emitter.OrientFront = { 0, 0, 1 };
     emitter.OrientTop = { 0, 1, 0 };
 
+    float channelAzimuths[XAUDIO2_MAX_AUDIO_CHANNELS] = { 0 };
+    emitter.ChannelRadius = 0.0f;
+    emitter.pChannelAzimuths = channelAzimuths;
+
     X3DAUDIO_DSP_SETTINGS dspSettings = {};
-    float matrix[8] = { 0 };
+    float matrix[kMaxMatrixSize] = { 0 };
     dspSettings.SrcChannelCount = instance.channels;
     dspSettings.DstChannelCount = dstChannels;
     dspSettings.pMatrixCoefficients = matrix;

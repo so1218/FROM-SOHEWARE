@@ -1,0 +1,47 @@
+{
+    "Stages/Stage2/FireflyField": {
+        "ActiveRadius": 30.0,
+        "BaseDensity": 0.01600000075995922,
+        "BlinkPeriodMax": 5.0,
+        "BlinkPeriodMin": 2.0,
+        "CellSize": 4.0,
+        "ClusterCellSize": 40.0,
+        "ClusterDensity": 0.27000001072883606,
+        "ClusterProbability": 1.0,
+        "ClusterRadiusMax": 12.0,
+        "ClusterRadiusMin": 5.0,
+        "ClusterSync": 0.6000000238418579,
+        "Color": [
+            0.49005505442619324,
+            0.9875776171684265,
+            0.10734536498785019,
+            1.0
+        ],
+        "DimBrightness": 0.05000000074505806,
+        "DriftDistance": 1.2000000476837158,
+        "DriftHeight": 0.4000000059604645,
+        "DriftSpeed": 0.11999999731779099,
+        "FadeStartRatio": 0.6000000238418579,
+        "GlowDuration": 0.800000011920929,
+        "HeightMax": 20.0,
+        "HeightMin": 1.600000023841858,
+        "Intensity": 19.5,
+        "LightColor": [
+            0.699999988079071,
+            1.0,
+            0.3499999940395355,
+            1.0
+        ],
+        "LightDistance": 25.0,
+        "LightHeight": 8.649999618530273,
+        "LightIntensity": 1.649999976158142,
+        "LightRadius": 18.5,
+        "LightVolumetricIntensity": 1.0,
+        "MaxCount": 200,
+        "MaxLightCount": 2,
+        "NightFullSunHeight": -0.10000000149011612,
+        "NightStartSunHeight": 0.05000000074505806,
+        "RainCutoff": 0.20000000298023224,
+        "Size": 0.125
+    }
+}

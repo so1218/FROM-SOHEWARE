@@ -18,6 +18,8 @@ public:
     void DebugGui() override;
 
     void SpawnBurst(const FS::Vector3& position);
+    // 落ちているコインを全部消す
+    void Clear();
 
 private:
     enum class State
@@ -46,6 +48,7 @@ private:
     {
         int coinsPerBurst = 10;
         int valuePerCoin = 3;
+        float burstSoundVolume = 0.5f;   
         float spawnDuration = 0.2f;    
         float ejectSpeed = 6.0f;       
         float spreadSpeed = 3.0f;      

@@ -30,7 +30,8 @@ public:
     // 遠景の地形
     void SubmitVista(const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
 
-    void Draw(const RenderEnvironment& env, ShadowMap* shadowMap);
+    // 焼け跡を描くため、草の燃え具合の地図と、その範囲と燃え方を受け取る
+    void Draw(const RenderEnvironment& env, ShadowMap* shadowMap, uint32_t fireMapSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress);
     void DrawShadow(const RenderEnvironment& env, uint32_t cascadeIndex);
 
     // 草や植物の生成でも、地形と同じ高さを求めるのに使う
@@ -55,7 +56,8 @@ private:
 
     static void InitializeBatch(const RenderEnvironment& env, Batch& batch);
     static void SubmitBatch(Batch& batch, const TerrainDrawData& drawData, const std::vector<TerrainChunkData>& visibleChunks);
-    static void DrawBatch(const RenderEnvironment& env, ShadowMap* shadowMap, const Batch& batch, const char* eventName);
+    static void DrawBatch(const RenderEnvironment& env, ShadowMap* shadowMap, const Batch& batch, const char* eventName,
+        uint32_t fireMapSrvIndex, D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress);
 
     Batch main_;
     Batch vista_;

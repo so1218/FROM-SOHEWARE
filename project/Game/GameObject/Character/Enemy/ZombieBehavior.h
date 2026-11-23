@@ -4,6 +4,7 @@
 #include "PropertyBinder.h"
 #include "AnimationModel.h"
 #include "ParticleEmitter.h"
+#include "BurnStatus.h"
 #include <random>
 
 namespace FS { class Terrain; }
@@ -28,7 +29,7 @@ struct ZombieConfig
     float despawnDistance = 90.0f;  
     float emergeTime = 2.5f;        
     float emergeDepth = 1.8f;       
-    float emergeBuryMargin = 0.3f;   // 頭のてっぺんより、さらに深く埋める分
+    float emergeBuryMargin = 0.3f;   
 
     // 発見
     float sightRange = 40.0f;       
@@ -47,12 +48,35 @@ struct ZombieConfig
     float attackRange = 1.6f;
     int attackDamage = 10;
     float attackHitTime = 0.45f;    
+    float attackReachMargin = 0.5f;     
+    float attackHalfAngle = 60.0f;      
+    float attackTrackEndTime = 0.3f;    
 
     // アニメーション速度
     float emergeAnimSpeed = 1.0f;
     float walkAnimSpeed = 1.0f;
     float attackAnimSpeed = 1.0f;
     float animBlendTime = 0.25f;
+
+    // 撃たれたときの音
+    float damagedSoundVolume = 0.6f;
+    float sparkSoundVolume = 0.5f;
+
+    // 燃えている草の上での継続ダメージ
+    BurnConfig burn = { 0.2f, 20.0f, 0.5f, 3.0f };
+    // 燃えている間に、回路が焼ける音を鳴らす間隔と大きさ
+    float burnSparkInterval = 0.8f;
+    float burnSparkVolume = 0.35f;
+    float burnSparkHearingDistance = 30.0f; 
+
+    // 足音
+    float footstepVolume = 0.5f;
+    float footstepMaxDistance = 25.0f;
+    float footstepLeftTime = 0.1f;
+    float footstepRightTime = 0.6f;
+
+    // 倒されて爆発したときに、足元の草に火がつく半径。0 でつかない
+    float deathIgniteRadius = 4.0f;
 };
 
 class ZombieBehavior : public IEnemyBehavior
@@ -60,13 +84,13 @@ class ZombieBehavior : public IEnemyBehavior
 public:
     // アニメーションと見た目のモデルの名前
     static constexpr const char* kMeshName = "humanMesh";
-    static constexpr const char* kEmergeAnimation = "humanIdle";
+    static constexpr const char* kEmergeAnimation = "zombieEmerge";
     static constexpr const char* kIdleAnimation = "humanIdle";
-    static constexpr const char* kWalkAnimation = "humanRun";
-    static constexpr const char* kAttackAnimation = "humanPistolIdle";
+    static constexpr const char* kWalkAnimation = "zombieWalk";
+    static constexpr const char* kAttackAnimation = "zombieAttack";
     static constexpr const char* kDeathAnimation = "zombieDeath";
 
-    // materialSource は全員で共有するマテリアルを持つモデル。ImGui で調整した値が毎フレーム反映される
+    // materialSource は全員で共有するマテリアルを持つモデル
     ZombieBehavior(const ZombieConfig& config, const FS::Terrain* terrain, const FS::AnimationModel* materialSource, const FS::Vector3& spawnPosition, float spawnYaw);
 
     void Initialize(Enemy* owner) override;
@@ -82,6 +106,7 @@ public:
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
     int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
+    void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
 
     // ゾンビどうしを押し離すのに使う
     bool IsDying() const { return state_ == State::Dying; }
@@ -107,14 +132,21 @@ private:
 
     // 見えているか、銃声が聞こえたら、プレイヤーの位置を覚えて true
     bool TryNoticePlayer(const FS::Vector3& position);
-    // 地面に沿って歩き、進む向きを向く。着いたら true
+    // 地面に沿って歩き、進む向きを向く
     bool MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
+    // 正面から左右 attackHalfAngle の中にいるか
+    bool IsInAttackAngle(Enemy* owner, const FS::Vector3& targetPosition) const;
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
     float GetGroundHeight(float x, float z) const;
     void PlayAnimation(const char* name, bool isLoop, float speed);
     float RandomRange(float min, float max);
     void ReleaseEffects();
-    // 本体と同じ大きさで立たせたときの、足元から頭までの高さ。頭の骨が無ければ 0
+    // 足元の炎で燃え、継続ダメージを受ける
+    void UpdateBurning(Enemy* owner, float deltaTime);
+    void UpdateBurnEffects(Enemy* owner);
+    // 歩いている間、足が着いた瞬間に足音を鳴らす
+    void UpdateFootsteps(Enemy* owner);
+    // 本体と同じ大きさで立たせたときの、足元から頭までの高さ
     float MeasureHeadHeight();
 
     const ZombieConfig& config_;
@@ -126,7 +158,18 @@ private:
     FS::ParticleEmitter* auraEmitterPtr_ = nullptr;
     // 這い出ている間だけ出す土煙
     FS::ParticleEmitter* dustEmitterPtr_ = nullptr;
-    // 這い出る前に埋まっている深さ。頭まで隠れるように、モデルの高さから決める
+    // 倒されて消えるときの爆発
+    FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
+    // 燃えている間だけ出す火の粉
+    FS::ParticleEmitter* burnEmbersEmitterPtr_ = nullptr;
+    bool isBurnEffectPlaying_ = false;
+    BurnStatus burn_;
+    float burnSparkTimer_ = 0.0f;
+    // 今流しているアニメーションと、足音を判定するための前のフレームの進み具合
+    const char* currentAnimation_ = nullptr;
+    float previousFootstepTime_ = 0.0f;
+    // 這い出る前に埋まっている深さ
     float buriedDepth_ = 0.0f;
 
     State state_ = State::Emerge;

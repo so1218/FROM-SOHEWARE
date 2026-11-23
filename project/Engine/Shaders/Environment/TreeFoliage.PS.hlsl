@@ -1,6 +1,7 @@
 #include "Common/Object3D.hlsli"
 #include "Common/ShaderConstants.hlsli"
 #include "Common/MathUtils.hlsli"
+#include "Common/ShadowUtils.hlsli"
 
 ConstantBuffer<FrameData> gFrameData : register(b0);
 cbuffer DirectionalLights : register(b1)
@@ -67,6 +68,7 @@ PixelShaderOutput main(TreeFoliagePSInput input, bool isFrontFace : SV_IsFrontFa
     float3 lightDir = normalize(-gDirectionalLights[0].direction);
 
     float shadowFactor = CalculateFastShadowCSM(input.worldPosition, normal, viewDepth);
+    shadowFactor = lerp(shadowFactor, 1.0f, CalculateShadowDistanceFade(viewDepth, gShadowData.cascadeSplits));
     float3 attenuatedLight = (gDirectionalLights[0].color.rgb * gDirectionalLights[0].intensity) * shadowFactor;
 
     // 光の裏側も少し明るくする (wrap)

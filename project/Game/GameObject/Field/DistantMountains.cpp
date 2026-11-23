@@ -66,13 +66,13 @@ float RidgedNoise(float x, float z, int seed, float sharpness)
 
 }
 
-DistantMountains::DistantMountains(Engine* engine, const Terrain* playableTerrain)
+DistantMountains::DistantMountains(Engine* engine, const Terrain* playableTerrain, const std::string& groupName)
     : GameObject(), engine_(engine), playableTerrain_(playableTerrain)
 {
     vistaTerrain_ = std::make_unique<Terrain>(engine_);
     vistaTerrain_->SetDrawAsVista(true);
     vistaTerrain_->ShareMaterialFrom(playableTerrain_);
-    binder_ = std::make_unique<PropertyBinder>(engine_, "DistantMountains");
+    binder_ = std::make_unique<PropertyBinder>(engine_, groupName);
 }
 
 void DistantMountains::Initialize()

@@ -1,0 +1,69 @@
+{
+    "Stages/Stage1/GrassField": {
+        "BaseScale": 5.0,
+        "DensityMap": "noise_44",
+        "DensityThreshold": 0.5,
+        "Fire_BurnDuration": 6.0,
+        "Fire_CharColor": [
+            0.029999999329447746,
+            0.02500000037252903,
+            0.019999999552965164
+        ],
+        "Fire_CharHeightRatio": 0.15000000596046448,
+        "Fire_CoolingRate": 0.5,
+        "Fire_GroundScorchDarkness": 0.8500000238418579,
+        "Fire_MaxSpreadDistance": 25.0,
+        "Fire_RainSpreadDistanceRate": 0.3499999940395355,
+        "Fire_RainSuppression": 0.8999999761581421,
+        "Fire_ScorchColor": [
+            0.3499999940395355,
+            0.25,
+            0.10000000149011612
+        ],
+        "Fire_SpreadRate": 2.5,
+        "Fire_WindSpreadBias": 1.5,
+        "FlattenFactor": 10.0,
+        "FlutterAmount": 0.029999999329447746,
+        "GrassNormalBlend": 0.44999998807907104,
+        "GridSpacing": 0.7799999713897705,
+        "GustScale": 0.0010000000474974513,
+        "GustStrength": 1.0,
+        "InteractStrength": 1.0,
+        "LodDistance1": 100.0,
+        "LodDistance2": 150.0,
+        "MaxDrawDistance": 500.0,
+        "MaxGrassCount": 5000000,
+        "MaxHeight": 1.0199999809265137,
+        "MaxThinningRate": 0.9900000095367432,
+        "MaxWidth": 0.05000000074505806,
+        "MaxWidthMultiplier": 15.0,
+        "MinHeight": 1.0099999904632568,
+        "MinWidth": 0.05000000074505806,
+        "NearFadeMaxDist": 15.0,
+        "NearFadeMinDist": 2.0,
+        "RootColor": [
+            0.021267861127853394,
+            0.06211179494857788,
+            0.0
+        ],
+        "SSSColor": [
+            0.36461564898490906,
+            0.7670807242393494,
+            0.11911192536354065
+        ],
+        "SSSStrength": 1.899999976158142,
+        "ShadowBias": 0.0010000000474974513,
+        "ShadowDensity": 1.0,
+        "ShadowNormalBias": 0.009999999776482582,
+        "ThinStartDistance": 150.0,
+        "TipColor": [
+            0.36951708793640137,
+            0.9223602414131165,
+            0.18619072437286377
+        ],
+        "TrailFlattenWeight": 1.0,
+        "WindFlattenStrength": 0.20000000298023224,
+        "WindMap": "noise_19",
+        "WindSpeedMult": 1.0
+    }
+}

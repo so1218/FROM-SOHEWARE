@@ -4,11 +4,10 @@
 #include "PropertyBinder.h"
 #include "Terrain.h"
 
-// 歩ける地形の外に、遠景の山並みを作って描く
 class DistantMountains : public FS::GameObject
 {
 public:
-    DistantMountains(FS::Engine* engine, const FS::Terrain* playableTerrain);
+    DistantMountains(FS::Engine* engine, const FS::Terrain* playableTerrain, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

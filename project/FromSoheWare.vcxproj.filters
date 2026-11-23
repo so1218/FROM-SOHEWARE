@@ -147,6 +147,9 @@
     <ClCompile Include="Game\Global\GameInput.cpp">
       <Filter>Game\Global</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Global\StageCatalog.cpp">
+      <Filter>Game\Global</Filter>
+    </ClCompile>
     <ClCompile Include="Game\Camera\FollowCamera.cpp">
       <Filter>Game\Camera</Filter>
     </ClCompile>
@@ -192,10 +195,22 @@
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateSprint.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateCrouch.cpp">
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateCrawl.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerBurn.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\BurnStatus.cpp">
+      <Filter>Game\GameObject\Character</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerConcealment.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateHurt.cpp">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDeath.cpp">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Character\Player\PlayerStateDodge.cpp">
@@ -231,10 +246,22 @@
     <ClCompile Include="Game\GameObject\UI\PauseMenuHint.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
+    <ClCompile Include="Game\GameObject\UI\GameOverScreen.cpp">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\UI\UISound.cpp">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClCompile>
     <ClCompile Include="Game\GameObject\UI\PauseMenu.cpp">
       <Filter>Game\GameObject\UI</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Field\GrassField.cpp">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Field\GrassFireEffects.cpp">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\GameObject\Field\FireflyField.cpp">
       <Filter>Game\GameObject\Field</Filter>
     </ClCompile>
     <ClCompile Include="Game\GameObject\Field\DistantMountains.cpp">
@@ -262,6 +289,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game\Global\GameInput.h">
+      <Filter>Game\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Global\StageCatalog.h">
       <Filter>Game\Global</Filter>
     </ClInclude>
     <ClInclude Include="Game\Camera\FollowCamera.h">
@@ -312,10 +342,22 @@
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateSprint.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateCrouch.h">
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateCrawl.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerBurn.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\BurnStatus.h">
+      <Filter>Game\GameObject\Character</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerConcealment.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateHurt.h">
+      <Filter>Game\GameObject\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDeath.h">
       <Filter>Game\GameObject\Character\Player</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Character\Player\PlayerStateDodge.h">
@@ -351,10 +393,22 @@
     <ClInclude Include="Game\GameObject\UI\PauseMenuHint.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\GameOverScreen.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\UI\UISound.h">
+      <Filter>Game\GameObject\UI</Filter>
+    </ClInclude>
     <ClInclude Include="Game\GameObject\UI\PauseMenu.h">
       <Filter>Game\GameObject\UI</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\GrassField.h">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Field\GrassFireEffects.h">
+      <Filter>Game\GameObject\Field</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameObject\Field\FireflyField.h">
       <Filter>Game\GameObject\Field</Filter>
     </ClInclude>
     <ClInclude Include="Game\GameObject\Field\DistantMountains.h">

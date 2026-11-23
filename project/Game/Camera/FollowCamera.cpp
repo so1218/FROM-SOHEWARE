@@ -32,6 +32,11 @@ void FollowCamera::Initialize()
     binder_->Bind("Aim Deadzone", &aimDeadzone_, 0.08f, 0.005f, 0.0f, 0.9f);
     binder_->Bind("Aim Sens Multiplier", &aimRotateSpeedMultiplier_, 0.6f, 0.05f, 0.1f, 2.0f);
 
+    binder_->Bind("Death Distance", &deathDistance_, 30.0f, 0.1f, 1.0f, 200.0f);
+    binder_->Bind("Death LookAt Offset", &deathLookAtOffset_, { 0.0f, 0.5f, 0.0f });
+    binder_->Bind("Death Pitch", &deathPitch_, 0.6f, 0.01f, -1.5f, 1.5f);
+    binder_->Bind("Death Transition Time", &deathTransitionTime_, 0.8f, 0.01f, 0.01f, 5.0f);
+
     binder_->Bind("Rotate Speed Yaw", &rotateSpeedYaw_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotate Speed Pitch", &rotateSpeedPitch_, 2.0f, 0.01f, 0.0f, 10.0f);
     binder_->Bind("Rotation Acceleration Time", &rotationAccelerationTime_, 0.1f, 0.005f, 0.0f, 1.0f);
@@ -68,29 +73,31 @@ void FollowCamera::UpdateCamera(Camera* camera)
     float dt = TimeManager::GetInstance()->GetUnscaledDeltaTime();
 
     // エイム状態に応じた目標値の設定
-    float activeTargetDistance = isAiming_ ? aimDistance_ : normalDistance_;
-    Vector3 activeTargetShoulder = isAiming_ ? aimShoulderOffset_ : normalShoulderOffset_;
-    Vector3 activeTargetLookAt = isAiming_ ? aimLookAtOffset_ : normalLookAtOffset_;
-    float activeTargetFov = isAiming_ ? aimFov_ : normalFov_;
+    const bool isAimView = isAiming_ && !isDeathFocus_;
+    float activeTargetDistance = isDeathFocus_ ? deathDistance_ : (isAimView ? aimDistance_ : normalDistance_);
+    Vector3 activeTargetShoulder = isDeathFocus_ ? Vector3(0.0f, 0.0f, 0.0f) : (isAimView ? aimShoulderOffset_ : normalShoulderOffset_);
+    Vector3 activeTargetLookAt = isDeathFocus_ ? deathLookAtOffset_ : (isAimView ? aimLookAtOffset_ : normalLookAtOffset_);
+    float activeTargetFov = isAimView ? aimFov_ : normalFov_;
+    const float transitionTime = isDeathFocus_ ? deathTransitionTime_ : aimTransitionSmoothTime_;
 
     // 目標値へスムーズ補間
     targetDistance_ = std::clamp(activeTargetDistance, minDistance_, maxDistance_);
-    distance_ = SmoothDamp(distance_, targetDistance_, distanceVelocity_, aimTransitionSmoothTime_, dt);
+    distance_ = SmoothDamp(distance_, targetDistance_, distanceVelocity_, transitionTime, dt);
 
-    currentShoulderOffset_.x = SmoothDamp(currentShoulderOffset_.x, activeTargetShoulder.x, shoulderOffsetVelocity_.x, aimTransitionSmoothTime_, dt);
-    currentShoulderOffset_.y = SmoothDamp(currentShoulderOffset_.y, activeTargetShoulder.y, shoulderOffsetVelocity_.y, aimTransitionSmoothTime_, dt);
-    currentShoulderOffset_.z = SmoothDamp(currentShoulderOffset_.z, activeTargetShoulder.z, shoulderOffsetVelocity_.z, aimTransitionSmoothTime_, dt);
+    currentShoulderOffset_.x = SmoothDamp(currentShoulderOffset_.x, activeTargetShoulder.x, shoulderOffsetVelocity_.x, transitionTime, dt);
+    currentShoulderOffset_.y = SmoothDamp(currentShoulderOffset_.y, activeTargetShoulder.y, shoulderOffsetVelocity_.y, transitionTime, dt);
+    currentShoulderOffset_.z = SmoothDamp(currentShoulderOffset_.z, activeTargetShoulder.z, shoulderOffsetVelocity_.z, transitionTime, dt);
 
-    currentLookAtOffset_.x = SmoothDamp(currentLookAtOffset_.x, activeTargetLookAt.x, lookAtOffsetVelocity_.x, aimTransitionSmoothTime_, dt);
-    currentLookAtOffset_.y = SmoothDamp(currentLookAtOffset_.y, activeTargetLookAt.y, lookAtOffsetVelocity_.y, aimTransitionSmoothTime_, dt);
-    currentLookAtOffset_.z = SmoothDamp(currentLookAtOffset_.z, activeTargetLookAt.z, lookAtOffsetVelocity_.z, aimTransitionSmoothTime_, dt);
+    currentLookAtOffset_.x = SmoothDamp(currentLookAtOffset_.x, activeTargetLookAt.x, lookAtOffsetVelocity_.x, transitionTime, dt);
+    currentLookAtOffset_.y = SmoothDamp(currentLookAtOffset_.y, activeTargetLookAt.y, lookAtOffsetVelocity_.y, transitionTime, dt);
+    currentLookAtOffset_.z = SmoothDamp(currentLookAtOffset_.z, activeTargetLookAt.z, lookAtOffsetVelocity_.z, transitionTime, dt);
 
-    currentFov_ = SmoothDamp(currentFov_, activeTargetFov, fovVelocity_, aimTransitionSmoothTime_, dt);
+    currentFov_ = SmoothDamp(currentFov_, activeTargetFov, fovVelocity_, transitionTime, dt);
     camera->SetFov(currentFov_);
 
     // エイム中は狙う先がぼけないように被写界深度を消す
-    const float targetDofStrength = isAiming_ ? 0.0f : 1.0f;
-    dofStrength_ = std::clamp(SmoothDamp(dofStrength_, targetDofStrength, dofStrengthVelocity_, aimTransitionSmoothTime_, dt), 0.0f, 1.0f);
+    const float targetDofStrength = isAimView ? 0.0f : 1.0f;
+    dofStrength_ = std::clamp(SmoothDamp(dofStrength_, targetDofStrength, dofStrengthVelocity_, transitionTime, dt), 0.0f, 1.0f);
     engine_->GetPostEffectManager()->GetCompositeSettings()->dofStrength = dofStrength_;
 
     // ---------------------------------------------------------
@@ -98,7 +105,8 @@ void FollowCamera::UpdateCamera(Camera* camera)
     // ---------------------------------------------------------
     // バインドされたデッドゾーンを使用
     const float currentDeadzone = isAiming_ ? aimDeadzone_ : normalDeadzone_;
-    const Vector2 lookAxis = GameInput::GetLookAxis(currentDeadzone);
+    // 倒れている間は回せない
+    const Vector2 lookAxis = isDeathFocus_ ? Vector2(0.0f, 0.0f) : GameInput::GetLookAxis(currentDeadzone);
     const float rx = lookAxis.x;
     const float ry = lookAxis.y;
 
@@ -112,6 +120,11 @@ void FollowCamera::UpdateCamera(Camera* camera)
 
     currentYaw_ = std::remainder(currentYaw_ + yawRate_ * dt, Math::PI * 2.0f);
     currentPitch_ += pitchRate_ * dt;
+
+    if (isDeathFocus_)
+    {
+        currentPitch_ = SmoothDamp(currentPitch_, deathPitch_, deathPitchVelocity_, deathTransitionTime_, dt);
+    }
 
     // 上下の端に当たったら、その向きの勢いは捨てる
     if (currentPitch_ <= minPitch_ || currentPitch_ >= maxPitch_)
@@ -214,6 +227,14 @@ void FollowCamera::DebugGui()
         binder_->Draw("Aim Sens Multiplier", "エイム時感度倍率");
     }
 
+    if (ImGui::CollapsingHeader("倒れたとき"))
+    {
+        binder_->Draw("Death Distance", "距離");
+        binder_->Draw("Death LookAt Offset", "注視点 (プレイヤーの足元から)");
+        binder_->Draw("Death Pitch", "見下ろす角度 (ラジアン)");
+        binder_->Draw("Death Transition Time", "寄りきるまでの時間 (秒)");
+    }
+
     if (ImGui::CollapsingHeader("リコイル設定", ImGuiTreeNodeFlags_DefaultOpen))
     {
         binder_->Draw("Recoil Recovery Speed", "反動復元速度");
@@ -263,14 +284,22 @@ void FollowCamera::Reset(Camera* camera)
     UpdateCamera(camera);
 }
 
+void FollowCamera::SetDeathFocus(bool isDeathFocus)
+{
+    isDeathFocus_ = isDeathFocus;
+    deathPitchVelocity_ = 0.0f;
+}
+
 void FollowCamera::PlaceBehindTarget()
 {
     if (!target_) return;
 
-    // カメラは target から (sin(yaw), cos(yaw)) の方向に置かれるので、正面の反対にする
     const Vector3 forward = target_->rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
     currentYaw_ = std::atan2(forward.x, forward.z) + Math::PI;
     yawRate_ = 0.0f;
+    // 倒れたときに見下ろした角度などを残さない
+    currentPitch_ = kDefaultPitch;
+    pitchRate_ = 0.0f;
 }
 
 void FollowCamera::AddRecoil(float pitchAmount, float yawAmount)

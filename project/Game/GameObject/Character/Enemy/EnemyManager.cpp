@@ -9,6 +9,7 @@
 #include "Terrain.h"
 #include "TimeManager.h"
 #include "MathUtils.h"
+#include "Camera.h"
 
 namespace
 {
@@ -21,6 +22,13 @@ constexpr const char* kZombieGroupName = "GameZombie";
 constexpr float kZombieSpawnEdgeMargin = 10.0f;
 // 出す場所を探す回数
 constexpr int kZombieSpawnAttemptCount = 8;
+// 浮遊する敵の出す場所を探す回数
+constexpr int kFloatingSpawnAttemptCount = 16;
+// 浮遊する敵は、カメラの正面からこの角度 (度) より外の方向に出す
+constexpr float kFloatingSpawnHiddenAngle = 70.0f;
+// 飛んできた機体が最初に向かう、プレイヤーからの距離
+constexpr float kArrivalTargetMinDistance = 30.0f;
+constexpr float kArrivalTargetMaxDistance = 70.0f;
 
 }
 
@@ -33,7 +41,6 @@ EnemyManager::EnemyManager(Engine* engine, const std::string& groupName, const T
 void EnemyManager::Initialize()
 {
     binder_ = std::make_unique<FS::PropertyBinder>(engine_, managerGroupName_);
-    binder_->Bind("EnemyCount", &enemyCount_, 3);
 
     if (!thrusterModel_)
     {
@@ -41,6 +48,13 @@ void EnemyManager::Initialize()
         thrusterModel_->MakeMaterialUnique();
     }
     binder_->BindModel("ThrusterModel", thrusterModel_.get());
+
+    if (!floatingMaterialSource_)
+    {
+        floatingMaterialSource_ = std::make_unique<FS::Model>(engine_, "Enemy");
+        floatingMaterialSource_->MakeMaterialUnique();
+    }
+    binder_->BindModel("sharedEnemyModel", floatingMaterialSource_.get());
 
     floatingBinder_ = std::make_unique<FS::PropertyBinder>(engine_, "FloatingEnemy");
     floatingConfig_.Bind(*floatingBinder_);
@@ -79,58 +93,178 @@ void EnemyManager::SpawnEnemies()
 {
     enemies_.clear();
     zombieSpawnTimer_ = 0.0f;
-    for (int i = 0; i < enemyCount_; ++i)
-    {
-        enemies_.push_back(CreateEnemy(i));
-    }
+    floatingSpawnTimer_ = 0.0f;
 
-    RebuildMaterialSharing();
+    // 遊び始めから、フィールドのどこかに上限まで飛ばしておく
+    Player* player = GetManager()->FindObjectWithTag<Player>(ObjectTag::Player);
+    const Vector3 playerPosition = player ? player->GetTransform().translation_ : Vector3(0.0f, 0.0f, 0.0f);
+    if (floatingConfig_.isSpawnEnabled)
+    {
+        SpawnInitialFloating(playerPosition);
+    }
 }
 
-void EnemyManager::RebuildMaterialSharing()
+int EnemyManager::CountAliveFloating() const
 {
-    if (enemies_.empty()) return;
+    return static_cast<int>(std::count_if(enemies_.begin(), enemies_.end(),
+        [](const std::unique_ptr<Enemy>& enemy) { return enemy->IsActive() && enemy->GetType() == EnemyType::Floating; }));
+}
 
-    std::unordered_map<EnemyType, FS::Model*> archetypeModels;
-
-    for (auto& enemy : enemies_)
+float EnemyManager::GetGroundHeight(float x, float z) const
+{
+    float groundHeight = 0.0f;
+    if (terrain_ && terrain_->GetHeightAt(x, z, groundHeight))
     {
-        EnemyType type = enemy->GetType();
+        return groundHeight;
+    }
+    return 0.0f;
+}
 
-        if (archetypeModels.find(type) == archetypeModels.end())
+bool EnemyManager::FindFieldPointAround(const Vector3& origin, float minDistance, float maxDistance, Vector3& outPoint)
+{
+    if (!terrain_)
+    {
+        return false;
+    }
+
+    const Vector2 center = terrain_->GetCenterXZ();
+    const Vector2 halfSize = terrain_->GetSizeXZ() * 0.5f - Vector2(kZombieSpawnEdgeMargin, kZombieSpawnEdgeMargin);
+    std::uniform_real_distribution<float> angleRange(0.0f, Math::PI * 2.0f);
+    std::uniform_real_distribution<float> distanceRange(std::min(minDistance, maxDistance), std::max(minDistance, maxDistance));
+
+    for (int attempt = 0; attempt < kFloatingSpawnAttemptCount; ++attempt)
+    {
+        const float angle = angleRange(random_);
+        const float distance = distanceRange(random_);
+        const Vector3 candidate = { origin.x + std::cos(angle) * distance, 0.0f, origin.z + std::sin(angle) * distance };
+        if (std::abs(candidate.x - center.x) <= halfSize.x && std::abs(candidate.z - center.y) <= halfSize.y)
         {
-            enemy->GetModel()->MakeMaterialUnique();
-            archetypeModels[type] = enemy->GetModel();
-        }
-        else
-        {
-            enemy->GetModel()->ShareMaterialsFrom(archetypeModels[type]);
+            outPoint = candidate;
+            return true;
         }
     }
+    return false;
+}
 
-    if (archetypeModels.count(EnemyType::Floating))
+void EnemyManager::SpawnInitialFloating(const Vector3& playerPosition)
+{
+    if (!terrain_)
     {
-        binder_->BindModel("sharedEnemyModel", archetypeModels[EnemyType::Floating]);
+        return;
+    }
+
+    // フィールドの広さの半分までの所に、プレイヤーから離して散らす
+    const Vector2 fieldSize = terrain_->GetSizeXZ();
+    const float maxDistance = std::max(fieldSize.x, fieldSize.y) * 0.5f;
+    for (int count = 0; count < floatingConfig_.maxAliveCount; ++count)
+    {
+        Vector3 position;
+        if (!FindFieldPointAround(playerPosition, floatingConfig_.initialMinDistance, maxDistance, position))
+        {
+            continue;
+        }
+        position.y = GetGroundHeight(position.x, position.z) + floatingConfig_.wanderHeight;
+
+        Vector3 firstTarget;
+        if (!FindFieldPointAround(position, floatingConfig_.wanderMinStep, floatingConfig_.wanderMaxStep, firstTarget))
+        {
+            firstTarget = position;
+        }
+        SpawnFloating(position, firstTarget);
     }
 }
 
-void EnemyManager::AddEnemy()
+bool EnemyManager::SpawnArrivingFloating(Player* player)
 {
-    int newIndex = enemyCount_;
+    const Vector3 playerPosition = player->GetTransform().translation_;
 
-    enemies_.push_back(CreateEnemy(newIndex));
-    ++enemyCount_;
+    // 目の前に急に出ると理不尽なので、カメラに映っていない方向を選ぶ
+    Vector3 cameraForward = { 0.0f, 0.0f, 1.0f };
+    if (Camera* camera = player->GetCamera())
+    {
+        cameraForward = camera->GetWorldTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+    }
+    cameraForward.y = 0.0f;
+    const bool hasCameraForward = cameraForward.LengthSq() > 0.0001f;
+    if (hasCameraForward)
+    {
+        cameraForward = cameraForward.Normalize();
+    }
+    const float hiddenCos = std::cos(kFloatingSpawnHiddenAngle * Math::PI / 180.0f);
 
-    RebuildMaterialSharing();
+    for (int attempt = 0; attempt < kFloatingSpawnAttemptCount; ++attempt)
+    {
+        Vector3 position;
+        if (!FindFieldPointAround(playerPosition, floatingConfig_.spawnMinDistance, floatingConfig_.spawnMaxDistance, position))
+        {
+            return false;
+        }
+
+        if (hasCameraForward)
+        {
+            const Vector3 toSpawn = Vector3(position.x - playerPosition.x, 0.0f, position.z - playerPosition.z).Normalize();
+            if (toSpawn.x * cameraForward.x + toSpawn.z * cameraForward.z > hiddenCos)
+            {
+                continue;
+            }
+        }
+
+        // 高い所に出して、プレイヤーのいる辺りへ降りながら入ってくる
+        position.y = GetGroundHeight(position.x, position.z) + floatingConfig_.spawnHeight;
+        Vector3 firstTarget;
+        if (!FindFieldPointAround(playerPosition, kArrivalTargetMinDistance, kArrivalTargetMaxDistance, firstTarget))
+        {
+            firstTarget = playerPosition;
+        }
+        SpawnFloating(position, firstTarget);
+        return true;
+    }
+    return false;
 }
 
-std::unique_ptr<Enemy> EnemyManager::CreateEnemy(int index)
+void EnemyManager::SpawnFloating(const Vector3& position, const Vector3& firstWanderTarget)
 {
-    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_, thrusterModel_.get());
-    auto enemy = std::make_unique<Enemy>(engine_, index, EnemyType::Floating, std::move(behavior), managerGroupName_);
-    enemy->AttachToManager(GetManager(), 0); 
+    // 生きている機体と重ならない番号を使い回し、保存グループが増え続けないようにする
+    int slot = 0;
+    while (std::any_of(enemies_.begin(), enemies_.end(), [&](const std::unique_ptr<Enemy>& enemy)
+        { return enemy->IsActive() && enemy->GetType() == EnemyType::Floating && enemy->GetId() == slot; }))
+    {
+        ++slot;
+    }
+
+    auto behavior = std::make_unique<FloatingBehavior>(floatingConfig_, terrain_, thrusterModel_.get(), position, firstWanderTarget);
+    auto enemy = std::make_unique<Enemy>(engine_, slot, EnemyType::Floating, std::move(behavior), managerGroupName_);
+    enemy->AttachToManager(GetManager(), 0);
     enemy->Initialize();
-    return enemy;
+    enemy->GetModel()->ShareMaterialsFrom(floatingMaterialSource_.get());
+    enemies_.push_back(std::move(enemy));
+}
+
+void EnemyManager::UpdateFloatingSpawning()
+{
+    Player* player = GetManager()->FindObjectWithTag<Player>(ObjectTag::Player);
+    if (!player || !player->IsControllable() || !floatingConfig_.isSpawnEnabled)
+    {
+        return;
+    }
+
+    // 上限まで減っている間だけ数え、倒してすぐには次が来ないようにする
+    if (CountAliveFloating() >= floatingConfig_.maxAliveCount)
+    {
+        floatingSpawnTimer_ = 0.0f;
+        return;
+    }
+
+    floatingSpawnTimer_ += TimeManager::GetInstance()->GetDeltaTime();
+    if (floatingSpawnTimer_ < floatingConfig_.spawnInterval)
+    {
+        return;
+    }
+
+    if (SpawnArrivingFloating(player))
+    {
+        floatingSpawnTimer_ = 0.0f;
+    }
 }
 
 void EnemyManager::Update()
@@ -162,6 +296,7 @@ void EnemyManager::Update()
 
     SeparateZombies();
     UpdateZombieSpawning();
+    UpdateFloatingSpawning();
 }
 
 int EnemyManager::CountAliveZombies() const
@@ -332,23 +467,14 @@ void EnemyManager::Draw()
 void EnemyManager::DebugGui()
 {
     ImGui::Begin("敵マネージャー");
-    binder_->Draw("EnemyCount", "敵の数");
 
-    if (ImGui::Button("新しい敵を追加"))
-    {
-        AddEnemy();
-    }
-
-    ImGui::Separator();
-
-    if (!enemies_.empty())
-    {
-        binder_->DrawModel("sharedEnemyModel", "敵共通モデルインスペクター");
-        binder_->DrawModel("ThrusterModel", "スラスターのモデル");
-    }
+    binder_->DrawModel("sharedEnemyModel", "浮遊する敵のマテリアル (全機で共有)");
+    binder_->DrawModel("ThrusterModel", "スラスターのモデル");
 
     if (ImGui::CollapsingHeader("浮遊している敵共通"))
     {
+        ImGui::Text("出ている数: %d / 次が来るまで: %.0f 秒", CountAliveFloating(),
+            std::max(floatingConfig_.spawnInterval - floatingSpawnTimer_, 0.0f));
         floatingConfig_.Draw(*floatingBinder_);
     }
 

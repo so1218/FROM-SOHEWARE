@@ -450,7 +450,8 @@ void GlobalVariables::LoadFiles()
 		return;
 	}
 
-	for (const auto& entry : std::filesystem::directory_iterator(dir))
+	// フォルダの中も読む
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(dir))
 	{
 		if (!entry.is_regular_file()) continue;
 
@@ -464,6 +465,12 @@ void GlobalVariables::LoadFiles()
 		if (dotPos != std::string::npos)
 		{
 			filename = filename.substr(0, dotPos);
+		}
+
+		const std::filesystem::path folder = std::filesystem::relative(filePath.parent_path(), dir);
+		if (!folder.empty() && folder != ".")
+		{
+			filename = folder.generic_string() + "/" + filename;
 		}
 
 		LoadFile(filename);

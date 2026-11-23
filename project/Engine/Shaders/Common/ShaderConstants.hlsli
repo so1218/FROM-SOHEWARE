@@ -40,7 +40,7 @@
 #define LIGHT_SPOT 5
 
 #define MAX_FOG_EFFECTORS 4
-#define MAX_FOG_VOLUMES 8
+#define MAX_FOG_VOLUMES 32
 
 // SpriteInstance の drawMode
 #define SPRITE_DRAW_MODE_NORMAL   0
@@ -233,6 +233,15 @@ struct AtmosphereSkyData
     float cloudAbsorption;
     
     float3 sunDirection;
+    float starDensity;        
+
+    float starGridSize;       
+    float starSize;           
+    float starBrightness;
+    float starTwinkleSpeed;
+
+    float starTwinkleAmount;  
+    float3 starPadding;
 };
 
 struct TrailMaterialData
@@ -363,26 +372,6 @@ struct FinalCompositeSettings
     float ssrIntensity;
     int enableVolumetricFog; 
     float dofStrength; 
-    
-    int boundaryEnabled;
-    float2 boundaryMin;
-    float2 boundaryMax;
-
-    float boundaryDensity;
-    float boundaryInset;
-    float boundaryRampLength;
-    float boundaryHeightFalloff;
-
-    float boundaryBaseHeight;
-    float boundaryNoiseIntensity;
-    float fogAnisotropy;
-    float fogExtinctionScale;
-
-    float3 fogAlbedo;
-    float fogMaxDistance;
-
-    float3 fogAmbientLight;
-    float boundaryPadding;
 };
 
 struct SSAOSettings
@@ -491,6 +480,44 @@ struct GrassGenerationData
     float minWidth;
     float maxWidth;
     float densityThreshold;
+};
+
+#define MAX_GRASS_FIRE_IGNITIONS 16
+
+struct GrassFireIgnition
+{
+    float2 position; 
+    float radius;
+    float strength;  
+};
+
+struct GrassFireConstants
+{
+    float2 areaCenter;       
+    float2 areaSize;
+
+    float deltaTime;
+    float burnDuration;      
+    float spreadRate;        
+    float windSpreadBias;    
+
+    float rainSuppression;   
+    float densityThreshold;  
+    float coolingRate;       
+    uint ignitionCount;
+
+    uint resetRequested;     
+    uint isActive;           
+    float charHeightRatio;   
+    float maxSpreadDistance; 
+
+    float3 scorchColor;      
+    float groundScorchDarkness; 
+
+    float3 charColor;       
+    float rainSpreadDistanceRate;  
+
+    GrassFireIgnition ignitions[MAX_GRASS_FIRE_IGNITIONS];
 };
 
 struct TreeInstanceData
@@ -643,19 +670,6 @@ struct VolumetricFogSettings
     float noiseIntensity;
     
     float windSpeedMultiplier;
-
-    // 歩ける範囲の外で濃くなる霧
-    float boundaryDensity;
-    float boundaryInset;          // 境界からどれだけ内側で濃くなり始めるか
-    float boundaryRampLength;     // 濃くなりきるまでの距離
-
-    float boundaryHeightFalloff;  // 上に行くほど薄くなる割合
-    float boundaryBaseHeight;
-    float boundaryNoiseIntensity;
-    int boundaryEnabled;          // ゲームが毎フレーム範囲を渡したか。保存しない
-
-    float2 boundaryMin;           // 歩ける範囲の XZ。保存しない
-    float2 boundaryMax;
 };
 
 struct FogBilateralSettings

@@ -26,6 +26,8 @@ struct FloatingEnemyConfig
     // プレイヤーが隠れているとき
     float hiddenSightRange = 10.0f;
     float hiddenLoseTime = 4.0f;
+    // 気づいたときの叫び声の大きさ
+    float screamVolume = 0.6f;
 
     // 追跡
     float moveSpeed = 18.0f;
@@ -57,6 +59,28 @@ struct FloatingEnemyConfig
     // 墜落
     float crashTime = 5.0f;        
     float crashGravity = 30.0f;
+    // 爆発した所の草に火がつく半径
+    float deathIgniteRadius = 6.0f;
+    float deathIgniteGroundReach = 5.0f;
+
+    // 出現 
+    bool isSpawnEnabled = true;
+    int maxAliveCount = 3;
+    float spawnInterval = 40.0f;      
+    float spawnMinDistance = 100.0f;  
+    float spawnMaxDistance = 160.0f;
+    float spawnHeight = 60.0f;        
+    float initialMinDistance = 80.0f; 
+
+    // 徘徊
+    float wanderSpeed = 10.0f;
+    float wanderHeight = 15.0f;       
+    float wanderMinStep = 30.0f;      
+    float wanderMaxStep = 80.0f;
+    float wanderLeashDistance = 180.0f; 
+    float wanderPauseMinTime = 2.0f; 
+    float wanderPauseMaxTime = 5.0f;
+    float scanTurnSpeed = 0.5f;       
 
     // スポットライト
     FS::Vector4 spotColor = { 0.076f, 0.216f, 1.0f, 1.0f };
@@ -71,7 +95,8 @@ struct FloatingEnemyConfig
 class FloatingBehavior : public IEnemyBehavior
 {
 public:
-    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain, const FS::Model* thrusterSourceModel);
+    FloatingBehavior(const FloatingEnemyConfig& config, const FS::Terrain* terrain, const FS::Model* thrusterSourceModel,
+        const FS::Vector3& spawnPosition, const FS::Vector3& firstWanderTarget);
     ~FloatingBehavior() override;
 
     void Initialize(Enemy* owner) override;
@@ -83,6 +108,7 @@ public:
     std::string GetDamageParticleName() const override { return "floatingDamage"; }
 
     int ModifyDamage(Enemy* owner, int damage, const FS::Collider* hitCollider) override;
+    void OnTakeDamage(Enemy* owner, int damage, const FS::Vector3& hitPoint, const FS::Vector3& hitNormal) override;
     void OnDeath(Enemy* owner) override;
     void OnDespawn(Enemy* owner) override;
     bool OnHealthDepleted(Enemy* owner) override;
@@ -90,7 +116,7 @@ public:
 private:
     enum class State
     {
-        Patrol,   // 巡回
+        Patrol,   // フィールドを徘徊する
         Chase,    // プレイヤーの周りを回りながら近づく
         LockOn,   // レーザーで狙う
         Fire,     // 連射
@@ -113,6 +139,9 @@ private:
     bool CanDetectPlayer(const FS::Vector3& position);
     // 隠れていて、近すぎもしないので見えない
     bool IsPlayerHiddenFrom(float distance) const;
+    // 徘徊の次の目的地を決める
+    void ChooseWanderTarget(const FS::Vector3& position);
+    float GetGroundHeight(float x, float z) const;
     void MoveToward(Enemy* owner, const FS::Vector3& target, float speed, float deltaTime);
     void FaceDirection(Enemy* owner, const FS::Vector3& direction, float deltaTime);
 
@@ -167,17 +196,19 @@ private:
     };
     std::vector<Tracer> tracers_;
 
-    // 巡回
-    FS::Vector3 basePosition_;
-    FS::Vector3 amplitude_ = { 3.0f, 2.0f, 0.0f };
-    FS::Vector3 frequency_ = { 0.5f, 1.0f, 0.0f };
-    FS::Vector3 phase_ = { 0.0f, 0.0f, 0.0f };   
-    float patrolSpeed_ = 30.0f;
+    // 徘徊
+    FS::Vector3 spawnPosition_;
+    FS::Vector3 wanderTarget_;      
+    bool hasWanderTarget_ = false;
+    float wanderPauseTimer_ = 0.0f;
+    float scanAngle_ = 0.0f;
+    float scanDirection_ = 1.0f;
 
     // 演出
     FS::ParticleEmitter* moveFireEmitterPtr_ = nullptr;
     FS::ParticleEmitter* moveSmokeEmitterPtr_ = nullptr;
     FS::ParticleEmitter* explosionEmitterPtr_ = nullptr;
+    FS::ParticleEmitter* deathSparkEmitterPtr_ = nullptr;
     FS::ParticleEmitter* thrusterBreakEmitterPtr_ = nullptr;
     int soundHandleID_ = -1;
 };

@@ -3,6 +3,7 @@
 #include "EnvironmentManager.h"
 #include "TimeManager.h"
 #include "AudioPlayer.h"
+#include "RendererManager.h"
 #include "EnvironmentWindow.h"
 
 using namespace FS;
@@ -42,6 +43,8 @@ void WeatherEffectManager::Initialize()
     binder_->Bind("ThunderShakeDuration", &thunderShakeDuration_, 0.5f, 0.0f, 0.1f, 5.0f);
     binder_->Bind("ThunderShakeIntensity", &thunderShakeIntensity_, 2.0f, 0.0f, 0.1f, 20.0f);
     binder_->Bind("ThunderShakeMaxDist", &thunderShakeMaxDistance_, 300.0f, 1.0f, 10.0f, 1000.0f);
+    binder_->Bind("ThunderIgniteRadius", &thunderIgniteRadius_, 4.0f, 0.1f, 0.0f, 50.0f);
+    binder_->Bind("ThunderIgniteChance", &thunderIgniteChance_, 0.3f, 0.01f, 0.0f, 1.0f);
 
     PrepareThunderStrikeEmitters(maxStrikeCount_);
 }
@@ -81,14 +84,14 @@ void WeatherEffectManager::Update()
 
     // Volumetric Fogの設定適用
     auto fog = engine_->GetPostEffectManager()->GetVolumetricFogSettings();
-    fog->noiseScale = visual.noiseScale;
-    fog->noiseIntensity = visual.noiseIntensity;
-    fog->heightDensity = visual.heightDensity;
-    fog->heightFalloff = visual.heightFalloff;
-    fog->extinction = visual.extinction;
-    fog->erosion = visual.erosion;
-    fog->ambientLight = visual.ambientLight;
-    fog->windSpeedMultiplier = visual.windSpeedMultiplier;
+    fog->noiseScale = visual.fog.noiseScale;
+    fog->noiseIntensity = visual.fog.noiseIntensity;
+    fog->heightDensity = visual.fog.heightDensity;
+    fog->heightFalloff = visual.fog.heightFalloff;
+    fog->extinction = visual.fog.extinction;
+    fog->erosion = visual.fog.erosion;
+    fog->ambientLight = visual.fog.ambientLight;
+    fog->windSpeedMultiplier = visual.fog.windSpeedMultiplier;
 
     // 各天候のパーティクル強さを計算 & 制御
     auto CalculateIntensity = [&](WeatherState checkState) -> float
@@ -210,6 +213,13 @@ void WeatherEffectManager::Update()
                 // 落雷パーティクルの再生。1本ごとに別のエミッターを使う
                 thunderStrikeEmitters_[i]->SetPosition(endPos);
                 thunderStrikeEmitters_[i]->Play();
+
+                // 落ちた所の草に火がつく。雨で濡れているので、燃え広がる距離は短い
+                std::uniform_real_distribution<float> distIgnite(0.0f, 1.0f);
+                if (thunderIgniteRadius_ > 0.0f && distIgnite(randomEngine_) < thunderIgniteChance_)
+                {
+                    engine_->GetRendererManager()->SubmitGrassIgnition(endPos, thunderIgniteRadius_);
+                }
             }
 
             // カメラシェイク (一番近い雷の距離を使って1回だけ揺らす)
@@ -263,6 +273,8 @@ void WeatherEffectManager::DebugGui()
         binder_->Draw("StrikeRadiusMin", "最小発生距離");
         binder_->Draw("StrikeRadiusMax", "最大発生距離");
         binder_->Draw("StrikeHeight", "雷雲の高さ(Y)");
+        binder_->Draw("ThunderIgniteRadius", "落ちた所の草に火がつく半径 (0 でつかない)");
+        binder_->Draw("ThunderIgniteChance", "1 本の雷が火をつける割合 (0 ~ 1)");
 
         if (strikeRadiusMin_ > strikeRadiusMax_)
         {

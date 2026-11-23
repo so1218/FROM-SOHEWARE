@@ -163,12 +163,50 @@ public:
     void SetWorldInteractionCenter(const Vector2& center) { interactionCenter_ = center; }
     Vector2 GetWorldInteractionCenter() const { return interactionCenter_; }
 
+    // 草の延焼
+    GrassFireConstants& GetGrassFireSettings() { return grassFireSettings_; }
+    // その場所の草に火をつける
+    void SubmitGrassIgnition(const Vector3& position, float radius, float strength = 1.0f);
+    // 燃え跡を全部消す
+    void ResetGrassFire() { isGrassFireResetRequested_ = true; }
+
+    // RenderPipeline が燃え具合を進めるのに使う
+    const std::vector<GrassFireIgnition>& GetGrassIgnitions() const { return grassIgnitions_; }
+    void ClearGrassIgnitions() { grassIgnitions_.clear(); }
+    uint32_t GetGrassFireDensityMapSrvIndex() const { return grassFireDensityMapSrvIndex_; }
+    bool ConsumeGrassFireReset()
+    {
+        const bool isRequested = isGrassFireResetRequested_;
+        isGrassFireResetRequested_ = false;
+        return isRequested;
+    }
+    void SetGrassFireData(uint32_t srvIndex, D3D12_GPU_VIRTUAL_ADDRESS cbAddress)
+    {
+        grassFireMapSrvIndex_ = srvIndex;
+        grassFireCBAddress_ = cbAddress;
+    }
+    void SetGrassFireReadback(const std::vector<float>& values, const std::vector<float>& burntValues, uint32_t resolution)
+    {
+        grassFireReadback_ = values;
+        grassBurntReadback_ = burntValues;
+        grassFireReadbackResolution_ = resolution;
+    }
+
+    // 1 フレーム前の、燃えている場所の小さな地図
+    const std::vector<float>& GetGrassFireReadback() const { return grassFireReadback_; }
+    uint32_t GetGrassFireReadbackResolution() const { return grassFireReadbackResolution_; }
+    // その場所の炎の強さ
+    float SampleGrassFire(float worldX, float worldZ) const;
+    // その場所の草の燃え進み具合
+    float SampleGrassBurnt(float worldX, float worldZ) const;
+
     void SetOffscreenColorResource(ID3D12Resource* colorResource) {
         offscreenColorResource_ = colorResource;
     }
 
 private:
     void DrawPostEffectsProcess(uint32_t inputSrvIndex);
+    float SampleGrassReadback(const std::vector<float>& readback, float worldX, float worldZ) const;
 
     void TransitionColorToShaderResource();
     void TransitionColorToRenderTarget();
@@ -212,6 +250,17 @@ private:
     std::vector<InteractionEntity> interactionEntities_;
     InteractionConstants interactionConstants_{};
     Vector2 interactionCenter_{ 0.0f, 0.0f }; // デフォルト値
+
+    // 草の延焼
+    GrassFireConstants grassFireSettings_{};
+    std::vector<GrassFireIgnition> grassIgnitions_;
+    uint32_t grassFireDensityMapSrvIndex_ = 0;
+    bool isGrassFireResetRequested_ = false;
+    uint32_t grassFireMapSrvIndex_ = 0;
+    D3D12_GPU_VIRTUAL_ADDRESS grassFireCBAddress_ = 0;
+    std::vector<float> grassFireReadback_;
+    std::vector<float> grassBurntReadback_;
+    uint32_t grassFireReadbackResolution_ = 0;
 
     // 描画インデックスと描画情報（各プリミティブ）
     RenderEnvironment env_; // 各種マネージャーのポインタをまとめた構造体

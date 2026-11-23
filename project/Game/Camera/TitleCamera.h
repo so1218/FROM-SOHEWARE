@@ -9,7 +9,7 @@ class FollowCamera;
 class TitleCamera : public FS::ICameraController
 {
 public:
-    TitleCamera(FS::Engine* engine, FollowCamera* followCamera);
+    TitleCamera(FS::Engine* engine, FollowCamera* followCamera, const std::string& groupName);
 
     void Initialize();
     void UpdateCamera(FS::Camera* camera) override;

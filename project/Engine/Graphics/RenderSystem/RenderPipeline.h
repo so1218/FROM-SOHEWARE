@@ -18,6 +18,7 @@ class RenderContext;
 class DebugGuiManager;
 class FluidSimulationPass;
 class WorldInteractionPass;
+class GrassFirePass;
 
 // カメラ情報をまとめる構造体
 struct RenderCameraState 
@@ -59,6 +60,7 @@ private:
     std::unique_ptr<PostEffectManager> postEffectManager_;
     std::unique_ptr<RenderCoordinator> renderCoordinator_;
     std::unique_ptr<WorldInteractionPass> worldInteractionPass_;
+    std::unique_ptr<GrassFirePass> grassFirePass_;
 };
 
 }

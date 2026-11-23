@@ -3,6 +3,8 @@
 #include "TimeManager.h"
 #include "AudioPlayer.h"
 #include "GameInput.h"
+#include "StageCatalog.h"
+#include "UISound.h"
 
 using namespace FS;
 
@@ -17,6 +19,16 @@ TitleMenu::TitleMenu(Engine* engine)
     subtitleText_ = std::make_unique<Text>(engine_);
 
     startText_ = std::make_unique<Text>(engine_);
+    // ステージ名は START GAME のすぐ下に、少し小さく出す
+    stageText_ = std::make_unique<Text>(engine_, "Main");
+    stageText_->SetScreenAnchor({ 0.5f, 0.5f });
+    stageText_->SetPivot({ 0.5f, 0.5f });
+    stageText_->SetPosition({ 0.0f, 250.0f });
+    stageText_->SetAlign(TextAlign::Center);
+    stageText_->SetFontSize(24.0f);
+    stageText_->SetCharacterSpacing(4.0f);
+    stageText_->SetShadow({ 2.5f, 2.5f }, { 0.0f, 0.0f, 0.0f, 0.6f }, 3.5f, 1.0f);
+    stageText_->SetLayerOrder(31);
 
     blackScreen_ = std::make_unique<Sprite>(engine_);
     blackScreen_->SetScreenAnchor({ 0.0f, 0.0f });
@@ -29,6 +41,8 @@ void TitleMenu::Initialize()
     binder_->BindTextElement("TitleText", titleText_.get());
     binder_->BindTextElement("SubtitleText", subtitleText_.get());
     binder_->BindTextElement("StartText", startText_.get());
+    // 中身は選んでいるステージから毎回作るので、保存しない
+    binder_->BindTextElement("StageText", stageText_.get(), false);
 
     binder_->Bind("FadeInTime", &fadeInTime_, 2.0f, 0.05f, 0.0f, 10.0f);
     binder_->Bind("TextFadeInDelay", &textFadeInDelay_, 1.0f, 0.05f, 0.0f, 10.0f);
@@ -55,9 +69,12 @@ void TitleMenu::Update()
     case Phase::Waiting:
         if (IsConfirmTriggered())
         {
+            UISound::PlayConfirm();
             phase_ = Phase::Started;
             phaseTimer_ = 0.0f;
+            break;
         }
+        UpdateStageSelect(TimeManager::GetInstance()->GetDeltaTime());
         break;
 
     case Phase::Started:
@@ -73,6 +90,41 @@ bool TitleMenu::IsConfirmTriggered() const
     }
 
     return GameInput::IsTriggered(GameAction::Confirm);
+}
+
+void TitleMenu::UpdateStageSelect(float deltaTime)
+{
+    // 一度選び直したら、シーンを作り直すまで受け付けない
+    if (!isInputEnabled_ || isStageChangeRequested_ || StageCatalog::GetStages().size() < 2)
+    {
+        return;
+    }
+
+    const float horizontal = GameInput::GetMenuHorizontal();
+    const bool isLeft = leftRepeat_.Update((std::max)(-horizontal, 0.0f), deltaTime);
+    const bool isRight = rightRepeat_.Update((std::max)(horizontal, 0.0f), deltaTime);
+    const int move = (isRight ? 1 : 0) - (isLeft ? 1 : 0);
+    if (move == 0)
+    {
+        return;
+    }
+
+    UISound::PlayCursor();
+    StageCatalog::Select(StageCatalog::GetSelectedIndex() + move);
+    isStageChangeRequested_ = true;
+}
+
+bool TitleMenu::TakeStageChangeRequest()
+{
+    const bool isRequested = isStageChangeRequested_;
+    isStageChangeRequested_ = false;
+    return isRequested;
+}
+
+void TitleMenu::SkipFadeIn()
+{
+    phase_ = Phase::Waiting;
+    phaseTimer_ = 0.0f;
 }
 
 void TitleMenu::Skip()
@@ -127,6 +179,14 @@ void TitleMenu::Draw()
     subtitleText_->Draw();
     startText_->SetOpacity(startOpacity);
     startText_->Draw();
+
+    // ステージが 2 つ以上あるときだけ、左右で選べることを見せる
+    if (StageCatalog::GetStages().size() >= 2)
+    {
+        stageText_->SetText("<  " + StageCatalog::GetSelectedStage().displayName + "  >");
+        stageText_->SetOpacity(textOpacity);
+        stageText_->Draw();
+    }
 }
 
 void TitleMenu::DebugGui()
@@ -135,6 +195,7 @@ void TitleMenu::DebugGui()
     binder_->DrawTextElement("TitleText", "タイトル");
     binder_->DrawTextElement("SubtitleText", "サブタイトル");
     binder_->DrawTextElement("StartText", "START GAME");
+    binder_->DrawTextElement("StageText", "ステージ (中身は選んでいるステージから作る)");
     binder_->Draw("FadeInTime", "黒い画面が明けるまで (秒)");
     binder_->Draw("TextFadeInDelay", "文字が出始めるまで (秒)");
     binder_->Draw("TextFadeTime", "文字が出きるまで (秒)");

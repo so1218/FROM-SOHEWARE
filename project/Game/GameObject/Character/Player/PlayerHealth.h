@@ -14,7 +14,10 @@ public:
     void Update();
     void DrawHUD();
 
-    void TakeDamage(int damage);
+    // showFlash が false なら、画面全体を赤くする被弾の色を出さない
+    void TakeDamage(int damage, bool showFlash = true);
+    // 燃えている間は、ゲージを赤く点滅させる
+    void SetBurning(bool isBurning) { isBurning_ = isBurning; }
     void Refill();
 
     bool IsDead() const { return currentHP_ <= 0; }
@@ -38,4 +41,10 @@ private:
     FS::Vector4 flashColor_ = { 0.8f, 0.0f, 0.0f, 0.35f };
     float flashDuration_ = 0.35f;
     float flashTimer_ = 0.0f;
+
+    // 燃えている間のゲージの点滅
+    bool isBurning_ = false;
+    float burnBlinkTime_ = 0.0f;
+    FS::Vector4 burnBlinkColor_ = { 1.0f, 0.3f, 0.05f, 0.95f };
+    float burnBlinkSpeed_ = 8.0f;
 };

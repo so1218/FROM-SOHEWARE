@@ -14,13 +14,15 @@ public:
     void UpdateCamera(FS::Camera* camera) override;
     void DebugGui() override;
     void Reset(FS::Camera* camera) override;
-    // 追いかける相手の真後ろを向き先にする
     void PlaceBehindTarget();
 
     void AddRecoil(float pitchAmount, float yawAmount);
 
     void SetAiming(bool isAiming) { isAiming_ = isAiming; }
     bool IsAiming() const { return isAiming_; }
+
+    // 倒れている間は操作を受け付けず、倒れた体を見下ろす位置へ寄る
+    void SetDeathFocus(bool isDeathFocus);
 
 private:
     float SmoothDamp(float current, float target, float& currentVelocity,
@@ -50,7 +52,15 @@ private:
     float aimFov_ = 0.35f;
     float aimTransitionSmoothTime_ = 0.12f;
     float aimDeadzone_ = 0.08f;                 
-    float aimRotateSpeedMultiplier_ = 0.6f;       // エイム時感度倍率
+    float aimRotateSpeedMultiplier_ = 0.6f;      
+
+    // 倒れたときのカメラ設定
+    bool isDeathFocus_ = false;
+    float deathDistance_ = 30.0f;
+    FS::Vector3 deathLookAtOffset_ = { 0.0f, 0.5f, 0.0f };
+    float deathPitch_ = 0.6f;
+    float deathTransitionTime_ = 0.8f;
+    float deathPitchVelocity_ = 0.0f;
 
     FS::Vector3 currentShoulderOffset_ = { 0.0f, 0.0f, 0.0f };
     FS::Vector3 shoulderOffsetVelocity_ = { 0.0f, 0.0f, 0.0f };
@@ -69,16 +79,18 @@ private:
     float targetDistance_ = 45.0f;
 
     float currentYaw_ = 0.0f;
-    float currentPitch_ = 0.3f;
+    // 遊び始めとリスタートで使う、見下ろす角度
+    static constexpr float kDefaultPitch = 0.3f;
+    float currentPitch_ = kDefaultPitch;
     float distance_ = 45.0f;
 
-    // 今の回転の速さ (ラジアン / 秒)。スティックを離すとすぐ 0 に戻る
+    // 今の回転の速さ
     float yawRate_ = 0.0f;
     float pitchRate_ = 0.0f;
     float distanceVelocity_ = 0.0f;
 
-    float rotationAccelerationTime_ = 0.1f;    // 回し始めてから最高速度になるまで (秒)
-    float rotationDecelerationTime_ = 0.04f;   // 最高速度から止まるまで (秒)
+    float rotationAccelerationTime_ = 0.1f;   
+    float rotationDecelerationTime_ = 0.04f;   
     float zoomSmoothTime_ = 0.2f;
     float positionLerpSpeed_ = 8.0f;
 

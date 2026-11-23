@@ -8,7 +8,7 @@
 class GrassField : public FS::GameObject
 {
 public:
-    GrassField(FS::Engine* engine, FS::Terrain* terrain);
+    GrassField(FS::Engine* engine, FS::Terrain* terrain, const std::string& groupName);
 
     void Initialize() override;
     void Update() override;

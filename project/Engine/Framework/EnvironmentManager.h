@@ -32,6 +32,20 @@ enum class WeatherState
     Thunderstorm    
 };
 
+// Volumetric Fog の見た目。雨と雷雨は天候ごとの値、晴れは昼と夜の値を時間で混ぜたものを使う
+struct FogProfile
+{
+    float noiseScale = 0.03f;
+    float noiseIntensity = 0.0f;
+    float heightDensity = 0.0f;
+    float heightFalloff = 0.0f;
+    Vector3 ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
+    float extinction = 0.005f;
+    float erosion = 0.0f;
+    float windSpeedMultiplier = 1.0f;
+    float sunScattering = 13.0f; // 太陽と月の光が霧を照らす強さ
+};
+
 struct WeatherVisualParams
 {
     // Terrain
@@ -43,15 +57,7 @@ struct WeatherVisualParams
     Vector4 color = { 175.0f / 255.0f, 255.0f / 255.0f, 166.0f / 255.0f, 1.0f };
     float emissiveIntensity = 3.5f;
 
-    // Volumetric Fog
-    float noiseScale = 0.03f;
-    float noiseIntensity = 0.0f;
-    float heightDensity = 0.0f;
-    float heightFalloff = 0.0f;
-    Vector3 ambientLight = { 10.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f };
-    float extinction = 0.005f;
-    float erosion = 0.0f;
-    float windSpeedMultiplier = 1.0f;
+    FogProfile fog;
 };
 
 // 天候が環境に与える影響のプロファイル
@@ -99,6 +105,9 @@ public:
     // 初期化関数
     void Initialize(Engine* engine);
 
+    // 時間・天候・霧などの設定を、groupName のグループから読み直す
+    void LoadSettings(const std::string& groupName);
+
     void Update(LightManager* lightManager);
     void DebugGui();
 
@@ -139,21 +148,29 @@ private:
     void RequestWeatherChange(WeatherState nextWeather);
     // 天候のEnumから対応するプロファイルを返すヘルパー関数
     WeatherProfile GetWeatherProfile(WeatherState state) const;
+    // 霧の設定を ImGui に並べる。prefix は保存キーの頭 (Day, Night, Rain など)
+    void DrawFogSettings(const std::string& prefix);
 
+    Engine* engine_ = nullptr;
     std::unique_ptr<PropertyBinder> binder_;
+    int32_t startWeather_ = 0; 
 
     // パラメータ
     float timeOfDay_ = 12.0f;
     float timeSpeedMultiplier_ = 24.0f;
     Vector3 sunDirection_ = { 0.0f, -1.0f, 0.0f };
 
-    TimeOfDayProfile profileNight_;   // 0時
-    TimeOfDayProfile profileSunrise_; // 6時
-    TimeOfDayProfile profileDay_;     // 12時
-    TimeOfDayProfile profileSunset_;  // 18時
+    TimeOfDayProfile profileNight_;   
+    TimeOfDayProfile profileSunrise_; 
+    TimeOfDayProfile profileDay_;     
+    TimeOfDayProfile profileSunset_; 
 
     // ブレンドされた現在の結果を保存する変数
     TimeOfDayProfile currentProfile_;
+
+    // 晴れのときの霧。昼と夜で持ち、空と同じ時間 (5 ~ 7 時と 17 ~ 19 時) で入れ替える
+    FogProfile fogDay_;
+    FogProfile fogNight_;
 
     WeatherState currentWeather_ = WeatherState::Sunny;
     WeatherState targetWeather_ = WeatherState::Sunny;

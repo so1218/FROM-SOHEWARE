@@ -2,6 +2,7 @@
     "Coin": {
         "BlinkTime": 3.0,
         "Bounce": 0.5,
+        "BurstSoundVolume": 0.800000011920929,
         "CoinModel_AddShadow": 1,
         "CoinModel_AlbedoMap": "white1x1",
         "CoinModel_AlphaThres": 0.009999999776482582,
@@ -96,7 +97,7 @@
         "CollectRadius": 0.800000011920929,
         "EjectSpeed": 30.0,
         "Gravity": 64.5,
-        "LifeTime": 1000.0,
+        "LifeTime": 30.0,
         "LightColor": [
             1.0,
             0.800000011920929,
@@ -107,9 +108,9 @@
         "LightIntensity": 5.0,
         "LightRadius": 13.5,
         "LightVolumetric": 52.25,
-        "MagnetAcceleration": 60.0,
+        "MagnetAcceleration": 70.0,
         "MagnetDelay": 0.30000001192092896,
-        "MagnetMaxSpeed": 30.0,
+        "MagnetMaxSpeed": 50.0,
         "MagnetRadius": 4.0,
         "MaxLitBursts": 1,
         "RestSpeed": 1.5,

@@ -13,7 +13,8 @@ namespace FS
 class BaseScene
 {
 public:
-    BaseScene(Engine* engine, const std::string& sceneName)
+    // カメラ・ポストエフェクト・ライトの設定は settingsGroupName のグループに保存する
+    BaseScene(Engine* engine, const std::string& sceneName, const std::string& settingsGroupName = "")
         : engine_(engine), sceneName_(sceneName)
     {
         collisionManager_ = std::make_unique<CollisionManager>();
@@ -24,7 +25,7 @@ public:
 
         objectManager_.Create<ParticleSystemWrapper>(engine);
 
-        binder_ = std::make_unique<FS::PropertyBinder>(engine_, sceneName_);
+        binder_ = std::make_unique<FS::PropertyBinder>(engine_, settingsGroupName.empty() ? sceneName_ : settingsGroupName);
     }
     virtual ~BaseScene() = default;
 

@@ -1,0 +1,60 @@
+{
+    "GameOverScreen": {
+        "DimColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8470588326454163
+        ],
+        "DimTime": 1.5,
+        "EchoOpacity": 0.44999998807907104,
+        "EchoScale": 1.899999976158142,
+        "EchoTime": 1.100000023841858,
+        "FadeInTime": 1.0,
+        "FadeOutTime": 0.8999999761581421,
+        "HoldTime": 0.5,
+        "KanjiColor": [
+            0.7200000286102295,
+            0.029999973252415657,
+            0.029999973252415657,
+            1.0
+        ],
+        "KanjiDelay": 1.7999999523162842,
+        "KanjiDrift": 0.03999999910593033,
+        "KanjiDriftTime": 6.0,
+        "KanjiFadeTime": 0.30000001192092896,
+        "KanjiFont": "Title",
+        "KanjiFontSize": 150.0,
+        "KanjiGlowColor": [
+            0.44999998807907104,
+            0.0,
+            0.0,
+            0.800000011920929
+        ],
+        "KanjiGlowSoftness": 12.0,
+        "KanjiOffsetY": -20.0,
+        "KanjiSettleTime": 0.6000000238418579,
+        "KanjiSoundVolume": 0.5,
+        "KanjiStartScale": 1.350000023841858,
+        "PromptColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "PromptDelay": 1.399999976158142,
+        "PromptFadeTime": 0.5,
+        "PromptFontSize": 50.5,
+        "PromptIconSize": 50.0,
+        "PromptOffsetY": 210.0,
+        "PromptSpacing": 8.0,
+        "SlowMotionScale": 0.30000001192092896,
+        "SlowMotionTime": 1.2000000476837158,
+        "VignetteAmount": 0.800000011920929,
+        "VignetteColor": [
+            0.11999999731779099,
+            0.0,
+            0.0
+        ]
+    }
+}

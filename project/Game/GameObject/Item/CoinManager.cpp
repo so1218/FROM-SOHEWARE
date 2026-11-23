@@ -30,6 +30,7 @@ void CoinManager::Initialize()
     binder_->Bind("CoinsPerBurst", &c.coinsPerBurst, c.coinsPerBurst, 1.0f, 1, 100);
     binder_->Bind("ValuePerCoin", &c.valuePerCoin, c.valuePerCoin, 1.0f, 0, 10000);
     binder_->Bind("SpawnDuration", &c.spawnDuration, c.spawnDuration, 0.01f, 0.0f, 3.0f);
+    binder_->Bind("BurstSoundVolume", &c.burstSoundVolume, c.burstSoundVolume, 0.01f, 0.0f, 2.0f);
     binder_->Bind("EjectSpeed", &c.ejectSpeed, c.ejectSpeed, 0.1f, 0.0f, 100.0f);
     binder_->Bind("SpreadSpeed", &c.spreadSpeed, c.spreadSpeed, 0.1f, 0.0f, 100.0f);
     binder_->Bind("Gravity", &c.gravity, c.gravity, 0.5f, 0.0f, 200.0f);
@@ -56,6 +57,10 @@ void CoinManager::Initialize()
 void CoinManager::SpawnBurst(const Vector3& position)
 {
     const int burstId = nextBurstId_++;
+
+    // 1 枚ずつ鳴らすと重なって割れるので、まとめて散らばる音を 1 回だけ鳴らす
+    AudioPlayer::GetInstance().Play("coinBurst", config_.burstSoundVolume);
+
     for (int coinIndex = 0; coinIndex < config_.coinsPerBurst; ++coinIndex)
     {
         Coin coin;
@@ -67,6 +72,11 @@ void CoinManager::SpawnBurst(const Vector3& position)
         coin.burstId = burstId;
         coins_.push_back(std::move(coin));
     }
+}
+
+void CoinManager::Clear()
+{
+    coins_.clear();
 }
 
 void CoinManager::Update()
@@ -110,8 +120,7 @@ void CoinManager::UpdateCoin(Coin& coin, float deltaTime, const PlayerArea& play
 
     coin.elapsedTime += deltaTime;
 
-    // 近くにいれば吸い寄せる。出た直後は散らばる様子を見せるため待つ
-    // 体の大きさによらないよう、距離は当たり判定の箱の表面から測る
+    // 近くにいれば吸い寄せる
     const bool canAttract = player_ && player_->IsControllable() && coin.elapsedTime >= config_.magnetDelay;
     if (coin.state != State::Attracted && canAttract)
     {
@@ -177,7 +186,7 @@ void CoinManager::UpdateFlying(Coin& coin, float deltaTime)
         return;
     }
 
-    // 少し浮かせて置く。円柱のモデルは高さ 1 なので、厚みの半分
+    // 少し浮かせて置く
     const float restHeight = groundHeight + config_.scale.y * 0.5f;
     if (coin.position.y > restHeight)
     {
@@ -213,7 +222,7 @@ void CoinManager::Collect(Coin& coin)
     AudioPlayer::GetInstance().Play("coinCollect", 0.3f);
 }
 
-// 1 回分ずつ、残っている枚数の中心に点光源を置く。点光源の数には上限があるので、近いものだけ照らす
+// 1 回分ずつ、残っている枚数の中心に点光源を置く
 void CoinManager::SubmitBurstLights(const Vector3& playerCenter)
 {
     struct BurstLight
@@ -289,6 +298,7 @@ void CoinManager::DebugGui()
         binder_->Draw("CoinsPerBurst", "1 体から出る枚数");
         binder_->Draw("ValuePerCoin", "1 枚の金額");
         binder_->Draw("SpawnDuration", "出し切るまで (秒)");
+        binder_->Draw("BurstSoundVolume", "飛び出すときの音 (coinBurst) の大きさ");
         binder_->Draw("EjectSpeed", "上に飛び出す速さ");
         binder_->Draw("SpreadSpeed", "横に散らばる速さ");
         binder_->Draw("Gravity", "重力");

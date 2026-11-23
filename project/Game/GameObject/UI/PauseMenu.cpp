@@ -3,6 +3,7 @@
 #include "ImGuiManager.h"
 #include "TimeManager.h"
 #include "GameInput.h"
+#include "UISound.h"
 
 using namespace FS;
 
@@ -52,6 +53,7 @@ void PauseMenu::Initialize()
     binder_->BindColor("EditorColor", &editorColor_, { 1.0f, 0.78f, 0.3f, 1.0f });
     binder_->Bind("DescriptionFontSize", &descriptionFontSize_, 20.0f, 0.5f, 4.0f, 200.0f);
     binder_->Bind("DescriptionOffsetY", &descriptionOffsetY_, 40.0f, 1.0f);
+    UISound::BindProperties(*binder_);
 
     isOpen_ = false;
     openAmount_ = 0.0f;
@@ -67,10 +69,12 @@ void PauseMenu::Update()
     {
         if (isOpen_)
         {
+            UISound::PlayPauseClose();
             Close();
         }
         else if (canOpen_)
         {
+            UISound::PlayPauseOpen();
             Open();
         }
         return;
@@ -91,6 +95,7 @@ void PauseMenu::Update()
 
     if (GameInput::IsTriggered(GameAction::Cancel))
     {
+        UISound::PlayPauseClose();
         Close();
         return;
     }
@@ -99,6 +104,7 @@ void PauseMenu::Update()
 
     if (GameInput::IsTriggered(GameAction::Confirm))
     {
+        UISound::PlayConfirm();
         if (items_[cursorIndex_] == Item::QuitGame)
         {
             // 間違えて押しても終わらないように確認
@@ -115,12 +121,14 @@ void PauseMenu::UpdateQuitConfirm(int verticalMove)
 {
     if (GameInput::IsTriggered(GameAction::Cancel))
     {
+        UISound::PlayCancel();
         isConfirmingQuit_ = false;
         return;
     }
 
     if (verticalMove != 0)
     {
+        UISound::PlayCursor();
         quitConfirmIndex_ = 1 - quitConfirmIndex_;
     }
 
@@ -128,11 +136,14 @@ void PauseMenu::UpdateQuitConfirm(int verticalMove)
     {
         if (quitConfirmIndex_ == 1)
         {
+            UISound::PlayConfirm();
             selectedItem_ = Item::QuitGame;
             Close();
         }
         else
         {
+            // やめるを選んだときは戻る音にする
+            UISound::PlayCancel();
             isConfirmingQuit_ = false;
         }
     }
@@ -160,6 +171,11 @@ void PauseMenu::Close()
 
 void PauseMenu::UpdateCursor(int verticalMove)
 {
+    if (verticalMove == 0)
+    {
+        return;
+    }
+    UISound::PlayCursor();
     const int itemCount = static_cast<int>(items_.size());
     cursorIndex_ = (cursorIndex_ + verticalMove + itemCount) % itemCount;
 }
@@ -298,5 +314,6 @@ void PauseMenu::DebugGui()
     binder_->Draw("EditorColor", "エディターの項目の色");
     binder_->Draw("DescriptionFontSize", "説明の文字の大きさ");
     binder_->Draw("DescriptionOffsetY", "説明の位置 (最後の項目の下から)");
+    UISound::DrawProperties(*binder_);
     ImGui::End();
 }

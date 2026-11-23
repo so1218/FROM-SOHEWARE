@@ -304,6 +304,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.cpp">
       <Filter>Graphics\PostProcess</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\GrassFirePass.cpp">
+      <Filter>Graphics\PostProcess</Filter>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.cpp">
       <Filter>Graphics\Renderer</Filter>
     </ClCompile>
@@ -728,6 +731,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.h">
       <Filter>Graphics\PostProcess</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\GrassFirePass.h">
+      <Filter>Graphics\PostProcess</Filter>
+    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.h">
       <Filter>Graphics\Renderer</Filter>
     </ClInclude>
@@ -1082,6 +1088,15 @@
       <Filter>Shaders\Environment</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\WorldInteraction.CS.hlsl">
+      <Filter>Shaders\Environment</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFire.CS.hlsl">
+      <Filter>Shaders\Environment</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFireCommon.hlsli">
+      <Filter>Shaders\Environment</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFireReadback.CS.hlsl">
       <Filter>Shaders\Environment</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Object3D.PS.hlsl">

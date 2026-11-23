@@ -28,7 +28,9 @@ public:
         const GrassMaterialData& materialData,
         const GrassCullingData& cullingData,
         D3D12_GPU_VIRTUAL_ADDRESS interactionCBAddress,  
-        D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle);
+        D3D12_GPU_DESCRIPTOR_HANDLE interactionSrvHandle,
+        D3D12_GPU_VIRTUAL_ADDRESS fireCBAddress,
+        D3D12_GPU_DESCRIPTOR_HANDLE fireSrvHandle);
 
     // 描画状態をクリア（草の数を0にする）
     void Reset() { totalGeneratedCount_ = 0; }

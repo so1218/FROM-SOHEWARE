@@ -101,24 +101,6 @@ float CalculateVolumeMask(FogVolume volume, float3 localPosition)
     return smoothstep(1.0f, 1.0f - volume.blendDistance, distanceFromCenter);
 }
 
-// 歩ける範囲の外で濃くなる霧の濃さ。境界の少し内側から濃くなり始め、低い所ほど濃い
-float CalculateBoundaryFogDensity(float3 position)
-{
-    if (gFogSettings.boundaryEnabled == 0 || gFogSettings.boundaryDensity <= 0.0f)
-        return 0.0f;
-
-    // 範囲の外なら正、中なら負の、境界までの距離。角の外は丸くなる
-    float2 center = (gFogSettings.boundaryMin + gFogSettings.boundaryMax) * 0.5f;
-    float2 halfSize = (gFogSettings.boundaryMax - gFogSettings.boundaryMin) * 0.5f;
-    float2 outside = abs(position.xz - center) - halfSize;
-    float signedDistance = length(max(outside, 0.0f)) + min(max(outside.x, outside.y), 0.0f);
-
-    float rampStart = -gFogSettings.boundaryInset;
-    float ramp = smoothstep(rampStart, rampStart + max(gFogSettings.boundaryRampLength, kMinSafeDistance), signedDistance);
-    float heightFactor = exp(-max(position.y - gFogSettings.boundaryBaseHeight, 0.0f) * gFogSettings.boundaryHeightFalloff);
-    return gFogSettings.boundaryDensity * ramp * heightFactor;
-}
-
 // detailRatio が 0 に近いほど細かい模様を省く
 FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
 {
@@ -133,11 +115,8 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
         heightFactor = exp(-max(position.y - gFogSettings.baseHeight, 0.0f) * gFogSettings.heightFalloff);
     }
     float globalDensity = gFogSettings.extinction + gFogSettings.heightDensity * heightFactor;
-    float boundaryDensity = CalculateBoundaryFogDensity(position);
 
-    // 境界の霧も、全体の霧と同じむらで塊にする
-    bool needsBoundaryNoise = boundaryDensity > 0.0f && gFogSettings.boundaryNoiseIntensity > 0.0f;
-    if (gFogSettings.noiseIntensity > 0.0f || needsBoundaryNoise)
+    if (gFogSettings.noiseIntensity > 0.0f)
     {
         float3 windOffset = float3(gEnvironmentData.windOffset.x, 0.0f, gEnvironmentData.windOffset.y) * gFogSettings.windSpeedMultiplier;
         float3 noisePosition = position;
@@ -150,13 +129,12 @@ FogMedia EvaluateFogMedia(float3 position, float detailRatio, bool isDetailed)
         float shape = CalculateNoiseShape(noise, gFogSettings.coverage, gFogSettings.noiseFeather, gFogSettings.erosion * detailRatio);
 
         // 遠くではむらを弱める
-        float detailFade = lerp(0.2f, 1.0f, detailRatio);
-        globalDensity *= lerp(1.0f, shape, gFogSettings.noiseIntensity * detailFade);
-        boundaryDensity *= lerp(1.0f, shape, gFogSettings.boundaryNoiseIntensity * detailFade);
+        float noiseIntensity = gFogSettings.noiseIntensity * lerp(0.2f, 1.0f, detailRatio);
+        globalDensity *= lerp(1.0f, shape, noiseIntensity);
     }
 
-    media.density += globalDensity + boundaryDensity;
-    media.scattering += (globalDensity + boundaryDensity) * gFogSettings.albedo;
+    media.density += globalDensity;
+    media.scattering += globalDensity * gFogSettings.albedo;
 
     for (uint volumeIndex = 0; volumeIndex < gFogVolumeBuffer.volumeCount; ++volumeIndex)
     {

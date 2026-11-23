@@ -88,6 +88,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogBilateralPass.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogPass.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\GrassFirePass.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\GrassRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LightningRenderer.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogBilateralPass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\VolumetricFogPass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\WorldInteractionPass.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\PostProcess\GrassFirePass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\FoliageRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\GrassRenderer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Graphics\Renderer\LightningRenderer.h" />
@@ -382,6 +384,9 @@
     <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TreeFoliage.PS.hlsl" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\TreeTrunk.PS.hlsl" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\WorldInteraction.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFire.CS.hlsl" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFireCommon.hlsli" />
+    <None Include="$(MSBuildThisFileDirectory)Shaders\Environment\GrassFireReadback.CS.hlsl" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Object3D.PS.hlsl" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Object3D_Instanced.VS.hlsl" />
     <None Include="$(MSBuildThisFileDirectory)Shaders\Objects\Outline.PS.hlsl" />
