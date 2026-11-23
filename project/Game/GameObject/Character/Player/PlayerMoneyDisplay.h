@@ -14,6 +14,8 @@ public:
 
     // 続けて拾ったときは、表示中の+に足していく
     void OnGain(int amount);
+    // 出ている +表示を消す
+    void Reset();
     void Draw(int money);
 
 private:

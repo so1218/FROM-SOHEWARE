@@ -294,10 +294,12 @@ void FollowCamera::PlaceBehindTarget()
 {
     if (!target_) return;
 
-    // カメラは target から (sin(yaw), cos(yaw)) の方向に置かれるので、正面の反対にする
     const Vector3 forward = target_->rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
     currentYaw_ = std::atan2(forward.x, forward.z) + Math::PI;
     yawRate_ = 0.0f;
+    // 倒れたときに見下ろした角度などを残さない
+    currentPitch_ = kDefaultPitch;
+    pitchRate_ = 0.0f;
 }
 
 void FollowCamera::AddRecoil(float pitchAmount, float yawAmount)

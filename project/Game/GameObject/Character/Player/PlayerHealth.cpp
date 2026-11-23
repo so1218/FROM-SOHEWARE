@@ -69,6 +69,8 @@ void PlayerHealth::Refill()
 {
     currentHP_ = maxHP_;
     flashTimer_ = 0.0f;
+    isBurning_ = false;
+    burnBlinkTime_ = 0.0f;
 }
 
 void PlayerHealth::DrawHUD()

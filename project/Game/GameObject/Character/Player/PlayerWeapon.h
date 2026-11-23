@@ -96,6 +96,8 @@ public:
     // 弾が満タンでなく、リロード中でもなければリロードを始める
     void StartReload();
     void Refill();
+    // 弾の種類を普通の弾に戻す
+    void ResetAmmoType() { ammoType_ = AmmoType::Normal; }
 
     int GetAmmo() const { return ammoInMagazine_; }
     int GetMagazineSize() const { return config_.magazineSize; }

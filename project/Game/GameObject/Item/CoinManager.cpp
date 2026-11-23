@@ -74,6 +74,11 @@ void CoinManager::SpawnBurst(const Vector3& position)
     }
 }
 
+void CoinManager::Clear()
+{
+    coins_.clear();
+}
+
 void CoinManager::Update()
 {
     const float deltaTime = TimeManager::GetInstance()->GetDeltaTime();

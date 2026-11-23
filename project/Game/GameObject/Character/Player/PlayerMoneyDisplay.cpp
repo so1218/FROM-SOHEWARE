@@ -61,6 +61,12 @@ void PlayerMoneyDisplay::DrawProperties(PropertyBinder& binder)
     binder.Draw("Money_IconColor", "色");
 }
 
+void PlayerMoneyDisplay::Reset()
+{
+    gainAmount_ = 0;
+    gainTimer_ = 0.0f;
+}
+
 void PlayerMoneyDisplay::OnGain(int amount)
 {
     if (gainTimer_ <= 0.0f)

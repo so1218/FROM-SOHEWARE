@@ -58,8 +58,8 @@ PlayScene::PlayScene(Engine* engine)
     titleCamera_ = std::make_unique<TitleCamera>(engine_, followCamera_.get(), stage.GetGroupName("TitleCamera"));
 
     objectManager_.Create<WeatherEffectManager>(engine_, camera_.get(), cameraManager_.get(), player, terrain);
-    auto coinManager = objectManager_.Create<CoinManager>(engine_, player, terrain);
-    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, coinManager);
+    coinManager_ = objectManager_.Create<CoinManager>(engine_, player, terrain);
+    enemyManager_ = objectManager_.Create<EnemyManager>(engine_, "GameEnemy", terrain, coinManager_);
     objectManager_.Create<EnvironmentPropManager>(engine_, stage.GetGroupName("EnvironmentProps"));
     objectManager_.Create<FoliageField>(engine_, terrain, stage.GetGroupName("FoliageField"));
     gameUI_ = objectManager_.Create<GameUI>(engine_);
@@ -220,6 +220,7 @@ void PlayScene::RestartFromSpawn()
 {
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
+    coinManager_->Clear();
     engine_->GetRendererManager()->ResetGrassFire();
     // 倒れた場所からカメラが追いかけてこないよう、すぐ後ろに置き直す
     followCamera_->SetDeathFocus(false);
@@ -233,6 +234,7 @@ void PlayScene::ReturnToTitle()
     followCamera_->SetDeathFocus(false);
     player_->ResetToSpawn();
     enemyManager_->ResetEnemies();
+    coinManager_->Clear();
     // 次に遊ぶときは、燃える前の草原から始める
     engine_->GetRendererManager()->ResetGrassFire();
     tutorial_->Stop();

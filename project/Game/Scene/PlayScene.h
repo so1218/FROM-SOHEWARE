@@ -10,6 +10,7 @@ class GameUI;
 class EnemyManager;
 class PauseMenu;
 class GameOverScreen;
+class CoinManager;
 
 class PlayScene : public FS::BaseScene
 {
@@ -53,6 +54,7 @@ private:
     EnemyManager* enemyManager_ = nullptr;
     PauseMenu* pauseMenu_ = nullptr;
     GameOverScreen* gameOverScreen_ = nullptr;
+    CoinManager* coinManager_ = nullptr;
 
     Phase phase_ = Phase::Title;
 

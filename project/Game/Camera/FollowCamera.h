@@ -79,7 +79,9 @@ private:
     float targetDistance_ = 45.0f;
 
     float currentYaw_ = 0.0f;
-    float currentPitch_ = 0.3f;
+    // 遊び始めとリスタートで使う、見下ろす角度
+    static constexpr float kDefaultPitch = 0.3f;
+    float currentPitch_ = kDefaultPitch;
     float distance_ = 45.0f;
 
     // 今の回転の速さ

@@ -455,7 +455,14 @@ void Player::ResetToSpawn()
 	burn_->Reset();
 	stamina_->Refill();
 	weapon_->Refill();
+	weapon_->ResetAmmoType();
 	money_ = 0;
+	moneyDisplay_->Reset();
+	reticle_->Reset();
+	concealment_->Reset();
+	// 押したままのダッシュは、押し直すまで効かない
+	CancelSprintInput();
+	prevAnimNormalizedTime_ = 0.0f;
 	if (followCamera_)
 	{
 		followCamera_->SetAiming(false);

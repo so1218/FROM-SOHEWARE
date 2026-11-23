@@ -18,6 +18,8 @@ public:
     void DebugGui() override;
 
     void SpawnBurst(const FS::Vector3& position);
+    // 落ちているコインを全部消す
+    void Clear();
 
 private:
     enum class State
