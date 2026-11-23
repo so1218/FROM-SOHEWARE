@@ -11,7 +11,6 @@ class PropertyBinder;
 class Skydome
 {
 public:
-    // groupName は設定を保存するグループの名前
     Skydome(Engine* engine, const std::string& groupName = "Skydome");
     ~Skydome();
 

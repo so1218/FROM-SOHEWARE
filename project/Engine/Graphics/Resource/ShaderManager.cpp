@@ -74,6 +74,16 @@ void ShaderManager::Initialize()
         fs::create_directories(kShaderCacheDirectory);
         std::ofstream(settingsPath) << kCompileSettings;
     }
+
+    // どれかの .hlsli を変えたら全部作り直す
+    std::error_code errorCode;
+    for (fs::recursive_directory_iterator it(L"Engine/Shaders", errorCode), end; !errorCode && it != end; it.increment(errorCode))
+    {
+        if (it->is_regular_file(errorCode) && it->path().extension() == L".hlsli")
+        {
+            latestIncludeWriteTime_ = (std::max)(latestIncludeWriteTime_, it->last_write_time(errorCode));
+        }
+    }
 #endif
 }
 
@@ -98,7 +108,8 @@ Microsoft::WRL::ComPtr<IDxcBlob> ShaderManager::CompileShader(const std::wstring
     bool needCompile = true;
     if (fs::exists(csoPath) && fs::exists(srcPath))
     {
-        if (fs::last_write_time(csoPath) >= fs::last_write_time(srcPath))
+        const fs::file_time_type sourceWriteTime = (std::max)(fs::last_write_time(srcPath), latestIncludeWriteTime_);
+        if (fs::last_write_time(csoPath) >= sourceWriteTime)
         {
             needCompile = false; // .cso の方が新しいのでコンパイル不要
         }

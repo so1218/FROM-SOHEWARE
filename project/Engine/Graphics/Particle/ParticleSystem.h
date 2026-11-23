@@ -27,8 +27,7 @@ public:
         const WorldTransform* attractionTarget, const ModelData* emitterModelData = nullptr,
         const AnimationModel* emitterAnimModel = nullptr);
     void Update();
-    // プリセットからエミッターを作って登録する。持ち主は ParticleSystem で、返したポインタは使う側が覚えておいて Play などに使う。
-    // シーンの切り替えで消えるので、シーンをまたいで持ち続けない
+    // プリセットからエミッターを作って登録
     ParticleEmitter* SpawnEmitter(const std::string& presetName, std::source_location location = std::source_location::current());
     void AddEmitter(std::unique_ptr<ParticleEmitter> emitter);
     std::unique_ptr<ParticleEmitter> CreateEmitter(const std::string& presetName, std::source_location location = std::source_location::current());

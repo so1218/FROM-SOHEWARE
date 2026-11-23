@@ -25,6 +25,8 @@ private:
 
     // シェーダーキャッシュ
     std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDxcBlob>> shaderCache_;
+    // 共通のヘッダー (.hlsli) のうち、一番新しく書き換えた時刻
+    fs::file_time_type latestIncludeWriteTime_{};
 };
 
 }

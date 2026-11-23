@@ -16,7 +16,7 @@ namespace FS
 namespace
 {
 
-// チャンクの始まりの位置を並べる。最後のチャンクは前のチャンクと重ねて、地形の端に揃える
+// チャンクの始まりの位置を並べる
 std::vector<uint32_t> CalculateChunkStarts(uint32_t totalCells, uint32_t chunkCells)
 {
     std::vector<uint32_t> starts;
@@ -300,7 +300,7 @@ void Terrain::CreateChunks()
 
 void Terrain::CreateMesh()
 {
-    // 頂点は位置を持たず、チャンクの中で何番目かだけを持つ。高さと位置はシェーダーで決める
+    // 頂点は位置を持たず、チャンクの中で何番目かだけを持つ
     const uint32_t vertexCountX = chunkCellsX_ + 1;
     const uint32_t vertexCountZ = chunkCellsZ_ + 1;
 
@@ -376,7 +376,7 @@ bool Terrain::GetHeightAt(float worldX, float worldZ, float& outHeight) const
     const uint32_t cellZ = static_cast<uint32_t>(gridZ);
     if (cellX >= heightMapWidth_ - 1 || cellZ >= heightMapHeight_ - 1) return false;
 
-    // メッシュと同じ三角形の上で補間する
+    // メッシュと同じ三角形の上で補間
     const float u = gridX - cellX;
     const float v = gridZ - cellZ;
     const float height00 = GetHeightRatio(cellX, cellZ);

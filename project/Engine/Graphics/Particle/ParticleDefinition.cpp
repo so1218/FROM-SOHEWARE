@@ -10,7 +10,7 @@ Vector3 ShapeModule::GetInitialPositionOffset(const ModelData* overrideModelData
     switch (type)
     {
     case Type::Point:
-        return { 0.0f, 0.0f, 0.0f }; // 原点のみ
+        return { 0.0f, 0.0f, 0.0f }; 
 
     case Type::Box:
         // ボックス内部のランダムな位置
