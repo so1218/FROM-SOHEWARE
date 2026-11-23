@@ -116,10 +116,8 @@ private:
 
     std::string prefix_;
 
-    // 影の地図をカメラの描画距離いっぱいに広げると 1 ピクセルが大きくなり、葉の影の形が出ない
-    // そのため影はこの距離までにして、手前のカスケードほど細かく割り振る
-    float shadowDistance_ = 120.0f;
-    float cascadeSplitLambda_ = 0.75f;   // 0 で等間隔、1 で手前ほど細かく (対数) 分ける
+    float shadowDistance_ = 300.0f;
+    float cascadeSplitLambda_ = 0.75f;   
 };
 
 }

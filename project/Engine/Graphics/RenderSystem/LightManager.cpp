@@ -467,7 +467,7 @@ void LightManager::BindProperties(PropertyBinder& binder, const std::string& pre
         binder.Bind(dp + "VolumetricScattering", &dir.volumetricScatteringIntensity, 5.0f, 0.1f, 0.0f, 50.0f);
     }
 
-    binder.Bind(p + "Shadow/Distance", &shadowDistance_, 120.0f, 1.0f, 5.0f, 2000.0f);
+    binder.Bind(p + "Shadow/Distance", &shadowDistance_, 300.0f, 1.0f, 5.0f, 2000.0f);
     binder.Bind(p + "Shadow/SplitLambda", &cascadeSplitLambda_, 0.75f, 0.01f, 0.0f, 1.0f);
 }
 

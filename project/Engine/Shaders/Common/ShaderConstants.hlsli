@@ -40,7 +40,7 @@
 #define LIGHT_SPOT 5
 
 #define MAX_FOG_EFFECTORS 4
-#define MAX_FOG_VOLUMES 8
+#define MAX_FOG_VOLUMES 32
 
 // SpriteInstance の drawMode
 #define SPRITE_DRAW_MODE_NORMAL   0
@@ -515,7 +515,7 @@ struct GrassFireConstants
     float groundScorchDarkness; 
 
     float3 charColor;       
-    float rainSpreadDistanceRate;   // 濡れきったときに、燃え広がる距離に掛ける割合
+    float rainSpreadDistanceRate;  
 
     GrassFireIgnition ignitions[MAX_GRASS_FIRE_IGNITIONS];
 };
