@@ -20,6 +20,7 @@
 #include "PlayerStateDodge.h"
 #include "PlayerStateCrawl.h"
 #include "PlayerStateDeath.h"
+#include "PlayerStateHurt.h"
 #include "PlayerConcealment.h"
 #include "PlayerBurn.h"
 #include "Enemy.h"
@@ -49,7 +50,11 @@ engine_(engine), camera_(camera), terrain_(terrain), treeField_(treeField)
 	collider_->SetCollisionMask(CollisionLayer::Enemy | CollisionLayer::Prop);
 }
 
-Player::~Player() = default;
+Player::~Player()
+{
+	// 当たった瞬間に遅くした時間を、次のシーンに残さない
+	EndHitStop();
+}
 
 void Player::Initialize()
 {
@@ -93,6 +98,14 @@ void Player::Initialize()
 	binder_->Bind("DodgeDuration", &config.dodgeDuration, 0.4f, 0.01f, 0.05f, 3.0f);
 	binder_->Bind("DodgeStaminaCost", &config.dodgeStaminaCost, 30.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("DodgeAnimSpeed", &config.dodgeAnimSpeed, 1.6f, 0.01f, 0.1f, 5.0f);
+
+	binder_->Bind("HitKnockbackDistance", &config.hitKnockbackDistance, 3.0f, 0.1f, 0.0f, 50.0f);
+	binder_->Bind("HitKnockbackTime", &config.hitKnockbackTime, 0.25f, 0.01f, 0.01f, 2.0f);
+	binder_->Bind("HitStunTime", &config.hitStunTime, 0.4f, 0.01f, 0.0f, 3.0f);
+	binder_->Bind("HitInvulnerableTime", &config.hitInvulnerableTime, 0.8f, 0.01f, 0.0f, 5.0f);
+	binder_->Bind("HitCameraShake", &config.hitCameraShake, 0.04f, 0.001f, 0.0f, 0.5f);
+	binder_->Bind("HitStopTime", &config.hitStopTime, 0.05f, 0.005f, 0.0f, 0.5f);
+	binder_->Bind("HitStopTimeScale", &config.hitStopTimeScale, 0.05f, 0.01f, 0.0f, 1.0f);
 	binder_->Bind("JumpStaminaCost", &config.jumpStaminaCost, 15.0f, 0.5f, 0.0f, 500.0f);
 	binder_->Bind("CrouchSpeed", &config.crawlSpeed, 0.1f, 0.005f, 0.0f, 5.0f);
 	binder_->Bind("CrouchWalkAnimSpeed", &config.crawlWalkAnimSpeed, 0.7f, 0.01f, 0.1f, 5.0f);
@@ -119,6 +132,9 @@ void Player::Initialize()
 void Player::Update()
 {
 	float deltaTime = TimeManager::GetInstance()->GetDeltaTime();
+
+	UpdateHitStop();
+	invulnerableTimer_ = std::max(invulnerableTimer_ - deltaTime, 0.0f);
 
 	moveDirection_ = ReadMoveInput();
 	UpdateSprintInput();
@@ -422,6 +438,79 @@ void Player::TakeBurnDamage(int damage)
 	}
 }
 
+void Player::TakeHit(int damage, const Vector3& knockbackDirection)
+{
+	// 囲まれて続けざまに殴られないよう、殴られた直後は効かない
+	if (IsDead() || invulnerableTimer_ > 0.0f || stateMachine_->IsCurrentState<PlayerStateDodge>())
+	{
+		return;
+	}
+
+	health_->TakeDamage(damage);
+	GameInput::StartVibration(0.7f, 0.7f, 0.2f);
+
+	if (health_->IsDead())
+	{
+		StartDeath();
+		return;
+	}
+
+	invulnerableTimer_ = config.hitInvulnerableTime;
+	weapon_->CancelReload();
+	stateMachine_->ChangeState<PlayerStateHurt>(knockbackDirection);
+
+	if (followCamera_)
+	{
+		followCamera_->SetAiming(false);
+		const float pitch = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * config.hitCameraShake;
+		const float yaw = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * config.hitCameraShake;
+		followCamera_->AddRecoil(pitch, yaw);
+	}
+
+	StartHitStop();
+}
+
+void Player::StartHitStop()
+{
+	TimeManager* timeManager = TimeManager::GetInstance();
+	// ポーズ中や、もう止めているときは重ねない
+	if (isHitStopActive_ || config.hitStopTime <= 0.0f || timeManager->GetTimeScale() <= 0.0f)
+	{
+		return;
+	}
+
+	timeScaleBeforeHitStop_ = timeManager->GetTimeScale();
+	timeManager->SetTimeScale(timeScaleBeforeHitStop_ * config.hitStopTimeScale);
+	hitStopTimer_ = config.hitStopTime;
+	isHitStopActive_ = true;
+}
+
+void Player::UpdateHitStop()
+{
+	TimeManager* timeManager = TimeManager::GetInstance();
+	// ポーズで止まっている間は数えない
+	if (!isHitStopActive_ || timeManager->GetTimeScale() <= 0.0f)
+	{
+		return;
+	}
+
+	hitStopTimer_ -= timeManager->GetUnscaledDeltaTime();
+	if (hitStopTimer_ <= 0.0f)
+	{
+		EndHitStop();
+	}
+}
+
+void Player::EndHitStop()
+{
+	if (!isHitStopActive_)
+	{
+		return;
+	}
+	TimeManager::GetInstance()->SetTimeScale(timeScaleBeforeHitStop_);
+	isHitStopActive_ = false;
+}
+
 bool Player::IsDead() const
 {
 	return health_->IsDead();
@@ -456,6 +545,8 @@ void Player::ResetToSpawn()
 	stamina_->Refill();
 	weapon_->Refill();
 	weapon_->ResetAmmoType();
+	EndHitStop();
+	invulnerableTimer_ = 0.0f;
 	money_ = 0;
 	moneyDisplay_->Reset();
 	reticle_->Reset();
@@ -612,7 +703,8 @@ bool Player::IsJumpInputTriggered() const
 
 bool Player::IsReloadInputTriggered() const
 {
-	return isControllable_ && GameInput::IsTriggered(GameAction::Reload);
+	// よろけている間はリロードできない
+	return isControllable_ && !stateMachine_->IsCurrentState<PlayerStateHurt>() && GameInput::IsTriggered(GameAction::Reload);
 }
 
 bool Player::IsCrawlInputTriggered() const
@@ -740,6 +832,17 @@ void Player::DebugGui()
 		binder_->Draw("DodgeDuration", "かかる時間 (秒)");
 		binder_->Draw("DodgeStaminaCost", "スタミナ消費");
 		binder_->Draw("DodgeAnimSpeed", "アニメ速度");
+	}
+
+	if (ImGui::CollapsingHeader("殴られたとき"))
+	{
+		binder_->Draw("HitKnockbackDistance", "押し飛ばされる距離");
+		binder_->Draw("HitKnockbackTime", "押し飛ばされる時間 (秒)");
+		binder_->Draw("HitStunTime", "操作できない時間 (秒)");
+		binder_->Draw("HitInvulnerableTime", "次に殴られても効かない時間 (秒)");
+		binder_->Draw("HitCameraShake", "カメラの揺れ (ラジアン)");
+		binder_->Draw("HitStopTime", "当たった瞬間に止める時間 (秒)");
+		binder_->Draw("HitStopTimeScale", "止めている間の時間の速さ");
 	}
 
 	if (ImGui::CollapsingHeader("初期位置"))

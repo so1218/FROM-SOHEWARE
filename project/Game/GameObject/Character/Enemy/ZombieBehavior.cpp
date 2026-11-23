@@ -231,7 +231,13 @@ void ZombieBehavior::UpdateAttack(Enemy* owner, float deltaTime)
         if (HorizontalDistance(position, playerPosition) <= config_.attackRange + config_.attackReachMargin &&
             IsInAttackAngle(owner, playerPosition))
         {
-            player_->TakeDamage(config_.attackDamage);
+            // ゾンビから離れる向きへ押し飛ばす
+            Vector3 knockbackDirection = { playerPosition.x - position.x, 0.0f, playerPosition.z - position.z };
+            if (knockbackDirection.LengthSq() < 0.0001f)
+            {
+                knockbackDirection = owner->GetTransform().rotation_.RotateVector({ 0.0f, 0.0f, 1.0f });
+            }
+            player_->TakeHit(config_.attackDamage, knockbackDirection);
         }
     }
 

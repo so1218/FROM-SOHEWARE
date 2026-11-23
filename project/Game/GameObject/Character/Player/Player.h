@@ -61,6 +61,15 @@ public:
 		float dodgeStaminaCost = 30.0f;
 		float dodgeAnimSpeed = 1.6f;
 
+		// 殴られたとき
+		float hitKnockbackDistance = 3.0f;  
+		float hitKnockbackTime = 0.25f;     
+		float hitStunTime = 0.4f;           
+		float hitInvulnerableTime = 0.8f;   
+		float hitCameraShake = 0.04f;       
+		float hitStopTime = 0.05f;          
+		float hitStopTimeScale = 0.05f;     
+
 		float jumpStaminaCost = 15.0f;
 
 		// 這う
@@ -85,6 +94,7 @@ public:
 
 	void FireWeapon();
 	void TakeDamage(int damage); 
+	void TakeHit(int damage, const FS::Vector3& knockbackDirection);
 	// 燃えている草の上で受ける継続ダメージ
 	void TakeBurnDamage(int damage);
 
@@ -219,6 +229,10 @@ private:
 	void PlaceAtSpawn();
 	// 倒れる
 	void StartDeath();
+	// 当たった瞬間に一瞬だけ時間を遅くして、衝撃を強調する
+	void StartHitStop();
+	void UpdateHitStop();
+	void EndHitStop();
 	FS::Vector3 spawnPosition_ = { 0.0f, 0.0f, 0.0f };  
 	float spawnRotationY_ = 0.0f;                        
 	bool isSprintInputActive_ = false;
@@ -226,6 +240,12 @@ private:
 	bool isSprintRepressRequired_ = false;
 
 	int shotCount_ = 0;
+
+	// 殴られたとき
+	float invulnerableTimer_ = 0.0f;
+	bool isHitStopActive_ = false;
+	float hitStopTimer_ = 0.0f;
+	float timeScaleBeforeHitStop_ = 1.0f;
 	bool isControllable_ = true;
 };
 

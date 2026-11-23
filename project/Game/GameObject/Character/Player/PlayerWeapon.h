@@ -95,6 +95,8 @@ public:
     bool CanFire() const { return !IsReloading() && fireCooldown_ <= 0.0f && ammoInMagazine_ > 0; }
     // 弾が満タンでなく、リロード中でもなければリロードを始める
     void StartReload();
+    // リロードを途中でやめる
+    void CancelReload() { reloadTimer_ = 0.0f; }
     void Refill();
     // 弾の種類を普通の弾に戻す
     void ResetAmmoType() { ammoType_ = AmmoType::Normal; }
